@@ -17,7 +17,6 @@
 #include "chrome/browser/offline_pages/android/background_scheduler_bridge.h"
 #include "chrome/browser/offline_pages/android/downloads/offline_page_notification_bridge.h"
 #include "chrome/browser/offline_pages/android/evaluation/evaluation_test_scheduler.h"
-#include "chrome/browser/offline_pages/android/prerendering_offliner.h"
 #include "chrome/browser/offline_pages/background_loader_offliner.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/offline_pages/request_coordinator_factory.h"
@@ -168,16 +167,6 @@ std::unique_ptr<KeyedService> GetTestingRequestCoordinator(
   return std::move(request_coordinator);
 }
 
-std::unique_ptr<KeyedService> GetTestPrerenderRequestCoordinator(
-    content::BrowserContext* context) {
-  std::unique_ptr<OfflinerPolicy> policy(new OfflinerPolicy());
-  std::unique_ptr<Offliner> offliner(new PrerenderingOffliner(
-      context, policy.get(),
-      OfflinePageModelFactory::GetForBrowserContext(context)));
-  return GetTestingRequestCoordinator(context, std::move(policy),
-                                      std::move(offliner));
-}
-
 std::unique_ptr<KeyedService> GetTestBackgroundLoaderRequestCoordinator(
     content::BrowserContext* context) {
   std::unique_ptr<OfflinerPolicy> policy(new OfflinerPolicy());
@@ -190,35 +179,28 @@ std::unique_ptr<KeyedService> GetTestBackgroundLoaderRequestCoordinator(
 }
 
 RequestCoordinator* GetRequestCoordinator(Profile* profile,
-                                          bool use_evaluation_scheduler,
-                                          bool use_background_loader) {
+                                          bool use_evaluation_scheduler) {
   if (!use_evaluation_scheduler) {
     return RequestCoordinatorFactory::GetForBrowserContext(profile);
   }
-  if (use_background_loader) {
-    return static_cast<RequestCoordinator*>(
-        RequestCoordinatorFactory::GetInstance()->SetTestingFactoryAndUse(
-            profile, &GetTestBackgroundLoaderRequestCoordinator));
-  }
   return static_cast<RequestCoordinator*>(
       RequestCoordinatorFactory::GetInstance()->SetTestingFactoryAndUse(
-          profile, &GetTestPrerenderRequestCoordinator));
+          profile, &GetTestBackgroundLoaderRequestCoordinator));
 }
+
 }  // namespace
 
 static jlong CreateBridgeForProfile(JNIEnv* env,
                                     const JavaParamRef<jobject>& obj,
                                     const JavaParamRef<jobject>& j_profile,
-                                    const jboolean j_use_evaluation_scheduler,
-                                    const jboolean j_use_background_loader) {
+                                    const jboolean j_use_evaluation_scheduler) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
 
   OfflinePageModel* offline_page_model =
       OfflinePageModelFactory::GetForBrowserContext(profile);
 
   RequestCoordinator* request_coordinator = GetRequestCoordinator(
-      profile, static_cast<bool>(j_use_evaluation_scheduler),
-      static_cast<bool>(j_use_background_loader));
+      profile, static_cast<bool>(j_use_evaluation_scheduler));
 
   if (offline_page_model == nullptr || request_coordinator == nullptr)
     return 0;
