@@ -50,7 +50,7 @@ class MEDIA_MOJO_EXPORT MojoCdmService : public mojom::ContentDecryptionModule {
   // mojom::ContentDecryptionModule implementation.
   void SetClient(mojom::ContentDecryptionModuleClientPtr client) final;
   void Initialize(const std::string& key_system,
-                  const std::string& security_origin,
+                  const url::Origin& security_origin,
                   const CdmConfig& cdm_config,
                   InitializeCallback callback) final;
   void SetServerCertificate(const std::vector<uint8_t>& certificate_data,

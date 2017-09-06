@@ -183,11 +183,15 @@ MockCdmSessionPromise::~MockCdmSessionPromise() {
   MarkPromiseSettled();
 }
 
-MockCdm::MockCdm(const SessionMessageCB& session_message_cb,
+MockCdm::MockCdm(const std::string& key_system,
+                 const url::Origin& security_origin,
+                 const SessionMessageCB& session_message_cb,
                  const SessionClosedCB& session_closed_cb,
                  const SessionKeysChangeCB& session_keys_change_cb,
                  const SessionExpirationUpdateCB& session_expiration_update_cb)
-    : session_message_cb_(session_message_cb),
+    : key_system_(key_system),
+      security_origin_(security_origin),
+      session_message_cb_(session_message_cb),
       session_closed_cb_(session_closed_cb),
       session_keys_change_cb_(session_keys_change_cb),
       session_expiration_update_cb_(session_expiration_update_cb) {}
@@ -258,7 +262,7 @@ MockCdmFactory::~MockCdmFactory() {}
 
 void MockCdmFactory::Create(
     const std::string& key_system,
-    const url::Origin& /* security_origin */,
+    const url::Origin& security_origin,
     const CdmConfig& /* cdm_config */,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
@@ -278,8 +282,8 @@ void MockCdmFactory::Create(
   // Create and return a new MockCdm. Keep a pointer to the created CDM so
   // that tests can access it. Calls to GetCdmContext() can be ignored.
   scoped_refptr<MockCdm> cdm = new StrictMock<MockCdm>(
-      session_message_cb, session_closed_cb, session_keys_change_cb,
-      session_expiration_update_cb);
+      key_system, security_origin, session_message_cb, session_closed_cb,
+      session_keys_change_cb, session_expiration_update_cb);
   created_cdm_ = cdm.get();
   EXPECT_CALL(*created_cdm_.get(), GetCdmContext());
   cdm_created_cb.Run(std::move(cdm), "");

@@ -135,6 +135,9 @@ class MojoCdmTest : public ::testing::Test {
     EXPECT_EQ(SUCCESS, expected_result);
     mojo_cdm_ = cdm;
     remote_cdm_ = cdm_factory_.GetCreatedCdm();
+    EXPECT_EQ(kClearKeyKeySystem, remote_cdm_->GetKeySystem());
+    EXPECT_EQ(kTestSecurityOrigin,
+              remote_cdm_->GetSecurityOrigin().Serialize());
   }
 
   void ForceConnectionError() {

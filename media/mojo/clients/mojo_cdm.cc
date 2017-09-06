@@ -116,10 +116,8 @@ void MojoCdm::InitializeCdm(const std::string& key_system,
 
   pending_init_promise_ = std::move(promise);
 
-  // TODO(jrummell): Pass |security_origin| as a url.mojom.Origin.
-  // http://crbug.com/639438.
   remote_cdm_->Initialize(
-      key_system, security_origin.Serialize(), cdm_config,
+      key_system, security_origin, cdm_config,
       base::Bind(&MojoCdm::OnCdmInitialized, base::Unretained(this)));
 }
 
