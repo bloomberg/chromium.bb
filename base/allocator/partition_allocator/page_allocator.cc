@@ -98,7 +98,7 @@ size_t s_reservation_size = 0;
 static void* SystemAllocPages(void* hint,
                               size_t length,
                               PageAccessibilityConfiguration page_accessibility,
-                              bool commit = true) {
+                              bool commit) {
   DCHECK(!(length & kPageAllocationGranularityOffsetMask));
   DCHECK(!(reinterpret_cast<uintptr_t>(hint) &
            kPageAllocationGranularityOffsetMask));
@@ -147,15 +147,14 @@ static void* SystemAllocPages(void* hint,
   return ret;
 }
 
-}  // namespace
-
 // Trims base to given length and alignment. Windows returns null on failure and
 // frees base.
 static void* TrimMapping(void* base,
                          size_t base_length,
                          size_t trim_length,
                          uintptr_t align,
-                         PageAccessibilityConfiguration page_accessibility) {
+                         PageAccessibilityConfiguration page_accessibility,
+                         bool commit) {
   size_t pre_slack = reinterpret_cast<uintptr_t>(base) & (align - 1);
   if (pre_slack)
     pre_slack = align - pre_slack;
@@ -180,17 +179,20 @@ static void* TrimMapping(void* base,
   if (pre_slack || post_slack) {
     ret = reinterpret_cast<char*>(base) + pre_slack;
     FreePages(base, base_length);
-    ret = SystemAllocPages(ret, trim_length, page_accessibility);
+    ret = SystemAllocPages(ret, trim_length, page_accessibility, commit);
   }
 #endif
 
   return ret;
 }
 
+}  // namespace
+
 void* AllocPages(void* address,
                  size_t length,
                  size_t align,
-                 PageAccessibilityConfiguration page_accessibility) {
+                 PageAccessibilityConfiguration page_accessibility,
+                 bool commit) {
   DCHECK(length >= kPageAllocationGranularity);
   DCHECK(!(length & kPageAllocationGranularityOffsetMask));
   DCHECK(align >= kPageAllocationGranularity);
@@ -210,7 +212,7 @@ void* AllocPages(void* address,
 
   // First try to force an exact-size, aligned allocation from our random base.
   for (int count = 0; count < 3; ++count) {
-    void* ret = SystemAllocPages(address, length, page_accessibility);
+    void* ret = SystemAllocPages(address, length, page_accessibility, commit);
     if (kHintIsAdvisory || ret) {
       // If the alignment is to our liking, we're done.
       if (!(reinterpret_cast<uintptr_t>(ret) & align_offset_mask))
@@ -246,12 +248,11 @@ void* AllocPages(void* address,
   do {
     // Don't continue to burn cycles on mandatory hints (Windows).
     address = kHintIsAdvisory ? GetRandomPageBase() : nullptr;
-    ret = SystemAllocPages(address, try_length, page_accessibility);
+    ret = SystemAllocPages(address, try_length, page_accessibility, commit);
     // The retries are for Windows, where a race can steal our mapping on
     // resize.
-  } while (ret &&
-           (ret = TrimMapping(ret, try_length, length, align,
-                              page_accessibility)) == nullptr);
+  } while (ret && (ret = TrimMapping(ret, try_length, length, align,
+                                     page_accessibility, commit)) == nullptr);
 
   return ret;
 }
@@ -359,12 +360,10 @@ void DiscardSystemPages(void* address, size_t length) {
 }
 
 bool ReserveAddressSpace(size_t size) {
-  DCHECK(size >= kPageAllocationGranularity);
-  DCHECK(!(size & kPageAllocationGranularityOffsetMask));
-
   // Don't take |s_reserveLock| while allocating, since a failure would invoke
   // ReleaseReservation and deadlock.
-  void* mem = SystemAllocPages(nullptr, size, PageInaccessible, false);
+  void* mem = AllocPages(nullptr, size, kPageAllocationGranularity,
+                         PageInaccessible, false);
   // We guarantee this alignment when reserving address space.
   DCHECK(!(reinterpret_cast<uintptr_t>(mem) &
            kPageAllocationGranularityOffsetMask));

@@ -53,7 +53,8 @@ enum PageAccessibilityConfiguration {
 BASE_EXPORT void* AllocPages(void* address,
                              size_t length,
                              size_t align,
-                             PageAccessibilityConfiguration page_accessibility);
+                             PageAccessibilityConfiguration page_accessibility,
+                             bool commit = true);
 
 // Free one or more pages.
 // address and length must match a previous call to allocPages().
