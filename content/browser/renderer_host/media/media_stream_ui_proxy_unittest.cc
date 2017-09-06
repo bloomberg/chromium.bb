@@ -9,8 +9,11 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/test/test_render_frame_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
@@ -257,6 +260,175 @@ TEST_F(MediaStreamUIProxyTest, WindowIdCallbackCalled) {
                     base::BindOnce(&MockStopStreamHandler::OnWindowId,
                                    base::Unretained(&handler)));
   base::RunLoop().RunUntilIdle();
+}
+
+// Basic tests for feature policy checks through the MediaStreamUIProxy. These
+// tests are not meant to cover every edge case as the FeaturePolicy class
+// itself is tested thoroughly in feature_policy_unittest.cc and in
+// render_frame_host_feature_policy_unittest.cc.
+class MediaStreamUIProxyFeaturePolicyTest
+    : public RenderViewHostImplTestHarness {
+ public:
+  void SetUp() override {
+    RenderViewHostImplTestHarness::SetUp();
+    NavigateAndCommit(GURL("https://example.com"));
+  }
+
+ protected:
+  // The header policy should only be set once on page load, so we refresh the
+  // page to simulate that.
+  void RefreshPageAndSetHeaderPolicy(RenderFrameHost* rfh,
+                                     blink::WebFeaturePolicyFeature feature,
+                                     bool enabled) {
+    NavigateAndCommit(rfh->GetLastCommittedURL());
+    std::vector<url::Origin> whitelist;
+    if (enabled)
+      whitelist.push_back(rfh->GetLastCommittedOrigin());
+    RenderFrameHostTester::For(rfh)->SimulateFeaturePolicyHeader(feature,
+                                                                 whitelist);
+  }
+
+  void GetResultForRequest(std::unique_ptr<MediaStreamRequest> request,
+                           MediaStreamDevices* devices_out,
+                           MediaStreamRequestResult* result_out) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(
+            &MediaStreamUIProxyFeaturePolicyTest::GetResultForRequestOnIOThread,
+            base::Unretained(this), base::Passed(&request)));
+    run_loop.Run();
+    *devices_out = devices_;
+    *result_out = result_;
+  }
+
+  std::unique_ptr<MediaStreamRequest> CreateRequest(RenderFrameHost* rfh,
+                                                    MediaStreamType mic_type,
+                                                    MediaStreamType cam_type) {
+    return base::MakeUnique<MediaStreamRequest>(
+        rfh->GetProcess()->GetID(), rfh->GetRoutingID(), 0,
+        rfh->GetLastCommittedURL(), false, MEDIA_GENERATE_STREAM, std::string(),
+        std::string(), mic_type, cam_type, false);
+  }
+
+ private:
+  class TestRFHDelegate : public RenderFrameHostDelegate {
+    void RequestMediaAccessPermission(
+        const MediaStreamRequest& request,
+        const MediaResponseCallback& callback) override {
+      MediaStreamDevices devices;
+      if (request.audio_type == MEDIA_DEVICE_AUDIO_CAPTURE) {
+        devices.push_back(
+            MediaStreamDevice(MEDIA_DEVICE_AUDIO_CAPTURE, "Mic", "Mic"));
+      }
+      if (request.video_type == MEDIA_DEVICE_VIDEO_CAPTURE) {
+        devices.push_back(
+            MediaStreamDevice(MEDIA_DEVICE_VIDEO_CAPTURE, "Camera", "Camera"));
+      }
+      std::unique_ptr<MockMediaStreamUI> ui(new MockMediaStreamUI());
+      callback.Run(devices, MEDIA_DEVICE_OK, std::move(ui));
+    }
+  };
+
+  void GetResultForRequestOnIOThread(
+      std::unique_ptr<MediaStreamRequest> request) {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    proxy_ = MediaStreamUIProxy::CreateForTests(&delegate_);
+    proxy_->RequestAccess(
+        std::move(request),
+        base::Bind(
+            &MediaStreamUIProxyFeaturePolicyTest::FinishedGetResultOnIOThread,
+            base::Unretained(this)));
+  }
+
+  void FinishedGetResultOnIOThread(const MediaStreamDevices& devices,
+                                   MediaStreamRequestResult result) {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    proxy_.reset();
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&MediaStreamUIProxyFeaturePolicyTest::FinishedGetResult,
+                   base::Unretained(this), devices, result));
+  }
+
+  void FinishedGetResult(const MediaStreamDevices& devices,
+                         MediaStreamRequestResult result) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    devices_ = devices;
+    result_ = result;
+    quit_closure_.Run();
+  }
+
+  // These should only be accessed on the UI thread.
+  MediaStreamDevices devices_;
+  MediaStreamRequestResult result_;
+  base::Closure quit_closure_;
+
+  // These should only be accessed on the IO thread.
+  TestRFHDelegate delegate_;
+  std::unique_ptr<MediaStreamUIProxy> proxy_;
+};
+
+TEST_F(MediaStreamUIProxyFeaturePolicyTest, FeaturePolicy) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kUseFeaturePolicyForPermissions);
+  MediaStreamDevices devices;
+  MediaStreamRequestResult result;
+
+  // Default FP.
+  GetResultForRequest(CreateRequest(main_rfh(), MEDIA_DEVICE_AUDIO_CAPTURE,
+                                    MEDIA_DEVICE_VIDEO_CAPTURE),
+                      &devices, &result);
+  EXPECT_EQ(MEDIA_DEVICE_OK, result);
+  ASSERT_EQ(2u, devices.size());
+  EXPECT_EQ(MEDIA_DEVICE_AUDIO_CAPTURE, devices[0].type);
+  EXPECT_EQ(MEDIA_DEVICE_VIDEO_CAPTURE, devices[1].type);
+
+  // Mic disabled.
+  RefreshPageAndSetHeaderPolicy(main_rfh(),
+                                blink::WebFeaturePolicyFeature::kMicrophone,
+                                /*enabled=*/false);
+  GetResultForRequest(CreateRequest(main_rfh(), MEDIA_DEVICE_AUDIO_CAPTURE,
+                                    MEDIA_DEVICE_VIDEO_CAPTURE),
+                      &devices, &result);
+  EXPECT_EQ(MEDIA_DEVICE_OK, result);
+  ASSERT_EQ(1u, devices.size());
+  EXPECT_EQ(MEDIA_DEVICE_VIDEO_CAPTURE, devices[0].type);
+
+  // Camera disabled.
+  RefreshPageAndSetHeaderPolicy(main_rfh(),
+                                blink::WebFeaturePolicyFeature::kCamera,
+                                /*enabled=*/false);
+  GetResultForRequest(CreateRequest(main_rfh(), MEDIA_DEVICE_AUDIO_CAPTURE,
+                                    MEDIA_DEVICE_VIDEO_CAPTURE),
+                      &devices, &result);
+  EXPECT_EQ(MEDIA_DEVICE_OK, result);
+  ASSERT_EQ(1u, devices.size());
+  EXPECT_EQ(MEDIA_DEVICE_AUDIO_CAPTURE, devices[0].type);
+
+  // Camera disabled resulting in no devices being returned.
+  RefreshPageAndSetHeaderPolicy(main_rfh(),
+                                blink::WebFeaturePolicyFeature::kCamera,
+                                /*enabled=*/false);
+  GetResultForRequest(
+      CreateRequest(main_rfh(), MEDIA_NO_SERVICE, MEDIA_DEVICE_VIDEO_CAPTURE),
+      &devices, &result);
+  EXPECT_EQ(MEDIA_DEVICE_PERMISSION_DENIED, result);
+  ASSERT_EQ(0u, devices.size());
+
+  // Ensure that the policy is ignored if kUseFeaturePolicyForPermissions is
+  // disabled.
+  base::test::ScopedFeatureList empty_feature_list;
+  empty_feature_list.Init();
+  GetResultForRequest(CreateRequest(main_rfh(), MEDIA_DEVICE_AUDIO_CAPTURE,
+                                    MEDIA_DEVICE_VIDEO_CAPTURE),
+                      &devices, &result);
+  EXPECT_EQ(MEDIA_DEVICE_OK, result);
+  ASSERT_EQ(2u, devices.size());
+  EXPECT_EQ(MEDIA_DEVICE_AUDIO_CAPTURE, devices[0].type);
+  EXPECT_EQ(MEDIA_DEVICE_VIDEO_CAPTURE, devices[1].type);
 }
 
 }  // namespace content
