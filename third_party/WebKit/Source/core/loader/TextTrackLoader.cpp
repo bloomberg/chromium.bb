@@ -111,11 +111,15 @@ void TextTrackLoader::CorsPolicyPreventedLoad(SecurityOrigin* security_origin,
 
 void TextTrackLoader::NotifyFinished(Resource* resource) {
   DCHECK_EQ(this->GetResource(), resource);
-  if (state_ != kFailed)
-    state_ = resource->ErrorOccurred() ? kFailed : kFinished;
-
-  if (state_ == kFinished && cue_parser_)
+  if (cue_parser_)
     cue_parser_->Flush();
+
+  if (state_ != kFailed) {
+    if (resource->ErrorOccurred() || !cue_parser_)
+      state_ = kFailed;
+    else
+      state_ = kFinished;
+  }
 
   if (!cue_load_timer_.IsActive())
     cue_load_timer_.StartOneShot(0, BLINK_FROM_HERE);
