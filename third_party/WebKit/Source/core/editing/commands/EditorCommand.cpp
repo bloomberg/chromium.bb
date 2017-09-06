@@ -2401,7 +2401,8 @@ static String ValueFormatBlock(const EditorInternalCommand&,
                                Event*) {
   const VisibleSelection& selection =
       frame.Selection().ComputeVisibleSelectionInDOMTreeDeprecated();
-  if (!selection.IsNonOrphanedCaretOrRange() || !selection.IsContentEditable())
+  if (selection.IsNone() || !selection.IsValidFor(*(frame.GetDocument())) ||
+      !selection.IsContentEditable())
     return "";
   Element* format_block_element =
       FormatBlockCommand::ElementForFormatBlockCommand(
