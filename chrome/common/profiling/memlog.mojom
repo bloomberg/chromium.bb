@@ -28,5 +28,5 @@ interface Memlog {
   // On success, returns a valid shared_buffer handle and the size of the
   // data written. On failure, returns an invalid shared_buffer handle.
   DumpProcessForTracing(mojo.common.mojom.ProcessId pid) =>
-      (handle<shared_buffer> consumer, uint32 size);
+      (handle<shared_buffer>? consumer, uint32 size);
 };
