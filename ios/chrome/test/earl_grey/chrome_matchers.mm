@@ -273,4 +273,29 @@ id<GREYMatcher> PaymentRequestErrorView() {
   return grey_accessibilityID(kPaymentRequestErrorCollectionViewID);
 }
 
+id<GREYMatcher> VoiceSearchButton() {
+  return grey_allOf(grey_accessibilityID(kSettingsVoiceSearchCellId),
+                    grey_accessibilityTrait(UIAccessibilityTraitButton), nil);
+}
+
+id<GREYMatcher> SettingsCollectionView() {
+  return grey_accessibilityID(kSettingsCollectionViewId);
+}
+
+id<GREYMatcher> ClearBrowsingHistoryButton() {
+  return grey_accessibilityID(kClearBrowsingHistoryCellId);
+}
+
+id<GREYMatcher> ClearCookiesButton() {
+  return grey_accessibilityID(kClearCookiesCellId);
+}
+
+id<GREYMatcher> ClearCacheButton() {
+  return grey_accessibilityID(kClearCacheCellId);
+}
+
+id<GREYMatcher> ClearSavedPasswordsButton() {
+  return grey_accessibilityID(kClearSavedPasswordsCellId);
+}
+
 }  // namespace chrome_test_util

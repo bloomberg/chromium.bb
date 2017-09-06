@@ -22,13 +22,11 @@
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
-#import "ios/chrome/browser/ui/settings/password_details_collection_view_controller_for_testing.h"
 #import "ios/chrome/browser/ui/settings/reauthentication_module.h"
-#import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #include "ios/chrome/browser/ui/tools_menu/tools_menu_constants.h"
-#import "ios/chrome/browser/ui/util/top_view_controller.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/test/app/password_test_util.h"
 #include "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -57,6 +55,7 @@ using autofill::PasswordForm;
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::SettingsMenuBackButton;
 using chrome_test_util::NavigationBarDoneButton;
+using chrome_test_util::SetUpAndReturnMockReauthenticationModule;
 
 namespace {
 
@@ -342,62 +341,6 @@ void TapEdit() {
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON)]
       performAction:grey_tap()];
-}
-
-}  // namespace
-
-@interface MockReauthenticationModule : NSObject<ReauthenticationProtocol>
-
-// Indicates whether the device is capable of reauthenticating the user.
-@property(nonatomic, assign) BOOL canAttempt;
-
-// Indicates whether (mock) authentication should succeed or not. Setting
-// |shouldSucceed| to any value sets |canAttempt| to YES.
-@property(nonatomic, assign) BOOL shouldSucceed;
-
-@end
-
-@implementation MockReauthenticationModule
-
-@synthesize shouldSucceed = _shouldSucceed;
-@synthesize canAttempt = _canAttempt;
-
-- (void)setShouldSucceed:(BOOL)shouldSucceed {
-  _canAttempt = YES;
-  _shouldSucceed = shouldSucceed;
-}
-
-- (BOOL)canAttemptReauth {
-  return _canAttempt;
-}
-
-- (void)attemptReauthWithLocalizedReason:(NSString*)localizedReason
-                                 handler:(void (^)(BOOL success))
-                                             showCopyPasswordsHandler {
-  showCopyPasswordsHandler(_shouldSucceed);
-}
-
-@end
-
-namespace {
-
-// Replace the reauthentication module in
-// PasswordDetailsCollectionViewController with a fake one to avoid being
-// blocked with a reauth prompt, and return the fake reauthentication module.
-MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
-  MockReauthenticationModule* mock_reauthentication_module =
-      [[MockReauthenticationModule alloc] init];
-  // TODO(crbug.com/754642): Stop using TopPresentedViewController();
-  SettingsNavigationController* settings_navigation_controller =
-      base::mac::ObjCCastStrict<SettingsNavigationController>(
-          top_view_controller::TopPresentedViewController());
-  PasswordDetailsCollectionViewController*
-      password_details_collection_view_controller =
-          base::mac::ObjCCastStrict<PasswordDetailsCollectionViewController>(
-              settings_navigation_controller.topViewController);
-  [password_details_collection_view_controller
-      setReauthenticationModule:mock_reauthentication_module];
-  return mock_reauthentication_module;
 }
 
 }  // namespace

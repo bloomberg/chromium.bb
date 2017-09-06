@@ -84,7 +84,7 @@ id<GREYAction> ScrollDown() {
       grey_allOf(buttonMatcher, grey_interactable(), nil);
   [[[EarlGrey selectElementWithMatcher:interactableButtonMatcher]
          usingSearchAction:ScrollDown()
-      onElementWithMatcher:grey_accessibilityID(kSettingsCollectionViewId)]
+      onElementWithMatcher:chrome_test_util::SettingsCollectionView()]
       performAction:grey_tap()];
 }
 
