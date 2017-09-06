@@ -34,8 +34,7 @@
 @synthesize sadTabShown = sadTabShown;
 @synthesize repeatedFailure = _repeatedFailure;
 
-- (void)sadTabHelper:(SadTabTabHelper*)tabHelper
-    presentSadTabForRepeatedFailure:(BOOL)repeatedFailure {
+- (void)presentSadTabForRepeatedFailure:(BOOL)repeatedFailure {
   self.sadTabShown = YES;
   self.repeatedFailure = repeatedFailure;
 }

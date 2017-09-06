@@ -28,6 +28,19 @@ source_set("sad_tab") {
   libs = [ "UIKit.framework" ]
 }
 
+source_set("coordinator") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "sad_tab_legacy_coordinator.h",
+    "sad_tab_legacy_coordinator.mm",
+  ]
+  deps = [
+    ":sad_tab",
+    "//ios/chrome/browser/web:tab_helper_delegates",
+    "//ios/web",
+  ]
+}
+
 source_set("eg_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
