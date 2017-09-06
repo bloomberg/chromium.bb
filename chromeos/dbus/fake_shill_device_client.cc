@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -96,6 +97,7 @@ void FakeShillDeviceClient::GetProperties(
 
 void FakeShillDeviceClient::ProposeScan(const dbus::ObjectPath& device_path,
                                         VoidDBusMethodCallback callback) {
+  // Deprecated.
   PostVoidCallback(std::move(callback), DBUS_METHOD_CALL_SUCCESS);
 }
 
@@ -460,6 +462,44 @@ void FakeShillDeviceClient::SetSimLocked(const std::string& device_path,
   status.type = locked ? shill::kSIMLockPin : "";
   status.retries_left = kSimPinRetryCount;
   SetSimLockStatus(device_path, status);
+}
+
+void FakeShillDeviceClient::AddCellularFoundNetwork(
+    const std::string& device_path) {
+  base::Value* device_properties = stub_devices_.FindKey(device_path);
+  if (!device_properties || !device_properties->is_dict()) {
+    LOG(ERROR) << "Device path not found: " << device_path;
+    return;
+  }
+  std::string type =
+      device_properties->FindKey(shill::kTypeProperty)->GetString();
+  if (type != shill::kTypeCellular) {
+    LOG(ERROR) << "AddCellularNetwork called for non Cellular network: "
+               << device_path;
+    return;
+  }
+
+  // Add a new scan result entry
+  base::Value* scan_results =
+      device_properties->FindKey(shill::kFoundNetworksProperty);
+  if (!scan_results) {
+    scan_results = device_properties->SetKey(shill::kFoundNetworksProperty,
+                                             base::ListValue());
+  }
+  base::DictionaryValue new_result;
+  int idx = static_cast<int>(scan_results->GetList().size());
+  new_result.SetKey(shill::kNetworkIdProperty,
+                    base::Value(base::StringPrintf("network%d", idx)));
+  new_result.SetKey(shill::kLongNameProperty,
+                    base::Value(base::StringPrintf("Network %d", idx)));
+  new_result.SetKey(shill::kTechnologyProperty, base::Value("GSM"));
+  new_result.SetKey(shill::kStatusProperty, base::Value("available"));
+  scan_results->GetList().push_back(std::move(new_result));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(&FakeShillDeviceClient::NotifyObserversPropertyChanged,
+                 weak_ptr_factory_.GetWeakPtr(), dbus::ObjectPath(device_path),
+                 shill::kFoundNetworksProperty));
 }
 
 // Private Methods -------------------------------------------------------------

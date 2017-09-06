@@ -375,7 +375,8 @@ bool NetworkingPrivateServiceClient::DisableNetworkType(
   return false;
 }
 
-bool NetworkingPrivateServiceClient::RequestScan() {
+bool NetworkingPrivateServiceClient::RequestScan(
+    const std::string& /* type */) {
   task_runner_->PostTask(FROM_HERE,
                          base::Bind(&WiFiService::RequestNetworkScan,
                                     base::Unretained(wifi_service_.get())));

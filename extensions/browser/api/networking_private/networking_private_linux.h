@@ -98,7 +98,7 @@ class NetworkingPrivateLinux : public NetworkingPrivateDelegate {
   std::unique_ptr<base::DictionaryValue> GetCertificateLists() override;
   bool EnableNetworkType(const std::string& type) override;
   bool DisableNetworkType(const std::string& type) override;
-  bool RequestScan() override;
+  bool RequestScan(const std::string& type) override;
   void AddObserver(NetworkingPrivateDelegateObserver* observer) override;
   void RemoveObserver(NetworkingPrivateDelegateObserver* observer) override;
 

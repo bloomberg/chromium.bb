@@ -22,6 +22,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_connection_handler.h"
+#include "chromeos/network/network_device_handler.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_handler_callbacks.h"
 #include "chromeos/network/network_state.h"
@@ -879,9 +880,20 @@ void NetworkStateHandler::GetDeviceListByType(const NetworkTypePattern& type,
   }
 }
 
-void NetworkStateHandler::RequestScan() {
-  NET_LOG_USER("RequestScan", "");
-  shill_property_handler_->RequestScan();
+void NetworkStateHandler::RequestScan(const NetworkTypePattern& type) {
+  NET_LOG_USER("RequestScan", type.ToDebugString());
+  bool did_scan = false;
+  if (type.MatchesType(shill::kTypeWifi)) {
+    shill_property_handler_->RequestScanByType(shill::kTypeWifi);
+    did_scan = true;
+  }
+  if (type.Equals(NetworkTypePattern::Primitive(shill::kTypeCellular))) {
+    // Only request a Cellular scan if Cellular is requested explicitly.
+    shill_property_handler_->RequestScanByType(shill::kTypeCellular);
+    did_scan = true;
+  }
+  if (!did_scan)
+    NET_LOG(ERROR) << "RequestScan: Invalid type: " << type.ToDebugString();
   NotifyScanRequested();
 }
 

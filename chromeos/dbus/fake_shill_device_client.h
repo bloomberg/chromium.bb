@@ -112,6 +112,7 @@ class CHROMEOS_EXPORT FakeShillDeviceClient
   void SetTDLSBusyCount(int count) override;
   void SetTDLSState(const std::string& state) override;
   void SetSimLocked(const std::string& device_path, bool locked) override;
+  void AddCellularFoundNetwork(const std::string& device_path) override;
 
   static const char kDefaultSimPin[];
   static const int kSimPinRetryCount;

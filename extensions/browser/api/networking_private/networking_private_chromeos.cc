@@ -806,8 +806,10 @@ bool NetworkingPrivateChromeOS::DisableNetworkType(const std::string& type) {
   return true;
 }
 
-bool NetworkingPrivateChromeOS::RequestScan() {
-  GetStateHandler()->RequestScan();
+bool NetworkingPrivateChromeOS::RequestScan(const std::string& type) {
+  NetworkTypePattern pattern = chromeos::onc::NetworkTypePatternFromOncType(
+      type.empty() ? ::onc::network_type::kAllTypes : type);
+  GetStateHandler()->RequestScan(pattern);
   return true;
 }
 

@@ -631,7 +631,7 @@ void ArcNetHostImpl::SetWifiEnabledState(
 }
 
 void ArcNetHostImpl::StartScan() {
-  GetStateHandler()->RequestScan();
+  GetStateHandler()->RequestScan(chromeos::NetworkTypePattern::WiFi());
 }
 
 void ArcNetHostImpl::ScanCompleted(const chromeos::DeviceState* /*unused*/) {

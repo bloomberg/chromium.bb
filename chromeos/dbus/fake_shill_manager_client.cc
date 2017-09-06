@@ -195,15 +195,15 @@ void FakeShillManagerClient::RequestScan(const std::string& type,
                                          const ErrorCallback& error_callback) {
   VLOG(1) << "RequestScan: " << type;
   // For Stub purposes, default to a Wifi scan.
-  std::string device_type = shill::kTypeWifi;
-  if (!type.empty())
-    device_type = type;
+  std::string device_type = type.empty() ? shill::kTypeWifi : type;
   ShillDeviceClient::TestInterface* device_client =
       DBusThreadManager::Get()->GetShillDeviceClient()->GetTestInterface();
   std::string device_path = device_client->GetDevicePathForType(device_type);
   if (!device_path.empty()) {
     device_client->SetDeviceProperty(device_path, shill::kScanningProperty,
                                      base::Value(true));
+    if (device_type == shill::kTypeCellular)
+      device_client->AddCellularFoundNetwork(device_path);
   }
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
