@@ -228,6 +228,10 @@ void SessionController::ShowMultiProfileLogin() {
     client_->ShowMultiProfileLogin();
 }
 
+PrefService* SessionController::GetSigninScreenPrefService() const {
+  return signin_screen_prefs_.get();
+}
+
 PrefService* SessionController::GetUserPrefServiceForUser(
     const AccountId& account_id) {
   auto it = per_user_prefs_.find(account_id);
@@ -395,6 +399,11 @@ void SessionController::LockScreenAndFlushForTest() {
   FlushMojoForTest();
 }
 
+void SessionController::SetSigninScreenPrefServiceForTest(
+    std::unique_ptr<PrefService> prefs) {
+  OnSigninScreenPrefServiceInitialized(std::move(prefs));
+}
+
 void SessionController::ProvideUserPrefServiceForTest(
     const AccountId& account_id,
     std::unique_ptr<PrefService> pref_service) {
@@ -559,16 +568,14 @@ void SessionController::OnSigninScreenPrefServiceInitialized(
   if (!pref_service)
     return;
 
+  DCHECK(!signin_screen_prefs_);
   signin_screen_prefs_ = std::move(pref_service);
 
   // The signin profile should be initialized before any user profile.
   DCHECK(!last_active_user_prefs_);
 
-  // Chrome's ProfileManager::GetActiveUserProfile() can return the signin
-  // screen profile, so do the same thing here with signin screen profile prefs.
-  last_active_user_prefs_ = signin_screen_prefs_.get();
   for (auto& observer : observers_)
-    observer.OnActiveUserPrefServiceChanged(last_active_user_prefs_);
+    observer.OnSigninScreenPrefServiceInitialized(signin_screen_prefs_.get());
 }
 
 void SessionController::OnProfilePrefServiceInitialized(

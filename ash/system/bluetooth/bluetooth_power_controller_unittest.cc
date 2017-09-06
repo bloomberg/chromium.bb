@@ -5,10 +5,12 @@
 #include "ash/system/bluetooth/bluetooth_power_controller.h"
 
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test_shell_delegate.h"
+#include "base/run_loop.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
@@ -20,22 +22,38 @@ namespace {
 constexpr char kUser1Email[] = "user1@bluetooth";
 constexpr bool kUserFirstLogin = true;
 
+void SetupBluetoothAdapter() {
+  // Set Bluetooth discovery simulation delay to 0 so the test doesn't have to
+  // wait or use timers.
+  bluez::FakeBluetoothAdapterClient* adapter_client =
+      static_cast<bluez::FakeBluetoothAdapterClient*>(
+          bluez::BluezDBusManager::Get()->GetBluetoothAdapterClient());
+  adapter_client->SetSimulationIntervalMs(0);
+
+  // Makes sure we get the callback from BluetoothAdapterFactory::GetAdapter
+  // first before running the remaining test.
+  base::RunLoop().RunUntilIdle();
+}
+
+BluetoothPowerController* GetController() {
+  return Shell::Get()->bluetooth_power_controller();
+}
+
+device::BluetoothAdapter* GetBluetoothAdapter() {
+  return GetController()->bluetooth_adapter_for_test();
+}
+
 }  // namespace
 
+// NOTE: Manually controls local state prefs and user prefs so to allow tests
+// of default pref values before the pref service initialization notifications.
 class BluetoothPowerControllerTest : public NoSessionAshTestBase {
  public:
-  BluetoothPowerControllerTest() {}
+  BluetoothPowerControllerTest() { disable_provide_local_state(); }
   ~BluetoothPowerControllerTest() override {}
 
   void SetUp() override {
     NoSessionAshTestBase::SetUp();
-
-    // Set Bluetooth discovery simulation delay to 0 so the test doesn't have to
-    // wait or use timers.
-    bluez::FakeBluetoothAdapterClient* adapter_client =
-        static_cast<bluez::FakeBluetoothAdapterClient*>(
-            bluez::BluezDBusManager::Get()->GetBluetoothAdapterClient());
-    adapter_client->SetSimulationIntervalMs(0);
 
     BluetoothPowerController::RegisterProfilePrefs(
         active_user_prefs_.registry());
@@ -44,9 +62,7 @@ class BluetoothPowerControllerTest : public NoSessionAshTestBase {
 
     GetController()->local_state_pref_service_ = &local_state_prefs_;
 
-    // Makes sure we get the callback from BluetoothAdapterFactory::GetAdapter
-    // first before running the remaining test.
-    RunAllPendingInMessageLoop();
+    SetupBluetoothAdapter();
   }
 
   void AddUserSessionAndStartWatchingPrefsChanges(
@@ -65,20 +81,12 @@ class BluetoothPowerControllerTest : public NoSessionAshTestBase {
   }
 
  protected:
-  BluetoothPowerController* GetController() {
-    return Shell::Get()->bluetooth_power_controller();
-  }
-
-  device::BluetoothAdapter* GetBluetoothAdapter() {
-    return Shell::Get()->bluetooth_power_controller()->bluetooth_adapter_.get();
-  }
-
   void ApplyBluetoothLocalStatePref() {
-    Shell::Get()->bluetooth_power_controller()->ApplyBluetoothLocalStatePref();
+    GetController()->ApplyBluetoothLocalStatePref();
   }
 
   void ApplyBluetoothPrimaryUserPref() {
-    Shell::Get()->bluetooth_power_controller()->ApplyBluetoothPrimaryUserPref();
+    GetController()->ApplyBluetoothPrimaryUserPref();
   }
 
   TestingPrefServiceSimple active_user_prefs_;
@@ -295,6 +303,36 @@ TEST_F(BluetoothPowerControllerTest, ApplyBluetoothPrimaryUserPrefOn) {
   EXPECT_TRUE(
       active_user_prefs_.GetBoolean(prefs::kUserBluetoothAdapterEnabled));
   EXPECT_TRUE(GetBluetoothAdapter()->IsPowered());
+}
+
+using BluetoothPowerControllerIntegrationTest = NoSessionAshTestBase;
+
+// An "integration" test using the PrefService objects provided by AshTestBase
+// and TestSessionControllerClient to provide a closer simulation of production
+// login behavior. http://crbug.com/762567
+TEST_F(BluetoothPowerControllerIntegrationTest, Basics) {
+  SetupBluetoothAdapter();
+  device::BluetoothAdapter* adapter = GetBluetoothAdapter();
+
+  // Verify toggling bluetooth before login.
+  PrefService* local_state = Shell::Get()->GetLocalStatePrefService();
+  GetController()->ToggleBluetoothEnabled();
+  EXPECT_TRUE(local_state->GetBoolean(prefs::kSystemBluetoothAdapterEnabled));
+  EXPECT_TRUE(adapter->IsPowered());
+  GetController()->ToggleBluetoothEnabled();
+  EXPECT_FALSE(local_state->GetBoolean(prefs::kSystemBluetoothAdapterEnabled));
+  EXPECT_FALSE(adapter->IsPowered());
+
+  // Verify toggling bluetooth after login.
+  SimulateUserLogin(kUser1Email);
+  PrefService* user_prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  GetController()->ToggleBluetoothEnabled();
+  EXPECT_TRUE(user_prefs->GetBoolean(prefs::kUserBluetoothAdapterEnabled));
+  EXPECT_TRUE(adapter->IsPowered());
+  GetController()->ToggleBluetoothEnabled();
+  EXPECT_FALSE(user_prefs->GetBoolean(prefs::kUserBluetoothAdapterEnabled));
+  EXPECT_FALSE(adapter->IsPowered());
 }
 
 }  // namespace ash

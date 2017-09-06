@@ -106,4 +106,34 @@ TEST_F(AccessibilityControllerTest, SetHighContrastEnabled) {
   Shell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(&observer);
 }
 
+using AccessibilityControllerSigninTest = NoSessionAshTestBase;
+
+TEST_F(AccessibilityControllerSigninTest, SigninScreenPrefs) {
+  AccessibilityController* accessibility =
+      Shell::Get()->accessibility_controller();
+
+  SessionController* session = Shell::Get()->session_controller();
+  EXPECT_EQ(session_manager::SessionState::LOGIN_PRIMARY,
+            session->GetSessionState());
+  EXPECT_FALSE(accessibility->IsLargeCursorEnabled());
+
+  // Verify that toggling prefs at the signin screen changes the signin setting.
+  PrefService* signin_prefs = session->GetSigninScreenPrefService();
+  using prefs::kAccessibilityLargeCursorEnabled;
+  EXPECT_FALSE(signin_prefs->GetBoolean(kAccessibilityLargeCursorEnabled));
+  accessibility->SetLargeCursorEnabled(true);
+  EXPECT_TRUE(accessibility->IsLargeCursorEnabled());
+  EXPECT_TRUE(signin_prefs->GetBoolean(kAccessibilityLargeCursorEnabled));
+
+  // Verify that toggling prefs after signin changes the user setting.
+  SimulateUserLogin("user1@test.com");
+  PrefService* user_prefs = session->GetLastActiveUserPrefService();
+  EXPECT_NE(signin_prefs, user_prefs);
+  EXPECT_FALSE(accessibility->IsLargeCursorEnabled());
+  EXPECT_FALSE(user_prefs->GetBoolean(kAccessibilityLargeCursorEnabled));
+  accessibility->SetLargeCursorEnabled(true);
+  EXPECT_TRUE(accessibility->IsLargeCursorEnabled());
+  EXPECT_TRUE(user_prefs->GetBoolean(kAccessibilityLargeCursorEnabled));
+}
+
 }  // namespace ash

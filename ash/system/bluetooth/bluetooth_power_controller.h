@@ -63,6 +63,10 @@ class ASH_EXPORT BluetoothPowerController
   void AdapterPresentChanged(device::BluetoothAdapter* adapter,
                              bool present) override;
 
+  device::BluetoothAdapter* bluetooth_adapter_for_test() {
+    return bluetooth_adapter_.get();
+  }
+
  private:
   friend class BluetoothPowerControllerTest;
 

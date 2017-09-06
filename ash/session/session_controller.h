@@ -139,6 +139,10 @@ class ASH_EXPORT SessionController : public mojom::SessionController {
   // Show the multi-profile login UI to add another user to this session.
   void ShowMultiProfileLogin();
 
+  // Returns the PrefService used at the signin screen, which is tied to an
+  // incognito profile in chrome and is valid until the browser exits.
+  PrefService* GetSigninScreenPrefService() const;
+
   // Returns the PrefService for |account_id| or null if one does not exist.
   PrefService* GetUserPrefServiceForUser(const AccountId& account_id);
 
@@ -173,6 +177,7 @@ class ASH_EXPORT SessionController : public mojom::SessionController {
   void ClearUserSessionsForTest();
   void FlushMojoForTest();
   void LockScreenAndFlushForTest();
+  void SetSigninScreenPrefServiceForTest(std::unique_ptr<PrefService> prefs);
   void ProvideUserPrefServiceForTest(const AccountId& account_id,
                                      std::unique_ptr<PrefService> pref_service);
 
