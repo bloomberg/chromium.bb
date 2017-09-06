@@ -19,6 +19,7 @@ import android.view.KeyEvent;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
+import android.widget.LinearLayout;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -60,6 +61,8 @@ public class AutocompleteEditTextTest {
 
     private InOrder mInOrder;
     private TestAutocompleteEditText mAutocomplete;
+    private LinearLayout mFocusPlaceHolder;
+
     private Context mContext;
     private InputConnection mInputConnection;
     private Verifier mVerifier;
@@ -160,13 +163,16 @@ public class AutocompleteEditTextTest {
 
         mVerifier = spy(new Verifier());
         mAutocomplete = new TestAutocompleteEditText(mContext, null);
+        mFocusPlaceHolder = new LinearLayout(mContext);
+        mFocusPlaceHolder.setFocusable(true);
+        mFocusPlaceHolder.addView(mAutocomplete);
         assertNotNull(mAutocomplete);
 
         // Pretend that the view is shown in the activity hierarchy, which is for accessibility
         // testing.
         Activity activity = Robolectric.buildActivity(Activity.class).create().get();
-        activity.setContentView(mAutocomplete);
-        assertNotNull(mAutocomplete.getParent());
+        activity.setContentView(mFocusPlaceHolder);
+        assertNotNull(mFocusPlaceHolder.getParent());
         mIsShown = true;
         assertTrue(mAutocomplete.isShown());
 
@@ -181,7 +187,7 @@ public class AutocompleteEditTextTest {
         mInOrder = inOrder(mVerifier);
         assertTrue(mAutocomplete.requestFocus());
         verifyOnPopulateAccessibilityEvent(
-                AccessibilityEvent.TYPE_VIEW_FOCUSED, "", "", 1, -1, -1, -1, -1);
+                AccessibilityEvent.TYPE_VIEW_FOCUSED, "", "", 2, -1, -1, -1, -1);
         assertNotNull(mAutocomplete.onCreateInputConnection(new EditorInfo()));
         mInputConnection = mAutocomplete.getInputConnection();
         assertNotNull(mInputConnection);
@@ -1103,5 +1109,62 @@ public class AutocompleteEditTextTest {
         // On Android JB, TextView#onSaveInstanceState() calls new SpannableString(mText). This
         // should not crash.
         new SpannableString(mAutocomplete.getText());
+    }
+
+    // crbug.com/759876
+    @Test
+    @Features(@Features.Register(
+            value = ChromeFeatureList.SPANNABLE_INLINE_AUTOCOMPLETE, enabled = true))
+    public void testFocusInAndSelectAllWithSpannableModel() {
+        internalTestFocusInAndSelectAll();
+    }
+
+    // crbug.com/759876
+    @Test
+    @Features(@Features.Register(
+            value = ChromeFeatureList.SPANNABLE_INLINE_AUTOCOMPLETE, enabled = false))
+    public void testFocusInAndSelectAllWithoutSpannableModel() {
+        internalTestFocusInAndSelectAll();
+    }
+
+    private void internalTestFocusInAndSelectAll() {
+        final String url = "https://google.com";
+        final int len = url.length();
+        mAutocomplete.setIgnoreTextChangesForAutocomplete(true);
+        mAutocomplete.setText(url);
+        mAutocomplete.setIgnoreTextChangesForAutocomplete(false);
+
+        mInOrder.verifyNoMoreInteractions();
+        assertVerifierCallCounts(0, 0);
+
+        assertTrue(mFocusPlaceHolder.requestFocus());
+
+        mInOrder.verifyNoMoreInteractions();
+        assertVerifierCallCounts(0, 0);
+
+        // LocationBarLayout does this.
+        mAutocomplete.setSelectAllOnFocus(true);
+
+        assertTrue(mAutocomplete.requestFocus());
+
+        if (isUsingSpannableModel()) {
+            verifyOnPopulateAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED,
+                    url, "", 18, 18, 18, -1, -1);
+        }
+        mInOrder.verify(mVerifier).onUpdateSelection(len, len);
+        verifyOnPopulateAccessibilityEvent(
+                AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED, url, "", 18, 18, 18, -1, -1);
+        mInOrder.verify(mVerifier).onUpdateSelection(0, len);
+        verifyOnPopulateAccessibilityEvent(
+                AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED, url, "", 18, 0, 18, -1, -1);
+        verifyOnPopulateAccessibilityEvent(
+                AccessibilityEvent.TYPE_VIEW_FOCUSED, url, "", 2, -1, -1, -1, -1);
+
+        if (isUsingSpannableModel()) {
+            assertVerifierCallCounts(2, 4);
+        } else {
+            assertVerifierCallCounts(2, 3);
+        }
+        mInOrder.verifyNoMoreInteractions();
     }
 }
