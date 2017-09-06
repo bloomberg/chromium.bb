@@ -36,8 +36,12 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
     PlaybackSettings(PlaybackSettings&&);
     ~PlaybackSettings();
 
+    // If set to true, this indicates that the canvas has already been
+    // rasterized into. This means that the canvas cannot be cleared safely.
+    bool playback_to_shared_canvas : 1;
+
     // If set to true, we should use LCD text.
-    bool use_lcd_text = true;
+    bool use_lcd_text : 1;
 
     // The ImageProvider used to replace images during playback.
     ImageProvider* image_provider = nullptr;
@@ -109,9 +113,7 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   virtual sk_sp<SkPicture> GetFlattenedPicture();
   virtual size_t GetMemoryUsage() const;
 
-  const scoped_refptr<DisplayItemList>& GetDisplayItemList() const {
-    return display_list_;
-  }
+  const DisplayItemList* display_list() const { return display_list_.get(); }
 
   SkColor background_color() const { return background_color_; }
 
