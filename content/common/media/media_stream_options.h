@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "content/common/content_export.h"
-#include "content/public/common/media_stream_request.h"
 
 namespace content {
 
@@ -55,32 +54,6 @@ struct CONTENT_EXPORT StreamControls {
   bool hotword_enabled;  // kMediaStreamAudioHotword = "googHotword";
   bool disable_local_echo;
 };
-
-// StreamDeviceInfo describes information about a device.
-struct CONTENT_EXPORT StreamDeviceInfo {
-  static const int kNoId;
-
-  StreamDeviceInfo();
-  StreamDeviceInfo(MediaStreamType service_param,
-                   const std::string& name_param,
-                   const std::string& device_param);
-  StreamDeviceInfo(MediaStreamType service_param,
-                   const std::string& name_param,
-                   const std::string& device_param,
-                   int sample_rate,
-                   int channel_layout,
-                   int frames_per_buffer);
-  explicit StreamDeviceInfo(MediaStreamDevice media_stream_device);
-  static bool IsEqual(const StreamDeviceInfo& first,
-                      const StreamDeviceInfo& second);
-
-  MediaStreamDevice device;
-
-  // Id for this capture session. Unique for all sessions of the same type.
-  int session_id;
-};
-
-typedef std::vector<StreamDeviceInfo> StreamDeviceInfoArray;
 
 }  // namespace content
 

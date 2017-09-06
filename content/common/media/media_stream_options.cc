@@ -4,8 +4,6 @@
 
 #include "content/common/media/media_stream_options.h"
 
-#include "base/logging.h"
-
 namespace content {
 
 const char kMediaStreamSourceTab[] = "tab";
@@ -36,40 +34,5 @@ StreamControls::StreamControls(bool request_audio, bool request_video)
       disable_local_echo(false) {}
 
 StreamControls::~StreamControls() {}
-
-// static
-const int StreamDeviceInfo::kNoId = -1;
-
-StreamDeviceInfo::StreamDeviceInfo()
-    : session_id(kNoId) {}
-
-StreamDeviceInfo::StreamDeviceInfo(MediaStreamType service_param,
-                                   const std::string& name_param,
-                                   const std::string& device_param)
-    : device(service_param, device_param, name_param), session_id(kNoId) {}
-
-StreamDeviceInfo::StreamDeviceInfo(MediaStreamType service_param,
-                                   const std::string& name_param,
-                                   const std::string& device_param,
-                                   int sample_rate,
-                                   int channel_layout,
-                                   int frames_per_buffer)
-    : device(service_param,
-             device_param,
-             name_param,
-             sample_rate,
-             channel_layout,
-             frames_per_buffer),
-      session_id(kNoId) {}
-
-StreamDeviceInfo::StreamDeviceInfo(MediaStreamDevice media_stream_device)
-    : device(media_stream_device), session_id(media_stream_device.session_id) {}
-
-// static
-bool StreamDeviceInfo::IsEqual(const StreamDeviceInfo& first,
-                               const StreamDeviceInfo& second) {
-  return first.device.IsEqual(second.device) &&
-      first.session_id == second.session_id;
-}
 
 }  // namespace content

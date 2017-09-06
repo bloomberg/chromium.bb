@@ -40,8 +40,6 @@ class MockAudioInputDeviceManagerListener
 
   MOCK_METHOD2(Opened, void(MediaStreamType, const int));
   MOCK_METHOD2(Closed, void(MediaStreamType, const int));
-  MOCK_METHOD2(DevicesEnumerated, void(MediaStreamType,
-                                       const StreamDeviceInfoArray&));
   MOCK_METHOD2(Aborted, void(MediaStreamType, int));
 
  private:
@@ -285,7 +283,7 @@ TEST_F(MAYBE_AudioInputDeviceManagerTest, AccessInvalidSession) {
   WaitForOpenCompletion();
 
   // Access a non-opened device.
-  // This should fail and return an empty StreamDeviceInfo.
+  // This should fail and return an empty MediaStreamDevice.
   int invalid_session_id = session_id + 1;
   const MediaStreamDevice* device =
       manager_->GetOpenedDeviceById(invalid_session_id);
