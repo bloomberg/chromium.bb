@@ -148,7 +148,8 @@ Output.ROLE_INFO_ = {
   link: {msgId: 'role_link', earconId: 'LINK'},
   listBox: {msgId: 'role_listbox', earconId: 'LISTBOX'},
   listBoxOption: {msgId: 'role_listitem', earconId: 'LIST_ITEM'},
-  listItem: {msgId: 'role_listitem', earconId: 'LIST_ITEM'},
+  listItem:
+      {msgId: 'role_listitem', earconId: 'LIST_ITEM', outputContextFirst: true},
   log: {
     msgId: 'role_log',
   },

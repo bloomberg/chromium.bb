@@ -86,5 +86,13 @@ ChromeVoxNextE2ETest.prototype = {
   forceContextualLastOutput: function() {
     for (var role in Output.ROLE_INFO_)
       Output.ROLE_INFO_[role]['outputContextFirst'] = undefined;
+  },
+
+  /**
+   * Forces output to place context utterances at the beginning of output.
+   */
+  forceContextualFirstOutput: function() {
+    for (var role in Output.ROLE_INFO_)
+      Output.ROLE_INFO_[role]['outputContextFirst'] = true;
   }
 };
