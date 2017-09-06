@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -38,10 +39,10 @@ class ServiceWorkerContextObserver;
 class StoragePartitionImpl;
 class URLLoaderFactoryGetter;
 
-// A refcounted wrapper class for our core object. Higher level content lib
-// classes keep references to this class on mutliple threads. The inner core
-// instance is strictly single threaded and is not refcounted, the core object
-// is what is used internally in the service worker lib.
+// A refcounted wrapper class for ServiceWorkerContextCore. Higher level content
+// lib classes keep references to this class on multiple threads. The inner core
+// instance is strictly single threaded and is not refcounted. The core object
+// is what is used internally by service worker classes.
 class CONTENT_EXPORT ServiceWorkerContextWrapper
     : public ServiceWorkerContext,
       public ServiceWorkerContextCoreObserver,
@@ -57,7 +58,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   using GetUserDataForAllRegistrationsCallback =
       ServiceWorkerStorage::GetUserDataForAllRegistrationsCallback;
 
-  ServiceWorkerContextWrapper(BrowserContext* browser_context);
+  explicit ServiceWorkerContextWrapper(BrowserContext* browser_context);
 
   // Init and Shutdown are for use on the UI thread when the profile,
   // storagepartition is being setup and torn down.
@@ -106,6 +107,13 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
                              const ResultCallback& continuation) override;
   void UnregisterServiceWorker(const GURL& pattern,
                                const ResultCallback& continuation) override;
+  bool StartingExternalRequest(int64_t service_worker_version_id,
+                               const std::string& request_uuid) override;
+  bool FinishedExternalRequest(int64_t service_worker_version_id,
+                               const std::string& request_uuid) override;
+  void CountExternalRequestsForTest(
+      const GURL& url,
+      const CountExternalRequestsCallback& callback) override;
   void GetAllOriginsInfo(const GetUsageInfoCallback& callback) override;
   void DeleteForOrigin(const GURL& origin,
                        const ResultCallback& callback) override;
@@ -113,21 +121,14 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       const GURL& url,
       const GURL& other_url,
       const CheckHasServiceWorkerCallback& callback) override;
-  void CountExternalRequestsForTest(
-      const GURL& url,
-      const CountExternalRequestsCallback& callback) override;
-  void StopAllServiceWorkersForOrigin(const GURL& origin) override;
   void ClearAllServiceWorkersForTest(const base::Closure& callback) override;
-  bool StartingExternalRequest(int64_t service_worker_version_id,
-                               const std::string& request_uuid) override;
-  bool FinishedExternalRequest(int64_t service_worker_version_id,
-                               const std::string& request_uuid) override;
-  void StartServiceWorkerForNavigationHint(
-      const GURL& document_url,
-      const StartServiceWorkerForNavigationHintCallback& callback) override;
   void StartActiveWorkerForPattern(const GURL& pattern,
                                    StartActiveWorkerCallback info_callback,
                                    base::OnceClosure failure_callback) override;
+  void StartServiceWorkerForNavigationHint(
+      const GURL& document_url,
+      const StartServiceWorkerForNavigationHintCallback& callback) override;
+  void StopAllServiceWorkersForOrigin(const GURL& origin) override;
 
   // These methods must only be called from the IO thread.
   ServiceWorkerRegistration* GetLiveRegistration(int64_t registration_id);
@@ -238,12 +239,12 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   // be called on the UI thread.
   void StartServiceWorker(const GURL& pattern, const StatusCallback& callback);
 
-  // This function can be called from any thread.
-  void SkipWaitingWorker(const GURL& pattern);
-
   // These methods can be called from any thread.
+  void SkipWaitingWorker(const GURL& pattern);
   void UpdateRegistration(const GURL& pattern);
   void SetForceUpdateOnPageLoad(bool force_update_on_page_load);
+  // Different from AddObserver/RemoveObserver(ServiceWorkerContextObserver*).
+  // But we must keep the same name, or else base::ScopedObserver breaks.
   void AddObserver(ServiceWorkerContextCoreObserver* observer);
   void RemoveObserver(ServiceWorkerContextCoreObserver* observer);
 
