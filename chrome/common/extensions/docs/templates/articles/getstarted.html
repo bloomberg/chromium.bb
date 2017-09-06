@@ -6,21 +6,23 @@
   technologies that you're already familiar with from web development: HTML,
   CSS, and JavaScript. If you've ever built a web page, you should feel right at
   home with extensions pretty quickly; we'll put that to the test right now by
-  walking through the construction of a simple extension that will fetch an
-  image from Google using the current page's URL as a search term.
+  walking through the construction of a simple extension that will allow the
+  user to change the background color of the current webpage.
 </p>
 
 <p>
   We'll do so by implementing a UI element we call a
   <a href="browserAction">browser action</a>, which allows us to place a
   clickable icon right next to Chrome's Omnibox for easy access. Clicking that
-  icon will open a popup window filled with an image derived from the current
-  page, which will look something like this:
+  icon will open a popup window that will allow the user to choose the
+  background color of the current page. If the user had selected a background
+  color for the page earlier, the extension will remember the user's choice and
+  use it as the default, once the popup is clicked. Here is how it will look:
 </p>
 
 <img src="{{static}}/images/gettingstarted-preview"
-     width="558"
-     height="264"
+     width="614"
+     height="390"
      alt="Chrome with an extension's popup open.">
 
 <p>
@@ -45,8 +47,8 @@
   In our example's manifest,
   we will declare a <a href="browserAction">browser action</a>,
   the <a href="activeTab">activeTab permission</a> to see the URL of the current
-  tab, and the host <a href="declare_permissions">permission</a> to access the
-  external Google Image search API.
+  tab and the <a href="storage">storage permission</a> to remember the user's
+  choice of background color for a page.
 </p>
 
 <pre data-filename="manifest.json">
@@ -54,7 +56,7 @@
   "manifest_version": 2,
 
   "name": "Getting started example",
-  "description": "This extension shows a Google Image search result for the current page",
+  "description": "This extension allows the user to change the background color of the current page.",
   "version": "1.0",
 
   "browser_action": {
@@ -63,7 +65,7 @@
   },
   "permissions": [
     "activeTab",
-    "https://ajax.googleapis.com/"
+    "storage"
   ]
 }
 </pre>
@@ -114,8 +116,8 @@
     <p>
       The actual logic of rendering the content of the popup is implemented by
       <a href="examples/tutorials/getstarted/popup.js">popup.js</a>. You are
-      encouraged to read the elaborate comments in this file to learn more
-      about the logic.<br>
+      encouraged to read the comments in this file to learn more about the
+      logic.<br>
       <a href="examples/tutorials/getstarted/popup.js" download="popup.js">
         Download a copy of <code>popup.js</code> from our sample repository
       </a>, and save it into the directory you're working in.
@@ -150,8 +152,8 @@
            height="29"
            width="29"
            alt="The menu's icon is three horizontal bars."> and
-      select <strong>Extensions</strong> under the <strong>Tools</strong> menu
-      to get to the same place).
+      select <strong>Extensions</strong> under the <strong>More Tools</strong>
+      menu to get to the same place).
     </p>
   </li>
   <li>
@@ -216,7 +218,7 @@
   The manifest file is only parsed when the extension is loaded. If you want to
   see the previous changes in action, the extension has to be reloaded.
   Visit the extensions page (go to <strong>chrome://extensions</strong>, or
-  <strong>Tools &gt; Extensions</strong> under the Chrome menu), and click
+  <strong>More Tools &gt; Extensions</strong> under the Chrome menu), and click
   <strong>Reload</strong> under your extension.
   All extensions are also reloaded when the extensions page is reloaded, e.g.
   after hitting <kbd>F5<kbd> or <kbd>Ctrl</kbd>-<kbd>R</kbd>.
@@ -226,12 +228,12 @@
   Once you've reloaded the extension, hover over the browser action badge to see
   the new tooltip!<br>
   <img src="{{static}}/images/gettingstarted-tooltip-before.png"
-       width="160"
+       width="169"
        height="120"
        alt="&quot;Getting started example&quot; tooltip.">
 
   <img src="{{static}}/images/gettingstarted-tooltip-after.png"
-       width="160"
+       width="169"
        height="120"
        alt="&quot;Click here!&quot; tooltip, after modifying manifest.json and reloading the extension.">
 </p>
