@@ -9,6 +9,10 @@
 
 #include "ash/fast_ink/fast_ink_pointer_controller.h"
 
+namespace base {
+class OneShotTimer;
+}
+
 namespace ash {
 
 class HighlighterResultView;
@@ -38,6 +42,11 @@ class ASH_EXPORT HighlighterController : public FastInkPointerController {
                          aura::Window* root_window) override;
   void UpdatePointerView(ui::TouchEvent* event) override;
   void DestroyPointerView() override;
+  bool CanStartNewGesture(ui::TouchEvent* event) override;
+
+  // Performs gesture recognition, initiates appropriate visual effects,
+  // notifies the observer if necessary.
+  void RecognizeGesture();
 
   // Destroys |highlighter_view_|, if it exists.
   void DestroyHighlighterView();
@@ -69,6 +78,10 @@ class ASH_EXPORT HighlighterController : public FastInkPointerController {
 
   // Recognized gesture counter withing a session.
   int recognized_gesture_counter_ = 0;
+
+  // Not null while waiting for the next event to continue an interrupted
+  // stroke.
+  std::unique_ptr<base::OneShotTimer> interrupted_stroke_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(HighlighterController);
 };

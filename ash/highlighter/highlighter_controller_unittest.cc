@@ -207,15 +207,15 @@ TEST_F(HighlighterControllerTest, HighlighterGestures) {
 
   // A closed diamond shape is recognized
   controller_test_api_->ResetSelection();
-  GetEventGenerator().MoveTouch(gfx::Point(100, 0));
+  GetEventGenerator().MoveTouch(gfx::Point(100, 50));
   GetEventGenerator().PressTouch();
   GetEventGenerator().MoveTouch(gfx::Point(200, 150));
-  GetEventGenerator().MoveTouch(gfx::Point(100, 300));
+  GetEventGenerator().MoveTouch(gfx::Point(100, 250));
   GetEventGenerator().MoveTouch(gfx::Point(0, 150));
-  GetEventGenerator().MoveTouch(gfx::Point(100, 0));
+  GetEventGenerator().MoveTouch(gfx::Point(100, 50));
   GetEventGenerator().ReleaseTouch();
   EXPECT_TRUE(controller_test_api_->handle_selection_called());
-  EXPECT_EQ("0,0 200x300", controller_test_api_->selection().ToString());
+  EXPECT_EQ("0,50 200x200", controller_test_api_->selection().ToString());
 }
 
 // Test that stylus gesture recognition correctly handles display scaling
@@ -288,6 +288,50 @@ TEST_F(HighlighterControllerTest, HighlighterGesturesRotated) {
   TraceRect(trace);
   EXPECT_TRUE(controller_test_api_->handle_selection_called());
   EXPECT_EQ("600,200 300x400", controller_test_api_->selection().ToString());
+}
+
+// Test that a stroke interrupted close to the screen edge is treated as
+// contiguous.
+TEST_F(HighlighterControllerTest, InterruptedStroke) {
+  controller_test_api_->SetEnabled(true);
+  GetEventGenerator().EnterPenPointerMode();
+
+  UpdateDisplay("1500x1000");
+
+  // An interrupted stroke close to the screen edge should be recognized as a
+  // contiguous stroke.
+  controller_test_api_->ResetSelection();
+  GetEventGenerator().MoveTouch(gfx::Point(300, 100));
+  GetEventGenerator().PressTouch();
+  GetEventGenerator().MoveTouch(gfx::Point(0, 100));
+  GetEventGenerator().ReleaseTouch();
+  EXPECT_TRUE(controller_test_api_->IsWaitingToResumeStroke());
+  EXPECT_FALSE(controller_test_api_->handle_selection_called());
+  EXPECT_FALSE(controller_test_api_->IsFadingAway());
+
+  GetEventGenerator().MoveTouch(gfx::Point(0, 200));
+  GetEventGenerator().PressTouch();
+  GetEventGenerator().MoveTouch(gfx::Point(300, 200));
+  GetEventGenerator().ReleaseTouch();
+  EXPECT_FALSE(controller_test_api_->IsWaitingToResumeStroke());
+  EXPECT_TRUE(controller_test_api_->handle_selection_called());
+  EXPECT_EQ("0,100 300x100", controller_test_api_->selection().ToString());
+
+  // Repeat the same gesture, but simulate a timeout after the gap. This should
+  // force the gesture completion.
+  controller_test_api_->ResetSelection();
+  GetEventGenerator().MoveTouch(gfx::Point(300, 100));
+  GetEventGenerator().PressTouch();
+  GetEventGenerator().MoveTouch(gfx::Point(0, 100));
+  GetEventGenerator().ReleaseTouch();
+  EXPECT_TRUE(controller_test_api_->IsWaitingToResumeStroke());
+  EXPECT_FALSE(controller_test_api_->handle_selection_called());
+  EXPECT_FALSE(controller_test_api_->IsFadingAway());
+
+  controller_test_api_->SimulateInterruptedStrokeTimeout();
+  EXPECT_FALSE(controller_test_api_->IsWaitingToResumeStroke());
+  EXPECT_TRUE(controller_test_api_->handle_selection_called());
+  EXPECT_TRUE(controller_test_api_->IsFadingAway());
 }
 
 }  // namespace ash

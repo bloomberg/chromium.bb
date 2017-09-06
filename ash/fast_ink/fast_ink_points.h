@@ -16,14 +16,16 @@
 
 namespace ash {
 
-// FastInkPoints is a helper class used for displaying low-latency palette tools
-// It keeps track of the points needed to render the image.
+// FastInkPoints is a helper class used for displaying low-latency palette
+// tools. It contains a collection of points representing one or more
+// contiguous trajectory segments.
 class ASH_EXPORT FastInkPoints {
  public:
   // Struct to describe each point.
   struct FastInkPoint {
     gfx::PointF location;
     base::TimeTicks time;
+    bool gap_after = false;  // True when there is a gap after this point.
   };
 
   // Constructor with a parameter to choose the fade out time of the points in
@@ -33,6 +35,9 @@ class ASH_EXPORT FastInkPoints {
 
   // Adds a point.
   void AddPoint(const gfx::PointF& point, const base::TimeTicks& time);
+  // Adds a gap after the most recent point. This is useful for multi-stroke
+  // gesture handling (e.g. strokes going over the bezel).
+  void AddGap();
   // Updates the collection latest time. Automatically clears points that are
   // too old.
   void MoveForwardToTime(const base::TimeTicks& latest_time);

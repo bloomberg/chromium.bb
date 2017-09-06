@@ -24,8 +24,10 @@ class HighlighterControllerTestApi : public HighlighterSelectionObserver {
 
   void SetEnabled(bool enabled);
   void DestroyPointerView();
+  void SimulateInterruptedStrokeTimeout();
   bool IsShowingHighlighter() const;
   bool IsFadingAway() const;
+  bool IsWaitingToResumeStroke() const;
   bool IsShowingSelectionResult() const;
   const FastInkPoints& points() const;
   const FastInkPoints& predicted_points() const;

@@ -231,4 +231,25 @@ TEST_F(FastInkPointsTest, FastInkPointsPrediction) {
   // Not testing with non-zero jerk, as the current prediction implementation
   // is not maintaining constant jerk on purpose.
 }
+
+// Test the interrupted stroke support.
+TEST_F(FastInkPointsTest, AddGap) {
+  points_.AddPoint(gfx::PointF(0, 0), base::TimeTicks());
+  points_.AddPoint(gfx::PointF(1, 1), base::TimeTicks());
+  points_.AddGap();
+  points_.AddPoint(gfx::PointF(2, 2), base::TimeTicks());
+  points_.AddPoint(gfx::PointF(3, 3), base::TimeTicks());
+  points_.AddPoint(gfx::PointF(4, 4), base::TimeTicks());
+  points_.AddGap();
+  points_.AddPoint(gfx::PointF(5, 5), base::TimeTicks());
+
+  auto points = points_.points();
+
+  EXPECT_FALSE(points[0].gap_after);
+  EXPECT_TRUE(points[1].gap_after);
+  EXPECT_FALSE(points[2].gap_after);
+  EXPECT_FALSE(points[3].gap_after);
+  EXPECT_TRUE(points[4].gap_after);
+  EXPECT_FALSE(points[5].gap_after);
+}
 }  // namespace ash

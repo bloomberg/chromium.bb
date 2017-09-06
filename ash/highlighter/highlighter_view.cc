@@ -109,6 +109,10 @@ void HighlighterView::AddNewPoint(const gfx::PointF& point,
   RequestRedraw();
 }
 
+void HighlighterView::AddGap() {
+  points_.AddGap();
+}
+
 void HighlighterView::Animate(const gfx::PointF& pivot,
                               HighlighterGestureType gesture_type,
                               const base::Closure& done) {
@@ -179,23 +183,24 @@ void HighlighterView::OnRedraw(gfx::Canvas& canvas) {
   // is exactly kPenTipHeight.
   const int height = kPenTipHeight - kPenTipWidth;
 
-  gfx::PointF previous_point;
+  FastInkPoints::FastInkPoint previous_point;
 
   for (int i = 0; i < num_points; ++i) {
-    gfx::PointF current_point;
+    FastInkPoints::FastInkPoint current_point;
     if (i < points_.GetNumberOfPoints()) {
-      current_point = points_.points()[i].location;
+      current_point = points_.points()[i];
     } else {
       current_point =
-          predicted_points_.points()[i - points_.GetNumberOfPoints()].location;
+          predicted_points_.points()[i - points_.GetNumberOfPoints()];
     }
 
-    if (i != 0) {
+    if (i != 0 && !previous_point.gap_after) {
       gfx::Rect damage_rect = InflateDamageRect(gfx::ToEnclosingRect(
-          gfx::BoundingRect(previous_point, current_point)));
+          gfx::BoundingRect(previous_point.location, current_point.location)));
       // Only draw the segment if it is touching the clip rect.
       if (clip_rect.Intersects(damage_rect)) {
-        DrawSegment(canvas, previous_point, current_point, height, flags);
+        DrawSegment(canvas, previous_point.location, current_point.location,
+                    height, flags);
       }
     }
 

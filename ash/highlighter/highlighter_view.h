@@ -41,6 +41,8 @@ class HighlighterView : public FastInkView {
 
   void AddNewPoint(const gfx::PointF& new_point, const base::TimeTicks& time);
 
+  void AddGap();
+
   void Animate(const gfx::PointF& pivot,
                HighlighterGestureType gesture_type,
                const base::Closure& done);
