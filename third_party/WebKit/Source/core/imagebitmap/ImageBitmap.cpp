@@ -313,16 +313,43 @@ RefPtr<StaticBitmapImage> ApplyColorSpaceConversion(
   // a new SRGB SkImage). This is inefficient and also converts GPU-backed
   // images to CPU-backed. For now, we ignore this and let the images be in
   // null color space. This must be okay if color management is only supported
-  // for SRGB. This might be okay for converting null color space to other
-  // color spaces. Please see crbug.com/754713 for more details.
+  // for SRGB. Please see crbug.com/754713 for more details.
 
   if (!CanvasColorParams::ColorCorrectRenderingInAnyColorSpace())
     return image;
 
+  // If the image is still in legacy color mode (no color space info) use a
+  // slow code path to tag the image as SRGB. This is inefficient and
+  // problematic. We eventually need to replace this with a check for the
+  // color space information of the image (crbug.com/754713).
+  sk_sp<SkImage> sk_image = image->PaintImageForCurrentFrame().GetSkImage();
+  if (!sk_image->colorSpace()) {
+    SkImageInfo srgb_info =
+        SkImageInfo::Make(sk_image->width(), sk_image->height(),
+                          kN32_SkColorType, sk_image->alphaType(), nullptr);
+    size_t size =
+        sk_image->width() * sk_image->height() * srgb_info.bytesPerPixel();
+    sk_sp<SkData> srgb_data = SkData::MakeUninitialized(size);
+    if (srgb_data && srgb_data->size() == size) {
+      sk_sp<SkImage> srgb_image;
+      if (sk_image->readPixels(srgb_info, srgb_data->writable_data(),
+                               sk_image->width() * srgb_info.bytesPerPixel(), 0,
+                               0)) {
+        srgb_info = srgb_info.makeColorSpace(SkColorSpace::MakeSRGB());
+        srgb_image = SkImage::MakeRasterData(
+            srgb_info, srgb_data,
+            sk_image->width() * srgb_info.bytesPerPixel());
+      }
+      if (srgb_image)
+        image = StaticBitmapImage::Create(srgb_image);
+    }
+  }
+
   // Color correct the image. This code path uses SkImage::makeColorSpace(). If
   // the color space of the source image is nullptr, it will be assumed in SRGB.
-  return image->ConvertToColorSpace(options.color_params.GetSkColorSpace(),
-                                    SkTransferFunctionBehavior::kRespect);
+  return image->ConvertToColorSpace(
+      options.color_params.GetSkColorSpaceForSkSurfaces(),
+      SkTransferFunctionBehavior::kRespect);
 }
 
 RefPtr<StaticBitmapImage> MakeBlankImage(
@@ -605,13 +632,24 @@ ImageBitmap::ImageBitmap(ImageData* data,
     return;
   RefPtr<Uint8Array> image_pixels =
       Uint8Array::Create(std::move(array_buffer), 0, byte_length);
-  memcpy(image_pixels->Data(), cropped_data->BufferBase()->Data(), byte_length);
-
-  SkImageInfo info = SkImageInfo::Make(
-      cropped_data->width(), cropped_data->height(),
-      cropped_data->GetCanvasColorParams().GetSkColorType(),
-      kUnpremul_SkAlphaType,
-      cropped_data->GetCanvasColorParams().GetSkColorSpaceForSkSurfaces());
+  CanvasColorParams color_params = cropped_data->GetCanvasColorParams();
+  if (color_params.GetSkColorType() == kRGBA_F16_SkColorType) {
+    std::unique_ptr<SkColorSpaceXform> xform = SkColorSpaceXform::New(
+        color_params.GetSkColorSpaceForSkSurfaces().get(),
+        color_params.GetSkColorSpaceForSkSurfaces().get());
+    xform->apply(SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat,
+                 image_pixels->Data(),
+                 SkColorSpaceXform::ColorFormat::kRGBA_F32_ColorFormat,
+                 cropped_data->BufferBase()->Data(),
+                 cropped_data->Size().Area(), kUnpremul_SkAlphaType);
+  } else {
+    memcpy(image_pixels->Data(), cropped_data->BufferBase()->Data(),
+           byte_length);
+  }
+  SkImageInfo info =
+      SkImageInfo::Make(cropped_data->width(), cropped_data->height(),
+                        color_params.GetSkColorType(), kUnpremul_SkAlphaType,
+                        color_params.GetSkColorSpaceForSkSurfaces());
 
   // If we are in color correct rendering mode but we only color correct to
   // SRGB, we don't do any color conversion when transferring the pixels from
@@ -861,7 +899,6 @@ ScriptPromise ImageBitmap::CreateAsync(ImageElementBase* image,
                       std::move(paint_record), draw_dst_rect,
                       !image->WouldTaintOrigin(document->GetSecurityOrigin()),
                       WTF::Passed(std::move(passed_parsed_options))));
-
   return promise;
 }
 
