@@ -5197,6 +5197,9 @@ All users must sign out to continue.
   </message>
 
   <!-- Print Job Notification -->
+  <message name="IDS_PRINT_JOB_NOTIFICATION_DISPLAY_SOURCE" desc="The context title of printing notification.">
+    Print
+  </message>
   <message name="IDS_PRINT_JOB_PRINTING_NOTIFICATION_TITLE" desc="Title of the printing-in-progress notification.">
     Now printing <ph name="DOCUMENT_NAME">$1<ex>document.pdf</ex></ph>
   </message>
