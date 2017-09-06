@@ -83,6 +83,8 @@ public class WebVrInputTest {
      */
     @Test
     @MediumTest
+    @DisableIf.Build(message = "Flaky on K/L crbug.com/762126",
+            sdk_is_less_than = Build.VERSION_CODES.M)
     public void testScreenTapsNotRegistered() throws InterruptedException {
         mVrTestFramework.loadUrlAndAwaitInitialization(
                 VrTestFramework.getHtmlTestFile("test_screen_taps_not_registered"),
