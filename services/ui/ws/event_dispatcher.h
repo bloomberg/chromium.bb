@@ -21,6 +21,7 @@
 #include "services/ui/ws/event_targeter_delegate.h"
 #include "services/ui/ws/modal_window_controller.h"
 #include "services/ui/ws/server_window_observer.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace viz {
@@ -182,23 +183,19 @@ class EventDispatcher : public ServerWindowObserver,
 
   // Keeps track of state associated with an active pointer.
   struct PointerTarget {
-    PointerTarget()
-        : window(nullptr),
-          is_mouse_event(false),
-          in_nonclient_area(false),
-          is_pointer_down(false) {}
-
     // The target window, which may be null. null is used in two situations:
     // when there is no valid window target, or there was a target but the
     // window is destroyed before a corresponding release/cancel.
-    ServerWindow* window;
+    ServerWindow* window = nullptr;
 
-    bool is_mouse_event;
+    bool is_mouse_event = false;
 
     // Did the pointer event start in the non-client area.
-    bool in_nonclient_area;
+    bool in_nonclient_area = false;
 
-    bool is_pointer_down;
+    bool is_pointer_down = false;
+
+    int64_t display_id = display::kInvalidDisplayId;
   };
 
   struct DeepestWindowAndTarget {
@@ -228,6 +225,7 @@ class EventDispatcher : public ServerWindowObserver,
                                int64_t new_mouse_display_id);
 
   void ProcessKeyEvent(const ui::KeyEvent& event,
+                       int64_t display_id,
                        AcceleratorMatchPhase match_phase);
 
   // When the user presses a key, we want to hide the cursor if it doesn't
@@ -312,7 +310,8 @@ class EventDispatcher : public ServerWindowObserver,
   // Dispatch |event| to the delegate.
   void DispatchToClient(ServerWindow* window,
                         ClientSpecificId client_id,
-                        const ui::LocatedEvent& event);
+                        const ui::LocatedEvent& event,
+                        int64_t display_id);
 
   // Stops sending pointer events to |window|. This does not remove the entry
   // for |window| from |pointer_targets_|, rather it nulls out the window. This
@@ -373,9 +372,6 @@ class EventDispatcher : public ServerWindowObserver,
   gfx::Point mouse_pointer_last_location_;
   // Id of the display |mouse_pointer_last_location_| is on.
   int64_t mouse_pointer_display_id_ = display::kInvalidDisplayId;
-
-  // Id of the display the most recent event is on.
-  int64_t event_display_id_ = display::kInvalidDisplayId;
 
   std::map<uint32_t, std::unique_ptr<Accelerator>> accelerators_;
 

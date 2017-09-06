@@ -1565,7 +1565,7 @@ TEST_F(WindowTreeTest, TestWindowManagerSettingCursorLocation) {
   // have switched to ibeam.
   EXPECT_EQ(ui::CursorType::kPointer, cursor_type());
 
-  // Have the window manager mvoe the cursor within the embed window.
+  // Have the window manager move the cursor within the embed window.
   static_cast<mojom::WindowManagerClient*>(wm_tree())
       ->WmMoveCursorToDisplayLocation(gfx::Point(21, 21), -1);
 
