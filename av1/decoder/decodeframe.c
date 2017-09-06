@@ -3240,6 +3240,19 @@ static void setup_frame_size_with_refs(AV1_COMMON *cm,
   pool->frame_bufs[cm->new_fb_idx].buf.render_height = cm->render_height;
 }
 
+static void read_tile_group_range(AV1Decoder *pbi,
+                                  struct aom_read_bit_buffer *const rb) {
+  AV1_COMMON *const cm = &pbi->common;
+  const int num_bits = cm->log2_tile_rows + cm->log2_tile_cols;
+  const int num_tiles =
+      cm->tile_rows * cm->tile_cols;  // Note: May be < (1<<num_bits)
+  pbi->tg_start = aom_rb_read_literal(rb, num_bits);
+  pbi->tg_size = 1 + aom_rb_read_literal(rb, num_bits);
+  if (pbi->tg_start + pbi->tg_size > num_tiles)
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "Tile group extends past last tile in frame");
+}
+
 static void read_tile_info(AV1Decoder *const pbi,
                            struct aom_read_bit_buffer *const rb) {
   AV1_COMMON *const cm = &pbi->common;
@@ -3333,13 +3346,7 @@ static void read_tile_info(AV1Decoder *const pbi,
 
   // Store an index to the location of the tile group information
   pbi->tg_size_bit_offset = rb->bit_offset;
-  pbi->tg_size = 1 << (cm->log2_tile_rows + cm->log2_tile_cols);
-  if (cm->log2_tile_rows + cm->log2_tile_cols > 0) {
-    pbi->tg_start =
-        aom_rb_read_literal(rb, cm->log2_tile_rows + cm->log2_tile_cols);
-    pbi->tg_size =
-        1 + aom_rb_read_literal(rb, cm->log2_tile_rows + cm->log2_tile_cols);
-  }
+  read_tile_group_range(pbi, rb);
 }
 
 static int mem_get_varsize(const uint8_t *src, int sz) {
@@ -3547,8 +3554,6 @@ static void get_tile_buffers(
   int first_tile_in_tg = 0;
   struct aom_read_bit_buffer rb_tg_hdr;
   uint8_t clear_data[MAX_AV1_HEADER_SIZE];
-  const int num_tiles = tile_rows * tile_cols;
-  const int num_bits = OD_ILOG(num_tiles) - 1;
   const size_t hdr_size = pbi->uncomp_hdr_size + pbi->first_partition_size;
   const int tg_size_bit_offset = pbi->tg_size_bit_offset;
 #if CONFIG_DEPENDENT_HORZTILES
@@ -3569,14 +3574,11 @@ static void get_tile_buffers(
       if (hdr_offset) {
         init_read_bit_buffer(pbi, &rb_tg_hdr, data, data_end, clear_data);
         rb_tg_hdr.bit_offset = tg_size_bit_offset;
-        if (num_tiles) {
-          pbi->tg_start = aom_rb_read_literal(&rb_tg_hdr, num_bits);
-          pbi->tg_size = 1 + aom_rb_read_literal(&rb_tg_hdr, num_bits);
+        read_tile_group_range(pbi, &rb_tg_hdr);
 #if CONFIG_DEPENDENT_HORZTILES
-          tile_group_start_row = r;
-          tile_group_start_col = c;
+        tile_group_start_row = r;
+        tile_group_start_col = c;
 #endif
-        }
       }
       first_tile_in_tg += tc == first_tile_in_tg ? pbi->tg_size : 0;
       data += hdr_offset;
