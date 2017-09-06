@@ -89,6 +89,14 @@ def _merge_doc(doc, doc2):
         _merge_dict("data")
 
 
+def _is_valid(valid_values, value):
+    if type(value) == str and all([type(i) == str for i in valid_values]):
+        return any([(value == valid) or (re.match("^" + valid + "$", value) is not None)
+                    for valid in valid_values])
+    else:
+        return value in valid_values
+
+
 class Json5File(object):
     def __init__(self, file_paths, doc, default_metadata=None, default_parameters=None):
         self.file_paths = file_paths
@@ -181,12 +189,12 @@ class Json5File(object):
         # validate each item in the value list against valid_values.
         if valid_type == "list" and type(valid_values[0]) is not list:
             for item in value:
-                if item not in valid_values:
-                    raise Exception("Unknown value: '%s'\nKnown values: %s" %
-                                    (item, valid_values))
-        elif value not in valid_values:
-            raise Exception("Unknown value: '%s'\nKnown values: %s" %
-                            (value, valid_values))
+                if not _is_valid(valid_values, item):
+                    raise Exception("Unknown value: '%s'\nValid values: %s, \
+                        Please change your value to a valid value" % (item, valid_values))
+        elif not _is_valid(valid_values, value):
+            raise Exception("Unknown value: '%s'\nValid values: %s, \
+                Please change your value to a valid value" % (value, valid_values))
 
 
 class Writer(object):

@@ -218,7 +218,7 @@ def _get_include_paths(properties):
     return list(sorted(include_paths))
 
 
-def _create_groups(properties):
+def _create_groups(properties, alias_dictionary):
     """Create a tree of groups from a list of properties.
 
     Returns:
@@ -251,7 +251,7 @@ def _create_groups(properties):
             for group_name in property_['field_group'].split('->'):
                 current_group_dict[group_name] = current_group_dict.get(group_name, {None: []})
                 current_group_dict = current_group_dict[group_name]
-        current_group_dict[None].extend(_create_fields(property_))
+        current_group_dict[None].extend(_create_fields(property_, alias_dictionary))
 
     return _dict_to_group(None, root_group_dict)
 
@@ -326,7 +326,7 @@ def _create_enums(properties):
     return list(sorted(enums.values(), key=lambda e: e.type_name))
 
 
-def _create_property_field(property_):
+def _create_property_field(property_, alias_dictionary):
     """
     Create a property field.
     """
@@ -335,6 +335,12 @@ def _create_property_field(property_):
     assert property_['default_value'] is not None, \
         ('MakeComputedStyleBase requires an default value for all fields, none specified '
          'for property ' + property_['name'])
+
+    if property_['field_template'] in alias_dictionary:
+        alias_template = property_['field_template']
+        for field in alias_dictionary[alias_template]:
+            if field != 'name':
+                property_[field] = alias_dictionary[alias_template][field]
 
     if property_['field_template'] == 'keyword':
         type_name = property_['type_name']
@@ -372,12 +378,6 @@ def _create_property_field(property_):
     elif property_['field_template'] == 'pointer':
         type_name = property_['type_name']
         default_value = property_['default_value']
-        size = None
-    elif property_['field_template'] == '<length>':
-        property_['field_template'] = 'external'
-        property_['type_name'] = type_name = 'Length'
-        default_value = property_['default_value']
-        property_['include_paths'] = ["platform/Length.h"]
         size = None
     else:
         assert property_['field_template'] in ('monotonic_flag',)
@@ -436,7 +436,7 @@ def _create_inherited_flag_field(property_):
     )
 
 
-def _create_fields(property_):
+def _create_fields(property_, alias_dictionary):
     """
     Create ComputedStyle fields from a property and return a list of Field objects.
     """
@@ -448,7 +448,7 @@ def _create_fields(property_):
         if property_['independent']:
             fields.append(_create_inherited_flag_field(property_))
 
-        fields.append(_create_property_field(property_))
+        fields.append(_create_property_field(property_, alias_dictionary))
 
     return fields
 
@@ -638,18 +638,18 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
 
         # Organise fields into a tree structure where the root group
         # is ComputedStyleBase.
-
         group_parameters = dict([(conf["name"], conf["cumulative_distribution"]) for conf in
                                  json5_generator.Json5File.load_from_files([json5_file_paths[5]]).name_dictionaries])
 
         _evaluate_rare_non_inherited_group(all_properties, json5_file_paths[4],
                                            len(group_parameters["rare_non_inherited_properties_rule"]),
                                            group_parameters["rare_non_inherited_properties_rule"])
-
         _evaluate_rare_inherit_group(all_properties, json5_file_paths[4],
                                      len(group_parameters["rare_inherited_properties_rule"]),
                                      group_parameters["rare_inherited_properties_rule"])
-        self._root_group = _create_groups(all_properties)
+        alias_dictionary = dict([(alias["name"], alias) for alias in
+                                 json5_generator.Json5File.load_from_files([json5_file_paths[6]]).name_dictionaries])
+        self._root_group = _create_groups(all_properties, alias_dictionary)
         self._diff_functions_map = _create_diff_groups_map(json5_generator.Json5File.load_from_files(
             [json5_file_paths[2]]
         ).name_dictionaries, self._root_group)
