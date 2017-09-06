@@ -42,11 +42,11 @@ var LockStateBehavior = {
 
   /** @override */
   attached: function() {
-    this.boundOnActiveModesChanged_ = this.updateUnlockType_.bind(this);
+    this.boundOnActiveModesChanged_ = this.updateUnlockType.bind(this);
     this.quickUnlockPrivate_.onActiveModesChanged.addListener(
         this.boundOnActiveModesChanged_);
 
-    this.updateUnlockType_();
+    this.updateUnlockType();
   },
 
   /** @override */
@@ -59,10 +59,8 @@ var LockStateBehavior = {
    * Updates the selected unlock type radio group. This function will get called
    * after preferences are initialized, after the quick unlock mode has been
    * changed, and after the lockscreen preference has changed.
-   *
-   * @private
    */
-  updateUnlockType_: function() {
+  updateUnlockType: function() {
     this.quickUnlockPrivate_.getActiveModes(modes => {
       if (modes.includes(chrome.quickUnlockPrivate.QuickUnlockMode.PIN)) {
         this.hasPin = true;
