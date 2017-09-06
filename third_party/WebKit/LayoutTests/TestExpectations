@@ -596,6 +596,7 @@ crbug.com/728378 virtual/layout_ng/overflow/overflow-position-004.html [ Failure
 # ====== DevTools test migration failures from here ======
 
 ### virtual/mojo-loading/http/tests/devtools
+crbug.com/667560 http/tests/devtools/console/console-search.js [ Skip ]
 crbug.com/667560 virtual/mojo-loading/http/tests/devtools/console/console-search.js [ Skip ]
 
 crbug.com/667560 http/tests/devtools/elements/styles-3/styles-change-node-while-editing.html [ Pass Failure ]
@@ -2319,6 +2320,7 @@ crbug.com/435547 virtual/mojo-loading/http/tests/cachestorage/serviceworker/igno
 crbug.com/697971 [ Mac10.12 ] fast/text/flexbox-selection-nested.html [ Skip ]
 crbug.com/697971 [ Mac10.12 ] fast/text/flexbox-selection.html [ Skip ]
 crbug.com/678481 http/tests/inspector/appcache/appcache-manifest-with-non-existing-file.html [ Timeout Failure Pass ]
+crbug.com/678481 http/tests/inspector/appcache/appcache-iframe-manifests.html [ Timeout Failure Pass ]
 crbug.com/678481 virtual/mojo-loading/http/tests/inspector/appcache/appcache-iframe-manifests.html [ Timeout Failure Pass ]
 
 crbug.com/701047 [ Mac10.12 ] editing/caret/caret-color.html [ Failure ]
@@ -2362,7 +2364,7 @@ crbug.com/664873 virtual/mojo-loading/http/tests/xmlhttprequest/small-chunks-res
 
 crbug.com/660295 http/tests/devtools/elements/elements-panel-restore-selection-when-node-comes-later.html [ Pass Failure ]
 crbug.com/667560 virtual/mojo-loading/http/tests/devtools/elements/elements-panel-restore-selection-when-node-comes-later.html [ Pass Failure ]
-crbug.com/735245 http/tests/inspector/application-panel/storage-view-reports-quota.html [ Pass Timeout ]
+crbug.com/735245 http/tests/inspector/application-panel/storage-view-reports-quota.html [ Pass Timeout Failure ]
 crbug.com/735245 virtual/mojo-loading/http/tests/inspector/application-panel/storage-view-reports-quota.html [ Pass Timeout Failure ]
 
 # [css-grid]
@@ -3640,17 +3642,29 @@ crbug.com/669329 virtual/threaded/http/tests/devtools/tracing/timeline-js/timeli
 crbug.com/667560 virtual/mojo-loading/http/tests/devtools/tracing/timeline-js/timeline-runtime-stats.html [ Pass Failure Crash ]
 
 # Tests timing out on WebKit Linux Trusty MSAN
+crbug.com/760543 [ Linux Release ] http/tests/devtools/profiler/heap-snapshot-inspect-dom-wrapper.html [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/profiler/heap-snapshot-inspect-dom-wrapper.html [ Pass Timeout ]
+crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/console-timeline.html [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/tracing/console-timeline.html [ Pass Timeout ]
+crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-layout/timeline-layout-with-invalidations.html [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/tracing/timeline-layout/timeline-layout-with-invalidations.html [ Pass Timeout ]
+crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.html [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.html [ Pass Timeout ]
+crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-paint/timeline-paint-with-style-recalc-invalidations.html [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-style-recalc-invalidations.html [ Pass Timeout ]
+crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.html [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.html [ Pass Timeout ]
+crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-style/timeline-style-recalc-with-invalidations.html [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/tracing/timeline-style/timeline-style-recalc-with-invalidations.html [ Pass Timeout ]
+crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-style/timeline-style-recalc-with-invalidator-invalidations.html [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/tracing/timeline-style/timeline-style-recalc-with-invalidator-invalidations.html [ Pass Timeout ]
+crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-misc/timeline-event-causes.html [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/tracing/timeline-misc/timeline-event-causes.html [ Pass Timeout ]
+crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.html [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.html [ Pass Timeout ]
+crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-time/timeline-usertiming.html [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/tracing/timeline-time/timeline-usertiming.html [ Pass Timeout ]
+crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-paint/timeline-paint.html [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/tracing/timeline-paint/timeline-paint.html [ Pass Timeout ]
 
 crbug.com/761891 [ Win7 Debug ] virtual/threaded/animations/transition-and-animation-3.html [ Pass Failure Timeout ]
