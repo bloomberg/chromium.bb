@@ -4,7 +4,6 @@
 
 #include "chrome/browser/feature_engagement/bookmark/bookmark_tracker.h"
 
-#include "base/feature_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/feature_engagement/session_duration_updater.h"
 #include "chrome/browser/feature_engagement/session_duration_updater_factory.h"
@@ -18,7 +17,7 @@
 
 namespace {
 
-const int kFiveHoursInMinutes = 300;
+const int kDefaultPromoShowTimeInHours = 5;
 
 }  // namespace
 
@@ -27,7 +26,11 @@ namespace feature_engagement {
 BookmarkTracker::BookmarkTracker(
     Profile* profile,
     SessionDurationUpdater* session_duration_updater)
-    : FeatureTracker(profile, session_duration_updater) {}
+    : FeatureTracker(profile,
+                     session_duration_updater,
+                     &kIPHBookmarkFeature,
+                     base::TimeDelta::FromHours(kDefaultPromoShowTimeInHours)) {
+}
 
 BookmarkTracker::BookmarkTracker(
     SessionDurationUpdater* session_duration_updater)
@@ -48,16 +51,8 @@ void BookmarkTracker::OnVisitedKnownURL() {
     ShowPromo();
 }
 
-bool BookmarkTracker::ShouldShowPromo() {
-  return GetTracker()->ShouldTriggerHelpUI(kIPHBookmarkFeature);
-}
-
 void BookmarkTracker::OnSessionTimeMet() {
   GetTracker()->NotifyEvent(events::kBookmarkSessionTimeMet);
-}
-
-int BookmarkTracker::GetSessionTimeRequiredToShowInMinutes() {
-  return kFiveHoursInMinutes;
 }
 
 void BookmarkTracker::ShowPromo() {

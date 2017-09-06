@@ -4,6 +4,8 @@
 
 #include "chrome/browser/feature_engagement/feature_tracker.h"
 
+#include "base/metrics/field_trial_params.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "components/feature_engagement/public/event_constants.h"
@@ -12,11 +14,16 @@
 
 namespace feature_engagement {
 
-FeatureTracker::FeatureTracker(Profile* profile,
-                               SessionDurationUpdater* session_duration_updater)
+FeatureTracker::FeatureTracker(
+    Profile* profile,
+    SessionDurationUpdater* session_duration_updater,
+    const base::Feature* feature,
+    base::TimeDelta default_time_required_to_show_promo)
     : profile_(profile),
       session_duration_updater_(session_duration_updater),
-      session_duration_observer_(this) {
+      session_duration_observer_(this),
+      feature_(feature),
+      field_trial_time_delta_(default_time_required_to_show_promo) {
   AddSessionDurationObserver();
 }
 
@@ -34,6 +41,10 @@ bool FeatureTracker::IsObserving() {
   return session_duration_observer_.IsObserving(session_duration_updater_);
 }
 
+bool FeatureTracker::ShouldShowPromo() {
+  return GetTracker()->ShouldTriggerHelpUI(*feature_);
+}
+
 Tracker* FeatureTracker::GetTracker() const {
   return TrackerFactory::GetForBrowserContext(profile_);
 }
@@ -45,10 +56,24 @@ void FeatureTracker::OnSessionEnded(base::TimeDelta total_session_time) {
   }
 }
 
+base::TimeDelta FeatureTracker::GetSessionTimeRequiredToShow() {
+  if (!has_retrieved_field_trial_minutes_) {
+    has_retrieved_field_trial_minutes_ = true;
+    std::string field_trial_string_value =
+        base::GetFieldTrialParamValueByFeature(*feature_, "x_minutes");
+    int field_trial_int_value;
+    if (base::StringToInt(field_trial_string_value, &field_trial_int_value)) {
+      field_trial_time_delta_ =
+          base::TimeDelta::FromMinutes(field_trial_int_value);
+    }
+  }
+  return field_trial_time_delta_;
+}
+
 bool FeatureTracker::HasEnoughSessionTimeElapsed(
     base::TimeDelta total_session_time) {
   return total_session_time.InMinutes() >=
-         GetSessionTimeRequiredToShowInMinutes();
+         GetSessionTimeRequiredToShow().InMinutes();
 }
 
 }  // namespace feature_engagement

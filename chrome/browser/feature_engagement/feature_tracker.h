@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_FEATURE_ENGAGEMENT_FEATURE_TRACKER_H_
 #define CHROME_BROWSER_FEATURE_ENGAGEMENT_FEATURE_TRACKER_H_
 
+#include "base/feature_list.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/feature_engagement/session_duration_updater.h"
 #include "chrome/browser/profiles/profile.h"
@@ -24,7 +25,7 @@ class Tracker;
 // SessionDurationUpdater keeps track of the observed session time and, upon
 // each session ending, updates all of the FeatureTrackers with the new total
 // observed session time. Once the observed session time exceeds the time
-// requirement provided by GetSessionTimeRequiredToShowInMinutes(), the
+// requirement provided by GetSessionTimeRequiredToShow(), the
 // FeatureTracker unregisters itself as an obsever of SessionDurationUpdater.
 // SessionDurationUpdater stops updating the observed session time if no
 // features are observing it, and will start tracking the observed sesion time
@@ -33,7 +34,9 @@ class FeatureTracker : public SessionDurationUpdater::Observer,
                        public KeyedService {
  public:
   FeatureTracker(Profile* profile,
-                 SessionDurationUpdater* session_duration_updater);
+                 SessionDurationUpdater* session_duration_updater,
+                 const base::Feature* feature,
+                 base::TimeDelta defaultTimeRequiredToShowPromo);
 
   // Adds the SessionDurationUpdater observer.
   void AddSessionDurationObserver();
@@ -47,15 +50,20 @@ class FeatureTracker : public SessionDurationUpdater::Observer,
   // SessionDurationUpdater::Observer:
   void OnSessionEnded(base::TimeDelta total_session_time) override;
 
+  // Returns whether or not the promo should be displayed.
+  bool ShouldShowPromo();
+
  protected:
   ~FeatureTracker() override;
-  // Returns the required session time in minutes for the FeatureTracker's
-  // subclass to show its promo.
-  virtual int GetSessionTimeRequiredToShowInMinutes() = 0;
+
   // Alerts the feature tracker that the session time is up.
   virtual void OnSessionTimeMet() = 0;
   // Returns the Tracker associated with this FeatureTracker.
   virtual Tracker* GetTracker() const;
+
+  // Returns the required session time in minutes for the FeatureTracker's
+  // subclass to show its promo.
+  base::TimeDelta GetSessionTimeRequiredToShow();
 
  private:
   // Returns whether the active session time of a user has elapsed more than the
@@ -72,6 +80,16 @@ class FeatureTracker : public SessionDurationUpdater::Observer,
   // starts and ends.
   ScopedObserver<SessionDurationUpdater, SessionDurationUpdater::Observer>
       session_duration_observer_;
+
+  // IPH Feature that the tracker is tracking.
+  const base::Feature* const feature_;
+
+  // "x_minutes" param value from the field trial.
+  base::TimeDelta field_trial_time_delta_;
+
+  // Whether the "x_minutes" param value has already been retrieved to prevent
+  // reading from the field trial multiple times for the same param.
+  bool has_retrieved_field_trial_minutes_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FeatureTracker);
 };
