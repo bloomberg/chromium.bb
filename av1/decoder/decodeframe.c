@@ -1830,10 +1830,13 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
       int row_y, col_y, row_c, col_c;
       int plane;
 
+// TODO(anybody) : remove this flag when PVQ supports pallete coding tool
+#if !CONFIG_PVQ
       for (plane = 0; plane <= 1; ++plane) {
         if (mbmi->palette_mode_info.palette_size[plane])
           av1_decode_palette_tokens(xd, plane, r);
       }
+#endif  // !CONFIG_PVQ
 
       for (row_y = 0; row_y < tu_num_h_y; row_y++) {
         for (col_y = 0; col_y < tu_num_w_y; col_y++) {
@@ -1913,10 +1916,15 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
 #else  // CONFIG_COEF_INTERLEAVE
   if (!is_inter_block(mbmi)) {
     int plane;
+
+// TODO(anybody) : remove this flag when PVQ supports pallete coding tool
+#if !CONFIG_PVQ
     for (plane = 0; plane <= 1; ++plane) {
       if (mbmi->palette_mode_info.palette_size[plane])
         av1_decode_palette_tokens(xd, plane, r);
     }
+#endif  // #if !CONFIG_PVQ
+
     for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
       const struct macroblockd_plane *const pd = &xd->plane[plane];
       const TX_SIZE tx_size = av1_get_tx_size(plane, xd);

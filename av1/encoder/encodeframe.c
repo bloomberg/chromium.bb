@@ -5084,6 +5084,8 @@ static int do_gm_search_logic(SPEED_FEATURES *const sf, int num_refs_using_gm,
 }
 #endif  // CONFIG_GLOBAL_MOTION
 
+// TODO(anybody) : remove this flag when PVQ supports pallete coding tool
+#if !CONFIG_PVQ
 // Estimate if the source frame is screen content, based on the portion of
 // blocks that have no more than 4 (experimentally selected) luma colors.
 static int is_screen_content(const uint8_t *src,
@@ -5111,6 +5113,7 @@ static int is_screen_content(const uint8_t *src,
   // The threshold is 10%.
   return counts * blk_h * blk_w * 10 > width * height;
 }
+#endif  // !CONFIG_PVQ
 
 static void encode_frame_internal(AV1_COMP *cpi) {
   ThreadData *const td = &cpi->td;
@@ -5142,6 +5145,8 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   av1_zero(rdc->comp_pred_diff);
 
   if (frame_is_intra_only(cm)) {
+// TODO(anybody) : remove this flag when PVQ supports pallete coding tool
+#if !CONFIG_PVQ
     cm->allow_screen_content_tools =
         cpi->oxcf.content == AOM_CONTENT_SCREEN ||
         is_screen_content(cpi->source->y_buffer,
@@ -5150,6 +5155,9 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 #endif  // CONFIG_HIGHBITDEPTH
                           cpi->source->y_stride, cpi->source->y_width,
                           cpi->source->y_height);
+#else
+    cm->allow_screen_content_tools = 0;
+#endif  // !CONFIG_PVQ
   }
 
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
@@ -6123,6 +6131,9 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
       sum_intra_stats(td->counts, xd, mi, xd->above_mi, xd->left_mi,
                       frame_is_intra_only(cm), mi_row, mi_col);
     }
+
+// TODO(anybody) : remove this flag when PVQ supports pallete coding tool
+#if !CONFIG_PVQ
     if (bsize >= BLOCK_8X8) {
       for (plane = 0; plane <= 1; ++plane) {
         if (mbmi->palette_mode_info.palette_size[plane] > 0) {
@@ -6135,6 +6146,8 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
         }
       }
     }
+#endif  // !CONFIG_PVQ
+
 #if CONFIG_VAR_TX
     mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
 #endif

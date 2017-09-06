@@ -334,6 +334,14 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
   if (extra_cfg->tuning == AOM_TUNE_SSIM)
     ERROR("Option --tune=ssim is not currently supported in AV1.");
 
+// TODO(anybody) : remove this flag when PVQ supports pallete coding tool
+#if CONFIG_PVQ
+  if (extra_cfg->content == AOM_CONTENT_SCREEN)
+    ERROR(
+        "Option --tune-content=screen is not currently supported when PVQ is "
+        "enabled.");
+#endif  // CONFIG_PVQ
+
   if (cfg->g_pass == AOM_RC_LAST_PASS) {
 #if !CONFIG_XIPHRC
     const size_t packet_sz = sizeof(FIRSTPASS_STATS);
