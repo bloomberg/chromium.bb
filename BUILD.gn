@@ -70,6 +70,7 @@ group("gn_all") {
 
   deps = [
     ":gn_visibility",
+    "//base:base_perftests",
     "//base:base_unittests",
     "//chrome/installer",
     "//net:net_unittests",
@@ -418,7 +419,6 @@ group("gn_all") {
   if (is_ios || is_win || (is_linux && !is_chromeos)) {
     deps += [
       "//base:base_i18n_perftests",
-      "//base:base_perftests",
       "//google_apis:google_apis_unittests",
     ]
   }
