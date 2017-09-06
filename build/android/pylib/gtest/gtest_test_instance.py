@@ -188,7 +188,7 @@ def ParseGTestOutput(output, symbolizer, device_abi):
         duration = 0 # Don't know.
 
     if log is not None:
-      if _STACK_LINE_RE.match(l):
+      if not matcher and _STACK_LINE_RE.match(l):
         stack.append(l)
       else:
         log.append(l)
