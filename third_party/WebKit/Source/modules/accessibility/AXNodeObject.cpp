@@ -986,12 +986,6 @@ Element* AXNodeObject::MouseButtonListener() const {
 
   for (Element* element = ToElement(node); element;
        element = element->parentElement()) {
-    // It's a pretty common practice to put click listeners on the body or
-    // document, but that's almost never what the user wants when clicking on an
-    // accessible element.
-    if (isHTMLBodyElement(element))
-      break;
-
     if (element->HasEventListeners(EventTypeNames::click) ||
         element->HasEventListeners(EventTypeNames::mousedown) ||
         element->HasEventListeners(EventTypeNames::mouseup) ||
@@ -999,7 +993,7 @@ Element* AXNodeObject::MouseButtonListener() const {
       return element;
   }
 
-  return 0;
+  return nullptr;
 }
 
 AccessibilityRole AXNodeObject::RemapAriaRoleDueToParent(
@@ -1286,18 +1280,20 @@ bool AXNodeObject::IsMoveableSplitter() const {
 }
 
 bool AXNodeObject::IsClickable() const {
-  if (GetNode()) {
-    if (GetNode()->IsElementNode() &&
-        ToElement(GetNode())->IsDisabledFormControl())
-      return false;
+  Node* node = GetNode();
+  if (!node)
+    return false;
+  if (node->IsElementNode() && ToElement(node)->IsDisabledFormControl()) {
+    return false;
+  }
 
-    // Note: we can't call getNode()->willRespondToMouseClickEvents() because
-    // that triggers a style recalc and can delete this.
-    if (GetNode()->HasEventListeners(EventTypeNames::mouseup) ||
-        GetNode()->HasEventListeners(EventTypeNames::mousedown) ||
-        GetNode()->HasEventListeners(EventTypeNames::click) ||
-        GetNode()->HasEventListeners(EventTypeNames::DOMActivate))
-      return true;
+  // Note: we can't call |node->WillRespondToMouseClickEvents()| because that
+  // triggers a style recalc and can delete this.
+  if (node->HasEventListeners(EventTypeNames::mouseup) ||
+      node->HasEventListeners(EventTypeNames::mousedown) ||
+      node->HasEventListeners(EventTypeNames::click) ||
+      node->HasEventListeners(EventTypeNames::DOMActivate)) {
+    return true;
   }
 
   return AXObject::IsClickable();

@@ -70,6 +70,7 @@ const char* const ALL_ATTRIBUTES[] = {
     "maximumValue",
     "description",
     "default_action",
+    "action_name",
     "keyboard_shortcut",
     "location",
     "size",
@@ -271,10 +272,19 @@ void AccessibilityTreeFormatterWin::AddProperties(
   }
   temp_bstr.Reset();
 
+  // |get_accDefaultAction| returns a localized string.
   if (SUCCEEDED(ax_object->GetCOM()->get_accDefaultAction(
           variant_self, temp_bstr.Receive()))) {
     dict->SetString("default_action", base::string16(temp_bstr,
         temp_bstr.Length()));
+  }
+  temp_bstr.Reset();
+
+  // |IAccessibleAction::get_name| returns a localized string.
+  if (SUCCEEDED(ax_object->GetCOM()->get_name(0 /* action_index */,
+                                              temp_bstr.Receive()))) {
+    dict->SetString("action_name",
+                    base::string16(temp_bstr, temp_bstr.Length()));
   }
   temp_bstr.Reset();
 

@@ -311,6 +311,13 @@
     activate,
     check,
     click,
+
+    // A click will be performed on one of the node's ancestors.
+    // This happens when the node itself is not clickable, but one of its
+    // ancestors has click handlers attached which are able to capture the click
+    // as it bubbles up.
+    click_ancestor,
+
     jump,
     open,
     press,
