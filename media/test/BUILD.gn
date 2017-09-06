@@ -142,19 +142,50 @@ pipeline_integration_fuzzer_variants = [
 
   # MSE pipeline fuzzer test variants. Note, while it would be nice to have one
   # generic MSE fuzzer, we use distinct fuzzers corresponding 1:1 to a set of
-  # mimetype+codec strings for now because maintaining the association of a
-  # (mutated) corpus item with the same MSE SourceBuffer configuration requires
-  # associating that item with the same mimetype+codec string. The benefits are
-  # simpler fuzzers and the ability to slice per-fuzzer coverage stats. The
-  # costs include more fuzzers and more potential duplicate bugs from different
-  # fuzzers for common issues exposed across mimetype+codec string variants.
-  # TODO(wolenetz): Add more MSE fuzzer variants for different bytestreams and
-  # codec combos. See https://crbug.com/750818.
-  "MP4_FLAC",
-  "MP4_AVC1",
+  # mimetype+codec strings for now because:
+  # a) the SourceBuffer implementation must be constructed to expect a
+  #    particular bytestream type and (set of) codec(s); it does not
+  #    auto-detect those from the appended media, and
+  # b) maintaining the association of a (mutated) corpus item with the same MSE
+  #    SourceBuffer configuration requires associating that item with the same
+  #    mimetype+codec string. The benefits are simpler fuzzers and the ability
+  #    to slice per-fuzzer coverage stats. The costs include more fuzzers, risk
+  #    of new bytestream types or codec fuzzing gaps, and more potential
+  #    duplicate bugs from different fuzzers for common issues exposed across
+  #    mimetype+codec string variants.
+  "WEBM_OPUS",
+  "WEBM_VORBIS",
+  "WEBM_VP8",
   "WEBM_VP9",
-  "MP3",
+  "WEBM_OPUS_VP9",
+
+  # See below for additional variants depending on build configuration.
 ]
+
+if (proprietary_codecs) {
+  pipeline_integration_fuzzer_variants += [
+    "ADTS",
+    "MP3",
+    "MP4_AACLC",
+    "MP4_AACSBR",
+
+    # Though neither StreamParserFactory, MP4StreamParser, nor
+    # SourceBufferState::Init differentiate kinds of AVC, we use "AVC1" here to
+    # retain corpus associated with this fuzzer target name.
+    "MP4_AVC1",
+    "MP4_FLAC",
+    "MP4_AACLC_AVC",
+  ]
+  if (enable_mse_mpeg2ts_stream_parser) {
+    pipeline_integration_fuzzer_variants += [
+      "MP2T_AACLC",
+      "MP2T_AACSBR",
+      "MP2T_AVC",
+      "MP2T_MP3",
+      "MP2T_AACLC_AVC",
+    ]
+  }
+}
 
 foreach(variant, pipeline_integration_fuzzer_variants) {
   if (variant == "SRC") {
