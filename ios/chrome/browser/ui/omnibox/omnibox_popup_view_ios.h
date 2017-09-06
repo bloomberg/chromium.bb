@@ -20,6 +20,7 @@ class OmniboxPopupModel;
 class OmniboxPopupViewSuggestionsDelegate;
 @protocol OmniboxPopupPositioner;
 struct AutocompleteMatch;
+@class OmniboxPopupPresenter;
 
 namespace ios {
 class ChromeBrowserState;
@@ -58,15 +59,9 @@ class OmniboxPopupViewIOS : public OmniboxPopupView,
  private:
   std::unique_ptr<OmniboxPopupModel> model_;
   OmniboxPopupViewSuggestionsDelegate* delegate_;  // weak
-  __weak id<OmniboxPopupPositioner> positioner_;
-  // View that contains the omnibox popup table view and shadow.
-  base::scoped_nsobject<UIView> popupView_;
+  base::scoped_nsobject<OmniboxPopupPresenter> presenter_;
   base::scoped_nsobject<OmniboxPopupMaterialViewController> popup_controller_;
   bool is_open_;
-  // Animate the appearance of the omnibox popup view.
-  void AnimateDropdownExpansion(CGFloat parentHeight);
-  // Animate the disappearance of the omnibox popup view.
-  void AnimateDropdownCollapse();
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_VIEW_IOS_H_

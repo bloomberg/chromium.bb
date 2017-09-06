@@ -27,6 +27,8 @@ source_set("omnibox_internal") {
     "omnibox_popup_material_view_controller.h",
     "omnibox_popup_material_view_controller.mm",
     "omnibox_popup_positioner.h",
+    "omnibox_popup_presenter.h",
+    "omnibox_popup_presenter.mm",
     "omnibox_popup_view_ios.h",
     "omnibox_popup_view_ios.mm",
     "omnibox_popup_view_suggestions_delegate.h",
