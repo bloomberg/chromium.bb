@@ -75,7 +75,7 @@ class NewTabPageControllerTest : public BlockCleanupTest {
                                       ntpObserver:nil
                                      browserState:chrome_browser_state_.get()
                                        colorCache:nil
-                               webToolbarDelegate:nil
+                                  toolbarDelegate:nil
                                          tabModel:tabModel_
                              parentViewController:parentViewController_
                                        dispatcher:nil];
@@ -88,7 +88,7 @@ class NewTabPageControllerTest : public BlockCleanupTest {
                 browserState:chrome_browser_state_
                                  ->GetOffTheRecordChromeBrowserState()
                   colorCache:nil
-          webToolbarDelegate:nil
+             toolbarDelegate:nil
                     tabModel:nil
         parentViewController:parentViewController_
                   dispatcher:nil];

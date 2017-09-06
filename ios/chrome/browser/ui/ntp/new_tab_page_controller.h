@@ -33,10 +33,10 @@ std::string FragmentFromIdentifier(ntp_home::PanelIdentifier panel);
 @protocol BrowserCommands;
 @protocol CRWSwipeRecognizerProvider;
 @class GoogleLandingViewController;
+@protocol IncognitoViewControllerDelegate;
 @protocol NewTabPagePanelProtocol;
 @protocol OmniboxFocuser;
 @class TabModel;
-@protocol WebToolbarDelegate;
 @protocol UrlLoader;
 
 // This protocol provides callbacks for when the NewTabPageController changes
@@ -83,7 +83,7 @@ std::string FragmentFromIdentifier(ntp_home::PanelIdentifier panel);
              ntpObserver:(id<NewTabPageControllerObserver>)ntpObserver
             browserState:(ios::ChromeBrowserState*)browserState
               colorCache:(NSMutableDictionary*)colorCache
-      webToolbarDelegate:(id<WebToolbarDelegate>)webToolbarDelegate
+         toolbarDelegate:(id<IncognitoViewControllerDelegate>)toolbarDelegate
                 tabModel:(TabModel*)tabModel
     parentViewController:(UIViewController*)parentViewController
               dispatcher:(id<ApplicationCommands,

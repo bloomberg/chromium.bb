@@ -134,6 +134,7 @@
 #import "ios/chrome/browser/ui/history_popup/requirements/tab_history_presentation.h"
 #import "ios/chrome/browser/ui/history_popup/tab_history_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/key_commands_provider.h"
+#import "ios/chrome/browser/ui/ntp/incognito_panel_controller.h"
 #import "ios/chrome/browser/ui/ntp/modal_ntp.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_handset_coordinator.h"
@@ -356,6 +357,7 @@ bool IsURLAllowedInIncognito(const GURL& url) {
                                     CRWWebStateDelegate,
                                     DialogPresenterDelegate,
                                     FullScreenControllerDelegate,
+                                    IncognitoViewControllerDelegate,
                                     IOSCaptivePortalBlockingPageDelegate,
                                     KeyCommandsPlumbing,
                                     MFMailComposeViewControllerDelegate,
@@ -1740,9 +1742,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (void)browserStateDestroyed {
   [self setActive:NO];
-  // Reset the toolbar opacity in case it was changed for contextual search.
-  [self updateToolbarControlsAlpha:1.0];
-  [self updateToolbarBackgroundAlpha:1.0];
+  [self setToolbarBackgroundAlpha:1.0];
   [_paymentRequestManager close];
   _paymentRequestManager = nil;
   [_toolbarController browserStateDestroyed];
@@ -3271,7 +3271,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
                                       ntpObserver:self
                                      browserState:_browserState
                                        colorCache:_dominantColorCache
-                               webToolbarDelegate:self
+                                  toolbarDelegate:self
                                          tabModel:_model
                              parentViewController:self
                                        dispatcher:self.dispatcher];
@@ -3860,16 +3860,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
   return [[_model currentTab] webState];
 }
 
-// This is called from within an animation block.
-- (void)toolbarHeightChanged {
-  if ([self headerHeight] != 0) {
-    // Ensure full screen height is updated.
-    Tab* currentTab = [_model currentTab];
-    BOOL visible = self.isToolbarOnScreen;
-    [currentTab updateFullscreenWithToolbarVisible:visible];
-  }
-}
-
 // Load a new URL on a new page/tab.
 - (void)webPageOrderedOpen:(const GURL&)URL
                   referrer:(const web::Referrer&)referrer
@@ -4001,20 +3991,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
   }
 }
 
-- (IBAction)prepareToEnterTabSwitcher:(id)sender {
-  [[_model currentTab] updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
-}
-
 - (ToolbarModelIOS*)toolbarModelIOS {
   return _toolbarModelIOS.get();
-}
-
-- (void)updateToolbarBackgroundAlpha:(CGFloat)alpha {
-  [_toolbarController setBackgroundAlpha:alpha];
-}
-
-- (void)updateToolbarControlsAlpha:(CGFloat)alpha {
-  [_toolbarController setControlsAlpha:alpha];
 }
 
 - (void)willUpdateToolbarSnapshot {
@@ -5090,6 +5068,12 @@ bubblePresenterForFeature:(const base::Feature&)feature
 - (void)userTappedDismiss:(UIView*)view {
   base::RecordAction(base::UserMetricsAction("IOSRateThisAppDismissChosen"));
   _rateThisAppDialog = nil;
+}
+
+#pragma mark - IncognitoViewControllerDelegate
+
+- (void)setToolbarBackgroundAlpha:(CGFloat)alpha {
+  [_toolbarController setBackgroundAlpha:alpha];
 }
 
 #pragma mark - VoiceSearchBarDelegate

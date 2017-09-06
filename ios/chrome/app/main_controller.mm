@@ -1735,7 +1735,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
     [currentTab setSnapshotCoalescingEnabled:NO];
   }));
 
-  [currentBVC prepareToEnterTabSwitcher:nil];
+  [currentTab updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
 
   if (!_tabSwitcherController) {
     if (IsIPadIdiom()) {

@@ -257,23 +257,24 @@ const int kLinkColor = 0x03A9F4;
 // Calculate the background alpha for the toolbar based on how much |scrollView|
 // has scrolled up.
 - (CGFloat)toolbarAlphaForScrollView:(UIScrollView*)scrollView;
+
+@property(nonatomic, weak) id<IncognitoViewControllerDelegate> toolbarDelegate;
 @end
 
 @implementation IncognitoPanelController {
-  // Delegate for updating the toolbar's background alpha.
-  __weak id<WebToolbarDelegate> _webToolbarDelegate;
-
   // The scrollview containing the actual views.
   IncognitoNTPView* _incognitoView;
 }
+
+@synthesize toolbarDelegate = _toolbarDelegate;
 
 // Property declared in NewTabPagePanelProtocol.
 @synthesize delegate = _delegate;
 @synthesize view = _view;
 
 - (id)initWithLoader:(id<UrlLoader>)loader
-          browserState:(ios::ChromeBrowserState*)browserState
-    webToolbarDelegate:(id<WebToolbarDelegate>)webToolbarDelegate {
+        browserState:(ios::ChromeBrowserState*)browserState
+     toolbarDelegate:(id<IncognitoViewControllerDelegate>)toolbarDelegate {
   self = [super init];
   if (self) {
     _view = [[UIView alloc]
@@ -295,8 +296,8 @@ const int kLinkColor = 0x03A9F4;
     }
     if (!IsIPadIdiom()) {
       [_incognitoView setDelegate:self];
-      _webToolbarDelegate = webToolbarDelegate;
-      [_webToolbarDelegate updateToolbarBackgroundAlpha:0];
+      _toolbarDelegate = toolbarDelegate;
+      [_toolbarDelegate setToolbarBackgroundAlpha:0];
     }
     [_view addSubview:_incognitoView];
   }
@@ -309,9 +310,8 @@ const int kLinkColor = 0x03A9F4;
 }
 
 - (void)dealloc {
-  [_webToolbarDelegate updateToolbarBackgroundAlpha:1];
+  [self.toolbarDelegate setToolbarBackgroundAlpha:1];
   [_incognitoView setDelegate:nil];
-  ;
 }
 
 #pragma mark -
@@ -322,11 +322,11 @@ const int kLinkColor = 0x03A9F4;
 
 - (void)wasShown {
   CGFloat alpha = [self toolbarAlphaForScrollView:_incognitoView];
-  [_webToolbarDelegate updateToolbarBackgroundAlpha:alpha];
+  [self.toolbarDelegate setToolbarBackgroundAlpha:alpha];
 }
 
 - (void)wasHidden {
-  [_webToolbarDelegate updateToolbarBackgroundAlpha:1];
+  [self.toolbarDelegate setToolbarBackgroundAlpha:1];
 }
 
 - (void)dismissModals {
@@ -347,7 +347,7 @@ const int kLinkColor = 0x03A9F4;
 
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {
   CGFloat alpha = [self toolbarAlphaForScrollView:_incognitoView];
-  [_webToolbarDelegate updateToolbarBackgroundAlpha:alpha];
+  [self.toolbarDelegate setToolbarBackgroundAlpha:alpha];
 }
 
 @end
