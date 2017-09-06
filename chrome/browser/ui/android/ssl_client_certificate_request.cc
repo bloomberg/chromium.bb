@@ -183,8 +183,12 @@ void ShowSSLClientCertificateSelector(
     net::SSLCertRequestInfo* cert_request_info,
     net::ClientCertIdentityList unused_client_certs,
     std::unique_ptr<content::ClientCertificateDelegate> delegate) {
+  // TODO(asimjour): This should be removed once we have proper
+  // implementation of SSL client certificate selector in VR.
   if (vr::VrTabHelper::IsInVr(contents)) {
     delegate->ContinueWithCertificate(nullptr, nullptr);
+    vr::VrTabHelper::UISuppressed(
+        vr::UiSuppressedElement::kSslClientCertificate);
     return;
   }
 
