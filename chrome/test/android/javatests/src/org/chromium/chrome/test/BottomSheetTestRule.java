@@ -4,10 +4,13 @@
 
 package org.chromium.chrome.test;
 
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 import static org.chromium.chrome.browser.ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE;
 import static org.chromium.chrome.test.BottomSheetTestRule.ENABLE_CHROME_HOME;
 import static org.chromium.chrome.test.ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG;
 
+import android.support.test.InstrumentationRegistry;
+import android.support.test.uiautomator.UiDevice;
 import android.support.v7.widget.RecyclerView;
 
 import org.chromium.base.ThreadUtils;
@@ -96,10 +99,10 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
     private Observer mObserver;
 
     /** A handle to the bottom sheet. */
-    private BottomSheet mBottomSheet;
+    private BottomSheet mSheet;
 
     /** A handle to the {@link BottomSheetContentController}. */
-    private BottomSheetContentController mBottomSheetContentController;
+    private BottomSheetContentController mSheetContentController;
 
     private boolean mOldChromeHomeFlagValue;
 
@@ -126,11 +129,11 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
                 ((RecyclerView) getBottomSheetContent().getContentView().findViewById(
                         R.id.recycler_view)));
 
-        mBottomSheet = getActivity().getBottomSheet();
-        mBottomSheetContentController = getActivity().getBottomSheetContentController();
+        mSheet = getActivity().getBottomSheet();
+        mSheetContentController = getActivity().getBottomSheetContentController();
 
         mObserver = new Observer();
-        mBottomSheet.addObserver(mObserver);
+        mSheet.addObserver(mObserver);
     }
 
     @Override
@@ -155,11 +158,11 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
     }
 
     public BottomSheet getBottomSheet() {
-        return mBottomSheet;
+        return mSheet;
     }
 
     public BottomSheetContentController getBottomSheetContentController() {
-        return mBottomSheetContentController;
+        return mSheetContentController;
     }
 
     /**
@@ -168,13 +171,8 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
      * @param state   The state to set the sheet to.
      * @param animate If the sheet should animate to the provided state.
      */
-    public void setSheetState(final int state, final boolean animate) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mBottomSheet.setSheetState(state, animate);
-            }
-        });
+    public void setSheetState(int state, boolean animate) {
+        ThreadUtils.runOnUiThreadBlocking(() -> mSheet.setSheetState(state, animate));
     }
 
     /**
@@ -182,13 +180,8 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
      *
      * @param offset The offset from the bottom that the sheet should be.
      */
-    public void setSheetOffsetFromBottom(final float offset) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mBottomSheet.setSheetOffsetFromBottomForTesting(offset);
-            }
-        });
+    public void setSheetOffsetFromBottom(float offset) {
+        ThreadUtils.runOnUiThreadBlocking(() -> mSheet.setSheetOffsetFromBottomForTesting(offset));
     }
 
     public BottomSheetContent getBottomSheetContent() {
@@ -199,12 +192,17 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
      * @param itemId The id of the MenuItem corresponding to the {@link BottomSheetContent} to
      *               select.
      */
-    public void selectBottomSheetContent(final int itemId) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mBottomSheetContentController.selectItem(itemId);
-            }
-        });
+    public void selectBottomSheetContent(int itemId) {
+        ThreadUtils.runOnUiThreadBlocking(() -> mSheetContentController.selectItem(itemId));
+    }
+
+    /**
+     * Wait for an update to start and finish.
+     */
+    public static void waitForWindowUpdates() {
+        final long maxWindowUpdateTimeMs = scaleTimeout(1000);
+        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        device.waitForWindowUpdate(null, maxWindowUpdateTimeMs);
+        device.waitForIdle(maxWindowUpdateTimeMs);
     }
 }

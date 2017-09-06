@@ -99,6 +99,7 @@ android_library("chrome_java_test_support") {
     "//third_party/android_tools:android_support_v7_recyclerview_java",
     "//third_party/jsr-305:jsr_305_javalib",
     "//third_party/junit",
+    "//third_party/ub-uiautomator:ub_uiautomator_java",
     "//ui/android:ui_java",
     "//ui/android:ui_java_test_support",
   ]

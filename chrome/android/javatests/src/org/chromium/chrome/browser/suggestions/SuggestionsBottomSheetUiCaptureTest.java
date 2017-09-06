@@ -9,9 +9,9 @@ import static android.support.test.espresso.action.ViewActions.longClick;
 import static android.support.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 
-import android.support.test.InstrumentationRegistry;
+import static org.chromium.chrome.test.BottomSheetTestRule.waitForWindowUpdates;
+
 import android.support.test.filters.MediumTest;
-import android.support.test.uiautomator.UiDevice;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -46,23 +46,9 @@ public class SuggestionsBottomSheetUiCaptureTest {
     @Rule
     public ScreenShooter mScreenShooter = new ScreenShooter();
 
-    private static final int MAX_WINDOW_UPDATE_TIME_MS = 1000;
-
     @Before
     public void setup() throws InterruptedException {
         mActivityRule.startMainActivityOnBlankPage();
-    }
-
-    private void setSheetState(final int position) {
-        mActivityRule.setSheetState(position, false);
-        waitForWindowUpdates();
-    }
-
-    private void waitForWindowUpdates() {
-        // Wait for update to start and finish.
-        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
-        device.waitForWindowUpdate(null, MAX_WINDOW_UPDATE_TIME_MS);
-        device.waitForIdle(MAX_WINDOW_UPDATE_TIME_MS);
     }
 
     @Test
@@ -70,11 +56,16 @@ public class SuggestionsBottomSheetUiCaptureTest {
     @Feature({"UiCatalogue"})
     @ScreenShooter.Directory("SuggestionsBottomSheetPosition")
     public void testBottomSheetPosition() throws Exception {
-        setSheetState(BottomSheet.SHEET_STATE_HALF);
+        mActivityRule.setSheetState(BottomSheet.SHEET_STATE_HALF, false);
+        waitForWindowUpdates();
         mScreenShooter.shoot("Half");
-        setSheetState(BottomSheet.SHEET_STATE_FULL);
+
+        mActivityRule.setSheetState(BottomSheet.SHEET_STATE_FULL, false);
+        waitForWindowUpdates();
         mScreenShooter.shoot("Full");
-        setSheetState(BottomSheet.SHEET_STATE_PEEK);
+
+        mActivityRule.setSheetState(BottomSheet.SHEET_STATE_PEEK, false);
+        waitForWindowUpdates();
         mScreenShooter.shoot("Peek");
     }
 
@@ -84,7 +75,8 @@ public class SuggestionsBottomSheetUiCaptureTest {
     @ScreenShooter.Directory("SuggestionsContextMenu")
     public void testContextMenu() throws Exception {
         // Needs to be "Full" to for this to work on small screens in landscape.
-        setSheetState(BottomSheet.SHEET_STATE_FULL);
+        mActivityRule.setSheetState(BottomSheet.SHEET_STATE_FULL, false);
+        waitForWindowUpdates();
         int position = mActivityRule.getFirstPositionForType(ItemViewType.SNIPPET);
         onView(withId(R.id.recycler_view)).perform(actionOnItemAtPosition(position, longClick()));
         waitForWindowUpdates();
