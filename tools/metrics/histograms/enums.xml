@@ -2484,14 +2484,14 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="BadMessageReasonChrome">
-<!-- Generated from chrome/browser/bad_message.h -->
+<!-- Generated from chrome/browser/bad_message.h.-->
 
   <int value="0" label="WRLHH_LOGGING_STOPPED_BAD_STATE"/>
   <int value="1" label="PPH_EXTRA_PREVIEW_MESSAGE"/>
 </enum>
 
 <enum name="BadMessageReasonContent">
-<!-- Generated from content/browser/bad_message.h -->
+<!-- Generated from content/browser/bad_message.h.-->
 
   <int value="0" label="NC_IN_PAGE_NAVIGATION"/>
   <int value="1" label="RFH_CAN_COMMIT_URL_BLOCKED"/>
@@ -2673,10 +2673,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="175" label="SWDH_PROVIDER_CREATED_ILLEGAL_TYPE_CONTROLLER"/>
   <int value="176" label="SWDH_PROVIDER_CREATED_DUPLICATE_ID"/>
   <int value="177" label="SWDH_PROVIDER_CREATED_BAD_ID"/>
+  <int value="178" label="RFH_KEEP_ALIVE_HANDLE_REQUESTED_INCORRECTLY"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">
-<!-- Generated from extensions/browser/bad_message.h -->
+<!-- Generated from extensions/browser/bad_message.h.-->
 
   <int value="0" label="EOG_BAD_ORIGIN"/>
   <int value="1" label="EVG_BAD_ORIGIN"/>
@@ -2692,7 +2693,7 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="BadMessageReasonGuestView">
-<!-- Generated from components/guest_view/browser/bad_message.h -->
+<!-- Generated from components/guest_view/browser/bad_message.h.-->
 
   <int value="0" label="GVM_EMBEDDER_FORBIDDEN_ACCESS_TO_GUEST"/>
   <int value="1" label="GVM_INVALID_GUESTVIEW_TYPE"/>
@@ -2700,7 +2701,7 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="BadMessageReasonNaCl">
-<!-- Generated from components/nacl/browser/bad_message.h -->
+<!-- Generated from components/nacl/browser/bad_message.h.-->
 
   <int value="0" label="NFH_OPEN_EXECUTABLE_BAD_ROUTING_ID"/>
   <int value="1" label="NHMF_LAUNCH_CONTINUATION_BAD_ROUTING_ID"/>
@@ -2708,7 +2709,7 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="BadMessageReasonPasswordManager">
-<!-- Generated from components/password_manager/content/browser/bad_message.h -->
+<!-- Generated from components/password_manager/content/browser/bad_message.h.-->
 
   <int value="1" label="CPMD_BAD_ORIGIN_FORMS_PARSED"/>
   <int value="2" label="CPMD_BAD_ORIGIN_FORMS_RENDERED"/>
@@ -23018,6 +23019,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-2043128632" label="enable-tab-switcher-in-document-mode"/>
   <int value="-2040471724" label="CrOSComponent:disabled"/>
   <int value="-2040115518" label="load-media-router-component-extension"/>
+  <int value="-2039343702"
+      label="KeepAliveRendererForKeepaliveRequests:enabled"/>
   <int value="-2036149591" label="FaviconsFromWebManifest:disabled"/>
   <int value="-2035126988" label="enabled-new-style-notification"/>
   <int value="-2033225430" label="NTPMostLikelyFaviconsFromServer:disabled"/>
@@ -23917,6 +23920,8 @@ from previous Chrome versions.
   <int value="711424932" label="enable-cloud-print-xps"/>
   <int value="715617684" label="OriginTrials:disabled"/>
   <int value="716080990" label="restrict-iframe-permissions"/>
+  <int value="719267310"
+      label="KeepAliveRendererForKeepaliveRequests:disabled"/>
   <int value="724208771" label="TabsInCBD:enabled"/>
   <int value="730024226" label="enable-out-of-process-pdf"/>
   <int value="730750097" label="PermissionsBlacklist:disabled"/>

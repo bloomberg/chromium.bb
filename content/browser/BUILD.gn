@@ -752,6 +752,8 @@ source_set("browser") {
     "frame_host/interstitial_page_impl.h",
     "frame_host/interstitial_page_navigator_impl.cc",
     "frame_host/interstitial_page_navigator_impl.h",
+    "frame_host/keep_alive_handle_factory.cc",
+    "frame_host/keep_alive_handle_factory.h",
     "frame_host/mixed_content_navigation_throttle.cc",
     "frame_host/mixed_content_navigation_throttle.h",
     "frame_host/navigation_controller_android.cc",

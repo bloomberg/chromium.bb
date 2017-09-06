@@ -350,6 +350,11 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   //    - there was an external renderer connected to a shared worker in this
   //      process, and now there is none
   //    - a new worker finished being created in this process.
+  //  - Keepalive request (if the KeepAliveRendererForKeepaliveRequests
+  //    feature is enabled):
+  //    When a fetch request with keepalive flag
+  //    (https://fetch.spec.whatwg.org/#request-keepalive-flag) specified is
+  //    pending, it wishes the renderer process to be kept alive.
   virtual void IncrementKeepAliveRefCount() = 0;
   virtual void DecrementKeepAliveRefCount() = 0;
 

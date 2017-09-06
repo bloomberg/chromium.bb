@@ -6,6 +6,7 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -14,6 +15,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -30,6 +32,8 @@
 #include "media/base/test_data_util.h"
 #include "media/mojo/features.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -48,6 +52,20 @@ int RenderProcessHostCount() {
     hosts.Advance();
   }
   return count;
+}
+
+std::unique_ptr<net::test_server::HttpResponse> HandleBeacon(
+    const net::test_server::HttpRequest& request) {
+  if (request.relative_url != "/beacon")
+    return nullptr;
+  return base::MakeUnique<net::test_server::BasicHttpResponse>();
+}
+
+std::unique_ptr<net::test_server::HttpResponse> HandleHungBeacon(
+    const net::test_server::HttpRequest& request) {
+  if (request.relative_url != "/beacon")
+    return nullptr;
+  return base::MakeUnique<net::test_server::HungResponse>();
 }
 
 class RenderProcessHostTest : public ContentBrowserTest,
@@ -78,6 +96,10 @@ class RenderProcessHostTest : public ContentBrowserTest,
   }
   void RenderProcessHostDestroyed(RenderProcessHost* host) override {
     ++host_destructions_;
+  }
+  void WaitUntilProcessExits(int target) {
+    while (process_exits_ < target)
+      base::RunLoop().RunUntilIdle();
   }
 
   int process_exits_;
@@ -672,6 +694,60 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
   EXPECT_EQ(0, rph->get_media_stream_count_for_testing());
   EXPECT_EQ(1, process_exits_);
   EXPECT_EQ(0, host_destructions_);
+  if (!host_destructions_)
+    rph->RemoveObserver(this);
+}
+
+IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KeepAliveRendererProcess) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeatureWithParameters(
+      features::kKeepAliveRendererForKeepaliveRequests,
+      {std::make_pair("timeout_in_sec", "30")});
+
+  embedded_test_server()->RegisterRequestHandler(
+      base::BindRepeating(HandleBeacon));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  RenderProcessHostImpl* rph = static_cast<RenderProcessHostImpl*>(
+      shell()->web_contents()->GetMainFrame()->GetProcess());
+
+  host_destructions_ = 0;
+  process_exits_ = 0;
+  rph->AddObserver(this);
+
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/send-beacon.html"));
+  base::TimeTicks start = base::TimeTicks::Now();
+  NavigateToURL(shell(), GURL("data:text/html,<p>hello</p>"));
+
+  WaitUntilProcessExits(1);
+
+  EXPECT_LT(base::TimeTicks::Now() - start, base::TimeDelta::FromSeconds(30));
+  if (!host_destructions_)
+    rph->RemoveObserver(this);
+}
+
+IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KeepAliveRendererProcess_Hung) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeatureWithParameters(
+      features::kKeepAliveRendererForKeepaliveRequests,
+      {std::make_pair("timeout_in_sec", "1")});
+
+  embedded_test_server()->RegisterRequestHandler(
+      base::BindRepeating(HandleHungBeacon));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  RenderProcessHostImpl* rph = static_cast<RenderProcessHostImpl*>(
+      shell()->web_contents()->GetMainFrame()->GetProcess());
+
+  host_destructions_ = 0;
+  process_exits_ = 0;
+  rph->AddObserver(this);
+
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/send-beacon.html"));
+  base::TimeTicks start = base::TimeTicks::Now();
+  NavigateToURL(shell(), GURL("data:text/html,<p>hello</p>"));
+
+  WaitUntilProcessExits(1);
+
+  EXPECT_GE(base::TimeTicks::Now() - start, base::TimeDelta::FromSeconds(1));
   if (!host_destructions_)
     rph->RemoveObserver(this);
 }

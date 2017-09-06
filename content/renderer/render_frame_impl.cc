@@ -6848,8 +6848,15 @@ std::unique_ptr<blink::WebURLLoader> RenderFrameImpl::CreateURLLoader(
     DCHECK(factory);
   }
 
+  mojom::KeepAliveHandlePtr keep_alive_handle;
+  if (base::FeatureList::IsEnabled(
+          features::kKeepAliveRendererForKeepaliveRequests) &&
+      request.GetKeepalive()) {
+    GetFrameHost()->IssueKeepAliveHandle(mojo::MakeRequest(&keep_alive_handle));
+  }
   return base::MakeUnique<WebURLLoaderImpl>(child_thread->resource_dispatcher(),
-                                            task_runner, factory);
+                                            task_runner, factory,
+                                            std::move(keep_alive_handle));
 }
 
 void RenderFrameImpl::DraggableRegionsChanged() {
