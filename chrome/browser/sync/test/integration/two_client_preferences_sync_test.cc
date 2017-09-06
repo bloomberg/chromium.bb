@@ -127,7 +127,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
   ASSERT_TRUE(AwaitEncryptionComplete(0));
   ASSERT_TRUE(AwaitEncryptionComplete(1));
   ASSERT_TRUE(StringPrefMatchChecker(prefs::kHomePage).Wait());
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kHomePageIsNewTabPage));
+  ASSERT_TRUE(BooleanPrefMatchChecker(prefs::kHomePageIsNewTabPage).Wait());
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
