@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/containers/circular_deque.h"
-#include "base/feature_list.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "build/build_config.h"
@@ -16,7 +15,6 @@
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/ui/permission_bubble/permission_prompt.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -259,15 +257,6 @@ void PermissionRequestManager::UpdateAnchorPosition() {
 
 bool PermissionRequestManager::IsBubbleVisible() {
   return view_ && !requests_.empty();
-}
-
-// static
-bool PermissionRequestManager::IsEnabled() {
-#if defined(OS_ANDROID)
-  return base::FeatureList::IsEnabled(features::kUseGroupedPermissionInfobars);
-#else
-  return true;
-#endif
 }
 
 gfx::NativeWindow PermissionRequestManager::GetBubbleWindow() {

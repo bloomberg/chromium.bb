@@ -3137,7 +3137,6 @@ test("unit_tests") {
     "../browser/download/download_path_reservation_tracker_unittest.cc",
     "../browser/download/download_prefs_unittest.cc",
     "../browser/download/download_query_unittest.cc",
-    "../browser/download/download_request_infobar_delegate_unittest.cc",
     "../browser/download/download_request_limiter_unittest.cc",
     "../browser/download/download_resource_throttle_unittest.cc",
     "../browser/download/download_status_updater_unittest.cc",
@@ -3626,7 +3625,6 @@ test("unit_tests") {
       "../browser/password_manager/account_chooser_dialog_android_unittest.cc",
       "../browser/password_manager/auto_signin_first_run_dialog_android_unittest.cc",
       "../browser/password_manager/save_password_infobar_delegate_android_unittest.cc",
-      "../browser/permissions/permission_queue_controller_unittest.cc",
     ]
     deps += [
       ":unit_tests_java",
@@ -3826,8 +3824,6 @@ test("unit_tests") {
       "../browser/media/router/discovery/discovery_network_list_unittest.cc",
       "../browser/media/router/discovery/discovery_network_monitor_unittest.cc",
     ]
-    sources -=
-        [ "../browser/download/download_request_infobar_delegate_unittest.cc" ]
     deps += [
       "//components/signin/core/common:signin_features",
       "//ipc",

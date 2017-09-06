@@ -8,10 +8,10 @@
 #include <map>
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
-#include "chrome/browser/permissions/permission_request.h"
 #include "components/content_settings/core/common/content_settings.h"
-#include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/media_stream_request.h"
 
 class MediaStreamDevicesController;
 class Profile;
@@ -35,67 +35,6 @@ class MediaStreamDevicesControllerTestApi;
 
 class MediaStreamDevicesController {
  public:
-  // This class is only needed until we unify the codepaths for permission
-  // requests. It can be removed once crbug.com/606138 is fixed.
-  class Request : public PermissionRequest {
-   public:
-    using PromptAnsweredCallback =
-        base::Callback<void(ContentSetting, bool /* persist */)>;
-
-    Request(Profile* profile,
-            bool is_asking_for_audio,
-            bool is_asking_for_video,
-            const GURL& security_origin,
-            PromptAnsweredCallback prompt_answered_callback);
-
-    ~Request() override;
-
-    bool IsAskingForAudio() const;
-    bool IsAskingForVideo() const;
-
-    // PermissionRequest:
-    IconId GetIconId() const override;
-#if defined(OS_ANDROID)
-    base::string16 GetMessageText() const override;
-#endif
-    base::string16 GetMessageTextFragment() const override;
-    GURL GetOrigin() const override;
-    void PermissionGranted() override;
-    void PermissionDenied() override;
-    void Cancelled() override;
-    void RequestFinished() override;
-    PermissionRequestType GetPermissionRequestType() const override;
-    bool ShouldShowPersistenceToggle() const override;
-
-   private:
-    Profile* profile_;
-
-    bool is_asking_for_audio_;
-    bool is_asking_for_video_;
-
-    GURL security_origin_;
-
-    PromptAnsweredCallback prompt_answered_callback_;
-
-    // Whether the prompt has been answered.
-    bool responded_;
-
-    DISALLOW_COPY_AND_ASSIGN(Request);
-  };
-
-  // This class is only needed interally and for tests. It can be removed once
-  // crbug.com/606138 is fixed. Delegate for showing permission prompts. It's
-  // only public because subclassing from a friend class doesn't work in gcc
-  // (see https://codereview.chromium.org/2768923003).
-  class PermissionPromptDelegate {
-   public:
-    virtual void ShowPrompt(
-        bool user_gesture,
-        content::WebContents* web_contents,
-        std::unique_ptr<MediaStreamDevicesController::Request> request) = 0;
-    virtual ~PermissionPromptDelegate() {}
-  };
-
   static void RequestPermissions(
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback);
@@ -107,11 +46,6 @@ class MediaStreamDevicesController {
 
   bool IsAskingForAudio() const;
   bool IsAskingForVideo() const;
-
-  // Called when a permission prompt has been answered, with the |response| and
-  // whether the choice should be persisted.
-  // TODO(raymes): Remove this once crbug.com/606138 is fixed.
-  void PromptAnswered(ContentSetting response, bool persist);
 
   // Called when a permission prompt is answered through the PermissionManager.
   void PromptAnsweredGroupedRequest(
@@ -129,13 +63,6 @@ class MediaStreamDevicesController {
   friend class MediaStreamDevicesControllerTest;
   friend class test::MediaStreamDevicesControllerTestApi;
   friend class policy::MediaStreamDevicesControllerBrowserTest;
-
-  class PermissionPromptDelegateImpl;
-
-  static void RequestPermissionsWithDelegate(
-      const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback,
-      PermissionPromptDelegate* delegate);
 
   MediaStreamDevicesController(content::WebContents* web_contents,
                                const content::MediaStreamRequest& request,
@@ -191,8 +118,6 @@ class MediaStreamDevicesController {
   // The callback that needs to be Run to notify WebRTC of whether access to
   // audio/video devices was granted or not.
   content::MediaResponseCallback callback_;
-
-  std::unique_ptr<PermissionPromptDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamDevicesController);
 };
