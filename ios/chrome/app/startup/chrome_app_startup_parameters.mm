@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/app/chrome_app_startup_parameters.h"
+#import "ios/chrome/app/startup/chrome_app_startup_parameters.h"
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
@@ -85,7 +85,7 @@ enum SearchExtensionAction {
   if (!gurl.is_valid() || gurl.scheme().length() == 0)
     return nil;
 
-  // TODO(ios): Temporary fix for b/7174478
+  // TODO(crbug.com/228098): Temporary fix.
   if (IsXCallbackURL(gurl)) {
     NSString* action = [completeURL path];
     // Currently only "open" and "extension-command" are supported.
@@ -122,11 +122,10 @@ enum SearchExtensionAction {
       return nil;
     }
 
-    return [[ChromeAppStartupParameters alloc]
-        initWithExternalURL:url
-          declaredSourceApp:appId
-            secureSourceApp:nil
-                completeURL:completeURL];
+    return [[ChromeAppStartupParameters alloc] initWithExternalURL:url
+                                                 declaredSourceApp:appId
+                                                   secureSourceApp:nil
+                                                       completeURL:completeURL];
 
   } else if (gurl.SchemeIsFile()) {
     UMA_HISTOGRAM_ENUMERATION(kUMAMobileSessionStartActionHistogram,

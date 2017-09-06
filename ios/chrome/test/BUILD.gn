@@ -130,6 +130,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/app/application_delegate:unit_tests",
     "//ios/chrome/app/safe_mode:unit_tests",
     "//ios/chrome/app/spotlight:unit_tests",
+    "//ios/chrome/app/startup:unit_tests",
     "//ios/chrome/browser:unit_tests",
     "//ios/chrome/browser/autofill:unit_tests",
     "//ios/chrome/browser/browsing_data:unit_tests",

@@ -35,6 +35,8 @@ source_set("startup_basic") {
 
 source_set("startup") {
   sources = [
+    "chrome_app_startup_parameters.h",
+    "chrome_app_startup_parameters.mm",
     "client_registration.h",
     "client_registration.mm",
     "content_suggestions_scheduler_notifications.h",
@@ -54,13 +56,32 @@ source_set("startup") {
     "//ios/chrome/browser",
     "//ios/chrome/browser:browser_internal",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/first_run",
     "//ios/chrome/browser/ntp_snippets",
     "//ios/chrome/browser/web",
     "//ios/chrome/browser/web:web_internal",
+    "//ios/chrome/common",
+    "//ios/chrome/common/app_group",
     "//ios/net",
     "//ios/public/provider/chrome/browser",
     "//ios/web",
     "//ios/web/public/app",
     ios_provider_target,
+  ]
+}
+
+source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "chrome_app_startup_parameters_unittest.mm",
+  ]
+  deps = [
+    ":startup",
+    "//base",
+    "//ios/chrome/browser",
+    "//ios/chrome/common/app_group",
+    "//testing/gtest",
+    "//url",
   ]
 }
