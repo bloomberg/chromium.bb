@@ -500,8 +500,10 @@ void RenderWidgetHostViewChildFrame::ProcessCompositorFrame(
   current_surface_size_ = frame.size_in_pixels();
   current_surface_scale_factor_ = frame.device_scale_factor();
 
-  bool result =
-      support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+  // TODO(kenrb): Supply HitTestRegionList data here as described in
+  // crbug.com/750755.
+  bool result = support_->SubmitCompositorFrame(local_surface_id,
+                                                std::move(frame), nullptr);
   DCHECK(result);
   has_frame_ = true;
 

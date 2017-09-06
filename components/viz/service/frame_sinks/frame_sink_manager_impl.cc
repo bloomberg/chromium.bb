@@ -358,6 +358,14 @@ void FrameSinkManagerImpl::OnClientConnectionLost(
     client_->OnClientConnectionClosed(frame_sink_id);
 }
 
+void FrameSinkManagerImpl::SubmitHitTestRegionList(
+    const SurfaceId& surface_id,
+    uint64_t frame_index,
+    mojom::HitTestRegionListPtr hit_test_region_list) {
+  // TODO(gklassen): Route hit_test_region_list to appropriate
+  // matching RootCompositorFrameSink
+}
+
 void FrameSinkManagerImpl::OnAggregatedHitTestRegionListUpdated(
     const FrameSinkId& frame_sink_id,
     mojo::ScopedSharedBufferHandle active_handle,

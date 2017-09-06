@@ -737,6 +737,7 @@ source_set("common") {
     "//net:extras",
     "//printing",
     "//services/service_manager/public/cpp",
+    "//services/viz/public/interfaces",
     "//skia",
     "//storage/browser",
     "//storage/common",

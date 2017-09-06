@@ -21,6 +21,7 @@
 #include "components/viz/service/frame_sinks/surface_resource_holder_client.h"
 #include "components/viz/service/surfaces/surface_client.h"
 #include "components/viz/service/viz_service_export.h"
+#include "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom.h"
 
 namespace {
 // The frame index starts at 2 so that empty frames will be treated as
@@ -72,8 +73,10 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   void EvictCurrentSurface();
   void SetNeedsBeginFrame(bool needs_begin_frame);
   void DidNotProduceFrame(const BeginFrameAck& ack);
-  bool SubmitCompositorFrame(const LocalSurfaceId& local_surface_id,
-                             cc::CompositorFrame frame);
+  bool SubmitCompositorFrame(
+      const LocalSurfaceId& local_surface_id,
+      cc::CompositorFrame frame,
+      mojom::HitTestRegionListPtr hit_test_region_list = nullptr);
   void RequestCopyOfSurface(std::unique_ptr<CopyOutputRequest> request);
 
   Surface* GetCurrentSurfaceForTesting();

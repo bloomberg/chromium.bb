@@ -467,8 +467,10 @@ void DelegatedFrameHost::SubmitCompositorFrame(
     // called in the same call stack and so to ensure that the fallback surface
     // is set, then primary surface must be set prior to calling
     // CompositorFrameSinkSupport::SubmitCompositorFrame.
-    bool result =
-        support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+    // TODO(kenrb): Supply HitTestRegionList data here as described in
+    // crbug.com/750755.
+    bool result = support_->SubmitCompositorFrame(local_surface_id,
+                                                  std::move(frame), nullptr);
     DCHECK(result);
   }
   local_surface_id_ = local_surface_id;

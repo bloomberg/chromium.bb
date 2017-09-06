@@ -139,6 +139,11 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl : public SurfaceObserver,
   // by value avoids this.
   void DestroyCompositorFrameSink(FrameSinkId frame_sink_id);
 
+  void SubmitHitTestRegionList(
+      const SurfaceId& surface_id,
+      uint64_t frame_index,
+      mojom::HitTestRegionListPtr hit_test_region_list);
+
  private:
   friend class cc::test::SurfaceSynchronizationTest;
 
