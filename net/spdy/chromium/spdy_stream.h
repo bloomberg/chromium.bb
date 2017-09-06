@@ -336,7 +336,8 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // set |send_stalled_by_flow_control_| to false and unstall the data
   // sending. Called by the session or by the stream itself. Must be
   // called only when the stream is still open.
-  void PossiblyResumeIfSendStalled();
+  enum ShouldRequeueStream { Requeue, DoNotRequeue };
+  ShouldRequeueStream PossiblyResumeIfSendStalled();
 
   // Returns whether or not this stream is closed. Note that the only
   // time a stream is closed and not deleted is in its delegate's
