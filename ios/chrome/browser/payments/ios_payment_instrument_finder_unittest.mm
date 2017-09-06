@@ -31,9 +31,9 @@ class TestIOSPaymentInstrumentFinder final : public IOSPaymentInstrumentFinder {
   DISALLOW_COPY_AND_ASSIGN(TestIOSPaymentInstrumentFinder);
 };
 
-class IOSPaymentInstrumentFinderTest : public testing::Test {
+class PaymentRequestIOSPaymentInstrumentFinderTest : public testing::Test {
  public:
-  IOSPaymentInstrumentFinderTest()
+  PaymentRequestIOSPaymentInstrumentFinderTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::IO),
         context_getter_(new net::TestURLRequestContextGetter(
@@ -42,7 +42,7 @@ class IOSPaymentInstrumentFinderTest : public testing::Test {
             base::MakeUnique<TestIOSPaymentInstrumentFinder>(
                 context_getter_.get())) {}
 
-  ~IOSPaymentInstrumentFinderTest() override {}
+  ~PaymentRequestIOSPaymentInstrumentFinderTest() override {}
 
   size_t num_instruments_to_find() {
     return ios_payment_instrument_finder_->num_instruments_to_find_;
@@ -122,15 +122,15 @@ class IOSPaymentInstrumentFinderTest : public testing::Test {
   void FindInstrumentsWithMethods(std::vector<GURL>& url_methods) {
     ios_payment_instrument_finder_->CreateIOSPaymentInstrumentsForMethods(
         url_methods,
-        base::BindOnce(
-            &IOSPaymentInstrumentFinderTest::InstrumentsFoundCallback,
-            base::Unretained(this)));
+        base::BindOnce(&PaymentRequestIOSPaymentInstrumentFinderTest::
+                           InstrumentsFoundCallback,
+                       base::Unretained(this)));
   }
 
   void FindInstrumentsWithWebAppManifest(const GURL& method,
                                          const std::string& content) {
     ios_payment_instrument_finder_->callback_ = base::BindOnce(
-        &IOSPaymentInstrumentFinderTest::InstrumentsFoundCallback,
+        &PaymentRequestIOSPaymentInstrumentFinderTest::InstrumentsFoundCallback,
         base::Unretained(this));
     ios_payment_instrument_finder_->num_instruments_to_find_ = 1;
     ios_payment_instrument_finder_->OnWebAppManifestDownloaded(
@@ -152,79 +152,85 @@ class IOSPaymentInstrumentFinderTest : public testing::Test {
   std::unique_ptr<base::RunLoop> run_loop_;
   std::vector<std::unique_ptr<IOSPaymentInstrument>> result_;
 
-  DISALLOW_COPY_AND_ASSIGN(IOSPaymentInstrumentFinderTest);
+  DISALLOW_COPY_AND_ASSIGN(PaymentRequestIOSPaymentInstrumentFinderTest);
 };
 
 // Payment method manifest parsing:
 
-TEST_F(IOSPaymentInstrumentFinderTest, NullPaymentMethodManifestIsMalformed) {
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
+       NullPaymentMethodManifestIsMalformed) {
   ExpectUnableToParsePaymentMethodManifest(std::string());
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest,
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
        NonJsonPaymentMethodManifestIsMalformed) {
   ExpectUnableToParsePaymentMethodManifest("this is not json");
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest, StringPaymentMethodManifestIsMalformed) {
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
+       StringPaymentMethodManifestIsMalformed) {
   ExpectUnableToParsePaymentMethodManifest("\"this is a string\"");
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest,
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
        EmptyDictionaryPaymentMethodManifestIsMalformed) {
   ExpectUnableToParsePaymentMethodManifest("{}");
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest, NullDefaultApplicationIsMalformed) {
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
+       NullDefaultApplicationIsMalformed) {
   ExpectUnableToParsePaymentMethodManifest("{\"default_applications\": null}");
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest, NumberDefaultApplicationIsMalformed) {
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
+       NumberDefaultApplicationIsMalformed) {
   ExpectUnableToParsePaymentMethodManifest("{\"default_applications\": 0}");
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest,
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
        ListOfNumbersDefaultApplicationIsMalformed) {
   ExpectUnableToParsePaymentMethodManifest("{\"default_applications\": [0]}");
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest,
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
        EmptyListOfDefaultApplicationsIsMalformed) {
   ExpectUnableToParsePaymentMethodManifest("{\"default_applications\": []}");
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest,
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
        ListOfEmptyDefaultApplicationsIsMalformed) {
   ExpectUnableToParsePaymentMethodManifest(
       "{\"default_applications\": [\"\"]}");
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest,
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
        DefaultApplicationsShouldNotHaveNulCharacters) {
   ExpectUnableToParsePaymentMethodManifest(
       "{\"default_applications\": [\"https://bobpay.com/app\0json\"]}");
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest, DefaultApplicationKeyShouldBeLowercase) {
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
+       DefaultApplicationKeyShouldBeLowercase) {
   ExpectUnableToParsePaymentMethodManifest(
       "{\"Default_Applications\": [\"https://bobpay.com/app.json\"]}");
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest,
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
        DefaultApplicationsShouldHaveAbsoluteUrl) {
   ExpectUnableToParsePaymentMethodManifest(
       "{\"default_applications\": ["
       "\"app.json\"]}");
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest, DefaultApplicationsShouldBeHttps) {
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
+       DefaultApplicationsShouldBeHttps) {
   ExpectUnableToParsePaymentMethodManifest(
       "{\"default_applications\": ["
       "\"http://bobpay.com/app.json\","
       "\"http://alicepay.com/app.json\"]}");
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest,
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
        WellFormedPaymentMethodManifestWithApps) {
   ExpectParsedPaymentMethodManifest(
       "{\"default_applications\": ["
@@ -234,7 +240,7 @@ TEST_F(IOSPaymentInstrumentFinderTest,
        GURL("https://alicepay.com/app.json")});
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest,
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
        WellFormedPaymentMethodManifestWithDuplicateApps) {
   ExpectParsedPaymentMethodManifest(
       "{\"default_applications\": ["
@@ -247,23 +253,25 @@ TEST_F(IOSPaymentInstrumentFinderTest,
 
 // Web app manifest parsing:
 
-TEST_F(IOSPaymentInstrumentFinderTest, NullContentIsMalformed) {
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest, NullContentIsMalformed) {
   ExpectUnableToParseWebAppManifest(std::string());
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest, NonJsonContentIsMalformed) {
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
+       NonJsonContentIsMalformed) {
   ExpectUnableToParseWebAppManifest("this is not json");
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest, StringContentIsMalformed) {
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest, StringContentIsMalformed) {
   ExpectUnableToParseWebAppManifest("\"this is a string\"");
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest, EmptyDictionaryIsMalformed) {
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
+       EmptyDictionaryIsMalformed) {
   ExpectUnableToParseWebAppManifest("{}");
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest,
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
        NullRelatedApplicationsSectionIsMalformed) {
   ExpectUnableToParseWebAppManifest(
       "{"
@@ -275,7 +283,7 @@ TEST_F(IOSPaymentInstrumentFinderTest,
       "  \"related_applications\": null");
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest,
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
        NumberRelatedApplicationSectionIsMalformed) {
   ExpectUnableToParseWebAppManifest(
       "{"
@@ -288,7 +296,7 @@ TEST_F(IOSPaymentInstrumentFinderTest,
       "}");
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest,
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
        ListOfNumbersRelatedApplicationsSectionIsMalformed) {
   ExpectUnableToParseWebAppManifest(
       "{"
@@ -301,7 +309,7 @@ TEST_F(IOSPaymentInstrumentFinderTest,
       "}");
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest,
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
        EmptyListRelatedApplicationsSectionIsMalformed) {
   ExpectUnableToParseWebAppManifest(
       "{"
@@ -314,7 +322,7 @@ TEST_F(IOSPaymentInstrumentFinderTest,
       "}");
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest,
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
        ListOfEmptyDictionariesRelatedApplicationsSectionIsMalformed) {
   ExpectUnableToParseWebAppManifest(
       "{"
@@ -327,7 +335,8 @@ TEST_F(IOSPaymentInstrumentFinderTest,
       "}");
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest, NoItunesPlatformIsMalformed) {
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
+       NoItunesPlatformIsMalformed) {
   ExpectUnableToParseWebAppManifest(
       "{"
       "  \"short_name\": \"Bobpay\", "
@@ -341,7 +350,8 @@ TEST_F(IOSPaymentInstrumentFinderTest, NoItunesPlatformIsMalformed) {
       "}");
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest, NoUniversalLinkIsMalformed) {
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
+       NoUniversalLinkIsMalformed) {
   ExpectUnableToParseWebAppManifest(
       "{"
       "  \"short_name\": \"Bobpay\", "
@@ -355,7 +365,7 @@ TEST_F(IOSPaymentInstrumentFinderTest, NoUniversalLinkIsMalformed) {
       "}");
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest, NoShortNameIsMalformed) {
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest, NoShortNameIsMalformed) {
   ExpectUnableToParseWebAppManifest(
       "{"
       "  \"icons\": [{"
@@ -368,7 +378,8 @@ TEST_F(IOSPaymentInstrumentFinderTest, NoShortNameIsMalformed) {
       "}");
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest, PlatformShouldNotHaveNullCharacters) {
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
+       PlatformShouldNotHaveNullCharacters) {
   ExpectUnableToParseWebAppManifest(
       "{"
       "  \"short_name\": \"Bobpay\", "
@@ -382,7 +393,7 @@ TEST_F(IOSPaymentInstrumentFinderTest, PlatformShouldNotHaveNullCharacters) {
       "}");
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest,
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
        UniversalLinkShouldNotHaveNullCharacters) {
   ExpectUnableToParseWebAppManifest(
       "{"
@@ -398,7 +409,8 @@ TEST_F(IOSPaymentInstrumentFinderTest,
       "}");
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest, IconSourceShouldNotHaveNullCharacters) {
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
+       IconSourceShouldNotHaveNullCharacters) {
   ExpectUnableToParseWebAppManifest(
       "{"
       "  \"short_name\": \"Bobpay\", "
@@ -413,7 +425,8 @@ TEST_F(IOSPaymentInstrumentFinderTest, IconSourceShouldNotHaveNullCharacters) {
       "}");
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest, IconSizesShouldNotHaveNullCharacters) {
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
+       IconSizesShouldNotHaveNullCharacters) {
   ExpectUnableToParseWebAppManifest(
       "{"
       "  \"short_name\": \"Bobpay\", "
@@ -428,7 +441,8 @@ TEST_F(IOSPaymentInstrumentFinderTest, IconSizesShouldNotHaveNullCharacters) {
       "}");
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest, ShortNameShouldNotHaveNullCharacters) {
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
+       ShortNameShouldNotHaveNullCharacters) {
   ExpectUnableToParseWebAppManifest(
       "{"
       "  \"short_name\": \"Bob\0pay\", "
@@ -443,7 +457,7 @@ TEST_F(IOSPaymentInstrumentFinderTest, ShortNameShouldNotHaveNullCharacters) {
       "}");
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest, KeysShouldBeLowerCase) {
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest, KeysShouldBeLowerCase) {
   ExpectUnableToParseWebAppManifest(
       "{"
       "  \"Short_name\": \"Bobpay\", "
@@ -458,7 +472,8 @@ TEST_F(IOSPaymentInstrumentFinderTest, KeysShouldBeLowerCase) {
       "}");
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest, UniversalLinkShouldHaveAbsoluteUrl) {
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
+       UniversalLinkShouldHaveAbsoluteUrl) {
   ExpectUnableToParseWebAppManifest(
       "{"
       "  \"short_name\": \"Bobpay\", "
@@ -473,7 +488,8 @@ TEST_F(IOSPaymentInstrumentFinderTest, UniversalLinkShouldHaveAbsoluteUrl) {
       "}");
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest, UniversalLinkShouldBeHttps) {
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
+       UniversalLinkShouldBeHttps) {
   ExpectUnableToParseWebAppManifest(
       "{"
       "  \"short_name\": \"Bobpay\", "
@@ -488,7 +504,7 @@ TEST_F(IOSPaymentInstrumentFinderTest, UniversalLinkShouldBeHttps) {
       "}");
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest, WellFormed) {
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest, WellFormed) {
   ExpectParsedWebAppManifest(
       "{"
       "  \"short_name\": \"Bobpay\", "
@@ -505,7 +521,8 @@ TEST_F(IOSPaymentInstrumentFinderTest, WellFormed) {
       GURL("https://bobpay.xyz/pay"));
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest, RelativeIconPathWellFormed) {
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
+       RelativeIconPathWellFormed) {
   ExpectParsedWebAppManifest(
       "{"
       "  \"short_name\": \"Bobpay\", "
@@ -522,7 +539,8 @@ TEST_F(IOSPaymentInstrumentFinderTest, RelativeIconPathWellFormed) {
       GURL("https://bobpay.xyz/pay"));
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest, RelativeIconPathForwardSlashWellFormed) {
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
+       RelativeIconPathForwardSlashWellFormed) {
   ExpectParsedWebAppManifest(
       "{"
       "  \"short_name\": \"Bobpay\", "
@@ -539,7 +557,7 @@ TEST_F(IOSPaymentInstrumentFinderTest, RelativeIconPathForwardSlashWellFormed) {
       GURL("https://bobpay.xyz/pay"));
 }
 
-TEST_F(IOSPaymentInstrumentFinderTest,
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
        TwoRelatedApplicationsSecondIsWellFormed) {
   ExpectParsedWebAppManifest(
       "{"
@@ -563,7 +581,8 @@ TEST_F(IOSPaymentInstrumentFinderTest,
 // Tests that supplying no methods to the IOSPaymentInstrumentFinder class still
 // invokes the caller's callback function and that the list of returned
 // instruments is empty.
-TEST_F(IOSPaymentInstrumentFinderTest, NoMethodsSuppliedNoInstruments) {
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
+       NoMethodsSuppliedNoInstruments) {
   std::vector<GURL> url_methods;
 
   FindInstrumentsWithMethods(url_methods);
@@ -575,7 +594,7 @@ TEST_F(IOSPaymentInstrumentFinderTest, NoMethodsSuppliedNoInstruments) {
 // Tests that supplying many invalid methods to the IOSPaymentInstrumentFinder
 // class still invokes the caller's callback function and that the list of
 // returned instruments is empty.
-TEST_F(IOSPaymentInstrumentFinderTest,
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
        ManyInvalidMethodsSuppliedNoInstruments) {
   std::vector<GURL> url_methods;
   url_methods.push_back(GURL("https://fake-host-name/bobpay"));
@@ -592,7 +611,8 @@ TEST_F(IOSPaymentInstrumentFinderTest,
 // Tests that supplying one valid method with a corresponding complete web
 // app manifest will result in one created IOSPaymentInstrument that is returned
 // to the caller.
-TEST_F(IOSPaymentInstrumentFinderTest, OneValidMethodSuppliedOneInstrument) {
+TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
+       OneValidMethodSuppliedOneInstrument) {
   FindInstrumentsWithWebAppManifest(
       GURL("https://emerald-eon.appspot.com/bobpay"),
       "{"

@@ -72,7 +72,7 @@ class IOSPaymentInstrumentLauncher : public KeyedService {
   std::string payment_request_id() { return payment_request_id_; }
 
  private:
-  friend class IOSPaymentInstrumentLauncherTest;
+  friend class PaymentRequestIOSPaymentInstrumentLauncherTest;
 
   // Returns the JSON-serialized dictionary from each method name the merchant
   // requested to the corresponding method data. |stringified_method_data| is
