@@ -5,6 +5,7 @@
 #include "chrome/profiling/allocation_tracker.h"
 
 #include "base/callback.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/profiling/backtrace_storage.h"
 
 namespace profiling {
@@ -41,8 +42,8 @@ void AllocationTracker::OnFree(const FreePacket& free_packet) {
 }
 
 void AllocationTracker::OnComplete() {
-  std::move(complete_callback_).Run();
-  // Danger: object may be deleted now.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                std::move(complete_callback_));
 }
 
 }  // namespace profiling
