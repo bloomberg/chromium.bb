@@ -7,7 +7,9 @@
 #include "content/browser/blob_storage/blob_url_loader_factory.h"
 #include "content/browser/service_worker/service_worker_fetch_dispatcher.h"
 #include "content/browser/service_worker/service_worker_version.h"
+#include "content/browser/url_loader_factory_getter.h"
 #include "content/common/service_worker/service_worker_loader_helpers.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/content_switches.h"
@@ -20,15 +22,16 @@ ServiceWorkerURLLoaderJob::ServiceWorkerURLLoaderJob(
     LoaderCallback callback,
     Delegate* delegate,
     const ResourceRequest& resource_request,
+    scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
     base::WeakPtr<storage::BlobStorageContext> blob_storage_context)
     : loader_callback_(std::move(callback)),
       delegate_(delegate),
       resource_request_(resource_request),
+      url_loader_factory_getter_(std::move(url_loader_factory_getter)),
       blob_storage_context_(blob_storage_context),
       blob_client_binding_(this),
       binding_(this),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 ServiceWorkerURLLoaderJob::~ServiceWorkerURLLoaderJob() {}
 
@@ -104,7 +107,9 @@ void ServiceWorkerURLLoaderJob::StartRequest() {
                  weak_factory_.GetWeakPtr(), make_scoped_refptr(active_worker)),
       base::Bind(&ServiceWorkerURLLoaderJob::DidDispatchFetchEvent,
                  weak_factory_.GetWeakPtr())));
-  // TODO(kinuko): Handle navigation preload.
+  fetch_dispatcher_->MaybeStartNavigationPreloadWithURLLoader(
+      resource_request_, url_loader_factory_getter_.get(),
+      base::BindOnce(&base::DoNothing /* TODO(crbug/762357): metrics? */));
   fetch_dispatcher_->Run();
 }
 

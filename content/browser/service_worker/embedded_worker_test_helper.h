@@ -19,6 +19,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
+#include "content/browser/url_loader_factory_getter.h"
 #include "content/common/service_worker/embedded_worker.mojom.h"
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_status_code.h"
@@ -105,6 +106,10 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   // If |user_data_directory| is empty, the context makes storage stuff in
   // memory.
   explicit EmbeddedWorkerTestHelper(const base::FilePath& user_data_directory);
+  // S13nServiceWorker
+  EmbeddedWorkerTestHelper(
+      const base::FilePath& user_data_directory,
+      scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter);
   ~EmbeddedWorkerTestHelper() override;
 
   // Call this to simulate add/associate a process to a pattern.
@@ -172,6 +177,10 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   }
 
   static net::HttpResponseInfo CreateHttpResponseInfo();
+
+  URLLoaderFactoryGetter* url_loader_factory_getter() {
+    return url_loader_factory_getter_.get();
+  }
 
  protected:
   // StartWorker IPC handler routed through MockEmbeddedWorkerInstanceClient.
@@ -386,6 +395,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       embedded_worker_id_remote_provider_map_;
 
   std::vector<Event> events_;
+  scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter_;
 
   base::WeakPtrFactory<EmbeddedWorkerTestHelper> weak_factory_;
 

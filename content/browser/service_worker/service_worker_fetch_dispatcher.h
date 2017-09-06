@@ -32,6 +32,7 @@ class URLRequest;
 namespace content {
 
 class ServiceWorkerVersion;
+class URLLoaderFactoryGetter;
 
 // A helper class to dispatch fetch event to a service worker.
 class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
@@ -59,6 +60,12 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
   // |on_response| is invoked in OnReceiveResponse().
   bool MaybeStartNavigationPreload(net::URLRequest* original_request,
                                    base::OnceClosure on_response);
+  // S13nServiceWorker
+  // Same as above but for S13N.
+  bool MaybeStartNavigationPreloadWithURLLoader(
+      const ResourceRequest& original_request,
+      URLLoaderFactoryGetter* url_loader_factory_getter,
+      base::OnceClosure on_response);
 
   // Dispatches a fetch event to the |version| given in ctor, and fires
   // |fetch_callback| (also given in ctor) when finishes. It runs
@@ -109,6 +116,9 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
 
   scoped_refptr<URLLoaderAssets> url_loader_assets_;
 
+  // |preload_handle_| holds the URLLoader and URLLoaderClient for the service
+  // worker to receive the navigation preload response. It's passed to the
+  // service worker along with the fetch event.
   mojom::FetchEventPreloadHandlePtr preload_handle_;
 
   base::WeakPtrFactory<ServiceWorkerFetchDispatcher> weak_factory_;

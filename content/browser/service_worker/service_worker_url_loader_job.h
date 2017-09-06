@@ -11,6 +11,7 @@
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_response_type.h"
 #include "content/browser/service_worker/service_worker_url_job_wrapper.h"
+#include "content/browser/url_loader_factory_getter.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/url_loader.mojom.h"
@@ -73,6 +74,7 @@ class CONTENT_EXPORT ServiceWorkerURLLoaderJob : public mojom::URLLoader,
       LoaderCallback loader_callback,
       Delegate* delegate,
       const ResourceRequest& resource_request,
+      scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
       base::WeakPtr<storage::BlobStorageContext> blob_storage_context);
 
   ~ServiceWorkerURLLoaderJob() override;
@@ -145,6 +147,7 @@ class CONTENT_EXPORT ServiceWorkerURLLoaderJob : public mojom::URLLoader,
 
   Delegate* delegate_;
   ResourceRequest resource_request_;
+  scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter_;
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
   std::unique_ptr<ServiceWorkerFetchDispatcher> fetch_dispatcher_;
 
