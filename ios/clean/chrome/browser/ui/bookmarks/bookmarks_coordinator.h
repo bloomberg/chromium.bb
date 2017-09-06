@@ -13,8 +13,8 @@
 // own or inside the NTP.
 @interface BookmarksCoordinator : BrowserCoordinator
 
-// Whether the ViewController created by this coordinator will be contained.
-@property(nonatomic, assign) BOOL contained;
+// The presentation mode of this coordinator. Needs to be set before |-start|.
+@property(nonatomic, assign) BrowserCoordinatorMode mode;
 
 @end
 

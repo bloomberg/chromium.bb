@@ -17,7 +17,6 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_tablet_ntp_controller.h"
 #import "ios/chrome/browser/ui/browser_list/browser.h"
 #import "ios/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
-#include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/clean/chrome/browser/ui/adaptor/url_loader_adaptor.h"
 #include "ios/web/public/referrer.h"
 
@@ -34,7 +33,7 @@
 @end
 
 @implementation BookmarksCoordinator
-@synthesize contained = _contained;
+@synthesize mode = _mode;
 @synthesize viewController = _viewController;
 @synthesize bookmarkBrowser = _bookmarkBrowser;
 @synthesize loader = _loader;
@@ -43,8 +42,10 @@
   if (self.started)
     return;
 
+  DCHECK(self.mode != UNDEFINED);
+
   self.loader = [[URLLoaderAdaptor alloc] init];
-  if (!self.contained) {
+  if (self.mode == PRESENTED) {
     BookmarkControllerFactory* bookmarkControllerFactory =
         [[BookmarkControllerFactory alloc] init];
     self.bookmarkBrowser = [bookmarkControllerFactory
