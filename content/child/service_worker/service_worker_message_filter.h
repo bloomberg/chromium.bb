@@ -43,11 +43,6 @@ class CONTENT_EXPORT ServiceWorkerMessageFilter
                               int request_id,
                               const ServiceWorkerRegistrationObjectInfo& info,
                               const ServiceWorkerVersionAttributes& attrs);
-  void OnStaleGetRegistrations(
-      int thread_id,
-      int request_id,
-      const std::vector<ServiceWorkerRegistrationObjectInfo>& info,
-      const std::vector<ServiceWorkerVersionAttributes>& attrs);
   void OnStaleSetVersionAttributes(
       int thread_id,
       int registration_handle_id,

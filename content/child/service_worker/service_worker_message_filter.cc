@@ -67,10 +67,6 @@ void ServiceWorkerMessageFilter::OnStaleMessageReceived(
   // Specifically handle some messages in case we failed to post task
   // to the thread (meaning that the context on the thread is now gone).
   IPC_BEGIN_MESSAGE_MAP(ServiceWorkerMessageFilter, msg)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetRegistration,
-                        OnStaleGetRegistration)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetRegistrations,
-                        OnStaleGetRegistrations)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetRegistrationForReady,
                         OnStaleGetRegistration)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetVersionAttributes,
@@ -94,16 +90,6 @@ void ServiceWorkerMessageFilter::OnStaleGetRegistration(
   SendServiceWorkerObjectDestroyed(thread_safe_sender(),
                                    attrs.active.handle_id);
   SendRegistrationObjectDestroyed(thread_safe_sender(), info.handle_id);
-}
-
-void ServiceWorkerMessageFilter::OnStaleGetRegistrations(
-    int thread_id,
-    int request_id,
-    const std::vector<ServiceWorkerRegistrationObjectInfo>& infos,
-    const std::vector<ServiceWorkerVersionAttributes>& attrs) {
-  DCHECK_EQ(infos.size(), attrs.size());
-  for (size_t i = 0; i < infos.size(); ++i)
-    OnStaleGetRegistration(thread_id, request_id, infos[i], attrs[i]);
 }
 
 void ServiceWorkerMessageFilter::OnStaleSetVersionAttributes(
