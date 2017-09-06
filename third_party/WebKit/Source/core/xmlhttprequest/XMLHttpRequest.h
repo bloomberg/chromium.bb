@@ -170,6 +170,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
  private:
   class BlobLoader;
   XMLHttpRequest(ExecutionContext*,
+                 v8::Isolate*,
                  bool is_isolated_world,
                  RefPtr<SecurityOrigin>);
 
@@ -287,6 +288,17 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
 
   XMLHttpRequestProgressEventThrottle& ProgressEventThrottle();
 
+  // Report the memory usage associated with this object to V8 so that V8 can
+  // schedule GC accordingly.  This function should be called whenever the
+  // internal memory usage changes except for the following members.
+  // - response_text_ of type ScriptString
+  //   ScriptString internally creates and holds a v8::String, so V8 is aware of
+  //   its memory usage.
+  // - response_array_buffer_ of type DOMArrayBuffer
+  //   DOMArrayBuffer supports the memory usage reporting system on their own,
+  //   so there is no need.
+  void ReportMemoryUsageToV8();
+
   Member<XMLHttpRequestUpload> upload_;
 
   KURL url_;
@@ -310,7 +322,9 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   Member<DocumentParser> response_document_parser_;
 
   RefPtr<SharedBuffer> binary_response_builder_;
+  size_t binary_response_builder_last_reported_size_ = 0;
   long long length_downloaded_to_file_;
+  long long length_downloaded_to_file_last_reported_ = 0;
 
   TraceWrapperMember<DOMArrayBuffer> response_array_buffer_;
 
@@ -328,6 +342,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   // attribute.
   ResponseTypeCode response_type_code_;
 
+  v8::Isolate* const isolate_;
   // Set to true if the XMLHttpRequest was created in an isolated world.
   bool is_isolated_world_;
   // Stores the SecurityOrigin associated with the isolated world if any.
