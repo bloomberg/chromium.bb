@@ -544,6 +544,34 @@
             ]
         }
     ],
+    "ChromeHome": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Default"
+                },
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ChromeHome"
+                    ],
+                    "disable_features": [
+                        "ChromeHomeExpandButton"
+                    ]
+                },
+                {
+                    "name": "Enabled_Button",
+                    "enable_features": [
+                        "ChromeHome",
+                        "ChromeHomeExpandButton"
+                    ]
+                }
+            ]
+        }
+    ],
     "ClearOldOnDemandFavicons": [
         {
             "platforms": [
