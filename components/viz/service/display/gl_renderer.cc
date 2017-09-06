@@ -31,7 +31,6 @@
 #include "cc/debug/debug_colors.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_metadata.h"
-#include "cc/output/layer_quad.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/output_surface_frame.h"
 #include "cc/output/texture_mailbox_deleter.h"
@@ -47,6 +46,7 @@
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/service/display/dynamic_geometry_binding.h"
+#include "components/viz/service/display/layer_quad.h"
 #include "components/viz/service/display/static_geometry_binding.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
@@ -1556,7 +1556,7 @@ bool is_right(const gfx::QuadF* clip_region, const cc::DrawQuad* quad) {
 }  // anonymous namespace
 
 static gfx::QuadF GetDeviceQuadWithAntialiasingOnExteriorEdges(
-    const cc::LayerQuad& device_layer_edges,
+    const LayerQuad& device_layer_edges,
     const gfx::Transform& device_transform,
     const gfx::QuadF& tile_quad,
     const gfx::QuadF* clip_region,
@@ -1578,10 +1578,10 @@ static gfx::QuadF GetDeviceQuadWithAntialiasingOnExteriorEdges(
   top_left = cc::MathUtil::MapPoint(device_transform, top_left, &clipped);
   top_right = cc::MathUtil::MapPoint(device_transform, top_right, &clipped);
 
-  cc::LayerQuad::Edge bottom_edge(bottom_right, bottom_left);
-  cc::LayerQuad::Edge left_edge(bottom_left, top_left);
-  cc::LayerQuad::Edge top_edge(top_left, top_right);
-  cc::LayerQuad::Edge right_edge(top_right, bottom_right);
+  LayerQuad::Edge bottom_edge(bottom_right, bottom_left);
+  LayerQuad::Edge left_edge(bottom_left, top_left);
+  LayerQuad::Edge top_edge(top_left, top_right);
+  LayerQuad::Edge right_edge(top_right, bottom_right);
 
   // Only apply anti-aliasing to edges not clipped by culling or scissoring.
   // If an edge is degenerate we do not want to replace it with a "proper" edge
@@ -1610,7 +1610,7 @@ static gfx::QuadF GetDeviceQuadWithAntialiasingOnExteriorEdges(
   right_edge.scale(sign);
 
   // Create device space quad.
-  return cc::LayerQuad(left_edge, top_edge, right_edge, bottom_edge).ToQuadF();
+  return LayerQuad(left_edge, top_edge, right_edge, bottom_edge).ToQuadF();
 }
 
 float GetTotalQuadError(const gfx::QuadF* clipped_quad,
@@ -1640,10 +1640,10 @@ void AlignQuadToBoundingBox(gfx::QuadF* clipped_quad) {
 }
 
 void InflateAntiAliasingDistances(const gfx::QuadF& quad,
-                                  cc::LayerQuad* device_layer_edges,
+                                  LayerQuad* device_layer_edges,
                                   float edge[24]) {
   DCHECK(!quad.BoundingBox().IsEmpty());
-  cc::LayerQuad device_layer_bounds(gfx::QuadF(quad.BoundingBox()));
+  LayerQuad device_layer_bounds(gfx::QuadF(quad.BoundingBox()));
 
   device_layer_edges->InflateAntiAliasingDistance();
   device_layer_edges->ToFloatArray(edge);
@@ -1694,7 +1694,7 @@ void GLRenderer::SetupQuadForClippingAndAntialiasing(
     return;
   }
 
-  cc::LayerQuad device_layer_edges(*aa_quad);
+  LayerQuad device_layer_edges(*aa_quad);
   InflateAntiAliasingDistances(*aa_quad, &device_layer_edges, edge);
 
   // If we have a clip region then we are split, and therefore
@@ -1746,7 +1746,7 @@ void GLRenderer::SetupRenderPassQuadForClippingAndAntialiasing(
     return;
   }
 
-  cc::LayerQuad device_layer_edges(*aa_quad);
+  LayerQuad device_layer_edges(*aa_quad);
   InflateAntiAliasingDistances(*aa_quad, &device_layer_edges, edge);
 
   gfx::QuadF device_quad;
@@ -3552,7 +3552,7 @@ void GLRenderer::CopyRenderPassDrawQuadToOverlayResource(
     params.contents_device_transform.FlattenTo2d();
     gfx::QuadF device_layer_quad = cc::MathUtil::MapQuad(
         params.contents_device_transform, SharedGeometryQuad(), &clipped);
-    cc::LayerQuad device_layer_edges(device_layer_quad);
+    LayerQuad device_layer_edges(device_layer_quad);
     InflateAntiAliasingDistances(device_layer_quad, &device_layer_edges,
                                  params.edge);
   }

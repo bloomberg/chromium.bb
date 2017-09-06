@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/layer_quad.h"
+#include "components/viz/service/display/layer_quad.h"
 
 #include <stddef.h>
 
 #include "base/logging.h"
 #include "ui/gfx/geometry/quad_f.h"
 
-namespace cc {
+namespace viz {
 
 LayerQuad::Edge::Edge(const gfx::PointF& p, const gfx::PointF& q) {
   if (p == q) {
@@ -50,10 +50,7 @@ LayerQuad::LayerQuad(const Edge& left,
                      const Edge& top,
                      const Edge& right,
                      const Edge& bottom)
-    : left_(left),
-      top_(top),
-      right_(right),
-      bottom_(bottom) {}
+    : left_(left), top_(top), right_(right), bottom_(bottom) {}
 
 gfx::QuadF LayerQuad::ToQuadF() const {
   size_t num_degenerate_edges = left_.degenerate() + right_.degenerate() +
@@ -78,10 +75,8 @@ gfx::QuadF LayerQuad::ToQuadF() const {
     return gfx::QuadF(left_.Intersect(top_), top_.Intersect(right_),
                       right_.Intersect(left_), left_.Intersect(right_));
   }
-  return gfx::QuadF(left_.Intersect(top_),
-                    top_.Intersect(right_),
-                    right_.Intersect(bottom_),
-                    bottom_.Intersect(left_));
+  return gfx::QuadF(left_.Intersect(top_), top_.Intersect(right_),
+                    right_.Intersect(bottom_), bottom_.Intersect(left_));
 }
 
 void LayerQuad::ToFloatArray(float flattened[12]) const {
@@ -123,4 +118,4 @@ void LayerQuad::ToFloatArray(float flattened[12]) const {
   }
 }
 
-}  // namespace cc
+}  // namespace viz
