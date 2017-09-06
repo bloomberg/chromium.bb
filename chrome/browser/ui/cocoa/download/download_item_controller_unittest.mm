@@ -102,7 +102,8 @@ class DownloadItemControllerTest : public CocoaProfileTest {
   base::scoped_nsobject<DownloadShelfController> shelf_;
 };
 
-TEST_F(DownloadItemControllerTest, ShelfNotifiedOfOpenedDownload) {
+// TODO(crbug.com/762405): Disabled because it's flaky (crashing).
+TEST_F(DownloadItemControllerTest, DISABLED_ShelfNotifiedOfOpenedDownload) {
   base::scoped_nsobject<DownloadItemController> item(CreateItemController());
   [[(id)shelf_ expect] downloadWasOpened:[OCMArg any]];
   download_item_->NotifyObserversDownloadOpened();
@@ -114,7 +115,8 @@ TEST_F(DownloadItemControllerTest, RemovesSelfWhenDownloadIsDestroyed) {
   download_item_.reset();
 }
 
-TEST_F(DownloadItemControllerTest, NormalDownload) {
+// TODO(crbug.com/762405): Disabled because it's flaky (crashing).
+TEST_F(DownloadItemControllerTest, DISABLED_NormalDownload) {
   base::scoped_nsobject<DownloadItemController> item(CreateItemController());
 
   [item verifyProgressViewIsVisible:true];
@@ -132,7 +134,8 @@ TEST_F(DownloadItemControllerTest, DangerousDownload) {
   [item verifyDangerousDownloadPromptIsVisible:true];
 }
 
-TEST_F(DownloadItemControllerTest, NormalDownloadBecomesDangerous) {
+// TODO(crbug.com/762405): Disabled because it's flaky (crashing).
+TEST_F(DownloadItemControllerTest, DISABLED_NormalDownloadBecomesDangerous) {
   base::scoped_nsobject<DownloadItemController> item(CreateItemController());
 
   [item verifyProgressViewIsVisible:true];
