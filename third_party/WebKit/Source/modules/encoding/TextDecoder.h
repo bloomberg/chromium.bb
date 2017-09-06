@@ -32,7 +32,7 @@
 #define TextDecoder_h
 
 #include <memory>
-#include "bindings/core/v8/ArrayBufferOrArrayBufferView.h"
+#include "bindings/core/v8/array_buffer_or_array_buffer_view.h"
 #include "modules/encoding/TextDecodeOptions.h"
 #include "modules/encoding/TextDecoderOptions.h"
 #include "platform/bindings/ScriptWrappable.h"

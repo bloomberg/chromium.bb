@@ -32,12 +32,12 @@
 #include "core/dom/events/EventTarget.h"
 
 #include <memory>
-#include "bindings/core/v8/AddEventListenerOptionsOrBoolean.h"
-#include "bindings/core/v8/EventListenerOptionsOrBoolean.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptEventListener.h"
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/V8DOMActivityLogger.h"
+#include "bindings/core/v8/add_event_listener_options_or_boolean.h"
+#include "bindings/core/v8/event_listener_options_or_boolean.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/events/Event.h"
 #include "core/editing/Editor.h"

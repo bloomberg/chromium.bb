@@ -25,8 +25,8 @@
 
 #include "modules/webaudio/AsyncAudioDecoder.h"
 
-#include "bindings/modules/v8/DecodeErrorCallback.h"
-#include "bindings/modules/v8/DecodeSuccessCallback.h"
+#include "bindings/modules/v8/decode_error_callback.h"
+#include "bindings/modules/v8/decode_success_callback.h"
 #include "core/typed_arrays/DOMArrayBuffer.h"
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/BaseAudioContext.h"

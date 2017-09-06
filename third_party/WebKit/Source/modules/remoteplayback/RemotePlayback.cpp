@@ -5,7 +5,7 @@
 #include "modules/remoteplayback/RemotePlayback.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/modules/v8/RemotePlaybackAvailabilityCallback.h"
+#include "bindings/modules/v8/remote_playback_availability_callback.h"
 #include "core/HTMLNames.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"

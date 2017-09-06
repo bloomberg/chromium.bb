@@ -32,7 +32,7 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/DictionaryHelperForBindings.h"
-#include "bindings/core/v8/DictionarySequenceOrDictionary.h"
+#include "bindings/core/v8/dictionary_sequence_or_dictionary.h"
 #include "core/animation/AnimationInputHelpers.h"
 #include "core/animation/CompositorAnimations.h"
 #include "core/animation/KeyframeEffectModel.h"

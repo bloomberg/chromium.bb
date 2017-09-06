@@ -31,8 +31,8 @@
 
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/HTMLElementOrLong.h"
-#include "bindings/core/v8/HTMLOptionElementOrHTMLOptGroupElement.h"
+#include "bindings/core/v8/html_element_or_long.h"
+#include "bindings/core/v8/html_option_element_or_html_opt_group_element.h"
 #include "build/build_config.h"
 #include "core/HTMLNames.h"
 #include "core/dom/AXObjectCache.h"

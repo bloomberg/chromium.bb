@@ -5,8 +5,8 @@
 #include "modules/webgl/WebGL2RenderingContext.h"
 
 #include <memory>
-#include "bindings/modules/v8/OffscreenRenderingContext.h"
-#include "bindings/modules/v8/RenderingContext.h"
+#include "bindings/modules/v8/offscreen_rendering_context.h"
+#include "bindings/modules/v8/rendering_context.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/Settings.h"

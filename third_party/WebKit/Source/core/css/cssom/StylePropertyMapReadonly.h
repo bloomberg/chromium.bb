@@ -5,9 +5,9 @@
 #ifndef StylePropertyMapReadonly_h
 #define StylePropertyMapReadonly_h
 
-#include "bindings/core/v8/CSSStyleValueOrCSSStyleValueSequence.h"
-#include "bindings/core/v8/CSSStyleValueOrCSSStyleValueSequenceOrString.h"
 #include "bindings/core/v8/Iterable.h"
+#include "bindings/core/v8/css_style_value_or_css_style_value_sequence.h"
+#include "bindings/core/v8/css_style_value_or_css_style_value_sequence_or_string.h"
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/css/cssom/CSSStyleValue.h"

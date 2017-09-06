@@ -29,7 +29,7 @@
 #ifndef ImageData_h
 #define ImageData_h
 
-#include "bindings/core/v8/Uint8ClampedArrayOrUint16ArrayOrFloat32Array.h"
+#include "bindings/core/v8/uint8_clamped_array_or_uint16_array_or_float32_array.h"
 #include "core/CoreExport.h"
 #include "core/html/ImageDataColorSettings.h"
 #include "core/html/canvas/CanvasRenderingContext.h"

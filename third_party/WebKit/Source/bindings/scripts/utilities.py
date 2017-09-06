@@ -13,6 +13,11 @@ import re
 import shlex
 import string
 import subprocess
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..',
+                             'third_party', 'blink', 'tools'))
+from blinkpy.common.name_style_converter import NameStyleConverter
 
 
 KNOWN_COMPONENTS = frozenset(['core', 'modules'])
@@ -123,7 +128,7 @@ class ComponentInfoProviderCore(ComponentInfoProvider):
         return self._component_info['union_types']
 
     def include_path_for_union_types(self, union_type):
-        name = shorten_union_name(union_type)
+        name = to_snake_case(shorten_union_name(union_type))
         return 'bindings/core/v8/%s.h' % name
 
     @property
@@ -178,8 +183,8 @@ class ComponentInfoProviderModules(ComponentInfoProvider):
                                  in self._component_info_core['union_types']]
         name = shorten_union_name(union_type)
         if union_type.name in core_union_type_names:
-            return 'bindings/core/v8/%s.h' % name
-        return 'bindings/modules/v8/%s.h' % name
+            return 'bindings/core/v8/%s.h' % to_snake_case(name)
+        return 'bindings/modules/v8/%s.h' % to_snake_case(name)
 
     @property
     def callback_functions(self):
@@ -448,6 +453,12 @@ def shorten_union_name(union_type):
         raise Exception('crbug.com/711464: The union name %s is too long. '
                         'Please add an alias to shorten_union_name()' % name)
     return name
+
+
+def to_snake_case(name):
+    if name.lower() == name:
+        return name
+    return NameStyleConverter(name).to_snake_case()
 
 
 def format_remove_duplicates(text, patterns):

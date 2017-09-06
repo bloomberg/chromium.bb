@@ -8,7 +8,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/modules/v8/ArrayBufferOrArrayBufferViewOrUSVString.h"
+#include "bindings/modules/v8/array_buffer_or_array_buffer_view_or_usv_string.h"
 #include "core/fileapi/Blob.h"
 #include "core/typed_arrays/DOMArrayBuffer.h"
 #include "platform/bindings/ScriptState.h"

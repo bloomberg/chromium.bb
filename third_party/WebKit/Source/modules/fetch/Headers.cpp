@@ -6,7 +6,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8IteratorResultValue.h"
-#include "bindings/modules/v8/ByteStringSequenceSequenceOrByteStringByteStringRecord.h"
+#include "bindings/modules/v8/byte_string_sequence_sequence_or_byte_string_byte_string_record.h"
 #include "core/dom/Iterator.h"
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/wtf/text/WTFString.h"

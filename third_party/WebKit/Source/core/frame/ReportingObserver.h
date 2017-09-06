@@ -5,7 +5,7 @@
 #ifndef ReportingObserver_h
 #define ReportingObserver_h
 
-#include "bindings/core/v8/ReportingObserverCallback.h"
+#include "bindings/core/v8/reporting_observer_callback.h"
 #include "core/CoreExport.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/wtf/Vector.h"

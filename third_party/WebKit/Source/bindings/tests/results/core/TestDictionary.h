@@ -13,12 +13,12 @@
 #define TestDictionary_h
 
 #include "bindings/core/v8/Dictionary.h"
-#include "bindings/core/v8/DoubleOrString.h"
-#include "bindings/core/v8/FloatOrBoolean.h"
 #include "bindings/core/v8/IDLDictionaryBase.h"
-#include "bindings/core/v8/LongOrBoolean.h"
 #include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/TestInterface2OrUint8Array.h"
+#include "bindings/core/v8/double_or_string.h"
+#include "bindings/core/v8/float_or_boolean.h"
+#include "bindings/core/v8/long_or_boolean.h"
+#include "bindings/core/v8/test_interface_2_or_uint8_array.h"
 #include "bindings/tests/idls/core/TestInterface2.h"
 #include "core/CoreExport.h"
 #include "core/testing/InternalDictionary.h"

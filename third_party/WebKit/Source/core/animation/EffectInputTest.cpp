@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "bindings/core/v8/Dictionary.h"
-#include "bindings/core/v8/DictionarySequenceOrDictionary.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
+#include "bindings/core/v8/dictionary_sequence_or_dictionary.h"
 #include "core/animation/AnimationTestHelper.h"
 #include "core/animation/KeyframeEffectModel.h"
 #include "core/dom/Document.h"

@@ -5,8 +5,8 @@
 #ifndef SequenceTest_h
 #define SequenceTest_h
 
-#include "bindings/core/v8/DoubleOrDoubleSequence.h"
 #include "bindings/core/v8/Nullable.h"
+#include "bindings/core/v8/double_or_double_sequence.h"
 #include "core/dom/Element.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"

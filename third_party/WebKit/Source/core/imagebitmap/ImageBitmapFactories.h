@@ -32,9 +32,9 @@
 #define ImageBitmapFactories_h
 
 #include <memory>
-#include "bindings/core/v8/ImageBitmapSource.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "bindings/core/v8/image_bitmap_source.h"
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "core/frame/LocalDOMWindow.h"

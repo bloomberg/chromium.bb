@@ -31,7 +31,7 @@
 #include "core/fileapi/FileReader.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/StringOrArrayBuffer.h"
+#include "bindings/core/v8/string_or_array_buffer.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"

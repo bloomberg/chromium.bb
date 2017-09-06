@@ -27,7 +27,7 @@
 #include "modules/webdatabase/DOMWindowWebDatabase.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/modules/v8/DatabaseCallback.h"
+#include "bindings/modules/v8/database_callback.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "modules/webdatabase/Database.h"

@@ -28,7 +28,7 @@
 
 #include <memory>
 
-#include "bindings/modules/v8/StringOrStringSequence.h"
+#include "bindings/modules/v8/string_or_string_sequence.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMStringList.h"
 #include "modules/EventModules.h"

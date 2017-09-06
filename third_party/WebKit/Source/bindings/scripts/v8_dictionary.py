@@ -8,6 +8,7 @@ implementation classes that are used by blink's core/modules.
 
 import operator
 from idl_types import IdlType
+from utilities import to_snake_case
 from v8_globals import includes
 import v8_types
 import v8_utilities
@@ -121,7 +122,7 @@ def member_context(dictionary, member):
         return cpp_default_value, v8_default_value
 
     cpp_default_value, v8_default_value = default_values()
-    cpp_name = v8_utilities.to_snake_case(v8_utilities.cpp_name(member))
+    cpp_name = to_snake_case(v8_utilities.cpp_name(member))
     getter_name = getter_name_for_dictionary_member(member)
     is_deprecated_dictionary = unwrapped_idl_type.name == 'Dictionary'
 
@@ -200,7 +201,7 @@ def dictionary_impl_context(dictionary, interfaces_info):
 def member_impl_context(member, interfaces_info, header_includes,
                         header_forward_decls):
     idl_type = unwrap_nullable_if_needed(member.idl_type)
-    cpp_name = v8_utilities.to_snake_case(v8_utilities.cpp_name(member))
+    cpp_name = to_snake_case(v8_utilities.cpp_name(member))
 
     nullable_indicator_name = None
     if not idl_type.cpp_type_has_null_value:

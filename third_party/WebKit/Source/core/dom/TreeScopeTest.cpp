@@ -4,7 +4,7 @@
 
 #include "core/dom/TreeScope.h"
 
-#include "bindings/core/v8/StringOrDictionary.h"
+#include "bindings/core/v8/string_or_dictionary.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ShadowRoot.h"

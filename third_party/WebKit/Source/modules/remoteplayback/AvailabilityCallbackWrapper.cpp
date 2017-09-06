@@ -4,7 +4,7 @@
 
 #include "modules/remoteplayback/AvailabilityCallbackWrapper.h"
 
-#include "bindings/modules/v8/RemotePlaybackAvailabilityCallback.h"
+#include "bindings/modules/v8/remote_playback_availability_callback.h"
 #include "modules/remoteplayback/RemotePlayback.h"
 
 namespace blink {

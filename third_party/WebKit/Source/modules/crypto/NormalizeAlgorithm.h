@@ -31,7 +31,7 @@
 #ifndef NormalizeAlgorithm_h
 #define NormalizeAlgorithm_h
 
-#include "bindings/modules/v8/DictionaryOrString.h"
+#include "bindings/modules/v8/dictionary_or_string.h"
 #include "modules/ModulesExport.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Assertions.h"

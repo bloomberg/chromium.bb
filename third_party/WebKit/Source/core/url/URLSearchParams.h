@@ -8,7 +8,7 @@
 #include <base/gtest_prod_util.h>
 #include <utility>
 #include "bindings/core/v8/Iterable.h"
-#include "bindings/core/v8/USVStringSequenceSequenceOrUSVStringUSVStringRecordOrUSVString.h"
+#include "bindings/core/v8/usv_string_sequence_sequence_or_usv_string_usv_string_record_or_usv_string.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/EncodedFormData.h"

@@ -5,7 +5,7 @@
 #ifndef BluetoothRemoteGATTServer_h
 #define BluetoothRemoteGATTServer_h
 
-#include "bindings/modules/v8/StringOrUnsignedLong.h"
+#include "bindings/modules/v8/string_or_unsigned_long.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "modules/bluetooth/BluetoothDevice.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"

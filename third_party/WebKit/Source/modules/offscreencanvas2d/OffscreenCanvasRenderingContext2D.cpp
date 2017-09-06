@@ -4,7 +4,7 @@
 
 #include "modules/offscreencanvas2d/OffscreenCanvasRenderingContext2D.h"
 
-#include "bindings/modules/v8/OffscreenRenderingContext.h"
+#include "bindings/modules/v8/offscreen_rendering_context.h"
 #include "core/css/OffscreenFontSelector.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/css/resolver/FontStyleResolver.h"

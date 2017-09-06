@@ -12,13 +12,13 @@
 #ifndef V8TestInterface5_h
 #define V8TestInterface5_h
 
-#include "bindings/core/v8/DoubleOrString.h"
 #include "bindings/core/v8/GeneratedCodeHelper.h"
 #include "bindings/core/v8/NativeValueTraits.h"
 #include "bindings/core/v8/ToV8ForCore.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8TestInterfaceEmpty.h"
-#include "bindings/modules/v8/BooleanOrString.h"
+#include "bindings/core/v8/double_or_string.h"
+#include "bindings/modules/v8/boolean_or_string.h"
 #include "bindings/tests/idls/modules/TestInterface5Implementation.h"
 #include "modules/ModulesExport.h"
 #include "platform/bindings/ScriptWrappable.h"

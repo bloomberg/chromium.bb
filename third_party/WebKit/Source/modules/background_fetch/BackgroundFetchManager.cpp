@@ -5,8 +5,8 @@
 #include "modules/background_fetch/BackgroundFetchManager.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/modules/v8/RequestOrUSVString.h"
-#include "bindings/modules/v8/RequestOrUSVStringOrRequestOrUSVStringSequence.h"
+#include "bindings/modules/v8/request_or_usv_string.h"
+#include "bindings/modules/v8/request_or_usv_string_or_request_or_usv_string_sequence.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/Deprecation.h"

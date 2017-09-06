@@ -12,7 +12,7 @@
 #ifndef TestDictionaryDerivedImplementedAs_h
 #define TestDictionaryDerivedImplementedAs_h
 
-#include "bindings/core/v8/StringOrDouble.h"
+#include "bindings/core/v8/string_or_double.h"
 #include "bindings/tests/idls/core/TestDictionary.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"

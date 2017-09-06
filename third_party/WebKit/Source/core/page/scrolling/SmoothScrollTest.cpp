@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/ScrollIntoViewOptionsOrBoolean.h"
+#include "bindings/core/v8/scroll_into_view_options_or_boolean.h"
 #include "core/frame/ScrollIntoViewOptions.h"
 #include "core/frame/ScrollToOptions.h"
 #include "core/frame/WebLocalFrameImpl.h"

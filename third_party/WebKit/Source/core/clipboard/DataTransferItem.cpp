@@ -30,8 +30,8 @@
 
 #include "core/clipboard/DataTransferItem.h"
 
-#include "bindings/core/v8/FunctionStringCallback.h"
 #include "bindings/core/v8/V8BindingForCore.h"
+#include "bindings/core/v8/function_string_callback.h"
 #include "core/clipboard/DataObjectItem.h"
 #include "core/clipboard/DataTransfer.h"
 #include "core/dom/ExecutionContext.h"

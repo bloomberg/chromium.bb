@@ -4,12 +4,12 @@
 
 #include "core/testing/CallbackFunctionTest.h"
 
-#include "bindings/core/v8/TestCallback.h"
-#include "bindings/core/v8/TestEnumCallback.h"
-#include "bindings/core/v8/TestInterfaceCallback.h"
-#include "bindings/core/v8/TestReceiverObjectCallback.h"
-#include "bindings/core/v8/TestSequenceCallback.h"
 #include "bindings/core/v8/V8BindingForCore.h"
+#include "bindings/core/v8/test_callback.h"
+#include "bindings/core/v8/test_enum_callback.h"
+#include "bindings/core/v8/test_interface_callback.h"
+#include "bindings/core/v8/test_receiver_object_callback.h"
+#include "bindings/core/v8/test_sequence_callback.h"
 #include "core/html/HTMLDivElement.h"
 
 namespace blink {

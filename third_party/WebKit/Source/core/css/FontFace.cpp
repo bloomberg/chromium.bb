@@ -31,7 +31,7 @@
 #include "core/css/FontFace.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/StringOrArrayBufferOrArrayBufferView.h"
+#include "bindings/core/v8/string_or_array_buffer_or_array_buffer_view.h"
 #include "core/CSSValueKeywords.h"
 #include "core/css/BinaryDataFontFaceSource.h"
 #include "core/css/CSSFontFace.h"

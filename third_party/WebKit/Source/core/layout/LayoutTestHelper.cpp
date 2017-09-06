@@ -4,8 +4,8 @@
 
 #include "core/layout/LayoutTestHelper.h"
 
-#include "bindings/core/v8/StringOrArrayBufferOrArrayBufferView.h"
 #include "bindings/core/v8/V8BindingForCore.h"
+#include "bindings/core/v8/string_or_array_buffer_or_array_buffer_view.h"
 #include "core/css/FontFaceDescriptors.h"
 #include "core/css/FontFaceSetDocument.h"
 #include "core/html/HTMLIFrameElement.h"

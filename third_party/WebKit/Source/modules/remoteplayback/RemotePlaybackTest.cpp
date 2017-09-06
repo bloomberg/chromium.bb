@@ -6,7 +6,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
-#include "bindings/modules/v8/RemotePlaybackAvailabilityCallback.h"
+#include "bindings/modules/v8/remote_playback_availability_callback.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLMediaElement.h"

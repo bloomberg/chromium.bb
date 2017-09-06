@@ -32,10 +32,10 @@
 
 #include <algorithm>
 #include <memory>
-#include "bindings/core/v8/ArrayBufferOrArrayBufferView.h"
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
 #include "bindings/core/v8/V8ArrayBufferView.h"
+#include "bindings/core/v8/array_buffer_or_array_buffer_view.h"
 #include "bindings/modules/v8/V8CryptoKey.h"
 #include "core/typed_arrays/DOMArrayPiece.h"
 #include "core/typed_arrays/DOMTypedArray.h"
