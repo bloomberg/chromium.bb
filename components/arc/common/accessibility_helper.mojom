@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 5
+// Next MinVersion: 6
 
 module arc.mojom;
 
@@ -12,6 +12,9 @@ import "screen_rect.mojom";
 // from their equivalents in the Android source. Keep them in the
 // order given below and add as needed. The initial order matches the
 // order they appear in source files.
+//
+// If not explicitly called out, the structs and enums below come from:
+// https://developer.android.com/reference/android/view/accessibility/AccessibilityNodeInfo.html
 
 // AccessibilityEventType lists the possible accessibility events on Android.
 // https://developer.android.com/reference/android/view/accessibility/AccessibilityEvent.html
@@ -44,8 +47,7 @@ enum AccessibilityEventType {
   ASSIST_READING_CONTEXT,
 };
 
-// AccessibilityActionType lists possible accessibility actions on Android.
-// https://developer.android.com/reference/android/view/accessibility/AccessibilityNodeInfo.html
+// Possible actions that can be performed on an AccessibilityNodeInfo.
 [Extensible]
 enum AccessibilityActionType {
   FOCUS,
@@ -82,7 +84,6 @@ enum AccessibilityActionType {
 };
 
 // Possible boolean properties set on an AccessibilityNodeInfo.
-// https://developer.android.com/reference/android/view/accessibility/AccessibilityNodeInfo.html
 // The enum values appear in the same order as they do within
 // AccessibilityNodeInfo.java.
 [Extensible]
@@ -116,7 +117,9 @@ enum AccessibilityStringProperty {
   CLASS_NAME,
   TEXT,
   CONTENT_DESCRIPTION,
-  VIEW_ID_RESOURCE_NAME
+  VIEW_ID_RESOURCE_NAME,
+  CHROME_ROLE,  // Chrome only
+  ROLE_DESCRIPTION  // Chrome only
 };
 
 // These fields are taken from int instance members of
@@ -142,14 +145,71 @@ enum AccessibilityIntListProperty {
   CUSTOM_ACTION_IDS
 };
 
+// These fields are taken from List<String> instance members of
+// AccessibilityNodeInfo.
 [Extensible]
 enum AccessibilityStringListProperty {
   CUSTOM_ACTION_DESCRIPTIONS
 };
 
+// This type is a subset of spans available under android.text.style.
+[Extensible]
+enum SpanType {
+  URL,
+  CLICKABLE
+};
+
+// Groups data about a Spannable.
+struct SpanEntry {
+  int32 start;
+  int32 end;
+  SpanType span_type;
+};
+
+// These fields are taken from AccessibilityNodeInfo.CollectionItemInfo.
+[Extensible]
+enum AccessibilitySelectionMode {
+  NONE,
+  SINGLE,
+  MULTIPLE
+};
+
+// These fields are taken from AccessibilityNodeInfo.CollectionInfo.
+struct AccessibilityCollectionInfoData {
+  int32 row_count;
+  int32 column_count;
+  bool is_hierarchical;
+  AccessibilitySelectionMode selection_mode;
+};
+
+// These fields are taken from AccessibilityNodeInfo.CollectionItemInfo.
+struct AccessibilityCollectionItemInfoData {
+  int32 row_index;
+  int32 column_index;
+  int32 row_span;
+  int32 column_span;
+  bool is_heading;
+  bool is_selected;
+};
+
+// These fields are taken from AccessibilityNodeInfo.RangeInfo.
+[Extensible]
+enum AccessibilityRangeType {
+  INT,
+  FLOAT,
+  PERCENT
+};
+
+// These fields are taken from AccessibilityNodeInfo.RangeInfo.
+struct AccessibilityRangeInfoData {
+  AccessibilityRangeType range_type;
+  float min;
+  float max;
+  float current;
+};
+
 // AccessibilityNodeInfoData is a struct to contain info of
 // AccessibilityNodeInfo in Android.
-// https://developer.android.com/reference/android/view/accessibility/AccessibilityNodeInfo.html
 struct AccessibilityNodeInfoData {
   ScreenRect bounds_in_screen;
   [MinVersion=1]int32 id;
@@ -160,6 +220,11 @@ struct AccessibilityNodeInfoData {
       map<AccessibilityIntListProperty, array<int32>>? int_list_properties;
   [MinVersion=3]map<AccessibilityStringListProperty, array<string>>?
       string_list_properties;
+  [MinVersion=5]map<AccessibilityStringProperty, array<SpanEntry>>?
+      spannable_string_properties;
+  [MinVersion=5]AccessibilityCollectionInfoData? collection_info;
+  [MinVersion=5]AccessibilityCollectionItemInfoData? collection_item_info;
+  [MinVersion=5]AccessibilityRangeInfoData? range_info;
 };
 
 // Filters the event type (and implicitly the data) sent by the ARC
