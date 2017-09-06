@@ -2,16 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_NTP_INCOGNITO_PANEL_CONTROLLER_H_
-#define IOS_CHROME_BROWSER_UI_NTP_INCOGNITO_PANEL_CONTROLLER_H_
+#ifndef IOS_CHROME_BROWSER_UI_NTP_INCOGNITO_VIEW_CONTROLLER_H_
+#define IOS_CHROME_BROWSER_UI_NTP_INCOGNITO_VIEW_CONTROLLER_H_
 
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/ntp/new_tab_page_panel_protocol.h"
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 @protocol UrlLoader;
 
@@ -20,18 +16,14 @@ class ChromeBrowserState;
 - (void)setToolbarBackgroundAlpha:(CGFloat)alpha;
 @end
 
-@interface IncognitoPanelController : NSObject<NewTabPagePanelProtocol>
-
-// The view that is displaying the incognito* panel.
-@property(nonatomic, readonly) UIView* view;
+@interface IncognitoViewController : UIViewController<NewTabPagePanelProtocol>
 
 // Init with the given loader object. |loader| may be nil, but isn't
-// retained so it must outlive this controller. |browserState| may not be null.
-// |webToolbarDelegate| is used to fade the toolbar views on page scroll.
+// retained so it must outlive this controller.
+// |toolbarDelegate| is used to fade the toolbar views on page scroll.
 - (id)initWithLoader:(id<UrlLoader>)loader
-        browserState:(ios::ChromeBrowserState*)browserState
      toolbarDelegate:(id<IncognitoViewControllerDelegate>)toolbarDelegate;
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_NTP_INCOGNITO_PANEL_CONTROLLER_H_
+#endif  // IOS_CHROME_BROWSER_UI_NTP_INCOGNITO_VIEW_CONTROLLER_H_
