@@ -22,13 +22,15 @@ const double kDefaultFrameRate = 60.0;
 namespace blink {
 
 MediaStream* HTMLCanvasElementCapture::captureStream(
+    ScriptState* script_state,
     HTMLCanvasElement& element,
     ExceptionState& exception_state) {
-  return HTMLCanvasElementCapture::captureStream(element, false, 0,
-                                                 exception_state);
+  return HTMLCanvasElementCapture::captureStream(script_state, element, false,
+                                                 0, exception_state);
 }
 
 MediaStream* HTMLCanvasElementCapture::captureStream(
+    ScriptState* script_state,
     HTMLCanvasElement& element,
     double frame_rate,
     ExceptionState& exception_state) {
@@ -38,11 +40,12 @@ MediaStream* HTMLCanvasElementCapture::captureStream(
     return nullptr;
   }
 
-  return HTMLCanvasElementCapture::captureStream(element, true, frame_rate,
-                                                 exception_state);
+  return HTMLCanvasElementCapture::captureStream(script_state, element, true,
+                                                 frame_rate, exception_state);
 }
 
 MediaStream* HTMLCanvasElementCapture::captureStream(
+    ScriptState* script_state,
     HTMLCanvasElement& element,
     bool given_frame_rate,
     double frame_rate,
@@ -81,7 +84,7 @@ MediaStream* HTMLCanvasElementCapture::captureStream(
 
   MediaStreamTrackVector tracks;
   tracks.push_back(canvas_track);
-  return MediaStream::Create(element.GetExecutionContext(), tracks);
+  return MediaStream::Create(ExecutionContext::From(script_state), tracks);
 }
 
 }  // namespace blink

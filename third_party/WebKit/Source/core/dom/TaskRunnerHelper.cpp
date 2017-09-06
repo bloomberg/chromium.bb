@@ -18,18 +18,16 @@
 namespace blink {
 
 RefPtr<WebTaskRunner> TaskRunnerHelper::Get(TaskType type, LocalFrame* frame) {
+  DCHECK(frame);
   // TODO(haraken): Optimize the mapping from TaskTypes to task runners.
   switch (type) {
     case TaskType::kTimer:
-      return frame ? frame->FrameScheduler()->ThrottleableTaskRunner()
-                   : Platform::Current()->CurrentThread()->GetWebTaskRunner();
+      return frame->FrameScheduler()->ThrottleableTaskRunner();
     case TaskType::kUnspecedLoading:
     case TaskType::kNetworking:
-      return frame ? frame->FrameScheduler()->LoadingTaskRunner()
-                   : Platform::Current()->CurrentThread()->GetWebTaskRunner();
+      return frame->FrameScheduler()->LoadingTaskRunner();
     case TaskType::kNetworkingControl:
-      return frame ? frame->FrameScheduler()->LoadingControlTaskRunner()
-                   : Platform::Current()->CurrentThread()->GetWebTaskRunner();
+      return frame->FrameScheduler()->LoadingControlTaskRunner();
     // Throttling following tasks may break existing web pages, so tentatively
     // these are unthrottled.
     // TODO(nhiroki): Throttle them again after we're convinced that it's safe
@@ -52,8 +50,7 @@ RefPtr<WebTaskRunner> TaskRunnerHelper::Get(TaskType type, LocalFrame* frame) {
     case TaskType::kUnspecedTimer:
     case TaskType::kMiscPlatformAPI:
       // TODO(altimin): Move appropriate tasks to throttleable task queue.
-      return frame ? frame->FrameScheduler()->DeferrableTaskRunner()
-                   : Platform::Current()->CurrentThread()->GetWebTaskRunner();
+      return frame->FrameScheduler()->DeferrableTaskRunner();
     // PostedMessage can be used for navigation, so we shouldn't defer it
     // when expecting a user gesture.
     case TaskType::kPostedMessage:
@@ -62,37 +59,41 @@ RefPtr<WebTaskRunner> TaskRunnerHelper::Get(TaskType type, LocalFrame* frame) {
     // Media events should not be deferred to ensure that media playback is
     // smooth.
     case TaskType::kMediaElementEvent:
-      return frame ? frame->FrameScheduler()->PausableTaskRunner()
-                   : Platform::Current()->CurrentThread()->GetWebTaskRunner();
+      return frame->FrameScheduler()->PausableTaskRunner();
     case TaskType::kUnthrottled:
-      return frame ? frame->FrameScheduler()->UnpausableTaskRunner()
-                   : Platform::Current()->CurrentThread()->GetWebTaskRunner();
+      return frame->FrameScheduler()->UnpausableTaskRunner();
   }
   NOTREACHED();
   return nullptr;
 }
 
 RefPtr<WebTaskRunner> TaskRunnerHelper::Get(TaskType type, Document* document) {
-  return Get(type, document ? document->GetFrame() : nullptr);
+  DCHECK(document);
+  if (document->ContextDocument())
+    return Get(type, document->ContextDocument()->GetFrame());
+  // In most cases, ContextDocument() will get us to a relevant Frame, even if
+  // the passed-in document is detached. In some cases, though, there isn't a
+  // good candidate (e.g., XMLDocuments created by DocumentResource and stored
+  // in the MemoryCache).
+  return Platform::Current()->CurrentThread()->GetWebTaskRunner();
 }
 
 RefPtr<WebTaskRunner> TaskRunnerHelper::Get(
     TaskType type,
     ExecutionContext* execution_context) {
   if (!execution_context)
-    return Get(type, ToDocument(execution_context));
+    return Platform::Current()->CurrentThread()->GetWebTaskRunner();
   if (execution_context->IsDocument())
     return Get(type, ToDocument(execution_context));
   if (execution_context->IsWorkerOrWorkletGlobalScope())
     return Get(type, ToWorkerOrWorkletGlobalScope(execution_context));
-  execution_context = nullptr;
-  return Get(type, ToDocument(execution_context));
+  // This should only happen for a NullExecutionContext in a unit test.
+  return Platform::Current()->CurrentThread()->GetWebTaskRunner();
 }
 
 RefPtr<WebTaskRunner> TaskRunnerHelper::Get(TaskType type,
                                             ScriptState* script_state) {
-  return Get(type,
-             script_state ? ExecutionContext::From(script_state) : nullptr);
+  return Get(type, ExecutionContext::From(script_state));
 }
 
 RefPtr<WebTaskRunner> TaskRunnerHelper::Get(

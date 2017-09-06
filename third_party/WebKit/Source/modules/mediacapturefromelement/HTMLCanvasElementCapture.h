@@ -18,13 +18,17 @@ class HTMLCanvasElementCapture {
   STATIC_ONLY(HTMLCanvasElementCapture);
 
  public:
-  static MediaStream* captureStream(HTMLCanvasElement&, ExceptionState&);
-  static MediaStream* captureStream(HTMLCanvasElement&,
+  static MediaStream* captureStream(ScriptState*,
+                                    HTMLCanvasElement&,
+                                    ExceptionState&);
+  static MediaStream* captureStream(ScriptState*,
+                                    HTMLCanvasElement&,
                                     double frame_rate,
                                     ExceptionState&);
 
  private:
-  static MediaStream* captureStream(HTMLCanvasElement&,
+  static MediaStream* captureStream(ScriptState*,
+                                    HTMLCanvasElement&,
                                     bool given_frame_rate,
                                     double frame_rate,
                                     ExceptionState&);

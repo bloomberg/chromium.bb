@@ -20,7 +20,7 @@
 
 namespace blink {
 
-class Document;
+class ExecutionContext;
 
 class CORE_EXPORT CanvasAsyncBlobCreator
     : public GarbageCollectedFinalized<CanvasAsyncBlobCreator> {
@@ -31,13 +31,13 @@ class CORE_EXPORT CanvasAsyncBlobCreator
       const IntSize&,
       BlobCallback*,
       double start_time,
-      Document*);
+      ExecutionContext*);
   static CanvasAsyncBlobCreator* Create(
       DOMUint8ClampedArray* unpremultiplied_rgba_image_data,
       const String& mime_type,
       const IntSize&,
       double start_time,
-      Document*,
+      ExecutionContext*,
       ScriptPromiseResolver*);
   void ScheduleAsyncBlobCreation(const double& quality);
   virtual ~CanvasAsyncBlobCreator();
@@ -78,7 +78,7 @@ class CORE_EXPORT CanvasAsyncBlobCreator
                          const IntSize&,
                          BlobCallback*,
                          double,
-                         Document*,
+                         ExecutionContext*,
                          ScriptPromiseResolver*);
   // Methods are virtual for unit testing
   virtual void ScheduleInitiateEncoding(double quality);
@@ -102,7 +102,7 @@ class CORE_EXPORT CanvasAsyncBlobCreator
   std::unique_ptr<ImageEncoder> encoder_;
   Vector<unsigned char> encoded_image_;
   int num_rows_completed_;
-  Member<Document> document_;
+  Member<ExecutionContext> context_;
 
   SkPixmap src_data_;
   const MimeType mime_type_;

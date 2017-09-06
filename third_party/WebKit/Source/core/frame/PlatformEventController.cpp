@@ -8,11 +8,13 @@
 
 namespace blink {
 
-PlatformEventController::PlatformEventController(LocalFrame* frame)
-    : PageVisibilityObserver(frame ? frame->GetPage() : nullptr),
+PlatformEventController::PlatformEventController(Document* document)
+    : PageVisibilityObserver(document && document->GetFrame()
+                                 ? document->GetFrame()->GetPage()
+                                 : nullptr),
       has_event_listener_(false),
       is_active_(false),
-      timer_(TaskRunnerHelper::Get(TaskType::kUnspecedTimer, frame),
+      timer_(TaskRunnerHelper::Get(TaskType::kUnspecedTimer, document),
              this,
              &PlatformEventController::OneShotCallback) {}
 

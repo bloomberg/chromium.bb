@@ -117,17 +117,17 @@ CanvasRenderingContext2D::CanvasRenderingContext2D(
       try_restore_context_attempt_count_(0),
       dispatch_context_lost_event_timer_(
           TaskRunnerHelper::Get(TaskType::kMiscPlatformAPI,
-                                canvas->GetDocument().GetFrame()),
+                                &canvas->GetDocument()),
           this,
           &CanvasRenderingContext2D::DispatchContextLostEvent),
       dispatch_context_restored_event_timer_(
           TaskRunnerHelper::Get(TaskType::kMiscPlatformAPI,
-                                canvas->GetDocument().GetFrame()),
+                                &canvas->GetDocument()),
           this,
           &CanvasRenderingContext2D::DispatchContextRestoredEvent),
       try_restore_context_event_timer_(
           TaskRunnerHelper::Get(TaskType::kMiscPlatformAPI,
-                                canvas->GetDocument().GetFrame()),
+                                &canvas->GetDocument()),
           this,
           &CanvasRenderingContext2D::TryRestoreContextEvent),
       should_prune_local_font_cache_(false) {

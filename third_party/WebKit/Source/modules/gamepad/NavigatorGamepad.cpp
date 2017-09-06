@@ -171,7 +171,8 @@ NavigatorGamepad::NavigatorGamepad(Navigator& navigator)
     : Supplement<Navigator>(navigator),
       ContextLifecycleObserver(
           navigator.GetFrame() ? navigator.GetFrame()->GetDocument() : nullptr),
-      PlatformEventController(navigator.GetFrame()),
+      PlatformEventController(
+          navigator.GetFrame() ? navigator.GetFrame()->GetDocument() : nullptr),
       dispatch_one_event_runner_(AsyncMethodRunner<NavigatorGamepad>::Create(
           this,
           &NavigatorGamepad::DispatchOneEvent)) {

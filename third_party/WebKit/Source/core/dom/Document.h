@@ -1498,6 +1498,10 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<LocalDOMWindow> dom_window_;
   TraceWrapperMember<HTMLImportsController> imports_controller_;
 
+  // The document of creator browsing context for frame-less documents such as
+  // documents created by DOMParser and DOMImplementation.
+  WeakMember<Document> context_document_;
+
   Member<ResourceFetcher> fetcher_;
   TraceWrapperMember<DocumentParser> parser_;
   Member<ContextFeatures> context_features_;
@@ -1647,10 +1651,6 @@ class CORE_EXPORT Document : public ContainerNode,
   bool is_mobile_document_;
 
   LayoutView* layout_view_;
-
-  // The document of creator browsing context for frame-less documents such as
-  // documents created by DOMParser and DOMImplementation.
-  WeakMember<Document> context_document_;
 
   // For early return in Fullscreen::fromIfExists()
   bool has_fullscreen_supplement_;
