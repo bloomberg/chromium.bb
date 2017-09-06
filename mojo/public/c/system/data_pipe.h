@@ -129,8 +129,9 @@ extern "C" {
 //
 // Returns:
 //   |MOJO_RESULT_OK| on success.
-//   |MOJO_RESULT_INVALID_ARGUMENT| if some argument was invalid (e.g.,
-//       |*options| is invalid).
+//   |MOJO_RESULT_INVALID_ARGUMENT| if some argument was invalid, e.g.,
+//       |*options| is invalid, specified capacity or element size is zero, or
+//       the specified element size exceeds the specified capacity.
 //   |MOJO_RESULT_RESOURCE_EXHAUSTED| if a process/system/quota/etc. limit has
 //       been reached (e.g., if the requested capacity was too large, or if the
 //       maximum number of handles was exceeded).

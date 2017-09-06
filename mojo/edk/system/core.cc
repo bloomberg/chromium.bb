@@ -799,6 +799,10 @@ MojoResult Core::CreateDataPipe(const MojoCreateDataPipeOptions* options,
   create_options.capacity_num_bytes = options && options->capacity_num_bytes
                                           ? options->capacity_num_bytes
                                           : 64 * 1024;
+  if (!create_options.element_num_bytes || !create_options.capacity_num_bytes ||
+      create_options.capacity_num_bytes < create_options.element_num_bytes) {
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  }
 
   scoped_refptr<PlatformSharedBuffer> ring_buffer =
       GetNodeController()->CreateSharedBuffer(
