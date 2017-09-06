@@ -55,7 +55,7 @@ def get_grd_outputs(options):
   import grit_info
   outputs = grit_info.Outputs(options.grd_input, grit_defines,
                               'GRIT_DIR/../gritsettings/resource_ids',
-                               options.target_platform)
+                              options.target_platform)
 
   # Strip the path prefix from the filenames.
   result = []
