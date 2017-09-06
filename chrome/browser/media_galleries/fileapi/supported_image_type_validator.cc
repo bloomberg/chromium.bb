@@ -15,6 +15,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/image_decoder.h"
 #include "content/public/browser/browser_thread.h"
@@ -105,9 +107,8 @@ void SupportedImageTypeValidator::StartPreWriteValidation(
   DCHECK(callback_.is_null());
   callback_ = result_callback;
 
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::FILE,
-      FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::Bind(&ReadOnFileThread, path_),
       base::Bind(&SupportedImageTypeValidator::OnFileOpen,
                  weak_factory_.GetWeakPtr()));
