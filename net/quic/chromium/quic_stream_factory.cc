@@ -347,8 +347,6 @@ class QuicStreamFactory::Job {
 
   void OnIOComplete(int rv);
 
-  void Cancel();
-
   const QuicSessionKey& key() const { return key_; }
 
   const NetLogWithSource& net_log() const { return net_log_; }
@@ -482,14 +480,6 @@ void QuicStreamFactory::Job::OnIOComplete(int rv) {
   rv = DoLoop(rv);
   if (rv != ERR_IO_PENDING && !callback_.is_null())
     base::ResetAndReturn(&callback_).Run(rv);
-}
-
-void QuicStreamFactory::Job::Cancel() {
-  callback_.Reset();
-  if (session_)
-    session_->connection()->CloseConnection(
-        QUIC_CONNECTION_CANCELLED, "New job canceled.",
-        ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
 }
 
 void QuicStreamFactory::Job::PopulateNetErrorDetails(
