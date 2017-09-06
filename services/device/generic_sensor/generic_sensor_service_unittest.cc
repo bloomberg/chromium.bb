@@ -89,12 +89,6 @@ class FakePlatformSensor : public PlatformSensor {
 
 class FakePlatformSensorProvider : public PlatformSensorProvider {
  public:
-  static FakePlatformSensorProvider* GetInstance() {
-    return base::Singleton<
-        FakePlatformSensorProvider,
-        base::LeakySingletonTraits<FakePlatformSensorProvider>>::get();
-  }
-
   FakePlatformSensorProvider() = default;
   ~FakePlatformSensorProvider() override = default;
 
@@ -231,19 +225,35 @@ class GenericSensorServiceTest : public DeviceServiceTestBase {
   }
 
   void TearDown() override {
-    PlatformSensorProvider::SetProviderForTesting(nullptr);
+    io_thread_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&GenericSensorServiceTest::TearDownOnIOThread,
+                                  base::Unretained(this)));
+    io_loop_finished_event_.Wait();
   }
 
   void SetUpOnIOThread() {
+    fake_platform_sensor_provider_ = new FakePlatformSensorProvider();
     PlatformSensorProvider::SetProviderForTesting(
-        FakePlatformSensorProvider::GetInstance());
+        fake_platform_sensor_provider_);
     io_loop_finished_event_.Signal();
   }
 
+  void TearDownOnIOThread() {
+    PlatformSensorProvider::SetProviderForTesting(nullptr);
+
+    DCHECK(fake_platform_sensor_provider_);
+    delete fake_platform_sensor_provider_;
+    fake_platform_sensor_provider_ = nullptr;
+
+    io_loop_finished_event_.Signal();
+  }
   mojom::SensorProviderPtr sensor_provider_;
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
   base::WaitableEvent io_loop_finished_event_;
   base::test::ScopedFeatureList scoped_feature_list_;
+
+  // FakePlatformSensorProvider must be created and deleted in IO thread.
+  FakePlatformSensorProvider* fake_platform_sensor_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(GenericSensorServiceTest);
 };
@@ -261,13 +271,7 @@ TEST_F(GenericSensorServiceTest, GetSensorTest) {
 }
 
 // Tests GetDefaultConfiguration.
-// Failing on Android Tests (dbg); see https://crbug.com/761742.
-#if defined(OS_ANDROID)
-#define MAYBE_GetDefaultConfigurationTest DISABLED_GetDefaultConfigurationTest
-#else
-#define MAYBE_GetDefaultConfigurationTest GetDefaultConfigurationTest
-#endif
-TEST_F(GenericSensorServiceTest, MAYBE_GetDefaultConfigurationTest) {
+TEST_F(GenericSensorServiceTest, GetDefaultConfigurationTest) {
   mojom::SensorPtr sensor;
   auto client = base::MakeUnique<TestSensorClient>(SensorType::ACCELEROMETER);
   base::RunLoop run_loop;
@@ -314,12 +318,7 @@ TEST_F(GenericSensorServiceTest, ValidAddConfigurationTest) {
 // Tests adding an invalid configuation, the max allowed frequency is 50.0 in
 // the mocked SensorImpl, while we add one with 60.0.
 // Failing on Android Tests (dbg); see https://crbug.com/761742.
-#if defined(OS_ANDROID)
-#define MAYBE_InvalidAddConfigurationTest DISABLED_InvalidAddConfigurationTest
-#else
-#define MAYBE_InvalidAddConfigurationTest InvalidAddConfigurationTest
-#endif
-TEST_F(GenericSensorServiceTest, MAYBE_InvalidAddConfigurationTest) {
+TEST_F(GenericSensorServiceTest, InvalidAddConfigurationTest) {
   mojom::SensorPtr sensor;
   auto client =
       base::MakeUnique<TestSensorClient>(SensorType::LINEAR_ACCELERATION);
@@ -387,13 +386,7 @@ TEST_F(GenericSensorServiceTest, MultipleClientsTest) {
 // Tests adding more than one clients. If mojo connection is broken on one
 // client, other clients should not be affected.
 // Failing on Android Tests (dbg); see https://crbug.com/761742.
-#if defined(OS_ANDROID)
-#define MAYBE_ClientMojoConnectionBrokenTest \
-  DISABLED_ClientMojoConnectionBrokenTest
-#else
-#define MAYBE_ClientMojoConnectionBrokenTest ClientMojoConnectionBrokenTest
-#endif
-TEST_F(GenericSensorServiceTest, MAYBE_ClientMojoConnectionBrokenTest) {
+TEST_F(GenericSensorServiceTest, ClientMojoConnectionBrokenTest) {
   mojom::SensorPtr sensor_1;
   auto client_1 = base::MakeUnique<TestSensorClient>(SensorType::AMBIENT_LIGHT);
   sensor_provider_->GetSensor(SensorType::AMBIENT_LIGHT,
@@ -498,12 +491,7 @@ TEST_F(GenericSensorServiceTest, AddAndRemoveConfigurationTest) {
 // early quit of main thread (when there is an unexpected notification by
 // SensorReadingChanged()).
 // Failing on Android Tests (dbg); see https://crbug.com/761742.
-#if defined(OS_ANDROID)
-#define MAYBE_SuspendTest DISABLED_SuspendTest
-#else
-#define MAYBE_SuspendTest SuspendTest
-#endif
-TEST_F(GenericSensorServiceTest, MAYBE_SuspendTest) {
+TEST_F(GenericSensorServiceTest, SuspendTest) {
   mojom::SensorPtr sensor;
   auto client = base::MakeUnique<TestSensorClient>(SensorType::AMBIENT_LIGHT);
   sensor_provider_->GetSensor(SensorType::AMBIENT_LIGHT,
@@ -586,14 +574,7 @@ TEST_F(GenericSensorServiceTest, SuspendThenResumeTest) {
 // Test suspend when there are more than one client. The suspended client won't
 // receive SensorReadingChanged() notification.
 // Failing on Android Tests (dbg); see https://crbug.com/761742.
-#if defined(OS_ANDROID)
-#define MAYBE_MultipleClientsSuspendAndResumeTest \
-  DISABLED_MultipleClientsSuspendAndResumeTest
-#else
-#define MAYBE_MultipleClientsSuspendAndResumeTest \
-  MultipleClientsSuspendAndResumeTest
-#endif
-TEST_F(GenericSensorServiceTest, MAYBE_MultipleClientsSuspendAndResumeTest) {
+TEST_F(GenericSensorServiceTest, MultipleClientsSuspendAndResumeTest) {
   mojom::SensorPtr sensor_1;
   auto client_1 = base::MakeUnique<TestSensorClient>(SensorType::AMBIENT_LIGHT);
   sensor_provider_->GetSensor(SensorType::AMBIENT_LIGHT,
