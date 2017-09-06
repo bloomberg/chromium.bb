@@ -2344,193 +2344,89 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 #endif
   }
 #endif  // CONFIG_SUPERTX
+
+#if CONFIG_SUPERTX
+#define DEC_BLOCK_STX_ARG supertx_enabled,
+#else
+#define DEC_BLOCK_STX_ARG
+#endif
+#if CONFIG_EXT_PARTITION_TYPES
+#define DEC_BLOCK_EPT_ARG partition,
+#else
+#define DEC_BLOCK_EPT_ARG
+#endif
+#define DEC_BLOCK(db_r, db_c, db_subsize)                   \
+  decode_block(pbi, xd, DEC_BLOCK_STX_ARG(db_r), (db_c), r, \
+               DEC_BLOCK_EPT_ARG(db_subsize))
+#define DEC_PARTITION(db_r, db_c, db_subsize) \
+  decode_partition(pbi, xd, DEC_BLOCK_STX_ARG(db_r), (db_c), r, (db_subsize))
+
   if (!hbs && !unify_bsize) {
     // calculate bmode block dimensions (log 2)
     xd->bmode_blocks_wl = 1 >> !!(partition & PARTITION_VERT);
     xd->bmode_blocks_hl = 1 >> !!(partition & PARTITION_HORZ);
-    decode_block(pbi, xd,
-#if CONFIG_SUPERTX
-                 supertx_enabled,
-#endif  // CONFIG_SUPERTX
-                 mi_row, mi_col, r,
-#if CONFIG_EXT_PARTITION_TYPES
-                 partition,
-#endif  // CONFIG_EXT_PARTITION_TYPES
-                 subsize);
+    DEC_BLOCK(mi_row, mi_col, subsize);
   } else {
     switch (partition) {
-      case PARTITION_NONE:
-        decode_block(pbi, xd,
-#if CONFIG_SUPERTX
-                     supertx_enabled,
-#endif  // CONFIG_SUPERTX
-                     mi_row, mi_col, r,
-#if CONFIG_EXT_PARTITION_TYPES
-                     partition,
-#endif  // CONFIG_EXT_PARTITION_TYPES
-                     subsize);
-        break;
+      case PARTITION_NONE: DEC_BLOCK(mi_row, mi_col, subsize); break;
       case PARTITION_HORZ:
-        decode_block(pbi, xd,
-#if CONFIG_SUPERTX
-                     supertx_enabled,
-#endif  // CONFIG_SUPERTX
-                     mi_row, mi_col, r,
-#if CONFIG_EXT_PARTITION_TYPES
-                     partition,
-#endif  // CONFIG_EXT_PARTITION_TYPES
-                     subsize);
-        if (has_rows)
-          decode_block(pbi, xd,
-#if CONFIG_SUPERTX
-                       supertx_enabled,
-#endif  // CONFIG_SUPERTX
-                       mi_row + hbs, mi_col, r,
-#if CONFIG_EXT_PARTITION_TYPES
-                       partition,
-#endif  // CONFIG_EXT_PARTITION_TYPES
-                       subsize);
+        DEC_BLOCK(mi_row, mi_col, subsize);
+        if (has_rows) DEC_BLOCK(mi_row + hbs, mi_col, subsize);
         break;
       case PARTITION_VERT:
-        decode_block(pbi, xd,
-#if CONFIG_SUPERTX
-                     supertx_enabled,
-#endif  // CONFIG_SUPERTX
-                     mi_row, mi_col, r,
-#if CONFIG_EXT_PARTITION_TYPES
-                     partition,
-#endif  // CONFIG_EXT_PARTITION_TYPES
-                     subsize);
-        if (has_cols)
-          decode_block(pbi, xd,
-#if CONFIG_SUPERTX
-                       supertx_enabled,
-#endif  // CONFIG_SUPERTX
-                       mi_row, mi_col + hbs, r,
-#if CONFIG_EXT_PARTITION_TYPES
-                       partition,
-#endif  // CONFIG_EXT_PARTITION_TYPES
-                       subsize);
+        DEC_BLOCK(mi_row, mi_col, subsize);
+        if (has_cols) DEC_BLOCK(mi_row, mi_col + hbs, subsize);
         break;
       case PARTITION_SPLIT:
-        decode_partition(pbi, xd,
-#if CONFIG_SUPERTX
-                         supertx_enabled,
-#endif  // CONFIG_SUPERTX
-                         mi_row, mi_col, r, subsize);
-        decode_partition(pbi, xd,
-#if CONFIG_SUPERTX
-                         supertx_enabled,
-#endif  // CONFIG_SUPERTX
-                         mi_row, mi_col + hbs, r, subsize);
-        decode_partition(pbi, xd,
-#if CONFIG_SUPERTX
-                         supertx_enabled,
-#endif  // CONFIG_SUPERTX
-                         mi_row + hbs, mi_col, r, subsize);
-        decode_partition(pbi, xd,
-#if CONFIG_SUPERTX
-                         supertx_enabled,
-#endif  // CONFIG_SUPERTX
-                         mi_row + hbs, mi_col + hbs, r, subsize);
+        DEC_PARTITION(mi_row, mi_col, subsize);
+        DEC_PARTITION(mi_row, mi_col + hbs, subsize);
+        DEC_PARTITION(mi_row + hbs, mi_col, subsize);
+        DEC_PARTITION(mi_row + hbs, mi_col + hbs, subsize);
         break;
 #if CONFIG_EXT_PARTITION_TYPES
       case PARTITION_HORZ_A:
-        decode_block(pbi, xd,
-#if CONFIG_SUPERTX
-                     supertx_enabled,
-#endif
-                     mi_row, mi_col, r, partition, bsize2);
-        decode_block(pbi, xd,
-#if CONFIG_SUPERTX
-                     supertx_enabled,
-#endif
-                     mi_row, mi_col + hbs, r, partition, bsize2);
-        decode_block(pbi, xd,
-#if CONFIG_SUPERTX
-                     supertx_enabled,
-#endif
-                     mi_row + hbs, mi_col, r, partition, subsize);
+        DEC_BLOCK(mi_row, mi_col, bsize2);
+        DEC_BLOCK(mi_row, mi_col + hbs, bsize2);
+        DEC_BLOCK(mi_row + hbs, mi_col, subsize);
         break;
       case PARTITION_HORZ_B:
-        decode_block(pbi, xd,
-#if CONFIG_SUPERTX
-                     supertx_enabled,
-#endif
-                     mi_row, mi_col, r, partition, subsize);
-        decode_block(pbi, xd,
-#if CONFIG_SUPERTX
-                     supertx_enabled,
-#endif
-                     mi_row + hbs, mi_col, r, partition, bsize2);
-        decode_block(pbi, xd,
-#if CONFIG_SUPERTX
-                     supertx_enabled,
-#endif
-                     mi_row + hbs, mi_col + hbs, r, partition, bsize2);
+        DEC_BLOCK(mi_row, mi_col, subsize);
+        DEC_BLOCK(mi_row + hbs, mi_col, bsize2);
+        DEC_BLOCK(mi_row + hbs, mi_col + hbs, bsize2);
         break;
       case PARTITION_VERT_A:
-        decode_block(pbi, xd,
-#if CONFIG_SUPERTX
-                     supertx_enabled,
-#endif
-                     mi_row, mi_col, r, partition, bsize2);
-        decode_block(pbi, xd,
-#if CONFIG_SUPERTX
-                     supertx_enabled,
-#endif
-                     mi_row + hbs, mi_col, r, partition, bsize2);
-        decode_block(pbi, xd,
-#if CONFIG_SUPERTX
-                     supertx_enabled,
-#endif
-                     mi_row, mi_col + hbs, r, partition, subsize);
+        DEC_BLOCK(mi_row, mi_col, bsize2);
+        DEC_BLOCK(mi_row + hbs, mi_col, bsize2);
+        DEC_BLOCK(mi_row, mi_col + hbs, subsize);
         break;
       case PARTITION_VERT_B:
-        decode_block(pbi, xd,
-#if CONFIG_SUPERTX
-                     supertx_enabled,
-#endif
-                     mi_row, mi_col, r, partition, subsize);
-        decode_block(pbi, xd,
-#if CONFIG_SUPERTX
-                     supertx_enabled,
-#endif
-                     mi_row, mi_col + hbs, r, partition, bsize2);
-        decode_block(pbi, xd,
-#if CONFIG_SUPERTX
-                     supertx_enabled,
-#endif
-                     mi_row + hbs, mi_col + hbs, r, partition, bsize2);
+        DEC_BLOCK(mi_row, mi_col, subsize);
+        DEC_BLOCK(mi_row, mi_col + hbs, bsize2);
+        DEC_BLOCK(mi_row + hbs, mi_col + hbs, bsize2);
         break;
       case PARTITION_HORZ_4:
         for (i = 0; i < 4; ++i) {
           int this_mi_row = mi_row + i * quarter_step;
           if (i > 0 && this_mi_row >= cm->mi_rows) break;
-
-          decode_block(pbi, xd,
-#if CONFIG_SUPERTX
-                       supertx_enabled,
-#endif
-                       this_mi_row, mi_col, r, partition, subsize);
+          DEC_BLOCK(this_mi_row, mi_col, subsize);
         }
         break;
       case PARTITION_VERT_4:
         for (i = 0; i < 4; ++i) {
           int this_mi_col = mi_col + i * quarter_step;
           if (i > 0 && this_mi_col >= cm->mi_cols) break;
-
-          decode_block(pbi, xd,
-#if CONFIG_SUPERTX
-                       supertx_enabled,
-#endif
-                       mi_row, this_mi_col, r, partition, subsize);
+          DEC_BLOCK(mi_row, this_mi_col, subsize);
         }
         break;
 #endif  // CONFIG_EXT_PARTITION_TYPES
       default: assert(0 && "Invalid partition type");
     }
   }
+
+#undef DEC_PARTITION
+#undef DEC_BLOCK
+#undef DEC_BLOCK_EPT_ARG
+#undef DEC_BLOCK_STX_ARG
 
 #if CONFIG_SUPERTX
   if (supertx_enabled && read_token) {
