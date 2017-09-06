@@ -14,15 +14,15 @@ TrayDragController::TrayDragController(Shelf* shelf) : shelf_(shelf) {}
 
 void TrayDragController::ProcessGestureEvent(ui::GestureEvent* event,
                                              TrayBackgroundView* tray_view) {
-  if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
-    Shell::Get()->DismissAppList();
-    return;
-  }
-
   if (!Shell::Get()
            ->tablet_mode_controller()
            ->IsTabletModeWindowManagerEnabled() ||
       !shelf_->IsHorizontalAlignment()) {
+    return;
+  }
+
+  if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
+    Shell::Get()->DismissAppList();
     return;
   }
 
