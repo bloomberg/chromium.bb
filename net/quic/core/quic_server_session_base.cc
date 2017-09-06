@@ -90,7 +90,7 @@ void QuicServerSessionBase::OnConnectionClosed(QuicErrorCode error,
   QuicSession::OnConnectionClosed(error, error_details, source);
   // In the unlikely event we get a connection close while doing an asynchronous
   // crypto event, make sure we cancel the callback.
-  if (crypto_stream_.get() != nullptr) {
+  if (crypto_stream_ != nullptr) {
     crypto_stream_->CancelOutstandingCallbacks();
   }
 }

@@ -396,7 +396,10 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // QuicBlockedWriterInterface
   // Called when the underlying connection becomes writable to allow queued
   // writes to happen.
-  void OnCanWrite() override;
+  void OnBlockedWriterCanWrite() override;
+
+  // Called when the caller thinks it's worth a try to write.
+  virtual void OnCanWrite();
 
   // Called when an error occurs while attempting to write a packet to the
   // network.
