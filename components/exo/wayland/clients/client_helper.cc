@@ -43,6 +43,8 @@ DEFAULT_DELETER(wl_touch, wl_touch_destroy)
 DEFAULT_DELETER(wp_presentation, wp_presentation_destroy)
 DEFAULT_DELETER(struct wp_presentation_feedback,
                 wp_presentation_feedback_destroy)
+DEFAULT_DELETER(zaura_shell, zaura_shell_destroy)
+DEFAULT_DELETER(zaura_surface, zaura_surface_destroy)
 DEFAULT_DELETER(zwp_linux_buffer_params_v1, zwp_linux_buffer_params_v1_destroy)
 DEFAULT_DELETER(zwp_linux_dmabuf_v1, zwp_linux_dmabuf_v1_destroy)
 

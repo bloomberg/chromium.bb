@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "components/exo/layer_tree_frame_sink_holder.h"
+#include "components/exo/surface_delegate.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
@@ -41,7 +42,6 @@ namespace exo {
 class Buffer;
 class LayerTreeFrameSinkHolder;
 class Pointer;
-class SurfaceDelegate;
 class SurfaceObserver;
 class Surface;
 
@@ -131,6 +131,9 @@ class Surface final : public ui::PropertyHandler {
 
   // This sets the alpha value that will be applied to the whole surface.
   void SetAlpha(float alpha);
+
+  // Request that surface should have the specified frame type.
+  void SetFrame(SurfaceFrameType type);
 
   // Surface state (damage regions, attached buffers, etc.) is double-buffered.
   // A Commit() call atomically applies all pending state, replacing the

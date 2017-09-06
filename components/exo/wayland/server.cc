@@ -5,6 +5,7 @@
 #include "components/exo/wayland/server.h"
 
 #include <alpha-compositing-unstable-v1-server-protocol.h>
+#include <aura-shell-server-protocol.h>
 #include <gaming-input-unstable-v1-server-protocol.h>
 #include <gaming-input-unstable-v2-server-protocol.h>
 #include <grp.h>
@@ -207,28 +208,32 @@ base::flat_set<DndAction> DataDeviceManagerDndActions(uint32_t value) {
 }
 
 // A property key containing the surface resource that is associated with
-// window. If unset, no surface resource is associated with window.
+// window. If unset, no surface resource is associated with surface object.
 DEFINE_UI_CLASS_PROPERTY_KEY(wl_resource*, kSurfaceResourceKey, nullptr);
 
 // A property key containing a boolean set to true if a viewport is associated
-// with window.
+// with with surface object.
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSurfaceHasViewportKey, false);
 
 // A property key containing a boolean set to true if a security object is
-// associated with window.
+// associated with surface object.
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSurfaceHasSecurityKey, false);
 
 // A property key containing a boolean set to true if a blending object is
-// associated with window.
+// associated with surface object.
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSurfaceHasBlendingKey, false);
 
 // A property key containing a boolean set to true if the stylus_tool
-// object is associated with a window.
+// object is associated with surface object.
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSurfaceHasStylusToolKey, false);
 
 // A property key containing the data offer resource that is associated with
 // data offer object.
 DEFINE_UI_CLASS_PROPERTY_KEY(wl_resource*, kDataOfferResourceKey, nullptr);
+
+// A property key containing a boolean set to true if na aura surface object is
+// associated with surface object.
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSurfaceHasAuraSurfaceKey, false);
 
 wl_resource* GetSurfaceResource(Surface* surface) {
   return surface->GetProperty(kSurfaceResourceKey);
@@ -1060,13 +1065,7 @@ void shell_surface_resize(wl_client* client,
 }
 
 void shell_surface_set_toplevel(wl_client* client, wl_resource* resource) {
-  ShellSurface* shell_surface = GetUserDataAs<ShellSurface>(resource);
-  if (shell_surface->enabled())
-    return;
-
-  shell_surface->SetFrame(true);
-  shell_surface->SetRectangularShadowEnabled(true);
-  shell_surface->SetEnabled(true);
+  GetUserDataAs<ShellSurface>(resource)->SetEnabled(true);
 }
 
 void shell_surface_set_transient(wl_client* client,
@@ -1114,10 +1113,8 @@ void shell_surface_set_transient(wl_client* client,
     shell_surface->SetContainer(ash::kShellWindowId_SystemModalContainer);
     shell_surface->SetActivatable(false);
   } else {
-    shell_surface->SetFrame(true);
     shell_surface->SetParent(parent_shell_surface);
   }
-  shell_surface->SetRectangularShadowEnabled(true);
   shell_surface->SetEnabled(true);
 }
 
@@ -2631,6 +2628,98 @@ void bind_remote_shell(wl_client* client,
   SetImplementation(resource, &remote_shell_implementation,
                     base::MakeUnique<WaylandRemoteShell>(
                         static_cast<Display*>(data), resource));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// aura_surface_interface:
+
+class AuraSurface : public SurfaceObserver {
+ public:
+  explicit AuraSurface(Surface* surface) : surface_(surface) {
+    surface_->AddSurfaceObserver(this);
+    surface_->SetProperty(kSurfaceHasAuraSurfaceKey, true);
+  }
+  ~AuraSurface() override {
+    if (surface_) {
+      surface_->RemoveSurfaceObserver(this);
+      surface_->SetProperty(kSurfaceHasAuraSurfaceKey, false);
+    }
+  }
+
+  void SetFrame(SurfaceFrameType type) {
+    if (surface_)
+      surface_->SetFrame(type);
+  }
+
+  // Overridden from SurfaceObserver:
+  void OnSurfaceDestroying(Surface* surface) override {
+    surface->RemoveSurfaceObserver(this);
+    surface_ = nullptr;
+  }
+
+ private:
+  Surface* surface_;
+
+  DISALLOW_COPY_AND_ASSIGN(AuraSurface);
+};
+
+SurfaceFrameType ToSurfaceFrameType(uint32_t frame_type) {
+  switch (frame_type) {
+    case ZAURA_SURFACE_FRAME_TYPE_NONE:
+      return SurfaceFrameType::NONE;
+    case ZAURA_SURFACE_FRAME_TYPE_NORMAL:
+      return SurfaceFrameType::NORMAL;
+    case ZAURA_SURFACE_FRAME_TYPE_SHADOW:
+      return SurfaceFrameType::SHADOW;
+    default:
+      DLOG(WARNING) << "Unsupported frame type: " << frame_type;
+      return SurfaceFrameType::NONE;
+  }
+}
+
+void aura_surface_set_frame(wl_client* client, wl_resource* resource,
+                            uint32_t type) {
+  GetUserDataAs<AuraSurface>(resource)->SetFrame(ToSurfaceFrameType(type));
+}
+
+const struct zaura_surface_interface aura_surface_implementation = {
+    aura_surface_set_frame};
+
+////////////////////////////////////////////////////////////////////////////////
+// aura_shell_interface:
+
+void aura_shell_get_aura_surface(wl_client* client,
+                                 wl_resource* resource,
+                                 uint32_t id,
+                                 wl_resource* surface_resource) {
+  Surface* surface = GetUserDataAs<Surface>(surface_resource);
+  if (surface->GetProperty(kSurfaceHasAuraSurfaceKey)) {
+    wl_resource_post_error(
+        resource,
+        ZAURA_SHELL_ERROR_AURA_SURFACE_EXISTS,
+        "an aura surface object for that surface already exists");
+    return;
+  }
+
+  wl_resource* aura_surface_resource =
+      wl_resource_create(client, &zaura_surface_interface, 1, id);
+
+  SetImplementation(aura_surface_resource, &aura_surface_implementation,
+                    base::MakeUnique<AuraSurface>(surface));
+}
+
+const struct zaura_shell_interface aura_shell_implementation = {
+    aura_shell_get_aura_surface};
+
+void bind_aura_shell(wl_client* client,
+                     void* data,
+                     uint32_t version,
+                     uint32_t id) {
+  wl_resource* resource =
+      wl_resource_create(client, &zaura_shell_interface, 1, id);
+
+  wl_resource_set_implementation(resource, &aura_shell_implementation,
+                                 nullptr, nullptr);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -4507,6 +4596,8 @@ Server::Server(Display* display)
                    display_, bind_alpha_compositing);
   wl_global_create(wl_display_.get(), &zcr_remote_shell_v1_interface,
                    remote_shell_version, display_, bind_remote_shell);
+  wl_global_create(wl_display_.get(), &zaura_shell_interface, 1, display_,
+                   bind_aura_shell);
   wl_global_create(wl_display_.get(), &zcr_gaming_input_v1_interface, 1,
                    display_, bind_gaming_input_v1_DEPRECATED);
   wl_global_create(wl_display_.get(), &zcr_gaming_input_v2_interface, 1,

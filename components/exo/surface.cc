@@ -418,6 +418,13 @@ void Surface::SetAlpha(float alpha) {
   pending_state_.alpha = alpha;
 }
 
+void Surface::SetFrame(SurfaceFrameType type) {
+  TRACE_EVENT1("exo", "Surface::SetFrame", "type", static_cast<uint32_t>(type));
+
+  if (delegate_)
+    delegate_->OnSetFrame(type);
+}
+
 void Surface::Commit() {
   TRACE_EVENT0("exo", "Surface::Commit");
 

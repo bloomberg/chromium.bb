@@ -4,6 +4,7 @@
 
 #include "components/exo/wayland/clients/client_base.h"
 
+#include <aura-shell-client-protocol.h>
 #include <fcntl.h>
 #include <linux-dmabuf-unstable-v1-client-protocol.h>
 #include <presentation-time-client-protocol.h>
@@ -102,6 +103,9 @@ void RegistryHandler(void* data,
   } else if (strcmp(interface, "wp_presentation") == 0) {
     globals->presentation.reset(static_cast<wp_presentation*>(
         wl_registry_bind(registry, id, &wp_presentation_interface, 1)));
+  } else if (strcmp(interface, "zaura_shell") == 0) {
+    globals->aura_shell.reset(static_cast<zaura_shell*>(
+        wl_registry_bind(registry, id, &zaura_shell_interface, 1)));
   } else if (strcmp(interface, "zwp_linux_dmabuf_v1") == 0) {
     globals->linux_dmabuf.reset(static_cast<zwp_linux_dmabuf_v1*>(
         wl_registry_bind(registry, id, &zwp_linux_dmabuf_v1_interface, 1)));
@@ -263,6 +267,10 @@ bool ClientBase::Init(const InitParams& params) {
     LOG(ERROR) << "Can't find seat interface";
     return false;
   }
+  if (!globals_.aura_shell) {
+    LOG(ERROR) << "Can't find aura shell interface";
+    return false;
+  }
 
 #if defined(OZONE_PLATFORM_GBM)
   sk_sp<const GrGLInterface> native_interface;
@@ -377,6 +385,17 @@ bool ClientBase::Init(const InitParams& params) {
   }
 
   wl_shell_surface_set_title(shell_surface.get(), params.title.c_str());
+
+  std::unique_ptr<zaura_surface> aura_surface(
+      static_cast<zaura_surface*>(
+          zaura_shell_get_aura_surface(globals_.aura_shell.get(),
+                                       surface_.get())));
+  if (!aura_surface) {
+    LOG(ERROR) << "Can't get aura surface";
+    return false;
+  }
+
+  zaura_surface_set_frame(aura_surface.get(), ZAURA_SURFACE_FRAME_TYPE_NORMAL);
 
   if (fullscreen_) {
     wl_shell_surface_set_fullscreen(shell_surface.get(),

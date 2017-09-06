@@ -13,6 +13,7 @@
 #include <memory>
 
 #include "base/scoped_generic.h"
+#include "components/exo/wayland/aura-shell-client-protocol.h"
 
 #if defined(OZONE_PLATFORM_GBM)
 #include <gbm.h>
@@ -44,6 +45,8 @@ DEFAULT_DELETER_FDECL(wl_surface)
 DEFAULT_DELETER_FDECL(wl_touch)
 DEFAULT_DELETER_FDECL(wp_presentation)
 DEFAULT_DELETER_FDECL(struct wp_presentation_feedback)
+DEFAULT_DELETER_FDECL(zaura_shell)
+DEFAULT_DELETER_FDECL(zaura_surface)
 DEFAULT_DELETER_FDECL(zwp_linux_buffer_params_v1)
 DEFAULT_DELETER_FDECL(zwp_linux_dmabuf_v1)
 
