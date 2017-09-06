@@ -26,9 +26,9 @@
 
 #include "core/events/TouchEventContext.h"
 
-#include "core/dom/TouchList.h"
 #include "core/dom/events/Event.h"
 #include "core/events/TouchEvent.h"
+#include "core/input/TouchList.h"
 
 namespace blink {
 

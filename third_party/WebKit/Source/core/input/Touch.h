@@ -28,8 +28,8 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/Document.h"
-#include "core/dom/TouchInit.h"
 #include "core/dom/events/EventTarget.h"
+#include "core/input/TouchInit.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatSize.h"

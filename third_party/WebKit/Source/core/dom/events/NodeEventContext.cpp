@@ -26,12 +26,12 @@
 
 #include "core/dom/events/NodeEventContext.h"
 
-#include "core/dom/TouchList.h"
 #include "core/dom/events/Event.h"
 #include "core/events/FocusEvent.h"
 #include "core/events/MouseEvent.h"
 #include "core/events/PointerEvent.h"
 #include "core/events/TouchEventContext.h"
+#include "core/input/TouchList.h"
 
 namespace blink {
 

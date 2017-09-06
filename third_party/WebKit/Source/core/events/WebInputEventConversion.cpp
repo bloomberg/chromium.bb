@@ -30,8 +30,6 @@
 
 #include "core/events/WebInputEventConversion.h"
 
-#include "core/dom/Touch.h"
-#include "core/dom/TouchList.h"
 #include "core/events/GestureEvent.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
@@ -39,6 +37,8 @@
 #include "core/events/WheelEvent.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/VisualViewport.h"
+#include "core/input/Touch.h"
+#include "core/input/TouchList.h"
 #include "core/layout/api/LayoutItem.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
