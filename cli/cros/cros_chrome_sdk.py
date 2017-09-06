@@ -177,7 +177,7 @@ class SDKFetcher(object):
       Version number in format '3929.0.0'.
     """
     version = osutils.ReadFile(os.path.join(
-        chrome_src_dir, constants.PATH_TO_CHROME_LKGM))
+        chrome_src_dir, constants.PATH_TO_CHROME_LKGM)).rstrip()
     logging.debug('Loading LKGM version from "%s": %s',
                   constants.PATH_TO_CHROME_LKGM, version)
     return version
