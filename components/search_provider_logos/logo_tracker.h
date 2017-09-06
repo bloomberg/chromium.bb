@@ -43,6 +43,8 @@ class LogoObserver {
   // If the fresh logo is the same as the cached logo, this will not be called
   // again.
   virtual void OnLogoAvailable(const Logo* logo, bool from_cache) = 0;
+  virtual void OnEncodedLogoAvailable(const EncodedLogo* logo,
+                                      bool from_cache) {}
 
   // Called when the LogoTracker will no longer send updates to this
   // LogoObserver. For example: after the cached logo is validated, after
@@ -166,9 +168,15 @@ class LogoTracker : public net::URLFetcherDelegate {
   // Called when the fresh logo has been decoded into an SkBitmap. |image| will
   // be NULL if decoding failed.
   void OnFreshLogoAvailable(std::unique_ptr<EncodedLogo> logo,
+                            bool download_failed,
                             bool parsing_failed,
                             bool from_http_cache,
                             const SkBitmap& image);
+
+  void NotifyDecodedLogoObservers(const Logo* logo, bool from_cache) const;
+  void NotifyEncodedLogoObservers(const EncodedLogo* logo,
+                                  bool from_cache) const;
+  bool HaveDecodedLogoObservers() const;
 
   // net::URLFetcherDelegate:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
