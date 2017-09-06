@@ -379,14 +379,22 @@ bool SelectionController::HandleSingleClick(
       is_handle_visible = event.Event().FromTouch();
   }
 
-  UpdateSelectionForMouseDownDispatchingSelectStart(
-      inner_node,
-      ExpandSelectionToRespectUserSelectAll(
+  // This applies the JavaScript selectstart handler, which can change the DOM.
+  // SelectionControllerTest_SelectStartHandlerRemovesElement makes this return
+  // false.
+  if (!UpdateSelectionForMouseDownDispatchingSelectStart(
           inner_node,
-          SelectionInFlatTree::Builder().Collapse(position_to_use).Build()),
-      TextGranularity::kCharacter,
-      is_handle_visible ? HandleVisibility::kVisible
-                        : HandleVisibility::kNotVisible);
+          ExpandSelectionToRespectUserSelectAll(
+              inner_node,
+              SelectionInFlatTree::Builder().Collapse(position_to_use).Build()),
+          TextGranularity::kCharacter,
+          is_handle_visible ? HandleVisibility::kVisible
+                            : HandleVisibility::kNotVisible)) {
+    // UpdateSelectionForMouseDownDispatchingSelectStart() returns false when
+    // the selectstart handler has prevented the default selection behavior from
+    // occurring.
+    return false;
+  }
 
   if (has_editable_style && event.Event().FromTouch()) {
     frame_->GetTextSuggestionController().HandlePotentialMisspelledWordTap(
