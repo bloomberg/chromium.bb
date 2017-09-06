@@ -42,7 +42,7 @@ ScreenOrientationControllerImpl::ScreenOrientationControllerImpl(
     WebScreenOrientationClient* client)
     : ScreenOrientationController(frame),
       ContextLifecycleObserver(frame.GetDocument()),
-      PlatformEventController(&frame),
+      PlatformEventController(frame.GetDocument()),
       client_(client),
       dispatch_event_timer_(
           TaskRunnerHelper::Get(TaskType::kMiscPlatformAPI, &frame),

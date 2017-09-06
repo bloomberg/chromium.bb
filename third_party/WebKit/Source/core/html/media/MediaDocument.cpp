@@ -141,6 +141,8 @@ void MediaDocumentParser::CreateDocumentStructure() {
 
   body->AppendChild(media);
   root_element->AppendChild(head);
+  if (IsDetached())
+    return;  // DOM insertion events can detach the frame.
   root_element->AppendChild(body);
 
   did_build_document_structure_ = true;

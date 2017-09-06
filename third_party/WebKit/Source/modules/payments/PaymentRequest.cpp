@@ -1021,7 +1021,7 @@ PaymentRequest::PaymentRequest(ExecutionContext* execution_context,
       options_(options),
       client_binding_(this),
       complete_timer_(
-          TaskRunnerHelper::Get(TaskType::kMiscPlatformAPI, GetFrame()),
+          TaskRunnerHelper::Get(TaskType::kMiscPlatformAPI, execution_context),
           this,
           &PaymentRequest::OnCompleteTimeout) {
   if (!GetExecutionContext()->IsSecureContext()) {
