@@ -1,0 +1,17 @@
+{
+  "name": "multidevice_service_unittest",
+  "display_name": "MultiDevice Service Unittest",
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "service_manager:service_factory": [
+          "service_manager::mojom::ServiceFactory"
+        ]
+      },
+      "requires": {
+        "multidevice": [ "multidevice:device_sync" ],
+        "service_manager": [ "service_manager:service_manager" ]
+      }
+    }
+  }
+}

@@ -3,12 +3,10 @@
 # found in the LICENSE file.
 
 if (!is_ios && !is_android) {
-  import("//mojo/public/tools/bindings/mojom.gni")
-
-  mojom("interfaces") {
-    sources = [
-      "constants.mojom",
-      "device_sync.mojom",
+  source_set("unit_tests") {
+    testonly = true
+    deps = [
+      "//components/multidevice/service:multidevice_service_unittest",
     ]
   }
 }

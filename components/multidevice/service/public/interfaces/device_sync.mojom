@@ -93,9 +93,27 @@ enum RemoteDeviceCapability {
 };
 
 interface DeviceSyncObserver {
-  // TODO(khorimoto): Flesh out Observer.
+  // Invoked when the current device has finished enrolling itself (i.e., when
+  // it has contacted the server to provide device metadata). Devices must
+  // enroll themselves before other device can establish connections to them,
+  // and they continue to re-enroll themselves on a periodic basis after that.
+  OnEnrollmentFinished(bool success);
+
+  // Invoked when new devices have been synced from the server.
+  OnDevicesSynced(bool success);
 };
 
 interface DeviceSync {
+  // Triggers an enrollment. Result of the enrollment will be relayed via the
+  // OnEnrollmentFinished() observer function.
+  ForceEnrollmentNow();
+
+  // Triggers a device sync. Result of the sync will be relayed via the
+  // OnDevicesSynced() observer function.
+  ForceSyncNow();
+
+  // Adds an Observer of this API.
+  AddObserver(DeviceSyncObserver observer);
+
   // TODO(khorimoto): Flesh out API.
 };
