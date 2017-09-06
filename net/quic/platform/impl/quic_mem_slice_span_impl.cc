@@ -10,12 +10,10 @@
 namespace net {
 
 QuicMemSliceSpanImpl::QuicMemSliceSpanImpl(
-    const std::vector<scoped_refptr<IOBuffer>>* buffers,
-    const std::vector<int>* lengths)
-    : buffers_(buffers), lengths_(lengths) {
-  QUIC_BUG_IF(buffers->size() != lengths->size())
-      << " buffers size and lengths size are not equal";
-}
+    const scoped_refptr<IOBuffer>* buffers,
+    const int* lengths,
+    size_t num_buffers)
+    : buffers_(buffers), lengths_(lengths), num_buffers_(num_buffers) {}
 
 QuicMemSliceSpanImpl::QuicMemSliceSpanImpl(const QuicMemSliceSpanImpl& other) =
     default;
@@ -31,10 +29,10 @@ QuicMemSliceSpanImpl::~QuicMemSliceSpanImpl() = default;
 QuicByteCount QuicMemSliceSpanImpl::SaveMemSlicesInSendBuffer(
     QuicStreamSendBuffer* send_buffer) {
   size_t saved_length = 0;
-  for (size_t i = 0; i < buffers_->size(); ++i) {
-    saved_length += (*lengths_)[i];
+  for (size_t i = 0; i < num_buffers_; ++i) {
+    saved_length += lengths_[i];
     send_buffer->SaveMemSlice(
-        QuicMemSlice(QuicMemSliceImpl((*buffers_)[i], (*lengths_)[i])));
+        QuicMemSlice(QuicMemSliceImpl(buffers_[i], lengths_[i])));
   }
   return saved_length;
 }

@@ -22,7 +22,8 @@ QuicTestMemSliceVectorImpl::QuicTestMemSliceVectorImpl(
 }
 
 QuicMemSliceSpanImpl QuicTestMemSliceVectorImpl::span() {
-  return QuicMemSliceSpanImpl(&buffers_, &lengths_);
+  return QuicMemSliceSpanImpl(buffers_.data(), lengths_.data(),
+                              buffers_.size());
 }
 
 }  // namespace test
