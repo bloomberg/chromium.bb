@@ -55,7 +55,9 @@ static void GenerateUTrieSerialized(FILE* fp, int32_t size, uint8_t* array) {
           "#include <cstdint>\n\n"
           "namespace blink {\n\n"
           "extern const int32_t kSerializedCharacterDataSize = %d;\n"
-          "extern const uint8_t kSerializedCharacterData[] = {",
+          // The utrie2_openFromSerialized function requires character data to
+          // be aligned to 4 bytes.
+          "alignas(4) extern const uint8_t kSerializedCharacterData[] = {",
           size);
   for (int32_t i = 0; i < size;) {
     fprintf(fp, "\n   ");
