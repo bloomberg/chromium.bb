@@ -1,83 +1,36 @@
 <!DOCTYPE html>
 <html>
 <body>
-<script src="../../resources/js-test.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../resources/device-orientation-helpers.js"></script>
 <script>
+'use strict';
 
-description('Tests to see if the last available event is fired.');
-
-var mockEvent;
-function setMockMotion(accelerationX, accelerationY, accelerationZ,
-                       accelerationIncludingGravityX, accelerationIncludingGravityY, accelerationIncludingGravityZ,
-                       rotationRateAlpha, rotationRateBeta, rotationRateGamma,
-                       interval) {
-
-    mockEvent = {accelerationX: accelerationX, accelerationY: accelerationY, accelerationZ: accelerationZ,
-                 accelerationIncludingGravityX: accelerationIncludingGravityX, accelerationIncludingGravityY: accelerationIncludingGravityY, accelerationIncludingGravityZ: accelerationIncludingGravityZ,
-                 rotationRateAlpha: rotationRateAlpha, rotationRateBeta: rotationRateBeta, rotationRateGamma: rotationRateGamma,
-                 interval: interval};
-
-    if (window.testRunner)
-        testRunner.setMockDeviceMotion(null != mockEvent.accelerationX, null == mockEvent.accelerationX ? 0 : mockEvent.accelerationX,
-                                       null != mockEvent.accelerationY, null == mockEvent.accelerationY ? 0 : mockEvent.accelerationY,
-                                       null != mockEvent.accelerationZ, null == mockEvent.accelerationZ ? 0 : mockEvent.accelerationZ,
-                                       null != mockEvent.accelerationIncludingGravityX, null == mockEvent.accelerationIncludingGravityX ? 0 : mockEvent.accelerationIncludingGravityX,
-                                       null != mockEvent.accelerationIncludingGravityY, null == mockEvent.accelerationIncludingGravityY ? 0 : mockEvent.accelerationIncludingGravityY,
-                                       null != mockEvent.accelerationIncludingGravityZ, null == mockEvent.accelerationIncludingGravityZ ? 0 : mockEvent.accelerationIncludingGravityZ,
-                                       null != mockEvent.rotationRateAlpha, null == mockEvent.rotationRateAlpha ? 0 : mockEvent.rotationRateAlpha,
-                                       null != mockEvent.rotationRateBeta, null == mockEvent.rotationRateBeta ? 0 : mockEvent.rotationRateBeta,
-                                       null != mockEvent.rotationRateGamma, null == mockEvent.rotationRateGamma ? 0 : mockEvent.rotationRateGamma,
-                                       interval);
-    else
-        debug('This test can not be run without the TestRunner');
-}
-
-
-var deviceMotionEvent;
-function checkMotion(event) {
-    deviceMotionEvent = event;
-    shouldBe('deviceMotionEvent.acceleration.x', 'mockEvent.accelerationX');
-    shouldBe('deviceMotionEvent.acceleration.y', 'mockEvent.accelerationY');
-    shouldBe('deviceMotionEvent.acceleration.z', 'mockEvent.accelerationZ');
-
-    shouldBe('deviceMotionEvent.accelerationIncludingGravity.x', 'mockEvent.accelerationIncludingGravityX');
-    shouldBe('deviceMotionEvent.accelerationIncludingGravity.y', 'mockEvent.accelerationIncludingGravityY');
-    shouldBe('deviceMotionEvent.accelerationIncludingGravity.z', 'mockEvent.accelerationIncludingGravityZ');
-
-    shouldBe('deviceMotionEvent.rotationRate.alpha', 'mockEvent.rotationRateAlpha');
-    shouldBe('deviceMotionEvent.rotationRate.beta', 'mockEvent.rotationRateBeta');
-    shouldBe('deviceMotionEvent.rotationRate.gamma', 'mockEvent.rotationRateGamma');
-
-    shouldBe('deviceMotionEvent.interval', 'mockEvent.interval');
-}
-
-
-function mainFrameListener(event) {
-    checkMotion(event);
+async_test(test => {
+  assertTestRunner();
+  var motionData1 = generateMotionData(1, 2, 3,
+                                       4, 5, 6,
+                                       7, 8, 9,
+                                       10);
+  var motionData2 = generateMotionData(0, 0, 0,
+                                       0, 0, 0,
+                                       0, 0, 0,
+                                       0);
+  setMockMotion(motionData1);
+  window.addEventListener('devicemotion', function mainFrameListener(event) {
+    test.step(() => {
+      checkMotion(event, motionData1);
+    });
     var childFrame = document.createElement('iframe');
     document.body.appendChild(childFrame);
     window.removeEventListener('devicemotion', mainFrameListener);
-    testRunner.setMockDeviceMotion(true, 0, true, 0, true, 0,
-                                   true, 0, true, 0, true, 0,
-                                   true, 0, true, 0, true, 0,
-                                   0);
-    childFrame.contentWindow.addEventListener('devicemotion', childFrameListener);
-}
-
-function childFrameListener(event) {
-    checkMotion(event);
-    finishJSTest();
-}
-
-setMockMotion(1, 2, 3,
-              4, 5, 6,
-              7, 8, 9,
-              10);
-
-window.addEventListener('devicemotion', mainFrameListener);
-
-window.jsTestIsAsync = true;
-
+    setMockMotion(motionData2);
+    childFrame.contentWindow.addEventListener('devicemotion', test.step_func_done(event => {
+      checkMotion(event, motionData1);
+    }));
+  });
+}, 'Tests to see if the last available event is fired.');
 </script>
 </body>
 </html>
