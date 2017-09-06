@@ -682,6 +682,9 @@ extern const char kSecondaryUiMdDescription[];
 extern const char kServiceWorkerNavigationPreloadName[];
 extern const char kServiceWorkerNavigationPreloadDescription[];
 
+extern const char kServiceWorkerPaymentAppsName[];
+extern const char kServiceWorkerPaymentAppsDescription[];
+
 extern const char kServiceWorkerScriptStreamingName[];
 extern const char kServiceWorkerScriptStreamingDescription[];
 
@@ -1167,9 +1170,6 @@ extern const char kReaderModeHeuristicsAlwaysOn[];
 
 extern const char kReaderModeInCCTName[];
 extern const char kReaderModeInCCTDescription[];
-
-extern const char kServiceWorkerPaymentAppsName[];
-extern const char kServiceWorkerPaymentAppsDescription[];
 
 extern const char kSetMarketUrlForTestingName[];
 extern const char kSetMarketUrlForTestingDescription[];
