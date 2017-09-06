@@ -1,58 +1,48 @@
 <!DOCTYPE html>
 <html>
 <body>
-<script src="../../resources/js-test.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../resources/device-orientation-helpers.js"></script>
 <script>
+'use strict';
 
-description('Tests to check that devicemotion events are not fired when the page is not visible.');
-window.jsTestIsAsync = true;
+async_test(test => {
+  assertTestRunner();
 
-function succeedAndFinish()
-{
-    testPassed("Received a devicemotion event");
-    finishJSTest();
-}
+  var motionData = generateMotionData(0, 0, 0,
+                                      0, 0, 0,
+                                      0, 0, 0,
+                                      0);
+  var succeedAndFinish = test.step_func(() => {
+    test.done();
+  });
 
-function testWithPageVisible()
-{
-    testPassed("Did not receive a devicemotion event");
+  function testWithPageVisible() {
     window.removeEventListener('devicemotion', failAndFinish);
-    if (window.testRunner)
-        testRunner.setPageVisibility("visible");
-    debug("* Page is visible");
+    testRunner.setPageVisibility("visible");
     window.addEventListener('devicemotion', succeedAndFinish);
-}
+  }
 
-function failAndFinish()
-{
-    testFailed('Should not have received a devicemotion event while the page was hidden');
-    finishJSTest();
-}
+  var failAndFinish = test.step_func(() => {
+    assert_unreached("Should not have received a devicemotion event while the page was hidden");
+    test.done();
+  });
 
-function testWithPageHidden()
-{
-    testPassed("Received a devicemotion event");
+  function testWithPageHidden() {
     window.removeEventListener('devicemotion', deviceMotionListener);
-    if (window.testRunner)
-        testRunner.setPageVisibility("hidden");
-    debug("* Page is hidden");
+    testRunner.setPageVisibility("hidden");
     window.addEventListener('devicemotion', failAndFinish);
-
     setTimeout(testWithPageVisible, 100);
-}
+  }
 
-function deviceMotionListener(event) {
+  var deviceMotionListener = test.step_func(() => {
     setTimeout(testWithPageHidden, 0);
-}
+  });
 
-if (window.testRunner)
-    testRunner.setMockDeviceMotion(true, 0, true, 0, true, 0,
-                                   true, 0, true, 0, true, 0,
-                                   true, 0, true, 0, true, 0,
-                                   0);
-
-debug("* Page is visible");
-window.addEventListener('devicemotion', deviceMotionListener);
+  setMockMotion(motionData);
+  window.addEventListener('devicemotion', deviceMotionListener);
+}, 'Tests to check that devicemotion events are not fired when the page is not visible.');
 </script>
 </body>
 </html>
