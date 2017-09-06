@@ -257,7 +257,8 @@ void GpuVSyncWorker::WaitForVSyncOnThread() {
 
   NTSTATUS wait_result = WaitForVBlankEvent();
   if (wait_result != STATUS_SUCCESS) {
-    if (wait_result == STATUS_GRAPHICS_PRESENT_OCCLUDED) {
+    if (wait_result == STATUS_GRAPHICS_PRESENT_OCCLUDED ||
+        wait_result == WAIT_TIMEOUT) {
       // This may be triggered by the monitor going into sleep.
       UseDelayBasedVSyncOnError(WaitForVBlankErrorCode::kWaitForVBlankEvent);
       return;
