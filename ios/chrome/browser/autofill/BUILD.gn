@@ -77,6 +77,8 @@ source_set("autofill_internal") {
     "autofill_agent.mm",
     "autofill_controller.h",
     "autofill_controller.mm",
+    "autofill_tab_helper.h",
+    "autofill_tab_helper.mm",
   ]
   deps = [
     ":autofill",

@@ -45,7 +45,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
 #include "ios/chrome/browser/application_context.h"
-#import "ios/chrome/browser/autofill/autofill_controller.h"
+#import "ios/chrome/browser/autofill/autofill_tab_helper.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_controller.h"
 #import "ios/chrome/browser/autofill/form_suggestion_controller.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -220,9 +220,6 @@ class TabHistoryContext : public history::Context {
 
   // Manages the input accessory view during form input.
   FormInputAccessoryViewController* _inputAccessoryViewController;
-
-  // Handles autofill.
-  AutofillController* _autofillController;
 
   // Handles retrieving, generating and updating snapshots of CRWWebController's
   // web page.
@@ -439,11 +436,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   if (experimental_flags::IsAutoReloadEnabled())
     _autoReloadBridge = [[AutoReloadBridge alloc] initWithTab:self];
 
-  _autofillController = [[AutofillController alloc]
-           initWithBrowserState:_browserState
-      passwordGenerationManager:PasswordTabHelper::FromWebState(self.webState)
-                                    ->GetPasswordGenerationManager()
-                       webState:self.webState];
   _suggestionController = [[FormSuggestionController alloc]
       initWithWebState:self.webState
              providers:[self suggestionProviders]];
@@ -477,7 +469,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   NSMutableArray* providers = [NSMutableArray array];
   [providers addObject:PasswordTabHelper::FromWebState(self.webState)
                            ->GetSuggestionProvider()];
-  [providers addObject:[_autofillController suggestionProvider]];
+  [providers addObject:AutofillTabHelper::FromWebState(self.webState)
+                           ->GetSuggestionProvider()];
   return providers;
 }
 
@@ -869,8 +862,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   _faviconDriverObserverBridge.reset();
   [_openInController detachFromWebController];
   _openInController = nil;
-  [_autofillController detachFromWebState];
-  _autofillController = nil;
   [_suggestionController detachFromWebState];
   _suggestionController = nil;
   if (_fullScreenController)
