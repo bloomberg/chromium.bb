@@ -64,6 +64,8 @@ class CHROMEOS_EXPORT ShillDeviceClient : public DBusClient {
     // otherwise clears LockType. (This will unblock a PUK locked SIM).
     // Sets RetriesLeft to the PIN retry default. LockEnabled is unaffected.
     virtual void SetSimLocked(const std::string& device_path, bool enabled) = 0;
+    // Adds a new entry to Cellular.FoundNetworks.
+    virtual void AddCellularFoundNetwork(const std::string& device_path) = 0;
 
    protected:
     virtual ~TestInterface() {}

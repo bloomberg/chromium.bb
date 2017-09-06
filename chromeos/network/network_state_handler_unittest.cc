@@ -1537,7 +1537,7 @@ TEST_F(NetworkStateHandlerTest, RequestUpdate) {
 
 TEST_F(NetworkStateHandlerTest, RequestScan) {
   EXPECT_EQ(0u, test_observer_->scan_requested_count());
-  network_state_handler_->RequestScan();
+  network_state_handler_->RequestScan(NetworkTypePattern::WiFi());
   EXPECT_EQ(1u, test_observer_->scan_requested_count());
 }
 

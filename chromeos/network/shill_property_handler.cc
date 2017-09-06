@@ -241,11 +241,11 @@ void ShillPropertyHandler::SetNetworkThrottlingStatus(
                  network_handler::ErrorCallback()));
 }
 
-void ShillPropertyHandler::RequestScan() const {
+void ShillPropertyHandler::RequestScanByType(const std::string& type) const {
   shill_manager_->RequestScan(
-      "", base::Bind(&base::DoNothing),
+      type, base::Bind(&base::DoNothing),
       base::Bind(&network_handler::ShillErrorCallbackFunction,
-                 "RequestScan Failed", "", network_handler::ErrorCallback()));
+                 "RequestScan Failed", type, network_handler::ErrorCallback()));
 }
 
 void ShillPropertyHandler::RequestProperties(ManagedState::ManagedType type,

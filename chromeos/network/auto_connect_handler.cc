@@ -214,7 +214,7 @@ void AutoConnectHandler::CheckBestConnection() {
   connect_to_best_services_after_scan_ = true;
   if (!network_state_handler_->GetScanningByType(
           NetworkTypePattern::Primitive(shill::kTypeWifi))) {
-    network_state_handler_->RequestScan();
+    network_state_handler_->RequestScan(NetworkTypePattern::WiFi());
   }
 }
 

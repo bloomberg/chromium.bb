@@ -147,8 +147,8 @@ class CHROMEOS_EXPORT ShillPropertyHandler
                                   uint32_t upload_rate_kbits,
                                   uint32_t download_rate_kbits);
 
-  // Requests an immediate network scan.
-  void RequestScan() const;
+  // Requests an immediate network scan for |type|.
+  void RequestScanByType(const std::string& type) const;
 
   // Requests all properties for the service or device (called for new items).
   void RequestProperties(ManagedState::ManagedType type,

@@ -294,8 +294,9 @@ class CHROMEOS_EXPORT NetworkStateHandler
                            DeviceStateList* list) const;
 
   // Requests a network scan. This may trigger updates to the network
-  // list, which will trigger the appropriate observer calls.
-  void RequestScan();
+  // list, which will trigger the appropriate observer calls. If |type| is
+  // Cellular, a mobile network scan will be requested if supported.
+  void RequestScan(const NetworkTypePattern& type);
 
   // Requests an update for an existing NetworkState, e.g. after configuring
   // a network. This is a no-op if an update request is already pending. To

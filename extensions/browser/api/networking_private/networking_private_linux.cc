@@ -607,7 +607,7 @@ bool NetworkingPrivateLinux::DisableNetworkType(const std::string& type) {
   return false;
 }
 
-bool NetworkingPrivateLinux::RequestScan() {
+bool NetworkingPrivateLinux::RequestScan(const std::string& /* type */) {
   return GetNetworksForScanRequest();
 }
 

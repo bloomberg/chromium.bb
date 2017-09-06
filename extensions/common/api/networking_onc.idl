@@ -969,10 +969,12 @@ namespace networking.onc {
     static void disableNetworkType(NetworkType networkType);
 
     // Requests that the networking subsystem scan for new networks and
-    // update the list returned by $(ref:getNetworks). This is only a
+    // update the list returned by $(ref:getVisibleNetworks). This is only a
     // request: the network subsystem can choose to ignore it.  If the list
     // is updated, then the $(ref:onNetworkListChanged) event will be fired.
-    static void requestNetworkScan();
+    // |networkType|: If provided, requests a scan specific to the type.
+    //     For Cellular a mobile network scan will be requested if supported.
+    static void requestNetworkScan(optional NetworkType networkType);
 
     // Starts a connection to the network with networkGuid.
     // |networkGuid|: The GUID of the network to connect to.

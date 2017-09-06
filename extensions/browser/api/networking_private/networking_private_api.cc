@@ -566,7 +566,11 @@ NetworkingPrivateRequestNetworkScanFunction::
 
 ExtensionFunction::ResponseAction
 NetworkingPrivateRequestNetworkScanFunction::Run() {
-  if (!GetDelegate(browser_context())->RequestScan())
+  std::unique_ptr<private_api::RequestNetworkScan::Params> params =
+      private_api::RequestNetworkScan::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+  std::string network_type = private_api::ToString(params->network_type);
+  if (!GetDelegate(browser_context())->RequestScan(network_type))
     return RespondNow(Error(networking_private::kErrorNotSupported));
   return RespondNow(NoArguments());
 }

@@ -80,6 +80,7 @@ var availableTests = [
   },
   function requestNetworkScan() {
     chrome.networkingPrivate.requestNetworkScan();
+    chrome.networkingPrivate.requestNetworkScan('Cellular');
     chrome.test.succeed();
   },
   function startConnect() {
