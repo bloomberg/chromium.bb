@@ -35,15 +35,16 @@ void ExternalPolicyLoader::AddExtension(base::DictionaryValue* dict,
 }
 
 void ExternalPolicyLoader::StartLoading() {
+  std::unique_ptr<base::DictionaryValue> prefs;
   switch (type_) {
     case FORCED:
-      prefs_ = settings_->GetForceInstallList();
+      prefs = settings_->GetForceInstallList();
       break;
     case RECOMMENDED:
-      prefs_ = settings_->GetRecommendedInstallList();
+      prefs = settings_->GetRecommendedInstallList();
       break;
   }
-  LoadFinished();
+  LoadFinished(std::move(prefs));
 }
 
 }  // namespace extensions

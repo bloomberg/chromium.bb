@@ -25,7 +25,7 @@ void KioskAppExternalLoader::SetCurrentAppExtensions(
 
 void KioskAppExternalLoader::StartLoading() {
   if (prefs_)
-    LoadFinished();
+    LoadFinished(std::move(prefs_));
 }
 
 }  // namespace chromeos

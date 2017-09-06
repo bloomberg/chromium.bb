@@ -71,6 +71,7 @@ class DeviceLocalAccountExternalPolicyLoader
   policy::CloudPolicyStore* store_;
   const base::FilePath cache_dir_;
   std::unique_ptr<ExternalCache> external_cache_;
+  std::unique_ptr<base::DictionaryValue> prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceLocalAccountExternalPolicyLoader);
 };

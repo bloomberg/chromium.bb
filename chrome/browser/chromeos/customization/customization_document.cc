@@ -201,10 +201,9 @@ class ServicesCustomizationExternalLoader
         return;
     }
 
-    prefs_.reset(apps_.DeepCopy());
     VLOG(1) << "ServicesCustomization extension loader publishing "
             << apps_.size() << " apps.";
-    LoadFinished();
+    LoadFinished(apps_.CreateDeepCopy());
   }
 
  protected:

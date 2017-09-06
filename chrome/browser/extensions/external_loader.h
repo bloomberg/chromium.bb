@@ -40,10 +40,7 @@ class ExternalLoader : public base::RefCountedThreadSafe<ExternalLoader> {
   void OwnerShutdown();
 
   // Initiates the possibly asynchronous loading of extension list.
-  // It is the responsibility of the caller to ensure that calls to
-  // this method do not overlap with each other.
-  // Implementations of this method should save the loaded results
-  // in prefs_ and then call LoadFinished.
+  // Implementations of this method should call LoadFinished with results.
   virtual void StartLoading() = 0;
 
   // Some external providers allow relative file paths to local CRX files.
@@ -57,21 +54,15 @@ class ExternalLoader : public base::RefCountedThreadSafe<ExternalLoader> {
   virtual ~ExternalLoader();
 
   // Notifies the provider that the list of extensions has been loaded.
-  virtual void LoadFinished();
+  virtual void LoadFinished(std::unique_ptr<base::DictionaryValue> prefs);
 
   // Notifies the provider that the list of extensions has been updated.
   virtual void OnUpdated(std::unique_ptr<base::DictionaryValue> updated_prefs);
 
-  // Used for passing the list of extensions from the method that loads them
-  // to |LoadFinished|. To ensure thread safety, the rules are the following:
-  // if this value is written on another thread than the UI, then it should
-  // only be written in a task that was posted from |StartLoading|. After that,
-  // this task should invoke |LoadFinished| with a PostTask. This scheme of
-  // posting tasks will avoid concurrent access and imply the necessary memory
-  // barriers.
-  // TODO(lazyboy): To avoid |prefs_| getting unexpectedly overwritten before it
-  // is consumed, consider passing the prefs directly in LoadFinished().
-  std::unique_ptr<base::DictionaryValue> prefs_;
+  // Returns true if this loader has an owner.
+  // This is useful to know if calling LoadFinished/OnUpdated will propagate
+  // prefs to our owner.
+  bool has_owner() const { return owner_ != nullptr; }
 
  private:
   friend class base::RefCountedThreadSafe<ExternalLoader>;
