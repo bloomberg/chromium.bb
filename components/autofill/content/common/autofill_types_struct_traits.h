@@ -402,6 +402,11 @@ struct StructTraits<autofill::mojom::PasswordFormDataView,
     return r.other_possible_usernames;
   }
 
+  static const std::vector<base::string16>& other_possible_passwords(
+      const autofill::PasswordForm& r) {
+    return r.other_possible_passwords;
+  }
+
   static const base::string16& password_element(
       const autofill::PasswordForm& r) {
     return r.password_element;
