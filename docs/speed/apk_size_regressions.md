@@ -45,44 +45,6 @@
 
 ## Step 2: File Bug or Silence Alert
 
-### For Static Initializer Alerts
-
-Policy is to revert the offending CL.
-
-File a bug:
-
- * Change the bug's title from `X% regression` to `Static Initializer regression`
- * Assign to yourself, cc the CL author
- * Set description to (replacing **bold** parts):
-
-> Caused by "**First line of commit message**"
->
-> Commit: **abc123abc123abc123abc123abc123abc123abcd**
->
-> Link to size graph:
-> [https://chromeperf.appspot.com/report?sid=2e1421013ce75306cdc0974cbd058b84083ef684dabed256879bacb31613b326&num_points=10&rev=**480214**](https://chromeperf.appspot.com/report?sid=2e1421013ce75306cdc0974cbd058b84083ef684dabed256879bacb31613b326&num_points=10&rev=480214)
->
-> Policy is to revert the CL that added static initializers and reland it with
-> the fix.
->
-> You can verify locally that no static initializers are added by running the
-> following from within an Android checkout:
-> `tools/binary_size/diagnose_bloat.py HEAD -v`
->
-> Common fixes include:
->
->  * Add constexpr,
->  * Use LazyInstance<>,
->  * Use a getter to return a local static variable.
->
-> Thanks!
-
-Then, create a revert of the offending CL with the reasoning "Adds static
-initializers to MonochromePublic.apk" and add the issue number from the issue
-created above to the "BUG: XXXXXX" line in the CL description.
-
-### For Size Alerts
-
 If the code clearly justifies the size increase, silence the alert.
 
 Otherwise, file a bug (TODO: [Make this template automatic](https://github.com/catapult-project/catapult/issues/3150)):

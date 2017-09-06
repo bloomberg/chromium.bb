@@ -615,6 +615,9 @@
     ]
   },
   "Android N5X Swarm Builder": {
+    "additional_compile_targets": [
+      "monochrome_static_initializers"
+    ],
     "gtest_tests": [
       {
         "args": [

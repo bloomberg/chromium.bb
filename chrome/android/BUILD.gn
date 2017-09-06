@@ -18,6 +18,7 @@ import("//third_party/protobuf/proto_library.gni")
 import("//tools/resources/generate_resource_whitelist.gni")
 import("channel.gni")
 import("java_sources.gni")
+import("static_initializers.gni")
 
 manifest_package = "org.chromium.chrome"
 
@@ -1161,5 +1162,28 @@ instrumentation_test_apk("chrome_sync_shell_test_apk") {
     proguard_configs = [ "//base/android/proguard/enable_obfuscation.flags" ]
     proguard_config_exclusions =
         [ "//base/android/proguard/disable_chromium_obfuscation.flags" ]
+  }
+}
+
+if (defined(expected_static_initializer_count)) {
+  action("monochrome_static_initializers") {
+    script = "//build/android/gyp/assert_static_initializers.py"
+    inputs = [
+      "$root_build_dir/apks/MonochromePublic.apk",
+    ]
+    outputs = [
+      "$target_gen_dir/$target_name.stamp",
+    ]
+    deps = [
+      ":monochrome_public_apk",
+    ]
+    args = [
+      "--expected-count=$expected_static_initializer_count",
+      "--tool-prefix",
+      rebase_path(android_tool_prefix, root_build_dir),
+      "--touch",
+      rebase_path(outputs[0], root_build_dir),
+      rebase_path(inputs[0], root_build_dir),
+    ]
   }
 }

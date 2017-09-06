@@ -48,9 +48,10 @@ def _Divide(a, b):
 
 
 class Describer(object):
-  def __init__(self, verbose=False, recursive=False):
+  def __init__(self, verbose=False, recursive=False, summarize=True):
     self.verbose = verbose
     self.recursive = recursive
+    self.summarize = summarize
 
   def _DescribeSectionSizes(self, section_sizes):
     def include_in_totals(name):
@@ -189,40 +190,54 @@ class Describer(object):
           yield l
 
   def _DescribeSymbolGroup(self, group):
-    total_size = group.pss
-    section_sizes = collections.defaultdict(float)
-    for s in group.IterLeafSymbols():
-      section_sizes[s.section_name] += s.pss
+    if self.summarize:
+      total_size = group.pss
+      section_sizes = collections.defaultdict(float)
+      for s in group.IterLeafSymbols():
+        section_sizes[s.section_name] += s.pss
 
     # Apply this filter after calcualating size since an alias being removed
     # causes some symbols to be UNCHANGED, yet have pss != 0.
     if group.IsDelta() and not self.verbose:
       group = group.WhereDiffStatusIs(models.DIFF_STATUS_UNCHANGED).Inverted()
 
-    unique_paths = set()
-    for s in group.IterLeafSymbols():
-      # Ignore paths like foo/{shared}/2
-      if '{' not in s.object_path:
-        unique_paths.add(s.object_path)
+    if self.summarize:
+      unique_paths = set()
+      for s in group.IterLeafSymbols():
+        # Ignore paths like foo/{shared}/2
+        if '{' not in s.object_path:
+          unique_paths.add(s.object_path)
 
-    if group.IsDelta():
-      unique_part = 'aliases not grouped for diffs'
+      if group.IsDelta():
+        unique_part = 'aliases not grouped for diffs'
+      else:
+        unique_part = '{:,} unique'.format(group.CountUniqueSymbols())
+
+      relevant_sections = [
+          s for s in models.SECTION_TO_SECTION_NAME.itervalues()
+          if s in section_sizes]
+      if models.SECTION_NAME_MULTIPLE in relevant_sections:
+        relevant_sections.remove(models.SECTION_NAME_MULTIPLE)
+
+      size_summary = ' '.join(
+          '{}={:<10}'.format(k, _PrettySize(int(section_sizes[k])))
+          for k in relevant_sections)
+      size_summary += ' total={:<10}'.format(_PrettySize(int(total_size)))
+
+      section_legend = ', '.join(
+          '{}={}'.format(models.SECTION_NAME_TO_SECTION[k], k)
+          for k in relevant_sections if k in models.SECTION_NAME_TO_SECTION)
+
+      summary_desc = [
+          'Showing {:,} symbols ({}) with total pss: {} bytes'.format(
+              len(group), unique_part, int(total_size)),
+          size_summary,
+          'Number of unique paths: {}'.format(len(unique_paths)),
+          '',
+          'Section Legend: {}'.format(section_legend),
+      ]
     else:
-      unique_part = '{:,} unique'.format(group.CountUniqueSymbols())
-
-    relevant_sections = [s for s in models.SECTION_TO_SECTION_NAME.itervalues()
-                         if s in section_sizes]
-    if models.SECTION_NAME_MULTIPLE in relevant_sections:
-      relevant_sections.remove(models.SECTION_NAME_MULTIPLE)
-
-    size_summary = ' '.join(
-        '{}={:<10}'.format(k, _PrettySize(int(section_sizes[k])))
-        for k in relevant_sections)
-    size_summary += ' total={:<10}'.format(_PrettySize(int(total_size)))
-
-    section_legend = ', '.join(
-        '{}={}'.format(models.SECTION_NAME_TO_SECTION[k], k)
-        for k in relevant_sections if k in models.SECTION_NAME_TO_SECTION)
+      summary_desc = ()
 
     if self.verbose:
       titles = 'Index | Running Total | Section@Address | ...'
@@ -232,18 +247,10 @@ class Describer(object):
     else:
       titles = ('Index | Running Total | Section@Address | PSS | Path')
 
-    header_desc = [
-        'Showing {:,} symbols ({}) with total pss: {} bytes'.format(
-            len(group), unique_part, int(total_size)),
-        size_summary,
-        'Number of unique paths: {}'.format(len(unique_paths)),
-        '',
-        'Section Legend: {}'.format(section_legend),
-        titles,
-        '-' * 60
-    ]
+    header_desc = (titles, '-' * 60)
+
     children_desc = self._DescribeSymbolGroupChildren(group)
-    return itertools.chain(header_desc, children_desc)
+    return itertools.chain(summary_desc, header_desc, children_desc)
 
   def _DescribeDiffObjectPaths(self, delta_group):
     paths_by_status = [set(), set(), set(), set()]
@@ -281,28 +288,32 @@ class Describer(object):
         yield '  ' + p
 
   def _DescribeDeltaSymbolGroup(self, delta_group):
-    header_template = ('{} symbols added (+), {} changed (~), {} removed (-), '
-                       '{} unchanged ({})')
-    unchanged_msg = '=' if self.verbose else 'not shown'
-    counts = delta_group.CountsByDiffStatus()
-    num_unique_before_symbols, num_unique_after_symbols = (
-        delta_group.CountUniqueSymbols())
-    diff_summary_desc = [
-        header_template.format(
-            counts[models.DIFF_STATUS_ADDED],
-            counts[models.DIFF_STATUS_CHANGED],
-            counts[models.DIFF_STATUS_REMOVED],
-            counts[models.DIFF_STATUS_UNCHANGED],
-            unchanged_msg),
-        'Number of unique symbols {} -> {} ({:+})'.format(
-            num_unique_before_symbols, num_unique_after_symbols,
-            num_unique_after_symbols - num_unique_before_symbols),
-        ]
-    path_delta_desc = self._DescribeDiffObjectPaths(delta_group)
+    if self.summarize:
+      header_template = ('{} symbols added (+), {} changed (~), '
+                         '{} removed (-), {} unchanged ({})')
+      unchanged_msg = '=' if self.verbose else 'not shown'
+      counts = delta_group.CountsByDiffStatus()
+      num_unique_before_symbols, num_unique_after_symbols = (
+          delta_group.CountUniqueSymbols())
+      diff_summary_desc = [
+          header_template.format(
+              counts[models.DIFF_STATUS_ADDED],
+              counts[models.DIFF_STATUS_CHANGED],
+              counts[models.DIFF_STATUS_REMOVED],
+              counts[models.DIFF_STATUS_UNCHANGED],
+              unchanged_msg),
+          'Number of unique symbols {} -> {} ({:+})'.format(
+              num_unique_before_symbols, num_unique_after_symbols,
+              num_unique_after_symbols - num_unique_before_symbols),
+          ]
+      path_delta_desc = itertools.chain(
+          self._DescribeDiffObjectPaths(delta_group), ('',))
+    else:
+      diff_summary_desc = ()
+      path_delta_desc = ()
 
     group_desc = self._DescribeSymbolGroup(delta_group)
-    return itertools.chain(diff_summary_desc, path_delta_desc, ('',),
-                           group_desc)
+    return itertools.chain(diff_summary_desc, path_delta_desc, group_desc)
 
   def _DescribeDeltaSizeInfo(self, diff):
     common_metadata = {k: v for k, v in diff.before_metadata.iteritems()
@@ -415,9 +426,10 @@ def DescribeMetadata(metadata):
   return sorted('%s=%s' % t for t in display_dict.iteritems())
 
 
-def GenerateLines(obj, verbose=False, recursive=False):
+def GenerateLines(obj, verbose=False, recursive=False, summarize=True):
   """Returns an iterable of lines (without \n) that describes |obj|."""
-  return Describer(verbose=verbose, recursive=recursive).GenerateLines(obj)
+  d = Describer(verbose=verbose, recursive=recursive, summarize=summarize)
+  return d.GenerateLines(obj)
 
 
 def WriteLines(lines, func):

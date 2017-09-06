@@ -14,6 +14,7 @@ import os
 import readline
 import subprocess
 import sys
+import types
 
 import archive
 import canned_queries
@@ -76,6 +77,7 @@ class _Session(object):
         'ShowExamples': self._ShowExamplesFunc,
         'canned_queries': canned_queries.CannedQueries(size_infos),
         'printed': self._printed_variables,
+        'models': models,
     }
     self._lazy_paths = lazy_paths
     self._size_infos = size_infos
@@ -102,8 +104,8 @@ class _Session(object):
       ret.symbols = ret.symbols.Sorted()
     return ret
 
-  def _PrintFunc(self, obj=None, verbose=False, recursive=False, use_pager=None,
-                 to_file=None):
+  def _PrintFunc(self, obj=None, verbose=False, summarize=True, recursive=False,
+                 use_pager=None, to_file=None):
     """Prints out the given Symbol / SymbolGroup / SizeInfo.
 
     For convenience, |obj| will be appended to the global "printed" list.
@@ -112,6 +114,7 @@ class _Session(object):
       obj: The object to be printed. Defaults to size_infos[-1]. Also accepts an
           index into the |printed| array for showing previous results.
       verbose: Show more detailed output.
+      summarize: If False, show symbols only (no headers / summaries).
       recursive: Print children of nested SymbolGroups.
       use_pager: Pipe output through `less`. Ignored when |obj| is a Symbol.
           default is to automatically pipe when output is long.
@@ -123,7 +126,8 @@ class _Session(object):
       if not isinstance(obj, models.SymbolGroup) or len(obj) > 0:
         self._printed_variables.append(obj)
     obj = obj if obj is not None else self._size_infos[-1]
-    lines = describe.GenerateLines(obj, verbose=verbose, recursive=recursive)
+    lines = describe.GenerateLines(
+        obj, verbose=verbose, recursive=recursive, summarize=summarize)
     _WriteToStream(lines, use_pager=use_pager, to_file=to_file)
 
   def _ElfPathAndToolPrefixForSymbol(self, size_info, elf_path):
@@ -327,6 +331,8 @@ class _Session(object):
         '  printed: List of objects passed to Print().',
     ]
     for key, value in self._variables.iteritems():
+      if isinstance(value, types.ModuleType):
+        continue
       if key.startswith('size_info'):
         lines.append('  {}: Loaded from {}'.format(key, value.size_path))
     lines.append('*' * 80)

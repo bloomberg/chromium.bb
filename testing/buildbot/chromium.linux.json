@@ -6,7 +6,8 @@
   },
   "Android Builder": {
     "additional_compile_targets": [
-      "cronet_test_instrumentation_apk"
+      "cronet_test_instrumentation_apk",
+      "monochrome_static_initializers"
     ]
   },
   "Android Clang Builder (dbg)": {
