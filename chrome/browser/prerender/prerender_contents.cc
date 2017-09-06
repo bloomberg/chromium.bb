@@ -379,9 +379,7 @@ PrerenderContents::~PrerenderContents() {
   DCHECK_NE(ORIGIN_MAX, origin());
 
   prerender_manager_->RecordFinalStatus(origin(), final_status());
-
-  bool used = final_status() == FINAL_STATUS_USED;
-  prerender_manager_->RecordNetworkBytes(origin(), used, network_bytes_);
+  prerender_manager_->RecordNetworkBytesConsumed(origin(), network_bytes_);
 
   // Broadcast the removal of aliases.
   for (content::RenderProcessHost::iterator host_iterator =

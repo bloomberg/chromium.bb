@@ -61048,6 +61048,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Prerender.AbandonTimeUntilUsed" units="ms">
+  <obsolete>
+    Deprecated 2017-09 as prerenders can no longer be 'used' (=='swapped-in').
+  </obsolete>
   <owner>davidben@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
   <summary>
@@ -61319,6 +61322,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Prerender.NetworkBytesUsed" units="bytes">
+  <obsolete>
+    Deprecated 2017-09 as prerenders can no longer be 'used' (=='swapped-in').
+  </obsolete>
   <owner>hajimehoshi@chromium.org</owner>
   <owner>jkarlin@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>
@@ -61335,7 +61341,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>kouhei@chromium.org</owner>
   <summary>
     Number of bytes transferred on the network for URLRequests (not including
-    HTTP/TLS/TCP/IP overhead) for a prerender that was not used.
+    HTTP/TLS/TCP/IP overhead) for a prerender that was not used. All
+    nostate-prefetch bytes are currently counted as wasted because it is hard to
+    track byte use in HTTP cache.
   </summary>
 </histogram>
 
@@ -61397,6 +61405,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Prerender.OmniboxNavigationsUsedPrerenderCount">
+  <obsolete>
+    Deprecated 2017-09 as prerenders can no longer be 'used' (=='swapped-in').
+  </obsolete>
   <owner>pasko@chromium.org</owner>
   <summary>
     The number of navigations that use a prerender initiated from the Omnibox.
@@ -61407,6 +61418,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Prerender.OmniboxPrerenderCount">
+  <obsolete>
+    Deprecated 2017-09.
+  </obsolete>
   <owner>pasko@chromium.org</owner>
   <summary>
     The number of prerenders initiated from the Omnibox. This is incremented
@@ -61742,6 +61756,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Prerender.PercentLoadDoneAtSwapin">
+  <obsolete>
+    Deprecated 2017-09 as prerenders can no longer be 'used' (=='swapped-in').
+  </obsolete>
   <owner>pasko@chromium.org</owner>
   <summary>
     For prerenders that are swapped in, the percentage of the time from load
@@ -61817,7 +61834,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Prerender.PrerendersPerSessionCount">
   <owner>pasko@chromium.org</owner>
   <summary>
-    The number of sessions that have at least X successful prerenders.
+    The number of sessions that have at least X successful prerenders. Recorded
+    only on iOS since 2017-09.
   </summary>
 </histogram>
 
@@ -61966,11 +61984,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Prerender.TimeBetweenPrerenderRequests" units="ms">
+  <obsolete>
+    Deprecated 2017-09.
+  </obsolete>
   <owner>pasko@chromium.org</owner>
   <summary>Time between subsequent prerender requests.</summary>
 </histogram>
 
 <histogram name="Prerender.TimeSinceLastRecentVisit" units="ms">
+  <obsolete>
+    Deprecated 2017-09.
+  </obsolete>
   <owner>pasko@chromium.org</owner>
   <summary>
     The time elapsed between the most recent visit to a URL and when an
@@ -62001,6 +62025,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Prerender.TimeUntilUsed2" units="ms">
+  <obsolete>
+    Deprecated 2017-09 as prerenders can no longer be 'used' (=='swapped-in').
+  </obsolete>
   <owner>pasko@chromium.org</owner>
   <summary>
     Time from when a prerendered page is started to when it is first used due to
