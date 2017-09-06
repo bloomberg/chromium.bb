@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_TEST_MOCK_SERVICE_WORKER_CONTEXT_H_
 #define CONTENT_PUBLIC_TEST_MOCK_SERVICE_WORKER_CONTEXT_H_
 
+#include <string>
+
 #include "base/callback_forward.h"
 #include "content/public/browser/service_worker_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -27,19 +29,15 @@ class MockServiceWorkerContext : public ServiceWorkerContext {
                void(const ServiceWorkerContext::Scope&,
                     const GURL&,
                     const ServiceWorkerContext::ResultCallback&));
-  MOCK_METHOD2(StartingExternalRequest, bool(int64_t, const std::string&));
-  MOCK_METHOD2(FinishedExternalRequest, bool(int64_t, const std::string&));
-
-  // StartActiveWorkerForPattern cannot be mocked because OnceClosure is not
-  // copyable.
-  void StartActiveWorkerForPattern(
-      const GURL& pattern,
-      ServiceWorkerContext::StartActiveWorkerCallback info_callback,
-      base::OnceClosure failure_callback) override;
-
   MOCK_METHOD2(UnregisterServiceWorker,
                void(const ServiceWorkerContext::Scope&,
                     const ServiceWorkerContext::ResultCallback&));
+  MOCK_METHOD2(StartingExternalRequest, bool(int64_t, const std::string&));
+  MOCK_METHOD2(FinishedExternalRequest, bool(int64_t, const std::string&));
+  MOCK_METHOD2(
+      CountExternalRequestsForTest,
+      void(const GURL&,
+           const ServiceWorkerContext::CountExternalRequestsCallback&));
   MOCK_METHOD1(GetAllOriginsInfo,
                void(const ServiceWorkerContext::GetUsageInfoCallback&));
   MOCK_METHOD2(DeleteForOrigin,
@@ -49,15 +47,17 @@ class MockServiceWorkerContext : public ServiceWorkerContext {
       void(const GURL&,
            const GURL&,
            const ServiceWorkerContext::CheckHasServiceWorkerCallback&));
-  MOCK_METHOD2(
-      CountExternalRequestsForTest,
-      void(const GURL&,
-           const ServiceWorkerContext::CountExternalRequestsCallback&));
-  MOCK_METHOD1(StopAllServiceWorkersForOrigin, void(const GURL&));
   MOCK_METHOD1(ClearAllServiceWorkersForTest, void(const base::Closure&));
+  // StartActiveWorkerForPattern cannot be mocked because OnceClosure is not
+  // copyable.
+  void StartActiveWorkerForPattern(
+      const GURL& pattern,
+      ServiceWorkerContext::StartActiveWorkerCallback info_callback,
+      base::OnceClosure failure_callback) override;
   MOCK_METHOD2(StartServiceWorkerForNavigationHint,
                void(const GURL&,
                     const StartServiceWorkerForNavigationHintCallback&));
+  MOCK_METHOD1(StopAllServiceWorkersForOrigin, void(const GURL&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockServiceWorkerContext);

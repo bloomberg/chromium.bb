@@ -7,6 +7,7 @@
 
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "content/public/browser/service_worker_usage_info.h"
@@ -40,7 +41,10 @@ enum class StartServiceWorkerForNavigationHintResult {
   NUM_TYPES
 };
 
-// Represents the per-StoragePartition ServiceWorker data.
+// Represents the per-StoragePartition service worker data.
+//
+// Implemented by ServiceWorkerContextWrapper (for both its pure virtual
+// functions and its non-virtual functions).
 class ServiceWorkerContext {
  public:
   // https://rawgithub.com/slightlyoff/ServiceWorker/master/spec/service_worker/index.html#url-scope:
@@ -89,7 +93,6 @@ class ServiceWorkerContext {
   //  * |script_url| is on a different origin from |pattern|
   //  * Fetching |script_url| fails.
   //  * |script_url| fails to parse or its top-level execution fails.
-  //    TODO: The error message for this needs to be available to developers.
   //  * Something unexpected goes wrong, like a renderer crash or a full disk.
   //
   // This function can be called from any thread, but the callback will always
@@ -97,30 +100,6 @@ class ServiceWorkerContext {
   virtual void RegisterServiceWorker(const Scope& pattern,
                                      const GURL& script_url,
                                      const ResultCallback& callback) = 0;
-
-  // Mechanism for embedder to increment/decrement ref count of a service
-  // worker.
-  // Embedders can call StartingExternalRequest() while it is performing some
-  // work with the worker. The worker is considered to be working until embedder
-  // calls FinishedExternalRequest(). This ensures that content/ does not
-  // shut the worker down while embedder is expecting the worker to be kept
-  // alive.
-  //
-  // Must be called from the IO thread. Returns whether or not changing the ref
-  // count succeeded.
-  virtual bool StartingExternalRequest(int64_t service_worker_version_id,
-                                       const std::string& request_uuid) = 0;
-  virtual bool FinishedExternalRequest(int64_t service_worker_version_id,
-                                       const std::string& request_uuid) = 0;
-
-  // Starts the active worker of the registration whose scope is |pattern|.
-  // |info_callback| is passed the worker's render process id and thread id.
-  //
-  // Must be called on IO thread.
-  virtual void StartActiveWorkerForPattern(
-      const GURL& pattern,
-      StartActiveWorkerCallback info_callback,
-      base::OnceClosure failure_callback) = 0;
 
   // Equivalent to calling navigator.serviceWorker.unregister(pattern) from a
   // renderer, except that |pattern| is an absolute URL instead of relative to
@@ -136,7 +115,25 @@ class ServiceWorkerContext {
   virtual void UnregisterServiceWorker(const Scope& pattern,
                                        const ResultCallback& callback) = 0;
 
-  // Methods used in response to browsing data and quota manager requests.
+  // Mechanism for embedder to increment/decrement ref count of a service
+  // worker.
+  // Embedders can call StartingExternalRequest() while it is performing some
+  // work with the worker. The worker is considered to be working until embedder
+  // calls FinishedExternalRequest(). This ensures that content/ does not
+  // shut the worker down while embedder is expecting the worker to be kept
+  // alive.
+  //
+  // Must be called from the IO thread. Returns whether or not changing the ref
+  // count succeeded.
+  virtual bool StartingExternalRequest(int64_t service_worker_version_id,
+                                       const std::string& request_uuid) = 0;
+  virtual bool FinishedExternalRequest(int64_t service_worker_version_id,
+                                       const std::string& request_uuid) = 0;
+  // Returns the pending external request count for the worker with the
+  // specified |origin| via |callback|.
+  virtual void CountExternalRequestsForTest(
+      const GURL& origin,
+      const CountExternalRequestsCallback& callback) = 0;
 
   // Must be called from the IO thread.
   virtual void GetAllOriginsInfo(const GetUsageInfoCallback& callback) = 0;
@@ -162,17 +159,6 @@ class ServiceWorkerContext {
       const GURL& other_url,
       const CheckHasServiceWorkerCallback& callback) = 0;
 
-  // Returns the pending external request count for the worker with the
-  // specified |origin| via |callback|.
-  virtual void CountExternalRequestsForTest(
-      const GURL& origin,
-      const CountExternalRequestsCallback& callback) = 0;
-
-  // Stops all running workers on the given |origin|.
-  //
-  // This function can be called from any thread.
-  virtual void StopAllServiceWorkersForOrigin(const GURL& origin) = 0;
-
   // Stops all running service workers and unregisters all service worker
   // registrations. This method is used in LayoutTests to make sure that the
   // existing service worker will not affect the succeeding tests.
@@ -181,12 +167,26 @@ class ServiceWorkerContext {
   // be called on the UI thread.
   virtual void ClearAllServiceWorkersForTest(const base::Closure& callback) = 0;
 
+  // Starts the active worker of the registration whose scope is |pattern|.
+  // |info_callback| is passed the worker's render process id and thread id.
+  //
+  // Must be called on IO thread.
+  virtual void StartActiveWorkerForPattern(
+      const GURL& pattern,
+      StartActiveWorkerCallback info_callback,
+      base::OnceClosure failure_callback) = 0;
+
   // Starts the service worker for |document_url|. Called when a navigation to
   // that URL is predicted to occur soon. Must be called from the UI thread. The
   // |callback| will always be called on the UI thread.
   virtual void StartServiceWorkerForNavigationHint(
       const GURL& document_url,
       const StartServiceWorkerForNavigationHintCallback& callback) = 0;
+
+  // Stops all running workers on the given |origin|.
+  //
+  // This function can be called from any thread.
+  virtual void StopAllServiceWorkersForOrigin(const GURL& origin) = 0;
 
  protected:
   ServiceWorkerContext() {}
