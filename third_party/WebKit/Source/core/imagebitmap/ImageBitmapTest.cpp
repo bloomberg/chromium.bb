@@ -110,9 +110,15 @@ TEST_F(ImageBitmapTest, ImageResourceConsistency) {
   const ImageBitmapOptions default_options;
   HTMLImageElement* image_element =
       HTMLImageElement::Create(*Document::CreateForTest());
-  ImageResourceContent* image = ImageResourceContent::CreateLoaded(
-      StaticBitmapImage::Create(image_).Get());
-  image_element->SetImageForTest(image);
+  sk_sp<SkColorSpace> src_rgb_color_space = SkColorSpace::MakeSRGB();
+  SkImageInfo raster_image_info =
+      SkImageInfo::MakeN32Premul(5, 5, src_rgb_color_space);
+  sk_sp<SkSurface> surface(SkSurface::MakeRaster(raster_image_info));
+  sk_sp<SkImage> image = surface->makeImageSnapshot();
+  ImageResourceContent* original_image_resource =
+      ImageResourceContent::CreateLoaded(
+          StaticBitmapImage::Create(image).Get());
+  image_element->SetImageForTest(original_image_resource);
 
   Optional<IntRect> crop_rect =
       IntRect(0, 0, image_->width(), image_->height());
@@ -149,7 +155,7 @@ TEST_F(ImageBitmapTest, ImageResourceConsistency) {
                 ->GetImage()
                 ->PaintImageForCurrentFrame()
                 .GetSkImage());
-  ASSERT_NE(image_bitmap_exterior_crop->BitmapImage()
+  ASSERT_EQ(image_bitmap_exterior_crop->BitmapImage()
                 ->PaintImageForCurrentFrame()
                 .GetSkImage(),
             image_element->CachedImage()
@@ -172,9 +178,14 @@ TEST_F(ImageBitmapTest, ImageBitmapSourceChanged) {
   RuntimeEnabledFeatures::SetColorCanvasExtensionsEnabled(true);
   HTMLImageElement* image =
       HTMLImageElement::Create(*Document::CreateForTest());
+  sk_sp<SkColorSpace> src_rgb_color_space = SkColorSpace::MakeSRGB();
+  SkImageInfo raster_image_info =
+      SkImageInfo::MakeN32Premul(5, 5, src_rgb_color_space);
+  sk_sp<SkSurface> raster_surface(SkSurface::MakeRaster(raster_image_info));
+  sk_sp<SkImage> raster_image = raster_surface->makeImageSnapshot();
   ImageResourceContent* original_image_resource =
       ImageResourceContent::CreateLoaded(
-          StaticBitmapImage::Create(image_).Get());
+          StaticBitmapImage::Create(raster_image).Get());
   image->SetImageForTest(original_image_resource);
 
   const ImageBitmapOptions default_options;

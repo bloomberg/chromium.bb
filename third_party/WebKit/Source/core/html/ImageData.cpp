@@ -463,7 +463,7 @@ ScriptPromise ImageData::CreateImageBitmap(ScriptState* script_state,
                                            EventTarget& event_target,
                                            Optional<IntRect> crop_rect,
                                            const ImageBitmapOptions& options) {
-  if (data()->BufferBase()->IsNeutered()) {
+  if (BufferBase()->IsNeutered()) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(kInvalidStateError,
