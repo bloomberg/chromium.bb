@@ -2794,7 +2794,8 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
       boost_score += (decay_accumulator * frame_boost);
     }
   }
-  av_decay_accumulator /= (double)loop_decay_counter;
+  if (loop_decay_counter > 0)
+    av_decay_accumulator /= (double)loop_decay_counter;
 
   reset_fpf_position(twopass, start_position);
 
