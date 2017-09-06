@@ -10,6 +10,7 @@
 #include "base/process/process.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "build/build_config.h"
+#include "chrome/browser/profiling_host/background_profiling_triggers.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/profiling/memlog.mojom.h"
 #include "chrome/common/profiling/memlog_client.h"
@@ -58,6 +59,9 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
     kAll,
   };
 
+  // Returns the mode.
+  Mode mode() const { return mode_; }
+
   // Returns the mode set on the current process' command line.
   static Mode GetCurrentMode();
 
@@ -72,6 +76,8 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   // Returns a pointer to the current global profiling process host.
   static ProfilingProcessHost* GetInstance();
 
+  void ConfigureBackgroundProfilingTriggers();
+
   // Sends a message to the profiling process that it dump the given process'
   // memory data to the given file.
   void RequestProcessDump(base::ProcessId pid, const base::FilePath& dest);
@@ -80,11 +86,19 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   // memory data to the crash server (slow-report).
   void RequestProcessReport(base::ProcessId pid);
 
- private:
+ protected:
   friend struct base::DefaultSingletonTraits<ProfilingProcessHost>;
+  // Exposed for unittests.
   ProfilingProcessHost();
   ~ProfilingProcessHost() override;
 
+  void Register();
+  void Unregister();
+
+  // Set the profiling mode. Exposed for unittests.
+  void SetMode(Mode mode);
+
+ private:
   // Make and store a connector from |connection|.
   void MakeConnector(content::ServiceManagerConnection* connection);
 
@@ -128,8 +142,6 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
                              bool upload,
                              bool success);
 
-  void SetMode(Mode mode);
-
   // Returns the metadata for the trace. This is the minimum amount of metadata
   // needed to symbolize the trace.
   std::unique_ptr<base::DictionaryValue> GetMetadataJSONForTrace();
@@ -138,9 +150,17 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   std::unique_ptr<service_manager::Connector> connector_;
   mojom::MemlogPtr memlog_;
 
+  // Whether or not the host is registered to the |registrar_|.
+  bool is_registered_;
+
+  // Handle background triggers on high memory pressure. A trigger will call
+  // |RequestProcessReport| on this instance.
+  BackgroundProfilingTriggers background_triggers_;
+
   // The mode determines which processes should be profiled.
   Mode mode_;
 
+  // Whether or not the profiling host is started.
   static bool has_started_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfilingProcessHost);

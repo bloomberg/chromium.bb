@@ -89,13 +89,24 @@ void OnTraceUploadComplete(TraceCrashServiceUploader* uploader,
 
 }  // namespace
 
-ProfilingProcessHost::ProfilingProcessHost() {
+ProfilingProcessHost::ProfilingProcessHost()
+    : is_registered_(false), background_triggers_(this) {}
+
+ProfilingProcessHost::~ProfilingProcessHost() {
+  if (is_registered_)
+    Unregister();
+}
+
+void ProfilingProcessHost::Register() {
+  DCHECK(!is_registered_);
   Add(this);
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                  content::NotificationService::AllBrowserContextsAndSources());
+  is_registered_ = true;
 }
 
-ProfilingProcessHost::~ProfilingProcessHost() {
+void ProfilingProcessHost::Unregister() {
+  DCHECK(is_registered_);
   Remove(this);
 }
 
@@ -264,8 +275,10 @@ ProfilingProcessHost* ProfilingProcessHost::Start(
   has_started_ = true;
   ProfilingProcessHost* host = GetInstance();
   host->SetMode(mode);
+  host->Register();
   host->MakeConnector(connection);
   host->LaunchAsService();
+  host->ConfigureBackgroundProfilingTriggers();
   return host;
 }
 
@@ -274,6 +287,10 @@ ProfilingProcessHost* ProfilingProcessHost::GetInstance() {
   return base::Singleton<
       ProfilingProcessHost,
       base::LeakySingletonTraits<ProfilingProcessHost>>::get();
+}
+
+void ProfilingProcessHost::ConfigureBackgroundProfilingTriggers() {
+  background_triggers_.StartTimer();
 }
 
 void ProfilingProcessHost::RequestProcessDump(base::ProcessId pid,
