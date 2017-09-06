@@ -54,7 +54,6 @@ class WebApkInstaller : public net::URLFetcherDelegate {
   static void UpdateAsync(
       content::BrowserContext* context,
       const std::string& webapk_package,
-      const GURL& start_url,
       const base::string16& short_name,
       std::unique_ptr<std::vector<uint8_t>> serialized_proto,
       const FinishCallback& callback);
@@ -72,7 +71,6 @@ class WebApkInstaller : public net::URLFetcherDelegate {
   static void UpdateAsyncForTesting(
       WebApkInstaller* installer,
       const std::string& webapk_package,
-      const GURL& start_url,
       const base::string16& short_name,
       std::unique_ptr<std::vector<uint8_t>> serialized_proto,
       const FinishCallback& callback);
@@ -132,7 +130,6 @@ class WebApkInstaller : public net::URLFetcherDelegate {
   // the Google Play server to install the downloaded WebAPK. Calls
   // |finish_callback| once the update completed or failed.
   void UpdateAsync(const std::string& webapk_package,
-                   const GURL& start_url,
                    const base::string16& short_name,
                    const std::unique_ptr<std::vector<uint8_t>> serialized_proto,
                    const FinishCallback& callback);

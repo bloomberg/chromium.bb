@@ -60,13 +60,11 @@ void WebApkInstallService::InstallAsync(content::WebContents* web_contents,
 
 void WebApkInstallService::UpdateAsync(
     const std::string& webapk_package,
-    const GURL& start_url,
     const base::string16& short_name,
     std::unique_ptr<std::vector<uint8_t>> serialized_proto,
     const FinishCallback& finish_callback) {
-  WebApkInstaller::UpdateAsync(browser_context_, webapk_package, start_url,
-                               short_name, std::move(serialized_proto),
-                               finish_callback);
+  WebApkInstaller::UpdateAsync(browser_context_, webapk_package, short_name,
+                               std::move(serialized_proto), finish_callback);
 }
 
 void WebApkInstallService::OnFinishedInstall(

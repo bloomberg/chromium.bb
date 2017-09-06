@@ -124,8 +124,7 @@ class WebApkInstallerRunner {
 
     WebApkInstaller::UpdateAsyncForTesting(
         CreateWebApkInstaller(), kDownloadedWebApkPackageName,
-        GURL() /* start_url */, base::string16() /* short_name */,
-        std::move(serialized_proto_vector),
+        base::string16() /* short_name */, std::move(serialized_proto_vector),
         base::Bind(&WebApkInstallerRunner::OnCompleted,
                    base::Unretained(this)));
 
