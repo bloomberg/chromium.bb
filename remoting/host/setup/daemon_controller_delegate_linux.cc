@@ -120,6 +120,7 @@ DaemonController::State DaemonControllerDelegateLinux::GetState() {
   }
   base::CommandLine command_line(script_path);
   command_line.AppendArg("--get-status");
+  command_line.AppendArg("--config=" + GetConfigPath().value());
 
   std::string status;
   int exit_code = 0;
