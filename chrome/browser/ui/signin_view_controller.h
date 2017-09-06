@@ -11,6 +11,14 @@
 class Browser;
 class SigninViewControllerDelegate;
 
+namespace content {
+class WebContents;
+}
+
+namespace login_ui_test_utils {
+class SigninViewControllerTestUtil;
+}
+
 namespace signin_metrics {
 enum class AccessPoint;
 }
@@ -35,6 +43,9 @@ class SigninViewController {
   void ShowModalSyncConfirmationDialog(Browser* browser);
   void ShowModalSigninErrorDialog(Browser* browser);
 
+  // Returns true if the modal dialog is shown.
+  bool ShowsModalDialog();
+
   // Closes the tab-modal signin flow previously shown using this
   // SigninViewController, if one exists. Does nothing otherwise.
   void CloseModalSignin();
@@ -42,16 +53,21 @@ class SigninViewController {
   // Sets the height of the modal signin dialog.
   void SetModalSigninHeight(int height);
 
-  // Notifies this object that it's |signin_view_controller_delegate_|
-  // member has become invalid.
+  // Either navigates back in the signin flow if the history state allows it or
+  // closes the flow otherwise.
+  // Does nothing if the signin flow does not exist.
+  void PerformNavigation();
+
+  // Notifies this object that it's |delegate_| member has become invalid.
   void ResetModalSigninDelegate();
 
-  SigninViewControllerDelegate* delegate() {
-    return signin_view_controller_delegate_;
-  }
-
  private:
-  SigninViewControllerDelegate* signin_view_controller_delegate_;
+  friend class login_ui_test_utils::SigninViewControllerTestUtil;
+
+  // Returns the web contents of the modal dialog.
+  content::WebContents* GetModalDialogWebContentsForTesting();
+
+  SigninViewControllerDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninViewController);
 };

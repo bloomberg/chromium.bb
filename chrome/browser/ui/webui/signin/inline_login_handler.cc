@@ -277,7 +277,7 @@ void InlineLoginHandler::HandleNavigationButtonClicked(
   Browser* browser = signin::GetDesktopBrowser(web_ui());
   DCHECK(browser);
 
-  browser->signin_view_controller()->delegate()->PerformNavigation();
+  browser->signin_view_controller()->PerformNavigation();
 }
 
 void InlineLoginHandler::HandleDialogClose(const base::ListValue* args) {
