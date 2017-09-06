@@ -6,7 +6,8 @@
 
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/Document.h"
-#include "core/dom/ModulatorImpl.h"
+#include "core/dom/DocumentModulatorImpl.h"
+#include "core/dom/WorkletModulatorImpl.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/workers/MainThreadWorkletGlobalScope.h"
@@ -34,7 +35,8 @@ Modulator* Modulator::From(ScriptState* script_state) {
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   if (execution_context->IsDocument()) {
     Document* document = ToDocument(execution_context);
-    modulator = ModulatorImpl::Create(script_state, document->Fetcher());
+    modulator =
+        DocumentModulatorImpl::Create(script_state, document->Fetcher());
     Modulator::SetModulator(script_state, modulator);
 
     // See comment in LocalDOMWindow::modulator_ for this workaround.
@@ -43,8 +45,7 @@ Modulator* Modulator::From(ScriptState* script_state) {
   } else if (execution_context->IsMainThreadWorkletGlobalScope()) {
     MainThreadWorkletGlobalScope* global_scope =
         ToMainThreadWorkletGlobalScope(execution_context);
-    modulator = ModulatorImpl::Create(
-        script_state, global_scope->GetFrame()->GetDocument()->Fetcher());
+    modulator = WorkletModulatorImpl::Create(script_state);
     Modulator::SetModulator(script_state, modulator);
 
     // See comment in WorkletGlobalScope::modulator_ for this workaround.

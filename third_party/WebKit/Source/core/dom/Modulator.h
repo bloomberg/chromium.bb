@@ -21,6 +21,7 @@ namespace blink {
 
 class ExceptionState;
 class ModuleScript;
+class ModuleScriptFetcher;
 class ModuleScriptFetchRequest;
 class ModuleScriptLoaderClient;
 class ModuleTreeReachedUrlSet;
@@ -140,6 +141,8 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
       ScriptModule) = 0;
 
   virtual void ExecuteModule(const ModuleScript*) = 0;
+
+  virtual ModuleScriptFetcher* CreateModuleScriptFetcher() = 0;
 
  private:
   friend class ModuleMap;

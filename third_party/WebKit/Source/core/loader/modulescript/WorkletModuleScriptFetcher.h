@@ -26,11 +26,10 @@ class CORE_EXPORT WorkletModuleScriptFetcher final
   USING_GARBAGE_COLLECTED_MIXIN(WorkletModuleScriptFetcher);
 
  public:
-  WorkletModuleScriptFetcher(ModuleScriptFetcher::Client*,
-                             WorkletModuleResponsesMapProxy*);
+  explicit WorkletModuleScriptFetcher(WorkletModuleResponsesMapProxy*);
 
   // Implements ModuleScriptFetcher.
-  void Fetch(FetchParameters&) override;
+  void Fetch(FetchParameters&, ModuleScriptFetcher::Client*) override;
 
   // Implements WorkletModuleResponsesMap::Client.
   void OnRead(const ModuleScriptCreationParams&) override;

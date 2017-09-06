@@ -32,9 +32,9 @@ class CORE_EXPORT DocumentModuleScriptFetcher
   USING_GARBAGE_COLLECTED_MIXIN(DocumentModuleScriptFetcher);
 
  public:
-  DocumentModuleScriptFetcher(ResourceFetcher*, ModuleScriptFetcher::Client*);
+  explicit DocumentModuleScriptFetcher(ResourceFetcher*);
 
-  void Fetch(FetchParameters&) final;
+  void Fetch(FetchParameters&, ModuleScriptFetcher::Client*) final;
 
   // Implements ScriptResourceClient
   void NotifyFinished(Resource*) final;

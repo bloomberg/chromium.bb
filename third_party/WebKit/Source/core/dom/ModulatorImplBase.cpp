@@ -2,32 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/ModulatorImpl.h"
+#include "core/dom/ModulatorImplBase.h"
 
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ModuleMap.h"
 #include "core/dom/ModuleScript.h"
 #include "core/dom/ScriptModuleResolverImpl.h"
 #include "core/dom/TaskRunnerHelper.h"
-#include "core/frame/LocalFrame.h"
 #include "core/loader/modulescript/ModuleScriptFetchRequest.h"
 #include "core/loader/modulescript/ModuleScriptLoaderRegistry.h"
 #include "core/loader/modulescript/ModuleTreeLinkerRegistry.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
+#include "platform/WebTaskRunner.h"
 
 namespace blink {
 
-ModulatorImpl* ModulatorImpl::Create(RefPtr<ScriptState> script_state,
-                                     ResourceFetcher* resource_fetcher) {
-  return new ModulatorImpl(std::move(script_state), resource_fetcher);
+ExecutionContext* ModulatorImplBase::GetExecutionContext() const {
+  return ExecutionContext::From(script_state_.Get());
 }
 
-ModulatorImpl::ModulatorImpl(RefPtr<ScriptState> script_state,
-                             ResourceFetcher* fetcher)
+ModulatorImplBase::ModulatorImplBase(RefPtr<ScriptState> script_state)
     : script_state_(std::move(script_state)),
       task_runner_(
           TaskRunnerHelper::Get(TaskType::kNetworking, script_state_.Get())),
-      fetcher_(fetcher),
       map_(ModuleMap::Create(this)),
       loader_registry_(ModuleScriptLoaderRegistry::Create()),
       tree_linker_registry_(ModuleTreeLinkerRegistry::Create()),
@@ -36,21 +32,20 @@ ModulatorImpl::ModulatorImpl(RefPtr<ScriptState> script_state,
           ExecutionContext::From(script_state_.Get()))) {
   DCHECK(script_state_);
   DCHECK(task_runner_);
-  DCHECK(fetcher_);
 }
 
-ModulatorImpl::~ModulatorImpl() {}
+ModulatorImplBase::~ModulatorImplBase() {}
 
-ReferrerPolicy ModulatorImpl::GetReferrerPolicy() {
+ReferrerPolicy ModulatorImplBase::GetReferrerPolicy() {
   return GetExecutionContext()->GetReferrerPolicy();
 }
 
-SecurityOrigin* ModulatorImpl::GetSecurityOrigin() {
+SecurityOrigin* ModulatorImplBase::GetSecurityOrigin() {
   return GetExecutionContext()->GetSecurityOrigin();
 }
 
-void ModulatorImpl::FetchTree(const ModuleScriptFetchRequest& request,
-                              ModuleTreeClient* client) {
+void ModulatorImplBase::FetchTree(const ModuleScriptFetchRequest& request,
+                                  ModuleTreeClient* client) {
   // Step 1. Perform the internal module script graph fetching procedure given
   // url, settings object, destination, cryptographic nonce, parser state,
   // credentials mode, settings object, a new empty list, "client", and with the
@@ -71,11 +66,12 @@ void ModulatorImpl::FetchTree(const ModuleScriptFetchRequest& request,
   // Note: We delegate to ModuleTreeLinker to notify ModuleTreeClient.
 }
 
-void ModulatorImpl::FetchTreeInternal(const ModuleScriptFetchRequest& request,
-                                      const AncestorList& ancestor_list,
-                                      ModuleGraphLevel level,
-                                      ModuleTreeReachedUrlSet* reached_url_set,
-                                      ModuleTreeClient* client) {
+void ModulatorImplBase::FetchTreeInternal(
+    const ModuleScriptFetchRequest& request,
+    const AncestorList& ancestor_list,
+    ModuleGraphLevel level,
+    ModuleTreeReachedUrlSet* reached_url_set,
+    ModuleTreeClient* client) {
   // We ensure module-related code is not executed without the flag.
   // https://crbug.com/715376
   CHECK(RuntimeEnabledFeatures::ModuleScriptsEnabled());
@@ -84,15 +80,16 @@ void ModulatorImpl::FetchTreeInternal(const ModuleScriptFetchRequest& request,
                                reached_url_set, client);
 }
 
-void ModulatorImpl::FetchDescendantsForInlineScript(ModuleScript* module_script,
-                                                    ModuleTreeClient* client) {
+void ModulatorImplBase::FetchDescendantsForInlineScript(
+    ModuleScript* module_script,
+    ModuleTreeClient* client) {
   tree_linker_registry_->FetchDescendantsForInlineScript(module_script, this,
                                                          client);
 }
 
-void ModulatorImpl::FetchSingle(const ModuleScriptFetchRequest& request,
-                                ModuleGraphLevel level,
-                                SingleModuleClient* client) {
+void ModulatorImplBase::FetchSingle(const ModuleScriptFetchRequest& request,
+                                    ModuleGraphLevel level,
+                                    SingleModuleClient* client) {
   // We ensure module-related code is not executed without the flag.
   // https://crbug.com/715376
   CHECK(RuntimeEnabledFeatures::ModuleScriptsEnabled());
@@ -100,7 +97,7 @@ void ModulatorImpl::FetchSingle(const ModuleScriptFetchRequest& request,
   map_->FetchSingleModuleScript(request, level, client);
 }
 
-void ModulatorImpl::FetchNewSingleModule(
+void ModulatorImplBase::FetchNewSingleModule(
     const ModuleScriptFetchRequest& request,
     ModuleGraphLevel level,
     ModuleScriptLoaderClient* client) {
@@ -108,18 +105,18 @@ void ModulatorImpl::FetchNewSingleModule(
   // https://crbug.com/715376
   CHECK(RuntimeEnabledFeatures::ModuleScriptsEnabled());
 
-  loader_registry_->Fetch(request, level, this, fetcher_.Get(), client);
+  loader_registry_->Fetch(request, level, this, client);
 }
 
-ModuleScript* ModulatorImpl::GetFetchedModuleScript(const KURL& url) {
+ModuleScript* ModulatorImplBase::GetFetchedModuleScript(const KURL& url) {
   return map_->GetFetchedModuleScript(url);
 }
 
-bool ModulatorImpl::HasValidContext() {
+bool ModulatorImplBase::HasValidContext() {
   return script_state_->ContextIsValid();
 }
 
-ScriptModule ModulatorImpl::CompileModule(
+ScriptModule ModulatorImplBase::CompileModule(
     const String& provided_source,
     const String& url_str,
     AccessControlStatus access_control_status,
@@ -145,17 +142,18 @@ ScriptModule ModulatorImpl::CompileModule(
                                exception_state);
 }
 
-ScriptValue ModulatorImpl::InstantiateModule(ScriptModule script_module) {
+ScriptValue ModulatorImplBase::InstantiateModule(ScriptModule script_module) {
   ScriptState::Scope scope(script_state_.Get());
   return script_module.Instantiate(script_state_.Get());
 }
 
-ScriptModuleState ModulatorImpl::GetRecordStatus(ScriptModule script_module) {
+ScriptModuleState ModulatorImplBase::GetRecordStatus(
+    ScriptModule script_module) {
   ScriptState::Scope scope(script_state_.Get());
   return script_module.Status(script_state_.Get());
 }
 
-ScriptValue ModulatorImpl::GetError(const ModuleScript* module_script) {
+ScriptValue ModulatorImplBase::GetError(const ModuleScript* module_script) {
   DCHECK(module_script);
   ScriptState::Scope scope(script_state_.Get());
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-error
@@ -175,8 +173,8 @@ ScriptValue ModulatorImpl::GetError(const ModuleScript* module_script) {
                      record.ErrorCompletion(script_state_.Get()));
 }
 
-Vector<Modulator::ModuleRequest> ModulatorImpl::ModuleRequestsFromScriptModule(
-    ScriptModule script_module) {
+Vector<Modulator::ModuleRequest>
+ModulatorImplBase::ModuleRequestsFromScriptModule(ScriptModule script_module) {
   ScriptState::Scope scope(script_state_.Get());
   Vector<String> specifiers = script_module.ModuleRequests(script_state_.Get());
   Vector<TextPosition> positions =
@@ -190,11 +188,7 @@ Vector<Modulator::ModuleRequest> ModulatorImpl::ModuleRequestsFromScriptModule(
   return requests;
 }
 
-inline ExecutionContext* ModulatorImpl::GetExecutionContext() const {
-  return ExecutionContext::From(script_state_.Get());
-}
-
-void ModulatorImpl::ExecuteModule(const ModuleScript* module_script) {
+void ModulatorImplBase::ExecuteModule(const ModuleScript* module_script) {
   // https://html.spec.whatwg.org/#run-a-module-script
 
   // We ensure module-related code is not executed without the flag.
@@ -236,16 +230,15 @@ void ModulatorImpl::ExecuteModule(const ModuleScript* module_script) {
   // Implemented as the ScriptState::Scope destructor.
 }
 
-DEFINE_TRACE(ModulatorImpl) {
+DEFINE_TRACE(ModulatorImplBase) {
   Modulator::Trace(visitor);
-  visitor->Trace(fetcher_);
   visitor->Trace(map_);
   visitor->Trace(loader_registry_);
   visitor->Trace(tree_linker_registry_);
   visitor->Trace(script_module_resolver_);
 }
 
-DEFINE_TRACE_WRAPPERS(ModulatorImpl) {
+DEFINE_TRACE_WRAPPERS(ModulatorImplBase) {
   visitor->TraceWrappers(map_);
   visitor->TraceWrappers(tree_linker_registry_);
 }

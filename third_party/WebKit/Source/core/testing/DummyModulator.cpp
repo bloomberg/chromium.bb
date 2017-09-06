@@ -136,4 +136,9 @@ void DummyModulator::ExecuteModule(const ModuleScript*) {
   NOTREACHED();
 }
 
+ModuleScriptFetcher* DummyModulator::CreateModuleScriptFetcher() {
+  NOTREACHED();
+  return nullptr;
+}
+
 }  // namespace blink

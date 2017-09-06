@@ -19,7 +19,6 @@ class Modulator;
 class ModuleScript;
 class ModuleScriptLoaderClient;
 class ModuleScriptLoaderRegistry;
-class ResourceFetcher;
 enum class ModuleGraphLevel;
 
 // ModuleScriptLoader is responsible for loading a new single ModuleScript.
@@ -54,7 +53,6 @@ class CORE_EXPORT ModuleScriptLoader final
   ~ModuleScriptLoader();
 
   void Fetch(const ModuleScriptFetchRequest&,
-             ResourceFetcher*,
              ModuleGraphLevel);
 
   // Implements ModuleScriptFetcher::Client.
