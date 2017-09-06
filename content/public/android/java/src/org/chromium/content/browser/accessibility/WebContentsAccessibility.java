@@ -971,8 +971,8 @@ public class WebContentsAccessibility extends AccessibilityNodeProvider {
 
     @CalledByNative
     protected void setAccessibilityNodeInfoKitKatAttributes(AccessibilityNodeInfo node,
-            boolean isRoot, boolean isEditableText, String roleDescription, String hint,
-            int selectionStartIndex, int selectionEndIndex) {
+            boolean isRoot, boolean isEditableText, String role, String roleDescription,
+            String hint, int selectionStartIndex, int selectionEndIndex) {
         // Requires KitKat or higher.
     }
 
