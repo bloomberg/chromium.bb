@@ -41,7 +41,7 @@ class SystemMessageHandler extends Handler {
     protected SystemMessageHandler(long messagePumpDelegateNative, long messagePumpNative) {
         mMessagePumpDelegateNative = messagePumpDelegateNative;
         mMessagePumpNative = messagePumpNative;
-        Looper.myLooper().getQueue().addIdleHandler(mIdleHandler);
+        Looper.myQueue().addIdleHandler(mIdleHandler);
     }
 
     @Override
@@ -74,7 +74,7 @@ class SystemMessageHandler extends Handler {
     private void removeAllPendingMessages() {
         removeMessages(SCHEDULED_WORK);
         removeMessages(DELAYED_SCHEDULED_WORK);
-        Looper.myLooper().getQueue().removeIdleHandler(mIdleHandler);
+        Looper.myQueue().removeIdleHandler(mIdleHandler);
     }
 
     private Message obtainAsyncMessage(int what) {
