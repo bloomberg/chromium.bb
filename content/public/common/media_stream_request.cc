@@ -90,22 +90,6 @@ bool MediaStreamDevice::IsSameDevice(
   return IsEqual(other_device) && session_id == other_device.session_id;
 }
 
-MediaStreamDevices::MediaStreamDevices() {}
-
-MediaStreamDevices::MediaStreamDevices(size_t count,
-                                       const MediaStreamDevice& value)
-    : std::vector<MediaStreamDevice>(count, value) {
-}
-
-const MediaStreamDevice* MediaStreamDevices::FindById(
-    const std::string& device_id) const {
-  for (const_iterator iter = begin(); iter != end(); ++iter) {
-    if (iter->id == device_id)
-      return &(*iter);
-  }
-  return NULL;
-}
-
 MediaStreamRequest::MediaStreamRequest(
     int render_process_id,
     int render_frame_id,

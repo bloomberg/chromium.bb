@@ -146,18 +146,7 @@ struct CONTENT_EXPORT MediaStreamDevice {
   base::Optional<CameraCalibration> camera_calibration;
 };
 
-class CONTENT_EXPORT MediaStreamDevices
-    : public std::vector<MediaStreamDevice> {
- public:
-  MediaStreamDevices();
-  MediaStreamDevices(size_t count, const MediaStreamDevice& value);
-
-  // Looks for a MediaStreamDevice based on its ID.
-  // Returns NULL if not found.
-  const MediaStreamDevice* FindById(const std::string& device_id) const;
-};
-
-typedef std::map<MediaStreamType, MediaStreamDevices> MediaStreamDeviceMap;
+using MediaStreamDevices = std::vector<MediaStreamDevice>;
 
 // Represents a request for media streams (audio/video).
 // TODO(vrk): Decouple MediaStreamDevice from this header file so that
@@ -241,11 +230,10 @@ class MediaStreamUI {
 };
 
 // Callback used return results of media access requests.
-typedef base::Callback<void(const MediaStreamDevices& devices,
-                            content::MediaStreamRequestResult result,
-                            std::unique_ptr<MediaStreamUI> ui)>
-    MediaResponseCallback;
-
+using MediaResponseCallback =
+    base::Callback<void(const MediaStreamDevices& devices,
+                        MediaStreamRequestResult result,
+                        std::unique_ptr<MediaStreamUI> ui)>;
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_COMMON_MEDIA_STREAM_REQUEST_H_

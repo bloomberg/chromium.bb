@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/callback_helpers.h"
@@ -94,8 +95,15 @@ bool HasAvailableDevices(ContentSettingsType content_type,
   // Note: we check device_id before dereferencing devices. If the requested
   // device id is non-empty, then the corresponding device list must not be
   // NULL.
-  if (!device_id.empty() && !devices->FindById(device_id))
-    return false;
+  if (!device_id.empty()) {
+    auto it =
+        std::find_if(devices->begin(), devices->end(),
+                     [device_id](const content::MediaStreamDevice& device) {
+                       return device.id == device_id;
+                     });
+    if (it == devices->end())
+      return false;
+  }
 
   return true;
 }

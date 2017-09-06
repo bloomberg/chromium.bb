@@ -149,8 +149,14 @@ bool CastWebView::CheckMediaAccessPermission(content::WebContents* web_contents,
 const content::MediaStreamDevice* GetRequestedDeviceOrDefault(
     const content::MediaStreamDevices& devices,
     const std::string& requested_device_id) {
-  if (!requested_device_id.empty())
-    return devices.FindById(requested_device_id);
+  if (!requested_device_id.empty()) {
+    auto it = std::find_if(
+        devices.begin(), devices.end(),
+        [requested_device_id](const content::MediaStreamDevice& device) {
+          return device.id == requested_device_id;
+        });
+    return it != devices.end() ? &(*it) : nullptr;
+  }
 
   if (!devices.empty())
     return &devices[0];

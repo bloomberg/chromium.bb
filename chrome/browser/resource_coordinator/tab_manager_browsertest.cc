@@ -409,10 +409,10 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectVideoTabs) {
   auto* tab = browser()->tab_strip_model()->GetWebContentsAt(1);
 
   // Simulate that a video stream is now being captured.
-  content::MediaStreamDevice fake_media_device(
-      content::MEDIA_DEVICE_VIDEO_CAPTURE, "fake_media_device",
-      "fake_media_device");
-  content::MediaStreamDevices video_devices(1, fake_media_device);
+  content::MediaStreamDevices video_devices(1);
+  video_devices[0] =
+      content::MediaStreamDevice(content::MEDIA_DEVICE_VIDEO_CAPTURE,
+                                 "fake_media_device", "fake_media_device");
   MediaCaptureDevicesDispatcher* dispatcher =
       MediaCaptureDevicesDispatcher::GetInstance();
   dispatcher->SetTestVideoCaptureDevices(video_devices);
@@ -443,10 +443,10 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, CanSuspendBackgroundedRenderer) {
 
   auto* tab = browser()->tab_strip_model()->GetWebContentsAt(1);
   // Simulate that a video stream is now being captured.
-  content::MediaStreamDevice fake_media_device(
-      content::MEDIA_DEVICE_VIDEO_CAPTURE, "fake_media_device",
-      "fake_media_device");
-  content::MediaStreamDevices video_devices(1, fake_media_device);
+  content::MediaStreamDevices video_devices(1);
+  video_devices[0] =
+      content::MediaStreamDevice(content::MEDIA_DEVICE_VIDEO_CAPTURE,
+                                 "fake_media_device", "fake_media_device");
   MediaCaptureDevicesDispatcher* dispatcher =
       MediaCaptureDevicesDispatcher::GetInstance();
   dispatcher->SetTestVideoCaptureDevices(video_devices);
