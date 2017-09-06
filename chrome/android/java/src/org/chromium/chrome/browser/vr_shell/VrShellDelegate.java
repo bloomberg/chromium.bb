@@ -40,6 +40,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ApplicationLifetime;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -69,8 +70,10 @@ public class VrShellDelegate
                    ScreenOrientationDelegate {
     private static final String TAG = "VrShellDelegate";
 
-    // Pseudo-random number to avoid request id collisions.
-    public static final int EXIT_VR_RESULT = 721251;
+    // Pseudo-random number to avoid request id collisions. Result codes must fit in lower 16 bits
+    // when used with startActivityForResult...
+    public static final int EXIT_VR_RESULT = 7212;
+    public static final int VR_SERVICES_UPDATE_RESULT = 7213;
 
     private static final int ENTER_VR_NOT_NECESSARY = 0;
     private static final int ENTER_VR_CANCELLED = 1;
@@ -236,6 +239,23 @@ public class VrShellDelegate
     }
 
     /**
+     * See {@link Activity#onActivityResult}.
+     */
+    public static boolean onActivityResultWithNative(int requestCode, int resultCode) {
+        // Handles the result of the exit VR flow (DOFF).
+        if (requestCode == EXIT_VR_RESULT) {
+            if (sInstance != null) sInstance.onExitVrResult(resultCode == Activity.RESULT_OK);
+            return true;
+        }
+        // Handles the result of requesting to update VR services.
+        if (requestCode == VR_SERVICES_UPDATE_RESULT) {
+            if (sInstance != null) sInstance.onVrServicesMaybeUpdated();
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Called when the native library is first available.
      */
     public static void onNativeLibraryAvailable() {
@@ -286,14 +306,6 @@ public class VrShellDelegate
         if (instance.enterVrInternal() == ENTER_VR_CANCELLED && created_delegate) {
             instance.destroy();
         }
-    }
-
-    /**
-     * Handles the result of the exit VR flow (DOFF).
-     */
-    public static void onExitVrResult(int resultCode) {
-        if (sInstance == null) return;
-        sInstance.onExitVrResult(resultCode == Activity.RESULT_OK);
     }
 
     /**
@@ -615,6 +627,12 @@ public class VrShellDelegate
                 mVrDaydreamApi, mVrCoreVersionChecker, mActivity.getActivityTab());
         if (supportLevel == mVrSupportLevel) return;
         mVrSupportLevel = supportLevel;
+    }
+
+    private void onVrServicesMaybeUpdated() {
+        int vrCorePackageVersion = getVrCorePackageVersion();
+        if (mCachedVrCorePackageVersion == vrCorePackageVersion) return;
+        ApplicationLifetime.terminate(true);
     }
 
     /**
@@ -1387,8 +1405,9 @@ public class VrShellDelegate
 
             @Override
             public boolean onInfoBarButtonClicked(boolean isPrimary) {
-                activity.startActivity(
-                        new Intent(Intent.ACTION_VIEW, Uri.parse(VR_CORE_MARKET_URI)));
+                activity.startActivityForResult(
+                        new Intent(Intent.ACTION_VIEW, Uri.parse(VR_CORE_MARKET_URI)),
+                        VR_SERVICES_UPDATE_RESULT);
                 return false;
             }
         };
