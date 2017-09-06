@@ -9,43 +9,45 @@
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='main box'",
-      "position": [19, 89],
       "bounds": [318, 318],
-      "backgroundColor": "#FF0000"
+      "backgroundColor": "#FF0000",
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='negative child'",
       "bounds": [50, 50],
       "drawsContent": false,
-      "transform": 2
+      "transform": 3
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='main box' (foreground) Layer",
-      "position": [19, 89],
-      "bounds": [318, 318]
+      "bounds": [318, 318],
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='main box'",
-      "position": [363, 19],
       "bounds": [318, 318],
-      "backgroundColor": "#FF0000"
+      "backgroundColor": "#FF0000",
+      "transform": 4
     },
     {
       "name": "Child Containment Layer",
-      "position": [422, 78],
+      "position": [59, 59],
       "bounds": [200, 200],
-      "drawsContent": false
-    },
-    {
-      "name": "LayoutBlockFlow (positioned) DIV class='negative child'",
-      "bounds": [50, 50],
       "drawsContent": false,
       "transform": 4
     },
     {
+      "name": "LayoutBlockFlow (positioned) DIV class='negative child'",
+      "bounds": [50, 50],
+      "drawsContent": false,
+      "transform": 6
+    },
+    {
       "name": "LayoutBlockFlow (relative positioned) DIV class='main box' (foreground) Layer",
-      "position": [422, 78],
-      "bounds": [200, 200]
+      "position": [59, 59],
+      "bounds": [200, 200],
+      "transform": 4
     }
   ],
   "transforms": [
@@ -55,7 +57,7 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [78, 148, 0, 1]
+        [19, 89, 0, 1]
       ]
     },
     {
@@ -65,21 +67,41 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [0, 0, 1, 1]
+        [59, 59, 0, 1]
       ]
     },
     {
       "id": 3,
+      "parent": 2,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [422, 78, 0, 1]
+        [0, 0, 1, 1]
       ]
     },
     {
       "id": 4,
-      "parent": 3,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [363, 19, 0, 1]
+      ]
+    },
+    {
+      "id": 5,
+      "parent": 4,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [59, 59, 0, 1]
+      ]
+    },
+    {
+      "id": 6,
+      "parent": 5,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

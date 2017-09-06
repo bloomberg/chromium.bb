@@ -9,61 +9,89 @@
     },
     {
       "name": "LayoutIFrame IFRAME class='container'",
-      "position": [8, 8],
-      "bounds": [304, 154]
+      "bounds": [304, 154],
+      "transform": 1
     },
     {
       "name": "Frame Overflow Controls Host Layer",
-      "position": [10, 10],
+      "position": [2, 2],
       "bounds": [300, 150],
-      "drawsContent": false
+      "drawsContent": false,
+      "transform": 1
     },
     {
       "name": "Frame Clipping Layer",
-      "position": [10, 10],
+      "position": [2, 2],
       "bounds": [285, 150],
-      "drawsContent": false
+      "drawsContent": false,
+      "transform": 1
     },
     {
       "name": "Frame Scrolling Layer",
-      "position": [10, 10],
-      "drawsContent": false
+      "position": [2, 2],
+      "drawsContent": false,
+      "transform": 1
     },
     {
       "name": "Content Root Layer",
-      "position": [10, 10],
+      "position": [2, 2],
       "bounds": [285, 230],
-      "drawsContent": false
+      "drawsContent": false,
+      "transform": 1
     },
     {
       "name": "LayoutView #document",
-      "position": [10, 10],
+      "position": [2, 2],
       "bounds": [285, 230],
-      "backgroundColor": "#C0C0C0"
+      "backgroundColor": "#C0C0C0",
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow DIV id='iframe-content' class='box'",
-      "position": [28, 20],
       "bounds": [210, 210],
       "contentsOpaque": true,
-      "backgroundColor": "#0000FF"
+      "backgroundColor": "#0000FF",
+      "transform": 2
     },
     {
       "name": "Frame Vertical Scrollbar Layer",
-      "position": [295, 10],
+      "position": [287, 2],
       "bounds": [15, 150],
-      "drawsContent": false
+      "drawsContent": false,
+      "transform": 1
     },
     {
       "name": "Overflow Controls Host Layer",
-      "position": [8, 8],
       "bounds": [304, 154],
-      "drawsContent": false
+      "drawsContent": false,
+      "transform": 1
     },
     {
       "name": "Scroll Corner Layer",
-      "position": [295, 145],
-      "bounds": [15, 15]
+      "position": [287, 137],
+      "bounds": [15, 15],
+      "transform": 1
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 8, 0, 1]
+      ]
+    },
+    {
+      "id": 2,
+      "parent": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [20, 12, 0, 1]
+      ]
     }
   ]
 }

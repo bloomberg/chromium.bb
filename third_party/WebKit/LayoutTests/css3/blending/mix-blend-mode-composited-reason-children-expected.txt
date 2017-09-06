@@ -34,9 +34,9 @@
     },
     {
       "name": "LayoutImage IMG class='accelerated'",
-      "position": [8, 8],
       "bounds": [160, 90],
-      "drawsContent": false
+      "drawsContent": false,
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='stacking-context' (foreground) Layer",
@@ -45,6 +45,17 @@
     {
       "name": "LayoutBlockFlow HTML (foreground) Layer",
       "bounds": [800, 600]
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 8, 0, 1]
+      ]
     }
   ]
 }

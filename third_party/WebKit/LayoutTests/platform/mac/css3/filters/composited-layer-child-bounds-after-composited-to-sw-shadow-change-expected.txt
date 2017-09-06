@@ -8,17 +8,28 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='composited-parent' class='compositor-painted-shadow'",
-      "position": [100, 100],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "backgroundColor": "#FF0000"
+      "backgroundColor": "#FF0000",
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='absolutely-positioned-composited-child'",
-      "position": [100, 100],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "backgroundColor": "#008000"
+      "backgroundColor": "#008000",
+      "transform": 1
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [100, 100, 0, 1]
+      ]
     }
   ]
 }
@@ -32,17 +43,28 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='composited-parent' class='software-painted-shadow'",
-      "position": [100, 100],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "backgroundColor": "#FF0000"
+      "backgroundColor": "#FF0000",
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='absolutely-positioned-composited-child'",
-      "position": [100, 100],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "backgroundColor": "#008000"
+      "backgroundColor": "#008000",
+      "transform": 1
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [100, 100, 0, 1]
+      ]
     }
   ]
 }

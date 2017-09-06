@@ -13,9 +13,9 @@ lorem ipsumlorem ipsumlorem ipsum
     },
     {
       "name": "LayoutBlockFlow DIV class='overlap'",
-      "position": [8, 8],
       "bounds": [300, 500],
-      "drawsContent": false
+      "drawsContent": false,
+      "transform": 1
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='item')",
@@ -28,6 +28,18 @@ lorem ipsumlorem ipsumlorem ipsum
           "reason": "geometry"
         }
       ]
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 8, 0, 1]
+      ],
+      "flattenInheritedTransform": false
     }
   ],
   "objectPaintInvalidations": [
@@ -67,9 +79,9 @@ lorem ipsumlorem ipsumlorem ipsum
     },
     {
       "name": "LayoutBlockFlow DIV class='overlap'",
-      "position": [8, 8],
       "bounds": [300, 500],
-      "drawsContent": false
+      "drawsContent": false,
+      "transform": 1
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='item')",
@@ -87,6 +99,18 @@ lorem ipsumlorem ipsumlorem ipsum
           "reason": "geometry"
         }
       ]
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 8, 0, 1]
+      ],
+      "flattenInheritedTransform": false
     }
   ],
   "objectPaintInvalidations": [

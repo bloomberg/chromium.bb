@@ -15,7 +15,6 @@
     },
     {
       "name": "LayoutSVGRoot svg",
-      "position": [8, 8],
       "bounds": [600, 400],
       "paintInvalidations": [
         {
@@ -38,6 +37,18 @@
           "rect": [0, 120, 200, 160],
           "reason": "geometry"
         }
+      ],
+      "transform": 1
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 8, 0, 1]
       ]
     }
   ],

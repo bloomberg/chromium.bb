@@ -8,8 +8,19 @@
 },
 {
 "name": "LayoutBlockFlow DIV id='multicol'",
-"position": [8, 8],
-"bounds": [200, 100]
+"bounds": [200, 100],
+"transform": 1
+}
+],
+"transforms": [
+{
+"id": 1,
+"transform": [
+[1, 0, 0, 0],
+[0, 1, 0, 0],
+[0, 0, 1, 0],
+[8, 8, 0, 1]
+]
 }
 ]
 }

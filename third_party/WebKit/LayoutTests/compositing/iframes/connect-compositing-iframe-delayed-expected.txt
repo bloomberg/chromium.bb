@@ -45,10 +45,10 @@ When the parent document becomes composited, the layer trees should get connecte
     },
     {
       "name": "LayoutBlockFlow DIV id='iframe-content' class='box'",
-      "position": [61, 153],
       "bounds": [210, 210],
       "contentsOpaque": true,
-      "backgroundColor": "#0000FF"
+      "backgroundColor": "#0000FF",
+      "transform": 1
     },
     {
       "name": "Frame Vertical Scrollbar Layer",
@@ -58,10 +58,30 @@ When the parent document becomes composited, the layer trees should get connecte
     },
     {
       "name": "LayoutBlockFlow DIV id='box' class='composited'",
-      "position": [8, 8],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "backgroundColor": "#0000FF"
+      "backgroundColor": "#0000FF",
+      "transform": 2
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [61, 153, 0, 1]
+      ]
+    },
+    {
+      "id": 2,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 8, 0, 1]
+      ]
     }
   ]
 }

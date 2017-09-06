@@ -15,15 +15,27 @@ CASE 1, original layer tree:
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='forceComposited' class='composited underneath'",
-      "position": [60, 60],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "backgroundColor": "#808080"
+      "backgroundColor": "#808080",
+      "transform": 1
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='A' class='overlap1')",
       "position": [140, 140],
       "bounds": [260, 260]
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [60, 60, 0, 1]
+      ],
+      "flattenInheritedTransform": false
     }
   ]
 }

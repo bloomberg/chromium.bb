@@ -10,12 +10,12 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited'",
-      "bounds": [590, 210],
+      "bounds": [590, 208],
       "transform": 1
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited'",
-      "bounds": [590, 210],
+      "bounds": [590, 208],
       "transform": 2
     },
     {
@@ -52,7 +52,7 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [490, 110, 0, 1]
+        [490, 108, 0, 1]
       ]
     }
   ]

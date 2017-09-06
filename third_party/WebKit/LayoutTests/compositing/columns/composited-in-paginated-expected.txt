@@ -8,10 +8,21 @@
     },
     {
       "name": "LayoutBlockFlow DIV class='composited box'",
-      "position": [818, 145],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "backgroundColor": "#0000FF"
+      "backgroundColor": "#0000FF",
+      "transform": 1
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [818, 145, 0, 1]
+      ]
     }
   ]
 }

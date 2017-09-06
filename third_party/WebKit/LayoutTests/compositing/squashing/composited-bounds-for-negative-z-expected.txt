@@ -13,10 +13,10 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV",
-      "position": [8, 100],
       "bounds": [10, 10],
       "contentsOpaque": true,
-      "backgroundColor": "#FF0000"
+      "backgroundColor": "#FF0000",
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow HTML (foreground) Layer",
@@ -65,6 +65,17 @@
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV)",
       "position": [108, 100],
       "bounds": [285, 1000]
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 100, 0, 1]
+      ]
     }
   ]
 }

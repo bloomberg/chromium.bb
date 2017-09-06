@@ -1,4 +1,4 @@
-{
+ {
   "layers": [
     {
       "name": "LayoutView #document",
@@ -7,28 +7,30 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow BODY",
-      "bounds": [784, 584],
+      "name": "LayoutBlockFlow DIV class='composited block'",
+      "bounds": [210, 60],
+      "backgroundColor": "#0000FF",
       "transform": 1
     },
     {
-      "name": "LayoutBlockFlow DIV id='container'",
-      "bounds": [256, 256],
+      "name": "LayoutBlockFlow DIV class='composited box'",
+      "bounds": [50, 50],
       "contentsOpaque": true,
+      "backgroundColor": "#008000",
+      "transform": 2
+    },
+    {
+      "name": "LayoutBlockFlow DIV class='composited block'",
+      "bounds": [210, 60],
+      "backgroundColor": "#0000FF",
       "transform": 3
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV id='composited'",
-      "contentsOpaque": true,
-      "drawsContent": false,
-      "transform": 4
-    },
-    {
-      "name": "LayoutBlockFlow (positioned) DIV id='green'",
-      "bounds": [300, 300],
+      "name": "LayoutBlockFlow DIV class='composited box'",
+      "bounds": [50, 50],
       "contentsOpaque": true,
       "backgroundColor": "#008000",
-      "transform": 1
+      "transform": 4
     }
   ],
   "transforms": [
@@ -38,7 +40,7 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [8, 8, 0, 1]
+        [14, 162, 0, 1]
       ]
     },
     {
@@ -48,17 +50,16 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [15, 0, 0, 1]
+        [5, 5, 0, 1]
       ]
     },
     {
       "id": 3,
-      "parent": 2,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [-10, 0, 0, 1]
+        [272, 88, 0, 1]
       ]
     },
     {
@@ -68,7 +69,7 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [385, 0, 0, 1]
+        [5, 5, 0, 1]
       ]
     }
   ]

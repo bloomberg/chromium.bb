@@ -24,7 +24,6 @@
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='composited'",
-      "position": [29, 31],
       "bounds": [80, 10],
       "contentsOpaque": true,
       "backgroundColor": "#008000",
@@ -33,7 +32,8 @@
         "GraphicsLayerPaintForeground",
         "GraphicsLayerPaintMask",
         "GraphicsLayerPaintDecoration"
-      ]
+      ],
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow HTML (foreground) Layer",
@@ -120,6 +120,17 @@
         "GraphicsLayerPaintForeground",
         "GraphicsLayerPaintMask",
         "GraphicsLayerPaintDecoration"
+      ]
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [29, 31, 0, 1]
       ]
     }
   ]
