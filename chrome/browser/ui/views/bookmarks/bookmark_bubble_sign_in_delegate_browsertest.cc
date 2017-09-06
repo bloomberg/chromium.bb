@@ -67,7 +67,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBubbleSignInDelegateTest, OnSignInLinkClicked) {
   SignInBrowser(browser());
 
 #if !defined(OS_CHROMEOS)
-  EXPECT_TRUE(browser()->signin_view_controller()->delegate());
+  EXPECT_TRUE(browser()->signin_view_controller()->ShowsModalDialog());
   EXPECT_EQ(starting_tab_count, browser()->tab_strip_model()->count());
 #else
   EXPECT_EQ(starting_tab_count + 1, browser()->tab_strip_model()->count());
@@ -80,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBubbleSignInDelegateTest,
   SignInBrowser(browser());
 
 #if !defined(OS_CHROMEOS)
-  EXPECT_TRUE(browser()->signin_view_controller()->delegate());
+  EXPECT_TRUE(browser()->signin_view_controller()->ShowsModalDialog());
 #endif
   EXPECT_EQ(starting_tab_count, browser()->tab_strip_model()->count());
 }
@@ -131,7 +131,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBubbleSignInDelegateTest, BrowserRemoved) {
 
   int tab_count = extra_browser->tab_strip_model()->count();
 #if !defined(OS_CHROMEOS)
-  EXPECT_TRUE(extra_browser->signin_view_controller()->delegate());
+  EXPECT_TRUE(extra_browser->signin_view_controller()->ShowsModalDialog());
   EXPECT_EQ(starting_tab_count, tab_count);
 #else
   // A new tab should have been opened in the extra browser, which should be

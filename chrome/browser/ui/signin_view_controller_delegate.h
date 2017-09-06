@@ -78,7 +78,7 @@ class SigninViewControllerDelegate
 
   // WebContents is used for executing javascript in the context of a modal sync
   // confirmation dialog.
-  content::WebContents* web_contents_for_testing() { return web_contents_; }
+  content::WebContents* web_contents() { return web_contents_; }
 
  protected:
   SigninViewControllerDelegate(SigninViewController* signin_view_controller,
