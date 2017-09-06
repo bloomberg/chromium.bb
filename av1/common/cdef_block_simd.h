@@ -268,8 +268,10 @@ void SIMD_FUNC(cdef_filter_block_4x4_8)(uint8_t *dst, int dstride,
   const int *pri_taps = cdef_pri_taps[pri_strength & 1];
   const int *sec_taps = cdef_sec_taps[pri_strength & 1];
 
-  if (pri_strength) pri_damping -= get_msb(pri_strength);
-  if (sec_strength) sec_damping -= get_msb(sec_strength);
+  if (pri_strength)
+    pri_damping = AOMMAX(0, pri_damping - get_msb(pri_strength));
+  if (sec_strength)
+    sec_damping = AOMMAX(0, sec_damping - get_msb(sec_strength));
 
   sum = v256_zero();
   row = v256_from_v64(v64_load_aligned(&in[0 * CDEF_BSTRIDE]),
@@ -504,8 +506,10 @@ void SIMD_FUNC(cdef_filter_block_8x8_8)(uint8_t *dst, int dstride,
   const int *pri_taps = cdef_pri_taps[pri_strength & 1];
   const int *sec_taps = cdef_sec_taps[pri_strength & 1];
 
-  if (pri_strength) pri_damping -= get_msb(pri_strength);
-  if (sec_strength) sec_damping -= get_msb(sec_strength);
+  if (pri_strength)
+    pri_damping = AOMMAX(0, pri_damping - get_msb(pri_strength));
+  if (sec_strength)
+    sec_damping = AOMMAX(0, sec_damping - get_msb(sec_strength));
   for (i = 0; i < 8; i += 2) {
     sum = v256_zero();
     row = v256_from_v128(v128_load_aligned(&in[i * CDEF_BSTRIDE]),
@@ -717,8 +721,10 @@ void SIMD_FUNC(cdef_filter_block_4x4_16)(uint16_t *dst, int dstride,
   const int *pri_taps = cdef_pri_taps[pri_strength & 1];
   const int *sec_taps = cdef_sec_taps[pri_strength & 1];
 
-  if (pri_strength) pri_damping -= get_msb(pri_strength);
-  if (sec_strength) sec_damping -= get_msb(sec_strength);
+  if (pri_strength)
+    pri_damping = AOMMAX(0, pri_damping - get_msb(pri_strength));
+  if (sec_strength)
+    sec_damping = AOMMAX(0, sec_damping - get_msb(sec_strength));
   for (i = 0; i < 4; i += 2) {
     sum = v128_zero();
     row = v128_from_v64(v64_load_aligned(&in[i * CDEF_BSTRIDE]),
@@ -888,8 +894,10 @@ void SIMD_FUNC(cdef_filter_block_8x8_16)(uint16_t *dst, int dstride,
   const int *pri_taps = cdef_pri_taps[pri_strength & 1];
   const int *sec_taps = cdef_sec_taps[pri_strength & 1];
 
-  if (pri_strength) pri_damping -= get_msb(pri_strength);
-  if (sec_strength) sec_damping -= get_msb(sec_strength);
+  if (pri_strength)
+    pri_damping = AOMMAX(0, pri_damping - get_msb(pri_strength));
+  if (sec_strength)
+    sec_damping = AOMMAX(0, sec_damping - get_msb(sec_strength));
 
   for (i = 0; i < 8; i++) {
     sum = v128_zero();

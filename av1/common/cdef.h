@@ -24,14 +24,12 @@
 
 static INLINE int sign(int i) { return i < 0 ? -1 : 1; }
 
-static INLINE int constrain(int diff, int threshold, unsigned int damping) {
-  return threshold
-             ? sign(diff) *
-                   AOMMIN(abs(diff),
-                          AOMMAX(0,
-                                 threshold - (abs(diff) >>
-                                              (damping - get_msb(threshold)))))
-             : 0;
+static INLINE int constrain(int diff, int threshold, int damping) {
+  if (!threshold) return 0;
+
+  const int shift = AOMMAX(0, damping - get_msb(threshold));
+  return sign(diff) *
+         AOMMIN(abs(diff), AOMMAX(0, threshold - (abs(diff) >> shift)));
 }
 
 #ifdef __cplusplus
