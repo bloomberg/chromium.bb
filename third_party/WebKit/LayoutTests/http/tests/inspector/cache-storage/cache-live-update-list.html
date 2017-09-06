@@ -1,34 +1,35 @@
 <html>
 <head>
+<meta name="timeout" content="long">
 <script src="../inspector-test.js"></script>
 <script src="cache-storage-test.js"></script>
 <script>
 
-function test() {
-  var cacheStorageModel = TestRunner.mainTarget.model(SDK.ServiceWorkerCacheModel);
+async function test() {
+  var cacheStorageModel = InspectorTest.mainTarget.model(SDK.ServiceWorkerCacheModel);
   cacheStorageModel.enable();
+  cacheStorageModel._throttler._timeout = 0;
 
-  function errorAndExit(error) {
-    if (error)
-      TestRunner.addResult(error);
-    TestRunner.completeTest();
-  }
+  await InspectorTest.clearAllCaches();
+  await InspectorTest.dumpCacheTree();
 
-  function main() {
-    ApplicationTestRunner.clearAllCaches()
-        .then(ApplicationTestRunner.dumpCacheTree)
-        .then(ApplicationTestRunner.createCache.bind(this, 'testCache1'))
-        .then(ApplicationTestRunner.dumpCacheTree)
-        .then(ApplicationTestRunner.createCache.bind(this, 'testCache2'))
-        .then(ApplicationTestRunner.dumpCacheTree)
-        .then(ApplicationTestRunner.deleteCache.bind(this, 'testCache1'))
-        .then(ApplicationTestRunner.dumpCacheTree)
-        .then(ApplicationTestRunner.clearAllCaches)
-        .then(TestRunner.completeTest)
-        .catch(errorAndExit);
-  }
+  var promise = InspectorTest.addSnifferPromise(SDK.ServiceWorkerCacheModel.prototype, '_cacheAdded');
+  InspectorTest.createCache('testCache1');
+  await promise;
+  await InspectorTest.dumpCacheTreeNoRefresh();
 
-  ApplicationTestRunner.waitForCacheRefresh(main);
+  promise = InspectorTest.addSnifferPromise(SDK.ServiceWorkerCacheModel.prototype, '_cacheAdded');
+  InspectorTest.createCache('testCache2');
+  await promise;
+  await InspectorTest.dumpCacheTreeNoRefresh();
+
+  promise = InspectorTest.addSnifferPromise(SDK.ServiceWorkerCacheModel.prototype, '_cacheRemoved');
+  InspectorTest.deleteCache('testCache1');
+  await promise;
+  await InspectorTest.dumpCacheTreeNoRefresh();
+
+  await InspectorTest.clearAllCaches();
+  InspectorTest.completeTest();
 }
 </script>
 </head>
