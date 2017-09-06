@@ -2119,6 +2119,77 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForScaledLayers) {
   EXPECT_TRUE(output.end.visible());
 }
 
+TEST_F(LayerTreeImplTest, SelectionBoundsForDSFEnabled) {
+  LayerImpl* root = root_layer();
+  root->SetDrawsContent(true);
+  root->SetBounds(gfx::Size(100, 100));
+
+  int root_layer_id = root->id();
+  int sub_layer_id = 2;
+
+  gfx::Vector2dF sub_layer_offset(10, 0);
+  {
+    std::unique_ptr<LayerImpl> sub_layer =
+        LayerImpl::Create(host_impl().active_tree(), sub_layer_id);
+    sub_layer->SetPosition(gfx::PointF() + sub_layer_offset);
+    sub_layer->SetBounds(gfx::Size(50, 50));
+    sub_layer->SetDrawsContent(true);
+    root->test_properties()->AddChild(std::move(sub_layer));
+  }
+
+  host_impl().active_tree()->BuildPropertyTreesForTesting();
+
+  float device_scale_factor = 3.f;
+  float painted_device_scale_factor = 5.f;
+
+  LayerTreeImpl::ViewportLayerIds viewport_ids;
+  viewport_ids.page_scale = root->id();
+  host_impl().active_tree()->SetViewportLayersFromIds(viewport_ids);
+  host_impl().active_tree()->SetDeviceScaleFactor(device_scale_factor);
+  host_impl().active_tree()->set_painted_device_scale_factor(
+      painted_device_scale_factor);
+
+  LayerSelection input;
+  input.start.type = gfx::SelectionBound::LEFT;
+  input.start.edge_top = gfx::Point(10, 10);
+  input.start.edge_bottom = gfx::Point(10, 30);
+  input.start.layer_id = root_layer_id;
+
+  input.end.type = gfx::SelectionBound::RIGHT;
+  input.end.edge_top = gfx::Point(0, 0);
+  input.end.edge_bottom = gfx::Point(0, 20);
+  input.end.layer_id = sub_layer_id;
+  host_impl().active_tree()->RegisterSelection(input);
+
+  // The viewport bounds should be properly scaled by the page scale, but should
+  // remain in DIP coordinates.
+  Selection<gfx::SelectionBound> output;
+  host_impl().active_tree()->GetViewportSelection(&output);
+  EXPECT_EQ(input.start.type, output.start.type());
+  auto expected_output_start_top = gfx::PointF(input.start.edge_top);
+  auto expected_output_edge_bottom = gfx::PointF(input.start.edge_bottom);
+  expected_output_start_top.Scale(
+      1.f / (device_scale_factor * painted_device_scale_factor));
+  expected_output_edge_bottom.Scale(
+      1.f / (device_scale_factor * painted_device_scale_factor));
+  EXPECT_EQ(expected_output_start_top, output.start.edge_top());
+  EXPECT_EQ(expected_output_edge_bottom, output.start.edge_bottom());
+  EXPECT_TRUE(output.start.visible());
+  EXPECT_EQ(input.end.type, output.end.type());
+
+  auto expected_output_end_top = gfx::PointF(input.end.edge_top);
+  auto expected_output_end_bottom = gfx::PointF(input.end.edge_bottom);
+  expected_output_end_top.Offset(sub_layer_offset.x(), sub_layer_offset.y());
+  expected_output_end_bottom.Offset(sub_layer_offset.x(), sub_layer_offset.y());
+  expected_output_end_top.Scale(
+      1.f / (device_scale_factor * painted_device_scale_factor));
+  expected_output_end_bottom.Scale(
+      1.f / (device_scale_factor * painted_device_scale_factor));
+  EXPECT_EQ(expected_output_end_top, output.end.edge_top());
+  EXPECT_EQ(expected_output_end_bottom, output.end.edge_bottom());
+  EXPECT_TRUE(output.end.visible());
+}
+
 TEST_F(LayerTreeImplTest, SelectionBoundsWithLargeTransforms) {
   LayerImpl* root = root_layer();
   root->SetBounds(gfx::Size(100, 100));

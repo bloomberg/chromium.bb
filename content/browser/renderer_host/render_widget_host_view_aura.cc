@@ -926,30 +926,14 @@ void RenderWidgetHostViewAura::SubmitCompositorFrame(
   UpdateBackgroundColorFromRenderer(frame.metadata.root_background_color);
 
   last_scroll_offset_ = frame.metadata.root_scroll_offset;
-  cc::Selection<gfx::SelectionBound> selection = frame.metadata.selection;
-  if (IsUseZoomForDSFEnabled()) {
-    float viewportToDIPScale = 1.0f / current_device_scale_factor_;
-    gfx::PointF start_edge_top = selection.start.edge_top();
-    gfx::PointF start_edge_bottom = selection.start.edge_bottom();
-    gfx::PointF end_edge_top = selection.end.edge_top();
-    gfx::PointF end_edge_bottom = selection.end.edge_bottom();
-
-    start_edge_top.Scale(viewportToDIPScale);
-    start_edge_bottom.Scale(viewportToDIPScale);
-    end_edge_top.Scale(viewportToDIPScale);
-    end_edge_bottom.Scale(viewportToDIPScale);
-
-    selection.start.SetEdge(start_edge_top, start_edge_bottom);
-    selection.end.SetEdge(end_edge_top, end_edge_bottom);
-  }
-
   if (delegated_frame_host_) {
     delegated_frame_host_->SubmitCompositorFrame(local_surface_id,
                                                  std::move(frame));
   }
-  if (selection.start != selection_start_ || selection.end != selection_end_) {
-    selection_start_ = selection.start;
-    selection_end_ = selection.end;
+  if (frame.metadata.selection.start != selection_start_ ||
+      frame.metadata.selection.end != selection_end_) {
+    selection_start_ = frame.metadata.selection.start;
+    selection_end_ = frame.metadata.selection.end;
     selection_controller_client_->UpdateClientSelectionBounds(selection_start_,
                                                               selection_end_);
   }
