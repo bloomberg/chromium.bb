@@ -248,8 +248,9 @@ void AppListPresenterDelegate::OnMouseEvent(ui::MouseEvent* event) {
 void AppListPresenterDelegate::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP ||
       event->type() == ui::ET_GESTURE_TWO_FINGER_TAP ||
-      event->type() == ui::ET_GESTURE_LONG_PRESS)
+      event->type() == ui::ET_GESTURE_LONG_PRESS) {
     ProcessLocatedEvent(event);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

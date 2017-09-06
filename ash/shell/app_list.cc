@@ -24,6 +24,7 @@
 #include "ui/app_list/app_list_item_list.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_view_delegate.h"
+#include "ui/app_list/presenter/app_list.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/search_result.h"
 #include "ui/app_list/speech_ui_model.h"
@@ -271,7 +272,7 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
 
   void Dismiss() override {
     DCHECK(ShellPort::HasInstance());
-    Shell::Get()->DismissAppList();
+    Shell::Get()->app_list()->Dismiss();
   }
 
   void ViewClosing() override {

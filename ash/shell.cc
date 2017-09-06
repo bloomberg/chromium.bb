@@ -130,7 +130,6 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/sys_info.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/trace_event/trace_event.h"
@@ -492,41 +491,6 @@ void Shell::AddShellObserver(ShellObserver* observer) {
 
 void Shell::RemoveShellObserver(ShellObserver* observer) {
   shell_observers_.RemoveObserver(observer);
-}
-
-void Shell::ShowAppList(app_list::AppListShowSource toggle_method) {
-  if (IsAppListVisible()) {
-    UMA_HISTOGRAM_ENUMERATION(app_list::kAppListToggleMethodHistogram,
-                              toggle_method, app_list::kMaxAppListToggleMethod);
-  }
-  // Show the app list on the default display for new windows.
-  app_list_->Show(display::Screen::GetScreen()
-                      ->GetDisplayNearestWindow(GetRootWindowForNewWindows())
-                      .id());
-}
-
-void Shell::DismissAppList() {
-  app_list_->Dismiss();
-}
-
-void Shell::ToggleAppList(app_list::AppListShowSource toggle_method) {
-  if (IsAppListVisible()) {
-    UMA_HISTOGRAM_ENUMERATION(app_list::kAppListToggleMethodHistogram,
-                              toggle_method, app_list::kMaxAppListToggleMethod);
-  }
-  // Toggle the app list on the default display for new windows.
-  app_list_->ToggleAppList(
-      display::Screen::GetScreen()
-          ->GetDisplayNearestWindow(GetRootWindowForNewWindows())
-          .id());
-}
-
-bool Shell::IsAppListVisible() const {
-  return app_list_->IsVisible();
-}
-
-bool Shell::GetAppListTargetVisibility() const {
-  return app_list_->GetTargetVisibility();
 }
 
 void Shell::UpdateAfterLoginStatusChange(LoginStatus status) {

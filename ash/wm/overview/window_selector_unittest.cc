@@ -35,6 +35,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/user_action_tester.h"
 #include "ui/app_list/app_list_constants.h"
+#include "ui/app_list/presenter/app_list.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/window_types.h"
@@ -512,9 +513,10 @@ TEST_F(WindowSelectorTest, TextFilterActive) {
   EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
   EXPECT_EQ(window1.get(), wm::GetFocusedWindow());
 
-  // Pass an enum to satisfy the function, it is arbitrary and will not effect
+  // Pass an enum to satisfy the function, it is arbitrary and will not affect
   // histograms.
-  Shell::Get()->ToggleAppList(app_list::kShelfButton);
+  Shell::Get()->app_list()->ToggleAppList(GetPrimaryDisplay().id(),
+                                          app_list::kShelfButton);
 
   // Activating overview cancels the App-list which normally would activate the
   // previously active |window1|. Overview mode should properly transfer focus

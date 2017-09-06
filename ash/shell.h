@@ -538,24 +538,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   void AddShellObserver(ShellObserver* observer);
   void RemoveShellObserver(ShellObserver* observer);
 
-  // TODO(minch), move applist related functions to AppList.
-  // http://crbug.com/759909.
-  // Shows the app list on the active root window.
-  void ShowAppList(app_list::AppListShowSource toggle_method);
-
-  // Dismisses the app list.
-  void DismissAppList();
-
-  // Shows the app list if it's not visible. Dismisses it otherwise.
-  void ToggleAppList(app_list::AppListShowSource toggle_method);
-
-  // Returns app list actual visibility. This might differ from
-  // GetAppListTargetVisibility() when hiding animation is still in flight.
-  bool IsAppListVisible() const;
-
-  // Returns app list target visibility.
-  bool GetAppListTargetVisibility() const;
-
   // Called when the login status changes.
   // TODO(oshima): Investigate if we can merge this and |OnLoginStateChanged|.
   void UpdateAfterLoginStatusChange(LoginStatus status);

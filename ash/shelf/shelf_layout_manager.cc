@@ -29,7 +29,6 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
-#include "base/metrics/histogram_macros.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/presenter/app_list.h"
@@ -1113,7 +1112,11 @@ void ShelfLayoutManager::StartGestureDrag(
   if (CanStartFullscreenAppListDrag(
           gesture_in_screen.details().scroll_y_hint())) {
     gesture_drag_status_ = GESTURE_DRAG_APPLIST_IN_PROGRESS;
-    Shell::Get()->ShowAppList(app_list::kSwipeFromShelf);
+    Shell::Get()->app_list()->Show(
+        display::Screen::GetScreen()
+            ->GetDisplayNearestWindow(shelf_widget_->GetNativeWindow())
+            .id(),
+        app_list::kSwipeFromShelf);
     Shell::Get()->app_list()->UpdateYPositionAndOpacity(
         gesture_in_screen.location().y(),
         GetAppListBackgroundOpacityOnShelfOpacity());
@@ -1138,7 +1141,7 @@ void ShelfLayoutManager::UpdateGestureDrag(
     // Dismiss the app list if the shelf changed to vertical alignment during
     // dragging.
     if (!shelf_->IsHorizontalAlignment()) {
-      Shell::Get()->DismissAppList();
+      Shell::Get()->app_list()->Dismiss();
       gesture_drag_amount_ = 0.f;
       gesture_drag_status_ = GESTURE_DRAG_NONE;
       return;
@@ -1247,16 +1250,13 @@ void ShelfLayoutManager::CompleteAppListDrag(
   }
 
   Shell::Get()->app_list()->EndDragFromShelf(app_list_state);
-  UMA_HISTOGRAM_ENUMERATION(app_list::kAppListToggleMethodHistogram,
-                            app_list::kSwipeFromShelf,
-                            app_list::kMaxAppListToggleMethod);
 
   gesture_drag_status_ = GESTURE_DRAG_NONE;
 }
 
 void ShelfLayoutManager::CancelGestureDrag() {
   if (gesture_drag_status_ == GESTURE_DRAG_APPLIST_IN_PROGRESS) {
-    Shell::Get()->DismissAppList();
+    Shell::Get()->app_list()->Dismiss();
   } else {
     gesture_drag_status_ = GESTURE_DRAG_CANCEL_IN_PROGRESS;
     UpdateVisibilityState();
