@@ -30,29 +30,30 @@ void cfl_init(CFL_CTX *cfl, AV1_COMMON *cm) {
 }
 
 static INLINE void cfl_luma_subsampling_420(const uint8_t *y_pix,
-                                            uint8_t *output, int width,
+                                            int *output_q3, int width,
                                             int height) {
   for (int j = 0; j < height; j++) {
     for (int i = 0; i < width; i++) {
       int top = i << 1;
       int bot = top + MAX_SB_SIZE;
       int sum = y_pix[top] + y_pix[top + 1] + y_pix[bot] + y_pix[bot + 1];
-      output[i] = (sum + 2) >> 2;
+      // TODO(ltrudeau) replace "+ 2 >> 2 << 3" with << 1
+      output_q3[i] = ((sum + 2) >> 2) << 3;
     }
     y_pix += MAX_SB_SIZE << 1;
-    output += MAX_SB_SIZE;
+    output_q3 += MAX_SB_SIZE;
   }
 }
 
 static INLINE void cfl_luma_subsampling_444(const uint8_t *y_pix,
-                                            uint8_t *output, int width,
+                                            int *output_q3, int width,
                                             int height) {
   for (int j = 0; j < height; j++) {
     for (int i = 0; i < width; i++) {
-      output[i] = y_pix[i];
+      output_q3[i] = y_pix[i] << 3;
     }
     y_pix += MAX_SB_SIZE;
-    output += MAX_SB_SIZE;
+    output_q3 += MAX_SB_SIZE;
   }
 }
 
@@ -62,20 +63,19 @@ static void cfl_load(CFL_CTX *cfl, int row, int col, int width, int height) {
   const int sub_y = cfl->subsampling_y;
   const int off_log2 = tx_size_wide_log2[0];
 
-  // TODO(ltrudeau) convert to uint16 to add HBD support
-  uint8_t *output = cfl->y_down_pix;
+  int *output_q3 = cfl->y_down_pix_q3;
 
   // TODO(ltrudeau) should be faster to downsample when we store the values
   // TODO(ltrudeau) add support for 4:2:2
   if (sub_y == 0 && sub_x == 0) {
     // TODO(ltrudeau) convert to uint16 to add HBD support
     const uint8_t *y_pix = cfl->y_pix + ((row * MAX_SB_SIZE + col) << off_log2);
-    cfl_luma_subsampling_444(y_pix, output, width, height);
+    cfl_luma_subsampling_444(y_pix, output_q3, width, height);
   } else if (sub_y == 1 && sub_x == 1) {
     // TODO(ltrudeau) convert to uint16 to add HBD support
     const uint8_t *y_pix =
         cfl->y_pix + ((row * MAX_SB_SIZE + col) << (off_log2 + sub_y));
-    cfl_luma_subsampling_420(y_pix, output, width, height);
+    cfl_luma_subsampling_420(y_pix, output_q3, width, height);
   } else {
     assert(0);  // Unsupported chroma subsampling
   }
@@ -100,7 +100,7 @@ static void cfl_load(CFL_CTX *cfl, int row, int col, int width, int height) {
     for (int j = 0; j < height; j++) {
       last_pixel = output_row_offset - 1;
       for (int i = 0; i < diff_width; i++) {
-        output[output_row_offset + i] = output[last_pixel];
+        output_q3[output_row_offset + i] = output_q3[last_pixel];
       }
       output_row_offset += MAX_SB_SIZE;
     }
@@ -112,7 +112,7 @@ static void cfl_load(CFL_CTX *cfl, int row, int col, int width, int height) {
 
     for (int j = 0; j < diff_height; j++) {
       for (int i = 0; i < width; i++) {
-        output[output_row_offset + i] = output[last_row_offset + i];
+        output_q3[output_row_offset + i] = output_q3[last_row_offset + i];
       }
       output_row_offset += MAX_SB_SIZE;
     }
@@ -200,10 +200,8 @@ static void cfl_compute_averages(CFL_CTX *cfl, TX_SIZE tx_size) {
   const int num_pel_log2 =
       (tx_size_high_log2[tx_size] + tx_size_wide_log2[tx_size]);
 
-  // TODO(ltrudeau) Convert to uint16 for HBD support
-  const uint8_t *y_pix = cfl->y_down_pix;
-  // TODO(ltrudeau) Convert to uint16 for HBD support
-  const uint8_t *t_y_pix;
+  const int *y_pix_q3 = cfl->y_down_pix_q3;
+  const int *t_y_pix_q3;
   int *averages_q3 = cfl->y_averages_q3;
 
   cfl_load(cfl, 0, 0, width, height);
@@ -211,24 +209,23 @@ static void cfl_compute_averages(CFL_CTX *cfl, TX_SIZE tx_size) {
   int a = 0;
   for (int b_j = 0; b_j < height; b_j += tx_height) {
     for (int b_i = 0; b_i < width; b_i += tx_width) {
-      int sum = 0;
-      t_y_pix = y_pix;
+      int sum_q3 = 0;
+      t_y_pix_q3 = y_pix_q3;
       for (int t_j = 0; t_j < tx_height; t_j++) {
         for (int t_i = b_i; t_i < b_i + tx_width; t_i++) {
-          sum += t_y_pix[t_i];
+          sum_q3 += t_y_pix_q3[t_i];
         }
-        t_y_pix += MAX_SB_SIZE;
+        t_y_pix_q3 += MAX_SB_SIZE;
       }
       assert(a < MAX_NUM_TXB_SQUARE);
-      averages_q3[a++] =
-          ((sum << 3) + (1 << (num_pel_log2 - 1))) >> num_pel_log2;
+      averages_q3[a++] = (sum_q3 + (1 << (num_pel_log2 - 1))) >> num_pel_log2;
 
       // Loss is never more than 1/2 (in Q3)
       assert(fabs((double)averages_q3[a - 1] -
-                  (sum / ((double)(1 << num_pel_log2))) * (1 << 3)) <= 0.5);
+                  (sum_q3 / ((double)(1 << num_pel_log2)))) <= 0.5);
     }
     assert(a % stride == 0);
-    y_pix += block_row_stride;
+    y_pix_q3 += block_row_stride;
   }
 
   cfl->y_averages_stride = stride;
@@ -255,8 +252,7 @@ void cfl_predict_block(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,
 
   const int width = tx_size_wide[tx_size];
   const int height = tx_size_high[tx_size];
-  // TODO(ltrudeau) Convert to uint16 to support HBD
-  const uint8_t *y_pix = cfl->y_down_pix;
+  const int *y_pix_q3 = cfl->y_down_pix_q3;
 
   const int dc_pred = cfl->dc_pred[plane - 1];
   const int alpha_q3 =
@@ -273,11 +269,11 @@ void cfl_predict_block(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,
   for (int j = 0; j < height; j++) {
     for (int i = 0; i < width; i++) {
       // TODO(ltrudeau) add support for HBD.
-      dst[i] =
-          clip_pixel(get_scaled_luma_q0(alpha_q3, y_pix[i], avg_q3) + dc_pred);
+      dst[i] = clip_pixel(get_scaled_luma_q0(alpha_q3, y_pix_q3[i], avg_q3) +
+                          dc_pred);
     }
     dst += dst_stride;
-    y_pix += MAX_SB_SIZE;
+    y_pix_q3 += MAX_SB_SIZE;
   }
 }
 

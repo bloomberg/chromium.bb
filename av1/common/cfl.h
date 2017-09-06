@@ -14,8 +14,8 @@
 
 #include "av1/common/blockd.h"
 
-static INLINE int get_scaled_luma_q0(int alpha_q3, int y_pix, int avg_q3) {
-  int scaled_luma_q6 = alpha_q3 * ((y_pix << 3) - avg_q3);
+static INLINE int get_scaled_luma_q0(int alpha_q3, int y_pix_q3, int avg_q3) {
+  int scaled_luma_q6 = alpha_q3 * (y_pix_q3 - avg_q3);
   return ROUND_POWER_OF_TWO_SIGNED(scaled_luma_q6, 6);
 }
 

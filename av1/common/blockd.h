@@ -699,10 +699,8 @@ typedef struct cfl_ctx {
   // TODO(ltrudeau) Convert to uint16 for HBD support
   uint8_t y_pix[MAX_SB_SQUARE];
 
-  // Pixel buffer containing the downsampled luma pixels used as prediction for
-  // chroma
-  // TODO(ltrudeau) Convert to uint16 for HBD support
-  uint8_t y_down_pix[MAX_SB_SQUARE];
+  // Downsampled luma pixels (in Q3) used for chroma prediction
+  int y_down_pix_q3[MAX_SB_SQUARE];
 
   // Height and width of the luma prediction block currently in the pixel buffer
   int y_height, y_width;
