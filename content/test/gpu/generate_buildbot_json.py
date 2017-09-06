@@ -657,7 +657,6 @@ FYI_WATERFALL = {
     'Android Release (Nexus 5X)': {
       'swarming_dimensions': [
         {
-          'android_devices': '1',
           'device_type': 'bullhead',
           'device_os': 'M',
           'os': 'Android'
@@ -730,7 +729,6 @@ FYI_WATERFALL = {
     'Android dEQP Release (Nexus 5X)': {
       'swarming_dimensions': [
         {
-          'android_devices': '1',
           'device_type': 'bullhead',
           'device_os': 'M',
           'os': 'Android'
@@ -947,7 +945,6 @@ V8_FYI_WATERFALL = {
     'Android Release (Nexus 5X)': {
       'swarming_dimensions': [
         {
-          'android_devices': '1',
           'device_type': 'bullhead',
           'device_os': 'M',
           'os': 'Android'
@@ -1071,7 +1068,6 @@ COMMON_GTESTS = {
         'swarming_dimension_sets': [
           # Nexus 5X
           {
-            'android_devices': '1',
             'device_type': 'bullhead',
             'device_os': 'M',
             'os': 'Android'
@@ -1109,7 +1105,6 @@ COMMON_GTESTS = {
         'swarming_dimension_sets': [
           # Nexus 5X
           {
-            'android_devices': '1',
             'device_type': 'bullhead',
             'device_os': 'M',
             'os': 'Android'
