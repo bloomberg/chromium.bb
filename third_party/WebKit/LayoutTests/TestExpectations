@@ -1759,6 +1759,11 @@ crbug.com/751952 virtual/service-worker-script-streaming/external/wpt/service-wo
 crbug.com/761952 virtual/outofblink-cors/external/wpt/service-workers/service-worker/link-element-register-security-error.https.html [ Failure Pass ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/html/semantics/embedded-content/the-embed-element/embed-represent-nothing-02.html [ Failure ]
+crbug.com/626703 external/wpt/html/semantics/embedded-content/the-embed-element/embed-represent-nothing-04.html [ Failure ]
+crbug.com/626703 external/wpt/html/semantics/embedded-content/the-img-element/relevant-mutations.html [ Timeout ]
+crbug.com/626703 [ Android Linux Mac ] external/wpt/html/semantics/embedded-content/the-object-element/object-events.html [ Timeout ]
+crbug.com/626703 external/wpt/html/semantics/embedded-content/the-video-element/video_initially_paused.html [ Failure ]
 crbug.com/626703 external/wpt/payment-request/PaymentRequestUpdateEvent/updateWith-duplicate-shipping-options-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/payment-request/algorithms-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/payment-request/user-abort-algorithm-manual.https.html [ Skip ]
