@@ -87,13 +87,11 @@ public class OfflinePageEvaluationBridge {
      * @param profile The profile used to get bridge.
      * @param useEvaluationScheduler True if using the evaluation scheduler instead of the
      *                               GCMNetworkManager one.
-     * @param useBackgroundLoader True if using background loader. False for prerenderer.
      */
-    public OfflinePageEvaluationBridge(
-            Profile profile, boolean useEvaluationScheduler, boolean useBackgroundLoader) {
+    public OfflinePageEvaluationBridge(Profile profile, boolean useEvaluationScheduler) {
         ThreadUtils.assertOnUiThread();
         mNativeOfflinePageEvaluationBridge =
-                nativeCreateBridgeForProfile(profile, useEvaluationScheduler, useBackgroundLoader);
+                nativeCreateBridgeForProfile(profile, useEvaluationScheduler);
     }
 
     private static final String TAG = "OPEvalBridge";
@@ -269,7 +267,7 @@ public class OfflinePageEvaluationBridge {
     }
 
     private native long nativeCreateBridgeForProfile(
-            Profile profile, boolean useEvaluationScheduler, boolean useBackgroundLoader);
+            Profile profile, boolean useEvaluationScheduler);
     private native void nativeDestroy(long nativeOfflinePageEvaluationBridge);
 
     private native void nativeGetAllPages(long nativeOfflinePageEvaluationBridge,

@@ -53,11 +53,10 @@ import java.util.concurrent.TimeUnit;
  * Tests OfflinePageBridge.SavePageLater over a batch of urls.
  * Tests against a list of top EM urls, try to call SavePageLater on each of the url. It also
  * record metrics (failure rate, time elapsed etc.) by writing metrics to a file on external
- * storage. This will always use prerenderer.
+ * storage.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({"disable-features=BackgroundLoader",
-        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
 public class OfflinePageSavePageLaterEvaluationTest {
     /**
@@ -114,7 +113,6 @@ public class OfflinePageSavePageLaterEvaluationTest {
     private boolean mIsUserRequested;
     private boolean mUseTestScheduler;
     private int mScheduleBatchSize;
-    private boolean mUseBackgroundLoader;
 
     private LongSparseArray<RequestMetadata> mRequestMetadata;
 
@@ -225,17 +223,15 @@ public class OfflinePageSavePageLaterEvaluationTest {
      * Initializes the evaluation bridge which will be used.
      * @param useCustomScheduler True if customized scheduler (the one with immediate scheduling)
      *                           will be used. False otherwise.
-     * @param useBackgroundLoader True if use background loader. False if use prerenderer.
      */
-    private void initializeBridgeForProfile(final boolean useTestingScheduler,
-            final boolean useBackgroundLoader) throws InterruptedException {
+    private void initializeBridgeForProfile(final boolean useTestingScheduler)
+            throws InterruptedException {
         final Semaphore semaphore = new Semaphore(0);
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 Profile profile = Profile.getLastUsedProfile();
-                mBridge = new OfflinePageEvaluationBridge(
-                        profile, useTestingScheduler, useBackgroundLoader);
+                mBridge = new OfflinePageEvaluationBridge(profile, useTestingScheduler);
                 if (mBridge == null) {
                     Assert.fail("OfflinePageEvaluationBridge initialization failed!");
                     return;
@@ -261,10 +257,8 @@ public class OfflinePageSavePageLaterEvaluationTest {
      * Set up the input/output, bridge and observer we're going to use.
      * @param useCustomScheduler True if customized scheduler (the one with immediate scheduling)
      *                           will be used. False otherwise.
-     * @param useBackgroundLoader True if use background loader. False if use prerenderer.
      */
-    protected void setUpIOAndBridge(final boolean useCustomScheduler,
-            final boolean useBackgroundLoader) throws InterruptedException {
+    protected void setUpIOAndBridge(final boolean useCustomScheduler) throws InterruptedException {
         try {
             getUrlListFromInputFile(INPUT_FILE_PATH);
         } catch (IOException e) {
@@ -277,7 +271,7 @@ public class OfflinePageSavePageLaterEvaluationTest {
             mScheduleBatchSize = mUrls.size();
         }
 
-        initializeBridgeForProfile(useCustomScheduler, useBackgroundLoader);
+        initializeBridgeForProfile(useCustomScheduler);
         mObserver = new OfflinePageEvaluationObserver() {
             public void savePageRequestAdded(SavePageRequest request) {
                 RequestMetadata metadata = new RequestMetadata();
@@ -498,8 +492,6 @@ public class OfflinePageSavePageLaterEvaluationTest {
             mIsUserRequested = Boolean.parseBoolean(properties.getProperty("IsUserRequested"));
             mUseTestScheduler = Boolean.parseBoolean(properties.getProperty("UseTestScheduler"));
             mScheduleBatchSize = Integer.parseInt(properties.getProperty("ScheduleBatchSize"));
-            mUseBackgroundLoader =
-                    Boolean.parseBoolean(properties.getProperty("UseBackgroundLoader"));
         } catch (FileNotFoundException e) {
             Log.e(TAG, e.getMessage(), e);
             Assert.fail(String.format(
@@ -530,7 +522,7 @@ public class OfflinePageSavePageLaterEvaluationTest {
     @CommandLineFlags.Remove({"disable-features=OfflinePagesSvelteConcurrentLoading"})
     public void testFailureRate() throws IOException, InterruptedException {
         parseConfigFile();
-        setUpIOAndBridge(mUseTestScheduler, mUseBackgroundLoader);
+        setUpIOAndBridge(mUseTestScheduler);
         processUrls(mUrls);
     }
 

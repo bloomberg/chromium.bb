@@ -29,7 +29,6 @@ import urlparse
 
 DEFAULT_USER_REQUEST = True
 DEFAULT_USE_TEST_SCHEDULER = True
-DEFAULT_USE_BACKGROUND_LOADER = False
 # 0 means the batch would be the whole list of urls.
 DEFAULT_BATCH_SIZE = 0
 DEFAULT_VERBOSE = False
@@ -41,7 +40,6 @@ CONFIG_TEMPLATE = """\
 IsUserRequested = {is_user_requested}
 UseTestScheduler = {use_test_scheduler}
 ScheduleBatchSize = {schedule_batch_size}
-UseBackgroundLoader = {use_background_loader}
 """
 
 
@@ -92,23 +90,12 @@ def main(args):
   parser.add_argument('build_output_dir', help='Path to build directory.')
   parser.add_argument(
       'test_urls_file', help='Path to input file with urls to be tested.')
-  parser.add_argument(
-      '--use-background-loader',
-      dest='use_background_loader',
-      action='store_true',
-      help='Use background loader instead of prerenderer.')
-  parser.add_argument(
-      '--use-prerenderer',
-      dest='use_background_loader',
-      action='store_false',
-      help='Use prerenderer instead of background loader.')
   parser.set_defaults(
       output_dir=os.path.expanduser('~/offline_eval_output'),
       user_request=DEFAULT_USER_REQUEST,
       use_test_scheduler=DEFAULT_USE_TEST_SCHEDULER,
       schedule_batch_size=DEFAULT_BATCH_SIZE,
-      verbose=DEFAULT_VERBOSE,
-      use_background_loader=DEFAULT_USE_BACKGROUND_LOADER)
+      verbose=DEFAULT_VERBOSE)
 
   # Get the arguments and several paths.
   options, extra_args = parser.parse_known_args(args)
