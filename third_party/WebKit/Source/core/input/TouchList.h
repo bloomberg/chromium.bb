@@ -27,7 +27,7 @@
 #define TouchList_h
 
 #include "core/CoreExport.h"
-#include "core/dom/Touch.h"
+#include "core/input/Touch.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Vector.h"

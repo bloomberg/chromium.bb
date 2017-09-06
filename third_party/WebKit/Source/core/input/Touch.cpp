@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/Touch.h"
+#include "core/input/Touch.h"
 
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"

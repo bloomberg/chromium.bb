@@ -28,10 +28,14 @@ blink_core_sources("input") {
     "PointerEventManager.h",
     "ScrollManager.cpp",
     "ScrollManager.h",
+    "Touch.cpp",
+    "Touch.h",
     "TouchActionUtil.cpp",
     "TouchActionUtil.h",
     "TouchEventManager.cpp",
     "TouchEventManager.h",
+    "TouchList.cpp",
+    "TouchList.h",
   ]
 
   configs += [
