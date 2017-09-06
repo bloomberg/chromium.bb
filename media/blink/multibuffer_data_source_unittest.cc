@@ -1542,7 +1542,7 @@ TEST_F(MultibufferDataSourceTest, CheckBufferSizeForSmallFiles) {
   EXPECT_EQ(3 << 20, preload_high());
   EXPECT_EQ(25 << 20, max_buffer_forward());
   EXPECT_EQ(kFileSize * 2, max_buffer_backward());
-  EXPECT_EQ(5013504 /* file size rounted up to blocks size */, buffer_size());
+  EXPECT_EQ(5013504 /* file size rounded up to blocks size */, buffer_size());
 
   data_source_->SetBitrate(80 << 20);  // 80 mbit / s
   base::RunLoop().RunUntilIdle();
@@ -1551,7 +1551,33 @@ TEST_F(MultibufferDataSourceTest, CheckBufferSizeForSmallFiles) {
   EXPECT_EQ(51 << 20, preload_high());
   EXPECT_EQ(51 << 20, max_buffer_forward());
   EXPECT_EQ(20 << 20, max_buffer_backward());
-  EXPECT_EQ(5013504 /* file size rounted up to blocks size */, buffer_size());
+  EXPECT_EQ(5013504 /* file size rounded up to blocks size */, buffer_size());
+}
+
+TEST_F(MultibufferDataSourceTest, CheckBufferSizeAfterReadingALot) {
+  InitializeWith206Response();
+
+  EXPECT_CALL(*this, ReadCallback(kDataSize));
+  ReadAt(0);
+
+  const int to_read = 40;
+
+  for (int i = 1; i < to_read; i++) {
+    EXPECT_CALL(*this, ReadCallback(kDataSize));
+    EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * (i + 1)));
+    ReadAt(i * kDataSize);
+    ReceiveData(kDataSize);
+  }
+
+  data_source_->SetBitrate(1 << 20);  // 1 mbit / s
+  base::RunLoop().RunUntilIdle();
+  int64_t extra_buffer = to_read / 10 * kDataSize;
+  EXPECT_EQ(1 << 20, data_source_bitrate());
+  EXPECT_EQ((2 << 20) + extra_buffer, preload_low());
+  EXPECT_EQ((3 << 20) + extra_buffer, preload_high());
+  EXPECT_EQ(25 << 20, max_buffer_forward());
+  EXPECT_EQ(kFileSize * 2, max_buffer_backward());
+  EXPECT_EQ(5013504 /* file size rounded up to blocks size */, buffer_size());
 }
 
 // Provoke an edge case where the loading state may not end up transitioning

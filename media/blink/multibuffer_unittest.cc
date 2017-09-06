@@ -404,6 +404,36 @@ TEST_F(MultiBufferTest, LRUTest) {
   EXPECT_EQ(0, lru_->Size());
 }
 
+TEST_F(MultiBufferTest, LRUTest2) {
+  int64_t max_size = 17;
+  int64_t current_size = 0;
+  lru_->IncrementMaxSize(max_size);
+
+  multibuffer_.SetMaxWriters(1);
+  size_t pos = 0;
+  size_t end = 10000;
+  multibuffer_.SetFileSize(10000);
+  MultiBufferReader reader(&multibuffer_, pos, end,
+                           base::Callback<void(int64_t, int64_t)>());
+  reader.SetPreload(10000, 10000);
+  // Note, no pinning, all data should end up in LRU.
+  EXPECT_EQ(current_size, lru_->Size());
+  current_size += max_size;
+  while (AdvanceAll()) {
+  }
+  EXPECT_EQ(current_size, lru_->Size());
+  // Pruning shouldn't do anything here, because LRU is small enough already.
+  lru_->Prune(3);
+  EXPECT_EQ(current_size, lru_->Size());
+  // However TryFree should still work
+  lru_->TryFree(3);
+  current_size -= 3;
+  EXPECT_EQ(current_size, lru_->Size());
+  lru_->TryFreeAll();
+  EXPECT_EQ(0, lru_->Size());
+  lru_->IncrementMaxSize(-max_size);
+}
+
 TEST_F(MultiBufferTest, LRUTestExpirationTest) {
   int64_t max_size = 17;
   int64_t current_size = 0;

@@ -221,6 +221,8 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
 
   MediaLog* media_log_;
 
+  int buffer_size_update_counter_;
+
   // Host object to report buffered byte range changes to.
   BufferedDataSourceHost* host_;
 

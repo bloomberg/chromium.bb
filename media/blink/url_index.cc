@@ -205,7 +205,9 @@ UrlIndex::UrlIndex(ResourceFetchContext* fetch_context)
 UrlIndex::UrlIndex(ResourceFetchContext* fetch_context, int block_shift)
     : fetch_context_(fetch_context),
       lru_(new MultiBuffer::GlobalLRU(base::ThreadTaskRunnerHandle::Get())),
-      block_shift_(block_shift) {}
+      block_shift_(block_shift),
+      memory_pressure_listener_(
+          base::Bind(&UrlIndex::OnMemoryPressure, base::Unretained(this))) {}
 
 UrlIndex::~UrlIndex() {
 #if DCHECK_IS_ON()
@@ -244,6 +246,20 @@ scoped_refptr<UrlData> UrlIndex::GetByUrl(const GURL& gurl,
 scoped_refptr<UrlData> UrlIndex::NewUrlData(const GURL& url,
                                             UrlData::CORSMode cors_mode) {
   return new UrlData(url, cors_mode, this);
+}
+
+void UrlIndex::OnMemoryPressure(
+    base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
+  switch (memory_pressure_level) {
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
+      break;
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
+      lru_->TryFree(128);  // try to free 128 32kb blocks if possible
+      break;
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
+      lru_->TryFreeAll();  // try to free as many blocks as possible
+      break;
+  }
 }
 
 namespace {
