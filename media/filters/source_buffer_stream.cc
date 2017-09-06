@@ -415,12 +415,8 @@ DecodeTimestamp SourceBufferStream::PotentialNextAppendTimestamp() const {
   // |last_appended_buffer_timestamp_| (if known), or if unknown and we are
   // still at the beginning of a new coded frame group, then will be into the
   // range (if any) to which |coded_frame_group_start_time_| belongs.
-  if (last_appended_buffer_timestamp_ != kNoDecodeTimestamp()) {
-    // TODO(wolenetz): Determine if this +1us is still necessary. See
-    // https://crbug.com/589295.
-    return last_appended_buffer_timestamp_ +
-           base::TimeDelta::FromInternalValue(1);
-  }
+  if (last_appended_buffer_timestamp_ != kNoDecodeTimestamp())
+    return last_appended_buffer_timestamp_;
 
   if (new_coded_frame_group_)
     return coded_frame_group_start_time_;

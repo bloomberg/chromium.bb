@@ -34,6 +34,12 @@ using ::testing::HasSubstr;
 using ::testing::InSequence;
 using ::testing::StrictMock;
 
+namespace {
+
+enum class TimeGranularity { kMicrosecond, kMillisecond };
+
+}  // namespace
+
 namespace media {
 
 typedef StreamParser::BufferQueue BufferQueue;
@@ -232,7 +238,9 @@ class SourceBufferStreamTest : public testing::Test {
     EXPECT_EQ(expected, ss.str());
   }
 
-  void CheckExpectedRangesByTimestamp(const std::string& expected) {
+  void CheckExpectedRangesByTimestamp(
+      const std::string& expected,
+      TimeGranularity granularity = TimeGranularity::kMillisecond) {
     Ranges<base::TimeDelta> r = stream_->GetBufferedTime();
 
     std::stringstream ss;
@@ -243,8 +251,12 @@ class SourceBufferStreamTest : public testing::Test {
       // internally tracked range end time, and that the "highest presentation
       // timestamp" for the stream matches the last range's highest pts.  See
       // https://crbug.com/718641.
-      int64_t start = r.start(i).InMilliseconds();
-      int64_t end = r.end(i).InMilliseconds();
+      int64_t start = r.start(i).InMicroseconds();
+      int64_t end = r.end(i).InMicroseconds();
+      if (granularity == TimeGranularity::kMillisecond) {
+        start /= base::Time::kMicrosecondsPerMillisecond;
+        end /= base::Time::kMicrosecondsPerMillisecond;
+      }
       ss << "[" << start << "," << end << ") ";
     }
     ss << "}";
@@ -332,7 +344,9 @@ class SourceBufferStreamTest : public testing::Test {
     EXPECT_EQ(ending_position + 1, current_position);
   }
 
-  void CheckExpectedBuffers(const std::string& expected) {
+  void CheckExpectedBuffers(
+      const std::string& expected,
+      TimeGranularity granularity = TimeGranularity::kMillisecond) {
     std::vector<std::string> timestamps = base::SplitString(
         expected, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     std::stringstream ss;
@@ -367,11 +381,17 @@ class SourceBufferStreamTest : public testing::Test {
       if (status != SourceBufferStream::kSuccess)
         break;
 
-      ss << buffer->timestamp().InMilliseconds();
+      if (granularity == TimeGranularity::kMillisecond)
+        ss << buffer->timestamp().InMilliseconds();
+      else
+        ss << buffer->timestamp().InMicroseconds();
 
       if (buffer->GetDecodeTimestamp() !=
           DecodeTimestamp::FromPresentationTime(buffer->timestamp())) {
-        ss << "|" << buffer->GetDecodeTimestamp().InMilliseconds();
+        if (granularity == TimeGranularity::kMillisecond)
+          ss << "|" << buffer->GetDecodeTimestamp().InMilliseconds();
+        else
+          ss << "|" << buffer->GetDecodeTimestamp().InMicroseconds();
       }
 
       // Check duration if expected timestamp contains it.
@@ -516,23 +536,27 @@ class SourceBufferStreamTest : public testing::Test {
   // coded strings of timestamps separated by spaces.
   //
   // Supported syntax (options must be in this order):
-  // pp[|dd][Dzz][E][P][K]
+  // pp[u][|dd[u]][Dzz][E][P][K]
   //
   // pp:
   // Generates a StreamParserBuffer with decode and presentation timestamp xx.
   // E.g., "0 1 2 3".
+  // pp is interpreted as milliseconds, unless suffixed with "u", in which case
+  // pp is interpreted as microseconds.
   //
   // pp|dd:
   // Generates a StreamParserBuffer with presentation timestamp pp and decode
-  // timestamp dd. E.g., "0|0 3|1 1|2 2|3".
+  // timestamp dd. E.g., "0|0 3|1 1|2 2|3". dd is interpreted as milliseconds,
+  // unless suffixed with "u", in which case dd is interpreted as microseconds.
   //
-  // Dzz
+  // Dzz[u]
   // Explicitly describe the duration of the buffer. zz specifies the duration
-  // in milliseconds. If the duration isn't specified with this syntax, the
-  // duration is derived using the timestamp delta between this buffer and the
-  // next buffer. If not specified, the final buffer will simply copy the
-  // duration of the previous buffer. If the queue only contains 1 buffer then
-  // the duration must be explicitly specified with this format.
+  // in milliseconds (or in microseconds if suffixed with "u"). If the duration
+  // isn't specified with this syntax, the duration is derived using the
+  // timestamp delta between this buffer and the next buffer. If not specified,
+  // the final buffer will simply copy the duration of the previous buffer. If
+  // the queue only contains 1 buffer then the duration must be explicitly
+  // specified with this format.
   // E.g. "0D10 10D20"
   //
   // E:
@@ -577,41 +601,63 @@ class SourceBufferStreamTest : public testing::Test {
         timestamps[i] = timestamps[i].substr(0, timestamps[i].length() - 1);
       }
 
-      int duration_in_ms = -1;
+      int duration_in_us = -1;
       size_t duration_pos = timestamps[i].find('D');
       if (duration_pos != std::string::npos) {
+        bool is_duration_us = false;  // Default to millisecond interpretation.
+        if (base::EndsWith(timestamps[i], "u", base::CompareCase::SENSITIVE)) {
+          is_duration_us = true;
+          timestamps[i] = timestamps[i].substr(0, timestamps[i].length() - 1);
+        }
         CHECK(base::StringToInt(timestamps[i].substr(duration_pos + 1),
-                                &duration_in_ms));
+                                &duration_in_us));
+        if (!is_duration_us)
+          duration_in_us *= base::Time::kMicrosecondsPerMillisecond;
         timestamps[i] = timestamps[i].substr(0, duration_pos);
       }
 
-      std::vector<std::string> buffer_timestamps = base::SplitString(
+      std::vector<std::string> buffer_timestamp_strings = base::SplitString(
           timestamps[i], "|", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
-      if (buffer_timestamps.size() == 1)
-        buffer_timestamps.push_back(buffer_timestamps[0]);
+      if (buffer_timestamp_strings.size() == 1)
+        buffer_timestamp_strings.push_back(buffer_timestamp_strings[0]);
 
-      CHECK_EQ(2u, buffer_timestamps.size());
+      CHECK_EQ(2u, buffer_timestamp_strings.size());
 
-      int pts_in_ms = 0;
-      int dts_in_ms = 0;
-      CHECK(base::StringToInt(buffer_timestamps[0], &pts_in_ms));
-      CHECK(base::StringToInt(buffer_timestamps[1], &dts_in_ms));
+      std::vector<base::TimeDelta> buffer_timestamps;
+
+      // Parse PTS, then DTS into TimeDeltas.
+      for (size_t j = 0; j < 2; ++j) {
+        int us = 0;
+        bool is_us = false;  // Default to millisecond interpretation.
+
+        if (base::EndsWith(buffer_timestamp_strings[j], "u",
+                           base::CompareCase::SENSITIVE)) {
+          is_us = true;
+          buffer_timestamp_strings[j] = buffer_timestamp_strings[j].substr(
+              0, buffer_timestamp_strings[j].length() - 1);
+        }
+        CHECK(base::StringToInt(buffer_timestamp_strings[j], &us));
+        if (!is_us)
+          us *= base::Time::kMicrosecondsPerMillisecond;
+
+        buffer_timestamps.push_back(base::TimeDelta::FromMicroseconds(us));
+      }
 
       // Create buffer. Buffer type and track ID are meaningless to these tests.
       scoped_refptr<StreamParserBuffer> buffer =
           StreamParserBuffer::CopyFrom(&kDataA, kDataSize, is_keyframe,
                                        DemuxerStream::AUDIO, 0);
-      buffer->set_timestamp(base::TimeDelta::FromMilliseconds(pts_in_ms));
+      buffer->set_timestamp(buffer_timestamps[0]);
       buffer->set_is_duration_estimated(is_duration_estimated);
 
-      if (dts_in_ms != pts_in_ms) {
+      if (buffer_timestamps[1] != buffer_timestamps[0]) {
         buffer->SetDecodeTimestamp(
-            DecodeTimestamp::FromMilliseconds(dts_in_ms));
+            DecodeTimestamp::FromPresentationTime(buffer_timestamps[1]));
       }
 
-      if (duration_in_ms >= 0)
-        buffer->set_duration(base::TimeDelta::FromMilliseconds(duration_in_ms));
+      if (duration_in_us >= 0)
+        buffer->set_duration(base::TimeDelta::FromMicroseconds(duration_in_us));
 
       // Simulate preroll buffers by just generating another buffer and sticking
       // it as the preroll.
@@ -4028,6 +4074,50 @@ TEST_F(SourceBufferStreamTest, Remove_GapAtBeginningOfGroup) {
   CheckNoNextBuffer();
 
   CheckExpectedRangesByTimestamp("{ [120,180) }");
+}
+
+TEST_F(SourceBufferStreamTest,
+       OverlappingAppendRangeMembership_OneMicrosecond_Video) {
+  NewCodedFrameGroupAppend("10D20K");
+  CheckExpectedRangesByTimestamp("{ [10000,30000) }",
+                                 TimeGranularity::kMicrosecond);
+
+  // Append a buffer 1 microsecond earlier, with estimated duration.
+  NewCodedFrameGroupAppend("9999uD20EK");
+  CheckExpectedRangesByTimestamp("{ [9999,30000) }",
+                                 TimeGranularity::kMicrosecond);
+
+  // Append that same buffer again, but without any discontinuity signalled / no
+  // new coded frame group.
+  AppendBuffers("9999uD20EK");
+  CheckExpectedRangesByTimestamp("{ [9999,30000) }",
+                                 TimeGranularity::kMicrosecond);
+
+  Seek(0);
+  CheckExpectedBuffers("9999K 9999K 10000K", TimeGranularity::kMicrosecond);
+  CheckNoNextBuffer();
+}
+
+TEST_F(SourceBufferStreamTest,
+       OverlappingAppendRangeMembership_TwoMicroseconds_Video) {
+  NewCodedFrameGroupAppend("10D20K");
+  CheckExpectedRangesByTimestamp("{ [10000,30000) }",
+                                 TimeGranularity::kMicrosecond);
+
+  // Append an exactly abutting buffer 2us earlier.
+  NewCodedFrameGroupAppend("9998uD20EK");
+  CheckExpectedRangesByTimestamp("{ [9998,30000) }",
+                                 TimeGranularity::kMicrosecond);
+
+  // Append that same buffer again, but without any discontinuity signalled / no
+  // new coded frame group.
+  AppendBuffers("9998uD20EK");
+  CheckExpectedRangesByTimestamp("{ [9998,30000) }",
+                                 TimeGranularity::kMicrosecond);
+
+  Seek(0);
+  CheckExpectedBuffers("9998K 9998K 10000K", TimeGranularity::kMicrosecond);
+  CheckNoNextBuffer();
 }
 
 TEST_F(SourceBufferStreamTest, Text_Append_SingleRange) {
