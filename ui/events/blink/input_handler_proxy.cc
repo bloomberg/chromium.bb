@@ -276,7 +276,8 @@ void InputHandlerProxy::HandleInputEventWithLatencyInfo(
     bool is_scroll_end_from_wheel =
         gesture_event.source_device == blink::kWebGestureDeviceTouchpad &&
         gesture_event.GetType() == blink::WebGestureEvent::kGestureScrollEnd;
-    if (is_from_set_non_blocking_touch || is_scroll_end_from_wheel) {
+    if (is_from_set_non_blocking_touch || is_scroll_end_from_wheel ||
+        synchronous_input_handler_) {
       // Gesture events was already delayed by blocking events in rAF aligned
       // queue. We want to avoid additional one frame delay by flushing the
       // VSync queue immediately.
