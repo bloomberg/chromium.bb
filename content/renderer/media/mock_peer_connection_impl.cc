@@ -116,8 +116,7 @@ class MockDtmfSender : public DtmfSenderInterface {
   int inter_tone_gap_;
 };
 
-class FakeRtpReceiver
-    : public rtc::RefCountedObject<webrtc::RtpReceiverInterface> {
+class FakeRtpReceiver : public webrtc::RtpReceiverInterface {
  public:
   FakeRtpReceiver(rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track)
       : track_(track) {}
@@ -213,10 +212,12 @@ MockPeerConnectionImpl::GetReceivers() const {
   std::vector<rtc::scoped_refptr<webrtc::RtpReceiverInterface>> receivers;
   for (size_t i = 0; i < remote_streams_->count(); ++i) {
     for (const auto& audio_track : remote_streams_->at(i)->GetAudioTracks()) {
-      receivers.push_back(new FakeRtpReceiver(audio_track));
+      receivers.push_back(
+          new rtc::RefCountedObject<FakeRtpReceiver>(audio_track));
     }
     for (const auto& video_track : remote_streams_->at(i)->GetVideoTracks()) {
-      receivers.push_back(new FakeRtpReceiver(video_track));
+      receivers.push_back(
+          new rtc::RefCountedObject<FakeRtpReceiver>(video_track));
     }
   }
   return receivers;
