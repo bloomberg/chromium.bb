@@ -32,11 +32,10 @@
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_session.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "extensions/browser/event_router.h"
-#include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/test_event_router.h"
 #include "extensions/common/api/app_runtime.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -55,34 +54,42 @@ std::unique_ptr<arc::ArcSession> ArcSessionFactory() {
   return nullptr;
 }
 
-class TestEventRouter : public extensions::EventRouter {
+class LockScreenEventRouter : public extensions::TestEventRouter {
  public:
-  explicit TestEventRouter(content::BrowserContext* context)
-      : extensions::EventRouter(context,
-                                extensions::ExtensionPrefs::Get(context)),
-        context_(context) {}
-  ~TestEventRouter() override = default;
+  explicit LockScreenEventRouter(content::BrowserContext* context)
+      : extensions::TestEventRouter(context) {}
+  ~LockScreenEventRouter() override = default;
 
+  // extensions::EventRouter:
   bool ExtensionHasEventListener(const std::string& extension_id,
                                  const std::string& event_name) const override {
     return event_name == extensions::api::app_runtime::OnLaunched::kEventName;
   }
 
-  void BroadcastEvent(std::unique_ptr<extensions::Event> event) override {}
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LockScreenEventRouter);
+};
 
-  void DispatchEventToExtension(
-      const std::string& extension_id,
-      std::unique_ptr<extensions::Event> event) override {
-    if (event->event_name !=
+class LockScreenEventObserver
+    : public extensions::TestEventRouter::EventObserver {
+ public:
+  explicit LockScreenEventObserver(content::BrowserContext* context)
+      : context_(context) {}
+  ~LockScreenEventObserver() override = default;
+
+  // extensions::TestEventRouter::EventObserver:
+  void OnDispatchEventToExtension(const std::string& extension_id,
+                                  const extensions::Event& event) override {
+    if (event.event_name !=
         extensions::api::app_runtime::OnLaunched::kEventName) {
       return;
     }
-    ASSERT_TRUE(event->event_args);
+    ASSERT_TRUE(event.event_args);
     const base::Value* arg_value = nullptr;
-    ASSERT_TRUE(event->event_args->Get(0, &arg_value));
+    ASSERT_TRUE(event.event_args->Get(0, &arg_value));
     ASSERT_TRUE(arg_value);
-    if (event->restrict_to_browser_context)
-      EXPECT_EQ(context_, event->restrict_to_browser_context);
+    if (event.restrict_to_browser_context)
+      EXPECT_EQ(context_, event.restrict_to_browser_context);
 
     std::unique_ptr<extensions::api::app_runtime::LaunchData> launch_data =
         extensions::api::app_runtime::LaunchData::FromValue(*arg_value);
@@ -116,13 +123,8 @@ class TestEventRouter : public extensions::EventRouter {
   content::BrowserContext* context_;
   bool expect_restore_action_state_ = true;
 
-  DISALLOW_COPY_AND_ASSIGN(TestEventRouter);
+  DISALLOW_COPY_AND_ASSIGN(LockScreenEventObserver);
 };
-
-std::unique_ptr<KeyedService> TestEventRouterFactoryFunction(
-    content::BrowserContext* profile) {
-  return base::MakeUnique<TestEventRouter>(profile);
-}
 
 enum class TestAppLocation { kUnpacked, kInternal };
 
@@ -182,6 +184,15 @@ class LockScreenAppManagerImplTest
         base::CommandLine::ForCurrentProcess(),
         profile->GetPath().Append("Extensions") /* install_directory */,
         false /* autoupdate_enabled */);
+  }
+
+  void SetUpTestEventRouter() {
+    LockScreenEventRouter* event_router =
+        extensions::CreateAndUseTestEventRouter<LockScreenEventRouter>(
+            lock_screen_profile()->GetOriginalProfile());
+    event_observer_ = std::make_unique<LockScreenEventObserver>(
+        lock_screen_profile()->GetOriginalProfile());
+    event_router->AddEventObserver(event_observer_.get());
   }
 
   base::FilePath GetTestAppSourcePath(TestAppLocation location,
@@ -382,6 +393,8 @@ class LockScreenAppManagerImplTest
 
   int NoteTakingChangedCountOnStart() { return IsInstallAsync() ? 1 : 0; }
 
+  LockScreenEventObserver* event_observer() { return event_observer_.get(); }
+
  protected:
   base::SimpleTestTickClock tick_clock_;
 
@@ -398,6 +411,8 @@ class LockScreenAppManagerImplTest
   TestingProfileManager profile_manager_;
   TestingProfile* profile_ = nullptr;
   TestingProfile* lock_screen_profile_ = nullptr;
+
+  std::unique_ptr<LockScreenEventObserver> event_observer_;
 
   std::unique_ptr<arc::ArcServiceManager> arc_service_manager_;
   std::unique_ptr<arc::ArcSessionManager> arc_session_manager_;
@@ -1007,11 +1022,7 @@ TEST_P(LockScreenAppManagerImplTest, ShutdownWhenStarted) {
 }
 
 TEST_P(LockScreenAppManagerImplTest, LaunchAppWhenEnabled) {
-  TestEventRouter* event_router = static_cast<TestEventRouter*>(
-      extensions::EventRouterFactory::GetInstance()->SetTestingFactoryAndUse(
-          lock_screen_profile()->GetOriginalProfile(),
-          &TestEventRouterFactoryFunction));
-  ASSERT_TRUE(event_router);
+  SetUpTestEventRouter();
 
   scoped_refptr<const extensions::Extension> note_taking_app =
       AddTestAppWithLockScreenSupport(
@@ -1026,25 +1037,21 @@ TEST_P(LockScreenAppManagerImplTest, LaunchAppWhenEnabled) {
 
   EXPECT_TRUE(app_manager()->LaunchNoteTaking());
 
-  ASSERT_EQ(1u, event_router->launched_apps().size());
+  ASSERT_EQ(1u, event_observer()->launched_apps().size());
   EXPECT_EQ(chromeos::NoteTakingHelper::kProdKeepExtensionId,
-            event_router->launched_apps()[0]);
-  event_router->ClearLaunchedApps();
+            event_observer()->launched_apps()[0]);
+  event_observer()->ClearLaunchedApps();
 
   app_manager()->Stop();
 
   EXPECT_FALSE(app_manager()->LaunchNoteTaking());
-  EXPECT_TRUE(event_router->launched_apps().empty());
+  EXPECT_TRUE(event_observer()->launched_apps().empty());
 }
 
 TEST_P(LockScreenAppManagerImplTest, LaunchAppWithFalseRestoreLastActionState) {
-  TestEventRouter* event_router = static_cast<TestEventRouter*>(
-      extensions::EventRouterFactory::GetInstance()->SetTestingFactoryAndUse(
-          lock_screen_profile()->GetOriginalProfile(),
-          &TestEventRouterFactoryFunction));
-  ASSERT_TRUE(event_router);
+  SetUpTestEventRouter();
 
-  event_router->set_expect_restore_action_state(false);
+  event_observer()->set_expect_restore_action_state(false);
   profile()->GetPrefs()->SetBoolean(prefs::kRestoreLastLockScreenNote, false);
 
   scoped_refptr<const extensions::Extension> note_taking_app =
@@ -1060,23 +1067,19 @@ TEST_P(LockScreenAppManagerImplTest, LaunchAppWithFalseRestoreLastActionState) {
 
   EXPECT_TRUE(app_manager()->LaunchNoteTaking());
 
-  ASSERT_EQ(1u, event_router->launched_apps().size());
+  ASSERT_EQ(1u, event_observer()->launched_apps().size());
   EXPECT_EQ(chromeos::NoteTakingHelper::kProdKeepExtensionId,
-            event_router->launched_apps()[0]);
-  event_router->ClearLaunchedApps();
+            event_observer()->launched_apps()[0]);
+  event_observer()->ClearLaunchedApps();
 
   app_manager()->Stop();
 
   EXPECT_FALSE(app_manager()->LaunchNoteTaking());
-  EXPECT_TRUE(event_router->launched_apps().empty());
+  EXPECT_TRUE(event_observer()->launched_apps().empty());
 }
 
 TEST_P(LockScreenAppManagerImplTest, LaunchAppWhenNoLockScreenApp) {
-  TestEventRouter* event_router = static_cast<TestEventRouter*>(
-      extensions::EventRouterFactory::GetInstance()->SetTestingFactoryAndUse(
-          lock_screen_profile()->GetOriginalProfile(),
-          &TestEventRouterFactoryFunction));
-  ASSERT_TRUE(event_router);
+  SetUpTestEventRouter();
 
   scoped_refptr<const extensions::Extension> note_taking_app =
       AddTestAppWithLockScreenSupport(
@@ -1087,11 +1090,11 @@ TEST_P(LockScreenAppManagerImplTest, LaunchAppWhenNoLockScreenApp) {
   RunExtensionServiceTaskRunner(lock_screen_profile());
 
   EXPECT_FALSE(app_manager()->LaunchNoteTaking());
-  EXPECT_TRUE(event_router->launched_apps().empty());
+  EXPECT_TRUE(event_observer()->launched_apps().empty());
 
   app_manager()->Stop();
   EXPECT_FALSE(app_manager()->LaunchNoteTaking());
-  EXPECT_TRUE(event_router->launched_apps().empty());
+  EXPECT_TRUE(event_observer()->launched_apps().empty());
 }
 
 }  // namespace lock_screen_apps

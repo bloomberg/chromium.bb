@@ -11,34 +11,11 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
 #include "chrome/browser/extensions/api/image_writer_private/test_utils.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system_factory.h"
-#include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/test/base/testing_profile.h"
-#include "extensions/browser/event_router.h"
-#include "extensions/browser/event_router_factory.h"
+#include "extensions/browser/test_event_router.h"
 
 namespace extensions {
 namespace image_writer {
-
-// A fake for the EventRouter. If tests require monitoring of interaction with
-// the event router put the logic here.
-class FakeEventRouter : public extensions::EventRouter {
- public:
-  explicit FakeEventRouter(Profile* profile) : EventRouter(profile, NULL) {}
-
-  void DispatchEventToExtension(
-      const std::string& extension_id,
-      std::unique_ptr<extensions::Event> event) override {
-    // Do nothing with the event as no tests currently care.
-  }
-};
-
-// FakeEventRouter factory function
-std::unique_ptr<KeyedService> FakeEventRouterFactoryFunction(
-    content::BrowserContext* context) {
-  return base::MakeUnique<FakeEventRouter>(static_cast<Profile*>(context));
-}
 
 namespace {
 
@@ -64,9 +41,7 @@ class ImageWriterOperationManagerTest : public ImageWriterUnitTestBase {
 
   void SetUp() override {
     ImageWriterUnitTestBase::SetUp();
-    event_router_ = static_cast<FakeEventRouter*>(
-        extensions::EventRouterFactory::GetInstance()->SetTestingFactoryAndUse(
-            &test_profile_, &FakeEventRouterFactoryFunction));
+    CreateAndUseTestEventRouter(&test_profile_);
   }
 
   bool started_;
@@ -78,7 +53,6 @@ class ImageWriterOperationManagerTest : public ImageWriterUnitTestBase {
   std::string cancel_error_;
 
   TestingProfile test_profile_;
-  FakeEventRouter* event_router_;
 };
 
 TEST_F(ImageWriterOperationManagerTest, WriteFromFile) {

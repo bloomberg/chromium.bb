@@ -84,6 +84,8 @@ static_library("test_support") {
     "browser/mock_external_provider.h",
     "browser/scoped_ignore_content_verifier_for_test.cc",
     "browser/scoped_ignore_content_verifier_for_test.h",
+    "browser/test_event_router.cc",
+    "browser/test_event_router.h",
     "browser/test_extension_registry_observer.cc",
     "browser/test_extension_registry_observer.h",
     "browser/test_extensions_browser_client.cc",
