@@ -96,6 +96,59 @@ class LogoDelegateImpl : public search_provider_logos::LogoDelegate {
   DISALLOW_COPY_AND_ASSIGN(LogoDelegateImpl);
 };
 
+class CallbackLogoObserver : public LogoObserver {
+ public:
+  CallbackLogoObserver(LogoCallback on_cached_logo_available,
+                       EncodedLogoCallback on_cached_encoded_logo_available,
+                       LogoCallback on_fresh_logo_available,
+                       EncodedLogoCallback on_fresh_encoded_logo_available)
+      : on_cached_logo_available_(std::move(on_cached_logo_available)),
+        on_cached_encoded_logo_available_(
+            std::move(on_cached_encoded_logo_available)),
+        on_fresh_logo_available_(std::move(on_fresh_logo_available)),
+        on_fresh_encoded_logo_available_(
+            std::move(on_fresh_encoded_logo_available)) {}
+
+  void OnLogoAvailable(const Logo* logo, bool from_cache) override {
+    if (from_cache) {
+      if (on_cached_logo_available_) {
+        std::move(on_cached_logo_available_)
+            .Run(logo ? base::make_optional(*logo) : base::nullopt);
+      }
+    } else {
+      if (on_fresh_logo_available_) {
+        std::move(on_fresh_logo_available_)
+            .Run(logo ? base::make_optional(*logo) : base::nullopt);
+      }
+    }
+  }
+
+  void OnEncodedLogoAvailable(const EncodedLogo* logo,
+                              bool from_cache) override {
+    if (from_cache) {
+      if (on_cached_encoded_logo_available_) {
+        std::move(on_cached_encoded_logo_available_)
+            .Run(logo ? base::make_optional(*logo) : base::nullopt);
+      }
+    } else {
+      if (on_fresh_encoded_logo_available_) {
+        std::move(on_fresh_encoded_logo_available_)
+            .Run(logo ? base::make_optional(*logo) : base::nullopt);
+      }
+    }
+  }
+
+  void OnObserverRemoved() override { delete this; }
+
+ private:
+  LogoCallback on_cached_logo_available_;
+  EncodedLogoCallback on_cached_encoded_logo_available_;
+  LogoCallback on_fresh_logo_available_;
+  EncodedLogoCallback on_fresh_encoded_logo_available_;
+
+  DISALLOW_COPY_AND_ASSIGN(CallbackLogoObserver);
+};
+
 }  // namespace
 
 LogoService::LogoService(
@@ -215,6 +268,22 @@ void LogoService::GetLogo(search_provider_logos::LogoObserver* observer) {
   }
 
   logo_tracker_->GetLogo(observer);
+}
+
+void LogoService::GetLogo(LogoCallback on_cached_logo_available,
+                          LogoCallback on_fresh_logo_available) {
+  // CallbackLogoObserver is self-deleting.
+  GetLogo(new CallbackLogoObserver(
+      std::move(on_cached_logo_available), EncodedLogoCallback(),
+      std::move(on_fresh_logo_available), EncodedLogoCallback()));
+}
+
+void LogoService::GetEncodedLogo(EncodedLogoCallback on_cached_logo_available,
+                                 EncodedLogoCallback on_fresh_logo_available) {
+  // CallbackLogoObserver is self-deleting.
+  GetLogo(new CallbackLogoObserver(
+      LogoCallback(), std::move(on_cached_logo_available), LogoCallback(),
+      std::move(on_fresh_logo_available)));
 }
 
 void LogoService::SetLogoCacheForTests(std::unique_ptr<LogoCache> cache) {

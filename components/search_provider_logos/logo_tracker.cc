@@ -144,6 +144,7 @@ void LogoTracker::ReturnToIdle(int outcome) {
 void LogoTracker::OnCachedLogoRead(std::unique_ptr<EncodedLogo> cached_logo) {
   DCHECK(!is_idle_);
 
+  NotifyEncodedLogoObservers(cached_logo.get(), /*from_cache=*/true);
   if (cached_logo) {
     logo_delegate_->DecodeUntrustedImage(
         cached_logo->encoded_image,
@@ -166,8 +167,7 @@ void LogoTracker::OnCachedLogoAvailable(const LogoMetadata& metadata,
   }
   is_cached_logo_valid_ = true;
   Logo* logo = cached_logo_.get();
-  for (auto& observer : logo_observers_)
-    observer.OnLogoAvailable(logo, true);
+  NotifyDecodedLogoObservers(logo, /*from_cache=*/true);
   FetchLogo();
 }
 
@@ -243,8 +243,8 @@ void LogoTracker::OnFreshLogoParsed(bool* parsing_failed,
     logo->metadata.source_url = logo_url_;
 
   if (!logo || !logo->encoded_image.get()) {
-    OnFreshLogoAvailable(std::move(logo), *parsing_failed, from_http_cache,
-                         SkBitmap());
+    OnFreshLogoAvailable(std::move(logo), /*download_failed=*/false,
+                         *parsing_failed, from_http_cache, SkBitmap());
   } else {
     // Store the value of logo->encoded_image for use below. This ensures that
     // logo->encoded_image is evaulated before base::Passed(&logo), which sets
@@ -254,23 +254,28 @@ void LogoTracker::OnFreshLogoParsed(bool* parsing_failed,
         encoded_image,
         base::Bind(&LogoTracker::OnFreshLogoAvailable,
                    weak_ptr_factory_.GetWeakPtr(), base::Passed(&logo),
-                   *parsing_failed, from_http_cache));
+                   /*download_failed=*/false, *parsing_failed,
+                   from_http_cache));
   }
 }
 
 void LogoTracker::OnFreshLogoAvailable(
     std::unique_ptr<EncodedLogo> encoded_logo,
+    bool download_failed,
     bool parsing_failed,
     bool from_http_cache,
     const SkBitmap& image) {
   DCHECK(!is_idle_);
 
-  int download_outcome = kDownloadOutcomeNotTracked;
+  LogoDownloadOutcome download_outcome = DOWNLOAD_OUTCOME_COUNT;
+  std::unique_ptr<Logo> logo;
 
-  if (encoded_logo && !encoded_logo->encoded_image.get() && cached_logo_ &&
-      !encoded_logo->metadata.fingerprint.empty() &&
-      encoded_logo->metadata.fingerprint ==
-          cached_logo_->metadata.fingerprint) {
+  if (download_failed) {
+    download_outcome = DOWNLOAD_OUTCOME_DOWNLOAD_FAILED;
+  } else if (encoded_logo && !encoded_logo->encoded_image.get() &&
+             cached_logo_ && !encoded_logo->metadata.fingerprint.empty() &&
+             encoded_logo->metadata.fingerprint ==
+                 cached_logo_->metadata.fingerprint) {
     // The cached logo was revalidated, i.e. its fingerprint was verified.
     // mime_type isn't sent when revalidating, so copy it from the cached logo.
     encoded_logo->metadata.mime_type = cached_logo_->metadata.mime_type;
@@ -280,7 +285,6 @@ void LogoTracker::OnFreshLogoAvailable(
     // Image decoding failed. Do nothing.
     download_outcome = DOWNLOAD_OUTCOME_DECODING_FAILED;
   } else {
-    std::unique_ptr<Logo> logo;
     // Check if the server returned a valid, non-empty response.
     if (encoded_logo) {
       UMA_HISTOGRAM_BOOLEAN("NewTabPage.LogoImageDownloaded", from_http_cache);
@@ -299,18 +303,64 @@ void LogoTracker::OnFreshLogoAvailable(
       else
         download_outcome = DOWNLOAD_OUTCOME_NO_LOGO_TODAY;
     }
-
-    // Notify observers if a new logo was fetched, or if the new logo is NULL
-    // but the cached logo was non-NULL.
-    if (logo || cached_logo_) {
-      for (auto& observer : logo_observers_)
-        observer.OnLogoAvailable(logo.get(), false);
-      SetCachedLogo(std::move(encoded_logo));
-    }
   }
 
-  DCHECK_NE(kDownloadOutcomeNotTracked, download_outcome);
+  switch (download_outcome) {
+    case DOWNLOAD_OUTCOME_NEW_LOGO_SUCCESS:
+      DCHECK(encoded_logo.get());
+      DCHECK(logo.get());
+      NotifyEncodedLogoObservers(encoded_logo.get(), /*from_cache=*/false);
+      NotifyDecodedLogoObservers(logo.get(), /*from_cache=*/false);
+      SetCachedLogo(std::move(encoded_logo));
+      break;
+
+    case DOWNLOAD_OUTCOME_PARSING_FAILED:
+    case DOWNLOAD_OUTCOME_NO_LOGO_TODAY:
+      // Invalidate the cached logo if it was non-null. Otherwise, do nothing.
+      DCHECK(!encoded_logo.get());
+      DCHECK(!logo.get());
+      if (cached_logo_) {
+        NotifyEncodedLogoObservers(nullptr, /*from_cache=*/false);
+        NotifyDecodedLogoObservers(nullptr, /*from_cache=*/false);
+        SetCachedLogo(std::move(encoded_logo));
+      }
+      break;
+
+    case DOWNLOAD_OUTCOME_DECODING_FAILED:
+    case DOWNLOAD_OUTCOME_LOGO_REVALIDATED:
+      // In the server reported that the cached logo is still current, don't
+      // notify the observer at all, since the observer should continue to use
+      // the cached logo.
+      DCHECK(encoded_logo.get());
+      DCHECK(!logo.get());
+      break;
+
+    case DOWNLOAD_OUTCOME_DOWNLOAD_FAILED:
+      // In the download failed, don't notify the observer at all, since the
+      // observer should continue to use the cached logo.
+      DCHECK(!encoded_logo.get());
+      DCHECK(!logo.get());
+      break;
+
+    case DOWNLOAD_OUTCOME_COUNT:
+      NOTREACHED();
+  }
+
   ReturnToIdle(download_outcome);
+}
+
+void LogoTracker::NotifyDecodedLogoObservers(const Logo* logo,
+                                             bool from_cache) const {
+  for (auto& observer : logo_observers_) {
+    observer.OnLogoAvailable(logo, from_cache);
+  }
+}
+
+void LogoTracker::NotifyEncodedLogoObservers(const EncodedLogo* logo,
+                                             bool from_cache) const {
+  for (auto& observer : logo_observers_) {
+    observer.OnEncodedLogoAvailable(logo, from_cache);
+  }
 }
 
 void LogoTracker::OnURLFetchComplete(const net::URLFetcher* source) {
@@ -318,7 +368,8 @@ void LogoTracker::OnURLFetchComplete(const net::URLFetcher* source) {
   std::unique_ptr<net::URLFetcher> cleanup_fetcher(fetcher_.release());
 
   if (!source->GetStatus().is_success()) {
-    ReturnToIdle(DOWNLOAD_OUTCOME_DOWNLOAD_FAILED);
+    OnFreshLogoAvailable({}, /*download_failed=*/true, false, false,
+                         SkBitmap());
     return;
   }
 
@@ -327,7 +378,8 @@ void LogoTracker::OnURLFetchComplete(const net::URLFetcher* source) {
       response_code != net::URLFetcher::RESPONSE_CODE_INVALID) {
     // RESPONSE_CODE_INVALID is returned when fetching from a file: URL
     // (for testing). In all other cases we would have had a non-success status.
-    ReturnToIdle(DOWNLOAD_OUTCOME_DOWNLOAD_FAILED);
+    OnFreshLogoAvailable({}, /*download_failed=*/true, false, false,
+                         SkBitmap());
     return;
   }
 
@@ -358,7 +410,8 @@ void LogoTracker::OnURLFetchDownloadProgress(const net::URLFetcher* source,
                                              int64_t current_network_bytes) {
   if (total > kMaxDownloadBytes || current > kMaxDownloadBytes) {
     LOG(WARNING) << "Search provider logo exceeded download size limit";
-    ReturnToIdle(DOWNLOAD_OUTCOME_DOWNLOAD_FAILED);
+    OnFreshLogoAvailable({}, /*download_failed=*/true, false, false,
+                         SkBitmap());
   }
 }
 
