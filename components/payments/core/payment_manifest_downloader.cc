@@ -29,17 +29,25 @@ namespace {
 GURL ParseResponseHeader(const net::URLFetcher* source) {
   if (source->GetResponseCode() != net::HTTP_OK &&
       source->GetResponseCode() != net::HTTP_NO_CONTENT) {
+    LOG(ERROR) << "Unable to make a HEAD request to " << source->GetURL()
+               << " for payment method manifest.";
     return GURL();
   }
 
   net::HttpResponseHeaders* headers = source->GetResponseHeaders();
-  if (!headers)
+  if (!headers) {
+    LOG(ERROR) << "No HTTP headers found on " << source->GetURL()
+               << " for payment method manifest.";
     return GURL();
+  }
 
   std::string link_header;
   headers->GetNormalizedHeader("link", &link_header);
-  if (link_header.empty())
+  if (link_header.empty()) {
+    LOG(ERROR) << "No HTTP Link headers found on " << source->GetURL()
+               << " for payment method manifest.";
     return GURL();
+  }
 
   std::string payment_method_manifest_url;
   std::unordered_map<std::string, base::Optional<std::string>> params;
@@ -60,13 +68,18 @@ GURL ParseResponseHeader(const net::URLFetcher* source) {
       return source->GetOriginalURL().Resolve(payment_method_manifest_url);
   }
 
+  LOG(ERROR) << "No rel=\"payment-method-manifest\" HTTP Link headers found on "
+             << source->GetURL() << " for payment method manifest.";
   return GURL();
 }
 
 std::string ParseResponseContent(const net::URLFetcher* source) {
   std::string content;
-  if (source->GetResponseCode() != net::HTTP_OK)
+  if (source->GetResponseCode() != net::HTTP_OK) {
+    LOG(ERROR) << "Unable to download " << source->GetURL()
+               << " for payment manifests.";
     return content;
+  }
 
   bool success = source->GetResponseAsString(&content);
   DCHECK(success);  // Whether the fetcher was set to store result as string.
@@ -118,6 +131,7 @@ void PaymentManifestDownloader::OnURLFetchComplete(
       InitiateDownload(url, net::URLFetcher::GET,
                        std::move(download->callback));
     } else {
+      LOG(ERROR) << url << " is not a valid payment method manifest URL.";
       std::move(download->callback).Run(std::string());
     }
   } else {
