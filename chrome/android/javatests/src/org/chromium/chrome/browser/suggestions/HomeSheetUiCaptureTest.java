@@ -6,12 +6,10 @@ package org.chromium.chrome.browser.suggestions;
 
 import static org.junit.Assert.assertNotEquals;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 import static org.chromium.chrome.test.BottomSheetTestRule.ENABLE_CHROME_HOME;
+import static org.chromium.chrome.test.BottomSheetTestRule.waitForWindowUpdates;
 
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
-import android.support.test.uiautomator.UiDevice;
 import android.support.v7.widget.RecyclerView;
 
 import org.junit.Before;
@@ -48,14 +46,12 @@ public class HomeSheetUiCaptureTest {
     @Rule
     public SuggestionsBottomSheetTestRule mActivityRule = new SuggestionsBottomSheetTestRule();
 
-    private FakeSuggestionsSource mSuggestionsSource;
-
     @Rule
     public SuggestionsDependenciesRule setupSuggestions() {
         SuggestionsDependenciesRule.TestFactory depsFactory = NtpUiCaptureTestData.createFactory();
-        mSuggestionsSource = new FakeSuggestionsSource();
-        NtpUiCaptureTestData.registerArticleSamples(mSuggestionsSource);
-        depsFactory.suggestionsSource = mSuggestionsSource;
+        FakeSuggestionsSource suggestionsSource = new FakeSuggestionsSource();
+        NtpUiCaptureTestData.registerArticleSamples(suggestionsSource);
+        depsFactory.suggestionsSource = suggestionsSource;
         return new SuggestionsDependenciesRule(depsFactory);
     }
 
@@ -76,7 +72,8 @@ public class HomeSheetUiCaptureTest {
     @ScreenShooter.Directory("SignInPromo")
     public void testSignInPromo() {
         // Needs to be "Full" to for this to work on small screens in landscape.
-        setSheetState(BottomSheet.SHEET_STATE_FULL);
+        mActivityRule.setSheetState(BottomSheet.SHEET_STATE_FULL, false);
+        waitForWindowUpdates();
 
         mActivityRule.scrollToFirstItemOfType(ItemViewType.PROMO);
 
@@ -108,18 +105,5 @@ public class HomeSheetUiCaptureTest {
         mActivityRule.scrollToFirstItemOfType(ItemViewType.ALL_DISMISSED);
 
         mScreenShooter.shoot("All_dismissed");
-    }
-
-    private void setSheetState(final int position) {
-        mActivityRule.setSheetState(position, false);
-        waitForWindowUpdates();
-    }
-
-    /** Wait for update to start and finish. */
-    private static void waitForWindowUpdates() {
-        final long maxWindowUpdateTimeMs = scaleTimeout(1000);
-        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
-        device.waitForWindowUpdate(null, maxWindowUpdateTimeMs);
-        device.waitForIdle(maxWindowUpdateTimeMs);
     }
 }
