@@ -498,12 +498,11 @@ void WindowManagerState::DispatchInputEventToWindowImpl(
   in_flight_event_dispatch_details_->post_target_accelerator = accelerator;
 
   // Ignore |tree| because it will receive the event via normal dispatch.
-  window_server()->SendToPointerWatchers(
-      event, user_id(), target, tree,
-      in_flight_event_dispatch_details_->display_id);
+  window_server()->SendToPointerWatchers(event, user_id(), target, tree,
+                                         display_id);
 
   tree->DispatchInputEvent(
-      target, event,
+      target, event, display_id,
       base::BindOnce(
           &WindowManagerState::OnEventAck,
           in_flight_event_dispatch_details_->weak_factory.GetWeakPtr(), tree));

@@ -75,9 +75,11 @@ class TargetedEvent : public ServerWindowObserver {
  public:
   TargetedEvent(ServerWindow* target,
                 const ui::Event& event,
+                int64_t display_id,
                 WindowTree::DispatchEventCallback callback)
       : target_(target),
         event_(ui::Event::Clone(event)),
+        display_id_(display_id),
         callback_(std::move(callback)) {
     target_->AddObserver(this);
   }
@@ -88,6 +90,7 @@ class TargetedEvent : public ServerWindowObserver {
 
   ServerWindow* target() { return target_; }
   std::unique_ptr<ui::Event> TakeEvent() { return std::move(event_); }
+  int64_t display_id() const { return display_id_; }
   WindowTree::DispatchEventCallback TakeCallback() {
     return std::move(callback_);
   }
@@ -102,6 +105,7 @@ class TargetedEvent : public ServerWindowObserver {
 
   ServerWindow* target_;
   std::unique_ptr<ui::Event> event_;
+  const int64_t display_id_;
   WindowTree::DispatchEventCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TargetedEvent);
@@ -695,11 +699,12 @@ bool WindowTree::Embed(const ClientWindowId& window_id,
 
 void WindowTree::DispatchInputEvent(ServerWindow* target,
                                     const ui::Event& event,
+                                    int64_t display_id,
                                     DispatchEventCallback callback) {
   if (event_ack_id_) {
     // This is currently waiting for an event ack. Add it to the queue.
-    event_queue_.push(
-        base::MakeUnique<TargetedEvent>(target, event, std::move(callback)));
+    event_queue_.push(base::MakeUnique<TargetedEvent>(target, event, display_id,
+                                                      std::move(callback)));
     // TODO(sad): If the |event_queue_| grows too large, then this should notify
     // Display, so that it can stop sending events.
     return;
@@ -709,12 +714,12 @@ void WindowTree::DispatchInputEvent(ServerWindow* target,
   // and dispatch the latest event from the queue instead that still has a live
   // target.
   if (!event_queue_.empty()) {
-    event_queue_.push(
-        base::MakeUnique<TargetedEvent>(target, event, std::move(callback)));
+    event_queue_.push(base::MakeUnique<TargetedEvent>(target, event, display_id,
+                                                      std::move(callback)));
     return;
   }
 
-  DispatchInputEventImpl(target, event, std::move(callback));
+  DispatchInputEventImpl(target, event, display_id, std::move(callback));
 }
 
 bool WindowTree::IsWaitingForNewTopLevelWindow(uint32_t wm_change_id) {
@@ -1438,6 +1443,7 @@ uint32_t WindowTree::GenerateEventAckId() {
 
 void WindowTree::DispatchInputEventImpl(ServerWindow* target,
                                         const ui::Event& event,
+                                        int64_t display_id,
                                         DispatchEventCallback callback) {
   // DispatchInputEventImpl() is called so often that log level 4 is used.
   DVLOG(4) << "DispatchInputEventImpl client=" << id_;
@@ -1449,10 +1455,8 @@ void WindowTree::DispatchInputEventImpl(ServerWindow* target,
   // Should only get events from windows attached to a host.
   DCHECK(event_source_wms_);
   bool matched_pointer_watcher = EventMatchesPointerWatcher(event);
-  Display* display = GetDisplay(target);
-  DCHECK(display);
   client()->OnWindowInputEvent(
-      event_ack_id_, ClientWindowIdForWindow(target).id, display->GetId(),
+      event_ack_id_, ClientWindowIdForWindow(target).id, display_id,
       ui::Event::Clone(event), matched_pointer_watcher);
 }
 
@@ -1855,16 +1859,18 @@ void WindowTree::OnWindowInputEventAck(uint32_t event_id,
     ServerWindow* target = nullptr;
     std::unique_ptr<ui::Event> event;
     DispatchEventCallback callback;
+    int64_t display_id = display::kInvalidDisplayId;
     do {
       std::unique_ptr<TargetedEvent> targeted_event =
           std::move(event_queue_.front());
       event_queue_.pop();
       target = targeted_event->target();
       event = targeted_event->TakeEvent();
+      display_id = targeted_event->display_id();
       callback = targeted_event->TakeCallback();
     } while (!event_queue_.empty() && !GetDisplay(target));
     if (target)
-      DispatchInputEventImpl(target, *event, std::move(callback));
+      DispatchInputEventImpl(target, *event, display_id, std::move(callback));
   }
 }
 
