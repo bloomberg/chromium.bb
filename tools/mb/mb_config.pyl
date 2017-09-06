@@ -187,6 +187,9 @@
       'GomaCanaryiOS': 'ios',
       'ios-simulator': 'ios',
       'Headless Linux (dbg)': 'headless_linux_debug_bot',
+      'Jumbo Linux x64': 'jumbo_release_bot',
+      'Jumbo Mac': 'jumbo_release_bot',
+      'Jumbo Win x64': 'jumbo_release_bot',
       'MD Top Chrome ChromeOS material-hybrid': 'chromeos_with_codecs_debug_bot',
       'MD Top Chrome ChromeOS non-material': 'chromeos_with_codecs_debug_bot',
       'MD Top Chrome Win material': 'debug_bot_minimal_symbols',
@@ -1368,6 +1371,10 @@
     # build files.
     'ios': [ 'error'],
 
+    'jumbo_release_bot': [
+      'jumbo', 'release_bot'
+    ],
+
     'linux_chromium_analysis': [
       'analysis'
     ],
@@ -1843,6 +1850,10 @@
 
     'java_coverage': {
       'gn_args': 'emma_coverage=true emma_filter="org.chromium.*"',
+    },
+
+    'jumbo': {
+      'gn_args': 'use_jumbo_build=false',
     },
 
     'libfuzzer': { 'gn_args': 'use_libfuzzer=true' },
