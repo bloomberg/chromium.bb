@@ -120,29 +120,27 @@ void FoundReadyRegistrationForStartActiveWorker(
 }
 
 void StatusCodeToBoolCallbackAdapter(
-    const ServiceWorkerContext::ResultCallback& callback,
+    ServiceWorkerContext::ResultCallback callback,
     ServiceWorkerStatusCode code) {
-  callback.Run(code == ServiceWorkerStatusCode::SERVICE_WORKER_OK);
+  std::move(callback).Run(code == ServiceWorkerStatusCode::SERVICE_WORKER_OK);
 }
 
-void FinishRegistrationOnIO(
-    const ServiceWorkerContext::ResultCallback& continuation,
-    ServiceWorkerStatusCode status,
-    const std::string& status_message,
-    int64_t registration_id) {
+void FinishRegistrationOnIO(ServiceWorkerContext::ResultCallback callback,
+                            ServiceWorkerStatusCode status,
+                            const std::string& status_message,
+                            int64_t registration_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(continuation, status == SERVICE_WORKER_OK));
+      base::BindOnce(std::move(callback), status == SERVICE_WORKER_OK));
 }
 
-void FinishUnregistrationOnIO(
-    const ServiceWorkerContext::ResultCallback& continuation,
-    ServiceWorkerStatusCode status) {
+void FinishUnregistrationOnIO(ServiceWorkerContext::ResultCallback callback,
+                              ServiceWorkerStatusCode status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(continuation, status == SERVICE_WORKER_OK));
+      base::BindOnce(std::move(callback), status == SERVICE_WORKER_OK));
 }
 
 }  // namespace
@@ -272,45 +270,45 @@ void ServiceWorkerContextWrapper::RemoveObserver(
 void ServiceWorkerContextWrapper::RegisterServiceWorker(
     const GURL& pattern,
     const GURL& script_url,
-    const ResultCallback& continuation) {
+    ResultCallback callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(&ServiceWorkerContextWrapper::RegisterServiceWorker,
-                       this, pattern, script_url, continuation));
+                       this, pattern, script_url, std::move(callback)));
     return;
   }
   if (!context_core_) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(continuation, false));
+                            base::BindOnce(std::move(callback), false));
     return;
   }
   ServiceWorkerRegistrationOptions options(net::SimplifyUrlForRequest(pattern));
   context()->RegisterServiceWorker(
       net::SimplifyUrlForRequest(script_url), options,
       nullptr /* provider_host */,
-      base::Bind(&FinishRegistrationOnIO, continuation));
+      base::Bind(&FinishRegistrationOnIO, base::Passed(std::move(callback))));
 }
 
 void ServiceWorkerContextWrapper::UnregisterServiceWorker(
     const GURL& pattern,
-    const ResultCallback& continuation) {
+    ResultCallback callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(&ServiceWorkerContextWrapper::UnregisterServiceWorker,
-                       this, pattern, continuation));
+                       this, pattern, std::move(callback)));
     return;
   }
   if (!context_core_) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(continuation, false));
+                            base::BindOnce(std::move(callback), false));
     return;
   }
 
   context()->UnregisterServiceWorker(
       net::SimplifyUrlForRequest(pattern),
-      base::Bind(&FinishUnregistrationOnIO, continuation));
+      base::Bind(&FinishUnregistrationOnIO, base::Passed(std::move(callback))));
 }
 
 bool ServiceWorkerContextWrapper::StartingExternalRequest(
@@ -377,23 +375,23 @@ void ServiceWorkerContextWrapper::GetAllOriginsInfo(
       this, callback));
 }
 
-void ServiceWorkerContextWrapper::DeleteForOrigin(
-    const GURL& origin,
-    const ResultCallback& result) {
+void ServiceWorkerContextWrapper::DeleteForOrigin(const GURL& origin,
+                                                  ResultCallback callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(&ServiceWorkerContextWrapper::DeleteForOrigin, this,
-                       origin, result));
+                       origin, std::move(callback)));
     return;
   }
   if (!context_core_) {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::BindOnce(result, false));
+                            base::BindOnce(std::move(callback), false));
     return;
   }
   context()->UnregisterServiceWorkers(
-      origin.GetOrigin(), base::Bind(&StatusCodeToBoolCallbackAdapter, result));
+      origin.GetOrigin(), base::Bind(&StatusCodeToBoolCallbackAdapter,
+                                     base::Passed(std::move(callback))));
 }
 
 void ServiceWorkerContextWrapper::CheckHasServiceWorker(

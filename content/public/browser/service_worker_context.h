@@ -51,7 +51,7 @@ class ServiceWorkerContext {
   // roughly, must be of the form "<origin>/<path>/*".
   using Scope = GURL;
 
-  using ResultCallback = base::Callback<void(bool success)>;
+  using ResultCallback = base::OnceCallback<void(bool success)>;
 
   using GetUsageInfoCallback = base::Callback<void(
       const std::vector<ServiceWorkerUsageInfo>& usage_info)>;
@@ -99,7 +99,7 @@ class ServiceWorkerContext {
   // be called on the UI thread.
   virtual void RegisterServiceWorker(const Scope& pattern,
                                      const GURL& script_url,
-                                     const ResultCallback& callback) = 0;
+                                     ResultCallback callback) = 0;
 
   // Equivalent to calling navigator.serviceWorker.unregister(pattern) from a
   // renderer, except that |pattern| is an absolute URL instead of relative to
@@ -113,7 +113,7 @@ class ServiceWorkerContext {
   // This function can be called from any thread, but the callback will always
   // be called on the UI thread.
   virtual void UnregisterServiceWorker(const Scope& pattern,
-                                       const ResultCallback& callback) = 0;
+                                       ResultCallback callback) = 0;
 
   // Mechanism for embedder to increment/decrement ref count of a service
   // worker.
@@ -141,7 +141,7 @@ class ServiceWorkerContext {
   // This function can be called from any thread, but the callback will always
   // be called on the IO thread.
   virtual void DeleteForOrigin(const GURL& origin_url,
-                               const ResultCallback& callback) = 0;
+                               ResultCallback callback) = 0;
 
   // Returns ServiceWorkerCapability describing existence and properties of a
   // Service Worker registration matching |url|. Found service worker
