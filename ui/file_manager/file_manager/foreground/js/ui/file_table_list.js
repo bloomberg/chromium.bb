@@ -235,13 +235,6 @@ filelist.updateListItemExternalProps = function(li, externalProps) {
  * @this {cr.ui.ListSelectionController}
  */
 filelist.handleTap = function(e, index, eventType) {
-  var isTap = eventType == FileTapHandler.TapEvent.TAP ||
-      eventType == FileTapHandler.TapEvent.LONG_TAP ||
-      eventType == FileTapHandler.TapEvent.TWO_FINGER_TAP;
-  if (isTap && index == -1) {
-    return false;
-  }
-
   var sm = /** @type {!FileListSelectionModel|!FileListSingleSelectionModel} */
       (this.selectionModel);
   if (eventType == FileTapHandler.TapEvent.TWO_FINGER_TAP) {
@@ -250,23 +243,34 @@ filelist.handleTap = function(e, index, eventType) {
     // If the target is a non-selected file, cancel current selection and open
     // context menu for the single file.
     // Otherwise (when the target is the background), for the current folder.
-    var indexSelected = sm.getIndexSelected(index);
-    if (!indexSelected) {
-      // Prepare to open context menu of the new item by selecting only it.
-      if (sm.getCheckSelectMode()) {
-        // Unselect all items once to ensure that the check-select mode is
-        // terminated.
-        sm.unselectAll();
+    if (index == -1) {
+      // Two-finger tap outside the list should be handled here because it does
+      // not produce mousedown/click events.
+      sm.unselectAll();
+    } else {
+      var indexSelected = sm.getIndexSelected(index);
+      if (!indexSelected) {
+        // Prepare to open context menu of the new item by selecting only it.
+        if (sm.getCheckSelectMode()) {
+          // Unselect all items once to ensure that the check-select mode is
+          // terminated.
+          sm.unselectAll();
+        }
+        sm.beginChange();
+        sm.selectedIndex = index;
+        sm.endChange();
       }
-      sm.beginChange();
-      sm.selectedIndex = index;
-      sm.endChange();
     }
 
     // Context menu will be opened for the selected files by the following
     // 'contextmenu' event.
     return false;
   }
+  if (index == -1) {
+    return false;
+  }
+  var isTap = eventType == FileTapHandler.TapEvent.TAP ||
+      eventType == FileTapHandler.TapEvent.LONG_TAP;
   if (eventType == FileTapHandler.TapEvent.TAP &&
       e.target.classList.contains('detail-checkmark')) {
     // Single tap on the checkbox in the list view mode should toggle select,

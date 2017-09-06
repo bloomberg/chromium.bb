@@ -576,11 +576,13 @@ cr.define('cr.ui', function() {
 
       var target = /** @type {HTMLElement} */ (e.target);
 
-      // If the target was this element we need to make sure that the user did
-      // not click on a border or a scrollbar.
       if (target == this) {
-        if (inViewport(target, e))
-          this.selectionController_.handleTouchEvents(e, -1);
+        // Unlike the mouse events, we don't check if the touch is inside the
+        // viewport because of these reasons:
+        // - The scrollbars do not interact with touch.
+        // - touch* events are not sent to this element when tapping or
+        //   dragging window borders by touch.
+        this.selectionController_.handleTouchEvents(e, -1);
         return;
       }
 
