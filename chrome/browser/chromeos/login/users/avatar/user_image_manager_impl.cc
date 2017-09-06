@@ -324,8 +324,7 @@ void UserImageManagerImpl::Job::LoadImage(base::FilePath image_path,
   image_url_ = image_url;
   image_path_ = image_path;
 
-  if (image_index_ >= 0 &&
-      image_index_ < default_user_image::kDefaultImagesCount) {
+  if (default_user_image::IsValidIndex(image_index_)) {
     // Load one of the default images. This happens synchronously.
     std::unique_ptr<user_manager::UserImage> user_image(
         new user_manager::UserImage(
@@ -355,8 +354,7 @@ void UserImageManagerImpl::Job::SetToDefaultImage(int default_image_index) {
   DCHECK(!run_);
   run_ = true;
 
-  DCHECK_LE(0, default_image_index);
-  DCHECK_GT(default_user_image::kDefaultImagesCount, default_image_index);
+  DCHECK(default_user_image::IsValidIndex(default_image_index));
 
   image_index_ = default_image_index;
   std::unique_ptr<user_manager::UserImage> user_image(
@@ -599,8 +597,7 @@ void UserImageManagerImpl::LoadUserImage() {
 
   int image_index = user_manager::User::USER_IMAGE_INVALID;
   image_properties->GetInteger(kImageIndexNodeName, &image_index);
-  if (image_index >= 0 &&
-      image_index < default_user_image::kDefaultImagesCount) {
+  if (default_user_image::IsValidIndex(image_index)) {
     user->SetImage(base::MakeUnique<user_manager::UserImage>(
                        default_user_image::GetDefaultImage(image_index)),
                    image_index);

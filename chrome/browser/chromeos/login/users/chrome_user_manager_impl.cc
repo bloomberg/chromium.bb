@@ -1382,8 +1382,7 @@ void ChromeUserManagerImpl::ScheduleResolveLocale(
 }
 
 bool ChromeUserManagerImpl::IsValidDefaultUserImageId(int image_index) const {
-  return image_index >= 0 &&
-         image_index < chromeos::default_user_image::kDefaultImagesCount;
+  return chromeos::default_user_image::IsValidIndex(image_index);
 }
 
 std::unique_ptr<user_manager::User>

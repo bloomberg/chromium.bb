@@ -8,6 +8,7 @@
 
 login.createScreen('UserImageScreen', 'user-image', function() {
   var CONTEXT_KEY_IS_CAMERA_PRESENT = 'isCameraPresent';
+  var CONTEXT_KEY_SELECTED_IMAGE_INDEX = 'selectedImageIndex';
   var CONTEXT_KEY_SELECTED_IMAGE_URL = 'selectedImageURL';
   var CONTEXT_KEY_PROFILE_PICTURE_DATA_URL = 'profilePictureDataURL';
 
@@ -22,7 +23,9 @@ login.createScreen('UserImageScreen', 'user-image', function() {
             $('changePicture').cameraPresent = present;
           });
       this.context.addObserver(
-          CONTEXT_KEY_SELECTED_IMAGE_URL, this.setSelectedImage_);
+          CONTEXT_KEY_SELECTED_IMAGE_INDEX, this.setSelectedImageIndex_);
+      this.context.addObserver(
+          CONTEXT_KEY_SELECTED_IMAGE_URL, this.setSelectedImageUrl_);
       this.context.addObserver(
           CONTEXT_KEY_PROFILE_PICTURE_DATA_URL, function(url) {
             self.profileImageLoading = false;
@@ -100,9 +103,19 @@ login.createScreen('UserImageScreen', 'user-image', function() {
      * @param {Array<{url: string, author: string, website: string}>} images
      *   An array of default images data, including URL, author and website.
      */
-    setDefaultImages: function(imagesData) {
-      $('changePicture').defaultImages = imagesData;
+    setDefaultImages: function(info) {
+      $('changePicture').defaultImages = info.images;
+      $('changePicture').firstDefaultImageIndex = info.first;
       chrome.send('screenReady');
+    },
+
+    /**
+     * Selects user image with the given index.
+     * @param {number} index Index of the image to select.
+     * @private
+     */
+    setSelectedImageIndex_: function(index) {
+      $('changePicture').selectedImageIndex = index;
     },
 
     /**
@@ -110,7 +123,7 @@ login.createScreen('UserImageScreen', 'user-image', function() {
      * @param {string} url URL of the image to select.
      * @private
      */
-    setSelectedImage_: function(url) {
+    setSelectedImageUrl_: function(url) {
       if (!url)
         return;
       $('changePicture').selectedImageUrl = url;
