@@ -67,16 +67,8 @@ void MediaStreamDispatcherHost::StreamGenerated(
   DVLOG(1) << __func__ << " label= " << label;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  // TODO(c.padhi): Remove this when OnStreamGenerated's input types are
-  // changed to MediaStreamDevice, see https://crbug.com/760493.
-  StreamDeviceInfoArray audio_array, video_array;
-  for (const MediaStreamDevice& device : audio_devices)
-    audio_array.push_back(StreamDeviceInfo(device));
-  for (const MediaStreamDevice& device : video_devices)
-    video_array.push_back(StreamDeviceInfo(device));
-
   GetMediaStreamDispatcherForFrame(render_frame_id)
-      ->OnStreamGenerated(page_request_id, label, audio_array, video_array);
+      ->OnStreamGenerated(page_request_id, label, audio_devices, video_devices);
 }
 
 void MediaStreamDispatcherHost::StreamGenerationFailed(
@@ -99,7 +91,7 @@ void MediaStreamDispatcherHost::DeviceStopped(int render_frame_id,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   GetMediaStreamDispatcherForFrame(render_frame_id)
-      ->OnDeviceStopped(label, StreamDeviceInfo(device));
+      ->OnDeviceStopped(label, device);
 }
 
 void MediaStreamDispatcherHost::DeviceOpened(int render_frame_id,
@@ -110,7 +102,7 @@ void MediaStreamDispatcherHost::DeviceOpened(int render_frame_id,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   GetMediaStreamDispatcherForFrame(render_frame_id)
-      ->OnDeviceOpened(page_request_id, label, StreamDeviceInfo(device));
+      ->OnDeviceOpened(page_request_id, label, device);
 }
 
 mojom::MediaStreamDispatcher*

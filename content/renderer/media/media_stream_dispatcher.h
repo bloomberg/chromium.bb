@@ -17,7 +17,7 @@
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream.mojom.h"
-#include "content/common/media/media_stream_options.h"
+#include "content/public/common/media_stream_request.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -58,7 +58,7 @@ class CONTENT_EXPORT MediaStreamDispatcher
       const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler);
 
   // Stop a started device that has been requested by calling GenerateStream.
-  virtual void StopStreamDevice(const StreamDeviceInfo& device_info);
+  virtual void StopStreamDevice(const MediaStreamDevice& device);
 
   // Request to open a device.
   void OpenDevice(
@@ -117,16 +117,16 @@ class CONTENT_EXPORT MediaStreamDispatcher
   // mojom::MediaStreamDispatcher implementation.
   void OnStreamGenerated(int32_t request_id,
                          const std::string& label,
-                         const StreamDeviceInfoArray& audio_array,
-                         const StreamDeviceInfoArray& video_array) override;
+                         const MediaStreamDevices& audio_devices,
+                         const MediaStreamDevices& video_devices) override;
   void OnStreamGenerationFailed(int32_t request_id,
                                 MediaStreamRequestResult result) override;
   void OnDeviceOpened(int32_t request_id,
                       const std::string& label,
-                      const StreamDeviceInfo& device_info) override;
+                      const MediaStreamDevice& device) override;
   void OnDeviceOpenFailed(int32_t request_id) override;
   void OnDeviceStopped(const std::string& label,
-                       const StreamDeviceInfo& device_info) override;
+                       const MediaStreamDevice& device) override;
 
   void BindMediaStreamDispatcherRequest(
       mojom::MediaStreamDispatcherRequest request);
