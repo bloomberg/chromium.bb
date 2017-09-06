@@ -4660,6 +4660,8 @@ static_library("test_support_ui") {
       "ui/webui/web_ui_test_handler.cc",
       "ui/webui/web_ui_test_handler.h",
     ]
+
+    deps += [ "//chrome/common:mojo_bindings" ]
   }
 
   configs += [ "//build/config:precompiled_headers" ]
