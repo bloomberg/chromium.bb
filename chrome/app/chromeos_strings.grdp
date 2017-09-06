@@ -238,11 +238,11 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_ERROR_WHITESPACE_NAME" desc="Error message displayed when the user enters a file name consisting of only whitespace characters.">
     Invalid name
   </message>
-  <message name="IDS_FILE_BROWSER_ERROR_LONG_NAME" desc="Error message displayed when user trys to enter too long name for a file or a folder.">
-    This name is too long
+  <message name="IDS_FILE_BROWSER_ERROR_LONG_NAME" desc="Error message displayed when user tries to enter too long name for a file or a folder.">
+    Use a shorter name
   </message>
-  <message name="IDS_FILE_BROWSER_ERROR_EXTERNAL_DRIVE_LONG_NAME" desc="Error message displayed when user trys to enter too long name for an external drive.">
-    This name is too long and exceeds $1 character length limit.
+  <message name="IDS_FILE_BROWSER_ERROR_EXTERNAL_DRIVE_LONG_NAME" desc="Error message displayed when user tries to enter too long name for an external drive.">
+    Use a name that's $1 characters or less
   </message>
   <message name="IDS_FILE_BROWSER_EMPTY_FOLDER" desc="Label shown in an empty folder.">
     Nothing to see here...
