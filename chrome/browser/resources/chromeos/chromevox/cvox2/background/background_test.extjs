@@ -865,7 +865,11 @@ TEST_F('BackgroundTest', 'BackwardForwardSync', function() {
     mockFeedback.call(listItem.focus.bind(listItem))
         .expectSpeech('List item')
         .call(this.doCmd('nextObject'))
+        .expectSpeech('\u2022') // bullet
+        .call(this.doCmd('nextObject'))
         .expectSpeech('Button')
+        .call(this.doCmd('previousObject'))
+        .expectSpeech('\u2022') // bullet
         .call(this.doCmd('previousObject'))
         .expectSpeech('List item')
         .call(this.doCmd('previousObject'))
@@ -1244,6 +1248,37 @@ TEST_F('BackgroundTest', 'InPageLinks', function() {
     mockFeedback.expectSpeech('hi', 'Internal link')
         .call(doCmd('forceClickOnCurrentItem'))
         .expectSpeech('there', 'Button')
+        .replay();
+  });
+});
+
+TEST_F('BackgroundTest', 'ListItem', function() {
+  this.forceContextualFirstOutput();
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function(root) {/*!
+    <p>start</p>
+    <ul><li>apple<li>grape<li>banana</ul>
+    <ol><li>pork<li>beef<li>chicken</ol>
+  */}, function(root) {
+    mockFeedback.call(doCmd('nextLine'))
+        .expectSpeech('List item', '\u2022', 'apple')
+        .expectBraille('lstitm list +3 \u2022 apple')
+        .call(doCmd('nextLine'))
+        .expectSpeech('List item', '\u2022', 'grape')
+        .expectBraille('lstitm \u2022 grape')
+        .call(doCmd('nextLine'))
+        .expectSpeech('List item', '\u2022', 'banana')
+        .expectBraille('lstitm \u2022 banana')
+
+        .call(doCmd('nextLine'))
+        .expectSpeech('List item', '1', 'pork')
+        .expectBraille('lstitm list +3 1 pork')
+        .call(doCmd('nextLine'))
+        .expectSpeech('List item', '2', 'beef')
+        .expectBraille('lstitm 2 beef')
+        .call(doCmd('nextLine'))
+        .expectSpeech('List item', '3', 'chicken')
+        .expectBraille('lstitm 3 chicken')
         .replay();
   });
 });
