@@ -186,11 +186,17 @@ class ExtensionMessageBubbleController : public chrome::BrowserListObserver,
       bool should_ignore_learn_more);
 
  private:
+  void HandleExtensionUnloadOrUninstall();
+
   // ExtensionRegistryObserver:
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
                            UnloadedExtensionReason reason) override;
+  void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                              const Extension* extension,
+                              UninstallReason reason) override;
   void OnShutdown(ExtensionRegistry* registry) override;
+
   // BrowserListObserver:
   void OnBrowserRemoved(Browser* browser) override;
 

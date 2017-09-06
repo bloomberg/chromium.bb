@@ -280,10 +280,7 @@ void ExtensionMessageBubbleController::set_should_ignore_learn_more_for_testing(
   g_should_ignore_learn_more_for_testing = should_ignore;
 }
 
-void ExtensionMessageBubbleController::OnExtensionUnloaded(
-    content::BrowserContext* browser_context,
-    const Extension* extension,
-    UnloadedExtensionReason reason) {
+void ExtensionMessageBubbleController::HandleExtensionUnloadOrUninstall() {
   UpdateExtensionIdList();
   // If the callback is set, then that means that OnShown() was called, and the
   // bubble is displayed.
@@ -291,6 +288,20 @@ void ExtensionMessageBubbleController::OnExtensionUnloaded(
     base::ResetAndReturn(&close_bubble_callback_).Run();
   }
   // If the bubble refers to multiple extensions, we do not close the bubble.
+}
+
+void ExtensionMessageBubbleController::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UnloadedExtensionReason reason) {
+  HandleExtensionUnloadOrUninstall();
+}
+
+void ExtensionMessageBubbleController::OnExtensionUninstalled(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UninstallReason reason) {
+  HandleExtensionUnloadOrUninstall();
 }
 
 void ExtensionMessageBubbleController::OnShutdown(ExtensionRegistry* registry) {
