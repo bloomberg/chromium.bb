@@ -14,13 +14,19 @@
     <ImageView
         android:id="@+id/browser_icon"
         android:contentDescription="@null"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_gravity="start" />
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp" />
+
 
     <TextView
         android:id="@+id/browser_name"
         android:layout_gravity="center"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content" />
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/black_alpha_87"
+        android:textSize="@dimen/text_size_medium_dense"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp" />
 </LinearLayout>

@@ -11,16 +11,18 @@
 
     <TextView
         android:id="@+id/desc"
-        android:textColor="@android:color/black"
-        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Small"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/text_size_large"
+        android:textColor="@color/black_alpha_54"
+        android:layout_marginBottom="12dp" />
 
-   <ListView
+    <ListView
         android:id="@+id/browser_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:divider="@null"
-        android:dividerHeight="0dp" />
+        android:dividerHeight="0dp"
+        android:layout_marginTop="4dp" />
 
 </LinearLayout>
