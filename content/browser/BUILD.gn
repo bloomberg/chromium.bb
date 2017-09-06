@@ -58,6 +58,7 @@ source_set("browser") {
     "//content:resources",
     "//content/app/resources",
     "//content/app/strings",
+    "//content/browser/background_fetch:background_fetch_proto",
     "//content/browser/background_sync:background_sync_proto",
     "//content/browser/cache_storage:cache_storage_proto",
     "//content/browser/devtools:devtools_resources",

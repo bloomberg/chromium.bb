@@ -24,8 +24,11 @@ namespace {
 
 const char kExampleId[] = "my-example-id";
 
-const size_t kUserDataKeysPerRegistration = 1u;  // Not including requests.
-const size_t kUserDataKeysPerRequest = 1u;
+// A "bgfetch_registration_" per registration (not including keys for requests).
+const size_t kUserDataKeysPerRegistration = 1u;
+// A "bgfetch_request_" and "bgfetch_pending_request_" per request. See schema
+// documentation in background_fetch_data_manager.cc.
+const size_t kUserDataKeysPerRequest = 2u;
 
 }  // namespace
 
