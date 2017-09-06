@@ -46,7 +46,10 @@ void SiteSettingsCounter::Count() {
     map_->GetSettingsForOneType(type, content_settings::ResourceIdentifier(),
                                 &content_settings_list);
     for (const auto& content_setting : content_settings_list) {
-      if (content_setting.source == "preference") {
+      // TODO(crbug.com/762560): Check the conceptual SettingSource instead of
+      // ContentSettingPatternSource.source
+      if (content_setting.source == "preference" ||
+          content_setting.source == "notification_android") {
         base::Time last_modified = map_->GetSettingLastModifiedDate(
             content_setting.primary_pattern, content_setting.secondary_pattern,
             type);
