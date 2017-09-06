@@ -7,14 +7,38 @@
 #include <stddef.h>
 #include <utility>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
-#include "url/gurl.h"
+#include "content/public/browser/web_contents_observer.h"
+
+class InstantController::TabObserver : public content::WebContentsObserver {
+ public:
+  TabObserver(content::WebContents* web_contents, const base::Closure& callback)
+      : content::WebContentsObserver(web_contents), callback_(callback) {}
+  ~TabObserver() override = default;
+
+ private:
+  // Overridden from content::WebContentsObserver:
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    if (navigation_handle->HasCommitted() &&
+        navigation_handle->IsInMainFrame()) {
+      callback_.Run();
+    }
+  }
+
+  base::Closure callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(TabObserver);
+};
 
 InstantController::InstantController(BrowserInstantController* browser)
     : browser_(browser), search_origin_(SearchModel::Origin::DEFAULT) {}
@@ -49,12 +73,8 @@ void InstantController::ClearDebugEvents() {
   debug_events_.clear();
 }
 
-void InstantController::InstantTabAboutToNavigateMainFrame(
-    const content::WebContents* contents,
-    const GURL& url) {
-  DCHECK(instant_tab_);
-  DCHECK_EQ(instant_tab_->web_contents(), contents);
-
+void InstantController::InstantTabAboutToNavigateMainFrame() {
+  DCHECK(instant_tab_observer_);
   // The Instant tab navigated (which means it had instant support both before
   // and after the navigation). This may cause it to be assigned to a new
   // renderer process, which doesn't have the most visited/theme data yet, so
@@ -67,18 +87,21 @@ void InstantController::InstantTabAboutToNavigateMainFrame(
 void InstantController::ResetInstantTab() {
   if (search_origin_ == SearchModel::Origin::NTP) {
     content::WebContents* active_tab = browser_->GetActiveWebContents();
-    if (!instant_tab_ || active_tab != instant_tab_->web_contents()) {
-      instant_tab_ = base::MakeUnique<InstantTab>(this, active_tab);
-      instant_tab_->Init();
+    if (!instant_tab_observer_ ||
+        active_tab != instant_tab_observer_->web_contents()) {
+      instant_tab_observer_ = base::MakeUnique<TabObserver>(
+          active_tab,
+          base::Bind(&InstantController::InstantTabAboutToNavigateMainFrame,
+                     base::Unretained(this)));
       UpdateInfoForInstantTab();
     }
   } else {
-    instant_tab_.reset();
+    instant_tab_observer_.reset();
   }
 }
 
 void InstantController::UpdateInfoForInstantTab() {
-  DCHECK(instant_tab_);
+  DCHECK(instant_tab_observer_);
   InstantService* instant_service =
       InstantServiceFactory::GetForProfile(browser_->profile());
   if (instant_service) {
