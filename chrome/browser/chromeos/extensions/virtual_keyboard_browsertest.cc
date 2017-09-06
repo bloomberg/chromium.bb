@@ -120,19 +120,19 @@ void VirtualKeyboardBrowserTest::InjectJavascript(const base::FilePath& dir,
 }
 
 // Disabled. http://crbug.com/758697
-IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, DISABLED_TypingTest) {
+IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, TypingTest) {
   RunTest(base::FilePath(FILE_PATH_LITERAL("typing_test.js")),
           VirtualKeyboardBrowserTestConfig());
 }
 
 // Disabled. http://crbug.com/758697
-IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, DISABLED_LayoutTest) {
+IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, LayoutTest) {
   RunTest(base::FilePath(FILE_PATH_LITERAL("layout_test.js")),
           VirtualKeyboardBrowserTestConfig());
 }
 
 // Disabled. http://crbug.com/758697
-IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, DISABLED_ModifierTest) {
+IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, ModifierTest) {
   RunTest(base::FilePath(FILE_PATH_LITERAL("modifier_test.js")),
           VirtualKeyboardBrowserTestConfig());
 }

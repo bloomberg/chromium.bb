@@ -2247,6 +2247,12 @@ Controller.prototype.resize = function(opt_preventResizeTo) {
   var widthPercent;
   var candidateViewHeight;
   var isLandScape = screen.width > screen.height;
+
+  if (this.container_.getElement() == null) {
+    // Loading settings is not completed yet. Ignore this event.
+    return;
+  }
+
   if (isLandScape) {
     goog.dom.classlist.addRemove(this.container_.getElement(),
         Css.PORTRAIT, Css.LANDSCAPE);
