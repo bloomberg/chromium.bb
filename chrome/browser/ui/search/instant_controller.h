@@ -14,14 +14,9 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "chrome/browser/ui/search/instant_tab.h"
 #include "chrome/browser/ui/search/search_model.h"
 
 class BrowserInstantController;
-
-namespace content {
-class WebContents;
-}
 
 // InstantController is responsible for updating the theme and most visited info
 // of the current tab when
@@ -29,18 +24,18 @@ class WebContents;
 // * an open tab navigates to an NTP.
 //
 // InstantController is owned by Browser via BrowserInstantController.
-class InstantController : public InstantTab::Delegate {
+class InstantController {
  public:
   explicit InstantController(BrowserInstantController* browser);
-  ~InstantController() override;
+  ~InstantController();
 
-  // The search mode in the active tab has changed. Bind |instant_tab_| if the
-  // |new_mode| reflects an Instant NTP.
+  // The search mode in the active tab has changed. Bind |instant_tab_observer_|
+  // if the |new_origin| reflects an Instant NTP.
   void SearchModeChanged(SearchModel::Origin old_origin,
                          SearchModel::Origin new_origin);
 
-  // The user switched tabs. Bind |instant_tab_| if the newly active tab is an
-  // Instant NTP.
+  // The user switched tabs. Bind |instant_tab_observer_| if the newly active
+  // tab is an Instant NTP.
   void ActiveTabChanged();
 
   // Resets list of debug events.
@@ -52,6 +47,8 @@ class InstantController : public InstantTab::Delegate {
   }
 
  private:
+  class TabObserver;
+
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
                            SearchDoesntReuseInstantTabWithoutSupport);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
@@ -59,11 +56,7 @@ class InstantController : public InstantTab::Delegate {
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
                            DispatchMVChangeEventWhileNavigatingBackToNTP);
 
-  // Overridden from InstantTab::Delegate:
-  // TODO(shishir): We assume that the WebContent's current RenderViewHost is
-  // the RenderViewHost being created which is not always true. Fix this.
-  void InstantTabAboutToNavigateMainFrame(const content::WebContents* contents,
-                                          const GURL& url) override;
+  void InstantTabAboutToNavigateMainFrame();
 
   // Adds a new event to |debug_events_| and also DVLOG's it. Ensures that
   // |debug_events_| doesn't get too large.
@@ -78,8 +71,8 @@ class InstantController : public InstantTab::Delegate {
 
   BrowserInstantController* const browser_;
 
-  // The instance of InstantTab maintained by InstantController.
-  std::unique_ptr<InstantTab> instant_tab_;
+  // Only non-null if the current tab is an Instant tab, i.e. an NTP.
+  std::unique_ptr<TabObserver> instant_tab_observer_;
 
   // The search model mode for the active tab.
   SearchModel::Origin search_origin_;
