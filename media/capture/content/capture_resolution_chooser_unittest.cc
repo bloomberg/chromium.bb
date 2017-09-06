@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/size.h"
 
 using tracked_objects::Location;
 
@@ -17,10 +18,14 @@ namespace media {
 namespace {
 
 // 16:9 maximum and minimum frame sizes.
-const int kMaxFrameWidth = 3840;
-const int kMaxFrameHeight = 2160;
-const int kMinFrameWidth = 320;
-const int kMinFrameHeight = 180;
+constexpr int kMaxFrameWidth = 3840;
+constexpr int kMaxFrameHeight = 2160;
+constexpr int kMinFrameWidth = 320;
+constexpr int kMinFrameHeight = 180;
+
+// Smallest non-empty size for I420 video.
+constexpr int kSmallestNonEmptyWidth = 2;
+constexpr int kSmallestNonEmptyHeight = 2;
 
 // Checks whether |size| is strictly between (inclusive) |min_size| and
 // |max_size| and has the same aspect ratio as |max_size|.
@@ -186,13 +191,90 @@ void TestTargetedFrameAreas(CaptureResolutionChooser* chooser,
   EXPECT_EQ(smallest_size, chooser->capture_size());
 }
 
+// Determines that there is only one snapped frame size by implication: This
+// function searches for the nearest/larger/smaller frame sizes around
+// |the_one_size| and checks that there is only ever one result.
+void ExpectOnlyOneSnappedFrameSize(const CaptureResolutionChooser& chooser,
+                                   const gfx::Size& the_one_size) {
+  for (int i = 1; i < 4; ++i) {
+    EXPECT_EQ(the_one_size,
+              chooser.FindNearestFrameSize(the_one_size.GetArea() * i));
+    EXPECT_EQ(the_one_size,
+              chooser.FindSmallerFrameSize(the_one_size.GetArea(), i));
+    EXPECT_EQ(the_one_size,
+              chooser.FindLargerFrameSize(the_one_size.GetArea(), i));
+  }
+}
+
 }  // namespace
+
+// While clients should always strive to set their own constraints before
+// querying the CaptureResolutionChooser, do test that the reasonable "default"
+// behavior is exhibited beforehand.
+TEST(CaptureResolutionChooserTest, DefaultCaptureSizeIfNeverSetConstraints) {
+  CaptureResolutionChooser chooser;
+  EXPECT_EQ(CaptureResolutionChooser::kDefaultCaptureSize,
+            chooser.capture_size());
+
+  chooser.SetSourceSize(gfx::Size(kMinFrameWidth, kMinFrameHeight));
+  EXPECT_EQ(CaptureResolutionChooser::kDefaultCaptureSize,
+            chooser.capture_size());
+
+  chooser.SetSourceSize(gfx::Size());
+  EXPECT_EQ(CaptureResolutionChooser::kDefaultCaptureSize,
+            chooser.capture_size());
+
+  chooser.SetSourceSize(gfx::Size(kMaxFrameWidth, kMaxFrameHeight));
+  EXPECT_EQ(CaptureResolutionChooser::kDefaultCaptureSize,
+            chooser.capture_size());
+
+  ExpectOnlyOneSnappedFrameSize(chooser,
+                                CaptureResolutionChooser::kDefaultCaptureSize);
+}
+
+// While clients should always strive to set the source size before querying the
+// CaptureResolutionChooser, do test that the reasonable "default" behavior is
+// exhibited beforehand.
+TEST(CaptureResolutionChooserTest, ReasonableCaptureSizeWhenMissingSourceSize) {
+  CaptureResolutionChooser chooser;
+  // CaptureResolutionChooser starts out with capture size set to
+  // kDefaultCaptureSize.
+  EXPECT_EQ(CaptureResolutionChooser::kDefaultCaptureSize,
+            chooser.capture_size());
+
+  // Setting constraints around kDefaultCaptureSize means the capture size
+  // should remain as kDefaultCaptureSize.
+  chooser.SetConstraints(gfx::Size(kMinFrameWidth, kMinFrameHeight),
+                         gfx::Size(kMaxFrameWidth, kMaxFrameHeight), false);
+  EXPECT_EQ(CaptureResolutionChooser::kDefaultCaptureSize,
+            chooser.capture_size());
+
+  // Setting constraints to a fixed size less than kDefaultCaptureSize will
+  // change the capture size, to meet the required constraints range.
+  chooser.SetConstraints(gfx::Size(kMinFrameWidth, kMinFrameHeight),
+                         gfx::Size(kMinFrameWidth, kMinFrameHeight), false);
+  EXPECT_EQ(gfx::Size(kMinFrameWidth, kMinFrameHeight), chooser.capture_size());
+
+  // Setting the constraints back to the wide range should not change the
+  // capture size, since the new range includes the former capture size.
+  chooser.SetConstraints(gfx::Size(kMinFrameWidth, kMinFrameHeight),
+                         gfx::Size(kMaxFrameWidth, kMaxFrameHeight), false);
+  EXPECT_EQ(gfx::Size(kMinFrameWidth, kMinFrameHeight), chooser.capture_size());
+
+  // Finally, updating the source size to be exactly in the middle of the
+  // constraints range should result in the capture size being updated to that
+  // same size.
+  const gfx::Size middle_size((kMinFrameWidth + kMaxFrameWidth) / 2,
+                              (kMinFrameHeight + kMaxFrameHeight) / 2);
+  chooser.SetSourceSize(middle_size);
+  EXPECT_EQ(middle_size, chooser.capture_size());
+}
 
 TEST(CaptureResolutionChooserTest,
      FixedResolutionPolicy_CaptureSizeAlwaysFixed) {
   const gfx::Size the_one_frame_size(kMaxFrameWidth, kMaxFrameHeight);
-  CaptureResolutionChooser chooser(the_one_frame_size,
-                                   RESOLUTION_POLICY_FIXED_RESOLUTION);
+  CaptureResolutionChooser chooser;
+  chooser.SetConstraints(the_one_frame_size, the_one_frame_size, false);
   EXPECT_EQ(the_one_frame_size, chooser.capture_size());
 
   chooser.SetSourceSize(the_one_frame_size);
@@ -207,16 +289,7 @@ TEST(CaptureResolutionChooserTest,
   chooser.SetSourceSize(gfx::Size(kMinFrameWidth, kMinFrameHeight));
   EXPECT_EQ(the_one_frame_size, chooser.capture_size());
 
-  // Ensure that there is only one snapped frame size.
-  chooser.SetSourceSize(the_one_frame_size);
-  for (int i = 1; i < 4; ++i) {
-    EXPECT_EQ(the_one_frame_size,
-              chooser.FindNearestFrameSize(the_one_frame_size.GetArea() * i));
-    EXPECT_EQ(the_one_frame_size,
-              chooser.FindSmallerFrameSize(the_one_frame_size.GetArea(), i));
-    EXPECT_EQ(the_one_frame_size,
-              chooser.FindLargerFrameSize(the_one_frame_size.GetArea(), i));
-  }
+  ExpectOnlyOneSnappedFrameSize(chooser, the_one_frame_size);
 
   // Ensure that changing the target frame area does not change the computed
   // frame size.
@@ -228,12 +301,12 @@ TEST(CaptureResolutionChooserTest,
 
 TEST(CaptureResolutionChooserTest,
      FixedAspectRatioPolicy_CaptureSizeHasSameAspectRatio) {
-  CaptureResolutionChooser chooser(gfx::Size(kMaxFrameWidth, kMaxFrameHeight),
-                                   RESOLUTION_POLICY_FIXED_ASPECT_RATIO);
-
-  // Starting condition.
   const gfx::Size min_size(kMinFrameWidth, kMinFrameHeight);
   const gfx::Size max_size(kMaxFrameWidth, kMaxFrameHeight);
+  CaptureResolutionChooser chooser;
+  chooser.SetConstraints(min_size, max_size, true);
+
+  // Starting condition.
   ExpectIsWithinBoundsAndSameAspectRatio(FROM_HERE, min_size, max_size,
                                          chooser.capture_size());
 
@@ -299,12 +372,14 @@ TEST(CaptureResolutionChooserTest,
 
 TEST(CaptureResolutionChooserTest,
      AnyWithinLimitPolicy_CaptureSizeIsAnythingWithinLimits) {
+  const gfx::Size min_size(kSmallestNonEmptyWidth, kSmallestNonEmptyHeight);
   const gfx::Size max_size(kMaxFrameWidth, kMaxFrameHeight);
-  CaptureResolutionChooser chooser(max_size,
-                                   RESOLUTION_POLICY_ANY_WITHIN_LIMIT);
+  CaptureResolutionChooser chooser;
+  chooser.SetConstraints(min_size, max_size, false);
 
   // Starting condition.
-  EXPECT_EQ(max_size, chooser.capture_size());
+  EXPECT_EQ(CaptureResolutionChooser::kDefaultCaptureSize,
+            chooser.capture_size());
 
   // Max size in --> max size out.
   chooser.SetSourceSize(max_size);
