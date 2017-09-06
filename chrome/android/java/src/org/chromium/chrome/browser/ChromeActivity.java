@@ -2209,10 +2209,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     @Override
     public boolean onActivityResultWithNative(int requestCode, int resultCode, Intent intent) {
         if (super.onActivityResultWithNative(requestCode, resultCode, intent)) return true;
-        if (requestCode == VrShellDelegate.EXIT_VR_RESULT) {
-            VrShellDelegate.onExitVrResult(resultCode);
-            return true;
-        }
+        if (VrShellDelegate.onActivityResultWithNative(requestCode, resultCode)) return true;
         return false;
     }
 
