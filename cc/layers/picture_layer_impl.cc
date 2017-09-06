@@ -1489,6 +1489,13 @@ void PictureLayerImpl::InvalidateRegionForImages(
     return;
   }
 
+  // Make sure to union the rect from this invalidation with the update_rect
+  // instead of over-writing it. We don't want to reset the update that came
+  // from the main thread.
+  gfx::Rect new_update_rect = invalidation.bounds();
+  new_update_rect.Union(update_rect());
+  SetUpdateRect(new_update_rect);
+
   invalidation_.Union(invalidation);
   tilings_->Invalidate(invalidation);
   SetNeedsPushProperties();

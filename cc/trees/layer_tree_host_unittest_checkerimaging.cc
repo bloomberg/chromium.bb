@@ -112,6 +112,12 @@ class LayerTreeHostCheckerImagingTestMergeWithMainFrame
             }
           }
         }
+
+        // Insetting of image is included in the update rect.
+        gfx::Rect expected_update_rect(-1, -1, 452, 452);
+        expected_update_rect.Union(gfx::Rect(600, 0, 50, 500));
+        EXPECT_EQ(sync_layer_impl->update_rect(), expected_update_rect);
+
         EndTest();
       } break;
       default:
@@ -165,6 +171,9 @@ class LayerTreeHostCheckerImagingTestImplSideTree
         }
       }
     }
+
+    // Insetting of image is included in the update rect.
+    EXPECT_EQ(sync_layer_impl->update_rect(), gfx::Rect(-1, -1, 452, 452));
   }
 
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
