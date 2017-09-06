@@ -57,10 +57,9 @@ static bool IsElementForRemoveFormatCommand(const Element* element) {
 
 void RemoveFormatCommand::DoApply(EditingState* editing_state) {
   LocalFrame* frame = GetDocument().GetFrame();
-
-  if (!frame->Selection()
-           .ComputeVisibleSelectionInDOMTreeDeprecated()
-           .IsNonOrphanedCaretOrRange())
+  const VisibleSelection selection =
+      frame->Selection().ComputeVisibleSelectionInDOMTreeDeprecated();
+  if (selection.IsNone() || !selection.IsValidFor(GetDocument()))
     return;
 
   // Get the default style for this editable root, it's the style that we'll
