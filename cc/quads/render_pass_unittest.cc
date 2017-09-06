@@ -87,7 +87,7 @@ TEST(RenderPassTest, CopyShouldBeIdenticalExceptIdAndQuads) {
                filters, background_filters, color_space,
                has_transparent_background, cache_render_pass,
                has_damage_from_contributing_content);
-  pass->copy_requests.push_back(viz::CopyOutputRequest::CreateEmptyRequest());
+  pass->copy_requests.push_back(viz::CopyOutputRequest::CreateStubForTesting());
 
   // Stick a quad in the pass, this should not get copied.
   viz::SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();

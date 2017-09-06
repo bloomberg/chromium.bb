@@ -16,14 +16,14 @@ namespace mojo {
 template <>
 struct StructTraits<viz::mojom::CopyOutputRequestDataView,
                     std::unique_ptr<viz::CopyOutputRequest>> {
+  static viz::CopyOutputRequest::ResultFormat result_format(
+      const std::unique_ptr<viz::CopyOutputRequest>& request) {
+    return request->result_format();
+  }
+
   static const base::Optional<base::UnguessableToken>& source(
       const std::unique_ptr<viz::CopyOutputRequest>& request) {
     return request->source_;
-  }
-
-  static bool force_bitmap_result(
-      const std::unique_ptr<viz::CopyOutputRequest>& request) {
-    return request->force_bitmap_result_;
   }
 
   static const base::Optional<gfx::Rect>& area(

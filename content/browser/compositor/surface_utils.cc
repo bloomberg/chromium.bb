@@ -65,7 +65,6 @@ void PrepareTextureCopyOutputResult(
   // implement it here.
   callback.Run(SkBitmap(), content::READBACK_FAILED);
 #else
-  DCHECK(result->HasTexture());
   base::ScopedClosureRunner scoped_callback_runner(
       base::BindOnce(callback, SkBitmap(), content::READBACK_FAILED));
 
@@ -91,8 +90,12 @@ void PrepareTextureCopyOutputResult(
 
   viz::TextureMailbox texture_mailbox;
   std::unique_ptr<viz::SingleReleaseCallback> release_callback;
-  result->TakeTexture(&texture_mailbox, &release_callback);
-  DCHECK(texture_mailbox.IsTexture());
+  if (auto* mailbox = result->GetTextureMailbox()) {
+    texture_mailbox = *mailbox;
+    release_callback = result->TakeTextureOwnership();
+  }
+  if (!texture_mailbox.IsTexture())
+    return;
 
   ignore_result(scoped_callback_runner.Release());
 
@@ -115,17 +118,21 @@ void PrepareBitmapCopyOutputResult(
     // Switch back to default colortype if format not supported.
     color_type = kN32_SkColorType;
   }
-  DCHECK(result->HasBitmap());
-  std::unique_ptr<SkBitmap> source = result->TakeBitmap();
-  DCHECK(source);
+  const SkBitmap source = result->AsSkBitmap();
+  if (!source.readyToDraw()) {
+    callback.Run(source, content::READBACK_FAILED);
+    return;
+  }
   SkBitmap scaled_bitmap;
-  if (source->width() != dst_size_in_pixel.width() ||
-      source->height() != dst_size_in_pixel.height()) {
+  if (source.width() != dst_size_in_pixel.width() ||
+      source.height() != dst_size_in_pixel.height()) {
+    // TODO(miu): Delete this logic here and use the new
+    // CopyOutputRequest::SetScaleRatio() API. http://crbug.com/760348
     scaled_bitmap = skia::ImageOperations::Resize(
-        *source, skia::ImageOperations::RESIZE_BEST, dst_size_in_pixel.width(),
+        source, skia::ImageOperations::RESIZE_BEST, dst_size_in_pixel.width(),
         dst_size_in_pixel.height());
   } else {
-    scaled_bitmap = *source;
+    scaled_bitmap = source;
   }
   if (color_type == kN32_SkColorType) {
     DCHECK_EQ(scaled_bitmap.colorType(), kN32_SkColorType);
@@ -191,7 +198,7 @@ void CopyFromCompositingSurfaceHasResult(
     const SkColorType color_type,
     const ReadbackRequestCallback& callback,
     std::unique_ptr<viz::CopyOutputResult> result) {
-  if (result->IsEmpty() || result->size().IsEmpty()) {
+  if (result->IsEmpty()) {
     callback.Run(SkBitmap(), READBACK_FAILED);
     return;
   }
@@ -202,17 +209,21 @@ void CopyFromCompositingSurfaceHasResult(
   else
     output_size_in_pixel = dst_size_in_pixel;
 
-  if (result->HasTexture()) {
-    // GPU-accelerated path
-    PrepareTextureCopyOutputResult(output_size_in_pixel, color_type, callback,
-                                   std::move(result));
-    return;
-  }
+  switch (result->format()) {
+    case viz::CopyOutputResult::Format::RGBA_TEXTURE:
+      // TODO(miu): Delete this code path. All callers want a SkBitmap result;
+      // so all requests should be changed to RGBA_BITMAP, and then not bother
+      // with the extra GLHelper readback infrastructure client-side.
+      // http://crbug.com/759310
+      PrepareTextureCopyOutputResult(output_size_in_pixel, color_type, callback,
+                                     std::move(result));
+      break;
 
-  DCHECK(result->HasBitmap());
-  // Software path
-  PrepareBitmapCopyOutputResult(output_size_in_pixel, color_type, callback,
-                                std::move(result));
+    case viz::CopyOutputResult::Format::RGBA_BITMAP:
+      PrepareBitmapCopyOutputResult(output_size_in_pixel, color_type, callback,
+                                    std::move(result));
+      break;
+  }
 }
 
 namespace surface_utils {

@@ -329,7 +329,8 @@ TEST_F(DisplayTest, DisplayDamaged) {
     pass->output_rect = gfx::Rect(0, 0, 100, 100);
     pass->damage_rect = gfx::Rect(10, 10, 0, 0);
     bool copy_called = false;
-    pass->copy_requests.push_back(CopyOutputRequest::CreateRequest(
+    pass->copy_requests.push_back(std::make_unique<CopyOutputRequest>(
+        CopyOutputRequest::ResultFormat::RGBA_BITMAP,
         base::BindOnce(&CopyCallback, &copy_called)));
     pass->id = 1u;
 

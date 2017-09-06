@@ -9,10 +9,17 @@ import "cc/ipc/texture_mailbox_releaser.mojom";
 import "skia/public/interfaces/bitmap.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
-// See cc/output/copy_output_result.h.
+// See components/viz/common/quads/copy_output_result.h.
+enum CopyOutputResultFormat {
+  RGBA_BITMAP,
+  RGBA_TEXTURE,
+};
+
+// See components/viz/common/quads/copy_output_result.h.
 struct CopyOutputResult {
-  gfx.mojom.Size size;
+  CopyOutputResultFormat format;
+  gfx.mojom.Rect rect;
   skia.mojom.Bitmap? bitmap;
-  TextureMailbox texture_mailbox;
+  TextureMailbox? texture_mailbox;
   TextureMailboxReleaser? releaser;
 };

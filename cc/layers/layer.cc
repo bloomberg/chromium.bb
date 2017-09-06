@@ -374,8 +374,6 @@ void Layer::RequestCopyOfOutput(
     if (it != inputs_.copy_requests.end())
       inputs_.copy_requests.erase(it);
   }
-  if (request->IsEmpty())
-    return;
   inputs_.copy_requests.push_back(std::move(request));
   SetSubtreePropertyChanged();
   SetPropertyTreesNeedRebuild();

@@ -125,7 +125,8 @@ void DelegatedFrameHost::CopyFromCompositingSurface(
   }
 
   std::unique_ptr<viz::CopyOutputRequest> request =
-      viz::CopyOutputRequest::CreateRequest(
+      std::make_unique<viz::CopyOutputRequest>(
+          viz::CopyOutputRequest::ResultFormat::RGBA_TEXTURE,
           base::BindOnce(&CopyFromCompositingSurfaceHasResult, output_size,
                          preferred_color_type, callback));
   if (!src_subrect.IsEmpty())
@@ -142,8 +143,10 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceToVideoFrame(
     return;
   }
 
-  std::unique_ptr<viz::CopyOutputRequest> request =
-      viz::CopyOutputRequest::CreateRequest(base::BindOnce(
+  std::unique_ptr<viz::CopyOutputRequest> request = std::make_unique<
+      viz::CopyOutputRequest>(
+      viz::CopyOutputRequest::ResultFormat::RGBA_TEXTURE,
+      base::BindOnce(
           &DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo,
           AsWeakPtr(),  // For caching the ReadbackYUVInterface on this class.
           nullptr, std::move(target), callback));
@@ -347,10 +350,12 @@ void DelegatedFrameHost::AttemptFrameSubscriberCapture(
   }
 
   std::unique_ptr<viz::CopyOutputRequest> request =
-      viz::CopyOutputRequest::CreateRequest(base::BindOnce(
-          &DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo,
-          AsWeakPtr(), subscriber_texture, frame,
-          base::Bind(callback, present_time)));
+      std::make_unique<viz::CopyOutputRequest>(
+          viz::CopyOutputRequest::ResultFormat::RGBA_TEXTURE,
+          base::BindOnce(
+              &DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo,
+              AsWeakPtr(), subscriber_texture, frame,
+              base::Bind(callback, present_time)));
   // Setting the source in this copy request asks that the layer abort any prior
   // uncommitted copy requests made on behalf of the same frame subscriber.
   // This will not affect any of the copy requests spawned elsewhere from
@@ -579,9 +584,6 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceFinishedForVideo(
     gl_helper->GenerateSyncToken(&sync_token);
   }
   if (release_callback) {
-    // A release callback means the texture came from the compositor, so there
-    // should be no |subscriber_texture|.
-    DCHECK(!subscriber_texture.get());
     const bool lost_resource = !sync_token.HasData();
     release_callback->Run(sync_token, lost_resource);
   }
@@ -604,8 +606,6 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo(
     return;
   if (result->IsEmpty())
     return;
-  if (result->size().IsEmpty())
-    return;
 
   // Compute the dest size we want after the letterboxing resize. Make the
   // coordinates and sizes even because we letterbox in YUV space
@@ -621,19 +621,17 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo(
   if (region_in_frame.IsEmpty())
     return;
 
-  if (!result->HasTexture()) {
-    DCHECK(result->HasBitmap());
-    std::unique_ptr<SkBitmap> bitmap = result->TakeBitmap();
+  if (result->format() == viz::CopyOutputResult::Format::RGBA_BITMAP) {
+    SkBitmap bitmap = result->AsSkBitmap();
     // Scale the bitmap to the required size, if necessary.
     SkBitmap scaled_bitmap;
     if (result->size() != region_in_frame.size()) {
       skia::ImageOperations::ResizeMethod method =
           skia::ImageOperations::RESIZE_GOOD;
-      scaled_bitmap = skia::ImageOperations::Resize(*bitmap.get(), method,
-                                                    region_in_frame.width(),
-                                                    region_in_frame.height());
+      scaled_bitmap = skia::ImageOperations::Resize(
+          bitmap, method, region_in_frame.width(), region_in_frame.height());
     } else {
-      scaled_bitmap = *bitmap.get();
+      scaled_bitmap = bitmap;
     }
 
     media::CopyRGBToVideoFrame(
@@ -654,8 +652,12 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo(
 
   viz::TextureMailbox texture_mailbox;
   std::unique_ptr<viz::SingleReleaseCallback> release_callback;
-  result->TakeTexture(&texture_mailbox, &release_callback);
-  DCHECK(texture_mailbox.IsTexture());
+  if (auto* mailbox = result->GetTextureMailbox()) {
+    texture_mailbox = *mailbox;
+    release_callback = result->TakeTextureOwnership();
+  }
+  if (!texture_mailbox.IsTexture())
+    return;
 
   gfx::Rect result_rect(result->size());
 

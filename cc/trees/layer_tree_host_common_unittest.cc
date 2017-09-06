@@ -4808,8 +4808,6 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_TwoLayersImpl) {
   EXPECT_FALSE(grand_child_layer->contributes_to_drawn_render_surface());
 }
 
-void EmptyCopyOutputCallback(std::unique_ptr<viz::CopyOutputResult> result) {}
-
 TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   FakeImplTaskRunnerProvider task_runner_provider;
   TestTaskGraphRunner task_graph_runner;
@@ -4889,8 +4887,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   copy_grand_child_layer->test_properties()->hide_layer_and_subtree = true;
 
   copy_layer->test_properties()->copy_requests.push_back(
-      viz::CopyOutputRequest::CreateRequest(
-          base::BindOnce(&EmptyCopyOutputCallback)));
+      viz::CopyOutputRequest::CreateStubForTesting());
 
   RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
@@ -4986,8 +4983,7 @@ TEST_F(LayerTreeHostCommonTest, ClippedOutCopyRequest) {
   copy_child->SetDrawsContent(true);
 
   copy_layer->test_properties()->copy_requests.push_back(
-      viz::CopyOutputRequest::CreateRequest(
-          base::BindOnce(&EmptyCopyOutputCallback)));
+      viz::CopyOutputRequest::CreateStubForTesting());
 
   copy_layer->test_properties()->AddChild(std::move(copy_child));
   copy_parent->test_properties()->AddChild(std::move(copy_layer));
@@ -5028,8 +5024,7 @@ TEST_F(LayerTreeHostCommonTest, SingularTransformAndCopyRequests) {
   copy_layer->SetBounds(gfx::Size(100, 100));
   copy_layer->SetDrawsContent(true);
   copy_layer->test_properties()->copy_requests.push_back(
-      viz::CopyOutputRequest::CreateRequest(
-          base::BindOnce(&EmptyCopyOutputCallback)));
+      viz::CopyOutputRequest::CreateStubForTesting());
 
   LayerImpl* copy_child = AddChild<LayerImpl>(copy_layer);
   copy_child->SetBounds(gfx::Size(100, 100));
@@ -5089,8 +5084,7 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectInNonRootCopyRequest) {
   copy_surface->test_properties()->force_render_surface = true;
 
   copy_layer->test_properties()->copy_requests.push_back(
-      viz::CopyOutputRequest::CreateRequest(
-          base::BindOnce(&EmptyCopyOutputCallback)));
+      viz::CopyOutputRequest::CreateStubForTesting());
 
   DCHECK(!copy_layer->test_properties()->copy_requests.empty());
   ExecuteCalculateDrawProperties(root);
@@ -5105,8 +5099,7 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectInNonRootCopyRequest) {
   copy_layer->SetBounds(gfx::Size(50, 50));
   copy_layer->SetMasksToBounds(true);
   copy_layer->test_properties()->copy_requests.push_back(
-      viz::CopyOutputRequest::CreateRequest(
-          base::BindOnce(&EmptyCopyOutputCallback)));
+      viz::CopyOutputRequest::CreateStubForTesting());
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
 
   DCHECK(!copy_layer->test_properties()->copy_requests.empty());
@@ -5121,8 +5114,7 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectInNonRootCopyRequest) {
   // Case 3: When there is device scale factor.
   float device_scale_factor = 2.f;
   copy_layer->test_properties()->copy_requests.push_back(
-      viz::CopyOutputRequest::CreateRequest(
-          base::BindOnce(&EmptyCopyOutputCallback)));
+      viz::CopyOutputRequest::CreateStubForTesting());
 
   DCHECK(!copy_layer->test_properties()->copy_requests.empty());
   ExecuteCalculateDrawProperties(root, device_scale_factor);
@@ -8584,8 +8576,6 @@ TEST_F(LayerTreeHostCommonTest, UpdateScrollChildPosition) {
   EXPECT_EQ(gfx::Rect(0, 10, 25, 25), scroll_child->visible_layer_rect());
 }
 
-static void CopyOutputCallback(std::unique_ptr<viz::CopyOutputResult> result) {}
-
 TEST_F(LayerTreeHostCommonTest, HasCopyRequestsInTargetSubtree) {
   scoped_refptr<Layer> root = Layer::Create();
   scoped_refptr<Layer> child1 = Layer::Create();
@@ -8599,11 +8589,9 @@ TEST_F(LayerTreeHostCommonTest, HasCopyRequestsInTargetSubtree) {
   grandchild->AddChild(greatgrandchild);
   host()->SetRootLayer(root);
 
-  child1->RequestCopyOfOutput(viz::CopyOutputRequest::CreateBitmapRequest(
-      base::BindOnce(&CopyOutputCallback)));
+  child1->RequestCopyOfOutput(viz::CopyOutputRequest::CreateStubForTesting());
   greatgrandchild->RequestCopyOfOutput(
-      viz::CopyOutputRequest::CreateBitmapRequest(
-          base::BindOnce(&CopyOutputCallback)));
+      viz::CopyOutputRequest::CreateStubForTesting());
   child2->SetOpacity(0.f);
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
 
@@ -8689,8 +8677,8 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
   // Now, even though child has zero opacity, we will configure |grandchild| and
   // |greatgrandchild| in several ways that should force the subtree to be
   // processed anyhow.
-  grandchild->RequestCopyOfOutput(viz::CopyOutputRequest::CreateBitmapRequest(
-      base::BindOnce(&CopyOutputCallback)));
+  grandchild->RequestCopyOfOutput(
+      viz::CopyOutputRequest::CreateStubForTesting());
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
   update_list = GetUpdateLayerList();
   EXPECT_TRUE(VerifyLayerInList(grandchild, update_list));
@@ -8803,7 +8791,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
   // |greatgrandchild| in several ways that should force the subtree to be
   // processed anyhow.
   grandchild_ptr->test_properties()->copy_requests.push_back(
-      viz::CopyOutputRequest::CreateEmptyRequest());
+      viz::CopyOutputRequest::CreateStubForTesting());
   root_ptr->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root_ptr);
   EXPECT_EQ(gfx::Rect(10, 10), grandchild_ptr->visible_layer_rect());
@@ -9012,8 +9000,7 @@ TEST_F(LayerTreeHostCommonTest, LayerTreeRebuildTest) {
   parent->AddChild(child);
   host()->SetRootLayer(root);
 
-  child->RequestCopyOfOutput(viz::CopyOutputRequest::CreateRequest(
-      base::BindOnce(&EmptyCopyOutputCallback)));
+  child->RequestCopyOfOutput(viz::CopyOutputRequest::CreateStubForTesting());
 
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
   EXPECT_TRUE(root->has_copy_requests_in_target_subtree());
@@ -10116,8 +10103,7 @@ TEST_F(LayerTreeHostCommonTest, SurfaceContentsScaleChangeWithCopyRequestTest) {
   // Need to persist the render surface after copy request is cleared.
   copy_layer->test_properties()->force_render_surface = true;
   copy_layer->test_properties()->copy_requests.push_back(
-      viz::CopyOutputRequest::CreateRequest(
-          base::Bind(&EmptyCopyOutputCallback)));
+      viz::CopyOutputRequest::CreateStubForTesting());
 
   clip_layer->SetDrawsContent(true);
   clip_layer->SetMasksToBounds(true);
@@ -10367,8 +10353,7 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectInNonRootCacheRenderSurface) {
   // Case 4: When the non root cache render surface layer is clipped and there
   // is a copy request layer beneath it.
   copy_layer->test_properties()->copy_requests.push_back(
-      viz::CopyOutputRequest::CreateRequest(
-          base::Bind(&EmptyCopyOutputCallback)));
+      viz::CopyOutputRequest::CreateStubForTesting());
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   DCHECK(!copy_layer->test_properties()->copy_requests.empty());
   ExecuteCalculateDrawProperties(root);
@@ -10384,8 +10369,7 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectInNonRootCacheRenderSurface) {
   // request layer.
   cache_surface->test_properties()->cache_render_surface = true;
   copy_layer->test_properties()->copy_requests.push_back(
-      viz::CopyOutputRequest::CreateRequest(
-          base::Bind(&EmptyCopyOutputCallback)));
+      viz::CopyOutputRequest::CreateStubForTesting());
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   DCHECK(!copy_layer->test_properties()->copy_requests.empty());
   ExecuteCalculateDrawProperties(root);

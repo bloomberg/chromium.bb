@@ -296,6 +296,7 @@ struct GLRenderer::PendingAsyncReadPixels {
   PendingAsyncReadPixels() : buffer(0) {}
 
   std::unique_ptr<CopyOutputRequest> copy_request;
+  gfx::Rect copy_rect;
   unsigned buffer;
 
  private:
@@ -2614,9 +2615,9 @@ void GLRenderer::EnsureScissorTestDisabled() {
   is_scissor_enabled_ = false;
 }
 
-void GLRenderer::CopyCurrentRenderPassToBitmap(
+void GLRenderer::CopyDrawnRenderPass(
     std::unique_ptr<CopyOutputRequest> request) {
-  TRACE_EVENT0("cc", "GLRenderer::CopyCurrentRenderPassToBitmap");
+  TRACE_EVENT0("cc", "GLRenderer::CopyDrawnRenderPass");
   gfx::Rect copy_rect = current_frame()->current_render_pass->output_rect;
   if (request->has_area())
     copy_rect.Intersect(request->area());
@@ -2807,11 +2808,8 @@ void GLRenderer::DidReceiveTextureInUseResponses(
 void GLRenderer::GetFramebufferPixelsAsync(
     const gfx::Rect& rect,
     std::unique_ptr<CopyOutputRequest> request) {
-  DCHECK(!request->IsEmpty());
-  if (request->IsEmpty())
-    return;
   if (rect.IsEmpty())
-    return;
+    return;  // |request| auto-sends empty result on out-of-scope.
 
   if (overdraw_feedback_)
     FlushOverdrawFeedback(rect);
@@ -2821,90 +2819,104 @@ void GLRenderer::GetFramebufferPixelsAsync(
   DCHECK_GE(window_rect.y(), 0);
   DCHECK_LE(window_rect.right(), current_surface_size_.width());
   DCHECK_LE(window_rect.bottom(), current_surface_size_.height());
+  DCHECK_EQ(window_rect.width(), rect.width());
+  DCHECK_EQ(window_rect.height(), rect.height());
 
-  if (!request->force_bitmap_result()) {
-    bool own_mailbox = !request->has_texture_mailbox();
+  switch (request->result_format()) {
+    case CopyOutputRequest::ResultFormat::RGBA_TEXTURE: {
+      bool own_mailbox = !request->has_texture_mailbox();
 
-    GLuint texture_id = 0;
-    gpu::Mailbox mailbox;
-    if (own_mailbox) {
-      gl_->GenMailboxCHROMIUM(mailbox.name);
-      gl_->GenTextures(1, &texture_id);
-      gl_->BindTexture(GL_TEXTURE_2D, texture_id);
+      GLuint texture_id = 0;
+      gpu::Mailbox mailbox;
+      if (own_mailbox) {
+        gl_->GenMailboxCHROMIUM(mailbox.name);
+        gl_->GenTextures(1, &texture_id);
+        gl_->BindTexture(GL_TEXTURE_2D, texture_id);
 
-      gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-      gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-      gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-      gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-      gl_->ProduceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
-    } else {
-      mailbox = request->texture_mailbox().mailbox();
-      DCHECK_EQ(static_cast<unsigned>(GL_TEXTURE_2D),
-                request->texture_mailbox().target());
-      DCHECK(!mailbox.IsZero());
-      const gpu::SyncToken& incoming_sync_token =
-          request->texture_mailbox().sync_token();
-      if (incoming_sync_token.HasData())
-        gl_->WaitSyncTokenCHROMIUM(incoming_sync_token.GetConstData());
+        gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        gl_->ProduceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
+      } else {
+        mailbox = request->texture_mailbox().mailbox();
+        DCHECK_EQ(static_cast<unsigned>(GL_TEXTURE_2D),
+                  request->texture_mailbox().target());
+        DCHECK(!mailbox.IsZero());
+        const gpu::SyncToken& incoming_sync_token =
+            request->texture_mailbox().sync_token();
+        if (incoming_sync_token.HasData())
+          gl_->WaitSyncTokenCHROMIUM(incoming_sync_token.GetConstData());
 
-      texture_id =
-          gl_->CreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
+        texture_id =
+            gl_->CreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
+      }
+      GetFramebufferTexture(texture_id, window_rect);
+
+      const GLuint64 fence_sync = gl_->InsertFenceSyncCHROMIUM();
+      gl_->ShallowFlushCHROMIUM();
+
+      gpu::SyncToken sync_token;
+      gl_->GenSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
+
+      TextureMailbox texture_mailbox(mailbox, sync_token, GL_TEXTURE_2D);
+      // TODO(miu): Set |texture_mailbox.color_space_|. http://crbug.com/758057
+
+      std::unique_ptr<SingleReleaseCallback> release_callback;
+      if (own_mailbox) {
+        gl_->BindTexture(GL_TEXTURE_2D, 0);
+        release_callback = texture_mailbox_deleter_->GetReleaseCallback(
+            output_surface_->context_provider(), texture_id);
+      } else {
+        gl_->DeleteTextures(1, &texture_id);
+        // Create a no-op release callback, since the client that made the
+        // request owns the texture. This wart is going away soon, per work on
+        // http://crbug.com/754872.
+        release_callback = SingleReleaseCallback::Create(
+            base::Bind([](const gpu::SyncToken&, bool) {}));
+      }
+
+      request->SendResult(std::make_unique<CopyOutputTextureResult>(
+          rect, texture_mailbox, std::move(release_callback)));
+      return;
     }
-    GetFramebufferTexture(texture_id, window_rect);
 
-    const GLuint64 fence_sync = gl_->InsertFenceSyncCHROMIUM();
-    gl_->ShallowFlushCHROMIUM();
+    case CopyOutputRequest::ResultFormat::RGBA_BITMAP: {
+      std::unique_ptr<PendingAsyncReadPixels> pending_read(
+          new PendingAsyncReadPixels);
+      pending_read->copy_request = std::move(request);
+      pending_read->copy_rect = rect;
+      pending_async_read_pixels_.insert(pending_async_read_pixels_.begin(),
+                                        std::move(pending_read));
 
-    gpu::SyncToken sync_token;
-    gl_->GenSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
+      GLuint buffer = 0;
+      gl_->GenBuffers(1, &buffer);
+      gl_->BindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, buffer);
+      gl_->BufferData(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM,
+                      4 * window_rect.size().GetArea(), NULL, GL_STREAM_READ);
 
-    TextureMailbox texture_mailbox(mailbox, sync_token, GL_TEXTURE_2D);
+      GLuint query = 0;
+      gl_->GenQueriesEXT(1, &query);
+      gl_->BeginQueryEXT(GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM, query);
 
-    std::unique_ptr<SingleReleaseCallback> release_callback;
-    if (own_mailbox) {
-      gl_->BindTexture(GL_TEXTURE_2D, 0);
-      release_callback = texture_mailbox_deleter_->GetReleaseCallback(
-          output_surface_->context_provider(), texture_id);
-    } else {
-      gl_->DeleteTextures(1, &texture_id);
+      gl_->ReadPixels(window_rect.x(), window_rect.y(), window_rect.width(),
+                      window_rect.height(), GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+      gl_->BindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, 0);
+
+      // Save the buffer to verify the callbacks happen in the expected order.
+      pending_async_read_pixels_.front()->buffer = buffer;
+
+      gl_->EndQueryEXT(GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM);
+      context_support_->SignalQuery(
+          query, base::Bind(&GLRenderer::FinishedReadback,
+                            weak_ptr_factory_.GetWeakPtr(), buffer, query,
+                            window_rect.size()));
+      return;
     }
-
-    request->SendTextureResult(window_rect.size(), texture_mailbox,
-                               std::move(release_callback));
-    return;
   }
 
-  DCHECK(request->force_bitmap_result());
-
-  std::unique_ptr<PendingAsyncReadPixels> pending_read(
-      new PendingAsyncReadPixels);
-  pending_read->copy_request = std::move(request);
-  pending_async_read_pixels_.insert(pending_async_read_pixels_.begin(),
-                                    std::move(pending_read));
-
-  GLuint buffer = 0;
-  gl_->GenBuffers(1, &buffer);
-  gl_->BindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, buffer);
-  gl_->BufferData(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM,
-                  4 * window_rect.size().GetArea(), NULL, GL_STREAM_READ);
-
-  GLuint query = 0;
-  gl_->GenQueriesEXT(1, &query);
-  gl_->BeginQueryEXT(GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM, query);
-
-  gl_->ReadPixels(window_rect.x(), window_rect.y(), window_rect.width(),
-                  window_rect.height(), GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-
-  gl_->BindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, 0);
-
-  // Save the buffer to verify the callbacks happen in the expected order.
-  pending_async_read_pixels_.front()->buffer = buffer;
-
-  gl_->EndQueryEXT(GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM);
-  context_support_->SignalQuery(
-      query,
-      base::Bind(&GLRenderer::FinishedReadback, weak_ptr_factory_.GetWeakPtr(),
-                 buffer, query, window_rect.size()));
+  NOTREACHED();
 }
 
 void GLRenderer::FinishedReadback(unsigned source_buffer,
@@ -2930,7 +2942,7 @@ void GLRenderer::FinishedReadback(unsigned source_buffer,
   PendingAsyncReadPixels* current_read = iter->get();
 
   uint8_t* src_pixels = NULL;
-  std::unique_ptr<SkBitmap> bitmap;
+  SkBitmap bitmap;
 
   if (source_buffer != 0) {
     gl_->BindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, source_buffer);
@@ -2938,9 +2950,14 @@ void GLRenderer::FinishedReadback(unsigned source_buffer,
         GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, GL_READ_ONLY));
 
     if (src_pixels) {
-      bitmap.reset(new SkBitmap);
-      bitmap->allocN32Pixels(size.width(), size.height());
-      uint8_t* dest_pixels = static_cast<uint8_t*>(bitmap->getPixels());
+      // TODO(miu): Provide color space in this allocN32Pixels() call.
+      // http://crbug.com/758057
+      bitmap.allocN32Pixels(size.width(), size.height());
+
+      // TODO(miu): Replace the logic below with a simple SkBitmap.writePixels()
+      // call (to use Skia's optimized swizzle/conversion implementation).
+      // http://crbug.com/754872
+      uint8_t* dest_pixels = static_cast<uint8_t*>(bitmap.getPixels());
 
       size_t row_bytes = size.width() * 4;
       int num_rows = size.height();
@@ -2967,8 +2984,14 @@ void GLRenderer::FinishedReadback(unsigned source_buffer,
     gl_->DeleteBuffers(1, &source_buffer);
   }
 
-  if (bitmap)
-    current_read->copy_request->SendBitmapResult(std::move(bitmap));
+  if (bitmap.readyToDraw()) {
+    current_read->copy_request->SendResult(
+        std::make_unique<CopyOutputSkBitmapResult>(current_read->copy_rect,
+                                                   bitmap));
+  } else {
+    // The CopyOutputRequest will auto-send an empty result on out-of-scope
+    // (below).
+  }
 
   // Conversion from reverse iterator to iterator:
   // Iterator |iter.base() - 1| points to the same element with reverse iterator

@@ -9,12 +9,17 @@ import "cc/ipc/texture_mailbox.mojom";
 import "mojo/common/unguessable_token.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
-// See cc/output/copy_output_request.h.
+// See components/viz/common/quads/copy_output_request.h.
 struct CopyOutputRequest {
+  cc.mojom.CopyOutputResultFormat result_format;
+
   mojo.common.mojom.UnguessableToken? source;
-  bool force_bitmap_result;
   gfx.mojom.Rect? area;
+
+  // DEPRECATED: To be removed once tab capture is moved into VIZ.
+  // http://crbug.com/754872
   cc.mojom.TextureMailbox? texture_mailbox;
+
   CopyOutputResultSender result_sender;
 };
 

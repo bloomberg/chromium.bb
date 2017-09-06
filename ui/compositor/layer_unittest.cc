@@ -199,7 +199,8 @@ class LayerWithRealCompositorTest : public testing::Test {
   void ReadPixels(SkBitmap* bitmap, gfx::Rect source_rect) {
     scoped_refptr<ReadbackHolder> holder(new ReadbackHolder);
     std::unique_ptr<viz::CopyOutputRequest> request =
-        viz::CopyOutputRequest::CreateBitmapRequest(
+        std::make_unique<viz::CopyOutputRequest>(
+            viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
             base::BindOnce(&ReadbackHolder::OutputRequestCallback, holder));
     request->set_area(source_rect);
 
@@ -247,7 +248,10 @@ class LayerWithRealCompositorTest : public testing::Test {
     ReadbackHolder() : run_loop_(new base::RunLoop) {}
 
     void OutputRequestCallback(std::unique_ptr<viz::CopyOutputResult> result) {
-      result_ = result->TakeBitmap();
+      if (result->IsEmpty())
+        result_.reset();
+      else
+        result_ = std::make_unique<SkBitmap>(result->AsSkBitmap());
       run_loop_->Quit();
     }
 

@@ -172,7 +172,7 @@ class CC_EXPORT DirectRenderer {
   virtual void EnsureScissorTestEnabled() = 0;
   virtual void EnsureScissorTestDisabled() = 0;
   virtual void DidChangeVisibility() = 0;
-  virtual void CopyCurrentRenderPassToBitmap(
+  virtual void CopyDrawnRenderPass(
       std::unique_ptr<viz::CopyOutputRequest> request) = 0;
   virtual void SetEnableDCLayers(bool enable) = 0;
 

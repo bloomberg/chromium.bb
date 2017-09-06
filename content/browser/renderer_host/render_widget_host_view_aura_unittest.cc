@@ -3527,8 +3527,10 @@ class RenderWidgetHostViewAuraCopyRequestTest
   void ReleaseSwappedFrame() {
     std::unique_ptr<viz::CopyOutputRequest> request =
         std::move(view_->last_copy_request_);
-    request->SendTextureResult(view_rect_.size(), request->texture_mailbox(),
-                               std::unique_ptr<viz::SingleReleaseCallback>());
+    request->SendResult(std::make_unique<viz::CopyOutputTextureResult>(
+        view_rect_, request->texture_mailbox(),
+        viz::SingleReleaseCallback::Create(
+            base::Bind([](const gpu::SyncToken&, bool) {}))));
     RunLoopUntilCallback();
   }
 
@@ -3645,9 +3647,9 @@ TEST_F(RenderWidgetHostViewAuraCopyRequestTest, DestroyedAfterCopyRequest) {
   TearDownEnvironment();
 
   // Send the result after-the-fact.  It goes nowhere since DelegatedFrameHost
-  // has been destroyed.
-  request->SendTextureResult(view_rect_.size(), request->texture_mailbox(),
-                             std::unique_ptr<viz::SingleReleaseCallback>());
+  // has been destroyed.  CopyOutputRequest auto-sends an empty result upon
+  // destruction.
+  request.reset();
 
   // Because the copy request callback may be holding state within it, that
   // state must handle the RWHVA and ImageTransportFactory going away before the

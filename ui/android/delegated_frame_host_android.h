@@ -64,7 +64,9 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
 
   viz::FrameSinkId GetFrameSinkId() const;
 
-  // Should only be called when the host has a content layer.
+  // Should only be called when the host has a content layer. Use this for one-
+  // off screen capture, not for video. Always provides RGBA_BITMAP
+  // CopyOutputResults.
   void RequestCopyOfSurface(
       WindowAndroidCompositor* compositor,
       const gfx::Rect& src_subrect_in_pixel,

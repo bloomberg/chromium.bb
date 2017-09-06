@@ -37,7 +37,8 @@ void SnapshotAsync::ScaleCopyOutputResult(
     const GrabWindowSnapshotAsyncCallback& callback,
     const gfx::Size& target_size,
     std::unique_ptr<viz::CopyOutputResult> result) {
-  if (result->IsEmpty()) {
+  const SkBitmap bitmap = result->AsSkBitmap();
+  if (!bitmap.readyToDraw()) {
     callback.Run(gfx::Image());
     return;
   }
@@ -48,19 +49,19 @@ void SnapshotAsync::ScaleCopyOutputResult(
   // somewhere so that it can be reused here.
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::Bind(ScaleBitmap, *result->TakeBitmap(), target_size),
+      base::Bind(ScaleBitmap, bitmap, target_size),
       base::Bind(&OnFrameScalingFinished, callback));
 }
 
 void SnapshotAsync::RunCallbackWithCopyOutputResult(
     const GrabWindowSnapshotAsyncCallback& callback,
     std::unique_ptr<viz::CopyOutputResult> result) {
-  if (result->IsEmpty()) {
+  const SkBitmap bitmap = result->AsSkBitmap();
+  if (!bitmap.readyToDraw()) {
     callback.Run(gfx::Image());
     return;
   }
-
-  callback.Run(gfx::Image::CreateFrom1xBitmap(*result->TakeBitmap()));
+  callback.Run(gfx::Image::CreateFrom1xBitmap(bitmap));
 }
 
 }  // namespace ui

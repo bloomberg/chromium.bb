@@ -1002,17 +1002,6 @@ bool RenderWidgetCompositor::HaveScrollEventHandlers() const {
   return layer_tree_host_->have_scroll_event_handlers();
 }
 
-void CompositeAndReadbackAsyncCallback(
-    blink::WebCompositeAndReadbackAsyncCallback* callback,
-    std::unique_ptr<viz::CopyOutputResult> result) {
-  if (result->HasBitmap()) {
-    std::unique_ptr<SkBitmap> result_bitmap = result->TakeBitmap();
-    callback->DidCompositeAndReadback(*result_bitmap);
-  } else {
-    callback->DidCompositeAndReadback(SkBitmap());
-  }
-}
-
 bool RenderWidgetCompositor::CompositeIsSynchronous() const {
   if (!threaded_) {
     DCHECK(!layer_tree_host_->GetSettings().single_thread_proxy_scheduler);
@@ -1063,15 +1052,20 @@ void RenderWidgetCompositor::CompositeAndReadbackAsync(
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner =
       layer_tree_host_->GetTaskRunnerProvider()->MainThreadTaskRunner();
   std::unique_ptr<viz::CopyOutputRequest> request =
-      viz::CopyOutputRequest::CreateBitmapRequest(base::BindOnce(
-          [](blink::WebCompositeAndReadbackAsyncCallback* callback,
-             scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-             std::unique_ptr<viz::CopyOutputResult> result) {
-            task_runner->PostTask(FROM_HERE,
-                                  base::Bind(&CompositeAndReadbackAsyncCallback,
-                                             callback, base::Passed(&result)));
-          },
-          callback, base::Passed(&main_thread_task_runner)));
+      std::make_unique<viz::CopyOutputRequest>(
+          viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
+          base::BindOnce(
+              [](blink::WebCompositeAndReadbackAsyncCallback* callback,
+                 scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                 std::unique_ptr<viz::CopyOutputResult> result) {
+                task_runner->PostTask(
+                    FROM_HERE,
+                    base::Bind(&blink::WebCompositeAndReadbackAsyncCallback::
+                                   DidCompositeAndReadback,
+                               base::Unretained(callback),
+                               result->AsSkBitmap()));
+              },
+              callback, base::Passed(&main_thread_task_runner)));
   // Force a redraw to ensure that the copy swap promise isn't cancelled due to
   // no damage.
   SetNeedsForcedRedraw();

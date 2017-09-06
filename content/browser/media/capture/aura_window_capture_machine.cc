@@ -24,7 +24,6 @@
 #include "services/device/public/interfaces/wake_lock_provider.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "skia/ext/image_operations.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -237,7 +236,8 @@ void AuraWindowCaptureMachine::Capture(base::TimeTicks event_time) {
   if (oracle_proxy_->ObserveEventAndDecideCapture(
           event, gfx::Rect(), event_time, &frame, &capture_frame_cb)) {
     std::unique_ptr<viz::CopyOutputRequest> request =
-        viz::CopyOutputRequest::CreateRequest(
+        std::make_unique<viz::CopyOutputRequest>(
+            viz::CopyOutputRequest::ResultFormat::RGBA_TEXTURE,
             base::BindOnce(&AuraWindowCaptureMachine::DidCopyOutput,
                            weak_factory_.GetWeakPtr(), std::move(frame),
                            event_time, start_time, capture_frame_cb));
@@ -301,11 +301,7 @@ bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
     return false;
   }
   if (result->IsEmpty()) {
-    VLOG(1) << "CopyOutputRequest failed: No texture or bitmap in result.";
-    return false;
-  }
-  if (result->size().IsEmpty()) {
-    VLOG(1) << "CopyOutputRequest failed: Zero-area texture/bitmap result.";
+    VLOG(1) << "CopyOutputRequest failed: Empty result.";
     return false;
   }
   DCHECK(video_frame);
@@ -336,8 +332,10 @@ bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
 
   viz::TextureMailbox texture_mailbox;
   std::unique_ptr<viz::SingleReleaseCallback> release_callback;
-  result->TakeTexture(&texture_mailbox, &release_callback);
-  DCHECK(texture_mailbox.IsTexture());
+  if (auto* mailbox = result->GetTextureMailbox()) {
+    texture_mailbox = *mailbox;
+    release_callback = result->TakeTextureOwnership();
+  }
   if (!texture_mailbox.IsTexture()) {
     VLOG(1) << "Aborting capture: Failed to take texture from mailbox.";
     return false;
