@@ -14,7 +14,11 @@ class ChromeBrowserState;
 }
 
 @protocol UrlLoader;
-@protocol WebToolbarDelegate;
+
+@protocol IncognitoViewControllerDelegate
+// Sets the alpha for the toolbar's background views.
+- (void)setToolbarBackgroundAlpha:(CGFloat)alpha;
+@end
 
 @interface IncognitoPanelController : NSObject<NewTabPagePanelProtocol>
 
@@ -25,8 +29,8 @@ class ChromeBrowserState;
 // retained so it must outlive this controller. |browserState| may not be null.
 // |webToolbarDelegate| is used to fade the toolbar views on page scroll.
 - (id)initWithLoader:(id<UrlLoader>)loader
-          browserState:(ios::ChromeBrowserState*)browserState
-    webToolbarDelegate:(id<WebToolbarDelegate>)webToolbarDelegate;
+        browserState:(ios::ChromeBrowserState*)browserState
+     toolbarDelegate:(id<IncognitoViewControllerDelegate>)toolbarDelegate;
 
 @end
 

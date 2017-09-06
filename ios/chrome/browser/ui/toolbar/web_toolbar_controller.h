@@ -48,19 +48,9 @@ extern const CGFloat kiPhoneOmniboxPlaceholderColorBrightness;
 - (IBAction)locationBarDidResignFirstResponder:(id)sender;
 // Called when the location bar receives a key press.
 - (IBAction)locationBarBeganEdit:(id)sender;
-// Called when the stack view controller is about to be shown.
-- (IBAction)prepareToEnterTabSwitcher:(id)sender;
 // Returns the WebState.
 - (web::WebState*)currentWebState;
-// Called when the toolbar height changes. Other elements, such as the web view,
-// may need to adjust accordingly. This is called from within an animation
-// block.
-- (void)toolbarHeightChanged;
 - (ToolbarModelIOS*)toolbarModelIOS;
-// Sets the alpha for the toolbar's background views.
-- (void)updateToolbarBackgroundAlpha:(CGFloat)backgroundAlpha;
-// Sets the alpha for the toolbar's background views.
-- (void)updateToolbarControlsAlpha:(CGFloat)controlsAlpha;
 @optional
 // Called before the toolbar screenshot gets updated.
 - (void)willUpdateToolbarSnapshot;

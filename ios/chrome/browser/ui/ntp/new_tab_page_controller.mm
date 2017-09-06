@@ -136,7 +136,7 @@ enum {
   __weak id<OmniboxFocuser> _focuser;
 
   // Delegate to fetch the ToolbarModel and current web state from.
-  __weak id<WebToolbarDelegate> _webToolbarDelegate;
+  __weak id<IncognitoViewControllerDelegate> _toolbarDelegate;
 
   TabModel* _tabModel;
 }
@@ -214,7 +214,7 @@ enum {
              ntpObserver:(id<NewTabPageControllerObserver>)ntpObserver
             browserState:(ios::ChromeBrowserState*)browserState
               colorCache:(NSMutableDictionary*)colorCache
-      webToolbarDelegate:(id<WebToolbarDelegate>)webToolbarDelegate
+         toolbarDelegate:(id<IncognitoViewControllerDelegate>)toolbarDelegate
                 tabModel:(TabModel*)tabModel
     parentViewController:(UIViewController*)parentViewController
               dispatcher:(id<ApplicationCommands,
@@ -230,7 +230,7 @@ enum {
     _parentViewController = parentViewController;
     _dispatcher = dispatcher;
     _focuser = focuser;
-    _webToolbarDelegate = webToolbarDelegate;
+    _toolbarDelegate = toolbarDelegate;
     _tabModel = tabModel;
     _dominantColorCache = colorCache;
     self.title = l10n_util::GetNSString(IDS_NEW_TAB_TITLE);
@@ -637,7 +637,7 @@ enum {
       _incognitoController =
           [[IncognitoPanelController alloc] initWithLoader:_loader
                                               browserState:_browserState
-                                        webToolbarDelegate:_webToolbarDelegate];
+                                           toolbarDelegate:_toolbarDelegate];
     // TODO(crbug.com/708319): Also set panelController for incognito here.
     view = [_incognitoController view];
   } else {
