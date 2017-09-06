@@ -21,6 +21,7 @@
 #import "ios/chrome/app/main_controller.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
+#import "ios/testing/perf/startupLoggers.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -91,6 +92,7 @@
 // startup is fast, and the UI appears as soon as possible.
 - (BOOL)application:(UIApplication*)application
     didFinishLaunchingWithOptions:(NSDictionary*)launchOptions {
+  startup_loggers::RegisterAppDidFinishLaunchingTime();
   // Main window must be ChromeOverlayWindow or a subclass of it.
   self.window = [[ChromeOverlayWindow alloc]
       initWithFrame:[[UIScreen mainScreen] bounds]];
@@ -102,6 +104,7 @@
 }
 
 - (void)applicationDidBecomeActive:(UIApplication*)application {
+  startup_loggers::RegisterAppDidBecomeActiveTime();
   if ([_appState isInSafeMode])
     return;
 

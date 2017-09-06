@@ -11,6 +11,7 @@
 #include "ios/chrome/browser/crash_report/breakpad_helper.h"
 #include "ios/chrome/browser/crash_report/crash_keys.h"
 #include "ios/chrome/common/channel_info.h"
+#include "ios/testing/perf/startupLoggers.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -59,6 +60,7 @@ int RunUIApplicationMain(int argc, char* argv[]) {
 
 int main(int argc, char* argv[]) {
   IOSChromeMain::InitStartTime();
+  startup_loggers::RegisterAppStartTime();
 
   // Set NSUserDefaults keys to force pseudo-RTL if needed.
   SetTextDirectionIfPseudoRTLEnabled();
