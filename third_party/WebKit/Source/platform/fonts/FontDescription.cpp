@@ -164,6 +164,11 @@ void FontDescription::SetVariantCaps(FontVariantCaps variant_caps) {
   UpdateTypesettingFeatures();
 }
 
+void FontDescription::SetVariantEastAsian(
+    const FontVariantEastAsian variant_east_asian) {
+  fields_.variant_east_asian_ = variant_east_asian.fields_as_unsigned_;
+}
+
 void FontDescription::SetVariantLigatures(const VariantLigatures& ligatures) {
   fields_.common_ligatures_state_ = ligatures.common;
   fields_.discretionary_ligatures_state_ = ligatures.discretionary;

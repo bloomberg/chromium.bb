@@ -727,6 +727,7 @@ component("platform") {
     "fonts/FontSelector.h",
     "fonts/FontSelectorClient.h",
     "fonts/FontSmoothingMode.h",
+    "fonts/FontVariantEastAsian.h",
     "fonts/FontVariantNumeric.h",
     "fonts/FontWidthVariant.h",
     "fonts/GenericFontFamilySettings.cpp",
