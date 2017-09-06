@@ -147,7 +147,10 @@ bool InsertTextCommand::PerformOverwrite(const String& text,
 void InsertTextCommand::DoApply(EditingState* editing_state) {
   DCHECK_EQ(text_.find('\n'), kNotFound);
 
-  if (!EndingVisibleSelection().IsNonOrphanedCaretOrRange())
+  // TODO(editing-dev): We shouldn't construct an InsertTextCommand with none or
+  // invalid selection.
+  if (EndingVisibleSelection().IsNone() ||
+      !EndingVisibleSelection().IsValidFor(GetDocument()))
     return;
 
   // Delete the current selection.
