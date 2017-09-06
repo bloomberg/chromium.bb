@@ -33,6 +33,7 @@ class MockNetworkQualityProvider : public net::NetworkQualityProvider {
                      net::EffectiveConnectionType());
   MOCK_CONST_METHOD0(GetHttpRTT, base::Optional<base::TimeDelta>());
   MOCK_CONST_METHOD0(GetTransportRTT, base::Optional<base::TimeDelta>());
+  MOCK_CONST_METHOD0(GetDownstreamThroughputKbps, base::Optional<int32_t>());
 };
 
 }  // namespace
@@ -59,6 +60,10 @@ class UkmPageLoadMetricsObserverTest
     EXPECT_CALL(mock_network_quality_provider_, GetTransportRTT())
         .Times(AnyNumber())
         .WillRepeatedly(Return(base::Optional<base::TimeDelta>()));
+
+    EXPECT_CALL(mock_network_quality_provider_, GetDownstreamThroughputKbps())
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(base::Optional<int32_t>()));
   }
 
   MockNetworkQualityProvider& mock_network_quality_provider() {
@@ -257,6 +262,8 @@ TEST_F(UkmPageLoadMetricsObserverTest, NetworkQualityEstimates) {
       .WillRepeatedly(Return(base::TimeDelta::FromMilliseconds(100)));
   EXPECT_CALL(mock_network_quality_provider(), GetTransportRTT())
       .WillRepeatedly(Return(base::TimeDelta::FromMilliseconds(200)));
+  EXPECT_CALL(mock_network_quality_provider(), GetDownstreamThroughputKbps())
+      .WillRepeatedly(Return(300));
 
   NavigateAndCommit(GURL(kTestUrl1));
 
@@ -276,6 +283,8 @@ TEST_F(UkmPageLoadMetricsObserverTest, NetworkQualityEstimates) {
                                    internal::kUkmHttpRttEstimate, 100);
   test_ukm_recorder().ExpectMetric(*source, internal::kUkmPageLoadEventName,
                                    internal::kUkmTransportRttEstimate, 200);
+  test_ukm_recorder().ExpectMetric(*source, internal::kUkmPageLoadEventName,
+                                   internal::kUkmDownstreamKbpsEstimate, 300);
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest, PageTransitionReload) {

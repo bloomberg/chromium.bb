@@ -829,6 +829,13 @@ be describing additional metrics about the same event.
       The |ui::PageTransition| for the main frame navigation of this page load.
     </summary>
   </metric>
+  <metric name="Net.DownstreamKbpsEstimate.OnNavigationStart">
+    <owner>tbansal@chromium.org</owner>
+    <summary>
+      The downstream throughput (in kilobits per second) for this page load, at
+      the time the navigation for this page load was initiated.
+    </summary>
+  </metric>
   <metric name="Net.EffectiveConnectionType.OnNavigationStart">
     <obsolete>
       Deprecated 7/2017 in favor of

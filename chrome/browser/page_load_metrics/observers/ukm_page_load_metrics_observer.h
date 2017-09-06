@@ -33,6 +33,7 @@ extern const char kUkmNetErrorCode[];
 extern const char kUkmEffectiveConnectionType[];
 extern const char kUkmHttpRttEstimate[];
 extern const char kUkmTransportRttEstimate[];
+extern const char kUkmDownstreamKbpsEstimate[];
 extern const char kUkmPageTransition[];
 
 }  // namespace internal
@@ -96,6 +97,7 @@ class UkmPageLoadMetricsObserver
       net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
   base::Optional<base::TimeDelta> http_rtt_estimate_;
   base::Optional<base::TimeDelta> transport_rtt_estimate_;
+  base::Optional<int32_t> downstream_kbps_estimate_;
 
   // PAGE_TRANSITION_LINK is the default PageTransition value.
   ui::PageTransition page_transition_ = ui::PAGE_TRANSITION_LINK;
