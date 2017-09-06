@@ -79,8 +79,6 @@ TEST_F(SpellCheckerTest, SpellCheckDoesNotCauseUpdateLayout) {
   input->focus();
   input->setValue("Hello, input field");
   GetDocument().UpdateStyleAndLayout();
-  VisibleSelection old_selection =
-      GetDocument().GetFrame()->Selection().ComputeVisibleSelectionInDOMTree();
 
   Position new_position(input->InnerEditorElement()->firstChild(), 3);
   GetDocument().GetFrame()->Selection().SetSelection(
