@@ -52,6 +52,7 @@ using bookmarks::BookmarkNode;
 using IntegerPair = std::pair<NSInteger, NSInteger>;
 
 @interface BookmarkTableView ()<BookmarkModelBridgeObserver,
+                                BookmarkTableCellTitleEditDelegate,
                                 BookmarkTablePromoCellDelegate,
                                 SigninPromoViewConsumer,
                                 SyncedSessionsObserver,
@@ -59,7 +60,12 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
                                 UITableViewDelegate> {
   // A vector of bookmark nodes to display in the table view.
   std::vector<const BookmarkNode*> _bookmarkItems;
+
+  // The current root node of this table view.
   const BookmarkNode* _currentRootNode;
+
+  // The newly created folder node its name is being edited.
+  const BookmarkNode* _editingFolderNode;
 
   // Bridge to register for bookmark changes.
   std::unique_ptr<bookmarks::BookmarkModelBridge> _modelBridge;
@@ -213,6 +219,18 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   [self.tableView reloadData];
 }
 
+- (void)addNewFolder {
+  // TODO(crbug.com/695749): Check if we need to disable the 'New Folder' button
+  // when _currentRootNode is NULL.
+  if (!_currentRootNode) {
+    return;
+  }
+  base::string16 folderTitle = base::SysNSStringToUTF16(
+      l10n_util::GetNSString(IDS_IOS_BOOKMARK_NEW_GROUP_DEFAULT_NAME));
+  _editingFolderNode = self.bookmarkModel->AddFolder(
+      _currentRootNode, _currentRootNode->child_count(), folderTitle);
+}
+
 - (void)setEditing:(BOOL)editing {
   [self resetEditNodes];
   [self.tableView setEditing:editing animated:YES];
@@ -288,6 +306,10 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   }
   [cell setNode:node];
 
+  if (node == _editingFolderNode) {
+    [cell startEdit];
+    cell.textDelegate = self;
+  }
   [self loadFaviconAtIndexPath:indexPath];
   return cell;
 }
@@ -336,6 +358,11 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
       return;
     }
     if (node->is_folder()) {
+      // if editing folder name, cancel it.
+      if (_editingFolderNode) {
+        _editingFolderNode = NULL;
+        [self refreshContents];
+      }
       [self.delegate bookmarkTableView:self selectedFolderForNavigation:node];
     } else {
       // Open URL. Pass this to the delegate.
@@ -526,7 +553,7 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 
 // Computes the bookmarks table view based on the current root node.
 - (void)computeBookmarkTableViewData {
-  if (!self.bookmarkModel->loaded() || _currentRootNode == NULL) {
+  if (!self.bookmarkModel->loaded() || !_currentRootNode) {
     return;
   }
 
@@ -541,6 +568,9 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 
 // Generate the table view data when the current root node is a child node.
 - (void)generateTableViewData {
+  if (!_currentRootNode) {
+    return;
+  }
   // Add all bookmarks and folders of the current root node to the table.
   int childCount = _currentRootNode->child_count();
   for (int i = 0; i < childCount; ++i) {
@@ -580,7 +610,7 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
     return;
   }
 
-  if (_currentRootNode->empty()) {
+  if (!_currentRootNode || _currentRootNode->empty()) {
     [self showEmptyBackground];
   } else {
     // Hides the empty bookmarks background if it is showing.
@@ -745,6 +775,18 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
     return;
   }
   [self showEmptyOrLoadingSpinnerBackgroundIfNeeded];
+}
+
+#pragma mark - BookmarkTableCellTextFieldDelegate
+
+- (void)textDidChangeTo:(NSString*)newName {
+  DCHECK(_editingFolderNode);
+  if (newName.length > 0) {
+    self.bookmarkModel->SetTitle(_editingFolderNode,
+                                 base::SysNSStringToUTF16(newName));
+  }
+  _editingFolderNode = NULL;
+  [self refreshContents];
 }
 
 @end

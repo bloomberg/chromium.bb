@@ -920,6 +920,7 @@ const CGFloat kSpacer = 50;
       setButtonTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_BAR_SELECT)
            forButton:ContextBarTrailingButton];
 
+  [self setContextBarState:BookmarksContextBarDefault];
   [self.view addSubview:self.contextBar];
 }
 
@@ -1079,7 +1080,7 @@ const CGFloat kSpacer = 50;
   switch (self.contextBarState) {
     case BookmarksContextBarDefault:
       // New Folder clicked.
-      // TODO(crbug.com/695749): Implement the button action here.
+      [self.bookmarksTableView addNewFolder];
       break;
     case BookmarksContextBarBeginSelection:
       // This must never happen, as the leading button is disabled at this
@@ -1151,7 +1152,9 @@ const CGFloat kSpacer = 50;
 - (void)trailingButtonClicked {
   // Toggle edit mode.
   [self.bookmarksTableView setEditing:!self.bookmarksTableView.editing];
-  [self setContextBarState:BookmarksContextBarBeginSelection];
+  [self setContextBarState:self.bookmarksTableView.editing
+                               ? BookmarksContextBarBeginSelection
+                               : BookmarksContextBarDefault];
 }
 
 #pragma mark - ContextBarStates
@@ -1164,11 +1167,7 @@ const CGFloat kSpacer = 50;
       [self setBookmarksContextBarButtonsDefaultState];
       break;
     case BookmarksContextBarBeginSelection:
-      if (self.bookmarksTableView.editing) {
-        [self setBookmarksContextBarSelectionStartState];
-      } else {
-        [self setBookmarksContextBarButtonsDefaultState];
-      }
+      [self setBookmarksContextBarSelectionStartState];
       break;
     case BookmarksContextBarSingleURLSelection:
     case BookmarksContextBarMultipleURLSelection:
