@@ -336,21 +336,6 @@ class MyActivity(object):
     return ret
 
   @staticmethod
-  def gerrit_changes_over_ssh(instance, filters):
-    # See https://review.openstack.org/Documentation/cmd-query.html
-    # Gerrit doesn't allow filtering by created time, only modified time.
-    gquery_cmd = ['ssh', '-p', str(instance['port']), instance['host'],
-                  'gerrit', 'query',
-                  '--format', 'JSON',
-                  '--comments',
-                  '--'] + filters
-    (stdout, _) = subprocess.Popen(gquery_cmd, stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE).communicate()
-    # Drop the last line of the output with the stats.
-    issues = stdout.splitlines()[:-1]
-    return map(json.loads, issues)
-
-  @staticmethod
   def gerrit_changes_over_rest(instance, filters):
     # Convert the "key:value" filter to a list of (key, value) pairs.
     req = list(f.split(':', 1) for f in filters)
@@ -370,17 +355,9 @@ class MyActivity(object):
     user_filter = 'owner:%s' % owner if owner else 'reviewer:%s' % reviewer
     filters = ['-age:%ss' % max_age, user_filter]
 
-    # Determine the gerrit interface to use: SSH or REST API:
-    if 'host' in instance:
-      issues = self.gerrit_changes_over_ssh(instance, filters)
-      issues = [self.process_gerrit_ssh_issue(instance, issue)
-                for issue in issues]
-    elif 'url' in instance:
-      issues = self.gerrit_changes_over_rest(instance, filters)
-      issues = [self.process_gerrit_rest_issue(instance, issue)
-                for issue in issues]
-    else:
-      raise Exception('Invalid gerrit_instances configuration.')
+    issues = self.gerrit_changes_over_rest(instance, filters)
+    issues = [self.process_gerrit_issue(instance, issue)
+              for issue in issues]
 
     # TODO(cjhopman): should we filter abandoned changes?
     issues = filter(self.filter_issue, issues)
@@ -388,47 +365,7 @@ class MyActivity(object):
 
     return issues
 
-  def process_gerrit_ssh_issue(self, instance, issue):
-    ret = {}
-    if self.options.deltas:
-      ret['delta'] = DefaultFormatter().format(
-          '+{insertions},-{deletions}',
-          **issue)
-    ret['status'] = issue['status']
-    if 'shorturl' in instance:
-      protocol = instance.get('short_url_protocol', 'http')
-      ret['review_url'] = '%s://%s/%s' % (protocol, instance['shorturl'],
-                                          issue['number'])
-    else:
-      ret['review_url'] = issue['url']
-
-    ret['header'] = issue['subject']
-    ret['owner'] = issue['owner']['email']
-    ret['author'] = ret['owner']
-    ret['created'] = datetime.fromtimestamp(issue['createdOn'])
-    ret['modified'] = datetime.fromtimestamp(issue['lastUpdated'])
-    if 'comments' in issue:
-      ret['replies'] = self.process_gerrit_ssh_issue_replies(issue['comments'])
-    else:
-      ret['replies'] = []
-    ret['reviewers'] = set(r['author'] for r in ret['replies'])
-    ret['reviewers'].discard(ret['author'])
-    ret['bug'] = self.extract_bug_number_from_description(issue)
-    return ret
-
-  @staticmethod
-  def process_gerrit_ssh_issue_replies(replies):
-    ret = []
-    replies = filter(lambda r: 'email' in r['reviewer'], replies)
-    for reply in replies:
-      ret.append({
-        'author': reply['reviewer']['email'],
-        'created': datetime.fromtimestamp(reply['timestamp']),
-        'content': '',
-      })
-    return ret
-
-  def process_gerrit_rest_issue(self, instance, issue):
+  def process_gerrit_issue(self, instance, issue):
     ret = {}
     if self.options.deltas:
       ret['delta'] = DefaultFormatter().format(
@@ -449,7 +386,7 @@ class MyActivity(object):
     ret['created'] = datetime_from_gerrit(issue['created'])
     ret['modified'] = datetime_from_gerrit(issue['updated'])
     if 'messages' in issue:
-      ret['replies'] = self.process_gerrit_rest_issue_replies(issue['messages'])
+      ret['replies'] = self.process_gerrit_issue_replies(issue['messages'])
     else:
       ret['replies'] = []
     ret['reviewers'] = set(r['author'] for r in ret['replies'])
@@ -458,7 +395,7 @@ class MyActivity(object):
     return ret
 
   @staticmethod
-  def process_gerrit_rest_issue_replies(replies):
+  def process_gerrit_issue_replies(replies):
     ret = []
     replies = filter(lambda r: 'author' in r and 'email' in r['author'],
         replies)
