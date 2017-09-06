@@ -96046,6 +96046,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram_suffixes name="IPHFeatures" separator=".">
   <affected-histogram name="InProductHelp.NotifyEventReadyState"/>
   <affected-histogram name="InProductHelp.ShouldTriggerHelpUI"/>
+  <suffix name="IPH_Bookmark" label="In product help bookmark."/>
   <suffix name="IPH_DataSaverPreview"
       label="In product help data saver preview."/>
   <suffix name="IPH_DataSaverDetail"
