@@ -219,6 +219,24 @@ class WPTGitHub(object):
         else:
             raise Exception('Non-200 status code (%s): %s' % (response.status_code, response.data))
 
+    def is_pr_merged(self, pr_number):
+        path = '/repos/%s/%s/pulls/%d/merge' % (
+            WPT_GH_ORG,
+            WPT_GH_REPO_NAME,
+            pr_number
+        )
+        try:
+            response = self.request(path, method='GET')
+            if response.status_code == 204:
+                return True
+            else:
+                raise Exception('Unknown status code (%s): %s' % (response.status_code, response.data))
+        except urllib2.HTTPError as e:
+            if e.code == 404:
+                return False
+            else:
+                raise
+
     def merge_pull_request(self, pull_request_number):
         path = '/repos/%s/%s/pulls/%d/merge' % (
             WPT_GH_ORG,
@@ -226,8 +244,6 @@ class WPTGitHub(object):
             pull_request_number
         )
         body = {
-            # This currently will noop because the feature is in an opt-in beta.
-            # Once it leaves beta this will start working.
             'merge_method': 'rebase',
         }
 

@@ -46,6 +46,7 @@ class LocalWPT(object):
 
     def run(self, command, **kwargs):
         """Runs a command in the local WPT directory."""
+        # TODO(robertma): Migrate to webkitpy.common.checkout.Git. (crbug.com/676399)
         return self.host.executive.run_command(command, cwd=self.path, **kwargs)
 
     def clean(self):
@@ -148,3 +149,33 @@ class LocalWPT(object):
         return len(self.run([
             'git', 'rev-list', '{}..origin/master'.format(commit)
         ]).splitlines())
+
+    def _most_recent_log_matching(self, grep_str):
+        """Finds the most recent commit whose message contains the given pattern.
+
+        Args:
+            grep_str: A regular expression. (git uses basic regexp by default!)
+
+        Returns:
+            A string containing the commit log of the first matched commit
+            (empty if not found).
+        """
+        return self.run(['git', 'log', '-1', '--grep', grep_str])
+
+    def seek_change_id(self, change_id):
+        """Finds the most recent commit with the given Chromium change ID.
+
+        Returns:
+            A string of the matched commit log, empty if not found.
+        """
+        # Note: anchors (^, $) are important so that quoted commit messages are not matched.
+        return self._most_recent_log_matching('^Change-Id: %s$' % change_id)
+
+    def seek_commit_position(self, commit_position):
+        """Finds the most recent commit with the given Chromium commit position.
+
+        Returns:
+            A string of the matched commit log, empty if not found.
+        """
+        # Note: anchors (^, $) are important so that quoted commit messages are not matched.
+        return self._most_recent_log_matching('^Cr-Commit-Position: %s$' % commit_position)

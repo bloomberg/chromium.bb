@@ -11,7 +11,8 @@ DEFAULT_COMMIT_HISTORY_WINDOW = 5000
 
 
 def exportable_commits_over_last_n_commits(
-        host, local_wpt, wpt_github, number=DEFAULT_COMMIT_HISTORY_WINDOW, require_clean=True):
+        host, local_wpt, wpt_github, number=DEFAULT_COMMIT_HISTORY_WINDOW,
+        require_clean=True, verify_merged_pr=False):
     """Lists exportable commits after a certain point.
 
     Exportable commits contain changes in the wpt directory and have not been
@@ -29,6 +30,12 @@ def exportable_commits_over_last_n_commits(
             to and including HEAD.
         require_clean: Whether to only return exportable commits that can be
             applied cleanly and produce non-empty diff when tested individually.
+        verify_merged_pr: Whether to verify merged PRs can be found in the local
+            WPT repo. If this argument is True, for each Chromium commit with a
+            corresponding merged PR, we also check the local WPT repo, and still
+            consider the commit exportable if it cannot be found in local WPT.
+            (Note: Chromium commits that have closed but not merged PRs are
+            always considered exported regardless of this argument.)
 
     Returns:
         (exportable_commits, errors) where exportable_commits is a list of
@@ -37,10 +44,11 @@ def exportable_commits_over_last_n_commits(
         cleanly, both in chronological order.
     """
     start_commit = 'HEAD~{}'.format(number + 1)
-    return _exportable_commits_since(start_commit, host, local_wpt, wpt_github, require_clean)
+    return _exportable_commits_since(start_commit, host, local_wpt, wpt_github, require_clean, verify_merged_pr)
 
 
-def _exportable_commits_since(chromium_commit_hash, host, local_wpt, wpt_github, require_clean=True):
+def _exportable_commits_since(chromium_commit_hash, host, local_wpt, wpt_github,
+                              require_clean=True, verify_merged_pr=False):
     """Lists exportable commits after the given commit.
 
     Args:
@@ -62,7 +70,7 @@ def _exportable_commits_since(chromium_commit_hash, host, local_wpt, wpt_github,
     exportable_commits = []
     errors = []
     for commit in chromium_commits:
-        state, error = get_commit_export_state(commit, local_wpt, wpt_github)
+        state, error = get_commit_export_state(commit, local_wpt, wpt_github, verify_merged_pr)
         if require_clean:
             success = state == CommitExportState.EXPORTABLE_CLEAN
         else:
@@ -75,8 +83,16 @@ def _exportable_commits_since(chromium_commit_hash, host, local_wpt, wpt_github,
     return exportable_commits, errors
 
 
-def get_commit_export_state(chromium_commit, local_wpt, wpt_github):
+def get_commit_export_state(chromium_commit, local_wpt, wpt_github, verify_merged_pr=False):
     """Determines the exportability state of a Chromium commit.
+
+    Args:
+        verify_merged_pr: Whether to verify merged PRs can be found in the local
+            WPT repo. If this argument is True, for each Chromium commit with a
+            corresponding merged PR, we also check the local WPT repo, and still
+            consider the commit exportable if it cannot be found in local WPT.
+            (Note: Chromium commits that have closed but not merged PRs are
+            always considered exported regardless of this argument.)
 
     Returns:
         (state, error): state is one of the members of CommitExportState;
@@ -91,15 +107,37 @@ def get_commit_export_state(chromium_commit, local_wpt, wpt_github):
     if not patch:
         return CommitExportState.NO_PATCH, ''
 
-    # If there's a corresponding closed PR, then this commit should not
-    # be considered exportable; the PR might have been merged and reverted,
-    # or it might have been closed manually without merging.
-    pull_request = wpt_github.pr_for_chromium_commit(chromium_commit)
-    if pull_request and pull_request.state == 'closed':
+    if _is_commit_exported(chromium_commit, local_wpt, wpt_github, verify_merged_pr):
         return CommitExportState.EXPORTED, ''
 
     success, error = local_wpt.test_patch(patch)
     return (CommitExportState.EXPORTABLE_CLEAN, '') if success else (CommitExportState.EXPORTABLE_DIRTY, error)
+
+
+def _is_commit_exported(chromium_commit, local_wpt, wpt_github, verify_merged_pr):
+    pull_request = wpt_github.pr_for_chromium_commit(chromium_commit)
+    if not pull_request or pull_request.state != 'closed':
+        return False
+
+    # A closed PR can either be merged or abandoned:
+    # * Merged PR might not be present in local WPT as the checkout may be
+    #   stale. If verify_merged_pr=True, we further search the git log of local
+    #   WPT the commit to prevent clobbering during import. (crbug.com/756428)
+    # * Abandoned PRs are expected to be reverted in Chromium by importer, so
+    #   they are always considered "exported".
+    if not verify_merged_pr:
+        # If no verification is needed, all closed PRs are deemed exported.
+        return True
+
+    if not wpt_github.is_pr_merged(pull_request.number):
+        # PR is abandoned.
+        return True
+
+    # PR is merged, and we need to verify that local WPT contains the commit.
+    change_id = chromium_commit.change_id()
+    found_in_upstream = (local_wpt.seek_change_id(change_id) if change_id
+                         else local_wpt.seek_commit_position(chromium_commit.position))
+    return found_in_upstream
 
 
 class CommitExportState(object):

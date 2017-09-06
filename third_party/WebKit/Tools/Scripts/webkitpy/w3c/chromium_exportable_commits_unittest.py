@@ -13,35 +13,9 @@ from webkitpy.w3c.chromium_exportable_commits import (
     get_commit_export_state,
     CommitExportState
 )
+from webkitpy.w3c.local_wpt_mock import MockLocalWPT
 from webkitpy.w3c.wpt_github import PullRequest
 from webkitpy.w3c.wpt_github_mock import MockWPTGitHub
-
-
-class MockLocalWPT(object):
-
-    def __init__(self, patch_success=True, patch_error=''):
-        self.patch_success = patch_success
-        self.patch_error = patch_error
-
-    def test_patch(self, _):
-        return self.patch_success, self.patch_error
-
-
-class MultiResponseMockLocalWPT(object):
-
-    def __init__(self, test_results):
-        """A mock LocalWPT with canned responses of test_patch.
-
-        Args:
-            test_results: a list of (success, error).
-        """
-        self.test_results = test_results
-        self.count = 0
-
-    def test_patch(self, _):
-        success, error = self.test_results[self.count]
-        self.count += 1
-        return success, error
 
 
 class ChromiumExportableCommitsTest(unittest.TestCase):
@@ -63,7 +37,7 @@ class ChromiumExportableCommitsTest(unittest.TestCase):
         }, strict=True)
 
         commits, _ = _exportable_commits_since(
-            'beefcafe', host, MockLocalWPT(), MockWPTGitHub(pull_requests=[]))
+            'beefcafe', host, MockLocalWPT(test_patch=[(True, '')]), MockWPTGitHub(pull_requests=[]))
         self.assertEqual(len(commits), 1)
         self.assertIsInstance(commits[0], ChromiumCommit)
         self.assertEqual(host.executive.calls, [
@@ -88,7 +62,7 @@ class ChromiumExportableCommitsTest(unittest.TestCase):
                         'add087a97844f4b9e307d9a216940582d96db307\n'
                         'add087a97844f4b9e307d9a216940582d96db308\n'
         })
-        local_wpt = MultiResponseMockLocalWPT([
+        local_wpt = MockLocalWPT(test_patch=[
             (True, ''),
             (False, 'patch failure'),
             (True, ''),
@@ -98,7 +72,7 @@ class ChromiumExportableCommitsTest(unittest.TestCase):
             'beefcafe', host, local_wpt, MockWPTGitHub(pull_requests=[]))
         self.assertEqual(len(commits), 2)
 
-    def test_exportable_commits_since_without_require_clean(self):
+    def test_exportable_commits_since_not_require_clean(self):
         host = MockHost()
         host.executive = mock_git_commands({
             'diff-tree': 'third_party/WebKit/LayoutTests/external/wpt/some_files',
@@ -108,7 +82,7 @@ class ChromiumExportableCommitsTest(unittest.TestCase):
                         'add087a97844f4b9e307d9a216940582d96db307\n'
                         'add087a97844f4b9e307d9a216940582d96db308\n'
         })
-        local_wpt = MultiResponseMockLocalWPT([
+        local_wpt = MockLocalWPT(test_patch=[
             (True, ''),
             (False, 'patch failure'),
             (True, ''),
@@ -121,9 +95,12 @@ class ChromiumExportableCommitsTest(unittest.TestCase):
     def test_get_commit_export_state(self):
         commit = MockChromiumCommit(MockHost())
         github = MockWPTGitHub(pull_requests=[])
-        self.assertEqual(get_commit_export_state(commit, MockLocalWPT(), github), (CommitExportState.EXPORTABLE_CLEAN, ''))
+        self.assertEqual(get_commit_export_state(commit, MockLocalWPT(test_patch=[(True, '')]), github),
+                         (CommitExportState.EXPORTABLE_CLEAN, ''))
 
     def test_commit_with_noexport_is_not_exportable(self):
+        # Patch is not tested if the commit is ignored based on the message, hence empty MockLocalWPT.
+
         commit = MockChromiumCommit(MockHost(), body='Message\nNo-Export: true')
         github = MockWPTGitHub(pull_requests=[])
         self.assertEqual(get_commit_export_state(commit, MockLocalWPT(), github), (CommitExportState.IGNORED, ''))
@@ -146,26 +123,51 @@ class ChromiumExportableCommitsTest(unittest.TestCase):
     def test_commit_that_has_open_pr_is_exportable(self):
         commit = MockChromiumCommit(MockHost(), change_id='I00decade')
         github = MockWPTGitHub(pull_requests=[
-            PullRequest('PR1', 1, 'body\nChange-Id: I00c0ffee', 'closed', []),
             PullRequest('PR2', 2, 'body\nChange-Id: I00decade', 'open', []),
         ])
-        self.assertEqual(get_commit_export_state(commit, MockLocalWPT(), github), (CommitExportState.EXPORTABLE_CLEAN, ''))
+        self.assertEqual(get_commit_export_state(commit, MockLocalWPT(test_patch=[(True, '')]), github),
+                         (CommitExportState.EXPORTABLE_CLEAN, ''))
 
-    def test_commit_that_has_closed_pr_is_not_exportable(self):
+    def test_commit_that_has_closed_but_not_merged_pr(self):
         commit = MockChromiumCommit(MockHost(), change_id='I00decade')
         github = MockWPTGitHub(pull_requests=[
-            PullRequest('PR1', 1, 'body\nChange-Id: I00c0ffee', 'closed', []),
             PullRequest('PR2', 2, 'body\nChange-Id: I00decade', 'closed', []),
         ])
-        self.assertEqual(get_commit_export_state(commit, MockLocalWPT(), github), (CommitExportState.EXPORTED, ''))
+        # Regardless of verify_merged_pr, abandoned PRs are always exported.
+        self.assertEqual(get_commit_export_state(commit, MockLocalWPT(), github, verify_merged_pr=False),
+                         (CommitExportState.EXPORTED, ''))
+        self.assertEqual(get_commit_export_state(commit, MockLocalWPT(), github, verify_merged_pr=True),
+                         (CommitExportState.EXPORTED, ''))
+
+    def test_commit_that_has_merged_pr_and_found_locally(self):
+        commit = MockChromiumCommit(MockHost(), change_id='I00decade')
+        github = MockWPTGitHub(pull_requests=[
+            PullRequest('PR2', 2, 'body\nChange-Id: I00decade', 'closed', []),
+        ], merged_index=0)
+        self.assertEqual(get_commit_export_state(commit, MockLocalWPT(change_ids=['I00decade']), github, verify_merged_pr=False),
+                         (CommitExportState.EXPORTED, ''))
+        self.assertEqual(get_commit_export_state(commit, MockLocalWPT(change_ids=['I00decade']), github, verify_merged_pr=True),
+                         (CommitExportState.EXPORTED, ''))
+
+    def test_commit_that_has_merged_pr_but_not_found_locally(self):
+        commit = MockChromiumCommit(MockHost(), change_id='I00decade')
+        github = MockWPTGitHub(pull_requests=[
+            PullRequest('PR2', 2, 'body\nChange-Id: I00decade', 'closed', []),
+        ], merged_index=0)
+        # verify_merged_pr should be False by default.
+        self.assertEqual(get_commit_export_state(commit, MockLocalWPT(), github),
+                         (CommitExportState.EXPORTED, ''))
+        self.assertEqual(get_commit_export_state(commit, MockLocalWPT(test_patch=[(True, '')]), github, verify_merged_pr=True),
+                         (CommitExportState.EXPORTABLE_CLEAN, ''))
 
     def test_commit_that_produces_errors(self):
         commit = MockChromiumCommit(MockHost())
         github = MockWPTGitHub(pull_requests=[])
-        self.assertEqual(get_commit_export_state(commit, MockLocalWPT(False, 'error'), github),
+        self.assertEqual(get_commit_export_state(commit, MockLocalWPT(test_patch=[(False, 'error')]), github),
                          (CommitExportState.EXPORTABLE_DIRTY, 'error'))
 
     def test_commit_that_produces_empty_diff(self):
         commit = MockChromiumCommit(MockHost())
         github = MockWPTGitHub(pull_requests=[])
-        self.assertEqual(get_commit_export_state(commit, MockLocalWPT(False, ''), github), (CommitExportState.EXPORTABLE_DIRTY, ''))
+        self.assertEqual(get_commit_export_state(commit, MockLocalWPT(test_patch=[(False, '')]), github),
+                         (CommitExportState.EXPORTABLE_DIRTY, ''))
