@@ -12,7 +12,7 @@
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/ui/browser_list/browser_list.h"
+#import "ios/chrome/browser/ui/browser_list/browser_list_factory.h"
 #import "ios/clean/chrome/browser/ui/overlays/overlay_service_impl.h"
 #import "ios/web/public/certificate_policy_cache.h"
 #import "ios/web/public/web_state/session_certificate_policy_cache.h"
@@ -36,7 +36,9 @@ OverlayServiceFactory* OverlayServiceFactory::GetInstance() {
 OverlayServiceFactory::OverlayServiceFactory()
     : BrowserStateKeyedServiceFactory(
           "OverlayService",
-          BrowserStateDependencyManager::GetInstance()) {}
+          BrowserStateDependencyManager::GetInstance()) {
+  DependsOn(BrowserListFactory::GetInstance());
+}
 
 OverlayServiceFactory::~OverlayServiceFactory() {}
 
@@ -45,7 +47,7 @@ std::unique_ptr<KeyedService> OverlayServiceFactory::BuildServiceInstanceFor(
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
   return base::MakeUnique<OverlayServiceImpl>(
-      BrowserList::FromBrowserState(browser_state));
+      BrowserListFactory::GetForBrowserState(browser_state));
 }
 
 web::BrowserState* OverlayServiceFactory::GetBrowserStateToUse(

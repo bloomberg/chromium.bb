@@ -7,7 +7,9 @@
 #import "ios/chrome/app/startup/provider_registration.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/ui/browser_list/browser.h"
 #import "ios/chrome/browser/ui/browser_list/browser_list.h"
+#import "ios/chrome/browser/ui/browser_list/browser_list_factory.h"
 #import "ios/chrome/browser/ui/browser_list/browser_list_session_service.h"
 #import "ios/chrome/browser/ui/browser_list/browser_list_session_service_factory.h"
 #import "ios/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
@@ -38,7 +40,7 @@
 - (void)runFeature:(NSString*)feature withContext:(id<StepContext>)context {
   _rootCoordinator = [[RootCoordinator alloc] init];
   [_rootCoordinator
-      setBrowser:BrowserList::FromBrowserState(context.browserState)
+      setBrowser:BrowserListFactory::GetForBrowserState(context.browserState)
                      ->CreateNewBrowser()];
 
   BrowserListSessionService* service =

@@ -13,6 +13,8 @@ class WebState;
 
 // A delegate interface that the WebStateList uses to perform work that it
 // cannot do itself such as attaching tab helpers, ...
+//
+// See src/docs/ios/objects.md for more information.
 class WebStateListDelegate {
  public:
   WebStateListDelegate() = default;

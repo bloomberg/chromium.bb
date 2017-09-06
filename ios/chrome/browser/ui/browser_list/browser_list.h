@@ -5,58 +5,50 @@
 #ifndef IOS_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_LIST_H_
 #define IOS_CHROME_BROWSER_UI_BROWSER_LIST_BROWSER_LIST_H_
 
-#include <memory>
-#include <vector>
-
 #include "base/macros.h"
-#include "base/observer_list.h"
-#include "base/supports_user_data.h"
-#include "ios/chrome/browser/ui/browser_list/browser.h"
+#include "components/keyed_service/core/keyed_service.h"
 
+class Browser;
 class BrowserListObserver;
 
-namespace ios {
-class ChromeBrowserState;
-}
-
-// BrowserList attaches Browsers instance to a ChromeBrowserState.
-class BrowserList : public base::SupportsUserData::Data {
+// BrowserList attaches multiple Browser to a single ChromeBrowserState.
+// It allows listening for the addition or removal of Browsers via the
+// BrowserListObserver interface.
+//
+// See src/docs/ios/objects.md for more information.
+class BrowserList : public KeyedService {
  public:
-  explicit BrowserList(ios::ChromeBrowserState* browser_state);
   ~BrowserList() override;
 
-  static BrowserList* FromBrowserState(ios::ChromeBrowserState* browser_state);
-
   // Returns the number of Browsers in the BrowserList.
-  int count() const { return static_cast<int>(browsers_.size()); }
+  virtual int GetCount() const = 0;
 
   // Returns whether the specified index is valid.
-  int ContainsIndex(int index) const;
+  virtual int ContainsIndex(int index) const = 0;
 
   // Returns the Browser at the specified index.
-  Browser* GetBrowserAtIndex(int index) const;
+  virtual Browser* GetBrowserAtIndex(int index) const = 0;
 
   // Returns the index of the specified Browser, or kInvalidIndex if not found.
-  int GetIndexOfBrowser(const Browser* browser) const;
+  virtual int GetIndexOfBrowser(const Browser* browser) const = 0;
 
   // Creates and returns a new Browser instance.
-  Browser* CreateNewBrowser();
+  virtual Browser* CreateNewBrowser() = 0;
 
   // Closes the Browser at the specified index.
-  void CloseBrowserAtIndex(int index);
+  virtual void CloseBrowserAtIndex(int index) = 0;
 
   // Adds/removes |observer| from the list of observers.
-  void AddObserver(BrowserListObserver* observer);
-  void RemoveObserver(BrowserListObserver* observer);
+  virtual void AddObserver(BrowserListObserver* observer) = 0;
+  virtual void RemoveObserver(BrowserListObserver* observer) = 0;
 
   // Invalid index.
-  static const int kInvalidIndex = -1;
+  static constexpr int kInvalidIndex = -1;
+
+ protected:
+  BrowserList();
 
  private:
-  ios::ChromeBrowserState* browser_state_;
-  std::vector<std::unique_ptr<Browser>> browsers_;
-  base::ObserverList<BrowserListObserver, true> observers_;
-
   DISALLOW_COPY_AND_ASSIGN(BrowserList);
 };
 
