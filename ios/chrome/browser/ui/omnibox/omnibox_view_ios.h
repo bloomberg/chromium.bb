@@ -19,6 +19,7 @@ class AutocompleteResult;
 @class AutocompleteTextFieldDelegate;
 class GURL;
 @class OmniboxTextFieldIOS;
+@class OmniboxTextFieldPasteDelegate;
 @protocol OmniboxPopupPositioner;
 class WebOmniboxEditController;
 class OmniboxPopupViewIOS;
@@ -169,6 +170,7 @@ class OmniboxViewIOS : public OmniboxView,
   ios::ChromeBrowserState* browser_state_;
 
   base::scoped_nsobject<OmniboxTextFieldIOS> field_;
+  base::scoped_nsobject<OmniboxTextFieldPasteDelegate> paste_delegate_;
   WebOmniboxEditController* controller_;  // weak, owns us
   std::unique_ptr<OmniboxPopupViewIOS> popup_view_;
 

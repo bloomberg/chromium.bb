@@ -26,6 +26,7 @@
 #include "ios/chrome/browser/prerender/preload_provider.h"
 #include "ios/chrome/browser/ui/omnibox/chrome_omnibox_client_ios.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_popup_view_ios.h"
+#include "ios/chrome/browser/ui/omnibox/omnibox_text_field_paste_delegate.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
@@ -177,6 +178,12 @@ OmniboxViewIOS::OmniboxViewIOS(OmniboxTextFieldIOS* field,
       this->browser_state(), model(), this, positioner);
   field_delegate_.reset(
       [[AutocompleteTextFieldDelegate alloc] initWithEditView:this]);
+
+  if (@available(iOS 11.0, *)) {
+    paste_delegate_.reset([[OmniboxTextFieldPasteDelegate alloc] init]);
+    [field_ setPasteDelegate:paste_delegate_];
+  }
+
   [field_ setDelegate:field_delegate_];
   [field_ addTarget:field_delegate_
                 action:@selector(textFieldDidChange:)
