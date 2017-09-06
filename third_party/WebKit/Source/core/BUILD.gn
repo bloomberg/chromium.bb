@@ -426,6 +426,7 @@ css_properties("make_core_generated_computed_style_base") {
     "css/CSSValueKeywords.json5",
     "css/CSSPropertiesRanking.json5",
     "css/CSSGroupConfig.json5",
+    "css/ComputedStyleFieldAliases.json5",
   ]
   other_inputs = [
     "../build/scripts/templates/fields/field.tmpl",

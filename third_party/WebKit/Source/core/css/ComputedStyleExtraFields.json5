@@ -246,9 +246,7 @@
     {
       name: "VisitedLinkColor",
       inherited: true,
-      field_template: "external",
-      include_paths: ["platform/graphics/Color.h"],
-      type_name: "Color",
+      field_template: "<color>",
       field_group: "inherited",
       default_value: "Color::kBlack",
     },

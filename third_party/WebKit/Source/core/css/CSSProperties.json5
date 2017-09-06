@@ -100,10 +100,9 @@
         // Field is stored as a wrapper_pointer_name to a class.
         "pointer",
         // Preset "length" for external and Length class
-        // This preset represents:  field_template: "external"
-        //                          type_name: "Length"
-        //                          include_paths: ["platform/Length.h"]
-        "<length>"
+        // This preset represents alias templates that will be replace by entries
+        // in CSSFieldAlias.json5.
+        "<[a-z]+>",
       ],
     },
 
@@ -3358,9 +3357,7 @@
       api_methods: ["ParseSingleValue"],
       converter: "ConvertColor",
       inherited: true,
-      field_template: "external",
-      type_name: "Color",
-      include_paths: ["platform/graphics/Color.h"],
+      field_template: "<color>",
       default_value: "LayoutTheme::TapHighlightColor()",
       field_group: "*",
     },
