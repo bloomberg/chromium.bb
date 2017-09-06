@@ -50,8 +50,7 @@ std::unique_ptr<TemplateURLData> GetPrepopulatedEngine(PrefService* prefs,
 // Returns the prepopulated URLs associated with |locale|.  |locale| should be a
 // two-character uppercase ISO 3166-1 country code.
 std::vector<std::unique_ptr<TemplateURLData>> GetLocalPrepopulatedEngines(
-    const std::string& locale,
-    PrefService* prefs);
+    const std::string& locale);
 #endif
 
 // Returns all prepopulated engines for all locales. Used only by tests.

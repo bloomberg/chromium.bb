@@ -10,7 +10,6 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "components/search_engines/prepopulated_engines.h"
 #include "components/search_engines/template_url_data.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
@@ -27,27 +26,19 @@ using base::android::ConvertJavaStringToUTF8;
 class PrefService;
 class TemplateURL;
 
-namespace {
-
-Profile* GetOriginalProfile() {
-  return ProfileManager::GetActiveUserProfile()->GetOriginalProfile();
-}
-
-}  // namespace
-
 static jlong Init(JNIEnv* env,
                   const JavaParamRef<jclass>& clazz,
                   const JavaParamRef<jstring>& jlocale) {
+  Profile* profile =
+      ProfileManager::GetActiveUserProfile()->GetOriginalProfile();
   return reinterpret_cast<intptr_t>(new SpecialLocaleHandler(
-      GetOriginalProfile(),
       ConvertJavaStringToUTF8(env, jlocale),
-      TemplateURLServiceFactory::GetForProfile(GetOriginalProfile())));
+      TemplateURLServiceFactory::GetForProfile(profile)));
 }
 
-SpecialLocaleHandler::SpecialLocaleHandler(Profile* profile,
-                                           const std::string& locale,
+SpecialLocaleHandler::SpecialLocaleHandler(const std::string& locale,
                                            TemplateURLService* service)
-    : profile_(profile), locale_(locale), template_url_service_(service) {}
+    : locale_(locale), template_url_service_(service) {}
 
 void SpecialLocaleHandler::Destroy(JNIEnv* env,
                                    const JavaParamRef<jobject>& obj) {
@@ -60,7 +51,7 @@ jboolean SpecialLocaleHandler::LoadTemplateUrls(
   DCHECK(locale_.length() == 2);
 
   std::vector<std::unique_ptr<TemplateURLData>> prepopulated_list =
-      GetLocalPrepopulatedEngines(profile_);
+      GetLocalPrepopulatedEngines();
 
   if (prepopulated_list.empty())
     return false;
@@ -92,22 +83,8 @@ jboolean SpecialLocaleHandler::LoadTemplateUrls(
       }
     }
 
-    if (exists) {
-      // Update the visit time of any existing custom search engines to ensure
-      // they are not filtered out in TemplateUrlServicAndroid::LoadTemplateURLs
-      if (!template_url_service_->IsPrepopulatedOrCreatedByPolicy(
-              matching_url)) {
-        UIThreadSearchTermsData search_terms_data(profile_);
-
-        TemplateURLService::URLVisitedDetails visited_details;
-        visited_details.url =
-            matching_url->GenerateSearchURL(search_terms_data);
-        visited_details.is_keyword_transition = false;
-        template_url_service_->OnHistoryURLVisited(visited_details);
-      }
-
+    if (exists)
       continue;
-    }
 
     data_url.get()->safe_for_autoreplace = true;
     std::unique_ptr<TemplateURL> turl(
@@ -171,9 +148,8 @@ void SpecialLocaleHandler::SetGoogleAsDefaultSearch(
 }
 
 std::vector<std::unique_ptr<TemplateURLData>>
-SpecialLocaleHandler::GetLocalPrepopulatedEngines(Profile* profile) {
-  return TemplateURLPrepopulateData::GetLocalPrepopulatedEngines(
-      locale_, profile_->GetPrefs());
+SpecialLocaleHandler::GetLocalPrepopulatedEngines() {
+  return TemplateURLPrepopulateData::GetLocalPrepopulatedEngines(locale_);
 }
 
 int SpecialLocaleHandler::GetDesignatedSearchEngine() {
