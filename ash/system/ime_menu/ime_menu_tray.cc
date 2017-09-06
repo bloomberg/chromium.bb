@@ -4,7 +4,6 @@
 
 #include "ash/system/ime_menu/ime_menu_tray.h"
 
-#include "ash/accelerators/accelerator_controller.h"
 #include "ash/accessibility_delegate.h"
 #include "ash/ash_constants.h"
 #include "ash/ime/ime_controller.h"
@@ -504,18 +503,6 @@ void ImeMenuTray::BubbleViewDestroyed() {
 void ImeMenuTray::OnMouseEnteredView() {}
 
 void ImeMenuTray::OnMouseExitedView() {}
-
-void ImeMenuTray::RegisterAccelerators(
-    const std::vector<ui::Accelerator>& accelerators,
-    views::TrayBubbleView* tray_bubble_view) {
-  Shell::Get()->accelerator_controller()->Register(accelerators,
-                                                   tray_bubble_view);
-}
-
-void ImeMenuTray::UnregisterAllAccelerators(
-    views::TrayBubbleView* tray_bubble_view) {
-  Shell::Get()->accelerator_controller()->UnregisterAll(tray_bubble_view);
-}
 
 base::string16 ImeMenuTray::GetAccessibleNameForBubble() {
   return l10n_util::GetStringUTF16(IDS_ASH_IME_MENU_ACCESSIBLE_NAME);

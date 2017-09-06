@@ -24,6 +24,8 @@
 #include "ash/system/tray_drag_controller.h"
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/ash_test_helper.h"
+#include "ash/test/ash_test_views_delegate.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/memory/ptr_util.h"
@@ -55,6 +57,29 @@ class ModalWidgetDelegate : public views::WidgetDelegateView {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ModalWidgetDelegate);
+};
+
+class KeyEventConsumerView : public views::View {
+ public:
+  KeyEventConsumerView() : number_of_consumed_key_events_(0) {
+    SetFocusBehavior(FocusBehavior::ALWAYS);
+  }
+  ~KeyEventConsumerView() override {}
+
+  // Overriden from views::View
+  bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) override {
+    return true;
+  }
+  void OnKeyEvent(ui::KeyEvent* key_event) override {
+    number_of_consumed_key_events_++;
+  }
+
+  int number_of_consumed_key_events() { return number_of_consumed_key_events_; }
+
+ private:
+  int number_of_consumed_key_events_;
+
+  DISALLOW_COPY_AND_ASSIGN(KeyEventConsumerView);
 };
 
 }  // namespace
@@ -921,6 +946,83 @@ TEST_F(SystemTrayTest, SystemTrayHeightWithBubble) {
 
 TEST_F(SystemTrayTest, SeparatorThickness) {
   EXPECT_EQ(kSeparatorWidth, views::Separator::kThickness);
+}
+
+// System tray is not activated by default. But it should be activated when user
+// presses tab key.
+TEST_F(SystemTrayTest, KeyboardNavigationWithOtherWindow) {
+  std::unique_ptr<views::Widget> widget(CreateTestWidget(
+      nullptr, kShellWindowId_DefaultContainer, gfx::Rect(0, 0, 100, 100)));
+  EXPECT_TRUE(widget->IsActive());
+
+  // Add a view which tries to handle key event by themselves, and focus on it.
+  KeyEventConsumerView key_event_consumer_view;
+  views::View* root_view = widget->GetContentsView();
+  root_view->AddChildView(&key_event_consumer_view);
+  key_event_consumer_view.RequestFocus();
+  EXPECT_EQ(&key_event_consumer_view,
+            key_event_consumer_view.GetFocusManager()->GetFocusedView());
+
+  // Show system tray.
+  SystemTray* tray = GetPrimarySystemTray();
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  ASSERT_TRUE(tray->GetWidget());
+
+  // Confirms that system tray is not activated at this time.
+  EXPECT_FALSE(tray->GetSystemBubble()->bubble_view()->GetWidget()->IsActive());
+  EXPECT_TRUE(widget->IsActive());
+
+  ui::test::EventGenerator& event_generator = GetEventGenerator();
+  int number_of_consumed_key_events =
+      key_event_consumer_view.number_of_consumed_key_events();
+
+  // Send A key event. Nothing should happen for the tray. Key event is consumed
+  // by the tray.
+  event_generator.PressKey(ui::VKEY_A, ui::EF_NONE);
+  event_generator.ReleaseKey(ui::VKEY_A, ui::EF_NONE);
+
+  EXPECT_FALSE(tray->GetSystemBubble()->bubble_view()->GetWidget()->IsActive());
+  EXPECT_TRUE(widget->IsActive());
+  EXPECT_EQ(number_of_consumed_key_events,
+            key_event_consumer_view.number_of_consumed_key_events());
+
+  // Send tab key event.
+  event_generator.PressKey(ui::VKEY_TAB, ui::EF_NONE);
+  event_generator.ReleaseKey(ui::VKEY_TAB, ui::EF_NONE);
+
+  // Confirms that system tray is activated.
+  EXPECT_TRUE(tray->GetSystemBubble()->bubble_view()->GetWidget()->IsActive());
+  EXPECT_FALSE(widget->IsActive());
+  EXPECT_EQ(number_of_consumed_key_events,
+            key_event_consumer_view.number_of_consumed_key_events());
+}
+
+// System tray passes a key event to ViewsDelegate if it's not handled by the
+// tray. It closes the tray if ViewsDelegate returns CLOSE_MENU.
+TEST_F(SystemTrayTest, AcceleratorController) {
+  // Register A key as an accelerator which closes the menu.
+  ui::Accelerator accelerator(ui::VKEY_A, ui::EF_NONE);
+  AshTestViewsDelegate* views_delegate =
+      ash_test_helper()->test_views_delegate();
+  views_delegate->set_close_menu_accelerator(accelerator);
+
+  // Show system tray.
+  SystemTray* tray = GetPrimarySystemTray();
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  ASSERT_TRUE(tray->GetWidget());
+  ASSERT_TRUE(tray->IsSystemBubbleVisible());
+
+  ui::test::EventGenerator& event_generator = GetEventGenerator();
+
+  // Send B key event and confirms that nothing happens.
+  event_generator.PressKey(ui::VKEY_B, ui::EF_NONE);
+  event_generator.ReleaseKey(ui::VKEY_B, ui::EF_NONE);
+  EXPECT_TRUE(tray->IsSystemBubbleVisible());
+
+  // Send A key event and confirms that system tray becomes invisible.
+  event_generator.PressKey(ui::VKEY_A, ui::EF_NONE);
+  event_generator.ReleaseKey(ui::VKEY_A, ui::EF_NONE);
+  EXPECT_FALSE(tray->IsSystemBubbleVisible());
 }
 
 }  // namespace ash
