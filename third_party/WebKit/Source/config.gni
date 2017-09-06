@@ -18,10 +18,6 @@ declare_args() {
   # size of the binary and increasing the speed of gdb.
   remove_webcore_debug_symbols = false
 
-  # If true, enables WTF::ScopedLogger unconditionally.
-  # When false, WTF::ScopedLogger is enabled only if assertions are enabled.
-  blink_logging_always_on = false
-
   # If true, defaults image interpolation to low quality.
   use_low_quality_image_interpolation = is_android
 }
@@ -61,9 +57,6 @@ if (use_default_render_theme) {
   # If/when Blink can use buildflag headers, this should be removed in
   # preference to that.
   feature_defines_list += [ "WTF_USE_DEFAULT_RENDER_THEME=1" ]
-}
-if (blink_logging_always_on) {
-  feature_defines_list += [ "LOG_DISABLED=0" ]
 }
 
 if (remove_webcore_debug_symbols) {

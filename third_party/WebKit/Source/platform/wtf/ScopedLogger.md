@@ -90,7 +90,6 @@ of release builds, unless your `GYP_DEFINES` or GN args file includes one of the
 following:
 
 * `dcheck_always_on`: enables assertions and ScopedLogger
-* `blink_logging_always_on`: enables ScopedLogger, but not assertions
 
 The macro names are cumbersome to type, but most editors can be configured to
 make this easier.  For example, you can add the following to a Sublime Text key
