@@ -5692,7 +5692,8 @@ def CMDset_close(parser, args):
   cl = Changelist(auth_config=auth_config, issue=options.issue,
                   codereview=options.forced_codereview)
   # Ensure there actually is an issue to close.
-  cl.GetDescription()
+  if not cl.GetIssue():
+    DieWithError('ERROR No issue to close')
   cl.CloseIssue()
   return 0
 
