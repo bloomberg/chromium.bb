@@ -39072,6 +39072,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.DiskCache.Size" units="MB">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    The sum of the size of all files in the HTTP cache directory.
+
+    This is recorded on startup, and then every 24 hours afterwards. However, it
+    is only recorded for 0.1% of profiles, to reduce overhead for most users.
+    This is meant to be a temporary metric to help debug a potential HTTP cache
+    leak. We do not yet know which milestone we expect it to be removed in.
+  </summary>
+</histogram>
+
 <histogram name="Net.DNS_Resolution_And_TCP_Connection_Latency">
   <obsolete>
     Deprecated- see Net.DNS_Resolution_And_TCP_Connection_Latency2
