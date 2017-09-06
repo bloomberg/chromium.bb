@@ -80,7 +80,6 @@ source_set("main") {
     ":app",
     "//base",
     "//components/crash/core/common",
-    "//ios/chrome/app:app_internal",
     "//ios/chrome/app/startup",
     "//ios/chrome/app/startup:startup_basic",
     "//ios/chrome/browser",
@@ -123,9 +122,11 @@ source_set("app") {
   deps = [
     ":application_state",
     "//base",
+    "//ios/chrome/app/startup",
     "//ios/clean/chrome/app/steps:step_runner",
     "//ios/clean/chrome/app/steps:steps",
     "//ios/clean/chrome/browser",
     "//ios/testing/perf:startup",
+    "//net",
   ]
 }

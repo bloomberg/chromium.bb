@@ -6,9 +6,11 @@
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
+#include "ios/chrome/app/startup/chrome_app_startup_parameters.h"
 #import "ios/clean/chrome/app/application_state.h"
 #import "ios/clean/chrome/browser/url_opening.h"
 #import "ios/testing/perf/startupLoggers.h"
+#include "net/base/mac/url_conversions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -104,7 +106,13 @@
 - (BOOL)application:(UIApplication*)application
             openURL:(NSURL*)url
             options:(NSDictionary<UIApplicationOpenURLOptionsKey, id>*)options {
-  [self.applicationState.URLOpener openURL:url];
+  NSString* sourceApplication =
+      options[UIApplicationOpenURLOptionsSourceApplicationKey];
+  ChromeAppStartupParameters* params = [ChromeAppStartupParameters
+      newChromeAppStartupParametersWithURL:url
+                     fromSourceApplication:sourceApplication];
+  [self.applicationState.URLOpener
+      openURL:net::NSURLWithGURL(params.externalURL)];
   return YES;
 }
 

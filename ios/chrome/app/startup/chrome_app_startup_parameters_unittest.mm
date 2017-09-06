@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/app/chrome_app_startup_parameters.h"
+#import "ios/chrome/app/startup/chrome_app_startup_parameters.h"
 
 #import <Foundation/Foundation.h>
 
@@ -86,9 +86,9 @@ TEST_F(AppStartupParametersTest, ParseURLWithHttpsParsedURL) {
 }
 
 TEST_F(AppStartupParametersTest, ParseURLWithXCallbackURL) {
-  NSURL* url =
-      [NSURL URLWithString:@"chromium-x-callback://x-callback-url/open?"
-                            "url=https://www.google.com"];
+  NSURL* url = [NSURL URLWithString:
+                          @"chromium-x-callback://x-callback-url/open?"
+                           "url=https://www.google.com"];
   ChromeAppStartupParameters* params =
       [ChromeAppStartupParameters newChromeAppStartupParametersWithURL:url
                                                  fromSourceApplication:nil];
@@ -96,10 +96,10 @@ TEST_F(AppStartupParametersTest, ParseURLWithXCallbackURL) {
 }
 
 TEST_F(AppStartupParametersTest, ParseURLWithXCallbackURLAndExtraParams) {
-  NSURL* url =
-      [NSURL URLWithString:@"chromium-x-callback://x-callback-url/open?"
-                            "url=https://www.google.com&"
-                            "x-success=http://success"];
+  NSURL* url = [NSURL URLWithString:
+                          @"chromium-x-callback://x-callback-url/open?"
+                           "url=https://www.google.com&"
+                           "x-success=http://success"];
   ChromeAppStartupParameters* params =
       [ChromeAppStartupParameters newChromeAppStartupParametersWithURL:url
                                                  fromSourceApplication:nil];
@@ -107,9 +107,10 @@ TEST_F(AppStartupParametersTest, ParseURLWithXCallbackURLAndExtraParams) {
 }
 
 TEST_F(AppStartupParametersTest, ParseURLWithMalformedXCallbackURL) {
-  NSURL* url = [NSURL
-      URLWithString:@"chromium-x-callback://x-callback-url/open?url=foobar&"
-                     "x-source=myapp&x-success=http://success"];
+  NSURL* url =
+      [NSURL URLWithString:
+                 @"chromium-x-callback://x-callback-url/open?url=foobar&"
+                  "x-source=myapp&x-success=http://success"];
   ChromeAppStartupParameters* params = [ChromeAppStartupParameters
       newChromeAppStartupParametersWithURL:url
                      fromSourceApplication:@"com.myapp"];
@@ -128,9 +129,9 @@ TEST_F(AppStartupParametersTest, ParseURLWithJavascriptURLInXCallbackURL) {
 }
 
 TEST_F(AppStartupParametersTest, ParseURLWithChromeURLInXCallbackURL) {
-  NSURL* url =
-      [NSURL URLWithString:@"chromium-x-callback://x-callback-url/open?url="
-                            "chrome:passwords"];
+  NSURL* url = [NSURL URLWithString:
+                          @"chromium-x-callback://x-callback-url/open?url="
+                           "chrome:passwords"];
   ChromeAppStartupParameters* params = [ChromeAppStartupParameters
       newChromeAppStartupParametersWithURL:url
                      fromSourceApplication:@"com.myapp"];
