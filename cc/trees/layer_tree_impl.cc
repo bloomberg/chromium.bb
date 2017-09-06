@@ -2052,7 +2052,7 @@ void LayerTreeImpl::GetViewportSelection(
   selection->start = ComputeViewportSelectionBound(
       selection_.start,
       selection_.start.layer_id ? LayerById(selection_.start.layer_id) : NULL,
-      device_scale_factor());
+      device_scale_factor() * painted_device_scale_factor());
   if (selection->start.type() == gfx::SelectionBound::CENTER ||
       selection->start.type() == gfx::SelectionBound::EMPTY) {
     selection->end = selection->start;
@@ -2060,7 +2060,7 @@ void LayerTreeImpl::GetViewportSelection(
     selection->end = ComputeViewportSelectionBound(
         selection_.end,
         selection_.end.layer_id ? LayerById(selection_.end.layer_id) : NULL,
-        device_scale_factor());
+        device_scale_factor() * painted_device_scale_factor());
   }
 }
 
