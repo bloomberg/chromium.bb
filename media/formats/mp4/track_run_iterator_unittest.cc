@@ -148,6 +148,33 @@ MATCHER(ReservedValueInSampleDependencyInfo, "") {
   return CONTAINS_STRING(arg, "Reserved value used in sample dependency info.");
 }
 
+TEST(TimeDeltaFromRationalTest, RoundsTowardZero) {
+  // In each case, 1.5us should round to 1us.
+  base::TimeDelta expected = base::TimeDelta::FromMicroseconds(1);
+  EXPECT_EQ(TimeDeltaFromRational(3, 2000000), expected);
+  EXPECT_EQ(TimeDeltaFromRational(-3, 2000000), -expected);
+}
+
+TEST(TimeDeltaFromRationalTest, HandlesLargeValues) {
+  int64_t max_seconds =
+      std::numeric_limits<int64_t>::max() / base::Time::kMicrosecondsPerSecond;
+  // The current implementation rejects |max_seconds|.
+  // Note: kNoTimestamp is printed as "9.22337e+12 s", which is visually
+  // indistinguishable from |expected|.
+  int64_t seconds = max_seconds - 1;
+  base::TimeDelta expected = base::TimeDelta::FromSeconds(seconds);
+  EXPECT_EQ(TimeDeltaFromRational(seconds, 1), expected);
+  EXPECT_EQ(TimeDeltaFromRational(-seconds, 1), -expected);
+}
+
+TEST(TimeDeltaFromRationalTest, HandlesOverflow) {
+  int64_t max_seconds =
+      std::numeric_limits<int64_t>::max() / base::Time::kMicrosecondsPerSecond;
+  int64_t seconds = max_seconds + 1;
+  EXPECT_EQ(TimeDeltaFromRational(seconds, 1), kNoTimestamp);
+  EXPECT_EQ(TimeDeltaFromRational(-seconds, 1), kNoTimestamp);
+}
+
 class TrackRunIteratorTest : public testing::Test {
  public:
   TrackRunIteratorTest() { CreateMovie(); }
