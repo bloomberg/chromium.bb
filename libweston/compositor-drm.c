@@ -3375,8 +3375,6 @@ create_output_for_connector(struct drm_backend *b,
 
 	weston_output_init(&output->base, b->compositor);
 
-	wl_list_init(&output->base.mode_list);
-
 	for (i = 0; i < output->connector->count_modes; i++) {
 		drm_mode = drm_output_add_mode(output, &output->connector->modes[i]);
 		if (!drm_mode) {

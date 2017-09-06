@@ -4710,6 +4710,7 @@ weston_output_init(struct weston_output *output,
 
 	pixman_region32_init(&output->previous_damage);
 	pixman_region32_init(&output->region);
+	wl_list_init(&output->mode_list);
 }
 
 /** Adds weston_output object to pending output list.

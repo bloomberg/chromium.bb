@@ -488,7 +488,6 @@ rdp_output_set_size(struct weston_output *base,
 	assert(!output->base.current_mode);
 
 	wl_list_init(&output->peers);
-	wl_list_init(&output->base.mode_list);
 
 	initMode.flags = WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
 	initMode.width = width;

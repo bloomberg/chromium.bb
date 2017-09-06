@@ -523,7 +523,6 @@ fbdev_output_create(struct fbdev_backend *backend,
 	output->mode.width = output->fb_info.x_resolution;
 	output->mode.height = output->fb_info.y_resolution;
 	output->mode.refresh = output->fb_info.refresh_rate;
-	wl_list_init(&output->base.mode_list);
 	wl_list_insert(&output->base.mode_list, &output->mode.link);
 
 	output->base.current_mode = &output->mode;
