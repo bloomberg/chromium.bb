@@ -7415,6 +7415,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="BrowserDialogs.ExternalProtocol.RememberCheckbox"
     enum="BooleanChecked">
+  <obsolete>
+    Deprecated 09/2017. This histogram has been replaced with
+    ExternalProtocol.HandleState.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <summary>
     Whether or not the user checked the option in the external protocol dialog

@@ -18,14 +18,9 @@ class ProtocolDialogDelegate {
   virtual ~ProtocolDialogDelegate() {}
 
   // Called if the user has chosen to launch the application for this protocol.
-  // |dont_block| is true if the checkbox to prevent future instances of this
+  // |remember| is true if the checkbox to prevent future instances of this
   // dialog is checked.
-  virtual void DoAccept(const GURL& url, bool dont_block) const = 0;
-
-  // Called if the user has chosen to do nothing for this protocol.
-  // |dont_block| is true if the checkbox to prevent future instances of this
-  // dialog is checked.
-  virtual void DoCancel(const GURL& url, bool dont_block) const = 0;
+  virtual void DoAccept(const GURL& url, bool remember) const = 0;
 
   virtual base::string16 GetDialogButtonLabel(
       ui::DialogButton button) const = 0;
