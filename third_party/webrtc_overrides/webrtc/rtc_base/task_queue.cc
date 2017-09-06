@@ -114,12 +114,6 @@ TaskQueue* TaskQueue::Current() {
   return lazy_tls_ptr.Pointer()->Get();
 }
 
-// static
-bool TaskQueue::IsCurrent(const char* queue_name) {
-  TaskQueue* current = Current();
-  return current && current->thread_->thread_name().compare(queue_name) == 0;
-}
-
 void TaskQueue::PostTask(std::unique_ptr<QueuedTask> task) {
   thread_->task_runner()->PostTask(FROM_HERE,
                                    base::Bind(&RunTask, base::Passed(&task)));
