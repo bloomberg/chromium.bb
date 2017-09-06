@@ -33,9 +33,11 @@ typedef NS_ENUM(NSInteger, BookmarksContextBarState) {
   BookmarksContextBarBeginSelection,  // This is the clean start state,
                                       // selection is possible, but nothing is
                                       // selected yet.
-  BookmarksContextBarSingleSelection,        // Single URL selected state.
-  BookmarksContextBarMultipleSelection,      // Multiple URL /Folders selected.
-  BookmarksContextBarSingleFolderSelection,  // Single folder selected.
+  BookmarksContextBarSingleURLSelection,       // Single URL selected state.
+  BookmarksContextBarMultipleURLSelection,     // Multiple URLs selected state.
+  BookmarksContextBarSingleFolderSelection,    // Single folder selected.
+  BookmarksContextBarMultipleFolderSelection,  // Multiple folders selected.
+  BookmarksContextBarMixedSelection,  // Multiple URL / Folders selected.
 };
 
 // BookmarkHomeViewController class extension for protected read/write

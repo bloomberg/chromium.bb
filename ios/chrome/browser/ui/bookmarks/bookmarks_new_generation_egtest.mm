@@ -406,6 +406,280 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 }
 
+- (void)testContextMenuForSingleURLSelection {
+  if (IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
+  }
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
+
+  [BookmarksNewGenTestCase setupStandardBookmarks];
+  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksNewGenTestCase openMobileBookmarks];
+
+  // Change to edit mode
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          @"context_bar_trailing_button")]
+      performAction:grey_tap()];
+
+  // Select URL.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Second URL")]
+      performAction:grey_tap()];
+
+  // Tap context menu.
+  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarMoreString])]
+      performAction:grey_tap()];
+
+  // Verify it shows the context menu.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(@"bookmark_context_menu")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Verify options on context menu.
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_COPY)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  [[EarlGrey selectElementWithMatcher:
+                 ButtonWithAccessibilityLabelId(
+                     IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN_INCOGNITO)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+- (void)testContextMenuForMultipleURLSelection {
+  if (IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
+  }
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
+
+  [BookmarksNewGenTestCase setupStandardBookmarks];
+  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksNewGenTestCase openMobileBookmarks];
+
+  // Change to edit mode
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          @"context_bar_trailing_button")]
+      performAction:grey_tap()];
+
+  // Select URLs.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Second URL")]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"First URL")]
+      performAction:grey_tap()];
+
+  // Tap context menu.
+  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarMoreString])]
+      performAction:grey_tap()];
+
+  // Verify it shows the context menu.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(@"bookmark_context_menu")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Verify options on context menu.
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  [[EarlGrey selectElementWithMatcher:
+                 ButtonWithAccessibilityLabelId(
+                     IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN_INCOGNITO)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+- (void)testContextMenuForSingleFolderSelection {
+  if (IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
+  }
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
+
+  [BookmarksNewGenTestCase setupStandardBookmarks];
+  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksNewGenTestCase openMobileBookmarks];
+
+  // Change to edit mode
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          @"context_bar_trailing_button")]
+      performAction:grey_tap()];
+
+  // Select URL.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Folder 1")]
+      performAction:grey_tap()];
+
+  // Center button is "Edit".
+  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarEditString])]
+      assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
+
+  [[EarlGrey
+      selectElementWithMatcher:ButtonWithAccessibilityLabelId(IDS_CANCEL)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Tap Edit menu.
+  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarEditString])]
+      performAction:grey_tap()];
+
+  // Verify it shows edit view controller.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder Editor")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+- (void)testContextMenuForMultipleFolderSelection {
+  if (IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
+  }
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
+
+  [BookmarksNewGenTestCase setupStandardBookmarks];
+  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksNewGenTestCase openMobileBookmarks];
+
+  // Change to edit mode
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          @"context_bar_trailing_button")]
+      performAction:grey_tap()];
+
+  // Select Folders.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Folder 1")]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Folder 1.1")]
+      performAction:grey_tap()];
+
+  // Tap context menu.
+  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarMoreString])]
+      performAction:grey_tap()];
+
+  // Verify it shows the context menu.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(@"bookmark_context_menu")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Verify options on context menu.
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+- (void)testContextMenuForMixedSelection {
+  if (IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
+  }
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
+
+  [BookmarksNewGenTestCase setupStandardBookmarks];
+  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksNewGenTestCase openMobileBookmarks];
+
+  // Change to edit mode
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          @"context_bar_trailing_button")]
+      performAction:grey_tap()];
+
+  // Select URL and folder.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Second URL")]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Folder 1")]
+      performAction:grey_tap()];
+
+  // Tap context menu.
+  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarMoreString])]
+      performAction:grey_tap()];
+
+  // Verify it shows the context menu.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(@"bookmark_context_menu")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Verify options on context menu.
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Try deleting a bookmark from the edit screen, then undoing that delete.
+- (void)testUndoDeleteBookmarkFromEditScreen {
+  if (IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
+  }
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
+
+  [BookmarksNewGenTestCase setupStandardBookmarks];
+  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksNewGenTestCase openMobileBookmarks];
+
+  // Change to edit mode
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          @"context_bar_trailing_button")]
+      performAction:grey_tap()];
+
+  // Select Folder.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Folder 1")]
+      performAction:grey_tap()];
+
+  // Tap edit on context bar.
+  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarEditString])]
+      performAction:grey_tap()];
+
+  // Delete it.
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_BOOKMARK_GROUP_DELETE)]
+      performAction:grey_tap()];
+
+  // Wait until it's gone.
+  ConditionBlock condition = ^{
+    NSError* error = nil;
+    [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+        assertWithMatcher:grey_notVisible()
+                    error:&error];
+    return error == nil;
+  };
+  GREYAssert(testing::WaitUntilConditionOrTimeout(10, condition),
+             @"Waiting for bookmark to go away");
+
+  // Press undo
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Undo")]
+      performAction:grey_tap()];
+
+  // Verify it's back.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+      assertWithMatcher:grey_notNil()];
+
+  // Verify Delete is disabled.
+  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarDeleteString])]
+      assertWithMatcher:grey_allOf(grey_notNil(),
+                                   grey_accessibilityTrait(
+                                       UIAccessibilityTraitNotEnabled),
+                                   nil)];
+}
+
 - (void)testDeleteSingleURLNode {
   if (IsIPadIdiom()) {
     EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
@@ -442,6 +716,15 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
   // Verify it's back.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
       assertWithMatcher:grey_notNil()];
+
+  // Verify Delete is disabled.
+  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarDeleteString])]
+      assertWithMatcher:grey_allOf(grey_notNil(),
+                                   grey_accessibilityTrait(
+                                       UIAccessibilityTraitNotEnabled),
+                                   nil)];
 
   // Cancel edit mode.
   [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
@@ -486,6 +769,15 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
   // Verify it's back.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
       assertWithMatcher:grey_notNil()];
+
+  // Verify Delete is disabled.
+  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarDeleteString])]
+      assertWithMatcher:grey_allOf(grey_notNil(),
+                                   grey_accessibilityTrait(
+                                       UIAccessibilityTraitNotEnabled),
+                                   nil)];
 
   // Cancel edit mode.
   [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
@@ -814,6 +1106,9 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
   NSString* folderTitle = @"Folder 1";
   const bookmarks::BookmarkNode* folder1 = bookmark_model->AddFolder(
       bookmark_model->mobile_node(), 0, base::SysNSStringToUTF16(folderTitle));
+  folderTitle = @"Folder 1.1";
+  bookmark_model->AddFolder(bookmark_model->mobile_node(), 0,
+                            base::SysNSStringToUTF16(folderTitle));
 
   folderTitle = @"Folder 2";
   const bookmarks::BookmarkNode* folder2 = bookmark_model->AddFolder(
