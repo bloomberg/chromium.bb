@@ -61,7 +61,10 @@ class CacheURLLoader {
         mojo::common::BlockingCopyFromString(data_, data_pipe.producer_handle));
 
     client_->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
-    client_->OnComplete(ResourceRequestCompletionStatus(data_.size()));
+    ResourceRequestCompletionStatus status(net::OK);
+    status.encoded_data_length = data_.size();
+    status.encoded_body_length = data_.size();
+    client_->OnComplete(status);
 
     // So we don't delete |this| in the constructor.
     base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);

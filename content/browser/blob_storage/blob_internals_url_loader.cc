@@ -40,7 +40,10 @@ void StartBlobInternalsURLLoader(
   CHECK_EQ(result, MOJO_RESULT_OK);
 
   client->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
-  client->OnComplete(ResourceRequestCompletionStatus(output.size()));
+  ResourceRequestCompletionStatus status(net::OK);
+  status.encoded_data_length = output.size();
+  status.encoded_body_length = output.size();
+  client->OnComplete(status);
 }
 
 }  // namespace content
