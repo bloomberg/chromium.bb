@@ -557,7 +557,7 @@ void RenderFrameProxy::FrameRectsChanged(const blink::WebRect& frame_rect) {
       viz::SurfaceInfo surface_info(
           viz::SurfaceId(frame_sink_id_, local_surface_id_),
           device_scale_factor,
-          gfx::ScaleToCeiledSize(frame_rect_.size(), device_scale_factor));
+          gfx::ScaleToCeiledSize(rect.size(), device_scale_factor));
       compositing_helper_->SetPrimarySurfaceInfo(surface_info);
     }
   }
