@@ -548,8 +548,6 @@ All changes to this list should go through Blink's feature review process: http:
         grid-auto-columns
         grid-auto-flow
         grid-auto-rows
-        grid-column-gap
-        grid-row-gap
         grid-template-areas
         grid-template-columns
         grid-template-rows
