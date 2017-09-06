@@ -1131,12 +1131,14 @@ RefPtr<StaticBitmapImage> Canvas2DLayerBridge::NewImageSnapshot(
   if (!GetOrCreateSurface(hint))
     return nullptr;
   FlushInternal();
-  // A readback operation may alter the texture parameters, which may affect
-  // the compositor's behavior. Therefore, we must trigger copy-on-write
-  // even though we are not technically writing to the texture, only to its
-  // parameters.
-  GetOrCreateSurface()->notifyContentWillChange(
-      SkSurface::kRetain_ContentChangeMode);
+  if (IsAccelerated()) {
+    // A readback operation may alter the texture parameters, which may affect
+    // the compositor's behavior. Therefore, we must trigger copy-on-write
+    // even though we are not technically writing to the texture, only to its
+    // parameters.
+    GetOrCreateSurface()->notifyContentWillChange(
+        SkSurface::kRetain_ContentChangeMode);
+  }
   RefPtr<StaticBitmapImage> image = StaticBitmapImage::Create(
       surface_->makeImageSnapshot(), ContextProviderWrapper());
   if (image->IsTextureBacked()) {
