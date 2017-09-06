@@ -176,7 +176,10 @@ Element* InsertParagraphSeparatorCommand::CloneHierarchyUnderNewBlock(
 }
 
 void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
-  if (!EndingVisibleSelection().IsNonOrphanedCaretOrRange())
+  // TODO(editing-dev): We shouldn't construct an
+  // InsertParagraphSeparatorCommand with none or invalid selection.
+  if (EndingVisibleSelection().IsNone() ||
+      !EndingVisibleSelection().IsValidFor(GetDocument()))
     return;
 
   Position insertion_position = EndingVisibleSelection().Start();
