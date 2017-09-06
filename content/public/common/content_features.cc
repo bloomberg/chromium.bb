@@ -286,12 +286,6 @@ const base::Feature kSitePerProcess{"site-per-process",
 const base::Feature kSkipCompositingSmallScrollers{
     "SkipCompositingSmallScrollers", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// An experiment to reduce the soft tile memory limit on low-end android
-// devices.
-const base::Feature kReducedSoftTileMemoryLimitOnLowEndAndroid{
-    "ReducedSoftTileMemoryLimitOnLowEndAndroid",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Paint invalidation based on slimming paint. See https://goo.gl/eQczQW
 const base::Feature kSlimmingPaintInvalidation{
     "SlimmingPaintInvalidation", base::FEATURE_ENABLED_BY_DEFAULT};
