@@ -12,13 +12,13 @@ function test() {
 
   function addFileSystem(fileSystemMapping, path) {
     TestRunner.addResult('Adding file system ' + path);
-    fileSystemMapping.addFileSystem(path);
+    fileSystemMapping._addFileSystemPath(path);
     checkAndDumpFileSystemMapping(fileSystemMapping);
   }
 
   function removeFileSystem(fileSystemMapping, path) {
     TestRunner.addResult('Removing file system ' + path);
-    fileSystemMapping.removeFileSystem(path);
+    fileSystemMapping._removeFileSystemPath(path);
     checkAndDumpFileSystemMapping(fileSystemMapping);
   }
 
@@ -80,7 +80,7 @@ function test() {
   var fileSystemMapping = new Persistence.FileSystemMapping(Persistence.isolatedFileSystemManager);
   var fileSystemPaths = Object.keys(fileSystemMapping._fileSystemMappings);
   for (var i = 0; i < fileSystemPaths.length; ++i)
-    fileSystemMapping.removeFileSystem(fileSystemPaths[i]);
+    fileSystemMapping._removeFileSystemPath(fileSystemPaths[i]);
 
   // Now fill it with file systems.
   checkAndDumpFileSystemMapping(fileSystemMapping);

@@ -62,7 +62,7 @@ InspectorTest.TestFileSystem.prototype = {
     addFileMapping: function(urlPrefix, pathPrefix)
     {
         var fileSystemMapping = new Persistence.FileSystemMapping(Persistence.isolatedFileSystemManager);
-        fileSystemMapping.addFileSystem(this.fileSystemPath);
+        fileSystemMapping._addFileSystemPath(this.fileSystemPath);
         fileSystemMapping.addFileMapping(this.fileSystemPath, urlPrefix, pathPrefix);
         fileSystemMapping.dispose();
         Persistence.fileSystemMapping._loadFromSettings();
