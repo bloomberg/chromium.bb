@@ -22,8 +22,7 @@ class ExternalProtocolDialogDelegate : public ProtocolDialogDelegate {
 
   const base::string16& program_name() const { return program_name_; }
 
-  void DoAccept(const GURL& url, bool dont_block) const override;
-  void DoCancel(const GURL& url, bool dont_block) const override;
+  void DoAccept(const GURL& url, bool remember) const override;
 
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   base::string16 GetMessageText() const override;

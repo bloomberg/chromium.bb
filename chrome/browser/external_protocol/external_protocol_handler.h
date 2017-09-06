@@ -35,7 +35,7 @@ class ExternalProtocolHandler {
     LAUNCH,
     CHECKED_LAUNCH,
     DONT_LAUNCH,
-    CHECKED_DONT_LAUNCH,
+    CHECKED_DONT_LAUNCH_DEPRECATED,
     HANDLE_STATE_LAST
   };
 
@@ -63,7 +63,6 @@ class ExternalProtocolHandler {
   };
 
   // UMA histogram metric names.
-  static const char kRememberCheckboxMetric[];
   static const char kHandleStateMetric[];
 
   // Returns whether we should block a given scheme.
@@ -109,10 +108,6 @@ class ExternalProtocolHandler {
   // Prepopulates the dictionary with known protocols to deny or allow, if
   // preferences for them do not already exist.
   static void PrepopulateDictionary(base::DictionaryValue* win_pref);
-
-  // Records an UMA metric for the state of the checkbox in the dialog, i.e.
-  // whether |selected| is true (checked) or false (unchecked).
-  static void RecordCheckboxStateMetrics(bool selected);
 
   // Records an UMA metric for the external protocol HandleState selected, based
   // on if the check box is selected / not and block / Dont block is picked.

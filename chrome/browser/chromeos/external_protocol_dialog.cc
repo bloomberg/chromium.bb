@@ -72,14 +72,6 @@ void ExternalProtocolDialog::DeleteDelegate() {
   delete this;
 }
 
-bool ExternalProtocolDialog::Accept() {
-  ExternalProtocolHandler::RecordCheckboxStateMetrics(
-      message_box_view_->IsCheckBoxSelected());
-
-  // Returning true closes the dialog.
-  return true;
-}
-
 views::View* ExternalProtocolDialog::GetContentsView() {
   return message_box_view_;
 }

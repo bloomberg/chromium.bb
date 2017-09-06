@@ -54,10 +54,6 @@ gfx::Size ExternalProtocolDialog::CalculatePreferredSize() const {
   return gfx::Size(kDialogContentWidth, GetHeightForWidth(kDialogContentWidth));
 }
 
-int ExternalProtocolDialog::GetDefaultDialogButton() const {
-  return ui::DIALOG_BUTTON_CANCEL;
-}
-
 base::string16 ExternalProtocolDialog::GetDialogButtonLabel(
     ui::DialogButton button) const {
   return delegate_->GetDialogButtonLabel(button);
@@ -68,12 +64,8 @@ base::string16 ExternalProtocolDialog::GetWindowTitle() const {
 }
 
 bool ExternalProtocolDialog::Cancel() {
-  const bool remember = remember_decision_checkbox_->checked();
-  delegate_->DoCancel(delegate_->url(), remember);
-
-  ExternalProtocolHandler::RecordCheckboxStateMetrics(remember);
   ExternalProtocolHandler::RecordHandleStateMetrics(
-      remember, ExternalProtocolHandler::BLOCK);
+      false /* checkbox_selected */, ExternalProtocolHandler::BLOCK);
 
   // Returning true closes the dialog.
   return true;
@@ -87,22 +79,12 @@ bool ExternalProtocolDialog::Accept() {
                            base::TimeTicks::Now() - creation_time_);
 
   const bool remember = remember_decision_checkbox_->checked();
-  ExternalProtocolHandler::RecordCheckboxStateMetrics(remember);
   ExternalProtocolHandler::RecordHandleStateMetrics(
       remember, ExternalProtocolHandler::DONT_BLOCK);
 
   delegate_->DoAccept(delegate_->url(), remember);
 
   // Returning true closes the dialog.
-  return true;
-}
-
-bool ExternalProtocolDialog::Close() {
-  // If the user dismisses the dialog without interacting with the buttons (e.g.
-  // via pressing Esc or the X), act as though they cancelled the request, but
-  // ignore the checkbox state. This ensures that if they check the checkbox but
-  // dismiss the dialog, we don't stop prompting them forever.
-  delegate_->DoCancel(delegate_->url(), false);
   return true;
 }
 
