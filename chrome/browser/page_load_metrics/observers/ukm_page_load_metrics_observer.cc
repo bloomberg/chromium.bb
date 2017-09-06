@@ -35,6 +35,8 @@ const char kUkmEffectiveConnectionType[] =
 const char kUkmHttpRttEstimate[] = "Net.HttpRttEstimate.OnNavigationStart";
 const char kUkmTransportRttEstimate[] =
     "Net.TransportRttEstimate.OnNavigationStart";
+const char kUkmDownstreamKbpsEstimate[] =
+    "Net.DownstreamKbpsEstimate.OnNavigationStart";
 const char kUkmNetErrorCode[] = "Net.ErrorCode.OnFailedProvisionalLoad";
 const char kUkmPageTransition[] = "Navigation.PageTransition";
 
@@ -89,6 +91,8 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnStart(
         network_quality_provider_->GetEffectiveConnectionType();
     http_rtt_estimate_ = network_quality_provider_->GetHttpRTT();
     transport_rtt_estimate_ = network_quality_provider_->GetTransportRTT();
+    downstream_kbps_estimate_ =
+        network_quality_provider_->GetDownstreamThroughputKbps();
   }
   page_transition_ = navigation_handle->GetPageTransition();
   return CONTINUE_OBSERVING;
@@ -212,6 +216,10 @@ void UkmPageLoadMetricsObserver::RecordPageLoadExtraInfoMetrics(
     builder->AddMetric(
         internal::kUkmTransportRttEstimate,
         static_cast<int64_t>(transport_rtt_estimate_.value().InMilliseconds()));
+  }
+  if (downstream_kbps_estimate_) {
+    builder->AddMetric(internal::kUkmDownstreamKbpsEstimate,
+                       static_cast<int64_t>(downstream_kbps_estimate_.value()));
   }
   // page_transition_ fits in a uint32_t, so we can safely cast to int64_t.
   builder->AddMetric(internal::kUkmPageTransition,
