@@ -1398,8 +1398,6 @@ split_static_library("browser") {
     "tab_contents/tab_util.h",
     "task_manager/web_contents_tags.cc",
     "task_manager/web_contents_tags.h",
-    "task_profiler/task_profiler_data_serializer.cc",
-    "task_profiler/task_profiler_data_serializer.h",
     "themes/theme_service_win.cc",
     "themes/theme_service_win.h",
     "thumbnails/thumbnail_list_source.cc",

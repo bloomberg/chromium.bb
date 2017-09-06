@@ -49,7 +49,6 @@
 #include "chrome/browser/ui/webui/physical_web/physical_web_ui.h"
 #include "chrome/browser/ui/webui/policy_ui.h"
 #include "chrome/browser/ui/webui/predictors/predictors_ui.h"
-#include "chrome/browser/ui/webui/profiler_ui.h"
 #include "chrome/browser/ui/webui/quota_internals/quota_internals_ui.h"
 #include "chrome/browser/ui/webui/settings/md_settings_ui.h"
 #include "chrome/browser/ui/webui/settings_utils.h"
@@ -355,8 +354,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<PhysicalWebUI>;
   if (url.host_piece() == chrome::kChromeUIPredictorsHost)
     return &NewWebUI<PredictorsUI>;
-  if (url.host_piece() == chrome::kChromeUIProfilerHost)
-    return &NewWebUI<ProfilerUI>;
   if (url.host() == chrome::kChromeUIQuotaInternalsHost)
     return &NewWebUI<QuotaInternalsUI>;
   if (url.host() == safe_browsing::kChromeUISafeBrowsingHost)

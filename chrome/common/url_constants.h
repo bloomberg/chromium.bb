@@ -218,7 +218,6 @@ extern const char kChromeUIPolicyHost[];
 extern const char kChromeUIPrefsInternalsHost[];
 extern const char kChromeUIMdUserManagerHost[];
 extern const char kChromeUIPredictorsHost[];
-extern const char kChromeUIProfilerHost[];
 extern const char kChromeUIQuotaInternalsHost[];
 extern const char kChromeUIQuitHost[];
 extern const char kChromeUIRestartHost[];
