@@ -3657,3 +3657,6 @@ crbug.com/761891 [ Win7 Debug ] virtual/threaded/animations/transition-and-anima
 
 # Test flaky (crashing) on WebKit Android (Nexus4)
 crbug.com/762008 [ Android ] http/tests/appcache/abort-cache-onchecking-resource-404.html [ Pass Crash ]
+
+# Sheriff failure 2017-09-06
+crbug.com/762390 [ Android ] http/tests/devtools/console/only-one-deprecation-warning.html [ Pass Crash ]
