@@ -327,7 +327,7 @@ class Tab : public gfx::AnimationDelegate,
   gfx::ThrobAnimation pulse_animation_;
 
   // Crash icon animation (in place of favicon).
-  gfx::LinearAnimation crash_icon_animation_;
+  std::unique_ptr<FaviconCrashAnimation> crash_icon_animation_;
 
   scoped_refptr<gfx::AnimationContainer> animation_container_;
 

@@ -434,7 +434,7 @@ Tab::Tab(TabController* controller, gfx::AnimationContainer* container)
       favicon_hiding_offset_(0),
       should_display_crashed_favicon_(false),
       pulse_animation_(this),
-      crash_icon_animation_(this),
+      crash_icon_animation_(base::MakeUnique<FaviconCrashAnimation>(this)),
       animation_container_(container),
       throbber_(nullptr),
       alert_indicator_button_(nullptr),
@@ -549,13 +549,13 @@ void Tab::SetData(const TabRendererData& data) {
   title_->SetText(title);
 
   if (!data_.IsCrashed()) {
-    crash_icon_animation_.Stop();
+    crash_icon_animation_->Stop();
     SetShouldDisplayCrashedFavicon(false);
     favicon_hiding_offset_ = 0;
   } else if (!should_display_crashed_favicon_ &&
-             !crash_icon_animation_.is_animating()) {
+             !crash_icon_animation_->is_animating()) {
     data_.alert_state = TabAlertState::NONE;
-    crash_icon_animation_.Start();
+    crash_icon_animation_->Start();
   }
 
   if (data_.alert_state != old.alert_state)
@@ -1462,7 +1462,7 @@ void Tab::ScheduleIconPaint() {
     return;
 
   // Extends the area to the bottom when the crash animation is in progress.
-  if (crash_icon_animation_.is_animating())
+  if (crash_icon_animation_->is_animating())
     bounds.set_height(height() - bounds.y());
   SchedulePaintInRect(GetMirroredRect(bounds));
 }
