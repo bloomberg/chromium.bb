@@ -5077,6 +5077,30 @@ TEST_F(SourceBufferStreamTest, AudioRangeEndTimeCases) {
   }
 }
 
+TEST_F(SourceBufferStreamTest, SameTimestampEstimatedDurations_Video) {
+  // Start a coded frame group with a frame having a non-estimated duration.
+  NewCodedFrameGroupAppend("10D10K");
+
+  // In the same coded frame group, append a same-timestamp frame with estimated
+  // duration smaller than the first frame. (This can happen at least if there
+  // was an intervening init segment resetting the estimation logic.) This
+  // second frame need not be a keyframe. We use a non-keyframe here to
+  // differentiate the buffers in CheckExpectedBuffers(), below.
+  AppendBuffers("10D9E");
+
+  // The next append, which triggered https://crbug.com/761567, didn't need to
+  // be with same timestamp as the earlier ones; it just needs to be in the same
+  // buffered range.  Also, it doesn't need to be a keyframe, have an estimated
+  // duration, nor be in the same coded frame group to trigger that issue.
+  NewCodedFrameGroupAppend("11D10K");
+
+  Seek(0);
+  CheckExpectedRangesByTimestamp("{ [10,21) }");
+  CheckExpectedRangeEndTimes("{ <11,21> }");
+  CheckExpectedBuffers("10K 10 11K");
+  CheckNoNextBuffer();
+}
+
 TEST_F(SourceBufferStreamTest, RangeIsNextInPTS_Simple) {
   // Append a simple GOP where DTS==PTS, perform basic PTS continuity checks.
   NewCodedFrameGroupAppend("10D10K");
