@@ -36,10 +36,10 @@ public class DefaultSearchEngineDialogHelper implements OnCheckedChangeListener,
 
         /** Determine what search engines will be listed. */
         protected List<TemplateUrl> getSearchEngines() {
-            TemplateUrlService.getInstance().setFilteringDisabled(true);
+            TemplateUrlService.getInstance().setFilteringEnabled(false);
             List<TemplateUrl> templateUrls =
                     LocaleManager.getInstance().getSearchEnginesForPromoDialog(mDialogType);
-            TemplateUrlService.getInstance().setFilteringDisabled(false);
+            TemplateUrlService.getInstance().setFilteringEnabled(true);
             return templateUrls;
         }
 
