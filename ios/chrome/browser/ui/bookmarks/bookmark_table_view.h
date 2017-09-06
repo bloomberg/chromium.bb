@@ -78,9 +78,6 @@ class PrefRegistrySyncable;
 // Called when something outside the view causes the promo state to change.
 - (void)promoStateChangedAnimated:(BOOL)animated;
 
-// Called when adding a new folder
-- (void)addNewFolder;
-
 // Sets if the table view is in edit mode.
 - (void)setEditing:(BOOL)editing;
 

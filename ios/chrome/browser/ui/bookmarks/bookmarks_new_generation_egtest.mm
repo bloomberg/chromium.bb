@@ -1056,42 +1056,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
   [SigninEarlGreyUtils checkSigninPromoNotVisible];
 }
 
-// Tests the creation of new folders.
-- (void)testCreateNewFolder {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
-
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
-
-  // Click on "New Folder" and create "New Folder 1".
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"context_bar_leading_button")]
-      performAction:grey_tap()];
-  NSString* newFolderTitle = @"New Folder 1";
-  [BookmarksNewGenTestCase renameBookmarkFolderWithFolderTitle:newFolderTitle];
-
-  // Verify "New Folder 1" is created.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(newFolderTitle)]
-      assertWithMatcher:grey_notNil()];
-
-  // Click on "New Folder" and create "New Folder 2".
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"context_bar_leading_button")]
-      performAction:grey_tap()];
-  newFolderTitle = @"New Folder 2";
-  [BookmarksNewGenTestCase renameBookmarkFolderWithFolderTitle:newFolderTitle];
-
-  // Verify "New Folder 2" is created.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(newFolderTitle)]
-      assertWithMatcher:grey_notNil()];
-}
-
 #pragma mark - Helpers
 
 // Navigates to the bookmark manager UI.
@@ -1239,23 +1203,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 + (NSString*)contextBarMoreString {
   return l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_BAR_MORE);
 }
-
-// Rename title of the newly created folder.
-+ (void)renameBookmarkFolderWithFolderTitle:(NSString*)folderTitle {
-  NSString* titleIdentifier = @"bookmark_editing_text";
-
-  // Type the folder title.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(titleIdentifier)]
-      performAction:grey_replaceText(folderTitle)];
-
-  // Press the keyboard return key.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(titleIdentifier)]
-      performAction:grey_typeText(@"\n")];
-
-  // Wait until the editing textfield is gone.
-  [BookmarksNewGenTestCase waitForDeletionOfBookmarkWithTitle:titleIdentifier];
-}
-
 // TODO(crbug.com/695749): Add egtest for spinner and empty background
 
 @end

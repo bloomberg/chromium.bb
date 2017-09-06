@@ -12,9 +12,6 @@ namespace bookmarks {
 class BookmarkNode;
 }  // namespace bookmarks
 
-@class BookmarkTableCell;
-@class BookmarkTableCellTextFieldDelegate;
-
 // Cell to display bookmark folders and URLs.
 // |---------------------------------------------|
 // |                                             |
@@ -22,15 +19,6 @@ class BookmarkNode;
 // |                                             |
 // |---------------------------------------------|
 //
-
-// Delegates the cell's text field's event.
-@protocol BookmarkTableCellTitleEditDelegate
-
-// Called when the |titleText| of the cell was changed.
-- (void)textDidChangeTo:(NSString*)newName;
-
-@end
-
 @interface BookmarkTableCell : UITableViewCell
 
 - (instancetype)initWithReuseIdentifier:(NSString*)bookmarkCellIdentifier
@@ -57,13 +45,6 @@ class BookmarkNode;
 
 // Set the bookmark node this cell shows.
 - (void)setNode:(const bookmarks::BookmarkNode*)node;
-
-// Start editing the |titleText| of this cell.
-- (void)startEdit;
-
-// Receives the text field events.
-@property(nonatomic, weak) id<BookmarkTableCellTitleEditDelegate> textDelegate;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_BOOKMARKS_CELLS_BOOKMARK_TABLE_CELL_H_
