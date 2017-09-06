@@ -38,12 +38,12 @@ public abstract class SelectableItemView<E> extends FrameLayout implements Check
     protected TintedImageView mIconView;
     protected TextView mTitleView;
     protected TextView mDescriptionView;
-    protected Drawable mIconDrawable;
     protected ColorStateList mIconColorList;
 
     private SelectionDelegate<E> mSelectionDelegate;
     private E mItem;
     private boolean mIsChecked;
+    private Drawable mIconDrawable;
 
     /**
      * Constructor for inflating from XML.
@@ -190,12 +190,12 @@ public abstract class SelectableItemView<E> extends FrameLayout implements Check
     }
 
     /**
-     * Update cached icon drawable when icon view's drawable is changed. Note that this method must
-     * be called after the drawable is changed to ensure that it can be set back from the check
-     * icon in selection mode.
+     * Set drawable for the icon view. Note that you may need to use this method instead of
+     * mIconView#setImageDrawable to ensure icon view is correctly set in selection mode.
      */
-    protected void onIconDrawableChanged() {
-        mIconDrawable = mIconView.getDrawable();
+    protected void setIconDrawable(Drawable iconDrawable) {
+        mIconDrawable = iconDrawable;
+        updateIconView();
     }
 
     /**

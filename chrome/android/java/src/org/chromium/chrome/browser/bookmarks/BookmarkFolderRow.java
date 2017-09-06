@@ -27,9 +27,8 @@ public class BookmarkFolderRow extends BookmarkRow {
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        mIconView.setImageDrawable(
+        setIconDrawable(
                 TintedDrawable.constructTintedDrawable(getResources(), R.drawable.bookmark_folder));
-        onIconDrawableChanged();
     }
 
     // BookmarkRow implementation.
