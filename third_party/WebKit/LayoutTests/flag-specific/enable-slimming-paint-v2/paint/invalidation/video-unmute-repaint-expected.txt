@@ -10,6 +10,7 @@
       "name": "LayoutFlexibleBox (relative positioned) DIV",
       "position": [8, 501],
       "bounds": [700, 32],
+      "contentsOpaque": true,
       "backgroundColor": "#FAFAFA",
       "paintInvalidations": [
         {

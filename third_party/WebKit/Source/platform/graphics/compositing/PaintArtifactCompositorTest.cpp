@@ -3061,4 +3061,81 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, WillBeRemovedFromFrame) {
   EXPECT_EQ(0u, ContentLayerCount());
 }
 
+TEST_F(PaintArtifactCompositorTestWithPropertyTrees, ContentsNonOpaque) {
+  TestPaintArtifact artifact;
+  artifact.Chunk(DefaultPaintChunkProperties())
+      .RectDrawing(FloatRect(100, 100, 200, 200), Color::kBlack);
+  Update(artifact.Build());
+  ASSERT_EQ(1u, ContentLayerCount());
+  EXPECT_FALSE(ContentLayerAt(0)->contents_opaque());
+}
+
+TEST_F(PaintArtifactCompositorTestWithPropertyTrees, ContentsOpaque) {
+  TestPaintArtifact artifact;
+  artifact.Chunk(DefaultPaintChunkProperties())
+      .RectDrawing(FloatRect(100, 100, 200, 200), Color::kBlack)
+      .KnownToBeOpaque();
+  Update(artifact.Build());
+  ASSERT_EQ(1u, ContentLayerCount());
+  EXPECT_TRUE(ContentLayerAt(0)->contents_opaque());
+}
+
+TEST_F(PaintArtifactCompositorTestWithPropertyTrees, ContentsOpaqueSubpixel) {
+  TestPaintArtifact artifact;
+  artifact.Chunk(DefaultPaintChunkProperties())
+      .RectDrawing(FloatRect(100.5, 100.5, 200, 200), Color::kBlack)
+      .KnownToBeOpaque();
+  Update(artifact.Build());
+  ASSERT_EQ(1u, ContentLayerCount());
+  EXPECT_EQ(gfx::Size(201, 201), ContentLayerAt(0)->bounds());
+  EXPECT_FALSE(ContentLayerAt(0)->contents_opaque());
+}
+
+TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
+       ContentsOpaqueUnitedNonOpaque) {
+  TestPaintArtifact artifact;
+  artifact.Chunk(DefaultPaintChunkProperties())
+      .RectDrawing(FloatRect(100, 100, 200, 200), Color::kBlack)
+      .KnownToBeOpaque()
+      .Chunk(DefaultPaintChunkProperties())
+      .RectDrawing(FloatRect(200, 200, 200, 200), Color::kBlack)
+      .KnownToBeOpaque();
+  Update(artifact.Build());
+  ASSERT_EQ(1u, ContentLayerCount());
+  EXPECT_EQ(gfx::Size(300, 300), ContentLayerAt(0)->bounds());
+  EXPECT_FALSE(ContentLayerAt(0)->contents_opaque());
+}
+
+TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
+       ContentsOpaqueUnitedOpaque1) {
+  TestPaintArtifact artifact;
+  artifact.Chunk(DefaultPaintChunkProperties())
+      .RectDrawing(FloatRect(100, 100, 300, 300), Color::kBlack)
+      .KnownToBeOpaque()
+      .Chunk(DefaultPaintChunkProperties())
+      .RectDrawing(FloatRect(200, 200, 200, 200), Color::kBlack)
+      .KnownToBeOpaque();
+  Update(artifact.Build());
+  ASSERT_EQ(1u, ContentLayerCount());
+  EXPECT_EQ(gfx::Size(300, 300), ContentLayerAt(0)->bounds());
+  EXPECT_TRUE(ContentLayerAt(0)->contents_opaque());
+}
+
+TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
+       ContentsOpaqueUnitedOpaque2) {
+  TestPaintArtifact artifact;
+  artifact.Chunk(DefaultPaintChunkProperties())
+      .RectDrawing(FloatRect(100, 100, 200, 200), Color::kBlack)
+      .KnownToBeOpaque()
+      .Chunk(DefaultPaintChunkProperties())
+      .RectDrawing(FloatRect(100, 100, 300, 300), Color::kBlack)
+      .KnownToBeOpaque();
+  Update(artifact.Build());
+  ASSERT_EQ(1u, ContentLayerCount());
+  EXPECT_EQ(gfx::Size(300, 300), ContentLayerAt(0)->bounds());
+  // TODO(crbug.com/701991): Upgrade GeometryMapper to make this test pass with
+  // the following EXPECT_FALSE changed to EXPECT_TRUE.
+  EXPECT_FALSE(ContentLayerAt(0)->contents_opaque());
+}
+
 }  // namespace blink

@@ -57,6 +57,7 @@ class TestPaintArtifact {
                                   scoped_refptr<cc::Layer>);
   TestPaintArtifact& ScrollHitTest(
       PassRefPtr<const TransformPaintPropertyNode> scroll_offset);
+  TestPaintArtifact& KnownToBeOpaque();
 
   // Can't add more things once this is called.
   const PaintArtifact& Build();
