@@ -41,20 +41,6 @@ CSSPropertyParser::CSSPropertyParser(
   range_.ConsumeWhitespace();
 }
 
-// AddProperty takes implicit as an enum, below we're using a bool because
-// AddParsedProperty will be removed after we finish implemenation of property
-// APIs.
-void CSSPropertyParser::AddParsedProperty(CSSPropertyID resolved_property,
-                                          CSSPropertyID current_shorthand,
-                                          const CSSValue& value,
-                                          bool important,
-                                          bool implicit) {
-  AddProperty(resolved_property, current_shorthand, value, important,
-              implicit ? IsImplicitProperty::kImplicit
-                       : IsImplicitProperty::kNotImplicit,
-              *parsed_properties_);
-}
-
 bool CSSPropertyParser::ParseValue(
     CSSPropertyID unresolved_property,
     bool important,
@@ -117,8 +103,8 @@ bool CSSPropertyParser::ParseValueStart(CSSPropertyID unresolved_property,
   } else {
     if (const CSSValue* parsed_value = ParseSingleValue(unresolved_property)) {
       if (range_.AtEnd()) {
-        AddParsedProperty(property_id, CSSPropertyInvalid, *parsed_value,
-                          important);
+        AddProperty(property_id, CSSPropertyInvalid, *parsed_value, important,
+                    IsImplicitProperty::kNotImplicit, *parsed_properties_);
         return true;
       }
     }
@@ -136,7 +122,8 @@ bool CSSPropertyParser::ParseValueStart(CSSPropertyID unresolved_property,
       AddExpandedPropertyForValue(property_id, pending_value, important,
                                   *parsed_properties_);
     } else {
-      AddParsedProperty(property_id, CSSPropertyInvalid, *variable, important);
+      AddProperty(property_id, CSSPropertyInvalid, *variable, important,
+                  IsImplicitProperty::kNotImplicit, *parsed_properties_);
     }
     return true;
   }
@@ -239,7 +226,8 @@ bool CSSPropertyParser::ConsumeCSSWideKeyword(CSSPropertyID unresolved_property,
   if (!shorthand.length()) {
     if (!CSSPropertyAPI::Get(property).IsProperty())
       return false;
-    AddParsedProperty(property, CSSPropertyInvalid, *value, important);
+    AddProperty(property, CSSPropertyInvalid, *value, important,
+                IsImplicitProperty::kNotImplicit, *parsed_properties_);
   } else {
     AddExpandedPropertyForValue(property, *value, important,
                                 *parsed_properties_);
@@ -410,7 +398,8 @@ bool CSSPropertyParser::ParseFontFaceDescriptor(CSSPropertyID prop_id) {
   if (!parsed_value || !range_.AtEnd())
     return false;
 
-  AddParsedProperty(prop_id, CSSPropertyInvalid, *parsed_value, false);
+  AddProperty(prop_id, CSSPropertyInvalid, *parsed_value, false,
+              IsImplicitProperty::kNotImplicit, *parsed_properties_);
   return true;
 }
 
@@ -470,10 +459,12 @@ bool CSSPropertyParser::ParseViewportDescriptor(CSSPropertyID prop_id,
       }
       if (!max_width || !range_.AtEnd())
         return false;
-      AddParsedProperty(CSSPropertyMinWidth, CSSPropertyInvalid, *min_width,
-                        important);
-      AddParsedProperty(CSSPropertyMaxWidth, CSSPropertyInvalid, *max_width,
-                        important);
+      AddProperty(CSSPropertyMinWidth, CSSPropertyInvalid, *min_width,
+                  important, IsImplicitProperty::kNotImplicit,
+                  *parsed_properties_);
+      AddProperty(CSSPropertyMaxWidth, CSSPropertyInvalid, *max_width,
+                  important, IsImplicitProperty::kNotImplicit,
+                  *parsed_properties_);
       return true;
     }
     case CSSPropertyHeight: {
@@ -488,10 +479,12 @@ bool CSSPropertyParser::ParseViewportDescriptor(CSSPropertyID prop_id,
       }
       if (!max_height || !range_.AtEnd())
         return false;
-      AddParsedProperty(CSSPropertyMinHeight, CSSPropertyInvalid, *min_height,
-                        important);
-      AddParsedProperty(CSSPropertyMaxHeight, CSSPropertyInvalid, *max_height,
-                        important);
+      AddProperty(CSSPropertyMinHeight, CSSPropertyInvalid, *min_height,
+                  important, IsImplicitProperty::kNotImplicit,
+                  *parsed_properties_);
+      AddProperty(CSSPropertyMaxHeight, CSSPropertyInvalid, *max_height,
+                  important, IsImplicitProperty::kNotImplicit,
+                  *parsed_properties_);
       return true;
     }
     case CSSPropertyMinWidth:
@@ -507,7 +500,8 @@ bool CSSPropertyParser::ParseViewportDescriptor(CSSPropertyID prop_id,
           ConsumeSingleViewportDescriptor(range_, prop_id, context_->Mode());
       if (!parsed_value || !range_.AtEnd())
         return false;
-      AddParsedProperty(prop_id, CSSPropertyInvalid, *parsed_value, important);
+      AddProperty(prop_id, CSSPropertyInvalid, *parsed_value, important,
+                  IsImplicitProperty::kNotImplicit, *parsed_properties_);
       return true;
     }
     default:

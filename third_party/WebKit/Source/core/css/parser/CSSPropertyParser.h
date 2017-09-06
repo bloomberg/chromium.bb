@@ -71,11 +71,6 @@ class CSSPropertyParser {
   bool ParseViewportDescriptor(CSSPropertyID prop_id, bool important);
   bool ParseFontFaceDescriptor(CSSPropertyID);
 
-  void AddParsedProperty(CSSPropertyID resolved_property,
-                         CSSPropertyID current_shorthand,
-                         const CSSValue&,
-                         bool important,
-                         bool implicit = false);
   bool ParseShorthand(CSSPropertyID, bool important);
  private:
   // Inputs:
