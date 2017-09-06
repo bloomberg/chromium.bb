@@ -2105,8 +2105,10 @@ init_kms_caps(struct drm_backend *b)
 	else
 		b->cursor_height = 64;
 
-	ret = drmSetClientCap(b->drm.fd, DRM_CLIENT_CAP_UNIVERSAL_PLANES, 1);
-	b->universal_planes = (ret == 0);
+	if (!getenv("WESTON_DISABLE_UNIVERSAL_PLANES")) {
+		ret = drmSetClientCap(b->drm.fd, DRM_CLIENT_CAP_UNIVERSAL_PLANES, 1);
+		b->universal_planes = (ret == 0);
+	}
 	weston_log("DRM: %s universal planes\n",
 		   b->universal_planes ? "supports" : "does not support");
 
