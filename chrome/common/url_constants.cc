@@ -232,7 +232,6 @@ const char kChromeUIComponentsHost[] = "components";
 const char kChromeUIPolicyHost[] = "policy";
 const char kChromeUIMdUserManagerHost[] = "md-user-manager";
 const char kChromeUIPredictorsHost[] = "predictors";
-const char kChromeUIProfilerHost[] = "profiler";
 const char kChromeUIQuotaInternalsHost[] = "quota-internals";
 const char kChromeUIQuitHost[] = "quit";
 const char kChromeUIRestartHost[] = "restart";
@@ -665,7 +664,6 @@ const char* const kChromeHostURLs[] = {
     kChromeUIPasswordManagerInternalsHost,
     kChromeUIPolicyHost,
     kChromeUIPredictorsHost,
-    kChromeUIProfilerHost,
     kChromeUIQuotaInternalsHost,
     kChromeUISignInInternalsHost,
     kChromeUISiteEngagementHost,
