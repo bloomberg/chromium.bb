@@ -2052,9 +2052,18 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
 }
 
 // Tests that the security level of a HTTP page is NEUTRAL when MarkHttpAs is
-// not set.
+// not set to either kMarkHttpAsNonSecureWhileIncognito or
+// kMarkHttpAsNonSecureWhileIncognitoOrEditing.
 IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperIncognitoTest,
                        SecurityLevelNeutralByDefaultForHTTP) {
+  // We must explicitly specify a configuration using the command-line
+  // argument or this test can fail based on the values inside the
+  // fieldtrial_testing_config.json file.
+  base::test::ScopedCommandLine scoped_command_line;
+  scoped_command_line.GetProcessCommandLine()->AppendSwitchASCII(
+      security_state::switches::kMarkHttpAs,
+      security_state::switches::kMarkHttpAsNonSecureAfterEditing);
+
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
