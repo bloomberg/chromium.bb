@@ -151,12 +151,6 @@ void EventPath::CalculateTreeOrderAndSetNearestAncestorClosedTree() {
   //   - TreeScopes in m_treeScopeEventContexts must be *connected* in the same
   //     composed tree.
   //   - The root tree must be included.
-  HeapHashMap<Member<const TreeScope>, Member<TreeScopeEventContext>>
-      tree_scope_event_context_map;
-  for (const auto& tree_scope_event_context : tree_scope_event_contexts_)
-    tree_scope_event_context_map.insert(
-        &tree_scope_event_context->GetTreeScope(),
-        tree_scope_event_context.Get());
   TreeScopeEventContext* root_tree = nullptr;
   for (const auto& tree_scope_event_context : tree_scope_event_contexts_) {
     // Use olderShadowRootOrParentTreeScope here for parent-child relationships.
@@ -170,37 +164,41 @@ void EventPath::CalculateTreeOrderAndSetNearestAncestorClosedTree() {
       root_tree = tree_scope_event_context.Get();
       continue;
     }
-    DCHECK_NE(tree_scope_event_context_map.find(parent),
-              tree_scope_event_context_map.end());
-    tree_scope_event_context_map.find(parent)->value->AddChild(
-        *tree_scope_event_context.Get());
+    TreeScopeEventContext* parent_tree_scope_event_context =
+        GetTreeScopeEventContext(parent);
+    DCHECK(parent_tree_scope_event_context);
+    parent_tree_scope_event_context->AddChild(*tree_scope_event_context.Get());
   }
   DCHECK(root_tree);
   root_tree->CalculateTreeOrderAndSetNearestAncestorClosedTree(0, nullptr);
 }
 
+TreeScopeEventContext* EventPath::GetTreeScopeEventContext(
+    TreeScope* tree_scope) {
+  DCHECK(tree_scope);
+  for (TreeScopeEventContext* tree_scope_event_context :
+       tree_scope_event_contexts_) {
+    if (tree_scope_event_context->GetTreeScope() == tree_scope) {
+      return tree_scope_event_context;
+    }
+  }
+  return nullptr;
+}
+
 TreeScopeEventContext* EventPath::EnsureTreeScopeEventContext(
     Node* current_target,
-    TreeScope* tree_scope,
-    TreeScopeEventContextMap& tree_scope_event_context_map) {
+    TreeScope* tree_scope) {
   if (!tree_scope)
     return nullptr;
-  TreeScopeEventContext* tree_scope_event_context;
-  bool is_new_entry;
-  {
-    TreeScopeEventContextMap::AddResult add_result =
-        tree_scope_event_context_map.insert(tree_scope, nullptr);
-    is_new_entry = add_result.is_new_entry;
-    if (is_new_entry)
-      add_result.stored_value->value =
-          TreeScopeEventContext::Create(*tree_scope);
-    tree_scope_event_context = add_result.stored_value->value.Get();
-  }
-  if (is_new_entry) {
+  TreeScopeEventContext* tree_scope_event_context =
+      GetTreeScopeEventContext(tree_scope);
+  if (!tree_scope_event_context) {
+    tree_scope_event_context = TreeScopeEventContext::Create(*tree_scope);
+    tree_scope_event_contexts_.push_back(tree_scope_event_context);
+
     TreeScopeEventContext* parent_tree_scope_event_context =
         EnsureTreeScopeEventContext(
-            0, tree_scope->OlderShadowRootOrParentTreeScope(),
-            tree_scope_event_context_map);
+            0, tree_scope->OlderShadowRootOrParentTreeScope());
     if (parent_tree_scope_event_context &&
         parent_tree_scope_event_context->Target()) {
       tree_scope_event_context->SetTarget(
@@ -218,24 +216,19 @@ TreeScopeEventContext* EventPath::EnsureTreeScopeEventContext(
 
 void EventPath::CalculateAdjustedTargets() {
   const TreeScope* last_tree_scope = nullptr;
-
-  TreeScopeEventContextMap tree_scope_event_context_map;
   TreeScopeEventContext* last_tree_scope_event_context = nullptr;
 
   for (auto& context : node_event_contexts_) {
     Node* current_node = context.GetNode();
     TreeScope& current_tree_scope = current_node->GetTreeScope();
     if (last_tree_scope != &current_tree_scope) {
-      last_tree_scope_event_context = EnsureTreeScopeEventContext(
-          current_node, &current_tree_scope, tree_scope_event_context_map);
+      last_tree_scope_event_context =
+          EnsureTreeScopeEventContext(current_node, &current_tree_scope);
     }
     DCHECK(last_tree_scope_event_context);
     context.SetTreeScopeEventContext(last_tree_scope_event_context);
     last_tree_scope = &current_tree_scope;
   }
-  tree_scope_event_contexts_.AppendRange(
-      tree_scope_event_context_map.Values().begin(),
-      tree_scope_event_context_map.Values().end());
 }
 
 void EventPath::BuildRelatedNodeMap(const Node& related_node,

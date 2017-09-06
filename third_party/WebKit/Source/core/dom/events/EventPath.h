@@ -44,7 +44,8 @@ class TouchEvent;
 class TouchList;
 class TreeScope;
 
-class CORE_EXPORT EventPath final : public GarbageCollected<EventPath> {
+class CORE_EXPORT EventPath final
+    : public GarbageCollectedFinalized<EventPath> {
   WTF_MAKE_NONCOPYABLE(EventPath);
 
  public:
@@ -116,11 +117,9 @@ class CORE_EXPORT EventPath final : public GarbageCollected<EventPath> {
                        HeapVector<Member<TouchList>> adjusted_touch_list,
                        const HeapVector<Member<TreeScope>>& tree_scopes);
 
-  using TreeScopeEventContextMap =
-      HeapHashMap<Member<TreeScope>, Member<TreeScopeEventContext>>;
+  TreeScopeEventContext* GetTreeScopeEventContext(TreeScope*);
   TreeScopeEventContext* EnsureTreeScopeEventContext(Node* current_target,
-                                                     TreeScope*,
-                                                     TreeScopeEventContextMap&);
+                                                     TreeScope*);
 
   using RelatedTargetMap = HeapHashMap<Member<TreeScope>, Member<EventTarget>>;
 
@@ -134,7 +133,7 @@ class CORE_EXPORT EventPath final : public GarbageCollected<EventPath> {
   HeapVector<NodeEventContext> node_event_contexts_;
   Member<Node> node_;
   Member<Event> event_;
-  HeapVector<Member<TreeScopeEventContext>> tree_scope_event_contexts_;
+  HeapVector<Member<TreeScopeEventContext>, 8> tree_scope_event_contexts_;
   Member<WindowEventContext> window_event_context_;
 };
 
