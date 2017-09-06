@@ -15,6 +15,8 @@
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "ipc/ipc_channel_mojo.h"
+#include "ipc/ipc_perftest_messages.h"
+#include "ipc/ipc_perftest_util.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_test.mojom.h"
 #include "ipc/ipc_test_base.h"
@@ -27,24 +29,8 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
-#define IPC_MESSAGE_IMPL
-#include "ipc/ipc_message_macros.h"
-
-#define IPC_MESSAGE_START TestMsgStart
-
-IPC_MESSAGE_CONTROL0(TestMsg_Hello)
-IPC_MESSAGE_CONTROL0(TestMsg_Quit)
-IPC_MESSAGE_CONTROL1(TestMsg_Ping, std::string)
-IPC_SYNC_MESSAGE_CONTROL1_1(TestMsg_SyncPing, std::string, std::string)
-
 namespace IPC {
 namespace {
-
-scoped_refptr<base::SingleThreadTaskRunner> GetIOThreadTaskRunner() {
-  scoped_refptr<base::TaskRunner> runner = mojo::edk::GetIOTaskRunner();
-  return scoped_refptr<base::SingleThreadTaskRunner>(
-      static_cast<base::SingleThreadTaskRunner*>(runner.get()));
-}
 
 class PerformanceChannelListener : public Listener {
  public:
@@ -136,102 +122,6 @@ class PerformanceChannelListener : public Listener {
   std::unique_ptr<base::PerfTimeLogger> perf_logger_;
 };
 
-// This channel listener just replies to all messages with the exact same
-// message. It assumes each message has one string parameter. When the string
-// "quit" is sent, it will exit.
-class ChannelReflectorListener : public Listener {
- public:
-  ChannelReflectorListener() : channel_(NULL) {
-    VLOG(1) << "Client listener up";
-  }
-
-  ~ChannelReflectorListener() override { VLOG(1) << "Client listener down"; }
-
-  void Init(Sender* channel) {
-    DCHECK(!channel_);
-    channel_ = channel;
-  }
-
-  bool OnMessageReceived(const Message& message) override {
-    CHECK(channel_);
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(ChannelReflectorListener, message)
-      IPC_MESSAGE_HANDLER(TestMsg_Hello, OnHello)
-      IPC_MESSAGE_HANDLER(TestMsg_Ping, OnPing)
-      IPC_MESSAGE_HANDLER(TestMsg_SyncPing, OnSyncPing)
-      IPC_MESSAGE_HANDLER(TestMsg_Quit, OnQuit)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    return handled;
-  }
-
-  void OnHello() { channel_->Send(new TestMsg_Hello); }
-
-  void OnPing(const std::string& payload) {
-    channel_->Send(new TestMsg_Ping(payload));
-  }
-
-  void OnSyncPing(const std::string& payload, std::string* response) {
-    *response = payload;
-  }
-
-  void OnQuit() { base::RunLoop::QuitCurrentWhenIdleDeprecated(); }
-
-  void Send(IPC::Message* message) { channel_->Send(message); }
-
- private:
-  Sender* channel_;
-};
-
-// This class locks the current thread to a particular CPU core. This is
-// important because otherwise the different threads and processes of these
-// tests end up on different CPU cores which means that all of the cores are
-// lightly loaded so the OS (Windows and Linux) fails to ramp up the CPU
-// frequency, leading to unpredictable and often poor performance.
-class LockThreadAffinity {
- public:
-  explicit LockThreadAffinity(int cpu_number) : affinity_set_ok_(false) {
-#if defined(OS_WIN)
-    const DWORD_PTR thread_mask = static_cast<DWORD_PTR>(1) << cpu_number;
-    old_affinity_ = SetThreadAffinityMask(GetCurrentThread(), thread_mask);
-    affinity_set_ok_ = old_affinity_ != 0;
-#elif defined(OS_LINUX)
-    cpu_set_t cpuset;
-    CPU_ZERO(&cpuset);
-    CPU_SET(cpu_number, &cpuset);
-    auto get_result = sched_getaffinity(0, sizeof(old_cpuset_), &old_cpuset_);
-    DCHECK_EQ(0, get_result);
-    auto set_result = sched_setaffinity(0, sizeof(cpuset), &cpuset);
-    // Check for get_result failure, even though it should always succeed.
-    affinity_set_ok_ = (set_result == 0) && (get_result == 0);
-#endif
-    if (!affinity_set_ok_)
-      LOG(WARNING) << "Failed to set thread affinity to CPU " << cpu_number;
-  }
-
-  ~LockThreadAffinity() {
-    if (!affinity_set_ok_)
-      return;
-#if defined(OS_WIN)
-    auto set_result = SetThreadAffinityMask(GetCurrentThread(), old_affinity_);
-    DCHECK_NE(0u, set_result);
-#elif defined(OS_LINUX)
-    auto set_result = sched_setaffinity(0, sizeof(old_cpuset_), &old_cpuset_);
-    DCHECK_EQ(0, set_result);
-#endif
-  }
-
- private:
-  bool affinity_set_ok_;
-#if defined(OS_WIN)
-  DWORD_PTR old_affinity_;
-#elif defined(OS_LINUX)
-  cpu_set_t old_cpuset_;
-#endif
-
-  DISALLOW_COPY_AND_ASSIGN(LockThreadAffinity);
-};
-
 class PingPongTestParams {
  public:
   PingPongTestParams(size_t size, int count)
@@ -286,10 +176,6 @@ std::vector<InterfacePassingTestParams> GetDefaultInterfacePassingTestParams() {
   list.push_back({500 * kMultiplier, 8});
   return list;
 }
-
-// Avoid core 0 due to conflicts with Intel's Power Gadget.
-// Setting thread affinity will fail harmlessly on single/dual core machines.
-const int kSharedCore = 2;
 
 class MojoChannelPerfTest : public IPCChannelMojoTestBase {
  public:
@@ -374,34 +260,6 @@ TEST_F(MojoChannelPerfTest, ChannelProxySyncPing) {
   run_loop.RunUntilIdle();
 }
 
-class MojoPerfTestClient {
- public:
-  MojoPerfTestClient() : listener_(new ChannelReflectorListener()) {
-    mojo::edk::test::MultiprocessTestHelper::ChildSetup();
-  }
-
-  ~MojoPerfTestClient() = default;
-
-  int Run(MojoHandle handle) {
-    handle_ = mojo::MakeScopedHandle(mojo::MessagePipeHandle(handle));
-    LockThreadAffinity thread_locker(kSharedCore);
-
-    std::unique_ptr<ChannelProxy> channel =
-        IPC::ChannelProxy::Create(handle_.release(), Channel::MODE_CLIENT,
-                                  listener_.get(), GetIOThreadTaskRunner());
-    listener_->Init(channel.get());
-
-    base::RunLoop().Run();
-    return 0;
-  }
-
- private:
-  base::MessageLoop main_message_loop_;
-  std::unique_ptr<ChannelReflectorListener> listener_;
-  std::unique_ptr<Channel> channel_;
-  mojo::ScopedMessagePipeHandle handle_;
-};
-
 MULTIPROCESS_TEST_MAIN(MojoPerfTestClientTestChildMain) {
   MojoPerfTestClient client;
   int rv = mojo::edk::test::MultiprocessTestHelper::RunClientMain(
@@ -413,29 +271,6 @@ MULTIPROCESS_TEST_MAIN(MojoPerfTestClientTestChildMain) {
 
   return rv;
 }
-
-class ReflectorImpl : public IPC::mojom::Reflector {
- public:
-  explicit ReflectorImpl(mojo::ScopedMessagePipeHandle handle)
-      : binding_(this, IPC::mojom::ReflectorRequest(std::move(handle))) {}
-  ~ReflectorImpl() override {
-    ignore_result(binding_.Unbind().PassMessagePipe().release());
-  }
-
- private:
-  // IPC::mojom::Reflector:
-  void Ping(const std::string& value, PingCallback callback) override {
-    std::move(callback).Run(value);
-  }
-
-  void SyncPing(const std::string& value, PingCallback callback) override {
-    std::move(callback).Run(value);
-  }
-
-  void Quit() override { base::RunLoop::QuitCurrentWhenIdleDeprecated(); }
-
-  mojo::Binding<IPC::mojom::Reflector> binding_;
-};
 
 class MojoInterfacePerfTest : public mojo::edk::test::MojoTestBase {
  public:
@@ -509,8 +344,9 @@ class MojoInterfacePerfTest : public mojo::edk::test::MojoTestBase {
         base::MessageLoop::current());
 
     LockThreadAffinity thread_locker(kSharedCore);
-    ReflectorImpl impl(std::move(scoped_mp));
-    base::RunLoop().Run();
+    base::RunLoop run_loop;
+    ReflectorImpl impl(std::move(scoped_mp), run_loop.QuitWhenIdleClosure());
+    run_loop.Run();
     return 0;
   }
 
@@ -798,7 +634,7 @@ TEST_P(MojoInProcessInterfacePerfTest, SingleThreadPingPong) {
   mojo::MessagePipeHandle mp_handle(client_handle);
   mojo::ScopedMessagePipeHandle scoped_mp(mp_handle);
   LockThreadAffinity thread_locker(kSharedCore);
-  ReflectorImpl impl(std::move(scoped_mp));
+  ReflectorImpl impl(std::move(scoped_mp), base::Closure());
 
   RunPingPongServer(server_handle, "SingleProcess");
 }
