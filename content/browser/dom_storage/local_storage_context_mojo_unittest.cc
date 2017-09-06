@@ -1084,7 +1084,7 @@ class MockLevelDBService : public leveldb::mojom::LevelDBService {
   }
 
   void OpenWithOptions(
-      leveldb::mojom::OpenOptionsPtr options,
+      const leveldb_env::Options& options,
       filesystem::mojom::DirectoryPtr,
       const std::string& dbname,
       const base::Optional<base::trace_event::MemoryAllocatorDumpGuid>&

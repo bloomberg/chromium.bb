@@ -260,9 +260,9 @@ TEST_F(LevelDBServiceTest, Reconnect) {
     temp_directory->Clone(MakeRequest(&directory));
 
     mojom::LevelDBDatabaseAssociatedPtr database;
-    leveldb::mojom::OpenOptionsPtr options = leveldb::mojom::OpenOptions::New();
-    options->error_if_exists = true;
-    options->create_if_missing = true;
+    leveldb_env::Options options;
+    options.error_if_exists = true;
+    options.create_if_missing = true;
     base::RunLoop run_loop;
     leveldb()->OpenWithOptions(std::move(options), std::move(directory), "test",
                                base::nullopt, MakeRequest(&database),
@@ -311,9 +311,9 @@ TEST_F(LevelDBServiceTest, Destroy) {
     temp_directory->Clone(MakeRequest(&directory));
 
     mojom::LevelDBDatabaseAssociatedPtr database;
-    leveldb::mojom::OpenOptionsPtr options = leveldb::mojom::OpenOptions::New();
-    options->error_if_exists = true;
-    options->create_if_missing = true;
+    leveldb_env::Options options;
+    options.error_if_exists = true;
+    options.create_if_missing = true;
     base::RunLoop run_loop;
     leveldb()->OpenWithOptions(std::move(options), std::move(directory), "test",
                                base::nullopt, MakeRequest(&database),
