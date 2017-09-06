@@ -29,7 +29,7 @@ extern "C" {
 #if CONFIG_NCOBMC || CONFIG_NCOBMC_ADAPT_WEIGHT
 #define NC_MODE_INFO 1
 #else
-#define NC_MODE_INFO 1
+#define NC_MODE_INFO 0
 #endif
 
 // Max superblock size
