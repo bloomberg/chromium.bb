@@ -18,6 +18,7 @@
 #include "base/debug/thread_heap_usage_tracker.h"
 #include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/string_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/heap_profiler.h"
@@ -92,10 +93,52 @@ struct SessionStateConvertableProxy : public ConvertableToTraceFormat {
   GetterFunctPtr const getter_function;
 };
 
+void NotifyHeapProfilingEnabledOnMDPThread(
+    scoped_refptr<MemoryDumpProviderInfo> mdpinfo,
+    bool profiling_enabled) {
+  DCHECK(!mdpinfo->disabled);
+  mdpinfo->dump_provider->OnHeapProfilingEnabled(profiling_enabled);
+}
+
+inline bool ShouldEnableMDPAllocatorHooks(HeapProfilingMode mode) {
+  return (mode == kHeapProfilingModePseudo) ||
+         (mode == kHeapProfilingModeNative) ||
+         (mode == kHeapProfilingModeNoStack);
+}
+
+#if BUILDFLAG(USE_ALLOCATOR_SHIM) && !defined(OS_NACL)
 inline bool IsHeapProfilingModeEnabled(HeapProfilingMode mode) {
   return mode != kHeapProfilingModeDisabled &&
          mode != kHeapProfilingModeInvalid;
 }
+
+void EnableFilteringForPseudoStackProfiling() {
+  if (AllocationContextTracker::capture_mode() !=
+          AllocationContextTracker::CaptureMode::PSEUDO_STACK ||
+      (TraceLog::GetInstance()->enabled_modes() & TraceLog::FILTERING_MODE)) {
+    return;
+  }
+  // Create trace config with heap profiling filter.
+  std::string filter_string = JoinString(
+      {"*", TRACE_DISABLED_BY_DEFAULT("net"), TRACE_DISABLED_BY_DEFAULT("cc"),
+       MemoryDumpManager::kTraceCategory},
+      ",");
+  TraceConfigCategoryFilter category_filter;
+  category_filter.InitializeFromString(filter_string);
+
+  TraceConfig::EventFilterConfig heap_profiler_filter_config(
+      HeapProfilerEventFilter::kName);
+  heap_profiler_filter_config.SetCategoryFilter(category_filter);
+
+  TraceConfig::EventFilters filters;
+  filters.push_back(heap_profiler_filter_config);
+  TraceConfig filtering_trace_config;
+  filtering_trace_config.SetEventFilters(filters);
+
+  TraceLog::GetInstance()->SetEnabled(filtering_trace_config,
+                                      TraceLog::FILTERING_MODE);
+}
+#endif  // BUILDFLAG(USE_ALLOCATOR_SHIM) && !defined(OS_NACL)
 
 }  // namespace
 
@@ -139,11 +182,7 @@ MemoryDumpManager::MemoryDumpManager()
     : is_coordinator_(false),
       tracing_process_id_(kInvalidTracingProcessId),
       dumper_registrations_ignored_for_testing_(false),
-      heap_profiling_mode_(kHeapProfilingModeDisabled) {
-  // At this point the command line may not be initialized but we try to
-  // enable the heap profiler to capture allocations as soon as possible.
-  EnableHeapProfilingIfNeeded();
-}
+      heap_profiling_mode_(kHeapProfilingModeDisabled) {}
 
 MemoryDumpManager::~MemoryDumpManager() {
   Thread* dump_thread = nullptr;
@@ -204,13 +243,6 @@ bool MemoryDumpManager::EnableHeapProfiling(HeapProfilingMode profiling_mode) {
 #if BUILDFLAG(USE_ALLOCATOR_SHIM) && !defined(OS_NACL)
   bool notify_mdps = true;
 
-  // TODO(kraynov, ssid): Remove this when heap profiler will be capable to
-  // get enabled when tracing had already started.
-  if (heap_profiler_serialization_state_) {
-    LOG(ERROR) << "EnableHeapProfiling can't be used when tracing is enabled.";
-    return false;
-  }
-
   if (heap_profiling_mode_ == kHeapProfilingModeInvalid)
     return false;  // Disabled permanently.
 
@@ -225,6 +257,7 @@ bool MemoryDumpManager::EnableHeapProfiling(HeapProfilingMode profiling_mode) {
     case kHeapProfilingModePseudo:
       AllocationContextTracker::SetCaptureMode(
           AllocationContextTracker::CaptureMode::PSEUDO_STACK);
+      EnableFilteringForPseudoStackProfiling();
       break;
 
     case kHeapProfilingModeNative:
@@ -250,6 +283,8 @@ bool MemoryDumpManager::EnableHeapProfiling(HeapProfilingMode profiling_mode) {
         LOG(ERROR) << "ThreadHeapUsageTracker cannot be disabled.";
         return false;
       }
+      if (heap_profiling_mode_ == kHeapProfilingModePseudo)
+        TraceLog::GetInstance()->SetDisabled(TraceLog::FILTERING_MODE);
       AllocationContextTracker::SetCaptureMode(
           AllocationContextTracker::CaptureMode::DISABLED);
       heap_profiling_mode_ = kHeapProfilingModeInvalid;  // Disable permanently.
@@ -263,10 +298,18 @@ bool MemoryDumpManager::EnableHeapProfiling(HeapProfilingMode profiling_mode) {
   if (heap_profiling_mode_ != kHeapProfilingModeInvalid)
     heap_profiling_mode_ = profiling_mode;
 
+  // In case tracing was already enabled, setup the serialization state before
+  // notifying mdps.
+  InitializeHeapProfilerStateIfNeededLocked();
   if (notify_mdps) {
-    for (auto mdp : dump_providers_) {
-      mdp->dump_provider->OnHeapProfilingEnabled(
-          IsHeapProfilingModeEnabled(heap_profiling_mode_));
+    bool enabled = IsHeapProfilingModeEnabled(heap_profiling_mode_);
+    for (const auto& mdpinfo : dump_providers_) {
+      const auto& task_runner = mdpinfo->task_runner
+                                    ? mdpinfo->task_runner
+                                    : GetOrCreateBgTaskRunnerLocked();
+      task_runner->PostTask(
+          FROM_HERE,
+          Bind(&NotifyHeapProfilingEnabledOnMDPThread, mdpinfo, enabled));
     }
   }
   return true;
@@ -304,34 +347,6 @@ void MemoryDumpManager::Initialize(
 #endif
 
   TRACE_EVENT_WARMUP_CATEGORY(kTraceCategory);
-
-  // TODO(ssid): This should be done in EnableHeapProfiling so that we capture
-  // more allocations (crbug.com/625170).
-  if (AllocationContextTracker::capture_mode() ==
-          AllocationContextTracker::CaptureMode::PSEUDO_STACK &&
-      !(TraceLog::GetInstance()->enabled_modes() & TraceLog::FILTERING_MODE)) {
-    // Create trace config with heap profiling filter.
-    std::string filter_string = "*";
-    const char* const kFilteredCategories[] = {
-        TRACE_DISABLED_BY_DEFAULT("net"), TRACE_DISABLED_BY_DEFAULT("cc"),
-        MemoryDumpManager::kTraceCategory};
-    for (const char* cat : kFilteredCategories)
-      filter_string = filter_string + "," + cat;
-    TraceConfigCategoryFilter category_filter;
-    category_filter.InitializeFromString(filter_string);
-
-    TraceConfig::EventFilterConfig heap_profiler_filter_config(
-        HeapProfilerEventFilter::kName);
-    heap_profiler_filter_config.SetCategoryFilter(category_filter);
-
-    TraceConfig::EventFilters filters;
-    filters.push_back(heap_profiler_filter_config);
-    TraceConfig filtering_trace_config;
-    filtering_trace_config.SetEventFilters(filters);
-
-    TraceLog::GetInstance()->SetEnabled(filtering_trace_config,
-                                        TraceLog::FILTERING_MODE);
-  }
 }
 
 void MemoryDumpManager::RegisterDumpProvider(
@@ -390,7 +405,6 @@ void MemoryDumpManager::RegisterDumpProviderInternal(
                                      "polling must NOT be thread bound.";
   }
 
-  bool heap_profiling_enabled = false;
   {
     AutoLock lock(lock_);
     bool already_registered = !dump_providers_.insert(mdpinfo).second;
@@ -402,14 +416,15 @@ void MemoryDumpManager::RegisterDumpProviderInternal(
     if (options.is_fast_polling_supported)
       MemoryPeakDetector::GetInstance()->NotifyMemoryDumpProvidersChanged();
 
-    heap_profiling_enabled =
-        (heap_profiling_mode_ == kHeapProfilingModePseudo) ||
-        (heap_profiling_mode_ == kHeapProfilingModeNative) ||
-        (heap_profiling_mode_ == kHeapProfilingModeNoStack);
+    if (ShouldEnableMDPAllocatorHooks(heap_profiling_mode_)) {
+      const auto& mdp_task_runner = mdpinfo->task_runner
+                                        ? mdpinfo->task_runner
+                                        : GetOrCreateBgTaskRunnerLocked();
+      mdp_task_runner->PostTask(
+          FROM_HERE,
+          Bind(&NotifyHeapProfilingEnabledOnMDPThread, mdpinfo, true));
+    }
   }
-
-  if (heap_profiling_enabled)
-    mdp->OnHeapProfilingEnabled(true);
 }
 
 void MemoryDumpManager::UnregisterDumpProvider(MemoryDumpProvider* mdp) {
@@ -538,9 +553,11 @@ void MemoryDumpManager::CreateProcessDump(
     // MDM could have been disabled by this point destroying
     // |heap_profiler_serialization_state|. If heap profiling is enabled we
     // require session state so if heap profiling is on and session state is
-    // absent we fail the dump immediately.
+    // absent we fail the dump immediately. If heap profiler is enabled during
+    // the dump, then the dump succeeds since the dump was requested before, and
+    // the future process dumps will contain heap dumps.
     if (args.dump_type != MemoryDumpType::SUMMARY_ONLY &&
-        IsHeapProfilingModeEnabled(heap_profiling_mode_) &&
+        ShouldEnableMDPAllocatorHooks(heap_profiling_mode_) &&
         !heap_profiler_serialization_state_) {
       callback.Run(false /* success */, args.dump_guid, nullptr);
       return;
@@ -577,7 +594,7 @@ void MemoryDumpManager::SetupNextMemoryDump(
   TraceLog::GetInstance()->InitializeThreadLocalEventBufferIfSupported();
 
   if (pmd_async_state->pending_dump_providers.empty())
-    return FinalizeDumpAndAddToTrace(std::move(pmd_async_state));
+    return FinishAsyncProcessDump(std::move(pmd_async_state));
 
   // Read MemoryDumpProviderInfo thread safety considerations in
   // memory_dump_manager.h when accessing |mdpinfo| fields.
@@ -713,7 +730,7 @@ void MemoryDumpManager::InvokeOnMemoryDump(
   SetupNextMemoryDump(std::move(pmd_async_state));
 }
 
-void MemoryDumpManager::FinalizeDumpAndAddToTrace(
+void MemoryDumpManager::FinishAsyncProcessDump(
     std::unique_ptr<ProcessMemoryDumpAsyncState> pmd_async_state) {
   HEAP_PROFILER_SCOPED_IGNORE;
   DCHECK(pmd_async_state->pending_dump_providers.empty());
@@ -722,12 +739,12 @@ void MemoryDumpManager::FinalizeDumpAndAddToTrace(
     scoped_refptr<SingleThreadTaskRunner> callback_task_runner =
         pmd_async_state->callback_task_runner;
     callback_task_runner->PostTask(
-        FROM_HERE, BindOnce(&MemoryDumpManager::FinalizeDumpAndAddToTrace,
+        FROM_HERE, BindOnce(&MemoryDumpManager::FinishAsyncProcessDump,
                             Unretained(this), Passed(&pmd_async_state)));
     return;
   }
 
-  TRACE_EVENT0(kTraceCategory, "MemoryDumpManager::FinalizeDumpAndAddToTrace");
+  TRACE_EVENT0(kTraceCategory, "MemoryDumpManager::FinishAsyncProcessDump");
 
   if (!pmd_async_state->callback.is_null()) {
     pmd_async_state->callback.Run(
@@ -743,40 +760,14 @@ void MemoryDumpManager::FinalizeDumpAndAddToTrace(
 void MemoryDumpManager::SetupForTracing(
     const TraceConfig::MemoryDumpConfig& memory_dump_config) {
   AutoLock lock(lock_);
-
-  scoped_refptr<HeapProfilerSerializationState>
-      heap_profiler_serialization_state = new HeapProfilerSerializationState;
-  heap_profiler_serialization_state
+  heap_profiler_serialization_state_ = new HeapProfilerSerializationState();
+  heap_profiler_serialization_state_
       ->set_heap_profiler_breakdown_threshold_bytes(
           memory_dump_config.heap_profiler_options.breakdown_threshold_bytes);
-  if (IsHeapProfilingModeEnabled(heap_profiling_mode_)) {
-    // If heap profiling is enabled, the stack frame deduplicator and type name
-    // deduplicator will be in use. Add a metadata events to write the frames
-    // and type IDs.
-    heap_profiler_serialization_state->SetStackFrameDeduplicator(
-        WrapUnique(new StackFrameDeduplicator));
-
-    heap_profiler_serialization_state->SetTypeNameDeduplicator(
-        WrapUnique(new TypeNameDeduplicator));
-
-    TRACE_EVENT_API_ADD_METADATA_EVENT(
-        TraceLog::GetCategoryGroupEnabled("__metadata"), "stackFrames",
-        "stackFrames",
-        std::make_unique<SessionStateConvertableProxy<StackFrameDeduplicator>>(
-            heap_profiler_serialization_state,
-            &HeapProfilerSerializationState::stack_frame_deduplicator));
-
-    TRACE_EVENT_API_ADD_METADATA_EVENT(
-        TraceLog::GetCategoryGroupEnabled("__metadata"), "typeNames",
-        "typeNames",
-        std::make_unique<SessionStateConvertableProxy<TypeNameDeduplicator>>(
-            heap_profiler_serialization_state,
-            &HeapProfilerSerializationState::type_name_deduplicator));
-  }
+  InitializeHeapProfilerStateIfNeededLocked();
 
   // At this point we must have the ability to request global dumps.
   DCHECK(!request_dump_function_.is_null());
-  heap_profiler_serialization_state_ = heap_profiler_serialization_state;
 
   MemoryDumpScheduler::Config periodic_config;
   bool peak_detector_configured = false;
@@ -836,6 +827,35 @@ void MemoryDumpManager::TeardownForTracing() {
   MemoryDumpScheduler::GetInstance()->Stop();
   MemoryPeakDetector::GetInstance()->TearDown();
   heap_profiler_serialization_state_ = nullptr;
+}
+
+void MemoryDumpManager::InitializeHeapProfilerStateIfNeededLocked() {
+  lock_.AssertAcquired();
+  if (!ShouldEnableMDPAllocatorHooks(heap_profiling_mode_) ||
+      !heap_profiler_serialization_state_ ||
+      heap_profiler_serialization_state_->is_initialized()) {
+    return;
+  }
+  // If heap profiling is enabled, the stack frame deduplicator and type name
+  // deduplicator will be in use. Add a metadata events to write the frames
+  // and type IDs.
+  heap_profiler_serialization_state_->SetStackFrameDeduplicator(
+      WrapUnique(new StackFrameDeduplicator));
+  heap_profiler_serialization_state_->SetTypeNameDeduplicator(
+      WrapUnique(new TypeNameDeduplicator));
+
+  TRACE_EVENT_API_ADD_METADATA_EVENT(
+      TraceLog::GetCategoryGroupEnabled("__metadata"), "stackFrames",
+      "stackFrames",
+      std::make_unique<SessionStateConvertableProxy<StackFrameDeduplicator>>(
+          heap_profiler_serialization_state_,
+          &HeapProfilerSerializationState::stack_frame_deduplicator));
+
+  TRACE_EVENT_API_ADD_METADATA_EVENT(
+      TraceLog::GetCategoryGroupEnabled("__metadata"), "typeNames", "typeNames",
+      std::make_unique<SessionStateConvertableProxy<TypeNameDeduplicator>>(
+          heap_profiler_serialization_state_,
+          &HeapProfilerSerializationState::type_name_deduplicator));
 }
 
 MemoryDumpManager::ProcessMemoryDumpAsyncState::ProcessMemoryDumpAsyncState(
