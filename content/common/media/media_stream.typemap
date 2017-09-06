@@ -23,9 +23,9 @@ deps = [
 ]
 
 type_mappings = [
+  "content.mojom.MediaStreamDevice=content::MediaStreamDevice",
   "content.mojom.MediaStreamRequestResult=content::MediaStreamRequestResult",
   "content.mojom.MediaStreamType=content::MediaStreamType",
   "content.mojom.StreamControls=content::StreamControls",
-  "content.mojom.StreamDeviceInfo=content::StreamDeviceInfo",
   "content.mojom.TrackControls=content::TrackControls",
 ]

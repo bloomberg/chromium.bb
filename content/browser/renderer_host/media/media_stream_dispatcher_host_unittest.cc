@@ -130,9 +130,9 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
   // mojom::MediaStreamDispatcher implementation.
   void OnStreamGenerated(int32_t request_id,
                          const std::string& label,
-                         const StreamDeviceInfoArray& audio_array,
-                         const StreamDeviceInfoArray& video_array) override {
-    OnStreamGeneratedInternal(request_id, label, audio_array, video_array);
+                         const MediaStreamDevices& audio_devices,
+                         const MediaStreamDevices& video_devices) override {
+    OnStreamGeneratedInternal(request_id, label, audio_devices, video_devices);
   }
 
   void OnStreamGenerationFailed(int32_t request_id,
@@ -142,15 +142,15 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
 
   void OnDeviceOpened(int32_t request_id,
                       const std::string& label,
-                      const StreamDeviceInfo& device_info) override {
-    OnDeviceOpenedInternal(request_id, label, device_info);
+                      const MediaStreamDevice& device) override {
+    OnDeviceOpenedInternal(request_id, label, device);
   }
 
   void OnDeviceOpenFailed(int32_t request_id) override {}
 
   void OnDeviceStopped(const std::string& label,
-                       const StreamDeviceInfo& device_info) override {
-    OnDeviceStoppedInternal(label, device_info);
+                       const MediaStreamDevice& device) override {
+    OnDeviceStoppedInternal(label, device);
   }
 
   mojom::MediaStreamDispatcherPtr CreateInterfacePtrAndBind() {
@@ -160,19 +160,18 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
   }
 
   std::string label_;
-  StreamDeviceInfoArray audio_devices_;
-  StreamDeviceInfoArray video_devices_;
-  StreamDeviceInfo opened_device_;
+  MediaStreamDevices audio_devices_;
+  MediaStreamDevices video_devices_;
+  MediaStreamDevice opened_device_;
 
  private:
   // These handler methods do minimal things and delegate to the mock methods.
-  void OnStreamGeneratedInternal(
-      int request_id,
-      std::string label,
-      StreamDeviceInfoArray audio_device_list,
-      StreamDeviceInfoArray video_device_list) {
-    OnStreamGenerationSuccess(request_id, audio_device_list.size(),
-                              video_device_list.size());
+  void OnStreamGeneratedInternal(int request_id,
+                                 std::string label,
+                                 const MediaStreamDevices& audio_devices,
+                                 const MediaStreamDevices& video_devices) {
+    OnStreamGenerationSuccess(request_id, audio_devices.size(),
+                              video_devices.size());
     // Simulate the stream started event back to host for UI testing.
     OnStreamStarted(label);
 
@@ -182,8 +181,8 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
     task_runner_->PostTask(FROM_HERE, base::ResetAndReturn(&quit_closure));
 
     label_ = label;
-    audio_devices_ = audio_device_list;
-    video_devices_ = video_device_list;
+    audio_devices_ = audio_devices;
+    video_devices_ = video_devices;
   }
 
   void OnStreamGenerationFailedInternal(int request_id,
@@ -199,18 +198,18 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
   }
 
   void OnDeviceStoppedInternal(const std::string& label,
-                               const StreamDeviceInfo& device) {
-    if (IsVideoMediaType(device.device.type))
-      EXPECT_TRUE(StreamDeviceInfo::IsEqual(device, video_devices_[0]));
-    if (IsAudioInputMediaType(device.device.type))
-      EXPECT_TRUE(StreamDeviceInfo::IsEqual(device, audio_devices_[0]));
+                               const MediaStreamDevice& device) {
+    if (IsVideoMediaType(device.type))
+      EXPECT_TRUE(device.IsSameDevice(video_devices_[0]));
+    if (IsAudioInputMediaType(device.type))
+      EXPECT_TRUE(device.IsSameDevice(audio_devices_[0]));
 
     OnDeviceStopSuccess();
   }
 
   void OnDeviceOpenedInternal(int request_id,
                               const std::string& label,
-                              const StreamDeviceInfo& device) {
+                              const MediaStreamDevice& device) {
     base::Closure quit_closure = quit_closures_.front();
     quit_closures_.pop();
     task_runner_->PostTask(FROM_HERE, base::ResetAndReturn(&quit_closure));
@@ -370,26 +369,25 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     EXPECT_TRUE(DoesEveryDeviceMapToRawId(host_->video_devices_, origin_));
   }
 
-  bool DoesContainRawIds(const StreamDeviceInfoArray& devices) {
+  bool DoesContainRawIds(const MediaStreamDevices& devices) {
     for (size_t i = 0; i < devices.size(); ++i) {
-      if (devices[i].device.id !=
-              media::AudioDeviceDescription::kDefaultDeviceId &&
-          devices[i].device.id !=
+      if (devices[i].id != media::AudioDeviceDescription::kDefaultDeviceId &&
+          devices[i].id !=
               media::AudioDeviceDescription::kCommunicationsDeviceId) {
         for (const auto& audio_device : audio_device_descriptions_) {
-          if (audio_device.unique_id == devices[i].device.id)
+          if (audio_device.unique_id == devices[i].id)
             return true;
         }
       }
       for (const std::string& device_id : stub_video_device_ids_) {
-        if (device_id == devices[i].device.id)
+        if (device_id == devices[i].id)
           return true;
       }
     }
     return false;
   }
 
-  bool DoesEveryDeviceMapToRawId(const StreamDeviceInfoArray& devices,
+  bool DoesEveryDeviceMapToRawId(const MediaStreamDevices& devices,
                                  const url::Origin& origin) {
     for (size_t i = 0; i < devices.size(); ++i) {
       bool found_match = false;
@@ -397,7 +395,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
           audio_device_descriptions_.begin();
       for (; audio_it != audio_device_descriptions_.end(); ++audio_it) {
         if (DoesMediaDeviceIDMatchHMAC(browser_context_.GetMediaDeviceIDSalt(),
-                                       origin, devices[i].device.id,
+                                       origin, devices[i].id,
                                        audio_it->unique_id)) {
           EXPECT_FALSE(found_match);
           found_match = true;
@@ -405,31 +403,12 @@ class MediaStreamDispatcherHostTest : public testing::Test {
       }
       for (const std::string& device_id : stub_video_device_ids_) {
         if (DoesMediaDeviceIDMatchHMAC(browser_context_.GetMediaDeviceIDSalt(),
-                                       origin, devices[i].device.id,
-                                       device_id)) {
+                                       origin, devices[i].id, device_id)) {
           EXPECT_FALSE(found_match);
           found_match = true;
         }
       }
       if (!found_match)
-        return false;
-    }
-    return true;
-  }
-
-  // Returns true if all devices have labels, false otherwise.
-  bool DoesContainLabels(const StreamDeviceInfoArray& devices) {
-    for (size_t i = 0; i < devices.size(); ++i) {
-      if (devices[i].device.name.empty())
-        return false;
-    }
-    return true;
-  }
-
-  // Returns true if no devices have labels, false otherwise.
-  bool DoesNotContainLabels(const StreamDeviceInfoArray& devices) {
-    for (size_t i = 0; i < devices.size(); ++i) {
-      if (!devices[i].device.name.empty())
         return false;
     }
     return true;
@@ -509,7 +488,7 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamWithDepthVideo) {
   // host_->video_devices_[0] contains the information about generated video
   // stream device (the depth device).
   const base::Optional<CameraCalibration> calibration =
-      host_->video_devices_[0].device.camera_calibration;
+      host_->video_devices_[0].camera_calibration;
   EXPECT_TRUE(calibration);
   EXPECT_EQ(calibration->focal_length_x, kStubFocalLengthX);
   EXPECT_EQ(calibration->focal_length_y, kStubFocalLengthY);
@@ -531,7 +510,7 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsFromSameRenderId) {
   EXPECT_EQ(host_->audio_devices_.size(), 0u);
   EXPECT_EQ(host_->video_devices_.size(), 1u);
   const std::string label1 = host_->label_;
-  const std::string device_id1 = host_->video_devices_.front().device.id;
+  const std::string device_id1 = host_->video_devices_.front().id;
   const int session_id1 = host_->video_devices_.front().session_id;
 
   // Generate second stream.
@@ -542,7 +521,7 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsFromSameRenderId) {
   EXPECT_EQ(host_->audio_devices_.size(), 0u);
   EXPECT_EQ(host_->video_devices_.size(), 1u);
   const std::string label2 = host_->label_;
-  const std::string device_id2 = host_->video_devices_.front().device.id;
+  const std::string device_id2 = host_->video_devices_.front().id;
   int session_id2 = host_->video_devices_.front().session_id;
   EXPECT_EQ(device_id1, device_id2);
   EXPECT_EQ(session_id1, session_id2);
@@ -560,13 +539,13 @@ TEST_F(MediaStreamDispatcherHostTest,
   EXPECT_EQ(host_->audio_devices_.size(), 0u);
   EXPECT_EQ(host_->video_devices_.size(), 1u);
   const std::string label1 = host_->label_;
-  const std::string device_id1 = host_->video_devices_.front().device.id;
+  const std::string device_id1 = host_->video_devices_.front().id;
   const int session_id1 = host_->video_devices_.front().session_id;
 
   // Generate second stream.
   OpenVideoDeviceAndWaitForResult(kRenderId, kPageRequestId, device_id1);
 
-  const std::string device_id2 = host_->opened_device_.device.id;
+  const std::string device_id2 = host_->opened_device_.id;
   const int session_id2 = host_->opened_device_.session_id;
   const std::string label2 = host_->label_;
 
@@ -589,7 +568,7 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsDifferentRenderId) {
   EXPECT_EQ(host_->audio_devices_.size(), 0u);
   EXPECT_EQ(host_->video_devices_.size(), 1u);
   const std::string label1 = host_->label_;
-  const std::string device_id1 = host_->video_devices_.front().device.id;
+  const std::string device_id1 = host_->video_devices_.front().id;
   const int session_id1 = host_->video_devices_.front().session_id;
 
   // Generate second stream from another render frame.
@@ -604,7 +583,7 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsDifferentRenderId) {
   EXPECT_EQ(host_->audio_devices_.size(), 0u);
   EXPECT_EQ(host_->video_devices_.size(), 1u);
   const std::string label2 = host_->label_;
-  const std::string device_id2 = host_->video_devices_.front().device.id;
+  const std::string device_id2 = host_->video_devices_.front().id;
   const int session_id2 = host_->video_devices_.front().session_id;
   EXPECT_EQ(device_id1, device_id2);
   EXPECT_NE(session_id1, session_id2);
@@ -654,7 +633,7 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithSourceId) {
 
     SetupFakeUI(true);
     GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, controls);
-    EXPECT_EQ(host_->audio_devices_[0].device.id, source_id);
+    EXPECT_EQ(host_->audio_devices_[0].id, source_id);
   }
 
   for (const std::string& device_id : stub_video_device_ids_) {
@@ -666,7 +645,7 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithSourceId) {
 
     SetupFakeUI(true);
     GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, controls);
-    EXPECT_EQ(host_->video_devices_[0].device.id, source_id);
+    EXPECT_EQ(host_->video_devices_[0].id, source_id);
   }
 }
 
@@ -707,17 +686,16 @@ TEST_F(MediaStreamDispatcherHostTest, StopDeviceInStream) {
   GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, controls);
 
   std::string stream_request_label = host_->label_;
-  StreamDeviceInfo video_device_info = host_->video_devices_.front();
+  MediaStreamDevice video_device = host_->video_devices_.front();
   ASSERT_EQ(1u, media_stream_manager_->GetDevicesOpenedByRequest(
       stream_request_label).size());
 
   // Open the same device by Pepper.
-  OpenVideoDeviceAndWaitForResult(kRenderId, kPageRequestId,
-                                  video_device_info.device.id);
+  OpenVideoDeviceAndWaitForResult(kRenderId, kPageRequestId, video_device.id);
   std::string open_device_request_label = host_->label_;
 
   // Stop the device in the MediaStream.
-  host_->OnStopStreamDevice(kRenderId, video_device_info.device.id);
+  host_->OnStopStreamDevice(kRenderId, video_device.id);
 
   EXPECT_EQ(0u, media_stream_manager_->GetDevicesOpenedByRequest(
       stream_request_label).size());
@@ -732,12 +710,12 @@ TEST_F(MediaStreamDispatcherHostTest, StopDeviceInStreamAndRestart) {
   GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, controls);
 
   std::string request_label1 = host_->label_;
-  StreamDeviceInfo video_device_info = host_->video_devices_.front();
+  MediaStreamDevice video_device = host_->video_devices_.front();
   // Expect that 1 audio and 1 video device has been opened.
   EXPECT_EQ(2u, media_stream_manager_->GetDevicesOpenedByRequest(
       request_label1).size());
 
-  host_->OnStopStreamDevice(kRenderId, video_device_info.device.id);
+  host_->OnStopStreamDevice(kRenderId, video_device.id);
   EXPECT_EQ(1u, media_stream_manager_->GetDevicesOpenedByRequest(
       request_label1).size());
 
@@ -774,7 +752,7 @@ TEST_F(MediaStreamDispatcherHostTest,
 
   // Stop the video stream device from stream 1 while waiting for the
   // second stream to be generated.
-  host_->OnStopStreamDevice(kRenderId, host_->video_devices_[0].device.id);
+  host_->OnStopStreamDevice(kRenderId, host_->video_devices_[0].id);
   run_loop1.Run();
 
   EXPECT_EQ(host_->video_devices_.size(), 1u);

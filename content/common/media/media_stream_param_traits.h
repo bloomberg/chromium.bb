@@ -6,7 +6,7 @@
 // Multiply-included message file, hence no include guard.
 
 #include "content/common/content_export.h"
-#include "content/common/media/media_stream_options.h"
+#include "content/public/common/media_stream_request.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/base/ipc/media_param_traits.h"
 #include "media/capture/ipc/capture_param_traits.h"
@@ -20,14 +20,14 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::MediaStreamType,
 IPC_ENUM_TRAITS_MAX_VALUE(media::VideoFacingMode,
                           media::NUM_MEDIA_VIDEO_FACING_MODES - 1)
 
-IPC_STRUCT_TRAITS_BEGIN(content::StreamDeviceInfo)
-  IPC_STRUCT_TRAITS_MEMBER(device.type)
-  IPC_STRUCT_TRAITS_MEMBER(device.id)
-  IPC_STRUCT_TRAITS_MEMBER(device.video_facing)
-  IPC_STRUCT_TRAITS_MEMBER(device.matched_output_device_id)
-  IPC_STRUCT_TRAITS_MEMBER(device.name)
-  IPC_STRUCT_TRAITS_MEMBER(device.input)
-  IPC_STRUCT_TRAITS_MEMBER(device.matched_output)
-  IPC_STRUCT_TRAITS_MEMBER(device.camera_calibration)
+IPC_STRUCT_TRAITS_BEGIN(content::MediaStreamDevice)
+  IPC_STRUCT_TRAITS_MEMBER(type)
+  IPC_STRUCT_TRAITS_MEMBER(id)
+  IPC_STRUCT_TRAITS_MEMBER(video_facing)
+  IPC_STRUCT_TRAITS_MEMBER(matched_output_device_id)
+  IPC_STRUCT_TRAITS_MEMBER(name)
+  IPC_STRUCT_TRAITS_MEMBER(input)
+  IPC_STRUCT_TRAITS_MEMBER(matched_output)
   IPC_STRUCT_TRAITS_MEMBER(session_id)
+  IPC_STRUCT_TRAITS_MEMBER(camera_calibration)
 IPC_STRUCT_TRAITS_END()

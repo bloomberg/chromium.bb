@@ -56,12 +56,12 @@ void MockMediaStreamDispatcher::CancelGenerateStream(
 }
 
 void MockMediaStreamDispatcher::StopStreamDevice(
-    const StreamDeviceInfo& device_info) {
-  if (IsAudioInputMediaType(device_info.device.type)) {
+    const MediaStreamDevice& device) {
+  if (IsAudioInputMediaType(device.type)) {
     ++stop_audio_device_counter_;
     return;
   }
-  if (IsVideoMediaType(device_info.device.type)) {
+  if (IsVideoMediaType(device.type)) {
     ++stop_video_device_counter_;
     return;
   }

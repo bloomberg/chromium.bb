@@ -825,14 +825,24 @@ void UserMediaClientImpl::OnStreamGeneratedForCancelledRequest(
   // Only stop the device if the device is not used in another MediaStream.
   for (StreamDeviceInfoArray::const_iterator device_it = audio_array.begin();
        device_it != audio_array.end(); ++device_it) {
-    if (!FindLocalSource(*device_it))
-      media_stream_dispatcher_->StopStreamDevice(*device_it);
+    if (!FindLocalSource(*device_it)) {
+      // TODO(c.padhi): Remove this when |audio_array|'s type is
+      // changed to MediaStreamDevices, see https://crbug.com/760493.
+      MediaStreamDevice audio_device = device_it->device;
+      audio_device.session_id = device_it->session_id;
+      media_stream_dispatcher_->StopStreamDevice(audio_device);
+    }
   }
 
   for (StreamDeviceInfoArray::const_iterator device_it = video_array.begin();
        device_it != video_array.end(); ++device_it) {
-    if (!FindLocalSource(*device_it))
-      media_stream_dispatcher_->StopStreamDevice(*device_it);
+    if (!FindLocalSource(*device_it)) {
+      // TODO(c.padhi): Remove this when |video_array|'s type is
+      // changed to MediaStreamDevices, see https://crbug.com/760493.
+      MediaStreamDevice video_device = device_it->device;
+      video_device.session_id = device_it->session_id;
+      media_stream_dispatcher_->StopStreamDevice(video_device);
+    }
   }
 }
 
@@ -1435,8 +1445,7 @@ void UserMediaClientImpl::OnLocalSourceStopped(
 
   MediaStreamSource* source_impl =
       static_cast<MediaStreamSource*>(source.GetExtraData());
-  media_stream_dispatcher_->StopStreamDevice(
-      StreamDeviceInfo(source_impl->device()));
+  media_stream_dispatcher_->StopStreamDevice(source_impl->device());
 }
 
 void UserMediaClientImpl::StopLocalSource(
@@ -1448,8 +1457,7 @@ void UserMediaClientImpl::StopLocalSource(
            << "{device_id = " << source_impl->device().id << "})";
 
   if (notify_dispatcher) {
-    media_stream_dispatcher_->StopStreamDevice(
-        StreamDeviceInfo(source_impl->device()));
+    media_stream_dispatcher_->StopStreamDevice(source_impl->device());
   }
 
   source_impl->ResetSourceStoppedCallback();

@@ -6,12 +6,12 @@ module content.mojom;
 
 import "url/mojo/origin.mojom";
 
-// TODO(c.padhi): Add typemapping for StreamDeviceInfo,
+// TODO(c.padhi): Add typemapping for MediaStreamDevice,
 // see https://crbug.com/742682.
-// Native struct content::StreamDeviceInfo.
-// (see content/common/media/media_stream_options.h)
+// Native struct content::MediaStreamDevice.
+// (see content/public/common/media_stream_request.h)
 [Native]
-struct StreamDeviceInfo;
+struct MediaStreamDevice;
 
 // Types of media streams (see content/public/common/media_stream_request.h).
 enum MediaStreamType {
@@ -63,8 +63,8 @@ struct StreamControls {
 interface MediaStreamDispatcher {
   // Informs the renderer that browser has generated a stream successfully.
   OnStreamGenerated(int32 request_id, string label,
-                    array<StreamDeviceInfo> audio_array,
-                    array<StreamDeviceInfo> video_array);
+                    array<MediaStreamDevice> audio_devices,
+                    array<MediaStreamDevice> video_devices);
 
   // Informs the renderer that browser has failed to generate a stream.
   OnStreamGenerationFailed(int32 request_id, MediaStreamRequestResult result);
@@ -72,14 +72,14 @@ interface MediaStreamDispatcher {
   // TODO(wjia): should DeviceOpen* methods be merged with
   // StreamGenerat* ones?
   // Informs the renderer that browser has opened a device successfully.
-  OnDeviceOpened(int32 request_id, string label, StreamDeviceInfo device_info);
+  OnDeviceOpened(int32 request_id, string label, MediaStreamDevice device);
 
   // Informs the renderer that browser has failed to open a device.
   OnDeviceOpenFailed(int32 request_id);
 
   // The browser reports that a media device has been stopped. Stopping was
   // triggered from the browser process.
-  OnDeviceStopped(string label, StreamDeviceInfo device_info);
+  OnDeviceStopped(string label, MediaStreamDevice device);
 };
 
 // Per-process browser-side interface that is used by the renderer process to
