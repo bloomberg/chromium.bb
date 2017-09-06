@@ -24,8 +24,6 @@
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerState.h"
 
-class GURL;
-
 namespace base {
 class SingleThreadTaskRunner;
 }
@@ -59,12 +57,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
   typedef blink::WebServiceWorkerRegistration::
       WebServiceWorkerUnregistrationCallbacks
           WebServiceWorkerUnregistrationCallbacks;
-  typedef
-      blink::WebServiceWorkerProvider::WebServiceWorkerGetRegistrationCallbacks
-      WebServiceWorkerGetRegistrationCallbacks;
-  typedef
-      blink::WebServiceWorkerProvider::WebServiceWorkerGetRegistrationsCallbacks
-      WebServiceWorkerGetRegistrationsCallbacks;
   typedef blink::WebServiceWorkerProvider::
       WebServiceWorkerGetRegistrationForReadyCallbacks
           WebServiceWorkerGetRegistrationForReadyCallbacks;
@@ -92,15 +84,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
       int provider_id,
       int64_t registration_id,
       std::unique_ptr<WebServiceWorkerUnregistrationCallbacks> callbacks);
-  // Corresponds to navigator.serviceWorker.getRegistration().
-  void GetRegistration(
-      int provider_id,
-      const GURL& document_url,
-      std::unique_ptr<WebServiceWorkerGetRegistrationCallbacks> callbacks);
-  // Corresponds to navigator.serviceWorker.getRegistrations().
-  void GetRegistrations(
-      int provider_id,
-      std::unique_ptr<WebServiceWorkerGetRegistrationsCallbacks> callbacks);
 
   void GetRegistrationForReady(
       int provider_id,
@@ -174,10 +157,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
       base::IDMap<std::unique_ptr<WebServiceWorkerUpdateCallbacks>>;
   using UnregistrationCallbackMap =
       base::IDMap<std::unique_ptr<WebServiceWorkerUnregistrationCallbacks>>;
-  using GetRegistrationCallbackMap =
-      base::IDMap<std::unique_ptr<WebServiceWorkerGetRegistrationCallbacks>>;
-  using GetRegistrationsCallbackMap =
-      base::IDMap<std::unique_ptr<WebServiceWorkerGetRegistrationsCallbacks>>;
   using GetRegistrationForReadyCallbackMap = base::IDMap<
       std::unique_ptr<WebServiceWorkerGetRegistrationForReadyCallbacks>>;
   using EnableNavigationPreloadCallbackMap =
@@ -206,15 +185,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
   void OnUnregistered(int thread_id,
                       int request_id,
                       bool is_success);
-  void OnDidGetRegistration(int thread_id,
-                            int request_id,
-                            const ServiceWorkerRegistrationObjectInfo& info,
-                            const ServiceWorkerVersionAttributes& attrs);
-  void OnDidGetRegistrations(
-      int thread_id,
-      int request_id,
-      const std::vector<ServiceWorkerRegistrationObjectInfo>& infos,
-      const std::vector<ServiceWorkerVersionAttributes>& attrs);
   void OnDidGetRegistrationForReady(
       int thread_id,
       int request_id,
@@ -233,14 +203,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
                              int request_id,
                              blink::mojom::ServiceWorkerErrorType error_type,
                              const base::string16& message);
-  void OnGetRegistrationError(int thread_id,
-                              int request_id,
-                              blink::mojom::ServiceWorkerErrorType error_type,
-                              const base::string16& message);
-  void OnGetRegistrationsError(int thread_id,
-                               int request_id,
-                               blink::mojom::ServiceWorkerErrorType error_type,
-                               const base::string16& message);
   void OnEnableNavigationPreloadError(
       int thread_id,
       int request_id,
@@ -290,8 +252,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
 
   UpdateCallbackMap pending_update_callbacks_;
   UnregistrationCallbackMap pending_unregistration_callbacks_;
-  GetRegistrationCallbackMap pending_get_registration_callbacks_;
-  GetRegistrationsCallbackMap pending_get_registrations_callbacks_;
   GetRegistrationForReadyCallbackMap get_for_ready_callbacks_;
   EnableNavigationPreloadCallbackMap enable_navigation_preload_callbacks_;
   GetNavigationPreloadStateCallbackMap get_navigation_preload_state_callbacks_;

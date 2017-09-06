@@ -37,13 +37,13 @@ class WebServiceWorkerProviderImpl : public blink::WebServiceWorkerProvider {
 
   void SetClient(blink::WebServiceWorkerProviderClient* client) override;
 
-  // Corresponds to navigator.serviceWorker.register().
+  // blink::WebServiceWorkerProvider implementation.
   void RegisterServiceWorker(
-      const blink::WebURL& pattern,
-      const blink::WebURL& script_url,
+      const blink::WebURL& web_pattern,
+      const blink::WebURL& web_script_url,
       std::unique_ptr<WebServiceWorkerRegistrationCallbacks>) override;
   void GetRegistration(
-      const blink::WebURL& document_url,
+      const blink::WebURL& web_document_url,
       std::unique_ptr<WebServiceWorkerGetRegistrationCallbacks>) override;
   void GetRegistrations(
       std::unique_ptr<WebServiceWorkerGetRegistrationsCallbacks>) override;
@@ -66,6 +66,21 @@ class WebServiceWorkerProviderImpl : public blink::WebServiceWorkerProvider {
       const base::Optional<std::string>& error_msg,
       const base::Optional<ServiceWorkerRegistrationObjectInfo>& registration,
       const base::Optional<ServiceWorkerVersionAttributes>& attributes);
+
+  void OnDidGetRegistration(
+      std::unique_ptr<WebServiceWorkerGetRegistrationCallbacks> callbacks,
+      blink::mojom::ServiceWorkerErrorType error,
+      const base::Optional<std::string>& error_msg,
+      const base::Optional<ServiceWorkerRegistrationObjectInfo>& registration,
+      const base::Optional<ServiceWorkerVersionAttributes>& attributes);
+
+  void OnDidGetRegistrations(
+      std::unique_ptr<WebServiceWorkerGetRegistrationsCallbacks> callbacks,
+      blink::mojom::ServiceWorkerErrorType error,
+      const base::Optional<std::string>& error_msg,
+      const base::Optional<std::vector<ServiceWorkerRegistrationObjectInfo>>&
+          infos,
+      const base::Optional<std::vector<ServiceWorkerVersionAttributes>>& attrs);
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   scoped_refptr<ServiceWorkerProviderContext> context_;

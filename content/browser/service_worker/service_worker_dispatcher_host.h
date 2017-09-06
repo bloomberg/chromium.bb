@@ -22,8 +22,6 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding_set.h"
 
-class GURL;
-
 namespace url {
 class Origin;
 }  // namespace url
@@ -151,11 +149,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
                                  int request_id,
                                  int provider_id,
                                  int64_t registration_id);
-  void OnGetRegistration(int thread_id,
-                         int request_id,
-                         int provider_id,
-                         const GURL& document_url);
-  void OnGetRegistrations(int thread_id, int request_id, int provider_id);
   void OnGetRegistrationForReady(int thread_id,
                                  int request_id,
                                  int provider_id);
@@ -234,19 +227,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   void UnregistrationComplete(int thread_id,
                               int request_id,
                               ServiceWorkerStatusCode status);
-  void GetRegistrationComplete(
-      int thread_id,
-      int provider_id,
-      int request_id,
-      ServiceWorkerStatusCode status,
-      scoped_refptr<ServiceWorkerRegistration> registration);
-  void GetRegistrationsComplete(
-      int thread_id,
-      int provider_id,
-      int request_id,
-      ServiceWorkerStatusCode status,
-      const std::vector<scoped_refptr<ServiceWorkerRegistration>>&
-          registrations);
   void GetRegistrationForReadyComplete(
       int thread_id,
       int request_id,

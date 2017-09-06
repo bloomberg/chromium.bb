@@ -21,9 +21,29 @@ interface ServiceWorkerContainerHost {
         string? error_msg,
         ServiceWorkerRegistrationObjectInfo? registration,
         ServiceWorkerVersionAttributes? attributes);
+
+  // Corresponds to navigator.serviceWorker.getRegistration().
+  // Gets the service worker registration for the |client_url|.
+  // On success, |error| is kNone with |registration| and |attributes| set.
+  // Otherwise, |error| and |error_msg| describe the failure.
+  GetRegistration(url.mojom.Url client_url)
+    => (blink.mojom.ServiceWorkerErrorType error,
+        string? error_msg,
+        ServiceWorkerRegistrationObjectInfo? registration,
+        ServiceWorkerVersionAttributes? attributes);
+
+  // Corresponds to navigator.serviceWorker.getRegistrations().
+  // Gets all service worker registrations which have the same origin with
+  // the ServiceWorkerContainer that this interface hosts.
+  // On success, |error| is kNone with |infos| and |attrs| set. Otherwise,
+  // |error| and |error_msg| describe the failure.
+  GetRegistrations()
+    => (blink.mojom.ServiceWorkerErrorType error,
+        string? error_msg,
+        array<ServiceWorkerRegistrationObjectInfo>? infos,
+        array<ServiceWorkerVersionAttributes>? attrs);
+
   // TODO(leonhsl): implement this interface.
-  // GetRegistation();
-  // GetRegistrations();
   // GetRegistrationForReady();
   // GetControllerServiceWorker();
 };
