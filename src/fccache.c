@@ -38,11 +38,188 @@
 #if defined(_WIN32)
 #include <sys/locking.h>
 #endif
+#include <uuid/uuid.h>
 
 #ifndef O_BINARY
 #define O_BINARY 0
 #endif
 
+#define FC_UUID_HASH_SIZE 4099
+
+typedef struct _FcUuidBucket {
+    struct _FcUuidBucket *next;
+    FcChar8              *file;
+    uuid_t                uuid;
+} FcUuidBucket;
+
+typedef struct _FcUuidHashTable {
+    FcUuidBucket *buckets[FC_UUID_HASH_SIZE];
+} FcUuidHashTable;
+
+static FcUuidHashTable uuid_table;
+
+static FcBool
+FcCacheUuidAdd (FcUuidHashTable *table,
+		const FcChar8   *file,
+		uuid_t           uuid)
+{
+    FcUuidBucket **prev, *bucket;
+    FcChar32 hash = FcStrHashIgnoreCase (file);
+
+    for (prev = &table->buckets[hash % FC_UUID_HASH_SIZE];
+	 (bucket = *prev); prev = &(bucket->next))
+    {
+	if (FcStrCmp (bucket->file, file) == 0)
+	    return FcTrue;
+    }
+    bucket = (FcUuidBucket *) malloc (sizeof (FcUuidBucket));
+    if (!bucket)
+	return FcFalse;
+    bucket->next = NULL;
+    bucket->file = FcStrdup (file);
+    uuid_copy (bucket->uuid, uuid);
+    if (!bucket->file)
+    {
+	free (bucket);
+	return FcFalse;
+    }
+    *prev = bucket;
+
+    return FcTrue;
+}
+
+static FcBool
+FcCacheUuidRemove (FcUuidHashTable *table,
+		   const FcChar8   *file)
+{
+    FcUuidBucket **prev, *bucket;
+    FcChar32 hash = FcStrHashIgnoreCase (file);
+
+    for (prev = &table->buckets[hash % FC_UUID_HASH_SIZE];
+	 (bucket = *prev); )
+    {
+	if (FcStrCmp (bucket->file, file) == 0)
+	{
+	    *prev = bucket->next;
+	    FcStrFree (bucket->file);
+	    free (bucket);
+
+	    return FcTrue;
+	}
+	else
+	    prev = &(bucket->next);
+    }
+    return FcFalse;
+}
+
+static FcBool
+FcCacheUuidFind (FcUuidHashTable *table,
+		 const FcChar8   *file,
+		 uuid_t           ret)
+{
+    FcUuidBucket *bucket;
+    FcChar32 hash = FcStrHashIgnoreCase (file);
+
+    for (bucket = table->buckets[hash % FC_UUID_HASH_SIZE]; bucket; bucket = bucket->next)
+    {
+	if (FcStrCmp (bucket->file, file) == 0)
+	{
+	    uuid_copy (ret, bucket->uuid);
+	    return FcTrue;
+	}
+    }
+    return FcFalse;
+}
+
+FcBool
+FcDirCacheCreateUUID (const FcChar8 *dir,
+		      FcBool         force)
+{
+    FcBool ret = FcTrue;
+    FcChar8 *uuidname;
+
+    uuidname = FcStrBuildFilename (dir, ".uuid", NULL);
+    if (!uuidname)
+	return FcFalse;
+
+    if (force || access ((const char *) uuidname, F_OK) < 0)
+    {
+	FcAtomic *atomic;
+	int fd;
+	uuid_t uuid;
+	char out[37];
+
+	atomic = FcAtomicCreate (uuidname);
+	if (!atomic)
+	{
+	    ret = FcFalse;
+	    goto bail1;
+	}
+	if (!FcAtomicLock (atomic))
+	{
+	    ret = FcFalse;
+	    goto bail2;
+	}
+	fd = FcOpen ((char *)FcAtomicNewFile (atomic), O_RDWR | O_CREAT, 0644);
+	if (fd == -1)
+	{
+	    ret = FcFalse;
+	    goto bail3;
+	}
+	uuid_generate_random (uuid);
+	FcCacheUuidAdd (&uuid_table, dir, uuid);
+	uuid_unparse (uuid, out);
+	if (FcDebug () & FC_DBG_CACHE)
+	    printf ("FcDirCacheCreateUUID %s: %s\n", uuidname, out);
+	write (fd, out, strlen (out));
+	close (fd);
+	FcAtomicReplaceOrig (atomic);
+    bail3:
+	FcAtomicUnlock (atomic);
+    bail2:
+	FcAtomicDestroy (atomic);
+    }
+    bail1:
+    FcStrFree (uuidname);
+
+    return ret;
+}
+
+static void
+FcDirCacheReadUUID (const FcChar8 *dir)
+{
+    uuid_t uuid;
+
+    if (!FcCacheUuidFind (&uuid_table, dir, uuid))
+    {
+	FcChar8 *uuidname = FcStrBuildFilename (dir, ".uuid", NULL);
+	int fd;
+
+	if ((fd = FcOpen ((char *) uuidname, O_RDONLY)) >= 0)
+	{
+	    char suuid[37];
+
+	    memset (suuid, 0, sizeof (suuid));
+	    if (read (fd, suuid, 36) > 0)
+	    {
+		memset (uuid, 0, sizeof (uuid));
+		if (uuid_parse (suuid, uuid) == 0)
+		{
+		    if (FcDebug () & FC_DBG_CACHE)
+			printf ("FcDirCacheReadUUID %s -> %s\n", uuidname, suuid);
+		    FcCacheUuidAdd (&uuid_table, dir, uuid);
+		}
+	    }
+	    close (fd);
+	}
+	else
+	{
+	    if (FcDebug () & FC_DBG_CACHE)
+		printf ("FcDirCacheReadUUID Unable to read %s\n", uuidname);
+	}
+	FcStrFree (uuidname);
+    }
+}
 
 struct MD5Context {
         FcChar32 buf[4];
@@ -55,7 +232,7 @@ static void MD5Update(struct MD5Context *ctx, const unsigned char *buf, unsigned
 static void MD5Final(unsigned char digest[16], struct MD5Context *ctx);
 static void MD5Transform(FcChar32 buf[4], FcChar32 in[16]);
 
-#define CACHEBASE_LEN (1 + 32 + 1 + sizeof (FC_ARCHITECTURE) + sizeof (FC_CACHE_SUFFIX))
+#define CACHEBASE_LEN (1 + 36 + 1 + sizeof (FC_ARCHITECTURE) + sizeof (FC_CACHE_SUFFIX))
 
 static FcBool
 FcCacheIsMmapSafe (int fd)
@@ -94,7 +271,7 @@ static const char bin2hex[] = { '0', '1', '2', '3',
 				'c', 'd', 'e', 'f' };
 
 static FcChar8 *
-FcDirCacheBasename (const FcChar8 * dir, FcChar8 cache_base[CACHEBASE_LEN])
+FcDirCacheBasenameMD5 (const FcChar8 *dir, FcChar8 cache_base[CACHEBASE_LEN])
 {
     unsigned char 	hash[16];
     FcChar8		*hex_hash;
@@ -119,6 +296,20 @@ FcDirCacheBasename (const FcChar8 * dir, FcChar8 cache_base[CACHEBASE_LEN])
     return cache_base;
 }
 
+static FcChar8 *
+FcDirCacheBasenameUUID (const FcChar8 *dir, FcChar8 cache_base[CACHEBASE_LEN])
+{
+    uuid_t uuid;
+
+    if (FcCacheUuidFind (&uuid_table, dir, uuid))
+    {
+	uuid_unparse (uuid, (char *) cache_base);
+	strcat ((char *) cache_base, "-" FC_ARCHITECTURE FC_CACHE_SUFFIX);
+	return cache_base;
+    }
+    return NULL;
+}
+
 FcBool
 FcDirCacheUnlink (const FcChar8 *dir, FcConfig *config)
 {
@@ -128,7 +319,8 @@ FcDirCacheUnlink (const FcChar8 *dir, FcConfig *config)
     FcChar8	*cache_dir;
     const FcChar8 *sysroot = FcConfigGetSysRoot (config);
 
-    FcDirCacheBasename (dir, cache_base);
+    if (!FcDirCacheBasenameUUID (dir, cache_base))
+	FcDirCacheBasenameMD5 (dir, cache_base);
 
     list = FcStrListCreate (config->cacheDirs);
     if (!list)
@@ -204,7 +396,8 @@ FcDirCacheProcess (FcConfig *config, const FcChar8 *dir,
     }
     FcStrFree (d);
 
-    FcDirCacheBasename (dir, cache_base);
+    if (!FcDirCacheBasenameUUID (dir, cache_base))
+	FcDirCacheBasenameMD5 (dir, cache_base);
 
     list = FcStrListCreate (config->cacheDirs);
     if (!list)
@@ -534,7 +727,10 @@ FcCacheObjectDereference (void *object)
     if (skip)
     {
 	if (FcRefDec (&skip->ref) == 1)
+	{
+	    FcCacheUuidRemove (&uuid_table, FcCacheDir (skip->cache));
 	    FcDirCacheDisposeUnlocked (skip->cache);
+	}
     }
     unlock_cache ();
 }
@@ -797,6 +993,7 @@ FcDirCacheLoad (const FcChar8 *dir, FcConfig *config, FcChar8 **cache_file)
 			    FcDirCacheMapHelper,
 			    &cache, cache_file))
 	return NULL;
+    FcDirCacheReadUUID (FcCacheDir (cache));
 
     return cache;
 }
@@ -1049,7 +1246,8 @@ FcDirCacheWrite (FcCache *cache, FcConfig *config)
     if (!cache_dir)
 	return FcFalse;
 
-    FcDirCacheBasename (dir, cache_base);
+    if (!FcDirCacheBasenameUUID (dir, cache_base))
+	FcDirCacheBasenameMD5 (dir, cache_base);
     cache_hashed = FcStrBuildFilename (cache_dir, cache_base, NULL);
     if (!cache_hashed)
         return FcFalse;
@@ -1246,7 +1444,8 @@ FcDirCacheLock (const FcChar8 *dir,
     const FcChar8 *sysroot = FcConfigGetSysRoot (config);
     int fd = -1;
 
-    FcDirCacheBasename (dir, cache_base);
+    if (!FcDirCacheBasenameUUID (dir, cache_base))
+	FcDirCacheBasenameMD5 (dir, cache_base);
     list = FcStrListCreate (config->cacheDirs);
     if (!list)
 	return -1;

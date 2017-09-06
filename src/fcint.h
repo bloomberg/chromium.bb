@@ -587,6 +587,10 @@ struct _FcValuePromotionBuffer {
 
 /* fccache.c */
 
+FcPrivate FcBool
+FcDirCacheCreateUUID (const FcChar8 *dir,
+		      FcBool         force);
+
 FcPrivate FcCache *
 FcDirCacheScan (const FcChar8 *dir, FcConfig *config);
 
