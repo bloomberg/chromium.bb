@@ -1075,8 +1075,7 @@ TYPED_TEST(IntersectingQuadSoftwareTest, PictureQuads) {
   blue_quad->SetNew(this->front_quad_state_, this->quad_rect_, this->quad_rect_,
                     needs_blending, gfx::RectF(this->quad_rect_),
                     this->quad_rect_.size(), false, viz::RGBA_8888,
-                    this->quad_rect_, 1.f,
-                    blue_raster_source->GetDisplayItemList());
+                    this->quad_rect_, 1.f, blue_raster_source);
 
   std::unique_ptr<FakeRecordingSource> green_recording =
       FakeRecordingSource::CreateFilledRecordingSource(this->quad_rect_.size());
@@ -1091,8 +1090,7 @@ TYPED_TEST(IntersectingQuadSoftwareTest, PictureQuads) {
   green_quad->SetNew(this->back_quad_state_, this->quad_rect_, this->quad_rect_,
                      needs_blending, gfx::RectF(this->quad_rect_),
                      this->quad_rect_.size(), false, viz::RGBA_8888,
-                     this->quad_rect_, 1.f,
-                     green_raster_source->GetDisplayItemList());
+                     this->quad_rect_, 1.f, green_raster_source);
   SCOPED_TRACE("IntersectingPictureQuadsPass");
   this->AppendBackgroundAndRunTest(
       FuzzyPixelComparator(false, 2.f, 0.f, 256.f, 256, 0.f),
@@ -2635,7 +2633,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadIdentityScale) {
                     viewport,  // Intentionally bigger than clip.
                     viewport, needs_blending, gfx::RectF(viewport),
                     viewport.size(), nearest_neighbor, texture_format, viewport,
-                    1.f, blue_raster_source->GetDisplayItemList());
+                    1.f, std::move(blue_raster_source));
 
   // One viewport-filling green quad.
   std::unique_ptr<FakeRecordingSource> green_recording =
@@ -2656,7 +2654,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadIdentityScale) {
   green_quad->SetNew(green_shared_state, viewport, viewport, needs_blending,
                      gfx::RectF(0.f, 0.f, 1.f, 1.f), viewport.size(),
                      nearest_neighbor, texture_format, viewport, 1.f,
-                     green_raster_source->GetDisplayItemList());
+                     std::move(green_raster_source));
 
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
@@ -2698,8 +2696,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadOpacity) {
       pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
   green_quad->SetNew(green_shared_state, viewport, viewport, needs_blending,
                      gfx::RectF(0, 0, 1, 1), viewport.size(), nearest_neighbor,
-                     texture_format, viewport, 1.f,
-                     green_raster_source->GetDisplayItemList());
+                     texture_format, viewport, 1.f, green_raster_source.get());
 
   // One viewport-filling white quad.
   std::unique_ptr<FakeRecordingSource> white_recording =
@@ -2720,7 +2717,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadOpacity) {
   white_quad->SetNew(white_shared_state, viewport, viewport, needs_blending,
                      gfx::RectF(0, 0, 1, 1), viewport.size(), nearest_neighbor,
                      texture_format, viewport, 1.f,
-                     white_raster_source->GetDisplayItemList());
+                     std::move(white_raster_source));
 
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
@@ -2793,8 +2790,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadDisableImageFiltering) {
   PictureDrawQuad* quad = pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
   quad->SetNew(shared_state, viewport, viewport, needs_blending,
                gfx::RectF(0, 0, 2, 2), viewport.size(), nearest_neighbor,
-               texture_format, viewport, 1.f,
-               raster_source->GetDisplayItemList());
+               texture_format, viewport, 1.f, std::move(raster_source));
 
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
@@ -2843,8 +2839,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNearestNeighbor) {
   PictureDrawQuad* quad = pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
   quad->SetNew(shared_state, viewport, viewport, needs_blending,
                gfx::RectF(0, 0, 2, 2), viewport.size(), nearest_neighbor,
-               texture_format, viewport, 1.f,
-               raster_source->GetDisplayItemList());
+               texture_format, viewport, 1.f, std::move(raster_source));
 
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
@@ -3039,19 +3034,19 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNonIdentityScale) {
 
   PictureDrawQuad* green_quad1 =
       pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
-  green_quad1->SetNew(
-      top_right_green_shared_quad_state, green_rect1, green_rect1,
-      needs_blending, gfx::RectF(gfx::SizeF(green_rect1.size())),
-      green_rect1.size(), nearest_neighbor, texture_format, green_rect1, 1.f,
-      green_raster_source->GetDisplayItemList());
+  green_quad1->SetNew(top_right_green_shared_quad_state, green_rect1,
+                      green_rect1, needs_blending,
+                      gfx::RectF(gfx::SizeF(green_rect1.size())),
+                      green_rect1.size(), nearest_neighbor, texture_format,
+                      green_rect1, 1.f, green_raster_source);
 
   PictureDrawQuad* green_quad2 =
       pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
-  green_quad2->SetNew(
-      top_right_green_shared_quad_state, green_rect2, green_rect2,
-      needs_blending, gfx::RectF(gfx::SizeF(green_rect2.size())),
-      green_rect2.size(), nearest_neighbor, texture_format, green_rect2, 1.f,
-      green_raster_source->GetDisplayItemList());
+  green_quad2->SetNew(top_right_green_shared_quad_state, green_rect2,
+                      green_rect2, needs_blending,
+                      gfx::RectF(gfx::SizeF(green_rect2.size())),
+                      green_rect2.size(), nearest_neighbor, texture_format,
+                      green_rect2, 1.f, std::move(green_raster_source));
 
   // Add a green clipped checkerboard in the bottom right to help test
   // interleaving picture quad content and solid color content.
@@ -3118,7 +3113,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNonIdentityScale) {
                     needs_blending, gfx::RectF(quad_content_rect),
                     content_union_rect.size(), nearest_neighbor, texture_format,
                     content_union_rect, contents_scale,
-                    raster_source->GetDisplayItemList());
+                    std::move(raster_source));
 
   // Fill left half of viewport with green.
   gfx::Transform half_green_quad_to_target_transform;

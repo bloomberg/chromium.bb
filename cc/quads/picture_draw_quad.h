@@ -9,9 +9,9 @@
 
 #include "base/memory/ref_counted.h"
 #include "cc/cc_export.h"
-#include "cc/paint/display_item_list.h"
 #include "cc/quads/content_draw_quad_base.h"
-#include "components/viz/common/resources/resource_format.h"
+#include "cc/raster/raster_source.h"
+#include "cc/resources/resource_provider.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
@@ -35,7 +35,7 @@ class CC_EXPORT PictureDrawQuad : public ContentDrawQuadBase {
               viz::ResourceFormat texture_format,
               const gfx::Rect& content_rect,
               float contents_scale,
-              scoped_refptr<DisplayItemList> display_item_list);
+              scoped_refptr<RasterSource> raster_source);
 
   void SetAll(const viz::SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
@@ -47,11 +47,11 @@ class CC_EXPORT PictureDrawQuad : public ContentDrawQuadBase {
               viz::ResourceFormat texture_format,
               const gfx::Rect& content_rect,
               float contents_scale,
-              scoped_refptr<DisplayItemList> display_item_list);
+              scoped_refptr<RasterSource> raster_source);
 
   gfx::Rect content_rect;
   float contents_scale;
-  scoped_refptr<DisplayItemList> display_item_list;
+  scoped_refptr<RasterSource> raster_source;
   viz::ResourceFormat texture_format;
 
   static const PictureDrawQuad* MaterialCast(const DrawQuad* quad);
