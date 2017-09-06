@@ -123,6 +123,12 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
   BoxDecorationData box_decoration_data(layout_box_);
   GraphicsContextStateSaver state_saver(paint_info.context, false);
 
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+      LayoutRect(EnclosingIntRect(paint_rect)) == paint_rect &&
+      layout_box_.BackgroundIsKnownToBeOpaqueInRect(
+          BoundsForDrawingRecorder(paint_info, LayoutPoint())))
+    recorder.SetKnownToBeOpaque();
+
   if (!painting_overflow_contents) {
     // FIXME: Should eventually give the theme control over whether the box
     // shadow should paint, since controls could have custom shadows of their

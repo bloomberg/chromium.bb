@@ -30,6 +30,7 @@
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='transform'",
       "bounds": [200, 200],
+      "contentsOpaque": true,
       "backgroundColor": "#FFFF00",
       "paintInvalidations": [
         {

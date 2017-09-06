@@ -715,7 +715,10 @@ void PaintArtifactCompositor::Update(
     layer->SetClipTreeIndex(clip_id);
     layer->SetEffectTreeIndex(effect_id);
 
-    layer->SetContentsOpaque(pending_layer.known_to_be_opaque);
+    layer->SetContentsOpaque(
+        // Don't set opaque if the pending_layer's bounds are at subpixels.
+        EnclosingIntRect(pending_layer.bounds) == pending_layer.bounds &&
+        pending_layer.known_to_be_opaque);
     layer->SetDoubleSided(!pending_layer.backface_hidden);
     layer->SetShouldCheckBackfaceVisibility(pending_layer.backface_hidden);
   }

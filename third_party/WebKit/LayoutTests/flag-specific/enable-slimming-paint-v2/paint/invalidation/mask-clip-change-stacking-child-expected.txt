@@ -10,6 +10,7 @@
       "name": "LayoutBlockFlow DIV",
       "position": [8, 8],
       "bounds": [500, 500],
+      "contentsOpaque": true,
       "backgroundColor": "#ADD8E6"
     },
     {

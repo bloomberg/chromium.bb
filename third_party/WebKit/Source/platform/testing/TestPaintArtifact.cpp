@@ -100,6 +100,11 @@ TestPaintArtifact& TestPaintArtifact::ScrollHitTest(
   return *this;
 }
 
+TestPaintArtifact& TestPaintArtifact::KnownToBeOpaque() {
+  paint_chunks_.back().known_to_be_opaque = true;
+  return *this;
+}
+
 const PaintArtifact& TestPaintArtifact::Build() {
   if (built_)
     return paint_artifact_;

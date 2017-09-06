@@ -10,6 +10,7 @@
       "name": "LayoutBlockFlow (relative positioned) DIV id='outer'",
       "position": [278, 278],
       "bounds": [100, 100],
+      "contentsOpaque": true,
       "backfaceVisibility": "hidden",
       "backgroundColor": "#008000",
       "paintInvalidations": [
