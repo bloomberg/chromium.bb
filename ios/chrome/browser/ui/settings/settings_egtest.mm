@@ -23,10 +23,7 @@
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
-#import "ios/chrome/browser/ui/settings/clear_browsing_data_collection_view_controller.h"
-#import "ios/chrome/browser/ui/settings/settings_collection_view_controller.h"
 #include "ios/chrome/browser/ui/tools_menu/tools_menu_constants.h"
-#import "ios/chrome/browser/ui/tools_menu/tools_popup_controller.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
@@ -58,10 +55,16 @@
 
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::ClearBrowsingDataCollectionView;
+using chrome_test_util::ClearBrowsingHistoryButton;
+using chrome_test_util::ClearCacheButton;
+using chrome_test_util::ClearCookiesButton;
+using chrome_test_util::ClearSavedPasswordsButton;
 using chrome_test_util::ContentSettingsButton;
 using chrome_test_util::NavigationBarDoneButton;
+using chrome_test_util::SettingsCollectionView;
 using chrome_test_util::SettingsMenuBackButton;
 using chrome_test_util::SettingsMenuPrivacyButton;
+using chrome_test_util::VoiceSearchButton;
 
 namespace {
 
@@ -80,25 +83,6 @@ enum MetricsServiceType {
   kBreakpadFirstLaunch,
 };
 
-// Matcher for the clear browsing history cell on the clear browsing data panel.
-id<GREYMatcher> ClearBrowsingHistoryButton() {
-  return grey_allOf(grey_accessibilityID(kClearBrowsingHistoryCellId),
-                    grey_sufficientlyVisible(), nil);
-}
-// Matcher for the clear cookies cell on the clear browsing data panel.
-id<GREYMatcher> ClearCookiesButton() {
-  return grey_accessibilityID(kClearCookiesCellId);
-}
-// Matcher for the clear cache cell on the clear browsing data panel.
-id<GREYMatcher> ClearCacheButton() {
-  return grey_allOf(grey_accessibilityID(kClearCacheCellId),
-                    grey_sufficientlyVisible(), nil);
-}
-// Matcher for the clear saved passwords cell on the clear browsing data panel.
-id<GREYMatcher> ClearSavedPasswordsButton() {
-  return grey_allOf(grey_accessibilityID(kClearSavedPasswordsCellId),
-                    grey_sufficientlyVisible(), nil);
-}
 // Matcher for the clear browsing data button on the clear browsing data panel.
 id<GREYMatcher> ClearBrowsingDataButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_CLEAR_BUTTON);
@@ -127,11 +111,7 @@ id<GREYMatcher> AutofillButton() {
 id<GREYMatcher> GoogleChromeButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_PRODUCT_NAME);
 }
-// Matcher for the Google Chrome cell on the main Settings screen.
-id<GREYMatcher> VoiceSearchButton() {
-  return grey_allOf(grey_accessibilityID(kSettingsVoiceSearchCellId),
-                    grey_accessibilityTrait(UIAccessibilityTraitButton), nil);
-}
+
 // Matcher for the Preload Webpages button on the bandwidth UI.
 id<GREYMatcher> BandwidthPreloadWebpagesButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_OPTIONS_PRELOAD_WEBPAGES);
@@ -631,8 +611,7 @@ bool IsCertificateCleared() {
   chrome_test_util::OpenNewIncognitoTab();
 
   [ChromeEarlGreyUI openSettingsMenu];
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(kSettingsCollectionViewId)]
+  [[EarlGrey selectElementWithMatcher:SettingsCollectionView()]
       assertWithMatcher:grey_notNil()];
 
   [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
@@ -764,8 +743,7 @@ bool IsCertificateCleared() {
 // not when it itslef presents something.
 - (void)testSettingsKeyboardCommands {
   [ChromeEarlGreyUI openSettingsMenu];
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(kSettingsCollectionViewId)]
+  [[EarlGrey selectElementWithMatcher:SettingsCollectionView()]
       assertWithMatcher:grey_notNil()];
 
   // Verify that the Settings register keyboard commands.
