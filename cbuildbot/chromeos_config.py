@@ -2014,11 +2014,9 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       'bluestreak-pre-cq',
       board_configs['guado'],
       site_config.templates.pre_cq,
-      unittests=False,
       hw_tests=hw_test_list.BluestreakPoolPreCQ(),
       hw_tests_override=hw_test_list.BluestreakPoolPreCQ(),
       archive=True,
-      image_test=False,
       description='Bluestreak tests as pre-cq for CFM related changes',
   )
 

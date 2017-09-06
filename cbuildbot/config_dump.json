@@ -4041,6 +4041,7 @@
         "hw_tests_override": [
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 1,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"bluestreak-pre-cq\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": false,\n    \"suite\": \"bluestreak-pre-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}"
         ],
+        "image_test": true,
         "images": [
             "base",
             "test"
@@ -4052,7 +4053,6 @@
         "manifest_version": true,
         "pre_cq": true,
         "trybot_list": true,
-        "unittests": false,
         "upload_standalone_images": false,
         "useflags": [
             "chrome_internal"
