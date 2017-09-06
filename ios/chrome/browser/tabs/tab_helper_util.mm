@@ -14,6 +14,7 @@
 #include "components/keyed_service/core/service_access_type.h"
 #import "components/signin/ios/browser/account_consistency_service.h"
 #import "ios/chrome/browser/autofill/autofill_tab_helper.h"
+#import "ios/chrome/browser/autofill/form_suggestion_tab_helper.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
@@ -99,6 +100,11 @@ void AttachTabHelpers(web::WebState* web_state) {
   AutofillTabHelper::CreateForWebState(
       web_state, PasswordTabHelper::FromWebState(web_state)
                      ->GetPasswordGenerationManager());
+
+  FormSuggestionTabHelper::CreateForWebState(web_state, @[
+    PasswordTabHelper::FromWebState(web_state)->GetSuggestionProvider(),
+    AutofillTabHelper::FromWebState(web_state)->GetSuggestionProvider(),
+  ]);
 
   // Allow the embedder to attach tab helpers.
   ios::GetChromeBrowserProvider()->AttachTabHelpers(web_state, tab);
