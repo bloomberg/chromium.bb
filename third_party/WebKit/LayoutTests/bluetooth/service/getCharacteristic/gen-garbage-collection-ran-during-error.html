@@ -7,27 +7,22 @@
 <script src="../../../resources/mojo-helpers.js"></script>
 <script>
 'use strict';
-promise_test(() => {
-  let promise;
-  return setBluetoothFakeAdapter('MissingCharacteristicHeartRateAdapter')
-    .then(() => requestDeviceWithKeyDown({
-      filters: [{services: ['heart_rate']}]}))
-    .then(device => device.gatt.connect())
-    .then(gattServer => gattServer.getPrimaryService('heart_rate'))
-    .then(service => {
-      promise = assert_promise_rejects_with_message(
+let test_desc = 'Garbage Collection ran during getCharacteristic call that ' +
+   'fails. Should not crash';
+let service, func_promise;
+promise_test(() => getHealthThermometerService()
+  .then(({service}) => {
+    func_promise = assert_promise_rejects_with_message(
         service.getCharacteristic('measurement_interval'),
         new DOMException(
-          'GATT Server is disconnected. Cannot retrieve characteristics. ' +
-          '(Re)connect first with `device.gatt.connect`.',
-          'NetworkError'));
-      // Disconnect called to clear attributeInstanceMap and allow the
-      // object to get garbage collected.
-      service.device.gatt.disconnect();
-    })
-    .then(runGarbageCollection)
-    .then(() => promise);
-}, 'Garbage Collection ran during getCharacteristic call that fails. ' +
-   'Should not crash');
+            'GATT Server is disconnected. Cannot retrieve characteristics. ' +
+            '(Re)connect first with `device.gatt.connect`.',
+            'NetworkError'));
+    // Disconnect called to clear attributeInstanceMap and allow the object to
+    // get garbage collected.
+    service.device.gatt.disconnect();
+  })
+  .then(runGarbageCollection)
+  .then(() => func_promise), test_desc);
 
 </script>
