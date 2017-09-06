@@ -83,8 +83,8 @@ void RootCompositorFrameSinkImpl::SubmitCompositorFrame(
     cc::CompositorFrame frame,
     mojom::HitTestRegionListPtr hit_test_region_list,
     uint64_t submit_time) {
-  // TODO(gklassen): send |hit_test_region_list| to |support_|.
-  if (!support_->SubmitCompositorFrame(local_surface_id, std::move(frame))) {
+  if (!support_->SubmitCompositorFrame(local_surface_id, std::move(frame),
+                                       std::move(hit_test_region_list))) {
     compositor_frame_sink_binding_.Close();
     OnClientConnectionLost();
   }

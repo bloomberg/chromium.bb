@@ -134,7 +134,8 @@ void CompositorFrameSinkSupport::DidNotProduceFrame(const BeginFrameAck& ack) {
 
 bool CompositorFrameSinkSupport::SubmitCompositorFrame(
     const LocalSurfaceId& local_surface_id,
-    cc::CompositorFrame frame) {
+    cc::CompositorFrame frame,
+    mojom::HitTestRegionListPtr hit_test_region_list) {
   TRACE_EVENT0("cc", "CompositorFrameSinkSupport::SubmitCompositorFrame");
   DCHECK(local_surface_id.is_valid());
   DCHECK(!frame.render_pass_list.empty());
@@ -157,6 +158,9 @@ bool CompositorFrameSinkSupport::SubmitCompositorFrame(
                                0, 0);
     }
   }
+
+  frame_sink_manager()->SubmitHitTestRegionList(
+      current_surface_id_, frame_index, std::move(hit_test_region_list));
 
   Surface* prev_surface =
       surface_manager_->GetSurfaceForId(current_surface_id_);
