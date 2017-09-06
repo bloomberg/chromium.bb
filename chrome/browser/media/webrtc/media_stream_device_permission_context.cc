@@ -3,10 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/media/webrtc/media_stream_device_permission_context.h"
-#include "base/feature_list.h"
 #include "chrome/browser/media/webrtc/media_stream_device_permissions.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -47,8 +45,6 @@ void MediaStreamDevicePermissionContext::DecidePermission(
     const GURL& embedding_origin,
     bool user_gesture,
     const BrowserPermissionCallback& callback) {
-  DCHECK(base::FeatureList::IsEnabled(
-      features::kUsePermissionManagerForMediaRequests));
   PermissionContextBase::DecidePermission(web_contents, id, requesting_origin,
                                           embedding_origin, user_gesture,
                                           callback);

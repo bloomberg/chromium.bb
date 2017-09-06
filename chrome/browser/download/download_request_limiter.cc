@@ -9,7 +9,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/download/download_permission_request.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -27,10 +26,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "url/gurl.h"
-
-#if defined(OS_ANDROID)
-#include "chrome/browser/download/download_request_infobar_delegate_android.h"
-#endif
 
 using content::BrowserThread;
 using content::NavigationController;
@@ -174,15 +169,10 @@ void DownloadRequestLimiter::TabDownloadState::DidGetUserInteraction(
     return;
   }
 
-  bool promptable;
-  if (PermissionRequestManager::IsEnabled()) {
-    promptable =
-        PermissionRequestManager::FromWebContents(web_contents()) != nullptr;
-  } else {
-    promptable = InfoBarService::FromWebContents(web_contents()) != nullptr;
-  }
+  bool promptable =
+      PermissionRequestManager::FromWebContents(web_contents()) != nullptr;
 
-  // See PromptUserForDownload(): if there's no InfoBarService, then
+  // See PromptUserForDownload(): if there's no PermissionRequestManager, then
   // DOWNLOADS_NOT_ALLOWED is functionally equivalent to PROMPT_BEFORE_DOWNLOAD.
   if ((status_ != DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS) &&
       (!promptable ||
@@ -219,20 +209,13 @@ void DownloadRequestLimiter::TabDownloadState::PromptUserForDownload(
     return;
   }
 
-  if (PermissionRequestManager::IsEnabled()) {
-    PermissionRequestManager* permission_request_manager =
-        PermissionRequestManager::FromWebContents(web_contents_);
-    if (permission_request_manager) {
-      permission_request_manager->AddRequest(
-          new DownloadPermissionRequest(factory_.GetWeakPtr()));
-    } else {
-      Cancel();
-    }
+  PermissionRequestManager* permission_request_manager =
+      PermissionRequestManager::FromWebContents(web_contents_);
+  if (permission_request_manager) {
+    permission_request_manager->AddRequest(
+        new DownloadPermissionRequest(factory_.GetWeakPtr()));
   } else {
-#if defined(OS_ANDROID)
-    DownloadRequestInfoBarDelegateAndroid::Create(
-        InfoBarService::FromWebContents(web_contents_), factory_.GetWeakPtr());
-#endif
+    Cancel();
   }
 }
 

@@ -18,9 +18,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "third_party/WebKit/public/platform/WebFeaturePolicyFeature.h"
 
-#if defined(OS_ANDROID)
-class PermissionQueueController;
-#endif
 class GURL;
 class PermissionRequestID;
 class Profile;
@@ -152,11 +149,6 @@ class PermissionContextBase : public KeyedService {
                                 const GURL& requesting_origin,
                                 bool allowed) {}
 
-#if defined(OS_ANDROID)
-  // Return an instance of the infobar queue controller, creating it if needed.
-  PermissionQueueController* GetQueueController();
-#endif
-
   // Returns the profile associated with this permission context.
   Profile* profile() const;
 
@@ -206,9 +198,6 @@ class PermissionContextBase : public KeyedService {
   Profile* profile_;
   const ContentSettingsType content_settings_type_;
   const blink::WebFeaturePolicyFeature feature_policy_feature_;
-#if defined(OS_ANDROID)
-  std::unique_ptr<PermissionQueueController> permission_queue_controller_;
-#endif
   std::unordered_map<std::string, std::unique_ptr<PermissionRequest>>
       pending_requests_;
 

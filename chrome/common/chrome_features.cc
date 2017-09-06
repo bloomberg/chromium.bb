@@ -434,16 +434,6 @@ const base::Feature kSyzyasanDeferredFree{"SyzyasanDeferredFree",
 const base::Feature kUseGoogleLocalNtp{"UseGoogleLocalNtp",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Experiment to use grouped permission infobars which could show and handle
-// multiple permission requests.
-const base::Feature kUseGroupedPermissionInfobars{
-    "UseGroupedPermissionInfobars", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Feature to use the PermissionManager to show prompts for WebRTC permission
-// requests.
-const base::Feature kUsePermissionManagerForMediaRequests{
-    "UsePermissionManagerForMediaRequests", base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if !defined(OS_ANDROID)
 // Enables or disables Voice Search on the local NTP.
 const base::Feature kVoiceSearchOnLocalNtp{"VoiceSearchOnLocalNtp",

@@ -3177,33 +3177,6 @@ class MediaStreamDevicesControllerBrowserTest
     : public PolicyTest,
       public testing::WithParamInterface<bool> {
  public:
-  // TODO(raymes): When crbug.com/606138 is finished and the
-  // PermissionRequestManager is used to show all prompts on Android/Desktop
-  // we should remove PermissionPromptDelegate and just use
-  // MockPermissionPromptFactory instead. The APIs are the same.
-  class TestPermissionPromptDelegate
-      : public MediaStreamDevicesController::PermissionPromptDelegate {
-   public:
-    void ShowPrompt(bool user_gesture,
-                    content::WebContents* web_contents,
-                    std::unique_ptr<MediaStreamDevicesController::Request>
-                        request) override {
-      if (response_type_ == PermissionRequestManager::ACCEPT_ALL)
-        request->PermissionGranted();
-      else if (response_type_ == PermissionRequestManager::DENY_ALL)
-        request->PermissionDenied();
-    }
-
-    void set_response_type(
-        PermissionRequestManager::AutoResponseType response_type) {
-      response_type_ = response_type;
-    }
-
-   private:
-    PermissionRequestManager::AutoResponseType response_type_ =
-        PermissionRequestManager::NONE;
-  };
-
   MediaStreamDevicesControllerBrowserTest()
       : request_url_allowed_via_whitelist_(false),
         request_url_("https://www.example.com/foo") {
@@ -3219,17 +3192,12 @@ class MediaStreamDevicesControllerBrowserTest
     // since we are already using WithParamInterface. We only test whichever one
     // is enabled in chrome_features.cc since we won't keep the old path around
     // for long once we flip the flag.
-    if (base::FeatureList::IsEnabled(
-            features::kUsePermissionManagerForMediaRequests)) {
-      PermissionRequestManager* manager =
-          PermissionRequestManager::FromWebContents(
-              browser()->tab_strip_model()->GetActiveWebContents());
-      prompt_factory_.reset(new MockPermissionPromptFactory(manager));
-      prompt_factory_->set_response_type(PermissionRequestManager::ACCEPT_ALL);
-      manager->DisplayPendingRequests();
-    } else {
-      prompt_delegate_.set_response_type(PermissionRequestManager::ACCEPT_ALL);
-    }
+    PermissionRequestManager* manager =
+        PermissionRequestManager::FromWebContents(
+            browser()->tab_strip_model()->GetActiveWebContents());
+    prompt_factory_.reset(new MockPermissionPromptFactory(manager));
+    prompt_factory_->set_response_type(PermissionRequestManager::ACCEPT_ALL);
+    manager->DisplayPendingRequests();
   }
 
   void TearDownOnMainThread() override { prompt_factory_.reset(); }
@@ -3296,11 +3264,9 @@ class MediaStreamDevicesControllerBrowserTest
         content::MEDIA_DEVICE_AUDIO_CAPTURE, content::MEDIA_NO_SERVICE));
     // TODO(raymes): Test MEDIA_DEVICE_OPEN (Pepper) which grants both webcam
     // and microphone permissions at the same time.
-    MediaStreamDevicesController::RequestPermissionsWithDelegate(
-        request,
-        base::Bind(&MediaStreamDevicesControllerBrowserTest::Accept,
-                   base::Unretained(this)),
-        &prompt_delegate_);
+    MediaStreamDevicesController::RequestPermissions(
+        request, base::Bind(&MediaStreamDevicesControllerBrowserTest::Accept,
+                            base::Unretained(this)));
 
     base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
@@ -3310,16 +3276,13 @@ class MediaStreamDevicesControllerBrowserTest
         content::MEDIA_NO_SERVICE, content::MEDIA_DEVICE_VIDEO_CAPTURE));
     // TODO(raymes): Test MEDIA_DEVICE_OPEN (Pepper) which grants both webcam
     // and microphone permissions at the same time.
-    MediaStreamDevicesController::RequestPermissionsWithDelegate(
-        request,
-        base::Bind(&MediaStreamDevicesControllerBrowserTest::Accept,
-                   base::Unretained(this)),
-        &prompt_delegate_);
+    MediaStreamDevicesController::RequestPermissions(
+        request, base::Bind(&MediaStreamDevicesControllerBrowserTest::Accept,
+                            base::Unretained(this)));
 
     base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
-  TestPermissionPromptDelegate prompt_delegate_;
   std::unique_ptr<MockPermissionPromptFactory> prompt_factory_;
   bool policy_value_;
   bool request_url_allowed_via_whitelist_;

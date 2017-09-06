@@ -28,12 +28,6 @@
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_ANDROID)
-#include "chrome/browser/download/download_request_infobar_delegate_android.h"
-#include "chrome/browser/infobars/infobar_service.h"
-#else
-#endif
-
 using content::WebContents;
 
 namespace {
@@ -49,39 +43,20 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    use_permission_request_manager_ = PermissionRequestManager::IsEnabled();
-
-    if (use_permission_request_manager_) {
-      PermissionRequestManager::CreateForWebContents(web_contents());
-      PermissionRequestManager* manager =
-          PermissionRequestManager::FromWebContents(web_contents());
-      mock_permission_prompt_factory_.reset(
-          new MockPermissionPromptFactory(manager));
-      manager->DisplayPendingRequests();
-    } else {
-#if defined(OS_ANDROID)
-      InfoBarService::CreateForWebContents(web_contents());
-      fake_create_callback_ = base::Bind(
-          &DownloadRequestLimiterTest::FakeCreate, base::Unretained(this));
-      DownloadRequestInfoBarDelegateAndroid::SetCallbackForTesting(
-          &fake_create_callback_);
-#endif
-    }
+    PermissionRequestManager::CreateForWebContents(web_contents());
+    PermissionRequestManager* manager =
+        PermissionRequestManager::FromWebContents(web_contents());
+    mock_permission_prompt_factory_.reset(
+        new MockPermissionPromptFactory(manager));
+    manager->DisplayPendingRequests();
 
     UpdateExpectations(ACCEPT);
-    ask_allow_count_ = cancel_count_ = continue_count_ = 0;
+    cancel_count_ = continue_count_ = 0;
     download_request_limiter_ = new DownloadRequestLimiter();
   }
 
   void TearDown() override {
-    if (use_permission_request_manager_) {
-      mock_permission_prompt_factory_.reset();
-    } else {
-#if defined(OS_ANDROID)
-      UnsetInfobarDelegate();
-#endif
-    }
-
+    mock_permission_prompt_factory_.reset();
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
@@ -120,10 +95,7 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
     EXPECT_EQ(expect_cancels, cancel_count_) << "line " << line;
     EXPECT_EQ(expect_asks, AskAllowCount()) << "line " << line;
     continue_count_ = cancel_count_ = 0;
-    if (use_permission_request_manager_)
-      mock_permission_prompt_factory_->ResetCounts();
-    else
-      ask_allow_count_ = 0;
+    mock_permission_prompt_factory_->ResetCounts();
   }
 
   void UpdateContentSettings(WebContents* web_contents,
@@ -151,60 +123,28 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
   }
 
   void LoadCompleted() {
-    if (use_permission_request_manager_)
-      mock_permission_prompt_factory_->DocumentOnLoadCompletedInMainFrame();
+    mock_permission_prompt_factory_->DocumentOnLoadCompletedInMainFrame();
   }
 
-  int AskAllowCount() {
-    if (use_permission_request_manager_)
-      return mock_permission_prompt_factory_->show_count();
-    return ask_allow_count_;
-  }
+  int AskAllowCount() { return mock_permission_prompt_factory_->show_count(); }
 
   void UpdateExpectations(TestingAction action) {
-    if (use_permission_request_manager_) {
-      // Set expectations for PermissionRequestManager.
-      PermissionRequestManager::AutoResponseType response_type =
-          PermissionRequestManager::DISMISS;
-      switch (action) {
-        case ACCEPT:
-          response_type = PermissionRequestManager::ACCEPT_ALL;
-          break;
-        case CANCEL:
-          response_type = PermissionRequestManager::DENY_ALL;
-          break;
-        case WAIT:
-          response_type = PermissionRequestManager::NONE;
-          break;
-      }
-      mock_permission_prompt_factory_->set_response_type(response_type);
-    } else {
-      testing_action_ = action;
-    }
-  }
-
-#if defined(OS_ANDROID)
-  void FakeCreate(
-      InfoBarService* infobar_service,
-      base::WeakPtr<DownloadRequestLimiter::TabDownloadState> host) {
-    ask_allow_count_++;
-    switch (testing_action_) {
+    // Set expectations for PermissionRequestManager.
+    PermissionRequestManager::AutoResponseType response_type =
+        PermissionRequestManager::DISMISS;
+    switch (action) {
       case ACCEPT:
-        host->Accept();
+        response_type = PermissionRequestManager::ACCEPT_ALL;
         break;
       case CANCEL:
-        host->Cancel();
+        response_type = PermissionRequestManager::DENY_ALL;
         break;
       case WAIT:
+        response_type = PermissionRequestManager::NONE;
         break;
     }
+    mock_permission_prompt_factory_->set_response_type(response_type);
   }
-
-  void UnsetInfobarDelegate() {
-    if (!use_permission_request_manager_)
-      DownloadRequestInfoBarDelegateAndroid::SetCallbackForTesting(nullptr);
-  }
-#endif
 
   scoped_refptr<DownloadRequestLimiter> download_request_limiter_;
 
@@ -215,19 +155,6 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
   int cancel_count_;
 
   std::unique_ptr<MockPermissionPromptFactory> mock_permission_prompt_factory_;
-
-  // TODO(timloh): Remove the members below here after crbug.com/606138 is done.
-
-  bool use_permission_request_manager_;
-
-  // Number of times ShouldAllowDownload was invoked.
-  int ask_allow_count_;
-  // The action that FakeCreate() should take.
-  TestingAction testing_action_;
-#if defined(OS_ANDROID)
-  DownloadRequestInfoBarDelegateAndroid::FakeCreateCallback
-      fake_create_callback_;
-#endif
 };
 
 TEST_F(DownloadRequestLimiterTest, Allow) {
@@ -570,12 +497,9 @@ TEST_F(DownloadRequestLimiterTest, RawWebContents) {
   web_contents->GetController().LoadURL(
       url, content::Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
 
-// DownloadRequestLimiter won't try to make a permission request or infobar
-// if there is no PermissionRequestManager/InfoBarService, and we want to
-// test that it will Cancel() instead of prompting.
-#if defined(OS_ANDROID)
-  UnsetInfobarDelegate();
-#endif
+  // DownloadRequestLimiter won't try to make a permission request or infobar
+  // if there is no PermissionRequestManager, and we want to test that it will
+  // Cancel() instead of prompting.
   ExpectAndResetCounts(0, 0, 0, __LINE__);
   EXPECT_EQ(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD,
             download_request_limiter_->GetDownloadStatus(web_contents.get()));
