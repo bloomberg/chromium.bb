@@ -144,8 +144,68 @@ bool GetStringListProperty(arc::mojom::AccessibilityNodeInfoData* node,
   return true;
 }
 
+bool HasCoveringSpan(arc::mojom::AccessibilityNodeInfoData* data,
+                     arc::mojom::AccessibilityStringProperty prop,
+                     arc::mojom::SpanType span_type) {
+  if (!data->spannable_string_properties)
+    return false;
+
+  std::string text;
+  GetStringProperty(data, prop, &text);
+  if (text.empty())
+    return false;
+
+  auto span_entries_it = data->spannable_string_properties->find(prop);
+  if (span_entries_it == data->spannable_string_properties->end())
+    return false;
+
+  for (size_t i = 0; i < span_entries_it->second.size(); ++i) {
+    if (span_entries_it->second[i]->span_type != span_type)
+      continue;
+
+    size_t span_size =
+        span_entries_it->second[i]->end - span_entries_it->second[i]->start;
+    if (span_size == text.size())
+      return true;
+  }
+  return false;
+}
+
 void PopulateAXRole(arc::mojom::AccessibilityNodeInfoData* node,
                     ui::AXNodeData* out_data) {
+  if (HasCoveringSpan(node, arc::mojom::AccessibilityStringProperty::TEXT,
+                      arc::mojom::SpanType::URL) ||
+      HasCoveringSpan(
+          node, arc::mojom::AccessibilityStringProperty::CONTENT_DESCRIPTION,
+          arc::mojom::SpanType::URL)) {
+    out_data->role = ui::AX_ROLE_LINK;
+    return;
+  }
+
+  arc::mojom::AccessibilityCollectionItemInfoData* collection_item_info =
+      node->collection_item_info.get();
+  if (collection_item_info) {
+    if (collection_item_info->is_heading) {
+      out_data->role = ui::AX_ROLE_HEADING;
+    } else {
+      out_data->role = ui::AX_ROLE_LIST_ITEM;
+      out_data->AddIntAttribute(ui::AX_ATTR_POS_IN_SET,
+                                collection_item_info->row_index);
+    }
+    return;
+  }
+
+  std::string chrome_role;
+  if (GetStringProperty(node,
+                        arc::mojom::AccessibilityStringProperty::CHROME_ROLE,
+                        &chrome_role)) {
+    ui::AXRole role_value = ui::ParseAXRole(chrome_role);
+    if (role_value != ui::AX_ROLE_NONE) {
+      out_data->role = role_value;
+      return;
+    }
+  }
+
   std::string class_name;
   GetStringProperty(node, arc::mojom::AccessibilityStringProperty::CLASS_NAME,
                     &class_name);
@@ -431,6 +491,12 @@ void AXTreeSourceArc::SerializeNode(mojom::AccessibilityNodeInfoData* node,
   else if (GetStringProperty(node, AXStringProperty::CONTENT_DESCRIPTION,
                              &text))
     out_data->SetName(text);
+  std::string role_description;
+  if (GetStringProperty(node, AXStringProperty::ROLE_DESCRIPTION,
+                        &role_description)) {
+    out_data->AddStringAttribute(ui::AX_ATTR_ROLE_DESCRIPTION,
+                                 role_description);
+  }
 
   // Boolean properties.
   PopulateAXState(node, out_data);
