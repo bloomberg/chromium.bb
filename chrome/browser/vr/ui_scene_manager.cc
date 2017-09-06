@@ -197,10 +197,11 @@ static constexpr float kContentBoundsPropagationThreshold = 0.2f;
 //   kWebVrRoot
 //     kWebVrContent
 //     kWebVrViewportAwareRoot
+//       kSplashScreenText
 //       kWebVrPresentationToast
-//       kWebVrPermanentHttpSecurityWarning,
-//       kWebVrTransientHttpSecurityWarning,
-//       kTransientUrlBar
+//       kWebVrPermanentHttpSecurityWarning
+//       kWebVrTransientHttpSecurityWarning
+//       kWebVrUrlToast
 //
 // TODO(vollick): The above hierarchy is complex, brittle, and would be easier
 // to manage if it were specified in a declarative format.
@@ -422,13 +423,14 @@ void UiSceneManager::CreateSplashScreen() {
       }),
       IDS_VR_POWERED_BY_CHROME_MESSAGE);
   text->set_name(kSplashScreenText);
+  text->set_viewport_aware(true);
   text->set_draw_phase(kPhaseForeground);
   text->set_hit_testable(false);
   text->SetSize(kSplashScreenTextWidthM, kSplashScreenTextHeightM);
   text->SetTranslate(0, kSplashScreenTextVerticalOffset,
                      -kSplashScreenTextDistance);
   splash_screen_text_ = text.get();
-  scene_->AddUiElement(kWebVrRoot, std::move(text));
+  scene_->AddUiElement(kWebVrViewportAwareRoot, std::move(text));
 }
 
 void UiSceneManager::CreateUnderDevelopmentNotice() {
