@@ -1,26 +1,32 @@
-# TODO(fuchsia): Fix these tests and remove the filter. crbug.com/731302 .
+# TODO(fuchsia): Fix these tests and remove the filter. https://crbug.com/731302 .
 -*HTTPS*
 -*QuicEndToEndTest.Large*
 -*QuicEndToEndTest.TokenBinding*
 -*QuicEndToEndTest.Uber*
 -CertVerifyProcInternalTest.*
 -CloseOnConnectHttpServerTest.ServerImmediatelyClosesConnection
--DiskCacheEntryTest*AsyncIO*  # Flaky on the bots
--DiskCacheTest.BlockFiles_Grow  # Flaky timeouts
--HttpCache.RangeGET_ParallelValidationDifferentRanges  # https://crbug.com/755552
--HttpCache.RangeGET_ParallelValidationOverlappingRanges  # https://crbug.com/758221
--HttpNetworkTransactionTest.UploadUnreadableFile
 -HttpServerTest.*
 -NetworkInterfacesTest.GetNetworkList
--NetworkQualityEstimatorTest*
--Proxy*
+-ProxyScriptFetcherImplTest.Priority
 -PythonUtils*
--ReportingUploader*
--SpdyNetworkTransactionTest.UnreadableFilePost
 -SQLite*
--SSL*
 -TokenBindingURLRequest*
 -UnixDomain*Socket*
--URLFetcher*
--URLRequest*
+-URLRequest*FTP*
+-URLRequestQuic*
+-URLRequestTestHTTP.HeadersCallbacks
 -WebSocket*
+
+# Following tests pass locally, but flake on bots.
+-DiskCacheEntryTest*AsyncIO*
+-DiskCacheTest.BlockFiles_Grow
+-DiskCacheBackendTest.SimpleCacheDeleteQuickly
+-URLRequestTestHTTP.GetTest_ManyCookies
+
+# https://crbug.com/755552
+-HttpCache.RangeGET_ParallelValidationDifferentRanges
+-HttpCache.RangeGET_ParallelValidationOverlappingRanges
+
+# base::MakeFileUnreadable() doesn't work. https://crbug.com/759853
+-HttpNetworkTransactionTest.UploadUnreadableFile
+-SpdyNetworkTransactionTest.UnreadableFilePost
