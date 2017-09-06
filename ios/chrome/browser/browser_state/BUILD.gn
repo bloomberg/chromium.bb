@@ -106,6 +106,7 @@ source_set("browser_state_impl") {
     "//ios/chrome/browser/sync/glue",
     "//ios/chrome/browser/translate",
     "//ios/chrome/browser/ui/browser_list",
+    "//ios/chrome/browser/ui/browser_list:browser_list_impl",
     "//ios/chrome/browser/undo",
     "//ios/clean/chrome/browser/ui/overlays",
     "//ios/net",

@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/supports_user_data.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
 
 class WebStateList;
 class WebStateListDelegate;
@@ -20,28 +21,36 @@ namespace ios {
 class ChromeBrowserState;
 }
 
-// Browser holds the state backing a collection of Tabs and the attached
-// UI elements (Tab strip, ...).
+// Browser is the model for a window containing multiple tabs. Instances
+// are owned by a BrowserList to allow multiple windows for a single user
+// session.
+//
+// See src/docs/ios/objects.md for more information.
 class Browser : public base::SupportsUserData {
  public:
-  explicit Browser(ios::ChromeBrowserState* browser_state);
+  // Constructs a Browser attached to |browser_state|. The |delegate| is
+  // passed to WebStateList constructor. It must be non-null and outlive
+  // the Browser.
+  Browser(ios::ChromeBrowserState* browser_state,
+          WebStateListDelegate* delegate);
   ~Browser() override;
 
-  WebStateList& web_state_list() { return *web_state_list_.get(); }
-  const WebStateList& web_state_list() const { return *web_state_list_.get(); }
-
+  // Accessors for the ChromeBroadcaster and CommandDispatcher.
+  ChromeBroadcaster* broadcaster() { return broadcaster_; }
   CommandDispatcher* dispatcher() { return dispatcher_; }
 
+  // Accessor for the owning ChromeBrowserState.
   ios::ChromeBrowserState* browser_state() const { return browser_state_; }
 
-  ChromeBroadcaster* broadcaster() { return broadcaster_; }
+  // Accessors for the WebStateList.
+  WebStateList& web_state_list() { return web_state_list_; }
+  const WebStateList& web_state_list() const { return web_state_list_; }
 
  private:
   __strong ChromeBroadcaster* broadcaster_;
   __strong CommandDispatcher* dispatcher_;
   ios::ChromeBrowserState* browser_state_;
-  std::unique_ptr<WebStateListDelegate> web_state_list_delegate_;
-  std::unique_ptr<WebStateList> web_state_list_;
+  WebStateList web_state_list_;
 
   DISALLOW_COPY_AND_ASSIGN(Browser);
 };

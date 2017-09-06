@@ -20,7 +20,7 @@
 OverlayServiceImpl::OverlayServiceImpl(BrowserList* browser_list)
     : browser_list_(browser_list) {
   DCHECK(browser_list_);
-  for (int index = 0; index < browser_list_->count(); ++index) {
+  for (int index = 0; index < browser_list_->GetCount(); ++index) {
     StartServiceForBrowser(browser_list_->GetBrowserAtIndex(index));
   }
   browser_list_->AddObserver(this);
@@ -45,7 +45,7 @@ void OverlayServiceImpl::OnBrowserRemoved(BrowserList* browser_list,
 #pragma mark - KeyedService
 
 void OverlayServiceImpl::Shutdown() {
-  for (int index = 0; index < browser_list_->count(); ++index) {
+  for (int index = 0; index < browser_list_->GetCount(); ++index) {
     StopServiceForBrowser(browser_list_->GetBrowserAtIndex(index));
   }
   browser_list_->RemoveObserver(this);
@@ -59,11 +59,12 @@ void OverlayServiceImpl::OverlaySchedulerWillShowOverlay(
     web::WebState* web_state) {
   DCHECK(scheduler);
   Browser* scheduler_browser = nullptr;
-  for (int index = 0; !scheduler_browser && index < browser_list_->count();
-       ++index) {
+  for (int index = 0; index < browser_list_->GetCount(); ++index) {
     Browser* browser = browser_list_->GetBrowserAtIndex(index);
-    if (OverlayScheduler::FromBrowser(browser) == scheduler)
+    if (OverlayScheduler::FromBrowser(browser) == scheduler) {
       scheduler_browser = browser;
+      break;
+    }
   }
   DCHECK(scheduler_browser);
   for (auto& observer : observers_) {
@@ -98,7 +99,7 @@ void OverlayServiceImpl::ReplaceVisibleOverlay(
 }
 
 void OverlayServiceImpl::CancelOverlays() {
-  for (int index = 0; index < browser_list_->count(); ++index) {
+  for (int index = 0; index < browser_list_->GetCount(); ++index) {
     OverlayScheduler::FromBrowser(browser_list_->GetBrowserAtIndex(index))
         ->CancelOverlays();
   }

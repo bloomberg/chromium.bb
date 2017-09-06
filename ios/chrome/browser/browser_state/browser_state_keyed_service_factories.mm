@@ -47,6 +47,7 @@
 #include "ios/chrome/browser/sync/ios_user_event_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/browser/translate/translate_accept_languages_factory.h"
+#include "ios/chrome/browser/ui/browser_list/browser_list_factory.h"
 #include "ios/chrome/browser/ui/browser_list/browser_list_session_service_factory.h"
 #include "ios/chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
@@ -91,6 +92,7 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   ios::WebDataServiceFactory::GetInstance();
   ios::WebHistoryServiceFactory::GetInstance();
   AuthenticationServiceFactory::GetInstance();
+  BrowserListFactory::GetInstance();
   BrowserListSessionServiceFactory::GetInstance();
   DesktopPromotionSyncServiceFactory::GetInstance();
   feature_engagement::TrackerFactory::GetInstance();

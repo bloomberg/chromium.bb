@@ -7,12 +7,12 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/test/scoped_task_environment.h"
 #include "testing/platform_test.h"
 
 class Browser;
 class TestChromeBrowserState;
+class WebStateListDelegate;
 
 class BrowserCoordinatorTest : public PlatformTest {
  protected:
@@ -24,6 +24,7 @@ class BrowserCoordinatorTest : public PlatformTest {
  private:
   base::test::ScopedTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
+  std::unique_ptr<WebStateListDelegate> delegate_;
   std::unique_ptr<Browser> browser_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserCoordinatorTest);

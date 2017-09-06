@@ -54,6 +54,9 @@ BrowserList is a container owning Browser instances. It is owned by the
 ChromeBrowserState and each ChromeBrowserState has one associated
 BrowserList.
 
+The BrowserList owns the WebStateListDelegate that is passed to all the
+created Browsers (and then forwarded to their WebStateList).
+
 The corresponding object on desktop is BrowserList but the API is
 different. On desktop, it is a singleton and it points to all the
 Browsers instances whereas on iOS there is one per ChromeBrowserState.
@@ -65,7 +68,9 @@ on iOS there is only one window per ChromeBrowserState, thus there is
 a single Browser per BrowserList.
 
 The Browser owns a WebStateList and thus indirectly owns all the tabs
-(aka WebState and their associated tab helpers).
+(aka WebState and their associated tab helpers). The Browser also owns
+the CommandDispatcher and ChromeBroadcaster used for dispatching UI
+commands and property synchronisation.
 
 The corresponding object on desktop is Browser.
 
@@ -86,6 +91,20 @@ Tabs and added some behaviour. This interface is obsolete and is slowly
 being removed, prefer to use WebStateList if possible.
 
 The corresponding object on desktop is TabStripModel.
+
+# WebStateListDelegate
+
+WebStateListDelegate is the delegate for WebStateList. It is invoked
+before a WebState is inserted to or after a WebState is removed from
+the WebStateList.
+
+Each WebStateList points to a WebStateListDelegate but does not own
+it to allow sharing the same delegate for multiple WebStateList. In
+general, the WebStateListDelegate role is to attach tab helpers to
+the WebState when it is added to the WebStateList (and optionally to
+shut them down).
+
+The corresponding object on desktop is TabStripModelDelegate.
 
 # WebState
 

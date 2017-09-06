@@ -14,10 +14,7 @@
 #error "This file requires ARC support."
 #endif
 
-BrowserWebStateListDelegate::BrowserWebStateListDelegate(Browser* browser)
-    : browser_(browser) {
-  DCHECK(browser_);
-}
+BrowserWebStateListDelegate::BrowserWebStateListDelegate() = default;
 
 BrowserWebStateListDelegate::~BrowserWebStateListDelegate() = default;
 
