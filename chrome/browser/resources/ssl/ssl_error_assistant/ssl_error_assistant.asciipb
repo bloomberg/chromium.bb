@@ -151,6 +151,17 @@ captive_portal_cert {
   sha256_hash: "sha256/LKtpdq9q7F7msGK0w1+b/gKoDHaQcZKTHIf9PTz2u+U="
 }
 
+# https://mitm-software.badssl.com leaf.
+# This is a test certificate, keep it at the top of the MITM software list.
+mitm_software {
+  name: "BadSSL Antivirus",
+  issuer_common_name_regex: "BadSSL MITM Software Test",
+  issuer_organization_regex: "BadSSL"
+}
+
+################################################################################
+# The rest of the MITM software certificates are sorted alphabetically by name.
+
 mitm_software {
   name: "Avast Antivirus",
   issuer_common_name_regex: "avast! Web/Mail Shield Root",
