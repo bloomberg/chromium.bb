@@ -14,10 +14,10 @@
 
 #include "bindings/core/v8/GeneratedCodeHelper.h"
 #include "bindings/core/v8/NativeValueTraits.h"
-#include "bindings/core/v8/StringOrDouble.h"
 #include "bindings/core/v8/ToV8ForCore.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8TestInterfaceEmpty.h"
+#include "bindings/core/v8/string_or_double.h"
 #include "bindings/tests/idls/core/TestInterfaceImplementation.h"
 #include "core/CoreExport.h"
 #include "platform/bindings/ScriptWrappable.h"

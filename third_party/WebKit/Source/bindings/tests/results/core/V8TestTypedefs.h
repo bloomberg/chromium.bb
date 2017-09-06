@@ -12,15 +12,15 @@
 #ifndef V8TestTypedefs_h
 #define V8TestTypedefs_h
 
-#include "bindings/core/v8/ByteStringSequenceSequenceOrByteStringByteStringRecord.h"
 #include "bindings/core/v8/GeneratedCodeHelper.h"
 #include "bindings/core/v8/NativeValueTraits.h"
-#include "bindings/core/v8/NestedUnionType.h"
-#include "bindings/core/v8/StringOrDouble.h"
-#include "bindings/core/v8/TestInterfaceOrTestInterfaceEmpty.h"
 #include "bindings/core/v8/ToV8ForCore.h"
-#include "bindings/core/v8/UnsignedLongLongOrBooleanOrTestCallbackInterface.h"
 #include "bindings/core/v8/V8BindingForCore.h"
+#include "bindings/core/v8/byte_string_sequence_sequence_or_byte_string_byte_string_record.h"
+#include "bindings/core/v8/nested_union_type.h"
+#include "bindings/core/v8/string_or_double.h"
+#include "bindings/core/v8/test_interface_or_test_interface_empty.h"
+#include "bindings/core/v8/unsigned_long_long_or_boolean_or_test_callback_interface.h"
 #include "bindings/tests/idls/core/TestTypedefs.h"
 #include "core/CoreExport.h"
 #include "platform/bindings/ScriptWrappable.h"

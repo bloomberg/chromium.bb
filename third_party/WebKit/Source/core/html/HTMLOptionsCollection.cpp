@@ -23,9 +23,9 @@
 
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/HTMLElementOrLong.h"
-#include "bindings/core/v8/HTMLOptionElementOrHTMLOptGroupElement.h"
-#include "bindings/core/v8/NodeListOrElement.h"
+#include "bindings/core/v8/html_element_or_long.h"
+#include "bindings/core/v8/html_option_element_or_html_opt_group_element.h"
+#include "bindings/core/v8/node_list_or_element.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLOptionElement.h"

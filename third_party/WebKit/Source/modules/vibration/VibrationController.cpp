@@ -19,7 +19,7 @@
 
 #include "modules/vibration/VibrationController.h"
 
-#include "bindings/modules/v8/UnsignedLongOrUnsignedLongSequence.h"
+#include "bindings/modules/v8/unsigned_long_or_unsigned_long_sequence.h"
 #include "core/dom/Document.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/LocalFrame.h"

@@ -5,9 +5,9 @@
 #ifndef DictionaryTest_h
 #define DictionaryTest_h
 
-#include "bindings/core/v8/DoubleOrString.h"
 #include "bindings/core/v8/Nullable.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/double_or_string.h"
 #include "core/dom/Element.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"

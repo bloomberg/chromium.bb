@@ -6,7 +6,7 @@
 #define DOMMatrix_h
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/StringOrUnrestrictedDoubleSequence.h"
+#include "bindings/core/v8/string_or_unrestricted_double_sequence.h"
 #include "core/geometry/DOMMatrixInit.h"
 #include "core/geometry/DOMMatrixReadOnly.h"
 #include "core/typed_arrays/ArrayBufferViewHelpers.h"

@@ -5,8 +5,8 @@
 #ifndef BaseRenderingContext2D_h
 #define BaseRenderingContext2D_h
 
-#include "bindings/modules/v8/CanvasImageSource.h"
-#include "bindings/modules/v8/StringOrCanvasGradientOrCanvasPattern.h"
+#include "bindings/modules/v8/canvas_image_source.h"
+#include "bindings/modules/v8/string_or_canvas_gradient_or_canvas_pattern.h"
 #include "core/html/ImageData.h"
 #include "modules/ModulesExport.h"
 #include "modules/canvas2d/CanvasGradient.h"

@@ -6,7 +6,7 @@
 #define NFC_h
 
 #include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/modules/v8/StringOrArrayBufferOrNFCMessage.h"
+#include "bindings/modules/v8/string_or_array_buffer_or_nfc_message.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/page/PageVisibilityObserver.h"
 #include "modules/nfc/MessageCallback.h"

@@ -4,7 +4,7 @@
 
 #include "core/typed_arrays/DOMArrayPiece.h"
 
-#include "bindings/core/v8/ArrayBufferOrArrayBufferView.h"
+#include "bindings/core/v8/array_buffer_or_array_buffer_view.h"
 
 namespace blink {
 

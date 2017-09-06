@@ -11,13 +11,13 @@
 // clang-format off
 #include "V8TestCallbackFunctions.h"
 
-#include "bindings/core/v8/AnyCallbackFunctionOptionalAnyArg.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/IDLTypes.h"
-#include "bindings/core/v8/LongCallbackFunction.h"
 #include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
-#include "bindings/core/v8/VoidCallbackFunction.h"
+#include "bindings/core/v8/any_callback_function_optional_any_arg.h"
+#include "bindings/core/v8/long_callback_function.h"
+#include "bindings/core/v8/void_callback_function.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/html/custom/V0CustomElementProcessingStack.h"
 #include "platform/bindings/RuntimeCallStats.h"

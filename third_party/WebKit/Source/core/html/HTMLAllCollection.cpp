@@ -25,7 +25,7 @@
 
 #include "core/html/HTMLAllCollection.h"
 
-#include "bindings/core/v8/NodeListOrElement.h"
+#include "bindings/core/v8/node_list_or_element.h"
 #include "core/dom/Element.h"
 #include "core/dom/StaticNodeList.h"
 

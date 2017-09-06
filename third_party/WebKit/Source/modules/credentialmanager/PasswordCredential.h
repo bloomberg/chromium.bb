@@ -6,7 +6,7 @@
 #define PasswordCredential_h
 
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
-#include "bindings/modules/v8/FormDataOrURLSearchParams.h"
+#include "bindings/modules/v8/form_data_or_url_search_params.h"
 #include "modules/ModulesExport.h"
 #include "modules/credentialmanager/Credential.h"
 #include "platform/bindings/ScriptWrappable.h"

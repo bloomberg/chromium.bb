@@ -4,8 +4,8 @@
 
 #include "core/timing/PerformanceObserver.h"
 
-#include "bindings/core/v8/PerformanceObserverCallback.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
+#include "bindings/core/v8/performance_observer_callback.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/timing/Performance.h"

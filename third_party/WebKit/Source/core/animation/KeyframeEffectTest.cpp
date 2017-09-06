@@ -7,10 +7,10 @@
 #include <memory>
 
 #include "bindings/core/v8/Dictionary.h"
-#include "bindings/core/v8/DictionarySequenceOrDictionary.h"
-#include "bindings/core/v8/UnrestrictedDoubleOrKeyframeEffectOptions.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/V8KeyframeEffectOptions.h"
+#include "bindings/core/v8/dictionary_sequence_or_dictionary.h"
+#include "bindings/core/v8/unrestricted_double_or_keyframe_effect_options.h"
 #include "core/animation/Animation.h"
 #include "core/animation/AnimationClock.h"
 #include "core/animation/AnimationEffectTiming.h"

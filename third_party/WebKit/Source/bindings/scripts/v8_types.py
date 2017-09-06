@@ -47,6 +47,7 @@ from idl_types import IdlRecordType
 from idl_types import IdlType
 from idl_types import IdlTypeBase
 from idl_types import IdlUnionType
+from utilities import to_snake_case
 import v8_attributes  # for IdlType.constructor_type_name
 from v8_globals import includes
 from v8_utilities import extended_attribute_value_contains
@@ -412,7 +413,7 @@ def includes_for_type(idl_type, extended_attributes=None):
         return set()
     if idl_type.is_callback_function:
         component = IdlType.callback_functions[base_idl_type]['component_dir']
-        return set(['bindings/%s/v8/%s.h' % (component, base_idl_type)])
+        return set(['bindings/%s/v8/%s.h' % (component, to_snake_case(base_idl_type))])
     if base_idl_type not in component_dir:
         return set()
     return set(['bindings/%s/v8/V8%s.h' % (component_dir[base_idl_type],

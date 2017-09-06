@@ -7,6 +7,7 @@
 Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 """
 
+from utilities import to_snake_case
 from v8_globals import includes  # pylint: disable=W0403
 import v8_utilities  # pylint: disable=W0403
 
@@ -49,6 +50,7 @@ def callback_function_context(callback_function):
         'forward_declarations': sorted(forward_declarations(callback_function)),
         'header_includes': sorted(CALLBACK_FUNCTION_H_INCLUDES),
         'idl_type': idl_type_str,
+        'this_include_header_name': to_snake_case(callback_function.name),
     }
 
     if idl_type_str != 'void':

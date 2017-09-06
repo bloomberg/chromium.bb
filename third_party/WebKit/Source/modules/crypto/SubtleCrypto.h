@@ -31,10 +31,10 @@
 #ifndef SubtleCrypto_h
 #define SubtleCrypto_h
 
-#include "bindings/core/v8/ArrayBufferOrArrayBufferView.h"
 #include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/modules/v8/ArrayBufferOrArrayBufferViewOrDictionary.h"
-#include "bindings/modules/v8/DictionaryOrString.h"
+#include "bindings/core/v8/array_buffer_or_array_buffer_view.h"
+#include "bindings/modules/v8/array_buffer_or_array_buffer_view_or_dictionary.h"
+#include "bindings/modules/v8/dictionary_or_string.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"

@@ -32,8 +32,8 @@
 #define ElementAnimation_h
 
 #include "base/gtest_prod_util.h"
-#include "bindings/core/v8/DictionarySequenceOrDictionary.h"
-#include "bindings/core/v8/UnrestrictedDoubleOrKeyframeAnimationOptions.h"
+#include "bindings/core/v8/dictionary_sequence_or_dictionary.h"
+#include "bindings/core/v8/unrestricted_double_or_keyframe_animation_options.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/animation/EffectInput.h"
 #include "core/animation/ElementAnimations.h"

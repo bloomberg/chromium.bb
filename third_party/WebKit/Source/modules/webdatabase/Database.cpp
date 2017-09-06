@@ -26,7 +26,7 @@
 #include "modules/webdatabase/Database.h"
 
 #include <memory>
-#include "bindings/modules/v8/DatabaseCallback.h"
+#include "bindings/modules/v8/database_callback.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/TaskRunnerHelper.h"

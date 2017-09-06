@@ -59,7 +59,7 @@ import v8_interface
 import v8_types
 import v8_union
 from v8_utilities import cpp_name
-from utilities import idl_filename_to_component, is_testing_target, shorten_union_name
+from utilities import idl_filename_to_component, is_testing_target, shorten_union_name, to_snake_case
 
 
 # Make sure extension is .py, not .pyc or .pyo, so doesn't depend on caching
@@ -318,12 +318,12 @@ class CodeGeneratorUnionType(CodeGeneratorBase):
             template_context['header_includes'])
         template_context['code_generator'] = self.generator_name
         template_context['exported'] = self.info_provider.specifier_for_export
-        name = shorten_union_name(union_type)
-        template_context['this_include_header_name'] = name
+        snake_base_name = to_snake_case(shorten_union_name(union_type))
+        template_context['this_include_header_name'] = snake_base_name
         header_text = render_template(header_template, template_context)
         cpp_text = render_template(cpp_template, template_context)
-        header_path = posixpath.join(self.output_dir, '%s.h' % name)
-        cpp_path = posixpath.join(self.output_dir, '%s.cpp' % name)
+        header_path = posixpath.join(self.output_dir, '%s.h' % snake_base_name)
+        cpp_path = posixpath.join(self.output_dir, '%s.cc' % snake_base_name)
         return (
             (header_path, header_text),
             (cpp_path, cpp_text),
@@ -377,8 +377,9 @@ class CodeGeneratorCallbackFunction(CodeGeneratorBase):
         template_context['code_generator'] = MODULE_PYNAME
         header_text = render_template(header_template, template_context)
         cpp_text = render_template(cpp_template, template_context)
-        header_path = posixpath.join(self.output_dir, '%s.h' % callback_function.name)
-        cpp_path = posixpath.join(self.output_dir, '%s.cpp' % callback_function.name)
+        snake_base_name = to_snake_case(callback_function.name)
+        header_path = posixpath.join(self.output_dir, '%s.h' % snake_base_name)
+        cpp_path = posixpath.join(self.output_dir, '%s.cc' % snake_base_name)
         return (
             (header_path, header_text),
             (cpp_path, cpp_text),

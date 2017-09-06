@@ -4,7 +4,7 @@
 
 #include "core/mojo/MojoWatcher.h"
 
-#include "bindings/core/v8/MojoWatchCallback.h"
+#include "bindings/core/v8/mojo_watch_callback.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/mojo/MojoHandleSignals.h"

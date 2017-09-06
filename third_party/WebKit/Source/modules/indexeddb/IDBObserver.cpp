@@ -7,9 +7,9 @@
 #include <bitset>
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/modules/v8/IDBObserverCallback.h"
 #include "bindings/modules/v8/ToV8ForModules.h"
 #include "bindings/modules/v8/V8BindingForModules.h"
+#include "bindings/modules/v8/idb_observer_callback.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/IndexedDBNames.h"
 #include "modules/indexeddb/IDBDatabase.h"

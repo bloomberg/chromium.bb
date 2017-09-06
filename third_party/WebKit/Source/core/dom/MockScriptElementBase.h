@@ -5,7 +5,7 @@
 #ifndef MockScriptElementBase_h
 #define MockScriptElementBase_h
 
-#include "bindings/core/v8/HTMLScriptElementOrSVGScriptElement.h"
+#include "bindings/core/v8/html_script_element_or_svg_script_element.h"
 #include "core/dom/Document.h"
 #include "core/dom/ScriptElementBase.h"
 #include "testing/gmock/include/gmock/gmock.h"

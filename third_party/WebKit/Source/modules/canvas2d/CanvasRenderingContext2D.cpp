@@ -35,7 +35,7 @@
 
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/modules/v8/RenderingContext.h"
+#include "bindings/modules/v8/rendering_context.h"
 #include "core/CSSPropertyNames.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/StyleEngine.h"

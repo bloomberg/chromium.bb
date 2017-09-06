@@ -5,7 +5,7 @@
 #ifndef BluetoothUUID_h
 #define BluetoothUUID_h
 
-#include "bindings/modules/v8/StringOrUnsignedLong.h"
+#include "bindings/modules/v8/string_or_unsigned_long.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 

@@ -5,7 +5,7 @@
 #include "modules/beacon/NavigatorBeacon.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/modules/v8/ArrayBufferViewOrBlobOrStringOrFormData.h"
+#include "bindings/modules/v8/array_buffer_view_or_blob_or_string_or_form_data.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/Blob.h"

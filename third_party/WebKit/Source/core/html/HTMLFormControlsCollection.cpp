@@ -24,7 +24,7 @@
 
 #include "core/html/HTMLFormControlsCollection.h"
 
-#include "bindings/core/v8/RadioNodeListOrElement.h"
+#include "bindings/core/v8/radio_node_list_or_element.h"
 #include "core/HTMLNames.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLFormElement.h"

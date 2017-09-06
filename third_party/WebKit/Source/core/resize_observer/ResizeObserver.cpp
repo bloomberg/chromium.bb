@@ -4,7 +4,7 @@
 
 #include "core/resize_observer/ResizeObserver.h"
 
-#include "bindings/core/v8/ResizeObserverCallback.h"
+#include "bindings/core/v8/resize_observer_callback.h"
 #include "core/dom/Element.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutObject.h"

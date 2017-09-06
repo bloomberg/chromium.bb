@@ -27,7 +27,7 @@
 #include "core/dom/Node.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/NodeOrString.h"
+#include "bindings/core/v8/node_or_string.h"
 #include "core/HTMLNames.h"
 #include "core/MathMLNames.h"
 #include "core/css/CSSSelector.h"

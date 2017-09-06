@@ -31,7 +31,7 @@
 #ifndef Blob_h
 #define Blob_h
 
-#include "bindings/core/v8/ArrayBufferOrArrayBufferViewOrBlobOrUSVString.h"
+#include "bindings/core/v8/array_buffer_or_array_buffer_view_or_blob_or_usv_string.h"
 #include "core/CoreExport.h"
 #include "core/html/URLRegistry.h"
 #include "core/imagebitmap/ImageBitmapSource.h"

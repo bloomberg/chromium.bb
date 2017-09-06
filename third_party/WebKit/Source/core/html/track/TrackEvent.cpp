@@ -25,7 +25,7 @@
 
 #include "core/html/track/TrackEvent.h"
 
-#include "bindings/core/v8/VideoTrackOrAudioTrackOrTextTrack.h"
+#include "bindings/core/v8/video_track_or_audio_track_or_text_track.h"
 #include "core/html/track/AudioTrack.h"
 #include "core/html/track/TextTrack.h"
 #include "core/html/track/VideoTrack.h"

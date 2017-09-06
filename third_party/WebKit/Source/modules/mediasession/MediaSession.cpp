@@ -5,7 +5,7 @@
 #include "modules/mediasession/MediaSession.h"
 
 #include <memory>
-#include "bindings/modules/v8/MediaSessionActionHandler.h"
+#include "bindings/modules/v8/media_session_action_handler.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/UserGestureIndicator.h"
