@@ -30,7 +30,6 @@ import os  # Somewhat exposed through the API.
 import pickle  # Exposed through the API.
 import random
 import re  # Exposed through the API.
-import signal
 import sys  # Parts exposed through API.
 import tempfile  # Exposed through the API.
 import time
@@ -436,19 +435,11 @@ class InputApi(object):
 
     self.cpu_count = multiprocessing.cpu_count()
 
-    # We initialize here because in RunTests, the current working directory has
+    # this is done here because in RunTests, the current working directory has
     # changed, which causes Pool() to explode fantastically when run on windows
     # (because it tries to load the __main__ module, which imports lots of
     # things relative to the current working directory).
-    # We capture ctrl-c in the initializer to prevent massive console spew when
-    # cancelling all of the processes with ctrl-c.
-    def _capture_interrupt():
-      CTRL_C = signal.SIGINT
-      if sys.platform == 'win32':
-        CTRL_C = signal.CTRL_C_EVENT
-      signal.signal(CTRL_C, lambda x, y: sys.exit(1))
-    self._run_tests_pool = multiprocessing.Pool(
-        self.cpu_count, _capture_interrupt)
+    self._run_tests_pool = multiprocessing.Pool(self.cpu_count)
 
     # The local path of the currently-being-processed presubmit script.
     self._current_presubmit_path = os.path.dirname(presubmit_path)
