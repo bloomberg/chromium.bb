@@ -12,7 +12,6 @@
 #include "base/mac/bind_objc_block.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_checker.h"
 
@@ -450,15 +449,9 @@ DeviceMonitorMac::~DeviceMonitorMac() {}
 
 void DeviceMonitorMac::StartMonitoring() {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-    // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/458404
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "458404 DeviceMonitorMac::StartMonitoring::AVFoundation"));
-    DVLOG(1) << "Monitoring via AVFoundation";
-    device_monitor_impl_.reset(
-        new AVFoundationMonitorImpl(this, device_task_runner_));
+  DVLOG(1) << "Monitoring via AVFoundation";
+  device_monitor_impl_.reset(
+      new AVFoundationMonitorImpl(this, device_task_runner_));
 }
 
 void DeviceMonitorMac::NotifyDeviceChanged(

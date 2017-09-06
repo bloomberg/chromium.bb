@@ -13,7 +13,6 @@
 #include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -515,10 +514,6 @@ void URLRequest::Start() {
   if (!status_.is_success())
     return;
 
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456327 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("456327 URLRequest::Start"));
-
   // Some values can be NULL, but the job factory must not be.
   DCHECK(context_->job_factory());
 
@@ -534,10 +529,6 @@ void URLRequest::Start() {
   load_timing_info_.request_start = base::TimeTicks::Now();
 
   if (network_delegate_) {
-    // TODO(mmenke): Remove ScopedTracker below once crbug.com/456327 is fixed.
-    tracked_objects::ScopedTracker tracking_profile25(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("456327 URLRequest::Start 2.5"));
-
     OnCallToDelegate();
     int error = network_delegate_->NotifyBeforeURLRequest(
         this, before_request_callback_, &delegate_redirect_url_);
@@ -547,10 +538,6 @@ void URLRequest::Start() {
       BeforeRequestComplete(error);
     return;
   }
-
-  // TODO(mmenke): Remove ScopedTracker below once crbug.com/456327 is fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("456327 URLRequest::Start 2"));
 
   StartJob(URLRequestJobManager::GetInstance()->CreateJob(
       this, network_delegate_));
@@ -629,10 +616,6 @@ void URLRequest::BeforeRequestComplete(int error) {
 }
 
 void URLRequest::StartJob(URLRequestJob* job) {
-  // TODO(mmenke): Remove ScopedTracker below once crbug.com/456327 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("456327 URLRequest::StartJob"));
-
   DCHECK(!is_pending_);
   DCHECK(!job_.get());
 

@@ -12,7 +12,6 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
-#include "base/profiler/scoped_tracker.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -148,14 +147,8 @@ AppListViewDelegate::AppListViewDelegate(AppListControllerDelegate* controller)
 
 #if defined(GOOGLE_CHROME_BUILD)
   gfx::ImageSkia* image;
-  {
-    // TODO(tapted): Remove ScopedTracker below once crbug.com/431326 is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("431326 GetImageSkiaNamed()"));
-    image = ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-        IDR_APP_LIST_GOOGLE_LOGO_VOICE_SEARCH);
-  }
-
+  image = ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+      IDR_APP_LIST_GOOGLE_LOGO_VOICE_SEARCH);
   speech_ui_->set_logo(*image);
 #endif
 
@@ -212,31 +205,24 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
   DCHECK(!profile_->IsGuestSession() || profile_->IsOffTheRecord())
       << "Guest mode must use incognito profile";
 
-  {
-    // TODO(tapted): Remove ScopedTracker below once crbug.com/431326 is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "431326 AppListViewDelegate TemplateURL etc."));
-    TemplateURLService* template_url_service =
-        TemplateURLServiceFactory::GetForProfile(profile_);
-    template_url_service_observer_.Add(template_url_service);
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile_);
+  template_url_service_observer_.Add(template_url_service);
 
-    model_ = app_list::AppListSyncableServiceFactory::GetForProfile(profile_)
-                 ->GetModel();
+  model_ = app_list::AppListSyncableServiceFactory::GetForProfile(profile_)
+               ->GetModel();
 
-    // After |model_| is initialized, make a GetWallpaperColors mojo call to set
-    // wallpaper colors for |model_|.
-    wallpaper_controller_ptr_->GetWallpaperColors(
-        base::Bind(&AppListViewDelegate::OnGetWallpaperColorsCallback,
-                   weak_ptr_factory_.GetWeakPtr()));
+  // After |model_| is initialized, make a GetWallpaperColors mojo call to set
+  // wallpaper colors for |model_|.
+  wallpaper_controller_ptr_->GetWallpaperColors(
+      base::Bind(&AppListViewDelegate::OnGetWallpaperColorsCallback,
+                 weak_ptr_factory_.GetWeakPtr()));
 
-    app_sync_ui_state_watcher_.reset(
-        new AppSyncUIStateWatcher(profile_, model_));
+  app_sync_ui_state_watcher_.reset(new AppSyncUIStateWatcher(profile_, model_));
 
-    SetUpSearchUI();
-    SetUpCustomLauncherPages();
-    OnTemplateURLServiceChanged();
-  }
+  SetUpSearchUI();
+  SetUpCustomLauncherPages();
+  OnTemplateURLServiceChanged();
 
   // Clear search query.
   model_->search_box()->Update(base::string16(), false);

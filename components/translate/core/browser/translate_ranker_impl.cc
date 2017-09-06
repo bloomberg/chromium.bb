@@ -14,7 +14,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/metrics_hashes.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -227,11 +226,6 @@ bool TranslateRankerImpl::ShouldOfferTranslation(
   }
 
   SCOPED_UMA_HISTOGRAM_TIMER("Translate.Ranker.Timer.ShouldOfferTranslation");
-
-  // TODO(rogerm): Remove ScopedTracker below once crbug.com/646711 is closed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "646711 translate::TranslateRankerImpl::ShouldOfferTranslation"));
 
   bool result = GetModelDecision(*translate_event);
 

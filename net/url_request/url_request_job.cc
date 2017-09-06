@@ -13,7 +13,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/power_monitor/power_monitor.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -568,11 +567,6 @@ void URLRequestJob::ConvertResultToError(int result, Error* error, int* count) {
 void URLRequestJob::ReadRawDataComplete(int result) {
   DCHECK(request_->status().is_io_pending());
   DCHECK_NE(ERR_IO_PENDING, result);
-
-  // TODO(cbentzel): Remove ScopedTracker below once crbug.com/475755 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "475755 URLRequestJob::RawReadCompleted"));
 
   // The headers should be complete before reads complete
   DCHECK(has_handled_response_);

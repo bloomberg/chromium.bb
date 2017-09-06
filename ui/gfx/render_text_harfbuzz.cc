@@ -14,7 +14,6 @@
 #include "base/i18n/char_iterator.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1230,13 +1229,7 @@ void RenderTextHarfBuzz::EnsureLayout() {
 
     if (!display_text.empty()) {
       TRACE_EVENT0("ui", "RenderTextHarfBuzz:EnsureLayout1");
-
       ItemizeTextToRuns(display_text, display_run_list_.get());
-
-      // TODO(ckocagil): Remove ScopedTracker below once crbug.com/441028 is
-      // fixed.
-      tracked_objects::ScopedTracker tracking_profile(
-          FROM_HERE_WITH_EXPLICIT_FUNCTION("441028 ShapeRunList() 1"));
       ShapeRunList(display_text, display_run_list_.get());
     }
     update_display_run_list_ = false;
@@ -1245,12 +1238,6 @@ void RenderTextHarfBuzz::EnsureLayout() {
   }
 
   if (lines().empty()) {
-    // TODO(ckocagil): Remove ScopedTracker below once crbug.com/441028 is
-    // fixed.
-    std::unique_ptr<tracked_objects::ScopedTracker> tracking_profile(
-        new tracked_objects::ScopedTracker(
-            FROM_HERE_WITH_EXPLICIT_FUNCTION("441028 HarfBuzzLineBreaker")));
-
     internal::TextRunList* run_list = GetRunList();
     const int height = std::max(font_list().GetHeight(), min_line_height());
     HarfBuzzLineBreaker line_breaker(
@@ -1258,8 +1245,6 @@ void RenderTextHarfBuzz::EnsureLayout() {
         DetermineBaselineCenteringText(height, font_list()), height,
         word_wrap_behavior(), GetDisplayText(),
         multiline() ? &GetLineBreaks() : nullptr, *run_list);
-
-    tracking_profile.reset();
 
     if (multiline())
       line_breaker.ConstructMultiLines();
@@ -1625,15 +1610,8 @@ bool RenderTextHarfBuzz::ShapeRunWithFont(const base::string16& text,
   // TODO(ckocagil): Should we determine the actual language?
   hb_buffer_set_language(buffer, hb_language_get_default());
 
-  {
-    // TODO(ckocagil): Remove ScopedTracker below once crbug.com/441028 is
-    // fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("441028 hb_shape()"));
-
-    // Shape the text.
-    hb_shape(harfbuzz_font, buffer, NULL, 0);
-  }
+  // Shape the text.
+  hb_shape(harfbuzz_font, buffer, NULL, 0);
 
   // Populate the run fields with the resulting glyph data in the buffer.
   unsigned int glyph_count = 0;
@@ -1676,11 +1654,6 @@ void RenderTextHarfBuzz::EnsureLayoutRunList() {
     if (!text.empty()) {
       TRACE_EVENT0("ui", "RenderTextHarfBuzz:EnsureLayoutRunList");
       ItemizeTextToRuns(text, &layout_run_list_);
-
-      // TODO(ckocagil): Remove ScopedTracker below once crbug.com/441028 is
-      // fixed.
-      tracked_objects::ScopedTracker tracking_profile(
-          FROM_HERE_WITH_EXPLICIT_FUNCTION("441028 ShapeRunList() 2"));
       ShapeRunList(text, &layout_run_list_);
     }
 

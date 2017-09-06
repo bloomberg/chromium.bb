@@ -16,7 +16,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/os_crypt/ie7_password_win.h"
@@ -150,12 +149,6 @@ PasswordStoreWin::DBHandler::GetIE7Results(
 void PasswordStoreWin::DBHandler::OnWebDataServiceRequestDone(
     PasswordWebDataService::Handle handle,
     std::unique_ptr<WDTypedResult> result) {
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422460 PasswordStoreWin::DBHandler::OnWebDataServiceRequestDone"));
-
   DCHECK(
       password_store_->background_task_runner()->RunsTasksInCurrentSequence());
 

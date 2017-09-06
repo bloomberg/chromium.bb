@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "components/wallpaper/wallpaper_color_profile.h"
@@ -408,12 +407,6 @@ class AppListView::FullscreenWidgetObserver : views::WidgetObserver {
 };
 
 void AppListView::InitContents(gfx::NativeView parent, int initial_apps_page) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440224 and
-  // crbug.com/441028 are fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "440224, 441028 AppListView::InitContents"));
-
   if (is_fullscreen_app_list_enabled_) {
     // The shield view that colors/blurs the background of the app list and
     // makes it transparent.
@@ -441,21 +434,9 @@ void AppListView::InitContents(gfx::NativeView parent, int initial_apps_page) {
   search_box_view_->layer()->SetFillsBoundsOpaquely(false);
   search_box_view_->layer()->SetMasksToBounds(true);
 
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440224 and
-  // crbug.com/441028 are fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "440224, 441028 AppListView::InitContents1"));
-
   app_list_main_view_->Init(
       parent, is_fullscreen_app_list_enabled_ ? 0 : initial_apps_page,
       search_box_view_);
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440224 and
-  // crbug.com/441028 are fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "440224, 441028 AppListView::InitContents2"));
 
   // Speech recognition is available only when the start page exists.
   if (delegate_ && delegate_->IsSpeechRecognitionEnabled()) {

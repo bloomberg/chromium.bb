@@ -12,7 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "content/public/browser/browser_thread.h"
@@ -138,10 +137,6 @@ CookieStoreConfig::~CookieStoreConfig() {
 
 std::unique_ptr<net::CookieStore> CreateCookieStore(
     const CookieStoreConfig& config) {
-  // TODO(bcwhite): Remove ScopedTracker below once crbug.com/483686 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("483686 content::CreateCookieStore"));
-
   std::unique_ptr<net::CookieMonster> cookie_monster;
 
   if (config.path.empty()) {

@@ -35,7 +35,6 @@
 #include "base/process/memory.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -519,11 +518,6 @@ class ContentMainRunnerImpl : public ContentMainRunner {
       // called are destructed when it returns.
       exit_manager_.reset(new base::AtExitManager);
     }
-#endif  // !OS_ANDROID
-
-#if !defined(OS_ANDROID)
-    if (delegate_ && delegate_->ShouldEnableProfilerRecording())
-      tracked_objects::ScopedTracker::Enable();
 #endif  // !OS_ANDROID
 
     int exit_code = 0;

@@ -15,7 +15,6 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -516,11 +515,6 @@ void Label::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 void Label::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
   if (is_first_paint_text_) {
-    // TODO(ckocagil): Remove ScopedTracker below once crbug.com/441028 is
-    // fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("441028 First PaintText()"));
-
     is_first_paint_text_ = false;
     PaintText(canvas);
   } else {

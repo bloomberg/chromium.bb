@@ -14,7 +14,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -211,12 +210,6 @@ OAuth2TokenService::Fetcher::CreateAndStart(
   std::unique_ptr<OAuth2TokenService::Fetcher> fetcher = base::WrapUnique(
       new Fetcher(oauth2_token_service, account_id, getter, client_id,
                   client_secret, scopes, waiting_request));
-
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422460 OAuth2TokenService::Fetcher::CreateAndStart"));
 
   fetcher->Start();
   return fetcher;
@@ -483,22 +476,11 @@ OAuth2TokenService::StartRequestForClientWithContext(
     Consumer* consumer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422460 OAuth2TokenService::StartRequestForClientWithContext 1"));
   std::unique_ptr<RequestImpl> request(new RequestImpl(account_id, consumer));
   for (auto& observer : diagnostics_observer_list_)
     observer.OnAccessTokenRequested(account_id, consumer->id(), scopes);
 
   if (!RefreshTokenIsAvailable(account_id)) {
-    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile2(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "422460 OAuth2TokenService::StartRequestForClientWithContext 2"));
-
     GoogleServiceAuthError error(GoogleServiceAuthError::USER_NOT_SIGNED_UP);
 
     for (auto& observer : diagnostics_observer_list_) {
@@ -517,12 +499,6 @@ OAuth2TokenService::StartRequestForClientWithContext(
                                        account_id,
                                        scopes);
   if (HasCacheEntry(request_parameters)) {
-    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile3(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "422460 OAuth2TokenService::StartRequestForClientWithContext 3"));
-
     StartCacheLookupRequest(request.get(), request_parameters, consumer);
   } else {
     FetchOAuth2Token(request.get(),
@@ -541,12 +517,6 @@ void OAuth2TokenService::FetchOAuth2Token(RequestImpl* request,
                                           const std::string& client_id,
                                           const std::string& client_secret,
                                           const ScopeSet& scopes) {
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422460 OAuth2TokenService::FetchOAuth2Token"));
-
   // If there is already a pending fetcher for |scopes| and |account_id|,
   // simply register this |request| for those results rather than starting
   // a new fetcher.

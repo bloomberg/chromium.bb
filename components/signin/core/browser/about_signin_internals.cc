@@ -16,7 +16,6 @@
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -288,30 +287,12 @@ void AboutSigninInternals::NotifyObservers() {
   if (!signin_observers_.might_have_observers())
     return;
 
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422460 AboutSigninInternals::NotifyObservers"));
-
   const std::string product_version = client_->GetProductVersion();
-
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile05(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422460 AboutSigninInternals::NotifyObservers 0.5"));
 
   std::unique_ptr<base::DictionaryValue> signin_status_value =
       signin_status_.ToValue(account_tracker_, signin_manager_,
                              signin_error_controller_, token_service_,
                              cookie_manager_service_, product_version);
-
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422460 AboutSigninInternals::NotifyObservers1"));
 
   for (auto& observer : signin_observers_)
     observer.OnSigninStateChanged(signin_status_value.get());
@@ -327,12 +308,6 @@ void AboutSigninInternals::OnAccessTokenRequested(
     const std::string& account_id,
     const std::string& consumer_id,
     const OAuth2TokenService::ScopeSet& scopes) {
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422460 AboutSigninInternals::OnAccessTokenRequested"));
-
   TokenInfo* token = signin_status_.FindToken(account_id, consumer_id, scopes);
   if (token) {
     *token = TokenInfo(consumer_id, scopes);
@@ -523,12 +498,6 @@ AboutSigninInternals::SigninStatus::ToValue(
     ProfileOAuth2TokenService* token_service,
     GaiaCookieManagerService* cookie_manager_service_,
     const std::string& product_version) {
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422460 AboutSigninInternals::SigninStatus::ToValue1"));
-
   auto signin_status = base::MakeUnique<base::DictionaryValue>();
   auto signin_info = base::MakeUnique<base::ListValue>();
 
@@ -545,12 +514,6 @@ AboutSigninInternals::SigninStatus::ToValue(
       token_service->GetDelegate()->GetLoadCredentialsState();
   AddSectionEntry(basic_info, "TokenService Status",
                   TokenServiceLoadCredentialsStateToLabel(load_tokens_state));
-
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422460 AboutSigninInternals::SigninStatus::ToValue2"));
 
   if (signin_manager->IsAuthenticated()) {
     std::string account_id = signin_manager->GetAuthenticatedAccountId();
@@ -581,12 +544,6 @@ AboutSigninInternals::SigninStatus::ToValue(
   }
 
 #if !defined(OS_CHROMEOS)
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile3(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422460 AboutSigninInternals::SigninStatus::ToValue3"));
-
   // Time and status information of the possible sign in types.
   base::ListValue* detailed_info =
       AddSection(signin_info.get(), "Last Signin Details");
@@ -638,41 +595,13 @@ AboutSigninInternals::SigninStatus::ToValue(
 
 #endif  // !defined(OS_CHROMEOS)
 
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile4(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422460 AboutSigninInternals::SigninStatus::ToValue4"));
-
   // Token information for all services.
   auto token_info = base::MakeUnique<base::ListValue>();
   for (auto it = token_info_map.begin(); it != token_info_map.end(); ++it) {
-    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile41(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "422460 AboutSigninInternals::SigninStatus::ToValue41"));
-
     base::ListValue* token_details = AddSection(token_info.get(), it->first);
-
-    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile42(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "422460 AboutSigninInternals::SigninStatus::ToValue42"));
-
     std::sort(it->second.begin(), it->second.end(), TokenInfo::LessThan);
-    const auto& tokens = it->second;
-
-    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile43(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "422460 AboutSigninInternals::SigninStatus::ToValue43"));
-
-    for (const std::unique_ptr<TokenInfo>& token : tokens) {
+    for (const std::unique_ptr<TokenInfo>& token : it->second)
       token_details->Append(token->ToValue());
-    }
   }
   signin_status->Set("token_info", std::move(token_info));
 

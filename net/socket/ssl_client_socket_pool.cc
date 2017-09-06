@@ -13,7 +13,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "net/base/host_port_pair.h"
@@ -304,10 +303,6 @@ int SSLConnectJob::DoTunnelConnectComplete(int result) {
 
 int SSLConnectJob::DoSSLConnect() {
   TRACE_EVENT0(kNetTracingCategory, "SSLConnectJob::DoSSLConnect");
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/462815 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("462815 SSLConnectJob::DoSSLConnect"));
-
   next_state_ = STATE_SSL_CONNECT_COMPLETE;
 
   // Reset the timeout to just the time allowed for the SSL handshake.
@@ -344,11 +339,6 @@ int SSLConnectJob::DoSSLConnect() {
 int SSLConnectJob::DoSSLConnectComplete(int result) {
   // Version interference probes should not result in success.
   DCHECK(!version_interference_probe_ || result != OK);
-
-  // TODO(rvargas): Remove ScopedTracker below once crbug.com/462784 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "462784 SSLConnectJob::DoSSLConnectComplete"));
 
   connect_timing_.ssl_end = base::TimeTicks::Now();
 

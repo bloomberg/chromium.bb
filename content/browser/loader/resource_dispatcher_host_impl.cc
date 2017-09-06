@@ -29,7 +29,6 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/task_scheduler/post_task.h"
@@ -840,10 +839,6 @@ void ResourceDispatcherHostImpl::OnRequestResourceInternal(
     mojom::URLLoaderClientPtr url_loader_client,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(requester_info->IsRenderer() || requester_info->IsNavigationPreload());
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/477117 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "477117 ResourceDispatcherHostImpl::OnRequestResource"));
   // When logging time-to-network only care about main frame and non-transfer
   // navigations.
   // PlzNavigate: this log happens from NavigationRequest::OnRequestStarted
@@ -1445,10 +1440,6 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
     mojom::URLLoaderRequest mojo_request,
     mojom::URLLoaderClientPtr url_loader_client) {
   DCHECK(requester_info->IsRenderer() || requester_info->IsNavigationPreload());
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456331 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "456331 ResourceDispatcherHostImpl::CreateResourceHandler"));
   // Construct the IPC resource handler.
   std::unique_ptr<ResourceHandler> handler;
   if (sync_result_handler) {
@@ -2404,11 +2395,6 @@ void ResourceDispatcherHostImpl::CancelRequestFromRenderer(
 void ResourceDispatcherHostImpl::StartLoading(
     ResourceRequestInfoImpl* info,
     std::unique_ptr<ResourceLoader> loader) {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456331 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "456331 ResourceDispatcherHostImpl::StartLoading"));
-
   ResourceLoader* loader_ptr = loader.get();
   DCHECK(pending_loaders_[info->GetGlobalRequestID()] == nullptr);
   pending_loaders_[info->GetGlobalRequestID()] = std::move(loader);

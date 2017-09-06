@@ -18,7 +18,6 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/memory/ptr_util.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
@@ -442,22 +441,12 @@ void BluetoothAdapterMac::InitForTest(
 }
 
 void BluetoothAdapterMac::PollAdapter() {
-  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/461181
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "461181 BluetoothAdapterMac::PollAdapter::Start"));
   bool was_present = IsPresent();
   std::string address;
   bool classic_powered = false;
   IOBluetoothHostController* controller =
       [IOBluetoothHostController defaultController];
 
-  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/461181
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "461181 BluetoothAdapterMac::PollAdapter::GetControllerStats"));
   if (controller != nil) {
     address = BluetoothDevice::CanonicalizeAddress(
         base::SysNSStringToUTF8([controller addressAsString]));
@@ -470,39 +459,18 @@ void BluetoothAdapterMac::PollAdapter() {
   bool is_present = !address.empty();
   address_ = address;
 
-  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/461181
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile3(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "461181 BluetoothAdapterMac::PollAdapter::AdapterPresentChanged"));
   if (was_present != is_present) {
     for (auto& observer : observers_)
       observer.AdapterPresentChanged(this, is_present);
   }
 
-  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/461181
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile4(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "461181 BluetoothAdapterMac::PollAdapter::AdapterPowerChanged"));
   if (classic_powered_ != classic_powered) {
     classic_powered_ = classic_powered;
     for (auto& observer : observers_)
       observer.AdapterPoweredChanged(this, classic_powered_);
   }
 
-  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/461181
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile5(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "461181 BluetoothAdapterMac::PollAdapter::RemoveTimedOutDevices"));
   RemoveTimedOutDevices();
-
-  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/461181
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile6(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "461181 BluetoothAdapterMac::PollAdapter::AddPairedDevices"));
   AddPairedDevices();
 
   ui_task_runner_->PostDelayedTask(

@@ -18,7 +18,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -89,11 +88,6 @@ void CopyData(const scoped_refptr<net::IOBuffer>& buf,
               int buf_size,
               const scoped_refptr<base::RefCountedMemory>& data,
               int64_t data_offset) {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455423 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455423 URLRequestChromeJob::CompleteRead memcpy"));
   memcpy(buf->data(), data->front() + data_offset, buf_size);
 }
 

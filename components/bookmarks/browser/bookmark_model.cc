@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "components/bookmarks/browser/bookmark_expanded_state_tracker.h"
 #include "components/bookmarks/browser/bookmark_model_observer.h"
@@ -818,19 +817,9 @@ void BookmarkModel::DoneLoading(std::unique_ptr<BookmarkLoadDetails> details) {
     return;
   }
 
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/467179
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("467179 BookmarkModel::DoneLoading1"));
-
   next_node_id_ = details->max_id();
   if (details->computed_checksum() != details->stored_checksum() ||
       details->ids_reassigned()) {
-    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/467179
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile2(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("467179 BookmarkModel::DoneLoading2"));
-
     // If bookmarks file changed externally, the IDs may have changed
     // externally. In that case, the decoder may have reassigned IDs to make
     // them unique. So when the file has changed externally, we should save the
@@ -854,11 +843,6 @@ void BookmarkModel::DoneLoading(std::unique_ptr<BookmarkLoadDetails> details) {
   std::vector<std::unique_ptr<BookmarkPermanentNode>> extra_nodes =
       details->owned_extra_nodes();
 
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/467179
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile3(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("467179 BookmarkModel::DoneLoading3"));
-
   // WARNING: order is important here, various places assume the order is
   // constant (but can vary between embedders with the initial visibility
   // of permanent nodes).
@@ -869,11 +853,6 @@ void BookmarkModel::DoneLoading(std::unique_ptr<BookmarkLoadDetails> details) {
   std::move(extra_nodes.begin(), extra_nodes.end(),
             std::back_inserter(root_children));
 
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/467179
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile4(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("467179 BookmarkModel::DoneLoading4"));
-
   std::stable_sort(root_children.begin(),
                    root_children.end(),
                    VisibilityComparator(client_.get()));
@@ -882,11 +861,6 @@ void BookmarkModel::DoneLoading(std::unique_ptr<BookmarkLoadDetails> details) {
 
   root_.SetMetaInfoMap(details->model_meta_info_map());
   root_.set_sync_transaction_version(details->model_sync_transaction_version());
-
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/467179
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile5(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("467179 BookmarkModel::DoneLoading5"));
 
   {
     base::AutoLock url_lock(url_lock_);
@@ -897,11 +871,6 @@ void BookmarkModel::DoneLoading(std::unique_ptr<BookmarkLoadDetails> details) {
   loaded_ = true;
 
   loaded_signal_.Signal();
-
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/467179
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile6(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("467179 BookmarkModel::DoneLoading6"));
 
   // Notify our direct observers.
   for (BookmarkModelObserver& observer : observers_)

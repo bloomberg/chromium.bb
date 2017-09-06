@@ -20,7 +20,6 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/metrics/user_metrics.h"
 #include "base/path_service.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
@@ -216,11 +215,6 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     GURL* new_url) {
-  // TODO(mmenke): Remove ScopedTracker below once crbug.com/456327 is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "456327 URLRequest::ChromeNetworkDelegate::OnBeforeURLRequest"));
-
   // TODO(joaodasilva): This prevents extensions from seeing URLs that are
   // blocked. However, an extension might redirect the request to another URL,
   // which is not blocked.
@@ -239,22 +233,12 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
     return error;
   }
 
-  // TODO(mmenke): Remove ScopedTracker below once crbug.com/456327 is fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "456327 URLRequest::ChromeNetworkDelegate::OnBeforeURLRequest 2"));
-
   extensions_delegate_->ForwardStartRequestStatus(request);
 
   if (!enable_referrers_->GetValue())
     request->SetReferrer(std::string());
   if (enable_do_not_track_ && enable_do_not_track_->GetValue())
     request->SetExtraRequestHeaderByName(kDNTHeader, "1", true /* override */);
-
-  // TODO(mmenke): Remove ScopedTracker below once crbug.com/456327 is fixed.
-  tracked_objects::ScopedTracker tracking_profile3(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "456327 URLRequest::ChromeNetworkDelegate::OnBeforeURLRequest 3"));
 
   bool force_safe_search =
       (force_google_safe_search_ && force_google_safe_search_->GetValue());
@@ -270,18 +254,8 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
   int rv = extensions_delegate_->OnBeforeURLRequest(
       request, wrapped_callback, new_url);
 
-  // TODO(mmenke): Remove ScopedTracker below once crbug.com/456327 is fixed.
-  tracked_objects::ScopedTracker tracking_profile4(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "456327 URLRequest::ChromeNetworkDelegate::OnBeforeURLRequest 4"));
-
   if (force_safe_search && rv == net::OK && new_url->is_empty())
     safe_search_util::ForceGoogleSafeSearch(request, new_url);
-
-  // TODO(mmenke): Remove ScopedTracker below once crbug.com/456327 is fixed.
-  tracked_objects::ScopedTracker tracking_profile5(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "456327 URLRequest::ChromeNetworkDelegate::OnBeforeURLRequest 5"));
 
   if (allowed_domains_for_apps_ &&
       !allowed_domains_for_apps_->GetValue().empty() &&

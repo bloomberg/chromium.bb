@@ -17,7 +17,6 @@
 #include "base/i18n/case_conversion.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -737,23 +736,11 @@ TemplateURLService::RegisterOnLoadedCallback(const base::Closure& callback) {
 void TemplateURLService::OnWebDataServiceRequestDone(
     KeywordWebDataService::Handle h,
     std::unique_ptr<WDTypedResult> result) {
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422460 TemplateURLService::OnWebDataServiceRequestDone"));
-
   // Reset the load_handle so that we don't try and cancel the load in
   // the destructor.
   load_handle_ = 0;
 
   if (!result) {
-    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile1(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "422460 TemplateURLService::OnWebDataServiceRequestDone 1"));
-
     // Results are null if the database went away or (most likely) wasn't
     // loaded.
     load_failed_ = true;
@@ -766,12 +753,6 @@ void TemplateURLService::OnWebDataServiceRequestDone(
       base::MakeUnique<OwnedTemplateURLVector>();
   int new_resource_keyword_version = 0;
   {
-    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile2(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "422460 TemplateURLService::OnWebDataServiceRequestDone 2"));
-
     GetSearchProvidersUsingKeywordResult(
         *result, web_data_service_.get(), prefs_, template_urls.get(),
         (default_search_provider_source_ == DefaultSearchManager::FROM_USER)
@@ -783,61 +764,24 @@ void TemplateURLService::OnWebDataServiceRequestDone(
   KeywordWebDataService::BatchModeScoper scoper(web_data_service_.get());
 
   {
-    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile4(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "422460 TemplateURLService::OnWebDataServiceRequestDone 4"));
-
     PatchMissingSyncGUIDs(template_urls.get());
-
-    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile41(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "422460 TemplateURLService::OnWebDataServiceRequestDone 41"));
-
     SetTemplateURLs(std::move(template_urls));
-
-    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile42(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "422460 TemplateURLService::OnWebDataServiceRequestDone 42"));
 
     // This initializes provider_map_ which should be done before
     // calling UpdateKeywordSearchTermsForURL.
     // This also calls NotifyObservers.
     ChangeToLoadedState();
 
-    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile43(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "422460 TemplateURLService::OnWebDataServiceRequestDone 43"));
-
     // Index any visits that occurred before we finished loading.
     for (size_t i = 0; i < visits_to_add_.size(); ++i)
       UpdateKeywordSearchTermsForURL(visits_to_add_[i]);
     visits_to_add_.clear();
-
-    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile44(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "422460 TemplateURLService::OnWebDataServiceRequestDone 44"));
 
     if (new_resource_keyword_version)
       web_data_service_->SetBuiltinKeywordVersion(new_resource_keyword_version);
   }
 
   if (default_search_provider_) {
-    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile5(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "422460 TemplateURLService::OnWebDataServiceRequestDone 5"));
-
     UMA_HISTOGRAM_ENUMERATION(
         "Search.DefaultSearchProviderType",
         default_search_provider_->GetEngineType(search_terms_data()),
@@ -1586,22 +1530,10 @@ void TemplateURLService::SetTemplateURLs(
 }
 
 void TemplateURLService::ChangeToLoadedState() {
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422460 TemplateURLService::ChangeToLoadedState 1"));
-
   DCHECK(!loaded_);
 
   provider_map_->Init(template_urls_, search_terms_data());
   loaded_ = true;
-
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422460 TemplateURLService::ChangeToLoadedState 2"));
 
   // This will cause a call to NotifyObservers().
   ApplyDefaultSearchChangeNoMetrics(
@@ -1610,12 +1542,6 @@ void TemplateURLService::ChangeToLoadedState() {
           : nullptr,
       default_search_provider_source_);
   initial_default_search_provider_.reset();
-
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile3(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422460 TemplateURLService::ChangeToLoadedState 3"));
 
   on_loaded_callbacks_.Notify();
 }
