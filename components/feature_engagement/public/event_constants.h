@@ -11,9 +11,18 @@ namespace feature_engagement {
 
 namespace events {
 
-#if defined(OS_WIN) || defined(OS_LINUX)
-// All the events declared below are the string names
-// of deferred onboarding events for the New Tab.
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+// All the events declared below are the string names of deferred onboarding
+// events for the Bookmark feature.
+
+// The user has added a Bookmark (one-off event).
+extern const char kBookmarkAdded[];
+// The user has satisfied the session time requirement to show the BookmarkPromo
+// by accumulating 5 hours of active session time (one-off event).
+extern const char kBookmarkSessionTimeMet[];
+
+// All the events declared below are the string names of deferred onboarding
+// events for the New Tab.
 
 // The user has interacted with the omnibox.
 extern const char kOmniboxInteraction[];
@@ -21,8 +30,8 @@ extern const char kOmniboxInteraction[];
 // by accumulating 2 hours of active session time (one-off event).
 extern const char kNewTabSessionTimeMet[];
 
-// All the events declared below are the string names
-// of deferred onboarding events for the Incognito Window
+// All the events declared below are the string names of deferred onboarding
+// events for the Incognito Window.
 
 // The user has deleted browsing history.
 extern const char kHistoryDeleted[];

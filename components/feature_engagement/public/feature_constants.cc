@@ -29,7 +29,9 @@ const base::Feature kIPHMediaDownloadFeature{"IPH_MediaDownload",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID)
 
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+const base::Feature kIPHBookmarkFeature{"IPH_Bookmark",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHIncognitoWindowFeature{
     "IPH_IncognitoWindow", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHNewTabFeature{"IPH_NewTab",

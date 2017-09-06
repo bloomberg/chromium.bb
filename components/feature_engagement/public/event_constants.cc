@@ -8,7 +8,10 @@ namespace feature_engagement {
 
 namespace events {
 
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+const char kBookmarkAdded[] = "bookmark_added";
+const char kBookmarkSessionTimeMet[] = "bookmark_session_time_met";
+
 const char kOmniboxInteraction[] = "omnibox_used";
 const char kNewTabSessionTimeMet[] = "new_tab_session_time_met";
 

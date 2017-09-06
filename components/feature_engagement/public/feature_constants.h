@@ -29,7 +29,8 @@ extern const base::Feature kIPHChromeHomeExpandFeature;
 extern const base::Feature kIPHMediaDownloadFeature;
 #endif  // defined(OS_ANDROID)
 
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+extern const base::Feature kIPHBookmarkFeature;
 extern const base::Feature kIPHIncognitoWindowFeature;
 extern const base::Feature kIPHNewTabFeature;
 #endif  // defined(OS_WIN) || defined(OS_LINUX)

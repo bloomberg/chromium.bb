@@ -82,7 +82,9 @@
 #include "ui/base/ime/linux/text_edit_key_bindings_delegate_auralinux.h"
 #endif
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#include "chrome/browser/feature_engagement/bookmark/bookmark_tracker.h"
+#include "chrome/browser/feature_engagement/bookmark/bookmark_tracker_factory.h"
 #include "chrome/browser/feature_engagement/new_tab/new_tab_tracker.h"
 #include "chrome/browser/feature_engagement/new_tab/new_tab_tracker_factory.h"
 #endif
@@ -327,7 +329,7 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       CloseWindow(browser_);
       break;
     case IDC_NEW_TAB:
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
       // This is not in NewTab() to avoid tracking programmatic creation of new
       // tabs by extensions.
       feature_engagement::NewTabTrackerFactory::GetInstance()
@@ -412,9 +414,19 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       SavePage(browser_);
       break;
     case IDC_BOOKMARK_PAGE:
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+      feature_engagement::BookmarkTrackerFactory::GetInstance()
+          ->GetForProfile(profile())
+          ->OnBookmarkAdded();
+#endif
       BookmarkCurrentPageAllowingExtensionOverrides(browser_);
       break;
     case IDC_BOOKMARK_ALL_TABS:
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+      feature_engagement::BookmarkTrackerFactory::GetInstance()
+          ->GetForProfile(profile())
+          ->OnBookmarkAdded();
+#endif
       BookmarkAllTabs(browser_);
       break;
     case IDC_VIEW_SOURCE:
