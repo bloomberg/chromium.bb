@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/display/touch_calibrator/touch_calibrator_controller.h"
+#include "ash/display/touch_calibrator_controller.h"
 
+#include "ash/display/touch_calibrator_view.h"
 #include "ash/shell.h"
 #include "ash/touch/ash_touch_transform_controller.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/chromeos/display/touch_calibrator/touch_calibrator_view.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 
-namespace chromeos {
+namespace ash {
 
 // Time interval after a touch event during which all other touch events are
 // ignored during calibration.
@@ -39,7 +39,7 @@ void TouchCalibratorController::StartCalibration(
   is_calibrating_ = true;
   callback_ = callback;
 
-  ash::Shell::Get()->window_tree_host_manager()->AddObserver(this);
+  Shell::Get()->window_tree_host_manager()->AddObserver(this);
   target_display_ = target_display;
 
   // Clear all touch calibrator views used in any previous calibration.
@@ -57,10 +57,10 @@ void TouchCalibratorController::StartCalibration(
         base::MakeUnique<TouchCalibratorView>(display, is_primary_view);
   }
 
-  ash::Shell::Get()->touch_transformer_controller()->SetForCalibration(true);
+  Shell::Get()->touch_transformer_controller()->SetForCalibration(true);
 
   // Add self as an event handler target.
-  ash::Shell::Get()->AddPreTargetHandler(this);
+  Shell::Get()->AddPreTargetHandler(this);
 }
 
 void TouchCalibratorController::StopCalibration() {
@@ -68,12 +68,12 @@ void TouchCalibratorController::StopCalibration() {
     return;
   is_calibrating_ = false;
 
-  ash::Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
+  Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
 
-  ash::Shell::Get()->touch_transformer_controller()->SetForCalibration(false);
+  Shell::Get()->touch_transformer_controller()->SetForCalibration(false);
 
   // Remove self as the event handler.
-  ash::Shell::Get()->RemovePreTargetHandler(this);
+  Shell::Get()->RemovePreTargetHandler(this);
 
   // Transition all touch calibrator views to their final state for a graceful
   // exit.
@@ -120,7 +120,7 @@ void TouchCalibratorController::OnTouchEvent(ui::TouchEvent* touch) {
       callback_.Reset();
     }
     StopCalibration();
-    ash::Shell::Get()->display_manager()->SetTouchCalibrationData(
+    Shell::Get()->display_manager()->SetTouchCalibrationData(
         target_display_.id(), touch_point_quad_,
         target_screen_calibration_view->size());
     return;
@@ -162,4 +162,4 @@ void TouchCalibratorController::OnTouchEvent(ui::TouchEvent* touch) {
   target_screen_calibration_view->AdvanceToNextState();
 }
 
-}  // namespace chromeos
+}  // namespace ash

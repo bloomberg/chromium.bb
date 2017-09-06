@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DISPLAY_TOUCH_CALIBRATOR_TOUCH_CALIBRATOR_CONTROLLER_H_
-#define CHROME_BROWSER_CHROMEOS_DISPLAY_TOUCH_CALIBRATOR_TOUCH_CALIBRATOR_CONTROLLER_H_
+#ifndef ASH_DISPLAY_TOUCH_CALIBRATOR_TOUCH_CALIBRATOR_CONTROLLER_H_
+#define ASH_DISPLAY_TOUCH_CALIBRATOR_TOUCH_CALIBRATOR_CONTROLLER_H_
 
 #include <map>
 
+#include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "base/time/time.h"
 #include "ui/display/display.h"
@@ -16,9 +17,9 @@
 namespace ui {
 class KeyEvent;
 class TouchEvent;
-}
+}  // namespace ui
 
-namespace chromeos {
+namespace ash {
 
 class TouchCalibratorView;
 
@@ -26,8 +27,9 @@ class TouchCalibratorView;
 // associated data from the user. It instantiates TouchCalibratorView classes to
 // present an interface the user can interact with for calibration.
 // Touch calibration is restricted to calibrate only one display at a time.
-class TouchCalibratorController : public ui::EventHandler,
-                                  public ash::WindowTreeHostManager::Observer {
+class ASH_EXPORT TouchCalibratorController
+    : public ui::EventHandler,
+      public WindowTreeHostManager::Observer {
  public:
   using CalibrationPointPairQuad =
       display::TouchCalibrationData::CalibrationPointPairQuad;
@@ -86,5 +88,5 @@ class TouchCalibratorController : public ui::EventHandler,
   DISALLOW_COPY_AND_ASSIGN(TouchCalibratorController);
 };
 
-}  // namespace chromeos
-#endif  // CHROME_BROWSER_CHROMEOS_DISPLAY_TOUCH_CALIBRATOR_TOUCH_CALIBRATOR_CONTROLLER_H_
+}  // namespace ash
+#endif  // ASH_DISPLAY_TOUCH_CALIBRATOR_TOUCH_CALIBRATOR_CONTROLLER_H_

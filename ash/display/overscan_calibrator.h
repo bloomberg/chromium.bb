@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DISPLAY_OVERSCAN_CALIBRATOR_H_
-#define CHROME_BROWSER_CHROMEOS_DISPLAY_OVERSCAN_CALIBRATOR_H_
+#ifndef ASH_DISPLAY_OVERSCAN_CALIBRATOR_H_
+#define ASH_DISPLAY_OVERSCAN_CALIBRATOR_H_
 
 #include <memory>
 
+#include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/compositor/layer_delegate.h"
 #include "ui/display/display.h"
@@ -17,11 +18,11 @@ namespace ui {
 class Layer;
 }
 
-namespace chromeos {
+namespace ash {
 
 // This is used to show the visible feedback to the user's operations for
 // calibrating display overscan settings.
-class OverscanCalibrator : public ui::LayerDelegate {
+class ASH_EXPORT OverscanCalibrator : public ui::LayerDelegate {
  public:
   OverscanCalibrator(const display::Display& target_display,
                      const gfx::Insets& initial_insets);
@@ -64,6 +65,6 @@ class OverscanCalibrator : public ui::LayerDelegate {
   DISALLOW_COPY_AND_ASSIGN(OverscanCalibrator);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
-#endif  // CHROME_BROWSER_CHROMEOS_DISPLAY_OVERSCAN_CALIBRATOR_H_
+#endif  // ASH_DISPLAY_OVERSCAN_CALIBRATOR_H_

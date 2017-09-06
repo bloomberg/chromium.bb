@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/display/touch_calibrator/touch_calibrator_controller.h"
+#include "ash/display/touch_calibrator_controller.h"
 
 #include <vector>
 
+#include "ash/display/touch_calibrator_view.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/stl_util.h"
-#include "chrome/browser/chromeos/display/touch_calibrator/touch_calibrator_view.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/events/base_event_utils.h"
@@ -19,9 +19,9 @@
 
 using namespace display;
 
-namespace chromeos {
+namespace ash {
 
-class TouchCalibratorControllerTest : public ash::AshTestBase {
+class TouchCalibratorControllerTest : public AshTestBase {
  public:
   TouchCalibratorControllerTest() {}
 
@@ -75,7 +75,7 @@ TEST_F(TouchCalibratorControllerTest, StartCalibration) {
   TouchCalibratorController touch_calibrator_controller;
   StartCalibrationChecks(&touch_calibrator_controller, touch_display);
 
-  ui::EventTargetTestApi test_api(ash::Shell::Get());
+  ui::EventTargetTestApi test_api(Shell::Get());
   const ui::EventHandlerList& handlers = test_api.pre_target_handlers();
   EXPECT_TRUE(base::ContainsValue(handlers, &touch_calibrator_controller));
 }
@@ -119,4 +119,4 @@ TEST_F(TouchCalibratorControllerTest, TouchThreshold) {
             touch_calibrator_controller.last_touch_timestamp_);
 }
 
-}  // namespace chromeos
+}  // namespace ash

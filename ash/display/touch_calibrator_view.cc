@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/display/touch_calibrator/touch_calibrator_view.h"
+#include "ash/display/touch_calibrator_view.h"
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -21,7 +21,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -92,8 +92,8 @@ views::Widget::InitParams GetWidgetParams(aura::Window* root_window) {
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  params.parent = ash::Shell::GetContainer(
-      root_window, ash::kShellWindowId_OverlayContainer);
+  params.parent =
+      Shell::GetContainer(root_window, kShellWindowId_OverlayContainer);
   return params;
 }
 
@@ -240,8 +240,7 @@ TouchTargetThrobberView::TouchTargetThrobberView(
       icon_width_(bounds.width() * 0.5f) {
   SetBoundsRect(bounds);
 
-  hand_icon_ =
-      gfx::CreateVectorIcon(ash::kTouchCalibrationHandIcon, kHandIconColor);
+  hand_icon_ = gfx::CreateVectorIcon(kTouchCalibrationHandIcon, kHandIconColor);
 }
 
 TouchTargetThrobberView::~TouchTargetThrobberView() {}
@@ -442,8 +441,8 @@ CompletionMessageView::CompletionMessageView(const gfx::Rect& bounds,
 
   // crbug/676513 moves this file to src/ash which will require an ash icon
   // file.
-  check_icon_ = gfx::CreateVectorIcon(ash::kTouchCalibrationCompleteCheckIcon,
-                                      SK_ColorWHITE);
+  check_icon_ =
+      gfx::CreateVectorIcon(kTouchCalibrationCompleteCheckIcon, SK_ColorWHITE);
 
   flags_.setColor(SK_ColorWHITE);
   flags_.setStyle(cc::PaintFlags::kFill_Style);
@@ -470,7 +469,7 @@ TouchCalibratorView::TouchCalibratorView(const display::Display& target_display,
       throbber_circle_(nullptr),
       hint_box_view_(nullptr),
       touch_point_view_(nullptr) {
-  aura::Window* root = ash::Shell::GetRootWindowForDisplayId(display_.id());
+  aura::Window* root = Shell::GetRootWindowForDisplayId(display_.id());
   widget_.reset(new views::Widget);
   widget_->Init(GetWidgetParams(root));
   widget_->SetContentsView(this);
@@ -827,4 +826,4 @@ void TouchCalibratorView::SkipCurrentAnimation() {
   }
 }
 
-}  // namespace chromeos
+}  // namespace ash

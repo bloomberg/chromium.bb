@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DISPLAY_TOUCH_CALIBRATOR_TOUCH_CALIBRATOR_VIEW_H_
-#define CHROME_BROWSER_CHROMEOS_DISPLAY_TOUCH_CALIBRATOR_TOUCH_CALIBRATOR_VIEW_H_
+#ifndef ASH_DISPLAY_TOUCH_CALIBRATOR_VIEW_H_
+#define ASH_DISPLAY_TOUCH_CALIBRATOR_VIEW_H_
 
+#include "ash/ash_export.h"
 #include "base/macros.h"
 #include "cc/paint/paint_flags.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -15,18 +16,18 @@
 namespace views {
 class Label;
 class Widget;
-}
+}  // namespace views
 
 namespace gfx {
 class Animation;
 class LinearAnimation;
-}
+}  // namespace gfx
 
 namespace ui {
 class LayerAnimationSequence;
-}
+}  // namespace ui
 
-namespace chromeos {
+namespace ash {
 
 class CircularThrobberView;
 
@@ -36,9 +37,9 @@ class CircularThrobberView;
 // touch calibration view.
 // |TouchCalibratorView| acts as a state machine and has an API to toggle its
 // state or get the current state.
-class TouchCalibratorView : public views::View,
-                            public gfx::AnimationDelegate,
-                            public ui::LayerAnimationObserver {
+class ASH_EXPORT TouchCalibratorView : public views::View,
+                                       public gfx::AnimationDelegate,
+                                       public ui::LayerAnimationObserver {
  public:
   // Different states of |TouchCalibratorView| in order.
   enum State {
@@ -152,6 +153,6 @@ class TouchCalibratorView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(TouchCalibratorView);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
-#endif  // CHROME_BROWSER_CHROMEOS_DISPLAY_TOUCH_CALIBRATOR_TOUCH_CALIBRATOR_VIEW_H_
+#endif  // ASH_DISPLAY_TOUCH_CALIBRATOR_VIEW_H_
