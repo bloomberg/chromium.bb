@@ -552,6 +552,7 @@ bool StructTraits<mojom::PasswordFormDataView, PasswordForm>::Read(
 
   if (!data.ReadUsernameValue(&out->username_value) ||
       !data.ReadOtherPossibleUsernames(&out->other_possible_usernames) ||
+      !data.ReadOtherPossiblePasswords(&out->other_possible_passwords) ||
       !data.ReadPasswordElement(&out->password_element) ||
       !data.ReadPasswordValue(&out->password_value))
     return false;
