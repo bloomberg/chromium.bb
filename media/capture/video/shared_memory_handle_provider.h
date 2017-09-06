@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/logging.h"
 #include "base/memory/shared_memory.h"
 #include "base/optional.h"
 #include "media/capture/capture_export.h"
@@ -42,9 +43,10 @@ class CAPTURE_EXPORT SharedMemoryHandleProvider
       override;
 
  private:
-  // Accessor to mapped memory. While one or more of these exists, the shared
-  // memory is mapped. When the last of these is destroyed, the shared memory is
-  // unmapped.
+  // Accessor to mapped memory. When the first of these is created, the shared
+  // memory is mapped. The unmapping, however, does not occur until the
+  // SharedMemoryHandleProvider is destroyed. Therefore, the provider must
+  // outlive all of its Handles.
   class Handle : public VideoCaptureBufferHandle {
    public:
     explicit Handle(SharedMemoryHandleProvider* owner);
@@ -58,9 +60,10 @@ class CAPTURE_EXPORT SharedMemoryHandleProvider
     SharedMemoryHandleProvider* const owner_;
   };
 
-  // Called by Handle to decrement |map_ref_count_| and, if zero, unmap the
-  // memory from the process. This is thread-safe.
+#if DCHECK_IS_ON()
+  // Called by Handle to decrement |map_ref_count_|. This is thread-safe.
   void OnHandleDestroyed();
+#endif
 
   // These are set by one of the InitXYZ() methods.
   base::Optional<base::SharedMemory> shared_memory_;
@@ -73,8 +76,12 @@ class CAPTURE_EXPORT SharedMemoryHandleProvider
   // code that runs on a diffrent thread.
   base::Lock mapping_lock_;
 
-  // The number of Handle instances that are referencing the mapped memory.
+#if DCHECK_IS_ON()
+  // The number of Handle instances that are referencing the mapped memory. This
+  // is only used while DCHECKs are turned on, as a sanity-check that the object
+  // graph/lifetimes have not changed in a bad way.
   int map_ref_count_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(SharedMemoryHandleProvider);
 };

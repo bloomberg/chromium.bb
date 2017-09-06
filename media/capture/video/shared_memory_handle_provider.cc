@@ -4,23 +4,36 @@
 
 #include "media/capture/video/shared_memory_handle_provider.h"
 
-#include "base/logging.h"
-
 namespace media {
 
-SharedMemoryHandleProvider::SharedMemoryHandleProvider() : map_ref_count_(0) {}
+SharedMemoryHandleProvider::SharedMemoryHandleProvider() {
+#if DCHECK_IS_ON()
+  map_ref_count_ = 0;
+#endif
+}
 
 SharedMemoryHandleProvider::~SharedMemoryHandleProvider() {
+  base::AutoLock lock(mapping_lock_);
+
   // If the tracker is being destroyed, there must be no outstanding
   // Handles. If this DCHECK() triggers, it means that either there is a logic
   // flaw in VideoCaptureBufferPoolImpl, or a client did not delete all of its
   // owned VideoCaptureBufferHandles before calling Pool::ReliquishXYZ().
-  base::AutoLock lock(mapping_lock_);
+#if DCHECK_IS_ON()
   DCHECK_EQ(map_ref_count_, 0);
+#endif
+
+  if (shared_memory_ && shared_memory_->memory()) {
+    DVLOG(3) << __func__ << ": Unmapping memory for in-process access @"
+             << shared_memory_->memory() << '.';
+    CHECK(shared_memory_->Unmap());
+  }
 }
 
 bool SharedMemoryHandleProvider::InitForSize(size_t size) {
+#if DCHECK_IS_ON()
   DCHECK_EQ(map_ref_count_, 0);
+#endif
   DCHECK(!shared_memory_);
   shared_memory_.emplace();
   if (shared_memory_->CreateAnonymous(size)) {
@@ -33,7 +46,9 @@ bool SharedMemoryHandleProvider::InitForSize(size_t size) {
 
 bool SharedMemoryHandleProvider::InitFromMojoHandle(
     mojo::ScopedSharedBufferHandle buffer_handle) {
+#if DCHECK_IS_ON()
   DCHECK_EQ(map_ref_count_, 0);
+#endif
   DCHECK(!shared_memory_);
 
   base::SharedMemoryHandle memory_handle;
@@ -67,9 +82,11 @@ std::unique_ptr<VideoCaptureBufferHandle>
 SharedMemoryHandleProvider::GetHandleForInProcessAccess() {
   {
     base::AutoLock lock(mapping_lock_);
+#if DCHECK_IS_ON()
     DCHECK_GE(map_ref_count_, 0);
     ++map_ref_count_;
-    if (map_ref_count_ == 1) {
+#endif
+    if (!shared_memory_->memory()) {
       CHECK(shared_memory_->Map(mapped_size_));
       DVLOG(3) << __func__ << ": Mapped memory for in-process access @"
                << shared_memory_->memory() << '.';
@@ -79,22 +96,21 @@ SharedMemoryHandleProvider::GetHandleForInProcessAccess() {
   return std::make_unique<Handle>(this);
 }
 
+#if DCHECK_IS_ON()
 void SharedMemoryHandleProvider::OnHandleDestroyed() {
   base::AutoLock lock(mapping_lock_);
   DCHECK_GT(map_ref_count_, 0);
   --map_ref_count_;
-  if (map_ref_count_ == 0) {
-    DVLOG(3) << __func__ << ": Unmapping memory for in-process access @"
-             << shared_memory_->memory() << '.';
-    CHECK(shared_memory_->Unmap());
-  }
 }
+#endif
 
 SharedMemoryHandleProvider::Handle::Handle(SharedMemoryHandleProvider* owner)
     : owner_(owner) {}
 
 SharedMemoryHandleProvider::Handle::~Handle() {
+#if DCHECK_IS_ON()
   owner_->OnHandleDestroyed();
+#endif
 }
 
 size_t SharedMemoryHandleProvider::Handle::mapped_size() const {
