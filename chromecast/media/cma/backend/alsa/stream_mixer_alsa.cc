@@ -566,6 +566,7 @@ void StreamMixerAlsa::FinishFinalize() {
 
 void StreamMixerAlsa::Start() {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
+  output_samples_per_second_ = requested_output_samples_per_second_;
   if (!pcm_) {
     RETURN_REPORT_ERROR(PcmOpen, &pcm_, alsa_device_name_.c_str(),
                         SND_PCM_STREAM_PLAYBACK, 0);
