@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ui/app_list/presenter/app_list.h"
 
 namespace ash {
 
@@ -22,7 +23,7 @@ void TrayDragController::ProcessGestureEvent(ui::GestureEvent* event,
   }
 
   if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
-    Shell::Get()->DismissAppList();
+    Shell::Get()->app_list()->Dismiss();
     return;
   }
 

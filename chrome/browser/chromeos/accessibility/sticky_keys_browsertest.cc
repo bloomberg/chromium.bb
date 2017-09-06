@@ -22,6 +22,7 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/prefs/pref_service.h"
+#include "ui/app_list/presenter/app_list.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/test/event_generator.h"
@@ -162,7 +163,7 @@ IN_PROC_BROWSER_TEST_F(StickyKeysBrowserTest, SearchLeftOmnibox) {
 
   // Make sure that the AppList is not erroneously displayed and the omnibox
   // doesn't lose focus.
-  EXPECT_FALSE(ash::Shell::Get()->GetAppListTargetVisibility());
+  EXPECT_FALSE(ash::Shell::Get()->app_list()->GetTargetVisibility());
   EXPECT_TRUE(omnibox->GetNativeView()->HasFocus());
 
   // Type 'foo'.
@@ -176,14 +177,14 @@ IN_PROC_BROWSER_TEST_F(StickyKeysBrowserTest, SearchLeftOmnibox) {
   ASSERT_EQ(3U, start);
   ASSERT_EQ(3U, end);
 
-  EXPECT_FALSE(ash::Shell::Get()->GetAppListTargetVisibility());
+  EXPECT_FALSE(ash::Shell::Get()->app_list()->GetTargetVisibility());
   EXPECT_TRUE(omnibox->GetNativeView()->HasFocus());
 
   // Hit Home by sequencing Search (left Windows) and Left (arrow).
   SendKeyPress(ui::VKEY_LWIN);
   SendKeyPress(ui::VKEY_LEFT);
 
-  EXPECT_FALSE(ash::Shell::Get()->GetAppListTargetVisibility());
+  EXPECT_FALSE(ash::Shell::Get()->app_list()->GetTargetVisibility());
   EXPECT_TRUE(omnibox->GetNativeView()->HasFocus());
 
   // Verify caret moved to the beginning.

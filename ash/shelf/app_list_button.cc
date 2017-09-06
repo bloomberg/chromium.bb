@@ -177,7 +177,7 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
             base::Bind(&AppListButton::StartVoiceInteractionAnimation,
                        base::Unretained(this)));
       }
-      if (!Shell::Get()->IsAppListVisible())
+      if (!Shell::Get()->app_list()->IsVisible())
         AnimateInkDrop(views::InkDropState::ACTION_PENDING, event);
       ImageButton::OnGestureEvent(event);
       return;
@@ -270,7 +270,7 @@ void AppListButton::NotifyClick(const ui::Event& event) {
 bool AppListButton::ShouldEnterPushedState(const ui::Event& event) {
   if (!shelf_view_->ShouldEventActivateButton(this, event))
     return false;
-  if (Shell::Get()->IsAppListVisible())
+  if (Shell::Get()->app_list()->IsVisible())
     return false;
   return views::ImageButton::ShouldEnterPushedState(event);
 }

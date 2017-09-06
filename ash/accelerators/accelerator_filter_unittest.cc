@@ -164,8 +164,8 @@ TEST_F(AcceleratorFilterTest, SearchKeyShortcutsAreAlwaysHandled) {
   EXPECT_FALSE(session_controller->IsScreenLocked());
 
   // Search+L is processed when the app_list target visibility is false.
-  Shell::Get()->DismissAppList();
-  EXPECT_FALSE(Shell::Get()->GetAppListTargetVisibility());
+  Shell::Get()->app_list()->Dismiss();
+  EXPECT_FALSE(Shell::Get()->app_list()->GetTargetVisibility());
   generator.PressKey(ui::VKEY_L, ui::EF_COMMAND_DOWN);
   generator.ReleaseKey(ui::VKEY_L, ui::EF_COMMAND_DOWN);
   session_controller->FlushMojoForTest();  // LockScreen is an async mojo call.

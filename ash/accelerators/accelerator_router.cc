@@ -9,6 +9,7 @@
 #include "ash/wm/window_state.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
+#include "ui/app_list/presenter/app_list.h"
 #include "ui/aura/window.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/event.h"
@@ -129,7 +130,7 @@ bool AcceleratorRouter::ShouldProcessAcceleratorNow(
   if (accelerator_controller->IsPreferred(accelerator))
     return true;
 
-  return Shell::Get()->GetAppListTargetVisibility();
+  return Shell::Get()->app_list()->GetTargetVisibility();
 }
 
 }  // namespace ash

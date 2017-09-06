@@ -1652,7 +1652,7 @@ TEST_F(ShelfLayoutManagerFullscreenAppListTest,
 
   // Swiping up more than the peeking threshold should keep the app list at
   // FULLSCREEN_ALL_APPS state.
-  Shell::Get()->DismissAppList();
+  Shell::Get()->app_list()->Dismiss();
   delta.set_y(ShelfLayoutManager::kAppListDragSnapToPeekingThreshold + 10);
   end = start - delta;
   generator.GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);

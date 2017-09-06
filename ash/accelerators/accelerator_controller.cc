@@ -463,7 +463,12 @@ bool CanHandleToggleAppList(const ui::Accelerator& accelerator,
 void HandleToggleAppList(const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_LWIN)
     base::RecordAction(UserMetricsAction("Accel_Search_LWin"));
-  Shell::Get()->ToggleAppList(app_list::kSearchKey);
+
+  Shell::Get()->app_list()->ToggleAppList(
+      display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(Shell::GetRootWindowForNewWindows())
+          .id(),
+      app_list::kSearchKey);
 }
 
 void HandleToggleFullscreen(const ui::Accelerator& accelerator) {
