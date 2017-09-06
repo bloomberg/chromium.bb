@@ -3103,11 +3103,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kWebNfc)},
 #endif
 
-    {"enable-idle-time-spell-checking",
-     flag_descriptions::kEnableIdleTimeSpellCheckingName,
-     flag_descriptions::kEnableIdleTimeSpellCheckingDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kIdleTimeSpellChecking)},
-
 #if defined(OS_ANDROID)
     {"enable-clipboard-provider",
      flag_descriptions::kEnableOmniboxClipboardProviderName,

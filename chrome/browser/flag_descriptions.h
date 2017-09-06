@@ -238,9 +238,6 @@ extern const char kEnableHeapProfilingTaskProfiler[];
 extern const char kEnableHttpFormWarningName[];
 extern const char kEnableHttpFormWarningDescription[];
 
-extern const char kEnableIdleTimeSpellCheckingName[];
-extern const char kEnableIdleTimeSpellCheckingDescription[];
-
 extern const char kEnableManualFallbacksFillingName[];
 extern const char kEnableManualFallbacksFillingDescription[];
 
