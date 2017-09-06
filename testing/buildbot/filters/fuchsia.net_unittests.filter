@@ -1,5 +1,4 @@
 # TODO(fuchsia): Fix these tests and remove the filter. https://crbug.com/731302 .
--*HTTPS*
 -*QuicEndToEndTest.Large*
 -*QuicEndToEndTest.TokenBinding*
 -*QuicEndToEndTest.Uber*
