@@ -1702,6 +1702,11 @@ public class ChromeTabbedActivity
         if (!mUIInitialized) return false;
         final Tab currentTab = getActivityTab();
 
+        if (exitFullscreenIfShowing()) {
+            recordBackPressedUma("Exited fullscreen", BACK_PRESSED_EXITED_FULLSCREEN);
+            return true;
+        }
+
         if (getBottomSheet() != null && getBottomSheet().handleBackPress()) return true;
 
         if (currentTab == null) {
@@ -1714,11 +1719,6 @@ public class ChromeTabbedActivity
         if (mLayoutManager.overviewVisible() && !isTablet()) {
             recordBackPressedUma("Hid overview", BACK_PRESSED_EXITED_TAB_SWITCHER);
             mLayoutManager.hideOverview(true);
-            return true;
-        }
-
-        if (exitFullscreenIfShowing()) {
-            recordBackPressedUma("Exited fullscreen", BACK_PRESSED_EXITED_FULLSCREEN);
             return true;
         }
 
