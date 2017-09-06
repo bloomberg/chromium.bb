@@ -364,6 +364,9 @@ static void search_selfguided_restoration(uint8_t *dat8, int width, int height,
          pu_width == RESTORATION_PROC_UNIT_SIZE);
   assert(pu_height == (RESTORATION_PROC_UNIT_SIZE >> 1) ||
          pu_height == RESTORATION_PROC_UNIT_SIZE);
+#if !CONFIG_HIGHBITDEPTH
+  (void)bit_depth;
+#endif
 
   for (ep = 0; ep < SGRPROJ_PARAMS; ep++) {
     int exq[2];
