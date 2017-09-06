@@ -61,6 +61,11 @@ static_assert(arraysize(kBlacklistedCameraNames) == BLACKLISTED_CAMERA_MAX + 1,
               "kBlacklistedCameraNames should be same size as "
               "BlacklistedCameraNames enum");
 
+static bool IsDeviceBlacklistedForQueryingDetailedFrameRates(
+    const std::string& display_name) {
+  return display_name.find("WebcamMax") != std::string::npos;
+}
+
 static bool LoadMediaFoundationDlls() {
   static const wchar_t* const kMfDLLs[] = {
       L"%WINDIR%\\system32\\mf.dll",
@@ -245,9 +250,12 @@ static void GetDeviceSupportedFormatsDirectShow(const Descriptor& descriptor,
                                                 VideoCaptureFormats* formats) {
   DVLOG(1) << "GetDeviceSupportedFormatsDirectShow for "
            << descriptor.display_name;
+  bool query_detailed_frame_rates =
+      !IsDeviceBlacklistedForQueryingDetailedFrameRates(
+          descriptor.display_name);
   CapabilityList capability_list;
-  VideoCaptureDeviceWin::GetDeviceCapabilityList(descriptor.device_id,
-                                                 &capability_list);
+  VideoCaptureDeviceWin::GetDeviceCapabilityList(
+      descriptor.device_id, query_detailed_frame_rates, &capability_list);
   for (const auto& entry : capability_list) {
     formats->emplace_back(entry.supported_format);
     DVLOG(1) << descriptor.display_name << " "
