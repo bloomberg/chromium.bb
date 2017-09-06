@@ -34,7 +34,6 @@ class TimeTicks;
 namespace net {
 class NetLog;
 class ProxyConfigService;
-class SdchOwner;
 class URLRequestContext;
 class FileNetLogObserver;
 }  // namespace net
@@ -227,19 +226,11 @@ class CronetURLRequestContextAdapter
 
   // Manages the PrefService and all associated persistence managers
   // such as NetworkQualityPrefsManager, HostCachePersistenceManager, etc.
-  // It should be destroyed before |network_quality_estimator_| but after
-  // |sdch_owner_|. It also owns a PrefService object should outlive |context_|.
+  // It should be destroyed before |network_quality_estimator_|. It also owns a
+  // PrefService object should outlive |context_|.
   std::unique_ptr<CronetPrefsManager> cronet_prefs_manager_;
 
   std::unique_ptr<net::URLRequestContext> context_;
-
-  // |sdch_owner_| should be destroyed before |cronet_prefs_manager_|, because
-  // tearing down |sdch_owner_| forces |json_pref_store_| to flush pending
-  // writes to the disk. |json_pref_store_| is owned by |cronet_prefs_manager_|.
-  // |sdch_owner_| should also be destroyed before |context_|. This will
-  // unregister SdchManager observers before the context is destroyed.
-  // SdchManager should not be destroy until all observers are unregistered.
-  std::unique_ptr<net::SdchOwner> sdch_owner_;
 
   std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
 

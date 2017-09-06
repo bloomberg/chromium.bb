@@ -474,7 +474,6 @@ generate_jni("cronet_tests_jni_headers") {
     "test/src/org/chromium/net/MockUrlRequestJobFactory.java",
     "test/src/org/chromium/net/NativeTestServer.java",
     "test/src/org/chromium/net/QuicTestServer.java",
-    "test/src/org/chromium/net/SdchObserver.java",
     "test/src/org/chromium/net/TestUploadDataStreamHandler.java",
   ]
   jni_package = "cronet_tests"
@@ -499,7 +498,6 @@ shared_library("cronet_tests") {
     "test/mock_url_request_job_factory.cc",
     "test/native_test_server.cc",
     "test/quic_test_server.cc",
-    "test/sdch_test_util.cc",
     "test/test_upload_data_stream_handler.cc",
     "test/test_upload_data_stream_handler.h",
   ]
@@ -544,7 +542,6 @@ android_library("cronet_test_apk_java") {
     "test/src/org/chromium/net/MockUrlRequestJobFactory.java",
     "test/src/org/chromium/net/NativeTestServer.java",
     "test/src/org/chromium/net/QuicTestServer.java",
-    "test/src/org/chromium/net/SdchObserver.java",
     "test/src/org/chromium/net/TestFilesInstaller.java",
     "test/src/org/chromium/net/TestUploadDataStreamHandler.java",
   ]
@@ -612,19 +609,13 @@ android_assets("cronet_test_apk_assets") {
     "test/assets/test/redirect_invalid_scheme.html.mock-http-headers",
     "test/assets/test/set_cookie.html",
     "test/assets/test/set_cookie.html.mock-http-headers",
-    "test/assets/test/sdch/dict/LeQxM80O",
-    "test/assets/test/sdch/dict/LeQxM80O.mock-http-headers",
-    "test/assets/test/sdch/index",
-    "test/assets/test/sdch/index.mock-http-headers",
-    "test/assets/test/sdch/LeQxM80O_encoded",
-    "test/assets/test/sdch/LeQxM80O_encoded.mock-http-headers",
     "test/assets/test/secureproxychecksuccess.txt",
     "test/assets/test/secureproxychecksuccess.txt.mock-http-headers",
     "test/assets/test/success.txt",
     "test/assets/test/success.txt.mock-http-headers",
   ]
 
-  # Maintain directory structure. Example entry: "test/sdch/index".
+  # Maintain directory structure.
   renaming_destinations = rebase_path(renaming_sources, "test/assets")
 }
 
@@ -682,7 +673,6 @@ android_library("cronet_javatests") {
     "test/javatests/src/org/chromium/net/PkpTest.java",
     "test/javatests/src/org/chromium/net/QuicTest.java",
     "test/javatests/src/org/chromium/net/RequestFinishedInfoTest.java",
-    "test/javatests/src/org/chromium/net/SdchTest.java",
     "test/javatests/src/org/chromium/net/TestBidirectionalStreamCallback.java",
     "test/javatests/src/org/chromium/net/TestDrivenDataProvider.java",
     "test/javatests/src/org/chromium/net/TestNetworkQualityRttListener.java",

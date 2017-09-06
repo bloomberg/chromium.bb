@@ -26,7 +26,6 @@ class HostCache;
 class NetLog;
 class NetworkQualitiesPrefsManager;
 class NetworkQualityEstimator;
-class SdchOwner;
 class URLRequestContextBuilder;
 }  // namespace net
 
@@ -55,8 +54,6 @@ class CronetPrefsManager {
   void SetupHostCachePersistence(net::HostCache* host_cache,
                                  int host_cache_persistence_delay_ms,
                                  net::NetLog* net_log);
-
-  void SetupSdchPersistence(net::SdchOwner* sdch_owner);
 
   // Prepares |this| for shutdown.
   void PrepareForShutdown();

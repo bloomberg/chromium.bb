@@ -210,7 +210,6 @@ public abstract class ExperimentalCronetEngine extends CronetEngine {
 
         @Override
         public Builder enableSdch(boolean value) {
-            super.enableSdch(value);
             return this;
         }
 

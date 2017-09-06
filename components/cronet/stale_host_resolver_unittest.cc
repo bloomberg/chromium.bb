@@ -452,8 +452,6 @@ TEST_F(StaleHostResolverTest, CreatedByContext) {
       "Default QUIC User Agent ID",
       // Enable SPDY.
       true,
-      // Enable SDCH.
-      false,
       // Enable Brotli.
       false,
       // Type of http cache.

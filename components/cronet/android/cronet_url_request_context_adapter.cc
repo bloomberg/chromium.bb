@@ -58,7 +58,6 @@
 #include "net/proxy/proxy_config_service_android.h"
 #include "net/proxy/proxy_service.h"
 #include "net/quic/core/quic_versions.h"
-#include "net/sdch/sdch_owner.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -416,14 +415,6 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
 
   if (config->load_disable_cache)
     default_load_flags_ |= net::LOAD_DISABLE_CACHE;
-
-  if (config->enable_sdch) {
-    DCHECK(context_->sdch_manager());
-    sdch_owner_.reset(
-        new net::SdchOwner(context_->sdch_manager(), context_.get()));
-    if (cronet_prefs_manager_)
-      cronet_prefs_manager_->SetupSdchPersistence(sdch_owner_.get());
-  }
 
   if (config->enable_quic) {
     for (const auto& quic_hint : config->quic_hints) {
@@ -783,7 +774,6 @@ static jlong CreateRequestContextConfig(
     jboolean jquic_enabled,
     const JavaParamRef<jstring>& jquic_default_user_agent_id,
     jboolean jhttp2_enabled,
-    jboolean jsdch_enabled,
     jboolean jbrotli_enabled,
     jboolean jdisable_cache,
     jint jhttp_cache_mode,
@@ -796,7 +786,7 @@ static jlong CreateRequestContextConfig(
   return reinterpret_cast<jlong>(new URLRequestContextConfig(
       jquic_enabled,
       ConvertNullableJavaStringToUTF8(env, jquic_default_user_agent_id),
-      jhttp2_enabled, jsdch_enabled, jbrotli_enabled,
+      jhttp2_enabled, jbrotli_enabled,
       static_cast<URLRequestContextConfig::HttpCacheType>(jhttp_cache_mode),
       jhttp_cache_max_size, jdisable_cache,
       ConvertNullableJavaStringToUTF8(env, jstorage_path),

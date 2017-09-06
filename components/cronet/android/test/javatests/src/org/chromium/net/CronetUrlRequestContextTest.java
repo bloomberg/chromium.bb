@@ -1253,7 +1253,6 @@ public class CronetUrlRequestContextTest {
                 new ExperimentalCronetEngine.Builder(getContext());
         builder.enableHttp2(false);
         builder.enableQuic(true);
-        builder.enableSdch(true);
         builder.addQuicHint("example.com", 12, 34);
         builder.setCertVerifierData("test_cert_verifier_data");
         builder.enableHttpCache(HTTP_CACHE_IN_MEMORY, 54321);
