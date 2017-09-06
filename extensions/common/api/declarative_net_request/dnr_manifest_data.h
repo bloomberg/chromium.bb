@@ -21,6 +21,7 @@ struct DNRManifestData : Extension::ManifestData {
   // Returns ExtensionResource corresponding to the kDeclarativeNetRequestKey
   // manifest key for the |extension|. Returns null if the extension didn't
   // specify the manifest key.
+  // TODO(karandeepb): Change this so that it accepts a const reference.
   static const ExtensionResource* GetRulesetResource(
       const Extension* extension);
 

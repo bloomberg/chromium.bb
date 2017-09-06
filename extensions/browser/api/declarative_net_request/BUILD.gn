@@ -4,11 +4,16 @@
 
 source_set("declarative_net_request") {
   sources = [
+    "constants.cc",
     "constants.h",
     "flat_ruleset_indexer.cc",
     "flat_ruleset_indexer.h",
     "indexed_rule.cc",
     "indexed_rule.h",
+    "parse_info.cc",
+    "parse_info.h",
+    "utils.cc",
+    "utils.h",
   ]
 
   public_deps = [
