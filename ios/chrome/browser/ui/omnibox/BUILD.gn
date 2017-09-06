@@ -33,6 +33,8 @@ source_set("omnibox_internal") {
     "omnibox_text_field_delegate.h",
     "omnibox_text_field_ios.h",
     "omnibox_text_field_ios.mm",
+    "omnibox_text_field_paste_delegate.h",
+    "omnibox_text_field_paste_delegate.mm",
     "omnibox_view_ios.h",
     "omnibox_view_ios.mm",
     "page_info_model.cc",
