@@ -31,6 +31,10 @@ from py_utils import discover
 from core.sharding_map_generator import load_benchmark_sharding_map
 
 
+_UNSCHEDULED_TELEMETRY_BENCHMARKS = set([
+  ])
+
+
 # TODO(rnephew): Remove when no tests disable using
 # expectations.PermanentlyDisableBenchmark()
 ANDROID_BOT_TO_DEVICE_TYPE_MAP = {
@@ -775,12 +779,13 @@ def generate_telemetry_tests(name, tester_config, benchmarks,
       device = None
       sharding_map = benchmark_sharding_map.get(name, None)
       device = sharding_map.get(benchmark.Name(), None)
-      if device is None:
-        raise ValueError('No sharding map for benchmark %r found. Please'
-                         ' disable the benchmark with @Disabled(\'all\'), and'
-                         ' file a bug with Speed>Benchmarks>Waterfall'
-                         ' component and cc martiniss@ and nednguyen@ to'
-                         ' execute the benchmark on the waterfall.' % (
+      if not device:
+        raise ValueError('No sharding map for benchmark %r found. Please '
+                         'add the benchmark to '
+                         '_UNSCHEDULED_TELEMETRY_BENCHMARKS list, '
+                         'then file a bug with Speed>Benchmarks>Waterfall '
+                         'component and assign to eyaich@ or martiniss@ to '
+                         'schedule the benchmark on the perf waterfall.' % (
                              benchmark.Name()))
       swarming_dimensions.append(get_swarming_dimension(
           dimension, device))
@@ -838,9 +843,13 @@ def current_benchmarks():
       path_util.GetChromiumSrcDir(), 'tools', 'perf', 'benchmarks')
   top_level_dir = os.path.dirname(benchmarks_dir)
 
-  all_benchmarks = discover.DiscoverClasses(
+  all_benchmarks = []
+
+  for b in discover.DiscoverClasses(
       benchmarks_dir, top_level_dir, benchmark_module.Benchmark,
-      index_by_class_name=True).values()
+      index_by_class_name=True).values():
+    if not b.Name() in _UNSCHEDULED_TELEMETRY_BENCHMARKS:
+      all_benchmarks.append(b)
 
   return sorted(all_benchmarks, key=lambda b: b.Name())
 
