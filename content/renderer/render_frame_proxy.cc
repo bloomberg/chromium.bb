@@ -54,11 +54,6 @@ typedef std::map<blink::WebRemoteFrame*, RenderFrameProxy*> FrameMap;
 base::LazyInstance<FrameMap>::DestructorAtExit g_frame_map =
     LAZY_INSTANCE_INITIALIZER;
 
-bool IsRunningInMash() {
-  const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
-  return cmdline->HasSwitch(switches::kIsRunningInMash);
-}
-
 }  // namespace
 
 // static
@@ -222,7 +217,6 @@ void RenderFrameProxy::Init(blink::WebRemoteFrame* web_frame,
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   enable_surface_synchronization_ =
-      IsRunningInMash() ||
       command_line.HasSwitch(switches::kEnableSurfaceSynchronization);
 }
 

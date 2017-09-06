@@ -1459,6 +1459,8 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   if (IsUsingMus()) {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kIsRunningInMash);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableSurfaceSynchronization);
   }
 #endif
 
