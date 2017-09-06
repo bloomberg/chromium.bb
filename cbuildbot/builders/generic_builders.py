@@ -261,7 +261,6 @@ class Builder(object):
       options = self._run.options
       self.patch_pool = trybot_patch_pool.TrybotPatchPool.FromOptions(
           gerrit_patches=options.gerrit_patches,
-          local_patches=options.local_patches,
           sourceroot=options.sourceroot,
           remote_patches=options.remote_patches)
 
