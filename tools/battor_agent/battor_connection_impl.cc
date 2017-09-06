@@ -11,7 +11,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "device/serial/buffer.h"
 #include "device/serial/serial_io_handler.h"
@@ -117,7 +117,7 @@ void BattOrConnectionImpl::OnOpened(bool success) {
 
   if (!success) {
     Close();
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&Listener::OnConnectionOpened,
                               base::Unretained(listener_), false));
     return;
@@ -294,7 +294,7 @@ void BattOrConnectionImpl::EndReadBytesForMessage(
   LogSerial(StringPrintf("(message) Read finished with success: %d.", success));
 
   pending_read_buffer_ = nullptr;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&Listener::OnMessageRead, base::Unretained(listener_), success,
                  type, base::Passed(std::move(bytes))));
@@ -326,7 +326,7 @@ void BattOrConnectionImpl::BeginReadBytesForFlush() {
 void BattOrConnectionImpl::SetTimeout(base::TimeDelta timeout) {
   timeout_callback_.Reset(
       base::Bind(&BattOrConnectionImpl::CancelReadMessage, AsWeakPtr()));
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, timeout_callback_.callback(), timeout);
 }
 
@@ -341,7 +341,7 @@ void BattOrConnectionImpl::OnBytesReadForFlush(
         "(flush) Read failed due to serial read failure with error code: %d.",
         static_cast<int>(error)));
     pending_read_buffer_ = nullptr;
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&Listener::OnConnectionOpened,
                               base::Unretained(listener_), false));
     return;
@@ -357,7 +357,7 @@ void BattOrConnectionImpl::OnBytesReadForFlush(
         base::TimeDelta::FromMilliseconds(kFlushQuietPeriodThresholdMs)) {
       LogSerial("(flush) Quiet period has finished.");
       pending_read_buffer_ = nullptr;
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(&Listener::OnConnectionOpened,
                                 base::Unretained(listener_), true));
       return;
@@ -367,7 +367,7 @@ void BattOrConnectionImpl::OnBytesReadForFlush(
     // read again after a delay.
     LogSerial(StringPrintf("(flush) Reading more bytes after %u ms delay.",
                            kFlushQuietPeriodThresholdMs));
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&BattOrConnectionImpl::BeginReadBytesForFlush,
                        AsWeakPtr()),
@@ -436,7 +436,7 @@ void BattOrConnectionImpl::OnBytesSent(int bytes_sent,
                                        device::mojom::SerialSendError error) {
   bool success = (error == device::mojom::SerialSendError::NONE) &&
                  (pending_write_length_ == static_cast<size_t>(bytes_sent));
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&Listener::OnBytesSent, base::Unretained(listener_), success));
 }
