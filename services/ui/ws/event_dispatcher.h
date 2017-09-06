@@ -74,11 +74,6 @@ class EventDispatcher : public ServerWindowObserver,
   // any events to the delegate.
   void Reset();
 
-  // Generates a mouse move event corresponding to the mouse moving to a
-  // particular location.
-  std::unique_ptr<ui::Event> GenerateMouseMoveFor(
-      const gfx::Point& display_location) const;
-
   const gfx::Point& mouse_pointer_last_location() const {
     return mouse_pointer_last_location_;
   }
@@ -359,12 +354,6 @@ class EventDispatcher : public ServerWindowObserver,
   bool mouse_button_down_;
   ServerWindow* mouse_cursor_source_window_;
   bool mouse_cursor_in_non_client_area_;
-
-  // We calculate out the button flags for any synthetic mouse events we need
-  // to create during SetMousePointerDisplayLocation(). We don't try to set
-  // this on a per-PointerTarget because modified PointerTargets aren't always
-  // committed back into |pointer_targets_|.
-  int next_mouse_button_flags_;
 
   // The location of the mouse pointer in display coordinates. This can be
   // outside the bounds of |mouse_cursor_source_window_|, which can capture the

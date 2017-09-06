@@ -199,11 +199,8 @@ void WindowManagerState::SetCursorLocation(const gfx::Point& display_pixels,
     return;
   }
 
+  // MoveCursorTo() implicitly generates a mouse event.
   display->platform_display()->MoveCursorTo(display_pixels);
-
-  std::unique_ptr<ui::Event> event =
-      event_dispatcher_.GenerateMouseMoveFor(display_pixels);
-  ProcessEvent(*event, display_id);
 }
 
 void WindowManagerState::SetKeyEventsThatDontHideCursor(
@@ -310,9 +307,16 @@ void WindowManagerState::Activate(const gfx::Point& mouse_location_on_display,
                                   int64_t display_id) {
   SetAllRootWindowsVisible(true);
   event_dispatcher_.Reset();
-  std::unique_ptr<ui::Event> event =
-      event_dispatcher_.GenerateMouseMoveFor(mouse_location_on_display);
-  ProcessEvent(*event, display_id);
+
+  // Fake a mouse event to update cursor and ensure mouse location in client
+  // is up to date.
+  const PointerEvent move_event(
+      ET_POINTER_MOVED, mouse_location_on_display, mouse_location_on_display,
+      EF_NONE, EF_NONE,
+      PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
+                     MouseEvent::kMousePointerId),
+      base::TimeTicks::Now());
+  ProcessEvent(move_event, display_id);
 }
 
 void WindowManagerState::Deactivate() {
