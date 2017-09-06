@@ -68,13 +68,13 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
 - (void)updateText;
 // Updates the button target and tag according to the current |overlayType|.
 - (void)updateButtonTarget;
+// Sends a SignIn chrome command.
+- (void)showSignIn;
 
 @end
 
 @implementation TabSwitcherPanelOverlayView {
   ios::ChromeBrowserState* _browserState;  // Weak.
-  // |_container| should not be shown when |overlayType| is set to
-  // |OVERLAY_PANEL_USER_SIGNED_OUT|.
   UIView* _container;
   UILabel* _titleLabel;
   UILabel* _subtitleLabel;
@@ -83,8 +83,6 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
   MDCActivityIndicator* _activityIndicator;
   std::string _recordedMetricString;
   SigninPromoViewMediator* _signinPromoViewMediator;
-  // |_signinPromoView| should only be shown when |overlayType| is set to
-  // |OVERLAY_PANEL_USER_SIGNED_OUT|.
   SigninPromoView* _signinPromoView;
 }
 
@@ -206,9 +204,10 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
 
 - (void)setOverlayType:(TabSwitcherPanelOverlayType)overlayType {
   _overlayType = overlayType;
-  if (_overlayType ==
-      TabSwitcherPanelOverlayType::OVERLAY_PANEL_USER_SIGNED_OUT) {
-    [self createSigninPromoViewIfNeeded];
+  if (experimental_flags::IsSigninPromoEnabled() &&
+      _overlayType ==
+          TabSwitcherPanelOverlayType::OVERLAY_PANEL_USER_SIGNED_OUT) {
+    [self createSigninPromoviewIfNeeded];
     _container.hidden = YES;
   } else {
     _container.hidden = NO;
@@ -225,7 +224,7 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
 #pragma mark - Private
 
 // Creates the sign-in view and its mediator if it doesn't exist.
-- (void)createSigninPromoViewIfNeeded {
+- (void)createSigninPromoviewIfNeeded {
   if (_signinPromoView) {
     DCHECK(_signinPromoViewMediator);
     return;
@@ -274,9 +273,15 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
     case TabSwitcherPanelOverlayType::OVERLAY_PANEL_EMPTY:
       break;
     case TabSwitcherPanelOverlayType::OVERLAY_PANEL_USER_SIGNED_OUT:
-      // |_container| and its subviews should not be shown or updated when the
-      // user is signed out. |_signinPromoView| should be visible.
-      NOTREACHED();
+      DCHECK(!experimental_flags::IsSigninPromoEnabled());
+      titleString = [[NSMutableAttributedString alloc]
+          initWithString:l10n_util::GetNSString(
+                             IDS_IOS_TAB_SWITCHER_SIGN_IN_ACCOUNT_TITLE)];
+      subtitleString = [[NSMutableAttributedString alloc]
+          initWithString:l10n_util::GetNSString(
+                             IDS_IOS_TAB_SWITCHER_SIGN_IN_ACCOUNT_PROMO)];
+      buttonTitle =
+          l10n_util::GetNSString(IDS_IOS_TAB_SWITCHER_SIGN_IN_ACCOUNT_BUTTON);
       break;
     case TabSwitcherPanelOverlayType::OVERLAY_PANEL_USER_SIGNED_IN_SYNC_OFF:
       titleString = [[NSMutableAttributedString alloc]
@@ -400,9 +405,9 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
       shouldShowTextButton = NO;
       break;
     case TabSwitcherPanelOverlayType::OVERLAY_PANEL_USER_SIGNED_OUT:
-      // |_textButton| and |_container| should not be shown when the user is
-      // signed out. |_signinPromoView| should be visible.
-      NOTREACHED();
+      DCHECK(!experimental_flags::IsSigninPromoEnabled());
+      selector = @selector(showSignIn);
+      _recordedMetricString = "MobileTabSwitcherSignIn";
       break;
     case TabSwitcherPanelOverlayType::OVERLAY_PANEL_USER_SIGNED_IN_SYNC_OFF:
       selector = @selector(showSyncSettings);
@@ -446,6 +451,14 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
                       action:@selector(recordMetrics)
             forControlEvents:UIControlEventTouchUpInside];
   [_floatingButton setHidden:!shouldShowFloatingButton];
+}
+
+- (void)showSignIn {
+  base::RecordAction(base::UserMetricsAction("Signin_Signin_FromTabSwitcher"));
+  ShowSigninCommand* command = [[ShowSigninCommand alloc]
+      initWithOperation:AUTHENTICATION_OPERATION_SIGNIN
+            accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_TAB_SWITCHER];
+  [self chromeExecuteCommand:command];
 }
 
 - (void)showSyncSettings {

@@ -161,6 +161,18 @@ bool IsSuggestionsUIEnabled() {
   return base::FeatureList::IsEnabled(kIOSNTPSuggestions);
 }
 
+bool IsSigninPromoEnabled() {
+  // Check if the experimental flag is forced on or off.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableSigninPromo))
+    return true;
+  if (command_line->HasSwitch(switches::kDisableSigninPromo))
+    return false;
+  std::string group_name = base::FieldTrialList::FindFullName("IOSSigninPromo");
+  return base::StartsWith(group_name, "Enabled",
+                          base::CompareCase::INSENSITIVE_ASCII);
+}
+
 bool IsNewFeedbackKitEnabled() {
   return [[NSUserDefaults standardUserDefaults]
       boolForKey:@"NewFeedbackKitEnabled"];
