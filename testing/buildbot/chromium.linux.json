@@ -4214,6 +4214,13 @@
           ],
           "shards": 6
         }
+      },
+      {
+        "isolate_name": "webkit_python_tests",
+        "name": "webkit_python_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
       }
     ],
     "scripts": [
@@ -4224,10 +4231,6 @@
       {
         "name": "webkit_lint",
         "script": "webkit_lint.py"
-      },
-      {
-        "name": "webkit_python_tests",
-        "script": "webkit_python_tests.py"
       },
       {
         "name": "checkperms",
