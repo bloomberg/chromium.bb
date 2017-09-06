@@ -215,7 +215,7 @@ class BASE_EXPORT MemoryDumpManager {
     // Callback passed to the initial call to CreateProcessDump().
     ProcessMemoryDumpCallback callback;
 
-    // The thread on which FinalizeDumpAndAddToTrace() (and hence |callback|)
+    // The thread on which FinishAsyncProcessDump() (and hence |callback|)
     // should be invoked. This is the thread on which the initial
     // CreateProcessDump() request was called.
     const scoped_refptr<SingleThreadTaskRunner> callback_task_runner;
@@ -240,7 +240,7 @@ class BASE_EXPORT MemoryDumpManager {
   static void SetInstanceForTesting(MemoryDumpManager* instance);
   static uint32_t GetDumpsSumKb(const std::string&, const ProcessMemoryDump*);
 
-  void FinalizeDumpAndAddToTrace(
+  void FinishAsyncProcessDump(
       std::unique_ptr<ProcessMemoryDumpAsyncState> pmd_async_state);
 
   // Lazily initializes dump_thread_ and returns its TaskRunner.
@@ -272,6 +272,10 @@ class BASE_EXPORT MemoryDumpManager {
   // registered with is_fast_polling_supported == true.
   void GetDumpProvidersForPolling(
       std::vector<scoped_refptr<MemoryDumpProviderInfo>>*);
+
+  // Initialize |heap_profiler_serialization_state_| when tracing and heap
+  // profiler are enabled.
+  void InitializeHeapProfilerStateIfNeededLocked();
 
   // Returns true if Initialize() has been called, false otherwise.
   bool is_initialized() const { return !request_dump_function_.is_null(); }
