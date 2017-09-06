@@ -93,8 +93,6 @@ class ChromeResourceDispatcherHostDelegate
       net::URLRequest* request) const override;
   std::unique_ptr<net::ClientCertStore> CreateClientCertStore(
       content::ResourceContext* resource_context) override;
-  void OnAbortedFrameLoad(const GURL& url,
-                          base::TimeDelta request_loading_time) override;
 
   // Called on the UI thread. Allows switching out the
   // ExternalProtocolHandler::Delegate for testing code.
