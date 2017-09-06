@@ -402,7 +402,10 @@ void MemoryDumpManager::RegisterDumpProviderInternal(
     if (options.is_fast_polling_supported)
       MemoryPeakDetector::GetInstance()->NotifyMemoryDumpProvidersChanged();
 
-    heap_profiling_enabled = IsHeapProfilingModeEnabled(heap_profiling_mode_);
+    heap_profiling_enabled =
+        (heap_profiling_mode_ == kHeapProfilingModePseudo) ||
+        (heap_profiling_mode_ == kHeapProfilingModeNative) ||
+        (heap_profiling_mode_ == kHeapProfilingModeNoStack);
   }
 
   if (heap_profiling_enabled)
