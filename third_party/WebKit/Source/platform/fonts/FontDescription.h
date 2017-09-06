@@ -34,6 +34,7 @@
 #include "platform/fonts/FontOrientation.h"
 #include "platform/fonts/FontSelectionTypes.h"
 #include "platform/fonts/FontSmoothingMode.h"
+#include "platform/fonts/FontVariantEastAsian.h"
 #include "platform/fonts/FontVariantNumeric.h"
 #include "platform/fonts/FontWidthVariant.h"
 #include "platform/fonts/TextRenderingMode.h"
@@ -164,6 +165,10 @@ class PLATFORM_EXPORT FontDescription {
            Family().Family() == FontFamilyNames::webkit_monospace;
   }
   Kerning GetKerning() const { return static_cast<Kerning>(fields_.kerning_); }
+  FontVariantEastAsian GetVariantEastAsian() const {
+    return FontVariantEastAsian::InitializeFromUnsigned(
+        fields_.variant_east_asian_);
+  }
   VariantLigatures GetVariantLigatures() const;
   FontVariantNumeric VariantNumeric() const {
     return FontVariantNumeric::InitializeFromUnsigned(fields_.variant_numeric_);
@@ -243,6 +248,7 @@ class PLATFORM_EXPORT FontDescription {
   void SetStretch(FontSelectionValue s) { font_selection_request_.width = s; }
 
   void SetVariantCaps(FontVariantCaps);
+  void SetVariantEastAsian(const FontVariantEastAsian);
   void SetVariantLigatures(const VariantLigatures&);
   void SetVariantNumeric(const FontVariantNumeric&);
   void SetIsAbsoluteSize(bool s) { fields_.is_absolute_size_ = s; }
@@ -380,6 +386,7 @@ class PLATFORM_EXPORT FontDescription {
     unsigned subpixel_text_position_ : 1;
     unsigned typesetting_features_ : 3;
     unsigned variant_numeric_ : 8;
+    unsigned variant_east_asian_ : 6;
     mutable unsigned subpixel_ascent_descent_ : 1;
   };
 
