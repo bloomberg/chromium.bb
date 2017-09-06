@@ -121,7 +121,10 @@ if [ "X$DEPOT_TOOLS_UPDATE" != "X0" ]; then
 
   # Sync CIPD and CIPD client tools.
   source "$base_dir/cipd_bin_setup.sh"
-  cipd_bin_setup
+  cipd_bin_setup || {
+    echo "CIPD bootstrap failed"
+    exit 1
+  }
 
   find "$base_dir" -iname "*.pyc" -exec rm -f {} \;
 fi
