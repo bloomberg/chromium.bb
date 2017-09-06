@@ -1159,7 +1159,8 @@ std::unique_ptr<TemplateURLData> GetPrepopulatedEngine(PrefService* prefs,
 #if defined(OS_ANDROID)
 
 std::vector<std::unique_ptr<TemplateURLData>> GetLocalPrepopulatedEngines(
-    const std::string& locale) {
+    const std::string& locale,
+    PrefService* prefs) {
   int country_id = CountryStringToCountryID(locale);
   if (country_id == kCountryIDUnknown) {
     LOG(ERROR) << "Unknown country code specified: " << locale;

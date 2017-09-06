@@ -4,11 +4,10 @@
 
 #include "chrome/browser/android/locale/special_locale_handler.h"
 
-#include <stddef.h>
-
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/search_engines/prepopulated_engines.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_data_util.h"
@@ -20,14 +19,16 @@
 
 class MockSpecialLocaleHandler : public SpecialLocaleHandler {
  public:
-  MockSpecialLocaleHandler(std::string locale, TemplateURLService* service)
-      : SpecialLocaleHandler(locale, service) {}
+  MockSpecialLocaleHandler(Profile* profile,
+                           std::string locale,
+                           TemplateURLService* service)
+      : SpecialLocaleHandler(profile, locale, service) {}
 
   ~MockSpecialLocaleHandler() override {}
 
  protected:
-  std::vector<std::unique_ptr<TemplateURLData>> GetLocalPrepopulatedEngines()
-      override {
+  std::vector<std::unique_ptr<TemplateURLData>> GetLocalPrepopulatedEngines(
+      Profile* profile) override {
     std::vector<std::unique_ptr<TemplateURLData>> result;
     result.push_back(TemplateURLDataFromPrepopulatedEngine(
         TemplateURLPrepopulateData::so_360));
@@ -64,7 +65,8 @@ public:
 
 void SpecialLocaleHandlerTest::SetUp() {
   test_util_.reset(new TemplateURLServiceTestUtil);
-  handler_.reset(new MockSpecialLocaleHandler("jp", model()));
+  handler_.reset(
+      new MockSpecialLocaleHandler(test_util_->profile(), "jp", model()));
 }
 
 void SpecialLocaleHandlerTest::TearDown() {
@@ -76,28 +78,25 @@ TEST_F(SpecialLocaleHandlerTest, AddLocalSearchEngines) {
   test_util()->VerifyLoad();
   auto naver = base::ASCIIToUTF16("naver.com");
   auto keyword_so = base::ASCIIToUTF16("so.com");
-  ASSERT_EQ(nullptr, model()->GetTemplateURLForKeyword(naver));
-  ASSERT_EQ(nullptr, model()->GetTemplateURLForKeyword(keyword_so));
+  ASSERT_EQ(NULL, model()->GetTemplateURLForKeyword(naver));
+  ASSERT_EQ(NULL, model()->GetTemplateURLForKeyword(keyword_so));
 
-  ASSERT_TRUE(
-      handler()->LoadTemplateUrls(nullptr, JavaParamRef<jobject>(nullptr)));
+  ASSERT_TRUE(handler()->LoadTemplateUrls(NULL, JavaParamRef<jobject>(NULL)));
 
-  EXPECT_EQ(TemplateURLPrepopulateData::naver.id,
+  ASSERT_EQ(TemplateURLPrepopulateData::naver.id,
             model()->GetTemplateURLForKeyword(naver)->prepopulate_id());
-  EXPECT_EQ(TemplateURLPrepopulateData::so_360.id,
+  ASSERT_EQ(TemplateURLPrepopulateData::so_360.id,
             model()->GetTemplateURLForKeyword(keyword_so)->prepopulate_id());
 
-  // Ensure multiple calls to Load do not duplicate the search engines.
-  size_t existing_size = model()->GetTemplateURLs().size();
-  ASSERT_TRUE(
-      handler()->LoadTemplateUrls(nullptr, JavaParamRef<jobject>(nullptr)));
-  EXPECT_EQ(existing_size, model()->GetTemplateURLs().size());
+  // Ensure multiple calls to Load does not duplicate the search engines.
+  unsigned int existing_size = model()->GetTemplateURLs().size();
+  ASSERT_TRUE(handler()->LoadTemplateUrls(NULL, JavaParamRef<jobject>(NULL)));
+  ASSERT_EQ(existing_size, model()->GetTemplateURLs().size());
 }
 
 TEST_F(SpecialLocaleHandlerTest, RemoveLocalSearchEngines) {
   test_util()->VerifyLoad();
-  ASSERT_TRUE(
-      handler()->LoadTemplateUrls(nullptr, JavaParamRef<jobject>(nullptr)));
+  ASSERT_TRUE(handler()->LoadTemplateUrls(NULL, JavaParamRef<jobject>(NULL)));
   // Make sure locale engines are loaded.
   auto keyword_naver = base::ASCIIToUTF16("naver.com");
   auto keyword_so = base::ASCIIToUTF16("so.com");
@@ -106,10 +105,10 @@ TEST_F(SpecialLocaleHandlerTest, RemoveLocalSearchEngines) {
   ASSERT_EQ(TemplateURLPrepopulateData::so_360.id,
             model()->GetTemplateURLForKeyword(keyword_so)->prepopulate_id());
 
-  handler()->RemoveTemplateUrls(nullptr, JavaParamRef<jobject>(nullptr));
+  handler()->RemoveTemplateUrls(NULL, JavaParamRef<jobject>(NULL));
 
-  ASSERT_EQ(nullptr, model()->GetTemplateURLForKeyword(keyword_naver));
-  ASSERT_EQ(nullptr, model()->GetTemplateURLForKeyword(keyword_so));
+  ASSERT_EQ(NULL, model()->GetTemplateURLForKeyword(keyword_naver));
+  ASSERT_EQ(NULL, model()->GetTemplateURLForKeyword(keyword_so));
 }
 
 TEST_F(SpecialLocaleHandlerTest, OverrideDefaultSearch) {
@@ -117,20 +116,18 @@ TEST_F(SpecialLocaleHandlerTest, OverrideDefaultSearch) {
   ASSERT_EQ(TemplateURLPrepopulateData::google.id,
             model()->GetDefaultSearchProvider()->prepopulate_id());
   // Load local search engines first.
-  ASSERT_TRUE(
-      handler()->LoadTemplateUrls(nullptr, JavaParamRef<jobject>(nullptr)));
+  ASSERT_TRUE(handler()->LoadTemplateUrls(NULL, JavaParamRef<jobject>(NULL)));
 
   ASSERT_EQ(TemplateURLPrepopulateData::google.id,
             model()->GetDefaultSearchProvider()->prepopulate_id());
 
   // Set one of the local search engine as default.
-  handler()->OverrideDefaultSearchProvider(nullptr,
-                                           JavaParamRef<jobject>(nullptr));
+  handler()->OverrideDefaultSearchProvider(NULL, JavaParamRef<jobject>(NULL));
   ASSERT_EQ(TemplateURLPrepopulateData::naver.id,
             model()->GetDefaultSearchProvider()->prepopulate_id());
 
   // Revert the default search engine tweak.
-  handler()->SetGoogleAsDefaultSearch(nullptr, JavaParamRef<jobject>(nullptr));
+  handler()->SetGoogleAsDefaultSearch(NULL, JavaParamRef<jobject>(NULL));
   ASSERT_EQ(TemplateURLPrepopulateData::google.id,
             model()->GetDefaultSearchProvider()->prepopulate_id());
 }
@@ -146,8 +143,7 @@ TEST_F(SpecialLocaleHandlerTest, ChangedGoogleBaseURL) {
   // match.
   ASSERT_EQ(nullptr, model()->GetTemplateURLForKeyword(google_keyword));
 
-  ASSERT_TRUE(
-      handler()->LoadTemplateUrls(nullptr, JavaParamRef<jobject>(nullptr)));
+  ASSERT_TRUE(handler()->LoadTemplateUrls(NULL, JavaParamRef<jobject>(NULL)));
 
   auto template_urls = model()->GetTemplateURLs();
   ASSERT_EQ(1, std::count_if(template_urls.begin(), template_urls.end(),

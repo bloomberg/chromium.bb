@@ -199,10 +199,10 @@ public class TemplateUrlService {
      * the list of search engines returned here to match the underlying TemplateUrlService in
      * native.
      *
-     * @param enableFiltering Whether to enable filtering.
+     * @param disableFiltering Whether to disable filtering.
      */
-    public void setFilteringEnabled(boolean enableFiltering) {
-        nativeSetFilteringEnabled(mNativeTemplateUrlServiceAndroid, enableFiltering);
+    public void setFilteringDisabled(boolean disableFiltering) {
+        nativeSetFilteringDisabled(mNativeTemplateUrlServiceAndroid, disableFiltering);
     }
 
     /**
@@ -449,7 +449,7 @@ public class TemplateUrlService {
     private native long nativeInit();
     private native void nativeLoad(long nativeTemplateUrlServiceAndroid);
     private native boolean nativeIsLoaded(long nativeTemplateUrlServiceAndroid);
-    private native void nativeSetFilteringEnabled(
+    private native void nativeSetFilteringDisabled(
             long nativeTemplateUrlServiceAndroid, boolean disableFiltering);
     private native int nativeGetTemplateUrlCount(long nativeTemplateUrlServiceAndroid);
     private native TemplateUrl nativeGetTemplateUrlAt(long nativeTemplateUrlServiceAndroid, int i);
