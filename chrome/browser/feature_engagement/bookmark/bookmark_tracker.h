@@ -35,8 +35,6 @@ class BookmarkTracker : public FeatureTracker {
   void OnVisitedKnownURL();
   // Clears the flag for whether there is any in-product help being displayed.
   void OnPromoClosed();
-  // Returns whether or not the promo should be displayed.
-  bool ShouldShowPromo();
 
  protected:
   // Alternate constructor to support unit testing.
@@ -49,7 +47,6 @@ class BookmarkTracker : public FeatureTracker {
   FRIEND_TEST_ALL_PREFIXES(BookmarkTrackerTest, TestShouldShowPromo);
 
   // FeatureTracker:
-  int GetSessionTimeRequiredToShowInMinutes() override;
   void OnSessionTimeMet() override;
 
   // Sets the BookmarkInProductHelp pref to true and calls the Bookmark Promo.
