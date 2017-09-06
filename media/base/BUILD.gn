@@ -410,6 +410,7 @@ static_library("test_support") {
     "//base/test:test_support",
     "//testing/gmock",
     "//ui/gfx:test_support",
+    "//url",
   ]
 }
 
