@@ -8,8 +8,6 @@
 # compute_interfaces_info_overall.py, and writes out the code which adds
 # bindings for origin-trial-enabled features at runtime.
 
-# pylint: disable=W0403
-
 import optparse
 import os
 import posixpath
