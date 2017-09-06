@@ -754,6 +754,10 @@
     "label": "//mojo/android:mojo_test_apk",
     "type": "console_test_launcher",
   },
+  "monochrome_static_initializers": {
+    "label": "//chrome/android:monochrome_static_initializers",
+    "type": "additional_compile_target",
+  },
   "mus_browser_tests": {
     "label": "//chrome/test:mus_browser_tests",
     "label_type": "group",

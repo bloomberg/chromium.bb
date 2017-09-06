@@ -656,8 +656,8 @@ def _AnnotatePakResources(out_dir):
   return id_name_map, id_header_map
 
 
-def _PrintStaticInitializerAnalysis(apk_filename, tool_prefix, dump_sis,
-                                    out_dir, chartjson=None):
+# This method also used by //build/android/gyp/assert_static_initializers.py
+def AnalyzeStaticInitializers(apk_filename, tool_prefix, dump_sis, out_dir):
   # Static initializer counting mostly copies logic in
   # infra/scripts/legacy/scripts/slave/chromium/sizes.py.
   with zipfile.ZipFile(apk_filename) as z:
@@ -674,13 +674,12 @@ def _PrintStaticInitializerAnalysis(apk_filename, tool_prefix, dump_sis,
   for f in files_to_check:
     with Unzip(apk_filename, filename=f.filename) as unzipped_so:
       si_count += CountStaticInitializers(unzipped_so, tool_prefix)
-      if dump_sis and out_dir:
+      if dump_sis:
         # Print count and list of SIs reported by dump-static-initializers.py.
         # Doesn't work well on all archs (particularly arm), which is why
         # the readelf method is used for tracking SI counts.
         _PrintDumpSIsCount(f.filename, unzipped_so, out_dir, tool_prefix)
-  ReportPerfResult(chartjson, 'StaticInitializersCount', 'count', si_count,
-                   'count')
+  return si_count
 
 
 def _PrintDumpSIsCount(apk_so_name, unzipped_so, out_dir, tool_prefix):
@@ -772,7 +771,7 @@ def _VerifyLibBuildIdsMatch(tool_prefix, *so_files):
 
 def _ConfigOutDirAndToolsPrefix(out_dir):
   if out_dir:
-    constants.SetOutputDirectory(out_dir)
+    constants.SetOutputDirectory(os.path.abspath(out_dir))
   else:
     try:
       out_dir = constants.GetOutDirectory()
@@ -781,8 +780,7 @@ def _ConfigOutDirAndToolsPrefix(out_dir):
       pass
   if out_dir:
     build_vars = build_utils.ReadBuildVars()
-    tool_prefix = os.path.join(out_dir,
-                                build_vars['android_tool_prefix'])
+    tool_prefix = os.path.join(out_dir, build_vars['android_tool_prefix'])
   else:
     tool_prefix = ''
   return out_dir, tool_prefix
@@ -807,7 +805,7 @@ def main():
                          action='store_true',
                          dest='dump_sis',
                          help='Run dump-static-initializers.py to get the list'
-                         'of static initializers (slow).')
+                              'of static initializers (slow).')
   argparser.add_argument('-d', '--device',
                          help='Dummy option for perf runner.')
   argparser.add_argument('--estimate-patch-size',
@@ -827,10 +825,18 @@ def main():
 
   chartjson = _BASE_CHART.copy() if args.chartjson else None
   out_dir, tool_prefix = _ConfigOutDirAndToolsPrefix(args.out_dir)
+  if args.dump_sis and not out_dir:
+    argparser.error(
+        '--dump-static-initializers requires --chromium-output-directory')
+
   PrintApkAnalysis(args.apk, tool_prefix, chartjson=chartjson)
   _PrintDexAnalysis(args.apk, chartjson=chartjson)
-  _PrintStaticInitializerAnalysis(args.apk, tool_prefix, args.dump_sis,
-                                  out_dir, chartjson=chartjson)
+
+  si_count = AnalyzeStaticInitializers(
+      args.apk, tool_prefix, args.dump_sis, out_dir)
+  ReportPerfResult(chartjson, 'StaticInitializersCount', 'count', si_count,
+                   'count')
+
   if args.estimate_patch_size:
     _PrintPatchSizeEstimate(args.apk, args.reference_apk_builder,
                             args.reference_apk_bucket, chartjson=chartjson)
