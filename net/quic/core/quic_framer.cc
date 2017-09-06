@@ -1632,7 +1632,7 @@ QuicStringPiece QuicFramer::GetAssociatedDataFromEncryptedPacket(
 }
 
 void QuicFramer::SetDecrypter(EncryptionLevel level, QuicDecrypter* decrypter) {
-  DCHECK(alternative_decrypter_.get() == nullptr);
+  DCHECK(alternative_decrypter_ == nullptr);
   DCHECK_GE(level, decrypter_level_);
   decrypter_.reset(decrypter);
   decrypter_level_ = level;
@@ -1685,7 +1685,7 @@ size_t QuicFramer::EncryptPayload(EncryptionLevel level,
                                   const QuicPacket& packet,
                                   char* buffer,
                                   size_t buffer_len) {
-  DCHECK(encrypter_[level].get() != nullptr);
+  DCHECK(encrypter_[level] != nullptr);
 
   QuicStringPiece associated_data = packet.AssociatedData(quic_version_);
   // Copy in the header, because the encrypter only populates the encrypted
@@ -1711,7 +1711,7 @@ size_t QuicFramer::GetMaxPlaintextSize(size_t ciphertext_size) {
   size_t min_plaintext_size = ciphertext_size;
 
   for (int i = ENCRYPTION_NONE; i < NUM_ENCRYPTION_LEVELS; i++) {
-    if (encrypter_[i].get() != nullptr) {
+    if (encrypter_[i] != nullptr) {
       size_t size = encrypter_[i]->GetMaxPlaintextSize(ciphertext_size);
       if (size < min_plaintext_size) {
         min_plaintext_size = size;
@@ -1729,7 +1729,7 @@ bool QuicFramer::DecryptPayload(QuicDataReader* encrypted_reader,
                                 size_t buffer_length,
                                 size_t* decrypted_length) {
   QuicStringPiece encrypted = encrypted_reader->ReadRemainingPayload();
-  DCHECK(decrypter_.get() != nullptr);
+  DCHECK(decrypter_ != nullptr);
   QuicStringPiece associated_data = GetAssociatedDataFromEncryptedPacket(
       quic_version_, packet, header.public_header.connection_id_length,
       header.public_header.version_flag, header.public_header.nonce != nullptr,
@@ -1740,7 +1740,7 @@ bool QuicFramer::DecryptPayload(QuicDataReader* encrypted_reader,
       decrypted_buffer, decrypted_length, buffer_length);
   if (success) {
     visitor_->OnDecryptedPacket(decrypter_level_);
-  } else if (alternative_decrypter_.get() != nullptr) {
+  } else if (alternative_decrypter_ != nullptr) {
     if (header.public_header.nonce != nullptr) {
       DCHECK_EQ(perspective_, Perspective::IS_CLIENT);
       alternative_decrypter_->SetDiversificationNonce(

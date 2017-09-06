@@ -90,7 +90,7 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
   // Called by the dispatcher when the underlying socket becomes writable again,
   // since we might need to send pending public reset packets which we didn't
   // send because the underlying socket was write blocked.
-  void OnCanWrite() override;
+  void OnBlockedWriterCanWrite() override;
 
   // Used to delete connection_id entries that have outlived their time wait
   // period.

@@ -22,7 +22,6 @@ using testing::Not;
 using testing::Pair;
 using testing::Pointwise;
 using testing::Return;
-using testing::SetArgPointee;
 using testing::StrictMock;
 using testing::_;
 
