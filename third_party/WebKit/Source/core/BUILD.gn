@@ -634,6 +634,7 @@ code_generator("make_core_generated_css_property_apis") {
     "$blink_core_output_dir/css/properties/CSSPropertyAPIWebkitOriginY.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIWebkitPadding.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIWebkitTextDecorationsInEffect.h",
+    "$blink_core_output_dir/css/properties/CSSPropertyAPIWebkitTextEmphasisPosition.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIWebkitTextEmphasisStyle.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIWebkitTextStrokeColor.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIWebkitTextStrokeWidth.h",
