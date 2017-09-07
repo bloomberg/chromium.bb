@@ -302,6 +302,8 @@ class AppBannerManager : public content::WebContentsObserver,
   // A StatusReporter handles the reporting of |InstallableStatusCode|s.
   class StatusReporter {
    public:
+    virtual ~StatusReporter() {}
+
     // Reports whether the StatusReporter is waiting for ReportStatus to be
     // called.
     virtual bool Waiting() const = 0;
