@@ -321,6 +321,10 @@ void AnimateHideWindowCommon(aura::Window* window,
   ScopedHidingAnimationSettings hiding_settings(window);
   hiding_settings.layer_animation_settings()->SetAnimationMetricsReporter(
       g_reporter_hide.Pointer());
+  // Render surface caching may not provide a benefit when animating the opacity
+  // of a single layer.
+  if (!window->layer()->children().empty())
+    hiding_settings.layer_animation_settings()->CacheRenderSurface();
   base::TimeDelta duration = GetWindowVisibilityAnimationDuration(*window);
   if (duration > base::TimeDelta())
     hiding_settings.layer_animation_settings()->SetTransitionDuration(duration);
