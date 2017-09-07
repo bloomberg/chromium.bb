@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_CERT_INTERNAL_PARSE_OCSP_H_
-#define NET_CERT_INTERNAL_PARSE_OCSP_H_
+#ifndef NET_CERT_INTERNAL_OCSP_H_
+#define NET_CERT_INTERNAL_OCSP_H_
 
 #include <memory>
 #include <string>
@@ -22,7 +22,7 @@
 namespace base {
 class Time;
 class TimeDelta;
-}
+}  // namespace base
 
 namespace net {
 
@@ -77,7 +77,6 @@ struct OCSPCertID {
 // }
 // (from RFC 5280)
 struct OCSPCertStatus {
-
   // Correspond to the values of CRLReason
   enum class RevocationReason {
     UNSPECIFIED = 0,
@@ -291,4 +290,4 @@ NET_EXPORT_PRIVATE bool CheckOCSPDateValid(const OCSPSingleResponse& response,
 
 }  // namespace net
 
-#endif  // NET_CERT_INTERNAL_PARSE_OCSP_H_
+#endif  // NET_CERT_INTERNAL_OCSP_H_
