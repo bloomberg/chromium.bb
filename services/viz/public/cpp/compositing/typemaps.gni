@@ -10,6 +10,7 @@ typemaps = [
   "//services/viz/public/cpp/compositing/filter_operations.typemap",
   "//services/viz/public/cpp/compositing/copy_output_request.typemap",
   "//services/viz/public/cpp/compositing/frame_sink_id.typemap",
+  "//services/viz/public/cpp/compositing/local_surface_id.typemap",
   "//services/viz/public/cpp/compositing/render_pass.typemap",
   "//services/viz/public/cpp/compositing/resource_settings.typemap",
   "//services/viz/public/cpp/compositing/returned_resource.typemap",

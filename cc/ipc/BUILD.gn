@@ -40,7 +40,6 @@ cc_component("ipc") {
 mojom("interfaces") {
   sources = [
     "copy_output_result.mojom",
-    "local_surface_id.mojom",
     "texture_mailbox.mojom",
     "texture_mailbox_releaser.mojom",
   ]

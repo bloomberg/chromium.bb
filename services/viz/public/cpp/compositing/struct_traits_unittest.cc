@@ -7,7 +7,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "cc/ipc/copy_output_result_struct_traits.h"
-#include "cc/ipc/local_surface_id_struct_traits.h"
 #include "cc/ipc/texture_mailbox_struct_traits.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/quads/debug_border_draw_quad.h"
@@ -33,6 +32,7 @@
 #include "services/viz/public/cpp/compositing/filter_operation_struct_traits.h"
 #include "services/viz/public/cpp/compositing/filter_operations_struct_traits.h"
 #include "services/viz/public/cpp/compositing/frame_sink_id_struct_traits.h"
+#include "services/viz/public/cpp/compositing/local_surface_id_struct_traits.h"
 #include "services/viz/public/cpp/compositing/render_pass_struct_traits.h"
 #include "services/viz/public/cpp/compositing/resource_settings_struct_traits.h"
 #include "services/viz/public/cpp/compositing/returned_resource_struct_traits.h"
@@ -225,6 +225,16 @@ TEST_F(StructTraitsTest, FilterOperations) {
   for (size_t i = 0; i < input.size(); ++i) {
     ExpectEqual(input.at(i), output.at(i));
   }
+}
+
+TEST_F(StructTraitsTest, LocalSurfaceId) {
+  LocalSurfaceId input(
+      42, base::UnguessableToken::Deserialize(0x12345678, 0x9abcdef0));
+
+  LocalSurfaceId output;
+  SerializeAndDeserialize<mojom::LocalSurfaceId>(input, &output);
+
+  EXPECT_EQ(input, output);
 }
 
 TEST_F(StructTraitsTest, CopyOutputRequest_BitmapRequest) {

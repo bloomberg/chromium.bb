@@ -14,6 +14,7 @@ mojom("interfaces") {
     "compositing/filter_operation.mojom",
     "compositing/filter_operations.mojom",
     "compositing/frame_sink_id.mojom",
+    "compositing/local_surface_id.mojom",
     "compositing/quads.mojom",
     "compositing/render_pass.mojom",
     "compositing/resource_settings.mojom",
