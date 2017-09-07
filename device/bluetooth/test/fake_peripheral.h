@@ -46,6 +46,9 @@ class FakePeripheral : public device::BluetoothDevice {
   // after IsGattDiscoveryComplete is called.
   void SetNextGATTDiscoveryResponse(uint16_t code);
 
+  // Simulates a GATT disconnection from the peripheral.
+  void SimulateGATTDisconnection();
+
   // Adds a fake primary service with |service_uuid| to this peripheral.
   // Returns the service's Id.
   std::string AddFakeService(const device::BluetoothUUID& service_uuid);

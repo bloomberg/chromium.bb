@@ -105,6 +105,11 @@ interface FakeCentral {
   // have completed or if there was an error during any of them.
   SetNextGATTDiscoveryResponse(string address, uint16 code) => (bool success);
 
+  // Simulates a GATT disconnection from the peripheral with |address|.
+  // Calls callback with false if there was any error when simulating the GATT
+  // disconnection.
+  SimulateGATTDisconnection(string address) => (bool success);
+
   // Simulates an Indication from the peripheral's GATT `Service Changed`
   // Characteristic from BT 4.2 Vol 3 Part G 7.1. This Indication is signaled
   // when services, characteristics, or descriptors are changed, added, or

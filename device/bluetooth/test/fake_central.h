@@ -42,6 +42,9 @@ class FakeCentral : public mojom::FakeCentral, public device::BluetoothAdapter {
       const std::string& address,
       uint16_t code,
       SetNextGATTDiscoveryResponseCallback callback) override;
+  void SimulateGATTDisconnection(
+      const std::string& address,
+      SimulateGATTDisconnectionCallback callback) override;
   void SimulateGATTServicesChanged(
       const std::string& address,
       SimulateGATTServicesChangedCallback callback) override;
