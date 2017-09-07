@@ -446,23 +446,6 @@ void DownloadItemNotification::UpdateNotificationData(
              // If the notification is already visible as popup or in the
              // notification center, doesn't pop it up.
              (type == UPDATE_AND_POPUP && IsNotificationVisible())) {
-    // Shows a notifiation as progress type once so the visible content will be
-    // updated. Only progress-type notification's content will be updated
-    // immediately when the message center is visible.
-    // See the comment in MessageCenterImpl::UpdateNotification() for detail.
-    if (type == UPDATE_AND_POPUP &&
-        message_center_->IsMessageCenterVisible() &&
-        (item_->GetState() == content::DownloadItem::COMPLETE ||
-         item_->GetState() == content::DownloadItem::INTERRUPTED)) {
-      DCHECK_EQ(notification_->type(),
-                message_center::NOTIFICATION_TYPE_BASE_FORMAT);
-
-      notification_->set_type(message_center::NOTIFICATION_TYPE_PROGRESS);
-      g_browser_process->notification_ui_manager()->
-          Update(*notification_, profile());
-      notification_->set_type(message_center::NOTIFICATION_TYPE_BASE_FORMAT);
-    }
-
     g_browser_process->notification_ui_manager()->
         Update(*notification_, profile());
   } else if (type == UPDATE_AND_POPUP) {
