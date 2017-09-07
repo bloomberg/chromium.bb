@@ -682,7 +682,17 @@ public class IntentHandler {
      * the entry point (in {@link Activity#onCreate()} for instance).
      */
     public static void addTimestampToIntent(Intent intent) {
-        intent.putExtra(EXTRA_TIMESTAMP_MS, SystemClock.elapsedRealtime());
+        addTimestampToIntent(intent, SystemClock.elapsedRealtime());
+    }
+
+    /**
+     * Adds provided timestamp to an intent.
+     *
+     * To track page load time, the value passed in should be as close as possible to
+     * the entry point (in {@link Activity#onCreate()} for instance).
+     */
+    public static void addTimestampToIntent(Intent intent, long timeStamp) {
+        intent.putExtra(EXTRA_TIMESTAMP_MS, timeStamp);
     }
 
     /**
