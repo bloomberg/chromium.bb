@@ -57,32 +57,6 @@ struct IntTypes<8> {
 
 // Thomas Wang's 32 Bit Mix Function:
 // http://www.cris.com/~Ttwang/tech/inthash.htm
-inline unsigned HashInt(uint8_t key8) {
-  unsigned key = key8;
-  key += ~(key << 15);
-  key ^= (key >> 10);
-  key += (key << 3);
-  key ^= (key >> 6);
-  key += ~(key << 11);
-  key ^= (key >> 16);
-  return key;
-}
-
-// Thomas Wang's 32 Bit Mix Function:
-// http://www.cris.com/~Ttwang/tech/inthash.htm
-inline unsigned HashInt(uint16_t key16) {
-  unsigned key = key16;
-  key += ~(key << 15);
-  key ^= (key >> 10);
-  key += (key << 3);
-  key ^= (key >> 6);
-  key += ~(key << 11);
-  key ^= (key >> 16);
-  return key;
-}
-
-// Thomas Wang's 32 Bit Mix Function:
-// http://www.cris.com/~Ttwang/tech/inthash.htm
 inline unsigned HashInt(uint32_t key) {
   key += ~(key << 15);
   key ^= (key >> 10);
@@ -91,6 +65,16 @@ inline unsigned HashInt(uint32_t key) {
   key += ~(key << 11);
   key ^= (key >> 16);
   return key;
+}
+
+inline unsigned HashInt(uint16_t key16) {
+  uint32_t key = key16;
+  return HashInt(key);
+}
+
+inline unsigned HashInt(uint8_t key8) {
+  uint32_t key = key8;
+  return HashInt(key);
 }
 
 // Thomas Wang's 64 bit Mix Function:
@@ -193,6 +177,15 @@ struct UniquePtrHash : PtrHash<T> {
   static bool Equal(const T* a, const std::unique_ptr<T>& b) {
     return a == b.get();
   }
+};
+
+// Useful compounding hash functions.
+inline void AddIntToHash(unsigned& hash, unsigned key) {
+  hash = ((hash << 5) + hash) + key;  // Djb2
+};
+
+inline void AddFloatToHash(unsigned& hash, float value) {
+  AddIntToHash(hash, FloatHash<float>::GetHash(value));
 };
 
 // Default hash function for each type.

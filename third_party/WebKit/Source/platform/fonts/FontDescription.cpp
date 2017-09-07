@@ -32,6 +32,7 @@
 #include "platform/Language.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/wtf/Assertions.h"
+#include "platform/wtf/HashFunctions.h"
 #include "platform/wtf/StringHasher.h"
 #include "platform/wtf/text/AtomicStringHash.h"
 #include "platform/wtf/text/StringHash.h"
@@ -274,14 +275,6 @@ void FontDescription::UpdateTypesettingFeatures() {
     fields_.typesetting_features_ |= blink::kCaps;
 }
 
-static inline void AddToHash(unsigned& hash, unsigned key) {
-  hash = ((hash << 5) + hash) + key;  // Djb2
-}
-
-static inline void AddFloatToHash(unsigned& hash, float value) {
-  AddToHash(hash, StringHasher::HashMemory(&value, sizeof(value)));
-}
-
 unsigned FontDescription::StyleHashWithoutFamilyList() const {
   unsigned hash = 0;
   StringHasher string_hasher;
@@ -292,29 +285,29 @@ unsigned FontDescription::StyleHashWithoutFamilyList() const {
       const AtomicString& tag = settings->at(i).Tag();
       for (unsigned j = 0; j < tag.length(); j++)
         string_hasher.AddCharacter(tag[j]);
-      AddToHash(hash, settings->at(i).Value());
+      WTF::AddIntToHash(hash, settings->at(i).Value());
     }
   }
 
   if (VariationSettings())
-    AddToHash(hash, VariationSettings()->GetHash());
+    WTF::AddIntToHash(hash, VariationSettings()->GetHash());
 
   if (locale_) {
     const AtomicString& locale = locale_->LocaleString();
     for (unsigned i = 0; i < locale.length(); i++)
       string_hasher.AddCharacter(locale[i]);
   }
-  AddToHash(hash, string_hasher.GetHash());
+  WTF::AddIntToHash(hash, string_hasher.GetHash());
 
-  AddFloatToHash(hash, specified_size_);
-  AddFloatToHash(hash, computed_size_);
-  AddFloatToHash(hash, adjusted_size_);
-  AddFloatToHash(hash, size_adjust_);
-  AddFloatToHash(hash, letter_spacing_);
-  AddFloatToHash(hash, word_spacing_);
-  AddToHash(hash, fields_as_unsigned_.parts[0]);
-  AddToHash(hash, fields_as_unsigned_.parts[1]);
-  AddToHash(hash, font_selection_request_.GetHash());
+  WTF::AddFloatToHash(hash, specified_size_);
+  WTF::AddFloatToHash(hash, computed_size_);
+  WTF::AddFloatToHash(hash, adjusted_size_);
+  WTF::AddFloatToHash(hash, size_adjust_);
+  WTF::AddFloatToHash(hash, letter_spacing_);
+  WTF::AddFloatToHash(hash, word_spacing_);
+  WTF::AddIntToHash(hash, fields_as_unsigned_.parts[0]);
+  WTF::AddIntToHash(hash, fields_as_unsigned_.parts[1]);
+  WTF::AddIntToHash(hash, font_selection_request_.GetHash());
 
   return hash;
 }

@@ -16,14 +16,6 @@ uint32_t AtomicStringToFourByteTag(AtomicString tag) {
   return (((tag[0]) << 24) | ((tag[1]) << 16) | ((tag[2]) << 8) | (tag[3]));
 }
 
-static inline void AddToHash(unsigned& hash, unsigned key) {
-  hash = ((hash << 5) + hash) + key;  // Djb2
-};
-
-static inline void AddFloatToHash(unsigned& hash, float value) {
-  AddToHash(hash, WTF::FloatHash<float>::GetHash(value));
-};
-
 unsigned FontVariationSettings::GetHash() const {
   unsigned computed_hash = size() ? 5381 : 0;
   unsigned num_features = size();
@@ -33,8 +25,8 @@ unsigned FontVariationSettings::GetHash() const {
     for (unsigned j = 0; j < tag.length(); j++) {
       string_hasher.AddCharacter(tag[j]);
     }
-    AddToHash(computed_hash, string_hasher.GetHash());
-    AddFloatToHash(computed_hash, at(i).Value());
+    WTF::AddIntToHash(computed_hash, string_hasher.GetHash());
+    WTF::AddFloatToHash(computed_hash, at(i).Value());
   }
   return computed_hash;
 }
