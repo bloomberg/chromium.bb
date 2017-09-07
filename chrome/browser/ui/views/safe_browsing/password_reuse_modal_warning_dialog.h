@@ -16,9 +16,12 @@ class WebContents;
 namespace safe_browsing {
 
 // Implementation of password reuse modal dialog.
-class PasswordReuseModalWarningDialog : public views::DialogDelegateView {
+class PasswordReuseModalWarningDialog
+    : public views::DialogDelegateView,
+      public ChromePasswordProtectionService::Observer {
  public:
   PasswordReuseModalWarningDialog(content::WebContents* web_contents,
+                                  ChromePasswordProtectionService* service,
                                   OnWarningDone done_callback);
 
   ~PasswordReuseModalWarningDialog() override;
@@ -35,9 +38,16 @@ class PasswordReuseModalWarningDialog : public views::DialogDelegateView {
   int GetDefaultDialogButton() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
 
+  // ChromePasswordProtectionService::Observer:
+  void OnStartingGaiaPasswordChange() override;
+  void OnGaiaPasswordChanged() override;
+  void OnMarkingSiteAsLegitimate(const GURL& url) override;
+
  private:
   const bool show_softer_warning_;
   OnWarningDone done_callback_;
+  ChromePasswordProtectionService* service_;
+  const GURL url_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordReuseModalWarningDialog);
 };

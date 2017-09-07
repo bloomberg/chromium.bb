@@ -57,9 +57,6 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   using TriggerType = LoginReputationClientRequest::TriggerType;
   using SyncAccountType =
       LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType;
-  using WebContentsToProtoMap = std::unordered_map<
-      content::WebContents*,
-      std::pair<LoginReputationClientRequest, LoginReputationClientResponse>>;
 
   // The outcome of the request. These values are used for UMA.
   // DO NOT CHANGE THE ORDERING OF THESE VALUES.
@@ -95,7 +92,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
     // User clicks on "Ignore" button.
     IGNORE_WARNING = 2,
 
-    // User navigates page away or hit "ESC" to close dialog.
+    // Dialog closed in reaction to change of user state.
     CLOSE = 3,
 
     // User explicitly mark the site as legitimate.
@@ -191,12 +188,10 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
                      WarningUIType ui_type,
                      WarningAction action);
 
-  // Shows modal warning dialog on the current |web_contents| and store request
-  // and response protos in |web_contents_to_proto_map_|.
-  virtual void ShowModalWarning(
-      content::WebContents* web_contents,
-      const LoginReputationClientRequest* request_proto,
-      const LoginReputationClientResponse* response_proto) {}
+  // Shows modal warning dialog on the current |web_contents| and pass the
+  // |verdict_token| to callback of this dialog.
+  virtual void ShowModalWarning(content::WebContents* web_contents,
+                                const std::string& verdict_token) {}
 
   // Record UMA stats and trigger event logger when warning UI is shown.
   virtual void OnWarningShown(content::WebContents* web_contents,
@@ -283,10 +278,6 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   void CheckCsdWhitelistOnIOThread(const GURL& url, bool* check_result);
 
   HostContentSettingsMap* content_settings() const { return content_settings_; }
-
-  WebContentsToProtoMap web_contents_to_proto_map() const {
-    return web_contents_to_proto_map_;
-  }
 
  private:
   friend class PasswordProtectionServiceTest;
@@ -375,8 +366,6 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // Weakptr can only cancel task if it is posted to the same thread. Therefore,
   // we need CancelableTaskTracker to cancel tasks posted to IO thread.
   base::CancelableTaskTracker tracker_;
-
-  WebContentsToProtoMap web_contents_to_proto_map_;
 
   base::WeakPtrFactory<PasswordProtectionService> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(PasswordProtectionService);

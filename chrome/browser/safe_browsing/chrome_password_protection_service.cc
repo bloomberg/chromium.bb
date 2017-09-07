@@ -134,30 +134,28 @@ void ChromePasswordProtectionService::FillReferrerChain(
 
 void ChromePasswordProtectionService::ShowModalWarning(
     content::WebContents* web_contents,
-    const LoginReputationClientRequest* request_proto,
-    const LoginReputationClientResponse* response_proto) {
-  // Do nothing if there is already a modal warning showing for this
-  // WebContents.
-  if (web_contents_to_proto_map().find(web_contents) !=
-      web_contents_to_proto_map().end())
-    return;
-
-  web_contents_to_proto_map().insert(std::make_pair(
-      web_contents,
-      std::make_pair(LoginReputationClientRequest(*request_proto),
-                     LoginReputationClientResponse(*response_proto))));
-
+    const std::string& unused_verdict_token) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // TODO(jialiul): Use verdict_token field in post warning report.
   UpdateSecurityState(SB_THREAT_TYPE_PASSWORD_REUSE, web_contents);
 #if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
   // TODO(jialiul): Remove the restriction on Mac when this dialog has a Cocoa
   // version as well.
   ShowPasswordReuseModalWarningDialog(
-      web_contents,
+      web_contents, this,
       base::BindOnce(&ChromePasswordProtectionService::OnWarningDone,
                      GetWeakPtr(), web_contents,
                      PasswordProtectionService::MODAL_DIALOG));
 #endif  // !OS_MACOSX || MAC_VIEWS_BROWSER
   OnWarningShown(web_contents, PasswordProtectionService::MODAL_DIALOG);
+}
+
+void ChromePasswordProtectionService::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void ChromePasswordProtectionService::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
 }
 
 PrefService* ChromePasswordProtectionService::GetPrefs() {
