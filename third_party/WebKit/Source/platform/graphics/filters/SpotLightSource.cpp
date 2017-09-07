@@ -65,11 +65,6 @@ bool SpotLightSource::SetLimitingConeAngle(float limiting_cone_angle) {
   return true;
 }
 
-static TextStream& operator<<(TextStream& ts, const FloatPoint3D& p) {
-  ts << "x=" << p.X() << " y=" << p.Y() << " z=" << p.Z();
-  return ts;
-}
-
 TextStream& SpotLightSource::ExternalRepresentation(TextStream& ts) const {
   ts << "[type=SPOT-LIGHT] ";
   ts << "[position=\"" << GetPosition() << "\"]";

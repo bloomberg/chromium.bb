@@ -41,11 +41,6 @@ bool PointLightSource::SetPosition(const FloatPoint3D& position) {
   return true;
 }
 
-static TextStream& operator<<(TextStream& ts, const FloatPoint3D& p) {
-  ts << "x=" << p.X() << " y=" << p.Y() << " z=" << p.Z();
-  return ts;
-}
-
 TextStream& PointLightSource::ExternalRepresentation(TextStream& ts) const {
   ts << "[type=POINT-LIGHT] ";
   ts << "[position=\"" << GetPosition() << "\"]";
