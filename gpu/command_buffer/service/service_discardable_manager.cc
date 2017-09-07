@@ -11,20 +11,6 @@
 
 namespace gpu {
 namespace {
-// TODO(ericrk): AmountOfPhysicalMemoryMB is broken in the GPU proc on Linux.
-// Use 0 on Linux for now, causing us to pick our normal cache sizes. GPU
-// discardable is currently only used in production by GPU raster, which is not
-// enabled on Linux. crbug.com/743271
-#if !defined(OS_ANDROID)
-int AmountOfPhysicalMemoryWithWorkaround() {
-#if defined(OS_LINUX)
-  return 0;
-#else
-  return base::SysInfo::AmountOfPhysicalMemoryMB();
-#endif
-}
-#endif  // !defined(OS_ANDROID)
-
 size_t CacheSizeLimit() {
 // Cache size values are designed to roughly correspond to existing image cache
 // sizes for 2-3 renderers. These will be updated as more types of data are
@@ -48,7 +34,7 @@ size_t CacheSizeLimit() {
     return kNormalCacheSizeBytes;
   }
 #else
-  if (AmountOfPhysicalMemoryWithWorkaround() <
+  if (base::SysInfo::AmountOfPhysicalMemoryMB() <
       kLargeCacheSizeMemoryThresholdMB) {
     return kNormalCacheSizeBytes;
   } else {
