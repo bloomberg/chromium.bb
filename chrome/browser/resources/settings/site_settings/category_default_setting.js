@@ -82,9 +82,15 @@ Polymer({
 
   /**
    * A handler for changing the default permission value for a content type.
+   * This is also called during page setup after we get the default state.
    * @private
    */
   onChangePermissionControl_: function() {
+    // Don't override user settings with enforced settings.
+    if (this.controlParams_.enforcement ==
+        chrome.settingsPrivate.Enforcement.ENFORCED) {
+      return;
+    }
     switch (this.category) {
       case settings.ContentSettingsTypes.ADS:
       case settings.ContentSettingsTypes.BACKGROUND_SYNC:
