@@ -1314,6 +1314,9 @@ After setup is complete, you'll be able to access the computer from this page by
       <message desc="Label for the button to accept sharing the computer in 'It2Me' mode." name="IDS_SHARE_CONFIRM_DIALOG_CONFIRM" >
         Share
       </message>
+      <message desc="Label for the button to accept sharing the computer in 'It2Me' mode." meaning="Accept share request." name="IDS_SHARE_CONFIRM_DIALOG_CONFIRM_TEMP" >
+        Share
+      </message>
       <message desc="Label for the button to decline sharing the computer in 'It2Me' mode." name="IDS_SHARE_CONFIRM_DIALOG_DECLINE" >
         Cancel
       </message>
