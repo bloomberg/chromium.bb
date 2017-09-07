@@ -7,6 +7,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/metrics/renderer_uptime_tracker.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/service_manager_connection.h"
@@ -95,6 +96,11 @@ void EmitRendererMemoryMetrics(const ProcessMemoryDumpPtr& pmd,
   builder.SetBlinkGC(pmd->chrome_dump->blink_gc_total_kb / 1024);
   builder.SetV8(pmd->chrome_dump->v8_total_kb / 1024);
   builder.SetNumberOfExtensions(number_of_extensions);
+
+  base::TimeDelta uptime =
+      metrics::RendererUptimeTracker::Get()->GetProcessUptime(pmd->pid);
+  builder.SetUptime(uptime.InSeconds());
+
   builder.Record(ukm_recorder);
 }
 
