@@ -12,6 +12,7 @@
 #include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/trace_event/memory_dump_manager.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/tracing/crash_service_uploader.h"
@@ -71,11 +72,19 @@ void UploadTraceToCrashServer(base::FilePath file_path) {
     return;
   }
 
+  std::unique_ptr<base::DictionaryValue> metadata =
+      base::MakeUnique<base::DictionaryValue>();
+  base::Value configs(base::Value::Type::DICTIONARY);
+  configs.SetKey("mode", base::Value("REACTIVE_TRACING_MODE"));
+  configs.SetKey("category", base::Value("MEMLOG"));
+  metadata->SetKey("config", std::move(configs));
+
   TraceCrashServiceUploader* uploader = new TraceCrashServiceUploader(
       g_browser_process->system_request_context());
 
   uploader->DoUpload(file_contents, content::TraceUploader::UNCOMPRESSED_UPLOAD,
-                     nullptr, content::TraceUploader::UploadProgressCallback(),
+                     std::move(metadata),
+                     content::TraceUploader::UploadProgressCallback(),
                      base::Bind(&OnTraceUploadComplete, base::Owned(uploader)));
 }
 
