@@ -934,6 +934,13 @@ void UiSceneManager::ConfigureIndicators() {
   screen_capture_indicator_->SetVisible(allowed && screen_capturing_);
   location_access_indicator_->SetVisible(allowed && location_access_);
   bluetooth_connected_indicator_->SetVisible(allowed && bluetooth_connected_);
+
+  audio_capture_indicator_->set_requires_layout(allowed && audio_capturing_);
+  video_capture_indicator_->set_requires_layout(allowed && video_capturing_);
+  screen_capture_indicator_->set_requires_layout(allowed && screen_capturing_);
+  location_access_indicator_->set_requires_layout(allowed && location_access_);
+  bluetooth_connected_indicator_->set_requires_layout(allowed &&
+                                                      bluetooth_connected_);
 }
 
 void UiSceneManager::ConfigureExclusiveScreenToast() {

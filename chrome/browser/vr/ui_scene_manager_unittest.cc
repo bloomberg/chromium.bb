@@ -532,6 +532,7 @@ TEST_F(UiSceneManagerTest, CaptureIndicatorsVisibility) {
 
   MakeManager(kNotInCct, kNotInWebVr);
   EXPECT_TRUE(VerifyVisibility(indicators, false));
+  EXPECT_TRUE(VerifyRequiresLayout(indicators, false));
 
   manager_->SetAudioCapturingIndicator(true);
   manager_->SetVideoCapturingIndicator(true);
@@ -539,17 +540,21 @@ TEST_F(UiSceneManagerTest, CaptureIndicatorsVisibility) {
   manager_->SetLocationAccessIndicator(true);
   manager_->SetBluetoothConnectedIndicator(true);
   EXPECT_TRUE(VerifyVisibility(indicators, true));
+  EXPECT_TRUE(VerifyRequiresLayout(indicators, true));
 
   // Go into non-browser modes and make sure all indicators are hidden.
   manager_->SetWebVrMode(true, false);
   EXPECT_TRUE(VerifyVisibility(indicators, false));
+  EXPECT_TRUE(VerifyRequiresLayout(indicators, false));
   manager_->SetWebVrMode(false, false);
   manager_->SetFullscreen(true);
   EXPECT_TRUE(VerifyVisibility(indicators, false));
+  EXPECT_TRUE(VerifyRequiresLayout(indicators, false));
   manager_->SetFullscreen(false);
 
   // Back to browser, make sure the indicators reappear.
   EXPECT_TRUE(VerifyVisibility(indicators, true));
+  EXPECT_TRUE(VerifyRequiresLayout(indicators, true));
 
   // Ensure they can be turned off.
   manager_->SetAudioCapturingIndicator(false);
@@ -558,6 +563,7 @@ TEST_F(UiSceneManagerTest, CaptureIndicatorsVisibility) {
   manager_->SetLocationAccessIndicator(false);
   manager_->SetBluetoothConnectedIndicator(false);
   EXPECT_TRUE(VerifyVisibility(indicators, false));
+  EXPECT_TRUE(VerifyRequiresLayout(indicators, false));
 }
 
 TEST_F(UiSceneManagerTest, PropagateContentBoundsOnStart) {
