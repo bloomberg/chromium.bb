@@ -762,6 +762,11 @@ be describing additional metrics about the same event.
       Measure of total memory consumed by all processes.
     </summary>
   </metric>
+  <metric name="Uptime">
+    <summary>
+      Process uptime.
+    </summary>
+  </metric>
   <metric name="V8">
     <summary>
       Measure of memory consumed by V8.
