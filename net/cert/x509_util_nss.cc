@@ -306,6 +306,14 @@ bool GetDEREncoded(CERTCertificate* cert, std::string* der_encoded) {
   return true;
 }
 
+bool GetPEMEncoded(CERTCertificate* cert, std::string* pem_encoded) {
+  if (!cert || !cert->derCert.len)
+    return false;
+  std::string der(reinterpret_cast<char*>(cert->derCert.data),
+                  cert->derCert.len);
+  return X509Certificate::GetPEMEncodedFromDER(der, pem_encoded);
+}
+
 void GetRFC822SubjectAltNames(CERTCertificate* cert_handle,
                               std::vector<std::string>* names) {
   crypto::ScopedSECItem alt_name(SECITEM_AllocItem(NULL, NULL, 0));
@@ -414,8 +422,10 @@ bool GetValidityTimes(CERTCertificate* cert,
                       base::Time* not_after) {
   PRTime pr_not_before, pr_not_after;
   if (CERT_GetCertTimes(cert, &pr_not_before, &pr_not_after) == SECSuccess) {
-    *not_before = crypto::PRTimeToBaseTime(pr_not_before);
-    *not_after = crypto::PRTimeToBaseTime(pr_not_after);
+    if (not_before)
+      *not_before = crypto::PRTimeToBaseTime(pr_not_before);
+    if (not_after)
+      *not_after = crypto::PRTimeToBaseTime(pr_not_after);
     return true;
   }
   return false;

@@ -23,11 +23,10 @@ CHROMEOS_EXPORT net::CertType GetCertType(CERTCertificate* cert_handle);
 // string.
 CHROMEOS_EXPORT std::string GetCertTokenName(CERTCertificate* cert_handle);
 
-// Returns the common name for |cert_handle|->issuer or |alternative_text| if
-// the common name is missing or empty.
-CHROMEOS_EXPORT std::string GetIssuerCommonName(
-    CERTCertificate* cert_handle,
-    const std::string& alternative_text);
+// Returns a name that can be used to represent the issuer of |cert_handle|.
+// It tries in this order: CN, O and OU and returns the first non-empty one
+// found.
+CHROMEOS_EXPORT std::string GetIssuerDisplayName(CERTCertificate* cert_handle);
 
 // Returns the common name for |cert_handle|->subject converted to unicode,
 // or |cert_handle|->nickname if the subject name is unavailable or empty.

@@ -88,7 +88,7 @@ class CHROMEOS_EXPORT ClientCertResolver : public NetworkStateHandlerObserver,
   void NetworkConnectionStateChanged(const NetworkState* network) override;
 
   // CertLoader::Observer overrides
-  void OnCertificatesLoaded(const net::CertificateList& cert_list,
+  void OnCertificatesLoaded(const net::ScopedCERTCertificateList& cert_list,
                             bool initial_load) override;
 
   // NetworkPolicyObserver overrides

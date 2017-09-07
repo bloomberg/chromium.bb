@@ -36,13 +36,19 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/nss_key_util.h"
+#include "crypto/openssl_util.h"
 #include "crypto/scoped_nss_types.h"
 #include "net/base/net_errors.h"
+#include "net/cert/asn1_util.h"
 #include "net/cert/cert_database.h"
 #include "net/cert/nss_cert_database.h"
 #include "net/cert/x509_util_nss.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/third_party/mozilla_security_manager/nsNSSCertificateDB.h"
+#include "third_party/boringssl/src/include/openssl/bn.h"
+#include "third_party/boringssl/src/include/openssl/bytestring.h"
+#include "third_party/boringssl/src/include/openssl/evp.h"
+#include "third_party/boringssl/src/include/openssl/rsa.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -268,7 +274,7 @@ class GetCertificatesState : public NSSOperationState {
         from, base::Bind(callback_, base::Passed(&certs), error_message));
   }
 
-  std::unique_ptr<net::CertificateList> certs_;
+  net::ScopedCERTCertificateList certs_;
 
  private:
   // Must be called on origin thread, therefore use CallBack().
@@ -581,10 +587,10 @@ void SelectCertificatesOnIOThread(
 void FilterCertificatesOnWorkerThread(
     std::unique_ptr<GetCertificatesState> state) {
   std::unique_ptr<net::CertificateList> client_certs(new net::CertificateList);
-  for (net::CertificateList::const_iterator it = state->certs_->begin();
-       it != state->certs_->end();
-       ++it) {
-    net::X509Certificate::OSCertHandle cert_handle = (*it)->os_cert_handle();
+  for (net::ScopedCERTCertificateList::const_iterator it =
+           state->certs_.begin();
+       it != state->certs_.end(); ++it) {
+    CERTCertificate* cert_handle = it->get();
     crypto::ScopedPK11Slot cert_slot(PK11_KeyForCertExists(cert_handle,
                                                            NULL,    // keyPtr
                                                            NULL));  // wincx
@@ -594,7 +600,12 @@ void FilterCertificatesOnWorkerThread(
     if (cert_slot != state->slot_)
       continue;
 
-    client_certs->push_back(*it);
+    scoped_refptr<net::X509Certificate> cert =
+        net::x509_util::CreateX509CertificateFromCERTCertificate(cert_handle);
+    if (!cert)
+      continue;
+
+    client_certs->push_back(std::move(cert));
   }
 
   state->CallBack(FROM_HERE, std::move(client_certs),
@@ -604,7 +615,7 @@ void FilterCertificatesOnWorkerThread(
 // Passes the obtained certificates to the worker thread for filtering. Used by
 // GetCertificatesWithDB().
 void DidGetCertificates(std::unique_ptr<GetCertificatesState> state,
-                        std::unique_ptr<net::CertificateList> all_certs) {
+                        net::ScopedCERTCertificateList all_certs) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   state->certs_ = std::move(all_certs);
   // This task interacts with the TPM, hence MayBlock().
@@ -641,16 +652,24 @@ void ImportCertificateWithDB(std::unique_ptr<ImportCertificateState> state,
     return;
   }
 
+  net::ScopedCERTCertificate nss_cert =
+      net::x509_util::CreateCERTCertificateFromX509Certificate(
+          state->certificate_.get());
+  if (!nss_cert) {
+    state->OnError(FROM_HERE, net::ErrorToString(net::ERR_CERT_INVALID));
+    return;
+  }
+
   // Check that the private key is in the correct slot.
   crypto::ScopedPK11Slot slot(
-      PK11_KeyForCertExists(state->certificate_->os_cert_handle(), NULL, NULL));
+      PK11_KeyForCertExists(nss_cert.get(), NULL, NULL));
   if (slot.get() != state->slot_.get()) {
     state->OnError(FROM_HERE, kErrorKeyNotFound);
     return;
   }
 
-  const net::Error import_status = static_cast<net::Error>(
-      cert_db->ImportUserCert(state->certificate_.get()));
+  const net::Error import_status =
+      static_cast<net::Error>(cert_db->ImportUserCert(nss_cert.get()));
   if (import_status != net::OK) {
     LOG(ERROR) << "Could not import certificate.";
     state->OnError(FROM_HERE, net::ErrorToString(import_status));
@@ -683,13 +702,19 @@ void DidRemoveCertificate(std::unique_ptr<RemoveCertificateState> state,
 void RemoveCertificateWithDB(std::unique_ptr<RemoveCertificateState> state,
                              net::NSSCertDatabase* cert_db) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  // Get the pointer before base::Passed clears |state|.
-  scoped_refptr<net::X509Certificate> certificate = state->certificate_;
-  bool certificate_found = certificate->os_cert_handle()->isperm;
+
+  net::ScopedCERTCertificate nss_cert =
+      net::x509_util::CreateCERTCertificateFromX509Certificate(
+          state->certificate_.get());
+  if (!nss_cert) {
+    state->OnError(FROM_HERE, net::ErrorToString(net::ERR_CERT_INVALID));
+    return;
+  }
+
+  bool certificate_found = nss_cert->isperm;
   cert_db->DeleteCertAndKeyAsync(
-      certificate,
-      base::Bind(
-          &DidRemoveCertificate, base::Passed(&state), certificate_found));
+      std::move(nss_cert), base::Bind(&DidRemoveCertificate,
+                                      base::Passed(&state), certificate_found));
 }
 
 // Does the actual work to determine which tokens are available.
@@ -807,8 +832,15 @@ void SelectClientCertificates(
 
 std::string GetSubjectPublicKeyInfo(
     const scoped_refptr<net::X509Certificate>& certificate) {
-  const SECItem& spki_der = certificate->os_cert_handle()->derPublicKey;
-  return std::string(spki_der.data, spki_der.data + spki_der.len);
+  std::string der_bytes;
+  if (!net::X509Certificate::GetDEREncoded(certificate->os_cert_handle(),
+                                           &der_bytes))
+    return {};
+
+  base::StringPiece spki_bytes;
+  if (!net::asn1::ExtractSPKIFromDERCert(der_bytes, &spki_bytes))
+    return {};
+  return spki_bytes.as_string();
 }
 
 bool GetPublicKey(const scoped_refptr<net::X509Certificate>& certificate,
@@ -829,14 +861,24 @@ bool GetPublicKey(const scoped_refptr<net::X509Certificate>& certificate,
     return false;
   }
 
-  crypto::ScopedSECKEYPublicKey public_key(
-      CERT_ExtractPublicKey(certificate->os_cert_handle()));
-  if (!public_key) {
+  std::string spki = GetSubjectPublicKeyInfo(certificate);
+  crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
+  CBS cbs;
+  CBS_init(&cbs, reinterpret_cast<const uint8_t*>(spki.data()), spki.size());
+  bssl::UniquePtr<EVP_PKEY> pkey(EVP_parse_public_key(&cbs));
+  if (!pkey) {
     LOG(WARNING) << "Could not extract public key of certificate.";
     return false;
   }
-  long public_exponent = DER_GetInteger(&public_key->u.rsa.publicExponent);
-  if (public_exponent != 65537L) {
+  RSA* rsa = EVP_PKEY_get0_RSA(pkey.get());
+  if (!rsa) {
+    LOG(WARNING) << "Could not get RSA from PKEY.";
+    return false;
+  }
+
+  const BIGNUM* public_exponent;
+  RSA_get0_key(rsa, nullptr /* out_n */, &public_exponent, nullptr /* out_d */);
+  if (BN_get_word(public_exponent) != 65537L) {
     LOG(ERROR) << "Rejecting RSA public exponent that is unequal 65537.";
     return false;
   }

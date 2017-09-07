@@ -21,6 +21,7 @@
 #include "crypto/scoped_test_nss_db.h"
 #include "net/cert/nss_cert_database_chromeos.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util_nss.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -77,14 +78,14 @@ class NetworkCertMigratorTest : public testing::Test {
 
  protected:
   void SetupTestClientCert() {
-    test_client_cert_ = net::ImportClientCertAndKeyFromFile(
-        net::GetTestCertsDirectory(), "client_1.pem", "client_1.pk8",
-        test_nssdb_.slot());
+    net::ImportClientCertAndKeyFromFile(net::GetTestCertsDirectory(),
+                                        "client_1.pem", "client_1.pk8",
+                                        test_nssdb_.slot(), &test_client_cert_);
     ASSERT_TRUE(test_client_cert_.get());
 
     int slot_id = -1;
     test_client_cert_pkcs11_id_ = CertLoader::GetPkcs11IdAndSlotForCert(
-        *test_client_cert_, &slot_id);
+        test_client_cert_.get(), &slot_id);
     ASSERT_FALSE(test_client_cert_pkcs11_id_.empty());
     ASSERT_NE(-1, slot_id);
     test_client_cert_slot_id_ = base::IntToString(slot_id);
@@ -186,7 +187,7 @@ class NetworkCertMigratorTest : public testing::Test {
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   ShillServiceClient::TestInterface* service_test_;
-  scoped_refptr<net::X509Certificate> test_client_cert_;
+  net::ScopedCERTCertificate test_client_cert_;
   std::string test_client_cert_pkcs11_id_;
   std::string test_client_cert_slot_id_;
 

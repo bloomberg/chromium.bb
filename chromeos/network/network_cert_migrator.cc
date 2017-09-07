@@ -17,7 +17,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "dbus/object_path.h"
-#include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util_nss.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -36,11 +36,10 @@ namespace chromeos {
 class NetworkCertMigrator::MigrationTask
     : public base::RefCounted<MigrationTask> {
  public:
-  MigrationTask(const net::CertificateList& certs,
+  MigrationTask(const net::ScopedCERTCertificateList& certs,
                 const base::WeakPtr<NetworkCertMigrator>& cert_migrator)
-      : certs_(certs),
-        cert_migrator_(cert_migrator) {
-  }
+      : certs_(net::x509_util::DupCERTCertificateList(certs)),
+        cert_migrator_(cert_migrator) {}
 
   void Run(const NetworkStateHandler::NetworkStateList& networks) {
     // Request properties for each network that could be configured with a
@@ -95,9 +94,9 @@ class NetworkCertMigrator::MigrationTask
       return;
 
     int real_slot_id = -1;
-    scoped_refptr<net::X509Certificate> cert =
+    CERTCertificate* cert =
         FindCertificateWithPkcs11Id(pkcs11_id, &real_slot_id);
-    if (!cert.get()) {
+    if (!cert) {
       LOG(WARNING) << "No matching cert found, removing the certificate "
                       "configuration from network " << service_path;
       chromeos::client_cert::SetEmptyShillProperties(config_type,
@@ -109,7 +108,7 @@ class NetworkCertMigrator::MigrationTask
       return;
     }
 
-    if (cert.get() && real_slot_id != configured_slot_id) {
+    if (cert && real_slot_id != configured_slot_id) {
       VLOG(1) << "Network " << service_path
               << " is configured with no or an incorrect slot id.";
       chromeos::client_cert::SetShillProperties(
@@ -117,16 +116,16 @@ class NetworkCertMigrator::MigrationTask
     }
   }
 
-  scoped_refptr<net::X509Certificate> FindCertificateWithPkcs11Id(
-      const std::string& pkcs11_id, int* slot_id) {
+  CERTCertificate* FindCertificateWithPkcs11Id(const std::string& pkcs11_id,
+                                               int* slot_id) {
     *slot_id = -1;
-    for (scoped_refptr<net::X509Certificate> cert : certs_) {
+    for (const net::ScopedCERTCertificate& cert : certs_) {
       int current_slot_id = -1;
       std::string current_pkcs11_id =
-          CertLoader::GetPkcs11IdAndSlotForCert(*cert, &current_slot_id);
+          CertLoader::GetPkcs11IdAndSlotForCert(cert.get(), &current_slot_id);
       if (current_pkcs11_id == pkcs11_id) {
         *slot_id = current_slot_id;
-        return cert;
+        return cert.get();
       }
     }
     return nullptr;
@@ -155,7 +154,7 @@ class NetworkCertMigrator::MigrationTask
   virtual ~MigrationTask() {
   }
 
-  net::CertificateList certs_;
+  net::ScopedCERTCertificateList certs_;
   base::WeakPtr<NetworkCertMigrator> cert_migrator_;
 };
 
@@ -200,7 +199,7 @@ void NetworkCertMigrator::NetworkListChanged() {
 }
 
 void NetworkCertMigrator::OnCertificatesLoaded(
-    const net::CertificateList& cert_list,
+    const net::ScopedCERTCertificateList& cert_list,
     bool initial_load) {
   if (initial_load)
     NetworkListChanged();

@@ -210,8 +210,8 @@ base::string16 CertificateManagerModel::GetColumnText(CERTCertificate* cert,
           x509_certificate_model::GetSerialNumberHexified(cert, std::string()));
       break;
     case COL_EXPIRES_ON: {
-      base::Time not_before, not_after;
-      if (net::x509_util::GetValidityTimes(cert, &not_before, &not_after))
+      base::Time not_after;
+      if (net::x509_util::GetValidityTimes(cert, nullptr, &not_after))
         rv = base::TimeFormatShortDateNumeric(not_after);
       break;
     }

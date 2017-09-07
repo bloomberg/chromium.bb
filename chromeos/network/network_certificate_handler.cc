@@ -8,6 +8,7 @@
 #include "base/strings/stringprintf.h"
 #include "chromeos/network/certificate_helper.h"
 #include "net/base/hash_value.h"
+#include "net/cert/x509_util_nss.h"
 
 namespace chromeos {
 
@@ -16,26 +17,17 @@ namespace {
 // Root CA certificates that are built into Chrome use this token name.
 const char kRootCertificateTokenName[] = "Builtin Object Token";
 
-NetworkCertificateHandler::Certificate GetCertificate(
-    const net::X509Certificate& cert,
-    net::CertType type) {
+NetworkCertificateHandler::Certificate GetCertificate(CERTCertificate* cert,
+                                                      net::CertType type) {
   NetworkCertificateHandler::Certificate result;
 
-  result.hash = net::HashValue(net::X509Certificate::CalculateFingerprint256(
-                                   cert.os_cert_handle()))
-                    .ToString();
+  result.hash =
+      net::HashValue(net::x509_util::CalculateFingerprint256(cert)).ToString();
 
-  std::string alt_text;
-  if (!cert.subject().organization_names.empty())
-    alt_text = cert.subject().organization_names[0];
-  if (alt_text.empty())
-    alt_text = cert.subject().GetDisplayName();
-  result.issued_by =
-      certificate::GetIssuerCommonName(cert.os_cert_handle(), alt_text);
+  result.issued_by = certificate::GetIssuerDisplayName(cert);
 
-  result.issued_to = certificate::GetCertNameOrNickname(cert.os_cert_handle());
-  result.issued_to_ascii =
-      certificate::GetCertAsciiNameOrNickname(cert.os_cert_handle());
+  result.issued_to = certificate::GetCertNameOrNickname(cert);
+  result.issued_to_ascii = certificate::GetCertAsciiNameOrNickname(cert);
 
   if (type == net::USER_CERT) {
     int slot_id;
@@ -43,15 +35,14 @@ NetworkCertificateHandler::Certificate GetCertificate(
         CertLoader::GetPkcs11IdAndSlotForCert(cert, &slot_id);
     result.pkcs11_id = base::StringPrintf("%i:%s", slot_id, pkcs11_id.c_str());
   } else if (type == net::CA_CERT) {
-    if (!net::X509Certificate::GetPEMEncoded(cert.os_cert_handle(),
-                                             &result.pem)) {
+    if (!net::x509_util::GetPEMEncoded(cert, &result.pem)) {
       LOG(ERROR) << "Unable to PEM-encode CA";
     }
   } else {
     NOTREACHED();
   }
 
-  result.hardware_backed = CertLoader::IsCertificateHardwareBacked(&cert);
+  result.hardware_backed = CertLoader::IsCertificateHardwareBacked(cert);
 
   return result;
 }
@@ -86,28 +77,27 @@ void NetworkCertificateHandler::RemoveObserver(
 }
 
 void NetworkCertificateHandler::OnCertificatesLoaded(
-    const net::CertificateList& cert_list,
+    const net::ScopedCERTCertificateList& cert_list,
     bool /* initial_load */) {
   ProcessCertificates(cert_list);
 }
 
 void NetworkCertificateHandler::ProcessCertificates(
-    const net::CertificateList& cert_list) {
+    const net::ScopedCERTCertificateList& cert_list) {
   user_certificates_.clear();
   server_ca_certificates_.clear();
 
   // Add certificates to the appropriate list.
   for (const auto& cert_ref : cert_list) {
-    const net::X509Certificate& cert = *cert_ref.get();
-    net::X509Certificate::OSCertHandle cert_handle = cert.os_cert_handle();
-    net::CertType type = certificate::GetCertType(cert_handle);
+    CERTCertificate* cert = cert_ref.get();
+    net::CertType type = certificate::GetCertType(cert);
     switch (type) {
       case net::USER_CERT:
         user_certificates_.push_back(GetCertificate(cert, type));
         break;
       case net::CA_CERT: {
         // Exclude root CA certificates that are built into Chrome.
-        std::string token_name = certificate::GetCertTokenName(cert_handle);
+        std::string token_name = certificate::GetCertTokenName(cert);
         if (token_name != kRootCertificateTokenName)
           server_ca_certificates_.push_back(GetCertificate(cert, type));
         else
@@ -126,7 +116,7 @@ void NetworkCertificateHandler::ProcessCertificates(
 }
 
 void NetworkCertificateHandler::SetCertificatesForTest(
-    const net::CertificateList& cert_list) {
+    const net::ScopedCERTCertificateList& cert_list) {
   ProcessCertificates(cert_list);
 }
 

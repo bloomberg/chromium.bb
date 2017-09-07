@@ -82,6 +82,10 @@ NET_EXPORT CertificateList CreateX509CertificateListFromCERTCertificates(
 // true and writes the DER encoded certificate to |*der_encoded|.
 NET_EXPORT bool GetDEREncoded(CERTCertificate* cert, std::string* der_encoded);
 
+// Obtains the PEM encoded certificate data for |cert|. On success, returns
+// true and writes the PEM encoded certificate to |*pem_encoded|.
+NET_EXPORT bool GetPEMEncoded(CERTCertificate* cert, std::string* pem_encoded);
+
 // Stores the values of all rfc822Name subjectAltNames from |cert_handle|
 // into |names|. If no names are present, clears |names|.
 // WARNING: This method does not validate that the rfc822Name is
@@ -122,7 +126,8 @@ NET_EXPORT std::string GetDefaultUniqueNickname(CERTCertificate* nss_cert,
 NET_EXPORT std::string GetCERTNameDisplayName(CERTName* name);
 
 // Stores the notBefore and notAfter times from |cert| into |*not_before| and
-// |*not_after|, returning true if successful.
+// |*not_after|, returning true if successful. |not_before| or |not_after| may
+// be null.
 NET_EXPORT bool GetValidityTimes(CERTCertificate* cert,
                                  base::Time* not_before,
                                  base::Time* not_after);

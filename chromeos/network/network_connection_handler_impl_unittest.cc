@@ -254,9 +254,10 @@ class NetworkConnectionHandlerImplTest : public NetworkStateTest {
   }
 
   scoped_refptr<net::X509Certificate> ImportTestClientCert() {
-    net::CertificateList ca_cert_list(net::CreateCertificateListFromFile(
-        net::GetTestCertsDirectory(), "client_1_ca.pem",
-        net::X509Certificate::FORMAT_AUTO));
+    net::ScopedCERTCertificateList ca_cert_list =
+        net::CreateCERTCertificateListFromFile(
+            net::GetTestCertsDirectory(), "client_1_ca.pem",
+            net::X509Certificate::FORMAT_AUTO);
     if (ca_cert_list.empty()) {
       LOG(ERROR) << "No CA cert loaded.";
       return nullptr;
