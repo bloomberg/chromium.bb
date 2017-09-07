@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 #include "tools/battor_agent/battor_agent.h"
 
+#include <algorithm>
 #include <iomanip>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -101,6 +103,19 @@ bool ParseSampleFrame(BattOrMessageType type,
   return true;
 }
 }  // namespace
+
+BattOrResults::BattOrResults() {}
+
+BattOrResults::BattOrResults(std::string details,
+                             std::vector<float> power_samples_W,
+                             uint32_t sample_rate)
+    : details_(std::move(details)),
+      power_samples_W_(std::move(power_samples_W)),
+      sample_rate_(sample_rate) {}
+
+BattOrResults::BattOrResults(const BattOrResults&) = default;
+
+BattOrResults::~BattOrResults() {}
 
 BattOrAgent::BattOrAgent(
     const std::string& path,
@@ -541,7 +556,7 @@ void BattOrAgent::CompleteCommand(BattOrError error) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::Bind(&Listener::OnStopTracingComplete,
-                     base::Unretained(listener_), SamplesToString(), error));
+                     base::Unretained(listener_), SamplesToResults(), error));
       break;
     case Command::RECORD_CLOCK_SYNC_MARKER:
       base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -569,9 +584,9 @@ void BattOrAgent::CompleteCommand(BattOrError error) {
   num_command_attempts_ = 0;
 }
 
-std::string BattOrAgent::SamplesToString() {
+BattOrResults BattOrAgent::SamplesToResults() {
   if (calibration_frame_.empty() || samples_.empty() || !battor_eeprom_)
-    return "";
+    return BattOrResults();
 
   BattOrSampleConverter converter(*battor_eeprom_, calibration_frame_);
 
@@ -606,7 +621,13 @@ std::string BattOrAgent::SamplesToString() {
     trace_stream << std::endl;
   }
 
-  return trace_stream.str();
+  // Convert to a vector of power in watts.
+  std::vector<float> samples(samples_.size());
+  for (size_t i = 0; i < samples_.size(); i++)
+    samples[i] = converter.ToWatts(samples_[i]);
+
+  return BattOrResults(trace_stream.str(), samples,
+                       battor_eeprom_->sd_sample_rate);
 }
 
 void BattOrAgent::SetActionTimeout(uint16_t timeout_seconds) {

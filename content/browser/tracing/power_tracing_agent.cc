@@ -115,13 +115,14 @@ void PowerTracingAgent::StopAgentTracingOnIOThread(
   battor_agent_->StopTracing();
 }
 
-void PowerTracingAgent::OnStopTracingComplete(const std::string& trace,
-                                              battor::BattOrError error) {
+void PowerTracingAgent::OnStopTracingComplete(
+    const battor::BattOrResults& results,
+    battor::BattOrError error) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   scoped_refptr<base::RefCountedString> result(new base::RefCountedString());
   if (error == battor::BATTOR_ERROR_NONE)
-    result->data() = trace;
+    result->data() = results.ToString();
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
