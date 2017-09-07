@@ -63,6 +63,9 @@ class MockFrameSinkManagerImpl : public FrameSinkManagerImpl {
   // mojom::FrameSinkManager:
   MOCK_METHOD1(RegisterFrameSinkId, void(const FrameSinkId& frame_sink_id));
   MOCK_METHOD1(InvalidateFrameSinkId, void(const FrameSinkId& frame_sink_id));
+  MOCK_METHOD2(SetFrameSinkDebugLabel,
+               void(const FrameSinkId& frame_sink_id,
+                    const std::string& debug_label));
   // Work around for gmock not supporting move-only types.
   void CreateCompositorFrameSink(
       const FrameSinkId& frame_sink_id,

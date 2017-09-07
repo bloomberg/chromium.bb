@@ -76,6 +76,10 @@ TestRenderWidgetHostView::TestRenderWidgetHostView(RenderWidgetHost* rwh)
   if (ImageTransportFactory::GetInstance()) {
     frame_sink_id_ = AllocateFrameSinkId();
     GetHostFrameSinkManager()->RegisterFrameSinkId(frame_sink_id_, this);
+#if DCHECK_IS_ON()
+    GetHostFrameSinkManager()->SetFrameSinkDebugLabel(
+        frame_sink_id_, "TestRenderWidgetHostView");
+#endif
   }
 #endif
 

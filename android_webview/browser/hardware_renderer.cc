@@ -35,6 +35,10 @@ HardwareRenderer::HardwareRenderer(RenderThreadManager* state)
   DCHECK(last_egl_context_);
   surfaces_->GetFrameSinkManager()->surface_manager()->RegisterFrameSinkId(
       frame_sink_id_);
+#if DCHECK_IS_ON()
+  surfaces_->GetFrameSinkManager()->surface_manager()->SetFrameSinkDebugLabel(
+      frame_sink_id_, "HardwareRenderer");
+#endif
   CreateNewCompositorFrameSinkSupport();
 }
 

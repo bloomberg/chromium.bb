@@ -158,12 +158,12 @@ void SurfaceManager::SatisfySequence(const SurfaceSequence& sequence) {
 }
 
 void SurfaceManager::RegisterFrameSinkId(const FrameSinkId& frame_sink_id) {
-  bool inserted = valid_frame_sink_ids_.insert(frame_sink_id).second;
+  bool inserted = valid_frame_sink_labels_.emplace(frame_sink_id, "").second;
   DCHECK(inserted);
 }
 
 void SurfaceManager::InvalidateFrameSinkId(const FrameSinkId& frame_sink_id) {
-  valid_frame_sink_ids_.erase(frame_sink_id);
+  valid_frame_sink_labels_.erase(frame_sink_id);
 
   // Remove any temporary references owned by |frame_sink_id|.
   std::vector<SurfaceId> temp_refs_to_clear;
@@ -177,6 +177,17 @@ void SurfaceManager::InvalidateFrameSinkId(const FrameSinkId& frame_sink_id) {
     RemoveTemporaryReference(surface_id, false);
 
   GarbageCollectSurfaces();
+}
+
+void SurfaceManager::SetFrameSinkDebugLabel(const FrameSinkId& frame_sink_id,
+                                            const std::string& debug_label) {
+#if DCHECK_IS_ON()
+  auto it = valid_frame_sink_labels_.find(frame_sink_id);
+  DCHECK(it != valid_frame_sink_labels_.end());
+  it->second = debug_label;
+#else
+  NOTREACHED();
+#endif
 }
 
 const SurfaceId& SurfaceManager::GetRootSurfaceId() const {
@@ -319,7 +330,7 @@ SurfaceManager::SurfaceIdSet SurfaceManager::GetLiveSurfacesForSequences() {
     const SurfaceId& surface_id = map_entry.first;
     Surface* surface = map_entry.second.get();
     surface->SatisfyDestructionDependencies(&satisfied_sequences_,
-                                            &valid_frame_sink_ids_);
+                                            &valid_frame_sink_labels_);
 
     if (!IsMarkedForDestruction(surface_id) ||
         surface->GetDestructionDependencyCount() > 0) {
@@ -556,6 +567,9 @@ void SurfaceManager::SurfaceReferencesToStringImpl(const SurfaceId& surface_id,
   Surface* surface = GetSurfaceForId(surface_id);
   if (surface) {
     *str << surface->surface_id().ToString();
+    auto& label = valid_frame_sink_labels_[surface_id.frame_sink_id()];
+    if (!label.empty())
+      *str << " " << label;
     *str << (IsMarkedForDestruction(surface_id) ? " destroyed" : " live");
 
     if (surface->HasPendingFrame()) {

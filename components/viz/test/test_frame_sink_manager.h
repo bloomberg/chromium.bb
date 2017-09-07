@@ -22,6 +22,8 @@ class TestFrameSinkManagerImpl : public mojom::FrameSinkManager {
   // mojom::FrameSinkManager:
   void RegisterFrameSinkId(const FrameSinkId& frame_sink_id) override {}
   void InvalidateFrameSinkId(const FrameSinkId& frame_sink_id) override {}
+  void SetFrameSinkDebugLabel(const FrameSinkId& frame_sink_id,
+                              const std::string& debug_label) override {}
   void CreateRootCompositorFrameSink(
       const FrameSinkId& frame_sink_id,
       gpu::SurfaceHandle surface_handle,

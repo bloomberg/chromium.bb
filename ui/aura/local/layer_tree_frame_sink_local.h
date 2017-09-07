@@ -33,7 +33,8 @@ class LayerTreeFrameSinkLocal : public cc::LayerTreeFrameSink,
                                 public viz::HostFrameSinkClient {
  public:
   LayerTreeFrameSinkLocal(const viz::FrameSinkId& frame_sink_id,
-                          viz::HostFrameSinkManager* host_frame_sink_manager);
+                          viz::HostFrameSinkManager* host_frame_sink_manager,
+                          const std::string& debug_label);
   ~LayerTreeFrameSinkLocal() override;
 
   using SurfaceChangedCallback = base::Callback<void(const viz::SurfaceInfo&)>;

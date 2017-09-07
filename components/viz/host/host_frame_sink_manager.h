@@ -77,6 +77,11 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   // message pipe to the client will be closed.
   void InvalidateFrameSinkId(const FrameSinkId& frame_sink_id);
 
+  // |debug_label| is used when printing out the surface hierarchy so we know
+  // which clients are contributing which surfaces.
+  void SetFrameSinkDebugLabel(const FrameSinkId& frame_sink_id,
+                              const std::string& debug_label);
+
   // Creates a connection for a display root to viz. Provides the same
   // interfaces as CreateCompositorFramesink() plus the priviledged
   // DisplayPrivate interface. When no longer needed, call

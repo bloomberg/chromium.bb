@@ -165,7 +165,7 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineObserver {
   // remove them from sequences.
   void SatisfyDestructionDependencies(
       base::flat_set<SurfaceSequence>* sequences,
-      base::flat_set<FrameSinkId>* valid_id_namespaces);
+      base::flat_map<FrameSinkId, std::string>* valid_id_namespaces);
   size_t GetDestructionDependencyCount() const {
     return destruction_dependencies_.size();
   }

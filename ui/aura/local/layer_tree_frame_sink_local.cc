@@ -19,12 +19,16 @@ namespace aura {
 
 LayerTreeFrameSinkLocal::LayerTreeFrameSinkLocal(
     const viz::FrameSinkId& frame_sink_id,
-    viz::HostFrameSinkManager* host_frame_sink_manager)
+    viz::HostFrameSinkManager* host_frame_sink_manager,
+    const std::string& debug_label)
     : cc::LayerTreeFrameSink(nullptr, nullptr, nullptr, nullptr),
       frame_sink_id_(frame_sink_id),
       host_frame_sink_manager_(host_frame_sink_manager),
       weak_factory_(this) {
   host_frame_sink_manager_->RegisterFrameSinkId(frame_sink_id_, this);
+#if DCHECK_IS_ON()
+  host_frame_sink_manager_->SetFrameSinkDebugLabel(frame_sink_id_, debug_label);
+#endif
 }
 
 LayerTreeFrameSinkLocal::~LayerTreeFrameSinkLocal() {

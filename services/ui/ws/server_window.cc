@@ -51,8 +51,12 @@ ServerWindow::ServerWindow(ServerWindowDelegate* delegate,
   // TODO(kylechar): Add method to reregister |frame_sink_id_| when viz service
   // has crashed.
   auto* host_frame_sink_manager = delegate_->GetHostFrameSinkManager();
-  if (host_frame_sink_manager)
+  if (host_frame_sink_manager) {
     host_frame_sink_manager->RegisterFrameSinkId(frame_sink_id_, this);
+#if DCHECK_IS_ON()
+    host_frame_sink_manager->SetFrameSinkDebugLabel(frame_sink_id_, GetName());
+#endif
+  }
 }
 
 ServerWindow::~ServerWindow() {
@@ -390,6 +394,11 @@ void ServerWindow::SetProperty(const std::string& name,
   } else if (it != properties_.end()) {
     properties_.erase(it);
   }
+#if DCHECK_IS_ON()
+  auto* host_frame_sink_manager = delegate_->GetHostFrameSinkManager();
+  if (host_frame_sink_manager && name == mojom::WindowManager::kName_Property)
+    host_frame_sink_manager->SetFrameSinkDebugLabel(frame_sink_id_, GetName());
+#endif
 
   for (auto& observer : observers_)
     observer.OnWindowSharedPropertyChanged(this, name, value);
