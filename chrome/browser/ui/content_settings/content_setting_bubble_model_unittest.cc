@@ -395,8 +395,8 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubbleMediaMenus) {
               bubble_content.media_menus.begin()->first);
     EXPECT_FALSE(bubble_content.media_menus.begin()->second.disabled);
     // The first audio device should be selected by default.
-    EXPECT_TRUE(fake_audio_device1.IsEqual(
-                bubble_content.media_menus.begin()->second.selected_device));
+    EXPECT_TRUE(fake_audio_device1.IsSameDevice(
+        bubble_content.media_menus.begin()->second.selected_device));
 
     // Select a different (the second) device.
     content_setting_bubble_model->OnMediaMenuClicked(
@@ -414,8 +414,8 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubbleMediaMenus) {
               bubble_content.media_menus.begin()->first);
     EXPECT_FALSE(bubble_content.media_menus.begin()->second.disabled);
     // The second audio device should be selected.
-    EXPECT_TRUE(fake_audio_device2.IsEqual(
-                bubble_content.media_menus.begin()->second.selected_device));
+    EXPECT_TRUE(fake_audio_device2.IsSameDevice(
+        bubble_content.media_menus.begin()->second.selected_device));
     // The "settings changed" message should not be displayed when there is no
     // active capture.
     EXPECT_FALSE(bubble_content.custom_link_enabled);
@@ -451,8 +451,8 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubbleMediaMenus) {
     EXPECT_EQ(content::MEDIA_DEVICE_AUDIO_CAPTURE,
               bubble_content.media_menus.begin()->first);
     EXPECT_FALSE(bubble_content.media_menus.begin()->second.disabled);
-    EXPECT_TRUE(fake_audio_device2.IsEqual(
-                bubble_content.media_menus.begin()->second.selected_device));
+    EXPECT_TRUE(fake_audio_device2.IsSameDevice(
+        bubble_content.media_menus.begin()->second.selected_device));
 
     // Select a different different device.
     content_setting_bubble_model->OnMediaMenuClicked(
@@ -498,8 +498,8 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubbleMediaMenus) {
     EXPECT_EQ(content::MEDIA_DEVICE_AUDIO_CAPTURE,
               bubble_content.media_menus.begin()->first);
     EXPECT_FALSE(bubble_content.media_menus.begin()->second.disabled);
-    EXPECT_TRUE(fake_audio_device3.IsEqual(
-                bubble_content.media_menus.begin()->second.selected_device));
+    EXPECT_TRUE(fake_audio_device3.IsSameDevice(
+        bubble_content.media_menus.begin()->second.selected_device));
   }
 }
 
