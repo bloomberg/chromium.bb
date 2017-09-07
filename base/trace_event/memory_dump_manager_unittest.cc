@@ -137,6 +137,7 @@ class TestSequencedTaskRunner : public SequencedTaskRunner {
  public:
   TestSequencedTaskRunner()
       : worker_pool_(2 /* max_threads */, "Test Task Runner"),
+        token_(worker_pool_.pool()->GetSequenceToken()),
         enabled_(true),
         num_of_post_tasks_(0) {}
 
