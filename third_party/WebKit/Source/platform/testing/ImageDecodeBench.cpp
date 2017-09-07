@@ -19,6 +19,8 @@
 
 #include <memory>
 #include "base/command_line.h"
+#include "base/message_loop/message_loop.h"
+#include "mojo/edk/embedder/embedder.h"
 #include "platform/SharedBuffer.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "platform/wtf/PassRefPtr.h"
@@ -355,5 +357,7 @@ int Main(int argc, char* argv[]) {
 }  // namespace blink
 
 int main(int argc, char* argv[]) {
+  base::MessageLoop message_loop;
+  mojo::edk::Init();
   return blink::Main(argc, argv);
 }
