@@ -352,6 +352,9 @@ net::URLRequestContext* URLRequestContextFactory::CreateSystemRequestContext() {
   system_context->set_host_resolver(host_resolver_.get());
   system_context->set_channel_id_service(channel_id_service_.get());
   system_context->set_cert_verifier(cert_verifier_.get());
+  system_context->set_cert_transparency_verifier(
+      cert_transparency_verifier_.get());
+  system_context->set_ct_policy_enforcer(ct_policy_enforcer_.get());
   system_context->set_proxy_service(proxy_service_.get());
   system_context->set_ssl_config_service(ssl_config_service_.get());
   system_context->set_transport_security_state(
@@ -415,6 +418,9 @@ net::URLRequestContext* URLRequestContextFactory::CreateMainRequestContext(
   main_context->set_host_resolver(host_resolver_.get());
   main_context->set_channel_id_service(channel_id_service_.get());
   main_context->set_cert_verifier(cert_verifier_.get());
+  main_context->set_cert_transparency_verifier(
+      cert_transparency_verifier_.get());
+  main_context->set_ct_policy_enforcer(ct_policy_enforcer_.get());
   main_context->set_proxy_service(proxy_service_.get());
   main_context->set_ssl_config_service(ssl_config_service_.get());
   main_context->set_transport_security_state(transport_security_state_.get());
