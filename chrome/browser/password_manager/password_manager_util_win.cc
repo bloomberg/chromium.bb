@@ -131,6 +131,13 @@ int64_t GetPasswordLastChanged(const WCHAR* username) {
 
 bool CheckBlankPasswordWithPrefs(const WCHAR* username,
                                  PasswordCheckPrefs* prefs) {
+  // If the user name has a backslash, then it is of the form DOMAIN\username.
+  // NetUserGetInfo() (called from GetPasswordLastChanged()) as well as
+  // LogonUser() below only wants the username portion.
+  LPCWSTR backslash = wcschr(username, L'\\');
+  if (backslash)
+    username = backslash + 1;
+
   int64_t last_changed = GetPasswordLastChanged(username);
 
   // If we cannot determine when the password was last changed
@@ -453,8 +460,9 @@ bool AuthenticateUserNew(gfx::NativeWindow window) {
       CloseHandle(handle);
     } else {
       err = GetLastError();
-      if (err == ERROR_ACCOUNT_RESTRICTION && cred_password_length == 0) {
-        // Password is blank, so permit.
+      if (err == ERROR_ACCOUNT_RESTRICTION) {
+        // Password is blank, or there is some other restriction imposed on the
+        // account.  However, the password has been validated, so permit.
         retval = true;
       } else {
         DLOG(ERROR) << "Unable to authenticate " << GetLastError();
