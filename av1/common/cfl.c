@@ -103,6 +103,7 @@ static void cfl_load(CFL_CTX *cfl, int row, int col, int width, int height) {
       }
       output_row_offset += MAX_SB_SIZE;
     }
+    cfl->y_width = uv_width << sub_x;
   }
 
   if (diff_height > 0) {
@@ -115,6 +116,7 @@ static void cfl_load(CFL_CTX *cfl, int row, int col, int width, int height) {
       }
       output_row_offset += MAX_SB_SIZE;
     }
+    cfl->y_height = uv_height << sub_y;
   }
 }
 
