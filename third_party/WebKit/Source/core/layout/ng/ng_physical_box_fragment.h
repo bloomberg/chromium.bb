@@ -7,11 +7,12 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/inline/ng_baseline.h"
-#include "core/layout/ng/ng_physical_fragment.h"
+#include "core/layout/ng/ng_physical_container_fragment.h"
 
 namespace blink {
 
-class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
+class CORE_EXPORT NGPhysicalBoxFragment final
+    : public NGPhysicalContainerFragment {
  public:
   // This modifies the passed-in children vector.
   NGPhysicalBoxFragment(LayoutObject* layout_object,
@@ -26,10 +27,6 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
   // Returns the total size, including the contents outside of the border-box.
   NGPhysicalSize OverflowSize() const { return overflow_; }
 
-  const Vector<RefPtr<NGPhysicalFragment>>& Children() const {
-    return children_;
-  }
-
   const NGBaseline* Baseline(const NGBaselineRequest&) const;
 
   void UpdateVisualRect() const override;
@@ -38,7 +35,6 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
 
  private:
   NGPhysicalSize overflow_;
-  Vector<RefPtr<NGPhysicalFragment>> children_;
   Vector<NGBaseline> baselines_;
 };
 
