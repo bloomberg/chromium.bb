@@ -793,6 +793,18 @@ const FeatureEntry::Choice kEnableAudioFocusChoices[] = {
 };
 #endif  // !defined(OS_ANDROID)
 
+const FeatureEntry::Choice kForceColorProfileChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {flag_descriptions::kForceColorProfileSRGB, switches::kForceColorProfile,
+     "srgb"},
+    {flag_descriptions::kForceColorProfileP3, switches::kForceColorProfile,
+     "display-p3-d65"},
+    {flag_descriptions::kForceColorProfileColorSpin,
+     switches::kForceColorProfile, "color-spin-gamma24"},
+    {flag_descriptions::kForceColorProfileHdr, switches::kForceColorProfile,
+     "scrgb-linear"},
+};
+
 const FeatureEntry::Choice kAutoplayPolicyChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kAutoplayPolicyNoUserGestureRequired,
@@ -3095,6 +3107,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kColorCorrectRenderingName,
      flag_descriptions::kColorCorrectRenderingDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kColorCorrectRendering)},
+
+    {"force-color-profile", flag_descriptions::kForceColorProfileName,
+     flag_descriptions::kForceColorProfileDescription, kOsAll,
+     MULTI_VALUE_TYPE(kForceColorProfileChoices)},
 
 #if defined(OS_CHROMEOS)
     {"quick-unlock-pin-signin", flag_descriptions::kQuickUnlockPinSignin,

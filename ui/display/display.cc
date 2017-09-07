@@ -110,6 +110,8 @@ gfx::ColorSpace Display::GetForcedColorProfile() {
           switches::kForceColorProfile);
   if (value == "srgb") {
     return gfx::ColorSpace::CreateSRGB();
+  } else if (value == "display-p3-d65") {
+    return gfx::ColorSpace::CreateDisplayP3D65();
   } else if (value == "scrgb-linear") {
     return gfx::ColorSpace::CreateSCRGBLinear();
   } else if (value == "extended-srgb") {

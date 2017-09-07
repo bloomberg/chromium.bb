@@ -23883,6 +23883,7 @@ from previous Chrome versions.
   <int value="605150752" label="WebUSB:disabled"/>
   <int value="606288133" label="enable-print-preview-register-promos"/>
   <int value="606512202" label="AutofillCreditCardPopupLayout:enabled"/>
+  <int value="606834606" label="force-color-profile"/>
   <int value="609112512" label="touch-selection-strategy"/>
   <int value="610545308" label="enable-potentially-annoying-security-features"/>
   <int value="624317932" label="print-pdf-as-image"/>
