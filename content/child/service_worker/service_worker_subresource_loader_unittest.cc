@@ -156,7 +156,9 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
 
     ServiceWorkerSubresourceLoaderFactory loader_factory(
         std::move(shared_event_dispatcher), loader_factory_getter,
-        request.url.GetOrigin());
+        request.url.GetOrigin(),
+        base::MakeRefCounted<
+            base::RefCountedData<storage::mojom::BlobRegistryPtr>>());
     loader_factory.CreateLoaderAndStart(
         mojo::MakeRequest(&url_loader), 0, 0, mojom::kURLLoadOptionNone,
         request, url_loader_client.CreateInterfacePtr(),

@@ -14,6 +14,7 @@
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "storage/public/interfaces/blobs.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_stream_handle.mojom.h"
 
 namespace content {
@@ -44,7 +45,9 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
           base::RefCountedData<mojom::ServiceWorkerEventDispatcherPtr>>
           event_dispatcher,
       scoped_refptr<ChildURLLoaderFactoryGetter> default_loader_factory_getter,
-      const GURL& controller_origin);
+      const GURL& controller_origin,
+      scoped_refptr<base::RefCountedData<storage::mojom::BlobRegistryPtr>>
+          blob_registry);
 
   ~ServiceWorkerSubresourceLoader() override;
 
@@ -122,10 +125,12 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
 
   // To load a blob.
-  GURL blob_url_;
+  storage::mojom::BlobURLHandlePtr blob_url_handle_;
   GURL controller_origin_;
   mojom::URLLoaderPtr blob_loader_;
   mojo::Binding<mojom::URLLoaderClient> blob_client_binding_;
+  scoped_refptr<base::RefCountedData<storage::mojom::BlobRegistryPtr>>
+      blob_registry_;
 
   // For Blob loading and network fallback loading.
   scoped_refptr<ChildURLLoaderFactoryGetter> default_loader_factory_getter_;
@@ -161,7 +166,9 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoaderFactory
       scoped_refptr<base::RefCountedData<
           mojom::ServiceWorkerEventDispatcherPtr>> event_dispatcher,
       scoped_refptr<ChildURLLoaderFactoryGetter> default_loader_factory_getter,
-      const GURL& controller_origin);
+      const GURL& controller_origin,
+      scoped_refptr<base::RefCountedData<storage::mojom::BlobRegistryPtr>>
+          blob_registry);
 
   ~ServiceWorkerSubresourceLoaderFactory() override;
 
@@ -185,6 +192,9 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoaderFactory
   scoped_refptr<ChildURLLoaderFactoryGetter> default_loader_factory_getter_;
 
   GURL controller_origin_;
+
+  scoped_refptr<base::RefCountedData<storage::mojom::BlobRegistryPtr>>
+      blob_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerSubresourceLoaderFactory);
 };
