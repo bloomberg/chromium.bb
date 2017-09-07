@@ -4,7 +4,6 @@
 -*QuicEndToEndTest.Uber*
 -CertVerifyProcInternalTest.*
 -CloseOnConnectHttpServerTest.ServerImmediatelyClosesConnection
--HttpServerTest.*
 -NetworkInterfacesTest.GetNetworkList
 -ProxyScriptFetcherImplTest.Priority
 -PythonUtils*
