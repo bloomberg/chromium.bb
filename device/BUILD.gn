@@ -238,7 +238,7 @@ test("device_unittests") {
     ]
   }
 
-  if (enable_vr) {
+  if (enable_vr && is_android) {
     sources += [
       "vr/vr_device_manager_unittest.cc",
       "vr/vr_display_impl_unittest.cc",
