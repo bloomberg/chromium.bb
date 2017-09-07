@@ -10,6 +10,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/WeakPtr.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/gpu/GrTexture.h"
 
 namespace blink {
