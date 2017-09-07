@@ -61,7 +61,7 @@
     &quot;<ph name="SOFTWARE_NAME">$1<ex>Misconfigured Antivirus</ex></ph>&quot; isn’t configured correctly. Uninstalling &quot;<ph name="SOFTWARE_NAME">$1<ex>Misconfigured Antivirus</ex></ph>&quot; usually fixes the problem. <ph name="FURTHER_EXPLANATION">$2<ex>Further explanation goes here.</ex></ph>
   </message>
   <message name="IDS_MITM_SOFTWARE_EXPLANATION" desc="Part of an extended description hidden behind an 'Advanced' button on an error page. A user visits a website, antivirus or firewall software interferes with their connection, and they are shown this error. Page title and additional description of the error are shown above. 'Antivirus software' is software that finds and deletes viruses on a user's computer. 'Firewall software' is software typically used on a company network that keeps unwanted people from accessing the network. 'Proxy software' is software on a network that blocks the user from viewing certain websites. Proxies may be used to keep school children from viewing inappropriate websites for example. 'Web-filtering software' is a synonym for proxy software, so it can be excluded in translation.">
-    Applications that can cause this error includes antivirus, firewall, and web-filtering or proxy software.
+    Applications that can cause this error include antivirus, firewall, and web-filtering or proxy software.
   </message>
 
   <!-- Clock errors -->
