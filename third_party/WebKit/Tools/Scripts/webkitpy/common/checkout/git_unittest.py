@@ -143,7 +143,6 @@ class GitTestWithRealFilesystemAndExecutive(unittest.TestCase):
         self._write_text_file('test_file_commit1', 'contents')
         self._run(['git', 'add', 'test_file_commit1'])
         git.commit_locally_with_message('message')
-        git._patch_order = lambda: ''  # pylint: disable=protected-access
         patch = git.create_patch()
         self.assertNotRegexpMatches(patch, r'Subversion Revision:')
 
@@ -156,7 +155,6 @@ class GitTestWithRealFilesystemAndExecutive(unittest.TestCase):
 
         # Even if diff.noprefix is enabled, create_patch() produces diffs with prefixes.
         self._run(['git', 'config', 'diff.noprefix', 'true'])
-        git._patch_order = lambda: ''  # pylint: disable=protected-access
         patch = git.create_patch()
         self.assertRegexpMatches(patch, r'^diff --git a/test_file_commit1 b/test_file_commit1')
 

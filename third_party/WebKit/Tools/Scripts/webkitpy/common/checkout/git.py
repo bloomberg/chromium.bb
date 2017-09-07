@@ -249,7 +249,6 @@ class Git(object):
         Patch files are effectively binary since they may contain
         files of multiple different encodings.
         """
-        order = self._patch_order()
         command = [
             'diff',
             '--binary',
@@ -260,21 +259,10 @@ class Git(object):
             '--src-prefix=a/',
             '--dst-prefix=b/',
         ]
-        if order:
-            command.append(order)
         command += [self._merge_base(git_commit), '--']
         if changed_files:
             command += changed_files
         return self.run(command, decode_output=False, cwd=self.checkout_root)
-
-    def _patch_order(self):
-        # Put code changes at the top of the patch and layout tests
-        # at the bottom, this makes for easier reviewing.
-        config_path = self._filesystem.dirname(self._filesystem.path_to_module('webkitpy.common.config'))
-        order_file = self._filesystem.join(config_path, 'orderfile')
-        if self._filesystem.exists(order_file):
-            return '-O%s' % order_file
-        return ''
 
     @memoized
     def commit_position_from_git_commit(self, git_commit):
