@@ -133,6 +133,9 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Second URL")]
       performAction:grey_swipeFastInDirection(kGREYDirectionLeft)];
 
+  // Verify context bar does not change when "Delete" shows up.
+  [self verifyContextBarInDefaultState];
+
   // Delete it.
   [[EarlGrey selectElementWithMatcher:BookmarksDeleteSwipeButton()]
       performAction:grey_tap()];
@@ -147,6 +150,9 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
   // Verify it's back.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
       assertWithMatcher:grey_notNil()];
+
+  // Verify context bar remains in default state.
+  [self verifyContextBarInDefaultState];
 }
 
 // Tests that the bookmark context bar is shown in MobileBookmarks.
@@ -392,19 +398,7 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
                                               contextBarCancelString])]
       performAction:grey_tap()];
 
-  // Verify context bar shows enabled "New Folder" and enabled "Select".
-  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarNewFolderString])]
-      assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarMoreString])]
-      assertWithMatcher:grey_nil()];
-  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarSelectString])]
-      assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
+  [self verifyContextBarInDefaultState];
 }
 
 - (void)testContextMenuForSingleURLSelection {
@@ -1519,6 +1513,26 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
                                           IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
       assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+- (void)verifyContextBarInDefaultState {
+  // Verify the context bar is shown.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"context_bar")]
+      assertWithMatcher:grey_notNil()];
+
+  // Verify context bar shows enabled "New Folder" and enabled "Select".
+  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarNewFolderString])]
+      assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
+  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarMoreString])]
+      assertWithMatcher:grey_nil()];
+  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarSelectString])]
+      assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 }
 
 // Context bar strings.

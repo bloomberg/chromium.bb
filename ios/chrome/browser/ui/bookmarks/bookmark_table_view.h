@@ -60,6 +60,8 @@ class PrefRegistrySyncable;
 @end
 
 @interface BookmarkTableView : UIView
+// If the table is in edit mode.
+@property(nonatomic, assign) BOOL editing;
 
 // Shows all sub-folders and sub-urls of a folder node (that is set as the root
 // node) in a UITableView. Note: This class intentionally does not try to
@@ -83,14 +85,9 @@ class PrefRegistrySyncable;
 // Called when something outside the view causes the promo state to change.
 - (void)promoStateChangedAnimated:(BOOL)animated;
 
-// Sets if the table view is in edit mode.
-- (void)setEditing:(BOOL)editing;
-
-// Returns if the table is in edit mode.
-- (BOOL)editing;
-
 // Returns the currently selected edit nodes.
 - (const std::set<const bookmarks::BookmarkNode*>&)editNodes;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_TABLE_VIEW_H_

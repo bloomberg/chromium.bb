@@ -414,6 +414,11 @@ const CGFloat kSpacer = 50;
 - (void)bookmarkTableView:(BookmarkTableView*)view
         selectedEditNodes:
             (const std::set<const bookmarks::BookmarkNode*>&)nodes {
+  // Early return if bookmarks table is not in edit mode.
+  if (!self.bookmarksTableView.editing) {
+    return;
+  }
+
   if (nodes.size() == 0) {
     [self setContextBarState:BookmarksContextBarBeginSelection];
     return;
