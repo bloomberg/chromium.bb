@@ -2435,8 +2435,6 @@ crbug.com/508734 external/wpt/html/browsers/origin/cross-origin-objects/cross-or
 
 # Fail differently when run with --enable-wptserve: (crbug.com/508728)
 crbug.com/508728 crbug.com/664268 external/wpt/html/browsers/history/the-location-interface/reload_post_1.html [ Failure Timeout ]
-crbug.com/508728 external/wpt/webstorage/document-domain.html [ Failure Timeout ]
-crbug.com/508728 virtual/mojo-localstorage/external/wpt/webstorage/document-domain.html [ Failure Timeout ]
 
 crbug.com/508728 external/wpt/workers/Worker_cross_origin_security_err.htm [ Timeout ]
 
