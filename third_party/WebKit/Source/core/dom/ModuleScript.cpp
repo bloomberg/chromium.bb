@@ -248,7 +248,7 @@ DEFINE_TRACE(ModuleScript) {
 DEFINE_TRACE_WRAPPERS(ModuleScript) {
   // TODO(mlippautz): Support TraceWrappers(const
   // TraceWrapperV8Reference<v8::Module>&) to remove the cast.
-  visitor->TraceWrappers(record_.Cast<v8::Value>());
+  visitor->TraceWrappers(record_.UnsafeCast<v8::Value>());
   visitor->TraceWrappers(preinstantiation_error_);
 }
 
