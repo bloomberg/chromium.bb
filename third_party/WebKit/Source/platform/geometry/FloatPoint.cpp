@@ -32,15 +32,11 @@
 #include "platform/geometry/DoublePoint.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/geometry/LayoutSize.h"
+#include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/wtf/MathExtras.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
-
-// Skia has problems when passed infinite, etc floats, filter them to 0.
-static inline SkScalar WebCoreFloatToSkScalar(float f) {
-  return SkFloatToScalar(std::isfinite(f) ? f : 0);
-}
 
 FloatPoint::FloatPoint(const IntPoint& p) : x_(p.X()), y_(p.Y()) {}
 
