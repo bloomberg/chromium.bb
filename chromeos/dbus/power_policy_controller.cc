@@ -124,6 +124,16 @@ std::string PowerPolicyController::GetPolicyDebugString(
     str += base::StringPrintf("battery_idle=%d ", policy.battery_idle_action());
   if (policy.has_lid_closed_action())
     str += base::StringPrintf("lid_closed=%d ", policy.lid_closed_action());
+  if (policy.has_screen_wake_lock()) {
+    str +=
+        base::StringPrintf("screen_wake_lock=%d ", policy.screen_wake_lock());
+  }
+  if (policy.has_dim_wake_lock())
+    str += base::StringPrintf("dim_wake_lock=%d ", policy.dim_wake_lock());
+  if (policy.has_system_wake_lock()) {
+    str +=
+        base::StringPrintf("system_wake_lock=%d ", policy.system_wake_lock());
+  }
   if (policy.has_use_audio_activity())
     str += base::StringPrintf("use_audio=%d ", policy.use_audio_activity());
   if (policy.has_use_video_activity())
@@ -347,34 +357,21 @@ void PowerPolicyController::SendCurrentPolicy() {
     causes += (causes.empty() ? "" : ", ") + it.second.description;
   }
 
-  if (honor_screen_wake_locks_ && have_screen_wake_locks) {
-    policy.mutable_ac_delays()->set_screen_dim_ms(0);
-    policy.mutable_ac_delays()->set_screen_off_ms(0);
-    policy.mutable_ac_delays()->set_screen_lock_ms(0);
-    policy.mutable_battery_delays()->set_screen_dim_ms(0);
-    policy.mutable_battery_delays()->set_screen_off_ms(0);
-    policy.mutable_battery_delays()->set_screen_lock_ms(0);
+  // Downgrade full-brightness and dimmed-brightness locks to system locks if
+  // wake locks aren't allowed to keep the screen on.
+  if (!honor_screen_wake_locks_ &&
+      (have_screen_wake_locks || have_dim_wake_locks)) {
+    have_system_wake_locks = true;
+    have_screen_wake_locks = false;
+    have_dim_wake_locks = false;
   }
 
-  if (honor_screen_wake_locks_ && have_dim_wake_locks) {
-    policy.mutable_ac_delays()->set_screen_off_ms(0);
-    policy.mutable_ac_delays()->set_screen_lock_ms(0);
-    policy.mutable_battery_delays()->set_screen_off_ms(0);
-    policy.mutable_battery_delays()->set_screen_lock_ms(0);
-  }
-
-  if (have_screen_wake_locks || have_dim_wake_locks || have_system_wake_locks) {
-    if (!policy.has_ac_idle_action() || policy.ac_idle_action() ==
-        power_manager::PowerManagementPolicy_Action_SUSPEND) {
-      policy.set_ac_idle_action(
-          power_manager::PowerManagementPolicy_Action_DO_NOTHING);
-    }
-    if (!policy.has_battery_idle_action() || policy.battery_idle_action() ==
-        power_manager::PowerManagementPolicy_Action_SUSPEND) {
-      policy.set_battery_idle_action(
-          power_manager::PowerManagementPolicy_Action_DO_NOTHING);
-    }
-  }
+  if (have_screen_wake_locks)
+    policy.set_screen_wake_lock(true);
+  if (have_dim_wake_locks)
+    policy.set_dim_wake_lock(true);
+  if (have_system_wake_locks)
+    policy.set_system_wake_lock(true);
 
   if (encryption_migration_active_ &&
       policy.lid_closed_action() !=

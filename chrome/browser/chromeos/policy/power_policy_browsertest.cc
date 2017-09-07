@@ -480,12 +480,11 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, AllowScreenWakeLocks) {
   pm::PowerManagementPolicy baseline_policy =
       power_manager_client_->policy();
 
-  // Default settings should have delays.
+  // Default settings should not report any wake locks.
   pm::PowerManagementPolicy power_management_policy = baseline_policy;
-  EXPECT_NE(0, baseline_policy.ac_delays().screen_dim_ms());
-  EXPECT_NE(0, baseline_policy.ac_delays().screen_off_ms());
-  EXPECT_NE(0, baseline_policy.battery_delays().screen_dim_ms());
-  EXPECT_NE(0, baseline_policy.battery_delays().screen_off_ms());
+  EXPECT_FALSE(baseline_policy.screen_wake_lock());
+  EXPECT_FALSE(baseline_policy.dim_wake_lock());
+  EXPECT_FALSE(baseline_policy.system_wake_lock());
 
   // Pretend an extension grabs a screen wake lock.
   const char kExtensionId[] = "abcdefghijklmnopabcdefghijlkmnop";
@@ -500,10 +499,7 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, AllowScreenWakeLocks) {
   // Check that the lock is in effect (ignoring ac_idle_action,
   // battery_idle_action and reason).
   pm::PowerManagementPolicy policy = baseline_policy;
-  policy.mutable_ac_delays()->set_screen_dim_ms(0);
-  policy.mutable_ac_delays()->set_screen_off_ms(0);
-  policy.mutable_battery_delays()->set_screen_dim_ms(0);
-  policy.mutable_battery_delays()->set_screen_off_ms(0);
+  policy.set_screen_wake_lock(true);
   policy.set_ac_idle_action(
       power_manager_client_->policy().ac_idle_action());
   policy.set_battery_idle_action(
@@ -512,10 +508,12 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, AllowScreenWakeLocks) {
   EXPECT_EQ(GetDebugString(policy),
             GetDebugString(power_manager_client_->policy()));
 
-  // Engage the user policy and verify that the defaults take effect again.
+  // Engage the user policy and verify that the screen wake lock is downgraded
+  // to be a system wake lock.
   user_policy_.payload().mutable_allowscreenwakelocks()->set_value(false);
   StoreAndReloadUserPolicy();
   policy = baseline_policy;
+  policy.set_system_wake_lock(true);
   policy.set_ac_idle_action(power_manager_client_->policy().ac_idle_action());
   policy.set_battery_idle_action(
       power_manager_client_->policy().battery_idle_action());

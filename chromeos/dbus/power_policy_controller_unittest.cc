@@ -147,15 +147,14 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
             PowerPolicyController::GetPolicyDebugString(
                 fake_power_client_->policy()));
 
-  // Set the "allow screen wake locks" pref to false.  The system should be
-  // prevented from suspending due to user inactivity on AC power but the
-  // pref-supplied screen-related delays should be left untouched.
+  // Set the "allow screen wake locks" pref to false and add a screen wake lock.
+  // It should be downgraded to a system wake lock, and the pref-supplied delays
+  // should be left untouched.
   prefs.allow_screen_wake_locks = false;
   policy_controller_->ApplyPrefs(prefs);
   policy_controller_->AddScreenWakeLock(PowerPolicyController::REASON_OTHER,
                                         "Screen");
-  expected_policy.set_ac_idle_action(
-      power_manager::PowerManagementPolicy_Action_DO_NOTHING);
+  expected_policy.set_system_wake_lock(true);
   expected_policy.set_reason(std::string(PowerPolicyController::kPrefsReason) +
                              ", Screen");
   EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
@@ -163,112 +162,34 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
                 fake_power_client_->policy()));
 }
 
-TEST_F(PowerPolicyControllerTest, WakeLocks) {
-  // If our highest lock type is system, we only worry about
-  // the idle action.
-  const char kSystemWakeLockReason[] = "system";
-  power_manager::PowerManagementPolicy expected_policy_system;
-  expected_policy_system.set_ac_idle_action(
-      power_manager::PowerManagementPolicy_Action_DO_NOTHING);
-  expected_policy_system.set_battery_idle_action(
-      power_manager::PowerManagementPolicy_Action_DO_NOTHING);
-
-  // The dim lock type prevents the screen from turning off or
-  // locking, and we won't have an idle action.
-  const char kDimWakeLockReason[] = "dim";
-  power_manager::PowerManagementPolicy expected_policy_dim;
-  expected_policy_dim.set_ac_idle_action(
-      power_manager::PowerManagementPolicy_Action_DO_NOTHING);
-  expected_policy_dim.set_battery_idle_action(
-      power_manager::PowerManagementPolicy_Action_DO_NOTHING);
-  expected_policy_dim.mutable_ac_delays()->set_screen_off_ms(0);
-  expected_policy_dim.mutable_ac_delays()->set_screen_lock_ms(0);
-  expected_policy_dim.mutable_battery_delays()->set_screen_off_ms(0);
-  expected_policy_dim.mutable_battery_delays()->set_screen_lock_ms(0);
-
-  // The screen lock keeps the screen bright. We won't turn off,
-  // lock the screen or do anything for idle.
-  const char kScreenWakeLockReason[] = "screen";
-  power_manager::PowerManagementPolicy expected_policy_screen;
-  expected_policy_screen.set_ac_idle_action(
-      power_manager::PowerManagementPolicy_Action_DO_NOTHING);
-  expected_policy_screen.set_battery_idle_action(
-      power_manager::PowerManagementPolicy_Action_DO_NOTHING);
-  expected_policy_screen.mutable_ac_delays()->set_screen_dim_ms(0);
-  expected_policy_screen.mutable_ac_delays()->set_screen_off_ms(0);
-  expected_policy_screen.mutable_ac_delays()->set_screen_lock_ms(0);
-  expected_policy_screen.mutable_battery_delays()->set_screen_dim_ms(0);
-  expected_policy_screen.mutable_battery_delays()->set_screen_off_ms(0);
-  expected_policy_screen.mutable_battery_delays()->set_screen_lock_ms(0);
-
-  // With no locks our policy should be the default.
-  power_manager::PowerManagementPolicy expected_policy_none;
-
-  // There are eight different possibilities for combinations of
-  // different locks, as there are three types. We will go through
-  // each possibility by adding or removing one lock.
-
-  // System lock only.
-  const int system_id = policy_controller_->AddSystemWakeLock(
-      PowerPolicyController::REASON_OTHER, kSystemWakeLockReason);
-  expected_policy_system.set_reason(kSystemWakeLockReason);
-  EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy_system),
+TEST_F(PowerPolicyControllerTest, SystemWakeLock) {
+  policy_controller_->AddSystemWakeLock(PowerPolicyController::REASON_OTHER,
+                                        "1");
+  power_manager::PowerManagementPolicy expected_policy;
+  expected_policy.set_system_wake_lock(true);
+  expected_policy.set_reason("1");
+  EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
             PowerPolicyController::GetPolicyDebugString(
                 fake_power_client_->policy()));
+}
 
-  // System and dim locks.
-  const int dim_id = policy_controller_->AddDimWakeLock(
-      PowerPolicyController::REASON_OTHER, kDimWakeLockReason);
-  expected_policy_dim.set_reason(std::string(kSystemWakeLockReason) + ", " +
-                                 kDimWakeLockReason);
-  EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy_dim),
+TEST_F(PowerPolicyControllerTest, DimWakeLock) {
+  policy_controller_->AddDimWakeLock(PowerPolicyController::REASON_OTHER, "1");
+  power_manager::PowerManagementPolicy expected_policy;
+  expected_policy.set_dim_wake_lock(true);
+  expected_policy.set_reason("1");
+  EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
             PowerPolicyController::GetPolicyDebugString(
                 fake_power_client_->policy()));
+}
 
-  // Dim lock only.
-  policy_controller_->RemoveWakeLock(system_id);
-  expected_policy_dim.set_reason(kDimWakeLockReason);
-  EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy_dim),
-            PowerPolicyController::GetPolicyDebugString(
-                fake_power_client_->policy()));
-
-  // Dim and screen locks.
-  const int screen_id = policy_controller_->AddScreenWakeLock(
-      PowerPolicyController::REASON_OTHER, kScreenWakeLockReason);
-  expected_policy_screen.set_reason(std::string(kDimWakeLockReason) + ", " +
-                                    kScreenWakeLockReason);
-  EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy_screen),
-            PowerPolicyController::GetPolicyDebugString(
-                fake_power_client_->policy()));
-
-  // System, dim and screen locks.
-  const int system_id_2 = policy_controller_->AddSystemWakeLock(
-      PowerPolicyController::REASON_OTHER, kSystemWakeLockReason);
-  expected_policy_screen.set_reason(std::string(kDimWakeLockReason) + ", " +
-                                    std::string(kScreenWakeLockReason) + ", " +
-                                    kSystemWakeLockReason);
-  EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy_screen),
-            PowerPolicyController::GetPolicyDebugString(
-                fake_power_client_->policy()));
-
-  // System and screen locks.
-  policy_controller_->RemoveWakeLock(dim_id);
-  expected_policy_screen.set_reason(std::string(kScreenWakeLockReason) + ", " +
-                                    kSystemWakeLockReason);
-  EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy_screen),
-            PowerPolicyController::GetPolicyDebugString(
-                fake_power_client_->policy()));
-
-  // Screen lock only.
-  policy_controller_->RemoveWakeLock(system_id_2);
-  expected_policy_screen.set_reason(kScreenWakeLockReason);
-  EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy_screen),
-            PowerPolicyController::GetPolicyDebugString(
-                fake_power_client_->policy()));
-
-  // No locks.
-  policy_controller_->RemoveWakeLock(screen_id);
-  EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy_none),
+TEST_F(PowerPolicyControllerTest, ScreenWakeLock) {
+  policy_controller_->AddScreenWakeLock(PowerPolicyController::REASON_OTHER,
+                                        "1");
+  power_manager::PowerManagementPolicy expected_policy;
+  expected_policy.set_screen_wake_lock(true);
+  expected_policy.set_reason("1");
+  EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
             PowerPolicyController::GetPolicyDebugString(
                 fake_power_client_->policy()));
 }
@@ -302,16 +223,7 @@ TEST_F(PowerPolicyControllerTest, IgnoreMediaWakeLocksWhenRequested) {
   const int other_id = policy_controller_->AddScreenWakeLock(
       PowerPolicyController::REASON_OTHER, "other");
 
-  expected_policy.set_ac_idle_action(
-      power_manager::PowerManagementPolicy_Action_DO_NOTHING);
-  expected_policy.set_battery_idle_action(
-      power_manager::PowerManagementPolicy_Action_DO_NOTHING);
-  expected_policy.mutable_ac_delays()->set_screen_dim_ms(0);
-  expected_policy.mutable_ac_delays()->set_screen_off_ms(0);
-  expected_policy.mutable_ac_delays()->set_screen_lock_ms(0);
-  expected_policy.mutable_battery_delays()->set_screen_dim_ms(0);
-  expected_policy.mutable_battery_delays()->set_screen_off_ms(0);
-  expected_policy.mutable_battery_delays()->set_screen_lock_ms(0);
+  expected_policy.set_screen_wake_lock(true);
   expected_policy.set_reason(std::string(PowerPolicyController::kPrefsReason) +
                              ", other");
   EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
@@ -325,12 +237,22 @@ TEST_F(PowerPolicyControllerTest, IgnoreMediaWakeLocksWhenRequested) {
 
   expected_policy = kDefaultPolicy;
   expected_policy.set_use_video_activity(false);
-  expected_policy.set_ac_idle_action(
-      power_manager::PowerManagementPolicy_Action_DO_NOTHING);
-  expected_policy.set_battery_idle_action(
-      power_manager::PowerManagementPolicy_Action_DO_NOTHING);
+  expected_policy.set_system_wake_lock(true);
   expected_policy.set_reason(std::string(PowerPolicyController::kPrefsReason) +
                              ", audio");
+  EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
+            PowerPolicyController::GetPolicyDebugString(
+                fake_power_client_->policy()));
+
+  // Now honor video activity as well.
+  prefs.use_video_activity = true;
+  policy_controller_->ApplyPrefs(prefs);
+
+  expected_policy = kDefaultPolicy;
+  expected_policy.set_screen_wake_lock(true);
+  expected_policy.set_system_wake_lock(true);
+  expected_policy.set_reason(std::string(PowerPolicyController::kPrefsReason) +
+                             ", audio, video");
   EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
             PowerPolicyController::GetPolicyDebugString(
                 fake_power_client_->policy()));
