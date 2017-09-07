@@ -236,6 +236,14 @@
       if (success !== true) throw 'setNextGATTDiscoveryResponse failed.';
     }
 
+    // Simulates a GATT disconnection from the peripheral with |address|.
+    async simulateGATTDisconnection() {
+      let {success} =
+        await this.fake_central_ptr_.simulateGATTDisconnection(this.address);
+
+      if (success !== true) throw 'simulateGATTDisconnection failed.';
+    }
+
     // Simulates an Indication from the peripheral's GATT `Service Changed`
     // Characteristic from BT 4.2 Vol 3 Part G 7.1. This Indication is signaled
     // when services, characteristics, or descriptors are changed, added, or
