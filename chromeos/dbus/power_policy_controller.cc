@@ -13,6 +13,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 
+// Avoid some ugly line-wrapping later.
+using base::StringAppendF;
+
 namespace chromeos {
 
 namespace {
@@ -23,24 +26,24 @@ PowerPolicyController* g_power_policy_controller = nullptr;
 // power_manager::PowerManagementPolicy::Delays object, to |str|, an
 // std::string, if the field is set.  |name| is a char* describing the
 // field.
-#define APPEND_DELAY(str, delays, field, name)                                 \
-    {                                                                          \
-      if (delays.has_##field())                                                \
-        str += base::StringPrintf(name "=%" PRId64 " ", delays.field());       \
-    }
+#define APPEND_DELAY(str, delays, field, name)                   \
+  {                                                              \
+    if (delays.has_##field())                                    \
+      StringAppendF(&str, name "=%" PRId64 " ", delays.field()); \
+  }
 
 // Appends descriptions of all of the set delays in |delays|, a
 // power_manager::PowerManagementPolicy::Delays object, to |str|, an
 // std::string.  |prefix| should be a char* containing either "ac" or
 // "battery".
-#define APPEND_DELAYS(str, delays, prefix)                                     \
-    {                                                                          \
-      APPEND_DELAY(str, delays, screen_dim_ms, prefix "_screen_dim_ms");       \
-      APPEND_DELAY(str, delays, screen_off_ms, prefix "_screen_off_ms");       \
-      APPEND_DELAY(str, delays, screen_lock_ms, prefix "_screen_lock_ms");     \
-      APPEND_DELAY(str, delays, idle_warning_ms, prefix "_idle_warning_ms");   \
-      APPEND_DELAY(str, delays, idle_ms, prefix "_idle_ms");                   \
-    }
+#define APPEND_DELAYS(str, delays, prefix)                                 \
+  {                                                                        \
+    APPEND_DELAY(str, delays, screen_dim_ms, prefix "_screen_dim_ms");     \
+    APPEND_DELAY(str, delays, screen_off_ms, prefix "_screen_off_ms");     \
+    APPEND_DELAY(str, delays, screen_lock_ms, prefix "_screen_lock_ms");   \
+    APPEND_DELAY(str, delays, idle_warning_ms, prefix "_idle_warning_ms"); \
+    APPEND_DELAY(str, delays, idle_ms, prefix "_idle_ms");                 \
+  }
 
 // Returns the power_manager::PowerManagementPolicy_Action value
 // corresponding to |action|.
@@ -119,51 +122,46 @@ std::string PowerPolicyController::GetPolicyDebugString(
   if (policy.has_battery_delays())
     APPEND_DELAYS(str, policy.battery_delays(), "battery");
   if (policy.has_ac_idle_action())
-    str += base::StringPrintf("ac_idle=%d ", policy.ac_idle_action());
+    StringAppendF(&str, "ac_idle=%d ", policy.ac_idle_action());
   if (policy.has_battery_idle_action())
-    str += base::StringPrintf("battery_idle=%d ", policy.battery_idle_action());
+    StringAppendF(&str, "battery_idle=%d ", policy.battery_idle_action());
   if (policy.has_lid_closed_action())
-    str += base::StringPrintf("lid_closed=%d ", policy.lid_closed_action());
-  if (policy.has_screen_wake_lock()) {
-    str +=
-        base::StringPrintf("screen_wake_lock=%d ", policy.screen_wake_lock());
-  }
+    StringAppendF(&str, "lid_closed=%d ", policy.lid_closed_action());
+  if (policy.has_screen_wake_lock())
+    StringAppendF(&str, "screen_wake_lock=%d ", policy.screen_wake_lock());
   if (policy.has_dim_wake_lock())
-    str += base::StringPrintf("dim_wake_lock=%d ", policy.dim_wake_lock());
-  if (policy.has_system_wake_lock()) {
-    str +=
-        base::StringPrintf("system_wake_lock=%d ", policy.system_wake_lock());
-  }
+    StringAppendF(&str, "dim_wake_lock=%d ", policy.dim_wake_lock());
+  if (policy.has_system_wake_lock())
+    StringAppendF(&str, "system_wake_lock=%d ", policy.system_wake_lock());
   if (policy.has_use_audio_activity())
-    str += base::StringPrintf("use_audio=%d ", policy.use_audio_activity());
+    StringAppendF(&str, "use_audio=%d ", policy.use_audio_activity());
   if (policy.has_use_video_activity())
-    str += base::StringPrintf("use_video=%d ", policy.use_audio_activity());
-  if (policy.has_ac_brightness_percent()) {
-    str += base::StringPrintf("ac_brightness_percent=%f ",
-        policy.ac_brightness_percent());
-  }
+    StringAppendF(&str, "use_video=%d ", policy.use_audio_activity());
+  if (policy.has_ac_brightness_percent())
+    StringAppendF(&str, "ac_brightness_percent=%f ",
+                  policy.ac_brightness_percent());
   if (policy.has_battery_brightness_percent()) {
-    str += base::StringPrintf("battery_brightness_percent=%f ",
-        policy.battery_brightness_percent());
+    StringAppendF(&str, "battery_brightness_percent=%f ",
+                  policy.battery_brightness_percent());
   }
   if (policy.has_presentation_screen_dim_delay_factor()) {
-    str += base::StringPrintf("presentation_screen_dim_delay_factor=%f ",
-        policy.presentation_screen_dim_delay_factor());
+    StringAppendF(&str, "presentation_screen_dim_delay_factor=%f ",
+                  policy.presentation_screen_dim_delay_factor());
   }
   if (policy.has_user_activity_screen_dim_delay_factor()) {
-    str += base::StringPrintf("user_activity_screen_dim_delay_factor=%f ",
-        policy.user_activity_screen_dim_delay_factor());
+    StringAppendF(&str, "user_activity_screen_dim_delay_factor=%f ",
+                  policy.user_activity_screen_dim_delay_factor());
   }
   if (policy.has_wait_for_initial_user_activity()) {
-    str += base::StringPrintf("wait_for_initial_user_activity=%d ",
-        policy.wait_for_initial_user_activity());
+    StringAppendF(&str, "wait_for_initial_user_activity=%d ",
+                  policy.wait_for_initial_user_activity());
   }
   if (policy.has_force_nonzero_brightness_for_user_activity()) {
-    str += base::StringPrintf("force_nonzero_brightness_for_user_activity=%d ",
-        policy.force_nonzero_brightness_for_user_activity());
+    StringAppendF(&str, "force_nonzero_brightness_for_user_activity=%d ",
+                  policy.force_nonzero_brightness_for_user_activity());
   }
   if (policy.has_reason())
-    str += base::StringPrintf("reason=\"%s\" ", policy.reason().c_str());
+    StringAppendF(&str, "reason=\"%s\" ", policy.reason().c_str());
   base::TrimWhitespaceASCII(str, base::TRIM_TRAILING, &str);
   return str;
 }
