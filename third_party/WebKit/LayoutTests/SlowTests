@@ -268,8 +268,6 @@ crbug.com/357427 http/tests/workers/terminate-during-sync-operation-file.html [ 
 crbug.com/357427 virtual/mojo-loading/http/tests/workers/terminate-during-sync-operation-file.html [ Slow ]
 crbug.com/357427 http/tests/workers/terminate-during-sync-operation-filesystem.html [ Slow ]
 crbug.com/357427 virtual/mojo-loading/http/tests/workers/terminate-during-sync-operation-filesystem.html [ Slow ]
-crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/transform-interpolation.html [ Slow ]
-crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/webkit-transform-interpolation.html [ Slow ]
 crbug.com/402379 [ Debug ] storage/indexeddb/cursor-continue-validity.html [ Slow ]
 crbug.com/402379 [ Debug ] storage/indexeddb/mozilla/indexes.html [ Slow ]
 crbug.com/504706 [ Linux ] http/tests/devtools/profiler/heap-snapshot-containment-expansion-preserved-when-sorting.html [ Slow ]
@@ -306,8 +304,6 @@ crbug.com/516319 [ Win ] virtual/mojo-loading/http/tests/fetch/ [ Slow ]
 # Most crypto/subtle tests are slow some or most of the time.
 crbug.com/459009 crypto/subtle/ [ Slow ]
 
-crbug.com/24182 [ Debug ] animations/interpolation/transform-interpolation.html [ Slow ]
-crbug.com/24182 [ Debug ] animations/interpolation/webkit-transform-interpolation.html [ Slow ]
 
 crbug.com/528419 [ Linux ] http/tests/devtools/elements/shadow/shadow-host-display-modes.html [ Slow ]
 crbug.com/667560 [ Linux ] virtual/mojo-loading/http/tests/devtools/elements/shadow/shadow-host-display-modes.html [ Slow ]
