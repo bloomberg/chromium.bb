@@ -2568,8 +2568,8 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
       if (reuse_prev_lvl) {
         filt_lvl = prev_lvl;
       } else {
-        const unsigned int delta =
-            aom_read_literal(r, LPF_DELTA_BITS, ACCT_STR);
+        unsigned int delta = aom_read_literal(r, LPF_DELTA_BITS, ACCT_STR);
+        delta *= LPF_STEP;
 
         if (delta) {
           const int sign = aom_read_literal(r, 1, ACCT_STR);

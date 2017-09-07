@@ -3166,7 +3166,7 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
       aom_write_literal(w, curr_lvl == prev_lvl, 1);
       if (curr_lvl != prev_lvl) {
         const int sign = curr_lvl > prev_lvl;
-        const unsigned int delta = abs(curr_lvl - prev_lvl);
+        const unsigned int delta = abs(curr_lvl - prev_lvl) / LPF_STEP;
 
         aom_write_literal(w, delta, LPF_DELTA_BITS);
         if (delta) aom_write_literal(w, sign, 1);
