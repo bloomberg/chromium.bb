@@ -633,7 +633,7 @@ void ThreadState::PerformIdleLazySweep(double deadline_seconds) {
   SweepForbiddenScope scope(this);
   ScriptForbiddenIfMainThreadScope script_forbidden_scope;
 
-  double start_time = WTF::CurrentTimeMS();
+  double start_time = WTF::MonotonicallyIncreasingTimeMS();
   bool sweep_completed = true;
   for (int i = 0; i < BlinkGC::kNumberOfArenas; i++) {
     // lazySweepWithDeadline() won't check the deadline until it sweeps
@@ -650,7 +650,7 @@ void ThreadState::PerformIdleLazySweep(double deadline_seconds) {
       break;
     }
   }
-  AccumulateSweepingTime(WTF::CurrentTimeMS() - start_time);
+  AccumulateSweepingTime(WTF::MonotonicallyIncreasingTimeMS() - start_time);
 
   if (sweep_completed)
     PostSweep();
@@ -964,9 +964,9 @@ void ThreadState::EagerSweep() {
   SweepForbiddenScope scope(this);
   ScriptForbiddenIfMainThreadScope script_forbidden_scope;
 
-  double start_time = WTF::CurrentTimeMS();
+  double start_time = WTF::MonotonicallyIncreasingTimeMS();
   arenas_[BlinkGC::kEagerSweepArenaIndex]->CompleteSweep();
-  AccumulateSweepingTime(WTF::CurrentTimeMS() - start_time);
+  AccumulateSweepingTime(WTF::MonotonicallyIncreasingTimeMS() - start_time);
 }
 
 void ThreadState::CompleteSweep() {
@@ -985,14 +985,15 @@ void ThreadState::CompleteSweep() {
   ScriptForbiddenIfMainThreadScope script_forbidden_scope;
 
   TRACE_EVENT0("blink_gc,devtools.timeline", "ThreadState::completeSweep");
-  double start_time = WTF::CurrentTimeMS();
+  double start_time = WTF::MonotonicallyIncreasingTimeMS();
 
   static_assert(BlinkGC::kEagerSweepArenaIndex == 0,
                 "Eagerly swept arenas must be processed first.");
   for (int i = 0; i < BlinkGC::kNumberOfArenas; i++)
     arenas_[i]->CompleteSweep();
 
-  double time_for_complete_sweep = WTF::CurrentTimeMS() - start_time;
+  double time_for_complete_sweep =
+      WTF::MonotonicallyIncreasingTimeMS() - start_time;
   AccumulateSweepingTime(time_for_complete_sweep);
 
   if (IsMainThread()) {
@@ -1307,7 +1308,7 @@ void ThreadState::InvokePreFinalizers() {
   // ressurecting them.
   ObjectResurrectionForbiddenScope object_resurrection_forbidden(this);
 
-  double start_time = WTF::CurrentTimeMS();
+  double start_time = WTF::MonotonicallyIncreasingTimeMS();
   if (!ordered_pre_finalizers_.IsEmpty()) {
     // Call the prefinalizers in the opposite order to their registration.
     //
@@ -1327,7 +1328,8 @@ void ThreadState::InvokePreFinalizers() {
     } while (!done);
   }
   if (IsMainThread()) {
-    double time_for_invoking_pre_finalizers = WTF::CurrentTimeMS() - start_time;
+    double time_for_invoking_pre_finalizers =
+        WTF::MonotonicallyIncreasingTimeMS() - start_time;
     DEFINE_STATIC_LOCAL(
         CustomCountHistogram, pre_finalizers_histogram,
         ("BlinkGC.TimeForInvokingPreFinalizers", 1, 10 * 1000, 50));
@@ -1504,7 +1506,7 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
     TRACE_EVENT2("blink_gc,devtools.timeline", "BlinkGCMarking", "lazySweeping",
                  gc_type == BlinkGC::kGCWithoutSweep, "gcReason",
                  GcReasonString(reason));
-    double start_time = WTF::CurrentTimeMS();
+    double start_time = WTF::MonotonicallyIncreasingTimeMS();
 
     if (gc_type == BlinkGC::kTakeSnapshot)
       BlinkGCMemoryDumpProvider::Instance()->ClearProcessDumpForCurrentGC();
@@ -1543,7 +1545,8 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
       Heap().WeakProcessing(visitor.get());
     }
 
-    double marking_time_in_milliseconds = WTF::CurrentTimeMS() - start_time;
+    double marking_time_in_milliseconds =
+        WTF::MonotonicallyIncreasingTimeMS() - start_time;
     Heap().HeapStats().SetEstimatedMarkingTimePerByte(
         total_object_size
             ? (marking_time_in_milliseconds / 1000 / total_object_size)
