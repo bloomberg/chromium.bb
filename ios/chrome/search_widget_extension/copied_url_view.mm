@@ -130,7 +130,7 @@ const CGFloat kURLButtonMargin = 10;
           constraintEqualToAnchor:self.trailingAnchor
                          constant:-ui_util::kContentMargin],
       [_copiedButtonView.topAnchor
-          constraintEqualToAnchor:_hairlineView.bottomAnchor
+          constraintEqualToAnchor:self.topAnchor
                          constant:ui_util::kContentMargin],
       [_copiedButtonView.bottomAnchor
           constraintEqualToAnchor:self.bottomAnchor

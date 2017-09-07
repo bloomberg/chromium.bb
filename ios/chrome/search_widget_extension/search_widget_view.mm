@@ -121,6 +121,8 @@ const CGFloat kMaxContentSize = 421;
 }
 
 - (CGFloat)actionContentHeight {
+  [self.actionsContent setNeedsLayout];
+  [self.actionsContent layoutIfNeeded];
   CGFloat height =
       [self.actionsContent
           systemLayoutSizeFittingSize:UILayoutFittingCompressedSize]
@@ -129,6 +131,8 @@ const CGFloat kMaxContentSize = 421;
 }
 
 - (CGFloat)copiedURLSectionHeight {
+  [self.copiedURLSection setNeedsLayout];
+  [self.copiedURLSection layoutIfNeeded];
   CGFloat height =
       [self.copiedURLSection
           systemLayoutSizeFittingSize:UILayoutFittingCompressedSize]
