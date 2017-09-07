@@ -262,8 +262,6 @@ def _CreateParser():
                                  % '|'.join(constants.VALID_CHROME_REVISIONS)))
   parser.add_remote_option('--profile',
                            help='Name of profile to sub-specify board variant.')
-  parser.add_option('-c', '--config_repo',
-                    help='Deprecated option. Do not use!')
   # TODO(crbug.com/279618): Running GOMA is under development. Following
   # flags are added for development purpose due to repository dependency,
   # but not officially supported yet.
@@ -834,9 +832,6 @@ def main(argv):
 
   parser = _CreateParser()
   options = ParseCommandLine(parser, argv)
-
-  if options.config_repo:
-    cros_build_lib.Die('Deprecated usage. Ping crbug.com/735696 you need it.')
 
   # Fetch our site_config now, because we need it to do anything else.
   site_config = config_lib.GetConfig()

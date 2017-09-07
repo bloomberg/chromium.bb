@@ -104,50 +104,6 @@ class BootstrapStageTest(
     ])
 
 
-  def testSiteConfigBootstrap(self):
-    """Verify Bootstrap behavior, if config_repo is passed in."""
-
-    # Set a new command line option to set the repo.
-    self._run.options.config_repo = 'http://happy/config/repo'
-
-    self.RunStage()
-
-    # Clone next chromite.
-    self.assertCommandContains([
-        'git', 'clone', 'https://chromium.googlesource.com/chromiumos/chromite',
-        mock.ANY, # Can't predict new chromium checkout diretory.
-        '--reference', mock.ANY
-    ])
-
-    # Switch to the test branch.
-    self.assertCommandContains(['git', 'checkout', 'ooga_booga'])
-
-    # Clone the site config.
-    self.assertCommandContains([
-        'git', 'clone', 'http://happy/config/repo',
-        mock.ANY, # Can't predict new chromium checkout diretory.
-        '--reference', mock.ANY
-    ])
-
-    # Switch to the test branch.
-    self.assertCommandContains(['git', 'checkout', 'ooga_booga'])
-
-    # Re-exec cbuildbot. We mostly only want to test the CL options Bootstrap
-    # changes.
-    #   '--sourceroot=%s'
-    #   '--test-bootstrap'
-    #   '--nobootstrap'
-    #   '--manifest-repo-url'
-    self.assertCommandContains([
-        'chromite/cbuildbot/cbuildbot', 'sync-test-cbuildbot',
-        '-r', os.path.join(self.tempdir, 'buildroot'),
-        '--buildbot', '--noprebuilts', '--buildnumber', '1234321',
-        '--branch', 'ooga_booga',
-        '--sourceroot', mock.ANY,
-        '--nobootstrap',
-    ])
-
-
 class ManifestVersionedSyncStageTest(
     generic_stages_unittest.AbstractStageTestCase):
   """Tests the ManifestVersionedSync stage."""

@@ -199,7 +199,6 @@ class BootstrapStage(PatchChangesStage):
         builder_run, trybot_patch_pool.TrybotPatchPool(), **kwargs)
 
     self.patch_pool = patch_pool
-    self.config_repo = self._run.options.config_repo
     self.returncode = None
     self.tempdir = None
 
@@ -321,21 +320,6 @@ class BootstrapStage(PatchChangesStage):
       patches = patch_series.PatchSeries.WorkOnSingleRepo(
           chromite_dir, filter_branch)
       self._ApplyPatchSeries(patches, chromite_pool)
-
-    # Checkout the new version of site config (no patching logic, yet).
-    if self.config_repo:
-      site_config_dir = os.path.join(chromite_dir, 'config')
-      site_config_reference_repo = os.path.join(constants.SITE_CONFIG_DIR,
-                                                '.git')
-      repository.CloneGitRepo(site_config_dir, self.config_repo,
-                              reference=site_config_reference_repo)
-      git.RunGit(site_config_dir, ['checkout', filter_branch])
-
-      site_config_pool = branch_pool.FilterGitRemoteUrl(self.config_repo)
-      if site_config_pool:
-        site_patches = patch_series.PatchSeries.WorkOnSingleRepo(
-            site_config_dir, filter_branch)
-        self._ApplyPatchSeries(site_patches, site_config_pool)
 
     # Re-exec into new instance of cbuildbot, with proper command line args.
     cbuildbot_path = constants.PATH_TO_CBUILDBOT
