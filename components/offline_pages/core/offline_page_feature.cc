@@ -57,6 +57,9 @@ const base::Feature kNewBackgroundLoaderFeature{
 const base::Feature kOfflinePagesCTV2Feature{"OfflinePagesCTV2",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kOfflinePagesPrefetchingUIFeature{
+    "OfflinePagesPrefetchingUI", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsOfflineBookmarksEnabled() {
   return base::FeatureList::IsEnabled(kOfflineBookmarksFeature);
 }
@@ -88,6 +91,10 @@ bool IsOfflinePagesAsyncDownloadEnabled() {
 
 bool IsPrefetchingOfflinePagesEnabled() {
   return base::FeatureList::IsEnabled(kPrefetchingOfflinePagesFeature);
+}
+
+bool IsOfflinePagesPrefetchingUIEnabled() {
+  return base::FeatureList::IsEnabled(kOfflinePagesPrefetchingUIFeature);
 }
 
 bool IsOfflinePagesLoadSignalCollectingEnabled() {

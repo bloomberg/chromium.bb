@@ -23666,6 +23666,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-76631048" label="disable-offline-auto-reload-visible-only"/>
   <int value="-72455054" label="WebVrAutopresent:disabled"/>
   <int value="-70595606" label="ash-enable-unified-desktop"/>
+  <int value="-69427025" label="OfflinePagesPrefetchingUI:enabled"/>
   <int value="-68877684" label="BackgroundVideoTrackOptimization:enabled"/>
   <int value="-68225452" label="enable-translate-new-ux"/>
   <int value="-59401847" label="ContentSuggestionsLargeThumbnail:disabled"/>
@@ -24355,6 +24356,7 @@ from previous Chrome versions.
   <int value="2014629801" label="view-passwords:disabled"/>
   <int value="2020107447" label="AndroidPayIntegrationV1:enabled"/>
   <int value="2037756154" label="enable-impl-side-painting"/>
+  <int value="2043321329" label="OfflinePagesPrefetchingUI:disabled"/>
   <int value="2056572020" label="EnableUsernameCorrection:disabled"/>
   <int value="2059322877" label="new-avatar-menu"/>
   <int value="2063091429" label="OfflinePagesSharing:enabled"/>
