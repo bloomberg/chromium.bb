@@ -682,6 +682,7 @@ mojom("mojo_bindings") {
     "net_benchmarking.mojom",
     "network_diagnostics.mojom",
     "open_search_description_document_handler.mojom",
+    "plugin.mojom",
     "prerender.mojom",
     "renderer_configuration.mojom",
     "resource_usage_reporter.mojom",

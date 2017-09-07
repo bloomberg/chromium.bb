@@ -6,12 +6,13 @@
 
 #include "base/files/file_path.h"
 #include "base/values.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/plugin.mojom.h"
 #include "chrome/grit/renderer_resources.h"
 #include "components/plugins/renderer/plugin_placeholder.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/app/strings/grit/content_strings.h"
-#include "content/public/renderer/render_thread.h"
+#include "content/public/common/associated_interface_provider.h"
+#include "content/public/renderer/render_frame.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"
@@ -53,7 +54,9 @@ plugins::PluginPlaceholder* NonLoadablePluginPlaceholder::CreateErrorPlugin(
   plugins::PluginPlaceholder* plugin =
       new plugins::PluginPlaceholder(render_frame, params, html_data);
 
-  content::RenderThread::Get()->Send(new ChromeViewHostMsg_CouldNotLoadPlugin(
-      plugin->routing_id(), file_path));
+  chrome::mojom::PluginHostAssociatedPtr plugin_host;
+  render_frame->GetRemoteAssociatedInterfaces()->GetInterface(&plugin_host);
+  plugin_host->CouldNotLoadPlugin(file_path);
+
   return plugin;
 }

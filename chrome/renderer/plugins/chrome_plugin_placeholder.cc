@@ -25,6 +25,8 @@
 #include "chrome/renderer/plugins/plugin_preroller.h"
 #include "chrome/renderer/plugins/plugin_uma.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/common/associated_interface_provider.h"
+#include "content/public/common/associated_interface_registry.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/renderer/render_frame.h"
@@ -64,7 +66,8 @@ ChromePluginPlaceholder::ChromePluginPlaceholder(
     : plugins::LoadablePluginPlaceholder(render_frame, params, html_data),
       status_(ChromeViewHostMsg_GetPluginInfo_Status::kAllowed),
       title_(title),
-      context_menu_request_id_(0) {
+      context_menu_request_id_(0),
+      plugin_renderer_binding_(this) {
   RenderThread::Get()->AddObserver(this);
 }
 
@@ -72,10 +75,12 @@ ChromePluginPlaceholder::~ChromePluginPlaceholder() {
   RenderThread::Get()->RemoveObserver(this);
   if (context_menu_request_id_ && render_frame())
     render_frame()->CancelContextMenu(context_menu_request_id_);
+}
 
-  if (placeholder_routing_id_ == MSG_ROUTING_NONE)
-    return;
-  RenderThread::Get()->RemoveRoute(placeholder_routing_id_);
+chrome::mojom::PluginRendererPtr ChromePluginPlaceholder::BindPluginRenderer() {
+  chrome::mojom::PluginRendererPtr plugin_renderer;
+  plugin_renderer_binding_.Bind(mojo::MakeRequest(&plugin_renderer));
+  return plugin_renderer;
 }
 
 // TODO(bauerb): Move this method to NonLoadablePluginPlaceholder?
@@ -163,29 +168,7 @@ void ChromePluginPlaceholder::SetStatus(
   status_ = status;
 }
 
-int32_t ChromePluginPlaceholder::CreateRoutingId() {
-  placeholder_routing_id_ = RenderThread::Get()->GenerateRoutingID();
-  RenderThread::Get()->AddRoute(placeholder_routing_id_, this);
-  return placeholder_routing_id_;
-}
-
 bool ChromePluginPlaceholder::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ChromePluginPlaceholder, message)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_FinishedDownloadingPlugin,
-                        OnFinishedDownloadingPlugin)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_PluginComponentUpdateDownloading,
-                        OnPluginComponentUpdateDownloading)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_PluginComponentUpdateSuccess,
-                        OnPluginComponentUpdateSuccess)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_PluginComponentUpdateFailure,
-                        OnPluginComponentUpdateFailure)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  if (handled)
-    return true;
-
   // We don't swallow these messages because multiple blocked plugins and other
   // objects have an interest in them.
   IPC_BEGIN_MESSAGE_MAP(ChromePluginPlaceholder, message)
@@ -197,23 +180,24 @@ bool ChromePluginPlaceholder::OnMessageReceived(const IPC::Message& message) {
 }
 
 void ChromePluginPlaceholder::ShowPermissionBubbleCallback() {
-  RenderThread::Get()->Send(
-      new ChromeViewHostMsg_ShowFlashPermissionBubble(routing_id()));
+  chrome::mojom::PluginHostAssociatedPtr plugin_host;
+  render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(&plugin_host);
+  plugin_host->ShowFlashPermissionBubble();
 }
 
-void ChromePluginPlaceholder::OnFinishedDownloadingPlugin() {
+void ChromePluginPlaceholder::FinishedDownloading() {
   SetMessage(l10n_util::GetStringFUTF16(IDS_PLUGIN_UPDATING, plugin_name_));
 }
 
-void ChromePluginPlaceholder::OnPluginComponentUpdateDownloading() {
+void ChromePluginPlaceholder::UpdateDownloading() {
   SetMessage(l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOADING, plugin_name_));
 }
 
-void ChromePluginPlaceholder::OnPluginComponentUpdateSuccess() {
+void ChromePluginPlaceholder::UpdateSuccess() {
   PluginListChanged();
 }
 
-void ChromePluginPlaceholder::OnPluginComponentUpdateFailure() {
+void ChromePluginPlaceholder::UpdateFailure() {
   SetMessage(l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOAD_ERROR_SHORT,
                                         plugin_name_));
 }
