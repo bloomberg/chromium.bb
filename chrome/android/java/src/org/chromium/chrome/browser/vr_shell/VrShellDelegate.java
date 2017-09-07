@@ -154,6 +154,7 @@ public class VrShellDelegate
     private boolean mExitingCct;
     private boolean mPaused;
     private boolean mStopped;
+    private boolean mVisible;
     private int mRestoreSystemUiVisibilityFlag = -1;
     private Integer mRestoreOrientation = null;
     private long mNativeVrShellDelegate;
@@ -398,6 +399,20 @@ public class VrShellDelegate
         sInstance.requestToExitVrInternal(listener, reason);
     }
 
+    /**
+     * Called when the {@link ChromeActivity} becomes visible.
+     */
+    public static void onActivityShown(ChromeActivity activity) {
+        if (sInstance != null && sInstance.mActivity == activity) sInstance.onActivityShown();
+    }
+
+    /**
+     * Called when the {@link ChromeActivity} is hidden.
+     */
+    public static void onActivityHidden(ChromeActivity activity) {
+        if (sInstance != null && sInstance.mActivity == activity) sInstance.onActivityHidden();
+    }
+
     @CalledByNative
     private static VrShellDelegate getInstance() {
         Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
@@ -532,6 +547,7 @@ public class VrShellDelegate
         // If an activity isn't resumed at the point, it must have been paused.
         mPaused = ApplicationStatus.getStateForActivity(activity) != ActivityState.RESUMED;
         mStopped = ApplicationStatus.getStateForActivity(activity) == ActivityState.STOPPED;
+        mVisible = !mPaused;
         updateVrSupportLevel(null);
         mNativeVrShellDelegate = nativeInit();
         mFeedbackFrequency = VrFeedbackStatus.getFeedbackFrequency();
@@ -745,9 +761,9 @@ public class VrShellDelegate
         // We're entering VR, but not in WebVr mode.
         mVrBrowserUsed = !webVrMode && !mAutopresentWebVr;
 
-        // onResume needs to be called on GvrLayout after initialization to make sure DON flow works
+        // resume needs to be called on GvrLayout after initialization to make sure DON flow works
         // properly.
-        if (!mPaused) mVrShell.resume();
+        if (mVisible) mVrShell.resume();
 
         mVrShell.getContainer().setOnSystemUiVisibilityChangeListener(this);
         removeBlackOverlayView(mActivity);
@@ -1019,8 +1035,6 @@ public class VrShellDelegate
             });
         }
 
-        if (mInVr) mVrShell.resume();
-
         if (mDonSucceeded) {
             mCancellingEntryAnimation = false;
             handleDonFlowSuccess();
@@ -1053,6 +1067,29 @@ public class VrShellDelegate
             mVrDaydreamApi.launchVrHomescreen();
             mDonSucceeded = false;
         }
+    }
+
+    // Android lifecycle doesn't guarantee that this will be called after onResume (though it
+    // will usually be), so make sure anything we do here can happen before or after
+    // onResume.
+    private void onActivityShown() {
+        mVisible = true;
+
+        // Only resume VrShell once we're visible so that we don't start rendering before being
+        // visible and delaying startup.
+        if (mInVr) mVrShell.resume();
+    }
+
+    private void onActivityHidden() {
+        mVisible = false;
+        // We defer pausing of VrShell until the app is no longer visible to keep head tracking
+        // working for as long as possible while going to daydream home.
+        if (mInVr) mVrShell.pause();
+        if (mShowingDaydreamDoff || mProbablyInDon) return;
+
+        // TODO(mthiesse): When the user resumes Chrome in a 2D context, we don't want to tear down
+        // VR UI, so for now, exit VR.
+        shutdownVr(true /* disableVrMode */, false /* stayingInChrome */);
     }
 
     private void onPause() {
@@ -1099,14 +1136,6 @@ public class VrShellDelegate
         mStopped = true;
         cancelPendingVrEntry();
         assert !mCancellingEntryAnimation;
-        // We defer pausing of VrShell until the app is stopped to keep head tracking working for
-        // as long as possible while going to daydream home.
-        if (mInVr) mVrShell.pause();
-        if (mShowingDaydreamDoff || mProbablyInDon) return;
-
-        // TODO(mthiesse): When the user resumes Chrome in a 2D context, we don't want to tear down
-        // VR UI, so for now, exit VR.
-        shutdownVr(true /* disableVrMode */, false /* stayingInChrome */);
     }
 
     private boolean onBackPressedInternal() {
