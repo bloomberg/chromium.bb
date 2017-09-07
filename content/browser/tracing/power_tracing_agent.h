@@ -43,7 +43,7 @@ class PowerTracingAgent : public base::trace_event::TracingAgent,
 
   // BattOrAgent::Listener implementation.
   void OnStartTracingComplete(battor::BattOrError error) override;
-  void OnStopTracingComplete(const std::string& trace,
+  void OnStopTracingComplete(const battor::BattOrResults& results,
                              battor::BattOrError error) override;
   void OnRecordClockSyncMarkerComplete(battor::BattOrError error) override;
   void OnGetFirmwareGitHashComplete(const std::string& version,

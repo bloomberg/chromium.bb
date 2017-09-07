@@ -6,6 +6,7 @@
 #define TOOLS_BATTOR_AGENT_BATTOR_AGENT_H_
 
 #include <map>
+#include <vector>
 
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
@@ -17,6 +18,29 @@
 #include "tools/battor_agent/battor_error.h"
 
 namespace battor {
+
+// A BattOrResults object contains the results of BattOr tracing, including a
+// summary and sample data in watts.
+class BattOrResults {
+ public:
+  BattOrResults();
+  BattOrResults(std::string details,
+                std::vector<float> power_samples_W,
+                uint32_t sample_rate);
+  BattOrResults(const BattOrResults&);
+  ~BattOrResults();
+
+  // Get a detailed textual representation of the data recorded.
+  const std::string& ToString() const { return details_; }
+  // Returns a vector of power samples (in watts).
+  const std::vector<float>& GetPowerSamples() const { return power_samples_W_; }
+  uint32_t GetSampleRate() const { return sample_rate_; }
+
+ private:
+  std::string details_;
+  std::vector<float> power_samples_W_;
+  uint32_t sample_rate_ = 0;
+};
 
 // A BattOrAgent is a class used to asynchronously communicate with a BattOr for
 // the purpose of collecting power samples. A BattOr is an external USB device
@@ -41,7 +65,7 @@ class BattOrAgent : public BattOrConnection::Listener,
   class Listener {
    public:
     virtual void OnStartTracingComplete(BattOrError error) = 0;
-    virtual void OnStopTracingComplete(const std::string& trace,
+    virtual void OnStopTracingComplete(const BattOrResults& trace,
                                        BattOrError error) = 0;
     virtual void OnRecordClockSyncMarkerComplete(BattOrError error) = 0;
     virtual void OnGetFirmwareGitHashComplete(const std::string& version,
@@ -141,7 +165,7 @@ class BattOrAgent : public BattOrConnection::Listener,
   void CompleteCommand(BattOrError error);
 
   // Returns a formatted version of samples_ with timestamps and real units.
-  std::string SamplesToString();
+  BattOrResults SamplesToResults();
 
   // Sets and restarts the action timeout timer.
   void SetActionTimeout(uint16_t timeout_seconds);

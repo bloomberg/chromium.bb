@@ -107,11 +107,11 @@ class BattOrAgentTest : public testing::Test, public BattOrAgent::Listener {
     command_error_ = error;
   }
 
-  void OnStopTracingComplete(const std::string& trace,
+  void OnStopTracingComplete(const BattOrResults& results,
                              BattOrError error) override {
     is_command_complete_ = true;
     command_error_ = error;
-    trace_ = trace;
+    trace_ = results.ToString();
   }
 
   void OnRecordClockSyncMarkerComplete(BattOrError error) override {
