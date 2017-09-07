@@ -1850,7 +1850,7 @@
     },
 
     'jumbo': {
-      'gn_args': 'use_jumbo_build=false',
+      'gn_args': 'use_jumbo_build=true',
     },
 
     'libfuzzer': { 'gn_args': 'use_libfuzzer=true' },
