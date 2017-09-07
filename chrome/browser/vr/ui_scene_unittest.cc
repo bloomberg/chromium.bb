@@ -115,7 +115,7 @@ TEST(UiScene, ParentTransformAppliesToChild) {
   gfx::Point3F origin(0, 0, 0);
   gfx::Point3F point(1, 0, 0);
 
-  scene.OnBeginFrame(MicrosecondsToTicks(1), gfx::Vector3dF());
+  scene.OnBeginFrame(MicrosecondsToTicks(1), gfx::Vector3dF(0.f, 0.f, -1.0f));
   child->world_space_transform().TransformPoint(&origin);
   child->world_space_transform().TransformPoint(&point);
   EXPECT_VEC3F_NEAR(gfx::Point3F(6, 10, 0), origin);
@@ -137,7 +137,7 @@ TEST(UiScene, Opacity) {
   element->set_draw_phase(0);
   parent->AddChild(std::move(element));
 
-  scene.OnBeginFrame(MicrosecondsToTicks(0), gfx::Vector3dF());
+  scene.OnBeginFrame(MicrosecondsToTicks(0), gfx::Vector3dF(0.f, 0.f, -1.0f));
   EXPECT_EQ(0.5f, parent->computed_opacity());
   EXPECT_EQ(0.25f, child->computed_opacity());
 }
@@ -162,7 +162,7 @@ TEST(UiScene, ViewportAware) {
   element->set_draw_phase(0);
   parent->AddChild(std::move(element));
 
-  scene.OnBeginFrame(MicrosecondsToTicks(0), gfx::Vector3dF());
+  scene.OnBeginFrame(MicrosecondsToTicks(0), gfx::Vector3dF(0.f, 0.f, -1.0f));
   EXPECT_TRUE(parent->computed_viewport_aware());
   EXPECT_TRUE(child->computed_viewport_aware());
 }
@@ -195,7 +195,7 @@ TEST_P(AnchoringTest, VerifyCorrectPosition) {
   element->set_draw_phase(0);
   parent->AddChild(std::move(element));
 
-  scene.OnBeginFrame(MicrosecondsToTicks(0), gfx::Vector3dF());
+  scene.OnBeginFrame(MicrosecondsToTicks(0), gfx::Vector3dF(0.f, 0.f, -1.0f));
   EXPECT_NEAR(GetParam().expected_x, child->GetCenter().x(), TOLERANCE);
   EXPECT_NEAR(GetParam().expected_y, child->GetCenter().y(), TOLERANCE);
 }

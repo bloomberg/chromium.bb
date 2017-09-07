@@ -6,6 +6,8 @@
 
 #include <cmath>
 
+#include "cc/base/math_util.h"
+
 namespace vr {
 
 // static
@@ -13,6 +15,7 @@ const float ViewportAwareRoot::kViewportRotationTriggerDegrees = 55.0f;
 
 ViewportAwareRoot::ViewportAwareRoot() {
   set_viewport_aware(true);
+  SetTransitionedProperties({OPACITY});
 }
 
 ViewportAwareRoot::~ViewportAwareRoot() = default;
@@ -20,21 +23,27 @@ ViewportAwareRoot::~ViewportAwareRoot() = default;
 void ViewportAwareRoot::AdjustRotationForHeadPose(
     const gfx::Vector3dF& look_at) {
   DCHECK(viewport_aware());
+  DCHECK(!look_at.IsZero());
 
   gfx::Vector3dF rotated_center_vector{0.f, 0.f, -1.0f};
   LocalTransform().TransformVector(&rotated_center_vector);
   gfx::Vector3dF top_projected_look_at{look_at.x(), 0.f, look_at.z()};
   float degrees = gfx::ClockwiseAngleBetweenVectorsInDegrees(
       top_projected_look_at, rotated_center_vector, {0.f, 1.0f, 0.f});
-  if (degrees > kViewportRotationTriggerDegrees &&
-      degrees < 360.0f - kViewportRotationTriggerDegrees) {
-    viewport_aware_total_rotation_ += degrees;
-    if (viewport_aware_total_rotation_ > 360.0f)
-      viewport_aware_total_rotation_ -= 360.0f;
-    if (viewport_aware_total_rotation_ < -360.0f)
-      viewport_aware_total_rotation_ += 360.0f;
-    SetRotate(0.f, 1.f, 0.f, viewport_aware_total_rotation_ / 180 * M_PI);
+  if (degrees <= kViewportRotationTriggerDegrees ||
+      degrees >= 360.0f - kViewportRotationTriggerDegrees) {
+    return;
   }
+  viewport_aware_total_rotation_ += degrees;
+  viewport_aware_total_rotation_ = fmod(viewport_aware_total_rotation_, 360.0f);
+  SetRotate(0.f, 1.f, 0.f,
+            cc::MathUtil::Deg2Rad(viewport_aware_total_rotation_));
+
+  // Immediately hide the element.
+  SetVisibleImmediately(false);
+
+  // Fade it back in.
+  SetVisible(true);
 }
 
 void ViewportAwareRoot::OnUpdatedInheritedProperties() {

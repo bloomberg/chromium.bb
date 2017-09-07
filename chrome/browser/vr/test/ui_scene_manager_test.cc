@@ -103,20 +103,10 @@ void UiSceneManagerTest::AnimateBy(base::TimeDelta delta) {
   base::TimeTicks target_time = current_time_ + delta;
   base::TimeDelta frame_time = base::TimeDelta::FromSecondsD(1.0 / 60.0);
   for (; current_time_ < target_time; current_time_ += frame_time) {
-    scene_->OnBeginFrame(current_time_, gfx::Vector3dF());
+    scene_->OnBeginFrame(current_time_, gfx::Vector3dF(0.f, 0.f, -1.0f));
   }
   current_time_ = target_time;
-  scene_->OnBeginFrame(current_time_, gfx::Vector3dF());
-}
-
-bool UiSceneManagerTest::IsAnimating(
-    UiElement* element,
-    const std::vector<TargetProperty>& properties) const {
-  for (auto property : properties) {
-    if (!element->animation_player().IsAnimatingProperty(property))
-      return false;
-  }
-  return true;
+  scene_->OnBeginFrame(current_time_, gfx::Vector3dF(0.f, 0.f, -1.0f));
 }
 
 SkColor UiSceneManagerTest::GetBackgroundColor() const {
