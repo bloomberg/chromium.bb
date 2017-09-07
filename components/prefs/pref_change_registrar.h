@@ -23,10 +23,10 @@ class COMPONENTS_PREFS_EXPORT PrefChangeRegistrar : public PrefObserver {
  public:
   // You can register this type of callback if you need to know the
   // path of the preference that is changing.
-  typedef base::Callback<void(const std::string&)> NamedChangeCallback;
+  using NamedChangeCallback = base::RepeatingCallback<void(const std::string&)>;
 
   PrefChangeRegistrar();
-  virtual ~PrefChangeRegistrar();
+  ~PrefChangeRegistrar();
 
   // Must be called before adding or removing observers. Can be called more
   // than once as long as the value of |service| doesn't change.
@@ -70,7 +70,7 @@ class COMPONENTS_PREFS_EXPORT PrefChangeRegistrar : public PrefObserver {
   static void InvokeUnnamedCallback(const base::Closure& callback,
                                     const std::string& pref_name);
 
-  typedef std::map<std::string, NamedChangeCallback> ObserverMap;
+  using ObserverMap = std::map<std::string, NamedChangeCallback>;
 
   ObserverMap observers_;
   PrefService* service_;

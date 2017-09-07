@@ -26,6 +26,7 @@
 #include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/browser/extensions/api/preference/preference_helpers.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/font_pref_change_notifier_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/settings_utils.h"
 #include "chrome/common/extensions/api/font_settings.h"
@@ -54,9 +55,6 @@ const char kScriptKey[] = "script";
 const char kSetFromIncognitoError[] =
     "Can't modify regular settings from an incognito context.";
 
-// Format for font name preference paths.
-const char kWebKitFontPrefFormat[] = "webkit.webprefs.fonts.%s.%s";
-
 // Gets the font name preference path for |generic_family| and |script|. If
 // |script| is NULL, uses prefs::kWebKitCommonScript.
 std::string GetFontNamePrefPath(fonts::GenericFamily generic_family_enum,
@@ -65,30 +63,33 @@ std::string GetFontNamePrefPath(fonts::GenericFamily generic_family_enum,
   if (script.empty())
     script = prefs::kWebKitCommonScript;
   std::string generic_family = fonts::ToString(generic_family_enum);
-  return base::StringPrintf(kWebKitFontPrefFormat,
-                            generic_family.c_str(),
-                            script.c_str());
-}
 
-// Registers |obs| to observe per-script font prefs under the path |map_name|.
-void RegisterFontFamilyMapObserver(
-    PrefChangeRegistrar* registrar,
-    const char* map_name,
-    const PrefChangeRegistrar::NamedChangeCallback& callback) {
-  for (size_t i = 0; i < prefs::kWebKitScriptsForFontFamilyMapsLength; ++i) {
-    const char* script = prefs::kWebKitScriptsForFontFamilyMaps[i];
-    registrar->Add(base::StringPrintf("%s.%s", map_name, script), callback);
-  }
+  size_t prefix_len = strlen(pref_names_util::kWebKitFontPrefPrefix);
+
+  // Format is <prefix-(includes-dot)><family>.<script>
+  std::string result;
+  result.reserve(prefix_len + generic_family.size() + script.size() + 1);
+  result.append(pref_names_util::kWebKitFontPrefPrefix, prefix_len);
+  result.append(generic_family);
+  result.push_back('.');
+  result.append(script);
+  return result;
 }
 
 }  // namespace
 
-FontSettingsEventRouter::FontSettingsEventRouter(
-    Profile* profile) : profile_(profile) {
+FontSettingsEventRouter::FontSettingsEventRouter(Profile* profile)
+    : profile_(profile) {
   TRACE_EVENT0("browser,startup", "FontSettingsEventRouter::ctor")
   SCOPED_UMA_HISTOGRAM_TIMER("Extensions.FontSettingsEventRouterCtorTime");
 
   registrar_.Init(profile_->GetPrefs());
+
+  // Unretained is safe here because the registrar is owned by this class.
+  font_change_registrar_.Register(
+      FontPrefChangeNotifierFactory::GetForProfile(profile),
+      base::Bind(&FontSettingsEventRouter::OnFontFamilyMapPrefChanged,
+                 base::Unretained(this)));
 
   AddPrefToObserve(prefs::kWebKitDefaultFixedFontSize,
                    events::FONT_SETTINGS_ON_DEFAULT_FIXED_FONT_SIZE_CHANGED,
@@ -100,25 +101,6 @@ FontSettingsEventRouter::FontSettingsEventRouter(
   AddPrefToObserve(prefs::kWebKitMinimumFontSize,
                    events::FONT_SETTINGS_ON_MINIMUM_FONT_SIZE_CHANGED,
                    fonts::OnMinimumFontSizeChanged::kEventName, kPixelSizeKey);
-
-  PrefChangeRegistrar::NamedChangeCallback callback =
-      base::Bind(&FontSettingsEventRouter::OnFontFamilyMapPrefChanged,
-                 base::Unretained(this));
-  RegisterFontFamilyMapObserver(&registrar_,
-                                prefs::kWebKitStandardFontFamilyMap, callback);
-  RegisterFontFamilyMapObserver(&registrar_,
-                                prefs::kWebKitSerifFontFamilyMap, callback);
-  RegisterFontFamilyMapObserver(&registrar_,
-                                prefs::kWebKitSansSerifFontFamilyMap, callback);
-  RegisterFontFamilyMapObserver(&registrar_,
-                                prefs::kWebKitFixedFontFamilyMap, callback);
-  RegisterFontFamilyMapObserver(&registrar_,
-                                prefs::kWebKitCursiveFontFamilyMap, callback);
-  RegisterFontFamilyMapObserver(&registrar_,
-                                prefs::kWebKitFantasyFontFamilyMap, callback);
-  RegisterFontFamilyMapObserver(&registrar_,
-                                prefs::kWebKitPictographFontFamilyMap,
-                                callback);
 }
 
 FontSettingsEventRouter::~FontSettingsEventRouter() {}

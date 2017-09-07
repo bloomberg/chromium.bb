@@ -390,6 +390,14 @@ void PrefService::OnStoreDeletionFromDisk() {
   user_pref_store_->OnStoreDeletionFromDisk();
 }
 
+void PrefService::AddPrefObserverAllPrefs(PrefObserver* obs) {
+  pref_notifier_->AddPrefObserverAllPrefs(obs);
+}
+
+void PrefService::RemovePrefObserverAllPrefs(PrefObserver* obs) {
+  pref_notifier_->RemovePrefObserverAllPrefs(obs);
+}
+
 void PrefService::Set(const std::string& path, const base::Value& value) {
   SetUserPrefValue(path, value.CreateDeepCopy());
 }

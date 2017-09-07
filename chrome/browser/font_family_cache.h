@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/supports_user_data.h"
-#include "components/prefs/pref_change_registrar.h"
+#include "chrome/browser/font_pref_change_notifier.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/common/web_preferences.h"
@@ -90,8 +90,8 @@ class FontFamilyCache : public base::SupportsUserData::Data,
   // PrefService, so there is no worry about an invalid pointer.
   const PrefService* prefs_;
 
-  // Reacts to profile changes.
-  PrefChangeRegistrar profile_pref_registrar_;
+  // Reacts to profile font changes.
+  FontPrefChangeNotifier::Registrar font_change_registrar_;
 
   // Listens for profile destruction.
   content::NotificationRegistrar notification_registrar_;

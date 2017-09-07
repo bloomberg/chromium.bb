@@ -13,6 +13,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
+#include "chrome/browser/font_pref_change_notifier.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
@@ -68,6 +69,7 @@ class FontSettingsEventRouter {
 
   // Manages pref observation registration.
   PrefChangeRegistrar registrar_;
+  FontPrefChangeNotifier::Registrar font_change_registrar_;
 
   // Weak, owns us (transitively via ExtensionService).
   Profile* profile_;
