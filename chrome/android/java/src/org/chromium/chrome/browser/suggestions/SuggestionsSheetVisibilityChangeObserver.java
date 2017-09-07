@@ -9,7 +9,9 @@ import android.support.annotation.CallSuper;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
@@ -130,8 +132,18 @@ public abstract class SuggestionsSheetVisibilityChangeObserver
         int activityState = ApplicationStatus.getStateForActivity(mActivity);
         boolean isActivityVisible =
                 activityState == ActivityState.RESUMED || activityState == ActivityState.PAUSED;
+
+        // TODO(https://crbug.com/731128) Ensures we don't report the sheet as visible when covered
+        // by the omnibox suggestions. Stop gap solution, as it does not observe the state
+        // of the omnibox suggestions, but only reads it when the sheet is opened/closed/switched.
+        // Currently sequences of selecting and unselecting the omnibox do not end with showing home
+        // if they didn't start there so it's an acceptable solution. But the real way would be
+        // either to observe the bottom sheet overlay state, or to not have the sheet be selected
+        // when it's covered by the overlay.
+        LocationBar locationBar = mActivity.getToolbarManager().getToolbarLayout().getLocationBar();
+
         boolean newVisibility = isActivityVisible && mBottomSheet.isSheetOpen()
-                && mBottomSheet.getCurrentSheetContent() == mContentObserved;
+                && isObservedContentCurrent() && !locationBar.isSuggestionsListShown();
 
         // As the visibility we track is the one for a specific sheet content rather than the
         // whole BottomSheet, we also need to reflect that in the state, marking it "peeking" here
@@ -159,5 +171,10 @@ public abstract class SuggestionsSheetVisibilityChangeObserver
             onContentStateChanged(newContentState);
             mCurrentContentState = newContentState;
         }
+    }
+
+    @VisibleForTesting
+    protected boolean isObservedContentCurrent() {
+        return mContentObserved == mBottomSheet.getCurrentSheetContent();
     }
 }
