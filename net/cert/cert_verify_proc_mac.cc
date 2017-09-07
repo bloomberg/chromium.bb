@@ -745,7 +745,8 @@ int VerifyWithGivenFlags(X509Certificate* cert,
     }
 
     ScopedCFTypeRef<CFMutableArrayRef> cert_array(
-        x509_util::CreateSecCertificateArrayForX509Certificate(cert));
+        x509_util::CreateSecCertificateArrayForX509Certificate(
+            cert, x509_util::InvalidIntermediateBehavior::kIgnore));
     if (!cert_array) {
       verify_result->cert_status |= CERT_STATUS_INVALID;
       return ERR_CERT_INVALID;

@@ -79,6 +79,17 @@ NET_EXPORT scoped_refptr<X509Certificate> CreateX509CertificateFromCertContexts(
 NET_EXPORT ScopedPCCERT_CONTEXT
 CreateCertContextWithChain(const X509Certificate* cert);
 
+// Specify behavior if an intermediate certificate fails CERT_CONTEXT parsing.
+// kFail means the function should return a failure result immediately. kIgnore
+// means the invalid intermediate is not added to the output context.
+enum class InvalidIntermediateBehavior { kFail, kIgnore };
+
+// As CreateCertContextWithChain above, but |invalid_intermediate_behavior|
+// specifies behavior if intermediates of |cert| could not be converted.
+NET_EXPORT ScopedPCCERT_CONTEXT CreateCertContextWithChain(
+    const X509Certificate* cert,
+    InvalidIntermediateBehavior invalid_intermediate_behavior);
+
 // Calculates the SHA-256 fingerprint of the certificate.  Returns an empty
 // (all zero) fingerprint on failure.
 NET_EXPORT SHA256HashValue CalculateFingerprint256(PCCERT_CONTEXT cert);
