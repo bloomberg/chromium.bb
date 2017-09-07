@@ -71,7 +71,7 @@ AutocompleteMatch TitledUrlMatchToAutocompleteMatch(
   match.destination_url = url;
   const size_t match_start =
       titled_url_match.url_match_positions.empty()
-          ? 0
+          ? base::string16::npos
           : titled_url_match.url_match_positions[0].first;
   const bool trim_http =
       !AutocompleteInput::HasHTTPScheme(input.text()) &&
