@@ -95,6 +95,5 @@ class DummyBenchmarkThree(perf_benchmark.PerfBenchmark):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.PermanentlyDisableBenchmark(
-            [story.expectations.ALL], 'crbug.com/756210')
+        self.DisableBenchmark([story.expectations.ALL], 'crbug.com/756210')
     return StoryExpectations()
