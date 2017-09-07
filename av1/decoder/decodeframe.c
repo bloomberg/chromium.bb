@@ -5243,7 +5243,10 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
 #endif  // CONFIG_EXT_REFS || CONFIG_TEMPMV_SIGNALING
 
 #if CONFIG_TEMPMV_SIGNALING
-  if (cm->use_prev_frame_mvs) assert(frame_can_use_prev_frame_mvs(cm));
+  if (cm->use_prev_frame_mvs && !frame_can_use_prev_frame_mvs(cm)) {
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "Frame wrongly requests previous frame MVs");
+  }
 #else
   cm->use_prev_frame_mvs = !cm->error_resilient_mode && cm->prev_frame &&
 #if CONFIG_FRAME_SUPERRES
