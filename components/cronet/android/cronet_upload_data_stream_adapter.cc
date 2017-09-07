@@ -11,11 +11,9 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/cronet/android/cronet_url_request_adapter.h"
-#include "components/cronet/android/io_buffer_with_byte_buffer.h"
 #include "jni/CronetUploadDataStream_jni.h"
 
 using base::android::JavaParamRef;
@@ -46,16 +44,15 @@ void CronetUploadDataStreamAdapter::Read(net::IOBuffer* buffer, int buf_len) {
   DCHECK(network_task_runner_);
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   DCHECK_GT(buf_len, 0);
+  DCHECK(!buffer_.get());
+  buffer_ = buffer;
 
+  // TODO(mmenke):  Consider preserving the java buffer across reads, when the
+  // IOBuffer's data pointer and its length are unchanged.
   JNIEnv* env = base::android::AttachCurrentThread();
-  // Allow buffer reuse if |buffer| and |buf_len| are exactly the same as the
-  // ones used last time.
-  if (!(buffer_ && buffer_->io_buffer()->data() == buffer->data() &&
-        buffer_->io_buffer_len() == buf_len)) {
-    buffer_ = base::MakeUnique<ByteBufferWithIOBuffer>(env, buffer, buf_len);
-  }
-  Java_CronetUploadDataStream_readData(env, jupload_data_stream_,
-                                       buffer_->byte_buffer());
+  base::android::ScopedJavaLocalRef<jobject> java_buffer(
+      env, env->NewDirectByteBuffer(buffer->data(), buf_len));
+  Java_CronetUploadDataStream_readData(env, jupload_data_stream_, java_buffer);
 }
 
 void CronetUploadDataStreamAdapter::Rewind() {
@@ -85,6 +82,7 @@ void CronetUploadDataStreamAdapter::OnReadSucceeded(
     bool final_chunk) {
   DCHECK(bytes_read > 0 || (final_chunk && bytes_read == 0));
 
+  buffer_ = nullptr;
   network_task_runner_->PostTask(
       FROM_HERE, base::Bind(&CronetUploadDataStream::OnReadSuccess,
                             upload_data_stream_, bytes_read, final_chunk));

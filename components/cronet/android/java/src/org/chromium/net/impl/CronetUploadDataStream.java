@@ -216,7 +216,6 @@ public final class CronetUploadDataStream extends UploadDataSink {
                         String.format("Read upload data length %d exceeds expected length %d",
                                 mLength - mRemainingLength, mLength));
             }
-            mByteBuffer.position(0);
             mByteBuffer = null;
             mInWhichUserCallback = UserCallback.NOT_IN_CALLBACK;
 
