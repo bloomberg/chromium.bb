@@ -92,8 +92,10 @@ BrowserAccessibilityEvent::Result BrowserAccessibilityEventWin::Fire() {
 std::string BrowserAccessibilityEventWin::GetEventNameStr() {
   std::string result = base::UTF16ToUTF8(AccessibilityEventToString(
       win_event_type_));
-  if (event_type() != ui::AX_EVENT_NONE)
-    result += "/" + ui::ToString(event_type());
+  if (event_type() != ui::AX_EVENT_NONE) {
+    result.push_back('/');
+    result.append(ui::ToString(event_type()));
+  }
   return result;
 }
 

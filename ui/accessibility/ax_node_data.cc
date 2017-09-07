@@ -550,7 +550,8 @@ std::string AXNodeData::ToString() const {
   std::string result;
 
   result += "id=" + IntToString(id);
-  result += " " + ui::ToString(role);
+  result += " ";
+  result += ui::ToString(role);
 
   result += StateBitfieldToString(state);
 
@@ -663,14 +664,14 @@ std::string AXNodeData::ToString() const {
         }
         break;
       case AX_ATTR_NAME_FROM:
+        result += " name_from=";
         result +=
-            " name_from=" +
             ui::ToString(static_cast<AXNameFrom>(int_attributes[i].second));
         break;
       case AX_ATTR_DESCRIPTION_FROM:
-        result += " description_from=" +
-                  ui::ToString(
-                      static_cast<AXDescriptionFrom>(int_attributes[i].second));
+        result += " description_from=";
+        result += ui::ToString(
+            static_cast<AXDescriptionFrom>(int_attributes[i].second));
         break;
       case AX_ATTR_ACTIVEDESCENDANT_ID:
         result += " activedescendant=" + value;

@@ -67,12 +67,14 @@ std::string AXTreeData::ToString() const {
   if (sel_anchor_object_id != -1) {
     result += " sel_anchor_object_id=" + IntToString(sel_anchor_object_id);
     result += " sel_anchor_offset=" + IntToString(sel_anchor_offset);
-    result += " sel_anchor_affinity=" + ui::ToString(sel_anchor_affinity);
+    result += " sel_anchor_affinity=";
+    result += ui::ToString(sel_anchor_affinity);
   }
   if (sel_focus_object_id != -1) {
     result += " sel_focus_object_id=" + IntToString(sel_focus_object_id);
     result += " sel_focus_offset=" + IntToString(sel_focus_offset);
-    result += " sel_focus_affinity=" + ui::ToString(sel_focus_affinity);
+    result += " sel_focus_affinity=";
+    result += ui::ToString(sel_focus_affinity);
   }
 
   return result;
