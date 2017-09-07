@@ -4,16 +4,16 @@
 
 module ui.mojom;
 
-import "cc/ipc/local_surface_id.mojom";
-import "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom";
-import "services/viz/public/interfaces/compositing/surface_info.mojom";
 import "services/ui/public/interfaces/cursor/cursor.mojom";
 import "services/ui/public/interfaces/event_matcher.mojom";
 import "services/ui/public/interfaces/mus_constants.mojom";
 import "services/ui/public/interfaces/window_manager.mojom";
 import "services/ui/public/interfaces/window_manager_constants.mojom";
 import "services/ui/public/interfaces/window_tree_constants.mojom";
+import "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom";
 import "services/viz/public/interfaces/compositing/frame_sink_id.mojom";
+import "services/viz/public/interfaces/compositing/local_surface_id.mojom";
+import "services/viz/public/interfaces/compositing/surface_info.mojom";
 import "skia/public/interfaces/bitmap.mojom";
 import "ui/base/mojo/ui_base_types.mojom";
 import "ui/events/mojo/event.mojom";
@@ -112,7 +112,7 @@ interface WindowTree {
   // Sets the specified bounds of the specified window. The window will paint
   // the frame in the provided |local_frame_id|, if any.
   SetWindowBounds(uint32 change_id, uint32 window_id, gfx.mojom.Rect bounds,
-                  cc.mojom.LocalSurfaceId? local_surface_id);
+                  viz.mojom.LocalSurfaceId? local_surface_id);
 
   SetWindowTransform(uint32 change_id,
                      uint32 window_id,
@@ -347,7 +347,7 @@ interface WindowTreeClient {
           int64 display_id,
           uint32 focused_window,
           bool parent_drawn,
-          cc.mojom.LocalSurfaceId? local_surface_id);
+          viz.mojom.LocalSurfaceId? local_surface_id);
 
   // Invoked when the application embedded at |window| is disconnected. In other
   // words the embedded app closes the connection to the server. This is called
@@ -377,14 +377,14 @@ interface WindowTreeClient {
                     WindowData data,
                     int64 display_id,
                     bool parent_drawn,
-                    cc.mojom.LocalSurfaceId? local_surface_id);
+                    viz.mojom.LocalSurfaceId? local_surface_id);
 
   // Invoked when a window's bounds have changed. Only the client embedded in
   // |window| gets a non_empty |local_surface_id|.
   OnWindowBoundsChanged(uint32 window,
                         gfx.mojom.Rect old_bounds,
                         gfx.mojom.Rect new_bounds,
-                        cc.mojom.LocalSurfaceId? local_surface_id);
+                        viz.mojom.LocalSurfaceId? local_surface_id);
 
   OnWindowTransformChanged(uint32 window,
                            gfx.mojom.Transform old_transform,

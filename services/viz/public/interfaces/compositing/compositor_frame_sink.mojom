@@ -4,9 +4,9 @@
 
 module viz.mojom;
 
-import "cc/ipc/local_surface_id.mojom";
 import "services/viz/public/interfaces/compositing/begin_frame_args.mojom";
 import "services/viz/public/interfaces/compositing/compositor_frame.mojom";
+import "services/viz/public/interfaces/compositing/local_surface_id.mojom";
 import "services/viz/public/interfaces/compositing/returned_resource.mojom";
 import "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
@@ -33,7 +33,7 @@ interface CompositorFrameSink {
   // For successful swaps, the implementation must call
   // DidReceiveCompositorFrameAck() asynchronously when the frame has been
   // processed in order to unthrottle the next frame.
-  SubmitCompositorFrame(cc.mojom.LocalSurfaceId local_surface_id,
+  SubmitCompositorFrame(LocalSurfaceId local_surface_id,
                         CompositorFrame frame,
                         HitTestRegionList? hit_test_region_list,
                         uint64 submit_time);

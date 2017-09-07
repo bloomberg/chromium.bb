@@ -4,8 +4,8 @@
 
 module viz.mojom;
 
-import "cc/ipc/local_surface_id.mojom";
 import "services/viz/public/interfaces/compositing/frame_sink_id.mojom";
+import "services/viz/public/interfaces/compositing/local_surface_id.mojom";
 
 // A surface ID is composed of two parts: a FrameSinkID, and a LocalSurfaceId.
 // The FrameSinkId uniquely identifies the FrameSink associated with the
@@ -16,5 +16,5 @@ import "services/viz/public/interfaces/compositing/frame_sink_id.mojom";
 // that avoids duplicates and makes IDs unguessable respectively.
 struct SurfaceId {
   FrameSinkId frame_sink_id;
-  cc.mojom.LocalSurfaceId local_surface_id;
+  LocalSurfaceId local_surface_id;
 };

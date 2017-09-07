@@ -5,11 +5,11 @@
 #ifndef SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_SURFACE_ID_STRUCT_TRAITS_H_
 #define SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_SURFACE_ID_STRUCT_TRAITS_H_
 
-#include "cc/ipc/local_surface_id_struct_traits.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "services/viz/public/cpp/compositing/frame_sink_id_struct_traits.h"
+#include "services/viz/public/cpp/compositing/local_surface_id_struct_traits.h"
 #include "services/viz/public/interfaces/compositing/surface_id.mojom-shared.h"
 
 namespace mojo {

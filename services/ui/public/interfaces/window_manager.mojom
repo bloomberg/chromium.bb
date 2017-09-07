@@ -4,12 +4,12 @@
 
 module ui.mojom;
 
-import "cc/ipc/local_surface_id.mojom";
 import "services/ui/public/interfaces/cursor/cursor.mojom";
 import "services/ui/public/interfaces/event_matcher.mojom";
 import "services/ui/public/interfaces/window_manager_constants.mojom";
 import "services/ui/public/interfaces/window_tree_constants.mojom";
 import "services/viz/public/interfaces/compositing/frame_sink_id.mojom";
+import "services/viz/public/interfaces/compositing/local_surface_id.mojom";
 import "skia/public/interfaces/bitmap.mojom";
 import "ui/base/mojo/ui_base_types.mojom";
 import "ui/display/mojo/display.mojom";
@@ -165,7 +165,7 @@ interface WindowManager {
   WmNewDisplayAdded(display.mojom.Display display,
                     WindowData root,
                     bool parent_drawn,
-                    cc.mojom.LocalSurfaceId? local_surface_id);
+                    viz.mojom.LocalSurfaceId? local_surface_id);
 
   // Called when a display is removed. The root of the specified display is
   // still valid. It is expected the client calls DeleteWindow() shortly after
