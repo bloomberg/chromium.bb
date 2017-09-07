@@ -270,14 +270,6 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
     command_line->AppendArguments(temp_command_line, false);
   }
 
-  // Populate command line flag for Sign-in promo.
-  NSString* enableSigninPromo = [defaults stringForKey:@"EnableSigninPromo"];
-  if ([enableSigninPromo isEqualToString:@"Enabled"]) {
-    command_line->AppendSwitch(switches::kEnableSigninPromo);
-  } else if ([enableSigninPromo isEqualToString:@"Disabled"]) {
-    command_line->AppendSwitch(switches::kDisableSigninPromo);
-  }
-
   // Populate command line flag for 3rd party keyboard omnibox workaround.
   NSString* enableThirdPartyKeyboardWorkaround =
       [defaults stringForKey:@"EnableThirdPartyKeyboardWorkaround"];

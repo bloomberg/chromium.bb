@@ -24,8 +24,6 @@ source_set("views") {
     "signed_in_sync_off_view.mm",
     "signed_in_sync_on_no_sessions_view.h",
     "signed_in_sync_on_no_sessions_view.mm",
-    "signed_out_view.h",
-    "signed_out_view.mm",
     "spacers_view.h",
     "spacers_view.mm",
     "views_utils.h",

@@ -16,10 +16,8 @@ namespace switches {
 // All switches in alphabetical order. The switches should be documented
 // alongside the definition of their values in the .cc file.
 extern const char kClearTokenService[];
-extern const char kDisableSigninPromo[];
 extern const char kDisableSigninScopedDeviceId[];
 extern const char kEnableRefreshTokenAnnotationRequest[];
-extern const char kEnableSigninPromo[];
 extern const char kExtensionsMultiAccount[];
 
 #if !BUILDFLAG(ENABLE_MIRROR)

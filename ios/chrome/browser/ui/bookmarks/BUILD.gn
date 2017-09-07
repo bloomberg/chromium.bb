@@ -53,8 +53,6 @@ source_set("bookmarks") {
     "bookmark_panel_view.mm",
     "bookmark_position_cache.h",
     "bookmark_position_cache.mm",
-    "bookmark_promo_cell.h",
-    "bookmark_promo_cell.mm",
     "bookmark_promo_controller.h",
     "bookmark_promo_controller.mm",
     "bookmark_signin_promo_cell.h",
