@@ -16,8 +16,7 @@ namespace blink {
 
 namespace blink {
 
-CSSTokenizer::CSSTokenizer(const String& string, size_t offset)
-    : input_(string) {
+CSSTokenizer::CSSTokenizer(const String& string) : input_(string) {
   // According to the spec, we should perform preprocessing here.
   // See: http://dev.w3.org/csswg/css-syntax/#input-preprocessing
   //
@@ -30,11 +29,9 @@ CSSTokenizer::CSSTokenizer(const String& string, size_t offset)
   if (string.IsEmpty())
     return;
 
-  input_.Advance(offset);
-
   // To avoid resizing we err on the side of reserving too much space.
   // Most strings we tokenize have about 3.5 to 5 characters per token.
-  tokens_.ReserveInitialCapacity((string.length() - offset) / 3);
+  tokens_.ReserveInitialCapacity(string.length() / 3);
 }
 
 CSSTokenizer::CSSTokenizer(const String& string,

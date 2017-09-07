@@ -26,11 +26,13 @@ class CORE_EXPORT CSSTokenizer {
   DISALLOW_NEW();
 
  public:
-  CSSTokenizer(const String&, size_t offset = 0);
+  CSSTokenizer(const String&);
   CSSTokenizer(const String&, CSSParserObserverWrapper&);  // For the inspector
 
   CSSParserTokenRange TokenRange();
   unsigned TokenCount();
+
+  Vector<String> TakeEscapedStrings() { return std::move(string_pool_); }
 
  private:
   CSSParserToken TokenizeSingle();
