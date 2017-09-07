@@ -3312,9 +3312,12 @@ static void read_tile_info(AV1Decoder *const pbi,
   }
 #endif  // CONFIG_EXT_TILE
 
+// each tile group header is in its own tile group OBU
+#if !CONFIG_OBU
   // Store an index to the location of the tile group information
   pbi->tg_size_bit_offset = rb->bit_offset;
   read_tile_group_range(pbi, rb);
+#endif
 }
 
 static int mem_get_varsize(const uint8_t *src, int sz) {
@@ -3511,9 +3514,10 @@ static void get_tile_buffer(const uint8_t *const data_end,
   *data += size;
 }
 
-static void get_tile_buffers(
-    AV1Decoder *pbi, const uint8_t *data, const uint8_t *data_end,
-    TileBufferDec (*const tile_buffers)[MAX_TILE_COLS]) {
+static void get_tile_buffers(AV1Decoder *pbi, const uint8_t *data,
+                             const uint8_t *data_end,
+                             TileBufferDec (*const tile_buffers)[MAX_TILE_COLS],
+                             int startTile, int endTile) {
   AV1_COMMON *const cm = &pbi->common;
   int r, c;
   const int tile_cols = cm->tile_cols;
@@ -3522,8 +3526,13 @@ static void get_tile_buffers(
   int first_tile_in_tg = 0;
   struct aom_read_bit_buffer rb_tg_hdr;
   uint8_t clear_data[MAX_AV1_HEADER_SIZE];
+#if !CONFIG_OBU
   const size_t hdr_size = pbi->uncomp_hdr_size + pbi->first_partition_size;
   const int tg_size_bit_offset = pbi->tg_size_bit_offset;
+#else
+  const int tg_size_bit_offset = 0;
+#endif
+
 #if CONFIG_DEPENDENT_HORZTILES
   int tile_group_start_col = 0;
   int tile_group_start_row = 0;
@@ -3532,8 +3541,15 @@ static void get_tile_buffers(
   for (r = 0; r < tile_rows; ++r) {
     for (c = 0; c < tile_cols; ++c, ++tc) {
       TileBufferDec *const buf = &tile_buffers[r][c];
+#if CONFIG_OBU
+      const int is_last = (tc == endTile);
+      const size_t hdr_offset = 0;
+#else
       const int is_last = (r == tile_rows - 1) && (c == tile_cols - 1);
       const size_t hdr_offset = (tc && tc == first_tile_in_tg) ? hdr_size : 0;
+#endif
+
+      if (tc < startTile || tc > endTile) continue;
 
       if (data + hdr_offset >= data_end)
         aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
@@ -3621,7 +3637,8 @@ static void dec_setup_across_tile_boundary_info(
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
 
 static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
-                                   const uint8_t *data_end) {
+                                   const uint8_t *data_end, int startTile,
+                                   int endTile) {
   AV1_COMMON *const cm = &pbi->common;
   const AVxWorkerInterface *const winterface = aom_get_worker_interface();
   const int tile_cols = cm->tile_cols;
@@ -3689,7 +3706,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
     get_ls_tile_buffers(pbi, data, data_end, tile_buffers);
   else
 #endif  // CONFIG_EXT_TILE
-    get_tile_buffers(pbi, data, data_end, tile_buffers);
+    get_tile_buffers(pbi, data, data_end, tile_buffers, startTile, endTile);
 
   if (pbi->tile_data == NULL || n_tiles != pbi->allocated_tiles) {
     aom_free(pbi->tile_data);
@@ -3707,6 +3724,10 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
     for (tile_col = tile_cols_start; tile_col < tile_cols_end; ++tile_col) {
       const TileBufferDec *const buf = &tile_buffers[tile_row][tile_col];
       TileData *const td = pbi->tile_data + tile_cols * tile_row + tile_col;
+
+      if (tile_row * cm->tile_cols + tile_col < startTile ||
+          tile_row * cm->tile_cols + tile_col > endTile)
+        continue;
 
       td->cm = cm;
       td->xd = pbi->mb;
@@ -3769,6 +3790,11 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
     for (tile_col = tile_cols_start; tile_col < tile_cols_end; ++tile_col) {
       const int col = inv_col_order ? tile_cols - 1 - tile_col : tile_col;
       TileData *const td = pbi->tile_data + tile_cols * row + col;
+
+      if (tile_row * cm->tile_cols + tile_col < startTile ||
+          tile_row * cm->tile_cols + tile_col > endTile)
+        continue;
+
 #if CONFIG_ACCOUNTING
       if (pbi->acct_enabled) {
         td->bit_reader.accounting->last_tell_frac =
@@ -3831,7 +3857,9 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
       }
     }
 
+#if !CONFIG_OBU
     assert(mi_row > 0);
+#endif
 
 // when Parallel deblocking is enabled, deblocking should not
 // be interleaved with decoding. Instead, deblocking should be done
@@ -3881,8 +3909,11 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
                           cm->lf.filter_level_v, cm->lf.filter_level_v, 2, 0);
   }
 #else
-  av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
-                        cm->lf.filter_level, 0, 0);
+#if CONFIG_OBU
+  if (endTile == cm->tile_rows * cm->tile_cols - 1)
+#endif
+    av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
+                          cm->lf.filter_level, 0, 0);
 #endif  // CONFIG_LOOPFILTER_LEVEL
 #else
 #if CONFIG_PARALLEL_DEBLOCKING
@@ -3926,11 +3957,16 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
 #if CONFIG_ANS
     return data_end;
 #else
+#if !CONFIG_OBU
   {
     // Get last tile data.
     TileData *const td = pbi->tile_data + tile_cols * tile_rows - 1;
     return aom_reader_find_end(&td->bit_reader);
   }
+#else
+  TileData *const td = pbi->tile_data + endTile;
+  return aom_reader_find_end(&td->bit_reader);
+#endif
 #endif  // CONFIG_ANS
 #if CONFIG_EXT_TILE
   }
@@ -4081,7 +4117,8 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
     get_ls_tile_buffers(pbi, data, data_end, tile_buffers);
   else
 #endif  // CONFIG_EXT_TILE
-    get_tile_buffers(pbi, data, data_end, tile_buffers);
+    get_tile_buffers(pbi, data, data_end, tile_buffers, 0,
+                     cm->tile_rows * cm->tile_cols - 1);
 
   for (tile_row = tile_rows_start; tile_row < tile_rows_end; ++tile_row) {
     // Sort the buffers in this tile row based on size in descending order.
@@ -4481,9 +4518,11 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   int i, mask, ref_index = 0;
   size_t sz;
 
+#if !CONFIG_OBU
 #if CONFIG_REFERENCE_BUFFER
   /* TODO: Move outside frame loop or inside key-frame branch */
   read_sequence_header(&pbi->seq_params);
+#endif
 #endif
 
   cm->last_frame_type = cm->frame_type;
@@ -4494,6 +4533,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   cm->is_reference_frame = 1;
 #endif  // CONFIG_EXT_REFS
 
+#if !CONFIG_OBU
   if (aom_rb_read_literal(rb, 2) != AOM_FRAME_MARKER)
     aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                        "Invalid frame marker");
@@ -4506,6 +4546,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   if (cm->profile >= MAX_SUPPORTED_PROFILE)
     aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                        "Unsupported bitstream profile");
+#endif
 
 #if CONFIG_EXT_TILE
   cm->large_scale_tile = aom_rb_read_literal(rb, 1);
@@ -4559,7 +4600,12 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
     return 0;
   }
 
+#if !CONFIG_OBU
   cm->frame_type = (FRAME_TYPE)aom_rb_read_bit(rb);
+#else
+  cm->frame_type = (FRAME_TYPE)aom_rb_read_literal(rb, 2);  // 2 bits
+  cm->intra_only = cm->frame_type == INTRA_ONLY_FRAME;
+#endif
   cm->show_frame = aom_rb_read_bit(rb);
   cm->error_resilient_mode = aom_rb_read_bit(rb);
 #if CONFIG_REFERENCE_BUFFER
@@ -4608,8 +4654,9 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
     if (!av1_read_sync_code(rb))
       aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                          "Invalid frame sync code");
-
+#if !CONFIG_OBU
     read_bitdepth_colorspace_sampling(cm, rb, pbi->allow_lowbitdepth);
+#endif
     pbi->refresh_frame_flags = (1 << REF_FRAMES) - 1;
 
     for (i = 0; i < INTER_REFS_PER_FRAME; ++i) {
@@ -4644,7 +4691,9 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
     cm->use_prev_frame_mvs = 0;
 #endif
   } else {
+#if !CONFIG_OBU
     cm->intra_only = cm->show_frame ? 0 : aom_rb_read_bit(rb);
+#endif
     if (cm->intra_only) cm->allow_screen_content_tools = aom_rb_read_bit(rb);
 #if CONFIG_TEMPMV_SIGNALING
     if (cm->intra_only || cm->error_resilient_mode) cm->use_prev_frame_mvs = 0;
@@ -4676,8 +4725,9 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
       if (!av1_read_sync_code(rb))
         aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                            "Invalid frame sync code");
-
+#if !CONFIG_OBU
       read_bitdepth_colorspace_sampling(cm, rb, pbi->allow_lowbitdepth);
+#endif
 
       pbi->refresh_frame_flags = aom_rb_read_literal(rb, REF_FRAMES);
       setup_frame_size(cm, rb);
@@ -4689,7 +4739,13 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
       cm->ans_window_size_log2 = aom_rb_read_literal(rb, 4) + 8;
 #endif
     } else if (pbi->need_resync != 1) { /* Skip if need resync */
+#if CONFIG_OBU
+      pbi->refresh_frame_flags = (cm->frame_type == S_FRAME)
+                                     ? ~(1 << REF_FRAMES)
+                                     : aom_rb_read_literal(rb, REF_FRAMES);
+#else
       pbi->refresh_frame_flags = aom_rb_read_literal(rb, REF_FRAMES);
+#endif
 
 #if CONFIG_EXT_REFS
       if (!pbi->refresh_frame_flags) {
@@ -4705,7 +4761,12 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
         RefBuffer *const ref_frame = &cm->frame_refs[i];
         ref_frame->idx = idx;
         ref_frame->buf = &frame_bufs[idx].buf;
+#if CONFIG_OBU
+        cm->ref_frame_sign_bias[LAST_FRAME + i] =
+            (cm->frame_type == S_FRAME) ? 0 : aom_rb_read_bit(rb);
+#else
         cm->ref_frame_sign_bias[LAST_FRAME + i] = aom_rb_read_bit(rb);
+#endif
 #if CONFIG_REFERENCE_BUFFER
         if (pbi->seq_params.frame_id_numbers_present_flag) {
           int frame_id_length = pbi->seq_params.frame_id_length_minus7 + 7;
@@ -5242,6 +5303,7 @@ static void dec_setup_frame_boundary_info(AV1_COMMON *const cm) {
   }
 }
 
+// This function is now obsolete
 void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
                       const uint8_t *data_end, const uint8_t **p_data_end) {
   AV1_COMMON *const cm = &pbi->common;
@@ -5454,7 +5516,8 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
                          "Decode failed. Frame data is corrupted.");
     }
   } else {
-    *p_data_end = decode_tiles(pbi, data + first_partition_size, data_end);
+    *p_data_end = decode_tiles(pbi, data + first_partition_size, data_end, 0,
+                               cm->tile_rows * cm->tile_cols - 1);
   }
 
 #if CONFIG_CDEF
@@ -5532,3 +5595,460 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
     cm->frame_contexts[cm->frame_context_idx] = *cm->fc;
 #endif
 }
+
+size_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
+                                          const uint8_t *data_end,
+                                          const uint8_t **p_data_end) {
+  AV1_COMMON *const cm = &pbi->common;
+  MACROBLOCKD *const xd = &pbi->mb;
+  struct aom_read_bit_buffer rb;
+  uint8_t clear_data[MAX_AV1_HEADER_SIZE];
+  size_t first_partition_size;
+  YV12_BUFFER_CONFIG *new_fb;
+#if CONFIG_EXT_REFS || CONFIG_TEMPMV_SIGNALING
+  RefBuffer *last_fb_ref_buf = &cm->frame_refs[LAST_FRAME - LAST_FRAME];
+#endif  // CONFIG_EXT_REFS || CONFIG_TEMPMV_SIGNALING
+
+#if CONFIG_ADAPT_SCAN
+  av1_deliver_eob_threshold(cm, xd);
+#endif
+#if CONFIG_BITSTREAM_DEBUG
+  bitstream_queue_set_frame_read(cm->current_video_frame * 2 + cm->show_frame);
+#endif
+
+#if CONFIG_GLOBAL_MOTION
+  int i;
+  for (i = LAST_FRAME; i <= ALTREF_FRAME; ++i) {
+    set_default_warp_params(&cm->global_motion[i]);
+    set_default_warp_params(&cm->cur_frame->global_motion[i]);
+  }
+  xd->global_motion = cm->global_motion;
+#endif  // CONFIG_GLOBAL_MOTION
+
+  first_partition_size = read_uncompressed_header(
+      pbi, init_read_bit_buffer(pbi, &rb, data, data_end, clear_data));
+
+#if CONFIG_EXT_TILE
+  // If cm->single_tile_decoding = 0, the independent decoding of a single tile
+  // or a section of a frame is not allowed.
+  if (!cm->single_tile_decoding &&
+      (pbi->dec_tile_row >= 0 || pbi->dec_tile_col >= 0)) {
+    pbi->dec_tile_row = -1;
+    pbi->dec_tile_col = -1;
+  }
+#endif  // CONFIG_EXT_TILE
+
+  pbi->first_partition_size = first_partition_size;
+  pbi->uncomp_hdr_size = aom_rb_bytes_read(&rb);
+  new_fb = get_frame_new_buffer(cm);
+  xd->cur_buf = new_fb;
+#if CONFIG_INTRABC
+#if CONFIG_HIGHBITDEPTH
+  av1_setup_scale_factors_for_frame(
+      &xd->sf_identity, xd->cur_buf->y_crop_width, xd->cur_buf->y_crop_height,
+      xd->cur_buf->y_crop_width, xd->cur_buf->y_crop_height,
+      cm->use_highbitdepth);
+#else
+  av1_setup_scale_factors_for_frame(
+      &xd->sf_identity, xd->cur_buf->y_crop_width, xd->cur_buf->y_crop_height,
+      xd->cur_buf->y_crop_width, xd->cur_buf->y_crop_height);
+#endif  // CONFIG_HIGHBITDEPTH
+#endif  // CONFIG_INTRABC
+
+  if (!first_partition_size) {
+    // showing a frame directly
+    *p_data_end = data + aom_rb_bytes_read(&rb);
+    return 0;
+  }
+
+  data += aom_rb_bytes_read(&rb);
+  if (!read_is_valid(data, first_partition_size, data_end))
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "Truncated packet or corrupt header length");
+
+  cm->setup_mi(cm);
+
+#if CONFIG_EXT_REFS || CONFIG_TEMPMV_SIGNALING
+  // NOTE(zoeliu): As cm->prev_frame can take neither a frame of
+  //               show_exisiting_frame=1, nor can it take a frame not used as
+  //               a reference, it is probable that by the time it is being
+  //               referred to, the frame buffer it originally points to may
+  //               already get expired and have been reassigned to the current
+  //               newly coded frame. Hence, we need to check whether this is
+  //               the case, and if yes, we have 2 choices:
+  //               (1) Simply disable the use of previous frame mvs; or
+  //               (2) Have cm->prev_frame point to one reference frame buffer,
+  //                   e.g. LAST_FRAME.
+  if (!dec_is_ref_frame_buf(pbi, cm->prev_frame)) {
+    // Reassign the LAST_FRAME buffer to cm->prev_frame.
+    cm->prev_frame = last_fb_ref_buf->idx != INVALID_IDX
+                         ? &cm->buffer_pool->frame_bufs[last_fb_ref_buf->idx]
+                         : NULL;
+  }
+#endif  // CONFIG_EXT_REFS || CONFIG_TEMPMV_SIGNALING
+
+#if CONFIG_TEMPMV_SIGNALING
+  if (cm->use_prev_frame_mvs && !frame_can_use_prev_frame_mvs(cm)) {
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "Frame wrongly requests previous frame MVs");
+  }
+#else
+  cm->use_prev_frame_mvs = !cm->error_resilient_mode && cm->prev_frame &&
+#if CONFIG_FRAME_SUPERRES
+                           cm->width == cm->last_width &&
+                           cm->height == cm->last_height &&
+#else
+                           cm->width == cm->prev_frame->buf.y_crop_width &&
+                           cm->height == cm->prev_frame->buf.y_crop_height &&
+#endif  // CONFIG_FRAME_SUPERRES
+                           !cm->last_intra_only && cm->last_show_frame &&
+                           (cm->last_frame_type != KEY_FRAME);
+#endif  // CONFIG_TEMPMV_SIGNALING
+
+#if CONFIG_MFMV
+  av1_setup_frame_buf_refs(cm);
+  av1_setup_motion_field(cm);
+#endif
+
+  av1_setup_block_planes(xd, cm->subsampling_x, cm->subsampling_y);
+#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
+  if (cm->error_resilient_mode || frame_is_intra_only(cm)) {
+    // use the default frame context values
+    *cm->fc = cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
+    cm->pre_fc = &cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
+  } else {
+    *cm->fc = cm->frame_contexts[cm->frame_refs[0].idx];
+    cm->pre_fc = &cm->frame_contexts[cm->frame_refs[0].idx];
+  }
+#else
+  *cm->fc = cm->frame_contexts[cm->frame_context_idx];
+  cm->pre_fc = &cm->frame_contexts[cm->frame_context_idx];
+#endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
+  if (!cm->fc->initialized)
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "Uninitialized entropy context.");
+
+  av1_zero(cm->counts);
+
+  xd->corrupted = 0;
+  new_fb->corrupted = read_compressed_header(pbi, data, first_partition_size);
+  if (new_fb->corrupted)
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "Decode failed. Frame data header is corrupted.");
+
+  return first_partition_size;
+}
+
+void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
+                                    const uint8_t *data_end,
+                                    const uint8_t **p_data_end, int startTile,
+                                    int endTile, int initialize_flag) {
+  AV1_COMMON *const cm = &pbi->common;
+  MACROBLOCKD *const xd = &pbi->mb;
+  int context_updated = 0;
+
+#if CONFIG_LOOP_RESTORATION
+  if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
+      cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
+      cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
+    av1_alloc_restoration_buffers(cm);
+  }
+#endif
+
+#if CONFIG_LOOPFILTER_LEVEL
+  if ((cm->lf.filter_level[0] || cm->lf.filter_level[1]) &&
+      !cm->skip_loop_filter) {
+    av1_loop_filter_frame_init(cm, cm->lf.filter_level[0],
+                               cm->lf.filter_level[1]);
+  }
+#else
+  if (cm->lf.filter_level && !cm->skip_loop_filter) {
+    av1_loop_filter_frame_init(cm, cm->lf.filter_level, cm->lf.filter_level);
+  }
+#endif
+
+  // If encoded in frame parallel mode, frame context is ready after decoding
+  // the frame header.
+  if (cm->frame_parallel_decode && initialize_flag &&
+      cm->refresh_frame_context != REFRESH_FRAME_CONTEXT_BACKWARD) {
+    AVxWorker *const worker = pbi->frame_worker_owner;
+    FrameWorkerData *const frame_worker_data = worker->data1;
+    if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_FORWARD) {
+      context_updated = 1;
+#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
+      cm->frame_contexts[cm->new_fb_idx] = *cm->fc;
+#else
+      cm->frame_contexts[cm->frame_context_idx] = *cm->fc;
+#endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
+    }
+    av1_frameworker_lock_stats(worker);
+    pbi->cur_buf->row = -1;
+    pbi->cur_buf->col = -1;
+    frame_worker_data->frame_context_ready = 1;
+    // Signal the main thread that context is ready.
+    av1_frameworker_signal_stats(worker);
+    av1_frameworker_unlock_stats(worker);
+  }
+
+  dec_setup_frame_boundary_info(cm);
+
+  if (pbi->max_threads > 1 && !CONFIG_CB4X4 &&
+#if CONFIG_EXT_TILE
+      pbi->dec_tile_col < 0 &&  // Decoding all columns
+#endif                          // CONFIG_EXT_TILE
+      cm->tile_cols > 1) {
+    // Multi-threaded tile decoder
+    *p_data_end =
+        decode_tiles_mt(pbi, data + pbi->first_partition_size, data_end);
+    if (!xd->corrupted) {
+      if (!cm->skip_loop_filter) {
+// If multiple threads are used to decode tiles, then we use those
+// threads to do parallel loopfiltering.
+#if CONFIG_LOOPFILTER_LEVEL
+        av1_loop_filter_frame_mt(
+            (YV12_BUFFER_CONFIG *)xd->cur_buf, cm, pbi->mb.plane,
+            cm->lf.filter_level[0], cm->lf.filter_level[1], 0, 0,
+            pbi->tile_workers, pbi->num_tile_workers, &pbi->lf_row_sync);
+#else
+        av1_loop_filter_frame_mt((YV12_BUFFER_CONFIG *)xd->cur_buf, cm,
+                                 pbi->mb.plane, cm->lf.filter_level, 0, 0,
+                                 pbi->tile_workers, pbi->num_tile_workers,
+                                 &pbi->lf_row_sync);
+#endif  // CONFIG_LOOPFILTER_LEVEL
+      }
+    } else {
+      aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                         "Decode failed. Frame data is corrupted.");
+    }
+  } else {
+#if CONFIG_OBU
+    *p_data_end = decode_tiles(pbi, data, data_end, startTile, endTile);
+#else
+    *p_data_end = decode_tiles(
+        pbi, data + pbi->uncomp_hdr_size + pbi->first_partition_size, data_end,
+        startTile, endTile);
+#endif
+  }
+
+  if (endTile != cm->tile_rows * cm->tile_cols - 1) {
+    return;
+  }
+
+#if CONFIG_CDEF
+  if (!cm->skip_loop_filter && !cm->all_lossless) {
+    av1_cdef_frame(&pbi->cur_buf->buf, cm, &pbi->mb);
+  }
+#endif  // CONFIG_CDEF
+
+#if CONFIG_FRAME_SUPERRES
+  superres_post_decode(pbi);
+#endif  // CONFIG_FRAME_SUPERRES
+
+#if CONFIG_LOOP_RESTORATION
+  if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
+      cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
+      cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
+    aom_extend_frame_borders((YV12_BUFFER_CONFIG *)xd->cur_buf);
+    av1_loop_restoration_frame((YV12_BUFFER_CONFIG *)xd->cur_buf, cm,
+                               cm->rst_info, 7, 0, NULL);
+  }
+#endif  // CONFIG_LOOP_RESTORATION
+
+  if (!xd->corrupted) {
+    if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {
+      FRAME_CONTEXT **tile_ctxs = aom_malloc(cm->tile_rows * cm->tile_cols *
+                                             sizeof(&pbi->tile_data[0].tctx));
+      aom_cdf_prob **cdf_ptrs =
+          aom_malloc(cm->tile_rows * cm->tile_cols *
+                     sizeof(&pbi->tile_data[0].tctx.partition_cdf[0][0]));
+      make_update_tile_list_dec(pbi, cm->tile_rows, cm->tile_cols, tile_ctxs);
+#if CONFIG_LV_MAP
+      av1_adapt_coef_probs(cm);
+#endif  // CONFIG_LV_MAP
+      av1_adapt_intra_frame_probs(cm);
+      av1_average_tile_coef_cdfs(pbi->common.fc, tile_ctxs, cdf_ptrs,
+                                 cm->tile_rows * cm->tile_cols);
+      av1_average_tile_intra_cdfs(pbi->common.fc, tile_ctxs, cdf_ptrs,
+                                  cm->tile_rows * cm->tile_cols);
+#if CONFIG_PVQ
+      av1_average_tile_pvq_cdfs(pbi->common.fc, tile_ctxs,
+                                cm->tile_rows * cm->tile_cols);
+#endif  // CONFIG_PVQ
+#if CONFIG_ADAPT_SCAN
+      av1_adapt_scan_order(cm);
+#endif  // CONFIG_ADAPT_SCAN
+
+      if (!frame_is_intra_only(cm)) {
+        av1_adapt_inter_frame_probs(cm);
+        av1_adapt_mv_probs(cm, cm->allow_high_precision_mv);
+        av1_average_tile_inter_cdfs(&pbi->common, pbi->common.fc, tile_ctxs,
+                                    cdf_ptrs, cm->tile_rows * cm->tile_cols);
+        av1_average_tile_mv_cdfs(pbi->common.fc, tile_ctxs, cdf_ptrs,
+                                 cm->tile_rows * cm->tile_cols);
+      }
+      aom_free(tile_ctxs);
+      aom_free(cdf_ptrs);
+    } else {
+      debug_check_frame_counts(cm);
+    }
+  } else {
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "Decode failed. Frame data is corrupted.");
+  }
+
+#if CONFIG_INSPECTION
+  if (pbi->inspect_cb != NULL) {
+    (*pbi->inspect_cb)(pbi, pbi->inspect_ctx);
+  }
+#endif
+
+// Non frame parallel update frame context here.
+#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
+  if (!context_updated) cm->frame_contexts[cm->new_fb_idx] = *cm->fc;
+#else
+  if (!cm->error_resilient_mode && !context_updated)
+    cm->frame_contexts[cm->frame_context_idx] = *cm->fc;
+#endif
+}
+
+#if CONFIG_OBU
+
+static OBU_TYPE read_obu_header(struct aom_read_bit_buffer *rb,
+                                uint32_t *header_size) {
+  OBU_TYPE obu_type;
+  int obu_extension_flag;
+
+  *header_size = 1;
+
+  obu_type = (OBU_TYPE)aom_rb_read_literal(rb, 5);
+  aom_rb_read_literal(rb, 2);  // reserved
+  obu_extension_flag = aom_rb_read_bit(rb);
+  if (obu_extension_flag) {
+    *header_size += 1;
+    aom_rb_read_literal(rb, 3);  // temporal_id
+    aom_rb_read_literal(rb, 2);
+    aom_rb_read_literal(rb, 2);
+    aom_rb_read_literal(rb, 1);  // reserved
+  }
+
+  return obu_type;
+}
+
+static uint32_t read_temporal_delimiter_obu() { return 0; }
+
+static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
+                                         struct aom_read_bit_buffer *rb) {
+  AV1_COMMON *const cm = &pbi->common;
+  SequenceHeader *const seq_params = &pbi->seq_params;
+  uint32_t saved_bit_offset = rb->bit_offset;
+
+  cm->profile = av1_read_profile(rb);
+  aom_rb_read_literal(rb, 4);  // level
+
+  seq_params->frame_id_numbers_present_flag = aom_rb_read_bit(rb);
+  if (seq_params->frame_id_numbers_present_flag) {
+    seq_params->frame_id_length_minus7 = aom_rb_read_literal(rb, 4);
+    seq_params->delta_frame_id_length_minus2 = aom_rb_read_literal(rb, 4);
+  }
+
+  read_bitdepth_colorspace_sampling(cm, rb, pbi->allow_lowbitdepth);
+
+  return ((rb->bit_offset - saved_bit_offset + 7) >> 3);
+}
+
+static uint32_t read_frame_header_obu(AV1Decoder *pbi, const uint8_t *data,
+                                      const uint8_t *data_end,
+                                      const uint8_t **p_data_end) {
+  size_t header_size;
+
+  header_size =
+      av1_decode_frame_headers_and_setup(pbi, data, data_end, p_data_end);
+  return (uint32_t)(pbi->uncomp_hdr_size + header_size);
+}
+
+static uint32_t read_tile_group_header(AV1Decoder *pbi,
+                                       struct aom_read_bit_buffer *rb,
+                                       int *startTile, int *endTile) {
+  AV1_COMMON *const cm = &pbi->common;
+  uint32_t saved_bit_offset = rb->bit_offset;
+
+  *startTile = aom_rb_read_literal(rb, cm->log2_tile_rows + cm->log2_tile_cols);
+  *endTile = aom_rb_read_literal(rb, cm->log2_tile_rows + cm->log2_tile_cols);
+
+  return ((rb->bit_offset - saved_bit_offset + 7) >> 3);
+}
+
+static uint32_t read_one_tile_group_obu(AV1Decoder *pbi,
+                                        struct aom_read_bit_buffer *rb,
+                                        int is_first_tg, const uint8_t *data,
+                                        const uint8_t *data_end,
+                                        const uint8_t **p_data_end,
+                                        int *is_last_tg) {
+  AV1_COMMON *const cm = &pbi->common;
+  int startTile, endTile;
+  uint32_t header_size, tg_payload_size;
+
+  header_size = read_tile_group_header(pbi, rb, &startTile, &endTile);
+  data += header_size;
+  av1_decode_tg_tiles_and_wrapup(pbi, data, data_end, p_data_end, startTile,
+                                 endTile, is_first_tg);
+  tg_payload_size = (uint32_t)(*p_data_end - data);
+
+  // TODO(shan):  For now, assume all tile groups received in order
+  *is_last_tg = endTile == cm->tile_rows * cm->tile_cols - 1;
+
+  return header_size + tg_payload_size;
+}
+
+void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
+                                const uint8_t *data_end,
+                                const uint8_t **p_data_end) {
+  AV1_COMMON *const cm = &pbi->common;
+  int frame_decoding_finished = 0;
+  int is_first_tg_obu_received = 1;
+  int frame_header_received = 0;
+  int frame_header_size = 0;
+
+  // decode frame as a series of OBUs
+  while (!frame_decoding_finished && !cm->error.error_code) {
+    struct aom_read_bit_buffer rb;
+    uint8_t clear_data[80];
+    uint32_t obu_size, obu_header_size, obu_payload_size = 0;
+    OBU_TYPE obu_type;
+
+    init_read_bit_buffer(pbi, &rb, data + 4, data_end, clear_data);
+
+    // every obu is preceded by 4-byte size of obu (obu header + payload size)
+    // The obu size is only needed for tile group OBUs
+    obu_size = mem_get_le32(data);
+    obu_type = read_obu_header(&rb, &obu_header_size);
+    data += (4 + obu_header_size);
+
+    switch (obu_type) {
+      case OBU_TD: obu_payload_size = read_temporal_delimiter_obu(); break;
+      case OBU_SEQUENCE_HEADER:
+        obu_payload_size = read_sequence_header_obu(pbi, &rb);
+        break;
+      case OBU_FRAME_HEADER:
+        // Only decode first frame header received
+        if (!frame_header_received) {
+          frame_header_size = obu_payload_size =
+              read_frame_header_obu(pbi, data, data_end, p_data_end);
+          frame_header_received = 1;
+        } else {
+          obu_payload_size = frame_header_size;
+        }
+        if (cm->show_existing_frame) frame_decoding_finished = 1;
+        break;
+      case OBU_TILE_GROUP:
+        obu_payload_size = read_one_tile_group_obu(
+            pbi, &rb, is_first_tg_obu_received, data, data + obu_size - 1,
+            p_data_end, &frame_decoding_finished);
+        is_first_tg_obu_received = 0;
+        break;
+      default: break;
+    }
+    data += obu_payload_size;
+  }
+}
+#endif

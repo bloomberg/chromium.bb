@@ -712,6 +712,18 @@ typedef enum {
 } FILTER_DEGREE;
 #endif  // CONFIG_LPF_DIRECT
 
+#if CONFIG_OBU
+// R19
+typedef enum {
+  OBU_SEQUENCE_HEADER = 1,
+  OBU_TD = 2,
+  OBU_FRAME_HEADER = 3,
+  OBU_TILE_GROUP = 4,
+  OBU_METADATA = 5,
+  OBU_PADDING = 15,
+} OBU_TYPE;
+#endif
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

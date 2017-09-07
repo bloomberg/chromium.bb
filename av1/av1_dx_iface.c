@@ -153,6 +153,7 @@ static aom_codec_err_t decoder_destroy(aom_codec_alg_priv_t *ctx) {
   return AOM_CODEC_OK;
 }
 
+#if !CONFIG_OBU
 static int parse_bitdepth_colorspace_sampling(BITSTREAM_PROFILE profile,
                                               struct aom_read_bit_buffer *rb) {
   aom_color_space_t color_space;
@@ -200,6 +201,7 @@ static int parse_bitdepth_colorspace_sampling(BITSTREAM_PROFILE profile,
   }
   return 1;
 }
+#endif
 
 static aom_codec_err_t decoder_peek_si_internal(
     const uint8_t *data, unsigned int data_sz, aom_codec_stream_info_t *si,
@@ -229,9 +231,19 @@ static aom_codec_err_t decoder_peek_si_internal(
 
     data += index_size;
     data_sz -= index_size;
+#if CONFIG_OBU
+    if (data + data_sz <= data) return AOM_CODEC_INVALID_PARAM;
+#endif
   }
 
   {
+#if CONFIG_OBU
+    // Proper fix needed
+    si->is_kf = 1;
+    intra_only_flag = 1;
+    si->h = 1;
+
+#else
     int show_frame;
     int error_resilient;
     struct aom_read_bit_buffer rb = { data, data + data_sz, 0, NULL, NULL };
@@ -298,6 +310,7 @@ static aom_codec_err_t decoder_peek_si_internal(
         av1_read_frame_size(&rb, (int *)&si->w, (int *)&si->h);
       }
     }
+#endif
   }
   if (is_intra_only != NULL) *is_intra_only = intra_only_flag;
   return AOM_CODEC_OK;

@@ -347,6 +347,7 @@ EXPERIMENT_LIST="
     colorspace_headers
     mfmv
     jnt_comp
+    obu
     amvr
 "
 CONFIG_LIST="
