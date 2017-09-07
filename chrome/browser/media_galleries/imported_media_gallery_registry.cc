@@ -10,7 +10,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/media_galleries/fileapi/itunes_data_provider.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
-#include "chrome/browser/media_galleries/fileapi/picasa_data_provider.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/fileapi/external_mount_points.h"
@@ -40,44 +39,6 @@ void ImportedMediaGalleryRegistry::Initialize() {
     // zero would be an extra step to ensure permissions are correctly
     // enforced.
   }
-}
-
-bool ImportedMediaGalleryRegistry::RegisterPicasaFilesystemOnUIThread(
-    const std::string& fs_name, const base::FilePath& database_path) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(!fs_name.empty());
-  DCHECK(!database_path.empty());
-
-  bool result = false;
-
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  base::FilePath root = ImportedRoot();
-  if (root.empty())
-    return false;
-  result = ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
-      fs_name,
-      storage::kFileSystemTypePicasa,
-      storage::FileSystemMountOption(),
-      root.AppendASCII("picasa"));
-  if (!result)
-    return result;
-
-  picasa_fs_names_.insert(fs_name);
-
-  if (picasa_fs_names_.size() == 1) {
-    MediaFileSystemBackend::MediaTaskRunner()->PostTask(
-        FROM_HERE,
-        Bind(&ImportedMediaGalleryRegistry::RegisterPicasaFileSystem,
-             base::Unretained(this), database_path));
-#ifndef NDEBUG
-    picasa_database_path_ = database_path;
-  } else {
-    DCHECK_EQ(picasa_database_path_.value(), database_path.value());
-#endif
-  }
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
-
-  return result;
 }
 
 bool ImportedMediaGalleryRegistry::RegisterITunesFilesystemOnUIThread(
@@ -122,16 +83,6 @@ bool ImportedMediaGalleryRegistry::RevokeImportedFilesystemOnUIThread(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  if (picasa_fs_names_.erase(fs_name)) {
-    if (picasa_fs_names_.empty()) {
-      MediaFileSystemBackend::MediaTaskRunner()->PostTask(
-          FROM_HERE,
-          Bind(&ImportedMediaGalleryRegistry::RevokePicasaFileSystem,
-               base::Unretained(this)));
-    }
-    return ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(fs_name);
-  }
-
   if (itunes_fs_names_.erase(fs_name)) {
     if (itunes_fs_names_.empty()) {
       MediaFileSystemBackend::MediaTaskRunner()->PostTask(
@@ -153,14 +104,6 @@ base::FilePath ImportedMediaGalleryRegistry::ImportedRoot() {
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
 // static
-picasa::PicasaDataProvider*
-ImportedMediaGalleryRegistry::PicasaDataProvider() {
-  MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
-  DCHECK(GetInstance()->picasa_data_provider_);
-  return GetInstance()->picasa_data_provider_.get();
-}
-
-// static
 itunes::ITunesDataProvider*
 ImportedMediaGalleryRegistry::ITunesDataProvider() {
   MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
@@ -175,25 +118,11 @@ ImportedMediaGalleryRegistry::~ImportedMediaGalleryRegistry() {
   if (!imported_root_.empty())
     base::DeleteFile(imported_root_, false);
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  DCHECK_EQ(0U, picasa_fs_names_.size());
   DCHECK_EQ(0U, itunes_fs_names_.size());
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 }
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
-void ImportedMediaGalleryRegistry::RegisterPicasaFileSystem(
-    const base::FilePath& database_path) {
-  MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
-  DCHECK(!picasa_data_provider_);
-  picasa_data_provider_.reset(new picasa::PicasaDataProvider(database_path));
-}
-
-void ImportedMediaGalleryRegistry::RevokePicasaFileSystem() {
-  MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
-  DCHECK(picasa_data_provider_);
-  picasa_data_provider_.reset();
-}
-
 void ImportedMediaGalleryRegistry::RegisterITunesFileSystem(
     const base::FilePath& xml_library_path) {
   MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();

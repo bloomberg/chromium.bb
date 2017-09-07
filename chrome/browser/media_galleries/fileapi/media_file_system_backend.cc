@@ -47,7 +47,6 @@
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
 #include "chrome/browser/media_galleries/fileapi/itunes_file_util.h"
-#include "chrome/browser/media_galleries/fileapi/picasa_file_util.h"
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
@@ -144,9 +143,7 @@ MediaFileSystemBackend::MediaFileSystemBackend(
 #endif
 #if defined(OS_WIN) || defined(OS_MACOSX)
       ,
-      picasa_file_util_(new picasa::PicasaFileUtil(media_path_filter_.get())),
       itunes_file_util_(new itunes::ITunesFileUtil(media_path_filter_.get())),
-      picasa_file_util_used_(false),
       itunes_file_util_used_(false)
 #endif
 {
@@ -226,7 +223,6 @@ bool MediaFileSystemBackend::CanHandleType(storage::FileSystemType type) const {
     case storage::kFileSystemTypeNativeMedia:
     case storage::kFileSystemTypeDeviceMedia:
 #if defined(OS_WIN) || defined(OS_MACOSX)
-    case storage::kFileSystemTypePicasa:
     case storage::kFileSystemTypeItunes:
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
       return true;
@@ -265,12 +261,6 @@ storage::AsyncFileUtil* MediaFileSystemBackend::GetAsyncFileUtil(
         itunes_file_util_used_ = true;
       }
       return itunes_file_util_.get();
-    case storage::kFileSystemTypePicasa:
-      if (!picasa_file_util_used_) {
-        media_galleries::UsageCount(media_galleries::PICASA_FILE_SYSTEM_USED);
-        picasa_file_util_used_ = true;
-      }
-      return picasa_file_util_.get();
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
     default:
       NOTREACHED();
@@ -329,8 +319,7 @@ bool MediaFileSystemBackend::HasInplaceCopyImplementation(
     storage::FileSystemType type) const {
   DCHECK(type == storage::kFileSystemTypeNativeMedia ||
          type == storage::kFileSystemTypeDeviceMedia ||
-         type == storage::kFileSystemTypeItunes ||
-         type == storage::kFileSystemTypePicasa);
+         type == storage::kFileSystemTypeItunes);
   return true;
 }
 

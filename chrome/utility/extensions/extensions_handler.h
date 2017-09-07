@@ -10,10 +10,10 @@
 #include "base/base64.h"
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "chrome/common/media_galleries/picasa_types.h"
 #include "chrome/utility/utility_message_handler.h"
 #include "extensions/features/features.h"
 #include "extensions/utility/utility_handler.h"
+#include "ipc/ipc_platform_file.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 #if !BUILDFLAG(ENABLE_EXTENSIONS)
@@ -48,13 +48,6 @@ class ExtensionsHandler : public UtilityMessageHandler {
 #if defined(OS_WIN) || defined(OS_MACOSX)
   void OnParseITunesLibraryXmlFile(
       const IPC::PlatformFileForTransit& itunes_library_file);
-
-  void OnParsePicasaPMPDatabase(
-      const picasa::AlbumTableFilesForTransit& album_table_files);
-
-  void OnIndexPicasaAlbumsContents(
-      const picasa::AlbumUIDSet& album_uids,
-      const std::vector<picasa::FolderINIContents>& folders_inis);
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsHandler);

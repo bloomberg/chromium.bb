@@ -59,7 +59,6 @@ chrome/browser/media/webrtc/desktop_media_list_observer.h
 chrome/browser/media/webrtc/rtp_dump_type.h
 chrome/browser/media_galleries/fileapi/iapps_data_provider.h
 chrome/browser/media_galleries/fileapi/itunes_data_provider.h
-chrome/browser/media_galleries/fileapi/picasa_data_provider.h
 chrome/browser/media_galleries/fileapi/safe_iapps_library_parser.h
 chrome/browser/media_galleries/media_file_system_context.h
 chrome/browser/notifications/displayed_notifications_dispatch_callback.h
@@ -79,7 +78,6 @@ chrome/browser/ui/webui/large_icon_source.h
 chrome/common/mac/app_shim_launch.h
 chrome/common/mac/app_shim_messages.h
 chrome/common/media_galleries/itunes_library.h
-chrome/common/media_galleries/picasa_types.h
 chrome/install_static/chromium_install_modes.h
 chrome/install_static/install_constants.h
 chrome/install_static/install_details.h

@@ -290,9 +290,9 @@ class MediaGalleriesPreferences
   // Populates the default galleries. Call only on fresh profiles.
   void AddDefaultGalleries();
 
-  // This is a hack - Some devices (iTunes, Picasa) are singletons in that only
+  // This is a hack - Some devices (iTunes) are singletons in that only
   // one instance of that type is supported at a time. As such, the device id
-  // should just be "itunes:" or "picasa:" but that would mean finding the
+  // should just be "itunes:" but that would mean finding the
   // location of the database file multiple times, which may be an async
   // operation. Storing the location of the backing database in the device
   // id allows that look up to be avoided. However, the cost is that if the
@@ -303,7 +303,7 @@ class MediaGalleriesPreferences
 
   void OnStorageMonitorInit(bool api_has_been_used);
 
-  // Handle an iTunes or Picasa finder returning a device ID to us.
+  // Handle an iTunes finder returning a device ID to us.
   void OnFinderDeviceID(const std::string& device_id);
 
   // Builds |known_galleries_| from the persistent store.

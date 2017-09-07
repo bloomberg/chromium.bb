@@ -39,13 +39,6 @@
 #include "media/base/test_data_util.h"
 #include "media/media_features.h"
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-#include "chrome/browser/media_galleries/fileapi/picasa_finder.h"
-#include "chrome/common/media_galleries/picasa_test_util.h"
-#include "chrome/common/media_galleries/picasa_types.h"
-#include "chrome/common/media_galleries/pmp_test_util.h"
-#endif
-
 #if defined(OS_MACOSX)
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -215,39 +208,6 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
         fake_gallery_temp_dir_.GetPath().Append(source_path.BaseName())));
   }
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  void PopulatePicasaTestData(const base::FilePath& picasa_app_data_root) {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
-    base::FilePath picasa_database_path =
-        picasa::MakePicasaDatabasePath(picasa_app_data_root);
-    base::FilePath picasa_temp_dir_path =
-        picasa_database_path.DirName().AppendASCII(picasa::kPicasaTempDirName);
-    ASSERT_TRUE(base::CreateDirectory(picasa_database_path));
-    ASSERT_TRUE(base::CreateDirectory(picasa_temp_dir_path));
-
-    // Create fake folder directories.
-    base::FilePath folders_root =
-        ensure_media_directories_exists_->GetFakePicasaFoldersRootPath();
-    base::FilePath fake_folder_1 = folders_root.AppendASCII("folder1");
-    base::FilePath fake_folder_2 = folders_root.AppendASCII("folder2");
-    ASSERT_TRUE(base::CreateDirectory(fake_folder_1));
-    ASSERT_TRUE(base::CreateDirectory(fake_folder_2));
-
-    // Write folder and album contents.
-    picasa::WriteTestAlbumTable(
-        picasa_database_path, fake_folder_1, fake_folder_2);
-    picasa::WriteTestAlbumsImagesIndex(fake_folder_1, fake_folder_2);
-
-    base::FilePath test_jpg_path = GetCommonDataDir().AppendASCII("test.jpg");
-    ASSERT_TRUE(base::CopyFile(
-        test_jpg_path, fake_folder_1.AppendASCII("InBoth.jpg")));
-    ASSERT_TRUE(base::CopyFile(
-        test_jpg_path, fake_folder_1.AppendASCII("InSecondAlbumOnly.jpg")));
-    ASSERT_TRUE(base::CopyFile(
-        test_jpg_path, fake_folder_2.AppendASCII("InFirstAlbumOnly.jpg")));
-  }
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
-
   base::FilePath GetCommonDataDir() const {
     return test_data_dir_.AppendASCII("api_test")
                          .AppendASCII("media_galleries")
@@ -409,46 +369,6 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
 
   DetachFakeDevice();
 }
-
-// These two tests are flaky, they time out frequently on Win7 bots. See
-// crbug.com/567212.
-#if defined(OS_WIN)
-#define MAYBE_PicasaDefaultLocation DISABLED_PicasaDefaultLocation
-#define MAYBE_PicasaCustomLocation DISABLED_PicasaCustomLocation
-#else
-#define MAYBE_PicasaDefaultLocation PicasaDefaultLocation
-#define MAYBE_PicasaCustomLocation PicasaCustomLocation
-#endif
-#if defined(OS_WIN)|| defined(OS_MACOSX)
-IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
-                       MAYBE_PicasaDefaultLocation) {
-#if defined(OS_WIN)
-  PopulatePicasaTestData(
-      ensure_media_directories_exists()->GetFakeLocalAppDataPath());
-#elif defined(OS_MACOSX)
-  PopulatePicasaTestData(
-      ensure_media_directories_exists()->GetFakeAppDataPath());
-#endif
-
-  base::ListValue custom_args;
-  custom_args.AppendInteger(test_jpg_size());
-  ASSERT_TRUE(RunMediaGalleriesTestWithArg("picasa", custom_args)) << message_;
-}
-
-IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
-                       MAYBE_PicasaCustomLocation) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
-  base::ScopedTempDir custom_picasa_app_data_root;
-  ASSERT_TRUE(custom_picasa_app_data_root.CreateUniqueTempDir());
-  ensure_media_directories_exists()->SetCustomPicasaAppDataPath(
-      custom_picasa_app_data_root.GetPath());
-  PopulatePicasaTestData(custom_picasa_app_data_root.GetPath());
-
-  base::ListValue custom_args;
-  custom_args.AppendInteger(test_jpg_size());
-  ASSERT_TRUE(RunMediaGalleriesTestWithArg("picasa", custom_args)) << message_;
-}
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest, ToURL) {
   RemoveAllGalleries();

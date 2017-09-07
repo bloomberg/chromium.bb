@@ -19,11 +19,6 @@ class ITunesDataProvider;
 class ITunesDataProviderTest;
 }
 
-namespace picasa {
-class PicasaDataProvider;
-class PicasaDataProviderTest;
-}
-
 // This class lives on the MediaTaskRunner thread. It has some static
 // methods which are called on the UI thread.
 //
@@ -36,9 +31,6 @@ class ImportedMediaGalleryRegistry {
   void Initialize();
 
   // Should be called on the UI thread only.
-  bool RegisterPicasaFilesystemOnUIThread(const std::string& fs_name,
-                                          const base::FilePath& database_path);
-
   bool RegisterITunesFilesystemOnUIThread(
       const std::string& fs_name,
       const base::FilePath& xml_library_path);
@@ -50,22 +42,17 @@ class ImportedMediaGalleryRegistry {
 
   // Should be called on the MediaTaskRunner thread only.
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  static picasa::PicasaDataProvider* PicasaDataProvider();
   static itunes::ITunesDataProvider* ITunesDataProvider();
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
  private:
   friend struct base::LazyInstanceTraitsBase<ImportedMediaGalleryRegistry>;
   friend class itunes::ITunesDataProviderTest;
-  friend class picasa::PicasaDataProviderTest;
 
   ImportedMediaGalleryRegistry();
   virtual ~ImportedMediaGalleryRegistry();
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  void RegisterPicasaFileSystem(const base::FilePath& database_path);
-  void RevokePicasaFileSystem();
-
   void RegisterITunesFileSystem(const base::FilePath& xml_library_path);
   void RevokeITunesFileSystem();
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
@@ -74,15 +61,12 @@ class ImportedMediaGalleryRegistry {
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   // The data providers are only set or accessed on the task runner thread.
-  std::unique_ptr<picasa::PicasaDataProvider> picasa_data_provider_;
   std::unique_ptr<itunes::ITunesDataProvider> itunes_data_provider_;
 
   // The remaining members are only accessed on the IO thread.
-  std::set<std::string> picasa_fs_names_;
   std::set<std::string> itunes_fs_names_;
 
 #ifndef NDEBUG
-  base::FilePath picasa_database_path_;
   base::FilePath itunes_xml_library_path_;
 #endif
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)

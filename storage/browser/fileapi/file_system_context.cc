@@ -110,7 +110,6 @@ int FileSystemContext::GetPermissionPolicy(FileSystemType type) {
     case kFileSystemTypeDeviceMedia:
     case kFileSystemTypeItunes:
     case kFileSystemTypeNativeMedia:
-    case kFileSystemTypePicasa:
       return FILE_PERMISSION_USE_FILE_PERMISSION;
 
     // Following types are only accessed via IsolatedFileSystem, and

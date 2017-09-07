@@ -146,12 +146,6 @@ static_library("utility") {
         "media_galleries/iapps_xml_utils.h",
         "media_galleries/itunes_library_parser.cc",
         "media_galleries/itunes_library_parser.h",
-        "media_galleries/picasa_album_table_reader.cc",
-        "media_galleries/picasa_album_table_reader.h",
-        "media_galleries/picasa_albums_indexer.cc",
-        "media_galleries/picasa_albums_indexer.h",
-        "media_galleries/pmp_column_reader.cc",
-        "media_galleries/pmp_column_reader.h",
       ]
       deps += [ "//components/wifi" ]
     } else {

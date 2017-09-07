@@ -1165,8 +1165,8 @@ TEST_F(MediaGalleriesPreferencesTest, UpdateSingletonDeviceIdType) {
   EXPECT_EQ(1, observer.notifications());
 
   // No gallery for type.
-  std::string new_device_id =
-      StorageInfo::MakeDeviceId(StorageInfo::PICASA, path.AsUTF8Unsafe());
+  std::string new_device_id = StorageInfo::MakeDeviceId(
+      StorageInfo::MAC_IMAGE_CAPTURE, path.AsUTF8Unsafe());
   EXPECT_FALSE(UpdateDeviceIDForSingletonType(new_device_id));
 }
 

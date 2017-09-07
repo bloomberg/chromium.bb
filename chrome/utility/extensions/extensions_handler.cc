@@ -35,8 +35,6 @@
 #if defined(OS_WIN) || defined(OS_MACOSX)
 #include "chrome/utility/media_galleries/iapps_xml_utils.h"
 #include "chrome/utility/media_galleries/itunes_library_parser.h"
-#include "chrome/utility/media_galleries/picasa_album_table_reader.h"
-#include "chrome/utility/media_galleries/picasa_albums_indexer.h"
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
 namespace {
@@ -211,10 +209,6 @@ bool ExtensionsHandler::OnMessageReceived(const IPC::Message& message) {
 #if defined(OS_WIN) || defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_ParseITunesLibraryXmlFile,
                         OnParseITunesLibraryXmlFile)
-    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_ParsePicasaPMPDatabase,
-                        OnParsePicasaPMPDatabase)
-    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_IndexPicasaAlbumsContents,
-                        OnIndexPicasaAlbumsContents)
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -242,43 +236,6 @@ void ExtensionsHandler::OnParseITunesLibraryXmlFile(
   bool result = parser.Parse(iapps::ReadFileAsString(std::move(file)));
   content::UtilityThread::Get()->Send(
       new ChromeUtilityHostMsg_GotITunesLibrary(result, parser.library()));
-  content::UtilityThread::Get()->ReleaseProcess();
-}
-
-void ExtensionsHandler::OnParsePicasaPMPDatabase(
-    const picasa::AlbumTableFilesForTransit& album_table_files) {
-  picasa::AlbumTableFiles files;
-  files.indicator_file =
-      IPC::PlatformFileForTransitToFile(album_table_files.indicator_file);
-  files.category_file =
-      IPC::PlatformFileForTransitToFile(album_table_files.category_file);
-  files.date_file =
-      IPC::PlatformFileForTransitToFile(album_table_files.date_file);
-  files.filename_file =
-      IPC::PlatformFileForTransitToFile(album_table_files.filename_file);
-  files.name_file =
-      IPC::PlatformFileForTransitToFile(album_table_files.name_file);
-  files.token_file =
-      IPC::PlatformFileForTransitToFile(album_table_files.token_file);
-  files.uid_file =
-      IPC::PlatformFileForTransitToFile(album_table_files.uid_file);
-
-  picasa::PicasaAlbumTableReader reader(std::move(files));
-  bool parse_success = reader.Init();
-  content::UtilityThread::Get()->Send(
-      new ChromeUtilityHostMsg_ParsePicasaPMPDatabase_Finished(
-          parse_success, reader.albums(), reader.folders()));
-  content::UtilityThread::Get()->ReleaseProcess();
-}
-
-void ExtensionsHandler::OnIndexPicasaAlbumsContents(
-    const picasa::AlbumUIDSet& album_uids,
-    const std::vector<picasa::FolderINIContents>& folders_inis) {
-  picasa::PicasaAlbumsIndexer indexer(album_uids);
-  indexer.ParseFolderINI(folders_inis);
-  content::UtilityThread::Get()->Send(
-      new ChromeUtilityHostMsg_IndexPicasaAlbumsContents_Finished(
-          indexer.albums_images()));
   content::UtilityThread::Get()->ReleaseProcess();
 }
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
