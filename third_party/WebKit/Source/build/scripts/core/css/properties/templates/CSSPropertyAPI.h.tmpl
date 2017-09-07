@@ -19,9 +19,9 @@ class CSSParserLocalContext;
 class CSSProperty;
 class CSSValue;
 
-class CORE_EXPORT CSSPropertyAPI {
+class CSSPropertyAPI {
  public:
-  static const CSSPropertyAPI& Get(CSSPropertyID);
+  CORE_EXPORT static const CSSPropertyAPI& Get(CSSPropertyID);
 
 #if !defined(OS_WIN) || !defined(COMPILER_MSVC)
   constexpr CSSPropertyAPI() {}
