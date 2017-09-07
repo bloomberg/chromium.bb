@@ -3119,11 +3119,6 @@ crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/api/response/respons
 # Sheriff failure 2017-08-29
 crbug.com/727252 [ Win7 ] external/wpt/media-source/mediasource-endofstream.html [ Pass Timeout ]
 
-# Ganesh dither changes
-crbug.com/753462 virtual/gpu/fast/canvas/canvas-text-alignment.html [ NeedsManualRebaseline ]
-crbug.com/753462 virtual/gpu/fast/canvas/fillrect_gradient.html [ NeedsManualRebaseline ]
-crbug.com/753462 virtual/gpu/fast/canvas/gradient-add-second-start-end-stop.html [ NeedsManualRebaseline ]
-
 crbug.com/746904 [ Win ] fast/text/ellipsis-in-relative-inline.html [ Failure Pass ]
 
 crbug.com/754819 external/wpt/longtask-timing/longtask-in-childiframe-crossorigin.html [ Timeout ]
