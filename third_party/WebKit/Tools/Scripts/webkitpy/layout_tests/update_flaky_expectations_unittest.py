@@ -1097,5 +1097,5 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             'Recent test results history:\n'
             'https://test-results.appspot.com/dashboards/flakiness_dashboard.html'
             '#testType=webkit_layout_tests&tests=test/a.html,test/b.html\n\n'
-            'BUG=1111,2222\n'
+            'Bug: 1111, 2222\n'
         ])
