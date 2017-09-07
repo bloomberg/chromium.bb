@@ -803,9 +803,9 @@ def main():
     else:
       begin, end = (get_week_of(datetime.today() - timedelta(days=1)))
   else:
-    begin = datetime.strptime(options.begin, '%m/%d/%y')
+    begin = dateutil.parser.parse(options.begin)
     if options.end:
-      end = datetime.strptime(options.end, '%m/%d/%y')
+      end = dateutil.parser.parse(options.end)
     else:
       end = datetime.today()
   options.begin, options.end = begin, end

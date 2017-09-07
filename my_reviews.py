@@ -17,6 +17,14 @@ import sys
 import auth
 import rietveld
 
+try:
+  import dateutil  # pylint: disable=import-error
+  import dateutil.parser
+  from dateutil.relativedelta import relativedelta
+except ImportError:
+  print 'python-dateutil package required'
+  exit(1)
+
 
 def username(email):
   """Keeps the username of an email address."""
@@ -358,8 +366,8 @@ def main():
 
   # Validate dates.
   try:
-    to_datetime(options.begin)
-    to_datetime(options.end)
+    options.begin = dateutil.parser.parse(options.begin).strftime('%Y-%m-%d')
+    options.end = dateutil.parser.parse(options.end).strftime('%Y-%m-%d')
   except ValueError as e:
     parser.error('%s: %s - %s' % (e, options.begin, options.end))
 
