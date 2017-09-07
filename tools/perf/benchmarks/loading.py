@@ -100,6 +100,8 @@ class LoadingMobile(_LoadingBase):
                           'Test Failure: crbug.com/750747')
         self.DisableStory('Hongkiat', [story.expectations.ANDROID_NEXUS5X],
                           'Test Failure: crbug.com/750747')
+        self.DisableStory('Facebook', [story.expectations.ANDROID_NEXUS7],
+                          'Nexus7v2 Timeout: crbug.com/759861')
         # TODO(rnephew): Uncomment Disablings. crbug.com/728882
         # self.DisableStory(
         #     'AirHorner', [story.expectations.ALL], 'crbug.com/653775')
