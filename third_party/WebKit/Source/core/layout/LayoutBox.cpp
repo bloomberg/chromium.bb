@@ -959,17 +959,13 @@ bool LayoutBox::CanResize() const {
          Style()->Resize() != EResize::kNone;
 }
 
-void LayoutBox::AddLayerHitTestRects(
-    LayerHitTestRects& layer_rects,
-    const PaintLayer* current_layer,
-    const LayoutPoint& layer_offset,
-    TouchAction supported_fast_actions,
-    const LayoutRect& container_rect,
-    TouchAction container_whitelisted_touch_action) const {
+void LayoutBox::AddLayerHitTestRects(LayerHitTestRects& layer_rects,
+                                     const PaintLayer* current_layer,
+                                     const LayoutPoint& layer_offset,
+                                     const LayoutRect& container_rect) const {
   LayoutPoint adjusted_layer_offset = layer_offset + LocationOffset();
   LayoutBoxModelObject::AddLayerHitTestRects(
-      layer_rects, current_layer, adjusted_layer_offset, supported_fast_actions,
-      container_rect, container_whitelisted_touch_action);
+      layer_rects, current_layer, adjusted_layer_offset, container_rect);
 }
 
 void LayoutBox::ComputeSelfHitTestRects(Vector<LayoutRect>& rects,

@@ -5092,8 +5092,6 @@ void LocalFrameView::UpdateRenderThrottlingStatus(
   bool has_handlers =
       frame_->GetPage() &&
       (frame_->GetPage()->GetEventHandlerRegistry().HasEventHandlers(
-           EventHandlerRegistry::kTouchAction) ||
-       frame_->GetPage()->GetEventHandlerRegistry().HasEventHandlers(
            EventHandlerRegistry::kTouchStartOrMoveEventBlocking) ||
        frame_->GetPage()->GetEventHandlerRegistry().HasEventHandlers(
            EventHandlerRegistry::kTouchStartOrMoveEventBlockingLowLatency));

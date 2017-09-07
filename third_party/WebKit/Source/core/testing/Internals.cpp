@@ -1709,8 +1709,7 @@ unsigned Internals::scrollEventHandlerCount(Document* document) const {
 unsigned Internals::touchStartOrMoveEventHandlerCount(
     Document* document) const {
   DCHECK(document);
-  return EventHandlerCount(*document, EventHandlerRegistry::kTouchAction) +
-         EventHandlerCount(
+  return EventHandlerCount(
              *document, EventHandlerRegistry::kTouchStartOrMoveEventBlocking) +
          EventHandlerCount(
              *document,
