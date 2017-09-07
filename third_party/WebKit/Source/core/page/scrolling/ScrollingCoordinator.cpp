@@ -555,7 +555,7 @@ bool ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
 }
 
 using GraphicsLayerHitTestRects =
-    WTF::HashMap<const GraphicsLayer*, Vector<LayoutRect>>;
+    WTF::HashMap<const GraphicsLayer*, Vector<TouchActionRect>>;
 
 // In order to do a DFS cross-frame walk of the Layer tree, we need to know
 // which Layers have child frames inside of them. This computes a mapping for
@@ -607,29 +607,33 @@ static void ProjectRectsToGraphicsLayerSpaceRecursive(
 
     GraphicsLayerHitTestRects::iterator gl_iter =
         graphics_rects.find(graphics_layer);
-    Vector<LayoutRect>* gl_rects;
-    if (gl_iter == graphics_rects.end())
-      gl_rects = &graphics_rects.insert(graphics_layer, Vector<LayoutRect>())
-                      .stored_value->value;
-    else
+    Vector<TouchActionRect>* gl_rects;
+    if (gl_iter == graphics_rects.end()) {
+      gl_rects =
+          &graphics_rects.insert(graphics_layer, Vector<TouchActionRect>())
+               .stored_value->value;
+    } else {
       gl_rects = &gl_iter->value;
+    }
 
     // Transform each rect to the co-ordinate space of the graphicsLayer.
     for (size_t i = 0; i < layer_iter->value.size(); ++i) {
-      LayoutRect rect = layer_iter->value[i];
+      TouchActionRect rect = layer_iter->value[i];
       if (composited_layer != cur_layer) {
         FloatQuad compositor_quad = geometry_map.MapToAncestor(
-            FloatRect(rect), &composited_layer->GetLayoutObject());
-        rect = LayoutRect(compositor_quad.BoundingBox());
+            FloatRect(rect.rect), &composited_layer->GetLayoutObject());
+        rect.rect = LayoutRect(compositor_quad.BoundingBox());
         // If the enclosing composited layer itself is scrolled, we have to undo
         // the subtraction of its scroll offset since we want the offset
         // relative to the scrolling content, not the element itself.
-        if (composited_layer->GetLayoutObject().HasOverflowClip())
-          rect.Move(composited_layer->GetLayoutBox()->ScrolledContentOffset());
+        if (composited_layer->GetLayoutObject().HasOverflowClip()) {
+          rect.rect.Move(
+              composited_layer->GetLayoutBox()->ScrolledContentOffset());
+        }
       }
       PaintLayer::MapRectInPaintInvalidationContainerToBacking(
-          composited_layer->GetLayoutObject(), rect);
-      rect.Move(-graphics_layer->OffsetFromLayoutObject());
+          composited_layer->GetLayoutObject(), rect.rect);
+      rect.rect.Move(-graphics_layer->OffsetFromLayoutObject());
 
       gl_rects->push_back(rect);
     }
@@ -775,7 +779,6 @@ void ScrollingCoordinator::SetTouchEventTargetRects(
   // on GraphicsLayer instead of Layer, but we have no good hook into the
   // lifetime of a GraphicsLayer.
   GraphicsLayerHitTestRects graphics_layer_rects;
-  WTF::HashMap<const GraphicsLayer*, TouchAction> paint_layer_touch_action;
   for (const PaintLayer* layer : layers_with_touch_rects_) {
     if (layer->GetLayoutObject().GetFrameView() &&
         layer->GetLayoutObject().GetFrameView()->ShouldThrottleRendering()) {
@@ -783,13 +786,15 @@ void ScrollingCoordinator::SetTouchEventTargetRects(
     }
     GraphicsLayer* main_graphics_layer =
         layer->GraphicsLayerBacking(&layer->GetLayoutObject());
-    if (main_graphics_layer)
-      graphics_layer_rects.insert(main_graphics_layer, Vector<LayoutRect>());
+    if (main_graphics_layer) {
+      graphics_layer_rects.insert(main_graphics_layer,
+                                  Vector<TouchActionRect>());
+    }
     GraphicsLayer* scrolling_contents_layer = layer->GraphicsLayerBacking();
     if (scrolling_contents_layer &&
         scrolling_contents_layer != main_graphics_layer) {
       graphics_layer_rects.insert(scrolling_contents_layer,
-                                  Vector<LayoutRect>());
+                                  Vector<TouchActionRect>());
     }
   }
 
@@ -803,16 +808,6 @@ void ScrollingCoordinator::SetTouchEventTargetRects(
       if (!composited_layer)
         continue;
       layers_with_touch_rects_.insert(composited_layer);
-      GraphicsLayer* main_graphics_layer =
-          composited_layer->GraphicsLayerBacking(
-              &composited_layer->GetLayoutObject());
-      if (main_graphics_layer) {
-        TouchAction effective_touch_action =
-            TouchActionUtil::ComputeEffectiveTouchAction(
-                *(composited_layer->EnclosingNode()));
-        paint_layer_touch_action.insert(main_graphics_layer,
-                                        effective_touch_action);
-      }
     }
   }
 
@@ -821,15 +816,10 @@ void ScrollingCoordinator::SetTouchEventTargetRects(
 
   for (const auto& layer_rect : graphics_layer_rects) {
     const GraphicsLayer* graphics_layer = layer_rect.key;
-    TouchAction effective_touch_action = TouchAction::kTouchActionNone;
-    const auto& layer_touch_action =
-        paint_layer_touch_action.find(graphics_layer);
-    if (layer_touch_action != paint_layer_touch_action.end())
-      effective_touch_action = layer_touch_action->value;
     WebVector<WebTouchInfo> touch(layer_rect.value.size());
     for (size_t i = 0; i < layer_rect.value.size(); ++i) {
-      touch[i].rect = EnclosingIntRect(layer_rect.value[i]);
-      touch[i].touch_action = effective_touch_action;
+      touch[i].rect = EnclosingIntRect(layer_rect.value[i].rect);
+      touch[i].touch_action = layer_rect.value[i].whitelisted_touch_action;
     }
     graphics_layer->PlatformLayer()->SetTouchEventHandlerRegion(touch);
   }
@@ -1070,7 +1060,8 @@ Region ScrollingCoordinator::ComputeShouldHandleScrollGestureOnMainThreadRegion(
 static void AccumulateDocumentTouchEventTargetRects(
     LayerHitTestRects& rects,
     EventHandlerRegistry::EventHandlerClass event_class,
-    const Document* document) {
+    const Document* document,
+    TouchAction supported_fast_actions) {
   DCHECK(document);
   const EventTargetSet* targets =
       document->GetPage()->GetEventHandlerRegistry().EventHandlerTargets(
@@ -1103,7 +1094,7 @@ static void AccumulateDocumentTouchEventTargetRects(
       if (window || node == document || node == document->documentElement() ||
           node == document->body()) {
         if (LayoutViewItem layout_view = document->GetLayoutViewItem()) {
-          layout_view.ComputeLayerHitTestRects(rects);
+          layout_view.ComputeLayerHitTestRects(rects, supported_fast_actions);
         }
         return;
       }
@@ -1127,8 +1118,8 @@ static void AccumulateDocumentTouchEventTargetRects(
       continue;
 
     if (node->IsDocumentNode() && node != document) {
-      AccumulateDocumentTouchEventTargetRects(rects, event_class,
-                                              ToDocument(node));
+      AccumulateDocumentTouchEventTargetRects(
+          rects, event_class, ToDocument(node), supported_fast_actions);
     } else if (LayoutObject* layout_object = node->GetLayoutObject()) {
       // If the set also contains one of our ancestor nodes then processing
       // this node would be redundant.
@@ -1155,10 +1146,12 @@ static void AccumulateDocumentTouchEventTargetRects(
         // recomputed. Non-composited scrolling occurs on the main thread, so
         // we're not getting much benefit from compositor touch hit testing in
         // this case anyway.
-        if (enclosing_non_composited_scroll_layer)
-          enclosing_non_composited_scroll_layer->ComputeSelfHitTestRects(rects);
+        if (enclosing_non_composited_scroll_layer) {
+          enclosing_non_composited_scroll_layer->ComputeSelfHitTestRects(
+              rects, supported_fast_actions);
+        }
 
-        layout_object->ComputeLayerHitTestRects(rects);
+        layout_object->ComputeLayerHitTestRects(rects, supported_fast_actions);
       }
     }
   }
@@ -1173,10 +1166,14 @@ void ScrollingCoordinator::ComputeTouchEventTargetRects(
     return;
 
   AccumulateDocumentTouchEventTargetRects(
-      rects, EventHandlerRegistry::kTouchStartOrMoveEventBlocking, document);
+      rects, EventHandlerRegistry::kTouchAction, document,
+      TouchAction::kTouchActionAuto);
+  AccumulateDocumentTouchEventTargetRects(
+      rects, EventHandlerRegistry::kTouchStartOrMoveEventBlocking, document,
+      TouchAction::kTouchActionNone);
   AccumulateDocumentTouchEventTargetRects(
       rects, EventHandlerRegistry::kTouchStartOrMoveEventBlockingLowLatency,
-      document);
+      document, TouchAction::kTouchActionNone);
 }
 
 void ScrollingCoordinator::

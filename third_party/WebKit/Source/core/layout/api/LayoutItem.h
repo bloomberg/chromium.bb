@@ -171,8 +171,10 @@ class LayoutItem {
         ->SetShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
   }
 
-  void ComputeLayerHitTestRects(LayerHitTestRects& layer_rects) const {
-    layout_object_->ComputeLayerHitTestRects(layer_rects);
+  void ComputeLayerHitTestRects(LayerHitTestRects& layer_rects,
+                                TouchAction supported_fast_actions) const {
+    layout_object_->ComputeLayerHitTestRects(layer_rects,
+                                             supported_fast_actions);
   }
 
   FloatPoint LocalToAbsolute(const FloatPoint& local_point = FloatPoint(),

@@ -97,16 +97,20 @@ void LayoutSVGModelObject::WillBeDestroyed() {
 }
 
 void LayoutSVGModelObject::ComputeLayerHitTestRects(
-    LayerHitTestRects& rects) const {
+    LayerHitTestRects& rects,
+    TouchAction supported_fast_actions) const {
   // Using just the rect for the SVGRoot is good enough for now.
-  SVGLayoutSupport::FindTreeRootObject(this)->ComputeLayerHitTestRects(rects);
+  SVGLayoutSupport::FindTreeRootObject(this)->ComputeLayerHitTestRects(
+      rects, supported_fast_actions);
 }
 
 void LayoutSVGModelObject::AddLayerHitTestRects(
     LayerHitTestRects&,
     const PaintLayer* current_layer,
     const LayoutPoint& layer_offset,
-    const LayoutRect& container_rect) const {
+    TouchAction supported_fast_actions,
+    const LayoutRect& container_rect,
+    TouchAction container_whitelisted_touch_action) const {
   // We don't walk into SVG trees at all - just report their container.
 }
 
