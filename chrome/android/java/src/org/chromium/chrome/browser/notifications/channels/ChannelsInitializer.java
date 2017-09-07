@@ -66,7 +66,7 @@ public class ChannelsInitializer {
      * {@link ChannelDefinitions.PredefinedChannels}.
      */
     public void ensureInitializedAndDisabled(String channelId) {
-        ensureInitializedWithEnabledState(channelId, true);
+        ensureInitializedWithEnabledState(channelId, false);
     }
 
     private void ensureInitializedWithEnabledState(String channelId, boolean enabled) {
