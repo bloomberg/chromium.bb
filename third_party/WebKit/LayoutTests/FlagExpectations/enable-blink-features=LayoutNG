@@ -13102,7 +13102,6 @@ crbug.com/591099 http/tests/xmlhttprequest/XMLHttpRequestException.html [ Failur
 crbug.com/591099 http/tests/xmlhttprequest/abort-should-destroy-responseText.html [ Failure ]
 crbug.com/591099 http/tests/xmlhttprequest/chromium/access-control-preflight-data-saver.html [ Failure Timeout ]
 crbug.com/591099 http/tests/xmlhttprequest/access-control-response-with-body-sync.html [ Failure ]
-crbug.com/591099 http/tests/xmlhttprequest/access-control-response-with-body.html [ Failure ]
 crbug.com/591099 http/tests/xmlhttprequest/access-control-response-with-expose-headers.html [ Failure ]
 crbug.com/591099 http/tests/xmlhttprequest/access-control-sandboxed-iframe-allow-origin-null.html [ Failure ]
 crbug.com/591099 http/tests/xmlhttprequest/access-control-sandboxed-iframe-allow.html [ Failure ]
