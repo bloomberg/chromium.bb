@@ -66,6 +66,11 @@ var CrExtensionsBrowserTestWithInstalledExtension =
 
 var CrExtensionsSidebarTest = class extends CrExtensionsBrowserTest {
   /** @override */
+  get browsePreload() {
+    return 'chrome://extensions/sidebar.html';
+  }
+
+  /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
       'extension_sidebar_test.js',
@@ -76,6 +81,10 @@ var CrExtensionsSidebarTest = class extends CrExtensionsBrowserTest {
 TEST_F('CrExtensionsSidebarTest', 'LayoutAndClickHandlers', function() {
   mocha.grep(assert(extension_sidebar_tests.TestNames.LayoutAndClickHandlers))
       .run();
+});
+
+TEST_F('CrExtensionsSidebarTest', 'UpdateSelected', function() {
+  mocha.grep(assert(extension_sidebar_tests.TestNames.UpdateSelected)).run();
 });
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -318,6 +327,13 @@ TEST_F(
     'CrExtensionsManagerTestWithMultipleExtensionTypesInstalled', 'ChangePages',
     function() {
       mocha.grep(assert(extension_manager_tests.TestNames.ChangePages)).run();
+    });
+
+TEST_F(
+    'CrExtensionsManagerTestWithMultipleExtensionTypesInstalled',
+    'SidebarHighlighting', function() {
+      mocha.grep(assert(extension_manager_tests.TestNames.SidebarHighlighting))
+          .run();
     });
 
 TEST_F(
