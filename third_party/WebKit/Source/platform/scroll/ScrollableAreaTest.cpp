@@ -9,8 +9,10 @@
 #include "platform/scroll/ScrollbarTestSuite.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/scroll/ScrollbarThemeMock.h"
+#include "platform/scroll/ScrollbarThemeOverlayMock.h"
 #include "platform/testing/FakeGraphicsLayer.h"
 #include "platform/testing/FakeGraphicsLayerClient.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "public/platform/Platform.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -266,6 +268,38 @@ TEST_F(ScrollableAreaTest, ScrollableAreaDidScroll) {
   // After calling didScroll, the new offset should account for scroll origin.
   EXPECT_EQ(20, scrollable_area->ScrollOffsetInt().Width());
   EXPECT_EQ(21, scrollable_area->ScrollOffsetInt().Height());
+}
+
+// Scrollbars in popups shouldn't fade out since they aren't composited and thus
+// they don't appear on hover so users without a wheel can't scroll if they fade
+// out.
+TEST_F(ScrollableAreaTest, PopupOverlayScrollbarShouldNotFadeOut) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+
+  RuntimeEnabledFeatures::SetOverlayScrollbarsEnabled(true);
+  ScrollbarTheme::SetMockScrollbarsEnabled(true);
+
+  MockScrollableArea* scrollable_area =
+      MockScrollableArea::Create(ScrollOffset(0, 100));
+  scrollable_area->SetIsPopup();
+
+  ScrollbarThemeOverlayMock& theme =
+      (ScrollbarThemeOverlayMock&)ScrollbarTheme::GetTheme();
+  theme.SetOverlayScrollbarFadeOutDelay(1);
+  Scrollbar* scrollbar = Scrollbar::CreateForTesting(
+      scrollable_area, kHorizontalScrollbar, kRegularScrollbar, &theme);
+
+  DCHECK(scrollbar->IsOverlayScrollbar());
+  DCHECK(scrollbar->Enabled());
+
+  scrollable_area->ShowOverlayScrollbars();
+
+  // No fade out animation should be posted.
+  EXPECT_FALSE(scrollable_area->fade_overlay_scrollbars_timer_);
+
+  // Forced GC in order to finalize objects depending on the mock object.
+  ThreadState::Current()->CollectAllGarbage();
 }
 
 }  // namespace blink

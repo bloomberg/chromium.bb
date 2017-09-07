@@ -418,6 +418,9 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual void ScrollbarVisibilityChanged() {}
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ScrollableAreaTest,
+                           PopupOverlayScrollbarShouldNotFadeOut);
+
   void ProgrammaticScrollHelper(const ScrollOffset&, ScrollBehavior, bool);
   void UserScrollHelper(const ScrollOffset&, ScrollBehavior);
 

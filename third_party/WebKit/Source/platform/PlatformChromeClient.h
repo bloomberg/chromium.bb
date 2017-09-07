@@ -57,6 +57,8 @@ class PLATFORM_EXPORT PlatformChromeClient
   virtual float WindowToViewportScalar(const float) const = 0;
 
   virtual void ScheduleAnimation(const PlatformFrameView*) = 0;
+
+  virtual bool IsPopup() { return false; }
 };
 
 }  // namespace blink
