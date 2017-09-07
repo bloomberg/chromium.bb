@@ -32,7 +32,6 @@ class CORE_EXPORT EventHandlerRegistry final
     kScrollEvent,
     kWheelEventBlocking,
     kWheelEventPassive,
-    kTouchAction,
     kTouchStartOrMoveEventBlocking,
     kTouchStartOrMoveEventBlockingLowLatency,
     kTouchStartOrMoveEventPassive,

@@ -1723,6 +1723,7 @@ void LayoutObject::StyleWillChange(StyleDifference diff,
   //
   // Since a CSS property cannot be applied directly to a text node, a
   // handler will have already been added for its parent so ignore it.
+  // TODO: Remove this blocking event handler; crbug.com/318381
   TouchAction old_touch_action =
       style_ ? style_->GetTouchAction() : TouchAction::kTouchActionAuto;
   if (GetNode() && !GetNode()->IsTextNode() &&
@@ -1730,13 +1731,12 @@ void LayoutObject::StyleWillChange(StyleDifference diff,
           (new_style.GetTouchAction() == TouchAction::kTouchActionAuto)) {
     EventHandlerRegistry& registry =
         GetDocument().GetPage()->GetEventHandlerRegistry();
-    if (new_style.GetTouchAction() != TouchAction::kTouchActionAuto) {
-      registry.DidAddEventHandler(*GetNode(),
-                                  EventHandlerRegistry::kTouchAction);
-    } else {
-      registry.DidRemoveEventHandler(*GetNode(),
-                                     EventHandlerRegistry::kTouchAction);
-    }
+    if (new_style.GetTouchAction() != TouchAction::kTouchActionAuto)
+      registry.DidAddEventHandler(
+          *GetNode(), EventHandlerRegistry::kTouchStartOrMoveEventBlocking);
+    else
+      registry.DidRemoveEventHandler(
+          *GetNode(), EventHandlerRegistry::kTouchStartOrMoveEventBlocking);
   }
 }
 
@@ -2335,8 +2335,7 @@ LayoutRect LayoutObject::LocalCaretRect(
 }
 
 void LayoutObject::ComputeLayerHitTestRects(
-    LayerHitTestRects& layer_rects,
-    TouchAction supported_fast_actions) const {
+    LayerHitTestRects& layer_rects) const {
   // Figure out what layer our container is in. Any offset (or new layer) for
   // this layoutObject within it's container will be applied in
   // addLayerHitTestRects.
@@ -2362,17 +2361,14 @@ void LayoutObject::ComputeLayerHitTestRects(
   }
 
   this->AddLayerHitTestRects(layer_rects, current_layer, layer_offset,
-                             supported_fast_actions, LayoutRect(),
-                             TouchAction::kTouchActionAuto);
+                             LayoutRect());
 }
 
 void LayoutObject::AddLayerHitTestRects(
     LayerHitTestRects& layer_rects,
     const PaintLayer* current_layer,
     const LayoutPoint& layer_offset,
-    TouchAction supported_fast_actions,
-    const LayoutRect& container_rect,
-    TouchAction container_whitelisted_touch_action) const {
+    const LayoutRect& container_rect) const {
   DCHECK(current_layer);
   DCHECK_EQ(current_layer, this->EnclosingLayer());
 
@@ -2381,8 +2377,6 @@ void LayoutObject::AddLayerHitTestRects(
   // but this seems slightly simpler.
   Vector<LayoutRect> own_rects;
   LayoutRect new_container_rect;
-  TouchAction new_container_whitelisted_touch_action =
-      TouchAction::kTouchActionAuto;
   ComputeSelfHitTestRects(own_rects, layer_offset);
 
   // When we get to have a lot of rects on a layer, the performance cost of
@@ -2393,40 +2387,28 @@ void LayoutObject::AddLayerHitTestRects(
   const size_t kMaxRectsPerLayer = 100;
 
   LayerHitTestRects::iterator iter = layer_rects.find(current_layer);
-  Vector<TouchActionRect>* iter_value;
-  if (iter == layer_rects.end()) {
-    iter_value = &layer_rects.insert(current_layer, Vector<TouchActionRect>())
+  Vector<LayoutRect>* iter_value;
+  if (iter == layer_rects.end())
+    iter_value = &layer_rects.insert(current_layer, Vector<LayoutRect>())
                       .stored_value->value;
-  } else {
+  else
     iter_value = &iter->value;
-  }
-  TouchAction whitelisted_touch_action =
-      Style()->GetEffectiveTouchAction() & supported_fast_actions;
   for (size_t i = 0; i < own_rects.size(); i++) {
-    // If we have a different touch action than the container the rect needs to
-    // be reported even if it is contained.
-    if (whitelisted_touch_action != container_whitelisted_touch_action ||
-        !container_rect.Contains(own_rects[i])) {
-      iter_value->push_back(
-          TouchActionRect(own_rects[i], whitelisted_touch_action));
+    if (!container_rect.Contains(own_rects[i])) {
+      iter_value->push_back(own_rects[i]);
       if (iter_value->size() > kMaxRectsPerLayer) {
         // Just mark the entire layer instead, and switch to walking the layer
         // tree instead of the layout tree.
         layer_rects.erase(current_layer);
-        current_layer->AddLayerHitTestRects(layer_rects,
-                                            supported_fast_actions);
+        current_layer->AddLayerHitTestRects(layer_rects);
         return;
       }
-      if (new_container_rect.IsEmpty()) {
-        new_container_whitelisted_touch_action = whitelisted_touch_action;
+      if (new_container_rect.IsEmpty())
         new_container_rect = own_rects[i];
-      }
     }
   }
-  if (new_container_rect.IsEmpty()) {
-    new_container_whitelisted_touch_action = container_whitelisted_touch_action;
+  if (new_container_rect.IsEmpty())
     new_container_rect = container_rect;
-  }
 
   // If it's possible for children to have rects outside our bounds, then we
   // need to descend into the children and compute them.
@@ -2440,8 +2422,7 @@ void LayoutObject::AddLayerHitTestRects(
     for (LayoutObject* curr = SlowFirstChild(); curr;
          curr = curr->NextSibling()) {
       curr->AddLayerHitTestRects(layer_rects, current_layer, layer_offset,
-                                 supported_fast_actions, new_container_rect,
-                                 new_container_whitelisted_touch_action);
+                                 new_container_rect);
     }
   }
 }
@@ -2579,11 +2560,12 @@ void LayoutObject::WillBeDestroyed() {
       style_->GetTouchAction() != TouchAction::kTouchActionAuto) {
     EventHandlerRegistry& registry =
         GetDocument().GetPage()->GetEventHandlerRegistry();
-    if (registry.EventHandlerTargets(EventHandlerRegistry::kTouchAction)
-            ->Contains(GetNode())) {
-      registry.DidRemoveEventHandler(*GetNode(),
-                                     EventHandlerRegistry::kTouchAction);
-    }
+    if (registry
+            .EventHandlerTargets(
+                EventHandlerRegistry::kTouchStartOrMoveEventBlocking)
+            ->Contains(GetNode()))
+      registry.DidRemoveEventHandler(
+          *GetNode(), EventHandlerRegistry::kTouchStartOrMoveEventBlocking);
   }
 
   SetAncestorLineBoxDirty(false);

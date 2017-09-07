@@ -1610,8 +1610,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   virtual IntRect AbsoluteElementBoundingBoxRect() const;
 
   // Compute a list of hit-test rectangles per layer rooted at this
-  // layoutObject with at most the given touch action.
-  virtual void ComputeLayerHitTestRects(LayerHitTestRects&, TouchAction) const;
+  // layoutObject.
+  virtual void ComputeLayerHitTestRects(LayerHitTestRects&) const;
 
   static RespectImageOrientationEnum ShouldRespectImageOrientation(
       const LayoutObject*);
@@ -1996,13 +1996,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // containerRect is a rect that has already been added for the currentLayer
   // which is likely to be a container for child elements. Any rect wholly
   // contained by containerRect can be skipped.
-  virtual void AddLayerHitTestRects(
-      LayerHitTestRects&,
-      const PaintLayer* current_layer,
-      const LayoutPoint& layer_offset,
-      TouchAction supported_fast_actions,
-      const LayoutRect& container_rect,
-      TouchAction container_whitelisted_touch_action) const;
+  virtual void AddLayerHitTestRects(LayerHitTestRects&,
+                                    const PaintLayer* current_layer,
+                                    const LayoutPoint& layer_offset,
+                                    const LayoutRect& container_rect) const;
 
   // Add hit-test rects for this layoutObject only to the provided list.
   // layerOffset is the offset of this layoutObject within the current layer

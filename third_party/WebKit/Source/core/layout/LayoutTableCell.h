@@ -345,13 +345,10 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
   void ComputePreferredLogicalWidths() override;
 
-  void AddLayerHitTestRects(
-      LayerHitTestRects&,
-      const PaintLayer* current_composited_layer,
-      const LayoutPoint& layer_offset,
-      TouchAction supported_fast_actions,
-      const LayoutRect& container_rect,
-      TouchAction container_whitelisted_touch_action) const override;
+  void AddLayerHitTestRects(LayerHitTestRects&,
+                            const PaintLayer* current_composited_layer,
+                            const LayoutPoint& layer_offset,
+                            const LayoutRect& container_rect) const override;
 
   PaintInvalidationReason InvalidatePaint(
       const PaintInvalidatorContext&) const override;
