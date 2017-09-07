@@ -51,7 +51,7 @@ class RasterizeAndRecordMicroTop25(_RasterizeAndRecordMicro):
   """Measures rasterize and record performance on the top 25 web pages.
 
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
-  page_set = page_sets.Top25PageSet
+  page_set = page_sets.StaticTop25PageSet
 
   @classmethod
   def Name(cls):
@@ -60,23 +60,7 @@ class RasterizeAndRecordMicroTop25(_RasterizeAndRecordMicro):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.DisableStory('http://www.cnn.com', [story.expectations.ALL],
-                          'crbug.com/528472')
-        self.DisableStory('https://mail.google.com/mail/',
-                          [story.expectations.ALL],
-                          'crbug.com/747021')
-        self.DisableStory('Wikipedia (1 tab)',
-                          [story.expectations.ALL_MAC],
-                          'crbug.com/756117')
-        self.DisableStory('Wordpress',
-                          [story.expectations.ALL_MAC],
-                          'crbug.com/756117')
-        self.DisableStory('http://news.yahoo.com',
-                          [story.expectations.ALL_MAC],
-                          'crbug.com/756117')
-        self.DisableStory('http://sports.yahoo.com/',
-                          [story.expectations.ALL_MAC],
-                          'crbug.com/756117')
+        pass # Nothing disabled.
     return StoryExpectations()
 
 
