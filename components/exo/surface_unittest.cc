@@ -100,11 +100,23 @@ TEST_P(SurfaceTest, Attach) {
   ASSERT_EQ(1, release_buffer_call_count);
 }
 
+const cc::CompositorFrame& GetFrameFromSurface(ShellSurface* shell_surface) {
+  viz::SurfaceId surface_id = shell_surface->host_window()->GetSurfaceId();
+  viz::SurfaceManager* surface_manager = aura::Env::GetInstance()
+                                             ->context_factory_private()
+                                             ->GetFrameSinkManager()
+                                             ->surface_manager();
+  const cc::CompositorFrame& frame =
+      surface_manager->GetSurfaceForId(surface_id)->GetActiveFrame();
+  return frame;
+}
+
 TEST_P(SurfaceTest, Damage) {
   gfx::Size buffer_size(256, 256);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   std::unique_ptr<Surface> surface(new Surface);
+  auto shell_surface = base::MakeUnique<ShellSurface>(surface.get());
 
   // Attach the buffer to the surface. This will update the pending bounds of
   // the surface to the buffer size.
@@ -121,6 +133,24 @@ TEST_P(SurfaceTest, Damage) {
   // Check that damage larger than contents is handled correctly at commit.
   surface->Damage(gfx::Rect(gfx::ScaleToCeiledSize(buffer_size, 2.0f)));
   surface->Commit();
+  RunAllPendingInMessageLoop();
+
+  {
+    const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
+    EXPECT_EQ(ToPixel(gfx::Rect(0, 0, 512, 512)),
+              frame.render_pass_list.back()->damage_rect);
+  }
+
+  // Check that damage is correct for a non-square rectangle not at the origin.
+  surface->Damage(gfx::Rect(64, 128, 16, 32));
+  surface->Commit();
+  RunAllPendingInMessageLoop();
+
+  {
+    const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
+    EXPECT_EQ(ToPixel(gfx::Rect(64, 128, 16, 32)),
+              frame.render_pass_list.back()->damage_rect);
+  }
 }
 
 void SetFrameTime(base::TimeTicks* result, base::TimeTicks frame_time) {
@@ -137,17 +167,6 @@ TEST_P(SurfaceTest, RequestFrameCallback) {
 
   // Callback should not run synchronously.
   EXPECT_TRUE(frame_time.is_null());
-}
-
-const cc::CompositorFrame& GetFrameFromSurface(ShellSurface* shell_surface) {
-  viz::SurfaceId surface_id = shell_surface->host_window()->GetSurfaceId();
-  viz::SurfaceManager* surface_manager = aura::Env::GetInstance()
-                                             ->context_factory_private()
-                                             ->GetFrameSinkManager()
-                                             ->surface_manager();
-  const cc::CompositorFrame& frame =
-      surface_manager->GetSurfaceForId(surface_id)->GetActiveFrame();
-  return frame;
 }
 
 TEST_P(SurfaceTest, SetOpaqueRegion) {
