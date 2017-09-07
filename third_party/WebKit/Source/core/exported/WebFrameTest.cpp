@@ -6046,7 +6046,7 @@ class CompositedSelectionBoundsTest : public ParameterizedWebFrameTest {
 
     EXPECT_FALSE(selection->IsNone());
 
-    blink::Node* layer_owner_node_for_start = V8Node::toImplWithTypeCheck(
+    blink::Node* layer_owner_node_for_start = V8Node::ToImplWithTypeCheck(
         v8::Isolate::GetCurrent(), expected_result.Get(0));
     ASSERT_TRUE(layer_owner_node_for_start);
     EXPECT_EQ(layer_owner_node_for_start->GetLayoutObject()
@@ -6063,7 +6063,7 @@ class CompositedSelectionBoundsTest : public ParameterizedWebFrameTest {
     EXPECT_EQ(start_edge_bottom_in_layer_x,
               select_start->edge_bottom_in_layer.x);
 
-    blink::Node* layer_owner_node_for_end = V8Node::toImplWithTypeCheck(
+    blink::Node* layer_owner_node_for_end = V8Node::ToImplWithTypeCheck(
         v8::Isolate::GetCurrent(),
         expected_result.Get(context, 5).ToLocalChecked());
 

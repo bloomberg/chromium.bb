@@ -79,7 +79,7 @@ DEFINE_TRACE(DoubleOrStringOrDoubleOrStringSequence) {
   visitor->Trace(double_or_string_sequence_);
 }
 
-void V8DoubleOrStringOrDoubleOrStringSequence::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, DoubleOrStringOrDoubleOrStringSequence& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
+void V8DoubleOrStringOrDoubleOrStringSequence::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, DoubleOrStringOrDoubleOrStringSequence& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
   if (v8Value.IsEmpty())
     return;
 
@@ -129,7 +129,7 @@ v8::Local<v8::Value> ToV8(const DoubleOrStringOrDoubleOrStringSequence& impl, v8
 
 DoubleOrStringOrDoubleOrStringSequence NativeValueTraits<DoubleOrStringOrDoubleOrStringSequence>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   DoubleOrStringOrDoubleOrStringSequence impl;
-  V8DoubleOrStringOrDoubleOrStringSequence::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8DoubleOrStringOrDoubleOrStringSequence::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

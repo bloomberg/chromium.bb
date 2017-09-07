@@ -60,7 +60,7 @@ StringOrStringSequence& StringOrStringSequence::operator=(const StringOrStringSe
 DEFINE_TRACE(StringOrStringSequence) {
 }
 
-void V8StringOrStringSequence::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, StringOrStringSequence& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
+void V8StringOrStringSequence::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, StringOrStringSequence& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
   if (v8Value.IsEmpty())
     return;
 
@@ -100,7 +100,7 @@ v8::Local<v8::Value> ToV8(const StringOrStringSequence& impl, v8::Local<v8::Obje
 
 StringOrStringSequence NativeValueTraits<StringOrStringSequence>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   StringOrStringSequence impl;
-  V8StringOrStringSequence::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8StringOrStringSequence::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

@@ -62,7 +62,7 @@ DEFINE_TRACE(LongSequenceOrEvent) {
   visitor->Trace(event_);
 }
 
-void V8LongSequenceOrEvent::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, LongSequenceOrEvent& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
+void V8LongSequenceOrEvent::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, LongSequenceOrEvent& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
   if (v8Value.IsEmpty())
     return;
 
@@ -70,7 +70,7 @@ void V8LongSequenceOrEvent::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8
     return;
 
   if (V8Event::hasInstance(v8Value, isolate)) {
-    Event* cppValue = V8Event::toImpl(v8::Local<v8::Object>::Cast(v8Value));
+    Event* cppValue = V8Event::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
     impl.setEvent(cppValue);
     return;
   }
@@ -102,7 +102,7 @@ v8::Local<v8::Value> ToV8(const LongSequenceOrEvent& impl, v8::Local<v8::Object>
 
 LongSequenceOrEvent NativeValueTraits<LongSequenceOrEvent>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   LongSequenceOrEvent impl;
-  V8LongSequenceOrEvent::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8LongSequenceOrEvent::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

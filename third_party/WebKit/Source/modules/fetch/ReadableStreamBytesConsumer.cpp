@@ -45,7 +45,7 @@ class ReadableStreamBytesConsumer::OnFulfilled final : public ScriptFunction {
       consumer_->OnRejected();
       return ScriptValue();
     }
-    consumer_->OnRead(V8Uint8Array::toImpl(value.As<v8::Object>()));
+    consumer_->OnRead(V8Uint8Array::ToImpl(value.As<v8::Object>()));
     return v;
   }
 

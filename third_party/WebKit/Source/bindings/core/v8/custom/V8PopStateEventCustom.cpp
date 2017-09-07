@@ -66,7 +66,7 @@ void V8PopStateEvent::stateAttributeGetterCustom(
     return;
   }
 
-  PopStateEvent* event = V8PopStateEvent::toImpl(info.Holder());
+  PopStateEvent* event = V8PopStateEvent::ToImpl(info.Holder());
   History* history = event->GetHistory();
   if (!history || !event->SerializedState()) {
     // If the event doesn't have serializedState(), it means that the

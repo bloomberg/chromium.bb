@@ -677,7 +677,7 @@ XPathNSResolver* ToXPathNSResolver(ScriptState* script_state,
                                    v8::Local<v8::Value> value) {
   XPathNSResolver* resolver = nullptr;
   if (V8XPathNSResolver::hasInstance(value, script_state->GetIsolate())) {
-    resolver = V8XPathNSResolver::toImpl(v8::Local<v8::Object>::Cast(value));
+    resolver = V8XPathNSResolver::ToImpl(v8::Local<v8::Object>::Cast(value));
   } else if (value->IsObject()) {
     resolver =
         V8CustomXPathNSResolver::Create(script_state, value.As<v8::Object>());
@@ -692,7 +692,7 @@ DOMWindow* ToDOMWindow(v8::Isolate* isolate, v8::Local<v8::Value> value) {
   v8::Local<v8::Object> window_wrapper = V8Window::findInstanceInPrototypeChain(
       v8::Local<v8::Object>::Cast(value), isolate);
   if (!window_wrapper.IsEmpty())
-    return V8Window::toImpl(window_wrapper);
+    return V8Window::ToImpl(window_wrapper);
   return 0;
 }
 
@@ -730,11 +730,11 @@ ExecutionContext* ToExecutionContext(v8::Local<v8::Context> context) {
 
   const WrapperTypeInfo* wrapper_type_info = ToWrapperTypeInfo(global_proxy);
   if (wrapper_type_info->Equals(&V8Window::wrapperTypeInfo))
-    return V8Window::toImpl(global_proxy)->GetExecutionContext();
+    return V8Window::ToImpl(global_proxy)->GetExecutionContext();
   if (wrapper_type_info->IsSubclass(&V8WorkerGlobalScope::wrapperTypeInfo))
-    return V8WorkerGlobalScope::toImpl(global_proxy)->GetExecutionContext();
+    return V8WorkerGlobalScope::ToImpl(global_proxy)->GetExecutionContext();
   if (wrapper_type_info->IsSubclass(&V8WorkletGlobalScope::wrapperTypeInfo))
-    return V8WorkletGlobalScope::toImpl(global_proxy)->GetExecutionContext();
+    return V8WorkletGlobalScope::ToImpl(global_proxy)->GetExecutionContext();
 
   NOTREACHED();
   return nullptr;
@@ -761,7 +761,7 @@ void ToFlexibleArrayBufferView(v8::Isolate* isolate,
   DCHECK(value->IsArrayBufferView());
   v8::Local<v8::ArrayBufferView> buffer = value.As<v8::ArrayBufferView>();
   if (!storage) {
-    result.SetFull(V8ArrayBufferView::toImpl(buffer));
+    result.SetFull(V8ArrayBufferView::ToImpl(buffer));
     return;
   }
   size_t length = buffer->ByteLength();

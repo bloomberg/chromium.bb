@@ -49,7 +49,7 @@ Timing AnimationTimingInputTest::ApplyTimingInputNumber(
   Timing result;
   if (is_keyframeeffectoptions) {
     KeyframeEffectOptions timing_input_dictionary;
-    V8KeyframeEffectOptions::toImpl(isolate, timing_input,
+    V8KeyframeEffectOptions::ToImpl(isolate, timing_input,
                                     timing_input_dictionary, exception_state);
     timing_conversion_success =
         TimingInput::Convert(timing_input_dictionary, result, GetDocument(),
@@ -57,7 +57,7 @@ Timing AnimationTimingInputTest::ApplyTimingInputNumber(
         !exception_state.HadException();
   } else {
     KeyframeAnimationOptions timing_input_dictionary;
-    V8KeyframeAnimationOptions::toImpl(
+    V8KeyframeAnimationOptions::ToImpl(
         isolate, timing_input, timing_input_dictionary, exception_state);
     timing_conversion_success =
         TimingInput::Convert(timing_input_dictionary, result, GetDocument(),
@@ -81,7 +81,7 @@ Timing AnimationTimingInputTest::ApplyTimingInputString(
   Timing result;
   if (is_keyframeeffectoptions) {
     KeyframeEffectOptions timing_input_dictionary;
-    V8KeyframeEffectOptions::toImpl(isolate, timing_input,
+    V8KeyframeEffectOptions::ToImpl(isolate, timing_input,
                                     timing_input_dictionary, exception_state);
     timing_conversion_success =
         TimingInput::Convert(timing_input_dictionary, result, GetDocument(),
@@ -89,7 +89,7 @@ Timing AnimationTimingInputTest::ApplyTimingInputString(
         !exception_state.HadException();
   } else {
     KeyframeAnimationOptions timing_input_dictionary;
-    V8KeyframeAnimationOptions::toImpl(
+    V8KeyframeAnimationOptions::ToImpl(
         isolate, timing_input, timing_input_dictionary, exception_state);
     timing_conversion_success =
         TimingInput::Convert(timing_input_dictionary, result, GetDocument(),

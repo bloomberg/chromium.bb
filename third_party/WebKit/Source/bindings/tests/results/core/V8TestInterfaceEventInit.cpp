@@ -26,7 +26,7 @@ static const v8::Eternal<v8::Name>* eternalV8TestInterfaceEventInitKeys(v8::Isol
       kKeys, kKeys, WTF_ARRAY_LENGTH(kKeys));
 }
 
-void V8TestInterfaceEventInit::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterfaceEventInit& impl, ExceptionState& exceptionState) {
+void V8TestInterfaceEventInit::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterfaceEventInit& impl, ExceptionState& exceptionState) {
   if (IsUndefinedOrNull(v8Value)) {
     return;
   }
@@ -37,7 +37,7 @@ void V8TestInterfaceEventInit::toImpl(v8::Isolate* isolate, v8::Local<v8::Value>
   v8::Local<v8::Object> v8Object = v8Value.As<v8::Object>();
   ALLOW_UNUSED_LOCAL(v8Object);
 
-  V8EventInit::toImpl(isolate, v8Value, impl, exceptionState);
+  V8EventInit::ToImpl(isolate, v8Value, impl, exceptionState);
   if (exceptionState.HadException())
     return;
 
@@ -88,7 +88,7 @@ bool toV8TestInterfaceEventInit(const TestInterfaceEventInit& impl, v8::Local<v8
 
 TestInterfaceEventInit NativeValueTraits<TestInterfaceEventInit>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestInterfaceEventInit impl;
-  V8TestInterfaceEventInit::toImpl(isolate, value, impl, exceptionState);
+  V8TestInterfaceEventInit::ToImpl(isolate, value, impl, exceptionState);
   return impl;
 }
 

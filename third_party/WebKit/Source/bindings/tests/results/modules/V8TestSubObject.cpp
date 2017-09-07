@@ -69,7 +69,7 @@ namespace TestSubObjectV8Internal {
 static void unforgeableStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
-  TestSubObject* impl = V8TestSubObject::toImpl(holder);
+  TestSubObject* impl = V8TestSubObject::ToImpl(holder);
 
   V8SetReturnValueString(info, impl->unforgeableStringAttribute(), info.GetIsolate());
 }
@@ -81,7 +81,7 @@ static void unforgeableStringAttributeAttributeSetter(v8::Local<v8::Value> v8Val
   v8::Local<v8::Object> holder = info.Holder();
   ALLOW_UNUSED_LOCAL(holder);
 
-  TestSubObject* impl = V8TestSubObject::toImpl(holder);
+  TestSubObject* impl = V8TestSubObject::ToImpl(holder);
 
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
@@ -94,7 +94,7 @@ static void unforgeableStringAttributeAttributeSetter(v8::Local<v8::Value> v8Val
 static void unforgeableLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
-  TestSubObject* impl = V8TestSubObject::toImpl(holder);
+  TestSubObject* impl = V8TestSubObject::ToImpl(holder);
 
   V8SetReturnValueInt(info, impl->unforgeableLongAttribute());
 }
@@ -106,7 +106,7 @@ static void unforgeableLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value
   v8::Local<v8::Object> holder = info.Holder();
   ALLOW_UNUSED_LOCAL(holder);
 
-  TestSubObject* impl = V8TestSubObject::toImpl(holder);
+  TestSubObject* impl = V8TestSubObject::ToImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestSubObject", "unforgeableLongAttribute");
 
@@ -207,12 +207,12 @@ v8::Local<v8::Object> V8TestSubObject::findInstanceInPrototypeChain(v8::Local<v8
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
-TestSubObject* V8TestSubObject::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+TestSubObject* V8TestSubObject::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+  return hasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 TestSubObject* NativeValueTraits<TestSubObject>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  TestSubObject* nativeValue = V8TestSubObject::toImplWithTypeCheck(isolate, value);
+  TestSubObject* nativeValue = V8TestSubObject::ToImplWithTypeCheck(isolate, value);
   if (!nativeValue) {
     exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
         "TestSubObject"));

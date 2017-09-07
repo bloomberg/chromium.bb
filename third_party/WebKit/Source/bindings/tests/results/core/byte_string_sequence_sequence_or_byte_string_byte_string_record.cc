@@ -60,7 +60,7 @@ ByteStringSequenceSequenceOrByteStringByteStringRecord& ByteStringSequenceSequen
 DEFINE_TRACE(ByteStringSequenceSequenceOrByteStringByteStringRecord) {
 }
 
-void V8ByteStringSequenceSequenceOrByteStringByteStringRecord::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, ByteStringSequenceSequenceOrByteStringByteStringRecord& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
+void V8ByteStringSequenceSequenceOrByteStringByteStringRecord::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, ByteStringSequenceSequenceOrByteStringByteStringRecord& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
   if (v8Value.IsEmpty())
     return;
 
@@ -102,7 +102,7 @@ v8::Local<v8::Value> ToV8(const ByteStringSequenceSequenceOrByteStringByteString
 
 ByteStringSequenceSequenceOrByteStringByteStringRecord NativeValueTraits<ByteStringSequenceSequenceOrByteStringByteStringRecord>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   ByteStringSequenceSequenceOrByteStringByteStringRecord impl;
-  V8ByteStringSequenceSequenceOrByteStringByteStringRecord::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8ByteStringSequenceSequenceOrByteStringByteStringRecord::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

@@ -574,7 +574,7 @@ TEST_F(CacheStorageTest, MatchResponseTest) {
                    exception_state);
   ScriptValue script_value = GetResolveValue(result);
   Response* response =
-      V8Response::toImplWithTypeCheck(GetIsolate(), script_value.V8Value());
+      V8Response::ToImplWithTypeCheck(GetIsolate(), script_value.V8Value());
   ASSERT_TRUE(response);
   EXPECT_EQ(response_url, response->url());
 }

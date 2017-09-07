@@ -62,7 +62,7 @@ DEFINE_TRACE(XMLHttpRequestOrString) {
   visitor->Trace(xml_http_request_);
 }
 
-void V8XMLHttpRequestOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, XMLHttpRequestOrString& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
+void V8XMLHttpRequestOrString::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, XMLHttpRequestOrString& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
   if (v8Value.IsEmpty())
     return;
 
@@ -70,7 +70,7 @@ void V8XMLHttpRequestOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Value>
     return;
 
   if (V8XMLHttpRequest::hasInstance(v8Value, isolate)) {
-    XMLHttpRequest* cppValue = V8XMLHttpRequest::toImpl(v8::Local<v8::Object>::Cast(v8Value));
+    XMLHttpRequest* cppValue = V8XMLHttpRequest::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
     impl.setXMLHttpRequest(cppValue);
     return;
   }
@@ -100,7 +100,7 @@ v8::Local<v8::Value> ToV8(const XMLHttpRequestOrString& impl, v8::Local<v8::Obje
 
 XMLHttpRequestOrString NativeValueTraits<XMLHttpRequestOrString>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   XMLHttpRequestOrString impl;
-  V8XMLHttpRequestOrString::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8XMLHttpRequestOrString::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

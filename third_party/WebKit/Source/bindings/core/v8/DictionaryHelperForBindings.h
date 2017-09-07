@@ -41,7 +41,7 @@ bool DictionaryHelper::Get(const Dictionary& dictionary,
     return false;
 
   value =
-      V8TypeOf<T>::Type::toImplWithTypeCheck(dictionary.GetIsolate(), v8_value);
+      V8TypeOf<T>::Type::ToImplWithTypeCheck(dictionary.GetIsolate(), v8_value);
   return true;
 }
 

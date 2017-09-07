@@ -234,7 +234,7 @@ v8::Local<v8::Value> WebDocument::RegisterEmbedderCustomElement(
   Document* document = Unwrap<Document>();
   DummyExceptionStateForTesting exception_state;
   ElementRegistrationOptions registration_options;
-  V8ElementRegistrationOptions::toImpl(isolate, options, registration_options,
+  V8ElementRegistrationOptions::ToImpl(isolate, options, registration_options,
                                        exception_state);
   if (exception_state.HadException())
     return v8::Local<v8::Value>();

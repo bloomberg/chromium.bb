@@ -4374,7 +4374,7 @@ TEST_P(WebViewTest, StopLoadingIfJavaScriptURLReturnsNoStringResult) {
           "var win = window.open('javascript:false'); win.document"));
   ASSERT_TRUE(v8_value->IsObject());
   Document* document =
-      V8Document::toImplWithTypeCheck(v8::Isolate::GetCurrent(), v8_value);
+      V8Document::ToImplWithTypeCheck(v8::Isolate::GetCurrent(), v8_value);
   ASSERT_TRUE(document);
   EXPECT_FALSE(document->GetFrame()->IsLoading());
 }

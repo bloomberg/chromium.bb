@@ -61,7 +61,7 @@ DEFINE_TRACE(TestInterface2OrUint8Array) {
   visitor->Trace(uint8_array_);
 }
 
-void V8TestInterface2OrUint8Array::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterface2OrUint8Array& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
+void V8TestInterface2OrUint8Array::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterface2OrUint8Array& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
   if (v8Value.IsEmpty())
     return;
 
@@ -69,7 +69,7 @@ void V8TestInterface2OrUint8Array::toImpl(v8::Isolate* isolate, v8::Local<v8::Va
     return;
 
   if (V8TestInterface2::hasInstance(v8Value, isolate)) {
-    TestInterface2* cppValue = V8TestInterface2::toImpl(v8::Local<v8::Object>::Cast(v8Value));
+    TestInterface2* cppValue = V8TestInterface2::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
     impl.setTestInterface2(cppValue);
     return;
   }
@@ -101,7 +101,7 @@ v8::Local<v8::Value> ToV8(const TestInterface2OrUint8Array& impl, v8::Local<v8::
 
 TestInterface2OrUint8Array NativeValueTraits<TestInterface2OrUint8Array>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestInterface2OrUint8Array impl;
-  V8TestInterface2OrUint8Array::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8TestInterface2OrUint8Array::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

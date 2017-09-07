@@ -61,15 +61,15 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   {% set local_dom_window_only = interface_name == 'Window' and not attribute.has_cross_origin_getter %}
   {% if local_dom_window_only %}
   {% if attribute.is_check_security_for_receiver %}
-  {{cpp_class}}* uncheckedImpl = {{v8_class}}::toImpl(holder);
+  {{cpp_class}}* uncheckedImpl = {{v8_class}}::ToImpl(holder);
   {% else %}
   // Same-origin attribute getters are never exposed via the cross-origin
   // interceptors. Since same-origin access requires a LocalDOMWindow, it is
   // safe to downcast here.
-  LocalDOMWindow* impl = ToLocalDOMWindow({{v8_class}}::toImpl(holder));
+  LocalDOMWindow* impl = ToLocalDOMWindow({{v8_class}}::ToImpl(holder));
   {% endif %}{# attribute.is_check_security_for_receiver #}
   {% else %}
-  {{cpp_class}}* impl = {{v8_class}}::toImpl(holder);
+  {{cpp_class}}* impl = {{v8_class}}::ToImpl(holder);
   {% endif %}{# local_dom_window_only #}
   {% endif %}{# not attribute.is_static #}
 
@@ -329,15 +329,15 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
   {% set local_dom_window_only = interface_name == 'Window' and not attribute.has_cross_origin_setter %}
   {% if local_dom_window_only %}
   {% if attribute.is_check_security_for_receiver %}
-  {{cpp_class}}* uncheckedImpl = {{v8_class}}::toImpl(holder);
+  {{cpp_class}}* uncheckedImpl = {{v8_class}}::ToImpl(holder);
   {% else %}
   // Same-origin attributes setters are never exposed via the cross-origin
   // interceptors. Since same-origin access requires a LocalDOMWindow, it is
   // safe to downcast here.
-  LocalDOMWindow* impl = ToLocalDOMWindow({{v8_class}}::toImpl(holder));
+  LocalDOMWindow* impl = ToLocalDOMWindow({{v8_class}}::ToImpl(holder));
   {% endif %}{# attribute.is_check_security_for_receiver #}
   {% else %}
-  {{cpp_class}}* impl = {{v8_class}}::toImpl(holder);
+  {{cpp_class}}* impl = {{v8_class}}::ToImpl(holder);
   {% endif %}{# local_dom_window_only #}
   {% endif %}
 

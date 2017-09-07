@@ -69,7 +69,7 @@ DEFINE_TRACE(ElementSequenceOrByteStringDoubleOrStringRecord) {
   visitor->Trace(element_sequence_);
 }
 
-void V8ElementSequenceOrByteStringDoubleOrStringRecord::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, ElementSequenceOrByteStringDoubleOrStringRecord& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
+void V8ElementSequenceOrByteStringDoubleOrStringRecord::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, ElementSequenceOrByteStringDoubleOrStringRecord& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
   if (v8Value.IsEmpty())
     return;
 
@@ -111,7 +111,7 @@ v8::Local<v8::Value> ToV8(const ElementSequenceOrByteStringDoubleOrStringRecord&
 
 ElementSequenceOrByteStringDoubleOrStringRecord NativeValueTraits<ElementSequenceOrByteStringDoubleOrStringRecord>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   ElementSequenceOrByteStringDoubleOrStringRecord impl;
-  V8ElementSequenceOrByteStringDoubleOrStringRecord::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8ElementSequenceOrByteStringDoubleOrStringRecord::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

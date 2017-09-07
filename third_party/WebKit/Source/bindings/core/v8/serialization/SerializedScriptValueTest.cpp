@@ -113,7 +113,7 @@ TEST(SerializedScriptValueTest, WireFormatVersion0ImageData) {
   ASSERT_TRUE(deserialized->IsObject());
   v8::Local<v8::Object> deserializedObject = deserialized.As<v8::Object>();
   ASSERT_TRUE(V8ImageData::hasInstance(deserializedObject, isolate));
-  ImageData* imageData = V8ImageData::toImpl(deserializedObject);
+  ImageData* imageData = V8ImageData::ToImpl(deserializedObject);
   EXPECT_EQ(imageData->width(), 127);
   EXPECT_EQ(imageData->height(), 1);
 }
@@ -138,7 +138,7 @@ TEST(SerializedScriptValueTest, UserSelectedFile) {
       serialized_script_value->Deserialize(scope.GetIsolate());
 
   ASSERT_TRUE(V8File::hasInstance(v8_file, scope.GetIsolate()));
-  File* file = V8File::toImpl(v8::Local<v8::Object>::Cast(v8_file));
+  File* file = V8File::ToImpl(v8::Local<v8::Object>::Cast(v8_file));
   EXPECT_TRUE(file->HasBackingFile());
   EXPECT_EQ(File::kIsUserVisible, file->GetUserVisibility());
   EXPECT_EQ(file_path, file->GetPath());
@@ -162,7 +162,7 @@ TEST(SerializedScriptValueTest, FileConstructorFile) {
       serialized_script_value->Deserialize(scope.GetIsolate());
 
   ASSERT_TRUE(V8File::hasInstance(v8_file, scope.GetIsolate()));
-  File* file = V8File::toImpl(v8::Local<v8::Object>::Cast(v8_file));
+  File* file = V8File::ToImpl(v8::Local<v8::Object>::Cast(v8_file));
   EXPECT_FALSE(file->HasBackingFile());
   EXPECT_EQ(File::kIsNotUserVisible, file->GetUserVisibility());
   EXPECT_EQ("hello.txt", file->name());

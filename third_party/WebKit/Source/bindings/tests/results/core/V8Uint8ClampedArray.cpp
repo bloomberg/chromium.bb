@@ -58,7 +58,7 @@ static_assert(
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 
-TestUint8ClampedArray* V8Uint8ClampedArray::toImpl(v8::Local<v8::Object> object) {
+TestUint8ClampedArray* V8Uint8ClampedArray::ToImpl(v8::Local<v8::Object> object) {
   DCHECK(object->IsUint8ClampedArray());
   ScriptWrappable* scriptWrappable = ToScriptWrappable(object);
   if (scriptWrappable)
@@ -68,9 +68,9 @@ TestUint8ClampedArray* V8Uint8ClampedArray::toImpl(v8::Local<v8::Object> object)
   v8::Local<v8::Object> arrayBuffer = v8View->Buffer();
   TestUint8ClampedArray* typedArray = nullptr;
   if (arrayBuffer->IsArrayBuffer()) {
-    typedArray = TestUint8ClampedArray::Create(V8ArrayBuffer::toImpl(arrayBuffer), v8View->ByteOffset(), v8View->Length());
+    typedArray = TestUint8ClampedArray::Create(V8ArrayBuffer::ToImpl(arrayBuffer), v8View->ByteOffset(), v8View->Length());
   } else if (arrayBuffer->IsSharedArrayBuffer()) {
-    typedArray = TestUint8ClampedArray::Create(V8SharedArrayBuffer::toImpl(arrayBuffer), v8View->ByteOffset(), v8View->Length());
+    typedArray = TestUint8ClampedArray::Create(V8SharedArrayBuffer::ToImpl(arrayBuffer), v8View->ByteOffset(), v8View->Length());
   } else {
     NOTREACHED();
   }
@@ -80,12 +80,12 @@ TestUint8ClampedArray* V8Uint8ClampedArray::toImpl(v8::Local<v8::Object> object)
   return typedArray->ToImpl<TestUint8ClampedArray>();
 }
 
-TestUint8ClampedArray* V8Uint8ClampedArray::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  return value->IsUint8ClampedArray() ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+TestUint8ClampedArray* V8Uint8ClampedArray::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+  return value->IsUint8ClampedArray() ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 TestUint8ClampedArray* NativeValueTraits<TestUint8ClampedArray>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  TestUint8ClampedArray* nativeValue = V8Uint8ClampedArray::toImplWithTypeCheck(isolate, value);
+  TestUint8ClampedArray* nativeValue = V8Uint8ClampedArray::ToImplWithTypeCheck(isolate, value);
   if (!nativeValue) {
     exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
         "Uint8ClampedArray"));

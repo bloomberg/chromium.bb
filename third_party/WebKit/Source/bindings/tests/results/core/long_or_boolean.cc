@@ -60,7 +60,7 @@ LongOrBoolean& LongOrBoolean::operator=(const LongOrBoolean&) = default;
 DEFINE_TRACE(LongOrBoolean) {
 }
 
-void V8LongOrBoolean::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, LongOrBoolean& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
+void V8LongOrBoolean::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, LongOrBoolean& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
   if (v8Value.IsEmpty())
     return;
 
@@ -105,7 +105,7 @@ v8::Local<v8::Value> ToV8(const LongOrBoolean& impl, v8::Local<v8::Object> creat
 
 LongOrBoolean NativeValueTraits<LongOrBoolean>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   LongOrBoolean impl;
-  V8LongOrBoolean::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8LongOrBoolean::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

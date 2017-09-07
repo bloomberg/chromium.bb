@@ -209,9 +209,10 @@ struct TypeConverter<Optional<Vector<uint8_t>>, blink::ScriptValue> {
       return mojo::ConvertTo<Vector<uint8_t>>(string);
     }
 
-    if (value->IsArrayBuffer())
+    if (value->IsArrayBuffer()) {
       return mojo::ConvertTo<Vector<uint8_t>>(
-          blink::V8ArrayBuffer::toImpl(value.As<v8::Object>()));
+          blink::V8ArrayBuffer::ToImpl(value.As<v8::Object>()));
+    }
 
     return WTF::nullopt;
   }

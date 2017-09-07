@@ -71,7 +71,7 @@ namespace TestIntegerIndexedV8Internal {
 static void lengthAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
-  TestIntegerIndexed* impl = V8TestIntegerIndexed::toImpl(holder);
+  TestIntegerIndexed* impl = V8TestIntegerIndexed::ToImpl(holder);
 
   V8SetReturnValueInt(info, impl->length());
 }
@@ -83,7 +83,7 @@ static void lengthAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Functi
   v8::Local<v8::Object> holder = info.Holder();
   ALLOW_UNUSED_LOCAL(holder);
 
-  TestIntegerIndexed* impl = V8TestIntegerIndexed::toImpl(holder);
+  TestIntegerIndexed* impl = V8TestIntegerIndexed::ToImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestIntegerIndexed", "length");
 
@@ -96,7 +96,7 @@ static void lengthAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Functi
 }
 
 static void voidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestIntegerIndexed* impl = V8TestIntegerIndexed::toImpl(info.Holder());
+  TestIntegerIndexed* impl = V8TestIntegerIndexed::ToImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 1)) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodDocument", "TestIntegerIndexed", ExceptionMessages::NotEnoughArguments(1, info.Length())));
@@ -104,7 +104,7 @@ static void voidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& 
   }
 
   Document* document;
-  document = V8Document::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+  document = V8Document::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!document) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodDocument", "TestIntegerIndexed", "parameter 1 is not of type 'Document'."));
 
@@ -323,12 +323,12 @@ v8::Local<v8::Object> V8TestIntegerIndexed::findInstanceInPrototypeChain(v8::Loc
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
-TestIntegerIndexed* V8TestIntegerIndexed::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+TestIntegerIndexed* V8TestIntegerIndexed::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+  return hasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 TestIntegerIndexed* NativeValueTraits<TestIntegerIndexed>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  TestIntegerIndexed* nativeValue = V8TestIntegerIndexed::toImplWithTypeCheck(isolate, value);
+  TestIntegerIndexed* nativeValue = V8TestIntegerIndexed::ToImplWithTypeCheck(isolate, value);
   if (!nativeValue) {
     exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
         "TestIntegerIndexed"));

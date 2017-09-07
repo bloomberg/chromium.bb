@@ -27,7 +27,7 @@ class {{v8_class}} {
   STATIC_ONLY({{v8_class}});
  public:
   {% if is_array_buffer_or_view %}
-  {{exported}}static {{cpp_class}}* toImpl(v8::Local<v8::Object> object);
+  {{exported}}static {{cpp_class}}* ToImpl(v8::Local<v8::Object> object);
   {% else %}
   {{exported}}static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
   static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
@@ -35,11 +35,11 @@ class {{v8_class}} {
   {% if has_named_properties_object %}
   {{exported}}static v8::Local<v8::FunctionTemplate> domTemplateForNamedPropertiesObject(v8::Isolate*, const DOMWrapperWorld&);
   {% endif %}
-  static {{cpp_class}}* toImpl(v8::Local<v8::Object> object) {
+  static {{cpp_class}}* ToImpl(v8::Local<v8::Object> object) {
     return ToScriptWrappable(object)->ToImpl<{{cpp_class}}>();
   }
   {% endif %}
-  {{exported}}static {{cpp_class}}* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
+  {{exported}}static {{cpp_class}}* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
   {% if has_partial_interface %}
   {{exported}}static WrapperTypeInfo wrapperTypeInfo;
   {% else %}

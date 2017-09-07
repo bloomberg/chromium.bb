@@ -28,8 +28,8 @@ namespace blink {
 class V8ArrayBuffer {
   STATIC_ONLY(V8ArrayBuffer);
  public:
-  CORE_EXPORT static TestArrayBuffer* toImpl(v8::Local<v8::Object> object);
-  CORE_EXPORT static TestArrayBuffer* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
+  CORE_EXPORT static TestArrayBuffer* ToImpl(v8::Local<v8::Object> object);
+  CORE_EXPORT static TestArrayBuffer* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
   CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
   static void Trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
     visitor->TraceFromGeneratedCode(scriptWrappable->ToImpl<TestArrayBuffer>());

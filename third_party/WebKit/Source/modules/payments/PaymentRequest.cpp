@@ -311,7 +311,7 @@ void SetAndroidPayMethodData(const ScriptValue& input,
                              PaymentMethodDataPtr& output,
                              ExceptionState& exception_state) {
   AndroidPayMethodData android_pay;
-  V8AndroidPayMethodData::toImpl(input.GetIsolate(), input.V8Value(),
+  V8AndroidPayMethodData::ToImpl(input.GetIsolate(), input.V8Value(),
                                  android_pay, exception_state);
   if (exception_state.HadException())
     return;
@@ -438,7 +438,7 @@ void SetBasicCardMethodData(const ScriptValue& input,
                             PaymentMethodDataPtr& output,
                             ExceptionState& exception_state) {
   BasicCardRequest basic_card;
-  V8BasicCardRequest::toImpl(input.GetIsolate(), input.V8Value(), basic_card,
+  V8BasicCardRequest::ToImpl(input.GetIsolate(), input.V8Value(), basic_card,
                              exception_state);
   if (exception_state.HadException())
     return;
@@ -953,7 +953,7 @@ void PaymentRequest::OnUpdatePaymentDetails(
   ExceptionState exception_state(v8::Isolate::GetCurrent(),
                                  ExceptionState::kConstructionContext,
                                  "PaymentDetailsUpdate");
-  V8PaymentDetailsUpdate::toImpl(details_script_value.GetIsolate(),
+  V8PaymentDetailsUpdate::ToImpl(details_script_value.GetIsolate(),
                                  details_script_value.V8Value(), details,
                                  exception_state);
   if (exception_state.HadException()) {

@@ -60,7 +60,7 @@ FloatOrBoolean& FloatOrBoolean::operator=(const FloatOrBoolean&) = default;
 DEFINE_TRACE(FloatOrBoolean) {
 }
 
-void V8FloatOrBoolean::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, FloatOrBoolean& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
+void V8FloatOrBoolean::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, FloatOrBoolean& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
   if (v8Value.IsEmpty())
     return;
 
@@ -105,7 +105,7 @@ v8::Local<v8::Value> ToV8(const FloatOrBoolean& impl, v8::Local<v8::Object> crea
 
 FloatOrBoolean NativeValueTraits<FloatOrBoolean>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   FloatOrBoolean impl;
-  V8FloatOrBoolean::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8FloatOrBoolean::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

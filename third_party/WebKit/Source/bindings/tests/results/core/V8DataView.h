@@ -31,8 +31,8 @@ namespace blink {
 class V8DataView {
   STATIC_ONLY(V8DataView);
  public:
-  CORE_EXPORT static TestDataView* toImpl(v8::Local<v8::Object> object);
-  CORE_EXPORT static TestDataView* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
+  CORE_EXPORT static TestDataView* ToImpl(v8::Local<v8::Object> object);
+  CORE_EXPORT static TestDataView* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
   CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
   static void Trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
     visitor->TraceFromGeneratedCode(scriptWrappable->ToImpl<TestDataView>());

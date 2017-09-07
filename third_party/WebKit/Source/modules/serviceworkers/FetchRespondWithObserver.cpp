@@ -175,7 +175,7 @@ void FetchRespondWithObserver::OnResponseFulfilled(const ScriptValue& value) {
     OnResponseRejected(kWebServiceWorkerResponseErrorNoV8Instance);
     return;
   }
-  Response* response = V8Response::toImplWithTypeCheck(
+  Response* response = V8Response::ToImplWithTypeCheck(
       ToIsolate(GetExecutionContext()), value.V8Value());
   // "If one of the following conditions is true, return a network error:
   //   - |response|'s type is |error|.

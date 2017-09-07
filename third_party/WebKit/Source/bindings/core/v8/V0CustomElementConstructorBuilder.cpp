@@ -327,7 +327,7 @@ static void ConstructCustomElement(
 
   v8::Local<v8::Object> data = v8::Local<v8::Object>::Cast(info.Data());
   Document* document =
-      V8Document::toImpl(V8PrivateProperty::GetCustomElementDocument(isolate)
+      V8Document::ToImpl(V8PrivateProperty::GetCustomElementDocument(isolate)
                              .GetOrEmpty(data)
                              .As<v8::Object>());
   TOSTRING_VOID(

@@ -71,7 +71,7 @@ namespace TestIntegerIndexedGlobalV8Internal {
 static void lengthAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
-  TestIntegerIndexedGlobal* impl = V8TestIntegerIndexedGlobal::toImpl(holder);
+  TestIntegerIndexedGlobal* impl = V8TestIntegerIndexedGlobal::ToImpl(holder);
 
   V8SetReturnValue(info, static_cast<double>(impl->length()));
 }
@@ -83,7 +83,7 @@ static void lengthAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Functi
   v8::Local<v8::Object> holder = info.Holder();
   ALLOW_UNUSED_LOCAL(holder);
 
-  TestIntegerIndexedGlobal* impl = V8TestIntegerIndexedGlobal::toImpl(holder);
+  TestIntegerIndexedGlobal* impl = V8TestIntegerIndexedGlobal::ToImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestIntegerIndexedGlobal", "length");
 
@@ -96,7 +96,7 @@ static void lengthAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Functi
 }
 
 static void voidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestIntegerIndexedGlobal* impl = V8TestIntegerIndexedGlobal::toImpl(info.Holder());
+  TestIntegerIndexedGlobal* impl = V8TestIntegerIndexedGlobal::ToImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 1)) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodDocument", "TestIntegerIndexedGlobal", ExceptionMessages::NotEnoughArguments(1, info.Length())));
@@ -104,7 +104,7 @@ static void voidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& 
   }
 
   Document* document;
-  document = V8Document::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+  document = V8Document::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!document) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodDocument", "TestIntegerIndexedGlobal", "parameter 1 is not of type 'Document'."));
 
@@ -344,12 +344,12 @@ v8::Local<v8::Object> V8TestIntegerIndexedGlobal::findInstanceInPrototypeChain(v
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
-TestIntegerIndexedGlobal* V8TestIntegerIndexedGlobal::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+TestIntegerIndexedGlobal* V8TestIntegerIndexedGlobal::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+  return hasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 TestIntegerIndexedGlobal* NativeValueTraits<TestIntegerIndexedGlobal>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  TestIntegerIndexedGlobal* nativeValue = V8TestIntegerIndexedGlobal::toImplWithTypeCheck(isolate, value);
+  TestIntegerIndexedGlobal* nativeValue = V8TestIntegerIndexedGlobal::ToImplWithTypeCheck(isolate, value);
   if (!nativeValue) {
     exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
         "TestIntegerIndexedGlobal"));

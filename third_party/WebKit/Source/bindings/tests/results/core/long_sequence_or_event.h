@@ -60,7 +60,7 @@ class CORE_EXPORT LongSequenceOrEvent final {
 
 class V8LongSequenceOrEvent final {
  public:
-  CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, LongSequenceOrEvent&, UnionTypeConversionMode, ExceptionState&);
+  CORE_EXPORT static void ToImpl(v8::Isolate*, v8::Local<v8::Value>, LongSequenceOrEvent&, UnionTypeConversionMode, ExceptionState&);
 };
 
 CORE_EXPORT v8::Local<v8::Value> ToV8(const LongSequenceOrEvent&, v8::Local<v8::Object>, v8::Isolate*);

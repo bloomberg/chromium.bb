@@ -61,7 +61,7 @@ DEFINE_TRACE(LongOrTestDictionary) {
   visitor->Trace(test_dictionary_);
 }
 
-void V8LongOrTestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, LongOrTestDictionary& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
+void V8LongOrTestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, LongOrTestDictionary& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
   if (v8Value.IsEmpty())
     return;
 
@@ -70,7 +70,7 @@ void V8LongOrTestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v
 
   if (IsUndefinedOrNull(v8Value)) {
     TestDictionary cppValue;
-    V8TestDictionary::toImpl(isolate, v8Value, cppValue, exceptionState);
+    V8TestDictionary::ToImpl(isolate, v8Value, cppValue, exceptionState);
     if (exceptionState.HadException())
       return;
     impl.setTestDictionary(cppValue);
@@ -79,7 +79,7 @@ void V8LongOrTestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v
 
   if (v8Value->IsObject()) {
     TestDictionary cppValue;
-    V8TestDictionary::toImpl(isolate, v8Value, cppValue, exceptionState);
+    V8TestDictionary::ToImpl(isolate, v8Value, cppValue, exceptionState);
     if (exceptionState.HadException())
       return;
     impl.setTestDictionary(cppValue);
@@ -119,7 +119,7 @@ v8::Local<v8::Value> ToV8(const LongOrTestDictionary& impl, v8::Local<v8::Object
 
 LongOrTestDictionary NativeValueTraits<LongOrTestDictionary>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   LongOrTestDictionary impl;
-  V8LongOrTestDictionary::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8LongOrTestDictionary::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

@@ -51,7 +51,7 @@ WebArrayBuffer* WebArrayBufferConverter::CreateFromV8Value(
     v8::Isolate*) {
   if (!value->IsArrayBuffer())
     return nullptr;
-  return new WebArrayBuffer(V8ArrayBuffer::toImpl(value.As<v8::Object>()));
+  return new WebArrayBuffer(V8ArrayBuffer::ToImpl(value.As<v8::Object>()));
 }
 
 }  // namespace blink

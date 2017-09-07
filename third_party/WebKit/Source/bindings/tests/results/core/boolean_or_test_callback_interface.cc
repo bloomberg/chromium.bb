@@ -62,7 +62,7 @@ DEFINE_TRACE(BooleanOrTestCallbackInterface) {
   visitor->Trace(test_callback_interface_);
 }
 
-void V8BooleanOrTestCallbackInterface::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, BooleanOrTestCallbackInterface& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
+void V8BooleanOrTestCallbackInterface::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, BooleanOrTestCallbackInterface& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
   if (v8Value.IsEmpty())
     return;
 
@@ -70,7 +70,7 @@ void V8BooleanOrTestCallbackInterface::toImpl(v8::Isolate* isolate, v8::Local<v8
     return;
 
   if (V8TestCallbackInterface::hasInstance(v8Value, isolate)) {
-    TestCallbackInterface* cppValue = V8TestCallbackInterface::toImpl(v8::Local<v8::Object>::Cast(v8Value));
+    TestCallbackInterface* cppValue = V8TestCallbackInterface::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
     impl.setTestCallbackInterface(cppValue);
     return;
   }
@@ -102,7 +102,7 @@ v8::Local<v8::Value> ToV8(const BooleanOrTestCallbackInterface& impl, v8::Local<
 
 BooleanOrTestCallbackInterface NativeValueTraits<BooleanOrTestCallbackInterface>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   BooleanOrTestCallbackInterface impl;
-  V8BooleanOrTestCallbackInterface::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8BooleanOrTestCallbackInterface::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

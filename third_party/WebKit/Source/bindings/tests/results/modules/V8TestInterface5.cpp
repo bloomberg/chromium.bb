@@ -73,7 +73,7 @@ namespace TestInterface5ImplementationV8Internal {
 static void testInterfaceAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(holder);
 
   V8SetReturnValueFast(info, WTF::GetPtr(impl->testInterfaceAttribute()), impl);
 }
@@ -85,12 +85,12 @@ static void testInterfaceAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   v8::Local<v8::Object> holder = info.Holder();
   ALLOW_UNUSED_LOCAL(holder);
 
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface5", "testInterfaceAttribute");
 
   // Prepare the value to be set.
-  TestInterface5Implementation* cppValue = V8TestInterface5::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+  TestInterface5Implementation* cppValue = V8TestInterface5::ToImplWithTypeCheck(info.GetIsolate(), v8Value);
 
   // Type check per: http://heycam.github.io/webidl/#es-interface
   if (!cppValue) {
@@ -104,7 +104,7 @@ static void testInterfaceAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
 static void doubleAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(holder);
 
   V8SetReturnValue(info, impl->doubleAttribute());
 }
@@ -116,7 +116,7 @@ static void doubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
   v8::Local<v8::Object> holder = info.Holder();
   ALLOW_UNUSED_LOCAL(holder);
 
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface5", "doubleAttribute");
 
@@ -131,7 +131,7 @@ static void doubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
 static void floatAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(holder);
 
   V8SetReturnValue(info, impl->floatAttribute());
 }
@@ -143,7 +143,7 @@ static void floatAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8
   v8::Local<v8::Object> holder = info.Holder();
   ALLOW_UNUSED_LOCAL(holder);
 
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface5", "floatAttribute");
 
@@ -158,7 +158,7 @@ static void floatAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8
 static void unrestrictedDoubleAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(holder);
 
   V8SetReturnValue(info, impl->unrestrictedDoubleAttribute());
 }
@@ -170,7 +170,7 @@ static void unrestrictedDoubleAttributeAttributeSetter(v8::Local<v8::Value> v8Va
   v8::Local<v8::Object> holder = info.Holder();
   ALLOW_UNUSED_LOCAL(holder);
 
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface5", "unrestrictedDoubleAttribute");
 
@@ -185,7 +185,7 @@ static void unrestrictedDoubleAttributeAttributeSetter(v8::Local<v8::Value> v8Va
 static void unrestrictedFloatAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(holder);
 
   V8SetReturnValue(info, impl->unrestrictedFloatAttribute());
 }
@@ -197,7 +197,7 @@ static void unrestrictedFloatAttributeAttributeSetter(v8::Local<v8::Value> v8Val
   v8::Local<v8::Object> holder = info.Holder();
   ALLOW_UNUSED_LOCAL(holder);
 
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface5", "unrestrictedFloatAttribute");
 
@@ -231,7 +231,7 @@ static void staticStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
 static void lengthAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(holder);
 
   V8SetReturnValueUnsigned(info, impl->length());
 }
@@ -239,7 +239,7 @@ static void lengthAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& inf
 static void alwaysExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(holder);
 
   V8SetReturnValueInt(info, impl->alwaysExposedAttribute());
 }
@@ -251,7 +251,7 @@ static void alwaysExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   v8::Local<v8::Object> holder = info.Holder();
   ALLOW_UNUSED_LOCAL(holder);
 
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface5", "alwaysExposedAttribute");
 
@@ -266,7 +266,7 @@ static void alwaysExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
 static void workerExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(holder);
 
   V8SetReturnValueInt(info, impl->workerExposedAttribute());
 }
@@ -278,7 +278,7 @@ static void workerExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   v8::Local<v8::Object> holder = info.Holder();
   ALLOW_UNUSED_LOCAL(holder);
 
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface5", "workerExposedAttribute");
 
@@ -293,7 +293,7 @@ static void workerExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
 static void windowExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(holder);
 
   V8SetReturnValueInt(info, impl->windowExposedAttribute());
 }
@@ -305,7 +305,7 @@ static void windowExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   v8::Local<v8::Object> holder = info.Holder();
   ALLOW_UNUSED_LOCAL(holder);
 
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface5", "windowExposedAttribute");
 
@@ -318,7 +318,7 @@ static void windowExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
 }
 
 static void voidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 1)) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodTestInterfaceEmptyArg", "TestInterface5", ExceptionMessages::NotEnoughArguments(1, info.Length())));
@@ -326,7 +326,7 @@ static void voidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo
   }
 
   TestInterfaceEmpty* testInterfaceEmptyArg;
-  testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+  testInterfaceEmptyArg = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!testInterfaceEmptyArg) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodTestInterfaceEmptyArg", "TestInterface5", "parameter 1 is not of type 'TestInterfaceEmpty'."));
 
@@ -339,7 +339,7 @@ static void voidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo
 static void voidMethodDoubleArgFloatArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface5", "voidMethodDoubleArgFloatArg");
 
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 2)) {
     exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(2, info.Length()));
@@ -362,7 +362,7 @@ static void voidMethodDoubleArgFloatArgMethod(const v8::FunctionCallbackInfo<v8:
 static void voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface5", "voidMethodUnrestrictedDoubleArgUnrestrictedFloatArg");
 
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 2)) {
     exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(2, info.Length()));
@@ -383,31 +383,31 @@ static void voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethod(const v8::
 }
 
 static void voidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(info.Holder());
 
   impl->voidMethod();
 }
 
 static void voidMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(info.Holder());
 
   impl->voidMethod();
 }
 
 static void alwaysExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(info.Holder());
 
   impl->alwaysExposedMethod();
 }
 
 static void workerExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(info.Holder());
 
   impl->workerExposedMethod();
 }
 
 static void windowExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(info.Holder());
 
   impl->windowExposedMethod();
 }
@@ -425,7 +425,7 @@ static void windowExposedStaticMethodMethod(const v8::FunctionCallbackInfo<v8::V
 }
 
 static void windowAndServiceWorkerExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(info.Holder());
 
   impl->windowAndServiceWorkerExposedMethod();
 }
@@ -433,7 +433,7 @@ static void windowAndServiceWorkerExposedMethodMethod(const v8::FunctionCallback
 static void voidMethodBooleanOrDOMStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface5", "voidMethodBooleanOrDOMStringArg");
 
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 1)) {
     exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
@@ -441,7 +441,7 @@ static void voidMethodBooleanOrDOMStringArgMethod(const v8::FunctionCallbackInfo
   }
 
   BooleanOrString arg;
-  V8BooleanOrString::toImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8BooleanOrString::ToImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::kNotNullable, exceptionState);
   if (exceptionState.HadException())
     return;
 
@@ -451,7 +451,7 @@ static void voidMethodBooleanOrDOMStringArgMethod(const v8::FunctionCallbackInfo
 static void voidMethodDoubleOrDOMStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface5", "voidMethodDoubleOrDOMStringArg");
 
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 1)) {
     exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
@@ -459,7 +459,7 @@ static void voidMethodDoubleOrDOMStringArgMethod(const v8::FunctionCallbackInfo<
   }
 
   DoubleOrString arg;
-  V8DoubleOrString::toImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8DoubleOrString::ToImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::kNotNullable, exceptionState);
   if (exceptionState.HadException())
     return;
 
@@ -467,7 +467,7 @@ static void voidMethodDoubleOrDOMStringArgMethod(const v8::FunctionCallbackInfo<
 }
 
 static void voidMethodVoidExperimentalCallbackFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 1)) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodVoidExperimentalCallbackFunction", "TestInterface5", ExceptionMessages::NotEnoughArguments(1, info.Length())));
@@ -475,7 +475,7 @@ static void voidMethodVoidExperimentalCallbackFunctionMethod(const v8::FunctionC
   }
 
   VoidExperimentalCallbackFunction* arg;
-  arg = V8VoidExperimentalCallbackFunction::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+  arg = V8VoidExperimentalCallbackFunction::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!arg) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodVoidExperimentalCallbackFunction", "TestInterface5", "parameter 1 is not of type 'VoidExperimentalCallbackFunction'."));
 
@@ -486,7 +486,7 @@ static void voidMethodVoidExperimentalCallbackFunctionMethod(const v8::FunctionC
 }
 
 static void voidMethodVoidCallbackFunctionModulesArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 1)) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodVoidCallbackFunctionModulesArg", "TestInterface5", ExceptionMessages::NotEnoughArguments(1, info.Length())));
@@ -505,13 +505,13 @@ static void voidMethodVoidCallbackFunctionModulesArgMethod(const v8::FunctionCal
 }
 
 static void toStringMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(info.Holder());
 
   V8SetReturnValueString(info, impl->toString(), info.GetIsolate());
 }
 
 static void namedPropertyGetter(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Value>& info) {
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(info.Holder());
   String result = impl->AnonymousNamedGetter(name);
   if (result.IsNull())
     return;
@@ -522,7 +522,7 @@ static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallb
   const CString& nameInUtf8 = name.Utf8();
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kGetterContext, "TestInterface5", nameInUtf8.data());
 
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(info.Holder());
 
   bool result = impl->NamedPropertyQuery(name, exceptionState);
   if (!result)
@@ -539,7 +539,7 @@ static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallb
 static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kEnumerationContext, "TestInterface5");
 
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(info.Holder());
 
   Vector<String> names;
   impl->NamedPropertyEnumerator(names, exceptionState);
@@ -549,7 +549,7 @@ static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& i
 }
 
 static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(info.Holder());
 
   // We assume that all the implementations support length() method, although
   // the spec doesn't require that length() must exist.  It's okay that
@@ -586,7 +586,7 @@ static void indexedPropertyDescriptor(uint32_t index, const v8::PropertyCallback
 }
 
 static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(info.Holder());
   V8StringResource<> propertyValue = v8Value;
   if (!propertyValue.Prepare())
     return;
@@ -598,7 +598,7 @@ static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, 
 }
 
 static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
-  TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
+  TestInterface5Implementation* impl = V8TestInterface5::ToImpl(info.Holder());
 
   DeleteResult result = impl->AnonymousIndexedDeleter(index);
   if (result == kDeleteUnknownProperty)
@@ -1058,12 +1058,12 @@ v8::Local<v8::Object> V8TestInterface5::findInstanceInPrototypeChain(v8::Local<v
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
-TestInterface5Implementation* V8TestInterface5::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+TestInterface5Implementation* V8TestInterface5::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+  return hasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 TestInterface5Implementation* NativeValueTraits<TestInterface5Implementation>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  TestInterface5Implementation* nativeValue = V8TestInterface5::toImplWithTypeCheck(isolate, value);
+  TestInterface5Implementation* nativeValue = V8TestInterface5::ToImplWithTypeCheck(isolate, value);
   if (!nativeValue) {
     exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
         "TestInterface5"));

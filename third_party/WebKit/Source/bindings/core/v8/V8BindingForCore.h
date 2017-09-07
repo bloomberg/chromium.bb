@@ -623,7 +623,7 @@ NotSharedType ToNotShared(v8::Isolate* isolate,
                           ExceptionState& exception_state) {
   using DOMTypedArray = typename NotSharedType::TypedArrayType;
   DOMTypedArray* dom_typed_array =
-      V8TypeOf<DOMTypedArray>::Type::toImplWithTypeCheck(isolate, value);
+      V8TypeOf<DOMTypedArray>::Type::ToImplWithTypeCheck(isolate, value);
   if (dom_typed_array && dom_typed_array->IsShared()) {
     exception_state.ThrowTypeError(
         "The provided ArrayBufferView value must not be shared.");
@@ -640,7 +640,7 @@ MaybeSharedType ToMaybeShared(v8::Isolate* isolate,
                               ExceptionState& exception_state) {
   using DOMTypedArray = typename MaybeSharedType::TypedArrayType;
   DOMTypedArray* dom_typed_array =
-      V8TypeOf<DOMTypedArray>::Type::toImplWithTypeCheck(isolate, value);
+      V8TypeOf<DOMTypedArray>::Type::ToImplWithTypeCheck(isolate, value);
   return MaybeSharedType(dom_typed_array);
 }
 

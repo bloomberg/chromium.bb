@@ -31,8 +31,8 @@ namespace blink {
 class V8Uint8ClampedArray {
   STATIC_ONLY(V8Uint8ClampedArray);
  public:
-  CORE_EXPORT static TestUint8ClampedArray* toImpl(v8::Local<v8::Object> object);
-  CORE_EXPORT static TestUint8ClampedArray* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
+  CORE_EXPORT static TestUint8ClampedArray* ToImpl(v8::Local<v8::Object> object);
+  CORE_EXPORT static TestUint8ClampedArray* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
   CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
   static void Trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
     visitor->TraceFromGeneratedCode(scriptWrappable->ToImpl<TestUint8ClampedArray>());

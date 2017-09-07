@@ -62,7 +62,7 @@ DEFINE_TRACE(TestInterfaceGarbageCollectedOrString) {
   visitor->Trace(test_interface_garbage_collected_);
 }
 
-void V8TestInterfaceGarbageCollectedOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterfaceGarbageCollectedOrString& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
+void V8TestInterfaceGarbageCollectedOrString::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterfaceGarbageCollectedOrString& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
   if (v8Value.IsEmpty())
     return;
 
@@ -70,7 +70,7 @@ void V8TestInterfaceGarbageCollectedOrString::toImpl(v8::Isolate* isolate, v8::L
     return;
 
   if (V8TestInterfaceGarbageCollected::hasInstance(v8Value, isolate)) {
-    TestInterfaceGarbageCollected* cppValue = V8TestInterfaceGarbageCollected::toImpl(v8::Local<v8::Object>::Cast(v8Value));
+    TestInterfaceGarbageCollected* cppValue = V8TestInterfaceGarbageCollected::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
     impl.setTestInterfaceGarbageCollected(cppValue);
     return;
   }
@@ -100,7 +100,7 @@ v8::Local<v8::Value> ToV8(const TestInterfaceGarbageCollectedOrString& impl, v8:
 
 TestInterfaceGarbageCollectedOrString NativeValueTraits<TestInterfaceGarbageCollectedOrString>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestInterfaceGarbageCollectedOrString impl;
-  V8TestInterfaceGarbageCollectedOrString::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8TestInterfaceGarbageCollectedOrString::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

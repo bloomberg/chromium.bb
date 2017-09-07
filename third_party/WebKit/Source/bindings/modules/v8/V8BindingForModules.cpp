@@ -188,7 +188,7 @@ static IDBKey* CreateIDBKeyFromValue(v8::Isolate* isolate,
 
   // https://w3c.github.io/IndexedDB/#convert-a-key-to-a-value
   if (value->IsArrayBuffer()) {
-    DOMArrayBuffer* buffer = V8ArrayBuffer::toImpl(value.As<v8::Object>());
+    DOMArrayBuffer* buffer = V8ArrayBuffer::ToImpl(value.As<v8::Object>());
     if (buffer->IsNeutered()) {
       exception_state.ThrowTypeError("The ArrayBuffer is neutered.");
       return nullptr;
@@ -199,7 +199,7 @@ static IDBKey* CreateIDBKeyFromValue(v8::Isolate* isolate,
   }
   if (value->IsArrayBufferView()) {
     DOMArrayBufferView* view =
-        V8ArrayBufferView::toImpl(value.As<v8::Object>());
+        V8ArrayBufferView::ToImpl(value.As<v8::Object>());
     if (view->buffer()->IsNeutered()) {
       exception_state.ThrowTypeError("The viewed ArrayBuffer is neutered.");
       return nullptr;
@@ -317,11 +317,11 @@ static IDBKey* CreateIDBKeyFromValueAndKeyPath(
 
     if (V8Blob::hasInstance(object, isolate)) {
       if (element == "size") {
-        v8_value = v8::Number::New(isolate, V8Blob::toImpl(object)->size());
+        v8_value = v8::Number::New(isolate, V8Blob::ToImpl(object)->size());
         continue;
       }
       if (element == "type") {
-        v8_value = V8String(isolate, V8Blob::toImpl(object)->type());
+        v8_value = V8String(isolate, V8Blob::ToImpl(object)->type());
         continue;
       }
       // Fall through.
@@ -329,17 +329,17 @@ static IDBKey* CreateIDBKeyFromValueAndKeyPath(
 
     if (V8File::hasInstance(object, isolate)) {
       if (element == "name") {
-        v8_value = V8String(isolate, V8File::toImpl(object)->name());
+        v8_value = V8String(isolate, V8File::ToImpl(object)->name());
         continue;
       }
       if (element == "lastModified") {
         v8_value =
-            v8::Number::New(isolate, V8File::toImpl(object)->lastModified());
+            v8::Number::New(isolate, V8File::ToImpl(object)->lastModified());
         continue;
       }
       if (element == "lastModifiedDate") {
         v8_value =
-            v8::Date::New(isolate, V8File::toImpl(object)->lastModifiedDate());
+            v8::Date::New(isolate, V8File::ToImpl(object)->lastModifiedDate());
         continue;
       }
       // Fall through.
@@ -649,7 +649,7 @@ IDBKeyRange* NativeValueTraits<IDBKeyRange*>::NativeValue(
     v8::Isolate* isolate,
     v8::Local<v8::Value> value,
     ExceptionState& exception_state) {
-  return V8IDBKeyRange::toImplWithTypeCheck(isolate, value);
+  return V8IDBKeyRange::ToImplWithTypeCheck(isolate, value);
 }
 
 #if DCHECK_IS_ON()

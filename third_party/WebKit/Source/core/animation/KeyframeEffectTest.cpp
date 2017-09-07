@@ -176,7 +176,7 @@ TEST_F(AnimationKeyframeEffectV8Test, SpecifiedGetters) {
                               "ease-in-out");
   KeyframeEffectOptions timing_input_dictionary;
   DummyExceptionStateForTesting exception_state;
-  V8KeyframeEffectOptions::toImpl(scope.GetIsolate(), timing_input,
+  V8KeyframeEffectOptions::ToImpl(scope.GetIsolate(), timing_input,
                                   timing_input_dictionary, exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
@@ -203,7 +203,7 @@ TEST_F(AnimationKeyframeEffectV8Test, SpecifiedDurationGetter) {
                               "duration", 2.5);
   KeyframeEffectOptions timing_input_dictionary_with_duration;
   DummyExceptionStateForTesting exception_state;
-  V8KeyframeEffectOptions::toImpl(
+  V8KeyframeEffectOptions::ToImpl(
       scope.GetIsolate(), timing_input_with_duration,
       timing_input_dictionary_with_duration, exception_state);
   EXPECT_FALSE(exception_state.HadException());
@@ -222,7 +222,7 @@ TEST_F(AnimationKeyframeEffectV8Test, SpecifiedDurationGetter) {
   v8::Local<v8::Object> timing_input_no_duration =
       v8::Object::New(scope.GetIsolate());
   KeyframeEffectOptions timing_input_dictionary_no_duration;
-  V8KeyframeEffectOptions::toImpl(scope.GetIsolate(), timing_input_no_duration,
+  V8KeyframeEffectOptions::ToImpl(scope.GetIsolate(), timing_input_no_duration,
                                   timing_input_dictionary_no_duration,
                                   exception_state);
   EXPECT_FALSE(exception_state.HadException());
@@ -245,7 +245,7 @@ TEST_F(AnimationKeyframeEffectV8Test, SpecifiedSetters) {
   v8::Local<v8::Object> timing_input = v8::Object::New(scope.GetIsolate());
   KeyframeEffectOptions timing_input_dictionary;
   DummyExceptionStateForTesting exception_state;
-  V8KeyframeEffectOptions::toImpl(scope.GetIsolate(), timing_input,
+  V8KeyframeEffectOptions::ToImpl(scope.GetIsolate(), timing_input,
                                   timing_input_dictionary, exception_state);
   EXPECT_FALSE(exception_state.HadException());
   KeyframeEffect* animation =
@@ -295,7 +295,7 @@ TEST_F(AnimationKeyframeEffectV8Test, SetSpecifiedDuration) {
   v8::Local<v8::Object> timing_input = v8::Object::New(scope.GetIsolate());
   KeyframeEffectOptions timing_input_dictionary;
   DummyExceptionStateForTesting exception_state;
-  V8KeyframeEffectOptions::toImpl(scope.GetIsolate(), timing_input,
+  V8KeyframeEffectOptions::ToImpl(scope.GetIsolate(), timing_input,
                                   timing_input_dictionary, exception_state);
   EXPECT_FALSE(exception_state.HadException());
   KeyframeEffect* animation =

@@ -1144,7 +1144,7 @@ Response InspectorDOMAgent::NodeForRemoteObjectId(const String& object_id,
     return Response::Error(ToCoreString(std::move(error)));
   if (!V8Node::hasInstance(value, isolate_))
     return Response::Error("Object id doesn't reference a Node");
-  node = V8Node::toImpl(v8::Local<v8::Object>::Cast(value));
+  node = V8Node::ToImpl(v8::Local<v8::Object>::Cast(value));
   if (!node) {
     return Response::Error(
         "Couldn't convert object with given objectId to Node");

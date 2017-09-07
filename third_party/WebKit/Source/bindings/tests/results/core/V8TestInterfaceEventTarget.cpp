@@ -207,12 +207,12 @@ v8::Local<v8::Object> V8TestInterfaceEventTarget::findInstanceInPrototypeChain(v
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
-TestInterfaceEventTarget* V8TestInterfaceEventTarget::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+TestInterfaceEventTarget* V8TestInterfaceEventTarget::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+  return hasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 TestInterfaceEventTarget* NativeValueTraits<TestInterfaceEventTarget>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  TestInterfaceEventTarget* nativeValue = V8TestInterfaceEventTarget::toImplWithTypeCheck(isolate, value);
+  TestInterfaceEventTarget* nativeValue = V8TestInterfaceEventTarget::ToImplWithTypeCheck(isolate, value);
   if (!nativeValue) {
     exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
         "TestInterfaceEventTarget"));

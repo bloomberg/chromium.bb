@@ -66,7 +66,7 @@ static_assert(
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 
-TestArrayBuffer* V8ArrayBuffer::toImpl(v8::Local<v8::Object> object) {
+TestArrayBuffer* V8ArrayBuffer::ToImpl(v8::Local<v8::Object> object) {
   DCHECK(object->IsArrayBuffer());
   v8::Local<v8::ArrayBuffer> v8buffer = object.As<v8::ArrayBuffer>();
   if (v8buffer->IsExternal()) {
@@ -104,12 +104,12 @@ TestArrayBuffer* V8ArrayBuffer::toImpl(v8::Local<v8::Object> object) {
   return buffer;
 }
 
-TestArrayBuffer* V8ArrayBuffer::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  return value->IsArrayBuffer() ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+TestArrayBuffer* V8ArrayBuffer::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+  return value->IsArrayBuffer() ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 TestArrayBuffer* NativeValueTraits<TestArrayBuffer>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  TestArrayBuffer* nativeValue = V8ArrayBuffer::toImplWithTypeCheck(isolate, value);
+  TestArrayBuffer* nativeValue = V8ArrayBuffer::ToImplWithTypeCheck(isolate, value);
   if (!nativeValue) {
     exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
         "ArrayBuffer"));

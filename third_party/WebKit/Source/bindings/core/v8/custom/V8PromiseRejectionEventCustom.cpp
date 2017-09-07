@@ -24,7 +24,7 @@ void V8PromiseRejectionEvent::promiseAttributeGetterCustom(
   // us to disable some of V8's type checks, so we have to manually check that
   // info.Holder() really points to an instance of the type.
   PromiseRejectionEvent* event =
-      V8PromiseRejectionEvent::toImplWithTypeCheck(isolate, info.Holder());
+      V8PromiseRejectionEvent::ToImplWithTypeCheck(isolate, info.Holder());
   if (!event) {
     ExceptionState exception_state(isolate, ExceptionState::kGetterContext,
                                    "PromiseRejectionEvent", "promise");

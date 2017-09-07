@@ -521,7 +521,7 @@ v8::Maybe<uint32_t> V8ScriptValueSerializer::GetSharedArrayBufferId(
   }
 
   DOMSharedArrayBuffer* shared_array_buffer =
-      V8SharedArrayBuffer::toImpl(v8_shared_array_buffer);
+      V8SharedArrayBuffer::ToImpl(v8_shared_array_buffer);
 
   // The index returned from this function will be serialized into the data
   // stream. When deserializing, this will be used to index into the

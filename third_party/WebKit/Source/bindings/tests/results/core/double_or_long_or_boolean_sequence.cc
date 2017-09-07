@@ -62,7 +62,7 @@ DEFINE_TRACE(DoubleOrLongOrBooleanSequence) {
   visitor->Trace(long_or_boolean_sequence_);
 }
 
-void V8DoubleOrLongOrBooleanSequence::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, DoubleOrLongOrBooleanSequence& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
+void V8DoubleOrLongOrBooleanSequence::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, DoubleOrLongOrBooleanSequence& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
   if (v8Value.IsEmpty())
     return;
 
@@ -110,7 +110,7 @@ v8::Local<v8::Value> ToV8(const DoubleOrLongOrBooleanSequence& impl, v8::Local<v
 
 DoubleOrLongOrBooleanSequence NativeValueTraits<DoubleOrLongOrBooleanSequence>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   DoubleOrLongOrBooleanSequence impl;
-  V8DoubleOrLongOrBooleanSequence::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8DoubleOrLongOrBooleanSequence::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 
