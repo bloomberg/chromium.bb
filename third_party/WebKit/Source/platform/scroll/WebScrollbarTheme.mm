@@ -35,8 +35,6 @@
 #include "platform/mac/NSScrollerImpDetails.h"
 #include "platform/scroll/ScrollbarThemeMac.h"
 
-using namespace blink;
-
 namespace blink {
 
 static_assert(static_cast<NSScrollerStyle>(kScrollerStyleLegacy) ==
