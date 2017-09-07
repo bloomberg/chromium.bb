@@ -75,11 +75,6 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   COM_INTERFACE_ENTRY_CHAIN(ui::AXPlatformNodeWin)
   END_COM_MAP()
 
-  // Represents a non-static text node in IAccessibleHypertext. This character
-  // is embedded in the response to IAccessibleText::get_text, indicating the
-  // position where a non-static text child object appears.
-  CONTENT_EXPORT static const base::char16 kEmbeddedCharacter;
-
   // Mappings from roles and states to human readable strings. Initialize
   // with |InitializeStringMaps|.
   static std::map<int32_t, base::string16> role_string_map;
@@ -485,67 +480,6 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
 
   // Sets the selection given a start and end offset in IA2 Hypertext.
   void SetIA2HypertextSelection(LONG start_offset, LONG end_offset);
-
-  //
-  // Helper methods for IA2 hyperlinks.
-  //
-  // Hyperlink is an IA2 misnomer. It refers to objects embedded within other
-  // objects, such as a numbered list within a contenteditable div.
-  // Also, in IA2, text that includes embedded objects is called hypertext.
-
-  // Returns true if the current object is an IA2 hyperlink.
-  bool IsHyperlink() const;
-  // Returns the hyperlink at the given text position, or nullptr if no
-  // hyperlink can be found.
-  BrowserAccessibilityComWin* GetHyperlinkFromHypertextOffset(int offset);
-
-  // Functions for retrieving offsets for hyperlinks and hypertext.
-  // Return -1 in case of failure.
-  int32_t GetHyperlinkIndexFromChild(
-      const BrowserAccessibilityComWin& child) const;
-  int32_t GetHypertextOffsetFromHyperlinkIndex(int32_t hyperlink_index) const;
-  int32_t GetHypertextOffsetFromChild(BrowserAccessibilityComWin& child);
-  int32_t GetHypertextOffsetFromDescendant(
-      const BrowserAccessibilityComWin& descendant);
-
-  // If the selection endpoint is either equal to or an ancestor of this object,
-  // returns endpoint_offset.
-  // If the selection endpoint is a descendant of this object, returns its
-  // offset. Otherwise, returns either 0 or the length of the hypertext
-  // depending on the direction of the selection.
-  // Returns -1 in case of unexpected failure, e.g. the selection endpoint
-  // cannot be found in the accessibility tree.
-  int GetHypertextOffsetFromEndpoint(
-      const BrowserAccessibilityComWin& endpoint_object,
-      int endpoint_offset);
-
-  //
-  // Selection helper functions.
-  //
-  // The following functions retrieve the endpoints of the current selection.
-  // First they check for a local selection found on the current control, e.g.
-  // when querying the selection on a textarea.
-  // If not found they retrieve the global selection found on the current frame.
-  int GetSelectionAnchor();
-  int GetSelectionFocus();
-  // Retrieves the selection offsets in the way required by the IA2 APIs.
-  // selection_start and selection_end are -1 when there is no selection active
-  // on this object.
-  // The greatest of the two offsets is one past the last character of the
-  // selection.)
-  void GetSelectionOffsets(int* selection_start, int* selection_end);
-
-  bool IsSameHypertextCharacter(size_t old_char_index, size_t new_char_index);
-  void ComputeHypertextRemovedAndInserted(int* start,
-                                          int* old_len,
-                                          int* new_len);
-
-  // If offset is a member of IA2TextSpecialOffsets this function updates the
-  // value of offset and returns, otherwise offset remains unchanged.
-  void HandleSpecialTextOffset(LONG* offset);
-
-  // Convert from a IA2TextBoundaryType to a ui::TextBoundaryType.
-  ui::TextBoundaryType IA2TextBoundaryToTextBoundary(IA2TextBoundaryType type);
 
   // Search forwards (direction == 1) or backwards (direction == -1)
   // from the given offset until the given boundary is found, and
