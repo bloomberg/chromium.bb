@@ -9,24 +9,29 @@
 
 import contextlib
 import json
+import logging
 import optparse
 import os
 import sys
 import websocket
 
-from tracinglib import TracingBackend, TracingClient
+from tracinglib import TracingBackend, TracingBackendAndroid, TracingClient
 
 @contextlib.contextmanager
-def Connect(device_ip, devtools_port):
-  backend = TracingBackend()
+def Connect(options):
+  if options.adb_device:
+    backend = TracingBackendAndroid(options.adb_device)
+  else:
+    backend = TracingBackend(options.device, options.port, 10, 0)
+
   try:
-    backend.Connect(device_ip, devtools_port)
+    backend.Connect()
     yield backend
   finally:
     backend.Disconnect()
 
 
-def DumpTrace(trace, options):
+def GetOutputFilePath(options):
   filepath = os.path.expanduser(options.output) if options.output \
       else os.path.join(os.getcwd(), 'trace.json')
 
@@ -37,8 +42,6 @@ def DumpTrace(trace, options):
   else:
     filepath = os.path.join(os.getcwd(), filepath)
 
-  with open(filepath, 'w') as f:
-    json.dump(trace, f)
   return filepath
 
 
@@ -52,12 +55,15 @@ def _CreateOptionParser():
   parser.add_option(
       '-d', '--device', help='Device ip address.', type='string',
       default='127.0.0.1')
+  parser.add_option(
+      '-s', '--adb-device', help='Device serial for adb.', type='string')
 
   tracing_opts = optparse.OptionGroup(parser, 'Tracing options')
   tracing_opts.add_option(
       '-c', '--category-filter',
       help='Apply filter to control what category groups should be traced.',
-      type='string')
+      type='string',
+      default='"*"')
   tracing_opts.add_option(
       '--record-continuously',
       help='Keep recording until stopped. The trace buffer is of fixed size '
@@ -84,14 +90,13 @@ def main():
   options, _args = parser.parse_args()
   _ProcessOptions(options)
 
-  with Connect(options.device, options.port) as tracing_backend:
-    tracing_backend.StartTracing(TracingClient(),
-                                 options.category_filter,
+  with Connect(options) as tracing_backend:
+    tracing_backend.StartTracing(options.category_filter,
                                  options.record_continuously)
     raw_input('Capturing trace. Press Enter to stop...')
-    trace = tracing_backend.StopTracing()
+    filepath = GetOutputFilePath(options)
+    tracing_backend.StopTracing(filepath)
 
-  filepath = DumpTrace(trace, options)
   print('Done')
   print('Trace written to file://%s' % filepath)
 
