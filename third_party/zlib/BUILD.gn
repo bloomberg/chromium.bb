@@ -78,13 +78,13 @@ static_library("zlib") {
   if (current_cpu == "arm" || current_cpu == "arm64") {
     if (arm_use_neon) {
       sources -= [
-        "inflate.c",
         "inffast.c",
+        "inflate.c",
       ]
       sources += [
-        "contrib/arm/inflate.c",
-        "contrib/arm/inffast.c",
         "contrib/arm/chunkcopy.h",
+        "contrib/arm/inffast.c",
+        "contrib/arm/inflate.c",
       ]
     }
   }
