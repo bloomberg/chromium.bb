@@ -132,6 +132,7 @@ TEST_P(DOMStorageAreaParamTest, DOMStorageAreaBasics) {
     EXPECT_EQ(area->GetItem(kKey).string(), copy->GetItem(kKey).string());
   EXPECT_EQ(area->Key(0).string(), copy->Key(0).string());
   EXPECT_EQ(copy->map_.get(), area->map_.get());
+  copy->ClearShallowCopiedCommitBatches();
 
   // But will deep copy-on-write as needed.
   old_nullable_value = base::NullableString16(kValue, false);
@@ -249,6 +250,11 @@ TEST_P(DOMStorageAreaParamTest, ShallowCopyWithBacking) {
   const bool values_cached = GetParam();
   area->SetCacheOnlyKeys(!values_cached);
 
+  scoped_refptr<DOMStorageArea> temp_copy;
+  temp_copy = area->ShallowCopy(2, std::string());
+  EXPECT_TRUE(temp_copy->commit_batches_.empty());
+  temp_copy->ClearShallowCopiedCommitBatches();
+
   // Check if shallow copy is consistent.
   base::string16 old_value;
   base::NullableString16 old_nullable_value;
@@ -258,7 +264,7 @@ TEST_P(DOMStorageAreaParamTest, ShallowCopyWithBacking) {
   EXPECT_TRUE(area->HasUncommittedChanges());
   EXPECT_EQ(DOMStorageArea::CommitBatchHolder::TYPE_CURRENT_BATCH,
             area->commit_batches_.front().type);
-  copy = area->ShallowCopy(2, std::string());
+  copy = area->ShallowCopy(3, std::string());
   EXPECT_EQ(copy->map_.get(), area->map_.get());
   EXPECT_EQ(1u, copy->original_persistent_namespace_ids_->size());
   EXPECT_EQ(kNamespaceId, (*copy->original_persistent_namespace_ids_)[0]);

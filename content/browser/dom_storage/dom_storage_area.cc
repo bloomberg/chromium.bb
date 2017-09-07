@@ -345,8 +345,10 @@ void DOMStorageArea::ScheduleImmediateCommit() {
 void DOMStorageArea::ClearShallowCopiedCommitBatches() {
   if (is_shutdown_)
     return;
-  while (commit_batches_.back().type == CommitBatchHolder::TYPE_CLONE)
+  while (!commit_batches_.empty() &&
+         commit_batches_.back().type == CommitBatchHolder::TYPE_CLONE) {
     commit_batches_.pop_back();
+  }
   original_persistent_namespace_ids_ = nullptr;
 }
 
