@@ -23,7 +23,7 @@ enum {
   // single frame are promoted to a direct composited layer so that
   // their contents not be re-rasterized by the compositor when the
   // containing layer is the object of a paint invalidation.
-  kExpensiveOverdrawThreshold = 3,
+  kExpensiveOverdrawThreshold = 10,
 
   kExpensivePathPointCount = 50,
 
