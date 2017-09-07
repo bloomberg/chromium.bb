@@ -6,6 +6,7 @@
 #define LayerHitTestRects_h
 
 #include "platform/geometry/LayoutRect.h"
+#include "platform/graphics/TouchAction.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/Vector.h"
 
@@ -13,7 +14,16 @@ namespace blink {
 
 class PaintLayer;
 
-typedef WTF::HashMap<const PaintLayer*, Vector<LayoutRect>> LayerHitTestRects;
+struct TouchActionRect {
+  LayoutRect rect;
+  TouchAction whitelisted_touch_action;
+
+  TouchActionRect(LayoutRect layout_rect, TouchAction action)
+      : rect(layout_rect), whitelisted_touch_action(action) {}
+};
+
+typedef WTF::HashMap<const PaintLayer*, Vector<TouchActionRect>>
+    LayerHitTestRects;
 
 }  // namespace blink
 
