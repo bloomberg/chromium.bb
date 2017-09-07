@@ -17,7 +17,7 @@ class CSSLazyParsingState;
 // This class is responsible for lazily parsing a single CSS declaration list.
 class CSSLazyPropertyParserImpl : public CSSLazyPropertyParser {
  public:
-  CSSLazyPropertyParserImpl(size_t offset, CSSLazyParsingState*);
+  CSSLazyPropertyParserImpl(CSSParserTokenRange block, CSSLazyParsingState*);
 
   // CSSLazyPropertyParser:
   StylePropertySet* ParseProperties() override;
@@ -28,7 +28,7 @@ class CSSLazyPropertyParserImpl : public CSSLazyPropertyParser {
   }
 
  private:
-  size_t offset_;
+  Vector<CSSParserToken> tokens_;
   Member<CSSLazyParsingState> lazy_state_;
 };
 

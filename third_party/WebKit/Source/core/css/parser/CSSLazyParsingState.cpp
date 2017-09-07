@@ -4,7 +4,7 @@
 
 #include "core/css/parser/CSSLazyParsingState.h"
 #include "core/css/parser/CSSLazyPropertyParserImpl.h"
-#include "core/css/parser/CSSParserTokenStream.h"
+#include "core/css/parser/CSSParserTokenRange.h"
 #include "core/dom/Document.h"
 #include "core/frame/UseCounter.h"
 #include "platform/Histogram.h"
@@ -12,9 +12,11 @@
 namespace blink {
 
 CSSLazyParsingState::CSSLazyParsingState(const CSSParserContext* context,
+                                         Vector<String> escaped_strings,
                                          const String& sheet_text,
                                          StyleSheetContents* contents)
     : context_(context),
+      escaped_strings_(std::move(escaped_strings)),
       sheet_text_(sheet_text),
       owning_contents_(contents),
       parsed_style_rules_(0),
@@ -28,9 +30,9 @@ void CSSLazyParsingState::FinishInitialParsing() {
 }
 
 CSSLazyPropertyParserImpl* CSSLazyParsingState::CreateLazyParser(
-    const size_t offset) {
+    const CSSParserTokenRange& block) {
   ++total_style_rules_;
-  return new CSSLazyPropertyParserImpl(offset, this);
+  return new CSSLazyPropertyParserImpl(std::move(block), this);
 }
 
 const CSSParserContext* CSSLazyParsingState::Context() {
@@ -61,13 +63,13 @@ void CSSLazyParsingState::CountRuleParsed() {
 
 bool CSSLazyParsingState::ShouldLazilyParseProperties(
     const CSSSelectorList& selectors,
-    const CSSParserTokenStream& block) const {
-  // We should avoid lazy parsing empty blocks so we can avoid considering them
-  // when possible for matching. Lazy blocks must always be considered.
-  // Unfortunately, we can't tell how big the block will be, so the
-  // best we can do is to check if the next token is the end of the block.
-  // TODO(shend): Can we peek further than one token?
-  if (block.AtEnd())
+    const CSSParserTokenRange& block) const {
+  // Simple heuristic for an empty block. Note that |block| here does not
+  // include {} brackets. We avoid lazy parsing empty blocks so we can avoid
+  // considering them when possible for matching. Lazy blocks must always be
+  // considered. Three tokens is a reasonable minimum for a block:
+  // ident ':' <value>.
+  if (block.end() - block.begin() <= 2)
     return false;
 
   //  Disallow lazy parsing for blocks which have before/after in their selector
