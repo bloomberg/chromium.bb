@@ -89,7 +89,7 @@ void BufferQueue::UpdateBufferDamage(const gfx::Rect& damage) {
 
 void BufferQueue::SwapBuffers(const gfx::Rect& damage) {
   if (damage.IsEmpty()) {
-    in_flight_surfaces_.push_back(nullptr);
+    in_flight_surfaces_.push_back(std::move(current_surface_));
     return;
   }
 

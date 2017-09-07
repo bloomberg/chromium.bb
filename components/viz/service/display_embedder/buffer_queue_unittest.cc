@@ -477,18 +477,35 @@ TEST_F(BufferQueueTest, CheckTripleBuffering) {
 }
 
 TEST_F(BufferQueueTest, CheckEmptySwap) {
-  // Check empty swap flow, in which the damage is empty.
+  // Check empty swap flow, in which the damage is empty and BindFramebuffer
+  // might not be called.
   EXPECT_EQ(0, CountBuffers());
   output_surface_->BindFramebuffer();
   EXPECT_EQ(1, CountBuffers());
   EXPECT_NE(0U, current_surface());
   EXPECT_FALSE(displayed_frame());
+
+  // This is the texture to scanout.
+  uint32_t texture_id = output_surface_->GetCurrentTextureId();
   SwapBuffers();
+  // Make sure we won't be drawing to the texture we just sent for scanout.
+  output_surface_->BindFramebuffer();
+  EXPECT_NE(texture_id, output_surface_->GetCurrentTextureId());
+
   EXPECT_EQ(1U, in_flight_surfaces().size());
-  EXPECT_EQ(nullptr, in_flight_surfaces().front());
+  output_surface_->PageFlipComplete();
+
+  // Test swapbuffers without calling BindFramebuffer. DirectRenderer skips
+  // BindFramebuffer if not necessary.
+  SwapBuffers();
+  SwapBuffers();
+  EXPECT_EQ(2U, in_flight_surfaces().size());
+
+  output_surface_->PageFlipComplete();
+  EXPECT_EQ(1U, in_flight_surfaces().size());
+
   output_surface_->PageFlipComplete();
   EXPECT_EQ(0U, in_flight_surfaces().size());
-  EXPECT_EQ(nullptr, displayed_frame());
 }
 
 TEST_F(BufferQueueTest, CheckCorrectBufferOrdering) {
