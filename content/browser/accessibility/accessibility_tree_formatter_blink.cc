@@ -288,12 +288,10 @@ base::string16 AccessibilityTreeFormatterBlink::ToString(
     std::string string_value;
     if (!dict.GetString(ui::ToString(attr), &string_value))
       continue;
-    WriteAttribute(false,
-                   base::StringPrintf(
-                       "%s='%s'",
-                       ui::ToString(attr).c_str(),
-                       string_value.c_str()),
-                   &line);
+    WriteAttribute(
+        false,
+        base::StringPrintf("%s='%s'", ui::ToString(attr), string_value.c_str()),
+        &line);
   }
 
   for (int attr_index = ui::AX_INT_ATTRIBUTE_NONE;
@@ -303,10 +301,10 @@ base::string16 AccessibilityTreeFormatterBlink::ToString(
     std::string string_value;
     if (!dict.GetString(ui::ToString(attr), &string_value))
       continue;
-    WriteAttribute(false,
-                   base::StringPrintf("%s=%s", ui::ToString(attr).c_str(),
-                                      string_value.c_str()),
-                   &line);
+    WriteAttribute(
+        false,
+        base::StringPrintf("%s=%s", ui::ToString(attr), string_value.c_str()),
+        &line);
   }
 
   for (int attr_index = ui::AX_BOOL_ATTRIBUTE_NONE;
@@ -317,10 +315,8 @@ base::string16 AccessibilityTreeFormatterBlink::ToString(
     if (!dict.GetBoolean(ui::ToString(attr), &bool_value))
       continue;
     WriteAttribute(false,
-                   base::StringPrintf(
-                       "%s=%s",
-                       ui::ToString(attr).c_str(),
-                       bool_value ? "true" : "false"),
+                   base::StringPrintf("%s=%s", ui::ToString(attr),
+                                      bool_value ? "true" : "false"),
                    &line);
   }
 
@@ -331,8 +327,7 @@ base::string16 AccessibilityTreeFormatterBlink::ToString(
     if (!dict.GetDouble(ui::ToString(attr), &float_value))
       continue;
     WriteAttribute(
-        false,
-        base::StringPrintf("%s=%.2f", ui::ToString(attr).c_str(), float_value),
+        false, base::StringPrintf("%s=%.2f", ui::ToString(attr), float_value),
         &line);
   }
 
@@ -343,7 +338,8 @@ base::string16 AccessibilityTreeFormatterBlink::ToString(
     const base::ListValue* value;
     if (!dict.GetList(ui::ToString(attr), &value))
       continue;
-    std::string attr_string = ui::ToString(attr) + "=";
+    std::string attr_string(ui::ToString(attr));
+    attr_string.push_back('=');
     for (size_t i = 0; i < value->GetSize(); ++i) {
       if (i > 0)
         attr_string += ",";

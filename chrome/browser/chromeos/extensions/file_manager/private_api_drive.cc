@@ -789,11 +789,11 @@ bool FileManagerPrivateSearchDriveMetadataFunction::RunAsync() {
 
   drive::EventLogger* logger = file_manager::util::GetLogger(GetProfile());
   if (logger) {
-    logger->Log(logging::LOG_INFO,
-                "%s[%d] called. (types: '%s', maxResults: '%d')", name(),
-                request_id(), api::file_manager_private::ToString(
-                                  params->search_params.types).c_str(),
-                params->search_params.max_results);
+    logger->Log(
+        logging::LOG_INFO, "%s[%d] called. (types: '%s', maxResults: '%d')",
+        name(), request_id(),
+        api::file_manager_private::ToString(params->search_params.types),
+        params->search_params.max_results);
   }
   set_log_on_completion(true);
 
