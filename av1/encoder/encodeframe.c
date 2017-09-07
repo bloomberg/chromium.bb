@@ -1672,23 +1672,14 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
           else
             // This flag is also updated for 4x4 blocks
             rdc->single_ref_used_flag = 1;
-#if !SUB8X8_COMP_REF
-          if (mbmi->sb_type != BLOCK_4X4) {
+          if (is_comp_ref_allowed(mbmi->sb_type)) {
             counts->comp_inter[av1_get_reference_mode_context(cm, xd)]
                               [has_second_ref(mbmi)]++;
 #if CONFIG_NEW_MULTISYMBOL
             update_cdf(av1_get_reference_mode_cdf(cm, xd), has_second_ref(mbmi),
                        2);
-#endif
+#endif  // CONFIG_NEW_MULTISYMBOL
           }
-#else
-          counts->comp_inter[av1_get_reference_mode_context(cm, xd)]
-                            [has_second_ref(mbmi)]++;
-#if CONFIG_NEW_MULTISYMBOL
-          update_cdf(av1_get_reference_mode_cdf(cm, xd), has_second_ref(mbmi),
-                     2);
-#endif
-#endif
         }
 
         if (has_second_ref(mbmi)) {

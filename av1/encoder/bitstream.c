@@ -1029,14 +1029,12 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     // does the feature use compound prediction or not
     // (if not specified at the frame/segment level)
     if (cm->reference_mode == REFERENCE_MODE_SELECT) {
-#if !SUB8X8_COMP_REF
-      if (mbmi->sb_type != BLOCK_4X4)
-#endif
+      if (is_comp_ref_allowed(mbmi->sb_type))
 #if CONFIG_NEW_MULTISYMBOL
         aom_write_symbol(w, is_compound, av1_get_reference_mode_cdf(cm, xd), 2);
 #else
-      aom_write(w, is_compound, av1_get_reference_mode_prob(cm, xd));
-#endif
+        aom_write(w, is_compound, av1_get_reference_mode_prob(cm, xd));
+#endif  // CONFIG_NEW_MULTISYMBOL
     } else {
       assert((!is_compound) == (cm->reference_mode == SINGLE_REFERENCE));
     }

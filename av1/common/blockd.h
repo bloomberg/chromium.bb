@@ -76,6 +76,15 @@ typedef enum {
   FRAME_TYPES,
 } FRAME_TYPE;
 
+static INLINE int is_comp_ref_allowed(BLOCK_SIZE bsize) {
+  (void)bsize;
+#if SUB8X8_COMP_REF
+  return 1;
+#else
+  return AOMMIN(block_size_wide[bsize], block_size_high[bsize]) >= 8;
+#endif  // SUB8X8_COMP_REF
+}
+
 static INLINE int is_inter_mode(PREDICTION_MODE mode) {
 #if CONFIG_EXT_INTER
   return mode >= NEARESTMV && mode <= NEW_NEWMV;
