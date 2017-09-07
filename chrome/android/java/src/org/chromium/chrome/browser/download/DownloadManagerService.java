@@ -334,13 +334,11 @@ public class DownloadManagerService
                 (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo info = cm.getActiveNetworkInfo();
         if (info == null || !info.isConnected()) return;
-        if (progress.mCanDownloadWhileMetered && !isActiveNetworkMetered(mContext)) {
+        if (progress.mCanDownloadWhileMetered || !isActiveNetworkMetered(mContext)) {
             // Normally the download will automatically resume when network is reconnected.
             // However, if there are multiple network connections and the interruption is caused
             // by switching between active networks, onConnectionTypeChanged() will not get called.
             // As a result, we should resume immediately.
-            // TODO(qinmin): Handle the case if the interruption is caused by switching between
-            // 2 metered networks or 2 non-metered networks on device with multiple antennas.
             scheduleDownloadResumption(item);
         }
     }
