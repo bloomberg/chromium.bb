@@ -705,8 +705,8 @@ class CONTENT_EXPORT RenderFrameImpl
                  mojom::FrameRequest request,
                  mojom::FrameHostInterfaceBrokerPtr frame_host);
 
-  // Virtual so the test render frame can flush the interface.
-  virtual mojom::FrameHostAssociatedPtr GetFrameHost();
+  // Virtual so that a TestRenderFrame can mock out the interface.
+  virtual mojom::FrameHost* GetFrameHost();
 
   void BindFrameBindingsControl(
       mojom::FrameBindingsControlAssociatedRequest request);
@@ -1470,6 +1470,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   service_manager::BindSourceInfo browser_info_;
 
+  mojom::FrameHostAssociatedPtr frame_host_ptr_;
   mojo::BindingSet<service_manager::mojom::InterfaceProvider>
       interface_provider_bindings_;
 

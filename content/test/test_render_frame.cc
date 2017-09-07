@@ -19,26 +19,41 @@ namespace content {
 
 class MockFrameHost : public mojom::FrameHost {
  public:
-  MockFrameHost() : binding_(this) {}
+  MockFrameHost() {}
   ~MockFrameHost() override = default;
 
-  void CreateNewWindow(mojom::CreateNewWindowParamsPtr params,
-                       CreateNewWindowCallback callback) override {
-    mojom::CreateNewWindowReplyPtr reply = mojom::CreateNewWindowReply::New();
+  std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
+  TakeLastCommitParams() {
+    return std::move(last_commit_params_);
+  }
+
+ protected:
+  // mojom::FrameHost:
+  void CreateNewWindow(mojom::CreateNewWindowParamsPtr,
+                       CreateNewWindowCallback) override {
+    NOTREACHED() << "We should never dispatch to the service side signature.";
+  }
+
+  bool CreateNewWindow(mojom::CreateNewWindowParamsPtr params,
+                       mojom::CreateNewWindowReplyPtr* reply) override {
+    *reply = mojom::CreateNewWindowReply::New();
     MockRenderThread* mock_render_thread =
         static_cast<MockRenderThread*>(RenderThread::Get());
-    mock_render_thread->OnCreateWindow(*params, reply.get());
-    std::move(callback).Run(std::move(reply));
+    mock_render_thread->OnCreateWindow(*params, reply->get());
+    return true;
   }
 
   void IssueKeepAliveHandle(mojom::KeepAliveHandleRequest request) override {}
 
-  void Bind(mojo::ScopedInterfaceEndpointHandle handle) {
-    binding_.Bind(mojom::FrameHostAssociatedRequest(std::move(handle)));
+  void DidCommitProvisionalLoad(
+      std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params)
+      override {
+    last_commit_params_ = std::move(params);
   }
 
  private:
-  mojo::AssociatedBinding<mojom::FrameHost> binding_;
+  std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
+      last_commit_params_;
 
   DISALLOW_COPY_AND_ASSIGN(MockFrameHost);
 };
@@ -52,14 +67,9 @@ RenderFrameImpl* TestRenderFrame::CreateTestRenderFrame(
 TestRenderFrame::TestRenderFrame(const RenderFrameImpl::CreateParams& params)
     : RenderFrameImpl(params),
       mock_frame_host_(base::MakeUnique<MockFrameHost>()) {
-  GetRemoteAssociatedInterfaces()->OverrideBinderForTesting(
-      mojom::FrameHost::Name_,
-      base::Bind(&MockFrameHost::Bind,
-                 base::Unretained(mock_frame_host_.get())));
 }
 
-TestRenderFrame::~TestRenderFrame() {
-}
+TestRenderFrame::~TestRenderFrame() {}
 
 void TestRenderFrame::Navigate(const CommonNavigationParams& common_params,
                                const StartNavigationParams& start_params,
@@ -132,12 +142,35 @@ std::unique_ptr<blink::WebURLLoader> TestRenderFrame::CreateURLLoader(
       nullptr, base::ThreadTaskRunnerHandle::Get(), nullptr);
 }
 
-mojom::FrameHostAssociatedPtr TestRenderFrame::GetFrameHost() {
-  mojom::FrameHostAssociatedPtr ptr = RenderFrameImpl::GetFrameHost();
+std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
+TestRenderFrame::TakeLastCommitParams() {
+  return mock_frame_host_->TakeLastCommitParams();
+}
 
-  // Needed to ensure no deadlocks when waiting for sync IPC.
-  ptr.FlushForTesting();
-  return ptr;
+mojom::FrameHost* TestRenderFrame::GetFrameHost() {
+  // Need to mock this interface directly without going through a binding,
+  // otherwise calling its sync methods could lead to a deadlock.
+  //
+  // Imagine the following sequence of events take place:
+  //
+  //   1.) GetFrameHost() called for the first time
+  //   1.1.) GetRemoteAssociatedInterfaces()->GetInterface(&frame_host_ptr_)
+  //   1.1.1) ... plumbing ...
+  //   1.1.2) Task posted to bind the request end to the Mock implementation
+  //   1.2) The interface pointer end is returned to the caller
+  //   2.) GetFrameHost()->CreateNewWindow(...) sync method invoked
+  //   2.1.) Mojo sync request sent
+  //   2.2.) Waiting for sync response while dispatching incoming sync requests
+  //
+  // Normally the sync Mojo request would be processed in 2.2. However, the
+  // implementation is not yet bound at that point, and will never be, because
+  // only sync IPCs are dispatched by 2.2, not posted tasks. So the sync request
+  // is never dispatched, the response never arrives.
+  //
+  // Because the first invocation to GetFrameHost() may come while we are inside
+  // a message loop already, pumping messags before 1.2 would constitute a
+  // nested message loop and is therefore undesired.
+  return mock_frame_host_.get();
 }
 
 }  // namespace content

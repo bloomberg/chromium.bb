@@ -310,7 +310,7 @@ struct CONTENT_EXPORT RequestNavigationParams {
   // For browser-initiated navigations, this is the unique id of the
   // NavigationEntry being navigated to. (For renderer-initiated navigations it
   // is 0.) If the load succeeds, then this nav_entry_id will be reflected in
-  // the resulting FrameHostMsg_DidCommitProvisionalLoad message.
+  // the resulting FrameHostMsg_DidCommitProvisionalLoad_Params.
   int nav_entry_id;
 
   // Whether this is a history navigation in a newly created child frame, in

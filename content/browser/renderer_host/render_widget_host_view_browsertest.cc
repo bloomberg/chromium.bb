@@ -34,6 +34,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "content/test/did_commit_provisional_load_interceptor.h"
 #include "media/base/video_frame.h"
 #include "media/renderers/skcanvas_video_renderer.h"
 #include "net/base/filename_util.h"
@@ -208,25 +209,20 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
 
 // Helps to ensure that a navigation is committed after a compositor frame was
 // submitted by the renderer, but before corresponding ACK is sent back.
-class CommitBeforeSwapAckSentHelper : public WebContentsObserver {
+class CommitBeforeSwapAckSentHelper
+    : public DidCommitProvisionalLoadInterceptor {
  public:
   explicit CommitBeforeSwapAckSentHelper(WebContents* web_contents)
-      : WebContentsObserver(web_contents) {}
+      : DidCommitProvisionalLoadInterceptor(web_contents) {}
 
  private:
-  void WaitForSwapCompositorFrame() {
+  // DidCommitProvisionalLoadInterceptor:
+  void WillDispatchDidCommitProvisionalLoad(
+      RenderFrameHost* render_frame_host,
+      ::FrameHostMsg_DidCommitProvisionalLoad_Params*) override {
     base::MessageLoop::ScopedNestableTaskAllower allow(
         base::MessageLoop::current());
     FrameWatcher(web_contents()).WaitFrames(1);
-  }
-
-  bool OnMessageReceived(const IPC::Message& message,
-                         RenderFrameHost* rfh) override {
-    IPC_BEGIN_MESSAGE_MAP(CommitBeforeSwapAckSentHelper, message)
-      IPC_MESSAGE_HANDLER_GENERIC(FrameHostMsg_DidCommitProvisionalLoad,
-                                  WaitForSwapCompositorFrame())
-    IPC_END_MESSAGE_MAP()
-    return false;
   }
 
   DISALLOW_COPY_AND_ASSIGN(CommitBeforeSwapAckSentHelper);
