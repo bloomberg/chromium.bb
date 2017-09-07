@@ -72,6 +72,12 @@ void HostFrameSinkManager::InvalidateFrameSinkId(
   display_hit_test_query_.erase(frame_sink_id);
 }
 
+void HostFrameSinkManager::SetFrameSinkDebugLabel(
+    const FrameSinkId& frame_sink_id,
+    const std::string& debug_label) {
+  frame_sink_manager_->SetFrameSinkDebugLabel(frame_sink_id, debug_label);
+}
+
 void HostFrameSinkManager::CreateRootCompositorFrameSink(
     const FrameSinkId& frame_sink_id,
     gpu::SurfaceHandle surface_handle,

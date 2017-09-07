@@ -40,8 +40,10 @@ interface DisplayPrivate {
 // frame sink manager host which will forward the request to the frame sink
 // manager.
 interface FrameSinkManager {
-  // Registers |frame_sink_id| will be used. This must be called before
-  // Create(Root)CompositorFrameSink() is called.
+  // Starts the scope of temporary references tied to this |frame_sink_id|.
+  // Temporary references tied to this |frame_sink_id| will be dropped on
+  // InvalidateFrameSinkId.This must be called before Create(Root)
+  // CompositorFrameSink() is called.
   RegisterFrameSinkId(FrameSinkId frame_sink_id);
 
   // Invalidates |frame_sink_id| which cleans up any unsatisified surface
@@ -49,6 +51,10 @@ interface FrameSinkManager {
   // CompositorFrameSink for |frame_sink_id| then it will be destroyed and the
   // message pipe to the client will be closed.
   InvalidateFrameSinkId(FrameSinkId frame_sink_id);
+
+  // |debug_label| is used when printing out the surface hierarchy so we know
+  // which clients are contributing which surfaces.
+  SetFrameSinkDebugLabel(FrameSinkId frame_sink_id, string debug_label);
 
   // Create a CompositorFrameSink for a privileged client (e.g. WindowServer).
   // This is only used by privileged clients. The client can call methods that

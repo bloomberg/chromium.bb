@@ -81,6 +81,12 @@ void FrameSinkManagerImpl::InvalidateFrameSinkId(
   surface_manager_.InvalidateFrameSinkId(frame_sink_id);
 }
 
+void FrameSinkManagerImpl::SetFrameSinkDebugLabel(
+    const FrameSinkId& frame_sink_id,
+    const std::string& debug_label) {
+  surface_manager_.SetFrameSinkDebugLabel(frame_sink_id, debug_label);
+}
+
 void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
     const FrameSinkId& frame_sink_id,
     gpu::SurfaceHandle surface_handle,

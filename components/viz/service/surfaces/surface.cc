@@ -355,7 +355,7 @@ void Surface::AddDestructionDependency(SurfaceSequence sequence) {
 
 void Surface::SatisfyDestructionDependencies(
     base::flat_set<SurfaceSequence>* sequences,
-    base::flat_set<FrameSinkId>* valid_frame_sink_ids) {
+    base::flat_map<FrameSinkId, std::string>* valid_frame_sink_ids) {
   base::EraseIf(destruction_dependencies_,
                 [sequences, valid_frame_sink_ids](SurfaceSequence seq) {
                   return (!!sequences->erase(seq) ||

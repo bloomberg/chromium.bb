@@ -81,6 +81,10 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
     auto* host_frame_sink_manager =
         context_factory_private_->GetHostFrameSinkManager();
     host_frame_sink_manager->RegisterFrameSinkId(frame_sink_id_, this);
+#if DCHECK_IS_ON()
+    host_frame_sink_manager->SetFrameSinkDebugLabel(frame_sink_id_,
+                                                    "Compositor");
+#endif
   }
   root_web_layer_ = cc::Layer::Create();
 

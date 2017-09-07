@@ -132,6 +132,12 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // possibly because a renderer process has crashed.
   void InvalidateFrameSinkId(const FrameSinkId& frame_sink_id);
 
+  // Set |debug_label| of the |frame_sink_id|. |frame_sink_id| must exist in
+  // |valid_frame_sink_labels_| already when UpdateFrameSinkDebugLabel is
+  // called.
+  void SetFrameSinkDebugLabel(const FrameSinkId& frame_sink_id,
+                              const std::string& debug_label);
+
   // Register a relationship between two namespaces.  This relationship means
   // that surfaces from the child namespace will be displayed in the parent.
   // Children are allowed to use any begin frame source that their parent can
@@ -280,10 +286,10 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // waited on.
   base::flat_set<SurfaceSequence> satisfied_sequences_;
 
-  // Set of valid FrameSinkIds. When a FrameSinkId is removed from
-  // this set, any remaining (surface) sequences with that FrameSinkId are
+  // Set of valid FrameSinkIds and their labels. When a FrameSinkId is removed
+  // from this set, any remaining (surface) sequences with that FrameSinkId are
   // considered satisfied.
-  base::flat_set<FrameSinkId> valid_frame_sink_ids_;
+  base::flat_map<FrameSinkId, std::string> valid_frame_sink_labels_;
 
   // Root SurfaceId that references display root surfaces. There is no Surface
   // with this id, it's for bookkeeping purposes only.
