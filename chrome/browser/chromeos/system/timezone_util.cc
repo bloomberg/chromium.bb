@@ -242,6 +242,12 @@ void ApplyTimeZone(const TimeZoneResponseData* timezone) {
 
     if (primary_user) {
       Profile* profile = ProfileHelper::Get()->GetProfileByUser(primary_user);
+      // profile can be NULL only if user has logged in, but profile has not
+      // been initialized yet. Ignore delayed time zone update until user
+      // preferences are initialized.
+      if (!profile)
+        return;
+
       profile->GetPrefs()->SetString(prefs::kUserTimezone,
                                      timezone->timeZoneId);
       // chromeos::Preferences::ApplyPreferences() will automatically change
