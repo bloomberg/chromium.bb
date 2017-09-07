@@ -750,19 +750,8 @@ FileManagerPrivateInternalGetRecentFilesFunction::Run() {
 void FileManagerPrivateInternalGetRecentFilesFunction::OnGetRecentFiles(
     api::file_manager_private::SourceRestriction restriction,
     const std::vector<chromeos::RecentFile>& files) {
-  scoped_refptr<storage::FileSystemContext> file_system_context =
-      file_manager::util::GetFileSystemContextForRenderFrameHost(
-          chrome_details_.GetProfile(), render_frame_host());
-  DCHECK(file_system_context.get());
-
-  const storage::ExternalFileSystemBackend* external_backend =
-      file_system_context->external_backend();
-  DCHECK(external_backend);
-
   file_manager::util::FileDefinitionList file_definition_list;
   for (const auto& file : files) {
-    DCHECK(external_backend->CanHandleType(file.url().type()));
-
     // Filter out files from non-allowed sources.
     // We do this filtering here rather than in RecentModel so that the set of
     // files returned with some restriction is a subset of what would be
