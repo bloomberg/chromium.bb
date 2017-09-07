@@ -35,25 +35,14 @@ WorkletGlobalScope::WorkletGlobalScope(const KURL& url,
 
 WorkletGlobalScope::~WorkletGlobalScope() = default;
 
-// TODO(nhiroki): Remove this function after module loading for threaded
-// worklets is enabled.
 void WorkletGlobalScope::EvaluateClassicScript(
     const KURL& script_url,
     String source_code,
     std::unique_ptr<Vector<char>> cached_meta_data,
     V8CacheOptions v8_cache_options) {
-  if (source_code.IsNull()) {
-    // |source_code| is null when this is called during worker thread startup.
-    // Worklet will evaluate the script later via Worklet.addModule().
-    return;
-  }
-  DCHECK(!cached_meta_data);
-  // TODO(nhiroki): Call WorkerReportingProxy::WillEvaluateWorkerScript() or
-  // something like that (e.g., WillEvaluateModuleScript()).
-  bool success = ScriptController()->Evaluate(
-      ScriptSourceCode(source_code, script_url), nullptr /* error_event */,
-      nullptr /* cache_handler */, v8_cache_options);
-  ReportingProxy().DidEvaluateModuleScript(success);
+  // Worklet should evaluate a script as a module script (as opposed to a
+  // classic script).
+  NOTREACHED();
 }
 
 v8::Local<v8::Object> WorkletGlobalScope::Wrap(

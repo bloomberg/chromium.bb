@@ -501,8 +501,11 @@ void WorkerThread::InitializeOnWorkerThread(
     return;
   }
 
+  // Worklet will evaluate the script later via Worklet.addModule().
   // TODO(nhiroki): Start module loading for workers here.
   // (https://crbug.com/680046)
+  if (GlobalScope()->IsWorkletGlobalScope())
+    return;
   GlobalScope()->EvaluateClassicScript(script_url, std::move(source_code),
                                        std::move(cached_meta_data),
                                        v8_cache_options);
