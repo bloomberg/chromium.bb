@@ -193,6 +193,8 @@ def _ComputeTraceEventsThreadTimeForBlinkPerf(
 
     curr_test_runs_bound_index = 0
     for b in merged_event_boundaries:
+      if b.bounds.bounds == 0:
+        continue
       # Fast forward (if needed) to the first relevant test.
       while (curr_test_runs_bound_index < len(test_runs_bounds) and
              b.bounds.min > test_runs_bounds[curr_test_runs_bound_index].max):
