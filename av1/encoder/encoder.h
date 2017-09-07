@@ -650,9 +650,6 @@ int av1_get_active_map(AV1_COMP *cpi, unsigned char *map, int rows, int cols);
 int av1_set_internal_size(AV1_COMP *cpi, AOM_SCALING horiz_mode,
                           AOM_SCALING vert_mode);
 
-// Returns 1 if the assigned width or height was <= 0.
-int av1_set_size_literal(AV1_COMP *cpi, int width, int height);
-
 int av1_get_quantizer(struct AV1_COMP *cpi);
 
 static INLINE int frame_is_kf_gf_arf(const AV1_COMP *cpi) {
@@ -740,13 +737,6 @@ static INLINE unsigned int allocated_tokens(TileInfo tile) {
   return get_token_alloc(tile_mb_rows, tile_mb_cols);
 }
 
-void av1_alloc_compressor_data(AV1_COMP *cpi);
-
-void av1_scale_references(AV1_COMP *cpi);
-
-void av1_update_reference_frames(AV1_COMP *cpi);
-
-void av1_set_high_precision_mv(AV1_COMP *cpi, int allow_high_precision_mv);
 #if CONFIG_TEMPMV_SIGNALING
 void av1_set_temporal_mv_prediction(AV1_COMP *cpi, int allow_tempmv_prediction);
 #endif

@@ -253,7 +253,7 @@ int av1_get_active_map(AV1_COMP *cpi, unsigned char *new_map_16x16, int rows,
   }
 }
 
-void av1_set_high_precision_mv(AV1_COMP *cpi, int allow_high_precision_mv) {
+static void set_high_precision_mv(AV1_COMP *cpi, int allow_high_precision_mv) {
   MACROBLOCK *const mb = &cpi->td.mb;
   cpi->common.allow_high_precision_mv = allow_high_precision_mv;
 
@@ -373,7 +373,7 @@ static void setup_frame(AV1_COMP *cpi) {
   set_sb_size(cm, select_sb_size(cpi));
 }
 
-static void av1_enc_setup_mi(AV1_COMMON *cm) {
+static void enc_setup_mi(AV1_COMMON *cm) {
   int i;
   cm->mi = cm->mip + cm->mi_stride + 1;
   memset(cm->mip, 0, cm->mi_stride * (cm->mi_rows + 1) * sizeof(*cm->mip));
@@ -390,7 +390,7 @@ static void av1_enc_setup_mi(AV1_COMMON *cm) {
          cm->mi_stride * (cm->mi_rows + 1) * sizeof(*cm->mi_grid_base));
 }
 
-static int av1_enc_alloc_mi(AV1_COMMON *cm, int mi_size) {
+static int enc_alloc_mi(AV1_COMMON *cm, int mi_size) {
   cm->mip = aom_calloc(mi_size, sizeof(*cm->mip));
   if (!cm->mip) return 1;
   cm->prev_mip = aom_calloc(mi_size, sizeof(*cm->prev_mip));
@@ -406,7 +406,7 @@ static int av1_enc_alloc_mi(AV1_COMMON *cm, int mi_size) {
   return 0;
 }
 
-static void av1_enc_free_mi(AV1_COMMON *cm) {
+static void enc_free_mi(AV1_COMMON *cm) {
   aom_free(cm->mip);
   cm->mip = NULL;
   aom_free(cm->prev_mip);
@@ -417,7 +417,7 @@ static void av1_enc_free_mi(AV1_COMMON *cm) {
   cm->prev_mi_grid_base = NULL;
 }
 
-static void av1_swap_mi_and_prev_mi(AV1_COMMON *cm) {
+static void swap_mi_and_prev_mi(AV1_COMMON *cm) {
   // Current mip will be the prev_mip for the next frame.
   MODE_INFO **temp_base = cm->prev_mi_grid_base;
   MODE_INFO *temp = cm->prev_mip;
@@ -819,7 +819,7 @@ static void alloc_context_buffers_ext(AV1_COMP *cpi) {
                   aom_calloc(mi_size, sizeof(*cpi->mbmi_ext_base)));
 }
 
-void av1_alloc_compressor_data(AV1_COMP *cpi) {
+static void alloc_compressor_data(AV1_COMP *cpi) {
   AV1_COMMON *cm = &cpi->common;
 
   av1_alloc_context_buffers(cm, cm->width, cm->height);
@@ -1018,7 +1018,7 @@ static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
 
   cm->width = oxcf->width;
   cm->height = oxcf->height;
-  av1_alloc_compressor_data(cpi);
+  alloc_compressor_data(cpi);
 
   // Single thread case: use counts in common.
   cpi->td.counts = &cm->counts;
@@ -2318,7 +2318,7 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   set_compound_tools(cm);
 #endif  // CONFIG_EXT_INTER
   av1_reset_segment_features(cm);
-  av1_set_high_precision_mv(cpi, 0);
+  set_high_precision_mv(cpi, 0);
 
   set_rc_buffer_sizes(rc, &cpi->oxcf);
 
@@ -2349,7 +2349,7 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   if (cpi->initial_width) {
     if (cm->width > cpi->initial_width || cm->height > cpi->initial_height) {
       av1_free_context_buffers(cm);
-      av1_alloc_compressor_data(cpi);
+      alloc_compressor_data(cpi);
       realloc_segmentation_maps(cpi);
       cpi->initial_width = cpi->initial_height = 0;
     }
@@ -2401,9 +2401,9 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
   }
 
   cm->error.setjmp = 1;
-  cm->alloc_mi = av1_enc_alloc_mi;
-  cm->free_mi = av1_enc_free_mi;
-  cm->setup_mi = av1_enc_setup_mi;
+  cm->alloc_mi = enc_alloc_mi;
+  cm->free_mi = enc_free_mi;
+  cm->setup_mi = enc_setup_mi;
 
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
   get_default_ncobmc_kernels(cm);
@@ -3351,7 +3351,7 @@ static void enc_check_valid_ref_frames(AV1_COMP *const cpi) {
 }
 #endif  // CONFIG_VAR_REFS
 
-void av1_update_reference_frames(AV1_COMP *cpi) {
+static void update_reference_frames(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   BufferPool *const pool = cm->buffer_pool;
 
@@ -3572,7 +3572,7 @@ static INLINE void alloc_frame_mvs(AV1_COMMON *const cm, int buffer_idx) {
   new_fb_ptr->height = cm->height;
 }
 
-void av1_scale_references(AV1_COMP *cpi) {
+static void scale_references(AV1_COMP *cpi) {
   AV1_COMMON *cm = &cpi->common;
   MV_REFERENCE_FRAME ref_frame;
   const AOM_REFFRAME ref_mask[INTER_REFS_PER_FRAME] = {
@@ -3836,7 +3836,7 @@ static void set_size_dependent_vars(AV1_COMP *cpi, int *q, int *bottom_index,
 #endif
 
   if (!frame_is_intra_only(cm)) {
-    av1_set_high_precision_mv(cpi, (*q) < HIGH_PRECISION_MV_QTHRESH);
+    set_high_precision_mv(cpi, (*q) < HIGH_PRECISION_MV_QTHRESH);
   }
 
   // Configure experimental use of segmentation for enhanced coding of
@@ -3883,6 +3883,84 @@ static void set_restoration_tilesize(int width, int height, int sx, int sy,
 }
 #endif  // CONFIG_LOOP_RESTORATION
 
+static void init_ref_frame_bufs(AV1_COMMON *cm) {
+  int i;
+  BufferPool *const pool = cm->buffer_pool;
+  cm->new_fb_idx = INVALID_IDX;
+  for (i = 0; i < REF_FRAMES; ++i) {
+    cm->ref_frame_map[i] = INVALID_IDX;
+    pool->frame_bufs[i].ref_count = 0;
+  }
+#if CONFIG_HASH_ME
+  for (i = 0; i < FRAME_BUFFERS; ++i) {
+    av1_hash_table_init(&pool->frame_bufs[i].hash_table);
+  }
+#endif
+}
+
+static void check_initial_width(AV1_COMP *cpi,
+#if CONFIG_HIGHBITDEPTH
+                                int use_highbitdepth,
+#endif
+                                int subsampling_x, int subsampling_y) {
+  AV1_COMMON *const cm = &cpi->common;
+
+  if (!cpi->initial_width ||
+#if CONFIG_HIGHBITDEPTH
+      cm->use_highbitdepth != use_highbitdepth ||
+#endif
+      cm->subsampling_x != subsampling_x ||
+      cm->subsampling_y != subsampling_y) {
+    cm->subsampling_x = subsampling_x;
+    cm->subsampling_y = subsampling_y;
+#if CONFIG_HIGHBITDEPTH
+    cm->use_highbitdepth = use_highbitdepth;
+#endif
+
+    alloc_raw_frame_buffers(cpi);
+    init_ref_frame_bufs(cm);
+    alloc_util_frame_buffers(cpi);
+
+    init_motion_estimation(cpi);  // TODO(agrange) This can be removed.
+
+    cpi->initial_width = cm->width;
+    cpi->initial_height = cm->height;
+    cpi->initial_mbs = cm->MBs;
+  }
+}
+
+// Returns 1 if the assigned width or height was <= 0.
+static int set_size_literal(AV1_COMP *cpi, int width, int height) {
+  AV1_COMMON *cm = &cpi->common;
+#if CONFIG_HIGHBITDEPTH
+  check_initial_width(cpi, cm->use_highbitdepth, cm->subsampling_x,
+                      cm->subsampling_y);
+#else
+  check_initial_width(cpi, cm->subsampling_x, cm->subsampling_y);
+#endif  // CONFIG_HIGHBITDEPTH
+
+  if (width <= 0 || height <= 0) return 1;
+
+  cm->width = width;
+  if (cm->width > cpi->initial_width) {
+    cm->width = cpi->initial_width;
+    printf("Warning: Desired width too large, changed to %d\n", cm->width);
+  }
+
+  cm->height = height;
+  if (cm->height > cpi->initial_height) {
+    cm->height = cpi->initial_height;
+    printf("Warning: Desired height too large, changed to %d\n", cm->height);
+  }
+
+  assert(cm->width <= cpi->initial_width);
+  assert(cm->height <= cpi->initial_height);
+
+  update_frame_size(cpi);
+
+  return 0;
+}
+
 static void set_frame_size(AV1_COMP *cpi, int width, int height) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
@@ -3890,7 +3968,7 @@ static void set_frame_size(AV1_COMP *cpi, int width, int height) {
 
   if (width != cm->width || height != cm->height) {
     // There has been a change in the encoded frame size
-    av1_set_size_literal(cpi, width, height);
+    set_size_literal(cpi, width, height);
     set_mv_search_params(cpi);
   }
 
@@ -4160,7 +4238,7 @@ static void encode_without_recode_loop(AV1_COMP *cpi) {
 #endif
 
   if (frame_is_intra_only(cm) == 0) {
-    av1_scale_references(cpi);
+    scale_references(cpi);
   }
 
   av1_set_quantizer(cm, q);
@@ -4259,7 +4337,7 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
       if (loop_count > 0) {
         release_scaled_references(cpi);
       }
-      av1_scale_references(cpi);
+      scale_references(cpi);
     }
     av1_set_quantizer(cm, q);
 
@@ -4807,7 +4885,7 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
     //     the virtual indexes between LAST_FRAME and ALTREF2_FRAME, so that
     //     LAST3 will get retired, LAST2 becomes LAST3, LAST becomes LAST2, and
     //     ALTREF2_FRAME will serve as the new LAST_FRAME.
-    av1_update_reference_frames(cpi);
+    update_reference_frames(cpi);
 
     // Update frame flags
     cpi->frame_flags &= ~FRAMEFLAGS_GOLDEN;
@@ -5040,7 +5118,7 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
     release_scaled_references(cpi);
   }
 
-  av1_update_reference_frames(cpi);
+  update_reference_frames(cpi);
 
 #if CONFIG_ENTROPY_STATS
   av1_accumulate_frame_counts(&aggregate_fc, &cm->counts);
@@ -5140,7 +5218,7 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 // TODO(zoeliu): We may only swamp mi and prev_mi for those frames that are
 // being used as reference.
 #endif  // CONFIG_EXT_REFS
-    av1_swap_mi_and_prev_mi(cm);
+    swap_mi_and_prev_mi(cm);
     // Don't increment frame counters if this was an altref buffer
     // update not a real frame
     ++cm->current_video_frame;
@@ -5220,52 +5298,6 @@ static void Pass2Encode(AV1_COMP *cpi, size_t *size, uint8_t *dest,
 #endif  // CONFIG_EXT_REFS
 }
 #endif
-
-static void init_ref_frame_bufs(AV1_COMMON *cm) {
-  int i;
-  BufferPool *const pool = cm->buffer_pool;
-  cm->new_fb_idx = INVALID_IDX;
-  for (i = 0; i < REF_FRAMES; ++i) {
-    cm->ref_frame_map[i] = INVALID_IDX;
-    pool->frame_bufs[i].ref_count = 0;
-  }
-#if CONFIG_HASH_ME
-  for (i = 0; i < FRAME_BUFFERS; ++i) {
-    av1_hash_table_init(&pool->frame_bufs[i].hash_table);
-  }
-#endif
-}
-
-static void check_initial_width(AV1_COMP *cpi,
-#if CONFIG_HIGHBITDEPTH
-                                int use_highbitdepth,
-#endif
-                                int subsampling_x, int subsampling_y) {
-  AV1_COMMON *const cm = &cpi->common;
-
-  if (!cpi->initial_width ||
-#if CONFIG_HIGHBITDEPTH
-      cm->use_highbitdepth != use_highbitdepth ||
-#endif
-      cm->subsampling_x != subsampling_x ||
-      cm->subsampling_y != subsampling_y) {
-    cm->subsampling_x = subsampling_x;
-    cm->subsampling_y = subsampling_y;
-#if CONFIG_HIGHBITDEPTH
-    cm->use_highbitdepth = use_highbitdepth;
-#endif
-
-    alloc_raw_frame_buffers(cpi);
-    init_ref_frame_bufs(cm);
-    alloc_util_frame_buffers(cpi);
-
-    init_motion_estimation(cpi);  // TODO(agrange) This can be removed.
-
-    cpi->initial_width = cm->width;
-    cpi->initial_height = cm->height;
-    cpi->initial_mbs = cm->MBs;
-  }
-}
 
 int av1_receive_raw_frame(AV1_COMP *cpi, aom_enc_frame_flags_t frame_flags,
                           YV12_BUFFER_CONFIG *sd, int64_t time_stamp,
@@ -5611,7 +5643,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 
   aom_usec_timer_start(&cmptimer);
 
-  av1_set_high_precision_mv(cpi, ALTREF_HIGH_PRECISION_MV);
+  set_high_precision_mv(cpi, ALTREF_HIGH_PRECISION_MV);
 
   // Is multi-arf enabled.
   // Note that at the moment multi_arf is only configured for 2 pass VBR
@@ -6085,37 +6117,6 @@ int av1_set_internal_size(AV1_COMP *cpi, AOM_SCALING horiz_mode,
   // always go to the next whole number
   cm->width = (hs - 1 + cpi->oxcf.width * hr) / hs;
   cm->height = (vs - 1 + cpi->oxcf.height * vr) / vs;
-  assert(cm->width <= cpi->initial_width);
-  assert(cm->height <= cpi->initial_height);
-
-  update_frame_size(cpi);
-
-  return 0;
-}
-
-int av1_set_size_literal(AV1_COMP *cpi, int width, int height) {
-  AV1_COMMON *cm = &cpi->common;
-#if CONFIG_HIGHBITDEPTH
-  check_initial_width(cpi, cm->use_highbitdepth, cm->subsampling_x,
-                      cm->subsampling_y);
-#else
-  check_initial_width(cpi, cm->subsampling_x, cm->subsampling_y);
-#endif  // CONFIG_HIGHBITDEPTH
-
-  if (width <= 0 || height <= 0) return 1;
-
-  cm->width = width;
-  if (cm->width > cpi->initial_width) {
-    cm->width = cpi->initial_width;
-    printf("Warning: Desired width too large, changed to %d\n", cm->width);
-  }
-
-  cm->height = height;
-  if (cm->height > cpi->initial_height) {
-    cm->height = cpi->initial_height;
-    printf("Warning: Desired height too large, changed to %d\n", cm->height);
-  }
-
   assert(cm->width <= cpi->initial_width);
   assert(cm->height <= cpi->initial_height);
 
