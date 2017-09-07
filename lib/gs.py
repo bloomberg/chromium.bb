@@ -901,6 +901,7 @@ class GSContext(object):
       # gsutil doesn't support listing a local path, so just run 'ls'.
       kwargs.pop('retries', None)
       kwargs.pop('headers', None)
+      kwargs['capture_output'] = True
       result = cros_build_lib.RunCommand(['ls', path], **kwargs)
       return result.output.splitlines()
     else:
