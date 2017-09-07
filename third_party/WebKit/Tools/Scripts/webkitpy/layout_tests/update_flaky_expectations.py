@@ -346,11 +346,11 @@ class RemoveFlakesOMatic(object):
     def print_suggested_commit_description(self):
         """Prints the body of a suggested CL description after removing some lines."""
         dashboard_url = self._flakiness_dashboard_url()
-        bugs = ','.join(self._bug_numbers())
+        bugs = ', '.join(self._bug_numbers())
         message = ('Remove flaky TestExpectations for tests which appear non-flaky recently.\n\n'
                    'This change was made by the update-test-expectations script.\n\n'
                    'Recent test results history:\n%s\n\n'
-                   'BUG=%s') % (dashboard_url, bugs)
+                   'Bug: %s') % (dashboard_url, bugs)
         _log.info('Suggested commit description:\n' + message)
 
     def _flakiness_dashboard_url(self):
