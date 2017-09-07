@@ -132,9 +132,9 @@ void OmniboxPopupViewMac::UpdatePopupAppearance() {
   PositionPopup(NSHeight([matrix_ frame]));
 }
 
-void OmniboxPopupViewMac::SetMatchIcon(size_t match_index,
-                                       const gfx::Image& icon) {
-  // TODO(tommycli): Implement favicons for Cocoa.
+void OmniboxPopupViewMac::OnMatchIconUpdated(size_t match_index) {
+  [matrix_ setMatchIcon:ImageForMatch(GetResult().match_at(match_index))
+                 forRow:match_index];
 }
 
 gfx::Rect OmniboxPopupViewMac::GetTargetBounds() {
@@ -347,20 +347,10 @@ void OmniboxPopupViewMac::PositionPopup(const CGFloat matrixHeight) {
 
 NSImage* OmniboxPopupViewMac::ImageForMatch(
     const AutocompleteMatch& match) const {
-  gfx::Image image = model_->GetIconIfExtensionMatch(match);
-  if (!image.IsEmpty())
-    return image.AsNSImage();
-
   bool is_dark_mode = [matrix_ hasDarkTheme];
-  const SkColor icon_color =
+  const SkColor vector_icon_color =
       is_dark_mode ? SkColorSetA(SK_ColorWHITE, 0xCC) : gfx::kChromeIconGrey;
-  const gfx::VectorIcon& vector_icon =
-      model_->IsStarredMatch(match)
-          ? toolbar::kStarIcon
-          : AutocompleteMatch::TypeToVectorIcon(match.type);
-  const int kIconSize = 16;
-  return NSImageFromImageSkia(
-      gfx::CreateVectorIcon(vector_icon, kIconSize, icon_color));
+  return model_->GetMatchIcon(match, vector_icon_color).ToNSImage();
 }
 
 void OmniboxPopupViewMac::OpenURLForRow(size_t row,

@@ -38,10 +38,10 @@ const NSInteger kMiddleButtonNumber = 2;
   for (const AutocompleteMatch& match : result) {
     base::scoped_nsobject<OmniboxPopupCellData> cellData(
         [[OmniboxPopupCellData alloc]
-             initWithMatch:match
-                     image:popupView.ImageForMatch(match)
-               answerImage:(match.answer ? answerImage : nil)
-              forDarkTheme:isDarkTheme]);
+            initWithMatch:match
+                    image:popupView.ImageForMatch(match)
+              answerImage:(match.answer ? answerImage : nil)
+             forDarkTheme:isDarkTheme]);
     [array addObject:cellData];
   }
 
@@ -92,6 +92,13 @@ const NSInteger kMiddleButtonNumber = 2;
 
 - (void)setHighlightedRow:(NSInteger)rowIndex {
   hoveredIndex_ = rowIndex;
+}
+
+- (void)setMatchIcon:(NSImage*)icon forRow:(NSInteger)rowIndex {
+  OmniboxPopupCellData* cellData =
+      base::mac::ObjCCastStrict<OmniboxPopupCellData>(
+          [array_ objectAtIndex:rowIndex]);
+  [cellData setImage:icon];
 }
 
 - (CGFloat)tableView:(NSTableView*)tableView heightOfRow:(NSInteger)row {
@@ -313,6 +320,11 @@ const NSInteger kMiddleButtonNumber = 2;
     return YES;
   }
   return NO;
+}
+
+- (void)setMatchIcon:(NSImage*)icon forRow:(NSInteger)rowIndex {
+  [[self controller] setMatchIcon:icon forRow:rowIndex];
+  [self setNeedsDisplayInRect:[self rectOfRow:rowIndex]];
 }
 
 @end

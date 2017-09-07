@@ -46,7 +46,7 @@ class OmniboxPopupContentsView : public views::View,
   void InvalidateLine(size_t line) override;
   void OnLineSelected(size_t line) override;
   void UpdatePopupAppearance() override;
-  void SetMatchIcon(size_t match_index, const gfx::Image& icon) override;
+  void OnMatchIconUpdated(size_t match_index) override;
   gfx::Rect GetTargetBounds() override;
   void PaintUpdatesNow() override;
   void OnDragCanceled() override;
@@ -63,8 +63,8 @@ class OmniboxPopupContentsView : public views::View,
   void OnGestureEvent(ui::GestureEvent* event) override;
 
   bool IsSelectedIndex(size_t index) const;
-  gfx::Image GetIconIfExtensionMatch(size_t index) const;
-  bool IsStarredMatch(const AutocompleteMatch& match) const;
+  gfx::Image GetMatchIcon(const AutocompleteMatch& match,
+                          SkColor vector_icon_color) const;
 
  protected:
   OmniboxPopupContentsView(const gfx::FontList& font_list,
