@@ -93,6 +93,8 @@ public class FloatingPastePopupMenu implements PastePopupMenu {
                 menu.removeItem(R.id.select_action_menu_paste_as_plain_text);
             }
 
+            SelectionPopupController.setPasteAsPlainTextMenuItemTitle(menu);
+
             menu.removeItem(R.id.select_action_menu_cut);
             menu.removeItem(R.id.select_action_menu_copy);
             menu.removeItem(R.id.select_action_menu_share);

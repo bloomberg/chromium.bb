@@ -55,9 +55,11 @@
             android:alphabeticShortcut="a"
             android:orderInCategory="6"
             />
+        <!-- android:string/paste_as_plain_text is available since O,
+             we set title string after inflation if running on O+ devices. -->
         <item
             android:id="@+id/select_action_menu_paste_as_plain_text"
-            android:title="@android:string/paste_as_plain_text"
+            android:title=""
             android:showAsAction="always|withText"
             android:orderInCategory="7"
             />

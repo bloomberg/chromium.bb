@@ -493,11 +493,22 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         }
     }
 
+    @TargetApi(Build.VERSION_CODES.O)
+    public static void setPasteAsPlainTextMenuItemTitle(Menu menu) {
+        MenuItem item = menu.findItem(R.id.select_action_menu_paste_as_plain_text);
+        if (item == null) return;
+        // android.R.string.paste_as_plain_text is available in SDK since O.
+        assert BuildInfo.isAtLeastO();
+        item.setTitle(android.R.string.paste_as_plain_text);
+    }
+
     private void createActionMenu(ActionMode mode, Menu menu) {
         initializeMenu(mContext, mode, menu);
 
         mActionMenuDescriptor = createActionMenuDescriptor();
         mActionMenuDescriptor.apply(menu);
+
+        setPasteAsPlainTextMenuItemTitle(menu);
 
         if (!hasSelection() || isSelectionPassword()) return;
 
