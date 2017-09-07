@@ -20,15 +20,15 @@ class TestPrefetchDownloader : public PrefetchDownloader {
   ~TestPrefetchDownloader() override;
 
   void SetPrefetchService(PrefetchService* service) override;
+  bool IsDownloadServiceUnavailable() const override;
+  void CleanupDownloadsWhenReady() override;
   void StartDownload(const std::string& download_id,
                      const std::string& download_location) override;
-  void CancelDownload(const std::string& download_id) override;
   void OnDownloadServiceReady(
       const std::set<std::string>& outstanding_download_ids,
       const std::map<std::string, std::pair<base::FilePath, int64_t>>&
           success_downloads) override;
   void OnDownloadServiceUnavailable() override;
-  void OnDownloadServiceShutdown() override;
   void OnDownloadSucceeded(const std::string& download_id,
                            const base::FilePath& file_path,
                            int64_t file_size) override;
