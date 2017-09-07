@@ -912,8 +912,8 @@ static void highbd_warp_plane_old(const WarpedMotionParams *const wm,
       in[0] = j;
       in[1] = i;
       projectpoints(wm->wmmat, in, out, 1, 2, 2, subsampling_x, subsampling_y);
-      out[0] = ROUND_POWER_OF_TWO_SIGNED(out[0] * x_scale, 4);
-      out[1] = ROUND_POWER_OF_TWO_SIGNED(out[1] * y_scale, 4);
+      out[0] = ROUND_POWER_OF_TWO_SIGNED(out[0] * x_scale, SCALE_SUBPEL_BITS);
+      out[1] = ROUND_POWER_OF_TWO_SIGNED(out[1] * y_scale, SCALE_SUBPEL_BITS);
       if (conv_params->do_average)
         pred[(j - p_col) + (i - p_row) * p_stride] = ROUND_POWER_OF_TWO(
             pred[(j - p_col) + (i - p_row) * p_stride] +
@@ -1169,8 +1169,8 @@ static void warp_plane_old(const WarpedMotionParams *const wm,
       in[0] = j;
       in[1] = i;
       projectpoints(wm->wmmat, in, out, 1, 2, 2, subsampling_x, subsampling_y);
-      out[0] = ROUND_POWER_OF_TWO_SIGNED(out[0] * x_scale, 4);
-      out[1] = ROUND_POWER_OF_TWO_SIGNED(out[1] * y_scale, 4);
+      out[0] = ROUND_POWER_OF_TWO_SIGNED(out[0] * x_scale, SCALE_SUBPEL_BITS);
+      out[1] = ROUND_POWER_OF_TWO_SIGNED(out[1] * y_scale, SCALE_SUBPEL_BITS);
       if (conv_params->do_average)
         pred[(j - p_col) + (i - p_row) * p_stride] = ROUND_POWER_OF_TWO(
             pred[(j - p_col) + (i - p_row) * p_stride] +
