@@ -78,16 +78,13 @@ MediaStreamDevice::MediaStreamDevice(const MediaStreamDevice& other) = default;
 
 MediaStreamDevice::~MediaStreamDevice() {}
 
-bool MediaStreamDevice::IsEqual(const MediaStreamDevice& second) const {
-  const media::AudioParameters& input_second = second.input;
-  return type == second.type && name == second.name && id == second.id &&
-         input.sample_rate() == input_second.sample_rate() &&
-         input.channel_layout() == input_second.channel_layout();
-}
-
 bool MediaStreamDevice::IsSameDevice(
     const MediaStreamDevice& other_device) const {
-  return IsEqual(other_device) && session_id == other_device.session_id;
+  return type == other_device.type && name == other_device.name &&
+         id == other_device.id &&
+         input.sample_rate() == other_device.input.sample_rate() &&
+         input.channel_layout() == other_device.input.channel_layout() &&
+         session_id == other_device.session_id;
 }
 
 MediaStreamRequest::MediaStreamRequest(
