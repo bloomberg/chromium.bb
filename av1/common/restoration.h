@@ -26,10 +26,10 @@ extern "C" {
 
 #define RESTORATION_PROC_UNIT_SIZE 64
 
-#define SGRPROJ_BORDER_VERT 0  // Vertical border used for Sgr
+#define SGRPROJ_BORDER_VERT 1  // Vertical border used for Sgr
 #define SGRPROJ_BORDER_HORZ 2  // Horizontal border used for Sgr
 
-#define WIENER_BORDER_VERT 0  // Vertical border used for Wiener
+#define WIENER_BORDER_VERT 1  // Vertical border used for Wiener
 #define WIENER_HALFWIN 3
 #define WIENER_BORDER_HORZ (WIENER_HALFWIN)  // Horizontal border for Wiener
 
