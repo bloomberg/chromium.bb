@@ -86,7 +86,7 @@ class WebappActionsNotificationManager {
                 .setShowWhen(false)
                 .setAutoCancel(false)
                 .setOngoing(true)
-                .setPriority(Notification.PRIORITY_MIN)
+                .setPriority(Notification.PRIORITY_LOW)
                 .setContentIntent(focusIntent)
                 .addAction(R.drawable.ic_share_white_24dp,
                         mWebappActivity.getResources().getString(R.string.share), shareIntent)
