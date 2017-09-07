@@ -713,6 +713,36 @@ TEST_F(MediaControlsImplTest, TimelineImmediatelyUpdatesCurrentTime) {
   EXPECT_EQ(duration / 2, current_time_display->CurrentValue());
 }
 
+TEST_F(MediaControlsImplTest, VolumeSliderPaintInvalidationOnInput) {
+  EnsureSizing();
+
+  Element* volume_slider = VolumeSliderElement();
+
+  MockLayoutObject layout_object(volume_slider);
+  LayoutObject* prev_layout_object = volume_slider->GetLayoutObject();
+  volume_slider->SetLayoutObject(&layout_object);
+
+  layout_object.ClearPaintInvalidationFlags();
+  EXPECT_FALSE(layout_object.ShouldDoFullPaintInvalidation());
+  Event* event = Event::Create(EventTypeNames::input);
+  volume_slider->DefaultEventHandler(event);
+  EXPECT_TRUE(layout_object.ShouldDoFullPaintInvalidation());
+
+  layout_object.ClearPaintInvalidationFlags();
+  EXPECT_FALSE(layout_object.ShouldDoFullPaintInvalidation());
+  event = Event::Create(EventTypeNames::input);
+  volume_slider->DefaultEventHandler(event);
+  EXPECT_TRUE(layout_object.ShouldDoFullPaintInvalidation());
+
+  layout_object.ClearPaintInvalidationFlags();
+  EXPECT_FALSE(layout_object.ShouldDoFullPaintInvalidation());
+  event = Event::Create(EventTypeNames::input);
+  volume_slider->DefaultEventHandler(event);
+  EXPECT_TRUE(layout_object.ShouldDoFullPaintInvalidation());
+
+  volume_slider->SetLayoutObject(prev_layout_object);
+}
+
 TEST_F(MediaControlsImplTest, TimelineMetricsWidth) {
   MediaControls().MediaElement().SetSrc("https://example.com/foo.mp4");
   testing::RunPendingTasks();
@@ -829,7 +859,7 @@ TEST_F(MediaControlsImplTest, TimelineMetricsDragFromElsewhere) {
   MouseUpAt(trackTwoThirds);
 
   EXPECT_LE(0.66 * duration, MediaControls().MediaElement().currentTime());
-  EXPECT_GE(0.70 * duration, MediaControls().MediaElement().currentTime());
+  EXPECT_GE(0.68 * duration, MediaControls().MediaElement().currentTime());
 
   GetHistogramTester().ExpectUniqueSample("Media.Timeline.SeekType." TIMELINE_W,
                                           2 /* SeekType::kDragFromElsewhere */,

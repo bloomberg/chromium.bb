@@ -154,18 +154,6 @@ function isClosedCaptionsButtonVisible(currentMediaElement)
     return false;
 }
 
-function toggleClosedCaptionsButton(videoElement) {
-    return mediaControlsButton(videoElement, 'toggle-closed-captions-button');
-}
-
-function playButton(videoElement) {
-    return mediaControlsButton(videoElement, 'play-button');
-}
-
-function muteButton(videoElement) {
-    return mediaControlsButton(videoElement, 'mute-button');
-}
-
 function clickAtCoordinates(x, y)
 {
     eventSender.mouseMoveTo(x, y);
@@ -252,12 +240,4 @@ function isVisible(button) {
     var computedStyle = getComputedStyle(button);
     return computedStyle.display !== "none" &&
            computedStyle.visibility === "visible";
-}
-
-function checkButtonHasClass(button, className) {
-  assert_true(button.classList.contains(className));
-}
-
-function checkButtonNotHasClass(button, className) {
-  assert_false(button.classList.contains(className));
 }

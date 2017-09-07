@@ -1204,13 +1204,6 @@ void MediaControlsImpl::NetworkStateChanged() {
   // source or no longer have a source.
   download_button_->SetIsWanted(
       download_button_->ShouldDisplayDownloadButton());
-
-  if (MediaElement().getNetworkState() != HTMLMediaElement::kNetworkEmpty &&
-      MediaElement().getNetworkState() != HTMLMediaElement::kNetworkNoSource) {
-    setAttribute("class", "");
-  } else {
-    setAttribute("class", "not-loaded");
-  }
 }
 
 bool MediaControlsImpl::OverflowMenuVisible() {

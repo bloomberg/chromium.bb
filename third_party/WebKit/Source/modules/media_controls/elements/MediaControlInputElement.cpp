@@ -4,7 +4,6 @@
 
 #include "modules/media_controls/elements/MediaControlInputElement.h"
 
-#include "core/dom/DOMTokenList.h"
 #include "core/dom/events/Event.h"
 #include "core/html/HTMLLabelElement.h"
 #include "core/html/HTMLMediaElement.h"
@@ -173,14 +172,6 @@ void MediaControlInputElement::RecordCTREvent(CTREvent event) {
   EnumerationHistogram ctr_histogram(histogram_name.Ascii().data(),
                                      static_cast<int>(CTREvent::kCount));
   ctr_histogram.Count(static_cast<int>(event));
-}
-
-void MediaControlInputElement::SetClass(const AtomicString& class_name,
-                                        bool should_have_class) {
-  if (should_have_class)
-    classList().Add(class_name);
-  else
-    classList().Remove(class_name);
 }
 
 DEFINE_TRACE(MediaControlInputElement) {

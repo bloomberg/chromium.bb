@@ -3675,6 +3675,3 @@ crbug.com/762390 [ Android ] http/tests/devtools/console/only-one-deprecation-wa
 crbug.com/762423 [ Android ] http/tests/dom/create-contextual-fragment-from-svg-document-range.html [ Pass Crash ]
 crbug.com/762399 [ Android ] http/tests/cache/zero-length-xhr.html [ Pass Crash ]
 crbug.com/762486 [ Win7 Debug ] virtual/mojo-loading/http/tests/security/xss-DENIED-iframe-src-alias.html [ Pass Failure ]
-
-# Flaky
-crbug.com/747975 [ Mac10.12 Linux ] virtual/mojo-loading/http/tests/media/video-buffered-range-contains-currentTime.html [ Failure Pass ]

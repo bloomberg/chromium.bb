@@ -30,10 +30,10 @@
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_OVERFLOW_MENU_ICON" file="mediaplayer_overflow_menu.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_DOWNLOAD_ICON" file="mediaplayer_download.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_SUBTITLES_ICON" file="mediaplayer_subtitles_icon.png" />
-      <structure type="chrome_html" name="IDR_UASTYLE_MEDIA_CONTROLS_CSS" file="mediaControls.css" flattenhtml="true" />
     </structures>
     <includes>
-      <include name="IDR_UASTYLE_MEDIA_CONTROLS_ANDROID_CSS" file="mediaControlsAndroid.css" type="BINDATA" compress="gzip" />
+      <include name="IDR_UASTYLE_MEDIA_CONTROLS_ANDROID_CSS" file="mediaControlsAndroid.css" type="chrome_html" compress="gzip" />
+      <include name="IDR_UASTYLE_MEDIA_CONTROLS_CSS" file="mediaControls.css" type="chrome_html" compress="gzip" />
     </includes>
   </release>
 </grit>
