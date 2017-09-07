@@ -8,7 +8,7 @@
 #include <memory>
 #include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/TaskRunnerHelper.h"
+#include "core/dom/TaskTypeTraits.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"

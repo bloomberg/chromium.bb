@@ -5,6 +5,7 @@
 #include "core/workers/ParentFrameTaskRunners.h"
 
 #include "core/dom/Document.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/ThreadingPrimitives.h"
