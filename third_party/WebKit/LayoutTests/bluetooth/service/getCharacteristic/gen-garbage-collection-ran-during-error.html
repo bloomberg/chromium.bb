@@ -9,7 +9,7 @@
 'use strict';
 let test_desc = 'Garbage Collection ran during getCharacteristic call that ' +
    'fails. Should not crash';
-let service, func_promise;
+let func_promise;
 promise_test(() => getHealthThermometerService()
   .then(({service}) => {
     func_promise = assert_promise_rejects_with_message(
