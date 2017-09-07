@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/cert/internal/parse_ocsp.h"
+#include "net/cert/internal/ocsp.h"
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "net/cert/internal/test_helpers.h"
 #include "net/der/encode_values.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,7 +17,7 @@ namespace {
 const base::TimeDelta kOCSPAgeOneWeek = base::TimeDelta::FromDays(7);
 
 std::string GetFilePath(const std::string& file_name) {
-  return std::string("net/data/parse_ocsp_unittest/") + file_name;
+  return std::string("net/data/ocsp_unittest/") + file_name;
 }
 
 enum OCSPFailure {
