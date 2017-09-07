@@ -137,9 +137,7 @@ void ExtensionsGuestViewMessageFilter::OnResizeGuest(
     const gfx::Size& new_size) {
   // We should have a GuestViewManager at this point. If we don't then the
   // embedder is misbehaving.
-  // TODO(mcnee): The renderer currently does this. Correct its behaviour
-  // so that we can enforce this.
-  auto* manager = GuestViewManager::FromBrowserContext(browser_context_);
+  auto* manager = GetGuestViewManagerOrKill();
   if (!manager)
     return;
 

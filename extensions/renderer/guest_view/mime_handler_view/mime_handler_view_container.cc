@@ -195,6 +195,13 @@ void MimeHandlerViewContainer::DidResizeElement(const gfx::Size& new_size) {
   element_size_ = new_size;
 
   CreateMimeHandlerViewGuestIfNecessary();
+
+  // Don't try to resize a guest that hasn't been created yet. It is enough to
+  // initialise |element_size_| here and then we'll send that to the browser
+  // during guest creation.
+  if (!guest_created_)
+    return;
+
   render_frame()->Send(new ExtensionsGuestViewHostMsg_ResizeGuest(
       render_frame()->GetRoutingID(), element_instance_id(), new_size));
 }
