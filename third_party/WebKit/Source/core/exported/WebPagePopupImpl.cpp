@@ -77,6 +77,8 @@ class PagePopupChromeClient final : public EmptyChromeClient {
     popup_->SetWindowRect(rect);
   }
 
+  bool IsPopup() override { return true; }
+
  private:
   explicit PagePopupChromeClient(WebPagePopupImpl* popup) : popup_(popup) {
     DCHECK(popup_->WidgetClient());

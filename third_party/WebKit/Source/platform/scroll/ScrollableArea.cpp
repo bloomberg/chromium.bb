@@ -596,7 +596,10 @@ void ScrollableArea::ShowOverlayScrollbars() {
   // If the overlay scrollbars don't fade out, don't do anything. This is the
   // case for the mock overlays used in tests and on Mac, where the fade-out is
   // animated in ScrollAnimatorMac.
-  if (!time_until_disable)
+  // We also don't fade out overlay scrollbar for popup since we don't create
+  // compositor for popup and thus they don't appear on hover so users without
+  // a wheel can't scroll if they fade out.
+  if (!time_until_disable || GetChromeClient()->IsPopup())
     return;
 
   if (!fade_overlay_scrollbars_timer_) {
