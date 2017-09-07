@@ -161,6 +161,20 @@ bool IsTemplateParameterString(const std::string& param) {
       (*(param.rbegin()) == kEndParameter);
 }
 
+std::string YandexSearchPathFromDeviceFormFactor() {
+  switch (ui::GetDeviceFormFactor()) {
+    case ui::DEVICE_FORM_FACTOR_DESKTOP:
+      return "search/";
+    case ui::DEVICE_FORM_FACTOR_PHONE:
+      return "search/touch/";
+    case ui::DEVICE_FORM_FACTOR_TABLET:
+      return "search/pad/";
+    default:
+      NOTREACHED();
+      return std::string();
+  }
+}
+
 }  // namespace
 
 // TemplateURLRef::SearchTermsArgs --------------------------------------------
@@ -662,17 +676,7 @@ bool TemplateURLRef::ParseParameter(size_t start,
   } else if (parameter == "mailru:referralID") {
     replacements->push_back(Replacement(MAIL_RU_REFERRAL_ID, start));
   } else if (parameter == "yandex:searchPath") {
-    switch (ui::GetDeviceFormFactor()) {
-      case ui::DEVICE_FORM_FACTOR_DESKTOP:
-        url->insert(start, "search/");
-        break;
-      case ui::DEVICE_FORM_FACTOR_PHONE:
-        url->insert(start, "search/touch/");
-        break;
-      case ui::DEVICE_FORM_FACTOR_TABLET:
-        url->insert(start, "search/pad/");
-        break;
-    }
+    url->insert(start, YandexSearchPathFromDeviceFormFactor());
   } else if (parameter == "inputEncoding") {
     replacements->push_back(Replacement(ENCODING, start));
   } else if (parameter == "language") {
@@ -798,6 +802,8 @@ void TemplateURLRef::ParseHostAndSearchTermKey(
   base::ReplaceSubstringsAfterOffset(
       &url_string, 0, "{google:baseSuggestURL}",
       search_terms_data.GoogleBaseSuggestURLValue());
+  base::ReplaceSubstringsAfterOffset(&url_string, 0, "{yandex:searchPath}",
+                                     YandexSearchPathFromDeviceFormFactor());
 
   GURL url(url_string);
   if (!url.is_valid())

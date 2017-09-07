@@ -371,6 +371,23 @@ TEST_F(TemplateURLPrepopulateDataTest, GetEngineTypeForAllPrepopulatedEngines) {
   }
 }
 
+TEST_F(TemplateURLPrepopulateDataTest, CheckSearchURLDetection) {
+  using PrepopulatedEngine = TemplateURLPrepopulateData::PrepopulatedEngine;
+  const std::vector<const PrepopulatedEngine*> all_engines =
+      TemplateURLPrepopulateData::GetAllPrepopulatedEngines();
+  for (const PrepopulatedEngine* engine : all_engines) {
+    std::unique_ptr<TemplateURLData> data =
+        TemplateURLDataFromPrepopulatedEngine(*engine);
+    TemplateURL t_url(*data);
+    SearchTermsData search_data;
+    // Test that search term is successfully extracted from generated search
+    // url.
+    GURL search_url = t_url.GenerateSearchURL(search_data);
+    EXPECT_TRUE(t_url.IsSearchURL(search_url, search_data))
+        << "Search url is incorrectly detected for " << search_url;
+  }
+}
+
 namespace {
 
 void CheckTemplateUrlRefIsCryptographic(const TemplateURLRef& url_ref) {
