@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_COMMON_SANDBOX_TYPE_H_
 #define CONTENT_PUBLIC_COMMON_SANDBOX_TYPE_H_
 
+#include <string>
+
 #include "base/command_line.h"
 #include "content/common/content_export.h"
 
@@ -49,6 +51,9 @@ inline bool IsUnsandboxedSandboxType(SandboxType sandbox_type) {
 
 CONTENT_EXPORT SandboxType
 SandboxTypeFromCommandLine(const base::CommandLine& command_line);
+
+CONTENT_EXPORT SandboxType
+UtilitySandboxTypeFromString(const std::string& sandbox_string);
 
 }  // namespace content
 

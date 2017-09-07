@@ -1,6 +1,7 @@
 {
   "name": "profile_import",
   "display_name": "Profile Import",
+  "sandbox_type": "none",
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {

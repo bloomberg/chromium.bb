@@ -1,6 +1,7 @@
 {
   "name": "video_capture",
   "display_name": "Video Capture",
+  "sandbox_type": "none",
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides" : {

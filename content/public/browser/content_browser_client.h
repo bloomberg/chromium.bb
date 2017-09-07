@@ -698,17 +698,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Manager.
   virtual void RegisterInProcessServices(StaticServiceMap* services) {}
 
-  using OutOfProcessServiceMap =
-      std::map<std::string, std::pair<base::string16, SandboxType>>;
+  using OutOfProcessServiceMap = std::map<std::string, base::string16>;
 
-  // Registers services to be loaded out of the browser process, in an
-  // utility process. The value of each map entry should be a { process name,
-  // sandbox type } pair to use for the service's host process when launched.
-  //
-  // WARNING: SANDBOX_TYPE_NO_SANDBOX is NOT recommended as it creates an
-  // unsandboxed process! If a service needs another service that is only
-  // available out of the sandbox, it could ask the browser process to provide
-  // it. Only use this method when that approach does not work.
+  // Registers services to be loaded out of the browser process in an
+  // utility process. The value of each map entry should be a process name,
+  // to use for the service's host process when launched.
   virtual void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) {}
 
   // Allow the embedder to provide a dictionary loaded from a JSON file

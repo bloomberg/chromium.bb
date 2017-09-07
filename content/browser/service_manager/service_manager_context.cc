@@ -75,21 +75,35 @@ base::LazyInstance<std::unique_ptr<service_manager::Connector>>::Leaky
 
 void DestroyConnectorOnIOThread() { g_io_thread_connector.Get().reset(); }
 
+// Launch a process for a service once its sandbox type is known.
 void StartServiceInUtilityProcess(
     const std::string& service_name,
     const base::string16& process_name,
-    SandboxType sandbox_type,
-    service_manager::mojom::ServiceRequest request) {
+    service_manager::mojom::ServiceRequest request,
+    service_manager::mojom::ConnectResult query_result,
+    const std::string& sandbox_string) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   UtilityProcessHost* process_host =
       UtilityProcessHost::Create(nullptr, nullptr);
   process_host->SetName(process_name);
-  process_host->SetSandboxType(sandbox_type);
+  process_host->SetSandboxType(UtilitySandboxTypeFromString(sandbox_string));
   process_host->Start();
 
   service_manager::mojom::ServiceFactoryPtr service_factory;
   BindInterface(process_host, mojo::MakeRequest(&service_factory));
   service_factory->CreateService(std::move(request), service_name);
+}
+
+// Determine a sandbox type for a service and launch a process for it.
+void QueryAndStartServiceInUtilityProcess(
+    const std::string& service_name,
+    const base::string16& process_name,
+    service_manager::mojom::ServiceRequest request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  ServiceManagerContext::GetConnectorForIOThread()->QueryService(
+      service_manager::Identity(service_name),
+      base::BindOnce(&StartServiceInUtilityProcess, service_name, process_name,
+                     std::move(request)));
 }
 
 // Request service_manager::mojom::ServiceFactory from GPU process host. Must be
@@ -351,39 +365,35 @@ ServiceManagerContext::ServiceManagerContext() {
   GetContentClient()->browser()->RegisterOutOfProcessServices(
       &out_of_process_services);
 
-  out_of_process_services[data_decoder::mojom::kServiceName] = {
-      base::ASCIIToUTF16("Data Decoder Service"), SANDBOX_TYPE_UTILITY};
+  out_of_process_services[data_decoder::mojom::kServiceName] =
+      base::ASCIIToUTF16("Data Decoder Service");
 
   bool network_service_enabled =
       base::FeatureList::IsEnabled(features::kNetworkService);
   if (network_service_enabled) {
-    out_of_process_services[content::mojom::kNetworkServiceName] = {
-        base::ASCIIToUTF16("Network Service"), SANDBOX_TYPE_NETWORK};
+    out_of_process_services[content::mojom::kNetworkServiceName] =
+        base::ASCIIToUTF16("Network Service");
   }
 
   if (base::FeatureList::IsEnabled(video_capture::kMojoVideoCapture)) {
-    out_of_process_services[video_capture::mojom::kServiceName] = {
-        base::ASCIIToUTF16("Video Capture Service"), SANDBOX_TYPE_NO_SANDBOX};
+    out_of_process_services[video_capture::mojom::kServiceName] =
+        base::ASCIIToUTF16("Video Capture Service");
   }
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
-  out_of_process_services[media::mojom::kMediaServiceName] = {
-      base::ASCIIToUTF16("Media Service"), SANDBOX_TYPE_UTILITY};
+  out_of_process_services[media::mojom::kMediaServiceName] =
+      base::ASCIIToUTF16("Media Service");
 #endif
 
 #if BUILDFLAG(ENABLE_STANDALONE_CDM_SERVICE)
-  // TODO(xhwang): This is only used for test/experiment for now so it's okay
-  // to run it in an unsandboxed utility process. Fix CDM loading so that we can
-  // run it in the sandboxed utility process. See http://crbug.com/510604
-  out_of_process_services[media::mojom::kCdmServiceName] = {
-      base::ASCIIToUTF16("Content Decryption Module Service"),
-      SANDBOX_TYPE_NO_SANDBOX};
+  out_of_process_services[media::mojom::kCdmServiceName] =
+      base::ASCIIToUTF16("Content Decryption Module Service");
 #endif
 
   for (const auto& service : out_of_process_services) {
     packaged_services_connection_->AddServiceRequestHandler(
-        service.first, base::Bind(&StartServiceInUtilityProcess, service.first,
-                                  service.second.first, service.second.second));
+        service.first, base::Bind(&QueryAndStartServiceInUtilityProcess,
+                                  service.first, service.second));
   }
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
