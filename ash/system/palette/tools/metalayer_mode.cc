@@ -146,9 +146,11 @@ void MetalayerMode::UpdateView() {
   if (!highlight_view_)
     return;
 
-  highlight_view_->text_label()->SetText(l10n_util::GetStringUTF16(
+  const base::string16 text = l10n_util::GetStringUTF16(
       loading() ? IDS_ASH_STYLUS_TOOLS_METALAYER_MODE_LOADING
-                : IDS_ASH_STYLUS_TOOLS_METALAYER_MODE));
+                : IDS_ASH_STYLUS_TOOLS_METALAYER_MODE);
+  highlight_view_->text_label()->SetText(text);
+  highlight_view_->SetAccessibleName(text);
 
   highlight_view_->SetEnabled(selectable());
 
