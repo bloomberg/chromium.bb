@@ -1179,6 +1179,12 @@ split_static_library("browser") {
     "profiles/sql_init_error_message_ids.cc",
     "profiles/sql_init_error_message_ids.h",
     "profiles/storage_partition_descriptor.h",
+    "profiling_host/background_profiling_triggers.cc",
+    "profiling_host/background_profiling_triggers.h",
+    "profiling_host/chrome_browser_main_extra_parts_profiling.cc",
+    "profiling_host/chrome_browser_main_extra_parts_profiling.h",
+    "profiling_host/profiling_process_host.cc",
+    "profiling_host/profiling_process_host.h",
     "push_messaging/push_messaging_app_identifier.cc",
     "push_messaging/push_messaging_app_identifier.h",
     "push_messaging/push_messaging_constants.cc",
@@ -1490,13 +1496,6 @@ split_static_library("browser") {
     "win/titlebar_config.h",
   ]
 
-  if (is_ios) {
-    sources -= [
-      "ssl/mitm_software_blocking_page.cc",
-      "ssl/mitm_software_blocking_page.h",
-    ]
-  }
-
   if (!is_android) {
     sources += [
       "embedded_ui_service_info_factory.cc",
@@ -1514,9 +1513,8 @@ split_static_library("browser") {
 
   allow_circular_includes_from = [ "//chrome/browser/ui" ]
 
-  # iOS/non-iOS shared deps. New dependencies should generally be added in the
-  # non-iOS deps below.
   public_deps = [
+    "//base",
     "//chrome/common",
     "//components/autofill/core/browser",
     "//components/payments/core",
@@ -1528,6 +1526,8 @@ split_static_library("browser") {
   deps = [
     ":active_use_util",
     ":resource_prefetch_predictor_proto",
+    "//base:i18n",
+    "//base/allocator:features",
     "//cc",
     "//chrome:extra_resources",
     "//chrome:resources",
@@ -1541,7 +1541,6 @@ split_static_library("browser") {
     "//chrome/browser/metrics:expired_histograms_array",
     "//chrome/browser/metrics/variations:chrome_ui_string_overrider_factory",
     "//chrome/browser/net:probe_message_proto",
-    "//chrome/browser/profiling_host",
     "//chrome/browser/safe_browsing",
     "//chrome/browser/ssl:proto",
     "//chrome/browser/ui",
