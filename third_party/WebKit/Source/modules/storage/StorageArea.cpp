@@ -176,7 +176,7 @@ void StorageArea::DispatchLocalStorageEvent(
       Storage* storage =
           DOMWindowStorage::From(*local_window).OptionalLocalStorage();
       if (storage &&
-          local_frame->GetDocument()->GetSecurityOrigin()->CanAccess(
+          local_frame->GetDocument()->GetSecurityOrigin()->IsSameSchemeHostPort(
               security_origin) &&
           !IsEventSource(storage, source_area_instance))
         local_frame->DomWindow()->EnqueueWindowEvent(
@@ -228,7 +228,7 @@ void StorageArea::DispatchSessionStorageEvent(
     Storage* storage =
         DOMWindowStorage::From(*local_window).OptionalSessionStorage();
     if (storage &&
-        local_frame->GetDocument()->GetSecurityOrigin()->CanAccess(
+        local_frame->GetDocument()->GetSecurityOrigin()->IsSameSchemeHostPort(
             security_origin) &&
         !IsEventSource(storage, source_area_instance))
       local_frame->DomWindow()->EnqueueWindowEvent(
