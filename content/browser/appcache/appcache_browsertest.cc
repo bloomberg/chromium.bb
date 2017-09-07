@@ -136,8 +136,10 @@ IN_PROC_BROWSER_TEST_F(AppCacheNetworkServiceBrowserTest,
 // This test validates that navigating to a page which has an AppCache manifest
 // and subresources which are redirected to resources which exist in the
 // AppCache are loaded from the cache.
+//
+// Disabled because this is flaky (timeout). http://crbug.com/762381
 IN_PROC_BROWSER_TEST_F(AppCacheNetworkServiceBrowserTest,
-                       VerifyRedirectedSubresourceAppCacheLoad) {
+                       DISABLED_VerifyRedirectedSubresourceAppCacheLoad) {
   std::unique_ptr<net::EmbeddedTestServer> embedded_test_server(
       new net::EmbeddedTestServer());
 
