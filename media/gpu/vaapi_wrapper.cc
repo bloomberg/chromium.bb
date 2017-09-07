@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/environment.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
@@ -1198,10 +1199,16 @@ bool VaapiWrapper::VADisplayState::Initialize() {
       return false;
     }
 
+    // Set VA logging level to enable error messages, unless already set
+    constexpr char libva_log_level_env[] = "LIBVA_MESSAGING_LEVEL";
+    std::unique_ptr<base::Environment> env(base::Environment::Create());
+    if (!env->HasVar(libva_log_level_env))
+      env->SetVar(libva_log_level_env, "1");
+
     VAStatus va_res =
         vaInitialize(va_display_, &major_version_, &minor_version_);
     if (va_res != VA_STATUS_SUCCESS) {
-      LOG(WARNING) << "vaInitialize failed: " << vaErrorStr(va_res);
+      LOG(ERROR) << "vaInitialize failed: " << vaErrorStr(va_res);
       return false;
     }
 
