@@ -1719,7 +1719,7 @@ void RendererSchedulerImpl::DidCommitProvisionalLoad(
     bool is_reload,
     bool is_main_frame) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
-               "RendererSchedulerImpl::DidCommitProvisionalLoad");
+               "RendererSchedulerImpl::OnDidCommitProvisionalLoad");
   // Initialize |max_queueing_time_metric| lazily so that
   // |SingleSampleMetricsFactory::SetFactory()| is called before
   // |SingleSampleMetricsFactory::Get()|
