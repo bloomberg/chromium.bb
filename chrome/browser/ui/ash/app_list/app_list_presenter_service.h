@@ -31,6 +31,7 @@ class AppListPresenterService : public app_list::mojom::AppListPresenter {
   void UpdateYPositionAndOpacity(int y_position_in_screen,
                                  float background_opacity) override;
   void EndDragFromShelf(app_list::mojom::AppListState app_list_state) override;
+  void ProcessMouseWheelOffset(int y_scroll_offset) override;
 
  private:
   app_list::AppListPresenterImpl* GetPresenter();

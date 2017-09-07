@@ -10,6 +10,10 @@
 #include "ui/app_list/presenter/app_list_presenter.mojom.h"
 #include "ui/app_list/presenter/app_list_presenter_export.h"
 
+namespace ui {
+class MouseWheelEvent;
+}
+
 namespace app_list {
 
 class AppListDelegate;
@@ -31,6 +35,8 @@ class APP_LIST_PRESENTER_EXPORT AppList : public mojom::AppList {
   void UpdateYPositionAndOpacity(int y_position_in_screen,
                                  float background_opacity);
   void EndDragFromShelf(mojom::AppListState app_list_state);
+  void ProcessMouseWheelEvent(const ui::MouseWheelEvent& event);
+
   void Dismiss();
   void ToggleAppList(int64_t display_id, AppListShowSource show_source);
   void StartVoiceInteractionSession();

@@ -64,4 +64,8 @@ interface AppListPresenter {
 
   // Ends the drag of app list from shelf.
   EndDragFromShelf(AppListState app_list_state);
+
+  // Passes MouseWheelEvents from the Shelf to the AppListView.
+  ProcessMouseWheelOffset(int32 y_scroll_offset);
+
 };

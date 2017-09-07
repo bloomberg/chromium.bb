@@ -983,4 +983,15 @@ TEST_P(FullscreenAppListPresenterDelegateTest,
   ASSERT_EQ(app_list::AppListView::CLOSED, view->app_list_state());
 }
 
+TEST_F(FullscreenAppListPresenterDelegateTest,
+       MouseWheelFromAppListPresenterImplTransitionsAppListState) {
+  app_list_presenter_impl()->Show(GetPrimaryDisplayId());
+  app_list::AppListView* view = app_list_presenter_impl()->GetView();
+  EXPECT_EQ(app_list::AppListView::PEEKING, view->app_list_state());
+
+  app_list_presenter_impl()->ProcessMouseWheelOffset(-30);
+
+  ASSERT_EQ(app_list::AppListView::FULLSCREEN_ALL_APPS, view->app_list_state());
+}
+
 }  // namespace ash

@@ -79,6 +79,9 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   // Ends the drag of app list from shelf.
   void EndDragFromShelf(mojom::AppListState app_list_state);
 
+  // Passes a MouseWheelEvent from the shelf to the AppListView.
+  void ProcessMouseWheelOffset(int y_scroll_offset);
+
  private:
   friend class test::AppListPresenterImplTestApi;
 
