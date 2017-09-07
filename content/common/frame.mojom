@@ -96,6 +96,9 @@ struct CreateNewWindowReply {
 // the frame is detached. Used by resource requests with "keepalive" specified.
 interface KeepAliveHandle {};
 
+[Native]
+struct DidCommitProvisionalLoadParams;
+
 // Implemented by the frame server (i.e. the browser process). For messages that
 // must be associated with the IPC channel.
 interface FrameHost {
@@ -107,4 +110,8 @@ interface FrameHost {
 
   // Creates and returns a KeepAliveHandle.
   IssueKeepAliveHandle(KeepAliveHandle& keep_alive_handle);
+
+  // Sent by the renderer when a navigation commits in the frame.
+  DidCommitProvisionalLoad(
+      DidCommitProvisionalLoadParams params);
 };

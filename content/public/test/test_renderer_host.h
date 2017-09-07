@@ -83,7 +83,7 @@ class RenderFrameHostTester {
   // Simulates a navigation stopping in the RenderFrameHost.
   virtual void SimulateNavigationStop() = 0;
 
-  // Calls OnDidCommitProvisionalLoad on the RenderFrameHost with the given
+  // Calls DidCommitProvisionalLoad on the RenderFrameHost with the given
   // information with various sets of parameters. These are helper functions for
   // simulating the most common types of loads.
   //

@@ -135,6 +135,13 @@ class AssociatedBinding : public AssociatedBindingBase {
   // Returns the interface implementation that was previously specified.
   Interface* impl() { return ImplRefTraits::GetRawPointer(&stub_.sink()); }
 
+  // Allows test code to swap the interface implementation.
+  ImplPointerType SwapImplForTesting(ImplPointerType new_impl) {
+    Interface* old_impl = impl();
+    stub_.set_sink(std::move(new_impl));
+    return old_impl;
+  }
+
  private:
   typename Interface::template Stub_<ImplRefTraits> stub_;
 
