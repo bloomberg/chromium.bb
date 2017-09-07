@@ -599,6 +599,9 @@ public class BottomSheet
         // motion event with the raw (x, y) coordinates of the original so the gesture detector
         // functions properly.
         mGestureDetector.onTouchEvent(createRawMotionEvent(e));
+
+        if (!mIsScrolling && getTouchDelegate() != null) return getTouchDelegate().onTouchEvent(e);
+
         return mIsScrolling;
     }
 
@@ -640,6 +643,8 @@ public class BottomSheet
                 setSheetState(targetState, true);
             }
         }
+
+        if (!mIsScrolling && getTouchDelegate() != null) getTouchDelegate().onTouchEvent(e);
 
         return true;
     }
@@ -1014,7 +1019,13 @@ public class BottomSheet
         // doesn't appear to show a hole in the toolbar.
         int colorId = content.isIncognitoThemedContent() ? R.color.incognito_primary_color
                                                          : R.color.modern_primary_color;
-        mToolbarHolder.setBackgroundColor(ApiCompatibilityUtils.getColor(getResources(), colorId));
+        if (!mIsSheetOpen) {
+            // If the sheet is closed, the bottom sheet content container is invisible, so
+            // background color is needed on the toolbar holder to prevent a blank rectangle from
+            // appearing during the content transition.
+            mToolbarHolder.setBackgroundColor(
+                    ApiCompatibilityUtils.getColor(getResources(), colorId));
+        }
         mBottomSheetContentContainer.setBackgroundColor(
                 ApiCompatibilityUtils.getColor(getResources(), colorId));
 

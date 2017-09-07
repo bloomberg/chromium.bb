@@ -62,6 +62,7 @@ import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.animation.CancelAwareAnimatorListener;
 import org.chromium.chrome.browser.widget.newtab.NewTabButton;
@@ -479,6 +480,7 @@ public class ToolbarPhone extends ToolbarLayout
             // No null check -- the toolbar should not be moved if we are not on an NTP.
             return newTabPage.getView().dispatchTouchEvent(ev);
         }
+
         return super.onTouchEvent(ev);
     }
 
@@ -1089,13 +1091,8 @@ public class ToolbarPhone extends ToolbarLayout
 
     private void setAncestorsShouldClipChildren(boolean clip) {
         if (!isLocationBarShownInNTP()) return;
-        ViewGroup parent = this;
-        while (parent != null) {
-            parent.setClipChildren(clip);
-            if (!(parent.getParent() instanceof ViewGroup)) break;
-            if (parent.getId() == android.R.id.content) break;
-            parent = (ViewGroup) parent.getParent();
-        }
+
+        ViewUtils.setAncestorsShouldClipChildren(this, clip);
     }
 
     protected void drawTabSwitcherFadeAnimation(boolean animationFinished, float progress) {
