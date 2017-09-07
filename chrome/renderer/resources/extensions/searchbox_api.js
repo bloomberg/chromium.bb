@@ -14,8 +14,6 @@ if (!chrome.embeddedSearch) {
       //                            Private functions
       // =======================================================================
       native function GetRightToLeft();
-      native function GetSearchRequestParams();
-      native function GetSuggestionToPrefetch();
       native function IsFocused();
       native function IsKeyCaptureEnabled();
       native function Paste();
@@ -28,9 +26,6 @@ if (!chrome.embeddedSearch) {
       Object.defineProperty(this, 'rtl', { get: GetRightToLeft });
       this.__defineGetter__('isFocused', IsFocused);
       this.__defineGetter__('isKeyCaptureEnabled', IsKeyCaptureEnabled);
-      this.__defineGetter__('suggestion', GetSuggestionToPrefetch);
-      Object.defineProperty(this, 'requestParams',
-                            { get: GetSearchRequestParams });
 
       this.paste = function(value) {
         Paste(value);
@@ -46,8 +41,6 @@ if (!chrome.embeddedSearch) {
 
       this.onfocuschange = null;
       this.onkeycapturechange = null;
-      this.onsubmit = null;
-      this.onsuggestionchange = null;
     };
 
     this.newTabPage = new function() {
