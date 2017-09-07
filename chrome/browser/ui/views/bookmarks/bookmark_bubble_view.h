@@ -15,12 +15,12 @@
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "url/gurl.h"
 
-class Profile;
-
 class DesktopIOSPromotionBubbleView;
+class Profile;
 
 namespace bookmarks {
 class BookmarkBubbleObserver;
@@ -112,6 +112,12 @@ class BookmarkBubbleView : public LocationBarBubbleDelegateView,
   // Returns the name of the bookmark.
   base::string16 GetBookmarkName();
 
+  // Returns the model used to initialize |parent_combobox_|.
+  RecentlyUsedFoldersComboModel* folder_model() {
+    return static_cast<RecentlyUsedFoldersComboModel*>(
+        parent_combobox_->model());
+  }
+
   // Shows the BookmarkEditor.
   void ShowEditor();
 
@@ -140,8 +146,6 @@ class BookmarkBubbleView : public LocationBarBubbleDelegateView,
 
   // If true, the page was just bookmarked.
   const bool newly_bookmarked_;
-
-  RecentlyUsedFoldersComboModel parent_model_;
 
   // Button to bring up the editor.
   views::LabelButton* edit_button_ = nullptr;

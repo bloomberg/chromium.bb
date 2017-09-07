@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/harmony/textfield_layout.h"
 #include "chrome/browser/ui/views/sync/bubble_sync_promo_view.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -25,7 +26,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/controls/button/md_text_button.h"
-#include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/fill_layout.h"
@@ -41,25 +41,6 @@
 using base::UserMetricsAction;
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
-
-namespace {
-
-// This combobox prevents any lengthy content from stretching the bubble view.
-class UnsizedCombobox : public views::Combobox {
- public:
-  explicit UnsizedCombobox(ui::ComboboxModel* model) : views::Combobox(model) {}
-  ~UnsizedCombobox() override {}
-
-  // views::Combobox:
-  gfx::Size CalculatePreferredSize() const override {
-    return gfx::Size(0, views::Combobox::CalculatePreferredSize().height());
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(UnsizedCombobox);
-};
-
-}  // namespace
 
 BookmarkBubbleView* BookmarkBubbleView::bookmark_bubble_ = nullptr;
 
@@ -117,9 +98,6 @@ BookmarkBubbleView::~BookmarkBubbleView() {
     if (node)
       model->Remove(node);
   }
-  // |parent_combobox_| needs to be destroyed before |parent_model_| as it
-  // uses |parent_model_| in its destructor.
-  delete parent_combobox_;
 }
 
 // ui::DialogModel -------------------------------------------------------------
@@ -274,7 +252,7 @@ void BookmarkBubbleView::ButtonPressed(views::Button* sender,
 // views::ComboboxListener -----------------------------------------------------
 
 void BookmarkBubbleView::OnPerformAction(views::Combobox* combobox) {
-  if (combobox->selected_index() + 1 == parent_model_.GetItemCount()) {
+  if (combobox->selected_index() + 1 == folder_model()->GetItemCount()) {
     base::RecordAction(UserMetricsAction("BookmarkBubble_EditFromCombobox"));
     ShowEditor();
   }
@@ -298,43 +276,25 @@ void BookmarkBubbleView::Init() {
   bookmark_contents_view_ = new views::View();
   GridLayout* layout = GridLayout::CreateAndInstall(bookmark_contents_view_);
 
-  // This column set is used for the labels and textfields.
   constexpr int kColumnId = 0;
-  constexpr float kFixed = 0.f;
-  constexpr float kStretchy = 1.f;
-  views::ColumnSet* cs = layout->AddColumnSet(kColumnId);
-  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-
-  cs->AddColumn(provider->GetControlLabelGridAlignment(), GridLayout::CENTER,
-                kFixed, GridLayout::USE_PREF, 0, 0);
-  cs->AddPaddingColumn(kFixed, provider->GetDistanceMetric(
-                                   DISTANCE_UNRELATED_CONTROL_HORIZONTAL));
-  cs->AddColumn(GridLayout::FILL, GridLayout::CENTER, kStretchy,
-                GridLayout::USE_PREF, 0, 0);
-
-  layout->StartRow(kFixed, kColumnId);
-  views::Label* label = new views::Label(
-      l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_NAME_LABEL));
-  layout->AddView(label);
-
-  name_field_ = new views::Textfield();
+  ConfigureTextfieldStack(layout, kColumnId);
+  name_field_ = AddFirstTextfieldRow(
+      layout, l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_NAME_LABEL),
+      kColumnId);
   name_field_->SetText(GetBookmarkName());
   name_field_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_BOOKMARK_AX_BUBBLE_NAME_LABEL));
-  layout->AddView(name_field_);
 
-  layout->StartRowWithPadding(
-      kFixed, kColumnId, kFixed,
-      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
-  views::Label* combobox_label = new views::Label(
-      l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_FOLDER_LABEL));
-  layout->AddView(combobox_label);
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile_);
+  auto parent_folder_model = base::MakeUnique<RecentlyUsedFoldersComboModel>(
+      model, model->GetMostRecentlyAddedUserNodeForURL(url_));
 
-  parent_combobox_ = new UnsizedCombobox(&parent_model_);
+  parent_combobox_ = AddComboboxRow(
+      layout, l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_FOLDER_LABEL),
+      std::move(parent_folder_model), kColumnId);
   parent_combobox_->set_listener(this);
   parent_combobox_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_BOOKMARK_AX_BUBBLE_FOLDER_LABEL));
-  layout->AddView(parent_combobox_);
 
   AddChildView(bookmark_contents_view_);
 }
@@ -353,10 +313,7 @@ BookmarkBubbleView::BookmarkBubbleView(
       delegate_(std::move(delegate)),
       profile_(profile),
       url_(url),
-      newly_bookmarked_(newly_bookmarked),
-      parent_model_(BookmarkModelFactory::GetForBrowserContext(profile_),
-                    BookmarkModelFactory::GetForBrowserContext(profile_)
-                        ->GetMostRecentlyAddedUserNodeForURL(url)) {
+      newly_bookmarked_(newly_bookmarked) {
   chrome::RecordDialogCreation(chrome::DialogIdentifier::BOOKMARK);
 }
 
@@ -404,7 +361,7 @@ void BookmarkBubbleView::ApplyEdits() {
       base::RecordAction(
           UserMetricsAction("BookmarkBubble_ChangeTitleInBubble"));
     }
-    parent_model_.MaybeChangeParent(node, parent_combobox_->selected_index());
+    folder_model()->MaybeChangeParent(node, parent_combobox_->selected_index());
   }
 }
 
