@@ -83,11 +83,6 @@ WhatsNewPromoStatus GetWhatsNewPromoStatus() {
   return static_cast<WhatsNewPromoStatus>(status);
 }
 
-bool IsAutoReloadEnabled() {
-  // TODO(crbug.com/752084): Remove this function and its associated code.
-  return false;
-}
-
 bool IsLRUSnapshotCacheEnabled() {
   // TODO(crbug.com/751553): Remove this function and its associated code.
   return NO;

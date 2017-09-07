@@ -18,7 +18,6 @@
 
 @protocol ApplicationCommands;
 @class AutofillController;
-@class AutoReloadBridge;
 @protocol BrowserCommands;
 @protocol IOSCaptivePortalBlockingPageDelegate;
 @class CastController;
