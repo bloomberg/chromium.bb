@@ -2,6 +2,7 @@
 # Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+import logging
 
 from page_sets.system_health import platforms
 from page_sets.system_health import story_tags
@@ -674,16 +675,22 @@ class GoogleMapsStory(_BrowsingStory):
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
   TAGS = [story_tags.JAVASCRIPT_HEAVY]
 
+  def CanRunOnBrowser(self, browser_info, _):
+    if not browser_info.HasWebGLSupport():
+      logging.warning('Browser does not support webgl, skipping test')
+      return False
+    return True
+
   def _DidLoadDocument(self, action_runner):
     # Click on the search box.
     action_runner.WaitForElement(selector=self._MAPS_SEARCH_BOX_SELECTOR)
+    action_runner.WaitForElement(selector=self._MAPS_ZOOM_IN_SELECTOR)
     action_runner.ClickElement(selector=self._MAPS_SEARCH_BOX_SELECTOR)
 
     # Submit search query.
     action_runner.EnterText('restaurants near me')
     action_runner.PressKey('Return')
     action_runner.WaitForElement(selector=self._RESTAURANTS_LOADED)
-    action_runner.WaitForElement(selector=self._MAPS_ZOOM_IN_SELECTOR)
     action_runner.Wait(1)
 
     # ZoomIn two times.
@@ -748,6 +755,12 @@ class GoogleEarthStory(_BrowsingStory):
   _MAPS_SEARCH_BOX_SELECTOR = 'input[aria-label="Search Google Maps"]'
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
   TAGS = [story_tags.JAVASCRIPT_HEAVY]
+
+  def CanRunOnBrowser(self, browser_info, _):
+    if not browser_info.HasWebGLSupport():
+      logging.warning('Browser does not support webgl, skipping test')
+      return False
+    return True
 
   def _DidLoadDocument(self, action_runner):
     # Zommin three times.
