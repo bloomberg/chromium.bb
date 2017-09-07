@@ -1241,7 +1241,7 @@
         "value": "4.1"
       },
       "features": [
-        "webgl2"
+        "accelerated_webgl2"
       ]
     },
     {
@@ -1411,7 +1411,7 @@
       "cr_bugs": [449116, 698197],
       "gl_renderer": "Adreno \\(TM\\) 3.*",
       "features": [
-        "webgl2"
+        "accelerated_webgl2"
       ]
     },
     {
@@ -1425,7 +1425,7 @@
         }
       },
       "features": [
-        "webgl2"
+        "accelerated_webgl2"
       ]
     },
     {
@@ -1441,7 +1441,7 @@
         "value": "8.17.12.6973"
       },
       "features": [
-        "webgl2"
+        "accelerated_webgl2"
       ]
     },
     {
@@ -1453,7 +1453,7 @@
       },
       "vendor_id": "0x102b",
       "features": [
-        "webgl2"
+        "accelerated_webgl2"
       ]
     },
     {
@@ -1469,7 +1469,7 @@
         "value": "2011.1"
       },
       "features": [
-        "webgl2"
+        "accelerated_webgl2"
       ]
     },
     {
@@ -1485,7 +1485,7 @@
         "value": "8.16"
       },
       "features": [
-        "webgl2"
+        "accelerated_webgl2"
       ]
     },
     {
@@ -1501,7 +1501,7 @@
       },
       "multi_gpu_style": "amd_switchable",
       "features": [
-        "webgl2"
+        "accelerated_webgl2"
       ]
     },
     {

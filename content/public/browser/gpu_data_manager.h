@@ -35,6 +35,7 @@ class GpuDataManager {
   virtual bool IsFeatureBlacklisted(int feature) const = 0;
   virtual bool IsFeatureEnabled(int feature) const = 0;
   virtual bool IsWebGLEnabled() const = 0;
+  virtual bool IsWebGL2Enabled() const = 0;
 
   virtual gpu::GPUInfo GetGPUInfo() const = 0;
 

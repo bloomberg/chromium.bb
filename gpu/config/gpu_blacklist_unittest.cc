@@ -105,6 +105,6 @@ GPU_BLACKLIST_FEATURE_TEST(GpuRasterization,
                            GPU_FEATURE_TYPE_GPU_RASTERIZATION)
 
 GPU_BLACKLIST_FEATURE_TEST(WebGL2,
-                           GPU_FEATURE_TYPE_WEBGL2)
+                           GPU_FEATURE_TYPE_ACCELERATED_WEBGL2)
 
 }  // namespace gpu

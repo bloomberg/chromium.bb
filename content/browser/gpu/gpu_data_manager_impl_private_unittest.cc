@@ -170,12 +170,14 @@ TEST_F(GpuDataManagerImplPrivateTest, GpuSideBlacklisting) {
     EXPECT_TRUE(reason.empty());
     EXPECT_EQ(static_cast<size_t>(gpu::NUMBER_OF_GPU_FEATURE_TYPES),
               manager->GetBlacklistedFeatureCount());
-    EXPECT_TRUE(manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL2));
+    EXPECT_TRUE(manager->IsFeatureBlacklisted(
+        gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL2));
   } else {
     EXPECT_TRUE(manager->GpuAccessAllowed(&reason));
     EXPECT_TRUE(reason.empty());
     EXPECT_EQ(2u, manager->GetBlacklistedFeatureCount());
-    EXPECT_FALSE(manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL2));
+    EXPECT_FALSE(manager->IsFeatureBlacklisted(
+        gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL2));
   }
   EXPECT_TRUE(
       manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL));
@@ -233,7 +235,8 @@ TEST_F(GpuDataManagerImplPrivateTest, GpuSideBlacklistingWebGL) {
       gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS));
   EXPECT_TRUE(
       manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL));
-  EXPECT_TRUE(manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL2));
+  EXPECT_TRUE(
+      manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL2));
 }
 
 TEST_F(GpuDataManagerImplPrivateTest, GpuSideExceptions) {
@@ -306,7 +309,8 @@ TEST_F(GpuDataManagerImplPrivateTest, SwiftShaderRendering) {
             manager->GetBlacklistedFeatureCount());
   EXPECT_TRUE(manager->IsFeatureBlacklisted(
       gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS));
-  EXPECT_TRUE(manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL2));
+  EXPECT_TRUE(
+      manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL2));
 }
 
 TEST_F(GpuDataManagerImplPrivateTest, SwiftShaderRendering2) {
@@ -328,7 +332,8 @@ TEST_F(GpuDataManagerImplPrivateTest, SwiftShaderRendering2) {
             manager->GetBlacklistedFeatureCount());
   EXPECT_TRUE(manager->IsFeatureBlacklisted(
       gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS));
-  EXPECT_TRUE(manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL2));
+  EXPECT_TRUE(
+      manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL2));
 }
 
 TEST_F(GpuDataManagerImplPrivateTest, GpuInfoUpdate) {
