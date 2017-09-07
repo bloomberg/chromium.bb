@@ -32,10 +32,12 @@ std::unique_ptr<Connector> Connector::Create(mojom::ConnectorRequest* request) {
 }
 
 void Connector::StartService(const Identity& identity) {
-  if (BindConnectorIfNecessary())
-    connector_->StartService(identity,
-                             base::Bind(&Connector::RunStartServiceCallback,
-                                        weak_factory_.GetWeakPtr()));
+  if (!BindConnectorIfNecessary())
+    return;
+
+  connector_->StartService(identity,
+                           base::Bind(&Connector::RunStartServiceCallback,
+                                      weak_factory_.GetWeakPtr()));
 }
 
 void Connector::StartService(const std::string& name) {
@@ -58,6 +60,9 @@ void Connector::StartService(const Identity& identity,
 
 void Connector::QueryService(const Identity& identity,
                              mojom::Connector::QueryServiceCallback callback) {
+  if (!BindConnectorIfNecessary())
+    return;
+
   connector_->QueryService(identity, std::move(callback));
 }
 

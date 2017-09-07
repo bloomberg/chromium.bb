@@ -23,13 +23,8 @@ SandboxType SandboxTypeFromCommandLine(const base::CommandLine& command_line) {
     return SANDBOX_TYPE_RENDERER;
 
   if (process_type == switches::kUtilityProcess) {
-    std::string sandbox_type =
-        command_line.GetSwitchValueASCII(switches::kUtilityProcessSandboxType);
-    if (sandbox_type == "none")
-      return SANDBOX_TYPE_NO_SANDBOX;
-    if (sandbox_type == "network")
-      return SANDBOX_TYPE_NETWORK;
-    return SANDBOX_TYPE_UTILITY;
+    return UtilitySandboxTypeFromString(
+        command_line.GetSwitchValueASCII(switches::kUtilityProcessSandboxType));
   }
   if (process_type == switches::kGpuProcess) {
     if (command_line.HasSwitch(switches::kDisableGpuSandbox))
@@ -46,6 +41,14 @@ SandboxType SandboxTypeFromCommandLine(const base::CommandLine& command_line) {
   // process. If the embedder wants it sandboxed, they have a chance to return
   // the sandbox profile in ContentClient::GetSandboxProfileForSandboxType.
   return SANDBOX_TYPE_INVALID;
+}
+
+SandboxType UtilitySandboxTypeFromString(const std::string& sandbox_string) {
+  if (sandbox_string == "none")
+    return SANDBOX_TYPE_NO_SANDBOX;
+  if (sandbox_string == "network")
+    return SANDBOX_TYPE_NETWORK;
+  return SANDBOX_TYPE_UTILITY;
 }
 
 }  // namespace content

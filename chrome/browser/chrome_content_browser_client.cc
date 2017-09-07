@@ -2995,18 +2995,16 @@ void ChromeContentBrowserClient::RegisterInProcessServices(
 void ChromeContentBrowserClient::RegisterOutOfProcessServices(
       OutOfProcessServiceMap* services) {
 #if BUILDFLAG(ENABLE_PRINTING)
-  (*services)[printing::mojom::kServiceName] = {
-      base::ASCIIToUTF16("PDF Compositor Service"),
-      content::SANDBOX_TYPE_UTILITY};
+  (*services)[printing::mojom::kServiceName] =
+      base::ASCIIToUTF16("PDF Compositor Service");
 #endif
 
-  (*services)[profiling::mojom::kServiceName] = {
-      base::ASCIIToUTF16("Profiling Service"), content::SANDBOX_TYPE_UTILITY};
+  (*services)[profiling::mojom::kServiceName] =
+      base::ASCIIToUTF16("Profiling Service");
 
 #if !defined(OS_ANDROID)
-  (*services)[chrome::mojom::kProfileImportServiceName] = {
-      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_PROFILE_IMPORTER_NAME),
-      content::SANDBOX_TYPE_NO_SANDBOX};
+  (*services)[chrome::mojom::kProfileImportServiceName] =
+      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_PROFILE_IMPORTER_NAME);
 #endif
 }
 
