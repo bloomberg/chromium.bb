@@ -644,10 +644,10 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   bool FixedToViewport() const;
   bool ScrollsWithRespectTo(const PaintLayer*) const;
 
-  void AddLayerHitTestRects(LayerHitTestRects&) const;
+  void AddLayerHitTestRects(LayerHitTestRects&, TouchAction) const;
 
   // Compute rects only for this layer
-  void ComputeSelfHitTestRects(LayerHitTestRects&) const;
+  void ComputeSelfHitTestRects(LayerHitTestRects&, TouchAction) const;
 
   // FIXME: This should probably return a ScrollableArea but a lot of internal
   // methods are mistakenly exposed.
