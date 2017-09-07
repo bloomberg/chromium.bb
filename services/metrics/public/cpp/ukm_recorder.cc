@@ -14,7 +14,7 @@ namespace ukm {
 
 UkmRecorder* g_ukm_recorder = nullptr;
 
-#if defined(OS_IOS) || defined(OS_CHROMEOS)
+#if defined(OS_IOS)
 const base::Feature kUkmFeature = {"Ukm", base::FEATURE_DISABLED_BY_DEFAULT};
 #else
 const base::Feature kUkmFeature = {"Ukm", base::FEATURE_ENABLED_BY_DEFAULT};
