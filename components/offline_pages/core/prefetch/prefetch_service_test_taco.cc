@@ -19,7 +19,6 @@
 #include "components/offline_pages/core/prefetch/prefetch_importer.h"
 #include "components/offline_pages/core/prefetch/prefetch_service_impl.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
-#include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
 #include "components/offline_pages/core/prefetch/suggested_articles_observer.h"
 #include "components/offline_pages/core/prefetch/test_offline_metrics_collector.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_dispatcher.h"
@@ -66,7 +65,7 @@ PrefetchServiceTestTaco::PrefetchServiceTestTaco() {
   gcm_handler_ = base::MakeUnique<TestPrefetchGCMHandler>();
   network_request_factory_ =
       base::MakeUnique<TestPrefetchNetworkRequestFactory>();
-  prefetch_store_sql_ =
+  prefetch_store_ =
       base::MakeUnique<PrefetchStore>(base::ThreadTaskRunnerHandle::Get());
   suggested_articles_observer_ = base::MakeUnique<SuggestedArticlesObserver>();
   prefetch_downloader_ =
@@ -106,10 +105,10 @@ void PrefetchServiceTestTaco::SetPrefetchNetworkRequestFactory(
   network_request_factory_ = std::move(network_request_factory);
 }
 
-void PrefetchServiceTestTaco::SetPrefetchStoreSql(
-    std::unique_ptr<PrefetchStore> prefetch_store_sql) {
+void PrefetchServiceTestTaco::SetPrefetchStore(
+    std::unique_ptr<PrefetchStore> prefetch_store) {
   CHECK(!prefetch_service_);
-  prefetch_store_sql_ = std::move(prefetch_store_sql);
+  prefetch_store_ = std::move(prefetch_store);
 }
 
 void PrefetchServiceTestTaco::SetSuggestedArticlesObserver(
@@ -146,13 +145,13 @@ void PrefetchServiceTestTaco::SetPrefetchConfiguration(
 
 void PrefetchServiceTestTaco::CreatePrefetchService() {
   CHECK(metrics_collector_ && dispatcher_ && gcm_handler_ &&
-        network_request_factory_ && prefetch_store_sql_ &&
+        network_request_factory_ && prefetch_store_ &&
         suggested_articles_observer_ && prefetch_downloader_);
 
   prefetch_service_ = base::MakeUnique<PrefetchServiceImpl>(
       std::move(metrics_collector_), std::move(dispatcher_),
       std::move(gcm_handler_), std::move(network_request_factory_),
-      std::move(prefetch_store_sql_), std::move(suggested_articles_observer_),
+      std::move(prefetch_store_), std::move(suggested_articles_observer_),
       std::move(prefetch_downloader_), std::move(prefetch_importer_),
       std::move(prefetch_background_task_handler_),
       std::move(prefetch_configuration_));

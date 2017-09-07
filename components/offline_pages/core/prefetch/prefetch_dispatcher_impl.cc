@@ -27,6 +27,7 @@
 #include "components/offline_pages/core/prefetch/page_bundle_update_task.h"
 #include "components/offline_pages/core/prefetch/prefetch_background_task_handler.h"
 #include "components/offline_pages/core/prefetch/prefetch_configuration.h"
+#include "components/offline_pages/core/prefetch/prefetch_downloader.h"
 #include "components/offline_pages/core/prefetch/prefetch_gcm_handler.h"
 #include "components/offline_pages/core/prefetch/prefetch_importer.h"
 #include "components/offline_pages/core/prefetch/prefetch_network_request_factory.h"
@@ -137,6 +138,12 @@ void PrefetchDispatcherImpl::QueueReconcileTasks() {
       service_->GetPrefetchStore(),
       service_->GetPrefetchNetworkRequestFactory()));
 
+  // Notifies the downloader that the download cleanup can proceed when the
+  // download service is up. The prefetch service and download service are two
+  // separate services which can start up on their own. The download cleanup
+  // should only kick in when both services are ready.
+  service_->GetPrefetchDownloader()->CleanupDownloadsWhenReady();
+
   // This task should be last, because it is least important for correct
   // operation of the system, and because any reconciliation tasks might
   // generate more entries in the FINISHED state that the finalization task
@@ -148,10 +155,13 @@ void PrefetchDispatcherImpl::QueueReconcileTasks() {
 void PrefetchDispatcherImpl::QueueActionTasks() {
   service_->GetLogger()->RecordActivity("Dispatcher: Adding action tasks.");
 
-  std::unique_ptr<Task> download_archives_task =
-      base::MakeUnique<DownloadArchivesTask>(service_->GetPrefetchStore(),
-                                             service_->GetPrefetchDownloader());
-  task_queue_.AddTask(std::move(download_archives_task));
+  // Don't schedule any downloads if the download service can't be used at all.
+  if (!service_->GetPrefetchDownloader()->IsDownloadServiceUnavailable()) {
+    std::unique_ptr<Task> download_archives_task =
+        base::MakeUnique<DownloadArchivesTask>(
+            service_->GetPrefetchStore(), service_->GetPrefetchDownloader());
+    task_queue_.AddTask(std::move(download_archives_task));
+  }
 
   std::unique_ptr<Task> get_operation_task = base::MakeUnique<GetOperationTask>(
       service_->GetPrefetchStore(),

@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_PREFETCH_DISPATCHER_IMPL_H_
 #define COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_PREFETCH_DISPATCHER_IMPL_H_
 
+#include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -68,18 +70,18 @@ class PrefetchDispatcherImpl : public PrefetchDispatcher,
                         const std::string& operation_name,
                         const std::vector<RenderPageInfo>& pages);
 
-   // Adds the Reconcile tasks to the TaskQueue. These look for error/stuck
-   // processing conditions that happen as result of Chrome being evicted
-   // or network failures of certain kind. They are run on periodic wakeup
-   // (BeginBackgroundTask()). See PrefetchDispatcher interface
-   // declaration for Reconcile tasks definition.
-   void QueueReconcileTasks();
-   // Adds the Action tasks to the queue. See PrefetchDispatcher interface
-   // declaration for Action tasks definition.
-   // Action tasks can be added to the queue either in response to periodic
-   // wakeup (when BeginBackgroundTask() is called) or any time TaskQueue is
-   // becomes idle and any task called SchedulePipelineProcessing() before.
-   void QueueActionTasks();
+  // Adds the Reconcile tasks to the TaskQueue. These look for error/stuck
+  // processing conditions that happen as result of Chrome being evicted
+  // or network failures of certain kind. They are run on periodic wakeup
+  // (BeginBackgroundTask()). See PrefetchDispatcher interface
+  // declaration for Reconcile tasks definition.
+  void QueueReconcileTasks();
+  // Adds the Action tasks to the queue. See PrefetchDispatcher interface
+  // declaration for Action tasks definition.
+  // Action tasks can be added to the queue either in response to periodic
+  // wakeup (when BeginBackgroundTask() is called) or any time TaskQueue is
+  // becomes idle and any task called SchedulePipelineProcessing() before.
+  void QueueActionTasks();
 
   PrefetchService* service_;
   TaskQueue task_queue_;
