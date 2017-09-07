@@ -221,6 +221,11 @@ void AlsaPcmInputStream::ReadAudio() {
       callback_->OnData(this, audio_bus_.get(),
                         base::TimeTicks::Now() - hardware_delay,
                         normalized_volume);
+    } else if (frames_read < 0) {
+      bool success = Recover(frames_read);
+      LOG(WARNING) << "PcmReadi failed with error " << frames_read << ". "
+                   << (success ? "Successfully" : "Unsuccessfully")
+                   << " recovered.";
     } else {
       LOG(WARNING) << "PcmReadi returning less than expected frames: "
                    << frames_read << " vs. " << params_.frames_per_buffer()
