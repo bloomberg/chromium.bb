@@ -35,7 +35,6 @@
 #include "platform/mediastream/MediaStreamDescriptor.h"
 #include "platform/mediastream/MediaStreamSource.h"
 #include "platform/wtf/Forward.h"
-#include "public/platform/WebMediaConstraints.h"
 
 namespace blink {
 
@@ -125,7 +124,6 @@ class MODULES_EXPORT MediaStreamTrack
   bool is_iterating_registered_media_streams_;
   bool stopped_;
   Member<MediaStreamComponent> component_;
-  WebMediaConstraints constraints_;
   Member<ImageCapture> image_capture_;
 };
 
