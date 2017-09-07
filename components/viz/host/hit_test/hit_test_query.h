@@ -24,6 +24,11 @@ struct Target {
   uint32_t flags = 0;
 };
 
+enum class EventSource {
+  MOUSE,
+  TOUCH,
+};
+
 // Finds the target for a given location based on the AggregatedHitTestRegion
 // list aggregated by HitTestAggregator.
 // TODO(riajiang): Handle 3d space cases correctly.
@@ -71,13 +76,15 @@ class VIZ_HOST_EXPORT HitTestQuery {
   // then we get 2 in the coordinate system of a; apply the
   // transfrom-from-e-to-c and transform-from-c-to-b then we get 3 in the
   // coordinate system of b.
-  Target FindTargetForLocation(const gfx::Point& location_in_root) const;
+  Target FindTargetForLocation(EventSource event_source,
+                               const gfx::Point& location_in_root) const;
 
  private:
   // Helper function to find |target| for |location_in_parent| in the |region|,
   // returns true if a target is found and false otherwise. |location_in_parent|
   // is in the coordinate space of |region|'s parent.
-  bool FindTargetInRegionForLocation(const gfx::Point& location_in_parent,
+  bool FindTargetInRegionForLocation(EventSource event_source,
+                                     const gfx::Point& location_in_parent,
                                      AggregatedHitTestRegion* region,
                                      Target* target) const;
 

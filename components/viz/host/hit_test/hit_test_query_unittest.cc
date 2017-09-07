@@ -59,30 +59,34 @@ TEST_F(HitTestQueryTest, OneSurface) {
   gfx::Transform transform_e_to_e;
   AggregatedHitTestRegion* aggregated_hit_test_region_list =
       aggregated_hit_test_region();
-  aggregated_hit_test_region_list[0] = AggregatedHitTestRegion(
-      e_id, mojom::kHitTestMine, e_bounds, transform_e_to_e, 0);  // e
+  aggregated_hit_test_region_list[0] =
+      AggregatedHitTestRegion(e_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              e_bounds, transform_e_to_e, 0);  // e
 
   // All points are in e's coordinate system when we reach this case.
   gfx::Point point1(1, 1);
   gfx::Point point2(600, 600);
   gfx::Point point3(0, 0);
 
-  Target target1 = hit_test_query().FindTargetForLocation(point1);
+  Target target1 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point1);
   EXPECT_EQ(target1.frame_sink_id, e_id);
   EXPECT_EQ(target1.location_in_target, point1);
-  EXPECT_EQ(target1.flags, mojom::kHitTestMine);
+  EXPECT_EQ(target1.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 
   // point2 is on the bounds of e so no target found.
-  Target target2 = hit_test_query().FindTargetForLocation(point2);
+  Target target2 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point2);
   EXPECT_EQ(target2.frame_sink_id, FrameSinkId());
   EXPECT_EQ(target2.location_in_target, gfx::Point());
   EXPECT_FALSE(target2.flags);
 
   // There's a valid Target for point3, see Rect::Contains.
-  Target target3 = hit_test_query().FindTargetForLocation(point3);
+  Target target3 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point3);
   EXPECT_EQ(target3.frame_sink_id, e_id);
   EXPECT_EQ(target3.location_in_target, point3);
-  EXPECT_EQ(target3.flags, mojom::kHitTestMine);
+  EXPECT_EQ(target3.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 }
 
 // One embedder with two children.
@@ -106,12 +110,15 @@ TEST_F(HitTestQueryTest, OneEmbedderTwoChildren) {
   transform_e_to_c2.Translate(-300, -300);
   AggregatedHitTestRegion* aggregated_hit_test_region_list =
       aggregated_hit_test_region();
-  aggregated_hit_test_region_list[0] = AggregatedHitTestRegion(
-      e_id, mojom::kHitTestMine, e_bounds_in_e, transform_e_to_e, 2);  // e
-  aggregated_hit_test_region_list[1] = AggregatedHitTestRegion(
-      c1_id, mojom::kHitTestMine, c1_bounds_in_e, transform_e_to_c1, 0);  // c1
-  aggregated_hit_test_region_list[2] = AggregatedHitTestRegion(
-      c2_id, mojom::kHitTestMine, c2_bounds_in_e, transform_e_to_c2, 0);  // c2
+  aggregated_hit_test_region_list[0] =
+      AggregatedHitTestRegion(e_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              e_bounds_in_e, transform_e_to_e, 2);  // e
+  aggregated_hit_test_region_list[1] =
+      AggregatedHitTestRegion(c1_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              c1_bounds_in_e, transform_e_to_c1, 0);  // c1
+  aggregated_hit_test_region_list[2] =
+      AggregatedHitTestRegion(c2_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              c2_bounds_in_e, transform_e_to_c2, 0);  // c2
 
   // All points are in e's coordinate system when we reach this case.
   gfx::Point point1(99, 200);
@@ -119,22 +126,26 @@ TEST_F(HitTestQueryTest, OneEmbedderTwoChildren) {
   gfx::Point point3(400, 400);
   gfx::Point point4(650, 350);
 
-  Target target1 = hit_test_query().FindTargetForLocation(point1);
+  Target target1 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point1);
   EXPECT_EQ(target1.frame_sink_id, e_id);
   EXPECT_EQ(target1.location_in_target, point1);
-  EXPECT_EQ(target1.flags, mojom::kHitTestMine);
+  EXPECT_EQ(target1.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 
-  Target target2 = hit_test_query().FindTargetForLocation(point2);
+  Target target2 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point2);
   EXPECT_EQ(target2.frame_sink_id, c1_id);
   EXPECT_EQ(target2.location_in_target, gfx::Point(50, 50));
-  EXPECT_EQ(target2.flags, mojom::kHitTestMine);
+  EXPECT_EQ(target2.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 
-  Target target3 = hit_test_query().FindTargetForLocation(point3);
+  Target target3 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point3);
   EXPECT_EQ(target3.frame_sink_id, c2_id);
   EXPECT_EQ(target3.location_in_target, gfx::Point(100, 100));
-  EXPECT_EQ(target3.flags, mojom::kHitTestMine);
+  EXPECT_EQ(target3.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 
-  Target target4 = hit_test_query().FindTargetForLocation(point4);
+  Target target4 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point4);
   EXPECT_EQ(target4.frame_sink_id, FrameSinkId());
   EXPECT_EQ(target4.location_in_target, gfx::Point());
   EXPECT_FALSE(target4.flags);
@@ -152,25 +163,28 @@ TEST_F(HitTestQueryTest, OneEmbedderRotatedChild) {
   transform_e_to_c.Scale(.5f, .7f);
   AggregatedHitTestRegion* aggregated_hit_test_region_list =
       aggregated_hit_test_region();
-  aggregated_hit_test_region_list[0] = AggregatedHitTestRegion(
-      e_id, mojom::kHitTestMine, e_bounds_in_e, transform_e_to_e, 1);  // e
-  aggregated_hit_test_region_list[1] = AggregatedHitTestRegion(
-      c_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, c_bounds_in_e,
-      transform_e_to_c, 0);  // c
+  aggregated_hit_test_region_list[0] =
+      AggregatedHitTestRegion(e_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              e_bounds_in_e, transform_e_to_e, 1);  // e
+  aggregated_hit_test_region_list[1] =
+      AggregatedHitTestRegion(c_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              c_bounds_in_e, transform_e_to_c, 0);  // c
 
   // All points are in e's coordinate system when we reach this case.
   gfx::Point point1(150, 120);  // Point(-22, -12) after transform.
   gfx::Point point2(550, 400);  // Point(185, 194) after transform.
 
-  Target target1 = hit_test_query().FindTargetForLocation(point1);
+  Target target1 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point1);
   EXPECT_EQ(target1.frame_sink_id, e_id);
   EXPECT_EQ(target1.location_in_target, point1);
-  EXPECT_EQ(target1.flags, mojom::kHitTestMine);
+  EXPECT_EQ(target1.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 
-  Target target2 = hit_test_query().FindTargetForLocation(point2);
+  Target target2 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point2);
   EXPECT_EQ(target2.frame_sink_id, c_id);
   EXPECT_EQ(target2.location_in_target, gfx::Point(185, 194));
-  EXPECT_EQ(target2.flags, mojom::kHitTestChildSurface | mojom::kHitTestMine);
+  EXPECT_EQ(target2.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 }
 
 // One embedder with a clipped child with a tab and transparent background.
@@ -199,17 +213,18 @@ TEST_F(HitTestQueryTest, ClippedChildWithTabAndTransparentBackground) {
   transform_c_to_b.Translate(0, -100);
   AggregatedHitTestRegion* aggregated_hit_test_region_list =
       aggregated_hit_test_region();
-  aggregated_hit_test_region_list[0] = AggregatedHitTestRegion(
-      e_id, mojom::kHitTestMine, e_bounds_in_e, transform_e_to_e, 3);  // e
+  aggregated_hit_test_region_list[0] =
+      AggregatedHitTestRegion(e_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              e_bounds_in_e, transform_e_to_e, 3);  // e
   aggregated_hit_test_region_list[1] = AggregatedHitTestRegion(
       c_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore, c_bounds_in_e,
       transform_e_to_c, 2);  // c
-  aggregated_hit_test_region_list[2] = AggregatedHitTestRegion(
-      a_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, a_bounds_in_c,
-      transform_c_to_a, 0);  // a
-  aggregated_hit_test_region_list[3] = AggregatedHitTestRegion(
-      b_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, b_bounds_in_c,
-      transform_c_to_b, 0);  // b
+  aggregated_hit_test_region_list[2] =
+      AggregatedHitTestRegion(a_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              a_bounds_in_c, transform_c_to_a, 0);  // a
+  aggregated_hit_test_region_list[3] =
+      AggregatedHitTestRegion(b_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              b_bounds_in_c, transform_c_to_b, 0);  // b
 
   // All points are in e's coordinate system when we reach this case.
   gfx::Point point1(1, 1);
@@ -217,25 +232,29 @@ TEST_F(HitTestQueryTest, ClippedChildWithTabAndTransparentBackground) {
   gfx::Point point3(403, 103);
   gfx::Point point4(202, 202);
 
-  Target target1 = hit_test_query().FindTargetForLocation(point1);
+  Target target1 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point1);
   EXPECT_EQ(target1.frame_sink_id, e_id);
   EXPECT_EQ(target1.location_in_target, point1);
-  EXPECT_EQ(target1.flags, mojom::kHitTestMine);
+  EXPECT_EQ(target1.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 
-  Target target2 = hit_test_query().FindTargetForLocation(point2);
+  Target target2 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point2);
   EXPECT_EQ(target2.frame_sink_id, a_id);
   EXPECT_EQ(target2.location_in_target, gfx::Point(2, 2));
-  EXPECT_EQ(target2.flags, mojom::kHitTestChildSurface | mojom::kHitTestMine);
+  EXPECT_EQ(target2.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 
-  Target target3 = hit_test_query().FindTargetForLocation(point3);
+  Target target3 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point3);
   EXPECT_EQ(target3.frame_sink_id, e_id);
   EXPECT_EQ(target3.location_in_target, point3);
-  EXPECT_EQ(target3.flags, mojom::kHitTestMine);
+  EXPECT_EQ(target3.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 
-  Target target4 = hit_test_query().FindTargetForLocation(point4);
+  Target target4 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point4);
   EXPECT_EQ(target4.frame_sink_id, b_id);
   EXPECT_EQ(target4.location_in_target, gfx::Point(2, 2));
-  EXPECT_EQ(target4.flags, mojom::kHitTestChildSurface | mojom::kHitTestMine);
+  EXPECT_EQ(target4.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 }
 
 // One embedder with a clipped child with a tab and transparent background, and
@@ -269,20 +288,21 @@ TEST_F(HitTestQueryTest, ClippedChildWithChildUnderneath) {
   transform_e_to_d.Translate(-400, -50);
   AggregatedHitTestRegion* aggregated_hit_test_region_list =
       aggregated_hit_test_region();
-  aggregated_hit_test_region_list[0] = AggregatedHitTestRegion(
-      e_id, mojom::kHitTestMine, e_bounds_in_e, transform_e_to_e, 4);  // e
+  aggregated_hit_test_region_list[0] =
+      AggregatedHitTestRegion(e_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              e_bounds_in_e, transform_e_to_e, 4);  // e
   aggregated_hit_test_region_list[1] = AggregatedHitTestRegion(
       c_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore, c_bounds_in_e,
       transform_e_to_c, 2);  // c
-  aggregated_hit_test_region_list[2] = AggregatedHitTestRegion(
-      a_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, a_bounds_in_c,
-      transform_c_to_a, 0);  // a
-  aggregated_hit_test_region_list[3] = AggregatedHitTestRegion(
-      b_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, b_bounds_in_c,
-      transform_c_to_b, 0);  // b
-  aggregated_hit_test_region_list[4] = AggregatedHitTestRegion(
-      d_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, d_bounds_in_e,
-      transform_e_to_d, 0);  // d
+  aggregated_hit_test_region_list[2] =
+      AggregatedHitTestRegion(a_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              a_bounds_in_c, transform_c_to_a, 0);  // a
+  aggregated_hit_test_region_list[3] =
+      AggregatedHitTestRegion(b_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              b_bounds_in_c, transform_c_to_b, 0);  // b
+  aggregated_hit_test_region_list[4] =
+      AggregatedHitTestRegion(d_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              d_bounds_in_e, transform_e_to_d, 0);  // d
 
   // All points are in e's coordinate system when we reach this case.
   gfx::Point point1(1, 1);
@@ -290,25 +310,29 @@ TEST_F(HitTestQueryTest, ClippedChildWithChildUnderneath) {
   gfx::Point point3(450, 150);
   gfx::Point point4(202, 202);
 
-  Target target1 = hit_test_query().FindTargetForLocation(point1);
+  Target target1 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point1);
   EXPECT_EQ(target1.frame_sink_id, e_id);
   EXPECT_EQ(target1.location_in_target, point1);
-  EXPECT_EQ(target1.flags, mojom::kHitTestMine);
+  EXPECT_EQ(target1.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 
-  Target target2 = hit_test_query().FindTargetForLocation(point2);
+  Target target2 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point2);
   EXPECT_EQ(target2.frame_sink_id, a_id);
   EXPECT_EQ(target2.location_in_target, gfx::Point(2, 2));
-  EXPECT_EQ(target2.flags, mojom::kHitTestChildSurface | mojom::kHitTestMine);
+  EXPECT_EQ(target2.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 
-  Target target3 = hit_test_query().FindTargetForLocation(point3);
+  Target target3 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point3);
   EXPECT_EQ(target3.frame_sink_id, d_id);
   EXPECT_EQ(target3.location_in_target, gfx::Point(50, 100));
-  EXPECT_EQ(target3.flags, mojom::kHitTestChildSurface | mojom::kHitTestMine);
+  EXPECT_EQ(target3.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 
-  Target target4 = hit_test_query().FindTargetForLocation(point4);
+  Target target4 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point4);
   EXPECT_EQ(target4.frame_sink_id, b_id);
   EXPECT_EQ(target4.location_in_target, gfx::Point(2, 2));
-  EXPECT_EQ(target4.flags, mojom::kHitTestChildSurface | mojom::kHitTestMine);
+  EXPECT_EQ(target4.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 }
 
 // One embedder with two clipped children with a tab and transparent background.
@@ -353,26 +377,27 @@ TEST_F(HitTestQueryTest, ClippedChildrenWithTabAndTransparentBackground) {
   transform_c2_to_h.Translate(0, -100);
   AggregatedHitTestRegion* aggregated_hit_test_region_list =
       aggregated_hit_test_region();
-  aggregated_hit_test_region_list[0] = AggregatedHitTestRegion(
-      e_id, mojom::kHitTestMine, e_bounds_in_e, transform_e_to_e, 6);  // e
+  aggregated_hit_test_region_list[0] =
+      AggregatedHitTestRegion(e_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              e_bounds_in_e, transform_e_to_e, 6);  // e
   aggregated_hit_test_region_list[1] = AggregatedHitTestRegion(
       c1_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore,
       c1_bounds_in_e, transform_e_to_c1, 2);  // c1
-  aggregated_hit_test_region_list[2] = AggregatedHitTestRegion(
-      a_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, a_bounds_in_c1,
-      transform_c1_to_a, 0);  // a
-  aggregated_hit_test_region_list[3] = AggregatedHitTestRegion(
-      b_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, b_bounds_in_c1,
-      transform_c1_to_b, 0);  // b
+  aggregated_hit_test_region_list[2] =
+      AggregatedHitTestRegion(a_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              a_bounds_in_c1, transform_c1_to_a, 0);  // a
+  aggregated_hit_test_region_list[3] =
+      AggregatedHitTestRegion(b_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              b_bounds_in_c1, transform_c1_to_b, 0);  // b
   aggregated_hit_test_region_list[4] = AggregatedHitTestRegion(
       c2_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore,
       c2_bounds_in_e, transform_e_to_c2, 2);  // c2
-  aggregated_hit_test_region_list[5] = AggregatedHitTestRegion(
-      g_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, g_bounds_in_c2,
-      transform_c2_to_g, 0);  // g
-  aggregated_hit_test_region_list[6] = AggregatedHitTestRegion(
-      h_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, h_bounds_in_c2,
-      transform_c2_to_h, 0);  // h
+  aggregated_hit_test_region_list[5] =
+      AggregatedHitTestRegion(g_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              g_bounds_in_c2, transform_c2_to_g, 0);  // g
+  aggregated_hit_test_region_list[6] =
+      AggregatedHitTestRegion(h_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              h_bounds_in_c2, transform_c2_to_h, 0);  // h
 
   // All points are in e's coordinate system when we reach this case.
   gfx::Point point1(1, 1);
@@ -383,40 +408,47 @@ TEST_F(HitTestQueryTest, ClippedChildrenWithTabAndTransparentBackground) {
   gfx::Point point6(450, 750);
   gfx::Point point7(350, 1100);
 
-  Target target1 = hit_test_query().FindTargetForLocation(point1);
+  Target target1 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point1);
   EXPECT_EQ(target1.frame_sink_id, e_id);
   EXPECT_EQ(target1.location_in_target, point1);
-  EXPECT_EQ(target1.flags, mojom::kHitTestMine);
+  EXPECT_EQ(target1.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 
-  Target target2 = hit_test_query().FindTargetForLocation(point2);
+  Target target2 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point2);
   EXPECT_EQ(target2.frame_sink_id, a_id);
   EXPECT_EQ(target2.location_in_target, gfx::Point(2, 2));
-  EXPECT_EQ(target2.flags, mojom::kHitTestChildSurface | mojom::kHitTestMine);
+  EXPECT_EQ(target2.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 
-  Target target3 = hit_test_query().FindTargetForLocation(point3);
+  Target target3 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point3);
   EXPECT_EQ(target3.frame_sink_id, e_id);
   EXPECT_EQ(target3.location_in_target, point3);
-  EXPECT_EQ(target3.flags, mojom::kHitTestMine);
+  EXPECT_EQ(target3.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 
-  Target target4 = hit_test_query().FindTargetForLocation(point4);
+  Target target4 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point4);
   EXPECT_EQ(target4.frame_sink_id, b_id);
   EXPECT_EQ(target4.location_in_target, gfx::Point(2, 2));
-  EXPECT_EQ(target4.flags, mojom::kHitTestChildSurface | mojom::kHitTestMine);
+  EXPECT_EQ(target4.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 
-  Target target5 = hit_test_query().FindTargetForLocation(point5);
+  Target target5 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point5);
   EXPECT_EQ(target5.frame_sink_id, g_id);
   EXPECT_EQ(target5.location_in_target, gfx::Point(50, 50));
-  EXPECT_EQ(target5.flags, mojom::kHitTestChildSurface | mojom::kHitTestMine);
+  EXPECT_EQ(target5.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 
-  Target target6 = hit_test_query().FindTargetForLocation(point6);
+  Target target6 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point6);
   EXPECT_EQ(target6.frame_sink_id, e_id);
   EXPECT_EQ(target6.location_in_target, point6);
-  EXPECT_EQ(target6.flags, mojom::kHitTestMine);
+  EXPECT_EQ(target6.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 
-  Target target7 = hit_test_query().FindTargetForLocation(point7);
+  Target target7 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point7);
   EXPECT_EQ(target7.frame_sink_id, h_id);
   EXPECT_EQ(target7.location_in_target, gfx::Point(150, 300));
-  EXPECT_EQ(target7.flags, mojom::kHitTestChildSurface | mojom::kHitTestMine);
+  EXPECT_EQ(target7.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 }
 
 // Children that are multiple layers deep.
@@ -455,23 +487,24 @@ TEST_F(HitTestQueryTest, MultipleLayerChild) {
   transform_e_to_c2.Translate(-400, -50);
   AggregatedHitTestRegion* aggregated_hit_test_region_list =
       aggregated_hit_test_region();
-  aggregated_hit_test_region_list[0] = AggregatedHitTestRegion(
-      e_id, mojom::kHitTestMine, e_bounds_in_e, transform_e_to_e, 5),  // e
+  aggregated_hit_test_region_list[0] =
+      AggregatedHitTestRegion(e_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              e_bounds_in_e, transform_e_to_e, 5),  // e
       aggregated_hit_test_region_list[1] = AggregatedHitTestRegion(
           c1_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore,
           c1_bounds_in_e, transform_e_to_c1, 3);  // c1
-  aggregated_hit_test_region_list[2] = AggregatedHitTestRegion(
-      a_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, a_bounds_in_c1,
-      transform_c1_to_a, 2);  // a
-  aggregated_hit_test_region_list[3] = AggregatedHitTestRegion(
-      b_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, b_bounds_in_a,
-      transform_a_to_b, 1);  // b
-  aggregated_hit_test_region_list[4] = AggregatedHitTestRegion(
-      g_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, g_bounds_in_b,
-      transform_b_to_g, 0);  // g
-  aggregated_hit_test_region_list[5] = AggregatedHitTestRegion(
-      c2_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, c2_bounds_in_e,
-      transform_e_to_c2, 0);  // c2
+  aggregated_hit_test_region_list[2] =
+      AggregatedHitTestRegion(a_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              a_bounds_in_c1, transform_c1_to_a, 2);  // a
+  aggregated_hit_test_region_list[3] =
+      AggregatedHitTestRegion(b_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              b_bounds_in_a, transform_a_to_b, 1);  // b
+  aggregated_hit_test_region_list[4] =
+      AggregatedHitTestRegion(g_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              g_bounds_in_b, transform_b_to_g, 0);  // g
+  aggregated_hit_test_region_list[5] =
+      AggregatedHitTestRegion(c2_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              c2_bounds_in_e, transform_e_to_c2, 0);  // c2
 
   // All points are in e's coordinate system when we reach this case.
   gfx::Point point1(1, 1);
@@ -479,25 +512,29 @@ TEST_F(HitTestQueryTest, MultipleLayerChild) {
   gfx::Point point3(550, 350);
   gfx::Point point4(900, 350);
 
-  Target target1 = hit_test_query().FindTargetForLocation(point1);
+  Target target1 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point1);
   EXPECT_EQ(target1.frame_sink_id, e_id);
   EXPECT_EQ(target1.location_in_target, point1);
-  EXPECT_EQ(target1.flags, mojom::kHitTestMine);
+  EXPECT_EQ(target1.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 
-  Target target2 = hit_test_query().FindTargetForLocation(point2);
+  Target target2 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point2);
   EXPECT_EQ(target2.frame_sink_id, g_id);
   EXPECT_EQ(target2.location_in_target, gfx::Point(0, 20));
-  EXPECT_EQ(target2.flags, mojom::kHitTestChildSurface | mojom::kHitTestMine);
+  EXPECT_EQ(target2.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 
-  Target target3 = hit_test_query().FindTargetForLocation(point3);
+  Target target3 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point3);
   EXPECT_EQ(target3.frame_sink_id, b_id);
   EXPECT_EQ(target3.location_in_target, gfx::Point(400, 220));
-  EXPECT_EQ(target3.flags, mojom::kHitTestChildSurface | mojom::kHitTestMine);
+  EXPECT_EQ(target3.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 
-  Target target4 = hit_test_query().FindTargetForLocation(point4);
+  Target target4 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point4);
   EXPECT_EQ(target4.frame_sink_id, c2_id);
   EXPECT_EQ(target4.location_in_target, gfx::Point(500, 300));
-  EXPECT_EQ(target4.flags, mojom::kHitTestChildSurface | mojom::kHitTestMine);
+  EXPECT_EQ(target4.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 }
 
 // Multiple layers deep of transparent children.
@@ -536,8 +573,9 @@ TEST_F(HitTestQueryTest, MultipleLayerTransparentChild) {
   transform_e_to_c2.Translate(-400, -50);
   AggregatedHitTestRegion* aggregated_hit_test_region_list =
       aggregated_hit_test_region();
-  aggregated_hit_test_region_list[0] = AggregatedHitTestRegion(
-      e_id, mojom::kHitTestMine, e_bounds_in_e, transform_e_to_e, 5);  // e
+  aggregated_hit_test_region_list[0] =
+      AggregatedHitTestRegion(e_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              e_bounds_in_e, transform_e_to_e, 5);  // e
   aggregated_hit_test_region_list[1] = AggregatedHitTestRegion(
       c1_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore,
       c1_bounds_in_e, transform_e_to_c1, 3);  // c1
@@ -550,9 +588,9 @@ TEST_F(HitTestQueryTest, MultipleLayerTransparentChild) {
   aggregated_hit_test_region_list[4] = AggregatedHitTestRegion(
       g_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore, g_bounds_in_b,
       transform_b_to_g, 0);  // g
-  aggregated_hit_test_region_list[5] = AggregatedHitTestRegion(
-      c2_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, c2_bounds_in_e,
-      transform_e_to_c2, 0);  // c2
+  aggregated_hit_test_region_list[5] =
+      AggregatedHitTestRegion(c2_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              c2_bounds_in_e, transform_e_to_c2, 0);  // c2
 
   // All points are in e's coordinate system when we reach this case.
   gfx::Point point1(1, 1);
@@ -560,22 +598,26 @@ TEST_F(HitTestQueryTest, MultipleLayerTransparentChild) {
   gfx::Point point3(450, 350);
   gfx::Point point4(900, 350);
 
-  Target target1 = hit_test_query().FindTargetForLocation(point1);
+  Target target1 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point1);
   EXPECT_EQ(target1.frame_sink_id, e_id);
   EXPECT_EQ(target1.location_in_target, point1);
   EXPECT_TRUE(target1.flags);
 
-  Target target2 = hit_test_query().FindTargetForLocation(point2);
+  Target target2 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point2);
   EXPECT_EQ(target2.frame_sink_id, e_id);
   EXPECT_EQ(target2.location_in_target, point2);
   EXPECT_TRUE(target2.flags);
 
-  Target target3 = hit_test_query().FindTargetForLocation(point3);
+  Target target3 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point3);
   EXPECT_EQ(target3.frame_sink_id, c2_id);
   EXPECT_EQ(target3.location_in_target, gfx::Point(50, 300));
   EXPECT_TRUE(target3.flags);
 
-  Target target4 = hit_test_query().FindTargetForLocation(point4);
+  Target target4 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point4);
   EXPECT_EQ(target4.frame_sink_id, c2_id);
   EXPECT_EQ(target4.location_in_target, gfx::Point(500, 300));
   EXPECT_TRUE(target4.flags);
@@ -596,17 +638,18 @@ TEST_F(HitTestQueryTest, InvalidAggregatedHitTestRegionData) {
   transform_c_to_b.Translate(0, -100);
   AggregatedHitTestRegion* aggregated_hit_test_region_list_min =
       aggregated_hit_test_region();
-  aggregated_hit_test_region_list_min[0] = AggregatedHitTestRegion(
-      e_id, mojom::kHitTestMine, e_bounds_in_e, transform_e_to_e, 3);  // e
+  aggregated_hit_test_region_list_min[0] =
+      AggregatedHitTestRegion(e_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              e_bounds_in_e, transform_e_to_e, 3);  // e
   aggregated_hit_test_region_list_min[1] = AggregatedHitTestRegion(
       c_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore, c_bounds_in_e,
       transform_e_to_c, INT32_MIN);  // c
-  aggregated_hit_test_region_list_min[2] = AggregatedHitTestRegion(
-      a_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, a_bounds_in_c,
-      transform_c_to_a, 0);  // a
-  aggregated_hit_test_region_list_min[3] = AggregatedHitTestRegion(
-      b_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, b_bounds_in_c,
-      transform_c_to_b, 0);  // b
+  aggregated_hit_test_region_list_min[2] =
+      AggregatedHitTestRegion(a_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              a_bounds_in_c, transform_c_to_a, 0);  // a
+  aggregated_hit_test_region_list_min[3] =
+      AggregatedHitTestRegion(b_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              b_bounds_in_c, transform_c_to_b, 0);  // b
 
   // All points are in e's coordinate system when we reach this case.
   gfx::Point point1(1, 1);
@@ -614,12 +657,14 @@ TEST_F(HitTestQueryTest, InvalidAggregatedHitTestRegionData) {
 
   // |child_count| is invalid, which is a security fault. For now, check to see
   // if the returned Target is invalid.
-  Target target1 = hit_test_query().FindTargetForLocation(point1);
+  Target target1 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point1);
   EXPECT_EQ(target1.frame_sink_id, FrameSinkId());
   EXPECT_EQ(target1.location_in_target, gfx::Point());
   EXPECT_FALSE(target1.flags);
 
-  Target target2 = hit_test_query().FindTargetForLocation(point2);
+  Target target2 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point2);
   EXPECT_EQ(target2.frame_sink_id, FrameSinkId());
   EXPECT_EQ(target2.location_in_target, gfx::Point());
   EXPECT_FALSE(target2.flags);
@@ -627,41 +672,97 @@ TEST_F(HitTestQueryTest, InvalidAggregatedHitTestRegionData) {
   AggregatedHitTestRegion* aggregated_hit_test_region_list_max =
       aggregated_hit_test_region();
   aggregated_hit_test_region_list_max[0] =
-      AggregatedHitTestRegion(e_id, mojom::kHitTestMine, e_bounds_in_e,
-                              transform_e_to_e, INT32_MAX);  // e
+      AggregatedHitTestRegion(e_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              e_bounds_in_e, transform_e_to_e, INT32_MAX);  // e
   aggregated_hit_test_region_list_max[1] = AggregatedHitTestRegion(
       c_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore, c_bounds_in_e,
       transform_e_to_c, 2);  // c
-  aggregated_hit_test_region_list_max[2] = AggregatedHitTestRegion(
-      a_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, a_bounds_in_c,
-      transform_c_to_a, 0);  // a
-  aggregated_hit_test_region_list_max[3] = AggregatedHitTestRegion(
-      b_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, b_bounds_in_c,
-      transform_c_to_b, 0);  // b
+  aggregated_hit_test_region_list_max[2] =
+      AggregatedHitTestRegion(a_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              a_bounds_in_c, transform_c_to_a, 0);  // a
+  aggregated_hit_test_region_list_max[3] =
+      AggregatedHitTestRegion(b_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              b_bounds_in_c, transform_c_to_b, 0);  // b
 
-  Target target3 = hit_test_query().FindTargetForLocation(point1);
+  Target target3 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point1);
   EXPECT_EQ(target3.frame_sink_id, FrameSinkId());
   EXPECT_EQ(target3.location_in_target, gfx::Point());
   EXPECT_FALSE(target3.flags);
 
   AggregatedHitTestRegion* aggregated_hit_test_region_list_bigger =
       aggregated_hit_test_region();
-  aggregated_hit_test_region_list_bigger[0] = AggregatedHitTestRegion(
-      e_id, mojom::kHitTestMine, e_bounds_in_e, transform_e_to_e, 3);  // e
+  aggregated_hit_test_region_list_bigger[0] =
+      AggregatedHitTestRegion(e_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              e_bounds_in_e, transform_e_to_e, 3);  // e
   aggregated_hit_test_region_list_bigger[1] = AggregatedHitTestRegion(
       c_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore, c_bounds_in_e,
       transform_e_to_c, 3);  // c
-  aggregated_hit_test_region_list_bigger[2] = AggregatedHitTestRegion(
-      a_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, a_bounds_in_c,
-      transform_c_to_a, 0);  // a
-  aggregated_hit_test_region_list_bigger[3] = AggregatedHitTestRegion(
-      b_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, b_bounds_in_c,
-      transform_c_to_b, 0);  // b
+  aggregated_hit_test_region_list_bigger[2] =
+      AggregatedHitTestRegion(a_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              a_bounds_in_c, transform_c_to_a, 0);  // a
+  aggregated_hit_test_region_list_bigger[3] =
+      AggregatedHitTestRegion(b_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              b_bounds_in_c, transform_c_to_b, 0);  // b
 
-  Target target4 = hit_test_query().FindTargetForLocation(point1);
+  Target target4 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point1);
   EXPECT_EQ(target4.frame_sink_id, FrameSinkId());
   EXPECT_EQ(target4.location_in_target, gfx::Point());
   EXPECT_FALSE(target4.flags);
+}
+
+// Tests flags kHitTestMouse and kHitTestTouch.
+TEST_F(HitTestQueryTest, MouseTouchFlags) {
+  FrameSinkId e_id = FrameSinkId(1, 1);
+  FrameSinkId c1_id = FrameSinkId(2, 2);
+  FrameSinkId c2_id = FrameSinkId(3, 3);
+  gfx::Rect e_bounds_in_e = gfx::Rect(0, 0, 600, 600);
+  gfx::Rect c1_bounds_in_e = gfx::Rect(0, 0, 300, 200);
+  gfx::Rect c2_bounds_in_e = gfx::Rect(0, 0, 350, 250);
+  gfx::Transform transform_e_to_e, transform_e_to_c1, transform_e_to_c2;
+  transform_e_to_c1.Translate(-100, -100);
+  transform_e_to_c2.Translate(-75, -75);
+  AggregatedHitTestRegion* aggregated_hit_test_region_list =
+      aggregated_hit_test_region();
+  aggregated_hit_test_region_list[0] = AggregatedHitTestRegion(
+      e_id, mojom::kHitTestMine | mojom::kHitTestMouse | mojom::kHitTestTouch,
+      e_bounds_in_e, transform_e_to_e, 2);  // e
+  aggregated_hit_test_region_list[1] =
+      AggregatedHitTestRegion(c1_id, mojom::kHitTestMine | mojom::kHitTestMouse,
+                              c1_bounds_in_e, transform_e_to_c1, 0);  // c1
+  aggregated_hit_test_region_list[2] =
+      AggregatedHitTestRegion(c2_id, mojom::kHitTestMine | mojom::kHitTestTouch,
+                              c2_bounds_in_e, transform_e_to_c2, 0);  // c2
+
+  // All points are in e's coordinate system when we reach this case.
+  gfx::Point point1(80, 80);
+  gfx::Point point2(150, 150);
+
+  Target target1 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point1);
+  EXPECT_EQ(target1.frame_sink_id, e_id);
+  EXPECT_EQ(target1.location_in_target, point1);
+  EXPECT_EQ(target1.flags,
+            mojom::kHitTestMine | mojom::kHitTestMouse | mojom::kHitTestTouch);
+
+  Target target2 =
+      hit_test_query().FindTargetForLocation(EventSource::TOUCH, point1);
+  EXPECT_EQ(target2.frame_sink_id, c2_id);
+  EXPECT_EQ(target2.location_in_target, gfx::Point(5, 5));
+  EXPECT_EQ(target2.flags, mojom::kHitTestMine | mojom::kHitTestTouch);
+
+  Target target3 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point2);
+  EXPECT_EQ(target3.frame_sink_id, c1_id);
+  EXPECT_EQ(target3.location_in_target, gfx::Point(50, 50));
+  EXPECT_EQ(target3.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
+
+  Target target4 =
+      hit_test_query().FindTargetForLocation(EventSource::TOUCH, point2);
+  EXPECT_EQ(target4.frame_sink_id, c2_id);
+  EXPECT_EQ(target4.location_in_target, gfx::Point(75, 75));
+  EXPECT_EQ(target4.flags, mojom::kHitTestMine | mojom::kHitTestTouch);
 }
 
 }  // namespace test

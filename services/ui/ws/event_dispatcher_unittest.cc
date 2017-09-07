@@ -2387,10 +2387,12 @@ TEST_P(EventDispatcherVizTargeterTest, ProcessEvent) {
   viz::AggregatedHitTestRegion* aggregated_hit_test_region_list =
       aggregated_hit_test_region();
   aggregated_hit_test_region_list[0] = viz::AggregatedHitTestRegion(
-      root_window()->frame_sink_id(), viz::mojom::kHitTestMine,
+      root_window()->frame_sink_id(),
+      viz::mojom::kHitTestMine | viz::mojom::kHitTestMouse,
       root_window()->bounds(), root_window()->transform(), 1);  // root_window
   aggregated_hit_test_region_list[1] = viz::AggregatedHitTestRegion(
-      child->frame_sink_id(), viz::mojom::kHitTestMine, child->bounds(),
+      child->frame_sink_id(),
+      viz::mojom::kHitTestMine | viz::mojom::kHitTestMouse, child->bounds(),
       child->transform(), 0);  // child
 
   // Send event that is over child.
