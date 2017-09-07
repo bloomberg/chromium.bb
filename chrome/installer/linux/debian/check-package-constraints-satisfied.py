@@ -14,6 +14,7 @@ import subprocess
 import sys
 
 import deb_version
+import package_version_interval
 
 if len(sys.argv) != 5:
   print 'Usage: %s binary_path sysroot_path arch stamp_path' % sys.argv[0]
@@ -47,43 +48,13 @@ if exit_code != 0:
   print 'stderr was ' + stderr
   sys.exit(1)
 
-def version_statement_satisfied(left_version, op, right_version):
-  # Allowed relationship operators are specified in:
-  # https://www.debian.org/doc/debian-policy/ch-relationships.html
-  if op == '>=':
-    return left_version >= right_version
-  if op == '<=':
-    return left_version <= right_version
-  if op == '>>':
-    return left_version > right_version
-  if op == '<<':
-    return left_version < right_version
-  assert op == '='
-  return left_version == right_version
-
-def get_package_and_version_requirement(dep):
-  package_name_regex = '[a-z][a-z0-9\+\-\.]+'
-  match = re.match('^(%s)$' % package_name_regex, dep)
-  if match:
-    return (match.group(1), lambda version: True)
-  match = re.match('^(%s) \(([\>\=\<]+) ([\~0-9A-Za-z\+\-\.\:]+)\)$' %
-                   package_name_regex, dep)
-  if match:
-    return (match.group(1), lambda version: version_statement_satisfied(
-        version, match.group(2), deb_version.DebVersion(match.group(3))))
-  # At the time of writing this script, Chrome does not have any
-  # complex version requirements like 'version >> 3 | version << 2'.
-  print ('Conjunctions and disjunctions in package version requirements are ' +
-         'not implemented at this time.')
-  sys.exit(1)
-
 deps_str = stdout.replace('shlibs:Depends=', '').replace('\n', '')
 deps = deps_str.split(', ')
-package_requirements = {}
+package_intervals = {}
 if deps_str != '':
   for dep in deps:
-    (package, requirement) = get_package_and_version_requirement(dep)
-    package_requirements[package] = requirement
+    (package, interval) = package_version_interval.parse_dep(dep)
+    package_intervals[package] = interval
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 deps_file = os.path.join(script_dir, 'dist-package-versions.json')
@@ -91,7 +62,7 @@ distro_package_versions = json.load(open(deps_file))
 
 ret_code = 0
 for distro in distro_package_versions:
-  for package in package_requirements:
+  for package in package_intervals:
     if package not in distro_package_versions[distro]:
       print >> sys.stderr, (
           'Unexpected new dependency %s on distro %s caused by binary %s' % (
@@ -100,7 +71,7 @@ for distro in distro_package_versions:
       continue
     distro_version = deb_version.DebVersion(
         distro_package_versions[distro][package])
-    if not package_requirements[package](distro_version):
+    if not package_intervals[package].contains(distro_version):
       print >> sys.stderr, 'Dependency on package %s not satisfiable on %s' % (
           package, distro)
       ret_code = 1
