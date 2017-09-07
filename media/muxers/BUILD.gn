@@ -23,3 +23,22 @@ source_set("muxers") {
 
   configs += [ "//media:subcomponent_config" ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "webm_muxer_unittest.cc",
+  ]
+
+  deps = [
+    "//base/test:test_support",
+    "//media:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+
+  configs += [
+    # TODO(crbug.com/167187): Fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
+  ]
+}

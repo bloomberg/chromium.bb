@@ -129,62 +129,6 @@ component("media") {
   }
 }
 
-# TODO(xhwang): Move these into source_sets in respective subfolders.
-source_set("unit_tests") {
-  testonly = true
-  sources = [
-    "muxers/webm_muxer_unittest.cc",
-  ]
-
-  data = [
-    "test/data/",
-  ]
-
-  configs += [
-    ":media_config",
-
-    # TODO(crbug.com/167187): Fix size_t to int truncations.
-    "//build/config/compiler:no_size_t_to_int_warning",
-  ]
-
-  deps = [
-    ":test_support",
-    "//base/test:test_support",
-    "//crypto",
-    "//gpu:test_support",
-    "//gpu/command_buffer/common",
-    "//media/cdm:cdm_paths",
-    "//skia",  # Direct dependency required to inherit config.
-    "//testing/gmock",
-    "//testing/gtest",
-    "//third_party/libwebm",
-    "//third_party/libyuv",
-    "//third_party/widevine/cdm:headers",
-    "//ui/gfx:test_support",
-    "//url",
-  ]
-
-  data_deps = []
-
-  if (proprietary_codecs) {
-    if (enable_hls_sample_aes) {
-      deps += [ "//third_party/boringssl" ]
-    }
-  }
-
-  if (is_mac || is_ios) {
-    libs = [
-      "AppKit.framework",
-      "Foundation.framework",
-    ]
-  }
-
-  if (media_use_ffmpeg) {
-    # Direct dependency required to inherit config.
-    deps += [ "//third_party/ffmpeg" ]
-  }
-}
-
 # Note: This can't be a static_library since it does not have any sources.
 source_set("test_support") {
   testonly = true
@@ -202,7 +146,6 @@ source_set("test_support") {
 # TODO(xhwang): Move mojo/capture/remoting tests here where applicable.
 test("media_unittests") {
   deps = [
-    ":unit_tests",
     "//media/audio:unit_tests",
     "//media/base:unit_tests",
     "//media/cdm:unit_tests",
@@ -211,11 +154,18 @@ test("media_unittests") {
     "//media/formats:unit_tests",
     "//media/gpu:unit_tests",
     "//media/mojo:unit_tests",
+    "//media/muxers:unit_tests",
     "//media/renderers:unit_tests",
     "//media/test:pipeline_integration_tests",
     "//media/test:run_all_unittests",
     "//media/video:unit_tests",
   ]
+
+  data = [
+    "test/data/",
+  ]
+
+  data_deps = []
 
   if (media_use_ffmpeg) {
     deps += [ "//media/ffmpeg:unit_tests" ]
