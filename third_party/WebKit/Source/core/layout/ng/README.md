@@ -117,13 +117,18 @@ Here is the instruction how to generate a new result.
 * Generate the coverage html from the master lcov file
 `chromium\src>C:\Perl64\bin\perl.exe dynamorio.git\third_party\lcov\genhtml output.info -o output`
 
-### Debugging ###
+### Debugging, logging and testing ###
 Both layout input node subtrees and layout output physical fragment subtrees
-may be dumped to stderr, for debugging purposes.
+may be dumped, for debugging, logging and testing purposes.
 
 #### For layout input node subtree ####
-Call NGLayoutInputNode::ShowNodeTree().
+Call NGLayoutInputNode::ShowNodeTree() to dump the tree to stderr.
 
 #### For physical fragment subtree ####
-Call NGPhysicalFragment::ShowFragmentTree(). Fragments in the subtree are not
-required to be marked as placed (i.e. know their offset).
+Call NGPhysicalFragment::ShowFragmentTree() to dump the tree to
+stderr. Fragments in the subtree are not required to be marked as placed
+(i.e. know their offset).
+
+A fragment tree may also be dumped to a String, by calling
+NGPhysicalFragment::DumpFragmentTree(). It takes a flag parameter, so that the
+output can be customized to only contain what's relevant for a given purpose.
