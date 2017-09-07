@@ -59,8 +59,6 @@ component("keyboard_with_content") {
     "content/keyboard_constants.h",
     "content/keyboard_content_util.cc",
     "content/keyboard_content_util.h",
-    "content/keyboard_ui_content.cc",
-    "content/keyboard_ui_content.h",
   ]
 
   defines = [ "KEYBOARD_IMPLEMENTATION" ]
@@ -161,7 +159,6 @@ mojom("mojom") {
 
 test("keyboard_unittests") {
   sources = [
-    "content/keyboard_ui_content_unittest.cc",
     "keyboard_controller_unittest.cc",
     "keyboard_event_filter_unittest.cc",
     "keyboard_util_unittest.cc",
