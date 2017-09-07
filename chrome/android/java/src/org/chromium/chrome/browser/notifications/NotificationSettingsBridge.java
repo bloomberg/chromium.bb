@@ -13,6 +13,7 @@ import org.chromium.base.BuildInfo;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
+import org.chromium.components.url_formatter.UrlFormatter;
 
 /**
  * Interface for native code to interact with Android notification channels.
@@ -98,7 +99,8 @@ public class NotificationSettingsBridge {
         }
 
         public NotificationChannel toChannel() {
-            NotificationChannel channel = new NotificationChannel(mId, mOrigin,
+            NotificationChannel channel = new NotificationChannel(mId,
+                    UrlFormatter.formatUrlForSecurityDisplay(mOrigin, false /* showScheme */),
                     mStatus == NotificationChannelStatus.BLOCKED
                             ? NotificationManager.IMPORTANCE_NONE
                             : NotificationManager.IMPORTANCE_DEFAULT);

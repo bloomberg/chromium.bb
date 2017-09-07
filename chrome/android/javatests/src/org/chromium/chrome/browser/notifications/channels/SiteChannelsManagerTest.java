@@ -4,6 +4,7 @@
 package org.chromium.chrome.browser.notifications.channels;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 
@@ -19,6 +20,7 @@ import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -28,8 +30,11 @@ import org.chromium.chrome.browser.notifications.NotificationChannelStatus;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
 import org.chromium.chrome.browser.notifications.NotificationSettingsBridge;
+import org.chromium.content.browser.test.NativeLibraryTestRule;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Instrumentation unit tests for SiteChannelsManager.
@@ -43,9 +48,15 @@ import java.util.Arrays;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class SiteChannelsManagerTest {
     private SiteChannelsManager mSiteChannelsManager;
+    @Rule
+    public NativeLibraryTestRule mNativeLibraryTestRule = new NativeLibraryTestRule();
 
     @Before
     public void setUp() throws Exception {
+        // Not initializing the browser process is safe because
+        // UrlFormatter.formatUrlForSecurityDisplay() is stand-alone.
+        mNativeLibraryTestRule.loadNativeLibraryNoBrowserProcess();
+
         Context mContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
         NotificationManagerProxy notificationManagerProxy = new NotificationManagerProxyImpl(
                 (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE));
@@ -76,6 +87,22 @@ public class SiteChannelsManagerTest {
         assertThat(channel.getOrigin(), is("https://example-enabled.org"));
         assertThat(channel.getStatus(), matchesChannelStatus(NotificationChannelStatus.ENABLED));
         assertThat(channel.getTimestamp(), is(62102180000L));
+    }
+
+    @Test
+    @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    @TargetApi(Build.VERSION_CODES.O)
+    @SmallTest
+    public void testCreateSiteChannel_stripsSchemaForChannelName() throws Exception {
+        mSiteChannelsManager.createSiteChannel("http://127.0.0.1", 0L, true);
+        mSiteChannelsManager.createSiteChannel("https://example.com", 0L, true);
+        mSiteChannelsManager.createSiteChannel("ftp://127.0.0.1", 0L, true);
+        List<String> channelNames = new ArrayList<>();
+        for (NotificationSettingsBridge.SiteChannel siteChannel :
+                mSiteChannelsManager.getSiteChannels()) {
+            channelNames.add(siteChannel.toChannel().getName().toString());
+        }
+        assertThat(channelNames, containsInAnyOrder("ftp://127.0.0.1", "example.com", "127.0.0.1"));
     }
 
     @Test
