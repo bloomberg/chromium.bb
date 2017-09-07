@@ -310,7 +310,7 @@ int BubbleBorder::GetBorderThickness() const {
 }
 
 int BubbleBorder::GetBorderCornerRadius() const {
-  return UseMd() ? 3 : images_->corner_radius;
+  return UseMd() ? 2 : images_->corner_radius;
 }
 
 int BubbleBorder::GetArrowOffset(const gfx::Size& border_size) const {
