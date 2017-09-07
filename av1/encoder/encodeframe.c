@@ -3558,9 +3558,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
     src_diff_var = get_sby_perpixel_diff_variance(cpi, &x->plane[0].src, mi_row,
                                                   mi_col, bsize);
   }
-#endif
 
-#if CONFIG_FP_MB_STATS
   // Decide whether we shall split directly and skip searching NONE by using
   // the first pass block statistics
   if (cpi->use_fp_mb_stats && bsize >= BLOCK_32X32 && do_square_split &&
@@ -3742,13 +3740,11 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
     int reached_last_index = 0;
     subsize = get_subsize(bsize, PARTITION_SPLIT);
     if (bsize == BLOCK_8X8 && !unify_bsize) {
-#if CONFIG_DUAL_FILTER
       if (cpi->sf.adaptive_pred_interp_filter && partition_none_allowed)
         pc_tree->leaf_split[0]->pred_interp_filter =
+#if CONFIG_DUAL_FILTER
             ctx_none->mic.mbmi.interp_filter[0];
 #else
-      if (cpi->sf.adaptive_pred_interp_filter && partition_none_allowed)
-        pc_tree->leaf_split[0]->pred_interp_filter =
             ctx_none->mic.mbmi.interp_filter;
 #endif
 #if CONFIG_SUPERTX
