@@ -56,6 +56,10 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // Snaps window to left/right.
   void SnapWindow(aura::Window* window, SnapPosition snap_position);
 
+  // Swaps the left and right windows. This will do nothing if one of the
+  // windows is not snapped.
+  void SwapWindows();
+
   // Returns the default snapped window. It's the window that remains open until
   // the split mode ends. It's decided by |default_snap_position_|. E.g., If
   // |default_snap_position_| equals LEFT, then the default snapped window is
