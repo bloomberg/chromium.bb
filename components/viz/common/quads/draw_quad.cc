@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/quads/draw_quad.h"
+#include "components/viz/common/quads/draw_quad.h"
 
 #include <stddef.h>
 
@@ -13,22 +13,21 @@
 #include "components/viz/common/traced_value.h"
 #include "ui/gfx/geometry/quad_f.h"
 
-namespace cc {
+namespace viz {
 
 DrawQuad::DrawQuad()
-    : material(INVALID), needs_blending(false), shared_quad_state(0) {
-}
+    : material(INVALID), needs_blending(false), shared_quad_state(0) {}
 
 DrawQuad::DrawQuad(const DrawQuad& other) = default;
 
-void DrawQuad::SetAll(const viz::SharedQuadState* shared_quad_state,
+void DrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                       Material material,
                       const gfx::Rect& rect,
                       const gfx::Rect& visible_rect,
                       bool needs_blending) {
-  DCHECK(rect.Contains(visible_rect)) << "rect: " << rect.ToString()
-                                      << " visible_rect: "
-                                      << visible_rect.ToString();
+  DCHECK(rect.Contains(visible_rect))
+      << "rect: " << rect.ToString()
+      << " visible_rect: " << visible_rect.ToString();
 
   this->material = material;
   this->rect = rect;
@@ -40,33 +39,33 @@ void DrawQuad::SetAll(const viz::SharedQuadState* shared_quad_state,
   DCHECK(material != INVALID);
 }
 
-DrawQuad::~DrawQuad() {
-}
+DrawQuad::~DrawQuad() {}
 
 void DrawQuad::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetInteger("material", material);
-  viz::TracedValue::SetIDRef(shared_quad_state, value, "shared_state");
+  TracedValue::SetIDRef(shared_quad_state, value, "shared_state");
 
-  MathUtil::AddToTracedValue("content_space_rect", rect, value);
+  cc::MathUtil::AddToTracedValue("content_space_rect", rect, value);
 
   bool rect_is_clipped;
   gfx::QuadF rect_as_target_space_quad =
-      MathUtil::MapQuad(shared_quad_state->quad_to_target_transform,
-                        gfx::QuadF(gfx::RectF(rect)), &rect_is_clipped);
-  MathUtil::AddToTracedValue("rect_as_target_space_quad",
-                             rect_as_target_space_quad, value);
+      cc::MathUtil::MapQuad(shared_quad_state->quad_to_target_transform,
+                            gfx::QuadF(gfx::RectF(rect)), &rect_is_clipped);
+  cc::MathUtil::AddToTracedValue("rect_as_target_space_quad",
+                                 rect_as_target_space_quad, value);
 
   value->SetBoolean("rect_is_clipped", rect_is_clipped);
 
-  MathUtil::AddToTracedValue("content_space_visible_rect", visible_rect, value);
+  cc::MathUtil::AddToTracedValue("content_space_visible_rect", visible_rect,
+                                 value);
 
   bool visible_rect_is_clipped;
-  gfx::QuadF visible_rect_as_target_space_quad = MathUtil::MapQuad(
+  gfx::QuadF visible_rect_as_target_space_quad = cc::MathUtil::MapQuad(
       shared_quad_state->quad_to_target_transform,
       gfx::QuadF(gfx::RectF(visible_rect)), &visible_rect_is_clipped);
 
-  MathUtil::AddToTracedValue("visible_rect_as_target_space_quad",
-                             visible_rect_as_target_space_quad, value);
+  cc::MathUtil::AddToTracedValue("visible_rect_as_target_space_quad",
+                                 visible_rect_as_target_space_quad, value);
 
   value->SetBoolean("visible_rect_is_clipped", visible_rect_is_clipped);
 
@@ -80,4 +79,4 @@ DrawQuad::Resources::Resources() : count(0) {
     ids[i] = 0;
 }
 
-}  // namespace cc
+}  // namespace viz

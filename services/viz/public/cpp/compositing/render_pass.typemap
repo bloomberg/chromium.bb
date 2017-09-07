@@ -4,7 +4,7 @@
 
 mojom = "//services/viz/public/interfaces/compositing/render_pass.mojom"
 public_headers = [
-  "//cc/quads/draw_quad.h",
+  "//components/viz/common/quads/draw_quad.h",
   "//cc/quads/render_pass.h",
 ]
 traits_headers = [

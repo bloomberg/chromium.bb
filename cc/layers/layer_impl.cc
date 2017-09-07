@@ -461,7 +461,7 @@ void LayerImpl::NoteLayerPropertyChangedFromPropertyTrees() {
   SetNeedsPushProperties();
 }
 
-void LayerImpl::ValidateQuadResourcesInternal(DrawQuad* quad) const {
+void LayerImpl::ValidateQuadResourcesInternal(viz::DrawQuad* quad) const {
 #if DCHECK_IS_ON()
   const ResourceProvider* resource_provider =
       layer_tree_impl_->resource_provider();

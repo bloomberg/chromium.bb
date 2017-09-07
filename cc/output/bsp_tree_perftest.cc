@@ -18,7 +18,6 @@
 #include "cc/layers/layer.h"
 #include "cc/output/bsp_tree.h"
 #include "cc/quads/draw_polygon.h"
-#include "cc/quads/draw_quad.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/layer_tree_json_parser.h"

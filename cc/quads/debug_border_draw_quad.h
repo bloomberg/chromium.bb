@@ -8,12 +8,12 @@
 #include <memory>
 
 #include "cc/cc_export.h"
-#include "cc/quads/draw_quad.h"
+#include "components/viz/common/quads/draw_quad.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace cc {
 
-class CC_EXPORT DebugBorderDrawQuad : public DrawQuad {
+class CC_EXPORT DebugBorderDrawQuad : public viz::DrawQuad {
  public:
   DebugBorderDrawQuad();
 
@@ -33,7 +33,7 @@ class CC_EXPORT DebugBorderDrawQuad : public DrawQuad {
   SkColor color;
   int width;
 
-  static const DebugBorderDrawQuad* MaterialCast(const DrawQuad*);
+  static const DebugBorderDrawQuad* MaterialCast(const viz::DrawQuad*);
 
  private:
   void ExtendValue(base::trace_event::TracedValue* value) const override;

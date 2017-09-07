@@ -194,7 +194,7 @@ OverlayCandidate::~OverlayCandidate() {}
 
 // static
 bool OverlayCandidate::FromDrawQuad(DisplayResourceProvider* resource_provider,
-                                    const DrawQuad* quad,
+                                    const viz::DrawQuad* quad,
                                     OverlayCandidate* candidate) {
   // We don't support an opacity value different than one for an overlay plane.
   if (quad->shared_quad_state->opacity != 1.f)
@@ -205,13 +205,13 @@ bool OverlayCandidate::FromDrawQuad(DisplayResourceProvider* resource_provider,
     return false;
 
   switch (quad->material) {
-    case DrawQuad::TEXTURE_CONTENT:
+    case viz::DrawQuad::TEXTURE_CONTENT:
       return FromTextureQuad(resource_provider,
                              TextureDrawQuad::MaterialCast(quad), candidate);
-    case DrawQuad::TILED_CONTENT:
+    case viz::DrawQuad::TILED_CONTENT:
       return FromTileQuad(resource_provider, TileDrawQuad::MaterialCast(quad),
                           candidate);
-    case DrawQuad::STREAM_VIDEO_CONTENT:
+    case viz::DrawQuad::STREAM_VIDEO_CONTENT:
       return FromStreamVideoQuad(resource_provider,
                                  StreamVideoDrawQuad::MaterialCast(quad),
                                  candidate);
@@ -223,11 +223,11 @@ bool OverlayCandidate::FromDrawQuad(DisplayResourceProvider* resource_provider,
 }
 
 // static
-bool OverlayCandidate::IsInvisibleQuad(const DrawQuad* quad) {
+bool OverlayCandidate::IsInvisibleQuad(const viz::DrawQuad* quad) {
   float opacity = quad->shared_quad_state->opacity;
   if (opacity < std::numeric_limits<float>::epsilon())
     return true;
-  if (quad->material == DrawQuad::SOLID_COLOR) {
+  if (quad->material == viz::DrawQuad::SOLID_COLOR) {
     SkColor color = SolidColorDrawQuad::MaterialCast(quad)->color;
     float alpha = (SkColorGetA(color) * (1.0f / 255.0f)) * opacity;
     return quad->ShouldDrawWithBlending() &&
@@ -256,7 +256,7 @@ bool OverlayCandidate::IsOccluded(const OverlayCandidate& candidate,
 // static
 bool OverlayCandidate::FromDrawQuadResource(
     DisplayResourceProvider* resource_provider,
-    const DrawQuad* quad,
+    const viz::DrawQuad* quad,
     viz::ResourceId resource_id,
     bool y_flipped,
     OverlayCandidate* candidate) {

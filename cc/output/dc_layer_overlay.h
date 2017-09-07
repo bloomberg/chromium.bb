@@ -47,7 +47,7 @@ class CC_EXPORT DCLayerOverlay {
 
   // Resource ids that correspond to the DXGI textures to set as the contents
   // of the DCLayer.
-  DrawQuad::Resources resources;
+  viz::DrawQuad::Resources resources;
   // The contents rect property for the DCLayer.
   gfx::RectF contents_rect;
   // The bounds for the DCLayer in pixels.

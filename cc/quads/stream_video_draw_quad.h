@@ -10,12 +10,12 @@
 #include <memory>
 
 #include "cc/cc_export.h"
-#include "cc/quads/draw_quad.h"
+#include "components/viz/common/quads/draw_quad.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {
 
-class CC_EXPORT StreamVideoDrawQuad : public DrawQuad {
+class CC_EXPORT StreamVideoDrawQuad : public viz::DrawQuad {
  public:
   static const size_t kResourceIdIndex = 0;
 
@@ -45,7 +45,7 @@ class CC_EXPORT StreamVideoDrawQuad : public DrawQuad {
   };
   OverlayResources overlay_resources;
 
-  static const StreamVideoDrawQuad* MaterialCast(const DrawQuad*);
+  static const StreamVideoDrawQuad* MaterialCast(const viz::DrawQuad*);
 
   viz::ResourceId resource_id() const {
     return resources.ids[kResourceIdIndex];

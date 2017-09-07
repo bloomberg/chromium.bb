@@ -439,8 +439,8 @@ TEST_P(SurfaceTest, OverlayCandidate) {
   const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
   ASSERT_EQ(1u, frame.render_pass_list.size());
   ASSERT_EQ(1u, frame.render_pass_list.back()->quad_list.size());
-  cc::DrawQuad* draw_quad = frame.render_pass_list.back()->quad_list.back();
-  ASSERT_EQ(cc::DrawQuad::TEXTURE_CONTENT, draw_quad->material);
+  viz::DrawQuad* draw_quad = frame.render_pass_list.back()->quad_list.back();
+  ASSERT_EQ(viz::DrawQuad::TEXTURE_CONTENT, draw_quad->material);
 
   const cc::TextureDrawQuad* texture_quad =
       cc::TextureDrawQuad::MaterialCast(draw_quad);

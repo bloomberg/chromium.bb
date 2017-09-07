@@ -8,14 +8,14 @@
 #include <memory>
 
 #include "cc/cc_export.h"
-#include "cc/quads/draw_quad.h"
+#include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/surfaces/surface_id.h"
 
 namespace cc {
 
 enum class SurfaceDrawQuadType { PRIMARY, FALLBACK, LAST = FALLBACK };
 
-class CC_EXPORT SurfaceDrawQuad : public DrawQuad {
+class CC_EXPORT SurfaceDrawQuad : public viz::DrawQuad {
  public:
   SurfaceDrawQuad();
 
@@ -38,7 +38,7 @@ class CC_EXPORT SurfaceDrawQuad : public DrawQuad {
   SurfaceDrawQuadType surface_draw_quad_type;
   const SurfaceDrawQuad* fallback_quad = nullptr;
 
-  static const SurfaceDrawQuad* MaterialCast(const DrawQuad* quad);
+  static const SurfaceDrawQuad* MaterialCast(const viz::DrawQuad* quad);
 
  private:
   void ExtendValue(base::trace_event::TracedValue* value) const override;

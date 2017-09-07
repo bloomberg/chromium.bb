@@ -15,7 +15,6 @@
 #include "base/values.h"
 #include "cc/base/math_util.h"
 #include "cc/quads/debug_border_draw_quad.h"
-#include "cc/quads/draw_quad.h"
 #include "cc/quads/largest_draw_quad.h"
 #include "cc/quads/picture_draw_quad.h"
 #include "cc/quads/render_pass_draw_quad.h"
@@ -26,6 +25,7 @@
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/quads/yuv_video_draw_quad.h"
 #include "components/viz/common/quads/copy_output_request.h"
+#include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/shared_quad_state.h"
 #include "components/viz/common/traced_value.h"
 
@@ -37,14 +37,14 @@ const size_t kDefaultNumQuadsToReserve = 128;
 namespace cc {
 
 QuadList::QuadList()
-    : ListContainer<DrawQuad>(LargestDrawQuadAlignment(),
-                              LargestDrawQuadSize(),
-                              kDefaultNumSharedQuadStatesToReserve) {}
+    : ListContainer<viz::DrawQuad>(LargestDrawQuadAlignment(),
+                                   LargestDrawQuadSize(),
+                                   kDefaultNumSharedQuadStatesToReserve) {}
 
 QuadList::QuadList(size_t default_size_to_reserve)
-    : ListContainer<DrawQuad>(LargestDrawQuadAlignment(),
-                              LargestDrawQuadSize(),
-                              default_size_to_reserve) {}
+    : ListContainer<viz::DrawQuad>(LargestDrawQuadAlignment(),
+                                   LargestDrawQuadSize(),
+                                   default_size_to_reserve) {}
 
 void QuadList::ReplaceExistingQuadWithOpaqueTransparentSolidColor(Iterator at) {
   // In order to fill the backbuffer with transparent black, the replacement
@@ -148,7 +148,7 @@ std::unique_ptr<RenderPass> RenderPass::DeepCopy() const {
     }
     DCHECK(quad->shared_quad_state == *sqs_iter);
 
-    if (quad->material == DrawQuad::RENDER_PASS) {
+    if (quad->material == viz::DrawQuad::RENDER_PASS) {
       const RenderPassDrawQuad* pass_quad =
           RenderPassDrawQuad::MaterialCast(quad);
       copy_pass->CopyFromAndAppendRenderPassDrawQuad(pass_quad,
@@ -268,36 +268,37 @@ RenderPassDrawQuad* RenderPass::CopyFromAndAppendRenderPassDrawQuad(
   return copy_quad;
 }
 
-DrawQuad* RenderPass::CopyFromAndAppendDrawQuad(const DrawQuad* quad) {
+viz::DrawQuad* RenderPass::CopyFromAndAppendDrawQuad(
+    const viz::DrawQuad* quad) {
   DCHECK(!shared_quad_state_list.empty());
   switch (quad->material) {
-    case DrawQuad::DEBUG_BORDER:
+    case viz::DrawQuad::DEBUG_BORDER:
       CopyFromAndAppendTypedDrawQuad<DebugBorderDrawQuad>(quad);
       break;
-    case DrawQuad::PICTURE_CONTENT:
+    case viz::DrawQuad::PICTURE_CONTENT:
       CopyFromAndAppendTypedDrawQuad<PictureDrawQuad>(quad);
       break;
-    case DrawQuad::TEXTURE_CONTENT:
+    case viz::DrawQuad::TEXTURE_CONTENT:
       CopyFromAndAppendTypedDrawQuad<TextureDrawQuad>(quad);
       break;
-    case DrawQuad::SOLID_COLOR:
+    case viz::DrawQuad::SOLID_COLOR:
       CopyFromAndAppendTypedDrawQuad<SolidColorDrawQuad>(quad);
       break;
-    case DrawQuad::TILED_CONTENT:
+    case viz::DrawQuad::TILED_CONTENT:
       CopyFromAndAppendTypedDrawQuad<TileDrawQuad>(quad);
       break;
-    case DrawQuad::STREAM_VIDEO_CONTENT:
+    case viz::DrawQuad::STREAM_VIDEO_CONTENT:
       CopyFromAndAppendTypedDrawQuad<StreamVideoDrawQuad>(quad);
       break;
-    case DrawQuad::SURFACE_CONTENT:
+    case viz::DrawQuad::SURFACE_CONTENT:
       CopyFromAndAppendTypedDrawQuad<SurfaceDrawQuad>(quad);
       break;
-    case DrawQuad::YUV_VIDEO_CONTENT:
+    case viz::DrawQuad::YUV_VIDEO_CONTENT:
       CopyFromAndAppendTypedDrawQuad<YUVVideoDrawQuad>(quad);
       break;
     // RenderPass quads need to use specific CopyFrom function.
-    case DrawQuad::RENDER_PASS:
-    case DrawQuad::INVALID:
+    case viz::DrawQuad::RENDER_PASS:
+    case viz::DrawQuad::INVALID:
       LOG(FATAL) << "Invalid DrawQuad material " << quad->material;
       break;
   }

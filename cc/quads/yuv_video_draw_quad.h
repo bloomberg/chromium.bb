@@ -10,14 +10,14 @@
 #include <memory>
 
 #include "cc/cc_export.h"
-#include "cc/quads/draw_quad.h"
+#include "components/viz/common/quads/draw_quad.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace cc {
 
-class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
+class CC_EXPORT YUVVideoDrawQuad : public viz::DrawQuad {
  public:
   static const size_t kYPlaneResourceIdIndex = 0;
   static const size_t kUPlaneResourceIdIndex = 1;
@@ -93,7 +93,7 @@ class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
   gfx::ColorSpace video_color_space;
   bool require_overlay = false;
 
-  static const YUVVideoDrawQuad* MaterialCast(const DrawQuad*);
+  static const YUVVideoDrawQuad* MaterialCast(const viz::DrawQuad*);
 
   viz::ResourceId y_plane_resource_id() const {
     return resources.ids[kYPlaneResourceIdIndex];

@@ -586,48 +586,48 @@ void GLRenderer::BeginDrawingFrame() {
   num_triangles_drawn_ = 0;
 }
 
-void GLRenderer::DoDrawQuad(const cc::DrawQuad* quad,
+void GLRenderer::DoDrawQuad(const DrawQuad* quad,
                             const gfx::QuadF* clip_region) {
   DCHECK(quad->rect.Contains(quad->visible_rect));
-  if (quad->material != cc::DrawQuad::TEXTURE_CONTENT) {
+  if (quad->material != DrawQuad::TEXTURE_CONTENT) {
     FlushTextureQuadCache(SHARED_BINDING);
   }
 
   switch (quad->material) {
-    case cc::DrawQuad::INVALID:
+    case DrawQuad::INVALID:
       NOTREACHED();
       break;
-    case cc::DrawQuad::DEBUG_BORDER:
+    case DrawQuad::DEBUG_BORDER:
       DrawDebugBorderQuad(cc::DebugBorderDrawQuad::MaterialCast(quad));
       break;
-    case cc::DrawQuad::PICTURE_CONTENT:
+    case DrawQuad::PICTURE_CONTENT:
       // PictureDrawQuad should only be used for resourceless software draws.
       NOTREACHED();
       break;
-    case cc::DrawQuad::RENDER_PASS:
+    case DrawQuad::RENDER_PASS:
       DrawRenderPassQuad(cc::RenderPassDrawQuad::MaterialCast(quad),
                          clip_region);
       break;
-    case cc::DrawQuad::SOLID_COLOR:
+    case DrawQuad::SOLID_COLOR:
       DrawSolidColorQuad(cc::SolidColorDrawQuad::MaterialCast(quad),
                          clip_region);
       break;
-    case cc::DrawQuad::STREAM_VIDEO_CONTENT:
+    case DrawQuad::STREAM_VIDEO_CONTENT:
       DrawStreamVideoQuad(cc::StreamVideoDrawQuad::MaterialCast(quad),
                           clip_region);
       break;
-    case cc::DrawQuad::SURFACE_CONTENT:
+    case DrawQuad::SURFACE_CONTENT:
       // Surface content should be fully resolved to other quad types before
       // reaching a direct renderer.
       NOTREACHED();
       break;
-    case cc::DrawQuad::TEXTURE_CONTENT:
+    case DrawQuad::TEXTURE_CONTENT:
       EnqueueTextureQuad(cc::TextureDrawQuad::MaterialCast(quad), clip_region);
       break;
-    case cc::DrawQuad::TILED_CONTENT:
+    case DrawQuad::TILED_CONTENT:
       DrawTileQuad(cc::TileDrawQuad::MaterialCast(quad), clip_region);
       break;
-    case cc::DrawQuad::YUV_VIDEO_CONTENT:
+    case DrawQuad::YUV_VIDEO_CONTENT:
       DrawYUVVideoQuad(cc::YUVVideoDrawQuad::MaterialCast(quad), clip_region);
       break;
   }
@@ -1024,7 +1024,7 @@ const cc::TileDrawQuad* GLRenderer::CanPassBeDrawnDirectly(
   if (!pass->copy_requests.empty())
     return nullptr;
 
-  const cc::DrawQuad* quad = *pass->quad_list.BackToFrontBegin();
+  const DrawQuad* quad = *pass->quad_list.BackToFrontBegin();
   // Hack: this could be supported by concatenating transforms, but
   // in practice if there is one quad, it is at the origin of the render pass
   // and has the same size as the pass.
@@ -1034,7 +1034,7 @@ const cc::TileDrawQuad* GLRenderer::CanPassBeDrawnDirectly(
   // The quad is expected to be the entire layer so that AA edges are correct.
   if (quad->shared_quad_state->quad_layer_rect != quad->rect)
     return nullptr;
-  if (quad->material != cc::DrawQuad::TILED_CONTENT)
+  if (quad->material != DrawQuad::TILED_CONTENT)
     return nullptr;
 
   // TODO(chrishtr): support could be added for opacity, but care needs
@@ -1506,7 +1506,7 @@ void GLRenderer::DrawRPDQ(const DrawRenderPassDrawQuadParams& params) {
 namespace {
 // These functions determine if a quad, clipped by a clip_region contains
 // the entire {top|bottom|left|right} edge.
-bool is_top(const gfx::QuadF* clip_region, const cc::DrawQuad* quad) {
+bool is_top(const gfx::QuadF* clip_region, const DrawQuad* quad) {
   if (!quad->IsTopEdge())
     return false;
   if (!clip_region)
@@ -1516,7 +1516,7 @@ bool is_top(const gfx::QuadF* clip_region, const cc::DrawQuad* quad) {
          std::abs(clip_region->p2().y()) < kAntiAliasingEpsilon;
 }
 
-bool is_bottom(const gfx::QuadF* clip_region, const cc::DrawQuad* quad) {
+bool is_bottom(const gfx::QuadF* clip_region, const DrawQuad* quad) {
   if (!quad->IsBottomEdge())
     return false;
   if (!clip_region)
@@ -1530,7 +1530,7 @@ bool is_bottom(const gfx::QuadF* clip_region, const cc::DrawQuad* quad) {
              kAntiAliasingEpsilon;
 }
 
-bool is_left(const gfx::QuadF* clip_region, const cc::DrawQuad* quad) {
+bool is_left(const gfx::QuadF* clip_region, const DrawQuad* quad) {
   if (!quad->IsLeftEdge())
     return false;
   if (!clip_region)
@@ -1540,7 +1540,7 @@ bool is_left(const gfx::QuadF* clip_region, const cc::DrawQuad* quad) {
          std::abs(clip_region->p4().x()) < kAntiAliasingEpsilon;
 }
 
-bool is_right(const gfx::QuadF* clip_region, const cc::DrawQuad* quad) {
+bool is_right(const gfx::QuadF* clip_region, const DrawQuad* quad) {
   if (!quad->IsRightEdge())
     return false;
   if (!clip_region)
@@ -1560,7 +1560,7 @@ static gfx::QuadF GetDeviceQuadWithAntialiasingOnExteriorEdges(
     const gfx::Transform& device_transform,
     const gfx::QuadF& tile_quad,
     const gfx::QuadF* clip_region,
-    const cc::DrawQuad* quad) {
+    const DrawQuad* quad) {
   auto tile_rect = gfx::RectF(quad->visible_rect);
 
   gfx::PointF bottom_right = tile_quad.p3();
@@ -1675,7 +1675,7 @@ bool GLRenderer::ShouldAntialiasQuad(const gfx::QuadF& device_layer_quad,
 // static
 void GLRenderer::SetupQuadForClippingAndAntialiasing(
     const gfx::Transform& device_transform,
-    const cc::DrawQuad* quad,
+    const DrawQuad* quad,
     const gfx::QuadF* aa_quad,
     const gfx::QuadF* clip_region,
     gfx::QuadF* local_quad,
@@ -2643,7 +2643,7 @@ void GLRenderer::SetShaderQuadF(const gfx::QuadF& quad) {
   gl_->Uniform2fv(current_program_->quad_location(), 4, gl_quad);
 }
 
-void GLRenderer::SetShaderOpacity(const cc::DrawQuad* quad) {
+void GLRenderer::SetShaderOpacity(const DrawQuad* quad) {
   if (!current_program_ || current_program_->alpha_location() == -1)
     return;
   gl_->Uniform1f(current_program_->alpha_location(),
@@ -3364,7 +3364,7 @@ void GLRenderer::ScheduleDCLayers() {
     DCHECK(!dc_layer_overlay.rpdq);
 
     int i = 0;
-    unsigned texture_ids[cc::DrawQuad::Resources::kMaxResourceIdCount] = {};
+    unsigned texture_ids[DrawQuad::Resources::kMaxResourceIdCount] = {};
     int ids_to_send = 0;
 
     for (const auto& contents_resource_id : dc_layer_overlay.resources) {

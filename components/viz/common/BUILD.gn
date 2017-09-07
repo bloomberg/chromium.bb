@@ -60,6 +60,8 @@ viz_component("common") {
     "quads/copy_output_request.h",
     "quads/copy_output_result.cc",
     "quads/copy_output_result.h",
+    "quads/draw_quad.cc",
+    "quads/draw_quad.h",
     "quads/release_callback.h",
     "quads/shared_bitmap.cc",
     "quads/shared_bitmap.h",
@@ -106,11 +108,11 @@ viz_component("common") {
   ]
 
   deps = [
+    "//base",
+
     # TODO(staraz): cc/base was added because SharedQuadState includes
     # cc::MathUtil. Remove it once cc/base/math_util* are moved to viz.
     "//cc/base",
-
-    "//base",
     "//gpu",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/client:gles2_interface",

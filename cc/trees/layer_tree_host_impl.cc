@@ -1182,7 +1182,7 @@ void LayerTreeHostImpl::RemoveRenderPasses(FrameData* frame) {
 
     // Remove orphan RenderPassDrawQuads.
     for (auto it = pass->quad_list.begin(); it != pass->quad_list.end();) {
-      if (it->material != DrawQuad::RENDER_PASS) {
+      if (it->material != viz::DrawQuad::RENDER_PASS) {
         ++it;
         continue;
       }
@@ -1229,7 +1229,7 @@ void LayerTreeHostImpl::RemoveRenderPasses(FrameData* frame) {
       continue;
 
     for (auto it = pass->quad_list.begin(); it != pass->quad_list.end(); ++it) {
-      if (it->material != DrawQuad::RENDER_PASS)
+      if (it->material != viz::DrawQuad::RENDER_PASS)
         continue;
       const RenderPassDrawQuad* quad = RenderPassDrawQuad::MaterialCast(*it);
       pass_references[quad->render_pass_id]--;

@@ -43,8 +43,8 @@ void TextureDrawQuad::SetNew(const viz::SharedQuadState* shared_quad_state,
   needs_blending = needs_blending || vertex_opacity[0] != 1.0f ||
                    vertex_opacity[1] != 1.0f || vertex_opacity[2] != 1.0f ||
                    vertex_opacity[3] != 1.0f;
-  DrawQuad::SetAll(shared_quad_state, DrawQuad::TEXTURE_CONTENT, rect,
-                   visible_rect, needs_blending);
+  viz::DrawQuad::SetAll(shared_quad_state, viz::DrawQuad::TEXTURE_CONTENT, rect,
+                        visible_rect, needs_blending);
   resources.ids[kResourceIdIndex] = resource_id;
   resources.count = 1;
   this->premultiplied_alpha = premultiplied_alpha;
@@ -74,8 +74,8 @@ void TextureDrawQuad::SetAll(const viz::SharedQuadState* shared_quad_state,
                              bool y_flipped,
                              bool nearest_neighbor,
                              bool secure_output_only) {
-  DrawQuad::SetAll(shared_quad_state, DrawQuad::TEXTURE_CONTENT, rect,
-                   visible_rect, needs_blending);
+  viz::DrawQuad::SetAll(shared_quad_state, viz::DrawQuad::TEXTURE_CONTENT, rect,
+                        visible_rect, needs_blending);
   resources.ids[kResourceIdIndex] = resource_id;
   overlay_resources.size_in_pixels[kResourceIdIndex] = resource_size_in_pixels;
   resources.count = 1;
@@ -92,8 +92,9 @@ void TextureDrawQuad::SetAll(const viz::SharedQuadState* shared_quad_state,
   this->secure_output_only = secure_output_only;
 }
 
-const TextureDrawQuad* TextureDrawQuad::MaterialCast(const DrawQuad* quad) {
-  DCHECK(quad->material == DrawQuad::TEXTURE_CONTENT);
+const TextureDrawQuad* TextureDrawQuad::MaterialCast(
+    const viz::DrawQuad* quad) {
+  DCHECK(quad->material == viz::DrawQuad::TEXTURE_CONTENT);
   return static_cast<const TextureDrawQuad*>(quad);
 }
 

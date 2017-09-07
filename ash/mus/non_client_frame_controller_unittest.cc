@@ -26,7 +26,7 @@ namespace mus {
 
 namespace {
 
-gfx::Rect GetQuadBoundsInScreen(const cc::DrawQuad* quad) {
+gfx::Rect GetQuadBoundsInScreen(const viz::DrawQuad* quad) {
   return cc::MathUtil::MapEnclosingClippedRect(
       quad->shared_quad_state->quad_to_target_transform, quad->visible_rect);
 }
@@ -48,7 +48,7 @@ bool FindColorQuad(const cc::CompositorFrame& frame,
   DCHECK_EQ(1u, frame.render_pass_list.size());
   const cc::QuadList& quad_list = frame.render_pass_list[0]->quad_list;
   for (const auto* quad : quad_list) {
-    if (quad->material != cc::DrawQuad::Material::SOLID_COLOR)
+    if (quad->material != viz::DrawQuad::Material::SOLID_COLOR)
       continue;
 
     auto* color_quad = cc::SolidColorDrawQuad::MaterialCast(quad);
@@ -65,7 +65,7 @@ bool FindTiledContentQuad(const cc::CompositorFrame& frame,
   DCHECK_EQ(1u, frame.render_pass_list.size());
   const cc::QuadList& quad_list = frame.render_pass_list[0]->quad_list;
   for (const auto* quad : quad_list) {
-    if (quad->material == cc::DrawQuad::Material::TILED_CONTENT &&
+    if (quad->material == viz::DrawQuad::Material::TILED_CONTENT &&
         GetQuadBoundsInScreen(quad) == screen_rect)
       return true;
   }

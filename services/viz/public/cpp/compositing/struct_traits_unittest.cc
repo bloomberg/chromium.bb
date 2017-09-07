@@ -1123,7 +1123,7 @@ TEST_F(StructTraitsTest, YUVDrawQuad) {
   std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
   render_pass->SetNew(1, gfx::Rect(), gfx::Rect(), gfx::Transform());
 
-  const cc::DrawQuad::Material material = cc::DrawQuad::YUV_VIDEO_CONTENT;
+  const DrawQuad::Material material = DrawQuad::YUV_VIDEO_CONTENT;
   const gfx::Rect rect(1234, 4321, 1357, 7531);
   const gfx::Rect opaque_rect(1357, 8642, 432, 123);
   const gfx::Rect visible_rect(1337, 7331, 561, 293);

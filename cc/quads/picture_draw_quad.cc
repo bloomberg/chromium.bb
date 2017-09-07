@@ -31,7 +31,7 @@ void PictureDrawQuad::SetNew(const viz::SharedQuadState* shared_quad_state,
                              float contents_scale,
                              scoped_refptr<RasterSource> raster_source) {
   ContentDrawQuadBase::SetNew(
-      shared_quad_state, DrawQuad::PICTURE_CONTENT, rect, visible_rect,
+      shared_quad_state, viz::DrawQuad::PICTURE_CONTENT, rect, visible_rect,
       needs_blending, tex_coord_rect, texture_size,
       !viz::PlatformColor::SameComponentOrder(texture_format),
       nearest_neighbor);
@@ -53,7 +53,7 @@ void PictureDrawQuad::SetAll(const viz::SharedQuadState* shared_quad_state,
                              float contents_scale,
                              scoped_refptr<RasterSource> raster_source) {
   ContentDrawQuadBase::SetAll(
-      shared_quad_state, DrawQuad::PICTURE_CONTENT, rect, visible_rect,
+      shared_quad_state, viz::DrawQuad::PICTURE_CONTENT, rect, visible_rect,
       needs_blending, tex_coord_rect, texture_size,
       !viz::PlatformColor::SameComponentOrder(texture_format),
       nearest_neighbor);
@@ -63,8 +63,9 @@ void PictureDrawQuad::SetAll(const viz::SharedQuadState* shared_quad_state,
   this->texture_format = texture_format;
 }
 
-const PictureDrawQuad* PictureDrawQuad::MaterialCast(const DrawQuad* quad) {
-  DCHECK(quad->material == DrawQuad::PICTURE_CONTENT);
+const PictureDrawQuad* PictureDrawQuad::MaterialCast(
+    const viz::DrawQuad* quad) {
+  DCHECK(quad->material == viz::DrawQuad::PICTURE_CONTENT);
   return static_cast<const PictureDrawQuad*>(quad);
 }
 

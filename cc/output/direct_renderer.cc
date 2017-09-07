@@ -17,10 +17,10 @@
 #include "cc/output/bsp_tree.h"
 #include "cc/output/bsp_walk_action.h"
 #include "cc/output/output_surface.h"
-#include "cc/quads/draw_quad.h"
 #include "cc/resources/scoped_resource.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/quads/copy_output_request.h"
+#include "components/viz/common/quads/draw_quad.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/transform.h"
@@ -404,7 +404,7 @@ gfx::Rect DirectRenderer::OutputSurfaceRectInDrawSpace() const {
   }
 }
 
-bool DirectRenderer::ShouldSkipQuad(const DrawQuad& quad,
+bool DirectRenderer::ShouldSkipQuad(const viz::DrawQuad& quad,
                                     const gfx::Rect& render_pass_scissor) {
   if (render_pass_scissor.IsEmpty())
     return true;
@@ -419,7 +419,7 @@ bool DirectRenderer::ShouldSkipQuad(const DrawQuad& quad,
 }
 
 void DirectRenderer::SetScissorStateForQuad(
-    const DrawQuad& quad,
+    const viz::DrawQuad& quad,
     const gfx::Rect& render_pass_scissor,
     bool use_render_pass_scissor) {
   if (use_render_pass_scissor) {
@@ -573,7 +573,7 @@ void DirectRenderer::DrawRenderPass(const RenderPass* render_pass) {
   int last_sorting_context_id = 0;
   for (auto it = quad_list.BackToFrontBegin(); it != quad_list.BackToFrontEnd();
        ++it) {
-    const DrawQuad& quad = **it;
+    const viz::DrawQuad& quad = **it;
 
     if (render_pass_is_clipped &&
         ShouldSkipQuad(quad, render_pass_scissor_in_draw_space)) {

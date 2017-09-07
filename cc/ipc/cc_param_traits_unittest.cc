@@ -23,7 +23,7 @@
 
 using cc::CompositorFrame;
 using cc::DebugBorderDrawQuad;
-using cc::DrawQuad;
+using viz::DrawQuad;
 using cc::FilterOperation;
 using cc::FilterOperations;
 using cc::PictureDrawQuad;
@@ -90,8 +90,8 @@ class CCParamTraitsTest : public testing::Test {
     EXPECT_EQ(a->sorting_context_id, b->sorting_context_id);
   }
 
-  void Compare(const DrawQuad* a, const DrawQuad* b) {
-    ASSERT_NE(DrawQuad::INVALID, a->material);
+  void Compare(const viz::DrawQuad* a, const viz::DrawQuad* b) {
+    ASSERT_NE(viz::DrawQuad::INVALID, a->material);
     ASSERT_EQ(a->material, b->material);
     EXPECT_EQ(a->rect.ToString(), b->rect.ToString());
     EXPECT_EQ(a->visible_rect.ToString(), b->visible_rect.ToString());
@@ -100,42 +100,42 @@ class CCParamTraitsTest : public testing::Test {
     Compare(a->shared_quad_state, b->shared_quad_state);
 
     switch (a->material) {
-      case DrawQuad::DEBUG_BORDER:
+      case viz::DrawQuad::DEBUG_BORDER:
         Compare(DebugBorderDrawQuad::MaterialCast(a),
                 DebugBorderDrawQuad::MaterialCast(b));
         break;
-      case DrawQuad::PICTURE_CONTENT:
+      case viz::DrawQuad::PICTURE_CONTENT:
         Compare(PictureDrawQuad::MaterialCast(a),
                 PictureDrawQuad::MaterialCast(b));
         break;
-      case DrawQuad::RENDER_PASS:
+      case viz::DrawQuad::RENDER_PASS:
         Compare(RenderPassDrawQuad::MaterialCast(a),
                 RenderPassDrawQuad::MaterialCast(b));
         break;
-      case DrawQuad::TEXTURE_CONTENT:
+      case viz::DrawQuad::TEXTURE_CONTENT:
         Compare(TextureDrawQuad::MaterialCast(a),
                 TextureDrawQuad::MaterialCast(b));
         break;
-      case DrawQuad::TILED_CONTENT:
+      case viz::DrawQuad::TILED_CONTENT:
         Compare(TileDrawQuad::MaterialCast(a), TileDrawQuad::MaterialCast(b));
         break;
-      case DrawQuad::SOLID_COLOR:
+      case viz::DrawQuad::SOLID_COLOR:
         Compare(SolidColorDrawQuad::MaterialCast(a),
                 SolidColorDrawQuad::MaterialCast(b));
         break;
-      case DrawQuad::STREAM_VIDEO_CONTENT:
+      case viz::DrawQuad::STREAM_VIDEO_CONTENT:
         Compare(StreamVideoDrawQuad::MaterialCast(a),
                 StreamVideoDrawQuad::MaterialCast(b));
         break;
-      case DrawQuad::SURFACE_CONTENT:
+      case viz::DrawQuad::SURFACE_CONTENT:
         Compare(SurfaceDrawQuad::MaterialCast(a),
                 SurfaceDrawQuad::MaterialCast(b));
         break;
-      case DrawQuad::YUV_VIDEO_CONTENT:
+      case viz::DrawQuad::YUV_VIDEO_CONTENT:
         Compare(YUVVideoDrawQuad::MaterialCast(a),
                 YUVVideoDrawQuad::MaterialCast(b));
         break;
-      case DrawQuad::INVALID:
+      case viz::DrawQuad::INVALID:
         break;
     }
   }

@@ -7,11 +7,11 @@
 #include <stddef.h>
 
 #include "cc/output/layer_tree_frame_sink.h"
-#include "cc/quads/draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/layer_test_common.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/quads/draw_quad.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -140,7 +140,7 @@ TEST(TextureLayerImplTest, OutputIsSecure) {
     impl.AppendQuadsWithOcclusion(texture_layer_impl, occluded);
 
     EXPECT_EQ(1u, impl.quad_list().size());
-    ASSERT_EQ(DrawQuad::Material::TEXTURE_CONTENT,
+    ASSERT_EQ(viz::DrawQuad::Material::TEXTURE_CONTENT,
               impl.quad_list().front()->material);
     const TextureDrawQuad* quad =
         TextureDrawQuad::MaterialCast(impl.quad_list().front());

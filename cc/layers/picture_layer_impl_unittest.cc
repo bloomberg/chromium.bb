@@ -18,7 +18,6 @@
 #include "cc/base/math_util.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/picture_layer.h"
-#include "cc/quads/draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
@@ -37,6 +36,7 @@
 #include "cc/tiles/tiling_set_raster_queue_all.h"
 #include "cc/tiles/tiling_set_raster_queue_required.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/resources/buffer_to_texture_target_map.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -1525,7 +1525,7 @@ TEST_F(PictureLayerImplTest, DisallowTileDrawQuads) {
   active_layer()->DidDraw(nullptr);
 
   ASSERT_EQ(1u, render_pass->quad_list.size());
-  EXPECT_EQ(DrawQuad::PICTURE_CONTENT,
+  EXPECT_EQ(viz::DrawQuad::PICTURE_CONTENT,
             render_pass->quad_list.front()->material);
   EXPECT_EQ(render_pass->quad_list.front()->rect, layer_rect);
   EXPECT_FALSE(render_pass->quad_list.front()->needs_blending);
@@ -1563,9 +1563,9 @@ TEST_F(PictureLayerImplTest, ResourcelessPartialRecording) {
   gfx::Rect quad_visible = gfx::IntersectRects(scaled_visible, scaled_recorded);
 
   ASSERT_EQ(1U, render_pass->quad_list.size());
-  EXPECT_EQ(DrawQuad::PICTURE_CONTENT,
+  EXPECT_EQ(viz::DrawQuad::PICTURE_CONTENT,
             render_pass->quad_list.front()->material);
-  const DrawQuad* quad = render_pass->quad_list.front();
+  const viz::DrawQuad* quad = render_pass->quad_list.front();
   EXPECT_EQ(quad_visible, quad->rect);
   EXPECT_TRUE(quad->shared_quad_state->are_contents_opaque);
   EXPECT_EQ(quad_visible, quad->visible_rect);
@@ -3652,9 +3652,9 @@ TEST_F(PictureLayerImplTestWithDelegatingRenderer,
   // Even when OOM, quads should be produced, and should be different material
   // from quads with resource.
   EXPECT_LT(max_tiles, render_pass->quad_list.size());
-  EXPECT_EQ(DrawQuad::Material::TILED_CONTENT,
+  EXPECT_EQ(viz::DrawQuad::Material::TILED_CONTENT,
             render_pass->quad_list.front()->material);
-  EXPECT_EQ(DrawQuad::Material::SOLID_COLOR,
+  EXPECT_EQ(viz::DrawQuad::Material::SOLID_COLOR,
             render_pass->quad_list.back()->material);
 }
 
@@ -4371,9 +4371,9 @@ void PictureLayerImplTest::TestQuadsForSolidColor(bool test_for_solid,
   if (partial_opaque)
     EXPECT_EQ(4u, render_pass->quad_list.size());
 
-  DrawQuad::Material expected = test_for_solid
-                                    ? DrawQuad::Material::SOLID_COLOR
-                                    : DrawQuad::Material::TILED_CONTENT;
+  viz::DrawQuad::Material expected =
+      test_for_solid ? viz::DrawQuad::Material::SOLID_COLOR
+                     : viz::DrawQuad::Material::TILED_CONTENT;
   EXPECT_EQ(expected, render_pass->quad_list.front()->material);
 }
 
@@ -5000,7 +5000,8 @@ TEST_F(PictureLayerImplTest, CompositedImageIgnoreIdealContentsScale) {
   active_layer->DidDraw(nullptr);
 
   ASSERT_FALSE(render_pass->quad_list.empty());
-  EXPECT_EQ(DrawQuad::TILED_CONTENT, render_pass->quad_list.front()->material);
+  EXPECT_EQ(viz::DrawQuad::TILED_CONTENT,
+            render_pass->quad_list.front()->material);
 
   // Tiles are ready at correct scale, so should not set had_incomplete_tile.
   EXPECT_EQ(0, data.num_incomplete_tiles);

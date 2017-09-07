@@ -185,8 +185,6 @@ cc_component("cc") {
     "quads/debug_border_draw_quad.h",
     "quads/draw_polygon.cc",
     "quads/draw_polygon.h",
-    "quads/draw_quad.cc",
-    "quads/draw_quad.h",
     "quads/largest_draw_quad.cc",
     "quads/largest_draw_quad.h",
     "quads/nine_patch_generator.cc",

@@ -48,7 +48,7 @@ void VulkanRenderer::PrepareSurfaceForPass(
 }
 
 void VulkanRenderer::DoDrawQuad(DrawingFrame* frame,
-                                const DrawQuad* quad,
+                                const viz::DrawQuad* quad,
                                 const gfx::QuadF* clip_region) {
   NOTIMPLEMENTED();
 }

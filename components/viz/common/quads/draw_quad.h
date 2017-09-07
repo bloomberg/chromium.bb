@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_QUADS_DRAW_QUAD_H_
-#define CC_QUADS_DRAW_QUAD_H_
+#ifndef COMPONENTS_VIZ_COMMON_QUADS_DRAW_QUAD_H_
+#define COMPONENTS_VIZ_COMMON_QUADS_DRAW_QUAD_H_
 
 #include <stddef.h>
 
 #include "base/callback.h"
-#include "cc/cc_export.h"
 #include "components/viz/common/quads/shared_quad_state.h"
 #include "components/viz/common/resources/resource_id.h"
+#include "components/viz/common/viz_common_export.h"
 
 namespace base {
 namespace trace_event {
 class TracedValue;
 }
-}
+}  // namespace base
 
-namespace cc {
+namespace viz {
 
 // DrawQuad is a bag of data used for drawing a quad. Because different
 // materials need different bits of per-quad data to render, classes that derive
@@ -31,7 +31,7 @@ namespace cc {
 // for most other layers). There is also the "target space", which is the space,
 // in "physical" pixels, of the render target where the quads is drawn. The
 // quad's transform maps the content space to the target space.
-class CC_EXPORT DrawQuad {
+class VIZ_COMMON_EXPORT DrawQuad {
  public:
   enum Material {
     INVALID,
@@ -68,7 +68,7 @@ class CC_EXPORT DrawQuad {
   // Stores state common to a large bundle of quads; kept separate for memory
   // efficiency. There is special treatment to reconstruct these pointers
   // during serialization.
-  const viz::SharedQuadState* shared_quad_state;
+  const SharedQuadState* shared_quad_state;
 
   bool IsDebugQuad() const { return material == DEBUG_BORDER; }
 
@@ -104,24 +104,24 @@ class CC_EXPORT DrawQuad {
 
   void AsValueInto(base::trace_event::TracedValue* value) const;
 
-  struct CC_EXPORT Resources {
+  struct VIZ_COMMON_EXPORT Resources {
     enum : size_t { kMaxResourceIdCount = 4 };
     Resources();
 
-    viz::ResourceId* begin() { return ids; }
-    viz::ResourceId* end() {
+    ResourceId* begin() { return ids; }
+    ResourceId* end() {
       DCHECK_LE(count, kMaxResourceIdCount);
       return ids + count;
     }
 
-    const viz::ResourceId* begin() const { return ids; }
-    const viz::ResourceId* end() const {
+    const ResourceId* begin() const { return ids; }
+    const ResourceId* end() const {
       DCHECK_LE(count, kMaxResourceIdCount);
       return ids + count;
     }
 
     uint32_t count;
-    viz::ResourceId ids[kMaxResourceIdCount];
+    ResourceId ids[kMaxResourceIdCount];
   };
 
   Resources resources;
@@ -129,7 +129,7 @@ class CC_EXPORT DrawQuad {
  protected:
   DrawQuad();
 
-  void SetAll(const viz::SharedQuadState* shared_quad_state,
+  void SetAll(const SharedQuadState* shared_quad_state,
               Material material,
               const gfx::Rect& rect,
               const gfx::Rect& visible_rect,
@@ -137,6 +137,6 @@ class CC_EXPORT DrawQuad {
   virtual void ExtendValue(base::trace_event::TracedValue* value) const = 0;
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_QUADS_DRAW_QUAD_H_
+#endif  // COMPONENTS_VIZ_COMMON_QUADS_DRAW_QUAD_H_

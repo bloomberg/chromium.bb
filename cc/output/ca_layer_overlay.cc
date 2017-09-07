@@ -177,7 +177,7 @@ class CALayerOverlayProcessor {
   CALayerResult FromDrawQuad(
       ResourceProvider* resource_provider,
       const gfx::RectF& display_rect,
-      const DrawQuad* quad,
+      const viz::DrawQuad* quad,
       const base::flat_map<RenderPassId, FilterOperations*>&
           render_pass_filters,
       const base::flat_map<RenderPassId, FilterOperations*>&
@@ -225,34 +225,34 @@ class CALayerOverlayProcessor {
 
     ca_layer_overlay->bounds_rect = gfx::RectF(quad->rect);
 
-    *render_pass_draw_quad = quad->material == DrawQuad::RENDER_PASS;
+    *render_pass_draw_quad = quad->material == viz::DrawQuad::RENDER_PASS;
     switch (quad->material) {
-      case DrawQuad::TEXTURE_CONTENT:
+      case viz::DrawQuad::TEXTURE_CONTENT:
         return FromTextureQuad(resource_provider,
                                TextureDrawQuad::MaterialCast(quad),
                                ca_layer_overlay);
-      case DrawQuad::TILED_CONTENT:
+      case viz::DrawQuad::TILED_CONTENT:
         return FromTileQuad(resource_provider, TileDrawQuad::MaterialCast(quad),
                             ca_layer_overlay);
-      case DrawQuad::SOLID_COLOR:
+      case viz::DrawQuad::SOLID_COLOR:
         return FromSolidColorDrawQuad(SolidColorDrawQuad::MaterialCast(quad),
                                       ca_layer_overlay, skip);
-      case DrawQuad::STREAM_VIDEO_CONTENT:
+      case viz::DrawQuad::STREAM_VIDEO_CONTENT:
         return FromStreamVideoQuad(resource_provider,
                                    StreamVideoDrawQuad::MaterialCast(quad),
                                    ca_layer_overlay);
-      case DrawQuad::DEBUG_BORDER:
+      case viz::DrawQuad::DEBUG_BORDER:
         return CA_LAYER_FAILED_DEBUG_BORDER;
-      case DrawQuad::PICTURE_CONTENT:
+      case viz::DrawQuad::PICTURE_CONTENT:
         return CA_LAYER_FAILED_PICTURE_CONTENT;
-      case DrawQuad::RENDER_PASS:
+      case viz::DrawQuad::RENDER_PASS:
         return FromRenderPassQuad(
             resource_provider, RenderPassDrawQuad::MaterialCast(quad),
             render_pass_filters, render_pass_background_filters,
             ca_layer_overlay);
-      case DrawQuad::SURFACE_CONTENT:
+      case viz::DrawQuad::SURFACE_CONTENT:
         return CA_LAYER_FAILED_SURFACE_CONTENT;
-      case DrawQuad::YUV_VIDEO_CONTENT:
+      case viz::DrawQuad::YUV_VIDEO_CONTENT:
         return CA_LAYER_FAILED_YUV_VIDEO_CONTENT;
       default:
         break;
@@ -289,7 +289,7 @@ bool ProcessForCALayerOverlays(
   CALayerOverlayProcessor processor;
   for (auto it = quad_list.BackToFrontBegin(); it != quad_list.BackToFrontEnd();
        ++it) {
-    const DrawQuad* quad = *it;
+    const viz::DrawQuad* quad = *it;
     CALayerOverlay ca_layer;
     bool skip = false;
     bool render_pass_draw_quad = false;

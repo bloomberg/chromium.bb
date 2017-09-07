@@ -694,7 +694,7 @@ TEST_F(FullscreenOverlayTest, RemoveFullscreenQuadFromQuadList) {
   ASSERT_EQ(1U, candidate_list.size());
 
   // Check that the fullscreen quad is gone.
-  for (const DrawQuad* quad : main_pass->quad_list) {
+  for (const viz::DrawQuad* quad : main_pass->quad_list) {
     EXPECT_NE(main_pass->output_rect, quad->rect);
   }
 }
@@ -732,7 +732,7 @@ TEST_F(SingleOverlayOnTopTest, SuccessfulOverlay) {
   for (QuadList::ConstBackToFrontIterator it = quad_list.BackToFrontBegin();
        it != quad_list.BackToFrontEnd();
        ++it) {
-    EXPECT_NE(DrawQuad::TEXTURE_CONTENT, it->material);
+    EXPECT_NE(viz::DrawQuad::TEXTURE_CONTENT, it->material);
   }
 
   // Check that the right resource id got extracted.
@@ -1409,7 +1409,7 @@ TEST_F(UnderlayTest, OverlayLayerUnderMainLayer) {
   EXPECT_EQ(-1, candidate_list[0].plane_z_order);
   EXPECT_EQ(2U, main_pass->quad_list.size());
   // The overlay quad should have changed to a SOLID_COLOR quad.
-  EXPECT_EQ(main_pass->quad_list.back()->material, DrawQuad::SOLID_COLOR);
+  EXPECT_EQ(main_pass->quad_list.back()->material, viz::DrawQuad::SOLID_COLOR);
   SolidColorDrawQuad* quad =
       static_cast<SolidColorDrawQuad*>(main_pass->quad_list.back());
   EXPECT_EQ(quad->rect, quad->visible_rect);
@@ -1439,7 +1439,7 @@ TEST_F(UnderlayTest, AllowOnTop) {
   ASSERT_EQ(1U, candidate_list.size());
   EXPECT_EQ(-1, candidate_list[0].plane_z_order);
   // The overlay quad should have changed to a SOLID_COLOR quad.
-  EXPECT_EQ(main_pass->quad_list.front()->material, DrawQuad::SOLID_COLOR);
+  EXPECT_EQ(main_pass->quad_list.front()->material, viz::DrawQuad::SOLID_COLOR);
   SolidColorDrawQuad* quad =
       static_cast<SolidColorDrawQuad*>(main_pass->quad_list.front());
   EXPECT_EQ(quad->rect, quad->visible_rect);
@@ -2276,7 +2276,7 @@ class OverlayInfoRendererGL : public viz::GLRenderer {
         expect_overlays_(false) {}
 
   MOCK_METHOD2(DoDrawQuad,
-               void(const DrawQuad* quad, const gfx::QuadF* draw_region));
+               void(const viz::DrawQuad* quad, const gfx::QuadF* draw_region));
 
   void SetCurrentFrame(const DrawingFrame& frame) {
     SetCurrentFrameForTesting(frame);

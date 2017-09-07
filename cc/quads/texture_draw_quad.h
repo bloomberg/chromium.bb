@@ -10,13 +10,13 @@
 #include <memory>
 
 #include "cc/cc_export.h"
-#include "cc/quads/draw_quad.h"
+#include "components/viz/common/quads/draw_quad.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace cc {
 
-class CC_EXPORT TextureDrawQuad : public DrawQuad {
+class CC_EXPORT TextureDrawQuad : public viz::DrawQuad {
  public:
   static const size_t kResourceIdIndex = 0;
 
@@ -78,7 +78,7 @@ class CC_EXPORT TextureDrawQuad : public DrawQuad {
     overlay_resources.size_in_pixels[kResourceIdIndex] = size_in_pixels;
   }
 
-  static const TextureDrawQuad* MaterialCast(const DrawQuad*);
+  static const TextureDrawQuad* MaterialCast(const viz::DrawQuad*);
 
  private:
   void ExtendValue(base::trace_event::TracedValue* value) const override;

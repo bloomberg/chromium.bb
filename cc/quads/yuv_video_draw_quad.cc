@@ -35,8 +35,8 @@ void YUVVideoDrawQuad::SetNew(const viz::SharedQuadState* shared_quad_state,
                               float offset,
                               float multiplier,
                               uint32_t bits_per_channel) {
-  DrawQuad::SetAll(shared_quad_state, DrawQuad::YUV_VIDEO_CONTENT, rect,
-                   visible_rect, needs_blending);
+  viz::DrawQuad::SetAll(shared_quad_state, viz::DrawQuad::YUV_VIDEO_CONTENT,
+                        rect, visible_rect, needs_blending);
   this->ya_tex_coord_rect = ya_tex_coord_rect;
   this->uv_tex_coord_rect = uv_tex_coord_rect;
   this->ya_tex_size = ya_tex_size;
@@ -71,8 +71,8 @@ void YUVVideoDrawQuad::SetAll(const viz::SharedQuadState* shared_quad_state,
                               float multiplier,
                               uint32_t bits_per_channel,
                               bool require_overlay) {
-  DrawQuad::SetAll(shared_quad_state, DrawQuad::YUV_VIDEO_CONTENT, rect,
-                   visible_rect, needs_blending);
+  viz::DrawQuad::SetAll(shared_quad_state, viz::DrawQuad::YUV_VIDEO_CONTENT,
+                        rect, visible_rect, needs_blending);
   this->ya_tex_coord_rect = ya_tex_coord_rect;
   this->uv_tex_coord_rect = uv_tex_coord_rect;
   this->ya_tex_size = ya_tex_size;
@@ -91,8 +91,8 @@ void YUVVideoDrawQuad::SetAll(const viz::SharedQuadState* shared_quad_state,
 }
 
 const YUVVideoDrawQuad* YUVVideoDrawQuad::MaterialCast(
-    const DrawQuad* quad) {
-  DCHECK(quad->material == DrawQuad::YUV_VIDEO_CONTENT);
+    const viz::DrawQuad* quad) {
+  DCHECK(quad->material == viz::DrawQuad::YUV_VIDEO_CONTENT);
   return static_cast<const YUVVideoDrawQuad*>(quad);
 }
 
