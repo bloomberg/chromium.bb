@@ -20,7 +20,6 @@
 #include "chrome/browser/chromeos/printing/synced_printers_manager.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
 #include "chrome/browser/chromeos/printing/usb_printer_detector.h"
-#include "chrome/browser/chromeos/printing/usb_printer_detector_factory.h"
 #include "chrome/browser/chromeos/printing/zeroconf_printer_detector.h"
 #include "chrome/browser/profiles/profile.h"
 
@@ -82,13 +81,13 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   };
 
   CupsPrintersManagerImpl(SyncedPrintersManager* synced_printers_manager,
-                          PrinterDetector* usb_detector,
+                          std::unique_ptr<PrinterDetector> usb_detector,
                           std::unique_ptr<PrinterDetector> zeroconf_detector,
                           scoped_refptr<PpdProvider> ppd_provider,
                           PrinterEventTracker* event_tracker)
       : synced_printers_manager_(synced_printers_manager),
         synced_printers_manager_observer_(this),
-        usb_detector_(usb_detector),
+        usb_detector_(std::move(usb_detector)),
         zeroconf_detector_(std::move(zeroconf_detector)),
         ppd_provider_(std::move(ppd_provider)),
         event_tracker_(event_tracker),
@@ -104,7 +103,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
     // these instantiations must come after everything else is initialized.
     usb_detector_observer_proxy_ =
         base::MakeUnique<PrinterDetectorObserverProxy>(this, kUsbDetector,
-                                                       usb_detector_);
+                                                       usb_detector_.get());
     zeroconf_detector_observer_proxy_ =
         base::MakeUnique<PrinterDetectorObserverProxy>(
             this, kZeroconfDetector, zeroconf_detector_.get());
@@ -442,8 +441,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   ScopedObserver<SyncedPrintersManager, SyncedPrintersManager::Observer>
       synced_printers_manager_observer_;
 
-  // Not owned.
-  PrinterDetector* usb_detector_;
+  std::unique_ptr<PrinterDetector> usb_detector_;
   std::unique_ptr<PrinterDetectorObserverProxy> usb_detector_observer_proxy_;
 
   std::unique_ptr<PrinterDetector> zeroconf_detector_;
@@ -495,21 +493,21 @@ std::unique_ptr<CupsPrintersManager> CupsPrintersManager::Create(
   return base::MakeUnique<CupsPrintersManagerImpl>(
       SyncedPrintersManagerFactory::GetInstance()->GetForBrowserContext(
           profile),
-      UsbPrinterDetectorFactory::GetInstance()->Get(profile),
-      ZeroconfPrinterDetector::Create(profile), CreatePpdProvider(profile),
+      UsbPrinterDetector::Create(), ZeroconfPrinterDetector::Create(profile),
+      CreatePpdProvider(profile),
       PrinterEventTrackerFactory::GetInstance()->GetForBrowserContext(profile));
 }
 
 // static
 std::unique_ptr<CupsPrintersManager> CupsPrintersManager::Create(
     SyncedPrintersManager* synced_printers_manager,
-    PrinterDetector* usb_detector,
+    std::unique_ptr<PrinterDetector> usb_detector,
     std::unique_ptr<PrinterDetector> zeroconf_detector,
     scoped_refptr<PpdProvider> ppd_provider,
     PrinterEventTracker* event_tracker) {
   return base::MakeUnique<CupsPrintersManagerImpl>(
-      synced_printers_manager, usb_detector, std::move(zeroconf_detector),
-      std::move(ppd_provider), event_tracker);
+      synced_printers_manager, std::move(usb_detector),
+      std::move(zeroconf_detector), std::move(ppd_provider), event_tracker);
 }
 
 }  // namespace chromeos

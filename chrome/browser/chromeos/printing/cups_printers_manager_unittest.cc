@@ -251,13 +251,15 @@ class CupsPrintersManagerTest : public testing::Test,
   CupsPrintersManagerTest()
       : observed_printers_(CupsPrintersManager::kNumPrinterClasses),
         ppd_provider_(new FakePpdProvider) {
-    // Zeroconf detector ownership is taken by the manager, so we have
-    // to keep a raw pointer to it.
+    // Zeroconf and usb detector ownerships are taken by the manager, so we have
+    // to keep raw pointers to them.
     auto zeroconf_detector = base::MakeUnique<FakePrinterDetector>();
     zeroconf_detector_ = zeroconf_detector.get();
+    auto usb_detector = base::MakeUnique<FakePrinterDetector>();
+    usb_detector_ = usb_detector.get();
     manager_ = CupsPrintersManager::Create(
-        &synced_printers_manager_, &usb_detector_, std::move(zeroconf_detector),
-        ppd_provider_, &event_tracker_);
+        &synced_printers_manager_, std::move(usb_detector),
+        std::move(zeroconf_detector), ppd_provider_, &event_tracker_);
     manager_->AddObserver(this);
   }
 
@@ -286,7 +288,7 @@ class CupsPrintersManagerTest : public testing::Test,
 
   // Backend fakes driving the CupsPrintersManager.
   FakeSyncedPrintersManager synced_printers_manager_;
-  FakePrinterDetector usb_detector_;
+  FakePrinterDetector* usb_detector_;
   FakePrinterDetector* zeroconf_detector_;
   scoped_refptr<FakePpdProvider> ppd_provider_;
 
@@ -340,8 +342,8 @@ TEST_F(CupsPrintersManagerTest, GetConfiguredPrinters) {
 // surfaced appropriately.  One printer should be "automatic" because it has
 // a findable Ppd, the other should be "discovered".
 TEST_F(CupsPrintersManagerTest, GetUsbPrinters) {
-  usb_detector_.AddDetections({MakeDiscoveredPrinter("DiscoveredPrinter"),
-                               MakeAutomaticPrinter("AutomaticPrinter")});
+  usb_detector_->AddDetections({MakeDiscoveredPrinter("DiscoveredPrinter"),
+                                MakeAutomaticPrinter("AutomaticPrinter")});
   scoped_task_environment_.RunUntilIdle();
   ExpectPrintersInClassAre(CupsPrintersManager::kDiscovered,
                            {"DiscoveredPrinter"});
@@ -402,7 +404,7 @@ TEST_F(CupsPrintersManagerTest, UpdateConfiguredPrinter) {
   // Enterprise which is not relevant to this test.
   Printer existing_configured("Configured");
   synced_printers_manager_.AddConfiguredPrinters({existing_configured});
-  usb_detector_.AddDetections({MakeDiscoveredPrinter("Discovered")});
+  usb_detector_->AddDetections({MakeDiscoveredPrinter("Discovered")});
   zeroconf_detector_->AddDetections({MakeAutomaticPrinter("Automatic")});
   scoped_task_environment_.RunUntilIdle();
 
@@ -457,7 +459,7 @@ TEST_F(CupsPrintersManagerTest, UpdateConfiguredPrinter) {
 TEST_F(CupsPrintersManagerTest, GetPrinter) {
   synced_printers_manager_.AddConfiguredPrinters({Printer("Configured")});
   synced_printers_manager_.AddEnterprisePrinters({Printer("Enterprise")});
-  usb_detector_.AddDetections({MakeDiscoveredPrinter("Discovered")});
+  usb_detector_->AddDetections({MakeDiscoveredPrinter("Discovered")});
   zeroconf_detector_->AddDetections({MakeAutomaticPrinter("Automatic")});
   scoped_task_environment_.RunUntilIdle();
 
