@@ -10,6 +10,8 @@ source_set("autofill") {
     "form_input_accessory_view_controller.h",
     "form_input_accessory_view_controller.mm",
     "form_input_accessory_view_delegate.h",
+    "form_input_accessory_view_tab_helper.h",
+    "form_input_accessory_view_tab_helper.mm",
     "form_suggestion_controller.h",
     "form_suggestion_controller.mm",
     "form_suggestion_label.h",

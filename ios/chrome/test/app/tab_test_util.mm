@@ -185,9 +185,4 @@ NSUInteger GetEvictedMainTabCount() {
       .tabUsageRecorder->EvictedTabsMapSize();
 }
 
-FormInputAccessoryViewController* GetInputAccessoryViewController() {
-  Tab* current_tab = GetCurrentTab();
-  return [current_tab inputAccessoryViewController];
-}
-
 }  // namespace chrome_test_util

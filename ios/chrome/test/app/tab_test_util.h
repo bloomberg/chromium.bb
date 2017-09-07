@@ -7,7 +7,6 @@
 
 #import <Foundation/Foundation.h>
 
-@class FormInputAccessoryViewController;
 @class Tab;
 @class TabView;
 
@@ -74,9 +73,6 @@ TabView* GetTabViewForTab(Tab* tab);
 
 // Returns the number of main tabs currently evicted.
 NSUInteger GetEvictedMainTabCount();
-
-// Returns the current tab's input accessory view controller.
-FormInputAccessoryViewController* GetInputAccessoryViewController();
 
 }  // namespace chrome_test_util
 

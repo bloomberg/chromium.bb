@@ -96,6 +96,9 @@ typedef void (^AccessoryViewReadyCompletion)(
 // Notifies the controller that the owning tab was hidden.
 - (void)wasHidden;
 
+// Instructs the controller to detach itself from the WebState.
+- (void)detachFromWebState;
+
 // Hides the default input accessory view and replaces it with one that shows
 // |customView| and form navigation controls.
 - (void)showCustomInputAccessoryView:(UIView*)customView;
