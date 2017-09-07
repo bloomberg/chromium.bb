@@ -56,6 +56,14 @@ class TraceWrapperV8Reference {
 
   template <typename S>
   const TraceWrapperV8Reference<S>& Cast() const {
+    static_assert(std::is_base_of<S, T>::value, "T must inherit from S");
+    return reinterpret_cast<const TraceWrapperV8Reference<S>&>(
+        const_cast<const TraceWrapperV8Reference<T>&>(*this));
+  }
+  // TODO(mlippautz): Support TraceWrappers(const
+  // TraceWrapperV8Reference<v8::Module>&) and remove UnsafeCast.
+  template <typename S>
+  const TraceWrapperV8Reference<S>& UnsafeCast() const {
     return reinterpret_cast<const TraceWrapperV8Reference<S>&>(
         const_cast<const TraceWrapperV8Reference<T>&>(*this));
   }
@@ -63,7 +71,7 @@ class TraceWrapperV8Reference {
  private:
   inline void InternalSet(v8::Isolate* isolate, v8::Local<T> handle) {
     handle_.Reset(isolate, handle);
-    ScriptWrappableVisitor::WriteBarrier(isolate, &Cast<v8::Value>());
+    ScriptWrappableVisitor::WriteBarrier(isolate, &UnsafeCast<v8::Value>());
   }
 
   v8::Persistent<T> handle_;
