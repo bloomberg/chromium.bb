@@ -69,6 +69,7 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   bool IsFeatureBlacklisted(int feature) const override;
   bool IsFeatureEnabled(int feature) const override;
   bool IsWebGLEnabled() const override;
+  bool IsWebGL2Enabled() const override;
   gpu::GPUInfo GetGPUInfo() const override;
   bool GpuAccessAllowed(std::string* reason) const override;
   void RequestCompleteGpuInfoIfNeeded() override;

@@ -30,7 +30,7 @@
       "gl_renderer": ".*GeForce.*",
       "features": [
         "accelerated_webgl",
-        "webgl2"
+        "accelerated_webgl2"
       ]
     },
     {
