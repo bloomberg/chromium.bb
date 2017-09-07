@@ -280,6 +280,8 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest {
     version_2->set_fetch_handler_existence(
         ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
     registration_->SetWaitingVersion(version_2);
+    version_2->StartWorker(ServiceWorkerMetrics::EventType::INSTALL,
+                           base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
     version_2->SetStatus(ServiceWorkerVersion::INSTALLED);
 
     // Set it to activate when ready. The original version should still be
