@@ -35,7 +35,7 @@
 
 // When set to RESTORE_WIENER or RESTORE_SGRPROJ only those are allowed.
 // When set to RESTORE_TYPES we allow switchable.
-const RestorationType force_restore_type = RESTORE_TYPES;
+static const RestorationType force_restore_type = RESTORE_TYPES;
 
 // Number of Wiener iterations
 #define NUM_WIENER_ITERS 5
