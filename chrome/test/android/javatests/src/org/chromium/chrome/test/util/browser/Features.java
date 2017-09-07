@@ -59,12 +59,8 @@ public @interface Features {
         @Override
         protected void before() throws Throwable {
             Map<String, Boolean> registeredFeatures = new HashMap<>();
-            Register[] values = getAnnotation().value();
-
-            for (Register featureState : values) {
-                registeredFeatures.put(featureState.value(), featureState.enabled());
-            }
-
+            registerFeatures(registeredFeatures, getClassAnnotation());
+            registerFeatures(registeredFeatures, getTestAnnotation());
             ChromeFeatureList.setTestFeatures(registeredFeatures);
         }
 
@@ -72,5 +68,12 @@ public @interface Features {
         protected void after() {
             ChromeFeatureList.setTestFeatures(null);
         }
+
+        private void registerFeatures(Map<String, Boolean> registeredFeatures, Features feature) {
+            if (feature == null) return;
+            for (Register featureState : feature.value()) {
+                registeredFeatures.put(featureState.value(), featureState.enabled());
+            }
+        }
     }
-    }
+}
