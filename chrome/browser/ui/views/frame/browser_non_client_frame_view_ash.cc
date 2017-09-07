@@ -355,7 +355,8 @@ void BrowserNonClientFrameViewAsh::OnTabletModeEnded() {
 
   // Exit immersive mode if the feature is enabled and the widget is not in
   // fullscreen mode.
-  if (!frame()->IsFullscreen() && !browser_view()->IsBrowserTypeNormal()) {
+  if (!frame()->IsFullscreen() && !browser_view()->IsBrowserTypeNormal() &&
+      ash::Shell::Get()->tablet_mode_controller()->auto_hide_title_bars()) {
     browser_view()->immersive_mode_controller()->SetEnabled(false);
     return;
   }

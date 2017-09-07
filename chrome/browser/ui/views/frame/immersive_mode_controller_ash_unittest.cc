@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 
+#include "ash/frame/caption_buttons/frame_caption_button.h"
+#include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/root_window_controller.h"
@@ -18,6 +20,8 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
+#include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
+#include "chrome/browser/ui/views/frame/browser_non_client_frame_view_ash.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
@@ -408,4 +412,38 @@ TEST_F(ImmersiveModeControllerAshTestTabletMode, ImmersiveModeStatus) {
   ash::Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
       false);
   EXPECT_FALSE(controller()->IsEnabled());
+}
+
+// Verify that the frame layout is as expected when using immersive mode in
+// tablet mode.
+TEST_F(ImmersiveModeControllerAshTestTabletMode, FrameLayout) {
+  ASSERT_FALSE(controller()->IsEnabled());
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+  // We know we're using Ash, so static cast.
+  BrowserNonClientFrameViewAsh* frame_view =
+      static_cast<BrowserNonClientFrameViewAsh*>(
+          browser_view->GetWidget()->non_client_view()->frame_view());
+  ash::FrameCaptionButtonContainerView* caption_button_container =
+      frame_view->caption_button_container_;
+  ash::FrameCaptionButtonContainerView::TestApi frame_test_api(
+      caption_button_container);
+
+  EXPECT_TRUE(frame_test_api.size_button()->visible());
+  ash::Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
+      true);
+  frame_test_api.EndAnimations();
+
+  // Verify the size button is hidden in tablet mode.
+  EXPECT_FALSE(frame_test_api.size_button()->visible());
+  ash::Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
+      false);
+  frame_test_api.EndAnimations();
+
+  // Verify the size button is visible in clamshell mode, and that it does not
+  // cover the other two buttons.
+  EXPECT_TRUE(frame_test_api.size_button()->visible());
+  EXPECT_FALSE(frame_test_api.size_button()->GetBoundsInScreen().Intersects(
+      frame_test_api.close_button()->GetBoundsInScreen()));
+  EXPECT_FALSE(frame_test_api.size_button()->GetBoundsInScreen().Intersects(
+      frame_test_api.minimize_button()->GetBoundsInScreen()));
 }
