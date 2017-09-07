@@ -1,0 +1,23 @@
+This is a testharness.js-based test.
+PASS Payment handler interfaces.
+PASS PaymentManager interface: existence and properties of interface object
+PASS PaymentManager interface object length
+PASS PaymentManager interface object name
+PASS PaymentManager interface: existence and properties of interface prototype object
+PASS PaymentManager interface: existence and properties of interface prototype object's "constructor" property
+PASS PaymentManager interface: attribute instruments
+FAIL PaymentManager interface: operation requestPermission() assert_own_property: interface object missing static operation expected property "requestPermission" missing
+FAIL PaymentInstruments interface: existence and properties of interface object assert_own_property: self does not have own property "PaymentInstruments" expected property "PaymentInstruments" missing
+FAIL PaymentInstruments interface object length assert_own_property: self does not have own property "PaymentInstruments" expected property "PaymentInstruments" missing
+FAIL PaymentInstruments interface object name assert_own_property: self does not have own property "PaymentInstruments" expected property "PaymentInstruments" missing
+FAIL PaymentInstruments interface: existence and properties of interface prototype object assert_own_property: self does not have own property "PaymentInstruments" expected property "PaymentInstruments" missing
+FAIL PaymentInstruments interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "PaymentInstruments" expected property "PaymentInstruments" missing
+FAIL PaymentInstruments interface: operation delete(DOMString) assert_own_property: self does not have own property "PaymentInstruments" expected property "PaymentInstruments" missing
+FAIL PaymentInstruments interface: operation get(DOMString) assert_own_property: self does not have own property "PaymentInstruments" expected property "PaymentInstruments" missing
+FAIL PaymentInstruments interface: operation keys() assert_own_property: self does not have own property "PaymentInstruments" expected property "PaymentInstruments" missing
+FAIL PaymentInstruments interface: operation has(DOMString) assert_own_property: self does not have own property "PaymentInstruments" expected property "PaymentInstruments" missing
+FAIL PaymentInstruments interface: operation set(DOMString, PaymentInstrument) assert_own_property: self does not have own property "PaymentInstruments" expected property "PaymentInstruments" missing
+FAIL PaymentInstruments interface: operation clear() assert_own_property: self does not have own property "PaymentInstruments" expected property "PaymentInstruments" missing
+PASS PaymentRequestEvent interface: existence and properties of interface object
+Harness: the test ran to completion.
+
