@@ -31,7 +31,7 @@ class CONTENT_EXPORT AppCacheExecutableHandler {
     // TODO: blob + headers would be a good one to provide as well, as it would
     // make templating possible.
   };
-  typedef base::Callback<void(const Response&)> ResponseCallback;
+  typedef base::OnceCallback<void(const Response&)> ResponseCallback;
 
   // Deletion of the handler cancels all pending callbacks.
   virtual ~AppCacheExecutableHandler() {}
