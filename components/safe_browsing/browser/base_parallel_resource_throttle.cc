@@ -69,7 +69,6 @@ void BaseParallelResourceThrottle::WillRedirectRequest(
     const net::RedirectInfo& redirect_info,
     bool* defer) {
   url_loader_throttle_->WillRedirectRequest(redirect_info, defer);
-  DCHECK(!*defer);
 }
 
 void BaseParallelResourceThrottle::WillProcessResponse(bool* defer) {
