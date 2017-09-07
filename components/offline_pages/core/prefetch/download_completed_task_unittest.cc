@@ -116,9 +116,13 @@ TEST_F(DownloadCompletedTaskTest, UpdateItemOnDownloadSuccess) {
   EXPECT_EQ(kTestGUID, item->guid);
   EXPECT_EQ(kTestFilePath, item->file_path);
   EXPECT_EQ(kTestFileSize, item->file_size);
+  EXPECT_EQ(1, dispatcher()->processing_schedule_count);
 
   histogram_tester()->ExpectUniqueSample(
       "OfflinePages.Prefetching.DownloadedFileSize", kTestFileSize / 1024, 1);
+  // Bucket 0 reflects DownloadOutcome::DOWNLOAD_SUCCEEDED_ITEM_UPDATED.
+  histogram_tester()->ExpectUniqueSample(
+      "OfflinePages.Prefetching.DownloadFinishedUpdate", 0, 1);
 }
 
 TEST_F(DownloadCompletedTaskTest, UpdateItemOnDownloadError) {
@@ -136,9 +140,13 @@ TEST_F(DownloadCompletedTaskTest, UpdateItemOnDownloadError) {
   EXPECT_EQ(kTestGUID, item->guid);
   EXPECT_TRUE(item->file_path.empty());
   EXPECT_EQ(-1, item->file_size);
+  EXPECT_EQ(1, dispatcher()->processing_schedule_count);
 
   histogram_tester()->ExpectTotalCount(
       "OfflinePages.Prefetching.DownloadedFileSize", 0);
+  // Bucket 1 reflects DownloadOutcome::DOWNLOAD_SUCCEEDED_ITEM_UPDATED.
+  histogram_tester()->ExpectUniqueSample(
+      "OfflinePages.Prefetching.DownloadFinishedUpdate", 1, 1);
 }
 
 TEST_F(DownloadCompletedTaskTest, NoUpdateOnMismatchedDownloadSuccess) {
@@ -157,8 +165,13 @@ TEST_F(DownloadCompletedTaskTest, NoUpdateOnMismatchedDownloadSuccess) {
       store_util()->GetPrefetchItem(kTestOfflineID2);
   EXPECT_EQ(PrefetchItemState::NEW_REQUEST, item2->state);
 
+  EXPECT_EQ(0, dispatcher()->processing_schedule_count);
+
   histogram_tester()->ExpectUniqueSample(
       "OfflinePages.Prefetching.DownloadedFileSize", kTestFileSize / 1024, 1);
+  // Bucket 2 reflects DownloadOutcome::DOWNLOAD_SUCCEEDED_ITEM_NOT_FOUND.
+  histogram_tester()->ExpectUniqueSample(
+      "OfflinePages.Prefetching.DownloadFinishedUpdate", 2, 1);
 }
 
 TEST_F(DownloadCompletedTaskTest, NoUpdateOnMismatchedDownloadError) {
@@ -178,8 +191,13 @@ TEST_F(DownloadCompletedTaskTest, NoUpdateOnMismatchedDownloadError) {
       store_util()->GetPrefetchItem(kTestOfflineID2);
   EXPECT_EQ(PrefetchItemState::NEW_REQUEST, item2->state);
 
+  EXPECT_EQ(0, dispatcher()->processing_schedule_count);
+
   histogram_tester()->ExpectTotalCount(
       "OfflinePages.Prefetching.DownloadedFileSize", 0);
+  // Bucket 3 reflects DownloadOutcome::DOWNLOAD_FAILED_ITEM_NOT_FOUND.
+  histogram_tester()->ExpectUniqueSample(
+      "OfflinePages.Prefetching.DownloadFinishedUpdate", 3, 1);
 }
 
 }  // namespace offline_pages

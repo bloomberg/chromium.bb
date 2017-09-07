@@ -25,7 +25,7 @@ class DownloadCompletedTask : public Task {
   void Run() override;
 
  private:
-  void OnPrefetchItemUpdated(bool row_was_updated);
+  void OnPrefetchItemUpdated(bool successful_download, bool row_was_updated);
 
   PrefetchDispatcher* prefetch_dispatcher_;  // Outlives this class.
   PrefetchStore* prefetch_store_;  // Outlives this class.
