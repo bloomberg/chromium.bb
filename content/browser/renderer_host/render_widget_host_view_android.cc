@@ -476,7 +476,6 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
   // Set the layer which will hold the content layer for this view. The content
   // layer is managed by the DelegatedFrameHost.
   view_.SetLayer(cc::Layer::Create());
-  view_.SetLayout(ui::ViewAndroid::LayoutParams::MatchParent());
 
   if (using_browser_compositor_) {
     viz::FrameSinkId frame_sink_id =

@@ -123,6 +123,9 @@ class UI_ANDROID_EXPORT ViewAndroid {
   // if disconnected.
   virtual WindowAndroid* GetWindowAndroid() const;
 
+  // Virtual for testing.
+  virtual float GetDipScale();
+
   // Used to return and set the layer for this view. May be |null|.
   cc::Layer* GetLayer() const;
   void SetLayer(scoped_refptr<cc::Layer> layer);
@@ -147,13 +150,12 @@ class UI_ANDROID_EXPORT ViewAndroid {
   bool HasFocus();
   void RequestFocus();
 
-  // Sets the layout relative to parent. Used to do hit testing against events.
-  void SetLayout(LayoutParams params);
-
   bool StartDragAndDrop(const base::android::JavaRef<jstring>& jtext,
                         const base::android::JavaRef<jobject>& jimage);
 
   gfx::Size GetPhysicalBackingSize();
+
+  void OnSizeChanged(int width, int height);
   void OnPhysicalBackingSizeChanged(const gfx::Size& size);
   void OnCursorChanged(int type,
                        const SkBitmap& custom_image,
@@ -179,12 +181,17 @@ class UI_ANDROID_EXPORT ViewAndroid {
   void AddObserver(ViewAndroidObserver* observer);
   void RemoveObserver(ViewAndroidObserver* observer);
 
-  float GetDipScale();
-
  protected:
   ViewAndroid* parent_;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ViewAndroidBoundsTest, MatchesViewInFront);
+  FRIEND_TEST_ALL_PREFIXES(ViewAndroidBoundsTest, MatchesViewArea);
+  FRIEND_TEST_ALL_PREFIXES(ViewAndroidBoundsTest, MatchesViewAfterMove);
+  FRIEND_TEST_ALL_PREFIXES(ViewAndroidBoundsTest,
+                           MatchesViewSizeOfkMatchParent);
+  FRIEND_TEST_ALL_PREFIXES(ViewAndroidBoundsTest, MatchesViewsWithOffset);
+  FRIEND_TEST_ALL_PREFIXES(ViewAndroidBoundsTest, OnSizeChanged);
   friend class EventForwarder;
   friend class ViewAndroidBoundsTest;
 
@@ -228,6 +235,9 @@ class UI_ANDROID_EXPORT ViewAndroid {
   // Checks if there is any event forwarder in the node paths down to
   // each leaf of subtree.
   static bool SubtreeHasEventForwarder(ViewAndroid* view);
+
+  void OnSizeChangedInternal(int width, int height);
+  void DispatchOnSizeChanged();
 
   // Returns the Java delegate for this view. This is used to delegate work
   // up to the embedding view (or the embedder that can deal with the

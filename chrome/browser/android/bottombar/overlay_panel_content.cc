@@ -63,6 +63,7 @@ void OverlayPanelContent::OnPhysicalBackingSizeChanged(
       content::WebContents::FromJavaWebContents(jweb_contents);
   gfx::Size size(width, height);
   web_contents->GetNativeView()->OnPhysicalBackingSizeChanged(size);
+  web_contents->GetNativeView()->OnSizeChanged(width, height);
 }
 
 void OverlayPanelContent::RemoveLastHistoryEntry(

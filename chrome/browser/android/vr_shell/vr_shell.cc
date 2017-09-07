@@ -529,6 +529,7 @@ void VrShell::OnPhysicalBackingSizeChanged(
     jint height) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
+  web_contents->GetNativeView()->OnSizeChanged(width, height);
   gfx::Size size(width, height);
   web_contents->GetNativeView()->OnPhysicalBackingSizeChanged(size);
 }

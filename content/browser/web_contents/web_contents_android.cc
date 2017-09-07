@@ -676,6 +676,14 @@ WebContentsAndroid::GetFullscreenVideoSize(
   return Java_WebContentsImpl_createSize(env, size.width(), size.height());
 }
 
+void WebContentsAndroid::SetSize(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jint width,
+    jint height) {
+  web_contents_->GetNativeView()->OnSizeChanged(width, height);
+}
+
 ScopedJavaLocalRef<jobject> WebContentsAndroid::GetOrCreateEventForwarder(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {

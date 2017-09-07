@@ -212,6 +212,10 @@ class CONTENT_EXPORT WebContentsAndroid
   base::android::ScopedJavaLocalRef<jobject> GetFullscreenVideoSize(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
+  void SetSize(JNIEnv* env,
+               const base::android::JavaParamRef<jobject>& obj,
+               jint width,
+               jint height);
 
   base::android::ScopedJavaLocalRef<jobject> GetOrCreateEventForwarder(
       JNIEnv* env,

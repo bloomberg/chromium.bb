@@ -2105,6 +2105,8 @@ public class Tab
                 mTabUma = new TabUma(TabCreationState.FROZEN_ON_RESTORE_FAILED);
                 mFailedToRestore = true;
             }
+            View compositorView = getActivity().getCompositorViewHolder();
+            webContents.setSize(compositorView.getWidth(), compositorView.getHeight());
 
             mFrozenContentsState = null;
             initContentViewCore(webContents);
@@ -2339,6 +2341,10 @@ public class Tab
         swapContentViewCore(cvc, false, didStartLoad, didFinishLoad);
     }
 
+    private static Rect getEstimatedContentSize(Context context) {
+        return ExternalPrerenderHandler.estimateContentSize((Application) context, false);
+    }
+
     /**
      * Called to swap out the current view with the one passed in.
      *
@@ -2351,7 +2357,7 @@ public class Tab
      * @param didFinishLoad Whether WebContentsObserver::DidFinishLoad() has
      *         already been called.
      */
-    public void swapContentViewCore(ContentViewCore newContentViewCore,
+    private void swapContentViewCore(ContentViewCore newContentViewCore,
             boolean deleteOldNativeWebContents, boolean didStartLoad, boolean didFinishLoad) {
         int originalWidth = 0;
         int originalHeight = 0;
@@ -2363,8 +2369,7 @@ public class Tab
 
         Rect bounds = new Rect();
         if (originalWidth == 0 && originalHeight == 0) {
-            bounds = ExternalPrerenderHandler.estimateContentSize(
-                    (Application) getApplicationContext(), false);
+            bounds = getEstimatedContentSize(getApplicationContext());
             originalWidth = bounds.right - bounds.left;
             originalHeight = bounds.bottom - bounds.top;
         }
@@ -2378,6 +2383,8 @@ public class Tab
         // However, this size fluttering may confuse Blink and rendered result can be broken
         // (see http://crbug.com/340987).
         newContentViewCore.onSizeChanged(originalWidth, originalHeight, 0, 0);
+        newContentViewCore.getWebContents().setSize(originalWidth, originalHeight);
+
         if (!bounds.isEmpty()) {
             nativeOnPhysicalBackingSizeChanged(mNativeTabAndroid,
                     newContentViewCore.getWebContents(), bounds.right, bounds.bottom);
@@ -2987,10 +2994,11 @@ public class Tab
         tab.initialize(null, null, delegateFactory, true, false);
 
         // Resize the webContent to avoid expensive post load resize when attaching the tab.
-        Rect bounds = ExternalPrerenderHandler.estimateContentSize((Application) context, false);
+        Rect bounds = getEstimatedContentSize(context);
         int width = bounds.right - bounds.left;
         int height = bounds.bottom - bounds.top;
         tab.getContentViewCore().onSizeChanged(width, height, 0, 0);
+        tab.getWebContents().setSize(width, height);
 
         tab.detach(null, null);
         return tab;
