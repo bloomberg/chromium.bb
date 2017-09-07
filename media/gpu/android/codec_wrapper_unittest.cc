@@ -34,8 +34,13 @@ class CodecWrapperTest : public testing::Test {
                                               output_buffer_release_cb_.Get());
     ON_CALL(*codec_, DequeueOutputBuffer(_, _, _, _, _, _, _))
         .WillByDefault(Return(MEDIA_CODEC_OK));
+    ON_CALL(*codec_, DequeueInputBuffer(_, _))
+        .WillByDefault(DoAll(SetArgPointee<1>(12), Return(MEDIA_CODEC_OK)));
     ON_CALL(*codec_, QueueInputBuffer(_, _, _, _))
         .WillByDefault(Return(MEDIA_CODEC_OK));
+
+    uint8_t data = 0;
+    fake_decoder_buffer_ = DecoderBuffer::CopyFrom(&data, 1);
   }
 
   ~CodecWrapperTest() override {
@@ -52,6 +57,7 @@ class CodecWrapperTest : public testing::Test {
   NiceMock<MockMediaCodecBridge>* codec_;
   std::unique_ptr<CodecWrapper> wrapper_;
   NiceMock<base::MockCallback<base::Closure>> output_buffer_release_cb_;
+  scoped_refptr<DecoderBuffer> fake_decoder_buffer_;
 };
 
 TEST_F(CodecWrapperTest, TakeCodecReturnsTheCodecFirstAndNullLater) {
@@ -213,26 +219,27 @@ TEST_F(CodecWrapperTest, CodecStartsInFlushedState) {
   ASSERT_FALSE(wrapper_->IsDrained());
 }
 
-TEST_F(CodecWrapperTest, CodecIsNotFlushedAfterAnInputIsQueued) {
-  wrapper_->QueueInputBuffer(0, nullptr, 0, base::TimeDelta());
+TEST_F(CodecWrapperTest, CodecIsNotInFlushedStateAfterAnInputIsQueued) {
+  wrapper_->QueueInputBuffer(*fake_decoder_buffer_, EncryptionScheme());
   ASSERT_FALSE(wrapper_->IsFlushed());
   ASSERT_FALSE(wrapper_->IsDraining());
   ASSERT_FALSE(wrapper_->IsDrained());
 }
 
-TEST_F(CodecWrapperTest, FlushReturnsCodecToFlushed) {
-  wrapper_->QueueInputBuffer(0, nullptr, 0, base::TimeDelta());
+TEST_F(CodecWrapperTest, FlushTransitionsToFlushedState) {
+  wrapper_->QueueInputBuffer(*fake_decoder_buffer_, EncryptionScheme());
   wrapper_->Flush();
   ASSERT_TRUE(wrapper_->IsFlushed());
 }
 
-TEST_F(CodecWrapperTest, EosTransitionsToStateDraining) {
-  wrapper_->QueueInputBuffer(0, nullptr, 0, base::TimeDelta());
-  wrapper_->QueueEOS(0);
+TEST_F(CodecWrapperTest, EosTransitionsToDrainingState) {
+  wrapper_->QueueInputBuffer(*fake_decoder_buffer_, EncryptionScheme());
+  auto eos = DecoderBuffer::CreateEOSBuffer();
+  wrapper_->QueueInputBuffer(*eos, EncryptionScheme());
   ASSERT_TRUE(wrapper_->IsDraining());
 }
 
-TEST_F(CodecWrapperTest, DequeuingEosTransitionsToStateDrained) {
+TEST_F(CodecWrapperTest, DequeuingEosTransitionsToDrainedState) {
   // Set EOS on next dequeue.
   codec_->ProduceOneOutput(MockMediaCodecBridge::kEos);
   DequeueCodecOutputBuffer();
@@ -240,6 +247,20 @@ TEST_F(CodecWrapperTest, DequeuingEosTransitionsToStateDrained) {
   ASSERT_TRUE(wrapper_->IsDrained());
   wrapper_->Flush();
   ASSERT_FALSE(wrapper_->IsDrained());
+}
+
+TEST_F(CodecWrapperTest, RejectedInputBuffersAreReusedAfter) {
+  // If we get a MEDIA_CODEC_NO_KEY status, the next time we try to queue a
+  // buffer the previous input buffer should be reused.
+  EXPECT_CALL(*codec_, DequeueInputBuffer(_, _))
+      .WillOnce(DoAll(SetArgPointee<1>(666), Return(MEDIA_CODEC_OK)));
+  EXPECT_CALL(*codec_, QueueInputBuffer(666, _, _, _))
+      .WillOnce(Return(MEDIA_CODEC_NO_KEY))
+      .WillOnce(Return(MEDIA_CODEC_OK));
+  auto status =
+      wrapper_->QueueInputBuffer(*fake_decoder_buffer_, EncryptionScheme());
+  ASSERT_EQ(status, MEDIA_CODEC_NO_KEY);
+  wrapper_->QueueInputBuffer(*fake_decoder_buffer_, EncryptionScheme());
 }
 
 }  // namespace media

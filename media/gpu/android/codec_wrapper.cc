@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/stl_util.h"
 #include "media/base/android/media_codec_util.h"
 #include "media/base/bind_to_current_loop.h"
@@ -33,21 +34,8 @@ class CodecWrapperImpl : public base::RefCountedThreadSafe<CodecWrapperImpl> {
   bool IsDrained() const;
   bool SupportsFlush(DeviceInfo* device_info) const;
   bool Flush();
-  MediaCodecStatus QueueInputBuffer(int index,
-                                    const uint8_t* data,
-                                    size_t data_size,
-                                    base::TimeDelta presentation_time);
-  MediaCodecStatus QueueSecureInputBuffer(
-      int index,
-      const uint8_t* data,
-      size_t data_size,
-      const std::string& key_id,
-      const std::string& iv,
-      const std::vector<SubsampleEntry>& subsamples,
-      const EncryptionScheme& encryption_scheme,
-      base::TimeDelta presentation_time);
-  void QueueEOS(int input_buffer_index);
-  MediaCodecStatus DequeueInputBuffer(int* index);
+  MediaCodecStatus QueueInputBuffer(const DecoderBuffer& buffer,
+                                    const EncryptionScheme& encryption_scheme);
   MediaCodecStatus DequeueOutputBuffer(
       base::TimeDelta* presentation_time,
       bool* end_of_stream,
@@ -82,6 +70,11 @@ class CodecWrapperImpl : public base::RefCountedThreadSafe<CodecWrapperImpl> {
   // indices.
   int64_t next_buffer_id_;
   base::flat_map<int64_t, int> buffer_ids_;
+
+  // An input buffer that was dequeued but subsequently rejected from
+  // QueueInputBuffer() because the codec didn't have the crypto key. We
+  // maintain ownership of it and reuse it next time.
+  base::Optional<int> owned_input_buffer_;
 
   // The current output size. Updated when DequeueOutputBuffer() reports
   // OUTPUT_FORMAT_CHANGED.
@@ -172,8 +165,9 @@ bool CodecWrapperImpl::Flush() {
   base::AutoLock l(lock_);
   DCHECK(codec_ && state_ != State::kError);
 
-  // Dequeued output buffers are invalidated by flushing.
+  // Dequeued buffers are invalidated by flushing.
   buffer_ids_.clear();
+  owned_input_buffer_.reset();
   auto status = codec_->Flush();
   if (status == MEDIA_CODEC_ERROR) {
     state_ = State::kError;
@@ -184,64 +178,66 @@ bool CodecWrapperImpl::Flush() {
 }
 
 MediaCodecStatus CodecWrapperImpl::QueueInputBuffer(
-    int index,
-    const uint8_t* data,
-    size_t data_size,
-    base::TimeDelta presentation_time) {
+    const DecoderBuffer& buffer,
+    const EncryptionScheme& encryption_scheme) {
   DVLOG(4) << __func__;
   base::AutoLock l(lock_);
   DCHECK(codec_ && state_ != State::kError);
 
-  auto status =
-      codec_->QueueInputBuffer(index, data, data_size, presentation_time);
-  if (status == MEDIA_CODEC_ERROR)
-    state_ = State::kError;
-  else
-    state_ = State::kRunning;
-  return status;
-}
+  // Dequeue an input buffer if we don't already own one.
+  int input_buffer;
+  if (owned_input_buffer_) {
+    input_buffer = *owned_input_buffer_;
+    owned_input_buffer_.reset();
+  } else {
+    MediaCodecStatus status =
+        codec_->DequeueInputBuffer(base::TimeDelta(), &input_buffer);
+    if (status == MEDIA_CODEC_ERROR) {
+      state_ = State::kError;
+      return status;
+    } else if (status == MEDIA_CODEC_TRY_AGAIN_LATER) {
+      return status;
+    }
+    DCHECK_GE(input_buffer, 0);
+  }
 
-MediaCodecStatus CodecWrapperImpl::QueueSecureInputBuffer(
-    int index,
-    const uint8_t* data,
-    size_t data_size,
-    const std::string& key_id,
-    const std::string& iv,
-    const std::vector<SubsampleEntry>& subsamples,
-    const EncryptionScheme& encryption_scheme,
-    base::TimeDelta presentation_time) {
-  DVLOG(4) << __func__;
-  base::AutoLock l(lock_);
-  DCHECK(codec_ && state_ != State::kError);
+  // Queue EOS if it's an EOS buffer.
+  if (buffer.end_of_stream()) {
+    // Some MediaCodecs consider it an error to get an EOS as the first buffer
+    // (http://crbug.com/672268).
+    DCHECK_NE(state_, State::kFlushed);
+    codec_->QueueEOS(input_buffer);
+    state_ = State::kDraining;
+    return MEDIA_CODEC_OK;
+  }
 
-  auto status = codec_->QueueSecureInputBuffer(
-      index, data, data_size, key_id, iv, subsamples, encryption_scheme,
-      presentation_time);
-  if (status == MEDIA_CODEC_ERROR)
-    state_ = State::kError;
-  else
-    state_ = State::kRunning;
-  return status;
-}
-
-void CodecWrapperImpl::QueueEOS(int input_buffer_index) {
-  DVLOG(2) << __func__;
-  base::AutoLock l(lock_);
-  DCHECK(codec_ && state_ != State::kError);
-  // Some MediaCodecs consider it an error to get an EOS as the first buffer
-  // (http://crbug.com/672268).
-  DCHECK_NE(state_, State::kFlushed);
-  codec_->QueueEOS(input_buffer_index);
-  state_ = State::kDraining;
-}
-
-MediaCodecStatus CodecWrapperImpl::DequeueInputBuffer(int* index) {
-  DVLOG(4) << __func__;
-  base::AutoLock l(lock_);
-  DCHECK(codec_ && state_ != State::kError);
-  auto status = codec_->DequeueInputBuffer(base::TimeDelta(), index);
-  if (status == MEDIA_CODEC_ERROR)
-    state_ = State::kError;
+  // Queue a buffer.
+  const DecryptConfig* decrypt_config = buffer.decrypt_config();
+  bool encrypted = decrypt_config && decrypt_config->is_encrypted();
+  MediaCodecStatus status;
+  if (encrypted) {
+    status = codec_->QueueSecureInputBuffer(
+        input_buffer, buffer.data(), buffer.data_size(),
+        decrypt_config->key_id(), decrypt_config->iv(),
+        decrypt_config->subsamples(), encryption_scheme, buffer.timestamp());
+  } else {
+    status = codec_->QueueInputBuffer(input_buffer, buffer.data(),
+                                      buffer.data_size(), buffer.timestamp());
+  }
+  switch (status) {
+    case MEDIA_CODEC_OK:
+      state_ = State::kRunning;
+      break;
+    case MEDIA_CODEC_ERROR:
+      state_ = State::kError;
+      break;
+    case MEDIA_CODEC_NO_KEY:
+      // The input buffer remains owned by us, so save it for reuse.
+      owned_input_buffer_ = input_buffer;
+      break;
+    default:
+      NOTREACHED();
+  }
   return status;
 }
 
@@ -393,33 +389,9 @@ bool CodecWrapper::Flush() {
 }
 
 MediaCodecStatus CodecWrapper::QueueInputBuffer(
-    int index,
-    const uint8_t* data,
-    size_t data_size,
-    base::TimeDelta presentation_time) {
-  return impl_->QueueInputBuffer(index, data, data_size, presentation_time);
-}
-
-MediaCodecStatus CodecWrapper::QueueSecureInputBuffer(
-    int index,
-    const uint8_t* data,
-    size_t data_size,
-    const std::string& key_id,
-    const std::string& iv,
-    const std::vector<SubsampleEntry>& subsamples,
-    const EncryptionScheme& encryption_scheme,
-    base::TimeDelta presentation_time) {
-  return impl_->QueueSecureInputBuffer(index, data, data_size, key_id, iv,
-                                       subsamples, encryption_scheme,
-                                       presentation_time);
-}
-
-void CodecWrapper::QueueEOS(int input_buffer_index) {
-  impl_->QueueEOS(input_buffer_index);
-}
-
-MediaCodecStatus CodecWrapper::DequeueInputBuffer(int* index) {
-  return impl_->DequeueInputBuffer(index);
+    const DecoderBuffer& buffer,
+    const EncryptionScheme& encryption_scheme) {
+  return impl_->QueueInputBuffer(buffer, encryption_scheme);
 }
 
 MediaCodecStatus CodecWrapper::DequeueOutputBuffer(
