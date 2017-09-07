@@ -135,9 +135,8 @@ class AV1SelfguidedFilterTest
 TEST_P(AV1SelfguidedFilterTest, SpeedTest) { RunSpeedTest(); }
 TEST_P(AV1SelfguidedFilterTest, CorrectnessTest) { RunCorrectnessTest(); }
 
-const FilterTestParam params[] = { make_tuple() };
-
 #if HAVE_SSE4_1
+const FilterTestParam params[] = { make_tuple() };
 INSTANTIATE_TEST_CASE_P(SSE4_1, AV1SelfguidedFilterTest,
                         ::testing::ValuesIn(params));
 #endif
@@ -258,10 +257,9 @@ class AV1HighbdSelfguidedFilterTest
 TEST_P(AV1HighbdSelfguidedFilterTest, SpeedTest) { RunSpeedTest(); }
 TEST_P(AV1HighbdSelfguidedFilterTest, CorrectnessTest) { RunCorrectnessTest(); }
 
+#if HAVE_SSE4_1
 const HighbdFilterTestParam highbd_params[] = { make_tuple(8), make_tuple(10),
                                                 make_tuple(12) };
-
-#if HAVE_SSE4_1
 INSTANTIATE_TEST_CASE_P(SSE4_1, AV1HighbdSelfguidedFilterTest,
                         ::testing::ValuesIn(highbd_params));
 #endif
