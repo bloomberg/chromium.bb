@@ -95,7 +95,9 @@ class GbmSurfaceless : public gl::SurfacelessEGL {
   bool last_swap_buffers_result_ = true;
   bool swap_buffers_pending_ = false;
   bool rely_on_implicit_sync_ = false;
-  bool is_on_external_drm_device_ = false;
+  // Conservatively assume we begin on a device that requires
+  // explicit synchronization.
+  bool is_on_external_drm_device_ = true;
 
   base::WeakPtrFactory<GbmSurfaceless> weak_factory_;
 
