@@ -52,6 +52,11 @@ class PrefRegistrySyncable;
 - (void)bookmarkTableView:(BookmarkTableView*)view
         selectedEditNodes:
             (const std::set<const bookmarks::BookmarkNode*>&)nodes;
+
+// Tells the delegate to show context menu for the given |node|.
+- (void)bookmarkTableView:(BookmarkTableView*)view
+    showContextMenuForNode:(const bookmarks::BookmarkNode*)node;
+
 @end
 
 @interface BookmarkTableView : UIView

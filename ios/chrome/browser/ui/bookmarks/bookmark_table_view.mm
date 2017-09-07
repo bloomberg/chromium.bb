@@ -163,6 +163,12 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
     self.tableView.autoresizingMask =
         UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     self.tableView.allowsMultipleSelectionDuringEditing = YES;
+    UILongPressGestureRecognizer* longPressRecognizer =
+        [[UILongPressGestureRecognizer alloc]
+            initWithTarget:self
+                    action:@selector(handleLongPress:)];
+    longPressRecognizer.numberOfTouchesRequired = 1;
+    [self.tableView addGestureRecognizer:longPressRecognizer];
     [self addSubview:self.tableView];
     [self bringSubviewToFront:self.tableView];
 
@@ -489,6 +495,25 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 }
 
 #pragma mark - Private
+
+- (void)handleLongPress:(UILongPressGestureRecognizer*)gestureRecognizer {
+  if (self.editing ||
+      gestureRecognizer.state != UIGestureRecognizerStateBegan) {
+    return;
+  }
+  CGPoint touchPoint = [gestureRecognizer locationInView:self.tableView];
+  NSIndexPath* indexPath = [self.tableView indexPathForRowAtPoint:touchPoint];
+  if (indexPath == nil || indexPath.section != self.bookmarksSection) {
+    return;
+  }
+
+  const BookmarkNode* node = [self nodeAtIndexPath:indexPath];
+  if (!node) {
+    return;
+  }
+
+  [self.delegate bookmarkTableView:self showContextMenuForNode:node];
+}
 
 - (void)resetEditNodes {
   _editNodes.clear();
