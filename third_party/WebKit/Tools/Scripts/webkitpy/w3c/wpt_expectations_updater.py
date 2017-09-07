@@ -16,7 +16,7 @@ import logging
 from webkitpy.common.memoized import memoized
 from webkitpy.common.net.git_cl import GitCL
 from webkitpy.common.path_finder import PathFinder
-from webkitpy.layout_tests.models.test_expectations import TestExpectationLine, TestExpectations
+from webkitpy.layout_tests.models.test_expectations import TestExpectationLine
 from webkitpy.w3c.wpt_manifest import WPTManifest
 
 _log = logging.getLogger(__name__)
@@ -334,7 +334,9 @@ class WPTExpectationsUpdater(object):
         for name in sorted(port_names):
             specifiers.append(self.host.builders.version_specifier_for_port_name(name))
 
-        specifiers.extend(self.skipped_specifiers(test_name))
+        if self.specifiers_can_extend_to_all_platforms(specifiers, test_name):
+            return ''
+
         specifiers = self.simplify_specifiers(specifiers, self.port.configuration_specifier_macros())
         if not specifiers:
             return ''
@@ -346,6 +348,16 @@ class WPTExpectationsUpdater(object):
         if isinstance(tuple_or_value, tuple):
             return list(tuple_or_value)
         return [tuple_or_value]
+
+    def specifiers_can_extend_to_all_platforms(self, specifiers, test_name):
+        """Tests whether a list of specifiers can be extended to all platforms.
+
+        Tries to add skipped platform specifiers to the list and tests if the
+        extended list covers all platforms.
+        """
+        extended_specifiers = specifiers + self.skipped_specifiers(test_name)
+        # If the list is simplified to empty, then all platforms are covered.
+        return not self.simplify_specifiers(extended_specifiers, self.port.configuration_specifier_macros())
 
     def skipped_specifiers(self, test_name):
         """Returns a list of platform specifiers for which the test is skipped."""
@@ -361,7 +373,7 @@ class WPTExpectationsUpdater(object):
         return [self.host.port_factory.get_from_builder_name(name) for name in self._get_try_bots()]
 
     @staticmethod
-    def simplify_specifiers(specifiers, configuration_specifier_macros):  # pylint: disable=unused-argument
+    def simplify_specifiers(specifiers, configuration_specifier_macros):
         """Converts some collection of specifiers to an equivalent and maybe shorter list.
 
         The input strings are all case-insensitive, but the strings in the
