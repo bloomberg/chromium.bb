@@ -17,6 +17,7 @@
 #include "ash/shell.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "ui/app_list/presenter/app_list.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -263,6 +264,10 @@ bool Shelf::ProcessGestureEvent(const ui::GestureEvent& event) {
   if (!shelf_layout_manager_)
     return false;
   return shelf_layout_manager_->ProcessGestureEvent(event);
+}
+
+void Shelf::ProcessMouseWheelEvent(const ui::MouseWheelEvent& event) {
+  Shell::Get()->app_list()->ProcessMouseWheelEvent(event);
 }
 
 void Shelf::AddObserver(ShelfObserver* observer) {

@@ -46,11 +46,15 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "base/test/user_action_tester.h"
 #include "base/time/time.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/presenter/app_list.h"
+#include "ui/app_list/presenter/test/test_app_list_presenter.h"
+#include "ui/app_list/views/app_list_view.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -2036,6 +2040,73 @@ TEST_F(ShelfViewTest, ShelfWindowWatcherButtonShowsContextMenu) {
   EXPECT_TRUE(test_api_->CloseMenu());
 }
 
+TEST_F(ShelfViewTest, MouseWheelScrollOnShelfTransitionsAppList) {
+  // Enable the Fullscreen AppList.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      app_list::features::kEnableFullscreenAppList);
+  TestAppListPresenterImpl app_list_presenter_impl;
+  app_list_presenter_impl.ShowAndRunLoop(GetPrimaryDisplayId());
+  app_list::test::TestAppListPresenter test_app_list_presenter;
+  Shell::Get()->app_list()->SetAppListPresenter(
+      test_app_list_presenter.CreateInterfacePtrAndBind());
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  gfx::Point shelf_center = shelf_view_->GetBoundsInScreen().CenterPoint();
+  generator.MoveMouseTo(shelf_center);
+
+  // Mousewheel scroll on the shelf view.
+  generator.MoveMouseWheel(0, -1);
+  RunAllPendingInMessageLoop();
+
+  ASSERT_EQ(1u, test_app_list_presenter.process_mouse_wheel_offset_count());
+}
+
+TEST_F(ShelfViewTest, MouseWheelScrollOnApplistButtonTransitionsAppList) {
+  // Enable the fullscreen app list.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      app_list::features::kEnableFullscreenAppList);
+  TestAppListPresenterImpl app_list_presenter_impl;
+  app_list_presenter_impl.ShowAndRunLoop(GetPrimaryDisplayId());
+  app_list::test::TestAppListPresenter test_app_list_presenter;
+  Shell::Get()->app_list()->SetAppListPresenter(
+      test_app_list_presenter.CreateInterfacePtrAndBind());
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  gfx::Point app_list_button_center =
+      shelf_view_->GetAppListButton()->GetBoundsInScreen().CenterPoint();
+  generator.MoveMouseTo(app_list_button_center);
+
+  // Mousewheel scroll on the AppListButton.
+  generator.MoveMouseWheel(0, -1);
+  RunAllPendingInMessageLoop();
+
+  ASSERT_EQ(1u, test_app_list_presenter.process_mouse_wheel_offset_count());
+}
+
+TEST_F(ShelfViewTest, MouseWheelScrollOnAppIconTransitionsAppList) {
+  // Enable the Fullscreen AppList.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      app_list::features::kEnableFullscreenAppList);
+  TestAppListPresenterImpl app_list_presenter_impl;
+  app_list_presenter_impl.ShowAndRunLoop(GetPrimaryDisplayId());
+  app_list::test::TestAppListPresenter test_app_list_presenter;
+  Shell::Get()->app_list()->SetAppListPresenter(
+      test_app_list_presenter.CreateInterfacePtrAndBind());
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  // Add an app button
+  ShelfID id = AddApp();
+  gfx::Point button_center =
+      GetButtonByID(id)->GetBoundsInScreen().CenterPoint();
+  generator.MoveMouseTo(button_center);
+
+  // Mousewheel scroll on the app button.
+  generator.MoveMouseWheel(0, -1);
+  RunAllPendingInMessageLoop();
+
+  ASSERT_EQ(1u, test_app_list_presenter.process_mouse_wheel_offset_count());
+}
+
 class ShelfViewVisibleBoundsTest : public ShelfViewTest,
                                    public testing::WithParamInterface<bool> {
  public:
@@ -2802,8 +2873,8 @@ TEST_F(OverflowButtonInkDropTest, OnOverflowBubbleShowHide) {
               ElementsAre(views::InkDropState::DEACTIVATED));
 }
 
-// Tests ink drop state transitions for the overflow button when the user clicks
-// on it.
+// Tests ink drop state transitions for the overflow button when the user
+// clicks on it.
 TEST_F(OverflowButtonInkDropTest, MouseActivate) {
   ui::test::EventGenerator& generator = GetEventGenerator();
   gfx::Point mouse_location = GetScreenPointInsideOverflowButton();
@@ -2885,8 +2956,8 @@ TEST_F(OverflowButtonInkDropTest, MouseDragOutAndBack) {
   ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
 }
 
-// Tests ink drop state transitions for the overflow button when the user right
-// clicks on the button to show the context menu.
+// Tests ink drop state transitions for the overflow button when the user
+// right clicks on the button to show the context menu.
 TEST_F(OverflowButtonInkDropTest, MouseContextMenu) {
   ui::test::EventGenerator& generator = GetEventGenerator();
   generator.MoveMouseTo(GetScreenPointInsideOverflowButton());
@@ -3090,8 +3161,8 @@ TEST_P(OverflowButtonTextDirectionTest, ChevronDirection) {
   }
 }
 
-// Test fixture for testing material design ink drop on overflow button when it
-// is active.
+// Test fixture for testing material design ink drop on overflow button when
+// it is active.
 class OverflowButtonActiveInkDropTest : public OverflowButtonInkDropTest {
  public:
   OverflowButtonActiveInkDropTest() {}
@@ -3265,7 +3336,8 @@ TEST_F(OverflowButtonActiveInkDropTest, TouchDragOut) {
 }
 
 // Tests ink drop state transitions for the overflow button when it is active
-// and the user taps down on it and drags it out of the button bounds and back.
+// and the user taps down on it and drags it out of the button bounds and
+// back.
 TEST_F(OverflowButtonActiveInkDropTest, TouchDragOutAndBack) {
   ui::test::EventGenerator& generator = GetEventGenerator();
   generator.set_current_location(GetScreenPointInsideOverflowButton());

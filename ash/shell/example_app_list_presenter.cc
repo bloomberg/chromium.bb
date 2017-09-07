@@ -77,5 +77,7 @@ void ExampleAppListPresenter::UpdateYPositionAndOpacity(
 void ExampleAppListPresenter::EndDragFromShelf(
     app_list::mojom::AppListState app_list_state) {}
 
+void ExampleAppListPresenter::ProcessMouseWheelOffset(int offset) {}
+
 }  // namespace shell
 }  // namespace ash

@@ -30,6 +30,7 @@ class TestAppListPresenter : public mojom::AppListPresenter {
   void UpdateYPositionAndOpacity(int y_position_in_screen,
                                  float background_opacity) override;
   void EndDragFromShelf(mojom::AppListState app_list_state) override;
+  void ProcessMouseWheelOffset(int y_scroll_offset) override;
 
   size_t show_count() const { return show_count_; }
   size_t dismiss_count() const { return dismiss_count_; }
@@ -39,6 +40,9 @@ class TestAppListPresenter : public mojom::AppListPresenter {
     return voice_session_toggle_count_;
   }
   size_t set_y_position_count() const { return set_y_position_count_; }
+  size_t process_mouse_wheel_offset_count() const {
+    return process_mouse_wheel_offset_count_;
+  }
   mojom::AppListState app_list_state() const { return app_list_state_; }
 
  private:
@@ -48,6 +52,7 @@ class TestAppListPresenter : public mojom::AppListPresenter {
   size_t voice_session_count_ = 0u;
   size_t voice_session_toggle_count_ = 0u;
   size_t set_y_position_count_ = 0u;
+  size_t process_mouse_wheel_offset_count_ = 0u;
   mojom::AppListState app_list_state_ = mojom::AppListState::CLOSED;
 
   mojo::Binding<mojom::AppListPresenter> binding_;

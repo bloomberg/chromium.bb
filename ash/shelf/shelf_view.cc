@@ -35,6 +35,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/app_list/app_list_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/compositor/layer.h"
@@ -1549,6 +1550,14 @@ void ShelfView::OnGestureEvent(ui::GestureEvent* event) {
   event->set_location(location_in_screen);
   if (shelf_->ProcessGestureEvent(*event))
     event->StopPropagation();
+}
+
+bool ShelfView::OnMouseWheel(const ui::MouseWheelEvent& event) {
+  if (!app_list::features::IsFullscreenAppListEnabled())
+    return false;
+
+  shelf_->ProcessMouseWheelEvent(event);
+  return true;
 }
 
 void ShelfView::ShelfItemAdded(int model_index) {

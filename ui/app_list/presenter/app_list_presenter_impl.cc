@@ -150,6 +150,11 @@ void AppListPresenterImpl::EndDragFromShelf(
   }
 }
 
+void AppListPresenterImpl::ProcessMouseWheelOffset(int y_scroll_offset) {
+  if (view_)
+    view_->HandleScroll(y_scroll_offset, ui::ET_MOUSEWHEEL);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // AppListPresenterImpl, private:
 

@@ -146,8 +146,8 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   // Called when tablet mode starts and ends.
   void OnTabletModeChanged(bool started);
 
-  // Changes |app_list_state_| from |PEEKING| to |FULLSCREEN_ALL_APPS|.
-  bool HandleScroll(const ui::Event* event);
+  // Handles scroll events from various sources.
+  bool HandleScroll(int offset, ui::EventType type);
 
   // Changes the app list state.
   void SetState(AppListState new_state);
