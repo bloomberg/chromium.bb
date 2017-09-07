@@ -107,6 +107,7 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
     std::set<QueuedMemoryDumpRequest::PendingResponse> pending_responses;
     std::map<mojom::ClientProcess*, Response> responses;
     int failed_memory_dump_count = 0;
+    bool dump_in_progress = false;
     // The time we started handling the request (does not including queuing
     // time).
     base::Time start_time;
