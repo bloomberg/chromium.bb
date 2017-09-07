@@ -6,7 +6,7 @@
 # certificates. See chrome/browser/ssl/ssl_error_assistant.proto for the full
 # format.
 
-version_id: 3
+version_id: 4
 
 # https://captive-portal.badssl.com leaf.
 # This is a test certificate, always keep it at the top.
@@ -155,8 +155,7 @@ captive_portal_cert {
 # This is a test certificate, keep it at the top of the MITM software list.
 mitm_software {
   name: "BadSSL Antivirus",
-  issuer_common_name_regex: "BadSSL MITM Software Test",
-  issuer_organization_regex: "BadSSL"
+  issuer_common_name_regex: "BadSSL MITM Software Test"
 }
 
 ################################################################################
