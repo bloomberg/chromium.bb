@@ -185,6 +185,13 @@ ScopedCERTCertificate CreateCERTCertificateFromX509Certificate(
 
 ScopedCERTCertificateList CreateCERTCertificateListFromX509Certificate(
     const X509Certificate* cert) {
+  return x509_util::CreateCERTCertificateListFromX509Certificate(
+      cert, InvalidIntermediateBehavior::kFail);
+}
+
+ScopedCERTCertificateList CreateCERTCertificateListFromX509Certificate(
+    const X509Certificate* cert,
+    InvalidIntermediateBehavior invalid_intermediate_behavior) {
   ScopedCERTCertificateList nss_chain;
   nss_chain.reserve(1 + cert->GetIntermediateCertificates().size());
 #if BUILDFLAG(USE_BYTE_CERTS)
@@ -197,8 +204,12 @@ ScopedCERTCertificateList CreateCERTCertificateListFromX509Certificate(
        cert->GetIntermediateCertificates()) {
     ScopedCERTCertificate nss_intermediate = CreateCERTCertificateFromBytes(
         CRYPTO_BUFFER_data(intermediate), CRYPTO_BUFFER_len(intermediate));
-    if (!nss_intermediate)
-      return {};
+    if (!nss_intermediate) {
+      if (invalid_intermediate_behavior == InvalidIntermediateBehavior::kFail)
+        return {};
+      LOG(WARNING) << "error parsing intermediate";
+      continue;
+    }
     nss_chain.push_back(std::move(nss_intermediate));
   }
 #else

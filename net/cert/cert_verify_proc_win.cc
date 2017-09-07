@@ -854,7 +854,8 @@ int CertVerifyProcWin::VerifyInternal(
   // CRLSet.
   ScopedThreadLocalCRLSet thread_local_crlset(crl_set);
 
-  ScopedPCCERT_CONTEXT cert_list = x509_util::CreateCertContextWithChain(cert);
+  ScopedPCCERT_CONTEXT cert_list = x509_util::CreateCertContextWithChain(
+      cert, x509_util::InvalidIntermediateBehavior::kIgnore);
   if (!cert_list) {
     verify_result->cert_status |= CERT_STATUS_INVALID;
     return ERR_CERT_INVALID;

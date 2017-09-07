@@ -18,6 +18,14 @@ namespace x509_util {
 
 base::ScopedCFTypeRef<CFMutableArrayRef>
 CreateSecCertificateArrayForX509Certificate(X509Certificate* cert) {
+  return CreateSecCertificateArrayForX509Certificate(
+      cert, InvalidIntermediateBehavior::kFail);
+}
+
+base::ScopedCFTypeRef<CFMutableArrayRef>
+CreateSecCertificateArrayForX509Certificate(
+    X509Certificate* cert,
+    InvalidIntermediateBehavior invalid_intermediate_behavior) {
   base::ScopedCFTypeRef<CFMutableArrayRef> cert_list(
       CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks));
   if (!cert_list)
@@ -35,8 +43,12 @@ CreateSecCertificateArrayForX509Certificate(X509Certificate* cert) {
     base::ScopedCFTypeRef<SecCertificateRef> sec_cert(
         CreateSecCertificateFromBytes(CRYPTO_BUFFER_data(intermediate),
                                       CRYPTO_BUFFER_len(intermediate)));
-    if (!sec_cert)
-      return base::ScopedCFTypeRef<CFMutableArrayRef>();
+    if (!sec_cert) {
+      if (invalid_intermediate_behavior == InvalidIntermediateBehavior::kFail)
+        return base::ScopedCFTypeRef<CFMutableArrayRef>();
+      LOG(WARNING) << "error parsing intermediate";
+      continue;
+    }
     CFArrayAppendValue(cert_list, sec_cert);
   }
 #else

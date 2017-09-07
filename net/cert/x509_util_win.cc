@@ -58,6 +58,12 @@ scoped_refptr<X509Certificate> CreateX509CertificateFromCertContexts(
 }
 
 ScopedPCCERT_CONTEXT CreateCertContextWithChain(const X509Certificate* cert) {
+  return CreateCertContextWithChain(cert, InvalidIntermediateBehavior::kFail);
+}
+
+ScopedPCCERT_CONTEXT CreateCertContextWithChain(
+    const X509Certificate* cert,
+    InvalidIntermediateBehavior invalid_intermediate_behavior) {
   // Create an in-memory certificate store to hold the certificate and its
   // intermediate certificates. The store will be referenced in the returned
   // PCCERT_CONTEXT, and will not be freed until the PCCERT_CONTEXT is freed.
@@ -85,8 +91,11 @@ ScopedPCCERT_CONTEXT CreateCertContextWithChain(const X509Certificate* cert) {
         store.get(), X509_ASN_ENCODING, CRYPTO_BUFFER_data(intermediate),
         base::checked_cast<DWORD>(CRYPTO_BUFFER_len(intermediate)),
         CERT_STORE_ADD_ALWAYS, NULL);
-    if (!ok)
-      return nullptr;
+    if (!ok) {
+      if (invalid_intermediate_behavior == InvalidIntermediateBehavior::kFail)
+        return nullptr;
+      LOG(WARNING) << "error parsing intermediate";
+    }
   }
 #else
   PCCERT_CONTEXT os_cert_handle = cert->os_cert_handle();

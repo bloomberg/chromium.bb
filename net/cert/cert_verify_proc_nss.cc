@@ -785,7 +785,8 @@ int CertVerifyProcNSS::VerifyInternalImpl(
   // certificates for the intermediates is required for PKIXVerifyCert to find
   // them during chain building.
   ScopedCERTCertificateList input_chain =
-      x509_util::CreateCERTCertificateListFromX509Certificate(cert);
+      x509_util::CreateCERTCertificateListFromX509Certificate(
+          cert, x509_util::InvalidIntermediateBehavior::kIgnore);
   if (input_chain.empty()) {
     verify_result->cert_status |= CERT_STATUS_INVALID;
     return ERR_CERT_INVALID;

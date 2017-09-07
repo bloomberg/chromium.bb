@@ -491,8 +491,13 @@ TEST_P(CertVerifyProcInternalTest, InvalidTarget) {
 }
 
 // Tests the case where an intermediate certificate is accepted by
-// X509CertificateBytes, but has errors that should cause verification to fail.
-TEST_P(CertVerifyProcInternalTest, InvalidIntermediate) {
+// X509CertificateBytes, but has errors that should prevent using it during
+// verification.  The verification should succeed, since the intermediate
+// wasn't necessary.
+TEST_P(CertVerifyProcInternalTest, UnnecessaryInvalidIntermediate) {
+  ScopedTestRoot test_root(
+      ImportCertFromFile(GetTestCertsDirectory(), "root_ca_cert.pem").get());
+
   base::FilePath certs_dir =
       GetTestNetDataDirectory().AppendASCII("parse_certificate_unittest");
   bssl::UniquePtr<CRYPTO_BUFFER> bad_cert =
@@ -515,8 +520,8 @@ TEST_P(CertVerifyProcInternalTest, InvalidIntermediate) {
   int error = Verify(cert_with_bad_intermediate.get(), "127.0.0.1", flags, NULL,
                      CertificateList(), &verify_result);
 
-  EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_INVALID);
-  EXPECT_THAT(error, IsError(ERR_CERT_INVALID));
+  EXPECT_THAT(error, IsOk());
+  EXPECT_EQ(0u, verify_result.cert_status);
 }
 #endif  // BUILDFLAG(USE_BYTE_CERTS)
 
