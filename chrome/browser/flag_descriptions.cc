@@ -115,6 +115,16 @@ const char kColorCorrectRenderingName[] = "Color correct rendering";
 const char kColorCorrectRenderingDescription[] =
     "Enables color correct rendering of web content.";
 
+const char kForceColorProfileSRGB[] = "sRGB";
+const char kForceColorProfileP3[] = "Display P3 D65";
+const char kForceColorProfileColorSpin[] = "Color spin with gamma 2.4";
+const char kForceColorProfileHdr[] = "scRGB linear (HDR where available)";
+
+const char kForceColorProfileName[] = "Force color profile";
+const char kForceColorProfileDescription[] =
+    "Forces Chrome to use a specific color profile instead of the color "
+    "of the window's current monitor, as specified by the operating system.";
+
 const char kCompositedLayerBordersName[] = "Composited render layer borders";
 const char kCompositedLayerBordersDescription[] =
     "Renders a border around composited Render Layers to help debug and study "

@@ -95,6 +95,14 @@ extern const char kCloudImportDescription[];
 extern const char kColorCorrectRenderingName[];
 extern const char kColorCorrectRenderingDescription[];
 
+extern const char kForceColorProfileSRGB[];
+extern const char kForceColorProfileP3[];
+extern const char kForceColorProfileColorSpin[];
+extern const char kForceColorProfileHdr[];
+
+extern const char kForceColorProfileName[];
+extern const char kForceColorProfileDescription[];
+
 extern const char kCompositedLayerBordersName[];
 extern const char kCompositedLayerBordersDescription[];
 
