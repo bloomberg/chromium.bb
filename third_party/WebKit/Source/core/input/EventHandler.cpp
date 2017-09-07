@@ -828,9 +828,6 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
     return WebInputEventResult::kHandledSystem;
   }
 
-  // Mouse events simulated from touch should not hit-test again.
-  DCHECK(!mouse_event.FromTouch());
-
   HitTestRequest::HitTestRequestType hit_type = HitTestRequest::kMove;
   if (mouse_event_manager_->MousePressed()) {
     hit_type |= HitTestRequest::kActive;
