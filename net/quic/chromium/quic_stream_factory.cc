@@ -1025,22 +1025,19 @@ bool QuicStreamFactory::OnResolution(const QuicSessionKey& key,
 }
 
 void QuicStreamFactory::OnJobComplete(Job* job, int rv) {
-  // Copy |server_id|, because |job| might be destroyed before this method
-  // returns.
-  const QuicServerId server_id(job->key().server_id());
-
-  auto iter = active_jobs_.find(server_id);
+  auto iter = active_jobs_.find(job->key().server_id());
   // TODO(xunjieli): Change following CHECKs back to DCHECKs after
   // crbug.com/750271 is fixed.
   CHECK(iter != active_jobs_.end());
   if (rv == OK) {
     set_require_confirmation(false);
 
-    SessionMap::iterator session_it = active_sessions_.find(server_id);
+    SessionMap::iterator session_it =
+        active_sessions_.find(job->key().server_id());
     CHECK(session_it != active_sessions_.end());
     QuicChromiumClientSession* session = session_it->second;
     for (auto* request : iter->second->stream_requests()) {
-      CHECK(request->server_id() == server_id);
+      CHECK(request->server_id() == job->key().server_id());
       // Do not notify |request| yet.
       request->SetSession(session->CreateHandle());
     }
