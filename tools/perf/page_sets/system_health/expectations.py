@@ -63,8 +63,6 @@ class SystemHealthDesktopMemoryExpectations(expectations.StoryExpectations):
 
 class SystemHealthMobileCommonExpectations(expectations.StoryExpectations):
   def SetExpectations(self):
-    self.DisableStory('background:tools:gmail', [expectations.ALL_ANDROID],
-                      'crbug.com/723783')
     self.DisableStory('browse:shopping:flipkart', [expectations.ALL_ANDROID],
                       'crbug.com/708300')
     self.DisableStory('browse:news:globo', [expectations.ALL_ANDROID],
@@ -101,8 +99,6 @@ class SystemHealthMobileCommonExpectations(expectations.StoryExpectations):
 
 class SystemHealthMobileMemoryExpectations(expectations.StoryExpectations):
   def SetExpectations(self):
-    self.DisableStory('background:tools:gmail', [expectations.ALL_ANDROID],
-                      'crbug.com/723783')
     self.DisableStory('browse:shopping:flipkart', [expectations.ALL_ANDROID],
                       'crbug.com/708300')
     self.DisableStory('browse:news:globo', [expectations.ALL_ANDROID],
