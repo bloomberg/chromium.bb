@@ -3,14 +3,27 @@
 // found in the LICENSE file.
 
 {% from 'templates/macros.tmpl' import source_files_for_generated_file %}
+{% from 'core/css/properties/templates/application_macros.tmpl' import set_value, convert_and_set_value %}
 {{source_files_for_generated_file(template_file, input_files)}}
 
 #ifndef {{api_classname}}_h
 #define {{api_classname}}_h
 
+// TODO(jiameng): every property API header file needs to include a subset of
+// headers below. Ideally each property header should include required headers
+// only. Once all properties have their StyleBuilderFunctions moved to APIs,
+// we will need to revisit this issue.
 #include "core/CSSPropertyNames.h"
+#include "core/css/CSSIdentifierValue.h"
+#include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/properties/CSSPropertyAPI.h"
+#include "core/css/resolver/StyleBuilderConverter.h"
+#include "core/css/resolver/StyleResolverState.h"
+#include "core/style/ComputedStyle.h"
+#include "core/style/SVGComputedStyle.h"
 #include "platform/heap/HeapAllocator.h"
+#include "core/css/resolver/StyleResolverState.h"
 
 namespace blink {
 
@@ -38,6 +51,50 @@ class {{api_classname}} : public CSSPropertyAPI {
   {% endif %}
   {% if property.is_descriptor %}
   bool IsDescriptor() const override { return true; }
+  {% endif %}
+
+  {% if property.should_declare_application_functions %}
+    {% if not property.custom_initial %}
+  void ApplyInitial(StyleResolverState& state) const override {
+      {% if property.svg %}
+    {{set_value(property)}}(SVGComputedStyle::{{property.initial}}());
+      {% elif property.font %}
+    {{set_value(property)}}(FontBuilder::{{property.initial}}());
+      {% else %}
+    {{set_value(property)}}(ComputedStyle::{{property.initial}}());
+      {% endif %}
+      {% if property.independent %}
+    state.Style()->{{property.is_inherited_setter}}(false);
+      {% endif %}
+  }
+    {% endif %}
+    {# TODO(meade): else emit function declaration only #}
+
+    {% if not property.custom_inherit %}
+  void ApplyInherit(StyleResolverState& state) const override {
+      {% if property.svg %}
+    {{set_value(property)}}(state.ParentStyle()->SvgStyle().{{property.getter}}());
+      {% elif property.font %}
+    {{set_value(property)}}(state.ParentFontDescription().{{property.getter}}());
+      {% else %}
+    {{set_value(property)}}(state.ParentStyle()->{{property.getter}}());
+      {% endif %}
+      {% if property.independent %}
+    state.Style()->{{property.is_inherited_setter}}(true);
+      {% endif %}
+  }
+    {% endif %}
+    {# TODO(meade): else emit function declaration only #}
+
+    {% if not property.custom_value %}
+  void ApplyValue(StyleResolverState& state, const CSSValue& value) const override {
+    {{convert_and_set_value(property)}}
+      {% if property.independent %}
+    state.Style()->{{property.is_inherited_setter}}(false);
+      {% endif %}
+  }
+    {% endif %}
+    {# TODO(meade): else emit function declaration only #}
   {% endif %}
   {% if 'Percent' in property.typedom_types %}
   bool SupportsPercentage() const override { return true; }

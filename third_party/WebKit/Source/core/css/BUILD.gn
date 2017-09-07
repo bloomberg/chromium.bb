@@ -5,7 +5,7 @@
 import("//third_party/WebKit/Source/core/core.gni")
 
 blink_core_sources("css") {
-  split_count = 5
+  split_count = 10
   sources = [
     "ActiveStyleSheets.cpp",
     "ActiveStyleSheets.h",

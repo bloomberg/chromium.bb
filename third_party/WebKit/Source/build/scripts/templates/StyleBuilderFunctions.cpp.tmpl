@@ -1,10 +1,15 @@
 {% from 'templates/macros.tmpl' import license, source_files_for_generated_file %}
+{% from 'core/css/properties/templates/application_macros.tmpl' import set_value, convert_and_set_value %}
+
 {#
     This file is for property handlers which use the templating engine to
     reduce (handwritten) code duplication.
 
     The `properties' dict can be used to access a property's parameters in
     jinja2 templates (i.e. setter, getter, initial, type_name)
+
+    TODO(meade): Delete this file once all StyleBuilderFunction generation
+    is moved to the CSSPropertyAPI.
 #}
 
 {{source_files_for_generated_file(template_file, input_files)}}
@@ -30,33 +35,15 @@ void StyleBuilderFunctions::applyInherit{{property_id}}(StyleResolverState& stat
 {% macro declare_value_function(property_id) %}
 void StyleBuilderFunctions::applyValue{{property_id}}(StyleResolverState& state, const CSSValue& value)
 {%- endmacro %}
-{% macro set_value(property) %}
-{% if property.svg %}
-state.Style()->AccessSVGStyle().{{property.setter}}
-{%- elif property.font %}
-state.GetFontBuilder().{{property.setter}}
-{%- else %}
-state.Style()->{{property.setter}}
-{%- endif %}
-{% endmacro %}
-{% macro convert_and_set_value(property) %}
-{% if property.converter %}
-{{set_value(property)}}(StyleBuilderConverter::{{property.converter}}(state, value));
-{# TODO(sashab): Remove this list from this file. #}
-{% elif property.type_name in ['short', 'unsigned short', 'int', 'unsigned int', 'unsigned', 'float', 'LineClampValue'] %}
-{{set_value(property)}}(ToCSSPrimitiveValue(value).ConvertTo<{{property.type_name}}>());
-{%- else %}
-{{set_value(property)}}(ToCSSIdentifierValue(value).ConvertTo<{{property.type_name}}>());
-{%- endif %}
-{% endmacro %}
 {% macro set_is_inherited(property) %}
 state.Style()->{{property.is_inherited_setter}}
 {% endmacro %}
 
 namespace blink {
 
-{% for property_id, property in properties.items() if property.should_declare_functions %}
-{% set apply_type = property.apply_type %}
+{% for property_id, property in properties.items()
+       if property.should_declare_functions
+          and not property.use_api_in_stylebuilder %}
 {% if not property.custom_initial %}
 {{declare_initial_function(property_id)}} {
   {% if property.svg %}
