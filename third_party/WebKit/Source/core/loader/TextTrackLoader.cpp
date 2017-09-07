@@ -45,7 +45,7 @@ TextTrackLoader::TextTrackLoader(TextTrackLoaderClient& client,
       cue_load_timer_(TaskRunnerHelper::Get(TaskType::kNetworking, &document),
                       this,
                       &TextTrackLoader::CueLoadTimerFired),
-      state_(kIdle),
+      state_(kLoading),
       new_cues_available_(false) {}
 
 TextTrackLoader::~TextTrackLoader() {}
