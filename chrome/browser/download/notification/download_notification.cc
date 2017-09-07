@@ -69,9 +69,3 @@ bool DownloadNotification::HasNotificationClickedListener() {
 NotificationDelegate* DownloadNotification::watcher() const {
   return watcher_.get();
 }
-
-void DownloadNotification::InvokeUnsafeForceNotificationFlush(
-    message_center::MessageCenter* message_center, const std::string& id) {
-  DCHECK(message_center);
-  message_center->ForceNotificationFlush(id);
-}

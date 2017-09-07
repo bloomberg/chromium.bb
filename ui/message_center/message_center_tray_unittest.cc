@@ -75,10 +75,6 @@ class MessageCenterTrayTest : public testing::Test {
     AddNotification(id, DummyNotifierId());
   }
 
-  void EnableChangeQueue(bool enabled) {
-    message_center_->EnableChangeQueueForTest(enabled);
-  }
-
   void AddNotification(const std::string& id, NotifierId notifier_id) {
     std::unique_ptr<Notification> notification(new Notification(
         message_center::NOTIFICATION_TYPE_SIMPLE, id,
@@ -143,8 +139,6 @@ TEST_F(MessageCenterTrayTest, BasicPopup) {
 }
 
 TEST_F(MessageCenterTrayTest, MessageCenterClosesPopups) {
-  EnableChangeQueue(false);
-
   ASSERT_FALSE(message_center_tray_->popups_visible());
   ASSERT_FALSE(message_center_tray_->message_center_visible());
 
@@ -171,44 +165,6 @@ TEST_F(MessageCenterTrayTest, MessageCenterClosesPopups) {
 
   // There is no queued notification.
   ASSERT_FALSE(message_center_tray_->popups_visible());
-  ASSERT_FALSE(message_center_tray_->message_center_visible());
-
-  message_center_tray_->ShowMessageCenterBubble();
-  message_center_tray_->HideMessageCenterBubble();
-  ASSERT_FALSE(message_center_tray_->popups_visible());
-  ASSERT_FALSE(message_center_tray_->message_center_visible());
-}
-
-// TODO(yoshiki): Remove this test after no-change-queue mode gets stable.
-TEST_F(MessageCenterTrayTest, MessageCenterClosesPopupsWithChangeQueue) {
-  EnableChangeQueue(true);
-
-  ASSERT_FALSE(message_center_tray_->popups_visible());
-  ASSERT_FALSE(message_center_tray_->message_center_visible());
-
-  AddNotification("MessageCenterClosesPopups");
-
-  ASSERT_TRUE(message_center_tray_->popups_visible());
-  ASSERT_FALSE(message_center_tray_->message_center_visible());
-
-  bool shown = message_center_tray_->ShowMessageCenterBubble();
-  EXPECT_TRUE(shown);
-
-  ASSERT_FALSE(message_center_tray_->popups_visible());
-  ASSERT_TRUE(message_center_tray_->message_center_visible());
-
-  // The notification is queued if it's added when message center is visible.
-  AddNotification("MessageCenterClosesPopups2");
-
-  message_center_tray_->ShowPopupBubble();
-
-  ASSERT_FALSE(message_center_tray_->popups_visible());
-  ASSERT_TRUE(message_center_tray_->message_center_visible());
-
-  message_center_tray_->HideMessageCenterBubble();
-
-  // The queued notification appears as a popup.
-  ASSERT_TRUE(message_center_tray_->popups_visible());
   ASSERT_FALSE(message_center_tray_->message_center_visible());
 
   message_center_tray_->ShowMessageCenterBubble();

@@ -156,6 +156,4 @@ void FakeMessageCenter::SetProductOSName(
 
 void FakeMessageCenter::DisableTimersForTest() {}
 
-void FakeMessageCenter::EnableChangeQueueForTest(bool enabled) {}
-
 }  // namespace message_center
