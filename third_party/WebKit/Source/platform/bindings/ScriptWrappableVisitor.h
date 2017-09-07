@@ -188,6 +188,10 @@ class PLATFORM_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer {
   }
 
   virtual void DispatchTraceWrappers(const TraceWrapperBase*) const;
+  template <typename V8Type>
+  void TraceWrappers(const TraceWrapperV8Reference<V8Type>& v8reference) const {
+    TraceWrappers(v8reference.template Cast<v8::Value>());
+  }
   virtual void TraceWrappers(const TraceWrapperV8Reference<v8::Value>&) const;
   virtual void MarkWrapper(const v8::PersistentBase<v8::Value>*) const;
   virtual bool MarkWrapperHeader(HeapObjectHeader*) const;
