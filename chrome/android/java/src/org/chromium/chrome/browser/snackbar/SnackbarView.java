@@ -28,6 +28,7 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
@@ -39,10 +40,12 @@ class SnackbarView {
     private static final int MAX_LINES = 5;
 
     private final Activity mActivity;
-    private final ViewGroup mView;
+    private final ViewGroup mContainerView;
+    private final ViewGroup mSnackbarView;
     private final TemplatePreservingTextView mMessageView;
     private final TextView mActionButtonView;
     private final ImageView mProfileImageView;
+    private final View mShadowView;
     private final int mAnimationDuration;
     private final boolean mIsTablet;
     private ViewGroup mOriginalParent;
@@ -87,27 +90,31 @@ class SnackbarView {
 
         mRootContentView = activity.findViewById(android.R.id.content);
         mParent = mOriginalParent;
-        mView = (ViewGroup) LayoutInflater.from(activity).inflate(
+        mContainerView = (ViewGroup) LayoutInflater.from(activity).inflate(
                 R.layout.snackbar, mParent, false);
-        mAnimationDuration = mView.getResources()
-                .getInteger(android.R.integer.config_mediumAnimTime);
-        mMessageView = (TemplatePreservingTextView) mView.findViewById(R.id.snackbar_message);
-        mActionButtonView = (TextView) mView.findViewById(R.id.snackbar_button);
+        mSnackbarView = mContainerView.findViewById(R.id.snackbar);
+        mAnimationDuration =
+                mContainerView.getResources().getInteger(android.R.integer.config_mediumAnimTime);
+        mMessageView =
+                (TemplatePreservingTextView) mContainerView.findViewById(R.id.snackbar_message);
+        mActionButtonView = (TextView) mContainerView.findViewById(R.id.snackbar_button);
         mActionButtonView.setOnClickListener(listener);
-        mProfileImageView = (ImageView) mView.findViewById(R.id.snackbar_profile_image);
+        mProfileImageView = (ImageView) mContainerView.findViewById(R.id.snackbar_profile_image);
+        mShadowView = mContainerView.findViewById(R.id.snackbar_shadow);
 
         updateInternal(snackbar, false);
     }
 
     void show() {
         addToParent();
-        mView.addOnLayoutChangeListener(new OnLayoutChangeListener() {
+        mContainerView.addOnLayoutChangeListener(new OnLayoutChangeListener() {
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom,
                     int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                mView.removeOnLayoutChangeListener(this);
-                mView.setTranslationY(mView.getHeight() + getLayoutParams().bottomMargin);
-                Animator animator = ObjectAnimator.ofFloat(mView, View.TRANSLATION_Y, 0);
+                mContainerView.removeOnLayoutChangeListener(this);
+                mContainerView.setTranslationY(
+                        mContainerView.getHeight() + getLayoutParams().bottomMargin);
+                Animator animator = ObjectAnimator.ofFloat(mContainerView, View.TRANSLATION_Y, 0);
                 animator.setInterpolator(new DecelerateInterpolator());
                 animator.setDuration(mAnimationDuration);
                 startAnimatorOnSurfaceView(animator);
@@ -124,13 +131,13 @@ class SnackbarView {
             @Override
             public void onAnimationEnd(Animator animation) {
                 mRootContentView.removeOnLayoutChangeListener(mLayoutListener);
-                mParent.removeView(mView);
+                mParent.removeView(mContainerView);
             }
         });
-        Animator moveDown = ObjectAnimator.ofFloat(mView, View.TRANSLATION_Y,
-                mView.getHeight() + getLayoutParams().bottomMargin);
+        Animator moveDown = ObjectAnimator.ofFloat(mContainerView, View.TRANSLATION_Y,
+                mContainerView.getHeight() + getLayoutParams().bottomMargin);
         moveDown.setInterpolator(new DecelerateInterpolator());
-        Animator fadeOut = ObjectAnimator.ofFloat(mView, View.ALPHA, 0f);
+        Animator fadeOut = ObjectAnimator.ofFloat(mContainerView, View.ALPHA, 0f);
         fadeOut.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
 
         animatorSet.playTogether(fadeOut, moveDown);
@@ -168,7 +175,7 @@ class SnackbarView {
 
             if (prevBottomMargin != lp.bottomMargin || prevWidth != lp.width
                     || prevGravity != lp.gravity) {
-                mView.setLayoutParams(lp);
+                mContainerView.setLayoutParams(lp);
             }
         }
     }
@@ -180,17 +187,17 @@ class SnackbarView {
         mRootContentView.removeOnLayoutChangeListener(mLayoutListener);
         mParent = overridingParent == null ? mOriginalParent : overridingParent;
         if (isShowing()) {
-            ((ViewGroup) mView.getParent()).removeView(mView);
+            ((ViewGroup) mContainerView.getParent()).removeView(mContainerView);
         }
         addToParent();
     }
 
     boolean isShowing() {
-        return mView.isShown();
+        return mContainerView.isShown();
     }
 
     void bringToFront() {
-        mView.bringToFront();
+        mContainerView.bringToFront();
     }
 
     /**
@@ -199,7 +206,7 @@ class SnackbarView {
      */
     void announceforAccessibility() {
         mMessageView.announceForAccessibility(mMessageView.getContentDescription() + " "
-                + mView.getResources().getString(R.string.bottom_bar_screen_position));
+                + mContainerView.getResources().getString(R.string.bottom_bar_screen_position));
     }
 
     /**
@@ -213,7 +220,7 @@ class SnackbarView {
     }
 
     private void addToParent() {
-        mParent.addView(mView);
+        mParent.addView(mContainerView);
 
         // Why setting listener on parent? It turns out that if we force a relayout in the layout
         // change listener of the view itself, the force layout flag will be reset to 0 when
@@ -232,17 +239,20 @@ class SnackbarView {
 
         int backgroundColor = snackbar.getBackgroundColor();
         if (backgroundColor == 0) {
-            backgroundColor = ApiCompatibilityUtils.getColor(mView.getResources(),
-                    R.color.snackbar_background_color);
+            backgroundColor = ApiCompatibilityUtils.getColor(mContainerView.getResources(),
+                    FeatureUtilities.isChromeHomeModernEnabled()
+                            ? R.color.modern_primary_color
+                            : R.color.snackbar_background_color);
         }
 
         if (mIsTablet) {
             // On tablet, snackbars have rounded corners.
-            mView.setBackgroundResource(R.drawable.snackbar_background_tablet);
-            GradientDrawable backgroundDrawable = (GradientDrawable) mView.getBackground().mutate();
+            mSnackbarView.setBackgroundResource(R.drawable.snackbar_background_tablet);
+            GradientDrawable backgroundDrawable =
+                    (GradientDrawable) mSnackbarView.getBackground().mutate();
             backgroundDrawable.setColor(backgroundColor);
         } else {
-            mView.setBackgroundColor(backgroundColor);
+            mSnackbarView.setBackgroundColor(backgroundColor);
         }
 
         if (actionText != null) {
@@ -258,11 +268,18 @@ class SnackbarView {
         } else {
             mProfileImageView.setVisibility(View.GONE);
         }
+
+        if (FeatureUtilities.isChromeHomeModernEnabled()) {
+            ApiCompatibilityUtils.setTextAppearance(mMessageView, R.style.BlackBodyDefault);
+            mActionButtonView.setTextColor(ApiCompatibilityUtils.getColor(
+                    mContainerView.getResources(), R.color.blue_when_enabled));
+            mShadowView.setVisibility(View.VISIBLE);
+        }
         return true;
     }
 
     /**
-     * @return The parent {@link ViewGroup} that {@link #mView} will be added to.
+     * @return The parent {@link ViewGroup} that {@link #mContainerView} will be added to.
      */
     private ViewGroup findParentView(Activity activity) {
         if (activity instanceof ChromeActivity) {
@@ -286,7 +303,7 @@ class SnackbarView {
     }
 
     private FrameLayout.LayoutParams getLayoutParams() {
-        return (FrameLayout.LayoutParams) mView.getLayoutParams();
+        return (FrameLayout.LayoutParams) mContainerView.getLayoutParams();
     }
 
     private void setViewText(TextView view, CharSequence text, boolean animate) {
