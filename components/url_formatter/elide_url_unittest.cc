@@ -29,42 +29,167 @@ struct Testcase {
 };
 
 #if !defined(OS_ANDROID)
-void RunUrlTest(Testcase* testcases, size_t num_testcases) {
+void RunElisionTest(const std::vector<Testcase>& testcases) {
   const gfx::FontList font_list;
-  for (size_t i = 0; i < num_testcases; ++i) {
-    const GURL url(testcases[i].input);
+  for (const auto& testcase : testcases) {
+    SCOPED_TRACE("Eliding " + testcase.input);
+    const GURL url(testcase.input);
     const float available_width =
-        gfx::GetStringWidthF(base::UTF8ToUTF16(testcases[i].output), font_list);
-    EXPECT_EQ(base::UTF8ToUTF16(testcases[i].output),
+        gfx::GetStringWidthF(base::UTF8ToUTF16(testcase.output), font_list);
+    EXPECT_EQ(base::UTF8ToUTF16(testcase.output),
               url_formatter::ElideUrl(url, font_list, available_width));
+  }
+}
+
+struct ProgressiveTestcase {
+  const std::string input;
+  const std::vector<std::string> output;
+};
+
+// Verify that one or more URLs passes through an explicit sequence of elided
+// strings as available space progressively decreases. This helps ensure that
+// transitional corner cases are handled properly. To be tolerant of
+// character-width variation across platforms, the test allows a limited number
+// of expected strings to be skipped mid-run.  The first and last expected
+// strings must be matched. Example:
+//
+// google.com/intl/en/.../ads/   <-- Must match.
+// google.com/intl/.../ads/
+// google.com/.../ads/
+// google.com/intl...   <- Can skip this, in case the 'l' does not fit.
+// google.com/int...
+// google.com/in...   <- Must match.
+//
+void RunProgressiveElisionTest(
+    const std::vector<ProgressiveTestcase>& testcases) {
+  const gfx::FontList font_list;
+  for (const auto& testcase : testcases) {
+    SCOPED_TRACE("Eliding " + testcase.input);
+    const GURL url(testcase.input);
+
+    // Occasionally, a parsed URL can grow in length before elision, such as
+    // when parsing a Windows file path with missing slashes.
+    ASSERT_FALSE(testcase.output.empty());
+    float width = std::max(
+        gfx::GetStringWidthF(base::UTF8ToUTF16(testcase.input), font_list),
+        gfx::GetStringWidthF(base::UTF8ToUTF16(testcase.output.front()),
+                             font_list));
+
+    // Ideally, this test would iterate through all available field widths on a
+    // per-pixel basis, but this is slow. Instead, compute the next input field
+    // width as slightly less than the previous elided string. This approach
+    // misses coverage in cases where a smaller available width generates a
+    // longer string than some other larger available width, but the tradeoff
+    // feels acceptable.
+    int mismatches = 0;
+    const int kMaxConsecutiveMismatches = 2;
+    for (size_t i = 0; i < testcase.output.size(); i++) {
+      const auto& expected = testcase.output[i];
+      base::string16 expected_utf16 = base::UTF8ToUTF16(expected);
+      base::string16 elided = url_formatter::ElideUrl(url, font_list, width);
+      if (expected_utf16 != elided) {
+        if (i > 0 && i < testcase.output.size() - 1 &&
+            mismatches < kMaxConsecutiveMismatches) {
+          mismatches++;
+          continue;
+        }
+        EXPECT_EQ(expected_utf16, elided);
+        break;
+      }
+      mismatches = 0;
+      float new_width = gfx::GetStringWidthF(elided, font_list);
+      // Elision rounds fractional available widths up.
+      EXPECT_LE(new_width, std::ceil(width)) << " at " << elided;
+      width = new_width - 1.0f;
+    }
   }
 }
 
 // Test eliding of commonplace URLs.
 TEST(TextEliderTest, TestGeneralEliding) {
   const std::string kEllipsisStr(gfx::kEllipsis);
-  Testcase testcases[] = {
-      {"http://www.google.com/intl/en/ads/", "www.google.com/intl/en/ads/"},
-      {"http://www.google.com/intl/en/ads/", "www.google.com/intl/en/ads/"},
+  const std::vector<ProgressiveTestcase> progressive_testcases = {
+      // Elide a non-www URL (www URLs are handled differently). In this first
+      // case, elide down to nothing to test the terminal cases.
+      {"http://xyz.google.com/foo?bar",
+       {
+           /* clang-format off */
+           "xyz.google.com/foo?bar",
+           "xyz.google.com/foo?b" + kEllipsisStr,
+           "xyz.google.com/foo?" + kEllipsisStr,
+           "xyz.google.com/foo" + kEllipsisStr,
+           "xyz.google.com/fo" + kEllipsisStr,
+           "xyz.google.com/f" + kEllipsisStr,
+           kEllipsisStr + "google.com/foo" + kEllipsisStr,
+           kEllipsisStr + "google.com/fo" + kEllipsisStr,
+           kEllipsisStr + "google.com/f" + kEllipsisStr,
+           kEllipsisStr + "google.com/" + kEllipsisStr,
+           kEllipsisStr + "google.com" + kEllipsisStr,
+           kEllipsisStr + "google.co" + kEllipsisStr,
+           kEllipsisStr + "google.c" + kEllipsisStr,
+           kEllipsisStr + "google." + kEllipsisStr,
+           kEllipsisStr + "google" + kEllipsisStr,
+           kEllipsisStr + "googl" + kEllipsisStr,
+           kEllipsisStr + "goog" + kEllipsisStr,
+           kEllipsisStr + "goo" + kEllipsisStr,
+           kEllipsisStr + "go" + kEllipsisStr,
+           kEllipsisStr + "g" + kEllipsisStr,
+           kEllipsisStr + kEllipsisStr,
+           kEllipsisStr,
+           ""
+           /* clang-format on */
+       }},
+      // The trailing directory name is preserved
       {"http://www.google.com/intl/en/ads/",
-       "google.com/intl/" + kEllipsisStr + "/ads/"},
-      {"http://www.google.com/intl/en/ads/",
-       "google.com/" + kEllipsisStr + "/ads/"},
-      {"http://www.google.com/intl/en/ads/", "google.com/" + kEllipsisStr},
-      {"http://www.google.com/intl/en/ads/", "goog" + kEllipsisStr},
+       {
+           /* clang-format off */
+           "www.google.com/intl/en/ads/",
+           "google.com/intl/en/ads/",
+           "google.com/intl/" + kEllipsisStr + "/ads/",
+           "google.com/" + kEllipsisStr + "/ads/",
+           "google.com/" + kEllipsisStr + "/ad" + kEllipsisStr,
+           "google.com/" + kEllipsisStr + "/a" + kEllipsisStr,
+           "google.com/intl/" + kEllipsisStr,
+           "google.com/intl" + kEllipsisStr,
+           "google.com/int" + kEllipsisStr,
+           "google.com/in" + kEllipsisStr,
+           "google.com/i" + kEllipsisStr,
+           "google.com/" + kEllipsisStr,
+           "google.com" + kEllipsisStr,
+           "google.co" + kEllipsisStr,
+           "google.c" + kEllipsisStr,
+           "google." + kEllipsisStr,
+           "google" + kEllipsisStr,
+           "googl" + kEllipsisStr,
+           /* clang-format on */
+       }},
+      // Subdomain is completely elided if the last path element doesn't fit.
       {"https://subdomain.foo.com/bar/filename.html",
-       "https://subdomain.foo.com/bar/filename.html"},
-      {"https://subdomain.foo.com/bar/filename.html",
-       "subdomain.foo.com/bar/filename.html"},
-      {"https://subdomain.foo.com/bar/filename.html",
-       "subdomain.foo.com/" + kEllipsisStr + "/filename.html"},
-      {"http://subdomain.foo.com/bar/filename.html",
-       kEllipsisStr + "foo.com/" + kEllipsisStr + "/filename.html"},
-      {"http://www.google.com/intl/en/ads/?aLongQueryWhichIsNotRequired",
-       "www.google.com/intl/en/ads/?aLongQ" + kEllipsisStr},
+       {
+           /* clang-format off */
+           "https://subdomain.foo.com/bar/filename.html",
+           "subdomain.foo.com/bar/filename.html",
+           "subdomain.foo.com/" + kEllipsisStr + "/filename.html",
+           kEllipsisStr + "foo.com/bar/filename.html",
+           kEllipsisStr + "foo.com/" + kEllipsisStr + "/filename.html",
+           /* clang-format on */
+       }},
+      // Path eliding works when a query is present.
+      {"http://www.g.com/subdir/ads/?query",
+       {
+           /* clang-format off */
+           "www.g.com/subdir/ads/?query",
+           "www.g.com/subdir/ads/?que" + kEllipsisStr,
+           "www.g.com/subdir/ads/?qu" + kEllipsisStr,
+           "www.g.com/subdir/ads/?q" + kEllipsisStr,
+           "www.g.com/subdir/ads/?" + kEllipsisStr,
+           "www.g.com/subdir/ads/" + kEllipsisStr,
+           "www.g.com/subdir/ads" + kEllipsisStr,
+           "www.g.com/subdir/ad" + kEllipsisStr,
+           /* clang-format on */
+       }},
   };
-
-  RunUrlTest(testcases, arraysize(testcases));
+  RunProgressiveElisionTest(progressive_testcases);
 }
 
 // When there is very little space available, the elision code will shorten
@@ -107,44 +232,21 @@ TEST(TextEliderTest, TestTrailingEllipsisSlashEllipsisHack) {
             url_formatter::ElideUrl(url, font_list, available_width));
 
   // More space available - elide directories, partially elide filename.
-  Testcase testcases[] = {
+  const std::vector<Testcase> testcases = {
       {"http://battersbox.com/directory/foo/peter_paul_and_mary.html",
        "battersbox.com/" + kEllipsisStr + "/peter" + kEllipsisStr},
   };
-  RunUrlTest(testcases, arraysize(testcases));
+  RunElisionTest(testcases);
 }
 
 // Test eliding of empty strings, URLs with ports, passwords, queries, etc.
-TEST(TextEliderTest, TestMoreEliding) {
+TEST(TextEliderTest, TestElisionSpecialCases) {
 #if defined(OS_WIN)
   // Needed to bypass DCHECK in GetFallbackFont.
   base::MessageLoopForUI message_loop;
 #endif
   const std::string kEllipsisStr(gfx::kEllipsis);
-  Testcase testcases[] = {
-      // Eliding the same URL to various lengths.
-      {"http://xyz.google.com/foo?bar", "xyz.google.com/foo?bar"},
-      {"http://xyz.google.com/foo?bar", "xyz.google.com/foo?" + kEllipsisStr},
-      {"http://xyz.google.com/foo?bar", "xyz.google.com/foo" + kEllipsisStr},
-      {"http://xyz.google.com/foo?bar", "xyz.google.com/fo" + kEllipsisStr},
-      {"http://xyz.google.com/foo?bar",
-       kEllipsisStr + "google.com/fo" + kEllipsisStr},
-      {"http://xyz.google.com/foo?bar",
-       kEllipsisStr + "google.com/f" + kEllipsisStr},
-      {"http://xyz.google.com/foo?bar",
-       kEllipsisStr + "google.com/" + kEllipsisStr},
-      {"http://xyz.google.com/foo?bar",
-       kEllipsisStr + "google.com" + kEllipsisStr},
-      {"http://xyz.google.com/foo?bar",
-       kEllipsisStr + "google.co" + kEllipsisStr},
-      {"http://xyz.google.com/foo?bar",
-       kEllipsisStr + "google.c" + kEllipsisStr},
-      {"http://xyz.google.com/foo?bar",
-       kEllipsisStr + "google." + kEllipsisStr},
-      {"http://xyz.google.com/foo?bar", kEllipsisStr + "google" + kEllipsisStr},
-      {"http://xyz.google.com/foo?bar", kEllipsisStr + "googl" + kEllipsisStr},
-      {"http://xyz.google.com/foo?bar", kEllipsisStr + "g" + kEllipsisStr},
-
+  const std::vector<Testcase> testcases = {
       // URL with "www" subdomain (gets removed specially).
       {"http://www.google.com/foo?bar", "www.google.com/foo?bar"},
       {"http://www.google.com/foo?bar", "google.com/foo?bar"},
@@ -174,45 +276,65 @@ TEST(TextEliderTest, TestMoreEliding) {
        "www/\xe4\xbd\xa0\xe5\xa5\xbd?q=\xe4\xbd\xa0\xe5\xa5\xbd#\xe4\xbd\xa0"},
 
       // Invalid unescaping for path. The ref will always be valid UTF-8. We
-      // don't
-      // bother to do too many edge cases, since these are handled by the
-      // escaper
-      // unittest.
+      // don't bother to do too many edge cases, since these are handled by the
+      // escaper unittest.
       {"http://www/%E4%A0%E5%A5%BD?q=%E4%BD%A0%E5%A5%BD#\xe4\xbd\xa0",
        "www/%E4%A0%E5%A5%BD?q=\xe4\xbd\xa0\xe5\xa5\xbd#\xe4\xbd\xa0"},
   };
 
-  RunUrlTest(testcases, arraysize(testcases));
+  RunElisionTest(testcases);
 }
 
 // Test eliding of file: URLs.
 TEST(TextEliderTest, TestFileURLEliding) {
   const std::string kEllipsisStr(gfx::kEllipsis);
-  Testcase testcases[] = {
+  const std::vector<ProgressiveTestcase> progressive_testcases = {
     {"file:///C:/path1/path2/path3/filename",
-     "file:///C:/path1/path2/path3/filename"},
-    {"file:///C:/path1/path2/path3/filename", "C:/path1/path2/path3/filename"},
+     {
+         /* clang-format off */
+         "file:///C:/path1/path2/path3/filename",
+         "C:/path1/path2/path3/filename",
+         "C:/path1/path2/" + kEllipsisStr + "/filename",
+         /* clang-format on */
+     }},
 // GURL parses "file:///C:path" differently on windows than it does on posix.
 #if defined(OS_WIN)
     {"file:///C:path1/path2/path3/filename",
-     "C:/path1/path2/" + kEllipsisStr + "/filename"},
-    {"file:///C:path1/path2/path3/filename",
-     "C:/path1/" + kEllipsisStr + "/filename"},
-    {"file:///C:path1/path2/path3/filename",
-     "C:/" + kEllipsisStr + "/filename"},
+     {
+         /* clang-format off */
+         "file:///C:/path1/path2/path3/filename",
+         "C:/path1/path2/path3/filename",
+         "C:/path1/path2/" + kEllipsisStr + "/filename",
+         "C:/path1/" + kEllipsisStr + "/filename",
+         "C:/" + kEllipsisStr + "/filename",
+         /* clang-format on */
+     }},
 #endif  // defined(OS_WIN)
-    {"file://filer/foo/bar/file", "filer/foo/bar/file"},
-    {"file://filer/foo/bar/file", "filer/foo/" + kEllipsisStr + "/file"},
-    {"file://filer/foo/bar/file", "filer/" + kEllipsisStr + "/file"},
-    {"file://filer/foo/", "file://filer/foo/"},
-    {"file://filer/foo/", "filer/foo/"},
-    {"file://filer/foo/", "filer" + kEllipsisStr},
-    // Eliding file URLs with nothing after the ':' shouldn't crash.
-    {"file:///aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:", "aaa" + kEllipsisStr},
-    {"file:///aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:/", "aaa" + kEllipsisStr},
+    {"file://filer/foo/bar/file",
+     {
+         /* clang-format off */
+         "file://filer/foo/bar/file",
+         "filer/foo/bar/file",
+         "filer/foo/" + kEllipsisStr + "/file",
+         "filer/" + kEllipsisStr + "/file",
+         "filer/foo" + kEllipsisStr,
+         "filer/fo" + kEllipsisStr,
+         "filer/f" + kEllipsisStr,
+         "filer/" + kEllipsisStr,
+         "filer" + kEllipsisStr,
+         "file" + kEllipsisStr,
+         /* clang-format on */
+     }},
   };
 
-  RunUrlTest(testcases, arraysize(testcases));
+  RunProgressiveElisionTest(progressive_testcases);
+
+  const std::vector<Testcase> testcases = {
+      // Eliding file URLs with nothing after the ':' shouldn't crash.
+      {"file:///aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:", "aaa" + kEllipsisStr},
+      {"file:///aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:/", "aaa" + kEllipsisStr},
+  };
+  RunElisionTest(testcases);
 }
 
 TEST(TextEliderTest, TestHostEliding) {
