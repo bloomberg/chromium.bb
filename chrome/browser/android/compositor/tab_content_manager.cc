@@ -306,17 +306,6 @@ void TabContentManager::RemoveTabThumbnail(JNIEnv* env,
   NativeRemoveTabThumbnail(tab_id);
 }
 
-void TabContentManager::GetDecompressedThumbnail(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jint tab_id) {
-  base::Callback<void(bool, SkBitmap)> decompress_done_callback =
-      base::Bind(&TabContentManager::OnFinishDecompressThumbnail,
-                 weak_factory_.GetWeakPtr(), reinterpret_cast<int>(tab_id));
-  thumbnail_cache_->DecompressThumbnailFromFile(reinterpret_cast<int>(tab_id),
-                                                decompress_done_callback);
-}
-
 void TabContentManager::OnUIResourcesWereEvicted() {
   thumbnail_cache_->OnUIResourcesWereEvicted();
 }
