@@ -18,7 +18,7 @@
 #include "net/cert/cert_database.h"
 #include "net/cert/nss_cert_database.h"
 #include "net/cert/nss_cert_database_chromeos.h"
-#include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util_nss.h"
 
 namespace chromeos {
 
@@ -60,7 +60,7 @@ class CertLoader::CertCache : public net::CertDatabase::Observer {
     LoadCertificates();
   }
 
-  const net::CertificateList& cert_list() const { return cert_list_; }
+  const net::ScopedCERTCertificateList& cert_list() const { return cert_list_; }
 
   bool initial_load_running() const {
     return nss_database_ && !initial_load_finished_;
@@ -96,13 +96,13 @@ class CertLoader::CertCache : public net::CertDatabase::Observer {
   }
 
   // Called if a certificate load task is finished.
-  void UpdateCertificates(std::unique_ptr<net::CertificateList> cert_list) {
+  void UpdateCertificates(net::ScopedCERTCertificateList cert_list) {
     CHECK(thread_checker_.CalledOnValidThread());
     DCHECK(certificates_update_running_);
-    VLOG(1) << "UpdateCertificates: " << cert_list->size();
+    VLOG(1) << "UpdateCertificates: " << cert_list.size();
 
     // Ignore any existing certificates.
-    cert_list_ = std::move(*cert_list);
+    cert_list_ = std::move(cert_list);
 
     initial_load_finished_ = true;
     certificates_updated_callback_.Run();
@@ -130,7 +130,7 @@ class CertLoader::CertCache : public net::CertDatabase::Observer {
   net::NSSCertDatabase* nss_database_ = nullptr;
 
   // Cached Certificates loaded from the database.
-  net::CertificateList cert_list_;
+  net::ScopedCERTCertificateList cert_list_;
 
   base::ThreadChecker thread_checker_;
 
@@ -142,10 +142,9 @@ class CertLoader::CertCache : public net::CertDatabase::Observer {
 namespace {
 
 // Checks if |certificate| is on the given |slot|.
-bool IsCertificateOnSlot(const net::X509Certificate* certificate,
-                         PK11SlotInfo* slot) {
+bool IsCertificateOnSlot(CERTCertificate* certificate, PK11SlotInfo* slot) {
   crypto::ScopedPK11SlotList slots_for_cert(
-      PK11_GetAllSlotsForCert(certificate->os_cert_handle(), nullptr));
+      PK11_GetAllSlotsForCert(certificate, nullptr));
   if (!slots_for_cert)
     return false;
 
@@ -167,21 +166,20 @@ bool IsCertificateOnSlot(const net::X509Certificate* certificate,
 
 // Goes through all certificates in |all_certs| and copies those certificates
 // which are on |system_slot| to a new list.
-net::CertificateList FilterSystemTokenCertificates(
-    net::CertificateList certs,
+net::ScopedCERTCertificateList FilterSystemTokenCertificates(
+    net::ScopedCERTCertificateList certs,
     crypto::ScopedPK11Slot system_slot) {
   VLOG(1) << "FilterSystemTokenCertificates";
   if (!system_slot)
-    return net::CertificateList();
+    return net::ScopedCERTCertificateList();
 
-  // Only keep certificates which are on the |system_slot|.
   PK11SlotInfo* system_slot_ptr = system_slot.get();
+  // Only keep certificates which are on the |system_slot|.
   certs.erase(
-      std::remove_if(
-          certs.begin(), certs.end(),
-          [system_slot_ptr](const scoped_refptr<net::X509Certificate>& cert) {
-            return !IsCertificateOnSlot(cert.get(), system_slot_ptr);
-          }),
+      std::remove_if(certs.begin(), certs.end(),
+                     [system_slot_ptr](const net::ScopedCERTCertificate& cert) {
+                       return !IsCertificateOnSlot(cert.get(), system_slot_ptr);
+                     }),
       certs.end());
   return certs;
 }
@@ -242,10 +240,10 @@ void CertLoader::RemoveObserver(CertLoader::Observer* observer) {
 }
 
 // static
-bool CertLoader::IsCertificateHardwareBacked(const net::X509Certificate* cert) {
+bool CertLoader::IsCertificateHardwareBacked(CERTCertificate* cert) {
   if (g_force_hardware_backed_for_test)
     return true;
-  PK11SlotInfo* slot = cert->os_cert_handle()->slot;
+  PK11SlotInfo* slot = cert->slot;
   return slot && PK11_IsHW(slot);
 }
 
@@ -273,14 +271,11 @@ void CertLoader::ForceHardwareBackedForTesting() {
 // is shared between a certificate and its associated private and public
 // keys.  I tried to implement this with PK11_GetLowLevelKeyIDForCert(),
 // but that always returns NULL on Chrome OS for me.
-std::string CertLoader::GetPkcs11IdAndSlotForCert(
-    const net::X509Certificate& cert,
-    int* slot_id) {
+std::string CertLoader::GetPkcs11IdAndSlotForCert(CERTCertificate* cert,
+                                                  int* slot_id) {
   DCHECK(slot_id);
 
-  CERTCertificateStr* cert_handle = cert.os_cert_handle();
-  SECKEYPrivateKey* priv_key =
-      PK11_FindKeyByAnyCert(cert_handle, nullptr /* wincx */);
+  SECKEYPrivateKey* priv_key = PK11_FindKeyByAnyCert(cert, nullptr /* wincx */);
   if (!priv_key)
     return std::string();
 
@@ -314,21 +309,29 @@ void CertLoader::CacheUpdated() {
         FROM_HERE,
         {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(&FilterSystemTokenCertificates,
-                       user_cert_cache_->cert_list(), std::move(system_slot)),
+                       net::x509_util::DupCERTCertificateList(
+                           user_cert_cache_->cert_list()),
+                       std::move(system_slot)),
         base::BindOnce(&CertLoader::UpdateCertificates,
                        weak_factory_.GetWeakPtr(),
-                       user_cert_cache_->cert_list()));
+                       net::x509_util::DupCERTCertificateList(
+                           user_cert_cache_->cert_list())));
   } else {
     // The user's cert cache does not contain system certificates.
-    net::CertificateList system_certs = system_cert_cache_->cert_list();
-    net::CertificateList all_certs = user_cert_cache_->cert_list();
-    all_certs.insert(all_certs.end(), system_certs.begin(), system_certs.end());
+    net::ScopedCERTCertificateList system_certs =
+        net::x509_util::DupCERTCertificateList(system_cert_cache_->cert_list());
+    net::ScopedCERTCertificateList all_certs =
+        net::x509_util::DupCERTCertificateList(user_cert_cache_->cert_list());
+    all_certs.reserve(all_certs.size() + system_certs.size());
+    for (const net::ScopedCERTCertificate& cert : system_certs)
+      all_certs.push_back(net::x509_util::DupCERTCertificate(cert.get()));
     UpdateCertificates(std::move(all_certs), std::move(system_certs));
   }
 }
 
-void CertLoader::UpdateCertificates(net::CertificateList all_certs,
-                                    net::CertificateList system_certs) {
+void CertLoader::UpdateCertificates(
+    net::ScopedCERTCertificateList all_certs,
+    net::ScopedCERTCertificateList system_certs) {
   CHECK(thread_checker_.CalledOnValidThread());
   bool initial_load = pending_initial_load_;
   pending_initial_load_ = false;

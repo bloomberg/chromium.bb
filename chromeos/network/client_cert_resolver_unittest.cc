@@ -33,6 +33,7 @@
 #include "net/base/net_errors.h"
 #include "net/cert/nss_cert_database_chromeos.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util_nss.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -101,8 +102,8 @@ class ClientCertResolverTest : public testing::Test,
     cert_loader_->SetUserNSSDB(test_nsscertdb_.get());
     if (test_client_cert_.get()) {
       int slot_id = 0;
-      const std::string pkcs11_id =
-          CertLoader::GetPkcs11IdAndSlotForCert(*test_client_cert_, &slot_id);
+      const std::string pkcs11_id = CertLoader::GetPkcs11IdAndSlotForCert(
+          test_client_cert_.get(), &slot_id);
       test_cert_id_ = base::StringPrintf("%i:%s", slot_id, pkcs11_id.c_str());
     }
   }
@@ -112,12 +113,12 @@ class ClientCertResolverTest : public testing::Test,
   // test_ca_cert_pem_) that issued the client certificate.
   void SetupTestCerts(const std::string& prefix, bool import_issuer) {
     // Load a CA cert.
-    net::CertificateList ca_cert_list = net::CreateCertificateListFromFile(
-        net::GetTestCertsDirectory(), prefix + "_ca.pem",
-        net::X509Certificate::FORMAT_AUTO);
+    net::ScopedCERTCertificateList ca_cert_list =
+        net::CreateCERTCertificateListFromFile(
+            net::GetTestCertsDirectory(), prefix + "_ca.pem",
+            net::X509Certificate::FORMAT_AUTO);
     ASSERT_TRUE(!ca_cert_list.empty());
-    net::X509Certificate::GetPEMEncoded(ca_cert_list[0]->os_cert_handle(),
-                                        &test_ca_cert_pem_);
+    net::x509_util::GetPEMEncoded(ca_cert_list[0].get(), &test_ca_cert_pem_);
     ASSERT_TRUE(!test_ca_cert_pem_.empty());
 
     if (import_issuer) {
@@ -129,9 +130,9 @@ class ClientCertResolverTest : public testing::Test,
     }
 
     // Import a client cert signed by that CA.
-    test_client_cert_ = net::ImportClientCertAndKeyFromFile(
-        net::GetTestCertsDirectory(), prefix + ".pem", prefix + ".pk8",
-        test_nssdb_.slot());
+    net::ImportClientCertAndKeyFromFile(net::GetTestCertsDirectory(),
+                                        prefix + ".pem", prefix + ".pk8",
+                                        test_nssdb_.slot(), &test_client_cert_);
     ASSERT_TRUE(test_client_cert_.get());
   }
 
@@ -139,9 +140,9 @@ class ClientCertResolverTest : public testing::Test,
     test_nsscertdb_->SetSystemSlot(
         crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_system_nssdb_.slot())));
 
-    test_client_cert_ = net::ImportClientCertAndKeyFromFile(
+    net::ImportClientCertAndKeyFromFile(
         net::GetTestCertsDirectory(), prefix + ".pem", prefix + ".pk8",
-        test_system_nssdb_.slot());
+        test_system_nssdb_.slot(), &test_client_cert_);
     ASSERT_TRUE(test_client_cert_.get());
   }
 
@@ -327,7 +328,7 @@ class ClientCertResolverTest : public testing::Test,
   std::unique_ptr<NetworkConfigurationHandler> network_config_handler_;
   std::unique_ptr<ManagedNetworkConfigurationHandlerImpl>
       managed_config_handler_;
-  scoped_refptr<net::X509Certificate> test_client_cert_;
+  net::ScopedCERTCertificate test_client_cert_;
   std::string test_ca_cert_pem_;
   crypto::ScopedTestNSSDB test_nssdb_;
   crypto::ScopedTestNSSDB test_system_nssdb_;

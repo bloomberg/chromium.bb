@@ -11,7 +11,7 @@
 #include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
 #include "chromeos/cert_loader.h"
-#include "net/cert/x509_certificate.h"
+#include "net/cert/scoped_nss_types.h"
 
 namespace chromeos {
 
@@ -79,23 +79,24 @@ class CertLibrary : public CertLoader::Observer {
   int GetUserCertIndexByPkcs11Id(const std::string& pkcs11_id) const;
 
   // CertLoader::Observer
-  void OnCertificatesLoaded(const net::CertificateList&,
+  void OnCertificatesLoaded(const net::ScopedCERTCertificateList&,
                             bool initial_load) override;
 
  private:
   CertLibrary();
   ~CertLibrary() override;
 
-  net::X509Certificate* GetCertificateAt(CertType type, int index) const;
-  const net::CertificateList& GetCertificateListForType(CertType type) const;
+  CERTCertificate* GetCertificateAt(CertType type, int index) const;
+  const net::ScopedCERTCertificateList& GetCertificateListForType(
+      CertType type) const;
 
   base::ObserverList<CertLibrary::Observer> observer_list_;
 
   // Sorted certificate lists
-  net::CertificateList certs_;
-  net::CertificateList user_certs_;
-  net::CertificateList server_certs_;
-  net::CertificateList server_ca_certs_;
+  net::ScopedCERTCertificateList certs_;
+  net::ScopedCERTCertificateList user_certs_;
+  net::ScopedCERTCertificateList server_certs_;
+  net::ScopedCERTCertificateList server_ca_certs_;
 
   THREAD_CHECKER(thread_checker_);
 

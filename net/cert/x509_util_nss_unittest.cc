@@ -370,6 +370,25 @@ TEST(X509UtilNSSTest, GetValidityTimes) {
             not_after.ToDoubleT());
 }
 
+TEST(X509UtilNSSTest, GetValidityTimesOptionalArgs) {
+  ScopedCERTCertificate google_cert(x509_util::CreateCERTCertificateFromBytes(
+      google_der, arraysize(google_der)));
+  ASSERT_TRUE(google_cert);
+
+  base::Time not_before;
+  EXPECT_TRUE(
+      x509_util::GetValidityTimes(google_cert.get(), &not_before, nullptr));
+  // Constants copied from x509_certificate_unittest.cc.
+  EXPECT_EQ(1238192407,  // Mar 27 22:20:07 2009 GMT
+            not_before.ToDoubleT());
+
+  base::Time not_after;
+  EXPECT_TRUE(
+      x509_util::GetValidityTimes(google_cert.get(), nullptr, &not_after));
+  EXPECT_EQ(1269728407,  // Mar 27 22:20:07 2010 GMT
+            not_after.ToDoubleT());
+}
+
 TEST(X509UtilNSSTest, CalculateFingerprint256) {
   static const SHA256HashValue google_fingerprint = {
       {0x21, 0xaf, 0x58, 0x74, 0xea, 0x6b, 0xad, 0xbd, 0xe4, 0xb3, 0xb1,

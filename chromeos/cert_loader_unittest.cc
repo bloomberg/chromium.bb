@@ -17,6 +17,7 @@
 #include "crypto/scoped_test_nss_db.h"
 #include "net/cert/nss_cert_database_chromeos.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util_nss.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,29 +25,24 @@
 namespace chromeos {
 namespace {
 
-bool IsCertInCertificateList(const net::X509Certificate* cert,
-                             const net::CertificateList& cert_list) {
-  for (net::CertificateList::const_iterator it = cert_list.begin();
-       it != cert_list.end();
-       ++it) {
-    if (net::X509Certificate::IsSameOSCert((*it)->os_cert_handle(),
-                                            cert->os_cert_handle())) {
+bool IsCertInCertificateList(CERTCertificate* cert,
+                             const net::ScopedCERTCertificateList& cert_list) {
+  for (net::ScopedCERTCertificateList::const_iterator it = cert_list.begin();
+       it != cert_list.end(); ++it) {
+    if (net::x509_util::IsSameCertificate(it->get(), cert))
       return true;
-    }
   }
   return false;
 }
 
 size_t CountCertOccurencesInCertificateList(
-    const net::X509Certificate* cert,
-    const net::CertificateList& cert_list) {
+    CERTCertificate* cert,
+    const net::ScopedCERTCertificateList& cert_list) {
   size_t count = 0;
-  for (net::CertificateList::const_iterator it = cert_list.begin();
+  for (net::ScopedCERTCertificateList::const_iterator it = cert_list.begin();
        it != cert_list.end(); ++it) {
-    if (net::X509Certificate::IsSameOSCert((*it)->os_cert_handle(),
-                                           cert->os_cert_handle())) {
+    if (net::x509_util::IsSameCertificate(it->get(), cert))
       ++count;
-    }
   }
   return count;
 }
@@ -121,7 +117,7 @@ class CertLoaderTest : public testing::Test,
 
   // CertLoader::Observer:
   // The test keeps count of times the observer method was called.
-  void OnCertificatesLoaded(const net::CertificateList& cert_list,
+  void OnCertificatesLoaded(const net::ScopedCERTCertificateList& cert_list,
                             bool initial_load) override {
     EXPECT_TRUE(certificates_loaded_events_count_ == 0 || !initial_load);
     certificates_loaded_events_count_++;
@@ -147,13 +143,12 @@ class CertLoaderTest : public testing::Test,
 
   void ImportCACert(const std::string& cert_file,
                     net::NSSCertDatabase* database,
-                    net::CertificateList* imported_certs) {
+                    net::ScopedCERTCertificateList* imported_certs) {
     ASSERT_TRUE(database);
     ASSERT_TRUE(imported_certs);
 
-    *imported_certs = net::CreateCertificateListFromFile(
-        net::GetTestCertsDirectory(),
-        cert_file,
+    *imported_certs = net::CreateCERTCertificateListFromFile(
+        net::GetTestCertsDirectory(), cert_file,
         net::X509Certificate::FORMAT_AUTO);
     ASSERT_EQ(1U, imported_certs->size());
 
@@ -167,15 +162,15 @@ class CertLoaderTest : public testing::Test,
   // Import a client cert described by |test_cert| and key into a PKCS11 slot.
   // Then notify |database_to_notify| (which is presumably using that slot) that
   // new certificates are available.
-  scoped_refptr<net::X509Certificate> ImportClientCertAndKey(
+  net::ScopedCERTCertificate ImportClientCertAndKey(
       TestNSSCertDatabase* database_to_notify,
       PK11SlotInfo* slot_to_use,
       const TestClientCertWithKey& test_cert) {
     // Import a client cert signed by that CA.
-    scoped_refptr<net::X509Certificate> client_cert(
-        net::ImportClientCertAndKeyFromFile(
-            net::GetTestCertsDirectory(), test_cert.cert_pem_filename,
-            test_cert.key_pk8_filename, slot_to_use));
+    net::ScopedCERTCertificate client_cert;
+    net::ImportClientCertAndKeyFromFile(
+        net::GetTestCertsDirectory(), test_cert.cert_pem_filename,
+        test_cert.key_pk8_filename, slot_to_use, &client_cert);
     database_to_notify->NotifyObserversCertDBChanged();
     return client_cert;
   }
@@ -183,7 +178,7 @@ class CertLoaderTest : public testing::Test,
   // Import |TEST_CLIENT_CERT_1| into a PKCS11 slot. Then notify
   // |database_to_notify| (which is presumably using that slot) that new
   // certificates are avialable.
-  scoped_refptr<net::X509Certificate> ImportClientCertAndKey(
+  net::ScopedCERTCertificate ImportClientCertAndKey(
       TestNSSCertDatabase* database_to_notify,
       PK11SlotInfo* slot_to_use) {
     return ImportClientCertAndKey(database_to_notify, slot_to_use,
@@ -191,7 +186,7 @@ class CertLoaderTest : public testing::Test,
   }
 
   // Import a client cert into |database|'s private slot.
-  scoped_refptr<net::X509Certificate> ImportClientCertAndKey(
+  net::ScopedCERTCertificate ImportClientCertAndKey(
       TestNSSCertDatabase* database) {
     return ImportClientCertAndKey(database, database->GetPrivateSlot().get());
   }
@@ -276,12 +271,14 @@ TEST_F(CertLoaderTest, BasicOnlySystemDB) {
 // which does not have access to the system token.
 TEST_F(CertLoaderTest, SystemAndUnaffiliatedUserDB) {
   CreateCertDatabase(&system_db_, &system_certdb_);
-  scoped_refptr<net::X509Certificate> system_token_cert(ImportClientCertAndKey(
+  net::ScopedCERTCertificate system_token_cert(ImportClientCertAndKey(
       system_certdb_.get(), system_db_.slot(), TEST_CLIENT_CERT_1));
+  ASSERT_TRUE(system_token_cert);
 
   CreateCertDatabase(&primary_db_, &primary_certdb_);
-  scoped_refptr<net::X509Certificate> user_token_cert(ImportClientCertAndKey(
+  net::ScopedCERTCertificate user_token_cert(ImportClientCertAndKey(
       primary_certdb_.get(), primary_db_.slot(), TEST_CLIENT_CERT_2));
+  ASSERT_TRUE(user_token_cert);
 
   scoped_task_environment_.RunUntilIdle();
 
@@ -331,12 +328,14 @@ TEST_F(CertLoaderTest, SystemAndUnaffiliatedUserDB) {
 // which has access to the system token.
 TEST_F(CertLoaderTest, SystemAndAffiliatedUserDB) {
   CreateCertDatabase(&system_db_, &system_certdb_);
-  scoped_refptr<net::X509Certificate> system_token_cert(ImportClientCertAndKey(
+  net::ScopedCERTCertificate system_token_cert(ImportClientCertAndKey(
       system_certdb_.get(), system_db_.slot(), TEST_CLIENT_CERT_1));
+  ASSERT_TRUE(system_token_cert);
 
   CreateCertDatabase(&primary_db_, &primary_certdb_);
-  scoped_refptr<net::X509Certificate> user_token_cert(ImportClientCertAndKey(
+  net::ScopedCERTCertificate user_token_cert(ImportClientCertAndKey(
       primary_certdb_.get(), primary_db_.slot(), TEST_CLIENT_CERT_2));
+  ASSERT_TRUE(user_token_cert);
 
   AddSystemToken(primary_certdb_.get());
   scoped_task_environment_.RunUntilIdle();
@@ -386,7 +385,7 @@ TEST_F(CertLoaderTest, SystemAndAffiliatedUserDB) {
 TEST_F(CertLoaderTest, CertLoaderUpdatesCertListOnNewCert) {
   StartCertLoaderWithPrimaryDB();
 
-  net::CertificateList certs;
+  net::ScopedCERTCertificateList certs;
   ImportCACert("root_ca_cert.pem", primary_certdb_.get(), &certs);
 
   // Certs are loaded asynchronously, so the new cert should not yet be in the
@@ -412,7 +411,7 @@ TEST_F(CertLoaderTest, CertLoaderNoUpdateOnSecondaryDbChanges) {
   StartCertLoaderWithPrimaryDB();
   CreateCertDatabase(&secondary_db, &secondary_certdb);
 
-  net::CertificateList certs;
+  net::ScopedCERTCertificateList certs;
   ImportCACert("root_ca_cert.pem", secondary_certdb.get(), &certs);
 
   scoped_task_environment_.RunUntilIdle();
@@ -424,8 +423,9 @@ TEST_F(CertLoaderTest, CertLoaderNoUpdateOnSecondaryDbChanges) {
 TEST_F(CertLoaderTest, ClientLoaderUpdateOnNewClientCert) {
   StartCertLoaderWithPrimaryDB();
 
-  scoped_refptr<net::X509Certificate> cert(
+  net::ScopedCERTCertificate cert(
       ImportClientCertAndKey(primary_certdb_.get()));
+  ASSERT_TRUE(cert);
 
   ASSERT_EQ(0U, GetAndResetCertificatesLoadedEventsCount());
   scoped_task_environment_.RunUntilIdle();
@@ -438,8 +438,9 @@ TEST_F(CertLoaderTest, ClientLoaderUpdateOnNewClientCertInSystemToken) {
   StartCertLoaderWithPrimaryDBAndSystemToken();
 
   EXPECT_TRUE(cert_loader_->system_certs().empty());
-  scoped_refptr<net::X509Certificate> cert(ImportClientCertAndKey(
+  net::ScopedCERTCertificate cert(ImportClientCertAndKey(
       primary_certdb_.get(), primary_certdb_->GetSystemSlot().get()));
+  ASSERT_TRUE(cert);
 
   ASSERT_EQ(0U, GetAndResetCertificatesLoadedEventsCount());
   scoped_task_environment_.RunUntilIdle();
@@ -458,8 +459,9 @@ TEST_F(CertLoaderTest, CertLoaderNoUpdateOnNewClientCertInSecondaryDb) {
   StartCertLoaderWithPrimaryDB();
   CreateCertDatabase(&secondary_db, &secondary_certdb);
 
-  scoped_refptr<net::X509Certificate> cert(
+  net::ScopedCERTCertificate cert(
       ImportClientCertAndKey(secondary_certdb.get()));
+  ASSERT_TRUE(cert);
 
   scoped_task_environment_.RunUntilIdle();
 
@@ -469,8 +471,9 @@ TEST_F(CertLoaderTest, CertLoaderNoUpdateOnNewClientCertInSecondaryDb) {
 TEST_F(CertLoaderTest, UpdatedOnCertRemoval) {
   StartCertLoaderWithPrimaryDB();
 
-  scoped_refptr<net::X509Certificate> cert(
+  net::ScopedCERTCertificate cert(
       ImportClientCertAndKey(primary_certdb_.get()));
+  ASSERT_TRUE(cert);
 
   scoped_task_environment_.RunUntilIdle();
 
@@ -489,7 +492,7 @@ TEST_F(CertLoaderTest, UpdatedOnCertRemoval) {
 TEST_F(CertLoaderTest, UpdatedOnCACertTrustChange) {
   StartCertLoaderWithPrimaryDB();
 
-  net::CertificateList certs;
+  net::ScopedCERTCertificateList certs;
   ImportCACert("root_ca_cert.pem", primary_certdb_.get(), &certs);
 
   scoped_task_environment_.RunUntilIdle();

@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/url_formatter/url_formatter.h"
 #include "net/cert/nss_cert_database_chromeos.h"
+#include "net/cert/x509_util_nss.h"
 
 namespace chromeos {
 namespace certificate {
@@ -71,9 +72,8 @@ std::string GetCertTokenName(CERTCertificate* cert_handle) {
   return token;
 }
 
-std::string GetIssuerCommonName(CERTCertificate* cert_handle,
-                                const std::string& alternative_text) {
-  return Stringize(CERT_GetCommonName(&cert_handle->issuer), alternative_text);
+std::string GetIssuerDisplayName(CERTCertificate* cert_handle) {
+  return net::x509_util::GetCERTNameDisplayName(&cert_handle->issuer);
 }
 
 std::string GetCertNameOrNickname(CERTCertificate* cert_handle) {

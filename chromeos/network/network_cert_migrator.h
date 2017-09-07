@@ -34,7 +34,7 @@ class CHROMEOS_EXPORT NetworkCertMigrator : public NetworkStateHandlerObserver,
   void NetworkListChanged() override;
 
   // CertLoader::Observer overrides
-  void OnCertificatesLoaded(const net::CertificateList& cert_list,
+  void OnCertificatesLoaded(const net::ScopedCERTCertificateList& cert_list,
                             bool initial_load) override;
 
   // Unowned associated NetworkStateHandler* (global or test instance).
