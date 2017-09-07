@@ -83273,6 +83273,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </details>
 </histogram>
 
+<histogram name="Tabs.TabsStatsDailyEventInterval"
+    enum="DailyEventIntervalType">
+  <owner>sebmarchand@chromium.org</owner>
+  <summary>
+    Counts how often tab stats daily interval events were fired.
+  </summary>
+</histogram>
+
 <histogram name="TabsApi.RequestedWindowState" enum="RequestedWindowState">
   <owner>afakhry@chromium.org</owner>
   <summary>
