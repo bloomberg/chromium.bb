@@ -32,7 +32,6 @@
 #include "ios/chrome/browser/ui/ntp/recent_tabs/synced_sessions.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/views/signed_in_sync_off_view.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/views/signed_in_sync_on_no_sessions_view.h"
-#import "ios/chrome/browser/ui/ntp/recent_tabs/views/signed_out_view.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_cache.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_header_view.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_model.h"

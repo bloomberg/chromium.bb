@@ -147,9 +147,6 @@ locale.  The strings in this file are specific to iOS.
         Chromium has features that help you manage your internet data and how quickly you're able to load webpages.
 <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
       </message>
-      <message name="IDS_IOS_BOOKMARK_PROMO_MESSAGE" desc="Text of the promo panel for the new bookmarks UI. [Length: 90em.] [iOS only]">
-        To get your bookmarks on all your devices, sign in to Chromium.
-      </message>
       <message name="IDS_IOS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_DESCRIPTION" desc="Description of the dialog informing the user that their Chromium browsing history was deleted, but other forms of history can still be found on Google My Activity.">
         The selected data has been removed from Chromium and synced devices. Your Google Account may have other forms of browsing history like searches and activity from other Google services at history.google.com.
       </message>
@@ -237,9 +234,6 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_QR_SCANNER_MULTIPLE_FOREGROUND_APPS_ALERT_DETAIL" desc="Body of a modal dialog shown when the user tries to open the QR scanner in a Split View mode, when the camera is unavailable. [Length: 140em] [iOS only]">
         Chromium can't use your camera in Split View mode
       </message>
-      <message name="IDS_IOS_RECENT_TABS_SIGNIN_PROMO" desc="Description of the recent tabs screen where users can sign in. [Length: 80em]">
-        To get your tabs from your other devices, sign in to Chromium.
-      </message>
       <message name="IDS_IOS_SAFE_MODE_NAMED_TWEAKS_FOUND" desc="The message indicating a 3rd party tweak has been found that is known to crash Chromium.  After the ':', we will list the names of the libraries. [Length: 140em]">
         Some add-ons cause Chromium to crash. Please uninstall:
       </message>
@@ -263,15 +257,6 @@ locale.  The strings in this file are specific to iOS.
       </message>
       <message name="IDS_IOS_TAB_SWITCHER_NO_TABS_TO_SYNC_PROMO" desc="The title of the paragraph IDS_OPEN_TABS_NO_SESSION_INSTRUCTIONS_IOS. The paragraph explains that tabs opened on other devices where the user is signed in will appear here, in the Tab Switcher. [iOS only]">
         Use Chromium Everywhere
-      </message>
-      <message name="IDS_IOS_TAB_SWITCHER_SIGN_IN_ACCOUNT_BUTTON" desc="Title of the button to sign in. [Length: 20em] [iOS only]">
-          Sign in to Chromium
-      </message>
-      <message name="IDS_IOS_TAB_SWITCHER_SIGN_IN_ACCOUNT_PROMO" desc="The message explaining that signing in an account will allow presenting tabs from other devices. [iOS only]">
-        To get your tabs from your other devices, sign in to Chromium.
-      </message>
-      <message name="IDS_IOS_TAB_SWITCHER_SIGN_IN_ACCOUNT_TITLE" desc="Title of the paragraph explaining that signing in an account will allow presenting tabs from other devices. [Length: 20em] [iOS only]">
-          Sign in to Chromium
       </message>
       <message name="IDS_IOS_TRANSLATE_INFOBAR_NEVER_MESSAGE" desc="Message for the Translate infobar to allow the user to opt out. [Length: 250em]">
         Would you like Chromium to offer to translate <ph name="LANGUAGE_NAME">$1<ex>French</ex></ph> pages from this site next time?
