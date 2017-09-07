@@ -32,6 +32,7 @@
 
 #include <memory>
 #include "core/dom/ExecutionContext.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/fileapi/Blob.h"
 #include "core/loader/ThreadableLoadingContext.h"
 #include "core/typed_arrays/DOMArrayBuffer.h"

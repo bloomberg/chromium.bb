@@ -267,6 +267,7 @@ blink_core_sources("dom") {
     "TagCollection.h",
     "TaskRunnerHelper.cpp",
     "TaskRunnerHelper.h",
+    "TaskTypeTraits.h",
     "TemplateContentDocumentFragment.h",
     "Text.cpp",
     "Text.h",

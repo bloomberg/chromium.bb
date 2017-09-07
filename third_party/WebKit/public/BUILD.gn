@@ -124,6 +124,7 @@ source_set("blink_headers") {
     "platform/Platform.h",
     "platform/PointerProperties.h",
     "platform/ShapeProperties.h",
+    "platform/TaskType.h",
     "platform/URLConversion.h",
     "platform/UserMetricsAction.h",
     "platform/WebAddressSpace.h",

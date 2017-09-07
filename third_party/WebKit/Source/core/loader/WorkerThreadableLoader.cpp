@@ -31,6 +31,7 @@
 #include "core/loader/WorkerThreadableLoader.h"
 
 #include <memory>
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/loader/DocumentThreadableLoader.h"
 #include "core/loader/ThreadableLoadingContext.h"
 #include "core/timing/WorkerGlobalScopePerformance.h"
