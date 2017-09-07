@@ -12,33 +12,14 @@ import os
 import time
 
 from chromite.cbuildbot import repository
-from chromite.cbuildbot import manifest_version
 from chromite.lib import auth
 from chromite.lib import buildbucket_lib
 from chromite.lib import config_lib
 from chromite.lib import constants
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
-from chromite.lib import cache
 from chromite.lib import git
 
 site_config = config_lib.GetConfig()
-
-class ChromiteUpgradeNeeded(Exception):
-  """Exception thrown when it's detected that we need to upgrade chromite."""
-
-  def __init__(self, version=None):
-    Exception.__init__(self)
-    self.version = version
-    self.args = (version,)
-
-  def __str__(self):
-    version_str = ''
-    if self.version:
-      version_str = "  Need format version %r support." % (self.version,)
-    return (
-        "Your version of cbuildbot is too old; please resync it, "
-        "and then retry your submission.%s" % (version_str,))
 
 
 class ValidationError(Exception):
@@ -110,28 +91,20 @@ class RemoteTryJob(object):
                                  '[buildbucket_bucket:%s] '
                                  'with [config:%s] [buildbucket_id:%s].')
 
-  def __init__(self, bots, local_patches,
+  def __init__(self, build_configs, local_patches,
                pass_through_args,
-               cache_dir,
                remote_description,
-               committer_email=None,
-               use_buildbucket=True,
-               slaves=None):
+               committer_email=None):
     """Construct the object.
 
     Args:
-      bots: A list of configs to run tryjobs for.
+      build_configs: A list of configs to run tryjobs for.
       local_patches: A list of LocalPatch objects.
       pass_through_args: Command line arguments to pass to cbuildbot in job.
-      cache_dir: Cache directory used to hold manifest_versions checkout.
       remote_description: Requested tryjob description.
       committer_email: Email address of person requesting job, or None.
-      use_buildbucket: use buildbucket for scheduling?
-      slaves: Specific requested slaves for the job or []
     """
-    self.use_buildbucket = use_buildbucket
     self.user = getpass.getuser()
-    self.repo_cache = cache.DiskCache(cache_dir)
     cwd = os.path.dirname(os.path.realpath(__file__))
     if committer_email is not None:
       self.user_email = committer_email
@@ -140,37 +113,33 @@ class RemoteTryJob(object):
     logging.info('Using email:%s', self.user_email)
     # Name of the job that appears on the waterfall.
     self.name = remote_description
-    self.bots = bots[:]
-    self.slaves_request = slaves or []
+    self.build_configs = build_configs[:]
     self.description = ('name: %s' % self.name)
     self.extra_args = pass_through_args
-    if '--buildbot' not in self.extra_args:
-      self.extra_args.append('--remote-trybot')
-
     self.extra_args.append('--remote-version=%s'
                            % (self.TRYJOB_FORMAT_VERSION,))
     self.local_patches = local_patches
-    self.repo_url = self.EXTERNAL_URL
     self.cache_key = ('trybot',)
     self.manifest = git.ManifestCheckout.Cached(constants.SOURCE_ROOT)
     if repository.IsInternalRepoCheckout(constants.SOURCE_ROOT):
-      self.repo_url = self.INTERNAL_URL
       self.cache_key = ('trybot-internal',)
 
   @property
   def values(self):
     return {
-        'bot' : self.bots,
+        'bot' : self.build_configs,
         'email' : [self.user_email],
         'extra_args' : self.extra_args,
         'name' : self.name,
-        'slaves_request' : self.slaves_request,
         'user' : self.user,
         'version' : self.TRYJOB_FORMAT_VERSION,
         }
 
   def _VerifyForBuildbot(self):
     """Early validation, to ensure the job can be processed by buildbot."""
+
+    # TODO: Delete this after all tryjobs are on swarming. This restriction
+    # will have been lifted.
 
     # Buildbot stores the trybot description in a property with a 256
     # character limit. Validate that our description is well under the limit.
@@ -188,8 +157,14 @@ class RemoteTryJob(object):
           'limit.  If you have a lot of local patches, upload them and use the '
           '-g flag instead.')
 
-  def _Submit(self, workdir, testjob, dryrun):
-    """Internal submission function.  See Submit() for arg description."""
+  def Submit(self, testjob=False, dryrun=False):
+    """Submit the tryjob through Git.
+
+    Args:
+      testjob: Submit job to the test branch of the tryjob repo.  The tryjob
+               will be ignored by production master.
+      dryrun: Setting to true will run everything except the final submit step.
+    """
     # TODO(rcui): convert to shallow clone when that's available.
     current_time = str(int(time.time()))
 
@@ -215,21 +190,7 @@ class RemoteTryJob(object):
                                 patch.tracking_branch, tag))
 
     self._VerifyForBuildbot()
-    repository.UpdateGitRepo(workdir, self.repo_url)
-    version_path = os.path.join(workdir,
-                                self.TRYJOB_FORMAT_FILE)
-    with open(version_path, 'r') as f:
-      try:
-        val = int(f.read().strip())
-      except ValueError:
-        raise ChromiteUpgradeNeeded()
-      if val > self.TRYJOB_FORMAT_VERSION:
-        raise ChromiteUpgradeNeeded(val)
-
-    if self.use_buildbucket:
-      self._PostConfigsToBuildBucket(testjob, dryrun)
-    else:
-      self._PushConfig(workdir, testjob, dryrun, current_time)
+    self._PostConfigsToBuildBucket(testjob, dryrun)
 
   def _GetBuilder(self, bot):
     """Find and return the builder for bot."""
@@ -291,75 +252,13 @@ class RemoteTryJob(object):
         service_account_json=buildbucket_lib.GetServiceAccount(
             constants.CHROMEOS_SERVICE_ACCOUNT))
 
-    for bot in self.bots:
+    for bot in self.build_configs:
       self._PutConfigToBuildBucket(buildbucket_client, bot, dryrun)
-
-  def _PushConfig(self, workdir, testjob, dryrun, current_time):
-    """Pushes the tryjob config to Git as a file.
-
-    Args:
-      workdir: see Submit()
-      testjob: see Submit()
-      dryrun: see Submit()
-      current_time: the current time as a string represention of the time since
-        unix epoch.
-    """
-    push_branch = manifest_version.PUSH_BRANCH
-
-    remote_branch = None
-    if testjob:
-      remote_branch = git.RemoteRef('origin', 'refs/remotes/origin/test')
-    git.CreatePushBranch(push_branch, workdir, sync=False,
-                         remote_push_branch=remote_branch)
-    file_name = '%s.%s' % (self.user, current_time)
-    user_dir = os.path.join(workdir, self.user)
-    if not os.path.isdir(user_dir):
-      os.mkdir(user_dir)
-
-    fullpath = os.path.join(user_dir, file_name)
-    with open(fullpath, 'w+') as job_desc_file:
-      json.dump(self.values, job_desc_file)
-
-    git.RunGit(workdir, ['add', fullpath])
-    extra_env = {
-        # The committer field makes sure the creds match what the remote
-        # gerrit instance expects while the author field allows lookup
-        # on the console to work.  http://crosbug.com/27939
-        'GIT_COMMITTER_EMAIL' : self.user_email,
-        'GIT_AUTHOR_EMAIL'    : self.user_email,
-    }
-    git.RunGit(workdir, ['commit', '-m', self.description],
-               extra_env=extra_env)
-
-    try:
-      git.PushWithRetry(push_branch, workdir, retries=3, dryrun=dryrun)
-    except cros_build_lib.RunCommandError:
-      logging.error(
-          'Failed to submit tryjob.  This could be due to too many '
-          'submission requests by users.  Please try again.')
-      raise
-
-  def Submit(self, workdir=None, testjob=False, dryrun=False):
-    """Submit the tryjob through Git.
-
-    Args:
-      workdir: The directory to clone tryjob repo into.  If you pass this
-               in, you are responsible for deleting the directory.  Used for
-               testing.
-      testjob: Submit job to the test branch of the tryjob repo.  The tryjob
-               will be ignored by production master.
-      dryrun: Setting to true will run everything except the final submit step.
-    """
-    if workdir is None:
-      with self.repo_cache.Lookup(self.cache_key) as ref:
-        self._Submit(ref.path, testjob, dryrun)
-    else:
-      self._Submit(workdir, testjob, dryrun)
 
   def GetTrybotWaterfallLink(self):
     """Get link to the waterfall for the user."""
     # The builders on the trybot waterfall are named after the templates.
-    builders = set(self._GetBuilder(bot) for bot in self.bots)
+    builders = set(self._GetBuilder(bot) for bot in self.build_configs)
 
     # Note that this will only show the jobs submitted by the user in the last
     # 24 hours.

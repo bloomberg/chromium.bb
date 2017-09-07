@@ -13,7 +13,6 @@ from chromite.cli import command
 from chromite.lib import config_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
-from chromite.lib import path_util
 
 from chromite.cbuildbot import remote_try
 from chromite.cbuildbot import trybot_patch_pool
@@ -124,7 +123,6 @@ def RunRemote(options, patch_pool):
   tryjob = remote_try.RemoteTryJob(options.build_configs,
                                    patch_pool.local_patches,
                                    args,
-                                   path_util.GetCacheDir(),
                                    description,
                                    options.committer_email)
   tryjob.Submit(dryrun=False)
