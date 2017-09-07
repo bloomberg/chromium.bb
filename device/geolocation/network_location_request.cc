@@ -105,7 +105,9 @@ NetworkLocationRequest::NetworkLocationRequest(
     const scoped_refptr<net::URLRequestContextGetter>& context,
     const GURL& url,
     LocationResponseCallback callback)
-    : url_context_(context), location_response_callback_(callback), url_(url) {}
+    : url_context_(context), location_response_callback_(callback), url_(url) {
+  DCHECK(url.is_valid());
+}
 
 NetworkLocationRequest::~NetworkLocationRequest() {}
 
