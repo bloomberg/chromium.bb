@@ -7,7 +7,9 @@
 
 #include "base/macros.h"
 #include "chrome/common/features.h"
+#include "chrome/common/plugin.mojom.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "content/public/browser/web_contents_binding_set.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper_delegate.h"
 #include "ppapi/features/features.h"
@@ -16,8 +18,9 @@
 namespace extensions {
 class WebViewGuest;
 
-class ChromeWebViewPermissionHelperDelegate :
-  public WebViewPermissionHelperDelegate {
+class ChromeWebViewPermissionHelperDelegate
+    : public WebViewPermissionHelperDelegate,
+      public chrome::mojom::PluginAuthHost {
  public:
   explicit ChromeWebViewPermissionHelperDelegate(
       WebViewPermissionHelper* web_view_permission_helper);
@@ -54,13 +57,13 @@ class ChromeWebViewPermissionHelperDelegate :
 
  private:
 #if BUILDFLAG(ENABLE_PLUGINS)
-  // Message handlers:
-  void OnBlockedUnauthorizedPlugin(const base::string16& name,
-                                   const std::string& identifier);
-  void OnCouldNotLoadPlugin(const base::FilePath& plugin_path);
-  void OnBlockedOutdatedPlugin(int placeholder_id,
-                               const std::string& identifier);
-  void OnRemovePluginPlaceholderHost(int placeholder_id);
+  // chrome::mojom::PluginAuthHost methods.
+  void BlockedUnauthorizedPlugin(const base::string16& name,
+                                 const std::string& identifier) override;
+
+  content::WebContentsFrameBindingSet<chrome::mojom::PluginAuthHost>
+      plugin_auth_host_bindings_;
+
   void OnPermissionResponse(const std::string& identifier,
                             bool allow,
                             const std::string& user_input);

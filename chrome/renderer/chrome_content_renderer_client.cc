@@ -33,6 +33,7 @@
 #include "chrome/common/pause_tabs_field_trial.h"
 #include "chrome/common/pdf_uma.h"
 #include "chrome/common/pepper_permission_util.h"
+#include "chrome/common/plugin.mojom.h"
 #include "chrome/common/prerender_types.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/secure_origin_whitelist.h"
@@ -93,6 +94,7 @@
 #include "components/version_info/version_info.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "components/web_cache/renderer/web_cache_impl.h"
+#include "content/public/common/associated_interface_provider.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -949,9 +951,11 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             IDR_BLOCKED_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_OUTDATED, group_name));
         placeholder->AllowLoading();
-        render_frame->Send(new ChromeViewHostMsg_BlockedOutdatedPlugin(
-            render_frame->GetRoutingID(), placeholder->CreateRoutingId(),
-            identifier));
+        chrome::mojom::PluginHostAssociatedPtr plugin_host;
+        render_frame->GetRemoteAssociatedInterfaces()->GetInterface(
+            &plugin_host);
+        plugin_host->BlockedOutdatedPlugin(placeholder->BindPluginRenderer(),
+                                           identifier);
         break;
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedDisallowed: {
@@ -965,8 +969,10 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             IDR_BLOCKED_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_NOT_AUTHORIZED, group_name));
         placeholder->AllowLoading();
-        render_frame->Send(new ChromeViewHostMsg_BlockedUnauthorizedPlugin(
-            render_frame->GetRoutingID(), group_name, identifier));
+        chrome::mojom::PluginAuthHostAssociatedPtr plugin_auth_host;
+        render_frame->GetRemoteAssociatedInterfaces()->GetInterface(
+            &plugin_auth_host);
+        plugin_auth_host->BlockedUnauthorizedPlugin(group_name, identifier);
         observer->DidBlockContentType(content_type, group_name);
         break;
       }
@@ -1002,9 +1008,11 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             IDR_BLOCKED_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_OUTDATED, group_name));
         placeholder->AllowLoading();
-        render_frame->Send(new ChromeViewHostMsg_BlockedComponentUpdatedPlugin(
-            render_frame->GetRoutingID(), placeholder->CreateRoutingId(),
-            identifier));
+        chrome::mojom::PluginHostAssociatedPtr plugin_host;
+        render_frame->GetRemoteAssociatedInterfaces()->GetInterface(
+            &plugin_host);
+        plugin_host->BlockedComponentUpdatedPlugin(
+            placeholder->BindPluginRenderer(), identifier);
         break;
       }
 #if defined(OS_LINUX)

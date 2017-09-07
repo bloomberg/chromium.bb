@@ -236,52 +236,6 @@ IPC_SYNC_MESSAGE_CONTROL1_3(
     std::vector<base::string16> /* additional_param_values */)
 #endif
 
-// Notifies the browser that a missing plugin placeholder has been removed, so
-// the corresponding PluginPlaceholderHost can be deleted.
-IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_RemovePluginPlaceholderHost,
-                    int /* placeholder_id */)
-
-// Notifies a missing plugin placeholder that we have finished downloading
-// the plugin.
-IPC_MESSAGE_ROUTED0(ChromeViewMsg_FinishedDownloadingPlugin)
-
-// Notifies a missing plugin placeholder that we have finished component-
-// updating the plug-in.
-IPC_MESSAGE_ROUTED0(ChromeViewMsg_PluginComponentUpdateSuccess)
-
-// Notifies a missing plugin placeholder that we have failed to component-update
-// the plug-in.
-IPC_MESSAGE_ROUTED0(ChromeViewMsg_PluginComponentUpdateFailure)
-
-// Notifies a missing plugin placeholder that we have started the component
-// download.
-IPC_MESSAGE_ROUTED0(ChromeViewMsg_PluginComponentUpdateDownloading)
-
-
-// Tells the browser to show the Flash permission bubble in the same tab.
-IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_ShowFlashPermissionBubble)
-
-// Tells the browser that there was an error loading a plugin.
-IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_CouldNotLoadPlugin,
-                    base::FilePath /* plugin_path */)
-
-// Notifies when a plugin couldn't be loaded because it's outdated.
-IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_BlockedOutdatedPlugin,
-                    int /* placeholder ID */,
-                    std::string /* plugin group identifier */)
-
-// Notifies when a plugin couldn't be loaded because it requires a component
-// update.
-IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_BlockedComponentUpdatedPlugin,
-                    int /* placeholder ID */,
-                    std::string /* plugin group identifier */)
-
-// Notifies when a plugin couldn't be loaded because it requires
-// user authorization.
-IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_BlockedUnauthorizedPlugin,
-                    base::string16 /* name */,
-                    std::string /* plugin group identifier */)
-
 IPC_MESSAGE_ROUTED1(ChromeFrameHostMsg_DidGetWebApplicationInfo,
                     WebApplicationInfo)
 

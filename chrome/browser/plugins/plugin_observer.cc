@@ -42,6 +42,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/webplugininfo.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::PluginService;
@@ -127,29 +128,27 @@ bool ReloadPluginInfoBarDelegate::Accept() {
 
 class PluginObserver::PluginPlaceholderHost : public PluginInstallerObserver {
  public:
-  PluginPlaceholderHost(PluginObserver* observer,
-                        int routing_id,
-                        base::string16 plugin_name,
-                        PluginInstaller* installer)
+  PluginPlaceholderHost(
+      PluginObserver* observer,
+      base::string16 plugin_name,
+      PluginInstaller* installer,
+      chrome::mojom::PluginRendererPtr plugin_renderer_interface)
       : PluginInstallerObserver(installer),
         observer_(observer),
-        routing_id_(routing_id) {
+        plugin_renderer_interface_(std::move(plugin_renderer_interface)) {
+    plugin_renderer_interface_.set_connection_error_handler(
+        base::Bind(&PluginObserver::RemovePluginPlaceholderHost,
+                   base::Unretained(observer_), this));
     DCHECK(installer);
   }
 
   void DownloadFinished() override {
-    // TODO(lukasza): https://crbug.com/760637: |routing_id_| might live in a
-    // different process than the RenderViewHost - need to track and use
-    // placeholder's process here.
-    observer_->web_contents()->GetRenderViewHost()->Send(
-        new ChromeViewMsg_FinishedDownloadingPlugin(routing_id_));
+    plugin_renderer_interface_->FinishedDownloading();
   }
 
  private:
-  // Weak pointer; owns us.
   PluginObserver* observer_;
-
-  int routing_id_;
+  chrome::mojom::PluginRendererPtr plugin_renderer_interface_;
 };
 
 class PluginObserver::ComponentObserver
@@ -157,11 +156,14 @@ class PluginObserver::ComponentObserver
  public:
   using Events = update_client::UpdateClient::Observer::Events;
   ComponentObserver(PluginObserver* observer,
-                    int routing_id,
-                    const std::string& component_id)
+                    const std::string& component_id,
+                    chrome::mojom::PluginRendererPtr plugin_renderer_interface)
       : observer_(observer),
-        routing_id_(routing_id),
-        component_id_(component_id) {
+        component_id_(component_id),
+        plugin_renderer_interface_(std::move(plugin_renderer_interface)) {
+    plugin_renderer_interface_.set_connection_error_handler(
+        base::Bind(&PluginObserver::RemoveComponentObserver,
+                   base::Unretained(observer_), this));
     g_browser_process->component_updater()->AddObserver(this);
   }
 
@@ -178,18 +180,15 @@ class PluginObserver::ComponentObserver
       return;
     switch (event) {
       case Events::COMPONENT_UPDATED:
-        observer_->web_contents()->GetRenderViewHost()->Send(
-            new ChromeViewMsg_PluginComponentUpdateSuccess(routing_id_));
-        observer_->RemoveComponentObserver(routing_id_);
+        plugin_renderer_interface_->UpdateSuccess();
+        observer_->RemoveComponentObserver(this);
         break;
       case Events::COMPONENT_UPDATE_FOUND:
-        observer_->web_contents()->GetRenderViewHost()->Send(
-            new ChromeViewMsg_PluginComponentUpdateDownloading(routing_id_));
+        plugin_renderer_interface_->UpdateDownloading();
         break;
       case Events::COMPONENT_NOT_UPDATED:
-        observer_->web_contents()->GetRenderViewHost()->Send(
-            new ChromeViewMsg_PluginComponentUpdateFailure(routing_id_));
-        observer_->RemoveComponentObserver(routing_id_);
+        plugin_renderer_interface_->UpdateFailure();
+        observer_->RemoveComponentObserver(this);
         break;
       default:
         // No message to send.
@@ -199,15 +198,15 @@ class PluginObserver::ComponentObserver
 
  private:
   PluginObserver* observer_;
-  int routing_id_;
   std::string component_id_;
+  chrome::mojom::PluginRendererPtr plugin_renderer_interface_;
   DISALLOW_COPY_AND_ASSIGN(ComponentObserver);
 };
 
 PluginObserver::PluginObserver(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      weak_ptr_factory_(this) {
-}
+      plugin_host_bindings_(web_contents, this),
+      weak_ptr_factory_(this) {}
 
 PluginObserver::~PluginObserver() {
 }
@@ -262,36 +261,19 @@ void PluginObserver::PluginCrashed(const base::FilePath& plugin_path,
       infobar_text);
 }
 
-bool PluginObserver::OnMessageReceived(
-      const IPC::Message& message,
-      content::RenderFrameHost* render_frame_host) {
-  IPC_BEGIN_MESSAGE_MAP(PluginObserver, message)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_BlockedOutdatedPlugin,
-                        OnBlockedOutdatedPlugin)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_BlockedComponentUpdatedPlugin,
-                        OnBlockedComponentUpdatedPlugin)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RemovePluginPlaceholderHost,
-                        OnRemovePluginPlaceholderHost)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_ShowFlashPermissionBubble,
-                        OnShowFlashPermissionBubble)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_CouldNotLoadPlugin,
-                        OnCouldNotLoadPlugin)
-    IPC_MESSAGE_UNHANDLED(return false)
-  IPC_END_MESSAGE_MAP()
-
-  return true;
-}
-
-void PluginObserver::OnBlockedOutdatedPlugin(int placeholder_id,
-                                             const std::string& identifier) {
+void PluginObserver::BlockedOutdatedPlugin(
+    chrome::mojom::PluginRendererPtr plugin_renderer,
+    const std::string& identifier) {
   PluginFinder* finder = PluginFinder::GetInstance();
   // Find plugin to update.
   PluginInstaller* installer = NULL;
   std::unique_ptr<PluginMetadata> plugin;
   if (finder->FindPluginWithIdentifier(identifier, &installer, &plugin)) {
-    plugin_placeholders_[placeholder_id] =
-        base::MakeUnique<PluginPlaceholderHost>(this, placeholder_id,
-                                                plugin->name(), installer);
+    auto plugin_placeholder = base::MakeUnique<PluginPlaceholderHost>(
+        this, plugin->name(), installer, std::move(plugin_renderer));
+    plugin_placeholders_[plugin_placeholder.get()] =
+        std::move(plugin_placeholder);
+
     OutdatedPluginInfoBarDelegate::Create(
         InfoBarService::FromWebContents(web_contents()), installer,
         std::move(plugin));
@@ -300,38 +282,35 @@ void PluginObserver::OnBlockedOutdatedPlugin(int placeholder_id,
   }
 }
 
-void PluginObserver::OnBlockedComponentUpdatedPlugin(
-    int placeholder_id,
+void PluginObserver::BlockedComponentUpdatedPlugin(
+    chrome::mojom::PluginRendererPtr plugin_renderer,
     const std::string& identifier) {
-  component_observers_[placeholder_id] =
-      base::MakeUnique<ComponentObserver>(this, placeholder_id, identifier);
+  auto component_observer = base::MakeUnique<ComponentObserver>(
+      this, identifier, std::move(plugin_renderer));
+  component_observers_[component_observer.get()] =
+      std::move(component_observer);
   g_browser_process->component_updater()->GetOnDemandUpdater().OnDemandUpdate(
       identifier, component_updater::Callback());
 }
 
-void PluginObserver::RemoveComponentObserver(int placeholder_id) {
-  auto it = component_observers_.find(placeholder_id);
-  DCHECK(it != component_observers_.end());
-  component_observers_.erase(it);
+void PluginObserver::RemoveComponentObserver(
+    ComponentObserver* component_observer) {
+  component_observers_.erase(component_observer);
 }
 
-void PluginObserver::OnRemovePluginPlaceholderHost(int placeholder_id) {
-  auto it = plugin_placeholders_.find(placeholder_id);
-  if (it == plugin_placeholders_.end()) {
-    NOTREACHED();
-    return;
-  }
-  plugin_placeholders_.erase(it);
+void PluginObserver::RemovePluginPlaceholderHost(
+    PluginPlaceholderHost* placeholder) {
+  plugin_placeholders_.erase(placeholder);
 }
 
-void PluginObserver::OnShowFlashPermissionBubble() {
+void PluginObserver::ShowFlashPermissionBubble() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   FlashDownloadInterception::InterceptFlashDownloadNavigation(
       web_contents(), web_contents()->GetLastCommittedURL());
 }
 
-void PluginObserver::OnCouldNotLoadPlugin(const base::FilePath& plugin_path) {
+void PluginObserver::CouldNotLoadPlugin(const base::FilePath& plugin_path) {
   g_browser_process->GetMetricsServicesManager()->OnPluginLoadingError(
       plugin_path);
   base::string16 plugin_name =
