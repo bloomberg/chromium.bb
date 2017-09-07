@@ -5,6 +5,7 @@
 #include "ui/compositor/compositor_switches.h"
 
 #include "base/command_line.h"
+#include "build/build_config.h"
 
 namespace switches {
 
@@ -24,6 +25,7 @@ const char kLimitFps[] = "limit-fps";
 const char kUIEnableRGBA4444Textures[] = "ui-enable-rgba-4444-textures";
 
 const char kUIEnableZeroCopy[] = "ui-enable-zero-copy";
+const char kUIDisableZeroCopy[] = "ui-disable-zero-copy";
 
 const char kUIShowPaintRects[] = "ui-show-paint-rects";
 
@@ -39,9 +41,14 @@ const char kEnablePixelCanvasRecording[] = "enable-pixel-canvas-recording";
 namespace ui {
 
 bool IsUIZeroCopyEnabled() {
+  // Match the behavior of IsZeroCopyUploadEnabled() in content/browser/gpu.
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
+#if defined(OS_MACOSX)
+  return !command_line.HasSwitch(switches::kUIDisableZeroCopy);
+#else
   return command_line.HasSwitch(switches::kUIEnableZeroCopy);
+#endif
 }
 
 bool IsPixelCanvasRecordingEnabled() {
