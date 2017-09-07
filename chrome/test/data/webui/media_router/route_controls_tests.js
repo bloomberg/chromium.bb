@@ -81,14 +81,14 @@ cr.define('route_controls', function() {
       // Tests the initial expected text.
       test('initial text setting', function() {
         // Set |route|.
-        controls.onRouteUpdated(fakeRouteOne);
+        controls.onRouteUpdated_(fakeRouteOne);
         assertElementText(
             loadTimeData.getStringF(
                 'castingActivityStatus', fakeRouteOne.description),
             'route-description');
 
         // Set |route| to a different route.
-        controls.onRouteUpdated(fakeRouteTwo);
+        controls.onRouteUpdated_(fakeRouteTwo);
         assertElementText(
             loadTimeData.getStringF(
                 'castingActivityStatus', fakeRouteTwo.description),
@@ -115,7 +115,7 @@ cr.define('route_controls', function() {
         assertElementHidden('route-play-pause-button');
         assertElementHidden('route-time-controls');
         assertElementHidden('route-volume-button');
-        assertElementHidden('route-volume-slider');
+        assertElementHidden('volume-holder');
 
         controls.routeStatus =
             createRouteStatus({canPlayPause: true, canSeek: true});
@@ -123,7 +123,7 @@ cr.define('route_controls', function() {
         assertElementShown('route-play-pause-button');
         assertElementShown('route-time-controls');
         assertElementHidden('route-volume-button');
-        assertElementHidden('route-volume-slider');
+        assertElementHidden('volume-holder');
 
         controls.routeStatus =
             createRouteStatus({canMute: true, canSetVolume: true});
@@ -131,7 +131,7 @@ cr.define('route_controls', function() {
         assertElementHidden('route-play-pause-button');
         assertElementHidden('route-time-controls');
         assertElementShown('route-volume-button');
-        assertElementShown('route-volume-slider');
+        assertElementShown('volume-holder');
       });
 
       // Tests that the play button sends a command to the browser API.
@@ -278,7 +278,32 @@ cr.define('route_controls', function() {
         }, 1000);
       });
 
-      test('ignore external updates right after using sliders', function(done) {
+      test('hangouts local present mode', function(done) {
+        assertElementHidden('hangouts-local-present-controls');
+        let routeStatus = createRouteStatus();
+        controls.routeStatus = routeStatus;
+        assertElementHidden('hangouts-local-present-controls');
+
+        routeStatus = createRouteStatus();
+        routeStatus.hangoutsExtraData = {localPresent: false};
+        controls.routeStatus = routeStatus;
+        assertElementShown('hangouts-local-present-controls');
+
+        routeStatus = createRouteStatus();
+        routeStatus.hangoutsExtraData = {localPresent: true};
+        controls.routeStatus = routeStatus;
+        assertElementShown('hangouts-local-present-controls');
+        assertTrue(controls.$$('#hangouts-local-present-checkbox').checked);
+
+        document.addEventListener('mock-set-hangouts-local-present',
+            function(e) {
+              done();
+            });
+        MockInteractions.tap(controls.$$('#hangouts-local-present-checkbox'));
+        assertFalse(controls.$$('#hangouts-local-present-checkbox').checked);
+    });
+
+    test('ignore external updates right after using sliders', function(done) {
         var currentTime = 500;
         var externalCurrentTime = 800;
         var volume = 0.45;

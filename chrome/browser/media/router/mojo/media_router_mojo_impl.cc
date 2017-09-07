@@ -316,20 +316,33 @@ void MediaRouterMojoImpl::SearchSinks(
 
 scoped_refptr<MediaRouteController> MediaRouterMojoImpl::GetRouteController(
     const MediaRoute::Id& route_id) {
-  if (!IsRouteKnown(route_id))
+  auto* route = GetRoute(route_id);
+  if (!route) {
+    DVLOG_WITH_INSTANCE(1) << __func__ << ": route not found: " << route_id;
     return nullptr;
+  }
 
   auto it = route_controllers_.find(route_id);
   if (it != route_controllers_.end())
     return scoped_refptr<MediaRouteController>(it->second);
 
-  scoped_refptr<MediaRouteController> route_controller =
-      new MediaRouteController(route_id, context_);
-
-  DoCreateMediaRouteController(route_id,
-                               route_controller->CreateControllerRequest(),
-                               route_controller->BindObserverPtr());
+  scoped_refptr<MediaRouteController> route_controller;
+  switch (route->controller_type()) {
+    case RouteControllerType::kNone:
+      DVLOG_WITH_INSTANCE(1)
+          << __func__ << ": route does not support controller: " << route_id;
+      return nullptr;
+    case RouteControllerType::kGeneric:
+      route_controller = new MediaRouteController(route_id, context_);
+      break;
+    case RouteControllerType::kHangouts:
+      route_controller = new HangoutsMediaRouteController(route_id, context_);
+      break;
+  }
+  DCHECK(route_controller);
   route_controllers_.emplace(route_id, route_controller.get());
+
+  DoCreateMediaRouteController(route_controller.get());
   return route_controller;
 }
 
@@ -645,18 +658,22 @@ void MediaRouterMojoImpl::DoProvideSinks(const std::string& provider_name,
 }
 
 void MediaRouterMojoImpl::DoCreateMediaRouteController(
-    const MediaRoute::Id& route_id,
-    mojom::MediaControllerRequest mojo_media_controller_request,
-    mojom::MediaStatusObserverPtr mojo_observer) {
+    MediaRouteController* controller) {
   DVLOG_WITH_INSTANCE(1) << "DoCreateMediaRouteController";
-  if (!mojo_media_controller_request.is_pending() || !mojo_observer.is_bound())
+  auto controller_request = controller->CreateControllerRequest();
+  auto observer_ptr = controller->BindObserverPtr();
+  const MediaRoute::Id& route_id = controller->route_id();
+  if (!controller_request.is_pending() || !observer_ptr.is_bound()) {
+    DVLOG_WITH_INSTANCE(1) << __func__
+                           << ": invalid Mojo request/ptr: " << route_id;
     return;
+  }
 
   media_route_provider_->CreateMediaRouteController(
-      route_id, std::move(mojo_media_controller_request),
-      std::move(mojo_observer),
+      route_id, std::move(controller_request), std::move(observer_ptr),
       base::BindOnce(&MediaRouterMojoImpl::OnMediaControllerCreated,
                      base::Unretained(this), route_id));
+  controller->InitAdditionalMojoConnnections();
 }
 
 void MediaRouterMojoImpl::OnRouteMessagesReceived(
@@ -849,7 +866,7 @@ void MediaRouterMojoImpl::RemoveInvalidRouteControllers(
     const std::vector<MediaRoute>& routes) {
   auto it = route_controllers_.begin();
   while (it != route_controllers_.end()) {
-    if (IsRouteKnown(it->first)) {
+    if (GetRoute(it->first)) {
       ++it;
     } else {
       it->second->Invalidate();

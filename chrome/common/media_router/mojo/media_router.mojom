@@ -76,6 +76,12 @@ struct CastMediaSink {
   int32 cast_channel_id;
 };
 
+enum RouteControllerType {
+  kNone,
+  kGeneric,
+  kHangouts
+};
+
 // Should be kept in sync with media_route.h.
 struct MediaRoute {
   // The ID of this media route, e.g. "r_PR1O_blkC9dsKp-tb1ti8qurOo".
@@ -96,6 +102,11 @@ struct MediaRoute {
   string? custom_controller_path;
   // Whether the provider for this route supports the Media Route Controller.
   bool supports_media_route_controller;
+  // The type of route controller that can be created for this route. See
+  // media_controller.mojom for details.
+  // TODO(crbug.com/684642): Remove supports_media_route_controller in favor
+  // of controller_type.
+  RouteControllerType controller_type;
   // Set to true if this route should be displayed for |media_sink_id| in UI.
   bool for_display;
   // Set to true if this route was created by an incognito profile.

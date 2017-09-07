@@ -53,6 +53,12 @@ void AddRouteDetailsStrings(content::WebUIDataSource* html_source) {
       "currentTimeLabel", IDS_MEDIA_ROUTER_ROUTE_DETAILS_CURRENT_TIME_LABEL);
   html_source->AddLocalizedString(
       "durationLabel", IDS_MEDIA_ROUTER_ROUTE_DETAILS_DURATION_LABEL);
+  html_source->AddLocalizedString(
+      "hangoutsLocalPresentTitle",
+      IDS_MEDIA_ROUTER_ROUTE_DETAILS_HANGOUTS_LOCAL_PRESENT_TITLE);
+  html_source->AddLocalizedString(
+      "hangoutsLocalPresentSubtitle",
+      IDS_MEDIA_ROUTER_ROUTE_DETAILS_HANGOUTS_LOCAL_PRESENT_SUBTITLE);
 }
 
 void AddIssuesStrings(content::WebUIDataSource* html_source) {

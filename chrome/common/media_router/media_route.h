@@ -14,6 +14,10 @@
 
 namespace media_router {
 
+// TODO(imcheng): Use the Mojo enum directly once we Mojo-ified
+// MediaRouterAndroid.
+enum class RouteControllerType { kNone, kGeneric, kHangouts };
+
 // MediaRoute objects contain the status and metadata of a routing
 // operation. The fields are immutable and reflect the route status
 // only at the time of object creation. Updated route statuses must
@@ -86,6 +90,11 @@ class MediaRoute {
     return supports_media_route_controller_;
   }
 
+  void set_controller_type(RouteControllerType controller_type) {
+    controller_type_ = controller_type;
+  }
+  RouteControllerType controller_type() const { return controller_type_; }
+
   void set_for_display(bool for_display) { for_display_ = for_display; }
   bool for_display() const { return for_display_; }
 
@@ -120,10 +129,16 @@ class MediaRoute {
   // The custom controller path. This allows route provider to have custom route
   // detail as well as its own route control features route control features in
   // the media router dialog.
+  // TODO(crbug.com/684642): Remove this field in favor of controller_type once
+  // new controller is fully rolled out.
   std::string custom_controller_path_;
 
   // Whether the provider for this route supports the Media Route Controller.
+  // TODO(crbug.com/684642): Remove this field in favor of controller_type.
   bool supports_media_route_controller_ = false;
+
+  // The type of MediaRouteController supported by this route.
+  RouteControllerType controller_type_ = RouteControllerType::kNone;
 
   // |true| if the route can be displayed in the UI.
   bool for_display_ = false;

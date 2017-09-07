@@ -20,7 +20,8 @@
     </template>
     <template is="dom-if" if="[[shouldShowWebUiControls_(controllerType_)]]">
       <route-controls id="route-controls"
-          route-details-open-time="[[openTime_]]"></route-controls>
+          route-details-open-time="[[openTime_]]"
+          route="[[route]]"></route-controls>
     </template>
     <div id="route-action-buttons" class="layout">
       <paper-button flat class="route-button button"

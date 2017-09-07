@@ -23,7 +23,7 @@
   width: 90%;
 }
 
-:host-context([dir='rtl']) #play-pause-volume-controls {
+:host-context([dir='rtl']) #play-pause-volume-hangouts-controls {
   transform: scaleX(-1);
 }
 
@@ -40,7 +40,7 @@
   margin: 0 8px;
 }
 
-#play-pause-volume-controls {
+#play-pause-volume-hangouts-controls {
   display: block;
   margin-top: 13px;
   overflow: hidden;
@@ -85,4 +85,27 @@
   display: block;
   overflow: hidden;
   padding: 0.3em 0;
+}
+
+#hangouts-local-present-controls {
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+  display: inline-block;
+  float: right;
+  font-family: 'Roboto', 'Noto', sans-serif;
+  padding-top: 10.5px;
+  white-space: nowrap;
+}
+
+#hangouts-local-present-checkbox {
+  --paper-checkbox-checked-color: #1976D2;
+  --paper-checkbox-vertical-align: top;
+};
+
+#hangouts-local-present-checkbox-subtitle {
+  display: block;
+  font-size: 0.8em;
+  margin-top: 2px;
+  width: 249px;
 }

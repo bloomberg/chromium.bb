@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/av-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-slider/paper-slider.html">
 <dom-module id="route-controls">
   <link rel="import" type="css" href="../../media_router_common.css">
@@ -36,7 +37,7 @@
             </span>
           </div>
         </div>
-        <div id="play-pause-volume-controls">
+        <div id="play-pause-volume-hangouts-controls">
           <span id="button-holder" dir="ltr">
             <paper-icon-button
                 id="route-play-pause-button"
@@ -53,11 +54,10 @@
                 title="[[getMuteUnmuteTitle_(routeStatus)]]"
                 on-click="onMuteUnmute_"></paper-icon-button>
           </span>
-          <span id="volume-holder">
+          <span id="volume-holder" hidden="[[!routeStatus.canSetVolume]]">
             <paper-slider
                 aria-valuetext$="[[getVolumeSliderValueText_(displayedVolume_)]]"
                 id="route-volume-slider"
-                hidden="[[!routeStatus.canSetVolume]]"
                 disabled="[[!routeStatus.canSetVolume]]"
                 on-change="onVolumeChangeComplete_"
                 on-immediate-value-change="onVolumeChangeByDragging_"
@@ -65,6 +65,21 @@
                 value="[[displayedVolume_]]"
                 min="0" max="1" step="0.01"></paper-slider>
           </span>
+          <div id="hangouts-local-present-controls"
+               hidden="[[!routeStatus.hangoutsExtraData]]">
+            <paper-checkbox
+                checked="[[hangoutsLocalPresent_]]"
+                id="hangouts-local-present-checkbox"
+                on-change="onHangoutsLocalPresentChange_"
+                tabindex="0">
+              <span id='hangouts-local-present-checkbox-title'>
+                [[i18n('hangoutsLocalPresentTitle')]]
+              </span>
+              <span id="hangouts-local-present-checkbox-subtitle">
+                [[i18n('hangoutsLocalPresentSubtitle')]]
+              </span>
+            </paper-checkbox>
+          </div>
         </div>
       </div>
     </div>

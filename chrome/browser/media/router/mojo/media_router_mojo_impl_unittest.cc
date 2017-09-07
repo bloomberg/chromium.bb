@@ -88,14 +88,18 @@ IssueInfo CreateIssueInfo(const std::string& title) {
 
 // Creates a media route whose ID is |kRouteId|.
 MediaRoute CreateMediaRoute() {
-  return MediaRoute(kRouteId, MediaSource(kSource), kSinkId, kDescription, true,
-                    std::string(), true);
+  MediaRoute route(kRouteId, MediaSource(kSource), kSinkId, kDescription, true,
+                   std::string(), true);
+  route.set_controller_type(RouteControllerType::kGeneric);
+  return route;
 }
 
 // Creates a media route whose ID is |kRouteId2|.
 MediaRoute CreateMediaRoute2() {
-  return MediaRoute(kRouteId2, MediaSource(kSource), kSinkId, kDescription,
-                    true, std::string(), true);
+  MediaRoute route(kRouteId2, MediaSource(kSource), kSinkId, kDescription, true,
+                   std::string(), true);
+  route.set_controller_type(RouteControllerType::kGeneric);
+  return route;
 }
 
 void OnCreateMediaRouteController(
@@ -1025,6 +1029,8 @@ TEST_F(MediaRouterMojoImplTest, GetRouteControllerAfterInvalidation) {
 
   scoped_refptr<MediaRouteController> route_controller =
       router()->GetRouteController(kRouteId);
+  EXPECT_TRUE(route_controller);
+
   // Invalidate the MediaRouteController.
   route_controller = nullptr;
   // Call again with the same route ID. Since we've invalidated the

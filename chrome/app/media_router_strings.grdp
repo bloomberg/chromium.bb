@@ -175,6 +175,12 @@
   <message name="IDS_MEDIA_ROUTER_ROUTE_DETAILS_DURATION_LABEL" desc="The label for the total duration of media contents.">
     Duration
   </message>
+  <message name="IDS_MEDIA_ROUTER_ROUTE_DETAILS_HANGOUTS_LOCAL_PRESENT_TITLE" desc="The title for the local present mode toggle for casting to a Hangouts.">
+    Smooth Motion [beta]
+  </message>
+  <message name="IDS_MEDIA_ROUTER_ROUTE_DETAILS_HANGOUTS_LOCAL_PRESENT_SUBTITLE" desc="The subtitle for the local present mode toggle for casting to a Hangouts.">
+    Use high bandwidth for best video or animation. Other people with slow connections may not see your content.
+  </message>
 
   <!-- Sink List -->
   <message name="IDS_MEDIA_ROUTER_DESTINATION_MISSING" desc="Link to display when no Cast destinations are found which, on click, opens a page to the Chromecast help center explaining possible reasons why none are detected.">

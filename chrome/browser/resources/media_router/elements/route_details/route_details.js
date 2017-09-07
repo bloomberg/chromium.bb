@@ -232,8 +232,6 @@ Polymer({
   onRouteChange_: function(newRoute) {
     if (this.controllerType_ !== media_router.ControllerType.WEBUI) {
       this.updateActivityStatus_();
-    } else if (this.$$('route-controls')) {
-      this.$$('route-controls').onRouteUpdated(newRoute);
     }
   },
 

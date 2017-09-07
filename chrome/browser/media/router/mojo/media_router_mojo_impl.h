@@ -147,10 +147,7 @@ class MediaRouterMojoImpl : public MediaRouterBase,
                              const std::string& search_input,
                              const std::string& domain,
                              MediaSinkSearchResponseCallback sink_callback);
-  virtual void DoCreateMediaRouteController(
-      const MediaRoute::Id& route_id,
-      mojom::MediaControllerRequest mojo_media_controller_request,
-      mojom::MediaStatusObserverPtr mojo_observer);
+  virtual void DoCreateMediaRouteController(MediaRouteController* controller);
   virtual void DoProvideSinks(const std::string& provider_name,
                               std::vector<MediaSinkInternal> sinks);
   virtual void DoUpdateMediaSinks(const MediaSource::Id& source_id);

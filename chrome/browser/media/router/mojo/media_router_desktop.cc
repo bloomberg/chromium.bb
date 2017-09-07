@@ -246,21 +246,27 @@ void MediaRouterDesktop::DoSearchSinks(
       MediaRouteProviderWakeReason::SEARCH_SINKS);
 }
 
-void MediaRouterDesktop::DoCreateMediaRouteController(
-    const MediaRoute::Id& route_id,
-    mojom::MediaControllerRequest mojo_media_controller_request,
-    mojom::MediaStatusObserverPtr mojo_observer) {
-  if (request_manager_->mojo_connections_ready()) {
-    MediaRouterMojoImpl::DoCreateMediaRouteController(
-        route_id, std::move(mojo_media_controller_request),
-        std::move(mojo_observer));
+void MediaRouterDesktop::CreateMediaRouteControllerDeferred(
+    const MediaRoute::Id& route_id) {
+  auto controller_it = route_controllers_.find(route_id);
+  if (controller_it == route_controllers_.end()) {
+    DVLOG(1) << __func__ << ": route controller no longer exists: " << route_id;
     return;
   }
+  DoCreateMediaRouteController(controller_it->second);
+}
+
+void MediaRouterDesktop::DoCreateMediaRouteController(
+    MediaRouteController* controller) {
+  if (request_manager_->mojo_connections_ready()) {
+    MediaRouterMojoImpl::DoCreateMediaRouteController(controller);
+    return;
+  }
+  // We bind the route ID here since the controller may be deleted by the time
+  // the callback is executed.
   request_manager_->RunOrDefer(
-      base::BindOnce(&MediaRouterDesktop::DoCreateMediaRouteController,
-                     weak_factory_.GetWeakPtr(), route_id,
-                     std::move(mojo_media_controller_request),
-                     std::move(mojo_observer)),
+      base::BindOnce(&MediaRouterDesktop::CreateMediaRouteControllerDeferred,
+                     weak_factory_.GetWeakPtr(), controller->route_id()),
       MediaRouteProviderWakeReason::CREATE_MEDIA_ROUTE_CONTROLLER);
 }
 
@@ -358,13 +364,9 @@ void MediaRouterDesktop::RegisterMediaRouteProvider(
   // Now that we have a Mojo pointer to the MRP, we request MRP-side route
   // controllers to be created again. This must happen before |request_manager_|
   // executes requests to the MRP and its route controllers.
-  for (const auto& pair : route_controllers_) {
-    const MediaRoute::Id& route_id = pair.first;
-    MediaRouteController* route_controller = pair.second;
-    MediaRouterMojoImpl::DoCreateMediaRouteController(
-        route_id, route_controller->CreateControllerRequest(),
-        route_controller->BindObserverPtr());
-  }
+  for (const auto& pair : route_controllers_)
+    MediaRouterMojoImpl::DoCreateMediaRouteController(pair.second);
+
   request_manager_->OnMojoConnectionsReady();
 }
 
