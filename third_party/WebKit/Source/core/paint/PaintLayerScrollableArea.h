@@ -225,6 +225,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   ~PaintLayerScrollableArea() override;
   void Dispose();
 
+  void ForceVerticalScrollbarForFirstLayout() { SetHasVerticalScrollbar(true); }
   bool HasHorizontalScrollbar() const { return HorizontalScrollbar(); }
   bool HasVerticalScrollbar() const { return VerticalScrollbar(); }
 
