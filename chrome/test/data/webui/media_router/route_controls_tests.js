@@ -266,13 +266,13 @@ cr.define('route_controls', function() {
         // Check that the current time has been incremented after a second.
         setTimeout(function() {
           controls.routeStatus.playState = media_router.PlayState.PAUSED;
-          var pausedTime = controls.routeStatus.currentTime;
+          var pausedTime = controls.displayedCurrentTime_;
           assertTrue(pausedTime > initialTime);
 
           // Check that the current time stayed the same after a second, now
           // that the media is paused.
           setTimeout(function() {
-            assertEquals(pausedTime, controls.routeStatus.currentTime);
+            assertEquals(pausedTime, controls.displayedCurrentTime_);
             done();
           }, 1000);
         }, 1000);
