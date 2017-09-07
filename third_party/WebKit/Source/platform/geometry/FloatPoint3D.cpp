@@ -22,6 +22,7 @@
 #include "platform/geometry/FloatPoint3D.h"
 
 #include <math.h>
+#include "platform/text/TextStream.h"
 #include "platform/wtf/MathExtras.h"
 #include "platform/wtf/text/WTFString.h"
 
@@ -52,6 +53,11 @@ float FloatPoint3D::AngleBetween(const FloatPoint3D& y) const {
 
 String FloatPoint3D::ToString() const {
   return String::Format("%lg,%lg,%lg", X(), Y(), Z());
+}
+
+TextStream& operator<<(TextStream& ts, const FloatPoint3D& p) {
+  ts << "x=" << p.X() << " y=" << p.Y() << " z=" << p.Z();
+  return ts;
 }
 
 }  // namespace blink

@@ -29,6 +29,8 @@
 
 namespace blink {
 
+class TextStream;
+
 class PLATFORM_EXPORT FloatPoint3D {
   DISALLOW_NEW();
 
@@ -154,6 +156,8 @@ inline FloatPoint3D operator*(const FloatPoint3D& v, float k) {
 inline float FloatPoint3D::DistanceTo(const FloatPoint3D& a) const {
   return (*this - a).length();
 }
+
+TextStream& operator<<(TextStream&, const FloatPoint3D&);
 
 // Redeclared here to avoid ODR issues.
 // See platform/testing/GeometryPrinters.h.
