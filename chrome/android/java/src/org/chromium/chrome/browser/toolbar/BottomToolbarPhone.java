@@ -1054,7 +1054,7 @@ public class BottomToolbarPhone extends ToolbarPhone {
                     mExpandButton.setVisibility(View.VISIBLE);
                 }
 
-                requestLayout();
+                post(() -> requestLayout());
             } else {
                 mToolbarButtonVisibilityPercent = 0.f;
                 // Wait to set mShouldHideToolbarButtons until URL focus finishes.
