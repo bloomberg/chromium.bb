@@ -31,7 +31,7 @@ from webkitpy.w3c.wpt_manifest import WPTManifest
 
 # Settings for how often to check try job results and how long to wait.
 POLL_DELAY_SECONDS = 2 * 60
-TIMEOUT_SECONDS = 180 * 60
+TIMEOUT_SECONDS = 210 * 60
 
 _log = logging.getLogger(__file__)
 
