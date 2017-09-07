@@ -99,8 +99,13 @@ PaintImage PaintImage::MakeSubset(const gfx::Rect& subset) const {
 
 SkISize PaintImage::GetSupportedDecodeSize(
     const SkISize& requested_size) const {
-  // TODO(vmpstr): For now, we ignore the requested size and just return the
-  // available image size.
+  // TODO(vmpstr): If this image is using subset_rect, then we don't support
+  // decoding to any scale other than the original. See the comment in Decode()
+  // explaining this in more detail.
+  // TODO(vmpstr): For now, always decode to the original size. This can be
+  // enabled with the following code, and should be done as a follow-up.
+  //  if (paint_image_generator_ && subset_rect_.IsEmpty())
+  //    return paint_image_generator_->GetSupportedDecodeSize(requested_size);
   return SkISize::Make(width(), height());
 }
 
@@ -114,6 +119,65 @@ SkImageInfo PaintImage::CreateDecodeImageInfo(const SkISize& size,
 bool PaintImage::Decode(void* memory,
                         SkImageInfo* info,
                         sk_sp<SkColorSpace> color_space) const {
+  // We only support decode to supported decode size.
+  DCHECK(info->dimensions() == GetSupportedDecodeSize(info->dimensions()));
+
+  // TODO(vmpstr): If we're using a subset_rect_ then the info specifies the
+  // requested size relative to the subset. However, the generator isn't aware
+  // of this subsetting and would need a size that is relative to the original
+  // image size. We could still implement this case, but we need to convert the
+  // requested size into the space of the original image. For now, fallback to
+  // DecodeFromSkImage().
+  if (paint_image_generator_ && subset_rect_.IsEmpty())
+    return DecodeFromGenerator(memory, info, std::move(color_space));
+  return DecodeFromSkImage(memory, info, std::move(color_space));
+}
+
+bool PaintImage::DecodeFromGenerator(void* memory,
+                                     SkImageInfo* info,
+                                     sk_sp<SkColorSpace> color_space) const {
+  DCHECK(subset_rect_.IsEmpty());
+
+  // First convert the info to have the requested color space, since the decoder
+  // will convert this for us.
+  *info = info->makeColorSpace(std::move(color_space));
+  if (info->colorType() != kN32_SkColorType) {
+    // Since the decoders only support N32 color types, make one of those and
+    // decode into temporary memory. Then read the bitmap which will convert it
+    // to the target color type.
+    SkImageInfo n32info = info->makeColorType(kN32_SkColorType);
+    std::unique_ptr<char[]> n32memory(
+        new char[n32info.minRowBytes() * n32info.height()]);
+
+    bool result = paint_image_generator_->GetPixels(n32info, n32memory.get(),
+                                                    n32info.minRowBytes(),
+                                                    frame_index(), unique_id());
+    if (!result)
+      return false;
+
+    // The following block will use Skia to do the color type conversion from
+    // N32 to the destination color type. Since color space conversion was
+    // already done in GetPixels() above, remove the color space information
+    // first in case Skia tries to use it for something. In practice, n32info
+    // and *info color spaces match, so it should work without removing the
+    // color spaces, but better be safe.
+    SkImageInfo n32info_no_colorspace = n32info.makeColorSpace(nullptr);
+    SkImageInfo info_no_colorspace = info->makeColorSpace(nullptr);
+
+    SkBitmap bitmap;
+    bitmap.installPixels(n32info_no_colorspace, n32memory.get(),
+                         n32info.minRowBytes());
+    return bitmap.readPixels(info_no_colorspace, memory, info->minRowBytes(), 0,
+                             0);
+  }
+
+  return paint_image_generator_->GetPixels(*info, memory, info->minRowBytes(),
+                                           frame_index(), unique_id());
+}
+
+bool PaintImage::DecodeFromSkImage(void* memory,
+                                   SkImageInfo* info,
+                                   sk_sp<SkColorSpace> color_space) const {
   auto image = GetSkImage();
   DCHECK(image);
   if (color_space) {
@@ -126,7 +190,7 @@ bool PaintImage::Decode(void* memory,
   // given color space, since it can produce incorrect results.
   bool result = image->readPixels(*info, memory, info->minRowBytes(), 0, 0,
                                   SkImage::kDisallow_CachingHint);
-  *info = info->makeColorSpace(color_space);
+  *info = info->makeColorSpace(std::move(color_space));
   return result;
 }
 

@@ -147,6 +147,13 @@ class CC_PAINT_EXPORT PaintImage {
   friend class PaintImageBuilder;
   FRIEND_TEST_ALL_PREFIXES(PaintImageTest, Subsetting);
 
+  bool DecodeFromGenerator(void* memory,
+                           SkImageInfo* info,
+                           sk_sp<SkColorSpace> color_space) const;
+  bool DecodeFromSkImage(void* memory,
+                         SkImageInfo* info,
+                         sk_sp<SkColorSpace> color_space) const;
+
   sk_sp<SkImage> sk_image_;
 
   sk_sp<PaintRecord> paint_record_;

@@ -143,6 +143,7 @@ class PLATFORM_EXPORT ImageFrameGenerator final
                      ImageDecoder**,
                      SkBitmap::Allocator& external_allocator,
                      ImageDecoder::AlphaOption,
+                     const SkISize& scaled_size,
                      bool& used_external_allocator);
 
   const SkISize full_size_;

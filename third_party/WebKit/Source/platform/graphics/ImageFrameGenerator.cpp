@@ -150,9 +150,10 @@ bool ImageFrameGenerator::DecodeAndScale(
   TRACE_EVENT1("blink", "ImageFrameGenerator::decodeAndScale", "frame index",
                static_cast<int>(index));
 
-  // This implementation does not support scaling so check the requested size.
+  // This implementation does not support arbitrary scaling so check the
+  // requested size.
   SkISize scaled_size = SkISize::Make(info.width(), info.height());
-  DCHECK(full_size_ == scaled_size);
+  CHECK(GetSupportedDecodeSize(scaled_size) == scaled_size);
 
   // It is okay to allocate ref-counted ExternalMemoryAllocator on the stack,
   // because 1) it contains references to memory that will be invalid after
@@ -232,13 +233,13 @@ SkBitmap ImageFrameGenerator::TryToResumeDecode(
   // Lock the mutex, so only one thread can use the decoder at once.
   MutexLocker lock(decode_mutex_);
   const bool resume_decoding = ImageDecodingStore::Instance().LockDecoder(
-      this, full_size_, alpha_option, &decoder);
+      this, scaled_size, alpha_option, &decoder);
   DCHECK(!resume_decoding || decoder);
 
   bool used_external_allocator = false;
   ImageFrame* current_frame =
       Decode(data, all_data_received, index, &decoder, allocator, alpha_option,
-             used_external_allocator);
+             scaled_size, used_external_allocator);
 
   if (!decoder)
     return SkBitmap();
@@ -259,10 +260,10 @@ SkBitmap ImageFrameGenerator::TryToResumeDecode(
     return SkBitmap();
   }
 
-  SkBitmap full_size_bitmap = current_frame->Bitmap();
-  DCHECK_EQ(full_size_bitmap.width(), full_size_.width());
-  DCHECK_EQ(full_size_bitmap.height(), full_size_.height());
-  SetHasAlpha(index, !full_size_bitmap.isOpaque());
+  SkBitmap scaled_size_bitmap = current_frame->Bitmap();
+  DCHECK_EQ(scaled_size_bitmap.width(), scaled_size.width());
+  DCHECK_EQ(scaled_size_bitmap.height(), scaled_size.height());
+  SetHasAlpha(index, !scaled_size_bitmap.isOpaque());
 
   // Free as much memory as possible.  For single-frame images, we can
   // just delete the decoder entirely if they use the external allocator.
@@ -294,7 +295,7 @@ SkBitmap ImageFrameGenerator::TryToResumeDecode(
                                                  std::move(decoder_container));
   }
 
-  return full_size_bitmap;
+  return scaled_size_bitmap;
 }
 
 void ImageFrameGenerator::SetHasAlpha(size_t index, bool has_alpha) {
@@ -314,6 +315,7 @@ ImageFrame* ImageFrameGenerator::Decode(SegmentReader* data,
                                         ImageDecoder** decoder,
                                         SkBitmap::Allocator& allocator,
                                         ImageDecoder::AlphaOption alpha_option,
+                                        const SkISize& scaled_size,
                                         bool& used_external_allocator) {
 #if DCHECK_IS_ON()
   DCHECK(decode_mutex_.Locked());
@@ -327,12 +329,14 @@ ImageFrame* ImageFrameGenerator::Decode(SegmentReader* data,
   bool should_call_set_data = true;
   if (!*decoder) {
     new_decoder = true;
+    // TODO(vmpstr): The factory is only used for tests. We can convert all
+    // calls to use a factory so that we don't need to worry about this call.
     if (image_decoder_factory_)
       *decoder = image_decoder_factory_->Create().release();
 
     if (!*decoder) {
       *decoder = ImageDecoder::Create(data, all_data_received, alpha_option,
-                                      decoder_color_behavior_)
+                                      decoder_color_behavior_, scaled_size)
                      .release();
       // The newly created decoder just grabbed the data.  No need to reset it.
       should_call_set_data = false;

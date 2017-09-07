@@ -69,14 +69,22 @@ std::unique_ptr<ImageDecoder> ImageDecoder::Create(
     RefPtr<SegmentReader> data,
     bool data_complete,
     AlphaOption alpha_option,
-    const ColorBehavior& color_behavior) {
+    const ColorBehavior& color_behavior,
+    const SkISize& desired_size) {
   // At least kLongestSignatureLength bytes are needed to sniff the signature.
   if (data->size() < kLongestSignatureLength)
     return nullptr;
 
-  const size_t max_decoded_bytes =
-      Platform::Current() ? Platform::Current()->MaxDecodedImageBytes()
-                          : kNoDecodedImageByteLimit;
+  size_t max_decoded_bytes = Platform::Current()
+                                 ? Platform::Current()->MaxDecodedImageBytes()
+                                 : kNoDecodedImageByteLimit;
+  if (!desired_size.isEmpty()) {
+    static const size_t kBytesPerPixels = 4;
+    size_t requested_decoded_bytes =
+        kBytesPerPixels * desired_size.width() * desired_size.height();
+    DCHECK(requested_decoded_bytes <= max_decoded_bytes);
+    max_decoded_bytes = requested_decoded_bytes;
+  }
 
   // Access the first kLongestSignatureLength chars to sniff the signature.
   // (note: FastSharedBufferReader only makes a copy if the bytes are segmented)

@@ -116,13 +116,13 @@ bool DecodingImageGenerator::GetPixels(const SkImageInfo& dst_info,
   TRACE_EVENT1("blink", "DecodingImageGenerator::getPixels", "frame index",
                static_cast<int>(frame_index));
 
-  // Implementation doesn't support scaling yet, so make sure we're not given a
-  // different size.
-  // TODO(vmpstr): Implement support for supported sizes.
-  if (dst_info.dimensions() != GetSkImageInfo().dimensions()) {
+  // Implementation only supports decoding to a supported size.
+  if (dst_info.dimensions() != GetSupportedDecodeSize(dst_info.dimensions())) {
     return false;
   }
 
+  // TODO(vmpstr): We could do the color type conversion here by getting N32
+  // colortype decode first, and then converting to whatever was requested.
   if (dst_info.colorType() != kN32_SkColorType) {
     return false;
   }
