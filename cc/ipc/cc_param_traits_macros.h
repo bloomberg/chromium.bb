@@ -8,7 +8,6 @@
 #include "cc/base/filter_operation.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/quads/debug_border_draw_quad.h"
-#include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/stream_video_draw_quad.h"
@@ -17,6 +16,7 @@
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/quads/yuv_video_draw_quad.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
+#include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/resources/transferable_resource.h"
@@ -31,7 +31,7 @@
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CC_IPC_EXPORT
 
-IPC_ENUM_TRAITS_MAX_VALUE(cc::DrawQuad::Material, cc::DrawQuad::MATERIAL_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(viz::DrawQuad::Material, viz::DrawQuad::MATERIAL_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(cc::FilterOperation::FilterType,
                           cc::FilterOperation::FILTER_TYPE_LAST)
 // TODO(wutao): This trait belongs with skia code.
@@ -51,7 +51,7 @@ IPC_STRUCT_TRAITS_BEGIN(viz::SurfaceSequence)
   IPC_STRUCT_TRAITS_MEMBER(sequence)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(cc::DrawQuad)
+IPC_STRUCT_TRAITS_BEGIN(viz::DrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(material)
   IPC_STRUCT_TRAITS_MEMBER(rect)
   IPC_STRUCT_TRAITS_MEMBER(visible_rect)
@@ -60,13 +60,13 @@ IPC_STRUCT_TRAITS_BEGIN(cc::DrawQuad)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(cc::DebugBorderDrawQuad)
-  IPC_STRUCT_TRAITS_PARENT(cc::DrawQuad)
+  IPC_STRUCT_TRAITS_PARENT(viz::DrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(color)
   IPC_STRUCT_TRAITS_MEMBER(width)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(cc::RenderPassDrawQuad)
-  IPC_STRUCT_TRAITS_PARENT(cc::DrawQuad)
+  IPC_STRUCT_TRAITS_PARENT(viz::DrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(render_pass_id)
   IPC_STRUCT_TRAITS_MEMBER(mask_uv_rect)
   IPC_STRUCT_TRAITS_MEMBER(mask_texture_size)
@@ -76,13 +76,13 @@ IPC_STRUCT_TRAITS_BEGIN(cc::RenderPassDrawQuad)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(cc::SolidColorDrawQuad)
-  IPC_STRUCT_TRAITS_PARENT(cc::DrawQuad)
+  IPC_STRUCT_TRAITS_PARENT(viz::DrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(color)
   IPC_STRUCT_TRAITS_MEMBER(force_anti_aliasing_off)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(cc::StreamVideoDrawQuad)
-  IPC_STRUCT_TRAITS_PARENT(cc::DrawQuad)
+  IPC_STRUCT_TRAITS_PARENT(viz::DrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(overlay_resources)
   IPC_STRUCT_TRAITS_MEMBER(matrix)
 IPC_STRUCT_TRAITS_END()
@@ -92,13 +92,13 @@ IPC_STRUCT_TRAITS_BEGIN(cc::StreamVideoDrawQuad::OverlayResources)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(cc::SurfaceDrawQuad)
-  IPC_STRUCT_TRAITS_PARENT(cc::DrawQuad)
+  IPC_STRUCT_TRAITS_PARENT(viz::DrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(surface_id)
   IPC_STRUCT_TRAITS_MEMBER(surface_draw_quad_type)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(cc::TextureDrawQuad)
-  IPC_STRUCT_TRAITS_PARENT(cc::DrawQuad)
+  IPC_STRUCT_TRAITS_PARENT(viz::DrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(overlay_resources)
   IPC_STRUCT_TRAITS_MEMBER(premultiplied_alpha)
   IPC_STRUCT_TRAITS_MEMBER(uv_top_left)
@@ -118,7 +118,7 @@ IPC_STRUCT_TRAITS_BEGIN(cc::TextureDrawQuad::OverlayResources)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(cc::TileDrawQuad)
-  IPC_STRUCT_TRAITS_PARENT(cc::DrawQuad)
+  IPC_STRUCT_TRAITS_PARENT(viz::DrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(tex_coord_rect)
   IPC_STRUCT_TRAITS_MEMBER(texture_size)
   IPC_STRUCT_TRAITS_MEMBER(swizzle_contents)

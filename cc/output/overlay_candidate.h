@@ -35,11 +35,11 @@ class CC_EXPORT OverlayCandidate {
   // Returns true and fills in |candidate| if |draw_quad| is of a known quad
   // type and contains an overlayable resource.
   static bool FromDrawQuad(DisplayResourceProvider* resource_provider,
-                           const DrawQuad* quad,
+                           const viz::DrawQuad* quad,
                            OverlayCandidate* candidate);
   // Returns true if |quad| will not block quads underneath from becoming
   // an overlay.
-  static bool IsInvisibleQuad(const DrawQuad* quad);
+  static bool IsInvisibleQuad(const viz::DrawQuad* quad);
 
   // Returns true if any any of the quads in the list given by |quad_list_begin|
   // and |quad_list_end| are visible and on top of |candidate|.
@@ -99,7 +99,7 @@ class CC_EXPORT OverlayCandidate {
 
  private:
   static bool FromDrawQuadResource(DisplayResourceProvider* resource_provider,
-                                   const DrawQuad* quad,
+                                   const viz::DrawQuad* quad,
                                    viz::ResourceId resource_id,
                                    bool y_flipped,
                                    OverlayCandidate* candidate);

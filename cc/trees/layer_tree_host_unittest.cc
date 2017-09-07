@@ -27,7 +27,6 @@
 #include "cc/layers/video_layer.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/swap_promise.h"
-#include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/resources/ui_resource_manager.h"
@@ -62,6 +61,7 @@
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/common/quads/copy_output_result.h"
+#include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -6337,7 +6337,7 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
     RenderPass* root_pass = frame_data->render_passes.back().get();
     for (auto* draw_quad : root_pass->quad_list) {
       // Checkerboards mean an incomplete frame.
-      if (draw_quad->material != DrawQuad::TILED_CONTENT)
+      if (draw_quad->material != viz::DrawQuad::TILED_CONTENT)
         return 0.f;
       const TileDrawQuad* quad = TileDrawQuad::MaterialCast(draw_quad);
       float quad_scale =
@@ -7030,9 +7030,11 @@ class LayerTreeTestMaskLayerForSurfaceWithContentRectNotAtOrigin
     EXPECT_EQ(2u, root_pass->quad_list.size());
 
     // There's a solid color quad under everything.
-    EXPECT_EQ(DrawQuad::SOLID_COLOR, root_pass->quad_list.back()->material);
+    EXPECT_EQ(viz::DrawQuad::SOLID_COLOR,
+              root_pass->quad_list.back()->material);
 
-    EXPECT_EQ(DrawQuad::RENDER_PASS, root_pass->quad_list.front()->material);
+    EXPECT_EQ(viz::DrawQuad::RENDER_PASS,
+              root_pass->quad_list.front()->material);
     const RenderPassDrawQuad* render_pass_quad =
         RenderPassDrawQuad::MaterialCast(root_pass->quad_list.front());
     EXPECT_EQ(gfx::Rect(50, 50, 50, 50).ToString(),
@@ -7157,10 +7159,12 @@ class LayerTreeTestMaskLayerForSurfaceWithClippedLayer : public LayerTreeTest {
     EXPECT_EQ(2u, root_pass->quad_list.size());
 
     // There's a solid color quad under everything.
-    EXPECT_EQ(DrawQuad::SOLID_COLOR, root_pass->quad_list.back()->material);
+    EXPECT_EQ(viz::DrawQuad::SOLID_COLOR,
+              root_pass->quad_list.back()->material);
 
     // The surface is clipped to 10x20.
-    EXPECT_EQ(DrawQuad::RENDER_PASS, root_pass->quad_list.front()->material);
+    EXPECT_EQ(viz::DrawQuad::RENDER_PASS,
+              root_pass->quad_list.front()->material);
     const RenderPassDrawQuad* render_pass_quad =
         RenderPassDrawQuad::MaterialCast(root_pass->quad_list.front());
     EXPECT_EQ(gfx::Rect(20, 10, 10, 20).ToString(),
@@ -7279,9 +7283,11 @@ class LayerTreeTestMaskLayerWithScaling : public LayerTreeTest {
     EXPECT_EQ(2u, root_pass->quad_list.size());
 
     // There's a solid color quad under everything.
-    EXPECT_EQ(DrawQuad::SOLID_COLOR, root_pass->quad_list.back()->material);
+    EXPECT_EQ(viz::DrawQuad::SOLID_COLOR,
+              root_pass->quad_list.back()->material);
 
-    EXPECT_EQ(DrawQuad::RENDER_PASS, root_pass->quad_list.front()->material);
+    EXPECT_EQ(viz::DrawQuad::RENDER_PASS,
+              root_pass->quad_list.front()->material);
     const RenderPassDrawQuad* render_pass_quad =
         RenderPassDrawQuad::MaterialCast(root_pass->quad_list.front());
     switch (host_impl->active_tree()->source_frame_number()) {
@@ -7408,10 +7414,12 @@ class LayerTreeTestMaskWithNonExactTextureSize : public LayerTreeTest {
     EXPECT_EQ(2u, root_pass->quad_list.size());
 
     // There's a solid color quad under everything.
-    EXPECT_EQ(DrawQuad::SOLID_COLOR, root_pass->quad_list.back()->material);
+    EXPECT_EQ(viz::DrawQuad::SOLID_COLOR,
+              root_pass->quad_list.back()->material);
 
     // The surface is 100x100
-    EXPECT_EQ(DrawQuad::RENDER_PASS, root_pass->quad_list.front()->material);
+    EXPECT_EQ(viz::DrawQuad::RENDER_PASS,
+              root_pass->quad_list.front()->material);
     const RenderPassDrawQuad* render_pass_quad =
         RenderPassDrawQuad::MaterialCast(root_pass->quad_list.front());
     EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
@@ -7477,11 +7485,13 @@ class LayerTreeTestSolidColorMaskLayer : public LayerTreeTest {
     EXPECT_EQ(2u, root_pass->quad_list.size());
 
     // There's a solid color quad under everything.
-    EXPECT_EQ(DrawQuad::SOLID_COLOR, root_pass->quad_list.back()->material);
+    EXPECT_EQ(viz::DrawQuad::SOLID_COLOR,
+              root_pass->quad_list.back()->material);
 
     // Mask layer tiles should not be skipped even if the mask layer is solid
     // color.
-    EXPECT_EQ(DrawQuad::RENDER_PASS, root_pass->quad_list.front()->material);
+    EXPECT_EQ(viz::DrawQuad::RENDER_PASS,
+              root_pass->quad_list.front()->material);
     const RenderPassDrawQuad* render_pass_quad =
         RenderPassDrawQuad::MaterialCast(root_pass->quad_list.front());
     EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),

@@ -11,9 +11,9 @@
 #include "cc/ipc/cc_ipc_export.h"
 #include "cc/ipc/cc_param_traits_macros.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/quads/draw_quad.h"
 #include "cc/quads/stream_video_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
+#include "components/viz/common/quads/draw_quad.h"
 #include "gpu/ipc/common/gpu_command_buffer_traits.h"
 #include "ipc/ipc_message_macros.h"
 
@@ -114,8 +114,8 @@ struct CC_IPC_EXPORT ParamTraits<cc::CompositorFrame> {
 };
 
 template <>
-struct CC_IPC_EXPORT ParamTraits<cc::DrawQuad::Resources> {
-  typedef cc::DrawQuad::Resources param_type;
+struct CC_IPC_EXPORT ParamTraits<viz::DrawQuad::Resources> {
+  typedef viz::DrawQuad::Resources param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,

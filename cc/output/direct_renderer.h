@@ -123,10 +123,10 @@ class CC_EXPORT DirectRenderer {
 
   gfx::Rect DeviceViewportRectInDrawSpace() const;
   gfx::Rect OutputSurfaceRectInDrawSpace() const;
-  void SetScissorStateForQuad(const DrawQuad& quad,
+  void SetScissorStateForQuad(const viz::DrawQuad& quad,
                               const gfx::Rect& render_pass_scissor,
                               bool use_render_pass_scissor);
-  bool ShouldSkipQuad(const DrawQuad& quad,
+  bool ShouldSkipQuad(const viz::DrawQuad& quad,
                       const gfx::Rect& render_pass_scissor);
   void SetScissorTestRectInDrawSpace(const gfx::Rect& draw_space_rect);
 
@@ -159,7 +159,7 @@ class CC_EXPORT DirectRenderer {
   // |clip_region| is a (possibly null) pointer to a quad in the same
   // space as the quad. When non-null only the area of the quad that overlaps
   // with clip_region will be drawn.
-  virtual void DoDrawQuad(const DrawQuad* quad,
+  virtual void DoDrawQuad(const viz::DrawQuad* quad,
                           const gfx::QuadF* clip_region) = 0;
   virtual void BeginDrawingFrame() = 0;
   virtual void FinishDrawingFrame() = 0;

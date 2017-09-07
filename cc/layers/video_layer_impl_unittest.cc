@@ -8,7 +8,6 @@
 
 #include "cc/layers/video_frame_provider_client_impl.h"
 #include "cc/output/output_surface.h"
-#include "cc/quads/draw_quad.h"
 #include "cc/quads/stream_video_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/quads/yuv_video_draw_quad.h"
@@ -16,6 +15,7 @@
 #include "cc/test/layer_test_common.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/quads/draw_quad.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -320,8 +320,8 @@ TEST(VideoLayerImplTest, SoftwareVideoFrameGeneratesYUVQuad) {
   impl.AppendQuadsWithOcclusion(video_layer_impl, occluded);
 
   EXPECT_EQ(1u, impl.quad_list().size());
-  const DrawQuad* draw_quad = impl.quad_list().ElementAt(0);
-  ASSERT_EQ(DrawQuad::YUV_VIDEO_CONTENT, draw_quad->material);
+  const viz::DrawQuad* draw_quad = impl.quad_list().ElementAt(0);
+  ASSERT_EQ(viz::DrawQuad::YUV_VIDEO_CONTENT, draw_quad->material);
 
   const YUVVideoDrawQuad* yuv_draw_quad =
       static_cast<const YUVVideoDrawQuad*>(draw_quad);
@@ -366,8 +366,8 @@ TEST(VideoLayerImplTest, NativeYUVFrameGeneratesYUVQuad) {
   impl.AppendQuadsWithOcclusion(video_layer_impl, occluded);
 
   EXPECT_EQ(1u, impl.quad_list().size());
-  const DrawQuad* draw_quad = impl.quad_list().ElementAt(0);
-  ASSERT_EQ(DrawQuad::YUV_VIDEO_CONTENT, draw_quad->material);
+  const viz::DrawQuad* draw_quad = impl.quad_list().ElementAt(0);
+  ASSERT_EQ(viz::DrawQuad::YUV_VIDEO_CONTENT, draw_quad->material);
 
   const YUVVideoDrawQuad* yuv_draw_quad =
       static_cast<const YUVVideoDrawQuad*>(draw_quad);
@@ -410,8 +410,8 @@ TEST(VideoLayerImplTest, NativeARGBFrameGeneratesTextureQuad) {
   impl.AppendQuadsWithOcclusion(video_layer_impl, occluded);
 
   EXPECT_EQ(1u, impl.quad_list().size());
-  const DrawQuad* draw_quad = impl.quad_list().ElementAt(0);
-  ASSERT_EQ(DrawQuad::TEXTURE_CONTENT, draw_quad->material);
+  const viz::DrawQuad* draw_quad = impl.quad_list().ElementAt(0);
+  ASSERT_EQ(viz::DrawQuad::TEXTURE_CONTENT, draw_quad->material);
 
   const TextureDrawQuad* texture_draw_quad =
       TextureDrawQuad::MaterialCast(draw_quad);

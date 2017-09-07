@@ -95,7 +95,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public cc::DirectRenderer {
   void SetScissorTestRect(const gfx::Rect& scissor_rect) override;
   void PrepareSurfaceForPass(SurfaceInitializationMode initialization_mode,
                              const gfx::Rect& render_pass_scissor) override;
-  void DoDrawQuad(const class cc::DrawQuad*,
+  void DoDrawQuad(const class DrawQuad*,
                   const gfx::QuadF* draw_region) override;
   void BeginDrawingFrame() override;
   void FinishDrawingFrame() override;
@@ -117,7 +117,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public cc::DirectRenderer {
   // inflated quad's edge data.
   static void SetupQuadForClippingAndAntialiasing(
       const gfx::Transform& device_transform,
-      const cc::DrawQuad* quad,
+      const DrawQuad* quad,
       const gfx::QuadF* device_layer_quad,
       const gfx::QuadF* clip_region,
       gfx::QuadF* local_quad,
@@ -210,7 +210,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public cc::DirectRenderer {
                         const gfx::QuadF* clip_region);
   void DrawOverlayCandidateQuadBorder(float* gl_matrix);
 
-  void SetShaderOpacity(const cc::DrawQuad* quad);
+  void SetShaderOpacity(const DrawQuad* quad);
   void SetShaderQuadF(const gfx::QuadF& quad);
   void SetShaderMatrix(const gfx::Transform& transform);
   void SetShaderColor(SkColor color, float opacity);

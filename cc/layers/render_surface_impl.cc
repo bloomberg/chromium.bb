@@ -505,7 +505,7 @@ void RenderSurfaceImpl::TileMaskLayer(RenderPass* render_pass,
         -content_rect().OffsetFromOrigin());
 
     switch (temp_quad->material) {
-      case DrawQuad::TILED_CONTENT: {
+      case viz::DrawQuad::TILED_CONTENT: {
         DCHECK_EQ(1U, temp_quad->resources.count);
         gfx::Size mask_texture_size =
             static_cast<ContentDrawQuadBase*>(temp_quad)->texture_size;
@@ -532,7 +532,7 @@ void RenderSurfaceImpl::TileMaskLayer(RenderPass* render_pass,
                      FiltersOrigin(),
                      quad_rect_in_non_normalized_texture_space);
       } break;
-      case DrawQuad::SOLID_COLOR: {
+      case viz::DrawQuad::SOLID_COLOR: {
         if (!static_cast<SolidColorDrawQuad*>(temp_quad)->color)
           continue;
         SkAlpha solid = SK_AlphaOPAQUE;
@@ -548,7 +548,7 @@ void RenderSurfaceImpl::TileMaskLayer(RenderPass* render_pass,
                      FiltersOrigin(),
                      quad_rect_in_non_normalized_texture_space);
       } break;
-      case DrawQuad::DEBUG_BORDER:
+      case viz::DrawQuad::DEBUG_BORDER:
         NOTIMPLEMENTED();
         break;
       default:

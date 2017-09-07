@@ -20,8 +20,8 @@ void SurfaceDrawQuad::SetNew(const viz::SharedQuadState* shared_quad_state,
                              SurfaceDrawQuadType surface_draw_quad_type,
                              SurfaceDrawQuad* fallback_quad) {
   bool needs_blending = true;
-  DrawQuad::SetAll(shared_quad_state, DrawQuad::SURFACE_CONTENT, rect,
-                   visible_rect, needs_blending);
+  viz::DrawQuad::SetAll(shared_quad_state, viz::DrawQuad::SURFACE_CONTENT, rect,
+                        visible_rect, needs_blending);
   this->surface_id = surface_id;
   this->surface_draw_quad_type = surface_draw_quad_type;
   this->fallback_quad = fallback_quad;
@@ -34,15 +34,16 @@ void SurfaceDrawQuad::SetAll(const viz::SharedQuadState* shared_quad_state,
                              const viz::SurfaceId& surface_id,
                              SurfaceDrawQuadType surface_draw_quad_type,
                              SurfaceDrawQuad* fallback_quad) {
-  DrawQuad::SetAll(shared_quad_state, DrawQuad::SURFACE_CONTENT, rect,
-                   visible_rect, needs_blending);
+  viz::DrawQuad::SetAll(shared_quad_state, viz::DrawQuad::SURFACE_CONTENT, rect,
+                        visible_rect, needs_blending);
   this->surface_id = surface_id;
   this->surface_draw_quad_type = surface_draw_quad_type;
   this->fallback_quad = fallback_quad;
 }
 
-const SurfaceDrawQuad* SurfaceDrawQuad::MaterialCast(const DrawQuad* quad) {
-  DCHECK_EQ(quad->material, DrawQuad::SURFACE_CONTENT);
+const SurfaceDrawQuad* SurfaceDrawQuad::MaterialCast(
+    const viz::DrawQuad* quad) {
+  DCHECK_EQ(quad->material, viz::DrawQuad::SURFACE_CONTENT);
   return static_cast<const SurfaceDrawQuad*>(quad);
 }
 

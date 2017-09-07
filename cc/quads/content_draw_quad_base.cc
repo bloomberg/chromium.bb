@@ -19,7 +19,7 @@ ContentDrawQuadBase::~ContentDrawQuadBase() {
 }
 
 void ContentDrawQuadBase::SetNew(const viz::SharedQuadState* shared_quad_state,
-                                 DrawQuad::Material material,
+                                 viz::DrawQuad::Material material,
                                  const gfx::Rect& rect,
                                  const gfx::Rect& visible_rect,
                                  bool needs_blending,
@@ -27,8 +27,8 @@ void ContentDrawQuadBase::SetNew(const viz::SharedQuadState* shared_quad_state,
                                  const gfx::Size& texture_size,
                                  bool swizzle_contents,
                                  bool nearest_neighbor) {
-  DrawQuad::SetAll(shared_quad_state, material, rect, visible_rect,
-                   needs_blending);
+  viz::DrawQuad::SetAll(shared_quad_state, material, rect, visible_rect,
+                        needs_blending);
   this->tex_coord_rect = tex_coord_rect;
   this->texture_size = texture_size;
   this->swizzle_contents = swizzle_contents;
@@ -36,7 +36,7 @@ void ContentDrawQuadBase::SetNew(const viz::SharedQuadState* shared_quad_state,
 }
 
 void ContentDrawQuadBase::SetAll(const viz::SharedQuadState* shared_quad_state,
-                                 DrawQuad::Material material,
+                                 viz::DrawQuad::Material material,
                                  const gfx::Rect& rect,
                                  const gfx::Rect& visible_rect,
                                  bool needs_blending,
@@ -44,8 +44,8 @@ void ContentDrawQuadBase::SetAll(const viz::SharedQuadState* shared_quad_state,
                                  const gfx::Size& texture_size,
                                  bool swizzle_contents,
                                  bool nearest_neighbor) {
-  DrawQuad::SetAll(shared_quad_state, material, rect, visible_rect,
-                   needs_blending);
+  viz::DrawQuad::SetAll(shared_quad_state, material, rect, visible_rect,
+                        needs_blending);
   this->tex_coord_rect = tex_coord_rect;
   this->texture_size = texture_size;
   this->swizzle_contents = swizzle_contents;

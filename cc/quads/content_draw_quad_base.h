@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "cc/cc_export.h"
-#include "cc/quads/draw_quad.h"
+#include "components/viz/common/quads/draw_quad.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -18,10 +18,10 @@ class Rect;
 
 namespace cc {
 
-class CC_EXPORT ContentDrawQuadBase : public DrawQuad {
+class CC_EXPORT ContentDrawQuadBase : public viz::DrawQuad {
  public:
   void SetNew(const viz::SharedQuadState* shared_quad_state,
-              DrawQuad::Material material,
+              viz::DrawQuad::Material material,
               const gfx::Rect& rect,
               const gfx::Rect& visible_rect,
               bool needs_blending,
@@ -31,7 +31,7 @@ class CC_EXPORT ContentDrawQuadBase : public DrawQuad {
               bool nearest_neighbor);
 
   void SetAll(const viz::SharedQuadState* shared_quad_state,
-              DrawQuad::Material material,
+              viz::DrawQuad::Material material,
               const gfx::Rect& rect,
               const gfx::Rect& visible_rect,
               bool needs_blending,

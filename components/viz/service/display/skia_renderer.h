@@ -47,8 +47,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public cc::DirectRenderer {
   void SetScissorTestRect(const gfx::Rect& scissor_rect) override;
   void PrepareSurfaceForPass(SurfaceInitializationMode initialization_mode,
                              const gfx::Rect& render_pass_scissor) override;
-  void DoDrawQuad(const cc::DrawQuad* quad,
-                  const gfx::QuadF* draw_region) override;
+  void DoDrawQuad(const DrawQuad* quad, const gfx::QuadF* draw_region) override;
   void BeginDrawingFrame() override;
   void FinishDrawingFrame() override;
   bool FlippedFramebuffer() const override;
@@ -71,7 +70,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public cc::DirectRenderer {
   void DrawSolidColorQuad(const cc::SolidColorDrawQuad* quad);
   void DrawTextureQuad(const cc::TextureDrawQuad* quad);
   void DrawTileQuad(const cc::TileDrawQuad* quad);
-  void DrawUnsupportedQuad(const cc::DrawQuad* quad);
+  void DrawUnsupportedQuad(const DrawQuad* quad);
   bool ShouldApplyBackgroundFilters(
       const cc::RenderPassDrawQuad* quad,
       const cc::FilterOperations* background_filters) const;

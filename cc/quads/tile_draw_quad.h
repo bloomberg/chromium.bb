@@ -44,7 +44,7 @@ class CC_EXPORT TileDrawQuad : public ContentDrawQuadBase {
               bool swizzle_contents,
               bool nearest_neighbor);
 
-  static const TileDrawQuad* MaterialCast(const DrawQuad*);
+  static const TileDrawQuad* MaterialCast(const viz::DrawQuad*);
 
   viz::ResourceId resource_id() const {
     return resources.ids[kResourceIdIndex];

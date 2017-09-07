@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
-#include "cc/quads/draw_quad.h"
+#include "components/viz/common/quads/draw_quad.h"
 
 namespace {
 // This threshold controls how "thick" a plane is. If a point's distance is
@@ -34,7 +34,7 @@ namespace cc {
 DrawPolygon::DrawPolygon() {
 }
 
-DrawPolygon::DrawPolygon(const DrawQuad* original,
+DrawPolygon::DrawPolygon(const viz::DrawQuad* original,
                          const std::vector<gfx::Point3F>& in_points,
                          const gfx::Vector3dF& normal,
                          int draw_order_index)
@@ -54,7 +54,7 @@ DrawPolygon::DrawPolygon(const DrawQuad* original,
 // This takes the original DrawQuad that this polygon should be based on,
 // a visible content rect to make the 4 corner points from, and a transformation
 // to move it and its normal into screen space.
-DrawPolygon::DrawPolygon(const DrawQuad* original_ref,
+DrawPolygon::DrawPolygon(const viz::DrawQuad* original_ref,
                          const gfx::RectF& visible_layer_rect,
                          const gfx::Transform& transform,
                          int draw_order_index)

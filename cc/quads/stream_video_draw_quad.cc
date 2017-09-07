@@ -21,8 +21,8 @@ void StreamVideoDrawQuad::SetNew(const viz::SharedQuadState* shared_quad_state,
                                  unsigned resource_id,
                                  gfx::Size resource_size_in_pixels,
                                  const gfx::Transform& matrix) {
-  DrawQuad::SetAll(shared_quad_state, DrawQuad::STREAM_VIDEO_CONTENT, rect,
-                   visible_rect, needs_blending);
+  viz::DrawQuad::SetAll(shared_quad_state, viz::DrawQuad::STREAM_VIDEO_CONTENT,
+                        rect, visible_rect, needs_blending);
   resources.ids[kResourceIdIndex] = resource_id;
   overlay_resources.size_in_pixels[kResourceIdIndex] = resource_size_in_pixels;
   resources.count = 1;
@@ -36,8 +36,8 @@ void StreamVideoDrawQuad::SetAll(const viz::SharedQuadState* shared_quad_state,
                                  unsigned resource_id,
                                  gfx::Size resource_size_in_pixels,
                                  const gfx::Transform& matrix) {
-  DrawQuad::SetAll(shared_quad_state, DrawQuad::STREAM_VIDEO_CONTENT, rect,
-                   visible_rect, needs_blending);
+  viz::DrawQuad::SetAll(shared_quad_state, viz::DrawQuad::STREAM_VIDEO_CONTENT,
+                        rect, visible_rect, needs_blending);
   resources.ids[kResourceIdIndex] = resource_id;
   overlay_resources.size_in_pixels[kResourceIdIndex] = resource_size_in_pixels;
   resources.count = 1;
@@ -45,8 +45,8 @@ void StreamVideoDrawQuad::SetAll(const viz::SharedQuadState* shared_quad_state,
 }
 
 const StreamVideoDrawQuad* StreamVideoDrawQuad::MaterialCast(
-    const DrawQuad* quad) {
-  DCHECK(quad->material == DrawQuad::STREAM_VIDEO_CONTENT);
+    const viz::DrawQuad* quad) {
+  DCHECK(quad->material == viz::DrawQuad::STREAM_VIDEO_CONTENT);
   return static_cast<const StreamVideoDrawQuad*>(quad);
 }
 

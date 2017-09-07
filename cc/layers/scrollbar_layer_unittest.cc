@@ -553,7 +553,7 @@ TEST_F(ScrollbarLayerTest, SolidColorDrawQuads) {
 
     const QuadList& quads = render_pass->quad_list;
     ASSERT_EQ(1u, quads.size());
-    EXPECT_EQ(DrawQuad::SOLID_COLOR, quads.front()->material);
+    EXPECT_EQ(viz::DrawQuad::SOLID_COLOR, quads.front()->material);
     EXPECT_EQ(gfx::Rect(6, 0, 39, 3), quads.front()->rect);
   }
 
@@ -568,7 +568,7 @@ TEST_F(ScrollbarLayerTest, SolidColorDrawQuads) {
 
     const QuadList& quads = render_pass->quad_list;
     ASSERT_EQ(1u, quads.size());
-    EXPECT_EQ(DrawQuad::SOLID_COLOR, quads.front()->material);
+    EXPECT_EQ(viz::DrawQuad::SOLID_COLOR, quads.front()->material);
     EXPECT_EQ(gfx::Rect(8, 0, 19, 3), quads.front()->rect);
   }
 
@@ -583,7 +583,7 @@ TEST_F(ScrollbarLayerTest, SolidColorDrawQuads) {
 
     const QuadList& quads = render_pass->quad_list;
     ASSERT_EQ(1u, quads.size());
-    EXPECT_EQ(DrawQuad::SOLID_COLOR, quads.front()->material);
+    EXPECT_EQ(viz::DrawQuad::SOLID_COLOR, quads.front()->material);
     EXPECT_EQ(gfx::Rect(1, 0, 98, 3), quads.front()->rect);
   }
 }
@@ -640,7 +640,7 @@ TEST_F(ScrollbarLayerTest, LayerDrivenSolidColorDrawQuads) {
 
     const QuadList& quads = render_pass->quad_list;
     ASSERT_EQ(1u, quads.size());
-    EXPECT_EQ(DrawQuad::SOLID_COLOR, quads.front()->material);
+    EXPECT_EQ(viz::DrawQuad::SOLID_COLOR, quads.front()->material);
     EXPECT_EQ(gfx::Rect(3, 0, 3, 3), quads.front()->rect);
   }
 }

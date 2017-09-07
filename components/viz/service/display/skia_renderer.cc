@@ -315,7 +315,7 @@ bool SkiaRenderer::IsSoftwareResource(ResourceId resource_id) const {
   return false;
 }
 
-void SkiaRenderer::DoDrawQuad(const cc::DrawQuad* quad,
+void SkiaRenderer::DoDrawQuad(const DrawQuad* quad,
                               const gfx::QuadF* draw_region) {
   if (!current_canvas_)
     return;
@@ -377,32 +377,32 @@ void SkiaRenderer::DoDrawQuad(const cc::DrawQuad* quad,
   }
 
   switch (quad->material) {
-    case cc::DrawQuad::DEBUG_BORDER:
+    case DrawQuad::DEBUG_BORDER:
       DrawDebugBorderQuad(cc::DebugBorderDrawQuad::MaterialCast(quad));
       break;
-    case cc::DrawQuad::PICTURE_CONTENT:
+    case DrawQuad::PICTURE_CONTENT:
       DrawPictureQuad(cc::PictureDrawQuad::MaterialCast(quad));
       break;
-    case cc::DrawQuad::RENDER_PASS:
+    case DrawQuad::RENDER_PASS:
       DrawRenderPassQuad(cc::RenderPassDrawQuad::MaterialCast(quad));
       break;
-    case cc::DrawQuad::SOLID_COLOR:
+    case DrawQuad::SOLID_COLOR:
       DrawSolidColorQuad(cc::SolidColorDrawQuad::MaterialCast(quad));
       break;
-    case cc::DrawQuad::TEXTURE_CONTENT:
+    case DrawQuad::TEXTURE_CONTENT:
       DrawTextureQuad(cc::TextureDrawQuad::MaterialCast(quad));
       break;
-    case cc::DrawQuad::TILED_CONTENT:
+    case DrawQuad::TILED_CONTENT:
       DrawTileQuad(cc::TileDrawQuad::MaterialCast(quad));
       break;
-    case cc::DrawQuad::SURFACE_CONTENT:
+    case DrawQuad::SURFACE_CONTENT:
       // Surface content should be fully resolved to other quad types before
       // reaching a direct renderer.
       NOTREACHED();
       break;
-    case cc::DrawQuad::INVALID:
-    case cc::DrawQuad::YUV_VIDEO_CONTENT:
-    case cc::DrawQuad::STREAM_VIDEO_CONTENT:
+    case DrawQuad::INVALID:
+    case DrawQuad::YUV_VIDEO_CONTENT:
+    case DrawQuad::STREAM_VIDEO_CONTENT:
       DrawUnsupportedQuad(quad);
       NOTREACHED();
       break;
@@ -604,7 +604,7 @@ void SkiaRenderer::DrawRenderPassQuad(const cc::RenderPassDrawQuad* quad) {
   current_canvas_->drawRect(dest_visible_rect, current_paint_);
 }
 
-void SkiaRenderer::DrawUnsupportedQuad(const cc::DrawQuad* quad) {
+void SkiaRenderer::DrawUnsupportedQuad(const DrawQuad* quad) {
   // TODO(weiliangc): Make sure unsupported quads work. (crbug.com/644851)
   NOTIMPLEMENTED();
 #ifdef NDEBUG

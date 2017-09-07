@@ -16,8 +16,8 @@
 #include "cc/base/filter_operations.h"
 #include "cc/base/list_container.h"
 #include "cc/cc_export.h"
-#include "cc/quads/draw_quad.h"
 #include "cc/quads/largest_draw_quad.h"
+#include "components/viz/common/quads/draw_quad.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -31,16 +31,16 @@ class TracedValue;
 
 namespace viz {
 class CopyOutputRequest;
+class DrawQuad;
 class SharedQuadState;
 }
 
 namespace cc {
 
-class DrawQuad;
 class RenderPassDrawQuad;
 
 // A list of DrawQuad objects, sorted internally in front-to-back order.
-class CC_EXPORT QuadList : public ListContainer<DrawQuad> {
+class CC_EXPORT QuadList : public ListContainer<viz::DrawQuad> {
  public:
   QuadList();
   explicit QuadList(size_t default_size_to_reserve);
@@ -110,7 +110,7 @@ class CC_EXPORT RenderPass {
   RenderPassDrawQuad* CopyFromAndAppendRenderPassDrawQuad(
       const RenderPassDrawQuad* quad,
       RenderPassId render_pass_id);
-  DrawQuad* CopyFromAndAppendDrawQuad(const DrawQuad* quad);
+  viz::DrawQuad* CopyFromAndAppendDrawQuad(const viz::DrawQuad* quad);
 
   // Uniquely identifies the render pass in the compositor's current frame.
   RenderPassId id = 0;
@@ -158,7 +158,7 @@ class CC_EXPORT RenderPass {
 
  private:
   template <typename DrawQuadType>
-  DrawQuadType* CopyFromAndAppendTypedDrawQuad(const DrawQuad* quad) {
+  DrawQuadType* CopyFromAndAppendTypedDrawQuad(const viz::DrawQuad* quad) {
     return quad_list.AllocateAndCopyFrom(DrawQuadType::MaterialCast(quad));
   }
 

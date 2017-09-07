@@ -52,8 +52,8 @@ void RenderPassDrawQuad::SetAll(const viz::SharedQuadState* shared_quad_state,
                                 const gfx::RectF& tex_coord_rect) {
   DCHECK(render_pass_id);
 
-  DrawQuad::SetAll(shared_quad_state, DrawQuad::RENDER_PASS, rect, visible_rect,
-                   needs_blending);
+  viz::DrawQuad::SetAll(shared_quad_state, viz::DrawQuad::RENDER_PASS, rect,
+                        visible_rect, needs_blending);
   this->render_pass_id = render_pass_id;
   resources.ids[kMaskResourceIdIndex] = mask_resource_id;
   resources.count = mask_resource_id ? 1 : 0;
@@ -65,8 +65,8 @@ void RenderPassDrawQuad::SetAll(const viz::SharedQuadState* shared_quad_state,
 }
 
 const RenderPassDrawQuad* RenderPassDrawQuad::MaterialCast(
-    const DrawQuad* quad) {
-  DCHECK_EQ(quad->material, DrawQuad::RENDER_PASS);
+    const viz::DrawQuad* quad) {
+  DCHECK_EQ(quad->material, viz::DrawQuad::RENDER_PASS);
   return static_cast<const RenderPassDrawQuad*>(quad);
 }
 

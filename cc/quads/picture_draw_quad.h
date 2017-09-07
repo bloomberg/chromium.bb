@@ -54,7 +54,7 @@ class CC_EXPORT PictureDrawQuad : public ContentDrawQuadBase {
   scoped_refptr<RasterSource> raster_source;
   viz::ResourceFormat texture_format;
 
-  static const PictureDrawQuad* MaterialCast(const DrawQuad* quad);
+  static const PictureDrawQuad* MaterialCast(const viz::DrawQuad* quad);
 
  private:
   void ExtendValue(base::trace_event::TracedValue* value) const override;

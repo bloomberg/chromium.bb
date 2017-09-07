@@ -144,7 +144,7 @@ class CC_EXPORT LayerImpl {
   virtual void DidDraw(ResourceProvider* resource_provider);
 
   // Verify that the resource ids in the quad are valid.
-  void ValidateQuadResources(DrawQuad* quad) const {
+  void ValidateQuadResources(viz::DrawQuad* quad) const {
 #if DCHECK_IS_ON()
     ValidateQuadResourcesInternal(quad);
 #endif
@@ -459,7 +459,7 @@ class CC_EXPORT LayerImpl {
   gfx::Rect GetScaledEnclosingRectInTargetSpace(float scale) const;
 
  private:
-  void ValidateQuadResourcesInternal(DrawQuad* quad) const;
+  void ValidateQuadResourcesInternal(viz::DrawQuad* quad) const;
 
   virtual const char* LayerTypeAsString() const;
 

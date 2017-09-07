@@ -35,7 +35,7 @@ DCLayerOverlayProcessor::DCLayerResult FromYUVQuad(
 }
 
 // This returns the smallest rectangle in target space that contains the quad.
-gfx::RectF ClippedQuadRectangle(const DrawQuad* quad) {
+gfx::RectF ClippedQuadRectangle(const viz::DrawQuad* quad) {
   gfx::RectF quad_rect = MathUtil::MapClippedRect(
       quad->shared_quad_state->quad_to_target_transform,
       gfx::RectF(quad->rect));
@@ -55,9 +55,9 @@ gfx::RectF GetOcclusionBounds(const gfx::RectF& target_quad,
     float opacity = overlap_iter->shared_quad_state->opacity;
     if (opacity < std::numeric_limits<float>::epsilon())
       continue;
-    const DrawQuad* quad = *overlap_iter;
+    const viz::DrawQuad* quad = *overlap_iter;
     gfx::RectF overlap_rect = ClippedQuadRectangle(quad);
-    if (quad->material == DrawQuad::SOLID_COLOR) {
+    if (quad->material == viz::DrawQuad::SOLID_COLOR) {
       SkColor color = SolidColorDrawQuad::MaterialCast(quad)->color;
       float alpha = (SkColorGetA(color) * (1.0f / 255.0f)) * opacity;
       if (quad->ShouldDrawWithBlending() &&
@@ -100,7 +100,7 @@ DCLayerOverlayProcessor::DCLayerResult DCLayerOverlayProcessor::FromDrawQuad(
 
   DCLayerResult result;
   switch (quad->material) {
-    case DrawQuad::YUV_VIDEO_CONTENT:
+    case viz::DrawQuad::YUV_VIDEO_CONTENT:
       result =
           FromYUVQuad(resource_provider, YUVVideoDrawQuad::MaterialCast(*quad),
                       ca_layer_overlay);
@@ -158,7 +158,7 @@ QuadList::Iterator DCLayerOverlayProcessor::ProcessRenderPassDrawQuad(
     RenderPass* render_pass,
     gfx::Rect* damage_rect,
     QuadList::Iterator it) {
-  DCHECK_EQ(DrawQuad::RENDER_PASS, it->material);
+  DCHECK_EQ(viz::DrawQuad::RENDER_PASS, it->material);
   const RenderPassDrawQuad* rpdq = RenderPassDrawQuad::MaterialCast(*it);
 
   ++it;
@@ -235,7 +235,7 @@ void DCLayerOverlayProcessor::ProcessRenderPass(
     // next_it may be modified inside the loop if methods modify the quad list
     // and invalidate iterators to it.
 
-    if (it->material == DrawQuad::RENDER_PASS) {
+    if (it->material == viz::DrawQuad::RENDER_PASS) {
       next_it = ProcessRenderPassDrawQuad(render_pass, damage_rect, it);
       continue;
     }

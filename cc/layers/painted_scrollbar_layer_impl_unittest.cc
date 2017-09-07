@@ -6,10 +6,10 @@
 
 #include <stddef.h>
 
-#include "cc/quads/draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/ui_resource_bitmap.h"
 #include "cc/test/layer_test_common.h"
+#include "components/viz/common/quads/draw_quad.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -77,11 +77,11 @@ TEST(PaintedScrollbarLayerImplTest, Occlusion) {
     // Note: this is also testing that the thumb and track are both
     // scaled by the internal contents scale.  It's not occlusion-related
     // but is easy to verify here.
-    const DrawQuad* thumb_draw_quad = impl.quad_list().ElementAt(0);
-    const DrawQuad* track_draw_quad = impl.quad_list().ElementAt(1);
+    const viz::DrawQuad* thumb_draw_quad = impl.quad_list().ElementAt(0);
+    const viz::DrawQuad* track_draw_quad = impl.quad_list().ElementAt(1);
 
-    EXPECT_EQ(DrawQuad::TEXTURE_CONTENT, thumb_draw_quad->material);
-    EXPECT_EQ(DrawQuad::TEXTURE_CONTENT, track_draw_quad->material);
+    EXPECT_EQ(viz::DrawQuad::TEXTURE_CONTENT, thumb_draw_quad->material);
+    EXPECT_EQ(viz::DrawQuad::TEXTURE_CONTENT, track_draw_quad->material);
 
     const TextureDrawQuad* thumb_quad =
         TextureDrawQuad::MaterialCast(thumb_draw_quad);

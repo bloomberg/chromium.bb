@@ -8158,7 +8158,7 @@ TEST_F(LayerTreeHostImplTest, MayContainVideo) {
 class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
  protected:
   LayerTreeHostImplViewportCoveredTest()
-      : gutter_quad_material_(DrawQuad::SOLID_COLOR),
+      : gutter_quad_material_(viz::DrawQuad::SOLID_COLOR),
         child_(NULL),
         did_activate_pending_tree_(false) {}
 
@@ -8324,7 +8324,7 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
 
   void DidActivateSyncTree() override { did_activate_pending_tree_ = true; }
 
-  void set_gutter_quad_material(DrawQuad::Material material) {
+  void set_gutter_quad_material(viz::DrawQuad::Material material) {
     gutter_quad_material_ = material;
   }
   void set_gutter_texture_size(const gfx::Size& gutter_texture_size) {
@@ -8348,7 +8348,7 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
   // Make sure that the texture coordinates match their expectations.
   void ValidateTextureDrawQuads(const QuadList& quad_list) {
     for (auto* quad : quad_list) {
-      if (quad->material != DrawQuad::TEXTURE_CONTENT)
+      if (quad->material != viz::DrawQuad::TEXTURE_CONTENT)
         continue;
       const TextureDrawQuad* texture_quad = TextureDrawQuad::MaterialCast(quad);
       gfx::SizeF gutter_texture_size_pixels =
@@ -8372,7 +8372,7 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
         size, host_impl_->active_tree()->device_scale_factor());
   }
 
-  DrawQuad::Material gutter_quad_material_;
+  viz::DrawQuad::Material gutter_quad_material_;
   gfx::Size gutter_texture_size_;
   gfx::Size viewport_size_;
   BlendStateCheckLayer* child_;
@@ -8662,7 +8662,8 @@ TEST_F(LayerTreeHostImplTest, HasTransparentBackground) {
   {
     const auto& root_pass = frame.render_passes.back();
     ASSERT_EQ(1u, root_pass->quad_list.size());
-    EXPECT_EQ(DrawQuad::SOLID_COLOR, root_pass->quad_list.front()->material);
+    EXPECT_EQ(viz::DrawQuad::SOLID_COLOR,
+              root_pass->quad_list.front()->material);
   }
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
@@ -8829,7 +8830,7 @@ TEST_F(LayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
 
   ASSERT_EQ(1u, frame.render_passes.size());
   ASSERT_LE(1u, frame.render_passes[0]->quad_list.size());
-  const DrawQuad* quad = frame.render_passes[0]->quad_list.front();
+  const viz::DrawQuad* quad = frame.render_passes[0]->quad_list.front();
 
   bool clipped = false, force_aa = false;
   gfx::QuadF device_layer_quad = MathUtil::MapQuad(
@@ -12062,16 +12063,16 @@ TEST_F(LayerTreeHostImplTest, RemoveUnreferencedRenderPass) {
   // Add a quad to each pass so they aren't empty.
   SolidColorDrawQuad* color_quad;
   color_quad = pass1->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-  color_quad->material = DrawQuad::SOLID_COLOR;
+  color_quad->material = viz::DrawQuad::SOLID_COLOR;
   color_quad = pass2->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-  color_quad->material = DrawQuad::SOLID_COLOR;
+  color_quad->material = viz::DrawQuad::SOLID_COLOR;
   color_quad = pass3->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-  color_quad->material = DrawQuad::SOLID_COLOR;
+  color_quad->material = viz::DrawQuad::SOLID_COLOR;
 
   // pass3 is referenced by pass2.
   RenderPassDrawQuad* rpdq =
       pass2->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
-  rpdq->material = DrawQuad::RENDER_PASS;
+  rpdq->material = viz::DrawQuad::RENDER_PASS;
   rpdq->render_pass_id = pass3->id;
 
   // But pass2 is not referenced by pass1. So pass2 and pass3 should be culled.
@@ -12099,17 +12100,17 @@ TEST_F(LayerTreeHostImplTest, RemoveEmptyRenderPass) {
   // pass1 is not empty, but pass2 and pass3 are.
   SolidColorDrawQuad* color_quad;
   color_quad = pass1->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-  color_quad->material = DrawQuad::SOLID_COLOR;
+  color_quad->material = viz::DrawQuad::SOLID_COLOR;
 
   // pass3 is referenced by pass2.
   RenderPassDrawQuad* rpdq =
       pass2->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
-  rpdq->material = DrawQuad::RENDER_PASS;
+  rpdq->material = viz::DrawQuad::RENDER_PASS;
   rpdq->render_pass_id = pass3->id;
 
   // pass2 is referenced by pass1.
   rpdq = pass1->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
-  rpdq->material = DrawQuad::RENDER_PASS;
+  rpdq->material = viz::DrawQuad::RENDER_PASS;
   rpdq->render_pass_id = pass2->id;
 
   // Since pass3 is empty it should be removed. Then pass2 is empty too, and
@@ -12122,7 +12123,8 @@ TEST_F(LayerTreeHostImplTest, RemoveEmptyRenderPass) {
   EXPECT_EQ(1u, frame.render_passes[0]->id);
   // The RenderPassDrawQuad should be removed from pass1.
   EXPECT_EQ(1u, pass1->quad_list.size());
-  EXPECT_EQ(DrawQuad::SOLID_COLOR, pass1->quad_list.ElementAt(0)->material);
+  EXPECT_EQ(viz::DrawQuad::SOLID_COLOR,
+            pass1->quad_list.ElementAt(0)->material);
 }
 
 TEST_F(LayerTreeHostImplTest, DoNotRemoveEmptyRootRenderPass) {
@@ -12141,12 +12143,12 @@ TEST_F(LayerTreeHostImplTest, DoNotRemoveEmptyRootRenderPass) {
   // pass3 is referenced by pass2.
   RenderPassDrawQuad* rpdq =
       pass2->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
-  rpdq->material = DrawQuad::RENDER_PASS;
+  rpdq->material = viz::DrawQuad::RENDER_PASS;
   rpdq->render_pass_id = pass3->id;
 
   // pass2 is referenced by pass1.
   rpdq = pass1->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
-  rpdq->material = DrawQuad::RENDER_PASS;
+  rpdq->material = viz::DrawQuad::RENDER_PASS;
   rpdq->render_pass_id = pass2->id;
 
   // Since pass3 is empty it should be removed. Then pass2 is empty too, and

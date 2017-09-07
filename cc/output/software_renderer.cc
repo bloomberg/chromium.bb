@@ -206,7 +206,7 @@ bool SoftwareRenderer::IsSoftwareResource(viz::ResourceId resource_id) const {
   return false;
 }
 
-void SoftwareRenderer::DoDrawQuad(const DrawQuad* quad,
+void SoftwareRenderer::DoDrawQuad(const viz::DrawQuad* quad,
                                   const gfx::QuadF* draw_region) {
   if (!current_canvas_)
     return;
@@ -271,32 +271,32 @@ void SoftwareRenderer::DoDrawQuad(const DrawQuad* quad,
   }
 
   switch (quad->material) {
-    case DrawQuad::DEBUG_BORDER:
+    case viz::DrawQuad::DEBUG_BORDER:
       DrawDebugBorderQuad(DebugBorderDrawQuad::MaterialCast(quad));
       break;
-    case DrawQuad::PICTURE_CONTENT:
+    case viz::DrawQuad::PICTURE_CONTENT:
       DrawPictureQuad(PictureDrawQuad::MaterialCast(quad));
       break;
-    case DrawQuad::RENDER_PASS:
+    case viz::DrawQuad::RENDER_PASS:
       DrawRenderPassQuad(RenderPassDrawQuad::MaterialCast(quad));
       break;
-    case DrawQuad::SOLID_COLOR:
+    case viz::DrawQuad::SOLID_COLOR:
       DrawSolidColorQuad(SolidColorDrawQuad::MaterialCast(quad));
       break;
-    case DrawQuad::TEXTURE_CONTENT:
+    case viz::DrawQuad::TEXTURE_CONTENT:
       DrawTextureQuad(TextureDrawQuad::MaterialCast(quad));
       break;
-    case DrawQuad::TILED_CONTENT:
+    case viz::DrawQuad::TILED_CONTENT:
       DrawTileQuad(TileDrawQuad::MaterialCast(quad));
       break;
-    case DrawQuad::SURFACE_CONTENT:
+    case viz::DrawQuad::SURFACE_CONTENT:
       // Surface content should be fully resolved to other quad types before
       // reaching a direct renderer.
       NOTREACHED();
       break;
-    case DrawQuad::INVALID:
-    case DrawQuad::YUV_VIDEO_CONTENT:
-    case DrawQuad::STREAM_VIDEO_CONTENT:
+    case viz::DrawQuad::INVALID:
+    case viz::DrawQuad::YUV_VIDEO_CONTENT:
+    case viz::DrawQuad::STREAM_VIDEO_CONTENT:
       DrawUnsupportedQuad(quad);
       NOTREACHED();
       break;
@@ -553,7 +553,7 @@ void SoftwareRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
   current_canvas_->drawRect(dest_visible_rect, current_paint_);
 }
 
-void SoftwareRenderer::DrawUnsupportedQuad(const DrawQuad* quad) {
+void SoftwareRenderer::DrawUnsupportedQuad(const viz::DrawQuad* quad) {
 #ifdef NDEBUG
   current_paint_.setColor(SK_ColorWHITE);
 #else

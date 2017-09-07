@@ -11,15 +11,15 @@
 
 #include "cc/base/filter_operations.h"
 #include "cc/cc_export.h"
-#include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass.h"
+#include "components/viz/common/quads/draw_quad.h"
 
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace cc {
 
-class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
+class CC_EXPORT RenderPassDrawQuad : public viz::DrawQuad {
  public:
   static const size_t kMaskResourceIdIndex = 0;
 
@@ -70,7 +70,7 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
     return resources.ids[kMaskResourceIdIndex];
   }
 
-  static const RenderPassDrawQuad* MaterialCast(const DrawQuad*);
+  static const RenderPassDrawQuad* MaterialCast(const viz::DrawQuad*);
 
  private:
   void ExtendValue(base::trace_event::TracedValue* value) const override;

@@ -15,20 +15,22 @@
 #include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/gfx/transform.h"
 
-namespace cc {
-
+namespace viz {
 class DrawQuad;
+}
+
+namespace cc {
 
 class CC_EXPORT DrawPolygon {
  public:
   DrawPolygon();
   ~DrawPolygon();
 
-  DrawPolygon(const DrawQuad* original_ref,
+  DrawPolygon(const viz::DrawQuad* original_ref,
               const std::vector<gfx::Point3F>& in_points,
               const gfx::Vector3dF& normal,
               int draw_order_index = 0);
-  DrawPolygon(const DrawQuad* original_ref,
+  DrawPolygon(const viz::DrawQuad* original_ref,
               const gfx::RectF& visible_layer_rect,
               const gfx::Transform& transform,
               int draw_order_index = 0);
@@ -51,7 +53,7 @@ class CC_EXPORT DrawPolygon {
 
   const std::vector<gfx::Point3F>& points() const { return points_; }
   const gfx::Vector3dF& normal() const { return normal_; }
-  const DrawQuad* original_ref() const { return original_ref_; }
+  const viz::DrawQuad* original_ref() const { return original_ref_; }
   int order_index() const { return order_index_; }
   bool is_split() const { return is_split_; }
   std::unique_ptr<DrawPolygon> CreateCopy();
@@ -78,7 +80,7 @@ class CC_EXPORT DrawPolygon {
   // we need.
   // This DrawQuad is owned by the caller and its lifetime must be preserved
   // as long as this DrawPolygon is alive.
-  const DrawQuad* original_ref_;
+  const viz::DrawQuad* original_ref_;
   bool is_split_;
 };
 

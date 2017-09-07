@@ -38,7 +38,7 @@ class CC_EXPORT VulkanRenderer : public DirectRenderer {
                              SurfaceInitializationMode initialization_mode,
                              const gfx::Rect& render_pass_scissor) override;
   void DoDrawQuad(DrawingFrame* frame,
-                  const DrawQuad* quad,
+                  const viz::DrawQuad* quad,
                   const gfx::QuadF* clip_region) override;
   void BeginDrawingFrame(DrawingFrame* frame) override;
   void FinishDrawingFrame(DrawingFrame* frame) override;

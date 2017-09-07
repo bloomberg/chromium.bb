@@ -6,8 +6,8 @@
 
 #include "cc/base/math_util.h"
 #include "cc/output/overlay_candidate_validator.h"
-#include "cc/quads/draw_quad.h"
 #include "cc/quads/solid_color_draw_quad.h"
+#include "components/viz/common/quads/draw_quad.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
@@ -38,7 +38,7 @@ bool OverlayStrategyFullscreen::Attempt(
   if (front == quad_list->end())
     return false;
 
-  const DrawQuad* quad = *front;
+  const viz::DrawQuad* quad = *front;
   if (quad->ShouldDrawWithBlending())
     return false;
 

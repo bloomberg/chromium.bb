@@ -6,7 +6,6 @@
 
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/ui_resource_layer_impl.h"
-#include "cc/quads/draw_quad.h"
 #include "cc/resources/ui_resource_bitmap.h"
 #include "cc/resources/ui_resource_client.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
@@ -16,6 +15,7 @@
 #include "cc/test/layer_test_common.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/single_thread_proxy.h"
+#include "components/viz/common/quads/draw_quad.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/transform.h"

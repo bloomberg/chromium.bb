@@ -74,7 +74,7 @@ class VIZ_SERVICE_EXPORT SurfaceHittest {
       const SurfaceId& surface_id,
       cc::RenderPassId render_pass_id);
 
-  bool PointInQuad(const cc::DrawQuad* quad,
+  bool PointInQuad(const DrawQuad* quad,
                    const gfx::Point& point_in_render_pass_space,
                    gfx::Transform* target_to_quad_transform,
                    gfx::Point* point_in_quad_space);

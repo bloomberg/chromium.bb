@@ -9,7 +9,7 @@
 
 #include "cc/output/direct_renderer.h"
 #include "cc/quads/draw_polygon.h"
-#include "cc/quads/draw_quad.h"
+#include "components/viz/common/quads/draw_quad.h"
 
 namespace cc {
 
