@@ -76,10 +76,23 @@ bool UiSceneManagerTest::VerifyVisibility(const std::set<UiElementName>& names,
   for (auto name : names) {
     SCOPED_TRACE(name);
     auto* element = scene_->GetUiElementByName(name);
-    if (!element && visible) {
+    EXPECT_NE(nullptr, element);
+    if (element->IsVisible() != visible) {
       return false;
     }
-    if (element && element->IsVisible() != visible) {
+  }
+  return true;
+}
+
+bool UiSceneManagerTest::VerifyRequiresLayout(
+    const std::set<UiElementName>& names,
+    bool requires_layout) const {
+  scene_->root_element().UpdateInheritedProperties();
+  for (auto name : names) {
+    SCOPED_TRACE(name);
+    auto* element = scene_->GetUiElementByName(name);
+    EXPECT_NE(nullptr, element);
+    if (element->requires_layout() != requires_layout) {
       return false;
     }
   }

@@ -59,6 +59,11 @@ class UiSceneManagerTest : public testing::Test {
   bool VerifyVisibility(const std::set<UiElementName>& names,
                         bool visible) const;
 
+  // Return false if not all elements in the set match the specified requires
+  // layout state. Other elements are ignored.
+  bool VerifyRequiresLayout(const std::set<UiElementName>& names,
+                            bool requires_layout) const;
+
   // Advances current_time_ by delta. This is done in frame increments and
   // UiScene::OnBeginFrame is called at each increment.
   void AnimateBy(base::TimeDelta delta);
