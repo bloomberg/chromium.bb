@@ -4854,7 +4854,8 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 #endif  // CONFIG_EXT_TX
 
 #if CONFIG_GLOBAL_MOTION
-  read_global_motion(cm, rb);
+  if (!(frame_is_intra_only(cm) || cm->error_resilient_mode))
+    read_global_motion(cm, rb);
 #endif
 
   read_tile_info(pbi, rb);

@@ -4600,7 +4600,8 @@ static void write_uncompressed_header(AV1_COMP *cpi,
 #endif  // CONFIG_EXT_TX
 
 #if CONFIG_GLOBAL_MOTION
-  write_global_motion(cpi, wb);
+  if (!(frame_is_intra_only(cm) || cm->error_resilient_mode))
+    write_global_motion(cpi, wb);
 #endif  // CONFIG_GLOBAL_MOTION
 
   write_tile_info(cm, wb);
