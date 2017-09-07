@@ -56,8 +56,6 @@ public class DownloadNotificationService2 {
     public static final String ACTION_DOWNLOAD_OPEN =
             "org.chromium.chrome.browser.download.DOWNLOAD_OPEN";
 
-    public static final String NOTIFICATION_NAMESPACE = "DownloadNotificationService";
-
     public static final String EXTRA_NOTIFICATION_BUNDLE_ICON_ID =
             "Chrome.NotificationBundleIconIdExtra";
     /** Notification Id starting value, to avoid conflicts from IDs used in prior versions. */
@@ -236,7 +234,8 @@ public class DownloadNotificationService2 {
     }
 
     public void cancelNotification(int notificationId) {
-        mNotificationManager.cancel(NOTIFICATION_NAMESPACE, notificationId);
+        // TODO(b/65052774): Add back NOTIFICATION_NAMESPACE when able to.
+        mNotificationManager.cancel(notificationId);
     }
 
     /**
@@ -450,7 +449,8 @@ public class DownloadNotificationService2 {
 
     @VisibleForTesting
     void updateNotification(int id, Notification notification) {
-        mNotificationManager.notify(NOTIFICATION_NAMESPACE, id, notification);
+        // TODO(b/65052774): Add back NOTIFICATION_NAMESPACE when able to.
+        mNotificationManager.notify(id, notification);
     }
 
     private void updateNotification(int notificationId, Notification notification, ContentId id,
