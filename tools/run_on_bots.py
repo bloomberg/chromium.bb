@@ -20,6 +20,7 @@ import string
 import subprocess
 import sys
 import tempfile
+import threading
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
     __file__.decode(sys.getfilesystemencoding()))))
@@ -85,6 +86,53 @@ def archive(isolate_server, script):
     return subprocess.check_output(cmd, cwd=ROOT_DIR).split()[0]
   finally:
     file_path.rmtree(tempdir)
+
+
+def batched_subprocess(cmd, sem):
+    def run(cmd, sem):
+      subprocess.call(cmd, cwd=ROOT_DIR)
+      sem.release()
+    sem.acquire()
+    thread = threading.Thread(target=run, args=(cmd, sem))
+    thread.start()
+    return thread
+
+
+def run_batches(
+    swarming_server, isolate_server, dimensions, env, priority, deadline,
+    batches, repeat, isolated_hash, name, bots, args):
+  """Runs the task |batches| at a time.
+
+  This will be mainly bound by task scheduling latency, especially if the bots
+  are busy and the priority is low.
+  """
+  sem = threading.Semaphore(batches)
+  threads = []
+  for i in xrange(repeat):
+    for bot in bots:
+      suffix = '/%d' % i if repeat > 1 else ''
+      task_name = parallel_execution.task_to_name(
+            name, {'id': bot}, isolated_hash) + suffix
+      cmd = [
+        sys.executable, 'swarming.py', 'run',
+        '--swarming', swarming_server,
+        '--isolate-server', isolate_server,
+        '--priority', priority,
+        '--deadline', deadline,
+        '--dimension', 'id', bot,
+        '--task-name', task_name,
+        '-s', isolated_hash,
+      ]
+      for k, v in sorted(dimensions.iteritems()):
+        cmd.extend(('-d', k, v))
+      for k, v in env:
+        cmd.extend(('--env', k, v))
+      if args:
+        cmd.append('--')
+        cmd.extend(args)
+      threads.append(batched_subprocess(cmd, sem))
+  for t in threads:
+     t.join()
 
 
 def run_serial(
@@ -154,6 +202,9 @@ def main():
       help='Runs the task serially, to be used when debugging problems since '
            'it\'s slow')
   parser.add_option(
+      '--batches', type='int', default=0,
+      help='Runs a task in parallel |batches| at a time.')
+  parser.add_option(
       '--repeat', type='int', default=1,
       help='Runs the task multiple time on each bot, meant to be used as a '
            'load test')
@@ -208,6 +259,21 @@ def main():
     return 1
 
   # 3. Trigger the tasks.
+  if options.batches > 0:
+    return run_batches(
+        options.swarming,
+        options.isolate_server,
+        options.dimensions,
+        options.env,
+        str(options.priority),
+        str(options.deadline),
+        options.batches,
+        options.repeat,
+        isolated_hash,
+        name,
+        bots,
+        args[1:])
+
   if options.serial:
     return run_serial(
         options.swarming,
