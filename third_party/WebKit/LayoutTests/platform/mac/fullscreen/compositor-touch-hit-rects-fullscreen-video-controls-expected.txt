@@ -6,7 +6,7 @@ handler: #document (0, 0, 800, 600)
 EVENT(webkitfullscreenchange)
 Should keep rect on document
 handler: #document (0, 0, 800, 600)
-handler: #document (56, 600, 712, 8)
+handler: #document (55, 600, 713, 8)
 
 END OF TEST
 

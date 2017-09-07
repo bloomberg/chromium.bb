@@ -3239,15 +3239,22 @@ bool PaintLayer::HasFilterThatMovesPixels() const {
   return false;
 }
 
-void PaintLayer::AddLayerHitTestRects(LayerHitTestRects& rects) const {
-  ComputeSelfHitTestRects(rects);
+void PaintLayer::AddLayerHitTestRects(
+    LayerHitTestRects& rects,
+    TouchAction supported_fast_actions) const {
+  ComputeSelfHitTestRects(rects, supported_fast_actions);
   for (PaintLayer* child = FirstChild(); child; child = child->NextSibling())
-    child->AddLayerHitTestRects(rects);
+    child->AddLayerHitTestRects(rects, supported_fast_actions);
 }
 
-void PaintLayer::ComputeSelfHitTestRects(LayerHitTestRects& rects) const {
+void PaintLayer::ComputeSelfHitTestRects(
+    LayerHitTestRects& rects,
+    TouchAction supported_fast_actions) const {
   if (!size().IsEmpty()) {
-    Vector<LayoutRect> rect;
+    Vector<TouchActionRect> rect;
+    TouchAction whitelisted_touch_action =
+        GetLayoutObject().Style()->GetEffectiveTouchAction() &
+        supported_fast_actions;
 
     if (GetLayoutBox() && GetLayoutBox()->ScrollsOverflow()) {
       // For scrolling layers, rects are taken to be in the space of the
@@ -3256,21 +3263,26 @@ void PaintLayer::ComputeSelfHitTestRects(LayerHitTestRects& rects) const {
       // composited then the entire contents as well as they may be on another
       // composited layer. Skip reporting contents for non-composited layers as
       // they'll get projected to the same layer as the bounding box.
-      if (GetCompositingState() != kNotComposited && scrollable_area_)
-        rect.push_back(scrollable_area_->OverflowRect());
+      if (GetCompositingState() != kNotComposited && scrollable_area_) {
+        rect.push_back(TouchActionRect(scrollable_area_->OverflowRect(),
+                                       whitelisted_touch_action));
+      }
 
       rects.Set(this, rect);
       if (const PaintLayer* parent_layer = Parent()) {
         LayerHitTestRects::iterator iter = rects.find(parent_layer);
         if (iter == rects.end()) {
-          rects.insert(parent_layer, Vector<LayoutRect>())
-              .stored_value->value.push_back(PhysicalBoundingBox(parent_layer));
+          rects.insert(parent_layer, Vector<TouchActionRect>())
+              .stored_value->value.push_back(TouchActionRect(
+                  PhysicalBoundingBox(parent_layer), whitelisted_touch_action));
         } else {
-          iter->value.push_back(PhysicalBoundingBox(parent_layer));
+          iter->value.push_back(TouchActionRect(
+              PhysicalBoundingBox(parent_layer), whitelisted_touch_action));
         }
       }
     } else {
-      rect.push_back(LogicalBoundingBox());
+      rect.push_back(
+          TouchActionRect(LogicalBoundingBox(), whitelisted_touch_action));
       rects.Set(this, rect);
     }
   }

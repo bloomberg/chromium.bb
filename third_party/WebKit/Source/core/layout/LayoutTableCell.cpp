@@ -214,15 +214,18 @@ void LayoutTableCell::AddLayerHitTestRects(
     LayerHitTestRects& layer_rects,
     const PaintLayer* current_layer,
     const LayoutPoint& layer_offset,
-    const LayoutRect& container_rect) const {
+    TouchAction supported_fast_actions,
+    const LayoutRect& container_rect,
+    TouchAction container_whitelisted_touch_action) const {
   LayoutPoint adjusted_layer_offset = layer_offset;
   // LayoutTableCell's location includes the offset of it's containing
   // LayoutTableRow, so we need to subtract that again here (as for
   // LayoutTableCell::offsetFromContainer.
   if (Parent())
     adjusted_layer_offset -= ParentBox()->LocationOffset();
-  LayoutBox::AddLayerHitTestRects(layer_rects, current_layer,
-                                  adjusted_layer_offset, container_rect);
+  LayoutBox::AddLayerHitTestRects(
+      layer_rects, current_layer, adjusted_layer_offset, supported_fast_actions,
+      container_rect, container_whitelisted_touch_action);
 }
 
 void LayoutTableCell::ComputeIntrinsicPadding(int collapsed_height,
