@@ -213,15 +213,16 @@ void MojoContextState::FetchModule(const std::string& id) {
   DCHECK(url.is_valid() && !url.is_empty());
   DCHECK(fetched_modules_.find(id) == fetched_modules_.end());
   fetched_modules_.insert(id);
-  ResourceFetcher* fetcher = ResourceFetcher::Create(url);
-  module_fetchers_.push_back(base::WrapUnique(fetcher));
-  fetcher->Start(frame_, blink::WebURLRequest::kRequestContextScript,
-                 RenderFrame::FromWebFrame(frame_)
-                     ->GetDefaultURLLoaderFactoryGetter()
-                     ->GetNetworkLoaderFactory(),
-                 network_traffic_annotation_tag,
-                 base::BindOnce(&MojoContextState::OnFetchModuleComplete,
-                                base::Unretained(this), fetcher, id));
+  module_fetchers_.push_back(ResourceFetcher::Create(url));
+  module_fetchers_.back()->Start(
+      frame_, blink::WebURLRequest::kRequestContextScript,
+      RenderFrame::FromWebFrame(frame_)
+          ->GetDefaultURLLoaderFactoryGetter()
+          ->GetNetworkLoaderFactory(),
+      network_traffic_annotation_tag,
+      base::BindOnce(&MojoContextState::OnFetchModuleComplete,
+                     base::Unretained(this), module_fetchers_.back().get(),
+                     id));
 }
 
 void MojoContextState::OnFetchModuleComplete(
