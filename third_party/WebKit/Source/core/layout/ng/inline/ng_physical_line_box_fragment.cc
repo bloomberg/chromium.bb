@@ -28,4 +28,15 @@ LayoutUnit NGPhysicalLineBoxFragment::BaselinePosition(FontBaseline) const {
   return metrics_.ascent;
 }
 
+void NGPhysicalLineBoxFragment::UpdateVisualRect() const {
+  LayoutRect visual_rect(LayoutPoint(),
+                         LayoutSize(Size().width, Size().height));
+  for (const auto& child : children_) {
+    LayoutRect child_visual_rect = child->VisualRect();
+    child_visual_rect.Move(child->Offset().left, child->Offset().top);
+    visual_rect.Unite(child_visual_rect);
+  }
+  SetVisualRect(visual_rect);
+}
+
 }  // namespace blink
