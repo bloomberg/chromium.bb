@@ -32,7 +32,7 @@ TabStatsTracker* g_instance = nullptr;
 
 // static
 const char TabStatsTracker::kTabStatsDailyEventHistogramName[] =
-    "Tabs.TabsStatsDailyEventInteral";
+    "Tabs.TabsStatsDailyEventInterval";
 const char TabStatsTracker::UmaStatsReportingDelegate::
     kNumberOfTabsOnResumeHistogramName[] = "Tabs.NumberOfTabsOnResume";
 const char
@@ -157,6 +157,11 @@ void TabStatsTracker::UmaStatsReportingDelegate::ReportTabCountOnResume(
 
 void TabStatsTracker::UmaStatsReportingDelegate::ReportDailyMetrics(
     const TabStatsDataStore::TabsStats& tab_stats) {
+  // Don't report the counts if they're equal to 0, this means that Chrome has
+  // only been running in the background since the last time the metrics have
+  // been reported.
+  if (tab_stats.total_tab_count_max == 0)
+    return;
   UMA_HISTOGRAM_COUNTS_10000(kMaxTabsInADayHistogramName,
                              tab_stats.total_tab_count_max);
   UMA_HISTOGRAM_COUNTS_10000(kMaxTabsPerWindowInADayHistogramName,
