@@ -18,26 +18,6 @@ namespace content {
 
 namespace {
 
-media::AudioParameters TryToFixAudioParameters(
-    const media::AudioParameters& params) {
-  DCHECK(!params.IsValid());
-  media::AudioParameters params_copy(params);
-
-  // If the number of output channels is greater than the maximum, use the
-  // maximum allowed value. Hardware channels are ignored upstream, so it is
-  // better to report a valid value if this is the only problem.
-  if (params.channels() > media::limits::kMaxChannels) {
-    DCHECK(params.channel_layout() == media::CHANNEL_LAYOUT_DISCRETE);
-    params_copy.set_channels_for_discrete(media::limits::kMaxChannels);
-  }
-
-  // If hardware parameters are still invalid, use dummy parameters with
-  // fake audio path and let the client handle the error.
-  return params_copy.IsValid()
-             ? params_copy
-             : media::AudioParameters::UnavailableDeviceParams();
-}
-
 // Returns (by callback) the Origin for the frame and whether it may request
 // nondefault audio devices.
 void CheckAccessOnUIThread(
@@ -245,13 +225,14 @@ void AudioOutputAuthorizationHandler::DeviceParametersReceived(
     AuthorizationCompletedCallback cb,
     const std::string& id_for_renderer,
     const std::string& raw_device_id,
-    const media::AudioParameters& params) const {
+    const base::Optional<media::AudioParameters>& params) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!raw_device_id.empty());
-
-  std::move(cb).Run(media::OUTPUT_DEVICE_STATUS_OK,
-                    params.IsValid() ? params : TryToFixAudioParameters(params),
-                    raw_device_id, id_for_renderer);
+  DCHECK(!params || params->IsValid());
+  std::move(cb).Run(
+      media::OUTPUT_DEVICE_STATUS_OK,
+      params.value_or(media::AudioParameters::UnavailableDeviceParams()),
+      raw_device_id, id_for_renderer);
 }
 
 }  // namespace content

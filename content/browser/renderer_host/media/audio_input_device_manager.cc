@@ -88,12 +88,11 @@ int AudioInputDeviceManager::Open(const MediaStreamDevice& device) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseFakeDeviceForMediaStream)) {
     audio_system_->GetAssociatedOutputDeviceID(
-        device.id,
-        base::BindOnce(&AudioInputDeviceManager::OpenedOnIOThread,
-                       base::Unretained(this), session_id, device,
-                       base::TimeTicks::Now(),
-                       media::AudioParameters::UnavailableDeviceParams(),
-                       media::AudioParameters::UnavailableDeviceParams()));
+        device.id, base::BindOnce(&AudioInputDeviceManager::OpenedOnIOThread,
+                                  base::Unretained(this), session_id, device,
+                                  base::TimeTicks::Now(),
+                                  base::Optional<media::AudioParameters>(),
+                                  base::Optional<media::AudioParameters>()));
   } else {
     // TODO(tommi): As is, we hit this code path when device.type is
     // MEDIA_TAB_AUDIO_CAPTURE and the device id is not a device that
@@ -202,11 +201,15 @@ void AudioInputDeviceManager::OpenedOnIOThread(
     int session_id,
     const MediaStreamDevice& device,
     base::TimeTicks start_time,
-    const media::AudioParameters& input_params,
-    const media::AudioParameters& matched_output_params,
+    const base::Optional<media::AudioParameters>& input_params,
+    const base::Optional<media::AudioParameters>& matched_output_params,
     const std::string& matched_output_device_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(GetDevice(session_id) == devices_.end());
+  DCHECK(!input_params || input_params->IsValid());
+  DCHECK(!matched_output_params || matched_output_params->IsValid());
+  DCHECK(!matched_output_device_id.empty() ||
+         (matched_output_device_id.empty() && !matched_output_params));
 
   UMA_HISTOGRAM_TIMES("Media.AudioInputDeviceManager.OpenOnDeviceThreadTime",
                       base::TimeTicks::Now() - start_time);
@@ -214,14 +217,13 @@ void AudioInputDeviceManager::OpenedOnIOThread(
   MediaStreamDevice media_stream_device(device.type, device.id, device.name);
   media_stream_device.session_id = session_id;
   media_stream_device.input =
-      input_params.IsValid()
-          ? input_params
-          : media::AudioParameters::UnavailableDeviceParams();
+      input_params.value_or(media::AudioParameters::UnavailableDeviceParams());
   media_stream_device.matched_output_device_id = matched_output_device_id;
-  media_stream_device.matched_output =
-      matched_output_params.IsValid()
-          ? matched_output_params
-          : media::AudioParameters::UnavailableDeviceParams();
+  media_stream_device.matched_output = matched_output_params.value_or(
+      media::AudioParameters::UnavailableDeviceParams());
+
+  DCHECK(media_stream_device.input.IsValid());
+  DCHECK(media_stream_device.matched_output.IsValid());
 
   devices_.push_back(media_stream_device);
 

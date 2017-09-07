@@ -93,12 +93,13 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
   ~AudioInputDeviceManager() override;
 
   // Callback called on IO thread when device is opened.
-  void OpenedOnIOThread(int session_id,
-                        const MediaStreamDevice& device,
-                        base::TimeTicks start_time,
-                        const media::AudioParameters& input_params,
-                        const media::AudioParameters& matched_output_params,
-                        const std::string& matched_output_device_id);
+  void OpenedOnIOThread(
+      int session_id,
+      const MediaStreamDevice& device,
+      base::TimeTicks start_time,
+      const base::Optional<media::AudioParameters>& input_params,
+      const base::Optional<media::AudioParameters>& matched_output_params,
+      const std::string& matched_output_device_id);
 
   // Callback called on IO thread with the session_id referencing the closed
   // device.

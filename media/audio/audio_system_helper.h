@@ -50,8 +50,10 @@ class MEDIA_EXPORT AudioSystemHelper {
   base::SingleThreadTaskRunner* GetTaskRunner();
 
  private:
-  AudioParameters ComputeInputParameters(const std::string& device_id);
-  AudioParameters ComputeOutputParameters(const std::string& device_id);
+  base::Optional<AudioParameters> ComputeInputParameters(
+      const std::string& device_id);
+  base::Optional<AudioParameters> ComputeOutputParameters(
+      const std::string& device_id);
 
   AudioManager* const audio_manager_;
 

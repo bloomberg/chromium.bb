@@ -108,8 +108,9 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
   void GotAudioInputEnumeration(const std::string& default_device_id,
                                 const MediaDeviceEnumeration& enumeration);
 
-  void GotAudioInputParameters(size_t index,
-                               const media::AudioParameters& parameters);
+  void GotAudioInputParameters(
+      size_t index,
+      const base::Optional<media::AudioParameters>& parameters);
 
   void FinalizeGetAudioInputCapabilities();
 
