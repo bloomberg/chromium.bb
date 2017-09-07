@@ -132,7 +132,6 @@ class WizardController : public BaseScreenDelegate,
  private:
   // Show specific screen.
   void ShowNetworkScreen();
-  void ShowUpdateScreen();
   void ShowUserImageScreen();
   void ShowEulaScreen();
   void ShowEnrollmentScreen();
@@ -160,7 +159,6 @@ class WizardController : public BaseScreenDelegate,
   // Exit handlers:
   void OnHIDDetectionCompleted();
   void OnNetworkConnected();
-  void OnNetworkOffline();
   void OnConnectionFailed();
   void OnUpdateCompleted();
   void OnEulaAccepted();
@@ -169,7 +167,6 @@ class WizardController : public BaseScreenDelegate,
   void OnUserImageSelected();
   void OnUserImageSkipped();
   void OnEnrollmentDone();
-  void OnAutoEnrollmentDone();
   void OnDeviceModificationCanceled();
   void OnKioskAutolaunchCanceled();
   void OnKioskAutolaunchConfirmed();
@@ -192,12 +189,6 @@ class WizardController : public BaseScreenDelegate,
 
   // Callback function after setting MetricsReporting.
   void OnChangedMetricsReportingState(bool enabled);
-
-  // Loads brand code on I/O enabled thread and stores to Local State.
-  void LoadBrandCodeFromFile();
-
-  // Called after all post-EULA blocking tasks have been completed.
-  void OnEulaBlockingTasksDone();
 
   // Shows update screen and starts update process.
   void InitiateOOBEUpdate();
