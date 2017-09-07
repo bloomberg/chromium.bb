@@ -10330,6 +10330,7 @@
     },
     "guado-accelerator-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "boards": [
             "guado-accelerator"
         ],
@@ -15558,6 +15559,7 @@
             "glimmer-release",
             "gnawty-release",
             "gru-release",
+            "guado-accelerator-release",
             "guado-macrophage-release",
             "guado-release",
             "guado_labstation-release",
@@ -20841,7 +20843,7 @@
         "important": true,
         "models": [
             "{\n    \"name\": \"pyro\",\n    \"test_suites\": null\n}",
-            "{\n    \"name\": \"reef\",\n    \"test_suites\": [\n        \"sanity\",\n        \"bvt-inline\",\n        \"bvt-arc\",\n        \"au\",\n        \"bvt-cq\",\n        \"bvt-perbuild\"\n    ]\n}",
+            "{\n    \"name\": \"reef\",\n    \"test_suites\": null\n}",
             "{\n    \"name\": \"sand\",\n    \"test_suites\": [\n        \"sanity\",\n        \"bvt-inline\",\n        \"bvt-arc\",\n        \"au\",\n        \"bvt-cq\",\n        \"bvt-perbuild\"\n    ]\n}",
             "{\n    \"name\": \"snappy\",\n    \"test_suites\": null\n}"
         ],
