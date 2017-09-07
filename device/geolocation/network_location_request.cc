@@ -32,7 +32,6 @@
 namespace device {
 namespace {
 
-const char kAccessTokenString[] = "accessToken";
 const char kLocationString[] = "location";
 const char kLatitudeString[] = "lat";
 const char kLongitudeString[] = "lng";
@@ -78,7 +77,6 @@ GURL FormRequestURL(const GURL& url);
 
 void FormUploadData(const WifiData& wifi_data,
                     const base::Time& wifi_timestamp,
-                    const base::string16& access_token,
                     std::string* upload_data);
 
 // Attempts to extract a position from the response. Detects and indicates
@@ -88,16 +86,14 @@ void GetLocationFromResponse(bool http_post_result,
                              const std::string& response_body,
                              const base::Time& wifi_timestamp,
                              const GURL& server_url,
-                             Geoposition* position,
-                             base::string16* access_token);
+                             Geoposition* position);
 
 // Parses the server response body. Returns true if parsing was successful.
 // Sets |*position| to the parsed location if a valid fix was received,
 // otherwise leaves it unchanged.
 bool ParseServerResponse(const std::string& response_body,
                          const base::Time& wifi_timestamp,
-                         Geoposition* position,
-                         base::string16* access_token);
+                         Geoposition* position);
 void AddWifiData(const WifiData& wifi_data,
                  int age_milliseconds,
                  base::DictionaryValue* request);
@@ -113,8 +109,7 @@ NetworkLocationRequest::NetworkLocationRequest(
 
 NetworkLocationRequest::~NetworkLocationRequest() {}
 
-bool NetworkLocationRequest::MakeRequest(const base::string16& access_token,
-                                         const WifiData& wifi_data,
+bool NetworkLocationRequest::MakeRequest(const WifiData& wifi_data,
                                          const base::Time& wifi_timestamp) {
   RecordUmaEvent(NETWORK_LOCATION_REQUEST_EVENT_REQUEST_START);
   RecordUmaAccessPoints(wifi_data.access_point_data.size());
@@ -156,7 +151,7 @@ bool NetworkLocationRequest::MakeRequest(const base::string16& access_token,
                               net::URLFetcher::POST, this, traffic_annotation);
   url_fetcher_->SetRequestContext(url_context_.get());
   std::string upload_data;
-  FormUploadData(wifi_data, wifi_timestamp, access_token, &upload_data);
+  FormUploadData(wifi_data, wifi_timestamp, &upload_data);
   url_fetcher_->SetUploadData("application/json", upload_data);
   url_fetcher_->SetLoadFlags(net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
                              net::LOAD_DO_NOT_SAVE_COOKIES |
@@ -176,12 +171,10 @@ void NetworkLocationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
   RecordUmaResponseCode(response_code);
 
   Geoposition position;
-  base::string16 access_token;
   std::string data;
   source->GetResponseAsString(&data);
   GetLocationFromResponse(status.is_success(), response_code, data,
-                          wifi_timestamp_, source->GetURL(), &position,
-                          &access_token);
+                          wifi_timestamp_, source->GetURL(), &position);
   const bool server_error =
       !status.is_success() || (response_code >= 500 && response_code < 600);
   url_fetcher_.reset();
@@ -196,8 +189,7 @@ void NetworkLocationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
   }
 
   DVLOG(1) << "NetworkLocationRequest::OnURLFetchComplete() : run callback.";
-  location_response_callback_.Run(position, server_error, access_token,
-                                  wifi_data_);
+  location_response_callback_.Run(position, server_error, wifi_data_);
 }
 
 // Local functions.
@@ -228,7 +220,6 @@ GURL FormRequestURL(const GURL& url) {
 
 void FormUploadData(const WifiData& wifi_data,
                     const base::Time& wifi_timestamp,
-                    const base::string16& access_token,
                     std::string* upload_data) {
   int age = std::numeric_limits<int32_t>::min();  // Invalid so AddInteger()
                                                   // will ignore.
@@ -241,8 +232,6 @@ void FormUploadData(const WifiData& wifi_data,
 
   base::DictionaryValue request;
   AddWifiData(wifi_data, age, &request);
-  if (!access_token.empty())
-    request.SetString(kAccessTokenString, access_token);
   base::JSONWriter::Write(request, upload_data);
 }
 
@@ -309,10 +298,8 @@ void GetLocationFromResponse(bool http_post_result,
                              const std::string& response_body,
                              const base::Time& wifi_timestamp,
                              const GURL& server_url,
-                             Geoposition* position,
-                             base::string16* access_token) {
+                             Geoposition* position) {
   DCHECK(position);
-  DCHECK(access_token);
 
   // HttpPost can fail for a number of reasons. Most likely this is because
   // we're offline, or there was no response.
@@ -330,8 +317,7 @@ void GetLocationFromResponse(bool http_post_result,
   }
   // We use the timestamp from the wifi data that was used to generate
   // this position fix.
-  if (!ParseServerResponse(response_body, wifi_timestamp, position,
-                           access_token)) {
+  if (!ParseServerResponse(response_body, wifi_timestamp, position)) {
     // We failed to parse the repsonse.
     FormatPositionError(server_url, "Response was malformed", position);
     RecordUmaEvent(NETWORK_LOCATION_REQUEST_EVENT_RESPONSE_MALFORMED);
@@ -370,12 +356,10 @@ bool GetAsDouble(const base::DictionaryValue& object,
 
 bool ParseServerResponse(const std::string& response_body,
                          const base::Time& wifi_timestamp,
-                         Geoposition* position,
-                         base::string16* access_token) {
+                         Geoposition* position) {
   DCHECK(position);
   DCHECK(!position->Validate());
   DCHECK(position->error_code == Geoposition::ERROR_CODE_NONE);
-  DCHECK(access_token);
   DCHECK(!wifi_timestamp.is_null());
 
   if (response_body.empty()) {
@@ -401,9 +385,6 @@ bool ParseServerResponse(const std::string& response_body,
   }
   const base::DictionaryValue* response_object =
       static_cast<base::DictionaryValue*>(response_value.get());
-
-  // Get the access token, if any.
-  response_object->GetString(kAccessTokenString, access_token);
 
   // Get the location
   const base::Value* location_value = NULL;

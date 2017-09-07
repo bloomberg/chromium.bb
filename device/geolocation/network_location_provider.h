@@ -24,7 +24,6 @@
 #include "device/geolocation/wifi_data_provider_manager.h"
 
 namespace device {
-class AccessTokenStore;
 
 class NetworkLocationProvider : public LocationProvider {
  public:
@@ -63,10 +62,8 @@ class NetworkLocationProvider : public LocationProvider {
   };
 
   NetworkLocationProvider(
-      const scoped_refptr<AccessTokenStore>& access_token_store,
       const scoped_refptr<net::URLRequestContextGetter>& context,
-      const GURL& url,
-      const base::string16& access_token);
+      const GURL& url);
   ~NetworkLocationProvider() override;
 
   // LocationProvider implementation
@@ -88,10 +85,7 @@ class NetworkLocationProvider : public LocationProvider {
 
   void OnLocationResponse(const Geoposition& position,
                           bool server_error,
-                          const base::string16& access_token,
                           const WifiData& wifi_data);
-
-  const scoped_refptr<AccessTokenStore> access_token_store_;
 
   // The wifi data provider, acquired via global factories. Valid between
   // StartProvider() and StopProvider(), and checked via IsStarted().
@@ -105,10 +99,6 @@ class NetworkLocationProvider : public LocationProvider {
 
   // The timestamp for the latest wifi data update.
   base::Time wifi_timestamp_;
-
-  // Cached value loaded from the token store or set by a previous server
-  // response, and sent in each subsequent network request.
-  base::string16 access_token_;
 
   // The current best position estimate.
   Geoposition position_;
@@ -137,10 +127,8 @@ class NetworkLocationProvider : public LocationProvider {
 // Factory functions for the various types of location provider to abstract
 // over the platform-dependent implementations.
 DEVICE_GEOLOCATION_EXPORT LocationProvider* NewNetworkLocationProvider(
-    const scoped_refptr<AccessTokenStore>& access_token_store,
     const scoped_refptr<net::URLRequestContextGetter>& context,
-    const GURL& url,
-    const base::string16& access_token);
+    const GURL& url);
 
 }  // namespace device
 
