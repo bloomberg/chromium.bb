@@ -2080,12 +2080,12 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "ThreeRequests_Enabled",
                     "params": {
-                        "min_slice_size": "2097152",
-                        "parallel_request_delay": "5000",
+                        "min_slice_size": "1365333",
+                        "parallel_request_delay": "0",
                         "parallel_request_remaining_time": "2",
-                        "request_count": "2"
+                        "request_count": "3"
                     },
                     "enable_features": [
                         "ParallelDownloading"
