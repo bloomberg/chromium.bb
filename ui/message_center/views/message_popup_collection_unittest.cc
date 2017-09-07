@@ -709,13 +709,14 @@ TEST_F(MessagePopupCollectionTest, ChangingNotificationSize) {
   };
   std::vector<TestCase> updates = {
       {"shrinking", ""},
-      {"enlarging", "abc\ndef\nghk\n"},
-      {"restoring", "abc\ndef\n"},
+      {"enlarging", "abc\ndef\nghi\n"},
+      {"restoring", "abc\n"},
   };
 
   std::vector<std::string> notification_ids;
   // adding notifications
   {
+    // adding popup notifications
     constexpr int max_visible_popup_notifications = 3;
     notification_ids.reserve(max_visible_popup_notifications);
     for (int i = 0; i < max_visible_popup_notifications; ++i) {
@@ -727,6 +728,10 @@ TEST_F(MessagePopupCollectionTest, ChangingNotificationSize) {
   }
 
   WaitForTransitionsDone();
+
+  // Confirms that there are 2 toasts of 3 notifications.
+  EXPECT_EQ(3u, GetToastCounts());
+  EXPECT_EQ(3u, MessageCenter::Get()->NotificationCount());
 
   // updating notifications one by one
   for (const std::string& id : notification_ids) {

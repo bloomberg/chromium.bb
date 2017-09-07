@@ -47,7 +47,7 @@ namespace message_center {
 namespace {
 
 // Dimensions.
-constexpr gfx::Insets kContentRowPadding(2, 12, 12, 12);
+constexpr gfx::Insets kContentRowPadding(0, 12, 16, 12);
 constexpr gfx::Insets kActionsRowPadding(8, 8, 8, 8);
 constexpr int kActionsRowHorizontalSpacing = 8;
 constexpr gfx::Insets kActionButtonPadding(0, 12, 0, 12);
@@ -59,8 +59,8 @@ constexpr gfx::Size kIconViewSize(36, 36);
 constexpr gfx::Insets kLargeImageContainerPadding(0, 12, 12, 12);
 constexpr gfx::Size kLargeImageMinSize(328, 0);
 constexpr gfx::Size kLargeImageMaxSize(328, 218);
-constexpr gfx::Insets kLeftContentPadding(0, 4, 0, 4);
-constexpr gfx::Insets kLeftContentPaddingWithIcon(0, 4, 0, 12);
+constexpr gfx::Insets kLeftContentPadding(2, 4, 0, 4);
+constexpr gfx::Insets kLeftContentPaddingWithIcon(2, 4, 0, 12);
 
 // Background of inline actions area.
 const SkColor kActionsRowBackgroundColor = SkColorSetRGB(0xee, 0xee, 0xee);
