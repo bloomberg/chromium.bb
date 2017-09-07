@@ -2959,15 +2959,6 @@ WebContents* WebContentsImpl::OpenURL(const OpenURLParams& params) {
   return new_contents;
 }
 
-bool WebContentsImpl::Send(IPC::Message* message) {
-  if (!GetRenderViewHost()) {
-    delete message;
-    return false;
-  }
-
-  return GetRenderViewHost()->Send(message);
-}
-
 void WebContentsImpl::RenderFrameForInterstitialPageCreated(
     RenderFrameHost* render_frame_host) {
   for (auto& observer : observers_)
@@ -3524,8 +3515,8 @@ int WebContentsImpl::GetMaximumZoomPercent() const {
 }
 
 void WebContentsImpl::SetPageScale(float page_scale_factor) {
-  Send(new ViewMsg_SetPageScale(GetRenderViewHost()->GetRoutingID(),
-                                page_scale_factor));
+  GetRenderViewHost()->Send(new ViewMsg_SetPageScale(
+      GetRenderViewHost()->GetRoutingID(), page_scale_factor));
 }
 
 gfx::Size WebContentsImpl::GetPreferredSize() const {

@@ -19,8 +19,10 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/webplugininfo.h"
+#include "ipc/ipc_message_macros.h"
 #include "printing/features/features.h"
 
 using content::BrowserThread;
@@ -53,6 +55,17 @@ void EnableInternalPDFPluginForContents(int render_process_id,
 }  // namespace
 
 namespace printing {
+
+struct PrintViewManager::FrameDispatchHelper {
+  PrintViewManager* manager;
+  content::RenderFrameHost* render_frame_host;
+
+  bool Send(IPC::Message* msg) { return render_frame_host->Send(msg); }
+
+  void OnSetupScriptedPrintPreview(IPC::Message* reply_msg) {
+    manager->OnSetupScriptedPrintPreview(render_frame_host, reply_msg);
+  }
+};
 
 PrintViewManager::PrintViewManager(content::WebContents* web_contents)
     : PrintViewManagerBase(web_contents),
@@ -241,11 +254,13 @@ void PrintViewManager::OnScriptedPrintPreviewReply(IPC::Message* reply_msg) {
 bool PrintViewManager::OnMessageReceived(
     const IPC::Message& message,
     content::RenderFrameHost* render_frame_host) {
+  FrameDispatchHelper helper = {this, render_frame_host};
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(PrintViewManager, message, render_frame_host)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidShowPrintDialog, OnDidShowPrintDialog)
-    IPC_MESSAGE_HANDLER_WITH_PARAM_DELAY_REPLY(
-        PrintHostMsg_SetupScriptedPrintPreview, OnSetupScriptedPrintPreview)
+    IPC_MESSAGE_FORWARD_DELAY_REPLY(
+        PrintHostMsg_SetupScriptedPrintPreview, &helper,
+        FrameDispatchHelper::OnSetupScriptedPrintPreview)
     IPC_MESSAGE_HANDLER(PrintHostMsg_ShowScriptedPrintPreview,
                         OnShowScriptedPrintPreview)
     IPC_MESSAGE_UNHANDLED(handled = false)

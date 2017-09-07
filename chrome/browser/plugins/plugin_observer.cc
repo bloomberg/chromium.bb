@@ -138,7 +138,11 @@ class PluginObserver::PluginPlaceholderHost : public PluginInstallerObserver {
   }
 
   void DownloadFinished() override {
-    observer_->Send(new ChromeViewMsg_FinishedDownloadingPlugin(routing_id_));
+    // TODO(lukasza): https://crbug.com/760637: |routing_id_| might live in a
+    // different process than the RenderViewHost - need to track and use
+    // placeholder's process here.
+    observer_->web_contents()->GetRenderViewHost()->Send(
+        new ChromeViewMsg_FinishedDownloadingPlugin(routing_id_));
   }
 
  private:
@@ -166,20 +170,24 @@ class PluginObserver::ComponentObserver
   }
 
   void OnEvent(Events event, const std::string& id) override {
+    // TODO(lukasza): https://crbug.com/760637: |routing_id_| might live in a
+    // different process than the RenderViewHost - need to track and use
+    // placeholder's process when calling Send below.
+
     if (id != component_id_)
       return;
     switch (event) {
       case Events::COMPONENT_UPDATED:
-        observer_->Send(
+        observer_->web_contents()->GetRenderViewHost()->Send(
             new ChromeViewMsg_PluginComponentUpdateSuccess(routing_id_));
         observer_->RemoveComponentObserver(routing_id_);
         break;
       case Events::COMPONENT_UPDATE_FOUND:
-        observer_->Send(
+        observer_->web_contents()->GetRenderViewHost()->Send(
             new ChromeViewMsg_PluginComponentUpdateDownloading(routing_id_));
         break;
       case Events::COMPONENT_NOT_UPDATED:
-        observer_->Send(
+        observer_->web_contents()->GetRenderViewHost()->Send(
             new ChromeViewMsg_PluginComponentUpdateFailure(routing_id_));
         observer_->RemoveComponentObserver(routing_id_);
         break;

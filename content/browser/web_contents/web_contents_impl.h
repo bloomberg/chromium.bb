@@ -479,9 +479,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Implementation of PageNavigator.
   WebContents* OpenURL(const OpenURLParams& params) override;
 
-  // Implementation of IPC::Sender.
-  bool Send(IPC::Message* message) override;
-
   // RenderFrameHostDelegate ---------------------------------------------------
   bool OnMessageReceived(RenderFrameHostImpl* render_frame_host,
                          const IPC::Message& message) override;

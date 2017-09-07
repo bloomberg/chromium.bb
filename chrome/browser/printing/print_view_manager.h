@@ -68,6 +68,7 @@ class PrintViewManager : public PrintViewManagerBase,
   };
 
   // IPC Message handlers.
+  struct FrameDispatchHelper;
   void OnDidShowPrintDialog(content::RenderFrameHost* rfh);
   void OnSetupScriptedPrintPreview(content::RenderFrameHost* rfh,
                                    IPC::Message* reply_msg);

@@ -77,22 +77,21 @@ bool MediaSessionController::Initialize(
 
 void MediaSessionController::OnSuspend(int player_id) {
   DCHECK_EQ(player_id_, player_id);
-  media_web_contents_observer_->Send(
+  id_.first->Send(
       new MediaPlayerDelegateMsg_Pause(id_.first->GetRoutingID(), id_.second));
 }
 
 void MediaSessionController::OnResume(int player_id) {
   DCHECK_EQ(player_id_, player_id);
-  media_web_contents_observer_->Send(
+  id_.first->Send(
       new MediaPlayerDelegateMsg_Play(id_.first->GetRoutingID(), id_.second));
 }
 
 void MediaSessionController::OnSetVolumeMultiplier(int player_id,
                                                    double volume_multiplier) {
   DCHECK_EQ(player_id_, player_id);
-  media_web_contents_observer_->Send(
-      new MediaPlayerDelegateMsg_UpdateVolumeMultiplier(
-          id_.first->GetRoutingID(), id_.second, volume_multiplier));
+  id_.first->Send(new MediaPlayerDelegateMsg_UpdateVolumeMultiplier(
+      id_.first->GetRoutingID(), id_.second, volume_multiplier));
 }
 
 RenderFrameHost* MediaSessionController::render_frame_host() const {

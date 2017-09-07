@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/printing/browser/print_manager_utils.h"
 #include "components/printing/common/print_messages.h"
+#include "content/public/browser/render_view_host.h"
 #include "printing/pdf_metafile_skia.h"
 #include "printing/print_job_constants.h"
 #include "printing/units.h"
@@ -22,6 +23,22 @@
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(headless::HeadlessPrintManager);
 
 namespace headless {
+
+struct HeadlessPrintManager::FrameDispatchHelper {
+  HeadlessPrintManager* manager;
+  content::RenderFrameHost* render_frame_host;
+
+  bool Send(IPC::Message* msg) { return render_frame_host->Send(msg); }
+
+  void OnGetDefaultPrintSettings(IPC::Message* reply_msg) {
+    manager->OnGetDefaultPrintSettings(reply_msg);
+  }
+
+  void OnScriptedPrint(const PrintHostMsg_ScriptedPrint_Params& scripted_params,
+                       IPC::Message* reply_msg) {
+    manager->OnScriptedPrint(scripted_params, reply_msg);
+  }
+};
 
 HeadlessPrintSettings::HeadlessPrintSettings()
     : landscape(false),
@@ -217,14 +234,17 @@ bool HeadlessPrintManager::OnMessageReceived(
     return true;
   }
 
+  FrameDispatchHelper helper = {this, render_frame_host};
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(HeadlessPrintManager, message)
     IPC_MESSAGE_HANDLER(PrintHostMsg_ShowInvalidPrinterSettingsError,
                         OnShowInvalidPrinterSettingsError)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidPrintPage, OnDidPrintPage)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(PrintHostMsg_GetDefaultPrintSettings,
-                                    OnGetDefaultPrintSettings)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(PrintHostMsg_ScriptedPrint, OnScriptedPrint)
+    IPC_MESSAGE_FORWARD_DELAY_REPLY(
+        PrintHostMsg_GetDefaultPrintSettings, &helper,
+        FrameDispatchHelper::OnGetDefaultPrintSettings)
+    IPC_MESSAGE_FORWARD_DELAY_REPLY(PrintHostMsg_ScriptedPrint, &helper,
+                                    FrameDispatchHelper::OnScriptedPrint)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled || PrintManager::OnMessageReceived(message, render_frame_host);
