@@ -1259,8 +1259,8 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
   }
   image_data->decode.mark_used();
 
-  // TODO(crbug.com/740737): uploaded_image is sometimes null for reasons that
-  // need investigation.
+  // TODO(crbug.com/740737): Any time Skia returns a GPU backed SkImage it may
+  // be null due to lost context. Early out in in these cases.
   if (!uploaded_image)
     return;
 
@@ -1270,6 +1270,10 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
         draw_image.target_color_space().ToSkColorSpace(),
         SkTransferFunctionBehavior::kIgnore);
   }
+
+  // makeColorSpace may also return a null SkImage if context is lost.
+  if (!uploaded_image)
+    return;
 
   // At-raster may have decoded this while we were unlocked. If so, ignore our
   // result.
