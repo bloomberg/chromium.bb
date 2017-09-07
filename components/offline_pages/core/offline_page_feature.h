@@ -22,6 +22,7 @@ extern const base::Feature kNewBackgroundLoaderFeature;
 extern const base::Feature kOfflinePagesLoadSignalCollectingFeature;
 extern const base::Feature kOfflinePagesCTV2Feature;
 extern const base::Feature kOfflinePagesRenovationsFeature;
+extern const base::Feature kOfflinePagesPrefetchingUIFeature;
 
 // Returns true if saving bookmarked pages for offline viewing is enabled.
 bool IsOfflineBookmarksEnabled();
@@ -47,6 +48,9 @@ bool IsOfflinePagesAsyncDownloadEnabled();
 
 // Returns true if prefetching offline pages is enabled.
 bool IsPrefetchingOfflinePagesEnabled();
+
+// Returns true if we should show UI for prefetched pages.
+bool IsOfflinePagesPrefetchingUIEnabled();
 
 // Returns true if we enable load timing signals to be collected.
 bool IsOfflinePagesLoadSignalCollectingEnabled();

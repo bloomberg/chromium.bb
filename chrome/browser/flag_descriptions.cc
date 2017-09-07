@@ -1853,6 +1853,12 @@ const char kOfflinePagesPrefetchingDescription[] =
     "Enables suggested offline pages to be prefetched, so useful content is "
     "available while offline.";
 
+const char kOfflinePagesPrefetchingUIName[] =
+    "Enables prefetched offline pages to be shown in UI.";
+const char kOfflinePagesPrefetchingUIDescription[] =
+    "Enables prefetched offline pages to raise notifications and be shown in "
+    "download home UI.";
+
 const char kOfflinePagesRenovationsName[] = "Enables offline page renovations.";
 const char kOfflinePagesRenovationsDescription[] =
     "Enables offline page renovations which correct issues with dynamic "
