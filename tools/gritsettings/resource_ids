@@ -310,7 +310,6 @@
 
   "third_party/WebKit/public/blink_image_resources.grd": {
     "structures": [25300],
-    "includes": [25350],
   },
   "third_party/WebKit/public/blink_resources.grd": {
     "includes": [25400],

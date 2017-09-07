@@ -5,14 +5,14 @@
 #ifndef MediaControlVolumeSliderElement_h
 #define MediaControlVolumeSliderElement_h
 
-#include "modules/media_controls/elements/MediaControlSliderElement.h"
+#include "modules/media_controls/elements/MediaControlInputElement.h"
 
 namespace blink {
 
 class Event;
 class MediaControlsImpl;
 
-class MediaControlVolumeSliderElement final : public MediaControlSliderElement {
+class MediaControlVolumeSliderElement final : public MediaControlInputElement {
  public:
   explicit MediaControlVolumeSliderElement(MediaControlsImpl&);
 
@@ -31,7 +31,6 @@ class MediaControlVolumeSliderElement final : public MediaControlSliderElement {
  private:
   void DefaultEventHandler(Event*) override;
   bool KeepEventInNode(Event*) override;
-  void SetVolumeInternal(double);
 };
 
 }  // namespace blink

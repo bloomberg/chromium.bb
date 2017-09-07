@@ -11,7 +11,7 @@ layer at (8,8) size 300x150
     LayoutBlockFlow {DIV} at (0,118) size 300x32
 layer at (8,8) size 300x108
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x108
-layer at (8,126) size 300x32 scrollHeight 34
+layer at (8,126) size 300x32 scrollHeight 40
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x32 [bgcolor=#FAFAFA]
     LayoutButton {INPUT} at (0,0) size 32x32
     LayoutFlexibleBox {DIV} at (32,0) size 24x32 [color=#5A5A5A]
@@ -22,29 +22,13 @@ layer at (8,126) size 300x32 scrollHeight 34
       LayoutBlockFlow (anonymous) at (4,0) size 30x32
         LayoutText {#text} at (0,8) size 30x15
           text run at (0,8) width 30: "/ 0:07"
-    LayoutSlider {INPUT} at (114,15) size 37x2
-      LayoutFlexibleBox {DIV} at (0,0) size 37x2
+    LayoutSlider {INPUT} at (108,15) size 49x2
+      LayoutFlexibleBox {DIV} at (0,0) size 49x2
+        LayoutBlockFlow {DIV} at (-18,-23) size 85x48
+          LayoutBlockFlow {DIV} at (49,0) size 36x48
     LayoutButton {INPUT} at (175,0) size 32x32
     LayoutSlider {INPUT} at (225,15) size 25x2
-      LayoutFlexibleBox {DIV} at (6,0) size 13x2
+      LayoutFlexibleBox {DIV} at (0,0) size 25x2
+        LayoutBlockFlow {DIV} at (-18,-23) size 61x48
+          LayoutBlockFlow {DIV} at (25,0) size 36x48
     LayoutButton {INPUT} at (268,0) size 32x32
-layer at (104,142) size 73x0
-  LayoutBlockFlow (relative positioned) {DIV} at (-18,1) size 73x0
-layer at (116,141) size 49x2
-  LayoutBlockFlow (positioned) {DIV} at (12,-1) size 49x2 [bgcolor=#DADADA]
-layer at (221,142) size 49x0
-  LayoutBlockFlow (relative positioned) {DIV} at (-18,1) size 49x0
-layer at (233,141) size 25x2
-  LayoutBlockFlow (positioned) {DIV} at (12,-1) size 25x2 [bgcolor=#DADADA]
-layer at (116,141) size 49x2
-  LayoutBlockFlow (positioned) zI: 1 {DIV} at (0,0) size 49x2 [bgcolor=#4285F4]
-layer at (165,141) size 0x2
-  LayoutBlockFlow (positioned) zI: 1 {DIV} at (48.50,0) size 0.48x2 [bgcolor=#5A5A5A]
-layer at (233,141) size 25x2
-  LayoutBlockFlow (positioned) zI: 1 {DIV} at (0,0) size 25x2 [bgcolor=#4285F4]
-layer at (233,141) size 0x2
-  LayoutBlockFlow (positioned) zI: 1 {DIV} at (0,0) size 0x2 [bgcolor=#5A5A5A]
-layer at (141,124) size 36x36 backgroundClip at (8,126) size 300x32 clip at (8,126) size 300x32
-  LayoutBlockFlow (positioned) zI: 2 {DIV} at (37,-18) size 36x36
-layer at (234,124) size 36x36 backgroundClip at (8,126) size 300x32 clip at (8,126) size 300x32
-  LayoutBlockFlow (positioned) zI: 2 {DIV} at (13,-18) size 36x36

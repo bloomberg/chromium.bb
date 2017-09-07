@@ -31,7 +31,6 @@ void MediaControlToggleClosedCaptionsButtonElement::UpdateDisplayType() {
   bool captions_visible = MediaElement().TextTracksVisible();
   SetDisplayType(captions_visible ? kMediaHideClosedCaptionsButton
                                   : kMediaShowClosedCaptionsButton);
-  SetClass("visible", captions_visible);
 }
 
 WebLocalizedString::Name

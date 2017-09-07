@@ -68,7 +68,6 @@ void MediaControlCastButtonElement::UpdateDisplayType() {
     }
   }
   UpdateOverflowString();
-  SetClass("on", IsPlayingRemotely());
 }
 
 bool MediaControlCastButtonElement::WillRespondToMouseClickEvents() {

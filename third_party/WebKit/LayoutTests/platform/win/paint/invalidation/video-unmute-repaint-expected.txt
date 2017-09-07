@@ -4,7 +4,14 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "backgroundColor": "#FFFFFF"
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (anonymous)",
+          "rect": [8, 8, 784, 530],
+          "reason": "geometry"
+        }
+      ]
     },
     {
       "name": "LayoutVideo VIDEO id='v'",
@@ -39,19 +46,19 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='thumb'",
-          "rect": [597, 491, 36, 36],
+          "object": "LayoutSlider INPUT",
+          "rect": [580, 508, 70, 2],
           "reason": "full"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='thumb'",
-          "rect": [562, 491, 36, 36],
+          "object": "LayoutBlockFlow DIV id='thumb'",
+          "rect": [597, 485, 36, 48],
           "reason": "full"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV class='-internal-track-segment-highlight-before'",
-          "rect": [580, 508, 35, 2],
-          "reason": "appeared"
+          "object": "LayoutBlockFlow DIV id='thumb'",
+          "rect": [562, 485, 36, 48],
+          "reason": "full"
         },
         {
           "object": "LayoutButton INPUT",
@@ -62,6 +69,14 @@
     }
   ],
   "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (anonymous)",
+      "reason": "geometry"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "geometry"
+    },
     {
       "object": "LayoutVideo VIDEO id='v'",
       "reason": "style change"
@@ -75,16 +90,16 @@
       "reason": "full"
     },
     {
+      "object": "LayoutSlider INPUT",
+      "reason": "full"
+    },
+    {
       "object": "LayoutFlexibleBox DIV",
       "reason": "geometry"
     },
     {
-      "object": "LayoutBlockFlow (positioned) DIV id='thumb'",
+      "object": "LayoutBlockFlow DIV id='thumb'",
       "reason": "full"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV class='-internal-track-segment-highlight-before'",
-      "reason": "appeared"
     }
   ]
 }

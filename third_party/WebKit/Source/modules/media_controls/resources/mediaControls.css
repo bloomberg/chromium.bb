@@ -106,14 +106,8 @@ video:-webkit-full-page-media::-webkit-media-controls-panel {
     bottom: 0px;
 }
 
-audio::-webkit-media-controls-mute-button,
-video::-webkit-media-controls-mute-button {
-    -webkit-appearance: none;
-    background-image: -webkit-image-set(
-      url(default_100_percent/mediaplayer_sound_not_muted.png) 1x);
-    background-size: 32px;
-    background-repeat: no-repeat;
-    background-position: center center;
+audio::-webkit-media-controls-mute-button, video::-webkit-media-controls-mute-button {
+    -webkit-appearance: media-mute-button;
     display: flex;
     flex: none;
     box-sizing: border-box;
@@ -123,12 +117,6 @@ video::-webkit-media-controls-mute-button {
     border-width: 0px;
     background-color: initial;
     color: inherit;
-}
-
-audio::-webkit-media-controls-mute-button.muted,
-video::-webkit-media-controls-mute-button.muted {
-    background-image: -webkit-image-set(
-      url(default_100_percent/mediaplayer_sound_muted.png) 1x);
 }
 
 audio::-webkit-media-controls-overlay-enclosure {
@@ -153,12 +141,7 @@ video::-webkit-media-controls-overlay-enclosure {
 }
 
 video::-webkit-media-controls-overlay-play-button {
-    -webkit-appearance: none;
-    background-image: -webkit-image-set(
-      url(default_100_percent/mediaplayer_overlay_play.png) 1x);
-    background-size: 48px;
-    background-repeat: no-repeat;
-    background-position: center center;
+    -webkit-appearance: media-overlay-play-button;
     display: flex;
     position: absolute;
     top: 0;
@@ -203,13 +186,7 @@ video::-internal-media-remoting-background-image {
 }
 
 video::-internal-media-remoting-cast-icon {
-    -webkit-appearance: none;
-    background-image: -webkit-image-set(
-      url(default_100_percent/mediaremoting_cast.png) 1x,
-      url(default_200_percent/mediaremoting_cast.png) 2x);
-    background-size: 32px;
-    background-repeat: no-repeat;
-    background-position: center center;
+    -webkit-appearance: -internal-media-remoting-cast-icon;
     display: flex;
     position: absolute;
     margin: 0px;
@@ -266,12 +243,7 @@ video::-internal-media-remoting-disable-button:hover {
 }
 
 video::-internal-media-controls-overlay-cast-button {
-    -webkit-appearance: none;
-    background-image: -webkit-image-set(
-      url(default_100_percent/mediaplayer_overlay_cast_off.png) 1x);
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: center center;
+    -webkit-appearance: -internal-media-overlay-cast-off-button;
     display: flex;
     position: absolute;
     top: 8px;
@@ -286,19 +258,8 @@ video::-internal-media-controls-overlay-cast-button {
     transition: opacity 0.3s;
 }
 
-video::-internal-media-controls-overlay-cast-button.on {
-    background-image: -webkit-image-set(
-      url(default_100_percent/mediaplayer_overlay_cast_on.png) 1x);
-}
-
-audio::-webkit-media-controls-play-button,
-video::-webkit-media-controls-play-button {
-    -webkit-appearance: none;
-    background-image: -webkit-image-set(
-      url(default_100_percent/mediaplayer_pause.png) 1x);
-    background-size: 32px;
-    background-repeat: no-repeat;
-    background-position: center center;
+audio::-webkit-media-controls-play-button, video::-webkit-media-controls-play-button {
+    -webkit-appearance: media-play-button;
     display: flex;
     flex: none;
     box-sizing: border-box;
@@ -308,12 +269,6 @@ video::-webkit-media-controls-play-button {
     border-width: 0px;
     background-color: initial;
     color: inherit;
-}
-
-audio::-webkit-media-controls-play-button.pause,
-video::-webkit-media-controls-play-button.pause {
-  background-image: -webkit-image-set(
-      url(default_100_percent/mediaplayer_play.png) 1x);
 }
 
 audio::-webkit-media-controls-timeline-container, video::-webkit-media-controls-timeline-container {
@@ -376,9 +331,8 @@ audio::-webkit-media-controls-time-remaining-display, video::-webkit-media-contr
     text-decoration: none;
 }
 
-audio::-webkit-media-controls-timeline,
-video::-webkit-media-controls-timeline {
-    -webkit-appearance: none;
+audio::-webkit-media-controls-timeline, video::-webkit-media-controls-timeline {
+    -webkit-appearance: media-slider;
     display: flex;
     flex: 1 1 auto;
     height: 2px;
@@ -386,16 +340,16 @@ video::-webkit-media-controls-timeline {
     /* Leave 6px on either side for the thumb.  Use margin so that
      * the slider doesn't extend into it.  We also add 12px border.
      */
-    margin: 0 18px;
+    padding: 0;
+    margin: 0 18px 0 18px;
     background-color: transparent;
     min-width: 25px;
     border: initial;
     color: inherit;
 }
 
-audio::-webkit-media-controls-volume-slider,
-video::-webkit-media-controls-volume-slider {
-    -webkit-appearance: none;
+audio::-webkit-media-controls-volume-slider, video::-webkit-media-controls-volume-slider {
+    -webkit-appearance: media-volume-slider;
     display: flex;
     /* The 1.9 value was empirically chosen to match old-flexbox behaviour
      * and be aesthetically pleasing.
@@ -407,83 +361,44 @@ video::-webkit-media-controls-volume-slider {
      * than padding so that the slider doesn't extend into it.  We also
      * leave an addition 12px margin.
      */
-    margin: 0 18px;
+    padding: 0;
+    margin: 0 18px 0 18px;
     background-color: transparent;
     min-width: 25px;
     border: initial;
     color: inherit;
+}
+
+/* FIXME these shouldn't use special pseudoShadowIds, but nicer rules.
+   https://code.google.com/p/chromium/issues/detail?id=112508
+   https://bugs.webkit.org/show_bug.cgi?id=62218
+*/
+input[type="range" i]::-webkit-media-slider-container {
+    display: flex;
+    align-items: center;
+    flex-direction: row; /* This property is updated by C++ code. */
     box-sizing: border-box;
-}
-
-/**
- * Segmented Track
- */
-
-div.-internal-media-controls-segmented-track {
-    margin: 0 -18px 0 -18px;
-    position: relative;
-}
-
-div.-internal-media-controls-segmented-track .-internal-track-segment-background {
-    width: auto;
-    position: absolute;
-    background: #dadada;
+    /** this positions the slider thumb for both time and volume. */
     height: 2px;
-    margin-top: -1px;
-    left: 18px;
-    right: 18px;
-    top: 50%;
+    width: 100%;
+    background-color: transparent; /* Background drawing is managed by C++ code to draw ranges. */
 }
 
-div.-internal-media-controls-segmented-track .-internal-track-segment-highlight-before,
-div.-internal-media-controls-segmented-track .-internal-track-segment-highlight-after {
-    height: auto;
-    position: absolute;
-    top: 50%;
-    bottom: 0;
-    z-index: 1;
-    height: 2px;
-    margin-top: -1px;
+/* The negative right margin causes the track to overflow its container. */
+input[type="range" i]::-webkit-media-slider-container > div {
+    margin-right: -18px;  /* box is 36px wide, get to the middle */
+    margin-left:  -18px;
 }
 
-div.-internal-media-controls-segmented-track .-internal-track-segment-highlight-before {
-    background-color: #4285f4;
+input[type="range" i]::-webkit-media-slider-thumb {
+    box-sizing: border-box;
+    width: 48px;
+    height: 48px;
+    padding: 0px;
 }
 
-div.-internal-media-controls-segmented-track .-internal-track-segment-highlight-after {
-    background-color: #5a5a5a;
-}
-
-/**
- * Track Thumb
- */
-
-input[pseudo="-webkit-media-controls-timeline" i]::-webkit-slider-thumb,
-input[pseudo="-webkit-media-controls-volume-slider" i]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    background-image: -webkit-image-set(
-      url(default_100_percent/mediaplayer_slider_thumb.png) 1x);
-    background-size: 12px;
-    background-repeat: no-repeat;
-    background-position: center center;
-
-    height: 36px;
-    z-index: 2;
-    width: 36px;
-    margin: 0;
-    padding: 0;
-    top: -18px;
-    position: absolute;
-}
-
-audio::-webkit-media-controls-fullscreen-button,
-video::-webkit-media-controls-fullscreen-button {
-    -webkit-appearance: none;
-    background-image: -webkit-image-set(
-      url(default_100_percent/mediaplayer_enter_fullscreen.png) 1x);
-    background-size: 32px;
-    background-repeat: no-repeat;
-    background-position: center center;
+audio::-webkit-media-controls-fullscreen-button, video::-webkit-media-controls-fullscreen-button {
+    -webkit-appearance: media-enter-fullscreen-button;
     display: flex;
     flex: none;
     overflow: hidden;
@@ -496,19 +411,8 @@ video::-webkit-media-controls-fullscreen-button {
     color: inherit;
 }
 
-audio::-webkit-media-controls-fullscreen-button.fullscreen,
-video::-webkit-media-controls-fullscreen-button.fullscreen {
-    background-image: -webkit-image-set(
-      url(default_100_percent/mediaplayer_exit_fullscreen.png) 1x);
-}
-
 audio::-internal-media-controls-cast-button, video::-internal-media-controls-cast-button {
-    -webkit-appearance: none;
-    background-image: -webkit-image-set(
-      url(default_100_percent/mediaplayer_cast_off.png) 1x);
-    background-size: 32px;
-    background-repeat: no-repeat;
-    background-position: center center;
+    -webkit-appearance: -internal-media-cast-off-button;
     display: flex;
     flex: none;
     box-sizing: border-box;
@@ -520,12 +424,6 @@ audio::-internal-media-controls-cast-button, video::-internal-media-controls-cas
     margin-right: 0px;
     background-color: initial;
     color: inherit;
-}
-
-audio::-internal-media-controls-cast-button.on,
-video::-internal-media-controls-cast-button.on {
-    background-image: -webkit-image-set(
-      url(default_100_percent/mediaplayer_cast_on.png) 1x);
 }
 
 audio::-webkit-media-controls-toggle-closed-captions-button {
@@ -533,12 +431,7 @@ audio::-webkit-media-controls-toggle-closed-captions-button {
 }
 
 video::-webkit-media-controls-toggle-closed-captions-button {
-    -webkit-appearance: none;
-    background-image: -webkit-image-set(
-      url(default_100_percent/mediaplayer_closedcaption_disabled.png) 1x);
-    background-size: 32px;
-    background-repeat: no-repeat;
-    background-position: center center;
+    -webkit-appearance: media-toggle-closed-captions-button;
     display: flex;
     flex: none;
     box-sizing: border-box;
@@ -550,11 +443,6 @@ video::-webkit-media-controls-toggle-closed-captions-button {
     margin-right: 0px;
     background-color: initial;
     color: inherit;
-}
-
-video::-webkit-media-controls-toggle-closed-captions-button.visible {
-    background-image: -webkit-image-set(
-      url(default_100_percent/mediaplayer_closedcaption.png) 1x);
 }
 
 video::-internal-media-controls-text-track-list, video::-internal-media-controls-overflow-menu-list, audio::-internal-media-controls-overflow-menu-list {
@@ -589,12 +477,7 @@ video::-internal-media-controls-text-track-list-item:hover, video::-internal-med
 }
 
 video::-internal-media-controls-text-track-list-item-input {
-    -webkit-appearance: none;
-    background-image: -webkit-image-set(
-      url(default_100_percent/mediaplayer_trackselection_checkmark.png) 1x);
-    background-size: 32px;
-    background-repeat: no-repeat;
-    background-position: center center;
+    -webkit-appearance: -internal-media-track-selection-checkmark;
     visibility: hidden;
     left: 0;
     vertical-align: middle;
@@ -609,12 +492,7 @@ video::-internal-media-controls-text-track-list-item-input:checked {
 }
 
 video::-internal-media-controls-text-track-list-kind-captions {
-    -webkit-appearance: none;
-    background-image: -webkit-image-set(
-      url(default_100_percent/mediaplayer_closedcaptions_icon.png) 1x);
-    background-size: 32px;
-    background-repeat: no-repeat;
-    background-position: center center;
+    -webkit-appearance: -internal-media-closed-captions-icon;
     height: 20px;
     width: 20px;
     margin-left: 10px;
@@ -622,12 +500,7 @@ video::-internal-media-controls-text-track-list-kind-captions {
 }
 
 video::-internal-media-controls-text-track-list-kind-subtitles {
-    -webkit-appearance: none;
-    background-image: -webkit-image-set(
-      url(default_100_percent/mediaplayer_subtitles_icon.png) 1x);
-    background-size: 32px;
-    background-repeat: no-repeat;
-    background-position: center center;
+    -webkit-appearance: -internal-media-subtitles-icon;
     height: 20px;
     width: 20px;
     margin-left: 10px;
@@ -635,12 +508,7 @@ video::-internal-media-controls-text-track-list-kind-subtitles {
 }
 
 video::-internal-media-controls-overflow-button, audio::-internal-media-controls-overflow-button {
-    -webkit-appearance: none;
-    background-image: -webkit-image-set(
-      url(default_100_percent/mediaplayer_overflow_menu.png) 1x);
-    background-size: 32px;
-    background-repeat: no-repeat;
-    background-position: center center;
+    -webkit-appearance: -internal-media-overflow-button;
     display: flex;
     flex: none;
     box-sizing: border-box;
@@ -655,12 +523,7 @@ video::-internal-media-controls-overflow-button, audio::-internal-media-controls
 }
 
 video::-internal-media-controls-download-button, audio::-internal-media-controls-download-button {
-    -webkit-appearance: none;
-    background-image: -webkit-image-set(
-      url(default_100_percent/mediaplayer_download.png) 1x);
-    background-size: 32px;
-    background-repeat: no-repeat;
-    background-position: center center;
+    -webkit-appearance: -internal-media-download-button;
     display: flex;
     flex: none;
     box-sizing: border-box;
@@ -754,19 +617,4 @@ video::cue(u) {
 
 video::cue(i) {
     font-style: italic;
-}
-
-.not-loaded input[pseudo="-webkit-media-controls-play-button"],
-.not-loaded input[pseudo="-webkit-media-controls-mute-button"],
-.not-loaded input[pseudo="-webkit-media-controls-overlay-play-button"],
-.not-loaded input[pseudo="-webkit-media-controls-fullscreen-button"],
-.not-loaded input[pseudo="-internal-media-controls-download-button"],
-.not-loaded input[pseudo="-webkit-media-controls-timeline" i],
-.not-loaded input[pseudo="-webkit-media-controls-volume-slider" i] {
-    opacity: 0.4;
-}
-
-.not-loaded input[pseudo="-webkit-media-controls-timeline" i]::-webkit-slider-thumb,
-.not-loaded input[pseudo="-webkit-media-controls-volume-slider" i]::-webkit-slider-thumb {
-    display: none;
 }

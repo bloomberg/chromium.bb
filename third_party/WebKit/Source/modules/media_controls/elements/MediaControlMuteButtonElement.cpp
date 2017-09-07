@@ -28,9 +28,9 @@ void MediaControlMuteButtonElement::UpdateDisplayType() {
   // TODO(mlamouri): checking for volume == 0 because the mute button will look
   // 'muted' when the volume is 0 even if the element is not muted. This allows
   // the painting and the display type to actually match.
-  bool muted = MediaElement().muted() || MediaElement().volume() == 0;
-  SetDisplayType(muted ? kMediaUnMuteButton : kMediaMuteButton);
-  SetClass("muted", muted);
+  SetDisplayType((MediaElement().muted() || MediaElement().volume() == 0)
+                     ? kMediaUnMuteButton
+                     : kMediaMuteButton);
   UpdateOverflowString();
 }
 
