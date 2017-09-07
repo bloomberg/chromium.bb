@@ -118,7 +118,6 @@
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #endif
 
-using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
 using blink::WebDragOperation;
