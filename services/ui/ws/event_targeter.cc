@@ -59,7 +59,7 @@ void EventTargeter::FindTargetForLocationNow(
             updated_display_location.display_id);
     if (hit_test_query) {
       viz::Target target = hit_test_query->FindTargetForLocation(
-          updated_display_location.location);
+          event_source, updated_display_location.location);
       if (target.frame_sink_id.is_valid()) {
         ServerWindow* target_window =
             event_targeter_delegate_->GetWindowFromFrameSinkId(

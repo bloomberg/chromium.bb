@@ -5,6 +5,8 @@
 #ifndef SERVICES_UI_WS_WINDOW_FINDER_H_
 #define SERVICES_UI_WS_WINDOW_FINDER_H_
 
+#include "components/viz/host/hit_test/hit_test_query.h"
+
 namespace gfx {
 class Point;
 }
@@ -19,10 +21,7 @@ struct DeepestWindow {
   bool in_non_client_area = false;
 };
 
-enum class EventSource {
-  MOUSE,
-  TOUCH,
-};
+using EventSource = viz::EventSource;
 
 // Finds the deepest visible child of |root| that should receive an event at
 // |location|. |location| is in the coordinate space of |root_window|. The
