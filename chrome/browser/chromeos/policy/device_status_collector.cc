@@ -500,14 +500,20 @@ DeviceStatusCollector::DeviceStatusCollector(
   // Fetch the current values of the policies.
   UpdateReportingSettings();
 
-  // Get the OS and firmware version info.
-  chromeos::version_loader::GetFullOSAndTpmVersion(
+  // Get the OS, firmware, and TPM version info.
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      base::Bind(&chromeos::version_loader::GetVersion,
+                 chromeos::version_loader::VERSION_FULL),
       base::Bind(&DeviceStatusCollector::OnOSVersion,
                  weak_factory_.GetWeakPtr()));
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&chromeos::version_loader::GetFirmware),
       base::Bind(&DeviceStatusCollector::OnOSFirmware,
+                 weak_factory_.GetWeakPtr()));
+  chromeos::version_loader::GetTpmVersion(
+      base::Bind(&DeviceStatusCollector::OnTpmVersion,
                  weak_factory_.GetWeakPtr()));
 }
 
@@ -821,6 +827,7 @@ bool DeviceStatusCollector::GetVersionInfo(
   status->set_browser_version(version_info::GetVersionNumber());
   status->set_os_version(os_version_);
   status->set_firmware_version(firmware_version_);
+  status->set_tpm_version(tpm_version_);
   return true;
 }
 
@@ -1267,6 +1274,10 @@ void DeviceStatusCollector::OnOSVersion(const std::string& version) {
 
 void DeviceStatusCollector::OnOSFirmware(const std::string& version) {
   firmware_version_ = version;
+}
+
+void DeviceStatusCollector::OnTpmVersion(const std::string& version) {
+  tpm_version_ = version;
 }
 
 }  // namespace policy
