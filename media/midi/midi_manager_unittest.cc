@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/system_monitor/system_monitor.h"
@@ -30,8 +29,8 @@ using mojom::Result;
 
 class FakeMidiManager : public MidiManager {
  public:
-  FakeMidiManager()
-      : MidiManager(nullptr),
+  explicit FakeMidiManager(MidiService* service)
+      : MidiManager(service),
         start_initialization_is_called_(false),
         finalize_is_called_(false) {}
   ~FakeMidiManager() override {}
@@ -66,6 +65,29 @@ class FakeMidiManager : public MidiManager {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeMidiManager);
+};
+
+class FakeMidiManagerFactory : public MidiService::ManagerFactory {
+ public:
+  FakeMidiManagerFactory() = default;
+  ~FakeMidiManagerFactory() override = default;
+  std::unique_ptr<MidiManager> Create(MidiService* service) override {
+    std::unique_ptr<FakeMidiManager> manager =
+        std::make_unique<FakeMidiManager>(service);
+    // |manaegr| will be owned by the caller MidiService instance, and valid
+    // while the MidiService instance is running.
+    // MidiService::Shutdown() or destructor will destruct it, and |manager_|
+    // get to be invalid after that.
+    manager_ = manager.get();
+    return manager;
+  }
+  FakeMidiManager* GetCreatedManager() {
+    DCHECK(manager_);
+    return manager_;
+  }
+
+ private:
+  FakeMidiManager* manager_ = nullptr;
 };
 
 class FakeMidiManagerClient : public MidiManagerClient {
@@ -112,10 +134,13 @@ class FakeMidiManagerClient : public MidiManagerClient {
 
 class MidiManagerTest : public ::testing::Test {
  public:
-  MidiManagerTest()
-      : manager_(new FakeMidiManager),
-        service_(new MidiService(base::WrapUnique(manager_))),
-        message_loop_(new base::MessageLoop) {}
+  MidiManagerTest() : message_loop_(std::make_unique<base::MessageLoop>()) {
+    std::unique_ptr<FakeMidiManagerFactory> factory =
+        std::make_unique<FakeMidiManagerFactory>();
+    factory_ = factory.get();
+    service_ = std::make_unique<MidiService>(std::move(factory));
+    manager_ = factory_->GetCreatedManager();
+  }
   ~MidiManagerTest() override {
     manager_->Shutdown();
     base::RunLoop run_loop;
@@ -168,6 +193,7 @@ class MidiManagerTest : public ::testing::Test {
 
  protected:
   FakeMidiManager* manager_;  // Owned by |service_|.
+  FakeMidiManagerFactory* factory_;  // Owned by |service_|.
   std::unique_ptr<MidiService> service_;
 
  private:
@@ -224,7 +250,7 @@ TEST_F(MidiManagerTest, TooManyPendingSessions) {
   std::vector<std::unique_ptr<FakeMidiManagerClient>> many_existing_clients;
   many_existing_clients.resize(MidiManager::kMaxPendingClientCount);
   for (size_t i = 0; i < MidiManager::kMaxPendingClientCount; ++i) {
-    many_existing_clients[i] = base::MakeUnique<FakeMidiManagerClient>();
+    many_existing_clients[i] = std::make_unique<FakeMidiManagerClient>();
     StartTheNthSession(many_existing_clients[i].get(), i + 1);
   }
   EXPECT_TRUE(manager_->start_initialization_is_called_);
@@ -275,9 +301,9 @@ TEST_F(MidiManagerTest, CreateMidiManager) {
   base::SystemMonitor system_monitor;
 
   std::unique_ptr<FakeMidiManagerClient> client(
-      base::MakeUnique<FakeMidiManagerClient>());
+      std::make_unique<FakeMidiManagerClient>());
 
-  std::unique_ptr<MidiService> service(base::MakeUnique<MidiService>());
+  std::unique_ptr<MidiService> service(std::make_unique<MidiService>());
   service->StartSession(client.get());
 
   Result result = client->WaitForResult();
