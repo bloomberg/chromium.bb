@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_view_controller.h"
 
 #include "base/metrics/user_metrics.h"
+#include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -426,6 +427,7 @@ const CGFloat kSpacer = 50;
     }
     return;
   }
+
   BOOL foundURL = NO;
   BOOL foundFolder = NO;
   for (std::set<const bookmarks::BookmarkNode*>::iterator i = nodes.begin();
@@ -441,6 +443,7 @@ const CGFloat kSpacer = 50;
       break;
     }
   }
+
   // Only URLs are selected.
   if (foundURL && !foundFolder) {
     [self setContextBarState:BookmarksContextBarMultipleURLSelection];
@@ -459,6 +462,24 @@ const CGFloat kSpacer = 50;
 
   NOTREACHED();
   return;
+}
+
+- (void)bookmarkTableView:(BookmarkTableView*)view
+    showContextMenuForNode:(const bookmarks::BookmarkNode*)node {
+  if (node->is_url()) {
+    [self presentViewController:[self contextMenuForSingleBookmarkURL:node]
+                       animated:YES
+                     completion:nil];
+    return;
+  }
+
+  if (node->is_folder()) {
+    [self presentViewController:[self contextMenuForSingleBookmarkFolder:node]
+                       animated:YES
+                     completion:nil];
+    return;
+  }
+  NOTREACHED();
 }
 
 #pragma mark - BookmarkFolderViewControllerDelegate
@@ -1118,7 +1139,8 @@ const CGFloat kSpacer = 50;
       break;
     case BookmarksContextBarSingleURLSelection:
       // More clicked, show action sheet with context menu.
-      [self presentViewController:[self contextMenuForSingleBookmarkURL]
+      [self presentViewController:
+                [self contextMenuForSingleBookmarkURL:*(nodes.begin())]
                          animated:YES
                        completion:nil];
       break;
@@ -1135,11 +1157,10 @@ const CGFloat kSpacer = 50;
     case BookmarksContextBarMultipleFolderSelection:
     case BookmarksContextBarMixedSelection:
       // More clicked, show action sheet with context menu.
-      [self
-          presentViewController:[self
-                                    contextMenuForMixedAndMultiFolderSelection]
-                       animated:YES
-                     completion:nil];
+      [self presentViewController:
+                [self contextMenuForMixedAndMultiFolderSelection:nodes]
+                         animated:YES
+                       completion:nil];
       break;
     case BookmarksContextBarNone:
     default:
@@ -1275,7 +1296,9 @@ const CGFloat kSpacer = 50;
   return alert;
 }
 
-- (UIAlertController*)contextMenuForSingleBookmarkURL {
+- (UIAlertController*)contextMenuForSingleBookmarkURL:
+    (const BookmarkNode*)node {
+  __weak BookmarkHomeViewController* weakSelf = self;
   UIAlertController* alert = [UIAlertController
       alertControllerWithTitle:nil
                        message:nil
@@ -1290,12 +1313,19 @@ const CGFloat kSpacer = 50;
   UIAlertAction* editAction = [UIAlertAction
       actionWithTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT)
                 style:UIAlertActionStyleDefault
-              handler:nil];
+              handler:^(UIAlertAction* _Nonnull action) {
+                [weakSelf editNode:node];
+              }];
 
+  void (^copyHandler)(UIAlertAction*) = ^(UIAlertAction*) {
+    UIPasteboard* pasteboard = [UIPasteboard generalPasteboard];
+    std::string urlString = node->url().possibly_invalid_spec();
+    pasteboard.string = base::SysUTF8ToNSString(urlString);
+  };
   UIAlertAction* copyAction = [UIAlertAction
       actionWithTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_MENU_COPY)
                 style:UIAlertActionStyleDefault
-              handler:nil];
+              handler:copyHandler];
 
   UIAlertAction* openInIncognitoAction = [UIAlertAction
       actionWithTitle:l10n_util::GetNSString(
@@ -1309,7 +1339,44 @@ const CGFloat kSpacer = 50;
   return alert;
 }
 
-- (UIAlertController*)contextMenuForMixedAndMultiFolderSelection {
+- (UIAlertController*)contextMenuForSingleBookmarkFolder:
+    (const BookmarkNode*)node {
+  __weak BookmarkHomeViewController* weakSelf = self;
+  UIAlertController* alert = [UIAlertController
+      alertControllerWithTitle:nil
+                       message:nil
+                preferredStyle:UIAlertControllerStyleActionSheet];
+  alert.view.accessibilityIdentifier = @"bookmark_context_menu";
+
+  UIAlertAction* cancelAction =
+      [UIAlertAction actionWithTitle:l10n_util::GetNSString(IDS_CANCEL)
+                               style:UIAlertActionStyleCancel
+                             handler:nil];
+
+  UIAlertAction* editAction = [UIAlertAction
+      actionWithTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT)
+                style:UIAlertActionStyleDefault
+              handler:^(UIAlertAction* _Nonnull action) {
+                [weakSelf editNode:node];
+              }];
+
+  void (^moveHandler)(UIAlertAction*) = ^(UIAlertAction*) {
+    std::set<const BookmarkNode*> nodes;
+    nodes.insert(node);
+    [weakSelf moveNodes:nodes];
+  };
+  UIAlertAction* moveAction = [UIAlertAction
+      actionWithTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)
+                style:UIAlertActionStyleDefault
+              handler:moveHandler];
+  [alert addAction:editAction];
+  [alert addAction:moveAction];
+  [alert addAction:cancelAction];
+  return alert;
+}
+
+- (UIAlertController*)contextMenuForMixedAndMultiFolderSelection:
+    (const std::set<const bookmarks::BookmarkNode*>&)nodes {
   UIAlertController* alert = [UIAlertController
       alertControllerWithTitle:nil
                        message:nil
