@@ -721,7 +721,9 @@ drm_property_info_populate(struct drm_backend *b,
 /**
  * Free DRM property information
  *
- * Frees all memory associated with a DRM property info array.
+ * Frees all memory associated with a DRM property info array and zeroes
+ * it out, leaving it usable for a further drm_property_info_update() or
+ * drm_property_info_free().
  *
  * @param info DRM property info array
  * @param num_props Number of entries in array to free
@@ -733,6 +735,8 @@ drm_property_info_free(struct drm_property_info *info, int num_props)
 
 	for (i = 0; i < num_props; i++)
 		free(info[i].enum_values);
+
+	memset(info, 0, sizeof(*info) * num_props);
 }
 
 static void
