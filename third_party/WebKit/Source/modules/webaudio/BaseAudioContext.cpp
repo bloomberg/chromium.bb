@@ -29,8 +29,8 @@
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/modules/v8/decode_error_callback.h"
-#include "bindings/modules/v8/decode_success_callback.h"
+#include "bindings/modules/v8/v8_decode_error_callback.h"
+#include "bindings/modules/v8/v8_decode_success_callback.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -294,7 +294,7 @@ ScriptPromise BaseAudioContext::decodeAudioData(
 ScriptPromise BaseAudioContext::decodeAudioData(
     ScriptState* script_state,
     DOMArrayBuffer* audio_data,
-    DecodeSuccessCallback* success_callback,
+    V8DecodeSuccessCallback* success_callback,
     ExceptionState& exception_state) {
   return decodeAudioData(script_state, audio_data, success_callback, nullptr,
                          exception_state);
@@ -303,8 +303,8 @@ ScriptPromise BaseAudioContext::decodeAudioData(
 ScriptPromise BaseAudioContext::decodeAudioData(
     ScriptState* script_state,
     DOMArrayBuffer* audio_data,
-    DecodeSuccessCallback* success_callback,
-    DecodeErrorCallback* error_callback,
+    V8DecodeSuccessCallback* success_callback,
+    V8DecodeErrorCallback* error_callback,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
   DCHECK(audio_data);
@@ -355,8 +355,8 @@ ScriptPromise BaseAudioContext::decodeAudioData(
 void BaseAudioContext::HandleDecodeAudioData(
     AudioBuffer* audio_buffer,
     ScriptPromiseResolver* resolver,
-    DecodeSuccessCallback* success_callback,
-    DecodeErrorCallback* error_callback) {
+    V8DecodeSuccessCallback* success_callback,
+    V8DecodeErrorCallback* error_callback) {
   DCHECK(IsMainThread());
 
   if (audio_buffer) {

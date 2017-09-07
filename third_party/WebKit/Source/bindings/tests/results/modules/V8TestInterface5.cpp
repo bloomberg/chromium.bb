@@ -17,7 +17,7 @@
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8TestInterfaceEmpty.h"
 #include "bindings/modules/v8/V8TestInterface5.h"
-#include "bindings/modules/v8/void_callback_function_modules.h"
+#include "bindings/modules/v8/v8_void_callback_function_modules.h"
 #include "core/dom/ExecutionContext.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/bindings/RuntimeCallStats.h"
@@ -493,13 +493,13 @@ static void voidMethodVoidCallbackFunctionModulesArgMethod(const v8::FunctionCal
     return;
   }
 
-  VoidCallbackFunctionModules* arg;
+  V8VoidCallbackFunctionModules* arg;
   if (!(info[0]->IsObject() && v8::Local<v8::Object>::Cast(info[0])->IsCallable())) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodVoidCallbackFunctionModulesArg", "TestInterface5", "The callback provided as parameter 1 is not a function."));
 
     return;
   }
-  arg = VoidCallbackFunctionModules::Create(ScriptState::Current(info.GetIsolate()), info[0]);
+  arg = V8VoidCallbackFunctionModules::Create(ScriptState::Current(info.GetIsolate()), info[0]);
 
   impl->voidMethodVoidCallbackFunctionModulesArg(arg);
 }

@@ -10,8 +10,8 @@
 
 // clang-format off
 
-#ifndef VoidCallbackFunctionTestInterfaceSequenceArg_h
-#define VoidCallbackFunctionTestInterfaceSequenceArg_h
+#ifndef V8VoidCallbackFunctionTestInterfaceSequenceArg_h
+#define V8VoidCallbackFunctionTestInterfaceSequenceArg_h
 
 #include "bindings/core/v8/NativeValueTraits.h"
 #include "core/CoreExport.h"
@@ -25,11 +25,11 @@ namespace blink {
 class ScriptState;
 class TestInterfaceImplementation;
 
-class CORE_EXPORT VoidCallbackFunctionTestInterfaceSequenceArg final : public GarbageCollectedFinalized<VoidCallbackFunctionTestInterfaceSequenceArg>, public TraceWrapperBase {
+class CORE_EXPORT V8VoidCallbackFunctionTestInterfaceSequenceArg final : public GarbageCollectedFinalized<V8VoidCallbackFunctionTestInterfaceSequenceArg>, public TraceWrapperBase {
  public:
-  static VoidCallbackFunctionTestInterfaceSequenceArg* Create(ScriptState*, v8::Local<v8::Value> callback);
+  static V8VoidCallbackFunctionTestInterfaceSequenceArg* Create(ScriptState*, v8::Local<v8::Value> callback);
 
-  ~VoidCallbackFunctionTestInterfaceSequenceArg() = default;
+  ~V8VoidCallbackFunctionTestInterfaceSequenceArg() = default;
 
   DEFINE_INLINE_TRACE() {}
   DECLARE_TRACE_WRAPPERS();
@@ -41,17 +41,17 @@ class CORE_EXPORT VoidCallbackFunctionTestInterfaceSequenceArg final : public Ga
   }
 
  private:
-  VoidCallbackFunctionTestInterfaceSequenceArg(ScriptState*, v8::Local<v8::Function>);
+  V8VoidCallbackFunctionTestInterfaceSequenceArg(ScriptState*, v8::Local<v8::Function>);
 
   RefPtr<ScriptState> script_state_;
   TraceWrapperV8Reference<v8::Function> callback_;
 };
 
 template <>
-struct NativeValueTraits<VoidCallbackFunctionTestInterfaceSequenceArg> : public NativeValueTraitsBase<VoidCallbackFunctionTestInterfaceSequenceArg> {
-  CORE_EXPORT static VoidCallbackFunctionTestInterfaceSequenceArg* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+struct NativeValueTraits<V8VoidCallbackFunctionTestInterfaceSequenceArg> : public NativeValueTraitsBase<V8VoidCallbackFunctionTestInterfaceSequenceArg> {
+  CORE_EXPORT static V8VoidCallbackFunctionTestInterfaceSequenceArg* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 }  // namespace blink
 
-#endif  // VoidCallbackFunctionTestInterfaceSequenceArg_h
+#endif  // V8VoidCallbackFunctionTestInterfaceSequenceArg_h

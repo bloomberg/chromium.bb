@@ -377,7 +377,7 @@ class CodeGeneratorCallbackFunction(CodeGeneratorBase):
         template_context['code_generator'] = MODULE_PYNAME
         header_text = render_template(header_template, template_context)
         cpp_text = render_template(cpp_template, template_context)
-        snake_base_name = to_snake_case(callback_function.name)
+        snake_base_name = to_snake_case('V8%s' % callback_function.name)
         header_path = posixpath.join(self.output_dir, '%s.h' % snake_base_name)
         cpp_path = posixpath.join(self.output_dir, '%s.cc' % snake_base_name)
         return (

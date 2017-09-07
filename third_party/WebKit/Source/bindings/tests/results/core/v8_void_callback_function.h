@@ -10,8 +10,8 @@
 
 // clang-format off
 
-#ifndef AnyCallbackFunctionOptionalAnyArg_h
-#define AnyCallbackFunctionOptionalAnyArg_h
+#ifndef V8VoidCallbackFunction_h
+#define V8VoidCallbackFunction_h
 
 #include "bindings/core/v8/NativeValueTraits.h"
 #include "core/CoreExport.h"
@@ -24,33 +24,33 @@ namespace blink {
 
 class ScriptState;
 
-class CORE_EXPORT AnyCallbackFunctionOptionalAnyArg final : public GarbageCollectedFinalized<AnyCallbackFunctionOptionalAnyArg>, public TraceWrapperBase {
+class CORE_EXPORT V8VoidCallbackFunction final : public GarbageCollectedFinalized<V8VoidCallbackFunction>, public TraceWrapperBase {
  public:
-  static AnyCallbackFunctionOptionalAnyArg* Create(ScriptState*, v8::Local<v8::Value> callback);
+  static V8VoidCallbackFunction* Create(ScriptState*, v8::Local<v8::Value> callback);
 
-  ~AnyCallbackFunctionOptionalAnyArg() = default;
+  ~V8VoidCallbackFunction() = default;
 
   DEFINE_INLINE_TRACE() {}
   DECLARE_TRACE_WRAPPERS();
 
-  bool call(ScriptWrappable* scriptWrappable, ScriptValue optionalAnyArg, ScriptValue& returnValue);
+  bool call(ScriptWrappable* scriptWrappable);
 
   v8::Local<v8::Function> v8Value(v8::Isolate* isolate) {
     return callback_.NewLocal(isolate);
   }
 
  private:
-  AnyCallbackFunctionOptionalAnyArg(ScriptState*, v8::Local<v8::Function>);
+  V8VoidCallbackFunction(ScriptState*, v8::Local<v8::Function>);
 
   RefPtr<ScriptState> script_state_;
   TraceWrapperV8Reference<v8::Function> callback_;
 };
 
 template <>
-struct NativeValueTraits<AnyCallbackFunctionOptionalAnyArg> : public NativeValueTraitsBase<AnyCallbackFunctionOptionalAnyArg> {
-  CORE_EXPORT static AnyCallbackFunctionOptionalAnyArg* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+struct NativeValueTraits<V8VoidCallbackFunction> : public NativeValueTraitsBase<V8VoidCallbackFunction> {
+  CORE_EXPORT static V8VoidCallbackFunction* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 }  // namespace blink
 
-#endif  // AnyCallbackFunctionOptionalAnyArg_h
+#endif  // V8VoidCallbackFunction_h

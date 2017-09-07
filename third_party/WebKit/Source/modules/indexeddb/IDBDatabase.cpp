@@ -29,7 +29,7 @@
 #include "bindings/core/v8/Nullable.h"
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "bindings/modules/v8/V8BindingForModules.h"
-#include "bindings/modules/v8/idb_observer_callback.h"
+#include "bindings/modules/v8/v8_idb_observer_callback.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/events/EventQueue.h"

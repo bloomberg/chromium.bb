@@ -29,9 +29,9 @@ namespace blink {
 
 class AvailabilityCallbackWrapper;
 class HTMLMediaElement;
-class RemotePlaybackAvailabilityCallback;
 class ScriptPromiseResolver;
 class ScriptState;
+class V8RemotePlaybackAvailabilityCallback;
 class WebPresentationConnectionProxy;
 struct WebPresentationError;
 struct WebPresentationInfo;
@@ -64,7 +64,7 @@ class MODULES_EXPORT RemotePlayback final
   // availability via the provided callback. May start the monitoring of remote
   // playback devices if it isn't running yet.
   ScriptPromise watchAvailability(ScriptState*,
-                                  RemotePlaybackAvailabilityCallback*);
+                                  V8RemotePlaybackAvailabilityCallback*);
 
   // Cancels updating the page via the callback specified by its id.
   ScriptPromise cancelWatchAvailability(ScriptState*, int id);

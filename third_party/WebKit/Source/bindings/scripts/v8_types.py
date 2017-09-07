@@ -236,8 +236,11 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_
         idl_type_name = "Or".join(member_cpp_name(member)
                                   for member in idl_type.member_types)
         return 'const %s&' % idl_type_name if used_as_rvalue_type else idl_type_name
-    if idl_type.is_callback_function and not idl_type.is_custom_callback_function:
-        return base_idl_type + '*'
+    if idl_type.is_callback_function:
+        if idl_type.is_custom_callback_function:
+            return 'V8%s' % base_idl_type
+        return 'V8%s*' % base_idl_type
+
     if base_idl_type == 'void':
         return base_idl_type
     # Default, assume native type is a pointer with same type name as idl type
@@ -413,7 +416,7 @@ def includes_for_type(idl_type, extended_attributes=None):
         return set()
     if idl_type.is_callback_function:
         component = IdlType.callback_functions[base_idl_type]['component_dir']
-        return set(['bindings/%s/v8/%s.h' % (component, to_snake_case(base_idl_type))])
+        return set(['bindings/%s/v8/%s.h' % (component, to_snake_case('V8%s' % base_idl_type))])
     if base_idl_type not in component_dir:
         return set()
     return set(['bindings/%s/v8/V8%s.h' % (component_dir[base_idl_type],
@@ -638,7 +641,7 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
         cpp_expression_format = 'V8{idl_type}::toImpl({isolate}, {v8_value}, {variable_name}, exceptionState)'
     elif idl_type.is_callback_function:
         cpp_expression_format = (
-            '{idl_type}::Create(ScriptState::Current({isolate}), {v8_value})')
+            'V8{idl_type}::Create(ScriptState::Current({isolate}), {v8_value})')
     elif idl_type.v8_conversion_needs_exception_state:
         # Effectively, this if branch means everything with v8_conversion_needs_exception_state == True
         # except for unions and dictionary interfaces.

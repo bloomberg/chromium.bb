@@ -61,8 +61,6 @@ class ChannelSplitterNode;
 class ConstantSourceNode;
 class ConvolverNode;
 class DelayNode;
-class DecodeErrorCallback;
-class DecodeSuccessCallback;
 class Document;
 class DynamicsCompressorNode;
 class ExceptionState;
@@ -82,6 +80,8 @@ class ScriptPromiseResolver;
 class ScriptState;
 class SecurityOrigin;
 class StereoPannerNode;
+class V8DecodeErrorCallback;
+class V8DecodeSuccessCallback;
 class WaveShaperNode;
 
 // BaseAudioContext is the cornerstone of the web audio API and all AudioNodes
@@ -172,8 +172,8 @@ class MODULES_EXPORT BaseAudioContext
   // Asynchronous audio file data decoding.
   ScriptPromise decodeAudioData(ScriptState*,
                                 DOMArrayBuffer* audio_data,
-                                DecodeSuccessCallback*,
-                                DecodeErrorCallback*,
+                                V8DecodeSuccessCallback*,
+                                V8DecodeErrorCallback*,
                                 ExceptionState&);
 
   ScriptPromise decodeAudioData(ScriptState*,
@@ -182,15 +182,15 @@ class MODULES_EXPORT BaseAudioContext
 
   ScriptPromise decodeAudioData(ScriptState*,
                                 DOMArrayBuffer* audio_data,
-                                DecodeSuccessCallback*,
+                                V8DecodeSuccessCallback*,
                                 ExceptionState&);
 
   // Handles the promise and callbacks when |decodeAudioData| is finished
   // decoding.
   void HandleDecodeAudioData(AudioBuffer*,
                              ScriptPromiseResolver*,
-                             DecodeSuccessCallback*,
-                             DecodeErrorCallback*);
+                             V8DecodeSuccessCallback*,
+                             V8DecodeErrorCallback*);
 
   AudioListener* listener() { return listener_; }
 
@@ -481,8 +481,8 @@ class MODULES_EXPORT BaseAudioContext
   // Hold references to the |decodeAudioData| callbacks so that they
   // don't get prematurely GCed by v8 before |decodeAudioData| returns
   // and calls them.
-  HeapVector<TraceWrapperMember<DecodeSuccessCallback>> success_callbacks_;
-  HeapVector<TraceWrapperMember<DecodeErrorCallback>> error_callbacks_;
+  HeapVector<TraceWrapperMember<V8DecodeSuccessCallback>> success_callbacks_;
+  HeapVector<TraceWrapperMember<V8DecodeErrorCallback>> error_callbacks_;
 
   // When a context is closed, the sample rate is cleared.  But decodeAudioData
   // can be called after the context has been closed and it needs the sample

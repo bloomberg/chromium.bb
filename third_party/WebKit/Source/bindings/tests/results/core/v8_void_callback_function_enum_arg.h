@@ -10,8 +10,8 @@
 
 // clang-format off
 
-#ifndef LongCallbackFunction_h
-#define LongCallbackFunction_h
+#ifndef V8VoidCallbackFunctionEnumArg_h
+#define V8VoidCallbackFunctionEnumArg_h
 
 #include "bindings/core/v8/NativeValueTraits.h"
 #include "core/CoreExport.h"
@@ -24,33 +24,33 @@ namespace blink {
 
 class ScriptState;
 
-class CORE_EXPORT LongCallbackFunction final : public GarbageCollectedFinalized<LongCallbackFunction>, public TraceWrapperBase {
+class CORE_EXPORT V8VoidCallbackFunctionEnumArg final : public GarbageCollectedFinalized<V8VoidCallbackFunctionEnumArg>, public TraceWrapperBase {
  public:
-  static LongCallbackFunction* Create(ScriptState*, v8::Local<v8::Value> callback);
+  static V8VoidCallbackFunctionEnumArg* Create(ScriptState*, v8::Local<v8::Value> callback);
 
-  ~LongCallbackFunction() = default;
+  ~V8VoidCallbackFunctionEnumArg() = default;
 
   DEFINE_INLINE_TRACE() {}
   DECLARE_TRACE_WRAPPERS();
 
-  bool call(ScriptWrappable* scriptWrappable, int32_t num1, int32_t num2, int32_t& returnValue);
+  bool call(ScriptWrappable* scriptWrappable, const String& arg);
 
   v8::Local<v8::Function> v8Value(v8::Isolate* isolate) {
     return callback_.NewLocal(isolate);
   }
 
  private:
-  LongCallbackFunction(ScriptState*, v8::Local<v8::Function>);
+  V8VoidCallbackFunctionEnumArg(ScriptState*, v8::Local<v8::Function>);
 
   RefPtr<ScriptState> script_state_;
   TraceWrapperV8Reference<v8::Function> callback_;
 };
 
 template <>
-struct NativeValueTraits<LongCallbackFunction> : public NativeValueTraitsBase<LongCallbackFunction> {
-  CORE_EXPORT static LongCallbackFunction* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+struct NativeValueTraits<V8VoidCallbackFunctionEnumArg> : public NativeValueTraitsBase<V8VoidCallbackFunctionEnumArg> {
+  CORE_EXPORT static V8VoidCallbackFunctionEnumArg* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 }  // namespace blink
 
-#endif  // LongCallbackFunction_h
+#endif  // V8VoidCallbackFunctionEnumArg_h

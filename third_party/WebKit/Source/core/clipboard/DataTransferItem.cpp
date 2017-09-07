@@ -31,7 +31,7 @@
 #include "core/clipboard/DataTransferItem.h"
 
 #include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/function_string_callback.h"
+#include "bindings/core/v8/v8_function_string_callback.h"
 #include "core/clipboard/DataObjectItem.h"
 #include "core/clipboard/DataTransfer.h"
 #include "core/dom/ExecutionContext.h"
@@ -70,7 +70,7 @@ String DataTransferItem::type() const {
 }
 
 void DataTransferItem::getAsString(ScriptState* script_state,
-                                   FunctionStringCallback* callback) {
+                                   V8FunctionStringCallback* callback) {
   if (!data_transfer_->CanReadData())
     return;
   if (!callback || item_->Kind() != DataObjectItem::kStringKind)
@@ -98,7 +98,7 @@ DataTransferItem::DataTransferItem(DataTransfer* data_transfer,
     : data_transfer_(data_transfer), item_(item) {}
 
 void DataTransferItem::RunGetAsStringTask(ExecutionContext* context,
-                                          FunctionStringCallback* callback,
+                                          V8FunctionStringCallback* callback,
                                           const String& data) {
   DCHECK(callback);
   probe::AsyncTask async_task(context, callback);

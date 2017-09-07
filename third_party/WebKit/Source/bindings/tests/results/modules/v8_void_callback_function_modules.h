@@ -10,8 +10,8 @@
 
 // clang-format off
 
-#ifndef VoidCallbackFunctionModules_h
-#define VoidCallbackFunctionModules_h
+#ifndef V8VoidCallbackFunctionModules_h
+#define V8VoidCallbackFunctionModules_h
 
 #include "bindings/core/v8/NativeValueTraits.h"
 #include "modules/ModulesExport.h"
@@ -24,11 +24,11 @@ namespace blink {
 
 class ScriptState;
 
-class MODULES_EXPORT VoidCallbackFunctionModules final : public GarbageCollectedFinalized<VoidCallbackFunctionModules>, public TraceWrapperBase {
+class MODULES_EXPORT V8VoidCallbackFunctionModules final : public GarbageCollectedFinalized<V8VoidCallbackFunctionModules>, public TraceWrapperBase {
  public:
-  static VoidCallbackFunctionModules* Create(ScriptState*, v8::Local<v8::Value> callback);
+  static V8VoidCallbackFunctionModules* Create(ScriptState*, v8::Local<v8::Value> callback);
 
-  ~VoidCallbackFunctionModules() = default;
+  ~V8VoidCallbackFunctionModules() = default;
 
   DEFINE_INLINE_TRACE() {}
   DECLARE_TRACE_WRAPPERS();
@@ -40,17 +40,17 @@ class MODULES_EXPORT VoidCallbackFunctionModules final : public GarbageCollected
   }
 
  private:
-  VoidCallbackFunctionModules(ScriptState*, v8::Local<v8::Function>);
+  V8VoidCallbackFunctionModules(ScriptState*, v8::Local<v8::Function>);
 
   RefPtr<ScriptState> script_state_;
   TraceWrapperV8Reference<v8::Function> callback_;
 };
 
 template <>
-struct NativeValueTraits<VoidCallbackFunctionModules> : public NativeValueTraitsBase<VoidCallbackFunctionModules> {
-  MODULES_EXPORT static VoidCallbackFunctionModules* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+struct NativeValueTraits<V8VoidCallbackFunctionModules> : public NativeValueTraitsBase<V8VoidCallbackFunctionModules> {
+  MODULES_EXPORT static V8VoidCallbackFunctionModules* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 }  // namespace blink
 
-#endif  // VoidCallbackFunctionModules_h
+#endif  // V8VoidCallbackFunctionModules_h

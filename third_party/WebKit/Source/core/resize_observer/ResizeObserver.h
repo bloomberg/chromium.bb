@@ -14,10 +14,10 @@ namespace blink {
 
 class Document;
 class Element;
-class ResizeObserverCallback;
 class ResizeObserverController;
 class ResizeObserverEntry;
 class ResizeObservation;
+class V8ResizeObserverCallback;
 
 // ResizeObserver represents ResizeObserver javascript api:
 // https://github.com/WICG/ResizeObserver/
@@ -36,7 +36,7 @@ class CORE_EXPORT ResizeObserver final
     DEFINE_INLINE_VIRTUAL_TRACE() {}
   };
 
-  static ResizeObserver* Create(Document&, ResizeObserverCallback*);
+  static ResizeObserver* Create(Document&, V8ResizeObserverCallback*);
   static ResizeObserver* Create(Document&, Delegate*);
 
   virtual ~ResizeObserver(){};
@@ -57,13 +57,13 @@ class CORE_EXPORT ResizeObserver final
   DECLARE_TRACE_WRAPPERS();
 
  private:
-  ResizeObserver(ResizeObserverCallback*, Document&);
+  ResizeObserver(V8ResizeObserverCallback*, Document&);
   ResizeObserver(Delegate*, Document&);
 
   using ObservationList = HeapLinkedHashSet<WeakMember<ResizeObservation>>;
 
   // Either of |callback_| and |delegate_| should be non-null.
-  const TraceWrapperMember<ResizeObserverCallback> callback_;
+  const TraceWrapperMember<V8ResizeObserverCallback> callback_;
   const Member<Delegate> delegate_;
 
   // List of elements we are observing

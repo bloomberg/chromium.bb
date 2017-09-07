@@ -10,7 +10,7 @@
 
 // clang-format off
 
-#include "string_sequence_callback_function_long_sequence_arg.h"
+#include "v8_void_callback_function_enum_arg.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/IDLTypes.h"
@@ -24,23 +24,23 @@
 namespace blink {
 
 // static
-StringSequenceCallbackFunctionLongSequenceArg* StringSequenceCallbackFunctionLongSequenceArg::Create(ScriptState* scriptState, v8::Local<v8::Value> callback) {
+V8VoidCallbackFunctionEnumArg* V8VoidCallbackFunctionEnumArg::Create(ScriptState* scriptState, v8::Local<v8::Value> callback) {
   if (IsUndefinedOrNull(callback))
     return nullptr;
-  return new StringSequenceCallbackFunctionLongSequenceArg(scriptState, v8::Local<v8::Function>::Cast(callback));
+  return new V8VoidCallbackFunctionEnumArg(scriptState, v8::Local<v8::Function>::Cast(callback));
 }
 
-StringSequenceCallbackFunctionLongSequenceArg::StringSequenceCallbackFunctionLongSequenceArg(ScriptState* scriptState, v8::Local<v8::Function> callback)
+V8VoidCallbackFunctionEnumArg::V8VoidCallbackFunctionEnumArg(ScriptState* scriptState, v8::Local<v8::Function> callback)
     : script_state_(scriptState),
     callback_(scriptState->GetIsolate(), this, callback) {
   DCHECK(!callback_.IsEmpty());
 }
 
-DEFINE_TRACE_WRAPPERS(StringSequenceCallbackFunctionLongSequenceArg) {
+DEFINE_TRACE_WRAPPERS(V8VoidCallbackFunctionEnumArg) {
   visitor->TraceWrappers(callback_.Cast<v8::Value>());
 }
 
-bool StringSequenceCallbackFunctionLongSequenceArg::call(ScriptWrappable* scriptWrappable, const Vector<int32_t>& arg, Vector<String>& returnValue) {
+bool V8VoidCallbackFunctionEnumArg::call(ScriptWrappable* scriptWrappable, const String& arg) {
   if (callback_.IsEmpty())
     return false;
 
@@ -50,6 +50,17 @@ bool StringSequenceCallbackFunctionLongSequenceArg::call(ScriptWrappable* script
   // TODO(bashi): Make sure that using DummyExceptionStateForTesting is OK.
   // crbug.com/653769
   DummyExceptionStateForTesting exceptionState;
+
+  const char* valid_arg_values[] = {
+      "",
+      "EnumValue1",
+      "EnumValue2",
+      "EnumValue3",
+  };
+  if (!IsValidEnum(arg, valid_arg_values, WTF_ARRAY_LENGTH(valid_arg_values), "TestEnum", exceptionState)) {
+    NOTREACHED();
+    return false;
+  }
 
   ExecutionContext* context = ExecutionContext::From(script_state_.Get());
   DCHECK(context);
@@ -64,7 +75,7 @@ bool StringSequenceCallbackFunctionLongSequenceArg::call(ScriptWrappable* script
       script_state_->GetContext()->Global(),
       isolate);
 
-  v8::Local<v8::Value> v8_arg = ToV8(arg, script_state_->GetContext()->Global(), script_state_->GetIsolate());
+  v8::Local<v8::Value> v8_arg = V8String(script_state_->GetIsolate(), arg);
   v8::Local<v8::Value> argv[] = { v8_arg };
   v8::TryCatch exceptionCatcher(isolate);
   exceptionCatcher.SetVerbose(true);
@@ -79,18 +90,14 @@ bool StringSequenceCallbackFunctionLongSequenceArg::call(ScriptWrappable* script
     return false;
   }
 
-  Vector<String> cppValue = NativeValueTraits<IDLSequence<IDLString>>::NativeValue(script_state_->GetIsolate(), v8ReturnValue, exceptionState);
-  if (exceptionState.HadException())
-    return false;
-  returnValue = cppValue;
   return true;
 }
 
-StringSequenceCallbackFunctionLongSequenceArg* NativeValueTraits<StringSequenceCallbackFunctionLongSequenceArg>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  StringSequenceCallbackFunctionLongSequenceArg* nativeValue = StringSequenceCallbackFunctionLongSequenceArg::Create(ScriptState::Current(isolate), value);
+V8VoidCallbackFunctionEnumArg* NativeValueTraits<V8VoidCallbackFunctionEnumArg>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  V8VoidCallbackFunctionEnumArg* nativeValue = V8VoidCallbackFunctionEnumArg::Create(ScriptState::Current(isolate), value);
   if (!nativeValue) {
     exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
-        "StringSequenceCallbackFunctionLongSequenceArg"));
+        "VoidCallbackFunctionEnumArg"));
   }
   return nativeValue;
 }

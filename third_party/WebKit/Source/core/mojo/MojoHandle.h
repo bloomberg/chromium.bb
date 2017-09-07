@@ -21,11 +21,11 @@ class MojoReadDataOptions;
 class MojoReadDataResult;
 class MojoReadMessageFlags;
 class MojoReadMessageResult;
-class MojoWatchCallback;
 class MojoWatcher;
 class MojoWriteDataOptions;
 class MojoWriteDataResult;
 class ScriptState;
+class V8MojoWatchCallback;
 
 class MojoHandle final : public GarbageCollectedFinalized<MojoHandle>,
                          public ScriptWrappable {
@@ -39,7 +39,7 @@ class MojoHandle final : public GarbageCollectedFinalized<MojoHandle>,
   void close();
   MojoWatcher* watch(ScriptState*,
                      const MojoHandleSignals&,
-                     MojoWatchCallback*);
+                     V8MojoWatchCallback*);
 
   // MessagePipe handle.
   MojoResult writeMessage(ArrayBufferOrArrayBufferView&,

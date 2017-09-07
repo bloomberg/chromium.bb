@@ -8,7 +8,7 @@
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/performance_observer_callback.h"
+#include "bindings/core/v8/v8_performance_observer_callback.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/timing/DOMWindowPerformance.h"
@@ -24,7 +24,7 @@ namespace blink {
 
 PerformanceObserver* PerformanceObserver::Create(
     ScriptState* script_state,
-    PerformanceObserverCallback* callback) {
+    V8PerformanceObserverCallback* callback) {
   LocalDOMWindow* window = ToLocalDOMWindow(script_state->GetContext());
   ExecutionContext* context = ExecutionContext::From(script_state);
   if (window) {
@@ -45,9 +45,10 @@ PerformanceObserver* PerformanceObserver::Create(
   return nullptr;
 }
 
-PerformanceObserver::PerformanceObserver(ExecutionContext* execution_context,
-                                         PerformanceBase* performance,
-                                         PerformanceObserverCallback* callback)
+PerformanceObserver::PerformanceObserver(
+    ExecutionContext* execution_context,
+    PerformanceBase* performance,
+    V8PerformanceObserverCallback* callback)
     : ContextClient(execution_context),
       execution_context_(execution_context),
       callback_(callback),

@@ -46,13 +46,13 @@ namespace blink {
 class Document;
 class ExceptionState;
 class HTMLSlotElement;
-class MutationCallback;
 class MutationObserver;
 class MutationObserverInit;
 class MutationObserverRegistration;
 class MutationRecord;
 class Node;
 class ScriptState;
+class V8MutationCallback;
 
 typedef unsigned char MutationObserverOptions;
 typedef unsigned char MutationRecordDeliveryOptions;
@@ -101,7 +101,7 @@ class CORE_EXPORT MutationObserver final
   class CORE_EXPORT V8DelegateImpl;
 
   static MutationObserver* Create(Delegate*);
-  static MutationObserver* Create(ScriptState*, MutationCallback*);
+  static MutationObserver* Create(ScriptState*, V8MutationCallback*);
   static void ResumeSuspendedObservers();
   static void DeliverMutations();
   static void EnqueueSlotChange(HTMLSlotElement&);

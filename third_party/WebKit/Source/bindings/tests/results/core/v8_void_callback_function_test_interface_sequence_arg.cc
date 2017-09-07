@@ -10,7 +10,7 @@
 
 // clang-format off
 
-#include "void_callback_function_test_interface_sequence_arg.h"
+#include "v8_void_callback_function_test_interface_sequence_arg.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/IDLTypes.h"
@@ -25,23 +25,23 @@
 namespace blink {
 
 // static
-VoidCallbackFunctionTestInterfaceSequenceArg* VoidCallbackFunctionTestInterfaceSequenceArg::Create(ScriptState* scriptState, v8::Local<v8::Value> callback) {
+V8VoidCallbackFunctionTestInterfaceSequenceArg* V8VoidCallbackFunctionTestInterfaceSequenceArg::Create(ScriptState* scriptState, v8::Local<v8::Value> callback) {
   if (IsUndefinedOrNull(callback))
     return nullptr;
-  return new VoidCallbackFunctionTestInterfaceSequenceArg(scriptState, v8::Local<v8::Function>::Cast(callback));
+  return new V8VoidCallbackFunctionTestInterfaceSequenceArg(scriptState, v8::Local<v8::Function>::Cast(callback));
 }
 
-VoidCallbackFunctionTestInterfaceSequenceArg::VoidCallbackFunctionTestInterfaceSequenceArg(ScriptState* scriptState, v8::Local<v8::Function> callback)
+V8VoidCallbackFunctionTestInterfaceSequenceArg::V8VoidCallbackFunctionTestInterfaceSequenceArg(ScriptState* scriptState, v8::Local<v8::Function> callback)
     : script_state_(scriptState),
     callback_(scriptState->GetIsolate(), this, callback) {
   DCHECK(!callback_.IsEmpty());
 }
 
-DEFINE_TRACE_WRAPPERS(VoidCallbackFunctionTestInterfaceSequenceArg) {
+DEFINE_TRACE_WRAPPERS(V8VoidCallbackFunctionTestInterfaceSequenceArg) {
   visitor->TraceWrappers(callback_.Cast<v8::Value>());
 }
 
-bool VoidCallbackFunctionTestInterfaceSequenceArg::call(ScriptWrappable* scriptWrappable, const HeapVector<Member<TestInterfaceImplementation>>& arg) {
+bool V8VoidCallbackFunctionTestInterfaceSequenceArg::call(ScriptWrappable* scriptWrappable, const HeapVector<Member<TestInterfaceImplementation>>& arg) {
   if (callback_.IsEmpty())
     return false;
 
@@ -83,8 +83,8 @@ bool VoidCallbackFunctionTestInterfaceSequenceArg::call(ScriptWrappable* scriptW
   return true;
 }
 
-VoidCallbackFunctionTestInterfaceSequenceArg* NativeValueTraits<VoidCallbackFunctionTestInterfaceSequenceArg>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  VoidCallbackFunctionTestInterfaceSequenceArg* nativeValue = VoidCallbackFunctionTestInterfaceSequenceArg::Create(ScriptState::Current(isolate), value);
+V8VoidCallbackFunctionTestInterfaceSequenceArg* NativeValueTraits<V8VoidCallbackFunctionTestInterfaceSequenceArg>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  V8VoidCallbackFunctionTestInterfaceSequenceArg* nativeValue = V8VoidCallbackFunctionTestInterfaceSequenceArg::Create(ScriptState::Current(isolate), value);
   if (!nativeValue) {
     exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
         "VoidCallbackFunctionTestInterfaceSequenceArg"));

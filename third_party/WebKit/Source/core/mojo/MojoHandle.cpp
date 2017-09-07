@@ -46,7 +46,7 @@ void MojoHandle::close() {
 
 MojoWatcher* MojoHandle::watch(ScriptState* script_state,
                                const MojoHandleSignals& signals,
-                               MojoWatchCallback* callback) {
+                               V8MojoWatchCallback* callback) {
   return MojoWatcher::Create(handle_.get(), signals, callback,
                              ExecutionContext::From(script_state));
 }

@@ -44,12 +44,12 @@ def callback_function_context(callback_function):
         # in the future (e.g. if we support [ImplementedAs=] in callback
         # functions).
         'callback_function_name': callback_function.name,
-        'cpp_class': callback_function.name,
+        'cpp_class': 'V8%s' % callback_function.name,
         'cpp_includes': sorted(includes),
         'forward_declarations': sorted(forward_declarations(callback_function)),
         'header_includes': sorted(CALLBACK_FUNCTION_H_INCLUDES),
         'idl_type': idl_type_str,
-        'this_include_header_name': to_snake_case(callback_function.name),
+        'this_include_header_name': to_snake_case('V8%s' % callback_function.name),
     }
 
     if idl_type_str != 'void':

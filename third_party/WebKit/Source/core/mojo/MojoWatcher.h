@@ -16,7 +16,7 @@ namespace blink {
 
 class ExecutionContext;
 class MojoHandleSignals;
-class MojoWatchCallback;
+class V8MojoWatchCallback;
 
 class MojoWatcher final : public GarbageCollectedFinalized<MojoWatcher>,
                           public ActiveScriptWrappable<MojoWatcher>,
@@ -28,7 +28,7 @@ class MojoWatcher final : public GarbageCollectedFinalized<MojoWatcher>,
  public:
   static MojoWatcher* Create(mojo::Handle,
                              const MojoHandleSignals&,
-                             MojoWatchCallback*,
+                             V8MojoWatchCallback*,
                              ExecutionContext*);
   ~MojoWatcher();
 
@@ -46,7 +46,7 @@ class MojoWatcher final : public GarbageCollectedFinalized<MojoWatcher>,
  private:
   friend class V8MojoWatcher;
 
-  MojoWatcher(ExecutionContext*, MojoWatchCallback*);
+  MojoWatcher(ExecutionContext*, V8MojoWatchCallback*);
   MojoResult Watch(mojo::Handle, const MojoHandleSignals&);
   MojoResult Arm(MojoResult* ready_result);
 
@@ -57,7 +57,7 @@ class MojoWatcher final : public GarbageCollectedFinalized<MojoWatcher>,
   void RunReadyCallback(MojoResult);
 
   RefPtr<WebTaskRunner> task_runner_;
-  TraceWrapperMember<MojoWatchCallback> callback_;
+  TraceWrapperMember<V8MojoWatchCallback> callback_;
   mojo::ScopedWatcherHandle watcher_handle_;
   mojo::Handle handle_;
 };

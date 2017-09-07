@@ -138,7 +138,7 @@ Database* DatabaseManager::OpenDatabaseInternal(
     const String& expected_version,
     const String& display_name,
     unsigned estimated_size,
-    DatabaseCallback* creation_callback,
+    V8DatabaseCallback* creation_callback,
     bool set_version_in_new_database,
     DatabaseError& error,
     String& error_message) {
@@ -176,7 +176,7 @@ Database* DatabaseManager::OpenDatabase(ExecutionContext* context,
                                         const String& expected_version,
                                         const String& display_name,
                                         unsigned estimated_size,
-                                        DatabaseCallback* creation_callback,
+                                        V8DatabaseCallback* creation_callback,
                                         DatabaseError& error,
                                         String& error_message) {
   DCHECK_EQ(error, DatabaseError::kNone);

@@ -10,7 +10,7 @@
 
 // clang-format off
 
-#include "void_callback_function_modules.h"
+#include "v8_void_callback_function_modules.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/NativeValueTraitsImpl.h"
@@ -23,23 +23,23 @@
 namespace blink {
 
 // static
-VoidCallbackFunctionModules* VoidCallbackFunctionModules::Create(ScriptState* scriptState, v8::Local<v8::Value> callback) {
+V8VoidCallbackFunctionModules* V8VoidCallbackFunctionModules::Create(ScriptState* scriptState, v8::Local<v8::Value> callback) {
   if (IsUndefinedOrNull(callback))
     return nullptr;
-  return new VoidCallbackFunctionModules(scriptState, v8::Local<v8::Function>::Cast(callback));
+  return new V8VoidCallbackFunctionModules(scriptState, v8::Local<v8::Function>::Cast(callback));
 }
 
-VoidCallbackFunctionModules::VoidCallbackFunctionModules(ScriptState* scriptState, v8::Local<v8::Function> callback)
+V8VoidCallbackFunctionModules::V8VoidCallbackFunctionModules(ScriptState* scriptState, v8::Local<v8::Function> callback)
     : script_state_(scriptState),
     callback_(scriptState->GetIsolate(), this, callback) {
   DCHECK(!callback_.IsEmpty());
 }
 
-DEFINE_TRACE_WRAPPERS(VoidCallbackFunctionModules) {
+DEFINE_TRACE_WRAPPERS(V8VoidCallbackFunctionModules) {
   visitor->TraceWrappers(callback_.Cast<v8::Value>());
 }
 
-bool VoidCallbackFunctionModules::call(ScriptWrappable* scriptWrappable) {
+bool V8VoidCallbackFunctionModules::call(ScriptWrappable* scriptWrappable) {
   if (callback_.IsEmpty())
     return false;
 
@@ -80,8 +80,8 @@ bool VoidCallbackFunctionModules::call(ScriptWrappable* scriptWrappable) {
   return true;
 }
 
-VoidCallbackFunctionModules* NativeValueTraits<VoidCallbackFunctionModules>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  VoidCallbackFunctionModules* nativeValue = VoidCallbackFunctionModules::Create(ScriptState::Current(isolate), value);
+V8VoidCallbackFunctionModules* NativeValueTraits<V8VoidCallbackFunctionModules>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  V8VoidCallbackFunctionModules* nativeValue = V8VoidCallbackFunctionModules::Create(ScriptState::Current(isolate), value);
   if (!nativeValue) {
     exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
         "VoidCallbackFunctionModules"));

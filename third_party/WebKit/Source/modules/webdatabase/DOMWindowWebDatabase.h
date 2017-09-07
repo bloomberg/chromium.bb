@@ -33,9 +33,9 @@
 namespace blink {
 
 class Database;
-class DatabaseCallback;
 class ExceptionState;
 class LocalDOMWindow;
+class V8DatabaseCallback;
 
 class DOMWindowWebDatabase {
   STATIC_ONLY(DOMWindowWebDatabase);
@@ -52,7 +52,7 @@ class DOMWindowWebDatabase {
                                 const String& version,
                                 const String& display_name,
                                 unsigned estimated_size,
-                                DatabaseCallback* creation_callback,
+                                V8DatabaseCallback* creation_callback,
                                 ExceptionState&);
 };
 

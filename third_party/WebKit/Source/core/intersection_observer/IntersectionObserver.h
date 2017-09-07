@@ -20,10 +20,10 @@ namespace blink {
 class Document;
 class Element;
 class ExceptionState;
-class IntersectionObserverCallback;
 class IntersectionObserverDelegate;
 class IntersectionObserverInit;
 class ScriptState;
+class V8IntersectionObserverCallback;
 
 class CORE_EXPORT IntersectionObserver final
     : public GarbageCollectedFinalized<IntersectionObserver>,
@@ -39,7 +39,7 @@ class CORE_EXPORT IntersectionObserver final
                                       IntersectionObserverDelegate&,
                                       ExceptionState&);
   static IntersectionObserver* Create(ScriptState*,
-                                      IntersectionObserverCallback*,
+                                      V8IntersectionObserverCallback*,
                                       const IntersectionObserverInit&,
                                       ExceptionState&);
   static IntersectionObserver* Create(const Vector<Length>& root_margin,

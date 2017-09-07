@@ -19,8 +19,8 @@ class ExecutionContext;
 class ExceptionState;
 class PerformanceBase;
 class PerformanceObserver;
-class PerformanceObserverCallback;
 class PerformanceObserverInit;
+class V8PerformanceObserverCallback;
 
 using PerformanceEntryVector = HeapVector<Member<PerformanceEntry>>;
 
@@ -37,7 +37,7 @@ class CORE_EXPORT PerformanceObserver final
 
  public:
   static PerformanceObserver* Create(ScriptState*,
-                                     PerformanceObserverCallback*);
+                                     V8PerformanceObserverCallback*);
   static void ResumeSuspendedObservers();
 
   void observe(const PerformanceObserverInit&, ExceptionState&);
@@ -54,12 +54,12 @@ class CORE_EXPORT PerformanceObserver final
  private:
   PerformanceObserver(ExecutionContext*,
                       PerformanceBase*,
-                      PerformanceObserverCallback*);
+                      V8PerformanceObserverCallback*);
   void Deliver();
   bool ShouldBeSuspended() const;
 
   Member<ExecutionContext> execution_context_;
-  TraceWrapperMember<PerformanceObserverCallback> callback_;
+  TraceWrapperMember<V8PerformanceObserverCallback> callback_;
   WeakMember<PerformanceBase> performance_;
   PerformanceEntryVector performance_entries_;
   PerformanceEntryTypeMask filter_options_;

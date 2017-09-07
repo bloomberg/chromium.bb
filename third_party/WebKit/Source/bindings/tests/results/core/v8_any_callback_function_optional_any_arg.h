@@ -10,8 +10,8 @@
 
 // clang-format off
 
-#ifndef VoidCallbackFunction_h
-#define VoidCallbackFunction_h
+#ifndef V8AnyCallbackFunctionOptionalAnyArg_h
+#define V8AnyCallbackFunctionOptionalAnyArg_h
 
 #include "bindings/core/v8/NativeValueTraits.h"
 #include "core/CoreExport.h"
@@ -24,33 +24,33 @@ namespace blink {
 
 class ScriptState;
 
-class CORE_EXPORT VoidCallbackFunction final : public GarbageCollectedFinalized<VoidCallbackFunction>, public TraceWrapperBase {
+class CORE_EXPORT V8AnyCallbackFunctionOptionalAnyArg final : public GarbageCollectedFinalized<V8AnyCallbackFunctionOptionalAnyArg>, public TraceWrapperBase {
  public:
-  static VoidCallbackFunction* Create(ScriptState*, v8::Local<v8::Value> callback);
+  static V8AnyCallbackFunctionOptionalAnyArg* Create(ScriptState*, v8::Local<v8::Value> callback);
 
-  ~VoidCallbackFunction() = default;
+  ~V8AnyCallbackFunctionOptionalAnyArg() = default;
 
   DEFINE_INLINE_TRACE() {}
   DECLARE_TRACE_WRAPPERS();
 
-  bool call(ScriptWrappable* scriptWrappable);
+  bool call(ScriptWrappable* scriptWrappable, ScriptValue optionalAnyArg, ScriptValue& returnValue);
 
   v8::Local<v8::Function> v8Value(v8::Isolate* isolate) {
     return callback_.NewLocal(isolate);
   }
 
  private:
-  VoidCallbackFunction(ScriptState*, v8::Local<v8::Function>);
+  V8AnyCallbackFunctionOptionalAnyArg(ScriptState*, v8::Local<v8::Function>);
 
   RefPtr<ScriptState> script_state_;
   TraceWrapperV8Reference<v8::Function> callback_;
 };
 
 template <>
-struct NativeValueTraits<VoidCallbackFunction> : public NativeValueTraitsBase<VoidCallbackFunction> {
-  CORE_EXPORT static VoidCallbackFunction* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+struct NativeValueTraits<V8AnyCallbackFunctionOptionalAnyArg> : public NativeValueTraitsBase<V8AnyCallbackFunctionOptionalAnyArg> {
+  CORE_EXPORT static V8AnyCallbackFunctionOptionalAnyArg* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 }  // namespace blink
 
-#endif  // VoidCallbackFunction_h
+#endif  // V8AnyCallbackFunctionOptionalAnyArg_h

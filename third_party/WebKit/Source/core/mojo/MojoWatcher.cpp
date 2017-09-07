@@ -4,7 +4,7 @@
 
 #include "core/mojo/MojoWatcher.h"
 
-#include "bindings/core/v8/mojo_watch_callback.h"
+#include "bindings/core/v8/v8_mojo_watch_callback.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/mojo/MojoHandleSignals.h"
@@ -14,7 +14,7 @@
 
 namespace blink {
 
-static void RunWatchCallback(MojoWatchCallback* callback,
+static void RunWatchCallback(V8MojoWatchCallback* callback,
                              ScriptWrappable* wrappable,
                              MojoResult result) {
   callback->call(wrappable, result);
@@ -23,7 +23,7 @@ static void RunWatchCallback(MojoWatchCallback* callback,
 // static
 MojoWatcher* MojoWatcher::Create(mojo::Handle handle,
                                  const MojoHandleSignals& signals_dict,
-                                 MojoWatchCallback* callback,
+                                 V8MojoWatchCallback* callback,
                                  ExecutionContext* context) {
   MojoWatcher* watcher = new MojoWatcher(context, callback);
   MojoResult result = watcher->Watch(handle, signals_dict);
@@ -70,7 +70,8 @@ void MojoWatcher::ContextDestroyed(ExecutionContext*) {
   cancel();
 }
 
-MojoWatcher::MojoWatcher(ExecutionContext* context, MojoWatchCallback* callback)
+MojoWatcher::MojoWatcher(ExecutionContext* context,
+                         V8MojoWatchCallback* callback)
     : ContextLifecycleObserver(context),
       task_runner_(TaskRunnerHelper::Get(TaskType::kUnspecedTimer, context)),
       callback_(callback) {}

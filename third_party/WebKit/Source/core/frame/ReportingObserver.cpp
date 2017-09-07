@@ -13,12 +13,12 @@ namespace blink {
 
 ReportingObserver* ReportingObserver::Create(
     ExecutionContext* execution_context,
-    ReportingObserverCallback* callback) {
+    V8ReportingObserverCallback* callback) {
   return new ReportingObserver(execution_context, callback);
 }
 
 ReportingObserver::ReportingObserver(ExecutionContext* execution_context,
-                                     ReportingObserverCallback* callback)
+                                     V8ReportingObserverCallback* callback)
     : execution_context_(execution_context), callback_(callback) {}
 
 void ReportingObserver::ReportToCallback(
