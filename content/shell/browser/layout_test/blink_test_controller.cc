@@ -725,8 +725,8 @@ void BlinkTestController::OnTestFinished() {
 
 void BlinkTestController::OnAllServiceWorkersCleared() {
   if (main_window_) {
-    Send(new ShellViewMsg_Reset(
-        main_window_->web_contents()->GetRenderViewHost()->GetRoutingID()));
+    RenderViewHost* rvh = main_window_->web_contents()->GetRenderViewHost();
+    rvh->Send(new ShellViewMsg_Reset(rvh->GetRoutingID()));
   }
 }
 
@@ -942,12 +942,10 @@ void BlinkTestController::OnCaptureSessionHistory() {
     session_histories.push_back(history);
   }
 
-  RenderViewHost* render_view_host =
-      main_window_->web_contents()->GetRenderViewHost();
-  Send(new ShellViewMsg_SessionHistory(render_view_host->GetRoutingID(),
-                                       routing_ids,
-                                       session_histories,
-                                       current_entry_indexes));
+  RenderViewHost* rvh = main_window_->web_contents()->GetRenderViewHost();
+  rvh->Send(new ShellViewMsg_SessionHistory(rvh->GetRoutingID(), routing_ids,
+                                            session_histories,
+                                            current_entry_indexes));
 }
 
 void BlinkTestController::OnCloseRemainingWindows() {
@@ -963,10 +961,8 @@ void BlinkTestController::OnCloseRemainingWindows() {
 void BlinkTestController::OnResetDone() {
   if (is_leak_detection_enabled_) {
     if (main_window_ && main_window_->web_contents()) {
-      RenderViewHost* render_view_host =
-          main_window_->web_contents()->GetRenderViewHost();
-      render_view_host->Send(
-          new ShellViewMsg_TryLeakDetection(render_view_host->GetRoutingID()));
+      RenderViewHost* rvh = main_window_->web_contents()->GetRenderViewHost();
+      rvh->Send(new ShellViewMsg_TryLeakDetection(rvh->GetRoutingID()));
     }
     return;
   }
@@ -1005,9 +1001,9 @@ void BlinkTestController::OnGetBluetoothManualChooserEvents() {
         "getBluetoothManualChooserEvents.");
     return;
   }
-  Send(new ShellViewMsg_ReplyBluetoothManualChooserEvents(
-      main_window_->web_contents()->GetRenderViewHost()->GetRoutingID(),
-      bluetooth_chooser_factory_->GetAndResetEvents()));
+  RenderViewHost* rvh = main_window_->web_contents()->GetRenderViewHost();
+  rvh->Send(new ShellViewMsg_ReplyBluetoothManualChooserEvents(
+      rvh->GetRoutingID(), bluetooth_chooser_factory_->GetAndResetEvents()));
 }
 
 void BlinkTestController::OnSendBluetoothManualChooserEvent(

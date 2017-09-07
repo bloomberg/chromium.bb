@@ -17,7 +17,6 @@
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/resource_type.h"
 #include "ipc/ipc_listener.h"
-#include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
@@ -61,8 +60,7 @@ struct ResourceRequestDetails;
 //
 // TODO(creis, jochen): Hide the fact that there are several RenderViewHosts
 // from the WebContentsObserver API. http://crbug.com/173325
-class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
-                                           public IPC::Sender {
+class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
  public:
   // Frames and Views ----------------------------------------------------------
 
@@ -484,10 +482,6 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   //                                    RenderFrameHost* render_frame_host);
   // TODO(https://crbug.com/758026): Delete this overload when possible.
   bool OnMessageReceived(const IPC::Message& message) override;
-
-  // IPC::Sender implementation.
-  bool Send(IPC::Message* message) override;
-  int routing_id() const;
 
   WebContents* web_contents() const;
 

@@ -51,22 +51,6 @@ bool WebContentsObserver::OnMessageReceived(const IPC::Message& message) {
   return false;
 }
 
-bool WebContentsObserver::Send(IPC::Message* message) {
-  if (!web_contents_) {
-    delete message;
-    return false;
-  }
-
-  return web_contents_->Send(message);
-}
-
-int WebContentsObserver::routing_id() const {
-  if (!web_contents_)
-    return MSG_ROUTING_NONE;
-
-  return web_contents_->GetRenderViewHost()->GetRoutingID();
-}
-
 void WebContentsObserver::ResetWebContents() {
   web_contents_->RemoveObserver(this);
   web_contents_ = nullptr;

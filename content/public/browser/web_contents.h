@@ -26,7 +26,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/stop_find_action.h"
-#include "ipc/ipc_sender.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_tree_update.h"
 #include "ui/base/window_open_disposition.h"
@@ -100,7 +99,6 @@ struct RendererPreferences;
 // WebContents, navigate it backwards/forwards, etc. See navigation_controller.h
 // for more details.
 class WebContents : public PageNavigator,
-                    public IPC::Sender,
                     public base::SupportsUserData {
  public:
   struct CONTENT_EXPORT CreateParams {

@@ -51,9 +51,15 @@ class PluginObserver : public content::WebContentsObserver,
   void OnCouldNotLoadPlugin(const base::FilePath& plugin_path);
 
   // Stores all PluginPlaceholderHosts, keyed by their routing ID.
+  // TODO(lukasza): https://crbug.com/760637: Routing ids are only guaranteed to
+  // be unique within a single process - they shouldn't be used as map keys,
+  // unless they are paired with a process id.
   std::map<int, std::unique_ptr<PluginPlaceholderHost>> plugin_placeholders_;
 
   // Stores all ComponentObservers, keyed by their routing ID.
+  // TODO(lukasza): https://crbug.com/760637: Routing ids are only guaranteed to
+  // be unique within a single process - they shouldn't be used as map keys,
+  // unless they are paired with a process id.
   std::map<int, std::unique_ptr<ComponentObserver>> component_observers_;
 
   base::WeakPtrFactory<PluginObserver> weak_ptr_factory_;

@@ -95,6 +95,7 @@ class HeadlessPrintManager
                          content::RenderFrameHost* render_frame_host) override;
 
   // IPC Message handlers.
+  struct FrameDispatchHelper;
   void OnGetDefaultPrintSettings(IPC::Message* reply_msg);
   void OnScriptedPrint(const PrintHostMsg_ScriptedPrint_Params& params,
                        IPC::Message* reply_msg);

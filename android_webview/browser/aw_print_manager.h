@@ -41,9 +41,9 @@ class AwPrintManager : public printing::PrintManager,
                          content::RenderFrameHost* render_frame_host) override;
 
   // IPC Handlers
+  struct FrameDispatchHelper;
   void OnGetDefaultPrintSettings(content::RenderFrameHost* render_frame_host,
                                  IPC::Message* reply_msg);
-
   void OnScriptedPrint(content::RenderFrameHost* render_frame_host,
                        const PrintHostMsg_ScriptedPrint_Params& params,
                        IPC::Message* reply_msg);

@@ -999,7 +999,10 @@ void BrowserPluginGuest::OnLockMouse(bool user_gesture,
   if (pending_lock_request_) {
     // Immediately reject the lock because only one pointerLock may be active
     // at a time.
-    Send(new ViewMsg_LockMouse_ACK(routing_id(), false));
+    RenderWidgetHost* widget_host =
+        web_contents()->GetRenderViewHost()->GetWidget();
+    widget_host->Send(
+        new ViewMsg_LockMouse_ACK(widget_host->GetRoutingID(), false));
     return;
   }
 
@@ -1017,7 +1020,10 @@ void BrowserPluginGuest::OnLockMouse(bool user_gesture,
 
 void BrowserPluginGuest::OnLockMouseAck(int browser_plugin_instance_id,
                                         bool succeeded) {
-  Send(new ViewMsg_LockMouse_ACK(routing_id(), succeeded));
+  RenderWidgetHost* widget_host =
+      web_contents()->GetRenderViewHost()->GetWidget();
+  widget_host->Send(
+      new ViewMsg_LockMouse_ACK(widget_host->GetRoutingID(), succeeded));
   pending_lock_request_ = false;
   if (succeeded)
     mouse_locked_ = true;
@@ -1063,8 +1069,11 @@ void BrowserPluginGuest::OnUnlockMouseAck(int browser_plugin_instance_id) {
   // mouse_locked_ could be false here if the lock attempt was cancelled due
   // to window focus, or for various other reasons before the guest was informed
   // of the lock's success.
-  if (mouse_locked_)
-    Send(new ViewMsg_MouseLockLost(routing_id()));
+  if (mouse_locked_) {
+    RenderWidgetHost* widget_host =
+        web_contents()->GetRenderViewHost()->GetWidget();
+    widget_host->Send(new ViewMsg_MouseLockLost(widget_host->GetRoutingID()));
+  }
   mouse_locked_ = false;
 }
 

@@ -22,7 +22,7 @@ PluginContentOriginWhitelist::~PluginContentOriginWhitelist() {
 void PluginContentOriginWhitelist::RenderFrameCreated(
     RenderFrameHost* render_frame_host) {
   if (!whitelist_.empty()) {
-    Send(new FrameMsg_UpdatePluginContentOriginWhitelist(
+    render_frame_host->Send(new FrameMsg_UpdatePluginContentOriginWhitelist(
         render_frame_host->GetRoutingID(), whitelist_));
   }
 }
