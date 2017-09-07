@@ -212,6 +212,12 @@ bool SendBeaconCommon(LocalFrame* frame,
   request.SetRequestContext(WebURLRequest::kRequestContextBeacon);
   beacon.Serialize(request);
   FetchParameters params(request);
+  // The spec says:
+  //  - If mimeType is not null:
+  //   - If mimeType value is a CORS-safelisted request-header value for the
+  //     Content-Type header, set corsMode to "no-cors".
+  // As we don't support requests with non CORS-safelisted Content-Type, the
+  // mode should always be "no-cors".
   params.MutableOptions().initiator_info.name = FetchInitiatorTypeNames::beacon;
 
   Resource* resource =
