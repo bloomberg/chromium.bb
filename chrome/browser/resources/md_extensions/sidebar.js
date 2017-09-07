@@ -5,7 +5,13 @@ cr.define('extensions', function() {
   const Sidebar = Polymer({
     is: 'extensions-sidebar',
 
-    behaviors: [I18nBehavior],
+    properties: {
+      /** @private {number} */
+      selected_: {
+        type: Number,
+        value: -1,
+      },
+    },
 
     /** @private */
     onExtensionsTap_: function() {
@@ -22,6 +28,30 @@ cr.define('extensions', function() {
     /** @private */
     onKeyboardShortcutsTap_: function() {
       extensions.navigation.navigateTo({page: Page.SHORTCUTS});
+    },
+
+    /**
+     * @param {!PageState} state
+     */
+    updateSelected: function(state) {
+      let selected;
+
+      switch (state.page) {
+        case Page.LIST:
+          if (state.type == extensions.ShowingType.APPS)
+            selected = 1;
+          else
+            selected = 0;
+          break;
+        case Page.SHORTCUTS:
+          selected = 2;
+          break;
+        default:
+          selected = -1;
+          break;
+      }
+
+      this.selected_ = selected;
     },
   });
 

@@ -35,9 +35,6 @@ cr.define('extensions', function() {
     behaviors: [I18nBehavior],
 
     properties: {
-      /** @type {extensions.Sidebar} */
-      sidebar: Object,
-
       /** @type {extensions.Toolbar} */
       toolbar: Object,
 
@@ -165,7 +162,19 @@ cr.define('extensions', function() {
 
     /** @private */
     onMenuButtonTap_: function() {
-      this.$.drawer.toggle();
+      this.$.drawer.openDrawer();
+
+      // Sidebar needs manager to inform it of what to highlight since it
+      // has no access to item-specific page.
+      let page = extensions.navigation.getCurrentPage();
+      if (page.extensionId) {
+        // Find out what type of item we're looking at, and replace page info
+        // with that list type.
+        const data = assert(this.getData_(page.extensionId));
+        page = {page: Page.LIST, type: extensions.getItemListType(data)};
+      }
+
+      this.$.sidebar.updateSelected(page);
     },
 
     /**
@@ -298,7 +307,7 @@ cr.define('extensions', function() {
         data = assert(this.getData_(newPage.extensionId));
 
       if (newPage.hasOwnProperty('type'))
-        this.listType_ = newPage.type;
+        this.listType_ = /** @type {extensions.ShowingType} */ (newPage.type);
 
       if (toPage == Page.DETAILS)
         this.detailViewItem_ = assert(data);

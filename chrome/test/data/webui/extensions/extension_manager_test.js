@@ -12,6 +12,7 @@ cr.define('extension_manager_tests', function() {
     ChangePages: 'change pages',
     UrlNavigationToDetails: 'url navigation to details',
     UpdateItemData: 'update item data',
+    SidebarHighlighting: 'sidebar highlighting',
   };
 
   function getDataByName(list, name) {
@@ -127,6 +128,46 @@ cr.define('extension_manager_tests', function() {
       extensions.navigation.navigateTo(
           {page: Page.LIST, type: extensions.ShowingType.EXTENSIONS});
       expectEquals(manager.extensions, manager.$['items-list'].items);
+    });
+
+    test(assert(TestNames.SidebarHighlighting), function() {
+      const toolbar = manager.$$('extensions-toolbar');
+
+      // Stub manager.$.sidebar for testing convenience.
+      let pageState;
+      manager.$.sidebar = {
+        updateSelected: function(state) {
+          pageState = state;
+        },
+      };
+
+      // Tests if manager calls sidebar.updateSelected with the right params.
+      function testPassingCorrectState(onPageState, passedPageState) {
+        extensions.navigation.navigateTo(onPageState);
+        toolbar.fire('cr-toolbar-menu-tap');
+        expectDeepEquals(pageState, passedPageState || onPageState);
+        // Reset pageState so that testing order doesn't matter.
+        pageState = null;
+      }
+
+      testPassingCorrectState({page: Page.SHORTCUTS});
+      testPassingCorrectState(
+          {page: Page.LIST, type: extensions.ShowingType.APPS});
+      testPassingCorrectState(
+          {page: Page.LIST, type: extensions.ShowingType.EXTENSIONS});
+
+      testPassingCorrectState(
+          {page: Page.DETAILS, extensionId: manager.apps[0].id},
+          {page: Page.LIST, type: extensions.ShowingType.APPS});
+      testPassingCorrectState(
+          {page: Page.DETAILS, extensionId: manager.extensions[0].id},
+          {page: Page.LIST, type: extensions.ShowingType.EXTENSIONS});
+      testPassingCorrectState(
+          {page: Page.ERRORS, extensionId: manager.apps[0].id},
+          {page: Page.LIST, type: extensions.ShowingType.APPS});
+      testPassingCorrectState(
+          {page: Page.ERRORS, extensionId: manager.extensions[0].id},
+          {page: Page.LIST, type: extensions.ShowingType.EXTENSIONS});
     });
 
     test(assert(TestNames.ChangePages), function() {

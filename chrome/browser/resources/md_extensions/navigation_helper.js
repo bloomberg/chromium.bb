@@ -29,7 +29,8 @@ extensions.ShowingType = {
 
 /** @typedef {{page: Page,
                extensionId: (string|undefined),
-               subpage: (!Dialog|undefined)}} */
+               subpage: (!Dialog|undefined),
+               type: (!extensions.ShowingType|undefined)}} */
 let PageState;
 
 cr.define('extensions', function() {
@@ -117,7 +118,7 @@ cr.define('extensions', function() {
       let path;
       switch (entry.page) {
         case Page.LIST:
-          if (entry.type && entry.type == extensions.ShowingType.APPS)
+          if (entry.type == extensions.ShowingType.APPS)
             path = '/apps';
           else
             path = '/';
