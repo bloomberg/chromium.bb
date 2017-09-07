@@ -78,7 +78,7 @@ static const v8::Eternal<v8::Name>* eternalV8TestDictionaryKeys(v8::Isolate* iso
       kKeys, kKeys, WTF_ARRAY_LENGTH(kKeys));
 }
 
-void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestDictionary& impl, ExceptionState& exceptionState) {
+void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestDictionary& impl, ExceptionState& exceptionState) {
   if (IsUndefinedOrNull(v8Value)) {
     return;
   }
@@ -204,7 +204,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     // Do nothing.
   } else {
     DoubleOrString doubleOrStringMemberCppValue;
-    V8DoubleOrString::toImpl(isolate, doubleOrStringMemberValue, doubleOrStringMemberCppValue, UnionTypeConversionMode::kNotNullable, exceptionState);
+    V8DoubleOrString::ToImpl(isolate, doubleOrStringMemberValue, doubleOrStringMemberCppValue, UnionTypeConversionMode::kNotNullable, exceptionState);
     if (exceptionState.HadException())
       return;
     impl.setDoubleOrStringMember(doubleOrStringMemberCppValue);
@@ -234,7 +234,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   } else if (elementOrNullMemberValue->IsNull()) {
     impl.setElementOrNullMemberToNull();
   } else {
-    Element* elementOrNullMemberCppValue = V8Element::toImplWithTypeCheck(isolate, elementOrNullMemberValue);
+    Element* elementOrNullMemberCppValue = V8Element::ToImplWithTypeCheck(isolate, elementOrNullMemberValue);
     if (!elementOrNullMemberCppValue) {
       exceptionState.ThrowTypeError("member elementOrNullMember is not of type Element.");
       return;
@@ -294,7 +294,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   if (eventTargetMemberValue.IsEmpty() || eventTargetMemberValue->IsUndefined()) {
     // Do nothing.
   } else {
-    EventTarget* eventTargetMemberCppValue = V8EventTarget::toImplWithTypeCheck(isolate, eventTargetMemberValue);
+    EventTarget* eventTargetMemberCppValue = V8EventTarget::ToImplWithTypeCheck(isolate, eventTargetMemberValue);
     if (!eventTargetMemberCppValue) {
       exceptionState.ThrowTypeError("member eventTargetMember is not of type EventTarget.");
       return;
@@ -387,7 +387,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     // Do nothing.
   } else {
     DoubleOrString otherDoubleOrStringMemberCppValue;
-    V8DoubleOrString::toImpl(isolate, otherDoubleOrStringMemberValue, otherDoubleOrStringMemberCppValue, UnionTypeConversionMode::kNotNullable, exceptionState);
+    V8DoubleOrString::ToImpl(isolate, otherDoubleOrStringMemberValue, otherDoubleOrStringMemberCppValue, UnionTypeConversionMode::kNotNullable, exceptionState);
     if (exceptionState.HadException())
       return;
     impl.setOtherDoubleOrStringMember(otherDoubleOrStringMemberCppValue);
@@ -520,7 +520,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     // Do nothing.
   } else {
     TestInterface2OrUint8Array testInterface2OrUint8ArrayMemberCppValue;
-    V8TestInterface2OrUint8Array::toImpl(isolate, testInterface2OrUint8ArrayMemberValue, testInterface2OrUint8ArrayMemberCppValue, UnionTypeConversionMode::kNotNullable, exceptionState);
+    V8TestInterface2OrUint8Array::ToImpl(isolate, testInterface2OrUint8ArrayMemberValue, testInterface2OrUint8ArrayMemberCppValue, UnionTypeConversionMode::kNotNullable, exceptionState);
     if (exceptionState.HadException())
       return;
     impl.setTestInterface2OrUint8ArrayMember(testInterface2OrUint8ArrayMemberCppValue);
@@ -534,7 +534,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   if (testInterfaceGarbageCollectedMemberValue.IsEmpty() || testInterfaceGarbageCollectedMemberValue->IsUndefined()) {
     // Do nothing.
   } else {
-    TestInterfaceGarbageCollected* testInterfaceGarbageCollectedMemberCppValue = V8TestInterfaceGarbageCollected::toImplWithTypeCheck(isolate, testInterfaceGarbageCollectedMemberValue);
+    TestInterfaceGarbageCollected* testInterfaceGarbageCollectedMemberCppValue = V8TestInterfaceGarbageCollected::ToImplWithTypeCheck(isolate, testInterfaceGarbageCollectedMemberValue);
     if (!testInterfaceGarbageCollectedMemberCppValue) {
       exceptionState.ThrowTypeError("member testInterfaceGarbageCollectedMember is not of type TestInterfaceGarbageCollected.");
       return;
@@ -552,7 +552,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   } else if (testInterfaceGarbageCollectedOrNullMemberValue->IsNull()) {
     impl.setTestInterfaceGarbageCollectedOrNullMemberToNull();
   } else {
-    TestInterfaceGarbageCollected* testInterfaceGarbageCollectedOrNullMemberCppValue = V8TestInterfaceGarbageCollected::toImplWithTypeCheck(isolate, testInterfaceGarbageCollectedOrNullMemberValue);
+    TestInterfaceGarbageCollected* testInterfaceGarbageCollectedOrNullMemberCppValue = V8TestInterfaceGarbageCollected::ToImplWithTypeCheck(isolate, testInterfaceGarbageCollectedOrNullMemberValue);
     if (!testInterfaceGarbageCollectedOrNullMemberCppValue) {
       exceptionState.ThrowTypeError("member testInterfaceGarbageCollectedOrNullMember is not of type TestInterfaceGarbageCollected.");
       return;
@@ -582,7 +582,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   if (testInterfaceMemberValue.IsEmpty() || testInterfaceMemberValue->IsUndefined()) {
     // Do nothing.
   } else {
-    TestInterfaceImplementation* testInterfaceMemberCppValue = V8TestInterface::toImplWithTypeCheck(isolate, testInterfaceMemberValue);
+    TestInterfaceImplementation* testInterfaceMemberCppValue = V8TestInterface::ToImplWithTypeCheck(isolate, testInterfaceMemberValue);
     if (!testInterfaceMemberCppValue) {
       exceptionState.ThrowTypeError("member testInterfaceMember is not of type TestInterface.");
       return;
@@ -600,7 +600,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   } else if (testInterfaceOrNullMemberValue->IsNull()) {
     impl.setTestInterfaceOrNullMemberToNull();
   } else {
-    TestInterfaceImplementation* testInterfaceOrNullMemberCppValue = V8TestInterface::toImplWithTypeCheck(isolate, testInterfaceOrNullMemberValue);
+    TestInterfaceImplementation* testInterfaceOrNullMemberCppValue = V8TestInterface::ToImplWithTypeCheck(isolate, testInterfaceOrNullMemberValue);
     if (!testInterfaceOrNullMemberCppValue) {
       exceptionState.ThrowTypeError("member testInterfaceOrNullMember is not of type TestInterface.");
       return;
@@ -677,7 +677,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     // Do nothing.
   } else {
     FloatOrBoolean unionWithTypedefsCppValue;
-    V8FloatOrBoolean::toImpl(isolate, unionWithTypedefsValue, unionWithTypedefsCppValue, UnionTypeConversionMode::kNotNullable, exceptionState);
+    V8FloatOrBoolean::ToImpl(isolate, unionWithTypedefsValue, unionWithTypedefsCppValue, UnionTypeConversionMode::kNotNullable, exceptionState);
     if (exceptionState.HadException())
       return;
     impl.setUnionWithTypedefs(unionWithTypedefsCppValue);
@@ -1194,7 +1194,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
 
 TestDictionary NativeValueTraits<TestDictionary>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestDictionary impl;
-  V8TestDictionary::toImpl(isolate, value, impl, exceptionState);
+  V8TestDictionary::ToImpl(isolate, value, impl, exceptionState);
   return impl;
 }
 

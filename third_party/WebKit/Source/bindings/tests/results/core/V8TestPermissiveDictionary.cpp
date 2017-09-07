@@ -25,7 +25,7 @@ static const v8::Eternal<v8::Name>* eternalV8TestPermissiveDictionaryKeys(v8::Is
       kKeys, kKeys, WTF_ARRAY_LENGTH(kKeys));
 }
 
-void V8TestPermissiveDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestPermissiveDictionary& impl, ExceptionState& exceptionState) {
+void V8TestPermissiveDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestPermissiveDictionary& impl, ExceptionState& exceptionState) {
   if (IsUndefinedOrNull(v8Value)) {
     return;
   }
@@ -80,7 +80,7 @@ bool toV8TestPermissiveDictionary(const TestPermissiveDictionary& impl, v8::Loca
 
 TestPermissiveDictionary NativeValueTraits<TestPermissiveDictionary>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestPermissiveDictionary impl;
-  V8TestPermissiveDictionary::toImpl(isolate, value, impl, exceptionState);
+  V8TestPermissiveDictionary::ToImpl(isolate, value, impl, exceptionState);
   return impl;
 }
 

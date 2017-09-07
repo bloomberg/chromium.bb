@@ -158,7 +158,7 @@ void InspectorDOMDebuggerAgent::EventListenersInfoForTarget(
     bool pierce,
     V8EventListenerInfoList* event_information) {
   // Special-case nodes, respect depth and pierce parameters in case of nodes.
-  Node* node = V8Node::toImplWithTypeCheck(isolate, value);
+  Node* node = V8Node::ToImplWithTypeCheck(isolate, value);
   if (node) {
     if (depth < 0)
       depth = INT_MAX;
@@ -173,7 +173,7 @@ void InspectorDOMDebuggerAgent::EventListenersInfoForTarget(
     return;
   }
 
-  EventTarget* target = V8EventTarget::toImplWithTypeCheck(isolate, value);
+  EventTarget* target = V8EventTarget::ToImplWithTypeCheck(isolate, value);
   // We need to handle LocalDOMWindow specially, because LocalDOMWindow wrapper
   // exists on prototype chain.
   if (!target)

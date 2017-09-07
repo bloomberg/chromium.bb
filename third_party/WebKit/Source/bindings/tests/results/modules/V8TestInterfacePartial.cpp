@@ -38,7 +38,7 @@ namespace TestInterfaceImplementationPartialV8Internal {
 static void partial4LongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
-  TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
 
   V8SetReturnValueInt(info, TestInterfacePartial4::partial4LongAttribute(*impl));
 }
@@ -50,7 +50,7 @@ static void partial4LongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
   v8::Local<v8::Object> holder = info.Holder();
   ALLOW_UNUSED_LOCAL(holder);
 
-  TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "partial4LongAttribute");
 
@@ -84,7 +84,7 @@ static void partial4StaticLongAttributeAttributeSetter(v8::Local<v8::Value> v8Va
 }
 
 static void voidMethodPartialOverload3Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
 
   V8StringResource<> value;
   value = info[0];
@@ -157,10 +157,10 @@ static void promiseMethodPartialOverload3Method(const v8::FunctionCallbackInfo<v
     exceptionState.ThrowTypeError("Illegal invocation");
     return;
   }
-  TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
 
   Document* document;
-  document = V8Document::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+  document = V8Document::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!document) {
     exceptionState.ThrowTypeError("parameter 1 is not of type 'Document'.");
 
@@ -229,7 +229,7 @@ static void staticPromiseMethodPartialOverloadMethod(const v8::FunctionCallbackI
 }
 
 static void partial2VoidMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
 
   V8StringResource<> value;
   value = info[0];
@@ -240,10 +240,10 @@ static void partial2VoidMethod2Method(const v8::FunctionCallbackInfo<v8::Value>&
 }
 
 static void partial2VoidMethod3Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
 
   Node* node;
-  node = V8Node::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+  node = V8Node::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!node) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("partial2VoidMethod", "TestInterface", "parameter 1 is not of type 'Node'."));
 
@@ -282,7 +282,7 @@ static void partial2VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& 
 static void partialVoidTestEnumModulesArgMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "partialVoidTestEnumModulesArgMethod");
 
-  TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 1)) {
     exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
@@ -338,7 +338,7 @@ static void partial2StaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Va
 static void partial2VoidTestEnumModulesRecordMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "partial2VoidTestEnumModulesRecordMethod");
 
-  TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 1)) {
     exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
@@ -354,13 +354,13 @@ static void partial2VoidTestEnumModulesRecordMethodMethod(const v8::FunctionCall
 }
 
 static void unscopableVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
 
   TestInterfacePartial3Implementation::unscopableVoidMethod(*impl);
 }
 
 static void unionWithTypedefMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
 
   UnsignedLongLongOrBooleanOrTestCallbackInterface result;
   TestInterfacePartial3Implementation::unionWithTypedefMethod(*impl, result);
@@ -368,7 +368,7 @@ static void unionWithTypedefMethodMethod(const v8::FunctionCallbackInfo<v8::Valu
 }
 
 static void partial4VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
 
   TestInterfacePartial4::partial4VoidMethod(*impl);
 }

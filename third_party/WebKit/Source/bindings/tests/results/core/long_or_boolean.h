@@ -58,7 +58,7 @@ class CORE_EXPORT LongOrBoolean final {
 
 class V8LongOrBoolean final {
  public:
-  CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, LongOrBoolean&, UnionTypeConversionMode, ExceptionState&);
+  CORE_EXPORT static void ToImpl(v8::Isolate*, v8::Local<v8::Value>, LongOrBoolean&, UnionTypeConversionMode, ExceptionState&);
 };
 
 CORE_EXPORT v8::Local<v8::Value> ToV8(const LongOrBoolean&, v8::Local<v8::Object>, v8::Isolate*);

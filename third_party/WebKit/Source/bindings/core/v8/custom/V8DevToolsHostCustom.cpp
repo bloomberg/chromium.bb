@@ -150,20 +150,20 @@ void V8DevToolsHost::showContextMenuAtPointMethodCustom(
     if (!V8HTMLDocument::wrapperTypeInfo.Equals(
             ToWrapperTypeInfo(document_wrapper)))
       return;
-    document = V8HTMLDocument::toImpl(document_wrapper);
+    document = V8HTMLDocument::ToImpl(document_wrapper);
   } else {
     v8::Local<v8::Object> window_wrapper =
         V8Window::findInstanceInPrototypeChain(
             isolate->GetEnteredContext()->Global(), isolate);
     if (window_wrapper.IsEmpty())
       return;
-    DOMWindow* window = V8Window::toImpl(window_wrapper);
+    DOMWindow* window = V8Window::ToImpl(window_wrapper);
     document = window ? ToLocalDOMWindow(window)->document() : nullptr;
   }
   if (!document || !document->GetFrame())
     return;
 
-  DevToolsHost* devtools_host = V8DevToolsHost::toImpl(info.Holder());
+  DevToolsHost* devtools_host = V8DevToolsHost::ToImpl(info.Holder());
   Vector<ContextMenuItem> items = menu.Items();
   devtools_host->ShowContextMenu(document->GetFrame(), x, y, items);
 }

@@ -77,7 +77,7 @@ BooleanOrStringOrUnrestrictedDouble& BooleanOrStringOrUnrestrictedDouble::operat
 DEFINE_TRACE(BooleanOrStringOrUnrestrictedDouble) {
 }
 
-void V8BooleanOrStringOrUnrestrictedDouble::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, BooleanOrStringOrUnrestrictedDouble& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
+void V8BooleanOrStringOrUnrestrictedDouble::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, BooleanOrStringOrUnrestrictedDouble& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
   if (v8Value.IsEmpty())
     return;
 
@@ -124,7 +124,7 @@ v8::Local<v8::Value> ToV8(const BooleanOrStringOrUnrestrictedDouble& impl, v8::L
 
 BooleanOrStringOrUnrestrictedDouble NativeValueTraits<BooleanOrStringOrUnrestrictedDouble>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   BooleanOrStringOrUnrestrictedDouble impl;
-  V8BooleanOrStringOrUnrestrictedDouble::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8BooleanOrStringOrUnrestrictedDouble::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

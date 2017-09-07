@@ -47,7 +47,7 @@ void V8ErrorEvent::errorAttributeGetterCustom(
     return;
   }
 
-  ErrorEvent* event = V8ErrorEvent::toImpl(info.Holder());
+  ErrorEvent* event = V8ErrorEvent::ToImpl(info.Holder());
   ScriptState* script_state = ScriptState::From(isolate->GetCurrentContext());
   ScriptValue error = event->error(script_state);
   v8::Local<v8::Value> error_value =

@@ -77,43 +77,43 @@ static_assert(
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 
-TestArrayBufferView* V8ArrayBufferView::toImpl(v8::Local<v8::Object> object) {
+TestArrayBufferView* V8ArrayBufferView::ToImpl(v8::Local<v8::Object> object) {
   DCHECK(object->IsArrayBufferView());
   ScriptWrappable* scriptWrappable = ToScriptWrappable(object);
   if (scriptWrappable)
     return scriptWrappable->ToImpl<TestArrayBufferView>();
 
   if (object->IsInt8Array())
-    return V8Int8Array::toImpl(object);
+    return V8Int8Array::ToImpl(object);
   if (object->IsInt16Array())
-    return V8Int16Array::toImpl(object);
+    return V8Int16Array::ToImpl(object);
   if (object->IsInt32Array())
-    return V8Int32Array::toImpl(object);
+    return V8Int32Array::ToImpl(object);
   if (object->IsUint8Array())
-    return V8Uint8Array::toImpl(object);
+    return V8Uint8Array::ToImpl(object);
   if (object->IsUint8ClampedArray())
-    return V8Uint8ClampedArray::toImpl(object);
+    return V8Uint8ClampedArray::ToImpl(object);
   if (object->IsUint16Array())
-    return V8Uint16Array::toImpl(object);
+    return V8Uint16Array::ToImpl(object);
   if (object->IsUint32Array())
-    return V8Uint32Array::toImpl(object);
+    return V8Uint32Array::ToImpl(object);
   if (object->IsFloat32Array())
-    return V8Float32Array::toImpl(object);
+    return V8Float32Array::ToImpl(object);
   if (object->IsFloat64Array())
-    return V8Float64Array::toImpl(object);
+    return V8Float64Array::ToImpl(object);
   if (object->IsDataView())
-    return V8DataView::toImpl(object);
+    return V8DataView::ToImpl(object);
 
   NOTREACHED();
   return 0;
 }
 
-TestArrayBufferView* V8ArrayBufferView::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  return value->IsArrayBufferView() ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+TestArrayBufferView* V8ArrayBufferView::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+  return value->IsArrayBufferView() ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 TestArrayBufferView* NativeValueTraits<TestArrayBufferView>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  TestArrayBufferView* nativeValue = V8ArrayBufferView::toImplWithTypeCheck(isolate, value);
+  TestArrayBufferView* nativeValue = V8ArrayBufferView::ToImplWithTypeCheck(isolate, value);
   if (!nativeValue) {
     exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
         "ArrayBufferView"));

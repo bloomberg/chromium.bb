@@ -31,7 +31,7 @@ void V8ExtendableMessageEvent::constructorCustom(
           "parameter 2 ('eventInitDict') is not an object.");
       return;
     }
-    V8ExtendableMessageEventInit::toImpl(isolate, info[1], event_init_dict,
+    V8ExtendableMessageEventInit::ToImpl(isolate, info[1], event_init_dict,
                                          exception_state);
     if (exception_state.HadException())
       return;
@@ -60,7 +60,7 @@ void V8ExtendableMessageEvent::constructorCustom(
 void V8ExtendableMessageEvent::dataAttributeGetterCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExtendableMessageEvent* event =
-      V8ExtendableMessageEvent::toImpl(info.Holder());
+      V8ExtendableMessageEvent::ToImpl(info.Holder());
   v8::Isolate* isolate = info.GetIsolate();
   auto private_cached_data =
       V8PrivateProperty::GetMessageEventCachedData(isolate);

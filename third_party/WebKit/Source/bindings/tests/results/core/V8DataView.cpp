@@ -66,7 +66,7 @@ static_assert(
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 
-TestDataView* V8DataView::toImpl(v8::Local<v8::Object> object) {
+TestDataView* V8DataView::ToImpl(v8::Local<v8::Object> object) {
   DCHECK(object->IsDataView());
   ScriptWrappable* scriptWrappable = ToScriptWrappable(object);
   if (scriptWrappable)
@@ -76,9 +76,9 @@ TestDataView* V8DataView::toImpl(v8::Local<v8::Object> object) {
   v8::Local<v8::Object> arrayBuffer = v8View->Buffer();
   TestDataView* typedArray = nullptr;
   if (arrayBuffer->IsArrayBuffer()) {
-    typedArray = TestDataView::Create(V8ArrayBuffer::toImpl(arrayBuffer), v8View->ByteOffset(), v8View->ByteLength());
+    typedArray = TestDataView::Create(V8ArrayBuffer::ToImpl(arrayBuffer), v8View->ByteOffset(), v8View->ByteLength());
   } else if (arrayBuffer->IsSharedArrayBuffer()) {
-    typedArray = TestDataView::Create(V8SharedArrayBuffer::toImpl(arrayBuffer), v8View->ByteOffset(), v8View->ByteLength());
+    typedArray = TestDataView::Create(V8SharedArrayBuffer::ToImpl(arrayBuffer), v8View->ByteOffset(), v8View->ByteLength());
   } else {
     NOTREACHED();
   }
@@ -88,12 +88,12 @@ TestDataView* V8DataView::toImpl(v8::Local<v8::Object> object) {
   return typedArray->ToImpl<TestDataView>();
 }
 
-TestDataView* V8DataView::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  return value->IsDataView() ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+TestDataView* V8DataView::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+  return value->IsDataView() ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 TestDataView* NativeValueTraits<TestDataView>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  TestDataView* nativeValue = V8DataView::toImplWithTypeCheck(isolate, value);
+  TestDataView* nativeValue = V8DataView::ToImplWithTypeCheck(isolate, value);
   if (!nativeValue) {
     exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
         "DataView"));

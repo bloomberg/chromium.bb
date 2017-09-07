@@ -75,7 +75,7 @@ static void lenientThisLongAttributeAttributeGetter(const v8::FunctionCallbackIn
 
   v8::Local<v8::Object> holder = info.Holder();
 
-  TestAttributeGetters* impl = V8TestAttributeGetters::toImpl(holder);
+  TestAttributeGetters* impl = V8TestAttributeGetters::ToImpl(holder);
 
   V8SetReturnValueInt(info, impl->lenientThisLongAttribute());
 }
@@ -97,7 +97,7 @@ static void stringPromiseAttributeAttributeGetter(const v8::FunctionCallbackInfo
 
   v8::Local<v8::Object> holder = info.Holder();
 
-  TestAttributeGetters* impl = V8TestAttributeGetters::toImpl(holder);
+  TestAttributeGetters* impl = V8TestAttributeGetters::ToImpl(holder);
 
   V8SetReturnValue(info, impl->stringPromiseAttribute().V8Value());
 }
@@ -110,7 +110,7 @@ static void lenientThisStringPromiseAttributeAttributeGetter(const v8::FunctionC
 
   v8::Local<v8::Object> holder = info.Holder();
 
-  TestAttributeGetters* impl = V8TestAttributeGetters::toImpl(holder);
+  TestAttributeGetters* impl = V8TestAttributeGetters::ToImpl(holder);
 
   V8SetReturnValue(info, impl->lenientThisStringPromiseAttribute().V8Value());
 }
@@ -132,7 +132,7 @@ static void raisesExceptionShortPromiseAttributeAttributeGetter(const v8::Functi
 
   v8::Local<v8::Object> holder = info.Holder();
 
-  TestAttributeGetters* impl = V8TestAttributeGetters::toImpl(holder);
+  TestAttributeGetters* impl = V8TestAttributeGetters::ToImpl(holder);
 
   ScriptPromise cppValue(impl->raisesExceptionShortPromiseAttribute(exceptionState));
 
@@ -145,7 +145,7 @@ static void raisesExceptionShortPromiseAttributeAttributeGetter(const v8::Functi
 static void floatAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
-  TestAttributeGetters* impl = V8TestAttributeGetters::toImpl(holder);
+  TestAttributeGetters* impl = V8TestAttributeGetters::ToImpl(holder);
 
   V8SetReturnValue(info, impl->floatAttribute());
 }
@@ -247,12 +247,12 @@ v8::Local<v8::Object> V8TestAttributeGetters::findInstanceInPrototypeChain(v8::L
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
-TestAttributeGetters* V8TestAttributeGetters::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+TestAttributeGetters* V8TestAttributeGetters::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+  return hasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 TestAttributeGetters* NativeValueTraits<TestAttributeGetters>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  TestAttributeGetters* nativeValue = V8TestAttributeGetters::toImplWithTypeCheck(isolate, value);
+  TestAttributeGetters* nativeValue = V8TestAttributeGetters::ToImplWithTypeCheck(isolate, value);
   if (!nativeValue) {
     exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
         "TestAttributeGetters"));

@@ -73,7 +73,7 @@ static_assert(
 namespace TestSpecialOperationsV8Internal {
 
 static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestSpecialOperations* impl = V8TestSpecialOperations::toImpl(info.Holder());
+  TestSpecialOperations* impl = V8TestSpecialOperations::ToImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 1)) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("namedItem", "TestSpecialOperations", ExceptionMessages::NotEnoughArguments(1, info.Length())));
@@ -91,7 +91,7 @@ static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 }
 
 static void namedPropertyGetter(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Value>& info) {
-  TestSpecialOperations* impl = V8TestSpecialOperations::toImpl(info.Holder());
+  TestSpecialOperations* impl = V8TestSpecialOperations::ToImpl(info.Holder());
   NodeOrNodeList result;
   impl->getItem(name, result);
   if (result.isNull())
@@ -100,8 +100,8 @@ static void namedPropertyGetter(const AtomicString& name, const v8::PropertyCall
 }
 
 static void namedPropertySetter(const AtomicString& name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
-  TestSpecialOperations* impl = V8TestSpecialOperations::toImpl(info.Holder());
-  Node* propertyValue = V8Node::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+  TestSpecialOperations* impl = V8TestSpecialOperations::ToImpl(info.Holder());
+  Node* propertyValue = V8Node::ToImplWithTypeCheck(info.GetIsolate(), v8Value);
   if (!propertyValue && !IsUndefinedOrNull(v8Value)) {
     exceptionState.ThrowTypeError("The provided value is not of type 'Node'.");
     return;
@@ -117,7 +117,7 @@ static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallb
   const CString& nameInUtf8 = name.Utf8();
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kGetterContext, "TestSpecialOperations", nameInUtf8.data());
 
-  TestSpecialOperations* impl = V8TestSpecialOperations::toImpl(info.Holder());
+  TestSpecialOperations* impl = V8TestSpecialOperations::ToImpl(info.Holder());
 
   bool result = impl->NamedPropertyQuery(name, exceptionState);
   if (!result)
@@ -134,7 +134,7 @@ static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallb
 static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kEnumerationContext, "TestSpecialOperations");
 
-  TestSpecialOperations* impl = V8TestSpecialOperations::toImpl(info.Holder());
+  TestSpecialOperations* impl = V8TestSpecialOperations::ToImpl(info.Holder());
 
   Vector<String> names;
   impl->NamedPropertyEnumerator(names, exceptionState);
@@ -271,12 +271,12 @@ v8::Local<v8::Object> V8TestSpecialOperations::findInstanceInPrototypeChain(v8::
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
-TestSpecialOperations* V8TestSpecialOperations::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+TestSpecialOperations* V8TestSpecialOperations::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+  return hasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 TestSpecialOperations* NativeValueTraits<TestSpecialOperations>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  TestSpecialOperations* nativeValue = V8TestSpecialOperations::toImplWithTypeCheck(isolate, value);
+  TestSpecialOperations* nativeValue = V8TestSpecialOperations::ToImplWithTypeCheck(isolate, value);
   if (!nativeValue) {
     exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
         "TestSpecialOperations"));

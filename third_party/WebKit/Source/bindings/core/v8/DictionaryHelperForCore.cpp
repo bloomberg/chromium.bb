@@ -223,7 +223,7 @@ bool DictionaryHelper::Get(const Dictionary& dictionary,
     v8::Local<v8::Object> track = V8TextTrack::findInstanceInPrototypeChain(
         wrapper, dictionary.GetIsolate());
     if (!track.IsEmpty())
-      source = V8TextTrack::toImpl(track);
+      source = V8TextTrack::ToImpl(track);
   }
   value = source;
   return true;
@@ -312,7 +312,7 @@ CORE_EXPORT bool DictionaryHelper::Get(const Dictionary& dictionary,
   if (!dictionary.Get(key, v8_value))
     return false;
 
-  value = V8Uint8Array::toImplWithTypeCheck(dictionary.GetIsolate(), v8_value);
+  value = V8Uint8Array::ToImplWithTypeCheck(dictionary.GetIsolate(), v8_value);
   return true;
 }
 

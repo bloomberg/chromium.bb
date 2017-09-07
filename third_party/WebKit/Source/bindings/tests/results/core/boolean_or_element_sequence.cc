@@ -67,7 +67,7 @@ DEFINE_TRACE(BooleanOrElementSequence) {
   visitor->Trace(element_sequence_);
 }
 
-void V8BooleanOrElementSequence::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, BooleanOrElementSequence& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
+void V8BooleanOrElementSequence::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, BooleanOrElementSequence& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
   if (v8Value.IsEmpty())
     return;
 
@@ -109,7 +109,7 @@ v8::Local<v8::Value> ToV8(const BooleanOrElementSequence& impl, v8::Local<v8::Ob
 
 BooleanOrElementSequence NativeValueTraits<BooleanOrElementSequence>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   BooleanOrElementSequence impl;
-  V8BooleanOrElementSequence::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8BooleanOrElementSequence::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

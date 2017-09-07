@@ -54,7 +54,7 @@ void V8MessageEvent::dataAttributeGetterCustom(
     return;
   }
 
-  MessageEvent* event = V8MessageEvent::toImpl(info.Holder());
+  MessageEvent* event = V8MessageEvent::ToImpl(info.Holder());
 
   v8::Local<v8::Value> result;
   switch (event->GetDataType()) {
@@ -101,7 +101,7 @@ void V8MessageEvent::initMessageEventMethodCustom(
   ExceptionState exception_state(info.GetIsolate(),
                                  ExceptionState::kExecutionContext,
                                  "MessageEvent", "initMessageEvent");
-  MessageEvent* event = V8MessageEvent::toImpl(info.Holder());
+  MessageEvent* event = V8MessageEvent::ToImpl(info.Holder());
   TOSTRING_VOID(V8StringResource<>, type_arg, info[0]);
   bool can_bubble_arg = false;
   bool cancelable_arg = false;
@@ -116,7 +116,7 @@ void V8MessageEvent::initMessageEventMethodCustom(
   TOSTRING_VOID(V8StringResource<>, origin_arg, info[4]);
   TOSTRING_VOID(V8StringResource<>, last_event_id_arg, info[5]);
   EventTarget* source_arg =
-      V8EventTarget::toImplWithTypeCheck(info.GetIsolate(), info[6]);
+      V8EventTarget::ToImplWithTypeCheck(info.GetIsolate(), info[6]);
   MessagePortArray* port_array = nullptr;
   const int kPortArrayIndex = 7;
   if (!IsUndefinedOrNull(info[kPortArrayIndex])) {

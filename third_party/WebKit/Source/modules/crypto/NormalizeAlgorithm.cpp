@@ -281,13 +281,13 @@ bool GetOptionalBufferSource(const Dictionary& raw,
 
   if (v8_value->IsArrayBufferView()) {
     bytes = CopyBytes(
-        V8ArrayBufferView::toImpl(v8::Local<v8::Object>::Cast(v8_value)));
+        V8ArrayBufferView::ToImpl(v8::Local<v8::Object>::Cast(v8_value)));
     return true;
   }
 
   if (v8_value->IsArrayBuffer()) {
     bytes =
-        CopyBytes(V8ArrayBuffer::toImpl(v8::Local<v8::Object>::Cast(v8_value)));
+        CopyBytes(V8ArrayBuffer::ToImpl(v8::Local<v8::Object>::Cast(v8_value)));
     return true;
   }
 
@@ -843,7 +843,7 @@ bool ParseEcdhKeyDeriveParams(const Dictionary& raw,
   }
 
   CryptoKey* crypto_key =
-      V8CryptoKey::toImplWithTypeCheck(raw.GetIsolate(), v8_value);
+      V8CryptoKey::ToImplWithTypeCheck(raw.GetIsolate(), v8_value);
   if (!crypto_key) {
     SetTypeError(context.ToString("public", "Must be a CryptoKey"), error);
     return false;

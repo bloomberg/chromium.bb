@@ -71,7 +71,7 @@ namespace SVGTestInterfaceV8Internal {
 static void typeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
-  SVGTestInterface* impl = V8SVGTestInterface::toImpl(holder);
+  SVGTestInterface* impl = V8SVGTestInterface::ToImpl(holder);
 
   V8SetReturnValueString(info, impl->FastGetAttribute(SVGNames::typeAttr), info.GetIsolate());
 }
@@ -83,7 +83,7 @@ static void typeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Function
   v8::Local<v8::Object> holder = info.Holder();
   ALLOW_UNUSED_LOCAL(holder);
 
-  SVGTestInterface* impl = V8SVGTestInterface::toImpl(holder);
+  SVGTestInterface* impl = V8SVGTestInterface::ToImpl(holder);
 
   // Skip on compact node DOMString getters.
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -171,12 +171,12 @@ v8::Local<v8::Object> V8SVGTestInterface::findInstanceInPrototypeChain(v8::Local
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
-SVGTestInterface* V8SVGTestInterface::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+SVGTestInterface* V8SVGTestInterface::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+  return hasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 SVGTestInterface* NativeValueTraits<SVGTestInterface>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  SVGTestInterface* nativeValue = V8SVGTestInterface::toImplWithTypeCheck(isolate, value);
+  SVGTestInterface* nativeValue = V8SVGTestInterface::ToImplWithTypeCheck(isolate, value);
   if (!nativeValue) {
     exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
         "SVGTestInterface"));

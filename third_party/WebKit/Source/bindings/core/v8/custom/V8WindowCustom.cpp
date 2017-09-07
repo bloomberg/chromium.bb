@@ -68,7 +68,7 @@ void V8Window::locationAttributeGetterCustom(
   v8::Isolate* isolate = info.GetIsolate();
   v8::Local<v8::Object> holder = info.Holder();
 
-  DOMWindow* window = V8Window::toImpl(holder);
+  DOMWindow* window = V8Window::ToImpl(holder);
   Location* location = window->location();
   DCHECK(location);
 
@@ -102,7 +102,7 @@ void V8Window::locationAttributeGetterCustom(
 
 void V8Window::eventAttributeGetterCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
-  LocalDOMWindow* impl = ToLocalDOMWindow(V8Window::toImpl(info.Holder()));
+  LocalDOMWindow* impl = ToLocalDOMWindow(V8Window::ToImpl(info.Holder()));
   v8::Isolate* isolate = info.GetIsolate();
   ExceptionState exception_state(isolate, ExceptionState::kGetterContext,
                                  "Window", "event");
@@ -119,7 +119,7 @@ void V8Window::eventAttributeGetterCustom(
 void V8Window::eventAttributeSetterCustom(
     v8::Local<v8::Value> value,
     const v8::FunctionCallbackInfo<v8::Value>& info) {
-  LocalDOMWindow* impl = ToLocalDOMWindow(V8Window::toImpl(info.Holder()));
+  LocalDOMWindow* impl = ToLocalDOMWindow(V8Window::ToImpl(info.Holder()));
   v8::Isolate* isolate = info.GetIsolate();
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext,
                                  "Window", "event");
@@ -133,7 +133,7 @@ void V8Window::eventAttributeSetterCustom(
 
 void V8Window::frameElementAttributeGetterCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
-  LocalDOMWindow* impl = ToLocalDOMWindow(V8Window::toImpl(info.Holder()));
+  LocalDOMWindow* impl = ToLocalDOMWindow(V8Window::ToImpl(info.Holder()));
   Element* frameElement = impl->frameElement();
 
   if (!BindingSecurity::ShouldAllowAccessTo(
@@ -160,7 +160,7 @@ void V8Window::openerAttributeSetterCustom(
     v8::Local<v8::Value> value,
     const v8::PropertyCallbackInfo<void>& info) {
   v8::Isolate* isolate = info.GetIsolate();
-  DOMWindow* impl = V8Window::toImpl(info.Holder());
+  DOMWindow* impl = V8Window::ToImpl(info.Holder());
   if (!impl->GetFrame())
     return;
 
@@ -205,7 +205,7 @@ void V8Window::postMessageMethodCustom(
 
   // None of these need to be RefPtr because info and context are guaranteed
   // to hold on to them.
-  DOMWindow* window = V8Window::toImpl(info.Holder());
+  DOMWindow* window = V8Window::ToImpl(info.Holder());
   // TODO(yukishiino): The HTML spec specifies that we should use the
   // Incumbent Realm instead of the Current Realm, but currently we don't have
   // a way to retrieve the Incumbent Realm.  See also:
@@ -256,7 +256,7 @@ void V8Window::postMessageMethodCustom(
 
 void V8Window::openMethodCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
-  DOMWindow* impl = V8Window::toImpl(info.Holder());
+  DOMWindow* impl = V8Window::ToImpl(info.Holder());
   ExceptionState exception_state(
       info.GetIsolate(), ExceptionState::kExecutionContext, "Window", "open");
   if (!BindingSecurity::ShouldAllowAccessTo(CurrentDOMWindow(info.GetIsolate()),
@@ -296,7 +296,7 @@ void V8Window::openMethodCustom(
 void V8Window::namedPropertyGetterCustom(
     const AtomicString& name,
     const v8::PropertyCallbackInfo<v8::Value>& info) {
-  DOMWindow* window = V8Window::toImpl(info.Holder());
+  DOMWindow* window = V8Window::ToImpl(info.Holder());
   if (!window)
     return;
 

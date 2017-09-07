@@ -72,7 +72,7 @@ namespace TestInterfaceDocumentV8Internal {
 static void locationAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
-  TestInterfaceDocument* impl = V8TestInterfaceDocument::toImpl(holder);
+  TestInterfaceDocument* impl = V8TestInterfaceDocument::ToImpl(holder);
 
   V8SetReturnValueFast(info, WTF::GetPtr(impl->location()), impl);
 }
@@ -173,12 +173,12 @@ v8::Local<v8::Object> V8TestInterfaceDocument::findInstanceInPrototypeChain(v8::
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
-TestInterfaceDocument* V8TestInterfaceDocument::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+TestInterfaceDocument* V8TestInterfaceDocument::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+  return hasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 TestInterfaceDocument* NativeValueTraits<TestInterfaceDocument>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  TestInterfaceDocument* nativeValue = V8TestInterfaceDocument::toImplWithTypeCheck(isolate, value);
+  TestInterfaceDocument* nativeValue = V8TestInterfaceDocument::ToImplWithTypeCheck(isolate, value);
   if (!nativeValue) {
     exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
         "TestInterfaceDocument"));

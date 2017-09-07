@@ -141,7 +141,7 @@ DEFINE_TRACE(NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteString
   visitor->Trace(xml_http_request_);
 }
 
-void V8NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
+void V8NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
   if (v8Value.IsEmpty())
     return;
 
@@ -149,19 +149,19 @@ void V8NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNode
     return;
 
   if (V8Event::hasInstance(v8Value, isolate)) {
-    Event* cppValue = V8Event::toImpl(v8::Local<v8::Object>::Cast(v8Value));
+    Event* cppValue = V8Event::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
     impl.setEvent(cppValue);
     return;
   }
 
   if (V8Node::hasInstance(v8Value, isolate)) {
-    Node* cppValue = V8Node::toImpl(v8::Local<v8::Object>::Cast(v8Value));
+    Node* cppValue = V8Node::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
     impl.setNode(cppValue);
     return;
   }
 
   if (V8XMLHttpRequest::hasInstance(v8Value, isolate)) {
-    XMLHttpRequest* cppValue = V8XMLHttpRequest::toImpl(v8::Local<v8::Object>::Cast(v8Value));
+    XMLHttpRequest* cppValue = V8XMLHttpRequest::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
     impl.setXMLHttpRequest(cppValue);
     return;
   }
@@ -215,7 +215,7 @@ v8::Local<v8::Value> ToV8(const NodeOrLongSequenceOrEventOrXMLHttpRequestOrStrin
 
 NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord NativeValueTraits<NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord impl;
-  V8NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

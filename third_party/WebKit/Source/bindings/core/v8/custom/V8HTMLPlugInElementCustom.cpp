@@ -60,7 +60,7 @@ void GetScriptableObjectProperty(
   UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
                     WebFeature::kPluginInstanceAccessFromMainWorld);
 
-  HTMLPlugInElement* impl = ElementType::toImpl(info.Holder());
+  HTMLPlugInElement* impl = ElementType::ToImpl(info.Holder());
   v8::Local<v8::Object> instance = impl->PluginWrapper();
   if (instance.IsEmpty())
     return;
@@ -89,7 +89,7 @@ void SetScriptableObjectProperty(
     return;
   }
 
-  HTMLPlugInElement* impl = ElementType::toImpl(info.Holder());
+  HTMLPlugInElement* impl = ElementType::ToImpl(info.Holder());
   v8::Local<v8::Object> instance = impl->PluginWrapper();
   if (instance.IsEmpty())
     return;

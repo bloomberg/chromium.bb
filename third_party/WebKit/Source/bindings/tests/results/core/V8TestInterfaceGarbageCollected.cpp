@@ -74,7 +74,7 @@ namespace TestInterfaceGarbageCollectedV8Internal {
 static void attr1AttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
-  TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(holder);
+  TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::ToImpl(holder);
 
   V8SetReturnValueFast(info, WTF::GetPtr(impl->attr1()), impl);
 }
@@ -86,12 +86,12 @@ static void attr1AttributeSetter(v8::Local<v8::Value> v8Value, const v8::Functio
   v8::Local<v8::Object> holder = info.Holder();
   ALLOW_UNUSED_LOCAL(holder);
 
-  TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(holder);
+  TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::ToImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterfaceGarbageCollected", "attr1");
 
   // Prepare the value to be set.
-  TestInterfaceGarbageCollected* cppValue = V8TestInterfaceGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+  TestInterfaceGarbageCollected* cppValue = V8TestInterfaceGarbageCollected::ToImplWithTypeCheck(info.GetIsolate(), v8Value);
 
   // Type check per: http://heycam.github.io/webidl/#es-interface
   if (!cppValue) {
@@ -105,13 +105,13 @@ static void attr1AttributeSetter(v8::Local<v8::Value> v8Value, const v8::Functio
 static void sizeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
-  TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(holder);
+  TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::ToImpl(holder);
 
   V8SetReturnValueUnsigned(info, impl->size());
 }
 
 static void funcMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
+  TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::ToImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 1)) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("func", "TestInterfaceGarbageCollected", ExceptionMessages::NotEnoughArguments(1, info.Length())));
@@ -119,7 +119,7 @@ static void funcMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   }
 
   TestInterfaceGarbageCollected* arg;
-  arg = V8TestInterfaceGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+  arg = V8TestInterfaceGarbageCollected::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!arg) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("func", "TestInterfaceGarbageCollected", "parameter 1 is not of type 'TestInterfaceGarbageCollected'."));
 
@@ -132,7 +132,7 @@ static void funcMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 static void keysMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterfaceGarbageCollected", "keys");
 
-  TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
+  TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::ToImpl(info.Holder());
 
   ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
@@ -146,7 +146,7 @@ static void keysMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 static void entriesMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterfaceGarbageCollected", "entries");
 
-  TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
+  TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::ToImpl(info.Holder());
 
   ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
@@ -160,7 +160,7 @@ static void entriesMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterfaceGarbageCollected", "forEach");
 
-  TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
+  TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::ToImpl(info.Holder());
 
   ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
@@ -189,7 +189,7 @@ static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 static void hasMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterfaceGarbageCollected", "has");
 
-  TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
+  TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::ToImpl(info.Holder());
 
   ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
@@ -213,7 +213,7 @@ static void hasMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 static void addMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterfaceGarbageCollected", "add");
 
-  TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
+  TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::ToImpl(info.Holder());
 
   ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
@@ -237,7 +237,7 @@ static void addMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 static void clearMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterfaceGarbageCollected", "clear");
 
-  TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
+  TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::ToImpl(info.Holder());
 
   ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
@@ -250,7 +250,7 @@ static void clearMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 static void deleteMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterfaceGarbageCollected", "delete");
 
-  TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
+  TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::ToImpl(info.Holder());
 
   ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
@@ -274,7 +274,7 @@ static void deleteMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 static void iteratorMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterfaceGarbageCollected", "iterator");
 
-  TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
+  TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::ToImpl(info.Holder());
 
   ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
 
@@ -485,12 +485,12 @@ v8::Local<v8::Object> V8TestInterfaceGarbageCollected::findInstanceInPrototypeCh
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
-TestInterfaceGarbageCollected* V8TestInterfaceGarbageCollected::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+TestInterfaceGarbageCollected* V8TestInterfaceGarbageCollected::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+  return hasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 TestInterfaceGarbageCollected* NativeValueTraits<TestInterfaceGarbageCollected>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  TestInterfaceGarbageCollected* nativeValue = V8TestInterfaceGarbageCollected::toImplWithTypeCheck(isolate, value);
+  TestInterfaceGarbageCollected* nativeValue = V8TestInterfaceGarbageCollected::ToImplWithTypeCheck(isolate, value);
   if (!nativeValue) {
     exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
         "TestInterfaceGarbageCollected"));

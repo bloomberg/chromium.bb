@@ -333,7 +333,7 @@ static EventTarget* FirstArgumentAsEventTarget(
   if (info.Length() < 1)
     return nullptr;
   if (EventTarget* target =
-          V8EventTarget::toImplWithTypeCheck(info.GetIsolate(), info[0]))
+          V8EventTarget::ToImplWithTypeCheck(info.GetIsolate(), info[0]))
     return target;
   return ToDOMWindow(info.GetIsolate(), info[0]);
 }

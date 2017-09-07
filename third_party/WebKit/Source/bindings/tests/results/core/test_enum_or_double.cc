@@ -71,7 +71,7 @@ TestEnumOrDouble& TestEnumOrDouble::operator=(const TestEnumOrDouble&) = default
 DEFINE_TRACE(TestEnumOrDouble) {
 }
 
-void V8TestEnumOrDouble::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestEnumOrDouble& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
+void V8TestEnumOrDouble::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestEnumOrDouble& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
   if (v8Value.IsEmpty())
     return;
 
@@ -119,7 +119,7 @@ v8::Local<v8::Value> ToV8(const TestEnumOrDouble& impl, v8::Local<v8::Object> cr
 
 TestEnumOrDouble NativeValueTraits<TestEnumOrDouble>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestEnumOrDouble impl;
-  V8TestEnumOrDouble::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8TestEnumOrDouble::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

@@ -146,7 +146,7 @@ void CompileFromResponseCallback(
     return;
   }
 
-  Response* response = V8Response::toImpl(v8::Local<v8::Object>::Cast(args[0]));
+  Response* response = V8Response::ToImpl(v8::Local<v8::Object>::Cast(args[0]));
   if (response->MimeType() != "application/wasm") {
     V8SetReturnValue(
         args,

@@ -110,7 +110,7 @@ RequestInit::RequestInit(ExecutionContext* context,
   v8::Isolate* isolate = ToIsolate(context);
 
   if (is_header_set) {
-    V8ByteStringSequenceSequenceOrByteStringByteStringRecord::toImpl(
+    V8ByteStringSequenceSequenceOrByteStringByteStringRecord::ToImpl(
         isolate, v8_headers, headers, UnionTypeConversionMode::kNotNullable,
         exception_state);
     if (exception_state.HadException())
@@ -130,7 +130,7 @@ RequestInit::RequestInit(ExecutionContext* context,
       // behavior with this option, except that the `Content-Type` header will
       // be set early. That seems reasonable.
       PasswordCredential* credential =
-          V8PasswordCredential::toImpl(v8_credential.As<v8::Object>());
+          V8PasswordCredential::ToImpl(v8_credential.As<v8::Object>());
       attached_credential = credential->EncodeFormData(content_type);
       credentials = "password";
     } else if (v8_credential->IsString()) {
@@ -144,18 +144,18 @@ RequestInit::RequestInit(ExecutionContext* context,
 
   if (v8_body->IsArrayBuffer()) {
     body = new FormDataBytesConsumer(
-        V8ArrayBuffer::toImpl(v8_body.As<v8::Object>()));
+        V8ArrayBuffer::ToImpl(v8_body.As<v8::Object>()));
   } else if (v8_body->IsArrayBufferView()) {
     body = new FormDataBytesConsumer(
-        V8ArrayBufferView::toImpl(v8_body.As<v8::Object>()));
+        V8ArrayBufferView::ToImpl(v8_body.As<v8::Object>()));
   } else if (V8Blob::hasInstance(v8_body, isolate)) {
     RefPtr<BlobDataHandle> blob_data_handle =
-        V8Blob::toImpl(v8_body.As<v8::Object>())->GetBlobDataHandle();
+        V8Blob::ToImpl(v8_body.As<v8::Object>())->GetBlobDataHandle();
     content_type = blob_data_handle->GetType();
     body = new BlobBytesConsumer(context, std::move(blob_data_handle));
   } else if (V8FormData::hasInstance(v8_body, isolate)) {
     RefPtr<EncodedFormData> form_data =
-        V8FormData::toImpl(v8_body.As<v8::Object>())->EncodeMultiPartFormData();
+        V8FormData::ToImpl(v8_body.As<v8::Object>())->EncodeMultiPartFormData();
     // Here we handle formData->boundary() as a C-style string. See
     // FormDataEncoder::generateUniqueBoundaryString.
     content_type = AtomicString("multipart/form-data; boundary=") +
@@ -163,7 +163,7 @@ RequestInit::RequestInit(ExecutionContext* context,
     body = new FormDataBytesConsumer(context, std::move(form_data));
   } else if (V8URLSearchParams::hasInstance(v8_body, isolate)) {
     RefPtr<EncodedFormData> form_data =
-        V8URLSearchParams::toImpl(v8_body.As<v8::Object>())
+        V8URLSearchParams::ToImpl(v8_body.As<v8::Object>())
             ->ToEncodedFormData();
     content_type =
         AtomicString("application/x-www-form-urlencoded;charset=UTF-8");

@@ -71,7 +71,7 @@ namespace TestIntegerIndexedPrimaryGlobalV8Internal {
 static void lengthAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
-  TestIntegerIndexedPrimaryGlobal* impl = V8TestIntegerIndexedPrimaryGlobal::toImpl(holder);
+  TestIntegerIndexedPrimaryGlobal* impl = V8TestIntegerIndexedPrimaryGlobal::ToImpl(holder);
 
   V8SetReturnValueInt(info, impl->length());
 }
@@ -83,7 +83,7 @@ static void lengthAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Functi
   v8::Local<v8::Object> holder = info.Holder();
   ALLOW_UNUSED_LOCAL(holder);
 
-  TestIntegerIndexedPrimaryGlobal* impl = V8TestIntegerIndexedPrimaryGlobal::toImpl(holder);
+  TestIntegerIndexedPrimaryGlobal* impl = V8TestIntegerIndexedPrimaryGlobal::ToImpl(holder);
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestIntegerIndexedPrimaryGlobal", "length");
 
@@ -96,7 +96,7 @@ static void lengthAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Functi
 }
 
 static void voidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestIntegerIndexedPrimaryGlobal* impl = V8TestIntegerIndexedPrimaryGlobal::toImpl(info.Holder());
+  TestIntegerIndexedPrimaryGlobal* impl = V8TestIntegerIndexedPrimaryGlobal::ToImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 1)) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodDocument", "TestIntegerIndexedPrimaryGlobal", ExceptionMessages::NotEnoughArguments(1, info.Length())));
@@ -104,7 +104,7 @@ static void voidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& 
   }
 
   Document* document;
-  document = V8Document::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+  document = V8Document::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!document) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodDocument", "TestIntegerIndexedPrimaryGlobal", "parameter 1 is not of type 'Document'."));
 
@@ -344,12 +344,12 @@ v8::Local<v8::Object> V8TestIntegerIndexedPrimaryGlobal::findInstanceInPrototype
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
-TestIntegerIndexedPrimaryGlobal* V8TestIntegerIndexedPrimaryGlobal::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+TestIntegerIndexedPrimaryGlobal* V8TestIntegerIndexedPrimaryGlobal::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+  return hasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 TestIntegerIndexedPrimaryGlobal* NativeValueTraits<TestIntegerIndexedPrimaryGlobal>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  TestIntegerIndexedPrimaryGlobal* nativeValue = V8TestIntegerIndexedPrimaryGlobal::toImplWithTypeCheck(isolate, value);
+  TestIntegerIndexedPrimaryGlobal* nativeValue = V8TestIntegerIndexedPrimaryGlobal::ToImplWithTypeCheck(isolate, value);
   if (!nativeValue) {
     exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
         "TestIntegerIndexedPrimaryGlobal"));

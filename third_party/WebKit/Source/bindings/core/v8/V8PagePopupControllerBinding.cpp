@@ -21,7 +21,7 @@ namespace {
 void PagePopupControllerAttributeGetter(
     const v8::PropertyCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
-  DOMWindow* impl = V8Window::toImpl(holder);
+  DOMWindow* impl = V8Window::ToImpl(holder);
   PagePopupController* cpp_value = nullptr;
   if (LocalFrame* frame = ToLocalDOMWindow(impl)->GetFrame())
     cpp_value = PagePopupSupplement::From(*frame).GetPagePopupController();

@@ -99,7 +99,7 @@ void V8HTMLAllCollection::itemMethodCustom(
     return;
   }
 
-  HTMLAllCollection* impl = V8HTMLAllCollection::toImpl(info.Holder());
+  HTMLAllCollection* impl = V8HTMLAllCollection::ToImpl(info.Holder());
   V8SetReturnValue(
       info, GetItem(impl, info[0], info, WebFeature::kDocumentAllItemNamed,
                     WebFeature::kDocumentAllItemIndexed,
@@ -119,7 +119,7 @@ void V8HTMLAllCollection::legacyCallCustom(
   UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
                     WebFeature::kDocumentAllLegacyCall);
 
-  HTMLAllCollection* impl = V8HTMLAllCollection::toImpl(info.Holder());
+  HTMLAllCollection* impl = V8HTMLAllCollection::ToImpl(info.Holder());
 
   if (info.Length() == 1) {
     V8SetReturnValue(

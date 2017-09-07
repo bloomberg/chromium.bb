@@ -29,7 +29,7 @@ static const v8::Eternal<v8::Name>* eternalV8TestDictionaryDerivedImplementedAsK
       kKeys, kKeys, WTF_ARRAY_LENGTH(kKeys));
 }
 
-void V8TestDictionaryDerivedImplementedAs::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestDictionaryDerivedImplementedAs& impl, ExceptionState& exceptionState) {
+void V8TestDictionaryDerivedImplementedAs::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestDictionaryDerivedImplementedAs& impl, ExceptionState& exceptionState) {
   if (IsUndefinedOrNull(v8Value)) {
     exceptionState.ThrowTypeError("Missing required member(s): requiredLongMember.");
     return;
@@ -41,7 +41,7 @@ void V8TestDictionaryDerivedImplementedAs::toImpl(v8::Isolate* isolate, v8::Loca
   v8::Local<v8::Object> v8Object = v8Value.As<v8::Object>();
   ALLOW_UNUSED_LOCAL(v8Object);
 
-  V8TestDictionary::toImpl(isolate, v8Value, impl, exceptionState);
+  V8TestDictionary::ToImpl(isolate, v8Value, impl, exceptionState);
   if (exceptionState.HadException())
     return;
 
@@ -173,7 +173,7 @@ bool toV8TestDictionaryDerivedImplementedAs(const TestDictionaryDerivedImplement
 
 TestDictionaryDerivedImplementedAs NativeValueTraits<TestDictionaryDerivedImplementedAs>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   TestDictionaryDerivedImplementedAs impl;
-  V8TestDictionaryDerivedImplementedAs::toImpl(isolate, value, impl, exceptionState);
+  V8TestDictionaryDerivedImplementedAs::ToImpl(isolate, value, impl, exceptionState);
   return impl;
 }
 

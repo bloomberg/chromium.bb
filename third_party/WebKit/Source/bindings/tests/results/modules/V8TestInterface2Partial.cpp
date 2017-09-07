@@ -30,7 +30,7 @@ namespace blink {
 namespace TestInterface2PartialV8Internal {
 
 static void voidMethodPartial1Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
+  TestInterface2* impl = V8TestInterface2::ToImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 1)) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodPartial1", "TestInterface2", ExceptionMessages::NotEnoughArguments(1, info.Length())));
@@ -46,7 +46,7 @@ static void voidMethodPartial1Method(const v8::FunctionCallbackInfo<v8::Value>& 
 }
 
 static void voidMethodPartial2Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
+  TestInterface2* impl = V8TestInterface2::ToImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 1)) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodPartial2", "TestInterface2", ExceptionMessages::NotEnoughArguments(1, info.Length())));

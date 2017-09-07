@@ -60,7 +60,7 @@ UnrestrictedDoubleOrString& UnrestrictedDoubleOrString::operator=(const Unrestri
 DEFINE_TRACE(UnrestrictedDoubleOrString) {
 }
 
-void V8UnrestrictedDoubleOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, UnrestrictedDoubleOrString& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
+void V8UnrestrictedDoubleOrString::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, UnrestrictedDoubleOrString& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
   if (v8Value.IsEmpty())
     return;
 
@@ -100,7 +100,7 @@ v8::Local<v8::Value> ToV8(const UnrestrictedDoubleOrString& impl, v8::Local<v8::
 
 UnrestrictedDoubleOrString NativeValueTraits<UnrestrictedDoubleOrString>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   UnrestrictedDoubleOrString impl;
-  V8UnrestrictedDoubleOrString::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8UnrestrictedDoubleOrString::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

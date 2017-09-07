@@ -863,7 +863,7 @@ String GetTypeExtension(Document* document,
   if (string_or_options.isDictionary()) {
     Dictionary dict = string_or_options.getAsDictionary();
     ElementCreationOptions impl;
-    V8ElementCreationOptions::toImpl(dict.GetIsolate(), dict.V8Value(), impl,
+    V8ElementCreationOptions::ToImpl(dict.GetIsolate(), dict.V8Value(), impl,
                                      exception_state);
     if (exception_state.HadException())
       return g_empty_string;

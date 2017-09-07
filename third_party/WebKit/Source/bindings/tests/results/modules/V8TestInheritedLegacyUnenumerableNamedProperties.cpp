@@ -69,13 +69,13 @@ namespace TestInheritedLegacyUnenumerableNamedPropertiesV8Internal {
 static void longAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
-  TestInheritedLegacyUnenumerableNamedProperties* impl = V8TestInheritedLegacyUnenumerableNamedProperties::toImpl(holder);
+  TestInheritedLegacyUnenumerableNamedProperties* impl = V8TestInheritedLegacyUnenumerableNamedProperties::ToImpl(holder);
 
   V8SetReturnValueInt(info, impl->longAttribute());
 }
 
 static void namedPropertyGetter(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Value>& info) {
-  TestInheritedLegacyUnenumerableNamedProperties* impl = V8TestInheritedLegacyUnenumerableNamedProperties::toImpl(info.Holder());
+  TestInheritedLegacyUnenumerableNamedProperties* impl = V8TestInheritedLegacyUnenumerableNamedProperties::ToImpl(info.Holder());
   int32_t result = impl->AnonymousNamedGetter(name);
   if ()
     return;
@@ -86,7 +86,7 @@ static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallb
   const CString& nameInUtf8 = name.Utf8();
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kGetterContext, "TestInheritedLegacyUnenumerableNamedProperties", nameInUtf8.data());
 
-  TestInheritedLegacyUnenumerableNamedProperties* impl = V8TestInheritedLegacyUnenumerableNamedProperties::toImpl(info.Holder());
+  TestInheritedLegacyUnenumerableNamedProperties* impl = V8TestInheritedLegacyUnenumerableNamedProperties::ToImpl(info.Holder());
 
   bool result = impl->NamedPropertyQuery(name, exceptionState);
   if (!result)
@@ -103,7 +103,7 @@ static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallb
 static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kEnumerationContext, "TestInheritedLegacyUnenumerableNamedProperties");
 
-  TestInheritedLegacyUnenumerableNamedProperties* impl = V8TestInheritedLegacyUnenumerableNamedProperties::toImpl(info.Holder());
+  TestInheritedLegacyUnenumerableNamedProperties* impl = V8TestInheritedLegacyUnenumerableNamedProperties::ToImpl(info.Holder());
 
   Vector<String> names;
   impl->NamedPropertyEnumerator(names, exceptionState);
@@ -224,12 +224,12 @@ v8::Local<v8::Object> V8TestInheritedLegacyUnenumerableNamedProperties::findInst
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
-TestInheritedLegacyUnenumerableNamedProperties* V8TestInheritedLegacyUnenumerableNamedProperties::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+TestInheritedLegacyUnenumerableNamedProperties* V8TestInheritedLegacyUnenumerableNamedProperties::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+  return hasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 TestInheritedLegacyUnenumerableNamedProperties* NativeValueTraits<TestInheritedLegacyUnenumerableNamedProperties>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  TestInheritedLegacyUnenumerableNamedProperties* nativeValue = V8TestInheritedLegacyUnenumerableNamedProperties::toImplWithTypeCheck(isolate, value);
+  TestInheritedLegacyUnenumerableNamedProperties* nativeValue = V8TestInheritedLegacyUnenumerableNamedProperties::ToImplWithTypeCheck(isolate, value);
   if (!nativeValue) {
     exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
         "TestInheritedLegacyUnenumerableNamedProperties"));

@@ -32,10 +32,10 @@ class V8TestIntegerIndexedGlobal {
   static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
   CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
   CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplateForNamedPropertiesObject(v8::Isolate*, const DOMWrapperWorld&);
-  static TestIntegerIndexedGlobal* toImpl(v8::Local<v8::Object> object) {
+  static TestIntegerIndexedGlobal* ToImpl(v8::Local<v8::Object> object) {
     return ToScriptWrappable(object)->ToImpl<TestIntegerIndexedGlobal>();
   }
-  CORE_EXPORT static TestIntegerIndexedGlobal* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
+  CORE_EXPORT static TestIntegerIndexedGlobal* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
   CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
   static void Trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
     visitor->TraceFromGeneratedCode(scriptWrappable->ToImpl<TestIntegerIndexedGlobal>());

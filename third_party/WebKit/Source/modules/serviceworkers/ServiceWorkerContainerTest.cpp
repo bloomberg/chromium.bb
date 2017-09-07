@@ -109,7 +109,7 @@ class ExpectDOMException : public ScriptValueTest {
   ~ExpectDOMException() override {}
 
   void operator()(ScriptValue value) const override {
-    DOMException* exception = V8DOMException::toImplWithTypeCheck(
+    DOMException* exception = V8DOMException::ToImplWithTypeCheck(
         value.GetIsolate(), value.V8Value());
     EXPECT_TRUE(exception) << "the value should be a DOMException";
     if (!exception)

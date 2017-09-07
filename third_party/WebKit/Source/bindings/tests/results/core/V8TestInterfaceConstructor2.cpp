@@ -136,7 +136,7 @@ static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info) {
       break;
     --numArgsPassed;
   }
-  testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+  testInterfaceEmptyArg = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!testInterfaceEmptyArg) {
     exceptionState.ThrowTypeError("parameter 1 is not of type 'TestInterfaceEmpty'.");
 
@@ -308,12 +308,12 @@ v8::Local<v8::Object> V8TestInterfaceConstructor2::findInstanceInPrototypeChain(
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
-TestInterfaceConstructor2* V8TestInterfaceConstructor2::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+TestInterfaceConstructor2* V8TestInterfaceConstructor2::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+  return hasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 TestInterfaceConstructor2* NativeValueTraits<TestInterfaceConstructor2>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  TestInterfaceConstructor2* nativeValue = V8TestInterfaceConstructor2::toImplWithTypeCheck(isolate, value);
+  TestInterfaceConstructor2* nativeValue = V8TestInterfaceConstructor2::ToImplWithTypeCheck(isolate, value);
   if (!nativeValue) {
     exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
         "TestInterfaceConstructor2"));

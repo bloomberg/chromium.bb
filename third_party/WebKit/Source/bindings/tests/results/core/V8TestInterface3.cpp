@@ -71,7 +71,7 @@ namespace TestInterface3V8Internal {
 static void lengthAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
-  TestInterface3* impl = V8TestInterface3::toImpl(holder);
+  TestInterface3* impl = V8TestInterface3::ToImpl(holder);
 
   V8SetReturnValueUnsigned(info, impl->length());
 }
@@ -79,13 +79,13 @@ static void lengthAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& inf
 static void readonlyStringifierAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
-  TestInterface3* impl = V8TestInterface3::toImpl(holder);
+  TestInterface3* impl = V8TestInterface3::ToImpl(holder);
 
   V8SetReturnValueString(info, impl->readonlyStringifierAttribute(), info.GetIsolate());
 }
 
 static void voidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestInterface3* impl = V8TestInterface3::toImpl(info.Holder());
+  TestInterface3* impl = V8TestInterface3::ToImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 1)) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodDocument", "TestInterface3", ExceptionMessages::NotEnoughArguments(1, info.Length())));
@@ -93,7 +93,7 @@ static void voidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& 
   }
 
   Document* document;
-  document = V8Document::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+  document = V8Document::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!document) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodDocument", "TestInterface3", "parameter 1 is not of type 'Document'."));
 
@@ -104,7 +104,7 @@ static void voidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& 
 }
 
 static void toStringMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestInterface3* impl = V8TestInterface3::toImpl(info.Holder());
+  TestInterface3* impl = V8TestInterface3::ToImpl(info.Holder());
 
   V8SetReturnValueString(info, impl->readonlyStringifierAttribute(), info.GetIsolate());
 }
@@ -331,12 +331,12 @@ v8::Local<v8::Object> V8TestInterface3::findInstanceInPrototypeChain(v8::Local<v
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
-TestInterface3* V8TestInterface3::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+TestInterface3* V8TestInterface3::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+  return hasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 TestInterface3* NativeValueTraits<TestInterface3>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  TestInterface3* nativeValue = V8TestInterface3::toImplWithTypeCheck(isolate, value);
+  TestInterface3* nativeValue = V8TestInterface3::ToImplWithTypeCheck(isolate, value);
   if (!nativeValue) {
     exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
         "TestInterface3"));

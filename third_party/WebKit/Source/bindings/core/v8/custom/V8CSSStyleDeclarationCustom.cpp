@@ -200,7 +200,7 @@ void V8CSSStyleDeclaration::namedPropertyGetterCustom(
     return;
   CSSPropertyID resolved_property = resolveCSSPropertyID(unresolved_property);
 
-  CSSStyleDeclaration* impl = V8CSSStyleDeclaration::toImpl(info.Holder());
+  CSSStyleDeclaration* impl = V8CSSStyleDeclaration::ToImpl(info.Holder());
   const CSSValue* css_value =
       impl->GetPropertyCSSValueInternal(resolved_property);
   if (css_value) {
@@ -216,7 +216,7 @@ void V8CSSStyleDeclaration::namedPropertySetterCustom(
     const AtomicString& name,
     v8::Local<v8::Value> value,
     const v8::PropertyCallbackInfo<v8::Value>& info) {
-  CSSStyleDeclaration* impl = V8CSSStyleDeclaration::toImpl(info.Holder());
+  CSSStyleDeclaration* impl = V8CSSStyleDeclaration::ToImpl(info.Holder());
   CSSPropertyID unresolved_property = CssPropertyInfo(name);
   if (!unresolved_property)
     return;

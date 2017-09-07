@@ -60,7 +60,7 @@ StringOrDouble& StringOrDouble::operator=(const StringOrDouble&) = default;
 DEFINE_TRACE(StringOrDouble) {
 }
 
-void V8StringOrDouble::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, StringOrDouble& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
+void V8StringOrDouble::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, StringOrDouble& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
   if (v8Value.IsEmpty())
     return;
 
@@ -100,7 +100,7 @@ v8::Local<v8::Value> ToV8(const StringOrDouble& impl, v8::Local<v8::Object> crea
 
 StringOrDouble NativeValueTraits<StringOrDouble>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   StringOrDouble impl;
-  V8StringOrDouble::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8StringOrDouble::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

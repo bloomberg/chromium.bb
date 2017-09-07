@@ -56,7 +56,7 @@ namespace blink {
 
 void V8Document::openMethodCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
-  Document* document = V8Document::toImpl(info.Holder());
+  Document* document = V8Document::ToImpl(info.Holder());
 
   if (info.Length() > 2) {
     LocalFrame* frame = document->GetFrame();

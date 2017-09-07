@@ -446,7 +446,7 @@ TEST(OnPaymentResponseTest, CanRequestShippingInformation) {
       ->OnPaymentResponse(std::move(response));
 
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
-  PaymentResponse* resp = V8PaymentResponse::toImplWithTypeCheck(
+  PaymentResponse* resp = V8PaymentResponse::ToImplWithTypeCheck(
       scope.GetIsolate(), out_value.V8Value());
   EXPECT_EQ("standardShipping", resp->shippingOption());
   EXPECT_EQ("US", resp->shippingAddress()->country());
@@ -477,7 +477,7 @@ TEST(OnPaymentResponseTest, CanRequestName) {
       ->OnPaymentResponse(std::move(response));
 
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
-  PaymentResponse* pr = V8PaymentResponse::toImplWithTypeCheck(
+  PaymentResponse* pr = V8PaymentResponse::ToImplWithTypeCheck(
       scope.GetIsolate(), out_value.V8Value());
   EXPECT_EQ("Jon Doe", pr->payerName());
 }
@@ -506,7 +506,7 @@ TEST(OnPaymentResponseTest, CanRequestEmail) {
       ->OnPaymentResponse(std::move(response));
 
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
-  PaymentResponse* pr = V8PaymentResponse::toImplWithTypeCheck(
+  PaymentResponse* pr = V8PaymentResponse::ToImplWithTypeCheck(
       scope.GetIsolate(), out_value.V8Value());
   EXPECT_EQ("abc@gmail.com", pr->payerEmail());
 }
@@ -535,7 +535,7 @@ TEST(OnPaymentResponseTest, CanRequestPhone) {
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(std::move(response));
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
-  PaymentResponse* pr = V8PaymentResponse::toImplWithTypeCheck(
+  PaymentResponse* pr = V8PaymentResponse::ToImplWithTypeCheck(
       scope.GetIsolate(), out_value.V8Value());
 
   EXPECT_EQ("0123", pr->payerPhone());
@@ -562,7 +562,7 @@ TEST(OnPaymentResponseTest, ShippingInformationNotRequired) {
       ->OnPaymentResponse(BuildPaymentResponseForTest());
 
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
-  PaymentResponse* resp = V8PaymentResponse::toImplWithTypeCheck(
+  PaymentResponse* resp = V8PaymentResponse::ToImplWithTypeCheck(
       scope.GetIsolate(), out_value.V8Value());
   EXPECT_TRUE(resp->shippingOption().IsNull());
   EXPECT_EQ(nullptr, resp->shippingAddress());
@@ -592,7 +592,7 @@ TEST(OnPaymentResponseTest, PhoneNotRequred) {
       ->OnPaymentResponse(std::move(response));
 
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
-  PaymentResponse* pr = V8PaymentResponse::toImplWithTypeCheck(
+  PaymentResponse* pr = V8PaymentResponse::ToImplWithTypeCheck(
       scope.GetIsolate(), out_value.V8Value());
   EXPECT_TRUE(pr->payerPhone().IsNull());
 }
@@ -621,7 +621,7 @@ TEST(OnPaymentResponseTest, NameNotRequired) {
       ->OnPaymentResponse(std::move(response));
 
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
-  PaymentResponse* pr = V8PaymentResponse::toImplWithTypeCheck(
+  PaymentResponse* pr = V8PaymentResponse::ToImplWithTypeCheck(
       scope.GetIsolate(), out_value.V8Value());
   EXPECT_TRUE(pr->payerName().IsNull());
 }
@@ -650,7 +650,7 @@ TEST(OnPaymentResponseTest, EmailNotRequired) {
       ->OnPaymentResponse(std::move(response));
 
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
-  PaymentResponse* pr = V8PaymentResponse::toImplWithTypeCheck(
+  PaymentResponse* pr = V8PaymentResponse::ToImplWithTypeCheck(
       scope.GetIsolate(), out_value.V8Value());
   EXPECT_TRUE(pr->payerEmail().IsNull());
 }

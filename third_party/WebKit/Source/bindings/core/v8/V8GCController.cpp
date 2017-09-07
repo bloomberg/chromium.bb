@@ -104,7 +104,7 @@ class MinorGCUnmodifiedWrapperVisitor : public v8::PersistentHandleVisitor {
 
     if (class_id == WrapperTypeInfo::kNodeClassId) {
       DCHECK(V8Node::hasInstance(wrapper, isolate_));
-      Node* node = V8Node::toImpl(wrapper);
+      Node* node = V8Node::ToImpl(wrapper);
       if (node->HasEventListeners()) {
         v8::Persistent<v8::Object>::Cast(*value).MarkActive();
         return;
@@ -148,7 +148,7 @@ class HeapSnaphotWrapperVisitor : public ScriptWrappableVisitor,
     v8::Local<v8::Object> wrapper = v8::Local<v8::Object>::New(
         isolate_, v8::Persistent<v8::Object>::Cast(*value));
     DCHECK(V8Node::hasInstance(wrapper, isolate_));
-    Node* node = V8Node::toImpl(wrapper);
+    Node* node = V8Node::ToImpl(wrapper);
     Node* root = V8GCController::OpaqueRootForGC(isolate_, node);
     nodes_requiring_tracing_[root].push_back(node);
   }

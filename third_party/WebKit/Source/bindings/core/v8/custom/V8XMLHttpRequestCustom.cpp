@@ -49,7 +49,7 @@ namespace blink {
 
 void V8XMLHttpRequest::responseTextAttributeGetterCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
-  XMLHttpRequest* xml_http_request = V8XMLHttpRequest::toImpl(info.Holder());
+  XMLHttpRequest* xml_http_request = V8XMLHttpRequest::ToImpl(info.Holder());
   ExceptionState exception_state(info.GetIsolate(),
                                  ExceptionState::kGetterContext,
                                  "XMLHttpRequest", "responseText");
@@ -63,7 +63,7 @@ void V8XMLHttpRequest::responseTextAttributeGetterCustom(
 
 void V8XMLHttpRequest::responseAttributeGetterCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
-  XMLHttpRequest* xml_http_request = V8XMLHttpRequest::toImpl(info.Holder());
+  XMLHttpRequest* xml_http_request = V8XMLHttpRequest::ToImpl(info.Holder());
   ExceptionState exception_state(info.GetIsolate(),
                                  ExceptionState::kGetterContext,
                                  "XMLHttpRequest", "response");
