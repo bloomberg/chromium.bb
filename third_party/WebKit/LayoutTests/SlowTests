@@ -440,7 +440,6 @@ crbug.com/726075 [ Win Debug ] virtual/gpu/fast/canvas/canvas-composite-transfor
 crbug.com/726075 [ Win Debug ] virtual/gpu/fast/canvas/canvas-filter-modified-save-restore.html [ Slow ]
 crbug.com/726075 [ Win Debug ] virtual/gpu/fast/canvas/canvas-filter-modified.html [ Slow ]
 crbug.com/726075 [ Win Debug ] virtual/gpu/fast/canvas/canvas-scale-drawImage-shadow.html [ Slow ]
-crbug.com/726075 [ Win Debug ] virtual/threaded/animations/interpolation/svg-d-interpolation.html [ Slow ]
 crbug.com/726075 [ Win Debug ] virtual/threaded/animations/svg/animated-filter-svg-element.html [ Slow ]
 
 # IDB Observer tests require multiple browsing contexts/workers interacting with
