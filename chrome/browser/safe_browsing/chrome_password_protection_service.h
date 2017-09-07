@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_CHROME_PASSWORD_PROTECTION_SERVICE_H_
 #define CHROME_BROWSER_SAFE_BROWSING_CHROME_PASSWORD_PROTECTION_SERVICE_H_
 
+#include "base/observer_list.h"
 #include "build/build_config.h"
 #include "components/safe_browsing/password_protection/password_protection_service.h"
 #include "components/sync/protocol/user_event_specifics.pb.h"
@@ -22,20 +23,41 @@ namespace safe_browsing {
 class SafeBrowsingService;
 class SafeBrowsingNavigationObserverManager;
 class SafeBrowsingUIManager;
+class ChromePasswordProtectionService;
 
 using OnWarningDone =
     base::OnceCallback<void(PasswordProtectionService::WarningAction)>;
 
 #if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
 // Shows the platform-specific password reuse modal dialog.
-void ShowPasswordReuseModalWarningDialog(content::WebContents* web_contents,
-                                         OnWarningDone done_callback);
+void ShowPasswordReuseModalWarningDialog(
+    content::WebContents* web_contents,
+    ChromePasswordProtectionService* service,
+    OnWarningDone done_callback);
 #endif  // !OS_MACOSX || MAC_VIEWS_BROWSER
 
 // ChromePasswordProtectionService extends PasswordProtectionService by adding
 // access to SafeBrowsingNaivigationObserverManager and Profile.
 class ChromePasswordProtectionService : public PasswordProtectionService {
  public:
+  // Observer is used to coordinate password protection UIs (e.g. modal warning,
+  // change password card, etc) in reaction to user events.
+  class Observer {
+   public:
+    // Called when user clicks on the "Change Password" button on
+    // chrome://settings page.
+    virtual void OnStartingGaiaPasswordChange() {}
+
+    // Called when user completes the Gaia password reset.
+    virtual void OnGaiaPasswordChanged() {}
+
+    // Called when user marks the site as legitimate.
+    virtual void OnMarkingSiteAsLegitimate(const GURL& url) {}
+
+   protected:
+    virtual ~Observer() = default;
+  };
+
   ChromePasswordProtectionService(SafeBrowsingService* sb_service,
                                   Profile* profile);
 
@@ -43,10 +65,14 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   static bool ShouldShowChangePasswordSettingUI(Profile* profile);
 
-  void ShowModalWarning(
-      content::WebContents* web_contents,
-      const LoginReputationClientRequest* request_proto,
-      const LoginReputationClientResponse* response_proto) override;
+  void ShowModalWarning(content::WebContents* web_contents,
+                        const std::string& verdict_token) override;
+
+  // Called during the construction of Observer subclass.
+  virtual void AddObserver(Observer* observer);
+
+  // Called during the destruction of the observer subclass.
+  virtual void RemoveObserver(Observer* observer);
 
  protected:
   // PasswordProtectionService overrides.
@@ -136,6 +162,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   Profile* profile_;
   scoped_refptr<SafeBrowsingNavigationObserverManager>
       navigation_observer_manager_;
+  base::ObserverList<Observer> observer_list_;
   DISALLOW_COPY_AND_ASSIGN(ChromePasswordProtectionService);
 };
 
