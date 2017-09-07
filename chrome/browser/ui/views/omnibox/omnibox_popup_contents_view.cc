@@ -318,10 +318,8 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
   Layout();
 }
 
-void OmniboxPopupContentsView::SetMatchIcon(size_t match_index,
-                                            const gfx::Image& icon) {
-  OmniboxResultView* view = result_view_at(match_index);
-  view->SetCustomIcon(icon.AsImageSkia());
+void OmniboxPopupContentsView::OnMatchIconUpdated(size_t match_index) {
+  result_view_at(match_index)->OnMatchIconUpdated();
 }
 
 gfx::Rect OmniboxPopupContentsView::GetTargetBounds() {
@@ -343,16 +341,10 @@ bool OmniboxPopupContentsView::IsSelectedIndex(size_t index) const {
   return index == model_->selected_line();
 }
 
-gfx::Image OmniboxPopupContentsView::GetIconIfExtensionMatch(
-    size_t index) const {
-  if (!HasMatchAt(index))
-    return gfx::Image();
-  return model_->GetIconIfExtensionMatch(GetMatchAtIndex(index));
-}
-
-bool OmniboxPopupContentsView::IsStarredMatch(
-    const AutocompleteMatch& match) const {
-  return model_->IsStarredMatch(match);
+gfx::Image OmniboxPopupContentsView::GetMatchIcon(
+    const AutocompleteMatch& match,
+    SkColor vector_icon_color) const {
+  return model_->GetMatchIcon(match, vector_icon_color);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

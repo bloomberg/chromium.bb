@@ -16,7 +16,6 @@
 #include "build/build_config.h"
 
 namespace gfx {
-class Image;
 class Rect;
 }
 
@@ -37,10 +36,8 @@ class OmniboxPopupView {
   // mean opening or closing the window.
   virtual void UpdatePopupAppearance() = 0;
 
-  // Updates the icon used for the given match. The passed |icon| is not
-  // retained by the caller, and implementing classes are expected to make
-  // a copy if they wish to use |icon|.
-  virtual void SetMatchIcon(size_t match_index, const gfx::Image& icon) = 0;
+  // Notification that the icon used for the given match has been updated.
+  virtual void OnMatchIconUpdated(size_t match_index) = 0;
 
   // Returns the target bounds for the popup. This returns the popup's current
   // bounds when not animating, or the desired target bounds when animating.

@@ -227,7 +227,8 @@ OmniboxResultView::OmniboxResultView(OmniboxPopupContentsView* model,
   CHECK_GE(model_index, 0);
   keyword_icon_->set_owned_by_client();
   keyword_icon_->EnableCanvasFlippingForRTLUI(true);
-  keyword_icon_->SetImage(GetVectorIcon(omnibox::kKeywordSearchIcon));
+  keyword_icon_->SetImage(gfx::CreateVectorIcon(omnibox::kKeywordSearchIcon, 16,
+                                                GetVectorIconColor()));
   keyword_icon_->SizeToPreferredSize();
 }
 
@@ -499,8 +500,8 @@ std::unique_ptr<gfx::RenderText> OmniboxResultView::CreateClassifiedRenderText(
   return render_text;
 }
 
-void OmniboxResultView::SetCustomIcon(const gfx::ImageSkia& icon) {
-  custom_icon_ = icon;
+void OmniboxResultView::OnMatchIconUpdated() {
+  // The new icon will be fetched during repaint.
   SchedulePaint();
 }
 
@@ -513,28 +514,16 @@ const char* OmniboxResultView::GetClassName() const {
   return "OmniboxResultView";
 }
 
-gfx::ImageSkia OmniboxResultView::GetIcon() const {
-  // TODO(tommycli): Consolidate the extension icons, custom icons, and vector
-  // icons into a single concept at the cross-platform layer.
-  const gfx::Image image = model_->GetIconIfExtensionMatch(model_index_);
-  if (!image.IsEmpty())
-    return image.AsImageSkia();
-
-  if (!custom_icon_.isNull())
-    return custom_icon_;
-
-  return GetVectorIcon(model_->IsStarredMatch(match_)
-                           ? omnibox::kStarIcon
-                           : AutocompleteMatch::TypeToVectorIcon(match_.type));
+gfx::Image OmniboxResultView::GetIcon() const {
+  return model_->GetMatchIcon(match_, GetVectorIconColor());
 }
 
-gfx::ImageSkia OmniboxResultView::GetVectorIcon(
-    const gfx::VectorIcon& icon) const {
+SkColor OmniboxResultView::GetVectorIconColor() const {
   // For selected rows, paint the icon the same color as the text.
   SkColor color = GetColor(GetState(), TEXT);
   if (GetState() != SELECTED)
     color = color_utils::DeriveDefaultIconColor(color);
-  return gfx::CreateVectorIcon(icon, 16, color);
+  return color;
 }
 
 bool OmniboxResultView::ShowOnlyKeywordMatch() const {
@@ -572,14 +561,14 @@ void OmniboxResultView::Layout() {
                       horizontal_padding;
   const int end_x = width() - start_x;
 
-  const gfx::ImageSkia icon = GetIcon();
+  const gfx::Image icon = GetIcon();
 
   int row_height = GetTextHeight();
   if (base::FeatureList::IsEnabled(omnibox::kUIExperimentVerticalLayout))
     row_height += match_.answer ? GetAnswerHeight() : GetTextHeight();
 
-  const int icon_y = GetVerticalMargin() + (row_height - icon.height()) / 2;
-  icon_bounds_.SetRect(start_x, icon_y, icon.width(), icon.height());
+  const int icon_y = GetVerticalMargin() + (row_height - icon.Height()) / 2;
+  icon_bounds_.SetRect(start_x, icon_y, icon.Width(), icon.Height());
 
   const int text_x = start_x + LocationBarView::kIconWidth + horizontal_padding;
   int text_width = end_x - text_x;
@@ -609,8 +598,8 @@ void OmniboxResultView::OnPaint(gfx::Canvas* canvas) {
   // NOTE: While animating the keyword match, both matches may be visible.
 
   if (!ShowOnlyKeywordMatch()) {
-    canvas->DrawImageInt(GetIcon(), GetMirroredXForRect(icon_bounds_),
-                         icon_bounds_.y());
+    canvas->DrawImageInt(GetIcon().AsImageSkia(),
+                         GetMirroredXForRect(icon_bounds_), icon_bounds_.y());
     int x = GetMirroredXForRect(text_bounds_);
     mirroring_context_->Initialize(x, text_bounds_.width());
     InitContentsRenderTextIfNecessary();

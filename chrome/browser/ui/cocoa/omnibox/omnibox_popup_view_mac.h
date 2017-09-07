@@ -40,7 +40,7 @@ class OmniboxPopupViewMac : public OmniboxPopupView,
   void InvalidateLine(size_t line) override {}
   void OnLineSelected(size_t line) override {}
   void UpdatePopupAppearance() override;
-  void SetMatchIcon(size_t match_index, const gfx::Image& icon) override;
+  void OnMatchIconUpdated(size_t match_index) override;
   gfx::Rect GetTargetBounds() override;
   // This is only called by model in SetSelectedLine() after updating
   // everything.  Popup should already be visible.
