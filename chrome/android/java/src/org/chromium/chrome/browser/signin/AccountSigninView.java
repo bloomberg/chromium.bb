@@ -607,6 +607,7 @@ public class AccountSigninView extends FrameLayout {
                     @Override
                     public void onCancel() {
                         setButtonsEnabled(true);
+                        onSigninConfirmationCancel();
                     }
                 });
     }
@@ -658,15 +659,19 @@ public class AccountSigninView extends FrameLayout {
         mNegativeButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mUndoBehavior == UNDO_BACK_TO_SELECTION) {
-                    RecordUserAction.record("Signin_Undo_Signin");
-                    showSigninPage();
-                } else {
-                    assert mUndoBehavior == UNDO_ABORT;
-                    mListener.onAccountSelectionCanceled();
-                }
+                RecordUserAction.record("Signin_Undo_Signin");
+                onSigninConfirmationCancel();
             }
         });
+    }
+
+    private void onSigninConfirmationCancel() {
+        if (mUndoBehavior == UNDO_BACK_TO_SELECTION) {
+            showSigninPage();
+        } else {
+            assert mUndoBehavior == UNDO_ABORT;
+            mListener.onAccountSelectionCanceled();
+        }
     }
 
     private void setUpConfirmButton() {
