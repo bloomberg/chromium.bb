@@ -19,6 +19,30 @@
 namespace offline_pages {
 namespace {
 
+// Mirrors the OfflinePrefetchDownloadOutcomes metrics enum. Updates
+// here should be reflected there and vice versa. New values should be appended
+// and existing values never deleted.
+enum class DownloadOutcome {
+  DOWNLOAD_SUCCEEDED_ITEM_UPDATED,
+  DOWNLOAD_FAILED_ITEM_UPDATED,
+  DOWNLOAD_SUCCEEDED_ITEM_NOT_FOUND,
+  DOWNLOAD_FAILED_ITEM_NOT_FOUND,
+  COUNT  // Must always be the last element.
+};
+
+DownloadOutcome GetDownloadOutcome(bool successful_download,
+                                   bool row_was_updated) {
+  if (successful_download) {
+    return row_was_updated ? DownloadOutcome::DOWNLOAD_SUCCEEDED_ITEM_UPDATED
+                           : DownloadOutcome::DOWNLOAD_SUCCEEDED_ITEM_NOT_FOUND;
+  }
+  return row_was_updated ? DownloadOutcome::DOWNLOAD_FAILED_ITEM_UPDATED
+                         : DownloadOutcome::DOWNLOAD_FAILED_ITEM_NOT_FOUND;
+}
+
+// Updates a prefetch item after its archive was successfully downloaded.
+// Returns true if the respective row was successfully updated (as normally
+// expected).
 bool UpdatePrefetchItemOnDownloadSuccessSync(const std::string& guid,
                                              const base::FilePath& file_path,
                                              int64_t file_size,
@@ -38,9 +62,11 @@ bool UpdatePrefetchItemOnDownloadSuccessSync(const std::string& guid,
   statement.BindString(3, guid);
   statement.BindInt(4, static_cast<int>(PrefetchItemState::DOWNLOADING));
 
-  return statement.Run();
+  return statement.Run() && db->GetLastChangeCount() > 0;
 }
 
+// Updates a prefetch item after its archive failed being downloaded. Returns
+// true if the respective row was successfully updated (as normally expected).
 bool UpdatePrefetchItemOnDownloadErrorSync(const std::string& guid,
                                            sql::Connection* db) {
   if (!db)
@@ -57,7 +83,7 @@ bool UpdatePrefetchItemOnDownloadErrorSync(const std::string& guid,
   statement.BindString(2, guid);
   statement.BindInt(3, static_cast<int>(PrefetchItemState::DOWNLOADING));
 
-  return statement.Run();
+  return statement.Run() && db->GetLastChangeCount() > 0;
 }
 
 }  // namespace
@@ -85,21 +111,27 @@ void DownloadCompletedTask::Run() {
                        download_result_.download_id, download_result_.file_path,
                        download_result_.file_size),
         base::BindOnce(&DownloadCompletedTask::OnPrefetchItemUpdated,
-                       weak_ptr_factory_.GetWeakPtr()));
+                       weak_ptr_factory_.GetWeakPtr(), true));
   } else {
     prefetch_store_->Execute(
         base::BindOnce(&UpdatePrefetchItemOnDownloadErrorSync,
                        download_result_.download_id),
         base::BindOnce(&DownloadCompletedTask::OnPrefetchItemUpdated,
-                       weak_ptr_factory_.GetWeakPtr()));
+                       weak_ptr_factory_.GetWeakPtr(), false));
   }
 }
 
-void DownloadCompletedTask::OnPrefetchItemUpdated(bool success) {
+void DownloadCompletedTask::OnPrefetchItemUpdated(bool successful_download,
+                                                  bool row_was_updated) {
   // No further action can be done if the database fails to be updated. The
   // cleanup task should eventually kick in to clean this up.
-  if (success)
+  if (row_was_updated)
     prefetch_dispatcher_->SchedulePipelineProcessing();
+
+  DownloadOutcome status =
+      GetDownloadOutcome(successful_download, row_was_updated);
+  UMA_HISTOGRAM_ENUMERATION("OfflinePages.Prefetching.DownloadFinishedUpdate",
+                            status, DownloadOutcome::COUNT);
 
   TaskComplete();
 }

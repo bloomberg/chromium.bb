@@ -50745,6 +50745,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="OfflinePages.Prefetching.DownloadFinishedUpdate"
+    enum="OfflinePrefetchDownloadFinishedOutcome">
+  <owner>carlosk@chromium.org</owner>
+  <summary>
+    Reports the possible outcomes of an archive download finishing and its
+    respective prefetch item being updated in the store. Downloads are expected
+    to succeed or fail but a respective item should always exist and be updated.
+    The &quot;item not found&quot; cases are exceptions.
+  </summary>
+</histogram>
+
 <histogram name="OfflinePages.Prefetching.FinishedItemErrorCode"
     enum="OfflinePrefetchItemErrorCode">
   <owner>carlosk@chromium.org</owner>
