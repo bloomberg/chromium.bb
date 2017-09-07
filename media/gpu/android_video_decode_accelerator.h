@@ -411,7 +411,7 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
 
   // Must match AVDAFrameInformation UMA enum.  Please do not remove or re-order
   // values, only append new ones.
-  enum FrameInformation {
+  enum class FrameInformation {
     SURFACETEXTURE_INSECURE = 0,
     SURFACETEXTURE_L3 = 1,
     OVERLAY_L3 = 2,
@@ -428,7 +428,8 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
 
   // Most recently cached frame information, so that we can dispatch it without
   // recomputing it on every frame.  It changes very rarely.
-  FrameInformation cached_frame_information_ = SURFACETEXTURE_INSECURE;
+  FrameInformation cached_frame_information_ =
+      FrameInformation::SURFACETEXTURE_INSECURE;
 
   // WeakPtrFactory for posting tasks back to |this|.
   base::WeakPtrFactory<AndroidVideoDecodeAccelerator> weak_this_factory_;
