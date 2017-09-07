@@ -113,6 +113,13 @@ class SmartTokenizerTest(unittest.TestCase):
         tokenizer = SmartTokenizer('V8DOMRect')
         self.assertEqual(tokenizer.tokenize(), ['V8', 'DOM', 'Rect'])
 
+        tokenizer = SmartTokenizer('V0InsertionPoint')
+        self.assertEqual(tokenizer.tokenize(), ['V0', 'Insertion', 'Point'])
+        tokenizer = SmartTokenizer('ShadowDOMV0Test')
+        self.assertEqual(tokenizer.tokenize(), ['Shadow', 'DOM', 'V0', 'Test'])
+        tokenizer = SmartTokenizer('ElementShadowV0')
+        self.assertEqual(tokenizer.tokenize(), ['Element', 'Shadow', 'V0'])
+
         tokenizer = SmartTokenizer('XPathEvaluator')
         self.assertEqual(tokenizer.tokenize(), ['XPath', 'Evaluator'])
 

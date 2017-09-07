@@ -30,9 +30,11 @@ SPECIAL_TOKENS = [
     'S3TC',
     'UTF8',
     'CSS',
+    'DOM',
     'EXT',
     'RTC',
     'SVG',
+    'V0',
     'V8',
 ]
 
