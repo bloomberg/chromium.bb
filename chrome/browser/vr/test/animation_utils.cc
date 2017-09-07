@@ -4,7 +4,8 @@
 
 #include "chrome/browser/vr/test/animation_utils.h"
 
-#include "chrome/browser/vr/target_property.h"
+#include "chrome/browser/vr/animation_player.h"
+#include "chrome/browser/vr/elements/ui_element.h"
 
 namespace vr {
 
@@ -54,6 +55,15 @@ base::TimeTicks MsToTicks(uint64_t ms) {
 
 base::TimeDelta MsToDelta(uint64_t ms) {
   return MicrosecondsToDelta(1000 * ms);
+}
+
+bool IsAnimating(UiElement* element,
+                 const std::vector<TargetProperty>& properties) {
+  for (auto property : properties) {
+    if (!element->animation_player().IsAnimatingProperty(property))
+      return false;
+  }
+  return true;
 }
 
 }  // namespace vr

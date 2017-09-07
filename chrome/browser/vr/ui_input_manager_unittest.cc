@@ -26,7 +26,8 @@ class UiInputManagerTest : public UiSceneManagerTest {
     UiSceneManagerTest::SetUp();
     MakeManager(kNotInCct, kNotInWebVr);
     input_manager_ = base::MakeUnique<UiInputManager>(scene_.get());
-    scene_->OnBeginFrame(MicrosecondsToTicks(1), gfx::Vector3dF());
+    scene_->OnBeginFrame(MicrosecondsToTicks(1),
+                         gfx::Vector3dF(0.f, 0.f, -1.0f));
   }
 
  protected:

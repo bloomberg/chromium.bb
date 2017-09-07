@@ -94,6 +94,11 @@ void UiElement::SetSize(float width, float height) {
 void UiElement::SetVisible(bool visible) {
   SetOpacity(visible ? opacity_when_visible_ : 0.0);
 }
+
+void UiElement::SetVisibleImmediately(bool visible) {
+  opacity_ = visible ? opacity_when_visible_ : 0.0;
+}
+
 bool UiElement::IsVisible() const {
   return opacity_ > 0.0f && computed_opacity_ > 0.0f;
 }

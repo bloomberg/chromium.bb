@@ -105,6 +105,7 @@ class UiElement : public cc::AnimationTarget {
   bool IsVisible() const;
   // For convenience, sets opacity to |opacity_when_visible_|.
   virtual void SetVisible(bool visible);
+  void SetVisibleImmediately(bool visible);
 
   void set_opacity_when_visible(float opacity) {
     opacity_when_visible_ = opacity;

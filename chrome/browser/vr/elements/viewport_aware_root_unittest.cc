@@ -20,6 +20,7 @@ namespace vr {
 namespace {
 
 const float kThreshold = ViewportAwareRoot::kViewportRotationTriggerDegrees;
+const int kFramesPerSecond = 60;
 
 bool FloatNearlyEqual(float a, float b) {
   return std::abs(a - b) < kEpsilon;
@@ -110,31 +111,78 @@ TEST(ViewportAwareRoot, TestAdjustRotationForHeadPose) {
       gfx::Vector3dF{0.f, -std::sin(1.5), -std::cos(1.5)});
 }
 
-TEST(ViewportAwareRoot, ChildElementsRepositioned) {
-  UiScene scene;
+class ViewportAwareRootTest : public testing::Test {
+ public:
+  ViewportAwareRootTest() {}
+  ~ViewportAwareRootTest() override {}
 
-  auto viewport_aware_root = base::MakeUnique<ViewportAwareRoot>();
-  ViewportAwareRoot& root = *viewport_aware_root;
-  root.set_draw_phase(kPhaseForeground);
-  scene.AddUiElement(kRoot, std::move(viewport_aware_root));
+  void SetUp() override {
+    scene_ = base::MakeUnique<UiScene>();
+    auto viewport_aware_root = base::MakeUnique<ViewportAwareRoot>();
+    viewport_aware_root->set_draw_phase(kPhaseForeground);
+    viewport_root = viewport_aware_root.get();
+    scene_->AddUiElement(kRoot, std::move(viewport_aware_root));
 
-  auto element = base::MakeUnique<UiElement>();
-  UiElement& child = *element;
-  element->set_viewport_aware(true);
-  element->set_draw_phase(kPhaseForeground);
-  element->SetTranslate(0.f, 0.f, -1.f);
-  root.AddChild(std::move(element));
+    auto element = base::MakeUnique<UiElement>();
+    element->set_viewport_aware(true);
+    element->set_draw_phase(kPhaseForeground);
+    element->SetTranslate(0.f, 0.f, -1.f);
+    viewport_element = element.get();
+    viewport_root->AddChild(std::move(element));
+  }
 
+ protected:
+  void AnimateWithHeadPose(base::TimeDelta delta,
+                           const gfx::Vector3dF& head_pose) {
+    base::TimeTicks target_time = current_time_ + delta;
+    base::TimeDelta frame_duration =
+        base::TimeDelta::FromSecondsD(1.0 / kFramesPerSecond);
+    for (; current_time_ < target_time; current_time_ += frame_duration) {
+      scene_->OnBeginFrame(current_time_, head_pose);
+    }
+    current_time_ = target_time;
+    scene_->OnBeginFrame(current_time_, head_pose);
+  }
+
+  UiElement* viewport_root;
+  UiElement* viewport_element;
+
+ private:
+  std::unique_ptr<UiScene> scene_;
+  base::TimeTicks current_time_;
+};
+
+TEST_F(ViewportAwareRootTest, ChildElementsRepositioned) {
   gfx::Vector3dF look_at{0.f, 0.f, -1.f};
-  scene.OnBeginFrame(MicrosecondsToTicks(0), look_at);
-  EXPECT_TRUE(
-      Point3FAreNearlyEqual(gfx::Point3F(0.f, 0.f, -1.f), child.GetCenter()));
+  AnimateWithHeadPose(MsToDelta(0), look_at);
+  EXPECT_TRUE(Point3FAreNearlyEqual(gfx::Point3F(0.f, 0.f, -1.f),
+                                    viewport_element->GetCenter()));
 
   // This should trigger reposition of viewport aware elements.
   RotateAboutYAxis(90.f, &look_at);
-  scene.OnBeginFrame(MicrosecondsToTicks(10), look_at);
-  EXPECT_TRUE(
-      Point3FAreNearlyEqual(gfx::Point3F(-1.f, 0.f, 0.f), child.GetCenter()));
+  AnimateWithHeadPose(MsToDelta(10), look_at);
+  EXPECT_TRUE(Point3FAreNearlyEqual(gfx::Point3F(-1.f, 0.f, 0.f),
+                                    viewport_element->GetCenter()));
+}
+
+TEST_F(ViewportAwareRootTest, ChildElementsHasOpacityAnimation) {
+  gfx::Vector3dF look_at{0.f, 0.f, -1.f};
+  AnimateWithHeadPose(MsToDelta(0), look_at);
+  EXPECT_TRUE(viewport_element->IsVisible());
+
+  // Trigger a reposition.
+  RotateAboutYAxis(90.f, &look_at);
+  AnimateWithHeadPose(MsToDelta(5), look_at);
+
+  // Initially the element should be invisible and then animate to its full
+  // opacity.
+  EXPECT_FALSE(viewport_element->IsVisible());
+  AnimateWithHeadPose(MsToDelta(50), look_at);
+  EXPECT_TRUE(viewport_element->IsVisible());
+  EXPECT_TRUE(IsAnimating(viewport_root, {OPACITY}));
+  AnimateWithHeadPose(MsToDelta(500), look_at);
+  EXPECT_TRUE(viewport_element->IsVisible());
+  EXPECT_FALSE(IsAnimating(viewport_root, {OPACITY}));
 }
 
 }  // namespace vr
