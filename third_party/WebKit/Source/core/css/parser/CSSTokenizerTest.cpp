@@ -103,7 +103,7 @@ static CSSParserToken Delim(char c) {
   return CSSParserToken(kDelimiterToken, c);
 }
 
-static CSSParserToken UnicodeRange(UChar32 start, UChar32 end) {
+static CSSParserToken UnicodeRng(UChar32 start, UChar32 end) {
   return CSSParserToken(kUnicodeRangeToken, start, end);
 }
 
@@ -420,27 +420,27 @@ TEST(CSSTokenizerTest, PercentageToken) {
 }
 
 TEST(CSSTokenizerTest, UnicodeRangeToken) {
-  TEST_TOKENS("u+012345-123456", UnicodeRange(0x012345, 0x123456));
-  TEST_TOKENS("U+1234-2345", UnicodeRange(0x1234, 0x2345));
-  TEST_TOKENS("u+222-111", UnicodeRange(0x222, 0x111));
-  TEST_TOKENS("U+CafE-d00D", UnicodeRange(0xcafe, 0xd00d));
-  TEST_TOKENS("U+2??", UnicodeRange(0x200, 0x2ff));
-  TEST_TOKENS("U+ab12??", UnicodeRange(0xab1200, 0xab12ff));
-  TEST_TOKENS("u+??????", UnicodeRange(0x000000, 0xffffff));
-  TEST_TOKENS("u+??", UnicodeRange(0x00, 0xff));
+  TEST_TOKENS("u+012345-123456", UnicodeRng(0x012345, 0x123456));
+  TEST_TOKENS("U+1234-2345", UnicodeRng(0x1234, 0x2345));
+  TEST_TOKENS("u+222-111", UnicodeRng(0x222, 0x111));
+  TEST_TOKENS("U+CafE-d00D", UnicodeRng(0xcafe, 0xd00d));
+  TEST_TOKENS("U+2??", UnicodeRng(0x200, 0x2ff));
+  TEST_TOKENS("U+ab12??", UnicodeRng(0xab1200, 0xab12ff));
+  TEST_TOKENS("u+??????", UnicodeRng(0x000000, 0xffffff));
+  TEST_TOKENS("u+??", UnicodeRng(0x00, 0xff));
 
-  TEST_TOKENS("u+222+111", UnicodeRange(0x222, 0x222),
+  TEST_TOKENS("u+222+111", UnicodeRng(0x222, 0x222),
               Number(kIntegerValueType, 111, kPlusSign));
-  TEST_TOKENS("u+12345678", UnicodeRange(0x123456, 0x123456),
+  TEST_TOKENS("u+12345678", UnicodeRng(0x123456, 0x123456),
               Number(kIntegerValueType, 78, kNoSign));
-  TEST_TOKENS("u+123-12345678", UnicodeRange(0x123, 0x123456),
+  TEST_TOKENS("u+123-12345678", UnicodeRng(0x123, 0x123456),
               Number(kIntegerValueType, 78, kNoSign));
-  TEST_TOKENS("u+cake", UnicodeRange(0xca, 0xca), Ident("ke"));
-  TEST_TOKENS("u+1234-gggg", UnicodeRange(0x1234, 0x1234), Ident("-gggg"));
-  TEST_TOKENS("U+ab12???", UnicodeRange(0xab1200, 0xab12ff), Delim('?'));
-  TEST_TOKENS("u+a1?-123", UnicodeRange(0xa10, 0xa1f),
+  TEST_TOKENS("u+cake", UnicodeRng(0xca, 0xca), Ident("ke"));
+  TEST_TOKENS("u+1234-gggg", UnicodeRng(0x1234, 0x1234), Ident("-gggg"));
+  TEST_TOKENS("U+ab12???", UnicodeRng(0xab1200, 0xab12ff), Delim('?'));
+  TEST_TOKENS("u+a1?-123", UnicodeRng(0xa10, 0xa1f),
               Number(kIntegerValueType, -123, kMinusSign));
-  TEST_TOKENS("u+1??4", UnicodeRange(0x100, 0x1ff),
+  TEST_TOKENS("u+1??4", UnicodeRng(0x100, 0x1ff),
               Number(kIntegerValueType, 4, kNoSign));
   TEST_TOKENS("u+z", Ident("u"), Delim('+'), Ident("z"));
   TEST_TOKENS("u+", Ident("u"), Delim('+'));
