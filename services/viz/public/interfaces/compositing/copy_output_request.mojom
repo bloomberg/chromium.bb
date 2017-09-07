@@ -4,21 +4,21 @@
 
 module viz.mojom;
 
-import "cc/ipc/copy_output_result.mojom";
-import "cc/ipc/texture_mailbox.mojom";
+import "services/viz/public/interfaces/compositing/copy_output_result.mojom";
+import "services/viz/public/interfaces/compositing/texture_mailbox.mojom";
 import "mojo/common/unguessable_token.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 // See components/viz/common/quads/copy_output_request.h.
 struct CopyOutputRequest {
-  cc.mojom.CopyOutputResultFormat result_format;
+  CopyOutputResultFormat result_format;
 
   mojo.common.mojom.UnguessableToken? source;
   gfx.mojom.Rect? area;
 
   // DEPRECATED: To be removed once tab capture is moved into VIZ.
   // http://crbug.com/754872
-  cc.mojom.TextureMailbox? texture_mailbox;
+  TextureMailbox? texture_mailbox;
 
   CopyOutputResultSender result_sender;
 };
@@ -26,5 +26,5 @@ struct CopyOutputRequest {
 // When the display compositor is ready to respond to the CopyOutputRequest,
 // it uses this interface to send back the result.
 interface CopyOutputResultSender {
-  SendResult(cc.mojom.CopyOutputResult result);
+  SendResult(CopyOutputResult result);
 };

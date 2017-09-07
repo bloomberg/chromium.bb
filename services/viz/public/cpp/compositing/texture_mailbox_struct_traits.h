@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_IPC_TEXTURE_MAILBOX_STRUCT_TRAITS_H_
-#define CC_IPC_TEXTURE_MAILBOX_STRUCT_TRAITS_H_
+#ifndef SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_TEXTURE_MAILBOX_STRUCT_TRAITS_H_
+#define SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_TEXTURE_MAILBOX_STRUCT_TRAITS_H_
 
-#include "cc/ipc/texture_mailbox.mojom-shared.h"
+#include "build/build_config.h"
 #include "components/viz/common/quads/texture_mailbox.h"
 #include "gpu/ipc/common/mailbox_holder_struct_traits.h"
+#include "services/viz/public/interfaces/compositing/texture_mailbox.mojom-shared.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 #include "ui/gfx/ipc/color/gfx_param_traits.h"
 
 namespace mojo {
 
 template <>
-struct StructTraits<cc::mojom::TextureMailboxDataView, viz::TextureMailbox> {
+struct StructTraits<viz::mojom::TextureMailboxDataView, viz::TextureMailbox> {
   static const gpu::MailboxHolder& mailbox_holder(
       const viz::TextureMailbox& input) {
     return input.mailbox_holder_;
@@ -56,7 +57,7 @@ struct StructTraits<cc::mojom::TextureMailboxDataView, viz::TextureMailbox> {
     return input.color_space_;
   }
 
-  static bool Read(cc::mojom::TextureMailboxDataView data,
+  static bool Read(viz::mojom::TextureMailboxDataView data,
                    viz::TextureMailbox* out) {
 #if defined(OS_ANDROID)
     out->is_backed_by_surface_texture_ = data.is_backed_by_surface_texture();
@@ -74,4 +75,4 @@ struct StructTraits<cc::mojom::TextureMailboxDataView, viz::TextureMailbox> {
 
 }  // namespace mojo
 
-#endif  // CC_IPC_TEXTURE_MAILBOX_STRUCT_TRAITS_H_
+#endif  // SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_TEXTURE_MAILBOX_STRUCT_TRAITS_H_

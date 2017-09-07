@@ -124,7 +124,6 @@ viz_component("service") {
     "//base",
     "//cc",
     "//cc/debug",
-    "//cc/ipc:interfaces",
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/ipc:command_buffer",
     "//services/viz/privileged/interfaces/compositing",

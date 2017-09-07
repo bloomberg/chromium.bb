@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "cc/ipc/copy_output_result_struct_traits.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/viz/public/cpp/compositing/copy_output_result_struct_traits.h"
 
 namespace {
 

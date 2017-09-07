@@ -31,7 +31,6 @@ mojom("interfaces") {
 
   public_deps = [
     ":constants",
-    "//cc/ipc:interfaces",
     "//gpu/ipc/common:interfaces",
     "//media/gpu/mojo:jpeg_decoder",
     "//media/mojo/interfaces",

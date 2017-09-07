@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module cc.mojom;
+module viz.mojom;
 
-import "cc/ipc/texture_mailbox.mojom";
-import "cc/ipc/texture_mailbox_releaser.mojom";
+
+import "services/viz/public/interfaces/compositing/texture_mailbox.mojom";
+import "services/viz/public/interfaces/compositing/texture_mailbox_releaser.mojom";
 import "skia/public/interfaces/bitmap.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 

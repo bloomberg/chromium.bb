@@ -9,6 +9,7 @@ typemaps = [
   "//services/viz/public/cpp/compositing/filter_operation.typemap",
   "//services/viz/public/cpp/compositing/filter_operations.typemap",
   "//services/viz/public/cpp/compositing/copy_output_request.typemap",
+  "//services/viz/public/cpp/compositing/copy_output_result.typemap",
   "//services/viz/public/cpp/compositing/frame_sink_id.typemap",
   "//services/viz/public/cpp/compositing/local_surface_id.typemap",
   "//services/viz/public/cpp/compositing/render_pass.typemap",
@@ -20,4 +21,5 @@ typemaps = [
   "//services/viz/public/cpp/compositing/surface_id.typemap",
   "//services/viz/public/cpp/compositing/surface_info.typemap",
   "//services/viz/public/cpp/compositing/transferable_resource.typemap",
+  "//services/viz/public/cpp/compositing/texture_mailbox.typemap",
 ]

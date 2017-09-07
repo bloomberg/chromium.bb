@@ -133,7 +133,6 @@ static_library("lib") {
   public_deps = [
     "//base",
     "//cc",
-    "//cc/ipc:interfaces",
     "//components/viz/common",
     "//components/viz/host",
     "//components/viz/service",
