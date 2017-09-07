@@ -7,12 +7,13 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/inline/ng_line_height_metrics.h"
-#include "core/layout/ng/ng_physical_fragment.h"
+#include "core/layout/ng/ng_physical_container_fragment.h"
 #include "platform/fonts/FontBaseline.h"
 
 namespace blink {
 
-class CORE_EXPORT NGPhysicalLineBoxFragment final : public NGPhysicalFragment {
+class CORE_EXPORT NGPhysicalLineBoxFragment final
+    : public NGPhysicalContainerFragment {
  public:
   // This modifies the passed-in children vector.
   NGPhysicalLineBoxFragment(const ComputedStyle&,
@@ -20,10 +21,6 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final : public NGPhysicalFragment {
                             Vector<RefPtr<NGPhysicalFragment>>& children,
                             const NGLineHeightMetrics&,
                             RefPtr<NGBreakToken> break_token = nullptr);
-
-  const Vector<RefPtr<NGPhysicalFragment>>& Children() const {
-    return children_;
-  }
 
   const NGLineHeightMetrics& Metrics() const { return metrics_; }
 
@@ -36,12 +33,7 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final : public NGPhysicalFragment {
                                                   metrics_, break_token_));
   }
 
-  // Update visual rect for this fragment.
-  void UpdateVisualRect() const override;
-
  private:
-  Vector<RefPtr<NGPhysicalFragment>> children_;
-
   NGLineHeightMetrics metrics_;
 };
 
