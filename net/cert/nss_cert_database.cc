@@ -61,30 +61,6 @@ class CertNotificationForwarder : public NSSCertDatabase::Observer {
   DISALLOW_COPY_AND_ASSIGN(CertNotificationForwarder);
 };
 
-// TODO(mattm): remove this once crbug.com/671420 is done.
-ScopedCERTCertificateList CreateCERTCertificateListFromX509CertificateList(
-    const CertificateList& x509_certs) {
-  ScopedCERTCertificateList nss_certs;
-  for (const auto& x509_cert : x509_certs) {
-    ScopedCERTCertificate nss_cert =
-        x509_util::CreateCERTCertificateFromX509Certificate(x509_cert.get());
-    if (!nss_cert)
-      return {};
-    nss_certs.push_back(std::move(nss_cert));
-  }
-  return nss_certs;
-}
-
-// TODO(mattm): remove this once crbug.com/671420 is done.
-void ConvertOldCertsCallback(
-    const NSSCertDatabase::OldListCertsCallback& callback,
-    ScopedCERTCertificateList nss_certs) {
-  std::unique_ptr<CertificateList> x509_certs(new CertificateList());
-  *x509_certs =
-      x509_util::CreateX509CertificateListFromCERTCertificates(nss_certs);
-  callback.Run(std::move(x509_certs));
-}
-
 }  // namespace
 
 NSSCertDatabase::ImportCertFailure::ImportCertFailure(
@@ -118,10 +94,6 @@ NSSCertDatabase::~NSSCertDatabase() {}
 ScopedCERTCertificateList NSSCertDatabase::ListCertsSync() {
   return ListCertsImpl(crypto::ScopedPK11Slot());
 }
-void NSSCertDatabase::ListCertsSync(CertificateList* certs) {
-  *certs =
-      x509_util::CreateX509CertificateListFromCERTCertificates(ListCertsSync());
-}
 
 void NSSCertDatabase::ListCerts(const ListCertsCallback& callback) {
   base::PostTaskAndReplyWithResult(
@@ -129,10 +101,6 @@ void NSSCertDatabase::ListCerts(const ListCertsCallback& callback) {
       base::Bind(&NSSCertDatabase::ListCertsImpl,
                  base::Passed(crypto::ScopedPK11Slot())),
       callback);
-}
-
-void NSSCertDatabase::ListCerts(const OldListCertsCallback& callback) {
-  ListCerts(base::Bind(&ConvertOldCertsCallback, callback));
 }
 
 void NSSCertDatabase::ListCertsInSlot(const ListCertsCallback& callback,
@@ -144,11 +112,6 @@ void NSSCertDatabase::ListCertsInSlot(const ListCertsCallback& callback,
           &NSSCertDatabase::ListCertsImpl,
           base::Passed(crypto::ScopedPK11Slot(PK11_ReferenceSlot(slot)))),
       callback);
-}
-
-void NSSCertDatabase::ListCertsInSlot(const OldListCertsCallback& callback,
-                                      PK11SlotInfo* slot) {
-  ListCertsInSlot(base::Bind(&ConvertOldCertsCallback, callback), slot);
 }
 
 #if defined(OS_CHROMEOS)
@@ -210,45 +173,11 @@ int NSSCertDatabase::ImportFromPKCS12(
 
   return result;
 }
-int NSSCertDatabase::ImportFromPKCS12(PK11SlotInfo* slot_info,
-                                      const std::string& data,
-                                      const base::string16& password,
-                                      bool is_extractable,
-                                      CertificateList* imported_certs) {
-  ScopedCERTCertificateList nss_imported_certs;
-  int result = ImportFromPKCS12(slot_info, data, password, is_extractable,
-                                &nss_imported_certs);
-
-  if (imported_certs) {
-    *imported_certs = x509_util::CreateX509CertificateListFromCERTCertificates(
-        nss_imported_certs);
-  }
-  return result;
-}
-
-int NSSCertDatabase::ImportFromPKCS12(PK11SlotInfo* slot_info,
-                                      const std::string& data,
-                                      const base::string16& password,
-                                      bool is_extractable,
-                                      std::nullptr_t /* imported_certs */) {
-  return ImportFromPKCS12(slot_info, data, password, is_extractable,
-                          static_cast<ScopedCERTCertificateList*>(nullptr));
-}
 
 int NSSCertDatabase::ExportToPKCS12(const ScopedCERTCertificateList& certs,
                                     const base::string16& password,
                                     std::string* output) const {
   return psm::nsPKCS12Blob_Export(output, certs, password);
-}
-
-int NSSCertDatabase::ExportToPKCS12(const CertificateList& certs,
-                                    const base::string16& password,
-                                    std::string* output) const {
-  ScopedCERTCertificateList nss_certs =
-      CreateCERTCertificateListFromX509CertificateList(certs);
-  if (nss_certs.empty())
-    return 0;
-  return ExportToPKCS12(nss_certs, password, output);
 }
 
 CERTCertificate* NSSCertDatabase::FindRootInList(
@@ -266,29 +195,6 @@ CERTCertificate* NSSCertDatabase::FindRootInList(
   if (CERT_CompareName(&cert1->issuer, &cert0->subject) == SECEqual)
     return cert0;
   if (CERT_CompareName(&certn_2->issuer, &certn_1->subject) == SECEqual)
-    return certn_1;
-
-  LOG(WARNING) << "certificate list is not a hierarchy";
-  return cert0;
-}
-
-X509Certificate* NSSCertDatabase::FindRootInList(
-    const CertificateList& certificates) const {
-  DCHECK_GT(certificates.size(), 0U);
-
-  if (certificates.size() == 1)
-    return certificates[0].get();
-
-  X509Certificate* cert0 = certificates[0].get();
-  X509Certificate* cert1 = certificates[1].get();
-  X509Certificate* certn_2 = certificates[certificates.size() - 2].get();
-  X509Certificate* certn_1 = certificates[certificates.size() - 1].get();
-
-  if (CERT_CompareName(&cert1->os_cert_handle()->issuer,
-                       &cert0->os_cert_handle()->subject) == SECEqual)
-    return cert0;
-  if (CERT_CompareName(&certn_2->os_cert_handle()->issuer,
-                       &certn_1->os_cert_handle()->subject) == SECEqual)
     return certn_1;
 
   LOG(WARNING) << "certificate list is not a hierarchy";
@@ -319,14 +225,6 @@ int NSSCertDatabase::ImportUserCert(CERTCertificate* cert) {
   return result;
 }
 
-int NSSCertDatabase::ImportUserCert(X509Certificate* cert) {
-  ScopedCERTCertificate nss_cert =
-      x509_util::CreateCERTCertificateFromX509Certificate(cert);
-  if (!nss_cert)
-    return ERR_CERT_INVALID;
-  return ImportUserCert(nss_cert.get());
-}
-
 bool NSSCertDatabase::ImportCACerts(
     const ScopedCERTCertificateList& certificates,
     TrustBits trust_bits,
@@ -341,16 +239,6 @@ bool NSSCertDatabase::ImportCACerts(
   return success;
 }
 
-bool NSSCertDatabase::ImportCACerts(const CertificateList& certificates,
-                                    TrustBits trust_bits,
-                                    ImportCertFailureList* not_imported) {
-  ScopedCERTCertificateList nss_certs =
-      CreateCERTCertificateListFromX509CertificateList(certificates);
-  if (nss_certs.empty())
-    return false;
-  return ImportCACerts(nss_certs, trust_bits, not_imported);
-}
-
 bool NSSCertDatabase::ImportServerCert(
     const ScopedCERTCertificateList& certificates,
     TrustBits trust_bits,
@@ -358,16 +246,6 @@ bool NSSCertDatabase::ImportServerCert(
   crypto::ScopedPK11Slot slot(GetPublicSlot());
   return psm::ImportServerCert(slot.get(), certificates, trust_bits,
                                not_imported);
-}
-
-bool NSSCertDatabase::ImportServerCert(const CertificateList& certificates,
-                                       TrustBits trust_bits,
-                                       ImportCertFailureList* not_imported) {
-  ScopedCERTCertificateList nss_certs =
-      CreateCERTCertificateListFromX509CertificateList(certificates);
-  if (nss_certs.empty())
-    return false;
-  return ImportServerCert(nss_certs, trust_bits, not_imported);
 }
 
 NSSCertDatabase::TrustBits NSSCertDatabase::GetCertTrust(
@@ -415,16 +293,6 @@ NSSCertDatabase::TrustBits NSSCertDatabase::GetCertTrust(
     default:
       return TRUST_DEFAULT;
   }
-}
-
-NSSCertDatabase::TrustBits NSSCertDatabase::GetCertTrust(
-    const X509Certificate* cert,
-    CertType type) const {
-  ScopedCERTCertificate nss_cert =
-      x509_util::CreateCERTCertificateFromX509Certificate(cert);
-  if (!nss_cert)
-    return TRUST_DEFAULT;
-  return GetCertTrust(nss_cert.get(), type);
 }
 
 bool NSSCertDatabase::IsUntrusted(const CERTCertificate* cert) const {
@@ -479,14 +347,6 @@ bool NSSCertDatabase::IsUntrusted(const CERTCertificate* cert) const {
   return false;
 }
 
-bool NSSCertDatabase::IsUntrusted(const X509Certificate* cert) const {
-  ScopedCERTCertificate nss_cert =
-      x509_util::CreateCERTCertificateFromX509Certificate(cert);
-  if (!nss_cert)
-    return false;
-  return IsUntrusted(nss_cert.get());
-}
-
 bool NSSCertDatabase::SetCertTrust(CERTCertificate* cert,
                                    CertType type,
                                    TrustBits trust_bits) {
@@ -497,29 +357,11 @@ bool NSSCertDatabase::SetCertTrust(CERTCertificate* cert,
   return success;
 }
 
-bool NSSCertDatabase::SetCertTrust(const X509Certificate* cert,
-                                   CertType type,
-                                   TrustBits trust_bits) {
-  ScopedCERTCertificate nss_cert =
-      x509_util::CreateCERTCertificateFromX509Certificate(cert);
-  if (!nss_cert)
-    return false;
-  return SetCertTrust(nss_cert.get(), type, trust_bits);
-}
-
 bool NSSCertDatabase::DeleteCertAndKey(CERTCertificate* cert) {
   if (!DeleteCertAndKeyImpl(cert))
     return false;
   NotifyObserversCertDBChanged();
   return true;
-}
-
-bool NSSCertDatabase::DeleteCertAndKey(X509Certificate* cert) {
-  ScopedCERTCertificate nss_cert =
-      x509_util::CreateCERTCertificateFromX509Certificate(cert);
-  if (!nss_cert)
-    return false;
-  return DeleteCertAndKey(nss_cert.get());
 }
 
 void NSSCertDatabase::DeleteCertAndKeyAsync(
@@ -533,38 +375,14 @@ void NSSCertDatabase::DeleteCertAndKeyAsync(
                      weak_factory_.GetWeakPtr(), callback));
 }
 
-void NSSCertDatabase::DeleteCertAndKeyAsync(
-    const scoped_refptr<X509Certificate>& cert,
-    const DeleteCertCallback& callback) {
-  ScopedCERTCertificate nss_cert =
-      x509_util::CreateCERTCertificateFromX509Certificate(cert.get());
-  if (!nss_cert) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, false));
-  }
-  DeleteCertAndKeyAsync(std::move(nss_cert), callback);
-}
-
 bool NSSCertDatabase::IsReadOnly(const CERTCertificate* cert) const {
   PK11SlotInfo* slot = cert->slot;
   return slot && PK11_IsReadOnly(slot);
 }
 
-bool NSSCertDatabase::IsReadOnly(const X509Certificate* cert) const {
-  ScopedCERTCertificate nss_cert =
-      x509_util::CreateCERTCertificateFromX509Certificate(cert);
-  return nss_cert && IsReadOnly(nss_cert.get());
-}
-
 bool NSSCertDatabase::IsHardwareBacked(const CERTCertificate* cert) const {
   PK11SlotInfo* slot = cert->slot;
   return slot && PK11_IsHW(slot);
-}
-
-bool NSSCertDatabase::IsHardwareBacked(const X509Certificate* cert) const {
-  ScopedCERTCertificate nss_cert =
-      x509_util::CreateCERTCertificateFromX509Certificate(cert);
-  return nss_cert && IsHardwareBacked(nss_cert.get());
 }
 
 void NSSCertDatabase::AddObserver(Observer* observer) {
