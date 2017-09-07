@@ -576,6 +576,8 @@ void CastSocketImpl::CloseInternal() {
 
   VLOG_WITH_CONNECTION(1) << "Close ReadyState = "
                           << ReadyStateToString(ready_state_);
+  observers_.Clear();
+  delegate_.reset();
   transport_.reset();
   tcp_socket_.reset();
   socket_.reset();
