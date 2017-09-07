@@ -260,8 +260,9 @@ initWithFetcher:
   row.detailTruncatingLabel.hidden = answerPresent;
   row.detailAnswerLabel.hidden = !answerPresent;
   // URLs have have special layout requirements that need to be invoked here.
-  row.detailTruncatingLabel.displayAsURL =
-      !AutocompleteMatch::IsSearchType(match.type);
+  BOOL isURL = !AutocompleteMatch::IsSearchType(match.type);
+  row.detailTruncatingLabel.displayAsURL = isURL;
+
   // TODO(crbug.com/697647): The complexity of managing these two separate
   // labels could probably be encapusulated in the row class if we moved the
   // layout logic there.
@@ -284,12 +285,13 @@ initWithFetcher:
                      kDetailCellTopPadding, labelWidth, labelHeight);
   detailTextLabel.frame = LayoutRectGetRect(detailTextLabelLayout);
 
+  // Set the detail text.
   // The detail text should be the URL (|match.contents|) for non-search
   // suggestions and the entity type (|match.description|) for search entity
   // suggestions. For all other search suggestions, |match.description| is the
   // name of the currently selected search engine, which for mobile we suppress.
   NSString* detailText = nil;
-  if (!AutocompleteMatch::IsSearchType(match.type))
+  if (isURL)
     detailText = base::SysUTF16ToNSString(match.contents);
   else if (match.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY)
     detailText = base::SysUTF16ToNSString(match.description);
@@ -297,19 +299,9 @@ initWithFetcher:
   if (answerPresent) {
     detailTextLabel.attributedText =
         [self attributedStringWithAnswerLine:match.answer->second_line()];
-
-    // Answers specify their own limit on the number of lines to show but we
-    // additionally cap this at 3 to guard against unreasonable values.
-    const SuggestionAnswer::TextField& first_text_field =
-        match.answer->second_line().text_fields()[0];
-    if (first_text_field.has_num_lines() && first_text_field.num_lines() > 1)
-      detailTextLabel.numberOfLines = MIN(3, first_text_field.num_lines());
-    else
-      detailTextLabel.numberOfLines = 1;
   } else {
     const ACMatchClassifications* classifications =
-        !AutocompleteMatch::IsSearchType(match.type) ? &match.contents_class
-                                                     : nil;
+        isURL ? &match.contents_class : nil;
     // The suggestion detail color should match the main text color for entity
     // suggestions. For non-search suggestions (URLs), a highlight color is used
     // instead.
@@ -328,6 +320,19 @@ initWithFetcher:
                                    color:suggestionDetailTextColor
                                 dimColor:DimColor()];
   }
+
+  // Set detail text label number of lines
+  if (answerPresent) {
+    // Answers specify their own limit on the number of lines to show but
+    // still cap this at 3 to guard against unreasonable values.
+    const SuggestionAnswer::TextField& first_text_field =
+        match.answer->second_line().text_fields()[0];
+    if (first_text_field.has_num_lines() && first_text_field.num_lines() > 1)
+      detailTextLabel.numberOfLines = MIN(3, first_text_field.num_lines());
+    else
+      detailTextLabel.numberOfLines = 1;
+  }
+
   [detailTextLabel setNeedsDisplay];
 
   OmniboxPopupTruncatingLabel* textLabel = row.textTruncatingLabel;
@@ -337,20 +342,37 @@ initWithFetcher:
                      0, labelWidth, kTextLabelHeight);
   textLabel.frame = LayoutRectGetRect(textLabelLayout);
 
+  // Set the text.
   // The text should be search term (|match.contents|) for searches, otherwise
   // page title (|match.description|).
-  base::string16 textString = AutocompleteMatch::IsSearchType(match.type)
-                                  ? match.contents
-                                  : match.description;
+  base::string16 textString = isURL ? match.description : match.contents;
   NSString* text = base::SysUTF16ToNSString(textString);
-  const ACMatchClassifications* textClassifications =
-      AutocompleteMatch::IsSearchType(match.type) ? &match.contents_class
-                                                  : &match.description_class;
 
   // If for some reason the title is empty, copy the detailText.
   if ([text length] == 0 && [detailText length] != 0) {
     text = detailText;
   }
+
+  NSAttributedString* attributedText = nil;
+
+  if (answerPresent) {
+    attributedText =
+        [self attributedStringWithAnswerLine:match.answer->first_line()];
+  } else {
+    const ACMatchClassifications* textClassifications =
+        isURL ? &match.description_class : &match.contents_class;
+    UIColor* suggestionTextColor =
+        _incognito ? SuggestionTextColorIncognito() : SuggestionTextColor();
+    UIColor* dimColor = _incognito ? DimColorIncognito() : DimColor();
+
+    attributedText = [self attributedStringWithString:text
+                                      classifications:textClassifications
+                                            smallFont:NO
+                                                color:suggestionTextColor
+                                             dimColor:dimColor];
+  }
+  textLabel.attributedText = attributedText;
+
   // Center the textLabel if detailLabel is empty.
   if (!answerPresent && [detailText length] == 0) {
     textLabel.center = CGPointMake(textLabel.center.x, floor(kRowHeight / 2));
@@ -361,20 +383,6 @@ initWithFetcher:
     textLabel.frame = frame;
   }
   textLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-  UIColor* suggestionTextColor =
-      _incognito ? SuggestionTextColorIncognito() : SuggestionTextColor();
-  UIColor* dimColor = _incognito ? DimColorIncognito() : DimColor();
-  if (answerPresent) {
-    textLabel.attributedText =
-        [self attributedStringWithAnswerLine:match.answer->first_line()];
-  } else {
-    textLabel.attributedText =
-        [self attributedStringWithString:text
-                         classifications:textClassifications
-                               smallFont:NO
-                                   color:suggestionTextColor
-                                dimColor:dimColor];
-  }
   [textLabel setNeedsDisplay];
 
   // The leading image (e.g. magnifying glass, star, clock) is only shown on
