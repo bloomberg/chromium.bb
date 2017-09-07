@@ -213,15 +213,11 @@ initWithFetcher:
 
   BOOL LTRTextInRTLLayout = _alignment == NSTextAlignmentLeft && UseRTLLayout();
 
-  // Update the frame to reflect whether we have an answer or not.
-  const BOOL answerPresent = match.answer.get() != nil;
-  row.rowHeight = answerPresent ? kAnswerRowHeight : kRowHeight;
+  row.rowHeight = [self hasAnswer:match] ? kAnswerRowHeight : kRowHeight;
 
   // Fetch the answer image if specified.  Currently, no answer types specify an
   // image on the first line so for now we only look at the second line.
-  const BOOL answerImagePresent =
-      answerPresent && match.answer->second_line().image_url().is_valid();
-  if (answerImagePresent) {
+  if ([self hasImage:match]) {
     image_fetcher::IOSImageDataFetcherCallback callback =
         ^(NSData* data, const image_fetcher::RequestMetadata& metadata) {
           if (data) {
@@ -232,8 +228,7 @@ initWithFetcher:
             }
           }
         };
-    imageFetcher_->FetchImageDataWebpDecoded(
-        match.answer->second_line().image_url(), callback);
+    imageFetcher_->FetchImageDataWebpDecoded([self imageURL:match], callback);
 
     // Answers in suggest do not support RTL, left align only.
     CGFloat imageLeftPadding =
@@ -257,27 +252,26 @@ initWithFetcher:
   // For the detail text label, we use either the regular detail label, which
   // truncates by fading, or the answer label, which uses UILabel's standard
   // truncation by ellipse for the multi-line text sometimes shown in answers.
-  row.detailTruncatingLabel.hidden = answerPresent;
-  row.detailAnswerLabel.hidden = !answerPresent;
+  row.detailTruncatingLabel.hidden = [self hasAnswer:match];
+  row.detailAnswerLabel.hidden = ![self hasAnswer:match];
   // URLs have have special layout requirements that need to be invoked here.
-  BOOL isURL = !AutocompleteMatch::IsSearchType(match.type);
-  row.detailTruncatingLabel.displayAsURL = isURL;
+  row.detailTruncatingLabel.displayAsURL = [self isURL:match];
 
   // TODO(crbug.com/697647): The complexity of managing these two separate
   // labels could probably be encapusulated in the row class if we moved the
   // layout logic there.
-  UILabel* detailTextLabel =
-      answerPresent ? row.detailAnswerLabel : row.detailTruncatingLabel;
+  UILabel* detailTextLabel = [self hasAnswer:match] ? row.detailAnswerLabel
+                                                    : row.detailTruncatingLabel;
   [detailTextLabel setTextAlignment:_alignment];
 
   // The width must be positive for CGContextRef to be valid.
   CGFloat labelWidth =
       MAX(40, floorf(row.frame.size.width) - kTextCellLeadingPadding);
   CGFloat labelHeight =
-      answerPresent ? kAnswerLabelHeight : kTextDetailLabelHeight;
+      [self hasAnswer:match] ? kAnswerLabelHeight : kTextDetailLabelHeight;
   CGFloat answerImagePadding = kAnswerImageWidth + kAnswerImageRightPadding;
   CGFloat leadingPadding =
-      (answerImagePresent && !alignmentRight ? answerImagePadding : 0) +
+      ([self hasImage:match] && !alignmentRight ? answerImagePadding : 0) +
       kTextCellLeadingPadding;
 
   LayoutRect detailTextLabelLayout =
@@ -285,52 +279,11 @@ initWithFetcher:
                      kDetailCellTopPadding, labelWidth, labelHeight);
   detailTextLabel.frame = LayoutRectGetRect(detailTextLabelLayout);
 
-  // Set the detail text.
-  // The detail text should be the URL (|match.contents|) for non-search
-  // suggestions and the entity type (|match.description|) for search entity
-  // suggestions. For all other search suggestions, |match.description| is the
-  // name of the currently selected search engine, which for mobile we suppress.
-  NSString* detailText = nil;
-  if (isURL)
-    detailText = base::SysUTF16ToNSString(match.contents);
-  else if (match.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY)
-    detailText = base::SysUTF16ToNSString(match.description);
-
-  if (answerPresent) {
-    detailTextLabel.attributedText =
-        [self attributedStringWithAnswerLine:match.answer->second_line()];
-  } else {
-    const ACMatchClassifications* classifications =
-        isURL ? &match.contents_class : nil;
-    // The suggestion detail color should match the main text color for entity
-    // suggestions. For non-search suggestions (URLs), a highlight color is used
-    // instead.
-    UIColor* suggestionDetailTextColor = nil;
-    if (match.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY) {
-      suggestionDetailTextColor =
-          _incognito ? SuggestionTextColorIncognito() : SuggestionTextColor();
-    } else {
-      suggestionDetailTextColor = SuggestionDetailTextColor();
-    }
-    DCHECK(suggestionDetailTextColor);
-    detailTextLabel.attributedText =
-        [self attributedStringWithString:detailText
-                         classifications:classifications
-                               smallFont:YES
-                                   color:suggestionDetailTextColor
-                                dimColor:DimColor()];
-  }
+  detailTextLabel.attributedText = [self detailText:match];
 
   // Set detail text label number of lines
-  if (answerPresent) {
-    // Answers specify their own limit on the number of lines to show but
-    // still cap this at 3 to guard against unreasonable values.
-    const SuggestionAnswer::TextField& first_text_field =
-        match.answer->second_line().text_fields()[0];
-    if (first_text_field.has_num_lines() && first_text_field.num_lines() > 1)
-      detailTextLabel.numberOfLines = MIN(3, first_text_field.num_lines());
-    else
-      detailTextLabel.numberOfLines = 1;
+  if ([self hasAnswer:match]) {
+    detailTextLabel.numberOfLines = [self numberOfLines:match];
   }
 
   [detailTextLabel setNeedsDisplay];
@@ -343,38 +296,10 @@ initWithFetcher:
   textLabel.frame = LayoutRectGetRect(textLabelLayout);
 
   // Set the text.
-  // The text should be search term (|match.contents|) for searches, otherwise
-  // page title (|match.description|).
-  base::string16 textString = isURL ? match.description : match.contents;
-  NSString* text = base::SysUTF16ToNSString(textString);
-
-  // If for some reason the title is empty, copy the detailText.
-  if ([text length] == 0 && [detailText length] != 0) {
-    text = detailText;
-  }
-
-  NSAttributedString* attributedText = nil;
-
-  if (answerPresent) {
-    attributedText =
-        [self attributedStringWithAnswerLine:match.answer->first_line()];
-  } else {
-    const ACMatchClassifications* textClassifications =
-        isURL ? &match.description_class : &match.contents_class;
-    UIColor* suggestionTextColor =
-        _incognito ? SuggestionTextColorIncognito() : SuggestionTextColor();
-    UIColor* dimColor = _incognito ? DimColorIncognito() : DimColor();
-
-    attributedText = [self attributedStringWithString:text
-                                      classifications:textClassifications
-                                            smallFont:NO
-                                                color:suggestionTextColor
-                                             dimColor:dimColor];
-  }
-  textLabel.attributedText = attributedText;
+  textLabel.attributedText = [self text:match];
 
   // Center the textLabel if detailLabel is empty.
-  if (!answerPresent && [detailText length] == 0) {
+  if (![self hasAnswer:match] && [[self detailText:match] length] == 0) {
     textLabel.center = CGPointMake(textLabel.center.x, floor(kRowHeight / 2));
     textLabel.frame = AlignRectToPixel(textLabel.frame);
   } else {
@@ -388,24 +313,17 @@ initWithFetcher:
   // The leading image (e.g. magnifying glass, star, clock) is only shown on
   // iPad.
   if (IsIPadIdiom()) {
-    int imageId = GetIconForAutocompleteMatchType(
-        match.type, _delegate->IsStarredMatch(match), _incognito);
-    [row updateLeadingImage:imageId];
+    [row updateLeadingImage:[self imageId:match]];
   }
 
   // Show append button for search history/search suggestions/Physical Web as
   // the right control element (aka an accessory element of a table view cell).
-  BOOL appendableMatch =
-      match.type == AutocompleteMatchType::SEARCH_HISTORY ||
-      match.type == AutocompleteMatchType::SEARCH_SUGGEST ||
-      match.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY ||
-      match.type == AutocompleteMatchType::PHYSICAL_WEB;
-  row.appendButton.hidden = !appendableMatch;
+  row.appendButton.hidden = ![self isAppendable:match];
   [row.appendButton cancelTrackingWithEvent:nil];
 
   // If a right accessory element is present or the text alignment is right
   // aligned, adjust the width to align with the accessory element.
-  if (appendableMatch || alignmentRight) {
+  if ([self isAppendable:match] || alignmentRight) {
     LayoutRect layout =
         LayoutRectForRectInBoundingRect(textLabel.frame, self.view.frame);
     layout.size.width -= kAppendButtonWidth;
@@ -413,7 +331,7 @@ initWithFetcher:
     layout =
         LayoutRectForRectInBoundingRect(detailTextLabel.frame, self.view.frame);
     layout.size.width -=
-        kAppendButtonWidth + (answerImagePresent ? answerImagePadding : 0);
+        kAppendButtonWidth + ([self hasImage:match] ? answerImagePadding : 0);
     detailTextLabel.frame = LayoutRectGetRect(layout);
   }
 
@@ -823,6 +741,118 @@ attributedStringWithString:(NSString*)text
         ((const AutocompleteResult&)_currentResult).match_at(indexPath.row);
     _delegate->OnMatchSelectedForDeletion(match);
   }
+}
+
+- (BOOL)hasAnswer:(const AutocompleteMatch&)match {
+  return match.answer.get() != nil;
+}
+
+- (BOOL)hasImage:(const AutocompleteMatch&)match {
+  return [self hasAnswer:match] &&
+         match.answer->second_line().image_url().is_valid();
+}
+
+- (BOOL)isURL:(const AutocompleteMatch&)match {
+  return !AutocompleteMatch::IsSearchType(match.type);
+}
+
+- (NSAttributedString*)detailText:(const AutocompleteMatch&)match {
+  // The detail text should be the URL (|match.contents|) for non-search
+  // suggestions and the entity type (|match.description|) for search entity
+  // suggestions. For all other search suggestions, |match.description| is the
+  // name of the currently selected search engine, which for mobile we suppress.
+  NSString* detailText = nil;
+  if ([self isURL:match])
+    detailText = base::SysUTF16ToNSString(match.contents);
+  else if (match.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY)
+    detailText = base::SysUTF16ToNSString(match.description);
+
+  NSAttributedString* detailAttributedText = nil;
+  if ([self hasAnswer:match]) {
+    detailAttributedText =
+        [self attributedStringWithAnswerLine:match.answer->second_line()];
+  } else {
+    const ACMatchClassifications* classifications =
+        [self isURL:match] ? &match.contents_class : nil;
+    // The suggestion detail color should match the main text color for entity
+    // suggestions. For non-search suggestions (URLs), a highlight color is used
+    // instead.
+    UIColor* suggestionDetailTextColor = nil;
+    if (match.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY) {
+      suggestionDetailTextColor =
+          _incognito ? SuggestionTextColorIncognito() : SuggestionTextColor();
+    } else {
+      suggestionDetailTextColor = SuggestionDetailTextColor();
+    }
+    DCHECK(suggestionDetailTextColor);
+    detailAttributedText =
+        [self attributedStringWithString:detailText
+                         classifications:classifications
+                               smallFont:YES
+                                   color:suggestionDetailTextColor
+                                dimColor:DimColor()];
+  }
+  return detailAttributedText;
+}
+
+- (NSInteger)numberOfLines:(const AutocompleteMatch&)match {
+  // Answers specify their own limit on the number of lines to show but we
+  // additionally cap this at 3 to guard against unreasonable values.
+  const SuggestionAnswer::TextField& first_text_field =
+      match.answer->second_line().text_fields()[0];
+  if (first_text_field.has_num_lines() && first_text_field.num_lines() > 1)
+    return MIN(3, first_text_field.num_lines());
+  else
+    return 1;
+}
+
+- (NSAttributedString*)text:(const AutocompleteMatch&)match {
+  // The text should be search term (|match.contents|) for searches, otherwise
+  // page title (|match.description|).
+  base::string16 textString =
+      ![self isURL:match] ? match.contents : match.description;
+  NSString* text = base::SysUTF16ToNSString(textString);
+
+  // If for some reason the title is empty, copy the detailText.
+  if ([text length] == 0 && [[self detailText:match] length] != 0) {
+    text = [[self detailText:match] string];
+  }
+
+  NSAttributedString* attributedText = nil;
+
+  if ([self hasAnswer:match]) {
+    attributedText =
+        [self attributedStringWithAnswerLine:match.answer->first_line()];
+  } else {
+    const ACMatchClassifications* textClassifications =
+        ![self isURL:match] ? &match.contents_class : &match.description_class;
+    UIColor* suggestionTextColor =
+        _incognito ? SuggestionTextColorIncognito() : SuggestionTextColor();
+    UIColor* dimColor = _incognito ? DimColorIncognito() : DimColor();
+
+    attributedText = [self attributedStringWithString:text
+                                      classifications:textClassifications
+                                            smallFont:NO
+                                                color:suggestionTextColor
+                                             dimColor:dimColor];
+  }
+  return attributedText;
+}
+
+- (BOOL)isAppendable:(const AutocompleteMatch&)match {
+  return match.type == AutocompleteMatchType::SEARCH_HISTORY ||
+         match.type == AutocompleteMatchType::SEARCH_SUGGEST ||
+         match.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY ||
+         match.type == AutocompleteMatchType::PHYSICAL_WEB;
+}
+
+- (GURL)imageURL:(const AutocompleteMatch&)match {
+  return match.answer->second_line().image_url();
+}
+
+- (int)imageId:(const AutocompleteMatch&)match {
+  return GetIconForAutocompleteMatchType(
+      match.type, _delegate->IsStarredMatch(match), _incognito);
 }
 
 @end
