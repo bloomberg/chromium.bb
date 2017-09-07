@@ -448,7 +448,46 @@ FcListAppend (FcListHashTable	*table,
 	e = FcPatternObjectFindElt (font, FcObjectFromName (os->objects[o]));
 	if (e)
 	{
-	    for (v = FcPatternEltValues(e), idx = 0; v;
+	    idx = 0;
+	    if (FcRefIsConst (&font->ref) && !strcmp (os->objects[o], FC_FILE))
+	    {
+		struct stat statb;
+
+		for (v = FcPatternEltValues (e); v->value.type != FcTypeString; v = FcValueListNext (v));
+		if (!v)
+		    goto bail2;
+		if (FcStat (FcValueString (&v->value), &statb) < 0)
+		{
+		    FcChar8 *dir = FcStrDirname (FcValueString (&v->value));
+		    const FcChar8 *alias;
+
+		    if ((alias = FcDirCacheFindAliasPath (dir)))
+		    {
+			FcChar8 *base = FcStrBasename (FcValueString (&v->value));
+			FcChar8 *s = FcStrBuildFilename (alias, base, NULL);
+			FcValue vv;
+
+			FcStrFree (base);
+			vv.type = FcTypeString;
+			vv.u.s = s;
+			if (!FcPatternAdd (bucket->pattern,
+					   os->objects[o],
+					   FcValueCanonicalize (&vv),
+					   FcTrue))
+			{
+			    FcStrFree (s);
+			    FcStrFree (dir);
+			    goto bail2;
+			}
+			FcStrFree (s);
+			FcStrFree (dir);
+			idx++;
+		    }
+		    else
+			FcStrFree (dir);
+		}
+	    }
+	    for (v = FcPatternEltValues(e); v;
 		 v = FcValueListNext(v), ++idx)
 	    {
 		if (!FcPatternAdd (bucket->pattern,

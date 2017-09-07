@@ -643,6 +643,38 @@ FcFontRenderPrepare (FcConfig	    *config,
 	}
 	else
 	{
+	    if (FcRefIsConst (&font->ref) && fe->object == FC_FILE_OBJECT)
+	    {
+		FcValueListPtr l = FcPatternEltValues (fe);
+		struct stat statb;
+
+		while (l->value.type != FcTypeString)
+		    l = FcValueListNext (l);
+		if (FcStat (FcValueString (&l->value), &statb) < 0)
+		{
+		    FcChar8 *dir = FcStrDirname (FcValueString (&l->value));
+		    const FcChar8 *alias;
+
+		    if ((alias = FcDirCacheFindAliasPath (dir)))
+		    {
+			FcChar8 *base = FcStrBasename (FcValueString (&l->value));
+			FcChar8 *s = FcStrBuildFilename (alias, base, NULL);
+			FcValue v;
+
+			FcStrFree (base);
+			v.type = FcTypeString;
+			v.u.s = s;
+			FcPatternObjectAddWithBinding (new, fe->object,
+						       FcValueCanonicalize (&v),
+						       l->binding,
+						       FcTrue);
+			FcStrFree (s);
+			FcStrFree (dir);
+		    }
+		    else
+			FcStrFree (dir);
+		}
+	    }
 	    FcPatternObjectListAdd (new, fe->object,
 				    FcValueListDuplicate (FcPatternEltValues (fe)),
 				    FcTrue);
