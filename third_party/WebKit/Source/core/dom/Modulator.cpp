@@ -10,7 +10,7 @@
 #include "core/dom/WorkletModulatorImpl.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
-#include "core/workers/MainThreadWorkletGlobalScope.h"
+#include "core/workers/WorkletGlobalScope.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8PerContextData.h"
 
@@ -42,15 +42,15 @@ Modulator* Modulator::From(ScriptState* script_state) {
     // See comment in LocalDOMWindow::modulator_ for this workaround.
     LocalDOMWindow* window = document->ExecutingWindow();
     window->SetModulator(modulator);
-  } else if (execution_context->IsMainThreadWorkletGlobalScope()) {
-    MainThreadWorkletGlobalScope* global_scope =
-        ToMainThreadWorkletGlobalScope(execution_context);
+  } else if (execution_context->IsWorkletGlobalScope()) {
     modulator = WorkletModulatorImpl::Create(script_state);
     Modulator::SetModulator(script_state, modulator);
 
     // See comment in WorkletGlobalScope::modulator_ for this workaround.
-    global_scope->SetModulator(modulator);
+    ToWorkletGlobalScope(execution_context)->SetModulator(modulator);
   } else {
+    // TODO(nhiroki): Support module loading for workers.
+    // (https://crbug.com/680046)
     NOTREACHED();
   }
   return modulator;

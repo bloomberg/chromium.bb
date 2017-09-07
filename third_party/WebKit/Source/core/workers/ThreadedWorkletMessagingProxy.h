@@ -6,14 +6,11 @@
 #define ThreadedWorkletMessagingProxy_h
 
 #include "core/CoreExport.h"
-#include "core/loader/WorkletScriptLoader.h"
 #include "core/workers/ThreadedMessagingProxyBase.h"
 #include "core/workers/WorkletGlobalScopeProxy.h"
-#include "core/workers/WorkletPendingTasks.h"
 
 namespace blink {
 
-class ScriptSourceCode;
 class ThreadedWorkletObjectProxy;
 class WorkerClients;
 
@@ -45,18 +42,12 @@ class CORE_EXPORT ThreadedWorkletMessagingProxy
 
  private:
   friend class ThreadedWorkletMessagingProxyForTest;
-  class LoaderClient;
 
   virtual std::unique_ptr<ThreadedWorkletObjectProxy> CreateObjectProxy(
       ThreadedWorkletMessagingProxy*,
       ParentFrameTaskRunners*);
 
-  void NotifyLoadingFinished(WorkletScriptLoader*);
-  void EvaluateScript(const ScriptSourceCode&);
-
   std::unique_ptr<ThreadedWorkletObjectProxy> worklet_object_proxy_;
-
-  HeapHashSet<Member<WorkletScriptLoader>> loaders_;
 };
 
 }  // namespace blink
