@@ -38,10 +38,6 @@
 #include "platform/wtf/MathExtras.h"
 #include "platform/wtf/PtrUtil.h"
 
-#if defined(OS_MACOSX)
-using namespace std;
-#endif
-
 namespace blink {
 
 using namespace VectorMath;
