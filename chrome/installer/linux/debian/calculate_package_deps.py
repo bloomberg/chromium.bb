@@ -17,12 +17,12 @@ import deb_version
 import package_version_interval
 
 if len(sys.argv) != 5:
-  print 'Usage: %s binary_path sysroot_path arch stamp_path' % sys.argv[0]
+  print 'Usage: %s binary_path sysroot_path arch dep_file' % sys.argv[0]
   sys.exit(1)
 binary = os.path.abspath(sys.argv[1])
 sysroot = os.path.abspath(sys.argv[2])
 arch = sys.argv[3]
-stamp = sys.argv[4]
+dep_filename = sys.argv[4]
 
 cmd = ['dpkg-shlibdeps']
 if arch == 'x64':
@@ -76,6 +76,7 @@ for distro in distro_package_versions:
           package, distro)
       ret_code = 1
 if ret_code == 0:
-  with open(stamp, 'a'):
-    os.utime(stamp, None)
-exit(ret_code)
+  with open(dep_filename, 'w') as dep_file:
+    dep_file.write(package_version_interval.format_package_intervals(
+        package_intervals))
+sys.exit(ret_code)
