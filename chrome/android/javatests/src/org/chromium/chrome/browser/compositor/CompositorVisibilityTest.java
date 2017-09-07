@@ -71,11 +71,6 @@ public class CompositorVisibilityTest {
         }
 
         @Override
-        public boolean areBrowserControlsPermanentlyHidden() {
-            return false;
-        }
-
-        @Override
         public ResourceManager getResourceManager() {
             return null;
         }

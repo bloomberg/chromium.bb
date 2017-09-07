@@ -69,7 +69,6 @@ public class ChromeFullscreenManager
     private boolean mInGesture;
     private boolean mContentViewScrolling;
 
-    private boolean mBrowserControlsPermanentlyHidden;
     private boolean mBrowserControlsAndroidViewHidden;
 
     private final ArrayList<FullscreenListener> mListeners = new ArrayList<>();
@@ -324,22 +323,6 @@ public class ChromeFullscreenManager
     }
 
     /**
-     * @param remove Whether or not to forcefully remove the toolbar.
-     */
-    public void setBrowserControlsPermamentlyHidden(boolean remove) {
-        if (remove == mBrowserControlsPermanentlyHidden) return;
-        mBrowserControlsPermanentlyHidden = remove;
-        updateVisuals();
-    }
-
-    /**
-     * @return Whether or not the toolbar is forcefully being removed.
-     */
-    public boolean areBrowserControlsPermanentlyHidden() {
-        return mBrowserControlsPermanentlyHidden;
-    }
-
-    /**
      * @return Whether the browser controls should be drawn as a texture.
      */
     public boolean drawControlsAsTexture() {
@@ -371,7 +354,6 @@ public class ChromeFullscreenManager
 
     @Override
     public float getContentOffset() {
-        if (mBrowserControlsPermanentlyHidden) return 0;
         return mRendererTopContentOffset;
     }
 
@@ -379,7 +361,6 @@ public class ChromeFullscreenManager
      * @return The offset of the controls from the top of the screen.
      */
     public float getTopControlOffset() {
-        if (mBrowserControlsPermanentlyHidden) return -getTopControlsHeight();
         // This is to avoid a problem with -0f in tests.
         if (mControlOffsetRatio == 0f) return 0f;
         return mControlOffsetRatio * -getTopControlsHeight();
@@ -389,7 +370,6 @@ public class ChromeFullscreenManager
      * @return The offset of the controls from the bottom of the screen.
      */
     public float getBottomControlOffset() {
-        if (mBrowserControlsPermanentlyHidden) return getBottomControlsHeight();
         if (mControlOffsetRatio == 0f) return 0f;
         return mControlOffsetRatio * getBottomControlsHeight();
 
