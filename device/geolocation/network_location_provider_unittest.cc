@@ -21,7 +21,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "device/geolocation/fake_access_token_store.h"
 #include "device/geolocation/location_arbitrator.h"
 #include "device/geolocation/wifi_data_provider.h"
 #include "net/base/net_errors.h"
@@ -33,10 +32,6 @@ namespace device {
 
 // Constants used in multiple tests.
 const char kTestServerUrl[] = "https://www.geolocation.test/service";
-const char kAccessTokenString[] = "accessToken";
-
-// Using #define so we can easily paste this into various other strings.
-#define REFERENCE_ACCESS_TOKEN "2:k7j3G6LaL6u_lafw:4iXOeOpTh1glSXe"
 
 // Stops the specified (nested) message loop when the listener is called back.
 class MessageLoopQuitListener {
@@ -123,10 +118,8 @@ class GeolocationNetworkProviderTest : public testing::Test {
 
   LocationProvider* CreateProvider(bool set_permission_granted) {
     LocationProvider* provider = NewNetworkLocationProvider(
-        access_token_store_,
         nullptr,  // No URLContextGetter needed, using test urlfecther factory.
-        test_server_url_,
-        access_token_store_->access_token_map_[test_server_url_]);
+        test_server_url_);
     if (set_permission_granted)
       provider->OnPermissionGranted();
     return provider;
@@ -135,7 +128,6 @@ class GeolocationNetworkProviderTest : public testing::Test {
  protected:
   GeolocationNetworkProviderTest()
       : test_server_url_(kTestServerUrl),
-        access_token_store_(new FakeAccessTokenStore),
         wifi_data_provider_(MockWifiDataProvider::CreateInstance()) {
     // TODO(joth): Really these should be in SetUp, not here, but they take no
     // effect on Mac OS Release builds if done there. I kid not. Figure out why.
@@ -253,8 +245,7 @@ class GeolocationNetworkProviderTest : public testing::Test {
   void CheckRequestIsValid(const net::TestURLFetcher& request,
                            int expected_routers,
                            int expected_wifi_aps,
-                           int wifi_start_index,
-                           const std::string& expected_access_token) {
+                           int wifi_start_index) {
     const GURL& request_url = request.GetOriginalURL();
 
     EXPECT_TRUE(IsTestServerUrl(request_url));
@@ -277,16 +268,6 @@ class GeolocationNetworkProviderTest : public testing::Test {
 
     const base::DictionaryValue* request_json;
     ASSERT_TRUE(parsed_json->GetAsDictionary(&request_json));
-
-    if (!is_default_url) {
-      if (expected_access_token.empty()) {
-        ASSERT_FALSE(request_json->HasKey(kAccessTokenString));
-      } else {
-        std::string access_token;
-        EXPECT_TRUE(request_json->GetString(kAccessTokenString, &access_token));
-        EXPECT_EQ(expected_access_token, access_token);
-      }
-    }
 
     if (expected_wifi_aps) {
       base::ListValue expected_wifi_aps_json;
@@ -318,7 +299,6 @@ class GeolocationNetworkProviderTest : public testing::Test {
 
   GURL test_server_url_;
   const base::MessageLoop main_message_loop_;
-  const scoped_refptr<FakeAccessTokenStore> access_token_store_;
   const net::TestURLFetcherFactory url_fetcher_factory_;
   const scoped_refptr<MockWifiDataProvider> wifi_data_provider_;
 };
@@ -337,7 +317,7 @@ TEST_F(GeolocationNetworkProviderTest, StartProvider) {
   EXPECT_TRUE(provider->StartProvider(false));
   net::TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
   ASSERT_TRUE(fetcher);
-  CheckRequestIsValid(*fetcher, 0, 0, 0, std::string());
+  CheckRequestIsValid(*fetcher, 0, 0, 0);
 }
 
 TEST_F(GeolocationNetworkProviderTest, StartProviderDefaultUrl) {
@@ -346,7 +326,7 @@ TEST_F(GeolocationNetworkProviderTest, StartProviderDefaultUrl) {
   EXPECT_TRUE(provider->StartProvider(false));
   net::TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
   ASSERT_TRUE(fetcher);
-  CheckRequestIsValid(*fetcher, 0, 0, 0, std::string());
+  CheckRequestIsValid(*fetcher, 0, 0, 0);
 }
 
 TEST_F(GeolocationNetworkProviderTest, StartProviderLongRequest) {
@@ -361,7 +341,7 @@ TEST_F(GeolocationNetworkProviderTest, StartProviderLongRequest) {
   // in length by not including access points with the lowest signal strength
   // in the request.
   EXPECT_LT(fetcher->GetOriginalURL().spec().size(), size_t(2048));
-  CheckRequestIsValid(*fetcher, 0, 16, 4, std::string());
+  CheckRequestIsValid(*fetcher, 0, 16, 4);
 }
 
 TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
@@ -393,13 +373,11 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   fetcher = get_url_fetcher_and_advance_id();
   ASSERT_TRUE(fetcher);
   // The request should have the wifi data.
-  CheckRequestIsValid(*fetcher, 0, kFirstScanAps, 0, std::string());
+  CheckRequestIsValid(*fetcher, 0, kFirstScanAps, 0);
 
   // Send a reply with good position fix.
   const char* kReferenceNetworkResponse =
       "{"
-      "  \"accessToken\": \"" REFERENCE_ACCESS_TOKEN
-      "\","
       "  \"accuracy\": 1200.4,"
       "  \"location\": {"
       "    \"lat\": 51.0,"
@@ -418,10 +396,6 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   EXPECT_EQ(1200.4, position.accuracy);
   EXPECT_FALSE(position.timestamp.is_null());
   EXPECT_TRUE(position.Validate());
-
-  // Token should be in the store.
-  EXPECT_EQ(base::UTF8ToUTF16(REFERENCE_ACCESS_TOKEN),
-            access_token_store_->access_token_map_[test_server_url_]);
 
   // Wifi updated again, with one less AP. This is 'close enough' to the
   // previous scan, so no new request made.
@@ -442,7 +416,7 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   base::RunLoop().RunUntilIdle();
   fetcher = get_url_fetcher_and_advance_id();
   EXPECT_TRUE(fetcher);
-  CheckRequestIsValid(*fetcher, 0, kThirdScanAps, 0, REFERENCE_ACCESS_TOKEN);
+  CheckRequestIsValid(*fetcher, 0, kThirdScanAps, 0);
   // ...reply with a network error.
 
   fetcher->set_url(test_server_url_);
@@ -514,8 +488,6 @@ TEST_F(GeolocationNetworkProviderTest, NetworkRequestDeferredForPermission) {
 
 TEST_F(GeolocationNetworkProviderTest,
        NetworkRequestWithWifiDataDeferredForPermission) {
-  access_token_store_->access_token_map_[test_server_url_] =
-      base::UTF8ToUTF16(REFERENCE_ACCESS_TOKEN);
   std::unique_ptr<LocationProvider> provider(CreateProvider(false));
   EXPECT_TRUE(provider->StartProvider(false));
   net::TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
@@ -533,7 +505,7 @@ TEST_F(GeolocationNetworkProviderTest,
   fetcher = get_url_fetcher_and_advance_id();
   ASSERT_TRUE(fetcher);
 
-  CheckRequestIsValid(*fetcher, 0, kScanCount, 0, REFERENCE_ACCESS_TOKEN);
+  CheckRequestIsValid(*fetcher, 0, kScanCount, 0);
 }
 
 TEST_F(GeolocationNetworkProviderTest, NetworkPositionCache) {
