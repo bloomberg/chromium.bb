@@ -87,11 +87,12 @@ BrowserAccessibilityComWin::~BrowserAccessibilityComWin() {
 //
 
 STDMETHODIMP BrowserAccessibilityComWin::get_attributes(BSTR* attributes) {
-  // This can be removed once the rest of the interface has been removed.
+  // This can be removed once ISimpleDOMNode is migrated
   return AXPlatformNodeWin::get_attributes(attributes);
 }
 
 STDMETHODIMP BrowserAccessibilityComWin::scrollTo(IA2ScrollType scroll_type) {
+  // This can be removed once ISimpleDOMNode is migrated
   return AXPlatformNodeWin::scrollTo(scroll_type);
 }
 
