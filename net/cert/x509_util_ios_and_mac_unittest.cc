@@ -76,7 +76,6 @@ TEST(X509UtilTest, CreateSecCertificateArrayForX509Certificate) {
             BytesForSecCert(CFArrayGetValueAtIndex(sec_certs.get(), 3)));
 }
 
-#if BUILDFLAG(USE_BYTE_CERTS)
 TEST(X509UtilTest, CreateSecCertificateArrayForX509CertificateErrors) {
   scoped_refptr<X509Certificate> ok_cert(
       ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem"));
@@ -117,7 +116,6 @@ TEST(X509UtilTest, CreateSecCertificateArrayForX509CertificateErrors) {
   EXPECT_EQ(BytesForX509Cert(ok_cert2.get()),
             BytesForSecCert(CFArrayGetValueAtIndex(sec_certs.get(), 1)));
 }
-#endif
 
 TEST(X509UtilTest,
      CreateSecCertificateFromBytesAndCreateX509CertificateFromSecCertificate) {
