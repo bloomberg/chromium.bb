@@ -8,4 +8,5 @@ This tests that the X-XSS-Protection header is not ignored when there is an inco
 --------
 Frame: 'frame'
 --------
-
+Could not load the requested resource.
+Error code: -28 (net::ERR_BLOCKED_BY_XSS_AUDITOR)

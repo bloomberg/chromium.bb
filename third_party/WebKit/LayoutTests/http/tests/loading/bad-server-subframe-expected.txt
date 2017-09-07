@@ -5,6 +5,7 @@ main frame - didFinishDocumentLoadForFrame
 frame "f1" - didFailProvisionalLoadWithError
 frame "f1" - didStartProvisionalLoadForFrame
 frame "f1" - didCommitLoadForFrame
+frame "f1" - didReceiveTitle: Error
 frame "f1" - didFinishDocumentLoadForFrame
 frame "f1" - didHandleOnloadEventsForFrame
 frame "f1" - didFinishLoadForFrame
