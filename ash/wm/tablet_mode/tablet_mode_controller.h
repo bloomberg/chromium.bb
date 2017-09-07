@@ -102,6 +102,8 @@ class ASH_EXPORT TabletModeController
   // the feature is enabled and we are in tablet mode.
   bool ShouldAutoHideTitlebars() const;
 
+  bool auto_hide_title_bars() const { return auto_hide_title_bars_; }
+
   // ShellObserver:
   void OnShellInitialized() override;
 

@@ -83,6 +83,9 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
                            ToggleTabletModeRelayout);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
                            AvatarDisplayOnTeleportedWindow);
+  FRIEND_TEST_ALL_PREFIXES(ImmersiveModeControllerAshTestTabletMode,
+                           FrameLayout);
+
   friend class BrowserHeaderPainterAsh;
 
   // Distance between the left edge of the NonClientFrameView and the tab strip.
