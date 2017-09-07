@@ -96,7 +96,7 @@ verify_package() {
       LANG=C sort > actual_deb_depends
   BAD_DIFF=0
   diff -u expected_deb_depends actual_deb_depends || BAD_DIFF=1
-  if [ $BAD_DIFF -ne 0 ] && [ -z "${IGNORE_DEPS_CHANGES:-}" ]; then
+  if [ $BAD_DIFF -ne 0 ]; then
     echo
     echo "ERROR: bad dpkg dependencies!"
     echo
@@ -261,77 +261,8 @@ verify_channel
 export DEBFULLNAME="${MAINTNAME}"
 export DEBEMAIL="${MAINTMAIL}"
 
-# We'd like to eliminate more of these deps by relying on the 'lsb' package, but
-# that brings in tons of unnecessary stuff, like an mta and rpm. Until that full
-# 'lsb' package is installed by default on DEB distros, we'll have to stick with
-# the LSB sub-packages, to avoid pulling in all that stuff that's not installed
-# by default.
-
-# Generate the dependencies,
-# TODO(mmoss): This is a workaround for a problem where dpkg-shlibdeps was
-# resolving deps using some of our build output shlibs (i.e.
-# out/Release/lib.target/libfreetype.so.6), and was then failing with:
-#   dpkg-shlibdeps: error: no dependency information found for ...
-# It's not clear if we ever want to look in LD_LIBRARY_PATH to resolve deps,
-# but it seems that we don't currently, so this is the most expediant fix.
-SAVE_LDLP=${LD_LIBRARY_PATH:-}
-unset LD_LIBRARY_PATH
-if [ ${TARGETARCH} = "x64" ]; then
-  SHLIB_ARGS="-l${SYSROOT}/usr/lib/x86_64-linux-gnu"
-  SHLIB_ARGS="${SHLIB_ARGS} -l${SYSROOT}/lib/x86_64-linux-gnu"
-else
-  SHLIB_ARGS="-l${SYSROOT}/usr/lib/i386-linux-gnu"
-  SHLIB_ARGS="${SHLIB_ARGS} -l${SYSROOT}/lib/i386-linux-gnu"
-fi
-SHLIB_ARGS="${SHLIB_ARGS} -l${SYSROOT}/usr/lib"
-DPKG_SHLIB_DEPS=$(cd ${SYSROOT} && dpkg-shlibdeps ${SHLIB_ARGS:-} -O \
-                  -e"$BUILDDIR/chrome" | sed 's/^shlibs:Depends=//')
-if [ -n "$SAVE_LDLP" ]; then
-  LD_LIBRARY_PATH=$SAVE_LDLP
-fi
-
-# Format it nicely and save it for comparison.
-echo "$DPKG_SHLIB_DEPS" | sed 's/, /\n/g' | LANG=C sort > actual
-
-# Compare the expected dependency list to the generated list.
-BAD_DIFF=0
-if [ -r "$SCRIPTDIR/expected_deps_${TARGETARCH}" ]; then
-  diff -u "$SCRIPTDIR/expected_deps_${TARGETARCH}" actual || \
-    BAD_DIFF=1
-fi
-if [ $BAD_DIFF -ne 0 ] && [ -z "${IGNORE_DEPS_CHANGES:-}" ]; then
-  echo
-  echo "ERROR: Shared library dependencies changed!"
-  echo "If this is intentional, please update:"
-  echo "chrome/installer/linux/debian/expected_deps_x64"
-  echo
-  exit $BAD_DIFF
-fi
-
-# Additional dependencies not in the dpkg-shlibdeps output.
-# ca-certificates: Make sure users have SSL certificates.
-# fonts-liberation: Make sure users have compatible fonts for viewing PDFs.
-# libappindicator1: Make systray icons work in Unity.
-# libnss3: Pull a more recent version of NSS than required by runtime linking,
-#          for security and stability updates in NSS.
-# lsb-release: For lsb_release.
-# xdg-utils: For OS integration.
-# wget: For uploading crash reports with Breakpad.
-ADDITIONAL_DEPS="ca-certificates, fonts-liberation, libappindicator1, \
-  libnss3 (>= 3.26), lsb-release, xdg-utils (>= 1.0.2), wget"
-
-# Fix-up libnspr dependency due to renaming in Ubuntu (the old package still
-# exists, but it was moved to "universe" repository, which isn't installed by
-# default).
-# TODO(thestig): This is probably no longer needed. Verify and remove.
-DPKG_SHLIB_DEPS=$(sed \
-    's/\(libnspr4-0d ([^)]*)\), /\1 | libnspr4 (>= 4.9.5-0ubuntu0), /g' \
-    <<< $DPKG_SHLIB_DEPS)
-
-# Remove libnss dependency so the one in $ADDITIONAL_DEPS can supercede it.
-DPKG_SHLIB_DEPS=$(sed 's/\(libnss3 ([^)]*)\), //g' <<< $DPKG_SHLIB_DEPS)
-
-COMMON_DEPS="${DPKG_SHLIB_DEPS}, ${ADDITIONAL_DEPS}"
+DEB_COMMON_DEPS="${BUILDDIR}/deb_common.deps"
+COMMON_DEPS=$(sed ':a;N;$!ba;s/\n/, /g' "${DEB_COMMON_DEPS}")
 COMMON_PREDEPS="dpkg (>= 1.14.0)"
 
 

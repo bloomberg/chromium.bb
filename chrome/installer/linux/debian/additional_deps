@@ -1,0 +1,23 @@
+# Additional dependencies not in the dpkg-shlibdeps output.
+#
+# We'd like to eliminate more of these deps by relying on the 'lsb' package, but
+# that brings in tons of unnecessary stuff, like an mta and rpm. Until that full
+# 'lsb' package is installed by default on DEB distros, we'll have to stick with
+# the LSB sub-packages, to avoid pulling in all that stuff that's not installed
+# by default.
+#
+# ca-certificates: Make sure users have SSL certificates.
+# fonts-liberation: Make sure users have compatible fonts for viewing PDFs.
+# libappindicator1: Make systray icons work in Unity.
+# libnss3: Pull a more recent version of NSS than required by runtime linking,
+#          for security and stability updates in NSS.
+# lsb-release: For lsb_release.
+# xdg-utils: For OS integration.
+# wget: For uploading crash reports with Breakpad.
+ca-certificates
+fonts-liberation
+libappindicator1
+libnss3 (>= 3.26)
+lsb-release
+xdg-utils (>= 1.0.2)
+wget

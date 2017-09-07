@@ -79,10 +79,17 @@ action("merge_deb_dependencies") {
     ":calculate_deb_dependencies",
   ]
   script = "debian/merge_package_versions.py"
-  outputs = [
-    "$root_out_dir/deb_binaries.deps",
+  additional_deps = "debian/additional_deps"
+  inputs = [
+    additional_deps,
   ]
-  args = [ "deb_binaries.deps" ]
+  outputs = [
+    "$root_out_dir/deb_common.deps",
+  ]
+  args = [
+    "deb_common.deps",
+    rebase_path(additional_deps, root_build_dir),
+  ]
   args += rebase_path(get_target_outputs(":calculate_deb_dependencies"),
                       root_build_dir)
 }
@@ -191,7 +198,6 @@ copy("deb_packaging_files") {
     "debian/changelog.template",
     "debian/control.template",
     "debian/debian.menu",
-    "debian/expected_deps_x64",
     "debian/postinst",
     "debian/postrm",
     "debian/prerm",
@@ -343,6 +349,7 @@ template("linux_package") {
     }
     deps = [
       ":installer_deps",
+      ":merge_deb_dependencies",
     ]
   }
 
