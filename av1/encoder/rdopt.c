@@ -6013,11 +6013,18 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 
     mbmi->uv_mode = mode;
 #if CONFIG_CFL
+    const AV1_COMMON *const cm = &cpi->common;
     int cfl_alpha_rate = 0;
     if (mode == UV_CFL_PRED) {
       assert(!is_directional_mode);
-      const TX_SIZE uv_tx_size = av1_get_uv_tx_size(mbmi, &xd->plane[1]);
-      cfl_alpha_rate = cfl_rd_pick_alpha(x, uv_tx_size);
+      // TODO(ltrudeau) Remove key_frame check (used to test CfL only in Intra
+      // frame).
+      if (cm->frame_type == KEY_FRAME) {
+        const TX_SIZE uv_tx_size = av1_get_uv_tx_size(mbmi, &xd->plane[1]);
+        cfl_alpha_rate = cfl_rd_pick_alpha(x, uv_tx_size);
+      } else {
+        continue;
+      }
     }
 #endif
 #if CONFIG_EXT_INTRA
@@ -9920,9 +9927,13 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
     // Don't store the luma value if no chroma is associated.
     // Don't worry, we will store this reconstructed luma in the following
     // encode dry-run the chroma plane will never know.
-    xd->cfl->store_y = !x->skip_chroma_rd;
+    // TODO(ltrudeau) Delete frame type check (only used to test key-frame only
+    // CfL)
+    xd->cfl->store_y = !x->skip_chroma_rd && cm->frame_type == KEY_FRAME;
 #else
-    xd->cfl->store_y = 1;
+    // TODO(ltrudeau) Delete frame type check (only used to test key-frame only
+    // CfL)
+    xd->cfl->store_y = cm->frame_type == KEY_FRAME;
 #endif  // CONFIG_CB4X4
     if (xd->cfl->store_y) {
       txfm_rd_in_plane(x, cpi, &this_rd_stats, INT64_MAX, AOM_PLANE_Y,

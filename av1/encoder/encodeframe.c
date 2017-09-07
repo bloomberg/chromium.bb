@@ -6136,7 +6136,9 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
 
   if (!is_inter) {
 #if CONFIG_CFL
-    xd->cfl->store_y = 1;
+    // TODO(ltrudeau) Remove key_frame check (used to test CfL only in Intra
+    // frame).
+    xd->cfl->store_y = cm->frame_type == KEY_FRAME;
 #endif  // CONFIG_CFL
     int plane;
     mbmi->skip = 1;
