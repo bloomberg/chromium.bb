@@ -62,8 +62,18 @@ enum UserActivityType {
   USER_ACTIVITY_VOLUME_MUTE_KEY_PRESS = 5,
 };
 enum RequestRestartReason {
+  // An explicit user request (e.g. clicking a button).
   REQUEST_RESTART_FOR_USER = 0,
+  // A system update.
   REQUEST_RESTART_FOR_UPDATE = 1,
+  // Some other reason.
+  REQUEST_RESTART_OTHER = 2,
+};
+enum RequestShutdownReason {
+  // An explicit user request (e.g. clicking a button).
+  REQUEST_SHUTDOWN_FOR_USER = 0,
+  // Some other reason.
+  REQUEST_SHUTDOWN_OTHER = 1,
 };
 }  // namespace power_manager
 
