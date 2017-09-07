@@ -340,10 +340,11 @@ class CONTENT_EXPORT MediaStreamManager
       DeviceRequest* request,
       const MediaDeviceEnumeration& enumeration);
   // Called when audio output parameters have been read if needed.
-  void PostRequestToUI(const std::string& label,
-                       DeviceRequest* request,
-                       const MediaDeviceEnumeration& enumeration,
-                       const media::AudioParameters& output_parameters);
+  void PostRequestToUI(
+      const std::string& label,
+      DeviceRequest* request,
+      const MediaDeviceEnumeration& enumeration,
+      const base::Optional<media::AudioParameters>& output_parameters);
   // Returns true if a device with |device_id| has already been requested with
   // a render procecss_id and render_frame_id and type equal to the the values
   // in |request|. If it has been requested, |device_info| contain information

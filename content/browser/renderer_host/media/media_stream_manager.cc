@@ -953,7 +953,8 @@ void MediaStreamManager::ReadOutputParamsAndPostRequestToUI(
         base::BindOnce(&MediaStreamManager::PostRequestToUI,
                        base::Unretained(this), label, request, enumeration));
   } else {
-    PostRequestToUI(label, request, enumeration, media::AudioParameters());
+    PostRequestToUI(label, request, enumeration,
+                    base::Optional<media::AudioParameters>());
   }
 }
 
@@ -961,9 +962,10 @@ void MediaStreamManager::PostRequestToUI(
     const std::string& label,
     DeviceRequest* request,
     const MediaDeviceEnumeration& enumeration,
-    const media::AudioParameters& output_parameters) {
+    const base::Optional<media::AudioParameters>& output_parameters) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(request->HasUIRequest());
+  DCHECK(!output_parameters || output_parameters->IsValid());
   DVLOG(1) << "PostRequestToUI({label= " << label << "})";
 
   const MediaStreamType audio_type = request->audio_type();
@@ -999,7 +1001,9 @@ void MediaStreamManager::PostRequestToUI(
   request->ui_proxy->RequestAccess(
       request->DetachUIRequest(),
       base::BindOnce(&MediaStreamManager::HandleAccessRequestResponse,
-                     base::Unretained(this), label, output_parameters));
+                     base::Unretained(this), label,
+                     output_parameters.value_or(
+                         media::AudioParameters::UnavailableDeviceParams())));
 }
 
 void MediaStreamManager::SetupRequest(const std::string& label) {

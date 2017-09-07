@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/optional.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/media_export.h"
@@ -20,34 +21,32 @@ class MEDIA_EXPORT AudioSystem {
   // Replies are asynchronously sent from audio system thread to the thread the
   // call is issued on. Attention! Audio system thread may outlive the client
   // objects; bind callbacks with care.
+
+  // Non-empty optional AudioParameters are guaranteed to be valid.
+  // If optional AudioParameters are empty, it means the specified device is not
+  // found. This is best-effort: non-empty parameters do not guarantee existence
+  // of the device.
+  // TODO(olka,tommi): fix all AudioManager implementations to always report
+  // when a device is not found, instead of returning sub parameter values.
   using OnAudioParamsCallback =
-      base::OnceCallback<void(const AudioParameters&)>;
+      base::OnceCallback<void(const base::Optional<AudioParameters>&)>;
+  using OnInputDeviceInfoCallback =
+      base::OnceCallback<void(const base::Optional<AudioParameters>&,
+                              const base::Optional<AudioParameters>&,
+                              const std::string&)>;
+
   using OnBoolCallback = base::OnceCallback<void(bool)>;
   using OnDeviceDescriptionsCallback =
       base::OnceCallback<void(AudioDeviceDescriptions)>;
   using OnDeviceIdCallback = base::OnceCallback<void(const std::string&)>;
-  using OnInputDeviceInfoCallback = base::OnceCallback<
-      void(const AudioParameters&, const AudioParameters&, const std::string&)>;
 
   static AudioSystem* Get();
 
   virtual ~AudioSystem();
 
-  // Callback may receive invalid parameters, it means the specified device is
-  // not found. This is best-effort: valid parameters do not guarantee existence
-  // of the device.
-  // TODO(olka,tommi): fix all AudioManager implementations to return invalid
-  // parameters if the device is not found.
   virtual void GetInputStreamParameters(const std::string& device_id,
                                         OnAudioParamsCallback on_params_cb) = 0;
 
-  // If media::AudioDeviceDescription::IsDefaultDevice(device_id) is true,
-  // callback will receive the parameters of the default output device.
-  // Callback may receive invalid parameters, it means the specified device is
-  // not found. This is best-effort: valid parameters do not guarantee existence
-  // of the device.
-  // TODO(olka,tommi): fix all AudioManager implementations to return invalid
-  // parameters if the device is not found.
   virtual void GetOutputStreamParameters(
       const std::string& device_id,
       OnAudioParamsCallback on_params_cb) = 0;
@@ -69,7 +68,7 @@ class MEDIA_EXPORT AudioSystem {
 
   // Replies with audio parameters for the specified input device and audio
   // parameters and device ID of the associated output device, if any (otherwise
-  // it's AudioParameters() and an empty string).
+  // the associated output device ID is an empty string).
   virtual void GetInputDeviceInfo(
       const std::string& input_device_id,
       OnInputDeviceInfoCallback on_input_device_info_cb) = 0;
