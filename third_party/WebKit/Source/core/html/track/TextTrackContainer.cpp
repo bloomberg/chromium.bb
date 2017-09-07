@@ -31,6 +31,7 @@
 
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/track/CueTimeline.h"
+#include "core/html/track/TextTrack.h"
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutVideo.h"
 #include "core/resize_observer/ResizeObserver.h"

@@ -36,7 +36,6 @@
 #include "core/dom/events/MediaElementEventQueue.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/media/MediaControls.h"
-#include "core/html/track/TextTrack.h"
 #include "platform/Supplementable.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/audio/AudioSourceProvider.h"
@@ -65,6 +64,7 @@ class MediaError;
 class MediaStreamDescriptor;
 class HTMLMediaSource;
 class ScriptState;
+class TextTrack;
 class TextTrackContainer;
 class TextTrackList;
 class TimeRanges;
