@@ -391,9 +391,6 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   STDMETHODIMP get_relations(LONG max_relations,
                              IAccessibleRelation** relations,
                              LONG* n_relations) override;
-  //
-  // IAccessible2 methods not implemented.
-  //
 
   STDMETHODIMP get_attribute(BSTR name, VARIANT* attribute) override;
   STDMETHODIMP get_extendedRole(BSTR* extended_role) override;
