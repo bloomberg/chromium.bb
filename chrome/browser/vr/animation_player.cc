@@ -8,8 +8,8 @@
 
 #include "base/stl_util.h"
 #include "cc/animation/animation_curve.h"
-#include "cc/animation/animation_player.h"
 #include "cc/animation/animation_target.h"
+#include "cc/animation/animation_ticker.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/base/math_util.h"
 #include "chrome/browser/vr/elements/ui_element.h"
@@ -154,7 +154,7 @@ void AnimationPlayer::Tick(base::TimeTicks monotonic_time) {
   StartAnimations(monotonic_time);
 
   for (auto& animation : animations_) {
-    cc::AnimationPlayer::TickAnimation(monotonic_time, animation.get(),
+    cc::AnimationTicker::TickAnimation(monotonic_time, animation.get(),
                                        target_);
   }
 
