@@ -716,12 +716,6 @@ public class CompositorViewHolder extends FrameLayout
                 : ColorUtils.getTextBoxAlphaForToolbarBackground(mTabVisible);
     }
 
-    @Override
-    public boolean areBrowserControlsPermanentlyHidden() {
-        return mFullscreenManager != null
-                && mFullscreenManager.areBrowserControlsPermanentlyHidden();
-    }
-
     /**
      * @return The height of the top browser controls in pixels.
      */
@@ -738,9 +732,7 @@ public class CompositorViewHolder extends FrameLayout
 
     @Override
     public float getOverlayTranslateY() {
-        return areBrowserControlsPermanentlyHidden()
-                ? getTopControlsHeightPixels()
-                : mFullscreenManager.getTopVisibleContentOffset();
+        return mFullscreenManager.getTopVisibleContentOffset();
     }
 
     /**
