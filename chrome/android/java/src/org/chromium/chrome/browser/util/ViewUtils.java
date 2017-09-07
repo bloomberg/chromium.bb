@@ -149,4 +149,19 @@ public class ViewUtils {
     public static int dpToPx(DisplayMetrics metrics, float dp) {
         return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, metrics));
     }
+
+    /**
+     * Sets clip children for the provided ViewGroup and all of its ancestors.
+     * @param view The ViewGroup whose children should (not) be clipped.
+     * @param clip Whether to clip children to the parent bounds.
+     */
+    public static void setAncestorsShouldClipChildren(ViewGroup view, boolean clip) {
+        ViewGroup parent = view;
+        while (parent != null) {
+            parent.setClipChildren(clip);
+            if (!(parent.getParent() instanceof ViewGroup)) break;
+            if (parent.getId() == android.R.id.content) break;
+            parent = (ViewGroup) parent.getParent();
+        }
+    }
 }
