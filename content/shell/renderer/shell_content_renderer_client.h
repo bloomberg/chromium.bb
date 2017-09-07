@@ -6,6 +6,7 @@
 #define CONTENT_SHELL_RENDERER_SHELL_CONTENT_RENDERER_CLIENT_H_
 
 #include <memory>
+#include <string>
 
 #include "base/compiler_specific.h"
 #include "build/build_config.h"
@@ -26,6 +27,19 @@ class ShellContentRendererClient : public ContentRendererClient {
   // ContentRendererClient implementation.
   void RenderThreadStarted() override;
   void RenderViewCreated(RenderView* render_view) override;
+  bool HasErrorPage(int http_status_code) override;
+  void GetNavigationErrorStrings(RenderFrame* render_frame,
+                                 const blink::WebURLRequest& failed_request,
+                                 const blink::WebURLError& error,
+                                 std::string* error_html,
+                                 base::string16* error_description) override;
+  void GetNavigationErrorStringsForHttpStatusError(
+      content::RenderFrame* render_frame,
+      const blink::WebURLRequest& failed_request,
+      const GURL& unreachable_url,
+      int http_status,
+      std::string* error_html,
+      base::string16* error_description) override;
 
   // TODO(mkwst): These toggle based on the kEnablePepperTesting flag. Do we
   // need that outside of layout tests?
