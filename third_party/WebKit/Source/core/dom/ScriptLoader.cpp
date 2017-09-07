@@ -909,7 +909,7 @@ void ScriptLoader::ExecuteScriptBlock(PendingScript* pending_script,
   Document* element_document = &(element_->GetDocument());
   Document* context_document = element_document->ContextDocument();
   if (original_document_ != context_document &&
-      script->GetScriptType() == ScriptType::kModule)
+      GetScriptType() == ScriptType::kModule)
     return;
 
   // 2. "If the script's script is null, fire an event named error at the
