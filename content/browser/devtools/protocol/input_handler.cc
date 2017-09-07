@@ -547,8 +547,8 @@ void InputHandler::DispatchTouchEvent(
     if (point->HasId())
       with_id++;
     points[id].id = id;
-    points[id].radius_x = point->GetRadiusX(1);
-    points[id].radius_y = point->GetRadiusY(1);
+    points[id].radius_x = point->GetRadiusX(1.0);
+    points[id].radius_y = point->GetRadiusY(1.0);
     points[id].rotation_angle = point->GetRotationAngle(0.0);
     points[id].force = point->GetForce(1.0);
     points[id].pointer_type = blink::WebPointerProperties::PointerType::kTouch;
