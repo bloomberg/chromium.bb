@@ -53,7 +53,7 @@ std::string GuessEffectiveMakeAndModel(const device::UsbDevice& device) {
 class UsbPrinterDetectorImpl : public UsbPrinterDetector,
                                public device::UsbService::Observer {
  public:
-  explicit UsbPrinterDetectorImpl(Profile* profile)
+  UsbPrinterDetectorImpl()
       : usb_observer_(this),
         observer_list_(
             new base::ObserverListThreadSafe<UsbPrinterDetector::Observer>),
@@ -180,9 +180,8 @@ class UsbPrinterDetectorImpl : public UsbPrinterDetector,
 }  // namespace
 
 // static
-std::unique_ptr<UsbPrinterDetector> UsbPrinterDetector::Create(
-    Profile* profile) {
-  return base::MakeUnique<UsbPrinterDetectorImpl>(profile);
+std::unique_ptr<UsbPrinterDetector> UsbPrinterDetector::Create() {
+  return base::MakeUnique<UsbPrinterDetectorImpl>();
 }
 
 }  // namespace chromeos

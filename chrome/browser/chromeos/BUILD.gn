@@ -1382,8 +1382,6 @@ source_set("chromeos") {
     "printing/synced_printers_manager_factory.h",
     "printing/usb_printer_detector.cc",
     "printing/usb_printer_detector.h",
-    "printing/usb_printer_detector_factory.cc",
-    "printing/usb_printer_detector_factory.h",
     "printing/usb_printer_util.cc",
     "printing/usb_printer_util.h",
     "printing/zeroconf_printer_detector.cc",
