@@ -213,6 +213,56 @@ cr.define('bookmarks', function() {
   };
 
   /**
+   * Manages auto scrolling of elements on hover during internal drags. Native
+   * drags do this by themselves.
+   * @constructor
+   */
+  function AutoScroller() {
+    /** @const {number} */
+    this.SCROLL_ZONE_LENGTH = 20;
+    /** @const {number} */
+    this.SCROLL_DISTANCE = 10;
+    /** @const {number} */
+    this.SCROLL_INTERVAL = 100;
+    /** @private {?number} */
+    this.intervalId_ = null;
+  }
+
+  AutoScroller.prototype = {
+    /** @param {!Event} e */
+    update: function(e) {
+      this.reset();
+
+      var scrollParent = e.path.find((el) => {
+        return el.nodeType == Node.ELEMENT_NODE &&
+            window.getComputedStyle(el).overflowY == 'auto';
+      });
+
+      if (!scrollParent)
+        return;
+
+      var rect = scrollParent.getBoundingClientRect();
+      var yDelta = 0;
+      if (e.clientY < rect.top + this.SCROLL_ZONE_LENGTH)
+        yDelta = -this.SCROLL_DISTANCE;
+      else if (e.clientY > rect.bottom - this.SCROLL_ZONE_LENGTH)
+        yDelta = this.SCROLL_DISTANCE;
+
+      this.intervalId_ = window.setInterval(() => {
+        scrollParent.scrollTop += yDelta;
+      }, this.SCROLL_INTERVAL);
+    },
+
+    reset: function() {
+      if (this.intervalId_ == null)
+        return;
+
+      window.clearInterval(this.intervalId_);
+      this.intervalId_ = null;
+    },
+  };
+
+  /**
    * Encapsulates the behavior of the drag and drop indicator which puts a line
    * between items or highlights folders which are valid drop targets.
    * @constructor
@@ -335,6 +385,12 @@ cr.define('bookmarks', function() {
     /** @private {Object<string, function(!Event)>} */
     this.documentListeners_ = null;
 
+    /** @private {?bookmarks.AutoScroller} */
+    this.autoScroller_ = null;
+
+    /** @private {?bookmarks.AutoExpander} */
+    this.autoExpander_ = null;
+
     /**
      * Used to instantly clearDragData in tests.
      * @private {bookmarks.TimerProxy}
@@ -366,6 +422,7 @@ cr.define('bookmarks', function() {
       this.dragInfo_ = new DragInfo();
       this.dropIndicator_ = new DropIndicator();
       this.autoExpander_ = new AutoExpander();
+      this.autoScroller_ = new AutoScroller();
 
       this.documentListeners_ = {
         'mousedown': this.onMousedown_.bind(this),
@@ -437,6 +494,8 @@ cr.define('bookmarks', function() {
 
       // Prevents a native drag from starting.
       e.preventDefault();
+
+      this.autoScroller_.update(e);
 
       // On the first mousemove after a mousedown, calculate the items to drag.
       // This can't be done in mousedown because the user may be shift-clicking
@@ -626,6 +685,7 @@ cr.define('bookmarks', function() {
     /** @private */
     clearDragData_: function() {
       this.dndChip.hide();
+      this.autoScroller_.reset();
       this.internalDragElement_ = null;
       this.mouseDownPos_ = null;
       this.autoExpander_.reset();
@@ -941,6 +1001,8 @@ cr.define('bookmarks', function() {
   };
 
   return {
+    AutoExpander: AutoExpander,
+    AutoScroller: AutoScroller,
     DNDManager: DNDManager,
     DragInfo: DragInfo,
     DropIndicator: DropIndicator,
