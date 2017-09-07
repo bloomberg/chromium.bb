@@ -145,7 +145,7 @@ int DownloadCommands::GetCommandIconId(Command command) const {
     case CANCEL:
       return IDR_DOWNLOAD_NOTIFICATION_MENU_CANCEL;
     case LEARN_MORE_SCANNING:
-      return IDR_NOTIFICATION_WELCOME_LEARN_MORE;
+      return IDR_DOWNLOAD_NOTIFICATION_MENU_LEARN_MORE;
     case COPY_TO_CLIPBOARD:
       return IDR_DOWNLOAD_NOTIFICATION_MENU_COPY_TO_CLIPBOARD;
     case ANNOTATE:

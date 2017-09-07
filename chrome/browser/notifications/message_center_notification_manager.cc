@@ -10,8 +10,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/notifications/extension_welcome_notification.h"
-#include "chrome/browser/notifications/extension_welcome_notification_factory.h"
 #include "chrome/browser/notifications/message_center_settings_controller.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/profile_notification.h"
@@ -82,9 +80,6 @@ void MessageCenterNotificationManager::Add(const Notification& notification,
   std::unique_ptr<ProfileNotification> profile_notification_ptr =
       base::MakeUnique<ProfileNotification>(profile, notification);
   ProfileNotification* profile_notification = profile_notification_ptr.get();
-
-  ExtensionWelcomeNotificationFactory::GetForBrowserContext(profile)->
-      ShowWelcomeNotificationIfNecessary(profile_notification->notification());
 
   // WARNING: You MUST use AddProfileNotification or update the message center
   // via the notification within a ProfileNotification object or the profile ID

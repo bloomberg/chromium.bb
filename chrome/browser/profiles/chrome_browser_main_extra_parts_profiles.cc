@@ -35,7 +35,6 @@
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences_factory.h"
 #include "chrome/browser/net/nqe/ui_network_quality_estimator_service_factory.h"
-#include "chrome/browser/notifications/extension_welcome_notification_factory.h"
 #include "chrome/browser/notifications/notifier_state_tracker_factory.h"
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -220,9 +219,6 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   CloudPrintProxyServiceFactory::GetInstance();
 #endif
   CookieSettingsFactory::GetInstance();
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  ExtensionWelcomeNotificationFactory::GetInstance();
-#endif
   NotifierStateTrackerFactory::GetInstance();
   data_use_measurement::ChromeDataUseAscriberServiceFactory::GetInstance();
 #if defined(OS_WIN)

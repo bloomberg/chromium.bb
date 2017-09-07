@@ -9255,15 +9255,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_NOTIFICATION_PERMISSIONS_FRAGMENT" desc="Permission sentence fragment to show following the prompt 'This site wants to:' in a permissions request">
         Show notifications
       </message>
-      <message name="IDS_NOTIFICATION_WELCOME_BODY" desc="Notification body for the Welcome Notification">
-        Stay connected to what you need to know, across all devices.
-      </message>
-      <message name="IDS_NOTIFICATION_WELCOME_BUTTON_LEARN_MORE" desc="Learn more button text for the Welcome Notification">
-        Learn more
-      </message>
-      <message name="IDS_NOTIFICATION_WELCOME_TITLE" desc="Notification title for the Welcome Notification">
-        Google Now for Chrome!
-      </message>
       <message name="IDS_NOTIFICATION_BUTTON_SETTINGS" desc="Short button label to go to the notification settings panel">
         Settings
       </message>
@@ -9272,9 +9263,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
       <message name="IDS_NOTIFICATION_BUTTON_MORE" desc="Label shown on the second button of a MAC OSX system notification used to expand further options. [CHAR-LIMIT=12]">
         More
-      </message>
-      <message name="IDS_NOTIFIER_WELCOME_BUTTON" desc="Notification body for when a new notifier service is introduced.">
-        Turn off these notifications
       </message>
       <message name="IDS_NOTIFICATION_REPLY_PLACEHOLDER" desc="Placeholder text shown in the text box before any text is entered when replying directly to a notification.">
         Send message

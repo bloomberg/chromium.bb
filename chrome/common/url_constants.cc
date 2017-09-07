@@ -633,9 +633,6 @@ const char kChromeCleanerLearnMoreURL[] =
     "https://support.google.com/chrome/?p=chrome_cleanup_tool";
 #endif
 
-const char kNotificationWelcomeLearnMoreURL[] =
-    "https://support.google.com/chrome/?p=ib_google_now_welcome";
-
 // Add hosts here to be included in chrome://chrome-urls (about:about).
 // These hosts will also be suggested by BuiltinProvider.
 const char* const kChromeHostURLs[] = {

@@ -37,7 +37,6 @@
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/profile_network_context_service.h"
-#include "chrome/browser/notifications/extension_welcome_notification.h"
 #include "chrome/browser/notifications/notification_channels_provider_android.h"
 #include "chrome/browser/notifications/notifier_state_tracker.h"
 #include "chrome/browser/pepper_flash_settings_manager.h"
@@ -524,12 +523,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   extensions::NtpOverriddenBubbleDelegate::RegisterPrefs(registry);
   extensions::RuntimeAPI::RegisterPrefs(registry);
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-
-#if BUILDFLAG(ENABLE_EXTENSIONS) && !defined(OS_ANDROID)
-  // The extension welcome notification requires a build that enables extensions
-  // and notifications, and uses the UI message center.
-  ExtensionWelcomeNotification::RegisterProfilePrefs(registry);
-#endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   printing::StickySettings::RegisterProfilePrefs(registry);

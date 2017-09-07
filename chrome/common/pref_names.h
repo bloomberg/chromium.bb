@@ -434,10 +434,6 @@ extern const char kSupervisedUsers[];
 
 extern const char kMessageCenterDisabledExtensionIds[];
 extern const char kMessageCenterDisabledSystemComponentIds[];
-extern const char kWelcomeNotificationDismissed[];
-extern const char kWelcomeNotificationDismissedLocal[];
-extern const char kWelcomeNotificationPreviouslyPoppedUp[];
-extern const char kWelcomeNotificationExpirationTimestamp[];
 
 extern const char kFullscreenAllowed[];
 

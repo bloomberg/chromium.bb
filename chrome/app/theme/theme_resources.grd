@@ -150,6 +150,7 @@
         <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_NOTIFICATION_MENU_DELETE" file="cros/downloads/delete.png" />
         <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_NOTIFICATION_MENU_DOWNLOAD" file="cros/downloads/download.png" />
         <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_NOTIFICATION_MENU_FOLDER" file="cros/downloads/folder.png" />
+        <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_NOTIFICATION_MENU_LEARN_MORE" file="cros/downloads/learn_more.png" />
         <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_NOTIFICATION_MENU_PAUSE" file="cros/downloads/pause.png" />
         <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_NOTIFICATION_MENU_COPY_TO_CLIPBOARD" file="cros/downloads/copy_to_clipboard.png" />
         <structure type="chrome_scaled_image" name="IDR_ENABLE_DEBUGGING_FAILURE" file="cros/enable_debugging_failure.png" />
@@ -268,9 +269,6 @@
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_EASYUNLOCK_ENABLED" file="cros/notification_easyunlock_enabled.png" />
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_EASYUNLOCK_PROMO" file="cros/notification_easyunlock_promo.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_WELCOME_ICON" file="common/notification_welcome_icon.png" />
-      <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_WELCOME_LEARN_MORE" file="common/notification_welcome_learn_more.png" />
-      <structure type="chrome_scaled_image" name="IDR_NOTIFIER_BLOCK_BUTTON" file="common/block_notifier.png" />
       <if expr="is_macosx">
         <structure type="chrome_scaled_image" name="IDR_OVERLAY_DROP_SHADOW" file="mac/overlay_drop_shadow.png" />
       </if>
