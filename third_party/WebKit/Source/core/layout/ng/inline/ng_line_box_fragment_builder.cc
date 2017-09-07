@@ -70,10 +70,13 @@ NGLineBoxFragmentBuilder::ToLineBoxFragment() {
         writing_mode, Direction(), physical_size, child->Size()));
   }
 
-  return AdoptRef(new NGPhysicalLineBoxFragment(
-      Style(), physical_size, children_, metrics_,
-      break_token_ ? std::move(break_token_)
-                   : NGInlineBreakToken::Create(node_)));
+  RefPtr<NGPhysicalLineBoxFragment> fragment =
+      AdoptRef(new NGPhysicalLineBoxFragment(
+          Style(), physical_size, children_, metrics_,
+          break_token_ ? std::move(break_token_)
+                       : NGInlineBreakToken::Create(node_)));
+  fragment->UpdateVisualRect();
+  return fragment;
 }
 
 }  // namespace blink

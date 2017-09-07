@@ -203,6 +203,7 @@ RefPtr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
       layout_object_, Style(), physical_size,
       overflow_.ConvertToPhysical(WritingMode()), children_, baselines_,
       border_edges_.ToPhysical(WritingMode()), std::move(break_token)));
+  fragment->UpdateVisualRect();
 
   return AdoptRef(new NGLayoutResult(
       std::move(fragment), oof_positioned_descendants_, unpositioned_floats_,

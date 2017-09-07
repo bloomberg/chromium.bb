@@ -85,6 +85,9 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
     return LineOrientation() == NGLineOrientation::kHorizontal;
   }
 
+  // Update visual rect for this fragment.
+  void UpdateVisualRect() const override;
+
   NGTextEndEffect EndEffect() const {
     return static_cast<NGTextEndEffect>(end_effect_);
   }

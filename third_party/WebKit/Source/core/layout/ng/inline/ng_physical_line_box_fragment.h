@@ -36,6 +36,9 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final : public NGPhysicalFragment {
                                                   metrics_, break_token_));
   }
 
+  // Update visual rect for this fragment.
+  void UpdateVisualRect() const override;
+
  private:
   Vector<RefPtr<NGPhysicalFragment>> children_;
 
