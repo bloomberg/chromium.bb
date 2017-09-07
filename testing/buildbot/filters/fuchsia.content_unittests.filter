@@ -78,6 +78,8 @@
 -QuotaPolicyCookieStoreTest.TestDestroyOnBackgroundThread
 -QuotaPolicyCookieStoreTest.TestPersistence
 -QuotaPolicyCookieStoreTest.TestPolicy
+-_/DOMStorageAreaParamTest.DeleteOrigin/0
+-_/DOMStorageAreaParamTest.DeleteOrigin/1
 
 # https://crbug.com/761214
 -RendererAudioOutputStreamFactoryIntegrationTest.StreamIntegrationTest
