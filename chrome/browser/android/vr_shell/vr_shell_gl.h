@@ -236,6 +236,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
 
   bool web_vr_mode_;
   bool ready_to_draw_ = false;
+  bool paused_ = true;
   bool surfaceless_rendering_;
   bool daydream_support_;
   bool is_exiting_ = false;

@@ -817,9 +817,13 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         if (tab == null) return;
         if (hasFocus) {
             tab.onActivityShown();
+            VrShellDelegate.onActivityShown(this);
         } else {
             boolean stopped = ApplicationStatus.getStateForActivity(this) == ActivityState.STOPPED;
-            if (stopped) tab.onActivityHidden();
+            if (stopped) {
+                VrShellDelegate.onActivityHidden(this);
+                tab.onActivityHidden();
+            }
         }
     }
 
@@ -906,7 +910,10 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     @Override
     public void onStopWithNative() {
         Tab tab = getActivityTab();
-        if (tab != null && !hasWindowFocus()) tab.onActivityHidden();
+        if (!hasWindowFocus()) {
+            VrShellDelegate.onActivityHidden(this);
+            if (tab != null) tab.onActivityHidden();
+        }
         if (mAppMenuHandler != null) mAppMenuHandler.hideAppMenu();
 
         if (GSAState.getInstance(this).isGsaAvailable() && !SysUtils.isLowEndDevice()) {

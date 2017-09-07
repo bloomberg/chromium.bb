@@ -279,7 +279,8 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
       base::MakeUnique<vr::UiRenderer>(scene_, vr_shell_renderer_.get());
 
   ready_to_draw_ = true;
-  OnVSync(base::TimeTicks::Now());
+  if (!paused_)
+    OnVSync(base::TimeTicks::Now());
 }
 
 void VrShellGl::CreateContentSurface() {
@@ -1043,6 +1044,7 @@ void VrShellGl::DrawWebVr() {
 }
 
 void VrShellGl::OnPause() {
+  paused_ = true;
   vsync_helper_.CancelVSyncRequest();
   controller_->OnPause();
   gvr_api_->PauseTracking();
@@ -1050,6 +1052,7 @@ void VrShellGl::OnPause() {
 }
 
 void VrShellGl::OnResume() {
+  paused_ = false;
   gvr_api_->RefreshViewerProfile();
   gvr_api_->ResumeTracking();
   controller_->OnResume();
