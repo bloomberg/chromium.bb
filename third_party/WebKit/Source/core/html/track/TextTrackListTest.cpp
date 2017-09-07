@@ -4,6 +4,7 @@
 
 #include "core/html/track/TextTrackList.h"
 
+#include "core/html/track/TextTrack.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
