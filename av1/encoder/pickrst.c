@@ -34,8 +34,8 @@
 #include "av1/encoder/mathutils.h"
 
 // When set to RESTORE_WIENER or RESTORE_SGRPROJ only those are allowed.
-// When set to RESTORE_NONE (0) we allow switchable.
-const RestorationType force_restore_type = RESTORE_NONE;
+// When set to RESTORE_TYPES we allow switchable.
+const RestorationType force_restore_type = RESTORE_TYPES;
 
 // Number of Wiener iterations
 #define NUM_WIENER_ITERS 5
@@ -1447,7 +1447,7 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   for (int plane = AOM_PLANE_Y; plane <= AOM_PLANE_V; ++plane) {
     for (r = 0; r < RESTORE_SWITCHABLE_TYPES; ++r) {
       cost_restore[r] = DBL_MAX;
-      if (force_restore_type != 0)
+      if (force_restore_type != RESTORE_TYPES)
         if (r != RESTORE_NONE && r != force_restore_type) continue;
       cost_restore[r] =
           search_restore_fun[r](src, cpi, method == LPF_PICK_FROM_SUBIMAGE,
@@ -1463,7 +1463,7 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
     best_cost_restore = DBL_MAX;
     best_restore = 0;
     for (r = 0; r < RESTORE_TYPES; ++r) {
-      if (force_restore_type != 0)
+      if (force_restore_type != RESTORE_TYPES)
         if (r != RESTORE_NONE && r != force_restore_type) continue;
       if (cost_restore[r] < best_cost_restore) {
         best_restore = r;
@@ -1471,7 +1471,7 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
       }
     }
     cm->rst_info[plane].frame_restoration_type = best_restore;
-    if (force_restore_type != 0)
+    if (force_restore_type != RESTORE_TYPES)
       assert(best_restore == force_restore_type ||
              best_restore == RESTORE_NONE);
     if (best_restore != RESTORE_SWITCHABLE) {
