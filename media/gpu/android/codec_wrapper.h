@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "media/base/android/media_codec_bridge.h"
+#include "media/base/decoder_buffer.h"
 #include "media/gpu/android/device_info.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/surface_texture_gl_owner.h"
@@ -95,23 +96,12 @@ class MEDIA_GPU_EXPORT CodecWrapper {
   // Whether the codec supports Flush().
   bool SupportsFlush(DeviceInfo* device_info) const;
 
-  // See MediaCodecBridge documentation for the following.
+  // Flushes the codec and discards all output buffers.
   bool Flush();
-  MediaCodecStatus QueueInputBuffer(int index,
-                                    const uint8_t* data,
-                                    size_t data_size,
-                                    base::TimeDelta presentation_time);
-  MediaCodecStatus QueueSecureInputBuffer(
-      int index,
-      const uint8_t* data,
-      size_t data_size,
-      const std::string& key_id,
-      const std::string& iv,
-      const std::vector<SubsampleEntry>& subsamples,
-      const EncryptionScheme& encryption_scheme,
-      base::TimeDelta presentation_time);
-  void QueueEOS(int input_buffer_index);
-  MediaCodecStatus DequeueInputBuffer(int* index);
+
+  // Queues |buffer| if the codec has an available input buffer.
+  MediaCodecStatus QueueInputBuffer(const DecoderBuffer& buffer,
+                                    const EncryptionScheme& encryption_scheme);
 
   // Like MediaCodecBridge::DequeueOutputBuffer() but it outputs a
   // CodecOutputBuffer instead of an index. |*codec_buffer| must be null.
