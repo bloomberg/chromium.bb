@@ -5975,6 +5975,10 @@ static void update_txfm_count(MACROBLOCK *x, MACROBLOCKD *xd,
 static void tx_partition_count_update(const AV1_COMMON *const cm, MACROBLOCK *x,
                                       BLOCK_SIZE plane_bsize, int mi_row,
                                       int mi_col, FRAME_COUNTS *td_counts) {
+#if CONFIG_INTRABC
+  // Intrabc doesn't support var-tx yet. So no need to update tx partition info.
+  if (is_intrabc_block(&x->e_mbd.mi[0]->mbmi)) return;
+#endif  // CONFIG_INTRABC
   MACROBLOCKD *xd = &x->e_mbd;
   const int mi_width = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
   const int mi_height = block_size_high[plane_bsize] >> tx_size_wide_log2[0];
