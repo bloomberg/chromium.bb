@@ -203,6 +203,12 @@ bool StructTraits<media_router::mojom::MediaRouteDataView,
   if (custom_controller_path)
     out->set_custom_controller_path(*custom_controller_path);
 
+  media_router::RouteControllerType controller_type;
+  if (!data.ReadControllerType(&controller_type))
+    return false;
+
+  out->set_controller_type(controller_type);
+
   out->set_local(data.is_local());
   out->set_supports_media_route_controller(
       data.supports_media_route_controller());

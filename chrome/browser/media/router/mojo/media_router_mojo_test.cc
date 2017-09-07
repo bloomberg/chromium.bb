@@ -35,8 +35,10 @@ const uint8_t kBinaryMessage[] = {0x01, 0x02, 0x03, 0x04};
 
 // Creates a media route whose ID is |kRouteId|.
 MediaRoute CreateMediaRoute() {
-  return MediaRoute(kRouteId, MediaSource(kSource), kSinkId, kDescription, true,
-                    std::string(), true);
+  MediaRoute route(kRouteId, MediaSource(kSource), kSinkId, kDescription, true,
+                   std::string(), true);
+  route.set_controller_type(RouteControllerType::kGeneric);
+  return route;
 }
 
 class RouteResponseCallbackHandler {
@@ -90,7 +92,8 @@ void MockEventPageRequestManager::RunOrDefer(
   RunOrDeferInternal(request, wake_reason);
 }
 
-MockMediaController::MockMediaController() : binding_(this) {}
+MockMediaController::MockMediaController()
+    : binding_(this), hangouts_binding_(this) {}
 
 MockMediaController::~MockMediaController() {}
 

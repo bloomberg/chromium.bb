@@ -40,6 +40,16 @@ Polymer({
     },
 
     /**
+     * True if the Hangouts route is currently using local present mode.
+     * Valid for Hangouts routes only.
+     * @private {boolean}
+     */
+    hangoutsLocalPresent_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * The timestamp for when the initial media status was loaded.
      * @private {number}
      */
@@ -85,6 +95,15 @@ Polymer({
     lastVolumeChangeByUser_: {
       type: Number,
       value: 0,
+    },
+
+    /**
+     * The route currently associated with this controller.
+     * @type {?media_router.Route|undefined}
+     */
+    route: {
+      type: Object,
+      observer: 'onRouteUpdated_',
     },
 
     /**
@@ -271,6 +290,15 @@ Polymer({
   },
 
   /**
+   * Called when the "smooth motion" box for Hangouts is changed by the user.
+   * @param {!{target: !PaperCheckboxElement}} e
+   * @private
+   */
+  onHangoutsLocalPresentChange_: function(e) {
+    media_router.browserApi.setHangoutsLocalPresent(e.target.checked);
+  },
+
+  /**
    * Called when the user toggles the mute status of the media. Sends a mute or
    * unmute command to the browser.
    * @private
@@ -321,14 +349,17 @@ Polymer({
     } else {
       this.stopIncrementingCurrentTime_();
     }
+    this.hangoutsLocalPresent_ = !!newRouteStatus.hangoutsExtraData &&
+        newRouteStatus.hangoutsExtraData.localPresent;
   },
 
   /**
    * Called when the route is updated. Updates the description shown if it has
    * not been provided by status updates.
    * @param {?media_router.Route} route
+   * @private
    */
-  onRouteUpdated: function(route) {
+  onRouteUpdated_: function(route) {
     if (!route) {
       this.stopIncrementingCurrentTime_();
     }

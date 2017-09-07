@@ -18,10 +18,3 @@ RouteControlsInterface.prototype.routeStatus;
  * Resets the route controls. Called when the route details view is closed.
  */
 RouteControlsInterface.prototype.reset = function() {};
-
-/**
- * Called when the route is updated. Updates the description shown if it has
- * not been provided by status updates.
- * @param {!media_router.Route} route
- */
-RouteControlsInterface.prototype.onRouteUpdated = function(route) {};

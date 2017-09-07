@@ -36,14 +36,17 @@ class MediaRouteControllerTest : public ::testing::Test {
   void SetUp() override {
     SetUpMockObjects();
 
-    auto controller =
-        base::MakeRefCounted<MediaRouteController>(kRouteId, &profile_);
+    auto controller = CreateMediaRouteController();
     mock_media_controller_.Bind(controller->CreateControllerRequest());
     observer_ = base::MakeUnique<MockMediaRouteControllerObserver>(
         std::move(controller));
   }
 
   void TearDown() override { observer_.reset(); }
+
+  virtual scoped_refptr<MediaRouteController> CreateMediaRouteController() {
+    return base::MakeRefCounted<MediaRouteController>(kRouteId, &profile_);
+  }
 
   scoped_refptr<MediaRouteController> GetController() const {
     return observer_->controller();
@@ -78,6 +81,16 @@ class MediaRouteControllerTest : public ::testing::Test {
   }
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouteControllerTest);
+};
+
+class HangoutsMediaRouteControllerTest : public MediaRouteControllerTest {
+ public:
+  ~HangoutsMediaRouteControllerTest() override {}
+
+  scoped_refptr<MediaRouteController> CreateMediaRouteController() override {
+    return base::MakeRefCounted<HangoutsMediaRouteController>(kRouteId,
+                                                              &profile_);
+  }
 };
 
 // Test that when Mojo connections are ready, calls to the Mojo controller go
@@ -184,6 +197,23 @@ TEST_F(MediaRouteControllerTest, DestroyControllerOnNoObservers) {
   EXPECT_CALL(*router_, DetachRouteController(kRouteId, controller)).Times(1);
   observer2.reset();
   EXPECT_TRUE(Mock::VerifyAndClearExpectations(router_));
+}
+
+TEST_F(HangoutsMediaRouteControllerTest, HangoutsCommands) {
+  auto controller = GetController();
+  auto* hangouts_controller =
+      HangoutsMediaRouteController::From(controller.get());
+  ASSERT_TRUE(hangouts_controller);
+
+  EXPECT_CALL(mock_media_controller_, ConnectHangoutsMediaRouteController());
+  hangouts_controller->InitAdditionalMojoConnnections();
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_CALL(mock_media_controller_, SetLocalPresent(true));
+  hangouts_controller->SetLocalPresent(true);
+
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace media_router

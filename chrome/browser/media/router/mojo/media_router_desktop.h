@@ -89,16 +89,23 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
                      const std::string& search_input,
                      const std::string& domain,
                      MediaSinkSearchResponseCallback sink_callback) override;
-  void DoCreateMediaRouteController(
-      const MediaRoute::Id& route_id,
-      mojom::MediaControllerRequest mojo_media_controller_request,
-      mojom::MediaStatusObserverPtr mojo_observer) override;
+  void DoCreateMediaRouteController(MediaRouteController* controller) override;
   void DoProvideSinks(const std::string& provider_name,
                       std::vector<MediaSinkInternal> sinks) override;
   void DoUpdateMediaSinks(const MediaSource::Id& source_id) override;
 #if defined(OS_WIN)
   void DoEnsureMdnsDiscoveryEnabled();
 #endif
+
+  // This is the version that gets queued (instead of
+  // DoCreateMediaRouteController) if CreateMediaRouteController is deferred.
+  // This is because the MediaRouteController may be deleted by the time the
+  // callback is executed, so we need to perform a check that the controller
+  // exists. Note that it is possible that the original controller has been
+  // deleted and replaced with another instance. The base class
+  // DoCreateMediaRouteController should be handling this case correctly
+  // already.
+  void CreateMediaRouteControllerDeferred(const MediaRoute::Id& route_id);
 
   // Error handler callback for |binding_| and |media_route_provider_|.
   void OnConnectionError() override;

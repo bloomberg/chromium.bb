@@ -97,7 +97,12 @@ define('media_router_bindings', [
       // Begin newly added properties, followed by the milestone they were
       // added.  The guard should be safe to remove N+2 milestones later.
       'supports_media_route_controller':
-          !!route.supportsMediaRouteController  // M61
+          !!route.supportsMediaRouteController,  // M61
+      'controller_type':                         // M62
+          route.controllerType ||
+              (!!route.supportsMediaRouteController ?
+                  mediaRouterMojom.RouteControllerType.kGeneric :
+                  mediaRouterMojom.RouteControllerType.kNone)
     });
   }
 
@@ -281,6 +286,10 @@ define('media_router_bindings', [
       Binding: bindings.Binding,
       DialMediaSink: mediaRouterMojom.DialMediaSink,
       CastMediaSink: mediaRouterMojom.CastMediaSink,
+      HangoutsMediaRouteController:
+          mediaControllerMojom.HangoutsMediaRouteController,
+      HangoutsMediaStatusExtraData:
+          mediaStatusMojom.HangoutsMediaStatusExtraData,
       IPAddress: ipAddressMojom.IPAddress,
       IPEndpoint: ipEndpointMojom.IPEndpoint,
       InterfacePtrController: bindings.InterfacePtrController,
@@ -300,6 +309,7 @@ define('media_router_bindings', [
       RemotingSinkVideoCapability:
           remotingCommonMojom.RemotingSinkVideoCapability,
       RemotingSinkMetadata: remotingCommonMojom.RemotingSinkMetadata,
+      RouteControllerType: mediaRouterMojom.RouteControllerType,
       Origin: originMojom.Origin,
       Sink: mediaRouterMojom.MediaSink,
       SinkExtraData: mediaRouterMojom.MediaSinkExtraData,

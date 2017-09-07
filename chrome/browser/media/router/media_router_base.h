@@ -69,8 +69,9 @@ class MediaRouterBase : public MediaRouter {
   // JoinRoute().
   bool HasJoinableRoute() const;
 
-  // Returns true if there is a route with the ID in the current list of routes.
-  bool IsRouteKnown(const std::string& route_id) const;
+  // Returns a pointer to the MediaRoute whose ID is |route_id|, or nullptr
+  // if not found.
+  const MediaRoute* GetRoute(const MediaRoute::Id& route_id) const;
 
   using PresentationConnectionStateChangedCallbacks = base::CallbackList<void(
       const content::PresentationConnectionStateChangeInfo&)>;

@@ -83,12 +83,20 @@ MediaRouterElementsBrowserTest.prototype = {
         document.dispatchEvent(event);
       }
 
+      function setHangoutsLocalPresent(localPresent) {
+        const event = new CustomEvent(
+            'mock-set-hangouts-local-present',
+            {detail: {localPresent: localPresent}});
+        document.dispatchEvent(event);
+      }
+
       return {
         pauseCurrentMedia: pauseCurrentMedia,
         playCurrentMedia: playCurrentMedia,
         seekCurrentMedia: seekCurrentMedia,
         setCurrentMediaMute: setCurrentMediaMute,
         setCurrentMediaVolume: setCurrentMediaVolume,
+        setHangoutsLocalPresent: setHangoutsLocalPresent
       };
     });
   },

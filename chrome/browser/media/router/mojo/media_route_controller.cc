@@ -34,13 +34,18 @@ void MediaRouteController::Observer::OnControllerInvalidated() {}
 MediaRouteController::MediaRouteController(const MediaRoute::Id& route_id,
                                            content::BrowserContext* context)
     : route_id_(route_id),
-      media_router_(MediaRouterFactory::GetApiForBrowserContext(context)),
       request_manager_(
           EventPageRequestManagerFactory::GetApiForBrowserContext(context)),
-      binding_(this),
-      weak_factory_(this) {
+      media_router_(MediaRouterFactory::GetApiForBrowserContext(context)),
+      binding_(this) {
   DCHECK(media_router_);
   DCHECK(request_manager_);
+}
+
+void MediaRouteController::InitAdditionalMojoConnnections() {}
+
+RouteControllerType MediaRouteController::GetType() const {
+  return RouteControllerType::kGeneric;
 }
 
 void MediaRouteController::Play() {
@@ -49,7 +54,7 @@ void MediaRouteController::Play() {
     return;
   }
   request_manager_->RunOrDefer(
-      base::BindOnce(&MediaRouteController::Play, weak_factory_.GetWeakPtr()),
+      base::BindOnce(&MediaRouteController::Play, AsWeakPtr()),
       MediaRouteProviderWakeReason::ROUTE_CONTROLLER_COMMAND);
 }
 
@@ -59,7 +64,7 @@ void MediaRouteController::Pause() {
     return;
   }
   request_manager_->RunOrDefer(
-      base::BindOnce(&MediaRouteController::Pause, weak_factory_.GetWeakPtr()),
+      base::BindOnce(&MediaRouteController::Pause, AsWeakPtr()),
       MediaRouteProviderWakeReason::ROUTE_CONTROLLER_COMMAND);
 }
 
@@ -69,8 +74,7 @@ void MediaRouteController::Seek(base::TimeDelta time) {
     return;
   }
   request_manager_->RunOrDefer(
-      base::BindOnce(&MediaRouteController::Seek, weak_factory_.GetWeakPtr(),
-                     time),
+      base::BindOnce(&MediaRouteController::Seek, AsWeakPtr(), time),
       MediaRouteProviderWakeReason::ROUTE_CONTROLLER_COMMAND);
 }
 
@@ -80,8 +84,7 @@ void MediaRouteController::SetMute(bool mute) {
     return;
   }
   request_manager_->RunOrDefer(
-      base::BindOnce(&MediaRouteController::SetMute, weak_factory_.GetWeakPtr(),
-                     mute),
+      base::BindOnce(&MediaRouteController::SetMute, AsWeakPtr(), mute),
       MediaRouteProviderWakeReason::ROUTE_CONTROLLER_COMMAND);
 }
 
@@ -91,8 +94,7 @@ void MediaRouteController::SetVolume(float volume) {
     return;
   }
   request_manager_->RunOrDefer(
-      base::BindOnce(&MediaRouteController::SetVolume,
-                     weak_factory_.GetWeakPtr(), volume),
+      base::BindOnce(&MediaRouteController::SetVolume, AsWeakPtr(), volume),
       MediaRouteProviderWakeReason::ROUTE_CONTROLLER_COMMAND);
 }
 
@@ -104,6 +106,7 @@ void MediaRouteController::OnMediaStatusUpdated(const MediaStatus& status) {
 }
 
 void MediaRouteController::Invalidate() {
+  InvalidateInternal();
   is_valid_ = false;
   binding_.Close();
   mojo_media_controller_.reset();
@@ -113,7 +116,10 @@ void MediaRouteController::Invalidate() {
 }
 
 mojom::MediaControllerRequest MediaRouteController::CreateControllerRequest() {
-  return mojo::MakeRequest(&mojo_media_controller_);
+  auto request = mojo::MakeRequest(&mojo_media_controller_);
+  mojo_media_controller_.set_connection_error_handler(base::BindOnce(
+      &MediaRouteController::OnMojoConnectionError, base::Unretained(this)));
+  return request;
 }
 
 mojom::MediaStatusObserverPtr MediaRouteController::BindObserverPtr() {
@@ -143,6 +149,56 @@ void MediaRouteController::RemoveObserver(Observer* observer) {
 void MediaRouteController::OnMojoConnectionError() {
   binding_.Close();
   mojo_media_controller_.reset();
+}
+
+// static
+HangoutsMediaRouteController* HangoutsMediaRouteController::From(
+    MediaRouteController* controller) {
+  if (!controller || controller->GetType() != RouteControllerType::kHangouts)
+    return nullptr;
+
+  return static_cast<HangoutsMediaRouteController*>(controller);
+}
+
+HangoutsMediaRouteController::HangoutsMediaRouteController(
+    const MediaRoute::Id& route_id,
+    content::BrowserContext* context)
+    : MediaRouteController(route_id, context) {}
+
+HangoutsMediaRouteController::~HangoutsMediaRouteController() {}
+
+void HangoutsMediaRouteController::InitAdditionalMojoConnnections() {
+  MediaRouteController::InitAdditionalMojoConnnections();
+  auto request = mojo::MakeRequest(&mojo_hangouts_controller_);
+  mojo_hangouts_controller_.set_connection_error_handler(
+      base::BindOnce(&HangoutsMediaRouteController::OnMojoConnectionError,
+                     base::Unretained(this)));
+  mojo_media_controller()->ConnectHangoutsMediaRouteController(
+      std::move(request));
+}
+
+RouteControllerType HangoutsMediaRouteController::GetType() const {
+  return RouteControllerType::kHangouts;
+}
+
+void HangoutsMediaRouteController::SetLocalPresent(bool local_present) {
+  if (request_manager()->mojo_connections_ready()) {
+    mojo_hangouts_controller_->SetLocalPresent(local_present);
+    return;
+  }
+  request_manager()->RunOrDefer(
+      base::BindOnce(&HangoutsMediaRouteController::SetLocalPresent,
+                     base::AsWeakPtr(this), local_present),
+      MediaRouteProviderWakeReason::ROUTE_CONTROLLER_COMMAND);
+}
+
+void HangoutsMediaRouteController::OnMojoConnectionError() {
+  mojo_hangouts_controller_.reset();
+  MediaRouteController::OnMojoConnectionError();
+}
+
+void HangoutsMediaRouteController::InvalidateInternal() {
+  mojo_hangouts_controller_.reset();
 }
 
 }  // namespace media_router
