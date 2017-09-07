@@ -140,6 +140,8 @@ class V8BrowsingMobileExpecations(expectations.StoryExpectations):
   def SetExpectations(self):
     self.DisableStory('browse:shopping:flipkart', [expectations.ALL_ANDROID],
                       'crbug.com/708300')
+    self.DisableStory('browse:news:cnn', [expectations.ANDROID_NEXUS5X],
+                      'crbug.com/714650')
     self.DisableStory('browse:news:globo', [expectations.ALL_ANDROID],
                       'crbug.com/714650')
     self.DisableStory('browse:news:toi', [expectations.ALL_ANDROID],
