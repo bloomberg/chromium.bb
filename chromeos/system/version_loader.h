@@ -27,9 +27,9 @@ using StringCallback = base::Callback<void(const std::string&)>;
 // May block.
 CHROMEOS_EXPORT std::string GetVersion(VersionFormat format);
 
-// Gets the full OS version and adds the TPM version information. Asynchronous,
-// result is passed on to callback as a string.
-CHROMEOS_EXPORT void GetFullOSAndTpmVersion(StringCallback callback);
+// Gets the TPM version information. Asynchronous, result is passed on to
+// callback as a string.
+CHROMEOS_EXPORT void GetTpmVersion(StringCallback callback);
 
 // Gets the ARC version.
 // May block.

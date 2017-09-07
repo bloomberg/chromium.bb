@@ -174,6 +174,7 @@ class DeviceStatusCollector {
   // Callbacks from chromeos::VersionLoader.
   void OnOSVersion(const std::string& version);
   void OnOSFirmware(const std::string& version);
+  void OnTpmVersion(const std::string& version);
 
   void GetDeviceStatus(scoped_refptr<GetStatusState> state);
   void GetSessionStatus(scoped_refptr<GetStatusState> state);
@@ -232,6 +233,7 @@ class DeviceStatusCollector {
 
   std::string os_version_;
   std::string firmware_version_;
+  std::string tpm_version_;
 
   struct ResourceUsage {
     // Sample of percentage-of-CPU-used.

@@ -41,9 +41,6 @@ const char kFirmwarePrefix[] = "version";
 // File to look for firmware number in.
 const char kPathFirmware[] = "/var/log/bios_info.txt";
 
-// Used as separator when combining OS and TPM version strings.
-const char kVersionSeparator[] = "\n";
-
 }  // namespace
 
 std::string GetVersion(VersionFormat format) {
@@ -67,13 +64,12 @@ std::string GetVersion(VersionFormat format) {
   return version;
 }
 
-void GetFullOSAndTpmVersion(StringCallback callback) {
+void GetTpmVersion(StringCallback callback) {
   chromeos::DBusThreadManager::Get()->GetCryptohomeClient()->TpmGetVersion(
       base::Bind([](StringCallback callback,
                     chromeos::DBusMethodCallStatus call_status,
                     const std::string& tpm_version) {
-        const std::string version = GetVersion(VERSION_FULL);
-        callback.Run(version + kVersionSeparator + tpm_version);
+        callback.Run(tpm_version);
       },
       callback));
 }
