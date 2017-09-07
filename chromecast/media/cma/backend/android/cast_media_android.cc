@@ -6,12 +6,15 @@
 #include "base/at_exit.h"
 #include "base/logging.h"
 #include "chromecast/chromecast_features.h"
-#include "chromecast/media/cma/backend/android/loopback_audio_manager.h"
 #include "chromecast/media/cma/backend/android/media_pipeline_backend_android.h"
 #include "chromecast/public/cast_media_shlib.h"
 #include "chromecast/public/graphics_types.h"
 #include "chromecast/public/video_plane.h"
 #include "chromecast/public/volume_control.h"
+
+#if BUILDFLAG(ENABLE_ATHINGS_LOOPBACK)
+#include "chromecast/media/cma/backend/android/loopback_audio_manager.h"
+#endif  // BUILDFLAG(ENABLE_ATHINGS_LOOPBACK)
 
 namespace chromecast {
 namespace media {
