@@ -63,6 +63,7 @@
 #include "ui/gfx/geometry/point.h"
 
 using testing::_;
+using testing::UnorderedElementsAre;
 
 namespace {
 
@@ -2386,6 +2387,62 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   EXPECT_FALSE(prompt_observer->IsUpdatePromptShownAutomatically());
   CheckThatCredentialsStored(base::ASCIIToUTF16("temp"),
                              base::ASCIIToUTF16("pw"));
+}
+
+// This is a subclass to enable kEnablePasswordSelection feature.
+class PasswordManagerBrowserTestForPasswordSelection
+    : public PasswordManagerBrowserTestBase {
+ public:
+  PasswordManagerBrowserTestForPasswordSelection() = default;
+  ~PasswordManagerBrowserTestForPasswordSelection() override = default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        password_manager::features::kEnablePasswordSelection);
+    PasswordManagerBrowserTestBase::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestForPasswordSelection,
+                       MultiplePasswordsWithPasswordSelectionEnabled) {
+  NavigateToFile("/password/password_form.html");
+  NavigationObserver observer(WebContents());
+  // It is important that these 3 passwords are different. Because if two of
+  // them are the same, it is going to be treated as a password update and the
+  // dropdown will not be shown.
+  std::string fill_and_submit =
+      "document.getElementById('chg_password_wo_username_field').value = "
+      "'pass1';"
+      "document.getElementById('chg_new_password_wo_username_1').value = "
+      "'pass2';"
+      "document.getElementById('chg_new_password_wo_username_2').value = "
+      "'pass3';"
+      "document.getElementById('chg_submit_wo_username_button').click()";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  observer.Wait();
+  // 3 possible passwords are going to be shown in a dropdown when the password
+  // selection feature is enabled. The first one will be selected as the main
+  // password by default, and the other two will be in the
+  // other_possible_passwords list.
+  // The save password prompt is expected.
+  BubbleObserver bubble_observer(WebContents());
+  EXPECT_TRUE(bubble_observer.IsSavePromptShownAutomatically());
+  EXPECT_EQ(base::ASCIIToUTF16("pass1"),
+            ManagePasswordsUIController::FromWebContents(WebContents())
+                ->GetPendingPassword()
+                .password_value);
+  EXPECT_THAT(ManagePasswordsUIController::FromWebContents(WebContents())
+                  ->GetPendingPassword()
+                  .other_possible_passwords,
+              UnorderedElementsAre(base::ASCIIToUTF16("pass2"),
+                                   base::ASCIIToUTF16("pass3")));
+  bubble_observer.AcceptSavePrompt();
+  WaitForPasswordStore();
+  CheckThatCredentialsStored(base::ASCIIToUTF16(""),
+                             base::ASCIIToUTF16("pass1"));
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
