@@ -17,6 +17,7 @@
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -318,6 +319,51 @@ TEST_F(SplitViewControllerTest, DisplayConfigurationChangeTest) {
             new_bounds_window1.x() + new_bounds_window1.width());
   EXPECT_EQ(new_bounds_window2.x(),
             new_bounds_divider.x() + new_bounds_divider.width());
+}
+
+// Verify the left and right windows get swapped when SwapWindows is called or
+// the divider is double tapped.
+TEST_F(SplitViewControllerTest, SwapWindows) {
+  const gfx::Rect bounds(0, 0, 200, 200);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+  EXPECT_EQ(split_view_controller()->left_window(), window1.get());
+  EXPECT_EQ(split_view_controller()->right_window(), window2.get());
+
+  const gfx::Rect left_bounds = window1->GetBoundsInScreen();
+  const gfx::Rect right_bounds = window2->GetBoundsInScreen();
+
+  // Verify that after swapping windows, the windows and their bounds have been
+  // swapped.
+  split_view_controller()->SwapWindows();
+  EXPECT_EQ(split_view_controller()->left_window(), window2.get());
+  EXPECT_EQ(split_view_controller()->right_window(), window1.get());
+  EXPECT_EQ(left_bounds, window2->GetBoundsInScreen());
+  EXPECT_EQ(right_bounds, window1->GetBoundsInScreen());
+
+  // Perform a double tap on the divider center.
+  gfx::Point divider_center =
+      split_view_divider()
+          ->GetDividerBoundsInScreen(false /* is_dragging */)
+          .CenterPoint();
+  // The divider shifts after we click it once, so click it once before double
+  // clicking.
+  // TODO(sammiequon): Investigate why the divider shifts after the first click
+  // and remove the extra click.
+  GetEventGenerator().set_current_location(divider_center);
+  GetEventGenerator().ClickLeftButton();
+  divider_center = split_view_divider()
+                       ->GetDividerBoundsInScreen(false /* is_dragging */)
+                       .CenterPoint();
+  GetEventGenerator().set_current_location(divider_center);
+  GetEventGenerator().DoubleClickLeftButton();
+
+  EXPECT_EQ(split_view_controller()->left_window(), window1.get());
+  EXPECT_EQ(split_view_controller()->right_window(), window2.get());
 }
 
 }  // namespace ash

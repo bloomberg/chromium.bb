@@ -119,12 +119,18 @@ class DividerView : public views::View, public views::ViewTargeterDelegate {
     gfx::Point location(event.location());
     views::View::ConvertPointToScreen(this, &location);
     controller_->EndResize(location);
+    if (event.GetClickCount() == 2)
+      controller_->SwapWindows();
   }
 
   void OnGestureEvent(ui::GestureEvent* event) override {
     gfx::Point location(event->location());
     views::View::ConvertPointToScreen(this, &location);
     switch (event->type()) {
+      case ui::ET_GESTURE_TAP:
+        if (event->details().tap_count() == 2)
+          controller_->SwapWindows();
+        break;
       case ui::ET_GESTURE_TAP_DOWN:
       case ui::ET_GESTURE_SCROLL_BEGIN:
         controller_->StartResize(location);
