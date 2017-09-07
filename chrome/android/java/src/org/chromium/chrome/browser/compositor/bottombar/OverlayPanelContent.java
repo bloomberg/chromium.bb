@@ -340,6 +340,9 @@ public class OverlayPanelContent {
                 mNativeOverlayPanelContentPtr, mInterceptNavigationDelegate, panelWebContents);
 
         mContentDelegate.onContentViewCreated(mContentViewCore);
+        if (mContentViewWidth != 0 && mContentViewHeight != 0) {
+            onPhysicalBackingSizeChanged(mContentViewWidth, mContentViewHeight);
+        }
     }
 
     /**
@@ -479,15 +482,15 @@ public class OverlayPanelContent {
         return mContentViewCore;
     }
 
-    void onSizeChanged(int width, int height) {
-        mContentViewCore.onSizeChanged(width, height, mContentViewCore.getViewportWidthPix(),
-                mContentViewCore.getViewportHeightPix());
+    private WebContents getWebContents() {
+        return mContentViewCore != null ? mContentViewCore.getWebContents() : null;
     }
 
     void onPhysicalBackingSizeChanged(int width, int height) {
-        if (mContentViewCore != null && mContentViewCore.getWebContents() != null) {
-            nativeOnPhysicalBackingSizeChanged(mNativeOverlayPanelContentPtr,
-                    mContentViewCore.getWebContents(), width, height);
+        WebContents webContents = getWebContents();
+        if (webContents != null) {
+            nativeOnPhysicalBackingSizeChanged(
+                    mNativeOverlayPanelContentPtr, webContents, width, height);
         }
     }
 

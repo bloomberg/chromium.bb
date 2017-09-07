@@ -1029,7 +1029,6 @@ jlong Init(JNIEnv* env,
       << "A ContentViewCore should be created with a valid WebContents.";
   ui::ViewAndroid* view_android = web_contents->GetView()->GetNativeView();
   view_android->SetDelegate(jview_android_delegate);
-  view_android->SetLayout(ui::ViewAndroid::LayoutParams::MatchParent());
 
   ui::WindowAndroid* window_android =
       reinterpret_cast<ui::WindowAndroid*>(jwindow_android);

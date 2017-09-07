@@ -32,6 +32,9 @@ public class ContentViewRenderView extends FrameLayout {
     private final SurfaceView mSurfaceView;
     protected ContentViewCore mContentViewCore;
 
+    private int mWidth;
+    private int mHeight;
+
     /**
      * Constructs a new ContentViewRenderView.
      * This should be called and the {@link ContentViewRenderView} should be added to the view
@@ -101,6 +104,15 @@ public class ContentViewRenderView extends FrameLayout {
         mSurfaceView.setVisibility(VISIBLE);
     }
 
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        mWidth = w;
+        mHeight = h;
+        WebContents webContents =
+                mContentViewCore != null ? mContentViewCore.getWebContents() : null;
+        if (webContents != null) webContents.setSize(w, h);
+    }
+
     /**
      * Sets the background color of the surface view.  This method is necessary because the
      * background color of ContentViewRenderView itself is covered by the background of
@@ -137,7 +149,7 @@ public class ContentViewRenderView extends FrameLayout {
         WebContents webContents = contentViewCore != null ? contentViewCore.getWebContents() : null;
         if (webContents != null) {
             nativeOnPhysicalBackingSizeChanged(
-                    mNativeContentViewRenderView, webContents, getWidth(), getHeight());
+                    mNativeContentViewRenderView, webContents, mWidth, mHeight);
         }
         nativeSetCurrentWebContents(mNativeContentViewRenderView, webContents);
     }

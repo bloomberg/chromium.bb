@@ -456,9 +456,8 @@ public class VrShellImpl
         Point size = new Point(surfaceWidth, surfaceHeight);
         mContentVirtualDisplay.update(size, dpr, null, null, null, null, null);
         if (mTab != null && mTab.getContentViewCore() != null) {
-            mTab.getContentViewCore().onSizeChanged(surfaceWidth, surfaceHeight, 0, 0);
-            nativeOnPhysicalBackingSizeChanged(mNativeVrShell,
-                    mTab.getContentViewCore().getWebContents(), surfaceWidth, surfaceHeight);
+            nativeOnPhysicalBackingSizeChanged(
+                    mNativeVrShell, mTab.getWebContents(), surfaceWidth, surfaceHeight);
         }
         mRenderToSurfaceLayout.setLayoutParams(
                 new FrameLayout.LayoutParams(surfaceWidth, surfaceHeight));
