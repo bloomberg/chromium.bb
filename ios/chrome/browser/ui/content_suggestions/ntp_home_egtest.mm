@@ -6,12 +6,12 @@
 #import <XCTest/XCTest.h>
 
 #include "base/test/scoped_command_line.h"
-#include "base/values.h"
 #include "components/reading_list/core/reading_list_model.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/experimental_flags.h"
+#include "ios/chrome/browser/notification_promo.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory_util.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
@@ -37,14 +37,6 @@
 using namespace content_suggestions;
 using namespace ntp_home;
 using namespace ntp_snippets;
-
-namespace {
-const char kPrefPromoObject[] = "ios.ntppromo";
-const char kPrefPromoFirstViewTime[] = "first_view_time";
-const char kPrefPromoViews[] = "views";
-const char kPrefPromoClosed[] = "closed";
-
-}  // namespace
 
 // Test case for the NTP home UI. More precisely, this tests the positions of
 // the elements after interacting with the device.
@@ -254,18 +246,8 @@ const char kPrefPromoClosed[] = "closed";
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   [defaults setInteger:experimental_flags::WHATS_NEW_APP_RATING
                 forKey:@"WhatsNewPromoStatus"];
-  auto ntp_promo = base::MakeUnique<base::DictionaryValue>();
-  ntp_promo->SetPath({kPrefPromoFirstViewTime},
-                     base::Value(base::Time::Now().ToDoubleT()));
-  ntp_promo->SetPath({kPrefPromoViews}, base::Value(0));
-  ntp_promo->SetPath({kPrefPromoClosed}, base::Value(false));
-
   PrefService* local_state = GetApplicationContext()->GetLocalState();
-  base::DictionaryValue promo_dict;
-  promo_dict.MergeDictionary(local_state->GetDictionary(kPrefPromoObject));
-  promo_dict.Set(std::to_string(experimental_flags::WHATS_NEW_APP_RATING),
-                 std::move(ntp_promo));
-  local_state->Set(kPrefPromoObject, promo_dict);
+  ios::NotificationPromo::MigrateUserPrefs(local_state);
 
   // Open a new tab to have the promo.
   [ChromeEarlGreyUI openNewTab];
@@ -285,6 +267,7 @@ const char kPrefPromoClosed[] = "closed";
   // Reset the promo.
   [defaults setInteger:experimental_flags::WHATS_NEW_DEFAULT
                 forKey:@"WhatsNewPromoStatus"];
+  ios::NotificationPromo::MigrateUserPrefs(local_state);
 }
 
 @end
