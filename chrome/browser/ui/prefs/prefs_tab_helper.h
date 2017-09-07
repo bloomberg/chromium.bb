@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/font_pref_change_notifier.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -66,6 +67,7 @@ class PrefsTabHelper : public content::NotificationObserver,
 #if !defined(OS_ANDROID)
   std::unique_ptr<ChromeZoomLevelPrefs::DefaultZoomLevelSubscription>
       default_zoom_level_subscription_;
+  FontPrefChangeNotifier::Registrar font_change_registrar_;
 #endif  // !defined(OS_ANDROID)
   base::WeakPtrFactory<PrefsTabHelper> weak_ptr_factory_;
 

@@ -320,6 +320,21 @@ class COMPONENTS_PREFS_EXPORT PrefService {
   // to tangentially cleanup data it may have saved outside the store.
   void OnStoreDeletionFromDisk();
 
+  // A low level function for registering an observer for every single
+  // preference changed notification. The caller must ensure that the observer
+  // remains valid as long as it is registered. Pointer ownership is not
+  // transferred.
+  //
+  // Almost all calling code should use a PrefChangeRegistrar instead.
+  //
+  // AVOID ADDING THESE. These are low-level observer notifications that are
+  // called for every pref change. This can lead to inefficiency, and the lack
+  // of a "registrar" model makes it easy to forget to undregister. It is
+  // really designed for integrating other notification systems, not for normal
+  // observation.
+  void AddPrefObserverAllPrefs(PrefObserver* obs);
+  void RemovePrefObserverAllPrefs(PrefObserver* obs);
+
  protected:
   // The PrefNotifier handles registering and notifying preference observers.
   // It is created and owned by this PrefService. Subclasses may access it for

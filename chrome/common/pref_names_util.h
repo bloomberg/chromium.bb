@@ -9,6 +9,9 @@
 
 namespace pref_names_util {
 
+// Prefs prefix for all font types. Ends in a period.
+extern const char kWebKitFontPrefPrefix[];
+
 // Extracts the generic family and script from font name pref path |pref_path|.
 // For example, if |pref_path| is "webkit.webprefs.fonts.serif.Hang", returns
 // true and sets |generic_family| to "serif" and |script| to "Hang".

@@ -61,6 +61,16 @@ void PrefNotifierImpl::RemovePrefObserver(const std::string& path,
   observer_list->RemoveObserver(obs);
 }
 
+void PrefNotifierImpl::AddPrefObserverAllPrefs(PrefObserver* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  all_prefs_pref_observers_.AddObserver(observer);
+}
+
+void PrefNotifierImpl::RemovePrefObserverAllPrefs(PrefObserver* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  all_prefs_pref_observers_.RemoveObserver(observer);
+}
+
 void PrefNotifierImpl::AddInitObserver(base::Callback<void(bool)> obs) {
   init_observers_.push_back(obs);
 }
@@ -88,6 +98,10 @@ void PrefNotifierImpl::FireObservers(const std::string& path) {
   // Only send notifications for registered preferences.
   if (!pref_service_->FindPreference(path))
     return;
+
+  // Fire observers for any preference change.
+  for (auto& observer : all_prefs_pref_observers_)
+    observer.OnPreferenceChanged(pref_service_, path);
 
   auto observer_iterator = pref_observers_.find(path);
   if (observer_iterator == pref_observers_.end())
