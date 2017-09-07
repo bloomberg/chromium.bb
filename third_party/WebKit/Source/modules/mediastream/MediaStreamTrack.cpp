@@ -67,9 +67,7 @@ MediaStreamTrack::MediaStreamTrack(ExecutionContext* context,
       ready_state_(component->Source()->GetReadyState()),
       is_iterating_registered_media_streams_(false),
       stopped_(false),
-      component_(component),
-      // The source's constraints aren't yet initialized at creation time.
-      constraints_() {
+      component_(component) {
   component_->Source()->AddObserver(this);
 
   // If the source is already non-live at this point, the observer won't have
@@ -222,7 +220,7 @@ MediaStreamTrack* MediaStreamTrack::clone(ScriptState* script_state) {
 }
 
 void MediaStreamTrack::SetConstraints(const WebMediaConstraints& constraints) {
-  constraints_ = constraints;
+  component_->SetConstraints(constraints);
 }
 
 void MediaStreamTrack::getCapabilities(MediaTrackCapabilities& capabilities) {
@@ -231,7 +229,8 @@ void MediaStreamTrack::getCapabilities(MediaTrackCapabilities& capabilities) {
 }
 
 void MediaStreamTrack::getConstraints(MediaTrackConstraints& constraints) {
-  MediaConstraintsImpl::ConvertConstraints(constraints_, constraints);
+  MediaConstraintsImpl::ConvertConstraints(component_->Constraints(),
+                                           constraints);
 
   if (!image_capture_)
     return;

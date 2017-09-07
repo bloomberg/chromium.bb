@@ -29,6 +29,7 @@
 #include "platform/mediastream/MediaStreamSource.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebAudioSourceProvider.h"
+#include "public/platform/WebMediaConstraints.h"
 #include "public/platform/WebMediaStream.h"
 #include "public/platform/WebMediaStreamSource.h"
 #include "public/platform/WebString.h"
@@ -94,6 +95,17 @@ bool WebMediaStreamTrack::IsMuted() const {
 WebMediaStreamTrack::ContentHintType WebMediaStreamTrack::ContentHint() const {
   DCHECK(!private_.IsNull());
   return private_->ContentHint();
+}
+
+WebMediaConstraints WebMediaStreamTrack::Constraints() const {
+  DCHECK(!private_.IsNull());
+  return private_->Constraints();
+}
+
+void WebMediaStreamTrack::SetConstraints(
+    const WebMediaConstraints& constraints) {
+  DCHECK(!private_.IsNull());
+  return private_->SetConstraints(constraints);
 }
 
 WebString WebMediaStreamTrack::Id() const {

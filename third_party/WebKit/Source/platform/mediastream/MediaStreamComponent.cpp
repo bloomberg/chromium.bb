@@ -79,7 +79,8 @@ MediaStreamComponent::MediaStreamComponent(
       unique_id_(GenerateUniqueId()),
       enabled_(enabled),
       muted_(muted),
-      content_hint_(content_hint) {
+      content_hint_(content_hint),
+      constraints_() {
   DCHECK(id_.length());
 }
 
