@@ -172,15 +172,18 @@ void FakeRemoteGattCharacteristic::DispatchReadResponse(
   base::Optional<std::vector<uint8_t>> value = next_read_response_->value();
   next_read_response_.reset();
 
-  if (gatt_code == mojom::kGATTSuccess) {
-    DCHECK(value);
-    value_ = std::move(value.value());
-    callback.Run(value_);
-    return;
-  } else if (gatt_code == mojom::kGATTInvalidHandle) {
-    DCHECK(!value);
-    error_callback.Run(device::BluetoothGattService::GATT_ERROR_FAILED);
-    return;
+  switch (gatt_code) {
+    case mojom::kGATTSuccess:
+      DCHECK(value);
+      value_ = std::move(value.value());
+      callback.Run(value_);
+      break;
+    case mojom::kGATTInvalidHandle:
+      DCHECK(!value);
+      error_callback.Run(device::BluetoothGattService::GATT_ERROR_FAILED);
+      break;
+    default:
+      NOTREACHED();
   }
 }
 
@@ -192,13 +195,16 @@ void FakeRemoteGattCharacteristic::DispatchWriteResponse(
   uint16_t gatt_code = next_write_response_.value();
   next_write_response_.reset();
 
-  if (gatt_code == mojom::kGATTSuccess) {
-    last_written_value_ = value;
-    callback.Run();
-    return;
-  } else if (gatt_code == mojom::kGATTInvalidHandle) {
-    error_callback.Run(device::BluetoothGattService::GATT_ERROR_FAILED);
-    return;
+  switch (gatt_code) {
+    case mojom::kGATTSuccess:
+      last_written_value_ = value;
+      callback.Run();
+      break;
+    case mojom::kGATTInvalidHandle:
+      error_callback.Run(device::BluetoothGattService::GATT_ERROR_FAILED);
+      break;
+    default:
+      NOTREACHED();
   }
 }
 
