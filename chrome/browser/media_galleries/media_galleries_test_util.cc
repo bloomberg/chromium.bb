@@ -18,7 +18,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/media_galleries/fileapi/picasa_finder.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/crx_file/id_util.h"
@@ -98,7 +97,6 @@ EnsureMediaDirectoriesExists::EnsureMediaDirectoriesExists()
 EnsureMediaDirectoriesExists::~EnsureMediaDirectoriesExists() {
 #if defined(OS_MACOSX)
   iapps::SetMacPreferencesForTesting(NULL);
-  picasa::SetMacPreferencesForTesting(NULL);
 #endif  // OS_MACOSX
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   ignore_result(fake_dir_.Delete());
@@ -147,32 +145,7 @@ base::FilePath EnsureMediaDirectoriesExists::GetFakeLocalAppDataPath() const {
   DCHECK(fake_dir_.IsValid());
   return fake_dir_.GetPath().AppendASCII("localappdata");
 }
-
-void EnsureMediaDirectoriesExists::SetCustomPicasaAppDataPath(
-    const base::FilePath& path) {
-  base::win::RegKey key(HKEY_CURRENT_USER, picasa::kPicasaRegistryPath,
-                        KEY_SET_VALUE);
-  key.WriteValue(picasa::kPicasaRegistryAppDataPathKey, path.value().c_str());
-}
 #endif  // OS_WIN
-
-#if defined(OS_MACOSX)
-void EnsureMediaDirectoriesExists::SetCustomPicasaAppDataPath(
-    const base::FilePath& path) {
-  mac_preferences_->AddTestItem(
-      base::mac::NSToCFCast(picasa::kPicasaAppDataPathMacPreferencesKey),
-      base::SysUTF8ToNSString(path.value()),
-      false);
-}
-#endif  // OS_MACOSX
-
-#if defined(OS_WIN) || defined(OS_MACOSX)
-base::FilePath
-EnsureMediaDirectoriesExists::GetFakePicasaFoldersRootPath() const {
-  DCHECK(fake_dir_.IsValid());
-  return fake_dir_.GetPath().AppendASCII("picasa_folders");
-}
-#endif  // OS_WIN || OS_MACOSX
 
 #if defined(OS_MACOSX)
 base::FilePath EnsureMediaDirectoriesExists::GetFakeITunesRootPath() const {
@@ -189,20 +162,11 @@ void EnsureMediaDirectoriesExists::Init() {
   ASSERT_TRUE(fake_dir_.CreateUniqueTempDir());
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  // This is to control whether or not tests think iTunes (on Windows) and
-  // Picasa are installed.
+  // This is to control whether or not tests think iTunes (on Windows) is
+  // installed.
   app_data_override_.reset(new base::ScopedPathOverride(
       base::DIR_APP_DATA, GetFakeAppDataPath()));
 #endif  // OS_WIN || OS_MACOSX
-
-#if defined(OS_WIN)
-  // Picasa on Windows is by default in the DIR_LOCAL_APP_DATA directory.
-  local_app_data_override_.reset(new base::ScopedPathOverride(
-      base::DIR_LOCAL_APP_DATA, GetFakeLocalAppDataPath()));
-  // Picasa also looks in the registry for an alternate path.
-  ASSERT_NO_FATAL_FAILURE(
-      registry_override_.OverrideRegistry(HKEY_CURRENT_USER));
-#endif  // OS_WIN
 
 #if defined(OS_MACOSX)
   mac_preferences_.reset(new MockPreferences);
@@ -216,7 +180,6 @@ void EnsureMediaDirectoriesExists::Init() {
       false);
 
   iapps::SetMacPreferencesForTesting(mac_preferences_.get());
-  picasa::SetMacPreferencesForTesting(mac_preferences_.get());
 #endif  // OS_MACOSX
 
   ChangeMediaPathOverrides();

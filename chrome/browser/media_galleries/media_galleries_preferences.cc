@@ -26,7 +26,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media_galleries/fileapi/iapps_finder.h"
-#include "chrome/browser/media_galleries/fileapi/picasa_finder.h"
 #include "chrome/browser/media_galleries/imported_media_gallery_registry.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/media_galleries/media_galleries_histograms.h"
@@ -92,7 +91,6 @@ const char kMediaGalleriesDefaultGalleryTypePicturesDefaultValue[] = "pictures";
 const char kMediaGalleriesDefaultGalleryTypeVideosDefaultValue[] = "videos";
 
 const char kITunesGalleryName[] = "iTunes";
-const char kPicasaGalleryName[] = "Picasa";
 
 const int kCurrentPrefsVersion = 3;
 
@@ -493,7 +491,7 @@ void MediaGalleriesPreferences::EnsureInitialized(base::Closure callback) {
   // It cannot be incremented inline with each callback, as some may return
   // synchronously, decrement the counter to 0, and prematurely trigger
   // FinishInitialization.
-  pre_initialization_callbacks_waiting_ = 3;
+  pre_initialization_callbacks_waiting_ = 2;
 
   // Check whether we should be initializing -- are there any extensions that
   // are using media galleries?
@@ -512,10 +510,6 @@ void MediaGalleriesPreferences::EnsureInitialized(base::Closure callback) {
 
   // Look for optional default galleries every time.
   iapps::FindITunesLibrary(
-      base::Bind(&MediaGalleriesPreferences::OnFinderDeviceID,
-                 weak_factory_.GetWeakPtr()));
-
-  picasa::FindPicasaDatabase(
       base::Bind(&MediaGalleriesPreferences::OnFinderDeviceID,
                  weak_factory_.GetWeakPtr()));
 }
@@ -669,8 +663,6 @@ void MediaGalleriesPreferences::OnFinderDeviceID(const std::string& device_id) {
     std::string gallery_name;
     if (StorageInfo::IsITunesDevice(device_id))
       gallery_name = kITunesGalleryName;
-    else if (StorageInfo::IsPicasaDevice(device_id))
-      gallery_name = kPicasaGalleryName;
 
     if (!gallery_name.empty()) {
       pre_initialization_callbacks_waiting_++;

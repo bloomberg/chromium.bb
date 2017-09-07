@@ -58,8 +58,7 @@ void FilterAttachedDevicesOnBackgroundSequence(
     }
 
     if (type == StorageInfo::FIXED_MASS_STORAGE ||
-        type == StorageInfo::ITUNES ||
-        type == StorageInfo::PICASA) {
+        type == StorageInfo::ITUNES) {
       if (!base::PathExists(base::FilePath::FromUTF8Unsafe(unique_id)))
         missing_devices.insert(*it);
       continue;
@@ -174,9 +173,7 @@ base::FilePath MediaStorageUtil::FindDevicePathById(
   if (!StorageInfo::CrackDeviceId(device_id, &type, &unique_id))
     return base::FilePath();
 
-  if (type == StorageInfo::FIXED_MASS_STORAGE ||
-      type == StorageInfo::ITUNES ||
-      type == StorageInfo::PICASA) {
+  if (type == StorageInfo::FIXED_MASS_STORAGE || type == StorageInfo::ITUNES) {
     // For this type, the unique_id is the path.
     return base::FilePath::FromUTF8Unsafe(unique_id);
   }

@@ -27,8 +27,6 @@ class StorageInfo {
     MAC_IMAGE_CAPTURE,
     // An iTunes library.
     ITUNES,
-    // A Picasa database.
-    PICASA,
   };
 
   StorageInfo();
@@ -65,8 +63,6 @@ class StorageInfo {
   static bool IsMassStorageDevice(const std::string& device_id);
 
   static bool IsITunesDevice(const std::string& device_id);
-
-  static bool IsPicasaDevice(const std::string& device_id);
 
   static bool IsMTPDevice(const std::string& device_id);
 

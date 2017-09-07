@@ -713,10 +713,6 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
       ImportedMediaGalleryRegistry* registry =
           ImportedMediaGalleryRegistry::GetInstance();
       result = registry->RegisterITunesFilesystemOnUIThread(fs_name, path);
-    } else if (StorageInfo::IsPicasaDevice(device_id)) {
-      ImportedMediaGalleryRegistry* registry =
-          ImportedMediaGalleryRegistry::GetInstance();
-      result = registry->RegisterPicasaFilesystemOnUIThread(fs_name, path);
     } else {
       result = ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
           fs_name,

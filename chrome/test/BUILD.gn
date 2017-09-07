@@ -2553,7 +2553,6 @@ test("browser_tests") {
         "../browser/extensions/api/networking_private/networking_private_apitest.cc",
         "../browser/extensions/api/networking_private/networking_private_service_client_apitest.cc",
         "../browser/media_galleries/fileapi/itunes_data_provider_browsertest.cc",
-        "../browser/media_galleries/fileapi/picasa_data_provider_browsertest.cc",
       ]
       deps += [ "//components/wifi:test_support" ]
     }
@@ -4810,11 +4809,7 @@ test("unit_tests") {
   if (is_win || is_mac) {
     sources += [
       "../browser/media_galleries/fileapi/itunes_file_util_unittest.cc",
-      "../browser/media_galleries/fileapi/picasa_file_util_unittest.cc",
       "../utility/media_galleries/itunes_library_parser_unittest.cc",
-      "../utility/media_galleries/picasa_album_table_reader_unittest.cc",
-      "../utility/media_galleries/picasa_albums_indexer_unittest.cc",
-      "../utility/media_galleries/pmp_column_reader_unittest.cc",
     ]
   }
   if (is_win || is_mac || is_chromeos) {

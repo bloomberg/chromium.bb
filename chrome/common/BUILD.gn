@@ -389,9 +389,6 @@ static_library("common") {
     sources += [
       "media_galleries/itunes_library.cc",
       "media_galleries/itunes_library.h",
-      "media_galleries/picasa_types.cc",
-      "media_galleries/picasa_types.h",
-      "media_galleries/pmp_constants.h",
     ]
   }
   if (is_mac) {
@@ -633,15 +630,6 @@ static_library("test_support") {
     "//testing/gmock",
     "//testing/gtest",
   ]
-
-  if (is_win || is_mac) {
-    sources += [
-      "media_galleries/picasa_test_util.cc",
-      "media_galleries/picasa_test_util.h",
-      "media_galleries/pmp_test_util.cc",
-      "media_galleries/pmp_test_util.h",
-    ]
-  }
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
