@@ -15,7 +15,13 @@ IN_PROC_BROWSER_TEST_F(GalleryJsTest, ImageEncoderTest) {
       FILE_PATH_LITERAL("image_editor/image_encoder_unittest.html")));
 }
 
-IN_PROC_BROWSER_TEST_F(GalleryJsTest, ExifEncoderTest) {
+// Disabled on ASan builds due to a consistent failure. https://crbug.com/762831
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_ExifEncoderTest DISABLED_ExifEncoderTest
+#else
+#define MAYBE_ExifEncoderTest ExifEncoderTest
+#endif
+IN_PROC_BROWSER_TEST_F(GalleryJsTest, MAYBE_ExifEncoderTest) {
   RunTest(base::FilePath(
       FILE_PATH_LITERAL("image_editor/exif_encoder_unittest.html")));
 }
