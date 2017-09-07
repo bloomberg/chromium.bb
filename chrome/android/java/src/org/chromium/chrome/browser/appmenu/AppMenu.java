@@ -500,7 +500,7 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
         int availableScreenSpace = Math.max(
                 anchorViewY, appDimensions.height() - anchorViewY - anchorViewImpactHeight);
 
-        availableScreenSpace -= padding.bottom + footerHeight;
+        availableScreenSpace -= (padding.bottom + footerHeight + headerHeight);
         if (mIsByPermanentButton) availableScreenSpace -= padding.top;
 
         int numCanFit = availableScreenSpace / (mItemRowHeight + mItemDividerHeight);
