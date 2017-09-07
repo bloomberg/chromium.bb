@@ -52,6 +52,15 @@ std::vector<blink::WebImeTextSpan> ConvertUIImeTextSpansToBlinkImeTextSpans(
   return ime_text_spans;
 }
 
+void RunClosureIfNotSwappedOut(base::WeakPtr<RenderWidget> render_widget,
+                               base::OnceClosure closure) {
+  // Input messages must not be processed if the RenderWidget is in swapped out
+  // state.
+  if (!render_widget || render_widget->is_swapped_out())
+    return;
+  std::move(closure).Run();
+}
+
 }  // namespace
 
 WidgetInputHandlerImpl::WidgetInputHandlerImpl(
@@ -160,9 +169,10 @@ void WidgetInputHandlerImpl::DispatchNonBlockingEvent(
 
 void WidgetInputHandlerImpl::RunOnMainThread(base::OnceClosure closure) {
   if (input_event_queue_) {
-    input_event_queue_->QueueClosure(std::move(closure));
+    input_event_queue_->QueueClosure(base::BindOnce(
+        &RunClosureIfNotSwappedOut, render_widget_, std::move(closure)));
   } else {
-    std::move(closure).Run();
+    RunClosureIfNotSwappedOut(render_widget_, std::move(closure));
   }
 }
 
