@@ -10,8 +10,8 @@
 
 // clang-format off
 
-#ifndef VoidCallbackFunctionTypedef_h
-#define VoidCallbackFunctionTypedef_h
+#ifndef V8VoidCallbackFunctionInterfaceArg_h
+#define V8VoidCallbackFunctionInterfaceArg_h
 
 #include "bindings/core/v8/NativeValueTraits.h"
 #include "core/CoreExport.h"
@@ -23,34 +23,35 @@
 namespace blink {
 
 class ScriptState;
+class HTMLDivElement;
 
-class CORE_EXPORT VoidCallbackFunctionTypedef final : public GarbageCollectedFinalized<VoidCallbackFunctionTypedef>, public TraceWrapperBase {
+class CORE_EXPORT V8VoidCallbackFunctionInterfaceArg final : public GarbageCollectedFinalized<V8VoidCallbackFunctionInterfaceArg>, public TraceWrapperBase {
  public:
-  static VoidCallbackFunctionTypedef* Create(ScriptState*, v8::Local<v8::Value> callback);
+  static V8VoidCallbackFunctionInterfaceArg* Create(ScriptState*, v8::Local<v8::Value> callback);
 
-  ~VoidCallbackFunctionTypedef() = default;
+  ~V8VoidCallbackFunctionInterfaceArg() = default;
 
   DEFINE_INLINE_TRACE() {}
   DECLARE_TRACE_WRAPPERS();
 
-  bool call(ScriptWrappable* scriptWrappable, const String& arg);
+  bool call(ScriptWrappable* scriptWrappable, HTMLDivElement* divElement);
 
   v8::Local<v8::Function> v8Value(v8::Isolate* isolate) {
     return callback_.NewLocal(isolate);
   }
 
  private:
-  VoidCallbackFunctionTypedef(ScriptState*, v8::Local<v8::Function>);
+  V8VoidCallbackFunctionInterfaceArg(ScriptState*, v8::Local<v8::Function>);
 
   RefPtr<ScriptState> script_state_;
   TraceWrapperV8Reference<v8::Function> callback_;
 };
 
 template <>
-struct NativeValueTraits<VoidCallbackFunctionTypedef> : public NativeValueTraitsBase<VoidCallbackFunctionTypedef> {
-  CORE_EXPORT static VoidCallbackFunctionTypedef* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+struct NativeValueTraits<V8VoidCallbackFunctionInterfaceArg> : public NativeValueTraitsBase<V8VoidCallbackFunctionInterfaceArg> {
+  CORE_EXPORT static V8VoidCallbackFunctionInterfaceArg* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 }  // namespace blink
 
-#endif  // VoidCallbackFunctionTypedef_h
+#endif  // V8VoidCallbackFunctionInterfaceArg_h

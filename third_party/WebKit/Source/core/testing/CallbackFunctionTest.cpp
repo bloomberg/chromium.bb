@@ -5,18 +5,18 @@
 #include "core/testing/CallbackFunctionTest.h"
 
 #include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/test_callback.h"
-#include "bindings/core/v8/test_enum_callback.h"
-#include "bindings/core/v8/test_interface_callback.h"
-#include "bindings/core/v8/test_receiver_object_callback.h"
-#include "bindings/core/v8/test_sequence_callback.h"
+#include "bindings/core/v8/v8_test_callback.h"
+#include "bindings/core/v8/v8_test_enum_callback.h"
+#include "bindings/core/v8/v8_test_interface_callback.h"
+#include "bindings/core/v8/v8_test_receiver_object_callback.h"
+#include "bindings/core/v8/v8_test_sequence_callback.h"
 #include "core/html/HTMLDivElement.h"
 
 namespace blink {
 
 DEFINE_TRACE(CallbackFunctionTest) {}
 
-String CallbackFunctionTest::testCallback(TestCallback* callback,
+String CallbackFunctionTest::testCallback(V8TestCallback* callback,
                                           const String& message1,
                                           const String& message2,
                                           ExceptionState& exception_state) {
@@ -31,7 +31,7 @@ String CallbackFunctionTest::testCallback(TestCallback* callback,
 }
 
 String CallbackFunctionTest::testNullableCallback(
-    TestCallback* callback,
+    V8TestCallback* callback,
     const String& message1,
     const String& message2,
     ExceptionState& exception_state) {
@@ -41,7 +41,7 @@ String CallbackFunctionTest::testNullableCallback(
 }
 
 void CallbackFunctionTest::testInterfaceCallback(
-    TestInterfaceCallback* callback,
+    V8TestInterfaceCallback* callback,
     HTMLDivElement* div_element,
     ExceptionState& exception_state) {
   ScriptWrappable* script_wrappable;
@@ -51,14 +51,14 @@ void CallbackFunctionTest::testInterfaceCallback(
 }
 
 void CallbackFunctionTest::testReceiverObjectCallback(
-    TestReceiverObjectCallback* callback,
+    V8TestReceiverObjectCallback* callback,
     ExceptionState& exception_state) {
   callback->call(this);
   return;
 }
 
 Vector<String> CallbackFunctionTest::testSequenceCallback(
-    TestSequenceCallback* callback,
+    V8TestSequenceCallback* callback,
     const Vector<int>& numbers,
     ExceptionState& exception_state) {
   Vector<String> return_value;
@@ -68,7 +68,7 @@ Vector<String> CallbackFunctionTest::testSequenceCallback(
   return Vector<String>();
 }
 
-void CallbackFunctionTest::testEnumCallback(TestEnumCallback* callback,
+void CallbackFunctionTest::testEnumCallback(V8TestEnumCallback* callback,
                                             const String& enum_value,
                                             ExceptionState& exception_state) {
   callback->call(nullptr, enum_value);

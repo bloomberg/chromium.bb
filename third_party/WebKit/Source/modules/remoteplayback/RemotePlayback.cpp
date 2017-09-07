@@ -5,7 +5,7 @@
 #include "modules/remoteplayback/RemotePlayback.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/modules/v8/remote_playback_availability_callback.h"
+#include "bindings/modules/v8/v8_remote_playback_availability_callback.h"
 #include "core/HTMLNames.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
@@ -98,7 +98,7 @@ ExecutionContext* RemotePlayback::GetExecutionContext() const {
 
 ScriptPromise RemotePlayback::watchAvailability(
     ScriptState* script_state,
-    RemotePlaybackAvailabilityCallback* callback) {
+    V8RemotePlaybackAvailabilityCallback* callback) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 

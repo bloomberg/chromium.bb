@@ -5,7 +5,7 @@
 #ifndef ReportingObserver_h
 #define ReportingObserver_h
 
-#include "bindings/core/v8/reporting_observer_callback.h"
+#include "bindings/core/v8/v8_reporting_observer_callback.h"
 #include "core/CoreExport.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/wtf/Vector.h"
@@ -14,7 +14,6 @@ namespace blink {
 
 class ExecutionContext;
 class Report;
-class ReportingObserverCallback;
 
 class CORE_EXPORT ReportingObserver final
     : public GarbageCollected<ReportingObserver>,
@@ -23,7 +22,7 @@ class CORE_EXPORT ReportingObserver final
 
  public:
   static ReportingObserver* Create(ExecutionContext*,
-                                   ReportingObserverCallback*);
+                                   V8ReportingObserverCallback*);
 
   // Call the callback with reports.
   void ReportToCallback(const HeapVector<Member<Report>>& reports);
@@ -34,10 +33,10 @@ class CORE_EXPORT ReportingObserver final
   DECLARE_TRACE();
 
  private:
-  explicit ReportingObserver(ExecutionContext*, ReportingObserverCallback*);
+  explicit ReportingObserver(ExecutionContext*, V8ReportingObserverCallback*);
 
   Member<ExecutionContext> execution_context_;
-  Member<ReportingObserverCallback> callback_;
+  Member<V8ReportingObserverCallback> callback_;
 };
 
 }  // namespace blink

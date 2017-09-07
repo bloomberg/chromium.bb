@@ -5,7 +5,7 @@
 #include "core/timing/Performance.h"
 
 #include "bindings/core/v8/V8BindingForTesting.h"
-#include "bindings/core/v8/performance_observer_callback.h"
+#include "bindings/core/v8/v8_performance_observer_callback.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/testing/DummyPageHolder.h"
@@ -46,7 +46,7 @@ class PerformanceBaseTest : public ::testing::Test {
     v8::Local<v8::Function> callback =
         v8::Function::New(script_state->GetContext(), nullptr).ToLocalChecked();
     base_ = new TestPerformanceBase(script_state);
-    cb_ = PerformanceObserverCallback::Create(script_state, callback);
+    cb_ = V8PerformanceObserverCallback::Create(script_state, callback);
     observer_ = new PerformanceObserver(ExecutionContext::From(script_state),
                                         base_, cb_);
   }
@@ -75,7 +75,7 @@ class PerformanceBaseTest : public ::testing::Test {
   Persistent<ExecutionContext> execution_context_;
   Persistent<PerformanceObserver> observer_;
   std::unique_ptr<DummyPageHolder> page_holder_;
-  Persistent<PerformanceObserverCallback> cb_;
+  Persistent<V8PerformanceObserverCallback> cb_;
 };
 
 TEST_F(PerformanceBaseTest, Register) {

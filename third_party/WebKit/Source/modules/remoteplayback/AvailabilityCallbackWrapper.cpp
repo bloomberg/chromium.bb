@@ -4,13 +4,13 @@
 
 #include "modules/remoteplayback/AvailabilityCallbackWrapper.h"
 
-#include "bindings/modules/v8/remote_playback_availability_callback.h"
+#include "bindings/modules/v8/v8_remote_playback_availability_callback.h"
 #include "modules/remoteplayback/RemotePlayback.h"
 
 namespace blink {
 
 AvailabilityCallbackWrapper::AvailabilityCallbackWrapper(
-    RemotePlaybackAvailabilityCallback* callback)
+    V8RemotePlaybackAvailabilityCallback* callback)
     : bindings_cb_(callback) {}
 
 AvailabilityCallbackWrapper::AvailabilityCallbackWrapper(WTF::Closure callback)

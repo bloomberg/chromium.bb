@@ -10,8 +10,8 @@
 
 // clang-format off
 
-#ifndef VoidCallbackFunctionDictionaryArg_h
-#define VoidCallbackFunctionDictionaryArg_h
+#ifndef V8VoidCallbackFunctionDictionaryArg_h
+#define V8VoidCallbackFunctionDictionaryArg_h
 
 #include "bindings/core/v8/NativeValueTraits.h"
 #include "core/CoreExport.h"
@@ -25,11 +25,11 @@ namespace blink {
 class ScriptState;
 class TestDictionary;
 
-class CORE_EXPORT VoidCallbackFunctionDictionaryArg final : public GarbageCollectedFinalized<VoidCallbackFunctionDictionaryArg>, public TraceWrapperBase {
+class CORE_EXPORT V8VoidCallbackFunctionDictionaryArg final : public GarbageCollectedFinalized<V8VoidCallbackFunctionDictionaryArg>, public TraceWrapperBase {
  public:
-  static VoidCallbackFunctionDictionaryArg* Create(ScriptState*, v8::Local<v8::Value> callback);
+  static V8VoidCallbackFunctionDictionaryArg* Create(ScriptState*, v8::Local<v8::Value> callback);
 
-  ~VoidCallbackFunctionDictionaryArg() = default;
+  ~V8VoidCallbackFunctionDictionaryArg() = default;
 
   DEFINE_INLINE_TRACE() {}
   DECLARE_TRACE_WRAPPERS();
@@ -41,17 +41,17 @@ class CORE_EXPORT VoidCallbackFunctionDictionaryArg final : public GarbageCollec
   }
 
  private:
-  VoidCallbackFunctionDictionaryArg(ScriptState*, v8::Local<v8::Function>);
+  V8VoidCallbackFunctionDictionaryArg(ScriptState*, v8::Local<v8::Function>);
 
   RefPtr<ScriptState> script_state_;
   TraceWrapperV8Reference<v8::Function> callback_;
 };
 
 template <>
-struct NativeValueTraits<VoidCallbackFunctionDictionaryArg> : public NativeValueTraitsBase<VoidCallbackFunctionDictionaryArg> {
-  CORE_EXPORT static VoidCallbackFunctionDictionaryArg* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+struct NativeValueTraits<V8VoidCallbackFunctionDictionaryArg> : public NativeValueTraitsBase<V8VoidCallbackFunctionDictionaryArg> {
+  CORE_EXPORT static V8VoidCallbackFunctionDictionaryArg* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 }  // namespace blink
 
-#endif  // VoidCallbackFunctionDictionaryArg_h
+#endif  // V8VoidCallbackFunctionDictionaryArg_h

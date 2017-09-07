@@ -32,10 +32,6 @@ bindings_modules_generated_union_type_files = [
   "$bindings_modules_v8_output_dir/canvas_image_source.h",
   "$bindings_modules_v8_output_dir/client_or_service_worker_or_message_port.cc",
   "$bindings_modules_v8_output_dir/client_or_service_worker_or_message_port.h",
-  "$bindings_modules_v8_output_dir/decode_error_callback.cc",
-  "$bindings_modules_v8_output_dir/decode_error_callback.h",
-  "$bindings_modules_v8_output_dir/decode_success_callback.cc",
-  "$bindings_modules_v8_output_dir/decode_success_callback.h",
   "$bindings_modules_v8_output_dir/dictionary_or_string.cc",
   "$bindings_modules_v8_output_dir/dictionary_or_string.h",
   "$bindings_modules_v8_output_dir/double_or_constrain_double_range.cc",
@@ -77,14 +73,18 @@ bindings_modules_generated_union_type_files = [
 ]
 
 generated_modules_callback_function_files = [
-  "$bindings_modules_v8_output_dir/database_callback.cc",
-  "$bindings_modules_v8_output_dir/database_callback.h",
-  "$bindings_modules_v8_output_dir/idb_observer_callback.cc",
-  "$bindings_modules_v8_output_dir/idb_observer_callback.h",
-  "$bindings_modules_v8_output_dir/media_session_action_handler.cc",
-  "$bindings_modules_v8_output_dir/media_session_action_handler.h",
-  "$bindings_modules_v8_output_dir/remote_playback_availability_callback.cc",
-  "$bindings_modules_v8_output_dir/remote_playback_availability_callback.h",
+  "$bindings_modules_v8_output_dir/v8_decode_error_callback.cc",
+  "$bindings_modules_v8_output_dir/v8_decode_error_callback.h",
+  "$bindings_modules_v8_output_dir/v8_decode_success_callback.cc",
+  "$bindings_modules_v8_output_dir/v8_decode_success_callback.h",
+  "$bindings_modules_v8_output_dir/v8_database_callback.cc",
+  "$bindings_modules_v8_output_dir/v8_database_callback.h",
+  "$bindings_modules_v8_output_dir/v8_idb_observer_callback.cc",
+  "$bindings_modules_v8_output_dir/v8_idb_observer_callback.h",
+  "$bindings_modules_v8_output_dir/v8_media_session_action_handler.cc",
+  "$bindings_modules_v8_output_dir/v8_media_session_action_handler.h",
+  "$bindings_modules_v8_output_dir/v8_remote_playback_availability_callback.cc",
+  "$bindings_modules_v8_output_dir/v8_remote_playback_availability_callback.h",
 ]
 
 bindings_generated_v8_context_snapshot_external_references_file =

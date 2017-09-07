@@ -34,7 +34,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/mutation_callback.h"
+#include "bindings/core/v8/v8_mutation_callback.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/MutationObserverInit.h"
 #include "core/dom/MutationObserverRegistration.h"
@@ -53,7 +53,7 @@ class MutationObserver::V8DelegateImpl final
 
  public:
   static V8DelegateImpl* Create(v8::Isolate* isolate,
-                                MutationCallback* callback) {
+                                V8MutationCallback* callback) {
     ExecutionContext* execution_context =
         ToExecutionContext(callback->v8Value(isolate)->CreationContext());
 
@@ -80,11 +80,11 @@ class MutationObserver::V8DelegateImpl final
   DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() { visitor->TraceWrappers(callback_); }
 
  private:
-  V8DelegateImpl(MutationCallback* callback,
+  V8DelegateImpl(V8MutationCallback* callback,
                  ExecutionContext* execution_context)
       : ContextClient(execution_context), callback_(callback) {}
 
-  TraceWrapperMember<MutationCallback> callback_;
+  TraceWrapperMember<V8MutationCallback> callback_;
 };
 
 static unsigned g_observer_priority = 0;
@@ -102,7 +102,7 @@ MutationObserver* MutationObserver::Create(Delegate* delegate) {
 }
 
 MutationObserver* MutationObserver::Create(ScriptState* script_state,
-                                           MutationCallback* callback) {
+                                           V8MutationCallback* callback) {
   DCHECK(IsMainThread());
   return new MutationObserver(
       ExecutionContext::From(script_state),

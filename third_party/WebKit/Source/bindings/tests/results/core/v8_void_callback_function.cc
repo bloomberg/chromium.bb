@@ -10,13 +10,12 @@
 
 // clang-format off
 
-#include "void_callback_function_interface_arg.h"
+#include "v8_void_callback_function.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/ToV8ForCore.h"
 #include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8HTMLDivElement.h"
 #include "core/dom/ExecutionContext.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/wtf/Assertions.h"
@@ -24,23 +23,23 @@
 namespace blink {
 
 // static
-VoidCallbackFunctionInterfaceArg* VoidCallbackFunctionInterfaceArg::Create(ScriptState* scriptState, v8::Local<v8::Value> callback) {
+V8VoidCallbackFunction* V8VoidCallbackFunction::Create(ScriptState* scriptState, v8::Local<v8::Value> callback) {
   if (IsUndefinedOrNull(callback))
     return nullptr;
-  return new VoidCallbackFunctionInterfaceArg(scriptState, v8::Local<v8::Function>::Cast(callback));
+  return new V8VoidCallbackFunction(scriptState, v8::Local<v8::Function>::Cast(callback));
 }
 
-VoidCallbackFunctionInterfaceArg::VoidCallbackFunctionInterfaceArg(ScriptState* scriptState, v8::Local<v8::Function> callback)
+V8VoidCallbackFunction::V8VoidCallbackFunction(ScriptState* scriptState, v8::Local<v8::Function> callback)
     : script_state_(scriptState),
     callback_(scriptState->GetIsolate(), this, callback) {
   DCHECK(!callback_.IsEmpty());
 }
 
-DEFINE_TRACE_WRAPPERS(VoidCallbackFunctionInterfaceArg) {
+DEFINE_TRACE_WRAPPERS(V8VoidCallbackFunction) {
   visitor->TraceWrappers(callback_.Cast<v8::Value>());
 }
 
-bool VoidCallbackFunctionInterfaceArg::call(ScriptWrappable* scriptWrappable, HTMLDivElement* divElement) {
+bool V8VoidCallbackFunction::call(ScriptWrappable* scriptWrappable) {
   if (callback_.IsEmpty())
     return false;
 
@@ -64,8 +63,7 @@ bool VoidCallbackFunctionInterfaceArg::call(ScriptWrappable* scriptWrappable, HT
       script_state_->GetContext()->Global(),
       isolate);
 
-  v8::Local<v8::Value> v8_divElement = ToV8(divElement, script_state_->GetContext()->Global(), script_state_->GetIsolate());
-  v8::Local<v8::Value> argv[] = { v8_divElement };
+  v8::Local<v8::Value> *argv = nullptr;
   v8::TryCatch exceptionCatcher(isolate);
   exceptionCatcher.SetVerbose(true);
 
@@ -73,7 +71,7 @@ bool VoidCallbackFunctionInterfaceArg::call(ScriptWrappable* scriptWrappable, HT
   if (!V8ScriptRunner::CallFunction(callback_.NewLocal(isolate),
                                     context,
                                     thisValue,
-                                    1,
+                                    0,
                                     argv,
                                     isolate).ToLocal(&v8ReturnValue)) {
     return false;
@@ -82,11 +80,11 @@ bool VoidCallbackFunctionInterfaceArg::call(ScriptWrappable* scriptWrappable, HT
   return true;
 }
 
-VoidCallbackFunctionInterfaceArg* NativeValueTraits<VoidCallbackFunctionInterfaceArg>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  VoidCallbackFunctionInterfaceArg* nativeValue = VoidCallbackFunctionInterfaceArg::Create(ScriptState::Current(isolate), value);
+V8VoidCallbackFunction* NativeValueTraits<V8VoidCallbackFunction>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  V8VoidCallbackFunction* nativeValue = V8VoidCallbackFunction::Create(ScriptState::Current(isolate), value);
   if (!nativeValue) {
     exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
-        "VoidCallbackFunctionInterfaceArg"));
+        "VoidCallbackFunction"));
   }
   return nativeValue;
 }

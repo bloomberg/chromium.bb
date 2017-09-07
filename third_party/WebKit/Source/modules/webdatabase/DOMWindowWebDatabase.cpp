@@ -27,7 +27,7 @@
 #include "modules/webdatabase/DOMWindowWebDatabase.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/modules/v8/database_callback.h"
+#include "bindings/modules/v8/v8_database_callback.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "modules/webdatabase/Database.h"
@@ -53,7 +53,7 @@ Database* DOMWindowWebDatabase::openDatabase(
     const String& version,
     const String& display_name,
     unsigned estimated_size,
-    DatabaseCallback* creation_callback,
+    V8DatabaseCallback* creation_callback,
     ExceptionState& exception_state) {
   if (!window.IsCurrentlyDisplayedInFrame())
     return nullptr;

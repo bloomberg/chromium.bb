@@ -25,8 +25,8 @@
 
 #include "modules/webaudio/AsyncAudioDecoder.h"
 
-#include "bindings/modules/v8/decode_error_callback.h"
-#include "bindings/modules/v8/decode_success_callback.h"
+#include "bindings/modules/v8/v8_decode_error_callback.h"
+#include "bindings/modules/v8/v8_decode_success_callback.h"
 #include "core/typed_arrays/DOMArrayBuffer.h"
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/BaseAudioContext.h"
@@ -42,8 +42,8 @@ namespace blink {
 
 void AsyncAudioDecoder::DecodeAsync(DOMArrayBuffer* audio_data,
                                     float sample_rate,
-                                    DecodeSuccessCallback* success_callback,
-                                    DecodeErrorCallback* error_callback,
+                                    V8DecodeSuccessCallback* success_callback,
+                                    V8DecodeErrorCallback* error_callback,
                                     ScriptPromiseResolver* resolver,
                                     BaseAudioContext* context) {
   DCHECK(IsMainThread());
@@ -64,8 +64,8 @@ void AsyncAudioDecoder::DecodeAsync(DOMArrayBuffer* audio_data,
 void AsyncAudioDecoder::DecodeOnBackgroundThread(
     DOMArrayBuffer* audio_data,
     float sample_rate,
-    DecodeSuccessCallback* success_callback,
-    DecodeErrorCallback* error_callback,
+    V8DecodeSuccessCallback* success_callback,
+    V8DecodeErrorCallback* error_callback,
     ScriptPromiseResolver* resolver,
     BaseAudioContext* context) {
   DCHECK(!IsMainThread());
@@ -90,12 +90,13 @@ void AsyncAudioDecoder::DecodeOnBackgroundThread(
   }
 }
 
-void AsyncAudioDecoder::NotifyComplete(DOMArrayBuffer*,
-                                       DecodeSuccessCallback* success_callback,
-                                       DecodeErrorCallback* error_callback,
-                                       AudioBus* audio_bus,
-                                       ScriptPromiseResolver* resolver,
-                                       BaseAudioContext* context) {
+void AsyncAudioDecoder::NotifyComplete(
+    DOMArrayBuffer*,
+    V8DecodeSuccessCallback* success_callback,
+    V8DecodeErrorCallback* error_callback,
+    AudioBus* audio_bus,
+    ScriptPromiseResolver* resolver,
+    BaseAudioContext* context) {
   DCHECK(IsMainThread());
 
   AudioBuffer* audio_buffer = AudioBuffer::CreateFromAudioBus(audio_bus);

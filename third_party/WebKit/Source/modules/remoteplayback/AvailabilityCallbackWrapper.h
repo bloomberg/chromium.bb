@@ -15,8 +15,8 @@
 
 namespace blink {
 
-class RemotePlaybackAvailabilityCallback;
 class RemotePlayback;
+class V8RemotePlaybackAvailabilityCallback;
 
 // Wraps either a WTF::Closure or RemotePlaybackAvailabilityCallback object
 // to be kept in the RemotePlayback's |availability_callbacks_| map.
@@ -26,7 +26,7 @@ class AvailabilityCallbackWrapper final
   WTF_MAKE_NONCOPYABLE(AvailabilityCallbackWrapper);
 
  public:
-  explicit AvailabilityCallbackWrapper(RemotePlaybackAvailabilityCallback*);
+  explicit AvailabilityCallbackWrapper(V8RemotePlaybackAvailabilityCallback*);
   explicit AvailabilityCallbackWrapper(WTF::Closure);
   ~AvailabilityCallbackWrapper() = default;
 
@@ -37,7 +37,7 @@ class AvailabilityCallbackWrapper final
 
  private:
   // Only one of these callbacks must be set.
-  TraceWrapperMember<RemotePlaybackAvailabilityCallback> bindings_cb_;
+  TraceWrapperMember<V8RemotePlaybackAvailabilityCallback> bindings_cb_;
   WTF::Closure internal_cb_;
 };
 

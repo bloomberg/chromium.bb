@@ -6,7 +6,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
-#include "bindings/modules/v8/remote_playback_availability_callback.h"
+#include "bindings/modules/v8/v8_remote_playback_availability_callback.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLMediaElement.h"
@@ -283,9 +283,9 @@ TEST_F(RemotePlaybackTest, DisableRemotePlaybackCancelsAvailabilityCallbacks) {
 
   MockFunction* callback_function =
       MockFunction::Create(scope.GetScriptState());
-  RemotePlaybackAvailabilityCallback* availability_callback =
-      RemotePlaybackAvailabilityCallback::Create(scope.GetScriptState(),
-                                                 callback_function->Bind());
+  V8RemotePlaybackAvailabilityCallback* availability_callback =
+      V8RemotePlaybackAvailabilityCallback::Create(scope.GetScriptState(),
+                                                   callback_function->Bind());
 
   // The initial call upon registering will not happen as it's posted on the
   // message loop.
@@ -359,9 +359,9 @@ TEST_F(RemotePlaybackTest, WatchAvailabilityWorksWhenBackendDisabled) {
 
   MockFunction* callback_function =
       MockFunction::Create(scope.GetScriptState());
-  RemotePlaybackAvailabilityCallback* availability_callback =
-      RemotePlaybackAvailabilityCallback::Create(scope.GetScriptState(),
-                                                 callback_function->Bind());
+  V8RemotePlaybackAvailabilityCallback* availability_callback =
+      V8RemotePlaybackAvailabilityCallback::Create(scope.GetScriptState(),
+                                                   callback_function->Bind());
 
   // The initial call upon registering will not happen as it's posted on the
   // message loop.
@@ -410,9 +410,9 @@ TEST_F(RemotePlaybackTest, IsListening) {
 
   MockFunction* callback_function =
       MockFunction::Create(scope.GetScriptState());
-  RemotePlaybackAvailabilityCallback* availability_callback =
-      RemotePlaybackAvailabilityCallback::Create(scope.GetScriptState(),
-                                                 callback_function->Bind());
+  V8RemotePlaybackAvailabilityCallback* availability_callback =
+      V8RemotePlaybackAvailabilityCallback::Create(scope.GetScriptState(),
+                                                   callback_function->Bind());
 
   // The initial call upon registering will not happen as it's posted on the
   // message loop.

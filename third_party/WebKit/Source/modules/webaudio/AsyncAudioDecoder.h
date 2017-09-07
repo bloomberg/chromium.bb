@@ -31,13 +31,13 @@
 
 namespace blink {
 
-class BaseAudioContext;
 class AudioBuffer;
 class AudioBus;
-class DecodeErrorCallback;
-class DecodeSuccessCallback;
+class BaseAudioContext;
 class DOMArrayBuffer;
 class ScriptPromiseResolver;
+class V8DecodeErrorCallback;
+class V8DecodeSuccessCallback;
 
 // AsyncAudioDecoder asynchronously decodes audio file data from a
 // DOMArrayBuffer in the background thread. Upon successful decoding, a
@@ -58,8 +58,8 @@ class AsyncAudioDecoder {
   // appropriately when finished.
   void DecodeAsync(DOMArrayBuffer* audio_data,
                    float sample_rate,
-                   DecodeSuccessCallback*,
-                   DecodeErrorCallback*,
+                   V8DecodeSuccessCallback*,
+                   V8DecodeErrorCallback*,
                    ScriptPromiseResolver*,
                    BaseAudioContext*);
 
@@ -67,13 +67,13 @@ class AsyncAudioDecoder {
   AudioBuffer* CreateAudioBufferFromAudioBus(AudioBus*);
   static void DecodeOnBackgroundThread(DOMArrayBuffer* audio_data,
                                        float sample_rate,
-                                       DecodeSuccessCallback*,
-                                       DecodeErrorCallback*,
+                                       V8DecodeSuccessCallback*,
+                                       V8DecodeErrorCallback*,
                                        ScriptPromiseResolver*,
                                        BaseAudioContext*);
   static void NotifyComplete(DOMArrayBuffer* audio_data,
-                             DecodeSuccessCallback*,
-                             DecodeErrorCallback*,
+                             V8DecodeSuccessCallback*,
+                             V8DecodeErrorCallback*,
                              AudioBus*,
                              ScriptPromiseResolver*,
                              BaseAudioContext*);

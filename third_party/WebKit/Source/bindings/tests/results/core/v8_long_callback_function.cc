@@ -10,11 +10,11 @@
 
 // clang-format off
 
-#include "any_callback_function_optional_any_arg.h"
+#include "v8_long_callback_function.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/IDLTypes.h"
 #include "bindings/core/v8/NativeValueTraitsImpl.h"
-#include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ToV8ForCore.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/ExecutionContext.h"
@@ -24,23 +24,23 @@
 namespace blink {
 
 // static
-AnyCallbackFunctionOptionalAnyArg* AnyCallbackFunctionOptionalAnyArg::Create(ScriptState* scriptState, v8::Local<v8::Value> callback) {
+V8LongCallbackFunction* V8LongCallbackFunction::Create(ScriptState* scriptState, v8::Local<v8::Value> callback) {
   if (IsUndefinedOrNull(callback))
     return nullptr;
-  return new AnyCallbackFunctionOptionalAnyArg(scriptState, v8::Local<v8::Function>::Cast(callback));
+  return new V8LongCallbackFunction(scriptState, v8::Local<v8::Function>::Cast(callback));
 }
 
-AnyCallbackFunctionOptionalAnyArg::AnyCallbackFunctionOptionalAnyArg(ScriptState* scriptState, v8::Local<v8::Function> callback)
+V8LongCallbackFunction::V8LongCallbackFunction(ScriptState* scriptState, v8::Local<v8::Function> callback)
     : script_state_(scriptState),
     callback_(scriptState->GetIsolate(), this, callback) {
   DCHECK(!callback_.IsEmpty());
 }
 
-DEFINE_TRACE_WRAPPERS(AnyCallbackFunctionOptionalAnyArg) {
+DEFINE_TRACE_WRAPPERS(V8LongCallbackFunction) {
   visitor->TraceWrappers(callback_.Cast<v8::Value>());
 }
 
-bool AnyCallbackFunctionOptionalAnyArg::call(ScriptWrappable* scriptWrappable, ScriptValue optionalAnyArg, ScriptValue& returnValue) {
+bool V8LongCallbackFunction::call(ScriptWrappable* scriptWrappable, int32_t num1, int32_t num2, int32_t& returnValue) {
   if (callback_.IsEmpty())
     return false;
 
@@ -64,8 +64,9 @@ bool AnyCallbackFunctionOptionalAnyArg::call(ScriptWrappable* scriptWrappable, S
       script_state_->GetContext()->Global(),
       isolate);
 
-  v8::Local<v8::Value> v8_optionalAnyArg = optionalAnyArg.V8Value();
-  v8::Local<v8::Value> argv[] = { v8_optionalAnyArg };
+  v8::Local<v8::Value> v8_num1 = v8::Integer::New(script_state_->GetIsolate(), num1);
+  v8::Local<v8::Value> v8_num2 = v8::Integer::New(script_state_->GetIsolate(), num2);
+  v8::Local<v8::Value> argv[] = { v8_num1, v8_num2 };
   v8::TryCatch exceptionCatcher(isolate);
   exceptionCatcher.SetVerbose(true);
 
@@ -73,22 +74,24 @@ bool AnyCallbackFunctionOptionalAnyArg::call(ScriptWrappable* scriptWrappable, S
   if (!V8ScriptRunner::CallFunction(callback_.NewLocal(isolate),
                                     context,
                                     thisValue,
-                                    1,
+                                    2,
                                     argv,
                                     isolate).ToLocal(&v8ReturnValue)) {
     return false;
   }
 
-  ScriptValue cppValue = ScriptValue(ScriptState::Current(script_state_->GetIsolate()), v8ReturnValue);
+  int32_t cppValue = NativeValueTraits<IDLLong>::NativeValue(script_state_->GetIsolate(), v8ReturnValue, exceptionState, kNormalConversion);
+  if (exceptionState.HadException())
+    return false;
   returnValue = cppValue;
   return true;
 }
 
-AnyCallbackFunctionOptionalAnyArg* NativeValueTraits<AnyCallbackFunctionOptionalAnyArg>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  AnyCallbackFunctionOptionalAnyArg* nativeValue = AnyCallbackFunctionOptionalAnyArg::Create(ScriptState::Current(isolate), value);
+V8LongCallbackFunction* NativeValueTraits<V8LongCallbackFunction>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  V8LongCallbackFunction* nativeValue = V8LongCallbackFunction::Create(ScriptState::Current(isolate), value);
   if (!nativeValue) {
     exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
-        "AnyCallbackFunctionOptionalAnyArg"));
+        "LongCallbackFunction"));
   }
   return nativeValue;
 }

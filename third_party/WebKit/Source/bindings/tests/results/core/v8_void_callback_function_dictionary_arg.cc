@@ -10,13 +10,13 @@
 
 // clang-format off
 
-#include "long_callback_function.h"
+#include "v8_void_callback_function_dictionary_arg.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/IDLTypes.h"
 #include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/ToV8ForCore.h"
 #include "bindings/core/v8/V8BindingForCore.h"
+#include "bindings/core/v8/V8TestDictionary.h"
 #include "core/dom/ExecutionContext.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/wtf/Assertions.h"
@@ -24,23 +24,23 @@
 namespace blink {
 
 // static
-LongCallbackFunction* LongCallbackFunction::Create(ScriptState* scriptState, v8::Local<v8::Value> callback) {
+V8VoidCallbackFunctionDictionaryArg* V8VoidCallbackFunctionDictionaryArg::Create(ScriptState* scriptState, v8::Local<v8::Value> callback) {
   if (IsUndefinedOrNull(callback))
     return nullptr;
-  return new LongCallbackFunction(scriptState, v8::Local<v8::Function>::Cast(callback));
+  return new V8VoidCallbackFunctionDictionaryArg(scriptState, v8::Local<v8::Function>::Cast(callback));
 }
 
-LongCallbackFunction::LongCallbackFunction(ScriptState* scriptState, v8::Local<v8::Function> callback)
+V8VoidCallbackFunctionDictionaryArg::V8VoidCallbackFunctionDictionaryArg(ScriptState* scriptState, v8::Local<v8::Function> callback)
     : script_state_(scriptState),
     callback_(scriptState->GetIsolate(), this, callback) {
   DCHECK(!callback_.IsEmpty());
 }
 
-DEFINE_TRACE_WRAPPERS(LongCallbackFunction) {
+DEFINE_TRACE_WRAPPERS(V8VoidCallbackFunctionDictionaryArg) {
   visitor->TraceWrappers(callback_.Cast<v8::Value>());
 }
 
-bool LongCallbackFunction::call(ScriptWrappable* scriptWrappable, int32_t num1, int32_t num2, int32_t& returnValue) {
+bool V8VoidCallbackFunctionDictionaryArg::call(ScriptWrappable* scriptWrappable, const TestDictionary& arg) {
   if (callback_.IsEmpty())
     return false;
 
@@ -64,9 +64,8 @@ bool LongCallbackFunction::call(ScriptWrappable* scriptWrappable, int32_t num1, 
       script_state_->GetContext()->Global(),
       isolate);
 
-  v8::Local<v8::Value> v8_num1 = v8::Integer::New(script_state_->GetIsolate(), num1);
-  v8::Local<v8::Value> v8_num2 = v8::Integer::New(script_state_->GetIsolate(), num2);
-  v8::Local<v8::Value> argv[] = { v8_num1, v8_num2 };
+  v8::Local<v8::Value> v8_arg = ToV8(arg, script_state_->GetContext()->Global(), script_state_->GetIsolate());
+  v8::Local<v8::Value> argv[] = { v8_arg };
   v8::TryCatch exceptionCatcher(isolate);
   exceptionCatcher.SetVerbose(true);
 
@@ -74,24 +73,20 @@ bool LongCallbackFunction::call(ScriptWrappable* scriptWrappable, int32_t num1, 
   if (!V8ScriptRunner::CallFunction(callback_.NewLocal(isolate),
                                     context,
                                     thisValue,
-                                    2,
+                                    1,
                                     argv,
                                     isolate).ToLocal(&v8ReturnValue)) {
     return false;
   }
 
-  int32_t cppValue = NativeValueTraits<IDLLong>::NativeValue(script_state_->GetIsolate(), v8ReturnValue, exceptionState, kNormalConversion);
-  if (exceptionState.HadException())
-    return false;
-  returnValue = cppValue;
   return true;
 }
 
-LongCallbackFunction* NativeValueTraits<LongCallbackFunction>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  LongCallbackFunction* nativeValue = LongCallbackFunction::Create(ScriptState::Current(isolate), value);
+V8VoidCallbackFunctionDictionaryArg* NativeValueTraits<V8VoidCallbackFunctionDictionaryArg>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+  V8VoidCallbackFunctionDictionaryArg* nativeValue = V8VoidCallbackFunctionDictionaryArg::Create(ScriptState::Current(isolate), value);
   if (!nativeValue) {
     exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
-        "LongCallbackFunction"));
+        "VoidCallbackFunctionDictionaryArg"));
   }
   return nativeValue;
 }

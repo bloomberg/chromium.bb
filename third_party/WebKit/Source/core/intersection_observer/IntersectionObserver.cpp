@@ -7,7 +7,7 @@
 #include <algorithm>
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8IntersectionObserverDelegate.h"
-#include "bindings/core/v8/intersection_observer_callback.h"
+#include "bindings/core/v8/v8_intersection_observer_callback.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/CSSTokenizer.h"
 #include "core/dom/Element.h"
@@ -152,7 +152,7 @@ IntersectionObserver* IntersectionObserver::Create(
 
 IntersectionObserver* IntersectionObserver::Create(
     ScriptState* script_state,
-    IntersectionObserverCallback* callback,
+    V8IntersectionObserverCallback* callback,
     const IntersectionObserverInit& observer_init,
     ExceptionState& exception_state) {
   V8IntersectionObserverDelegate* delegate =

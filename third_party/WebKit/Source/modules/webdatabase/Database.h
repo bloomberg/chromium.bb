@@ -39,7 +39,6 @@ namespace blink {
 
 class ChangeVersionData;
 class DatabaseAuthorizer;
-class DatabaseCallback;
 class DatabaseContext;
 class ExecutionContext;
 class SQLTransaction;
@@ -48,6 +47,7 @@ class SQLTransactionCallback;
 class SQLTransactionClient;
 class SQLTransactionCoordinator;
 class SQLTransactionErrorCallback;
+class V8DatabaseCallback;
 class VoidCallback;
 
 class Database final : public GarbageCollectedFinalized<Database>,
@@ -131,7 +131,7 @@ class Database final : public GarbageCollectedFinalized<Database>,
            const String& expected_version,
            const String& display_name,
            unsigned estimated_size,
-           DatabaseCallback* creation_callback);
+           V8DatabaseCallback* creation_callback);
   bool PerformOpenAndVerify(bool set_version_in_new_database,
                             DatabaseError&,
                             String& error_message);
@@ -201,7 +201,7 @@ class Database final : public GarbageCollectedFinalized<Database>,
   SQLiteDatabase sqlite_database_;
 
   Member<DatabaseAuthorizer> database_authorizer_;
-  TraceWrapperMember<DatabaseCallback> creation_callback_;
+  TraceWrapperMember<V8DatabaseCallback> creation_callback_;
   Deque<CrossThreadPersistent<SQLTransactionBackend>> transaction_queue_;
   Mutex transaction_in_progress_mutex_;
   bool transaction_in_progress_;

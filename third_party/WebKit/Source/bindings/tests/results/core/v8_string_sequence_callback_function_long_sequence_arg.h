@@ -10,8 +10,8 @@
 
 // clang-format off
 
-#ifndef StringSequenceCallbackFunctionLongSequenceArg_h
-#define StringSequenceCallbackFunctionLongSequenceArg_h
+#ifndef V8StringSequenceCallbackFunctionLongSequenceArg_h
+#define V8StringSequenceCallbackFunctionLongSequenceArg_h
 
 #include "bindings/core/v8/NativeValueTraits.h"
 #include "core/CoreExport.h"
@@ -24,11 +24,11 @@ namespace blink {
 
 class ScriptState;
 
-class CORE_EXPORT StringSequenceCallbackFunctionLongSequenceArg final : public GarbageCollectedFinalized<StringSequenceCallbackFunctionLongSequenceArg>, public TraceWrapperBase {
+class CORE_EXPORT V8StringSequenceCallbackFunctionLongSequenceArg final : public GarbageCollectedFinalized<V8StringSequenceCallbackFunctionLongSequenceArg>, public TraceWrapperBase {
  public:
-  static StringSequenceCallbackFunctionLongSequenceArg* Create(ScriptState*, v8::Local<v8::Value> callback);
+  static V8StringSequenceCallbackFunctionLongSequenceArg* Create(ScriptState*, v8::Local<v8::Value> callback);
 
-  ~StringSequenceCallbackFunctionLongSequenceArg() = default;
+  ~V8StringSequenceCallbackFunctionLongSequenceArg() = default;
 
   DEFINE_INLINE_TRACE() {}
   DECLARE_TRACE_WRAPPERS();
@@ -40,17 +40,17 @@ class CORE_EXPORT StringSequenceCallbackFunctionLongSequenceArg final : public G
   }
 
  private:
-  StringSequenceCallbackFunctionLongSequenceArg(ScriptState*, v8::Local<v8::Function>);
+  V8StringSequenceCallbackFunctionLongSequenceArg(ScriptState*, v8::Local<v8::Function>);
 
   RefPtr<ScriptState> script_state_;
   TraceWrapperV8Reference<v8::Function> callback_;
 };
 
 template <>
-struct NativeValueTraits<StringSequenceCallbackFunctionLongSequenceArg> : public NativeValueTraitsBase<StringSequenceCallbackFunctionLongSequenceArg> {
-  CORE_EXPORT static StringSequenceCallbackFunctionLongSequenceArg* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+struct NativeValueTraits<V8StringSequenceCallbackFunctionLongSequenceArg> : public NativeValueTraitsBase<V8StringSequenceCallbackFunctionLongSequenceArg> {
+  CORE_EXPORT static V8StringSequenceCallbackFunctionLongSequenceArg* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 }  // namespace blink
 
-#endif  // StringSequenceCallbackFunctionLongSequenceArg_h
+#endif  // V8StringSequenceCallbackFunctionLongSequenceArg_h

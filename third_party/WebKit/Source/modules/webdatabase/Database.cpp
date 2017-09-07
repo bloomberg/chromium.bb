@@ -26,7 +26,7 @@
 #include "modules/webdatabase/Database.h"
 
 #include <memory>
-#include "bindings/modules/v8/database_callback.h"
+#include "bindings/modules/v8/v8_database_callback.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/TaskRunnerHelper.h"
@@ -227,7 +227,7 @@ Database::Database(DatabaseContext* database_context,
                    const String& expected_version,
                    const String& display_name,
                    unsigned estimated_size,
-                   DatabaseCallback* creation_callback)
+                   V8DatabaseCallback* creation_callback)
     : database_context_(database_context),
       name_(name.IsolatedCopy()),
       expected_version_(expected_version.IsolatedCopy()),
