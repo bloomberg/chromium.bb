@@ -92,17 +92,20 @@ class PLATFORM_EXPORT ImageDecoder {
   // we can't sniff a supported type from the provided data (possibly
   // because there isn't enough data yet).
   // Sets |max_decoded_bytes_| to Platform::MaxImageDecodedBytes().
-  static std::unique_ptr<ImageDecoder> Create(RefPtr<SegmentReader> data,
-                                              bool data_complete,
-                                              AlphaOption,
-                                              const ColorBehavior&);
+  static std::unique_ptr<ImageDecoder> Create(
+      RefPtr<SegmentReader> data,
+      bool data_complete,
+      AlphaOption,
+      const ColorBehavior&,
+      const SkISize& desired_size = SkISize::MakeEmpty());
   static std::unique_ptr<ImageDecoder> Create(
       RefPtr<SharedBuffer> data,
       bool data_complete,
       AlphaOption alpha_option,
-      const ColorBehavior& color_behavior) {
+      const ColorBehavior& color_behavior,
+      const SkISize& desired_size = SkISize::MakeEmpty()) {
     return Create(SegmentReader::CreateFromSharedBuffer(std::move(data)),
-                  data_complete, alpha_option, color_behavior);
+                  data_complete, alpha_option, color_behavior, desired_size);
   }
 
   virtual String FilenameExtension() const = 0;
@@ -140,7 +143,7 @@ class PLATFORM_EXPORT ImageDecoder {
   bool IsDecodedSizeAvailable() const { return !failed_ && size_available_; }
 
   virtual IntSize Size() const { return size_; }
-  virtual std::vector<SkISize> GetSupportedDecodeSizes() { return {}; };
+  virtual std::vector<SkISize> GetSupportedDecodeSizes() const { return {}; };
 
   // Decoders which downsample images should override this method to
   // return the actual decoded size.
