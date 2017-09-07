@@ -90,17 +90,31 @@ class ContextualSuggestionsService : public KeyedService {
   //   URL or personal data in unencrypted network traffic.
   // Note: these checks are in addition to CanSendUrl() on the default
   // contextual suggestion URL.
-  GURL ExperimentalZeroSuggestURL(
+  GURL ExperimentalContextualSuggestionsUrl(
       const std::string& current_url,
       const TemplateURLService* template_url_service) const;
 
-  // Creates an HTTP GET request for contextual suggestions. The returned
-  // fetcher does not include a header corresponding with an authorization
-  // token.
-  std::unique_ptr<net::URLFetcher> CreateRequest(
-      const GURL& suggest_url,
-      bool is_experimental,
-      net::URLFetcherDelegate* fetcher_delegate) const;
+  // Upon succesfull creation of an HTTP GET request for default contextual
+  // suggestions, the |callback| function is run with the HTTP GET request as a
+  // parameter.
+  //
+  // This function is called by CreateContextualSuggestionsRequest. See its
+  // function definition for details on the parameters.
+  void CreateDefaultRequest(const std::string& current_url,
+                            const TemplateURLService* template_url_service,
+                            net::URLFetcherDelegate* fetcher_delegate,
+                            ContextualSuggestionsCallback callback);
+
+  // Upon succesfull creation of an HTTP POST request for default contextual
+  // suggestions, the |callback| function is run with the HTTP POST request as a
+  // parameter.
+  //
+  // This function is called by CreateContextualSuggestionsRequest. See its
+  // function definition for details on the parameters.
+  void CreateExperimentalRequest(const std::string& current_url,
+                                 const GURL& suggest_url,
+                                 net::URLFetcherDelegate* fetcher_delegate,
+                                 ContextualSuggestionsCallback callback);
 
   // Called when an access token request completes (successfully or not).
   void AccessTokenAvailable(std::unique_ptr<net::URLFetcher> fetcher,
