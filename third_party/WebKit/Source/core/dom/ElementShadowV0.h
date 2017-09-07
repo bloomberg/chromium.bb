@@ -28,7 +28,7 @@
 #define ElementShadowV0_h
 
 #include "core/CoreExport.h"
-#include "core/dom/SelectRuleFeatureSet.h"
+#include "core/css/SelectRuleFeatureSet.h"
 #include "core/dom/V0InsertionPoint.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
