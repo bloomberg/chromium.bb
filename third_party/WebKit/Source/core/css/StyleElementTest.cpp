@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/StyleElement.h"
+#include "core/css/StyleElement.h"
 
+#include <memory>
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/Comment.h"
 #include "core/html/HTMLStyleElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 

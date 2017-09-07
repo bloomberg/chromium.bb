@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/SelectorQuery.h"
+#include "core/css/SelectorQuery.h"
 
 #include <memory>
 #include "core/css/parser/CSSParser.h"

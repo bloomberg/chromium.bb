@@ -24,7 +24,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/SelectorQuery.h"
+#include "core/css/SelectorQuery.h"
 
 #include <memory>
 #include "bindings/core/v8/ExceptionState.h"

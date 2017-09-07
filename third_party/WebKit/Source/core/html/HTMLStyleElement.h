@@ -23,10 +23,10 @@
 #ifndef HTMLStyleElement_h
 #define HTMLStyleElement_h
 
-#include "core/dom/IncrementLoadEventDelayCount.h"
-#include "core/dom/StyleElement.h"
-#include "core/html/HTMLElement.h"
 #include <memory>
+#include "core/css/StyleElement.h"
+#include "core/dom/IncrementLoadEventDelayCount.h"
+#include "core/html/HTMLElement.h"
 
 namespace blink {
 

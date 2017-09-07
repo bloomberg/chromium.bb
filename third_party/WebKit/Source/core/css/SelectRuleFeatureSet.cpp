@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/SelectRuleFeatureSet.h"
+#include "core/css/SelectRuleFeatureSet.h"
 
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSSelectorList.h"

@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/dom/StyleElement.h"
+#include "core/css/StyleElement.h"
 
 #include "bindings/core/v8/ScriptController.h"
 #include "core/css/MediaList.h"

@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/CSSSelectorWatch.h"
+#include "core/css/CSSSelectorWatch.h"
 
 #include "core/css/StyleEngine.h"
 #include "core/css/StylePropertySet.h"

@@ -24,6 +24,7 @@
 #include "core/dom/ContainerNode.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/css/SelectorQuery.h"
 #include "core/css/StyleChangeReason.h"
 #include "core/css/StyleEngine.h"
 #include "core/dom/ChildFrameDisconnector.h"
@@ -37,7 +38,6 @@
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/NodeTraversal.h"
-#include "core/dom/SelectorQuery.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/dom/WhitespaceAttacher.h"
