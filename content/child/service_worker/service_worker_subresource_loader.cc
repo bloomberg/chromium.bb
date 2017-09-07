@@ -11,8 +11,6 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/child/child_url_loader_factory_getter.h"
 #include "content/public/common/content_features.h"
-#include "third_party/WebKit/public/platform/Platform.h"
-#include "third_party/WebKit/public/platform/WebBlobRegistry.h"
 #include "ui/base/page_transition_types.h"
 
 namespace content {
@@ -39,7 +37,9 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
     scoped_refptr<base::RefCountedData<mojom::ServiceWorkerEventDispatcherPtr>>
         event_dispatcher,
     scoped_refptr<ChildURLLoaderFactoryGetter> default_loader_factory_getter,
-    const GURL& controller_origin)
+    const GURL& controller_origin,
+    scoped_refptr<base::RefCountedData<storage::mojom::BlobRegistryPtr>>
+        blob_registry)
     : url_loader_client_(std::move(client)),
       url_loader_binding_(this, std::move(request)),
       response_callback_binding_(this),
@@ -51,6 +51,7 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
       traffic_annotation_(traffic_annotation),
       controller_origin_(controller_origin),
       blob_client_binding_(this),
+      blob_registry_(std::move(blob_registry)),
       default_loader_factory_getter_(std::move(default_loader_factory_getter)),
       weak_factory_(this) {
   DCHECK(event_dispatcher_ && event_dispatcher_->data);
@@ -59,12 +60,7 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
   StartRequest(resource_request);
 }
 
-ServiceWorkerSubresourceLoader::~ServiceWorkerSubresourceLoader() {
-  if (!blob_url_.is_empty()) {
-    blink::Platform::Current()->GetBlobRegistry()->RevokePublicBlobURL(
-        blob_url_);
-  }
-}
+ServiceWorkerSubresourceLoader::~ServiceWorkerSubresourceLoader() = default;
 
 void ServiceWorkerSubresourceLoader::DeleteSoon() {
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
@@ -161,22 +157,12 @@ void ServiceWorkerSubresourceLoader::StartResponse(
   // https://docs.google.com/a/google.com/document/d/1_ROmusFvd8ATwIZa29-P6Ls5yyLjfld0KvKchVfA84Y/edit?usp=drive_web
   // TODO(kinuko): This code is hacked up on top of the legacy API, migrate
   // to mojo-fied Blob code once it becomes ready.
-  blink::WebBlobRegistry* blob_registry =
-      blink::Platform::Current()->GetBlobRegistry();
-  if (!response.blob_uuid.empty() && blob_registry) {
-    blink::WebString webstring_blob_uuid =
-        blink::WebString::FromASCII(response.blob_uuid);
-    blob_url_ =
+  if (!response.blob_uuid.empty()) {
+    GURL blob_url =
         GURL("blob:" + controller_origin_.spec() + "/" + response.blob_uuid);
-    blob_registry->RegisterPublicBlobURL(blob_url_, webstring_blob_uuid);
-    // Decrement the Blob ref-count to offset AddRef in the controller Service
-    // Worker code. TODO(kinuko): Remove this once RegisterPublicBlobURL can be
-    // issued over mojo. Also see the comment around AddBlobDataRef in
-    // ServiceWorkerContextClient for additional details. (crbug.com/756743)
-    blob_registry->RemoveBlobDataRef(webstring_blob_uuid);
-    VLOG(1) << "Reading blob: " << response.blob_uuid << " / "
-            << blob_url_.spec();
-    resource_request_.url = blob_url_;
+    blob_registry_->data->RegisterURL(std::move(body_as_blob), blob_url,
+                                      &blob_url_handle_);
+    resource_request_.url = blob_url;
 
     mojom::URLLoaderClientPtr blob_loader_client;
     blob_client_binding_.Bind(mojo::MakeRequest(&blob_loader_client));
@@ -301,10 +287,13 @@ ServiceWorkerSubresourceLoaderFactory::ServiceWorkerSubresourceLoaderFactory(
     scoped_refptr<base::RefCountedData<mojom::ServiceWorkerEventDispatcherPtr>>
         event_dispatcher,
     scoped_refptr<ChildURLLoaderFactoryGetter> default_loader_factory_getter,
-    const GURL& controller_origin)
+    const GURL& controller_origin,
+    scoped_refptr<base::RefCountedData<storage::mojom::BlobRegistryPtr>>
+        blob_registry)
     : event_dispatcher_(std::move(event_dispatcher)),
       default_loader_factory_getter_(std::move(default_loader_factory_getter)),
-      controller_origin_(controller_origin) {
+      controller_origin_(controller_origin),
+      blob_registry_(std::move(blob_registry)) {
   DCHECK_EQ(controller_origin, controller_origin.GetOrigin());
   DCHECK(default_loader_factory_getter_);
 }
@@ -327,7 +316,7 @@ void ServiceWorkerSubresourceLoaderFactory::CreateLoaderAndStart(
   new ServiceWorkerSubresourceLoader(
       std::move(request), routing_id, request_id, options, resource_request,
       std::move(client), traffic_annotation, event_dispatcher_,
-      default_loader_factory_getter_, controller_origin_);
+      default_loader_factory_getter_, controller_origin_, blob_registry_);
 }
 
 void ServiceWorkerSubresourceLoaderFactory::Clone(

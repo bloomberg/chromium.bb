@@ -20,9 +20,12 @@
 #include "content/child/worker_thread_registry.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/child/child_url_loader_factory_getter.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace content {
 
@@ -159,10 +162,16 @@ void ServiceWorkerProviderContext::SetController(
     auto event_dispatcher = base::MakeRefCounted<
         base::RefCountedData<mojom::ServiceWorkerEventDispatcherPtr>>();
     event_dispatcher->data = std::move(event_dispatcher_ptr);
+    storage::mojom::BlobRegistryPtr blob_registry_ptr;
+    ChildThreadImpl::current()->GetConnector()->BindInterface(
+        mojom::kBrowserServiceName, mojo::MakeRequest(&blob_registry_ptr));
+    auto blob_registry = base::MakeRefCounted<
+        base::RefCountedData<storage::mojom::BlobRegistryPtr>>();
+    blob_registry->data = std::move(blob_registry_ptr);
     mojo::MakeStrongBinding(
         base::MakeUnique<ServiceWorkerSubresourceLoaderFactory>(
-            event_dispatcher, state->default_loader_factory_getter,
-            state->controller->url().GetOrigin()),
+            std::move(event_dispatcher), state->default_loader_factory_getter,
+            state->controller->url().GetOrigin(), std::move(blob_registry)),
         mojo::MakeRequest(&state->subresource_loader_factory));
   }
 }

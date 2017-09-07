@@ -1050,16 +1050,6 @@ void ServiceWorkerContextClient::RespondToFetchEvent(
       blob_registry_->GetBlobFromUUID(MakeRequest(&blob_ptr),
                                       response.blob_uuid);
     }
-    if (ServiceWorkerUtils::IsServicificationEnabled()) {
-      // Blob's lifetime is guaranteed via mojom::BlobPtr, but
-      // we need to retain a reference in the BlobDispatcherHost
-      // to register a public URL in the controllee side as it
-      // still goes through the legacy IPC path.
-      // TODO(kinuko): Remove this code before this hits production
-      // code, there's a risk to leak a blob. (crbug.com/756743)
-      blink::Platform::Current()->GetBlobRegistry()->AddBlobDataRef(
-          blink::WebString::FromASCII(response.blob_uuid));
-    }
     response_callback->OnResponseBlob(
         response, std::move(blob_ptr),
         base::Time::FromDoubleT(event_dispatch_time));
