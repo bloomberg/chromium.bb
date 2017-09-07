@@ -66,9 +66,13 @@ void BrowserURLLoaderThrottle::WillStartRequest(
 void BrowserURLLoaderThrottle::WillRedirectRequest(
     const net::RedirectInfo& redirect_info,
     bool* defer) {
-  // If |blocked_| is true, the resource load has been canceled and there
-  // shouldn't be such a notification.
-  DCHECK(!blocked_);
+  if (blocked_) {
+    // OnCheckUrlResult() has set |blocked_| to true and called
+    // |delegate_->CancelWithError|, but this method is called before the
+    // request is actually cancelled. In that case, simply defer the request.
+    *defer = true;
+    return;
+  }
 
   pending_checks_++;
   url_checker_->CheckUrl(
@@ -78,9 +82,13 @@ void BrowserURLLoaderThrottle::WillRedirectRequest(
 }
 
 void BrowserURLLoaderThrottle::WillProcessResponse(bool* defer) {
-  // If |blocked_| is true, the resource load has been canceled and there
-  // shouldn't be such a notification.
-  DCHECK(!blocked_);
+  if (blocked_) {
+    // OnCheckUrlResult() has set |blocked_| to true and called
+    // |delegate_->CancelWithError|, but this method is called before the
+    // request is actually cancelled. In that case, simply defer the request.
+    *defer = true;
+    return;
+  }
 
   if (pending_checks_ == 0) {
     LogDelay(base::TimeDelta());
