@@ -41,11 +41,7 @@ void ShellAccessTokenStore::GetRequestContextOnUIThread(
 
 void ShellAccessTokenStore::RespondOnOriginatingThread(
     const LoadAccessTokensCallback& callback) {
-  // Since content_shell is a test executable, rather than an end user program,
-  // we provide a dummy access_token set to avoid hitting the server.
-  AccessTokenMap access_token_map;
-  access_token_map[GURL()] = base::ASCIIToUTF16("chromium_content_shell");
-  callback.Run(access_token_map, system_request_context_.get());
+  callback.Run(AccessTokenMap(), system_request_context_);
   system_request_context_ = NULL;
 }
 
