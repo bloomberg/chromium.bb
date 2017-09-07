@@ -58,6 +58,8 @@ per-file chrome_navigation_browsertest.cc=file://content/OWNERS
 per-file chrome_security_exploit_browsertest.cc=alexmos@chromium.org
 per-file chrome_security_exploit_browsertest.cc=file://content/OWNERS
 
+per-file chrome_service_worker_browsertest.cc=file://content/browser/service_worker/OWNERS
+
 per-file chrome_site_per_process_browsertest.cc=alexmos@chromium.org
 per-file chrome_site_per_process_browsertest.cc=file://content/OWNERS
 

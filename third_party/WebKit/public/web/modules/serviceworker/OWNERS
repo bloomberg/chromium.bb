@@ -1,12 +1,4 @@
-dominicc@chromium.org
-falken@chromium.org
-horo@chromium.org
-jsbell@chromium.org
-kinuko@chromium.org
-mek@chromium.org
-michaeln@chromium.org
-nhiroki@chromium.org
-shimazu@chromium.org
+file://content/browser/service_worker/OWNERS
 
 # TEAM: worker-dev@chromium.org
 # COMPONENT: Blink>ServiceWorker
