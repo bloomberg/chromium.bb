@@ -358,7 +358,7 @@ void ThreadHeap::PostMarkingProcessing(Visitor* visitor) {
 
 void ThreadHeap::WeakProcessing(Visitor* visitor) {
   TRACE_EVENT0("blink_gc", "ThreadHeap::weakProcessing");
-  double start_time = WTF::CurrentTimeMS();
+  double start_time = WTF::MonotonicallyIncreasingTimeMS();
 
   // Weak processing may access unmarked objects but are forbidden from
   // ressurecting them.
@@ -373,7 +373,8 @@ void ThreadHeap::WeakProcessing(Visitor* visitor) {
   // callback phase, so the marking stack should still be empty here.
   DCHECK(marking_stack_->IsEmpty());
 
-  double time_for_weak_processing = WTF::CurrentTimeMS() - start_time;
+  double time_for_weak_processing =
+      WTF::MonotonicallyIncreasingTimeMS() - start_time;
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       CustomCountHistogram, weak_processing_time_histogram,
       ("BlinkGC.TimeForGlobalWeakProcessing", 1, 10 * 1000, 50));

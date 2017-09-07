@@ -262,9 +262,10 @@ Address BaseArena::LazySweep(size_t allocation_size, size_t gc_info_index) {
   ThreadState::SweepForbiddenScope sweep_forbidden(GetThreadState());
   ScriptForbiddenIfMainThreadScope script_forbidden;
 
-  double start_time = WTF::CurrentTimeMS();
+  double start_time = WTF::MonotonicallyIncreasingTimeMS();
   Address result = LazySweepPages(allocation_size, gc_info_index);
-  GetThreadState()->AccumulateSweepingTime(WTF::CurrentTimeMS() - start_time);
+  GetThreadState()->AccumulateSweepingTime(
+      WTF::MonotonicallyIncreasingTimeMS() - start_time);
   ThreadHeap::ReportMemoryUsageForTracing();
 
   return result;
