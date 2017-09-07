@@ -136,10 +136,6 @@ js_compile_checked("credential_manager") {
 source_set("web_internal") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "auto_reload_bridge.h",
-    "auto_reload_bridge.mm",
-    "auto_reload_controller.h",
-    "auto_reload_controller.mm",
     "blocked_popup_tab_helper.h",
     "blocked_popup_tab_helper.mm",
     "chrome_web_client.h",
@@ -218,7 +214,6 @@ source_set("unit_tests_internal") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "auto_reload_controller_unittest.mm",
     "blocked_popup_tab_helper_unittest.mm",
     "chrome_web_client_unittest.mm",
     "error_page_generator_unittest.mm",
