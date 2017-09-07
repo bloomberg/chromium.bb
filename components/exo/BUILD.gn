@@ -64,7 +64,6 @@ source_set("exo") {
     "//ash/public/cpp:ash_public_cpp",
     "//base",
     "//cc",
-    "//cc/ipc:interfaces",
     "//components/viz/service",
     "//device/gamepad",
     "//device/gamepad/public/cpp:shared_with_blink",

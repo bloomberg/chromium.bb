@@ -18,13 +18,11 @@
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace cc {
+namespace viz {
+
 namespace mojom {
 class TextureMailboxDataView;
 }
-}  // namespace cc
-
-namespace viz {
 
 class SharedBitmap;
 
@@ -102,7 +100,7 @@ class VIZ_COMMON_EXPORT TextureMailbox {
 #endif
 
  private:
-  friend struct mojo::StructTraits<cc::mojom::TextureMailboxDataView,
+  friend struct mojo::StructTraits<mojom::TextureMailboxDataView,
                                    TextureMailbox>;
 
   gpu::MailboxHolder mailbox_holder_;

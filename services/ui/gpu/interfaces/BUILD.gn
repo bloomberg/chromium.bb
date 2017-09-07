@@ -12,7 +12,6 @@ mojom("interfaces") {
   ]
 
   public_deps = [
-    "//cc/ipc:interfaces",
     "//gpu/ipc/common:interfaces",
     "//media/gpu/mojo:jpeg_decoder",
     "//media/mojo/interfaces",

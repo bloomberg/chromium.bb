@@ -18,7 +18,6 @@ viz_source_set("client") {
   public_deps = [
     "//base",
     "//cc",
-    "//cc/ipc:interfaces",
     "//components/viz/common",
     "//mojo/public/cpp/bindings",
     "//services/viz/public/interfaces",

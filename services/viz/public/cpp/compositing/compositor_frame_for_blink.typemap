@@ -26,7 +26,6 @@ traits_headers = [
 ]
 public_deps = [
   "//cc",
-  "//cc/ipc:interfaces",
   "//gpu/ipc/common:interfaces",
   "//mojo/common:common_custom_types",
   "//services/viz/public/interfaces",

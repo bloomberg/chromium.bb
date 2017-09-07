@@ -893,7 +893,6 @@ mojom("offscreen_canvas_mojo_bindings") {
     "platform/modules/offscreencanvas/offscreen_canvas_surface.mojom",
   ]
   deps = [
-    "//cc/ipc:interfaces",
     "//services/viz/public/interfaces",
   ]
 

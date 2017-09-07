@@ -2,40 +2,40 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_IPC_COPY_OUTPUT_RESULT_STRUCT_TRAITS_H_
-#define CC_IPC_COPY_OUTPUT_RESULT_STRUCT_TRAITS_H_
+#ifndef SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_COPY_OUTPUT_RESULT_STRUCT_TRAITS_H_
+#define SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_COPY_OUTPUT_RESULT_STRUCT_TRAITS_H_
 
-#include "cc/ipc/copy_output_result.mojom-shared.h"
-#include "cc/ipc/texture_mailbox_releaser.mojom.h"
-#include "cc/ipc/texture_mailbox_struct_traits.h"
 #include "components/viz/common/quads/copy_output_result.h"
+#include "services/viz/public/cpp/compositing/texture_mailbox_struct_traits.h"
+#include "services/viz/public/interfaces/compositing/copy_output_result.mojom-shared.h"
+#include "services/viz/public/interfaces/compositing/texture_mailbox_releaser.mojom.h"
 #include "skia/public/interfaces/bitmap_skbitmap_struct_traits.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 
 namespace mojo {
 
 template <>
-struct EnumTraits<cc::mojom::CopyOutputResultFormat,
+struct EnumTraits<viz::mojom::CopyOutputResultFormat,
                   viz::CopyOutputResult::Format> {
-  static cc::mojom::CopyOutputResultFormat ToMojom(
+  static viz::mojom::CopyOutputResultFormat ToMojom(
       viz::CopyOutputResult::Format format) {
     switch (format) {
       case viz::CopyOutputResult::Format::RGBA_BITMAP:
-        return cc::mojom::CopyOutputResultFormat::RGBA_BITMAP;
+        return viz::mojom::CopyOutputResultFormat::RGBA_BITMAP;
       case viz::CopyOutputResult::Format::RGBA_TEXTURE:
-        return cc::mojom::CopyOutputResultFormat::RGBA_TEXTURE;
+        return viz::mojom::CopyOutputResultFormat::RGBA_TEXTURE;
     }
     NOTREACHED();
-    return cc::mojom::CopyOutputResultFormat::RGBA_BITMAP;
+    return viz::mojom::CopyOutputResultFormat::RGBA_BITMAP;
   }
 
-  static bool FromMojom(cc::mojom::CopyOutputResultFormat input,
+  static bool FromMojom(viz::mojom::CopyOutputResultFormat input,
                         viz::CopyOutputResult::Format* out) {
     switch (input) {
-      case cc::mojom::CopyOutputResultFormat::RGBA_BITMAP:
+      case viz::mojom::CopyOutputResultFormat::RGBA_BITMAP:
         *out = viz::CopyOutputResult::Format::RGBA_BITMAP;
         return true;
-      case cc::mojom::CopyOutputResultFormat::RGBA_TEXTURE:
+      case viz::mojom::CopyOutputResultFormat::RGBA_TEXTURE:
         *out = viz::CopyOutputResult::Format::RGBA_TEXTURE;
         return true;
     }
@@ -44,7 +44,7 @@ struct EnumTraits<cc::mojom::CopyOutputResultFormat,
 };
 
 template <>
-struct StructTraits<cc::mojom::CopyOutputResultDataView,
+struct StructTraits<viz::mojom::CopyOutputResultDataView,
                     std::unique_ptr<viz::CopyOutputResult>> {
   static viz::CopyOutputResult::Format format(
       const std::unique_ptr<viz::CopyOutputResult>& result) {
@@ -69,10 +69,10 @@ struct StructTraits<cc::mojom::CopyOutputResultDataView,
       return base::nullopt;
   }
 
-  static cc::mojom::TextureMailboxReleaserPtr releaser(
+  static viz::mojom::TextureMailboxReleaserPtr releaser(
       const std::unique_ptr<viz::CopyOutputResult>& result);
 
-  static bool Read(cc::mojom::CopyOutputResultDataView data,
+  static bool Read(viz::mojom::CopyOutputResultDataView data,
                    std::unique_ptr<viz::CopyOutputResult>* out_p);
 
  private:
@@ -81,4 +81,4 @@ struct StructTraits<cc::mojom::CopyOutputResultDataView,
 
 }  // namespace mojo
 
-#endif  // CC_IPC_COPY_OUTPUT_RESULT_STRUCT_TRAITS_H_
+#endif  // SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_COPY_OUTPUT_RESULT_STRUCT_TRAITS_H_
