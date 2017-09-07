@@ -280,10 +280,16 @@ page](https://github.com/quarnster/SublimeClang).
 
 ### Linux
 
-1. Install libclang-dev to get a copy of libclang.so:
+**Note** that there are recent (as of August 2017) changes to support C++14.
+Namely, you must use a more recent clang (3.9 is known to work), and use its
+resource directory instead of that supplied by SublimeClang.
+
+1. Install a recent libclang-dev to get a copy of libclang.so. 3.4 isn't
+   recent enough, but 3.9 works. If you use something different, change the
+   names and paths accordingly:
 
     ```shell
-    sudo apt-get install libclang-dev
+    sudo apt-get install libclang-3.9-dev
     ```
 
 1.  Build libclang.so and SublimeClang in your packages directory:
@@ -293,7 +299,7 @@ page](https://github.com/quarnster/SublimeClang).
     git clone --recursive https://github.com/quarnster/SublimeClang SublimeClang
     cd SublimeClang
     # Copy libclang.so to the internals dir
-    cp $(ldconfig -p | grep libclang.so | cut -d" " -f4) internals/libclang.so
+    cp /usr/lib/llvm-3.9/lib/libclang.so.1 internals/libclang.so
     # Make the project - should be really quick, since libclang.so is already built
     cd src && mkdir build && cd build
     cmake ..
@@ -314,11 +320,15 @@ page](https://github.com/quarnster/SublimeClang).
         "sublimeclang_options":
         [
           "-Wno-attributes",
+          "-resource-dir=/usr/lib/llvm-3.9/lib/clang/3.9.1",
         ],
         "sublimeclang_options_script": "python ${project_path}/src/tools/sublime/ninja_options_script.py -d '/path/to/depot_tools'",
       }
     }
     ```
+1. Edit your SublimeClang settings and set `dont_prepend_clang_includes` to
+   true. This way you use the resource directory we set instead of the ancient
+   ones included in the repository. Without this you won't have C++14 support.
 
 1.  Restart Sublime. Now when you save a file, you should see a "Reparsing…"
     message in the footer and errors will show up in the output panel. Also,
