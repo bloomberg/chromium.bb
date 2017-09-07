@@ -27,10 +27,24 @@ class TaskService;
 // the main thread and the I/O thread.
 class MIDI_EXPORT MidiService final {
  public:
+  class MIDI_EXPORT ManagerFactory {
+   public:
+    ManagerFactory() = default;
+    virtual ~ManagerFactory() = default;
+    virtual std::unique_ptr<MidiManager> Create(MidiService* service);
+
+    DISALLOW_COPY_AND_ASSIGN(ManagerFactory);
+  };
+
   // Use the first constructor for production code.
   MidiService();
-  // |MidiManager| can be explicitly specified in the constructor for testing.
-  explicit MidiService(std::unique_ptr<MidiManager> manager);
+  // ManagerFactory can be specified in the constructor for testing.  If the
+  // factory is specified, Dynamic instantiation mode is disabled.  MidiManager
+  // will be created immediately, and won't be destructed until MidiService
+  // dies.
+  // TODO(toyoshim): Adopt dynamic instantiation mode once the mode is enabled
+  // by default.
+  explicit MidiService(std::unique_ptr<ManagerFactory> factory);
   ~MidiService();
 
   // Called on the browser main thread to notify the I/O thread will stop and
@@ -63,6 +77,11 @@ class MIDI_EXPORT MidiService final {
   TaskService* task_service() { return task_service_.get(); }
 
  private:
+  MidiService(std::unique_ptr<ManagerFactory> factory,
+              bool enable_dynamic_instantiation);
+
+  std::unique_ptr<ManagerFactory> manager_factory_;
+
   // Holds MidiManager instance. If the dynamic instantiation feature is
   // enabled, the MidiManager would be constructed and destructed on the I/O
   // thread, and all MidiManager methods would be called on the I/O thread.
