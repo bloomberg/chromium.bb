@@ -305,9 +305,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool ShouldTriggerBeginImplFrameDeadlineImmediately() const;
   bool ShouldBlockDeadlineIndefinitely() const;
 
-  // True if we need to force activations to make forward progress.
-  // TODO(sunnyps): Rename this to ShouldAbortCurrentFrame or similar.
-  bool PendingActivationsShouldBeForced() const;
+  bool ShouldAbortCurrentFrame() const;
 
   bool ShouldBeginLayerTreeFrameSinkCreation() const;
   bool ShouldDraw() const;

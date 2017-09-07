@@ -246,34 +246,35 @@ bool SchedulerStateMachine::PendingDrawsShouldBeAborted() const {
   if (resourceless_draw_)
     return is_layer_tree_frame_sink_lost || !can_draw_;
 
-  // These are all the cases where we normally cannot or do not want to draw
-  // but, if needs_redraw_ is true and we do not draw to make forward progress,
-  // we might deadlock with the main thread.
-  // This should be a superset of PendingActivationsShouldBeForced() since
-  // activation of the pending tree is blocked by drawing of the active tree and
-  // the main thread might be blocked on activation of the most recent commit.
+  // These are all the cases where we normally cannot or do not want
+  // to draw but, if |needs_redraw_| is true and we do not draw to
+  // make forward progress, we might deadlock with the main
+  // thread. This should be a superset of ShouldAbortCurrentFrame()
+  // since activation of the pending tree is blocked by drawing of the
+  // active tree and the main thread might be blocked on activation of
+  // the most recent commit.
   return is_layer_tree_frame_sink_lost || !can_draw_ || !visible_ ||
          begin_frame_source_paused_;
 }
 
-bool SchedulerStateMachine::PendingActivationsShouldBeForced() const {
-  // There is no output surface to trigger our activations.
-  // If we do not force activations to make forward progress, we might deadlock
-  // with the main thread.
+bool SchedulerStateMachine::ShouldAbortCurrentFrame() const {
+  // Abort the frame if there is no output surface to trigger our
+  // activations, avoiding deadlock with the main thread.
   if (layer_tree_frame_sink_state_ == LAYER_TREE_FRAME_SINK_NONE)
     return true;
 
-  // If we're not visible, we should force activation.
-  // Since we set RequiresHighResToDraw when becoming visible, we ensure that we
-  // don't checkerboard until all visible resources are done. Furthermore, if we
-  // do keep the pending tree around, when becoming visible we might activate
-  // prematurely causing RequiresHighResToDraw flag to be reset. In all cases,
-  // we can simply activate on becoming invisible since we don't need to draw
+  // If we're not visible, we should just abort the frame. Since we
+  // set RequiresHighResToDraw when becoming visible, we ensure that
+  // we don't checkerboard until all visible resources are
+  // done. Furthermore, if we do keep the pending tree around, when
+  // becoming visible we might activate prematurely causing
+  // RequiresHighResToDraw flag to be reset. In all cases, we can
+  // simply activate on becoming invisible since we don't need to draw
   // the active tree when we're in this state.
   if (!visible_)
     return true;
 
-  // Force pending activations when viz::BeginFrameSource is paused to avoid
+  // Abort the frame when viz::BeginFrameSource is paused to avoid
   // deadlocking the main thread.
   if (begin_frame_source_paused_)
     return true;
@@ -366,8 +367,7 @@ bool SchedulerStateMachine::ShouldActivateSyncTree() const {
   if (active_tree_needs_first_draw_)
     return false;
 
-  // If we want to force activation, do so ASAP.
-  if (PendingActivationsShouldBeForced())
+  if (ShouldAbortCurrentFrame())
     return true;
 
   // At this point, only activate if we are ready to activate.
@@ -1014,8 +1014,8 @@ SchedulerStateMachine::CurrentBeginImplFrameDeadlineMode() const {
 
 bool SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineImmediately()
     const {
-  // If we just forced activation, we should end the deadline right now.
-  if (PendingActivationsShouldBeForced() && !has_pending_tree_)
+  // If we aborted the current frame we should end the deadline right now.
+  if (ShouldAbortCurrentFrame() && !has_pending_tree_)
     return true;
 
   // Throttle the deadline on CompositorFrameAck since we wont draw and submit

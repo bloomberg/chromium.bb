@@ -146,8 +146,8 @@ class StateMachine : public SchedulerStateMachine {
   bool CanDraw() const { return can_draw_; }
   bool Visible() const { return visible_; }
 
-  bool PendingActivationsShouldBeForced() const {
-    return SchedulerStateMachine::PendingActivationsShouldBeForced();
+  bool ShouldAbortCurrentFrame() const {
+    return SchedulerStateMachine::ShouldAbortCurrentFrame();
   }
 
   bool has_pending_tree() const { return has_pending_tree_; }
@@ -1711,7 +1711,7 @@ TEST(SchedulerStateMachineTest,
 }
 
 TEST(SchedulerStateMachineTest,
-     TestPendingActivationsShouldBeForcedAfterLostLayerTreeFrameSink) {
+     TestShouldAbortCurrentFrameAfterLostLayerTreeFrameSink) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
   SET_UP_STATE(state)
@@ -1726,7 +1726,7 @@ TEST(SchedulerStateMachineTest,
   state.NotifyReadyToCommit();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
 
-  EXPECT_TRUE(state.PendingActivationsShouldBeForced());
+  EXPECT_TRUE(state.ShouldAbortCurrentFrame());
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
 
   EXPECT_TRUE(state.PendingDrawsShouldBeAborted());
@@ -1816,7 +1816,7 @@ TEST(SchedulerStateMachineTest,
   // because we are not visible.
   state.NotifyBeginMainFrameStarted();
   state.NotifyReadyToCommit();
-  EXPECT_TRUE(state.PendingActivationsShouldBeForced());
+  EXPECT_TRUE(state.ShouldAbortCurrentFrame());
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
   EXPECT_TRUE(state.active_tree_needs_first_draw());
@@ -2066,7 +2066,7 @@ TEST(SchedulerStateMachineTest, TestTriggerDeadlineImmediatelyWhenInvisible) {
 
   state.SetVisible(false);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_TRUE(state.PendingActivationsShouldBeForced());
+  EXPECT_TRUE(state.ShouldAbortCurrentFrame());
   EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
 }
 
@@ -2086,7 +2086,7 @@ TEST(SchedulerStateMachineTest,
 
   state.SetBeginFrameSourcePaused(true);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_TRUE(state.PendingActivationsShouldBeForced());
+  EXPECT_TRUE(state.ShouldAbortCurrentFrame());
   EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
 }
 
