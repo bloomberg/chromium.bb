@@ -340,6 +340,18 @@ void RenderedPosition::PositionInGraphicsLayerBacking(
       LocalToInvalidationBackingPoint(edge_bottom_in_layer, nullptr);
 }
 
+LayoutPoint RenderedPosition::GetSamplePointForVisibility(
+    const LayoutPoint& edge_top_in_layer,
+    const LayoutPoint& edge_bottom_in_layer) {
+  FloatSize diff(edge_top_in_layer - edge_bottom_in_layer);
+  // Adjust by ~1px to avoid integer snapping error. This logic is the same
+  // as that in ComputeViewportSelectionBound in cc.
+  diff.Scale(1 / diff.DiagonalLength());
+  LayoutPoint sample_point = edge_bottom_in_layer;
+  sample_point.Move(LayoutSize(diff));
+  return sample_point;
+}
+
 bool RenderedPosition::IsVisible(bool selection_start) {
   if (IsNull())
     return false;
@@ -358,14 +370,16 @@ bool RenderedPosition::IsVisible(bool selection_start) {
     return true;
 
   LayoutPoint edge_top_in_layer;
-  LayoutPoint ignored1;
+  LayoutPoint edge_bottom_in_layer;
   bool ignored2;
-  GetLocalSelectionEndpoints(selection_start, edge_top_in_layer, ignored1,
-                             ignored2);
+  GetLocalSelectionEndpoints(selection_start, edge_top_in_layer,
+                             edge_bottom_in_layer, ignored2);
+  LayoutPoint sample_point =
+      GetSamplePointForVisibility(edge_top_in_layer, edge_bottom_in_layer);
 
   LayoutBox* text_control_object = ToLayoutBox(layout_object);
   LayoutPoint position_in_input(layout_object_->LocalToAncestorPoint(
-      FloatPoint(edge_top_in_layer), text_control_object,
+      FloatPoint(sample_point), text_control_object,
       kTraverseDocumentBoundaries));
   if (!text_control_object->BorderBoxRect().Contains(position_in_input))
     return false;

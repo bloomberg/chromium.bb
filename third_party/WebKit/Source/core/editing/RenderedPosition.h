@@ -117,6 +117,10 @@ class CORE_EXPORT RenderedPosition {
       const LayoutPoint& local_point,
       GraphicsLayer** graphics_layer_backing) const;
 
+  static LayoutPoint GetSamplePointForVisibility(
+      const LayoutPoint& edge_top_in_layer,
+      const LayoutPoint& edge_bottom_in_layer);
+
   LayoutObject* layout_object_;
   InlineBox* inline_box_;
   int offset_;
@@ -128,6 +132,8 @@ class CORE_EXPORT RenderedPosition {
 
   mutable InlineBox* prev_leaf_child_;
   mutable InlineBox* next_leaf_child_;
+
+  FRIEND_TEST_ALL_PREFIXES(RenderedPositionTest, GetSamplePointForVisibility);
 };
 
 inline RenderedPosition::RenderedPosition()
