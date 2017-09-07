@@ -114,6 +114,12 @@ enum DownloadCountTypes {
   // bytes are received when resuming the download.
   NO_BYTES_RECEIVED_AFTER_CONTENT_LENGTH_MISMATCH_COUNT,
 
+  // Count of downloads that requested target determination.
+  DETERMINE_DOWNLOAD_TARGET_COUNT,
+
+  // Count of downloads that has target determination completed.
+  DOWNLOAD_TARGET_DETERMINED_COUNT,
+
   DOWNLOAD_COUNT_TYPES_LAST_ENTRY
 };
 

@@ -8750,6 +8750,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="22" label="Completed with content length mismatch"/>
   <int value="23" label="More bytes received after content length mismatch"/>
   <int value="24" label="No bytes received after content length mismatch"/>
+  <int value="25" label="Target determination requeted"/>
+  <int value="26" label="Target determination completed"/>
 </enum>
 
 <enum name="DownloadDatabaseRecordDroppedType">
