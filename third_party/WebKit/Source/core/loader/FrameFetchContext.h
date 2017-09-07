@@ -53,6 +53,7 @@ class LocalFrameClient;
 class ResourceError;
 class ResourceResponse;
 class Settings;
+struct WebEnabledClientHints;
 class WebTaskRunner;
 
 class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
@@ -216,7 +217,8 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   ClientHintsPreferences GetClientHintsPreferences() const;
   float GetDevicePixelRatio() const;
   bool ShouldSendClientHint(mojom::WebClientHintsType,
-                            const ClientHintsPreferences&) const;
+                            const ClientHintsPreferences&,
+                            const WebEnabledClientHints&) const;
   // Checks if the origin requested persisting the client hints, and notifies
   // the |ContentSettingsClient| with the list of client hints and the
   // persistence duration.

@@ -19,6 +19,7 @@ class ContentSettingCallbacks;
 class KURL;
 class SecurityOrigin;
 class WebContentSettingsClient;
+struct WebEnabledClientHints;
 
 // This class provides the content settings information which tells
 // whether each feature is allowed. Most of the methods return the
@@ -50,6 +51,9 @@ class CORE_EXPORT ContentSettingsClient {
   // Controls whether scripts loaded from the given URL are allowed to execute.
   bool AllowScriptFromSource(bool enabled_per_settings, const KURL&);
 
+  // Retrieves the client hints that should be attached to the request for the
+  // given URL.
+  void GetAllowedClientHintsFromSource(const KURL&, WebEnabledClientHints*);
   // Controls whether images are allowed.
   bool AllowImage(bool enabled_per_settings, const KURL&);
 
