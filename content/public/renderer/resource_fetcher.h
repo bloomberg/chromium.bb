@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_RENDERER_RESOURCE_FETCHER_H_
 #define CONTENT_PUBLIC_RENDERER_RESOURCE_FETCHER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
@@ -29,27 +30,24 @@ struct NetworkTrafficAnnotationTag;
 
 namespace content {
 
-// Interface to download resources asynchronously.
-// TODO(toyoshim): Deprecates unused and confusing interfaces, such as Cancel.
+// Interface to download resources asynchronously.  Specified callback will be
+// called asynchronously after the URL has been fetched, successfully or not.
+// If there is a failure, response and data will both be empty.  |response| and
+// |data| are both valid until the ResourceFetcher instance is destroyed.  If
+// the instance is destroyed before the operation is finished, the request is
+// canceled, and the callback will not be called.
 class CONTENT_EXPORT ResourceFetcher {
  public:
-  static constexpr size_t kDefaultMaximumDownloadSize = 1024 * 1024;
-
-  virtual ~ResourceFetcher() {}
-
-  // This will be called asynchronously after the URL has been fetched,
-  // successfully or not.  If there is a failure, response and data will both be
-  // empty.  |response| and |data| are both valid until the ResourceFetcher
-  // instance is destroyed.  The callback will not be called if ResourceFetcher
-  // instance is destroyed before complication or cancellation.
   using Callback =
       base::OnceCallback<void(const blink::WebURLResponse& response,
                               const std::string& data)>;
 
-  // Creates a ResourceFetcher for the specified resource.  Caller takes
-  // ownership of the returned object.  Deleting the ResourceFetcher will
-  // cancel the request, and the callback will never be run.
-  static ResourceFetcher* Create(const GURL& url);
+  static constexpr size_t kDefaultMaximumDownloadSize = 1024 * 1024;
+
+  virtual ~ResourceFetcher() {}
+
+  // Creates a ResourceFetcher for the specified resource.
+  static std::unique_ptr<ResourceFetcher> Create(const GURL& url);
 
   // Set the corresponding parameters of the request.  Must be called before
   // Start.  By default, requests are GETs with no body and respect the default
@@ -70,13 +68,8 @@ class CONTENT_EXPORT ResourceFetcher {
       size_t maximum_download_size = kDefaultMaximumDownloadSize) = 0;
 
   // Sets how long to wait for the server to reply.  By default, there is no
-  // timeout.  Must be called after a request is started.
+  // timeout.  Must be called after a request is started at most once.
   virtual void SetTimeout(const base::TimeDelta& timeout) = 0;
-
-  // DEPRECATED: Manually cancel the request.  Calls |callback| with a null
-  // WebURLResponse.  New code should not use this method, but just destruct the
-  // instance to abort.
-  virtual void Cancel() = 0;
 };
 
 }  // namespace content

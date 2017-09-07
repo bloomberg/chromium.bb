@@ -294,8 +294,8 @@ void NetErrorHelper::FetchNavigationCorrections(
     const std::string& navigation_correction_request_body) {
   DCHECK(!correction_fetcher_.get());
 
-  correction_fetcher_.reset(
-      content::ResourceFetcher::Create(navigation_correction_url));
+  correction_fetcher_ =
+      content::ResourceFetcher::Create(navigation_correction_url);
   correction_fetcher_->SetMethod("POST");
   correction_fetcher_->SetBody(navigation_correction_request_body);
   correction_fetcher_->SetHeader("Content-Type", "application/json");
@@ -322,7 +322,7 @@ void NetErrorHelper::SendTrackingRequest(
     const GURL& tracking_url,
     const std::string& tracking_request_body) {
   // If there's already a pending tracking request, this will cancel it.
-  tracking_fetcher_.reset(content::ResourceFetcher::Create(tracking_url));
+  tracking_fetcher_ = content::ResourceFetcher::Create(tracking_url);
   tracking_fetcher_->SetMethod("POST");
   tracking_fetcher_->SetBody(tracking_request_body);
   tracking_fetcher_->SetHeader("Content-Type", "application/json");
