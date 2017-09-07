@@ -59,10 +59,10 @@ const ProcessPhase
 // Parameters for browser process sampling. Not const since these may be
 // changed when transitioning from start-up profiling to periodic profiling.
 CallStackProfileParams g_browser_process_sampling_params(
-    metrics::CallStackProfileParams::BROWSER_PROCESS,
-    metrics::CallStackProfileParams::UI_THREAD,
-    metrics::CallStackProfileParams::PROCESS_STARTUP,
-    metrics::CallStackProfileParams::MAY_SHUFFLE);
+    CallStackProfileParams::BROWSER_PROCESS,
+    CallStackProfileParams::UI_THREAD,
+    CallStackProfileParams::PROCESS_STARTUP,
+    CallStackProfileParams::MAY_SHUFFLE);
 
 // ProfilesState --------------------------------------------------------------
 
@@ -131,6 +131,11 @@ class PendingProfiles {
   PendingProfiles();
   ~PendingProfiles();
 
+  // Attemps to merge |profile_state| with existing |to_profile_state|. Returns
+  // true if merged.
+  bool TryProfileMerge(const ProfilesState& profile_state,
+                       ProfilesState* to_profile_state);
+
   mutable base::Lock lock_;
 
   // If true, profiles provided to CollectProfilesIfCollectionEnabled should be
@@ -196,6 +201,11 @@ void PendingProfiles::CollectProfilesIfCollectionEnabled(
     profiles.profiles[0].profile_duration = internal::GetUptime();
   }
 
+  for (ProfilesState& profile_state : profiles_) {
+    if (TryProfileMerge(profiles, &profile_state))
+      return;
+  }
+
   profiles_.push_back(std::move(profiles));
 }
 
@@ -216,6 +226,59 @@ PendingProfiles::PendingProfiles() : collection_enabled_(true) {}
 
 PendingProfiles::~PendingProfiles() {}
 
+bool PendingProfiles::TryProfileMerge(const ProfilesState& profile_state,
+                                      ProfilesState* to_profile_state) {
+  if (profile_state.profiles.empty() || to_profile_state->profiles.empty())
+    return false;
+
+  const auto& params = profile_state.params;
+  // Only periodic profile merging is supported.
+  if (params.trigger != CallStackProfileParams::PERIODIC_COLLECTION)
+    return false;
+
+  const auto& to_params = to_profile_state->params;
+  if (to_params.trigger != params.trigger ||
+      to_params.process != params.process ||
+      to_params.thread != params.thread) {
+    return false;
+  }
+  DCHECK_EQ(1U, profile_state.profiles.size());
+  DCHECK_EQ(1U, to_profile_state->profiles.size());
+  const auto& from_profile = profile_state.profiles[0];
+  auto* to_profile = &to_profile_state->profiles[0];
+
+  // Create a mapping from module id to index.
+  std::map<std::string, size_t> module_id_to_index;
+  for (const auto& module : to_profile->modules) {
+    module_id_to_index.insert(
+        std::make_pair(module.id, module_id_to_index.size()));
+  }
+
+  for (const auto& base_sample : from_profile.samples) {
+    // Make a copy of the sample so we can update its module indexes.
+    StackSamplingProfiler::Sample sample = base_sample;
+    for (StackSamplingProfiler::Frame& frame : sample.frames) {
+      const auto& module = from_profile.modules[frame.module_index];
+      auto it = module_id_to_index.find(module.id);
+      if (it == module_id_to_index.end()) {
+        module_id_to_index.insert(
+            std::make_pair(module.id, module_id_to_index.size()));
+        to_profile->modules.push_back(module);
+        frame.module_index = module_id_to_index.size() - 1;
+      } else {
+        frame.module_index = it->second;
+      }
+    }
+
+    to_profile->samples.push_back(sample);
+  }
+
+  // Update the profile duration, which stores uptime for periodic profiles.
+  to_profile->profile_duration = from_profile.profile_duration;
+
+  return true;
+}
+
 // Functions to process completed profiles ------------------------------------
 
 // Will be invoked on either the main thread or the profiler's thread. Provides
@@ -234,7 +297,7 @@ ReceiveCompletedProfilesImpl(
   if (CallStackProfileMetricsProvider::IsPeriodicSamplingEnabled() &&
       params->process == CallStackProfileParams::BROWSER_PROCESS &&
       params->thread == CallStackProfileParams::UI_THREAD) {
-    params->trigger = metrics::CallStackProfileParams::PERIODIC_COLLECTION;
+    params->trigger = CallStackProfileParams::PERIODIC_COLLECTION;
     params->start_timestamp = base::TimeTicks::Now();
 
     StackSamplingProfiler::SamplingParams sampling_params;
@@ -397,7 +460,7 @@ Process ToExecutionContextProcess(CallStackProfileParams::Process process) {
 }
 
 // Translates CallStackProfileParams's thread to the corresponding
-// SampledProfile TriggerEvent.
+// SampledProfile Thread.
 Thread ToExecutionContextThread(CallStackProfileParams::Thread thread) {
   switch (thread) {
     case CallStackProfileParams::UNKNOWN_THREAD:
@@ -541,9 +604,6 @@ void CallStackProfileMetricsProvider::ProvideCurrentSessionData(
 
   DCHECK(IsReportingEnabledByFieldTrial() || pending_profiles.empty());
 
-  // TODO(asvitkine): For post-startup periodic samples, this is currently
-  // wasteful as each sample is reported in its own profile. We should attempt
-  // to merge profiles to save bandwidth.
   for (const ProfilesState& profiles_state : pending_profiles) {
     for (const StackSamplingProfiler::CallStackProfile& profile :
              profiles_state.profiles) {
