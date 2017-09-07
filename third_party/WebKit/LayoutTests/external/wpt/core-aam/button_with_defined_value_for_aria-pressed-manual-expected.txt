@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL button with defined value for aria-pressed Uncaught ReferenceError: ATTAcomm is not defined
-Harness: the test ran to completion.
-
