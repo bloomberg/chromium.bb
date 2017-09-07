@@ -36,16 +36,13 @@ class MockServiceWorkerContext : public ServiceWorkerContext {
   MOCK_METHOD2(FinishedExternalRequest, bool(int64_t, const std::string&));
   void CountExternalRequestsForTest(
       const GURL& url,
-      const CountExternalRequestsCallback& callback) override;
-  MOCK_METHOD1(GetAllOriginsInfo,
-               void(const ServiceWorkerContext::GetUsageInfoCallback&));
+      CountExternalRequestsCallback callback) override;
+  void GetAllOriginsInfo(GetUsageInfoCallback callback) override;
   void DeleteForOrigin(const GURL& origin, ResultCallback callback) override;
-  MOCK_METHOD3(
-      CheckHasServiceWorker,
-      void(const GURL&,
-           const GURL&,
-           const ServiceWorkerContext::CheckHasServiceWorkerCallback&));
-  MOCK_METHOD1(ClearAllServiceWorkersForTest, void(const base::Closure&));
+  void CheckHasServiceWorker(const GURL& url,
+                             const GURL& other_url,
+                             CheckHasServiceWorkerCallback callback) override;
+  void ClearAllServiceWorkersForTest(base::OnceClosure) override;
   void StartActiveWorkerForPattern(
       const GURL& pattern,
       ServiceWorkerContext::StartActiveWorkerCallback info_callback,

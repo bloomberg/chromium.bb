@@ -74,7 +74,7 @@ void BrowsingDataServiceWorkerHelper::FetchServiceWorkerUsageInfoOnIOThread(
   DCHECK(!callback.is_null());
 
   service_worker_context_->GetAllOriginsInfo(
-      base::Bind(&GetAllOriginsInfoCallback, callback));
+      base::BindOnce(&GetAllOriginsInfoCallback, callback));
 }
 
 void BrowsingDataServiceWorkerHelper::DeleteServiceWorkersOnIOThread(

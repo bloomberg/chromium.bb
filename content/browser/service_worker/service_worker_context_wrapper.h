@@ -102,10 +102,10 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   // ServiceWorkerContext implementation:
   void AddObserver(ServiceWorkerContextObserver* observer) override;
   void RemoveObserver(ServiceWorkerContextObserver* observer) override;
-  void RegisterServiceWorker(const GURL& pattern,
+  void RegisterServiceWorker(const GURL& scope,
                              const GURL& script_url,
                              ResultCallback callback) override;
-  void UnregisterServiceWorker(const GURL& pattern,
+  void UnregisterServiceWorker(const GURL& scope,
                                ResultCallback callback) override;
   bool StartingExternalRequest(int64_t service_worker_version_id,
                                const std::string& request_uuid) override;
@@ -113,14 +113,13 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
                                const std::string& request_uuid) override;
   void CountExternalRequestsForTest(
       const GURL& url,
-      const CountExternalRequestsCallback& callback) override;
-  void GetAllOriginsInfo(const GetUsageInfoCallback& callback) override;
+      CountExternalRequestsCallback callback) override;
+  void GetAllOriginsInfo(GetUsageInfoCallback callback) override;
   void DeleteForOrigin(const GURL& origin, ResultCallback callback) override;
-  void CheckHasServiceWorker(
-      const GURL& url,
-      const GURL& other_url,
-      const CheckHasServiceWorkerCallback& callback) override;
-  void ClearAllServiceWorkersForTest(const base::Closure& callback) override;
+  void CheckHasServiceWorker(const GURL& url,
+                             const GURL& other_url,
+                             CheckHasServiceWorkerCallback callback) override;
+  void ClearAllServiceWorkersForTest(base::OnceClosure callback) override;
   void StartActiveWorkerForPattern(const GURL& pattern,
                                    StartActiveWorkerCallback info_callback,
                                    base::OnceClosure failure_callback) override;
@@ -288,16 +287,19 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void DidDeleteAndStartOver(ServiceWorkerStatusCode status);
 
   void DidGetAllRegistrationsForGetAllOrigins(
-      const GetUsageInfoCallback& callback,
+      GetUsageInfoCallback callback,
       ServiceWorkerStatusCode status,
       const std::vector<ServiceWorkerRegistrationInfo>& registrations);
 
-  void DidCheckHasServiceWorker(const CheckHasServiceWorkerCallback& callback,
+  void DidCheckHasServiceWorker(CheckHasServiceWorkerCallback callback,
                                 content::ServiceWorkerCapability status);
 
   void DidFindRegistrationForUpdate(
       ServiceWorkerStatusCode status,
       scoped_refptr<content::ServiceWorkerRegistration> registration);
+
+  void CountExternalRequests(const GURL& url,
+                             CountExternalRequestsCallback callback);
 
   void StartServiceWorkerForNavigationHintOnIO(
       const GURL& document_url,

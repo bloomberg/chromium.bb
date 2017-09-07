@@ -24,15 +24,27 @@ void MockServiceWorkerContext::UnregisterServiceWorker(
 }
 void MockServiceWorkerContext::CountExternalRequestsForTest(
     const GURL& url,
-    const CountExternalRequestsCallback& callback) {
+    CountExternalRequestsCallback callback) {
   NOTREACHED();
 }
-
+void MockServiceWorkerContext::GetAllOriginsInfo(
+    GetUsageInfoCallback callback) {
+  NOTREACHED();
+}
 void MockServiceWorkerContext::DeleteForOrigin(const GURL& origin,
                                                ResultCallback callback) {
   NOTREACHED();
 }
-
+void MockServiceWorkerContext::CheckHasServiceWorker(
+    const GURL& url,
+    const GURL& other_url,
+    CheckHasServiceWorkerCallback callback) {
+  NOTREACHED();
+}
+void MockServiceWorkerContext::ClearAllServiceWorkersForTest(
+    base::OnceClosure) {
+  NOTREACHED();
+}
 void MockServiceWorkerContext::StartActiveWorkerForPattern(
     const GURL& pattern,
     ServiceWorkerContext::StartActiveWorkerCallback info_callback,

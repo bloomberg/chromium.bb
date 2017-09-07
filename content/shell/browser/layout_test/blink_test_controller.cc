@@ -718,8 +718,8 @@ void BlinkTestController::OnTestFinished() {
   StoragePartition* storage_partition =
       BrowserContext::GetStoragePartition(browser_context, nullptr);
   storage_partition->GetServiceWorkerContext()->ClearAllServiceWorkersForTest(
-      base::Bind(&BlinkTestController::OnAllServiceWorkersCleared,
-                 base::Unretained(this)));
+      base::BindOnce(&BlinkTestController::OnAllServiceWorkersCleared,
+                     base::Unretained(this)));
   storage_partition->ClearBluetoothAllowedDevicesMapForTesting();
 }
 
