@@ -16,16 +16,6 @@ Security Critical: no
 Description: Used to reformat python code via format-webkitpy
 Local Modifications: None
 
-Name: BeautifulSoup - HTML parser
-Short Name: BeautifulSoup
-URL: http://www.crummy.com/software/BeautifulSoup/download/3.x/BeautifulSoup-3.2.1.tar.gz (?)
-Version: 3.2
-License: MIT
-License File: NOT_SHIPPED
-Security Critical: no
-Description: Used during the w3c import, other places
-Local Modifications: None
-
 Name: coverage - code coverage metrics for python
 Short Name: coverage
 URL: http://pypi.python.org/packages/source/c/coverage/coverage-3.5.1.tar.gz#md5=410d4c8155a4dab222f2bc51212d4a24
