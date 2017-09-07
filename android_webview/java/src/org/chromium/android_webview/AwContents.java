@@ -3006,14 +3006,13 @@ public class AwContents implements SmartClipProvider {
     @VisibleForTesting
     public void evaluateJavaScriptOnInterstitialForTesting(
             String script, final ValueCallback<String> callback) {
-        if (TRACE) Log.i(TAG, "%s evaluateJavascriptOnInterstitial=%s", this, script);
+        if (TRACE) Log.i(TAG, "%s evaluateJavaScriptOnInterstitialForTesting=%s", this, script);
         if (isDestroyedOrNoOperation(WARN)) return;
         JavaScriptCallback jsCallback = null;
         if (callback != null) {
             jsCallback = jsonResult -> callback.onReceiveValue(jsonResult);
         }
 
-        // mWebContents.evaluateJavaScript(script, jsCallback);
         nativeEvaluateJavaScriptOnInterstitialForTesting(mNativeAwContents, script, jsCallback);
     }
 
