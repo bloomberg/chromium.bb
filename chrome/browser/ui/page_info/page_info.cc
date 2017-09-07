@@ -448,10 +448,14 @@ void PageInfo::OpenSiteSettingsView() {
   // settings page specific to the current origin of the page. crbug.com/655876
   url::Origin site_origin = url::Origin(site_url());
   std::string link_destination(chrome::kChromeUIContentSettingsURL);
+  // TODO(https://crbug.com/444047): Site Details should work with file:// urls
+  // when this bug is fixed, so add it to the whitelist when that happens.
   if ((base::CommandLine::ForCurrentProcess()->HasSwitch(
            switches::kEnableSiteSettings) ||
        base::FeatureList::IsEnabled(features::kSiteDetails)) &&
-      !site_origin.unique()) {
+      !site_origin.unique() &&
+      (site_url().SchemeIsHTTPOrHTTPS() ||
+       site_url().SchemeIs(content_settings::kExtensionScheme))) {
     std::string origin_string = site_origin.Serialize();
     url::RawCanonOutputT<char> percent_encoded_origin;
     url::EncodeURIComponent(origin_string.c_str(), origin_string.length(),

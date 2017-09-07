@@ -192,6 +192,15 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
             OpenSiteSettingsForUrl(browser(), GURL(url::kAboutBlankURL), true));
 }
 
+// Test opening "Site Details" via Page Info from a file:// URL goes to "Content
+// Settings".
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
+                       SiteSettingsLinkWithSiteDetailsEnabledAndFileUrl) {
+  GURL url = GURL("file:///Users/homedirname/folder/file.pdf");
+  EXPECT_EQ(GURL(chrome::kChromeUIContentSettingsURL),
+            OpenSiteSettingsForUrl(browser(), url, true));
+}
+
 // Test opening page info bubble that matches SB_THREAT_TYPE_PASSWORD_REUSE
 // threat type.
 IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
