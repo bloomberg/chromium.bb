@@ -1161,49 +1161,81 @@ static INLINE int txfm_partition_context(TXFM_CONTEXT *above_ctx,
 }
 #endif
 
+// Compute the next partition in the direction of the sb_type stored in the mi
+// array, starting with bsize.
 static INLINE PARTITION_TYPE get_partition(const AV1_COMMON *const cm,
                                            int mi_row, int mi_col,
                                            BLOCK_SIZE bsize) {
-  if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) {
-    return PARTITION_INVALID;
-  } else {
-    const int offset = mi_row * cm->mi_stride + mi_col;
-    MODE_INFO **mi = cm->mi_grid_visible + offset;
-    const MB_MODE_INFO *const mbmi = &mi[0]->mbmi;
-    const int bsl = b_width_log2_lookup[bsize];
-    const PARTITION_TYPE partition = partition_lookup[bsl][mbmi->sb_type];
-#if !CONFIG_EXT_PARTITION_TYPES
-    return partition;
-#else
-    const int hbs = mi_size_wide[bsize] / 2;
+  if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return PARTITION_INVALID;
 
-    assert(cm->mi_grid_visible[offset] == &cm->mi[offset]);
+  const int offset = mi_row * cm->mi_stride + mi_col;
+  MODE_INFO **mi = cm->mi_grid_visible + offset;
+  const BLOCK_SIZE subsize = mi[0]->mbmi.sb_type;
 
-    if (partition == PARTITION_HORZ_4 || partition == PARTITION_VERT_4)
-      return partition;
+  if (subsize == bsize) return PARTITION_NONE;
 
-    if (partition != PARTITION_NONE && bsize > BLOCK_8X8 &&
-        mi_row + hbs < cm->mi_rows && mi_col + hbs < cm->mi_cols) {
-      const BLOCK_SIZE h = get_subsize(bsize, PARTITION_HORZ_A);
-      const BLOCK_SIZE v = get_subsize(bsize, PARTITION_VERT_A);
-      const MB_MODE_INFO *const mbmi_right = &mi[hbs]->mbmi;
-      const MB_MODE_INFO *const mbmi_below = &mi[hbs * cm->mi_stride]->mbmi;
-      if (mbmi->sb_type == h) {
-        return mbmi_below->sb_type == h ? PARTITION_HORZ : PARTITION_HORZ_B;
-      } else if (mbmi->sb_type == v) {
-        return mbmi_right->sb_type == v ? PARTITION_VERT : PARTITION_VERT_B;
-      } else if (mbmi_below->sb_type == h) {
-        return PARTITION_HORZ_A;
-      } else if (mbmi_right->sb_type == v) {
-        return PARTITION_VERT_A;
-      } else {
-        return PARTITION_SPLIT;
-      }
+  const int bhigh = mi_size_high[bsize];
+  const int bwide = mi_size_wide[bsize];
+  const int sshigh = mi_size_high[subsize];
+  const int sswide = mi_size_wide[subsize];
+
+#if CONFIG_EXT_PARTITION_TYPES
+  if (bsize > BLOCK_8X8 && mi_row + bwide / 2 < cm->mi_rows &&
+      mi_col + bhigh / 2 < cm->mi_cols) {
+    // In this case, the block might be using an extended partition
+    // type.
+    const MB_MODE_INFO *const mbmi_right = &mi[bwide / 2]->mbmi;
+    const MB_MODE_INFO *const mbmi_below = &mi[bhigh / 2 * cm->mi_stride]->mbmi;
+
+    if (sswide == bwide) {
+      // Smaller height but same width. Is PARTITION_HORZ_4, PARTITION_HORZ or
+      // PARTITION_HORZ_B. To distinguish the latter two, check if the lower
+      // half was split.
+      if (sshigh * 4 == bhigh) return PARTITION_HORZ_4;
+      assert(sshigh * 2 == bhigh);
+
+      if (mbmi_below->sb_type == subsize)
+        return PARTITION_HORZ;
+      else
+        return PARTITION_HORZ_B;
+    } else if (sshigh == bhigh) {
+      // Smaller width but same height. Is PARTITION_VERT_4, PARTITION_VERT or
+      // PARTITION_VERT_B. To distinguish the latter two, check if the right
+      // half was split.
+      if (sswide * 4 == bwide) return PARTITION_VERT_4;
+      assert(sswide * 2 == bhigh);
+
+      if (mbmi_right->sb_type == subsize)
+        return PARTITION_VERT;
+      else
+        return PARTITION_VERT_B;
+    } else {
+      // Smaller width and smaller height. Might be PARTITION_SPLIT or could be
+      // PARTITION_HORZ_A or PARTITION_VERT_A. If subsize isn't halved in both
+      // dimensions, we immediately know this is a split (which will recurse to
+      // get to subsize). Otherwise look down and to the right. With
+      // PARTITION_VERT_A, the right block will have height bhigh; with
+      // PARTITION_HORZ_A, the lower block with have width bwide. Otherwise
+      // it's PARTITION_SPLIT.
+      if (sswide * 2 != bwide || sshigh * 2 != bhigh) return PARTITION_SPLIT;
+
+      if (mi_size_wide[mbmi_below->sb_type] == bwide) return PARTITION_HORZ_A;
+      if (mi_size_high[mbmi_right->sb_type] == bhigh) return PARTITION_VERT_A;
+
+      return PARTITION_SPLIT;
     }
-
-    return partition;
-#endif  // !CONFIG_EXT_PARTITION_TYPES
   }
+#endif
+  const int vert_split = sswide < bwide;
+  const int horz_split = sshigh < bhigh;
+  const int split_idx = (vert_split << 1) | horz_split;
+  assert(split_idx != 0);
+
+  static const PARTITION_TYPE base_partitions[4] = {
+    PARTITION_INVALID, PARTITION_HORZ, PARTITION_VERT, PARTITION_SPLIT
+  };
+
+  return base_partitions[split_idx];
 }
 
 static INLINE void set_sb_size(AV1_COMMON *const cm, BLOCK_SIZE sb_size) {
