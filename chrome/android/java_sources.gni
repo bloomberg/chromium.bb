@@ -1673,6 +1673,7 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/suggestions/SuggestionsBottomSheetTest.java",
   "javatests/src/org/chromium/chrome/browser/suggestions/SuggestionsBottomSheetTestRule.java",
   "javatests/src/org/chromium/chrome/browser/suggestions/SuggestionsBottomSheetUiCaptureTest.java",
+  "javatests/src/org/chromium/chrome/browser/suggestions/SuggestionsSheetVisibilityChangeObserverTest.java",
   "javatests/src/org/chromium/chrome/browser/suggestions/TileGroupTest.java",
   "javatests/src/org/chromium/chrome/browser/suggestions/TileGridLayoutTest.java",
   "javatests/src/org/chromium/chrome/browser/superviseduser/SupervisedUserContentProviderTest.java",
