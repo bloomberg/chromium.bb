@@ -20,8 +20,11 @@
 #include "av1/common/onyxc_int.h"
 
 void av1_set_mb_mi(AV1_COMMON *cm, int width, int height) {
-  // TODO(jingning): Fine tune the loop filter operations and bring this
-  // back to integer multiple of 4 for cb4x4.
+  // Ensure that the decoded width and height are both multiples of
+  // 8 luma pixels (note: this may only be a multiple of 4 chroma pixels if
+  // subsampling is used).
+  // This simplifies the implementation of various experiments,
+  // eg. cdef, which operates on units of 8x8 luma pixels.
   const int aligned_width = ALIGN_POWER_OF_TWO(width, 3);
   const int aligned_height = ALIGN_POWER_OF_TWO(height, 3);
 
