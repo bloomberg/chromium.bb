@@ -7,6 +7,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Range.h"
 #include "core/dom/Text.h"
+#include "core/editing/testing/SelectionSample.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLElement.h"
 #include "core/testing/DummyPageHolder.h"
@@ -27,6 +28,33 @@ LocalFrame& EditingTestBase::GetFrame() const {
 
 FrameSelection& EditingTestBase::Selection() const {
   return GetFrame().Selection();
+}
+
+Position EditingTestBase::SetCaretTextToBody(
+    const std::string& selection_text) {
+  const SelectionInDOMTree selection = SetSelectionTextToBody(selection_text);
+  DCHECK(selection.IsCaret())
+      << "|selection_text| should contain a caret marker '|'";
+  return selection.Base();
+}
+
+SelectionInDOMTree EditingTestBase::SetSelectionTextToBody(
+    const std::string& selection_text) {
+  return SetSelectionText(GetDocument().body(), selection_text);
+}
+
+SelectionInDOMTree EditingTestBase::SetSelectionText(
+    HTMLElement* element,
+    const std::string& selection_text) {
+  const SelectionInDOMTree selection =
+      SelectionSample::SetSelectionText(element, selection_text);
+  UpdateAllLifecyclePhases();
+  return selection;
+}
+
+std::string EditingTestBase::GetSelectionTextFromBody(
+    const SelectionInDOMTree& selection) const {
+  return SelectionSample::GetSelectionText(*GetDocument().body(), selection);
 }
 
 void EditingTestBase::SetUp() {

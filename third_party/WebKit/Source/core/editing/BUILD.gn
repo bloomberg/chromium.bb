@@ -384,6 +384,9 @@ source_set("unit_tests") {
     "state_machines/StateMachineTestUtil.h",
     "state_machines/StateMachineUtilTest.cpp",
     "suggestion/TextSuggestionControllerTest.cpp",
+    "testing/SelectionSample.cpp",
+    "testing/SelectionSample.h",
+    "testing/SelectionSampleTest.cpp",
   ]
 
   configs += [

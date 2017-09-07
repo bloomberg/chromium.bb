@@ -372,7 +372,7 @@ HTMLSpanElement* CreateTabSpanElement(Document&, const String& tab_text);
 
 bool CanMergeLists(Element* first_list, Element* second_list);
 
-bool ElementCannotHaveEndTag(const Node&);
+CORE_EXPORT bool ElementCannotHaveEndTag(const Node&);
 
 // -------------------------------------------------------------------------
 // VisibleSelection
