@@ -115,6 +115,7 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 @synthesize delegate = _delegate;
 @synthesize emptyTableBackgroundView = _emptyTableBackgroundView;
 @synthesize spinnerView = _spinnerView;
+@synthesize editing = _editing;
 
 + (void)registerBrowserStatePrefs:(user_prefs::PrefRegistrySyncable*)registry {
   registry->RegisterIntegerPref(prefs::kIosBookmarkSigninPromoDisplayedCount,
@@ -220,12 +221,9 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 }
 
 - (void)setEditing:(BOOL)editing {
+  _editing = editing;
   [self resetEditNodes];
   [self.tableView setEditing:editing animated:YES];
-}
-
-- (BOOL)editing {
-  return self.tableView.editing;
 }
 
 - (const std::set<const bookmarks::BookmarkNode*>&)editNodes {
@@ -336,7 +334,7 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
     const BookmarkNode* node = [self nodeAtIndexPath:indexPath];
     DCHECK(node);
     // If table is in edit mode, record all the nodes added to edit set.
-    if (self.tableView.editing) {
+    if (self.editing) {
       _editNodes.insert(node);
       [self.delegate bookmarkTableView:self selectedEditNodes:_editNodes];
       return;
@@ -355,7 +353,7 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 
 - (void)tableView:(UITableView*)tableView
     didDeselectRowAtIndexPath:(NSIndexPath*)indexPath {
-  if (indexPath.section == self.bookmarksSection && self.tableView.editing) {
+  if (indexPath.section == self.bookmarksSection && self.editing) {
     const BookmarkNode* node = [self nodeAtIndexPath:indexPath];
     DCHECK(node);
     _editNodes.erase(node);
@@ -517,8 +515,10 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 
 - (void)resetEditNodes {
   _editNodes.clear();
-  // Also update viewcontroler that the edit nodes changed.
-  [self.delegate bookmarkTableView:self selectedEditNodes:_editNodes];
+  if (self.editing) {
+    // Also update viewcontroler that the edit nodes changed, if in edit mode.
+    [self.delegate bookmarkTableView:self selectedEditNodes:_editNodes];
+  }
 }
 
 // Removes the sign-in promo view.
