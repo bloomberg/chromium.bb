@@ -57,21 +57,34 @@ packaging_files = packaging_files_binaries + [
                     "$root_out_dir/locales/en-US.pak",
                   ]
 
-action_foreach("check_package_dependencies") {
+action_foreach("calculate_deb_dependencies") {
   deps = [
     ":installer_deps",
   ]
-  script = "debian/check-package-constraints-satisfied.py"
+  script = "debian/calculate_package_deps.py"
   sources = packaging_files_binaries
   outputs = [
-    "$root_out_dir/check_deps_{{source_name_part}}.stamp",
+    "$root_out_dir/deb_{{source_name_part}}.deps",
   ]
   args = [
     "{{source}}",
     rebase_path(sysroot, root_build_dir),
     target_cpu,
-    "check_deps_{{source_name_part}}.stamp",
+    "deb_{{source_name_part}}.deps",
   ]
+}
+
+action("merge_deb_dependencies") {
+  deps = [
+    ":calculate_deb_dependencies",
+  ]
+  script = "debian/merge_package_versions.py"
+  outputs = [
+    "$root_out_dir/deb_binaries.deps",
+  ]
+  args = [ "deb_binaries.deps" ]
+  args += rebase_path(get_target_outputs(":calculate_deb_dependencies"),
+                      root_build_dir)
 }
 
 action("strip_chrome_binary") {

@@ -90,7 +90,7 @@ class DebVersion:
                                            upstream_version_end]
 
   def __str__(self):
-    return 'DebVersion(%s)' % self.version_string
+    return self.version_string
 
   # Comparison algorithm is specified in 'man deb-version'.
   def __cmp__(self, other):
