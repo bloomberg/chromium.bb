@@ -186,6 +186,9 @@ public abstract class ChromeSwitches {
     /** Switch for enabling "button only" swipe logic for Chrome Home. */
     public static final String CHROME_HOME_SWIPE_LOGIC_BUTTON_ONLY = "button-only";
 
+    /** Switch for enabling downloads as a foreground service for all versions of Android. */
+    public static final String ENABLE_DOWNLOADS_FOREGROUND = "enable-downloads-foreground";
+
     // Prevent instantiation.
     private ChromeSwitches() {}
 }

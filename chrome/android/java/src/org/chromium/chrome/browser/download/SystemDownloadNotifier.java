@@ -39,6 +39,7 @@ public class SystemDownloadNotifier implements DownloadNotifier, Observer {
     private static final int DOWNLOAD_NOTIFICATION_TYPE_REMOVE_NOTIFICATION = 7;
 
     private final Context mApplicationContext;
+
     @Nullable
     private DownloadNotificationService mBoundService;
     private Set<String> mActiveDownloads = new HashSet<String>();
@@ -222,7 +223,6 @@ public class SystemDownloadNotifier implements DownloadNotifier, Observer {
     @Override
     public void resumePendingDownloads() {
         if (!DownloadNotificationService.isTrackingResumableDownloads(mApplicationContext)) return;
-
         updateDownloadNotification(
                 new PendingNotificationInfo(DOWNLOAD_NOTIFICATION_TYPE_RESUME_ALL, null), true);
     }
