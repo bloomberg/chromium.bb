@@ -8,7 +8,6 @@ from common import TestDriver
 from common import IntegrationTest
 from decorators import NotAndroid
 from decorators import ChromeVersionEqualOrAfterM
-from decorators import NotAndroid
 import json
 
 class Smoke(IntegrationTest):
@@ -85,12 +84,11 @@ class Smoke(IntegrationTest):
 
   # Ensure pageload metric pingback with DataSaver has the variations header.
   # Disabled on android because the net log is not copied yet. crbug.com/761507
-  @NotAndroid
   def testPingbackHasVariations(self):
     with TestDriver() as t:
       t.AddChromeArg('--enable-spdy-proxy-auth')
       t.AddChromeArg('--enable-data-reduction-proxy-force-pingback')
-      t.AddChromeArg('--log-net-log=chrome.netlog.json')
+      t.UseNetLog()
       # Force set the variations ID, so they are send along with the pingback
       # request.
       t.AddChromeArg('--force-variation-ids=42')
@@ -98,22 +96,21 @@ class Smoke(IntegrationTest):
       t.LoadURL('http://check.googlezip.net/test.html')
       t.SleepUntilHistogramHasEntry("DataReductionProxy.Pingback.Succeeded")
 
-    # Look for the request made to data saver pingback server.
-    with open('chrome.netlog.json') as data_file:
-      data = json.load(data_file)
-    variation_header_count = 0
-    for i in data["events"]:
-      dumped_event = json.dumps(i)
-      if dumped_event.find("datasaver.googleapis.com") !=-1 and\
-        dumped_event.find("recordPageloadMetrics") != -1 and\
-        dumped_event.find("headers") != -1 and\
-        dumped_event.find("accept-encoding") != -1 and\
-        dumped_event.find("x-client-data") !=-1:
-          variation_header_count = variation_header_count + 1
+      # Look for the request made to data saver pingback server.
+      data = t.StopAndGetNetLog()
+      variation_header_count = 0
+      for i in data["events"]:
+        dumped_event = json.dumps(i)
+        if dumped_event.find("datasaver.googleapis.com") !=-1 and\
+          dumped_event.find("recordPageloadMetrics") != -1 and\
+          dumped_event.find("headers") != -1 and\
+          dumped_event.find("accept-encoding") != -1 and\
+          dumped_event.find("x-client-data") !=-1:
+            variation_header_count = variation_header_count + 1
 
-    # Variation IDs are set. x-client-data should be present in the request
-    # headers.
-    self.assertLessEqual(1, variation_header_count)
+      # Variation IDs are set. x-client-data should be present in the request
+      # headers.
+      self.assertLessEqual(1, variation_header_count)
 
   # Verify unique page IDs are sent in the Chrome-Proxy header.
   @ChromeVersionEqualOrAfterM(59)
