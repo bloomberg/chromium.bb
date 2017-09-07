@@ -55,15 +55,22 @@ GURL HTMLToDataURI(const std::string& html) {
 
 const base::FilePath& GetTestDataDir() {
   CR_DEFINE_STATIC_LOCAL(base::FilePath, dir, ());
-  if (dir.empty())
-    PathService::Get(chrome::DIR_TEST_DATA, &dir);
+  if (dir.empty()) {
+    PathService::Get(base::DIR_SOURCE_ROOT, &dir);
+    dir = dir.AppendASCII("components");
+    dir = dir.AppendASCII("test");
+    dir = dir.AppendASCII("data");
+  }
   return dir;
 }
 
 const std::vector<base::FilePath> GetTestFiles() {
   base::FilePath dir;
   CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &dir));
-  dir = dir.AppendASCII("chrome/test/data/autofill")
+  dir = dir.AppendASCII("components")
+            .AppendASCII("test")
+            .AppendASCII("data")
+            .AppendASCII("autofill")
             .Append(kTestName)
             .AppendASCII("input");
   base::FileEnumerator input_files(dir, false, base::FileEnumerator::FILES);
