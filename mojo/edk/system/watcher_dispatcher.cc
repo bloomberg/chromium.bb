@@ -139,6 +139,8 @@ MojoResult WatcherDispatcher::WatchDispatcher(
 
     scoped_refptr<Watch> watch =
         new Watch(this, dispatcher, context, signals, condition);
+    // TODO(crbug.com/740044): Remove this.
+    CHECK(watch);
     watches_.insert({context, watch});
     auto result =
         watched_handles_.insert(std::make_pair(dispatcher.get(), watch));
