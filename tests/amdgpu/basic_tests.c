@@ -31,6 +31,7 @@
 #ifdef HAVE_ALLOCA_H
 # include <alloca.h>
 #endif
+#include <sys/wait.h>
 
 #include "CUnit/Basic.h"
 
@@ -1403,6 +1404,11 @@ static void amdgpu_userptr_test(void)
 	while (j++ < sdma_write_length)
 		pm4[i++] = 0xdeadbeaf;
 
+	if (!fork()) {
+		pm4[0] = 0x0;
+		exit(0);
+	}
+
 	amdgpu_test_exec_cs_helper(context_handle,
 				   AMDGPU_HW_IP_DMA, 0,
 				   i, pm4,
@@ -1426,4 +1432,6 @@ static void amdgpu_userptr_test(void)
 
 	r = amdgpu_cs_ctx_free(context_handle);
 	CU_ASSERT_EQUAL(r, 0);
+
+	wait(NULL);
 }
