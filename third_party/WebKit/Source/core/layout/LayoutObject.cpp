@@ -2814,7 +2814,7 @@ void LayoutObject::DestroyAndCleanupAnonymousWrappers() {
        destroy_root = destroy_root_parent,
                     destroy_root_parent = destroy_root_parent->Parent()) {
     // Anonymous block continuations are tracked and destroyed elsewhere (see
-    // the bottom of LayoutBlock::removeChild)
+    // the bottom of LayoutBlockFlow::RemoveChild)
     if (destroy_root_parent->IsLayoutBlockFlow() &&
         ToLayoutBlockFlow(destroy_root_parent)->IsAnonymousBlockContinuation())
       break;
@@ -2823,10 +2823,9 @@ void LayoutObject::DestroyAndCleanupAnonymousWrappers() {
     if (destroy_root_parent->IsLayoutFlowThread())
       break;
 
-    if (destroy_root_parent->SlowFirstChild() != destroy_root ||
-        destroy_root_parent->SlowLastChild() != destroy_root)
+    if (destroy_root->PreviousSibling() || destroy_root->NextSibling())
       break;  // Need to keep the anonymous parent, since it won't become empty
-              // by the removal of this layoutObject.
+              // by the removal of this LayoutObject.
   }
 
   destroy_root->Destroy();
