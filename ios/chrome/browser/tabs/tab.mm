@@ -212,9 +212,6 @@ class TabHistoryContext : public history::Context {
   // opening a URL in an external application.
   ExternalAppLauncher* _externalAppLauncher;
 
-  // Manages the input accessory view during form input.
-  FormInputAccessoryViewController* _inputAccessoryViewController;
-
   // Handles retrieving, generating and updating snapshots of CRWWebController's
   // web page.
   WebControllerSnapshotHelper* _webControllerSnapshotHelper;
@@ -250,10 +247,6 @@ class TabHistoryContext : public history::Context {
 
 // Handles caching and retrieving of snapshots.
 @property(nonatomic, strong) SnapshotManager* snapshotManager;
-
-// Returns a list of FormInputAccessoryViewProviders to be queried for an input
-// accessory view in order of priority.
-- (NSArray*)accessoryViewProviders;
 
 // Sets the favicon on the current NavigationItem.
 - (void)setFavicon:(const gfx::Image*)image;
@@ -426,10 +419,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   if (experimental_flags::IsAutoReloadEnabled())
     _autoReloadBridge = [[AutoReloadBridge alloc] initWithTab:self];
 
-  _inputAccessoryViewController = [[FormInputAccessoryViewController alloc]
-      initWithWebState:self.webState
-             providers:[self accessoryViewProviders]];
-
   [self setShouldObserveFaviconChanges:YES];
 }
 
@@ -438,19 +427,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 - (void)attachDispatcherDependentTabHelpers {
   _printObserver =
       base::MakeUnique<PrintObserver>(self.webState, self.dispatcher);
-}
-
-- (NSArray*)accessoryViewProviders {
-  NSMutableArray* providers = [NSMutableArray array];
-
-  id<FormInputAccessoryViewProvider> provider =
-      PasswordTabHelper::FromWebState(self.webState)
-          ->GetAccessoryViewProvider();
-  if (provider)
-    [providers addObject:provider];
-  [providers addObject:FormSuggestionTabHelper::FromWebState(self.webState)
-                           ->GetAccessoryViewProvider()];
-  return providers;
 }
 
 - (id<FindInPageControllerDelegate>)findInPageControllerDelegate {
@@ -1581,7 +1557,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   [self updateFullscreenWithToolbarVisible:YES];
   if (self.webState)
     self.webState->WasShown();
-  [_inputAccessoryViewController wasShown];
 }
 
 - (void)wasHidden {
@@ -1589,7 +1564,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   [self updateFullscreenWithToolbarVisible:YES];
   if (self.webState)
     self.webState->WasHidden();
-  [_inputAccessoryViewController wasHidden];
 }
 
 #pragma mark - PagePlaceholderTabHelperDelegate
@@ -1641,10 +1615,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 - (TabModel*)parentTabModel {
   return _parentTabModel;
-}
-
-- (FormInputAccessoryViewController*)inputAccessoryViewController {
-  return _inputAccessoryViewController;
 }
 
 // TODO(crbug.com/620465): this require the Tab's WebState to be a WebStateImpl,

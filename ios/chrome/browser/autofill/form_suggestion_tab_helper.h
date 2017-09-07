@@ -37,7 +37,7 @@ class FormSuggestionTabHelper
   // web::WebStateObserver implementation.
   void WebStateDestroyed() override;
 
-  // The Objective-C form suggestion controller instance.
+  // The Objective-C password controller instance.
   __strong FormSuggestionController* controller_;
 
   DISALLOW_COPY_AND_ASSIGN(FormSuggestionTabHelper);

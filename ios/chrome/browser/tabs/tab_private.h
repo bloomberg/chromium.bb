@@ -28,8 +28,6 @@ class WebStateImpl;
 // Replaces the existing |externalAppLauncher_|.
 - (void)replaceExternalAppLauncher:(id)externalAppLauncher;
 
-- (FormInputAccessoryViewController*)inputAccessoryViewController;
-
 // Returns the Tab owning TabModel.
 - (TabModel*)parentTabModel;
 

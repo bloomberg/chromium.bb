@@ -6,7 +6,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#include "ios/chrome/browser/autofill/form_input_accessory_view_controller.h"
+#import "ios/chrome/browser/autofill/form_input_accessory_view_tab_helper.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -151,11 +151,12 @@ void AssertElementIsFocused(const std::string& element_id) {
 // Tests that trying to programmatically dismiss the keyboard when it isn't
 // visible doesn't crash the browser.
 - (void)testCloseKeyboardWhenNotVisible {
-  FormInputAccessoryViewController* inputAccessoryViewController =
-      chrome_test_util::GetInputAccessoryViewController();
-  GREYAssertNotNil(inputAccessoryViewController,
+  FormInputAccessoryViewTabHelper* tabHelper =
+      FormInputAccessoryViewTabHelper::FromWebState(
+          chrome_test_util::GetCurrentWebState());
+  GREYAssertNotNil(tabHelper,
                    @"The tab's input accessory view should not be non nil.");
-  [inputAccessoryViewController closeKeyboardWithoutButtonPress];
+  tabHelper->CloseKeyboard();
 }
 
 @end

@@ -292,6 +292,11 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
+- (void)detachFromWebState {
+  [self reset];
+  _webStateObserverBridge.reset();
+}
+
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
@@ -504,8 +509,7 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
 }
 
 - (void)webStateDestroyed:(web::WebState*)webState {
-  [self reset];
-  _webStateObserverBridge.reset();
+  [self detachFromWebState];
 }
 
 - (void)reset {
