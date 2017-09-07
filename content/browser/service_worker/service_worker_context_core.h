@@ -280,7 +280,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
       int new_host_id,
       std::unique_ptr<ServiceWorkerProviderHost> provider_host);
 
-  void ClearAllServiceWorkersForTest(const base::Closure& callback);
+  void ClearAllServiceWorkersForTest(base::OnceClosure callback);
 
   // Determines if there is a ServiceWorker registration that matches |url|, and
   // if |other_url| falls inside the scope of the same registration. See

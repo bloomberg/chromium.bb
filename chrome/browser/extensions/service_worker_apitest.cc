@@ -189,7 +189,7 @@ class ServiceWorkerTest : public ExtensionApiTest {
       run_loop->Quit();
     };
     sw_context->CountExternalRequestsForTest(
-        origin, base::Bind(set_ref_count, &ref_count, &run_loop));
+        origin, base::BindOnce(set_ref_count, &ref_count, &run_loop));
     run_loop.Run();
     return ref_count;
   }
