@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 #include "core/editing/Position.h"
+#include "core/editing/SelectionTemplate.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/wtf/Forward.h"
 
@@ -29,6 +30,28 @@ class EditingTestBase : public ::testing::Test {
  protected:
   EditingTestBase();
   ~EditingTestBase() override;
+
+  // Returns |Position| for specified |caret_text|, which is HTML markup with
+  // caret marker "|".
+  Position SetCaretTextToBody(const std::string& caret_text);
+
+  // Returns |SelectionInDOMTree| for specified |selection_text| by using
+  // |SetSelectionText()| on BODY.
+  SelectionInDOMTree SetSelectionTextToBody(const std::string& selection_text);
+
+  // Sets |HTMLElement#innerHTML| with |selection_text|, which is HTML markup
+  // with selection markers "^" and "|" and returns |SelectionInDOMTree| of
+  // specified selection markers.
+  // See also |GetSelectionText()| which returns selection text from specified
+  // |ContainerNode| and |SelectionInDOMTree|.
+  // Note: Unlike |assert_selection()|, this function doesn't change
+  // |FrameSelection|.
+  SelectionInDOMTree SetSelectionText(HTMLElement*,
+                                      const std::string& selection_text);
+
+  // Returns selection text for child nodes of BODY with specified
+  // |SelectionInDOMTree|.
+  std::string GetSelectionTextFromBody(const SelectionInDOMTree&) const;
 
   void SetUp() override;
 
