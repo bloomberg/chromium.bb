@@ -480,12 +480,6 @@ void WizardController::ShowLoginScreen(const LoginScreenContext& context) {
   login_screen_started_ = true;
 }
 
-void WizardController::ShowUpdateScreen() {
-  VLOG(1) << "Showing update screen.";
-  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_OOBE_UPDATE);
-  SetCurrentScreen(GetScreen(OobeScreen::SCREEN_OOBE_UPDATE));
-}
-
 void WizardController::ShowUserImageScreen() {
   const user_manager::UserManager* user_manager =
       user_manager::UserManager::Get();
@@ -704,12 +698,6 @@ void WizardController::OnNetworkConnected() {
   } else {
     InitiateOOBEUpdate();
   }
-}
-
-void WizardController::OnNetworkOffline() {
-  // TODO(dpolukhin): if(is_out_of_box_) we cannot work offline and
-  // should report some error message here and stay on the same screen.
-  ShowLoginScreen(LoginScreenContext());
 }
 
 void WizardController::OnConnectionFailed() {
