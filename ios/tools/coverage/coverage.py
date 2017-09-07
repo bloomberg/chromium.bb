@@ -24,7 +24,9 @@
 import sys
 
 import argparse
+import collections
 import ConfigParser
+import json
 import os
 import subprocess
 
@@ -46,7 +48,7 @@ PROFRAW_LOG_IDENTIFIER = 'Coverage data at '
 # Having default values are important because otherwise the code coverage data
 # returned by "llvm-cove" will include completely unrelated directories such as
 # 'base/' and 'url/'.
-DEFAULT_FILTERS = ['ios/']
+DEFAULT_FILTER_PATHS = ['ios/']
 
 # Only test targets with the following postfixes are considered to be valid.
 VALID_TEST_TARGET_POSTFIXES = ['unittests', 'inttests', 'egtests']
@@ -55,11 +57,11 @@ VALID_TEST_TARGET_POSTFIXES = ['unittests', 'inttests', 'egtests']
 EARL_GREY_TEST_TARGET_POSTFIX = 'egtests'
 
 
-def CreateCoverageProfileDataForTarget(target, jobs_count=None):
+def _CreateCoverageProfileDataForTarget(target, jobs_count=None):
   """Builds and runs target to generate the coverage profile data.
 
   Args:
-    target: A string representing the name of the target.
+    target: A string representing the name of the target to be tested.
     jobs_count: Number of jobs to run in parallel for building. If None, a
                 default value is derived based on CPUs availability.
 
@@ -74,6 +76,177 @@ def CreateCoverageProfileDataForTarget(target, jobs_count=None):
   return profdata_path
 
 
+def _DisplayLineCoverageReport(target, profdata_path, filter_paths):
+  """Generates and displays line coverage report.
+
+  The output has the following format:
+  Line Coverage Report for the Following Directories:
+  dir1:
+    Total Lines: 10 Executed Lines: 5 Missed Lines: 5  Coverage: 50%
+  dir2:
+    Total Lines: 20 Executed Lines: 2 Missed lines: 18 Coverage: 10%
+  In Aggregate:
+    Total Lines: 30 Executed Lines: 7 Missed Lines: 23 Coverage: 23%
+
+  Args:
+    target: A string representing the name of the target to be tested.
+    profdata_path: A string representing the path to the profdata file.
+    filter_paths: A list of directories used to restrict code coverage results.
+  """
+  print 'Generating code coverge report'
+  coverage_json = _ExportCodeCoverageToJson(target, profdata_path)
+  raw_line_coverage_report = _GenerateLineCoverageReport(coverage_json)
+  line_coverage_report = _FilterLineCoverageReport(raw_line_coverage_report,
+                                                   filter_paths)
+
+  coverage_by_filter = collections.defaultdict(
+      lambda: collections.defaultdict(lambda: 0))
+  for coverage_file in line_coverage_report:
+    file_name = coverage_file['filename']
+    total_lines = coverage_file['summary']['count']
+    executed_lines = coverage_file['summary']['covered']
+
+    matched_filter_paths = _MatchFilePathWithDirectories(file_name,
+                                                         filter_paths)
+    for matched_filter in matched_filter_paths:
+      coverage_by_filter[matched_filter]['total_lines'] += total_lines
+      coverage_by_filter[matched_filter]['executed_lines'] += executed_lines
+
+    if matched_filter_paths:
+      coverage_by_filter['aggregate']['total_lines'] += total_lines
+      coverage_by_filter['aggregate']['executed_lines'] += executed_lines
+
+  print '\nLine Coverage Report for Following Directories: ' + str(filter_paths)
+  for filter_path in filter_paths:
+    print filter_path + ':'
+    _PrintLineCoverageStats(coverage_by_filter[filter_path]['total_lines'],
+                            coverage_by_filter[filter_path]['executed_lines'])
+
+  if len(filter_paths) > 1:
+    print 'In Aggregate:'
+    _PrintLineCoverageStats(coverage_by_filter['aggregate']['total_lines'],
+                            coverage_by_filter['aggregate']['executed_lines'])
+
+
+def _ExportCodeCoverageToJson(target, profdata_path):
+  """Exports code coverage data.
+
+  Args:
+    target: A string representing the name of the target to be tested.
+    profdata_path: A string representing the path to the profdata file.
+
+  Returns:
+    A json object whose format can be found at:
+    https://github.com/llvm-mirror/llvm/blob/master/tools/llvm-cov/CoverageExporterJson.cpp.
+  """
+  application_path = _GetApplicationBundlePath(target)
+  binary_path = os.path.join(application_path, target)
+  cmd = ['xcrun', 'llvm-cov', 'export', '-instr-profile', profdata_path,
+         '-arch=x86_64', binary_path]
+  std_out = subprocess.check_output(cmd)
+  return json.loads(std_out)
+
+
+def _GenerateLineCoverageReport(coverage_json):
+  """Generates a line coverage report out of exported coverage json data.
+
+  Args:
+    coverage_json: A json object whose format can be found at:
+        https://github.com/llvm-mirror/llvm/blob/master/tools/llvm-cov/CoverageExporterJson.cpp.
+
+  Returns:
+    A json object with the following format:
+
+    Root: array => List of objects describing line covearge summary for files
+    -- File: dict => Line coverage summary for a single file
+    ---- FileName: str => Name of tis file
+    ---- Summary: dict => Object summarizing the line coverage for this file
+  """
+  assert len(coverage_json['data']) == 1, ('There should be only one export '
+                                           'object for a single target.')
+  coverage_data = coverage_json['data'][0]
+  coverage_files = coverage_data['files']
+
+  coverage_lines_report = []
+  for coverage_file in coverage_files:
+    summary_lines = coverage_file['summary']['lines']
+    coverage_lines_file = {
+        'filename': coverage_file['filename'],
+        'summary': summary_lines
+    }
+    coverage_lines_report.append(coverage_lines_file)
+
+  return coverage_lines_report
+
+
+def _FilterLineCoverageReport(raw_report, filter_paths):
+  """Filter line coverage report to only include directories in |filter_paths|.
+
+  Args:
+    raw_report: A json object with the following format:
+      Root: array => List of objects describing line covearge summary for files
+      -- File: dict => Line coverage summary for a single file
+      ---- FileName: str => Name of this file
+      ---- Summary: dict => Object summarizing the line coverage for this file
+    filter_paths: A list of directories used to restrict code coverage results.
+
+  Returns:
+    A json object with the following format:
+
+    Root: array => List of objects describing line covearge summary for files
+    -- File: dict => Line coverage summary for a single file
+    ---- FileName: str => Name of this file
+    ---- Summary: dict => Object summarizing the line coverage for this file
+  """
+  filtered_report = []
+  for coverage_lines_file in raw_report:
+    file_name = coverage_lines_file['filename']
+    if _MatchFilePathWithDirectories(file_name, filter_paths):
+      filtered_report.append(coverage_lines_file)
+
+  return filtered_report
+
+
+def _PrintLineCoverageStats(total_lines, executed_lines):
+  """Print line coverage statistics.
+
+  The format is as following:
+    Total Lines: 20 Executed Lines: 2 missed lines: 18 Coverage: 10%
+
+  Args:
+    total_lines: number of lines in total.
+    executed_lines: number of lines that are executed.
+  """
+  missed_lines = total_lines - executed_lines
+  coverage = float(executed_lines) / total_lines if total_lines > 0 else None
+  percentage_coverage = '{}%'.format(int(coverage * 100)) if coverage else None
+
+  output = ('\tTotal Lines: {}\tExecuted Lines: {}\tMissed Lines: {}\t'
+            'Coverage: {}\n')
+  print output.format(total_lines, executed_lines, missed_lines,
+                      percentage_coverage or 'NA')
+
+
+def _MatchFilePathWithDirectories(file_path, directories):
+  """Returns the directories that contains the file.
+
+  Args:
+    file_path: the absolute path of a file that is to be matched.
+    directories: A list of directories that are relative to source root.
+
+  Returns:
+    A list of directories that contains the file.
+  """
+  matched_directories = []
+  src_root = _GetSrcRootPath()
+  relative_file_path = os.path.relpath(file_path, src_root)
+  for directory in directories:
+    if relative_file_path.startswith(directory):
+      matched_directories.append(directory)
+
+  return matched_directories
+
+
 def _BuildTargetWithCoverageConfiguration(target, jobs_count):
   """Builds target with coverage configuration.
 
@@ -86,8 +259,8 @@ def _BuildTargetWithCoverageConfiguration(target, jobs_count):
   """
   print 'Building ' + target
 
-  default_root = _GetSrcRootPath()
-  build_dir_path = os.path.join(default_root, BUILD_DIRECTORY)
+  src_root = _GetSrcRootPath()
+  build_dir_path = os.path.join(src_root, BUILD_DIRECTORY)
 
   cmd = ['ninja', '-C', build_dir_path]
   if jobs_count:
@@ -161,8 +334,8 @@ def _CreateCoverageProfileDataFromProfRawData(profraw_path):
   """
   print 'Creating the profile data file'
 
-  default_root = _GetSrcRootPath()
-  profdata_path = os.path.join(default_root, BUILD_DIRECTORY,
+  src_root = _GetSrcRootPath()
+  profdata_path = os.path.join(src_root, BUILD_DIRECTORY,
                                PROFDATA_FILE_NAME)
   try:
     cmd = ['xcrun', 'llvm-profdata', 'merge', '-o', profdata_path, profraw_path]
@@ -193,9 +366,9 @@ def _GetApplicationBundlePath(target):
   Returns:
     A string representing the path to the generated application bundle.
   """
-  default_root = _GetSrcRootPath()
+  src_root = _GetSrcRootPath()
   application_bundle_name = target + '.app'
-  return os.path.join(default_root, BUILD_DIRECTORY, application_bundle_name)
+  return os.path.join(src_root, BUILD_DIRECTORY, application_bundle_name)
 
 
 def _GetXCTestBundlePath(target):
@@ -207,7 +380,7 @@ def _GetXCTestBundlePath(target):
   Returns:
     A string representing the path to the generated xctest bundle.
   """
-  application_path = _GetApplicationBundlePath(target);
+  application_path = _GetApplicationBundlePath(target)
   xctest_bundle_name = target + '_module.xctest'
   return os.path.join(application_path, 'PlugIns', xctest_bundle_name)
 
@@ -218,8 +391,8 @@ def _GetIOSSimPath():
   Returns:
     A string representing the path to the iossim executable file.
   """
-  default_root = _GetSrcRootPath()
-  iossim_path = os.path.join(default_root, BUILD_DIRECTORY, 'iossim')
+  src_root = _GetSrcRootPath()
+  iossim_path = os.path.join(src_root, BUILD_DIRECTORY, 'iossim')
   return iossim_path
 
 
@@ -294,11 +467,29 @@ def _ParseCommandArguments():
 
 def _AssertCoverageBuildDirectoryExists():
   """Asserts that the build directory with converage configuration exists."""
-  default_root = _GetSrcRootPath()
-  build_dir_path = os.path.join(default_root, BUILD_DIRECTORY)
+  src_root = _GetSrcRootPath()
+  build_dir_path = os.path.join(src_root, BUILD_DIRECTORY)
   assert os.path.exists(build_dir_path), (build_dir_path + " doesn't exist."
                                           'Hint: run gclient runhooks or '
                                           'ios/build/tools/setup-gn.py.')
+
+
+def _AssertFilterPathsExist(filter_paths):
+  """Asserts that paths specified in |filter_paths| exist.
+
+  Args:
+    filter_paths: A list of directories.
+  """
+  src_root = _GetSrcRootPath()
+  for filter_path in filter_paths:
+    filter_abspath = os.path.join(src_root, filter_path)
+    assert os.path.exists(filter_abspath), ('Filter path: {} doesn\'t exist.\n '
+                                            'A valid filter path must exist '
+                                            'and be relative to the root of '
+                                            'source, which is {} \nFor '
+                                            'example, \'ios/\' is a valid '
+                                            'filter.').format(filter_abspath,
+                                                              src_root)
 
 
 def Main():
@@ -319,8 +510,11 @@ def Main():
     jobs = DEFAULT_GOMA_JOBS
 
   _AssertCoverageBuildDirectoryExists()
+  _AssertFilterPathsExist(args.filter)
 
-  CreateCoverageProfileDataForTarget(target, jobs)
+  profdata_path = _CreateCoverageProfileDataForTarget(target, jobs)
+  _DisplayLineCoverageReport(target, profdata_path,
+                             args.filter or DEFAULT_FILTER_PATHS)
 
 if __name__ == '__main__':
   sys.exit(Main())
