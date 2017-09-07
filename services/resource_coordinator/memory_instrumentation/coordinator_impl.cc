@@ -132,7 +132,7 @@ void CoordinatorImpl::RequestGlobalMemoryDump(
   UMA_HISTOGRAM_COUNTS_1000("Memory.Experimental.Debug.GlobalDumpQueueLength",
                             queued_memory_dump_requests_.size());
 
-  bool another_dump_already_in_progress = !queued_memory_dump_requests_.empty();
+  bool another_dump_is_queued = !queued_memory_dump_requests_.empty();
 
   // TODO(primiano): remove dump_guid from the request. For the moment callers
   // should just pass a zero |dump_guid| in input. It should be an out-only arg.
@@ -143,7 +143,7 @@ void CoordinatorImpl::RequestGlobalMemoryDump(
   // If this is a periodic or peak memory dump request and there already is
   // another request in the queue with the same level of detail, there's no
   // point in enqueuing this request.
-  if (another_dump_already_in_progress &&
+  if (another_dump_is_queued &&
       args.dump_type !=
           base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED &&
       args.dump_type != base::trace_event::MemoryDumpType::SUMMARY_ONLY &&
@@ -166,9 +166,9 @@ void CoordinatorImpl::RequestGlobalMemoryDump(
 
   queued_memory_dump_requests_.emplace_back(args, callback);
 
-  // If another dump is already in progress, this dump will automatically be
+  // If another dump is already in queued, this dump will automatically be
   // scheduled when the other dump finishes.
-  if (another_dump_already_in_progress)
+  if (another_dump_is_queued)
     return;
 
   PerformNextQueuedGlobalMemoryDump();
@@ -224,8 +224,6 @@ void CoordinatorImpl::UnregisterClientProcess(
         continue;
       RemovePendingResponse(client_process, current->type);
       request->failed_memory_dump_count++;
-      // Regression test (crbug.com/742265).
-      DCHECK(GetCurrentRequest());
     }
     FinalizeGlobalMemoryDumpIfAllManagersReplied();
   }
@@ -237,10 +235,8 @@ void CoordinatorImpl::PerformNextQueuedGlobalMemoryDump() {
   using ResponseType = QueuedMemoryDumpRequest::PendingResponse::Type;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   QueuedMemoryDumpRequest* request = GetCurrentRequest();
-  if (request == nullptr) {
-    NOTREACHED() << "No current dump request.";
-    return;
-  }
+  DCHECK(!request->dump_in_progress);
+  request->dump_in_progress = true;
 
   const bool wants_mmaps = request->args.level_of_detail ==
                            base::trace_event::MemoryDumpLevelOfDetail::DETAILED;
@@ -425,7 +421,7 @@ void CoordinatorImpl::RemovePendingResponse(
 void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
   DCHECK(!queued_memory_dump_requests_.empty());
   QueuedMemoryDumpRequest* request = &queued_memory_dump_requests_.front();
-  if (request->pending_responses.size() > 0)
+  if (!request->dump_in_progress || request->pending_responses.size() > 0)
     return;
 
   // Reconstruct a map of pid -> ProcessMemoryDump by reassembling the responses
