@@ -756,11 +756,15 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest, Types) {
   } test_cases[] = {
       {"\"cookies\"", true, false, false},
       {"\"storage\"", false, true, false},
-      {"\"cache\"", false, false, true},
+
+      // TODO(crbug.com/762417): The "cache" parameter is temporarily disabled.
+      {"\"cache\"", false, false, false},
       {"\"cookies\", \"storage\"", true, true, false},
-      {"\"cookies\", \"cache\"", true, false, true},
-      {"\"storage\", \"cache\"", false, true, true},
-      {"\"cookies\", \"storage\", \"cache\"", true, true, true},
+
+      // TODO(crbug.com/762417): The "cache" parameter is temporarily disabled.
+      {"\"cookies\", \"cache\"", true, false, false},
+      {"\"storage\", \"cache\"", false, true, false},
+      {"\"cookies\", \"storage\", \"cache\"", true, true, false},
   };
 
   for (const TestCase& test_case : test_cases) {
@@ -847,7 +851,9 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest,
 // entries are actually written to the disk. Other tests using CacheTestUtil
 // show that a timeout of around 1s between cache operations is necessary to
 // avoid flakiness.
-IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest, CacheIntegrationTest) {
+// TODO(crbug.com/762417): The "cache" parameter is temporarily disabled.
+IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest,
+                       DISABLED_CacheIntegrationTest) {
   const int kTimeoutMs = 1000;
 
   CacheTestUtil util(
