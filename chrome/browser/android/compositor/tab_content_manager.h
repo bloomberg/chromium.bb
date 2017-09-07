@@ -97,9 +97,6 @@ class TabContentManager : public ThumbnailCacheObserver {
   void RemoveTabThumbnail(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj,
                           jint tab_id);
-  void GetDecompressedThumbnail(JNIEnv* env,
-                                const base::android::JavaParamRef<jobject>& obj,
-                                jint tab_id);
   void OnUIResourcesWereEvicted();
 
   // ThumbnailCacheObserver implementation;
