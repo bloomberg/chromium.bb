@@ -566,6 +566,7 @@ core_dictionary_idl_files =
                     "frame/ScrollIntoViewOptions.idl",
                     "frame/ScrollOptions.idl",
                     "frame/ScrollToOptions.idl",
+                    "geometry/DOMMatrix2DInit.idl",
                     "geometry/DOMMatrixInit.idl",
                     "geometry/DOMPointInit.idl",
                     "geometry/DOMQuadInit.idl",
