@@ -1417,6 +1417,13 @@ COMMON_GTESTS = {
         'os_types': ['win', 'linux', 'mac', 'android'],
       },
     ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux Ozone (Intel)',
+        ],
+      },
+    ],
   },
   # The gles2_conform_tests are closed-source and deliberately only run
   # on the FYI waterfall and the optional tryservers.

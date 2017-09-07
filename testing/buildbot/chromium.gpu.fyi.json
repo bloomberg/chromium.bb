@@ -3149,19 +3149,6 @@
         },
         "test": "angle_unittests",
         "use_xvfb": false
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": false,
-          "dimension_sets": [
-            {
-              "gpu": "8086:1912",
-              "os": "Ubuntu"
-            }
-          ]
-        },
-        "test": "gpu_unittests",
-        "use_xvfb": false
       }
     ],
     "isolated_scripts": []
