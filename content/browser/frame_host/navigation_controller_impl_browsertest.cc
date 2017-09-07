@@ -48,7 +48,6 @@
 #include "content/shell/browser/shell.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/test/content_browser_test_utils_internal.h"
-#include "content/test/did_commit_provisional_load_interceptor.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -6100,39 +6099,56 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(start_url.GetOrigin().spec(), origin + "/");
 }
 
-// Helper to trigger a history-back navigation in the WebContents after the
-// renderer has committed a same-process and cross-origin navigation to the
-// given |url|, but before the browser side has had a chance to process the
-// DidCommitProvisionalLoad message.
-class HistoryNavigationBeforeCommitInjector
-    : public DidCommitProvisionalLoadInterceptor {
+// A BrowserMessageFilter that delays FrameHostMsg_DidCommitProvisionalLoad IPC
+// message for a specified URL, navigates the WebContents back and then
+// processes the commit message.
+class GoBackAndCommitFilter : public BrowserMessageFilter {
  public:
-  HistoryNavigationBeforeCommitInjector(WebContentsImpl* web_contents,
-                                        const GURL& url)
-      : DidCommitProvisionalLoadInterceptor(web_contents),
-        did_trigger_history_navigation_(false),
-        url_(url) {}
-  ~HistoryNavigationBeforeCommitInjector() override {}
+  GoBackAndCommitFilter(const GURL& url, WebContentsImpl* web_contents)
+      : BrowserMessageFilter(FrameMsgStart),
+        url_(url),
+        web_contents_(web_contents) {}
 
-  bool did_trigger_history_navigation() const {
-    return did_trigger_history_navigation_;
-  }
+ protected:
+  ~GoBackAndCommitFilter() override {}
 
  private:
-  // DidCommitProvisionalLoadInterceptor:
-  void WillDispatchDidCommitProvisionalLoad(
-      RenderFrameHost* render_frame_host,
-      ::FrameHostMsg_DidCommitProvisionalLoad_Params* params) override {
-    if (!render_frame_host->GetParent() && params->url == url_) {
-      did_trigger_history_navigation_ = true;
-      web_contents()->GetController().GoBack();
-    }
+  static void NavigateBackAndCommit(const IPC::Message& message,
+                                    WebContentsImpl* web_contents) {
+    web_contents->GetController().GoBack();
+
+    RenderFrameHostImpl* rfh = web_contents->GetMainFrame();
+    DCHECK_EQ(rfh->routing_id(), message.routing_id());
+    rfh->OnMessageReceived(message);
   }
 
-  bool did_trigger_history_navigation_;
-  GURL url_;
+  // BrowserMessageFilter:
+  bool OnMessageReceived(const IPC::Message& message) override {
+    if (message.type() != FrameHostMsg_DidCommitProvisionalLoad::ID)
+      return false;
 
-  DISALLOW_COPY_AND_ASSIGN(HistoryNavigationBeforeCommitInjector);
+    // Parse the IPC message so the URL can be checked against the expected one.
+    base::PickleIterator iter(message);
+    FrameHostMsg_DidCommitProvisionalLoad_Params validated_params;
+    if (!IPC::ParamTraits<FrameHostMsg_DidCommitProvisionalLoad_Params>::Read(
+            &message, &iter, &validated_params)) {
+      return false;
+    }
+
+    // Only handle the message if the URLs are matching.
+    if (validated_params.url != url_)
+      return false;
+
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&NavigateBackAndCommit, message, web_contents_));
+    return true;
+  }
+
+  GURL url_;
+  WebContentsImpl* web_contents_;
+
+  DISALLOW_COPY_AND_ASSIGN(GoBackAndCommitFilter);
 };
 
 // Test which simulates a race condition between a cross-origin, same-process
@@ -6159,11 +6175,13 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(NavigateToURL(shell(), same_document_url));
   EXPECT_EQ(2, web_contents->GetController().GetEntryCount());
 
-  // Create a HistoryNavigationBeforeCommitInjector, which will perform a
-  // GoBack() just before a cross-origin, same process navigation commits.
+  // Create a GoBackAndCommitFilter, which will delay the commit IPC for a
+  // cross-origin, same process navigation and will perform a GoBack.
   GURL cross_origin_url(
       embedded_test_server()->GetURL("suborigin.a.com", "/title2.html"));
-  HistoryNavigationBeforeCommitInjector trigger(web_contents, cross_origin_url);
+  scoped_refptr<GoBackAndCommitFilter> filter =
+      new GoBackAndCommitFilter(cross_origin_url, web_contents);
+  web_contents->GetMainFrame()->GetProcess()->AddFilter(filter.get());
 
   // Navigate cross-origin, waiting for the commit to occur.
   UrlCommitObserver cross_origin_commit_observer(root, cross_origin_url);
@@ -6172,7 +6190,6 @@ IN_PROC_BROWSER_TEST_F(
   cross_origin_commit_observer.Wait();
   EXPECT_EQ(cross_origin_url, web_contents->GetLastCommittedURL());
   EXPECT_EQ(2, web_contents->GetController().GetLastCommittedEntryIndex());
-  EXPECT_TRUE(trigger.did_trigger_history_navigation());
 
   if (IsBrowserSideNavigationEnabled()) {
     // With browser-side-navigation, the history navigation is dropped.
