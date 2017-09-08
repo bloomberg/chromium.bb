@@ -62468,6 +62468,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PrintPreview.PdfAction" enum="PrintPreviewPdfActionBuckets">
+  <owner>rbpotter@chromium.org</owner>
+  <summary>
+    Actions taken on the PDF viewer inside Print Preview's preview area.
+  </summary>
+</histogram>
+
 <histogram name="PrintPreview.PreviewEvent" enum="PrintPreviewHelperEvents">
   <owner>vitalybuka@chromium.org</owner>
   <summary>Print preview events.</summary>
