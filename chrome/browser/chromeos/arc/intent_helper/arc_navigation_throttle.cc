@@ -26,6 +26,8 @@ namespace arc {
 
 namespace {
 
+constexpr char kPlayGoogleCom[] = "play.google.com";
+
 // Compares the host name of the referrer and target URL to decide whether
 // the navigation needs to be overriden.
 bool ShouldOverrideUrlLoading(const GURL& previous_url,
@@ -49,9 +51,17 @@ bool ShouldOverrideUrlLoading(const GURL& previous_url,
     return false;
   }
 
-  return !net::registry_controlled_domains::SameDomainOrHost(
-      current_url, previous_url,
-      net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+  if (net::registry_controlled_domains::SameDomainOrHost(
+          current_url, previous_url,
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
+    // Special case so "https://play.google.com/app_name" links can trigger the
+    // intent picker even if the domain for both the |previous_url| and
+    // |current_url| is "google.com". All the other jumps within the same domain
+    // won't show the UI or jump directly to the app.
+    return current_url.host_piece() == kPlayGoogleCom &&
+           previous_url.host_piece() != kPlayGoogleCom;
+  }
+  return true;
 }
 
 // Returns true if |handlers| contain one or more apps. When this function is
