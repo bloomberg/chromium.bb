@@ -1,6 +1,6 @@
 # Checking out and Building Chromium for Windows
 
-There are instructions for other platforms linked from the 
+There are instructions for other platforms linked from the
 [get the code](get_the_code.md) page.
 
 ## Instructions for Google Employees
@@ -23,8 +23,8 @@ Are you a Google employee? See
 
 ### Visual Studio
 
-As of December 8, 2016 Chromium requires Visual Studio 2015, with the 14393
-Windows SDK to build.
+As of September, 2017 Chromium requires Visual Studio 2015, with the 14393
+Windows SDK or later to build.
 
 Install Visual Studio 2015 Update 3 or later - Community Edition
 should work if its license is appropriate for you. Use the Custom Install option
@@ -32,20 +32,22 @@ and select:
 
 - Visual C++, which will select three sub-categories including MFC
 - Universal Windows Apps Development Tools > Tools (1.4.1) and Windows 10 SDK
-  (10.0.14393)
 
-You must have the 14393 Windows SDK installed - the 15063 SDK has errors and
-cannot be used to compile Chrome. It is okay to have multiple SDK versions
-installed as long as 14393 is one of them. The installer can be found in the
-[Windows SDK archive](https://developer.microsoft.com/en-us/windows/downloads/sdk-archive).
+You can also install Visual Studio 2017 Update 3 or later - set
+GYP_MSVS_VERSION=2017 to tell the Chrome build system to use this toolchain.
+This generally works but is not yet officially supported.
 
-When installing the 14393 Windows SDK choose Debugging Tools For Windows in
+You must have the Windows 10 SDK installed, version 10.0.14393 or
+10.0.15063. The 10.0.15063 SDK initially had errors but the 10.0.15063.468
+version works well.
+
+When installing the Windows 10 SDK choose Debugging Tools For Windows in
 order to get windbg and cdb. The latter is required for the build to succeed as
 some tests use it for symbolizing crash dumps.
 
-If the Windows SDK was installed via the Visual Studio installer, the Debugging
+If the Windows 10 SDK was installed via the Visual Studio installer, the Debugging
 Tools can be installed by going to: Control Panel → Programs →
-Programs and Features → Select the "Windows Software Development Kit" v14393 →
+Programs and Features → Select the "Windows Software Development Kit" →
 Change → Change → Check "Debugging Tools For Windows" → Change.
 
 ## Install `depot_tools`
@@ -56,11 +58,11 @@ and extract it somewhere.
 *** note
 **Warning:** **DO NOT** use drag-n-drop or copy-n-paste extract from Explorer,
 this will not extract the hidden “.git” folder which is necessary for
-depot_tools to autoupdate itself. You can use “Extract all…” from the 
+depot_tools to autoupdate itself. You can use “Extract all…” from the
 context menu though.
 ***
 
-Add depot_tools to the start of your PATH (must be ahead of any installs of 
+Add depot_tools to the start of your PATH (must be ahead of any installs of
 Python). Assuming you unzipped the bundle to C:\src\depot_tools, open:
 
 Control Panel → System and Security → System → Advanced system settings
@@ -87,9 +89,9 @@ the code, including msysgit and python.
 * If you see strange errors with the file system on the first run of gclient,
   you may want to [disable Windows Indexing](http://tortoisesvn.tigris.org/faq.html#cantmove2).
 
-After running gclient open a command prompt and type `where python` and 
-confirm that the depot_tools `python.bat` comes ahead of any copies of 
-python.exe. Failing to ensure this can lead to overbuilding when 
+After running gclient open a command prompt and type `where python` and
+confirm that the depot_tools `python.bat` comes ahead of any copies of
+python.exe. Failing to ensure this can lead to overbuilding when
 using gn - see [crbug.com/611087](https://crbug.com/611087).
 
 ## Get the code
@@ -285,7 +287,7 @@ $ gclient sync
 
 The first command updates the primary Chromium source repository and rebases
 any of your local branches on top of tip-of-tree (aka the Git branch `origin/master`).
-If you don't want to use this script, you can also just use `git pull` or 
+If you don't want to use this script, you can also just use `git pull` or
 other common Git commands to update the repo.
 
 The second command syncs the subrepositories to the appropriate versions and
