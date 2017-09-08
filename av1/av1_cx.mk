@@ -173,4 +173,8 @@ ifeq ($(CONFIG_GLOBAL_MOTION),yes)
 AV1_CX_SRCS-$(HAVE_SSE4_1) += encoder/x86/corner_match_sse4.c
 endif
 
+ifeq ($(CONFIG_EXT_TX),yes)
+AV1_CX_SRCS-yes += encoder/tx_prune_model_weights.h
+endif
+
 AV1_CX_SRCS-yes := $(filter-out $(AV1_CX_SRCS_REMOVE-yes),$(AV1_CX_SRCS-yes))
