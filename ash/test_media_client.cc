@@ -18,11 +18,17 @@ mojom::MediaClientAssociatedPtrInfo TestMediaClient::CreateAssociatedPtrInfo() {
   return ptr.PassInterface();
 }
 
-void TestMediaClient::HandleMediaNextTrack() {}
+void TestMediaClient::HandleMediaNextTrack() {
+  ++handle_media_next_track_count_;
+}
 
-void TestMediaClient::HandleMediaPlayPause() {}
+void TestMediaClient::HandleMediaPlayPause() {
+  ++handle_media_play_pause_count_;
+}
 
-void TestMediaClient::HandleMediaPrevTrack() {}
+void TestMediaClient::HandleMediaPrevTrack() {
+  ++handle_media_prev_track_count_;
+}
 
 void TestMediaClient::RequestCaptureState() {}
 

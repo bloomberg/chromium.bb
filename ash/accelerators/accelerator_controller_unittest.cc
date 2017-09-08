@@ -9,6 +9,7 @@
 #include "ash/accessibility_types.h"
 #include "ash/ash_switches.h"
 #include "ash/ime/ime_controller.h"
+#include "ash/media_controller.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/interfaces/ime_info.mojom.h"
@@ -18,6 +19,7 @@
 #include "ash/system/brightness_control_delegate.h"
 #include "ash/system/keyboard_brightness_control_delegate.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test_media_client.h"
 #include "ash/test_screenshot_delegate.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/lock_state_controller_test_api.h"
@@ -868,6 +870,25 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppList) {
       CreateReleaseAccelerator(ui::VKEY_LWIN, ui::EF_NONE)));
   RunAllPendingInMessageLoop();
   EXPECT_EQ(3u, test_app_list_presenter.toggle_count());
+}
+
+TEST_F(AcceleratorControllerTest, MediaGlobalAccelerators) {
+  TestMediaClient client;
+  Shell::Get()->media_controller()->SetClient(client.CreateAssociatedPtrInfo());
+  EXPECT_EQ(0, client.handle_media_next_track_count());
+  ProcessInController(ui::Accelerator(ui::VKEY_MEDIA_NEXT_TRACK, ui::EF_NONE));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, client.handle_media_next_track_count());
+
+  EXPECT_EQ(0, client.handle_media_play_pause_count());
+  ProcessInController(ui::Accelerator(ui::VKEY_MEDIA_PLAY_PAUSE, ui::EF_NONE));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, client.handle_media_play_pause_count());
+
+  EXPECT_EQ(0, client.handle_media_prev_track_count());
+  ProcessInController(ui::Accelerator(ui::VKEY_MEDIA_PREV_TRACK, ui::EF_NONE));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, client.handle_media_prev_track_count());
 }
 
 TEST_F(AcceleratorControllerTest, ImeGlobalAccelerators) {
