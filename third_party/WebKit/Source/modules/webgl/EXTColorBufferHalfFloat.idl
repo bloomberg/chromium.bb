@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Motorola Mobility LLC. All rights reserved.
+ * Copyright (C) 2017 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,33 +23,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webgl/OESTextureHalfFloat.h"
+// https://www.khronos.org/registry/webgl/extensions/EXT_color_buffer_half_float
 
-namespace blink {
-
-OESTextureHalfFloat::OESTextureHalfFloat(WebGLRenderingContextBase* context)
-    : WebGLExtension(context) {
-  context->ExtensionsUtil()->EnsureExtensionEnabled(
-      "GL_OES_texture_half_float");
-  // GL_EXT_color_buffer_half_float is always enabled if available.
-}
-
-WebGLExtensionName OESTextureHalfFloat::GetName() const {
-  return kOESTextureHalfFloatName;
-}
-
-OESTextureHalfFloat* OESTextureHalfFloat::Create(
-    WebGLRenderingContextBase* context) {
-  return new OESTextureHalfFloat(context);
-}
-
-bool OESTextureHalfFloat::Supported(WebGLRenderingContextBase* context) {
-  return context->ExtensionsUtil()->SupportsExtension(
-      "GL_OES_texture_half_float");
-}
-
-const char* OESTextureHalfFloat::ExtensionName() {
-  return "OES_texture_half_float";
-}
-
-}  // namespace blink
+[
+    DependentLifetime,
+    NoInterfaceObject
+] interface EXTColorBufferHalfFloat {
+};

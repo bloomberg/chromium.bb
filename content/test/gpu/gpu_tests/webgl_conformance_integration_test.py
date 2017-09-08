@@ -152,6 +152,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       return [
         'ANGLE_instanced_arrays',
         'EXT_blend_minmax',
+        'EXT_color_buffer_half_float',
         'EXT_disjoint_timer_query',
         'EXT_frag_depth',
         'EXT_shader_texture_lod',
@@ -164,6 +165,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         'OES_texture_half_float',
         'OES_texture_half_float_linear',
         'OES_vertex_array_object',
+        'WEBGL_color_buffer_float',
         'WEBGL_compressed_texture_astc',
         'WEBGL_compressed_texture_atc',
         'WEBGL_compressed_texture_etc1',
