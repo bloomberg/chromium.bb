@@ -48,7 +48,9 @@ class BASE_EXPORT MemoryDumpProvider {
                             ProcessMemoryDump* pmd) = 0;
 
   // Called by the MemoryDumpManager when an allocator should start or stop
-  // collecting extensive allocation data, if supported.
+  // collecting extensive allocation data, if supported. Can be called on any
+  // thread and MDM guarantees OnMemoryDump() and OnHeapProfilingEnabled() are
+  // not called at the same time.
   virtual void OnHeapProfilingEnabled(bool enabled) {}
 
   // Quickly record the total memory usage in |memory_total|. This method will
