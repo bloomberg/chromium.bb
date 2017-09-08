@@ -26,7 +26,7 @@ class BackgroundFetchDataManager;
 // The JobController will be responsible for coordinating communication with the
 // DownloadManager. It will get requests from the DataManager and dispatch them
 // to the DownloadManager. It lives entirely on the IO thread.
-class CONTENT_EXPORT BackgroundFetchJobController
+class CONTENT_EXPORT BackgroundFetchJobController final
     : public BackgroundFetchDelegateProxy::Controller {
  public:
   enum class State { INITIALIZED, FETCHING, ABORTED, COMPLETED };
