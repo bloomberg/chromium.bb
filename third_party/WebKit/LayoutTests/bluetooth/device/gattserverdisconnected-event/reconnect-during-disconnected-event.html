@@ -2,43 +2,33 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script src="../../../resources/bluetooth/web-bluetooth-test.js"></script>
+<script src="../../../resources/mojo-helpers.js"></script>
 <script>
 'use strict';
-promise_test(t => {
-  return setBluetoothFakeAdapter('DisconnectingHeartRateAdapter')
-    .then(() => requestDeviceWithKeyDown({
-      filters: [{services: ['heart_rate']}],
-      optionalServices: [request_disconnection_service_uuid]
-    }))
-    .then(device => {
-      return device.gatt.connect().then(gattServer => {
-        return get_request_disconnection(gattServer)
-          .then(requestDisconnection1 => {
-            // 1. Attach a listener that tries to reconnect.
-            let waitUntilReconnection = new Promise(resolve => {
-              let reconnectThenResolver = function(event) {
-                device.removeEventListener(
-                  'gattserverdisconnected', reconnectThenResolver);
-                device.gatt.connect().then(resolve);
-              };
-              device.addEventListener(
-                'gattserverdisconnected', reconnectThenResolver);
-            });
-            // 2. Disconnect.
-            requestDisconnection1();
-            return waitUntilReconnection
-              .then(() => get_request_disconnection(gattServer))
-              .then(requestDisconnection2 => {
-                // Resolves after disconnected event.
-                let disconnected = eventPromise(
-                  device, 'gattserverdisconnected');
-                // 3. Disconnect after reconnecting.
-                requestDisconnection2();
-                return disconnected;
-              });
-          });
-      });
+let test_desc = 'A device that reconnects during the gattserverdisconnected ' +
+    'event should still receive gattserverdisconnected events after ' +
+    're-connection.';
+let device, fake_peripheral;
+promise_test(() => getHealthThermometerDevice()
+  .then(_ => ({device, fake_peripheral} = _))
+  // 1. Disconnect.
+  .then(() => new Promise(resolve => {
+    fake_peripheral.simulateGATTDisconnection();
+    device.addEventListener(
+        'gattserverdisconnected', function onDisconnected() {
+      device.removeEventListener('gattserverdisconnected', onDisconnected);
+      // 2. Reconnect.
+      fake_peripheral.setNextGATTConnectionResponse({
+        code: HCI_SUCCESS,
+      })
+        .then(() => device.gatt.connect())
+        .then(() => resolve());
     });
-}, 'A device that reconnects during the gattserverdisconnected event ' +
-   'should still receive gattserverdisconnected events after re-connection.');
+  }))
+  // 3. Disconnect after reconnecting.
+  .then(() => {
+    fake_peripheral.simulateGATTDisconnection();
+    return eventPromise(device, 'gattserverdisconnected')
+  }), test_desc);
 </script>
