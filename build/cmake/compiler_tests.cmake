@@ -53,8 +53,8 @@ set(AOM_CXX_PASSED_TESTS)
 set(AOM_CXX_FAILED_TESTS)
 
 function(aom_push_var var new_value)
-  set(SAVED_${var} ${var} PARENT_SCOPE)
-  set(${var} ${new_value} PARENT_SCOPE)
+  set(SAVED_${var} ${${var}} PARENT_SCOPE)
+  set(${var} "${${var}} ${new_value}" PARENT_SCOPE)
 endfunction ()
 
 function(aom_pop_var var)
