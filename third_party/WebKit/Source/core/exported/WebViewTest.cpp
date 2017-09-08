@@ -508,9 +508,15 @@ TEST_P(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent) {
   LayoutRect paint_rect(0, 0, kWidth, kHeight);
   PaintLayerPaintingInfo painting_info(root_layer, paint_rect,
                                        kGlobalPaintNormalPhase, LayoutSize());
+
+  view->GetLayoutView()->GetDocument().Lifecycle().AdvanceTo(
+      DocumentLifecycle::kInPaint);
   PaintLayerPainter(*root_layer)
       .PaintLayerContents(builder.Context(), painting_info,
                           kPaintLayerPaintingCompositingAllPhases);
+  view->GetLayoutView()->GetDocument().Lifecycle().AdvanceTo(
+      DocumentLifecycle::kPaintClean);
+
   builder.EndRecording()->Playback(&canvas);
 
   // The result should be a blend of red and green.

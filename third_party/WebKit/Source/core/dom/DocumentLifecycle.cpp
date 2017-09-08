@@ -264,6 +264,8 @@ bool DocumentLifecycle::CanAdvanceTo(LifecycleState next_state) const {
         return true;
       if (next_state == kInPrePaint)
         return true;
+      if (next_state == kInPaint)
+        return true;
       break;
     case kStopping:
       return next_state == kStopped;

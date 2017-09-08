@@ -98,7 +98,9 @@ void ValidationMessageOverlayDelegate::PaintPageOverlay(
   const_cast<ValidationMessageOverlayDelegate*>(this)->UpdateFrameViewState(
       overlay, view_size);
   LocalFrameView& view = FrameView();
-  view.Paint(context, CullRect(IntRect(0, 0, view.Width(), view.Height())));
+  view.PaintWithLifecycleUpdate(
+      context, kGlobalPaintNormalPhase,
+      CullRect(IntRect(0, 0, view.Width(), view.Height())));
 }
 
 void ValidationMessageOverlayDelegate::UpdateFrameViewState(

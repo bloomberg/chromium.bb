@@ -436,7 +436,18 @@ Response InspectorLayerTreeAgent::makeSnapshot(const String& layer_id,
 
   IntRect interest_rect(IntPoint(0, 0), size);
   suppress_layer_paint_events_ = true;
+
+  inspected_frames_->Root()->View()->UpdateAllLifecyclePhasesExceptPaint();
+  for (auto frame = inspected_frames_->begin();
+       frame != inspected_frames_->end(); ++frame) {
+    frame->GetDocument()->Lifecycle().AdvanceTo(DocumentLifecycle::kInPaint);
+  }
   layer->Paint(&interest_rect);
+  for (auto frame = inspected_frames_->begin();
+       frame != inspected_frames_->end(); ++frame) {
+    frame->GetDocument()->Lifecycle().AdvanceTo(DocumentLifecycle::kPaintClean);
+  }
+
   suppress_layer_paint_events_ = false;
 
   GraphicsContext context(layer->GetPaintController());

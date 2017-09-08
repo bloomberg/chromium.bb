@@ -3352,7 +3352,8 @@ void LocalFrameView::PaintTree() {
         graphics_context.SetHighContrast(high_contrast_settings);
       }
 
-      Paint(graphics_context, CullRect(LayoutRect::InfiniteIntRect()));
+      PaintInternal(graphics_context, kGlobalPaintNormalPhase,
+                    CullRect(LayoutRect::InfiniteIntRect()));
       paint_controller_->CommitNewDisplayItems();
     }
   } else {
@@ -4789,19 +4790,42 @@ ScrollBehavior LocalFrameView::ScrollBehaviorStyle() const {
 
 void LocalFrameView::Paint(GraphicsContext& context,
                            const CullRect& cull_rect) const {
-  Paint(context, kGlobalPaintNormalPhase, cull_rect);
+  PaintInternal(context, kGlobalPaintNormalPhase, cull_rect);
 }
 
-void LocalFrameView::Paint(GraphicsContext& context,
-                           const GlobalPaintFlags global_paint_flags,
-                           const CullRect& cull_rect) const {
+void LocalFrameView::PaintWithLifecycleUpdate(
+    GraphicsContext& context,
+    const GlobalPaintFlags global_paint_flags,
+    const CullRect& cull_rect) {
+  ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
+    frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kInPaint);
+  });
+
+  PaintInternal(context, global_paint_flags, cull_rect);
+
+  ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
+    frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kPaintClean);
+  });
+}
+
+void LocalFrameView::PaintInternal(GraphicsContext& context,
+                                   const GlobalPaintFlags global_paint_flags,
+                                   const CullRect& cull_rect) const {
   FramePainter(*this).Paint(context, global_paint_flags, cull_rect);
 }
 
 void LocalFrameView::PaintContents(GraphicsContext& context,
                                    const GlobalPaintFlags global_paint_flags,
-                                   const IntRect& damage_rect) const {
+                                   const IntRect& damage_rect) {
+  ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
+    frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kInPaint);
+  });
+
   FramePainter(*this).PaintContents(context, global_paint_flags, damage_rect);
+
+  ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
+    frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kPaintClean);
+  });
 }
 
 bool LocalFrameView::IsPointInScrollbarCorner(
