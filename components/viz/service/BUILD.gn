@@ -105,6 +105,7 @@ viz_component("service") {
   configs = [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   deps = [
+    "//cc/paint",
     "//components/viz/common",
 
     # Note that dependency on //gpu/ipc/client is for GpuMemoryBufferImpl. This

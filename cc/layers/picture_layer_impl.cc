@@ -264,7 +264,7 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
     quad->SetNew(shared_quad_state, geometry_rect, visible_geometry_rect,
                  needs_blending, texture_rect, texture_size, nearest_neighbor_,
                  viz::RGBA_8888, quad_content_rect, max_contents_scale,
-                 raster_source_);
+                 raster_source_->GetDisplayItemList());
     ValidateQuadResources(quad);
     return;
   }

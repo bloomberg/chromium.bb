@@ -441,13 +441,13 @@ TEST(DrawQuadTest, CopyPictureDrawQuad) {
   viz::ResourceFormat texture_format = viz::RGBA_8888;
   gfx::Rect content_rect(30, 40, 20, 30);
   float contents_scale = 3.141592f;
-  scoped_refptr<RasterSource> raster_source =
-      FakeRasterSource::CreateEmpty(gfx::Size(100, 100));
+  scoped_refptr<DisplayItemList> display_item_list =
+      FakeRasterSource::CreateEmpty(gfx::Size(100, 100))->GetDisplayItemList();
   CREATE_SHARED_STATE();
 
   CREATE_QUAD_NEW(PictureDrawQuad, visible_rect, needs_blending, tex_coord_rect,
                   texture_size, nearest_neighbor, texture_format, content_rect,
-                  contents_scale, raster_source);
+                  contents_scale, display_item_list);
   EXPECT_EQ(viz::DrawQuad::PICTURE_CONTENT, copy_quad->material);
   EXPECT_EQ(visible_rect, copy_quad->visible_rect);
   EXPECT_EQ(needs_blending, copy_quad->needs_blending);
@@ -457,11 +457,11 @@ TEST(DrawQuadTest, CopyPictureDrawQuad) {
   EXPECT_EQ(texture_format, copy_quad->texture_format);
   EXPECT_EQ(content_rect, copy_quad->content_rect);
   EXPECT_EQ(contents_scale, copy_quad->contents_scale);
-  EXPECT_EQ(raster_source, copy_quad->raster_source);
+  EXPECT_EQ(display_item_list, copy_quad->display_item_list);
 
   CREATE_QUAD_ALL(PictureDrawQuad, tex_coord_rect, texture_size,
                   nearest_neighbor, texture_format, content_rect,
-                  contents_scale, raster_source);
+                  contents_scale, display_item_list);
   EXPECT_EQ(viz::DrawQuad::PICTURE_CONTENT, copy_quad->material);
   EXPECT_EQ(tex_coord_rect, copy_quad->tex_coord_rect);
   EXPECT_EQ(texture_size, copy_quad->texture_size);
@@ -469,7 +469,7 @@ TEST(DrawQuadTest, CopyPictureDrawQuad) {
   EXPECT_EQ(texture_format, copy_quad->texture_format);
   EXPECT_EQ(content_rect, copy_quad->content_rect);
   EXPECT_EQ(contents_scale, copy_quad->contents_scale);
-  EXPECT_EQ(raster_source, copy_quad->raster_source);
+  EXPECT_EQ(display_item_list, copy_quad->display_item_list);
 }
 
 class DrawQuadIteratorTest : public testing::Test {
@@ -633,25 +633,6 @@ TEST_F(DrawQuadIteratorTest, YUVVideoDrawQuad) {
   EXPECT_EQ(u_plane_resource_id + 1, quad_new->u_plane_resource_id());
   EXPECT_EQ(v_plane_resource_id + 1, quad_new->v_plane_resource_id());
   EXPECT_EQ(a_plane_resource_id + 1, quad_new->a_plane_resource_id());
-}
-
-// Disabled until picture draw quad is supported for ubercomp: crbug.com/231715
-TEST_F(DrawQuadIteratorTest, DISABLED_PictureDrawQuad) {
-  gfx::Rect visible_rect(40, 50, 30, 20);
-  gfx::RectF tex_coord_rect(31.f, 12.f, 54.f, 20.f);
-  gfx::Size texture_size(85, 32);
-  bool nearest_neighbor = true;
-  viz::ResourceFormat texture_format = viz::RGBA_8888;
-  gfx::Rect content_rect(30, 40, 20, 30);
-  float contents_scale = 3.141592f;
-  scoped_refptr<RasterSource> raster_source =
-      FakeRasterSource::CreateEmpty(gfx::Size(100, 100));
-
-  CREATE_SHARED_STATE();
-  CREATE_QUAD_NEW(PictureDrawQuad, visible_rect, needs_blending, tex_coord_rect,
-                  texture_size, nearest_neighbor, texture_format, content_rect,
-                  contents_scale, raster_source);
-  EXPECT_EQ(0, IterateAndCount(quad_new));
 }
 
 TEST(DrawQuadTest, LargestQuadType) {
