@@ -292,6 +292,14 @@ void RenderAccessibilityImpl::HandleAXEvent(
   }
   pending_events_.push_back(acc_event);
 
+  // Don't send accessibility events for frames that are not in the frame tree
+  // yet (i.e., provisional frames used for remote-to-local navigations, which
+  // haven't committed yet).  Doing so might trigger layout, which may not work
+  // correctly for those frames.  The events should be sent once such a frame
+  // commits.
+  if (!render_frame_->in_frame_tree())
+    return;
+
   if (!ack_pending_ && !weak_factory_.HasWeakPtrs()) {
     // When no accessibility events are in-flight post a task to send
     // the events to the browser. We use PostTask so that we can queue
