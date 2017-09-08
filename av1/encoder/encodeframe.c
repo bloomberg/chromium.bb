@@ -5898,7 +5898,8 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
 #if CONFIG_ENTROPY_STATS
   ++counts->uv_mode[y_mode][uv_mode];
 #endif  // CONFIG_ENTROPY_STATS
-  update_cdf(fc->uv_mode_cdf[y_mode], av1_intra_mode_ind[uv_mode], INTRA_MODES);
+  update_cdf(fc->uv_mode_cdf[y_mode], av1_intra_mode_ind[uv_mode],
+             UV_INTRA_MODES);
 }
 
 #if CONFIG_VAR_TX
