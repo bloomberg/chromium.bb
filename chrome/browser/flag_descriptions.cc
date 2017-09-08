@@ -1793,12 +1793,6 @@ const char kModalPermissionPromptsName[] = "Modal Permission Prompts";
 const char kModalPermissionPromptsDescription[] =
     "Whether to use permission dialogs in place of permission infobars.";
 
-const char kNewBackgroundLoaderName[] =
-    "Use background loader instead of prerenderer to load pages.";
-const char kNewBackgroundLoaderDescription[] =
-    "Use background loader instead of prerenderer to asynchronously download "
-    "pages.";
-
 const char kNewPhotoPickerName[] = "Enable new Photopicker";
 const char kNewPhotoPickerDescription[] =
     "Activates the new picker for selecting photos.";

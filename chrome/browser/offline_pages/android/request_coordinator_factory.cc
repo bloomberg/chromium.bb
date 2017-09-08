@@ -16,7 +16,6 @@
 #include "chrome/browser/offline_pages/android/cct_request_observer.h"
 #include "chrome/browser/offline_pages/android/downloads/offline_page_notification_bridge.h"
 #include "chrome/browser/offline_pages/android/load_termination_listener_impl.h"
-#include "chrome/browser/offline_pages/android/prerendering_offliner.h"
 #include "chrome/browser/offline_pages/background_loader_offliner.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -62,15 +61,10 @@ KeyedService* RequestCoordinatorFactory::BuildServiceInstanceFor(
   OfflinePageModel* model =
       OfflinePageModelFactory::GetInstance()->GetForBrowserContext(context);
 
-  // Determines which offliner to use based on flag.
-  if (ShouldUseNewBackgroundLoader()) {
-    std::unique_ptr<LoadTerminationListenerImpl> load_termination_listener =
-        base::MakeUnique<LoadTerminationListenerImpl>();
-    offliner.reset(new BackgroundLoaderOffliner(
-        context, policy.get(), model, std::move(load_termination_listener)));
-  } else {
-    offliner.reset(new PrerenderingOffliner(context, policy.get(), model));
-  }
+  std::unique_ptr<LoadTerminationListenerImpl> load_termination_listener =
+      base::MakeUnique<LoadTerminationListenerImpl>();
+  offliner.reset(new BackgroundLoaderOffliner(
+      context, policy.get(), model, std::move(load_termination_listener)));
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       base::CreateSequencedTaskRunnerWithTraits(

@@ -1092,9 +1092,6 @@ extern const char kMediaScreenCaptureDescription[];
 extern const char kModalPermissionPromptsName[];
 extern const char kModalPermissionPromptsDescription[];
 
-extern const char kNewBackgroundLoaderName[];
-extern const char kNewBackgroundLoaderDescription[];
-
 extern const char kNewPhotoPickerName[];
 extern const char kNewPhotoPickerDescription[];
 

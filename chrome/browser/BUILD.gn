@@ -2245,10 +2245,6 @@ split_static_library("browser") {
       "offline_pages/prefetch/prefetch_instance_id_proxy.h",
       "offline_pages/prefetch/prefetch_service_factory.cc",
       "offline_pages/prefetch/prefetch_service_factory.h",
-      "offline_pages/prerender_adapter.cc",
-      "offline_pages/prerender_adapter.h",
-      "offline_pages/prerendering_loader.cc",
-      "offline_pages/prerendering_loader.h",
       "offline_pages/recent_tab_helper.cc",
       "offline_pages/recent_tab_helper.h",
       "offline_pages/request_coordinator_factory.h",
@@ -2277,8 +2273,6 @@ split_static_library("browser") {
         "offline_pages/android/offline_page_utils_android.cc",
         "offline_pages/android/prefetch_background_task_android.cc",
         "offline_pages/android/prefetch_background_task_android.h",
-        "offline_pages/android/prerendering_offliner.cc",
-        "offline_pages/android/prerendering_offliner.h",
         "offline_pages/android/request_coordinator_factory.cc",
       ]
     }

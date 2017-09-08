@@ -18,7 +18,6 @@ extern const base::Feature kOfflinePagesSharingFeature;
 extern const base::Feature kBackgroundLoaderForDownloadsFeature;
 extern const base::Feature kOfflinePagesAsyncDownloadFeature;
 extern const base::Feature kPrefetchingOfflinePagesFeature;
-extern const base::Feature kNewBackgroundLoaderFeature;
 extern const base::Feature kOfflinePagesLoadSignalCollectingFeature;
 extern const base::Feature kOfflinePagesCTV2Feature;
 extern const base::Feature kOfflinePagesRenovationsFeature;
@@ -58,10 +57,6 @@ bool IsOfflinePagesLoadSignalCollectingEnabled();
 // Returns true if we should use the "page renovation" framework in
 // the BackgroundLoaderOffliner.
 bool IsOfflinePagesRenovationsEnabled();
-
-// Returns true if we should use background loader rather than prerenderer
-// to offline pages.
-bool ShouldUseNewBackgroundLoader();
 
 // Returns true if a command line for test has been set that shortens the
 // snapshot delay.

@@ -43,8 +43,8 @@ class SavePageRequest {
   // request to be AVAILABLE.  It will not change the state of a PAUSED request.
   void MarkAttemptAborted();
 
-  // Mark the attempt as paused.  It is not available for future prerendering
-  // until it has been explicitly unpaused.
+  // Mark the attempt as paused.  It is not available for future background
+  // loading until it has been explicitly unpaused.
   void MarkAttemptPaused();
 
   int64_t request_id() const { return request_id_; }
