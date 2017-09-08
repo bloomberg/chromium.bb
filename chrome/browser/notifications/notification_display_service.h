@@ -59,7 +59,8 @@ class NotificationDisplayService : public KeyedService {
                                     const std::string& origin,
                                     const std::string& notification_id,
                                     int action_index,
-                                    const base::NullableString16& reply);
+                                    const base::NullableString16& reply,
+                                    bool by_user = true);
 
   // Return whether a notification of |notification_type| should be displayed
   // for |origin| when the browser is in full screen mode.

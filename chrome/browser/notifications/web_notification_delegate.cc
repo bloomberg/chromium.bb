@@ -55,7 +55,7 @@ void WebNotificationDelegate::Close(bool by_user) {
       NotificationDisplayServiceFactory::GetForProfile(profile_);
   display_service->ProcessNotificationOperation(
       NotificationCommon::CLOSE, notification_type_, origin().spec(),
-      notification_id_, -1, base::NullableString16());
+      notification_id_, -1, base::NullableString16(), by_user);
 }
 
 void WebNotificationDelegate::Click() {
