@@ -65,8 +65,8 @@ class GpuMain : public gpu::GpuSandboxHelper, public mojom::GpuMain {
 
   // gpu::GpuSandboxHelper:
   void PreSandboxStartup() override;
-  bool EnsureSandboxInitialized(
-      gpu::GpuWatchdogThread* watchdog_thread) override;
+  bool EnsureSandboxInitialized(gpu::GpuWatchdogThread* watchdog_thread,
+                                const gpu::GPUInfo* gpu_info) override;
 
   std::unique_ptr<gpu::GpuInit> gpu_init_;
   std::unique_ptr<viz::GpuServiceImpl> gpu_service_;
