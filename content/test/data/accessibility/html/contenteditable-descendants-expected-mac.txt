@@ -20,7 +20,7 @@ Editable list item.
 ++++++AXGroup
 ++++AXList
 ++++++AXGroup AXTitle='Editable list item.'
-++++++++AXListMarker AXValue='1'
+++++++++AXListMarker AXValue='1. '
 ++++++++AXStaticText AXValue='Editable list item.'
 ++AXGroup
 ++++AXStaticText AXValue='Non-editable paragraph.'

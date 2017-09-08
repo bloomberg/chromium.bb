@@ -39,7 +39,7 @@ AXRole: AXWebArea
         AXRole: AXStaticText "The first list item has a listitem role even if ul has a presentation role because it has an explicit role."
             AXRole: AXInlineTextBox "The first list item has a listitem role even if ul has a presentation role because it has an explicit role."
     AXRole: AXListItem
-        AXRole: AXListMarker "•"
+        AXRole: AXListMarker "• "
         AXRole: AXStaticText "Explicit Item 1"
             AXRole: AXInlineTextBox "Explicit Item 1"
     AXRole: AXStaticText "Implicit Item 2"

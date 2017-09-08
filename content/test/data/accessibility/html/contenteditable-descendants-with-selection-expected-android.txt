@@ -14,5 +14,5 @@ android.webkit.WebView focusable focused scrollable
 ++++++android.view.View
 ++++android.widget.ListView collection hierarchical item_count=1 row_count=1
 ++++++android.view.View collection_item name='Editable list item'
-++++++++android.view.View clickable name='1'
+++++++++android.view.View clickable name='1. '
 ++++++++android.view.View clickable name='Editable list item'

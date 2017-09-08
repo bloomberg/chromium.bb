@@ -133,7 +133,7 @@ test(function(t) {
   axObj = axObj.previousOnLine();
   assert_equals(axObj.role, 'AXRole: AXListMarker');
   lineText.push(axObj.name);
-  assert_array_equals(lineText, ['1', 'List item', '1']);
+  assert_array_equals(lineText, ['1. ', 'List item', '1. ']);
 }, 'Test |NextOnLine| and |PreviousOnLine| on list markers.');
 
 if (window.testRunner) {

@@ -13,15 +13,15 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 AXRole: AXWebArea
     AXRole: AXListItem
-        AXRole: AXListMarker "•"
+        AXRole: AXListMarker "• "
         AXRole: AXStaticText "Item 1"
             AXRole: AXInlineTextBox "Item 1"
     AXRole: AXListItem
-        AXRole: AXListMarker "•"
+        AXRole: AXListMarker "• "
         AXRole: AXStaticText "Item 2"
             AXRole: AXInlineTextBox "Item 2"
     AXRole: AXListItem
-        AXRole: AXListMarker "•"
+        AXRole: AXListMarker "• "
         AXRole: AXStaticText "Item 3"
             AXRole: AXInlineTextBox "Item 3"
     AXRole: AXStaticText "Plain Text 1"

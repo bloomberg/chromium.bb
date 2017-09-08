@@ -1,15 +1,15 @@
 rootWebArea
 ++list
 ++++listItem
-++++++listMarker name='•'
+++++++listMarker name='• '
 ++++++staticText name='tic'
 ++++++++inlineTextBox name='tic'
 ++++listItem
-++++++listMarker name='•'
+++++++listMarker name='• '
 ++++++staticText name='tac'
 ++++++++inlineTextBox name='tac'
 ++++listItem
-++++++listMarker name='•'
+++++++listMarker name='• '
 ++++++staticText name='toe'
 ++++++++inlineTextBox name='toe'
 ++list

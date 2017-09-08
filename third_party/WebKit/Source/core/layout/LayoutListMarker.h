@@ -24,6 +24,7 @@
 #ifndef LayoutListMarker_h
 #define LayoutListMarker_h
 
+#include "core/CoreExport.h"
 #include "core/layout/LayoutBox.h"
 
 namespace blink {
@@ -37,7 +38,11 @@ class LayoutListMarker final : public LayoutBox {
   static LayoutListMarker* CreateAnonymous(LayoutListItem*);
   ~LayoutListMarker() override;
 
+  // Marker text without suffix, e.g. "1".
   const String& GetText() const { return text_; }
+
+  // Marker text with suffix, e.g. "1. ", for use in accessibility.
+  CORE_EXPORT String TextAlternative() const;
 
   // A reduced set of list style categories allowing for more concise expression
   // of list style specific logic.

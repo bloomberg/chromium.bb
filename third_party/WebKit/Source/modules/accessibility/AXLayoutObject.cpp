@@ -65,6 +65,7 @@
 #include "core/layout/LayoutHTMLCanvas.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutInline.h"
+#include "core/layout/LayoutListItem.h"
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/LayoutMenuList.h"
 #include "core/layout/LayoutTextControl.h"
@@ -1308,7 +1309,7 @@ String AXLayoutObject::TextAlternative(bool recursive,
       }
       found_text_alternative = true;
     } else if (layout_object_->IsListMarker() && !recursive) {
-      text_alternative = ToLayoutListMarker(layout_object_)->GetText();
+      text_alternative = ToLayoutListMarker(layout_object_)->TextAlternative();
       found_text_alternative = true;
     }
 
