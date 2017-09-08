@@ -1313,6 +1313,9 @@ TEST_P(VideoGLRendererPixelHiLoTest, SimpleYUVRect) {
 
   int id = 1;
   std::unique_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
+  // Set the output color space to match the input primaries and transfer.
+  pass->color_space = gfx::ColorSpace(gfx::ColorSpace::PrimaryID::SMPTE170M,
+                                      gfx::ColorSpace::TransferID::SMPTE170M);
 
   SharedQuadState* shared_state =
       CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
@@ -1339,6 +1342,9 @@ TEST_P(VideoGLRendererPixelHiLoTest, ClippedYUVRect) {
 
   int id = 1;
   std::unique_ptr<RenderPass> pass = CreateTestRootRenderPass(id, viewport);
+  // Set the output color space to match the input primaries and transfer.
+  pass->color_space = gfx::ColorSpace(gfx::ColorSpace::PrimaryID::SMPTE170M,
+                                      gfx::ColorSpace::TransferID::SMPTE170M);
 
   SharedQuadState* shared_state =
       CreateTestSharedQuadState(gfx::Transform(), viewport, pass.get());
@@ -1362,6 +1368,9 @@ TEST_F(VideoGLRendererPixelHiLoTest, OffsetYUVRect) {
 
   int id = 1;
   std::unique_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
+  // Set the output color space to match the input primaries and transfer.
+  pass->color_space = gfx::ColorSpace(gfx::ColorSpace::PrimaryID::SMPTE170M,
+                                      gfx::ColorSpace::TransferID::SMPTE170M);
 
   SharedQuadState* shared_state =
       CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
@@ -1385,6 +1394,9 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVRectBlack) {
 
   int id = 1;
   std::unique_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
+  // Set the output color space to match the input primaries and transfer.
+  pass->color_space = gfx::ColorSpace(gfx::ColorSpace::PrimaryID::SMPTE170M,
+                                      gfx::ColorSpace::TransferID::SMPTE170M);
 
   SharedQuadState* shared_state =
       CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
@@ -1469,6 +1481,10 @@ TEST_F(VideoGLRendererPixelTest, YUVAEdgeBleed) {
   RenderPassList pass_list;
   CreateEdgeBleedPass(media::PIXEL_FORMAT_YV12A, media::COLOR_SPACE_SD_REC601,
                       &pass_list);
+  // Set the output color space to match the input primaries and transfer.
+  pass_list.back()->color_space =
+      gfx::ColorSpace(gfx::ColorSpace::PrimaryID::SMPTE170M,
+                      gfx::ColorSpace::TransferID::SMPTE170M);
   EXPECT_TRUE(this->RunPixelTest(&pass_list,
                                  base::FilePath(FILE_PATH_LITERAL("green.png")),
                                  FuzzyPixelOffByOneComparator(true)));
@@ -1503,6 +1519,9 @@ TEST_F(VideoGLRendererPixelHiLoTest, SimpleYUVARect) {
 
   int id = 1;
   std::unique_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
+  // Set the output color space to match the input primaries and transfer.
+  pass->color_space = gfx::ColorSpace(gfx::ColorSpace::PrimaryID::SMPTE170M,
+                                      gfx::ColorSpace::TransferID::SMPTE170M);
 
   SharedQuadState* shared_state =
       CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
@@ -1530,6 +1549,9 @@ TEST_F(VideoGLRendererPixelTest, FullyTransparentYUVARect) {
 
   int id = 1;
   std::unique_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
+  // Set the output color space to match the input primaries and transfer.
+  pass->color_space = gfx::ColorSpace(gfx::ColorSpace::PrimaryID::SMPTE170M,
+                                      gfx::ColorSpace::TransferID::SMPTE170M);
 
   SharedQuadState* shared_state =
       CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());

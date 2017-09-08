@@ -211,6 +211,7 @@ void RenderPass::SetAll(uint64_t id,
 
   DCHECK(quad_list.empty());
   DCHECK(shared_quad_state_list.empty());
+  DCHECK(color_space.IsValid());
 }
 
 void RenderPass::AsValueInto(base::trace_event::TracedValue* value) const {
