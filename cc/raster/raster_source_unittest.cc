@@ -546,67 +546,9 @@ TEST(RasterSourceTest, GetPictureMemoryUsageIncludesClientReportedMemory) {
   EXPECT_LT(total_memory_usage, 2 * kReportedMemoryUsageInBytes);
 }
 
-TEST(RasterSourceTest, ImageHijackCanvasRespectsSharedCanvasTransform) {
-  gfx::Size size(100, 100);
-
-  // Create a recording source that is filled with red and every corner is
-  // green (4x4 rects in the corner are green to account for blending when
-  // scaling). Note that we paint an image first, so that we can force image
-  // hijack canvas to be used.
-  std::unique_ptr<FakeRecordingSource> recording_source =
-      FakeRecordingSource::CreateFilledRecordingSource(size);
-
-  // 1. Paint the image.
-  recording_source->add_draw_image(CreateDiscardablePaintImage(gfx::Size(5, 5)),
-                                   gfx::Point(0, 0));
-
-  // 2. Cover everything in red.
-  PaintFlags flags;
-  flags.setColor(SK_ColorRED);
-  recording_source->add_draw_rect_with_flags(gfx::Rect(size), flags);
-
-  // 3. Draw 4x4 green rects into every corner.
-  flags.setColor(SK_ColorGREEN);
-  recording_source->add_draw_rect_with_flags(gfx::Rect(0, 0, 4, 4), flags);
-  recording_source->add_draw_rect_with_flags(
-      gfx::Rect(size.width() - 4, 0, 4, 4), flags);
-  recording_source->add_draw_rect_with_flags(
-      gfx::Rect(0, size.height() - 4, 4, 4), flags);
-  recording_source->add_draw_rect_with_flags(
-      gfx::Rect(size.width() - 4, size.height() - 4, 4, 4), flags);
-
-  recording_source->Rerecord();
-
-  scoped_refptr<RasterSource> raster_source =
-      recording_source->CreateRasterSource();
-  SoftwareImageDecodeCache controller(
-      kN32_SkColorType,
-      LayerTreeSettings().decoded_image_working_set_budget_bytes);
-  PlaybackImageProvider image_provider(false, PaintImageIdFlatSet(),
-                                       &controller, gfx::ColorSpace());
-
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(size.width() * 0.5f, size.height() * 0.25f);
-  SkCanvas canvas(bitmap);
-  canvas.scale(0.5f, 0.25f);
-
-  RasterSource::PlaybackSettings settings;
-  settings.playback_to_shared_canvas = true;
-  settings.image_provider = &image_provider;
-  raster_source->PlaybackToCanvas(&canvas, ColorSpaceForTesting(),
-                                  gfx::Rect(size), gfx::Rect(size),
-                                  gfx::AxisTransform2d(), settings);
-
-  EXPECT_EQ(SK_ColorGREEN, bitmap.getColor(0, 0));
-  EXPECT_EQ(SK_ColorGREEN, bitmap.getColor(49, 0));
-  EXPECT_EQ(SK_ColorGREEN, bitmap.getColor(0, 24));
-  EXPECT_EQ(SK_ColorGREEN, bitmap.getColor(49, 24));
-  for (int x = 0; x < 49; ++x)
-    EXPECT_EQ(SK_ColorRED, bitmap.getColor(x, 12));
-  for (int y = 0; y < 24; ++y)
-    EXPECT_EQ(SK_ColorRED, bitmap.getColor(24, y));
-}
-
+// In debug there is a bunch of clearing to debug colors that makes mocking
+// very noisy and hard to test against.
+#ifdef NDEBUG
 TEST(RasterSourceTest, RasterTransformWithoutRecordingScale) {
   gfx::Size size(100, 100);
   float recording_scale = 2.f;
@@ -619,8 +561,6 @@ TEST(RasterSourceTest, RasterTransformWithoutRecordingScale) {
 
   StrictMock<MockCanvas> mock_canvas;
   Sequence s;
-  RasterSource::PlaybackSettings settings;
-  settings.playback_to_shared_canvas = true;
 
   SkMatrix m;
   m.setScale(1.f / recording_scale, 1.f / recording_scale);
@@ -629,12 +569,19 @@ TEST(RasterSourceTest, RasterTransformWithoutRecordingScale) {
   // The call to raster_canvas->scale() should have values with the recording
   // scale removed.
   EXPECT_CALL(mock_canvas, didConcat(m)).InSequence(s);
+
+  // Save/restore/clear around the paint ops being played back.
+  EXPECT_CALL(mock_canvas, willSave()).InSequence(s);
+  EXPECT_CALL(mock_canvas, OnDrawPaintWithColor(_)).InSequence(s);
   EXPECT_CALL(mock_canvas, willRestore()).InSequence(s);
 
-  raster_source->PlaybackToCanvas(&mock_canvas, ColorSpaceForTesting(),
-                                  gfx::Rect(size), gfx::Rect(size),
-                                  gfx::AxisTransform2d(), settings);
+  EXPECT_CALL(mock_canvas, willRestore()).InSequence(s);
+
+  raster_source->PlaybackToCanvas(
+      &mock_canvas, ColorSpaceForTesting(), gfx::Rect(size), gfx::Rect(size),
+      gfx::AxisTransform2d(), RasterSource::PlaybackSettings());
 }
+#endif
 
 }  // namespace
 }  // namespace cc
