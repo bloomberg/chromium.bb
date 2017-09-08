@@ -673,7 +673,8 @@ static void quantize_dc(const tran_low_t *coeff_ptr, int n_coeffs,
   const int coeff = coeff_ptr[rc];
   const int coeff_sign = (coeff >> 31);
   const int abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
-  int64_t tmp, eob = -1;
+  int64_t tmp;
+  int eob = -1;
   int32_t tmp32;
   int dequant;
 
