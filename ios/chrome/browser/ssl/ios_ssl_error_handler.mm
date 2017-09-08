@@ -66,22 +66,27 @@ void IOSSSLErrorHandler::HandleSSLError(
 
   CaptivePortalDetectorTabHelper* tab_helper =
       CaptivePortalDetectorTabHelper::FromWebState(web_state);
-  // TODO(crbug.com/754378): The captive portal detection may take a very long
-  // time. It should timeout and default to displaying the SSL error page.
-  tab_helper->detector()->DetectCaptivePortal(
-      GURL(CaptivePortalDetector::kDefaultURL),
-      base::BindBlockArc(^(const CaptivePortalDetector::Results& results) {
 
-        IOSSSLErrorHandler::LogCaptivePortalResult(results.result);
-        if (results.result == captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL) {
-          IOSSSLErrorHandler::ShowCaptivePortalInterstitial(
-              web_state, url, results.landing_url, callback);
-        } else {
-          IOSSSLErrorHandler::ShowSSLInterstitial(
-              web_state, cert_error, ssl_info, url, overridable, callback);
-        }
-      }),
-      NO_TRAFFIC_ANNOTATION_YET);
+  // TODO(crbug.com/760873): replace test with DCHECK when this method is only
+  // called on WebStates attached to tabs.
+  if (tab_helper) {
+    // TODO(crbug.com/754378): The captive portal detection may take a very long
+    // time. It should timeout and default to displaying the SSL error page.
+    tab_helper->detector()->DetectCaptivePortal(
+        GURL(CaptivePortalDetector::kDefaultURL),
+        base::BindBlockArc(^(const CaptivePortalDetector::Results& results) {
+
+          IOSSSLErrorHandler::LogCaptivePortalResult(results.result);
+          if (results.result == captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL) {
+            IOSSSLErrorHandler::ShowCaptivePortalInterstitial(
+                web_state, url, results.landing_url, callback);
+          } else {
+            IOSSSLErrorHandler::ShowSSLInterstitial(
+                web_state, cert_error, ssl_info, url, overridable, callback);
+          }
+        }),
+        NO_TRAFFIC_ANNOTATION_YET);
+  }
 }
 
 // static
@@ -127,6 +132,12 @@ void IOSSSLErrorHandler::ShowCaptivePortalInterstitial(
 void IOSSSLErrorHandler::RecordCaptivePortalState(web::WebState* web_state) {
   CaptivePortalDetectorTabHelper* tab_helper =
       CaptivePortalDetectorTabHelper::FromWebState(web_state);
+
+  // TODO(crbug.com/760873): replace test with DCHECK when this method is only
+  // called on WebStates attached to tabs.
+  if (!tab_helper) {
+    return;
+  }
   tab_helper->detector()->DetectCaptivePortal(
       GURL(CaptivePortalDetector::kDefaultURL),
       base::BindBlockArc(^(const CaptivePortalDetector::Results& results) {
