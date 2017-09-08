@@ -362,6 +362,26 @@ class Helper : public EmbeddedWorkerTestHelper {
   DISALLOW_COPY_AND_ASSIGN(Helper);
 };
 
+// Returns typical response info for a resource load that went through a service
+// worker.
+std::unique_ptr<ResourceResponseHead> CreateResponseInfoFromServiceWorker() {
+  auto head = std::make_unique<ResourceResponseHead>();
+  head->was_fetched_via_service_worker = true;
+  head->was_fallback_required_by_service_worker = false;
+  head->url_list_via_service_worker = std::vector<GURL>();
+  head->response_type_via_service_worker =
+      network::mojom::FetchResponseType::kDefault;
+  // TODO(falken): start and ready time should be set, and we'll need
+  // a different way of comparing expectation to actual since we don't know
+  // the actual time.
+  head->service_worker_start_time = base::TimeTicks();
+  head->service_worker_ready_time = base::TimeTicks();
+  head->is_in_cache_storage = false;
+  head->cache_storage_cache_name = std::string();
+  head->did_service_worker_navigation_preload = false;
+  return head;
+}
+
 }  // namespace
 
 // ServiceWorkerURLLoaderJobTest is for testing the handling of requests
@@ -454,17 +474,25 @@ class ServiceWorkerURLLoaderJobTest
     return JobResult::kHandledRequest;
   }
 
-  void ExpectFetchedViaServiceWorker(const ResourceResponseHead& info) {
-    EXPECT_TRUE(info.was_fetched_via_service_worker);
-    EXPECT_FALSE(info.was_fallback_required_by_service_worker);
-    EXPECT_TRUE(info.url_list_via_service_worker.empty());
-    EXPECT_EQ(network::mojom::FetchResponseType::kDefault,
+  void ExpectResponseInfo(const ResourceResponseHead& info,
+                          const ResourceResponseHead& expected_info) {
+    EXPECT_EQ(expected_info.was_fetched_via_service_worker,
+              info.was_fetched_via_service_worker);
+    EXPECT_EQ(expected_info.was_fallback_required_by_service_worker,
+              info.was_fallback_required_by_service_worker);
+    EXPECT_EQ(expected_info.url_list_via_service_worker,
+              info.url_list_via_service_worker);
+    EXPECT_EQ(expected_info.response_type_via_service_worker,
               info.response_type_via_service_worker);
-    // TODO(falken): start and ready time should be set.
-    EXPECT_TRUE(info.service_worker_start_time.is_null());
-    EXPECT_TRUE(info.service_worker_ready_time.is_null());
-    EXPECT_FALSE(info.is_in_cache_storage);
-    EXPECT_EQ(std::string(), info.cache_storage_cache_name);
+    EXPECT_EQ(expected_info.service_worker_start_time,
+              info.service_worker_start_time);
+    EXPECT_EQ(expected_info.service_worker_ready_time,
+              info.service_worker_ready_time);
+    EXPECT_EQ(expected_info.is_in_cache_storage, info.is_in_cache_storage);
+    EXPECT_EQ(expected_info.cache_storage_cache_name,
+              info.cache_storage_cache_name);
+    EXPECT_EQ(expected_info.did_service_worker_navigation_preload,
+              info.did_service_worker_navigation_preload);
   }
 
  protected:
@@ -502,7 +530,7 @@ TEST_F(ServiceWorkerURLLoaderJobTest, Basic) {
   EXPECT_EQ(net::OK, client_.completion_status().error_code);
   const ResourceResponseHead& info = client_.response_head();
   EXPECT_EQ(200, info.headers->response_code());
-  ExpectFetchedViaServiceWorker(info);
+  ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
 }
 
 TEST_F(ServiceWorkerURLLoaderJobTest, BlobResponse) {
@@ -519,7 +547,7 @@ TEST_F(ServiceWorkerURLLoaderJobTest, BlobResponse) {
   EXPECT_EQ(JobResult::kHandledRequest, result);
   const ResourceResponseHead& info = client_.response_head();
   EXPECT_EQ(200, info.headers->response_code());
-  ExpectFetchedViaServiceWorker(info);
+  ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
 
   // Test the body.
   std::string response;
@@ -541,7 +569,7 @@ TEST_F(ServiceWorkerURLLoaderJobTest, NonExistentBlobUUIDResponse) {
   // the spec seems to say this should act as if a network error has occurred.
   // See https://crbug.com/732750
   EXPECT_EQ(404, info.headers->response_code());
-  ExpectFetchedViaServiceWorker(info);
+  ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
 }
 
 TEST_F(ServiceWorkerURLLoaderJobTest, StreamResponse) {
@@ -557,7 +585,7 @@ TEST_F(ServiceWorkerURLLoaderJobTest, StreamResponse) {
   EXPECT_EQ(JobResult::kHandledRequest, result);
   const ResourceResponseHead& info = client_.response_head();
   EXPECT_EQ(200, info.headers->response_code());
-  ExpectFetchedViaServiceWorker(info);
+  ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
 
   // TODO(falken): This should be true since the worker is still streaming the
   // response body. See https://crbug.com/758455
@@ -595,7 +623,7 @@ TEST_F(ServiceWorkerURLLoaderJobTest, StreamResponse_Abort) {
   EXPECT_EQ(JobResult::kHandledRequest, result);
   const ResourceResponseHead& info = client_.response_head();
   EXPECT_EQ(200, info.headers->response_code());
-  ExpectFetchedViaServiceWorker(info);
+  ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
 
   // Start writing the body stream, then abort before finishing.
   uint32_t written_bytes = sizeof(kResponseBody) - 1;
@@ -630,7 +658,7 @@ TEST_F(ServiceWorkerURLLoaderJobTest, StreamResponseAndCancel) {
   EXPECT_EQ(JobResult::kHandledRequest, result);
   const ResourceResponseHead& info = client_.response_head();
   EXPECT_EQ(200, info.headers->response_code());
-  ExpectFetchedViaServiceWorker(info);
+  ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
 
   // Start writing the body stream, then cancel the job before finishing.
   uint32_t written_bytes = sizeof(kResponseBody) - 1;
@@ -697,7 +725,7 @@ TEST_F(ServiceWorkerURLLoaderJobTest, EarlyResponse) {
   EXPECT_EQ(JobResult::kHandledRequest, result);
   const ResourceResponseHead& info = client_.response_head();
   EXPECT_EQ(200, info.headers->response_code());
-  ExpectFetchedViaServiceWorker(info);
+  ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
 
   // Although the response was already received, the event remains outstanding
   // until waitUntil() resolves.
@@ -736,7 +764,11 @@ TEST_F(ServiceWorkerURLLoaderJobTest, NavigationPreload) {
   EXPECT_EQ(net::OK, client_.completion_status().error_code);
   const ResourceResponseHead& info = client_.response_head();
   EXPECT_EQ(200, info.headers->response_code());
-  ExpectFetchedViaServiceWorker(info);
+
+  std::unique_ptr<ResourceResponseHead> expected_info =
+      CreateResponseInfoFromServiceWorker();
+  expected_info->did_service_worker_navigation_preload = true;
+  ExpectResponseInfo(info, *expected_info);
 
   std::string response;
   EXPECT_TRUE(client_.response_body().is_valid());
