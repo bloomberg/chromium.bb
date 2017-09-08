@@ -103,6 +103,12 @@ void SaveMostVisitedToDisk(const ntp_tiles::NTPTilesVector& mostVisitedData,
                                              attributes:nil
                                                   error:nil];
 
+  // If there are 0 sites to display, the for loop below will not be entered.
+  // Write the updated empty list of sites to disk before returning.
+  if (mostVisitedData.size() == 0) {
+    WriteToDiskIfComplete(tiles, faviconsURL);
+  }
+
   // For each site, get the favicon. If it is returned, write it to the favicon
   // tmp folder. If a fallback value is returned, update the tile info. Calls
   // WriteToDiskIfComplete after each callback execution.
