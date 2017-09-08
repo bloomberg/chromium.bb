@@ -7,8 +7,8 @@
 
 namespace {
 // The max number of started tries is to guard against pages that make the
-// prerenderer crash.  It should be greater than or equal to the max number of
-// completed tries.
+// background loader crash. It should be greater than or equal to the max
+// number of completed tries.
 const int kMaxStartedTries = 5;
 // The number of max completed tries is based on Gin2G-poor testing showing that
 // we often need about 4 tries with a 2 minute window, or 3 retries with a 3
@@ -27,8 +27,10 @@ const int kSinglePageTimeLimitWhenBackgroundScheduledSeconds =
 // Immediate processing time limits.  Note: experiments on GIN-2g-poor show many
 // page requests took 3 or 4 attempts in background scheduled mode with timeout
 // of 2 minutes. So for immediate processing mode, give page requests just under
-// 5 minutes, which is the timeout limit for the prerender itself. Then budget
-// up to 3 of those requests in processing window.
+// 5 minutes, which was equal to the timeout limit in prerender. Then budget up
+// to 3 of those requests in processing window.
+// TODO(petewil): Consider if we want to up the immediate window to 8 minutes
+// now that we are always using the background loader.
 const int kSinglePageTimeLimitForImmediateLoadSeconds = 60 * 4 + 50;
 const int kImmediateLoadProcessingTimeBudgetSeconds =
     kSinglePageTimeLimitForImmediateLoadSeconds * 5;
@@ -81,8 +83,8 @@ class OfflinerPolicy {
   }
 
   // The max number of times we will start a request.  Not all started attempts
-  // will complete.  This may be caused by prerenderer issues or chromium being
-  // swapped out of memory.
+  // will complete.  This may be caused by background loader issues or chromium
+  // being swapped out of memory.
   int GetMaxStartedTries() const { return max_started_tries_; }
 
   // The max number of times we will retry a request when the attempt

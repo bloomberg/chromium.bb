@@ -51,9 +51,6 @@ const base::Feature kOfflinePagesAsyncDownloadFeature{
 const base::Feature kPrefetchingOfflinePagesFeature{
     "OfflinePagesPrefetching", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kNewBackgroundLoaderFeature{
-    "BackgroundLoader", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kOfflinePagesCTV2Feature{"OfflinePagesCTV2",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -103,10 +100,6 @@ bool IsOfflinePagesLoadSignalCollectingEnabled() {
 
 bool IsOfflinePagesRenovationsEnabled() {
   return base::FeatureList::IsEnabled(kOfflinePagesRenovationsFeature);
-}
-
-bool ShouldUseNewBackgroundLoader() {
-  return base::FeatureList::IsEnabled(kNewBackgroundLoaderFeature);
 }
 
 bool ShouldUseTestingSnapshotDelay() {
