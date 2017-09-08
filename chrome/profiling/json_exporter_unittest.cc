@@ -29,9 +29,10 @@ using MemoryMap = std::vector<memory_instrumentation::mojom::VmRegionPtr>;
 
 static constexpr int kNoParent = -1;
 
-// Finds the first period_interval trace event in the given JSON trace.
+// Finds the first trace event in the given JSON trace with name |name|.
 // Returns null on failure.
-const base::Value* FindFirstPeriodicInterval(const base::Value& root) {
+const base::Value* FindEventWithName(const base::Value& root,
+                                     const char* name) {
   const base::Value* found_trace_events =
       root.FindKeyOfType("traceEvents", base::Value::Type::LIST);
   if (!found_trace_events)
@@ -42,10 +43,16 @@ const base::Value* FindFirstPeriodicInterval(const base::Value& root) {
         cur.FindKeyOfType("name", base::Value::Type::STRING);
     if (!found_name)
       return nullptr;
-    if (found_name->GetString() == "periodic_interval")
+    if (found_name->GetString() == name)
       return &cur;
   }
   return nullptr;
+}
+
+// Finds the first period_interval trace event in the given JSON trace.
+// Returns null on failure.
+const base::Value* FindFirstPeriodicInterval(const base::Value& root) {
+  return FindEventWithName(root, "periodic_interval");
 }
 
 // Finds the first vm region in the given periodic interval. Returns null on
@@ -136,6 +143,61 @@ bool IsBacktraceInList(const base::Value* backtraces, int id, int parent) {
 }
 
 }  // namespace
+
+TEST(ProfilingJsonExporterTest, TraceHeader) {
+  BacktraceStorage backtrace_storage;
+  AllocationEventSet events;
+  std::ostringstream stream;
+  ExportAllocationEventSetToJSON(1234, events, MemoryMap(), stream, nullptr,
+                                 kNoSizeThreshold, kNoCountThreshold);
+  std::string json = stream.str();
+
+  // JSON should parse.
+  base::JSONReader reader(base::JSON_PARSE_RFC);
+  std::unique_ptr<base::Value> root = reader.ReadToValue(stream.str());
+  ASSERT_EQ(base::JSONReader::JSON_NO_ERROR, reader.error_code())
+      << reader.GetErrorMessage();
+  ASSERT_TRUE(root);
+
+  const base::Value* process_name = FindEventWithName(*root, "process_name");
+  ASSERT_TRUE(process_name);
+  const base::Value* process_pid =
+      process_name->FindKeyOfType("pid", base::Value::Type::INTEGER);
+  ASSERT_TRUE(process_pid);
+
+  const base::Value* process_args_name =
+      process_name->FindPathOfType({"args", "name"}, base::Value::Type::STRING);
+  ASSERT_TRUE(process_args_name);
+  EXPECT_EQ("Browser", process_args_name->GetString());
+
+  const base::Value* thread_name = FindEventWithName(*root, "thread_name");
+  ASSERT_TRUE(thread_name);
+  const base::Value* thread_pid =
+      thread_name->FindKeyOfType("pid", base::Value::Type::INTEGER);
+  const base::Value* thread_tid =
+      thread_name->FindKeyOfType("tid", base::Value::Type::INTEGER);
+  ASSERT_TRUE(thread_pid);
+  ASSERT_TRUE(thread_tid);
+
+  const base::Value* thread_args_name =
+      thread_name->FindPathOfType({"args", "name"}, base::Value::Type::STRING);
+  ASSERT_TRUE(thread_args_name);
+  EXPECT_EQ("CrBrowserMain", thread_args_name->GetString());
+
+  const base::Value* memlog_event =
+      FindEventWithName(*root, "MemlogTraceEvent");
+  ASSERT_TRUE(memlog_event);
+  const base::Value* memlog_pid =
+      memlog_event->FindKeyOfType("pid", base::Value::Type::INTEGER);
+  const base::Value* memlog_tid =
+      memlog_event->FindKeyOfType("tid", base::Value::Type::INTEGER);
+  ASSERT_TRUE(memlog_pid);
+  ASSERT_TRUE(memlog_tid);
+
+  EXPECT_EQ(process_pid->GetInt(), thread_pid->GetInt());
+  EXPECT_EQ(process_pid->GetInt(), memlog_pid->GetInt());
+  EXPECT_EQ(thread_tid->GetInt(), memlog_tid->GetInt());
+}
 
 TEST(ProfilingJsonExporterTest, DumpsHeader) {
   BacktraceStorage backtrace_storage;
