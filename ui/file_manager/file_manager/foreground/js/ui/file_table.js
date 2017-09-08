@@ -430,7 +430,7 @@ FileTable.decorate = function(
       self.getRenderFunction()));
 
   // Keep focus on the file list when clicking on the header.
-  self.header.addEventListener('pointerdown', function(e) {
+  self.header.addEventListener('mousedown', function(e) {
     self.list.focus();
     e.preventDefault();
   });
