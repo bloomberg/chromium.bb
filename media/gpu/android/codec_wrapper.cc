@@ -26,6 +26,9 @@ class CodecWrapperImpl : public base::RefCountedThreadSafe<CodecWrapperImpl> {
   CodecWrapperImpl(std::unique_ptr<MediaCodecBridge> codec,
                    base::Closure output_buffer_release_cb);
 
+  using DequeueStatus = CodecWrapper::DequeueStatus;
+  using QueueStatus = CodecWrapper::QueueStatus;
+
   std::unique_ptr<MediaCodecBridge> TakeCodec();
   bool HasUnreleasedOutputBuffers() const;
   void DiscardOutputBuffers();
@@ -34,13 +37,13 @@ class CodecWrapperImpl : public base::RefCountedThreadSafe<CodecWrapperImpl> {
   bool IsDrained() const;
   bool SupportsFlush(DeviceInfo* device_info) const;
   bool Flush();
-  MediaCodecStatus QueueInputBuffer(const DecoderBuffer& buffer,
-                                    const EncryptionScheme& encryption_scheme);
-  MediaCodecStatus DequeueOutputBuffer(
+  QueueStatus QueueInputBuffer(const DecoderBuffer& buffer,
+                               const EncryptionScheme& encryption_scheme);
+  DequeueStatus DequeueOutputBuffer(
       base::TimeDelta* presentation_time,
       bool* end_of_stream,
       std::unique_ptr<CodecOutputBuffer>* codec_buffer);
-  MediaCodecStatus SetSurface(const base::android::JavaRef<jobject>& surface);
+  bool SetSurface(const base::android::JavaRef<jobject>& surface);
 
   // Releases the codec buffer and optionally renders it. This is a noop if
   // the codec buffer is not valid. Can be called on any thread. Returns true if
@@ -177,7 +180,7 @@ bool CodecWrapperImpl::Flush() {
   return true;
 }
 
-MediaCodecStatus CodecWrapperImpl::QueueInputBuffer(
+CodecWrapperImpl::QueueStatus CodecWrapperImpl::QueueInputBuffer(
     const DecoderBuffer& buffer,
     const EncryptionScheme& encryption_scheme) {
   DVLOG(4) << __func__;
@@ -192,13 +195,18 @@ MediaCodecStatus CodecWrapperImpl::QueueInputBuffer(
   } else {
     MediaCodecStatus status =
         codec_->DequeueInputBuffer(base::TimeDelta(), &input_buffer);
-    if (status == MEDIA_CODEC_ERROR) {
-      state_ = State::kError;
-      return status;
-    } else if (status == MEDIA_CODEC_TRY_AGAIN_LATER) {
-      return status;
+    switch (status) {
+      case MEDIA_CODEC_ERROR:
+        state_ = State::kError;
+        return QueueStatus::kError;
+      case MEDIA_CODEC_TRY_AGAIN_LATER:
+        return QueueStatus::kTryAgainLater;
+      case MEDIA_CODEC_OK:
+        break;
+      default:
+        NOTREACHED();
+        return QueueStatus::kError;
     }
-    DCHECK_GE(input_buffer, 0);
   }
 
   // Queue EOS if it's an EOS buffer.
@@ -208,7 +216,7 @@ MediaCodecStatus CodecWrapperImpl::QueueInputBuffer(
     DCHECK_NE(state_, State::kFlushed);
     codec_->QueueEOS(input_buffer);
     state_ = State::kDraining;
-    return MEDIA_CODEC_OK;
+    return QueueStatus::kOk;
   }
 
   // Queue a buffer.
@@ -224,24 +232,25 @@ MediaCodecStatus CodecWrapperImpl::QueueInputBuffer(
     status = codec_->QueueInputBuffer(input_buffer, buffer.data(),
                                       buffer.data_size(), buffer.timestamp());
   }
+
   switch (status) {
     case MEDIA_CODEC_OK:
       state_ = State::kRunning;
-      break;
+      return QueueStatus::kOk;
     case MEDIA_CODEC_ERROR:
       state_ = State::kError;
-      break;
+      return QueueStatus::kError;
     case MEDIA_CODEC_NO_KEY:
       // The input buffer remains owned by us, so save it for reuse.
       owned_input_buffer_ = input_buffer;
-      break;
+      return QueueStatus::kNoKey;
     default:
       NOTREACHED();
+      return QueueStatus::kError;
   }
-  return status;
 }
 
-MediaCodecStatus CodecWrapperImpl::DequeueOutputBuffer(
+CodecWrapperImpl::DequeueStatus CodecWrapperImpl::DequeueOutputBuffer(
     base::TimeDelta* presentation_time,
     bool* end_of_stream,
     std::unique_ptr<CodecOutputBuffer>* codec_buffer) {
@@ -272,40 +281,44 @@ MediaCodecStatus CodecWrapperImpl::DequeueOutputBuffer(
           codec_->ReleaseOutputBuffer(index, false);
           if (end_of_stream)
             *end_of_stream = true;
-          return status;
+          return DequeueStatus::kOk;
         }
 
         int64_t buffer_id = next_buffer_id_++;
         buffer_ids_[buffer_id] = index;
         *codec_buffer =
             base::WrapUnique(new CodecOutputBuffer(this, buffer_id, size_));
-        return status;
+        return DequeueStatus::kOk;
+      }
+      case MEDIA_CODEC_TRY_AGAIN_LATER: {
+        return DequeueStatus::kTryAgainLater;
       }
       case MEDIA_CODEC_ERROR: {
         state_ = State::kError;
-        return status;
+        return DequeueStatus::kError;
       }
       case MEDIA_CODEC_OUTPUT_FORMAT_CHANGED: {
-        // An OUTPUT_FORMAT_CHANGED is not reported after Flush() if the frame
-        // size does not change.
         if (codec_->GetOutputSize(&size_) == MEDIA_CODEC_ERROR) {
           state_ = State::kError;
-          return MEDIA_CODEC_ERROR;
+          return DequeueStatus::kError;
         }
         continue;
       }
-      case MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED:
+      case MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED: {
         continue;
-      default:
-        return status;
+      }
+      case MEDIA_CODEC_NO_KEY: {
+        NOTREACHED();
+        return DequeueStatus::kError;
+      }
     }
   }
 
   state_ = State::kError;
-  return MEDIA_CODEC_ERROR;
+  return DequeueStatus::kError;
 }
 
-MediaCodecStatus CodecWrapperImpl::SetSurface(
+bool CodecWrapperImpl::SetSurface(
     const base::android::JavaRef<jobject>& surface) {
   DVLOG(2) << __func__;
   base::AutoLock l(lock_);
@@ -313,9 +326,9 @@ MediaCodecStatus CodecWrapperImpl::SetSurface(
 
   if (!codec_->SetSurface(surface)) {
     state_ = State::kError;
-    return MEDIA_CODEC_ERROR;
+    return false;
   }
-  return MEDIA_CODEC_OK;
+  return true;
 }
 
 bool CodecWrapperImpl::ReleaseCodecOutputBuffer(int64_t id, bool render) {
@@ -388,13 +401,13 @@ bool CodecWrapper::Flush() {
   return impl_->Flush();
 }
 
-MediaCodecStatus CodecWrapper::QueueInputBuffer(
+CodecWrapper::QueueStatus CodecWrapper::QueueInputBuffer(
     const DecoderBuffer& buffer,
     const EncryptionScheme& encryption_scheme) {
   return impl_->QueueInputBuffer(buffer, encryption_scheme);
 }
 
-MediaCodecStatus CodecWrapper::DequeueOutputBuffer(
+CodecWrapper::DequeueStatus CodecWrapper::DequeueOutputBuffer(
     base::TimeDelta* presentation_time,
     bool* end_of_stream,
     std::unique_ptr<CodecOutputBuffer>* codec_buffer) {
@@ -402,8 +415,7 @@ MediaCodecStatus CodecWrapper::DequeueOutputBuffer(
                                     codec_buffer);
 }
 
-MediaCodecStatus CodecWrapper::SetSurface(
-    const base::android::JavaRef<jobject>& surface) {
+bool CodecWrapper::SetSurface(const base::android::JavaRef<jobject>& surface) {
   return impl_->SetSurface(surface);
 }
 
