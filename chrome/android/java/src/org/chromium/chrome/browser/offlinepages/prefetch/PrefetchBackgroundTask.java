@@ -43,6 +43,11 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
     private long mNativeTask = 0;
     private TaskFinishedCallback mTaskFinishedCallback = null;
     private Profile mProfile = null;
+    // We update this when we call TaskFinishedCallback, so that subsequent calls to
+    // onStopTask* can respond the same way.  This is possible due to races with the JobScheduler.
+    // Defaults to true so that we are rescheduled automatically if somehow we were unable to start
+    // up native.
+    private boolean mCachedRescheduleResult = true;
 
     public PrefetchBackgroundTask() {}
 
@@ -136,14 +141,15 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
 
     @Override
     protected boolean onStopTaskBeforeNativeLoaded(Context context, TaskParameters taskParameters) {
-        // TODO(dewittj): Implement this properly.
-        return true;
+        return mCachedRescheduleResult;
     }
 
     @Override
     protected boolean onStopTaskWithNative(Context context, TaskParameters taskParameters) {
         assert taskParameters.getTaskId() == TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID;
-        assert mNativeTask != 0;
+        // Sometimes we can race with JobScheduler and receive a stop call after we have called the
+        // TaskFinishedCallback, so we need to save the reschedule result.
+        if (mNativeTask == 0) return mCachedRescheduleResult;
 
         return nativeOnStopTask(mNativeTask);
     }
@@ -172,6 +178,7 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
     @CalledByNative
     void doneProcessing(boolean needsReschedule) {
         assert mTaskFinishedCallback != null;
+        mCachedRescheduleResult = needsReschedule;
         mTaskFinishedCallback.taskFinished(needsReschedule);
         setNativeTask(0);
     }

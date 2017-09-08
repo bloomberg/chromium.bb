@@ -101,7 +101,6 @@ public class PrefetchBackgroundTaskUnitTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        // ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
         doNothing().when(mChromeBrowserInitializer).handlePreNativeStartup(any(BrowserParts.class));
         try {
             doAnswer(new Answer<Void>() {
@@ -339,5 +338,29 @@ public class PrefetchBackgroundTaskUnitTest {
                     }
                 });
         assertEquals(NativeBackgroundTask.RESCHEDULE, result);
+    }
+
+    @Test
+    public void testOnStopAfterCallback() throws Exception {
+        final ArrayList<Boolean> reschedules = new ArrayList<>();
+        TaskParameters params = mock(TaskParameters.class);
+        when(params.getTaskId()).thenReturn(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID);
+
+        // Conditions should be appropriate for running the task.
+        DeviceConditions deviceConditions = new DeviceConditions(
+                POWER_CONNECTED, HIGH_BATTERY_LEVEL - 1, ConnectionType.CONNECTION_WIFI);
+        ShadowDeviceConditions.setCurrentConditions(deviceConditions, false /* metered */);
+
+        mPrefetchBackgroundTask.onStartTask(null, params, new TaskFinishedCallback() {
+            @Override
+            public void taskFinished(boolean needsReschedule) {
+                reschedules.add(needsReschedule);
+            }
+        });
+        mPrefetchBackgroundTask.doneProcessing(false);
+        mPrefetchBackgroundTask.onStopTaskWithNative(RuntimeEnvironment.application, params);
+
+        assertEquals(1, reschedules.size());
+        assertEquals(false, reschedules.get(0));
     }
 }
