@@ -1085,6 +1085,10 @@ This file contains the strings for ash.
         Display scale settings
       </message>
       <message name="IDS_ASH_STATUS_TRAY_SCALE_SLIDER" desc="The accessible text for the scale slider">Display scale</message>
+
+      <message name="IDS_ASH_SPLIT_VIEW_GUIDANCE" desc="Message that shows up on overview mode telling users where to drag the window to use split view">
+        Drag here to use split screen
+      </message>
     </messages>
   </release>
 </grit>

@@ -23,6 +23,7 @@
 #include "ash/wm/overview/window_selector_delegate.h"
 #include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/panels/panel_layout_manager.h"
+#include "ash/wm/splitview/split_view_overview_overlay.h"
 #include "ash/wm/switchable_windows.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -273,6 +274,9 @@ void WindowSelector::Init(const WindowList& windows,
   if (restore_focus_window_)
     restore_focus_window_->AddObserver(this);
 
+  if (SplitViewController::ShouldAllowSplitView())
+    split_view_overview_overlay_ = base::MakeUnique<SplitViewOverviewOverlay>();
+
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   std::sort(root_windows.begin(), root_windows.end(),
             [](const aura::Window* a, const aura::Window* b) {
@@ -493,6 +497,13 @@ void WindowSelector::SetBoundsForWindowGridsInScreenIgnoringWindow(
     WindowSelectorItem* ignored_item) {
   for (std::unique_ptr<WindowGrid>& grid : grid_list_)
     grid->SetBoundsAndUpdatePositionsIgnoringWindow(bounds, ignored_item);
+}
+
+void WindowSelector::SetSplitViewOverviewOverlayVisible(
+    bool visible,
+    const gfx::Point& event_location) {
+  DCHECK(split_view_overview_overlay_);
+  split_view_overview_overlay_->SetVisible(visible, event_location);
 }
 
 void WindowSelector::RemoveWindowSelectorItem(WindowSelectorItem* item) {
