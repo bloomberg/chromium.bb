@@ -108,7 +108,13 @@ bool LayoutTableCol::CanHaveChildren() const {
   return IsTableColumnGroup();
 }
 
-LayoutRect LayoutTableCol::LocalVisualRect() const {
+LayoutRect LayoutTableCol::LocalVisualRectIgnoringVisibility() const {
+  // On SPv2, raster invalidation is based on paint result. LayoutTableCol
+  // paints nothing (its background is painted by LayoutTableSection) so should
+  // not issue any raster invalidation.
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return LayoutRect();
+
   // Entire table gets invalidated, instead of invalidating
   // every cell in the column. This is simpler, but suboptimal.
 
@@ -120,7 +126,7 @@ LayoutRect LayoutTableCol::LocalVisualRect() const {
   // location is always zero.
   DCHECK(this->Location() == LayoutPoint());
 
-  return table->LocalVisualRect();
+  return table->LocalVisualRectIgnoringVisibility();
 }
 
 void LayoutTableCol::ClearPreferredLogicalWidthsDirtyBits() {

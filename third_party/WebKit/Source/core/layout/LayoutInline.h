@@ -287,7 +287,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   // This method differs from visualOverflowRect in that it doesn't include the
   // rects for culled inline boxes, which aren't necessary for paint
   // invalidation.
-  LayoutRect LocalVisualRect() const override;
+  LayoutRect LocalVisualRectIgnoringVisibility() const override;
 
   bool MapToVisualRectInAncestorSpaceInternal(
       const LayoutBoxModelObject* ancestor,

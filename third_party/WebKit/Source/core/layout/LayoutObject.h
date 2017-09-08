@@ -1383,7 +1383,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // non-SVG objects and LayoutSVGRoot only. SVG objects (except LayoutSVGRoot)
   // should use visualRectInLocalSVGCoordinates() and map with SVG transforms
   // instead.
-  virtual LayoutRect LocalVisualRect() const;
+  LayoutRect LocalVisualRect() const {
+    if (StyleRef().Visibility() != EVisibility::kVisible &&
+        VisualRectRespectsVisibility())
+      return LayoutRect();
+    return LocalVisualRectIgnoringVisibility();
+  }
 
   // Given a rect in the object's coordinate space, mutates the rect into one
   // representing the size of its visual painted output as if |ancestor| was the
@@ -2042,6 +2047,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   RarePaintData& EnsureRarePaintData();
   RarePaintData* GetRarePaintData() const { return rare_paint_data_.get(); }
+
+  virtual bool VisualRectRespectsVisibility() const { return true; }
+  virtual LayoutRect LocalVisualRectIgnoringVisibility() const;
 
  private:
   // Used only by applyFirstLineChanges to get a first line style based off of a

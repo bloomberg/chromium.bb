@@ -289,7 +289,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   bool IsText() const =
       delete;  // This will catch anyone doing an unnecessary check.
 
-  LayoutRect LocalVisualRect() const override;
+  LayoutRect LocalVisualRectIgnoringVisibility() const final;
 
   // We put the bitfield first to minimize padding on 64-bit.
 

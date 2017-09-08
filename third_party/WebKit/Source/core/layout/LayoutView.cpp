@@ -333,7 +333,7 @@ LayoutRect LayoutView::VisualOverflowRect() const {
   return LayoutOverflowRect();
 }
 
-LayoutRect LayoutView::LocalVisualRect() const {
+LayoutRect LayoutView::LocalVisualRectIgnoringVisibility() const {
   // TODO(wangxianzhu): This is only required without rootLayerScrolls (though
   // it is also correct but unnecessary with rootLayerScrolls) because of the
   // special LayoutView overflow model.

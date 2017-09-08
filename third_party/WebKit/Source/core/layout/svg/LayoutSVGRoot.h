@@ -137,7 +137,7 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
                    const LayoutPoint& accumulated_offset,
                    HitTestAction) override;
 
-  LayoutRect LocalVisualRect() const override;
+  LayoutRect LocalVisualRectIgnoringVisibility() const override;
 
   bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const final {
     // The rule is the same as LayoutBox's instead of LayoutReplaced's.

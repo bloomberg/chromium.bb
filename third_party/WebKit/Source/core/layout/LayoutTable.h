@@ -422,6 +422,9 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
     return is_any_column_ever_collapsed_;
   }
 
+  // Expose for LayoutTableCol::LocalVisualRectIgnoringVisibility().
+  using LayoutBlock::LocalVisualRectIgnoringVisibility;
+
  protected:
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
   void SimplifiedNormalFlowLayout() override;
