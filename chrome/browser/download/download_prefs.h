@@ -40,9 +40,6 @@ class DownloadPrefs {
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  // Returns the download directory for temporary files.
-  static const base::FilePath& GetTempDownloadDirectory();
-
   // Returns the default download directory.
   static const base::FilePath& GetDefaultDownloadDirectory();
 

@@ -220,14 +220,7 @@ DownloadTargetDeterminer::Result
       // If the user is going to be prompted and the user has been prompted
       // before, then always prefer the last directory that the user selected.
       target_directory = download_prefs_->SaveFilePath();
-    } else if (download_prefs_->IsAutoOpenEnabledBasedOnExtension(
-                   generated_filename)) {
-      // If we do not need user confirmation and we are going to auto-open the
-      // file, just download it to the system temp directory.
-      target_directory = download_prefs_->GetTempDownloadDirectory();
     } else {
-      // The user has not configured this file to be auto-opened. Download it to
-      // the standard location.
       target_directory = download_prefs_->DownloadPath();
     }
     virtual_path_ = target_directory.Append(generated_filename);
