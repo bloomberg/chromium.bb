@@ -20,7 +20,6 @@ const char kRemovableMassStorageNoDCIMPrefix[] = "nodcim:";
 const char kFixedMassStoragePrefix[] = "path:";
 const char kMtpPtpPrefix[] = "mtp:";
 const char kMacImageCapturePrefix[] = "ic:";
-const char kITunesPrefix[] = "itunes:";
 
 base::string16 GetDisplayNameForDevice(uint64_t storage_size_in_bytes,
                                        const base::string16& name) {
@@ -85,8 +84,6 @@ std::string StorageInfo::MakeDeviceId(Type type, const std::string& unique_id) {
       return std::string(kMtpPtpPrefix) + unique_id;
     case MAC_IMAGE_CAPTURE:
       return std::string(kMacImageCapturePrefix) + unique_id;
-    case ITUNES:
-      return std::string(kITunesPrefix) + unique_id;
   }
   NOTREACHED();
   return std::string();
@@ -111,8 +108,6 @@ bool StorageInfo::CrackDeviceId(const std::string& device_id,
     found_type = MTP_OR_PTP;
   } else if (prefix == kMacImageCapturePrefix) {
     found_type = MAC_IMAGE_CAPTURE;
-  } else if (prefix == kITunesPrefix) {
-    found_type = ITUNES;
   } else {
     NOTREACHED();
     return false;
@@ -148,14 +143,7 @@ bool StorageInfo::IsMassStorageDevice(const std::string& device_id) {
   Type type;
   return CrackDeviceId(device_id, &type, NULL) &&
          (type == REMOVABLE_MASS_STORAGE_WITH_DCIM ||
-          type == REMOVABLE_MASS_STORAGE_NO_DCIM ||
-          type == FIXED_MASS_STORAGE || type == ITUNES);
-}
-
-// static
-bool StorageInfo::IsITunesDevice(const std::string& device_id) {
-  Type type;
-  return CrackDeviceId(device_id, &type, NULL) && type == ITUNES;
+          type == REMOVABLE_MASS_STORAGE_NO_DCIM || type == FIXED_MASS_STORAGE);
 }
 
 // static

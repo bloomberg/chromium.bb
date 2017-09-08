@@ -197,7 +197,6 @@ int32_t PepperFileIOHost::OnHostMsgOpen(
       switch (file_system_url_.type()) {
         case storage::kFileSystemTypeNativeMedia:
         case storage::kFileSystemTypeDeviceMedia:
-        case storage::kFileSystemTypeItunes:
           break;
         default:
           return PP_ERROR_NOACCESS;

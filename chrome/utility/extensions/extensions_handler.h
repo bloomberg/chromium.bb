@@ -5,15 +5,9 @@
 #ifndef CHROME_UTILITY_EXTENSIONS_EXTENSIONS_HANDLER_H_
 #define CHROME_UTILITY_EXTENSIONS_EXTENSIONS_HANDLER_H_
 
-#include <stdint.h>
-
-#include "base/base64.h"
-#include "base/macros.h"
 #include "build/build_config.h"
-#include "chrome/utility/utility_message_handler.h"
 #include "extensions/features/features.h"
 #include "extensions/utility/utility_handler.h"
-#include "ipc/ipc_platform_file.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 #if !BUILDFLAG(ENABLE_EXTENSIONS)
@@ -22,36 +16,12 @@
 
 namespace extensions {
 
-// Dispatches IPCs for Chrome extensions utility messages.
-// Note: these IPC are deprecated so there is no need to convert
-// them to mojo. https://crbug.com/680928
-class ExtensionsHandler : public UtilityMessageHandler {
- public:
-  ExtensionsHandler();
-  ~ExtensionsHandler() override;
+void InitExtensionsClient();
 
-  static void PreSandboxStartup();
+void PreSandboxStartup();
 
-  static void ExposeInterfacesToBrowser(
-      service_manager::BinderRegistry* registry,
-      bool running_elevated);
-
-  // UtilityMessageHandler:
-  bool OnMessageReceived(const IPC::Message& message) override;
-
- private:
-  // IPC message handlers.
-#if defined(OS_WIN)
-  void OnParseITunesPrefXml(const std::string& itunes_xml_data);
-#endif  // defined(OS_WIN)
-
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  void OnParseITunesLibraryXmlFile(
-      const IPC::PlatformFileForTransit& itunes_library_file);
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionsHandler);
-};
+void ExposeInterfacesToBrowser(service_manager::BinderRegistry* registry,
+                               bool running_elevated);
 
 }  // namespace extensions
 

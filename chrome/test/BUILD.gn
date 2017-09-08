@@ -1335,7 +1335,6 @@ test("browser_tests") {
       "../browser/media/webrtc/webrtc_webcam_browsertest.cc",
       "../browser/media/wv_test_license_server_config.cc",
       "../browser/media/wv_test_license_server_config.h",
-      "../browser/media_galleries/fileapi/iapps_finder_impl_win_browsertest.cc",
       "../browser/media_galleries/fileapi/media_file_validator_browsertest.cc",
       "../browser/media_galleries/media_galleries_dialog_controller_mock.cc",
       "../browser/media_galleries/media_galleries_dialog_controller_mock.h",
@@ -2448,10 +2447,7 @@ test("browser_tests") {
         "//ui/resources",
       ]
     } else {
-      sources -= [
-        "../app/chrome_version.rc.version",
-        "../browser/media_galleries/fileapi/iapps_finder_impl_win_browsertest.cc",
-      ]
+      sources -= [ "../app/chrome_version.rc.version" ]
     }
     if (is_mac) {
       # Other platforms only need .pak files, and can build this target
@@ -2556,7 +2552,6 @@ test("browser_tests") {
       sources += [
         "../browser/extensions/api/networking_private/networking_private_apitest.cc",
         "../browser/extensions/api/networking_private/networking_private_service_client_apitest.cc",
-        "../browser/media_galleries/fileapi/itunes_data_provider_browsertest.cc",
       ]
       deps += [ "//components/wifi:test_support" ]
     }
@@ -4803,12 +4798,6 @@ test("unit_tests") {
       "//chrome:packed_resources",
       "//chrome/tools/convert_dict:lib",
       "//third_party/hunspell",
-    ]
-  }
-  if (is_win || is_mac) {
-    sources += [
-      "../browser/media_galleries/fileapi/itunes_file_util_unittest.cc",
-      "../utility/media_galleries/itunes_library_parser_unittest.cc",
     ]
   }
   if (is_win || is_mac || is_chromeos) {

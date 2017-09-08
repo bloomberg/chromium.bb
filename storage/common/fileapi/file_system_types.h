@@ -75,9 +75,6 @@ enum FileSystemType {
   // such as MTP or PTP.
   kFileSystemTypeDeviceMedia,
 
-  // Indicates a synthetic iTunes filesystem.
-  kFileSystemTypeItunes,
-
   // Indicates a Drive filesystem which provides access to Google Drive.
   kFileSystemTypeDrive,
 

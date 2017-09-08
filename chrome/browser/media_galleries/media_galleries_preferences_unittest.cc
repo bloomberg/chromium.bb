@@ -334,8 +334,9 @@ class MediaGalleriesPreferencesTest : public testing::Test {
         false, 0, 0, 0, 2, MediaGalleryPrefInfo::kNotDefault);
   }
 
-  MediaGalleryPrefId AddFixedGalleryWithExepectation(
-      const std::string& path_name, const std::string& name,
+  MediaGalleryPrefId AddFixedGalleryWithExpectation(
+      const std::string& path_name,
+      const std::string& name,
       MediaGalleryPrefInfo::Type type) {
     base::FilePath path = MakeMediaGalleriesTestingPath(path_name);
     StorageInfo info;
@@ -348,10 +349,6 @@ class MediaGalleriesPreferencesTest : public testing::Test {
                           type);
     Verify();
     return id;
-  }
-
-  bool UpdateDeviceIDForSingletonType(const std::string& device_id) {
-    return gallery_prefs()->UpdateDeviceIDForSingletonType(device_id);
   }
 
   scoped_refptr<extensions::Extension> all_permission_extension;
@@ -526,31 +523,25 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryManagement) {
 }
 
 TEST_F(MediaGalleriesPreferencesTest, ForgetAndErase) {
-  MediaGalleryPrefId user_erase =
-      AddFixedGalleryWithExepectation("user_erase", "UserErase",
-                                      MediaGalleryPrefInfo::kUserAdded);
+  MediaGalleryPrefId user_erase = AddFixedGalleryWithExpectation(
+      "user_erase", "UserErase", MediaGalleryPrefInfo::kUserAdded);
   EXPECT_EQ(default_galleries_count() + 1UL, user_erase);
-  MediaGalleryPrefId user_forget =
-      AddFixedGalleryWithExepectation("user_forget", "UserForget",
-                                      MediaGalleryPrefInfo::kUserAdded);
+  MediaGalleryPrefId user_forget = AddFixedGalleryWithExpectation(
+      "user_forget", "UserForget", MediaGalleryPrefInfo::kUserAdded);
   EXPECT_EQ(default_galleries_count() + 2UL, user_forget);
 
-  MediaGalleryPrefId auto_erase =
-      AddFixedGalleryWithExepectation("auto_erase", "AutoErase",
-                                      MediaGalleryPrefInfo::kAutoDetected);
+  MediaGalleryPrefId auto_erase = AddFixedGalleryWithExpectation(
+      "auto_erase", "AutoErase", MediaGalleryPrefInfo::kAutoDetected);
   EXPECT_EQ(default_galleries_count() + 3UL, auto_erase);
-  MediaGalleryPrefId auto_forget =
-      AddFixedGalleryWithExepectation("auto_forget", "AutoForget",
-                                      MediaGalleryPrefInfo::kAutoDetected);
+  MediaGalleryPrefId auto_forget = AddFixedGalleryWithExpectation(
+      "auto_forget", "AutoForget", MediaGalleryPrefInfo::kAutoDetected);
   EXPECT_EQ(default_galleries_count() + 4UL, auto_forget);
 
-  MediaGalleryPrefId scan_erase =
-      AddFixedGalleryWithExepectation("scan_erase", "ScanErase",
-                                      MediaGalleryPrefInfo::kScanResult);
+  MediaGalleryPrefId scan_erase = AddFixedGalleryWithExpectation(
+      "scan_erase", "ScanErase", MediaGalleryPrefInfo::kScanResult);
   EXPECT_EQ(default_galleries_count() + 5UL, scan_erase);
-  MediaGalleryPrefId scan_forget =
-      AddFixedGalleryWithExepectation("scan_forget", "ScanForget",
-                                      MediaGalleryPrefInfo::kScanResult);
+  MediaGalleryPrefId scan_forget = AddFixedGalleryWithExpectation(
+      "scan_forget", "ScanForget", MediaGalleryPrefInfo::kScanResult);
   EXPECT_EQ(default_galleries_count() + 6UL, scan_forget);
 
   Verify();
@@ -1132,68 +1123,6 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryChangeObserver) {
   EXPECT_EQ(3, observer2.notifications());
 }
 
-TEST_F(MediaGalleriesPreferencesTest, UpdateSingletonDeviceIdType) {
-  MediaGalleryPrefId id;
-  base::FilePath path;
-  Verify();
-
-  // Add a new auto detect gallery to test with.
-  path = MakeMediaGalleriesTestingPath("new_auto");
-  base::string16 gallery_name = base::ASCIIToUTF16("NewAutoGallery");
-  std::string device_id = StorageInfo::MakeDeviceId(StorageInfo::ITUNES,
-                                                    path.AsUTF8Unsafe());
-  id = AddGalleryWithNameV2(device_id, gallery_name, base::FilePath(),
-                            MediaGalleryPrefInfo::kAutoDetected);
-  EXPECT_EQ(default_galleries_count() + 1UL, id);
-  AddGalleryExpectation(id, gallery_name, device_id, base::FilePath(),
-                        MediaGalleryPrefInfo::kAutoDetected);
-  Verify();
-
-  // Update the device id.
-  MockGalleryChangeObserver observer(gallery_prefs());
-  gallery_prefs()->AddGalleryChangeObserver(&observer);
-
-  path = MakeMediaGalleriesTestingPath("updated_path");
-  std::string updated_device_id =
-      StorageInfo::MakeDeviceId(StorageInfo::ITUNES, path.AsUTF8Unsafe());
-  EXPECT_TRUE(UpdateDeviceIDForSingletonType(updated_device_id));
-  AddGalleryExpectation(id, gallery_name, updated_device_id, base::FilePath(),
-                        MediaGalleryPrefInfo::kAutoDetected);
-  expected_device_map[device_id].erase(id);
-  expected_device_map[updated_device_id].insert(id);
-  Verify();
-  EXPECT_EQ(1, observer.notifications());
-
-  // No gallery for type.
-  std::string new_device_id = StorageInfo::MakeDeviceId(
-      StorageInfo::MAC_IMAGE_CAPTURE, path.AsUTF8Unsafe());
-  EXPECT_FALSE(UpdateDeviceIDForSingletonType(new_device_id));
-}
-
-TEST_F(MediaGalleriesPreferencesTest, LookupImportedGalleryByPath) {
-  MediaGalleryPrefId id;
-  base::FilePath path;
-  Verify();
-
-  // iTunes device path points to an XML file in the library directory.
-  path = MakeMediaGalleriesTestingPath("new_auto").AppendASCII("library.xml");
-  base::string16 gallery_name = base::ASCIIToUTF16("NewAutoGallery");
-  std::string device_id = StorageInfo::MakeDeviceId(StorageInfo::ITUNES,
-                                                    path.AsUTF8Unsafe());
-  id = AddGalleryWithNameV2(device_id, gallery_name, base::FilePath(),
-                            MediaGalleryPrefInfo::kAutoDetected);
-  EXPECT_EQ(default_galleries_count() + 1UL, id);
-  AddGalleryExpectation(id, gallery_name, device_id, base::FilePath(),
-                        MediaGalleryPrefInfo::kAutoDetected);
-  Verify();
-
-  // Verify we can look up the imported gallery by its path.
-  MediaGalleryPrefInfo gallery_info;
-  EXPECT_TRUE(gallery_prefs()->LookUpGalleryByPath(path.DirName(),
-                                                   &gallery_info));
-  EXPECT_EQ(id, gallery_info.pref_id);
-}
-
 TEST_F(MediaGalleriesPreferencesTest, ScanResults) {
   MediaGalleryPrefId id;
   base::FilePath path;
@@ -1477,8 +1406,8 @@ TEST_F(MediaGalleriesPreferencesTest, UpdateAddsDefaultGalleryTypeIfMissing) {
 #endif
 
   // Add a new user added gallery.
-  AddFixedGalleryWithExepectation("user_added", "UserAdded",
-                                  MediaGalleryPrefInfo::kUserAdded);
+  AddFixedGalleryWithExpectation("user_added", "UserAdded",
+                                 MediaGalleryPrefInfo::kUserAdded);
 
   // Remove the "default_gallery_type" field completely from the persisted data
   // for the prefs info object. This simulates the case where a user updated

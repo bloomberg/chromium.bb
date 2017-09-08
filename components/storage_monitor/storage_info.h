@@ -25,8 +25,6 @@ class StorageInfo {
     MTP_OR_PTP,
     // A Mac ImageCapture device.
     MAC_IMAGE_CAPTURE,
-    // An iTunes library.
-    ITUNES,
   };
 
   StorageInfo();
@@ -61,8 +59,6 @@ class StorageInfo {
   // Looks inside |device_id| to determine if it is a mass storage device
   // (type isn't MTP_OR_PTP).
   static bool IsMassStorageDevice(const std::string& device_id);
-
-  static bool IsITunesDevice(const std::string& device_id);
 
   static bool IsMTPDevice(const std::string& device_id);
 

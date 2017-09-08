@@ -237,7 +237,7 @@ base::LazyInstance<ChromeContentUtilityClient::NetworkBinderCreationCallback>::
 ChromeContentUtilityClient::ChromeContentUtilityClient()
     : utility_process_running_elevated_(false) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  handlers_.push_back(base::MakeUnique<extensions::ExtensionsHandler>());
+  extensions::InitExtensionsClient();
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
@@ -267,8 +267,8 @@ void ChromeContentUtilityClient::UtilityThreadStarted() {
 
   auto registry = base::MakeUnique<service_manager::BinderRegistry>();
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  extensions::ExtensionsHandler::ExposeInterfacesToBrowser(
-      registry.get(), utility_process_running_elevated_);
+  extensions::ExposeInterfacesToBrowser(registry.get(),
+                                        utility_process_running_elevated_);
   extensions::utility_handler::ExposeInterfacesToBrowser(
       registry.get(), utility_process_running_elevated_);
 #endif
@@ -356,7 +356,7 @@ void ChromeContentUtilityClient::RegisterNetworkBinders(
 // static
 void ChromeContentUtilityClient::PreSandboxStartup() {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  extensions::ExtensionsHandler::PreSandboxStartup();
+  extensions::PreSandboxStartup();
 #endif
 }
 

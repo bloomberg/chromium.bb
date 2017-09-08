@@ -45,10 +45,6 @@
 #include "storage/common/fileapi/file_system_types.h"
 #include "storage/common/fileapi/file_system_util.h"
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-#include "chrome/browser/media_galleries/fileapi/itunes_file_util.h"
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
-
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 #include "chrome/browser/media_galleries/fileapi/device_media_async_file_util.h"
 #endif
@@ -141,11 +137,6 @@ MediaFileSystemBackend::MediaFileSystemBackend(
           DeviceMediaAsyncFileUtil::Create(profile_path_,
                                            APPLY_MEDIA_FILE_VALIDATION))
 #endif
-#if defined(OS_WIN) || defined(OS_MACOSX)
-      ,
-      itunes_file_util_(new itunes::ITunesFileUtil(media_path_filter_.get())),
-      itunes_file_util_used_(false)
-#endif
 {
 }
 
@@ -222,9 +213,6 @@ bool MediaFileSystemBackend::CanHandleType(storage::FileSystemType type) const {
   switch (type) {
     case storage::kFileSystemTypeNativeMedia:
     case storage::kFileSystemTypeDeviceMedia:
-#if defined(OS_WIN) || defined(OS_MACOSX)
-    case storage::kFileSystemTypeItunes:
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
       return true;
     default:
       return false;
@@ -254,14 +242,6 @@ storage::AsyncFileUtil* MediaFileSystemBackend::GetAsyncFileUtil(
     case storage::kFileSystemTypeDeviceMedia:
       return device_media_async_file_util_.get();
 #endif
-#if defined(OS_WIN) || defined(OS_MACOSX)
-    case storage::kFileSystemTypeItunes:
-      if (!itunes_file_util_used_) {
-        media_galleries::UsageCount(media_galleries::ITUNES_FILE_SYSTEM_USED);
-        itunes_file_util_used_ = true;
-      }
-      return itunes_file_util_.get();
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
     default:
       NOTREACHED();
   }
@@ -282,7 +262,6 @@ MediaFileSystemBackend::GetCopyOrMoveFileValidatorFactory(
   switch (type) {
     case storage::kFileSystemTypeNativeMedia:
     case storage::kFileSystemTypeDeviceMedia:
-    case storage::kFileSystemTypeItunes:
       if (!media_copy_or_move_file_validator_factory_) {
         *error_code = base::File::FILE_ERROR_SECURITY;
         return NULL;
@@ -318,8 +297,7 @@ bool MediaFileSystemBackend::SupportsStreaming(
 bool MediaFileSystemBackend::HasInplaceCopyImplementation(
     storage::FileSystemType type) const {
   DCHECK(type == storage::kFileSystemTypeNativeMedia ||
-         type == storage::kFileSystemTypeDeviceMedia ||
-         type == storage::kFileSystemTypeItunes);
+         type == storage::kFileSystemTypeDeviceMedia);
   return true;
 }
 

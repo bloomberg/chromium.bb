@@ -18,7 +18,6 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/common/cast_messages.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
-#include "chrome/common/extensions/chrome_utility_extensions_messages.h"
 #include "chrome/common/extensions/mojom/inline_install_traits.h"
 #endif
 

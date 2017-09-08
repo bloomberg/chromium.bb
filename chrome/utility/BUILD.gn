@@ -119,8 +119,6 @@ static_library("utility") {
       "image_writer/image_writer_win.cc",
       "media_galleries/ipc_data_source.cc",
       "media_galleries/ipc_data_source.h",
-      "media_galleries/itunes_pref_parser_win.cc",
-      "media_galleries/itunes_pref_parser_win.h",
       "media_galleries/media_metadata_parser.cc",
       "media_galleries/media_metadata_parser.h",
     ]
@@ -141,12 +139,6 @@ static_library("utility") {
     }
 
     if (is_win || is_mac) {
-      sources += [
-        "media_galleries/iapps_xml_utils.cc",
-        "media_galleries/iapps_xml_utils.h",
-        "media_galleries/itunes_library_parser.cc",
-        "media_galleries/itunes_library_parser.h",
-      ]
       deps += [ "//components/wifi" ]
     } else {
       sources += [ "image_writer/image_writer_stub.cc" ]

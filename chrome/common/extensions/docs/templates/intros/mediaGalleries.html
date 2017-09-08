@@ -106,31 +106,6 @@ user's computer. The user may add or remove galleries using the
 media gallery permission dialog, after which the app will be able
 to read all the media files from galleries that the user selected.</p>
 
-<h2 id="iTunes">iTunes</h2>
-
-<p>If present, the user's iTunes library can be accessed as a media gallery.
-In addition to the media files in the library, the "iTunes Music Library.xml"
-file is also presented.</p>
-<p>Regardless of where the music files are actually on the disk (and where
-the xml file says they are), they are mapped into an Artist/Album/Track
-hierarchy like iTunes does by default.  This mapping doesn't always work
-perfectly, so there are two things to note for Apps trying to match the
-xml file with files in the gallery.</p>
-<p>If the filenames for tracks within an album are not unique, they will be
-uniquified by adding the track id in parentheses before the extension, and
-if there is a colon or a slash in the artist, album, or track name, they are
-turned into underscore characters.</p>
-
-<h2 id="Picasa">Picasa</h2>
-
-<p>If present, the user's Picasa library can also be accessed as a media
-gallery. Directories on the filesystem scanned by Picasa are presented under
-folders/. Picasa Albums are presented under albums/.</p>
-<p>Albums and Folders that have duplicate names and dates will be uniquified
-using an incrementing integer in parenthesis before the extension.</p>
-<p>Duplicate filenames within the same Album will also be uniquified using an
-incrementing integer in parenthesis before the extension.</p>
-
 <h2 id="iPhoto">iPhoto</h2>
 
 <p>iPhoto support was removed in Chrome 51.</p>
