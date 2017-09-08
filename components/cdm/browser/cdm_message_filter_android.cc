@@ -93,11 +93,14 @@ static SupportedCodecs GetSupportedCodecs(
   return supported_codecs;
 }
 
-CdmMessageFilterAndroid::CdmMessageFilterAndroid(bool can_use_secure_codecs)
+CdmMessageFilterAndroid::CdmMessageFilterAndroid(
+    bool can_persist_data,
+    bool force_to_support_secure_codecs)
     : BrowserMessageFilter(EncryptedMediaMsgStart),
       task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BACKGROUND})),
-      force_to_support_secure_codecs_(can_use_secure_codecs) {}
+      can_persist_data_(can_persist_data),
+      force_to_support_secure_codecs_(force_to_support_secure_codecs) {}
 
 CdmMessageFilterAndroid::~CdmMessageFilterAndroid() {}
 
@@ -136,6 +139,15 @@ void CdmMessageFilterAndroid::OnQueryKeySystemSupport(
   }
 
   if (!MediaDrmBridge::IsKeySystemSupported(request.key_system))
+    return;
+
+  // When using MediaDrm, we assume it'll always try to persist some data. If
+  // |can_persist_data_| is false and MediaDrm were to persist data on the
+  // Android system, we are somewhat violating the incognito assumption.
+  // This cannot be used detect incognito mode easily because the result is the
+  // same when |can_persist_data_| is false, and when user blocks the "protected
+  // media identifier" permission prompt.
+  if (!can_persist_data_)
     return;
 
   DCHECK(request.codecs & media::EME_CODEC_ALL) << "unrecognized codec";

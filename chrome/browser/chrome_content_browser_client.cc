@@ -1050,11 +1050,14 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
       profile->GetPath(),
       context));
 #endif
-#if defined(OS_ANDROID)
-  host->AddFilter(new cdm::CdmMessageFilterAndroid());
-#endif
 
   bool is_incognito_process = profile->IsOffTheRecord();
+
+#if defined(OS_ANDROID)
+  // Data cannot be persisted if the profile is off the record.
+  host->AddFilter(
+      new cdm::CdmMessageFilterAndroid(!is_incognito_process, false));
+#endif
 
   chrome::mojom::RendererConfigurationAssociatedPtr rc_interface;
   host->GetChannel()->GetRemoteAssociatedInterface(&rc_interface);
