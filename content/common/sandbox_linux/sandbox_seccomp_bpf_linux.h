@@ -10,7 +10,6 @@
 
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
-#include "gpu/config/gpu_info.h"
 #include "sandbox/linux/bpf_dsl/policy.h"
 
 namespace content {
@@ -35,8 +34,7 @@ class SandboxSeccompBPF {
   // Start the sandbox and apply the policy for process_type, depending on
   // command line switches.
   static bool StartSandbox(const std::string& process_type,
-                           base::ScopedFD proc_fd,
-                           const gpu::GPUInfo* gpu_info);
+                           base::ScopedFD proc_fd);
 
   // This is the API to enable a seccomp-bpf sandbox by using an
   // external policy.

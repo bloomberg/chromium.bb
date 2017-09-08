@@ -24,7 +24,6 @@
 
 #include "base/files/scoped_file.h"
 #include "base/posix/eintr_wrapper.h"
-#include "content/common/sandbox_linux/bpf_cros_amd_gpu_policy_linux.h"
 #include "content/common/sandbox_linux/bpf_cros_arm_gpu_policy_linux.h"
 #include "content/common/sandbox_linux/bpf_gpu_policy_linux.h"
 #include "content/common/sandbox_linux/bpf_ppapi_policy_linux.h"
@@ -37,7 +36,6 @@
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_sets.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"
-#include "third_party/angle/src/gpu_info_util/SystemInfo.h"
 
 using sandbox::BaselinePolicy;
 using sandbox::SandboxBPF;
@@ -160,21 +158,14 @@ void RunSandboxSanityChecks(const std::string& process_type) {
   }
 }
 
-std::unique_ptr<SandboxBPFBasePolicy> GetGpuProcessSandbox(
-    const gpu::GPUInfo* gpu_info) {
+std::unique_ptr<SandboxBPFBasePolicy> GetGpuProcessSandbox() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  uint32_t gpu_vendor = 0;
-  if (gpu_info != NULL)
-    gpu_vendor = gpu_info->active_gpu().vendor_id;
   if (IsChromeOS() && IsArchitectureArm()) {
     bool allow_sysv_shm =
         command_line.HasSwitch(switches::kGpuSandboxAllowSysVShm);
     return std::unique_ptr<SandboxBPFBasePolicy>(
         new CrosArmGpuProcessPolicy(allow_sysv_shm));
-  } else if (IsChromeOS() && angle::IsAMD(gpu_vendor)) {
-    return std::unique_ptr<SandboxBPFBasePolicy>(
-        new CrosAmdGpuProcessPolicy());
   } else {
     return std::unique_ptr<SandboxBPFBasePolicy>(new GpuProcessPolicy());
   }
@@ -183,12 +174,11 @@ std::unique_ptr<SandboxBPFBasePolicy> GetGpuProcessSandbox(
 // Initialize the seccomp-bpf sandbox.
 bool StartBPFSandbox(const base::CommandLine& command_line,
                      const std::string& process_type,
-                     base::ScopedFD proc_fd,
-                     const gpu::GPUInfo* gpu_info) {
+                     base::ScopedFD proc_fd) {
   std::unique_ptr<SandboxBPFBasePolicy> policy;
 
   if (process_type == switches::kGpuProcess) {
-    policy.reset(GetGpuProcessSandbox(gpu_info).release());
+    policy.reset(GetGpuProcessSandbox().release());
   } else if (process_type == switches::kRendererProcess) {
     policy.reset(new RendererProcessPolicy);
   } else if (process_type == switches::kPpapiPluginProcess) {
@@ -264,8 +254,7 @@ bool SandboxSeccompBPF::SupportsSandboxWithTsync() {
 }
 
 bool SandboxSeccompBPF::StartSandbox(const std::string& process_type,
-                                     base::ScopedFD proc_fd,
-                                     const gpu::GPUInfo* gpu_info) {
+                                     base::ScopedFD proc_fd) {
 #if BUILDFLAG(USE_SECCOMP_BPF)
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -275,8 +264,8 @@ bool SandboxSeccompBPF::StartSandbox(const std::string& process_type,
       SupportsSandbox()) {
     // If the kernel supports the sandbox, and if the command line says we
     // should enable it, enable it or die.
-    bool started_sandbox = StartBPFSandbox(command_line, process_type,
-                                           std::move(proc_fd), gpu_info);
+    bool started_sandbox =
+        StartBPFSandbox(command_line, process_type, std::move(proc_fd));
     CHECK(started_sandbox);
     return true;
   }

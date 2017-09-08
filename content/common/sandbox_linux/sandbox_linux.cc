@@ -200,9 +200,9 @@ std::vector<int> LinuxSandbox::GetFileDescriptorsToClose() {
   return fds;
 }
 
-bool LinuxSandbox::InitializeSandbox(const gpu::GPUInfo* gpu_info) {
+bool LinuxSandbox::InitializeSandbox() {
   LinuxSandbox* linux_sandbox = LinuxSandbox::GetInstance();
-  return linux_sandbox->InitializeSandboxImpl(gpu_info);
+  return linux_sandbox->InitializeSandboxImpl();
 }
 
 void LinuxSandbox::StopThread(base::Thread* thread) {
@@ -276,13 +276,12 @@ sandbox::SetuidSandboxClient*
 }
 
 // For seccomp-bpf, we use the SandboxSeccompBPF class.
-bool LinuxSandbox::StartSeccompBPF(const std::string& process_type,
-                                   const gpu::GPUInfo* gpu_info) {
+bool LinuxSandbox::StartSeccompBPF(const std::string& process_type) {
   CHECK(!seccomp_bpf_started_);
   CHECK(pre_initialized_);
   if (seccomp_bpf_supported()) {
-    seccomp_bpf_started_ = SandboxSeccompBPF::StartSandbox(
-        process_type, OpenProc(proc_fd_), gpu_info);
+    seccomp_bpf_started_ =
+        SandboxSeccompBPF::StartSandbox(process_type, OpenProc(proc_fd_));
   }
 
   if (seccomp_bpf_started_) {
@@ -292,7 +291,7 @@ bool LinuxSandbox::StartSeccompBPF(const std::string& process_type,
   return seccomp_bpf_started_;
 }
 
-bool LinuxSandbox::InitializeSandboxImpl(const gpu::GPUInfo* gpu_info) {
+bool LinuxSandbox::InitializeSandboxImpl() {
   DCHECK(!initialize_sandbox_ran_);
   initialize_sandbox_ran_ = true;
 
@@ -360,7 +359,7 @@ bool LinuxSandbox::InitializeSandboxImpl(const gpu::GPUInfo* gpu_info) {
   LimitAddressSpace(process_type);
 
   // Try to enable seccomp-bpf.
-  bool seccomp_bpf_started = StartSeccompBPF(process_type, gpu_info);
+  bool seccomp_bpf_started = StartSeccompBPF(process_type);
 
   return seccomp_bpf_started;
 }
