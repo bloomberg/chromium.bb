@@ -129,7 +129,7 @@ void DelegatedFrameHostAndroid::RequestCopyOfSurface(
   compositor->AttachLayerForReadback(readback_layer);
   std::unique_ptr<viz::CopyOutputRequest> copy_output_request =
       std::make_unique<viz::CopyOutputRequest>(
-          viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
+          viz::CopyOutputRequest::ResultFormat::RGBA_TEXTURE,
           base::BindOnce(&CopyOutputRequestCallback, readback_layer,
                          std::move(result_callback)));
 
