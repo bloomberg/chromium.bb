@@ -33,7 +33,6 @@ namespace {
 
 constexpr char kManagedProvisionNotificationId[] = "arc_managed_provision";
 constexpr char kManagedProvisionNotifierId[] = "arc_managed_provision";
-constexpr char kManagedProvisionDisplaySource[] = "arc_managed_provision";
 
 class DelegateImpl : public ArcProvisionNotificationService::Delegate {
  public:
@@ -63,8 +62,8 @@ void DelegateImpl::ShowManagedProvisionNotification() {
               ui::GetChromeOSDeviceName()),
           gfx::Image(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
               IDR_ARC_PLAY_STORE_OPTIN_IN_PROGRESS_NOTIFICATION)),
-          base::UTF8ToUTF16(kManagedProvisionDisplaySource), GURL(),
-          notifier_id, optional_fields, nullptr));
+          l10n_util::GetStringUTF16(IDS_ARC_NOTIFICATION_DISPLAY_SOURCE),
+          GURL(), notifier_id, optional_fields, nullptr));
 }
 
 void DelegateImpl::RemoveManagedProvisionNotification() {
