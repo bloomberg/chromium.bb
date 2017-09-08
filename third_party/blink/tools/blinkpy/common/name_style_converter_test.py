@@ -49,6 +49,9 @@ class SmartTokenizerTest(unittest.TestCase):
         tokenizer = SmartTokenizer('CanvasRenderingContext2D')
         self.assertEqual(tokenizer.tokenize(),
                          ['Canvas', 'Rendering', 'Context', '2D'])
+        tokenizer = SmartTokenizer('CanvasRenderingContext2DAPITest')
+        self.assertEqual(tokenizer.tokenize(),
+                         ['Canvas', 'Rendering', 'Context', '2D', 'API', 'Test'])
 
         tokenizer = SmartTokenizer('SVGSVGElement')
         self.assertEqual(tokenizer.tokenize(), ['SVG', 'SVG', 'Element'])
@@ -58,15 +61,27 @@ class SmartTokenizerTest(unittest.TestCase):
 
         tokenizer = SmartTokenizer('CSSURLImageValue')
         self.assertEqual(tokenizer.tokenize(), ['CSS', 'URL', 'Image', 'Value'])
+        tokenizer = SmartTokenizer('CSSPropertyAPID')
+        self.assertEqual(tokenizer.tokenize(), ['CSS', 'Property', 'API', 'D'])
+        tokenizer = SmartTokenizer('AXARIAGridCell')
+        self.assertEqual(tokenizer.tokenize(), ['AX', 'ARIA', 'Grid', 'Cell'])
 
         tokenizer = SmartTokenizer('CDATASection')
         self.assertEqual(tokenizer.tokenize(), ['CDATA', 'Section'])
 
+        tokenizer = SmartTokenizer('ASCIICType')
+        self.assertEqual(tokenizer.tokenize(), ['ASCII', 'CType'])
+        tokenizer = SmartTokenizer('CString')
+        self.assertEqual(tokenizer.tokenize(), ['CString'])
+
         tokenizer = SmartTokenizer('HTMLDListElement')
         self.assertEqual(tokenizer.tokenize(), ['HTML', 'DList', 'Element'])
-
+        tokenizer = SmartTokenizer('HTMLOListElement')
+        self.assertEqual(tokenizer.tokenize(), ['HTML', 'OList', 'Element'])
         tokenizer = SmartTokenizer('HTMLIFrameElement')
         self.assertEqual(tokenizer.tokenize(), ['HTML', 'IFrame', 'Element'])
+        tokenizer = SmartTokenizer('HTMLPlugInElement')
+        self.assertEqual(tokenizer.tokenize(), ['HTML', 'PlugIn', 'Element'])
 
         # No special handling for OptGroup, FieldSet, and TextArea.
         tokenizer = SmartTokenizer('HTMLOptGroupElement')
@@ -108,6 +123,10 @@ class SmartTokenizerTest(unittest.TestCase):
         self.assertEqual(tokenizer.tokenize(), ['UTF8', 'Decoder'])
         tokenizer = SmartTokenizer('Uint8Array')
         self.assertEqual(tokenizer.tokenize(), ['Uint8', 'Array'])
+        tokenizer = SmartTokenizer('DOMWindowBase64')
+        self.assertEqual(tokenizer.tokenize(), ['DOM', 'Window', 'Base64'])
+        tokenizer = SmartTokenizer('TextCodecLatin1')
+        self.assertEqual(tokenizer.tokenize(), ['Text', 'Codec', 'Latin1'])
         tokenizer = SmartTokenizer('V8BindingForCore')
         self.assertEqual(tokenizer.tokenize(), ['V8', 'Binding', 'For', 'Core'])
         tokenizer = SmartTokenizer('V8DOMRect')
@@ -119,7 +138,11 @@ class SmartTokenizerTest(unittest.TestCase):
         self.assertEqual(tokenizer.tokenize(), ['Shadow', 'DOM', 'V0', 'Test'])
         tokenizer = SmartTokenizer('ElementShadowV0')
         self.assertEqual(tokenizer.tokenize(), ['Element', 'Shadow', 'V0'])
+        tokenizer = SmartTokenizer('StubChromeClientForSPv2')
+        self.assertEqual(tokenizer.tokenize(), ['Stub', 'Chrome', 'Client', 'For', 'SPv2'])
 
+        tokenizer = SmartTokenizer('SQLiteAuthorizer')
+        self.assertEqual(tokenizer.tokenize(), ['SQLite', 'Authorizer'])
         tokenizer = SmartTokenizer('XPathEvaluator')
         self.assertEqual(tokenizer.tokenize(), ['XPath', 'Evaluator'])
 
