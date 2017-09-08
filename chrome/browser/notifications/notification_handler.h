@@ -8,9 +8,8 @@
 #include <memory>
 #include <string>
 
-namespace base {
-class NullableString16;
-}
+#include "base/optional.h"
+#include "base/strings/string16.h"
 
 class Profile;
 
@@ -35,8 +34,8 @@ class NotificationHandler {
   virtual void OnClick(Profile* profile,
                        const std::string& origin,
                        const std::string& notification_id,
-                       int action_index,
-                       const base::NullableString16& reply) = 0;
+                       const base::Optional<int>& action_index,
+                       const base::Optional<base::string16>& reply) = 0;
 
   // Open notification settings.
   virtual void OpenSettings(Profile* profile) = 0;

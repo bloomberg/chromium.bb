@@ -31,13 +31,12 @@ void NonPersistentNotificationHandler::OnClick(
     Profile* profile,
     const std::string& origin,
     const std::string& notification_id,
-    int action_index,
-    const base::NullableString16& reply) {
-  DCHECK(reply.is_null());
-
-  // Non persistent notifications don't allow buttons.
+    const base::Optional<int>& action_index,
+    const base::Optional<base::string16>& reply) {
+  // Non persistent notifications don't allow buttons or replies.
   // https://notifications.spec.whatwg.org/#create-a-notification
-  DCHECK_EQ(-1, action_index);
+  DCHECK(!action_index.has_value());
+  DCHECK(!reply.has_value());
 
   content::NotificationEventDispatcher::GetInstance()
       ->DispatchNonPersistentClickEvent(notification_id);
