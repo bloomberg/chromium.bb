@@ -4,9 +4,11 @@
 
 #include "core/paint/TextPainter.h"
 
+#include <memory>
+
 #include "core/CSSPropertyNames.h"
-#include "core/CSSValueKeywords.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSValueKeywords.h"
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/api/LineLayoutText.h"
@@ -15,7 +17,6 @@
 #include "core/style/ShadowList.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 namespace {

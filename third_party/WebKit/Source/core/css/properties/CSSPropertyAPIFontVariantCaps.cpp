@@ -4,7 +4,7 @@
 
 #include "core/css/properties/CSSPropertyAPIFontVariantCaps.h"
 
-#include "core/CSSValueKeywords.h"
+#include "core/css/CSSValueKeywords.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 
 namespace blink {
