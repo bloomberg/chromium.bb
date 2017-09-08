@@ -1520,7 +1520,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "EnabledOnM+",
                     "enable_features": [
                         "MidiManagerAndroid"
                     ]
