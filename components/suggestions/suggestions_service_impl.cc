@@ -62,6 +62,9 @@ void LogResponseState(SuggestionsResponseState state) {
                             RESPONSE_STATE_SIZE);
 }
 
+// TODO(treib): Use net::BackoffEntry here instead of rolling our own
+// exponential backoff logic.
+
 // Default delay used when scheduling a request.
 const int kDefaultSchedulingDelaySec = 1;
 
@@ -69,8 +72,8 @@ const int kDefaultSchedulingDelaySec = 1;
 const int kSchedulingBackoffMultiplier = 2;
 
 // Maximum valid delay for scheduling a request. Candidate delays larger than
-// this are rejected. This means the maximum backoff is at least 5 / 2 minutes.
-const int kSchedulingMaxDelaySec = 5 * 60;
+// this are rejected. This means the maximum backoff is at least 1 hour.
+const int kSchedulingMaxDelaySec = 2 * 60 * 60;
 
 const char kDefaultGoogleBaseURL[] = "https://www.google.com/";
 
