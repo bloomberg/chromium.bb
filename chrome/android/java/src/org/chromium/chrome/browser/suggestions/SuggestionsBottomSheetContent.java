@@ -116,7 +116,7 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
 
         mSuggestionsCarousel =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_CAROUSEL)
-                ? new SuggestionsCarousel(uiConfig, mSuggestionsUiDelegate)
+                ? new SuggestionsCarousel(uiConfig, mSuggestionsUiDelegate, mContextMenuManager)
                 : null;
 
         final NewTabPageAdapter adapter = new NewTabPageAdapter(mSuggestionsUiDelegate,

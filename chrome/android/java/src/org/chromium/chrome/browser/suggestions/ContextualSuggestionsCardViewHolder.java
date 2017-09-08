@@ -5,12 +5,14 @@
 package org.chromium.chrome.browser.suggestions;
 
 import android.util.DisplayMetrics;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -32,28 +34,21 @@ public class ContextualSuggestionsCardViewHolder extends NewTabPageViewHolder {
     private final DisplayStyleObserverAdapter mDisplayStyleObserver;
     private SnippetArticle mSuggestion;
 
-    public ContextualSuggestionsCardViewHolder(
-            ViewGroup recyclerView, UiConfig uiConfig, SuggestionsUiDelegate uiDelegate) {
+    public ContextualSuggestionsCardViewHolder(ViewGroup recyclerView, UiConfig uiConfig,
+            SuggestionsUiDelegate uiDelegate, ContextMenuManager contextMenuManager) {
         super(getCardView(recyclerView));
 
         mUiDelegate = uiDelegate;
         mSuggestionsBinder = new SuggestionsBinder(itemView, uiDelegate);
+        InteractionsDelegate interactionsDelegate = new InteractionsDelegate(contextMenuManager);
+
+        itemView.setOnClickListener(interactionsDelegate);
+        itemView.setOnCreateContextMenuListener(interactionsDelegate);
 
         int startMargin = itemView.getResources().getDimensionPixelOffset(
                 R.dimen.contextual_carousel_space_between_cards);
         ApiCompatibilityUtils.setMarginStart(
                 (ViewGroup.MarginLayoutParams) itemView.getLayoutParams(), startMargin);
-
-        itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int windowDisposition = WindowOpenDisposition.CURRENT_TAB;
-                mUiDelegate.getNavigationDelegate().navigateToSuggestionUrl(
-                        windowDisposition, mSuggestion.mUrl);
-
-                SuggestionsMetrics.recordContextualSuggestionOpened();
-            }
-        });
 
         mDisplayStyleObserver =
                 new DisplayStyleObserverAdapter(itemView, uiConfig, new DisplayStyleObserver() {
@@ -67,18 +62,25 @@ public class ContextualSuggestionsCardViewHolder extends NewTabPageViewHolder {
                 /* showThumbnailVideoOverlay = */ false, /* headerMaxLines = */ 3);
     }
 
+    public void onBindViewHolder(SnippetArticle suggestion) {
+        mSuggestion = suggestion;
+        mDisplayStyleObserver.attach();
+        mSuggestionsBinder.updateViewInformation(mSuggestion);
+    }
+
+    @Override
+    public void recycle() {
+        mDisplayStyleObserver.detach();
+        mSuggestionsBinder.recycle();
+        super.recycle();
+    }
+
     private static View getCardView(ViewGroup recyclerView) {
         int res = FeatureUtilities.isChromeHomeModernEnabled()
                 ? R.layout.content_suggestions_card_modern
                 : R.layout.contextual_suggestions_card;
 
         return LayoutInflater.from(recyclerView.getContext()).inflate(res, recyclerView, false);
-    }
-
-    public void onBindViewHolder(SnippetArticle suggestion) {
-        mSuggestion = suggestion;
-        mDisplayStyleObserver.attach();
-        mSuggestionsBinder.updateViewInformation(mSuggestion);
     }
 
     private void updateCardWidth(UiConfig.DisplayStyle displayStyle) {
@@ -100,10 +102,51 @@ public class ContextualSuggestionsCardViewHolder extends NewTabPageViewHolder {
         itemView.setLayoutParams(params);
     }
 
-    @Override
-    public void recycle() {
-        mDisplayStyleObserver.detach();
-        mSuggestionsBinder.recycle();
-        super.recycle();
+    private class InteractionsDelegate implements ContextMenuManager.Delegate, View.OnClickListener,
+                                                  View.OnCreateContextMenuListener {
+        private final ContextMenuManager mContextMenuManager;
+
+        InteractionsDelegate(ContextMenuManager contextMenuManager) {
+            mContextMenuManager = contextMenuManager;
+        }
+
+        @Override
+        public void openItem(int windowDisposition) {
+            mUiDelegate.getNavigationDelegate().navigateToSuggestionUrl(
+                    windowDisposition, mSuggestion.getUrl());
+
+            SuggestionsMetrics.recordContextualSuggestionOpened();
+        }
+
+        @Override
+        public void removeItem() {
+            // Unsupported.
+            assert false;
+        }
+
+        @Override
+        public String getUrl() {
+            return mSuggestion.getUrl();
+        }
+
+        @Override
+        public boolean isItemSupported(@ContextMenuManager.ContextMenuItemId int menuItemId) {
+            return menuItemId != ContextMenuManager.ID_REMOVE
+                    && menuItemId != ContextMenuManager.ID_LEARN_MORE;
+        }
+
+        @Override
+        public void onContextMenuCreated() {}
+
+        @Override
+        public void onCreateContextMenu(
+                ContextMenu contextMenu, View view, ContextMenu.ContextMenuInfo contextMenuInfo) {
+            mContextMenuManager.createContextMenu(contextMenu, view, this);
+        }
+
+        @Override
+        public void onClick(View view) {
+            openItem(WindowOpenDisposition.CURRENT_TAB);
+        }
     }
 }

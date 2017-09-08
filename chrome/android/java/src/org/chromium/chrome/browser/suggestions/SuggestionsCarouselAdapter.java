@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.suggestions;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
+import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
@@ -21,17 +22,22 @@ public class SuggestionsCarouselAdapter
         extends RecyclerView.Adapter<ContextualSuggestionsCardViewHolder> {
     private final SuggestionsUiDelegate mUiDelegate;
     private final UiConfig mUiConfig;
+    private final ContextMenuManager mContextMenuManager;
+
     private final List<SnippetArticle> mSuggestions;
 
-    public SuggestionsCarouselAdapter(UiConfig uiConfig, SuggestionsUiDelegate uiDelegate) {
-        mUiDelegate = uiDelegate;
+    public SuggestionsCarouselAdapter(UiConfig uiConfig, SuggestionsUiDelegate uiDelegate,
+            ContextMenuManager contextMenuManager) {
         mUiConfig = uiConfig;
+        mUiDelegate = uiDelegate;
+        mContextMenuManager = contextMenuManager;
         mSuggestions = new ArrayList<>();
     }
 
     @Override
     public ContextualSuggestionsCardViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
-        return new ContextualSuggestionsCardViewHolder(viewGroup, mUiConfig, mUiDelegate);
+        return new ContextualSuggestionsCardViewHolder(
+                viewGroup, mUiConfig, mUiDelegate, mContextMenuManager);
     }
 
     @Override
