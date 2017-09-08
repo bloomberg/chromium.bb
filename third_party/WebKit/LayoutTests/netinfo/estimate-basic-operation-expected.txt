@@ -16,11 +16,11 @@ PASS connection.effectiveType is newEffectiveType
 PASS connection.rtt is newRtt
 PASS connection.downlink is newDownlink
 PASS typeof connection.type is "string"
-PASS connection.type is initialType
-PASS connection.downlinkMax is initialDownlinkMax
-PASS connection.effectiveType is initialEffectiveType
-PASS connection.rtt is initialRtt
-PASS connection.downlink is initialDownlink
+PASS connection.type is newConnectionType
+PASS connection.downlinkMax is newDownlinkMax
+PASS connection.effectiveType is newEffectiveType
+PASS connection.rtt is newRtt
+PASS connection.downlink is newDownlink
 PASS successfullyParsed is true
 
 TEST COMPLETE
