@@ -24,6 +24,7 @@
 #include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/splitview/split_view_overview_overlay.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -2143,6 +2144,98 @@ TEST_F(WindowSelectorTest, EmptyWindowsListExitOverview) {
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::LEFT_SNAPPED);
   EXPECT_FALSE(window_selector_controller()->IsSelecting());
+}
+
+// Verify that the split view overview overlay is shown when expected.
+TEST_F(WindowSelectorTest, SplitViewOverviewOverlayVisibility) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAshEnableTabletSplitView);
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+
+  ToggleOverview();
+  ASSERT_TRUE(window_selector_controller()->IsSelecting());
+
+  // Verify that when are no snapped windows, the overlay is visible when a drag
+  // is initiated and disappears when the drag is started.
+  const int grid_index = 0;
+  WindowSelectorItem* selector_item =
+      GetWindowItemForWindow(grid_index, window1.get());
+  gfx::Point start_location(selector_item->target_bounds().CenterPoint());
+  window_selector()->InitiateDrag(selector_item, start_location);
+  EXPECT_TRUE(window_selector()->split_view_overview_overlay()->visible());
+  const gfx::Point end_location1(0, 0);
+  window_selector()->Drag(selector_item, end_location1);
+  EXPECT_FALSE(window_selector()->split_view_overview_overlay()->visible());
+
+  // Snap window to the left.
+  window_selector()->CompleteDrag(selector_item);
+  ASSERT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  ASSERT_EQ(SplitViewController::LEFT_SNAPPED,
+            split_view_controller()->state());
+
+  // Verify that when there is a snapped window, the overlay is not visible.
+  selector_item = GetWindowItemForWindow(grid_index, window2.get());
+  start_location = selector_item->target_bounds().CenterPoint();
+  window_selector()->InitiateDrag(selector_item, start_location);
+  EXPECT_FALSE(window_selector()->split_view_overview_overlay()->visible());
+  window_selector()->CompleteDrag(selector_item);
+}
+
+// Verify that the split view overview overlays widget reparents when starting a
+// drag on a different display.
+TEST_F(WindowSelectorTest, SplitViewOverviewOverlayWidgetReparenting) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAshEnableTabletSplitView);
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+
+  // Add two displays and one window on each display.
+  UpdateDisplay("600x600,600x600");
+  auto root_windows = Shell::Get()->GetAllRootWindows();
+  ASSERT_EQ(2u, root_windows.size());
+
+  const gfx::Rect primary_screen_bounds(0, 0, 600, 600);
+  const gfx::Rect secondary_screen_bounds(600, 0, 600, 600);
+  std::unique_ptr<aura::Window> primary_screen_window(
+      CreateWindow(primary_screen_bounds));
+  std::unique_ptr<aura::Window> secondary_screen_window(
+      CreateWindow(secondary_screen_bounds));
+
+  ToggleOverview();
+  ASSERT_TRUE(window_selector_controller()->IsSelecting());
+
+  // Select an item on the primary display and verify the overlay's widget's
+  // parent is the primary root window.
+  WindowSelectorItem* selector_item =
+      GetWindowItemForWindow(0, primary_screen_window.get());
+  gfx::Point start_location(selector_item->target_bounds().CenterPoint());
+  window_selector()->InitiateDrag(selector_item, start_location);
+  EXPECT_TRUE(window_selector()->split_view_overview_overlay()->visible());
+  EXPECT_EQ(root_windows[0], window_selector()
+                                 ->split_view_overview_overlay()
+                                 ->widget_->GetNativeView()
+                                 ->GetRootWindow());
+  // Drag the item in a way that neither opens the window nor activates
+  // splitview mode.
+  window_selector()->Drag(selector_item, primary_screen_bounds.CenterPoint());
+  window_selector()->CompleteDrag(selector_item);
+  ASSERT_TRUE(window_selector());
+  ASSERT_FALSE(split_view_controller()->IsSplitViewModeActive());
+
+  // Select an item on the secondary display and verify the overlay's widget has
+  // reparented to the secondary root window.
+  selector_item = GetWindowItemForWindow(1, secondary_screen_window.get());
+  start_location = gfx::Point(selector_item->target_bounds().CenterPoint());
+  window_selector()->InitiateDrag(selector_item, start_location);
+  EXPECT_TRUE(window_selector()->split_view_overview_overlay()->visible());
+  EXPECT_EQ(root_windows[1], window_selector()
+                                 ->split_view_overview_overlay()
+                                 ->widget_->GetNativeView()
+                                 ->GetRootWindow());
+  window_selector()->CompleteDrag(selector_item);
 }
 
 }  // namespace ash

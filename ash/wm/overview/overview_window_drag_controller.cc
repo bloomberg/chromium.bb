@@ -9,6 +9,7 @@
 #include "ash/wm/overview/scoped_transform_overview_window.h"
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_item.h"
+#include "ash/wm/splitview/split_view_overview_overlay.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
@@ -41,6 +42,9 @@ void OverviewWindowDragController::InitiateDrag(
     const gfx::Point& location_in_screen) {
   previous_event_location_ = location_in_screen;
   item_ = item;
+
+  window_selector_->SetSplitViewOverviewOverlayVisible(true,
+                                                       location_in_screen);
 }
 
 void OverviewWindowDragController::Drag(const gfx::Point& location_in_screen) {
@@ -64,10 +68,13 @@ void OverviewWindowDragController::Drag(const gfx::Point& location_in_screen) {
   // snappable.
   if (wm::GetWindowState(item_->GetWindow())->CanSnap())
     UpdatePhantomWindowAndWindowGrid(location_in_screen);
+  window_selector_->SetSplitViewOverviewOverlayVisible(false,
+                                                       location_in_screen);
 }
 
 void OverviewWindowDragController::CompleteDrag() {
   phantom_window_controller_.reset();
+  window_selector_->SetSplitViewOverviewOverlayVisible(false, gfx::Point());
 
   if (!did_move_) {
     // If no drag was initiated (e.g., a click/tap on the overview window),

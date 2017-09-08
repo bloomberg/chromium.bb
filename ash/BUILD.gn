@@ -749,6 +749,8 @@ component("ash") {
     "wm/splitview/split_view_controller.h",
     "wm/splitview/split_view_divider.cc",
     "wm/splitview/split_view_divider.h",
+    "wm/splitview/split_view_overview_overlay.cc",
+    "wm/splitview/split_view_overview_overlay.h",
     "wm/stacking_controller.cc",
     "wm/stacking_controller.h",
     "wm/switchable_windows.cc",
