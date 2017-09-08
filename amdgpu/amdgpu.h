@@ -1433,6 +1433,20 @@ int amdgpu_cs_syncobj_import_sync_file(amdgpu_device_handle dev,
 				       int sync_file_fd);
 
 /**
+ * Export an amdgpu fence as a handle (syncobj or fd).
+ *
+ * \param what		AMDGPU_FENCE_TO_HANDLE_GET_{SYNCOBJ, FD}
+ * \param out_handle	returned handle
+ *
+ * \return   0 on success\n
+ *          <0 - Negative POSIX Error code
+ */
+int amdgpu_cs_fence_to_handle(amdgpu_device_handle dev,
+			      struct amdgpu_cs_fence *fence,
+			      uint32_t what,
+			      uint32_t *out_handle);
+
+/**
  *  Submit raw command submission to kernel
  *
  * \param   dev	       - \c [in] device handle

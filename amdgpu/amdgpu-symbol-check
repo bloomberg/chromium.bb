@@ -34,6 +34,7 @@ amdgpu_cs_ctx_free
 amdgpu_cs_destroy_semaphore
 amdgpu_cs_destroy_syncobj
 amdgpu_cs_export_syncobj
+amdgpu_cs_fence_to_handle
 amdgpu_cs_import_syncobj
 amdgpu_cs_query_fence_status
 amdgpu_cs_query_reset_state
