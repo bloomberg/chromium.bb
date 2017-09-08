@@ -32,6 +32,7 @@
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/prefs/pref_service.h"
@@ -89,13 +90,14 @@ class TestPersonalDataManager : public PersonalDataManager {
   // Overridden to avoid a trip to the database. This should be a no-op except
   // for the side-effect of logging the profile count.
   void LoadProfiles() override {
+    pending_profiles_query_ = 123;
+    pending_server_profiles_query_ = 124;
     {
       std::vector<std::unique_ptr<AutofillProfile>> profiles;
       web_profiles_.swap(profiles);
       std::unique_ptr<WDTypedResult> result = base::MakeUnique<
           WDResult<std::vector<std::unique_ptr<AutofillProfile>>>>(
           AUTOFILL_PROFILES_RESULT, std::move(profiles));
-      pending_profiles_query_ = 123;
       OnWebDataServiceRequestDone(pending_profiles_query_, std::move(result));
     }
     {
@@ -104,7 +106,6 @@ class TestPersonalDataManager : public PersonalDataManager {
       std::unique_ptr<WDTypedResult> result = base::MakeUnique<
           WDResult<std::vector<std::unique_ptr<AutofillProfile>>>>(
           AUTOFILL_PROFILES_RESULT, std::move(profiles));
-      pending_server_profiles_query_ = 124;
       OnWebDataServiceRequestDone(pending_server_profiles_query_,
                                   std::move(result));
     }
@@ -112,13 +113,14 @@ class TestPersonalDataManager : public PersonalDataManager {
 
   // Overridden to avoid a trip to the database.
   void LoadCreditCards() override {
+    pending_creditcards_query_ = 125;
+    pending_server_creditcards_query_ = 126;
     {
       std::vector<std::unique_ptr<CreditCard>> credit_cards;
       local_credit_cards_.swap(credit_cards);
       std::unique_ptr<WDTypedResult> result =
           base::MakeUnique<WDResult<std::vector<std::unique_ptr<CreditCard>>>>(
               AUTOFILL_CREDITCARDS_RESULT, std::move(credit_cards));
-      pending_creditcards_query_ = 125;
       OnWebDataServiceRequestDone(pending_creditcards_query_,
                                   std::move(result));
     }
@@ -128,7 +130,6 @@ class TestPersonalDataManager : public PersonalDataManager {
       std::unique_ptr<WDTypedResult> result =
           base::MakeUnique<WDResult<std::vector<std::unique_ptr<CreditCard>>>>(
               AUTOFILL_CREDITCARDS_RESULT, std::move(credit_cards));
-      pending_server_creditcards_query_ = 126;
       OnWebDataServiceRequestDone(pending_server_creditcards_query_,
                                   std::move(result));
     }
@@ -1976,6 +1977,126 @@ TEST_F(AutofillMetricsTest, UkmDeveloperEngagement_LogUpiVpaTypeHint) {
         {AutofillMetrics::FILLABLE_FORM_PARSED_WITH_TYPE_HINTS,
          AutofillMetrics::FORM_CONTAINS_UPI_VPA_HINT});
   }
+}
+
+TEST_F(AutofillMetricsTest, LogStoredCreditCardMetrics) {
+  // Helper timestamps for setting up the test data.
+  base::Time now = AutofillClock::Now();
+  base::Time one_month_ago = now - base::TimeDelta::FromDays(30);
+  base::Time::Exploded now_exploded;
+  base::Time::Exploded one_month_ago_exploded;
+  now.LocalExplode(&now_exploded);
+  one_month_ago.LocalExplode(&one_month_ago_exploded);
+
+  std::vector<std::unique_ptr<CreditCard>> local_cards;
+  std::vector<std::unique_ptr<CreditCard>> server_cards;
+  local_cards.reserve(2);
+  server_cards.reserve(10);
+
+  // Create in-use and in-disuse cards of each record type: 1 of each for local,
+  // 2 of each for masked, and 3 of each for unmasked.
+  const std::vector<CreditCard::RecordType> record_types{
+      CreditCard::LOCAL_CARD, CreditCard::MASKED_SERVER_CARD,
+      CreditCard::FULL_SERVER_CARD};
+  int num_cards_of_type = 0;
+  for (auto record_type : record_types) {
+    num_cards_of_type += 1;
+    for (int i = 0; i < num_cards_of_type; ++i) {
+      // Create a card that's still in active use.
+      CreditCard card_in_use = test::GetRandomCreditCard(record_type);
+      card_in_use.set_use_date(now - base::TimeDelta::FromDays(30));
+      card_in_use.set_use_count(10);
+
+      // Create a card that's not in active use.
+      CreditCard card_in_disuse = test::GetRandomCreditCard(record_type);
+      card_in_disuse.SetExpirationYear(one_month_ago_exploded.year);
+      card_in_disuse.SetExpirationMonth(one_month_ago_exploded.month);
+      card_in_disuse.set_use_date(now - base::TimeDelta::FromDays(200));
+      card_in_disuse.set_use_count(10);
+
+      // Add the cards to the personal data manager in the appropriate way.
+      auto& repo =
+          (record_type == CreditCard::LOCAL_CARD) ? local_cards : server_cards;
+      repo.push_back(base::MakeUnique<CreditCard>(std::move(card_in_use)));
+      repo.push_back(base::MakeUnique<CreditCard>(std::move(card_in_disuse)));
+    }
+  }
+
+  // Log the stored credit card metrics for the cards configured above.
+  base::HistogramTester histogram_tester;
+  AutofillMetrics::LogStoredCreditCardMetrics(local_cards, server_cards,
+                                              base::TimeDelta::FromDays(180));
+
+  // Validate the basic count metrics.
+  histogram_tester.ExpectTotalCount("Autofill.StoredCreditCardCount", 1);
+  histogram_tester.ExpectTotalCount("Autofill.StoredCreditCardCount.Local", 1);
+  histogram_tester.ExpectTotalCount("Autofill.StoredCreditCardCount.Server", 1);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.StoredCreditCardCount.Server.Masked", 1);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.StoredCreditCardCount.Server.Unmasked", 1);
+  histogram_tester.ExpectBucketCount("Autofill.StoredCreditCardCount", 12, 1);
+  histogram_tester.ExpectBucketCount("Autofill.StoredCreditCardCount.Local", 2,
+                                     1);
+  histogram_tester.ExpectBucketCount("Autofill.StoredCreditCardCount.Server",
+                                     10, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.StoredCreditCardCount.Server.Masked", 4, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.StoredCreditCardCount.Server.Unmasked", 6, 1);
+
+  // Validate the disused count metrics.
+  histogram_tester.ExpectTotalCount("Autofill.StoredCreditCardDisusedCount", 1);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.StoredCreditCardDisusedCount.Local", 1);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.StoredCreditCardDisusedCount.Server", 1);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.StoredCreditCardDisusedCount.Server.Masked", 1);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.StoredCreditCardDisusedCount.Server.Unmasked", 1);
+  histogram_tester.ExpectBucketCount("Autofill.StoredCreditCardDisusedCount", 6,
+                                     1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.StoredCreditCardDisusedCount.Local", 1, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.StoredCreditCardDisusedCount.Server", 5, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.StoredCreditCardDisusedCount.Server.Masked", 2, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.StoredCreditCardDisusedCount.Server.Unmasked", 3, 1);
+
+  // Validate the days-since-last-use metrics.
+  histogram_tester.ExpectTotalCount(
+      "Autofill.DaysSinceLastUse.StoredCreditCard", 12);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.DaysSinceLastUse.StoredCreditCard.Local", 2);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.DaysSinceLastUse.StoredCreditCard.Server", 10);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.DaysSinceLastUse.StoredCreditCard.Server.Masked", 4);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.DaysSinceLastUse.StoredCreditCard.Server.Unmasked", 6);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.DaysSinceLastUse.StoredCreditCard", 30, 6);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.DaysSinceLastUse.StoredCreditCard", 200, 6);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.DaysSinceLastUse.StoredCreditCard.Local", 30, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.DaysSinceLastUse.StoredCreditCard.Local", 200, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.DaysSinceLastUse.StoredCreditCard.Server", 30, 5);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.DaysSinceLastUse.StoredCreditCard.Server", 200, 5);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.DaysSinceLastUse.StoredCreditCard.Server.Masked", 30, 2);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.DaysSinceLastUse.StoredCreditCard.Server.Masked", 200, 2);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.DaysSinceLastUse.StoredCreditCard.Server.Unmasked", 30, 3);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.DaysSinceLastUse.StoredCreditCard.Server.Unmasked", 200, 3);
 }
 
 // Test that the profile count is logged correctly.

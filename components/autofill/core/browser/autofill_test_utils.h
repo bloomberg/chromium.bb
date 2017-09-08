@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
 
@@ -22,7 +23,6 @@ namespace autofill {
 
 class AutofillProfile;
 class AutofillTable;
-class CreditCard;
 struct FormData;
 struct FormFieldData;
 
@@ -101,6 +101,10 @@ CreditCard GetVerifiedCreditCard2();
 // Returns a masked server card full of dummy info.
 CreditCard GetMaskedServerCard();
 CreditCard GetMaskedServerCardAmex();
+
+// Returns a randomly generated credit card of |record_type|. Note that the
+// card is not guaranteed to be valid/sane from a card validation standpoint.
+CreditCard GetRandomCreditCard(CreditCard::RecordType record_Type);
 
 // A unit testing utility that is common to a number of the Autofill unit
 // tests.  |SetProfileInfo| provides a quick way to populate a profile with
