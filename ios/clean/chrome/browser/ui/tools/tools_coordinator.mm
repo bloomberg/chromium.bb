@@ -33,9 +33,9 @@
   self.viewController = [[MenuViewController alloc] init];
   self.viewController.modalPresentationStyle = UIModalPresentationCustom;
   self.transitionController = [[ZoomingMenuTransitionController alloc]
-      initWithDispatcher:static_cast<id>(self.browser->dispatcher())];
+      initWithDispatcher:self.callableDispatcher];
   self.viewController.transitioningDelegate = self.transitionController;
-  self.viewController.dispatcher = static_cast<id>(self.browser->dispatcher());
+  self.viewController.dispatcher = self.callableDispatcher;
   self.mediator =
       [[ToolsMediator alloc] initWithConsumer:self.viewController
                                 configuration:self.toolsMenuConfiguration];

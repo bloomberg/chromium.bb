@@ -24,6 +24,7 @@
 @implementation BrowserCoordinator
 
 @synthesize browser = _browser;
+@synthesize dispatcher = _dispatcher;
 @synthesize childCoordinators = _childCoordinators;
 @synthesize parentCoordinator = _parentCoordinator;
 @synthesize started = _started;
@@ -37,6 +38,10 @@
 }
 
 #pragma mark - Public API
+
+- (id)callableDispatcher {
+  return self.dispatcher;
+}
 
 - (void)start {
   if (self.started) {
@@ -80,6 +85,7 @@
   [self.childCoordinators addObject:childCoordinator];
   childCoordinator.parentCoordinator = self;
   childCoordinator.browser = self.browser;
+  childCoordinator.dispatcher = self.dispatcher;
   [childCoordinator wasAddedToParentCoordinator:self];
 }
 

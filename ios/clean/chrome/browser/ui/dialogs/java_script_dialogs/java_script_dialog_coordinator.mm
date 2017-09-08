@@ -24,7 +24,7 @@
 
 // The dispatcher to use for JavaScriptdialogDismissalCommands.
 @property(nonatomic, readonly) id<JavaScriptDialogDismissalCommands>
-    dismissalDispatcher;
+    callableDispatcher;
 // The request for this dialog.
 @property(nonatomic, strong) JavaScriptDialogRequest* request;
 
@@ -32,6 +32,7 @@
 
 @implementation JavaScriptDialogCoordinator
 @synthesize request = _request;
+@dynamic callableDispatcher;
 
 - (instancetype)initWithRequest:(JavaScriptDialogRequest*)request {
   DCHECK(request);
@@ -41,28 +42,20 @@
   return self;
 }
 
-#pragma mark - Accessors
-
-- (id<JavaScriptDialogDismissalCommands>)dismissalDispatcher {
-  return static_cast<id<JavaScriptDialogDismissalCommands>>(
-      self.browser->dispatcher());
-}
-
 #pragma mark - BrowserCoordinator
 
 - (void)start {
   _mediator = [[JavaScriptDialogMediator alloc]
       initWithRequest:self.request
-           dispatcher:self.dismissalDispatcher];
-  [self.browser->dispatcher()
+           dispatcher:self.callableDispatcher];
+  [self.dispatcher
       startDispatchingToTarget:self
                    forProtocol:@protocol(JavaScriptDialogDismissalCommands)];
   [super start];
 }
 
 - (void)stop {
-  if (self.started)
-    [self.browser->dispatcher() stopDispatchingToTarget:self];
+  [self.dispatcher stopDispatchingToTarget:self];
   [super stop];
 }
 

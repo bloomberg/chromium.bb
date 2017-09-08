@@ -58,7 +58,6 @@ typedef void (^AlertActionHandler)(UIAlertAction*);
 
 - (instancetype)initWithStyle:(UIAlertControllerStyle)style
                    dispatcher:(id<DialogDismissalCommands>)dispatcher {
-  DCHECK(dispatcher);
   self = [[self class] alertControllerWithTitle:nil
                                         message:nil
                                  preferredStyle:style];

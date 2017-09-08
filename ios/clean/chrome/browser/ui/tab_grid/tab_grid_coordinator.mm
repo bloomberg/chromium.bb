@@ -58,6 +58,10 @@
 @property(nonatomic, strong) TabGridMediator* mediator;
 @property(nonatomic, readonly) SnapshotCache* snapshotCache;
 
+@property(nonatomic, readonly)
+    id<SettingsCommands, TabGridCommands, ToolsMenuCommands>
+        callableDispatcher;
+
 @end
 
 @implementation TabGridCoordinator
@@ -66,6 +70,7 @@
 @synthesize toolsMenuCoordinator = _toolsMenuCoordinator;
 @synthesize activeTabCoordinator = _activeTabCoordinator;
 @synthesize mediator = _mediator;
+@dynamic callableDispatcher;
 
 - (instancetype)init {
   if ((self = [super init])) {
@@ -100,7 +105,7 @@
   [self registerForToolsMenuCommands];
 
   self.viewController = [[TabGridViewController alloc] init];
-  self.viewController.dispatcher = static_cast<id>(self.browser->dispatcher());
+  self.viewController.dispatcher = self.callableDispatcher;
   self.viewController.snapshotCache = self.snapshotCache;
 
   self.mediator.consumer = self.viewController;
@@ -114,7 +119,7 @@
 
 - (void)stop {
   [super stop];
-  [self.browser->dispatcher() stopDispatchingToTarget:self];
+  [self.dispatcher stopDispatchingToTarget:self];
   [self.mediator disconnect];
 
   OverlayServiceFactory::GetInstance()
@@ -177,7 +182,7 @@
 #pragma mark - SettingsCommands
 
 - (void)showSettings {
-  CommandDispatcher* dispatcher = self.browser->dispatcher();
+  CommandDispatcher* dispatcher = self.dispatcher;
   [dispatcher startDispatchingToTarget:self
                            forSelector:@selector(closeSettings)];
   SettingsCoordinator* settingsCoordinator = [[SettingsCoordinator alloc] init];
@@ -187,7 +192,7 @@
 }
 
 - (void)closeSettings {
-  CommandDispatcher* dispatcher = self.browser->dispatcher();
+  CommandDispatcher* dispatcher = self.dispatcher;
   [dispatcher stopDispatchingForSelector:@selector(closeSettings)];
   [self.settingsCoordinator stop];
   [self.settingsCoordinator.parentCoordinator
@@ -281,47 +286,41 @@
   // implemented, these commands will need to be unregistered before switching
   // to incognito mode, as "open in new tab" commands are meant to be handled
   // by the incognito TabGridCoordinator.
-  [self.browser->dispatcher()
+  [self.dispatcher
       startDispatchingToTarget:self
                    forSelector:@selector(openContextMenuLinkInNewTab:)];
-  [self.browser->dispatcher()
+  [self.dispatcher
       startDispatchingToTarget:self
                    forSelector:@selector(openContextMenuImageInNewTab:)];
 }
 
 - (void)registerForSettingsCommands {
-  [self.browser->dispatcher() startDispatchingToTarget:self
-                                           forSelector:@selector(showSettings)];
+  [self.dispatcher startDispatchingToTarget:self
+                                forSelector:@selector(showSettings)];
 }
 
 - (void)registerForTabGridCommands {
-  [self.browser->dispatcher() startDispatchingToTarget:self
-                                           forSelector:@selector(showTabGrid)];
-  [self.browser->dispatcher()
-      startDispatchingToTarget:self
-                   forSelector:@selector(showTabGridTabAtIndex:)];
-  [self.browser->dispatcher()
-      startDispatchingToTarget:self
-                   forSelector:@selector(closeTabGridTabAtIndex:)];
-  [self.browser->dispatcher()
+  [self.dispatcher startDispatchingToTarget:self
+                                forSelector:@selector(showTabGrid)];
+  [self.dispatcher startDispatchingToTarget:self
+                                forSelector:@selector(showTabGridTabAtIndex:)];
+  [self.dispatcher startDispatchingToTarget:self
+                                forSelector:@selector(closeTabGridTabAtIndex:)];
+  [self.dispatcher
       startDispatchingToTarget:self
                    forSelector:@selector(createAndShowNewTabInTabGrid)];
 }
 
 - (void)registerForToolsMenuCommands {
-  [self.browser->dispatcher()
-      startDispatchingToTarget:self
-                   forSelector:@selector(showToolsMenu)];
-  [self.browser->dispatcher()
-      startDispatchingToTarget:self
-                   forSelector:@selector(closeToolsMenu)];
+  [self.dispatcher startDispatchingToTarget:self
+                                forSelector:@selector(showToolsMenu)];
+  [self.dispatcher startDispatchingToTarget:self
+                                forSelector:@selector(closeToolsMenu)];
 }
 
 - (void)deRegisterFromToolsMenuCommands {
-  [self.browser->dispatcher()
-      stopDispatchingForSelector:@selector(showToolsMenu)];
-  [self.browser->dispatcher()
-      stopDispatchingForSelector:@selector(closeToolsMenu)];
+  [self.dispatcher stopDispatchingForSelector:@selector(showToolsMenu)];
+  [self.dispatcher stopDispatchingForSelector:@selector(closeToolsMenu)];
 }
 
 // Creates and returns a tab coordinator based on whether the tap strip is

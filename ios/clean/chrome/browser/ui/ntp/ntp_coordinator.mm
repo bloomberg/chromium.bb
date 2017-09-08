@@ -44,10 +44,10 @@
   self.viewController = [[NTPViewController alloc] init];
   self.mediator = [[NTPMediator alloc] initWithConsumer:self.viewController];
 
-  CommandDispatcher* dispatcher = self.browser->dispatcher();
   // NTPCommands
-  [dispatcher startDispatchingToTarget:self forProtocol:@protocol(NTPCommands)];
-  self.viewController.dispatcher = static_cast<id>(self.browser->dispatcher());
+  [self.dispatcher startDispatchingToTarget:self
+                                forProtocol:@protocol(NTPCommands)];
+  self.viewController.dispatcher = self.callableDispatcher;
   [self.browser->broadcaster()
       broadcastValue:@"selectedNTPPanel"
             ofObject:self.viewController
@@ -59,7 +59,7 @@
   [super stop];
   [self.browser->broadcaster()
       stopBroadcastingForSelector:@selector(broadcastSelectedNTPPanel:)];
-  [self.browser->dispatcher() stopDispatchingToTarget:self];
+  [self.dispatcher stopDispatchingToTarget:self];
 }
 
 - (void)childCoordinatorDidStart:(BrowserCoordinator*)coordinator {

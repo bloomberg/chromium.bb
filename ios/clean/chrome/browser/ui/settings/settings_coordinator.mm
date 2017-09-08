@@ -64,7 +64,7 @@ void TraverseCoordinatorHierarchy(BrowserCoordinator* coordinator,
 }
 
 - (void)closeSettings {
-  [static_cast<id>(self.browser->dispatcher()) closeSettings];
+  [self.callableDispatcher closeSettings];
 }
 
 - (id)dispatcherForSettings {

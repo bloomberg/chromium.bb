@@ -71,16 +71,15 @@
     return;
 
   self.viewController = [[ToolbarViewController alloc]
-      initWithDispatcher:static_cast<id>(self.browser->dispatcher())];
+      initWithDispatcher:self.callableDispatcher];
   self.viewController.usesTabStrip = self.usesTabStrip;
 
-  CommandDispatcher* dispatcher = self.browser->dispatcher();
-  [dispatcher startDispatchingToTarget:self
-                           forSelector:@selector(showToolsMenu)];
-  [dispatcher startDispatchingToTarget:self
-                           forSelector:@selector(closeToolsMenu)];
-  [dispatcher startDispatchingToTarget:self
-                           forProtocol:@protocol(TabHistoryPopupCommands)];
+  [self.dispatcher startDispatchingToTarget:self
+                                forSelector:@selector(showToolsMenu)];
+  [self.dispatcher startDispatchingToTarget:self
+                                forSelector:@selector(closeToolsMenu)];
+  [self.dispatcher startDispatchingToTarget:self
+                                forProtocol:@protocol(TabHistoryPopupCommands)];
 
   self.mediator.consumer = self.viewController;
   self.mediator.webStateList = &self.browser->web_state_list();
@@ -105,7 +104,7 @@
         removeObserver:self.mediator
            forSelector:@selector(broadcastTabStripVisible:)];
   }
-  [self.browser->dispatcher() stopDispatchingToTarget:self];
+  [self.dispatcher stopDispatchingToTarget:self];
 }
 
 - (void)childCoordinatorDidStart:(BrowserCoordinator*)childCoordinator {

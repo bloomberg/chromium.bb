@@ -50,5 +50,6 @@ source_set("unit_tests") {
   deps = [
     ":coordinators",
     ":test_support",
+    "//ios/chrome/browser/ui/commands",
   ]
 }

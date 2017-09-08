@@ -61,6 +61,7 @@ source_set("steps") {
     "//ios/chrome/browser/browser_state:browser_state_impl",
     "//ios/chrome/browser/content_settings",
     "//ios/chrome/browser/ui/browser_list",
+    "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators",
     "//ios/chrome/browser/ui/webui:webui_internal",
     "//ios/chrome/browser/web:web_internal",

@@ -8,7 +8,6 @@
 #include "base/memory/ptr_util.h"
 
 #import "ios/chrome/browser/ui/broadcaster/chrome_broadcaster.h"
-#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -17,7 +16,6 @@
 Browser::Browser(ios::ChromeBrowserState* browser_state,
                  WebStateListDelegate* delegate)
     : broadcaster_([[ChromeBroadcaster alloc] init]),
-      dispatcher_([[CommandDispatcher alloc] init]),
       browser_state_(browser_state),
       web_state_list_(delegate) {
   DCHECK(browser_state_);
