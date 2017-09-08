@@ -203,7 +203,6 @@ void ReparentAllWindows(aura::Window* src, aura::Window* dst) {
   };
   const int kExtraContainerIdsToMoveInUnifiedMode[] = {
       kShellWindowId_LockScreenContainer,
-      kShellWindowId_LockScreenWallpaperContainer,
   };
   std::vector<int> container_ids(
       kContainerIdsToMove,
