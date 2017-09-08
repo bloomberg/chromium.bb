@@ -1655,6 +1655,7 @@ void AXLayoutObject::AddChildren() {
   AddCanvasChildren();
   AddRemoteSVGChildren();
   AddInlineTextBoxChildren(false);
+  AddAccessibleNodeChildren();
 
   for (const auto& child : children_) {
     if (!child->CachedParentObject())

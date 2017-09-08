@@ -62,6 +62,8 @@ blink_modules_sources("accessibility") {
     "AXTableHeaderContainer.h",
     "AXTableRow.cpp",
     "AXTableRow.h",
+    "AXVirtualObject.cpp",
+    "AXVirtualObject.h",
     "InspectorAccessibilityAgent.cpp",
     "InspectorAccessibilityAgent.h",
     "InspectorTypeBuilderHelper.cpp",

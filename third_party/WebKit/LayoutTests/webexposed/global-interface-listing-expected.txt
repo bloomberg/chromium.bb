@@ -69,6 +69,7 @@ interface AccessibleNode : EventTarget
     getter valueMin
     getter valueNow
     getter valueText
+    method appendChild
     method constructor
     setter activeDescendant
     setter atomic
