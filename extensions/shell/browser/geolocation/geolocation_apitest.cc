@@ -7,11 +7,12 @@
 namespace extensions {
 
 IN_PROC_BROWSER_TEST_F(ShellApiTest,
-                       ExtensionGeolocationShouldReturnPermissionDenied) {
+                       ExtensionGeolocationShouldReturnPositionUnavailable) {
   // app_shell does not implement CreateAccessTokenStore() and the other
   // bits for proper Geolocation support. We make sure that clients of this
   // API will always get "permission denied" and won't crash.
-  ASSERT_TRUE(RunAppTest("geolocation/always_permission_denied")) << message_;
+  ASSERT_TRUE(RunAppTest("geolocation/always_position_unavailable"))
+      << message_;
 }
 
 }  // namespace extensions
