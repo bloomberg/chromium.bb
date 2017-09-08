@@ -106,7 +106,17 @@ class LineLayoutItem {
     return LineLayoutItem(layout_object_->SlowLastChild());
   }
 
-  const ComputedStyle& StyleRef(bool first_line = false) const {
+  // TODO(dgrogan/eae): Collapse these 4 methods to 1. Settle on pointer or
+  // ref. Give firstLine a default value.
+  const ComputedStyle* Style() const { return layout_object_->Style(); }
+
+  const ComputedStyle& StyleRef() const { return layout_object_->StyleRef(); }
+
+  const ComputedStyle* Style(bool first_line) const {
+    return layout_object_->Style(first_line);
+  }
+
+  const ComputedStyle& StyleRef(bool first_line) const {
     return layout_object_->StyleRef(first_line);
   }
 
