@@ -5880,7 +5880,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'example_value': ['pjkljhegncpnkpknbcohdijeoejaedia'],
+      'example_value': ['pjkljhegncpnkpknbcohdijeoejaedia', 'com.google.android.gm'],
       'id': 144,
       'caption': '''List of pinned apps to show in the launcher''',
       'tags': [],
@@ -5889,6 +5889,7 @@
       If this policy is configured, the set of applications is fixed and can't be changed by the user.
 
       If this policy is left unset, the user may change the list of pinned apps in the launcher.''',
+      'arc_support': 'This policy can also be used to pin Android apps.',
     },
     {
       'name': 'RestrictSigninToPattern',
@@ -8725,12 +8726,53 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
-      'example_value': '',
+      'example_value': '{"applications":[{"packageName":"com.google.android.gm","installType":"FORCE_INSTALLED"},{"packageName":"com.google.android.apps.docs","installType":"PRELOAD"}]}',
       'id': 318,
       'caption': '''Configure ARC''',
       'tags': [],
       'desc':
-      '''Specifies a set of policies that will be handed over to the ARC runtime. The value must be valid JSON.'''
+      '''Specifies a set of policies that will be handed over to the ARC runtime. The value must be valid JSON.
+
+      This policy can be used to configure which Android apps are automatically installed on the device:
+
+      {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "packageName": {
+              "description": "Android app identifier, e.g. \"com.google.android.gm\" for Gmail",
+              "type": "string"
+            },
+            "installType": {
+              "description": "Specifies how an app is installed. OPTIONAL: The app is not installed automatically, but the user can install it. This is the default if this policy is not specified. PRELOAD: The app is installed automatically, but the user can uninstall it. FORCE_INSTALLED: The app is installed automatically and the user cannot uninstall it. BLOCKED: The app is blocked and cannot be installed. If the app was installed under a previous policy it will be uninstalled.",
+              "type": "string",
+              "enum": [
+                "OPTIONAL"
+                "PRELOAD",
+                "FORCE_INSTALLED",
+                "BLOCKED"
+              ]
+            },
+            "defaultPermissionPolicy": {
+              "description": "Policy for granting permission requests to apps. PERMISSION_POLICY_UNSPECIFIED: Policy not specified. If no policy is specified for a permission at any level, then the `PROMPT` behavior is used by default. PROMPT: Prompt the user to grant a permission. GRANT: Automatically grant a permission. DENY: Automatically deny a permission.",
+              "type": "string",
+              "enum": [
+                "PERMISSION_POLICY_UNSPECIFIED",
+                "PROMPT",
+                "GRANT",
+                "DENY"
+              ]
+            },
+            "managedConfiguration": {
+              "description": "App-specific JSON configuration string. The keys are defined in the app manifest. Typically looks like '{ \"key\" : value }'.",
+              "type": "string"
+            }
+          }
+        }
+      }
+
+      To pin apps to the launcher, see PinnedLauncherApps.'''
     },
     {
       'name': 'AllowKioskAppControlChromeVersion',
