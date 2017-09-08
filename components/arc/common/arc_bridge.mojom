@@ -18,6 +18,7 @@ import "file_system.mojom";
 import "ime.mojom";
 import "intent_helper.mojom";
 import "kiosk.mojom";
+import "lock_screen.mojom";
 import "metrics.mojom";
 import "net.mojom";
 import "notifications.mojom";
@@ -36,9 +37,9 @@ import "voice_interaction_framework.mojom";
 import "volume_mounter.mojom";
 import "wallpaper.mojom";
 
-// Next MinVersion: 29
+// Next MinVersion: 30
 // Deprecated method IDs: 101, 105
-// Next method ID: 134
+// Next method ID: 135
 interface ArcBridgeHost {
   // Keep the entries alphabetical. In order to do so without breaking
   // compatibility with the ARC instance, explicitly assign each interface a
@@ -92,6 +93,9 @@ interface ArcBridgeHost {
 
   // Notifies Chrome that the KioskInstance interface is ready.
   [MinVersion=20] OnKioskInstanceReady@126(KioskInstance instance_ptr);
+
+  // Notifies Chrome that the LockScreenInstance interface is ready.
+  [MinVersion=29] OnLockScreenInstanceReady@134(LockScreenInstance instance_ptr);
 
   // Notifies Chrome that the MetricsInstance interface is ready.
   [MinVersion=10] OnMetricsInstanceReady@116(MetricsInstance instance_ptr);

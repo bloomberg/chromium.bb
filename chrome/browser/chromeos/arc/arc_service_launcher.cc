@@ -47,6 +47,7 @@
 #include "components/arc/crash_collector/arc_crash_collector_bridge.h"
 #include "components/arc/ime/arc_ime_service.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
+#include "components/arc/lock_screen/arc_lock_screen_bridge.h"
 #include "components/arc/metrics/arc_metrics_service.h"
 #include "components/arc/net/arc_net_host_impl.h"
 #include "components/arc/obb_mounter/arc_obb_mounter_bridge.h"
@@ -143,6 +144,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcImeService::GetForBrowserContext(profile);
   ArcIntentHelperBridge::GetForBrowserContext(profile);
   ArcKioskBridge::GetForBrowserContext(profile);
+  ArcLockScreenBridge::GetForBrowserContext(profile);
   ArcMetricsService::GetForBrowserContext(profile);
   ArcNetHostImpl::GetForBrowserContext(profile);
   ArcNotificationManager::GetForBrowserContext(profile);
