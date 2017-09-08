@@ -35,6 +35,7 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "modules/webgl/ANGLEInstancedArrays.h"
 #include "modules/webgl/EXTBlendMinMax.h"
+#include "modules/webgl/EXTColorBufferHalfFloat.h"
 #include "modules/webgl/EXTDisjointTimerQuery.h"
 #include "modules/webgl/EXTFragDepth.h"
 #include "modules/webgl/EXTShaderTextureLOD.h"
@@ -47,6 +48,7 @@
 #include "modules/webgl/OESTextureHalfFloat.h"
 #include "modules/webgl/OESTextureHalfFloatLinear.h"
 #include "modules/webgl/OESVertexArrayObject.h"
+#include "modules/webgl/WebGLColorBufferFloat.h"
 #include "modules/webgl/WebGLCompressedTextureASTC.h"
 #include "modules/webgl/WebGLCompressedTextureATC.h"
 #include "modules/webgl/WebGLCompressedTextureETC.h"
@@ -146,12 +148,13 @@ void WebGLRenderingContext::RegisterContextExtensions() {
 
   RegisterExtension<ANGLEInstancedArrays>(angle_instanced_arrays_);
   RegisterExtension<EXTBlendMinMax>(ext_blend_min_max_);
+  RegisterExtension<EXTColorBufferHalfFloat>(ext_color_buffer_half_float_);
   RegisterExtension<EXTDisjointTimerQuery>(ext_disjoint_timer_query_);
   RegisterExtension<EXTFragDepth>(ext_frag_depth_);
   RegisterExtension<EXTShaderTextureLOD>(ext_shader_texture_lod_);
-  RegisterExtension<EXTsRGB>(exts_rgb_);
   RegisterExtension<EXTTextureFilterAnisotropic>(
       ext_texture_filter_anisotropic_, kApprovedExtension, kBothPrefixes);
+  RegisterExtension<EXTsRGB>(exts_rgb_);
   RegisterExtension<OESElementIndexUint>(oes_element_index_uint_);
   RegisterExtension<OESStandardDerivatives>(oes_standard_derivatives_);
   RegisterExtension<OESTextureFloat>(oes_texture_float_);
@@ -159,6 +162,7 @@ void WebGLRenderingContext::RegisterContextExtensions() {
   RegisterExtension<OESTextureHalfFloat>(oes_texture_half_float_);
   RegisterExtension<OESTextureHalfFloatLinear>(oes_texture_half_float_linear_);
   RegisterExtension<OESVertexArrayObject>(oes_vertex_array_object_);
+  RegisterExtension<WebGLColorBufferFloat>(webgl_color_buffer_float_);
   RegisterExtension<WebGLCompressedTextureASTC>(webgl_compressed_texture_astc_);
   RegisterExtension<WebGLCompressedTextureATC>(
       webgl_compressed_texture_atc_, kApprovedExtension, kBothPrefixes);
@@ -183,22 +187,20 @@ void WebGLRenderingContext::RegisterContextExtensions() {
 DEFINE_TRACE(WebGLRenderingContext) {
   visitor->Trace(angle_instanced_arrays_);
   visitor->Trace(ext_blend_min_max_);
+  visitor->Trace(ext_color_buffer_half_float_);
   visitor->Trace(ext_disjoint_timer_query_);
   visitor->Trace(ext_frag_depth_);
   visitor->Trace(ext_shader_texture_lod_);
-  visitor->Trace(exts_rgb_);
   visitor->Trace(ext_texture_filter_anisotropic_);
+  visitor->Trace(exts_rgb_);
+  visitor->Trace(oes_element_index_uint_);
+  visitor->Trace(oes_standard_derivatives_);
   visitor->Trace(oes_texture_float_);
   visitor->Trace(oes_texture_float_linear_);
   visitor->Trace(oes_texture_half_float_);
   visitor->Trace(oes_texture_half_float_linear_);
-  visitor->Trace(oes_standard_derivatives_);
   visitor->Trace(oes_vertex_array_object_);
-  visitor->Trace(oes_element_index_uint_);
-  visitor->Trace(webgl_lose_context_);
-  visitor->Trace(webgl_debug_renderer_info_);
-  visitor->Trace(webgl_debug_shaders_);
-  visitor->Trace(webgl_draw_buffers_);
+  visitor->Trace(webgl_color_buffer_float_);
   visitor->Trace(webgl_compressed_texture_astc_);
   visitor->Trace(webgl_compressed_texture_atc_);
   visitor->Trace(webgl_compressed_texture_etc_);
@@ -206,7 +208,11 @@ DEFINE_TRACE(WebGLRenderingContext) {
   visitor->Trace(webgl_compressed_texture_pvrtc_);
   visitor->Trace(webgl_compressed_texture_s3tc_);
   visitor->Trace(webgl_compressed_texture_s3tc_srgb_);
+  visitor->Trace(webgl_debug_renderer_info_);
+  visitor->Trace(webgl_debug_shaders_);
   visitor->Trace(webgl_depth_texture_);
+  visitor->Trace(webgl_draw_buffers_);
+  visitor->Trace(webgl_lose_context_);
   WebGLRenderingContextBase::Trace(visitor);
 }
 

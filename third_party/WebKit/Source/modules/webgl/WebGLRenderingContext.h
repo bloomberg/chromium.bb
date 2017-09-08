@@ -35,6 +35,7 @@ namespace blink {
 class ANGLEInstancedArrays;
 class CanvasContextCreationAttributes;
 class EXTBlendMinMax;
+class EXTColorBufferHalfFloat;
 class EXTFragDepth;
 class EXTShaderTextureLOD;
 class EXTsRGB;
@@ -45,6 +46,7 @@ class OESTextureFloat;
 class OESTextureFloatLinear;
 class OESTextureHalfFloat;
 class OESTextureHalfFloatLinear;
+class WebGLColorBufferFloat;
 class WebGLDebugRendererInfo;
 class WebGLDepthTexture;
 class WebGLLoseContext;
@@ -91,22 +93,20 @@ class WebGLRenderingContext final : public WebGLRenderingContextBase {
   // Enabled extension objects.
   Member<ANGLEInstancedArrays> angle_instanced_arrays_;
   Member<EXTBlendMinMax> ext_blend_min_max_;
+  Member<EXTColorBufferHalfFloat> ext_color_buffer_half_float_;
   Member<EXTDisjointTimerQuery> ext_disjoint_timer_query_;
   Member<EXTFragDepth> ext_frag_depth_;
   Member<EXTShaderTextureLOD> ext_shader_texture_lod_;
-  Member<EXTsRGB> exts_rgb_;
   Member<EXTTextureFilterAnisotropic> ext_texture_filter_anisotropic_;
+  Member<EXTsRGB> exts_rgb_;
+  Member<OESElementIndexUint> oes_element_index_uint_;
+  Member<OESStandardDerivatives> oes_standard_derivatives_;
   Member<OESTextureFloat> oes_texture_float_;
   Member<OESTextureFloatLinear> oes_texture_float_linear_;
   Member<OESTextureHalfFloat> oes_texture_half_float_;
   Member<OESTextureHalfFloatLinear> oes_texture_half_float_linear_;
-  Member<OESStandardDerivatives> oes_standard_derivatives_;
   Member<OESVertexArrayObject> oes_vertex_array_object_;
-  Member<OESElementIndexUint> oes_element_index_uint_;
-  Member<WebGLLoseContext> webgl_lose_context_;
-  Member<WebGLDebugRendererInfo> webgl_debug_renderer_info_;
-  Member<WebGLDebugShaders> webgl_debug_shaders_;
-  Member<WebGLDrawBuffers> webgl_draw_buffers_;
+  Member<WebGLColorBufferFloat> webgl_color_buffer_float_;
   Member<WebGLCompressedTextureASTC> webgl_compressed_texture_astc_;
   Member<WebGLCompressedTextureATC> webgl_compressed_texture_atc_;
   Member<WebGLCompressedTextureETC> webgl_compressed_texture_etc_;
@@ -114,7 +114,11 @@ class WebGLRenderingContext final : public WebGLRenderingContextBase {
   Member<WebGLCompressedTexturePVRTC> webgl_compressed_texture_pvrtc_;
   Member<WebGLCompressedTextureS3TC> webgl_compressed_texture_s3tc_;
   Member<WebGLCompressedTextureS3TCsRGB> webgl_compressed_texture_s3tc_srgb_;
+  Member<WebGLDebugRendererInfo> webgl_debug_renderer_info_;
+  Member<WebGLDebugShaders> webgl_debug_shaders_;
   Member<WebGLDepthTexture> webgl_depth_texture_;
+  Member<WebGLDrawBuffers> webgl_draw_buffers_;
+  Member<WebGLLoseContext> webgl_lose_context_;
 };
 
 DEFINE_TYPE_CASTS(WebGLRenderingContext,

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Motorola Mobility LLC. All rights reserved.
+ * Copyright (C) 2017 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,33 +23,32 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webgl/OESTextureHalfFloat.h"
+#include "modules/webgl/EXTColorBufferHalfFloat.h"
 
 namespace blink {
 
-OESTextureHalfFloat::OESTextureHalfFloat(WebGLRenderingContextBase* context)
-    : WebGLExtension(context) {
-  context->ExtensionsUtil()->EnsureExtensionEnabled(
-      "GL_OES_texture_half_float");
-  // GL_EXT_color_buffer_half_float is always enabled if available.
+EXTColorBufferHalfFloat::EXTColorBufferHalfFloat(
+    WebGLRenderingContextBase* context)
+    : WebGLExtension(context) {}
+
+WebGLExtensionName EXTColorBufferHalfFloat::GetName() const {
+  return kEXTColorBufferHalfFloatName;
 }
 
-WebGLExtensionName OESTextureHalfFloat::GetName() const {
-  return kOESTextureHalfFloatName;
-}
-
-OESTextureHalfFloat* OESTextureHalfFloat::Create(
+EXTColorBufferHalfFloat* EXTColorBufferHalfFloat::Create(
     WebGLRenderingContextBase* context) {
-  return new OESTextureHalfFloat(context);
+  return new EXTColorBufferHalfFloat(context);
 }
 
-bool OESTextureHalfFloat::Supported(WebGLRenderingContextBase* context) {
+bool EXTColorBufferHalfFloat::Supported(WebGLRenderingContextBase* context) {
   return context->ExtensionsUtil()->SupportsExtension(
-      "GL_OES_texture_half_float");
+             "GL_OES_texture_half_float") &&
+         context->ExtensionsUtil()->SupportsExtension(
+             "GL_EXT_color_buffer_half_float");
 }
 
-const char* OESTextureHalfFloat::ExtensionName() {
-  return "OES_texture_half_float";
+const char* EXTColorBufferHalfFloat::ExtensionName() {
+  return "EXT_color_buffer_half_float";
 }
 
 }  // namespace blink
