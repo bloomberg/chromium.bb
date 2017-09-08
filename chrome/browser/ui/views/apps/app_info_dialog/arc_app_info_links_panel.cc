@@ -48,9 +48,8 @@ ArcAppInfoLinksPanel::~ArcAppInfoLinksPanel() {}
 
 void ArcAppInfoLinksPanel::LinkClicked(views::Link* source, int event_flags) {
   DCHECK_EQ(manage_link_, source);
-  if (arc::ShowPackageInfoOnPage(
-          kArcChromePackageName,
-          arc::mojom::ShowPackageInfoPage::MANAGE_LINKS)) {
+  if (arc::ShowPackageInfo(kArcChromePackageName,
+                           arc::mojom::ShowPackageInfoPage::MANAGE_LINKS)) {
     Close();
   }
 }
