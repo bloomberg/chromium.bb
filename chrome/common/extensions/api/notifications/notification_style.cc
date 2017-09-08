@@ -4,7 +4,7 @@
 
 #include "chrome/common/extensions/api/notifications/notification_style.h"
 
-#include "ui/message_center/message_center_style.h"
+#include "ui/message_center/public/cpp/message_center_constants.h"
 
 NotificationBitmapSizes::NotificationBitmapSizes() {
 }

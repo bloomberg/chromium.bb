@@ -20,8 +20,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/message_center/message_center.h"
-#include "ui/message_center/message_center_style.h"
+#include "ui/message_center/public/cpp/message_center_constants.h"
+#include "ui/message_center/public/cpp/message_center_switches.h"
 
 using message_center::MessageCenter;
 using l10n_util::GetStringUTF16;
@@ -157,14 +157,14 @@ void EolNotification::Update() {
       message_center::NOTIFICATION_TYPE_SIMPLE,
       GetStringUTF16(IDS_EOL_NOTIFICATION_TITLE),
       GetStringUTF16(IDS_EOL_NOTIFICATION_EOL),
-      MessageCenter::IsNewStyleNotificationEnabled()
+      message_center::IsNewStyleNotificationEnabled()
           ? gfx::Image()
           : gfx::Image(CreateVectorIcon(kEolIcon, kNotificationIconColor)),
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  kEolNotificationId),
       GetStringUTF16(IDS_EOL_NOTIFICATION_DISPLAY_SOURCE), GURL(),
       kEolNotificationId, data, new EolNotificationDelegate(profile_));
-  if (MessageCenter::IsNewStyleNotificationEnabled()) {
+  if (message_center::IsNewStyleNotificationEnabled()) {
     notification.set_accent_color(
         message_center::kSystemNotificationColorCriticalWarning);
     notification.set_small_image(gfx::Image(gfx::CreateVectorIcon(

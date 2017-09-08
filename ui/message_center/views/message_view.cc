@@ -14,7 +14,7 @@
 #include "ui/gfx/shadow_util.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/message_center/message_center.h"
-#include "ui/message_center/message_center_style.h"
+#include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/views/message_center_controller.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"

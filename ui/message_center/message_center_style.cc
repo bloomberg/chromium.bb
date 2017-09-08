@@ -9,13 +9,8 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/message_center/vector_icons.h"
 
 namespace message_center {
-
-// Within a notification ///////////////////////////////////////////////////////
-
-// Limits.
 
 gfx::Size GetImageSizeForContainerSize(const gfx::Size& container_size,
                                        const gfx::Size& image_size) {
@@ -36,18 +31,6 @@ gfx::Size GetImageSizeForContainerSize(const gfx::Size& container_size,
   }
 
   return scaled_size;
-}
-
-// Icons.
-
-gfx::ImageSkia GetCloseIcon() {
-  return gfx::CreateVectorIcon(kNotificationCloseButtonIcon,
-                               gfx::kChromeIconGrey);
-}
-
-gfx::ImageSkia GetSettingsIcon() {
-  return gfx::CreateVectorIcon(kNotificationSettingsButtonIcon,
-                               gfx::kChromeIconGrey);
 }
 
 }  // namespace message_center

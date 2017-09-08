@@ -117,7 +117,7 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/chrome_feature_list.h"
 #else  // OS_ANDROID
-#include "ui/message_center/message_center_switches.h"
+#include "ui/message_center/public/cpp/message_center_switches.h"
 #endif  // OS_ANDROID
 
 #if defined(OS_CHROMEOS)
@@ -1989,14 +1989,15 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMessageCenterAlwaysScrollUpUponRemovalDescription,
      kOsDesktop,
      SINGLE_VALUE_TYPE(
-         switches::kEnableMessageCenterAlwaysScrollUpUponNotificationRemoval)},
+         message_center::switches::
+             kEnableMessageCenterAlwaysScrollUpUponNotificationRemoval)},
     {"enable-message-center-new-style-notification",
      flag_descriptions::kMessageCenterNewStyleNotificationName,
      flag_descriptions::kMessageCenterNewStyleNotificationDescription,
      kOsDesktop,
      ENABLE_DISABLE_VALUE_TYPE(
-         switches::kEnableMessageCenterNewStyleNotification,
-         switches::kDisableMessageCenterNewStyleNotification)},
+         message_center::switches::kEnableMessageCenterNewStyleNotification,
+         message_center::switches::kDisableMessageCenterNewStyleNotification)},
 #endif  // !OS_ANDROID
 #if defined(OS_CHROMEOS)
     {"memory-pressure-thresholds",

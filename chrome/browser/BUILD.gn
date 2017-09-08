@@ -1764,6 +1764,7 @@ split_static_library("browser") {
     "//ui/gl",
     "//ui/gl:gl_features",
     "//ui/message_center",
+    "//ui/message_center/public/cpp",
     "//ui/resources",
     "//ui/shell_dialogs",
     "//ui/strings",

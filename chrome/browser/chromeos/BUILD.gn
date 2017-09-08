@@ -194,6 +194,7 @@ source_set("chromeos") {
     "//ui/keyboard",
     "//ui/keyboard:mojom",
     "//ui/message_center",
+    "//ui/message_center/public/cpp",
     "//ui/ozone",
     "//ui/shell_dialogs",
     "//ui/snapshot",

@@ -28,6 +28,7 @@ component("message_center") {
   deps = [
     "//base",
     "//ui/base",
+    "//ui/message_center/public/cpp",
     "//ui/strings",
     "//url",
   ]
@@ -73,8 +74,6 @@ component("message_center") {
       "message_center_observer.h",
       "message_center_style.cc",
       "message_center_style.h",
-      "message_center_switches.cc",
-      "message_center_switches.h",
       "message_center_tray.cc",
       "message_center_tray.h",
       "message_center_tray_delegate.h",
@@ -245,6 +244,7 @@ if (enable_message_center) {
       "//ui/gl",
       "//ui/gl:test_support",
       "//ui/message_center/mojo:test_interfaces",
+      "//ui/message_center/public/cpp",
       "//ui/resources",
       "//ui/resources:ui_test_pak",
       "//url",

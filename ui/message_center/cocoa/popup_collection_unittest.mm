@@ -16,8 +16,8 @@
 #import "ui/message_center/cocoa/notification_controller.h"
 #import "ui/message_center/cocoa/popup_controller.h"
 #include "ui/message_center/message_center.h"
-#include "ui/message_center/message_center_style.h"
 #include "ui/message_center/notification.h"
+#include "ui/message_center/public/cpp/message_center_constants.h"
 
 using base::ASCIIToUTF16;
 

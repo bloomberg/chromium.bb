@@ -43,14 +43,14 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/message_center.h"
-#include "ui/message_center/message_center_style.h"
+#include "ui/message_center/public/cpp/message_center_constants.h"
+#include "ui/message_center/public/cpp/message_center_switches.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/note_taking_helper.h"
 #endif  // defined(OS_CHROMEOS)
 
 using base::UserMetricsAction;
-using message_center::MessageCenter;
 
 namespace {
 
@@ -369,7 +369,7 @@ void DownloadItemNotification::UpdateNotificationData(
   DownloadCommands command(item_);
 
   notification_->set_title(GetTitle());
-  if (message_center::MessageCenter::IsNewStyleNotificationEnabled()) {
+  if (message_center::IsNewStyleNotificationEnabled()) {
     notification_->set_message(GetSubStatusString());
     notification_->set_progress_status(GetStatusString());
   } else {
@@ -486,7 +486,7 @@ void DownloadItemNotification::UpdateNotificationIcon() {
                             ? IDR_DOWNLOAD_NOTIFICATION_WARNING_BAD
                             : IDR_DOWNLOAD_NOTIFICATION_WARNING_UNWANTED);
 #else
-    if (MessageCenter::IsNewStyleNotificationEnabled()) {
+    if (message_center::IsNewStyleNotificationEnabled()) {
       SetNotificationVectorIcon(
           kNotificationDownloadIcon,
           model.MightBeMalicious()
@@ -508,7 +508,7 @@ void DownloadItemNotification::UpdateNotificationIcon() {
   switch (item_->GetState()) {
     case content::DownloadItem::IN_PROGRESS:
     case content::DownloadItem::COMPLETE:
-      if (MessageCenter::IsNewStyleNotificationEnabled()) {
+      if (message_center::IsNewStyleNotificationEnabled()) {
         SetNotificationVectorIcon(
             kNotificationDownloadIcon,
             message_center::kSystemNotificationColorNormal);
@@ -530,7 +530,7 @@ void DownloadItemNotification::UpdateNotificationIcon() {
 #if defined(OS_MACOSX)
       SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_ERROR);
 #else
-      if (MessageCenter::IsNewStyleNotificationEnabled()) {
+      if (message_center::IsNewStyleNotificationEnabled()) {
         SetNotificationVectorIcon(
             kNotificationDownloadIcon,
             message_center::kSystemNotificationColorCriticalWarning);
@@ -571,7 +571,7 @@ void DownloadItemNotification::SetNotificationIcon(int resource_id) {
 void DownloadItemNotification::SetNotificationVectorIcon(
     const gfx::VectorIcon& icon,
     SkColor color) {
-  if (MessageCenter::IsNewStyleNotificationEnabled()) {
+  if (message_center::IsNewStyleNotificationEnabled()) {
     notification_->set_accent_color(color);
     notification_->set_small_image(gfx::Image(
         gfx::CreateVectorIcon(icon, message_center::kSmallImageSizeMD, color)));
@@ -937,7 +937,7 @@ base::string16 DownloadItemNotification::GetStatusString() const {
       show_size_ratio ? model.GetProgressSizesString() :
                         ui::FormatBytes(item_->GetReceivedBytes());
 
-  if (message_center::MessageCenter::IsNewStyleNotificationEnabled()) {
+  if (message_center::IsNewStyleNotificationEnabled()) {
     return l10n_util::GetStringFUTF16(IDS_DOWNLOAD_NOTIFICATION_STATUS_SHORT,
                                       size, host_name);
   } else {

@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "ui/message_center/message_center.h"
+#include "ui/message_center/public/cpp/message_center_switches.h"
 
 namespace ash {
 namespace system_notifier {
@@ -106,7 +106,7 @@ std::unique_ptr<message_center::Notification> CreateSystemNotification(
     scoped_refptr<message_center::NotificationDelegate> delegate,
     const gfx::VectorIcon& small_image,
     message_center::SystemNotificationWarningLevel color_type) {
-  if (message_center::MessageCenter::IsNewStyleNotificationEnabled()) {
+  if (message_center::IsNewStyleNotificationEnabled()) {
     return message_center::Notification::CreateSystemNotification(
         type, id, title, message, gfx::Image(), display_source, origin_url,
         notifier_id, optional_fields, delegate, small_image, color_type);
