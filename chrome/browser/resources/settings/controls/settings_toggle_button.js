@@ -73,6 +73,7 @@ Polymer({
    * @private
    */
   resetTrackLock_: function() {
-    Polymer.Gestures.gestures.tap.reset();
+    // Run tap.reset in next run-loop to avoid reversing the current tap event.
+    setTimeout(() => Polymer.Gestures.gestures.tap.reset());
   },
 });
