@@ -47,20 +47,24 @@ bool ArrayBuffer::Transfer(ArrayBufferContents& result) {
 
   if (all_views_are_neuterable) {
     contents_.Transfer(result);
+
+    while (first_view_) {
+      ArrayBufferView* current = first_view_;
+      RemoveView(current);
+      current->Neuter();
+    }
+
+    is_neutered_ = true;
   } else {
+    // TODO(https://crbug.com/763038): See original bug at
+    // https://crbug.com/254728. Copying the buffer instead of transferring is
+    // not spec compliant but was added for a WebAudio bug fix. The only time
+    // this branch is taken is when attempting to transfer an AudioBuffer's
+    // channel data ArrayBuffer.
     contents_.CopyTo(result);
     if (!result.Data())
       return false;
   }
-
-  while (first_view_) {
-    ArrayBufferView* current = first_view_;
-    RemoveView(current);
-    if (all_views_are_neuterable || current->IsNeuterable())
-      current->Neuter();
-  }
-
-  is_neutered_ = true;
 
   return true;
 }
