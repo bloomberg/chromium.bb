@@ -1,0 +1,50 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/elements-test.js"></script>
+<script src="../resources/sass-test.js"></script>
+<style>
+pre {
+    font-family: monospace;
+}
+</style>
+<script>
+
+function test() {
+  TestRunner.evaluateInPage('getCSS()', onCSS);
+
+  function onCSS(result) {
+    SASSTestRunner.parseCSS('', result.value)
+        .then(SASSTestRunner.dumpAST)
+        .then(SASSTestRunner.validateASTRanges)
+        .catch(console.error.bind(console))
+        .then(TestRunner.completeTest);
+  }
+}
+
+function getCSS()
+{
+    return document.querySelector(".snippet").textContent;
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Verifies AST of CSS with missing trailing semicolon after last property.
+</p>
+<pre class="snippet">
+body {
+    /* padding-top: 5em; */
+    margin: 0 auto
+}
+
+body {
+    color: red;
+    /* margin: 0 auto */
+}
+
+</pre>
+</body>
+</html>

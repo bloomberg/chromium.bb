@@ -1,0 +1,57 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/elements-test.js"></script>
+<script src="../resources/sass-test.js"></script>
+<style>
+pre {
+    font-family: monospace;
+}
+</style>
+<script>
+
+function test() {
+  TestRunner.evaluateInPage('getSASS()', onSASS);
+
+  function onSASS(result) {
+    SASSTestRunner.parseSCSS('', result.value)
+        .then(SASSTestRunner.dumpAST)
+        .then(SASSTestRunner.validateASTRanges)
+        .catch(console.error.bind(console))
+        .then(TestRunner.completeTest);
+  }
+}
+
+function getSASS()
+{
+    return document.querySelector(".snippet").textContent;
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Verifies AST of SCSS with mixins.
+</p>
+<pre class="snippet">
+@mixin awesome {
+    width: 100%;
+    height: 100%;
+}
+
+@mixin border-radius($radius) {
+  -webkit-border-radius: $radius;
+     -moz-border-radius: $radius;
+      -ms-border-radius: $radius;
+          border-radius: $radius;
+}
+
+div {
+    @include border-radius(15px);
+    @include awesome;
+}
+
+</pre>
+</body>
+</html>

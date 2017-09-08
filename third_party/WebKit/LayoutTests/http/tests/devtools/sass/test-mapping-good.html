@@ -1,0 +1,47 @@
+<html>
+<head>
+
+<link rel="stylesheet" href="resources/test-mapping-good.css">
+
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/debugger-test.js"></script>
+<script src="../resources/sass-test.js"></script>
+<script>
+
+function test() {
+  var mapping;
+
+  var header = TestRunner.cssModel.styleSheetHeaders().find(header => !!header.sourceMapURL);
+  SASSTestRunner.loadASTMapping(header, onMappingLoaded);
+
+  function onMappingLoaded(map) {
+    mapping = map;
+    if (!map) {
+      TestRunner.addResult('ERROR: mapping is not valid.');
+      TestRunner.completeTest();
+      return;
+    }
+    SASSTestRunner.validateMapping(mapping);
+    TestRunner.runTestSuite(testSuite);
+  }
+
+  var testSuite = [
+    function testRebase(next) {
+      var cssClone = mapping.compiledModel().clone();
+      var sassAST = mapping.sourceModels().valuesArray()[0];
+      var sassClone = sassAST.clone();
+      var newMapping = mapping.rebase([cssClone, sassClone]);
+      SASSTestRunner.validateMapping(newMapping);
+      next();
+    },
+  ];
+}
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>Verify WI.ASTSourceMap rebaselines.</p>
+</body>
+</html>

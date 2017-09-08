@@ -1,0 +1,28 @@
+<html>
+<head>
+<script src="../inspector/inspector-test.js"></script>
+<script>
+
+function sum(a, b)
+{
+    return a + b;
+}
+
+function test() {
+  function callback(result) {
+    TestRunner.addResult('2 + 2 = ' + result.description);
+    TestRunner.completeTest();
+  }
+  TestRunner.evaluateInPage('sum(2, 2)', callback);
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+This tests that layout test can evaluate scripts in the inspected page.
+</p>
+
+</body>
+</html>

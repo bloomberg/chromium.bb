@@ -1,0 +1,40 @@
+<html>
+<head>
+
+<link rel="stylesheet" href="resources/test-mapping-good.css?rel=123412341234">
+
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/debugger-test.js"></script>
+<script src="../resources/sass-test.js"></script>
+<script>
+
+function simulateBrowserSync()
+{
+    var link = document.querySelector("link");
+    // Simulate iNotify push of new CSS.
+    link.href = "resources/test-mapping-good.css";
+    // Simluate BrowserSync update styleSheet with a cache-busting URL.
+    setTimeout(() => link.href = "resources/test-mapping-good.css?rel=123412341234", 0);
+}
+
+function test() {
+  TestRunner.evaluateInPage('simulateBrowserSync()', function() {});
+  TestRunner.cssModel.sourceMapManager().addEventListener(
+      SDK.SourceMapManager.Events.SourceMapAttached, onSourceMapAttached);
+
+  function onSourceMapAttached(event) {
+    var header = event.data.client;
+    var sourceMap = event.data.sourceMap;
+    TestRunner.addResult('SourceMap is editable: ' + sourceMap.editable());
+    TestRunner.completeTest();
+  }
+}
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>Verifies that editable source map is created in case of race between iNotify and BrowserSync.</p>
+</body>
+</html>

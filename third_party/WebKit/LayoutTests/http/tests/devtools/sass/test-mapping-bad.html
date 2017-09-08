@@ -1,0 +1,32 @@
+<html>
+<head>
+
+<link rel="stylesheet" href="resources/test-mapping-bad.css">
+
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/debugger-test.js"></script>
+<script src="../resources/sass-test.js"></script>
+<script>
+
+function test() {
+  var header = TestRunner.cssModel.styleSheetHeaders().find(header => !!header.sourceMapURL);
+  SASSTestRunner.loadASTMapping(header, onMapping);
+
+  function onMapping(map) {
+    if (map) {
+      TestRunner.addResult('ERROR: a valid mapping created for misaligned sourcemap.');
+    } else {
+      TestRunner.addResult('OK: the mapping successfully reported misalignment.');
+    }
+    TestRunner.completeTest();
+  }
+}
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>Verify that mapping is not valid for misaligned sources.</p>
+</body>
+</html>

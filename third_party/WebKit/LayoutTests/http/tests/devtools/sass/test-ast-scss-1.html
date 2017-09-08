@@ -1,0 +1,58 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/elements-test.js"></script>
+<script src="../resources/sass-test.js"></script>
+<style>
+pre {
+    font-family: monospace;
+}
+</style>
+<script>
+
+function test() {
+  TestRunner.evaluateInPage('getSASS()', onSASS);
+
+  function onSASS(result) {
+    SASSTestRunner.parseSCSS('', result.value)
+        .then(SASSTestRunner.dumpAST)
+        .then(SASSTestRunner.validateASTRanges)
+        .catch(console.error.bind(console))
+        .then(TestRunner.completeTest);
+  }
+}
+
+function getSASS()
+{
+    return document.querySelector(".snippet").textContent;
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Verifies SCSS AST in case of simple nesting and CSS properties.
+</p>
+<pre class="snippet">
+div {
+    /* display: flex; */
+    color: $my-color;
+    background-color: blue;
+    /* position: absolute; */
+
+    .className {
+        padding: 10px 0 0 10px;
+        /* font-family: "Times New Roman"; */
+        background-image: url(assets/no-image-set.png);
+
+        #test::before {
+            margin: 10px 10px;
+            content: "test me";
+            /* border: 1px solid black; */
+        }
+    }
+}
+</pre>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<html>
+<head><meta charset="utf-8"/>
+<script src="../inspector/inspector-test.js"></script>
+<script src="../inspector/timeline-test.js"></script>
+<script>
+function test() {
+  var mainThread = 1;
+  var pid = 100;
+
+  var testData = [
+    {
+      'name': 'NonAscii',
+      'ts': 10000,
+      args: {'nonascii': 'лет ми спик фром май харт'},
+      'dur': 1000,
+      'ph': 'X',
+      'tid': mainThread,
+      'pid': 100,
+      'cat': 'test'
+    },
+    {
+      'name': 'NonAsciiSnapshot',
+      'ts': 20000,
+      args: {'snapshot': 'тест'},
+      'dur': 1000,
+      'ph': 'O',
+      'tid': mainThread,
+      'pid': 100,
+      'cat': 'test'
+    },
+    {
+      'name': 'ShortSnapshot',
+      'ts': 20000,
+      args: {'snapshot': 'short snapshot data'},
+      'dur': 1000,
+      'ph': 'O',
+      'tid': mainThread,
+      'pid': 100,
+      'cat': 'test'
+    },
+    {
+      'name': 'LongSnapshot',
+      'ts': 20000,
+      args: {'snapshot': 'abcdef'.repeat(10000)},
+      'dur': 1000,
+      'ph': 'O',
+      'tid': mainThread,
+      'pid': 100,
+      'cat': 'test'
+    }
+  ];
+
+  function getEventByName(name) {
+    return thread.events().filter(function(event) {
+      return event.name === name;
+    })[0];
+  }
+
+  var model = PerformanceTestRunner.createTracingModel(testData);
+  var process = model.sortedProcesses()[0];
+  var thread = process.sortedThreads()[0];
+  TestRunner.assertEquals('лет ми спик фром май харт', getEventByName('NonAscii').args['nonascii']);
+  getEventByName('ShortSnapshot').requestObject(step1);
+  function step1(object) {
+    TestRunner.assertEquals('short snapshot data', object);
+    getEventByName('LongSnapshot').requestObject(step2);
+  }
+  function step2(object) {
+    TestRunner.assertEquals('abcdef'.repeat(10000), object);
+    getEventByName('NonAsciiSnapshot').requestObject(step3);
+  }
+  function step3(object) {
+    TestRunner.assertEquals('тест', object);
+    TestRunner.addResult('DONE');
+    TestRunner.completeTest();
+  }
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Test that tracing model correctly processes trace events.
+</p>
+</body>
+</html>

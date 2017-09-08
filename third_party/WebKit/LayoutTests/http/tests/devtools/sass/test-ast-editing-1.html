@@ -1,0 +1,43 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/elements-test.js"></script>
+<script src="../resources/sass-test.js"></script>
+<script src="../resources/editing-test-suite.js"></script>
+<style>
+pre {
+    font-family: monospace;
+}
+</style>
+<script>
+
+function test() {
+  TestRunner.evaluateInPagePromise('getCSS()')
+      .then(result => SASSTestRunner.parseCSS('', result.value))
+      .then(ast => SASSTestRunner.runEditingTests(ast))
+      .catch(console.error.bind(console))
+      .then(TestRunner.completeTest);
+}
+
+function getCSS()
+{
+    return document.querySelector(".snippet").textContent;
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Verifies AST editing of formatted source.
+</p>
+<pre class="snippet">
+div {
+    /* This is a regular comment */
+    color: red;
+    /* position: absolute; */
+    display: block
+}
+</pre>
+</body>
+</html>
