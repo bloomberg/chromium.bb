@@ -8,49 +8,32 @@
 
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
-#include "build/build_config.h"
+#include "content/browser/background_fetch/background_fetch_delegate.h"
 #include "content/browser/background_fetch/background_fetch_job_controller.h"
 #include "content/browser/background_fetch/background_fetch_response.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_url_parameters.h"
 
-#if defined(OS_ANDROID)
-#include "base/android/path_utils.h"
-#include "base/files/file_path.h"
-#endif
-
 namespace content {
-
-#if defined(OS_ANDROID)
-namespace {
-
-// Prefix for files stored in the Chromium-internal download directory to
-// indicate files that were fetched through Background Fetch.
-const char kBackgroundFetchFilePrefix[] = "BGFetch-";
-
-}  // namespace
-#endif  // defined(OS_ANDROID)
 
 // Internal functionality of the BackgroundFetchDelegateProxy that lives on the
 // UI thread, where all interaction with the download manager must happen.
-class BackgroundFetchDelegateProxy::Core {
+class BackgroundFetchDelegateProxy::Core
+    : public BackgroundFetchDelegate::Client {
  public:
   Core(const base::WeakPtr<BackgroundFetchDelegateProxy>& io_parent,
-       BrowserContext* browser_context,
-       scoped_refptr<net::URLRequestContextGetter> request_context)
-      : io_parent_(io_parent),
-        browser_context_(browser_context),
-        request_context_(std::move(request_context)),
-        weak_ptr_factory_(this) {
-    // Although the Core lives only on the UI thread, it is constructed on IO.
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+       base::WeakPtr<BackgroundFetchDelegate> delegate)
+      : io_parent_(io_parent), delegate_(delegate), weak_ptr_factory_(this) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+    delegate_->SetDelegateClient(weak_ptr_factory_.GetWeakPtr());
   }
 
-  ~Core() { DCHECK_CURRENTLY_ON(BrowserThread::UI); }
+  ~Core() override { DCHECK_CURRENTLY_ON(BrowserThread::UI); }
 
   base::WeakPtr<Core> GetWeakPtrOnUI() {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     return weak_ptr_factory_.GetWeakPtr();
   }
 
@@ -58,12 +41,7 @@ class BackgroundFetchDelegateProxy::Core {
                     const url::Origin& origin,
                     scoped_refptr<BackgroundFetchRequestInfo> request) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    DCHECK(request_context_);
     DCHECK(request);
-
-    DownloadManager* download_manager =
-        BrowserContext::GetDownloadManager(browser_context_);
-    DCHECK(download_manager);
 
     const ServiceWorkerFetchRequest& fetch_request = request->fetch_request();
 
@@ -96,15 +74,11 @@ class BackgroundFetchDelegateProxy::Core {
               policy_exception_justification: "Not implemented."
             })"));
 
-    std::unique_ptr<DownloadUrlParameters> download_parameters(
-        base::MakeUnique<DownloadUrlParameters>(
-            fetch_request.url, request_context_.get(), traffic_annotation));
-
-    // TODO(peter): The |download_parameters| should be populated with all the
-    // properties set in the |fetch_request| structure.
-
+    // TODO(peter): The |headers| should be populated with all the properties
+    // set in the |fetch_request| structure.
+    net::HttpRequestHeaders headers;
     for (const auto& pair : fetch_request.headers)
-      download_parameters->add_request_header(pair.first, pair.second);
+      headers.SetHeader(pair.first, pair.second);
 
     // Append the Origin header for requests whose CORS flag is set, or whose
     // request method is not GET or HEAD. See section 3.1 of the standard:
@@ -112,149 +86,73 @@ class BackgroundFetchDelegateProxy::Core {
     if (fetch_request.mode == FETCH_REQUEST_MODE_CORS ||
         fetch_request.mode == FETCH_REQUEST_MODE_CORS_WITH_FORCED_PREFLIGHT ||
         (fetch_request.method != "GET" && fetch_request.method != "POST")) {
-      download_parameters->add_request_header("Origin", origin.Serialize());
+      headers.SetHeader("Origin", origin.Serialize());
     }
 
-    // TODO(peter): Background Fetch responses should not end up in the user's
-    // download folder on any platform. Find an appropriate solution for desktop
-    // too. The Android internal directory is not scoped to a profile.
-
-    download_parameters->set_transient(true);
-
-#if defined(OS_ANDROID)
-    base::FilePath download_directory;
-    if (base::android::GetDownloadInternalDirectory(&download_directory)) {
-      download_parameters->set_file_path(download_directory.Append(
-          std::string(kBackgroundFetchFilePrefix) + base::GenerateGUID()));
-    }
-#endif  // defined(OS_ANDROID)
-
-    download_parameters->set_callback(
-        base::Bind(&Core::DidStartRequest, weak_ptr_factory_.GetWeakPtr()));
-    download_parameters->set_guid(guid);
-
-    download_manager->DownloadUrl(std::move(download_parameters));
+    delegate_->DownloadUrl(guid, fetch_request.method, fetch_request.url,
+                           traffic_annotation, headers);
   }
+
+  // BackgroundFetchDelegate::Client implementation:
+  void OnDownloadUpdated(const std::string& guid,
+                         uint64_t bytes_downloaded) override;
+  void OnDownloadComplete(
+      const std::string& guid,
+      std::unique_ptr<BackgroundFetchResult> result) override;
+  void OnDownloadStarted(
+      const std::string& guid,
+      std::unique_ptr<content::BackgroundFetchResponse> response) override;
 
  private:
-  class DownloadItemObserver : public DownloadItem::Observer {
-   public:
-    explicit DownloadItemObserver(base::WeakPtr<Core> core) : core_(core) {
-      DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    }
-
-    void OnDownloadUpdated(DownloadItem* download_item) override;
-    void OnDownloadDestroyed(DownloadItem* download_item) override;
-
-   private:
-    base::WeakPtr<Core> core_;
-  };
-
-  // Called when the download manager has started a request. The |download_item|
-  // continues to be owned by the download system. The |interrupt_reason| will
-  // indicate when a request could not be started.
-  void DidStartRequest(DownloadItem* download_item,
-                       DownloadInterruptReason interrupt_reason) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-    // TODO(peter): These two DCHECKs are assumptions our implementation
-    // currently makes, but are not fit for production. We need to handle such
-    // failures gracefully.
-    DCHECK_EQ(interrupt_reason, DOWNLOAD_INTERRUPT_REASON_NONE);
-    DCHECK(download_item);
-
-    // Register for updates on the download's progress.
-    download_item->AddObserver(
-        new DownloadItemObserver(weak_ptr_factory_.GetWeakPtr()));
-
-    const std::string& guid = download_item->GetGuid();
-
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&BackgroundFetchDelegateProxy::DidStartRequest,
-                       io_parent_, guid,
-                       base::MakeUnique<BackgroundFetchResponse>(
-                           download_item->GetUrlChain(),
-                           download_item->GetResponseHeaders())));
-  }
-
-  // Weak reference to the BackgroundFetchJobController instance that owns us.
+  // Weak reference to the IO thread outer class that owns us.
   base::WeakPtr<BackgroundFetchDelegateProxy> io_parent_;
 
-  // The BrowserContext that owns the JobController, and thereby us.
-  BrowserContext* browser_context_;
-
-  // The URL request context to use when issuing the requests.
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
+  base::WeakPtr<BackgroundFetchDelegate> delegate_;
 
   base::WeakPtrFactory<Core> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
-void BackgroundFetchDelegateProxy::Core::DownloadItemObserver::
-    OnDownloadUpdated(DownloadItem* download_item) {
+void BackgroundFetchDelegateProxy::Core::OnDownloadUpdated(
+    const std::string& guid,
+    uint64_t bytes_downloaded) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  if (!core_.get()) {
-    download_item->RemoveObserver(this);
-    delete this;
-    return;
-  }
-
-  switch (download_item->GetState()) {
-    case DownloadItem::DownloadState::COMPLETE:
-      // Inform the host about |host| having completed.
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          base::BindOnce(&BackgroundFetchDelegateProxy::OnDownloadComplete,
-                         core_->io_parent_, download_item->GetGuid(),
-                         base::MakeUnique<BackgroundFetchResult>(
-                             download_item->GetEndTime(),
-                             download_item->GetTargetFilePath(),
-                             download_item->GetReceivedBytes())));
-
-      download_item->RemoveObserver(this);
-      delete this;
-      // Cannot access this after deleting itself so return immediately.
-      return;
-    case DownloadItem::DownloadState::CANCELLED:
-      // TODO(harkness): Consider how we want to handle cancelled downloads.
-      break;
-    case DownloadItem::DownloadState::INTERRUPTED:
-      // TODO(harkness): Just update the notification that it is paused.
-      break;
-    case DownloadItem::DownloadState::IN_PROGRESS:
-      // TODO(harkness): If the download was previously paused, this should
-      // now unpause the notification.
-      break;
-    case DownloadItem::DownloadState::MAX_DOWNLOAD_STATE:
-      NOTREACHED();
-      break;
-  }
 }
 
-void BackgroundFetchDelegateProxy::Core::DownloadItemObserver::
-    OnDownloadDestroyed(DownloadItem* download_item) {
+void BackgroundFetchDelegateProxy::Core::OnDownloadComplete(
+    const std::string& guid,
+    std::unique_ptr<BackgroundFetchResult> result) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&BackgroundFetchDelegateProxy::OnDownloadComplete,
+                     io_parent_, guid, std::move(result)));
+}
+
+void BackgroundFetchDelegateProxy::Core::OnDownloadStarted(
+    const std::string& guid,
+    std::unique_ptr<content::BackgroundFetchResponse> response) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  download_item->RemoveObserver(this);
-  delete this;
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&BackgroundFetchDelegateProxy::DidStartRequest, io_parent_,
+                     guid, std::move(response)));
 }
 
 BackgroundFetchDelegateProxy::BackgroundFetchDelegateProxy(
-    BrowserContext* browser_context,
-    scoped_refptr<net::URLRequestContextGetter> request_context)
+    base::WeakPtr<BackgroundFetchDelegate> delegate)
     : weak_ptr_factory_(this) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  ui_core_.reset(new Core(weak_ptr_factory_.GetWeakPtr(), browser_context,
-                          request_context));
+  // Normally it would be unsafe to obtain a weak pointer on the UI thread from
+  // a factory that lives on the IO thread, but it's ok in the constructor as
+  // |this| can't be destroyed before the constructor finishes.
+  ui_core_.reset(new Core(weak_ptr_factory_.GetWeakPtr(), delegate));
 
-  // Get a WeakPtr over which we can talk to the |ui_core_|. Normally it
-  // would be unsafe to obtain a weak pointer on the IO thread from a
-  // factory that lives on the UI thread, but it's ok in this constructor
-  // since the Core can't be destroyed before this constructor finishes.
+  // Since this constructor runs on the UI thread, a WeakPtr can be safely
+  // obtained from the Core.
   ui_core_ptr_ = ui_core_->GetWeakPtrOnUI();
 }
 
@@ -263,18 +161,19 @@ BackgroundFetchDelegateProxy::~BackgroundFetchDelegateProxy() {
 }
 
 void BackgroundFetchDelegateProxy::StartRequest(
-    BackgroundFetchJobController* job_controller,
+    base::WeakPtr<Controller> job_controller,
+    const url::Origin& origin,
     scoped_refptr<BackgroundFetchRequestInfo> request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(job_controller);
 
   std::string guid(base::GenerateGUID());
 
-  controller_map_[guid] = std::make_pair(request, job_controller->GetWeakPtr());
+  controller_map_[guid] = std::make_pair(request, job_controller);
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&Core::StartRequest, ui_core_ptr_, guid,
-                     job_controller->registration_id().origin(), request));
+      base::BindOnce(&Core::StartRequest, ui_core_ptr_, guid, origin, request));
 }
 
 void BackgroundFetchDelegateProxy::UpdateUI(const std::string& title) {
@@ -294,9 +193,9 @@ void BackgroundFetchDelegateProxy::DidStartRequest(
     std::unique_ptr<BackgroundFetchResponse> response) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  scoped_refptr<BackgroundFetchRequestInfo> request_info;
-  base::WeakPtr<BackgroundFetchJobController> job_controller;
-  std::tie(request_info, job_controller) = controller_map_[guid];
+  const scoped_refptr<BackgroundFetchRequestInfo>& request_info =
+      controller_map_[guid].first;
+  base::WeakPtr<Controller> job_controller = controller_map_[guid].second;
 
   request_info->PopulateWithResponse(std::move(response));
 
@@ -309,9 +208,9 @@ void BackgroundFetchDelegateProxy::OnDownloadComplete(
     std::unique_ptr<BackgroundFetchResult> result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  scoped_refptr<BackgroundFetchRequestInfo> request_info;
-  base::WeakPtr<BackgroundFetchJobController> job_controller;
-  std::tie(request_info, job_controller) = controller_map_[guid];
+  const scoped_refptr<BackgroundFetchRequestInfo>& request_info =
+      controller_map_[guid].first;
+  base::WeakPtr<Controller> job_controller = controller_map_[guid].second;
 
   request_info->SetResult(std::move(result));
 

@@ -59,11 +59,12 @@ void BackgroundFetchJobController::StartRequest(
     return;
   }
 
-  delegate_proxy_->StartRequest(this, request);
+  delegate_proxy_->StartRequest(weak_ptr_factory_.GetWeakPtr(),
+                                registration_id_.origin(), request);
 }
 
 void BackgroundFetchJobController::DidStartRequest(
-    scoped_refptr<BackgroundFetchRequestInfo> request,
+    const scoped_refptr<BackgroundFetchRequestInfo>& request,
     const std::string& download_guid) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   data_manager_->MarkRequestAsStarted(registration_id_, request.get(),
@@ -71,7 +72,7 @@ void BackgroundFetchJobController::DidStartRequest(
 }
 
 void BackgroundFetchJobController::DidCompleteRequest(
-    scoped_refptr<BackgroundFetchRequestInfo> request) {
+    const scoped_refptr<BackgroundFetchRequestInfo>& request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // The DataManager must acknowledge that it stored the data and that there are

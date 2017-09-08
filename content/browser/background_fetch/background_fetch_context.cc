@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
+#include "content/browser/background_fetch/background_fetch_delegate_impl.h"
 #include "content/browser/background_fetch/background_fetch_event_dispatcher.h"
 #include "content/browser/background_fetch/background_fetch_job_controller.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
@@ -47,19 +48,33 @@ BackgroundFetchContext::BackgroundFetchContext(
       weak_factory_(this) {
   // Although this lives only on the IO thread, it is constructed on UI thread.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // These are constructed out of the initializer because delegate's real type
+  // is required to get the WeakPtr.
+  std::unique_ptr<BackgroundFetchDelegateImpl, BrowserThread::DeleteOnUIThread>
+      delegate;
+  delegate.reset(new BackgroundFetchDelegateImpl(browser_context_));
+  delegate_proxy_ =
+      std::make_unique<BackgroundFetchDelegateProxy>(delegate->GetWeakPtr());
+  delegate_ = std::move(delegate);
 }
 
 BackgroundFetchContext::~BackgroundFetchContext() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  // TODO(crbug.com/762960): Keep a reference to the request_context_ on the UI
+  // thread so it can be deref'd and destroyed there until the referenced bug is
+  // fixed.
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(
+          [](scoped_refptr<net::URLRequestContextGetter> request_context) {},
+          std::move(request_context_getter_)));
 }
 
 void BackgroundFetchContext::InitializeOnIOThread(
     scoped_refptr<net::URLRequestContextGetter> request_context_getter) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
   request_context_getter_ = request_context_getter;
-  delegate_proxy_ = base::MakeUnique<BackgroundFetchDelegateProxy>(
-      browser_context_, request_context_getter);
 }
 
 void BackgroundFetchContext::StartFetch(
@@ -154,13 +169,9 @@ void BackgroundFetchContext::CreateController(
           base::BindOnce(&BackgroundFetchContext::DidCompleteJob,
                          weak_factory_.GetWeakPtr()));
 
-  // TODO(peter): We should actually be able to use Background Fetch in layout
-  // tests. That requires a download manager and a request context.
-  if (request_context_getter_) {
-    // Start fetching the first few requests immediately. At some point in the
-    // future we may want a more elaborate scheduling mechanism here.
-    controller->Start();
-  }
+  // Start fetching the first few requests immediately. At some point in the
+  // future we may want a more elaborate scheduling mechanism here.
+  controller->Start();
 
   active_fetches_.insert(
       std::make_pair(registration_id, std::move(controller)));

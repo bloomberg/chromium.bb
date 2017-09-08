@@ -33,7 +33,7 @@ struct CONTENT_EXPORT BackgroundFetchResponse {
 struct CONTENT_EXPORT BackgroundFetchResult {
   BackgroundFetchResult(base::Time response_time,
                         const base::FilePath& path,
-                        uint64_t size);
+                        uint64_t file_size);
 
   ~BackgroundFetchResult();
 

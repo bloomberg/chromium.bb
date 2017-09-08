@@ -15,31 +15,41 @@
 #include "content/browser/background_fetch/background_fetch_request_info.h"
 #include "content/public/browser/browser_thread.h"
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace content {
 
+class BackgroundFetchDelegate;
 class BackgroundFetchJobController;
 struct BackgroundFetchResponse;
-class BrowserContext;
 
 // Proxy class for passing messages between BackgroundFetchJobControllers on the
 // IO thread and BackgroundFetchDelegate on the UI thread.
-// TODO(delphick): Create BackgroundFetchDelegate.
 class CONTENT_EXPORT BackgroundFetchDelegateProxy {
  public:
-  BackgroundFetchDelegateProxy(
-      BrowserContext* browser_context,
-      scoped_refptr<net::URLRequestContextGetter> request_context);
+  // Subclasses must only be destroyed on the IO thread, since these methods
+  // will be called on the IO thread.
+  class Controller {
+   public:
+    // Called when the given |request| has started fetching, after having been
+    // assigned the |download_guid| by the download system.
+    virtual void DidStartRequest(
+        const scoped_refptr<BackgroundFetchRequestInfo>& request,
+        const std::string& download_guid) = 0;
+
+    // Called when the given |request| has been completed.
+    virtual void DidCompleteRequest(
+        const scoped_refptr<BackgroundFetchRequestInfo>& request) = 0;
+  };
+
+  explicit BackgroundFetchDelegateProxy(
+      base::WeakPtr<BackgroundFetchDelegate> delegate);
 
   ~BackgroundFetchDelegateProxy();
 
   // Requests that the download manager start fetching |request|.
-  // Should only be called from the BackgroundFetchJobController (on the IO
+  // Should only be called from the Controller (on the IO
   // thread).
-  void StartRequest(BackgroundFetchJobController* job_controller,
+  void StartRequest(base::WeakPtr<Controller> job_controller,
+                    const url::Origin& origin,
                     scoped_refptr<BackgroundFetchRequestInfo> request);
 
   // Updates the representation of this Background Fetch in the user interface
@@ -72,7 +82,7 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
   // that started the download.
   std::map<std::string,
            std::pair<scoped_refptr<BackgroundFetchRequestInfo>,
-                     base::WeakPtr<BackgroundFetchJobController>>>
+                     base::WeakPtr<Controller>>>
       controller_map_;
 
   base::WeakPtrFactory<BackgroundFetchDelegateProxy> weak_ptr_factory_;

@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "content/browser/background_fetch/background_fetch_constants.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
+#include "content/browser/background_fetch/background_fetch_delegate_impl.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/background_fetch/background_fetch_test_base.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -24,7 +25,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/fake_download_item.h"
 #include "content/public/test/mock_download_manager.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::_;
@@ -82,14 +82,10 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
   // Creates a new BackgroundFetchJobController instance.
   std::unique_ptr<BackgroundFetchJobController> CreateJobController(
       const BackgroundFetchRegistrationId& registration_id) {
-    // StoragePartition creates its own BackgroundFetchContext, but this test
-    // doesn't use that; it just uses the StoragePartition's URLRequestContext.
-    StoragePartition* storage_partition =
-        BrowserContext::GetDefaultStoragePartition(browser_context());
-
-    delegate_proxy_.reset(new BackgroundFetchDelegateProxy(
-        browser_context(),
-        make_scoped_refptr(storage_partition->GetURLRequestContext())));
+    delegate_ =
+        base::MakeUnique<BackgroundFetchDelegateImpl>(browser_context());
+    delegate_proxy_ =
+        base::MakeUnique<BackgroundFetchDelegateProxy>(delegate_->GetWeakPtr());
 
     return base::MakeUnique<BackgroundFetchJobController>(
         delegate_proxy_.get(), registration_id, BackgroundFetchOptions(),
@@ -107,6 +103,7 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
   base::OnceClosure job_completed_closure_;
 
   std::unique_ptr<BackgroundFetchDelegateProxy> delegate_proxy_;
+  std::unique_ptr<BackgroundFetchDelegateImpl> delegate_;
 
  private:
   void DidCreateRegistration(blink::mojom::BackgroundFetchError* out_error,

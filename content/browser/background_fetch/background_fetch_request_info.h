@@ -34,10 +34,9 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
                              const ServiceWorkerFetchRequest& fetch_request);
 
   // Populates the cached state for the in-progress download.
-  void PopulateWithResponse(
-      std::unique_ptr<const BackgroundFetchResponse> response);
+  void PopulateWithResponse(std::unique_ptr<BackgroundFetchResponse> response);
 
-  void SetResult(std::unique_ptr<const BackgroundFetchResult> result);
+  void SetResult(std::unique_ptr<BackgroundFetchResult> result);
 
   // Returns the index of this request within a Background Fetch registration.
   int request_index() const { return request_index_; }
@@ -93,7 +92,7 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
   std::vector<GURL> url_chain_;
 
   // ---- Data associated with the response ------------------------------------
-  std::unique_ptr<const BackgroundFetchResult> result_;
+  std::unique_ptr<BackgroundFetchResult> result_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
