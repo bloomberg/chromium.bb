@@ -31,6 +31,7 @@
 
 #include "platform/image-decoders/ImageDecoder.h"
 #include "platform/wtf/Time.h"
+#include "platform/wtf/Vector.h"
 #include "webp/decode.h"
 #include "webp/demux.h"
 
@@ -107,9 +108,12 @@ class PLATFORM_EXPORT WEBPImageDecoder final : public ImageDecoder {
   void Clear();
   void ClearDecoder();
 
-  // FIXME: Update libwebp's API so it does not require copying the data on each
-  // update.
+  // This will point to one of three things:
+  // - the SegmentReader's data, if contiguous.
+  // - its own copy, if not, and all data was received initially.
+  // - |buffer_|, if streaming.
   sk_sp<SkData> consolidated_data_;
+  Vector<char> buffer_;
 };
 
 }  // namespace blink
