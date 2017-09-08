@@ -361,7 +361,7 @@ const char kEnableHeapProfilingTaskProfiler[] = "Enabled (task mode)";
 
 const char kEnableHttpFormWarningName[] =
     "Show in-form warnings for sensitive fields when the top-level page is not "
-    "not HTTPS";
+    "HTTPS";
 const char kEnableHttpFormWarningDescription[] =
     "Attaches a warning UI to any password or credit card fields detected when "
     "the top-level page is not HTTPS";
