@@ -113,17 +113,16 @@ Document& FrameSelection::GetDocument() const {
   return *LifecycleContext();
 }
 
-const VisibleSelection& FrameSelection::ComputeVisibleSelectionInDOMTree()
-    const {
+VisibleSelection FrameSelection::ComputeVisibleSelectionInDOMTree() const {
   return selection_editor_->ComputeVisibleSelectionInDOMTree();
 }
 
-const VisibleSelectionInFlatTree&
-FrameSelection::ComputeVisibleSelectionInFlatTree() const {
+VisibleSelectionInFlatTree FrameSelection::ComputeVisibleSelectionInFlatTree()
+    const {
   return selection_editor_->ComputeVisibleSelectionInFlatTree();
 }
 
-const SelectionInDOMTree& FrameSelection::GetSelectionInDOMTree() const {
+SelectionInDOMTree FrameSelection::GetSelectionInDOMTree() const {
   return selection_editor_->GetSelectionInDOMTree();
 }
 
@@ -145,16 +144,15 @@ ContainerNode* RootEditableElementOrTreeScopeRootNodeOf(
   return node ? &node->GetTreeScope().RootNode() : 0;
 }
 
-const VisibleSelection&
-FrameSelection::ComputeVisibleSelectionInDOMTreeDeprecated() const {
+VisibleSelection FrameSelection::ComputeVisibleSelectionInDOMTreeDeprecated()
+    const {
   // TODO(editing-dev): Hoist updateStyleAndLayoutIgnorePendingStylesheets
   // to caller. See http://crbug.com/590369 for more details.
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   return ComputeVisibleSelectionInDOMTree();
 }
 
-const VisibleSelectionInFlatTree& FrameSelection::GetSelectionInFlatTree()
-    const {
+VisibleSelectionInFlatTree FrameSelection::GetSelectionInFlatTree() const {
   return ComputeVisibleSelectionInFlatTree();
 }
 

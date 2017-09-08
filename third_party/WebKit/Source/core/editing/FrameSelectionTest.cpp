@@ -30,10 +30,10 @@ namespace blink {
 
 class FrameSelectionTest : public EditingTestBase {
  protected:
-  const VisibleSelection& VisibleSelectionInDOMTree() const {
+  VisibleSelection VisibleSelectionInDOMTree() const {
     return Selection().ComputeVisibleSelectionInDOMTree();
   }
-  const VisibleSelectionInFlatTree& GetVisibleSelectionInFlatTree() const {
+  VisibleSelectionInFlatTree GetVisibleSelectionInFlatTree() const {
     return Selection().GetSelectionInFlatTree();
   }
 

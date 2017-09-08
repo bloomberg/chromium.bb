@@ -100,7 +100,7 @@ void DOMSelection::UpdateFrameSelection(const SelectionInDOMTree& selection,
     UseCounter::Count(GetFrame(), WebFeature::kSelectionFuncionsChangeFocus);
 }
 
-const VisibleSelection& DOMSelection::GetVisibleSelection() const {
+VisibleSelection DOMSelection::GetVisibleSelection() const {
   DCHECK(GetFrame());
   return GetFrame()->Selection().ComputeVisibleSelectionInDOMTreeDeprecated();
 }

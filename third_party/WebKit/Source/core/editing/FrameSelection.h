@@ -83,14 +83,14 @@ class CORE_EXPORT FrameSelection final
   // An implementation of |WebFrame::moveCaretSelection()|
   void MoveCaretSelection(const IntPoint&);
 
-  const VisibleSelection& ComputeVisibleSelectionInDOMTree() const;
-  const VisibleSelectionInFlatTree& ComputeVisibleSelectionInFlatTree() const;
+  VisibleSelection ComputeVisibleSelectionInDOMTree() const;
+  VisibleSelectionInFlatTree ComputeVisibleSelectionInFlatTree() const;
 
   // TODO(editing-dev): We should replace
   // |computeVisibleSelectionInDOMTreeDeprecated()| with update layout and
   // |computeVisibleSelectionInDOMTree()| to increase places hoisting update
   // layout.
-  const VisibleSelection& ComputeVisibleSelectionInDOMTreeDeprecated() const;
+  VisibleSelection ComputeVisibleSelectionInDOMTreeDeprecated() const;
 
   void SetSelection(const SelectionInDOMTree&, const SetSelectionOptions&);
 
@@ -144,7 +144,7 @@ class CORE_EXPORT FrameSelection final
 
   void DidChangeFocus();
 
-  const SelectionInDOMTree& GetSelectionInDOMTree() const;
+  SelectionInDOMTree GetSelectionInDOMTree() const;
   bool IsDirectional() const { return GetSelectionInDOMTree().IsDirectional(); }
 
   void DocumentAttached(Document*);
@@ -239,7 +239,7 @@ class CORE_EXPORT FrameSelection final
 
   // Note: We have |selectionInFlatTree()| for unit tests, we should
   // use |visibleSelection<EditingInFlatTreeStrategy>()|.
-  const VisibleSelectionInFlatTree& GetSelectionInFlatTree() const;
+  VisibleSelectionInFlatTree GetSelectionInFlatTree() const;
 
   void NotifyAccessibilityForSelectionChange();
   void NotifyCompositorForSelectionChange();
