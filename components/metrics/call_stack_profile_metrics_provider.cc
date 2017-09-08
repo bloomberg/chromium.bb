@@ -590,7 +590,8 @@ void CallStackProfileMetricsProvider::Init() {
 }
 
 void CallStackProfileMetricsProvider::OnRecordingEnabled() {
-  PendingProfiles::GetInstance()->SetCollectionEnabled(true);
+  PendingProfiles::GetInstance()->SetCollectionEnabled(
+      base::FeatureList::IsEnabled(kEnableReporting));
 }
 
 void CallStackProfileMetricsProvider::OnRecordingDisabled() {
@@ -602,7 +603,8 @@ void CallStackProfileMetricsProvider::ProvideCurrentSessionData(
   std::vector<ProfilesState> pending_profiles;
   PendingProfiles::GetInstance()->Swap(&pending_profiles);
 
-  DCHECK(IsReportingEnabledByFieldTrial() || pending_profiles.empty());
+  DCHECK(base::FeatureList::IsEnabled(kEnableReporting) ||
+         pending_profiles.empty());
 
   for (const ProfilesState& profiles_state : pending_profiles) {
     for (const StackSamplingProfiler::CallStackProfile& profile :
@@ -623,11 +625,6 @@ void CallStackProfileMetricsProvider::ProvideCurrentSessionData(
 // static
 void CallStackProfileMetricsProvider::ResetStaticStateForTesting() {
   PendingProfiles::GetInstance()->ResetToDefaultStateForTesting();
-}
-
-// static
-bool CallStackProfileMetricsProvider::IsReportingEnabledByFieldTrial() {
-  return base::FeatureList::IsEnabled(kEnableReporting);
 }
 
 }  // namespace metrics
