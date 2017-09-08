@@ -23486,6 +23486,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-684223908" label="enable-android-wallpapers-app"/>
   <int value="-680589442" label="MacRTL:disabled"/>
   <int value="-667517406" label="overscroll-history-navigation"/>
+  <int value="-666508951" label="CrOSContainer:enabled"/>
   <int value="-661978438" label="enable-data-reduction-proxy-lo-fi"/>
   <int value="-660160292" label="enable-apps-show-on-first-paint"/>
   <int value="-650504533" label="enable-speculative-launch-service-worker"/>
@@ -24130,6 +24131,7 @@ from previous Chrome versions.
   <int value="1344833841" label="ImeThread:enabled"/>
   <int value="1351830811" label="do-not-ignore-autocomplete-off"/>
   <int value="1352447982" label="enable-lcd-text"/>
+  <int value="1355923367" label="CrOSContainer:disabled"/>
   <int value="1359972809" label="enable-gesture-deletion"/>
   <int value="1361047396" label="disable-click-delay"/>
   <int value="1361073386" label="ContentSuggestionsNotifications:enabled"/>
