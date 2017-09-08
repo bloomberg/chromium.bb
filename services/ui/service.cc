@@ -155,12 +155,15 @@ Service::~Service() {
   // be destroyed before GpuState as well.
   window_server_.reset();
 
-#if defined(USE_OZONE)
+  // Must be destroyed before calling OzonePlatform::Shutdown().
+  threaded_image_cursors_factory_.reset();
+
 #if defined(OS_CHROMEOS)
   // InputDeviceController uses ozone.
   input_device_controller_.reset();
 #endif
 
+#if defined(USE_OZONE)
   OzonePlatform::Shutdown();
 #endif
 }
@@ -252,11 +255,11 @@ void Service::OnStart() {
   }
 
   DCHECK(gfx::ClientNativePixmapFactory::GetInstance());
+#endif
 
 #if defined(OS_CHROMEOS)
   input_device_controller_ = base::MakeUnique<InputDeviceController>();
   input_device_controller_->AddInterface(&registry_);
-#endif
 #endif
 
 // TODO(rjkroege): Enter sandbox here before we start threads in GpuState
