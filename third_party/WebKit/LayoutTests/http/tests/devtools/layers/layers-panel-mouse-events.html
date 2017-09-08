@@ -1,0 +1,96 @@
+<html>
+<head>
+<style>
+.layer {
+    position: absolute;
+    transform: translateZ(10px);
+    opacity: 0.8;
+    left: 20px;
+    top: 20px;
+    background-color: #eee;
+    border-color: black;
+}
+</style>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/layers-test.js"></script>
+<script>
+function initialize_LayersPanelnMouseEvents()
+{
+
+InspectorTest.findLayerTreeElement = function(layer)
+{
+    var layerTree = UI.panels.layers._layerTreeOutline._treeOutline;
+    var element = layer[LayerViewer.LayerTreeElement._symbol];
+    element.reveal();
+    return element.listItemElement;
+}
+
+InspectorTest.dispatchMouseEventToLayerTree = function(eventType, button, layer)
+{
+    var element = InspectorTest.findLayerTreeElement(layer);
+    TestRunner.assertTrue(!!element);
+    LayersTestRunner.dispatchMouseEvent(eventType, button, element, element.clientWidth >> 1, element.clientHeight >> 1);
+}
+
+InspectorTest.dumpSelectedStyles = function(message, element)
+{
+    var classes = [];
+    if (element.classList.contains("selected"))
+        classes.push("selected");
+    if (element.classList.contains("hovered"))
+        classes.push("hovered");
+
+    TestRunner.addResult(message + ": " + classes.join(", "));
+}
+
+}
+
+function test() {
+  function step1() {
+    UI.panels.layers._update();
+    var layerB1 = LayersTestRunner.findLayerByNodeIdAttribute('b1');
+    var treeElementB1 = InspectorTest.findLayerTreeElement(layerB1);
+
+    var layerB3 = LayersTestRunner.findLayerByNodeIdAttribute('b3');
+    var treeElementB3 = InspectorTest.findLayerTreeElement(layerB3);
+
+    function dumpElementSelectionState() {
+      UI.panels.layers._update();
+      InspectorTest.dumpSelectedStyles('Layer b1 in tree', treeElementB1);
+      InspectorTest.dumpSelectedStyles('Layer b3 in tree', treeElementB3);
+    }
+    TestRunner.addResult('Hovering b1 in tree');
+    InspectorTest.dispatchMouseEventToLayerTree('mousemove', -1, layerB1);
+    dumpElementSelectionState();
+
+    TestRunner.addResult('Hovering b3 in tree');
+    InspectorTest.dispatchMouseEventToLayerTree('mousemove', -1, layerB3);
+    dumpElementSelectionState();
+
+    TestRunner.addResult('Hovering away from tree');
+    InspectorTest.dispatchMouseEventToLayerTree('mouseout', -1, layerB3);
+    dumpElementSelectionState();
+
+    TestRunner.addResult('Selecting b1 in tree');
+    InspectorTest.dispatchMouseEventToLayerTree('mousedown', 0, layerB1);
+    dumpElementSelectionState();
+
+    TestRunner.addResult('Selecting b3 in tree');
+    InspectorTest.dispatchMouseEventToLayerTree('mousedown', 0, layerB3);
+    dumpElementSelectionState();
+
+    TestRunner.completeTest();
+  }
+  LayersTestRunner.requestLayers(TestRunner.safeWrap(step1));
+}
+</script>
+
+<body onload="runTest()">
+<div id="a" style="width: 200px; height: 200px" class="layer">
+  <div class="layer" id="b1" style="width: 150px; height: 100px"></div>
+  <div id="b2" class="layer" style="width: 140px; height: 110px">
+    <div id="b3" class="layer" style="width: 140px; height: 110px;"></div>
+    <div id="c" class="layer" style="width: 100px; height: 90px"></div>
+  </div>
+</div>
+</body>

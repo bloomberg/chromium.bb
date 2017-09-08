@@ -56,7 +56,8 @@ crbug.com/438499 [ Linux ] virtual/threaded/animations/unanimated-style.html [ T
 
 # Flakily timeout on Linux ASAN bots.
 crbug.com/243871 [ Linux ] virtual/threaded/fast/scroll-behavior/ [ Skip ]
-crbug.com/700795 [ Linux ] inspector/animation/animation-transition-setTiming-crash.html [ Skip ]
+crbug.com/700795 [ Linux ] http/tests/devtools/animation/animation-transition-setTiming-crash.html [ Skip ]
+crbug.com/667560 [ Linux ] virtual/mojo-loading/http/tests/devtools/animation/animation-transition-setTiming-crash.html [ Skip ]
 
 # Reliably timeout on Linux ASAN bots.
 crbug.com/248938 [ Linux ] virtual/threaded/animations/transition-and-animation-2.html [ Skip ]

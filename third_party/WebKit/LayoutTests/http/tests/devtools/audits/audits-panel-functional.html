@@ -1,0 +1,96 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<style>
+@media all {
+
+/* This is a comment to use some space before the unused rule */
+
+.unused {
+    color: green;
+    -webkit-opacity: 1;
+    opacity: 1;
+}
+
+x:before { color: black }
+x:nth-child(1):hover:after { color: black }
+x:after { color: black }
+x:hover { color: black }
+x:first-letter { color: black }
+x:nth-child(2n + 1) { color: black }
+
+/* These rules should NOT be reported as unused */
+
+a:visited { text-decoration: none }
+
+img::before { color: red }
+img:after { color: red }
+
+img:hover { border: 1px solid black }
+img:focus { border: 1px solid black }
+img:active { border: 1px solid black }
+
+span:first-letter { color: red }
+
+img:nth-child(2n) { border: 1px solid blue }
+img:nth-child(2n + 1) { border: 1px solid green }
+img:nth-child(1):hover:after { border: 1px solid cyan }
+
+}
+</style>
+<script>
+JSON = {};
+</script>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/audits-test.js"></script>
+
+<!-- These scripts are needed to result in a violation of the max JS resource count from the same domain -->
+<script src="resources/audits-script1.js"></script>
+<link rel="stylesheet" href="resources/audits-style1.css" type="text/css">
+<script src="resources/audits-script2.js"></script>
+<script>
+var test = function() {
+  TestRunner.reloadPage(onPageReloaded);
+  var pendingStyleSheetsCount = 4;
+  TestRunner.addSniffer(SDK.CSSModel.prototype, '_styleSheetAdded', maybeStylesheetsLoaded, true);
+
+  var pageReloaded = false;
+  function onPageReloaded() {
+    pageReloaded = true;
+    maybeStylesheetsLoaded();
+  }
+
+  function maybeStylesheetsLoaded() {
+    if (!pageReloaded)
+      return;
+    if (TestRunner.cssModel.styleSheetHeaders().length !== pendingStyleSheetsCount)
+      return;
+    Audits.AuditRuleResult.resourceDomain = function() {
+      return '[domain]';
+    };
+
+    AuditsTestRunner.launchAllAudits(false, onAuditsFinished);
+  }
+
+  function onAuditsFinished() {
+    AuditsTestRunner.collectAuditResults(TestRunner.completeTest);
+  }
+};
+</script>
+</head>
+
+<body onload="runTest()">
+<p>Tests audit rules.</p>
+<style>
+.violation { color: red; -webkit-border-radius: 3px; }
+</style>
+<link rel="stylesheet" href="resources/audits-style1.css" type="text/css">
+<img src="foo1.jpg">
+<img src="foo2.jpg" width=100>
+<img src="foo3.jpg" style="position: absolute">
+<img src="foo4.jpg" style="width: 16px; height: 16px">
+<span>Text</span>
+<a>Link</a>
+
+</body>
+</html>

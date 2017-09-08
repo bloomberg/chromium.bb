@@ -1,0 +1,45 @@
+<html>
+<head>
+<style>
+#node {
+    transition: left 100s;
+    left: 0px;
+}
+</style>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/elements-test.js"></script>
+<script>
+function startCSSTransition() {
+    // Force style recalcs that will trigger a transition.
+    getComputedStyle(node).left;
+    node.style.left = "100px";
+    getComputedStyle(node).left;
+}
+
+var initialize_Animations = function() {
+    InspectorTest.preloadModule("animation");
+}
+
+function test() {
+  UI.viewManager.showView('animations');
+  var timeline = self.runtime.sharedInstance(Animation.AnimationTimeline);
+  TestRunner.evaluateInPage('startCSSTransition()');
+  ElementsTestRunner.waitForAnimationAdded(animationAdded);
+  function animationAdded(group) {
+    group.animations()[0].setTiming(1, 0);
+    TestRunner.completeTest();
+  }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+This test passes if it does not crash.
+</p>
+
+<div id="node"></div>
+
+</body>
+</html>

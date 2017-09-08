@@ -1206,7 +1206,8 @@ crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html 
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-lr.html [ Failure ]
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-rl.html [ Failure ]
 
-crbug.com/700795 inspector/animation/animation-transition-setTiming-crash.html [ Timeout Pass ]
+crbug.com/700795 http/tests/devtools/animation/animation-transition-setTiming-crash.html [ Timeout Pass ]
+crbug.com/667560 virtual/mojo-loading/http/tests/devtools/animation/animation-transition-setTiming-crash.html [ Timeout Pass ]
 
 # These are the failing tests because Chrome hasn't implemented according to the spec.
 crbug.com/645988 external/wpt/uievents/order-of-events/focus-events/focus-manual.html [ Failure ]
@@ -1547,7 +1548,8 @@ crbug.com/611658 [ Win7 ] fast/writing-mode/english-lr-text.html [ Failure ]
 
 crbug.com/605059 [ Retina ] fast/text/international/rtl-negative-letter-spacing.html [ Failure ]
 
-crbug.com/610464 [ Linux Win7 Debug ] inspector/components/throttler.html [ Failure Pass ]
+crbug.com/610464 [ Linux Win7 Debug ] http/tests/devtools/components/throttler.html [ Failure Pass ]
+crbug.com/667560 [ Linux Win7 Debug ] virtual/mojo-loading/http/tests/devtools/components/throttler.html [ Failure Pass ]
 crbug.com/654477 [ Linux Mac Win7 ] paint/invalidation/video-paint-invalidation.html [ Failure ]
 crbug.com/654477 [ Win ] compositing/video/video-controls-layer-creation.html [ Pass Failure ]
 crbug.com/654477 fast/hidpi/video-controls-in-hidpi.html [ Failure ]

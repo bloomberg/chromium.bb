@@ -1,0 +1,61 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/network-test.js"></script>
+<script>
+async function test() {
+  var target = UI.panels.network._networkLogView;
+  var types = Common.resourceTypes;
+
+  var categoryName = types.XHR.category().title;
+  target._resourceCategoryFilterUI._toggleTypeFilter(categoryName, false);
+  TestRunner.addResult('Clicked \'' + categoryName + '\' button.');
+
+  var requestFoo = new SDK.NetworkRequest('', '', '', '', '');
+  requestFoo.setResourceType(types.Script);
+  requestFoo.setRequestId('foo');
+  TestRunner.networkManager._dispatcher._startNetworkRequest(requestFoo);
+
+  var requestBar = new SDK.NetworkRequest('', '', '', '', '');
+  requestBar.setResourceType(types.Script);
+  requestBar.setRequestId('bar');
+  TestRunner.networkManager._dispatcher._startNetworkRequest(requestBar);
+
+  async function isFilteredOut(request) {
+    var node = await NetworkTestRunner.waitForNetworkLogViewNodeForRequest(request);
+    return !!node[Network.NetworkLogView._isFilteredOutSymbol];
+  }
+
+  TestRunner.addResult('');
+  TestRunner.addResult(
+      'Request [' + requestFoo.requestId() + '] of type \'' + requestFoo.resourceType().name() +
+      '\' is hidden: ' + await isFilteredOut(requestFoo));
+  TestRunner.addResult(
+      'Request [' + requestBar.requestId() + '] of type \'' + requestBar.resourceType().name() +
+      '\' is hidden: ' + await isFilteredOut(requestBar));
+
+  TestRunner.addResult('');
+  requestFoo.setResourceType(types.XHR);
+  TestRunner.networkManager._dispatcher._updateNetworkRequest(requestFoo);
+  TestRunner.addResult('Updated request [' + requestFoo.requestId() + '] type.');
+  TestRunner.networkManager._dispatcher._updateNetworkRequest(requestBar);
+  TestRunner.addResult('Updated request [' + requestBar.requestId() + '].');
+  target._refresh();
+
+  TestRunner.addResult('');
+  TestRunner.addResult(
+      'Request [' + requestFoo.requestId() + '] of type \'' + requestFoo.resourceType().name() +
+      '\' is hidden: ' + await isFilteredOut(requestFoo));
+  TestRunner.addResult(
+      'Request [' + requestBar.requestId() + '] of type \'' + requestBar.resourceType().name() +
+      '\' is hidden: ' + await isFilteredOut(requestBar));
+
+  TestRunner.completeTest();
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that filter is reapplied when request is updated.</p>
+</body>
+</html>

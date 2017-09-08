@@ -1,0 +1,29 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/elements-test.js"></script>
+<script src="../resources/coverage-test.js"></script>
+<script src="resources/coverage.js"></script>
+
+<link rel="stylesheet" type="text/css" href="resources/highlight-in-source.css">
+
+<script>
+async function test() {
+  CoverageTestRunner.startCoverage();
+  await TestRunner.evaluateInPagePromise('performActions()');
+  await CoverageTestRunner.stopCoverage();
+
+  CoverageTestRunner.dumpCoverageListView();
+  TestRunner.completeTest();
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p class="class">
+Tests the coverage list view after finishing recording in the Coverage view.
+</p>
+
+</body>
+</html>

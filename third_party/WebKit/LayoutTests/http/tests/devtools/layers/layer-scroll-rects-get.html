@@ -1,0 +1,27 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/layers-test.js"></script>
+<script>
+function test() {
+  function onGotLayers() {
+    TestRunner.addResult('Scroll rectangles');
+    LayersTestRunner.dumpModelScrollRects();
+    TestRunner.completeTest();
+  }
+
+  LayersTestRunner.requestLayers(onGotLayers);
+}
+</script>
+</head>
+<body onload="runTest()">
+<div style="transform: translateZ(100px);" onmousewheel=""></div>
+<div id="touchable" style="transform:translateZ(100px);height:20px;width:20px;overflow:scroll;">
+    <div style="height:40px;width:40px;"></div>
+</div>
+<script type="text/javascript">
+    var element = document.getElementById('touchable');
+    element.addEventListener("touchstart", function(evt) {}, false);
+</script>
+</body>
+</html>

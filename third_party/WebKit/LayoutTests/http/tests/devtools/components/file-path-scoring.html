@@ -1,0 +1,87 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/sources-test.js"></script>
+<script src="../resources/example-fileset-for-test.js"></script>
+<script>
+function test() {
+  const TestQueries = [
+    ['textepl', './Source/devtools/front_end/TextEditor.pl'],
+    ['defted', './Source/devtools/front_end/DefaultTextEditor.pl'],
+    ['CMTE', './Source/devtools/front_end/CodeMirrorTextEditor.pl'],
+    ['frocmte', './Source/devtools/front_end/CodeMirrorTextEditor.pl'],
+    ['cmtepl', './Source/devtools/front_end/CodeMirrorTextEditor.pl'],
+    ['setscr', './Source/devtools/front_end/SettingsScreen.pl'],
+    ['cssnfv', './Source/devtools/front_end/CSSNamedFlowView.pl'],
+    ['jssf', './Source/devtools/front_end/JavaScriptSourceFrame.pl'],
+    ['sofrapl', './Source/devtools/front_end/SourceFrame.pl'],
+    ['inspeins', './Source/core/inspector/InspectorInstrumentation.z'],
+    ['froscr', './Source/devtools/front_end/Script.pl'],
+    ['adscon', './Source/devtools/front_end/AdvancedSearchController.pl']
+  ];
+  TestRunner.evaluateInPage('blinkFilePaths()', step1);
+  TestRunner.addResult('Expected score must be equal to the actual score');
+
+  function step1(filePaths) {
+    var files = filePaths.value.split(':');
+    TestRunner.addResult('Test set size: ' + files.length);
+    for (var i = 0; i < TestQueries.length; ++i) {
+      runQuery(files, TestQueries[i][0], TestQueries[i][1]);
+    }
+
+    runQuery(
+        ['svg/SVGTextRunRenderingContext.cpp', 'dom/ExecutionContext.cpp', 'testing/NullExecutionContext.cpp'],
+        'execontext', 'dom/ExecutionContext.cpp');
+
+    TestRunner.completeTest();
+  }
+
+  function runQuery(paths, query, expected) {
+    var scorer = new Sources.FilePathScoreFunction(query);
+    var bestScore = -1;
+    var bestIndex = -1;
+    var filter = QuickOpen.FilteredListWidget.filterRegex(query);
+    for (var i = 0; i < paths.length; ++i) {
+      if (!filter.test(paths[i]))
+        continue;
+      var score = scorer.score(paths[i]);
+      if (score > bestScore) {
+        bestScore = score;
+        bestIndex = i;
+      }
+    }
+    var result = '\n=== Test query: ' + query;
+    result += '\n    expected return: ' + render(scorer, expected);
+    result += '\n      actual return: ' + render(scorer, paths[bestIndex]);
+    TestRunner.addResult(result);
+  }
+
+  function render(scorer, value) {
+    var indexes = [];
+    var score = scorer.score(value, indexes);
+    var result = '';
+    var bold = false;
+    for (var i = 0; i < value.length; ++i) {
+      if (indexes.indexOf(i) !== -1) {
+        if (!bold)
+          result += '>';
+        bold = true;
+        result += value[i];
+      } else {
+        if (bold)
+          result += '<';
+        result += value[i];
+        bold = false;
+      }
+    }
+    if (bold)
+      result += '<';
+    return result + ' (score: ' + score + ')';
+  }
+};
+</script>
+</head>
+<body onload="runTest()">
+<p>Test file path scoring function</p>
+</body>
+</html>
