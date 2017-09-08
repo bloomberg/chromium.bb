@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/CSSPropertyAPIAlignOrJustifySelf.h"
+#include "core/css/properties/CSSPropertyAPIJustifySelf.h"
 
 #include "core/css/properties/CSSPropertyAlignmentUtils.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 
-const CSSValue* CSSPropertyAPIAlignOrJustifySelf::ParseSingleValue(
+const CSSValue* CSSPropertyAPIJustifySelf::ParseSingleValue(
     CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,

@@ -48,8 +48,8 @@ class CSSPropertyAPIWriter(css_properties.CSSProperties):
             ApiClassData(
                 enum_value=1,
                 property_id="CSSPropertyApplyAtRule",
-                classname="CSSPropertyAPI"))
-        self._api_classes.add("CSSPropertyAPI")
+                classname="CSSPropertyAPIApplyAtRule"))
+        self._api_classes.add("CSSPropertyAPIApplyAtRule")
         self._api_classes_by_property_id.append(
             ApiClassData(
                 enum_value=2,

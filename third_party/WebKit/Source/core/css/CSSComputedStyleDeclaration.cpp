@@ -36,6 +36,7 @@
 #include "core/css/ComputedStyleCSSValueMapping.h"
 #include "core/css/StyleEngine.h"
 #include "core/css/parser/CSSParser.h"
+#include "core/css/properties/CSSPropertyAPI.h"
 #include "core/css/zoomAdjustedPixelValue.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -509,7 +510,7 @@ String CSSComputedStyleDeclaration::getPropertyValue(
       return value->CssText();
     return String();
   }
-  DCHECK(CSSPropertyMetadata::IsEnabledProperty(property_id));
+  DCHECK(CSSPropertyAPI::Get(property_id).IsEnabled());
   return GetPropertyValue(property_id);
 }
 

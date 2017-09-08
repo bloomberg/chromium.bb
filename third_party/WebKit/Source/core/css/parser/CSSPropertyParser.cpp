@@ -156,7 +156,7 @@ static CSSPropertyID UnresolvedCSSPropertyID(const CharacterType* property_name,
   if (!hash_table_entry)
     return CSSPropertyInvalid;
   CSSPropertyID property = static_cast<CSSPropertyID>(hash_table_entry->id);
-  if (!CSSPropertyMetadata::IsEnabledProperty(property))
+  if (!CSSPropertyAPI::Get(resolveCSSPropertyID(property)).IsEnabled())
     return CSSPropertyInvalid;
   return property;
 }

@@ -29,7 +29,6 @@
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSPendingSubstitutionValue.h"
-#include "core/css/CSSPropertyMetadata.h"
 #include "core/css/CSSValuePool.h"
 #include "core/css/properties/CSSPropertyAPI.h"
 #include "platform/wtf/StdLibExtras.h"
@@ -226,14 +225,14 @@ String StylePropertySerializer::AsText() const {
     StylePropertySerializer::PropertyValueForSerializer property =
         property_set_.PropertyAt(n);
     CSSPropertyID property_id = property.Id();
+    const CSSPropertyAPI& property_api =
+        CSSPropertyAPI::Get(resolveCSSPropertyID(property_id));
     // Only enabled properties should be part of the style.
-    DCHECK(CSSPropertyMetadata::IsEnabledProperty(property_id));
+    DCHECK(property_api.IsEnabled());
     // All shorthand properties should have been expanded at parse time.
     DCHECK(property_set_.IsDescriptorContext() ||
-           (CSSPropertyAPI::Get(property_id).IsProperty() &&
-            !isShorthandProperty(property_id)));
-    DCHECK(!property_set_.IsDescriptorContext() ||
-           CSSPropertyAPI::Get(property_id).IsDescriptor());
+           (property_api.IsProperty() && !isShorthandProperty(property_id)));
+    DCHECK(!property_set_.IsDescriptorContext() || property_api.IsDescriptor());
 
     switch (property_id) {
       case CSSPropertyVariable:

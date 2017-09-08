@@ -30,9 +30,9 @@
 #include "core/css/DOMWindowCSS.h"
 
 #include "core/css/CSSMarkup.h"
-#include "core/css/CSSPropertyMetadata.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/parser/CSSParser.h"
+#include "core/css/properties/CSSPropertyAPI.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "platform/wtf/text/WTFString.h"
 
@@ -52,7 +52,8 @@ bool DOMWindowCSS::supports(const String& property, const String& value) {
         .did_parse;
   }
 
-  DCHECK(CSSPropertyMetadata::IsEnabledProperty(unresolved_property));
+  DCHECK(CSSPropertyAPI::Get(resolveCSSPropertyID(unresolved_property))
+             .IsEnabled());
 
   // This will return false when !important is present
   MutableStylePropertySet* dummy_style =
