@@ -3427,7 +3427,8 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 #endif
                                          bsize);
 #endif  // CONFIG_CB4X4
-  const int *partition_cost = x->partition_cost[pl];
+  const int *partition_cost =
+      pl >= 0 ? x->partition_cost[pl] : x->partition_cost[0];
 #if CONFIG_SUPERTX
   int this_rate_nocoef, sum_rate_nocoef = 0, best_rate_nocoef = INT_MAX;
   int abort_flag;
