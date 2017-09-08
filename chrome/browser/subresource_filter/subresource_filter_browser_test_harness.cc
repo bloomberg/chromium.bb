@@ -17,17 +17,13 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
-#include "chrome/browser/safe_browsing/v4_test_utils.h"
+#include "chrome/browser/safe_browsing/test_safe_browsing_database_helper.h"
 #include "chrome/browser/subresource_filter/subresource_filter_profile_context.h"
 #include "chrome/browser/subresource_filter/subresource_filter_profile_context_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
-#include "components/safe_browsing_db/v4_database.h"
-#include "components/safe_browsing_db/v4_feature_list.h"
-#include "components/safe_browsing_db/v4_get_hash_protocol_manager.h"
+#include "components/safe_browsing_db/util.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "content/public/browser/web_contents.h"
@@ -41,25 +37,6 @@
 namespace subresource_filter {
 
 namespace {
-
-// UI manager that never actually shows any interstitials, but emulates as if
-// the user chose to proceed through them.
-class FakeSafeBrowsingUIManager
-    : public safe_browsing::TestSafeBrowsingUIManager {
- public:
-  FakeSafeBrowsingUIManager() {}
-
- protected:
-  ~FakeSafeBrowsingUIManager() override {}
-
-  void DisplayBlockingPage(const UnsafeResource& resource) override {
-    resource.callback_thread->PostTask(
-        FROM_HERE, base::Bind(resource.callback, true /* proceed */));
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FakeSafeBrowsingUIManager);
-};
 
 }  // namespace
 
@@ -79,22 +56,7 @@ std::vector<base::StringPiece> SubresourceFilterBrowserTest::RequiredFeatures()
 }
 
 void SubresourceFilterBrowserTest::SetUp() {
-  sb_factory_ = base::MakeUnique<safe_browsing::TestSafeBrowsingServiceFactory>(
-      safe_browsing::V4FeatureList::V4UsageStatus::V4_ONLY);
-  sb_factory_->SetTestUIManager(new FakeSafeBrowsingUIManager());
-  safe_browsing::SafeBrowsingService::RegisterFactory(sb_factory_.get());
-
-  safe_browsing::V4Database::RegisterStoreFactoryForTest(
-      base::WrapUnique(new safe_browsing::TestV4StoreFactory()));
-
-  v4_db_factory_ = new safe_browsing::TestV4DatabaseFactory();
-  safe_browsing::V4Database::RegisterDatabaseFactoryForTest(
-      base::WrapUnique(v4_db_factory_));
-
-  v4_get_hash_factory_ =
-      new safe_browsing::TestV4GetHashProtocolManagerFactory();
-  safe_browsing::V4GetHashProtocolManager::RegisterFactory(
-      base::WrapUnique(v4_get_hash_factory_));
+  database_helper_ = CreateTestDatabase();
   InProcessBrowserTest::SetUp();
 }
 
@@ -102,10 +64,7 @@ void SubresourceFilterBrowserTest::TearDown() {
   InProcessBrowserTest::TearDown();
   // Unregister test factories after InProcessBrowserTest::TearDown
   // (which destructs SafeBrowsingService).
-  safe_browsing::V4GetHashProtocolManager::RegisterFactory(nullptr);
-  safe_browsing::V4Database::RegisterDatabaseFactoryForTest(nullptr);
-  safe_browsing::V4Database::RegisterStoreFactoryForTest(nullptr);
-  safe_browsing::SafeBrowsingService::RegisterFactory(nullptr);
+  database_helper_.reset();
 }
 
 void SubresourceFilterBrowserTest::SetUpOnMainThread() {
@@ -131,30 +90,27 @@ void SubresourceFilterBrowserTest::SetUpOnMainThread() {
 #endif
 }
 
+std::unique_ptr<TestSafeBrowsingDatabaseHelper>
+SubresourceFilterBrowserTest::CreateTestDatabase() {
+  return base::MakeUnique<TestSafeBrowsingDatabaseHelper>();
+}
+
 GURL SubresourceFilterBrowserTest::GetTestUrl(
     const std::string& relative_url) const {
   return embedded_test_server()->base_url().Resolve(relative_url);
 }
 
-void SubresourceFilterBrowserTest::MarkUrlAsMatchingListWithId(
-    const GURL& bad_url,
-    const safe_browsing::ListIdentifier& list_id,
-    safe_browsing::ThreatPatternType threat_pattern_type) {
-  safe_browsing::FullHashInfo full_hash_info =
-      GetFullHashInfoWithMetadata(bad_url, list_id, threat_pattern_type);
-  v4_db_factory_->MarkPrefixAsBad(list_id, full_hash_info.full_hash);
-  v4_get_hash_factory_->AddToFullHashCache(full_hash_info);
-}
-
 void SubresourceFilterBrowserTest::ConfigureAsPhishingURL(const GURL& url) {
-  MarkUrlAsMatchingListWithId(url, safe_browsing::GetUrlSocEngId(),
-                              safe_browsing::ThreatPatternType::NONE);
+  database_helper_->MarkUrlAsMatchingListWithId(
+      url, safe_browsing::GetUrlSocEngId(),
+      safe_browsing::ThreatPatternType::NONE);
 }
 
 void SubresourceFilterBrowserTest::ConfigureAsSubresourceFilterOnlyURL(
     const GURL& url) {
-  MarkUrlAsMatchingListWithId(url, safe_browsing::GetUrlSubresourceFilterId(),
-                              safe_browsing::ThreatPatternType::NONE);
+  database_helper_->MarkUrlAsMatchingListWithId(
+      url, safe_browsing::GetUrlSubresourceFilterId(),
+      safe_browsing::ThreatPatternType::NONE);
 }
 
 content::WebContents* SubresourceFilterBrowserTest::web_contents() const {

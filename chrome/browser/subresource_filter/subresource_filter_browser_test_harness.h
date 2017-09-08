@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "chrome/browser/subresource_filter/test_ruleset_publisher.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "components/safe_browsing_db/util.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "components/url_pattern_index/proto/rules.pb.h"
@@ -30,14 +29,8 @@ class RenderFrameHost;
 class WebContents;
 }  // namespace content
 
-namespace safe_browsing {
-class ListIdentifier;
-class TestSafeBrowsingServiceFactory;
-class TestV4DatabaseFactory;
-class TestV4GetHashProtocolManagerFactory;
-}  // namespace safe_browsing
-
 class SubresourceFilterContentSettingsManager;
+class TestSafeBrowsingDatabaseHelper;
 
 namespace subresource_filter {
 
@@ -53,14 +46,11 @@ class SubresourceFilterBrowserTest : public InProcessBrowserTest {
   void TearDown() override;
   void SetUpOnMainThread() override;
 
+  virtual std::unique_ptr<TestSafeBrowsingDatabaseHelper> CreateTestDatabase();
+
   std::vector<base::StringPiece> RequiredFeatures() const;
 
   GURL GetTestUrl(const std::string& relative_url) const;
-
-  void MarkUrlAsMatchingListWithId(
-      const GURL& bad_url,
-      const safe_browsing::ListIdentifier& list_id,
-      safe_browsing::ThreatPatternType threat_pattern_type);
 
   void ConfigureAsPhishingURL(const GURL& url);
 
@@ -101,16 +91,16 @@ class SubresourceFilterBrowserTest : public InProcessBrowserTest {
       bool measure_performance = false,
       bool whitelist_site_on_reload = false);
 
+  TestSafeBrowsingDatabaseHelper* database_helper() {
+    return database_helper_.get();
+  }
+
  private:
   TestRulesetCreator ruleset_creator_;
   ScopedSubresourceFilterConfigurator scoped_configuration_;
   TestRulesetPublisher test_ruleset_publisher_;
 
-  std::unique_ptr<safe_browsing::TestSafeBrowsingServiceFactory> sb_factory_;
-  // Owned by the V4Database.
-  safe_browsing::TestV4DatabaseFactory* v4_db_factory_;
-  // Owned by the V4GetHashProtocolManager.
-  safe_browsing::TestV4GetHashProtocolManagerFactory* v4_get_hash_factory_;
+  std::unique_ptr<TestSafeBrowsingDatabaseHelper> database_helper_;
 
   // Owned by the profile.
   SubresourceFilterContentSettingsManager* settings_manager_;
