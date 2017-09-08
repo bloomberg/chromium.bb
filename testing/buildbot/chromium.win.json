@@ -1057,7 +1057,7 @@
       }
     ]
   },
-  "Win10 x64 (GCE)": {
+  "Win10 Tests x64 (GCE)": {
     "gtest_tests": [
       {
         "swarming": {
