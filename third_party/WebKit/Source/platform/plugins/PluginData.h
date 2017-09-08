@@ -62,6 +62,7 @@ class PLATFORM_EXPORT PluginInfo final
 
   void AddMimeType(MimeClassInfo*);
 
+  const HeapVector<Member<MimeClassInfo>>& Mimes() const { return mimes_; }
   const MimeClassInfo* GetMimeClassInfo(size_t index) const;
   const MimeClassInfo* GetMimeClassInfo(const String& type) const;
   size_t GetMimeClassInfoSize() const;

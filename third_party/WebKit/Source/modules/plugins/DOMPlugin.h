@@ -29,6 +29,8 @@
 
 namespace blink {
 
+class ExceptionState;
+
 class DOMPlugin final : public GarbageCollected<DOMPlugin>,
                         public ScriptWrappable,
                         public ContextClient {
@@ -48,6 +50,8 @@ class DOMPlugin final : public GarbageCollected<DOMPlugin>,
 
   DOMMimeType* item(unsigned index);
   DOMMimeType* namedItem(const AtomicString& property_name);
+  void NamedPropertyEnumerator(Vector<String>&, ExceptionState&) const;
+  bool NamedPropertyQuery(const AtomicString&, ExceptionState&) const;
 
   DECLARE_VIRTUAL_TRACE();
 

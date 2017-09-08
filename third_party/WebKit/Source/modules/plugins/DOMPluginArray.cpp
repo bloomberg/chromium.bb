@@ -77,6 +77,24 @@ DOMPlugin* DOMPluginArray::namedItem(const AtomicString& property_name) {
   return nullptr;
 }
 
+void DOMPluginArray::NamedPropertyEnumerator(Vector<String>& property_names,
+                                             ExceptionState&) const {
+  PluginData* data = GetPluginData();
+  if (!data)
+    return;
+  property_names.ReserveInitialCapacity(data->Plugins().size());
+  for (const PluginInfo* plugin_info : data->Plugins()) {
+    property_names.UncheckedAppend(plugin_info->Name());
+  }
+}
+
+bool DOMPluginArray::NamedPropertyQuery(const AtomicString& property_name,
+                                        ExceptionState& exception_state) const {
+  Vector<String> properties;
+  NamedPropertyEnumerator(properties, exception_state);
+  return properties.Contains(property_name);
+}
+
 void DOMPluginArray::refresh(bool reload) {
   if (!GetFrame())
     return;
