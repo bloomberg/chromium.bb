@@ -15,9 +15,8 @@ class FakeUiElementRenderer : public UiElementRenderer {
   FakeUiElementRenderer();
   ~FakeUiElementRenderer() override;
 
-  float texture_opacity() { return texture_opacity_; }
-  float gradient_opacity() { return gradient_opacity_; }
-  float grid_opacity() { return grid_opacity_; }
+  bool called() const { return called_; }
+  float opacity() const { return opacity_; }
 
   void DrawTexturedQuad(int texture_data_handle,
                         TextureLocation texture_location,
@@ -42,9 +41,8 @@ class FakeUiElementRenderer : public UiElementRenderer {
                             float opacity) override;
 
  private:
-  float texture_opacity_ = -1.f;
-  float gradient_opacity_ = -1.f;
-  float grid_opacity_ = -1.f;
+  float opacity_ = -1.f;
+  float called_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FakeUiElementRenderer);
 };
