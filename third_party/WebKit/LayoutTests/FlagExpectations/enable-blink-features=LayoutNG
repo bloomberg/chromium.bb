@@ -9628,7 +9628,7 @@ crbug.com/757767 fast/multicol/span/balance-before-and-after-spanner.html [ Cras
 crbug.com/757767 fast/multicol/span/balance-before-spanner-extra-height.html [ Crash ]
 crbug.com/591099 fast/multicol/span/becomes-empty-spanner-crash.html [ Failure ]
 crbug.com/591099 fast/multicol/span/becomes-spanner-with-new-width.html [ Failure ]
-crbug.com/757767 fast/multicol/span/block-with-top-border-and-margin-around-spanner-exact-fit.html [ Timeout ]
+crbug.com/591099 fast/multicol/span/block-with-top-border-and-margin-around-spanner-exact-fit.html [ Failure ]
 crbug.com/591099 fast/multicol/span/block-with-top-border-and-margin-around-spanner-extra-space.html [ Failure ]
 crbug.com/591099 fast/multicol/span/break-in-columns-before-spanner.html [ Failure ]
 crbug.com/591099 fast/multicol/span/button-with-spanner-crash.html [ Failure ]

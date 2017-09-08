@@ -1819,7 +1819,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, FloatFragmentationParallelFlows) {
   // Second fragment of float2.
   child = iterator.NextChild();
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(75), LayoutUnit(100)), child->Size());
-  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(65), LayoutUnit(10)), child->Offset());
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(65), LayoutUnit()), child->Offset());
 }
 
 // Tests that float children don't fragment if they aren't in the same writing
