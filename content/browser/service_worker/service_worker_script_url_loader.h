@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "content/browser/service_worker/service_worker_version.h"
+#include "content/common/content_export.h"
 #include "content/public/common/resource_request.h"
 #include "content/public/common/url_loader.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -22,8 +23,9 @@ class URLLoaderFactoryGetter;
 // Eventually this should replace the existing URLRequestJob-based request
 // interception for script loading, namely ServiceWorkerWriteToCacheJob.
 // TODO(kinuko): Implement this.
-class ServiceWorkerScriptURLLoader : public mojom::URLLoader,
-                                     public mojom::URLLoaderClient {
+class CONTENT_EXPORT ServiceWorkerScriptURLLoader
+    : public mojom::URLLoader,
+      public mojom::URLLoaderClient {
  public:
   ServiceWorkerScriptURLLoader(
       int32_t routing_id,
