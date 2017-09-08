@@ -17,8 +17,6 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/portal_detector/mock_network_portal_detector.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
-#include "components/image_fetcher/core/image_fetcher.h"
-#include "components/image_fetcher/core/image_fetcher_delegate.h"
 #include "components/image_fetcher/core/request_metadata.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -26,7 +24,6 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/image/image_unittest_util.h"
 #include "ui/message_center/fake_message_center_tray_delegate.h"
 #include "ui/message_center/message_center.h"
 
@@ -37,35 +34,7 @@ using testing::Return;
 using testing::SaveArg;
 using testing::StrictMock;
 
-using image_fetcher::ImageFetcher;
-using image_fetcher::ImageFetcherDelegate;
-
 namespace chromeos {
-
-namespace {
-
-class MockImageFetcher : public image_fetcher::ImageFetcher {
- public:
-  MockImageFetcher() {}
-  ~MockImageFetcher() override {}
-
-  MOCK_METHOD4(StartOrQueueNetworkRequest,
-               void(const std::string&,
-                    const GURL&,
-                    const ImageFetcher::ImageFetcherCallback&,
-                    const net::NetworkTrafficAnnotationTag&));
-  MOCK_METHOD1(SetImageFetcherDelegate, void(ImageFetcherDelegate*));
-  MOCK_METHOD1(SetDataUseServiceName, void(DataUseServiceName));
-  MOCK_METHOD1(SetImageDownloadLimit,
-               void(base::Optional<int64_t> max_download_bytes));
-  MOCK_METHOD1(SetDesiredImageFrameSize, void(const gfx::Size&));
-  MOCK_METHOD0(GetImageDecoder, image_fetcher::ImageDecoder*());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockImageFetcher);
-};
-
-}  // namespace
 
 class HatsNotificationControllerTest : public BrowserWithTestWindowTest {
  public:
@@ -101,11 +70,10 @@ class HatsNotificationControllerTest : public BrowserWithTestWindowTest {
   }
 
   scoped_refptr<HatsNotificationController> InstantiateHatsController() {
-    mock_image_fetcher_ = new MockImageFetcher;
     // The initialization will fail since the function IsNewDevice() will return
     // true.
     scoped_refptr<HatsNotificationController> hats_notification_controller =
-        new HatsNotificationController(&profile_, mock_image_fetcher_);
+        new HatsNotificationController(&profile_);
 
     // HatsController::IsNewDevice() is run on a blocking thread.
     content::RunAllBlockingPoolTasksUntilIdle();
@@ -124,40 +92,11 @@ class HatsNotificationControllerTest : public BrowserWithTestWindowTest {
                   &network_state, online_state);
             }));
 
-    // Run the image fetcher callback to simulate a successful 1x icon fetch.
-    ON_CALL(*mock_image_fetcher_,
-            StartOrQueueNetworkRequest(
-                HatsNotificationController::kImageFetcher1xId, _, _, _))
-        .WillByDefault(Invoke([&hats_notification_controller](
-                                  const std::string&, const GURL&,
-                                  const ImageFetcher::ImageFetcherCallback&,
-                                  const net::NetworkTrafficAnnotationTag&) {
-          gfx::Image icon_1x(gfx::test::CreateImage());
-          hats_notification_controller->OnImageFetched(
-              HatsNotificationController::kImageFetcher1xId, icon_1x,
-              image_fetcher::RequestMetadata());
-        }));
-
-    // Run the image fetcher callback to simulate a successful 2x icon fetch.
-    ON_CALL(*mock_image_fetcher_,
-            StartOrQueueNetworkRequest(
-                HatsNotificationController::kImageFetcher2xId, _, _, _))
-        .WillByDefault(Invoke([&hats_notification_controller](
-                                  const std::string&, const GURL&,
-                                  ImageFetcher::ImageFetcherCallback,
-                                  const net::NetworkTrafficAnnotationTag&) {
-          gfx::Image icon_1x(gfx::test::CreateImage());
-          hats_notification_controller->OnImageFetched(
-              HatsNotificationController::kImageFetcher2xId, icon_1x,
-              image_fetcher::RequestMetadata());
-        }));
-
     return hats_notification_controller;
   }
 
   TestingProfile profile_;
   StrictMock<MockNetworkPortalDetector> mock_network_portal_detector_;
-  MockImageFetcher* mock_image_fetcher_;
 
  private:
   std::unique_ptr<TestingProfileManager> profile_manager_;
@@ -206,17 +145,6 @@ TEST_F(HatsNotificationControllerTest, OldDevice_ShouldShowNotification) {
   EXPECT_CALL(mock_network_portal_detector_,
               RemoveObserver(hats_notification_controller.get()))
       .Times(2);
-
-  EXPECT_CALL(*mock_image_fetcher_,
-              StartOrQueueNetworkRequest(
-                  HatsNotificationController::kImageFetcher1xId,
-                  GURL(HatsNotificationController::kGoogleIcon1xUrl), _, _))
-      .Times(1);
-  EXPECT_CALL(*mock_image_fetcher_,
-              StartOrQueueNetworkRequest(
-                  HatsNotificationController::kImageFetcher2xId,
-                  GURL(HatsNotificationController::kGoogleIcon2xUrl), _, _))
-      .Times(1);
 
   hats_notification_controller->Initialize(false);
 

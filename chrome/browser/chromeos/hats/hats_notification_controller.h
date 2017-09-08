@@ -16,15 +16,6 @@
 class Profile;
 class NetworkState;
 
-namespace gfx {
-class Image;
-}
-
-namespace image_fetcher {
-class ImageFetcher;
-struct RequestMetadata;
-}
-
 namespace chromeos {
 
 // Happiness tracking survey (HaTS) notification controller is responsible for
@@ -34,14 +25,8 @@ class HatsNotificationController : public NotificationDelegate,
  public:
   static const char kDelegateId[];
   static const char kNotificationId[];
-  static const char kImageFetcher1xId[];
-  static const char kImageFetcher2xId[];
-  static const char kGoogleIcon1xUrl[];
-  static const char kGoogleIcon2xUrl[];
 
-  explicit HatsNotificationController(
-      Profile* profile,
-      image_fetcher::ImageFetcher* image_fetcher = nullptr);
+  explicit HatsNotificationController(Profile* profile);
 
   // Returns true if the survey needs to be displayed for the given |profile|.
   static bool ShouldShowSurveyToProfile(Profile* profile);
@@ -68,10 +53,6 @@ class HatsNotificationController : public NotificationDelegate,
   void Click() override;
   std::string id() const override;
 
-  void OnImageFetched(const std::string& id,
-                      const gfx::Image& image,
-                      const image_fetcher::RequestMetadata& metadata);
-
   // NetworkPortalDetector::Observer override:
   void OnPortalDetectionCompleted(
       const NetworkState* network,
@@ -81,11 +62,6 @@ class HatsNotificationController : public NotificationDelegate,
   void UpdateLastInteractionTime();
 
   Profile* profile_;
-  // A count of requests that have been completed so far. This includes requests
-  // that may have failed as well.
-  int completed_requests_;
-  std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher_;
-  gfx::ImageSkia icon_;
   base::WeakPtrFactory<HatsNotificationController> weak_pointer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HatsNotificationController);
