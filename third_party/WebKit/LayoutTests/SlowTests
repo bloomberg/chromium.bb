@@ -121,7 +121,6 @@ crbug.com/450493 virtual/mojo-loading/http/tests/devtools/sources/ [ Slow ]
 #############################################################
 
 # Most inspector tests are slow in Debug.
-webkit.org/b/90488 [ Debug ] inspector/ [ Slow ]
 webkit.org/b/90488 [ Debug ] http/tests/inspector/ [ Slow ]
 webkit.org/b/90488 [ Debug ] virtual/mojo-loading/http/tests/inspector/ [ Slow ]
 webkit.org/b/90488 [ Debug ] http/tests/inspector-enabled/ [ Slow ]
@@ -256,7 +255,8 @@ crbug.com/492664 external/wpt/css/css-writing-modes-3/text-orientation-script-00
 crbug.com/492664 external/wpt/css/css-writing-modes-3/text-orientation-script-001n.html [ Slow ]
 crbug.com/492664 external/wpt/css/css-writing-modes-3/text-orientation-script-001o.html [ Slow ]
 
-crbug.com/336481 inspector/jump-to-previous-editing-location.html [ Slow ]
+crbug.com/336481 http/tests/devtools/jump-to-previous-editing-location.html [ Slow ]
+crbug.com/667560 virtual/mojo-loading/http/tests/devtools/jump-to-previous-editing-location.html [ Slow ]
 crbug.com/346259 http/tests/websocket/no-crash-on-cookie-flood.html [ Slow ]
 crbug.com/346259 virtual/mojo-loading/http/tests/websocket/no-crash-on-cookie-flood.html [ Slow ]
 

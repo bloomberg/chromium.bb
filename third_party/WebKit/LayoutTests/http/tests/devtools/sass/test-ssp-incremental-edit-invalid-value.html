@@ -1,0 +1,68 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/elements-test.js"></script>
+<script src="../../inspector/debugger-test.js"></script>
+<link rel="stylesheet">
+<script>
+
+function insertStyleSheet()
+{
+    var link = document.querySelector("link");
+    link.setAttribute("href", "resources/test-ssp-editing.css");
+}
+
+function test() {
+  var sourceCode;
+  TestRunner.evaluateInPage('insertStyleSheet()', onStyleSheet);
+
+  function onStyleSheet() {
+    SourcesTestRunner.waitForScriptSource('test-ssp-editing.scss', onSASS);
+  }
+
+  function onSASS(sc) {
+    sourceCode = sc;
+    ElementsTestRunner.selectNodeAndWaitForStyles('inspected', setInvalidValue);
+  }
+
+  function setInvalidValue() {
+    setColorPropertyValue('!!!<invalid>', false, setEmptyValue);
+  }
+
+  function setEmptyValue() {
+    setColorPropertyValue('', false, setValidValue);
+  }
+
+  function setValidValue() {
+    setColorPropertyValue('magenta', true, onEditingEnded);
+  }
+
+  function onEditingEnded() {
+    TestRunner.addResult(sourceCode.workingCopy());
+    TestRunner.completeTest();
+  }
+
+  function setColorPropertyValue(value, commit, callback) {
+    var treeElement = ElementsTestRunner.getMatchedStylePropertyTreeItem('color');
+    treeElement.startEditing(treeElement.valueElement);
+    treeElement.valueElement.textContent = value;
+    if (commit)
+      treeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent('Enter'));
+    else
+      treeElement.kickFreeFlowStyleEditForTest();
+    ElementsTestRunner.waitForStyleApplied(callback);
+  }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that setting invalid values for CSS property value does
+not break LiveSASS.
+</p>
+
+<div id="inspected"></div>
+</body>
+</html>

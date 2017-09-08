@@ -1011,7 +1011,8 @@ crbug.com/637255 [ Win10 ] media/video-transformed.html [ Pass Failure ]
 
 crbug.com/760367 http/tests/devtools/console/console-tainted-globals.html [ NeedsManualRebaseline Timeout ]
 crbug.com/760367 virtual/mojo-loading/http/tests/devtools/console/console-tainted-globals.html [ NeedsManualRebaseline Timeout ]
-crbug.com/760367 inspector/runtime/runtime-callFunctionOn.html [ NeedsManualRebaseline Timeout ]
+crbug.com/760367 http/tests/devtools/runtime/runtime-callFunctionOn.html [ NeedsManualRebaseline Timeout ]
+crbug.com/760367 virtual/mojo-loading/http/tests/devtools/runtime/runtime-callFunctionOn.html [ NeedsManualRebaseline Timeout ]
 
 # These tests pass but images do not match because tests are stricter than the spec.
 crbug.com/492664 external/wpt/css/css-writing-modes-3/text-combine-upright-value-all-001.html [ Failure ]
@@ -3115,7 +3116,8 @@ crbug.com/626703 [ Win7 Mac10.11 ] external/wpt/html/semantics/tabular-data/proc
 
 # Sheriff failure 2017-08-07
 crbug.com/708499 [ Linux ] virtual/wheelscrolllatching/fast/compositor-wheel-scroll-latching/touchpad-scroll-impl-to-main.html [ Failure Pass ]
-crbug.com/752845 [ Win ] inspector/sha1.html [ Pass Crash ]
+crbug.com/752845 [ Win ] http/tests/devtools/sha1.html [ Pass Crash ]
+crbug.com/667560 [ Win ] virtual/mojo-loading/http/tests/devtools/sha1.html [ Pass Crash ]
 
 # Sheriff failure 2017-08-11
 crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/api/response/response-cancel-stream.html [ Pass Timeout ]

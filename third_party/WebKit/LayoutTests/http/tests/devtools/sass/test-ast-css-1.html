@@ -1,0 +1,58 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/elements-test.js"></script>
+<script src="../resources/sass-test.js"></script>
+<style>
+pre {
+    font-family: monospace;
+}
+</style>
+<script>
+
+function test() {
+  TestRunner.evaluateInPage('getCSS()', onCSS);
+
+  function onCSS(result) {
+    SASSTestRunner.parseCSS('', result.value)
+        .then(SASSTestRunner.dumpAST)
+        .then(SASSTestRunner.validateASTRanges)
+        .catch(console.error.bind(console))
+        .then(TestRunner.completeTest);
+  }
+}
+
+function getCSS()
+{
+    return document.querySelector(".snippet").textContent;
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Verifies CSS AST for simple input.
+</p>
+<pre class="snippet">
+div {
+    /* display: flex; */
+    color: red;
+    background-color: blue;
+    /* position: absolute; */
+}
+
+div .className {
+    padding: 10px 0 0 10px;
+    /* font-family: "Times New Roman"; */
+    background-image: url(assets/no-image-set.png);
+}
+
+div .className #test::before {
+    margin: 10px 10px;
+    content: "test me";
+    /* border: 1px solid black; */
+}
+</pre>
+</body>
+</html>
