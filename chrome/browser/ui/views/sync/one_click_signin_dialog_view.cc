@@ -75,8 +75,8 @@ OneClickSigninDialogView::OneClickSigninDialogView(
       advanced_link_(nullptr),
       learn_more_link_(nullptr) {
   DCHECK(!start_sync_callback_.is_null());
-  set_margins(ChromeLayoutProvider::Get()->GetInsetsMetric(
-      views::INSETS_DIALOG_CONTENTS));
+  set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
+      views::TEXT, views::TEXT));
   chrome::RecordDialogCreation(chrome::DialogIdentifier::ONE_CLICK_SIGNIN);
 }
 

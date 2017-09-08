@@ -179,9 +179,6 @@ const char* MessageBoxView::GetClassName() const {
 // MessageBoxView, private:
 
 void MessageBoxView::Init(const InitParams& params) {
-  SetBorder(CreateEmptyBorder(
-      LayoutProvider::Get()->GetInsetsMetric(INSETS_DIALOG_CONTENTS)));
-
   if (params.options & DETECT_DIRECTIONALITY) {
     std::vector<base::string16> texts;
     SplitStringIntoParagraphs(params.message, &texts);
@@ -245,23 +242,31 @@ void MessageBoxView::ResetLayoutManager() {
   layout->StartRow(0, message_column_view_set_id);
   layout->AddView(scroll_view);
 
+  views::DialogContentType trailing_content_type = views::TEXT;
   if (prompt_field_) {
     layout->AddPaddingRow(0, inter_row_vertical_spacing_);
     layout->StartRow(0, extra_column_view_set_id);
     layout->AddView(prompt_field_);
+    trailing_content_type = views::CONTROL;
   }
 
   if (checkbox_) {
     layout->AddPaddingRow(0, inter_row_vertical_spacing_);
     layout->StartRow(0, extra_column_view_set_id);
     layout->AddView(checkbox_);
+    trailing_content_type = views::CONTROL;
   }
 
   if (link_) {
     layout->AddPaddingRow(0, inter_row_vertical_spacing_);
     layout->StartRow(0, extra_column_view_set_id);
     layout->AddView(link_);
+    trailing_content_type = views::TEXT;
   }
+
+  SetBorder(
+      CreateEmptyBorder(LayoutProvider::Get()->GetDialogInsetsForContentType(
+          views::TEXT, trailing_content_type)));
 }
 
 }  // namespace views

@@ -133,7 +133,7 @@ AppInfoDialog::AppInfoDialog(gfx::NativeWindow parent_window,
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   dialog_body_contents->SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kVertical,
-      provider->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS),
+      provider->GetInsetsMetric(views::INSETS_DIALOG_SUBSECTION),
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
   dialog_body_contents->AddChildView(new AppInfoSummaryPanel(profile, app));
   dialog_body_contents->AddChildView(new AppInfoPermissionsPanel(profile, app));

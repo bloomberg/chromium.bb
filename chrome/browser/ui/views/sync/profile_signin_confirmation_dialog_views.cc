@@ -200,8 +200,8 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
 
   // Layout the components.
   const gfx::Insets content_insets =
-      views::LayoutProvider::Get()->GetInsetsMetric(
-          views::INSETS_DIALOG_CONTENTS);
+      views::LayoutProvider::Get()->GetDialogInsetsForContentType(
+          views::CONTROL, views::TEXT);
   // The prompt bar needs to go to the edge of the dialog, so remove horizontal
   // insets.
   SetBorder(views::CreateEmptyBorder(content_insets.top(), 0,
@@ -213,7 +213,7 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
       views::GridLayout::CreateAndInstall(prompt_bar);
   prompt_bar->SetBorder(
       views::CreateEmptyBorder(ChromeLayoutProvider::Get()->GetInsetsMetric(
-          views::INSETS_DIALOG_CONTENTS)));
+          views::INSETS_DIALOG_SUBSECTION)));
   constexpr int kPromptBarColumnSetId = 0;
   prompt_layout->AddColumnSet(kPromptBarColumnSetId)
       ->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 100,

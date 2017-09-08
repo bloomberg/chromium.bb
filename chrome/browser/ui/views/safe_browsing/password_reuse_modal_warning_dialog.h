@@ -27,6 +27,7 @@ class PasswordReuseModalWarningDialog
   ~PasswordReuseModalWarningDialog() override;
 
   // views::DialogDelegateView:
+  gfx::Size CalculatePreferredSize() const override;
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;

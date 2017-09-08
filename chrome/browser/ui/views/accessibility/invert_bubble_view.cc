@@ -70,6 +70,7 @@ InvertBubbleView::InvertBubbleView(Browser* browser, views::View* anchor_view)
       dark_theme_(NULL),
       learn_more_(NULL),
       close_(NULL) {
+  set_margins(gfx::Insets());
   chrome::RecordDialogCreation(chrome::DialogIdentifier::INVERT);
 }
 
@@ -83,7 +84,7 @@ int InvertBubbleView::GetDialogButtons() const {
 void InvertBubbleView::Init() {
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   SetBorder(views::CreateEmptyBorder(
-      provider->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS)));
+      provider->GetInsetsMetric(views::INSETS_DIALOG)));
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   const gfx::FontList& original_font_list =

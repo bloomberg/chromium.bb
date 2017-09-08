@@ -8,6 +8,7 @@ gfx::Insets HarmonyLayoutProvider::GetInsetsMetric(int metric) const {
   DCHECK_LT(metric, views::VIEWS_INSETS_MAX);
   switch (metric) {
     case views::INSETS_DIALOG:
+    case views::INSETS_DIALOG_SUBSECTION:
       return gfx::Insets(kHarmonyLayoutUnit);
     case views::INSETS_CHECKBOX_RADIO_BUTTON: {
       gfx::Insets insets = ChromeLayoutProvider::GetInsetsMetric(metric);
@@ -37,10 +38,23 @@ int HarmonyLayoutProvider::GetDistanceMetric(int metric) const {
     }
     case views::DISTANCE_CONTROL_TOTAL_VERTICAL_TEXT_PADDING:
       return kHarmonyLayoutUnit / 2;
-    case views::DISTANCE_DIALOG_CONTENT_TO_BUTTONS:
+    case views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_CONTROL:
+      return kHarmonyLayoutUnit * 3 / 2;
+    case views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_TEXT: {
+      // This is reduced so there is about the same amount of visible
+      // whitespace, compensating for the text's internal leading.
+      return GetDistanceMetric(
+                 views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_CONTROL) -
+             8;
+    }
+    case views::DISTANCE_DIALOG_CONTENT_MARGIN_TOP_CONTROL:
       return kHarmonyLayoutUnit;
-    case views::DISTANCE_DIALOG_TITLE_TO_CONTENT:
-      return kHarmonyLayoutUnit;
+    case views::DISTANCE_DIALOG_CONTENT_MARGIN_TOP_TEXT: {
+      // See the comment in DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_TEXT above.
+      return GetDistanceMetric(
+                 views::DISTANCE_DIALOG_CONTENT_MARGIN_TOP_CONTROL) -
+             8;
+    }
     case views::DISTANCE_RELATED_BUTTON_HORIZONTAL:
       return kHarmonyLayoutUnit / 2;
     case views::DISTANCE_RELATED_CONTROL_HORIZONTAL:

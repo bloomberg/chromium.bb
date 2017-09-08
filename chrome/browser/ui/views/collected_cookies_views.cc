@@ -389,7 +389,7 @@ views::View* CollectedCookiesViews::CreateAllowedPane() {
   GridLayout* layout = GridLayout::CreateAndInstall(pane);
   pane->SetBorder(
       views::CreateEmptyBorder(ChromeLayoutProvider::Get()->GetInsetsMetric(
-          views::INSETS_DIALOG_CONTENTS)));
+          views::INSETS_DIALOG_SUBSECTION)));
   int unrelated_vertical_distance =
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           views::DISTANCE_UNRELATED_CONTROL_VERTICAL);
@@ -456,7 +456,7 @@ views::View* CollectedCookiesViews::CreateBlockedPane() {
   GridLayout* layout = GridLayout::CreateAndInstall(pane);
   pane->SetBorder(
       views::CreateEmptyBorder(ChromeLayoutProvider::Get()->GetInsetsMetric(
-          views::INSETS_DIALOG_CONTENTS)));
+          views::INSETS_DIALOG_SUBSECTION)));
   int unrelated_vertical_distance =
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           views::DISTANCE_UNRELATED_CONTROL_VERTICAL);

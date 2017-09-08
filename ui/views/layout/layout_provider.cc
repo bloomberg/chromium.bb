@@ -46,17 +46,11 @@ gfx::Insets LayoutProvider::GetInsetsMetric(int metric) const {
   DCHECK_LT(metric, VIEWS_INSETS_MAX);
   switch (metric) {
     case InsetsMetric::INSETS_DIALOG:
+    case InsetsMetric::INSETS_DIALOG_SUBSECTION:
       return gfx::Insets(13, 13);
     case InsetsMetric::INSETS_DIALOG_BUTTON_ROW: {
       const gfx::Insets dialog_insets = GetInsetsMetric(INSETS_DIALOG);
       return gfx::Insets(0, dialog_insets.left(), dialog_insets.bottom(),
-                         dialog_insets.right());
-    }
-    case InsetsMetric::INSETS_DIALOG_CONTENTS: {
-      const gfx::Insets dialog_insets = GetInsetsMetric(INSETS_DIALOG);
-      return gfx::Insets(GetDistanceMetric(DISTANCE_DIALOG_TITLE_TO_CONTENT),
-                         dialog_insets.left(),
-                         GetDistanceMetric(DISTANCE_DIALOG_CONTENT_TO_BUTTONS),
                          dialog_insets.right());
     }
     case InsetsMetric::INSETS_DIALOG_TITLE: {
@@ -84,9 +78,12 @@ int LayoutProvider::GetDistanceMetric(int metric) const {
       return 7;
     case DistanceMetric::DISTANCE_CONTROL_TOTAL_VERTICAL_TEXT_PADDING:
       return 6;
-    case DistanceMetric::DISTANCE_DIALOG_CONTENT_TO_BUTTONS:
-      return 13;
-    case DistanceMetric::DISTANCE_DIALOG_TITLE_TO_CONTENT:
+    case DistanceMetric::DISTANCE_DIALOG_BUTTON_MINIMUM_WIDTH:
+      return 75;
+    case DistanceMetric::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_CONTROL:
+    case DistanceMetric::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_TEXT:
+    case DistanceMetric::DISTANCE_DIALOG_CONTENT_MARGIN_TOP_CONTROL:
+    case DistanceMetric::DISTANCE_DIALOG_CONTENT_MARGIN_TOP_TEXT:
       return 13;
     case DistanceMetric::DISTANCE_RELATED_BUTTON_HORIZONTAL:
       return 6;
@@ -94,8 +91,6 @@ int LayoutProvider::GetDistanceMetric(int metric) const {
       return 8;
     case DistanceMetric::DISTANCE_RELATED_CONTROL_VERTICAL:
       return 8;
-    case DistanceMetric::DISTANCE_DIALOG_BUTTON_MINIMUM_WIDTH:
-      return 75;
     case DistanceMetric::DISTANCE_RELATED_LABEL_HORIZONTAL:
       return 10;
     case DistanceMetric::DISTANCE_TABLE_CELL_HORIZONTAL_MARGIN:
@@ -119,6 +114,22 @@ int LayoutProvider::GetSnappedDialogWidth(int min_width) const {
   // than this value. In principle it's possible to factor in the title width
   // here, but it is not really worth the complexity.
   return std::max(min_width, 320);
+}
+
+gfx::Insets LayoutProvider::GetDialogInsetsForContentType(
+    DialogContentType leading,
+    DialogContentType trailing) const {
+  const int top_margin =
+      leading == CONTROL
+          ? GetDistanceMetric(DISTANCE_DIALOG_CONTENT_MARGIN_TOP_CONTROL)
+          : GetDistanceMetric(DISTANCE_DIALOG_CONTENT_MARGIN_TOP_TEXT);
+  const int bottom_margin =
+      trailing == CONTROL
+          ? GetDistanceMetric(DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_CONTROL)
+          : GetDistanceMetric(DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_TEXT);
+  const gfx::Insets dialog_insets = GetInsetsMetric(INSETS_DIALOG);
+  return gfx::Insets(top_margin, dialog_insets.left(), bottom_margin,
+                     dialog_insets.right());
 }
 
 }  // namespace views

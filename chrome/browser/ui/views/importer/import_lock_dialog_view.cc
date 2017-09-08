@@ -51,9 +51,9 @@ ImportLockDialogView::ImportLockDialogView(
   SetLayoutManager(new views::FillLayout());
   views::Label* description_label =
       new views::Label(l10n_util::GetStringUTF16(IDS_IMPORTER_LOCK_TEXT));
-  description_label->SetBorder(
-      views::CreateEmptyBorder(ChromeLayoutProvider::Get()->GetInsetsMetric(
-          views::INSETS_DIALOG_CONTENTS)));
+  description_label->SetBorder(views::CreateEmptyBorder(
+      ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(views::TEXT,
+                                                                 views::TEXT)));
   description_label->SetMultiLine(true);
   description_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(description_label);

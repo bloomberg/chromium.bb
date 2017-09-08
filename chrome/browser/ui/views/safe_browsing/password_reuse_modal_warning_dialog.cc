@@ -21,7 +21,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/fill_layout.h"
 
 namespace safe_browsing {
 
@@ -53,13 +53,10 @@ PasswordReuseModalWarningDialog::PasswordReuseModalWarningDialog(
   if (service_)
     service_->AddObserver(this);
 
-  set_margins(ChromeLayoutProvider::Get()->GetInsetsMetric(
-      views::INSETS_DIALOG_CONTENTS));
-
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
-  views::ColumnSet* column_set = layout->AddColumnSet(0);
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
-                        views::GridLayout::FIXED, 400, 0);
+  const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+  set_margins(
+      provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT));
+  SetLayoutManager(new views::FillLayout());
 
   views::Label* message_body_label = new views::Label(
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS));
@@ -67,8 +64,8 @@ PasswordReuseModalWarningDialog::PasswordReuseModalWarningDialog(
   message_body_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   // Makes message label align with title label.
   int horizontal_adjustment =
-      kIconSize + ChromeLayoutProvider::Get()->GetDistanceMetric(
-                      DISTANCE_UNRELATED_CONTROL_HORIZONTAL);
+      kIconSize +
+      provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL);
   if (base::i18n::IsRTL()) {
     message_body_label->SetBorder(
         views::CreateEmptyBorder(0, 0, 0, horizontal_adjustment));
@@ -76,14 +73,17 @@ PasswordReuseModalWarningDialog::PasswordReuseModalWarningDialog(
     message_body_label->SetBorder(
         views::CreateEmptyBorder(0, horizontal_adjustment, 0, 0));
   }
-
-  layout->StartRow(0, 0);
-  layout->AddView(message_body_label);
+  AddChildView(message_body_label);
 }
 
 PasswordReuseModalWarningDialog::~PasswordReuseModalWarningDialog() {
   if (service_)
     service_->RemoveObserver(this);
+}
+
+gfx::Size PasswordReuseModalWarningDialog::CalculatePreferredSize() const {
+  constexpr int kDialogWidth = 400;
+  return gfx::Size(kDialogWidth, GetHeightForWidth(kDialogWidth));
 }
 
 ui::ModalType PasswordReuseModalWarningDialog::GetModalType() const {

@@ -497,7 +497,7 @@ std::string VPNConfigView::GetProviderTypeString() const {
 void VPNConfigView::Init() {
   const views::LayoutProvider* provider = views::LayoutProvider::Get();
   SetBorder(views::CreateEmptyBorder(
-      provider->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS)));
+      provider->GetDialogInsetsForContentType(views::CONTROL, views::CONTROL)));
 
   const NetworkState* vpn = NULL;
   if (!service_path_.empty()) {

@@ -64,9 +64,9 @@ IdleActionWarningDialogView::IdleActionWarningDialogView(
     : idle_action_time_(idle_action_time),
       label_(NULL) {
   label_ = new FixedWidthLabel(kIdleActionWarningContentWidth);
-  label_->SetBorder(
-      views::CreateEmptyBorder(ChromeLayoutProvider::Get()->GetInsetsMetric(
-          views::INSETS_DIALOG_CONTENTS)));
+  label_->SetBorder(views::CreateEmptyBorder(
+      ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(views::TEXT,
+                                                                 views::TEXT)));
   AddChildView(label_);
   SetLayoutManager(new views::FillLayout());
 
