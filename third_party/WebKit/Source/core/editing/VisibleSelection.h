@@ -98,9 +98,6 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
   bool IsNone() const;
   bool IsCaret() const;
   bool IsRange() const;
-  bool IsNonOrphanedCaretOrRange() const {
-    return !IsNone() && !Start().IsOrphan() && !End().IsOrphan();
-  }
 
   // True if base() <= extent().
   bool IsBaseFirst() const { return base_is_first_; }
