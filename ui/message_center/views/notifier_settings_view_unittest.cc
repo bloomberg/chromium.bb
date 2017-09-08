@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/notifier_settings.h"
@@ -81,7 +81,7 @@ class TestingNotifierSettingsProvider : public NotifierSettingsProvider {
                                         const std::string& title,
                                         bool enabled) {
     NotifierId notifier_id(NotifierId::APPLICATION, id);
-    return base::MakeUnique<Notifier>(notifier_id, base::UTF8ToUTF16(title),
+    return std::make_unique<Notifier>(notifier_id, base::UTF8ToUTF16(title),
                                       enabled);
   }
 
@@ -118,7 +118,7 @@ NotifierSettingsViewTest::~NotifierSettingsViewTest() = default;
 void NotifierSettingsViewTest::SetUp() {
   views::ViewsTestBase::SetUp();
   notifier_settings_view_ =
-      base::MakeUnique<NotifierSettingsView>(&settings_provider_);
+      std::make_unique<NotifierSettingsView>(&settings_provider_);
 }
 
 void NotifierSettingsViewTest::TearDown() {

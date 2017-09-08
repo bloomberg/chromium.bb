@@ -6,7 +6,6 @@
 
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/task_scheduler/post_task.h"
@@ -58,7 +57,7 @@ void PlatformNotificationContextImpl::Initialize() {
   PlatformNotificationService* service =
       GetContentClient()->browser()->GetPlatformNotificationService();
   if (!service) {
-    auto displayed_notifications = base::MakeUnique<std::set<std::string>>();
+    auto displayed_notifications = std::make_unique<std::set<std::string>>();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(&PlatformNotificationContextImpl::InitializeOnIO, this,
@@ -140,7 +139,7 @@ void PlatformNotificationContextImpl::CreateServiceOnIO(
     ResourceContext* resource_context,
     mojo::InterfaceRequest<blink::mojom::NotificationService> request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  services_.push_back(base::MakeUnique<BlinkNotificationServiceImpl>(
+  services_.push_back(std::make_unique<BlinkNotificationServiceImpl>(
       this, resource_context, render_process_id, std::move(request)));
 }
 
@@ -237,7 +236,7 @@ void PlatformNotificationContextImpl::
         const ReadAllResultCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  auto notification_ids = base::MakeUnique<std::set<std::string>>();
+  auto notification_ids = std::make_unique<std::set<std::string>>();
 
   PlatformNotificationService* service =
       GetContentClient()->browser()->GetPlatformNotificationService();

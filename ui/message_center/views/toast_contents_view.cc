@@ -411,7 +411,7 @@ void ToastContentsView::CreateWidget(
   // default. But it is not good for popup. So we override it with the normal
   // WindowTargeter.
   gfx::NativeWindow native_window = widget->GetNativeWindow();
-  native_window->SetEventTargeter(base::MakeUnique<aura::WindowTargeter>());
+  native_window->SetEventTargeter(std::make_unique<aura::WindowTargeter>());
 #endif
 }
 

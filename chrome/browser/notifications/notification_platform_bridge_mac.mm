@@ -4,6 +4,7 @@
 
 #include "chrome/browser/notifications/notification_platform_bridge_mac.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -547,7 +548,7 @@ getDisplayedAlertsForProfileId:(NSString*)profileId
                       callback:(GetDisplayedNotificationsCallback)callback {
   auto reply = ^(NSArray* alerts) {
     std::unique_ptr<std::set<std::string>> displayedNotifications =
-        base::MakeUnique<std::set<std::string>>();
+        std::make_unique<std::set<std::string>>();
 
     for (NSUserNotification* toast in
          [notificationCenter deliveredNotifications]) {

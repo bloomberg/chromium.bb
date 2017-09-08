@@ -215,7 +215,7 @@ std::unique_ptr<ResourceFile> WriteDataToTmpFile(
   if (!base::CreateTemporaryFile(&file_path))
     return nullptr;
 
-  auto resource_file = base::MakeUnique<ResourceFile>(file_path);
+  auto resource_file = std::make_unique<ResourceFile>(file_path);
   if (base::WriteFile(file_path, data->front_as<char>(), data_len) !=
       data_len) {
     resource_file.reset();
@@ -270,7 +270,7 @@ class NotificationPlatformBridgeLinuxImpl
     // notification and its images.  Wrap the notification in a
     // unique_ptr to transfer ownership of the notification (and the
     // non-thread-safe reference counts) to the task runner thread.
-    auto notification_copy = base::MakeUnique<Notification>(notification);
+    auto notification_copy = std::make_unique<Notification>(notification);
     notification_copy->set_icon(DeepCopyImage(notification_copy->icon()));
     notification_copy->set_image(body_images_supported_.value()
                                      ? DeepCopyImage(notification_copy->image())
@@ -674,7 +674,7 @@ class NotificationPlatformBridgeLinuxImpl
       bool incognito,
       const GetDisplayedNotificationsCallback& callback) const {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
-    auto displayed = base::MakeUnique<std::set<std::string>>();
+    auto displayed = std::make_unique<std::set<std::string>>();
     for (const auto& pair : notifications_) {
       NotificationData* data = pair.first;
       if (data->profile_id == profile_id && data->is_incognito == incognito)

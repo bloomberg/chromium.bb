@@ -4,8 +4,9 @@
 
 #include "ui/message_center/message_center_tray.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -202,7 +203,7 @@ std::unique_ptr<ui::MenuModel> MessageCenterTray::CreateNotificationMenuModel(
   }
 #endif
 
-  return base::MakeUnique<NotificationMenuModel>(this, notifier_id,
+  return std::make_unique<NotificationMenuModel>(this, notifier_id,
                                                  display_source);
 }
 

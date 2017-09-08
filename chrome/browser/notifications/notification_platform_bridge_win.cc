@@ -8,12 +8,12 @@
 #include <windows.ui.notifications.h>
 #include <wrl/client.h>
 #include <wrl/wrappers/corewrappers.h>
+#include <memory>
 #include <set>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_common.h"
@@ -310,7 +310,7 @@ void NotificationPlatformBridgeWin::GetDisplayed(
     bool incognito,
     const GetDisplayedNotificationsCallback& callback) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  auto displayed_notifications = base::MakeUnique<std::set<std::string>>();
+  auto displayed_notifications = std::make_unique<std::set<std::string>>();
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::Bind(callback, base::Passed(&displayed_notifications),

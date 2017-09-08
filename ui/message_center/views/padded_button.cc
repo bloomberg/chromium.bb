@@ -4,7 +4,8 @@
 
 #include "ui/message_center/views/padded_button.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/message_center/message_center_style.h"
@@ -41,7 +42,7 @@ std::unique_ptr<views::InkDrop> PaddedButton::CreateInkDrop() {
 
 std::unique_ptr<views::InkDropRipple> PaddedButton::CreateInkDropRipple()
     const {
-  return base::MakeUnique<views::FloodFillInkDropRipple>(
+  return std::make_unique<views::FloodFillInkDropRipple>(
       size(), GetInkDropCenterBasedOnLastEvent(),
       SkColorSetA(SK_ColorBLACK, 0.6 * 255), ink_drop_visible_opacity());
 }

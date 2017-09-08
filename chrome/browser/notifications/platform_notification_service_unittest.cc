@@ -4,12 +4,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -53,12 +53,12 @@ const int kNotificationVibrationPattern[] = { 100, 200, 300 };
 class PlatformNotificationServiceTest : public testing::Test {
  public:
   void SetUp() override {
-    profile_manager_ = base::MakeUnique<TestingProfileManager>(
+    profile_manager_ = std::make_unique<TestingProfileManager>(
         TestingBrowserProcess::GetGlobal());
     ASSERT_TRUE(profile_manager_->SetUp());
     profile_ = profile_manager_->CreateTestingProfile("Miguel");
     display_service_tester_ =
-        base::MakeUnique<NotificationDisplayServiceTester>(profile_);
+        std::make_unique<NotificationDisplayServiceTester>(profile_);
   }
 
   void TearDown() override {

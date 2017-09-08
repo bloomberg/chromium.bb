@@ -63,7 +63,7 @@ std::unique_ptr<NotificationTemplateBuilder> NotificationTemplateBuilder::Build(
 }
 
 NotificationTemplateBuilder::NotificationTemplateBuilder()
-    : xml_writer_(base::MakeUnique<XmlWriter>()) {
+    : xml_writer_(std::make_unique<XmlWriter>()) {
   xml_writer_->StartWriting();
 }
 

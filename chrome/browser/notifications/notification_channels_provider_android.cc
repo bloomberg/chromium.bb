@@ -162,8 +162,8 @@ NotificationChannel::NotificationChannel(const NotificationChannel& other) =
 
 NotificationChannelsProviderAndroid::NotificationChannelsProviderAndroid()
     : NotificationChannelsProviderAndroid(
-          base::MakeUnique<NotificationChannelsBridgeImpl>(),
-          base::MakeUnique<base::DefaultClock>()) {}
+          std::make_unique<NotificationChannelsBridgeImpl>(),
+          std::make_unique<base::DefaultClock>()) {}
 
 NotificationChannelsProviderAndroid::NotificationChannelsProviderAndroid(
     std::unique_ptr<NotificationChannelsBridge> bridge,
@@ -230,7 +230,7 @@ NotificationChannelsProviderAndroid::GetRuleIterator(
   std::vector<NotificationChannel> channels = UpdateCachedChannels();
   return channels.empty()
              ? nullptr
-             : base::MakeUnique<ChannelsRuleIterator>(std::move(channels));
+             : std::make_unique<ChannelsRuleIterator>(std::move(channels));
 }
 
 std::vector<NotificationChannel>
