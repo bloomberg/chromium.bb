@@ -12,6 +12,7 @@ import android.os.Bundle;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.util.IntentUtils;
 
 /**
@@ -97,9 +98,12 @@ public class VrIntentUtils {
     }
 
     /*
-     * Remove VR-specific extras from the given intent.
+     * Remove VR-specific extras from the given intent so that we don't auto-present
+     * WebVR content after FRE completion.
      */
-    public static void removeVrExtras(Intent intent) {
+    public static void updateFreCallerIntent(Context context, Intent intent) {
+        // Let the caller intent be handeled by the standard laucher.
+        intent.setClassName(context, ChromeLauncherActivity.class.getName());
         intent.removeExtra(DAYDREAM_VR_EXTRA);
     }
 
