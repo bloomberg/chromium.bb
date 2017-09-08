@@ -2364,7 +2364,24 @@ void LayoutBlockFlow::DeleteEllipsisLineBoxes() {
 
       curr->MoveInInlineDirection(logical_left - curr->LogicalLeft());
     }
+    ClearTruncationOnAtomicInlines(curr);
     indent_text = kDoNotIndentText;
+  }
+}
+
+void LayoutBlockFlow::ClearTruncationOnAtomicInlines(RootInlineBox* root) {
+  bool ltr = Style()->IsLeftToRightDirection();
+  InlineBox* first_child = ltr ? root->LastChild() : root->FirstChild();
+  for (InlineBox* box = first_child; box;
+       box = ltr ? box->PrevOnLine() : box->NextOnLine()) {
+    if (!box->GetLineLayoutItem().IsAtomicInlineLevel() ||
+        !box->GetLineLayoutItem().IsLayoutBlockFlow()) {
+      continue;
+    }
+
+    if (!box->GetLineLayoutItem().IsTruncated())
+      return;
+    box->GetLineLayoutItem().SetIsTruncated(false);
   }
 }
 
@@ -2466,6 +2483,7 @@ void LayoutBlockFlow::CheckLinesForTextOverflow() {
           curr, LogicalRightOffsetForContent(), LogicalLeftOffsetForContent(),
           width, selected_ellipsis_str, box_truncation_starts_at);
     }
+
     indent_text = kDoNotIndentText;
   }
 }

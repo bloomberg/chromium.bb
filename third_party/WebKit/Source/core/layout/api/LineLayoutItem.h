@@ -309,6 +309,8 @@ class LineLayoutItem {
     layout_object_->SetIsTruncated(set_truncation);
   }
 
+  bool IsTruncated() { return layout_object_->IsTruncated(); }
+
   struct LineLayoutItemHash {
     STATIC_ONLY(LineLayoutItemHash);
     static unsigned GetHash(const LineLayoutItem& key) {
