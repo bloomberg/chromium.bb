@@ -45,7 +45,7 @@ def LogSpan(span):
     with open(GetSpanLogFilePath(span), 'w') as fh:
       fh.write(json.dumps(span.ToDict()))
   # Catch various configuration errors
-  except OSError as error:
+  except (OSError, IOError) as error:
     if error.errno == errno.EPERM:
       log.warning(
           'Received permissions error while trying to open the span log file.')
