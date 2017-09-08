@@ -89,6 +89,7 @@
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
+#include "chrome/browser/ui/blocked_content/popup_tracker.h"
 #include "chrome/browser/ui/bluetooth/bluetooth_chooser_controller.h"
 #include "chrome/browser/ui/bluetooth/bluetooth_chooser_desktop.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
@@ -1497,17 +1498,18 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
   if (params.user_gesture)
     nav_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   nav_params.user_gesture = params.user_gesture;
-  if ((params.disposition == WindowOpenDisposition::NEW_POPUP ||
-       params.disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB ||
-       params.disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB ||
-       params.disposition == WindowOpenDisposition::NEW_WINDOW) &&
-      PopupBlockerTabHelper::MaybeBlockPopup(source, base::Optional<GURL>(),
-                                             nav_params, &params,
-                                             blink::mojom::WindowFeatures())) {
+  bool is_popup =
+      PopupBlockerTabHelper::ConsiderForPopupBlocking(params.disposition);
+  if (is_popup && PopupBlockerTabHelper::MaybeBlockPopup(
+                      source, base::Optional<GURL>(), nav_params, &params,
+                      blink::mojom::WindowFeatures())) {
     return nullptr;
   }
 
   chrome::Navigate(&nav_params);
+
+  if (is_popup && nav_params.target_contents)
+    PopupTracker::CreateForWebContents(nav_params.target_contents);
 
   return nav_params.target_contents;
 }
@@ -1549,6 +1551,10 @@ void Browser::AddNewContents(WebContents* source,
                              const gfx::Rect& initial_rect,
                              bool user_gesture,
                              bool* was_blocked) {
+  // At this point the |new_contents| is beyond the popup blocker, but we use
+  // the same logic for determining if the popup tracker needs to be attached.
+  if (PopupBlockerTabHelper::ConsiderForPopupBlocking(disposition))
+    PopupTracker::CreateForWebContents(new_contents);
   chrome::AddWebContents(this, source, new_contents, disposition, initial_rect,
                          user_gesture, was_blocked);
 }

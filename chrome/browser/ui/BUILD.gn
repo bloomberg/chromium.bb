@@ -78,6 +78,8 @@ split_static_library("ui") {
     "blocked_content/blocked_window_params.h",
     "blocked_content/popup_blocker_tab_helper.cc",
     "blocked_content/popup_blocker_tab_helper.h",
+    "blocked_content/popup_tracker.cc",
+    "blocked_content/popup_tracker.h",
     "bookmarks/bookmark_bar.h",
     "bookmarks/bookmark_bar_constants.h",
     "bookmarks/bookmark_bar_instructions_delegate.h",

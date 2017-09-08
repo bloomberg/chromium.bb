@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 
 #include "base/containers/id_map.h"
 #include "base/macros.h"
@@ -49,6 +50,11 @@ class PopupBlockerTabHelper
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
+
+  // Whether a new window opened with |disposition| would be considered for
+  // popup blocking. Note that this includes more dispositions than just
+  // NEW_POPUP since the popup blocker targets all new windows and tabs.
+  static bool ConsiderForPopupBlocking(WindowOpenDisposition disposition);
 
   // Returns true if the popup request defined by |params| and the optional
   // |open_url_params| should be blocked. In that case, it is also added to the

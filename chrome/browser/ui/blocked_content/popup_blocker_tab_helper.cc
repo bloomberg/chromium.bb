@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -60,6 +62,15 @@ void PopupBlockerTabHelper::AddObserver(Observer* observer) {
 
 void PopupBlockerTabHelper::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
+}
+
+// static
+bool PopupBlockerTabHelper::ConsiderForPopupBlocking(
+    WindowOpenDisposition disposition) {
+  return disposition == WindowOpenDisposition::NEW_POPUP ||
+         disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB ||
+         disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB ||
+         disposition == WindowOpenDisposition::NEW_WINDOW;
 }
 
 void PopupBlockerTabHelper::DidFinishNavigation(
