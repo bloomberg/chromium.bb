@@ -319,7 +319,7 @@ void MediaCodecVideoDecoder::TransitionToIncomingSurface() {
   DCHECK(incoming_surface_);
   DCHECK(codec_);
   auto surface_bundle = std::move(incoming_surface_);
-  if (codec_->SetSurface(surface_bundle->GetJavaSurface()) == MEDIA_CODEC_OK)
+  if (codec_->SetSurface(surface_bundle->GetJavaSurface()))
     codec_config_->surface_bundle = std::move(surface_bundle);
   else
     EnterTerminalState(State::kError);
@@ -354,7 +354,7 @@ void MediaCodecVideoDecoder::OnCodecCreated(
 
 void MediaCodecVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
                                     const DecodeCB& decode_cb) {
-  DVLOG(2) << __func__ << buffer->AsHumanReadableString();
+  DVLOG(2) << __func__ << ": " << buffer->AsHumanReadableString();
   if (state_ == State::kError) {
     decode_cb.Run(DecodeStatus::DECODE_ERROR);
     return;
@@ -453,24 +453,26 @@ bool MediaCodecVideoDecoder::QueueInput() {
     return false;
 
   PendingDecode& pending_decode = pending_decodes_.front();
-  MediaCodecStatus status = codec_->QueueInputBuffer(
-      *pending_decode.buffer, decoder_config_.encryption_scheme());
-  if (status == MEDIA_CODEC_TRY_AGAIN_LATER)
-    return false;
+  auto status = codec_->QueueInputBuffer(*pending_decode.buffer,
+                                         decoder_config_.encryption_scheme());
+  int lvl = status == CodecWrapper::QueueStatus::kTryAgainLater ? 3 : 2;
+  DVLOG(lvl) << "QueueInput(" << pending_decode.buffer->AsHumanReadableString()
+             << ") status=" << static_cast<int>(status);
 
-  DVLOG(2) << "QueueInput(" << pending_decode.buffer->AsHumanReadableString()
-           << ") status=" << status;
-  if (status == MEDIA_CODEC_ERROR) {
-    EnterTerminalState(State::kError);
-    return false;
-  }
-  if (status == MEDIA_CODEC_NO_KEY) {
-    // Retry when a key is added.
-    waiting_for_key_ = true;
-    return false;
+  switch (status) {
+    case CodecWrapper::QueueStatus::kOk:
+      break;
+    case CodecWrapper::QueueStatus::kTryAgainLater:
+      return false;
+    case CodecWrapper::QueueStatus::kNoKey:
+      // Retry when a key is added.
+      waiting_for_key_ = true;
+      return false;
+    case CodecWrapper::QueueStatus::kError:
+      EnterTerminalState(State::kError);
+      return false;
   }
 
-  DCHECK_EQ(status, MEDIA_CODEC_OK);
   if (pending_decode.buffer->end_of_stream()) {
     // The VideoDecoder interface requires that the EOS DecodeCB is called after
     // all decodes before it are delivered, so we have to save it and call it
@@ -508,16 +510,18 @@ bool MediaCodecVideoDecoder::DequeueOutput() {
   base::TimeDelta presentation_time;
   bool eos = false;
   std::unique_ptr<CodecOutputBuffer> output_buffer;
-  MediaCodecStatus status =
+  auto status =
       codec_->DequeueOutputBuffer(&presentation_time, &eos, &output_buffer);
-  if (status == MEDIA_CODEC_ERROR) {
-    DVLOG(1) << "DequeueOutputBuffer() error";
-    EnterTerminalState(State::kError);
-    return false;
-  } else if (status == MEDIA_CODEC_TRY_AGAIN_LATER) {
-    return false;
+  switch (status) {
+    case CodecWrapper::DequeueStatus::kOk:
+      break;
+    case CodecWrapper::DequeueStatus::kTryAgainLater:
+      return false;
+    case CodecWrapper::DequeueStatus::kError:
+      DVLOG(1) << "DequeueOutputBuffer() error";
+      EnterTerminalState(State::kError);
+      return false;
   }
-  DCHECK_EQ(status, MEDIA_CODEC_OK);
 
   if (eos) {
     DVLOG(2) << "DequeueOutputBuffer(): EOS";

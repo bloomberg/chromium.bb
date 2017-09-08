@@ -100,8 +100,9 @@ class MEDIA_GPU_EXPORT CodecWrapper {
   bool Flush();
 
   // Queues |buffer| if the codec has an available input buffer.
-  MediaCodecStatus QueueInputBuffer(const DecoderBuffer& buffer,
-                                    const EncryptionScheme& encryption_scheme);
+  enum class QueueStatus { kOk, kError, kTryAgainLater, kNoKey };
+  QueueStatus QueueInputBuffer(const DecoderBuffer& buffer,
+                               const EncryptionScheme& encryption_scheme);
 
   // Like MediaCodecBridge::DequeueOutputBuffer() but it outputs a
   // CodecOutputBuffer instead of an index. |*codec_buffer| must be null.
@@ -110,14 +111,14 @@ class MEDIA_GPU_EXPORT CodecWrapper {
   // codec immediately. Unlike MediaCodecBridge, this does not return
   // MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED or MEDIA_CODEC_OUTPUT_FORMAT_CHANGED. It
   // tries to dequeue another buffer instead.
-  MediaCodecStatus DequeueOutputBuffer(
+  enum class DequeueStatus { kOk, kError, kTryAgainLater };
+  DequeueStatus DequeueOutputBuffer(
       base::TimeDelta* presentation_time,
       bool* end_of_stream,
       std::unique_ptr<CodecOutputBuffer>* codec_buffer);
 
-  // Sets the given surface and returns MEDIA_CODEC_OK on success or
-  // MEDIA_CODEC_ERROR on failure.
-  MediaCodecStatus SetSurface(const base::android::JavaRef<jobject>& surface);
+  // Sets the given surface and returns true on success.
+  bool SetSurface(const base::android::JavaRef<jobject>& surface);
 
  private:
   scoped_refptr<CodecWrapperImpl> impl_;

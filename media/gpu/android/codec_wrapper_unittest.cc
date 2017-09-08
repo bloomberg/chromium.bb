@@ -171,7 +171,7 @@ TEST_F(CodecWrapperTest, FormatChangedStatusIsSwallowed) {
       .WillOnce(Return(MEDIA_CODEC_TRY_AGAIN_LATER));
   std::unique_ptr<CodecOutputBuffer> codec_buffer;
   auto status = wrapper_->DequeueOutputBuffer(nullptr, nullptr, &codec_buffer);
-  ASSERT_EQ(status, MEDIA_CODEC_TRY_AGAIN_LATER);
+  ASSERT_EQ(status, CodecWrapper::DequeueStatus::kTryAgainLater);
 }
 
 TEST_F(CodecWrapperTest, BuffersChangedStatusIsSwallowed) {
@@ -180,7 +180,7 @@ TEST_F(CodecWrapperTest, BuffersChangedStatusIsSwallowed) {
       .WillOnce(Return(MEDIA_CODEC_TRY_AGAIN_LATER));
   std::unique_ptr<CodecOutputBuffer> codec_buffer;
   auto status = wrapper_->DequeueOutputBuffer(nullptr, nullptr, &codec_buffer);
-  ASSERT_EQ(status, MEDIA_CODEC_TRY_AGAIN_LATER);
+  ASSERT_EQ(status, CodecWrapper::DequeueStatus::kTryAgainLater);
 }
 
 TEST_F(CodecWrapperTest, MultipleFormatChangedStatusesIsAnError) {
@@ -188,7 +188,7 @@ TEST_F(CodecWrapperTest, MultipleFormatChangedStatusesIsAnError) {
       .WillRepeatedly(Return(MEDIA_CODEC_OUTPUT_FORMAT_CHANGED));
   std::unique_ptr<CodecOutputBuffer> codec_buffer;
   auto status = wrapper_->DequeueOutputBuffer(nullptr, nullptr, &codec_buffer);
-  ASSERT_EQ(status, MEDIA_CODEC_ERROR);
+  ASSERT_EQ(status, CodecWrapper::DequeueStatus::kError);
 }
 
 TEST_F(CodecWrapperTest, CodecOutputBuffersHaveTheCorrectSize) {
@@ -259,7 +259,7 @@ TEST_F(CodecWrapperTest, RejectedInputBuffersAreReusedAfter) {
       .WillOnce(Return(MEDIA_CODEC_OK));
   auto status =
       wrapper_->QueueInputBuffer(*fake_decoder_buffer_, EncryptionScheme());
-  ASSERT_EQ(status, MEDIA_CODEC_NO_KEY);
+  ASSERT_EQ(status, CodecWrapper::QueueStatus::kNoKey);
   wrapper_->QueueInputBuffer(*fake_decoder_buffer_, EncryptionScheme());
 }
 
