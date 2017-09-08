@@ -194,25 +194,6 @@ TEST_F(ShillDeviceClientTest, ClearProperty) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(ShillDeviceClientTest, AddIPConfig) {
-  const dbus::ObjectPath expected_result("/result/path");
-  // Create response.
-  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
-  dbus::MessageWriter writer(response.get());
-  writer.AppendObjectPath(expected_result);
-
-  // Set expectations.
-  PrepareForMethodCall(shill::kAddIPConfigFunction,
-                       base::Bind(&ExpectStringArgument, shill::kTypeDHCP),
-                       response.get());
-  // Call method.
-  client_->AddIPConfig(dbus::ObjectPath(kExampleDevicePath),
-                       shill::kTypeDHCP,
-                       base::Bind(&ExpectObjectPathResult, expected_result));
-  // Run the message loop.
-  base::RunLoop().RunUntilIdle();
-}
-
 TEST_F(ShillDeviceClientTest, RequirePin) {
   const char kPin[] = "123456";
   const bool kRequired = true;

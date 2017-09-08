@@ -97,16 +97,6 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
     GetHelper(device_path)->CallVoidMethod(&method_call, std::move(callback));
   }
 
-  void AddIPConfig(const dbus::ObjectPath& device_path,
-                   const std::string& method,
-                   const ObjectPathDBusMethodCallback& callback) override {
-    dbus::MethodCall method_call(shill::kFlimflamDeviceInterface,
-                                 shill::kAddIPConfigFunction);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendString(method);
-    GetHelper(device_path)->CallObjectPathMethod(&method_call, callback);
-  }
-
   void RequirePin(const dbus::ObjectPath& device_path,
                   const std::string& pin,
                   bool require,

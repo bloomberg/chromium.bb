@@ -44,9 +44,6 @@ class CHROMEOS_EXPORT FakeShillDeviceClient
   void ClearProperty(const dbus::ObjectPath& device_path,
                      const std::string& name,
                      VoidDBusMethodCallback callback) override;
-  void AddIPConfig(const dbus::ObjectPath& device_path,
-                   const std::string& method,
-                   const ObjectPathDBusMethodCallback& callback) override;
   void RequirePin(const dbus::ObjectPath& device_path,
                   const std::string& pin,
                   bool require,

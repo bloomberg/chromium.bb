@@ -144,15 +144,6 @@ void FakeShillDeviceClient::ClearProperty(const dbus::ObjectPath& device_path,
   PostVoidCallback(std::move(callback), DBUS_METHOD_CALL_SUCCESS);
 }
 
-void FakeShillDeviceClient::AddIPConfig(
-    const dbus::ObjectPath& device_path,
-    const std::string& method,
-    const ObjectPathDBusMethodCallback& callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, dbus::ObjectPath()));
-}
-
 void FakeShillDeviceClient::RequirePin(const dbus::ObjectPath& device_path,
                                        const std::string& pin,
                                        bool require,
