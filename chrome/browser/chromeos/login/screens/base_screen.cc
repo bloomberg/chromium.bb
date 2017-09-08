@@ -100,11 +100,6 @@ void BaseScreen::Finish(ScreenExitCode exit_code) {
   base_screen_delegate_->OnExit(*this, exit_code, &context_);
 }
 
-void BaseScreen::SetContext(::login::ScreenContext* context) {
-  if (context)
-    context_.CopyFrom(*context);
-}
-
 void BaseScreen::OnUserAction(const std::string& action_id) {
   LOG(WARNING) << "Unhandled user action: action_id=" << action_id;
 }

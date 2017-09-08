@@ -90,9 +90,6 @@ class EasyUnlockKeyManager {
                                     base::ListValue* remote_devices,
                                     const RefreshKeysCallback& callback);
 
-  // Returns true if there are pending operations.
-  bool HasPendingOperations() const;
-
   // Callback invoked after refresh keys operation.
   void OnKeysRefreshed(const RefreshKeysCallback& callback,
                        bool create_success);
