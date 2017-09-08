@@ -100,7 +100,6 @@
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/ScriptRunner.h"
 #include "core/dom/ScriptedAnimationController.h"
-#include "core/dom/ScriptedIdleTaskController.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/dom/TaskRunnerHelper.h"
@@ -6415,9 +6414,11 @@ ScriptedIdleTaskController& Document::EnsureScriptedIdleTaskController() {
   return *scripted_idle_task_controller_;
 }
 
-int Document::RequestIdleCallback(IdleRequestCallback* callback,
-                                  const IdleRequestOptions& options) {
-  return EnsureScriptedIdleTaskController().RegisterCallback(callback, options);
+int Document::RequestIdleCallback(
+    ScriptedIdleTaskController::IdleTask* idle_task,
+    const IdleRequestOptions& options) {
+  return EnsureScriptedIdleTaskController().RegisterCallback(idle_task,
+                                                             options);
 }
 
 void Document::CancelIdleCallback(int id) {
@@ -7048,6 +7049,7 @@ DEFINE_TRACE_WRAPPERS(Document) {
   visitor->TraceWrappers(style_sheet_list_);
   visitor->TraceWrappers(style_engine_);
   visitor->TraceWrappers(script_runner_);
+  visitor->TraceWrappers(scripted_idle_task_controller_);
   // Cannot trace in Supplementable<Document> as it is part of platform/ and
   // thus cannot refer to ScriptWrappableVisitor.
   visitor->TraceWrappersWithManualWriteBarrier(

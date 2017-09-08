@@ -141,7 +141,6 @@ blink_core_sources("dom") {
     "IdTargetObserverRegistry.h",
     "IdleDeadline.cpp",
     "IdleDeadline.h",
-    "IdleRequestCallback.h",
     "IgnoreDestructiveWriteCountIncrementer.h",
     "IncrementLoadEventDelayCount.cpp",
     "IncrementLoadEventDelayCount.h",

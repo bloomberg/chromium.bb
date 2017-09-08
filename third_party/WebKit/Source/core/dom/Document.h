@@ -46,6 +46,7 @@
 #include "core/dom/DocumentTiming.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/MutationObserver.h"
+#include "core/dom/ScriptedIdleTaskController.h"
 #include "core/dom/SynchronousMutationNotifier.h"
 #include "core/dom/SynchronousMutationObserver.h"
 #include "core/dom/Text.h"
@@ -126,7 +127,6 @@ class HTMLImportsController;
 class HTMLLinkElement;
 class HTMLScriptElementOrSVGScriptElement;
 class HitTestRequest;
-class IdleRequestCallback;
 class IdleRequestOptions;
 class IntersectionObserverController;
 class LayoutPoint;
@@ -158,7 +158,6 @@ class ScriptElementBase;
 class ScriptRunner;
 class ScriptableDocumentParser;
 class ScriptedAnimationController;
-class ScriptedIdleTaskController;
 class SecurityOrigin;
 class SegmentedString;
 class SelectorQueryCache;
@@ -1152,7 +1151,8 @@ class CORE_EXPORT Document : public ContainerNode,
   void CancelAnimationFrame(int id);
   void ServiceScriptedAnimations(double monotonic_animation_start_time);
 
-  int RequestIdleCallback(IdleRequestCallback*, const IdleRequestOptions&);
+  int RequestIdleCallback(ScriptedIdleTaskController::IdleTask*,
+                          const IdleRequestOptions&);
   void CancelIdleCallback(int id);
 
   EventTarget* ErrorEventTarget() final;
@@ -1671,7 +1671,7 @@ class CORE_EXPORT Document : public ContainerNode,
   unsigned write_recursion_depth_;
 
   Member<ScriptedAnimationController> scripted_animation_controller_;
-  Member<ScriptedIdleTaskController> scripted_idle_task_controller_;
+  TraceWrapperMember<ScriptedIdleTaskController> scripted_idle_task_controller_;
   Member<TextAutosizer> text_autosizer_;
 
   Member<V0CustomElementRegistrationContext> registration_context_;
