@@ -140,7 +140,7 @@ class DialogLauncher : public content::NotificationObserver {
           arc::ArcVoiceInteractionFrameworkService::GetForBrowserContext(
               profile_);
       if (service)
-        service->StartSessionFromUserInteraction(gfx::Rect());
+        service->StartVoiceInteractionOobe();
     } else {
       TryLaunchFirstRunDialog(profile_);
     }
