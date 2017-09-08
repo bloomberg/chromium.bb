@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
 
 #include "base/logging.h"
-#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #include "ios/web/public/referrer.h"
 #include "url/gurl.h"
 

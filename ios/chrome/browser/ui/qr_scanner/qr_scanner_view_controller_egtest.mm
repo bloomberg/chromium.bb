@@ -13,8 +13,6 @@
 #include "components/version_info/version_info.h"
 #import "ios/chrome/app/main_controller.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
-#import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
-#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #include "ios/chrome/browser/ui/icons/chrome_icon.h"
 #include "ios/chrome/browser/ui/qr_scanner/camera_controller.h"
 #include "ios/chrome/browser/ui/qr_scanner/qr_scanner_view.h"

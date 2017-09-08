@@ -21,8 +21,6 @@
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
-#import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
-#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller.h"
 #include "ios/chrome/browser/ui/tools_menu/tools_menu_constants.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
