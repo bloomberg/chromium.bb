@@ -140,12 +140,16 @@ class GLRendererShaderPixelTest : public cc::GLRendererPixelTest {
     renderer()->SetCurrentFrameForTesting(GLRenderer::DrawingFrame());
     const size_t kNumSrcColorSpaces = 4;
     gfx::ColorSpace src_color_spaces[kNumSrcColorSpaces] = {
-        gfx::ColorSpace(), gfx::ColorSpace::CreateSRGB(),
+        gfx::ColorSpace::CreateSRGB(),
+        gfx::ColorSpace(gfx::ColorSpace::PrimaryID::ADOBE_RGB,
+                        gfx::ColorSpace::TransferID::GAMMA28),
         gfx::ColorSpace::CreateREC709(), gfx::ColorSpace::CreateExtendedSRGB(),
     };
     const size_t kNumDstColorSpaces = 3;
     gfx::ColorSpace dst_color_spaces[kNumDstColorSpaces] = {
-        gfx::ColorSpace(), gfx::ColorSpace::CreateSRGB(),
+        gfx::ColorSpace::CreateSRGB(),
+        gfx::ColorSpace(gfx::ColorSpace::PrimaryID::ADOBE_RGB,
+                        gfx::ColorSpace::TransferID::GAMMA18),
         gfx::ColorSpace::CreateSCRGBLinear(),
     };
     for (size_t i = 0; i < kNumDstColorSpaces; ++i) {

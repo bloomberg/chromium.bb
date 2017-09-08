@@ -3160,6 +3160,9 @@ void GLRenderer::SetUseProgram(const ProgramKey& program_key,
 void GLRenderer::SetUseProgram(const ProgramKey& program_key_no_color,
                                const gfx::ColorSpace& src_color_space,
                                const gfx::ColorSpace& dst_color_space) {
+  if (settings_->enable_color_correct_rendering)
+    DCHECK(dst_color_space.IsValid());
+
   ProgramKey program_key = program_key_no_color;
   const gfx::ColorTransform* color_transform =
       GetColorTransform(src_color_space, dst_color_space);

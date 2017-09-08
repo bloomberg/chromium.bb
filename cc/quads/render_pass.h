@@ -131,7 +131,7 @@ class CC_EXPORT RenderPass {
   FilterOperations background_filters;
 
   // The color space into which content will be rendered for this render pass.
-  gfx::ColorSpace color_space;
+  gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
 
   // If false, the pixels in the render pass' texture are all opaque.
   bool has_transparent_background = true;
