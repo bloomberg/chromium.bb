@@ -80,9 +80,6 @@ config("feature_flags") {
   if (use_glib) {
     defines += [ "USE_GLIB=1" ]
   }
-  if (use_openssl_certs) {
-    defines += [ "USE_OPENSSL_CERTS=1" ]
-  }
   if (use_nss_certs) {
     defines += [ "USE_NSS_CERTS=1" ]
   }
