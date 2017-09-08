@@ -1,6 +1,9 @@
 # These tests currently fail when run with --enable-network-service
 # See https://crbug.com/729849
 
+Bug(none) bluetooth/service/getCharacteristic/gen-garbage-collection-ran-during-error.html [ Timeout ]
+Bug(none) bluetooth/service/getCharacteristics/gen-garbage-collection-ran-during-error-with-uuid.html [ Timeout ]
+Bug(none) bluetooth/service/getCharacteristics/gen-garbage-collection-ran-during-error.html [ Timeout ]
 Bug(none) compositing/video-frame-size-change.html [ Timeout ]
 Bug(none) external/wpt/clear-site-data/storage.https.html [ Failure ]
 Bug(none) external/wpt/fetch/api/abort/general-serviceworker.https.html [ Failure ]
