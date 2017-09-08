@@ -13,7 +13,7 @@ class StoragePartition;
 
 void CreateReportingServiceProxy(
     StoragePartition* storage_partition,
-    mojom::ReportingServiceProxyRequest request);
+    blink::mojom::ReportingServiceProxyRequest request);
 
 }  // namespace content
 
