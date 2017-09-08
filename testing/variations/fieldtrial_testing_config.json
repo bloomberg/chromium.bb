@@ -1696,9 +1696,9 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled-ClickBasedRanker-InitialOrderGeneral",
+                    "name": "Enabled-ClickBasedRanker-InitialOrderEM",
                     "params": {
-                        "category_order": "general",
+                        "category_order": "emerging_markets_oriented",
                         "category_ranker": "click_based"
                     },
                     "enable_features": [
