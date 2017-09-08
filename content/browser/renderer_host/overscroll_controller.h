@@ -60,10 +60,6 @@ class OverscrollController {
       const blink::WebInputEvent& event,
       bool processed);
 
-  // This must be called when a gesture event is filtered out and not sent to
-  // the renderer.
-  void DiscardingGestureEvent(const blink::WebGestureEvent& event);
-
   OverscrollMode overscroll_mode() const { return overscroll_mode_; }
 
   void set_delegate(OverscrollControllerDelegate* delegate) {
@@ -118,6 +114,9 @@ class OverscrollController {
 
   // Whether this event should be processed or not handled by the controller.
   bool ShouldProcessEvent(const blink::WebInputEvent& event);
+
+  // Helper function to reset |scroll_state_| and |locked_mode_|.
+  void ResetScrollState();
 
   // The current state of overscroll gesture.
   OverscrollMode overscroll_mode_ = OVERSCROLL_NONE;
