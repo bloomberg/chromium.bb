@@ -79,7 +79,6 @@ bool DownloadPathIsDangerous(const base::FilePath& download_path) {
 class DefaultDownloadDirectory {
  public:
   const base::FilePath& path() const { return path_; }
-  const base::FilePath& temp_path() const { return temp_path_; }
 
  private:
   friend struct base::LazyInstanceTraitsBase<DefaultDownloadDirectory>;
@@ -88,11 +87,6 @@ class DefaultDownloadDirectory {
     if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &path_)) {
       NOTREACHED();
     }
-
-    if (!base::GetTempDir(&temp_path_)) {
-      NOTREACHED();
-    }
-
     if (DownloadPathIsDangerous(path_)) {
       // This is only useful on platforms that support
       // DIR_DEFAULT_DOWNLOADS_SAFE.
@@ -103,7 +97,6 @@ class DefaultDownloadDirectory {
   }
 
   base::FilePath path_;
-  base::FilePath temp_path_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultDownloadDirectory);
 };
@@ -242,11 +235,6 @@ base::FilePath DownloadPrefs::GetDefaultDownloadDirectoryForProfile() const {
 // static
 const base::FilePath& DownloadPrefs::GetDefaultDownloadDirectory() {
   return g_default_download_directory.Get().path();
-}
-
-// static
-const base::FilePath& DownloadPrefs::GetTempDownloadDirectory() {
-  return g_default_download_directory.Get().temp_path();
 }
 
 // static

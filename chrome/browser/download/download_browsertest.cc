@@ -503,12 +503,6 @@ class DownloadTest : public InProcessBrowserTest {
     return GetDownloadDirectory(browser).Append(file.BaseName());
   }
 
-  base::FilePath TemporaryFile(const base::FilePath& file) {
-    base::FilePath tmp;
-    base::GetTempDir(&tmp);
-    return tmp.Append(file.BaseName());
-  }
-
   // Must be called after browser creation.  Creates a temporary
   // directory for downloads that is auto-deleted on destruction.
   // Returning false indicates a failure of the function, and should be asserted
@@ -2032,7 +2026,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, AutoOpen) {
 
   // As long as we're here, confirmed everything else is good.
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
-  CheckDownloadFullPaths(browser(), TemporaryFile(file), OriginFile(file));
+  CheckDownload(browser(), file, file);
 }
 
 // Download an extension. Expect a dangerous download warning.
