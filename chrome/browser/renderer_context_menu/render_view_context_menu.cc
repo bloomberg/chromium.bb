@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
@@ -59,6 +60,7 @@
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_restriction.h"
 #include "chrome/common/image_context_menu_renderer.mojom.h"
@@ -129,7 +131,11 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/devtools_util.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/ui/extensions/app_launch_params.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "extensions/browser/extension_host.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
@@ -310,9 +316,11 @@ const struct UmaEnumCommandIdPair {
     {86, -1, IDC_CONTENT_CONTEXT_OPEN_WITH13},
     {87, -1, IDC_CONTENT_CONTEXT_OPEN_WITH14},
     {88, -1, IDC_CONTENT_CONTEXT_EXIT_FULLSCREEN},
+    {89, -1, IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP},
     // Add new items here and use |enum_id| from the next line.
-    // Also, add new items to RenderViewContextMenuItem enum in histograms.xml.
-    {89, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
+    // Also, add new items to RenderViewContextMenuItem enum in
+    // tools/metrics/histograms/enums.xml.
+    {90, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
                   // was added.
 };
 
@@ -480,6 +488,25 @@ void OnProfileCreated(const GURL& link_url,
     nav_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
     chrome::Navigate(&nav_params);
   }
+}
+
+// Returns a Bookmark App that has |url| in its scope.
+const extensions::Extension* GetBookmarkAppForURL(
+    BrowserContext* browser_context,
+    const GURL& target_url) {
+  const extensions::ExtensionSet& enabled_extensions =
+      extensions::ExtensionRegistry::Get(browser_context)->enabled_extensions();
+  for (const auto extension : enabled_extensions) {
+    if (!extension->from_bookmark())
+      continue;
+
+    const extensions::UrlHandlerInfo* handler =
+        extensions::UrlHandlers::FindMatchingUrlHandler(extension.get(),
+                                                        target_url);
+    if (handler)
+      return extension.get();
+  }
+  return nullptr;
 }
 
 }  // namespace
@@ -969,6 +996,21 @@ void RenderViewContextMenu::AppendDevtoolsForUnpackedExtensions() {
 
 void RenderViewContextMenu::AppendLinkItems() {
   if (!params_.link_url.is_empty()) {
+    if (base::FeatureList::IsEnabled(features::kDesktopPWAWindowing)) {
+      const Extension* bookmark_app =
+          GetBookmarkAppForURL(browser_context_, params_.link_url);
+      if (bookmark_app) {
+        menu_model_.AddItem(
+            IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP,
+            l10n_util::GetStringFUTF16(
+                IDS_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP,
+                base::ASCIIToUTF16(bookmark_app->short_name())));
+        MenuManager* menu_manager = MenuManager::Get(browser_context_);
+        gfx::Image icon = menu_manager->GetIconForExtension(bookmark_app->id());
+        menu_model_.SetIcon(menu_model_.GetItemCount() - 1, icon);
+      }
+    }
+
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
                                     IDS_CONTENT_CONTEXT_OPENLINKNEWTAB);
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW,
@@ -1518,6 +1560,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_CONTENT_CONTEXT_OPENLINKNEWTAB:
     case IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW:
     case IDC_CONTENT_CONTEXT_OPENLINKINPROFILE:
+    case IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP:
       return params_.link_url.is_valid();
 
     case IDC_CONTENT_CONTEXT_COPYLINKLOCATION:
@@ -1714,6 +1757,10 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       OpenURLWithExtraHeaders(params_.link_url, GURL(),
                               WindowOpenDisposition::OFF_THE_RECORD,
                               ui::PAGE_TRANSITION_LINK, "", true);
+      break;
+
+    case IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP:
+      ExecOpenBookmarkApp();
       break;
 
     case IDC_CONTENT_CONTEXT_SAVELINKAS:
@@ -2152,6 +2199,21 @@ void RenderViewContextMenu::ExecOpenLinkNewTab() {
                               ? WindowOpenDisposition::NEW_FOREGROUND_TAB
                               : WindowOpenDisposition::NEW_BACKGROUND_TAB,
                           ui::PAGE_TRANSITION_LINK, "", true);
+}
+
+void RenderViewContextMenu::ExecOpenBookmarkApp() {
+  const extensions::Extension* bookmark_app =
+      GetBookmarkAppForURL(browser_context_, params_.link_url);
+  // |bookmark_app| could be null if it has been uninstalled since the user
+  // opened the context menu.
+  if (!bookmark_app)
+    return;
+
+  AppLaunchParams launch_params(
+      GetProfile(), bookmark_app, extensions::LAUNCH_CONTAINER_WINDOW,
+      WindowOpenDisposition::CURRENT_TAB, extensions::SOURCE_CONTEXT_MENU);
+  launch_params.override_url = params_.link_url;
+  OpenApplication(launch_params);
 }
 
 void RenderViewContextMenu::ExecProtocolHandler(int event_flags,

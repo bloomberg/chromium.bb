@@ -173,6 +173,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
 
   // Command execution functions.
   void ExecOpenLinkNewTab();
+  void ExecOpenBookmarkApp();
   void ExecProtocolHandler(int event_flags, int handler_index);
   void ExecOpenLinkInProfile(int profile_index);
   void ExecInspectElement();
