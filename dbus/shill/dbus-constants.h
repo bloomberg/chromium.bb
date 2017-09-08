@@ -32,7 +32,6 @@ const char kGetVPNServiceFunction[] = "GetVPNService";
 const char kRemoveServiceFunction[] = "Remove";
 const char kEnableTechnologyFunction[] = "EnableTechnology";
 const char kDisableTechnologyFunction[] = "DisableTechnology";
-const char kAddIPConfigFunction[] = "AddIPConfig";
 const char kRemoveConfigFunction[] = "Remove";
 const char kGetEntryFunction[] = "GetEntry";
 const char kDeleteEntryFunction[] = "DeleteEntry";
