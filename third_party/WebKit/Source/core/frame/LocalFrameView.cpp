@@ -320,8 +320,6 @@ void LocalFrameView::ForAllChildLocalFrameViews(const Function& function) {
 }
 
 // Call function for each non-throttled frame view in pre tree order.
-// Note it needs a null check of the frame's layoutView to access it in case of
-// detached frames.
 template <typename Function>
 void LocalFrameView::ForAllNonThrottledLocalFrameViews(
     const Function& function) {
@@ -1371,7 +1369,8 @@ void LocalFrameView::SetNeedsPaintPropertyUpdate() {
 
 void LocalFrameView::SetSubtreeNeedsPaintPropertyUpdate() {
   SetNeedsPaintPropertyUpdate();
-  GetLayoutView()->SetSubtreeNeedsPaintPropertyUpdate();
+  if (auto* layout_view = GetLayoutView())
+    layout_view->SetSubtreeNeedsPaintPropertyUpdate();
 }
 
 IntRect LocalFrameView::ComputeVisibleArea() {
@@ -3029,6 +3028,28 @@ void LocalFrameView::UpdateAllLifecyclePhasesExceptPaint() {
       DocumentLifecycle::kPrePaintClean);
 }
 
+void LocalFrameView::UpdateLifecyclePhasesForPrinting() {
+  auto* local_frame_view_root = GetFrame().LocalFrameRoot().View();
+  local_frame_view_root->UpdateLifecyclePhasesInternal(
+      DocumentLifecycle::kPrePaintClean);
+
+  auto* detached_frame_view = this;
+  while (detached_frame_view->is_attached_ &&
+         detached_frame_view != local_frame_view_root)
+    detached_frame_view = detached_frame_view->parent_.Get();
+
+  if (detached_frame_view == local_frame_view_root)
+    return;
+  DCHECK(!detached_frame_view->is_attached_);
+
+  // We are printing a detached frame or a descendant of a detached frame which
+  // was not reached in some phases during during |local_frame_view_root->
+  // UpdateLifecyclePhasesInternalnormal()|. We need the subtree to be ready for
+  // painting.
+  detached_frame_view->UpdateLifecyclePhasesInternal(
+      DocumentLifecycle::kPrePaintClean);
+}
+
 void LocalFrameView::UpdateLifecycleToLayoutClean() {
   GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhasesInternal(
       DocumentLifecycle::kLayoutClean);
@@ -3121,9 +3142,10 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
     return;
   }
 
-  // This must be called from the root frame, since it recurses down, not up.
-  // Otherwise the lifecycles of the frames might be out of sync.
-  DCHECK(frame_->IsLocalRoot());
+  // This must be called from the root frame, or a detached frame for printing,
+  // since it recurses down, not up. Otherwise the lifecycles of the frames
+  // might be out of sync.
+  DCHECK(frame_->IsLocalRoot() || !is_attached_);
 
   // Only the following target states are supported.
   DCHECK(target_state == DocumentLifecycle::kLayoutClean ||
@@ -3890,6 +3912,11 @@ void LocalFrameView::AttachToLayout() {
   UpdateParentScrollableAreaSet();
   SetupRenderThrottling();
   subtree_throttled_ = ParentFrameView()->CanThrottleRendering();
+
+  // We may have updated paint properties in detached frame subtree for
+  // printing (see UpdateLifecyclePhasesForPrinting()). The paint properties
+  // may change after the frame is attached.
+  SetSubtreeNeedsPaintPropertyUpdate();
 }
 
 void LocalFrameView::DetachFromLayout() {
@@ -3907,6 +3934,10 @@ void LocalFrameView::DetachFromLayout() {
     parent->RemoveScrollableArea(this);
   SetParentVisible(false);
   is_attached_ = false;
+
+  // We may need update paint properties in detached frame subtree for printing.
+  // See UpdateLifecyclePhasesForPrinting().
+  SetSubtreeNeedsPaintPropertyUpdate();
 }
 
 void LocalFrameView::AddPlugin(PluginView* plugin) {
