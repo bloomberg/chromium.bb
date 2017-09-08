@@ -70,6 +70,7 @@ Bug(none) external/wpt/streams/piping/pipe-through.serviceworker.https.html [ Cr
 Bug(none) external/wpt/streams/piping/transform-streams.serviceworker.https.html [ Crash Failure Timeout ]
 Bug(none) external/wpt/streams/readable-byte-streams/general.serviceworker.https.html [ Crash Failure Timeout ]
 Bug(none) external/wpt/streams/readable-byte-streams/properties.serviceworker.https.html [ Timeout Pass ]
+Bug(none) external/wpt/streams/readable-byte-streams/brand-checks.serviceworker.https.html [ Timeout ]
 Bug(none) external/wpt/streams/readable-streams/bad-strategies.serviceworker.https.html [ Crash Failure Timeout ]
 Bug(none) external/wpt/streams/readable-streams/bad-underlying-sources.serviceworker.https.html [ Crash Failure Timeout ]
 Bug(none) external/wpt/streams/readable-streams/brand-checks.serviceworker.https.html [ Crash Failure Timeout ]
