@@ -302,7 +302,14 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
     trace_cpu_time_metrics = {}
     if tab.EvaluateJavaScript('testRunner.isWaitingForTracingStart'):
       trace_data = self._ContinueTestRunWithTracing(tab)
-      trace_value = trace.TraceValue(page, trace_data)
+      # TODO(#763375): Rely on results.telemetry_info.file_path/etc.
+      kwargs = {}
+      if hasattr(results.telemetry_info, 'file_path'):
+        kwargs['file_path'] = results.telemetry_info.file_path
+        kwargs['remote_path'] = results.telemetry_info.remote_path
+        kwargs['upload_bucket'] = results.telemetry_info.upload_bucket
+        kwargs['cloud_url'] = results.telemetry_info.cloud_url
+      trace_value = trace.TraceValue(page, trace_data, **kwargs)
       results.AddValue(trace_value)
 
       trace_events_to_measure = tab.EvaluateJavaScript(
