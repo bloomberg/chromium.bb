@@ -29,6 +29,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/models/simple_combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_features.h"
 #include "ui/gfx/color_palette.h"
@@ -39,6 +40,7 @@
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/md_text_button.h"
+#include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/separator.h"
@@ -228,6 +230,20 @@ std::unique_ptr<views::ToggleImageButton> GeneratePasswordViewButton(
   button->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                             views::ImageButton::ALIGN_MIDDLE);
   return button;
+}
+
+// Creates a dropdown from the password value & other possible passwords.
+// The items are made of '*'s.
+std::unique_ptr<views::Combobox> GeneratePasswordDropdownView(
+    const autofill::PasswordForm& form) {
+  std::vector<base::string16> passwords = {
+      base::string16(form.password_value.length(), '*')};
+  for (const base::string16& possible_password :
+       form.other_possible_passwords) {
+    passwords.push_back(base::string16(possible_password.length(), '*'));
+  }
+  return std::make_unique<views::Combobox>(
+      std::make_unique<ui::SimpleComboboxModel>(passwords));
 }
 
 // Builds a credential row, adds the given elements to the layout.
@@ -460,6 +476,13 @@ void ManagePasswordsBubbleView::PendingView::CreateAndSetLayout() {
   // Credentials row.
   if (!parent_->model()->pending_password().username_value.empty() ||
       edit_button_) {
+    // Create the eye icon if password selection feature is on.
+    if (base::FeatureList::IsEnabled(
+            password_manager::features::kEnablePasswordSelection) &&
+        !password_view_button_) {
+      password_view_button_ = GeneratePasswordViewButton(this).release();
+    }
+
     const autofill::PasswordForm* password_form =
         &parent_->model()->pending_password();
     DCHECK(!username_field_);
@@ -468,16 +491,15 @@ void ManagePasswordsBubbleView::PendingView::CreateAndSetLayout() {
     } else {
       username_field_ = GenerateUsernameLabel(*password_form).release();
     }
-    if (!password_field_) {
+
+    DCHECK(!password_field_);
+    if (password_view_button_ && editing_ &&
+        !password_form->other_possible_passwords.empty()) {
+      password_field_ = GeneratePasswordDropdownView(*password_form).release();
+    } else {
       password_field_ = GeneratePasswordLabel(*password_form).release();
     }
 
-    // Add the eye icon if password selection feature is on.
-    if (base::FeatureList::IsEnabled(
-            password_manager::features::kEnablePasswordSelection) &&
-        !password_view_button_) {
-      password_view_button_ = GeneratePasswordViewButton(this).release();
-    }
     BuildCredentialRow(
         layout, std::unique_ptr<views::View>(username_field_),
         std::unique_ptr<views::View>(password_field_),
@@ -536,7 +558,8 @@ void ManagePasswordsBubbleView::PendingView::OnWillChangeFocus(
 void ManagePasswordsBubbleView::PendingView::OnDidChangeFocus(
     View* focused_before,
     View* focused_now) {
-  if (editing_ && focused_before == username_field_) {
+  if (editing_ && focused_now != username_field_ &&
+      focused_now != password_field_) {
     ToggleEditingState(true);
   }
 }
@@ -568,6 +591,8 @@ void ManagePasswordsBubbleView::PendingView::ToggleEditingState(
   edit_button_->SetEnabled(!editing_);
   RemoveChildView(username_field_);
   username_field_ = nullptr;
+  RemoveChildView(password_field_);
+  password_field_ = nullptr;
   CreateAndSetLayout();
   Layout();
   if (editing_) {
