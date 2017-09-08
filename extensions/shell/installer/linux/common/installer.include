@@ -110,12 +110,8 @@ stage_install_common() {
   # http://code.google.com/p/chromium/issues/detail?id=4451
   #
   # app
-  # We need to add the debug link so gdb knows to look for the symbols.
-  DEBUGFILE="${BUILDDIR}/${PROGNAME}.debug"
   STRIPPEDFILE="${BUILDDIR}/${PROGNAME}.stripped"
-  "${BUILDDIR}/app_shell_installer/common/eu-strip" -o "${STRIPPEDFILE}" -f "${DEBUGFILE}" "${BUILDDIR}/${PROGNAME}"
   install -m 755 "${STRIPPEDFILE}" "${STAGEDIR}/${INSTALLDIR}/${PROGNAME}"
-  rm "${DEBUGFILE}" "${STRIPPEDFILE}"
 
   # resources
   install -m 644 \
