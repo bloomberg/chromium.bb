@@ -37,8 +37,6 @@
 #import "ios/chrome/browser/ui/browser_view_controller_dependency_factory.h"
 #import "ios/chrome/browser/ui/browser_view_controller_testing.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
-#import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
-#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #import "ios/chrome/browser/ui/page_not_available_controller.h"
 #include "ios/chrome/browser/ui/toolbar/test_toolbar_model_ios.h"
@@ -268,10 +266,6 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     [bvc_ shutdown];
 
     BlockCleanupTest::TearDown();
-  }
-
-  GenericChromeCommand* GetCommandWithTag(NSInteger tag) {
-    return [[GenericChromeCommand alloc] initWithTag:tag];
   }
 
   MOCK_METHOD0(OnCompletionCalled, void());

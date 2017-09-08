@@ -10,7 +10,6 @@
 
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
-#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
 #import "ios/chrome/browser/ui/settings/bar_button_activity_indicator.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
