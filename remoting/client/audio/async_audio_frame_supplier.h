@@ -5,7 +5,7 @@
 #ifndef REMOTING_CLIENT_AUDIO_ASYNC_AUDIO_FRAME_SUPPLIER_H_
 #define REMOTING_CLIENT_AUDIO_ASYNC_AUDIO_FRAME_SUPPLIER_H_
 
-#include <stdint>
+#include <cstdint>
 
 #include "base/callback.h"
 #include "remoting/client/audio/audio_frame_supplier.h"
@@ -19,10 +19,10 @@ namespace remoting {
 // Stream -> Decode -> Stream Consumer -> Buffer -> [Frame Supplier] -> Play
 class AsyncAudioFrameSupplier : public AudioFrameSupplier {
  public:
-  // |samples| is the destination of the audio frame data, it should be at least
-  // |buffer_size|. |done| will be called when |samples| has been filled.
+  // |buffer| is the destination of the audio frame data, it should be at least
+  // |buffer_size|. |done| will be called when |buffer| has been filled.
   virtual void AsyncGetAudioFrame(uint32_t buffer_size,
-                                  void* samples,
+                                  void* buffer,
                                   const base::Closure& done) = 0;
 };
 

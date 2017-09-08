@@ -5,9 +5,7 @@
 #ifndef REMOTING_CLIENT_AUDIO_AUDIO_PLAYER_H_
 #define REMOTING_CLIENT_AUDIO_AUDIO_PLAYER_H_
 
-#include <stddef.h>
-#include <stdint.h>
-
+#include <cstdint>
 #include <list>
 #include <memory>
 

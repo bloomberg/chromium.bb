@@ -5,7 +5,7 @@
 #ifndef REMOTING_CLIENT_AUDIO_AUDIO_FRAME_SUPPLIER_H_
 #define REMOTING_CLIENT_AUDIO_AUDIO_FRAME_SUPPLIER_H_
 
-#include <stdint>
+#include <cstdint>
 
 #include "base/macros.h"
 #include "remoting/proto/audio.pb.h"
@@ -20,7 +20,7 @@ class AudioFrameSupplier {
  public:
   AudioFrameSupplier() = default;
   virtual ~AudioFrameSupplier() = default;
-  virtual uint32_t GetAudioFrame(void* buffer, uint32_t buffer_size) = 0;
+  virtual uint32_t GetAudioFrame(uint32_t buffer_size, void* buffer) = 0;
 
   // Methods to describe buffered data.
   virtual AudioPacket::SamplingRate buffered_sampling_rate() const = 0;
