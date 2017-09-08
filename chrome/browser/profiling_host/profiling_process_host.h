@@ -84,7 +84,7 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
 
   // Sends a message to the profiling process that it report the given process'
   // memory data to the crash server (slow-report).
-  void RequestProcessReport(base::ProcessId pid);
+  void RequestProcessReport(base::ProcessId pid, std::string trigger_name);
 
  protected:
   friend struct base::DefaultSingletonTraits<ProfilingProcessHost>;
@@ -133,12 +133,15 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
 
   void GetOutputFileOnBlockingThread(base::ProcessId pid,
                                      const base::FilePath& dest,
+                                     std::string trigger_name,
                                      bool upload);
   void HandleDumpProcessOnIOThread(base::ProcessId pid,
                                    base::FilePath file_path,
                                    base::File file,
+                                   std::string trigger_name,
                                    bool upload);
   void OnProcessDumpComplete(base::FilePath file_path,
+                             std::string trigger_name,
                              bool upload,
                              bool success);
 

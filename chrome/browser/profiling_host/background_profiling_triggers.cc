@@ -82,7 +82,7 @@ void BackgroundProfilingTriggers::OnReceivedMemoryDump(
 
 void BackgroundProfilingTriggers::TriggerMemoryReportForProcess(
     base::ProcessId pid) {
-  host_->RequestProcessReport(pid);
+  host_->RequestProcessReport(pid, "MEMLOG_BACKGROUND_TRIGGER");
 
   // Reset the timer to avoid uploading too many reports.
   timer_.Start(
