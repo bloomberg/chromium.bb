@@ -168,38 +168,30 @@ class ThreadHeapStats {
  public:
   ThreadHeapStats();
   void SetMarkedObjectSizeAtLastCompleteSweep(size_t size) {
-    ReleaseStore(&marked_object_size_at_last_complete_sweep_, size);
+    marked_object_size_at_last_complete_sweep_ = size;
   }
   size_t MarkedObjectSizeAtLastCompleteSweep() {
-    return AcquireLoad(&marked_object_size_at_last_complete_sweep_);
+    return marked_object_size_at_last_complete_sweep_;
   }
   void IncreaseAllocatedObjectSize(size_t delta);
   void DecreaseAllocatedObjectSize(size_t delta);
-  size_t AllocatedObjectSize() { return AcquireLoad(&allocated_object_size_); }
+  size_t AllocatedObjectSize() { return allocated_object_size_; }
   void IncreaseMarkedObjectSize(size_t delta);
-  size_t MarkedObjectSize() { return AcquireLoad(&marked_object_size_); }
+  size_t MarkedObjectSize() { return marked_object_size_; }
   void IncreaseAllocatedSpace(size_t delta);
   void DecreaseAllocatedSpace(size_t delta);
-  size_t AllocatedSpace() { return AcquireLoad(&allocated_space_); }
-  size_t ObjectSizeAtLastGC() { return AcquireLoad(&object_size_at_last_gc_); }
-  void IncreaseWrapperCount(size_t delta) {
-    AtomicAdd(&wrapper_count_, static_cast<long>(delta));
-  }
-  void DecreaseWrapperCount(size_t delta) {
-    AtomicSubtract(&wrapper_count_, static_cast<long>(delta));
-  }
+  size_t AllocatedSpace() { return allocated_space_; }
+  size_t ObjectSizeAtLastGC() { return object_size_at_last_gc_; }
+  void IncreaseWrapperCount(size_t delta) { wrapper_count_ += delta; }
+  void DecreaseWrapperCount(size_t delta) { wrapper_count_ -= delta; }
   size_t WrapperCount() { return AcquireLoad(&wrapper_count_); }
-  size_t WrapperCountAtLastGC() {
-    return AcquireLoad(&wrapper_count_at_last_gc_);
-  }
+  size_t WrapperCountAtLastGC() { return wrapper_count_at_last_gc_; }
   void IncreaseCollectedWrapperCount(size_t delta) {
-    AtomicAdd(&collected_wrapper_count_, static_cast<long>(delta));
+    collected_wrapper_count_ += delta;
   }
-  size_t CollectedWrapperCount() {
-    return AcquireLoad(&collected_wrapper_count_);
-  }
+  size_t CollectedWrapperCount() { return collected_wrapper_count_; }
   size_t PartitionAllocSizeAtLastGC() {
-    return AcquireLoad(&partition_alloc_size_at_last_gc_);
+    return partition_alloc_size_at_last_gc_;
   }
   void SetEstimatedMarkingTimePerByte(double estimated_marking_time_per_byte) {
     estimated_marking_time_per_byte_ = estimated_marking_time_per_byte;
