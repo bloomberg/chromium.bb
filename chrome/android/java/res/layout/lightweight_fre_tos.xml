@@ -31,8 +31,7 @@
         android:lineSpacingMultiplier="1.64"
         android:paddingEnd="24dp"
         android:paddingStart="24dp"
-        android:textColor="@color/fre_text_color"
-        android:textSize="@dimen/text_size_medium" />
+        android:textAppearance="@style/BlackBodyDefault" />
 
     <org.chromium.ui.widget.ButtonCompat
         android:id="@+id/lightweight_fre_terms_accept"

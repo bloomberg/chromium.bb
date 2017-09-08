@@ -333,7 +333,6 @@
     <dimen name="ntp_search_box_logo_padding">8dp</dimen>
     <dimen name="ntp_wide_card_lateral_margins">48dp</dimen>
     <dimen name="ntp_list_item_min_height">48dp</dimen>
-    <dimen name="ntp_list_item_text_size">16sp</dimen>
     <dimen name="ntp_shadow_height">9dp</dimen>
     <dimen name="ntp_sign_in_promo_margin_top">20dp</dimen>
     <dimen name="ntp_progress_indicator_diameter">56dp</dimen>

@@ -32,8 +32,7 @@
         android:layout_marginBottom="8dp"
         android:gravity="center_horizontal"
         android:text="@string/ntp_title_no_suggestions"
-        android:textSize="16sp"
-        android:textColor="@color/snippets_headline_text_color"
+        android:textAppearance="@style/BlackTitle1"
         chrome:leading="24dp" />
 
     <org.chromium.ui.widget.TextViewWithLeading

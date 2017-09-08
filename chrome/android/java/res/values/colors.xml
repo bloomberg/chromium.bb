@@ -63,10 +63,6 @@
     <color name="connection_info_popup_reset_cert_decisions_button">#000000</color>
     <color name="connection_info_popup_text">@color/black_alpha_87</color>
 
-    <!-- Page Info Popup colors -->
-    <color name="page_info_popup_text">@color/black_alpha_87</color>
-    <color name="page_info_popup_text_link">@color/google_blue_700</color>
-
     <!-- URL Emphasizer colors -->
     <color name="url_emphasis_non_emphasized_text">#80333333</color>
     <color name="url_emphasis_light_non_emphasized_text">#80ffffff</color>
@@ -103,30 +99,22 @@
     <color name="compositor_tab_title_bar_text">@color/black_alpha_87</color>
     <color name="compositor_tab_title_bar_text_incognito">#FFFFFFFF</color>
 
-    <!-- First Run Experience Colors -->
-    <color name="fre_text_color">#000000</color>
-
     <!-- Account Signin Colors -->
     <!-- As in dimens.xml, signin uses values from the First Run Experience -->
     <color name="signin_head_background">#fff</color>
     <color name="signin_body_background">#fafafa</color>
 
     <!-- Sad Tab colors -->
-    <color name="sad_tab_header_text_color">#333333</color>
     <color name="sad_tab_body_text_color">#646464</color>
 
     <!-- NTP Colors. Used on the bookmarks and recent tabs pages. -->
     <color name="ntp_bg">#f2f2f2</color>
     <color name="ntp_bg_incognito">#222</color>
     <color name="ntp_search_box_hint">@color/black_alpha_54</color>
-    <color name="ntp_list_item_text">#333</color>
-    <color name="ntp_list_header_text">#333</color>
     <color name="ntp_list_header_subtext">#969696</color>
-    <color name="ntp_list_header_subtext_active">#7cadff</color>
     <color name="snippets_publisher_name_color">#646464</color>
     <color name="snippets_text_color">#646464</color>
     <color name="snippets_list_header_text_color">#646464</color>
-    <color name="snippets_headline_text_color">#333333</color>
     <color name="suggestions_modern_bg">@android:color/white</color>
 
     <!-- Incognito NTP Colors. -->
@@ -141,7 +129,6 @@
     <color name="tile_view_offline_badge_tint">#4285f4</color>
 
     <!-- Contextual Search colors -->
-    <color name="contextual_search_promo_text_color">#333333</color>
     <color name="contextual_search_promo_background_color">#EEEEEE</color>
     <color name="contextual_search_promo_border_color">#C2C2C2</color>
 
@@ -175,7 +162,6 @@
     <color name="find_result_bar_result_border_color">#c9af35</color>
     <color name="find_result_bar_active_color">#ff9632</color>
     <color name="find_result_bar_active_border_color">#c37e3b</color>
-    <color name="find_in_page_query_color">#333333</color>
     <color name="find_in_page_query_white_color">#ffffff</color>
     <color name="find_in_page_failed_results_status_color">#db4437</color>
 

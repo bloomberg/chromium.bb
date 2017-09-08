@@ -18,8 +18,7 @@
         android:id="@+id/status_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="16sp"
-        android:textColor="@color/snippets_headline_text_color"
+        android:textAppearance="@style/BlackTitle1"
         chrome:leading="24dp" />
 
     <org.chromium.ui.widget.TextViewWithLeading

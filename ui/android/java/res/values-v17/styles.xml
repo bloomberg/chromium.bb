@@ -155,6 +155,10 @@
     </style>
     <style name="BlueLink2" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/google_blue_700</item>
+        <item name="android:textSize">@dimen/text_size_medium</item>
+    </style>
+    <style name="BlueLink3" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/google_blue_700</item>
         <item name="android:textSize">@dimen/text_size_small</item>
     </style>
 </resources>
