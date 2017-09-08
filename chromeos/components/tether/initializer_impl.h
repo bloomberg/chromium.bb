@@ -60,6 +60,7 @@ class TetherHostFetcher;
 class TetherHostResponseRecorder;
 class TetherNetworkDisconnectionHandler;
 class WifiHotspotConnector;
+class WifiHotspotDisconnector;
 
 // Initializes the Tether Chrome OS component.
 class InitializerImpl : public Initializer,
@@ -169,8 +170,9 @@ class InitializerImpl : public Initializer,
   std::unique_ptr<HostScanner> host_scanner_;
   std::unique_ptr<HostScanScheduler> host_scan_scheduler_;
   std::unique_ptr<HostConnectionMetricsLogger> host_connection_metrics_logger_;
-  std::unique_ptr<TetherConnector> tether_connector_;
   std::unique_ptr<NetworkConfigurationRemover> network_configuration_remover_;
+  std::unique_ptr<WifiHotspotDisconnector> wifi_hotspot_disconnector_;
+  std::unique_ptr<TetherConnector> tether_connector_;
   std::unique_ptr<TetherDisconnector> tether_disconnector_;
   std::unique_ptr<TetherNetworkDisconnectionHandler>
       tether_network_disconnection_handler_;

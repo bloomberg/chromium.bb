@@ -34,6 +34,11 @@ WifiHotspotConnector::WifiHotspotConnector(
 
 WifiHotspotConnector::~WifiHotspotConnector() {
   network_state_handler_->RemoveObserver(this, FROM_HERE);
+
+  // If a connection attempt is active when this class is destroyed, the attempt
+  // has no time to finish successfully, so it is considered a failure.
+  if (!wifi_network_guid_.empty())
+    CompleteActiveConnectionAttempt(false /* success */);
 }
 
 void WifiHotspotConnector::ConnectToWifiHotspot(
@@ -64,7 +69,7 @@ void WifiHotspotConnector::ConnectToWifiHotspot(
                    << tether_network_guid_ << "\").";
     }
 
-    InvokeWifiConnectionCallback(std::string());
+    CompleteActiveConnectionAttempt(false /* success */);
   }
 
   ssid_ = ssid;
@@ -125,7 +130,7 @@ void WifiHotspotConnector::NetworkPropertiesUpdated(
 
   if (network->IsConnectedState()) {
     // If a connection occurred, notify observers and exit early.
-    InvokeWifiConnectionCallback(wifi_network_guid_);
+    CompleteActiveConnectionAttempt(true /* success */);
     return;
   }
 
@@ -159,13 +164,22 @@ void WifiHotspotConnector::NetworkPropertiesUpdated(
   }
 }
 
-void WifiHotspotConnector::InvokeWifiConnectionCallback(
-    const std::string& wifi_guid) {
+void WifiHotspotConnector::CompleteActiveConnectionAttempt(bool success) {
   DCHECK(!callback_.is_null());
+  DCHECK(!wifi_network_guid_.empty());
 
-  // |wifi_guid| may be a reference to |wifi_network_guid_|, so make a copy of
-  // it first before clearing it below.
-  std::string wifi_network_guid_copy = wifi_guid;
+  // Note: Empty string is passed to callback to signify a failed attempt.
+  std::string wifi_guid_for_callback =
+      success ? wifi_network_guid_ : std::string();
+
+  // If the connection attempt has failed (e.g., due to cancellation or
+  // timeout) and ConnectToNetworkId() has already been called, the in-progress
+  // connection attempt should be stopped; there is no cancellation mechanism,
+  // so DisconnectFromNetworkId() is called here instead. Without this, it would
+  // be possible for the connection to complete after the Tether component had
+  // already shut down. See crbug.com/761569.
+  if (!success && has_initiated_connection_to_current_network_)
+    network_connect_->DisconnectFromNetworkId(wifi_network_guid_);
 
   ssid_.clear();
   password_.clear();
@@ -175,7 +189,7 @@ void WifiHotspotConnector::InvokeWifiConnectionCallback(
 
   timer_->Stop();
 
-  if (!wifi_network_guid_copy.empty()) {
+  if (!wifi_guid_for_callback.empty()) {
     // UMA_HISTOGRAM_MEDIUM_TIMES is used because UMA_HISTOGRAM_TIMES has a max
     // of 10 seconds.
     DCHECK(!connection_attempt_start_time_.is_null());
@@ -185,7 +199,7 @@ void WifiHotspotConnector::InvokeWifiConnectionCallback(
     connection_attempt_start_time_ = base::Time();
   }
 
-  callback_.Run(wifi_network_guid_copy);
+  callback_.Run(wifi_guid_for_callback);
   callback_.Reset();
 }
 
@@ -227,7 +241,7 @@ base::DictionaryValue WifiHotspotConnector::CreateWifiPropertyDictionary(
 }
 
 void WifiHotspotConnector::OnConnectionTimeout() {
-  InvokeWifiConnectionCallback(std::string());
+  CompleteActiveConnectionAttempt(false /* success */);
 }
 
 void WifiHotspotConnector::SetTimerForTest(std::unique_ptr<base::Timer> timer) {
