@@ -1253,7 +1253,7 @@ TEST_F('BackgroundTest', 'InPageLinks', function() {
 });
 
 TEST_F('BackgroundTest', 'ListItem', function() {
-  this.forceContextualFirstOutput();
+  this.resetContextualOutput();
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*!
     <p>start</p>
@@ -1261,24 +1261,41 @@ TEST_F('BackgroundTest', 'ListItem', function() {
     <ol><li>pork<li>beef<li>chicken</ol>
   */}, function(root) {
     mockFeedback.call(doCmd('nextLine'))
-        .expectSpeech('List item', '\u2022 ', 'apple')
-        .expectBraille('lstitm list +3 \u2022 apple')
+        .expectSpeech('\u2022 ', 'apple', 'List item')
+        .expectBraille('\u2022 apple lstitm list +3')
         .call(doCmd('nextLine'))
-        .expectSpeech('List item', '\u2022 ', 'grape')
-        .expectBraille('lstitm \u2022 grape')
+        .expectSpeech('\u2022 ', 'grape', 'List item')
+        .expectBraille('\u2022 grape lstitm')
         .call(doCmd('nextLine'))
-        .expectSpeech('List item', '\u2022 ', 'banana')
-        .expectBraille('lstitm \u2022 banana')
+        .expectSpeech('\u2022 ', 'banana', 'List item')
+        .expectBraille('\u2022 banana lstitm')
 
         .call(doCmd('nextLine'))
-        .expectSpeech('List item', '1. ', 'pork')
-        .expectBraille('lstitm list +3 1. pork')
+        .expectSpeech('1. ', 'pork', 'List item')
+        .expectBraille('1. pork lstitm list +3')
         .call(doCmd('nextLine'))
-        .expectSpeech('List item', '2. ', 'beef')
-        .expectBraille('lstitm 2. beef')
+        .expectSpeech('2. ', 'beef', 'List item')
+        .expectBraille('2. beef lstitm')
         .call(doCmd('nextLine'))
-        .expectSpeech('List item', '3. ', 'chicken')
-        .expectBraille('lstitm 3. chicken')
+        .expectSpeech('3. ', 'chicken', 'List item')
+        .expectBraille('3. chicken lstitm')
+        .replay();
+  });
+});
+
+TEST_F('BackgroundTest', 'BusyHeading', function() {
+  this.resetContextualOutput();
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function(root) {/*!
+    <p>start</p>
+    <h2><a href="#">Lots</a><a href="#">going</a><a href="#">here</a></h2>
+  */}, function(root) {
+    // In the past, this would have inserted the 'heading 2' after the first
+    // link's output. Make sure it goes to the end.
+    mockFeedback.call(doCmd('nextLine'))
+        .expectSpeech(
+            'Lots', 'Link', 'going', 'Link', 'here', 'Link', 'Heading 2')
+        .expectBraille('Lots lnk going lnk here lnk h2')
         .replay();
   });
 });
