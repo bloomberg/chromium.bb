@@ -79,6 +79,7 @@ enum ControlPart {
   kMediaOverflowMenuButtonPart,
   kMediaDownloadIconPart,
   kMediaRemotingCastIconPart,
+  kMediaControlPart,
   kMenulistPart,
   kMenulistButtonPart,
   kMenulistTextPart,

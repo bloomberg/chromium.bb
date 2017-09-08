@@ -339,6 +339,9 @@ inline CSSIdentifierValue::CSSIdentifierValue(ControlPart e)
     case kMediaDownloadIconPart:
       value_id_ = CSSValueInternalMediaDownloadButton;
       break;
+    case kMediaControlPart:
+      value_id_ = CSSValueInternalMediaControl;
+      break;
     case kMenulistPart:
       value_id_ = CSSValueMenulist;
       break;

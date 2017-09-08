@@ -33,6 +33,8 @@
 #include "core/HTMLNames.h"
 #include "core/SVGNames.h"
 #include "core/css/StyleChangeReason.h"
+#include "core/css/resolver/StyleResolver.h"
+#include "core/css/resolver/StyleResolverState.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -471,11 +473,14 @@ static void AdjustEffectiveTouchAction(ComputedStyle& style,
   }
 }
 
-void StyleAdjuster::AdjustComputedStyle(
-    ComputedStyle& style,
-    const ComputedStyle& parent_style,
-    const ComputedStyle& layout_parent_style,
-    Element* element) {
+void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
+                                        Element* element) {
+  DCHECK(state.LayoutParentStyle());
+  DCHECK(state.ParentStyle());
+  ComputedStyle& style = state.MutableStyleRef();
+  const ComputedStyle& parent_style = *state.ParentStyle();
+  const ComputedStyle& layout_parent_style = *state.LayoutParentStyle();
+
   if (style.Display() != EDisplay::kNone) {
     if (element && element->IsHTMLElement())
       AdjustStyleForHTMLElement(style, ToHTMLElement(*element));
@@ -600,5 +605,15 @@ void StyleAdjuster::AdjustComputedStyle(
   }
 
   AdjustEffectiveTouchAction(style, parent_style, element);
+
+  bool is_media_control =
+      element && element->ShadowPseudoId().StartsWith("-webkit-media-controls");
+  if (is_media_control && style.Appearance() == kNoControlPart) {
+    // For compatibility reasons if the element is a media control and the
+    // -webkit-appearance is none then we should clear the background image.
+    if (!StyleResolver::HasAuthorBackground(state)) {
+      style.MutableBackgroundInternal().ClearImage();
+    }
+  }
 }
 }  // namespace blink

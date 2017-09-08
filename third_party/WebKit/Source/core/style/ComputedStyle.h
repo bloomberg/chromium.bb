@@ -172,6 +172,8 @@ class ComputedStyle : public ComputedStyleBase,
   friend class CachedUAStyle;
   // Accesses visited and unvisited colors.
   friend class ColorPropertyFunctions;
+  // Edits the background for media controls.
+  friend class StyleAdjuster;
 
   // FIXME: When we stop resolving currentColor at style time, these can be
   // removed.
