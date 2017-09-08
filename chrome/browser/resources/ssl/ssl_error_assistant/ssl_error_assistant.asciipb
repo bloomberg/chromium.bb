@@ -169,7 +169,7 @@ mitm_software {
 
 mitm_software {
   name: "Bitdefender Antivirus",
-  issuer_common_name_regex: "Bitdefender Personal CA.Net-Defender",
+  issuer_common_name_regex: "Bitdefender Personal CA\.Net-Defender",
   issuer_organization_regex: "Bitdefender"
 }
 
@@ -210,7 +210,7 @@ mitm_software {
 
 mitm_software {
   name: "Fortinet",
-  issuer_organization_regex: "Fortinet( Ltd.)?"
+  issuer_organization_regex: "Fortinet( Ltd\.)?"
 }
 
 mitm_software {
@@ -225,7 +225,7 @@ mitm_software {
 
 mitm_software {
   name: "NetSpark",
-  issuer_common_name_regex: "www.netspark.com",
+  issuer_common_name_regex: "www\.netspark\.com",
   issuer_organization_regex: "NetSpark"
 }
 
@@ -269,10 +269,10 @@ mitm_software {
 
 mitm_software {
   name: "Trend Micro InterScan Web Security Suite (IWSS)",
-  issuer_common_name_regex: "IWSS.TREND"
+  issuer_common_name_regex: "IWSS\.TREND"
 }
 
 mitm_software {
   name: "Zscaler",
-  issuer_organization_regex: "Zscaler Inc."
+  issuer_organization_regex: "Zscaler Inc\."
 }
