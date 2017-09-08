@@ -332,7 +332,7 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
           profile_, kPlayStoreAppId,
           GetLaunchIntent(kPlayStorePackage, kPlayStoreActivity,
                           {kInitialStartParam}),
-          true, false);
+          false /* deferred_launch_allowed */);
     }
 
     for (auto& observer : observer_list_)

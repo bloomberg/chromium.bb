@@ -8,11 +8,9 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "components/arc/common/app.mojom.h"
-#include "ui/gfx/geometry/rect.h"
 
 class Profile;
 
@@ -31,8 +29,6 @@ extern const char kPlayStorePackage[];
 extern const char kPlayStoreActivity[];
 extern const char kSettingsAppId[];
 extern const char kInitialStartParam[];
-
-using CanHandleResolutionCallback = base::Callback<void(bool)>;
 
 // Represents unparsed intent.
 class Intent {
@@ -83,11 +79,6 @@ class Intent {
 // Checks if a given app should be hidden in launcher.
 bool ShouldShowInLauncher(const std::string& app_id);
 
-// Launch an app and let the system decides how big and where to place it.
-bool LaunchApp(content::BrowserContext* context,
-               const std::string& app_id,
-               int event_flags);
-
 // Launch Android Settings app.
 bool LaunchAndroidSettingsApp(content::BrowserContext* context,
                               int event_flags);
@@ -95,22 +86,14 @@ bool LaunchAndroidSettingsApp(content::BrowserContext* context,
 // Launch Play Store app.
 bool LaunchPlayStoreWithUrl(const std::string& url);
 
-// Launches an app with given layout and lets the system decides how big and
-// where to place it.
+// Launches an ARC app.
 bool LaunchApp(content::BrowserContext* context,
                const std::string& app_id,
-               bool landscape_layout,
                int event_flags);
 
-// Launches an app with given layout and lets the system decides how big and
-// where to place it. |launch_intent| may be optionally provided to customize
-// an app launch.
-// TODO(khmel): replace bool for |landscape_layout| with enum class in order
-// to prevent using another LaunchApp with different signature mistakenly.
 bool LaunchAppWithIntent(content::BrowserContext* context,
                          const std::string& app_id,
                          const base::Optional<std::string>& launch_intent,
-                         bool landscape_layout,
                          int event_flags);
 
 // Sets task active.
@@ -125,15 +108,6 @@ void ShowTalkBackSettings();
 // Starts Play Auto Install flow.
 void StartPaiFlow();
 
-// Tests if the application can use the given target resolution.
-// The callback will receive the information once known.
-// A false will get returned if the result cannot be determined in which case
-// the callback will not be called.
-bool CanHandleResolution(content::BrowserContext* context,
-                         const std::string& app_id,
-                         const gfx::Rect& rect,
-                         const CanHandleResolutionCallback& callback);
-
 // Uninstalls the package in ARC.
 void UninstallPackage(const std::string& package_name);
 
@@ -143,13 +117,9 @@ void UninstallArcApp(const std::string& app_id, Profile* profile);
 // Removes cached app shortcut icon in ARC.
 void RemoveCachedIcon(const std::string& icon_resource_id);
 
-// Shows package info for ARC package.
-// Deprecated. Use ShowPackageInfoOnPage.
-bool ShowPackageInfo(const std::string& package_name);
-
 // Shows package info for ARC package at the specified page.
-bool ShowPackageInfoOnPage(const std::string& package_name,
-                           mojom::ShowPackageInfoPage page);
+bool ShowPackageInfo(const std::string& package_name,
+                     mojom::ShowPackageInfoPage page);
 
 // Returns true if |id| represents either ARC app or ARC shelf group.
 bool IsArcItem(content::BrowserContext* context, const std::string& id);
