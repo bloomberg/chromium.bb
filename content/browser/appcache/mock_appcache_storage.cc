@@ -474,8 +474,8 @@ void MockAppCacheStorage::ProcessMakeGroupObsolete(
         group.get(), true, response_code);
 }
 
-void MockAppCacheStorage::ScheduleTask(const base::Closure& task) {
-  pending_tasks_.push_back(task);
+void MockAppCacheStorage::ScheduleTask(base::OnceClosure task) {
+  pending_tasks_.push_back(std::move(task));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&MockAppCacheStorage::RunOnePendingTask,
                                 weak_factory_.GetWeakPtr()));
@@ -483,9 +483,9 @@ void MockAppCacheStorage::ScheduleTask(const base::Closure& task) {
 
 void MockAppCacheStorage::RunOnePendingTask() {
   DCHECK(!pending_tasks_.empty());
-  base::Closure task = pending_tasks_.front();
+  base::OnceClosure task = std::move(pending_tasks_.front());
   pending_tasks_.pop_front();
-  task.Run();
+  std::move(task).Run();
 }
 
 void MockAppCacheStorage::AddStoredCache(AppCache* cache) {
