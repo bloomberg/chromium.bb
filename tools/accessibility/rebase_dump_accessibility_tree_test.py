@@ -119,24 +119,28 @@ def Run():
       platform = tokens[6]
       build = tokens[8]
       logdog_prefix = 'chromium/bb/%s/%s/%s' % (bucket, platform, build)
-      logdog_steps = '%s/+/recipes/steps/*/*/*' % logdog_prefix
+      logdog_steps = '%s/+/recipes/steps/**' % logdog_prefix
       logdog_query = 'cit logdog query -results 999 -path "%s"' % logdog_steps
       print (BRIGHT_COLOR + '=> %s' + NORMAL_COLOR) % logdog_query
       steps = os.popen(logdog_query).readlines()
       a11y_step = None
       for step in steps:
-        if (step.find('content_browsertests') >= 0 and
+        if (step.find('/content_browsertests') >= 0 and
             step.find('with_patch') >= 0 and
             step.find('trigger') == -1 and
+            step.find('swarming.summary') == -1 and
+            step.find('step_metadata') == -1 and
             step.find('Upload') == -1):
+
           a11y_step = step.rstrip()
+          logdog_cat = 'cit logdog cat -raw "chromium%s"' % a11y_step
+          # A bit noisy but useful for debugging.
+          # print (BRIGHT_COLOR + '=> %s' + NORMAL_COLOR) % logdog_cat
+          output = os.popen(logdog_cat).read()
+          ParseLog(output)
       if not a11y_step:
         print 'No content_browsertests (with patch) step found'
         continue
-      logdog_cat = 'cit logdog cat -raw "chromium%s"' % a11y_step
-      print (BRIGHT_COLOR + '=> %s' + NORMAL_COLOR) % logdog_cat
-      output = os.popen(logdog_cat).read()
-      ParseLog(output)
 
 if __name__ == '__main__':
   sys.exit(Run())
