@@ -19,14 +19,25 @@ import sys
 t_specified = False
 j_specified = False
 output_dir = '.'
-for index, arg in enumerate(sys.argv[1:]):
+input_args = sys.argv
+# On Windows the autoninja.bat script passes along the arguments enclosed in
+# double quotes. This prevents multiple levels of parsing of the special '^'
+# characters needed when compiling a single file but means that this script gets
+# called with a single argument containing all of the actual arguments,
+# separated by spaces. When this case is detected we need to do argument
+# splitting ourselves. This means that arguments containing actual spaces are
+# not supported by autoninja, but that is not a real limitation.
+if (sys.platform.startswith('win') and len(sys.argv) == 2 and
+    input_args[1].count(' ') > 0):
+  input_args = sys.argv[:1] + sys.argv[1].split()
+for index, arg in enumerate(input_args[1:]):
   if arg == '-j':
     j_specified = True
   if arg == '-t':
     t_specified = True
   if arg == '-C':
-    # + 1 to get the next argument and +1 because we trimmed off sys.argv[0]
-    output_dir = sys.argv[index + 2]
+    # + 1 to get the next argument and +1 because we trimmed off input_args[0]
+    output_dir = input_args[index + 2]
 
 use_goma = False
 try:
@@ -42,9 +53,9 @@ except IOError:
 if sys.platform.startswith('win'):
   # Specify ninja.exe on Windows so that ninja.bat can call autoninja and not
   # be called back.
-  args = ['ninja.exe'] + sys.argv[1:]
+  args = ['ninja.exe'] + input_args[1:]
 else:
-  args = ['ninja'] + sys.argv[1:]
+  args = ['ninja'] + input_args[1:]
 
 num_cores = multiprocessing.cpu_count()
 if not j_specified and not t_specified:
