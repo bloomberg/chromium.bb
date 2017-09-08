@@ -1038,8 +1038,7 @@
                   '|chrome/browser/media_galleries/'\
                   '|chrome/browser/storage_monitor/'\
                   '|chrome/common/media_galleries/'\
-                  '|chrome/test/data/extensions/api_test/media_galleries/'\
-                  '|chrome/utility/itunes*',
+                  '|chrome/test/data/extensions/api_test/media_galleries/'
     },
     'media_mojo': {
       'filepath': 'media/mojo/*'

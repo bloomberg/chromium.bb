@@ -42,7 +42,6 @@
 #if defined(OS_MACOSX)
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "chrome/browser/media_galleries/fileapi/iapps_finder_impl.h"
 #endif  // OS_MACOSX
 
 #if !defined(DISABLE_NACL)

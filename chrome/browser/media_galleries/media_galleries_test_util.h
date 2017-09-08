@@ -54,10 +54,6 @@ class EnsureMediaDirectoriesExists {
   base::FilePath GetFakeLocalAppDataPath() const;
 #endif
 
-#if defined(OS_MACOSX)
-  base::FilePath GetFakeITunesRootPath() const;
-#endif
-
  private:
   void Init();
 

@@ -315,7 +315,6 @@ static_library("common") {
       "extensions/chrome_manifest_handlers.h",
       "extensions/chrome_manifest_url_handlers.cc",
       "extensions/chrome_manifest_url_handlers.h",
-      "extensions/chrome_utility_extensions_messages.h",
       "extensions/command.cc",
       "extensions/command.h",
       "extensions/extension_constants.cc",
@@ -385,12 +384,6 @@ static_library("common") {
     }
   }
 
-  if (is_win || is_mac) {
-    sources += [
-      "media_galleries/itunes_library.cc",
-      "media_galleries/itunes_library.h",
-    ]
-  }
   if (is_mac) {
     public_deps += [ ":app_mode_app_support" ]
   }

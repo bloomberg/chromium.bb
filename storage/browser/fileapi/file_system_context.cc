@@ -108,7 +108,6 @@ int FileSystemContext::GetPermissionPolicy(FileSystemType type) {
              FILE_PERMISSION_USE_FILE_PERMISSION;
 
     case kFileSystemTypeDeviceMedia:
-    case kFileSystemTypeItunes:
     case kFileSystemTypeNativeMedia:
       return FILE_PERMISSION_USE_FILE_PERMISSION;
 

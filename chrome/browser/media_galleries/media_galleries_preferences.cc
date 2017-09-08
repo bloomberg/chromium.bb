@@ -25,8 +25,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/media_galleries/fileapi/iapps_finder.h"
-#include "chrome/browser/media_galleries/imported_media_gallery_registry.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/media_galleries/media_galleries_histograms.h"
 #include "chrome/browser/profiles/profile.h"
@@ -89,8 +87,6 @@ const char kMediaGalleriesDefaultGalleryTypeNotDefaultValue[] = "notDefault";
 const char kMediaGalleriesDefaultGalleryTypeMusicDefaultValue[] = "music";
 const char kMediaGalleriesDefaultGalleryTypePicturesDefaultValue[] = "pictures";
 const char kMediaGalleriesDefaultGalleryTypeVideosDefaultValue[] = "videos";
-
-const char kITunesGalleryName[] = "iTunes";
 
 const int kCurrentPrefsVersion = 3;
 
@@ -364,11 +360,6 @@ base::string16 GetDisplayNameForSubFolder(const base::string16& device_name,
           device_name);
 }
 
-void InitializeImportedMediaGalleryRegistryInBackground() {
-  base::ThreadRestrictions::AssertIOAllowed();
-  ImportedMediaGalleryRegistry::GetInstance()->Initialize();
-}
-
 }  // namespace
 
 MediaGalleryPrefInfo::MediaGalleryPrefInfo()
@@ -463,7 +454,6 @@ MediaGalleriesPreferences::GalleryChangeObserver::~GalleryChangeObserver() {}
 
 MediaGalleriesPreferences::MediaGalleriesPreferences(Profile* profile)
     : initialized_(false),
-      pre_initialization_callbacks_waiting_(0),
       profile_(profile),
       extension_prefs_for_testing_(NULL),
       weak_factory_(this) {
@@ -487,12 +477,6 @@ void MediaGalleriesPreferences::EnsureInitialized(base::Closure callback) {
   if (on_initialize_callbacks_.size() > 1)
     return;
 
-  // This counter must match the number of async methods dispatched below.
-  // It cannot be incremented inline with each callback, as some may return
-  // synchronously, decrement the counter to 0, and prematurely trigger
-  // FinishInitialization.
-  pre_initialization_callbacks_waiting_ = 2;
-
   // Check whether we should be initializing -- are there any extensions that
   // are using media galleries?
   media_galleries::UsageCount(media_galleries::PREFS_INITIALIZED);
@@ -507,62 +491,11 @@ void MediaGalleriesPreferences::EnsureInitialized(base::Closure callback) {
       base::Bind(&MediaGalleriesPreferences::OnStorageMonitorInit,
                  weak_factory_.GetWeakPtr(),
                  APIHasBeenUsed(profile_)));
-
-  // Look for optional default galleries every time.
-  iapps::FindITunesLibrary(
-      base::Bind(&MediaGalleriesPreferences::OnFinderDeviceID,
-                 weak_factory_.GetWeakPtr()));
 }
 
 bool MediaGalleriesPreferences::IsInitialized() const { return initialized_; }
 
 Profile* MediaGalleriesPreferences::profile() { return profile_; }
-
-void MediaGalleriesPreferences::OnInitializationCallbackReturned() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(!IsInitialized());
-  DCHECK_GT(pre_initialization_callbacks_waiting_, 0);
-  if (--pre_initialization_callbacks_waiting_ == 0)
-    FinishInitialization();
-}
-
-void MediaGalleriesPreferences::FinishInitialization() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(!IsInitialized());
-
-  initialized_ = true;
-
-  StorageMonitor* monitor = StorageMonitor::GetInstance();
-  DCHECK(monitor->IsInitialized());
-
-  InitFromPrefs();
-
-  StorageMonitor::GetInstance()->AddObserver(this);
-
-  std::vector<StorageInfo> existing_devices =
-      monitor->GetAllAvailableStorages();
-  for (size_t i = 0; i < existing_devices.size(); i++) {
-    if (!(StorageInfo::IsMediaDevice(existing_devices[i].device_id()) &&
-          StorageInfo::IsRemovableDevice(existing_devices[i].device_id())))
-      continue;
-    AddGallery(existing_devices[i].device_id(),
-               base::FilePath(),
-               MediaGalleryPrefInfo::kAutoDetected,
-               existing_devices[i].storage_label(),
-               existing_devices[i].vendor_name(),
-               existing_devices[i].model_name(),
-               existing_devices[i].total_size_in_bytes(),
-               base::Time::Now(), 0, 0, 0);
-  }
-
-  for (std::vector<base::Closure>::iterator iter =
-           on_initialize_callbacks_.begin();
-       iter != on_initialize_callbacks_.end();
-       ++iter) {
-    iter->Run();
-  }
-  on_initialize_callbacks_.clear();
-}
 
 void MediaGalleriesPreferences::AddDefaultGalleries() {
   const struct DefaultTypes {
@@ -606,46 +539,6 @@ void MediaGalleriesPreferences::AddDefaultGalleries() {
   }
 }
 
-bool MediaGalleriesPreferences::UpdateDeviceIDForSingletonType(
-    const std::string& device_id) {
-  StorageInfo::Type singleton_type;
-  if (!StorageInfo::CrackDeviceId(device_id, &singleton_type, NULL))
-    return false;
-
-  PrefService* prefs = profile_->GetPrefs();
-  std::unique_ptr<ListPrefUpdate> update(
-      new ListPrefUpdate(prefs, prefs::kMediaGalleriesRememberedGalleries));
-  base::ListValue* list = update->Get();
-  for (base::ListValue::iterator iter = list->begin();
-       iter != list->end(); ++iter) {
-    // All of these calls should succeed, but preferences file can be corrupt.
-    base::DictionaryValue* dict;
-    if (!iter->GetAsDictionary(&dict))
-      continue;
-    std::string this_device_id;
-    if (!dict->GetString(kMediaGalleriesDeviceIdKey, &this_device_id))
-      continue;
-    if (this_device_id == device_id)
-      return true;  // No update is necessary.
-    StorageInfo::Type device_type;
-    if (!StorageInfo::CrackDeviceId(this_device_id, &device_type, NULL))
-      continue;
-
-    if (device_type == singleton_type) {
-      dict->SetString(kMediaGalleriesDeviceIdKey, device_id);
-      update.reset();  // commits the update.
-      InitFromPrefs();
-      MediaGalleryPrefId pref_id;
-      if (GetPrefId(*dict, &pref_id)) {
-        for (auto& observer : gallery_change_observers_)
-          observer.OnGalleryInfoUpdated(this, pref_id);
-      }
-      return true;
-    }
-  }
-  return false;
-}
-
 void MediaGalleriesPreferences::OnStorageMonitorInit(
     bool api_has_been_used) {
   if (api_has_been_used)
@@ -655,47 +548,38 @@ void MediaGalleriesPreferences::OnStorageMonitorInit(
   // we upgrade (migrate) prefs for galleries with prefs version prior to 3.
   AddDefaultGalleries();
 
-  OnInitializationCallbackReturned();
-}
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(!IsInitialized());
 
-void MediaGalleriesPreferences::OnFinderDeviceID(const std::string& device_id) {
-  if (!device_id.empty()) {
-    std::string gallery_name;
-    if (StorageInfo::IsITunesDevice(device_id))
-      gallery_name = kITunesGalleryName;
+  initialized_ = true;
 
-    if (!gallery_name.empty()) {
-      pre_initialization_callbacks_waiting_++;
-      base::PostTaskWithTraitsAndReply(
-          FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-          base::BindOnce(&InitializeImportedMediaGalleryRegistryInBackground),
-          base::BindOnce(
-              &MediaGalleriesPreferences::OnInitializationCallbackReturned,
-              weak_factory_.GetWeakPtr()));
-    }
+  StorageMonitor* monitor = StorageMonitor::GetInstance();
+  DCHECK(monitor->IsInitialized());
 
-    if (!UpdateDeviceIDForSingletonType(device_id)) {
-      DCHECK(!gallery_name.empty());
-      AddOrUpdateGalleryInternal(
-          device_id,
-          base::ASCIIToUTF16(gallery_name),
-          base::FilePath(),
-          MediaGalleryPrefInfo::kAutoDetected,
-          base::string16(),
-          base::string16(),
-          base::string16(),
-          0,
-          base::Time(),
-          false,
-          0,
-          0,
-          0,
-          kCurrentPrefsVersion,
-          MediaGalleryPrefInfo::kNotDefault);
-    }
+  InitFromPrefs();
+
+  StorageMonitor::GetInstance()->AddObserver(this);
+
+  std::vector<StorageInfo> existing_devices =
+      monitor->GetAllAvailableStorages();
+  for (size_t i = 0; i < existing_devices.size(); i++) {
+    if (!(StorageInfo::IsMediaDevice(existing_devices[i].device_id()) &&
+          StorageInfo::IsRemovableDevice(existing_devices[i].device_id())))
+      continue;
+    AddGallery(
+        existing_devices[i].device_id(), base::FilePath(),
+        MediaGalleryPrefInfo::kAutoDetected,
+        existing_devices[i].storage_label(), existing_devices[i].vendor_name(),
+        existing_devices[i].model_name(),
+        existing_devices[i].total_size_in_bytes(), base::Time::Now(), 0, 0, 0);
   }
 
-  OnInitializationCallbackReturned();
+  for (std::vector<base::Closure>::iterator iter =
+           on_initialize_callbacks_.begin();
+       iter != on_initialize_callbacks_.end(); ++iter) {
+    iter->Run();
+  }
+  on_initialize_callbacks_.clear();
 }
 
 void MediaGalleriesPreferences::InitFromPrefs() {
@@ -750,16 +634,6 @@ bool MediaGalleriesPreferences::LookUpGalleryByPath(
     const base::FilePath& path,
     MediaGalleryPrefInfo* gallery_info) const {
   DCHECK(IsInitialized());
-
-  // First check if the path matches an imported gallery.
-  for (MediaGalleriesPrefInfoMap::const_iterator it =
-           known_galleries_.begin(); it != known_galleries_.end(); ++it) {
-    const std::string& device_id = it->second.device_id;
-    if (iapps::PathIndicatesITunesLibrary(device_id, path)) {
-      *gallery_info = it->second;
-      return true;
-    }
-  }
 
   StorageInfo info;
   base::FilePath relative_path;
