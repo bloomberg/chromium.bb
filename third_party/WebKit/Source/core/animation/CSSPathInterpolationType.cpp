@@ -9,6 +9,7 @@
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSPathValue.h"
 #include "core/css/resolver/StyleResolverState.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/wtf/PtrUtil.h"
 
 namespace blink {

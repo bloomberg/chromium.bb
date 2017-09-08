@@ -61,6 +61,7 @@
 #include "core/loader/resource/ScriptResource.h"
 #include "core/page/Page.h"
 #include "core/probe/CoreProbes.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/loader/fetch/Resource.h"

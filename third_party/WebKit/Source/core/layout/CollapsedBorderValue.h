@@ -25,11 +25,16 @@
 #ifndef CollapsedBorderValue_h
 #define CollapsedBorderValue_h
 
+#include "core/CoreExport.h"
+#include "core/style/BorderValue.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/geometry/LayoutRect.h"
+#include "platform/graphics/Color.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {
+
+class ComputedStyle;
 
 enum EBorderPrecedence {
   kBorderPrecedenceOff,
@@ -41,7 +46,7 @@ enum EBorderPrecedence {
   kBorderPrecedenceCell
 };
 
-class CollapsedBorderValue {
+class CORE_EXPORT CollapsedBorderValue {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
@@ -53,39 +58,12 @@ class CollapsedBorderValue {
         precedence_(kBorderPrecedenceOff) {}
 
   CollapsedBorderValue(const BorderValue& border,
-                       const Color& color,
-                       EBorderPrecedence precedence)
-      : color_(color),
-        style_(static_cast<unsigned>(border.Style())),
-        precedence_(precedence) {
-    if (!ComputedStyle::BorderStyleIsVisible(border.Style())) {
-      width_ = 0;
-    } else {
-      if (border.Width() > 0.0f && border.Width() <= 1.0f)
-        width_ = 1;
-      else
-        width_ = border.Width();
-    }
-    DCHECK(precedence != kBorderPrecedenceOff);
-  }
-
+                       const Color&,
+                       EBorderPrecedence);
   CollapsedBorderValue(EBorderStyle style,
                        const float width,
-                       const Color& color,
-                       EBorderPrecedence precedence)
-      : color_(color),
-        style_(static_cast<unsigned>(style)),
-        precedence_(precedence) {
-    if (!ComputedStyle::BorderStyleIsVisible(style)) {
-      width_ = 0;
-    } else {
-      if (width > 0.0f && width <= 1.0f)
-        width_ = 1;
-      else
-        width_ = width;
-    }
-    DCHECK(precedence != kBorderPrecedenceOff);
-  }
+                       const Color&,
+                       EBorderPrecedence);
 
   unsigned Width() const { return width_; }
   EBorderStyle Style() const { return static_cast<EBorderStyle>(style_); }

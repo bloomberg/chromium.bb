@@ -7,6 +7,7 @@
 #include "core/css/CSSToLengthConversionData.h"
 #include "core/css/resolver/FontBuilder.h"
 #include "core/css/resolver/StyleBuilderConverter.h"
+#include "platform/fonts/Font.h"
 #include "platform/fonts/FontDescription.h"
 
 namespace blink {

@@ -11,6 +11,7 @@
 #include "core/css/CSSValueList.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/css/resolver/TransformBuilder.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/transforms/TransformOperations.h"
 #include "platform/transforms/TranslateTransformOperation.h"
 #include "platform/wtf/PtrUtil.h"

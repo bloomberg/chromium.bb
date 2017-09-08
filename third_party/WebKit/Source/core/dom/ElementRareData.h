@@ -88,10 +88,8 @@ class ElementRareData : public NodeRareData {
   }
 
   ComputedStyle* GetComputedStyle() const { return computed_style_.Get(); }
-  void SetComputedStyle(RefPtr<ComputedStyle> computed_style) {
-    computed_style_ = std::move(computed_style);
-  }
-  void ClearComputedStyle() { computed_style_ = nullptr; }
+  void SetComputedStyle(RefPtr<ComputedStyle>);
+  void ClearComputedStyle();
 
   DOMTokenList* GetClassList() const { return class_list_.Get(); }
   void SetClassList(DOMTokenList* class_list) {
@@ -205,15 +203,6 @@ DEFINE_TRAIT_FOR_TRACE_WRAPPERS(ElementRareData);
 
 inline LayoutSize DefaultMinimumSizeForResizing() {
   return LayoutSize(LayoutUnit::Max(), LayoutUnit::Max());
-}
-
-inline ElementRareData::ElementRareData(NodeRenderingData* node_layout_data)
-    : NodeRareData(node_layout_data), class_list_(nullptr) {
-  is_element_rare_data_ = true;
-}
-
-inline ElementRareData::~ElementRareData() {
-  DCHECK(!pseudo_element_data_);
 }
 
 inline bool ElementRareData::HasPseudoElements() const {

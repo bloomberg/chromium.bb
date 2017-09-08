@@ -35,6 +35,7 @@
 #include "core/animation/Interpolation.h"
 #include "core/animation/css/CSSAnimationData.h"
 #include "core/animation/css/CSSAnimationUpdate.h"
+#include "core/animation/css/CSSTransitionData.h"
 #include "core/css/CSSKeyframesRule.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Document.h"

@@ -14,6 +14,7 @@ blink_core_sources("layout") {
     "BidiRun.h",
     "BidiRunForLine.cpp",
     "BidiRunForLine.h",
+    "CollapsedBorderValue.cpp",
     "CollapsedBorderValue.h",
     "ColumnBalancer.cpp",
     "ColumnBalancer.h",

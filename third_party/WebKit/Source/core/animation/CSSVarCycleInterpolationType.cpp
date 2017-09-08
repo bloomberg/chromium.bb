@@ -10,6 +10,7 @@
 #include "core/css/PropertyRegistration.h"
 #include "core/css/resolver/CSSVariableResolver.h"
 #include "core/css/resolver/StyleBuilder.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 

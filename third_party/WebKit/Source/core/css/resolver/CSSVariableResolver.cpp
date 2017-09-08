@@ -22,6 +22,7 @@
 #include "core/css/resolver/StyleBuilderConverter.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/css/resolver/StyleResolverStats.h"
+#include "core/style/ComputedStyle.h"
 #include "core/style/StyleInheritedVariables.h"
 #include "core/style/StyleNonInheritedVariables.h"
 #include "platform/wtf/Vector.h"

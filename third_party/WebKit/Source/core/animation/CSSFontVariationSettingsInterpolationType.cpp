@@ -6,6 +6,7 @@
 
 #include "core/css/CSSFontVariationValue.h"
 #include "core/css/CSSValueList.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 

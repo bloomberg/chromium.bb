@@ -25,6 +25,7 @@
 #include "core/css/CSSURIValue.h"
 #include "core/css/CSSValuePair.h"
 #include "core/css/resolver/StyleResolverState.h"
+#include "core/style/ComputedStyle.h"
 
 {% macro declare_initial_function(property_id) %}
 void StyleBuilderFunctions::applyInitial{{property_id}}(StyleResolverState& state)

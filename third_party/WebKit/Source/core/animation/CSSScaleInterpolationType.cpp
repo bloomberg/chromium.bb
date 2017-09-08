@@ -8,6 +8,7 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/resolver/StyleResolverState.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/wtf/PtrUtil.h"
 
 namespace blink {

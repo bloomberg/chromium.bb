@@ -8,6 +8,7 @@
 #include "core/animation/CSSInterpolationEnvironment.h"
 #include "core/animation/StringKeyframe.h"
 #include "core/css/resolver/StyleResolverState.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 

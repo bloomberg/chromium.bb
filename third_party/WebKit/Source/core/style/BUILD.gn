@@ -19,6 +19,7 @@ blink_core_sources("rendering") {
     "BorderImageLengthBox.h",
     "BorderStyle.h",
     "BorderValue.h",
+    "CachedUAStyle.cpp",
     "CachedUAStyle.h",
     "ClipPathOperation.cpp",
     "ClipPathOperation.h",
