@@ -1259,7 +1259,7 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
     if (query_in_progress()) {
       // It's technically possible for |result| to be empty if no provider
       // returns a synchronous result but the query has not completed
-      // synchronously; pratically, however, that should never actually happen.
+      // synchronously; practically, however, that should never actually happen.
       if (result().empty())
         return;
       // The user cannot have manually selected a match, or the query would have
@@ -1277,7 +1277,7 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
               *selected_match.associated_keyword : selected_match;
     }
     if (alternate_nav_url &&
-        (!popup_model() || popup_model()->manually_selected_match().empty()))
+        (!popup_model() || !popup_model()->has_selected_match()))
       *alternate_nav_url = result().alternate_nav_url();
   } else {
     client_->GetAutocompleteClassifier()->Classify(
