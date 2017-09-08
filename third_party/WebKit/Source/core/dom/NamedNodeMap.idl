@@ -21,13 +21,12 @@
 // https://dom.spec.whatwg.org/#interface-namednodemap
 
 [
-    DependentLifetime
+    DependentLifetime,
+    LegacyUnenumerableNamedProperties
 ] interface NamedNodeMap {
     readonly attribute unsigned long length;
     [MeasureAs=NamedNodeMapItem] getter Attr? item(unsigned long index);
-    // FIXME: getNamedItem should be an enumerable getter.
-    [MeasureAs=NamedNodeMapGetNamedItem] Attr? getNamedItem(DOMString name);
-    [NotEnumerable, ImplementedAs=getNamedItem] getter Attr? (DOMString name);
+    [MeasureAs=NamedNodeMapGetNamedItem] getter Attr? getNamedItem(DOMString name);
     [MeasureAs=NamedNodeMapGetNamedItemNS] Attr? getNamedItemNS(DOMString? namespaceURI, DOMString localName);
     [RaisesException, CEReactions, CustomElementCallbacks, MeasureAs=NamedNodeMapSetNamedItem] Attr? setNamedItem(Attr attr);
     [RaisesException, CEReactions, CustomElementCallbacks, MeasureAs=NamedNodeMapSetNamedItemNS] Attr? setNamedItemNS(Attr attr);

@@ -62,6 +62,9 @@ class NamedNodeMap final : public GarbageCollected<NamedNodeMap>,
   Attr* item(unsigned index) const;
   size_t length() const;
 
+  void NamedPropertyEnumerator(Vector<String>& names, ExceptionState&) const;
+  bool NamedPropertyQuery(const AtomicString&, ExceptionState&) const;
+
   DECLARE_TRACE();
 
  private:
