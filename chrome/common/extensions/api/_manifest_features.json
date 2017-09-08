@@ -16,7 +16,7 @@
     "extension_types": ["hosted_app"]
   },
   "app.linked_icons": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["hosted_app"]
   },
   "app.isolation": {
