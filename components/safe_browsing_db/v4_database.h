@@ -20,9 +20,7 @@
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "components/safe_browsing_db/v4_store.h"
 
-namespace subresource_filter {
-class SubresourceFilterBrowserTest;
-}
+class TestSafeBrowsingDatabaseHelper;
 
 namespace safe_browsing {
 
@@ -179,7 +177,7 @@ class V4Database {
   const std::unique_ptr<StoreMap> store_map_;
 
  private:
-  friend class subresource_filter::SubresourceFilterBrowserTest;
+  friend class ::TestSafeBrowsingDatabaseHelper;
   friend class V4DatabaseFactory;
   friend class V4DatabaseTest;
   friend class V4SafeBrowsingServiceTest;

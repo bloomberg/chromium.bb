@@ -1430,6 +1430,8 @@ test("browser_tests") {
       "../browser/resource_coordinator/tab_manager_browsertest.cc",
       "../browser/resource_coordinator/tab_manager_observer_browsertest.cc",
       "../browser/safe_browsing/chrome_cleaner/reporter_runner_browsertest_win.cc",
+      "../browser/safe_browsing/test_safe_browsing_database_helper.cc",
+      "../browser/safe_browsing/test_safe_browsing_database_helper.h",
       "../browser/safe_json_parser_browsertest.cc",
       "../browser/search/hotword_installer_browsertest.cc",
       "../browser/search/suggestions/image_fetcher_impl_browsertest.cc",
