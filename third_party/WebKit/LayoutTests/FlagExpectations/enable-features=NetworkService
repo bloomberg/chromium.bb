@@ -323,6 +323,7 @@ Bug(none) http/tests/local/formdata/send-form-data-with-sliced-file.html [ Failu
 Bug(none) http/tests/local/formdata/upload-events.html [ Failure ]
 Bug(none) http/tests/local/serviceworker/fetch-request-body-file.html [ Crash Timeout ]
 Bug(none) http/tests/media/video-buffered.html [ Timeout ]
+Bug(none) http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
 Bug(none) http/tests/media/video-in-iframe-crash.html [ Crash Timeout ]
 Bug(none) http/tests/misc/embed-image-load-outlives-gc-without-crashing.html [ Failure Pass ]
 Bug(none) http/tests/misc/image-checks-for-accept.html [ Failure Pass ]
