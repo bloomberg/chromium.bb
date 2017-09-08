@@ -287,6 +287,8 @@ source_set("common") {
     "sandbox_init_mac.cc",
     "sandbox_init_mac.h",
     "sandbox_init_win.cc",
+    "sandbox_linux/bpf_cros_amd_gpu_policy_linux.cc",
+    "sandbox_linux/bpf_cros_amd_gpu_policy_linux.h",
     "sandbox_linux/bpf_cros_arm_gpu_policy_linux.cc",
     "sandbox_linux/bpf_cros_arm_gpu_policy_linux.h",
     "sandbox_linux/bpf_gpu_policy_linux.cc",
@@ -424,6 +426,7 @@ source_set("common") {
     "//services/viz/public/interfaces",
     "//skia",
     "//storage/common",
+    "//third_party/angle:angle_gpu_info_util",
     "//third_party/boringssl",
     "//third_party/icu",
     "//ui/accessibility",
@@ -538,6 +541,8 @@ source_set("common") {
   if (!use_seccomp_bpf) {
     if (is_linux) {
       sources -= [
+        "sandbox_linux/bpf_cros_amd_gpu_policy_linux.cc",
+        "sandbox_linux/bpf_cros_amd_gpu_policy_linux.h",
         "sandbox_linux/bpf_cros_arm_gpu_policy_linux.cc",
         "sandbox_linux/bpf_cros_arm_gpu_policy_linux.h",
         "sandbox_linux/bpf_gpu_policy_linux.cc",

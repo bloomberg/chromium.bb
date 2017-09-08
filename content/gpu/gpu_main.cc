@@ -95,7 +95,7 @@ namespace content {
 namespace {
 
 #if defined(OS_LINUX)
-bool StartSandboxLinux(gpu::GpuWatchdogThread*);
+bool StartSandboxLinux(gpu::GpuWatchdogThread*, const gpu::GPUInfo*);
 #elif defined(OS_WIN)
 bool StartSandboxWindows(const sandbox::SandboxInterfaceInfo*);
 #endif
@@ -150,10 +150,10 @@ class ContentSandboxHelper : public gpu::GpuSandboxHelper {
     base::SysInfo::AmountOfPhysicalMemory();
   }
 
-  bool EnsureSandboxInitialized(
-      gpu::GpuWatchdogThread* watchdog_thread) override {
+  bool EnsureSandboxInitialized(gpu::GpuWatchdogThread* watchdog_thread,
+                                const gpu::GPUInfo* gpu_info) override {
 #if defined(OS_LINUX)
-    return StartSandboxLinux(watchdog_thread);
+    return StartSandboxLinux(watchdog_thread, gpu_info);
 #elif defined(OS_WIN)
     return StartSandboxWindows(sandbox_info_);
 #elif defined(OS_MACOSX)
@@ -313,7 +313,8 @@ int GpuMain(const MainFunctionParams& parameters) {
 namespace {
 
 #if defined(OS_LINUX)
-bool StartSandboxLinux(gpu::GpuWatchdogThread* watchdog_thread) {
+bool StartSandboxLinux(gpu::GpuWatchdogThread* watchdog_thread,
+                       const gpu::GPUInfo* gpu_info) {
   TRACE_EVENT0("gpu,startup", "Initialize sandbox");
 
   bool res = false;
@@ -326,7 +327,7 @@ bool StartSandboxLinux(gpu::GpuWatchdogThread* watchdog_thread) {
 
   // LinuxSandbox::InitializeSandbox() must always be called
   // with only one thread.
-  res = LinuxSandbox::InitializeSandbox();
+  res = LinuxSandbox::InitializeSandbox(gpu_info);
   if (watchdog_thread) {
     base::Thread::Options options;
     options.timer_slack = base::TIMER_SLACK_MAXIMUM;
