@@ -79,12 +79,11 @@
 - (void)childCoordinatorDidStart:(BrowserCoordinator*)childCoordinator {
   // Register to receive relevant ContextMenuCommands.
   if ([childCoordinator isKindOfClass:[ContextMenuDialogCoordinator class]]) {
-    [self.browser->dispatcher()
+    [self.dispatcher
         startDispatchingToTarget:self
                      forSelector:@selector(executeContextMenuScript:)];
-    [self.browser->dispatcher()
-        startDispatchingToTarget:self
-                     forSelector:@selector(openContextMenuImage:)];
+    [self.dispatcher startDispatchingToTarget:self
+                                  forSelector:@selector(openContextMenuImage:)];
   }
   [self.viewController presentViewController:childCoordinator.viewController
                                     animated:YES
@@ -94,9 +93,9 @@
 - (void)childCoordinatorWillStop:(BrowserCoordinator*)childCoordinator {
   // Unregister ContextMenuCommands once the UI has been dismissed.
   if ([childCoordinator isKindOfClass:[ContextMenuDialogCoordinator class]]) {
-    [self.browser->dispatcher()
+    [self.dispatcher
         stopDispatchingForSelector:@selector(executeContextMenuScript:)];
-    [self.browser->dispatcher()
+    [self.dispatcher
         stopDispatchingForSelector:@selector(openContextMenuImage:)];
   }
 }

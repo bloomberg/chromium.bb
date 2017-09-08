@@ -40,33 +40,31 @@
   DCHECK(self.browser);
 
   // Register command handlers with the dispatcher.
-  CommandDispatcher* dispatcher = self.browser->dispatcher();
-  [dispatcher startDispatchingToTarget:self
-                           forSelector:@selector(showFindInPage)];
-  [dispatcher startDispatchingToTarget:self
-                           forSelector:@selector(hideFindInPage)];
+  [self.dispatcher startDispatchingToTarget:self
+                                forSelector:@selector(showFindInPage)];
+  [self.dispatcher startDispatchingToTarget:self
+                                forSelector:@selector(hideFindInPage)];
 
   self.mediator = [[FindInPageMediator alloc]
       initWithWebStateList:(&self.browser->web_state_list())provider:self
-                dispatcher:static_cast<id>(dispatcher)];
-  [dispatcher startDispatchingToTarget:self.mediator
-                           forSelector:@selector(findStringInPage:)];
-  [dispatcher startDispatchingToTarget:self.mediator
-                           forSelector:@selector(findNextInPage)];
-  [dispatcher startDispatchingToTarget:self.mediator
-                           forSelector:@selector(findPreviousInPage)];
+                dispatcher:self.callableDispatcher];
+  [self.dispatcher startDispatchingToTarget:self.mediator
+                                forSelector:@selector(findStringInPage:)];
+  [self.dispatcher startDispatchingToTarget:self.mediator
+                                forSelector:@selector(findNextInPage)];
+  [self.dispatcher startDispatchingToTarget:self.mediator
+                                forSelector:@selector(findPreviousInPage)];
 }
 
 - (void)willBeRemovedFromParentCoordinator {
-  CommandDispatcher* dispatcher = self.browser->dispatcher();
-  [dispatcher stopDispatchingToTarget:self];
-  [dispatcher stopDispatchingToTarget:self.mediator];
+  [self.dispatcher stopDispatchingToTarget:self];
+  [self.dispatcher stopDispatchingToTarget:self.mediator];
   self.mediator = nil;
 }
 
 - (void)start {
   self.viewController = [[FindInPageViewController alloc] init];
-  self.viewController.dispatcher = static_cast<id>(self.browser->dispatcher());
+  self.viewController.dispatcher = self.callableDispatcher;
   [super start];
 }
 

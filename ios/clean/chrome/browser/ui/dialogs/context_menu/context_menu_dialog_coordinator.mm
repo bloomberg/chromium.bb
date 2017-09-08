@@ -24,7 +24,7 @@
 // The dispatcher to use for ContextMenuDialogMediators.
 @property(nonatomic, readonly)
     id<ContextMenuCommands, ContextMenuDismissalCommands>
-        mediatorDispatcher;
+        callableDispatcher;
 // The request for this dialog.
 @property(nonatomic, strong) ContextMenuDialogRequest* request;
 
@@ -32,6 +32,7 @@
 
 @implementation ContextMenuDialogCoordinator
 @synthesize request = _request;
+@dynamic callableDispatcher;
 
 - (instancetype)initWithRequest:(ContextMenuDialogRequest*)request {
   DCHECK(request);
@@ -41,30 +42,21 @@
   return self;
 }
 
-#pragma mark - Accessors
-
-- (id<ContextMenuCommands, ContextMenuDismissalCommands>)mediatorDispatcher {
-  return static_cast<id<ContextMenuCommands, ContextMenuDismissalCommands>>(
-      self.browser->dispatcher());
-}
-
 #pragma mark - BrowserCoordinator
 
 - (void)start {
   if (self.started)
     return;
   _mediator = [[ContextMenuDialogMediator alloc] initWithRequest:self.request];
-  _mediator.dispatcher = self.mediatorDispatcher;
-  [self.browser->dispatcher()
+  _mediator.dispatcher = self.callableDispatcher;
+  [self.dispatcher
       startDispatchingToTarget:self
                    forProtocol:@protocol(ContextMenuDismissalCommands)];
   [super start];
 }
 
 - (void)stop {
-  if (!self.started)
-    return;
-  [self.browser->dispatcher() stopDispatchingToTarget:self];
+  [self.dispatcher stopDispatchingToTarget:self];
   [super stop];
 }
 

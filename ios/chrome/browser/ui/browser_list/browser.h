@@ -15,7 +15,6 @@ class WebStateList;
 class WebStateListDelegate;
 
 @class ChromeBroadcaster;
-@class CommandDispatcher;
 
 namespace ios {
 class ChromeBrowserState;
@@ -35,9 +34,8 @@ class Browser : public base::SupportsUserData {
           WebStateListDelegate* delegate);
   ~Browser() override;
 
-  // Accessors for the ChromeBroadcaster and CommandDispatcher.
+  // Accessor for the ChromeBroadcaster.
   ChromeBroadcaster* broadcaster() { return broadcaster_; }
-  CommandDispatcher* dispatcher() { return dispatcher_; }
 
   // Accessor for the owning ChromeBrowserState.
   ios::ChromeBrowserState* browser_state() const { return browser_state_; }
@@ -48,7 +46,6 @@ class Browser : public base::SupportsUserData {
 
  private:
   __strong ChromeBroadcaster* broadcaster_;
-  __strong CommandDispatcher* dispatcher_;
   ios::ChromeBrowserState* browser_state_;
   WebStateList web_state_list_;
 

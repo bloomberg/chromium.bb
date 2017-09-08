@@ -43,8 +43,8 @@
   TabStripCoordinator* tabStripCoordinator = [[TabStripCoordinator alloc] init];
   [self addChildCoordinator:tabStripCoordinator];
   [tabStripCoordinator start];
-  [self.browser->dispatcher() startDispatchingToTarget:self
-                                           forSelector:@selector(showTabStrip)];
+  [self.dispatcher startDispatchingToTarget:self
+                                forSelector:@selector(showTabStrip)];
 
   [super start];
 
@@ -56,6 +56,7 @@
 
 - (void)stop {
   [super stop];
+  [self.dispatcher stopDispatchingToTarget:self];
   [self.browser->broadcaster()
       stopBroadcastingForSelector:@selector(broadcastTabStripVisible:)];
 }

@@ -88,12 +88,12 @@
       _webStateListObserver.get());
   _scopedWebStateListObserver->Add(&self.browser->web_state_list());
 
-  [self.browser->dispatcher() startDispatchingToTarget:self
-                                           forSelector:@selector(loadURL:)];
+  [self.dispatcher startDispatchingToTarget:self
+                                forSelector:@selector(loadURL:)];
 
   // NavigationController will handle all the dispatcher navigation calls.
   self.navigationController = [[TabNavigationController alloc]
-      initWithDispatcher:self.browser->dispatcher()
+      initWithDispatcher:self.callableDispatcher
                 webState:self.webState];
 
   WebCoordinator* webCoordinator = [[WebCoordinator alloc] init];
@@ -131,7 +131,7 @@
     [self removeChildCoordinator:child];
   }
   _webStateObserver.reset();
-  [self.browser->dispatcher() stopDispatchingToTarget:self];
+  [self.dispatcher stopDispatchingToTarget:self];
   [self.navigationController stop];
 }
 

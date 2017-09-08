@@ -24,7 +24,7 @@
 
 // The dispatcher to provide to the mediator.
 @property(nonatomic, readonly, strong) id<HTTPAuthDialogDismissalCommands>
-    dismissalDispatcher;
+    callableDispatcher;
 // The request used for this dialog.
 @property(nonatomic, strong) HTTPAuthDialogRequest* request;
 
@@ -32,6 +32,7 @@
 
 @implementation HTTPAuthDialogCoordinator
 @synthesize request = _request;
+@dynamic callableDispatcher;
 
 - (instancetype)initWithRequest:(HTTPAuthDialogRequest*)request {
   DCHECK(request);
@@ -41,27 +42,19 @@
   return self;
 }
 
-#pragma mark - Accessors
-
-- (id<HTTPAuthDialogDismissalCommands>)dismissalDispatcher {
-  return static_cast<id<HTTPAuthDialogDismissalCommands>>(
-      self.browser->dispatcher());
-}
-
 #pragma mark - BrowserCoordinator
 
 - (void)start {
   _mediator = [[HTTPAuthDialogMediator alloc] initWithRequest:self.request];
-  _mediator.dispatcher = self.dismissalDispatcher;
-  [self.browser->dispatcher()
+  _mediator.dispatcher = self.callableDispatcher;
+  [self.dispatcher
       startDispatchingToTarget:self
                    forProtocol:@protocol(HTTPAuthDialogDismissalCommands)];
   [super start];
 }
 
 - (void)stop {
-  if (self.started)
-    [self.browser->dispatcher() stopDispatchingToTarget:self];
+  [self.dispatcher stopDispatchingToTarget:self];
   [super stop];
 }
 

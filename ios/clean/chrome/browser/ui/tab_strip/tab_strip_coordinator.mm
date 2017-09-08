@@ -36,17 +36,17 @@
 #pragma mark - BrowserCoordinator
 
 - (void)start {
-  CommandDispatcher* dispatcher = self.browser->dispatcher();
-  [dispatcher startDispatchingToTarget:self
-                           forSelector:@selector(showTabStripTabAtIndex:)];
-  [dispatcher startDispatchingToTarget:self
-                           forSelector:@selector(closeTabStripTabAtIndex:)];
+  [self.dispatcher startDispatchingToTarget:self
+                                forSelector:@selector(showTabStripTabAtIndex:)];
+  [self.dispatcher
+      startDispatchingToTarget:self
+                   forSelector:@selector(closeTabStripTabAtIndex:)];
 
   self.viewController = [[TabStripViewController alloc] init];
   self.mediator = [[TabCollectionMediator alloc] init];
   self.mediator.webStateList = &self.webStateList;
   self.mediator.consumer = self.viewController;
-  self.viewController.dispatcher = static_cast<id>(self.browser->dispatcher());
+  self.viewController.dispatcher = self.callableDispatcher;
 
   [super start];
 }
@@ -54,7 +54,7 @@
 - (void)stop {
   [super stop];
   [self.mediator disconnect];
-  [self.browser->dispatcher() stopDispatchingToTarget:self];
+  [self.dispatcher stopDispatchingToTarget:self];
 }
 
 #pragma mark - TabStripCommands
@@ -66,7 +66,7 @@
 - (void)closeTabStripTabAtIndex:(int)index {
   self.webStateList.CloseWebStateAt(index);
   if (self.webStateList.empty()) {
-    [static_cast<id<TabGridCommands>>(self.browser->dispatcher()) showTabGrid];
+    [self.callableDispatcher showTabGrid];
   }
 }
 

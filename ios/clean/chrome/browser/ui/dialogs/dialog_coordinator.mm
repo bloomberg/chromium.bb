@@ -18,7 +18,7 @@
 @interface DialogCoordinator ()
 
 // The dispatcher for DialogDismissalCommands.
-@property(nonatomic, readonly) id<DialogDismissalCommands> dismissalDispatcher;
+@property(nonatomic, readonly) id<DialogDismissalCommands> callableDispatcher;
 // The view controller used to display this dialog.
 @property(nonatomic, strong) DialogViewController* viewController;
 
@@ -26,12 +26,7 @@
 
 @implementation DialogCoordinator
 @synthesize viewController = _viewController;
-
-#pragma mark - Accessors
-
-- (id<DialogDismissalCommands>)dismissalDispatcher {
-  return static_cast<id<DialogDismissalCommands>>(self.browser->dispatcher());
-}
+@dynamic callableDispatcher;
 
 #pragma mark - BrowserCoordinator
 
@@ -39,16 +34,15 @@
   DCHECK(self.mediator);
   self.viewController =
       [[DialogViewController alloc] initWithStyle:self.alertStyle
-                                       dispatcher:self.dismissalDispatcher];
+                                       dispatcher:self.callableDispatcher];
   [self.mediator updateConsumer:self.viewController];
-  [self.browser->dispatcher()
-      startDispatchingToTarget:self.mediator
-                   forProtocol:@protocol(DialogDismissalCommands)];
+  [self.dispatcher startDispatchingToTarget:self.mediator
+                                forProtocol:@protocol(DialogDismissalCommands)];
   [super start];
 }
 
 - (void)stop {
-  [self.browser->dispatcher() stopDispatchingToTarget:self.mediator];
+  [self.dispatcher stopDispatchingToTarget:self.mediator];
   [super stop];
 }
 

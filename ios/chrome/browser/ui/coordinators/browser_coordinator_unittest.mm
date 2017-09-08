@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/coordinators/browser_coordinator.h"
 #import "ios/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/coordinators/browser_coordinator_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -86,6 +87,7 @@
 
 @end
 
+// Tests that -stop isn't called when a BrowserCoordinator is destroyed.
 TEST_F(BrowserCoordinatorTest, TestDontStopOnDealloc) {
   __block BOOL called = NO;
 
@@ -99,6 +101,8 @@ TEST_F(BrowserCoordinatorTest, TestDontStopOnDealloc) {
   EXPECT_FALSE(called);
 }
 
+// Test that parents know who their children are, and that children know who
+// their parent is.
 TEST_F(BrowserCoordinatorTest, TestChildren) {
   TestCoordinator* parent = [[TestCoordinator alloc] init];
   TestCoordinator* child = [[TestCoordinator alloc] init];
@@ -121,6 +125,7 @@ TEST_F(BrowserCoordinatorTest, TestChildren) {
   EXPECT_EQ(otherParent, otherChild.parentCoordinator);
 }
 
+// Test that overlays function as expected.
 TEST_F(BrowserCoordinatorTest, TestOverlay) {
   TestCoordinator* parent = [[TestCoordinator alloc] init];
   TestCoordinator* child = [[TestCoordinator alloc] init];
@@ -170,6 +175,7 @@ TEST_F(BrowserCoordinatorTest, TestOverlay) {
   EXPECT_FALSE(thirdOverlay.overlaying);
 }
 
+// Test that the wasAdded/ willBeRemoved methods are called.
 TEST_F(BrowserCoordinatorTest, AddedRemoved) {
   TestCoordinator* parent = [[TestCoordinator alloc] init];
   TestCoordinator* child = [[TestCoordinator alloc] init];
@@ -186,6 +192,7 @@ TEST_F(BrowserCoordinatorTest, AddedRemoved) {
   EXPECT_TRUE(child.willBeRemovedCalled);
 }
 
+// Tests that the didState/willStop methods are called.
 TEST_F(BrowserCoordinatorTest, DidStartWillStop) {
   TestCoordinator* parent = [[TestCoordinator alloc] init];
   TestCoordinator* child = [[TestCoordinator alloc] init];
@@ -202,6 +209,8 @@ TEST_F(BrowserCoordinatorTest, DidStartWillStop) {
   EXPECT_TRUE(parent.childWillStopCalled);
 }
 
+// Tests that calling -stop on a coordinator also recursively stops any children
+// of that coordinator that have been started.
 TEST_F(BrowserCoordinatorTest, StopStopsStartedChildren) {
   TestCoordinator* parent = [[TestCoordinator alloc] init];
   TestCoordinator* child = [[TestCoordinator alloc] init];
@@ -221,6 +230,8 @@ TEST_F(BrowserCoordinatorTest, StopStopsStartedChildren) {
   EXPECT_TRUE(called);
 }
 
+// Tests that calling -stop on a coordinator does *not* call -stop on children
+// that haven't been started.
 TEST_F(BrowserCoordinatorTest, StopStopsNonStartedChildren) {
   TestCoordinator* parent = [[TestCoordinator alloc] init];
   TestCoordinator* child = [[TestCoordinator alloc] init];
@@ -239,6 +250,8 @@ TEST_F(BrowserCoordinatorTest, StopStopsNonStartedChildren) {
   EXPECT_TRUE(called);
 }
 
+// Tests that removing a child also sets the child's browser to nil, even if
+// the child itself isn't nil.
 TEST_F(BrowserCoordinatorTest, BrowserIsNilAfterCoordinatorIsRemoved) {
   TestCoordinator* parent = [[TestCoordinator alloc] init];
   TestCoordinator* child = [[TestCoordinator alloc] init];
@@ -253,6 +266,7 @@ TEST_F(BrowserCoordinatorTest, BrowserIsNilAfterCoordinatorIsRemoved) {
   EXPECT_EQ(nil, child.browser);
 }
 
+// Tests that children are recursively removed.
 TEST_F(BrowserCoordinatorTest, RemoveRemovesGrandChildren) {
   TestCoordinator* parent = [[TestCoordinator alloc] init];
   TestCoordinator* child = [[TestCoordinator alloc] init];
@@ -270,6 +284,8 @@ TEST_F(BrowserCoordinatorTest, RemoveRemovesGrandChildren) {
   EXPECT_TRUE(child.removeCalled);
 }
 
+// Tests that grandchildren are removed before -willRemove is called on the
+// child.
 TEST_F(BrowserCoordinatorTest,
        RemoveRemovesGrandChildThenCallWillRemoveOnChild) {
   TestCoordinator* parent = [[TestCoordinator alloc] init];
@@ -291,6 +307,7 @@ TEST_F(BrowserCoordinatorTest,
   EXPECT_TRUE(child.willBeRemovedCalled);
 }
 
+// Tests that multiple grandchildren are removed.
 TEST_F(BrowserCoordinatorTest, RemoveChildWithMultipleGrandChildren) {
   TestCoordinator* parent = [[TestCoordinator alloc] init];
   TestCoordinator* child = [[TestCoordinator alloc] init];
@@ -302,4 +319,25 @@ TEST_F(BrowserCoordinatorTest, RemoveChildWithMultipleGrandChildren) {
 
   // Remove the child.
   [parent removeChildCoordinator:child];
+}
+
+// Tests that children inherit the dispatcher of the parent when it's nil.
+TEST_F(BrowserCoordinatorTest, NilDispatcherInherited) {
+  TestCoordinator* parent = [[TestCoordinator alloc] init];
+  EXPECT_EQ(nil, parent.dispatcher);
+  TestCoordinator* child = [[TestCoordinator alloc] init];
+  EXPECT_EQ(nil, child.dispatcher);
+  [parent addChildCoordinator:child];
+  EXPECT_EQ(nil, child.dispatcher);
+}
+
+// Tests that children inherit the dispatcher of the parent when it's nonnil.
+TEST_F(BrowserCoordinatorTest, DispatcherInherited) {
+  TestCoordinator* parent = [[TestCoordinator alloc] init];
+  EXPECT_EQ(nil, parent.dispatcher);
+  TestCoordinator* child = [[TestCoordinator alloc] init];
+  EXPECT_EQ(nil, child.dispatcher);
+  parent.dispatcher = [[CommandDispatcher alloc] init];
+  [parent addChildCoordinator:child];
+  EXPECT_EQ(parent.dispatcher, child.dispatcher);
 }

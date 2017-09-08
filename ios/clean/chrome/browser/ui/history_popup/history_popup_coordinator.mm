@@ -23,6 +23,8 @@
 
 @interface HistoryPopupCoordinator ()<PopupMenuDelegate>
 
+@property(nonatomic, readonly) id<TabHistoryPopupCommands> callableDispatcher;
+
 // The TabHistoryPopupController instance that this coordinator will be
 // presenting.
 @property(nonatomic, strong)
@@ -39,6 +41,9 @@
 @synthesize tabHistoryUIUpdater = _tabHistoryUIUpdater;
 @synthesize webState = _webState;
 @synthesize presentingButton = _presentingButton;
+@dynamic callableDispatcher;
+
+#pragma mark - BrowserCoordinator
 
 - (void)start {
   if (self.started)
@@ -55,8 +60,7 @@
       initWithOrigin:historyPopupOrigin
           parentView:[self.presentationProvider viewForTabHistoryPresentation]
                items:self.navigationItems
-          dispatcher:static_cast<id<TabHistoryPopupCommands>>(
-                         self.browser->dispatcher())];
+          dispatcher:self.callableDispatcher];
 
   [self.tabHistoryUIUpdater
       updateUIForTabHistoryPresentationFrom:self.presentingButton];
