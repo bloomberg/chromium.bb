@@ -64,6 +64,7 @@ class MODULES_EXPORT AXTableCell : public AXLayoutObject {
 
  protected:
   virtual AXObject* ParentTable() const;
+  virtual AXObject* ParentRow() const;
   AccessibilityRole DetermineAccessibilityRole() final;
 
  private:

@@ -60,6 +60,45 @@ void AXARIAGridRow::HeaderObjectsForRow(AXObjectVector& headers) {
   }
 }
 
+bool AXARIAGridRow::AddCell(AXObject* possible_cell) {
+  if (!possible_cell)
+    return false;
+
+  AccessibilityRole role = possible_cell->RoleValue();
+  if (role != kCellRole && role != kRowHeaderRole && role != kColumnHeaderRole)
+    return false;
+
+  DCHECK(possible_cell->IsTableCell());
+  cells_.push_back(possible_cell);
+  return true;
+}
+
+void AXARIAGridRow::ComputeCells(AXObjectVector possible_cells) {
+  // Only add children that are actually rows.
+  for (const auto& possible_cell : possible_cells) {
+    if (!AddCell(possible_cell)) {
+      // Normally with good authoring practices, the cells should be children of
+      // the row. However, if this is not the case, recursively look for cells
+      // in the descendants of the non-row child.
+      if (!possible_cell->HasChildren())
+        possible_cell->AddChildren();
+
+      ComputeCells(possible_cell->Children());
+    }
+  }
+}
+
+void AXARIAGridRow::AddChildren() {
+  DCHECK(!IsDetached());
+  DCHECK(!have_children_);
+
+  AXTableRow::AddChildren();
+
+  if (IsTableRow() && layout_object_) {
+    ComputeCells(children_);
+  }
+}
+
 AXObject* AXARIAGridRow::ParentTable() const {
   // A poorly-authored ARIA grid row could be nested within wrapper elements.
   AXObject* ancestor = static_cast<AXObject*>(const_cast<AXARIAGridRow*>(this));
@@ -68,6 +107,11 @@ AXObject* AXARIAGridRow::ParentTable() const {
   } while (ancestor && !ancestor->IsAXTable());
 
   return ancestor;
+}
+
+DEFINE_TRACE(AXARIAGridRow) {
+  visitor->Trace(cells_);
+  AXTableRow::Trace(visitor);
 }
 
 }  // namespace blink

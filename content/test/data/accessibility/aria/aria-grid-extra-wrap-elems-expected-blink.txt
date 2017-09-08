@@ -1,109 +1,110 @@
 rootWebArea
 ++grid name='1: Individual rows get their own wrappers' tableRowCount=2 tableColumnCount=2
 ++++genericContainer name='r1-wrap'
-++++++row selectable name='r1-real'
-++++++++cell selectable name='A1'
+++++++row selectable name='r1-real' tableRowIndex=0
+++++++++cell selectable name='A1' tableCellColumnIndex=0 tableCellRowIndex=0
 ++++++++++staticText name='A1'
 ++++++++++++inlineTextBox name='A1'
-++++++++cell selectable name='A2'
+++++++++cell selectable name='A2' tableCellColumnIndex=1 tableCellRowIndex=0
 ++++++++++staticText name='A2'
 ++++++++++++inlineTextBox name='A2'
 ++++genericContainer name='r2-wrap'
 ++++++genericContainer name='r2-vanilla'
-++++++++row selectable name='r2-real'
-++++++++++cell selectable name='B1'
+++++++++row selectable name='r2-real' tableRowIndex=1
+++++++++++cell selectable name='B1' tableCellColumnIndex=0 tableCellRowIndex=1
 ++++++++++++staticText name='B1'
 ++++++++++++++inlineTextBox name='B1'
-++++++++++cell selectable name='B2'
+++++++++++cell selectable name='B2' tableCellColumnIndex=1 tableCellRowIndex=1
 ++++++++++++staticText name='B2'
 ++++++++++++++inlineTextBox name='B2'
-++++column
-++++column
+++++column tableColumnIndex=0
+++++column tableColumnIndex=1
 ++++tableHeaderContainer
 ++grid name='2: Single wrapper around all rows' tableRowCount=2 tableColumnCount=2
 ++++genericContainer
-++++++row selectable
-++++++++cell selectable name='A1'
+++++++row selectable tableRowIndex=0
+++++++++cell selectable name='A1' tableCellColumnIndex=0 tableCellRowIndex=0
 ++++++++++staticText name='A1'
 ++++++++++++inlineTextBox name='A1'
-++++++++cell selectable name='A2'
+++++++++cell selectable name='A2' tableCellColumnIndex=1 tableCellRowIndex=0
 ++++++++++staticText name='A2'
 ++++++++++++inlineTextBox name='A2'
-++++++row selectable
-++++++++cell selectable name='B1'
+++++++row selectable tableRowIndex=1
+++++++++cell selectable name='B1' tableCellColumnIndex=0 tableCellRowIndex=1
 ++++++++++staticText name='B1'
 ++++++++++++inlineTextBox name='B1'
-++++++++cell selectable name='B2'
+++++++++cell selectable name='B2' tableCellColumnIndex=1 tableCellRowIndex=1
 ++++++++++staticText name='B2'
 ++++++++++++inlineTextBox name='B2'
-++++column
-++++column
+++++column tableColumnIndex=0
+++++column tableColumnIndex=1
 ++++tableHeaderContainer
 ++grid name='3: Individual cells get their own wrappers' tableRowCount=2 tableColumnCount=2
-++++row selectable
+++++row selectable tableRowIndex=0
 ++++++genericContainer
-++++++++cell selectable name='A1'
+++++++++cell selectable name='A1' tableCellColumnIndex=0 tableCellRowIndex=0
 ++++++++++staticText name='A1'
 ++++++++++++inlineTextBox name='A1'
 ++++++genericContainer
-++++++++cell selectable name='A2'
+++++++++cell selectable name='A2' tableCellColumnIndex=1 tableCellRowIndex=0
 ++++++++++staticText name='A2'
 ++++++++++++inlineTextBox name='A2'
-++++row selectable
+++++row selectable tableRowIndex=1
 ++++++genericContainer
-++++++++cell selectable name='B1'
+++++++++cell selectable name='B1' tableCellColumnIndex=0 tableCellRowIndex=1
 ++++++++++staticText name='B1'
 ++++++++++++inlineTextBox name='B1'
 ++++++genericContainer
 ++++++++genericContainer
-++++++++++cell selectable name='B2'
+++++++++++cell selectable name='B2' tableCellColumnIndex=1 tableCellRowIndex=1
 ++++++++++++staticText name='B2'
 ++++++++++++++inlineTextBox name='B2'
-++++column
-++++column
+++++column tableColumnIndex=0
+++++column tableColumnIndex=1
 ++++tableHeaderContainer
-++grid name='4: Single wrapper around all cells in a row' tableRowCount=2 tableColumnCount=1
-++++row selectable
+++grid name='4: Single wrapper around all cells in a row' tableRowCount=2 tableColumnCount=2
+++++row selectable tableRowIndex=0
 ++++++genericContainer
-++++++++cell selectable name='A1'
+++++++++cell selectable name='A1' tableCellColumnIndex=0 tableCellRowIndex=0
 ++++++++++staticText name='A1'
 ++++++++++++inlineTextBox name='A1'
-++++++++cell selectable name='A2'
+++++++++cell selectable name='A2' tableCellColumnIndex=1 tableCellRowIndex=0
 ++++++++++staticText name='A2'
 ++++++++++++inlineTextBox name='A2'
-++++row selectable
+++++row selectable tableRowIndex=1
 ++++++genericContainer
 ++++++++genericContainer
-++++++++++cell selectable name='B1'
+++++++++++cell selectable name='B1' tableCellColumnIndex=0 tableCellRowIndex=1
 ++++++++++++staticText name='B1'
 ++++++++++++++inlineTextBox name='B1'
 ++++++++genericContainer
-++++++++++cell selectable name='B2'
+++++++++++cell selectable name='B2' tableCellColumnIndex=1 tableCellRowIndex=1
 ++++++++++++staticText name='B2'
 ++++++++++++++inlineTextBox name='B2'
-++++column
+++++column tableColumnIndex=0
+++++column tableColumnIndex=1
 ++++tableHeaderContainer
 ++grid name='5: Wrapper insanity' tableRowCount=2 tableColumnCount=2
 ++++genericContainer
 ++++++genericContainer
 ++++++++genericContainer
-++++++++++row selectable
+++++++++++row selectable tableRowIndex=0
 ++++++++++++genericContainer
 ++++++++++++++genericContainer
-++++++++++++++++cell selectable name='A1'
+++++++++++++++++cell selectable name='A1' tableCellColumnIndex=0 tableCellRowIndex=0
 ++++++++++++++++++staticText name='A1'
 ++++++++++++++++++++inlineTextBox name='A1'
-++++++++++++cell selectable name='A2'
+++++++++++++cell selectable name='A2' tableCellColumnIndex=1 tableCellRowIndex=0
 ++++++++++++++staticText name='A2'
 ++++++++++++++++inlineTextBox name='A2'
 ++++++genericContainer
-++++++++row selectable
-++++++++++cell selectable name='B1'
+++++++++row selectable tableRowIndex=1
+++++++++++cell selectable name='B1' tableCellColumnIndex=0 tableCellRowIndex=1
 ++++++++++++staticText name='B1'
 ++++++++++++++inlineTextBox name='B1'
-++++++++++cell selectable name='B2'
+++++++++++cell selectable name='B2' tableCellColumnIndex=1 tableCellRowIndex=1
 ++++++++++++staticText name='B2'
 ++++++++++++++inlineTextBox name='B2'
-++++column
-++++column
+++++column tableColumnIndex=0
+++++column tableColumnIndex=1
 ++++tableHeaderContainer
