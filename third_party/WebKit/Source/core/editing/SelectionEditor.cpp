@@ -71,8 +71,7 @@ Document& SelectionEditor::GetDocument() const {
   return *LifecycleContext();
 }
 
-const VisibleSelection& SelectionEditor::ComputeVisibleSelectionInDOMTree()
-    const {
+VisibleSelection SelectionEditor::ComputeVisibleSelectionInDOMTree() const {
   DCHECK_EQ(GetFrame()->GetDocument(), GetDocument());
   DCHECK_EQ(GetFrame(), GetDocument().GetFrame());
   UpdateCachedVisibleSelectionIfNeeded();
@@ -83,8 +82,8 @@ const VisibleSelection& SelectionEditor::ComputeVisibleSelectionInDOMTree()
   return cached_visible_selection_in_dom_tree_;
 }
 
-const VisibleSelectionInFlatTree&
-SelectionEditor::ComputeVisibleSelectionInFlatTree() const {
+VisibleSelectionInFlatTree SelectionEditor::ComputeVisibleSelectionInFlatTree()
+    const {
   DCHECK_EQ(GetFrame()->GetDocument(), GetDocument());
   DCHECK_EQ(GetFrame(), GetDocument().GetFrame());
   UpdateCachedVisibleSelectionInFlatTreeIfNeeded();
@@ -95,7 +94,7 @@ SelectionEditor::ComputeVisibleSelectionInFlatTree() const {
   return cached_visible_selection_in_flat_tree_;
 }
 
-const SelectionInDOMTree& SelectionEditor::GetSelectionInDOMTree() const {
+SelectionInDOMTree SelectionEditor::GetSelectionInDOMTree() const {
   AssertSelectionValid();
   return selection_;
 }

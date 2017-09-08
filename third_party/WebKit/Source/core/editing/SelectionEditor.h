@@ -49,10 +49,10 @@ class SelectionEditor final : public GarbageCollectedFinalized<SelectionEditor>,
   virtual ~SelectionEditor();
   void Dispose();
 
-  const SelectionInDOMTree& GetSelectionInDOMTree() const;
+  SelectionInDOMTree GetSelectionInDOMTree() const;
 
-  const VisibleSelection& ComputeVisibleSelectionInDOMTree() const;
-  const VisibleSelectionInFlatTree& ComputeVisibleSelectionInFlatTree() const;
+  VisibleSelection ComputeVisibleSelectionInDOMTree() const;
+  VisibleSelectionInFlatTree ComputeVisibleSelectionInFlatTree() const;
   void SetSelection(const SelectionInDOMTree&);
 
   void DocumentAttached(Document*);

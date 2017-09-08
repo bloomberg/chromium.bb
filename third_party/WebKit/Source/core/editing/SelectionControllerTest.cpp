@@ -16,11 +16,11 @@ class SelectionControllerTest : public EditingTestBase {
  protected:
   SelectionControllerTest() = default;
 
-  const VisibleSelection& VisibleSelectionInDOMTree() const {
+  VisibleSelection VisibleSelectionInDOMTree() const {
     return Selection().ComputeVisibleSelectionInDOMTree();
   }
 
-  const VisibleSelectionInFlatTree& GetVisibleSelectionInFlatTree() const {
+  VisibleSelectionInFlatTree GetVisibleSelectionInFlatTree() const {
     return Selection().GetSelectionInFlatTree();
   }
 

@@ -111,7 +111,7 @@ class CORE_EXPORT DOMSelection final : public GarbageCollected<DOMSelection>,
 
   void UpdateFrameSelection(const SelectionInDOMTree&, Range*) const;
   // Convenience methods for accessors, does not check m_frame present.
-  const VisibleSelection& GetVisibleSelection() const;
+  VisibleSelection GetVisibleSelection() const;
   bool IsBaseFirstInSelection() const;
   const Position& AnchorPosition() const;
 
