@@ -1089,6 +1089,20 @@ This file contains the strings for ash.
       <message name="IDS_ASH_SPLIT_VIEW_GUIDANCE" desc="Message that shows up on overview mode telling users where to drag the window to use split view">
         Drag here to use split screen
       </message>
+
+      <!-- Lockscreen strings -->
+      <message name="IDS_ASH_LOGIN_ERROR_AUTHENTICATING" desc="Couldn't sign in because password is invalid">
+        Sorry, your password could not be verified. Please try again.
+      </message>
+      <message name="IDS_ASH_LOGIN_ERROR_AUTHENTICATING_2ND_TIME" desc="Couldn't sign in because password is invalid for the 2nd time">
+        Sorry, your password still could not be verified. Note: if you changed your password recently, your new password will be applied once you sign out, please use the old password here.
+      </message>
+      <message name="IDS_ASH_LOGIN_ERROR_CAPS_LOCK_HINT" desc="A hint text for the login and lock screens that Caps Lock is on">
+        Caps Lock is on.
+      </message>
+      <message name="IDS_ASH_LOGIN_ERROR_KEYBOARD_SWITCH_HINT" desc="A hint text for the login and lock screens about layout switching">
+        Hit Control-Shift-Space to switch keyboard layout.
+      </message>
     </messages>
   </release>
 </grit>

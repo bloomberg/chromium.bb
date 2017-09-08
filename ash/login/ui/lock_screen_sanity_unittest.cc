@@ -134,8 +134,13 @@ TEST_F(LockScreenSanityTest, ShiftTabGoesToShelf) {
   ExpectFocused(lock);
   ExpectNotFocused(shelf);
 
-  // A single shift+tab brings focus to the shelf.
+  // Two shift+tab bring focus to the shelf.
+  // Focus from password view to user view (user dropdown button).
   GetEventGenerator().PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
+
+  // Focus from user view to the shelf.
+  GetEventGenerator().PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
+
   ExpectNotFocused(lock);
   ExpectFocused(shelf);
 }
