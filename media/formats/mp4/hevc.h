@@ -102,6 +102,9 @@ class HEVCBitstreamConverter : public BitstreamConverter {
                     bool is_keyframe,
                     std::vector<SubsampleEntry>* subsamples) const override;
 
+  bool IsValid(std::vector<uint8_t>* frame_buf,
+               std::vector<SubsampleEntry>* subsamples) const override;
+
  private:
   ~HEVCBitstreamConverter() override;
   std::unique_ptr<HEVCDecoderConfigurationRecord> hevc_config_;

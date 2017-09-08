@@ -132,6 +132,9 @@ class MEDIA_EXPORT MP4StreamParser : public StreamParser {
   // Tracks the number of MEDIA_LOGS for skipping empty trun samples.
   int num_empty_samples_skipped_;
 
+  // Tracks the number of MEDIA_LOGS for invalid bitstream conversion.
+  int num_invalid_conversions_;
+
   DISALLOW_COPY_AND_ASSIGN(MP4StreamParser);
 };
 

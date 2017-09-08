@@ -107,11 +107,7 @@ bool AVC::ConvertFrameToAnnexB(int length_size,
 // static
 bool AVC::InsertParamSetsAnnexB(const AVCDecoderConfigurationRecord& avc_config,
                                 std::vector<uint8_t>* buffer,
-                                std::vector<SubsampleEntry>* subsamples,
-                                bool annexb_validation) {
-  if (annexb_validation)
-    DCHECK(AVC::IsValidAnnexB(*buffer, *subsamples));
-
+                                std::vector<SubsampleEntry>* subsamples) {
   std::unique_ptr<H264Parser> parser(new H264Parser());
   const uint8_t* start = &(*buffer)[0];
   parser->SetEncryptedStream(start, buffer->size(), *subsamples);
@@ -144,9 +140,6 @@ bool AVC::InsertParamSetsAnnexB(const AVCDecoderConfigurationRecord& avc_config,
 
   buffer->insert(config_insert_point,
                  param_sets.begin(), param_sets.end());
-
-  if (annexb_validation)
-    DCHECK(AVC::IsValidAnnexB(*buffer, *subsamples));
   return true;
 }
 
@@ -319,8 +312,11 @@ bool AVC::IsValidAnnexB(const uint8_t* buffer,
 
 AVCBitstreamConverter::AVCBitstreamConverter(
     std::unique_ptr<AVCDecoderConfigurationRecord> avc_config)
-    : avc_config_(std::move(avc_config)), post_annexb_validation_(true) {
+    : avc_config_(std::move(avc_config)) {
   DCHECK(avc_config_);
+#if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+  disable_validation_ = false;
+#endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
 }
 
 AVCBitstreamConverter::~AVCBitstreamConverter() {
@@ -342,12 +338,20 @@ bool AVCBitstreamConverter::ConvertFrame(
     // If this is a keyframe, we (re-)inject SPS and PPS headers at the start of
     // a frame. If subsample info is present, we also update the clear byte
     // count for that first subsample.
-    RCHECK(AVC::InsertParamSetsAnnexB(*avc_config_, frame_buf, subsamples,
-                                      post_annexb_validation_));
+    RCHECK(AVC::InsertParamSetsAnnexB(*avc_config_, frame_buf, subsamples));
   }
 
-  DCHECK(AVC::IsValidAnnexB(*frame_buf, *subsamples));
   return true;
+}
+
+bool AVCBitstreamConverter::IsValid(
+    std::vector<uint8_t>* frame_buf,
+    std::vector<SubsampleEntry>* subsamples) const {
+#if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+  if (disable_validation_)
+    return true;
+#endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+  return AVC::IsValidAnnexB(*frame_buf, *subsamples);
 }
 
 }  // namespace mp4

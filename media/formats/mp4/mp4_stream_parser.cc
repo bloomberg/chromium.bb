@@ -37,6 +37,7 @@ namespace mp4 {
 
 namespace {
 const int kMaxEmptySampleLogs = 20;
+const int kMaxInvalidConversionLogs = 20;
 
 // Caller should be prepared to handle return of Unencrypted() in case of
 // unsupported scheme.
@@ -86,7 +87,8 @@ MP4StreamParser::MP4StreamParser(const std::set<int>& audio_object_types,
       audio_object_types_(audio_object_types),
       has_sbr_(has_sbr),
       has_flac_(has_flac),
-      num_empty_samples_skipped_(0) {
+      num_empty_samples_skipped_(0),
+      num_invalid_conversions_(0) {
   DCHECK(!has_flac || base::FeatureList::IsEnabled(kMseFlacInIsobmff));
 }
 
@@ -670,7 +672,7 @@ bool MP4StreamParser::EnqueueSample(BufferQueueMap* buffers, bool* err) {
     // the current sample is not empty.
     LIMITED_MEDIA_LOG(DEBUG, media_log_, num_empty_samples_skipped_,
                       kMaxEmptySampleLogs)
-        << " Skipping 'trun' sample with size of 0.";
+        << "Skipping 'trun' sample with size of 0.";
     runs_->AdvanceSample();
     return true;
   }
@@ -698,6 +700,12 @@ bool MP4StreamParser::EnqueueSample(BufferQueueMap* buffers, bool* err) {
             << "Failed to prepare video sample for decode";
         *err = true;
         return false;
+      }
+      if (!runs_->video_description().frame_bitstream_converter->IsValid(
+              &frame_buf, &subsamples)) {
+        LIMITED_MEDIA_LOG(DEBUG, media_log_, num_invalid_conversions_,
+                          kMaxInvalidConversionLogs)
+            << "Prepared video sample is not conformant";
       }
     }
   }
