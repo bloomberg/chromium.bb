@@ -241,11 +241,10 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
 
   box_states_.OnEndPlaceItems(&line_box, baseline_type_, position);
 
-  LayoutUnit baseline = line_info->LineTop() + line_box.Metrics().ascent;
-
   // Check if the line fits into the constraint space in block direction.
-  LayoutUnit line_bottom = baseline + line_box.Metrics().descent;
-
+  NGLogicalOffset line_offset(line_info->LineOffset());
+  LayoutUnit line_bottom =
+      line_offset.block_offset + line_box.Metrics().LineHeight();
   if (!container_builder_.Children().IsEmpty() &&
       ConstraintSpace().AvailableSize().block_size != NGSizeIndefinite &&
       line_bottom > ConstraintSpace().AvailableSize().block_size) {
@@ -260,22 +259,18 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
   // Up until this point, children are placed so that the dominant baseline is
   // at 0. Move them to the final baseline position, and set the logical top of
   // the line box to the line top.
-  line_box.MoveChildrenInBlockDirection(baseline);
-
-  // Compute the offset of the line box.
-  LayoutUnit inline_size = position;
-  NGLogicalOffset offset(line_info->LineLeft(),
-                         baseline - box_states_.LineBoxState().metrics.ascent);
+  line_box.MoveChildrenInBlockDirection(line_box.Metrics().ascent);
 
   // Other 'text-align' values than 'justify' move line boxes as a whole, but
   // indivisual items do not change their relative position to the line box.
+  LayoutUnit inline_size = position;
   if (text_align != ETextAlign::kJustify) {
-    ApplyTextAlign(text_align, &offset.inline_offset, inline_size,
+    ApplyTextAlign(text_align, &line_offset.inline_offset, inline_size,
                    line_info->AvailableWidth());
   }
 
   line_box.SetInlineSize(inline_size);
-  container_builder_.AddChild(line_box.ToLineBoxFragment(), offset);
+  container_builder_.AddChild(line_box.ToLineBoxFragment(), line_offset);
 
   max_inline_size_ = std::max(max_inline_size_, inline_size);
   content_size_ = ComputeContentSize(*line_info, exclusion_space, line_bottom);
