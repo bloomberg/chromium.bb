@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -59,7 +58,7 @@ void NativeNotificationDisplayService::OnNotificationPlatformBridgeReady(
     notification_bridge_ready_ = true;
   } else {
     message_center_display_service_ =
-        base::MakeUnique<MessageCenterDisplayService>(
+        std::make_unique<MessageCenterDisplayService>(
             profile_, g_browser_process->notification_ui_manager());
   }
 

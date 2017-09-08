@@ -4,7 +4,8 @@
 
 #include "ui/message_center/views/notification_control_buttons_view.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
@@ -53,7 +54,7 @@ NotificationControlButtonsView::~NotificationControlButtonsView() = default;
 
 void NotificationControlButtonsView::ShowCloseButton(bool show) {
   if (show && !close_button_) {
-    close_button_ = base::MakeUnique<message_center::PaddedButton>(this);
+    close_button_ = std::make_unique<message_center::PaddedButton>(this);
     close_button_->set_owned_by_client();
     close_button_->SetImage(views::Button::STATE_NORMAL,
                             message_center::GetCloseIcon());
@@ -75,7 +76,7 @@ void NotificationControlButtonsView::ShowCloseButton(bool show) {
 
 void NotificationControlButtonsView::ShowSettingsButton(bool show) {
   if (show && !settings_button_) {
-    settings_button_ = base::MakeUnique<message_center::PaddedButton>(this);
+    settings_button_ = std::make_unique<message_center::PaddedButton>(this);
     settings_button_->set_owned_by_client();
     settings_button_->SetImage(views::Button::STATE_NORMAL,
                                message_center::GetSettingsIcon());

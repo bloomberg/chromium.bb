@@ -4,6 +4,7 @@
 
 #include "chrome/browser/notifications/notification_platform_bridge_android.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -340,7 +341,7 @@ void NotificationPlatformBridgeAndroid::GetDisplayed(
     const std::string& profile_id,
     bool incognito,
     const GetDisplayedNotificationsCallback& callback) const {
-  auto displayed_notifications = base::MakeUnique<std::set<std::string>>();
+  auto displayed_notifications = std::make_unique<std::set<std::string>>();
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::Bind(callback, base::Passed(&displayed_notifications),

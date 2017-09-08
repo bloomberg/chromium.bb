@@ -6,14 +6,13 @@
 
 #include <algorithm>
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/browser/profiles/profile.h"
 
 // static
 std::unique_ptr<KeyedService> StubNotificationDisplayService::FactoryForTests(
     content::BrowserContext* context) {
-  return base::MakeUnique<StubNotificationDisplayService>(
+  return std::make_unique<StubNotificationDisplayService>(
       Profile::FromBrowserContext(context));
 }
 
@@ -117,7 +116,7 @@ void StubNotificationDisplayService::Close(
 void StubNotificationDisplayService::GetDisplayed(
     const DisplayedNotificationsCallback& callback) {
   std::unique_ptr<std::set<std::string>> notifications =
-      base::MakeUnique<std::set<std::string>>();
+      std::make_unique<std::set<std::string>>();
 
   for (const auto& notification_data : notifications_)
     notifications->insert(notification_data.second.delegate_id());

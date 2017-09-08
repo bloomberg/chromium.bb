@@ -4,12 +4,12 @@
 
 #import "chrome/browser/notifications/stub_alert_dispatcher_mac.h"
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/callback.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/cocoa/notifications/notification_constants_mac.h"
 
@@ -55,7 +55,7 @@ getDisplayedAlertsForProfileId:(NSString*)profileId
             notificationCenter:(NSUserNotificationCenter*)notificationCenter
                       callback:(GetDisplayedNotificationsCallback)callback {
   std::unique_ptr<std::set<std::string>> displayedNotifications =
-      base::MakeUnique<std::set<std::string>>();
+      std::make_unique<std::set<std::string>>();
   for (NSUserNotification* toast in
        [notificationCenter deliveredNotifications]) {
     NSString* toastProfileId = [toast.userInfo

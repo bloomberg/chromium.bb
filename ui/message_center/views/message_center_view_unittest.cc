@@ -10,7 +10,6 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -231,14 +230,14 @@ void MessageCenterViewTest::SetUp() {
   message_center_.reset(new FakeMessageCenterImpl());
 
   // Create a dummy notification.
-  std::unique_ptr<Notification> notification1 = base::MakeUnique<Notification>(
+  std::unique_ptr<Notification> notification1 = std::make_unique<Notification>(
       NOTIFICATION_TYPE_SIMPLE, std::string(kNotificationId1),
       base::UTF8ToUTF16("title"), base::UTF8ToUTF16("message1"), gfx::Image(),
       base::UTF8ToUTF16("display source"), GURL(),
       NotifierId(NotifierId::APPLICATION, "extension_id"),
       message_center::RichNotificationData(), nullptr);
 
-  std::unique_ptr<Notification> notification2 = base::MakeUnique<Notification>(
+  std::unique_ptr<Notification> notification2 = std::make_unique<Notification>(
       NOTIFICATION_TYPE_SIMPLE, std::string(kNotificationId2),
       base::UTF8ToUTF16("title2"), base::UTF8ToUTF16("message2"), gfx::Image(),
       base::UTF8ToUTF16("display source"), GURL(),
@@ -466,7 +465,7 @@ TEST_F(MessageCenterViewTest, DISABLED_SizeAfterUpdate) {
   int width =
       GetMessageListView()->width() - GetMessageListView()->GetInsets().width();
 
-  std::unique_ptr<Notification> notification = base::MakeUnique<Notification>(
+  std::unique_ptr<Notification> notification = std::make_unique<Notification>(
       NOTIFICATION_TYPE_SIMPLE, std::string(kNotificationId2),
       base::UTF8ToUTF16("title2"),
       base::UTF8ToUTF16("message\nwhich\nis\nvertically\nlong\n."),
@@ -513,7 +512,7 @@ TEST_F(MessageCenterViewTest, SizeAfterUpdateBelowWithRepositionTarget) {
   GetMessageListView()->SetRepositionTargetForTest(
       GetNotificationView(kNotificationId1)->bounds());
 
-  std::unique_ptr<Notification> notification = base::MakeUnique<Notification>(
+  std::unique_ptr<Notification> notification = std::make_unique<Notification>(
       NOTIFICATION_TYPE_SIMPLE, std::string(kNotificationId2),
       base::UTF8ToUTF16("title2"),
       base::UTF8ToUTF16("message\nwhich\nis\nvertically\nlong\n."),
@@ -545,7 +544,7 @@ TEST_F(MessageCenterViewTest, SizeAfterUpdateOfRepositionTarget) {
   GetMessageListView()->SetRepositionTargetForTest(
       GetNotificationView(kNotificationId1)->bounds());
 
-  std::unique_ptr<Notification> notification = base::MakeUnique<Notification>(
+  std::unique_ptr<Notification> notification = std::make_unique<Notification>(
       NOTIFICATION_TYPE_SIMPLE, std::string(kNotificationId1),
       base::UTF8ToUTF16("title2"),
       base::UTF8ToUTF16("message\nwhich\nis\nvertically\nlong\n."),
@@ -595,7 +594,7 @@ TEST_F(MessageCenterViewTest, PositionAfterUpdate) {
   GetMessageListView()->SetRepositionTargetForTest(
       GetNotificationView(kNotificationId1)->bounds());
 
-  std::unique_ptr<Notification> notification = base::MakeUnique<Notification>(
+  std::unique_ptr<Notification> notification = std::make_unique<Notification>(
       NOTIFICATION_TYPE_SIMPLE, std::string(kNotificationId2),
       base::UTF8ToUTF16("title2"),
       base::UTF8ToUTF16("message\nwhich\nis\nvertically\nlong\n."),
@@ -717,28 +716,28 @@ TEST_F(MessageCenterViewTest, CloseButtonEnablity) {
       message_center::RichNotificationData(), NULL);
   pinned_notification2.set_pinned(true);
 
-  AddNotification(base::MakeUnique<Notification>(normal_notification1));
+  AddNotification(std::make_unique<Notification>(normal_notification1));
 
   // There should be 1 non-pinned notification.
   EXPECT_EQ(1u, GetMessageCenter()->GetVisibleNotifications().size());
   EXPECT_TRUE(close_button->enabled());
 
   UpdateNotification(kNotificationId1,
-                     base::MakeUnique<Notification>(pinned_notification1));
+                     std::make_unique<Notification>(pinned_notification1));
 
   // There should be 1 pinned notification.
   EXPECT_EQ(1u, GetMessageCenter()->GetVisibleNotifications().size());
   EXPECT_FALSE(close_button->enabled());
 
   // Adds 1 pinned notification.
-  AddNotification(base::MakeUnique<Notification>(pinned_notification2));
+  AddNotification(std::make_unique<Notification>(pinned_notification2));
 
   // There should be 1 pinned notification.
   EXPECT_EQ(2u, GetMessageCenter()->GetVisibleNotifications().size());
   EXPECT_FALSE(close_button->enabled());
 
   UpdateNotification(kNotificationId1,
-                     base::MakeUnique<Notification>(normal_notification1));
+                     std::make_unique<Notification>(normal_notification1));
 
   // There should be 1 normal notification and 1 pinned notification.
   EXPECT_EQ(2u, GetMessageCenter()->GetVisibleNotifications().size());
@@ -756,7 +755,7 @@ TEST_F(MessageCenterViewTest, CloseButtonEnablity) {
   EXPECT_EQ(0u, GetMessageCenter()->GetVisibleNotifications().size());
   EXPECT_FALSE(close_button->enabled());
 
-  AddNotification(base::MakeUnique<Notification>(pinned_notification2));
+  AddNotification(std::make_unique<Notification>(pinned_notification2));
 
   // There should be 1 pinned notification.
   EXPECT_EQ(1u, GetMessageCenter()->GetVisibleNotifications().size());
@@ -784,7 +783,7 @@ TEST_F(MessageCenterViewTest, CheckModeWithRemovingAndAddingNotifications) {
   EXPECT_EQ(Mode::BUTTONS_ONLY, GetMessageCenterViewInternalMode());
 
   // Add a notification.
-  AddNotification(base::MakeUnique<Notification>(
+  AddNotification(std::make_unique<Notification>(
       NOTIFICATION_TYPE_SIMPLE, std::string(kNotificationId1),
       base::UTF8ToUTF16("title2"),
       base::UTF8ToUTF16("message\nwhich\nis\nvertically\nlong\n."),
@@ -839,7 +838,7 @@ TEST_F(MessageCenterViewTest,
   EXPECT_EQ(Mode::SETTINGS, GetMessageCenterViewInternalMode());
 
   // Add a notification during settings is visible.
-  AddNotification(base::MakeUnique<Notification>(
+  AddNotification(std::make_unique<Notification>(
       NOTIFICATION_TYPE_SIMPLE, std::string(kNotificationId1),
       base::UTF8ToUTF16("title2"),
       base::UTF8ToUTF16("message\nwhich\nis\nvertically\nlong\n."),
@@ -890,7 +889,7 @@ TEST_F(MessageCenterViewTest, LockScreen) {
   GetMessageCenterView()->SizeToPreferredSize();
   EXPECT_EQ(kLockedMessageCenterViewHeight, GetMessageCenterView()->height());
 
-  AddNotification(base::MakeUnique<Notification>(
+  AddNotification(std::make_unique<Notification>(
       NOTIFICATION_TYPE_SIMPLE, std::string(kNotificationId1),
       base::UTF8ToUTF16("title1"), base::UTF8ToUTF16("message"), gfx::Image(),
       base::UTF8ToUTF16("display source"), GURL(),
@@ -942,7 +941,7 @@ TEST_F(MessageCenterViewTest, NoNotification) {
   GetMessageCenterView()->SizeToPreferredSize();
   EXPECT_EQ(kEmptyMessageCenterViewHeight, GetMessageCenterView()->height());
 
-  AddNotification(base::MakeUnique<Notification>(
+  AddNotification(std::make_unique<Notification>(
       NOTIFICATION_TYPE_SIMPLE, std::string(kNotificationId1),
       base::UTF8ToUTF16("title1"), base::UTF8ToUTF16("message"), gfx::Image(),
       base::UTF8ToUTF16("display source"), GURL(),

@@ -88,7 +88,7 @@ class PlatformNotificationServiceBrowserTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     display_service_tester_ =
-        base::MakeUnique<NotificationDisplayServiceTester>(
+        std::make_unique<NotificationDisplayServiceTester>(
             browser()->profile());
 
     SiteEngagementScore::SetParamValuesForTesting();

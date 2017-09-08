@@ -4,7 +4,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/notifications/notification_system_observer.h"
 #include "chrome/browser/notifications/notification_test_util.h"
@@ -37,13 +36,13 @@ class NotificationSystemObserverTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
-    profile_manager_ = base::MakeUnique<TestingProfileManager>(
+    profile_manager_ = std::make_unique<TestingProfileManager>(
         TestingBrowserProcess::GetGlobal());
     ASSERT_TRUE(profile_manager_->SetUp());
     profile_ = profile_manager_->CreateTestingProfile("test-profile");
-    ui_manager_ = base::MakeUnique<StubNotificationUIManager>();
+    ui_manager_ = std::make_unique<StubNotificationUIManager>();
     notification_observer_ =
-        base::MakeUnique<NotificationSystemObserver>(ui_manager_.get());
+        std::make_unique<NotificationSystemObserver>(ui_manager_.get());
   }
 
   TestingProfileManager* profile_manager() { return profile_manager_.get(); }

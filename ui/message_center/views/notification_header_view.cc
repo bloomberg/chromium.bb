@@ -4,7 +4,8 @@
 
 #include "ui/message_center/views/notification_header_view.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -366,7 +367,7 @@ bool NotificationHeaderView::IsExpandButtonEnabled() {
 }
 
 std::unique_ptr<views::InkDrop> NotificationHeaderView::CreateInkDrop() {
-  auto ink_drop = base::MakeUnique<views::InkDropImpl>(this, size());
+  auto ink_drop = std::make_unique<views::InkDropImpl>(this, size());
   ink_drop->SetAutoHighlightMode(
       views::InkDropImpl::AutoHighlightMode::SHOW_ON_RIPPLE);
   ink_drop->SetShowHighlightOnHover(false);
@@ -375,14 +376,14 @@ std::unique_ptr<views::InkDrop> NotificationHeaderView::CreateInkDrop() {
 
 std::unique_ptr<views::InkDropRipple>
 NotificationHeaderView::CreateInkDropRipple() const {
-  return base::MakeUnique<views::FloodFillInkDropRipple>(
+  return std::make_unique<views::FloodFillInkDropRipple>(
       size(), GetInkDropCenterBasedOnLastEvent(), GetInkDropBaseColor(),
       ink_drop_visible_opacity());
 }
 
 std::unique_ptr<views::InkDropHighlight>
 NotificationHeaderView::CreateInkDropHighlight() const {
-  auto highlight = base::MakeUnique<views::InkDropHighlight>(
+  auto highlight = std::make_unique<views::InkDropHighlight>(
       size(), kInkDropSmallCornerRadius,
       gfx::RectF(GetLocalBounds()).CenterPoint(), GetInkDropBaseColor());
   highlight->set_visible_opacity(kInkDropHighlightVisibleOpacity);

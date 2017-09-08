@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/notifications/message_center_settings_controller.h"
 #include "chrome/browser/notifications/notification.h"
@@ -45,9 +44,9 @@ MessageCenterNotificationManager::MessageCenterNotificationManager(
 
 #if !defined(OS_CHROMEOS)
   blockers_.push_back(
-      base::MakeUnique<ScreenLockNotificationBlocker>(message_center));
+      std::make_unique<ScreenLockNotificationBlocker>(message_center));
   blockers_.push_back(
-      base::MakeUnique<FullscreenNotificationBlocker>(message_center));
+      std::make_unique<FullscreenNotificationBlocker>(message_center));
 #endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX) \
@@ -78,7 +77,7 @@ void MessageCenterNotificationManager::Add(const Notification& notification,
     return;
 
   std::unique_ptr<ProfileNotification> profile_notification_ptr =
-      base::MakeUnique<ProfileNotification>(profile, notification);
+      std::make_unique<ProfileNotification>(profile, notification);
   ProfileNotification* profile_notification = profile_notification_ptr.get();
 
   // WARNING: You MUST use AddProfileNotification or update the message center
@@ -88,7 +87,7 @@ void MessageCenterNotificationManager::Add(const Notification& notification,
   AddProfileNotification(std::move(profile_notification_ptr));
 
   message_center_->AddNotification(
-      base::MakeUnique<message_center::Notification>(
+      std::make_unique<message_center::Notification>(
           profile_notification->notification()));
 }
 
@@ -118,7 +117,7 @@ bool MessageCenterNotificationManager::Update(const Notification& notification,
       // Add/remove notification in the local list but just update the same
       // one in MessageCenter.
       std::unique_ptr<ProfileNotification> new_notification =
-          base::MakeUnique<ProfileNotification>(profile, notification);
+          std::make_unique<ProfileNotification>(profile, notification);
       const Notification& notification = new_notification->notification();
       // Delete the old one after the new one is created to ensure we don't run
       // out of KeepAlives.
@@ -137,7 +136,7 @@ bool MessageCenterNotificationManager::Update(const Notification& notification,
       // center via the notification within a ProfileNotification object or the
       // profile ID will not be correctly set for ChromeOS.
       message_center_->UpdateNotification(
-          old_id, base::MakeUnique<message_center::Notification>(notification));
+          old_id, std::make_unique<message_center::Notification>(notification));
 
       return true;
     }

@@ -112,7 +112,7 @@ class NotificationChannelsProviderAndroidTest : public testing::Test {
   NotificationChannelsProviderAndroidTest() {
     scoped_feature_list_.InitAndEnableFeature(
         features::kSiteNotificationChannels);
-    profile_ = base::MakeUnique<TestingProfile>();
+    profile_ = std::make_unique<TestingProfile>();
     // Creating a test profile creates an (inaccessible) NCPA and migrates
     // (zero) channels, setting the 'migrated' pref to true in the process, so
     // we must first reset it to false before we reuse prefs for the instance
@@ -129,14 +129,14 @@ class NotificationChannelsProviderAndroidTest : public testing::Test {
  protected:
   void InitChannelsProvider(bool should_use_channels) {
     InitChannelsProviderWithClock(should_use_channels,
-                                  base::MakeUnique<base::DefaultClock>());
+                                  std::make_unique<base::DefaultClock>());
   }
 
   void InitChannelsProviderWithClock(bool should_use_channels,
                                      std::unique_ptr<base::Clock> clock) {
     fake_bridge_ = new FakeNotificationChannelsBridge(should_use_channels);
 
-    // Can't use base::MakeUnique because the provider's constructor is private.
+    // Can't use std::make_unique because the provider's constructor is private.
     channels_provider_ =
         base::WrapUnique(new NotificationChannelsProviderAndroid(
             base::WrapUnique(fake_bridge_), std::move(clock)));
@@ -475,7 +475,7 @@ TEST_F(NotificationChannelsProviderAndroidTest,
 
 TEST_F(NotificationChannelsProviderAndroidTest,
        GetWebsiteSettingLastModifiedReturnsMostRecentTimestamp) {
-  auto test_clock = base::MakeUnique<base::SimpleTestClock>();
+  auto test_clock = std::make_unique<base::SimpleTestClock>();
   base::Time t1 = base::Time::Now();
   test_clock->SetNow(t1);
   base::SimpleTestClock* clock = test_clock.get();
@@ -535,7 +535,7 @@ TEST_F(NotificationChannelsProviderAndroidTest,
 TEST_F(NotificationChannelsProviderAndroidTest,
        MigrateToChannels_NoopWhenNoNotificationSettingsToMigrate) {
   InitChannelsProvider(true /* should_use_channels */);
-  auto old_provider = base::MakeUnique<content_settings::MockProvider>();
+  auto old_provider = std::make_unique<content_settings::MockProvider>();
   old_provider->SetWebsiteSetting(
       ContentSettingsPattern::FromString("https://blocked.com"),
       ContentSettingsPattern::Wildcard(), CONTENT_SETTINGS_TYPE_COOKIES,
@@ -549,7 +549,7 @@ TEST_F(NotificationChannelsProviderAndroidTest,
 TEST_F(NotificationChannelsProviderAndroidTest,
        MigrateToChannels_NoopWhenChannelsShouldNotBeUsed) {
   InitChannelsProvider(false /* should_use_channels */);
-  auto old_provider = base::MakeUnique<content_settings::MockProvider>();
+  auto old_provider = std::make_unique<content_settings::MockProvider>();
 
   // Give the old provider some notification settings to provide.
   old_provider->SetWebsiteSetting(
@@ -569,7 +569,7 @@ TEST_F(NotificationChannelsProviderAndroidTest,
 TEST_F(NotificationChannelsProviderAndroidTest,
        MigrateToChannels_CreatesChannelsForProvidedSettings) {
   InitChannelsProvider(true /* should_use_channels */);
-  auto old_provider = base::MakeUnique<content_settings::MockProvider>();
+  auto old_provider = std::make_unique<content_settings::MockProvider>();
 
   // Give the old provider some notification settings to provide.
   old_provider->SetWebsiteSetting(
@@ -606,7 +606,7 @@ TEST_F(NotificationChannelsProviderAndroidTest,
 TEST_F(NotificationChannelsProviderAndroidTest,
        MigrateToChannels_DoesNotMigrateIfAlreadyMigrated) {
   InitChannelsProvider(true /* should_use_channels */);
-  auto old_provider = base::MakeUnique<content_settings::MockProvider>();
+  auto old_provider = std::make_unique<content_settings::MockProvider>();
   profile_->GetPrefs()->SetBoolean(prefs::kMigratedToSiteNotificationChannels,
                                    true);
   old_provider->SetWebsiteSetting(
@@ -622,7 +622,7 @@ TEST_F(NotificationChannelsProviderAndroidTest,
 TEST_F(NotificationChannelsProviderAndroidTest,
        UnmigrateChannels_DeletesChannelsAndUpdatesPrefProvider) {
   InitChannelsProvider(true /* should_use_channels */);
-  auto mock_pref_provider = base::MakeUnique<content_settings::MockProvider>();
+  auto mock_pref_provider = std::make_unique<content_settings::MockProvider>();
   profile_->GetPrefs()->SetBoolean(prefs::kMigratedToSiteNotificationChannels,
                                    true);
 

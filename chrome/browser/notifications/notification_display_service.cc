@@ -4,7 +4,8 @@
 
 #include "chrome/browser/notifications/notification_display_service.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/strings/nullable_string16.h"
 #include "chrome/browser/notifications/non_persistent_notification_handler.h"
 #include "chrome/browser/notifications/notification_common.h"
@@ -19,13 +20,13 @@
 NotificationDisplayService::NotificationDisplayService(Profile* profile)
     : profile_(profile) {
   AddNotificationHandler(NotificationCommon::NON_PERSISTENT,
-                         base::MakeUnique<NonPersistentNotificationHandler>());
+                         std::make_unique<NonPersistentNotificationHandler>());
   AddNotificationHandler(NotificationCommon::PERSISTENT,
-                         base::MakeUnique<PersistentNotificationHandler>());
+                         std::make_unique<PersistentNotificationHandler>());
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   AddNotificationHandler(
       NotificationCommon::EXTENSION,
-      base::MakeUnique<extensions::ExtensionNotificationHandler>());
+      std::make_unique<extensions::ExtensionNotificationHandler>());
 #endif
 }
 

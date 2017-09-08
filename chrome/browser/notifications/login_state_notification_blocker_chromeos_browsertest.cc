@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "ash/system/system_notifier.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -96,7 +98,7 @@ class LoginStateNotificationBlockerChromeOSBrowserTest
         message_center::MessageCenter::Get()->GetPopupNotifications().size();
     std::string id("browser-id");
     message_center::MessageCenter::Get()->AddNotification(
-        base::MakeUnique<message_center::Notification>(
+        std::make_unique<message_center::Notification>(
             message_center::NOTIFICATION_TYPE_SIMPLE, id,
             UTF8ToUTF16("browser-title"), UTF8ToUTF16("browser-message"),
             gfx::Image(), UTF8ToUTF16("browser-source"), GURL(), notifier_id,

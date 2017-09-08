@@ -122,7 +122,7 @@ ScriptPromise ServiceWorkerRegistrationNotifications::getNotifications(
   ScriptPromise promise = resolver->Promise();
 
   auto callbacks =
-      WTF::MakeUnique<CallbackPromiseAdapter<NotificationArray, void>>(
+      std::make_unique<CallbackPromiseAdapter<NotificationArray, void>>(
           resolver);
 
   WebNotificationManager* notification_manager =
