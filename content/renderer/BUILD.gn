@@ -635,8 +635,6 @@ target(link_target_type, "renderer") {
       "media/media_stream_video_track.h",
       "media/peer_connection_tracker.cc",
       "media/peer_connection_tracker.h",
-      "media/remote_media_stream_impl.cc",
-      "media/remote_media_stream_impl.h",
       "media/remote_media_stream_track_adapter.cc",
       "media/remote_media_stream_track_adapter.h",
       "media/rtc_certificate.cc",

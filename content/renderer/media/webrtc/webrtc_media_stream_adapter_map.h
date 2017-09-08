@@ -85,6 +85,11 @@ class CONTENT_EXPORT WebRtcMediaStreamAdapterMap
       scoped_refptr<webrtc::MediaStreamInterface> webrtc_stream);
   size_t GetRemoteStreamCount() const;
 
+  const scoped_refptr<WebRtcMediaStreamTrackAdapterMap>& track_adapter_map()
+      const {
+    return track_adapter_map_;
+  }
+
  private:
   friend class base::RefCountedThreadSafe<WebRtcMediaStreamAdapterMap>;
 
