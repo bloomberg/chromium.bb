@@ -53,8 +53,9 @@ bool QuickUnlockStorage::IsPinAuthenticationAvailable() const {
   return HasStrongAuth() && pin_storage_->IsPinAuthenticationAvailable();
 }
 
-bool QuickUnlockStorage::TryAuthenticatePin(const std::string& pin) {
-  return HasStrongAuth() && pin_storage()->TryAuthenticatePin(pin);
+bool QuickUnlockStorage::TryAuthenticatePin(const std::string& pin,
+                                            Key::KeyType key_type) {
+  return HasStrongAuth() && pin_storage()->TryAuthenticatePin(pin, key_type);
 }
 
 FingerprintStorage* QuickUnlockStorage::fingerprint_storage() {

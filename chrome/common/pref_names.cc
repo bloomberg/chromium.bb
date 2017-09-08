@@ -900,8 +900,7 @@ const char kPinUnlockFeatureNotificationShown[] =
 const char kFingerprintUnlockFeatureNotificationShown[] =
     "fingerprint_unlock_feature_notification_shown";
 
-// The salt and hash for the pin quick unlock mechanism.
-const char kQuickUnlockPinSalt[] = "quick_unlock.pin.salt";
+// The hash for the pin quick unlock mechanism.
 const char kQuickUnlockPinSecret[] = "quick_unlock.pin.secret";
 
 // An integer pref. Indicates the number of fingerprint records registered.

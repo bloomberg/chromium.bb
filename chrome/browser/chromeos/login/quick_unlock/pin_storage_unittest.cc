@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/public/cpp/ash_pref_names.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
@@ -47,8 +48,8 @@ class PinStorageTestApi {
   bool IsPinAuthenticationAvailable() const {
     return pin_storage_->IsPinAuthenticationAvailable();
   }
-  bool TryAuthenticatePin(const std::string& pin) {
-    return pin_storage_->TryAuthenticatePin(pin);
+  bool TryAuthenticatePin(const std::string& pin, Key::KeyType key_type) {
+    return pin_storage_->TryAuthenticatePin(pin, key_type);
   }
 
  private:
@@ -64,7 +65,7 @@ class PinStorageTestApi {
 TEST_F(PinStorageUnitTest, PinStorageWritesToPrefs) {
   PrefService* prefs = profile_->GetPrefs();
 
-  EXPECT_EQ("", prefs->GetString(prefs::kQuickUnlockPinSalt));
+  EXPECT_EQ("", prefs->GetString(ash::prefs::kQuickUnlockPinSalt));
   EXPECT_EQ("", prefs->GetString(prefs::kQuickUnlockPinSecret));
 
   quick_unlock::PinStorage* pin_storage =
@@ -75,7 +76,7 @@ TEST_F(PinStorageUnitTest, PinStorageWritesToPrefs) {
   pin_storage->SetPin("1111");
   EXPECT_TRUE(pin_storage->IsPinSet());
   EXPECT_EQ(pin_storage_test.PinSalt(),
-            prefs->GetString(prefs::kQuickUnlockPinSalt));
+            prefs->GetString(ash::prefs::kQuickUnlockPinSalt));
   EXPECT_EQ(pin_storage_test.PinSecret(),
             prefs->GetString(prefs::kQuickUnlockPinSecret));
   EXPECT_NE("", pin_storage_test.PinSalt());
@@ -83,7 +84,7 @@ TEST_F(PinStorageUnitTest, PinStorageWritesToPrefs) {
 
   pin_storage->RemovePin();
   EXPECT_FALSE(pin_storage->IsPinSet());
-  EXPECT_EQ("", prefs->GetString(prefs::kQuickUnlockPinSalt));
+  EXPECT_EQ("", prefs->GetString(ash::prefs::kQuickUnlockPinSalt));
   EXPECT_EQ("", prefs->GetString(prefs::kQuickUnlockPinSecret));
 }
 
@@ -116,7 +117,8 @@ TEST_F(PinStorageUnitTest, AuthenticationSucceedsWithRightPin) {
 
   pin_storage->SetPin("1111");
 
-  EXPECT_TRUE(pin_storage_test.TryAuthenticatePin("1111"));
+  EXPECT_TRUE(pin_storage_test.TryAuthenticatePin(
+      "1111", Key::KEY_TYPE_PASSWORD_PLAIN));
 }
 
 // Verifies that the correct pin will fail to authenticate if too many
@@ -132,11 +134,33 @@ TEST_F(PinStorageUnitTest, AuthenticationFailsFromTooManyAttempts) {
   // Use up all of the authentication attempts so authentication fails.
   EXPECT_TRUE(pin_storage_test.IsPinAuthenticationAvailable());
   for (int i = 0; i < quick_unlock::PinStorage::kMaximumUnlockAttempts; ++i)
-    EXPECT_FALSE(pin_storage_test.TryAuthenticatePin("foobar"));
+    EXPECT_FALSE(pin_storage_test.TryAuthenticatePin(
+        "foobar", Key::KEY_TYPE_PASSWORD_PLAIN));
 
   // We used up all of the attempts, so entering the right PIN will still fail.
   EXPECT_FALSE(pin_storage_test.IsPinAuthenticationAvailable());
-  EXPECT_FALSE(pin_storage_test.TryAuthenticatePin("1111"));
+  EXPECT_FALSE(pin_storage_test.TryAuthenticatePin(
+      "1111", Key::KEY_TYPE_PASSWORD_PLAIN));
+}
+
+// Verifies that hashed pin can be used to authenticate.
+TEST_F(PinStorageUnitTest, AuthenticationWithHashedPin) {
+  quick_unlock::PinStorage* pin_storage =
+      quick_unlock::QuickUnlockFactory::GetForProfile(profile_.get())
+          ->pin_storage();
+  PinStorageTestApi pin_storage_test(pin_storage);
+
+  pin_storage->SetPin("1111");
+  std::string hashed_pin = pin_storage_test.PinSecret();
+
+  // Verify that hashed pin can be used to authenticate.
+  EXPECT_TRUE(pin_storage_test.TryAuthenticatePin(
+      hashed_pin, Key::KEY_TYPE_SALTED_PBKDF2_AES256_1234));
+
+  // Use key type of Key::KEY_TYPE_PASSWORD_PLAIN should fail the
+  // authentication.
+  EXPECT_FALSE(pin_storage_test.TryAuthenticatePin(
+      hashed_pin, Key::KEY_TYPE_PASSWORD_PLAIN));
 }
 
 }  // namespace chromeos

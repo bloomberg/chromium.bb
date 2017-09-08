@@ -9,6 +9,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/time/time.h"
+#include "chromeos/login/auth/key.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -55,7 +56,7 @@ class PinStorage {
 
   // Tries to authenticate the given pin. This will consume an unlock attempt.
   // This always returns false if IsPinAuthenticationAvailable returns false.
-  bool TryAuthenticatePin(const std::string& pin);
+  bool TryAuthenticatePin(const std::string& pin, Key::KeyType key_type);
 
   // Return the stored salt/secret. This is fetched directly from pref_service_.
   std::string PinSalt() const;

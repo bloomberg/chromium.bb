@@ -10,6 +10,8 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
+class PrefRegistrySimple;
+
 namespace ash {
 
 // LockScreenController implements mojom::LockScreen and wraps the
@@ -23,6 +25,8 @@ class ASH_EXPORT LockScreenController : public mojom::LockScreen {
 
   LockScreenController();
   ~LockScreenController() override;
+
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test);
 
   // Binds the mojom::LockScreen interface to this object.
   void BindRequest(mojom::LockScreenRequest request);

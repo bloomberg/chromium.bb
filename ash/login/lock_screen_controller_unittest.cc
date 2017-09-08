@@ -5,9 +5,12 @@
 #include "ash/login/lock_screen_controller.h"
 
 #include "ash/login/mock_lock_screen_client.h"
+#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/run_loop.h"
+#include "components/prefs/pref_service.h"
 
 using ::testing::_;
 
@@ -35,6 +38,27 @@ TEST_F(LockScreenControllerTest, RequestAuthentication) {
   base::Optional<bool> callback_result;
   controller->AuthenticateUser(
       id, password, false,
+      base::BindOnce([](base::Optional<bool>* result,
+                        bool did_auth) { *result = did_auth; },
+                     &callback_result));
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(callback_result.has_value());
+  EXPECT_TRUE(*callback_result);
+
+  // Verify that pin is hashed correctly.
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  EXPECT_TRUE(prefs->FindPreference(prefs::kQuickUnlockPinSalt));
+
+  std::string pin = "123456";
+  std::string hashed_pin = "cqgMB9rwrcE35iFxm+4vP2toO6qkzW+giCnCcEou92Y=";
+  EXPECT_NE(pin, hashed_pin);
+
+  EXPECT_CALL(*client, AuthenticateUser_(id, hashed_pin, true, _));
+  controller->AuthenticateUser(
+      id, pin, true,
       base::BindOnce([](base::Optional<bool>* result,
                         bool did_auth) { *result = did_auth; },
                      &callback_result));

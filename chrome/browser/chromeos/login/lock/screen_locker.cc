@@ -371,17 +371,13 @@ void ScreenLocker::Authenticate(const UserContext& user_context,
   if (user) {
     // Check to see if the user submitted a PIN and it is valid.
     const std::string pin = user_context.GetKey()->GetSecret();
+    Key::KeyType key_type = user_context.GetKey()->GetKeyType();
 
-    // We only want to try authenticating the pin if it is a number,
-    // otherwise we will timeout PIN if the user enters their account password
-    // incorrectly more than a few times.
-    int dummy_value;
-    if (unlock_attempt_type_ == AUTH_PIN &&
-        base::StringToInt(pin, &dummy_value)) {
+    if (unlock_attempt_type_ == AUTH_PIN) {
       quick_unlock::QuickUnlockStorage* quick_unlock_storage =
           quick_unlock::QuickUnlockFactory::GetForUser(user);
       if (quick_unlock_storage &&
-          quick_unlock_storage->TryAuthenticatePin(pin)) {
+          quick_unlock_storage->TryAuthenticatePin(pin, key_type)) {
         OnAuthSuccess(user_context);
         return;
       }

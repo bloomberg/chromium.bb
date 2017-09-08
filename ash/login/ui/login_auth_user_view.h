@@ -81,7 +81,7 @@ class ASH_EXPORT LoginAuthUserView : public views::View {
   struct AnimationState;
 
   // Called when the user submits an auth method. Runs mojo call.
-  void OnAuthSubmit(bool is_pin, const base::string16& password);
+  void OnAuthSubmit(const base::string16& password);
 
   AuthMethods auth_methods_ = AUTH_NONE;
   views::View* non_pin_root_ = nullptr;
