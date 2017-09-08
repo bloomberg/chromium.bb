@@ -122,27 +122,27 @@ void ThreadHeapStats::Reset() {
 }
 
 void ThreadHeapStats::IncreaseAllocatedObjectSize(size_t delta) {
-  AtomicAdd(&allocated_object_size_, static_cast<long>(delta));
+  allocated_object_size_ += delta;
   ProcessHeap::IncreaseTotalAllocatedObjectSize(delta);
 }
 
 void ThreadHeapStats::DecreaseAllocatedObjectSize(size_t delta) {
-  AtomicSubtract(&allocated_object_size_, static_cast<long>(delta));
+  allocated_object_size_ -= delta;
   ProcessHeap::DecreaseTotalAllocatedObjectSize(delta);
 }
 
 void ThreadHeapStats::IncreaseMarkedObjectSize(size_t delta) {
-  AtomicAdd(&marked_object_size_, static_cast<long>(delta));
+  allocated_object_size_ += delta;
   ProcessHeap::IncreaseTotalMarkedObjectSize(delta);
 }
 
 void ThreadHeapStats::IncreaseAllocatedSpace(size_t delta) {
-  AtomicAdd(&allocated_space_, static_cast<long>(delta));
+  allocated_space_ += delta;
   ProcessHeap::IncreaseTotalAllocatedSpace(delta);
 }
 
 void ThreadHeapStats::DecreaseAllocatedSpace(size_t delta) {
-  AtomicSubtract(&allocated_space_, static_cast<long>(delta));
+  allocated_space_ -= delta;
   ProcessHeap::DecreaseTotalAllocatedSpace(delta);
 }
 
@@ -511,7 +511,6 @@ void ThreadHeap::ResetHeapCounters() {
   ProcessHeap::DecreaseTotalMarkedObjectSize(stats_.MarkedObjectSize());
 
   stats_.Reset();
-  thread_state_->ResetHeapCounters();
 }
 
 ThreadHeap* ThreadHeap::main_thread_heap_ = nullptr;

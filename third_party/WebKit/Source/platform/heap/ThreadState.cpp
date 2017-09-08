@@ -131,8 +131,6 @@ ThreadState::ThreadState()
 #if defined(LEAK_SANITIZER)
       disabled_static_persistent_registration_(0),
 #endif
-      allocated_object_size_(0),
-      marked_object_size_(0),
       reported_memory_to_v8_(0) {
   DCHECK(CheckThread());
   DCHECK(!**thread_specific_);
@@ -1200,31 +1198,12 @@ void ThreadState::ReportMemoryToV8() {
   if (!isolate_)
     return;
 
-  size_t current_heap_size = allocated_object_size_ + marked_object_size_;
+  size_t current_heap_size = heap_->HeapStats().AllocatedObjectSize() +
+                             heap_->HeapStats().MarkedObjectSize();
   int64_t diff = static_cast<int64_t>(current_heap_size) -
                  static_cast<int64_t>(reported_memory_to_v8_);
   isolate_->AdjustAmountOfExternalAllocatedMemory(diff);
   reported_memory_to_v8_ = current_heap_size;
-}
-
-void ThreadState::ResetHeapCounters() {
-  allocated_object_size_ = 0;
-  marked_object_size_ = 0;
-}
-
-void ThreadState::IncreaseAllocatedObjectSize(size_t delta) {
-  allocated_object_size_ += delta;
-  heap_->HeapStats().IncreaseAllocatedObjectSize(delta);
-}
-
-void ThreadState::DecreaseAllocatedObjectSize(size_t delta) {
-  allocated_object_size_ -= delta;
-  heap_->HeapStats().DecreaseAllocatedObjectSize(delta);
-}
-
-void ThreadState::IncreaseMarkedObjectSize(size_t delta) {
-  marked_object_size_ += delta;
-  heap_->HeapStats().IncreaseMarkedObjectSize(delta);
 }
 
 void ThreadState::CopyStackUntilSafePointScope() {
