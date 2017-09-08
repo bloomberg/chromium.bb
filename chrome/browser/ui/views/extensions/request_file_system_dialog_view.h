@@ -41,7 +41,6 @@ class RequestFileSystemDialogView : public views::DialogDelegateView {
   bool Cancel() override;
   bool Accept() override;
   gfx::Size CalculatePreferredSize() const override;
-  gfx::Insets GetInsets() const override;
 
  private:
   RequestFileSystemDialogView(

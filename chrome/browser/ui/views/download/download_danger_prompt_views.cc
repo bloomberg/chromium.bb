@@ -47,10 +47,10 @@ class DownloadDangerPromptViews : public DownloadDangerPrompt,
                             bool show_context,
                             const OnDone& done);
 
-  // DownloadDangerPrompt methods:
+  // DownloadDangerPrompt:
   void InvokeActionForTesting(Action action) override;
 
-  // views::DialogDelegate methods:
+  // views::DialogDelegate:
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   base::string16 GetWindowTitle() const override;
   void DeleteDelegate() override;
@@ -96,8 +96,8 @@ DownloadDangerPromptViews::DownloadDangerPromptViews(
 
   contents_view_ = new views::View;
 
-  set_margins(ChromeLayoutProvider::Get()->GetInsetsMetric(
-      views::INSETS_DIALOG_CONTENTS));
+  set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
+      views::TEXT, views::TEXT));
   views::GridLayout* layout =
       views::GridLayout::CreateAndInstall(contents_view_);
 

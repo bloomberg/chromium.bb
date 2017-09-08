@@ -160,9 +160,6 @@ TryChromeDialog::Result TryChromeDialog::ShowDialog(
   views::View* root_view = popup_->GetRootView();
   root_view->SetBackground(views::CreateSolidBackground(kBackgroundColor));
   views::GridLayout* layout = views::GridLayout::CreateAndInstall(root_view);
-  root_view->SetBorder(
-      views::CreateEmptyBorder(ChromeLayoutProvider::Get()->GetInsetsMetric(
-          views::INSETS_DIALOG_CONTENTS)));
   layout->set_minimum_size(gfx::Size(kToastWidth, 0));
   views::ColumnSet* columns;
 

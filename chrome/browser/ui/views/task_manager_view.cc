@@ -337,9 +337,18 @@ void TaskManagerView::Init() {
   AddChildView(tab_table_parent_);
 
   SetLayoutManager(new views::FillLayout());
-  SetBorder(
-      views::CreateEmptyBorder(ChromeLayoutProvider::Get()->GetInsetsMetric(
-          views::INSETS_DIALOG_CONTENTS)));
+
+  const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+  const gfx::Insets dialog_insets =
+      provider->GetInsetsMetric(views::INSETS_DIALOG);
+  // We don't use ChromeLayoutProvider::GetDialogInsetsForContentType because we
+  // don't have a title.
+  const gfx::Insets content_insets(
+      dialog_insets.top(), dialog_insets.left(),
+      provider->GetDistanceMetric(
+          views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_CONTROL),
+      dialog_insets.right());
+  SetBorder(views::CreateEmptyBorder(content_insets));
 
   table_model_->RetrieveSavedColumnsSettingsAndUpdateTable();
 

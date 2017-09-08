@@ -515,21 +515,19 @@ void ContentSettingBubbleContents::Init() {
     bubble_content_empty = false;
   }
 
-  layout->AddPaddingRow(0, related_control_vertical_spacing);
   if (bubble_content.show_manage_text_as_checkbox) {
+    layout->AddPaddingRow(0, related_control_vertical_spacing);
     layout->StartRow(0, kIndentedSingleColumnSetId);
     manage_checkbox_ = new views::Checkbox(bubble_content.manage_text);
     manage_checkbox_->set_listener(this);
     layout->AddView(manage_checkbox_);
   }
 
-  if (!bubble_content_empty) {
-    if (!provider->IsHarmonyMode()) {
-      layout->AddPaddingRow(0, related_control_vertical_spacing);
-      layout->StartRow(0, kSingleColumnSetId);
-      layout->AddView(new views::Separator(), 1, 1, GridLayout::FILL,
-                      GridLayout::FILL);
-    }
+  if (!bubble_content_empty && !provider->IsHarmonyMode()) {
+    layout->AddPaddingRow(0, related_control_vertical_spacing);
+    layout->StartRow(0, kSingleColumnSetId);
+    layout->AddView(new views::Separator(), 1, 1, GridLayout::FILL,
+                    GridLayout::FILL);
     layout->AddPaddingRow(0, related_control_vertical_spacing);
   }
 

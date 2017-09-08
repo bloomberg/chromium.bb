@@ -214,7 +214,10 @@ BubbleDialogDelegateView::BubbleDialogDelegateView(View* anchor_view,
       adjust_if_offscreen_(true),
       parent_window_(nullptr) {
   LayoutProvider* provider = LayoutProvider::Get();
-  set_margins(provider->GetInsetsMetric(INSETS_DIALOG_CONTENTS));
+  // An individual bubble should override these margins if its layout differs
+  // from the typical title/text/buttons.
+  set_margins(
+      provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT));
   title_margins_ = provider->GetInsetsMetric(INSETS_DIALOG_TITLE);
   if (anchor_view)
     SetAnchorView(anchor_view);

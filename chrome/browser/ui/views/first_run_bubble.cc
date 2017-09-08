@@ -26,11 +26,6 @@
 
 namespace {
 
-const int kTopInset = 1;
-const int kLeftInset = 2;
-const int kBottomInset = 7;
-const int kRightInset = 2;
-
 FirstRunBubble* ShowBubbleImpl(Browser* browser,
                                views::View* anchor_view,
                                gfx::NativeWindow parent_window) {
@@ -69,8 +64,6 @@ void FirstRunBubble::Init() {
       l10n_util::GetStringUTF16(IDS_FR_BUBBLE_SUBTEXT), {original_font_list});
 
   views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
-  SetBorder(views::CreateEmptyBorder(kTopInset, kLeftInset, kBottomInset,
-                                     kRightInset));
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
@@ -98,6 +91,11 @@ FirstRunBubble::FirstRunBubble(Browser* browser,
     : views::BubbleDialogDelegateView(nullptr, views::BubbleBorder::TOP_LEFT),
       browser_(browser),
       bubble_closer_(this, parent_window) {
+  constexpr int kTopInset = 1;
+  constexpr int kHorizontalInset = 2;
+  constexpr int kBottomInset = 7;
+  set_margins(
+      gfx::Insets(kTopInset, kHorizontalInset, kBottomInset, kHorizontalInset));
   if (anchor_view) {
     // Compensate for built-in vertical padding in the anchor view's image.
     set_anchor_view_insets(gfx::Insets(

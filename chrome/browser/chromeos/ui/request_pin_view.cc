@@ -162,8 +162,8 @@ void RequestPinView::UpdateHeaderText() {
 }
 
 void RequestPinView::Init() {
-  set_margins(ChromeLayoutProvider::Get()->GetInsetsMetric(
-      views::INSETS_DIALOG_CONTENTS));
+  set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
+      views::TEXT, views::TEXT));
 
   views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
 

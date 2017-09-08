@@ -23,6 +23,7 @@
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/widget/widget.h"
 
@@ -38,11 +39,6 @@ void ShowChromeCleanerPrompt(
 }
 
 }  // namespace chrome
-
-namespace {
-constexpr int kDialogWidth = 448;
-
-}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // ChromeCleanerDialog
@@ -65,11 +61,9 @@ ChromeCleanerDialog::ChromeCleanerDialog(
   DCHECK(dialog_controller_);
   DCHECK(cleaner_controller_);
 
-  SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical,
-                           ChromeLayoutProvider::Get()->GetInsetsMetric(
-                               views::INSETS_DIALOG_CONTENTS),
-                           0));
+  set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
+      views::TEXT, views::TEXT));
+  SetLayoutManager(new views::FillLayout());
   views::Label* label = new views::Label(
       l10n_util::GetStringUTF16(IDS_CHROME_CLEANUP_PROMPT_EXPLANATION));
   label->SetMultiLine(true);
@@ -136,7 +130,7 @@ views::View* ChromeCleanerDialog::CreateFootnoteView() {
   views::View* footnote_view = new views::View();
   footnote_view->SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kVertical, ChromeLayoutProvider::Get()->GetInsetsMetric(
-                                       views::INSETS_DIALOG_CONTENTS)));
+                                       views::INSETS_DIALOG_SUBSECTION)));
   logs_permission_checkbox_ = new views::Checkbox(
       l10n_util::GetStringUTF16(IDS_CHROME_CLEANUP_LOGS_PERMISSION));
   logs_permission_checkbox_->SetChecked(dialog_controller_->LogsEnabled());
@@ -183,6 +177,7 @@ bool ChromeCleanerDialog::Close() {
 // View overrides.
 
 gfx::Size ChromeCleanerDialog::CalculatePreferredSize() const {
+  constexpr int kDialogWidth = 448;
   return gfx::Size(kDialogWidth, GetHeightForWidth(kDialogWidth));
 }
 

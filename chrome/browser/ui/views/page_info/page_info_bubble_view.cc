@@ -539,11 +539,10 @@ PageInfoBubbleView::PageInfoBubbleView(
   if (!ui::MaterialDesignController::IsSecondaryUiMaterial()) {
     // In non-material, titles are inset from the dialog margin. Ensure the
     // horizontal insets match.
-    set_title_margins(
-        gfx::Insets(ChromeLayoutProvider::Get()
-                        ->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS)
-                        .top(),
-                    side_margin, 0, side_margin));
+    set_title_margins(gfx::Insets(ChromeLayoutProvider::Get()
+                                      ->GetInsetsMetric(views::INSETS_DIALOG)
+                                      .top(),
+                                  side_margin, 0, side_margin));
   }
   views::BubbleDialogDelegateView::CreateBubble(this);
 

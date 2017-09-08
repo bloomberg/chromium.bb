@@ -80,8 +80,8 @@ FirstRunDialog::FirstRunDialog(Profile* profile)
     : profile_(profile),
       make_default_(NULL),
       report_crashes_(NULL) {
-  set_margins(ChromeLayoutProvider::Get()->GetInsetsMetric(
-      views::INSETS_DIALOG_CONTENTS));
+  set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
+      views::CONTROL, views::CONTROL));
   GridLayout* layout = GridLayout::CreateAndInstall(this);
 
   views::ColumnSet* column_set = layout->AddColumnSet(0);

@@ -46,13 +46,12 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
     const base::Callback<void(bool)>& close_callback)
     : profile_(profile),
       close_callback_(close_callback),
-      create_shortcuts_label_(nullptr),
       desktop_check_box_(nullptr),
       menu_check_box_(nullptr),
       quick_launch_check_box_(nullptr),
       weak_ptr_factory_(this) {
-  set_margins(ChromeLayoutProvider::Get()->GetInsetsMetric(
-      views::INSETS_DIALOG_CONTENTS));
+  set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
+      views::TEXT, views::CONTROL));
   InitControls();
 
   // Get shortcut and icon information; needed for creating the shortcut.
@@ -67,10 +66,10 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
 CreateChromeApplicationShortcutView::~CreateChromeApplicationShortcutView() {}
 
 void CreateChromeApplicationShortcutView::InitControls() {
-  create_shortcuts_label_ = new views::Label(
-      l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_LABEL));
-  create_shortcuts_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  create_shortcuts_label_->SetMultiLine(true);
+  views::Label* create_shortcuts_label =
+      new views::Label(l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_LABEL));
+  create_shortcuts_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  create_shortcuts_label->SetMultiLine(true);
 
   desktop_check_box_ = AddCheckbox(
       l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_DESKTOP_CHKBOX),
@@ -123,7 +122,7 @@ void CreateChromeApplicationShortcutView::InitControls() {
                         100.0f, views::GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, kHeaderColumnSetId);
-  layout->AddView(create_shortcuts_label_);
+  layout->AddView(create_shortcuts_label);
 
   layout->AddPaddingRow(0, provider->GetDistanceMetric(
       views::DISTANCE_RELATED_CONTROL_VERTICAL));

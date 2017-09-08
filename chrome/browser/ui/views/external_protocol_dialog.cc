@@ -101,7 +101,8 @@ ExternalProtocolDialog::ExternalProtocolDialog(
       routing_id_(routing_id),
       creation_time_(base::TimeTicks::Now()) {
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  set_margins(provider->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS));
+  set_margins(
+      provider->GetDialogInsetsForContentType(views::CONTROL, views::CONTROL));
 
   // TODO(crbug.com/760651): We should use FillLayout since we only have one
   // child, but it causes the checkbox image to get cut off in MD.

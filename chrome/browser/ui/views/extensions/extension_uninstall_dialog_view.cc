@@ -157,7 +157,7 @@ ExtensionUninstallDialogDelegateView::ExtensionUninstallDialogDelegateView(
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kHorizontal,
-      provider->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS),
+      provider->GetDialogInsetsForContentType(views::CONTROL, views::CONTROL),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
 
   icon_ = new views::ImageView();

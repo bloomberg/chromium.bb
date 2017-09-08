@@ -20,8 +20,8 @@
 ConfirmBubbleViews::ConfirmBubbleViews(
     std::unique_ptr<ConfirmBubbleModel> model)
     : model_(std::move(model)), link_(NULL) {
-  set_margins(ChromeLayoutProvider::Get()->GetInsetsMetric(
-      views::INSETS_DIALOG_CONTENTS));
+  set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
+      views::TEXT, views::TEXT));
   views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
 
   // Use a fixed maximum message width, so longer messages will wrap.

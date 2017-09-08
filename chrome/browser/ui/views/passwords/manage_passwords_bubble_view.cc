@@ -504,10 +504,9 @@ void ManagePasswordsBubbleView::PendingView::CreateAndSetLayout() {
         layout, std::unique_ptr<views::View>(username_field_),
         std::unique_ptr<views::View>(password_field_),
         std::unique_ptr<views::ToggleImageButton>(password_view_button_));
-    layout->AddPaddingRow(0,
-                          ChromeLayoutProvider::Get()
-                              ->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS)
-                              .bottom());
+    layout->AddPaddingRow(
+        0, ChromeLayoutProvider::Get()->GetDistanceMetric(
+               views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_CONTROL));
   }
   // Button row.
   ColumnSetType column_set_type =
@@ -668,12 +667,10 @@ ManagePasswordsBubbleView::ManageView::ManageView(
 
   ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
   layout->AddPaddingRow(
-      0,
-      layout_provider->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS).bottom());
+      0, layout_provider->GetDistanceMetric(
+             views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_CONTROL));
   BuildColumnSet(layout, LINK_BUTTON_COLUMN_SET);
-  layout->StartRowWithPadding(
-      0, LINK_BUTTON_COLUMN_SET, 0,
-      layout_provider->GetInsetsMetric(views::INSETS_DIALOG_BUTTON_ROW).top());
+  layout->StartRow(0, LINK_BUTTON_COLUMN_SET);
   layout->AddView(manage_link_);
   layout->AddView(done_button_);
 
@@ -746,13 +743,11 @@ ManagePasswordsBubbleView::SaveConfirmationView::SaveConfirmationView(
       this, l10n_util::GetStringUTF16(IDS_OK));
 
   ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
-  layout->AddPaddingRow(
-      0,
-      layout_provider->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS).bottom());
+  layout->AddPaddingRow(0,
+                        layout_provider->GetDistanceMetric(
+                            views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_TEXT));
   BuildColumnSet(layout, SINGLE_BUTTON_COLUMN_SET);
-  layout->StartRowWithPadding(
-      0, SINGLE_BUTTON_COLUMN_SET, 0,
-      layout_provider->GetInsetsMetric(views::INSETS_DIALOG_BUTTON_ROW).top());
+  layout->StartRow(0, SINGLE_BUTTON_COLUMN_SET);
   layout->AddView(ok_button_);
 
   parent_->set_initially_focused_view(ok_button_);
@@ -883,8 +878,8 @@ ManagePasswordsBubbleView::UpdatePendingView::UpdatePendingView(
                        GeneratePasswordLabel(*password_form), nullptr);
   }
   layout->AddPaddingRow(
-      0,
-      layout_provider->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS).bottom());
+      0, layout_provider->GetDistanceMetric(
+             views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_CONTROL));
 
   // Button row.
   nope_button_ = views::MdTextButton::CreateSecondaryUiButton(
@@ -893,9 +888,7 @@ ManagePasswordsBubbleView::UpdatePendingView::UpdatePendingView(
   update_button_ = views::MdTextButton::CreateSecondaryUiBlueButton(
       this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_UPDATE_BUTTON));
   BuildColumnSet(layout, DOUBLE_BUTTON_COLUMN_SET);
-  layout->StartRowWithPadding(
-      0, DOUBLE_BUTTON_COLUMN_SET, 0,
-      layout_provider->GetInsetsMetric(views::INSETS_DIALOG_BUTTON_ROW).top());
+  layout->StartRow(0, DOUBLE_BUTTON_COLUMN_SET);
   layout->AddView(update_button_);
   layout->AddView(nope_button_);
 
@@ -1008,6 +1001,8 @@ ManagePasswordsBubbleView::ManagePasswordsBubbleView(
              reason == AUTOMATIC ? ManagePasswordsBubbleModel::AUTOMATIC
                                  : ManagePasswordsBubbleModel::USER_ACTION),
       initially_focused_view_(nullptr) {
+  set_margins(
+      ChromeLayoutProvider::Get()->GetInsetsMetric(views::INSETS_DIALOG));
   mouse_handler_.reset(new WebContentMouseHandler(this, this->web_contents()));
   manage_passwords_bubble_ = this;
   chrome::RecordDialogCreation(chrome::DialogIdentifier::MANAGE_PASSWORDS);

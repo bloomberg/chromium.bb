@@ -85,11 +85,6 @@ gfx::Size RequestFileSystemDialogView::CalculatePreferredSize() const {
                    child_at(0)->GetHeightForWidth(kDialogMaxWidth));
 }
 
-gfx::Insets RequestFileSystemDialogView::GetInsets() const {
-  return ChromeLayoutProvider::Get()->GetInsetsMetric(
-      views::INSETS_DIALOG_CONTENTS);
-}
-
 RequestFileSystemDialogView::RequestFileSystemDialogView(
     const std::string& extension_name,
     const std::string& volume_label,
@@ -97,6 +92,8 @@ RequestFileSystemDialogView::RequestFileSystemDialogView(
     const base::Callback<void(ui::DialogButton)>& callback)
     : callback_(callback) {
   DCHECK(!callback_.is_null());
+  set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
+      views::TEXT, views::TEXT));
 
   const base::string16 app_name = base::UTF8ToUTF16(extension_name);
   // TODO(mtomasz): Improve the dialog contents, so it's easier for the user
