@@ -249,6 +249,9 @@ const int kTouchDownContextResetTimeout = 500;
 // same location as the cursor.
 const int kSynthesizedMouseMessagesTimeDifference = 500;
 
+// Currently this flag is always false - see http://crbug.com/763223
+const bool kUsePointerEventsForTouch = false;
+
 }  // namespace
 
 // A scoping class that prevents a window from being able to redraw in response
@@ -1741,10 +1744,12 @@ LRESULT HWNDMessageHandler::OnPointerEvent(UINT message,
   }
 
   switch (pointer_type) {
-    case PT_TOUCH:
-      return HandlePointerEventTypeTouch(message, w_param, l_param);
     case PT_PEN:
       return HandlePointerEventTypePen(message, w_param, l_param);
+    case PT_TOUCH:
+      if (kUsePointerEventsForTouch)
+        return HandlePointerEventTypeTouch(message, w_param, l_param);
+    // FALLTHROUGH_INTENDED
     default:
       SetMsgHandled(FALSE);
       return -1;
