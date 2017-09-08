@@ -337,6 +337,7 @@ source_set("unit_tests") {
     "VisiblePositionTest.cpp",
     "VisibleSelectionTest.cpp",
     "VisibleUnitsTest.cpp",
+    "VisibleUnitsWordTest.cpp",
     "commands/ApplyBlockElementCommandTest.cpp",
     "commands/ApplyStyleCommandTest.cpp",
     "commands/CompositeEditCommandTest.cpp",
