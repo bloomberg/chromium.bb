@@ -16,7 +16,6 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 
-import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.FileUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
@@ -24,7 +23,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BasicNativePage;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
@@ -72,10 +70,10 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
         private SelectionDelegate<DownloadHistoryItemWrapper> mSelectionDelegate;
         private ThumbnailProvider mThumbnailProvider;
 
-        DownloadBackendProvider(DiscardableReferencePool referencePool) {
+        DownloadBackendProvider() {
             mOfflinePageBridge = new OfflinePageDownloadBridge(Profile.getLastUsedProfile());
             mSelectionDelegate = new DownloadItemSelectionDelegate();
-            mThumbnailProvider = new ThumbnailProviderImpl(referencePool);
+            mThumbnailProvider = new ThumbnailProviderImpl();
         }
 
         @Override
@@ -184,10 +182,8 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
             ComponentName parentComponent, boolean isSeparateActivity,
             SnackbarManager snackbarManager) {
         mActivity = activity;
-        ChromeApplication application = (ChromeApplication) activity.getApplication();
-        mBackendProvider = sProviderForTests == null
-                ? new DownloadBackendProvider(application.getReferencePool())
-                : sProviderForTests;
+        mBackendProvider =
+                sProviderForTests == null ? new DownloadBackendProvider() : sProviderForTests;
         mSnackbarManager = snackbarManager;
 
         mMainView = (ViewGroup) LayoutInflater.from(activity).inflate(R.layout.download_main, null);
