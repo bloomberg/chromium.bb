@@ -33,7 +33,6 @@
 #include "core/animation/animatable/AnimatableDouble.h"
 #include "core/animation/animatable/AnimatableFilterOperations.h"
 #include "core/animation/animatable/AnimatableTransform.h"
-#include "core/css/CSSPropertyMetadata.h"
 #include "core/css/properties/CSSPropertyAPI.h"
 #include "core/style/ComputedStyle.h"
 

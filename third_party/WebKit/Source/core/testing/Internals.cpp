@@ -40,7 +40,6 @@
 #include "core/SVGNames.h"
 #include "core/StylePropertyShorthand.h"
 #include "core/animation/DocumentTimeline.h"
-#include "core/css/CSSPropertyMetadata.h"
 #include "core/css/SelectRuleFeatureSet.h"
 #include "core/css/StyleEngine.h"
 #include "core/dom/DOMNodeIds.h"

@@ -39,7 +39,6 @@
 #include "core/animation/CSSTranslateInterpolationType.h"
 #include "core/animation/CSSVarCycleInterpolationType.h"
 #include "core/animation/CSSVisibilityInterpolationType.h"
-#include "core/css/CSSPropertyMetadata.h"
 #include "core/css/CSSSyntaxDescriptor.h"
 #include "core/css/PropertyRegistry.h"
 #include "core/css/properties/CSSPropertyAPI.h"
