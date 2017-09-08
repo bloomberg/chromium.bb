@@ -538,6 +538,26 @@ FYI_WATERFALL = {
       'os_type': 'mac',
       'is_asan': True,
     },
+    'Mac dEQP Release': {
+      # This bot spawns jobs on multiple GPU types.
+      'swarming_dimensions': [
+        {
+          'gpu': '8086:0a2e',
+          # TODO(crbug.com/754777): change to 10.12.6.
+          'os': 'Mac-10.12'
+        },
+        {
+          'gpu': '1002:6821',
+          'hidpi': '1',
+          # TODO(crbug.com/754777): change to 10.12.6.
+          'os': 'Mac'
+        },
+      ],
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'mac',
+      'type': Types.DEQP,
+    },
     'Linux Release (NVIDIA)': {
       'swarming_dimensions': [
         {
@@ -988,10 +1008,6 @@ COMMON_GTESTS = {
     'tester_configs': [
       {
         'predicate': Predicates.DEQP,
-        # Run only on the Win7 NVIDIA/AMD R7 240 32- and 64-bit bots (and
-        # trybots) for the time being, at least until more capacity is
-        # added.
-        'build_configs': ['Release', 'Release_x64'],
         'swarming_dimension_sets': [
           # NVIDIA Win 7
           {
@@ -1027,14 +1043,22 @@ COMMON_GTESTS = {
     'tester_configs': [
       {
         'predicate': Predicates.DEQP,
-        # Run only on the Linux Release NVIDIA 32- and 64-bit bots (and
-        # trybots) for the time being, at least until more capacity is added.
-        'build_configs': ['Release', 'Release_x64'],
         'swarming_dimension_sets': [
-          # NVIDIA Linux
+          # Linux NVIDIA
           {
             'gpu': '10de:104a',
             'os': 'Ubuntu'
+          },
+          # Mac Intel
+          {
+            'gpu': '8086:0a2e',
+            'os': 'Mac-10.12.5'
+          },
+          # Mac NVIDIA
+          {
+            'gpu': '1002:6821',
+            'hidpi': '1',
+            'os': 'Mac'
           },
         ],
       },
@@ -1138,9 +1162,6 @@ COMMON_GTESTS = {
       {
         # TODO(jmadill): Run this on ANGLE roll tryservers.
         'predicate': Predicates.DEQP,
-        # Run only on the NVIDIA and AMD Win7 bots (and trybots) for the time
-        # being, at least until more capacity is added.
-        'build_configs': ['Release'],
         'swarming_dimension_sets': [
           # NVIDIA Win 7
           {
@@ -1180,9 +1201,6 @@ COMMON_GTESTS = {
       {
         # TODO(jmadill): Run this on ANGLE roll tryservers.
         'predicate': Predicates.DEQP,
-        # Run only on the Linux Release NVIDIA 32-bit bots (and trybots) for
-        # the time being, at least until more capacity is added.
-        'build_configs': ['Release'],
         'swarming_dimension_sets': [
           # NVIDIA Linux
           {
@@ -1213,8 +1231,6 @@ COMMON_GTESTS = {
     'tester_configs': [
       {
         'predicate': Predicates.DEQP,
-        # Run on the Win Release NVIDIA bots.
-        'build_configs': ['Release'],
         'swarming_dimension_sets': [
           {
             'gpu': '10de:104a',
@@ -1246,8 +1262,6 @@ COMMON_GTESTS = {
     'tester_configs': [
       {
         'predicate': Predicates.DEQP,
-        # Run on the Win Release NVIDIA bots.
-        'build_configs': ['Release'],
         'swarming_dimension_sets': [
           {
             'gpu': '10de:104a',
