@@ -4,14 +4,17 @@
 
 #include "core/html/track/TextTrackList.h"
 
+#include "core/html/HTMLVideoElement.h"
 #include "core/html/track/TextTrack.h"
+#include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
 TEST(TextTrackListTest, InvalidateTrackIndexes) {
   // Create and fill the list
-  TextTrackList* list = TextTrackList::Create(nullptr);
+  TextTrackList* list = TextTrackList::Create(
+      HTMLVideoElement::Create(DummyPageHolder::Create()->GetDocument()));
   const size_t kNumTextTracks = 4;
   TextTrack* text_tracks[kNumTextTracks];
   for (size_t i = 0; i < kNumTextTracks; ++i) {
