@@ -158,8 +158,6 @@ class CORE_TEMPLATE_CLASS_EXPORT PositionTemplate {
     return anchor_node_ && anchor_node_->isConnected();
   }
 
-  bool IsValidFor(const Document&) const;
-
   bool IsNull() const { return !anchor_node_; }
   bool IsNotNull() const { return anchor_node_; }
   bool IsOrphan() const { return anchor_node_ && !anchor_node_->isConnected(); }
