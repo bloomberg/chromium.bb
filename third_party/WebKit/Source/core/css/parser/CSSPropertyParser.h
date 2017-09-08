@@ -63,8 +63,6 @@ class CSSPropertyParser {
   // TODO(timloh): Rename once the CSSParserValue-based parseValue is removed
   bool ParseValueStart(CSSPropertyID unresolved_property, bool important);
   bool ConsumeCSSWideKeyword(CSSPropertyID unresolved_property, bool important);
-  const CSSValue* ParseSingleValue(CSSPropertyID,
-                                   CSSPropertyID = CSSPropertyInvalid);
 
   bool InQuirksMode() const { return IsQuirksModeBehavior(context_->Mode()); }
 
