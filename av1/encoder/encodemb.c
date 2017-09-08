@@ -715,10 +715,9 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   // Assert not magic number (uninitialized).
   assert(x->blk_skip[plane][blk_row * bw + blk_col] != 234);
 
-  if (x->blk_skip[plane][blk_row * bw + blk_col] == 0) {
-#else
-  {
+  if (x->blk_skip[plane][blk_row * bw + blk_col] == 0)
 #endif
+  {
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                     ctx, AV1_XFORM_QUANT_FP);
   }
@@ -842,34 +841,36 @@ static void encode_block_pass1(int plane, int block, int blk_row, int blk_col,
 
   av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                   ctx, AV1_XFORM_QUANT_B);
-#if !CONFIG_PVQ
-  if (p->eobs[block] > 0) {
-#else
+#if CONFIG_PVQ
   if (!x->pvq_skip[plane]) {
-    {
-      int tx_blk_size;
-      int i, j;
-      // transform block size in pixels
-      tx_blk_size = tx_size_wide[tx_size];
+    int tx_blk_size;
+    int i, j;
+    // transform block size in pixels
+    tx_blk_size = tx_size_wide[tx_size];
 
 // Since av1 does not have separate function which does inverse transform
 // but av1_inv_txfm_add_*x*() also does addition of predicted image to
 // inverse transformed image,
 // pass blank dummy image to av1_inv_txfm_add_*x*(), i.e. set dst as zeros
 #if CONFIG_HIGHBITDEPTH
-      if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-        for (j = 0; j < tx_blk_size; j++)
-          for (i = 0; i < tx_blk_size; i++)
-            CONVERT_TO_SHORTPTR(dst)[j * pd->dst.stride + i] = 0;
-      } else {
+    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+      for (j = 0; j < tx_blk_size; j++)
+        for (i = 0; i < tx_blk_size; i++)
+          CONVERT_TO_SHORTPTR(dst)[j * pd->dst.stride + i] = 0;
+    } else {
 #endif  // CONFIG_HIGHBITDEPTH
-        for (j = 0; j < tx_blk_size; j++)
-          for (i = 0; i < tx_blk_size; i++) dst[j * pd->dst.stride + i] = 0;
+      for (j = 0; j < tx_blk_size; j++)
+        for (i = 0; i < tx_blk_size; i++) dst[j * pd->dst.stride + i] = 0;
 #if CONFIG_HIGHBITDEPTH
-      }
-#endif  // CONFIG_HIGHBITDEPTH
     }
-#endif  // !CONFIG_PVQ
+#endif  // CONFIG_HIGHBITDEPTH
+  }
+#endif  // CONFIG_PVQ
+
+#if !CONFIG_PVQ
+  if (p->eobs[block] > 0)
+#endif
+  {
     txfm_param.bd = xd->bd;
     txfm_param.tx_type = DCT_DCT;
     txfm_param.eob = p->eobs[block];
