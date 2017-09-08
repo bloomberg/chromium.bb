@@ -525,14 +525,9 @@ void MediaControlsImpl::Reset() {
   EventDispatchForbiddenScope::AllowUserAgentEvents allow_events_in_shadow;
   BatchedControlUpdate batch(this);
 
-  const double duration = MediaElement().duration();
-  duration_display_->SetCurrentValue(duration);
+  OnDurationChange();
 
   // Show everything that we might hide.
-  // If we don't have a duration, then mark it to be hidden.  For the
-  // old UI case, want / don't want is the same as show / hide since
-  // it is never marked as not fitting.
-  duration_display_->SetIsWanted(std::isfinite(duration));
   current_time_display_->SetIsWanted(true);
   timeline_->SetIsWanted(true);
 
@@ -544,7 +539,6 @@ void MediaControlsImpl::Reset() {
 
   UpdateCurrentTimeDisplay();
 
-  timeline_->SetDuration(duration);
   timeline_->SetPosition(MediaElement().currentTime());
 
   OnVolumeChange();
@@ -959,6 +953,7 @@ void MediaControlsImpl::OnDurationChange() {
 
   // Update the displayed current time/duration.
   duration_display_->SetCurrentValue(duration);
+  duration_display_->SetIsWanted(std::isfinite(duration));
   // TODO(crbug.com/756698): Determine if this is still needed since the format
   // of the current time no longer depends on the duration.
   UpdateCurrentTimeDisplay();
