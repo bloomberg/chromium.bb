@@ -181,17 +181,37 @@ bool WEBPImageDecoder::UpdateDemuxer() {
   if (Failed())
     return false;
 
+  const unsigned kWebpHeaderSize = 30;
+  if (data_->size() < kWebpHeaderSize)
+    return IsAllDataReceived() ? SetFailed() : false;
+
   if (have_already_parsed_this_data_)
     return true;
 
   have_already_parsed_this_data_ = true;
 
-  const unsigned kWebpHeaderSize = 30;
-  if (data_->size() < kWebpHeaderSize)
-    return false;  // Await VP8X header so WebPDemuxPartial succeeds.
+  if (consolidated_data_ && consolidated_data_->size() >= data_->size()) {
+    // Less data provided than last time. |consolidated_data_| is guaranteed
+    // to be its own copy of the data, so it is safe to keep it.
+    return true;
+  }
+
+  if (IsAllDataReceived() && !consolidated_data_) {
+    consolidated_data_ = data_->GetAsSkData();
+  } else {
+    buffer_.ReserveCapacity(data_->size());
+    while (buffer_.size() < data_->size()) {
+      const char* segment;
+      const size_t bytes = data_->GetSomeData(segment, buffer_.size());
+      DCHECK(bytes);
+      buffer_.Append(segment, bytes);
+    }
+    DCHECK_EQ(buffer_.size(), data_->size());
+    consolidated_data_ =
+        SkData::MakeWithoutCopy(buffer_.data(), buffer_.size());
+  }
 
   WebPDemuxDelete(demux_);
-  consolidated_data_ = data_->GetAsSkData();
   WebPData input_data = {
       reinterpret_cast<const uint8_t*>(consolidated_data_->data()),
       consolidated_data_->size()};
