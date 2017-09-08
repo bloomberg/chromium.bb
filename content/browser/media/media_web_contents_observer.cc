@@ -218,13 +218,15 @@ void MediaWebContentsObserver::OnMediaEffectivelyFullscreenChanged(
     bool is_fullscreen) {
   const MediaPlayerId id(render_frame_host, delegate_id);
 
-  if (!is_fullscreen) {
-    if (fullscreen_player_ && *fullscreen_player_ == id)
-      fullscreen_player_.reset();
-    return;
-  }
+  if (is_fullscreen) {
+    fullscreen_player_ = id;
+  } else {
+    if (!fullscreen_player_ || *fullscreen_player_ != id)
+      return;
 
-  fullscreen_player_ = id;
+    fullscreen_player_.reset();
+  }
+  web_contents_impl()->MediaEffectivelyFullscreenChanged(is_fullscreen);
 }
 
 void MediaWebContentsObserver::OnMediaSizeChanged(

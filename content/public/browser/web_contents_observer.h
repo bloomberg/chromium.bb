@@ -440,6 +440,11 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   virtual void MediaStoppedPlaying(const MediaPlayerInfo& video_type,
                                    const MediaPlayerId& id) {}
   virtual void MediaResized(const gfx::Size& size, const MediaPlayerId& id) {}
+  // Invoked when media enters or exits fullscreen. We must use a heuristic
+  // to determine this as it is not trivial for media with custom controls.
+  // There is a slight delay between media entering or exiting fullscreen
+  // and it being detected.
+  virtual void MediaEffectivelyFullscreenChanged(bool is_fullscreen) {}
   virtual void MediaMutedStatusChanged(const MediaPlayerId& id, bool muted) {}
 
   // Invoked when the renderer process changes the page scale factor.
