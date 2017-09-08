@@ -29,7 +29,6 @@ namespace {
 
 const char kLowDiskSpaceId[] = "arc_low_disk";
 const char kNotifierId[] = "arc_boot_error";
-const char kDisplaySource[] = "arc_boot_error_source";
 const char kStoragePage[] = "storage";
 
 class LowDiskSpaceErrorNotificationDelegate
@@ -89,8 +88,9 @@ void ShowLowDiskSpaceErrorNotification(content::BrowserContext* context) {
               IDS_ARC_CRITICALLY_LOW_DISK_NOTIFICATION_MESSAGE),
           gfx::Image(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
               IDR_DISK_SPACE_NOTIFICATION_CRITICAL)),
-          base::UTF8ToUTF16(kDisplaySource), GURL(), notifier_id,
-          optional_fields, new LowDiskSpaceErrorNotificationDelegate(context)));
+          l10n_util::GetStringUTF16(IDS_ARC_NOTIFICATION_DISPLAY_SOURCE),
+          GURL(), notifier_id, optional_fields,
+          new LowDiskSpaceErrorNotificationDelegate(context)));
 }
 
 // Singleton factory for ArcBootErrorNotificationFactory.
