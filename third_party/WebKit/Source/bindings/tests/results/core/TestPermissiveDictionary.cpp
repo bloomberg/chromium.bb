@@ -22,13 +22,6 @@ TestPermissiveDictionary::TestPermissiveDictionary(const TestPermissiveDictionar
 
 TestPermissiveDictionary& TestPermissiveDictionary::operator=(const TestPermissiveDictionary&) = default;
 
-bool TestPermissiveDictionary::hasBooleanMember() const {
-  return has_boolean_member_;
-}
-bool TestPermissiveDictionary::booleanMember() const {
-  DCHECK(has_boolean_member_);
-  return boolean_member_;
-}
 void TestPermissiveDictionary::setBooleanMember(bool value) {
   boolean_member_ = value;
   has_boolean_member_ = true;

@@ -23,15 +23,6 @@ namespace blink {
 {{cpp_class}}& {{cpp_class}}::operator=(const {{cpp_class}}&) = default;
 
 {% for member in members %}
-bool {{cpp_class}}::{{member.has_method_name}}() const {
-  return {{member.has_method_expression}};
-}
-{{member.rvalue_cpp_type}} {{cpp_class}}::{{member.getter_name}}() const {
-  {% if member.nullable_indicator_name %}
-  DCHECK({{member.nullable_indicator_name}});
-  {% endif %}
-  return {{member.getter_expression}};
-}
 void {{cpp_class}}::{{member.setter_name}}({{member.rvalue_cpp_type}} value) {
   {{member.cpp_name}}_ = {{member.setter_value}};
   {% if member.nullable_indicator_name %}

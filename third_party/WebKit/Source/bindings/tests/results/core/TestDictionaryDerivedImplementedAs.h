@@ -29,20 +29,30 @@ class CORE_EXPORT TestDictionaryDerivedImplementedAs : public TestDictionary {
   TestDictionaryDerivedImplementedAs(const TestDictionaryDerivedImplementedAs&);
   TestDictionaryDerivedImplementedAs& operator=(const TestDictionaryDerivedImplementedAs&);
 
-  bool hasDerivedStringMember() const;
-  const String& derivedStringMember() const;
+  bool hasDerivedStringMember() const { return !derived_string_member_.IsNull(); }
+  const String& derivedStringMember() const {
+    return derived_string_member_;
+  }
   void setDerivedStringMember(const String&);
 
-  bool hasDerivedStringMemberWithDefault() const;
-  const String& derivedStringMemberWithDefault() const;
+  bool hasDerivedStringMemberWithDefault() const { return !derived_string_member_with_default_.IsNull(); }
+  const String& derivedStringMemberWithDefault() const {
+    return derived_string_member_with_default_;
+  }
   void setDerivedStringMemberWithDefault(const String&);
 
-  bool hasRequiredLongMember() const;
-  int32_t requiredLongMember() const;
+  bool hasRequiredLongMember() const { return has_required_long_member_; }
+  int32_t requiredLongMember() const {
+    DCHECK(has_required_long_member_);
+    return required_long_member_;
+  }
   void setRequiredLongMember(int32_t);
 
-  bool hasStringOrDoubleSequenceMember() const;
-  const HeapVector<StringOrDouble>& stringOrDoubleSequenceMember() const;
+  bool hasStringOrDoubleSequenceMember() const { return has_string_or_double_sequence_member_; }
+  const HeapVector<StringOrDouble>& stringOrDoubleSequenceMember() const {
+    DCHECK(has_string_or_double_sequence_member_);
+    return string_or_double_sequence_member_;
+  }
   void setStringOrDoubleSequenceMember(const HeapVector<StringOrDouble>&);
 
   v8::Local<v8::Value> ToV8Impl(v8::Local<v8::Object>, v8::Isolate*) const override;

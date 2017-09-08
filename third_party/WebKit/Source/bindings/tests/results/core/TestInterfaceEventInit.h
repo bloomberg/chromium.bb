@@ -27,8 +27,10 @@ class CORE_EXPORT TestInterfaceEventInit : public EventInit {
   TestInterfaceEventInit(const TestInterfaceEventInit&);
   TestInterfaceEventInit& operator=(const TestInterfaceEventInit&);
 
-  bool hasStringMember() const;
-  const String& stringMember() const;
+  bool hasStringMember() const { return !string_member_.IsNull(); }
+  const String& stringMember() const {
+    return string_member_;
+  }
   void setStringMember(const String&);
 
   v8::Local<v8::Value> ToV8Impl(v8::Local<v8::Object>, v8::Isolate*) const override;

@@ -44,162 +44,257 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   TestDictionary(const TestDictionary&);
   TestDictionary& operator=(const TestDictionary&);
 
-  bool hasAnyInRecordMember() const;
-  const Vector<std::pair<String, ScriptValue>>& anyInRecordMember() const;
+  bool hasAnyInRecordMember() const { return has_any_in_record_member_; }
+  const Vector<std::pair<String, ScriptValue>>& anyInRecordMember() const {
+    DCHECK(has_any_in_record_member_);
+    return any_in_record_member_;
+  }
   void setAnyInRecordMember(const Vector<std::pair<String, ScriptValue>>&);
 
-  bool hasAnyMember() const;
-  ScriptValue anyMember() const;
+  bool hasAnyMember() const { return !(any_member_.IsEmpty() || any_member_.IsNull() || any_member_.IsUndefined()); }
+  ScriptValue anyMember() const {
+    return any_member_;
+  }
   void setAnyMember(ScriptValue);
 
-  bool hasBooleanMember() const;
-  bool booleanMember() const;
+  bool hasBooleanMember() const { return has_boolean_member_; }
+  bool booleanMember() const {
+    DCHECK(has_boolean_member_);
+    return boolean_member_;
+  }
   void setBooleanMember(bool);
 
-  bool hasCreateMember() const;
-  bool createMember() const;
+  bool hasCreateMember() const { return has_create_member_; }
+  bool createMember() const {
+    DCHECK(has_create_member_);
+    return create_member_;
+  }
   void setCreateMember(bool);
 
-  bool hasDictionaryMember() const;
-  Dictionary dictionaryMember() const;
+  bool hasDictionaryMember() const { return !dictionary_member_.IsUndefinedOrNull(); }
+  Dictionary dictionaryMember() const {
+    return dictionary_member_;
+  }
   void setDictionaryMember(Dictionary);
 
-  bool hasDoubleOrNullMember() const;
-  double doubleOrNullMember() const;
+  bool hasDoubleOrNullMember() const { return has_double_or_null_member_; }
+  double doubleOrNullMember() const {
+    DCHECK(has_double_or_null_member_);
+    return double_or_null_member_;
+  }
   void setDoubleOrNullMember(double);
   void setDoubleOrNullMemberToNull();
 
-  bool hasDoubleOrStringMember() const;
-  const DoubleOrString& doubleOrStringMember() const;
+  bool hasDoubleOrStringMember() const { return !double_or_string_member_.isNull(); }
+  const DoubleOrString& doubleOrStringMember() const {
+    return double_or_string_member_;
+  }
   void setDoubleOrStringMember(const DoubleOrString&);
 
-  bool hasDoubleOrStringSequenceMember() const;
-  const HeapVector<DoubleOrString>& doubleOrStringSequenceMember() const;
+  bool hasDoubleOrStringSequenceMember() const { return has_double_or_string_sequence_member_; }
+  const HeapVector<DoubleOrString>& doubleOrStringSequenceMember() const {
+    DCHECK(has_double_or_string_sequence_member_);
+    return double_or_string_sequence_member_;
+  }
   void setDoubleOrStringSequenceMember(const HeapVector<DoubleOrString>&);
 
-  bool hasElementOrNullMember() const;
-  Element* elementOrNullMember() const;
+  bool hasElementOrNullMember() const { return element_or_null_member_; }
+  Element* elementOrNullMember() const {
+    return element_or_null_member_;
+  }
   void setElementOrNullMember(Element*);
   void setElementOrNullMemberToNull();
 
-  bool hasEnumMember() const;
-  const String& enumMember() const;
+  bool hasEnumMember() const { return !enum_member_.IsNull(); }
+  const String& enumMember() const {
+    return enum_member_;
+  }
   void setEnumMember(const String&);
 
-  bool hasEnumSequenceMember() const;
-  const Vector<String>& enumSequenceMember() const;
+  bool hasEnumSequenceMember() const { return has_enum_sequence_member_; }
+  const Vector<String>& enumSequenceMember() const {
+    DCHECK(has_enum_sequence_member_);
+    return enum_sequence_member_;
+  }
   void setEnumSequenceMember(const Vector<String>&);
 
-  bool hasEventTargetMember() const;
-  EventTarget* eventTargetMember() const;
+  bool hasEventTargetMember() const { return event_target_member_; }
+  EventTarget* eventTargetMember() const {
+    return event_target_member_;
+  }
   void setEventTargetMember(EventTarget*);
 
-  bool hasGarbageCollectedRecordMember() const;
-  const HeapVector<std::pair<String, Member<TestObject>>>& garbageCollectedRecordMember() const;
+  bool hasGarbageCollectedRecordMember() const { return has_garbage_collected_record_member_; }
+  const HeapVector<std::pair<String, Member<TestObject>>>& garbageCollectedRecordMember() const {
+    DCHECK(has_garbage_collected_record_member_);
+    return garbage_collected_record_member_;
+  }
   void setGarbageCollectedRecordMember(const HeapVector<std::pair<String, Member<TestObject>>>&);
 
-  bool hasInternalDictionarySequenceMember() const;
-  const HeapVector<InternalDictionary>& internalDictionarySequenceMember() const;
+  bool hasInternalDictionarySequenceMember() const { return has_internal_dictionary_sequence_member_; }
+  const HeapVector<InternalDictionary>& internalDictionarySequenceMember() const {
+    DCHECK(has_internal_dictionary_sequence_member_);
+    return internal_dictionary_sequence_member_;
+  }
   void setInternalDictionarySequenceMember(const HeapVector<InternalDictionary>&);
 
-  bool hasIsPublic() const;
-  bool isPublic() const;
+  bool hasIsPublic() const { return has_is_public_; }
+  bool isPublic() const {
+    DCHECK(has_is_public_);
+    return is_public_;
+  }
   void setIsPublic(bool);
 
-  bool hasLongMember() const;
-  int32_t longMember() const;
+  bool hasLongMember() const { return has_long_member_; }
+  int32_t longMember() const {
+    DCHECK(has_long_member_);
+    return long_member_;
+  }
   void setLongMember(int32_t);
 
-  bool hasObjectMember() const;
-  ScriptValue objectMember() const;
+  bool hasObjectMember() const { return !(object_member_.IsEmpty() || object_member_.IsNull() || object_member_.IsUndefined()); }
+  ScriptValue objectMember() const {
+    return object_member_;
+  }
   void setObjectMember(ScriptValue);
 
-  bool hasObjectOrNullMember() const;
-  ScriptValue objectOrNullMember() const;
+  bool hasObjectOrNullMember() const { return !(object_or_null_member_.IsEmpty() || object_or_null_member_.IsNull() || object_or_null_member_.IsUndefined()); }
+  ScriptValue objectOrNullMember() const {
+    return object_or_null_member_;
+  }
   void setObjectOrNullMember(ScriptValue);
   void setObjectOrNullMemberToNull();
 
-  bool hasOtherDoubleOrStringMember() const;
-  const DoubleOrString& otherDoubleOrStringMember() const;
+  bool hasOtherDoubleOrStringMember() const { return !other_double_or_string_member_.isNull(); }
+  const DoubleOrString& otherDoubleOrStringMember() const {
+    return other_double_or_string_member_;
+  }
   void setOtherDoubleOrStringMember(const DoubleOrString&);
 
-  bool hasPrefixGetMember() const;
-  ScriptValue getPrefixGetMember() const;
+  bool hasPrefixGetMember() const { return !(prefix_get_member_.IsEmpty() || prefix_get_member_.IsNull() || prefix_get_member_.IsUndefined()); }
+  ScriptValue getPrefixGetMember() const {
+    return prefix_get_member_;
+  }
   void setPrefixGetMember(ScriptValue);
 
-  bool hasRecordMember() const;
-  const Vector<std::pair<String, int8_t>>& recordMember() const;
+  bool hasRecordMember() const { return has_record_member_; }
+  const Vector<std::pair<String, int8_t>>& recordMember() const {
+    DCHECK(has_record_member_);
+    return record_member_;
+  }
   void setRecordMember(const Vector<std::pair<String, int8_t>>&);
 
-  bool hasRestrictedDoubleMember() const;
-  double restrictedDoubleMember() const;
+  bool hasRestrictedDoubleMember() const { return has_restricted_double_member_; }
+  double restrictedDoubleMember() const {
+    DCHECK(has_restricted_double_member_);
+    return restricted_double_member_;
+  }
   void setRestrictedDoubleMember(double);
 
-  bool hasRuntimeMember() const;
-  bool runtimeMember() const;
+  bool hasRuntimeMember() const { return has_runtime_member_; }
+  bool runtimeMember() const {
+    DCHECK(has_runtime_member_);
+    return runtime_member_;
+  }
   void setRuntimeMember(bool);
 
-  bool hasStringMember() const;
-  const String& stringMember() const;
+  bool hasStringMember() const { return !string_member_.IsNull(); }
+  const String& stringMember() const {
+    return string_member_;
+  }
   void setStringMember(const String&);
 
-  bool hasStringOrNullMember() const;
-  const String& stringOrNullMember() const;
+  bool hasStringOrNullMember() const { return !string_or_null_member_.IsNull(); }
+  const String& stringOrNullMember() const {
+    return string_or_null_member_;
+  }
   void setStringOrNullMember(const String&);
   void setStringOrNullMemberToNull();
 
-  bool hasStringSequenceMember() const;
-  const Vector<String>& stringSequenceMember() const;
+  bool hasStringSequenceMember() const { return has_string_sequence_member_; }
+  const Vector<String>& stringSequenceMember() const {
+    DCHECK(has_string_sequence_member_);
+    return string_sequence_member_;
+  }
   void setStringSequenceMember(const Vector<String>&);
 
-  bool hasTestInterface2OrUint8ArrayMember() const;
-  const TestInterface2OrUint8Array& testInterface2OrUint8ArrayMember() const;
+  bool hasTestInterface2OrUint8ArrayMember() const { return !test_interface_2_or_uint8_array_member_.isNull(); }
+  const TestInterface2OrUint8Array& testInterface2OrUint8ArrayMember() const {
+    return test_interface_2_or_uint8_array_member_;
+  }
   void setTestInterface2OrUint8ArrayMember(const TestInterface2OrUint8Array&);
 
-  bool hasTestInterfaceGarbageCollectedMember() const;
-  TestInterfaceGarbageCollected* testInterfaceGarbageCollectedMember() const;
+  bool hasTestInterfaceGarbageCollectedMember() const { return test_interface_garbage_collected_member_; }
+  TestInterfaceGarbageCollected* testInterfaceGarbageCollectedMember() const {
+    return test_interface_garbage_collected_member_;
+  }
   void setTestInterfaceGarbageCollectedMember(TestInterfaceGarbageCollected*);
 
-  bool hasTestInterfaceGarbageCollectedOrNullMember() const;
-  TestInterfaceGarbageCollected* testInterfaceGarbageCollectedOrNullMember() const;
+  bool hasTestInterfaceGarbageCollectedOrNullMember() const { return test_interface_garbage_collected_or_null_member_; }
+  TestInterfaceGarbageCollected* testInterfaceGarbageCollectedOrNullMember() const {
+    return test_interface_garbage_collected_or_null_member_;
+  }
   void setTestInterfaceGarbageCollectedOrNullMember(TestInterfaceGarbageCollected*);
   void setTestInterfaceGarbageCollectedOrNullMemberToNull();
 
-  bool hasTestInterfaceGarbageCollectedSequenceMember() const;
-  const HeapVector<Member<TestInterfaceGarbageCollected>>& testInterfaceGarbageCollectedSequenceMember() const;
+  bool hasTestInterfaceGarbageCollectedSequenceMember() const { return has_test_interface_garbage_collected_sequence_member_; }
+  const HeapVector<Member<TestInterfaceGarbageCollected>>& testInterfaceGarbageCollectedSequenceMember() const {
+    DCHECK(has_test_interface_garbage_collected_sequence_member_);
+    return test_interface_garbage_collected_sequence_member_;
+  }
   void setTestInterfaceGarbageCollectedSequenceMember(const HeapVector<Member<TestInterfaceGarbageCollected>>&);
 
-  bool hasTestInterfaceMember() const;
-  TestInterfaceImplementation* testInterfaceMember() const;
+  bool hasTestInterfaceMember() const { return test_interface_member_; }
+  TestInterfaceImplementation* testInterfaceMember() const {
+    return test_interface_member_;
+  }
   void setTestInterfaceMember(TestInterfaceImplementation*);
 
-  bool hasTestInterfaceOrNullMember() const;
-  TestInterfaceImplementation* testInterfaceOrNullMember() const;
+  bool hasTestInterfaceOrNullMember() const { return test_interface_or_null_member_; }
+  TestInterfaceImplementation* testInterfaceOrNullMember() const {
+    return test_interface_or_null_member_;
+  }
   void setTestInterfaceOrNullMember(TestInterfaceImplementation*);
   void setTestInterfaceOrNullMemberToNull();
 
-  bool hasTestInterfaceSequenceMember() const;
-  const HeapVector<Member<TestInterfaceImplementation>>& testInterfaceSequenceMember() const;
+  bool hasTestInterfaceSequenceMember() const { return has_test_interface_sequence_member_; }
+  const HeapVector<Member<TestInterfaceImplementation>>& testInterfaceSequenceMember() const {
+    DCHECK(has_test_interface_sequence_member_);
+    return test_interface_sequence_member_;
+  }
   void setTestInterfaceSequenceMember(const HeapVector<Member<TestInterfaceImplementation>>&);
 
-  bool hasTestObjectSequenceMember() const;
-  const HeapVector<Member<TestObject>>& testObjectSequenceMember() const;
+  bool hasTestObjectSequenceMember() const { return has_test_object_sequence_member_; }
+  const HeapVector<Member<TestObject>>& testObjectSequenceMember() const {
+    DCHECK(has_test_object_sequence_member_);
+    return test_object_sequence_member_;
+  }
   void setTestObjectSequenceMember(const HeapVector<Member<TestObject>>&);
 
-  bool hasUint8ArrayMember() const;
-  NotShared<DOMUint8Array> uint8ArrayMember() const;
+  bool hasUint8ArrayMember() const { return uint8_array_member_; }
+  NotShared<DOMUint8Array> uint8ArrayMember() const {
+    return uint8_array_member_;
+  }
   void setUint8ArrayMember(NotShared<DOMUint8Array>);
 
-  bool hasUnionInRecordMember() const;
-  const HeapVector<std::pair<String, LongOrBoolean>>& unionInRecordMember() const;
+  bool hasUnionInRecordMember() const { return has_union_in_record_member_; }
+  const HeapVector<std::pair<String, LongOrBoolean>>& unionInRecordMember() const {
+    DCHECK(has_union_in_record_member_);
+    return union_in_record_member_;
+  }
   void setUnionInRecordMember(const HeapVector<std::pair<String, LongOrBoolean>>&);
 
-  bool hasUnionWithTypedefs() const;
-  const FloatOrBoolean& unionWithTypedefs() const;
+  bool hasUnionWithTypedefs() const { return !union_with_typedefs_.isNull(); }
+  const FloatOrBoolean& unionWithTypedefs() const {
+    return union_with_typedefs_;
+  }
   void setUnionWithTypedefs(const FloatOrBoolean&);
 
-  bool hasUnrestrictedDoubleMember() const;
-  double unrestrictedDoubleMember() const;
+  bool hasUnrestrictedDoubleMember() const { return has_unrestricted_double_member_; }
+  double unrestrictedDoubleMember() const {
+    DCHECK(has_unrestricted_double_member_);
+    return unrestricted_double_member_;
+  }
   void setUnrestrictedDoubleMember(double);
 
   v8::Local<v8::Value> ToV8Impl(v8::Local<v8::Object>, v8::Isolate*) const override;

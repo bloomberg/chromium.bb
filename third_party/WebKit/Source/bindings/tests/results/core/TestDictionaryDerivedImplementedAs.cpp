@@ -23,41 +23,15 @@ TestDictionaryDerivedImplementedAs::TestDictionaryDerivedImplementedAs(const Tes
 
 TestDictionaryDerivedImplementedAs& TestDictionaryDerivedImplementedAs::operator=(const TestDictionaryDerivedImplementedAs&) = default;
 
-bool TestDictionaryDerivedImplementedAs::hasDerivedStringMember() const {
-  return !derived_string_member_.IsNull();
-}
-const String& TestDictionaryDerivedImplementedAs::derivedStringMember() const {
-  return derived_string_member_;
-}
 void TestDictionaryDerivedImplementedAs::setDerivedStringMember(const String& value) {
   derived_string_member_ = value;
-}
-bool TestDictionaryDerivedImplementedAs::hasDerivedStringMemberWithDefault() const {
-  return !derived_string_member_with_default_.IsNull();
-}
-const String& TestDictionaryDerivedImplementedAs::derivedStringMemberWithDefault() const {
-  return derived_string_member_with_default_;
 }
 void TestDictionaryDerivedImplementedAs::setDerivedStringMemberWithDefault(const String& value) {
   derived_string_member_with_default_ = value;
 }
-bool TestDictionaryDerivedImplementedAs::hasRequiredLongMember() const {
-  return has_required_long_member_;
-}
-int32_t TestDictionaryDerivedImplementedAs::requiredLongMember() const {
-  DCHECK(has_required_long_member_);
-  return required_long_member_;
-}
 void TestDictionaryDerivedImplementedAs::setRequiredLongMember(int32_t value) {
   required_long_member_ = value;
   has_required_long_member_ = true;
-}
-bool TestDictionaryDerivedImplementedAs::hasStringOrDoubleSequenceMember() const {
-  return has_string_or_double_sequence_member_;
-}
-const HeapVector<StringOrDouble>& TestDictionaryDerivedImplementedAs::stringOrDoubleSequenceMember() const {
-  DCHECK(has_string_or_double_sequence_member_);
-  return string_or_double_sequence_member_;
 }
 void TestDictionaryDerivedImplementedAs::setStringOrDoubleSequenceMember(const HeapVector<StringOrDouble>& value) {
   string_or_double_sequence_member_ = value;

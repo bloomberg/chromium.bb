@@ -26,8 +26,11 @@ class CORE_EXPORT TestPermissiveDictionary : public IDLDictionaryBase {
   TestPermissiveDictionary(const TestPermissiveDictionary&);
   TestPermissiveDictionary& operator=(const TestPermissiveDictionary&);
 
-  bool hasBooleanMember() const;
-  bool booleanMember() const;
+  bool hasBooleanMember() const { return has_boolean_member_; }
+  bool booleanMember() const {
+    DCHECK(has_boolean_member_);
+    return boolean_member_;
+  }
   void setBooleanMember(bool);
 
   v8::Local<v8::Value> ToV8Impl(v8::Local<v8::Object>, v8::Isolate*) const override;
