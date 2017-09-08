@@ -96,7 +96,7 @@ class CONTENT_EXPORT SyntheticSmoothMoveGesture : public SyntheticGesture {
   SyntheticSmoothMoveGestureParams params_;
   std::unique_ptr<SyntheticPointerDriver> synthetic_pointer_driver_;
   // Used for mouse input.
-  gfx::Vector2d current_move_segment_total_delta_discrete_;
+  gfx::Vector2dF current_move_segment_total_delta_;
   // Used for touch input.
   gfx::PointF current_move_segment_start_position_;
   GestureState state_;

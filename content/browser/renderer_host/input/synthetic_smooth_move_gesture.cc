@@ -12,12 +12,6 @@
 namespace content {
 namespace {
 
-gfx::Vector2d FloorTowardZero(const gfx::Vector2dF& vector) {
-  int x = vector.x() > 0 ? floor(vector.x()) : ceil(vector.x());
-  int y = vector.y() > 0 ? floor(vector.y()) : ceil(vector.y());
-  return gfx::Vector2d(x, y);
-}
-
 gfx::Vector2d CeilFromZero(const gfx::Vector2dF& vector) {
   int x = vector.x() > 0 ? ceil(vector.x()) : floor(vector.x());
   int y = vector.y() > 0 ? ceil(vector.y()) : floor(vector.y());
@@ -157,36 +151,24 @@ void SyntheticSmoothMoveGesture::ForwardMouseWheelInputEvents(
       }
       ComputeNextMoveSegment();
       state_ = MOVING;
-      // Fall through to forward the first event.
+      break;
     case MOVING: {
-      // Even though WebMouseWheelEvents take floating point deltas,
-      // internally the scroll position is stored as an integer. We therefore
-      // keep track of the discrete delta which is consistent with the
-      // internal scrolling state. This ensures that when the gesture has
-      // finished we've scrolled exactly the specified distance.
       base::TimeTicks event_timestamp = ClampTimestamp(timestamp);
-      gfx::Vector2dF current_move_segment_total_delta =
-          GetPositionDeltaAtTime(event_timestamp);
-      gfx::Vector2d delta_discrete =
-          FloorTowardZero(current_move_segment_total_delta -
-                          current_move_segment_total_delta_discrete_);
+      gfx::Vector2dF delta = GetPositionDeltaAtTime(event_timestamp) -
+                             current_move_segment_total_delta_;
 
       blink::WebMouseWheelEvent::Phase phase =
           needs_scroll_begin_ ? blink::WebMouseWheelEvent::kPhaseBegan
                               : blink::WebMouseWheelEvent::kPhaseChanged;
-      // Only send wheel events if they have non-zero deltas.
-      if (delta_discrete.x() || delta_discrete.y()) {
-        ForwardMouseWheelEvent(target, delta_discrete, phase, event_timestamp);
-        if (phase == blink::WebMouseWheelEvent::kPhaseBegan)
-          needs_scroll_begin_ = false;
-      }
-      current_move_segment_total_delta_discrete_ += delta_discrete;
+      DCHECK(delta.x() || delta.y());
+      ForwardMouseWheelEvent(target, delta, phase, event_timestamp);
+      current_move_segment_total_delta_ += delta;
+      needs_scroll_begin_ = false;
 
       if (FinishedCurrentMoveSegment(event_timestamp)) {
         if (!IsLastMoveSegment()) {
-          current_move_segment_total_delta_discrete_ = gfx::Vector2d();
+          current_move_segment_total_delta_ = gfx::Vector2dF();
           ComputeNextMoveSegment();
-          ForwardMouseWheelInputEvents(timestamp, target);
         } else {
           state_ = DONE;
           // Forward a wheel event with phase ended and zero deltas.
