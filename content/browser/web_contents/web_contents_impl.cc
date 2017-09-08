@@ -5908,6 +5908,11 @@ void WebContentsImpl::MediaResized(
     observer.MediaResized(size, id);
 }
 
+void WebContentsImpl::MediaEffectivelyFullscreenChanged(bool is_fullscreen) {
+  for (auto& observer : observers_)
+    observer.MediaEffectivelyFullscreenChanged(is_fullscreen);
+}
+
 base::Optional<gfx::Size> WebContentsImpl::GetFullscreenVideoSize() {
   base::Optional<WebContentsObserver::MediaPlayerId> id =
       media_web_contents_observer_->GetFullscreenVideoMediaPlayerId();

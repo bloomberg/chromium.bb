@@ -61,47 +61,45 @@ void WebContentsObserverProxy::Destroy(JNIEnv* env,
 
 void WebContentsObserverProxy::WebContentsDestroyed() {
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj(java_observer_);
   // The java side will destroy |this|
-  Java_WebContentsObserverProxy_destroy(env, obj);
+  Java_WebContentsObserverProxy_destroy(env, java_observer_);
 }
 
 void WebContentsObserverProxy::RenderViewReady() {
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj(java_observer_);
-  Java_WebContentsObserverProxy_renderViewReady(env, obj);
+  Java_WebContentsObserverProxy_renderViewReady(env, java_observer_);
 }
 
 void WebContentsObserverProxy::RenderProcessGone(
     base::TerminationStatus termination_status) {
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj(java_observer_);
   jboolean was_oom_protected =
       termination_status == base::TERMINATION_STATUS_OOM_PROTECTED;
-  Java_WebContentsObserverProxy_renderProcessGone(env, obj, was_oom_protected);
+  Java_WebContentsObserverProxy_renderProcessGone(env, java_observer_,
+                                                  was_oom_protected);
 }
 
 void WebContentsObserverProxy::DidStartLoading() {
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj(java_observer_);
   ScopedJavaLocalRef<jstring> jstring_url(
       ConvertUTF8ToJavaString(env, web_contents()->GetVisibleURL().spec()));
   if (auto* entry = web_contents()->GetController().GetPendingEntry()) {
     base_url_of_last_started_data_url_ = entry->GetBaseURLForDataURL();
   }
-  Java_WebContentsObserverProxy_didStartLoading(env, obj, jstring_url);
+  Java_WebContentsObserverProxy_didStartLoading(env, java_observer_,
+                                                jstring_url);
 }
 
 void WebContentsObserverProxy::DidStopLoading() {
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj(java_observer_);
   std::string url_string = web_contents()->GetLastCommittedURL().spec();
   SetToBaseURLForDataURLIfNeeded(&url_string);
   // DidStopLoading is the last event we should get.
   base_url_of_last_started_data_url_ = GURL::EmptyGURL();
   ScopedJavaLocalRef<jstring> jstring_url(ConvertUTF8ToJavaString(
       env, url_string));
-  Java_WebContentsObserverProxy_didStopLoading(env, obj, jstring_url);
+  Java_WebContentsObserverProxy_didStopLoading(env, java_observer_,
+                                               jstring_url);
 }
 
 void WebContentsObserverProxy::DidFailLoad(
@@ -110,38 +108,35 @@ void WebContentsObserverProxy::DidFailLoad(
     int error_code,
     const base::string16& error_description) {
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj(java_observer_);
   ScopedJavaLocalRef<jstring> jstring_error_description(
       ConvertUTF16ToJavaString(env, error_description));
   ScopedJavaLocalRef<jstring> jstring_url(
       ConvertUTF8ToJavaString(env, validated_url.spec()));
 
   Java_WebContentsObserverProxy_didFailLoad(
-      env, obj, !render_frame_host->GetParent(), error_code,
+      env, java_observer_, !render_frame_host->GetParent(), error_code,
       jstring_error_description, jstring_url);
 }
 
 void WebContentsObserverProxy::DocumentAvailableInMainFrame() {
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj(java_observer_);
-  Java_WebContentsObserverProxy_documentAvailableInMainFrame(env, obj);
+  Java_WebContentsObserverProxy_documentAvailableInMainFrame(env,
+                                                             java_observer_);
 }
 
 void WebContentsObserverProxy::DidStartNavigation(
     NavigationHandle* navigation_handle) {
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj(java_observer_);
   ScopedJavaLocalRef<jstring> jstring_url(
       ConvertUTF8ToJavaString(env, navigation_handle->GetURL().spec()));
   Java_WebContentsObserverProxy_didStartNavigation(
-      env, obj, jstring_url, navigation_handle->IsInMainFrame(),
+      env, java_observer_, jstring_url, navigation_handle->IsInMainFrame(),
       navigation_handle->IsSameDocument(), navigation_handle->IsErrorPage());
 }
 
 void WebContentsObserverProxy::DidFinishNavigation(
     NavigationHandle* navigation_handle) {
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj(java_observer_);
   ScopedJavaLocalRef<jstring> jstring_url(
       ConvertUTF8ToJavaString(env, navigation_handle->GetURL().spec()));
 
@@ -162,7 +157,7 @@ void WebContentsObserverProxy::DidFinishNavigation(
       ConvertUTF8ToJavaString(env, "");
 
   Java_WebContentsObserverProxy_didFinishNavigation(
-      env, obj, jstring_url, navigation_handle->IsInMainFrame(),
+      env, java_observer_, jstring_url, navigation_handle->IsInMainFrame(),
       navigation_handle->IsErrorPage(), navigation_handle->HasCommitted(),
       navigation_handle->IsSameDocument(), is_fragment_navigation,
       navigation_handle->HasCommitted() ? navigation_handle->GetPageTransition()
@@ -178,7 +173,6 @@ void WebContentsObserverProxy::DidFinishNavigation(
 void WebContentsObserverProxy::DidFinishLoad(RenderFrameHost* render_frame_host,
                                              const GURL& validated_url) {
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj(java_observer_);
 
   std::string url_string = validated_url.spec();
   SetToBaseURLForDataURLIfNeeded(&url_string);
@@ -186,70 +180,69 @@ void WebContentsObserverProxy::DidFinishLoad(RenderFrameHost* render_frame_host,
   ScopedJavaLocalRef<jstring> jstring_url(
       ConvertUTF8ToJavaString(env, url_string));
   Java_WebContentsObserverProxy_didFinishLoad(
-      env, obj, render_frame_host->GetRoutingID(), jstring_url,
+      env, java_observer_, render_frame_host->GetRoutingID(), jstring_url,
       !render_frame_host->GetParent());
 }
 
 void WebContentsObserverProxy::DocumentLoadedInFrame(
     RenderFrameHost* render_frame_host) {
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj(java_observer_);
   Java_WebContentsObserverProxy_documentLoadedInFrame(
-      env, obj, render_frame_host->GetRoutingID(),
+      env, java_observer_, render_frame_host->GetRoutingID(),
       !render_frame_host->GetParent());
 }
 
 void WebContentsObserverProxy::NavigationEntryCommitted(
     const LoadCommittedDetails& load_details) {
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj(java_observer_);
-  Java_WebContentsObserverProxy_navigationEntryCommitted(env, obj);
+  Java_WebContentsObserverProxy_navigationEntryCommitted(env, java_observer_);
 }
 
 void WebContentsObserverProxy::DidAttachInterstitialPage() {
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj(java_observer_);
-  Java_WebContentsObserverProxy_didAttachInterstitialPage(env, obj);
+  Java_WebContentsObserverProxy_didAttachInterstitialPage(env, java_observer_);
 }
 
 void WebContentsObserverProxy::DidDetachInterstitialPage() {
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj(java_observer_);
-  Java_WebContentsObserverProxy_didDetachInterstitialPage(env, obj);
+  Java_WebContentsObserverProxy_didDetachInterstitialPage(env, java_observer_);
 }
 
 void WebContentsObserverProxy::DidChangeThemeColor(SkColor color) {
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj(java_observer_);
-  Java_WebContentsObserverProxy_didChangeThemeColor(env, obj, color);
+  Java_WebContentsObserverProxy_didChangeThemeColor(env, java_observer_, color);
+}
+
+void WebContentsObserverProxy::MediaEffectivelyFullscreenChanged(
+    bool is_fullscreen) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_WebContentsObserverProxy_hasEffectivelyFullscreenVideoChange(
+      env, java_observer_, is_fullscreen);
 }
 
 void WebContentsObserverProxy::DidFirstVisuallyNonEmptyPaint() {
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj(java_observer_);
-  Java_WebContentsObserverProxy_didFirstVisuallyNonEmptyPaint(env, obj);
+  Java_WebContentsObserverProxy_didFirstVisuallyNonEmptyPaint(env,
+                                                              java_observer_);
 }
 
 void WebContentsObserverProxy::WasShown() {
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj(java_observer_);
-  Java_WebContentsObserverProxy_wasShown(env, obj);
+  Java_WebContentsObserverProxy_wasShown(env, java_observer_);
 }
 
 void WebContentsObserverProxy::WasHidden() {
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj(java_observer_);
-  Java_WebContentsObserverProxy_wasHidden(env, obj);
+  Java_WebContentsObserverProxy_wasHidden(env, java_observer_);
 }
 
 void WebContentsObserverProxy::TitleWasSet(NavigationEntry* entry,
                                            bool explicit_set) {
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj(java_observer_);
   ScopedJavaLocalRef<jstring> jstring_title = ConvertUTF8ToJavaString(
       env,
       base::UTF16ToUTF8(web_contents()->GetTitle()));
-  Java_WebContentsObserverProxy_titleWasSet(env, obj, jstring_title);
+  Java_WebContentsObserverProxy_titleWasSet(env, java_observer_, jstring_title);
 }
 
 void WebContentsObserverProxy::SetToBaseURLForDataURLIfNeeded(

@@ -848,6 +848,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // GetCurrentlyPlayingVideoCount if you need this when playback starts.
   void MediaResized(const gfx::Size& size,
                     const WebContentsObserver::MediaPlayerId& id);
+  void MediaEffectivelyFullscreenChanged(bool is_fullscreen);
 
   int GetCurrentlyPlayingVideoCount() override;
   base::Optional<gfx::Size> GetFullscreenVideoSize() override;

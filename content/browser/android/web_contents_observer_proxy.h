@@ -56,6 +56,7 @@ class WebContentsObserverProxy : public WebContentsObserver {
   void DidAttachInterstitialPage() override;
   void DidDetachInterstitialPage() override;
   void DidChangeThemeColor(SkColor color) override;
+  void MediaEffectivelyFullscreenChanged(bool is_fullscreen) override;
   void SetToBaseURLForDataURLIfNeeded(std::string* url);
 
   base::android::ScopedJavaGlobalRef<jobject> java_observer_;
