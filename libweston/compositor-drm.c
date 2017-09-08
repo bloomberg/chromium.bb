@@ -406,8 +406,6 @@ struct drm_head {
 	struct weston_head base;
 	struct drm_backend *backend;
 
-	struct drm_output *output; /* XXX: temporary */
-
 	drmModeConnector *connector;
 	uint32_t connector_id;
 	struct drm_edid edid;
@@ -813,19 +811,6 @@ drm_head_find_by_connector(struct drm_backend *backend, uint32_t connector_id)
 		if (head->connector_id == connector_id)
 			return head;
 	}
-
-	return NULL;
-}
-
-static struct drm_output *
-drm_output_find_by_connector(struct drm_backend *b, uint32_t connector_id)
-{
-	struct drm_head *head;
-
-	/* XXX: like the old version, this counts both enabled and disabled outputs */
-	head = drm_head_find_by_connector(b, connector_id);
-	if (head && head->output)
-		return head->output;
 
 	return NULL;
 }
@@ -4908,7 +4893,6 @@ drm_output_destroy(struct weston_output *base)
 {
 	struct drm_output *output = to_drm_output(base);
 	struct drm_backend *b = to_drm_backend(base->compositor);
-	struct weston_head *head = weston_output_get_first_head(base);
 
 	if (output->page_flip_pending || output->vblank_pending ||
 	    output->atomic_complete_pending) {
@@ -4931,10 +4915,6 @@ drm_output_destroy(struct weston_output *base)
 	drm_output_state_free(output->state_cur);
 
 	free(output);
-
-	/* XXX: temporary */
-	if (head)
-		drm_head_destroy(to_drm_head(head));
 }
 
 static int
@@ -4956,19 +4936,6 @@ drm_output_disable(struct weston_output *base)
 	output->disable_pending = 0;
 
 	return 0;
-}
-
-static struct weston_output *
-drm_output_create(struct weston_compositor *compositor, const char *name)
-{
-	struct drm_head *head;
-
-	/* XXX: Temporary until we can have heads without an output */
-	wl_list_for_each(head, &compositor->head_list, base.compositor_link)
-		if (strcmp(name, head->base.name) == 0)
-			return &head->output->base;
-
-	return NULL;
 }
 
 /**
@@ -5072,6 +5039,31 @@ drm_head_assign_connector_info(struct drm_head *head,
 	return 0;
 }
 
+/** Update connector and monitor information
+ *
+ * @param head The head to update.
+ *
+ * Re-reads the DRM property lists for the connector and updates monitor
+ * information and connection status. This may schedule a heads changed call
+ * to the user.
+ */
+static void
+drm_head_update_info(struct drm_head *head)
+{
+	drmModeConnector *connector;
+
+	connector = drmModeGetConnector(head->backend->drm.fd,
+					head->connector_id);
+	if (!connector) {
+		weston_log("DRM: getting connector info for '%s' failed.\n",
+			   head->base.name);
+		return;
+	}
+
+	if (drm_head_assign_connector_info(head, connector) < 0)
+		drmModeFreeConnector(connector);
+}
+
 /**
  * Create a Weston head for a connector
  *
@@ -5162,36 +5154,27 @@ drm_head_destroy(struct drm_head *head)
 /**
  * Create a Weston output structure
  *
- * Given a DRM connector, create a matching drm_output structure and add it
- * to Weston's output list. It also takes ownership of the connector, which
- * is released when output is destroyed.
+ * Create an "empty" drm_output. This is the implementation of
+ * weston_backend::create_output.
  *
- * @param b Weston backend structure
- * @param resources DRM resources for this device
- * @param connector DRM connector to use for this new output
- * @param drm_device udev device pointer
- * @returns 0 on success, or -1 on failure
+ * Creating an output is usually followed by drm_output_attach_head()
+ * and drm_output_enable() to make use of it.
+ *
+ * @param compositor The compositor instance.
+ * @param name Name for the new output.
+ * @returns The output, or NULL on failure.
  */
-static int
-create_output_for_connector(struct drm_backend *b,
-			    drmModeRes *resources,
-			    drmModeConnector *connector,
-			    struct udev_device *drm_device)
+static struct weston_output *
+drm_output_create(struct weston_compositor *compositor, const char *name)
 {
+	struct drm_backend *b = to_drm_backend(compositor);
 	struct drm_output *output;
-	struct drm_head *head;
 
 	output = zalloc(sizeof *output);
 	if (output == NULL)
-		goto err_init;
+		return NULL;
 
-	/* XXX: temporary */
-	head = drm_head_create(b, connector->connector_id, drm_device);
-	if (!head)
-		abort();
-	head->output = output;
-
-	weston_output_init(&output->base, b->compositor, head->base.name);
+	weston_output_init(&output->base, compositor, name);
 
 	output->base.enable = drm_output_enable;
 	output->base.destroy = drm_output_destroy;
@@ -5205,20 +5188,13 @@ create_output_for_connector(struct drm_backend *b,
 
 	weston_compositor_add_pending_output(&output->base, b->compositor);
 
-	/* drm_head_create() made its own connector */
-	drmModeFreeConnector(connector);
-
-	return 0;
-
-err_init:
-	drmModeFreeConnector(connector);
-	return -1;
+	return &output->base;
 }
 
 static int
-create_outputs(struct drm_backend *b, struct udev_device *drm_device)
+drm_backend_create_heads(struct drm_backend *b, struct udev_device *drm_device)
 {
-	drmModeConnector *connector;
+	struct drm_head *head;
 	drmModeRes *resources;
 	int i;
 
@@ -5234,28 +5210,16 @@ create_outputs(struct drm_backend *b, struct udev_device *drm_device)
 	b->max_height = resources->max_height;
 
 	for (i = 0; i < resources->count_connectors; i++) {
-		int ret;
+		uint32_t connector_id = resources->connectors[i];
 
-		connector = drmModeGetConnector(b->drm.fd,
-						resources->connectors[i]);
-		if (connector == NULL)
-			continue;
-
-		if (connector->connection == DRM_MODE_CONNECTED) {
-			ret = create_output_for_connector(b, resources,
-							  connector, drm_device);
-			if (ret < 0)
-				weston_log("failed to create new connector\n");
-		} else {
-			drmModeFreeConnector(connector);
+		head = drm_head_create(b, connector_id, drm_device);
+		if (!head) {
+			weston_log("DRM: failed to create head for connector %d.\n",
+				   connector_id);
 		}
 	}
 
 	drm_backend_update_unused_outputs(b, resources);
-
-	if (wl_list_empty(&b->compositor->output_list) &&
-	    wl_list_empty(&b->compositor->pending_output_list))
-		weston_log("No currently active connector found.\n");
 
 	drmModeFreeResources(resources);
 
@@ -5263,13 +5227,11 @@ create_outputs(struct drm_backend *b, struct udev_device *drm_device)
 }
 
 static void
-update_outputs(struct drm_backend *b, struct udev_device *drm_device)
+drm_backend_update_heads(struct drm_backend *b, struct udev_device *drm_device)
 {
-	drmModeConnector *connector;
 	drmModeRes *resources;
 	struct weston_head *base, *next;
 	struct drm_head *head;
-	uint32_t *connected;
 	int i;
 
 	resources = drmModeGetResources(b->drm.fd);
@@ -5278,63 +5240,45 @@ update_outputs(struct drm_backend *b, struct udev_device *drm_device)
 		return;
 	}
 
-	connected = calloc(resources->count_connectors, sizeof(uint32_t));
-	if (!connected) {
-		drmModeFreeResources(resources);
-		return;
-	}
-
-	/* collect new connects */
+	/* collect new connectors that have appeared, e.g. MST */
 	for (i = 0; i < resources->count_connectors; i++) {
 		uint32_t connector_id = resources->connectors[i];
 
-		connector = drmModeGetConnector(b->drm.fd, connector_id);
-		if (connector == NULL)
-			continue;
-
-		if (connector->connection != DRM_MODE_CONNECTED) {
-			drmModeFreeConnector(connector);
-			continue;
+		head = drm_head_find_by_connector(b, connector_id);
+		if (head) {
+			drm_head_update_info(head);
+		} else {
+			head = drm_head_create(b, connector_id, drm_device);
+			if (!head)
+				weston_log("DRM: failed to create head for hot-added connector %d.\n",
+					   connector_id);
 		}
-
-		connected[i] = connector_id;
-
-		if (drm_output_find_by_connector(b, connector_id)) {
-			drmModeFreeConnector(connector);
-			continue;
-		}
-
-		create_output_for_connector(b, resources,
-					    connector, drm_device);
-		weston_log("connector %d connected\n", connector_id);
 	}
 
+	/* Remove connectors that have disappeared. */
 	wl_list_for_each_safe(base, next,
 			      &b->compositor->head_list, compositor_link) {
-		bool disconnected = true;
+		bool removed = true;
 
 		head = to_drm_head(base);
 
-		if (!head->output)
-			continue;
-
 		for (i = 0; i < resources->count_connectors; i++) {
-			if (connected[i] == head->connector_id) {
-				disconnected = false;
+			if (resources->connectors[i] == head->connector_id) {
+				removed = false;
 				break;
 			}
 		}
 
-		if (!disconnected)
+		if (!removed)
 			continue;
 
-		weston_log("connector %d disconnected\n", head->connector_id);
-		drm_output_destroy(&head->output->base);
+		weston_log("DRM: head '%s' (connector %d) disappeared.\n",
+			   head->base.name, head->connector_id);
+		drm_head_destroy(head);
 	}
 
 	drm_backend_update_unused_outputs(b, resources);
 
-	free(connected);
 	drmModeFreeResources(resources);
 }
 
@@ -5364,7 +5308,7 @@ udev_drm_event(int fd, uint32_t mask, void *data)
 	event = udev_monitor_receive_device(b->udev_monitor);
 
 	if (udev_event_is_hotplug(b, event))
-		update_outputs(b, event);
+		drm_backend_update_heads(b, event);
 
 	udev_device_unref(event);
 
@@ -5922,8 +5866,8 @@ drm_backend_create(struct weston_compositor *compositor,
 		goto err_sprite;
 	}
 
-	if (create_outputs(b, drm_device) < 0) {
-		weston_log("failed to create output for %s\n", b->drm.filename);
+	if (drm_backend_create_heads(b, drm_device) < 0) {
+		weston_log("Failed to create heads for %s\n", b->drm.filename);
 		goto err_udev_input;
 	}
 
