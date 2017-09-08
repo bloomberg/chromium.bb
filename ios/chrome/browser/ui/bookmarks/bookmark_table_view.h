@@ -85,6 +85,9 @@ class PrefRegistrySyncable;
 // Called when something outside the view causes the promo state to change.
 - (void)promoStateChangedAnimated:(BOOL)animated;
 
+// Called when adding a new folder
+- (void)addNewFolder;
+
 // Returns the currently selected edit nodes.
 - (const std::set<const bookmarks::BookmarkNode*>&)editNodes;
 
