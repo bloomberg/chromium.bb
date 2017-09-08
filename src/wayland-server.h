@@ -43,6 +43,16 @@
 extern "C" {
 #endif
 
+/*
+ * The user can set this macro to hide the wl_object, wl_resource and wl_buffer
+ * objects alongside the associated API.
+ *
+ * The structs were meant to be opaque, although we missed that in the early days.
+ *
+ * NOTE: the list of structs, functions, etc in this section MUST NEVER GROW.
+ * Otherwise we will break forward compatibility and applications that used to
+ * build fine will no longer be able to do so.
+ */
 #ifndef WL_HIDE_DEPRECATED
 
 struct wl_object {
