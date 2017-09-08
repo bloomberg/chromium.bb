@@ -99,28 +99,28 @@ static void installV8TestConstantsTemplate(
   ALLOW_UNUSED_LOCAL(prototypeTemplate);
 
   // Register IDL constants, attributes and operations.
-  const V8DOMConfiguration::ConstantConfiguration V8TestConstantsConstants[] = {
-      {"CONST_VALUE_ZERO", 0, 0, V8DOMConfiguration::kConstantTypeUnsignedShort},
-      {"CONST_VALUE_ONE", 1, 0, V8DOMConfiguration::kConstantTypeUnsignedShort},
-      {"CONST_VALUE_TWO", 2, 0, V8DOMConfiguration::kConstantTypeUnsignedShort},
-      {"CONST_VALUE_NEGATIVE", -1, 0, V8DOMConfiguration::kConstantTypeShort},
-      {"CONST_VALUE_32_BITS", 0xffffffff, 0, V8DOMConfiguration::kConstantTypeUnsignedShort},
-      {"CONST_VALUE_HEX", 0x01, 0, V8DOMConfiguration::kConstantTypeUnsignedShort},
-      {"CONST_VALUE_HEX2", 0X20, 0, V8DOMConfiguration::kConstantTypeUnsignedShort},
-      {"CONST_VALUE_HEX3", 0x1abc, 0, V8DOMConfiguration::kConstantTypeUnsignedShort},
-      {"CONST_VALUE_OCT", 010, 0, V8DOMConfiguration::kConstantTypeUnsignedShort},
-      {"CONST_VALUE_NEGATIVE_OCT", -010, 0, V8DOMConfiguration::kConstantTypeUnsignedShort},
-      {"CONST_VALUE_NEGATIVE_HEX", -0x1A, 0, V8DOMConfiguration::kConstantTypeUnsignedShort},
-      {"CONST_VALUE_NEGATIVE_HEX2", -0X1a, 0, V8DOMConfiguration::kConstantTypeUnsignedShort},
-      {"CONST_VALUE_DECIMAL", 0, 0.123, V8DOMConfiguration::kConstantTypeDouble},
-      {"CONST_VALUE_DECIMAL2", 0, 4e9, V8DOMConfiguration::kConstantTypeDouble},
-      {"CONST_VALUE_DECIMAL3", 0, 3.4e5, V8DOMConfiguration::kConstantTypeDouble},
-      {"CONST_VALUE_DECIMAL4", 0, .123, V8DOMConfiguration::kConstantTypeDouble},
-      {"CONST_VALUE_DECIMAL5", 0, 5E+4, V8DOMConfiguration::kConstantTypeDouble},
-      {"CONST_VALUE_NEGATIVE_DECIMAL", 0, -1.3, V8DOMConfiguration::kConstantTypeDouble},
-      {"CONST_VALUE_NEGATIVE_DECIMAL2", 0, -4e-9, V8DOMConfiguration::kConstantTypeDouble},
-      {"CONST_VALUE_FLOAT", 0, 1, V8DOMConfiguration::kConstantTypeFloat},
-      {"CONST_JAVASCRIPT", 1, 0, V8DOMConfiguration::kConstantTypeShort},
+  static constexpr V8DOMConfiguration::ConstantConfiguration V8TestConstantsConstants[] = {
+      {"CONST_VALUE_ZERO", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(0)},
+      {"CONST_VALUE_ONE", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(1)},
+      {"CONST_VALUE_TWO", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(2)},
+      {"CONST_VALUE_NEGATIVE", V8DOMConfiguration::kConstantTypeShort, static_cast<int>(-1)},
+      {"CONST_VALUE_32_BITS", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(0xffffffff)},
+      {"CONST_VALUE_HEX", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(0x01)},
+      {"CONST_VALUE_HEX2", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(0X20)},
+      {"CONST_VALUE_HEX3", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(0x1abc)},
+      {"CONST_VALUE_OCT", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(010)},
+      {"CONST_VALUE_NEGATIVE_OCT", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(-010)},
+      {"CONST_VALUE_NEGATIVE_HEX", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(-0x1A)},
+      {"CONST_VALUE_NEGATIVE_HEX2", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(-0X1a)},
+      {"CONST_VALUE_DECIMAL", V8DOMConfiguration::kConstantTypeDouble, static_cast<double>(0.123)},
+      {"CONST_VALUE_DECIMAL2", V8DOMConfiguration::kConstantTypeDouble, static_cast<double>(4e9)},
+      {"CONST_VALUE_DECIMAL3", V8DOMConfiguration::kConstantTypeDouble, static_cast<double>(3.4e5)},
+      {"CONST_VALUE_DECIMAL4", V8DOMConfiguration::kConstantTypeDouble, static_cast<double>(.123)},
+      {"CONST_VALUE_DECIMAL5", V8DOMConfiguration::kConstantTypeDouble, static_cast<double>(5E+4)},
+      {"CONST_VALUE_NEGATIVE_DECIMAL", V8DOMConfiguration::kConstantTypeDouble, static_cast<double>(-1.3)},
+      {"CONST_VALUE_NEGATIVE_DECIMAL2", V8DOMConfiguration::kConstantTypeDouble, static_cast<double>(-4e-9)},
+      {"CONST_VALUE_FLOAT", V8DOMConfiguration::kConstantTypeFloat, static_cast<double>(1)},
+      {"CONST_JAVASCRIPT", V8DOMConfiguration::kConstantTypeShort, static_cast<int>(1)},
   };
   V8DOMConfiguration::InstallConstants(
       isolate, interfaceTemplate, prototypeTemplate,
@@ -175,8 +175,8 @@ void V8TestConstants::InstallRuntimeEnabledFeaturesOnTemplate(
   // Register IDL constants, attributes and operations.
   if (RuntimeEnabledFeatures::FeatureName1Enabled()) {
     static const V8DOMConfiguration::ConstantConfiguration constant_configurations[] = {
-        {"FEATURE1_ENABLED_CONST1", 1, 0, V8DOMConfiguration::kConstantTypeShort},
-        {"FEATURE1_ENABLED_CONST2", 2, 0, V8DOMConfiguration::kConstantTypeShort},
+        {"FEATURE1_ENABLED_CONST1", V8DOMConfiguration::kConstantTypeShort, static_cast<int>(1)},
+        {"FEATURE1_ENABLED_CONST2", V8DOMConfiguration::kConstantTypeShort, static_cast<int>(2)},
     };
     V8DOMConfiguration::InstallConstants(
         isolate, interface_template, prototype_template,
@@ -184,8 +184,8 @@ void V8TestConstants::InstallRuntimeEnabledFeaturesOnTemplate(
   }
   if (RuntimeEnabledFeatures::FeatureName2Enabled()) {
     static const V8DOMConfiguration::ConstantConfiguration constant_configurations[] = {
-        {"FEATURE2_ENABLED_CONST1", 3, 0, V8DOMConfiguration::kConstantTypeShort},
-        {"FEATURE2_ENABLED_CONST2", 4, 0, V8DOMConfiguration::kConstantTypeShort},
+        {"FEATURE2_ENABLED_CONST1", V8DOMConfiguration::kConstantTypeShort, static_cast<int>(3)},
+        {"FEATURE2_ENABLED_CONST2", V8DOMConfiguration::kConstantTypeShort, static_cast<int>(4)},
     };
     V8DOMConfiguration::InstallConstants(
         isolate, interface_template, prototype_template,
@@ -196,9 +196,9 @@ void V8TestConstants::InstallRuntimeEnabledFeaturesOnTemplate(
 }
 
 void V8TestConstants::installFeatureName1(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface) {
-  const V8DOMConfiguration::ConstantConfiguration constantFeature1OriginTrialEnabledConst1Configuration = {"FEATURE1_ORIGIN_TRIAL_ENABLED_CONST1", 6, 0, V8DOMConfiguration::kConstantTypeShort};
+  const V8DOMConfiguration::ConstantConfiguration constantFeature1OriginTrialEnabledConst1Configuration = {"FEATURE1_ORIGIN_TRIAL_ENABLED_CONST1", V8DOMConfiguration::kConstantTypeShort, static_cast<int>(6)};
   V8DOMConfiguration::InstallConstant(isolate, interface, prototype, constantFeature1OriginTrialEnabledConst1Configuration);
-  const V8DOMConfiguration::ConstantConfiguration constantFeature1OriginTrialEnabledConst2Configuration = {"FEATURE1_ORIGIN_TRIAL_ENABLED_CONST2", 7, 0, V8DOMConfiguration::kConstantTypeShort};
+  const V8DOMConfiguration::ConstantConfiguration constantFeature1OriginTrialEnabledConst2Configuration = {"FEATURE1_ORIGIN_TRIAL_ENABLED_CONST2", V8DOMConfiguration::kConstantTypeShort, static_cast<int>(7)};
   V8DOMConfiguration::InstallConstant(isolate, interface, prototype, constantFeature1OriginTrialEnabledConst2Configuration);
 }
 
@@ -215,9 +215,9 @@ void V8TestConstants::installFeatureName1(ScriptState* scriptState) {
 }
 
 void V8TestConstants::installFeatureName2(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface) {
-  const V8DOMConfiguration::ConstantConfiguration constantFeature2OriginTrialEnabledConst1Configuration = {"FEATURE2_ORIGIN_TRIAL_ENABLED_CONST1", 8, 0, V8DOMConfiguration::kConstantTypeShort};
+  const V8DOMConfiguration::ConstantConfiguration constantFeature2OriginTrialEnabledConst1Configuration = {"FEATURE2_ORIGIN_TRIAL_ENABLED_CONST1", V8DOMConfiguration::kConstantTypeShort, static_cast<int>(8)};
   V8DOMConfiguration::InstallConstant(isolate, interface, prototype, constantFeature2OriginTrialEnabledConst1Configuration);
-  const V8DOMConfiguration::ConstantConfiguration constantFeature2OriginTrialEnabledConst2Configuration = {"FEATURE2_ORIGIN_TRIAL_ENABLED_CONST2", 9, 0, V8DOMConfiguration::kConstantTypeShort};
+  const V8DOMConfiguration::ConstantConfiguration constantFeature2OriginTrialEnabledConst2Configuration = {"FEATURE2_ORIGIN_TRIAL_ENABLED_CONST2", V8DOMConfiguration::kConstantTypeShort, static_cast<int>(9)};
   V8DOMConfiguration::InstallConstant(isolate, interface, prototype, constantFeature2OriginTrialEnabledConst2Configuration);
 }
 

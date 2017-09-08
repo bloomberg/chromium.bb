@@ -792,7 +792,7 @@ void V8TestInterface2::InstallRuntimeEnabledFeaturesOnTemplate(
   // Register IDL constants, attributes and operations.
   if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
     static const V8DOMConfiguration::ConstantConfiguration constant_configurations[] = {
-        {"CONST_VALUE_1", 1, 0, V8DOMConfiguration::kConstantTypeUnsignedShort},
+        {"CONST_VALUE_1", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(1)},
     };
     V8DOMConfiguration::InstallConstants(
         isolate, interface_template, prototype_template,

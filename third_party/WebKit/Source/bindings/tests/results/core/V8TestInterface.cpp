@@ -3440,12 +3440,12 @@ void V8TestInterface::installV8TestInterfaceTemplate(
   ALLOW_UNUSED_LOCAL(prototypeTemplate);
 
   // Register IDL constants, attributes and operations.
-  const V8DOMConfiguration::ConstantConfiguration V8TestInterfaceConstants[] = {
-      {"UNSIGNED_LONG", 0, 0, V8DOMConfiguration::kConstantTypeUnsignedLong},
-      {"CONST_JAVASCRIPT", 1, 0, V8DOMConfiguration::kConstantTypeShort},
-      {"IMPLEMENTS_CONSTANT_1", 1, 0, V8DOMConfiguration::kConstantTypeUnsignedShort},
-      {"IMPLEMENTS_CONSTANT_2", 2, 0, V8DOMConfiguration::kConstantTypeUnsignedShort},
-      {"PARTIAL2_UNSIGNED_SHORT", 0, 0, V8DOMConfiguration::kConstantTypeUnsignedShort},
+  static constexpr V8DOMConfiguration::ConstantConfiguration V8TestInterfaceConstants[] = {
+      {"UNSIGNED_LONG", V8DOMConfiguration::kConstantTypeUnsignedLong, static_cast<int>(0)},
+      {"CONST_JAVASCRIPT", V8DOMConfiguration::kConstantTypeShort, static_cast<int>(1)},
+      {"IMPLEMENTS_CONSTANT_1", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(1)},
+      {"IMPLEMENTS_CONSTANT_2", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(2)},
+      {"PARTIAL2_UNSIGNED_SHORT", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(0)},
   };
   V8DOMConfiguration::InstallConstants(
       isolate, interfaceTemplate, prototypeTemplate,
@@ -3508,8 +3508,8 @@ void V8TestInterface::InstallRuntimeEnabledFeaturesOnTemplate(
   // Register IDL constants, attributes and operations.
   if (RuntimeEnabledFeatures::PartialFeatureNameEnabled()) {
     static const V8DOMConfiguration::ConstantConfiguration constant_configurations[] = {
-        {"PARTIAL_UNSIGNED_SHORT", 0, 0, V8DOMConfiguration::kConstantTypeUnsignedShort},
-        {"PARTIAL_DOUBLE", 0, 3.14, V8DOMConfiguration::kConstantTypeDouble},
+        {"PARTIAL_UNSIGNED_SHORT", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(0)},
+        {"PARTIAL_DOUBLE", V8DOMConfiguration::kConstantTypeDouble, static_cast<double>(3.14)},
     };
     V8DOMConfiguration::InstallConstants(
         isolate, interface_template, prototype_template,
