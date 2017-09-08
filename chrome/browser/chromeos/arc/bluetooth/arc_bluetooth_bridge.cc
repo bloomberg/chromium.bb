@@ -905,7 +905,8 @@ void ArcBluetoothBridge::OnSetAdapterProperty(
     mojom::BluetoothPropertyPtr property) {
   auto* bluetooth_instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service_->bluetooth(), OnAdapterProperties);
-  DCHECK(bluetooth_instance);
+  if (!bluetooth_instance)
+    return;
 
   std::vector<arc::mojom::BluetoothPropertyPtr> properties;
   properties.push_back(std::move(property));
