@@ -656,8 +656,10 @@ bool Label::CanHandleAccelerators() const {
          View::CanHandleAccelerators();
 }
 
-void Label::OnDeviceScaleFactorChanged(float device_scale_factor) {
-  View::OnDeviceScaleFactorChanged(device_scale_factor);
+void Label::OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                       float new_device_scale_factor) {
+  View::OnDeviceScaleFactorChanged(old_device_scale_factor,
+                                   new_device_scale_factor);
   // When the device scale factor is changed, some font rendering parameters is
   // changed (especially, hinting). The bounding box of the text has to be
   // re-computed based on the new parameters. See crbug.com/441439

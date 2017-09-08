@@ -257,10 +257,12 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void OnTransientRestackDone(WindowMus* window) override;
   void NotifyEmbeddedAppDisconnected() override;
   bool HasLocalLayerTreeFrameSink() override;
+  float GetDeviceScaleFactor() override;
 
   // WindowPort:
   void OnPreInit(Window* window) override;
-  void OnDeviceScaleFactorChanged(float device_scale_factor) override;
+  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                  float new_device_scale_factor) override;
   void OnWillAddChild(Window* child) override;
   void OnWillRemoveChild(Window* child) override;
   void OnWillMoveChild(size_t current_index, size_t dest_index) override;
@@ -303,7 +305,6 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
 
   viz::LocalSurfaceId local_surface_id_;
   viz::LocalSurfaceIdAllocator local_surface_id_allocator_;
-  float last_device_scale_factor_ = 1.0f;
   gfx::Size last_surface_size_in_pixels_;
 
   ui::CursorData cursor_;

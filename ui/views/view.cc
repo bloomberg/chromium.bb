@@ -1710,9 +1710,10 @@ void View::OnDelegatedFrameDamage(
     const gfx::Rect& damage_rect_in_dip) {
 }
 
-void View::OnDeviceScaleFactorChanged(float device_scale_factor) {
+void View::OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                      float new_device_scale_factor) {
   snap_layer_to_pixel_boundary_ =
-      (device_scale_factor - std::floor(device_scale_factor)) != 0.0f;
+      (new_device_scale_factor - std::floor(new_device_scale_factor)) != 0.0f;
 
   if (!layer())
     return;
@@ -2690,17 +2691,21 @@ void View::PropagateThemeChanged() {
   OnThemeChanged();
 }
 
-void View::PropagateDeviceScaleFactorChanged(float device_scale_factor) {
+void View::PropagateDeviceScaleFactorChanged(float old_device_scale_factor,
+                                             float new_device_scale_factor) {
   {
     internal::ScopedChildrenLock lock(this);
-    for (auto* child : base::Reversed(children_))
-      child->PropagateDeviceScaleFactorChanged(device_scale_factor);
+    for (auto* child : base::Reversed(children_)) {
+      child->PropagateDeviceScaleFactorChanged(old_device_scale_factor,
+                                               new_device_scale_factor);
+    }
   }
 
   // If the view is drawing to the layer, OnDeviceScaleFactorChanged() is called
   // through LayerDelegate callback.
   if (!layer())
-    OnDeviceScaleFactorChanged(device_scale_factor);
+    OnDeviceScaleFactorChanged(old_device_scale_factor,
+                               new_device_scale_factor);
 }
 
 // Tooltips --------------------------------------------------------------------

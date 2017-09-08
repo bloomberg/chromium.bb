@@ -2880,7 +2880,7 @@ TEST_P(WindowTest, LocalSurfaceIdChanges) {
   EXPECT_TRUE(local_surface_id2.is_valid());
   EXPECT_NE(local_surface_id1, local_surface_id2);
 
-  window.OnDeviceScaleFactorChanged(3.0f);
+  window.OnDeviceScaleFactorChanged(1.0f, 3.0f);
   viz::LocalSurfaceId local_surface_id3 = window.GetLocalSurfaceId();
   EXPECT_TRUE(local_surface_id3.is_valid());
   EXPECT_NE(local_surface_id1, local_surface_id3);

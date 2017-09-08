@@ -30,7 +30,8 @@ class AURA_EXPORT WindowPortLocal : public WindowPort {
 
   // WindowPort:
   void OnPreInit(Window* window) override;
-  void OnDeviceScaleFactorChanged(float device_scale_factor) override;
+  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                  float new_device_scale_factor) override;
   void OnWillAddChild(Window* child) override;
   void OnWillRemoveChild(Window* child) override;
   void OnWillMoveChild(size_t current_index, size_t dest_index) override;

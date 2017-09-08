@@ -63,7 +63,8 @@ class CursorWindowDelegate : public aura::WindowDelegate {
     ui::PaintRecorder recorder(context, size_);
     recorder.canvas()->DrawImageInt(cursor_image_, 0, 0);
   }
-  void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
+  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                  float new_device_scale_factor) override {}
   void OnWindowDestroying(aura::Window* window) override {}
   void OnWindowDestroyed(aura::Window* window) override {}
   void OnWindowTargetVisibilityChanged(bool visible) override {}

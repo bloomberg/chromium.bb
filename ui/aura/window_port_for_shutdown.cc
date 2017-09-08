@@ -23,7 +23,8 @@ void WindowPortForShutdown::Install(aura::Window* window) {
 void WindowPortForShutdown::OnPreInit(Window* window) {}
 
 void WindowPortForShutdown::OnDeviceScaleFactorChanged(
-    float device_scale_factor) {}
+    float old_device_scale_factor,
+    float new_device_scale_factor) {}
 
 void WindowPortForShutdown::OnWillAddChild(Window* child) {}
 

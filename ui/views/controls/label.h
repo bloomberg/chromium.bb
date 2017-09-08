@@ -241,7 +241,8 @@ class VIEWS_EXPORT Label : public View,
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void VisibilityChanged(View* starting_from, bool is_visible) override;
   void OnPaint(gfx::Canvas* canvas) override;
-  void OnDeviceScaleFactorChanged(float device_scale_factor) override;
+  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                  float new_device_scale_factor) override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
   gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
   void OnFocus() override;

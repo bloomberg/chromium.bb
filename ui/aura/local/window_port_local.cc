@@ -65,18 +65,22 @@ WindowPortLocal::~WindowPortLocal() {}
 
 void WindowPortLocal::OnPreInit(Window* window) {}
 
-void WindowPortLocal::OnDeviceScaleFactorChanged(float device_scale_factor) {
-  if (last_device_scale_factor_ != device_scale_factor &&
+void WindowPortLocal::OnDeviceScaleFactorChanged(
+    float old_device_scale_factor,
+    float new_device_scale_factor) {
+  if (last_device_scale_factor_ != new_device_scale_factor &&
       local_surface_id_.is_valid()) {
-    last_device_scale_factor_ = device_scale_factor;
+    last_device_scale_factor_ = new_device_scale_factor;
     local_surface_id_ = local_surface_id_allocator_.GenerateId();
     if (frame_sink_)
       frame_sink_->SetLocalSurfaceId(local_surface_id_);
   }
 
   ScopedCursorHider hider(window_);
-  if (window_->delegate())
-    window_->delegate()->OnDeviceScaleFactorChanged(device_scale_factor);
+  if (window_->delegate()) {
+    window_->delegate()->OnDeviceScaleFactorChanged(old_device_scale_factor,
+                                                    new_device_scale_factor);
+  }
 }
 
 void WindowPortLocal::OnWillAddChild(Window* child) {}

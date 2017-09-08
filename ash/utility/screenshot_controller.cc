@@ -134,7 +134,8 @@ class ScreenshotController::ScreenshotLayer : public ui::LayerOwner,
 
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
 
-  void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
+  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                  float new_device_scale_factor) override {}
 
   // Mouse cursor may move sub DIP, so paint pseudo cursor instead of
   // using platform cursor so that it's aliend with the region.

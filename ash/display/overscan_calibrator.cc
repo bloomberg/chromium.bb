@@ -145,7 +145,9 @@ void OverscanCalibrator::OnPaintLayer(const ui::PaintContext& context) {
 void OverscanCalibrator::OnDelegatedFrameDamage(
     const gfx::Rect& damage_rect_in_dip) {}
 
-void OverscanCalibrator::OnDeviceScaleFactorChanged(float device_scale_factor) {
+void OverscanCalibrator::OnDeviceScaleFactorChanged(
+    float old_device_scale_factor,
+    float new_device_scale_factor) {
   // TODO(mukai): Cancel the overscan calibration when the device
   // configuration has changed.
 }

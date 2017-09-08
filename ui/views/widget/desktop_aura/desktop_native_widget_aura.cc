@@ -1001,8 +1001,8 @@ void DesktopNativeWidgetAura::OnPaint(const ui::PaintContext& context) {
 }
 
 void DesktopNativeWidgetAura::OnDeviceScaleFactorChanged(
-    float device_scale_factor) {
-}
+    float old_device_scale_factor,
+    float new_device_scale_factor) {}
 
 void DesktopNativeWidgetAura::OnWindowDestroying(aura::Window* window) {
   // Cleanup happens in OnHostClosed().

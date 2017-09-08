@@ -198,7 +198,8 @@ class PaintedLayer : public ui::LayerOwner, public ui::LayerDelegate {
   // LayerDelegate:
   void OnPaintLayer(const ui::PaintContext& context) override;
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override;
-  void OnDeviceScaleFactorChanged(float device_scale_factor) override;
+  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                  float new_device_scale_factor) override;
 
  private:
   std::unique_ptr<Painter> painter_;
@@ -222,7 +223,8 @@ void PaintedLayer::OnPaintLayer(const ui::PaintContext& context) {
 void PaintedLayer::OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) {
 }
 
-void PaintedLayer::OnDeviceScaleFactorChanged(float device_scale_factor) {}
+void PaintedLayer::OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                              float new_device_scale_factor) {}
 
 }  // namespace
 

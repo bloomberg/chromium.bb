@@ -99,6 +99,10 @@ class TestWindowTree : public ui::mojom::WindowTree {
     return last_local_surface_id_;
   }
 
+  const gfx::Rect& last_set_window_bounds() const {
+    return last_set_window_bounds_;
+  }
+
  private:
   struct Change {
     WindowTreeChangeType type;
@@ -240,6 +244,8 @@ class TestWindowTree : public ui::mojom::WindowTree {
   base::Optional<gfx::Rect> last_hit_test_mask_;
 
   base::Optional<viz::LocalSurfaceId> last_local_surface_id_;
+
+  gfx::Rect last_set_window_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowTree);
 };

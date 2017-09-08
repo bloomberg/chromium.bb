@@ -138,7 +138,8 @@ class Arrow : public ui::LayerDelegate {
   // ui::LayerDelegate:
   void OnPaintLayer(const ui::PaintContext& context) override;
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override;
-  void OnDeviceScaleFactorChanged(float device_scale_factor) override;
+  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                  float new_device_scale_factor) override;
 
   const OverscrollMode mode_;
   ui::Layer layer_;
@@ -185,7 +186,8 @@ void Arrow::OnPaintLayer(const ui::PaintContext& context) {
 
 void Arrow::OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) {}
 
-void Arrow::OnDeviceScaleFactorChanged(float device_scale_factor) {}
+void Arrow::OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                       float new_device_scale_factor) {}
 
 }  // namespace
 
@@ -240,7 +242,8 @@ class Affordance : public ui::LayerDelegate, public gfx::AnimationDelegate {
   // ui::LayerDelegate:
   void OnPaintLayer(const ui::PaintContext& context) override;
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override;
-  void OnDeviceScaleFactorChanged(float device_scale_factor) override;
+  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                  float new_device_scale_factor) override;
 
   // gfx::AnimationDelegate:
   void AnimationEnded(const gfx::Animation* animation) override;
@@ -504,7 +507,8 @@ void Affordance::OnPaintLayer(const ui::PaintContext& context) {
 
 void Affordance::OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) {}
 
-void Affordance::OnDeviceScaleFactorChanged(float device_scale_factor) {}
+void Affordance::OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                            float new_device_scale_factor) {}
 
 void Affordance::AnimationEnded(const gfx::Animation* animation) {
   owner_->OnAffordanceAnimationEnded();

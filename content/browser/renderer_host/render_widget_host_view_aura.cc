@@ -1526,19 +1526,20 @@ void RenderWidgetHostViewAura::OnPaint(const ui::PaintContext& context) {
 }
 
 void RenderWidgetHostViewAura::OnDeviceScaleFactorChanged(
-    float device_scale_factor) {
+    float old_device_scale_factor,
+    float new_device_scale_factor) {
   if (!window_->GetRootWindow())
     return;
 
   RenderWidgetHostImpl* host =
       RenderWidgetHostImpl::From(GetRenderWidgetHost());
   if (host && host->delegate())
-    host->delegate()->UpdateDeviceScaleFactor(device_scale_factor);
+    host->delegate()->UpdateDeviceScaleFactor(new_device_scale_factor);
 
-  device_scale_factor_ = device_scale_factor;
+  device_scale_factor_ = new_device_scale_factor;
   const display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window_);
-  DCHECK_EQ(device_scale_factor, display.device_scale_factor());
+  DCHECK_EQ(new_device_scale_factor, display.device_scale_factor());
   current_cursor_.SetDisplayInfo(display);
   SnapToPhysicalPixelBoundary();
 }

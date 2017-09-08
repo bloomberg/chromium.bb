@@ -121,7 +121,8 @@ void FocusRingLayer::OnDelegatedFrameDamage(
     const gfx::Rect& damage_rect_in_dip) {
 }
 
-void FocusRingLayer::OnDeviceScaleFactorChanged(float device_scale_factor) {
+void FocusRingLayer::OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                                float new_device_scale_factor) {
   if (delegate_)
     delegate_->OnDeviceScaleFactorChanged();
 }
