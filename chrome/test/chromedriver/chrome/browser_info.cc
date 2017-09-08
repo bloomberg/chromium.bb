@@ -47,6 +47,8 @@ BrowserInfo::BrowserInfo(std::string android_package,
       is_android(is_android) {
 }
 
+BrowserInfo::~BrowserInfo() {}
+
 Status ParseBrowserInfo(const std::string& data, BrowserInfo* browser_info) {
   std::unique_ptr<base::Value> value = base::JSONReader::Read(data);
   if (!value.get())
@@ -70,6 +72,10 @@ Status ParseBrowserInfo(const std::string& data, BrowserInfo* browser_info) {
       ParseBrowserString(has_android_package, browser_string, browser_info);
   if (status.IsError())
     return status;
+
+  // "webSocketDebuggerUrl" is only returned on Chrome 62.0.3178 and above,
+  // thus it's not an error if it's missing.
+  dict->GetString("webSocketDebuggerUrl", &browser_info->web_socket_url);
 
   std::string blink_version;
   if (!dict->GetString("WebKit-Version", &blink_version))

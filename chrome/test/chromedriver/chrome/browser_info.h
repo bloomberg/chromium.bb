@@ -24,10 +24,12 @@ struct BrowserInfo {
               int build_no_,
               int blink_revision_,
               bool is_android_);
+  ~BrowserInfo();
 
   std::string android_package;
   std::string browser_name;
   std::string browser_version;
+  std::string web_socket_url;
   int major_version;
   int build_no;
   int blink_revision;

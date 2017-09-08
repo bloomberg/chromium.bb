@@ -77,13 +77,6 @@ _VERSION_SPECIFIC_FILTER = {}
 _VERSION_SPECIFIC_FILTER['HEAD'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1819
     'ChromeExtensionsCapabilityTest.testIFrameWithExtensionsSource',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1918
-    'ChromeDriverTest.testWindowFullScreen',
-    'ChromeDriverTest.testWindowMaximize',
-    'ChromeDriverTest.testWindowPosition',
-    'ChromeDriverTest.testWindowSize',
-    'ChromeLoggingCapabilityTest.testPerformanceLogger',
-    'MobileEmulationCapabilityTest.testDeviceMetricsWithStandardWidth',
 ]
 _VERSION_SPECIFIC_FILTER['61'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1819
