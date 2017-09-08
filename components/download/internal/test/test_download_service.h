@@ -43,7 +43,7 @@ class TestDownloadService : public DownloadService {
   void SetFailedDownload(const std::string& failed_download_id,
                          bool fail_at_start);
 
-  void set_is_ready(bool is_ready) { is_ready_ = is_ready; }
+  void SetIsReady(bool is_ready);
 
   void set_client(Client* client) { client_ = client; }
 

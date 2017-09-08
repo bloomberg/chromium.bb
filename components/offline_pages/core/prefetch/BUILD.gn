@@ -171,6 +171,7 @@ source_set("unit_tests") {
     "metrics_finalization_task_unittest.cc",
     "page_bundle_update_task_unittest.cc",
     "prefetch_dispatcher_impl_unittest.cc",
+    "prefetch_download_flow_unittest.cc",
     "prefetch_downloader_impl_unittest.cc",
     "prefetch_gcm_app_handler_unittest.cc",
     "prefetch_item_unittest.cc",
@@ -183,6 +184,8 @@ source_set("unit_tests") {
     "store/prefetch_downloader_quota_unittest.cc",
     "store/prefetch_store_unittest.cc",
     "suggested_articles_observer_unittest.cc",
+    "test_download_client.cc",
+    "test_download_client.h",
   ]
 
   deps = [

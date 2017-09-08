@@ -61,21 +61,19 @@ DownloadService::ServiceStatus TestDownloadService::GetStatus() {
 }
 
 void TestDownloadService::StartDownload(const DownloadParams& params) {
-  if (!is_ready_) {
-    params.callback.Run(params.guid,
-                        DownloadParams::StartResult::INTERNAL_ERROR);
-    return;
-  }
-
   if (!failed_download_id_.empty() && fail_at_start_) {
     params.callback.Run(params.guid,
                         DownloadParams::StartResult::UNEXPECTED_GUID);
     return;
   }
 
+  // The download will be accepted and queued even if the service is not ready.
   params.callback.Run(params.guid, DownloadParams::StartResult::ACCEPTED);
-
   downloads_.push_back(params);
+
+  if (!is_ready_)
+    return;
+
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&TestDownloadService::ProcessDownload,
                             base::Unretained(this)));
@@ -112,6 +110,12 @@ void TestDownloadService::SetFailedDownload(
     bool fail_at_start) {
   failed_download_id_ = failed_download_id;
   fail_at_start_ = fail_at_start;
+}
+
+void TestDownloadService::SetIsReady(bool is_ready) {
+  is_ready_ = is_ready;
+  if (is_ready_)
+    ProcessDownload();
 }
 
 void TestDownloadService::ProcessDownload() {
