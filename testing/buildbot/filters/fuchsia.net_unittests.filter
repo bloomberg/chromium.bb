@@ -1,14 +1,10 @@
 # TODO(fuchsia): Fix these tests and remove the filter. https://crbug.com/731302 .
--*QuicEndToEndTest.Large*
--*QuicEndToEndTest.TokenBinding*
--*QuicEndToEndTest.Uber*
 -CertVerifyProcInternalTest.*
 -CloseOnConnectHttpServerTest.ServerImmediatelyClosesConnection
 -NetworkInterfacesTest.GetNetworkList
 -ProxyScriptFetcherImplTest.Priority
 -PythonUtils*
 -SQLite*
--TokenBindingURLRequest*
 -UnixDomain*Socket*
 -URLRequest*FTP*
 -URLRequestQuic*
