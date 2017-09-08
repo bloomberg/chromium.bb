@@ -36,7 +36,6 @@ if (window.internals && internals.dictionaryTest) {
     shouldBeUndefined('dict.doubleOrStringMember');
     shouldBeUndefined('dict.doubleOrStringSequenceMember');
     shouldBeNull('dict.eventTargetOrNullMember');
-    shouldBeUndefined('dict.prefixGetMember');
     debug('');
 
     debug('Test for setting undefined');
@@ -91,7 +90,6 @@ if (window.internals && internals.dictionaryTest) {
         doubleOrStringMember: 3.14,
         doubleOrStringSequenceMember: [3.14, 'Hello'],
         eventTargetOrNullMember: element1,
-        prefixGetMember: testObject1,
     });
     dict = dictionaryTest.get();
     shouldBe('dict.longMember', '1');
@@ -119,7 +117,6 @@ if (window.internals && internals.dictionaryTest) {
     shouldBe('dict.doubleOrStringMember', '3.14');
     shouldBe('dict.doubleOrStringSequenceMember', '[3.14, "Hello"]');
     shouldBe('dict.eventTargetOrNullMember', 'element1');
-    shouldBe('dict.prefixGetMember', 'testObject1');
     debug('');
 
     debug('Additional test for union type members');

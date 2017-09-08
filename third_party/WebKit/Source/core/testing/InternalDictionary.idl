@@ -34,5 +34,4 @@ dictionary InternalDictionary {
     sequence<(double or DOMString)> doubleOrStringSequenceMember;
     EventTarget? eventTargetOrNullMember = null;
     Dictionary dictionaryMember;
-    [PrefixGet] object prefixGetMember;
 };

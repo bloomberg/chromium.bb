@@ -73,7 +73,6 @@ void DictionaryTest::set(const InternalDictionary& testing_dictionary) {
         testing_dictionary.dictionaryMember().GetOwnPropertiesAsStringHashMap(
             exception_state);
   }
-  prefix_get_member_ = testing_dictionary.getPrefixGetMember();
 }
 
 void DictionaryTest::get(InternalDictionary& result) {
@@ -120,7 +119,6 @@ void DictionaryTest::get(InternalDictionary& result) {
     result.setDoubleOrStringSequenceMember(
         double_or_string_sequence_member_.Get());
   result.setEventTargetOrNullMember(event_target_or_null_member_);
-  result.setPrefixGetMember(prefix_get_member_);
 }
 
 ScriptValue DictionaryTest::getDictionaryMemberProperties(
@@ -221,7 +219,6 @@ void DictionaryTest::Reset() {
   derived_string_member_with_default_ = String();
   required_boolean_member_ = false;
   dictionary_member_properties_ = nullptr;
-  prefix_get_member_ = ScriptValue();
 }
 
 DEFINE_TRACE(DictionaryTest) {

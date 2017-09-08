@@ -115,9 +115,6 @@ void TestDictionary::setObjectOrNullMemberToNull() {
 void TestDictionary::setOtherDoubleOrStringMember(const DoubleOrString& value) {
   other_double_or_string_member_ = value;
 }
-void TestDictionary::setPrefixGetMember(ScriptValue value) {
-  prefix_get_member_ = value;
-}
 void TestDictionary::setRecordMember(const Vector<std::pair<String, int8_t>>& value) {
   record_member_ = value;
   has_record_member_ = true;
