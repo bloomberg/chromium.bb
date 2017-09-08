@@ -14,7 +14,6 @@
 
 #include <tuple>
 
-#include "base/profiler/scoped_profile.h"
 #include "ipc/ipc_message_macros.h"
 #include "ppapi/c/pp_errors.h"
 
@@ -74,7 +73,6 @@ inline int32_t DispatchResourceCall(ObjT* obj, Method method,
 // no params in the message).
 #define PPAPI_DISPATCH_HOST_RESOURCE_CALL(msg_class, member_func) \
     case msg_class::ID: { \
-      TRACK_RUN_IN_THIS_SCOPED_REGION(member_func); \
       msg_class::Schema::Param p; \
       if (msg_class::Read(&ipc_message__, &p)) { \
         return ppapi::host::DispatchResourceCall( \
@@ -87,7 +85,6 @@ inline int32_t DispatchResourceCall(ObjT* obj, Method method,
 
 #define PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(msg_class, member_func) \
   case msg_class::ID: { \
-    TRACK_RUN_IN_THIS_SCOPED_REGION(member_func); \
     return member_func(context); \
   }
 

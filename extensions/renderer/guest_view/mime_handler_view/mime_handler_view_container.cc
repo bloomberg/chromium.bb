@@ -7,6 +7,7 @@
 #include <map>
 #include <set>
 
+#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "components/guest_view/common/guest_view_constants.h"
 #include "components/guest_view/common/guest_view_messages.h"

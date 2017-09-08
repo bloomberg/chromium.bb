@@ -13,8 +13,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/statistics_recorder.h"
-#include "base/profiler/scoped_profile.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "base/trace_event/heap_profiler_allocation_context_tracker.h"
@@ -71,8 +69,6 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
     tracked_objects::ThreadData::InitializeThreadContext(kMainThreadName);
     base::trace_event::AllocationContextTracker::SetCurrentThreadName(
         kMainThreadName);
-    TRACK_SCOPED_REGION(
-        "Startup", "BrowserMainRunnerImpl::Initialize");
     TRACE_EVENT0("startup", "BrowserMainRunnerImpl::Initialize");
 
     // On Android we normally initialize the browser in a series of UI thread

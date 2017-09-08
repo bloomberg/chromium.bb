@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/lazy_instance.h"
 #include "device/base/device_client.h"
 #include "device/usb/usb_device.h"
 #include "extensions/browser/api/device_permissions_manager.h"
