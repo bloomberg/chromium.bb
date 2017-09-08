@@ -24,8 +24,8 @@
 
 #include "core/layout/LayoutTextControlSingleLine.h"
 
-#include "core/CSSValueKeywords.h"
 #include "core/InputTypeNames.h"
+#include "core/css/CSSValueKeywords.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
 #include "core/frame/LocalFrame.h"

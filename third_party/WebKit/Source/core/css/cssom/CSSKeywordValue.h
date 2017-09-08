@@ -5,8 +5,8 @@
 #ifndef CSSKeywordValue_h
 #define CSSKeywordValue_h
 
-#include "core/CSSValueKeywords.h"
 #include "core/CoreExport.h"
+#include "core/css/CSSValueKeywords.h"
 #include "core/css/cssom/CSSStyleValue.h"
 
 namespace blink {

@@ -4,9 +4,9 @@
 
 #include "core/css/properties/CSSPropertyBorderImageUtils.h"
 
-#include "core/CSSValueKeywords.h"
 #include "core/css/CSSBorderImage.h"
 #include "core/css/CSSQuadValue.h"
+#include "core/css/CSSValueKeywords.h"
 #include "core/css/CSSValuePair.h"
 #include "core/css/parser/CSSParserMode.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"

@@ -21,9 +21,9 @@
 
 #include "core/layout/LayoutTheme.h"
 
-#include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"
+#include "core/css/CSSValueKeywords.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementShadow.h"
 #include "core/editing/FrameSelection.h"

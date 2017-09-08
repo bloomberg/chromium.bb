@@ -5,7 +5,7 @@
 #ifndef CSSFunctionValue_h
 #define CSSFunctionValue_h
 
-#include "core/CSSValueKeywords.h"
+#include "core/css/CSSValueKeywords.h"
 #include "core/css/CSSValueList.h"
 
 namespace blink {

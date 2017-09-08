@@ -4,7 +4,7 @@
 
 #include "core/css/properties/CSSPropertyAPIOutlineColor.h"
 
-#include "core/CSSValueKeywords.h"
+#include "core/css/CSSValueKeywords.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 

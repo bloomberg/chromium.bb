@@ -23,8 +23,8 @@
 #include "core/html/HTMLFontElement.h"
 
 #include "core/CSSPropertyNames.h"
-#include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
+#include "core/css/CSSValueKeywords.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSValuePool.h"
 #include "core/css/StylePropertySet.h"
