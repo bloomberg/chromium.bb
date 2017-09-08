@@ -206,7 +206,7 @@ void ExtensionService::BlacklistExtensionForTest(
 bool ExtensionService::OnExternalExtensionUpdateUrlFound(
     const ExternalInstallInfoUpdateUrl& info,
     bool is_initial_load) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CHECK(crx_file::id_util::IdIsValid(info.extension_id));
 
   if (Manifest::IsExternalLocation(info.download_location)) {
@@ -1329,7 +1329,7 @@ void ExtensionService::CheckForExternalUpdates() {
 
 void ExtensionService::OnExternalProviderReady(
     const ExternalProviderInterface* provider) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CHECK(provider->IsReady());
 
   // An external provider has finished loading.  We only take action
@@ -1347,7 +1347,7 @@ bool ExtensionService::AreAllExternalProvidersReady() const {
 }
 
 void ExtensionService::OnAllExternalProvidersReady() {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::TimeDelta elapsed = base::Time::Now() - profile_->GetStartTime();
   UMA_HISTOGRAM_TIMES("Extension.ExternalProvidersReadyAfter", elapsed);
 
@@ -2076,7 +2076,7 @@ const Extension* ExtensionService::GetInstalledExtension(
 
 bool ExtensionService::OnExternalExtensionFileFound(
     const ExternalInstallInfoFile& info) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CHECK(crx_file::id_util::IdIsValid(info.extension_id));
   if (extension_prefs_->IsExternalExtensionUninstalled(info.extension_id))
     return false;

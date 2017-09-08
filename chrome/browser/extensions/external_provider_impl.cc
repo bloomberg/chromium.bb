@@ -126,7 +126,7 @@ ExternalProviderImpl::ExternalProviderImpl(
 }
 
 ExternalProviderImpl::~ExternalProviderImpl() {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   loader_->OwnerShutdown();
 }
 
@@ -137,7 +137,7 @@ void ExternalProviderImpl::VisitRegisteredExtension() {
 
 void ExternalProviderImpl::SetPrefs(
     std::unique_ptr<base::DictionaryValue> prefs) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Check if the service is still alive. It is possible that it went
   // away while |loader_| was working on the FILE thread.
@@ -164,7 +164,7 @@ void ExternalProviderImpl::SetPrefs(
 
 void ExternalProviderImpl::UpdatePrefs(
     std::unique_ptr<base::DictionaryValue> prefs) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // We only expect updates from windows registry or via policies on chromeos.
   CHECK(crx_location_ == Manifest::EXTERNAL_REGISTRY ||
         download_location_ == Manifest::EXTERNAL_POLICY_DOWNLOAD);
@@ -436,7 +436,7 @@ bool ExternalProviderImpl::IsReady() const {
 
 bool ExternalProviderImpl::HasExtension(
     const std::string& id) const {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CHECK(prefs_.get());
   CHECK(ready_);
   return prefs_->HasKey(id);
@@ -446,7 +446,7 @@ bool ExternalProviderImpl::GetExtensionDetails(
     const std::string& id,
     Manifest::Location* location,
     std::unique_ptr<base::Version>* version) const {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CHECK(prefs_.get());
   CHECK(ready_);
   base::DictionaryValue* extension = NULL;
