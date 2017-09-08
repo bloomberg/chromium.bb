@@ -277,8 +277,15 @@ class BASE_EXPORT MemoryDumpManager {
   // profiler are enabled.
   void InitializeHeapProfilerStateIfNeededLocked();
 
-  // Returns true if Initialize() has been called, false otherwise.
-  bool is_initialized() const { return !request_dump_function_.is_null(); }
+  // Sends OnHeapProfilingEnabled() notifcation to mdp ensuring OnMemoryDump()
+  // is not called at the same time.
+  void NotifyHeapProfilingEnabledLocked(
+      scoped_refptr<MemoryDumpProviderInfo> mdpinfo,
+      bool enabled);
+
+  bool can_request_global_dumps() const {
+    return !request_dump_function_.is_null();
+  }
 
   // An ordered set of registered MemoryDumpProviderInfo(s), sorted by task
   // runner affinity (MDPs belonging to the same task runners are adjacent).
