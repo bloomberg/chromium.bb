@@ -5,7 +5,7 @@
 mojom = "//content/common/media/media_stream.mojom"
 
 public_headers = [
-  "//content/common/media/media_stream_options.h",
+  "//content/common/media/media_stream_controls.h",
   "//content/public/common/media_stream_request.h",
 ]
 

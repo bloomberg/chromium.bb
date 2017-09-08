@@ -16,7 +16,6 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
-#include "content/common/media/media_stream_options.h"
 #include "content/public/common/content_features.h"
 #include "content/public/renderer/media_stream_utils.h"
 #include "content/renderer/media/media_stream_constraints_util.h"

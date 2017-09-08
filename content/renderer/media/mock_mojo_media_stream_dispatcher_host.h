@@ -9,7 +9,8 @@
 
 #include "base/macros.h"
 #include "content/common/media/media_stream.mojom.h"
-#include "content/common/media/media_stream_options.h"
+#include "content/common/media/media_stream_controls.h"
+#include "content/public/common/media_stream_request.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

@@ -7,7 +7,7 @@
 #include <cmath>
 #include <string>
 
-#include "content/common/media/media_stream_options.h"
+#include "content/common/media/media_stream_controls.h"
 #include "content/renderer/media/mock_constraint_factory.h"
 #include "media/base/limits.h"
 #include "testing/gtest/include/gtest/gtest.h"

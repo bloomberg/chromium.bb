@@ -43,7 +43,7 @@
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_devices.h"
-#include "content/common/media/media_stream_options.h"
+#include "content/common/media/media_stream_controls.h"
 #include "content/public/browser/media_request_state.h"
 #include "content/public/common/media_stream_request.h"
 #include "media/base/video_facing.h"

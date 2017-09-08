@@ -6,7 +6,7 @@
 #define CONTENT_COMMON_MEDIA_MEDIA_STREAM_TYPEMAP_TRAITS_H_
 
 #include "content/common/media/media_stream.mojom.h"
-#include "content/common/media/media_stream_options.h"
+#include "content/common/media/media_stream_controls.h"
 #include "content/public/common/media_stream_request.h"
 
 namespace mojo {
