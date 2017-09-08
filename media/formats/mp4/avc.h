@@ -11,8 +11,10 @@
 #include <memory>
 #include <vector>
 
+#include "base/macros.h"
 #include "media/base/media_export.h"
 #include "media/formats/mp4/bitstream_converter.h"
+#include "media/media_features.h"
 
 namespace media {
 
@@ -32,14 +34,11 @@ class MEDIA_EXPORT AVC {
   // |buffer| is expected to contain AnnexB conformant data.
   // |subsamples| contains the SubsampleEntry info if |buffer| contains
   // encrypted data.
-  // |annexb_validation| indicates if it should perform Annex B validation after
-  // the operation.
   // Returns true if the param sets were successfully inserted.
   static bool InsertParamSetsAnnexB(
       const AVCDecoderConfigurationRecord& avc_config,
       std::vector<uint8_t>* buffer,
-      std::vector<SubsampleEntry>* subsamples,
-      bool annexb_validation);
+      std::vector<SubsampleEntry>* subsamples);
 
   static bool ConvertConfigToAnnexB(
       const AVCDecoderConfigurationRecord& avc_config,
@@ -73,20 +72,32 @@ class AVCBitstreamConverter : public BitstreamConverter {
  public:
   explicit AVCBitstreamConverter(
       std::unique_ptr<AVCDecoderConfigurationRecord> avc_config);
-  // Overrides |post_annexb_validation_| to disable Annex B validation
-  void DisablePostAnnexbValidation() { post_annexb_validation_ = false; }
+
+#if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+  // TODO(erickung): Dolby Vision should have its own subclasses of the
+  // bitstream converters so that the validation logic can properly accommodate
+  // it.
+  void disable_validation() { disable_validation_ = true; }
+#endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
 
   // BitstreamConverter interface
   bool ConvertFrame(std::vector<uint8_t>* frame_buf,
                     bool is_keyframe,
                     std::vector<SubsampleEntry>* subsamples) const override;
 
+  bool IsValid(std::vector<uint8_t>* frame_buf,
+               std::vector<SubsampleEntry>* subsamples) const override;
+
  private:
   ~AVCBitstreamConverter() override;
   std::unique_ptr<AVCDecoderConfigurationRecord> avc_config_;
-  // Indicates if it needs to do AnnexB validation on bitstream after performing
-  // ConvertFrame() operation.
-  bool post_annexb_validation_;
+
+#if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+  // Annex B validation is short-circuited when true.
+  bool disable_validation_;
+#endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+
+  DISALLOW_COPY_AND_ASSIGN(AVCBitstreamConverter);
 };
 
 }  // namespace mp4

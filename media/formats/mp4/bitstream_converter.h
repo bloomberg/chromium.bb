@@ -37,6 +37,12 @@ class BitstreamConverter
                             bool is_keyframe,
                             std::vector<SubsampleEntry>* subsamples) const = 0;
 
+  // Checks a converted frame for conformance.
+  // Note: may return true even if the frame is not conformant; the checks may
+  // not be exhaustive (or implemented at all).
+  virtual bool IsValid(std::vector<uint8_t>* frame_buf,
+                       std::vector<SubsampleEntry>* subsamples) const = 0;
+
  protected:
   friend class base::RefCountedThreadSafe<BitstreamConverter>;
   virtual ~BitstreamConverter();

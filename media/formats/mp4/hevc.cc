@@ -245,8 +245,13 @@ bool HEVCBitstreamConverter::ConvertFrame(
     RCHECK(HEVC::InsertParamSetsAnnexB(*hevc_config_, frame_buf, subsamples));
   }
 
-  DCHECK(HEVC::IsValidAnnexB(*frame_buf, *subsamples));
   return true;
+}
+
+bool HEVCBitstreamConverter::IsValid(
+    std::vector<uint8_t>* frame_buf,
+    std::vector<SubsampleEntry>* subsamples) const {
+  return HEVC::IsValidAnnexB(*frame_buf, *subsamples);
 }
 
 }  // namespace mp4
