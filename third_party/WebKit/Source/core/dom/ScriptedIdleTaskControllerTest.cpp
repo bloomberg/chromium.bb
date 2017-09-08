@@ -4,7 +4,7 @@
 
 #include "core/dom/ScriptedIdleTaskController.h"
 
-#include "core/dom/IdleRequestCallback.h"
+#include "bindings/core/v8/v8_idle_request_callback.h"
 #include "core/dom/IdleRequestOptions.h"
 #include "core/testing/NullExecutionContext.h"
 #include "platform/testing/TestingPlatformSupport.h"
@@ -91,11 +91,10 @@ class MockScriptedIdleTaskControllerPlatform : public TestingPlatformSupport {
   DISALLOW_COPY_AND_ASSIGN(MockScriptedIdleTaskControllerPlatform);
 };
 
-class MockIdleRequestCallback : public IdleRequestCallback {
+class MockIdleTask : public ScriptedIdleTaskController::IdleTask {
  public:
-  MOCK_METHOD1(handleEvent, void(IdleDeadline*));
+  MOCK_METHOD1(invoke, void(IdleDeadline*));
 };
-
 }  // namespace
 
 class ScriptedIdleTaskControllerTest : public ::testing::Test {
@@ -113,16 +112,16 @@ TEST_F(ScriptedIdleTaskControllerTest, RunCallback) {
   ScriptedIdleTaskController* controller =
       ScriptedIdleTaskController::Create(execution_context_);
 
-  Persistent<MockIdleRequestCallback> callback(new MockIdleRequestCallback());
+  Persistent<MockIdleTask> idle_task(new MockIdleTask());
   IdleRequestOptions options;
   EXPECT_FALSE(platform->HasIdleTask());
-  int id = controller->RegisterCallback(callback, options);
+  int id = controller->RegisterCallback(idle_task, options);
   EXPECT_TRUE(platform->HasIdleTask());
   EXPECT_NE(0, id);
 
-  EXPECT_CALL(*callback, handleEvent(::testing::_));
+  EXPECT_CALL(*idle_task, invoke(::testing::_));
   platform->RunIdleTask();
-  ::testing::Mock::VerifyAndClearExpectations(callback);
+  ::testing::Mock::VerifyAndClearExpectations(idle_task);
   EXPECT_FALSE(platform->HasIdleTask());
 }
 
@@ -133,14 +132,14 @@ TEST_F(ScriptedIdleTaskControllerTest, DontRunCallbackWhenAskedToYield) {
   ScriptedIdleTaskController* controller =
       ScriptedIdleTaskController::Create(execution_context_);
 
-  Persistent<MockIdleRequestCallback> callback(new MockIdleRequestCallback());
+  Persistent<MockIdleTask> idle_task(new MockIdleTask());
   IdleRequestOptions options;
-  int id = controller->RegisterCallback(callback, options);
+  int id = controller->RegisterCallback(idle_task, options);
   EXPECT_NE(0, id);
 
-  EXPECT_CALL(*callback, handleEvent(::testing::_)).Times(0);
+  EXPECT_CALL(*idle_task, invoke(::testing::_)).Times(0);
   platform->RunIdleTask();
-  ::testing::Mock::VerifyAndClearExpectations(callback);
+  ::testing::Mock::VerifyAndClearExpectations(idle_task);
 
   // The idle task should have been reposted.
   EXPECT_TRUE(platform->HasIdleTask());

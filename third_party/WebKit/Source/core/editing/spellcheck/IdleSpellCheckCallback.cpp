@@ -41,8 +41,8 @@ IdleSpellCheckCallback::~IdleSpellCheckCallback() {}
 DEFINE_TRACE(IdleSpellCheckCallback) {
   visitor->Trace(frame_);
   visitor->Trace(cold_mode_requester_);
-  IdleRequestCallback::Trace(visitor);
   SynchronousMutationObserver::Trace(visitor);
+  ScriptedIdleTaskController::IdleTask::Trace(visitor);
 }
 
 IdleSpellCheckCallback* IdleSpellCheckCallback::Create(LocalFrame& frame) {
@@ -164,7 +164,7 @@ void IdleSpellCheckCallback::HotModeInvocation(IdleDeadline* deadline) {
   }
 }
 
-void IdleSpellCheckCallback::handleEvent(IdleDeadline* deadline) {
+void IdleSpellCheckCallback::invoke(IdleDeadline* deadline) {
   DCHECK(GetFrame().GetDocument());
   DCHECK(GetFrame().GetDocument()->IsActive());
   DCHECK_NE(idle_callback_handle_, kInvalidHandle);
@@ -214,12 +214,12 @@ void IdleSpellCheckCallback::ForceInvocationForTesting() {
       cold_mode_timer_.Stop();
       state_ = State::kColdModeRequested;
       idle_callback_handle_ = kDummyHandleForForcedInvocation;
-      handleEvent(deadline);
+      invoke(deadline);
       break;
     case State::kHotModeRequested:
     case State::kColdModeRequested:
       GetFrame().GetDocument()->CancelIdleCallback(idle_callback_handle_);
-      handleEvent(deadline);
+      invoke(deadline);
       break;
     case State::kInactive:
     case State::kInHotModeInvocation:

@@ -5,7 +5,7 @@
 #ifndef IdleSpellCheckCallback_h
 #define IdleSpellCheckCallback_h
 
-#include "core/dom/IdleRequestCallback.h"
+#include "core/dom/ScriptedIdleTaskController.h"
 #include "core/dom/SynchronousMutationObserver.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/Position.h"
@@ -27,7 +27,7 @@ class SpellCheckRequester;
 
 // Main class for the implementation of idle time spell checker.
 class CORE_EXPORT IdleSpellCheckCallback final
-    : public IdleRequestCallback,
+    : public ScriptedIdleTaskController::IdleTask,
       public SynchronousMutationObserver {
   DISALLOW_COPY_AND_ASSIGN(IdleSpellCheckCallback);
   USING_GARBAGE_COLLECTED_MIXIN(IdleSpellCheckCallback);
@@ -65,7 +65,7 @@ class CORE_EXPORT IdleSpellCheckCallback final
 
  private:
   explicit IdleSpellCheckCallback(LocalFrame&);
-  void handleEvent(IdleDeadline*) override;
+  void invoke(IdleDeadline*) override;
 
   LocalFrame& GetFrame() const { return *frame_; }
 
