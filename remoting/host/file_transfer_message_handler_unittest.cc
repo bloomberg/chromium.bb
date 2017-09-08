@@ -44,7 +44,10 @@ class FakeFileProxyWrapper : public FileProxyWrapper {
   void Init(StatusCallback status_callback) override;
   void CreateFile(const base::FilePath& directory,
                   const std::string& filename) override;
+  void OpenFile(const base::FilePath& filepath,
+                OpenFileCallback open_callback) override;
   void WriteChunk(std::unique_ptr<CompoundBuffer> buffer) override;
+  void ReadChunk(uint64_t chunk_size, ReadCallback read_callback) override;
   void Close() override;
   void Cancel() override;
   State state() override;
@@ -92,13 +95,21 @@ void FakeFileProxyWrapper::Init(StatusCallback status_callback) {
 void FakeFileProxyWrapper::CreateFile(const base::FilePath& directory,
                                       const std::string& filename) {
   ASSERT_EQ(state_, kInitialized);
-  state_ = kFileCreated;
+  state_ = kReady;
 
   filename_ = filename;
 }
 
+void FakeFileProxyWrapper::OpenFile(const base::FilePath& filepath,
+                                    OpenFileCallback open_callback) {
+  ASSERT_EQ(state_, kInitialized);
+  state_ = kReady;
+
+  // TODO(jarhar): Implement fake file reading.
+}
+
 void FakeFileProxyWrapper::WriteChunk(std::unique_ptr<CompoundBuffer> buffer) {
-  ASSERT_EQ(state_, kFileCreated);
+  ASSERT_EQ(state_, kReady);
 
   std::vector<char> data;
   data.resize(buffer->total_bytes());
@@ -106,8 +117,15 @@ void FakeFileProxyWrapper::WriteChunk(std::unique_ptr<CompoundBuffer> buffer) {
   chunks_.push(data);
 }
 
+void FakeFileProxyWrapper::ReadChunk(uint64_t chunk_size,
+                                     ReadCallback read_callback) {
+  ASSERT_EQ(state_, kReady);
+
+  // TODO(jarhar): Implement fake file reading.
+}
+
 void FakeFileProxyWrapper::Close() {
-  ASSERT_EQ(state_, kFileCreated);
+  ASSERT_EQ(state_, kReady);
   state_ = kClosed;
 }
 
