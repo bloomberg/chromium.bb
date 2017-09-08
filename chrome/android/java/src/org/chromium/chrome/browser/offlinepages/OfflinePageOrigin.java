@@ -31,13 +31,23 @@ public class OfflinePageOrigin {
 
     /** Creates origin based on the context and tab. */
     public OfflinePageOrigin(Context context, Tab tab) {
-        if (TextUtils.isEmpty(tab.getAppAssociatedWith())) {
-            mAppName = "";
-        } else {
-            mAppName = tab.getAppAssociatedWith();
-        }
+        this(context, tab.getAppAssociatedWith());
+    }
 
-        mSignatures = getAppSignaturesFor(context, mAppName);
+    /** Creates origin based on the context and an app name. */
+    public OfflinePageOrigin(Context context, String appName) {
+        if (TextUtils.isEmpty(appName)) {
+            mAppName = "";
+            mSignatures = null;
+        } else {
+            mSignatures = getAppSignaturesFor(context, appName);
+            // If signatures returned null, the app probably doesn't exist. Assume Chrome.
+            if (mSignatures == null) {
+                mAppName = "";
+            } else {
+                mAppName = appName;
+            }
+        }
     }
 
     /** Creates origin based on a qualified string. Assumes Chrome if invalid. */
