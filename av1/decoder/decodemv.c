@@ -2312,7 +2312,12 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
         av1_mode_context_analyzer(inter_mode_ctx, mbmi->ref_frame, bsize, -1);
   mbmi->ref_mv_idx = 0;
 
+#if CONFIG_SEGMENT_ZEROMV
+  if (segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP) ||
+      segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_ZEROMV)) {
+#else
   if (segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
+#endif
     mbmi->mode = ZEROMV;
     if (bsize < BLOCK_8X8 && !unify_bsize) {
       aom_internal_error(xd->error_info, AOM_CODEC_UNSUP_BITSTREAM,

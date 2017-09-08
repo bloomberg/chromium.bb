@@ -321,6 +321,7 @@ EXPERIMENT_LIST="
     lv_map
     txk_sel
     mv_compress
+    segment_zeromv
     frame_superres
     new_multisymbol
     compound_singleref
