@@ -68,6 +68,8 @@ class NetworkListView : public NetworkStateListDetailedView,
   // Returns a set of guids for the added network connections.
   std::unique_ptr<std::set<std::string>> UpdateNetworkListEntries();
 
+  bool ShouldMobileDataSectionBeShown();
+
   // Creates the view which displays a warning message, if a VPN or proxy is
   // being used.
   TriView* CreateConnectionWarning();

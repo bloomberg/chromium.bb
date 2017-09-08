@@ -10,6 +10,7 @@
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -600,11 +601,7 @@ NetworkListView::UpdateNetworkListEntries() {
       UpdateNetworkChildren(NetworkInfo::Type::UNKNOWN, index);
   index += new_guids->size();
 
-  // Show the Mobile data section if Cellular or Tether networks are available,
-  // unless Tether is prohibited by policy.
-  if (handler->IsTechnologyAvailable(NetworkTypePattern::Cellular()) ||
-      (handler->IsTechnologyAvailable(NetworkTypePattern::Tether()) &&
-       !handler->IsTechnologyProhibited(NetworkTypePattern::Tether()))) {
+  if (ShouldMobileDataSectionBeShown()) {
     bool cellular_enabled =
         handler->IsTechnologyEnabled(NetworkTypePattern::Cellular());
     bool tether_enabled =
@@ -686,6 +683,31 @@ NetworkListView::UpdateNetworkListEntries() {
   }
 
   return new_guids;
+}
+
+bool NetworkListView::ShouldMobileDataSectionBeShown() {
+  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
+
+  // The section should always be shown if Cellular networks are available.
+  if (handler->IsTechnologyAvailable(NetworkTypePattern::Cellular()))
+    return true;
+
+  // Hide the section if both Cellular and Tether are UNAVAILABLE.
+  if (!handler->IsTechnologyAvailable(NetworkTypePattern::Tether()))
+    return false;
+
+  // Hide the section if Tether is PROHIBITED.
+  if (handler->IsTechnologyProhibited(NetworkTypePattern::Tether()))
+    return false;
+
+  // Secondary users cannot enable Bluetooth, and Tether is only UNINITIALIZED
+  // if Bluetooth is disabled. Hide the section in this case.
+  if (handler->IsTechnologyUninitialized(NetworkTypePattern::Tether()) &&
+      !Shell::Get()->session_controller()->IsUserPrimary()) {
+    return false;
+  }
+
+  return true;
 }
 
 void NetworkListView::UpdateViewForNetwork(HoverHighlightView* view,
