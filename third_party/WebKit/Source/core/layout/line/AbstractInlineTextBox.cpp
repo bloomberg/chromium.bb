@@ -114,7 +114,7 @@ AbstractInlineTextBox::Direction AbstractInlineTextBox::GetDirection() const {
   if (!inline_text_box_ || !line_layout_item_)
     return kLeftToRight;
 
-  if (line_layout_item_.Style()->IsHorizontalWritingMode()) {
+  if (line_layout_item_.StyleRef().IsHorizontalWritingMode()) {
     return (inline_text_box_->Direction() == TextDirection::kRtl
                 ? kRightToLeft
                 : kLeftToRight);

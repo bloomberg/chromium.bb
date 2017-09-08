@@ -91,7 +91,7 @@ void SVGInlineTextBoxPainter::Paint(const PaintInfo& paint_info,
          paint_info.phase == kPaintPhaseSelection);
   DCHECK(svg_inline_text_box_.Truncation() == kCNoTruncation);
 
-  if (svg_inline_text_box_.GetLineLayoutItem().Style()->Visibility() !=
+  if (svg_inline_text_box_.GetLineLayoutItem().StyleRef().Visibility() !=
           EVisibility::kVisible ||
       !svg_inline_text_box_.Len())
     return;
@@ -221,7 +221,7 @@ void SVGInlineTextBoxPainter::PaintTextFragments(
 
 void SVGInlineTextBoxPainter::PaintSelectionBackground(
     const PaintInfo& paint_info) {
-  if (svg_inline_text_box_.GetLineLayoutItem().Style()->Visibility() !=
+  if (svg_inline_text_box_.GetLineLayoutItem().StyleRef().Visibility() !=
       EVisibility::kVisible)
     return;
 
@@ -314,8 +314,8 @@ void SVGInlineTextBoxPainter::PaintDecoration(const PaintInfo& paint_info,
                                               TextDecoration decoration,
                                               const SVGTextFragment& fragment) {
   if (svg_inline_text_box_.GetLineLayoutItem()
-          .Style()
-          ->TextDecorationsInEffect() == TextDecoration::kNone)
+          .StyleRef()
+          .TextDecorationsInEffect() == TextDecoration::kNone)
     return;
 
   if (fragment.width <= 0)

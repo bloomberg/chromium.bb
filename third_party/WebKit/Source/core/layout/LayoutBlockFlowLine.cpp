@@ -100,7 +100,7 @@ class ExpansionOpportunities {
         CHECK_LE(opportunities_in_run, total_opportunities_);
 
         // Don't justify for white-space: pre.
-        if (r->line_layout_item_.Style()->WhiteSpace() != EWhiteSpace::kPre) {
+        if (r->line_layout_item_.StyleRef().WhiteSpace() != EWhiteSpace::kPre) {
           InlineTextBox* text_box = ToInlineTextBox(r->box_);
           CHECK(total_opportunities_);
           int expansion = ((available_logical_width - total_logical_width) *
@@ -149,7 +149,7 @@ static inline InlineTextBox* CreateInlineBoxForText(BidiRun& run,
   if (text.IsBR())
     text_box->SetIsText(is_only_run || text.GetDocument().InNoQuirksMode());
   text_box->SetDirOverride(
-      run.DirOverride(text.Style()->RtlOrdering() == EOrder::kVisual));
+      run.DirOverride(text.StyleRef().RtlOrdering() == EOrder::kVisual));
   if (run.has_hyphen_)
     text_box->SetHasHyphen(true);
   return text_box;
@@ -533,7 +533,7 @@ static inline void SetLogicalWidthForTextRun(
   HashSet<const SimpleFontData*> fallback_fonts;
   GlyphOverflow glyph_overflow;
 
-  const Font& font = layout_text.Style(line_info.IsFirstLine())->GetFont();
+  const Font& font = layout_text.StyleRef(line_info.IsFirstLine()).GetFont();
 
   LayoutUnit hyphen_width;
   if (ToInlineTextBox(run->box_)->HasHyphen())
@@ -578,7 +578,7 @@ static inline void SetLogicalWidthForTextRun(
                               run->Direction(), line_info.IsFirstLine());
         if (i > 0 && word_length == 1 &&
             layout_text.CharacterAt(word_measurement.start_offset) == ' ')
-          measured_width += layout_text.Style()->WordSpacing();
+          measured_width += layout_text.StyleRef().WordSpacing();
       } else {
         FloatRect word_glyph_bounds = word_measurement.glyph_bounds;
         word_glyph_bounds.Move(measured_width, 0);
@@ -659,7 +659,7 @@ void LayoutBlockFlow::UpdateLogicalWidthForAlignment(
     unsigned expansion_opportunity_count) {
   TextDirection direction;
   if (root_inline_box &&
-      root_inline_box->GetLineLayoutItem().Style()->GetUnicodeBidi() ==
+      root_inline_box->GetLineLayoutItem().StyleRef().GetUnicodeBidi() ==
           UnicodeBidi::kPlaintext)
     direction = root_inline_box->Direction();
   else
@@ -827,8 +827,8 @@ BidiRun* LayoutBlockFlow::ComputeInlineDirectionPositionsForSegment(
       if (rt.TextLength()) {
         if (!r->start_ && needs_word_spacing &&
             IsSpaceOrNewline(rt.CharacterAt(r->start_)))
-          total_logical_width += rt.Style(line_info.IsFirstLine())
-                                     ->GetFont()
+          total_logical_width += rt.StyleRef(line_info.IsFirstLine())
+                                     .GetFont()
                                      .GetFontDescription()
                                      .WordSpacing();
         needs_word_spacing = !IsSpaceOrNewline(rt.CharacterAt(r->stop_ - 1));
@@ -1254,7 +1254,7 @@ void LayoutBlockFlow::LayoutRunsAndFloatsInRange(
 
     if (!pagination_strut_from_deleted_line) {
       for (const auto& positioned_object : line_breaker.PositionedObjects()) {
-        if (positioned_object.Style()->IsOriginalDisplayInlineType()) {
+        if (positioned_object.StyleRef().IsOriginalDisplayInlineType()) {
           // Auto-positioned "inline" out-of-flow objects have already been
           // positioned, but if we're paginated, or just ceased to be so, we
           // need to update their position now, since the line they "belong" to
@@ -2162,7 +2162,7 @@ bool LayoutBlockFlow::LineBoxHasBRWithClearance(RootInlineBox* curr) {
                             ? curr->LastLeafChild()
                             : curr->FirstLeafChild();
   return last_box && last_box->GetLineLayoutItem().IsBR() &&
-         last_box->GetLineLayoutItem().Style()->Clear() != EClear::kNone;
+         last_box->GetLineLayoutItem().StyleRef().Clear() != EClear::kNone;
 }
 
 void LayoutBlockFlow::DetermineEndPosition(LineLayoutState& layout_state,

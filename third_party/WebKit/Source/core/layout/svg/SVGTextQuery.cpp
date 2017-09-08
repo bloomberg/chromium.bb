@@ -108,7 +108,7 @@ static bool QueryTextBox(QueryData* query_data,
       LineLayoutSVGInlineText(text_box->GetLineLayoutItem());
 
   query_data->is_vertical_text =
-      !query_data->text_line_layout.Style()->IsHorizontalWritingMode();
+      !query_data->text_line_layout.StyleRef().IsHorizontalWritingMode();
 
   // Loop over all text fragments in this text box, firing a callback for each.
   for (const SVGTextFragment& fragment : text_box->TextFragments()) {
@@ -163,7 +163,6 @@ static void LogicalQuery(LayoutObject* query_root,
 
     LineLayoutSVGInlineText text_line_layout =
         LineLayoutSVGInlineText(ToLayoutSVGInlineText(layout_object));
-    DCHECK(text_line_layout.Style());
 
     // TODO(fs): Allow filtering the search earlier, since we should be
     // able to trivially reject (prune) at least some of the queries.

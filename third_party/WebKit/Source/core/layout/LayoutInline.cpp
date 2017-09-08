@@ -633,7 +633,7 @@ static inline void ComputeItemTopHeight(const LayoutInline* container,
                                         LayoutUnit* height) {
   bool first_line = root_box.IsFirstLineStyle();
   const SimpleFontData* font_data =
-      root_box.GetLineLayoutItem().Style(first_line)->GetFont().PrimaryFont();
+      root_box.GetLineLayoutItem().StyleRef(first_line).GetFont().PrimaryFont();
   const SimpleFontData* container_font_data =
       container->Style(first_line)->GetFont().PrimaryFont();
   DCHECK(font_data);

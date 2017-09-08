@@ -366,8 +366,8 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
   EVerticalAlign VerticalAlign() const {
     return IsAnonymousInline() ? ComputedStyle::InitialVerticalAlign()
                                : GetLineLayoutItem()
-                                     .Style(bitfields_.FirstLine())
-                                     ->VerticalAlign();
+                                     .StyleRef(bitfields_.FirstLine())
+                                     .VerticalAlign();
   }
 
   // Use with caution! The type is not checked!

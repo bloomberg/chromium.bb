@@ -307,7 +307,7 @@ LayoutUnit RootInlineBox::AlignBoxesInBlockDirection(
 LayoutUnit RootInlineBox::BeforeAnnotationsAdjustment() const {
   LayoutUnit result;
 
-  if (!GetLineLayoutItem().Style()->IsFlippedLinesWritingMode()) {
+  if (!GetLineLayoutItem().StyleRef().IsFlippedLinesWritingMode()) {
     // Annotations under the previous line may push us down.
     if (PrevRootBox() && PrevRootBox()->HasAnnotationsAfter())
       result = PrevRootBox()->ComputeUnderAnnotationAdjustment(LineTop());
@@ -391,11 +391,11 @@ InlineBox* RootInlineBox::LastSelectedBox() const {
 LayoutUnit RootInlineBox::SelectionTop() const {
   LayoutUnit selection_top = line_top_;
   if (has_annotations_before_)
-    selection_top -= !GetLineLayoutItem().Style()->IsFlippedLinesWritingMode()
+    selection_top -= !GetLineLayoutItem().StyleRef().IsFlippedLinesWritingMode()
                          ? ComputeOverAnnotationAdjustment(line_top_)
                          : ComputeUnderAnnotationAdjustment(line_top_);
 
-  if (GetLineLayoutItem().Style()->IsFlippedLinesWritingMode() ||
+  if (GetLineLayoutItem().StyleRef().IsFlippedLinesWritingMode() ||
       !PrevRootBox())
     return selection_top;
 
@@ -409,11 +409,11 @@ LayoutUnit RootInlineBox::SelectionBottom() const {
 
   if (has_annotations_after_)
     selection_bottom +=
-        !GetLineLayoutItem().Style()->IsFlippedLinesWritingMode()
+        !GetLineLayoutItem().StyleRef().IsFlippedLinesWritingMode()
             ? ComputeUnderAnnotationAdjustment(line_bottom_)
             : ComputeOverAnnotationAdjustment(line_bottom_);
 
-  if (!GetLineLayoutItem().Style()->IsFlippedLinesWritingMode() ||
+  if (!GetLineLayoutItem().StyleRef().IsFlippedLinesWritingMode() ||
       !NextRootBox())
     return selection_bottom;
 
@@ -421,7 +421,7 @@ LayoutUnit RootInlineBox::SelectionBottom() const {
 }
 
 LayoutUnit RootInlineBox::BlockDirectionPointInLine() const {
-  return !Block().Style()->IsFlippedBlocksWritingMode()
+  return !Block().StyleRef().IsFlippedBlocksWritingMode()
              ? std::max(LineTop(), SelectionTop())
              : std::min(LineBottom(), SelectionBottom());
 }
@@ -613,13 +613,13 @@ void RootInlineBox::AscentAndDescentForBox(
 
   if (used_fonts && !used_fonts->IsEmpty() &&
       (box->GetLineLayoutItem()
-           .Style(IsFirstLineStyle())
-           ->LineHeight()
+           .StyleRef(IsFirstLineStyle())
+           .LineHeight()
            .IsNegative() &&
        include_leading)) {
     used_fonts->push_back(box->GetLineLayoutItem()
-                              .Style(IsFirstLineStyle())
-                              ->GetFont()
+                              .StyleRef(IsFirstLineStyle())
+                              .GetFont()
                               .PrimaryFont());
     for (size_t i = 0; i < used_fonts->size(); ++i) {
       const FontMetrics& font_metrics = used_fonts->at(i)->GetFontMetrics();
@@ -687,19 +687,19 @@ LayoutUnit RootInlineBox::VerticalPositionForBox(
   }
 
   LayoutUnit vertical_position;
-  EVerticalAlign vertical_align = box_model.Style()->VerticalAlign();
+  EVerticalAlign vertical_align = box_model.StyleRef().VerticalAlign();
   if (vertical_align == EVerticalAlign::kTop ||
       vertical_align == EVerticalAlign::kBottom)
     return LayoutUnit();
 
   LineLayoutItem parent = box_model.Parent();
   if (parent.IsLayoutInline() &&
-      parent.Style()->VerticalAlign() != EVerticalAlign::kTop &&
-      parent.Style()->VerticalAlign() != EVerticalAlign::kBottom)
+      parent.StyleRef().VerticalAlign() != EVerticalAlign::kTop &&
+      parent.StyleRef().VerticalAlign() != EVerticalAlign::kBottom)
     vertical_position = box->Parent()->LogicalTop();
 
   if (vertical_align != EVerticalAlign::kBaseline) {
-    const Font& font = parent.Style(first_line)->GetFont();
+    const Font& font = parent.StyleRef(first_line).GetFont();
     const SimpleFontData* font_data = font.PrimaryFont();
     DCHECK(font_data);
     if (!font_data)
@@ -744,12 +744,12 @@ LayoutUnit RootInlineBox::VerticalPositionForBox(
       LayoutUnit line_height;
       // Per http://www.w3.org/TR/CSS21/visudet.html#propdef-vertical-align:
       // 'Percentages: refer to the 'line-height' of the element itself'.
-      if (box_model.Style()->GetVerticalAlignLength().IsPercentOrCalc())
-        line_height = LayoutUnit(box_model.Style()->ComputedLineHeight());
+      if (box_model.StyleRef().GetVerticalAlignLength().IsPercentOrCalc())
+        line_height = LayoutUnit(box_model.StyleRef().ComputedLineHeight());
       else
         line_height = box_model.LineHeight(first_line, line_direction);
       vertical_position -= ValueForLength(
-          box_model.Style()->GetVerticalAlignLength(), line_height);
+          box_model.StyleRef().GetVerticalAlignLength(), line_height);
     }
   }
 

@@ -290,18 +290,18 @@ bool SVGInlineTextBox::NodeAtPoint(HitTestResult& result,
   // FIXME: integrate with InlineTextBox::nodeAtPoint better.
   DCHECK(!IsLineBreak());
 
-  PointerEventsHitRules hit_rules(PointerEventsHitRules::SVG_TEXT_HITTESTING,
-                                  result.GetHitTestRequest(),
-                                  GetLineLayoutItem().Style()->PointerEvents());
+  PointerEventsHitRules hit_rules(
+      PointerEventsHitRules::SVG_TEXT_HITTESTING, result.GetHitTestRequest(),
+      GetLineLayoutItem().StyleRef().PointerEvents());
   bool is_visible =
-      GetLineLayoutItem().Style()->Visibility() == EVisibility::kVisible;
+      GetLineLayoutItem().StyleRef().Visibility() == EVisibility::kVisible;
   if (is_visible || !hit_rules.require_visible) {
     if (hit_rules.can_hit_bounding_box ||
         (hit_rules.can_hit_stroke &&
-         (GetLineLayoutItem().Style()->SvgStyle().HasStroke() ||
+         (GetLineLayoutItem().StyleRef().SvgStyle().HasStroke() ||
           !hit_rules.require_stroke)) ||
         (hit_rules.can_hit_fill &&
-         (GetLineLayoutItem().Style()->SvgStyle().HasFill() ||
+         (GetLineLayoutItem().StyleRef().SvgStyle().HasFill() ||
           !hit_rules.require_fill))) {
       LayoutRect rect(Location(), Size());
       rect.MoveBy(accumulated_offset);

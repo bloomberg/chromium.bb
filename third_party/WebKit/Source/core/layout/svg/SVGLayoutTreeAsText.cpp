@@ -445,7 +445,7 @@ static inline void WriteSVGInlineTextBox(TextStream& ts,
   LineLayoutSVGInlineText text_line_layout =
       LineLayoutSVGInlineText(text_box->GetLineLayoutItem());
 
-  const SVGComputedStyle& svg_style = text_line_layout.Style()->SvgStyle();
+  const SVGComputedStyle& svg_style = text_line_layout.StyleRef().SvgStyle();
   String text = text_box->GetLineLayoutItem().GetText();
 
   unsigned fragments_size = fragments.size();
@@ -461,7 +461,7 @@ static inline void WriteSVGInlineTextBox(TextStream& ts,
     ts << "chunk 1 ";
     ETextAnchor anchor = svg_style.TextAnchor();
     bool is_vertical_text =
-        !text_line_layout.Style()->IsHorizontalWritingMode();
+        !text_line_layout.StyleRef().IsHorizontalWritingMode();
     if (anchor == TA_MIDDLE) {
       ts << "(middle anchor";
       if (is_vertical_text)

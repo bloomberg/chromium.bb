@@ -189,7 +189,7 @@ static void ComputeOriginAndWidthForBox(const InlineTextBox& box,
   if (box.Truncation() != kCNoTruncation) {
     bool ltr = box.IsLeftToRightDirection();
     bool flow_is_ltr =
-        box.GetLineLayoutItem().Style()->IsLeftToRightDirection();
+        box.GetLineLayoutItem().StyleRef().IsLeftToRightDirection();
     width = LayoutUnit(box.GetLineLayoutItem().Width(
         ltr == flow_is_ltr ? box.Start() : box.Start() + box.Truncation(),
         ltr == flow_is_ltr ? box.Truncation() : box.Len() - box.Truncation(),
@@ -343,7 +343,7 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
   if (inline_text_box_.IsFirstLineStyle()) {
     first_line_string = layout_item_string;
     ApplyTextTransform(
-        inline_text_box_.GetLineLayoutItem().Style(
+        &inline_text_box_.GetLineLayoutItem().StyleRef(
             inline_text_box_.IsFirstLineStyle()),
         first_line_string,
         inline_text_box_.GetLineLayoutItem().PreviousCharacter());
@@ -448,8 +448,8 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
   bool ltr = inline_text_box_.IsLeftToRightDirection();
   bool flow_is_ltr = inline_text_box_.GetLineLayoutItem()
                          .ContainingBlock()
-                         .Style()
-                         ->IsLeftToRightDirection();
+                         .StyleRef()
+                         .IsLeftToRightDirection();
 
   const PaintOffsets& selection_offsets =
       ApplyTruncationToPaintOffsets({static_cast<unsigned>(selection_start),
@@ -488,7 +488,7 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
       const LineLayoutItem& decorating_box =
           EnclosingUnderlineObject(&inline_text_box_);
       const ComputedStyle* decorating_box_style =
-          decorating_box ? decorating_box.Style() : nullptr;
+          decorating_box ? &decorating_box.StyleRef() : nullptr;
       text_painter.ComputeDecorationInfo(decoration_info, box_origin,
                                          local_origin, width,
                                          inline_text_box_.Root().BaselineType(),
@@ -559,7 +559,7 @@ bool InlineTextBoxPainter::ShouldPaintTextBox(const PaintInfo& paint_info) {
   // This code path is only called in PaintPhaseForeground whereas we would
   // expect PaintPhaseSelection. The existing haveSelection logic in paint()
   // tests for != PaintPhaseTextClip.
-  if (inline_text_box_.GetLineLayoutItem().Style()->Visibility() !=
+  if (inline_text_box_.GetLineLayoutItem().StyleRef().Visibility() !=
           EVisibility::kVisible ||
       inline_text_box_.Truncation() == kCFullTruncation ||
       !inline_text_box_.Len())
@@ -580,8 +580,8 @@ InlineTextBoxPainter::ApplyTruncationToPaintOffsets(
   bool ltr = inline_text_box_.IsLeftToRightDirection();
   bool flow_is_ltr = inline_text_box_.GetLineLayoutItem()
                          .ContainingBlock()
-                         .Style()
-                         ->IsLeftToRightDirection();
+                         .StyleRef()
+                         .IsLeftToRightDirection();
 
   // truncation is relative to the start of the InlineTextBox, not the text
   // node.
@@ -635,13 +635,14 @@ void InlineTextBoxPainter::PaintSingleMarkerBackgroundRun(
   if (background_color == Color::kTransparent)
     return;
 
-  int delta_y =
-      (inline_text_box_.GetLineLayoutItem().Style()->IsFlippedLinesWritingMode()
-           ? inline_text_box_.Root().SelectionBottom() -
-                 inline_text_box_.LogicalBottom()
-           : inline_text_box_.LogicalTop() -
-                 inline_text_box_.Root().SelectionTop())
-          .ToInt();
+  int delta_y = (inline_text_box_.GetLineLayoutItem()
+                         .StyleRef()
+                         .IsFlippedLinesWritingMode()
+                     ? inline_text_box_.Root().SelectionBottom() -
+                           inline_text_box_.LogicalBottom()
+                     : inline_text_box_.LogicalTop() -
+                           inline_text_box_.Root().SelectionTop())
+                    .ToInt();
   int sel_height = inline_text_box_.Root().SelectionHeight().ToInt();
   FloatPoint local_origin(box_origin.X().ToFloat(),
                           box_origin.Y().ToFloat() - delta_y);
@@ -979,8 +980,8 @@ void InlineTextBoxPainter::PaintDocumentMarker(GraphicsContext& context,
 
     // Calculate start & width
     int delta_y = (inline_text_box_.GetLineLayoutItem()
-                           .Style()
-                           ->IsFlippedLinesWritingMode()
+                           .StyleRef()
+                           .IsFlippedLinesWritingMode()
                        ? inline_text_box_.Root().SelectionBottom() -
                              inline_text_box_.LogicalBottom()
                        : inline_text_box_.LogicalTop() -
@@ -1010,8 +1011,8 @@ void InlineTextBoxPainter::PaintDocumentMarker(GraphicsContext& context,
 
   const SimpleFontData* font_data =
       inline_text_box_.GetLineLayoutItem()
-          .Style(inline_text_box_.IsFirstLineStyle())
-          ->GetFont()
+          .StyleRef(inline_text_box_.IsFirstLineStyle())
+          .GetFont()
           .PrimaryFont();
   DCHECK(font_data);
   int baseline = font_data ? font_data->GetFontMetrics().Ascent() : 0;
@@ -1061,8 +1062,8 @@ void InlineTextBoxPainter::PaintSelection(GraphicsContext& context,
   bool ltr = inline_text_box_.IsLeftToRightDirection();
   bool flow_is_ltr = inline_text_box_.GetLineLayoutItem()
                          .ContainingBlock()
-                         .Style()
-                         ->IsLeftToRightDirection();
+                         .StyleRef()
+                         .IsLeftToRightDirection();
   if (inline_text_box_.Truncation() != kCNoTruncation) {
     // In a mixed-direction flow the ellipsis is at the start of the text
     // so we need to start after it. Otherwise we just need to make sure
@@ -1101,10 +1102,12 @@ void InlineTextBoxPainter::PaintSelection(GraphicsContext& context,
   LayoutUnit selection_bottom = inline_text_box_.Root().SelectionBottom();
   LayoutUnit selection_top = inline_text_box_.Root().SelectionTop();
 
-  int delta_y = RoundToInt(
-      inline_text_box_.GetLineLayoutItem().Style()->IsFlippedLinesWritingMode()
-          ? selection_bottom - inline_text_box_.LogicalBottom()
-          : inline_text_box_.LogicalTop() - selection_top);
+  int delta_y =
+      RoundToInt(inline_text_box_.GetLineLayoutItem()
+                         .StyleRef()
+                         .IsFlippedLinesWritingMode()
+                     ? selection_bottom - inline_text_box_.LogicalBottom()
+                     : inline_text_box_.LogicalTop() - selection_top);
   int sel_height = std::max(0, RoundToInt(selection_bottom - selection_top));
 
   FloatPoint local_origin(box_rect.X().ToFloat(),
@@ -1180,8 +1183,8 @@ void InlineTextBoxPainter::PaintStyleableMarkerUnderline(
   int line_thickness = 1;
   const SimpleFontData* font_data =
       inline_text_box_.GetLineLayoutItem()
-          .Style(inline_text_box_.IsFirstLineStyle())
-          ->GetFont()
+          .StyleRef(inline_text_box_.IsFirstLineStyle())
+          .GetFont()
           .PrimaryFont();
   DCHECK(font_data);
   int baseline = font_data ? font_data->GetFontMetrics().Ascent() : 0;

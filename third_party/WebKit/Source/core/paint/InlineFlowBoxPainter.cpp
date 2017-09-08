@@ -85,14 +85,14 @@ void InlineFlowBoxPainter::PaintFillLayer(const PaintInfo& paint_info,
   BoxModelObjectPainter box_model_painter(*box_model, &inline_flow_box_,
                                           rect.Size());
   if ((!has_fill_image &&
-       !inline_flow_box_.GetLineLayoutItem().Style()->HasBorderRadius()) ||
+       !inline_flow_box_.GetLineLayoutItem().StyleRef().HasBorderRadius()) ||
       (!inline_flow_box_.PrevLineBox() && !inline_flow_box_.NextLineBox()) ||
       !inline_flow_box_.Parent()) {
     box_model_painter.PaintFillLayer(paint_info, c, fill_layer, rect,
                                      kBackgroundBleedNone, geometry, op);
   } else if (inline_flow_box_.GetLineLayoutItem()
-                 .Style()
-                 ->BoxDecorationBreak() == EBoxDecorationBreak::kClone) {
+                 .StyleRef()
+                 .BoxDecorationBreak() == EBoxDecorationBreak::kClone) {
     GraphicsContextStateSaver state_saver(paint_info.context);
     paint_info.context.Clip(PixelSnappedIntRect(rect));
     box_model_painter.PaintFillLayer(paint_info, c, fill_layer, rect,
@@ -103,7 +103,7 @@ void InlineFlowBoxPainter::PaintFillLayer(const PaintInfo& paint_info,
     LayoutSize frame_size(inline_flow_box_.Width(), inline_flow_box_.Height());
     LayoutRect image_strip_paint_rect = PaintRectForImageStrip(
         rect.Location(), frame_size,
-        inline_flow_box_.GetLineLayoutItem().Style()->Direction());
+        inline_flow_box_.GetLineLayoutItem().StyleRef().Direction());
     GraphicsContextStateSaver state_saver(paint_info.context);
     // TODO(chrishtr): this should likely be pixel-snapped.
     paint_info.context.Clip(PixelSnappedIntRect(rect));
@@ -221,9 +221,9 @@ InlineFlowBoxPainter::GetBorderPaintType(const LayoutRect& adjusted_frame_rect,
                                          IntRect& adjusted_clip_rect) const {
   adjusted_clip_rect = PixelSnappedIntRect(adjusted_frame_rect);
   if (inline_flow_box_.Parent() &&
-      inline_flow_box_.GetLineLayoutItem().Style()->HasBorderDecoration()) {
+      inline_flow_box_.GetLineLayoutItem().StyleRef().HasBorderDecoration()) {
     const NinePieceImage& border_image =
-        inline_flow_box_.GetLineLayoutItem().Style()->BorderImage();
+        inline_flow_box_.GetLineLayoutItem().StyleRef().BorderImage();
     StyleImage* border_image_source = border_image.GetImage();
     bool has_border_image =
         border_image_source && border_image_source->CanRender();
@@ -257,7 +257,7 @@ void InlineFlowBoxPainter::PaintBoxDecorationBackground(
     const LayoutPoint& paint_offset,
     const LayoutRect& cull_rect) {
   DCHECK(paint_info.phase == kPaintPhaseForeground);
-  if (inline_flow_box_.GetLineLayoutItem().Style()->Visibility() !=
+  if (inline_flow_box_.GetLineLayoutItem().StyleRef().Visibility() !=
       EVisibility::kVisible)
     return;
 
@@ -266,7 +266,7 @@ void InlineFlowBoxPainter::PaintBoxDecorationBackground(
   LayoutObject* inline_flow_box_layout_object =
       LineLayoutAPIShim::LayoutObjectFrom(inline_flow_box_.GetLineLayoutItem());
   const ComputedStyle* style_to_use =
-      inline_flow_box_.GetLineLayoutItem().Style(
+      &inline_flow_box_.GetLineLayoutItem().StyleRef(
           inline_flow_box_.IsFirstLineStyle());
   bool should_paint_box_decoration_background;
   if (inline_flow_box_.Parent())
@@ -275,7 +275,7 @@ void InlineFlowBoxPainter::PaintBoxDecorationBackground(
   else
     should_paint_box_decoration_background =
         inline_flow_box_.IsFirstLineStyle() &&
-        style_to_use != inline_flow_box_.GetLineLayoutItem().Style();
+        style_to_use != &inline_flow_box_.GetLineLayoutItem().StyleRef();
 
   if (!should_paint_box_decoration_background)
     return;
@@ -346,7 +346,7 @@ void InlineFlowBoxPainter::PaintBoxDecorationBackground(
 
 void InlineFlowBoxPainter::PaintMask(const PaintInfo& paint_info,
                                      const LayoutPoint& paint_offset) {
-  if (inline_flow_box_.GetLineLayoutItem().Style()->Visibility() !=
+  if (inline_flow_box_.GetLineLayoutItem().StyleRef().Visibility() !=
           EVisibility::kVisible ||
       paint_info.phase != kPaintPhaseMask)
     return;
@@ -359,9 +359,9 @@ void InlineFlowBoxPainter::PaintMask(const PaintInfo& paint_info,
   LayoutPoint adjusted_paint_offset = paint_offset + local_rect.Location();
 
   const NinePieceImage& mask_nine_piece_image =
-      inline_flow_box_.GetLineLayoutItem().Style()->MaskBoxImage();
+      inline_flow_box_.GetLineLayoutItem().StyleRef().MaskBoxImage();
   StyleImage* mask_box_image =
-      inline_flow_box_.GetLineLayoutItem().Style()->MaskBoxImage().GetImage();
+      inline_flow_box_.GetLineLayoutItem().StyleRef().MaskBoxImage().GetImage();
 
   // Figure out if we need to push a transparency layer to render our mask.
   bool push_transparency_layer = false;
@@ -376,10 +376,10 @@ void InlineFlowBoxPainter::PaintMask(const PaintInfo& paint_info,
   SkBlendMode composite_op = SkBlendMode::kSrcOver;
   if (!mask_blending_applied_by_compositor) {
     if ((mask_box_image && inline_flow_box_.GetLineLayoutItem()
-                               .Style()
-                               ->MaskLayers()
+                               .StyleRef()
+                               .MaskLayers()
                                .HasImage()) ||
-        inline_flow_box_.GetLineLayoutItem().Style()->MaskLayers().Next()) {
+        inline_flow_box_.GetLineLayoutItem().StyleRef().MaskLayers().Next()) {
       push_transparency_layer = true;
       paint_info.context.BeginLayer(1.0f, SkBlendMode::kDstIn);
     } else {
@@ -395,7 +395,7 @@ void InlineFlowBoxPainter::PaintMask(const PaintInfo& paint_info,
 
   LayoutRect paint_rect = LayoutRect(adjusted_paint_offset, frame_rect.Size());
   PaintFillLayers(paint_info, Color::kTransparent,
-                  inline_flow_box_.GetLineLayoutItem().Style()->MaskLayers(),
+                  inline_flow_box_.GetLineLayoutItem().StyleRef().MaskLayers(),
                   paint_rect, composite_op);
 
   bool has_box_image = mask_box_image && mask_box_image->CanRender();
