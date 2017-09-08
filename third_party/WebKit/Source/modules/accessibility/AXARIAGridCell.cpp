@@ -56,21 +56,21 @@ bool AXARIAGridCell::IsAriaRowHeader() const {
 }
 
 AXObject* AXARIAGridCell::ParentTable() const {
-  AXObject* parent = ParentObjectUnignored();
-  if (!parent)
-    return 0;
+  AXObject* ancestor =
+      static_cast<AXObject*>(const_cast<AXARIAGridCell*>(this));
+  do {
+    ancestor = ancestor->ParentObjectUnignored();
+  } while (ancestor && !ancestor->IsAXTable());
+  return ancestor;
+}
 
-  if (parent->IsAXTable())
-    return parent;
-
-  // It could happen that we hadn't reached the parent table yet (in
-  // case objects for rows were not ignoring accessibility) so for
-  // that reason we need to run parentObjectUnignored once again.
-  parent = parent->ParentObjectUnignored();
-  if (!parent || !parent->IsAXTable())
-    return 0;
-
-  return parent;
+AXObject* AXARIAGridCell::ParentRow() const {
+  AXObject* ancestor =
+      static_cast<AXObject*>(const_cast<AXARIAGridCell*>(this));
+  do {
+    ancestor = ancestor->ParentObjectUnignored();
+  } while (ancestor && !ancestor->IsTableRow());
+  return ancestor;
 }
 
 bool AXARIAGridCell::RowIndexRange(
@@ -83,12 +83,14 @@ bool AXARIAGridCell::RowIndexRange(
   if (AXTableCell::RowIndexRange(row_range))
     return true;
 
-  if (parent->IsTableRow()) {
+  AXObject* row = ParentRow();
+  if (row && row->IsTableRow()) {
     // We already got a table row, use its API.
-    row_range.first = ToAXTableRow(parent)->RowIndex();
+    row_range.first = ToAXTableRow(row)->RowIndex();
   } else if (parent->IsAXTable()) {
     // We reached the parent table, so we need to inspect its
     // children to determine the row index for the cell in it.
+    // TODO do we still want this?
     unsigned column_count = ToAXTable(parent)->ColumnCount();
     if (!column_count)
       return false;
@@ -103,34 +105,34 @@ bool AXARIAGridCell::RowIndexRange(
     }
   }
 
-  // TODO should aria-rowspan be checked here? We also support it another way.
+  // ARIA cells not based on th/td can have an aria-rowspan, however that is not
+  // exposed here as this method only exposes physical coordinates, not virtual.
   row_range.second = 1;
   return true;
 }
 
 bool AXARIAGridCell::ColumnIndexRange(
     std::pair<unsigned, unsigned>& column_range) const {
-  AXObject* parent = ParentObjectUnignored();
-  if (!parent)
-    return false;
-
   // Use native table semantics if this is ARIA overlayed on an HTML table.
   if (AXTableCell::ColumnIndexRange(column_range))
     return true;
 
-  if (!parent->IsTableRow() && !parent->IsAXTable())
-    return false;
+  AXObject* row = ParentRow();
+  if (!row)
+    return false;  // Auto col index range not supported if no row object
 
-  const auto& siblings = parent->Children();
-  unsigned children_size = siblings.size();
-  for (unsigned k = 0; k < children_size; ++k) {
-    if (siblings[k].Get() == this) {
+  DCHECK(row->IsTableRow());
+  const auto& cells = ToAXTableRow(row)->Cells();
+  unsigned cells_size = cells.size();
+  for (unsigned k = 0; k < cells_size; ++k) {
+    if (cells[k].Get() == this) {
       column_range.first = k;
       break;
     }
   }
 
-  // TODO should aria-colspan be checked here? We also support it another way.
+  // ARIA cells not based on th/td can have an aria-colspan, however that is not
+  // exposed here as this method only exposes physical coordinates, not virtual.
   column_range.second = 1;
   return true;
 }
