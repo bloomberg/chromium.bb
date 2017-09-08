@@ -29,6 +29,7 @@
 #include "core/dom/Attr.h"
 #include "core/dom/Element.h"
 #include "core/dom/ExceptionCode.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 
@@ -89,6 +90,41 @@ Attr* NamedNodeMap::item(unsigned index) const {
 
 size_t NamedNodeMap::length() const {
   return element_->Attributes().size();
+}
+
+void NamedNodeMap::NamedPropertyEnumerator(Vector<String>& names,
+                                           ExceptionState&) const {
+  // https://dom.spec.whatwg.org/#interface-namednodemap
+  // A NamedNodeMap object’s supported property names are the return value of
+  // running these steps:
+  // 1. Let names be the qualified names of the attributes in this NamedNodeMap
+  //    object’s attribute list, with duplicates omitted, in order.
+  // 2. If this NamedNodeMap object’s element is in the HTML namespace and its
+  //    node document is an HTML document, then for each name in names:
+  //    2.1. Let lowercaseName be name, in ASCII lowercase.
+  //    2.2. If lowercaseName is not equal to name, remove name from names.
+  // 3. Return names.
+  const AttributeCollection attributes = element_->Attributes();
+  names.ReserveInitialCapacity(attributes.size());
+  if (element_->IsHTMLElement() && element_->GetDocument().IsHTMLDocument()) {
+    for (const Attribute& attribute : attributes) {
+      if ((attribute.Prefix() == attribute.Prefix().LowerASCII()) &&
+          (attribute.LocalName() == attribute.LocalName().LowerASCII())) {
+        names.UncheckedAppend(attribute.GetName().ToString());
+      }
+    }
+  } else {
+    for (const Attribute& attribute : attributes) {
+      names.UncheckedAppend(attribute.GetName().ToString());
+    }
+  }
+}
+
+bool NamedNodeMap::NamedPropertyQuery(const AtomicString& name,
+                                      ExceptionState& exception_state) const {
+  Vector<String> properties;
+  NamedPropertyEnumerator(properties, exception_state);
+  return properties.Contains(name);
 }
 
 DEFINE_TRACE(NamedNodeMap) {
