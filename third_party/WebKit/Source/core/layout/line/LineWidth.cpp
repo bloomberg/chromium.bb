@@ -87,8 +87,7 @@ void LineWidth::ShrinkAvailableWidthForNewFloatIfNeeded(
         new_left = left_;
       }
     }
-    if (IndentText() == kIndentText &&
-        block_.StyleRef().IsLeftToRightDirection())
+    if (IndentText() == kIndentText && block_.Style()->IsLeftToRightDirection())
       new_left += FloorToInt(block_.TextIndentOffset());
     left_ = std::max(left_, new_left);
   } else {
@@ -103,7 +102,7 @@ void LineWidth::ShrinkAvailableWidthForNewFloatIfNeeded(
       }
     }
     if (IndentText() == kIndentText &&
-        !block_.StyleRef().IsLeftToRightDirection())
+        !block_.Style()->IsLeftToRightDirection())
       new_right -= FloorToInt(block_.TextIndentOffset());
     right_ = std::min(right_, new_right);
   }

@@ -271,7 +271,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
   static bool ShouldSkipCreatingRunsForObject(LineLayoutItem obj) {
     return obj.IsFloating() || (obj.IsOutOfFlowPositioned() &&
-                                !obj.StyleRef().IsOriginalDisplayInlineType() &&
+                                !obj.Style()->IsOriginalDisplayInlineType() &&
                                 !obj.Container().IsLayoutInline());
   }
 

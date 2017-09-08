@@ -214,9 +214,9 @@ void InlineFlowBox::AddToLine(InlineBox* child) {
   }
 
   if (!child->GetLineLayoutItem().IsOutOfFlowPositioned()) {
-    const ComputedStyle& child_style =
-        child->GetLineLayoutItem().StyleRef(IsFirstLineStyle());
     if (child->IsText()) {
+      const ComputedStyle& child_style =
+          child->GetLineLayoutItem().StyleRef(IsFirstLineStyle());
       if (child_style.LetterSpacing() < 0 || child_style.TextShadow() ||
           child_style.GetTextEmphasisMark() != TextEmphasisMark::kNone ||
           child_style.TextStrokeWidth())
@@ -226,13 +226,19 @@ void InlineFlowBox::AddToLine(InlineBox* child) {
       if (box.HasOverflowModel() || box.HasSelfPaintingLayer())
         child->ClearKnownToHaveNoOverflow();
     } else if (!child->GetLineLayoutItem().IsBR() &&
-               (child_style.BoxShadow() ||
+               (child->GetLineLayoutItem()
+                    .Style(IsFirstLineStyle())
+                    ->BoxShadow() ||
                 child->BoxModelObject().HasSelfPaintingLayer() ||
                 (child->GetLineLayoutItem().IsListMarker() &&
                  !LineLayoutListMarker(child->GetLineLayoutItem())
                       .IsInside()) ||
-                child_style.HasBorderImageOutsets() ||
-                child_style.HasOutline())) {
+                child->GetLineLayoutItem()
+                    .Style(IsFirstLineStyle())
+                    ->HasBorderImageOutsets() ||
+                child->GetLineLayoutItem()
+                    .Style(IsFirstLineStyle())
+                    ->HasOutline())) {
       child->ClearKnownToHaveNoOverflow();
     }
 
@@ -370,14 +376,14 @@ void InlineFlowBox::DetermineSpacingForFlowBoxes(
 
   // The root inline box never has borders/margins/padding.
   if (Parent()) {
-    bool ltr = GetLineLayoutItem().StyleRef().IsLeftToRightDirection();
+    bool ltr = GetLineLayoutItem().Style()->IsLeftToRightDirection();
 
     // Check to see if all initial lines are unconstructed.  If so, then
     // we know the inline began on this line (unless we are a continuation).
     LineBoxList* line_box_list = LineBoxes();
     if (!line_box_list->FirstLineBox()->IsConstructed() &&
         !GetLineLayoutItem().IsInlineElementContinuation()) {
-      if (GetLineLayoutItem().StyleRef().BoxDecorationBreak() ==
+      if (GetLineLayoutItem().Style()->BoxDecorationBreak() ==
           EBoxDecorationBreak::kClone)
         include_left_edge = include_right_edge = true;
       else if (ltr && line_box_list->FirstLineBox() == this)
@@ -406,7 +412,7 @@ void InlineFlowBox::DetermineSpacingForFlowBoxes(
       //     next line.
       // (4) The decoration break is set to clone therefore there will be
       //     borders on every sides.
-      if (GetLineLayoutItem().StyleRef().BoxDecorationBreak() ==
+      if (GetLineLayoutItem().Style()->BoxDecorationBreak() ==
           EBoxDecorationBreak::kClone) {
         include_left_edge = include_right_edge = true;
       } else if (ltr) {
@@ -476,8 +482,8 @@ void InlineFlowBox::PlaceBoxRangeInInlineDirection(
       if (rt.TextLength()) {
         if (needs_word_spacing &&
             IsSpaceOrNewline(rt.CharacterAt(text->Start())))
-          space = LayoutUnit(rt.StyleRef(IsFirstLineStyle())
-                                 .GetFont()
+          space = LayoutUnit(rt.Style(IsFirstLineStyle())
+                                 ->GetFont()
                                  .GetFontDescription()
                                  .WordSpacing());
         needs_word_spacing = !IsSpaceOrNewline(rt.CharacterAt(text->end()));
@@ -498,8 +504,8 @@ void InlineFlowBox::PlaceBoxRangeInInlineDirection(
       if (curr->GetLineLayoutItem().IsOutOfFlowPositioned()) {
         if (curr->GetLineLayoutItem()
                 .Parent()
-                .StyleRef()
-                .IsLeftToRightDirection()) {
+                .Style()
+                ->IsLeftToRightDirection()) {
           curr->SetLogicalLeft(logical_left);
         } else {
           // Our offset that we cache needs to be from the edge of the right
@@ -557,8 +563,8 @@ FontBaseline InlineFlowBox::DominantBaseline() const {
   // text-orientation is not sideways-*.
   // http://dev.w3.org/csswg/css-writing-modes-3/#text-baselines
   if (!IsHorizontal() && GetLineLayoutItem()
-                             .StyleRef(IsFirstLineStyle())
-                             .GetFontDescription()
+                             .Style(IsFirstLineStyle())
+                             ->GetFontDescription()
                              .IsVerticalAnyUpright())
     return kIdeographicBaseline;
   return kAlphabeticBaseline;
@@ -740,10 +746,8 @@ void InlineFlowBox::PlaceBoxesInBlockDirection(
     FontBaseline baseline_type) {
   bool is_root_box = IsRootInlineBox();
   if (is_root_box) {
-    const SimpleFontData* font_data = GetLineLayoutItem()
-                                          .StyleRef(IsFirstLineStyle())
-                                          .GetFont()
-                                          .PrimaryFont();
+    const SimpleFontData* font_data =
+        GetLineLayoutItem().Style(IsFirstLineStyle())->GetFont().PrimaryFont();
     DCHECK(font_data);
     if (!font_data)
       return;
@@ -798,8 +802,8 @@ void InlineFlowBox::PlaceBoxesInBlockDirection(
     LayoutUnit border_padding_height;
     if (curr->IsText() || curr->IsInlineFlowBox()) {
       const SimpleFontData* font_data = curr->GetLineLayoutItem()
-                                            .StyleRef(IsFirstLineStyle())
-                                            .GetFont()
+                                            .Style(IsFirstLineStyle())
+                                            ->GetFont()
                                             .PrimaryFont();
       DCHECK(font_data);
       if (!font_data)
@@ -840,8 +844,8 @@ void InlineFlowBox::PlaceBoxesInBlockDirection(
         // being part of the overall lineTop/lineBottom.
         // Really this is a workaround hack for the fact that ruby should have
         // been done as line layout and not done using inline-block.
-        if (GetLineLayoutItem().StyleRef().IsFlippedLinesWritingMode() ==
-            (curr->GetLineLayoutItem().StyleRef().GetRubyPosition() ==
+        if (GetLineLayoutItem().Style()->IsFlippedLinesWritingMode() ==
+            (curr->GetLineLayoutItem().Style()->GetRubyPosition() ==
              RubyPosition::kAfter))
           has_annotations_before = true;
         else
@@ -860,7 +864,7 @@ void InlineFlowBox::PlaceBoxesInBlockDirection(
               (ruby_base.FirstRootBox() ? ruby_base.FirstRootBox()->LineTop()
                                         : LayoutUnit());
           new_logical_top +=
-              !GetLineLayoutItem().StyleRef().IsFlippedLinesWritingMode()
+              !GetLineLayoutItem().Style()->IsFlippedLinesWritingMode()
                   ? top_ruby_base_leading
                   : bottom_ruby_base_leading;
           box_height -= (top_ruby_base_leading + bottom_ruby_base_leading);
@@ -929,7 +933,7 @@ void InlineFlowBox::PlaceBoxesInBlockDirection(
           std::max(line_bottom, line_bottom_including_margins);
     }
 
-    if (GetLineLayoutItem().StyleRef().IsFlippedLinesWritingMode())
+    if (GetLineLayoutItem().Style()->IsFlippedLinesWritingMode())
       FlipLinesInBlockDirection(line_top_including_margins,
                                 line_bottom_including_margins);
   }
@@ -994,7 +998,7 @@ inline void InlineFlowBox::AddBoxShadowVisualOverflow(
   // box-shadow on the block element applies to the block and not to the lines,
   // unless it is modified by :first-line pseudo element.
   if (!Parent() &&
-      (!IsFirstLineStyle() || &style == &GetLineLayoutItem().StyleRef()))
+      (!IsFirstLineStyle() || &style == GetLineLayoutItem().Style()))
     return;
 
   WritingMode writing_mode = style.GetWritingMode();
@@ -1021,7 +1025,7 @@ inline void InlineFlowBox::AddBorderOutsetVisualOverflow(
   // border-image-outset on the block element applies to the block and not to
   // the lines, unless it is modified by :first-line pseudo element.
   if (!Parent() &&
-      (!IsFirstLineStyle() || &style == &GetLineLayoutItem().StyleRef()))
+      (!IsFirstLineStyle() || &style == GetLineLayoutItem().Style()))
     return;
 
   if (!style.HasBorderImageOutsets())
@@ -1202,7 +1206,7 @@ static void ComputeGlyphOverflow(
   float measured_width = layout_text.Width(
       text->Start(), text->Len(), LayoutUnit(), text->Direction(), false,
       &fallback_fonts, &glyph_bounds);
-  const Font& font = layout_text.StyleRef().GetFont();
+  const Font& font = layout_text.Style()->GetFont();
   glyph_overflow.SetFromBounds(glyph_bounds, font, measured_width);
   if (!fallback_fonts.IsEmpty()) {
     GlyphOverflowAndFallbackFontsMap::ValueType* it =
@@ -1406,12 +1410,11 @@ bool InlineFlowBox::NodeAtPoint(HitTestResult& result,
                                       overflow_rect.Location()))
     return false;
 
-  if (GetLineLayoutItem().StyleRef().HasBorderRadius()) {
+  if (GetLineLayoutItem().Style()->HasBorderRadius()) {
     LayoutRect border_rect = LogicalFrameRect();
     border_rect.MoveBy(accumulated_offset);
-    FloatRoundedRect border =
-        GetLineLayoutItem().StyleRef().GetRoundedBorderFor(
-            border_rect, IncludeLogicalLeftEdge(), IncludeLogicalRightEdge());
+    FloatRoundedRect border = GetLineLayoutItem().Style()->GetRoundedBorderFor(
+        border_rect, IncludeLogicalLeftEdge(), IncludeLogicalRightEdge());
     if (!location_in_container.Intersects(border))
       return false;
   }
@@ -1456,8 +1459,7 @@ bool InlineFlowBox::BoxShadowCanBeAppliedToBackground(
   // would be clipped out, so it has to be drawn separately).
   StyleImage* image = last_background_layer.GetImage();
   bool has_fill_image = image && image->CanRender();
-  return (!has_fill_image &&
-          !GetLineLayoutItem().StyleRef().HasBorderRadius()) ||
+  return (!has_fill_image && !GetLineLayoutItem().Style()->HasBorderRadius()) ||
          (!PrevLineBox() && !NextLineBox()) || !Parent();
 }
 
@@ -1561,14 +1563,14 @@ LayoutUnit InlineFlowBox::ComputeOverAnnotationAdjustment(
 
     if (curr->GetLineLayoutItem().IsAtomicInlineLevel() &&
         curr->GetLineLayoutItem().IsRubyRun() &&
-        curr->GetLineLayoutItem().StyleRef().GetRubyPosition() ==
+        curr->GetLineLayoutItem().Style()->GetRubyPosition() ==
             RubyPosition::kBefore) {
       LineLayoutRubyRun ruby_run = LineLayoutRubyRun(curr->GetLineLayoutItem());
       LineLayoutRubyText ruby_text = ruby_run.RubyText();
       if (!ruby_text)
         continue;
 
-      if (!ruby_run.StyleRef().IsFlippedLinesWritingMode()) {
+      if (!ruby_run.Style()->IsFlippedLinesWritingMode()) {
         LayoutUnit top_of_first_ruby_text_line =
             ruby_text.LogicalTop() + (ruby_text.FirstRootBox()
                                           ? ruby_text.FirstRootBox()->LineTop()
@@ -1632,14 +1634,14 @@ LayoutUnit InlineFlowBox::ComputeUnderAnnotationAdjustment(
 
     if (curr->GetLineLayoutItem().IsAtomicInlineLevel() &&
         curr->GetLineLayoutItem().IsRubyRun() &&
-        curr->GetLineLayoutItem().StyleRef().GetRubyPosition() ==
+        curr->GetLineLayoutItem().Style()->GetRubyPosition() ==
             RubyPosition::kAfter) {
       LineLayoutRubyRun ruby_run = LineLayoutRubyRun(curr->GetLineLayoutItem());
       LineLayoutRubyText ruby_text = ruby_run.RubyText();
       if (!ruby_text)
         continue;
 
-      if (ruby_run.StyleRef().IsFlippedLinesWritingMode()) {
+      if (ruby_run.Style()->IsFlippedLinesWritingMode()) {
         LayoutUnit top_of_first_ruby_text_line =
             ruby_text.LogicalTop() + (ruby_text.FirstRootBox()
                                           ? ruby_text.FirstRootBox()->LineTop()
@@ -1703,7 +1705,7 @@ void InlineFlowBox::CollectLeafBoxesInLogicalOrder(
     leaf_boxes_in_logical_order.push_back(leaf);
   }
 
-  if (GetLineLayoutItem().StyleRef().RtlOrdering() == EOrder::kVisual)
+  if (GetLineLayoutItem().Style()->RtlOrdering() == EOrder::kVisual)
     return;
 
   // Reverse of reordering of the line (L2 according to Bidi spec):
