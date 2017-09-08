@@ -36,8 +36,8 @@ class WebNotificationDelegate : public NotificationDelegate {
   bool ShouldDisplayOverFullscreen() const override;
   void Close(bool by_user) override;
   void Click() override;
-  void ButtonClick(int button_index) override;
-  void ButtonClickWithReply(int button_index,
+  void ButtonClick(int action_index) override;
+  void ButtonClickWithReply(int action_index,
                             const base::string16& reply) override;
 
  protected:

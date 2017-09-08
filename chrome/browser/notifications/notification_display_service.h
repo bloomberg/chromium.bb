@@ -12,12 +12,10 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/optional.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/notifications/notification_common.h"
 #include "components/keyed_service/core/keyed_service.h"
-
-namespace base {
-class NullableString16;
-}
 
 class Notification;
 class NotificationHandler;
@@ -58,9 +56,9 @@ class NotificationDisplayService : public KeyedService {
                                     NotificationCommon::Type notification_type,
                                     const std::string& origin,
                                     const std::string& notification_id,
-                                    int action_index,
-                                    const base::NullableString16& reply,
-                                    bool by_user = true);
+                                    const base::Optional<int>& action_index,
+                                    const base::Optional<base::string16>& reply,
+                                    const base::Optional<bool>& by_user);
 
   // Return whether a notification of |notification_type| should be displayed
   // for |origin| when the browser is in full screen mode.

@@ -53,9 +53,9 @@ void NotificationDisplayService::ProcessNotificationOperation(
     NotificationCommon::Type notification_type,
     const std::string& origin,
     const std::string& notification_id,
-    int action_index,
-    const base::NullableString16& reply,
-    bool by_user) {
+    const base::Optional<int>& action_index,
+    const base::Optional<base::string16>& reply,
+    const base::Optional<bool>& by_user) {
   NotificationHandler* handler = GetNotificationHandler(notification_type);
   DCHECK(handler);
   if (!handler) {
@@ -67,7 +67,8 @@ void NotificationDisplayService::ProcessNotificationOperation(
       handler->OnClick(profile_, origin, notification_id, action_index, reply);
       break;
     case NotificationCommon::CLOSE:
-      handler->OnClose(profile_, origin, notification_id, by_user);
+      DCHECK(by_user.has_value());
+      handler->OnClose(profile_, origin, notification_id, by_user.value());
       break;
     case NotificationCommon::SETTINGS:
       handler->OpenSettings(profile_);

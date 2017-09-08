@@ -86,21 +86,21 @@ void ExtensionNotificationHandler::OnClick(
     Profile* profile,
     const std::string& origin,
     const std::string& notification_id,
-    int action_index,
-    const base::NullableString16& reply) {
-  DCHECK(reply.is_null());
+    const base::Optional<int>& action_index,
+    const base::Optional<base::string16>& reply) {
+  DCHECK(!reply.has_value());
 
   std::string extension_id(GetExtensionId(origin));
   std::unique_ptr<base::ListValue> args(
       CreateBaseEventArgs(extension_id, notification_id));
-  if (action_index > -1)
-    args->AppendInteger(action_index);
+  if (action_index.has_value())
+    args->AppendInteger(action_index.value());
   events::HistogramValue histogram_value =
-      action_index > -1 ? events::NOTIFICATIONS_ON_BUTTON_CLICKED
-                        : events::NOTIFICATIONS_ON_CLICKED;
+      action_index.has_value() ? events::NOTIFICATIONS_ON_BUTTON_CLICKED
+                               : events::NOTIFICATIONS_ON_CLICKED;
   const std::string& event_name =
-      action_index > -1 ? api::notifications::OnButtonClicked::kEventName
-                        : api::notifications::OnClicked::kEventName;
+      action_index.has_value() ? api::notifications::OnButtonClicked::kEventName
+                               : api::notifications::OnClicked::kEventName;
 
   SendEvent(profile, extension_id, histogram_value, event_name,
             EventRouter::USER_GESTURE_ENABLED, std::move(args));

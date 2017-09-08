@@ -105,8 +105,9 @@ void ProfileLoadedCallback(NotificationCommon::Operation operation,
                            NotificationCommon::Type notification_type,
                            const std::string& origin,
                            const std::string& notification_id,
-                           int action_index,
-                           const base::NullableString16& reply,
+                           const base::Optional<int>& action_index,
+                           const base::Optional<base::string16>& reply,
+                           const base::Optional<bool>& by_user,
                            Profile* profile) {
   if (!profile) {
     // TODO(miguelg): Add UMA for this condition.
@@ -120,7 +121,7 @@ void ProfileLoadedCallback(NotificationCommon::Operation operation,
 
   display_service->ProcessNotificationOperation(operation, notification_type,
                                                 origin, notification_id,
-                                                action_index, reply);
+                                                action_index, reply, by_user);
 }
 
 }  // namespace
@@ -166,11 +167,10 @@ void NotificationPlatformBridgeAndroid::OnNotificationClicked(
   std::string profile_id = ConvertJavaStringToUTF8(env, java_profile_id);
   std::string webapk_package =
       ConvertJavaStringToUTF8(env, java_webapk_package);
-  base::NullableString16 reply =
-      java_reply
-          ? base::NullableString16(ConvertJavaStringToUTF16(env, java_reply),
-                                   false /* is_null */)
-          : base::NullableString16();
+
+  base::Optional<base::string16> reply;
+  if (java_reply)
+    reply = ConvertJavaStringToUTF16(env, java_reply);
 
   GURL origin(ConvertJavaStringToUTF8(env, java_origin));
   GURL scope_url(ConvertJavaStringToUTF8(env, java_scope_url));
@@ -185,7 +185,7 @@ void NotificationPlatformBridgeAndroid::OnNotificationClicked(
       profile_id, incognito,
       base::Bind(&ProfileLoadedCallback, NotificationCommon::CLICK,
                  NotificationCommon::PERSISTENT, origin.spec(), notification_id,
-                 action_index, reply));
+                 action_index, std::move(reply), base::nullopt /* by_user */));
 }
 
 void NotificationPlatformBridgeAndroid::
@@ -231,7 +231,8 @@ void NotificationPlatformBridgeAndroid::OnNotificationClosed(
       base::Bind(&ProfileLoadedCallback, NotificationCommon::CLOSE,
                  NotificationCommon::PERSISTENT,
                  ConvertJavaStringToUTF8(env, java_origin), notification_id,
-                 -1 /* action index */, base::NullableString16() /* reply */));
+                 base::nullopt /* action index */, base::nullopt /* reply */,
+                 by_user));
 }
 
 void NotificationPlatformBridgeAndroid::Display(

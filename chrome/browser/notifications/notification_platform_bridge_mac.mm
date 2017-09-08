@@ -70,7 +70,9 @@ void ProfileLoadedCallback(NotificationCommon::Operation operation,
                            NotificationCommon::Type notification_type,
                            const std::string& origin,
                            const std::string& notification_id,
-                           int action_index,
+                           const base::Optional<int>& action_index,
+                           const base::Optional<base::string16>& reply,
+                           const base::Optional<bool>& by_user,
                            Profile* profile) {
   if (!profile) {
     // TODO(miguelg): Add UMA for this condition.
@@ -82,9 +84,9 @@ void ProfileLoadedCallback(NotificationCommon::Operation operation,
   auto* display_service =
       NotificationDisplayServiceFactory::GetForProfile(profile);
 
-  display_service->ProcessNotificationOperation(
-      operation, notification_type, origin, notification_id, action_index,
-      base::NullableString16() /* reply */);
+  display_service->ProcessNotificationOperation(operation, notification_type,
+                                                origin, notification_id,
+                                                action_index, reply, by_user);
 }
 
 // Loads the profile and process the Notification response
@@ -94,15 +96,18 @@ void DoProcessNotificationResponse(NotificationCommon::Operation operation,
                                    bool incognito,
                                    const std::string& origin,
                                    const std::string& notification_id,
-                                   int32_t button_index) {
+                                   const base::Optional<int>& action_index,
+                                   const base::Optional<base::string16>& reply,
+                                   const base::Optional<bool>& by_user) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   ProfileManager* profileManager = g_browser_process->profile_manager();
   DCHECK(profileManager);
 
   profileManager->LoadProfile(
-      profile_id, incognito, base::Bind(&ProfileLoadedCallback, operation, type,
-                                        origin, notification_id, button_index));
+      profile_id, incognito,
+      base::Bind(&ProfileLoadedCallback, operation, type, origin,
+                 notification_id, action_index, reply, by_user));
 }
 
 // This enum backs an UMA histogram, so it should be treated as append-only.
@@ -378,7 +383,8 @@ void NotificationPlatformBridgeMac::ProcessNotificationResponse(
                  static_cast<NotificationCommon::Type>(
                      notification_type.unsignedIntValue),
                  profile_id, [is_incognito boolValue], notification_origin,
-                 notification_id, button_index.intValue));
+                 notification_id, button_index.intValue /* action_index */,
+                 base::nullopt /* reply */, true /* by_user */));
 }
 
 // static

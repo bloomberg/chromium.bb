@@ -55,7 +55,8 @@ void WebNotificationDelegate::Close(bool by_user) {
       NotificationDisplayServiceFactory::GetForProfile(profile_);
   display_service->ProcessNotificationOperation(
       NotificationCommon::CLOSE, notification_type_, origin().spec(),
-      notification_id_, -1, base::NullableString16(), by_user);
+      notification_id_, base::nullopt /* action_index */,
+      base::nullopt /* reply */, by_user);
 }
 
 void WebNotificationDelegate::Click() {
@@ -63,25 +64,26 @@ void WebNotificationDelegate::Click() {
       NotificationDisplayServiceFactory::GetForProfile(profile_);
   display_service->ProcessNotificationOperation(
       NotificationCommon::CLICK, notification_type_, origin().spec(),
-      notification_id_, -1, base::NullableString16());
+      notification_id_, base::nullopt /* action_index */,
+      base::nullopt /* reply */, base::nullopt /* by_user */);
 }
 
-void WebNotificationDelegate::ButtonClick(int button_index) {
-  DCHECK(button_index >= 0);
+void WebNotificationDelegate::ButtonClick(int action_index) {
+  DCHECK_GE(action_index, 0);
   auto* display_service =
       NotificationDisplayServiceFactory::GetForProfile(profile_);
   display_service->ProcessNotificationOperation(
       NotificationCommon::CLICK, notification_type_, origin().spec(),
-      notification_id_, button_index, base::NullableString16());
+      notification_id_, action_index, base::nullopt /* reply */,
+      base::nullopt /* by_user */);
 }
 
 void WebNotificationDelegate::ButtonClickWithReply(
-    int button_index,
+    int action_index,
     const base::string16& reply) {
   auto* display_service =
       NotificationDisplayServiceFactory::GetForProfile(profile_);
   display_service->ProcessNotificationOperation(
       NotificationCommon::CLICK, notification_type_, origin().spec(),
-      notification_id_, button_index,
-      base::NullableString16(reply, false /* is_null */));
+      notification_id_, action_index, reply, base::nullopt /* by_user */);
 }
