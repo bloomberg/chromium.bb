@@ -334,6 +334,29 @@ Node* PositionTemplate<Strategy>::CommonAncestorContainer(
                                   *other.ComputeContainerNode());
 }
 
+static bool IsPositionValidFor(const Position& position,
+                               const Document& document) {
+  if (position.IsNull())
+    return true;
+  if (position.GetDocument() != document)
+    return false;
+  return position.AnchorNode()->isConnected();
+}
+
+static bool IsPositionValidFor(const PositionInFlatTree& position,
+                               const Document& document) {
+  if (position.IsNull())
+    return true;
+  if (position.GetDocument() != document)
+    return false;
+  return FlatTreeTraversal::Contains(document, *position.AnchorNode());
+}
+
+template <typename Strategy>
+bool PositionTemplate<Strategy>::IsValidFor(const Document& document) const {
+  return IsPositionValidFor(*this, document);
+}
+
 int ComparePositions(const PositionInFlatTree& position_a,
                      const PositionInFlatTree& position_b) {
   DCHECK(position_a.IsNotNull());
