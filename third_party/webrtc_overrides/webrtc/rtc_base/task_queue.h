@@ -15,6 +15,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "third_party/webrtc/rtc_base/scoped_ref_ptr.h"
 #include "third_party/webrtc/rtc_base/thread_annotations.h"
 
 namespace rtc {
@@ -229,9 +230,9 @@ class LOCKABLE TaskQueue {
   }
 
  private:
-  class WorkerThread;
+  class Impl;
+  const scoped_refptr<Impl> impl_;
 
-  std::unique_ptr<WorkerThread> thread_;
   DISALLOW_COPY_AND_ASSIGN(TaskQueue);
 };
 
