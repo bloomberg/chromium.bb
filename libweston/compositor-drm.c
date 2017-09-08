@@ -4698,6 +4698,8 @@ drm_output_init_crtc(struct drm_output *output,
 		drm_output_find_special_plane(b, output,
 					      WDRM_PLANE_TYPE_CURSOR);
 
+	wl_array_remove_uint32(&b->unused_crtcs, output->crtc_id);
+
 	return 0;
 
 err_crtc:
@@ -4717,6 +4719,7 @@ static void
 drm_output_fini_crtc(struct drm_output *output)
 {
 	struct drm_backend *b = to_drm_backend(output->base.compositor);
+	uint32_t *unused;
 
 	if (!b->universal_planes && !b->shutting_down) {
 		/* With universal planes, the 'special' planes are allocated at
@@ -4738,6 +4741,15 @@ drm_output_fini_crtc(struct drm_output *output)
 	}
 
 	drm_property_info_free(output->props_crtc, WDRM_CRTC__COUNT);
+
+	assert(output->crtc_id != 0);
+
+	unused = wl_array_add(&b->unused_crtcs, sizeof(*unused));
+	*unused = output->crtc_id;
+
+	/* Force resetting unused CRTCs */
+	b->state_invalid = true;
+
 	output->crtc_id = 0;
 	output->cursor_plane = NULL;
 	output->scanout_plane = NULL;
@@ -4750,6 +4762,21 @@ drm_output_enable(struct weston_output *base)
 	struct drm_backend *b = to_drm_backend(base->compositor);
 	struct drm_head *head = to_drm_head(weston_output_get_first_head(base));
 	struct weston_mode *m;
+	drmModeRes *resources;
+	int ret;
+
+	resources = drmModeGetResources(b->drm.fd);
+	if (!resources) {
+		weston_log("drmModeGetResources failed\n");
+		return -1;
+	}
+	ret = drm_output_init_crtc(output, resources, head->connector);
+	drmModeFreeResources(resources);
+	if (ret < 0)
+		return -1;
+
+	if (drm_output_init_gamma_size(output) < 0)
+		goto err;
 
 	if (b->pageflip_timeout)
 		drm_output_pageflip_timer_create(output);
@@ -4792,7 +4819,6 @@ drm_output_enable(struct weston_output *base)
 				      &b->compositor->primary_plane);
 
 	wl_array_remove_uint32(&b->unused_connectors, head->connector_id);
-	wl_array_remove_uint32(&b->unused_crtcs, output->crtc_id);
 
 	weston_log("Output %s, (connector %d, crtc %d)\n",
 		   output->base.name, head->connector_id, output->crtc_id);
@@ -4809,6 +4835,8 @@ drm_output_enable(struct weston_output *base)
 	return 0;
 
 err:
+	drm_output_fini_crtc(output);
+
 	return -1;
 }
 
@@ -4843,11 +4871,8 @@ drm_output_deinit(struct weston_output *base)
 
 	unused = wl_array_add(&b->unused_connectors, sizeof(*unused));
 	*unused = head->connector_id;
-	unused = wl_array_add(&b->unused_crtcs, sizeof(*unused));
-	*unused = output->crtc_id;
 
-	/* Force programming unused connectors and crtcs. */
-	b->state_invalid = true;
+	drm_output_fini_crtc(output);
 }
 
 static void
@@ -4876,8 +4901,6 @@ drm_output_destroy(struct weston_output *base)
 		wl_event_source_remove(output->pageflip_timer);
 
 	weston_output_release(&output->base);
-
-	drm_output_fini_crtc(output);
 
 	assert(!output->state_last);
 	drm_output_state_free(output->state_cur);
@@ -5147,12 +5170,6 @@ create_output_for_connector(struct drm_backend *b,
 
 	output->destroy_pending = 0;
 	output->disable_pending = 0;
-
-	if (drm_output_init_crtc(output, resources, connector) < 0)
-		goto err_output;
-
-	if (drm_output_init_gamma_size(output) < 0)
-		goto err_output;
 
 	output->state_cur = drm_output_state_alloc(output, NULL);
 
