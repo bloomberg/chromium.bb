@@ -445,5 +445,39 @@ TEST_F(NGColumnLayoutAlgorithmTest, TwoFloatsInTwoColumns) {
   EXPECT_EQ(expectation, dump);
 }
 
+TEST_F(NGColumnLayoutAlgorithmTest, BlockWithTopMarginInThreeColumns) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-fill: auto;
+        column-gap: 10px;
+        width: 320px;
+        height: 100px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div style="width:50px; height:70px;"></div>
+        <div style="margin-top:10px; width:60px; height:150px;"></div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x100
+        offset:0,0 size:50x70
+        offset:0,80 size:60x20
+      offset:110,0 size:100x100
+        offset:0,0 size:60x100
+      offset:220,0 size:100x30
+        offset:0,0 size:60x30
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
 }  // anonymous namespace
 }  // namespace blink

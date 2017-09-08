@@ -67,7 +67,8 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   virtual RefPtr<NGLayoutResult> Layout() override;
 
  private:
-  NGBoxStrut CalculateMargins(NGLayoutInputNode child);
+  NGBoxStrut CalculateMargins(NGLayoutInputNode child,
+                              const NGBreakToken* child_break_token);
 
   // Creates a new constraint space for the current child.
   RefPtr<NGConstraintSpace> CreateConstraintSpaceForChild(
@@ -77,7 +78,8 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
 
   // @return Estimated BFC offset for the "to be layout" child.
   NGInflowChildData ComputeChildData(const NGPreviousInflowPosition&,
-                                     NGLayoutInputNode);
+                                     NGLayoutInputNode,
+                                     const NGBreakToken* child_break_token);
 
   NGPreviousInflowPosition ComputeInflowPosition(
       const NGPreviousInflowPosition& previous_inflow_position,
