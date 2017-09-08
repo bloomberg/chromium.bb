@@ -5,6 +5,7 @@
 #include "platform/scheduler/base/work_queue.h"
 
 #include "platform/scheduler/base/work_queue_sets.h"
+#include "platform/wtf/debug/CrashLogging.h"
 
 namespace blink {
 namespace scheduler {
@@ -109,10 +110,29 @@ TaskQueueImpl::Task WorkQueue::TakeTaskFromWorkQueue() {
   DCHECK(work_queue_sets_);
   DCHECK(!work_queue_.empty());
 
+  static const char kBlinkSchedulerTaskFunctionNameKey[] =
+      "blink_scheduler_task_function_name";
+  static const char kBlinkSchedulerTaskFileNameKey[] =
+      "blink_scheduler_task_file_name";
+
   // Skip over canceled tasks, except for the last one since we always return
   // something.
-  while (work_queue_.size() > 1u && work_queue_.front().task.IsCancelled()) {
-    work_queue_.pop_front();
+  while (work_queue_.size() > 1u) {
+    if (!work_queue_.front().task) {
+      base::debug::SetCrashKeyValue(
+          kBlinkSchedulerTaskFunctionNameKey,
+          work_queue_.front().posted_from.function_name());
+      base::debug::SetCrashKeyValue(
+          kBlinkSchedulerTaskFileNameKey,
+          work_queue_.front().posted_from.file_name());
+    }
+    CHECK(work_queue_.front().task);
+
+    if (work_queue_.front().task.IsCancelled()) {
+      work_queue_.pop_front();
+    } else {
+      break;
+    }
   }
 
   TaskQueueImpl::Task pending_task = work_queue_.TakeFirst();
