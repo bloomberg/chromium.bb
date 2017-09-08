@@ -1581,7 +1581,6 @@ void PrintPreviewHandler::PostPrintToPdfTask() {
       base::BindOnce(&PrintToPdfCallback, data, print_to_pdf_path_,
                      pdf_file_saved_closure_));
   print_to_pdf_path_.clear();
-  ClosePreviewDialog();
 }
 
 void PrintPreviewHandler::FileSelectionCanceled(void* params) {
