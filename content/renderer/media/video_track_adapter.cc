@@ -76,7 +76,8 @@ class VideoTrackAdapter::VideoFrameResolutionAdapter
   void RemoveCallback(const MediaStreamVideoTrack* track);
 
   void DeliverFrame(const scoped_refptr<media::VideoFrame>& frame,
-                    const base::TimeTicks& estimated_capture_time);
+                    const base::TimeTicks& estimated_capture_time,
+                    bool is_device_rotated);
 
   // Returns true if all arguments match with the output of this adapter.
   bool SettingsMatch(const VideoTrackAdapterSettings& settings) const;
@@ -103,7 +104,6 @@ class VideoTrackAdapter::VideoFrameResolutionAdapter
   const scoped_refptr<base::SingleThreadTaskRunner> renderer_task_runner_;
 
   const gfx::Size max_frame_size_;
-  base::Optional<gfx::Size> expected_native_size_;
   const double min_aspect_ratio_;
   const double max_aspect_ratio_;
 
@@ -124,7 +124,6 @@ VideoTrackAdapter::VideoFrameResolutionAdapter::VideoFrameResolutionAdapter(
     const VideoTrackAdapterSettings& settings)
     : renderer_task_runner_(render_message_loop),
       max_frame_size_(settings.max_width, settings.max_height),
-      expected_native_size_(settings.expected_native_size),
       min_aspect_ratio_(settings.min_aspect_ratio),
       max_aspect_ratio_(settings.max_aspect_ratio),
       frame_rate_(MediaStreamVideoSource::kDefaultFrameRate),
@@ -194,7 +193,8 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::RemoveCallback(
 
 void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
     const scoped_refptr<media::VideoFrame>& frame,
-    const base::TimeTicks& estimated_capture_time) {
+    const base::TimeTicks& estimated_capture_time,
+    bool is_device_rotated) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
 
   if (!frame) {
@@ -219,17 +219,8 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
   }
   scoped_refptr<media::VideoFrame> video_frame(frame);
 
-  bool is_rotated = false;
-  // TODO(guidou): Use actual device information instead of this heuristic to
-  // detect frames from rotated devices. http://crbug.com/722748
-  if (expected_native_size_ &&
-      frame->natural_size().width() == expected_native_size_->height() &&
-      frame->natural_size().height() == expected_native_size_->width()) {
-    is_rotated = true;
-  }
-
   gfx::Size desired_size;
-  CalculateTargetSize(is_rotated, frame->natural_size(), max_frame_size_,
+  CalculateTargetSize(is_device_rotated, frame->natural_size(), max_frame_size_,
                       min_aspect_ratio_, max_aspect_ratio_, &desired_size);
   if (desired_size != frame->natural_size()) {
     // Get the largest centered rectangle with the same aspect ratio of
@@ -262,8 +253,7 @@ bool VideoTrackAdapter::VideoFrameResolutionAdapter::SettingsMatch(
          max_frame_size_.height() == settings.max_height &&
          min_aspect_ratio_ == settings.min_aspect_ratio &&
          max_aspect_ratio_ == settings.max_aspect_ratio &&
-         max_frame_rate_ == settings.max_frame_rate &&
-         expected_native_size_ == settings.expected_native_size;
+         max_frame_rate_ == settings.max_frame_rate;
 }
 
 bool VideoTrackAdapter::VideoFrameResolutionAdapter::IsEmpty() const {
@@ -342,22 +332,18 @@ VideoTrackAdapterSettings::VideoTrackAdapterSettings()
                                 std::numeric_limits<int>::max(),
                                 0.0,
                                 std::numeric_limits<double>::max(),
-                                0.0,
-                                base::Optional<gfx::Size>()) {}
+                                0.0) {}
 
-VideoTrackAdapterSettings::VideoTrackAdapterSettings(
-    int max_width,
-    int max_height,
-    double min_aspect_ratio,
-    double max_aspect_ratio,
-    double max_frame_rate,
-    const base::Optional<gfx::Size>& expected_native_size)
+VideoTrackAdapterSettings::VideoTrackAdapterSettings(int max_width,
+                                                     int max_height,
+                                                     double min_aspect_ratio,
+                                                     double max_aspect_ratio,
+                                                     double max_frame_rate)
     : max_width(max_width),
       max_height(max_height),
       min_aspect_ratio(min_aspect_ratio),
       max_aspect_ratio(max_aspect_ratio),
-      max_frame_rate(max_frame_rate),
-      expected_native_size(expected_native_size) {
+      max_frame_rate(max_frame_rate) {
   DCHECK_GE(max_width, 1);
   DCHECK_GE(max_height, 1);
   DCHECK_GE(min_aspect_ratio, 0.0);
@@ -443,6 +429,13 @@ void VideoTrackAdapter::StopFrameMonitoring() {
       base::BindOnce(&VideoTrackAdapter::StopFrameMonitoringOnIO, this));
 }
 
+void VideoTrackAdapter::SetSourceFrameSize(const gfx::Size& source_frame_size) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  io_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&VideoTrackAdapter::SetSourceFrameSizeOnIO,
+                                this, source_frame_size));
+}
+
 // static
 void VideoTrackAdapter::CalculateTargetSize(
     bool is_rotated,
@@ -520,6 +513,12 @@ void VideoTrackAdapter::StopFrameMonitoringOnIO() {
   monitoring_frame_rate_ = false;
 }
 
+void VideoTrackAdapter::SetSourceFrameSizeOnIO(
+    const gfx::Size& source_frame_size) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  source_frame_size_ = source_frame_size;
+}
+
 void VideoTrackAdapter::RemoveTrackOnIO(const MediaStreamVideoTrack* track) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   for (FrameAdapters::iterator it = adapters_.begin();
@@ -538,8 +537,17 @@ void VideoTrackAdapter::DeliverFrameOnIO(
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT0("video", "VideoTrackAdapter::DeliverFrameOnIO");
   ++frame_counter_;
+
+  bool is_device_rotated = false;
+  // TODO(guidou): Use actual device information instead of this heuristic to
+  // detect frames from rotated devices. http://crbug.com/722748
+  if (source_frame_size_ &&
+      frame->natural_size().width() == source_frame_size_->height() &&
+      frame->natural_size().height() == source_frame_size_->width()) {
+    is_device_rotated = true;
+  }
   for (const auto& adapter : adapters_)
-    adapter->DeliverFrame(frame, estimated_capture_time);
+    adapter->DeliverFrame(frame, estimated_capture_time, is_device_rotated);
 }
 
 void VideoTrackAdapter::CheckFramesReceivedOnIO(

@@ -122,6 +122,11 @@ void MediaStreamVideoSource::UpdateCapturingLinkSecure(
   OnCapturingLinkSecured(secure_tracker_.is_capturing_secure());
 }
 
+void MediaStreamVideoSource::SetDeviceRotationDetection(bool enabled) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  enable_device_rotation_detection_ = enabled;
+}
+
 base::SingleThreadTaskRunner* MediaStreamVideoSource::io_task_runner() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return track_adapter_->io_task_runner();
@@ -151,11 +156,7 @@ void MediaStreamVideoSource::OnStartDone(MediaStreamRequestResult result) {
     DCHECK_EQ(STARTING, state_);
     state_ = STARTED;
     SetReadyState(blink::WebMediaStreamSource::kReadyStateLive);
-    double frame_rate =
-        GetCurrentFormat() ? GetCurrentFormat()->frame_rate : 0.0;
-    track_adapter_->StartFrameMonitoring(
-        frame_rate, base::Bind(&MediaStreamVideoSource::SetMutedState,
-                               weak_factory_.GetWeakPtr()));
+    StartFrameMonitoring();
   } else {
     StopSource();
   }
@@ -198,6 +199,18 @@ void MediaStreamVideoSource::FinalizeAddTrack() {
     if (!track.callback.is_null())
       track.callback.Run(this, result, blink::WebString());
   }
+}
+
+void MediaStreamVideoSource::StartFrameMonitoring() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::Optional<media::VideoCaptureFormat> current_format = GetCurrentFormat();
+  double frame_rate = current_format ? current_format->frame_rate : 0.0;
+  if (current_format && enable_device_rotation_detection_) {
+    track_adapter_->SetSourceFrameSize(current_format->frame_size);
+  }
+  track_adapter_->StartFrameMonitoring(
+      frame_rate, base::Bind(&MediaStreamVideoSource::SetMutedState,
+                             weak_factory_.GetWeakPtr()));
 }
 
 void MediaStreamVideoSource::SetReadyState(

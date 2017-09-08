@@ -180,13 +180,10 @@ VideoCaptureSettings ComputeVideoDeviceCaptureSettings(
   media::VideoCaptureParams capture_params;
   capture_params.requested_format = candidate.format();
   capture_params.power_line_frequency = candidate.power_line_frequency();
-  // With device capture, incoming frames are expected to have the size
-  // specified in the requested capture format.
-  bool expect_source_native_size = true;
   auto track_adapter_settings = SelectVideoTrackAdapterSettings(
       basic_constraint_set, constrained_format.constrained_resolution(),
       constrained_format.constrained_frame_rate(),
-      capture_params.requested_format, expect_source_native_size);
+      capture_params.requested_format);
 
   return VideoCaptureSettings(
       candidate.device_id(), capture_params, candidate.noise_reduction(),

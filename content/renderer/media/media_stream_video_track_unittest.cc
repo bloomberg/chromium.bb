@@ -308,8 +308,7 @@ TEST_F(MediaStreamVideoTrackTest, GetSettingsWithAdjustment) {
   const int kAdjustedHeight = 400;
   const double kAdjustedFrameRate = 20.0;
   VideoTrackAdapterSettings adapter_settings(kAdjustedWidth, kAdjustedHeight,
-                                             0.0, 10000.0, kAdjustedFrameRate,
-                                             base::Optional<gfx::Size>());
+                                             0.0, 10000.0, kAdjustedFrameRate);
   blink::WebMediaStreamTrack track = CreateTrackWithSettings(adapter_settings);
   MediaStreamVideoTrack* const native_track =
       MediaStreamVideoTrack::GetVideoTrack(track);

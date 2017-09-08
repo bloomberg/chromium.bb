@@ -75,6 +75,9 @@ class CONTENT_EXPORT MediaStreamVideoSource : public MediaStreamSource {
   // Request underlying source to capture a new frame.
   virtual void RequestRefreshFrame() {}
 
+  // Enables or disables an heuristic to detect frames from rotated devices.
+  void SetDeviceRotationDetection(bool enabled);
+
   // Returns the task runner where video frames will be delivered on.
   base::SingleThreadTaskRunner* io_task_runner() const;
 
@@ -136,6 +139,7 @@ class CONTENT_EXPORT MediaStreamVideoSource : public MediaStreamSource {
   // simply drop the references to the blink source and track which will lead
   // to this object being deleted.
   void FinalizeAddTrack();
+  void StartFrameMonitoring();
 
   State state_;
 
@@ -169,6 +173,10 @@ class CONTENT_EXPORT MediaStreamVideoSource : public MediaStreamSource {
 
   // This is used for tracking if all connected video sinks are secure.
   SecureDisplayLinkTracker<MediaStreamVideoTrack> secure_tracker_;
+
+  // This flag enables a heuristic to detect device rotation based on frame
+  // size.
+  bool enable_device_rotation_detection_ = false;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<MediaStreamVideoSource> weak_factory_;
