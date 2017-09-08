@@ -226,6 +226,10 @@ const base::Feature kMemoryPressureBasedSourceBufferGC{
 // still missing and this feature should only be enabled for testing.
 const base::Feature kMojoCdm{"MojoCdm", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Manage and report MSE buffered ranges by PTS intervals, not DTS intervals.
+const base::Feature kMseBufferByPts{"MseBufferByPts",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Support FLAC codec within ISOBMFF streams used with Media Source Extensions.
 const base::Feature kMseFlacInIsobmff{"MseFlacInIsobmff",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
