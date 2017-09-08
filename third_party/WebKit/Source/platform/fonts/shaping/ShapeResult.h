@@ -94,6 +94,11 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   // For memory reporting.
   size_t ByteSize() const;
 
+  // Returns the next or previous offsets respectively at which it is safe to
+  // break without reshaping.
+  unsigned NextSafeToBreakOffset(unsigned offset) const;
+  unsigned PreviousSafeToBreakOffset(unsigned offset) const;
+
   unsigned OffsetForPosition(float target_x, bool include_partial_glyphs) const;
   float PositionForOffset(unsigned offset) const;
   LayoutUnit SnappedStartPositionForOffset(unsigned offset) const {
