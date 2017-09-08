@@ -4,6 +4,7 @@
 
 #include "ash/login/ui/lock_contents_view.h"
 
+#include "ash/login/lock_screen_controller.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_auth_user_view.h"
 #include "ash/login/ui/login_display_style.h"
@@ -188,6 +189,9 @@ void LockContentsView::OnUsersChanged(
 
   LayoutAuth(primary_auth_, opt_secondary_auth_, false /*animate*/);
 
+  // Auth user may be the same if we already built lock screen.
+  OnAuthUserChanged();
+
   // Force layout.
   PreferredSizeChanged();
   Layout();
@@ -371,10 +375,12 @@ void LockContentsView::SwapPrimaryAndSecondaryAuth(bool is_primary) {
   if (is_primary &&
       primary_auth_->auth_methods() == LoginAuthUserView::AUTH_NONE) {
     LayoutAuth(primary_auth_, opt_secondary_auth_, true /*animate*/);
+    OnAuthUserChanged();
   } else if (!is_primary && opt_secondary_auth_ &&
              opt_secondary_auth_->auth_methods() ==
                  LoginAuthUserView::AUTH_NONE) {
     LayoutAuth(opt_secondary_auth_, primary_auth_, true /*animate*/);
+    OnAuthUserChanged();
   }
 }
 
@@ -430,6 +436,22 @@ void LockContentsView::SwapToAuthUser(int user_index) {
   view->UpdateForUser(previous_auth_user, true /*animate*/);
   primary_auth_->UpdateForUser(new_auth_user);
   LayoutAuth(primary_auth_, nullptr, true /*animate*/);
+  OnAuthUserChanged();
+}
+
+void LockContentsView::OnAuthUserChanged() {
+  Shell::Get()->lock_screen_controller()->OnFocusPod(
+      CurrentAuthUserView()->current_user()->account_id);
+}
+
+LoginAuthUserView* LockContentsView::CurrentAuthUserView() {
+  if (opt_secondary_auth_ &&
+      opt_secondary_auth_->auth_methods() != LoginAuthUserView::AUTH_NONE) {
+    DCHECK(primary_auth_->auth_methods() == LoginAuthUserView::AUTH_NONE);
+    return opt_secondary_auth_;
+  }
+
+  return primary_auth_;
 }
 
 }  // namespace ash

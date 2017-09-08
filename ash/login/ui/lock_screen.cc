@@ -79,6 +79,11 @@ void LockScreen::Show() {
   window->Show();
 }
 
+// static
+bool LockScreen::IsShown() {
+  return !!instance_;
+}
+
 void LockScreen::Destroy() {
   CHECK_EQ(instance_, this);
 

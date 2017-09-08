@@ -44,7 +44,7 @@ class QuickUnlockStorage : public KeyedService {
 
   // Tries to authenticate the given pin. This will consume a pin unlock
   // attempt. This always returns false if HasStrongAuth returns false.
-  bool TryAuthenticatePin(const std::string& pin);
+  bool TryAuthenticatePin(const std::string& pin, Key::KeyType key_type);
 
   FingerprintStorage* fingerprint_storage();
 

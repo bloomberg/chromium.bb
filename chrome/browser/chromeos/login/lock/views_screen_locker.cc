@@ -142,8 +142,10 @@ void ViewsScreenLocker::HandleAuthenticateUser(
          !authenticated_by_pin);
 
   UserContext user_context(account_id);
-  user_context.SetKey(Key(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF, std::string(),
-                          hashed_password));
+  Key::KeyType key_type =
+      authenticated_by_pin ? chromeos::Key::KEY_TYPE_SALTED_PBKDF2_AES256_1234
+                           : chromeos::Key::KEY_TYPE_SALTED_SHA256_TOP_HALF;
+  user_context.SetKey(Key(key_type, std::string(), hashed_password));
   user_context.SetIsUsingPin(authenticated_by_pin);
   if (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY)
     user_context.SetUserType(user_manager::USER_TYPE_ACTIVE_DIRECTORY);

@@ -427,8 +427,10 @@ TEST_F(QuickUnlockPrivateUnitTest, VerifyAuthenticationAgainstPIN) {
 
   quick_unlock_storage->MarkStrongAuth();
   quick_unlock_storage->pin_storage()->ResetUnlockAttemptCount();
-  EXPECT_TRUE(quick_unlock_storage->TryAuthenticatePin("111111"));
-  EXPECT_FALSE(quick_unlock_storage->TryAuthenticatePin("000000"));
+  EXPECT_TRUE(quick_unlock_storage->TryAuthenticatePin(
+      "111111", Key::KEY_TYPE_PASSWORD_PLAIN));
+  EXPECT_FALSE(quick_unlock_storage->TryAuthenticatePin(
+      "000000", Key::KEY_TYPE_PASSWORD_PLAIN));
 }
 
 // Verifies that the number of modes and the number of passwords given must be

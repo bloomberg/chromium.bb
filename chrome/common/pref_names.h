@@ -299,7 +299,6 @@ extern const char kAllowScreenLock[];
 extern const char kHatsLastInteractionTimestamp[];
 extern const char kHatsSurveyCycleEndTimestamp[];
 extern const char kHatsDeviceIsSelected[];
-extern const char kQuickUnlockPinSalt[];
 extern const char kQuickUnlockPinSecret[];
 extern const char kQuickUnlockFingerprintRecord[];
 extern const char kEolStatus[];
