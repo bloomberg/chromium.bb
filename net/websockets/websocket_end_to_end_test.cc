@@ -296,17 +296,9 @@ class WebSocketEndToEndTest : public ::testing::Test {
   bool initialised_context_;
 };
 
-// Some test are not compatible with RemoteTestServer.
-// TODO(ricea): Make these tests work. See crbug.com/441711.
-#if defined(OS_ANDROID) || defined(OS_FUCHSIA)
-#define DISABLED_WITH_REMOTE_TS(test) DISABLED_##test
-#else
-#define DISABLED_WITH_REMOTE_TS(test) test
-#endif
-
 // Basic test of connectivity. If this test fails, nothing else can be expected
 // to work.
-TEST_F(WebSocketEndToEndTest, DISABLED_WITH_REMOTE_TS(BasicSmokeTest)) {
+TEST_F(WebSocketEndToEndTest, BasicSmokeTest) {
   SpawnedTestServer ws_server(SpawnedTestServer::TYPE_WS,
                               GetWebSocketTestDataDirectory());
   ASSERT_TRUE(ws_server.Start());
@@ -335,8 +327,18 @@ TEST_F(WebSocketEndToEndTest, DISABLED_HttpsProxyUnauthedFails) {
   EXPECT_EQ("Proxy authentication failed", event_interface_->failure_message());
 }
 
-TEST_F(WebSocketEndToEndTest,
-       DISABLED_WITH_REMOTE_TS(HttpsWssProxyUnauthedFails)) {
+// These test are not compatible with RemoteTestServer because RemoteTestServer
+// doesn't support TYPE_BASIC_AUTH_PROXY.
+// TODO(ricea): Make these tests work. See crbug.com/441711.
+#if defined(OS_ANDROID) || defined(OS_FUCHSIA)
+#define MAYBE_HttpsWssProxyUnauthedFails DISABLED_HttpsWssProxyUnauthedFails
+#define MAYBE_HttpsProxyUsed DISABLED_HttpsProxyUsed
+#else
+#define MAYBE_HttpsWssProxyUnauthedFails HttpsWssProxyUnauthedFails
+#define MAYBE_HttpsProxyUsed HttpsProxyUsed
+#endif
+
+TEST_F(WebSocketEndToEndTest, MAYBE_HttpsWssProxyUnauthedFails) {
   SpawnedTestServer proxy_server(SpawnedTestServer::TYPE_BASIC_AUTH_PROXY,
                                  base::FilePath());
   SpawnedTestServer wss_server(SpawnedTestServer::TYPE_WSS,
@@ -357,7 +359,7 @@ TEST_F(WebSocketEndToEndTest,
 
 // Regression test for crbug/426736 "WebSocket connections not using configured
 // system HTTPS Proxy".
-TEST_F(WebSocketEndToEndTest, DISABLED_WITH_REMOTE_TS(HttpsProxyUsed)) {
+TEST_F(WebSocketEndToEndTest, MAYBE_HttpsProxyUsed) {
   SpawnedTestServer proxy_server(SpawnedTestServer::TYPE_BASIC_AUTH_PROXY,
                                  base::FilePath());
   SpawnedTestServer ws_server(SpawnedTestServer::TYPE_WS,
@@ -403,7 +405,7 @@ TEST_F(WebSocketEndToEndTest, DISABLED_WITH_REMOTE_TS(HttpsProxyUsed)) {
 
 // This is a regression test for crbug.com/408061 Crash in
 // net::WebSocketBasicHandshakeStream::Upgrade.
-TEST_F(WebSocketEndToEndTest, DISABLED_WITH_REMOTE_TS(TruncatedResponse)) {
+TEST_F(WebSocketEndToEndTest, TruncatedResponse) {
   SpawnedTestServer ws_server(SpawnedTestServer::TYPE_WS,
                               GetWebSocketTestDataDirectory());
   ASSERT_TRUE(ws_server.Start());
@@ -414,7 +416,7 @@ TEST_F(WebSocketEndToEndTest, DISABLED_WITH_REMOTE_TS(TruncatedResponse)) {
 }
 
 // Regression test for crbug.com/455215 "HSTS not applied to WebSocket"
-TEST_F(WebSocketEndToEndTest, DISABLED_WITH_REMOTE_TS(HstsHttpsToWebSocket)) {
+TEST_F(WebSocketEndToEndTest, HstsHttpsToWebSocket) {
   EmbeddedTestServer https_server(net::EmbeddedTestServer::Type::TYPE_HTTPS);
   https_server.SetSSLConfig(
       net::EmbeddedTestServer::CERT_COMMON_NAME_IS_DOMAIN);
@@ -444,7 +446,7 @@ TEST_F(WebSocketEndToEndTest, DISABLED_WITH_REMOTE_TS(HstsHttpsToWebSocket)) {
   EXPECT_TRUE(ConnectAndWait(ws_url));
 }
 
-TEST_F(WebSocketEndToEndTest, DISABLED_WITH_REMOTE_TS(HstsWebSocketToHttps)) {
+TEST_F(WebSocketEndToEndTest, HstsWebSocketToHttps) {
   EmbeddedTestServer https_server(net::EmbeddedTestServer::Type::TYPE_HTTPS);
   https_server.SetSSLConfig(
       net::EmbeddedTestServer::CERT_COMMON_NAME_IS_DOMAIN);
@@ -474,8 +476,7 @@ TEST_F(WebSocketEndToEndTest, DISABLED_WITH_REMOTE_TS(HstsWebSocketToHttps)) {
   EXPECT_TRUE(request->url().SchemeIs("https"));
 }
 
-TEST_F(WebSocketEndToEndTest,
-       DISABLED_WITH_REMOTE_TS(HstsWebSocketToWebSocket)) {
+TEST_F(WebSocketEndToEndTest, HstsWebSocketToWebSocket) {
   SpawnedTestServer::SSLOptions ssl_options(
       SpawnedTestServer::SSLOptions::CERT_COMMON_NAME_IS_DOMAIN);
   SpawnedTestServer wss_server(SpawnedTestServer::TYPE_WSS, ssl_options,
@@ -493,7 +494,7 @@ TEST_F(WebSocketEndToEndTest,
 
 // Regression test for crbug.com/180504 "WebSocket handshake fails when HTTP
 // headers have trailing LWS".
-TEST_F(WebSocketEndToEndTest, DISABLED_WITH_REMOTE_TS(TrailingWhitespace)) {
+TEST_F(WebSocketEndToEndTest, TrailingWhitespace) {
   SpawnedTestServer ws_server(SpawnedTestServer::TYPE_WS,
                               GetWebSocketTestDataDirectory());
   ASSERT_TRUE(ws_server.Start());
@@ -509,7 +510,7 @@ TEST_F(WebSocketEndToEndTest, DISABLED_WITH_REMOTE_TS(TrailingWhitespace)) {
 // TODO(ricea): HTTP continuation headers have been deprecated by RFC7230.  If
 // support for continuation headers is removed from Chrome, then this test will
 // break and should be removed.
-TEST_F(WebSocketEndToEndTest, DISABLED_WITH_REMOTE_TS(HeaderContinuations)) {
+TEST_F(WebSocketEndToEndTest, HeaderContinuations) {
   SpawnedTestServer ws_server(SpawnedTestServer::TYPE_WS,
                               GetWebSocketTestDataDirectory());
   ASSERT_TRUE(ws_server.Start());

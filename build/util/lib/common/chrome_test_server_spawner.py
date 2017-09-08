@@ -43,6 +43,7 @@ SERVER_TYPES = {
     'sync': '',  # Sync uses its own script, and doesn't take a server type arg.
     'tcpecho': '--tcp-echo',
     'udpecho': '--udp-echo',
+    'ws': '--websocket',
 }
 
 
