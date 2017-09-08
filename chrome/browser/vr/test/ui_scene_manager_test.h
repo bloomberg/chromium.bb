@@ -17,6 +17,7 @@
 
 namespace vr {
 
+class UiElement;
 class UiScene;
 class UiSceneManager;
 
@@ -62,9 +63,17 @@ class UiSceneManagerTest : public testing::Test {
   bool VerifyRequiresLayout(const std::set<UiElementName>& names,
                             bool requires_layout) const;
 
+  // Check if element using correct opacity in Renderer recursively. If the name
+  // of an element is in |exceptions|, we don't verify its renderer opacity.
+  void CheckRendererOpacityRecursive(const std::set<UiElementName>& exceptions,
+                                     UiElement* element);
+
   // Advances current_time_ by delta. This is done in frame increments and
   // UiScene::OnBeginFrame is called at each increment.
   void AnimateBy(base::TimeDelta delta);
+
+  // A wrapper to call scene_->OnBeginFrame.
+  void OnBeginFrame();
 
   SkColor GetBackgroundColor() const;
 

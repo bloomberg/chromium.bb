@@ -30,7 +30,7 @@ class TexturedElement : public UiElement {
   void Render(UiElementRenderer* renderer,
               const gfx::Transform& view_proj_matrix) const final;
 
-  void SetInitializedForTesting();
+  static void SetInitializedForTesting();
 
  protected:
   void UpdateTexture();

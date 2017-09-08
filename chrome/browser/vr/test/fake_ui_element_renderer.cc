@@ -19,7 +19,8 @@ void FakeUiElementRenderer::DrawTexturedQuad(
     float opacity,
     gfx::SizeF element_size,
     float corner_radius) {
-  texture_opacity_ = opacity;
+  opacity_ = opacity;
+  called_ = true;
 }
 
 void FakeUiElementRenderer::DrawGradientQuad(
@@ -29,7 +30,8 @@ void FakeUiElementRenderer::DrawGradientQuad(
     float opacity,
     gfx::SizeF element_size,
     float corner_radius) {
-  gradient_opacity_ = opacity;
+  opacity_ = opacity;
+  called_ = true;
 }
 
 void FakeUiElementRenderer::DrawGradientGridQuad(
@@ -39,7 +41,8 @@ void FakeUiElementRenderer::DrawGradientGridQuad(
     const SkColor grid_color,
     int gridline_count,
     float opacity) {
-  grid_opacity_ = opacity;
+  opacity_ = opacity;
+  called_ = true;
 }
 
 }  // namespace vr
