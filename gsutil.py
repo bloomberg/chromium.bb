@@ -29,6 +29,9 @@ DEFAULT_BIN_DIR = os.path.join(THIS_DIR, 'external_bin', 'gsutil')
 DEFAULT_FALLBACK_GSUTIL = os.path.join(
     THIS_DIR, 'third_party', 'gsutil', 'gsutil')
 
+IS_WINDOWS = os.name == 'nt'
+
+
 class InvalidGsutilError(Exception):
   pass
 
@@ -126,8 +129,17 @@ def run_gsutil(force_version, fallback, target, args, clean=False):
   else:
     gsutil_bin = fallback
   disable_update = ['-o', 'GSUtil:software_update_check_period=0']
-  cmd = [sys.executable, gsutil_bin] + disable_update + args
-  return subprocess.call(cmd)
+
+  # Run "gsutil" through "vpython". We need to do this because on GCE instances,
+  # expectations are made about Python having access to "google-compute-engine"
+  # and "boto" packages that are not met with non-system Python (e.g., bundles).
+  cmd = [
+      'vpython',
+      '-vpython-spec', os.path.join(THIS_DIR, 'gsutil.vpython'),
+      '--',
+      gsutil_bin
+  ] + disable_update + args
+  return subprocess.call(cmd, shell=IS_WINDOWS)
 
 
 def parse_args():
