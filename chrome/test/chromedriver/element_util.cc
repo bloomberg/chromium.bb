@@ -239,10 +239,10 @@ Status FindElement(int interval_ms,
                    std::unique_ptr<base::Value>* value) {
   std::string strategy;
   if (!params.GetString("using", &strategy))
-    return Status(kUnknownError, "'using' must be a string");
+    return Status(kInvalidArgument, "'using' must be a string");
   std::string target;
   if (!params.GetString("value", &target))
-    return Status(kUnknownError, "'value' must be a string");
+    return Status(kInvalidArgument, "'value' must be a string");
 
   std::string script;
   if (only_one)
