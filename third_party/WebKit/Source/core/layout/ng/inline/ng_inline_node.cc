@@ -656,8 +656,8 @@ void NGInlineNode::CopyFragmentDataToLayoutBox(
 
     // Create a BidiRunList for this line.
     CreateBidiRuns(&bidi_runs, physical_line_box.Children(), constraint_space,
-                   {line_box.InlineOffset(), LayoutUnit(0)}, items,
-                   text_offsets, &positions_for_bidi_runs, &positions);
+                   line_box.Offset(), items, text_offsets,
+                   &positions_for_bidi_runs, &positions);
     // TODO(kojii): bidi needs to find the logical last run.
     bidi_runs.SetLogicallyLastRun(bidi_runs.LastRun());
 

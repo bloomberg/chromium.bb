@@ -146,7 +146,7 @@ void NGBoxFragmentPainter::PaintChildren(
     if (child->Type() == NGPhysicalBoxFragment::kFragmentLineBox) {
       const NGPhysicalLineBoxFragment& line_box_fragment =
           ToNGPhysicalLineBoxFragment(*child.Get());
-      PaintChildren(line_box_fragment.Children(), child_info, paint_offset);
+      PaintChildren(line_box_fragment.Children(), child_info, child_offset);
     } else if (child->Type() == NGPhysicalBoxFragment::kFragmentBox) {
       const NGPhysicalBoxFragment& box_fragment =
           ToNGPhysicalBoxFragment(*child.Get());

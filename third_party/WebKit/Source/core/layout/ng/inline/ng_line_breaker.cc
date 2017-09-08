@@ -239,8 +239,8 @@ void NGLineBreaker::ComputeLineLocation(NGLineInfo* line_info) const {
     available_width -= text_indent;
   }
 
-  line_info->SetLineLocation(line_left, available_width,
-                             content_offset_.block_offset);
+  line_info->SetLineOffset({line_left, content_offset_.block_offset},
+                           available_width);
 }
 
 bool NGLineBreaker::IsFirstBreakOpportunity(
