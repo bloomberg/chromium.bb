@@ -76,7 +76,9 @@ void CollapsedBorderPainter::SetupBorders() {
   if (start_.value) {
     const auto* cell_preceding = table_.CellPreceding(cell_);
     if (cell_.StartsAtSameRow(cell_preceding) &&
-        cell_preceding->RowSpan() >= cell_.RowSpan()) {
+        cell_preceding->RowSpan() >= cell_.RowSpan() &&
+        // |cell_preceding| didn't paint the border if it is invisible.
+        cell_preceding->StyleRef().Visibility() == EVisibility::kVisible) {
       start_.value = nullptr;
       // Otherwise we'll still paint the shared border twice which may cause
       // incorrect border conflict resolution for row/col spanning cells.
@@ -95,6 +97,8 @@ void CollapsedBorderPainter::SetupBorders() {
     const auto* cell_above = table_.CellAbove(cell_);
     if (cell_.StartsAtSameColumn(cell_above) &&
         cell_above->ColSpan() >= cell_.ColSpan() &&
+        // |cell_above| didn't paint the border if it is invisible.
+        cell_above->StyleRef().Visibility() == EVisibility::kVisible &&
         cell_above->Row()->HasSameDirectionAs(&table_)) {
       bool cell_is_top_of_repeating_footer =
           cell_.Section()->IsRepeatingFooterGroup() &&
