@@ -57,24 +57,18 @@ static INLINE void cfl_luma_subsampling_444(const uint8_t *y_pix,
 }
 
 // Load from the CfL pixel buffer into output
-static void cfl_load(CFL_CTX *cfl, int row, int col, int width, int height) {
+static void cfl_load(CFL_CTX *cfl, int width, int height) {
   const int sub_x = cfl->subsampling_x;
   const int sub_y = cfl->subsampling_y;
-  const int off_log2 = tx_size_wide_log2[0];
 
   int *output_q3 = cfl->y_down_pix_q3;
 
   // TODO(ltrudeau) should be faster to downsample when we store the values
   // TODO(ltrudeau) add support for 4:2:2
   if (sub_y == 0 && sub_x == 0) {
-    // TODO(ltrudeau) convert to uint16 to add HBD support
-    const uint8_t *y_pix = cfl->y_pix + ((row * MAX_SB_SIZE + col) << off_log2);
-    cfl_luma_subsampling_444(y_pix, output_q3, width, height);
+    cfl_luma_subsampling_444(cfl->y_pix, output_q3, width, height);
   } else if (sub_y == 1 && sub_x == 1) {
-    // TODO(ltrudeau) convert to uint16 to add HBD support
-    const uint8_t *y_pix =
-        cfl->y_pix + ((row * MAX_SB_SIZE + col) << (off_log2 + sub_y));
-    cfl_luma_subsampling_420(y_pix, output_q3, width, height);
+    cfl_luma_subsampling_420(cfl->y_pix, output_q3, width, height);
   } else {
     assert(0);  // Unsupported chroma subsampling
   }
@@ -86,11 +80,8 @@ static void cfl_load(CFL_CTX *cfl, int row, int col, int width, int height) {
   // overrun,
   // we apply rows first. This way, when the rows overrun the bottom of the
   // frame, the columns will be copied over them.
-  const int uv_width = (col << off_log2) + width;
-  const int uv_height = (row << off_log2) + height;
-
-  const int diff_width = uv_width - (cfl->y_width >> sub_x);
-  const int diff_height = uv_height - (cfl->y_height >> sub_y);
+  const int diff_width = width - (cfl->y_width >> sub_x);
+  const int diff_height = height - (cfl->y_height >> sub_y);
 
   if (diff_width > 0) {
     int last_pixel;
@@ -103,7 +94,7 @@ static void cfl_load(CFL_CTX *cfl, int row, int col, int width, int height) {
       }
       output_row_offset += MAX_SB_SIZE;
     }
-    cfl->y_width = uv_width << sub_x;
+    cfl->y_width = width << sub_x;
   }
 
   if (diff_height > 0) {
@@ -116,7 +107,7 @@ static void cfl_load(CFL_CTX *cfl, int row, int col, int width, int height) {
       }
       output_row_offset += MAX_SB_SIZE;
     }
-    cfl->y_height = uv_height << sub_y;
+    cfl->y_height = height << sub_y;
   }
 }
 
@@ -191,45 +182,44 @@ static void cfl_dc_pred(MACROBLOCKD *xd, BLOCK_SIZE plane_bsize) {
   cfl->dc_pred[CFL_PRED_V] = (sum_v + (num_pel >> 1)) / num_pel;
 }
 
-static void cfl_compute_averages(CFL_CTX *cfl, TX_SIZE tx_size) {
+static void cfl_subtract_averages(CFL_CTX *cfl, TX_SIZE tx_size) {
   const int width = cfl->uv_width;
   const int height = cfl->uv_height;
   const int tx_height = tx_size_high[tx_size];
   const int tx_width = tx_size_wide[tx_size];
-  const int stride = width >> tx_size_wide_log2[tx_size];
   const int block_row_stride = MAX_SB_SIZE << tx_size_high_log2[tx_size];
   const int num_pel_log2 =
       (tx_size_high_log2[tx_size] + tx_size_wide_log2[tx_size]);
 
-  const int *y_pix_q3 = cfl->y_down_pix_q3;
-  const int *t_y_pix_q3;
-  int *averages_q3 = cfl->y_averages_q3;
+  int *y_pix_q3 = cfl->y_down_pix_q3;
 
-  cfl_load(cfl, 0, 0, width, height);
-
-  int a = 0;
+  cfl_load(cfl, width, height);
   for (int b_j = 0; b_j < height; b_j += tx_height) {
     for (int b_i = 0; b_i < width; b_i += tx_width) {
       int sum_q3 = 0;
-      t_y_pix_q3 = y_pix_q3;
+      int *t_y_pix_q3 = y_pix_q3;
       for (int t_j = 0; t_j < tx_height; t_j++) {
         for (int t_i = b_i; t_i < b_i + tx_width; t_i++) {
           sum_q3 += t_y_pix_q3[t_i];
         }
         t_y_pix_q3 += MAX_SB_SIZE;
       }
-      assert(a < MAX_NUM_TXB_SQUARE);
-      averages_q3[a++] = (sum_q3 + (1 << (num_pel_log2 - 1))) >> num_pel_log2;
-
+      int avg_q3 = (sum_q3 + (1 << (num_pel_log2 - 1))) >> num_pel_log2;
       // Loss is never more than 1/2 (in Q3)
-      assert(fabs((double)averages_q3[a - 1] -
-                  (sum_q3 / ((double)(1 << num_pel_log2)))) <= 0.5);
+      assert(fabs((double)avg_q3 - (sum_q3 / ((double)(1 << num_pel_log2)))) <=
+             0.5);
+
+      t_y_pix_q3 = y_pix_q3;
+      for (int t_j = 0; t_j < tx_height; t_j++) {
+        for (int t_i = b_i; t_i < b_i + tx_width; t_i++) {
+          t_y_pix_q3[t_i] -= avg_q3;
+        }
+
+        t_y_pix_q3 += MAX_SB_SIZE;
+      }
     }
-    assert(a % stride == 0);
     y_pix_q3 += block_row_stride;
   }
-
-  cfl->y_averages_stride = stride;
 }
 
 static INLINE int cfl_idx_to_alpha(int alpha_idx, int joint_sign,
@@ -253,28 +243,21 @@ void cfl_predict_block(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,
 
   const int width = tx_size_wide[tx_size];
   const int height = tx_size_high[tx_size];
-  const int *y_pix_q3 = cfl->y_down_pix_q3;
+  const int *y_down_pix_q3 =
+      cfl->y_down_pix_q3 + ((row * MAX_SB_SIZE + col) << tx_size_wide_log2[0]);
 
   const int dc_pred = cfl->dc_pred[plane - 1];
   const int alpha_q3 =
       cfl_idx_to_alpha(mbmi->cfl_alpha_idx, mbmi->cfl_alpha_signs, plane - 1);
 
-  const int avg_row =
-      (row << tx_size_wide_log2[0]) >> tx_size_wide_log2[tx_size];
-  const int avg_col =
-      (col << tx_size_high_log2[0]) >> tx_size_high_log2[tx_size];
-  const int avg_q3 =
-      cfl->y_averages_q3[cfl->y_averages_stride * avg_row + avg_col];
-
-  cfl_load(cfl, row, col, width, height);
   for (int j = 0; j < height; j++) {
     for (int i = 0; i < width; i++) {
       // TODO(ltrudeau) add support for HBD.
-      dst[i] = clip_pixel(get_scaled_luma_q0(alpha_q3, y_pix_q3[i], avg_q3) +
-                          dc_pred);
+      dst[i] =
+          clip_pixel(get_scaled_luma_q0(alpha_q3, y_down_pix_q3[i]) + dc_pred);
     }
     dst += dst_stride;
-    y_pix_q3 += MAX_SB_SIZE;
+    y_down_pix_q3 += MAX_SB_SIZE;
   }
 }
 
@@ -425,10 +408,7 @@ void cfl_compute_parameters(MACROBLOCKD *const xd, TX_SIZE tx_size) {
   }
 #endif  // CONFIG_DEBUG
 
-  // Compute block-level DC_PRED for both chromatic planes.
-  // DC_PRED replaces beta in the linear model.
   cfl_dc_pred(xd, plane_bsize);
-  // Compute transform-level average on reconstructed luma input.
-  cfl_compute_averages(cfl, tx_size);
+  cfl_subtract_averages(cfl, tx_size);
   cfl->are_parameters_computed = 1;
 }

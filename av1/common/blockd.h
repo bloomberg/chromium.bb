@@ -709,16 +709,6 @@ typedef struct cfl_ctx {
   // this context
   int uv_height, uv_width;
 
-  // Transform level averages of the luma reconstructed values over the entire
-  // prediction unit
-  // Fixed point y_averages is Q12.3:
-  //   * Worst case division is 1/1024
-  //   * Max error will be 1/16th.
-  // Note: 3 is chosen so that y_averages fits in 15 bits when 12 bit input is
-  // used
-  int y_averages_q3[MAX_NUM_TXB_SQUARE];
-  int y_averages_stride;
-
   int are_parameters_computed;
 
   // Chroma subsampling
