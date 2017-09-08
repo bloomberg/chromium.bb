@@ -124,25 +124,36 @@ TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScriptCredentialManager) {
                              web_view, @"typeof navigator.credentials"));
 }
 
-// Tests that ChromeWebClient does not provide payment request script for
-// WKWebView unless the feature is enabled.
-TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScriptPaymentRequest) {
+// Tests that ChromeWebClient provides payment request script for WKWebView if
+// the feature is enabled.
+TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScriptPaymentRequestEnabled) {
   // Chrome scripts rely on __gCrWeb object presence.
   WKWebView* web_view = web::BuildWKWebView(CGRectZero, browser_state());
   web::ExecuteJavaScript(web_view, @"__gCrWeb = {};");
 
   web::ScopedTestingWebClient web_client(base::MakeUnique<ChromeWebClient>());
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(payments::features::kWebPayments);
+  NSString* script = web_client.Get()->GetEarlyPageScript(browser_state());
+  web::ExecuteJavaScript(web_view, script);
+  EXPECT_NSEQ(@"function", web::ExecuteJavaScript(
+                               web_view, @"typeof window.PaymentRequest"));
+}
+
+// Tests that ChromeWebClient does not provide payment request script for
+// WKWebView if the feature is disabled.
+TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScriptPaymentRequestDisabled) {
+  // Chrome scripts rely on __gCrWeb object presence.
+  WKWebView* web_view = web::BuildWKWebView(CGRectZero, browser_state());
+  web::ExecuteJavaScript(web_view, @"__gCrWeb = {};");
+
+  web::ScopedTestingWebClient web_client(base::MakeUnique<ChromeWebClient>());
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(payments::features::kWebPayments);
   NSString* script = web_client.Get()->GetEarlyPageScript(browser_state());
   web::ExecuteJavaScript(web_view, script);
   EXPECT_NSEQ(@"undefined", web::ExecuteJavaScript(
                                 web_view, @"typeof window.PaymentRequest"));
-
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(payments::features::kWebPayments);
-  script = web_client.Get()->GetEarlyPageScript(browser_state());
-  web::ExecuteJavaScript(web_view, script);
-  EXPECT_NSEQ(@"function", web::ExecuteJavaScript(
-                               web_view, @"typeof window.PaymentRequest"));
 }
 
 }  // namespace
