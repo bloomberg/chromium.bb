@@ -41,7 +41,7 @@ class CastCrashdumpUploader {
       const CastCrashdumpData& data,
       std::unique_ptr<google_breakpad::LibcurlWrapper> http_layer);
   explicit CastCrashdumpUploader(const CastCrashdumpData& data);
-  ~CastCrashdumpUploader();
+  virtual ~CastCrashdumpUploader();
 
   virtual bool AddAttachment(const std::string& label,
                              const std::string& filename);
