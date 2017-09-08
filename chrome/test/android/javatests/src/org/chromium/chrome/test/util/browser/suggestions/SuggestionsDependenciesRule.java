@@ -7,6 +7,7 @@ package org.chromium.chrome.test.util.browser.suggestions;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
+import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.download.ui.ThumbnailProvider;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
@@ -89,9 +90,9 @@ public class SuggestionsDependenciesRule extends TestWatcher {
         }
 
         @Override
-        public ThumbnailProvider createThumbnailProvider() {
+        public ThumbnailProvider createThumbnailProvider(DiscardableReferencePool referencePool) {
             if (thumbnailProvider != null) return thumbnailProvider;
-            return super.createThumbnailProvider();
+            return super.createThumbnailProvider(referencePool);
         }
 
         @Override

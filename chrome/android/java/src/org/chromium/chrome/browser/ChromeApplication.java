@@ -11,6 +11,7 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.MainDex;
@@ -34,11 +35,9 @@ import org.chromium.content.app.ContentApplication;
 public class ChromeApplication extends ContentApplication {
     public static final String COMMAND_LINE_FILE = "chrome-command-line";
     private static final String TAG = "ChromiumApplication";
-    private static final String PREF_BOOT_TIMESTAMP =
-            "com.google.android.apps.chrome.ChromeMobileApplication.BOOT_TIMESTAMP";
-    private static final long BOOT_TIMESTAMP_MARGIN_MS = 1000;
 
     private static DocumentTabModelSelector sDocumentTabModelSelector;
+    private DiscardableReferencePool mReferencePool;
 
     @Override
     protected void attachBaseContext(Context base) {
@@ -61,6 +60,17 @@ public class ChromeApplication extends ContentApplication {
         super.onCreate();
 
         TraceEvent.end("ChromeApplication.onCreate");
+    }
+
+    @Override
+    public void onTrimMemory(int level) {
+        super.onTrimMemory(level);
+        // The conditions are expressed using ranges to capture intermediate levels possibly added
+        // to the API in the future.
+        if ((level >= TRIM_MEMORY_RUNNING_LOW && level < TRIM_MEMORY_UI_HIDDEN)
+                || level >= TRIM_MEMORY_MODERATE) {
+            mReferencePool.drain();
+        }
     }
 
     /**
@@ -96,5 +106,16 @@ public class ChromeApplication extends ContentApplication {
                     new StorageDelegate(), new TabDelegate(false), new TabDelegate(true));
         }
         return sDocumentTabModelSelector;
+    }
+
+    /**
+     * @return The DiscardableReferencePool for the application.
+     */
+    public DiscardableReferencePool getReferencePool() {
+        ThreadUtils.assertOnUiThread();
+        if (mReferencePool == null) {
+            mReferencePool = new DiscardableReferencePool();
+        }
+        return mReferencePool;
     }
 }

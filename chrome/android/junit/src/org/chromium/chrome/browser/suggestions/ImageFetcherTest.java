@@ -21,6 +21,7 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
+import org.chromium.base.DiscardableReferencePool;
 import org.chromium.chrome.browser.DisableHistogramsRule;
 import org.chromium.chrome.browser.NativePageHost;
 import org.chromium.chrome.browser.download.ui.ThumbnailProvider;
@@ -53,8 +54,10 @@ public class ImageFetcherTest {
     @Rule
     public SuggestionsDependenciesRule mSuggestionsDeps = new SuggestionsDependenciesRule();
 
+    private DiscardableReferencePool mReferencePool = new DiscardableReferencePool();
+
     @Mock
-    FaviconHelper mFaviconHelper;
+    private FaviconHelper mFaviconHelper;
     @Mock
     private ThumbnailProvider mThumbnailProvider;
     @Mock
@@ -75,8 +78,8 @@ public class ImageFetcherTest {
 
     @Test
     public void testFaviconFetch() {
-        ImageFetcher imageFetcher = new ImageFetcher(
-                mSuggestionsSource, mock(Profile.class), mock(NativePageHost.class));
+        ImageFetcher imageFetcher = new ImageFetcher(mSuggestionsSource, mock(Profile.class),
+                mReferencePool, mock(NativePageHost.class));
 
         SnippetArticle suggestion = createDummySuggestion(KnownCategories.BOOKMARKS);
         imageFetcher.makeFaviconRequest(suggestion, IMAGE_SIZE_PX, mock(Callback.class));
@@ -90,8 +93,8 @@ public class ImageFetcherTest {
 
     @Test
     public void testDownloadThumbnailFetch() {
-        ImageFetcher imageFetcher = new ImageFetcher(
-                mSuggestionsSource, mock(Profile.class), mock(NativePageHost.class));
+        ImageFetcher imageFetcher = new ImageFetcher(mSuggestionsSource, mock(Profile.class),
+                mReferencePool, mock(NativePageHost.class));
 
         SnippetArticle suggestion = createDummySuggestion(KnownCategories.DOWNLOADS);
 
@@ -105,8 +108,8 @@ public class ImageFetcherTest {
 
     @Test
     public void testArticleThumbnailFetch() {
-        ImageFetcher imageFetcher = new ImageFetcher(
-                mSuggestionsSource, mock(Profile.class), mock(NativePageHost.class));
+        ImageFetcher imageFetcher = new ImageFetcher(mSuggestionsSource, mock(Profile.class),
+                mReferencePool, mock(NativePageHost.class));
 
         SnippetArticle suggestion = createDummySuggestion(KnownCategories.ARTICLES);
         imageFetcher.makeArticleThumbnailRequest(suggestion, mock(Callback.class));
@@ -116,8 +119,8 @@ public class ImageFetcherTest {
 
     @Test
     public void testLargeIconFetch() {
-        ImageFetcher imageFetcher = new ImageFetcher(
-                mSuggestionsSource, mock(Profile.class), mock(NativePageHost.class));
+        ImageFetcher imageFetcher = new ImageFetcher(mSuggestionsSource, mock(Profile.class),
+                mReferencePool, mock(NativePageHost.class));
 
         imageFetcher.makeLargeIconRequest(URL_STRING, IMAGE_SIZE_PX, mock(LargeIconCallback.class));
 

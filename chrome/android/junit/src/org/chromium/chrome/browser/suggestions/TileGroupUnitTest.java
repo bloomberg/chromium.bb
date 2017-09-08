@@ -483,7 +483,7 @@ public class TileGroupUnitTest {
         private final List<LargeIconCallback> mCallbackList = new ArrayList<>();
 
         public FakeImageFetcher() {
-            super(null, null, null);
+            super(null, null, null, null);
         }
 
         @Override
