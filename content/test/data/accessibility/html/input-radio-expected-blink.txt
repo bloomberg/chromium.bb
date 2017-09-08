@@ -10,11 +10,7 @@ rootWebArea
 ++++++inlineTextBox name='Radio2'
 ++form
 ++++radioButton name='Radio3' checkedState=false radioGroupIds=radioButton,radioButton
-++++staticText name=' '
-++++++inlineTextBox name=' '
 ++++radioButton name='Radio4' checkedState=true radioGroupIds=radioButton,radioButton
 ++form
 ++++radioButton name='Radio5' checkedState=false radioGroupIds=radioButton
-++++staticText name=' '
-++++++inlineTextBox name=' '
 ++++radioButton name='Radio6' checkedState=true radioGroupIds=radioButton

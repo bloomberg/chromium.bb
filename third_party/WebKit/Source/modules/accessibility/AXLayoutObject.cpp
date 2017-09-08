@@ -754,30 +754,59 @@ bool AXLayoutObject::HasAriaCellRole(Element* elem) const {
 
 // Return true if whitespace is not necessary to keep adjacent_node separate
 // in screen reader output from surrounding nodes.
-bool AXLayoutObject::CanIgnoreSpaceNextTo(Node* adjacent_node) const {
-  if (!adjacent_node)
+bool AXLayoutObject::CanIgnoreSpaceNextTo(LayoutObject* layout,
+                                          bool is_after) const {
+  if (!layout)
     return true;
-  if (!adjacent_node->IsElementNode())
+
+  // If adjacent to a whitespace character, the current space can be ignored.
+  if (layout->IsText()) {
+    LayoutText* layout_text = ToLayoutText(layout);
+    if (layout_text->HasEmptyText())
+      return false;
+    auto text = layout_text->GetText().Impl();
+    auto adjacent_char =
+        text->CharacterStartingAt(is_after ? 0 : text->length() - 1);
+    return adjacent_char == ' ' || adjacent_char == '\n' ||
+           adjacent_char == '\t';
+  }
+
+  // Keep spaces between images and other visible content.
+  if (layout->IsLayoutImage())
     return false;
 
-  // Use layout whitespace to separate elements if a screen reader would
-  // otherwise incorrectly merge the text without whitespace in its output.
+  // Do not keep spaces between blocks.
+  if (!layout->IsLayoutInline())
+    return true;
+
+  // If next to an element that a screen reader will always read separately,
+  // the the space can be ignored.
   // Elements that are naturally focusable even without a tabindex tend
   // to be rendered separately even if there is no space between them.
   // Some ARIA roles act like table cells and don't need adjacent whitespace to
   // indicate separation.
   // False negatives are acceptable in that they merely lead to extra whitespace
   // static text nodes.
-  Element* adjacent_elem = ToElement(adjacent_node);
-  return IsFocusableByDefault(adjacent_elem) || HasAriaCellRole(adjacent_elem);
+  // TODO(aleventhal) Do we want this? Is it too hard/complex for Braille/Cvox?
+  Node* node = layout->GetNode();
+  if (node && node->IsElementNode()) {
+    Element* elem = ToElement(node);
+    if (IsFocusableByDefault(elem) || HasAriaCellRole(elem))
+      return true;
+  }
+
+  // Test against the appropriate child text node.
+  LayoutInline* layout_inline = ToLayoutInline(layout);
+  LayoutObject* child =
+      is_after ? layout_inline->FirstChild() : layout_inline->LastChild();
+  return CanIgnoreSpaceNextTo(child, is_after);
 }
 
 bool AXLayoutObject::CanIgnoreTextAsEmpty() const {
   DCHECK(layout_object_->IsText());
+  DCHECK(layout_object_->Parent());
+
   LayoutText* layout_text = ToLayoutText(layout_object_);
-  if (!layout_text->HasTextBoxes()) {
-    return true;
-  }
 
   // Ignore empty text
   if (layout_text->HasEmptyText()) {
@@ -789,20 +818,27 @@ bool AXLayoutObject::CanIgnoreTextAsEmpty() const {
   if (!node)
     return false;
 
-  // Don't ignore static text in editable text controls.
-  if (HasEditableStyle(*node))
+  // Always keep if anything other than collapsible whitespace.
+  if (!layout_text->IsAllCollapsibleWhitespace())
     return false;
 
-  // Ignore extra whitespace-only text if a sibling doesn't will be presented
-  // separately by scren readers whether whitespace is there or not.
+  // Will now look at sibling nodes.
   // Using "skipping children" methods as we need the closest element to the
   // whitespace markup-wise, e.g. tag1 in these examples:
   // [whitespace] <tag1><tag2>x</tag2></tag1>
   // <span>[whitespace]</span> <tag1><tag2>x</tag2></tag1>
-  if (layout_text->GetText().Impl()->ContainsOnlyWhitespace() &&
-      (CanIgnoreSpaceNextTo(FlatTreeTraversal::NextSkippingChildren(*node)) ||
-       CanIgnoreSpaceNextTo(
-           FlatTreeTraversal::PreviousSkippingChildren(*node))))
+  Node* prev_node = FlatTreeTraversal::PreviousSkippingChildren(*node);
+  if (!prev_node)
+    return true;
+
+  Node* next_node = FlatTreeTraversal::NextSkippingChildren(*node);
+  if (!next_node)
+    return true;
+
+  // Ignore extra whitespace-only text if a sibling will be presented
+  // separately by screen readers whether whitespace is there or not.
+  if (CanIgnoreSpaceNextTo(prev_node->GetLayoutObject(), false) ||
+      CanIgnoreSpaceNextTo(next_node->GetLayoutObject(), true))
     return true;
 
   // Text elements with empty whitespace are returned, because of cases
@@ -1253,11 +1289,23 @@ String AXLayoutObject::TextAlternative(bool recursive,
     } else if (layout_object_->IsText() &&
                (!recursive || !layout_object_->IsCounter())) {
       LayoutText* layout_text = ToLayoutText(layout_object_);
-      String result = layout_text->PlainText();
-      if (!result.IsEmpty() || layout_text->IsAllCollapsibleWhitespace())
-        text_alternative = result;
-      else
-        text_alternative = layout_text->GetText();
+      String visible_text = layout_text->PlainText();  // Actual rendered text.
+      // If no text boxes we assume this is unrendered end-of-line whitespace.
+      // TODO find robust way to deterministically detect end-of-line space.
+      if (visible_text.IsEmpty()) {
+        // No visible rendered text -- must be whitespace.
+        // Either it is useful whitespace for separating words or not.
+        if (layout_text->IsAllCollapsibleWhitespace()) {
+          if (cached_is_ignored_)
+            return "";
+          // If no textboxes, this was whitespace at the line's end.
+          text_alternative = " ";
+        } else {
+          text_alternative = layout_text->GetText();
+        }
+      } else {
+        text_alternative = visible_text;
+      }
       found_text_alternative = true;
     } else if (layout_object_->IsListMarker() && !recursive) {
       text_alternative = ToLayoutListMarker(layout_object_)->GetText();

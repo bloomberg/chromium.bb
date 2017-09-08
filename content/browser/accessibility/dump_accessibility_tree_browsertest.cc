@@ -1546,6 +1546,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilitySpan) {
   RunHtmlTest(FILE_PATH_LITERAL("span.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilitySpanLineBreak) {
+  RunHtmlTest(FILE_PATH_LITERAL("span-line-break.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityStrong) {
   RunHtmlTest(FILE_PATH_LITERAL("strong.html"));
 }
