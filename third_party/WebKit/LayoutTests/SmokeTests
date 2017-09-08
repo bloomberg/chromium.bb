@@ -258,7 +258,6 @@ external/wpt/html/webappapis/scripting/processing-model-2/window-onerror-runtime
 external/wpt/html/webappapis/system-state-and-capabilities/the-navigator-object/content/006.xhtml
 external/wpt/html/webappapis/timers/type-long-setinterval.html
 external/wpt/html/webappapis/timers/type-long-settimeout.html
-external/wpt/IndexedDB/idbobjectstore_add2.htm
 external/wpt/infrastructure/failing-test.html
 external/wpt/innerText/setter.html
 external/wpt/input-events/idlharness.html
@@ -335,7 +334,6 @@ external/wpt/webstorage/storage_length.html
 external/wpt/webvtt/api/VTTCue/size.html
 external/wpt/webvtt/api/VTTRegion/constructor.html
 external/wpt/webvtt/api/VTTRegion/regionAnchorX.html
-external/wpt/webvtt/parsing/cue-text-parsing/tests/tags.html
 external/wpt/webvtt/parsing/file-parsing/tests/settings-line.html
 external/wpt/webvtt/parsing/file-parsing/tests/timings-too-short.html
 external/wpt/workers/constructors/SharedWorker/unresolvable-url.html
