@@ -79,8 +79,10 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
     CSSPropertyID property,
     const CSSParserTokenRange& range,
     const CSSParserContext* context) {
+  DCHECK(context);
   CSSPropertyParser parser(range, context, nullptr);
-  const CSSValue* value = parser.ParseSingleValue(property);
+  const CSSValue* value = CSSPropertyParserHelpers::ParseLonghandViaAPI(
+      property, CSSPropertyInvalid, *parser.context_, parser.range_);
   if (!value || !parser.range_.AtEnd())
     return nullptr;
   return value;
@@ -101,7 +103,10 @@ bool CSSPropertyParser::ParseValueStart(CSSPropertyID unresolved_property,
     if (ParseShorthand(unresolved_property, important))
       return true;
   } else {
-    if (const CSSValue* parsed_value = ParseSingleValue(unresolved_property)) {
+    DCHECK(context_);
+    if (const CSSValue* parsed_value =
+            CSSPropertyParserHelpers::ParseLonghandViaAPI(
+                unresolved_property, CSSPropertyInvalid, *context_, range_)) {
       if (range_.AtEnd()) {
         AddProperty(property_id, CSSPropertyInvalid, *parsed_value, important,
                     IsImplicitProperty::kNotImplicit, *parsed_properties_);
@@ -258,16 +263,6 @@ static CSSValue* ConsumeFontVariantList(CSSParserTokenRange& range) {
     return values;
 
   return nullptr;
-}
-
-const CSSValue* CSSPropertyParser::ParseSingleValue(
-    CSSPropertyID unresolved_property,
-    CSSPropertyID current_shorthand) {
-  DCHECK(context_);
-  // FIXME(meade): This function can be deleted now that everything is handled
-  // in the CSSPropertyAPI classes.
-  return CSSPropertyParserHelpers::ParseLonghandViaAPI(
-      unresolved_property, current_shorthand, *context_, range_);
 }
 
 static CSSIdentifierValue* ConsumeFontDisplay(CSSParserTokenRange& range) {
