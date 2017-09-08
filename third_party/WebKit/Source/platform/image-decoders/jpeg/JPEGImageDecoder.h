@@ -63,7 +63,7 @@ class PLATFORM_EXPORT JPEGImageDecoder final : public ImageDecoder {
   }
   void SetDecodedSize(unsigned width, unsigned height);
 
-  void AddSupportedDecodeSize(unsigned width, unsigned height);
+  void SetSupportedDecodeSizes(std::vector<SkISize> sizes);
 
  private:
   // ImageDecoder:

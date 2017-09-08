@@ -441,12 +441,15 @@ class JPEGImageReader final {
         info_.scale_denom = g_scale_denomiator;
 
         if (decoder_->ShouldGenerateAllSizes()) {
+          std::vector<SkISize> sizes;
+          sizes.reserve(max_numerator);
           for (int numerator = 1; numerator <= max_numerator; ++numerator) {
             info_.scale_num = numerator;
             jpeg_calc_output_dimensions(&info_);
-            decoder_->AddSupportedDecodeSize(info_.output_width,
-                                             info_.output_height);
+            sizes.push_back(
+                SkISize::Make(info_.output_width, info_.output_height));
           }
+          decoder_->SetSupportedDecodeSizes(std::move(sizes));
         }
 
         info_.scale_num = max_numerator;
@@ -811,8 +814,8 @@ void JPEGImageDecoder::SetImagePlanes(
   image_planes_ = std::move(image_planes);
 }
 
-void JPEGImageDecoder::AddSupportedDecodeSize(unsigned width, unsigned height) {
-  supported_decode_sizes_.push_back(SkISize::Make(width, height));
+void JPEGImageDecoder::SetSupportedDecodeSizes(std::vector<SkISize> sizes) {
+  supported_decode_sizes_ = std::move(sizes);
 }
 
 std::vector<SkISize> JPEGImageDecoder::GetSupportedDecodeSizes() const {
