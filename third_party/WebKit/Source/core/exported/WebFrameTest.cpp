@@ -11971,4 +11971,31 @@ TEST_P(SlimmingPaintWebFrameTest, FrameViewScroll) {
   EXPECT_EQ(ScrollOffset(0, 1), scrollable_area->GetScrollOffset());
 }
 
+static void TestFramePrinting(WebLocalFrameImpl* frame) {
+  WebPrintParams print_params;
+  WebSize page_size(500, 500);
+  print_params.print_content_area.width = page_size.width;
+  print_params.print_content_area.height = page_size.height;
+  EXPECT_EQ(1, frame->PrintBegin(print_params, WebNode()));
+  PaintRecorder recorder;
+  frame->PrintPagesForTesting(recorder.beginRecording(IntRect()), page_size);
+  frame->PrintEnd();
+}
+
+TEST_P(ParameterizedWebFrameTest, PrintDetachedIframe) {
+  RegisterMockedHttpURLLoad("print-detached-iframe.html");
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "print-detached-iframe.html");
+  TestFramePrinting(
+      ToWebLocalFrameImpl(web_view_helper.LocalMainFrame()->FirstChild()));
+}
+
+TEST_P(ParameterizedWebFrameTest, PrintIframeUnderDetached) {
+  RegisterMockedHttpURLLoad("print-detached-iframe.html");
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "print-detached-iframe.html");
+  TestFramePrinting(ToWebLocalFrameImpl(
+      web_view_helper.LocalMainFrame()->FirstChild()->FirstChild()));
+}
+
 }  // namespace blink

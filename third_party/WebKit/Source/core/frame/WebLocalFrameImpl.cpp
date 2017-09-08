@@ -277,7 +277,7 @@ class ChromePrintContext : public PrintContext {
         GetFrame()->GetDocument()->GetLayoutViewItem().IsNull())
       return 0;
 
-    GetFrame()->View()->UpdateAllLifecyclePhasesExceptPaint();
+    GetFrame()->View()->UpdateLifecyclePhasesForPrinting();
     if (!GetFrame()->GetDocument() ||
         GetFrame()->GetDocument()->GetLayoutViewItem().IsNull())
       return 0;
@@ -301,7 +301,7 @@ class ChromePrintContext : public PrintContext {
         GetFrame()->GetDocument()->GetLayoutViewItem().IsNull())
       return;
 
-    GetFrame()->View()->UpdateAllLifecyclePhasesExceptPaint();
+    GetFrame()->View()->UpdateLifecyclePhasesForPrinting();
     if (!GetFrame()->GetDocument() ||
         GetFrame()->GetDocument()->GetLayoutViewItem().IsNull())
       return;

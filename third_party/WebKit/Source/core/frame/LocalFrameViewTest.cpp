@@ -6,22 +6,17 @@
 
 #include <memory>
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/frame/Settings.h"
 #include "core/html/HTMLElement.h"
-#include "core/layout/LayoutBoxModelObject.h"
-#include "core/layout/LayoutObject.h"
-#include "core/loader/EmptyClients.h"
-#include "core/page/Page.h"
+#include "core/layout/LayoutTestHelper.h"
+#include "core/layout/LayoutView.h"
 #include "core/paint/PaintLayer.h"
-#include "core/testing/DummyPageHolder.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/paint/PaintArtifact.h"
-#include "platform/heap/Handle.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
+
+#include "core/paint/PaintPropertyTreePrinter.h"
 
 using ::testing::_;
 using ::testing::AnyNumber;
@@ -53,10 +48,11 @@ typedef bool TestParamRootLayerScrolling;
 class LocalFrameViewTest
     : public ::testing::WithParamInterface<TestParamRootLayerScrolling>,
       private ScopedRootLayerScrollingForTest,
-      public ::testing::Test {
+      public RenderingTest {
  protected:
   LocalFrameViewTest()
       : ScopedRootLayerScrollingForTest(GetParam()),
+        RenderingTest(SingleChildLocalFrameClient::Create()),
         chrome_client_(new AnimationMockChromeClient) {
     EXPECT_CALL(ChromeClient(), AttachRootGraphicsLayer(_, _))
         .Times(AnyNumber());
@@ -66,28 +62,23 @@ class LocalFrameViewTest
     ::testing::Mock::VerifyAndClearExpectations(&ChromeClient());
   }
 
+  ChromeClient& GetChromeClient() const override { return *chrome_client_; }
+
   void SetUp() override {
-    Page::PageClients clients;
-    FillWithEmptyClients(clients);
-    clients.chrome_client = chrome_client_.Get();
-    page_holder_ = DummyPageHolder::Create(IntSize(800, 600), &clients);
-    page_holder_->GetPage().GetSettings().SetAcceleratedCompositingEnabled(
-        true);
+    RenderingTest::SetUp();
+    EnableCompositing();
   }
 
-  Document& GetDocument() { return page_holder_->GetDocument(); }
-  AnimationMockChromeClient& ChromeClient() { return *chrome_client_; }
+  AnimationMockChromeClient& ChromeClient() const { return *chrome_client_; }
 
  private:
   Persistent<AnimationMockChromeClient> chrome_client_;
-  std::unique_ptr<DummyPageHolder> page_holder_;
 };
 
 INSTANTIATE_TEST_CASE_P(All, LocalFrameViewTest, ::testing::Bool());
 
 TEST_P(LocalFrameViewTest, SetPaintInvalidationDuringUpdateAllLifecyclePhases) {
-  GetDocument().body()->setInnerHTML("<div id='a' style='color: blue'>A</div>");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  SetBodyInnerHTML("<div id='a' style='color: blue'>A</div>");
   GetDocument().getElementById("a")->setAttribute(HTMLNames::styleAttr,
                                                   "color: green");
   ChromeClient().has_scheduled_animation_ = false;
@@ -96,8 +87,7 @@ TEST_P(LocalFrameViewTest, SetPaintInvalidationDuringUpdateAllLifecyclePhases) {
 }
 
 TEST_P(LocalFrameViewTest, SetPaintInvalidationOutOfUpdateAllLifecyclePhases) {
-  GetDocument().body()->setInnerHTML("<div id='a' style='color: blue'>A</div>");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  SetBodyInnerHTML("<div id='a' style='color: blue'>A</div>");
   ChromeClient().has_scheduled_animation_ = false;
   GetDocument()
       .getElementById("a")
@@ -118,9 +108,7 @@ TEST_P(LocalFrameViewTest, SetPaintInvalidationOutOfUpdateAllLifecyclePhases) {
 // If we don't hide the tooltip on scroll, it can negatively impact scrolling
 // performance. See crbug.com/586852 for details.
 TEST_P(LocalFrameViewTest, HideTooltipWhenScrollPositionChanges) {
-  GetDocument().body()->setInnerHTML(
-      "<div style='width:1000px;height:1000px'></div>");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  SetBodyInnerHTML("<div style='width:1000px;height:1000px'></div>");
 
   EXPECT_CALL(ChromeClient(),
               MockSetToolTip(GetDocument().GetFrame(), String(), _));
@@ -152,11 +140,10 @@ TEST_P(LocalFrameViewTest, NoOverflowInIncrementVisuallyNonEmptyPixelCount) {
 // overflow layer would always be valid.
 TEST_P(LocalFrameViewTest,
        ViewportConstrainedObjectsHandledCorrectlyDuringLayout) {
-  GetDocument().body()->setInnerHTML(
+  SetBodyInnerHTML(
       "<style>.container { height: 200%; }"
       "#sticky { position: sticky; top: 0; height: 50px; }</style>"
       "<div class='container'><div id='sticky'></div></div>");
-  GetDocument().View()->UpdateAllLifecyclePhases();
 
   LayoutBoxModelObject* sticky = ToLayoutBoxModelObject(
       GetDocument().getElementById("sticky")->GetLayoutObject());
@@ -177,7 +164,7 @@ TEST_P(LocalFrameViewTest, StyleChangeUpdatesViewportConstrainedObjects) {
   if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
     return;
 
-  GetDocument().body()->setInnerHTML(
+  SetBodyInnerHTML(
       "<style>.container { height: 200%; }"
       "#sticky1 { position: sticky; top: 0; height: 50px; }"
       "#sticky2 { position: sticky; height: 50px; }</style>"
@@ -185,7 +172,6 @@ TEST_P(LocalFrameViewTest, StyleChangeUpdatesViewportConstrainedObjects) {
       "  <div id='sticky1'></div>"
       "  <div id='sticky2'></div>"
       "</div>");
-  GetDocument().View()->UpdateAllLifecyclePhases();
 
   LayoutBoxModelObject* sticky1 = ToLayoutBoxModelObject(
       GetDocument().getElementById("sticky1")->GetLayoutObject());
@@ -232,6 +218,27 @@ TEST_P(LocalFrameViewTest, StyleChangeUpdatesViewportConstrainedObjects) {
 
   EXPECT_FALSE(
       GetDocument().View()->ViewportConstrainedObjects()->Contains(sticky2));
+}
+
+TEST_P(LocalFrameViewTest, UpdateLifecyclePhasesForPrintingDetachedFrame) {
+  SetBodyInnerHTML("<iframe style='display: none'></iframe>");
+  SetChildFrameHTML("A");
+
+  ChildDocument().SetPrinting(Document::kPrinting);
+  ChildDocument().View()->UpdateLifecyclePhasesForPrinting();
+
+  // The following checks that the detached frame has been walked for PrePaint.
+  EXPECT_EQ(DocumentLifecycle::kPrePaintClean,
+            GetDocument().Lifecycle().GetState());
+  EXPECT_EQ(DocumentLifecycle::kPrePaintClean,
+            ChildDocument().Lifecycle().GetState());
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+    auto* child_layout_view = ChildDocument().GetLayoutView();
+    ASSERT_TRUE(child_layout_view->FirstFragment());
+    EXPECT_TRUE(child_layout_view->FirstFragment()->PaintProperties());
+  } else {
+    EXPECT_TRUE(ChildDocument().View()->PreTranslation());
+  }
 }
 
 }  // namespace

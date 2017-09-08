@@ -302,6 +302,11 @@ class CORE_EXPORT LocalFrameView final
   // Everything except paint (the last phase).
   void UpdateAllLifecyclePhasesExceptPaint();
 
+  // Printing needs everything up-to-date except paint (which will be done
+  // specially). We may also print a detached frame or a descendant of a
+  // detached frame and need special handling of the frame.
+  void UpdateLifecyclePhasesForPrinting();
+
   // Computes the style, layout and compositing lifecycle stages if needed.
   // After calling this method, all frames will be in a lifecycle
   // state >= CompositingClean, and scrolling has been updated (unless
