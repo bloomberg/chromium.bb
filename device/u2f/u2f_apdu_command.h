@@ -14,7 +14,7 @@
 namespace device {
 
 // APDU commands are defined as part of ISO 7816-4. Commands can be serialized
-// into either short length encodings, where the maximum data length is 255
+// into either short length encodings, where the maximum data length is 256
 // bytes, or an extended length encoding, where the maximum data length is 65536
 // bytes. This class implements only the extended length encoding. Serialized
 // commands consist of a CLA byte, denoting the class of instruction, an INS
@@ -33,10 +33,10 @@ class U2fApduCommand {
                  std::vector<uint8_t> suffix);
   ~U2fApduCommand();
 
-  // Construct an apdu command from the serialized message data
+  // Constructs an APDU command from the serialized message data.
   static std::unique_ptr<U2fApduCommand> CreateFromMessage(
       const std::vector<uint8_t>& data);
-  // Returns serialized message data
+  // Returns serialized message data.
   std::vector<uint8_t> GetEncodedCommand() const;
   void set_cla(uint8_t cla) { cla_ = cla; }
   void set_ins(uint8_t ins) { ins_ = ins; }
@@ -51,7 +51,7 @@ class U2fApduCommand {
       const std::vector<uint8_t>& appid_digest,
       const std::vector<uint8_t>& challenge_digest);
   static std::unique_ptr<U2fApduCommand> CreateVersion();
-  // Early U2F drafts defined a non-ISO 7816-4 conforming layout
+  // Early U2F drafts defined a non-ISO 7816-4 conforming layout.
   static std::unique_ptr<U2fApduCommand> CreateLegacyVersion();
   static std::unique_ptr<U2fApduCommand> CreateSign(
       const std::vector<uint8_t>& appid_digest,
@@ -72,20 +72,23 @@ class U2fApduCommand {
   // As defined in ISO7816-4, extended length APDU request data is limited to
   // 16 bits in length with a maximum value of 65535. Response data length is
   // also limited to 16 bits in length with a value of 0x0000 corresponding to
-  // a length of 65536
+  // a length of 65536.
   static constexpr size_t kApduMaxDataLength = 65535;
   static constexpr size_t kApduMaxResponseLength = 65536;
   static constexpr size_t kApduMaxLength =
       kApduMaxDataLength + kApduMaxHeader + 2;
-  // APDU instructions
+
+  // APDU instructions.
   static constexpr uint8_t kInsU2fEnroll = 0x01;
   static constexpr uint8_t kInsU2fSign = 0x02;
   static constexpr uint8_t kInsU2fVersion = 0x03;
-  // P1 instructions
+
+  // P1 instructions.
   static constexpr uint8_t kP1TupRequired = 0x01;
   static constexpr uint8_t kP1TupConsumed = 0x02;
   static constexpr uint8_t kP1TupRequiredConsumed =
       kP1TupRequired | kP1TupConsumed;
+
   static constexpr size_t kMaxKeyHandleLength = 255;
   static constexpr size_t kChallengeDigestLen = 32;
   static constexpr size_t kAppIdDigestLen = 32;
@@ -98,6 +101,7 @@ class U2fApduCommand {
   std::vector<uint8_t> data_;
   std::vector<uint8_t> suffix_;
 };
+
 }  // namespace device
 
 #endif  // DEVICE_U2F_U2F_APDU_COMMAND_H_
