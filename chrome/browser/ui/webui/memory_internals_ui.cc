@@ -209,7 +209,8 @@ void MemoryInternalsDOMHandler::HandleReportProcess(
     return;
 
   int pid = pid_value.GetInt();
-  profiling::ProfilingProcessHost::GetInstance()->RequestProcessReport(pid);
+  profiling::ProfilingProcessHost::GetInstance()->RequestProcessReport(
+      pid, "MEMLOG_MANUAL_TRIGGER");
 }
 
 void MemoryInternalsDOMHandler::GetChildProcessesOnIOThread(

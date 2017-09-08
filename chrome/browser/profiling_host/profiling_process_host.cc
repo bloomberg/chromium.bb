@@ -59,12 +59,14 @@ bool ProfilingProcessHost::has_started_ = false;
 namespace {
 
 const size_t kMaxTraceSizeUploadInBytes = 10 * 1024 * 1024;
+const char kNoTriggerName[] = "";
 
 void OnTraceUploadComplete(TraceCrashServiceUploader* uploader,
                            bool success,
                            const std::string& feedback);
 
-void UploadTraceToCrashServer(base::FilePath file_path) {
+void UploadTraceToCrashServer(base::FilePath file_path,
+                              std::string trigger_name) {
   std::string file_contents;
   if (!base::ReadFileToStringWithMaxSize(file_path, &file_contents,
                                          kMaxTraceSizeUploadInBytes)) {
@@ -72,11 +74,20 @@ void UploadTraceToCrashServer(base::FilePath file_path) {
     return;
   }
 
-  std::unique_ptr<base::DictionaryValue> metadata =
-      base::MakeUnique<base::DictionaryValue>();
+  base::Value rules_list(base::Value::Type::LIST);
+  base::Value rule(base::Value::Type::DICTIONARY);
+  rule.SetKey("rule", base::Value("MEMLOG"));
+  rule.SetKey("trigger_name", base::Value(std::move(trigger_name)));
+  rule.SetKey("category", base::Value("BENCHMARK_MEMORY_HEAVY"));
+  rules_list.GetList().push_back(std::move(rule));
+
   base::Value configs(base::Value::Type::DICTIONARY);
   configs.SetKey("mode", base::Value("REACTIVE_TRACING_MODE"));
   configs.SetKey("category", base::Value("MEMLOG"));
+  configs.SetKey("configs", std::move(rules_list));
+
+  std::unique_ptr<base::DictionaryValue> metadata =
+      base::MakeUnique<base::DictionaryValue>();
   metadata->SetKey("config", std::move(configs));
 
   TraceCrashServiceUploader* uploader = new TraceCrashServiceUploader(
@@ -330,10 +341,12 @@ void ProfilingProcessHost::RequestProcessDump(base::ProcessId pid,
   base::PostTaskWithTraits(
       FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
       base::BindOnce(&ProfilingProcessHost::GetOutputFileOnBlockingThread,
-                     base::Unretained(this), pid, dest, kNoUpload));
+                     base::Unretained(this), pid, dest, kNoTriggerName,
+                     kNoUpload));
 }
 
-void ProfilingProcessHost::RequestProcessReport(base::ProcessId pid) {
+void ProfilingProcessHost::RequestProcessReport(base::ProcessId pid,
+                                                std::string trigger_name) {
   if (!connector_) {
     DLOG(ERROR)
         << "Requesting process dump when profiling process hasn't started.";
@@ -350,7 +363,8 @@ void ProfilingProcessHost::RequestProcessReport(base::ProcessId pid) {
   base::PostTaskWithTraits(
       FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
       base::BindOnce(&ProfilingProcessHost::GetOutputFileOnBlockingThread,
-                     base::Unretained(this), pid, output_path, kUpload));
+                     base::Unretained(this), pid, std::move(output_path),
+                     std::move(trigger_name), kUpload));
 }
 
 void ProfilingProcessHost::MakeConnector(
@@ -392,6 +406,7 @@ void ProfilingProcessHost::LaunchAsService() {
 void ProfilingProcessHost::GetOutputFileOnBlockingThread(
     base::ProcessId pid,
     const base::FilePath& dest,
+    std::string trigger_name,
     bool upload) {
   base::File file(dest,
                   base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
@@ -399,21 +414,24 @@ void ProfilingProcessHost::GetOutputFileOnBlockingThread(
       content::BrowserThread::IO, FROM_HERE,
       base::BindOnce(&ProfilingProcessHost::HandleDumpProcessOnIOThread,
                      base::Unretained(this), pid, std::move(dest),
-                     std::move(file), upload));
+                     std::move(file), std::move(trigger_name), upload));
 }
 
 void ProfilingProcessHost::HandleDumpProcessOnIOThread(base::ProcessId pid,
                                                        base::FilePath file_path,
                                                        base::File file,
+                                                       std::string trigger_name,
                                                        bool upload) {
   mojo::ScopedHandle handle = mojo::WrapPlatformFile(file.TakePlatformFile());
   memlog_->DumpProcess(
       pid, std::move(handle), GetMetadataJSONForTrace(),
       base::BindOnce(&ProfilingProcessHost::OnProcessDumpComplete,
-                     base::Unretained(this), std::move(file_path), upload));
+                     base::Unretained(this), std::move(file_path),
+                     std::move(trigger_name), upload));
 }
 
 void ProfilingProcessHost::OnProcessDumpComplete(base::FilePath file_path,
+                                                 std::string trigger_name,
                                                  bool upload,
                                                  bool success) {
   if (!success) {
@@ -427,7 +445,7 @@ void ProfilingProcessHost::OnProcessDumpComplete(base::FilePath file_path,
   }
 
   if (upload) {
-    UploadTraceToCrashServer(file_path);
+    UploadTraceToCrashServer(file_path, trigger_name);
 
     // Uploaded file is a temporary file and must be deleted.
     base::PostTaskWithTraits(
