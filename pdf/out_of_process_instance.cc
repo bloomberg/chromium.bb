@@ -56,6 +56,7 @@ const char kChromeExtension[] =
 const char kType[] = "type";
 // Viewport message arguments. (Page -> Plugin).
 const char kJSViewportType[] = "viewport";
+const char kJSUserInitiated[] = "userInitiated";
 const char kJSXOffset[] = "xOffset";
 const char kJSYOffset[] = "yOffset";
 const char kJSZoom[] = "zoom";
@@ -367,6 +368,9 @@ OutOfProcessInstance::OutOfProcessInstance(PP_Instance instance)
   RequestFilteringInputEvents(PP_INPUTEVENT_CLASS_MOUSE);
   RequestFilteringInputEvents(PP_INPUTEVENT_CLASS_KEYBOARD);
   RequestFilteringInputEvents(PP_INPUTEVENT_CLASS_TOUCH);
+
+  for (size_t i = 0; i < PDFACTION_BUCKET_BOUNDARY; i++)
+    preview_action_recorded_[i] = false;
 }
 
 OutOfProcessInstance::~OutOfProcessInstance() {
@@ -555,6 +559,10 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
 
     // Bound the input parameters.
     zoom = std::max(kMinZoom, zoom);
+    DCHECK(dict.Get(pp::Var(kJSUserInitiated)).is_bool());
+    if (dict.Get(pp::Var(kJSUserInitiated)).AsBool())
+      PrintPreviewHistogramEnumeration(UPDATE_ZOOM);
+
     SetZoom(zoom);
     scroll_offset = BoundScrollOffsetToDocument(scroll_offset);
     engine_->ScrolledToXPosition(scroll_offset.x() * device_scale_);
@@ -627,6 +635,7 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
     engine_->New(url_.c_str(), nullptr /* empty header */);
 
     paint_manager_.InvalidateRect(pp::Rect(pp::Point(), plugin_size_));
+    PrintPreviewHistogramEnumeration(PRINT_PREVIEW_SHOWN);
   } else if (type == kJSLoadPreviewPageType &&
              dict.Get(pp::Var(kJSPreviewPageUrl)).is_string() &&
              dict.Get(pp::Var(kJSPreviewPageIndex)).is_int()) {
@@ -1494,15 +1503,16 @@ void OutOfProcessInstance::DocumentLoadComplete(int page_count) {
   }
 
   pp::PDF::SetContentRestriction(this, content_restrictions);
-
   HistogramCustomCounts("PDF.PageCount", page_count, 1, 1000000, 50);
 }
 
 void OutOfProcessInstance::RotateClockwise() {
+  PrintPreviewHistogramEnumeration(ROTATE);
   engine_->RotateClockwise();
 }
 
 void OutOfProcessInstance::RotateCounterclockwise() {
+  PrintPreviewHistogramEnumeration(ROTATE);
   engine_->RotateCounterclockwise();
 }
 
@@ -1714,6 +1724,8 @@ void OutOfProcessInstance::IsSelectingChanged(bool is_selecting) {
   message.Set(kType, kJSSetIsSelectingType);
   message.Set(kJSIsSelecting, pp::Var(is_selecting));
   PostMessage(message);
+  if (is_selecting)
+    PrintPreviewHistogramEnumeration(SELECT_TEXT);
 }
 
 void OutOfProcessInstance::ProcessPreviewPageInfo(const std::string& url,
@@ -1804,6 +1816,16 @@ void OutOfProcessInstance::HistogramEnumeration(const std::string& name,
     return;
 
   uma_.HistogramEnumeration(name, sample, boundary_value);
+}
+
+void OutOfProcessInstance::PrintPreviewHistogramEnumeration(int32_t sample) {
+  if (!IsPrintPreview())
+    return;
+  if (preview_action_recorded_[sample])
+    return;
+  uma_.HistogramEnumeration("PrintPreview.PdfAction", sample,
+                            PDFACTION_BUCKET_BOUNDARY);
+  preview_action_recorded_[sample] = true;
 }
 
 }  // namespace chrome_pdf
