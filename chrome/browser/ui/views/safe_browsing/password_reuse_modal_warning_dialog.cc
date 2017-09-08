@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/safe_browsing/password_reuse_modal_warning_dialog.h"
 
+#include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -18,10 +19,13 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/grid_layout.h"
 
 namespace safe_browsing {
+
+constexpr int kIconSize = 24;
 
 #if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
 void ShowPasswordReuseModalWarningDialog(
@@ -52,7 +56,6 @@ PasswordReuseModalWarningDialog::PasswordReuseModalWarningDialog(
   set_margins(ChromeLayoutProvider::Get()->GetInsetsMetric(
       views::INSETS_DIALOG_CONTENTS));
 
-  // TODO(jialiul): Dialog message should align with title.
   views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
   views::ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
@@ -62,6 +65,17 @@ PasswordReuseModalWarningDialog::PasswordReuseModalWarningDialog(
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS));
   message_body_label->SetMultiLine(true);
   message_body_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  // Makes message label align with title label.
+  int horizontal_adjustment =
+      kIconSize + ChromeLayoutProvider::Get()->GetDistanceMetric(
+                      DISTANCE_UNRELATED_CONTROL_HORIZONTAL);
+  if (base::i18n::IsRTL()) {
+    message_body_label->SetBorder(
+        views::CreateEmptyBorder(0, 0, 0, horizontal_adjustment));
+  } else {
+    message_body_label->SetBorder(
+        views::CreateEmptyBorder(0, horizontal_adjustment, 0, 0));
+  }
 
   layout->StartRow(0, 0);
   layout->AddView(message_body_label);
@@ -87,7 +101,6 @@ bool PasswordReuseModalWarningDialog::ShouldShowCloseButton() const {
 }
 
 gfx::ImageSkia PasswordReuseModalWarningDialog::GetWindowIcon() {
-  constexpr int kIconSize = 24;
   return show_softer_warning_
              ? gfx::CreateVectorIcon(kSecurityIcon, kIconSize,
                                      gfx::kChromeIconGrey)
