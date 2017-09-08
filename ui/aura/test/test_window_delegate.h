@@ -55,7 +55,8 @@ class TestWindowDelegate : public WindowDelegate {
   bool CanFocus() override;
   void OnCaptureLost() override;
   void OnPaint(const ui::PaintContext& context) override;
-  void OnDeviceScaleFactorChanged(float device_scale_factor) override;
+  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                  float new_device_scale_factor) override;
   void OnWindowDestroying(Window* window) override;
   void OnWindowDestroyed(Window* window) override;
   void OnWindowTargetVisibilityChanged(bool visible) override;

@@ -140,6 +140,7 @@ void TestWindowTree::SetWindowBounds(
     const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
   window_id_ = window_id;
   last_local_surface_id_ = local_surface_id;
+  last_set_window_bounds_ = bounds;
   OnChangeReceived(change_id, WindowTreeChangeType::BOUNDS);
 }
 

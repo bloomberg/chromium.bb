@@ -144,12 +144,6 @@ void SetWindowTypeFromProperties(
   SetWindowType(window, window_type);
 }
 
-// Helper function to get the device_scale_factor() of the display::Display
-// nearest to |window|.
-float ScaleFactorForDisplay(Window* window) {
-  return ui::GetScaleFactorForNativeView(window);
-}
-
 // Create and return a MouseEvent or TouchEvent from |event| if |event| is a
 // PointerEvent, otherwise return the copy of |event|.
 std::unique_ptr<ui::Event> MapEvent(const ui::Event& event) {
@@ -572,7 +566,8 @@ WindowMus* WindowTreeClient::NewWindowFromWindowData(
   window->Init(ui::LAYER_NOT_DRAWN);
   SetLocalPropertiesFromServerProperties(window_mus, window_data);
   window_mus->SetBoundsFromServer(
-      gfx::ConvertRectToDIP(ScaleFactorForDisplay(window), window_data.bounds),
+      gfx::ConvertRectToDIP(window_mus->GetDeviceScaleFactor(),
+                            window_data.bounds),
       base::nullopt);
   if (parent)
     parent->AddChildFromServer(window_port_mus_ptr);
@@ -706,7 +701,7 @@ void WindowTreeClient::SetWindowBoundsFromServer(
   }
 
   window->SetBoundsFromServer(
-      gfx::ConvertRectToDIP(ScaleFactorForDisplay(window->GetWindow()),
+      gfx::ConvertRectToDIP(window->GetDeviceScaleFactor(),
                             revert_bounds_in_pixels),
       local_surface_id);
 }
@@ -880,7 +875,7 @@ void WindowTreeClient::OnWindowMusBoundsChanged(WindowMus* window,
     return;
   }
 
-  float device_scale_factor = ScaleFactorForDisplay(window->GetWindow());
+  float device_scale_factor = window->GetDeviceScaleFactor();
   ScheduleInFlightBoundsChange(
       window, gfx::ConvertRectToPixel(device_scale_factor, old_bounds),
       gfx::ConvertRectToPixel(device_scale_factor, new_bounds));
@@ -986,6 +981,21 @@ void WindowTreeClient::OnWindowMusPropertyChanged(
           window, transport_name, std::move(data_mus->transport_value)));
   tree_->SetWindowProperty(change_id, window->server_id(), transport_name,
                            transport_value_mojo);
+}
+
+void WindowTreeClient::OnWindowMusDeviceScaleFactorChanged(
+    WindowMus* window,
+    float old_scale_factor,
+    float new_scale_factor) {
+  // Root changes are handled else where.
+  if (IsRoot(window))
+    return;
+
+  const gfx::Rect old_bounds =
+      gfx::ConvertRectToPixel(old_scale_factor, window->GetWindow()->bounds());
+  const gfx::Rect new_bounds =
+      gfx::ConvertRectToPixel(new_scale_factor, window->GetWindow()->bounds());
+  ScheduleInFlightBoundsChange(window, old_bounds, new_bounds);
 }
 
 void WindowTreeClient::OnWmMoveLoopCompleted(uint32_t change_id,
@@ -1172,10 +1182,11 @@ void WindowTreeClient::OnTopLevelCreated(
     InFlightBoundsChange bounds_change(this, window, bounds, local_surface_id);
     InFlightChange* current_change =
         GetOldestInFlightChangeMatching(bounds_change);
-    if (current_change)
+    if (current_change) {
       current_change->SetRevertValueFrom(bounds_change);
-    else if (gfx::ConvertRectToPixel(ScaleFactorForDisplay(window->GetWindow()),
-                                     window->GetWindow()->bounds()) != bounds) {
+    } else if (gfx::ConvertRectToPixel(window->GetDeviceScaleFactor(),
+                                       window->GetWindow()->bounds()) !=
+               bounds) {
       SetWindowBoundsFromServer(window, bounds, local_surface_id);
     }
   }
@@ -1239,7 +1250,7 @@ void WindowTreeClient::OnClientAreaChanged(
   if (!window)
     return;
 
-  float device_scale_factor = ScaleFactorForDisplay(window->GetWindow());
+  float device_scale_factor = window->GetDeviceScaleFactor();
   std::vector<gfx::Rect> new_additional_client_areas_in_dip;
   for (const gfx::Rect& area : new_additional_client_areas) {
     new_additional_client_areas_in_dip.push_back(
@@ -1682,7 +1693,7 @@ void WindowTreeClient::WmSetBounds(uint32_t change_id,
                                    const gfx::Rect& transit_bounds_in_pixels) {
   WindowMus* window = GetWindowByServerId(window_id);
   if (window) {
-    float device_scale_factor = ScaleFactorForDisplay(window->GetWindow());
+    float device_scale_factor = window->GetDeviceScaleFactor();
     DCHECK(window_manager_delegate_);
     gfx::Rect transit_bounds_in_dip =
         gfx::ConvertRectToDIP(device_scale_factor, transit_bounds_in_pixels);
@@ -1981,9 +1992,10 @@ void WindowTreeClient::SetExtendedHitRegionForChildren(
   if (!window_manager_client_)
     return;
 
-  const float device_scale_factor = ScaleFactorForDisplay(window);
+  WindowMus* window_mus = WindowMus::Get(window);
+  const float device_scale_factor = window_mus->GetDeviceScaleFactor();
   window_manager_client_->SetExtendedHitRegionForChildren(
-      WindowMus::Get(window)->server_id(),
+      window_mus->server_id(),
       gfx::ConvertInsetsToPixel(device_scale_factor, mouse_insets),
       gfx::ConvertInsetsToPixel(device_scale_factor, touch_insets));
 }
@@ -2103,15 +2115,15 @@ void WindowTreeClient::OnWindowTreeHostClientAreaWillChange(
     const gfx::Insets& client_area,
     const std::vector<gfx::Rect>& additional_client_areas) {
   DCHECK(tree_);
-  Window* window = window_tree_host->window();
-  float device_scale_factor = ScaleFactorForDisplay(window);
+  WindowMus* window = WindowMus::Get(window_tree_host->window());
+  float device_scale_factor = window->GetDeviceScaleFactor();
   std::vector<gfx::Rect> additional_client_areas_in_pixel;
   for (const gfx::Rect& area : additional_client_areas) {
     additional_client_areas_in_pixel.push_back(
         gfx::ConvertRectToPixel(device_scale_factor, area));
   }
   tree_->SetClientArea(
-      WindowMus::Get(window)->server_id(),
+      window->server_id(),
       gfx::ConvertInsetsToPixel(device_scale_factor, client_area),
       additional_client_areas_in_pixel);
 }
@@ -2119,16 +2131,15 @@ void WindowTreeClient::OnWindowTreeHostClientAreaWillChange(
 void WindowTreeClient::OnWindowTreeHostHitTestMaskWillChange(
     WindowTreeHostMus* window_tree_host,
     const base::Optional<gfx::Rect>& mask_rect) {
-  Window* window = window_tree_host->window();
+  WindowMus* window = WindowMus::Get(window_tree_host->window());
 
   base::Optional<gfx::Rect> out_rect = base::nullopt;
   if (mask_rect) {
-    out_rect = gfx::ConvertRectToPixel(ScaleFactorForDisplay(window),
+    out_rect = gfx::ConvertRectToPixel(window->GetDeviceScaleFactor(),
                                        mask_rect.value());
   }
 
-  tree_->SetHitTestMask(WindowMus::Get(window_tree_host->window())->server_id(),
-                        out_rect);
+  tree_->SetHitTestMask(window->server_id(), out_rect);
 }
 
 void WindowTreeClient::OnWindowTreeHostSetOpacity(

@@ -1194,9 +1194,10 @@ void BridgedNativeWidget::OnDelegatedFrameDamage(
 }
 
 void BridgedNativeWidget::OnDeviceScaleFactorChanged(
-    float device_scale_factor) {
+    float old_device_scale_factor,
+    float new_device_scale_factor) {
   native_widget_mac_->GetWidget()->DeviceScaleFactorChanged(
-      device_scale_factor);
+      old_device_scale_factor, new_device_scale_factor);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

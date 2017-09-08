@@ -3597,9 +3597,11 @@ class ScaleFactorView : public View {
   ScaleFactorView() = default;
 
   // Overridden from ui::LayerDelegate:
-  void OnDeviceScaleFactorChanged(float device_scale_factor) override {
-    last_scale_factor_ = device_scale_factor;
-    View::OnDeviceScaleFactorChanged(device_scale_factor);
+  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                  float new_device_scale_factor) override {
+    last_scale_factor_ = new_device_scale_factor;
+    View::OnDeviceScaleFactorChanged(old_device_scale_factor,
+                                     new_device_scale_factor);
   }
 
   float last_scale_factor() const { return last_scale_factor_; };
@@ -3628,7 +3630,7 @@ TEST_F(WidgetTest, OnDeviceScaleFactorChanged) {
 
   // For views that are not layer-backed, adding the view won't notify the view
   // about the initial scale factor. Fake it.
-  view->OnDeviceScaleFactorChanged(scale_factor);
+  view->OnDeviceScaleFactorChanged(0.f, scale_factor);
   EXPECT_EQ(scale_factor, view->last_scale_factor());
 
   // Changes should be propagated.

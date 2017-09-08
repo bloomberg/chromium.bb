@@ -55,10 +55,10 @@ class ResultLayer : public ui::Layer, public ui::LayerDelegate {
   ResultLayer(const gfx::Rect& bounds);
 
  private:
+  // ui::LayerDelegate:
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
-
-  void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
-
+  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                  float new_device_scale_factor) override {}
   void OnPaintLayer(const ui::PaintContext& context) override;
 
   void DrawVerticalBar(gfx::Canvas& canvas,

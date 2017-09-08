@@ -74,7 +74,8 @@ class Layer::LayerMirror : public LayerDelegate, LayerObserver {
       delegate->OnPaintLayer(context);
   }
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
-  void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
+  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                  float new_device_scale_factor) override {}
 
   // LayerObserver:
   void LayerDestroyed(Layer* layer) override {
@@ -897,6 +898,7 @@ void Layer::OnDeviceScaleFactorChanged(float device_scale_factor) {
     return;
   if (animator_)
     animator_->StopAnimatingProperty(LayerAnimationElement::TRANSFORM);
+  const float old_device_scale_factor = device_scale_factor_;
   device_scale_factor_ = device_scale_factor;
   RecomputeDrawsContentAndUVRect();
   RecomputePosition();
@@ -906,8 +908,10 @@ void Layer::OnDeviceScaleFactorChanged(float device_scale_factor) {
     UpdateNinePatchLayerAperture(nine_patch_layer_aperture_);
   }
   SchedulePaint(gfx::Rect(bounds_.size()));
-  if (delegate_)
-    delegate_->OnDeviceScaleFactorChanged(device_scale_factor);
+  if (delegate_) {
+    delegate_->OnDeviceScaleFactorChanged(old_device_scale_factor,
+                                          device_scale_factor);
+  }
   for (size_t i = 0; i < children_.size(); ++i)
     children_[i]->OnDeviceScaleFactorChanged(device_scale_factor);
   if (layer_mask_)

@@ -337,6 +337,9 @@ class AURA_EXPORT WindowTreeClient
                                   const void* key,
                                   int64_t old_value,
                                   std::unique_ptr<ui::PropertyData> data);
+  void OnWindowMusDeviceScaleFactorChanged(WindowMus* window,
+                                           float old_scale_factor,
+                                           float new_scale_factor);
 
   // Callback passed from WmPerformMoveLoop().
   void OnWmMoveLoopCompleted(uint32_t change_id, bool completed);

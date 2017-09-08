@@ -836,8 +836,11 @@ void NativeWidgetAura::OnPaint(const ui::PaintContext& context) {
   delegate_->OnNativeWidgetPaint(context);
 }
 
-void NativeWidgetAura::OnDeviceScaleFactorChanged(float device_scale_factor) {
-  GetWidget()->DeviceScaleFactorChanged(device_scale_factor);
+void NativeWidgetAura::OnDeviceScaleFactorChanged(
+    float old_device_scale_factor,
+    float new_device_scale_factor) {
+  GetWidget()->DeviceScaleFactorChanged(old_device_scale_factor,
+                                        new_device_scale_factor);
 }
 
 void NativeWidgetAura::OnWindowDestroying(aura::Window* window) {

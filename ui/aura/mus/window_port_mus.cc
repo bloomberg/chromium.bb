@@ -24,16 +24,6 @@
 
 namespace aura {
 
-namespace {
-// Helper function to get the device_scale_factor() of the display::Display
-// nearest to |window|.
-float ScaleFactorForDisplay(Window* window) {
-  return display::Screen::GetScreen()
-      ->GetDisplayNearestWindow(window)
-      .device_scale_factor();
-}
-}  // namespace
-
 WindowPortMus::WindowMusChangeDataImpl::WindowMusChangeDataImpl() = default;
 
 WindowPortMus::WindowMusChangeDataImpl::~WindowMusChangeDataImpl() = default;
@@ -250,9 +240,8 @@ void WindowPortMus::SetBoundsFromServer(
   ServerChangeData data;
   data.bounds_in_dip = bounds;
   ScopedServerChange change(this, ServerChangeType::BOUNDS, data);
-  float device_scale_factor = ScaleFactorForDisplay(window_);
   last_surface_size_in_pixels_ =
-      gfx::ConvertSizeToPixel(device_scale_factor, bounds.size());
+      gfx::ConvertSizeToPixel(GetDeviceScaleFactor(), bounds.size());
   if (local_surface_id)
     local_surface_id_ = *local_surface_id;
   else
@@ -459,24 +448,28 @@ bool WindowPortMus::HasLocalLayerTreeFrameSink() {
   return !!local_layer_tree_frame_sink_;
 }
 
+float WindowPortMus::GetDeviceScaleFactor() {
+  return window_->layer()->device_scale_factor();
+}
+
 void WindowPortMus::OnPreInit(Window* window) {
   window_ = window;
   window_tree_client_->OnWindowMusCreated(this);
 }
 
-void WindowPortMus::OnDeviceScaleFactorChanged(float device_scale_factor) {
-  // TODO(fsamuel): If we don't have a LayerTreeFrameSinkLocal then we should
-  // let the window server know about the device scale factor change and
-  // the new LocalSurfaceId allocated.
-  if (last_device_scale_factor_ != device_scale_factor &&
-      local_surface_id_.is_valid() && local_layer_tree_frame_sink_) {
-    last_device_scale_factor_ = device_scale_factor;
+void WindowPortMus::OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                               float new_device_scale_factor) {
+  if (local_surface_id_.is_valid() && local_layer_tree_frame_sink_) {
     local_surface_id_ = local_surface_id_allocator_.GenerateId();
     local_layer_tree_frame_sink_->SetLocalSurfaceId(local_surface_id_);
   }
+  window_tree_client_->OnWindowMusDeviceScaleFactorChanged(
+      this, old_device_scale_factor, new_device_scale_factor);
 
-  if (window_->delegate())
-    window_->delegate()->OnDeviceScaleFactorChanged(device_scale_factor);
+  if (window_->delegate()) {
+    window_->delegate()->OnDeviceScaleFactorChanged(old_device_scale_factor,
+                                                    new_device_scale_factor);
+  }
 }
 
 void WindowPortMus::OnWillAddChild(Window* child) {
@@ -597,9 +590,9 @@ void WindowPortMus::UpdatePrimarySurfaceInfo() {
   if (!embed_frame_sink_id_.is_valid() || !local_surface_id_.is_valid())
     return;
 
-  primary_surface_info_ = viz::SurfaceInfo(
-      viz::SurfaceId(embed_frame_sink_id_, local_surface_id_),
-      ScaleFactorForDisplay(window_), last_surface_size_in_pixels_);
+  primary_surface_info_ =
+      viz::SurfaceInfo(viz::SurfaceId(embed_frame_sink_id_, local_surface_id_),
+                       GetDeviceScaleFactor(), last_surface_size_in_pixels_);
   UpdateClientSurfaceEmbedder();
 }
 

@@ -128,7 +128,8 @@ class PartialMagnificationController::ContentMask : public ui::LayerDelegate {
 
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
 
-  void OnDeviceScaleFactorChanged(float device_scale_factor) override {
+  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                  float new_device_scale_factor) override {
     // Redrawing will take care of scale factor change.
   }
 
@@ -197,7 +198,8 @@ class PartialMagnificationController::BorderRenderer
 
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
 
-  void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
+  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                  float new_device_scale_factor) override {}
 
   gfx::Rect magnifier_window_bounds_;
   std::vector<gfx::ShadowValue> magnifier_shadows_;

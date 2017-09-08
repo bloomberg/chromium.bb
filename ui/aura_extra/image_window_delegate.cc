@@ -78,8 +78,9 @@ void ImageWindowDelegate::OnPaint(const ui::PaintContext& context) {
   }
 }
 
-void ImageWindowDelegate::OnDeviceScaleFactorChanged(float scale_factor) {
-}
+void ImageWindowDelegate::OnDeviceScaleFactorChanged(
+    float old_device_scale_factor,
+    float new_device_scale_factor) {}
 
 void ImageWindowDelegate::OnWindowDestroying(aura::Window* window) {
 }

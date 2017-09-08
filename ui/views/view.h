@@ -1288,7 +1288,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Overridden from ui::LayerDelegate:
   void OnPaintLayer(const ui::PaintContext& context) override;
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override;
-  void OnDeviceScaleFactorChanged(float device_scale_factor) override;
+  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                  float new_device_scale_factor) override;
 
   // Finds the layer that this view paints to (it may belong to an ancestor
   // view), then reorders the immediate children of that layer to match the
@@ -1628,7 +1629,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Used to propagate device scale factor changed notifications from the root
   // view to all views in the hierarchy.
-  void PropagateDeviceScaleFactorChanged(float device_scale_factor);
+  void PropagateDeviceScaleFactorChanged(float old_device_scale_factor,
+                                         float new_device_scale_factor);
 
   // Tooltips ------------------------------------------------------------------
 

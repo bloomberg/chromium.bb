@@ -857,8 +857,10 @@ void Widget::ThemeChanged() {
   root_view_->ThemeChanged();
 }
 
-void Widget::DeviceScaleFactorChanged(float device_scale_factor) {
-  root_view_->DeviceScaleFactorChanged(device_scale_factor);
+void Widget::DeviceScaleFactorChanged(float old_device_scale_factor,
+                                      float new_device_scale_factor) {
+  root_view_->DeviceScaleFactorChanged(old_device_scale_factor,
+                                       new_device_scale_factor);
 }
 
 void Widget::SetFocusTraversableParent(FocusTraversable* parent) {

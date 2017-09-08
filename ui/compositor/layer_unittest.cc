@@ -88,7 +88,8 @@ class ColoredLayer : public Layer, public LayerDelegate {
 
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
 
-  void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
+  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                  float new_device_scale_factor) override {}
 
  private:
   SkColor color_;
@@ -114,7 +115,8 @@ class DrawFadedStringLayerDelegate : public LayerDelegate {
 
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
 
-  void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
+  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                  float new_device_scale_factor) override {}
 
  private:
   const SkColor background_color_;
@@ -305,8 +307,9 @@ class TestLayerDelegate : public LayerDelegate {
 
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
 
-  void OnDeviceScaleFactorChanged(float device_scale_factor) override {
-    device_scale_factor_ = device_scale_factor;
+  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                  float new_device_scale_factor) override {
+    device_scale_factor_ = new_device_scale_factor;
   }
 
   void reset() {
@@ -344,7 +347,8 @@ class DrawTreeLayerDelegate : public LayerDelegate {
     recorder.canvas()->DrawColor(SK_ColorWHITE);
   }
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
-  void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
+  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                  float new_device_scale_factor) override {}
 
   bool painted_;
   const gfx::Rect layer_bounds_;
@@ -362,7 +366,8 @@ class NullLayerDelegate : public LayerDelegate {
   // Overridden from LayerDelegate:
   void OnPaintLayer(const ui::PaintContext& context) override {}
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
-  void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
+  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                  float new_device_scale_factor) override {}
 
   DISALLOW_COPY_AND_ASSIGN(NullLayerDelegate);
 };
@@ -1556,7 +1561,8 @@ class SchedulePaintLayerDelegate : public LayerDelegate {
 
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
 
-  void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
+  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                  float new_device_scale_factor) override {}
 
   int paint_count_;
   Layer* layer_;

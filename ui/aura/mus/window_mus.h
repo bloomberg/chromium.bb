@@ -134,6 +134,8 @@ class AURA_EXPORT WindowMus {
 
   virtual bool HasLocalLayerTreeFrameSink() = 0;
 
+  virtual float GetDeviceScaleFactor() = 0;
+
  private:
   // Just for set_server_id(), which other places should not call.
   friend class WindowTreeClient;

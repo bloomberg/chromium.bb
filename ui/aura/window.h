@@ -303,7 +303,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   //typedef void (*PropertyDeallocator)(int64_t value);
 
   // Overridden from ui::LayerDelegate:
-  void OnDeviceScaleFactorChanged(float device_scale_factor) override;
+  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                  float new_device_scale_factor) override;
 
 #if !defined(NDEBUG)
   // These methods are useful when debugging.

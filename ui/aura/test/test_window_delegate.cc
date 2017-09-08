@@ -76,8 +76,8 @@ void TestWindowDelegate::OnPaint(const ui::PaintContext& context) {
 }
 
 void TestWindowDelegate::OnDeviceScaleFactorChanged(
-    float device_scale_factor) {
-}
+    float old_device_scale_factor,
+    float new_device_scale_factor) {}
 
 void TestWindowDelegate::OnWindowDestroying(Window* window) {
 }

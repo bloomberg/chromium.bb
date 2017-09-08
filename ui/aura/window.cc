@@ -611,8 +611,10 @@ void* Window::GetNativeWindowProperty(const char* key) const {
   return reinterpret_cast<void*>(GetPropertyInternal(key, 0));
 }
 
-void Window::OnDeviceScaleFactorChanged(float device_scale_factor) {
-  port_->OnDeviceScaleFactorChanged(device_scale_factor);
+void Window::OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                        float new_device_scale_factor) {
+  port_->OnDeviceScaleFactorChanged(old_device_scale_factor,
+                                    new_device_scale_factor);
 }
 
 #if !defined(NDEBUG)

@@ -82,7 +82,8 @@ class DemoWindowDelegate : public aura::WindowDelegate {
       recorder.canvas()->FillRect(r, color_, SkBlendMode::kXor);
     }
   }
-  void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
+  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                  float new_device_scale_factor) override {}
   void OnWindowDestroying(aura::Window* window) override {}
   void OnWindowDestroyed(aura::Window* window) override {}
   void OnWindowTargetVisibilityChanged(bool visible) override {}

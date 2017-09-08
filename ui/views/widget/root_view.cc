@@ -219,8 +219,10 @@ void RootView::ThemeChanged() {
   View::PropagateThemeChanged();
 }
 
-void RootView::DeviceScaleFactorChanged(float device_scale_factor) {
-  View::PropagateDeviceScaleFactorChanged(device_scale_factor);
+void RootView::DeviceScaleFactorChanged(float old_device_scale_factor,
+                                        float new_device_scale_factor) {
+  View::PropagateDeviceScaleFactorChanged(old_device_scale_factor,
+                                          new_device_scale_factor);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

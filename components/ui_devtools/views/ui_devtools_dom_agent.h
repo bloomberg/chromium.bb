@@ -96,7 +96,8 @@ class UIDevToolsDOMAgent : public ui_devtools::UiDevToolsBaseAgent<
   // ui::LayerDelegate:
   void OnPaintLayer(const ui::PaintContext& context) override;
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
-  void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
+  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                  float new_device_scale_factor) override {}
 
   // aura::EnvObserver:
   void OnWindowInitialized(aura::Window* window) override {}

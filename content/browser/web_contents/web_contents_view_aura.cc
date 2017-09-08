@@ -1118,8 +1118,8 @@ void WebContentsViewAura::OnPaint(const ui::PaintContext& context) {
 }
 
 void WebContentsViewAura::OnDeviceScaleFactorChanged(
-    float device_scale_factor) {
-}
+    float old_device_scale_factor,
+    float new_device_scale_factor) {}
 
 void WebContentsViewAura::OnWindowDestroying(aura::Window* window) {
   // This means the destructor is going to be called soon. If there is an
