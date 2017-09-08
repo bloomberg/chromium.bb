@@ -53,9 +53,8 @@ void OfflinePrefetchDownloadClient::OnServiceInitialized(
 }
 
 void OfflinePrefetchDownloadClient::OnServiceUnavailable() {
-  PrefetchDownloader* downloader = GetPrefetchDownloader();
-  if (downloader)
-    downloader->OnDownloadServiceUnavailable();
+  // TODO(dtrainor, jianli): Handle service initialization failures.  This could
+  // potentially just drop all pending start requests.
 }
 
 download::Client::ShouldDownload
