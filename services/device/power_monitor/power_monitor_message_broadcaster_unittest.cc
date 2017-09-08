@@ -4,21 +4,22 @@
 
 #include "services/device/power_monitor/power_monitor_message_broadcaster.h"
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/power_monitor_test_base.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "services/device/device_service_test_base.h"
 #include "services/device/public/cpp/power_monitor/power_monitor_broadcast_source.h"
 
 namespace device {
 
-class MockPowerMonitorBroadcastSource : public PowerMonitorBroadcastSource {
+class MockClient : public PowerMonitorBroadcastSource::Client {
  public:
-  MockPowerMonitorBroadcastSource(service_manager::Connector* connector,
-                                  base::Closure service_connected)
-      : PowerMonitorBroadcastSource(connector),
-        service_connected_(service_connected) {}
-  ~MockPowerMonitorBroadcastSource() override = default;
+  MockClient(base::Closure service_connected)
+      : service_connected_(service_connected) {}
+  ~MockClient() override = default;
 
   // Implement device::mojom::PowerMonitorClient
   void PowerStateChange(bool on_battery_power) override {
@@ -64,51 +65,61 @@ class PowerMonitorMessageBroadcasterTest : public DeviceServiceTestBase {
 
 TEST_F(PowerMonitorMessageBroadcasterTest, PowerMessageBroadcast) {
   base::RunLoop run_loop;
-  MockPowerMonitorBroadcastSource client(connector(), run_loop.QuitClosure());
+
+  std::unique_ptr<PowerMonitorBroadcastSource> broadcast_source(
+      new PowerMonitorBroadcastSource(
+          base::MakeUnique<MockClient>(run_loop.QuitClosure()), connector(),
+          base::SequencedTaskRunnerHandle::Get()));
   run_loop.Run();
+
+  MockClient* client =
+      static_cast<MockClient*>(broadcast_source->client_for_testing());
 
   // Above PowerMonitorBroadcastSource ctor will connect to Device Service to
   // bind device::mojom::PowerMonitor interface, on which AddClient() will be
   // called then, this should invoke immediatelly a power state change back to
   // PowerMonitorBroadcastSource.
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(client.power_state_changes(), 1);
+  EXPECT_EQ(client->power_state_changes(), 1);
 
   // Sending resume when not suspended should have no effect.
   source()->GenerateResumeEvent();
-  EXPECT_EQ(client.resumes(), 0);
+  EXPECT_EQ(client->resumes(), 0);
 
   // Pretend we suspended.
   source()->GenerateSuspendEvent();
-  EXPECT_EQ(client.suspends(), 1);
+  EXPECT_EQ(client->suspends(), 1);
 
   // Send a second suspend notification.  This should be suppressed.
   source()->GenerateSuspendEvent();
-  EXPECT_EQ(client.suspends(), 1);
+  EXPECT_EQ(client->suspends(), 1);
 
   // Pretend we were awakened.
   source()->GenerateResumeEvent();
-  EXPECT_EQ(client.resumes(), 1);
+  EXPECT_EQ(client->resumes(), 1);
 
   // Send a duplicate resume notification.  This should be suppressed.
   source()->GenerateResumeEvent();
-  EXPECT_EQ(client.resumes(), 1);
+  EXPECT_EQ(client->resumes(), 1);
 
   // Pretend the device has gone on battery power
   source()->GeneratePowerStateEvent(true);
-  EXPECT_EQ(client.power_state_changes(), 2);
+  EXPECT_EQ(client->power_state_changes(), 2);
 
   // Repeated indications the device is on battery power should be suppressed.
   source()->GeneratePowerStateEvent(true);
-  EXPECT_EQ(client.power_state_changes(), 2);
+  EXPECT_EQ(client->power_state_changes(), 2);
 
   // Pretend the device has gone off battery power
   source()->GeneratePowerStateEvent(false);
-  EXPECT_EQ(client.power_state_changes(), 3);
+  EXPECT_EQ(client->power_state_changes(), 3);
 
   // Repeated indications the device is off battery power should be suppressed.
   source()->GeneratePowerStateEvent(false);
-  EXPECT_EQ(client.power_state_changes(), 3);
+  EXPECT_EQ(client->power_state_changes(), 3);
+
+  broadcast_source.reset();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace device
