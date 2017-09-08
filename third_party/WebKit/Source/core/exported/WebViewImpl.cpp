@@ -33,11 +33,11 @@
 #include <memory>
 
 #include "build/build_config.h"
+#include "core/CSSValueKeywords.h"
 #include "core/CoreInitializer.h"
 #include "core/HTMLNames.h"
 #include "core/animation/CompositorMutatorImpl.h"
 #include "core/clipboard/DataObject.h"
-#include "core/css/CSSValueKeywords.h"
 #include "core/dom/ContextFeaturesClientImpl.h"
 #include "core/dom/Document.h"
 #include "core/dom/LayoutTreeBuilderTraversal.h"

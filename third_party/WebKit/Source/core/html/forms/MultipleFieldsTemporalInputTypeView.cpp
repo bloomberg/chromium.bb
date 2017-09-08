@@ -30,7 +30,7 @@
 
 #include "core/html/forms/MultipleFieldsTemporalInputTypeView.h"
 
-#include "core/css/CSSValueKeywords.h"
+#include "core/CSSValueKeywords.h"
 #include "core/css/StyleChangeReason.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/events/ScopedEventQueue.h"

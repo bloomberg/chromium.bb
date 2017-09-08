@@ -40,6 +40,7 @@
 
 #include <memory>
 #include "core/CSSPropertyNames.h"
+#include "core/CSSValueKeywords.h"
 #include "core/StyleBuilderFunctions.h"
 #include "core/StylePropertyShorthand.h"
 #include "core/animation/css/CSSAnimations.h"
@@ -54,7 +55,6 @@
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/CSSValueIDMappings.h"
-#include "core/css/CSSValueKeywords.h"
 #include "core/css/CSSVariableReferenceValue.h"
 #include "core/css/PropertyRegistration.h"
 #include "core/css/PropertyRegistry.h"

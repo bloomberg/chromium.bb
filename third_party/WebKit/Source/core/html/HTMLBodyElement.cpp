@@ -25,9 +25,9 @@
 #include "core/html/HTMLBodyElement.h"
 
 #include "bindings/core/v8/ScriptEventListener.h"
+#include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
 #include "core/css/CSSImageValue.h"
-#include "core/css/CSSValueKeywords.h"
 #include "core/css/StyleChangeReason.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/parser/CSSParser.h"
