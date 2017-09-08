@@ -181,6 +181,8 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
     if (enable_scroll_latching_) {
       if (event_sent_for_gesture_ack_->event.phase ==
           blink::WebMouseWheelEvent::kPhaseBegan) {
+        // Wheel event with phaseBegan must have non-zero deltas.
+        DCHECK(needs_update);
         send_wheel_events_async_ = true;
         SendScrollBegin(scroll_update, false);
       }
