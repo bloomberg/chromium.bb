@@ -524,6 +524,10 @@ void BattOrAgent::RetryCommand() {
     return;
   }
 
+  // Restart the serial connection to guarantee that the connection gets flushed
+  // before retrying the command.
+  connection_->Close();
+
   // Failed to read response to message, retry current command.
   base::Callback<void()> next_command;
   switch (command_) {

@@ -540,6 +540,20 @@ TEST_F(BattOrAgentTest, StartTracingFailsAfterTooManyCumulativeFailures) {
   EXPECT_EQ(BATTOR_ERROR_TOO_MANY_COMMAND_RETRIES, GetCommandError());
 }
 
+TEST_F(BattOrAgentTest, StartTracingRestartsConnectionUponRetry) {
+  GetAgent()->StartTracing();
+  RunStartTracingTo(BattOrAgentState::INIT_SENT);
+
+  EXPECT_CALL(*GetAgent()->GetConnection(), Close());
+
+  OnMessageRead(false, BATTOR_MESSAGE_TYPE_CONTROL_ACK, nullptr);
+
+  RunStartTracingTo(BattOrAgentState::START_TRACING_COMPLETE);
+
+  EXPECT_TRUE(IsCommandComplete());
+  EXPECT_EQ(BATTOR_ERROR_NONE, GetCommandError());
+}
+
 TEST_F(BattOrAgentTest, StopTracing) {
   testing::InSequence s;
   EXPECT_CALL(*GetAgent()->GetConnection(), Open());
@@ -885,6 +899,19 @@ TEST_F(BattOrAgentTest, StopTracingSucceedsAfterDataFrameArrivesOutOfOrder) {
   EXPECT_EQ(BATTOR_ERROR_NONE, GetCommandError());
 }
 
+TEST_F(BattOrAgentTest, StopTracingRestartsConnectionUponRetry) {
+  GetAgent()->StopTracing();
+  RunStopTracingTo(BattOrAgentState::SAMPLES_REQUEST_SENT);
+
+  EXPECT_CALL(*GetAgent()->GetConnection(), Close());
+
+  OnMessageRead(true, BATTOR_MESSAGE_TYPE_CONTROL_ACK, ToCharVector(kInitAck));
+  RunStopTracingTo(BattOrAgentState::SAMPLES_END_FRAME_RECEIVED);
+
+  EXPECT_TRUE(IsCommandComplete());
+  EXPECT_EQ(BATTOR_ERROR_NONE, GetCommandError());
+}
+
 TEST_F(BattOrAgentTest, RecordClockSyncMarker) {
   testing::InSequence s;
   EXPECT_CALL(*GetAgent()->GetConnection(), Open());
@@ -1030,6 +1057,20 @@ TEST_F(BattOrAgentTest, GetFirmwareGitHashSucceedsReadHasWrongType) {
                 ToCharVector(current_sample));
 
   EXPECT_FALSE(IsCommandComplete());
+
+  RunGetFirmwareGitHashTo(BattOrAgentState::READ_GIT_HASH_RECEIVED);
+
+  EXPECT_TRUE(IsCommandComplete());
+  EXPECT_EQ(BATTOR_ERROR_NONE, GetCommandError());
+}
+
+TEST_F(BattOrAgentTest, GetFirmwareRestartsConnectionUponRetry) {
+  GetAgent()->GetFirmwareGitHash();
+  RunGetFirmwareGitHashTo(BattOrAgentState::GIT_FIRMWARE_HASH_REQUEST_SENT);
+
+  EXPECT_CALL(*GetAgent()->GetConnection(), Close());
+
+  OnMessageRead(false, BATTOR_MESSAGE_TYPE_CONTROL_ACK, nullptr);
 
   RunGetFirmwareGitHashTo(BattOrAgentState::READ_GIT_HASH_RECEIVED);
 
