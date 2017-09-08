@@ -109,7 +109,7 @@ class MockAppCacheStorage : public AppCacheStorage {
   void ProcessFindResponseForMainRequest(
       const GURL& url, scoped_refptr<DelegateReference> delegate_ref);
 
-  void ScheduleTask(const base::Closure& task);
+  void ScheduleTask(base::OnceClosure task);
   void RunOnePendingTask();
 
   void AddStoredCache(AppCache* cache);
@@ -201,7 +201,7 @@ class MockAppCacheStorage : public AppCacheStorage {
   StoredEvictionTimesMap stored_eviction_times_;
   DoomedResponseIds doomed_response_ids_;
   std::unique_ptr<AppCacheDiskCache> disk_cache_;
-  std::deque<base::Closure> pending_tasks_;
+  std::deque<base::OnceClosure> pending_tasks_;
 
   bool simulate_make_group_obsolete_failure_;
   bool simulate_store_group_and_newest_cache_failure_;
