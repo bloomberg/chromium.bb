@@ -22,12 +22,6 @@ TestInterfaceEventInit::TestInterfaceEventInit(const TestInterfaceEventInit&) = 
 
 TestInterfaceEventInit& TestInterfaceEventInit::operator=(const TestInterfaceEventInit&) = default;
 
-bool TestInterfaceEventInit::hasStringMember() const {
-  return !string_member_.IsNull();
-}
-const String& TestInterfaceEventInit::stringMember() const {
-  return string_member_;
-}
 void TestInterfaceEventInit::setStringMember(const String& value) {
   string_member_ = value;
 }

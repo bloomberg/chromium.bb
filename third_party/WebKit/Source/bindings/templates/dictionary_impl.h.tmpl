@@ -24,8 +24,13 @@ class {{exported}}{{cpp_class}}{% if parent_cpp_class %} : public {{parent_cpp_c
   {{cpp_class}}& operator=(const {{cpp_class}}&);
 
   {% for member in members %}
-  bool {{member.has_method_name}}() const;
-  {{member.rvalue_cpp_type}} {{member.getter_name}}() const;
+  bool {{member.has_method_name}}() const { return {{member.has_method_expression}}; }
+  {{member.rvalue_cpp_type}} {{member.getter_name}}() const {
+    {% if member.nullable_indicator_name %}
+    DCHECK({{member.nullable_indicator_name}});
+    {% endif %}
+    return {{member.getter_expression}};
+  }
   void {{member.setter_name}}({{member.rvalue_cpp_type}});
   {% if member.null_setter_name %}
   void {{member.null_setter_name}}();
