@@ -23,7 +23,7 @@ rootWebArea
 ++++++tableHeaderContainer
 ++++list editable richlyEditable
 ++++++listItem editable richlyEditable
-++++++++listMarker name='1'
+++++++++listMarker name='1. '
 ++++++++staticText editable richlyEditable name='Editable list item.'
 ++++++++++inlineTextBox name='Editable list item.'
 ++paragraph

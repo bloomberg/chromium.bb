@@ -19,5 +19,5 @@ Editable list item.'
 ++++++AXGroup
 ++++AXList
 ++++++AXGroup
-++++++++AXListMarker AXValue='1'
+++++++++AXListMarker AXValue='1. '
 ++++++++AXStaticText AXValue='Editable list item.'
