@@ -179,8 +179,6 @@ class HEADLESS_EXPORT GenericURLRequestJob
   size_t body_size_ = 0;
   size_t read_offset_ = 0;
   net::LoadTimingInfo load_timing_info_;
-  const uint64_t request_id_;
-  static uint64_t next_request_id_;
 
   base::WeakPtrFactory<GenericURLRequestJob> weak_factory_;
 
