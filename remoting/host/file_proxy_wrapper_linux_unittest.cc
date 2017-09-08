@@ -51,6 +51,8 @@ class FileProxyWrapperLinuxTest : public testing::Test {
   void StatusCallback(
       FileProxyWrapper::State state,
       base::Optional<protocol::FileTransferResponse_ErrorCode> error);
+  void OpenFileCallback(int64_t filesize);
+  void ReadChunkCallback(std::unique_ptr<std::vector<char>> chunk);
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -60,6 +62,9 @@ class FileProxyWrapperLinuxTest : public testing::Test {
   base::Optional<protocol::FileTransferResponse_ErrorCode> error_;
   FileProxyWrapper::State final_state_;
   bool done_callback_succeeded_;
+
+  std::queue<std::vector<char>> read_chunks_;
+  int64_t read_filesize_;
 };
 
 FileProxyWrapperLinuxTest::FileProxyWrapperLinuxTest()
@@ -78,6 +83,9 @@ void FileProxyWrapperLinuxTest::SetUp() {
   error_ = base::Optional<protocol::FileTransferResponse_ErrorCode>();
   final_state_ = FileProxyWrapper::kUninitialized;
   done_callback_succeeded_ = false;
+
+  read_chunks_ = {};
+  read_filesize_ = 0;
 }
 
 void FileProxyWrapperLinuxTest::TearDown() {
@@ -90,6 +98,15 @@ void FileProxyWrapperLinuxTest::StatusCallback(
   final_state_ = state;
   error_ = error;
   done_callback_succeeded_ = !error_.has_value();
+}
+
+void FileProxyWrapperLinuxTest::OpenFileCallback(int64_t filesize) {
+  read_filesize_ = filesize;
+}
+
+void FileProxyWrapperLinuxTest::ReadChunkCallback(
+    std::unique_ptr<std::vector<char>> chunk) {
+  read_chunks_.push(*chunk);
 }
 
 // Verifies that FileProxyWrapper can write three chunks to a file without
@@ -141,6 +158,61 @@ TEST_F(FileProxyWrapperLinuxTest, FileAlreadyExists) {
 
   ASSERT_FALSE(error_);
   ASSERT_EQ(final_state_, FileProxyWrapper::kClosed);
+}
+
+// Verifies that FileProxyWrapper can read chunks from a file.
+TEST_F(FileProxyWrapperLinuxTest, ReadThreeChunks) {
+  std::string test_data = kTestDataOne + kTestDataTwo + kTestDataThree;
+  WriteFile(TestFilePath(), test_data.data(), test_data.size());
+
+  file_proxy_wrapper_->OpenFile(
+      TestFilePath(), base::Bind(&FileProxyWrapperLinuxTest::OpenFileCallback,
+                                 base::Unretained(this)));
+  scoped_task_environment_.RunUntilIdle();
+  ASSERT_FALSE(error_);
+  ASSERT_EQ(static_cast<uint64_t>(read_filesize_), test_data.size());
+
+  file_proxy_wrapper_->ReadChunk(
+      kTestDataOne.size(),
+      base::BindOnce(&FileProxyWrapperLinuxTest::ReadChunkCallback,
+                     base::Unretained(this)));
+  scoped_task_environment_.RunUntilIdle();
+
+  file_proxy_wrapper_->ReadChunk(
+      kTestDataTwo.size(),
+      base::BindOnce(&FileProxyWrapperLinuxTest::ReadChunkCallback,
+                     base::Unretained(this)));
+  scoped_task_environment_.RunUntilIdle();
+
+  file_proxy_wrapper_->ReadChunk(
+      kTestDataThree.size(),
+      base::BindOnce(&FileProxyWrapperLinuxTest::ReadChunkCallback,
+                     base::Unretained(this)));
+  scoped_task_environment_.RunUntilIdle();
+
+  file_proxy_wrapper_->Close();
+  scoped_task_environment_.RunUntilIdle();
+
+  std::queue<std::vector<char>> expected_read_chunks;
+  expected_read_chunks.push(
+      std::vector<char>(kTestDataOne.begin(), kTestDataOne.end()));
+  expected_read_chunks.push(
+      std::vector<char>(kTestDataTwo.begin(), kTestDataTwo.end()));
+  expected_read_chunks.push(
+      std::vector<char>(kTestDataThree.begin(), kTestDataThree.end()));
+  ASSERT_FALSE(error_);
+  ASSERT_EQ(expected_read_chunks, read_chunks_);
+}
+
+// Verifies that FileProxyWrapper fails to open a file for reading if the file
+// doesn't exist.
+TEST_F(FileProxyWrapperLinuxTest, FileDoesntExist) {
+  file_proxy_wrapper_->OpenFile(
+      TestFilePath(), base::Bind(&FileProxyWrapperLinuxTest::OpenFileCallback,
+                                 base::Unretained(this)));
+  scoped_task_environment_.RunUntilIdle();
+
+  ASSERT_EQ(error_, protocol::FileTransferResponse_ErrorCode_FILE_IO_ERROR);
 }
 
 }  // namespace remoting
