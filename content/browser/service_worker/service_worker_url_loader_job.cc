@@ -99,17 +99,18 @@ void ServiceWorkerURLLoaderJob::StartRequest() {
     return;
   }
 
-  fetch_dispatcher_.reset(new ServiceWorkerFetchDispatcher(
+  fetch_dispatcher_ = std::make_unique<ServiceWorkerFetchDispatcher>(
       ServiceWorkerLoaderHelpers::CreateFetchRequest(resource_request_),
       active_worker, resource_request_.resource_type, base::nullopt,
       net::NetLogWithSource() /* TODO(scottmg): net log? */,
       base::Bind(&ServiceWorkerURLLoaderJob::DidPrepareFetchEvent,
                  weak_factory_.GetWeakPtr(), make_scoped_refptr(active_worker)),
       base::Bind(&ServiceWorkerURLLoaderJob::DidDispatchFetchEvent,
-                 weak_factory_.GetWeakPtr())));
-  fetch_dispatcher_->MaybeStartNavigationPreloadWithURLLoader(
-      resource_request_, url_loader_factory_getter_.get(),
-      base::BindOnce(&base::DoNothing /* TODO(crbug/762357): metrics? */));
+                 weak_factory_.GetWeakPtr()));
+  did_navigation_preload_ =
+      fetch_dispatcher_->MaybeStartNavigationPreloadWithURLLoader(
+          resource_request_, url_loader_factory_getter_.get(),
+          base::BindOnce(&base::DoNothing /* TODO(crbug/762357): metrics? */));
   fetch_dispatcher_->Run();
 }
 
@@ -151,9 +152,6 @@ void ServiceWorkerURLLoaderJob::DidDispatchFetchEvent(
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
     storage::mojom::BlobPtr body_as_blob,
     const scoped_refptr<ServiceWorkerVersion>& version) {
-  if (!did_navigation_preload_)
-    fetch_dispatcher_.reset();
-
   ServiceWorkerMetrics::URLRequestJobResult result =
       ServiceWorkerMetrics::REQUEST_JOB_ERROR_BAD_DELEGATE;
   if (!delegate_->RequestStillValid(&result)) {
@@ -215,6 +213,9 @@ void ServiceWorkerURLLoaderJob::StartResponse(
   ServiceWorkerLoaderHelpers::SaveResponseHeaders(
       response.status_code, response.status_text, response.headers,
       &response_head_);
+
+  response_head_.did_service_worker_navigation_preload =
+      did_navigation_preload_;
 
   // Handle a stream response body.
   if (!body_as_stream.is_null() && body_as_stream->stream.is_valid()) {
