@@ -15,8 +15,8 @@ BackgroundFetchResponse::~BackgroundFetchResponse() {}
 
 BackgroundFetchResult::BackgroundFetchResult(base::Time response_time,
                                              const base::FilePath& path,
-                                             uint64_t size)
-    : response_time(response_time), file_path(path), file_size(size) {}
+                                             uint64_t file_size)
+    : response_time(response_time), file_path(path), file_size(file_size) {}
 
 BackgroundFetchResult::~BackgroundFetchResult() {}
 

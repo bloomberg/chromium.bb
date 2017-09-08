@@ -123,17 +123,9 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
   void SetUp() override {
     BackgroundFetchTestBase::SetUp();
 
-    // StoragePartition creates its own BackgroundFetchContext, but this test
-    // doesn't use that since it has the wrong ServiceWorkerContextWrapper; this
-    // test just uses the StoragePartition to get a URLRequestContext.
-    StoragePartitionImpl* storage_partition =
-        static_cast<StoragePartitionImpl*>(
-            BrowserContext::GetDefaultStoragePartition(browser_context()));
     context_ = new BackgroundFetchContext(
         browser_context(),
         make_scoped_refptr(embedded_worker_test_helper()->context_wrapper()));
-    context_->InitializeOnIOThread(
-        make_scoped_refptr(storage_partition->GetURLRequestContext()));
 
     service_ = base::MakeUnique<BackgroundFetchServiceImpl>(
         0 /* render_process_id */, context_);

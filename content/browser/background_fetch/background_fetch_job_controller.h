@@ -26,7 +26,8 @@ class BackgroundFetchDataManager;
 // The JobController will be responsible for coordinating communication with the
 // DownloadManager. It will get requests from the DataManager and dispatch them
 // to the DownloadManager. It lives entirely on the IO thread.
-class CONTENT_EXPORT BackgroundFetchJobController {
+class CONTENT_EXPORT BackgroundFetchJobController
+    : public BackgroundFetchDelegateProxy::Controller {
  public:
   enum class State { INITIALIZED, FETCHING, ABORTED, COMPLETED };
 
@@ -67,13 +68,11 @@ class CONTENT_EXPORT BackgroundFetchJobController {
     return weak_ptr_factory_.GetWeakPtr();
   }
 
-  // Called when the given |request| has started fetching, after having been
-  // assigned the |download_guid| by the download system.
-  void DidStartRequest(scoped_refptr<BackgroundFetchRequestInfo> request,
-                       const std::string& download_guid);
-
-  // Called when the given |request| has been completed.
-  void DidCompleteRequest(scoped_refptr<BackgroundFetchRequestInfo> request);
+  // BackgroundFetchDelegateProxy::Controller implementation:
+  void DidStartRequest(const scoped_refptr<BackgroundFetchRequestInfo>& request,
+                       const std::string& download_guid) override;
+  void DidCompleteRequest(
+      const scoped_refptr<BackgroundFetchRequestInfo>& request) override;
 
  private:
   // Requests the download manager to start fetching |request|.
