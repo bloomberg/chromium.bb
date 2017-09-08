@@ -304,28 +304,19 @@ TEST_F(RootWindowControllerTest, MoveWindows_LockWindowsInUnified) {
 
   UpdateDisplay("500x500");
   const int kLockScreenWindowId = 1000;
-  const int kLockWallpaperWindowId = 1001;
 
   RootWindowController* controller = Shell::GetPrimaryRootWindowController();
 
   aura::Window* lock_container =
       controller->GetContainer(kShellWindowId_LockScreenContainer);
-  aura::Window* lock_wallpaper_container =
-      controller->GetContainer(kShellWindowId_LockScreenWallpaperContainer);
 
   views::Widget* lock_screen =
       CreateModalWidgetWithParent(gfx::Rect(10, 10, 100, 100), lock_container);
   lock_screen->GetNativeWindow()->set_id(kLockScreenWindowId);
   lock_screen->SetFullscreen(true);
 
-  views::Widget* lock_wallpaper = CreateModalWidgetWithParent(
-      gfx::Rect(10, 10, 100, 100), lock_wallpaper_container);
-  lock_wallpaper->GetNativeWindow()->set_id(kLockWallpaperWindowId);
-
   ASSERT_EQ(lock_screen->GetNativeWindow(),
             controller->GetRootWindow()->GetChildById(kLockScreenWindowId));
-  ASSERT_EQ(lock_wallpaper->GetNativeWindow(),
-            controller->GetRootWindow()->GetChildById(kLockWallpaperWindowId));
   EXPECT_EQ("0,0 500x500", lock_screen->GetNativeWindow()->bounds().ToString());
 
   // Switch to unified.
@@ -336,8 +327,6 @@ TEST_F(RootWindowControllerTest, MoveWindows_LockWindowsInUnified) {
 
   ASSERT_EQ(lock_screen->GetNativeWindow(),
             controller->GetRootWindow()->GetChildById(kLockScreenWindowId));
-  ASSERT_EQ(lock_wallpaper->GetNativeWindow(),
-            controller->GetRootWindow()->GetChildById(kLockWallpaperWindowId));
   EXPECT_EQ("0,0 500x500", lock_screen->GetNativeWindow()->bounds().ToString());
 
   // Switch to mirror.
@@ -347,8 +336,6 @@ TEST_F(RootWindowControllerTest, MoveWindows_LockWindowsInUnified) {
   controller = Shell::GetPrimaryRootWindowController();
   ASSERT_EQ(lock_screen->GetNativeWindow(),
             controller->GetRootWindow()->GetChildById(kLockScreenWindowId));
-  ASSERT_EQ(lock_wallpaper->GetNativeWindow(),
-            controller->GetRootWindow()->GetChildById(kLockWallpaperWindowId));
   EXPECT_EQ("0,0 500x500", lock_screen->GetNativeWindow()->bounds().ToString());
 
   // Switch to unified.
@@ -359,8 +346,6 @@ TEST_F(RootWindowControllerTest, MoveWindows_LockWindowsInUnified) {
 
   ASSERT_EQ(lock_screen->GetNativeWindow(),
             controller->GetRootWindow()->GetChildById(kLockScreenWindowId));
-  ASSERT_EQ(lock_wallpaper->GetNativeWindow(),
-            controller->GetRootWindow()->GetChildById(kLockWallpaperWindowId));
   EXPECT_EQ("0,0 500x500", lock_screen->GetNativeWindow()->bounds().ToString());
 
   // Switch to single display.
@@ -372,8 +357,6 @@ TEST_F(RootWindowControllerTest, MoveWindows_LockWindowsInUnified) {
 
   ASSERT_EQ(lock_screen->GetNativeWindow(),
             controller->GetRootWindow()->GetChildById(kLockScreenWindowId));
-  ASSERT_EQ(lock_wallpaper->GetNativeWindow(),
-            controller->GetRootWindow()->GetChildById(kLockWallpaperWindowId));
   EXPECT_EQ("0,0 600x500", lock_screen->GetNativeWindow()->bounds().ToString());
 }
 
