@@ -82,8 +82,8 @@ class OmniboxPopupModel {
   // the necessary parts of the window, as well as updating the edit with the
   // new temporary text.  |line| will be clamped to the range of valid lines.
   // |reset_to_default| is true when the selection is being reset back to the
-  // default match, and thus there is no temporary text (and no
-  // |manually_selected_match_|). If |force| is true then the selected line will
+  // default match, and thus there is no temporary text (and not
+  // |has_selected_match_|). If |force| is true then the selected line will
   // be updated forcibly even if the |line| is same as the current selected
   // line.
   // NOTE: This assumes the popup is open, and thus both old and new values for
@@ -119,10 +119,8 @@ class OmniboxPopupModel {
   // Returns true if the destination URL of the match is bookmarked.
   bool IsStarredMatch(const AutocompleteMatch& match) const;
 
-  // The match the user has manually chosen, if any.
-  const AutocompleteResult::Selection& manually_selected_match() const {
-    return manually_selected_match_;
-  }
+  // The user has manually selected a match.
+  bool has_selected_match() { return has_selected_match_; }
 
   // Invoked from the edit model any time the result set of the controller
   // changes.
@@ -169,8 +167,8 @@ class OmniboxPopupModel {
   // (if KEYWORD) is selected.
   LineState selected_line_state_;
 
-  // The match the user has manually chosen, if any.
-  AutocompleteResult::Selection manually_selected_match_;
+  // The user has manually selected a match.
+  bool has_selected_match_;
 
   // Observers.
   base::ObserverList<OmniboxPopupModelObserver> observers_;

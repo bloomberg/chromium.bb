@@ -48,6 +48,7 @@ OmniboxPopupModel::OmniboxPopupModel(OmniboxPopupView* popup_view,
       edit_model_(edit_model),
       selected_line_(kNoMatch),
       selected_line_state_(NORMAL),
+      has_selected_match_(false),
       weak_factory_(this) {
   edit_model->set_popup_model(this);
 }
@@ -131,15 +132,7 @@ void OmniboxPopupModel::SetSelectedLine(size_t line,
 
   line = std::min(line, result.size() - 1);
   const AutocompleteMatch& match = result.match_at(line);
-  if (reset_to_default) {
-    manually_selected_match_.Clear();
-  } else {
-    // Track the user's selection until they cancel it.
-    manually_selected_match_.destination_url = match.destination_url;
-    manually_selected_match_.provider_affinity = match.provider;
-    manually_selected_match_.is_history_what_you_typed_match =
-        match.type == AutocompleteMatchType::URL_WHAT_YOU_TYPED;
-  }
+  has_selected_match_ = !reset_to_default;
 
   if (line == selected_line_ && !force)
     return;  // Nothing else to do.
@@ -226,7 +219,7 @@ void OmniboxPopupModel::TryDeletingCurrentItem() {
   const AutocompleteMatch& match = result().match_at(selected_line_);
   if (match.SupportsDeletion()) {
     const size_t selected_line = selected_line_;
-    const bool was_temporary_text = !manually_selected_match_.empty();
+    const bool was_temporary_text = has_selected_match_;
 
     // This will synchronously notify both the edit and us that the results
     // have changed, causing both to revert to the default match.
@@ -257,7 +250,7 @@ void OmniboxPopupModel::OnResultChanged() {
       kNoMatch : static_cast<size_t>(result.default_match() - result.begin());
   // There had better not be a nonempty result set with no default match.
   CHECK((selected_line_ != kNoMatch) || result.empty());
-  manually_selected_match_.Clear();
+  has_selected_match_ = false;
   selected_line_state_ = NORMAL;
 
   bool popup_was_open = view_->IsOpen();

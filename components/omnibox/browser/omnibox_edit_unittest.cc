@@ -15,6 +15,8 @@
 #include "components/omnibox/browser/omnibox_client.h"
 #include "components/omnibox/browser/omnibox_edit_controller.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
+#include "components/omnibox/browser/omnibox_popup_model.h"
+#include "components/omnibox/browser/omnibox_popup_view.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/omnibox/browser/search_provider.h"
 #include "components/search_engines/search_terms_data.h"
@@ -23,6 +25,7 @@
 #include "components/sessions/core/session_id.h"
 #include "components/toolbar/test_toolbar_model.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace {
 
@@ -120,6 +123,19 @@ class TestingOmniboxEditController : public OmniboxEditController {
   DISALLOW_COPY_AND_ASSIGN(TestingOmniboxEditController);
 };
 
+class TestingOmniboxPopupView : public OmniboxPopupView {
+ public:
+  ~TestingOmniboxPopupView() override {}
+  bool IsOpen() const override { return false; }
+  void InvalidateLine(size_t line) override {}
+  void OnLineSelected(size_t line) override {}
+  void UpdatePopupAppearance() override {}
+  void OnMatchIconUpdated(size_t match_index) override {}
+  gfx::Rect GetTargetBounds() override { return gfx::Rect(); }
+  void PaintUpdatesNow() override {}
+  void OnDragCanceled() override {}
+};
+
 class TestingSchemeClassifier : public AutocompleteSchemeClassifier {
  public:
   TestingSchemeClassifier() {}
@@ -208,12 +224,13 @@ class OmniboxEditTest : public ::testing::Test {
   OmniboxEditTest()
       : controller_(&toolbar_model_),
         view_(&controller_),
-        model_(&view_, &controller_, base::MakeUnique<TestingOmniboxClient>()) {
-  }
+        model_(&view_, &controller_, base::MakeUnique<TestingOmniboxClient>()),
+        popup_model_(&popup_view_, &model_) {}
 
   TestToolbarModel* toolbar_model() { return &toolbar_model_; }
   const TestingOmniboxView& view() { return view_; }
   OmniboxEditModel* model() { return &model_; }
+  OmniboxPopupModel* popup_model() { return &popup_model_; }
 
  private:
   base::MessageLoop message_loop_;
@@ -221,6 +238,8 @@ class OmniboxEditTest : public ::testing::Test {
   TestingOmniboxEditController controller_;
   TestingOmniboxView view_;
   OmniboxEditModel model_;
+  TestingOmniboxPopupView popup_view_;
+  OmniboxPopupModel popup_model_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxEditTest);
 };
@@ -348,4 +367,26 @@ TEST_F(OmniboxEditTest, AlternateNavHasHTTP) {
                      alternate_nav_url, base::string16(), 0);
   EXPECT_TRUE(AutocompleteInput::HasHTTPScheme(
       client->alternate_nav_match().fill_into_edit));
+}
+
+// This verifies that the new treatment of the user's selected match in
+// |SetSelectedLine()| with removed |AutocompleteResult::Selection::empty()|
+// is correct in the face of various replacement versions of |empty()|.
+TEST_F(OmniboxEditTest, SetSelectedLine) {
+  ACMatches matches;
+  for (size_t i = 0; i < 2; ++i) {
+    AutocompleteMatch match(nullptr, 1000, false,
+                            AutocompleteMatchType::URL_WHAT_YOU_TYPED);
+    match.keyword = base::ASCIIToUTF16("match");
+    matches.push_back(match);
+  }
+  auto* result = &model()->autocomplete_controller()->result_;
+  result->AppendMatches(AutocompleteInput(), matches);
+  result->SortAndCull(AutocompleteInput(), nullptr);
+  popup_model()->OnResultChanged();
+  EXPECT_FALSE(popup_model()->has_selected_match());
+  popup_model()->SetSelectedLine(0, true, false);
+  EXPECT_FALSE(popup_model()->has_selected_match());
+  popup_model()->SetSelectedLine(0, false, false);
+  EXPECT_TRUE(popup_model()->has_selected_match());
 }

@@ -27,37 +27,6 @@ class AutocompleteResult {
   typedef ACMatches::const_iterator const_iterator;
   typedef ACMatches::iterator iterator;
 
-  // The "Selection" struct is the information we need to select the same match
-  // in one result set that was selected in another.
-  struct Selection {
-    Selection()
-        : provider_affinity(NULL),
-          is_history_what_you_typed_match(false) {
-    }
-
-    // Clear the selection entirely.
-    void Clear();
-
-    // True when the selection is empty.
-    bool empty() const {
-      return destination_url.is_empty() && !provider_affinity &&
-          !is_history_what_you_typed_match;
-    }
-
-    // The desired destination URL.
-    GURL destination_url;
-
-    // The desired provider.  If we can't find a match with the specified
-    // |destination_url|, we'll use the best match from this provider.
-    const AutocompleteProvider* provider_affinity;
-
-    // True when this is the HistoryURLProvider's "what you typed" match.  This
-    // can't be tracked using |destination_url| because its URL changes on every
-    // keystroke, so if this is set, we'll preserve the selection by simply
-    // choosing the new "what you typed" entry and ignoring |destination_url|.
-    bool is_history_what_you_typed_match;
-  };
-
   // Max number of matches we'll show from the various providers.
   static size_t GetMaxMatches();
 

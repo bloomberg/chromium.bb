@@ -32,12 +32,6 @@ size_t AutocompleteResult::GetMaxMatches() {
       kDefaultMaxAutocompleteMatches);
 }
 
-void AutocompleteResult::Selection::Clear() {
-  destination_url = GURL();
-  provider_affinity = NULL;
-  is_history_what_you_typed_match = false;
-}
-
 AutocompleteResult::AutocompleteResult() {
   // Reserve space for the max number of matches we'll show.
   matches_.reserve(GetMaxMatches());
