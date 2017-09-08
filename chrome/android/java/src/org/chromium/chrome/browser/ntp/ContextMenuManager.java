@@ -31,7 +31,7 @@ import java.util.TreeMap;
  */
 public class ContextMenuManager implements OnCloseContextMenuListener {
     @IntDef({ID_OPEN_IN_NEW_WINDOW, ID_OPEN_IN_NEW_TAB, ID_OPEN_IN_INCOGNITO_TAB,
-            ID_SAVE_FOR_OFFLINE, ID_REMOVE})
+            ID_SAVE_FOR_OFFLINE, ID_REMOVE, ID_LEARN_MORE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ContextMenuItemId {}
 
