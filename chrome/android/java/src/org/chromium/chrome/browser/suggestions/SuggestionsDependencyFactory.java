@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.suggestions;
 
+import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.download.ui.ThumbnailProvider;
@@ -53,8 +54,8 @@ public class SuggestionsDependencyFactory {
         return new LargeIconBridge(profile);
     }
 
-    public ThumbnailProvider createThumbnailProvider() {
-        return new ThumbnailProviderImpl();
+    public ThumbnailProvider createThumbnailProvider(DiscardableReferencePool referencePool) {
+        return new ThumbnailProviderImpl(referencePool);
     }
 
     public FaviconHelper createFaviconHelper() {
