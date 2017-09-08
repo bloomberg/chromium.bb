@@ -45,8 +45,6 @@
 #include <utrie2.h>
 #endif
 
-using CharCategory = WTF::Unicode::CharCategory;
-
 namespace blink {
 
 #if defined(USING_SYSTEM_ICU)
@@ -214,7 +212,7 @@ unsigned Character::ExpansionOpportunityCount(const UChar* characters,
 }
 
 bool Character::CanReceiveTextEmphasis(UChar32 c) {
-  CharCategory category = WTF::Unicode::Category(c);
+  WTF::Unicode::CharCategory category = WTF::Unicode::Category(c);
   if (category &
       (WTF::Unicode::kSeparator_Space | WTF::Unicode::kSeparator_Line |
        WTF::Unicode::kSeparator_Paragraph | WTF::Unicode::kOther_NotAssigned |
