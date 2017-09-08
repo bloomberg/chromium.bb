@@ -263,12 +263,15 @@ void CastContentBrowserClient::RenderProcessWillLaunch(
                  base::Unretained(this), host->GetID()));
 
 #if defined(OS_ANDROID)
+  // Cast on Android always allows persisting data.
+  //
   // Cast on Android build always uses kForceVideoOverlays command line switch
   // such that secure codecs can always be rendered.
+  //
   // TODO(yucliu): On Clank, secure codecs support is tied to AndroidOverlay.
   // Remove kForceVideoOverlays and swtich to the Clank model for secure codecs
   // support.
-  host->AddFilter(new cdm::CdmMessageFilterAndroid(true));
+  host->AddFilter(new cdm::CdmMessageFilterAndroid(true, true));
 #endif  // defined(OS_ANDROID)
 }
 
