@@ -40,6 +40,7 @@
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
+#include "third_party/boringssl/src/include/openssl/mem.h"
 #include "third_party/boringssl/src/include/openssl/rsa.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -99,7 +100,7 @@ bool RsaSign(const std::vector<uint8_t>& digest,
       RSA_sign_raw(rsa_key, &len, signature->data(), signature->size(),
                    prefixed_digest, prefixed_digest_len, RSA_PKCS1_PADDING);
   if (is_alloced)
-    free(prefixed_digest);
+    OPENSSL_free(prefixed_digest);
 
   if (rv) {
     signature->resize(len);
