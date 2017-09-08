@@ -91856,7 +91856,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="WebRTC.Video.Screenshare.SentFramesPerSecond" units="fps">
-  <owner>sprang@chromium.org</owner>
+  <owner>asapersson@chromium.org</owner>
   <summary>
     The number of sent frames per second for a sent (screen content) video
     stream. Recorded when a stream is removed. The total number of frames is
@@ -91877,6 +91877,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Percentage of sent packets lost for a sent screenshare stream. Recorded when
     a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.Screenshare.SentToInputFpsRatioPercent" units="%">
+  <owner>ilnik@chromium.org</owner>
+  <summary>
+    Ratio between Screenshare.SentFramesPerSecond and
+    Screenshare.InputFramesPerSecond in percents. Recorded when a stream is
+    removed. The total number of sent frames is divided by the total number of
+    input frames and multiplied by 100.
   </summary>
 </histogram>
 
@@ -91958,6 +91968,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Percentage of sent packets lost for a sent video stream. Recorded when a
     stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.SentToInputFpsRatioPercent" units="%">
+  <owner>ilnik@chromium.org</owner>
+  <summary>
+    Ratio between SentFramesPerSecond and InputFramesPerSecond in percents.
+    Recorded when a stream is removed. The total number of sent frames is
+    divided by the total number of input frames and multiplied by 100.
   </summary>
 </histogram>
 
