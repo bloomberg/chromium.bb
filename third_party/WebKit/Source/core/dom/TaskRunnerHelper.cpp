@@ -69,12 +69,12 @@ RefPtr<WebTaskRunner> TaskRunnerHelper::Get(TaskType type, LocalFrame* frame) {
 
 RefPtr<WebTaskRunner> TaskRunnerHelper::Get(TaskType type, Document* document) {
   DCHECK(document);
-  if (document->ContextDocument())
+  if (document->ContextDocument() && document->ContextDocument()->GetFrame())
     return Get(type, document->ContextDocument()->GetFrame());
-  // In most cases, ContextDocument() will get us to a relevant Frame, even if
-  // the passed-in document is detached. In some cases, though, there isn't a
-  // good candidate (e.g., XMLDocuments created by DocumentResource and stored
-  // in the MemoryCache).
+  // In most cases, ContextDocument() will get us to a relevant Frame. In some
+  // cases, though, there isn't a good candidate (most commonly when either the
+  // passed-in document or ContextDocument() used to be attached to a Frame but
+  // has since been detached).
   return Platform::Current()->CurrentThread()->GetWebTaskRunner();
 }
 
