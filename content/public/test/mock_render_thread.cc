@@ -225,16 +225,6 @@ int32_t MockRenderThread::GetClientId() {
   return 1;
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-MockRenderThread::GetTimerTaskRunner() {
-  return base::ThreadTaskRunnerHandle::Get();
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
-MockRenderThread::GetLoadingTaskRunner() {
-  return base::ThreadTaskRunnerHandle::Get();
-}
-
 void MockRenderThread::SetRendererProcessType(
     blink::scheduler::RendererProcessType type) {}
 
