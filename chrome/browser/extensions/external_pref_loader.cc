@@ -170,21 +170,21 @@ ExternalPrefLoader::ExternalPrefLoader(int base_path_id,
                                        Options options,
                                        Profile* profile)
     : base_path_id_(base_path_id), options_(options), profile_(profile) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 ExternalPrefLoader::~ExternalPrefLoader() {
 }
 
 const base::FilePath ExternalPrefLoader::GetBaseCrxFilePath() {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // |base_path_| was set in LoadOnFileThread().
   return base_path_;
 }
 
 void ExternalPrefLoader::StartLoading() {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if ((options_ & DELAY_LOAD_UNTIL_PRIORITY_SYNC) &&
       (profile_ && profile_->IsSyncAllowed())) {
     pending_waiter_list_.push_back(
