@@ -12,6 +12,8 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "components/wallpaper/wallpaper_color_profile.h"
+#include "ui/accessibility/ax_node.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_model.h"
@@ -28,6 +30,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -41,6 +44,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -716,6 +720,23 @@ void AppListView::EndDrag(const gfx::Point& location) {
   initial_drag_point_ = gfx::Point();
 }
 
+void AppListView::CreateAccessibilityEvent(AppListState new_state) {
+  if (new_state != PEEKING && new_state != FULLSCREEN_ALL_APPS)
+    return;
+
+  DCHECK(state_announcement_ == base::string16());
+
+  if (new_state == PEEKING) {
+    state_announcement_ = l10n_util::GetStringUTF16(
+        IDS_APP_LIST_SUGGESTED_APPS_ACCESSIBILITY_ANNOUNCEMENT);
+  } else {
+    state_announcement_ = l10n_util::GetStringUTF16(
+        IDS_APP_LIST_ALL_APPS_ACCESSIBILITY_ANNOUNCEMENT);
+  }
+  NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
+  state_announcement_ = base::string16();
+}
+
 void AppListView::RecordStateTransitionForUma(AppListState new_state) {
   if (!is_fullscreen_app_list_enabled_)
     return;
@@ -1016,6 +1037,11 @@ void AppListView::SchedulePaintInRect(const gfx::Rect& rect) {
     GetBubbleFrameView()->SchedulePaint();
 }
 
+void AppListView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->SetName(state_announcement_);
+  node_data->role = ui::AX_ROLE_DESKTOP;
+}
+
 void AppListView::OnTabletModeChanged(bool started) {
   is_tablet_mode_ = started;
   search_box_view_->OnTabletModeChanged(started);
@@ -1072,6 +1098,9 @@ void AppListView::SetState(AppListState new_state) {
           app_list_state_ == FULLSCREEN_ALL_APPS ? CLOSED : FULLSCREEN_ALL_APPS;
     }
   }
+
+  // Notify ChromeVox if the state transition warrants a notification.
+  CreateAccessibilityEvent(new_state_override);
 
   switch (new_state_override) {
     case PEEKING: {
