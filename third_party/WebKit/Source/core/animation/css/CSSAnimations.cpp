@@ -48,7 +48,6 @@
 #include "core/animation/css/CSSAnimatableValueFactory.h"
 #include "core/css/CSSKeyframeRule.h"
 #include "core/css/CSSPropertyEquality.h"
-#include "core/css/CSSPropertyMetadata.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/PropertyRegistry.h"
 #include "core/css/StyleEngine.h"

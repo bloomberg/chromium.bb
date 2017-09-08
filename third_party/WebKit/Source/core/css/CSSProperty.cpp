@@ -324,6 +324,17 @@ bool CSSProperty::IsAffectedByAllProperty(CSSPropertyID property_id) {
          property_id != CSSPropertyDirection;
 }
 
+void CSSProperty::FilterEnabledCSSPropertiesIntoVector(
+    const CSSPropertyID* properties,
+    size_t propertyCount,
+    Vector<CSSPropertyID>& outVector) {
+  for (unsigned i = 0; i < propertyCount; i++) {
+    CSSPropertyID property = properties[i];
+    if (CSSPropertyAPI::Get(property).IsEnabled())
+      outVector.push_back(property);
+  }
+}
+
 bool CSSProperty::operator==(const CSSProperty& other) const {
   return DataEquivalent(value_, other.value_) &&
          IsImportant() == other.IsImportant();

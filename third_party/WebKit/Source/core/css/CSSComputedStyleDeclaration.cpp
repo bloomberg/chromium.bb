@@ -29,8 +29,8 @@
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
+#include "core/css/CSSProperty.h"
 #include "core/css/CSSPropertyIDTemplates.h"
-#include "core/css/CSSPropertyMetadata.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSVariableData.h"
 #include "core/css/ComputedStyleCSSValueMapping.h"
@@ -266,7 +266,7 @@ const Vector<CSSPropertyID>&
 CSSComputedStyleDeclaration::ComputableProperties() {
   DEFINE_STATIC_LOCAL(Vector<CSSPropertyID>, properties, ());
   if (properties.IsEmpty()) {
-    CSSPropertyMetadata::FilterEnabledCSSPropertiesIntoVector(
+    CSSProperty::FilterEnabledCSSPropertiesIntoVector(
         kComputedPropertyArray, WTF_ARRAY_LENGTH(kComputedPropertyArray),
         properties);
   }

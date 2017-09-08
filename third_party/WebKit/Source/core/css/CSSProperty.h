@@ -22,7 +22,6 @@
 #define CSSProperty_h
 
 #include "core/CSSPropertyNames.h"
-#include "core/css/CSSPropertyMetadata.h"
 #include "core/css/CSSValue.h"
 #include "core/css/properties/CSSPropertyAPI.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -97,6 +96,10 @@ class CSSProperty {
                                                      TextDirection,
                                                      WritingMode);
   static bool IsAffectedByAllProperty(CSSPropertyID);
+
+  static void FilterEnabledCSSPropertiesIntoVector(const CSSPropertyID*,
+                                                   size_t length,
+                                                   Vector<CSSPropertyID>&);
 
   const StylePropertyMetadata& Metadata() const { return metadata_; }
 

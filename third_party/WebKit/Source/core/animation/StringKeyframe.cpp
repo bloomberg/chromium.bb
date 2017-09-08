@@ -7,7 +7,6 @@
 #include "core/StylePropertyShorthand.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSCustomPropertyDeclaration.h"
-#include "core/css/CSSPropertyMetadata.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/svg/SVGElement.h"
 #include "platform/RuntimeEnabledFeatures.h"
