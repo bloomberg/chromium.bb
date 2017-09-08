@@ -43,14 +43,14 @@ enum MediaStreamRequestResult {
   KILL_SWITCH_ON
 };
 
-// See content/common/media/media_stream_options.h.
+// See content/common/media/media_stream_controls.h.
 struct TrackControls {
   bool requested;
   string stream_source;
   string device_id;
 };
 
-// See content/common/media/media_stream_options.h.
+// See content/common/media/media_stream_controls.h.
 struct StreamControls {
   TrackControls audio;
   TrackControls video;

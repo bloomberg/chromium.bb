@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_MEDIA_MEDIA_STREAM_OPTIONS_H_
-#define CONTENT_COMMON_MEDIA_MEDIA_STREAM_OPTIONS_H_
+#ifndef CONTENT_COMMON_MEDIA_MEDIA_STREAM_CONTROLS_H_
+#define CONTENT_COMMON_MEDIA_MEDIA_STREAM_CONTROLS_H_
 
 #include <string>
-#include <vector>
 
 #include "content/common/content_export.h"
 
@@ -21,12 +20,12 @@ CONTENT_EXPORT extern const char kMediaStreamSourceDesktop[];
 CONTENT_EXPORT extern const char kMediaStreamSourceSystem[];
 
 struct CONTENT_EXPORT TrackControls {
- public:
   TrackControls();
   explicit TrackControls(bool request);
   explicit TrackControls(const TrackControls& other);
   ~TrackControls();
-  bool requested;
+
+  bool requested = false;
 
   // Source. This is "tab", "screen", "desktop", "system", or blank.
   // Consider replacing with MediaStreamType enum variables.
@@ -41,20 +40,20 @@ struct CONTENT_EXPORT TrackControls {
 // from the renderer process in order to control the opening of a device
 // pair. This may result in opening one audio and/or one video device.
 // This has to be a struct with public members in order to allow it to
-// be sent in the IPC of media_stream_messages.h
+// be sent in the mojo IPC.
 struct CONTENT_EXPORT StreamControls {
- public:
   StreamControls();
   StreamControls(bool request_audio, bool request_video);
   ~StreamControls();
+
   TrackControls audio;
   TrackControls video;
   // Hotword functionality (chromeos only)
   // See crbug.com/564574 for discussion on possibly #ifdef'ing this out.
-  bool hotword_enabled;  // kMediaStreamAudioHotword = "googHotword";
-  bool disable_local_echo;
+  bool hotword_enabled = false;
+  bool disable_local_echo = false;
 };
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_MEDIA_MEDIA_STREAM_OPTIONS_H_
+#endif  // CONTENT_COMMON_MEDIA_MEDIA_STREAM_CONTROLS_H_

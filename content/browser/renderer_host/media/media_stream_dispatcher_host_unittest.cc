@@ -23,7 +23,6 @@
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
 #include "content/browser/renderer_host/media/mock_video_capture_provider.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
-#include "content/common/media/media_stream_options.h"
 #include "content/public/browser/media_device_id.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_browser_context.h"

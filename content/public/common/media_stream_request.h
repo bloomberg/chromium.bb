@@ -148,8 +148,6 @@ struct CONTENT_EXPORT MediaStreamDevice {
 using MediaStreamDevices = std::vector<MediaStreamDevice>;
 
 // Represents a request for media streams (audio/video).
-// TODO(vrk): Decouple MediaStreamDevice from this header file so that
-// media_stream_options.h no longer depends on this file.
 // TODO(vrk,justinlin,wjia): Figure out a way to share this code cleanly between
 // vanilla WebRTC, Tab Capture, and Pepper Video Capture. Right now there is
 // Tab-only stuff and Pepper-only stuff being passed around to all clients,

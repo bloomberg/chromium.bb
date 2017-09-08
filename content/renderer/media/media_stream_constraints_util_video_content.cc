@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-#include "content/common/media/media_stream_options.h"
+#include "content/common/media/media_stream_controls.h"
 #include "content/renderer/media/media_stream_constraints_util_sets.h"
 #include "content/renderer/media/media_stream_video_source.h"
 #include "media/base/limits.h"

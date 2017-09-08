@@ -12,7 +12,6 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/child/child_process.h"
-#include "content/common/media/media_stream_options.h"
 #include "content/common/video_capture.mojom.h"
 #include "content/renderer/media/video_capture_impl.h"
 #include "content/renderer/media/video_capture_impl_manager.h"

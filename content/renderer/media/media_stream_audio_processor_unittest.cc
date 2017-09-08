@@ -19,7 +19,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "content/common/media/media_stream_options.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/renderer/media/media_stream_audio_processor.h"

@@ -12,7 +12,7 @@
 #include "content/browser/renderer_host/media/media_stream_requester.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream.mojom.h"
-#include "content/common/media/media_stream_options.h"
+#include "content/common/media/media_stream_controls.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace url {
