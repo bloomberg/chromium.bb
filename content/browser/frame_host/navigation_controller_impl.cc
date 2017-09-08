@@ -990,7 +990,8 @@ bool NavigationControllerImpl::RendererDidNavigate(
 
   NotifyNavigationEntryCommitted(details);
 
-  if (active_entry->GetURL().SchemeIs(url::kHttpsScheme) && !rfh->GetParent()) {
+  if (active_entry->GetURL().SchemeIs(url::kHttpsScheme) && !rfh->GetParent() &&
+      navigation_handle->GetNetErrorCode() == net::OK) {
     UMA_HISTOGRAM_BOOLEAN("Navigation.SecureSchemeHasSSLStatus",
                           !!active_entry->GetSSL().certificate);
   }
@@ -1155,7 +1156,8 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
       // this case.
       new_entry->GetSSL() = SSLStatus();
 
-      if (params.url.SchemeIs(url::kHttpsScheme) && !rfh->GetParent()) {
+      if (params.url.SchemeIs(url::kHttpsScheme) && !rfh->GetParent() &&
+          handle->GetNetErrorCode() == net::OK) {
         UMA_HISTOGRAM_BOOLEAN(
             "Navigation.SecureSchemeHasSSLStatus.NewPageInPageOriginMismatch",
             !!new_entry->GetSSL().certificate);
@@ -1168,7 +1170,8 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
 
     update_virtual_url = new_entry->update_virtual_url_with_url();
 
-    if (params.url.SchemeIs(url::kHttpsScheme) && !rfh->GetParent()) {
+    if (params.url.SchemeIs(url::kHttpsScheme) && !rfh->GetParent() &&
+        handle->GetNetErrorCode() == net::OK) {
       UMA_HISTOGRAM_BOOLEAN("Navigation.SecureSchemeHasSSLStatus.NewPageInPage",
                             !!new_entry->GetSSL().certificate);
     }
@@ -1192,7 +1195,8 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
     update_virtual_url = new_entry->update_virtual_url_with_url();
     new_entry->GetSSL() = handle->ssl_status();
 
-    if (params.url.SchemeIs(url::kHttpsScheme) && !rfh->GetParent()) {
+    if (params.url.SchemeIs(url::kHttpsScheme) && !rfh->GetParent() &&
+        handle->GetNetErrorCode() == net::OK) {
       UMA_HISTOGRAM_BOOLEAN(
           "Navigation.SecureSchemeHasSSLStatus.NewPagePendingEntryMatches",
           !!new_entry->GetSSL().certificate);
@@ -1219,7 +1223,8 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
     update_virtual_url = needs_update;
     new_entry->GetSSL() = handle->ssl_status();
 
-    if (params.url.SchemeIs(url::kHttpsScheme) && !rfh->GetParent()) {
+    if (params.url.SchemeIs(url::kHttpsScheme) && !rfh->GetParent() &&
+        handle->GetNetErrorCode() == net::OK) {
       UMA_HISTOGRAM_BOOLEAN(
           "Navigation.SecureSchemeHasSSLStatus.NewPageNoMatchingEntry",
           !!new_entry->GetSSL().certificate);
@@ -1297,7 +1302,8 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
     if (!is_same_document)
       entry->GetSSL() = handle->ssl_status();
 
-    if (params.url.SchemeIs(url::kHttpsScheme) && !rfh->GetParent()) {
+    if (params.url.SchemeIs(url::kHttpsScheme) && !rfh->GetParent() &&
+        handle->GetNetErrorCode() == net::OK) {
       bool has_cert = !!entry->GetSSL().certificate;
       if (is_same_document) {
         UMA_HISTOGRAM_BOOLEAN(
@@ -1336,7 +1342,8 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
         entry->GetSSL() = handle->ssl_status();
     }
 
-    if (params.url.SchemeIs(url::kHttpsScheme) && !rfh->GetParent()) {
+    if (params.url.SchemeIs(url::kHttpsScheme) && !rfh->GetParent() &&
+        handle->GetNetErrorCode() == net::OK) {
       bool has_cert = !!entry->GetSSL().certificate;
       if (is_same_document && was_restored) {
         UMA_HISTOGRAM_BOOLEAN(
@@ -1370,7 +1377,8 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
     if (!is_same_document)
       entry->GetSSL() = handle->ssl_status();
 
-    if (params.url.SchemeIs(url::kHttpsScheme) && !rfh->GetParent()) {
+    if (params.url.SchemeIs(url::kHttpsScheme) && !rfh->GetParent() &&
+        handle->GetNetErrorCode() == net::OK) {
       bool has_cert = !!entry->GetSSL().certificate;
       if (is_same_document) {
         UMA_HISTOGRAM_BOOLEAN(
@@ -1462,7 +1470,7 @@ void NavigationControllerImpl::RendererDidNavigateToSamePage(
   existing_entry->GetSSL() = handle->ssl_status();
 
   if (existing_entry->GetURL().SchemeIs(url::kHttpsScheme) &&
-      !rfh->GetParent()) {
+      !rfh->GetParent() && handle->GetNetErrorCode() == net::OK) {
     UMA_HISTOGRAM_BOOLEAN("Navigation.SecureSchemeHasSSLStatus.SamePage",
                           !!existing_entry->GetSSL().certificate);
   }
@@ -1505,11 +1513,6 @@ void NavigationControllerImpl::RendererDidNavigateNewSubframe(
       GetLastCommittedEntry()->CloneAndReplace(
           frame_entry.get(), is_same_document, rfh->frame_tree_node(),
           delegate_->GetFrameTree()->root());
-
-  if (new_entry->GetURL().SchemeIs(url::kHttpsScheme) && !rfh->GetParent()) {
-    UMA_HISTOGRAM_BOOLEAN("Navigation.SecureSchemeHasSSLStatus.NewSubFrame",
-                          !!new_entry->GetSSL().certificate);
-  }
 
   // TODO(creis): Update this to add the frame_entry if we can't find the one
   // to replace, which can happen due to a unique name change.  See
