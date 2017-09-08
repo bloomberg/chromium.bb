@@ -3116,8 +3116,6 @@ crbug.com/708499 [ Linux ] virtual/wheelscrolllatching/fast/compositor-wheel-scr
 crbug.com/752845 [ Win ] inspector/sha1.html [ Pass Crash ]
 
 # Sheriff failure 2017-08-11
-crbug.com/754657 http/tests/media/media-source/mediasource-duration.html [ Pass Failure ]
-crbug.com/754657 virtual/mojo-loading/http/tests/media/media-source/mediasource-duration.html [ Pass Failure ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/api/response/response-cancel-stream.html [ Pass Timeout ]
 
 # Sheriff failure 2017-08-29
