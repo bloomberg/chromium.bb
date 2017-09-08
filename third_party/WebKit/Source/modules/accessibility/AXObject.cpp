@@ -335,6 +335,7 @@ AXObject::AXObject(AXObjectCacheImpl& ax_object_cache)
     : id_(0),
       have_children_(false),
       role_(kUnknownRole),
+      aria_role_(kUnknownRole),
       last_known_is_ignored_value_(kDefaultBehavior),
       explicit_container_id_(0),
       parent_(nullptr),
@@ -356,6 +357,10 @@ AXObject::~AXObject() {
   --number_of_live_ax_objects_;
 }
 
+void AXObject::Init() {
+  role_ = DetermineAccessibilityRole();
+}
+
 void AXObject::Detach() {
   // Clear any children and call detachFromParent on them so that
   // no children are left with dangling pointers to their parent.
@@ -370,9 +375,11 @@ bool AXObject::IsDetached() const {
 
 const AtomicString& AXObject::GetAOMPropertyOrARIAAttribute(
     AOMStringProperty property) const {
-  if (Element* element = this->GetElement())
-    return AccessibleNode::GetPropertyOrARIAAttribute(element, property);
-  return g_null_atom;
+  Element* element = this->GetElement();
+  if (!element)
+    return g_null_atom;
+
+  return AccessibleNode::GetPropertyOrARIAAttribute(element, property);
 }
 
 Element* AXObject::GetAOMPropertyOrARIAAttribute(
@@ -1471,6 +1478,73 @@ bool AXObject::IsLiveRegion() const {
   return !live_region.IsEmpty() && !EqualIgnoringASCIICase(live_region, "off");
 }
 
+AccessibilityRole AXObject::DetermineAccessibilityRole() {
+  aria_role_ = DetermineAriaRoleAttribute();
+  return aria_role_;
+}
+
+AccessibilityRole AXObject::AriaRoleAttribute() const {
+  return aria_role_;
+}
+
+AccessibilityRole AXObject::DetermineAriaRoleAttribute() const {
+  const AtomicString& aria_role =
+      GetAOMPropertyOrARIAAttribute(AOMStringProperty::kRole);
+  if (aria_role.IsNull() || aria_role.IsEmpty())
+    return kUnknownRole;
+
+  AccessibilityRole role = AriaRoleToWebCoreRole(aria_role);
+
+  // ARIA states if an item can get focus, it should not be presentational.
+  if ((role == kNoneRole || role == kPresentationalRole) &&
+      CanSetFocusAttribute())
+    return kUnknownRole;
+
+  if (role == kButtonRole)
+    role = ButtonRoleType();
+
+  role = RemapAriaRoleDueToParent(role);
+
+  if (role)
+    return role;
+
+  return kUnknownRole;
+}
+
+AccessibilityRole AXObject::RemapAriaRoleDueToParent(
+    AccessibilityRole role) const {
+  // Some objects change their role based on their parent.
+  // However, asking for the unignoredParent calls accessibilityIsIgnored(),
+  // which can trigger a loop.  While inside the call stack of creating an
+  // element, we need to avoid accessibilityIsIgnored().
+  // https://bugs.webkit.org/show_bug.cgi?id=65174
+
+  if (role != kListBoxOptionRole && role != kMenuItemRole)
+    return role;
+
+  for (AXObject* parent = ParentObject();
+       parent && !parent->AccessibilityIsIgnored();
+       parent = parent->ParentObject()) {
+    AccessibilityRole parent_aria_role = parent->AriaRoleAttribute();
+
+    // Selects and listboxes both have options as child roles, but they map to
+    // different roles within WebCore.
+    if (role == kListBoxOptionRole && parent_aria_role == kMenuRole)
+      return kMenuItemRole;
+    // An aria "menuitem" may map to MenuButton or MenuItem depending on its
+    // parent.
+    if (role == kMenuItemRole && parent_aria_role == kGroupRole)
+      return kMenuButtonRole;
+
+    // If the parent had a different role, then we don't need to continue
+    // searching up the chain.
+    if (parent_aria_role)
+      break;
+  }
+
+  return role;
+}
+
 bool AXObject::IsEditableRoot() const {
   UpdateCachedAttributeValuesIfNeeded();
   return cached_is_editable_root_;
@@ -1597,6 +1671,19 @@ void AXObject::ClearChildren() {
 
   children_.clear();
   have_children_ = false;
+}
+
+void AXObject::AddAccessibleNodeChildren() {
+  Element* element = GetElement();
+  if (!element)
+    return;
+
+  AccessibleNode* accessible_node = element->ExistingAccessibleNode();
+  if (!accessible_node)
+    return;
+
+  for (const auto& child : accessible_node->GetChildren())
+    children_.push_back(AxObjectCache().GetOrCreate(child));
 }
 
 Element* AXObject::GetElement() const {

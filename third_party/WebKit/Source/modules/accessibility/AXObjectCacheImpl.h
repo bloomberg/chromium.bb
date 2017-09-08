@@ -68,12 +68,14 @@ class MODULES_EXPORT AXObjectCacheImpl
   void SelectionChanged(Node*) override;
   void ChildrenChanged(Node*) override;
   void ChildrenChanged(LayoutObject*) override;
+  void ChildrenChanged(AccessibleNode*) override;
   void CheckedStateChanged(Node*) override;
   virtual void ListboxOptionStateChanged(HTMLOptionElement*);
   virtual void ListboxSelectedChildrenChanged(HTMLSelectElement*);
   virtual void ListboxActiveIndexChanged(HTMLSelectElement*);
   virtual void RadiobuttonRemovedFromGroup(HTMLInputElement*);
 
+  void Remove(AccessibleNode*) override;
   void Remove(LayoutObject*) override;
   void Remove(Node*) override;
   void Remove(AbstractInlineTextBox*) override;
@@ -131,11 +133,13 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   // used for objects without backing elements
   AXObject* GetOrCreate(AccessibilityRole);
+  AXObject* GetOrCreate(AccessibleNode*);
   AXObject* GetOrCreate(LayoutObject*) override;
   AXObject* GetOrCreate(Node*);
   AXObject* GetOrCreate(AbstractInlineTextBox*);
 
   // will only return the AXObject if it already exists
+  AXObject* Get(AccessibleNode*);
   AXObject* Get(const Node*) override;
   AXObject* Get(LayoutObject*);
   AXObject* Get(AbstractInlineTextBox*);
@@ -219,6 +223,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   HeapHashMap<AXID, Member<AXObject>> objects_;
   // LayoutObject and AbstractInlineTextBox are not on the Oilpan heap so we
   // do not use HeapHashMap for those mappings.
+  HeapHashMap<Member<AccessibleNode>, AXID> accessible_node_mapping_;
   HashMap<LayoutObject*, AXID> layout_object_mapping_;
   HeapHashMap<Member<const Node>, AXID> node_object_mapping_;
   HashMap<AbstractInlineTextBox*, AXID> inline_text_box_object_mapping_;

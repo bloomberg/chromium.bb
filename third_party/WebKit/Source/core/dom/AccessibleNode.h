@@ -18,6 +18,7 @@ namespace blink {
 
 class AccessibleNodeList;
 class AXObjectCache;
+class Document;
 class Element;
 class QualifiedName;
 
@@ -109,14 +110,24 @@ class CORE_EXPORT AccessibleNode : public EventTargetWithInlineData {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  explicit AccessibleNode(Document&);
   explicit AccessibleNode(Element*);
   virtual ~AccessibleNode();
+
+  static AccessibleNode* Create(Document&);
 
   // Gets the associated element, if any.
   Element* element() const { return element_; }
 
+  // Gets the associated document.
+  Document* GetDocument() const { return document_.Get(); }
+
+  // Children. These are only virtual AccessibleNodes that were added
+  // explicitly, never AccessibleNodes from DOM Elements.
+  HeapVector<Member<AccessibleNode>> GetChildren() { return children_; }
+
   // Returns the given string property if the Element has an AccessibleNode.
-  static const AtomicString& GetProperty(Element*, AOMStringProperty);
+  const AtomicString& GetProperty(AOMStringProperty) const;
 
   // Returns the given relation property if the Element has an AccessibleNode.
   static AccessibleNode* GetProperty(Element*, AOMRelationProperty);
@@ -327,6 +338,8 @@ class CORE_EXPORT AccessibleNode : public EventTargetWithInlineData {
   AtomicString valueText() const;
   void setValueText(const AtomicString&);
 
+  void appendChild(AccessibleNode*, ExceptionState&);
+
   // EventTarget
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
@@ -366,8 +379,15 @@ class CORE_EXPORT AccessibleNode : public EventTargetWithInlineData {
   HeapVector<std::pair<AOMRelationListProperty, Member<AccessibleNodeList>>>
       relation_list_properties_;
 
-  // This object's owner Element.
+  // This object's owner Element, if it corresponds to an Element.
   Member<Element> element_;
+
+  // The object's owner Document.
+  Member<Document> document_;
+
+  // This object's AccessibleNode children, which must be only virtual
+  // AccessibleNodes (with no associated Element).
+  HeapVector<Member<AccessibleNode>> children_;
 };
 
 }  // namespace blink

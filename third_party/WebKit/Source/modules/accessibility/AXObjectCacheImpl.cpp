@@ -82,6 +82,7 @@
 #include "modules/accessibility/AXTableColumn.h"
 #include "modules/accessibility/AXTableHeaderContainer.h"
 #include "modules/accessibility/AXTableRow.h"
+#include "modules/accessibility/AXVirtualObject.h"
 #include "modules/permissions/PermissionUtils.h"
 #include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/PtrUtil.h"
@@ -270,6 +271,18 @@ AXObject* AXObjectCacheImpl::Get(AbstractInlineTextBox* inline_text_box) {
   return objects_.at(ax_id);
 }
 
+AXObject* AXObjectCacheImpl::Get(AccessibleNode* accessible_node) {
+  if (!accessible_node)
+    return 0;
+
+  AXID ax_id = accessible_node_mapping_.at(accessible_node);
+  DCHECK(!HashTraits<AXID>::IsDeletedValue(ax_id));
+  if (!ax_id)
+    return 0;
+
+  return objects_.at(ax_id);
+}
+
 // FIXME: This probably belongs on Node.
 // FIXME: This should take a const char*, but one caller passes nullAtom.
 static bool NodeHasRole(Node* node, const String& role) {
@@ -372,6 +385,18 @@ AXObject* AXObjectCacheImpl::CreateFromNode(Node* node) {
 AXObject* AXObjectCacheImpl::CreateFromInlineTextBox(
     AbstractInlineTextBox* inline_text_box) {
   return AXInlineTextBox::Create(inline_text_box, *this);
+}
+
+AXObject* AXObjectCacheImpl::GetOrCreate(AccessibleNode* accessible_node) {
+  if (AXObject* obj = Get(accessible_node))
+    return obj;
+
+  AXObject* new_obj = new AXVirtualObject(*this, accessible_node);
+  const AXID ax_id = GetOrCreateAXID(new_obj);
+  accessible_node_mapping_.Set(accessible_node, ax_id);
+
+  new_obj->Init();
+  return new_obj;
 }
 
 AXObject* AXObjectCacheImpl::GetOrCreate(Node* node) {
@@ -511,6 +536,15 @@ void AXObjectCacheImpl::Remove(AXID ax_id) {
   DCHECK_GE(objects_.size(), ids_in_use_.size());
 }
 
+void AXObjectCacheImpl::Remove(AccessibleNode* accessible_node) {
+  if (!accessible_node)
+    return;
+
+  AXID ax_id = accessible_node_mapping_.at(accessible_node);
+  Remove(ax_id);
+  accessible_node_mapping_.erase(accessible_node);
+}
+
 void AXObjectCacheImpl::Remove(LayoutObject* layout_object) {
   if (!layout_object)
     return;
@@ -647,6 +681,10 @@ void AXObjectCacheImpl::ChildrenChanged(Node* node) {
 
 void AXObjectCacheImpl::ChildrenChanged(LayoutObject* layout_object) {
   ChildrenChanged(Get(layout_object));
+}
+
+void AXObjectCacheImpl::ChildrenChanged(AccessibleNode* accessible_node) {
+  ChildrenChanged(Get(accessible_node));
 }
 
 void AXObjectCacheImpl::ChildrenChanged(AXObject* obj) {
@@ -1378,6 +1416,7 @@ void AXObjectCacheImpl::ContextDestroyed(ExecutionContext*) {
 
 DEFINE_TRACE(AXObjectCacheImpl) {
   visitor->Trace(document_);
+  visitor->Trace(accessible_node_mapping_);
   visitor->Trace(node_object_mapping_);
 
   visitor->Trace(objects_);

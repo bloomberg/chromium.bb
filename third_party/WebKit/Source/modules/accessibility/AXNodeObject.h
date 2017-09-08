@@ -52,8 +52,6 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   DECLARE_VIRTUAL_TRACE();
 
  protected:
-  // Protected data.
-  AccessibilityRole aria_role_;
   bool children_dirty_;
 #if DCHECK_IS_ON()
   bool initialized_ = false;
@@ -61,7 +59,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
 
   bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
   const AXObject* InheritsPresentationalRoleFrom() const override;
-  virtual AccessibilityRole DetermineAccessibilityRole();
+  AccessibilityRole DetermineAccessibilityRole() override;
   virtual AccessibilityRole NativeAccessibilityRoleIgnoringAria() const;
   String AccessibilityDescriptionForElements(
       HeapVector<Member<Element>>& elements) const;
@@ -69,7 +67,6 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   AXObject* ActiveDescendant() override;
   String AriaAccessibilityDescription() const;
   String AriaAutoComplete() const;
-  AccessibilityRole DetermineAriaRoleAttribute() const;
   void AccessibilityChildrenFromAOMProperty(AOMRelationListProperty,
                                             AXObject::AXObjectVector&) const;
 
@@ -81,7 +78,6 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   AXObject* MenuButtonForMenu() const;
   Element* MenuItemElementForMenu() const;
   Element* MouseButtonListener() const;
-  AccessibilityRole RemapAriaRoleDueToParent(AccessibilityRole) const;
   bool IsNativeCheckboxOrRadio() const;
   void SetNode(Node*);
   AXObject* CorrespondingControlForLabelElement() const;

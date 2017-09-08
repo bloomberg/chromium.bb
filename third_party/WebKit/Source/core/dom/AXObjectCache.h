@@ -36,6 +36,7 @@ typedef unsigned AXID;
 namespace blink {
 
 class AbstractInlineTextBox;
+class AccessibleNode;
 class HTMLCanvasElement;
 class HTMLOptionElement;
 class HTMLSelectElement;
@@ -96,12 +97,14 @@ class CORE_EXPORT AXObjectCache
   virtual void SelectionChanged(Node*) = 0;
   virtual void ChildrenChanged(Node*) = 0;
   virtual void ChildrenChanged(LayoutObject*) = 0;
+  virtual void ChildrenChanged(AccessibleNode*) = 0;
   virtual void CheckedStateChanged(Node*) = 0;
   virtual void ListboxOptionStateChanged(HTMLOptionElement*) = 0;
   virtual void ListboxSelectedChildrenChanged(HTMLSelectElement*) = 0;
   virtual void ListboxActiveIndexChanged(HTMLSelectElement*) = 0;
   virtual void RadiobuttonRemovedFromGroup(HTMLInputElement*) = 0;
 
+  virtual void Remove(AccessibleNode*) = 0;
   virtual void Remove(LayoutObject*) = 0;
   virtual void Remove(Node*) = 0;
   virtual void Remove(AbstractInlineTextBox*) = 0;

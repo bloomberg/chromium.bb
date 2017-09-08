@@ -203,23 +203,28 @@ QualifiedName GetCorrespondingARIAAttribute(AOMIntProperty property) {
 
 }  // namespace
 
-AccessibleNode::AccessibleNode(Element* element) : element_(element) {
+AccessibleNode::AccessibleNode(Element* element)
+    : element_(element), document_(element->GetDocument()) {
+  DCHECK(RuntimeEnabledFeatures::AccessibilityObjectModelEnabled());
+}
+
+AccessibleNode::AccessibleNode(Document& document)
+    : element_(nullptr), document_(document) {
   DCHECK(RuntimeEnabledFeatures::AccessibilityObjectModelEnabled());
 }
 
 AccessibleNode::~AccessibleNode() {}
 
 // static
-const AtomicString& AccessibleNode::GetProperty(Element* element,
-                                                AOMStringProperty property) {
-  if (!element)
-    return g_null_atom;
+AccessibleNode* AccessibleNode::Create(Document& document) {
+  return new AccessibleNode(document);
+}
 
-  if (AccessibleNode* accessible_node = element->ExistingAccessibleNode()) {
-    for (const auto& item : accessible_node->string_properties_) {
-      if (item.first == property && !item.second.IsNull())
-        return item.second;
-    }
+const AtomicString& AccessibleNode::GetProperty(
+    AOMStringProperty property) const {
+  for (const auto& item : string_properties_) {
+    if (item.first == property && !item.second.IsNull())
+      return item.second;
   }
 
   return g_null_atom;
@@ -365,22 +370,23 @@ const AtomicString& AccessibleNode::GetPropertyOrARIAAttribute(
     return g_null_atom;
 
   const bool is_token_attr = IsStringTokenProperty(property);
-  const AtomicString& result = GetProperty(element, property);
-
-  if (result.IsNull()) {
-    // Fall back on the equivalent ARIA attribute.
-    QualifiedName attribute = GetCorrespondingARIAAttribute(property);
-    const AtomicString& attr_value = element->FastGetAttribute(attribute);
-    if (is_token_attr && IsUndefinedAttrValue(attr_value))
-      return g_null_atom;  // Attribute not set or explicitly undefined.
-
-    return attr_value;
+  AccessibleNode* accessible_node = element->ExistingAccessibleNode();
+  if (accessible_node) {
+    const AtomicString& result = accessible_node->GetProperty(property);
+    if (!result.IsNull()) {
+      if (is_token_attr && IsUndefinedAttrValue(result))
+        return g_null_atom;  // Property specifically set to undefined value.
+      return result;
+    }
   }
 
-  if (is_token_attr && IsUndefinedAttrValue(result))
-    return g_null_atom;  // Property specifically set to undefined value.
+  // Fall back on the equivalent ARIA attribute.
+  QualifiedName attribute = GetCorrespondingARIAAttribute(property);
+  const AtomicString& attr_value = element->FastGetAttribute(attribute);
+  if (is_token_attr && IsUndefinedAttrValue(attr_value))
+    return g_null_atom;  // Attribute not set or explicitly undefined.
 
-  return result;
+  return attr_value;
 }
 
 // static
@@ -571,7 +577,7 @@ void AccessibleNode::setAtomic(bool atomic, bool is_null) {
 }
 
 AtomicString AccessibleNode::autocomplete() const {
-  return GetProperty(element_, AOMStringProperty::kAutocomplete);
+  return GetProperty(AOMStringProperty::kAutocomplete);
 }
 
 void AccessibleNode::setAutocomplete(const AtomicString& autocomplete) {
@@ -589,7 +595,7 @@ void AccessibleNode::setBusy(bool busy, bool is_null) {
 }
 
 AtomicString AccessibleNode::checked() const {
-  return GetProperty(element_, AOMStringProperty::kChecked);
+  return GetProperty(AOMStringProperty::kChecked);
 }
 
 void AccessibleNode::setChecked(const AtomicString& checked) {
@@ -634,13 +640,13 @@ void AccessibleNode::setControls(AccessibleNodeList* controls) {
 }
 
 AtomicString AccessibleNode::current() const {
-  return GetProperty(element_, AOMStringProperty::kCurrent);
+  return GetProperty(AOMStringProperty::kCurrent);
 }
 
 void AccessibleNode::setCurrent(const AtomicString& current) {
   SetStringProperty(AOMStringProperty::kCurrent, current);
 
-  if (AXObjectCache* cache = element_->GetDocument().ExistingAXObjectCache())
+  if (AXObjectCache* cache = GetAXObjectCache())
     cache->HandleAttributeChanged(aria_currentAttr, element_);
 }
 
@@ -699,7 +705,7 @@ void AccessibleNode::setFlowTo(AccessibleNodeList* flow_to) {
 }
 
 AtomicString AccessibleNode::hasPopUp() const {
-  return GetProperty(element_, AOMStringProperty::kHasPopUp);
+  return GetProperty(AOMStringProperty::kHasPopUp);
 }
 
 void AccessibleNode::setHasPopUp(const AtomicString& has_popup) {
@@ -717,7 +723,7 @@ void AccessibleNode::setHidden(bool hidden, bool is_null) {
 }
 
 AtomicString AccessibleNode::invalid() const {
-  return GetProperty(element_, AOMStringProperty::kInvalid);
+  return GetProperty(AOMStringProperty::kInvalid);
 }
 
 void AccessibleNode::setInvalid(const AtomicString& invalid) {
@@ -726,7 +732,7 @@ void AccessibleNode::setInvalid(const AtomicString& invalid) {
 }
 
 AtomicString AccessibleNode::keyShortcuts() const {
-  return GetProperty(element_, AOMStringProperty::kKeyShortcuts);
+  return GetProperty(AOMStringProperty::kKeyShortcuts);
 }
 
 void AccessibleNode::setKeyShortcuts(const AtomicString& key_shortcuts) {
@@ -735,7 +741,7 @@ void AccessibleNode::setKeyShortcuts(const AtomicString& key_shortcuts) {
 }
 
 AtomicString AccessibleNode::label() const {
-  return GetProperty(element_, AOMStringProperty::kLabel);
+  return GetProperty(AOMStringProperty::kLabel);
 }
 
 void AccessibleNode::setLabel(const AtomicString& label) {
@@ -762,7 +768,7 @@ void AccessibleNode::setLevel(uint32_t level, bool is_null) {
 }
 
 AtomicString AccessibleNode::live() const {
-  return GetProperty(element_, AOMStringProperty::kLive);
+  return GetProperty(AOMStringProperty::kLive);
 }
 
 void AccessibleNode::setLive(const AtomicString& live) {
@@ -799,7 +805,7 @@ void AccessibleNode::setMultiselectable(bool multiselectable, bool is_null) {
 }
 
 AtomicString AccessibleNode::orientation() const {
-  return GetProperty(element_, AOMStringProperty::kOrientation);
+  return GetProperty(AOMStringProperty::kOrientation);
 }
 
 void AccessibleNode::setOrientation(const AtomicString& orientation) {
@@ -817,7 +823,7 @@ void AccessibleNode::setOwns(AccessibleNodeList* owns) {
 }
 
 AtomicString AccessibleNode::placeholder() const {
-  return GetProperty(element_, AOMStringProperty::kPlaceholder);
+  return GetProperty(AOMStringProperty::kPlaceholder);
 }
 
 void AccessibleNode::setPlaceholder(const AtomicString& placeholder) {
@@ -835,7 +841,7 @@ void AccessibleNode::setPosInSet(uint32_t pos_in_set, bool is_null) {
 }
 
 AtomicString AccessibleNode::pressed() const {
-  return GetProperty(element_, AOMStringProperty::kPressed);
+  return GetProperty(AOMStringProperty::kPressed);
 }
 
 void AccessibleNode::setPressed(const AtomicString& pressed) {
@@ -853,7 +859,7 @@ void AccessibleNode::setReadOnly(bool read_only, bool is_null) {
 }
 
 AtomicString AccessibleNode::relevant() const {
-  return GetProperty(element_, AOMStringProperty::kRelevant);
+  return GetProperty(AOMStringProperty::kRelevant);
 }
 
 void AccessibleNode::setRelevant(const AtomicString& relevant) {
@@ -871,7 +877,7 @@ void AccessibleNode::setRequired(bool required, bool is_null) {
 }
 
 AtomicString AccessibleNode::role() const {
-  return GetProperty(element_, AOMStringProperty::kRole);
+  return GetProperty(AOMStringProperty::kRole);
 }
 
 void AccessibleNode::setRole(const AtomicString& role) {
@@ -880,7 +886,7 @@ void AccessibleNode::setRole(const AtomicString& role) {
 }
 
 AtomicString AccessibleNode::roleDescription() const {
-  return GetProperty(element_, AOMStringProperty::kRoleDescription);
+  return GetProperty(AOMStringProperty::kRoleDescription);
 }
 
 void AccessibleNode::setRoleDescription(const AtomicString& role_description) {
@@ -934,7 +940,7 @@ void AccessibleNode::setSetSize(int32_t set_size, bool is_null) {
 }
 
 AtomicString AccessibleNode::sort() const {
-  return GetProperty(element_, AOMStringProperty::kSort);
+  return GetProperty(AOMStringProperty::kSort);
 }
 
 void AccessibleNode::setSort(const AtomicString& sort) {
@@ -970,12 +976,34 @@ void AccessibleNode::setValueNow(float value_now, bool is_null) {
 }
 
 AtomicString AccessibleNode::valueText() const {
-  return GetProperty(element_, AOMStringProperty::kValueText);
+  return GetProperty(AOMStringProperty::kValueText);
 }
 
 void AccessibleNode::setValueText(const AtomicString& value_text) {
   SetStringProperty(AOMStringProperty::kValueText, value_text);
   NotifyAttributeChanged(aria_valuetextAttr);
+}
+
+void AccessibleNode::appendChild(AccessibleNode* child,
+                                 ExceptionState& exception_state) {
+  if (child->element()) {
+    exception_state.ThrowDOMException(
+        kInvalidAccessError,
+        "An AccessibleNode associated with an Element cannot be a child.");
+    return;
+  }
+
+  if (!document_->GetSecurityOrigin()->CanAccess(
+          child->GetDocument()->GetSecurityOrigin())) {
+    exception_state.ThrowDOMException(
+        kInvalidAccessError,
+        "Trying to access an AccessibleNode from a different origin.");
+    return;
+  }
+
+  children_.push_back(child);
+  if (AXObjectCache* cache = GetAXObjectCache())
+    cache->ChildrenChanged(this);
 }
 
 // These properties support a list of tokens, and "undefined"/"" is
@@ -1109,13 +1137,15 @@ void AccessibleNode::NotifyAttributeChanged(
 }
 
 AXObjectCache* AccessibleNode::GetAXObjectCache() {
-  return element_->GetDocument().ExistingAXObjectCache();
+  return document_->ExistingAXObjectCache();
 }
 
 DEFINE_TRACE(AccessibleNode) {
   visitor->Trace(element_);
+  visitor->Trace(document_);
   visitor->Trace(relation_properties_);
   visitor->Trace(relation_list_properties_);
+  visitor->Trace(children_);
   EventTargetWithInlineData::Trace(visitor);
 }
 

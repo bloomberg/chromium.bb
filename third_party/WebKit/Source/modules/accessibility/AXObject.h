@@ -329,7 +329,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // unique ID, then added to AXObjectCacheImpl, and finally init() must
   // be called last.
   void SetAXObjectID(AXID ax_object_id) { id_ = ax_object_id; }
-  virtual void Init() {}
+  virtual void Init();
 
   // When the corresponding WebCore object that this AXObject
   // wraps is deleted, it must be detached.
@@ -351,7 +351,8 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
 
   // Wrappers that retrieve either an Accessibility Object Model property,
   // or the equivalent ARIA attribute, in that order.
-  const AtomicString& GetAOMPropertyOrARIAAttribute(AOMStringProperty) const;
+  virtual const AtomicString& GetAOMPropertyOrARIAAttribute(
+      AOMStringProperty) const;
   Element* GetAOMPropertyOrARIAAttribute(AOMRelationProperty) const;
   bool HasAOMProperty(AOMRelationListProperty,
                       HeapVector<Member<Element>>& result) const;
@@ -440,6 +441,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual bool IsTextControl() const { return false; }
   virtual bool IsTableCol() const { return false; }
   bool IsTree() const { return RoleValue() == kTreeRole; }
+  virtual bool IsVirtualObject() const { return false; }
   bool IsWebArea() const { return RoleValue() == kWebAreaRole; }
 
   // Check object state.
@@ -631,6 +633,9 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual AXRestriction Restriction() const { return kNone; }
 
   // ARIA attributes.
+  virtual AccessibilityRole DetermineAccessibilityRole();
+  AccessibilityRole DetermineAriaRoleAttribute() const;
+  virtual AccessibilityRole AriaRoleAttribute() const;
   virtual AXObject* ActiveDescendant() { return nullptr; }
   virtual String AriaAutoComplete() const { return String(); }
   virtual void AriaOwnsElements(AXObjectVector& owns) const {}
@@ -643,7 +648,6 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual bool IsRichlyEditable() const { return false; }
   bool AriaCheckedIsPresent() const;
   bool AriaPressedIsPresent() const;
-  virtual AccessibilityRole AriaRoleAttribute() const { return kUnknownRole; }
   bool SupportsActiveDescendant() const;
   bool SupportsARIAAttributes() const;
   virtual bool SupportsARIADragging() const { return false; }
@@ -728,6 +732,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual void ClearChildren();
   virtual void DetachFromParent() { parent_ = 0; }
   virtual AXObject* ScrollBar(AccessibilityOrientation) { return 0; }
+  virtual void AddAccessibleNodeChildren();
 
   // Properties of the object's owning document or page.
   virtual double EstimatedLoadingProgress() const { return 0; }
@@ -836,6 +841,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   AXObjectVector children_;
   mutable bool have_children_;
   AccessibilityRole role_;
+  AccessibilityRole aria_role_;
   AXObjectInclusion last_known_is_ignored_value_;
   LayoutRect explicit_element_rect_;
   AXID explicit_container_id_;
@@ -908,6 +914,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   static bool IsNativeCheckboxInMixedState(const Node*);
   static bool IncludesARIAWidgetRole(const String&);
   static bool HasInteractiveARIAAttribute(const Element&);
+  AccessibilityRole RemapAriaRoleDueToParent(AccessibilityRole) const;
 
   static unsigned number_of_live_ax_objects_;
 };
