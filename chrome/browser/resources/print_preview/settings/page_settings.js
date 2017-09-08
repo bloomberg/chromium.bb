@@ -32,28 +32,35 @@ cr.define('print_preview', function() {
 
     /**
      * Custom page range input.
-     * @type {HTMLInputElement}
+     * @type {?HTMLInputElement}
      * @private
      */
     this.customInput_ = null;
 
     /**
      * Custom page range radio button.
-     * @type {HTMLInputElement}
+     * @type {?HTMLInputElement}
      * @private
      */
     this.customRadio_ = null;
 
     /**
+     * Custom page range label.
+     * @type {?HTMLElement}
+     * @private
+     */
+    this.customLabel_ = null;
+
+    /**
      * All page rage radio button.
-     * @type {HTMLInputElement}
+     * @type {?HTMLInputElement}
      * @private
      */
     this.allRadio_ = null;
 
     /**
      * Container of a hint to show when the custom page range is invalid.
-     * @type {HTMLElement}
+     * @type {?HTMLElement}
      * @private
      */
     this.customHintEl_ = null;
@@ -68,6 +75,7 @@ cr.define('print_preview', function() {
     ALL_RADIO: 'page-settings-all-radio',
     CUSTOM_HINT: 'page-settings-custom-hint',
     CUSTOM_INPUT: 'page-settings-custom-input',
+    CUSTOM_LABEL: 'page-settings-print-pages-div',
     CUSTOM_RADIO: 'page-settings-custom-radio'
   };
 
@@ -106,7 +114,7 @@ cr.define('print_preview', function() {
           assert(this.allRadio_), 'click', this.onAllRadioClick_.bind(this));
       this.tracker.add(
           assert(this.customRadio_), 'click',
-          this.onCustomRadioClick_.bind(this));
+          this.focusCustomInput_.bind(this));
       this.tracker.add(customInput, 'blur', this.onCustomInputBlur_.bind(this));
       this.tracker.add(
           customInput, 'focus', this.onCustomInputFocus_.bind(this));
@@ -114,6 +122,9 @@ cr.define('print_preview', function() {
           customInput, 'keydown', this.onCustomInputKeyDown_.bind(this));
       this.tracker.add(
           customInput, 'input', this.onCustomInputChange_.bind(this));
+      this.tracker.add(
+          assert(this.customLabel_), 'focus',
+          this.focusCustomInput_.bind(this));
       this.tracker.add(
           this.pageRangeTicketItem_,
           print_preview.ticket_items.TicketItem.EventType.CHANGE,
@@ -139,6 +150,8 @@ cr.define('print_preview', function() {
           PageSettings.Classes_.CUSTOM_RADIO)[0];
       this.customHintEl_ = this.getElement().getElementsByClassName(
           PageSettings.Classes_.CUSTOM_HINT)[0];
+      this.customLabel_ = this.getElement().getElementsByClassName(
+          PageSettings.Classes_.CUSTOM_LABEL)[0];
     },
 
     /**
@@ -179,10 +192,11 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Called when the custom radio button is clicked. Updates the print ticket.
+     * Focuses the custom input. Called when the custom radio button or custom
+     * input label is clicked.
      * @private
      */
-    onCustomRadioClick_: function() {
+    focusCustomInput_: function() {
       this.customInput_.focus();
     },
 
