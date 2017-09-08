@@ -208,6 +208,10 @@ size_t RegisterChromeCrashKeys() {
 
     // TODO(asvitkine): Remove after fixing https://crbug.com/736675
     {"bad_histogram", kMediumSize},
+
+    // Temporary for https://crbug.com/752914.
+    {"blink_scheduler_task_function_name", kMediumSize},
+    {"blink_scheduler_task_file_name", kMediumSize},
   };
 
   // This dynamic set of keys is used for sets of key value pairs when gathering
