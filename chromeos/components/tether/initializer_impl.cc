@@ -32,6 +32,7 @@
 #include "chromeos/components/tether/tether_network_disconnection_handler.h"
 #include "chromeos/components/tether/timer_factory.h"
 #include "chromeos/components/tether/wifi_hotspot_connector.h"
+#include "chromeos/components/tether/wifi_hotspot_disconnector_impl.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_connection_handler.h"
@@ -45,6 +46,15 @@
 namespace chromeos {
 
 namespace tether {
+
+namespace {
+
+void OnDisconnectErrorDuringShutdown(const std::string& error_name) {
+  PA_LOG(WARNING) << "Error disconnecting from Tether network during shutdown; "
+                  << "Error name: " << error_name;
+}
+
+}  // namespace
 
 // static
 InitializerImpl::Factory* InitializerImpl::Factory::factory_instance_ = nullptr;
@@ -79,7 +89,7 @@ void InitializerImpl::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   ActiveHost::RegisterPrefs(registry);
   PersistentHostScanCacheImpl::RegisterPrefs(registry);
   TetherHostResponseRecorder::RegisterPrefs(registry);
-  TetherDisconnectorImpl::RegisterPrefs(registry);
+  WifiHotspotDisconnectorImpl::RegisterPrefs(registry);
 }
 
 std::unique_ptr<Initializer> InitializerImpl::Factory::BuildInstance(
@@ -139,18 +149,40 @@ InitializerImpl::~InitializerImpl() {
     disconnect_tethering_request_sender_->RemoveObserver(this);
 }
 
+// Note: The asynchronous shutdown flow does not scale well (see
+// crbug.com/761532).
+// TODO(khorimoto): Refactor this flow.
 void InitializerImpl::RequestShutdown() {
-  DCHECK(status() == Initializer::Status::ACTIVE);
+  // If shutdown has already happened, there is nothing else to do.
+  if (status() != Initializer::Status::ACTIVE) {
+    return;
+  }
 
-  // Trigger a disconnect on any active Tether connections.
-  tether_disconnector_.reset();
+  // If there is an active connection, it needs to be disconnected before the
+  // Tether component is shut down.
+  if (active_host_->GetActiveHostStatus() !=
+      ActiveHost::ActiveHostStatus::DISCONNECTED) {
+    PA_LOG(INFO) << "There was an active connection during Tether shutdown. "
+                 << "Initiating disconnection from device ID \""
+                 << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(
+                        active_host_->GetActiveHostDeviceId())
+                 << "\".";
+    tether_disconnector_->DisconnectFromNetwork(
+        active_host_->GetTetherNetworkGuid(), base::Bind(&base::DoNothing),
+        base::Bind(&OnDisconnectErrorDuringShutdown));
+  }
 
+  // If the Tether component is not in the process of sending a
+  // DisconnectTetheringRequest, shut down now.
   if (!disconnect_tethering_request_sender_ ||
       !disconnect_tethering_request_sender_->HasPendingRequests()) {
     TransitionToStatus(Initializer::Status::SHUT_DOWN);
     return;
   }
 
+  // If a DisconnectTetheringRequest is currently being sent, the Tether
+  // component must finish sending it before shutting down completely to ensure
+  // that the ex-active host turns off its Wi-Fi hotspot (see crbug.com/754097).
   TransitionToStatus(Initializer::Status::SHUTTING_DOWN);
   StartAsynchronousShutdown();
 }
@@ -242,20 +274,24 @@ void InitializerImpl::CreateComponent() {
       network_state_handler_, host_scanner_.get());
   host_connection_metrics_logger_ =
       base::MakeUnique<HostConnectionMetricsLogger>();
+  network_configuration_remover_ =
+      base::MakeUnique<NetworkConfigurationRemover>(
+          network_state_handler_, managed_network_configuration_handler_);
+  wifi_hotspot_disconnector_ = base::MakeUnique<WifiHotspotDisconnectorImpl>(
+      network_connection_handler_, network_state_handler_, pref_service_,
+      network_configuration_remover_.get());
   tether_connector_ = base::MakeUnique<TetherConnectorImpl>(
       network_state_handler_, wifi_hotspot_connector_.get(), active_host_.get(),
       tether_host_fetcher_.get(), ble_connection_manager_.get(),
       tether_host_response_recorder_.get(),
       device_id_tether_network_guid_map_.get(), master_host_scan_cache_.get(),
-      notification_presenter_, host_connection_metrics_logger_.get());
-  network_configuration_remover_ =
-      base::MakeUnique<NetworkConfigurationRemover>(
-          network_state_handler_, managed_network_configuration_handler_);
-  tether_disconnector_ = base::MakeUnique<TetherDisconnectorImpl>(
-      network_connection_handler_, network_state_handler_, active_host_.get(),
+      notification_presenter_, host_connection_metrics_logger_.get(),
       disconnect_tethering_request_sender_.get(),
-      network_configuration_remover_.get(), tether_connector_.get(),
-      device_id_tether_network_guid_map_.get(), pref_service_);
+      wifi_hotspot_disconnector_.get());
+  tether_disconnector_ = base::MakeUnique<TetherDisconnectorImpl>(
+      active_host_.get(), wifi_hotspot_disconnector_.get(),
+      disconnect_tethering_request_sender_.get(), tether_connector_.get(),
+      device_id_tether_network_guid_map_.get());
   tether_network_disconnection_handler_ =
       base::MakeUnique<TetherNetworkDisconnectionHandler>(
           active_host_.get(), network_state_handler_,

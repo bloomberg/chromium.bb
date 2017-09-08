@@ -56,9 +56,7 @@ class WifiHotspotConnector : public NetworkStateHandlerObserver {
 
   static const int64_t kConnectionTimeoutSeconds = 20;
 
-  // Passes an empty string as |wifi_guid| to signal that the connection did not
-  // succeed.
-  void InvokeWifiConnectionCallback(const std::string& wifi_guid);
+  void CompleteActiveConnectionAttempt(bool success);
   void CreateWifiConfiguration();
   base::DictionaryValue CreateWifiPropertyDictionary(
       const std::string& ssid,

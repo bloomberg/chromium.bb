@@ -10,10 +10,12 @@
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
 #include "chromeos/components/tether/fake_active_host.h"
 #include "chromeos/components/tether/fake_ble_connection_manager.h"
+#include "chromeos/components/tether/fake_disconnect_tethering_request_sender.h"
 #include "chromeos/components/tether/fake_host_scan_cache.h"
 #include "chromeos/components/tether/fake_notification_presenter.h"
 #include "chromeos/components/tether/fake_tether_host_fetcher.h"
 #include "chromeos/components/tether/fake_wifi_hotspot_connector.h"
+#include "chromeos/components/tether/fake_wifi_hotspot_disconnector.h"
 #include "chromeos/components/tether/mock_host_connection_metrics_logger.h"
 #include "chromeos/components/tether/mock_tether_host_response_recorder.h"
 #include "chromeos/components/tether/tether_connector.h"
@@ -151,6 +153,10 @@ class TetherConnectorImplTest : public NetworkStateTest {
         base::MakeUnique<FakeNotificationPresenter>();
     mock_host_connection_metrics_logger_ =
         base::WrapUnique(new StrictMock<MockHostConnectionMetricsLogger>);
+    fake_disconnect_tethering_request_sender_ =
+        base::MakeUnique<FakeDisconnectTetheringRequestSender>();
+    fake_wifi_hotspot_disconnector_ =
+        base::MakeUnique<FakeWifiHotspotDisconnector>();
 
     result_.clear();
 
@@ -161,7 +167,9 @@ class TetherConnectorImplTest : public NetworkStateTest {
         mock_tether_host_response_recorder_.get(),
         device_id_tether_network_guid_map_.get(), fake_host_scan_cache_.get(),
         fake_notification_presenter_.get(),
-        mock_host_connection_metrics_logger_.get()));
+        mock_host_connection_metrics_logger_.get(),
+        fake_disconnect_tethering_request_sender_.get(),
+        fake_wifi_hotspot_disconnector_.get()));
 
     SetUpTetherNetworks();
   }
@@ -314,6 +322,9 @@ class TetherConnectorImplTest : public NetworkStateTest {
   std::unique_ptr<FakeNotificationPresenter> fake_notification_presenter_;
   std::unique_ptr<StrictMock<MockHostConnectionMetricsLogger>>
       mock_host_connection_metrics_logger_;
+  std::unique_ptr<FakeDisconnectTetheringRequestSender>
+      fake_disconnect_tethering_request_sender_;
+  std::unique_ptr<FakeWifiHotspotDisconnector> fake_wifi_hotspot_disconnector_;
 
   std::string result_;
 
@@ -382,6 +393,9 @@ TEST_F(TetherConnectorImplTest, TestCancelWhileOperationActive) {
             fake_active_host_->GetActiveHostStatus());
   EXPECT_EQ(NetworkConnectionHandler::kErrorConnectCanceled,
             GetResultAndReset());
+  EXPECT_EQ(
+      std::vector<std::string>{test_devices_[0].GetDeviceId()},
+      fake_disconnect_tethering_request_sender_->device_ids_sent_requests());
   EXPECT_FALSE(
       fake_notification_presenter_->is_connection_failed_notification_shown());
 }
@@ -524,8 +538,18 @@ TEST_F(TetherConnectorImplTest, TestCancelWhileConnectingToWifi) {
             fake_active_host_->GetActiveHostStatus());
   EXPECT_EQ(NetworkConnectionHandler::kErrorConnectCanceled,
             GetResultAndReset());
+  EXPECT_EQ(
+      std::vector<std::string>{test_devices_[0].GetDeviceId()},
+      fake_disconnect_tethering_request_sender_->device_ids_sent_requests());
   EXPECT_FALSE(
       fake_notification_presenter_->is_connection_failed_notification_shown());
+
+  // Now, simulate the Wi-Fi connection connecting. |tether_connector_| should
+  // request that the connection be disconnected.
+  SuccessfullyJoinWifiNetwork();
+  EXPECT_EQ(
+      kWifiNetworkGuid,
+      fake_wifi_hotspot_disconnector_->last_disconnected_wifi_network_guid());
 }
 
 TEST_F(TetherConnectorImplTest, TestSuccessfulConnection) {

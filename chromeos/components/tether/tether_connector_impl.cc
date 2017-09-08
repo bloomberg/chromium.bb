@@ -7,11 +7,13 @@
 #include "base/bind.h"
 #include "chromeos/components/tether/active_host.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
+#include "chromeos/components/tether/disconnect_tethering_request_sender.h"
 #include "chromeos/components/tether/host_connection_metrics_logger.h"
 #include "chromeos/components/tether/host_scan_cache.h"
 #include "chromeos/components/tether/notification_presenter.h"
 #include "chromeos/components/tether/tether_host_fetcher.h"
 #include "chromeos/components/tether/wifi_hotspot_connector.h"
+#include "chromeos/components/tether/wifi_hotspot_disconnector.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -20,6 +22,17 @@
 namespace chromeos {
 
 namespace tether {
+
+namespace {
+
+void OnDisconnectFromWifiFailure(const std::string& device_id,
+                                 const std::string& error_name) {
+  PA_LOG(WARNING) << "Failed to disconnect from tether hotspot for device ID "
+                  << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id)
+                  << ". Error: " << error_name;
+}
+
+}  // namespace
 
 TetherConnectorImpl::TetherConnectorImpl(
     NetworkStateHandler* network_state_handler,
@@ -31,7 +44,9 @@ TetherConnectorImpl::TetherConnectorImpl(
     DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map,
     HostScanCache* host_scan_cache,
     NotificationPresenter* notification_presenter,
-    HostConnectionMetricsLogger* host_connection_metrics_logger)
+    HostConnectionMetricsLogger* host_connection_metrics_logger,
+    DisconnectTetheringRequestSender* disconnect_tethering_request_sender,
+    WifiHotspotDisconnector* wifi_hotspot_disconnector)
     : network_state_handler_(network_state_handler),
       wifi_hotspot_connector_(wifi_hotspot_connector),
       active_host_(active_host),
@@ -42,12 +57,13 @@ TetherConnectorImpl::TetherConnectorImpl(
       host_scan_cache_(host_scan_cache),
       notification_presenter_(notification_presenter),
       host_connection_metrics_logger_(host_connection_metrics_logger),
+      disconnect_tethering_request_sender_(disconnect_tethering_request_sender),
+      wifi_hotspot_disconnector_(wifi_hotspot_disconnector),
       weak_ptr_factory_(this) {}
 
 TetherConnectorImpl::~TetherConnectorImpl() {
-  if (connect_tethering_operation_) {
+  if (connect_tethering_operation_)
     connect_tethering_operation_->RemoveObserver(this);
-  }
 }
 
 void TetherConnectorImpl::ConnectToNetwork(
@@ -123,6 +139,11 @@ bool TetherConnectorImpl::CancelConnectionAttempt(
     connect_tethering_operation_.reset();
   }
 
+  // Send a DisconnectTetheringRequest so that it can turn off its Wi-Fi
+  // hotspot.
+  disconnect_tethering_request_sender_->SendDisconnectRequestToDevice(
+      device_id);
+
   SetConnectionFailed(
       NetworkConnectionHandler::kErrorConnectCanceled,
       HostConnectionMetricsLogger::ConnectionToHostResult::
@@ -139,9 +160,9 @@ void TetherConnectorImpl::OnSuccessfulConnectTetheringResponse(
     // ignore it.
     PA_LOG(INFO) << "Received successful ConnectTetheringResponse from "
                  << "device with ID "
-                 << remote_device.GetTruncatedDeviceIdForLogs()
-                 << ", but a connection to another device was started while "
-                 << "the response was being received.";
+                 << remote_device.GetTruncatedDeviceIdForLogs() << ", but the "
+                 << "connection attempt to that device has been canceled.";
+
     return;
   }
 
@@ -285,14 +306,25 @@ void TetherConnectorImpl::OnWifiConnection(
     const std::string& device_id,
     const std::string& wifi_network_guid) {
   if (device_id != device_id_pending_connection_) {
-    // If the device ID does not match the ID of the device pending connection,
-    // this is a stale attempt.
-    PA_LOG(ERROR) << "Cannot connect to device with ID "
-                  << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id)
-                  << " because another connection attempt has been started to "
-                  << "a different device.";
+    if (wifi_network_guid.empty()) {
+      PA_LOG(WARNING)
+          << "Failed to connect to Wi-Fi hotspot for device with ID "
+          << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id) << ", "
+          << "but the connection to that device was canceled.";
+      return;
+    }
 
-    // TODO(khorimoto): Disconnect from the network.
+    PA_LOG(INFO) << "Connected to Wi-Fi hotspot for device with ID "
+                 << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id)
+                 << ", but the connection to that device was canceled. "
+                 << "Disconnecting.";
+
+    // Disconnect from the Wi-Fi hotspot; otherwise, it is possible to be
+    // connected to the Wi-Fi hotspot despite there being no active host. See
+    // crbug.com/761171.
+    wifi_hotspot_disconnector_->DisconnectFromWifiHotspot(
+        wifi_network_guid, base::Bind(&base::DoNothing),
+        base::Bind(&OnDisconnectFromWifiFailure, device_id));
     return;
   }
 

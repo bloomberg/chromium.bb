@@ -15,40 +15,24 @@
 #include "chromeos/components/tether/tether_disconnector.h"
 #include "chromeos/network/network_handler_callbacks.h"
 
-class PrefRegistrySimple;
-class PrefService;
-
-namespace base {
-class DictionaryValue;
-}
-
 namespace chromeos {
-
-class NetworkConnectionHandler;
-class NetworkStateHandler;
 
 namespace tether {
 
 class ActiveHost;
 class DeviceIdTetherNetworkGuidMap;
 class DisconnectTetheringRequestSender;
-class NetworkConfigurationRemover;
 class TetherConnector;
+class WifiHotspotDisconnector;
 
 class TetherDisconnectorImpl : public TetherDisconnector {
  public:
-  // Registers the prefs used by this class to the given |registry|.
-  static void RegisterPrefs(PrefRegistrySimple* registry);
-
   TetherDisconnectorImpl(
-      NetworkConnectionHandler* network_connection_handler,
-      NetworkStateHandler* network_state_handler,
       ActiveHost* active_host,
+      WifiHotspotDisconnector* wifi_hotspot_disconnector,
       DisconnectTetheringRequestSender* disconnect_tethering_request_sender,
-      NetworkConfigurationRemover* network_configuration_remover,
       TetherConnector* tether_connector,
-      DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map,
-      PrefService* pref_service);
+      DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map);
   ~TetherDisconnectorImpl() override;
 
   void DisconnectFromNetwork(
@@ -64,30 +48,12 @@ class TetherDisconnectorImpl : public TetherDisconnector {
       const std::string& wifi_network_guid,
       const base::Closure& success_callback,
       const network_handler::StringResultCallback& error_callback);
-  void OnSuccessfulWifiDisconnect(
-      const std::string& wifi_network_guid,
-      const base::Closure& success_callback,
-      const network_handler::StringResultCallback& error_callback);
-  void OnFailedWifiDisconnect(
-      const std::string& wifi_network_guid,
-      const base::Closure& success_callback,
-      const network_handler::StringResultCallback& error_callback,
-      const std::string& error_name,
-      std::unique_ptr<base::DictionaryValue> error_data);
-  void CleanUpAfterWifiDisconnection(
-      bool success,
-      const std::string& wifi_network_guid,
-      const base::Closure& success_callback,
-      const network_handler::StringResultCallback& error_callback);
 
-  NetworkConnectionHandler* network_connection_handler_;
-  NetworkStateHandler* network_state_handler_;
   ActiveHost* active_host_;
+  WifiHotspotDisconnector* wifi_hotspot_disconnector_;
   DisconnectTetheringRequestSender* disconnect_tethering_request_sender_;
-  NetworkConfigurationRemover* network_configuration_remover_;
   TetherConnector* tether_connector_;
   DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map_;
-  PrefService* pref_service_;
 
   base::WeakPtrFactory<TetherDisconnectorImpl> weak_ptr_factory_;
 
