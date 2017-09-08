@@ -970,6 +970,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
                                          LayoutUnit width,
                                          const AtomicString&,
                                          InlineBox*);
+  void ClearTruncationOnAtomicInlines(RootInlineBox*);
   void MarkLinesDirtyInBlockRange(LayoutUnit logical_top,
                                   LayoutUnit logical_bottom,
                                   RootInlineBox* highest = nullptr);
