@@ -1011,8 +1011,6 @@ component("base") {
     "trace_event/tracing_agent.h",
     "tracked_objects.cc",
     "tracked_objects.h",
-    "tracking_info.cc",
-    "tracking_info.h",
     "tuple.h",
     "unguessable_token.cc",
     "unguessable_token.h",

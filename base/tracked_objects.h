@@ -29,10 +29,6 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_local_storage.h"
 
-namespace base {
-struct TrackingInfo;
-}
-
 // TrackedObjects provides a database of stats about objects (generally Tasks)
 // that are tracked.  Tracking means their birth, death, duration, birth thread,
 // death thread, and birth place are recorded.  This data is carefully spread
@@ -85,7 +81,7 @@ struct TrackingInfo;
 // that data is constant across the life of the process.
 //
 // The above work *could* also be done for any other object as well by calling
-// TallyABirthIfActive() and TallyRunOnNamedThreadIfTracking() as appropriate.
+// TallyABirthIfActive() as appropriate.
 //
 // The upper bound for the amount of memory used in the above data structures is
 // the product of the number of ThreadData instances and the number of
@@ -588,18 +584,6 @@ class BASE_EXPORT ThreadData {
   // thread, and increment that tally.
   // TallyABirthIfActive will returns NULL if the birth cannot be tallied.
   static Births* TallyABirthIfActive(const Location& location);
-
-  // Records the end of a timed run of an object.  The |completed_task| contains
-  // a pointer to a Births, the time_posted, and a delayed_start_time if any.
-  // The |start_of_run| indicates when we started to perform the run of the
-  // task.  The delayed_start_time is non-null for tasks that were posted as
-  // delayed tasks, and it indicates when the task should have run (i.e., when
-  // it should have posted out of the timer queue, and into the work queue.
-  // The |end_of_run| was just obtained by a call to Now() (just after the task
-  // finished).  It is provided as an argument to help with testing.
-  static void TallyRunOnNamedThreadIfTracking(
-      const base::TrackingInfo& completed_task,
-      const TaskStopwatch& stopwatch);
 
   // Record the end of a timed run of an object.  The |birth| is the record for
   // the instance, the |time_posted| records that instant, which is presumed to

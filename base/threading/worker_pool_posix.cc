@@ -99,9 +99,6 @@ void WorkerThread::ThreadMain() {
     stopwatch.Start();
     std::move(pending_task.task).Run();
     stopwatch.Stop();
-
-    tracked_objects::ThreadData::TallyRunOnWorkerThreadIfTracking(
-        pending_task.birth_tally, pending_task.time_posted, stopwatch);
   }
 
   // The WorkerThread is non-joinable, so it deletes itself.

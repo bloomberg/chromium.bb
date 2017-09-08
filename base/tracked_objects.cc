@@ -23,7 +23,6 @@
 #include "base/third_party/valgrind/memcheck.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/worker_pool.h"
-#include "base/tracking_info.h"
 #include "build/build_config.h"
 
 using base::TimeDelta;
@@ -729,33 +728,6 @@ Births* ThreadData::TallyABirthIfActive(const Location& location) {
   if (!current_thread_data)
     return NULL;
   return current_thread_data->TallyABirth(location);
-}
-
-// static
-void ThreadData::TallyRunOnNamedThreadIfTracking(
-    const base::TrackingInfo& completed_task,
-    const TaskStopwatch& stopwatch) {
-  // Even if we have been DEACTIVATED, we will process any pending births so
-  // that our data structures (which counted the outstanding births) remain
-  // consistent.
-  const Births* births = completed_task.birth_tally;
-  if (!births)
-    return;
-  ThreadData* current_thread_data = stopwatch.GetThreadData();
-  if (!current_thread_data)
-    return;
-
-  // Watch out for a race where status_ is changing, and hence one or both
-  // of start_of_run or end_of_run is zero.  In that case, we didn't bother to
-  // get a time value since we "weren't tracking" and we were trying to be
-  // efficient by not calling for a genuine time value.  For simplicity, we'll
-  // use a default zero duration when we can't calculate a true value.
-  base::TimeTicks start_of_run = stopwatch.StartTime();
-  base::TimeDelta queue_duration;
-  if (!start_of_run.is_null()) {
-    queue_duration = start_of_run - completed_task.EffectiveTimePosted();
-  }
-  current_thread_data->TallyADeath(*births, queue_duration, stopwatch);
 }
 
 // static
