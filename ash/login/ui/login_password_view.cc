@@ -105,6 +105,16 @@ LoginPasswordView::LoginPasswordView(const OnPasswordSubmit& on_submit)
 
 LoginPasswordView::~LoginPasswordView() = default;
 
+void LoginPasswordView::SetFocusEnabledForChildViews(bool enable) {
+  auto behavior = enable ? FocusBehavior::ALWAYS : FocusBehavior::NEVER;
+  textfield_->SetFocusBehavior(behavior);
+  submit_button_->SetFocusBehavior(behavior);
+}
+
+void LoginPasswordView::Clear() {
+  textfield_->SetText(base::string16());
+}
+
 void LoginPasswordView::AppendNumber(int value) {
   textfield_->SetText(textfield_->text() + base::IntToString16(value));
 }
@@ -154,7 +164,7 @@ void LoginPasswordView::ButtonPressed(views::Button* sender,
 
 void LoginPasswordView::SubmitPassword() {
   on_submit_.Run(textfield_->text());
-  textfield_->SetText(base::string16());
+  Clear();
 }
 
 }  // namespace ash

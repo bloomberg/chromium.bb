@@ -181,11 +181,25 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods) {
 
   bool has_password = (auth_methods & AUTH_PASSWORD) != 0;
   password_view_->SetEnabled(has_password);
+  password_view_->SetFocusEnabledForChildViews(has_password);
   password_view_->layer()->SetOpacity(has_password ? 1 : 0);
+
+  // Make sure to clear any existing password on showing the view. We do this on
+  // show instead of on hide so that the password does not clear when animating
+  // out.
+  if (has_password) {
+    password_view_->Clear();
+    password_view_->RequestFocus();
+  }
 
   pin_view_->SetVisible(auth_methods_ & AUTH_PIN);
 
-  user_view_->SetForceOpaque(auth_methods_ != 0);
+  // Only the active auth user view has a password displayed. If that is the
+  // case, then render the user view as if it was always focused, since clicking
+  // on it will not do anything (such as swapping users).
+  user_view_->SetForceOpaque(has_password);
+  user_view_->SetFocusBehavior(has_password ? FocusBehavior::NEVER
+                                            : FocusBehavior::ALWAYS);
 
   PreferredSizeChanged();
 }

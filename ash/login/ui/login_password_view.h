@@ -50,6 +50,13 @@ class ASH_EXPORT LoginPasswordView : public views::View,
   explicit LoginPasswordView(const OnPasswordSubmit& on_submit);
   ~LoginPasswordView() override;
 
+  // Enable or disable focus on the child elements (ie, password field and
+  // submit button).
+  void SetFocusEnabledForChildViews(bool enable);
+
+  // Clear all currently entered text.
+  void Clear();
+
   // Add the given numeric value to the textfield.
   void AppendNumber(int value);
 

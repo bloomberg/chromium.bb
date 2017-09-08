@@ -40,6 +40,14 @@ views::View* WrapViewForPreferredSize(views::View* view) {
   return proxy;
 }
 
+// Creates a button with |text| that cannot be focused.
+views::MdTextButton* CreateButton(views::ButtonListener* listener,
+                                  const std::string& text) {
+  auto* view = views::MdTextButton::Create(listener, base::ASCIIToUTF16(text));
+  view->SetFocusBehavior(views::View::FocusBehavior::NEVER);
+  return view;
+}
+
 }  // namespace
 
 // Applies a series of user-defined transformations to a |LoginDataDispatcher|
@@ -155,14 +163,13 @@ LockDebugView::LockDebugView(LoginDataDispatcher* data_dispatcher)
   debug_->SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal));
   AddChildView(debug_);
 
-  toggle_blur_ = views::MdTextButton::Create(this, base::ASCIIToUTF16("Blur"));
+  toggle_blur_ = CreateButton(this, "Blur");
   debug_->AddChildView(WrapViewForPreferredSize(toggle_blur_));
 
-  add_user_ = views::MdTextButton::Create(this, base::ASCIIToUTF16("Add"));
+  add_user_ = CreateButton(this, "Add");
   debug_->AddChildView(WrapViewForPreferredSize(add_user_));
 
-  remove_user_ =
-      views::MdTextButton::Create(this, base::ASCIIToUTF16("Remove"));
+  remove_user_ = CreateButton(this, "Remove");
   debug_->AddChildView(WrapViewForPreferredSize(remove_user_));
 
   user_column_ = new views::View();
@@ -216,8 +223,7 @@ void LockDebugView::RebuildDebugUserColumn() {
   user_column_entries_toggle_pin_.clear();
 
   for (size_t i = 0u; i < num_users_; ++i) {
-    views::View* toggle_pin =
-        views::MdTextButton::Create(this, base::ASCIIToUTF16("Toggle PIN"));
+    views::View* toggle_pin = CreateButton(this, "Toggle PIN");
     user_column_entries_toggle_pin_.push_back(toggle_pin);
     user_column_->AddChildView(toggle_pin);
   }
