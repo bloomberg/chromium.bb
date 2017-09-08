@@ -203,7 +203,12 @@ class PLATFORM_EXPORT RuntimeCallStats {
   V(GcPrologue)        \
   V(PerformIdleLazySweep)
 
-#define PARSING_COUNTERS(V) V(DocumentFragmentParseHTML)
+#define PARSING_COUNTERS(V)      \
+  V(DocumentFragmentParseHTML)   \
+  V(ParserAppendChild)           \
+  V(ReplaceChildrenWithFragment) \
+  V(HTMLTokenizerNextToken)      \
+  V(ConstructTree)
 
 #define STYLE_COUNTERS(V) \
   V(ProcessStyleSheet)    \

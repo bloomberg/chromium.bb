@@ -56,6 +56,8 @@
 #include "core/probe/CoreProbes.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/ScriptForbiddenScope.h"
+#include "platform/bindings/RuntimeCallStats.h"
+#include "platform/bindings/V8PerIsolateData.h"
 
 namespace blink {
 
@@ -820,6 +822,9 @@ void ContainerNode::ParserAppendChild(Node* new_child) {
   DCHECK(new_child);
   DCHECK(!new_child->IsDocumentFragment());
   DCHECK(!isHTMLTemplateElement(this));
+
+  RUNTIME_CALL_TIMER_SCOPE(V8PerIsolateData::MainThreadIsolate(),
+                           RuntimeCallStats::CounterId::kParserAppendChild);
 
   if (!CheckParserAcceptChild(*new_child))
     return;
