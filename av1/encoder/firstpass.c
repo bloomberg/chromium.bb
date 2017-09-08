@@ -471,7 +471,7 @@ static double raw_motion_error_stdev(int *raw_motion_err_list,
   for (i = 0; i < raw_motion_err_counts; i++) {
     sum_raw_err += raw_motion_err_list[i];
   }
-  raw_err_avg = sum_raw_err / raw_motion_err_counts;
+  raw_err_avg = (double)sum_raw_err / raw_motion_err_counts;
   for (i = 0; i < raw_motion_err_counts; i++) {
     raw_err_stdev += (raw_motion_err_list[i] - raw_err_avg) *
                      (raw_motion_err_list[i] - raw_err_avg);
