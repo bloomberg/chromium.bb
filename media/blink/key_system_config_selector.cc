@@ -31,6 +31,13 @@ using EmeFeatureRequirement =
 
 namespace {
 
+// The rejection message when the key system is not supported or when none of
+// the requested configurations is supported should always be the same to help
+// avoid leaking internal information unnecessarily.
+// See https://crbug.com/760720
+const char kUnsupportedKeySystemOrConfigMessage[] =
+    "Unsupported keySystem or supportedConfigurations.";
+
 static EmeConfigRule GetSessionTypeConfigRule(EmeSessionTypeSupport support) {
   switch (support) {
     case EmeSessionTypeSupport::INVALID:
@@ -865,7 +872,7 @@ void KeySystemConfigSelector::SelectConfig(
 
   std::string key_system_ascii = key_system.Ascii();
   if (!key_systems_->IsSupportedKeySystem(key_system_ascii)) {
-    not_supported_cb.Run("Unsupported keySystem");
+    not_supported_cb.Run(kUnsupportedKeySystemOrConfigMessage);
     return;
   }
 
@@ -939,8 +946,7 @@ void KeySystemConfigSelector::SelectConfigInternal(
   }
 
   // 6.4. Reject promise with a NotSupportedError.
-  request->not_supported_cb.Run(
-      "None of the requested configurations were supported.");
+  request->not_supported_cb.Run(kUnsupportedKeySystemOrConfigMessage);
 }
 
 void KeySystemConfigSelector::OnPermissionResult(
