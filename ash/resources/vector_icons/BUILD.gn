@@ -20,6 +20,8 @@ aggregate_vector_icons("ash_vector_icons") {
     "ime_menu_on_screen_keyboard.icon",
     "ime_menu_write.1x.icon",
     "ime_menu_write.icon",
+    "lock_screen_alert.1x.icon",
+    "lock_screen_alert.icon",
     "lock_screen_arrow.1x.icon",
     "lock_screen_arrow.icon",
     "lock_screen_backspace.1x.icon",

@@ -72,6 +72,8 @@ class ASH_EXPORT LoginAuthUserView : public views::View {
 
   const mojom::UserInfoPtr& current_user() const;
 
+  LoginPasswordView* password_view() { return password_view_; }
+
   // views::View:
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;

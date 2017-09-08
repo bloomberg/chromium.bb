@@ -13,10 +13,12 @@
 #include "ui/views/view.h"
 
 namespace views {
-class ImageView;
+class ImageButton;
 }
 
 namespace ash {
+
+class LoginBubble;
 
 // Display the user's profile icon, name, and a menu icon in various layout
 // styles.
@@ -95,7 +97,8 @@ class ASH_EXPORT LoginUserView : public views::Button,
   LoginDisplayStyle display_style_;
   UserImage* user_image_ = nullptr;
   UserLabel* user_label_ = nullptr;
-  views::ImageView* user_dropdown_ = nullptr;
+  views::ImageButton* user_dropdown_ = nullptr;
+  std::unique_ptr<LoginBubble> user_menu_;
 
   // True iff the view is currently opaque (ie, opacity = 1).
   bool is_opaque_ = false;

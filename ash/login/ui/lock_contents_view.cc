@@ -5,14 +5,20 @@
 #include "ash/login/ui/lock_contents_view.h"
 
 #include "ash/focus_cycler.h"
+#include "ash/ime/ime_controller.h"
 #include "ash/login/lock_screen_controller.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_auth_user_view.h"
+#include "ash/login/ui/login_bubble.h"
 #include "ash/login/ui/login_display_style.h"
 #include "ash/login/ui/login_user_view.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
+#include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
@@ -146,6 +152,7 @@ LockContentsView::LockContentsView(LoginDataDispatcher* data_dispatcher)
   data_dispatcher_->AddObserver(this);
   display_observer_.Add(display::Screen::GetScreen());
   Shell::Get()->system_tray_notifier()->AddStatusAreaFocusObserver(this);
+  error_bubble_ = base::MakeUnique<LoginBubble>();
 
   // We reuse the focusable state on this view as a signal that focus should
   // switch to the status area. LockContentsView should otherwise not be
@@ -444,8 +451,14 @@ void LockContentsView::SwapPrimaryAndSecondaryAuth(bool is_primary) {
 }
 
 void LockContentsView::OnAuthenticate(bool auth_success) {
-  if (auth_success)
-    LockScreen::Get()->Destroy();
+  if (auth_success) {
+    unlock_attempt_ = 0;
+    error_bubble_->Close();
+    ash::LockScreen::Get()->Destroy();
+  } else {
+    ShowErrorMessage();
+    ++unlock_attempt_;
+  }
 }
 
 LockContentsView::UserState* LockContentsView::FindStateForUser(
@@ -501,6 +514,9 @@ void LockContentsView::SwapToAuthUser(int user_index) {
 void LockContentsView::OnAuthUserChanged() {
   Shell::Get()->lock_screen_controller()->OnFocusPod(
       CurrentAuthUserView()->current_user()->account_id);
+
+  // Reset unlock attempt when the auth user changes.
+  unlock_attempt_ = 0;
 }
 
 LoginAuthUserView* LockContentsView::CurrentAuthUserView() {
@@ -511,6 +527,28 @@ LoginAuthUserView* LockContentsView::CurrentAuthUserView() {
   }
 
   return primary_auth_;
+}
+
+void LockContentsView::ShowErrorMessage() {
+  std::string error_text = l10n_util::GetStringUTF8(
+      unlock_attempt_ ? IDS_ASH_LOGIN_ERROR_AUTHENTICATING_2ND_TIME
+                      : IDS_ASH_LOGIN_ERROR_AUTHENTICATING);
+  ImeController* ime_controller = Shell::Get()->ime_controller();
+  if (ime_controller->IsCapsLockEnabled()) {
+    error_text +=
+        "\n" + l10n_util::GetStringUTF8(IDS_ASH_LOGIN_ERROR_CAPS_LOCK_HINT);
+  }
+
+  // Display a hint to switch keyboards if there are other active input
+  // methods.
+  if (ime_controller->available_imes().size() > 1) {
+    error_text += "\n" + l10n_util::GetStringUTF8(
+                             IDS_ASH_LOGIN_ERROR_KEYBOARD_SWITCH_HINT);
+  }
+
+  error_bubble_->ShowErrorBubble(
+      base::UTF8ToUTF16(error_text),
+      CurrentAuthUserView()->password_view() /*anchor_view*/);
 }
 
 }  // namespace ash

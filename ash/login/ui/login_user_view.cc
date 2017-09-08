@@ -4,6 +4,8 @@
 
 #include "ash/login/ui/login_user_view.h"
 
+#include "ash/ash_constants.h"
+#include "ash/login/ui/login_bubble.h"
 #include "ash/login/ui/login_constants.h"
 #include "ash/login/ui/user_switch_flip_animation.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -13,10 +15,11 @@
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/views/controls/image_view.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/painter.h"
 
 namespace ash {
 namespace {
@@ -227,11 +230,15 @@ LoginUserView::LoginUserView(LoginDisplayStyle style,
   user_image_ = new UserImage(GetImageSize(style));
   user_label_ = new UserLabel(style);
   if (show_dropdown) {
-    user_dropdown_ = new views::ImageView();
+    user_dropdown_ = new views::ImageButton(this);
     user_dropdown_->SetPreferredSize(
         gfx::Size(kDropdownIconSizeDp, kDropdownIconSizeDp));
     user_dropdown_->SetImage(
+        views::Button::STATE_NORMAL,
         gfx::CreateVectorIcon(kLockScreenDropdownIcon, SK_ColorWHITE));
+    user_dropdown_->SetFocusBehavior(FocusBehavior::ALWAYS);
+    user_dropdown_->SetFocusPainter(views::Painter::CreateSolidFocusPainter(
+        ash::kFocusBorderColor, ash::kFocusBorderThickness, gfx::InsetsF()));
   }
 
   switch (style) {
@@ -356,6 +363,20 @@ void LoginUserView::OnBlur() {
 
 void LoginUserView::ButtonPressed(Button* sender, const ui::Event& event) {
   on_tap_.Run();
+  if (user_dropdown_ && sender == user_dropdown_) {
+    if (!user_menu_ || !user_menu_->IsVisible()) {
+      user_menu_ = base::MakeUnique<LoginBubble>();
+      // TODO: Use mojom::LoginUserInfo for current_user_ which has
+      // is_device_owner information. See crbug.com/762343.
+      user_menu_->ShowUserMenu(base::UTF8ToUTF16(current_user_->display_name),
+                               base::UTF8ToUTF16(current_user_->display_email),
+                               user_dropdown_ /*anchor_view*/,
+                               user_dropdown_ /*bubble_opener*/,
+                               false /*show_remove_user*/);
+    } else {
+      user_menu_->Close();
+    }
+  }
 }
 
 void LoginUserView::UpdateCurrentUserState() {
