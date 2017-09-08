@@ -81,8 +81,7 @@ RefPtr<WebTaskRunner> TaskRunnerHelper::Get(TaskType type, Document* document) {
 RefPtr<WebTaskRunner> TaskRunnerHelper::Get(
     TaskType type,
     ExecutionContext* execution_context) {
-  if (!execution_context)
-    return Platform::Current()->CurrentThread()->GetWebTaskRunner();
+  DCHECK(execution_context);
   if (execution_context->IsDocument())
     return Get(type, ToDocument(execution_context));
   if (execution_context->IsWorkerOrWorkletGlobalScope())
