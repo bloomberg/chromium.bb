@@ -24,24 +24,6 @@
       stringWithFormat:@"cronet-consumer-net-log%" PRIuNS ".json", _counter];
 }
 
-- (NSString*)SDCHPrefStoreFileName {
-  NSFileManager* manager = [NSFileManager defaultManager];
-  NSArray* possibleURLs =
-      [manager URLsForDirectory:NSApplicationSupportDirectory
-                      inDomains:NSUserDomainMask];
-  NSURL* appSupportDir = [possibleURLs firstObject];
-  if (appSupportDir == nil)
-    return nil;
-  NSURL* prefStoreFile =
-      [NSURL URLWithString:@"sdch-prefs.json" relativeToURL:appSupportDir];
-  NSError* error = nil;
-  [manager createDirectoryAtURL:appSupportDir
-      withIntermediateDirectories:YES
-                       attributes:nil
-                            error:&error];
-  return error != nil ? [prefStoreFile path] : nil;
-}
-
 - (BOOL)application:(UIApplication*)application
     didFinishLaunchingWithOptions:(NSDictionary*)launchOptions {
   [Cronet setUserAgent:@"Dummy/1.0" partial:YES];
