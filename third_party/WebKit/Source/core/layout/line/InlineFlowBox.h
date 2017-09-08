@@ -74,7 +74,7 @@ class InlineFlowBox : public InlineBox {
     // bullet list items.  Even when the list bullet is an image, the line is
     // still considered to be immune from the quirk.
     has_text_children_ =
-        line_layout_item.Style()->Display() == EDisplay::kListItem;
+        line_layout_item.StyleRef().Display() == EDisplay::kListItem;
     has_text_descendants_ = has_text_children_;
   }
 
@@ -172,20 +172,16 @@ class InlineFlowBox : public InlineBox {
   LayoutUnit BorderLogicalLeft() const {
     if (!IncludeLogicalLeftEdge())
       return LayoutUnit();
-    return LayoutUnit(
-        IsHorizontal()
-            ? GetLineLayoutItem().Style(IsFirstLineStyle())->BorderLeftWidth()
-            : GetLineLayoutItem().Style(IsFirstLineStyle())->BorderTopWidth());
+    const auto& style = GetLineLayoutItem().StyleRef(IsFirstLineStyle());
+    return LayoutUnit(IsHorizontal() ? style.BorderLeftWidth()
+                                     : style.BorderTopWidth());
   }
   LayoutUnit BorderLogicalRight() const {
     if (!IncludeLogicalRightEdge())
       return LayoutUnit();
-    return LayoutUnit(
-        IsHorizontal()
-            ? GetLineLayoutItem().Style(IsFirstLineStyle())->BorderRightWidth()
-            : GetLineLayoutItem()
-                  .Style(IsFirstLineStyle())
-                  ->BorderBottomWidth());
+    const auto& style = GetLineLayoutItem().StyleRef(IsFirstLineStyle());
+    return LayoutUnit(IsHorizontal() ? style.BorderRightWidth()
+                                     : style.BorderBottomWidth());
   }
   int PaddingLogicalLeft() const {
     if (!IncludeLogicalLeftEdge())

@@ -149,8 +149,8 @@ void BlockPainter::PaintInlineBox(const InlineBox& inline_box,
   LayoutPoint child_point = paint_offset;
   if (inline_box.Parent()
           ->GetLineLayoutItem()
-          .Style()
-          ->IsFlippedBlocksWritingMode()) {
+          .StyleRef()
+          .IsFlippedBlocksWritingMode()) {
     // Faster than calling containingBlock().
     child_point =
         LineLayoutAPIShim::LayoutObjectFrom(inline_box.GetLineLayoutItem())

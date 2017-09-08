@@ -69,7 +69,7 @@ class BreakingContext {
         last_object_(current_.GetLineLayoutItem()),
         next_object_(nullptr),
         current_style_(nullptr),
-        block_style_(block.Style()),
+        block_style_(block.StyleRef()),
         line_info_(in_line_info),
         layout_text_info_(in_layout_text_info),
         width_(line_width),
@@ -88,7 +88,7 @@ class BreakingContext {
         starting_new_paragraph_(line_info_.PreviousLineBrokeCleanly()),
         allow_images_to_break_(
             !block.GetDocument().InQuirksMode() || !block.IsTableCell() ||
-            !block_style_->LogicalWidth().IsIntrinsicOrAuto()),
+            !block_style_.LogicalWidth().IsIntrinsicOrAuto()),
         at_end_(false),
         line_midpoint_state_(resolver.GetMidpointState()) {
     line_info_.SetPreviousLineBrokeCleanly(false);
@@ -192,7 +192,7 @@ class BreakingContext {
   LineLayoutItem next_object_;
 
   const ComputedStyle* current_style_;
-  const ComputedStyle* block_style_;
+  const ComputedStyle& block_style_;
 
   LineInfo& line_info_;
 
@@ -252,10 +252,10 @@ inline bool RequiresLineBoxForContent(LineLayoutInline flow,
                                       const LineInfo& line_info) {
   LineLayoutItem parent = flow.Parent();
   if (flow.GetDocument().InNoQuirksMode() &&
-      (flow.Style(line_info.IsFirstLine())->LineHeight() !=
-           parent.Style(line_info.IsFirstLine())->LineHeight() ||
-       flow.Style()->VerticalAlign() != parent.Style()->VerticalAlign() ||
-       !parent.Style()->HasIdenticalAscentDescentAndLineGap(flow.StyleRef())))
+      (flow.StyleRef(line_info.IsFirstLine()).LineHeight() !=
+           parent.StyleRef(line_info.IsFirstLine()).LineHeight() ||
+       flow.StyleRef().VerticalAlign() != parent.StyleRef().VerticalAlign() ||
+       !parent.StyleRef().HasIdenticalAscentDescentAndLineGap(flow.StyleRef())))
     return true;
   return false;
 }
@@ -348,7 +348,7 @@ inline void BreakingContext::SkipTrailingWhitespace(InlineIterator& iterator,
 }
 
 inline void BreakingContext::InitializeForCurrentObject() {
-  current_style_ = current_.GetLineLayoutItem().Style();
+  current_style_ = &current_.GetLineLayoutItem().StyleRef();
   next_object_ =
       BidiNextSkippingEmptyInlines(block_, current_.GetLineLayoutItem());
   if (next_object_ && next_object_.Parent() &&
@@ -356,12 +356,13 @@ inline void BreakingContext::InitializeForCurrentObject() {
           current_.GetLineLayoutItem().Parent()))
     include_end_width_ = true;
 
-  curr_ws_ = current_.GetLineLayoutItem().IsLayoutInline()
-                 ? current_style_->WhiteSpace()
-                 : current_.GetLineLayoutItem().Parent().Style()->WhiteSpace();
+  curr_ws_ =
+      current_.GetLineLayoutItem().IsLayoutInline()
+          ? current_style_->WhiteSpace()
+          : current_.GetLineLayoutItem().Parent().StyleRef().WhiteSpace();
   last_ws_ = last_object_.IsLayoutInline()
-                 ? last_object_.Style()->WhiteSpace()
-                 : last_object_.Parent().Style()->WhiteSpace();
+                 ? last_object_.StyleRef().WhiteSpace()
+                 : last_object_.Parent().StyleRef().WhiteSpace();
 
   bool is_svg_text = current_.GetLineLayoutItem().IsSVGInlineText();
   auto_wrap_ = !is_svg_text && ComputedStyle::AutoWrap(curr_ws_);
@@ -481,7 +482,7 @@ inline void BreakingContext::HandleOutOfFlowPositioned(
   // If our original display wasn't an inline type, then we can
   // go ahead and determine our static inline position now.
   LineLayoutBox box(current_.GetLineLayoutItem());
-  bool is_inline_type = box.Style()->IsOriginalDisplayInlineType();
+  bool is_inline_type = box.StyleRef().IsOriginalDisplayInlineType();
   if (!is_inline_type) {
     block_.SetStaticInlinePositionForChild(box, block_.StartOffsetForContent());
   } else {
@@ -573,7 +574,7 @@ inline bool ShouldSkipWhitespaceAfterStartObject(
       LineLayoutText(next).TextLength() > 0) {
     LineLayoutText next_text(next);
     UChar next_char = next_text.CharacterAt(0);
-    if (next_text.Style()->IsCollapsibleWhiteSpace(next_char)) {
+    if (next_text.StyleRef().IsCollapsibleWhiteSpace(next_char)) {
       line_midpoint_state.StartIgnoringSpaces(InlineIterator(0, o, 0));
       return true;
     }
@@ -601,7 +602,7 @@ inline void BreakingContext::HandleEmptyInline() {
       trailing_objects_.Clear();
       EnsureLineBoxInsideIgnoredSpaces(&line_midpoint_state_,
                                        current_.GetLineLayoutItem());
-    } else if (block_style_->CollapseWhiteSpace() &&
+    } else if (block_style_.CollapseWhiteSpace() &&
                resolver_.GetPosition().GetLineLayoutItem() ==
                    current_.GetLineLayoutItem() &&
                ShouldSkipWhitespaceAfterStartObject(
@@ -658,7 +659,7 @@ inline void BreakingContext::HandleReplaced() {
       block_.MarginEndForChild(replaced_box) +
       InlineLogicalWidthFromAncestorsIfNeeded(current_.GetLineLayoutItem());
   if (current_.GetLineLayoutItem().IsListMarker()) {
-    if (block_style_->CollapseWhiteSpace() &&
+    if (block_style_.CollapseWhiteSpace() &&
         ShouldSkipWhitespaceAfterStartObject(
             block_, current_.GetLineLayoutItem(), line_midpoint_state_)) {
       // Like with inline flows, we start ignoring spaces to make sure that any
@@ -718,12 +719,13 @@ ALWAYS_INLINE float TextWidth(
     bool collapse_white_space,
     HashSet<const SimpleFontData*>* fallback_fonts = nullptr,
     FloatRect* glyph_bounds = nullptr) {
-  if ((!from && len == text.TextLength()) || text.Style()->HasTextCombine())
+  if ((!from && len == text.TextLength()) || text.StyleRef().HasTextCombine()) {
     return text.Width(from, len, font, LayoutUnit(x_pos),
-                      text.Style()->Direction(), fallback_fonts, glyph_bounds);
-
+                      text.StyleRef().Direction(), fallback_fonts,
+                      glyph_bounds);
+  }
   TextRun run = ConstructTextRun(font, text, from, len, text.StyleRef());
-  run.SetTabSize(!collapse_white_space, text.Style()->GetTabSize());
+  run.SetTabSize(!collapse_white_space, text.StyleRef().GetTabSize());
   run.SetXPos(x_pos);
   return font.Width(run, fallback_fonts, glyph_bounds);
 }
@@ -1498,7 +1500,7 @@ inline void BreakingContext::CommitAndUpdateLineBreakIfNeeded() {
     check_for_break = true;
   } else if (next_object_ && current_.GetLineLayoutItem().IsText() &&
              next_object_.IsText() && !next_object_.IsBR() &&
-             (auto_wrap_ || next_object_.Style()->AutoWrap())) {
+             (auto_wrap_ || next_object_.StyleRef().AutoWrap())) {
     if (auto_wrap_ && current_character_is_space_) {
       check_for_break = true;
     } else {
@@ -1560,7 +1562,7 @@ inline void BreakingContext::CommitAndUpdateLineBreakIfNeeded() {
       at_end_ = true;
       return;
     }
-  } else if (block_style_->AutoWrap() && !width_.FitsOnLine() &&
+  } else if (block_style_.AutoWrap() && !width_.FitsOnLine() &&
              !width_.CommittedWidth()) {
     // If the container autowraps but the current child does not then we still
     // need to ensure that it wraps and moves below any floats.

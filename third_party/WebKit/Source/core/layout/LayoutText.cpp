@@ -565,7 +565,7 @@ CreatePositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(
 
     const InlineBox* prev_box = box->PrevLeafChildIgnoringLineBreak();
     if ((prev_box && prev_box->BidiLevel() == box->BidiLevel()) ||
-        box->GetLineLayoutItem().ContainingBlock().Style()->Direction() ==
+        box->GetLineLayoutItem().ContainingBlock().StyleRef().Direction() ==
             box->Direction())  // FIXME: left on 12CBA
       return CreatePositionWithAffinityForBox(box, box->CaretLeftmostOffset(),
                                               should_affinity_be_downstream);
@@ -603,7 +603,7 @@ CreatePositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(
 
   const InlineBox* next_box = box->NextLeafChildIgnoringLineBreak();
   if ((next_box && next_box->BidiLevel() == box->BidiLevel()) ||
-      box->GetLineLayoutItem().ContainingBlock().Style()->Direction() ==
+      box->GetLineLayoutItem().ContainingBlock().StyleRef().Direction() ==
           box->Direction())
     return CreatePositionWithAffinityForBox(box, box->CaretRightmostOffset(),
                                             should_affinity_be_downstream);
@@ -702,7 +702,7 @@ LayoutRect LayoutText::LocalCaretRect(InlineBox* inline_box,
   InlineTextBox* box = ToInlineTextBox(inline_box);
   // Find an InlineBox before caret position, which is used to get caret height.
   InlineBox* caret_box = box;
-  if (box->GetLineLayoutItem().Style(box->IsFirstLineStyle())->Direction() ==
+  if (box->GetLineLayoutItem().StyleRef(box->IsFirstLineStyle()).Direction() ==
       TextDirection::kLtr) {
     if (box->PrevLeafChild() && caret_offset == 0)
       caret_box = box->PrevLeafChild();
@@ -712,12 +712,12 @@ LayoutRect LayoutText::LocalCaretRect(InlineBox* inline_box,
   }
 
   // Get caret height from a font of character.
-  const ComputedStyle* style_to_use =
-      caret_box->GetLineLayoutItem().Style(caret_box->IsFirstLineStyle());
-  if (!style_to_use->GetFont().PrimaryFont())
+  const ComputedStyle& style_to_use =
+      caret_box->GetLineLayoutItem().StyleRef(caret_box->IsFirstLineStyle());
+  if (!style_to_use.GetFont().PrimaryFont())
     return LayoutRect();
 
-  int height = style_to_use->GetFont().PrimaryFont()->GetFontMetrics().Height();
+  int height = style_to_use.GetFont().PrimaryFont()->GetFontMetrics().Height();
   int top = caret_box->LogicalTop().ToInt();
 
   // Go ahead and round left to snap it to the nearest pixel.

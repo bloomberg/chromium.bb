@@ -145,7 +145,7 @@ LayoutUnit InlineBox::LogicalHeight() const {
     return VirtualLogicalHeight();
 
   const SimpleFontData* font_data =
-      GetLineLayoutItem().Style(IsFirstLineStyle())->GetFont().PrimaryFont();
+      GetLineLayoutItem().StyleRef(IsFirstLineStyle()).GetFont().PrimaryFont();
   if (GetLineLayoutItem().IsText()) {
     DCHECK(font_data);
     return bitfields_.IsText() && font_data

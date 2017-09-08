@@ -118,12 +118,12 @@ LayoutRect LayoutListMarker::LocalSelectionRect() const {
   if (!box)
     return LayoutRect(LayoutPoint(), Size());
   RootInlineBox& root = InlineBoxWrapper()->Root();
-  const ComputedStyle* block_style = root.Block().Style();
+  const ComputedStyle& block_style = root.Block().StyleRef();
   LayoutUnit new_logical_top =
-      block_style->IsFlippedBlocksWritingMode()
+      block_style.IsFlippedBlocksWritingMode()
           ? InlineBoxWrapper()->LogicalBottom() - root.SelectionBottom()
           : root.SelectionTop() - InlineBoxWrapper()->LogicalTop();
-  return block_style->IsHorizontalWritingMode()
+  return block_style.IsHorizontalWritingMode()
              ? LayoutRect(LayoutUnit(), new_logical_top, Size().Width(),
                           root.SelectionHeight())
              : LayoutRect(new_logical_top, LayoutUnit(), root.SelectionHeight(),

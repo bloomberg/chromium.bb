@@ -1258,10 +1258,10 @@ void LayoutDeprecatedFlexibleBox::ApplyLineClamp(FlexBoxIterator& iterator,
 
     // FIXME: Directions of src/destBlock could be different from our direction
     // and from one another.
-    if (!src_block.Style()->IsLeftToRightDirection())
+    if (!src_block.StyleRef().IsLeftToRightDirection())
       continue;
 
-    bool left_to_right = dest_block.Style()->IsLeftToRightDirection();
+    bool left_to_right = dest_block.StyleRef().IsLeftToRightDirection();
     if (!left_to_right)
       continue;
 

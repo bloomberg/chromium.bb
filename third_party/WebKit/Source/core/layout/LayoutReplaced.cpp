@@ -925,10 +925,10 @@ LayoutRect LayoutReplaced::LocalSelectionRect() const {
 
   RootInlineBox& root = InlineBoxWrapper()->Root();
   LayoutUnit new_logical_top =
-      root.Block().Style()->IsFlippedBlocksWritingMode()
+      root.Block().StyleRef().IsFlippedBlocksWritingMode()
           ? InlineBoxWrapper()->LogicalBottom() - root.SelectionBottom()
           : root.SelectionTop() - InlineBoxWrapper()->LogicalTop();
-  if (root.Block().Style()->IsHorizontalWritingMode())
+  if (root.Block().StyleRef().IsHorizontalWritingMode())
     return LayoutRect(LayoutUnit(), new_logical_top, Size().Width(),
                       root.SelectionHeight());
   return LayoutRect(new_logical_top, LayoutUnit(), root.SelectionHeight(),

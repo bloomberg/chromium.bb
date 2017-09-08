@@ -31,7 +31,7 @@ InlineIterator BreakingContext::HandleEndOfLine() {
       (!line_break_.GetLineLayoutItem() ||
        !line_break_.GetLineLayoutItem().IsBR())) {
     // we just add as much as possible
-    if (block_style_->WhiteSpace() == EWhiteSpace::kPre && !current_.Offset()) {
+    if (block_style_.WhiteSpace() == EWhiteSpace::kPre && !current_.Offset()) {
       line_break_.MoveTo(last_object_,
                          last_object_.IsText() ? last_object_.length() : 0);
     } else if (line_break_.GetLineLayoutItem()) {

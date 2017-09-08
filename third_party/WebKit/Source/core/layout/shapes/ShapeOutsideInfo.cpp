@@ -377,7 +377,7 @@ ShapeOutsideDeltas ShapeOutsideInfo::ComputeDeltasForContainingBlockLine(
           std::min(line_height, ShapeLogicalBottom() - border_box_line_top));
       if (segment.is_valid) {
         LayoutUnit logical_left_margin =
-            containing_block.Style()->IsLeftToRightDirection()
+            containing_block.StyleRef().IsLeftToRightDirection()
                 ? containing_block.MarginStartForChild(layout_box_)
                 : containing_block.MarginEndForChild(layout_box_);
         LayoutUnit raw_left_margin_box_delta(
@@ -386,7 +386,7 @@ ShapeOutsideDeltas ShapeOutsideInfo::ComputeDeltasForContainingBlockLine(
             raw_left_margin_box_delta, LayoutUnit(), float_margin_box_width);
 
         LayoutUnit logical_right_margin =
-            containing_block.Style()->IsLeftToRightDirection()
+            containing_block.StyleRef().IsLeftToRightDirection()
                 ? containing_block.MarginEndForChild(layout_box_)
                 : containing_block.MarginStartForChild(layout_box_);
         LayoutUnit raw_right_margin_box_delta(

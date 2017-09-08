@@ -133,7 +133,8 @@ LayoutUnit InlineTextBox::OffsetTo(LineVerticalPositionType position_type,
   if (IsText() &&
       (position_type == LineVerticalPositionType::TopOfEmHeight ||
        position_type == LineVerticalPositionType::BottomOfEmHeight)) {
-    const Font& font = GetLineLayoutItem().Style(IsFirstLineStyle())->GetFont();
+    const Font& font =
+        GetLineLayoutItem().StyleRef(IsFirstLineStyle()).GetFont();
     if (const SimpleFontData* font_data = font.PrimaryFont()) {
       const FontMetrics& metrics = font_data->GetFontMetrics();
       if (position_type == LineVerticalPositionType::TopOfEmHeight) {
@@ -184,7 +185,7 @@ SelectionState InlineTextBox::GetSelectionState() const {
 
     // FIXME: Remove -webkit-line-break: LineBreakAfterWhiteSpace.
     int end_of_line_adjustment_for_css_line_break =
-        GetLineLayoutItem().Style()->GetLineBreak() ==
+        GetLineLayoutItem().StyleRef().GetLineBreak() ==
                 LineBreak::kAfterWhiteSpace
             ? -1
             : 0;
@@ -469,7 +470,7 @@ LayoutUnit InlineTextBox::PlaceEllipsisBox(bool flow_is_ltr,
 
 bool InlineTextBox::IsLineBreak() const {
   return GetLineLayoutItem().IsBR() ||
-         (GetLineLayoutItem().Style()->PreserveNewline() && Len() == 1 &&
+         (GetLineLayoutItem().StyleRef().PreserveNewline() && Len() == 1 &&
           (*GetLineLayoutItem().GetText().Impl())[Start()] == '\n');
 }
 

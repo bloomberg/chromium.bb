@@ -85,8 +85,8 @@ TextDirection DeterminePlaintextDirectionality(LineLayoutItem root,
   InlineIterator iter(LineLayoutItem(root), first_layout_object,
                       first_layout_object == current ? pos : 0);
   InlineBidiResolver observer;
-  observer.SetStatus(BidiStatus(root.Style()->Direction(),
-                                IsOverride(root.Style()->GetUnicodeBidi())));
+  observer.SetStatus(BidiStatus(root.StyleRef().Direction(),
+                                IsOverride(root.StyleRef().GetUnicodeBidi())));
   observer.SetPositionIgnoringNestedIsolates(iter);
   return observer.DetermineParagraphDirectionality();
 }
@@ -140,7 +140,7 @@ void ConstructBidiRunsForLine(InlineBidiResolver& top_resolver,
         isolated_resolver.GetMidpointState();
     isolated_line_midpoint_state =
         top_resolver.MidpointStateForIsolatedRun(isolated_run.run_to_replace);
-    UnicodeBidi unicode_bidi = isolated_inline.Style()->GetUnicodeBidi();
+    UnicodeBidi unicode_bidi = isolated_inline.StyleRef().GetUnicodeBidi();
     TextDirection direction;
     if (unicode_bidi == UnicodeBidi::kPlaintext) {
       direction = DeterminePlaintextDirectionality(
@@ -148,7 +148,7 @@ void ConstructBidiRunsForLine(InlineBidiResolver& top_resolver,
     } else {
       DCHECK(unicode_bidi == UnicodeBidi::kIsolate ||
              unicode_bidi == UnicodeBidi::kIsolateOverride);
-      direction = isolated_inline.Style()->Direction();
+      direction = isolated_inline.StyleRef().Direction();
     }
     isolated_resolver.SetStatus(BidiStatus::CreateForIsolate(
         direction, IsOverride(unicode_bidi), isolated_run.level));

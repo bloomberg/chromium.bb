@@ -137,7 +137,7 @@ bool LineBoxList::RangeIntersectsRect(LineLayoutBoxModel layout_object,
   LayoutUnit physical_extent = AbsoluteValue(physical_end - physical_start);
   physical_start = std::min(physical_start, physical_end);
 
-  if (layout_object.Style()->IsHorizontalWritingMode()) {
+  if (layout_object.StyleRef().IsHorizontalWritingMode()) {
     physical_start += offset.Y();
     return cull_rect.IntersectsVerticalRange(physical_start,
                                              physical_start + physical_extent);
