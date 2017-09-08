@@ -22,8 +22,8 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/CSSPropertyNames.h"
+#include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
-#include "core/css/CSSValueKeywords.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/TaskRunnerHelper.h"

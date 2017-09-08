@@ -5,11 +5,10 @@
 #ifndef CSSColorInterpolationType_h
 #define CSSColorInterpolationType_h
 
-#include <memory>
-
+#include "core/CSSValueKeywords.h"
 #include "core/animation/CSSInterpolationType.h"
-#include "core/css/CSSValueKeywords.h"
 #include "platform/graphics/Color.h"
+#include <memory>
 
 namespace blink {
 

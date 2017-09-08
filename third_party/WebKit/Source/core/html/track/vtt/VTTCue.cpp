@@ -33,7 +33,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/double_or_auto_keyword.h"
 #include "core/CSSPropertyNames.h"
-#include "core/css/CSSValueKeywords.h"
+#include "core/CSSValueKeywords.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/events/Event.h"

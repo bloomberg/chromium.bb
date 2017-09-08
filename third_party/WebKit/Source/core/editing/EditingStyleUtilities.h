@@ -32,7 +32,7 @@
 #ifndef EditingStyleUtilities_h
 #define EditingStyleUtilities_h
 
-#include "core/css/CSSValueKeywords.h"
+#include "core/CSSValueKeywords.h"
 #include "core/editing/VisibleSelection.h"
 
 namespace blink {
