@@ -308,8 +308,12 @@ base::TimeDelta CrossFadeAnimation(
     aura::Window* window,
     std::unique_ptr<ui::LayerTreeOwner> old_layer_owner,
     gfx::Tween::Type tween_type) {
-  DCHECK(old_layer_owner->root());
+  ui::Layer* old_layer = old_layer_owner->root();
+  ui::Layer* new_layer = window->layer();
+
+  DCHECK(old_layer);
   const gfx::Rect old_bounds(old_layer_owner->root()->bounds());
+
   gfx::RectF old_transformed_bounds(old_bounds);
   gfx::Transform old_transform(old_layer_owner->root()->transform());
   gfx::Transform old_transform_in_root;
@@ -319,6 +323,12 @@ base::TimeDelta CrossFadeAnimation(
   old_transform_in_root.TransformRect(&old_transformed_bounds);
   const gfx::Rect new_bounds(window->bounds());
   const bool old_on_top = (old_bounds.width() > new_bounds.width());
+
+  // Ensure the higher-resolution layer is on top.
+  if (old_on_top)
+    old_layer->parent()->StackBelow(new_layer, old_layer);
+  else
+    old_layer->parent()->StackAbove(new_layer, old_layer);
 
   // Shorten the animation if there's not much visual movement.
   const base::TimeDelta duration =
@@ -367,23 +377,23 @@ base::TimeDelta CrossFadeAnimation(
   in_transform.Translate(old_transformed_bounds.x() - new_bounds.x(),
                          old_transformed_bounds.y() - new_bounds.y());
   in_transform.Scale(scale_x, scale_y);
-  window->layer()->SetTransform(in_transform);
+  new_layer->SetTransform(in_transform);
   if (!old_on_top) {
     // The new layer is on top and should fade in.  The old layer below will
     // stay opaque and block the desktop.
-    window->layer()->SetOpacity(kWindowAnimation_HideOpacity);
+    new_layer->SetOpacity(kWindowAnimation_HideOpacity);
   }
   {
     // Animate the new layer to the identity transform, so the window goes to
     // its newly set bounds.
-    ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
+    ui::ScopedLayerAnimationSettings settings(new_layer->GetAnimator());
     settings.CacheRenderSurface();
     settings.SetTransitionDuration(duration);
     settings.SetTweenType(tween_type);
-    window->layer()->SetTransform(gfx::Transform());
+    new_layer->SetTransform(gfx::Transform());
     if (!old_on_top) {
       // New layer is on top, fade it in.
-      window->layer()->SetOpacity(kWindowAnimation_ShowOpacity);
+      new_layer->SetOpacity(kWindowAnimation_ShowOpacity);
     }
   }
   return duration;

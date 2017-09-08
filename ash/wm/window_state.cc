@@ -485,8 +485,6 @@ void WindowState::SetBoundsDirectCrossFade(const gfx::Rect& new_bounds) {
     return;
   }
 
-  const gfx::Rect old_bounds = window_->bounds();
-
   // Create fresh layers for the window and all its children to paint into.
   // Takes ownership of the old layer and all its children, which will be
   // cleaned up after the animation completes.
@@ -494,19 +492,9 @@ void WindowState::SetBoundsDirectCrossFade(const gfx::Rect& new_bounds) {
   // windows of |window|.
   std::unique_ptr<ui::LayerTreeOwner> old_layer_owner =
       ::wm::RecreateLayers(window_);
-  ui::Layer* old_layer = old_layer_owner->root();
-  DCHECK(old_layer);
-  ui::Layer* new_layer = window_->layer();
 
   // Resize the window to the new size, which will force a layout and paint.
   SetBoundsDirect(new_bounds);
-
-  // Ensure the higher-resolution layer is on top.
-  bool old_on_top = (old_bounds.width() > new_bounds.width());
-  if (old_on_top)
-    old_layer->parent()->StackBelow(new_layer, old_layer);
-  else
-    old_layer->parent()->StackAbove(new_layer, old_layer);
 
   CrossFadeAnimation(window_, std::move(old_layer_owner), gfx::Tween::EASE_OUT);
 }
