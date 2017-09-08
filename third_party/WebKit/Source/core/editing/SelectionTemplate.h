@@ -103,8 +103,8 @@ class CORE_EXPORT SelectionTemplate final {
   bool operator==(const SelectionTemplate&) const;
   bool operator!=(const SelectionTemplate&) const;
 
-  const PositionTemplate<Strategy>& Base() const;
-  const PositionTemplate<Strategy>& Extent() const;
+  PositionTemplate<Strategy> Base() const;
+  PositionTemplate<Strategy> Extent() const;
   TextAffinity Affinity() const { return affinity_; }
   bool IsBaseFirst() const;
   bool IsCaret() const;
@@ -117,8 +117,8 @@ class CORE_EXPORT SelectionTemplate final {
   bool AssertValid() const;
   bool AssertValidFor(const Document&) const;
 
-  const PositionTemplate<Strategy>& ComputeEndPosition() const;
-  const PositionTemplate<Strategy>& ComputeStartPosition() const;
+  PositionTemplate<Strategy> ComputeEndPosition() const;
+  PositionTemplate<Strategy> ComputeStartPosition() const;
 
   // Returns |SelectionType| for |this| based on |base_| and |extent_|.
   SelectionType Type() const;
