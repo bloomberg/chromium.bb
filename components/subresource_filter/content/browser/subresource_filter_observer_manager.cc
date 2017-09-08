@@ -29,6 +29,16 @@ void SubresourceFilterObserverManager::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
+void SubresourceFilterObserverManager::NotifySafeBrowsingCheckComplete(
+    content::NavigationHandle* navigation_handle,
+    safe_browsing::SBThreatType threat_type,
+    const safe_browsing::ThreatMetadata& threat_metadata) {
+  for (auto& observer : observers_) {
+    observer.OnSafeBrowsingCheckComplete(navigation_handle, threat_type,
+                                         threat_metadata);
+  }
+}
+
 void SubresourceFilterObserverManager::NotifyPageActivationComputed(
     content::NavigationHandle* navigation_handle,
     ActivationDecision activation_decision,

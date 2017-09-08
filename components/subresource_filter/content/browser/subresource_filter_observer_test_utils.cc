@@ -4,6 +4,7 @@
 
 #include "components/subresource_filter/content/browser/subresource_filter_observer_test_utils.h"
 
+#include "base/logging.h"
 #include "content/public/browser/navigation_handle.h"
 
 namespace subresource_filter {
@@ -22,6 +23,15 @@ TestSubresourceFilterObserver::~TestSubresourceFilterObserver() {}
 
 void TestSubresourceFilterObserver::OnSubresourceFilterGoingAway() {
   scoped_observer_.RemoveAll();
+}
+
+void TestSubresourceFilterObserver::OnSafeBrowsingCheckComplete(
+    content::NavigationHandle* navigation_handle,
+    safe_browsing::SBThreatType threat_type,
+    const safe_browsing::ThreatMetadata& threat_metadata) {
+  DCHECK(navigation_handle->IsInMainFrame());
+  safe_browsing_checks_[navigation_handle->GetURL()] =
+      std::make_pair(threat_type, threat_metadata);
 }
 
 void TestSubresourceFilterObserver::OnPageActivationComputed(
@@ -77,6 +87,14 @@ base::Optional<LoadPolicy> TestSubresourceFilterObserver::GetSubframeLoadPolicy(
 base::Optional<ActivationDecision>
 TestSubresourceFilterObserver::GetPageActivationForLastCommittedLoad() const {
   return last_committed_activation_;
+}
+
+base::Optional<TestSubresourceFilterObserver::SafeBrowsingCheck>
+TestSubresourceFilterObserver::GetSafeBrowsingResult(const GURL& url) const {
+  auto it = safe_browsing_checks_.find(url);
+  if (it != safe_browsing_checks_.end())
+    return it->second;
+  return base::Optional<SafeBrowsingCheck>();
 }
 
 }  // namespace subresource_filter
