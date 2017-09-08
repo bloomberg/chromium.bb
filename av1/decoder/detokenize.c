@@ -106,7 +106,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
                         dequant_val_type_nuq *dq_val,
 #else
 #if CONFIG_AOM_QM
-                        const qm_val_t *iqm[2][TX_SIZES_ALL],
+                        qm_val_t *iqm[2][TX_SIZES_ALL],
 #endif  // CONFIG_AOM_QM
 #endif  // CONFIG_NEW_QUANT
                         int ctx, const int16_t *scan, const int16_t *nb,
