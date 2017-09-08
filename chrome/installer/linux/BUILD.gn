@@ -17,37 +17,40 @@ if (current_cpu == "x86" || current_cpu == "x64") {
 
 assert(is_linux)
 
-packaging_files_binaries = [
+packaging_files_executables = [
   "$root_out_dir/chrome",
   "$root_out_dir/chrome_sandbox",
 ]
+packaging_files_shlibs = []
 
 if (enable_nacl) {
-  packaging_files_binaries += [
+  packaging_files_executables += [
     "$root_out_dir/nacl_helper",
     "$root_out_dir/nacl_helper_bootstrap",
   ]
 
   if (current_cpu == "x86") {
-    packaging_files_binaries += [ "$root_out_dir/nacl_irt_x86_32.nexe" ]
+    packaging_files_executables += [ "$root_out_dir/nacl_irt_x86_32.nexe" ]
   } else if (current_cpu == "x64") {
-    packaging_files_binaries += [ "$root_out_dir/nacl_irt_x86_64.nexe" ]
+    packaging_files_executables += [ "$root_out_dir/nacl_irt_x86_64.nexe" ]
   } else if (current_cpu == "arm") {
-    packaging_files_binaries += [ "$root_out_dir/nacl_irt_arm.nexe" ]
+    packaging_files_executables += [ "$root_out_dir/nacl_irt_arm.nexe" ]
   }
 }
 
 # The widevine BUILD.gn only produces shared libraries for x86 and x64
 if (is_chrome_branded && (current_cpu == "x86" || current_cpu == "x64")) {
-  packaging_files_binaries += [
+  packaging_files_shlibs += [
     "$root_out_dir/$widevine_cdm_path/libwidevinecdmadapter.so",
     "$root_out_dir/$widevine_cdm_path/libwidevinecdm.so",
   ]
 }
 
 if (!libcpp_is_static && use_custom_libcxx) {
-  packaging_files_binaries += [ "$root_out_dir/libc++.so" ]
+  packaging_files_shlibs += [ "$root_out_dir/libc++.so" ]
 }
+
+packaging_files_binaries = packaging_files_executables + packaging_files_shlibs
 
 # TODO(mmoss) Any convenient way to get all the relevant build files?
 # (e.g. all locales, resources, etc.)
@@ -91,6 +94,35 @@ action("merge_deb_dependencies") {
     rebase_path(additional_deps, root_build_dir),
   ]
   args += rebase_path(get_target_outputs(":calculate_deb_dependencies"),
+                      root_build_dir)
+}
+
+action_foreach("calculate_rpm_dependencies") {
+  deps = [
+    ":installer_deps",
+  ]
+  script = "rpm/calculate_package_deps.py"
+  sources = packaging_files_binaries
+  outputs = [
+    "$root_out_dir/rpm_{{source_name_part}}.deps",
+  ]
+  args = [
+    "{{source}}",
+    "rpm_{{source_name_part}}.deps",
+  ]
+  args += rebase_path(packaging_files_shlibs, root_build_dir)
+}
+
+action("merge_rpm_dependencies") {
+  deps = [
+    ":calculate_rpm_dependencies",
+  ]
+  script = "rpm/merge_package_deps.py"
+  outputs = [
+    "$root_out_dir/rpm_common.deps",
+  ]
+  args = [ "rpm_common.deps" ]
+  args += rebase_path(get_target_outputs(":calculate_rpm_dependencies"),
                       root_build_dir)
 }
 
