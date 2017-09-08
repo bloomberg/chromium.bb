@@ -39,8 +39,7 @@ class PowerTypical10Mobile(perf_benchmark.PerfBenchmark):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.DisableStory('http://www.rg.ru/2014/10/21/cska-site.html', [story.expectations.ALL],
-                          'crbug.com/763107')
+        pass
     return StoryExpectations()
 
 
@@ -119,3 +118,4 @@ class IdlePlatformBenchmark(perf_benchmark.PerfBenchmark):
       def SetExpectations(self):
         pass # Nothing disabled.
     return StoryExpectations()
+
