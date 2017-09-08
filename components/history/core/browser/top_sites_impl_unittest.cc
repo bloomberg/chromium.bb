@@ -326,8 +326,7 @@ class TopSitesImplTest : public HistoryUnitTestBase {
 
 // Helper function for appending a URL to a vector of "most visited" URLs,
 // using the default values for everything but the URL.
-static void AppendMostVisitedURL(std::vector<MostVisitedURL>* list,
-                                 const GURL& url) {
+void AppendMostVisitedURL(std::vector<MostVisitedURL>* list, const GURL& url) {
   MostVisitedURL mv;
   mv.url = url;
   mv.redirects.push_back(url);
@@ -336,9 +335,9 @@ static void AppendMostVisitedURL(std::vector<MostVisitedURL>* list,
 
 // Helper function for appending a URL to a vector of "most visited" URLs,
 // using the default values for everything but the URL.
-static void AppendForcedMostVisitedURL(std::vector<MostVisitedURL>* list,
-                                       const GURL& url,
-                                       double last_forced_time) {
+void AppendForcedMostVisitedURL(std::vector<MostVisitedURL>* list,
+                                const GURL& url,
+                                double last_forced_time) {
   MostVisitedURL mv;
   mv.url = url;
   mv.last_forced_time = base::Time::FromJsTime(last_forced_time);
@@ -348,13 +347,25 @@ static void AppendForcedMostVisitedURL(std::vector<MostVisitedURL>* list,
 
 // Same as AppendMostVisitedURL except that it adds a redirect from the first
 // URL to the second.
-static void AppendMostVisitedURLWithRedirect(std::vector<MostVisitedURL>* list,
-                                             const GURL& redirect_source,
-                                             const GURL& redirect_dest) {
+void AppendMostVisitedURLWithRedirect(std::vector<MostVisitedURL>* list,
+                                      const GURL& redirect_source,
+                                      const GURL& redirect_dest) {
   MostVisitedURL mv;
   mv.url = redirect_dest;
   mv.redirects.push_back(redirect_source);
   mv.redirects.push_back(redirect_dest);
+  list->push_back(mv);
+}
+
+// Helper function for appending a URL to a vector of "most visited" URLs,
+// using the default values for everything but the URL and the title.
+void AppendMostVisitedURLwithTitle(const GURL& url,
+                                   const base::string16& title,
+                                   std::vector<MostVisitedURL>* list) {
+  MostVisitedURL mv;
+  mv.url = url;
+  mv.title = title;
+  mv.redirects.push_back(url);
   list->push_back(mv);
 }
 
@@ -387,6 +398,70 @@ TEST_F(TopSitesImplTest, GetCanonicalURL) {
   // The URL in question is the destination of a redirect.
   result = GetCanonicalURL(dest);
   EXPECT_EQ(dest, result);
+}
+
+class MockTopSitesObserver : public TopSitesObserver {
+ public:
+  MockTopSitesObserver() {}
+
+  // history::TopSitesObserver:
+  void TopSitesLoaded(TopSites* top_sites) override {}
+  void TopSitesChanged(TopSites* top_sites,
+                       ChangeReason change_reason) override {
+    is_notified_ = true;
+  }
+
+  void ResetIsNotifiedState() { is_notified_ = false; }
+  bool is_notified() const { return is_notified_; }
+
+ private:
+  bool is_notified_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(MockTopSitesObserver);
+};
+
+// Tests DoTitlesDiffer.
+TEST_F(TopSitesImplTest, DoTitlesDiffer) {
+  GURL url_1("http://url1/");
+  GURL url_2("http://url2/");
+  base::string16 title_1(base::ASCIIToUTF16("title1"));
+  base::string16 title_2(base::ASCIIToUTF16("title2"));
+
+  MockTopSitesObserver observer;
+  top_sites()->AddObserver(&observer);
+
+  // TopSites has a new list of sites and should notify its observers.
+  std::vector<MostVisitedURL> list_1;
+  AppendMostVisitedURLwithTitle(url_1, title_1, &list_1);
+  SetTopSites(list_1);
+  EXPECT_TRUE(observer.is_notified());
+  observer.ResetIsNotifiedState();
+  EXPECT_FALSE(observer.is_notified());
+
+  // list_1 and list_2 have different sizes. TopSites should notify its
+  // observers.
+  std::vector<MostVisitedURL> list_2;
+  AppendMostVisitedURLwithTitle(url_1, title_1, &list_2);
+  AppendMostVisitedURLwithTitle(url_2, title_2, &list_2);
+  SetTopSites(list_2);
+  EXPECT_TRUE(observer.is_notified());
+  observer.ResetIsNotifiedState();
+  EXPECT_FALSE(observer.is_notified());
+
+  // list_1 and list_2 are exactly the same now. TopSites should not notify its
+  // observers.
+  AppendMostVisitedURLwithTitle(url_2, title_2, &list_1);
+  SetTopSites(list_1);
+  EXPECT_FALSE(observer.is_notified());
+
+  // Change |url_2|'s title to |title_1| in list_2. The two lists are different
+  // in titles now. TopSites should notify its observers.
+  list_2.pop_back();
+  AppendMostVisitedURLwithTitle(url_2, title_1, &list_2);
+  SetTopSites(list_2);
+  EXPECT_TRUE(observer.is_notified());
+
+  top_sites()->RemoveObserver(&observer);
 }
 
 // Tests DiffMostVisited.
