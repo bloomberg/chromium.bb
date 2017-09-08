@@ -54,7 +54,7 @@ jinja_template("chrome_public_android_manifest") {
   variables = chrome_public_jinja_variables
   variables += [
     "min_sdk_version=16",
-    "target_sdk_version=23",
+    "target_sdk_version=$android_sdk_version",
   ]
 }
 
@@ -64,16 +64,16 @@ jinja_template("chrome_modern_public_android_manifest") {
   variables = chrome_public_jinja_variables
   variables += [
     "min_sdk_version=21",
-    "target_sdk_version=23",
+    "target_sdk_version=$android_sdk_version",
   ]
 }
 
 jinja_template("monochrome_public_android_manifest") {
   input = "java/AndroidManifest_monochrome.xml"
   output = monochrome_public_android_manifest
-  variables =
-      chrome_public_jinja_variables +
-      monochrome_android_manifest_jinja_variables + [ "target_sdk_version=24" ]
+  variables = chrome_public_jinja_variables +
+              monochrome_android_manifest_jinja_variables +
+              [ "target_sdk_version=$android_sdk_version" ]
 }
 
 jinja_template("chrome_sync_shell_android_manifest") {
@@ -82,7 +82,7 @@ jinja_template("chrome_sync_shell_android_manifest") {
   variables = chrome_sync_shell_jinja_variables
   variables += [
     "min_sdk_version=16",
-    "target_sdk_version=22",
+    "target_sdk_version=$android_sdk_version",
   ]
 }
 
