@@ -7,11 +7,13 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/common/highlight_button.h"
+
 // View to show and allow opening of the copied URL. Shows a button with the
 // |copiedURLString| if it has been set. When tapped, |actionSelector| in
 // |target| is called. If no |copiedURLString| was set, the button is replaced
 // by a hairline separation and placeholder text.
-@interface CopiedURLView : UIView
+@interface CopiedURLView : HighlightButton
 
 // The copied URL string to be displayed. nil is a valid value to indicate
 // there is no copied URL to display.
