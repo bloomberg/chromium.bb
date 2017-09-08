@@ -360,10 +360,10 @@ by a child template that "extends" this file.
         </activity>
         {% endfor %}
         {% if enable_vr == "true" %}
-        <activity android:name="org.chromium.chrome.browser.vr_shell.SeparateTaskCustomTabVrActivity"
+        <activity android:name="org.chromium.chrome.browser.vr.VrMainActivity"
             android:theme="@style/VrSupportTheme"
             android:screenOrientation="landscape"
-            android:exported="false"
+            android:exported="true"
             android:enableVrMode="@string/gvr_vr_mode_component"
             android:taskAffinity=""
             android:persistableMode="persistNever"
@@ -450,6 +450,7 @@ by a child template that "extends" this file.
         {% if enable_vr == "true" %}
         <activity android:name="org.chromium.chrome.browser.vr_shell.VrFirstRunActivity"
             android:exported="false"
+            android:launchMode="singleInstance"
             android:theme="@style/VrActivityTheme"
             android:excludeFromRecents="true"
             android:enableVrMode="@string/gvr_vr_mode_component"

@@ -68,6 +68,11 @@ import java.lang.reflect.InvocationTargetException;
 public class VrShellDelegate
         implements ApplicationStatus.ActivityStateListener, View.OnSystemUiVisibilityChangeListener,
                    ScreenOrientationDelegate {
+    public static final int VR_SYSTEM_UI_FLAGS = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN
+            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+
     private static final String TAG = "VrShellDelegate";
 
     // Pseudo-random number to avoid request id collisions. Result codes must fit in lower 16 bits
@@ -96,11 +101,6 @@ public class VrShellDelegate
     /* package */
     static final String VR_ENTRY_RESULT_ACTION =
             "org.chromium.chrome.browser.vr_shell.VrEntryResult";
-    /* package */
-    static final int VR_SYSTEM_UI_FLAGS = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN
-            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
 
     private static final long REENTER_VR_TIMEOUT_MS = 1000;
     private static final int EXPECT_DON_TIMEOUT_MS = 2000;
@@ -810,6 +810,7 @@ public class VrShellDelegate
         // Autopresent intents are only expected from trusted first party apps while
         // we're not in vr.
         assert !mInVr;
+        mNeedsAnimationCancel = true;
         mDonSucceeded = true;
         // We assume that the user is already in VR mode when launched for auto-presentation.
         mInVrAtChromeLaunch = true;
@@ -824,26 +825,15 @@ public class VrShellDelegate
         mVrDaydreamApi.launchVrHomescreen();
     }
 
-    private void onVrIntent() {
-        // We assume that when we get a VR intent, we're in the headset.
-        mNeedsAnimationCancel = true;
-    }
-
-    private static boolean canAutopresent(ChromeActivity activity, Intent intent) {
-        return activitySupportsAutopresentation(activity)
-                && VrIntentUtils.getHandlerInstance().isTrustedDaydreamIntent(intent);
-    }
-
     /**
      * This is called every time ChromeActivity gets a new intent.
      */
     public static void onNewIntentWithNative(ChromeActivity activity, Intent intent) {
         if (!VrIntentUtils.isVrIntent(intent)) return;
         VrShellDelegate instance = getInstance(activity);
-
         if (instance == null) return;
-        instance.onVrIntent();
-        if (canAutopresent(activity, intent)) {
+        if (VrIntentUtils.getHandlerInstance().isTrustedDaydreamIntent(intent)) {
+            assert activitySupportsAutopresentation(activity);
             instance.mAutopresentWebVr = true;
             if (!ChromeFeatureList.isEnabled(ChromeFeatureList.WEBVR_AUTOPRESENT)
                     || !isVrShellEnabled(instance.mVrSupportLevel)) {
@@ -858,7 +848,7 @@ public class VrShellDelegate
      * This is called when ChromeTabbedActivity gets a new intent before native is initialized.
      */
     public static void maybeHandleVrIntentPreNative(ChromeActivity activity, Intent intent) {
-        if (canAutopresent(activity, intent)) {
+        if (VrIntentUtils.getHandlerInstance().isTrustedDaydreamIntent(intent)) {
             // We add a black overlay view so that we can show black while the VR UI is loading.
             // Note that this alone isn't sufficient to prevent 2D UI from showing when
             // auto-presenting WebVR. See comment about the custom animation in {@link

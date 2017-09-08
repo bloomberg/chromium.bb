@@ -15,7 +15,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.provider.Browser;
-import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsIntent;
 import android.text.TextUtils;
 
@@ -51,7 +50,7 @@ import org.chromium.chrome.browser.upgrade.UpgradeActivity;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
-import org.chromium.chrome.browser.vr_shell.SeparateTaskCustomTabVrActivity;
+import org.chromium.chrome.browser.vr.VrMainActivity;
 import org.chromium.chrome.browser.vr_shell.VrIntentUtils;
 import org.chromium.chrome.browser.webapps.ActivityAssigner;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
@@ -204,9 +203,7 @@ public class ChromeLauncherActivity extends Activity
 
         // Check if we should launch the ChromeTabbedActivity.
         if (!mIsCustomTabIntent && !FeatureUtilities.isDocumentMode(this)) {
-            Bundle options = null;
-            if (isVrIntent) options = VrIntentUtils.getVrIntentOptions(this);
-            launchTabbedMode(options);
+            launchTabbedMode();
             finish();
             return;
         }
@@ -351,8 +348,7 @@ public class ChromeLauncherActivity extends Activity
                 // Force a new document L+ to ensure the proper task/stack creation.
                 newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
                 if (VrIntentUtils.isVrIntent(intent)) {
-                    newIntent.setClassName(
-                            context, SeparateTaskCustomTabVrActivity.class.getName());
+                    newIntent.setClassName(context, VrMainActivity.class.getName());
                 } else {
                     newIntent.setClassName(context, SeparateTaskCustomTabActivity.class.getName());
                 }
@@ -398,7 +394,7 @@ public class ChromeLauncherActivity extends Activity
         // Create and fire a launch intent.
         Bundle options = null;
         if (VrIntentUtils.isVrIntent(getIntent())) {
-            // VR intents will open a VR-specific CCT {@link SeparateTaskCustomTabVrActivity} which
+            // VR intents will open a VR-specific CCT {@link VrMainActivity} which
             // starts with a theme that disables the system preview window. As a side effect, you
             // see a flash of the previous app exiting before Chrome is started. These options
             // prevent that flash as it can look jarring while the user is in their headset.
@@ -414,7 +410,7 @@ public class ChromeLauncherActivity extends Activity
      * Handles launching a {@link ChromeTabbedActivity}.
      */
     @SuppressLint("InlinedApi")
-    private void launchTabbedMode(@Nullable Bundle options) {
+    private void launchTabbedMode() {
         maybePrefetchDnsInBackground();
 
         Intent newIntent = new Intent(getIntent());
@@ -438,7 +434,7 @@ public class ChromeLauncherActivity extends Activity
         // This system call is often modified by OEMs and not actionable. http://crbug.com/619646.
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {
-            startActivity(newIntent, options);
+            startActivity(newIntent);
         } catch (SecurityException ex) {
             if (isContentScheme) {
                 Toast.makeText(

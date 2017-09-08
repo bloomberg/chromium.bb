@@ -245,7 +245,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     }
 
     private final void onCreateInternal(Bundle savedInstanceState) {
-        Intent intent = getIntent();
+        setIntent(validateIntent(getIntent()));
         if (DocumentModeAssassin.getInstance().isMigrationNecessary()) {
             super.onCreate(null);
 
@@ -257,6 +257,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
             return;
         }
 
+        Intent intent = getIntent();
         if (!isStartedUpCorrectly(intent)) {
             abortLaunch();
             return;
@@ -347,6 +348,14 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
      */
     protected boolean isStartedUpCorrectly(Intent intent) {
         return true;
+    }
+
+    /**
+     * Validates the intent that started this activity.
+     * @return The validated intent.
+     */
+    protected Intent validateIntent(final Intent intent) {
+        return intent;
     }
 
     /**

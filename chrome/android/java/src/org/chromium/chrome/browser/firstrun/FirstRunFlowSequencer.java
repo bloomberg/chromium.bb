@@ -384,9 +384,8 @@ public abstract class FirstRunFlowSequencer  {
 
             boolean isVrIntent = VrIntentUtils.isVrIntent(intent);
             if (isVrIntent) {
-                // Remove VR-specific extras from the intent to Chrome because we don't want the
-                // VR intent to auto-present after the FRE is complete.
-                VrIntentUtils.removeVrExtras(intent);
+                // Modify the caller intent to handle FRE completion correctly for VR.
+                VrIntentUtils.updateFreCallerIntent(caller, intent);
             }
             // Add a PendingIntent so that the intent used to launch Chrome will be resent when
             // First Run is completed or canceled.
