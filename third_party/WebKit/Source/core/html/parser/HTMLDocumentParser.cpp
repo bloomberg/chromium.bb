@@ -50,6 +50,8 @@
 #include "platform/Histogram.h"
 #include "platform/SharedBuffer.h"
 #include "platform/WebFrameScheduler.h"
+#include "platform/bindings/RuntimeCallStats.h"
+#include "platform/bindings/V8PerIsolateData.h"
 #include "platform/heap/Handle.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
@@ -656,8 +658,13 @@ void HTMLDocumentParser::PumpTokenizer() {
     if (xss_auditor_.IsEnabled())
       source_tracker_.Start(input_.Current(), tokenizer_.get(), Token());
 
-    if (!tokenizer_->NextToken(input_.Current(), Token()))
-      break;
+    {
+      RUNTIME_CALL_TIMER_SCOPE(
+          V8PerIsolateData::MainThreadIsolate(),
+          RuntimeCallStats::CounterId::kHTMLTokenizerNextToken);
+      if (!tokenizer_->NextToken(input_.Current(), Token()))
+        break;
+    }
 
     if (xss_auditor_.IsEnabled()) {
       source_tracker_.end(input_.Current(), tokenizer_.get(), Token());
