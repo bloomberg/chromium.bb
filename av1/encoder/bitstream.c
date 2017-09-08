@@ -3407,7 +3407,8 @@ static void encode_cdef(const AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
   aom_wb_write_literal(wb, cm->cdef_bits, 2);
   for (i = 0; i < cm->nb_cdef_strengths; i++) {
     aom_wb_write_literal(wb, cm->cdef_strengths[i], CDEF_STRENGTH_BITS);
-    aom_wb_write_literal(wb, cm->cdef_uv_strengths[i], CDEF_STRENGTH_BITS);
+    if (cm->subsampling_x == cm->subsampling_y)
+      aom_wb_write_literal(wb, cm->cdef_uv_strengths[i], CDEF_STRENGTH_BITS);
   }
 }
 #endif

@@ -2857,7 +2857,9 @@ static void setup_cdef(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   cm->nb_cdef_strengths = 1 << cm->cdef_bits;
   for (i = 0; i < cm->nb_cdef_strengths; i++) {
     cm->cdef_strengths[i] = aom_rb_read_literal(rb, CDEF_STRENGTH_BITS);
-    cm->cdef_uv_strengths[i] = aom_rb_read_literal(rb, CDEF_STRENGTH_BITS);
+    cm->cdef_uv_strengths[i] = cm->subsampling_x == cm->subsampling_y
+                                   ? aom_rb_read_literal(rb, CDEF_STRENGTH_BITS)
+                                   : 0;
   }
 }
 #endif  // CONFIG_CDEF
