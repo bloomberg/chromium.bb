@@ -343,6 +343,30 @@ TEST_F(MHTMLTest, EnforceSandboxFlags) {
   EXPECT_FALSE(document->getElementById("mySpan"));
 }
 
+TEST_F(MHTMLTest, EnforceSandboxFlagsInXSLT) {
+  const char kURL[] = "http://www.example.com";
+
+  // Register the mocked frame and load it.
+  RegisterMockedURLLoad(kURL, "xslt.mht");
+  LoadURLInTopFrame(ToKURL(kURL));
+  ASSERT_TRUE(GetPage());
+  LocalFrame* frame = ToLocalFrame(GetPage()->MainFrame());
+  ASSERT_TRUE(frame);
+  Document* document = frame->GetDocument();
+  ASSERT_TRUE(document);
+
+  // Full sandboxing with the exception to new top-level windows should be
+  // turned on.
+  EXPECT_EQ(kSandboxAll & ~(kSandboxPopups |
+                            kSandboxPropagatesToAuxiliaryBrowsingContexts),
+            document->GetSandboxFlags());
+
+  // MHTML document should be loaded into unique origin.
+  EXPECT_TRUE(document->GetSecurityOrigin()->IsUnique());
+  // Script execution should be disabled.
+  EXPECT_FALSE(document->CanExecuteScripts(kNotAboutToExecuteScript));
+}
+
 TEST_F(MHTMLTest, ShadowDom) {
   const char kURL[] = "http://www.example.com";
 
