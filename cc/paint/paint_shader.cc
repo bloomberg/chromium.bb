@@ -257,10 +257,15 @@ bool PaintShader::IsValid() const {
   switch (shader_type_) {
     case Type::kColor:
       return true;
+    case Type::kSweepGradient:
+      if (!std::isfinite(start_degrees_) || !std::isfinite(end_degrees_) ||
+          start_degrees_ >= end_degrees_) {
+        return false;
+      }
+    // Fallthrough.
     case Type::kLinearGradient:
     case Type::kRadialGradient:
     case Type::kTwoPointConicalGradient:
-    case Type::kSweepGradient:
       return colors_.size() >= 2 &&
              (positions_.empty() || positions_.size() == colors_.size());
     case Type::kImage:
