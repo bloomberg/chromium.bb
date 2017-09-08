@@ -1387,6 +1387,9 @@ extern const char kCaptivePortalBypassProxyDescription[];
 extern const char kCrOSComponentName[];
 extern const char kCrOSComponentDescription[];
 
+extern const char kCrOSContainerName[];
+extern const char kCrOSContainerDescription[];
+
 extern const char kCrosRegionsModeName[];
 extern const char kCrosRegionsModeDescription[];
 extern const char kCrosRegionsModeDefault[];
