@@ -303,13 +303,15 @@ bool CSSProperty::IsAffectedByAllProperty(CSSPropertyID property_id) {
   if (property_id == CSSPropertyAll)
     return false;
 
-  if (!CSSPropertyMetadata::IsEnabledProperty(property_id))
+  const CSSPropertyAPI& property_api =
+      CSSPropertyAPI::Get(resolveCSSPropertyID(property_id));
+  if (!property_api.IsEnabled())
     return false;
 
   if (property_id == CSSPropertyVariable)
     return false;
 
-  if (!CSSPropertyAPI::Get(property_id).IsProperty())
+  if (!property_api.IsProperty())
     return false;
 
   // all shorthand spec says:

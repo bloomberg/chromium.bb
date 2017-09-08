@@ -5,41 +5,17 @@
 
 #include "core/css/CSSPropertyMetadata.h"
 
-#include "platform/RuntimeEnabledFeatures.h"
+#include "core/css/properties/CSSPropertyAPI.h"
 #include <bitset>
 
 namespace blink {
-bool CSSPropertyMetadata::IsEnabledProperty(CSSPropertyID unresolvedProperty) {
-  CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
-  static std::bitset<numCSSProperties>* enabledProperties = []() {
-    std::bitset<numCSSProperties>* props = new std::bitset<numCSSProperties>();
-    props->set(); // All bits sets to 1.
-    {% for property in properties_including_aliases if property.runtime_flag %}
-    if (!RuntimeEnabledFeatures::{{property.runtime_flag}}Enabled())
-      props->reset({{property.property_id}} - {{first_enum_value}});
-    {% endfor %}
-    {% for property in properties_including_aliases if property.is_internal %}
-    props->reset({{property.property_id}} - {{first_enum_value}});
-    {% endfor %}
-    return props;
-  }();
-
-  if (unresolvedProperty >= {{first_enum_value}})
-    return enabledProperties->test(property - {{first_enum_value}});
-
-  if (unresolvedProperty == CSSPropertyVariable)
-    return true;
-  DCHECK_EQ(unresolvedProperty, CSSPropertyApplyAtRule);
-  return RuntimeEnabledFeatures::CSSApplyAtRulesEnabled();
-}
-
 void CSSPropertyMetadata::FilterEnabledCSSPropertiesIntoVector(
     const CSSPropertyID* properties,
     size_t propertyCount,
     Vector<CSSPropertyID>& outVector) {
   for (unsigned i = 0; i < propertyCount; i++) {
     CSSPropertyID property = properties[i];
-    if (IsEnabledProperty(property))
+    if (CSSPropertyAPI::Get(resolveCSSPropertyID(property)).IsEnabled())
       outVector.push_back(property);
   }
 }

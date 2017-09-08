@@ -36,10 +36,10 @@
 #include "core/CSSPropertyNames.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSPropertyIDTemplates.h"
-#include "core/css/CSSPropertyMetadata.h"
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/css/CSSValue.h"
 #include "core/css/parser/CSSParser.h"
+#include "core/css/properties/CSSPropertyAPI.h"
 #include "core/dom/events/EventTarget.h"
 #include "core/html/custom/CEReactionsScope.h"
 #include "platform/wtf/ASCIICType.h"
@@ -143,7 +143,8 @@ static CSSPropertyID CssPropertyInfo(const AtomicString& name) {
     unresolved_property = CSSPropertyInvalid;
   map.insert(name, unresolved_property);
   DCHECK(!unresolved_property ||
-         CSSPropertyMetadata::IsEnabledProperty(unresolved_property));
+         CSSPropertyAPI::Get(resolveCSSPropertyID(unresolved_property))
+             .IsEnabled());
   return unresolved_property;
 }
 
@@ -156,7 +157,7 @@ void V8CSSStyleDeclaration::namedPropertyEnumeratorCustom(
   if (property_names.IsEmpty()) {
     for (int id = firstCSSProperty; id <= lastCSSProperty; ++id) {
       CSSPropertyID property_id = static_cast<CSSPropertyID>(id);
-      if (CSSPropertyMetadata::IsEnabledProperty(property_id))
+      if (CSSPropertyAPI::Get(resolveCSSPropertyID(property_id)).IsEnabled())
         property_names.push_back(getJSPropertyName(property_id));
     }
     std::sort(property_names.begin(), property_names.end(),

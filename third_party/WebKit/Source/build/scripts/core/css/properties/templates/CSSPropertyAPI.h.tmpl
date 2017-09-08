@@ -54,6 +54,7 @@ class CSSPropertyAPI {
   virtual bool IsDescriptor() const { return false; }
   virtual bool SupportsPercentage() const { return false; }
   virtual bool IsProperty() const { return true; }
+  virtual bool IsEnabled() const { return true; }
   virtual void ApplyInitial(StyleResolverState&) const { NOTREACHED(); }
   virtual void ApplyInherit(StyleResolverState&) const { NOTREACHED(); }
   virtual void ApplyValue(StyleResolverState&, const CSSValue&) const {
