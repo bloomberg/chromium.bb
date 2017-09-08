@@ -71,6 +71,37 @@ bool TetherService::IsFeatureFlagEnabled() {
   return base::FeatureList::IsEnabled(features::kInstantTethering);
 }
 
+// static.
+std::string TetherService::TetherFeatureStateToString(
+    TetherFeatureState state) {
+  switch (state) {
+    case (TetherFeatureState::OTHER_OR_UNKNOWN):
+      return "[other or unknown]";
+    case (TetherFeatureState::BLE_ADVERTISING_NOT_SUPPORTED):
+      return "[BLE advertising not supported]";
+    case (TetherFeatureState::SCREEN_LOCKED):
+      return "[screen is locked]";
+    case (TetherFeatureState::NO_AVAILABLE_HOSTS):
+      return "[no potential Tether hosts]";
+    case (TetherFeatureState::CELLULAR_DISABLED):
+      return "[Cellular setting disabled]";
+    case (TetherFeatureState::PROHIBITED):
+      return "[prohibited by device policy]";
+    case (TetherFeatureState::BLUETOOTH_DISABLED):
+      return "[Bluetooth is disabled]";
+    case (TetherFeatureState::USER_PREFERENCE_DISABLED):
+      return "[Instant Tethering preference is disabled]";
+    case (TetherFeatureState::ENABLED):
+      return "[Enabled]";
+    case (TetherFeatureState::BLE_NOT_PRESENT):
+      return "[BLE is not present on the device]";
+    default:
+      // |previous_feature_state_| is initialized to TETHER_FEATURE_STATE_MAX,
+      // and this value is never actually used in practice.
+      return "[TetherService initializing]";
+  }
+}
+
 TetherService::TetherService(
     Profile* profile,
     chromeos::PowerManagerClient* power_manager_client,
@@ -301,7 +332,16 @@ void TetherService::UpdateTetherTechnologyState() {
 
 chromeos::NetworkStateHandler::TechnologyState
 TetherService::GetTetherTechnologyState() {
-  switch (GetTetherFeatureState()) {
+  TetherFeatureState new_feature_state = GetTetherFeatureState();
+  if (new_feature_state != previous_feature_state_) {
+    PA_LOG(INFO) << "Tether state has changed. New state: "
+                 << TetherFeatureStateToString(new_feature_state)
+                 << ", Old state: "
+                 << TetherFeatureStateToString(previous_feature_state_);
+    previous_feature_state_ = new_feature_state;
+  }
+
+  switch (new_feature_state) {
     case OTHER_OR_UNKNOWN:
     case BLE_NOT_PRESENT:
     case BLE_ADVERTISING_NOT_SUPPORTED:

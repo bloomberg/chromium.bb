@@ -147,6 +147,9 @@ class TetherService : public KeyedService,
     TETHER_FEATURE_STATE_MAX
   };
 
+  // For debug logs.
+  static std::string TetherFeatureStateToString(TetherFeatureState state);
+
   void OnBluetoothAdapterFetched(
       scoped_refptr<device::BluetoothAdapter> adapter);
   void OnBluetoothAdapterAdvertisingIntervalSet();
@@ -191,7 +194,14 @@ class TetherService : public KeyedService,
   // was closed).
   bool suspended_ = false;
 
+  // Whether the BLE advertising interval has attempted to be set during this
+  // session.
   bool has_attempted_to_set_ble_advertising_interval_ = false;
+
+  // The TetherFeatureState obtained the last time that
+  // GetTetherTechnologyState() was called. Used only for logging purposes.
+  TetherFeatureState previous_feature_state_ =
+      TetherFeatureState::TETHER_FEATURE_STATE_MAX;
 
   Profile* profile_;
   chromeos::PowerManagerClient* power_manager_client_;
