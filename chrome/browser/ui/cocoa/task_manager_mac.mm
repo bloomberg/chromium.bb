@@ -225,6 +225,8 @@ bool ShouldUseViewsTaskManager() {
 }
 
 - (void)dealloc {
+  // Paranoia. These should have been nilled out in -windowWillClose: but let's
+  // make sure we have no dangling references.
   [tableView_ setDelegate:nil];
   [tableView_ setDataSource:nil];
   [super dealloc];
@@ -423,6 +425,12 @@ bool ShouldUseViewsTaskManager() {
     taskManagerMac_->WindowWasClosed();
     taskManagerMac_ = nullptr;
     tableModel_ = nullptr;
+
+    // Now that there is no model, ensure that this object gets no data requests
+    // in the window of time between the autorelease and the actual dealloc.
+    // https://crbug.com/763367
+    [tableView_ setDelegate:nil];
+    [tableView_ setDataSource:nil];
   }
   [self autorelease];
 }
