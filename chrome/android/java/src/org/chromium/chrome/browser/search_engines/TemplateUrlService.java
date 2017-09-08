@@ -205,6 +205,10 @@ public class TemplateUrlService {
         nativeSetFilteringDisabled(mNativeTemplateUrlServiceAndroid, disableFiltering);
     }
 
+    public void setFilteringEnabled(boolean enableFiltering) {
+        nativeSetFilteringDisabled(mNativeTemplateUrlServiceAndroid, !enableFiltering);
+    }
+
     /**
      * Returns a list of the prepopulated search engines.
      *
