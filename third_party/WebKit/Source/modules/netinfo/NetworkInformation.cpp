@@ -141,15 +141,18 @@ void NetworkInformation::ConnectionChange(
     return;
   }
 
+  bool type_changed =
+      RuntimeEnabledFeatures::NetInfoDownlinkMaxEnabled() &&
+      (type_ != type || downlink_max_mbps_ != downlink_max_mbps);
+
   type_ = type;
   downlink_max_mbps_ = downlink_max_mbps;
   effective_type_ = effective_type;
   http_rtt_msec_ = new_http_rtt_msec;
   downlink_mbps_ = new_downlink_mbps;
-  DispatchEvent(Event::Create(EventTypeNames::typechange));
-
-  if (RuntimeEnabledFeatures::NetInfoDownlinkMaxEnabled())
-    DispatchEvent(Event::Create(EventTypeNames::change));
+  if (type_changed)
+    DispatchEvent(Event::Create(EventTypeNames::typechange));
+  DispatchEvent(Event::Create(EventTypeNames::change));
 }
 
 const AtomicString& NetworkInformation::InterfaceName() const {
