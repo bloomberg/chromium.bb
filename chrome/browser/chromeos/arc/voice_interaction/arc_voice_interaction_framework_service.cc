@@ -489,7 +489,7 @@ void ArcVoiceInteractionFrameworkService::SetVoiceInteractionSetupCompleted() {
 
   PrefService* prefs = Profile::FromBrowserContext(context_)->GetPrefs();
   prefs->SetBoolean(prefs::kArcVoiceInteractionValuePropAccepted, true);
-  prefs->SetBoolean(prefs::kVoiceInteractionEnabled, true);
+  SetVoiceInteractionEnabled(true);
   prefs->SetBoolean(prefs::kVoiceInteractionContextEnabled, true);
 
   ash::Shell::Get()->NotifyVoiceInteractionSetupCompleted();
@@ -564,22 +564,25 @@ bool ArcVoiceInteractionFrameworkService::ValidateTimeSinceUserInteraction() {
   return true;
 }
 
+void ArcVoiceInteractionFrameworkService::StartVoiceInteractionOobe() {
+  if (chromeos::LoginDisplayHost::default_host())
+    return;
+  gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
+  // The display host will be destructed at the end of OOBE flow.
+  chromeos::LoginDisplayHostImpl* display_host =
+      new chromeos::LoginDisplayHostImpl(screen_bounds);
+  display_host->StartVoiceInteractionOobe();
+}
+
 bool ArcVoiceInteractionFrameworkService::InitiateUserInteraction() {
   VLOG(1) << "Start voice interaction.";
   PrefService* prefs = Profile::FromBrowserContext(context_)->GetPrefs();
   if (!prefs->GetBoolean(prefs::kArcVoiceInteractionValuePropAccepted)) {
     VLOG(1) << "Voice interaction feature not accepted.";
-    // If voice interaction value prop already showing, return.
-    if (chromeos::LoginDisplayHost::default_host())
-      return false;
+    should_start_runtime_flow_ = true;
     // If voice interaction value prop has not been accepted, show the value
     // prop OOBE page again.
-    gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
-    // The display host will be destructed at the end of OOBE flow.
-    chromeos::LoginDisplayHostImpl* display_host =
-        new chromeos::LoginDisplayHostImpl(screen_bounds);
-    should_start_runtime_flow_ = true;
-    display_host->StartVoiceInteractionOobe();
+    StartVoiceInteractionOobe();
     return false;
   }
 
