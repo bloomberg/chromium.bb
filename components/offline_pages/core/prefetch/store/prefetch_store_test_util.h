@@ -79,7 +79,7 @@ class PrefetchStoreTestUtil {
   // Causes the store to behave as if an initialization error occurred.
   void SimulateInitializationError();
 
-  PrefetchStore* store() { return store_.get(); }
+  PrefetchStore* store() { return store_; }
 
   base::SimpleTestClock* clock() { return &clock_; }
 
@@ -88,7 +88,9 @@ class PrefetchStoreTestUtil {
 
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ScopedTempDir temp_directory_;
-  std::unique_ptr<PrefetchStore> store_;
+  // TODO(jianli): Refactor this class to avoid owning the store.
+  std::unique_ptr<PrefetchStore> owned_store_;
+  PrefetchStore* store_;
   base::SimpleTestClock clock_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchStoreTestUtil);
