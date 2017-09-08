@@ -310,13 +310,9 @@ VideoCaptureSettings SelectResultFromCandidates(
   base::Optional<bool> noise_reduction = SelectNoiseReductionFromCandidates(
       candidates.noise_reduction_set(), basic_constraint_set);
 
-  // Using false because the resolution policy for content capture can produce
-  // frames in various sizes.
-  bool expect_source_native_size = false;
   auto track_adapter_settings = SelectVideoTrackAdapterSettings(
       basic_constraint_set, candidates.resolution_set(),
-      candidates.frame_rate_set(), capture_params.requested_format,
-      expect_source_native_size);
+      candidates.frame_rate_set(), capture_params.requested_format);
 
   return VideoCaptureSettings(std::move(device_id), capture_params,
                               noise_reduction, track_adapter_settings,

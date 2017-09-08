@@ -21,13 +21,11 @@ namespace content {
 
 struct CONTENT_EXPORT VideoTrackAdapterSettings {
   VideoTrackAdapterSettings();
-  VideoTrackAdapterSettings(
-      int max_width,
-      int max_height,
-      double min_aspect_ratio,
-      double max_aspect_ratio,
-      double max_frame_rate,
-      const base::Optional<gfx::Size>& expected_native_resolution);
+  VideoTrackAdapterSettings(int max_width,
+                            int max_height,
+                            double min_aspect_ratio,
+                            double max_aspect_ratio,
+                            double max_frame_rate);
   VideoTrackAdapterSettings(const VideoTrackAdapterSettings& other);
   VideoTrackAdapterSettings& operator=(const VideoTrackAdapterSettings& other);
   int max_width;
@@ -38,8 +36,6 @@ struct CONTENT_EXPORT VideoTrackAdapterSettings {
   // is necessary.
   // TODO(guidou): Change this to base::Optional. http://crbug.com/734528
   double max_frame_rate;
-  // If supplied, this can be used to detect frames from a rotated device.
-  base::Optional<gfx::Size> expected_native_size;
 };
 
 // VideoTrackAdapter is a helper class used by MediaStreamVideoSource used for
@@ -87,6 +83,8 @@ class VideoTrackAdapter
                             const OnMutedCallback& on_muted_callback);
   void StopFrameMonitoring();
 
+  void SetSourceFrameSize(const gfx::Size& source_frame_size);
+
   static void CalculateTargetSize(bool is_rotated,
                                   const gfx::Size& input_size,
                                   const gfx::Size& max_frame_size,
@@ -107,6 +105,7 @@ class VideoTrackAdapter
     const OnMutedCallback& on_muted_state_callback,
     double source_frame_rate);
   void StopFrameMonitoringOnIO();
+  void SetSourceFrameSizeOnIO(const gfx::Size& frame_size);
 
   // Compare |frame_counter_snapshot| with the current |frame_counter_|, and
   // inform of the situation (muted, not muted) via |set_muted_state_callback|.
@@ -143,6 +142,9 @@ class VideoTrackAdapter
 
   // Frame rate configured on the video source, accessed on the IO-thread.
   float source_frame_rate_;
+
+  // Resolution configured on the video source, accessed on the IO-thread.
+  base::Optional<gfx::Size> source_frame_size_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoTrackAdapter);
 };

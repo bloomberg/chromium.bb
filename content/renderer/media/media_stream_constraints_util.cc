@@ -265,8 +265,7 @@ VideoTrackAdapterSettings SelectVideoTrackAdapterSettings(
     const blink::WebMediaTrackConstraintSet& basic_constraint_set,
     const ResolutionSet& resolution_set,
     const NumericRangeSet<double>& frame_rate_set,
-    const media::VideoCaptureFormat& source_format,
-    bool expect_source_native_size) {
+    const media::VideoCaptureFormat& source_format) {
   ResolutionSet::Point resolution = resolution_set.SelectClosestPointToIdeal(
       basic_constraint_set, source_format.frame_size.height(),
       source_format.frame_size.width());
@@ -295,13 +294,9 @@ VideoTrackAdapterSettings SelectVideoTrackAdapterSettings(
   if (track_max_frame_rate >= source_format.frame_rate)
     track_max_frame_rate = 0.0;
 
-  base::Optional<gfx::Size> expected_native_size;
-  if (expect_source_native_size)
-    expected_native_size = source_format.frame_size;
-
   return VideoTrackAdapterSettings(
       track_max_width, track_max_height, track_min_aspect_ratio,
-      track_max_aspect_ratio, track_max_frame_rate, expected_native_size);
+      track_max_aspect_ratio, track_max_frame_rate);
 }
 
 double NumericConstraintFitnessDistance(double value1, double value2) {
