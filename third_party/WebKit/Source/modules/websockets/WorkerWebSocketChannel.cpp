@@ -190,7 +190,11 @@ bool MainChannelClient::Connect(const KURL& url,
   DCHECK(IsMainThread());
   if (!main_channel_)
     return false;
-  return main_channel_->Connect(url, protocol, std::move(socket_ptr));
+  if (socket_ptr)
+    return main_channel_->Connect(url, protocol, std::move(socket_ptr));
+  // See Bridge::Connect for an explanation of the case where |socket_ptr| is
+  // null. In this case we allow |main_channel_| to connect the pipe for us.
+  return main_channel_->Connect(url, protocol);
 }
 
 void MainChannelClient::SendTextAsCharVector(
@@ -403,9 +407,17 @@ bool Bridge::Connect(std::unique_ptr<SourceLocation> location,
   RefPtr<WebTaskRunner> worker_networking_task_runner =
       TaskRunnerHelper::Get(TaskType::kNetworking, worker_global_scope_.Get());
   WorkerThread* worker_thread = worker_global_scope_->GetThread();
+
+  // Dedicated workers are a special case as they always have an associated
+  // document and so can make requests using that context. In the case of
+  // https://crbug.com/760708 for example this is necessary to apply the user's
+  // SSL interstitial decision to WebSocket connections from the worker.
   mojom::blink::WebSocketPtrInfo socket_ptr_info;
-  worker_thread->GetInterfaceProvider().GetInterface(
-      mojo::MakeRequest(&socket_ptr_info));
+  if (!worker_global_scope_->IsDedicatedWorkerGlobalScope()) {
+    worker_thread->GetInterfaceProvider().GetInterface(
+        mojo::MakeRequest(&socket_ptr_info));
+  }
+
   parent_frame_task_runners_->Get(TaskType::kNetworking)
       ->PostTask(
           BLINK_FROM_HERE,
