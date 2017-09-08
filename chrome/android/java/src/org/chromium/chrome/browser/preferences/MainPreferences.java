@@ -40,6 +40,7 @@ public class MainPreferences extends PreferenceFragment
 
     private final ManagedPreferenceDelegate mManagedPreferenceDelegate;
     private final Map<String, Preference> mAllPreferences = new HashMap<>();
+    private SignInPreference mSignInPreference;
 
     public MainPreferences() {
         setHasOptionsMenu(true);
@@ -58,7 +59,7 @@ public class MainPreferences extends PreferenceFragment
         updatePreferences();
         if (SigninManager.get(getActivity()).isSigninSupported()) {
             SigninManager.get(getActivity()).addSignInStateObserver(this);
-            ((SignInPreference) mAllPreferences.get(PREF_SIGN_IN)).registerForUpdates();
+            mSignInPreference.registerForUpdates();
         }
     }
 
@@ -67,7 +68,7 @@ public class MainPreferences extends PreferenceFragment
         super.onPause();
         if (SigninManager.get(getActivity()).isSigninSupported()) {
             SigninManager.get(getActivity()).removeSignInStateObserver(this);
-            ((SignInPreference) mAllPreferences.get(PREF_SIGN_IN)).unregisterForUpdates();
+            mSignInPreference.unregisterForUpdates();
         }
     }
 
@@ -123,6 +124,7 @@ public class MainPreferences extends PreferenceFragment
             Preference preference = getPreferenceScreen().getPreference(index);
             mAllPreferences.put(preference.getKey(), preference);
         }
+        mSignInPreference = (SignInPreference) mAllPreferences.get(PREF_SIGN_IN);
     }
 
     private void setManagedPreferenceDelegateForPreference(String key) {
@@ -256,5 +258,11 @@ public class MainPreferences extends PreferenceFragment
                 return super.isPreferenceClickDisabledByPolicy(preference);
             }
         };
+    }
+
+    @Override
+    public void onDestroy() {
+        mSignInPreference.onPreferenceFragmentDestroyed();
+        super.onDestroy();
     }
 }
