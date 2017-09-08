@@ -811,15 +811,6 @@ bool DocumentLoader::MaybeCreateArchive() {
   if (!frame_)
     return false;
 
-  // The MHTML page is loaded in full sandboxing mode with the only
-  // exception to open new top-level windows. Since the MHTML page stays in a
-  // unquie origin with script execution disabled, the risk to navigate to
-  // 'blob:'' and 'filesystem:'' URLs that allow code execution in the page's
-  // "real" origin is mitigated.
-  frame_->GetDocument()->EnforceSandboxFlags(
-      kSandboxAll &
-      ~(kSandboxPopups | kSandboxPropagatesToAuxiliaryBrowsingContexts));
-
   RefPtr<SharedBuffer> data(main_resource->Data());
   data->ForEachSegment(
       [this](const char* segment, size_t segment_size, size_t segment_offset) {
