@@ -5,8 +5,7 @@
       // of the result.
       function setResultInTitle(title) {
         if (title == "" || title == "success" ||
-            title == "Unsupported keySystem" ||
-            title == "None of the requested configurations were supported.") {
+            title == "Unsupported keySystem or supportedConfigurations.") {
           document.title = title;
         } else {
           console.log("Unexpected result: " + title);
