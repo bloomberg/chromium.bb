@@ -299,6 +299,7 @@ void ContentSuggestionsNotifierService::SetEnabled(bool enabled) {
     Enable();
   } else {
     Disable();
+    RecordContentSuggestionsNotificationOptOut(CONTENT_SUGGESTIONS_EXPLICIT);
   }
 }
 
