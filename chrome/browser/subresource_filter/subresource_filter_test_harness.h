@@ -59,6 +59,10 @@ class SubresourceFilterTestHarness : public ChromeRenderViewHostTestHarness {
     return scoped_configuration_;
   }
 
+  FakeSafeBrowsingDatabaseManager* fake_safe_browsing_database() {
+    return fake_safe_browsing_database_.get();
+  }
+
  private:
   base::ScopedTempDir ruleset_service_dir_;
   TestingPrefServiceSimple pref_service_;
