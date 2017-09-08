@@ -40,16 +40,6 @@ const char kMessageTypeUnlockResponse[] = "unlock_response";
 
 // The name for an unlock event originating from the local device.
 const char kUnlockEventName[] = "easy_unlock";
-
-// Messages sent and received from the iOS app when polling for it's lock screen
-// status.
-// TODO(tengs): Unify the iOS status update protocol with the existing Android
-// protocol, so we don't have this special case.
-const char kPollScreenState[] = "PollScreenState";
-const char kScreenUnlocked[] = "Screen Unlocked";
-const char kScreenLocked[] = "Screen Locked";
-const int kIOSPollingIntervalSeconds = 5;
-
 const char kEasyUnlockFeatureName[] = "easy_unlock";
 
 // Serializes the |value| to a JSON string and returns the result.
@@ -78,11 +68,6 @@ MessengerImpl::MessengerImpl(
       weak_ptr_factory_(this) {
   DCHECK(connection_->IsConnected());
   connection_->AddObserver(this);
-
-  // TODO(tengs): We need CryptAuth to report if the phone runs iOS or Android,
-  // rather than relying on this heuristic.
-  if (connection_->remote_device().bluetooth_address.empty())
-    PollScreenStateForIOS();
 }
 
 MessengerImpl::~MessengerImpl() {
@@ -99,10 +84,8 @@ void MessengerImpl::RemoveObserver(MessengerObserver* observer) {
 }
 
 bool MessengerImpl::SupportsSignIn() const {
-  // TODO(tengs): Support sign-in for Bluetooth LE protocol.
   return (secure_context_->GetProtocolVersion() ==
-          cryptauth::SecureContext::PROTOCOL_VERSION_THREE_ONE) &&
-         !connection_->remote_device().bluetooth_address.empty();
+          cryptauth::SecureContext::PROTOCOL_VERSION_THREE_ONE);
 }
 
 void MessengerImpl::DispatchUnlockEvent() {
@@ -189,21 +172,6 @@ void MessengerImpl::OnMessageEncoded(const std::string& encoded_message) {
 }
 
 void MessengerImpl::OnMessageDecoded(const std::string& decoded_message) {
-  // TODO(tengs): Unify the iOS status update protocol with the existing Android
-  // protocol, so we don't have this special case.
-  if (decoded_message == kScreenUnlocked || decoded_message == kScreenLocked) {
-    RemoteStatusUpdate update;
-    update.user_presence =
-        (decoded_message == kScreenUnlocked ? USER_PRESENT : USER_ABSENT);
-    update.secure_screen_lock_state = SECURE_SCREEN_LOCK_ENABLED;
-    update.trust_agent_state = TRUST_AGENT_ENABLED;
-    for (auto& observer : observers_)
-      observer.OnRemoteStatusUpdate(update);
-    pending_message_.reset();
-    ProcessMessageQueue();
-    return;
-  }
-
   // The decoded message should be a JSON string.
   std::unique_ptr<base::Value> message_value =
       base::JSONReader::Read(decoded_message);
@@ -295,21 +263,6 @@ void MessengerImpl::HandleUnlockResponseMessage(
     const base::DictionaryValue& message) {
   for (auto& observer : observers_)
     observer.OnUnlockResponse(true);
-}
-
-void MessengerImpl::PollScreenStateForIOS() {
-  if (!connection_->IsConnected())
-    return;
-
-  // Sends message requesting screen state.
-  queued_messages_.push_back(PendingMessage(std::string(kPollScreenState)));
-  ProcessMessageQueue();
-
-  // Schedules the next message in |kPollingIntervalSeconds|.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&MessengerImpl::PollScreenStateForIOS,
-                            weak_ptr_factory_.GetWeakPtr()),
-      base::TimeDelta::FromSeconds(kIOSPollingIntervalSeconds));
 }
 
 void MessengerImpl::OnConnectionStatusChanged(

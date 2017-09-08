@@ -87,10 +87,6 @@ class MessengerImpl : public Messenger, public cryptauth::ConnectionObserver {
   // response.
   void HandleUnlockResponseMessage(const base::DictionaryValue& message);
 
-  // For iOS, we need to poll the phone every few seconds to keep the app alive
-  // in the background. This function starts the poll loop.
-  void PollScreenStateForIOS();
-
   // cryptauth::ConnectionObserver:
   void OnConnectionStatusChanged(
       cryptauth::Connection* connection,
