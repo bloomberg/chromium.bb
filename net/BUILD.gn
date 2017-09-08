@@ -39,8 +39,8 @@ enable_built_in_dns = !is_ios && !is_proto_quic
 enable_net_mojo = !is_ios && !is_proto_quic
 
 # True if certificates are represented with DER byte buffers. This can be true
-# in addition to use_openssl_certs or use_nss_certs, in that case byte certs
-# are used internally but OpenSSL or NSS are used for certificate verification.
+# in addition to use_nss_certs, in that case byte certs are used internally but
+# NSS is used for certificate verification.
 # TODO(mattm): crbug.com/671420: Implement and enable this for all platforms.
 use_byte_certs =
     is_mac || is_android || is_nacl || is_ios || is_win || is_fuchsia
@@ -163,7 +163,7 @@ component("net") {
     "cert/asn1_util.h",
     "cert/cert_database.cc",
     "cert/cert_database.h",
-    "cert/cert_database_openssl.cc",
+    "cert/cert_database_stub.cc",
     "cert/cert_status_flags.cc",
     "cert/cert_status_flags.h",
     "cert/cert_status_flags_list.h",
@@ -255,8 +255,6 @@ component("net") {
     "cert/x509_certificate_net_log_param.h",
     "cert/x509_util.cc",
     "cert/x509_util.h",
-    "cert/x509_util_openssl.cc",
-    "cert/x509_util_openssl.h",
     "der/encode_values.cc",
     "der/encode_values.h",
     "der/input.cc",
@@ -606,7 +604,6 @@ component("net") {
       "cert/x509_cert_types_win.cc",
       "cert/x509_certificate_known_roots_win.h",
       "cert/x509_certificate_nss.cc",
-      "cert/x509_certificate_openssl.cc",
       "cert/x509_certificate_win.cc",
       "cert/x509_util_android.cc",
       "cert/x509_util_ios.cc",
@@ -1831,9 +1828,6 @@ component("net") {
       if (use_nss_certs) {
         sources -= [ "cert/x509_certificate_nss.cc" ]
       }
-      if (use_openssl_certs) {
-        sources -= [ "cert/x509_certificate_openssl.cc" ]
-      }
       if (is_win) {
         sources -= [
           "cert/x509_cert_types_win.cc",
@@ -1844,18 +1838,6 @@ component("net") {
       sources -= [ "cert/x509_certificate_bytes.cc" ]
     }
 
-    if (!use_openssl_certs) {
-      sources -= [
-        "cert/cert_database_openssl.cc",
-        "cert/x509_certificate_openssl.cc",
-      ]
-    } else {
-      if (is_android) {
-        # Android doesn't use this file even when using OpenSSL.
-        sources -= [ "cert/cert_database_openssl.cc" ]
-      }
-    }
-
     if (!use_kerberos || is_android) {
       sources -= [
         "http/http_auth_gssapi_posix.cc",
@@ -1864,7 +1846,10 @@ component("net") {
     }
 
     if (!is_nacl) {
-      sources -= [ "base/network_interfaces_nacl.cc" ]
+      sources -= [
+        "base/network_interfaces_nacl.cc",
+        "cert/cert_database_stub.cc",
+      ]
     }
 
     # Use getifaddrs() on POSIX platforms, except Linux and Android.

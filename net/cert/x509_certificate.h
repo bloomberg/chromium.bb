@@ -25,9 +25,6 @@
 #elif defined(OS_WIN)
 #include <windows.h>
 #include "crypto/wincrypt_shim.h"
-#elif defined(USE_OPENSSL_CERTS)
-// Forward declaration; real one in <x509.h>
-typedef struct x509_st X509;
 #elif defined(USE_NSS_CERTS)
 // Forward declaration; real one in <cert.h>
 struct CERTCertificateStr;
@@ -60,8 +57,6 @@ class NET_EXPORT X509Certificate
   typedef CRYPTO_BUFFER* OSCertHandle;
 #elif defined(OS_WIN)
   typedef PCCERT_CONTEXT OSCertHandle;
-#elif defined(USE_OPENSSL_CERTS)
-  typedef X509* OSCertHandle;
 #elif defined(USE_NSS_CERTS)
   typedef struct CERTCertificateStr* OSCertHandle;
 #else
