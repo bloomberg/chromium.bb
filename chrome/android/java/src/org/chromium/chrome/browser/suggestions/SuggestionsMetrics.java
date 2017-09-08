@@ -63,6 +63,18 @@ public abstract class SuggestionsMetrics {
         RecordUserAction.record("Suggestions.Card.SwipedAway");
     }
 
+    public static void recordContextualSuggestionOpened() {
+        RecordUserAction.record("Suggestions.ContextualSuggestion.Open");
+    }
+
+    public static void recordContextualSuggestionsCarouselShown() {
+        RecordUserAction.record("Suggestions.Contextual.Carousel.Shown");
+    }
+
+    public static void recordContextualSuggestionsCarouselScrolled() {
+        RecordUserAction.record("Suggestions.Contextual.Carousel.Scrolled");
+    }
+
     // Effect/Purpose of the interactions. Most are recorded in |content_suggestions_metrics.h|
 
     public static void recordActionViewAll() {

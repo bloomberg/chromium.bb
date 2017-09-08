@@ -17110,6 +17110,33 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Suggestions.Contextual.Carousel.Scrolled">
+  <owner>dgn@chromium.org</owner>
+  <owner>galinap@google.com</owner>
+  <description>
+    Android: The contextual suggestions carousel in Chrome Home was scrolled by
+    the user.
+  </description>
+</action>
+
+<action name="Suggestions.Contextual.Carousel.Shown">
+  <owner>dgn@chromium.org</owner>
+  <owner>galinap@google.com</owner>
+  <description>
+    Android: The contextual suggestions carousel in Chrome Home was shown to the
+    user.
+  </description>
+</action>
+
+<action name="Suggestions.ContextualSuggestion.Open">
+  <owner>dgn@chromium.org</owner>
+  <owner>galinap@google.com</owner>
+  <description>
+    Android: A contextual suggestion in the carousel in Chrome Home was opened
+    by the user.
+  </description>
+</action>
+
 <action name="Suggestions.FirstTimeSurfaceVisible">
   <owner>finkm@chromium.org</owner>
   <owner>dgn@chromium.org</owner>

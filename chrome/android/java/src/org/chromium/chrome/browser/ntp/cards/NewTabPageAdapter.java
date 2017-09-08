@@ -187,7 +187,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
                 return new AllDismissedItem.ViewHolder(mRecyclerView, mSections);
 
             case ItemViewType.CAROUSEL:
-                return mSuggestionsCarousel.createViewHolder(parent);
+                return new SuggestionsCarousel.ViewHolder(mRecyclerView);
         }
 
         assert false : viewType;

@@ -10,7 +10,6 @@ import android.graphics.Rect;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.OnScrollListener;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.TouchDelegate;
@@ -18,7 +17,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.Callback;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -29,13 +27,13 @@ import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.ntp.LogoDelegateImpl;
 import org.chromium.chrome.browser.ntp.LogoView;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
-import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.ViewUtils;
@@ -45,10 +43,6 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetNewTabController;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
-import org.chromium.ui.widget.Toast;
-
-import java.util.List;
-import java.util.Locale;
 
 /**
  * Provides content to be displayed inside of the Home tab of bottom sheet.
@@ -292,32 +286,10 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
         if (mSuggestionsCarousel == null) return;
         assert ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_CAROUSEL);
 
-        if (mSheet.getActiveTab() == null) {
-            mSuggestionsCarousel.clearSuggestions();
-            return;
-        }
+        Tab activeTab = mSheet.getActiveTab();
+        final String currentUrl = activeTab == null ? null : activeTab.getUrl();
 
-        final String url = mSheet.getActiveTab().getUrl();
-
-        // Do nothing if there are already suggestions in the carousel for the current context.
-        if (TextUtils.equals(url, mSuggestionsCarousel.getCurrentCarouselContextUrl())) return;
-
-        // Context has changed, so we want to remove any old suggestions from the carousel.
-        mSuggestionsCarousel.clearSuggestions();
-
-        String text = "Fetching contextual suggestions...";
-        Toast.makeText(mRecyclerView.getContext(), text, Toast.LENGTH_SHORT).show();
-        mSuggestionsUiDelegate.getSuggestionsSource().fetchContextualSuggestions(
-                url, new Callback<List<SnippetArticle>>() {
-                    @Override
-                    public void onResult(List<SnippetArticle> contextualSuggestions) {
-                        mSuggestionsCarousel.newContextualSuggestionsAvailable(
-                                url, contextualSuggestions);
-                        String text = String.format(Locale.US, "Fetched %d contextual suggestions.",
-                                contextualSuggestions.size());
-                        Toast.makeText(mRecyclerView.getContext(), text, Toast.LENGTH_SHORT).show();
-                    }
-                });
+        mSuggestionsCarousel.refresh(mSheet.getContext(), currentUrl);
     }
 
     private void updateSearchProviderHasLogo() {
