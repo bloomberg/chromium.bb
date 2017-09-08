@@ -63,7 +63,7 @@ void GpuClient::CreateJpegDecodeAccelerator(
 
 void GpuClient::CreateVideoEncodeAcceleratorProvider(
     media::mojom::VideoEncodeAcceleratorProviderRequest request) {
-  NOTIMPLEMENTED();
+  gpu_service_->CreateVideoEncodeAcceleratorProvider(std::move(request));
 }
 
 void GpuClient::CreateGpuMemoryBuffer(
