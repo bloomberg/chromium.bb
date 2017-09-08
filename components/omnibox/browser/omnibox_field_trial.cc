@@ -646,9 +646,9 @@ OmniboxFieldTrial::GetEmphasizeTitlesConditionForInput(
       base::FeatureList::IsEnabled(omnibox::kZeroSuggestSwapTitleAndUrl)) {
     return EMPHASIZE_WHEN_NONEMPTY;
   }
-  // Look up the parameter named kEmphasizeTitlesRule + ":" + input.type(),
+  // Look up the parameter named kEmphasizeTitlesRule + "_" + input.type(),
   // find its value, and return that value as an enum.  If the parameter
-  // isn't redefined, fall back to the generic rule kEmphasizeTitlesRule + ":*"
+  // isn't redefined, fall back to the generic rule kEmphasizeTitlesRule + "_*"
   std::string value_str(variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName,
       std::string(kEmphasizeTitlesRule) + "_" +
