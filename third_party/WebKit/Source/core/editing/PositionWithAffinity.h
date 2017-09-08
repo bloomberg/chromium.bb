@@ -34,10 +34,6 @@ class CORE_TEMPLATE_CLASS_EXPORT PositionWithAffinityTemplate {
     return !operator==(other);
   }
 
-  bool IsValidFor(const Document& document) const {
-    return position_.IsValidFor(document);
-  }
-
   bool IsNotNull() const { return position_.IsNotNull(); }
   bool IsNull() const { return position_.IsNull(); }
   bool IsOrphan() const { return position_.IsOrphan(); }

@@ -85,7 +85,6 @@ class CORE_TEMPLATE_CLASS_EXPORT VisiblePositionTemplate final {
   bool operator!=(const VisiblePositionTemplate&) const = delete;
 
   bool IsValid() const;
-  bool IsValidFor(const Document&) const;
 
   // TODO(editing-dev): We should have |DCHECK(isValid())| in the following
   // functions. However, there are some clients storing a VisiblePosition and
