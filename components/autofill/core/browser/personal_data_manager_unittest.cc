@@ -6916,4 +6916,86 @@ TEST_F(PersonalDataManagerTest, RemoveProfilesNotUsedSinceTimestamp) {
   }
 }
 
+TEST_F(PersonalDataManagerTest, LogStoredCreditCardMetrics) {
+  EnableWalletCardImport();
+  ASSERT_EQ(0U, personal_data_->GetCreditCards().size());
+
+  // Helper timestamps for setting up the test data.
+  base::Time now = AutofillClock::Now();
+  base::Time one_month_ago = now - base::TimeDelta::FromDays(30);
+  base::Time::Exploded now_exploded;
+  base::Time::Exploded one_month_ago_exploded;
+  now.LocalExplode(&now_exploded);
+  one_month_ago.LocalExplode(&one_month_ago_exploded);
+
+  std::vector<CreditCard> server_cards;
+  server_cards.reserve(10);
+
+  // Create in-use and in-disuse cards of each record type.
+  const std::vector<CreditCard::RecordType> record_types{
+      CreditCard::LOCAL_CARD, CreditCard::MASKED_SERVER_CARD,
+      CreditCard::FULL_SERVER_CARD};
+  for (auto record_type : record_types) {
+    // Create a card that's still in active use.
+    CreditCard card_in_use = test::GetRandomCreditCard(record_type);
+    card_in_use.set_use_date(now - base::TimeDelta::FromDays(30));
+    card_in_use.set_use_count(10);
+
+    // Create a card that's not in active use.
+    CreditCard card_in_disuse = test::GetRandomCreditCard(record_type);
+    card_in_disuse.SetExpirationYear(one_month_ago_exploded.year);
+    card_in_disuse.SetExpirationMonth(one_month_ago_exploded.month);
+    card_in_disuse.set_use_date(now - base::TimeDelta::FromDays(200));
+    card_in_disuse.set_use_count(10);
+
+    // Add the cards to the personal data manager in the appropriate way.
+    if (record_type == CreditCard::LOCAL_CARD) {
+      personal_data_->AddCreditCard(card_in_use);
+      personal_data_->AddCreditCard(card_in_disuse);
+    } else {
+      server_cards.push_back(std::move(card_in_use));
+      server_cards.push_back(std::move(card_in_disuse));
+    }
+  }
+
+  test::SetServerCreditCards(autofill_table_, server_cards);
+
+  // test::SetServerCreditCards modifies the metadata (use_count and use_date)
+  // of unmasked cards. Reset the server card metadata to match the data set
+  // up above.
+  for (const auto& card : server_cards)
+    autofill_table_->UpdateServerCardMetadata(card);
+
+  personal_data_->Refresh();
+  WaitForOnPersonalDataChanged();
+
+  ASSERT_EQ(6U, personal_data_->GetCreditCards().size());
+
+  // Reload the database, which will log the stored profile counts.
+  base::HistogramTester histogram_tester;
+  ResetPersonalDataManager(USER_MODE_NORMAL);
+
+  ASSERT_EQ(6U, personal_data_->GetCreditCards().size());
+
+  // Validate the basic count metrics for both local and server cards. Deep
+  // validation of the metrics is done in:
+  //    AutofillMetricsTest::LogStoredCreditCardMetrics
+  histogram_tester.ExpectTotalCount("Autofill.StoredCreditCardCount", 1);
+  histogram_tester.ExpectTotalCount("Autofill.StoredCreditCardCount.Local", 1);
+  histogram_tester.ExpectTotalCount("Autofill.StoredCreditCardCount.Server", 1);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.StoredCreditCardCount.Server.Masked", 1);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.StoredCreditCardCount.Server.Unmasked", 1);
+  histogram_tester.ExpectBucketCount("Autofill.StoredCreditCardCount", 6, 1);
+  histogram_tester.ExpectBucketCount("Autofill.StoredCreditCardCount.Local", 2,
+                                     1);
+  histogram_tester.ExpectBucketCount("Autofill.StoredCreditCardCount.Server", 4,
+                                     1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.StoredCreditCardCount.Server.Masked", 2, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.StoredCreditCardCount.Server.Unmasked", 2, 1);
+}
+
 }  // namespace autofill

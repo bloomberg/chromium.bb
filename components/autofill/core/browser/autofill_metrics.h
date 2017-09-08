@@ -24,6 +24,7 @@
 namespace autofill {
 
 class AutofillField;
+class CreditCard;
 
 class AutofillMetrics {
  public:
@@ -750,12 +751,12 @@ class AutofillMetrics {
   // called once per address profile each time a new chrome profile is launched.
   static void LogStoredProfileDaysSinceLastUse(size_t days);
 
-  // This should be called each time a new chrome profile is launched.
-  static void LogStoredLocalCreditCardCount(size_t num_local_cards);
-
-  // This should be called each time a new chrome profile is launched.
-  static void LogStoredServerCreditCardCounts(size_t num_masked_cards,
-                                              size_t num_unmasked_cards);
+  // Logs various metrics about the local and server cards associated with a
+  // profile. This should be called each time a new chrome profile is launched.
+  static void LogStoredCreditCardMetrics(
+      const std::vector<std::unique_ptr<CreditCard>>& local_cards,
+      const std::vector<std::unique_ptr<CreditCard>>& server_cards,
+      base::TimeDelta disused_data_threshold);
 
   // Log the number of profiles available when an autofillable form is
   // submitted.

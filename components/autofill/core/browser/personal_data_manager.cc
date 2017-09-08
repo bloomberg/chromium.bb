@@ -274,8 +274,7 @@ PersonalDataManager::PersonalDataManager(const std::string& app_locale)
       account_tracker_(nullptr),
       is_off_the_record_(false),
       has_logged_stored_profile_metrics_(false),
-      has_logged_local_credit_card_count_(false),
-      has_logged_server_credit_card_counts_(false) {}
+      has_logged_stored_credit_card_metrics_(false) {}
 
 void PersonalDataManager::Init(scoped_refptr<AutofillWebDataService> database,
                                PrefService* pref_service,
@@ -364,40 +363,36 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
       pending_server_creditcards_query_ = 0;
     else if (h == pending_server_profiles_query_)
       pending_server_profiles_query_ = 0;
-    return;
-  }
+  } else {
+    switch (result->GetType()) {
+      case AUTOFILL_PROFILES_RESULT:
+        if (h == pending_profiles_query_) {
+          ReceiveLoadedDbValues(h, result.get(), &pending_profiles_query_,
+                                &web_profiles_);
+        } else {
+          ReceiveLoadedDbValues(h, result.get(),
+                                &pending_server_profiles_query_,
+                                &server_profiles_);
+        }
+        break;
+      case AUTOFILL_CREDITCARDS_RESULT:
+        if (h == pending_creditcards_query_) {
+          ReceiveLoadedDbValues(h, result.get(), &pending_creditcards_query_,
+                                &local_credit_cards_);
+        } else {
+          ReceiveLoadedDbValues(h, result.get(),
+                                &pending_server_creditcards_query_,
+                                &server_credit_cards_);
 
-  switch (result->GetType()) {
-    case AUTOFILL_PROFILES_RESULT:
-      if (h == pending_profiles_query_) {
-        ReceiveLoadedDbValues(h, result.get(), &pending_profiles_query_,
-                              &web_profiles_);
-        LogStoredProfileMetrics();  // This only logs local profiles.
-      } else {
-        ReceiveLoadedDbValues(h, result.get(), &pending_server_profiles_query_,
-                              &server_profiles_);
-      }
-      break;
-    case AUTOFILL_CREDITCARDS_RESULT:
-      if (h == pending_creditcards_query_) {
-        ReceiveLoadedDbValues(h, result.get(), &pending_creditcards_query_,
-                              &local_credit_cards_);
-        LogLocalCreditCardCount();
-      } else {
-        ReceiveLoadedDbValues(h, result.get(),
-                              &pending_server_creditcards_query_,
-                              &server_credit_cards_);
-
-        // If the user has a saved unmasked server card and the experiment is
-        // disabled, force mask all cards back to the unsaved state.
-        if (!OfferStoreUnmaskedCards())
-          ResetFullServerCards();
-
-        LogServerCreditCardCounts();
-      }
-      break;
-    default:
-      NOTREACHED();
+          // If the user has a saved unmasked server card and the experiment is
+          // disabled, force mask all cards back to the unsaved state.
+          if (!OfferStoreUnmaskedCards())
+            ResetFullServerCards();
+        }
+        break;
+      default:
+        NOTREACHED();
+    }
   }
 
   // If all requests have responded, then all personal data is loaded.
@@ -406,6 +401,8 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
       pending_server_profiles_query_ == 0 &&
       pending_server_creditcards_query_ == 0) {
     is_data_loaded_ = true;
+    LogStoredProfileMetrics();
+    LogStoredCreditCardMetrics();
     NotifyPersonalDataChanged();
   }
 }
@@ -1387,26 +1384,13 @@ void PersonalDataManager::LogStoredProfileMetrics() const {
   }
 }
 
-void PersonalDataManager::LogLocalCreditCardCount() const {
-  if (!has_logged_local_credit_card_count_) {
-    AutofillMetrics::LogStoredLocalCreditCardCount(local_credit_cards_.size());
-    has_logged_local_credit_card_count_ = true;
-  }
-}
+void PersonalDataManager::LogStoredCreditCardMetrics() const {
+  if (!has_logged_stored_credit_card_metrics_) {
+    AutofillMetrics::LogStoredCreditCardMetrics(
+        local_credit_cards_, server_credit_cards_, kDisusedProfileTimeDelta);
 
-void PersonalDataManager::LogServerCreditCardCounts() const {
-  if (!has_logged_server_credit_card_counts_) {
-    size_t unmasked_cards = 0, masked_cards = 0;
-    for (const auto& card : server_credit_cards_) {
-      if (card->record_type() == CreditCard::MASKED_SERVER_CARD) {
-        masked_cards++;
-      } else if (card->record_type() == CreditCard::FULL_SERVER_CARD) {
-        unmasked_cards++;
-      }
-    }
-    AutofillMetrics::LogStoredServerCreditCardCounts(masked_cards,
-                                                     unmasked_cards);
-    has_logged_server_credit_card_counts_ = true;
+    // Only log this info once per chrome user profile load.
+    has_logged_stored_credit_card_metrics_ = true;
   }
 }
 

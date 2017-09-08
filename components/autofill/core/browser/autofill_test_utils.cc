@@ -7,6 +7,8 @@
 #include <string>
 
 #include "base/guid.h"
+#include "base/rand_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_manager.h"
@@ -26,11 +28,25 @@
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/common/signin_pref_names.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
 
 namespace autofill {
 namespace test {
+
+namespace {
+
+std::string GetRandomCardNumber() {
+  const size_t length = 16;
+  std::string value;
+  value.reserve(length);
+  for (size_t i = 0; i < length; ++i)
+    value.push_back(static_cast<char>(base::RandInt('0', '9')));
+  return value;
+}
+
+}  // namespace
 
 std::unique_ptr<PrefService> PrefServiceForTesting() {
   scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
@@ -294,6 +310,41 @@ CreditCard GetMaskedServerCardAmex() {
   return credit_card;
 }
 
+CreditCard GetRandomCreditCard(CreditCard::RecordType record_type) {
+  static const char* const kNetworks[] = {
+      kAmericanExpressCard,
+      kDinersCard,
+      kDiscoverCard,
+      kEloCard,
+      kGenericCard,
+      kJCBCard,
+      kMasterCard,
+      kMirCard,
+      kUnionPay,
+      kVisaCard,
+  };
+  constexpr size_t kNumNetworks = sizeof(kNetworks) / sizeof(kNetworks[0]);
+  base::Time::Exploded now;
+  base::Time::Now().LocalExplode(&now);
+
+  CreditCard credit_card =
+      (record_type == CreditCard::LOCAL_CARD)
+          ? CreditCard(base::GenerateGUID(), "http://www.example.com")
+          : CreditCard(record_type, base::GenerateGUID().substr(24));
+  test::SetCreditCardInfo(
+      &credit_card, "Justin Thyme", GetRandomCardNumber().c_str(),
+      base::StringPrintf("%d", base::RandInt(1, 13)).c_str(),
+      base::StringPrintf("%d", base::RandInt(now.year + 1, now.year + 4))
+          .c_str(),
+      "1");
+  if (record_type == CreditCard::MASKED_SERVER_CARD) {
+    credit_card.SetNetworkForMaskedCard(
+        kNetworks[base::RandInt(0, kNumNetworks)]);
+  }
+
+  return credit_card;
+}
+
 void SetProfileInfo(AutofillProfile* profile,
     const char* first_name, const char* middle_name,
     const char* last_name, const char* email, const char* company,
@@ -362,8 +413,7 @@ void SetServerCreditCards(AutofillTable* table,
   for (const CreditCard& card : cards) {
     if (card.record_type() != CreditCard::FULL_SERVER_CARD)
       continue;
-
-    table->UnmaskServerCreditCard(card, card.number());
+    ASSERT_TRUE(table->UnmaskServerCreditCard(card, card.number()));
   }
 }
 

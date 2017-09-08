@@ -18,6 +18,7 @@
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/form_data.h"
@@ -797,14 +798,118 @@ void AutofillMetrics::LogStoredProfileDaysSinceLastUse(size_t days) {
 }
 
 // static
-void AutofillMetrics::LogStoredLocalCreditCardCount(size_t num_local_cards) {
-  UMA_HISTOGRAM_COUNTS("Autofill.StoredLocalCreditCardCount", num_local_cards);
-}
+void AutofillMetrics::LogStoredCreditCardMetrics(
+    const std::vector<std::unique_ptr<CreditCard>>& local_cards,
+    const std::vector<std::unique_ptr<CreditCard>>& server_cards,
+    base::TimeDelta disused_data_threshold) {
+  size_t num_local_cards = 0;
+  size_t num_masked_cards = 0;
+  size_t num_unmasked_cards = 0;
+  size_t num_disused_local_cards = 0;
+  size_t num_disused_masked_cards = 0;
+  size_t num_disused_unmasked_cards = 0;
 
-// static
-void AutofillMetrics::LogStoredServerCreditCardCounts(
-    size_t num_masked_cards,
-    size_t num_unmasked_cards) {
+  // Concatenate the local and server cards into one big collection of raw
+  // CreditCard pointers.
+  std::vector<const CreditCard*> credit_cards;
+  credit_cards.reserve(local_cards.size() + server_cards.size());
+  for (const auto* collection : {&local_cards, &server_cards}) {
+    for (const auto& card : *collection) {
+      credit_cards.push_back(card.get());
+    }
+  }
+
+  // Iterate over all of the cards and gather metrics.
+  const base::Time now = AutofillClock::Now();
+  for (const CreditCard* card : credit_cards) {
+    const base::TimeDelta time_since_last_use = now - card->use_date();
+    const int days_since_last_use = time_since_last_use.InDays();
+    const int disused_delta =
+        (time_since_last_use > disused_data_threshold) ? 1 : 0;
+    UMA_HISTOGRAM_COUNTS_1000("Autofill.DaysSinceLastUse.StoredCreditCard",
+                              days_since_last_use);
+    switch (card->record_type()) {
+      case CreditCard::LOCAL_CARD:
+        UMA_HISTOGRAM_COUNTS_1000(
+            "Autofill.DaysSinceLastUse.StoredCreditCard.Local",
+            days_since_last_use);
+        num_local_cards += 1;
+        num_disused_local_cards += disused_delta;
+        break;
+      case CreditCard::MASKED_SERVER_CARD:
+        UMA_HISTOGRAM_COUNTS_1000(
+            "Autofill.DaysSinceLastUse.StoredCreditCard.Server",
+            days_since_last_use);
+        UMA_HISTOGRAM_COUNTS_1000(
+            "Autofill.DaysSinceLastUse.StoredCreditCard.Server.Masked",
+            days_since_last_use);
+        num_masked_cards += 1;
+        num_disused_masked_cards += disused_delta;
+        break;
+      case CreditCard::FULL_SERVER_CARD:
+        UMA_HISTOGRAM_COUNTS_1000(
+            "Autofill.DaysSinceLastUse.StoredCreditCard.Server",
+            days_since_last_use);
+        UMA_HISTOGRAM_COUNTS_1000(
+            "Autofill.DaysSinceLastUse.StoredCreditCard.Server.Unmasked",
+            days_since_last_use);
+        num_unmasked_cards += 1;
+        num_disused_unmasked_cards += disused_delta;
+        break;
+    }
+  }
+
+  // Calculate some summary info.
+  const size_t num_server_cards = num_masked_cards + num_unmasked_cards;
+  const size_t num_cards = num_local_cards + num_server_cards;
+  const size_t num_disused_server_cards =
+      num_disused_masked_cards + num_disused_unmasked_cards;
+  const size_t num_disused_cards =
+      num_disused_local_cards + num_disused_server_cards;
+
+  // Log the overall counts.
+  UMA_HISTOGRAM_COUNTS_1000("Autofill.StoredCreditCardCount", num_cards);
+  UMA_HISTOGRAM_COUNTS_1000("Autofill.StoredCreditCardCount.Local",
+                            num_local_cards);
+  UMA_HISTOGRAM_COUNTS_1000("Autofill.StoredCreditCardCount.Server",
+                            num_server_cards);
+  UMA_HISTOGRAM_COUNTS_1000("Autofill.StoredCreditCardCount.Server.Masked",
+                            num_masked_cards);
+  UMA_HISTOGRAM_COUNTS_1000("Autofill.StoredCreditCardCount.Server.Unmasked",
+                            num_unmasked_cards);
+
+  // For card types held by the user, log how many are disused.
+  if (num_cards) {
+    UMA_HISTOGRAM_COUNTS_1000("Autofill.StoredCreditCardDisusedCount",
+                              num_disused_cards);
+  }
+  if (num_local_cards) {
+    UMA_HISTOGRAM_COUNTS_1000("Autofill.StoredCreditCardDisusedCount.Local",
+                              num_disused_local_cards);
+  }
+  if (num_server_cards) {
+    UMA_HISTOGRAM_COUNTS_1000("Autofill.StoredCreditCardDisusedCount.Server",
+                              num_disused_server_cards);
+  }
+  if (num_masked_cards) {
+    UMA_HISTOGRAM_COUNTS_1000(
+        "Autofill.StoredCreditCardDisusedCount.Server.Masked",
+        num_disused_masked_cards);
+  }
+  if (num_unmasked_cards) {
+    UMA_HISTOGRAM_COUNTS_1000(
+        "Autofill.StoredCreditCardDisusedCount.Server.Unmasked",
+        num_disused_unmasked_cards);
+  }
+
+  // Legacy histogram names.
+  // Validated by:
+  //     AutofillMetricsTest.StoredLocalCreditCardCount
+  //     AutofillMetricsTest.StoredServerCreditCardCount_Masked
+  //     AutofillMetricsTest.StoredServerCreditCardCount_Unmasked
+  // TODO(crbug/762131): Delete these in 2018/Q2 once enough UMA history is
+  // established for the new names.
+  UMA_HISTOGRAM_COUNTS("Autofill.StoredLocalCreditCardCount", num_local_cards);
   UMA_HISTOGRAM_COUNTS_1000("Autofill.StoredServerCreditCardCount.Masked",
                             num_masked_cards);
   UMA_HISTOGRAM_COUNTS_1000("Autofill.StoredServerCreditCardCount.Unmasked",

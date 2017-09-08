@@ -396,18 +396,13 @@ class PersonalDataManager : public KeyedService,
   // Notifies observers that personal data has changed.
   void NotifyPersonalDataChanged();
 
-  // The first time this is called, logs a UMA metrics about the user's profile.
-  // On subsequent calls, does nothing.
+  // The first time this is called, logs a UMA metrics about the user's autofill
+  // addresses. On subsequent calls, does nothing.
   void LogStoredProfileMetrics() const;
 
-  // The first time this is called, logs an UMA metric for the number of local
-  // credit cards the user has. On subsequent calls, does nothing.
-  void LogLocalCreditCardCount() const;
-
-  // The first time this is called, logs an UMA metric for the number of server
-  // credit cards the user has (both masked and unmasked). On subsequent calls,
-  // does nothing.
-  void LogServerCreditCardCounts() const;
+  // The first time this is called, logs an UMA metric about the user's autofill
+  // credit cardss. On subsequent calls, does nothing.
+  void LogStoredCreditCardMetrics() const;
 
   // Returns the value of the AutofillEnabled pref.
   virtual bool IsAutofillEnabled() const;
@@ -601,13 +596,8 @@ class PersonalDataManager : public KeyedService,
   // Whether we have already logged the stored profile metrics this session.
   mutable bool has_logged_stored_profile_metrics_;
 
-  // Whether we have already logged the number of local credit cards this
-  // session.
-  mutable bool has_logged_local_credit_card_count_;
-
-  // Whether we have already logged the number of server credit cards this
-  // session.
-  mutable bool has_logged_server_credit_card_counts_;
+  // Whether we have already logged the stored credit card metrics this session.
+  mutable bool has_logged_stored_credit_card_metrics_;
 
   // An observer to listen for changes to prefs::kAutofillEnabled.
   std::unique_ptr<BooleanPrefMember> enabled_pref_;
