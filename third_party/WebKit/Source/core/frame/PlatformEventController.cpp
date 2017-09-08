@@ -14,27 +14,26 @@ PlatformEventController::PlatformEventController(Document* document)
                                  : nullptr),
       has_event_listener_(false),
       is_active_(false),
-      timer_(TaskRunnerHelper::Get(TaskType::kUnspecedTimer, document),
-             this,
-             &PlatformEventController::OneShotCallback) {}
+      document_(document) {}
 
 PlatformEventController::~PlatformEventController() {}
 
-void PlatformEventController::OneShotCallback(TimerBase* timer) {
-  DCHECK_EQ(timer, &timer_);
+void PlatformEventController::UpdateCallback() {
   DCHECK(HasLastData());
-  DCHECK(!timer_.IsActive());
-
   DidUpdateData();
 }
 
 void PlatformEventController::StartUpdating() {
-  if (is_active_)
+  if (is_active_ || !document_)
     return;
 
-  if (HasLastData() && !timer_.IsActive()) {
-    // Make sure to fire the data as soon as possible.
-    timer_.StartOneShot(0, BLINK_FROM_HERE);
+  if (HasLastData() && !update_callback_handle_.IsActive()) {
+    update_callback_handle_ =
+        TaskRunnerHelper::Get(TaskType::kUnspecedTimer, document_)
+            ->PostCancellableTask(
+                BLINK_FROM_HERE,
+                WTF::Bind(&PlatformEventController::UpdateCallback,
+                          WrapWeakPersistent(this)));
   }
 
   RegisterWithDispatcher();
@@ -45,7 +44,7 @@ void PlatformEventController::StopUpdating() {
   if (!is_active_)
     return;
 
-  timer_.Stop();
+  update_callback_handle_.Cancel();
   UnregisterWithDispatcher();
   is_active_ = false;
 }
@@ -58,6 +57,11 @@ void PlatformEventController::PageVisibilityChanged() {
     StartUpdating();
   else
     StopUpdating();
+}
+
+DEFINE_TRACE(PlatformEventController) {
+  visitor->Trace(document_);
+  PageVisibilityObserver::Trace(visitor);
 }
 
 }  // namespace blink
