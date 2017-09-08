@@ -40,6 +40,23 @@ const int kNumberOfFailsBeforeWifiOnly = 5;
 // Number of time the download must fail before we give up trying to download
 // it.
 const int kNumberOfFailsBeforeStop = 7;
+
+// Scans |root| directory and deletes all subdirectories not listed
+// in |directories_to_keep|.
+// Must be called on File thread.
+void CleanUpFiles(base::FilePath root,
+                  const std::set<std::string>& processed_directories) {
+  base::ThreadRestrictions::AssertIOAllowed();
+  base::FileEnumerator file_enumerator(root, false,
+                                       base::FileEnumerator::DIRECTORIES);
+  for (base::FilePath sub_directory = file_enumerator.Next();
+       !sub_directory.empty(); sub_directory = file_enumerator.Next()) {
+    std::string directory_name = sub_directory.BaseName().value();
+    if (!processed_directories.count(directory_name)) {
+      base::DeleteFile(sub_directory, true);
+    }
+  }
+}
 }  // namespace
 
 ReadingListDownloadService::ReadingListDownloadService(
@@ -146,25 +163,12 @@ void ReadingListDownloadService::SyncWithModel() {
     }
   }
   base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-      base::Bind(&ReadingListDownloadService::CleanUpFiles,
-                 base::Unretained(this), processed_directories),
+      FROM_HERE,
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::Bind(&::CleanUpFiles, OfflineRoot(), processed_directories),
       base::Bind(&ReadingListDownloadService::DownloadUnprocessedEntries,
                  base::Unretained(this), unprocessed_entries));
-}
-
-void ReadingListDownloadService::CleanUpFiles(
-    const std::set<std::string>& processed_directories) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  base::FileEnumerator file_enumerator(OfflineRoot(), false,
-                                       base::FileEnumerator::DIRECTORIES);
-  for (base::FilePath sub_directory = file_enumerator.Next();
-       !sub_directory.empty(); sub_directory = file_enumerator.Next()) {
-    std::string directory_name = sub_directory.BaseName().value();
-    if (!processed_directories.count(directory_name)) {
-      base::DeleteFile(sub_directory, true);
-    }
-  }
 }
 
 void ReadingListDownloadService::DownloadUnprocessedEntries(
