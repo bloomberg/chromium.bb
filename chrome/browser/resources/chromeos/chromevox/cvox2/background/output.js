@@ -148,8 +148,7 @@ Output.ROLE_INFO_ = {
   link: {msgId: 'role_link', earconId: 'LINK'},
   listBox: {msgId: 'role_listbox', earconId: 'LISTBOX'},
   listBoxOption: {msgId: 'role_listitem', earconId: 'LIST_ITEM'},
-  listItem:
-      {msgId: 'role_listitem', earconId: 'LIST_ITEM', outputContextFirst: true},
+  listItem: {msgId: 'role_listitem', earconId: 'LIST_ITEM'},
   log: {
     msgId: 'role_log',
   },
@@ -1367,6 +1366,16 @@ Output.prototype = {
       return buff;
     }.bind(this);
 
+    var lca = null;
+    if (!this.outputContextFirst_) {
+      if (range.start.node != range.end.node) {
+        lca = AutomationUtil.getLeastCommonAncestor(
+            range.end.node, range.start.node);
+      }
+
+      prevNode = lca || prevNode;
+    }
+
     var unit = range.isInlineText() ? cursors.Unit.TEXT : cursors.Unit.NODE;
     while (cursor.node && range.end.node &&
            AutomationUtil.getDirection(cursor.node, range.end.node) ==
@@ -1379,6 +1388,18 @@ Output.prototype = {
       // Reached a boundary.
       if (cursor.node == prevNode)
         break;
+    }
+
+    // Finally, add on ancestry announcements, if needed.
+    if (!this.outputContextFirst_) {
+      // No lca; the range was already fully described.
+      if (lca == null || !prevRange.start.node)
+        return;
+
+      // Since the lca itself needs to be part of the ancestry output, use its
+      // first child as a target.
+      var target = lca.firstChild || lca;
+      this.ancestry_(target, prevRange.start.node, type, rangeBuff);
     }
   },
 
