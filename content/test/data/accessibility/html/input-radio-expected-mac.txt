@@ -7,9 +7,7 @@ AXWebArea
 ++++AXStaticText AXValue='Radio2'
 ++AXGroup
 ++++AXRadioButton AXTitle='Radio3' AXValue='0' AXLinkedUIElements=["AXRadioButton Radio3","AXRadioButton Radio4"]
-++++AXStaticText AXValue=' '
 ++++AXRadioButton AXTitle='Radio4' AXValue='1' AXLinkedUIElements=["AXRadioButton Radio3","AXRadioButton Radio4"]
 ++AXGroup
 ++++AXRadioButton AXTitle='Radio5' AXValue='0' AXLinkedUIElements=["AXRadioButton Radio5"]
-++++AXStaticText AXValue=' '
 ++++AXRadioButton AXTitle='Radio6' AXValue='1' AXLinkedUIElements=["AXRadioButton Radio6"]

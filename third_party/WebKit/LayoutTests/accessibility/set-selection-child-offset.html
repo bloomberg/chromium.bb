@@ -52,7 +52,7 @@
         assert_equals(sel.startContainer.textContent, "this is a");
 
         // Select the second child.
-        axRegion.setSelection(axRegion, 1, axRegion, 3);
+        axRegion.setSelection(axRegion, 1, axRegion, 2);
         updateSelectedRangeFromPage();
         assert_equals(sel.toString(), "test\n");
         assert_false(sel.collapsed);
@@ -65,7 +65,7 @@
         assert_equals(sel.endContainer.textContent, "\n    ");
 
         // Next, another insertion point between second and third child.
-        axRegion.setSelection(axRegion, 3, axRegion, 3);
+        axRegion.setSelection(axRegion, 2, axRegion, 2);
         updateSelectedRangeFromPage();
         assert_equals(sel.toString(), "");
         assert_true(sel.collapsed);
@@ -74,7 +74,7 @@
         assert_equals(sel.startContainer.textContent, "\n    ");
 
         // Select the third child.
-        axRegion.setSelection(axRegion, 3, axRegion, 4);
+        axRegion.setSelection(axRegion, 2, axRegion, 3);
         updateSelectedRangeFromPage();
         assert_equals(sel.toString(), "of selection");
         assert_false(sel.collapsed);
@@ -86,7 +86,7 @@
         assert_equals(sel.endContainer.textContent, "of selection");
 
         // Select the first and second children.
-        axRegion.setSelection(axRegion, 0, axRegion, 3);
+        axRegion.setSelection(axRegion, 0, axRegion, 2);
         updateSelectedRangeFromPage();
         assert_equals(sel.toString(), "this is atest\n");
         assert_false(sel.collapsed);
@@ -98,7 +98,7 @@
         assert_equals(sel.endContainer.textContent, "\n    ");
 
         // Select the second and third children.
-        axRegion.setSelection(axRegion, 1, axRegion, 4);
+        axRegion.setSelection(axRegion, 1, axRegion, 3);
         updateSelectedRangeFromPage();
         assert_equals(sel.toString(), "test\n    of selection");
         assert_false(sel.collapsed);
@@ -110,7 +110,7 @@
         assert_equals(sel.endContainer.textContent, "of selection");
 
         // Select everything.
-        axRegion.setSelection(axRegion, 0, axRegion, 4);
+        axRegion.setSelection(axRegion, 0, axRegion, 3);
         updateSelectedRangeFromPage();
         assert_equals(sel.toString(), "this is atest\n    of selection");
         assert_false(sel.collapsed);
@@ -122,7 +122,7 @@
         assert_equals(sel.endContainer.textContent, "of selection");
 
         // Last, the insertion point after third child.
-        axRegion.setSelection(axRegion, 4, axRegion, 4);
+        axRegion.setSelection(axRegion, 3, axRegion, 3);
         updateSelectedRangeFromPage();
         assert_equals(sel.toString(), "");
         assert_true(sel.collapsed);

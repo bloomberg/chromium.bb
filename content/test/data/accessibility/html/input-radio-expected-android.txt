@@ -7,9 +7,7 @@ android.webkit.WebView focusable focused scrollable
 ++++android.view.View name='Radio2'
 ++android.view.View
 ++++android.widget.RadioButton role_description='radio button' checkable clickable focusable name='Radio3'
-++++android.view.View name=' '
 ++++android.widget.RadioButton role_description='radio button' checkable checked clickable focusable name='Radio4'
 ++android.view.View
 ++++android.widget.RadioButton role_description='radio button' checkable clickable focusable name='Radio5'
-++++android.view.View name=' '
 ++++android.widget.RadioButton role_description='radio button' checkable checked clickable focusable name='Radio6'
