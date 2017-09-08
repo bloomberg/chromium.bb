@@ -51,7 +51,7 @@ namespace {
 
 // Test fixture to exercise net::CookieStoreIOSPersistent created with
 // TestPersistentCookieStore back-end and not synchronized with
-// NSHTTPCookieStorage.
+// SystemCookieStore.
 class CookieStoreIOSPersistentTest : public testing::Test {
  public:
   CookieStoreIOSPersistentTest()

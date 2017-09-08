@@ -13,8 +13,6 @@
 #include "net/cookies/cookie_store.h"
 #include "url/gurl.h"
 
-@class NSHTTPCookieStorage;
-
 namespace net {
 
 // The CookieStoreIOSPersistent is an implementation of CookieStore relying on
@@ -29,7 +27,7 @@ namespace net {
 class CookieStoreIOSPersistent : public CookieStoreIOS {
  public:
   // Creates a CookieStoreIOS with a default value of
-  // |NSHTTPCookieStorage sharedCookieStorage| as the system's cookie store.
+  // the SystemCookieStore as the system's cookie store.
   explicit CookieStoreIOSPersistent(
       net::CookieMonster::PersistentCookieStore* persistent_store);
 

@@ -21,12 +21,12 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "ios/net/cookies/cookie_cache.h"
+#import "ios/net/cookies/system_cookie_store.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
 #include "url/gurl.h"
 
 @class NSHTTPCookie;
-@class NSHTTPCookieStorage;
 @class NSArray;
 
 namespace net {
@@ -58,7 +58,12 @@ class CookieStoreIOS : public net::CookieStore,
   // as its default backend and is initially synchronized with it.
   // Apple does not persist the cookies' creation dates in NSHTTPCookieStorage,
   // so callers should not expect these values to be populated.
-  explicit CookieStoreIOS(NSHTTPCookieStorage* cookie_storage);
+  explicit CookieStoreIOS(std::unique_ptr<SystemCookieStore> system_store);
+
+  // Used by ChromeSigninCookieManager/Cronet
+  // TODO(crbug.com/759226): Remove once the migration to use SystemCookieStore
+  // is finished.
+  explicit CookieStoreIOS(NSHTTPCookieStorage* ns_cookie_store);
 
   ~CookieStoreIOS() override;
 
@@ -130,7 +135,7 @@ class CookieStoreIOS : public net::CookieStore,
 
  protected:
   CookieStoreIOS(net::CookieMonster::PersistentCookieStore* persistent_store,
-                 NSHTTPCookieStorage* system_store);
+                 std::unique_ptr<SystemCookieStore> system_store);
 
   // These three functions are used for wrapping user-supplied callbacks given
   // to CookieStoreIOS mutator methods. Given a callback, they return a new
@@ -168,7 +173,7 @@ class CookieStoreIOS : public net::CookieStore,
                                DeleteCallback callback);
 
   std::unique_ptr<net::CookieMonster> cookie_monster_;
-  base::scoped_nsobject<NSHTTPCookieStorage> system_store_;
+  std::unique_ptr<SystemCookieStore> system_store_;
   std::unique_ptr<CookieCreationTimeManager> creation_time_manager_;
   bool metrics_enabled_;
   base::CancelableClosure flush_closure_;
