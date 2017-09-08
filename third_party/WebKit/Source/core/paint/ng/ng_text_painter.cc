@@ -24,7 +24,7 @@ namespace blink {
 void NGTextPainter::Paint(unsigned start_offset,
                           unsigned end_offset,
                           unsigned length,
-                          const Style& text_style) {
+                          const TextPaintStyle& text_style) {
   GraphicsContextStateSaver state_saver(graphics_context_, false);
   UpdateGraphicsContext(text_style, state_saver);
   // TODO(layout-dev): Handle combine text here or elsewhere.

@@ -38,15 +38,16 @@ class CORE_EXPORT NGTextPainter : public TextPainterBase {
   void Paint(unsigned start_offset,
              unsigned end_offset,
              unsigned length,
-             const Style&);
+             const TextPaintStyle&);
 
-  static Style TextPaintingStyle(const NGPhysicalTextFragment*,
-                                 const ComputedStyle&,
-                                 const PaintInfo&);
-  static Style SelectionPaintingStyle(const NGPhysicalTextFragment*,
-                                      bool have_selection,
-                                      const PaintInfo&,
-                                      const Style& text_style);
+  static TextPaintStyle TextPaintingStyle(const NGPhysicalTextFragment*,
+                                          const ComputedStyle&,
+                                          const PaintInfo&);
+  static TextPaintStyle SelectionPaintingStyle(
+      const NGPhysicalTextFragment*,
+      bool have_selection,
+      const PaintInfo&,
+      const TextPaintStyle& text_style);
 
  private:
   template <PaintInternalStep step>

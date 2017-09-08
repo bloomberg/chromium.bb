@@ -4,6 +4,7 @@
 
 #include "core/layout/ng/ng_physical_fragment.h"
 
+#include "core/layout/LayoutObject.h"
 #include "core/layout/ng/geometry/ng_border_edges.h"
 #include "core/layout/ng/geometry/ng_box_strut.h"
 #include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
@@ -163,6 +164,12 @@ void NGPhysicalFragment::Destroy() const {
 const ComputedStyle& NGPhysicalFragment::Style() const {
   DCHECK(style_);
   return *style_;
+}
+
+Node* NGPhysicalFragment::GetNode() const {
+  // TODO(layout-dev): This should store the node directly instead of going
+  // through LayoutObject.
+  return layout_object_ ? layout_object_->GetNode() : nullptr;
 }
 
 NGPixelSnappedPhysicalBoxStrut NGPhysicalFragment::BorderWidths() const {

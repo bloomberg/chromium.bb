@@ -8,6 +8,7 @@
 #include "core/paint/AppliedDecorationPainter.h"
 #include "core/paint/BoxPainterBase.h"
 #include "core/paint/PaintInfo.h"
+#include "core/paint/SelectionPaintingUtils.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/ShadowList.h"
 #include "platform/fonts/Font.h"
@@ -60,7 +61,7 @@ void TextPainterBase::SetEmphasisMark(const AtomicString& emphasis_mark,
 // static
 void TextPainterBase::UpdateGraphicsContext(
     GraphicsContext& context,
-    const Style& text_style,
+    const TextPaintStyle& text_style,
     bool horizontal,
     GraphicsContextStateSaver& state_saver) {
   TextDrawingModeFlags mode = context.TextDrawingMode();
@@ -100,11 +101,10 @@ Color TextPainterBase::TextColorForWhiteBackground(Color text_color) {
 }
 
 // static
-TextPainterBase::Style TextPainterBase::TextPaintingStyle(
-    const Document& document,
-    const ComputedStyle& style,
-    const PaintInfo& paint_info) {
-  TextPainterBase::Style text_style;
+TextPaintStyle TextPainterBase::TextPaintingStyle(const Document& document,
+                                                  const ComputedStyle& style,
+                                                  const PaintInfo& paint_info) {
+  TextPaintStyle text_style;
   bool is_printing = paint_info.IsPrinting();
 
   if (paint_info.phase == kPaintPhaseTextClip) {
@@ -148,6 +148,17 @@ TextPainterBase::Style TextPainterBase::TextPaintingStyle(
   }
 
   return text_style;
+}
+
+TextPaintStyle TextPainterBase::SelectionPaintingStyle(
+    const Document& document,
+    const ComputedStyle& style,
+    Node* node,
+    bool have_selection,
+    const PaintInfo& paint_info,
+    const TextPaintStyle& text_style) {
+  return SelectionPaintingUtils::SelectionPaintingStyle(
+      document, style, node, have_selection, text_style, paint_info);
 }
 
 void TextPainterBase::DecorationsStripeIntercepts(

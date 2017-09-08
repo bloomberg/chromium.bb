@@ -1317,45 +1317,6 @@ bool LayoutObject::IsSelectable() const {
                          Style()->UserModify() == EUserModify::kReadOnly);
 }
 
-Color LayoutObject::SelectionBackgroundColor() const {
-  if (!IsSelectable())
-    return Color::kTransparent;
-
-  if (RefPtr<ComputedStyle> pseudo_style = GetUncachedSelectionStyle())
-    return ResolveColor(*pseudo_style, CSSPropertyBackgroundColor)
-        .BlendWithWhite();
-  return GetFrame()->Selection().FrameIsFocusedAndActive()
-             ? LayoutTheme::GetTheme().ActiveSelectionBackgroundColor()
-             : LayoutTheme::GetTheme().InactiveSelectionBackgroundColor();
-}
-
-Color LayoutObject::SelectionColor(
-    int color_property,
-    const GlobalPaintFlags global_paint_flags) const {
-  // If the element is unselectable, or we are only painting the selection,
-  // don't override the foreground color with the selection foreground color.
-  if (!IsSelectable() || (global_paint_flags & kGlobalPaintSelectionOnly))
-    return ResolveColor(color_property);
-
-  if (RefPtr<ComputedStyle> pseudo_style = GetUncachedSelectionStyle())
-    return ResolveColor(*pseudo_style, color_property);
-  if (!LayoutTheme::GetTheme().SupportsSelectionForegroundColors())
-    return ResolveColor(color_property);
-  return GetFrame()->Selection().FrameIsFocusedAndActive()
-             ? LayoutTheme::GetTheme().ActiveSelectionForegroundColor()
-             : LayoutTheme::GetTheme().InactiveSelectionForegroundColor();
-}
-
-Color LayoutObject::SelectionForegroundColor(
-    const GlobalPaintFlags global_paint_flags) const {
-  return SelectionColor(CSSPropertyWebkitTextFillColor, global_paint_flags);
-}
-
-Color LayoutObject::SelectionEmphasisMarkColor(
-    const GlobalPaintFlags global_paint_flags) const {
-  return SelectionColor(CSSPropertyWebkitTextEmphasisColor, global_paint_flags);
-}
-
 // Called when an object that was floating or positioned becomes a normal flow
 // object again. We have to make sure the layout tree updates as needed to
 // accommodate the new normal flow object.
@@ -3045,42 +3006,6 @@ RefPtr<ComputedStyle> LayoutObject::GetUncachedPseudoStyle(
     return nullptr;
 
   return element->GetUncachedPseudoStyle(request, parent_style);
-}
-
-RefPtr<ComputedStyle> LayoutObject::GetUncachedSelectionStyle() const {
-  if (!GetNode())
-    return nullptr;
-
-  // In Blink, ::selection only applies to direct children of the element on
-  // which ::selection is matched. In order to be able to style ::selection
-  // inside elements implemented with a UA shadow tree, like input::selection,
-  // we calculate ::selection style on the shadow host for elements inside the
-  // UA shadow.
-  if (ShadowRoot* root = GetNode()->ContainingShadowRoot()) {
-    if (root->GetType() == ShadowRootType::kUserAgent) {
-      if (Element* shadow_host = GetNode()->OwnerShadowHost()) {
-        if (LayoutObject* obj = shadow_host->GetLayoutObject()) {
-          return obj->GetUncachedPseudoStyle(
-              PseudoStyleRequest(kPseudoIdSelection));
-        }
-      }
-    }
-  }
-
-  // If we request ::selection style for LayoutText, query ::selection style on
-  // the parent element instead, as that is the node for which ::selection
-  // matches.
-  const LayoutObject* selection_layout_object = this;
-  Element* element = Traversal<Element>::FirstAncestorOrSelf(*GetNode());
-  if (!element)
-    return nullptr;
-  if (element != GetNode()) {
-    selection_layout_object = element->GetLayoutObject();
-    if (!selection_layout_object)
-      return nullptr;
-  }
-  return selection_layout_object->GetUncachedPseudoStyle(
-      PseudoStyleRequest(kPseudoIdSelection));
 }
 
 void LayoutObject::AddAnnotatedRegions(Vector<AnnotatedRegionValue>& regions) {

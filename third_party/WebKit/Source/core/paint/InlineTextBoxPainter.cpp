@@ -18,6 +18,7 @@
 #include "core/paint/AppliedDecorationPainter.h"
 #include "core/paint/DecorationInfo.h"
 #include "core/paint/PaintInfo.h"
+#include "core/paint/SelectionPaintingUtils.h"
 #include "core/paint/TextPainter.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
@@ -158,13 +159,12 @@ bool InlineTextBoxPainter::PaintsMarkerHighlights(
              layout_object.GetNode());
 }
 
-static void PrepareContextForDecoration(
-    GraphicsContext& context,
-    GraphicsContextStateSaver& state_saver,
-    bool is_horizontal,
-    const TextPainterBase::Style& text_style,
-    const LayoutTextCombine* combined_text,
-    const LayoutRect& box_rect) {
+static void PrepareContextForDecoration(GraphicsContext& context,
+                                        GraphicsContextStateSaver& state_saver,
+                                        bool is_horizontal,
+                                        const TextPaintStyle& text_style,
+                                        const LayoutTextCombine* combined_text,
+                                        const LayoutRect& box_rect) {
   TextPainterBase::UpdateGraphicsContext(context, text_style, is_horizontal,
                                          state_saver);
   if (combined_text) {
@@ -396,12 +396,13 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
   }
 
   // Determine text colors.
-  TextPainterBase::Style text_style = TextPainterBase::TextPaintingStyle(
+  TextPaintStyle text_style = TextPainterBase::TextPaintingStyle(
       inline_text_box_.GetLineLayoutItem().GetDocument(), style_to_use,
       paint_info);
-  TextPainterBase::Style selection_style = TextPainter::SelectionPaintingStyle(
-      inline_text_box_.GetLineLayoutItem(), have_selection, paint_info,
-      text_style);
+  TextPaintStyle selection_style = TextPainterBase::SelectionPaintingStyle(
+      inline_text_box_.GetLineLayoutItem().GetDocument(), style_to_use,
+      inline_text_box_.GetLineLayoutItem().GetNode(), have_selection,
+      paint_info, text_style);
   bool paint_selected_text_only = (paint_info.phase == kPaintPhaseSelection);
   bool paint_selected_text_separately =
       !paint_selected_text_only && text_style != selection_style;
@@ -1045,7 +1046,9 @@ void InlineTextBoxPainter::PaintSelection(GraphicsContext& context,
   if (s_pos >= e_pos)
     return;
 
-  Color c = inline_text_box_.GetLineLayoutItem().SelectionBackgroundColor();
+  auto layout_item = inline_text_box_.GetLineLayoutItem();
+  Color c = SelectionPaintingUtils::SelectionBackgroundColor(
+      layout_item.GetDocument(), layout_item.StyleRef(), layout_item.GetNode());
   if (!c.Alpha())
     return;
 
@@ -1224,7 +1227,7 @@ void InlineTextBoxPainter::PaintTextMatchMarkerForeground(
   if (!font_data)
     return;
 
-  TextPainterBase::Style text_style;
+  TextPaintStyle text_style;
   text_style.current_color = text_style.fill_color = text_style.stroke_color =
       text_style.emphasis_mark_color = text_color;
   text_style.stroke_width = style.TextStrokeWidth();

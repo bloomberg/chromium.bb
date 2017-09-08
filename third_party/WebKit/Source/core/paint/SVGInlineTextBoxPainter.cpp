@@ -21,6 +21,7 @@
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/SVGPaintContext.h"
+#include "core/paint/SelectionPaintingUtils.h"
 #include "core/style/AppliedTextDecoration.h"
 #include "core/style/ShadowList.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
@@ -231,8 +232,9 @@ void SVGInlineTextBoxPainter::PaintSelectionBackground(
       !ShouldPaintSelection(paint_info))
     return;
 
-  Color background_color =
-      svg_inline_text_box_.GetLineLayoutItem().SelectionBackgroundColor();
+  auto layout_item = svg_inline_text_box_.GetLineLayoutItem();
+  Color background_color = SelectionPaintingUtils::SelectionBackgroundColor(
+      layout_item.GetDocument(), layout_item.StyleRef(), layout_item.GetNode());
   if (!background_color.Alpha())
     return;
 
