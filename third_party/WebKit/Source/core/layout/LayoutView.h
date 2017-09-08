@@ -222,7 +222,7 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   }
 
   LayoutRect VisualOverflowRect() const override;
-  LayoutRect LocalVisualRect() const override;
+  LayoutRect LocalVisualRectIgnoringVisibility() const override;
 
   // Invalidates paint for the entire view, including composited descendants,
   // but not including child frames.

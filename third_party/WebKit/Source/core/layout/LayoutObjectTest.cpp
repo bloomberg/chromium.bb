@@ -11,9 +11,12 @@
 #include "core/layout/LayoutView.h"
 #include "platform/json/JSONValues.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
+
+using ::testing::Return;
 
 class LayoutObjectTest : public RenderingTest {
  public:
@@ -360,6 +363,38 @@ TEST_F(LayoutObjectTest,
   const LayoutTextFragment* layout_object2 =
       ToLayoutTextFragment(AssociatedLayoutObjectOf(*text, 2));
   EXPECT_EQ(layout_object1, layout_object2);
+}
+
+TEST_F(LayoutObjectTest, VisualRect) {
+  class MockLayoutObject : public LayoutObject {
+   public:
+    MockLayoutObject() : LayoutObject(nullptr) {}
+    MOCK_CONST_METHOD0(VisualRectRespectsVisibility, bool());
+
+   private:
+    LayoutRect LocalVisualRectIgnoringVisibility() const {
+      return LayoutRect(10, 10, 20, 20);
+    }
+    const char* GetName() const final { return "MockLayoutObject"; }
+    void UpdateLayout() final {}
+    FloatRect LocalBoundingBoxRectForAccessibility() const final {
+      return FloatRect();
+    }
+  };
+
+  MockLayoutObject mock_object;
+  auto style = ComputedStyle::Create();
+  mock_object.SetStyle(style.Get());
+  EXPECT_EQ(LayoutRect(10, 10, 20, 20), mock_object.LocalVisualRect());
+  EXPECT_EQ(LayoutRect(10, 10, 20, 20), mock_object.LocalVisualRect());
+
+  style->SetVisibility(EVisibility::kHidden);
+  EXPECT_CALL(mock_object, VisualRectRespectsVisibility())
+      .WillOnce(Return(true));
+  EXPECT_EQ(LayoutRect(), mock_object.LocalVisualRect());
+  EXPECT_CALL(mock_object, VisualRectRespectsVisibility())
+      .WillOnce(Return(false));
+  EXPECT_EQ(LayoutRect(10, 10, 20, 20), mock_object.LocalVisualRect());
 }
 
 }  // namespace blink

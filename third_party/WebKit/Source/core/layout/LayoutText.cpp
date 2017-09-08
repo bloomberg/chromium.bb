@@ -1862,10 +1862,7 @@ LayoutRect LayoutText::VisualOverflowRect() const {
   return rect;
 }
 
-LayoutRect LayoutText::LocalVisualRect() const {
-  if (Style()->Visibility() != EVisibility::kVisible)
-    return LayoutRect();
-
+LayoutRect LayoutText::LocalVisualRectIgnoringVisibility() const {
   return UnionRect(VisualOverflowRect(), LocalSelectionRect());
 }
 

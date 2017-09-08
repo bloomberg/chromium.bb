@@ -626,8 +626,9 @@ bool LayoutMultiColumnSet::ComputeColumnRuleBounds(
   return true;
 }
 
-LayoutRect LayoutMultiColumnSet::LocalVisualRect() const {
-  LayoutRect block_flow_bounds = LayoutBlockFlow::LocalVisualRect();
+LayoutRect LayoutMultiColumnSet::LocalVisualRectIgnoringVisibility() const {
+  LayoutRect block_flow_bounds =
+      LayoutBlockFlow::LocalVisualRectIgnoringVisibility();
 
   // Now add in column rule bounds, if present.
   Vector<LayoutRect> column_rule_bounds;

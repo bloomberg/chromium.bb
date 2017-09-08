@@ -1182,7 +1182,7 @@ LayoutRect LayoutObject::AbsoluteVisualRect() const {
   return rect;
 }
 
-LayoutRect LayoutObject::LocalVisualRect() const {
+LayoutRect LayoutObject::LocalVisualRectIgnoringVisibility() const {
   NOTREACHED();
   return LayoutRect();
 }

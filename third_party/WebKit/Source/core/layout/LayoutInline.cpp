@@ -1149,12 +1149,9 @@ LayoutRect LayoutInline::AbsoluteVisualRect() const {
   return LayoutRect();
 }
 
-LayoutRect LayoutInline::LocalVisualRect() const {
+LayoutRect LayoutInline::LocalVisualRectIgnoringVisibility() const {
   // If we don't create line boxes, we don't have any invalidations to do.
   if (!AlwaysCreateLineBoxes())
-    return LayoutRect();
-
-  if (Style()->Visibility() != EVisibility::kVisible)
     return LayoutRect();
 
   return VisualOverflowRect();

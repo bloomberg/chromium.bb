@@ -42,22 +42,23 @@ class LayoutSVGGradientStop final : public LayoutObject {
 
   void UpdateLayout() override;
 
+ private:
   // These overrides are needed to prevent NOTREACHED on <svg><stop /></svg> in
   // LayoutObject's default implementations.
-  LayoutRect LocalVisualRect() const override { return LayoutRect(); }
-  FloatRect ObjectBoundingBox() const override { return FloatRect(); }
-  FloatRect StrokeBoundingBox() const override { return FloatRect(); }
-  FloatRect VisualRectInLocalSVGCoordinates() const override {
+  LayoutRect LocalVisualRectIgnoringVisibility() const final {
+    return LayoutRect();
+  }
+  FloatRect ObjectBoundingBox() const final { return FloatRect(); }
+  FloatRect StrokeBoundingBox() const final { return FloatRect(); }
+  FloatRect VisualRectInLocalSVGCoordinates() const final {
     return FloatRect();
   }
   FloatRect LocalBoundingBoxRectForAccessibility() const final {
     return FloatRect();
   }
 
- protected:
-  void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
+  void StyleDidChange(StyleDifference, const ComputedStyle* old_style) final;
 
- private:
   SVGGradientElement* GradientElement() const;
 };
 

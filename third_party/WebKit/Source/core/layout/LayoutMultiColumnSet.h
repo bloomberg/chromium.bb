@@ -234,14 +234,14 @@ class CORE_EXPORT LayoutMultiColumnSet : public LayoutBlockFlow {
   bool ComputeColumnRuleBounds(const LayoutPoint& paint_offset,
                                Vector<LayoutRect>& column_rule_bounds) const;
 
-  LayoutRect LocalVisualRect() const override;
-
   void UpdateFromNG();
 
  protected:
   LayoutMultiColumnSet(LayoutFlowThread*);
 
  private:
+  LayoutRect LocalVisualRectIgnoringVisibility() const final;
+
   void InsertedIntoTree() final;
   void WillBeRemovedFromTree() final;
 

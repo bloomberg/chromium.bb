@@ -378,7 +378,7 @@ AffineTransform LayoutSVGRoot::LocalToSVGParentTransform() const {
          local_to_border_box_transform_;
 }
 
-LayoutRect LayoutSVGRoot::LocalVisualRect() const {
+LayoutRect LayoutSVGRoot::LocalVisualRectIgnoringVisibility() const {
   // This is an open-coded aggregate of SVGLayoutSupport::localVisualRect
   // and LayoutReplaced::localVisualRect. The reason for this is to optimize/
   // minimize the visual rect when the box is not "decorated" (does not have
@@ -386,8 +386,7 @@ LayoutRect LayoutSVGRoot::LocalVisualRect() const {
   // LayoutSVGRootTest.VisualRectMappingWithViewportClipWithoutBorder).
 
   // Return early for any cases where we don't actually paint.
-  if (Style()->Visibility() != EVisibility::kVisible &&
-      !EnclosingLayer()->HasVisibleContent())
+  if (!EnclosingLayer()->HasVisibleContent())
     return LayoutRect();
 
   // Compute the visual rect of the content of the SVG in the border-box
