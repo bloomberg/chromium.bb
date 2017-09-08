@@ -23,6 +23,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/chrome_web_view_internal.h"
 #include "chrome/common/extensions/api/context_menus.h"
+#include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -865,6 +866,10 @@ void MenuManager::OnExtensionLoaded(content::BrowserContext* browser_context,
         kContextMenusKey,
         base::Bind(
             &MenuManager::ReadFromStorage, AsWeakPtr(), extension->id()));
+  }
+
+  if (extension->from_bookmark() && UrlHandlers::GetUrlHandlers(extension)) {
+    icon_manager_.LoadIcon(browser_context_, extension);
   }
 }
 

@@ -41,7 +41,8 @@ namespace app.runtime {
     kiosk,
     chrome_internal,
     test,
-    installed_notification
+    installed_notification,
+    context_menu
   };
 
   // An app can be launched with a specific action in mind, for example, to
