@@ -7,6 +7,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/heap/HeapPage.h"
+#include "platform/heap/ThreadingTraits.h"
 #include "platform/heap/VisitorImpl.h"
 #include "platform/wtf/Deque.h"
 #include "platform/wtf/Vector.h"
@@ -128,7 +129,8 @@ class PLATFORM_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer {
       return;
     }
 
-    const ThreadState* thread_state = ThreadState::Current();
+    const ThreadState* thread_state =
+        ThreadStateFor<ThreadingTrait<T>::kAffinity>::GetState();
     DCHECK(thread_state);
     // Bail out if tracing is not in progress.
     if (!thread_state->WrapperTracingInProgress())
