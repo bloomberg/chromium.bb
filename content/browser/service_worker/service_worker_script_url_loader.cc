@@ -106,6 +106,9 @@ void ServiceWorkerScriptURLLoader::OnStartLoadingResponseBody(
 void ServiceWorkerScriptURLLoader::OnComplete(
     const ResourceRequestCompletionStatus& status) {
   forwarding_client_->OnComplete(status);
+
+  network_client_binding_.Close();
+  network_loader_.reset();
 }
 
 }  // namespace content
