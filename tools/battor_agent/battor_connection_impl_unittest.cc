@@ -80,6 +80,8 @@ class BattOrConnectionImplTest : public testing::Test,
     task_runner_->RunUntilIdle();
   }
 
+  void CloseConnection() { connection_->Close(); }
+
   void ReadMessage(BattOrMessageType type) {
     is_read_complete_ = false;
     connection_->ReadMessage(type);
@@ -160,11 +162,24 @@ TEST_F(BattOrConnectionImplTest, OpenConnectionSucceedsAfterTimeout) {
   ASSERT_TRUE(GetOpenSuccess());
 }
 
+TEST_F(BattOrConnectionImplTest, OpenConnectionSucceedsImmediatelyIfOpen) {
+  OpenConnection();
+  ASSERT_FALSE(IsOpenComplete());
+
+  AdvanceTickClock(base::TimeDelta::FromMilliseconds(50));
+
+  OpenConnection();
+  ASSERT_TRUE(IsOpenComplete());
+  ASSERT_TRUE(GetOpenSuccess());
+}
+
 TEST_F(BattOrConnectionImplTest, OpenConnectionFlushesIfAlreadyOpen) {
   OpenConnection();
   AdvanceTickClock(base::TimeDelta::FromMilliseconds(50));
 
   SendControlMessage(BATTOR_CONTROL_MESSAGE_TYPE_RESET, 4, 7);
+
+  CloseConnection();
   OpenConnection();
   AdvanceTickClock(base::TimeDelta::FromMilliseconds(50));
 
@@ -203,6 +218,7 @@ TEST_F(BattOrConnectionImplTest, OpenConnectionFlushesAlreadyReadBuffer) {
   SendBytesRaw(data, 9);
   ReadMessage(BATTOR_MESSAGE_TYPE_SAMPLES);
 
+  CloseConnection();
   OpenConnection();
   AdvanceTickClock(base::TimeDelta::FromMilliseconds(50));
 
@@ -260,6 +276,7 @@ TEST_F(BattOrConnectionImplTest, OpenConnectionFlushesMultipleReadsOfData) {
   for (int i = 0; i < 10; i++)
     SendBytesRaw(data, 50000);
 
+  CloseConnection();
   OpenConnection();
   AdvanceTickClock(base::TimeDelta::FromMilliseconds(50));
 
