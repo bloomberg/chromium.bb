@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/app/safe_mode_util.h"
+#include "ios/chrome/browser/safe_mode/safe_mode_util.h"
 
 #include <mach-o/dyld.h>
 #include <stdint.h>

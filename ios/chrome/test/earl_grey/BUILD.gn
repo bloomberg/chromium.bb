@@ -55,7 +55,6 @@ chrome_ios_eg_test("ios_chrome_settings_egtests") {
 
 chrome_ios_eg_test("ios_chrome_ui_egtests") {
   deps = [
-    "//ios/chrome/app/safe_mode:eg_tests",
     "//ios/chrome/browser/ui:eg_tests",
     "//ios/chrome/browser/ui/activity_services:eg_tests",
     "//ios/chrome/browser/ui/alert_coordinator:eg_tests",
@@ -73,6 +72,7 @@ chrome_ios_eg_test("ios_chrome_ui_egtests") {
     "//ios/chrome/browser/ui/print:eg_tests",
     "//ios/chrome/browser/ui/qr_scanner:eg_tests",
     "//ios/chrome/browser/ui/sad_tab:eg_tests",
+    "//ios/chrome/browser/ui/safe_mode:eg_tests",
     "//ios/chrome/browser/ui/stack_view:eg_tests",
     "//ios/chrome/browser/ui/sync:eg_tests",
     "//ios/chrome/browser/ui/tab_switcher:eg_tests",
