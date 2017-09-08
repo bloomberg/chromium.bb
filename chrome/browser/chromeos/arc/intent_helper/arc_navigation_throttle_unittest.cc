@@ -50,6 +50,21 @@ TEST(ArcNavigationThrottleTest, TestShouldOverrideUrlLoading) {
   EXPECT_FALSE(ArcNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
       GURL("http://a.b.google.com"), GURL("http://c.google.com/")));
 
+  // Same as last tests, except for "play.google.com".
+  EXPECT_TRUE(ArcNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
+      GURL("http://google.com"), GURL("http://play.google.com/fake_app")));
+  EXPECT_TRUE(ArcNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
+      GURL("https://www.google.com.mx"),
+      GURL("https://play.google.com/fake_app")));
+  EXPECT_TRUE(ArcNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
+      GURL("https://mail.google.com"),
+      GURL("https://play.google.com/fake_app")));
+  EXPECT_FALSE(ArcNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
+      GURL("https://play.google.com/search"),
+      GURL("https://play.google.com/fake_app")));
+  EXPECT_TRUE(ArcNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
+      GURL("http://not_google.com"), GURL("http://play.google.com/fake_app")));
+
   // If either of two paramters is empty, the function should return false.
   EXPECT_FALSE(ArcNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
       GURL(), GURL("http://a.google.com/")));
