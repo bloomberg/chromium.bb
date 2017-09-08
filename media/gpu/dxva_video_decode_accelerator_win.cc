@@ -2417,11 +2417,6 @@ void DXVAVideoDecodeAccelerator::CopySurface(
     RECT rect = {0, 0, width, height};
     DXVA2_VideoSample sample = {0};
     sample.End = 1000;
-    if (use_color_info_) {
-      sample.SampleFormat = gfx::ColorSpaceWin::GetExtendedFormat(color_space);
-    } else {
-      sample.SampleFormat.SampleFormat = DXVA2_SampleProgressiveFrame;
-    }
 
     sample.SrcSurface = src_surface;
     sample.SrcRect = rect;
@@ -2436,6 +2431,14 @@ void DXVAVideoDecodeAccelerator::CopySurface(
     params.ProcAmpValues = default_procamp_values_;
 
     params.Alpha = DXVA2_Fixed32OpaqueAlpha();
+
+    if (use_color_info_) {
+      sample.SampleFormat = gfx::ColorSpaceWin::GetExtendedFormat(color_space);
+      params.DestFormat =
+          gfx::ColorSpaceWin::GetExtendedFormat(config_.target_color_space);
+    } else {
+      sample.SampleFormat.SampleFormat = DXVA2_SampleProgressiveFrame;
+    }
 
     hr = processor_->VideoProcessBlt(dest_surface, &params, &sample, 1, NULL);
     if (hr != S_OK) {
