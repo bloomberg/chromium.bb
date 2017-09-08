@@ -203,12 +203,22 @@ class CORE_EXPORT V8DOMConfiguration final {
   // object's constants. It sets the constant on both the FunctionTemplate and
   // the ObjectTemplate. PropertyAttributes is always ReadOnly.
   struct ConstantConfiguration {
+    constexpr ConstantConfiguration(const char* name,
+                                    ConstantType type,
+                                    int value)
+        : name(name), type(type), ivalue(value) {}
+    constexpr ConstantConfiguration(const char* name,
+                                    ConstantType type,
+                                    double value)
+        : name(name), type(type), dvalue(value) {}
     ConstantConfiguration& operator=(const ConstantConfiguration&) = delete;
     DISALLOW_NEW();
     const char* const name;
-    int ivalue;
-    double dvalue;
     ConstantType type;
+    union {
+      int ivalue;
+      double dvalue;
+    };
   };
 
   // Constant installation

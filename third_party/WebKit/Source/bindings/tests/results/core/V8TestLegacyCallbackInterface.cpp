@@ -70,8 +70,8 @@ static void InstallV8TestLegacyCallbackInterfaceTemplate(
   ALLOW_UNUSED_LOCAL(prototypeTemplate);
 
   // Register DOM constants.
-  const V8DOMConfiguration::ConstantConfiguration V8TestLegacyCallbackInterfaceConstants[] = {
-      {"CONST_VALUE_USHORT_42", 42, 0, V8DOMConfiguration::kConstantTypeUnsignedShort},
+  static constexpr V8DOMConfiguration::ConstantConfiguration V8TestLegacyCallbackInterfaceConstants[] = {
+      {"CONST_VALUE_USHORT_42", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(42)},
   };
   V8DOMConfiguration::InstallConstants(
       isolate, interfaceTemplate, prototypeTemplate,
