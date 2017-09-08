@@ -3,3 +3,6 @@ CACHE MANIFEST
 /resources/network-simulator.php?path=/appcache/resources/offline-access.manifest
 /resources/network-simulator.php?path=/appcache/resources/simple.txt
 /resources/network-simulator.php?path=/appcache/resources/offline-access.js
+
+NETWORK:
+/resources/redirect.php

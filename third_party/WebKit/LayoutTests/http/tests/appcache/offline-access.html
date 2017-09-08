@@ -29,8 +29,14 @@ function createFrame()
     document.body.appendChild(ifr);
 }
 
-function frameCreated()
+function frameCreated(msg)
 {
+    if (msg.data != "done") {
+        log("FAIL: " + msg.data);
+        if (window.testRunner)
+            testRunner.notifyDone();
+        return;
+    }
     if (stage == 0) {
         stage = 1;
         setNetworkEnabled(false);
