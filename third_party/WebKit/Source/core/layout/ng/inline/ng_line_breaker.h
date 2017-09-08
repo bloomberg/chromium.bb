@@ -101,7 +101,7 @@ class CORE_EXPORT NGLineBreaker {
     kForcedBreak
   };
 
-  LineBreakState HandleText(const NGInlineItemResults&,
+  LineBreakState HandleText(const NGLineInfo&,
                             const NGInlineItem&,
                             NGInlineItemResult*);
   void BreakText(NGInlineItemResult*,
@@ -122,7 +122,7 @@ class CORE_EXPORT NGLineBreaker {
   void Rewind(NGLineInfo*, unsigned new_end);
 
   void SetCurrentStyle(const ComputedStyle&);
-  bool IsFirstBreakOpportunity(unsigned, const NGInlineItemResults&) const;
+  bool IsFirstBreakOpportunity(unsigned, const NGLineInfo&) const;
   LineBreakState ComputeIsBreakableAfter(NGInlineItemResult*) const;
 
   void MoveToNextOf(const NGInlineItem&);

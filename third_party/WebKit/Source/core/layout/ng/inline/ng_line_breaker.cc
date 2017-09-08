@@ -144,7 +144,7 @@ void NGLineBreaker::BreakLine(NGLineInfo* line_info) {
         NGInlineItemResult(&item, item_index_, offset_, item.EndOffset()));
     NGInlineItemResult* item_result = &item_results->back();
     if (item.Type() == NGInlineItem::kText) {
-      state = HandleText(*item_results, item, item_result);
+      state = HandleText(*line_info, item, item_result);
     } else if (item.Type() == NGInlineItem::kAtomicInline) {
       state = HandleAtomicInline(item, item_result, *line_info);
     } else if (item.Type() == NGInlineItem::kControl) {
@@ -243,11 +243,10 @@ void NGLineBreaker::ComputeLineLocation(NGLineInfo* line_info) const {
                            available_width);
 }
 
-bool NGLineBreaker::IsFirstBreakOpportunity(
-    unsigned offset,
-    const NGInlineItemResults& results) const {
-  unsigned line_start_offset = results.front().start_offset;
-  return break_iterator_.NextBreakOpportunity(line_start_offset) >= offset;
+bool NGLineBreaker::IsFirstBreakOpportunity(unsigned offset,
+                                            const NGLineInfo& line_info) const {
+  return break_iterator_.NextBreakOpportunity(line_info.StartOffset() + 1) >=
+         offset;
 }
 
 NGLineBreaker::LineBreakState NGLineBreaker::ComputeIsBreakableAfter(
@@ -261,7 +260,7 @@ NGLineBreaker::LineBreakState NGLineBreaker::ComputeIsBreakableAfter(
 }
 
 NGLineBreaker::LineBreakState NGLineBreaker::HandleText(
-    const NGInlineItemResults& results,
+    const NGLineInfo& line_info,
     const NGInlineItem& item,
     NGInlineItemResult* item_result) {
   DCHECK_EQ(item.Type(), NGInlineItem::kText);
@@ -291,7 +290,7 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleText(
     // If overflow and no break opportunities exist, and if 'break-word', try to
     // break at every grapheme cluster boundary.
     if (is_overflow && break_if_overflow_ &&
-        IsFirstBreakOpportunity(item_result->end_offset, results)) {
+        IsFirstBreakOpportunity(item_result->end_offset, line_info)) {
       DCHECK_EQ(break_iterator_.BreakType(), LineBreakType::kNormal);
       break_iterator_.SetBreakType(LineBreakType::kBreakCharacter);
       BreakText(item_result, item, available_width - line_.position);

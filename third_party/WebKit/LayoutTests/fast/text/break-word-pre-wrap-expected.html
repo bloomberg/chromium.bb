@@ -11,11 +11,15 @@ div {
 .c5 { width: 5.1ch; }
 .c6 { width: 6.1ch; }
 </style>
+<!-- This part contains non spec-conformant behavior due to recent spec change,
+     which pass on NG and Edge but not on pre-NG. Commenting out until we can
+     test fail-only-pre-NG.
 <div class="c5">Lorem<br>Ipsum<br>dollo<br>ABCDE<br>FGHI</div>
-<div class="c5">Lorem<br>Ipsum<br><br>dollo<br>ABCDE<br>FGHI</div>
-<div class="c5">Lorem<br><br>Ipsum<br><br>dollo<br>ABCDE<br>FGHI</div>
-<div class="c5">Lorem<br><br>Ipsum<br><br>dollo<br>ABCDE<br>FGHI</div>
+<div class="c5">Lorem<br>Ipsum<br>dollo<br>ABCDE<br>FGHI</div>
+<div class="c5">Lorem<br><br>Ipsum<br>dollo<br>ABCDE<br>FGHI</div>
+<div class="c5">Lorem<br><br>Ipsum<br>dollo<br>ABCDE<br>FGHI</div>
 <br>
+-->
 <div class="c6">Lorem<br>Ipsum<br>dollo<br>ABCDEF<br>GHI</div>
 <div class="c6">Lorem<br>Ipsum<br>dollo<br>ABCDEF<br>GHI</div>
 <div class="c6">Lorem<br>Ipsum<br>dollo<br>ABCDEF<br>GHI</div>
