@@ -245,7 +245,8 @@ void CronetEnvironment::Start() {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       ios_global_state::GetSharedNetworkIOThreadTaskRunner();
   if (!task_runner) {
-    network_io_thread_.reset(new base::Thread("Chrome Network IO Thread"));
+    network_io_thread_.reset(
+        new CronetNetworkThread("Chrome Network IO Thread", this));
     network_io_thread_->StartWithOptions(
         base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
   }
@@ -258,7 +259,7 @@ void CronetEnvironment::Start() {
                                  base::Unretained(this)));
 }
 
-void CronetEnvironment::PrepareForDestroyOnNetworkThread() {
+void CronetEnvironment::CleanUpOnNetworkThread() {
   // TODO(lilyhoughton) make unregistering of this work.
   // net::HTTPProtocolHandlerDelegate::SetInstance(nullptr);
 
@@ -273,25 +274,19 @@ void CronetEnvironment::PrepareForDestroyOnNetworkThread() {
   }
 
   // cronet_prefs_manager_ should be deleted on the network thread.
-  cronet_prefs_manager_.reset(nullptr);
+  cronet_prefs_manager_.reset();
 
-  file_thread_.reset(nullptr);
+  file_thread_.reset();
 
   // TODO(lilyhoughton) this should be smarter about making sure there are no
   // pending requests, etc.
-  main_context_.reset(nullptr);
+  main_context_.reset();
 }
 
 CronetEnvironment::~CronetEnvironment() {
-  PostToNetworkThread(
-      FROM_HERE,
-      base::Bind(&CronetEnvironment::PrepareForDestroyOnNetworkThread,
-                 base::Unretained(this)));
-  if (network_io_thread_) {
-    // Deleting a thread blocks the current thread and waits until all pending
-    // tasks are completed.
-    network_io_thread_.reset(nullptr);
-  }
+  // Deleting a thread blocks the current thread and waits until all pending
+  // tasks are completed.
+  network_io_thread_.reset();
 }
 
 void CronetEnvironment::InitializeOnNetworkThread() {
@@ -448,6 +443,19 @@ std::string CronetEnvironment::getDefaultQuicUserAgentId() const {
 base::SingleThreadTaskRunner* CronetEnvironment::GetFileThreadRunnerForTesting()
     const {
   return file_thread_->task_runner().get();
+}
+
+CronetEnvironment::CronetNetworkThread::CronetNetworkThread(
+    const std::string& name,
+    cronet::CronetEnvironment* cronet_environment)
+    : base::Thread(name), cronet_environment_(cronet_environment) {}
+
+CronetEnvironment::CronetNetworkThread::~CronetNetworkThread() {
+  Stop();
+}
+
+void CronetEnvironment::CronetNetworkThread::CleanUp() {
+  cronet_environment_->CleanUpOnNetworkThread();
 }
 
 }  // namespace cronet
