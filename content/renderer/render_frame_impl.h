@@ -303,6 +303,14 @@ class CONTENT_EXPORT RenderFrameImpl
     return render_accessibility_;
   }
 
+  // Whether or not the frame is currently swapped into the frame tree.  If
+  // this is false, this is a provisional frame which has not committed yet,
+  // and which will swap with a proxy when it commits.
+  //
+  // TODO(https://crbug.com/578349): Remove this once provisional frames are
+  // gone, and clean up code that depends on it.
+  bool in_frame_tree() { return in_frame_tree_; }
+
   void HandleWebAccessibilityEvent(const blink::WebAXObject& obj,
                                    blink::WebAXEvent event);
 

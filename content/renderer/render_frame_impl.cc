@@ -1014,6 +1014,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   DCHECK_EQ(render_view->GetWidget(), render_frame->render_widget_)
       << "Main frame is no longer reusing the RenderView as its widget! "
       << "Does the RenderFrame need to register itself with the RenderWidget?";
+  render_frame->in_frame_tree_ = true;
   return render_frame;
 }
 

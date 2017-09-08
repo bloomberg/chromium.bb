@@ -165,4 +165,30 @@ IN_PROC_BROWSER_TEST_F(MAYBE_SitePerProcessAccessibilityBrowserTest,
       "Title Of Awesomeness");
 }
 
+// Ensure that enabling accessibility and doing a remote-to-local main frame
+// navigation doesn't crash.  See https://crbug.com/762824.
+IN_PROC_BROWSER_TEST_F(MAYBE_SitePerProcessAccessibilityBrowserTest,
+                       RemoteToLocalMainFrameNavigation) {
+  // Enable full accessibility for all current and future WebContents.
+  BrowserAccessibilityState::GetInstance()->EnableAccessibility();
+
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  NavigateToURL(shell(), main_url);
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "This page has no title.");
+
+  // Open a new tab for b.com and wait for it to load.  This will create a
+  // proxy in b.com for the original (opener) tab.
+  GURL b_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  Shell* new_shell = OpenPopup(shell()->web_contents(), b_url, "popup");
+  WaitForAccessibilityTreeToContainNodeWithName(new_shell->web_contents(),
+                                                "Title Of Awesomeness");
+
+  // Navigate the original tab to b.com as well.  This performs a
+  // remote-to-local main frame navigation in b.com and shouldn't crash.
+  NavigateToURL(shell(), b_url);
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Title Of Awesomeness");
+}
+
 }  // namespace content
