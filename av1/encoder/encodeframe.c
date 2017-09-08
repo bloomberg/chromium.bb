@@ -5814,9 +5814,6 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
   const PREDICTION_MODE y_mode = mbmi->mode;
   const UV_PREDICTION_MODE uv_mode = mbmi->uv_mode;
   (void)counts;
-  (void)above_mi;
-  (void)left_mi;
-  (void)intraonly;
   const BLOCK_SIZE bsize = mbmi->sb_type;
   const int unify_bsize = CONFIG_CB4X4;
 
