@@ -111,12 +111,6 @@ class CHROMEOS_EXPORT ShillDeviceClient : public DBusClient {
                              const std::string& name,
                              VoidDBusMethodCallback callback) = 0;
 
-  // Calls AddIPConfig method.
-  // |callback| is called after the method call finishes.
-  virtual void AddIPConfig(const dbus::ObjectPath& device_path,
-                           const std::string& method,
-                           const ObjectPathDBusMethodCallback& callback) = 0;
-
   // Calls the RequirePin method.
   // |callback| is called after the method call finishes.
   virtual void RequirePin(const dbus::ObjectPath& device_path,
