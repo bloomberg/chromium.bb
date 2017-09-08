@@ -13,6 +13,9 @@
 #include "u2f_device.h"
 
 namespace device {
+
+// TODO(crbug/763303): Factor out HidService::Observer to make this class
+// transport agnostic, so that BLE devices could take part in requests as well.
 class U2fRequest : HidService::Observer {
  public:
   using ResponseCallback =
@@ -63,6 +66,7 @@ class U2fRequest : HidService::Observer {
   ScopedObserver<HidService, HidService::Observer> hid_service_observer_;
   base::WeakPtrFactory<U2fRequest> weak_factory_;
 };
+
 }  // namespace device
 
 #endif  // DEVICE_U2F_U2F_REQUEST_H_
