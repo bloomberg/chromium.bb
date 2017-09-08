@@ -66,7 +66,17 @@ constexpr int kTypeId = 0;
 // this entry since everything is associated with a PID.
 void WriteProcessName(int pid, std::ostream& out) {
   out << "{ \"pid\":" << pid << ", \"ph\":\"M\", \"name\":\"process_name\", "
-      << "\"args\":{\"name\":\"Browser process\"}}";
+      << "\"args\":{\"name\":\"Browser\"}},";
+
+  // Catapult needs a thread named "CrBrowserMain" to recognize Chrome browser.
+  out << "{ \"pid\":" << pid << ", \"ph\":\"M\", \"name\":\"thread_name\", "
+      << "\"tid\": 1,"
+      << "\"args\":{\"name\":\"CrBrowserMain\"}},";
+
+  // At least, one event must be present on the thread to avoid being pruned.
+  out << "{ \"name\": \"MemlogTraceEvent\", \"cat\": \"memlog\", "
+      << "\"ph\": \"B\", \"ts\": 1, \"pid\": " << pid << ", "
+      << "\"tid\": 1, \"args\": {}}";
 }
 
 // Writes the dictionary keys to preceed a "dumps" trace argument.
