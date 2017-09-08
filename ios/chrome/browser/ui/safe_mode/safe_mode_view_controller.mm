@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/app/safe_mode/safe_mode_view_controller.h"
+#import "ios/chrome/browser/ui/safe_mode/safe_mode_view_controller.h"
 
 #import <QuartzCore/QuartzCore.h>
 
 #include "base/strings/sys_string_conversions.h"
-#import "ios/chrome/app/safe_mode_crashing_modules_config.h"
-#import "ios/chrome/app/safe_mode_util.h"
 #include "ios/chrome/browser/crash_report/breakpad_helper.h"
+#import "ios/chrome/browser/safe_mode/safe_mode_crashing_modules_config.h"
+#import "ios/chrome/browser/safe_mode/safe_mode_util.h"
 #import "ios/chrome/browser/ui/fancy_ui/primary_action_button.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -298,8 +298,7 @@ const NSTimeInterval kUploadTotalTime = 5;
 
     [startButton_ setEnabled:YES];
     [uploadDescription_
-        setText:NSLocalizedString(@"IDS_IOS_SAFE_MODE_CRASH_REPORT_SENT",
-                                  @"")];
+        setText:NSLocalizedString(@"IDS_IOS_SAFE_MODE_CRASH_REPORT_SENT", @"")];
     [uploadDescription_ sizeToFit];
     [self centerView:uploadDescription_ afterView:startButton_];
     [uploadProgress_ setHidden:YES];

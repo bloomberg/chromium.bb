@@ -18,6 +18,7 @@ source_set("safe_mode") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/crash_report",
+    "//ios/chrome/browser/safe_mode",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/fancy_ui",
     "//ui/gfx",

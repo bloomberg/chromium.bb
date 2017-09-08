@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/app/safe_mode/safe_mode_coordinator.h"
+#import "ios/chrome/browser/ui/safe_mode/safe_mode_coordinator.h"
 
 #import "base/logging.h"
-#import "ios/chrome/app/safe_mode/safe_mode_view_controller.h"
 #include "ios/chrome/browser/crash_loop_detection_util.h"
+#import "ios/chrome/browser/ui/safe_mode/safe_mode_view_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

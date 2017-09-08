@@ -43,7 +43,6 @@
 #import "ios/chrome/app/deferred_initialization_runner.h"
 #import "ios/chrome/app/main_controller_private.h"
 #import "ios/chrome/app/memory_monitor.h"
-#import "ios/chrome/app/safe_mode_crashing_modules_config.h"
 #import "ios/chrome/app/spotlight/spotlight_manager.h"
 #import "ios/chrome/app/spotlight/spotlight_util.h"
 #include "ios/chrome/app/startup/chrome_app_startup_parameters.h"

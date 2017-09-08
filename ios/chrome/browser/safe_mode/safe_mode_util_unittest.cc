@@ -7,7 +7,7 @@
 
 #include "base/files/file_path.h"
 #include "base/strings/string_util.h"
-#include "ios/chrome/app/safe_mode_util.h"
+#include "ios/chrome/browser/safe_mode/safe_mode_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

@@ -6,23 +6,16 @@ import("//build/config/ios/rules.gni")
 import("//build/config/mac/base_rules.gni")
 import("//build/mac/tweak_info_plist.gni")
 import("//ios/build/chrome_build.gni")
-import("//ios/public/provider/chrome/browser/build_config.gni")
 
 source_set("app") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "deferred_initialization_runner.h",
     "deferred_initialization_runner.mm",
-    "safe_mode_crashing_modules_config.h",
-    "safe_mode_crashing_modules_config.mm",
-    "safe_mode_util.cc",
-    "safe_mode_util.h",
   ]
 
   deps = [
-    ":resources",
     "//base",
-    ios_packed_resources_target,
   ]
 
   libs = [ "Foundation.framework" ]
@@ -36,7 +29,6 @@ source_set("unit_tests") {
     "deferred_initialization_runner_unittest.mm",
     "main_application_delegate_unittest.mm",
     "main_controller_unittest.mm",
-    "safe_mode_util_unittest.cc",
   ]
   deps = [
     ":app",
@@ -72,16 +64,6 @@ source_set("tests_fake_hook") {
   ]
   deps = [
     ":tests_hook",
-  ]
-}
-
-bundle_data("resources") {
-  visibility = [ ":app" ]
-  sources = [
-    "resources/SafeModeCrashingModules.plist",
-  ]
-  outputs = [
-    "{{bundle_resources_dir}}/{{source_file_part}}",
   ]
 }
 
@@ -160,7 +142,6 @@ source_set("app_internal") {
     "//components/web_resource",
     "//ios/chrome/app/application_delegate",
     "//ios/chrome/app/application_delegate:application_delegate_internal",
-    "//ios/chrome/app/safe_mode",
     "//ios/chrome/app/spotlight",
     "//ios/chrome/app/startup",
     "//ios/chrome/app/startup:startup_basic",

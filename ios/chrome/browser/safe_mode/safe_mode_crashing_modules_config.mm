@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/app/safe_mode_crashing_modules_config.h"
+#import "ios/chrome/browser/safe_mode/safe_mode_crashing_modules_config.h"
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
