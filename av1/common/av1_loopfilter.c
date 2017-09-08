@@ -597,9 +597,12 @@ static uint8_t get_filter_level(const AV1_COMMON *cm,
 #if CONFIG_LOOPFILTER_LEVEL
                                 const int dir_idx,
 #endif
+#if CONFIG_LPF_SB
+                                int mi_row, int mi_col,
+#endif
                                 const MB_MODE_INFO *mbmi) {
 #if CONFIG_LPF_SB
-  return mbmi->filt_lvl;
+  return cm->mi[mi_row * cm->mi_stride + mi_col].mbmi.filt_lvl;
 #endif
 
 #if CONFIG_SUPERTX
@@ -647,10 +650,6 @@ static uint8_t get_filter_level(const AV1_COMMON *cm,
 #else
 static uint8_t get_filter_level(const loop_filter_info_n *lfi_n,
                                 const MB_MODE_INFO *mbmi) {
-#if CONFIG_LPF_SB
-  return mbmi->filt_lvl;
-#endif
-
 #if CONFIG_SUPERTX
   const int segment_id = AOMMIN(mbmi->segment_id, mbmi->segment_id_supertx);
   assert(
@@ -1461,7 +1460,11 @@ static void build_masks(AV1_COMMON *const cm,
 #if CONFIG_LOOPFILTER_LEVEL
   const int filter_level = get_filter_level(cm, lfi_n, 0, mbmi);
 #else
+#if CONFIG_LPF_SB
+  const int filter_level = get_filter_level(cm, lfi_n, 0, 0, mbmi);
+#else
   const int filter_level = get_filter_level(cm, lfi_n, mbmi);
+#endif  // CONFIG_LPF_SB
 #endif
 #else
   const int filter_level = get_filter_level(lfi_n, mbmi);
@@ -1559,7 +1562,11 @@ static void build_y_mask(AV1_COMMON *const cm,
 #if CONFIG_LOOPFILTER_LEVEL
   const int filter_level = get_filter_level(cm, lfi_n, 0, mbmi);
 #else
+#if CONFIG_LPF_SB
+  const int filter_level = get_filter_level(cm, lfi_n, 0, 0, mbmi);
+#else
   const int filter_level = get_filter_level(cm, lfi_n, mbmi);
+#endif  // CONFIG_LPF_SB
 #endif
 #else
   const int filter_level = get_filter_level(lfi_n, mbmi);
@@ -2169,7 +2176,13 @@ static void get_filter_level_and_masks_non420(
     if (!(lfl_r[c_step] = get_filter_level(cm, &cm->lf_info, 0, mbmi)))
       continue;
 #else
+#if CONFIG_LPF_SB
+    if (!(lfl_r[c_step] =
+              get_filter_level(cm, &cm->lf_info, mi_row, mi_col, mbmi)))
+      continue;
+#else
     if (!(lfl_r[c_step] = get_filter_level(cm, &cm->lf_info, mbmi))) continue;
+#endif  // CONFIG_LPF_SB
 #endif
 #else
     if (!(lfl_r[c_step] = get_filter_level(&cm->lf_info, mbmi))) continue;
@@ -2867,7 +2880,12 @@ static void set_lpf_parameters(
     const uint32_t curr_level =
         get_filter_level(cm, &cm->lf_info, edge_dir, mbmi);
 #else
+#if CONFIG_LPF_SB
+    const uint32_t curr_level =
+        get_filter_level(cm, &cm->lf_info, mi_row, mi_col, mbmi);
+#else
     const uint32_t curr_level = get_filter_level(cm, &cm->lf_info, mbmi);
+#endif  // CONFIG_LPF_SB
 #endif
 #else
     const uint32_t curr_level = get_filter_level(&cm->lf_info, mbmi);
@@ -2904,8 +2922,13 @@ static void set_lpf_parameters(
           const uint32_t pv_lvl =
               get_filter_level(cm, &cm->lf_info, edge_dir, &mi_prev->mbmi);
 #else
+#if CONFIG_LPF_SB
+          const uint32_t pv_lvl = get_filter_level(cm, &cm->lf_info, pv_row,
+                                                   pv_col, &mi_prev->mbmi);
+#else
           const uint32_t pv_lvl =
               get_filter_level(cm, &cm->lf_info, &mi_prev->mbmi);
+#endif  // CONFIG_LPF_SB
 #endif
 #else
           const uint32_t pv_lvl =

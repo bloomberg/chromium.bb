@@ -232,6 +232,10 @@ static int search_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
     filt_best = last_lvl;
   }
 
+  // Compute rdcost to determine whether to reuse previous filter lvl
+  if (filt_best != last_lvl) {
+  }
+
   if (best_cost_ret) *best_cost_ret = RDCOST_DBL(x->rdmult, 0, best_err);
   return filt_best;
 }
