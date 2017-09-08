@@ -22,6 +22,10 @@ service_test("services_unittests") {
     "//services/network/public/cpp:tests",
   ]
 
+  data_deps = [
+    "//testing/buildbot/filters:services_unittests_filters",
+  ]
+
   if (!is_ios) {
     deps += [
       "//services/data_decoder:tests",
