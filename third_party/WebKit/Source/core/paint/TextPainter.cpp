@@ -13,6 +13,7 @@
 #include "core/paint/AppliedDecorationPainter.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/PaintInfo.h"
+#include "core/paint/SelectionPaintingUtils.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/ShadowList.h"
 #include "platform/fonts/Font.h"
@@ -27,7 +28,7 @@ namespace blink {
 void TextPainter::Paint(unsigned start_offset,
                         unsigned end_offset,
                         unsigned length,
-                        const Style& text_style) {
+                        const TextPaintStyle& text_style) {
   GraphicsContextStateSaver state_saver(graphics_context_, false);
   UpdateGraphicsContext(text_style, state_saver);
   if (combined_text_) {
@@ -124,46 +125,6 @@ void TextPainter::PaintEmphasisMarkForCombinedText() {
                                       text_run_paint_info, emphasis_mark_,
                                       emphasis_mark_text_origin);
   graphics_context_.ConcatCTM(Rotation(text_bounds_, kCounterclockwise));
-}
-
-TextPainter::Style TextPainter::SelectionPaintingStyle(
-    LineLayoutItem line_layout_item,
-    bool have_selection,
-    const PaintInfo& paint_info,
-    const TextPainterBase::Style& text_style) {
-  const LayoutObject& layout_object =
-      *LineLayoutAPIShim::ConstLayoutObjectFrom(line_layout_item);
-  TextPainterBase::Style selection_style = text_style;
-  bool uses_text_as_clip = paint_info.phase == kPaintPhaseTextClip;
-  bool is_printing = paint_info.IsPrinting();
-
-  if (have_selection) {
-    if (!uses_text_as_clip) {
-      selection_style.fill_color = layout_object.SelectionForegroundColor(
-          paint_info.GetGlobalPaintFlags());
-      selection_style.emphasis_mark_color =
-          layout_object.SelectionEmphasisMarkColor(
-              paint_info.GetGlobalPaintFlags());
-    }
-
-    if (const ComputedStyle* pseudo_style =
-            layout_object.GetCachedPseudoStyle(kPseudoIdSelection)) {
-      selection_style.stroke_color =
-          uses_text_as_clip
-              ? Color::kBlack
-              : layout_object.ResolveColor(*pseudo_style,
-                                           CSSPropertyWebkitTextStrokeColor);
-      selection_style.stroke_width = pseudo_style->TextStrokeWidth();
-      selection_style.shadow =
-          uses_text_as_clip ? 0 : pseudo_style->TextShadow();
-    }
-
-    // Text shadows are disabled when printing. http://crbug.com/258321
-    if (is_printing)
-      selection_style.shadow = 0;
-  }
-
-  return selection_style;
 }
 
 }  // namespace blink

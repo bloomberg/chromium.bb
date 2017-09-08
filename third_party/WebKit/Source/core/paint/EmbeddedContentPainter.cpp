@@ -14,6 +14,7 @@
 #include "core/paint/ReplacedPainter.h"
 #include "core/paint/RoundedInnerRectClipper.h"
 #include "core/paint/ScrollableAreaPainter.h"
+#include "core/paint/SelectionPaintingUtils.h"
 #include "core/paint/TransformRecorder.h"
 #include "platform/wtf/Optional.h"
 
@@ -96,8 +97,11 @@ void EmbeddedContentPainter::Paint(const PaintInfo& paint_info,
     LayoutObjectDrawingRecorder drawing_recorder(
         paint_info.context, layout_embedded_content_, paint_info.phase,
         selection_rect);
-    paint_info.context.FillRect(
-        selection_rect, layout_embedded_content_.SelectionBackgroundColor());
+    Color selection_bg = SelectionPaintingUtils::SelectionBackgroundColor(
+        layout_embedded_content_.GetDocument(),
+        layout_embedded_content_.StyleRef(),
+        layout_embedded_content_.GetNode());
+    paint_info.context.FillRect(selection_rect, selection_bg);
   }
 
   if (layout_embedded_content_.CanResize()) {

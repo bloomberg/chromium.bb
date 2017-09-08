@@ -13,6 +13,7 @@
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/RoundedInnerRectClipper.h"
+#include "core/paint/SelectionPaintingUtils.h"
 #include "core/paint/compositing/CompositedLayerMapping.h"
 #include "platform/wtf/Optional.h"
 
@@ -132,8 +133,10 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info,
     LayoutObjectDrawingRecorder drawing_recorder(
         paint_info.context, layout_replaced_, DisplayItem::kSelectionTint,
         selection_painting_int_rect);
-    paint_info.context.FillRect(selection_painting_int_rect,
-                                layout_replaced_.SelectionBackgroundColor());
+    Color selection_bg = SelectionPaintingUtils::SelectionBackgroundColor(
+        layout_replaced_.GetDocument(), layout_replaced_.StyleRef(),
+        layout_replaced_.GetNode());
+    paint_info.context.FillRect(selection_painting_int_rect, selection_bg);
   }
 }
 

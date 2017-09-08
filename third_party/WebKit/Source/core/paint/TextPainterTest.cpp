@@ -57,7 +57,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_Simple) {
   GetDocument().body()->SetInlineStyleProperty(CSSPropertyColor, CSSValueBlue);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  TextPainter::Style text_style = TextPainter::TextPaintingStyle(
+  TextPaintStyle text_style = TextPainter::TextPaintingStyle(
       GetLineLayoutText().GetDocument(), GetLineLayoutText().StyleRef(),
       CreatePaintInfo(false /* usesTextAsClip */, false /* isPrinting */));
   EXPECT_EQ(Color(0, 0, 255), text_style.fill_color);
@@ -81,7 +81,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_AllProperties) {
                                                "1px 2px 3px yellow");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  TextPainter::Style text_style = TextPainter::TextPaintingStyle(
+  TextPaintStyle text_style = TextPainter::TextPaintingStyle(
       GetLineLayoutText().GetDocument(), GetLineLayoutText().StyleRef(),
       CreatePaintInfo(false /* usesTextAsClip */, false /* isPrinting */));
   EXPECT_EQ(Color(255, 0, 0), text_style.fill_color);
@@ -111,7 +111,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_UsesTextAsClip) {
                                                "1px 2px 3px yellow");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  TextPainter::Style text_style = TextPainter::TextPaintingStyle(
+  TextPaintStyle text_style = TextPainter::TextPaintingStyle(
       GetLineLayoutText().GetDocument(), GetLineLayoutText().StyleRef(),
       CreatePaintInfo(true /* usesTextAsClip */, false /* isPrinting */));
   EXPECT_EQ(Color::kBlack, text_style.fill_color);
@@ -135,7 +135,7 @@ TEST_F(TextPainterTest,
   GetDocument().SetPrinting(Document::kPrinting);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  TextPainter::Style text_style = TextPainter::TextPaintingStyle(
+  TextPaintStyle text_style = TextPainter::TextPaintingStyle(
       GetLineLayoutText().GetDocument(), GetLineLayoutText().StyleRef(),
       CreatePaintInfo(false /* usesTextAsClip */, true /* isPrinting */));
   EXPECT_EQ(Color(255, 0, 0), text_style.fill_color);
@@ -156,7 +156,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_ForceBackgroundToWhite_Darkened) {
   GetDocument().SetPrinting(Document::kPrinting);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  TextPainter::Style text_style = TextPainter::TextPaintingStyle(
+  TextPaintStyle text_style = TextPainter::TextPaintingStyle(
       GetLineLayoutText().GetDocument(), GetLineLayoutText().StyleRef(),
       CreatePaintInfo(false /* usesTextAsClip */, true /* isPrinting */));
   EXPECT_EQ(Color(255, 220, 220).Dark(), text_style.fill_color);

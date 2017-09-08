@@ -78,10 +78,11 @@ void NGTextFragmentPainter::Paint(const Document& document,
   }
 
   // Determine text colors.
-  TextPainterBase::Style text_style =
+  TextPaintStyle text_style =
       TextPainterBase::TextPaintingStyle(document, style_to_use, paint_info);
-  // TODO(layout-dev): Implement.
-  TextPainterBase::Style selection_style = text_style;
+  TextPaintStyle selection_style = TextPainterBase::SelectionPaintingStyle(
+      document, style_to_use, fragment_.GetNode(), have_selection, paint_info,
+      text_style);
   bool paint_selected_text_only = (paint_info.phase == kPaintPhaseSelection);
   bool paint_selected_text_separately =
       !paint_selected_text_only && text_style != selection_style;

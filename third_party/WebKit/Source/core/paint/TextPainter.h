@@ -13,7 +13,6 @@ namespace blink {
 class TextRun;
 struct TextRunPaintInfo;
 class LayoutTextCombine;
-class LineLayoutItem;
 
 // Text painter for legacy layout. Operates on TextRuns.
 class CORE_EXPORT TextPainter : public TextPainterBase {
@@ -41,12 +40,7 @@ class CORE_EXPORT TextPainter : public TextPainterBase {
   void Paint(unsigned start_offset,
              unsigned end_offset,
              unsigned length,
-             const Style&);
-
-  static Style SelectionPaintingStyle(LineLayoutItem,
-                                      bool have_selection,
-                                      const PaintInfo&,
-                                      const Style& text_style);
+             const TextPaintStyle&);
 
  private:
   template <PaintInternalStep step>
