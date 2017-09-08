@@ -530,7 +530,7 @@
     'tryserver.chromium.angle': {
       'android_angle_rel_ng': 'gpu_tests_android_release_trybot_arm64',
       'android_angle_deqp_rel_ng': 'deqp_android_release_trybot_arm64',
-      'linux_angle_chromeos_rel_ng': 'gpu_fyi_tests_chromeos_cros_release_trybot',
+      'linux_angle_ozone_rel_ng': 'gpu_fyi_tests_ozone_linux_system_gbm_libdrm_release_trybot',
       'linux_angle_dbg_ng': 'gpu_fyi_tests_debug_trybot',
       'linux_angle_deqp_rel_ng': 'deqp_release_trybot',
       'linux_angle_rel_ng': 'gpu_fyi_tests_release_trybot',
@@ -1283,10 +1283,6 @@
 
     'deqp_release_trybot': [
       'angle_deqp_tests', 'release_trybot',
-    ],
-
-    'gpu_fyi_tests_chromeos_cros_release_trybot': [
-      'gpu_fyi_tests', 'chromeos', 'release_trybot',
     ],
 
     'gpu_fyi_tests_debug_trybot': [
