@@ -85,10 +85,6 @@ class CallStackProfileMetricsProvider : public MetricsProvider {
   static void ResetStaticStateForTesting();
 
  private:
-  // Returns true if reporting of profiles is enabled according to the
-  // controlling Finch field trial.
-  static bool IsReportingEnabledByFieldTrial();
-
   DISALLOW_COPY_AND_ASSIGN(CallStackProfileMetricsProvider);
 };
 
