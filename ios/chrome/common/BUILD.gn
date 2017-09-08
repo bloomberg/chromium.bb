@@ -10,8 +10,6 @@ source_set("common") {
   sources = [
     "channel_info.h",
     "channel_info.mm",
-    "material_timing.h",
-    "material_timing.mm",
     "string_util.h",
     "string_util.mm",
     "x_callback_url.cc",
@@ -28,7 +26,37 @@ source_set("common") {
     "//url",
   ]
 
+  public_deps = [
+    ":timing",
+  ]
+
   libs = [ "QuartzCore.framework" ]
+}
+
+source_set("common_extension") {
+  sources = [
+    "highlight_button.h",
+    "highlight_button.mm",
+  ]
+
+  libs = [ "UIKit.framework" ]
+
+  public_deps = [
+    ":timing",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("timing") {
+  sources = [
+    "material_timing.h",
+    "material_timing.mm",
+  ]
+
+  libs = [ "QuartzCore.framework" ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
 }
 
 source_set("unit_tests") {

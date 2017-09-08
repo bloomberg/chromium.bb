@@ -27,8 +27,8 @@ const CGFloat kURLButtonMargin = 10;
 @property(nonatomic, strong) UILabel* openCopiedURLTitleLabel;
 // The hairline view potentially shown at the top of the copied URL view.
 @property(nonatomic, strong) UIView* hairlineView;
-// The button shown when there is a copied URL to open.
-@property(nonatomic, strong) UIButton* copiedButtonView;
+// The button-shaped background view shown when there is a copied URL to open.
+@property(nonatomic, strong) UIView* copiedButtonView;
 
 // Updates the view to show the copied URL in a button.
 - (void)updateUICopiedURL;
@@ -63,6 +63,10 @@ const CGFloat kURLButtonMargin = 10;
   if (self) {
     self.translatesAutoresizingMaskIntoConstraints = NO;
 
+    [self addTarget:target
+                  action:actionSelector
+        forControlEvents:UIControlEventTouchUpInside];
+
     UIVibrancyEffect* primaryEffect;
     UIVibrancyEffect* secondaryEffect;
     if (base::ios::IsRunningOnIOS10OrLater()) {
@@ -83,6 +87,7 @@ const CGFloat kURLButtonMargin = 10;
       effectView.translatesAutoresizingMaskIntoConstraints = NO;
       [NSLayoutConstraint
           activateConstraints:ui_util::CreateSameConstraints(self, effectView)];
+      effectView.userInteractionEnabled = NO;
     }
 
     _hairlineView = [[UIView alloc] initWithFrame:CGRectZero];
@@ -92,16 +97,13 @@ const CGFloat kURLButtonMargin = 10;
     _hairlineView.translatesAutoresizingMaskIntoConstraints = NO;
     [secondaryEffectView.contentView addSubview:_hairlineView];
 
-    _copiedButtonView = [[UIButton alloc] initWithFrame:CGRectZero];
+    _copiedButtonView = [[UIView alloc] init];
     _copiedButtonView.backgroundColor = [UIColor colorWithWhite:0 alpha:0.05];
     _copiedButtonView.layer.cornerRadius = 5;
     _copiedButtonView.translatesAutoresizingMaskIntoConstraints = NO;
     _copiedButtonView.accessibilityLabel =
         NSLocalizedString(@"IDS_IOS_OPEN_COPIED_LINK", nil);
     [secondaryEffectView.contentView addSubview:_copiedButtonView];
-    [_copiedButtonView addTarget:target
-                          action:actionSelector
-                forControlEvents:UIControlEventTouchUpInside];
 
     _openCopiedURLTitleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     _openCopiedURLTitleLabel.textAlignment = NSTextAlignmentCenter;
@@ -171,9 +173,11 @@ const CGFloat kURLButtonMargin = 10;
       NSLocalizedString(@"IDS_IOS_OPEN_COPIED_LINK", nil);
   self.openCopiedURLTitleLabel.isAccessibilityElement = NO;
   self.copiedURLLabel.alpha = 1;
+  self.userInteractionEnabled = YES;
 }
 
 - (void)updateUINoCopiedURL {
+  self.userInteractionEnabled = NO;
   self.copiedButtonView.hidden = YES;
   self.hairlineView.hidden = NO;
   self.copiedURLLabel.text =

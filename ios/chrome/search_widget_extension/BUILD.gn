@@ -60,6 +60,7 @@ source_set("search_widget") {
     "//base",
     "//components/open_from_clipboard:open_from_clipboard_impl",
     "//ios/chrome/browser/ui/util:constraints_ui",
+    "//ios/chrome/common:common_extension",
     "//ios/chrome/common/app_group",
   ]
 

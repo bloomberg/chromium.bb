@@ -7,9 +7,11 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/common/highlight_button.h"
+
 // View for an action to launch the app from the widget. Represented as a
 // circular icon and a label. When tapped it calls |actionSelector| in |target|.
-@interface SearchActionView : UIView
+@interface SearchActionView : HighlightButton
 
 // Designated initializer, creates the action view with a |target| and
 // |selector| to act on. The image with name |imageName| is shown in the
