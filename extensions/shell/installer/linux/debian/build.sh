@@ -93,7 +93,12 @@ do_package() {
   if [ -f "${DEB_CONTROL}" ]; then
     gen_control
   fi
-  fakeroot dpkg-deb -Zxz -z9 -b "${STAGEDIR}" .
+  if [ ${IS_OFFICIAL_BUILD} -ne 0 ]; then
+    local COMPRESSION_OPTS="-Zxz -z9"
+  else
+    local COMPRESSION_OPTS="-Znone"
+  fi
+  fakeroot dpkg-deb ${COMPRESSION_OPTS} -b "${STAGEDIR}" .
 }
 
 verify_package() {
@@ -104,7 +109,7 @@ verify_package() {
       LANG=C sort > actual_deb_depends
   BAD_DIFF=0
   diff -u expected_deb_depends actual_deb_depends || BAD_DIFF=1
-  if [ $BAD_DIFF -ne 0 ] && [ -z "${IGNORE_DEPS_CHANGES:-}" ]; then
+  if [ $BAD_DIFF -ne 0 ]; then
     echo
     echo "ERROR: bad dpkg dependencies!"
     echo
@@ -120,15 +125,16 @@ cleanup() {
 }
 
 usage() {
-  echo "usage: $(basename $0) [-c channel] [-a target_arch] [-o 'dir'] "
-  echo "                      [-b 'dir'] -d branding"
-  echo "-c channel the package channel (trunk, asan, unstable, beta, stable)"
-  echo "-a arch    package architecture (ia32 or x64)"
-  echo "-o dir     package output directory [${OUTPUTDIR}]"
-  echo "-b dir     build input directory    [${BUILDDIR}]"
-  echo "-d brand   either chromium or google_chrome"
-  echo "-s dir     /path/to/sysroot"
-  echo "-h         this help message"
+  echo "usage: $(basename $0) [-a target_arch] [-b 'dir'] -c channel"
+  echo "                      -d branding [-f] [-o 'dir'] -s 'dir'"
+  echo "-a arch     package architecture (ia32 or x64)"
+  echo "-b dir      build input directory    [${BUILDDIR}]"
+  echo "-c channel  the package channel (unstable, beta, stable)"
+  echo "-d brand    either chromium or google_chrome"
+  echo "-f          indicates that this is an official build"
+  echo "-h          this help message"
+  echo "-o dir      package output directory [${OUTPUTDIR}]"
+  echo "-s dir      /path/to/sysroot"
 }
 
 # Check that the channel name is one of the allowable ones.
@@ -146,12 +152,6 @@ verify_channel() {
       CHANNEL=beta
       RELEASENOTES="http://googlechromereleases.blogspot.com/search/label/Beta%20updates"
       ;;
-    trunk|asan )
-      # Setting this to empty will prevent it from updating any existing configs
-      # from release packages.
-      REPOCONFIG=""
-      RELEASENOTES="http://googlechromereleases.blogspot.com/"
-      ;;
     * )
       echo
       echo "ERROR: '$CHANNEL' is not a valid channel type."
@@ -162,12 +162,11 @@ verify_channel() {
 }
 
 process_opts() {
-  while getopts ":s:o:b:c:a:d:h" OPTNAME
+  while getopts ":a:b:c:d:fho:s:" OPTNAME
   do
     case $OPTNAME in
-      o )
-        OUTPUTDIR=$(readlink -f "${OPTARG}")
-        mkdir -p "${OUTPUTDIR}"
+      a )
+        TARGETARCH="$OPTARG"
         ;;
       b )
         BUILDDIR=$(readlink -f "${OPTARG}")
@@ -175,18 +174,22 @@ process_opts() {
       c )
         CHANNEL="$OPTARG"
         ;;
-      a )
-        TARGETARCH="$OPTARG"
-        ;;
       d )
         BRANDING="$OPTARG"
         ;;
-      s )
-        SYSROOT="$OPTARG"
+      f )
+        IS_OFFICIAL_BUILD=1
         ;;
       h )
         usage
         exit 0
+        ;;
+      o )
+        OUTPUTDIR=$(readlink -f "${OPTARG}")
+        mkdir -p "${OUTPUTDIR}"
+        ;;
+      s )
+        SYSROOT="$OPTARG"
         ;;
       \: )
         echo "'-$OPTARG' needs an argument."
@@ -208,12 +211,6 @@ process_opts() {
 
 SCRIPTDIR=$(readlink -f "$(dirname "$0")")
 OUTPUTDIR="${PWD}"
-STAGEDIR=$(mktemp -d -t deb.build.XXXXXX) || exit 1
-TMPFILEDIR=$(mktemp -d -t deb.tmp.XXXXXX) || exit 1
-DEB_CHANGELOG="${TMPFILEDIR}/changelog"
-DEB_FILES="${TMPFILEDIR}/files"
-DEB_CONTROL="${TMPFILEDIR}/control"
-CHANNEL="trunk"
 # Default target architecture to same as build host.
 if [ "$(uname -m)" = "x86_64" ]; then
   TARGETARCH="x64"
@@ -225,6 +222,15 @@ fi
 trap cleanup 0
 process_opts "$@"
 BUILDDIR=${BUILDDIR:=$(readlink -f "${SCRIPTDIR}/../../../../out/Release")}
+IS_OFFICIAL_BUILD=${IS_OFFICIAL_BUILD:=0}
+
+STAGEDIR="${BUILDDIR}/app-shell-deb-staging-${CHANNEL}"
+mkdir -p "${STAGEDIR}"
+TMPFILEDIR="${BUILDDIR}/app-shell-deb-tmp-${CHANNEL}"
+mkdir -p "${TMPFILEDIR}"
+DEB_CHANGELOG="${TMPFILEDIR}/changelog"
+DEB_FILES="${TMPFILEDIR}/files"
+DEB_CONTROL="${TMPFILEDIR}/control"
 
 source ${BUILDDIR}/app_shell_installer/common/installer.include
 
@@ -276,19 +282,6 @@ fi
 
 # Format it nicely and save it for comparison.
 echo "$DPKG_SHLIB_DEPS" | sed 's/, /\n/g' | LANG=C sort > actual
-
-# Compare the expected dependency list to the generated list.
-BAD_DIFF=0
-diff -u "$SCRIPTDIR/expected_deps_${TARGETARCH}" actual || \
-  BAD_DIFF=1
-if [ $BAD_DIFF -ne 0 ] && [ -z "${IGNORE_DEPS_CHANGES:-}" ]; then
-  echo
-  echo "ERROR: Shared library dependencies changed!"
-  echo "If this is intentional, please update:"
-  echo "extensions/shell/installer/linux/debian/expected_deps_*"
-  echo
-  exit $BAD_DIFF
-fi
 
 # Additional dependencies not in the dpkg-shlibdeps output.
 # ca-certificates: Make sure users have SSL certificates.
