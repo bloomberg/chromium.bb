@@ -250,7 +250,7 @@ def _NormalizeLanguagePaks(translations, normalized_apk_size, factor):
   return normalized_apk_size
 
 
-def _NormalizeResourcesArsc(apk_path):
+def _NormalizeResourcesArsc(apk_path, num_translations):
   """Estimates the expected overhead of untranslated strings in resources.arsc.
 
   See http://crbug.com/677966 for why this is necessary.
@@ -262,10 +262,8 @@ def _NormalizeResourcesArsc(apk_path):
   en_strings = _CreateResourceIdValueMap(aapt_output, 'en-rGB')
   fr_strings = _CreateResourceIdValueMap(aapt_output, 'fr')
 
-  # Chrome supports 44 locales (en-US and en-GB will never be translated).
-  # This can be changed to |translations.GetNumEntries()| when Chrome and
-  # WebView support the same set of locales (http://crbug.com/369218).
-  config_count = 42
+  # en-US and en-GB will never be translated.
+  config_count = num_translations - 2
 
   size = 0
   for res_id, string_val in en_strings.iteritems():
@@ -498,14 +496,27 @@ def PrintApkAnalysis(apk_filename, tool_prefix, chartjson=None):
   # Avoid noise caused when strings change and translations haven't yet been
   # updated.
   num_translations = translations.GetNumEntries()
+  num_stored_translations = stored_translations.GetNumEntries()
+
   if num_translations > 1:
     # Multipliers found by looking at MonochromePublic.apk and seeing how much
     # smaller en-US.pak is relative to the average locale.pak.
     normalized_apk_size = _NormalizeLanguagePaks(
         translations, normalized_apk_size, 1.17)
+  if num_stored_translations > 1:
     normalized_apk_size = _NormalizeLanguagePaks(
         stored_translations, normalized_apk_size, 1.43)
-    normalized_apk_size += int(_NormalizeResourcesArsc(apk_filename))
+  if num_translations + num_stored_translations > 1:
+    if num_translations == 0:
+      # WebView stores all locale paks uncompressed.
+      num_arsc_translations = num_stored_translations
+    else:
+      # Monochrome has more configurations than Chrome since it includes
+      # WebView (which supports more locales), but these should mostly be empty
+      # so ignore them here.
+      num_arsc_translations = num_translations
+    normalized_apk_size += int(
+        _NormalizeResourcesArsc(apk_filename, num_arsc_translations))
 
   ReportPerfResult(chartjson, apk_basename + '_Specifics',
                    'normalized apk size', normalized_apk_size, 'bytes')
