@@ -12,17 +12,13 @@ TestPrefetchDownloader::~TestPrefetchDownloader() = default;
 
 void TestPrefetchDownloader::SetPrefetchService(PrefetchService* service) {}
 
-bool TestPrefetchDownloader::IsDownloadServiceUnavailable() const {
-  return false;
-}
-
-void TestPrefetchDownloader::CleanupDownloadsWhenReady() {}
-
 void TestPrefetchDownloader::StartDownload(
     const std::string& download_id,
     const std::string& download_location) {
   requested_downloads_[download_id] = download_location;
 }
+
+void TestPrefetchDownloader::CancelDownload(const std::string& download_id) {}
 
 void TestPrefetchDownloader::OnDownloadServiceReady(
     const std::set<std::string>& outstanding_download_ids,
@@ -30,6 +26,8 @@ void TestPrefetchDownloader::OnDownloadServiceReady(
         success_downloads) {}
 
 void TestPrefetchDownloader::OnDownloadServiceUnavailable() {}
+
+void TestPrefetchDownloader::OnDownloadServiceShutdown() {}
 
 void TestPrefetchDownloader::OnDownloadSucceeded(
     const std::string& download_id,

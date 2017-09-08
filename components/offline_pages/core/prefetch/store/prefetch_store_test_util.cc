@@ -188,22 +188,19 @@ void PrefetchStoreTestUtil::BuildStore() {
   if (!temp_directory_.CreateUniqueTempDir())
     DVLOG(1) << "temp_directory_ not created";
 
-  owned_store_.reset(
-      new PrefetchStore(task_runner_, temp_directory_.GetPath()));
-  store_ = owned_store_.get();
+  store_.reset(new PrefetchStore(task_runner_, temp_directory_.GetPath()));
 }
 
 void PrefetchStoreTestUtil::BuildStoreInMemory() {
-  owned_store_.reset(new PrefetchStore(task_runner_));
-  store_ = owned_store_.get();
+  store_.reset(new PrefetchStore(task_runner_));
 }
 
 std::unique_ptr<PrefetchStore> PrefetchStoreTestUtil::ReleaseStore() {
-  return std::move(owned_store_);
+  return std::move(store_);
 }
 
 void PrefetchStoreTestUtil::DeleteStore() {
-  owned_store_.reset();
+  store_.reset();
   if (temp_directory_.IsValid()) {
     if (!temp_directory_.Delete())
       DVLOG(1) << "temp_directory_ not created";
