@@ -1414,7 +1414,10 @@ COMMON_GTESTS = {
       {
         # Run this on the FYI waterfall and optional tryservers.
         'predicate': Predicates.FYI_AND_OPTIONAL,
-        'os_types': ['win', 'linux', 'mac', 'android'],
+        # gpu_unittests is killing the Swarmed Linux GPU bots
+        # similarly to how content_unittests was:
+        # http://crbug.com/763498 .
+        'os_types': ['win', 'mac', 'android'],
       },
     ],
     'disabled_tester_configs': [
