@@ -116,7 +116,13 @@ class DraggedNodeImageBuilder {
                             kPaintLayerUncachedClipRects;
     PaintRecordBuilder builder(
         DataTransfer::DeviceSpaceBounds(bounding_box, *local_frame_));
+
+    dragged_layout_object->GetDocument().Lifecycle().AdvanceTo(
+        DocumentLifecycle::kInPaint);
     PaintLayerPainter(*layer).Paint(builder.Context(), painting_info, flags);
+    dragged_layout_object->GetDocument().Lifecycle().AdvanceTo(
+        DocumentLifecycle::kPaintClean);
+
     PropertyTreeState border_box_properties = PropertyTreeState::Root();
     if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
       border_box_properties =
