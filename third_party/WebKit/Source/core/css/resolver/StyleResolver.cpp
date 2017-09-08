@@ -536,15 +536,6 @@ RefPtr<ComputedStyle> StyleResolver::StyleForViewport(Document& document) {
   return viewport_style;
 }
 
-void StyleResolver::AdjustComputedStyle(StyleResolverState& state,
-                                        Element* element) {
-  DCHECK(state.LayoutParentStyle());
-  DCHECK(state.ParentStyle());
-  StyleAdjuster::AdjustComputedStyle(state.MutableStyleRef(),
-                                     *state.ParentStyle(),
-                                     *state.LayoutParentStyle(), element);
-}
-
 // Start loading resources referenced by this style.
 void StyleResolver::LoadPendingResources(StyleResolverState& state) {
   state.GetElementStyleResources().LoadPendingResources(state.Style());
@@ -718,7 +709,7 @@ RefPtr<ComputedStyle> StyleResolver::StyleForElement(
     // Cache our original display.
     state.Style()->SetOriginalDisplay(state.Style()->Display());
 
-    AdjustComputedStyle(state, element);
+    StyleAdjuster::AdjustComputedStyle(state, element);
 
     UpdateBaseComputedStyle(state, element);
   } else {
@@ -733,7 +724,7 @@ RefPtr<ComputedStyle> StyleResolver::StyleForElement(
   if (ApplyAnimatedStandardProperties(state, element)) {
     INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
                                   styles_animated, 1);
-    AdjustComputedStyle(state, element);
+    StyleAdjuster::AdjustComputedStyle(state, element);
   }
 
   if (isHTMLBodyElement(*element))
@@ -900,8 +891,8 @@ bool StyleResolver::PseudoStyleForElementInternal(
     state.Style()->SetOriginalDisplay(state.Style()->Display());
 
     // FIXME: Passing 0 as the Element* introduces a lot of complexity
-    // in the adjustComputedStyle code.
-    AdjustComputedStyle(state, 0);
+    // in the StyleAdjuster::AdjustComputedStyle code.
+    StyleAdjuster::AdjustComputedStyle(state, 0);
 
     UpdateBaseComputedStyle(state, pseudo_element);
   }
@@ -911,7 +902,7 @@ bool StyleResolver::PseudoStyleForElementInternal(
   // require adjustment to have happened before deciding which properties to
   // transition.
   if (ApplyAnimatedStandardProperties(state, pseudo_element))
-    AdjustComputedStyle(state, 0);
+    StyleAdjuster::AdjustComputedStyle(state, 0);
 
   GetDocument().GetStyleEngine().IncStyleForElementCount();
   INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
@@ -1900,7 +1891,8 @@ void StyleResolver::ApplyMatchedStandardProperties(
       state, match_result.UaRules(), false, apply_inherited_only,
       needs_apply_pass);
 
-  // Cache the UA properties to pass them to LayoutTheme in adjustComputedStyle.
+  // Cache the UA properties to pass them to LayoutTheme in
+  // StyleAdjuster::AdjustComputedStyle.
   state.CacheUserAgentBorderAndBackground();
 
   // Now do the author and user normal priority properties and all the

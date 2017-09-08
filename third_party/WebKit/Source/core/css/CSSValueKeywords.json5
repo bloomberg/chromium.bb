@@ -660,6 +660,7 @@
     "-internal-media-overflow-button",
     "-internal-media-download-button",
     "-internal-media-remoting-cast-icon",
+    "-internal-media-control",
     "menulist",
     "menulist-button",
     "menulist-text",
