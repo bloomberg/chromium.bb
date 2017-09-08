@@ -29,7 +29,6 @@ public class ContextualSuggestionsCardViewHolder extends NewTabPageViewHolder {
     private static final double CARD_WIDTH_TO_WINDOW_SIZE_RATIO = 0.9;
     private final SuggestionsBinder mSuggestionsBinder;
     private final SuggestionsUiDelegate mUiDelegate;
-    private final UiConfig mUiConfig;
     private final DisplayStyleObserverAdapter mDisplayStyleObserver;
     private SnippetArticle mSuggestion;
 
@@ -37,7 +36,6 @@ public class ContextualSuggestionsCardViewHolder extends NewTabPageViewHolder {
             ViewGroup recyclerView, UiConfig uiConfig, SuggestionsUiDelegate uiDelegate) {
         super(getCardView(recyclerView));
 
-        mUiConfig = uiConfig;
         mUiDelegate = uiDelegate;
         mSuggestionsBinder = new SuggestionsBinder(itemView, uiDelegate);
 
@@ -49,10 +47,11 @@ public class ContextualSuggestionsCardViewHolder extends NewTabPageViewHolder {
         itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO(fhorschig): Add metrics to be recorded for the contextual suggestions.
                 int windowDisposition = WindowOpenDisposition.CURRENT_TAB;
                 mUiDelegate.getNavigationDelegate().navigateToSuggestionUrl(
                         windowDisposition, mSuggestion.mUrl);
+
+                SuggestionsMetrics.recordContextualSuggestionOpened();
             }
         });
 
