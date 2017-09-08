@@ -28,6 +28,7 @@ class FileSystemInstance;
 class ImeInstance;
 class IntentHelperInstance;
 class KioskInstance;
+class LockScreenInstance;
 class MetricsInstance;
 class NetInstance;
 class NotificationsInstance;
@@ -83,6 +84,9 @@ class ArcBridgeService {
     return &intent_helper_;
   }
   InstanceHolder<mojom::KioskInstance>* kiosk() { return &kiosk_; }
+  InstanceHolder<mojom::LockScreenInstance>* lock_screen() {
+    return &lock_screen_;
+  }
   InstanceHolder<mojom::MetricsInstance>* metrics() { return &metrics_; }
   InstanceHolder<mojom::NetInstance>* net() { return &net_; }
   InstanceHolder<mojom::NotificationsInstance>* notifications() {
@@ -130,6 +134,7 @@ class ArcBridgeService {
   InstanceHolder<mojom::ImeInstance> ime_;
   InstanceHolder<mojom::IntentHelperInstance> intent_helper_;
   InstanceHolder<mojom::KioskInstance> kiosk_;
+  InstanceHolder<mojom::LockScreenInstance> lock_screen_;
   InstanceHolder<mojom::MetricsInstance> metrics_;
   InstanceHolder<mojom::NetInstance> net_;
   InstanceHolder<mojom::NotificationsInstance> notifications_;

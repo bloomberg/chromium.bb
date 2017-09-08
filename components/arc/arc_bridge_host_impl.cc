@@ -159,6 +159,12 @@ void ArcBridgeHostImpl::OnKioskInstanceReady(
   OnInstanceReady(arc_bridge_service_->kiosk(), std::move(kiosk_ptr));
 }
 
+void ArcBridgeHostImpl::OnLockScreenInstanceReady(
+    mojom::LockScreenInstancePtr lock_screen_ptr) {
+  OnInstanceReady(arc_bridge_service_->lock_screen(),
+                  std::move(lock_screen_ptr));
+}
+
 void ArcBridgeHostImpl::OnMetricsInstanceReady(
     mojom::MetricsInstancePtr metrics_ptr) {
   OnInstanceReady(arc_bridge_service_->metrics(), std::move(metrics_ptr));
