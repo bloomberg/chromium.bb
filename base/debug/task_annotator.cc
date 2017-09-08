@@ -23,10 +23,9 @@ TaskAnnotator::~TaskAnnotator() {
 
 void TaskAnnotator::DidQueueTask(const char* queue_function,
                                  const PendingTask& pending_task) {
-  TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
-                          queue_function,
-                          TRACE_ID_MANGLE(GetTaskTraceID(pending_task)),
-                          TRACE_EVENT_FLAG_FLOW_OUT);
+  TRACE_EVENT_WITH_FLOW0(
+      TRACE_DISABLED_BY_DEFAULT("toplevel.flow"), queue_function,
+      TRACE_ID_MANGLE(GetTaskTraceID(pending_task)), TRACE_EVENT_FLAG_FLOW_OUT);
 }
 
 void TaskAnnotator::RunTask(const char* queue_function,
@@ -35,13 +34,10 @@ void TaskAnnotator::RunTask(const char* queue_function,
 
   tracked_objects::TaskStopwatch stopwatch;
   stopwatch.Start();
-  base::TimeDelta queue_duration =
-      stopwatch.StartTime() - pending_task->EffectiveTimePosted();
 
-  TRACE_EVENT_WITH_FLOW1(
+  TRACE_EVENT_WITH_FLOW0(
       TRACE_DISABLED_BY_DEFAULT("toplevel.flow"), queue_function,
-      TRACE_ID_MANGLE(GetTaskTraceID(*pending_task)), TRACE_EVENT_FLAG_FLOW_IN,
-      "queue_duration", queue_duration.InMilliseconds());
+      TRACE_ID_MANGLE(GetTaskTraceID(*pending_task)), TRACE_EVENT_FLAG_FLOW_IN);
 
   // Before running the task, store the task backtrace with the chain of
   // PostTasks that resulted in this call and deliberately alias it to ensure
@@ -65,8 +61,6 @@ void TaskAnnotator::RunTask(const char* queue_function,
   std::move(pending_task->task).Run();
 
   stopwatch.Stop();
-  tracked_objects::ThreadData::TallyRunOnNamedThreadIfTracking(*pending_task,
-                                                               stopwatch);
 }
 
 uint64_t TaskAnnotator::GetTaskTraceID(const PendingTask& task) const {

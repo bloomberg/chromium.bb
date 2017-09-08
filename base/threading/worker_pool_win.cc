@@ -36,9 +36,6 @@ DWORD CALLBACK WorkItemCallback(void* param) {
 
   GetWorkerPoolRunningOnThisThread()->Set(false);
 
-  tracked_objects::ThreadData::TallyRunOnWorkerThreadIfTracking(
-      pending_task->birth_tally, pending_task->time_posted, stopwatch);
-
   delete pending_task;
   return 0;
 }
