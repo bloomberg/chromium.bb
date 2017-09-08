@@ -69,6 +69,25 @@ DOMMimeType* DOMMimeTypeArray::namedItem(const AtomicString& property_name) {
   return nullptr;
 }
 
+void DOMMimeTypeArray::NamedPropertyEnumerator(Vector<String>& property_names,
+                                               ExceptionState&) const {
+  PluginData* data = GetPluginData();
+  if (!data)
+    return;
+  property_names.ReserveInitialCapacity(data->Mimes().size());
+  for (const MimeClassInfo* mime_info : data->Mimes()) {
+    property_names.UncheckedAppend(mime_info->Type());
+  }
+}
+
+bool DOMMimeTypeArray::NamedPropertyQuery(const AtomicString& property_name,
+                                          ExceptionState&) const {
+  PluginData* data = GetPluginData();
+  if (!data)
+    return false;
+  return data->SupportsMimeType(property_name);
+}
+
 PluginData* DOMMimeTypeArray::GetPluginData() const {
   if (!GetFrame())
     return nullptr;

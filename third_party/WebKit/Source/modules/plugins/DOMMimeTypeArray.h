@@ -30,6 +30,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class LocalFrame;
 class PluginData;
 
@@ -49,6 +50,8 @@ class DOMMimeTypeArray final : public GarbageCollected<DOMMimeTypeArray>,
   unsigned length() const;
   DOMMimeType* item(unsigned index);
   DOMMimeType* namedItem(const AtomicString& property_name);
+  void NamedPropertyEnumerator(Vector<String>&, ExceptionState&) const;
+  bool NamedPropertyQuery(const AtomicString&, ExceptionState&) const;
 
   // PluginsChangedObserver implementation.
   void PluginsChanged();

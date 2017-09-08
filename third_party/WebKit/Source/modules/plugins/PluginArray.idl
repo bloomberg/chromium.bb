@@ -21,11 +21,11 @@
 // https://html.spec.whatwg.org/multipage/webappapis.html#plugins-2
 
 [
-    ImplementedAs=DOMPluginArray
+    ImplementedAs=DOMPluginArray,
+    LegacyUnenumerableNamedProperties
 ] interface PluginArray {
     readonly attribute unsigned long length;
     getter Plugin? item(unsigned long index);
-    Plugin? namedItem(DOMString name);
-    [NotEnumerable, ImplementedAs=namedItem] getter Plugin? (DOMString name);
+    getter Plugin? namedItem(DOMString name);
     void refresh([Default=Undefined] optional boolean reload);
 };

@@ -50,6 +50,8 @@ class DOMPluginArray final : public GarbageCollected<DOMPluginArray>,
   unsigned length() const;
   DOMPlugin* item(unsigned index);
   DOMPlugin* namedItem(const AtomicString& property_name);
+  void NamedPropertyEnumerator(Vector<String>&, ExceptionState&) const;
+  bool NamedPropertyQuery(const AtomicString&, ExceptionState&) const;
 
   void refresh(bool reload);
 

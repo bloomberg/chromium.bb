@@ -66,4 +66,17 @@ DOMMimeType* DOMPlugin::namedItem(const AtomicString& property_name) {
   return DOMMimeType::Create(GetFrame(), *mime);
 }
 
+void DOMPlugin::NamedPropertyEnumerator(Vector<String>& property_names,
+                                        ExceptionState&) const {
+  property_names.ReserveInitialCapacity(plugin_info_->GetMimeClassInfoSize());
+  for (const MimeClassInfo* mime_info : plugin_info_->Mimes()) {
+    property_names.UncheckedAppend(mime_info->Type());
+  }
+}
+
+bool DOMPlugin::NamedPropertyQuery(const AtomicString& property_name,
+                                   ExceptionState&) const {
+  return plugin_info_->GetMimeClassInfo(property_name);
+}
+
 }  // namespace blink
