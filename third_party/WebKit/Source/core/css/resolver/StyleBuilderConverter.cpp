@@ -51,10 +51,12 @@
 #include "core/css/CSSURIValue.h"
 #include "core/css/CSSValuePair.h"
 #include "core/css/resolver/FilterOperationResolver.h"
+#include "core/css/resolver/StyleResolverState.h"
 #include "core/css/resolver/TransformBuilder.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/style/ClipPathOperation.h"
+#include "core/style/ComputedStyle.h"
 #include "core/style/TextSizeAdjust.h"
 #include "core/svg/SVGURIReference.h"
 #include "platform/fonts/FontCache.h"
@@ -1613,6 +1615,11 @@ const CSSValue& StyleBuilderConverter::ConvertRegisteredPropertyValue(
     const CSSValue& value) {
   return ComputeRegisteredPropertyValue(state.CssToLengthConversionData(),
                                         value);
+}
+
+const CSSToLengthConversionData&
+StyleBuilderConverter::CssToLengthConversionData(StyleResolverState& state) {
+  return state.CssToLengthConversionData();
 }
 
 }  // namespace blink

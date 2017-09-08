@@ -30,6 +30,8 @@
 
 #include "core/animation/ElementAnimations.h"
 
+#include "core/style/ComputedStyle.h"
+
 namespace blink {
 
 ElementAnimations::ElementAnimations() : animation_style_change_(false) {}

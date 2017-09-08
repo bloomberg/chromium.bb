@@ -247,6 +247,7 @@ blink_core_sources("animation") {
     "css/CSSAnimatableValueFactory.h",
     "css/CSSAnimationData.cpp",
     "css/CSSAnimationData.h",
+    "css/CSSAnimationUpdate.cpp",
     "css/CSSAnimationUpdate.h",
     "css/CSSAnimations.cpp",
     "css/CSSAnimations.h",

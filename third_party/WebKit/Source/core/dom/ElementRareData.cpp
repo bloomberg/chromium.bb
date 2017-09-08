@@ -33,6 +33,7 @@
 #include "core/css/cssom/InlineStylePropertyMap.h"
 #include "core/resize_observer/ResizeObservation.h"
 #include "core/resize_observer/ResizeObserver.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 
@@ -42,6 +43,15 @@ struct SameSizeAsElementRareData : NodeRareData {
   void* pointers[1];
   Member<void*> members[14];
 };
+
+ElementRareData::ElementRareData(NodeRenderingData* node_layout_data)
+    : NodeRareData(node_layout_data), class_list_(nullptr) {
+  is_element_rare_data_ = true;
+}
+
+ElementRareData::~ElementRareData() {
+  DCHECK(!pseudo_element_data_);
+}
 
 CSSStyleDeclaration& ElementRareData::EnsureInlineCSSStyleDeclaration(
     Element* owner_element) {
@@ -56,6 +66,14 @@ InlineStylePropertyMap& ElementRareData::EnsureInlineStylePropertyMap(
     cssom_map_wrapper_ = new InlineStylePropertyMap(owner_element);
   }
   return *cssom_map_wrapper_;
+}
+
+void ElementRareData::SetComputedStyle(RefPtr<ComputedStyle> computed_style) {
+  computed_style_ = std::move(computed_style);
+}
+
+void ElementRareData::ClearComputedStyle() {
+  computed_style_ = nullptr;
 }
 
 AttrNodeList& ElementRareData::EnsureAttrNodeList() {

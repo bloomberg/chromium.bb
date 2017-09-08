@@ -29,12 +29,17 @@
 
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSIdentifierValue.h"
+#include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSStringValue.h"
 #include "core/css/CSSValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSValuePair.h"
-#include "core/css/resolver/StyleResolverState.h"
+#include "core/style/GridArea.h"
+#include "core/style/GridPositionsResolver.h"
+#include "core/style/NamedGridLinesMap.h"
+#include "core/style/OrderedNamedGridLines.h"
 #include "core/style/QuotesData.h"
+#include "core/style/SVGComputedStyleDefs.h"
 #include "core/style/ShadowList.h"
 #include "core/style/StyleOffsetRotation.h"
 #include "core/style/StyleReflection.h"
@@ -48,11 +53,16 @@
 namespace blink {
 
 class ClipPathOperation;
+class CSSToLengthConversionData;
+class FontBuilder;
 class RotateTransformOperation;
 class ScaleTransformOperation;
+class StyleAutoColor;
 class StylePath;
+class StyleResolverState;
 class TextSizeAdjust;
 class TranslateTransformOperation;
+class UnzoomedLength;
 
 class StyleBuilderConverterBase {
   STATIC_ONLY(StyleBuilderConverterBase);
@@ -232,13 +242,17 @@ class StyleBuilderConverter {
   static const CSSValue& ConvertRegisteredPropertyValue(
       const StyleResolverState&,
       const CSSValue&);
+
+ private:
+  static const CSSToLengthConversionData& CssToLengthConversionData(
+      StyleResolverState&);
 };
 
 template <typename T>
 T StyleBuilderConverter::ConvertComputedLength(StyleResolverState& state,
                                                const CSSValue& value) {
   return ToCSSPrimitiveValue(value).ComputeLength<T>(
-      state.CssToLengthConversionData());
+      CssToLengthConversionData(state));
 }
 
 template <typename T>
@@ -275,7 +289,7 @@ T StyleBuilderConverter::ConvertLineWidth(StyleResolverState& state,
   // device pixels or zoom adjusted CSS pixels instead of raw CSS pixels.
   // Reference crbug.com/485650 and crbug.com/382483
   double result =
-      primitive_value.ComputeLength<double>(state.CssToLengthConversionData());
+      primitive_value.ComputeLength<double>(CssToLengthConversionData(state));
   if (result > 0.0 && result < 1.0)
     return 1.0;
   return clampTo<T>(RoundForImpreciseConversion<T>(result),

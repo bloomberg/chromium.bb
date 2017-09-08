@@ -36,6 +36,7 @@
 #include "core/css/resolver/StyleBuilderConverter.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/frame/UseCounter.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 

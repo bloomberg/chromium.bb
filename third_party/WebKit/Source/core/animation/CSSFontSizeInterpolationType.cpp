@@ -8,6 +8,7 @@
 #include "core/animation/LengthInterpolationFunctions.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/resolver/StyleResolverState.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/LengthFunctions.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/wtf/PtrUtil.h"

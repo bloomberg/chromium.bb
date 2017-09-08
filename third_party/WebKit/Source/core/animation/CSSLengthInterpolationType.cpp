@@ -12,6 +12,7 @@
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/StyleResolverState.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/LengthFunctions.h"
 #include "platform/wtf/PtrUtil.h"
 

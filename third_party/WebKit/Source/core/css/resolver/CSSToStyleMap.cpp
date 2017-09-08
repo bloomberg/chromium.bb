@@ -42,6 +42,7 @@
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/frame/Deprecation.h"
 #include "core/style/BorderImageLengthBox.h"
+#include "core/style/ComputedStyle.h"
 #include "core/style/FillLayer.h"
 
 namespace blink {

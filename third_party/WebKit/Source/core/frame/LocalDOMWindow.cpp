@@ -82,6 +82,7 @@
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/probe/CoreProbes.h"
+#include "core/style/ComputedStyle.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
 #include "platform/EventDispatchForbiddenScope.h"

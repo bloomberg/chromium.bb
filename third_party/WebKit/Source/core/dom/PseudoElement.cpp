@@ -31,6 +31,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutQuote.h"
 #include "core/probe/CoreProbes.h"
+#include "core/style/ComputedStyle.h"
 #include "core/style/ContentData.h"
 
 namespace blink {
@@ -196,6 +197,17 @@ Node* PseudoElement::FindAssociatedNode() const {
     ancestor = ancestor->Parent();
   }
   return ancestor->GetNode();
+}
+
+bool PseudoElementLayoutObjectIsNeeded(const ComputedStyle* style) {
+  if (!style)
+    return false;
+  if (style->Display() == EDisplay::kNone)
+    return false;
+  if (style->StyleType() == kPseudoIdFirstLetter ||
+      style->StyleType() == kPseudoIdBackdrop)
+    return true;
+  return style->GetContentData();
 }
 
 }  // namespace blink

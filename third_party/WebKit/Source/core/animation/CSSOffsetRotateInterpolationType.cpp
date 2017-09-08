@@ -6,6 +6,7 @@
 
 #include <memory>
 #include "core/css/resolver/StyleBuilderConverter.h"
+#include "core/style/ComputedStyle.h"
 #include "core/style/StyleOffsetRotation.h"
 #include "platform/wtf/PtrUtil.h"
 

@@ -46,6 +46,7 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/paint/compositing/PaintLayerCompositor.h"
 #include "core/probe/CoreProbes.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/Histogram.h"
 #include "platform/geometry/DoubleRect.h"
 #include "platform/geometry/FloatSize.h"
