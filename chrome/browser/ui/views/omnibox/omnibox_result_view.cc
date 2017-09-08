@@ -687,11 +687,38 @@ int OmniboxResultView::GetAnswerHeight() const {
 }
 
 bool OmniboxResultView::OnMousePressed(const ui::MouseEvent& event) {
-  // Cancel the hover state in case the user starts a drag, in which case we
-  // won't be notified on mouse exit.
-  if (event.IsLeftMouseButton() || event.IsMiddleMouseButton())
-    SetHovered(false);
+  if (event.IsOnlyLeftMouseButton())
+    model_->SetSelectedLine(model_index_);
+  return true;
+}
+
+bool OmniboxResultView::OnMouseDragged(const ui::MouseEvent& event) {
+  if (HitTestPoint(event.location())) {
+    // When the drag enters or remains within the bounds of this view, either
+    // set the state to be selected or hovered, depending on the mouse button.
+    if (event.IsOnlyLeftMouseButton()) {
+      if (GetState() != SELECTED)
+        model_->SetSelectedLine(model_index_);
+    } else {
+      SetHovered(true);
+    }
+    return true;
+  }
+
+  // When the drag leaves the bounds of this view, cancel the hover state and
+  // pass control to the popup view.
+  SetHovered(false);
+  SetMouseHandler(model_);
   return false;
+}
+
+void OmniboxResultView::OnMouseReleased(const ui::MouseEvent& event) {
+  if (event.IsOnlyMiddleMouseButton() || event.IsOnlyLeftMouseButton()) {
+    model_->OpenMatch(model_index_,
+                      event.IsOnlyLeftMouseButton()
+                          ? WindowOpenDisposition::CURRENT_TAB
+                          : WindowOpenDisposition::NEW_BACKGROUND_TAB);
+  }
 }
 
 void OmniboxResultView::OnMouseMoved(const ui::MouseEvent& event) {
