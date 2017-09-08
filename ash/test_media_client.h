@@ -26,9 +26,21 @@ class TestMediaClient : public mojom::MediaClient {
   void RequestCaptureState() override;
   void SuspendMediaSessions() override;
 
+  int handle_media_next_track_count() const {
+    return handle_media_next_track_count_;
+  }
+  int handle_media_play_pause_count() const {
+    return handle_media_play_pause_count_;
+  }
+  int handle_media_prev_track_count() const {
+    return handle_media_prev_track_count_;
+  }
   bool media_sessions_suspended() const { return media_sessions_suspended_; }
 
  private:
+  int handle_media_next_track_count_ = 0;
+  int handle_media_play_pause_count_ = 0;
+  int handle_media_prev_track_count_ = 0;
   bool media_sessions_suspended_ = false;
 
   mojo::AssociatedBinding<mojom::MediaClient> binding_;
