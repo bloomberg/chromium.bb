@@ -128,6 +128,7 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver, SignInStateObs
         if (mSigninPromoController != null) {
             AccountManagerFacade.get().removeObserver(this);
             mProfileDataCache.removeObserver(this);
+            mSigninPromoController.onPromoDestroyed();
         }
 
         mSignInManager.removeSignInStateObserver(this);

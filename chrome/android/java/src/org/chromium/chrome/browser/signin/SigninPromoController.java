@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -49,7 +50,11 @@ public class SigninPromoController {
     private final String mImpressionUserActionName;
     private final String mImpressionWithAccountUserActionName;
     private final String mImpressionWithNoAccountUserActionName;
+    private final @Nullable String mImpressionsTilDismissHistogramName;
+    private final @Nullable String mImpressionsTilSigninButtonsHistogramName;
     private final @StringRes int mDescriptionStringId;
+    private boolean mWasDisplayed;
+    private boolean mWasUsed;
 
     /**
      * Determines whether the promo should be shown to the user or not.
@@ -99,6 +104,10 @@ public class SigninPromoController {
                         "Signin_ImpressionWithAccount_FromBookmarkManager";
                 mImpressionWithNoAccountUserActionName =
                         "Signin_ImpressionWithNoAccount_FromBookmarkManager";
+                mImpressionsTilDismissHistogramName =
+                        "MobileSignInPromo.BookmarkManager.ImpressionsTilDismiss";
+                mImpressionsTilSigninButtonsHistogramName =
+                        "MobileSignInPromo.BookmarkManager.ImpressionsTilSigninButtons";
                 mDescriptionStringId = R.string.signin_promo_description_bookmarks;
                 break;
             case SigninAccessPoint.NTP_CONTENT_SUGGESTIONS:
@@ -109,6 +118,8 @@ public class SigninPromoController {
                         "Signin_ImpressionWithAccount_FromNTPContentSuggestions";
                 mImpressionWithNoAccountUserActionName =
                         "Signin_ImpressionWithNoAccount_FromNTPContentSuggestions";
+                mImpressionsTilDismissHistogramName = null;
+                mImpressionsTilSigninButtonsHistogramName = null;
                 mDescriptionStringId = R.string.signin_promo_description_ntp_content_suggestions;
                 break;
             case SigninAccessPoint.RECENT_TABS:
@@ -119,6 +130,8 @@ public class SigninPromoController {
                         "Signin_ImpressionWithAccount_FromRecentTabs";
                 mImpressionWithNoAccountUserActionName =
                         "Signin_ImpressionWithNoAccount_FromRecentTabs";
+                mImpressionsTilDismissHistogramName = null;
+                mImpressionsTilSigninButtonsHistogramName = null;
                 mDescriptionStringId = R.string.signin_promo_description_recent_tabs;
                 break;
             case SigninAccessPoint.SETTINGS:
@@ -127,6 +140,10 @@ public class SigninPromoController {
                 mImpressionWithAccountUserActionName = "Signin_ImpressionWithAccount_FromSettings";
                 mImpressionWithNoAccountUserActionName =
                         "Signin_ImpressionWithNoAccount_FromSettings";
+                mImpressionsTilDismissHistogramName =
+                        "MobileSignInPromo.SettingsManager.ImpressionsTilDismiss";
+                mImpressionsTilSigninButtonsHistogramName =
+                        "MobileSignInPromo.SettingsManager.ImpressionsTilSigninButtons";
                 mDescriptionStringId = R.string.signin_promo_description_settings;
                 break;
             default:
@@ -149,9 +166,20 @@ public class SigninPromoController {
         // If mImpressionCountName is not null then we should record impressions.
         if (mImpressionCountName != null) {
             SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
-            int numImpressions = preferences.getInt(mImpressionCountName, 0);
-            preferences.edit().putInt(mImpressionCountName, numImpressions + 1).apply();
+            int numImpressions = preferences.getInt(mImpressionCountName, 0) + 1;
+            preferences.edit().putInt(mImpressionCountName, numImpressions).apply();
         }
+    }
+
+    /**
+     * Called when the signin promo is destroyed.
+     */
+    public void onPromoDestroyed() {
+        if (!mWasDisplayed || mWasUsed || mImpressionsTilDismissHistogramName == null) {
+            return;
+        }
+        RecordHistogram.recordCount100Histogram(
+                mImpressionsTilDismissHistogramName, getNumImpressions());
     }
 
     /**
@@ -163,6 +191,7 @@ public class SigninPromoController {
      */
     public void setupSigninPromoView(Context context, SigninPromoView view,
             @Nullable final OnDismissListener onDismissListener) {
+        mWasDisplayed = true;
         view.getDescription().setText(mDescriptionStringId);
 
         if (mAccountName == null) {
@@ -173,11 +202,13 @@ public class SigninPromoController {
 
         if (onDismissListener != null) {
             view.getDismissButton().setVisibility(View.VISIBLE);
-            view.getDismissButton().setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    onDismissListener.onDismiss();
-                }
+            view.getDismissButton().setOnClickListener(promoView -> {
+                assert mAccessPoint == SigninAccessPoint.BOOKMARK_MANAGER;
+                mWasUsed = true;
+                RecordHistogram.recordCount100Histogram(
+                        "MobileSignInPromo.BookmarkManager.ImpressionsTilXButton",
+                        getNumImpressions());
+                onDismissListener.onDismiss();
             });
         } else {
             view.getDismissButton().setVisibility(View.GONE);
@@ -203,11 +234,9 @@ public class SigninPromoController {
         setImageSize(context, view, R.dimen.signin_promo_cold_state_image_size);
 
         view.getSigninButton().setText(R.string.sign_in_to_chrome);
-        view.getSigninButton().setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                AccountSigninActivity.startFromAddAccountPage(context, mAccessPoint, true);
-            }
+        view.getSigninButton().setOnClickListener(promoView -> {
+            recordSigninButtonUsed();
+            AccountSigninActivity.startFromAddAccountPage(context, mAccessPoint, true);
         });
 
         view.getChooseAccountButton().setVisibility(View.GONE);
@@ -222,24 +251,33 @@ public class SigninPromoController {
         String signinButtonText =
                 context.getString(R.string.signin_promo_continue_as, accountTitle);
         view.getSigninButton().setText(signinButtonText);
-        view.getSigninButton().setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                AccountSigninActivity.startFromConfirmationPage(
-                        context, mAccessPoint, mAccountName, true, true);
-            }
+        view.getSigninButton().setOnClickListener(promoView -> {
+            recordSigninButtonUsed();
+            AccountSigninActivity.startFromConfirmationPage(
+                    context, mAccessPoint, mAccountName, true, true);
         });
 
         String chooseAccountButtonText =
                 context.getString(R.string.signin_promo_choose_account, mAccountName);
         view.getChooseAccountButton().setText(chooseAccountButtonText);
-        view.getChooseAccountButton().setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                AccountSigninActivity.startAccountSigninActivity(context, mAccessPoint, true);
-            }
+        view.getChooseAccountButton().setOnClickListener(promoView -> {
+            recordSigninButtonUsed();
+            AccountSigninActivity.startAccountSigninActivity(context, mAccessPoint, true);
         });
         view.getChooseAccountButton().setVisibility(View.VISIBLE);
+    }
+
+    private int getNumImpressions() {
+        SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
+        return preferences.getInt(mImpressionCountName, 0);
+    }
+
+    private void recordSigninButtonUsed() {
+        mWasUsed = true;
+        if (mImpressionsTilSigninButtonsHistogramName != null) {
+            RecordHistogram.recordCount100Histogram(
+                    mImpressionsTilSigninButtonsHistogramName, getNumImpressions());
+        }
     }
 
     private void setImageSize(Context context, SigninPromoView view, @DimenRes int dimenResId) {
