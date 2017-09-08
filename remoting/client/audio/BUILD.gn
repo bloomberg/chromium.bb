@@ -10,6 +10,9 @@ source_set("audio") {
     "audio_player.h",
     "audio_player_android.cc",
     "audio_player_android.h",
+    "audio_player_buffer.cc",
+    "audio_player_buffer.h",
+    "audio_stream_consumer.cc",
     "audio_stream_consumer.h",
   ]
 
@@ -34,6 +37,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "audio_player_buffer_unittest.cc",
     "audio_player_unittest.cc",
   ]
 
