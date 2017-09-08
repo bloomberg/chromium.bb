@@ -195,8 +195,6 @@ static int amdgpu_cs_submit_one(amdgpu_context_handle context,
 		return -EINVAL;
 	if (ibs_request->ring >= AMDGPU_CS_MAX_RINGS)
 		return -EINVAL;
-	if (ibs_request->number_of_ibs > AMDGPU_CS_MAX_IBS_PER_SUBMIT)
-		return -EINVAL;
 	if (ibs_request->number_of_ibs == 0) {
 		ibs_request->seq_no = AMDGPU_NULL_SUBMIT_SEQ;
 		return 0;
