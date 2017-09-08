@@ -38,7 +38,7 @@ public class SuggestionsUiDelegateImpl implements SuggestionsUiDelegate {
         mSuggestionsRanker = new SuggestionsRanker();
         mSuggestionsEventReporter = eventReporter;
         mSuggestionsNavigationDelegate = navigationDelegate;
-        mImageFetcher = new ImageFetcher(suggestionsSource, profile, referencePool, host);
+        mImageFetcher = new ImageFetcher(suggestionsSource, profile, host);
 
         mHost = host;
         mReferencePool = referencePool;
