@@ -517,15 +517,6 @@ camera.views.Camera = function(context, router) {
   this.mirroringToggles_ = {};
 
   /**
-   * Overrides the default camera with a front facing camera due to
-   * limitations of WebRTC. This is a hack, to be removed when 58 hits
-   * post-stable.
-   * @type {boolean}
-   * @private
-   */
-  this.forceDefaultFrontFacingForReef58_ = false;
-
-  /**
    * Aspect ratio of the last opened video stream, or null if nothing was
    * opened.
    * @type {?number}
@@ -680,10 +671,6 @@ camera.views.Camera.prototype.initialize = function(callback) {
       });
     }
 
-    return camera.util.isBoard('reef');
-  }).then(function(isReef) {
-    this.forceDefaultFrontFacingForReef58_ = isReef;
-  }.bind(this)).then(function() {
     // Initialize the webgl canvases.
     try {
       this.mainCanvas_ = fx.canvas();
@@ -1915,7 +1902,7 @@ camera.views.Camera.prototype.mediaRecorderRecording_ = function() {
 /**
  * Starts capturing with the specified constraints.
  *
- * @param {!Object} constraints Constraints passed to WebRTC as mandatory ones.
+ * @param {!Object} constraints Constraints passed to WebRTC.
  * @param {function()} onSuccess Success callback.
  * @param {function()} onFailure Failure callback, eg. the constraints are
  *     not supported.
@@ -1924,42 +1911,7 @@ camera.views.Camera.prototype.mediaRecorderRecording_ = function() {
  */
  camera.views.Camera.prototype.startWithConstraints_ =
      function(constraints, onSuccess, onFailure, onDisconnected) {
-  // Convert the constraints to legacy ones, as the new format is not well
-  // supported yet and it's buggy.
-  var legacyConstraints = {
-    video: {
-      mandatory: {
-        minWidth: constraints.video.width,
-        minHeight: constraints.video.height
-      }
-    }
-  };
-
-  // If the deviceId is passed, then request it. Otherwise, let's open the
-  // default system camera.
-  if (constraints.video.deviceId) {
-    legacyConstraints.video.mandatory.sourceId = constraints.video.deviceId;
-  }
-
-  // For reef devices probing resolutions may cause selecting a device
-  // which is not the default one on Chrome 58 and older.
-  //
-  // To workaround it, on reef, for the time being, force selecting the user
-  // facing camera, no matter what's the default camera set to in
-  // chrome://settings. On 58 passing larger resolution than the front facing
-  // camera can handle, would select the back facing, so hard-code the
-  // resolution.
-  if (this.forceDefaultFrontFacingForReef58_ && !constraints.video.deviceId) {
-    legacyConstraints = {
-      video: {
-        width: { exact: 1280 },
-        height: { exact: 720 },
-        facingMode: { exact: 'user' }
-      }
-    };
-  }
-
-  navigator.mediaDevices.getUserMedia(legacyConstraints).then(function(stream) {
+  navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
     // Mute to avoid echo from the captured audio.
     this.video_.muted = true;
     this.video_.src = window.URL.createObjectURL(stream);
@@ -2231,7 +2183,8 @@ camera.views.Camera.prototype.start_ = function() {
           if (constraintsCandidates[index].video.deviceId) {
             // For non-default cameras fetch the deviceId from constraints.
             // Works on all supported Chrome versions.
-            this.videoDeviceId_ = constraintsCandidates[index].video.deviceId;
+            this.videoDeviceId_ =
+                constraintsCandidates[index].video.deviceId.exact;
           } else {
             // For default camera, obtain the deviceId from settings, which is
             // a feature available only from 59. For older Chrome versions,
@@ -2281,13 +2234,24 @@ camera.views.Camera.prototype.start_ = function() {
     // each candidate separately.
     sortedDeviceIds.forEach(function(deviceId) {
       camera.views.Camera.RESOLUTIONS.forEach(function(resolution) {
-        constraintsCandidates.push({
-          video: {
-            deviceId: deviceId,
-            width: resolution[0],
-            height: resolution[1]
-          }
-        });
+        if (deviceId) {
+          constraintsCandidates.push({
+            video: {
+              deviceId: { exact: deviceId },
+              width: { min: resolution[0] },
+              height: { min: resolution[1] }
+            }
+          });
+        } else {
+          // As a default camera use the one which is facing the user.
+          constraintsCandidates.push({
+            video: {
+              width: { min: resolution[0] },
+              height: { min: resolution[1] },
+              facingMode: { exact: 'user' }
+            }
+          });
+        }
       });
     });
 
