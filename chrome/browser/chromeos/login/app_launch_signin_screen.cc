@@ -141,12 +141,6 @@ void AppLaunchSigninScreen::SetWebUIHandler(
   webui_handler_ = webui_handler;
 }
 
-void AppLaunchSigninScreen::ShowSigninScreenForCreds(
-    const std::string& username,
-    const std::string& password) {
-  NOTREACHED();
-}
-
 const user_manager::UserList& AppLaunchSigninScreen::GetUsers() const {
   if (test_user_manager_) {
     return test_user_manager_->GetUsers();

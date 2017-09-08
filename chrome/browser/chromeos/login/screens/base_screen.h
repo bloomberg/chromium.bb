@@ -137,8 +137,6 @@ class BaseScreen {
   friend class ScreenManager;
   friend class UpdateScreenTest;
 
-  void SetContext(::login::ScreenContext* context);
-
   // Called when context for the current screen was
   // changed. Notification about this event comes from the JS
   // counterpart.

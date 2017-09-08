@@ -704,10 +704,6 @@ void ExistingUserController::ShowEnrollmentScreen() {
   host_->StartWizard(OobeScreen::SCREEN_OOBE_ENROLLMENT);
 }
 
-void ExistingUserController::ShowResetScreen() {
-  host_->StartWizard(OobeScreen::SCREEN_OOBE_RESET);
-}
-
 void ExistingUserController::ShowEnableDebuggingScreen() {
   host_->StartWizard(OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING);
 }

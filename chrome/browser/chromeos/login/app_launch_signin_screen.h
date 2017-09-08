@@ -72,8 +72,6 @@ class AppLaunchSigninScreen : public SigninScreenHandlerDelegate,
   void ShowKioskAutolaunchScreen() override;
   void ShowWrongHWIDScreen() override;
   void SetWebUIHandler(LoginDisplayWebUIHandler* webui_handler) override;
-  virtual void ShowSigninScreenForCreds(const std::string& username,
-                                        const std::string& password);
   bool IsShowGuest() const override;
   bool IsShowUsers() const override;
   bool ShowUsersHasChanged() const override;
