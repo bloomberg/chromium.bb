@@ -130,7 +130,7 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
   [BookmarksNewGenTestCase openMobileBookmarks];
 
   // Swipe action on the URL.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Second URL")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
       performAction:grey_swipeFastInDirection(kGREYDirectionLeft)];
 
   // Verify context bar does not change when "Delete" shows up.
@@ -222,7 +222,7 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 
   // Select single URL.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Second URL")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
       performAction:grey_tap()];
 
   // Verify context bar shows enabled "Delete" enabled "More" enabled "Cancel".
@@ -240,7 +240,7 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 
   // Unselect all.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Second URL")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
       performAction:grey_tap()];
 
   // Verify context bar shows disabled "Delete" disabled "More" enabled
@@ -265,7 +265,7 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 
   // Select single Folder.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Folder 1")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
       performAction:grey_tap()];
 
   // Verify context bar shows enabled "Delete" enabled "Edit" enabled "Cancel".
@@ -283,7 +283,7 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 
   // Unselect all.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Folder 1")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
       performAction:grey_tap()];
 
   // Verify context bar shows disabled "Delete" disabled "More" enabled
@@ -308,9 +308,9 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 
   // Multi select URL and folders.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Folder 1")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Second URL")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
       performAction:grey_tap()];
 
   // Verify context bar shows enabled "Delete" enabled "More" enabled "Cancel".
@@ -328,7 +328,7 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 
   // Unselect Folder 1, so that Second URL is selected.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Folder 1")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
       performAction:grey_tap()];
 
   // Verify context bar shows enabled "Delete" enabled "More" enabled
@@ -347,10 +347,10 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 
   // Unselect all, but one Folder - Folder 1 is selected.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Folder 1")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
       performAction:grey_tap()];
   // Unselect URL.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Second URL")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
       performAction:grey_tap()];
 
   // Verify context bar shows enabled "Delete" enabled "Edit" enabled "Cancel".
@@ -368,7 +368,7 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 
   // Unselect all.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Folder 1")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
       performAction:grey_tap()];
 
   // Verify context bar shows disabled "Delete" disabled "More" enabled
@@ -418,7 +418,7 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Select URL.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Second URL")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
       performAction:grey_tap()];
 
   // Tap context menu.
@@ -448,7 +448,7 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Select URL.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Second URL")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
       performAction:grey_tap()];
 
   // Invoke Edit through context menu.
@@ -481,7 +481,7 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       assertWithMatcher:grey_notVisible()];
 
   // Verify that the bookmark was updated.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"n5")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"n5")]
       assertWithMatcher:grey_sufficientlyVisible()];
   [BookmarksNewGenTestCase assertExistenceOfBookmarkWithURL:@"http://www.a.fr/"
                                                        name:@"n5"];
@@ -491,7 +491,7 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Verify old URL is back.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Second URL")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
@@ -513,7 +513,7 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Select URL.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"French URL")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"French URL")]
       performAction:grey_tap()];
 
   // Invoke Copy through context menu.
@@ -554,9 +554,9 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Select URLs.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Second URL")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"First URL")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL")]
       performAction:grey_tap()];
 
   // Tap context menu.
@@ -602,7 +602,7 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Select URL.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Folder 1")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
       performAction:grey_tap()];
 
   // Center button is "Edit".
@@ -643,9 +643,9 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Select Folders.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Folder 1")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Folder 1.1")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1.1")]
       performAction:grey_tap()];
 
   // Tap context menu.
@@ -674,9 +674,9 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Select URL and folder.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Second URL")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Folder 1")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
       performAction:grey_tap()];
 
   // Tap context menu.
@@ -699,7 +699,7 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
 
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Second URL")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
       performAction:grey_longPress()];
 
   // Verify context menu.
@@ -717,7 +717,7 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
 
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Folder 1")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
       performAction:grey_longPress()];
 
   // Verify it shows the context menu.
@@ -748,7 +748,7 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
   [BookmarksNewGenTestCase openMobileBookmarks];
 
   // Invoke Edit through long press.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Folder 1")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
       performAction:grey_longPress()];
 
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
@@ -784,7 +784,7 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
   [BookmarksNewGenTestCase openMobileBookmarks];
 
   // Invoke Move through long press.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Folder 1.1")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1.1")]
       performAction:grey_longPress()];
 
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
@@ -857,14 +857,14 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
                            ofFolderWithName:@"Title For New Folder"];
 
   // Drill down to where "Folder 1.1" has been moved and assert it's presence.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Folder 1")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Folder 2")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 2")]
       performAction:grey_tap()];
   [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityLabel(@"Title For New Folder")]
+      selectElementWithMatcher:grey_accessibilityID(@"Title For New Folder")]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Folder 1.1")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1.1")]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
@@ -886,7 +886,7 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Select Folder.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Folder 1")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
       performAction:grey_tap()];
 
   // Tap edit on context bar.
@@ -946,7 +946,7 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Select single URL.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Second URL")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
       performAction:grey_tap()];
 
   // Delete it.
@@ -999,7 +999,7 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Select single URL.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Folder 1")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
       performAction:grey_tap()];
 
   // Delete it.
@@ -1052,9 +1052,9 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Select Folder and URL.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Second URL")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Folder 1")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
       performAction:grey_tap()];
 
   // Delete it.
@@ -1303,6 +1303,54 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   // Check that the sign-in promo is not visible anymore.
   [SigninEarlGreyUtils checkSigninPromoNotVisible];
+}
+
+// Tests the creation of new folders by tapping on 'New Folder' button of the
+// context bar.
+- (void)testCreateNewFolderWithContextBar {
+  if (IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
+  }
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
+
+  [BookmarksNewGenTestCase setupStandardBookmarks];
+  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksNewGenTestCase openMobileBookmarks];
+
+  // Click on "New Folder".
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          @"context_bar_leading_button")]
+      performAction:grey_tap()];
+
+  // TODO(crbug.com/695749): Verify the context bar is in default state here.
+  // The keyboard is blocking the visibility to the context bar here.  So we
+  // will need to dismiss the keyboard when verifying.
+
+  // Rename the new folder as "New Folder 1".
+  NSString* newFolderTitle = @"New Folder 1";
+  [BookmarksNewGenTestCase
+      renameNewBookmarkFolderWithFolderTitle:newFolderTitle];
+
+  // Verify "New Folder 1" is created.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(newFolderTitle)]
+      assertWithMatcher:grey_notNil()];
+
+  // Click on "New Folder" and create "New Folder 2".
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          @"context_bar_leading_button")]
+      performAction:grey_tap()];
+  newFolderTitle = @"New Folder 2";
+  [BookmarksNewGenTestCase
+      renameNewBookmarkFolderWithFolderTitle:newFolderTitle];
+
+  // Verify "New Folder 2" is created.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(newFolderTitle)]
+      assertWithMatcher:grey_notNil()];
+
+  // Verify context bar does not change after editing folder name.
+  [self verifyContextBarInDefaultState];
 }
 
 #pragma mark - Helpers
@@ -1559,6 +1607,23 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 + (NSString*)contextBarMoreString {
   return l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_BAR_MORE);
 }
+
+// Rename title of the newly created folder.
++ (void)renameNewBookmarkFolderWithFolderTitle:(NSString*)folderTitle {
+  NSString* titleIdentifier = @"bookmark_editing_text";
+
+  // Type the folder title.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(titleIdentifier)]
+      performAction:grey_replaceText(folderTitle)];
+
+  // Press the keyboard return key.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(titleIdentifier)]
+      performAction:grey_typeText(@"\n")];
+
+  // Wait until the editing textfield is gone.
+  [BookmarksNewGenTestCase waitForDeletionOfBookmarkWithTitle:titleIdentifier];
+}
+
 // TODO(crbug.com/695749): Add egtest for spinner and empty background
 
 @end
