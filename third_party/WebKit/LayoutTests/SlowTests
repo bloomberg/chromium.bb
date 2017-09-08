@@ -99,8 +99,10 @@ crbug.com/451577 external/wpt/IndexedDB/idbindex-multientry-big.htm [ Slow ]
 crbug.com/451577 [ Mac ] http/tests/inspector/extensions/extensions-reload.html [ Slow ]
 crbug.com/451577 [ Mac ] http/tests/inspector/extensions/extensions-resources.html [ Slow ]
 crbug.com/451577 [ Win10 ] http/tests/inspector/extensions/extensions-sidebar.html [ Slow ]
-crbug.com/451577 [ Mac ] inspector/layers/layer-canvas-log.html [ Slow ]
-crbug.com/451577 [ Mac ] inspector/network/network-domain-filter.html [ Slow ]
+crbug.com/451577 [ Mac ] http/tests/devtools/layers/layer-canvas-log.html [ Slow ]
+crbug.com/667560 [ Mac ] virtual/mojo-loading/http/tests/devtools/layers/layer-canvas-log.html [ Slow ]
+crbug.com/451577 [ Mac ] http/tests/devtools/network/network-domain-filter.html [ Slow ]
+crbug.com/667560 [ Mac ] virtual/mojo-loading/http/tests/devtools/network/network-domain-filter.html [ Slow ]
 
 crbug.com/237245 [ Debug Win7 ] editing/selection/programmatic-selection-on-mac-is-directionless.html [ Slow ]
 
@@ -471,7 +473,8 @@ crbug.com/741259 editing/selection/select-bidi-run.html [ Slow ]
 # These tests were previously marked Slow in ASANExpectations.
 crbug.com/451577 [ Linux ] http/tests/devtools/elements/user-properties.html [ Slow ]
 crbug.com/667560 [ Linux ] virtual/mojo-loading/http/tests/devtools/elements/user-properties.html [ Slow ]
-crbug.com/451577 [ Linux ] inspector/layers/layer-canvas-log.html [ Slow ]
+crbug.com/451577 [ Linux ] http/tests/devtools/layers/layer-canvas-log.html [ Slow ]
+crbug.com/667560 [ Linux ] virtual/mojo-loading/http/tests/devtools/layers/layer-canvas-log.html [ Slow ]
 
 # These imported tests exercise tens of thousands of code points and generate large results.
 crbug.com/736056 external/wpt/encoding/legacy-mb-japanese [ Slow ]

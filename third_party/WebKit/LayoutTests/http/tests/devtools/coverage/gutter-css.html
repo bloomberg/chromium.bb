@@ -1,0 +1,27 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/debugger-test.js"></script>
+<script src="../resources/coverage-test.js"></script>
+
+<link rel="stylesheet" type="text/css" href="resources/highlight-in-source.css">
+<script>
+
+var initialize_Coverage = function() {
+    InspectorTest.preloadModule("coverage");
+}
+
+async function test() {
+  CoverageTestRunner.startCoverage();
+  await TestRunner.evaluateInPagePromise('performActions()');
+  await CoverageTestRunner.stopCoverage();
+  await CoverageTestRunner.dumpDecorations('highlight-in-source.css');
+  TestRunner.completeTest();
+}
+</script>
+</head>
+<p id="id">PASS</p>
+<body onload="runTest()">
+<p>Tests the coverage highlight in sources after the recording finishes.</p>
+</body>
+</html>

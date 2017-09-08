@@ -1,0 +1,11 @@
+Tests running audits with a single empty stylesheet.
+
+Page reloaded.
+    Network Utilization
+        [spritesheet-smallicons smallicon-red-ball severity] Leverage browser caching (3)
+         The following resources are missing a cache expiration. Resources that do not specify an expiration may not be cached by browsers:
+           audits-empty-stylesheet.html
+           inspector-test.js
+           audits-test.js
+    Web Page Performance
+

@@ -1,0 +1,131 @@
+<html>
+<head>
+<style type="text/css">
+#node {
+    transition: background-color 150ms cubic-bezier(0, 0.5, 0.5, 1);
+}
+
+#node.css-anim {
+    animation: anim 300ms ease-in-out;
+}
+
+@keyframes anim {
+    from {
+        width: 100px;
+    }
+    to {
+        width: 200px;
+    }
+}
+</style>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/elements-test.js"></script>
+<script>
+var player;
+
+function startAnimationWithDelay()
+{
+    player = node.animate([{ width: "100px" }, { width: "200px" }], { duration: 200, delay: 100, id: "testId" });
+}
+
+function startAnimationWithEndDelay()
+{
+    player = node.animate([{ width: "100px" }, { width: "200px" }], { duration: 20000, delay: 100, endDelay: 200 });
+}
+
+function startAnimationWithStepTiming()
+{
+    player = node.animate([{ width: "100px", easing: "steps(5, end)" }, { width: "200px", easing: "step-start" }], 200);
+}
+
+function startCSSAnimation()
+{
+    node.classList.add("css-anim");
+}
+
+function startCSSTransition()
+{
+    node.style.backgroundColor = "blue";
+}
+
+var initialize_Animations = function() {
+
+    InspectorTest.preloadModule("animation");
+}
+
+function test() {
+  // Override timeline width for testing
+  Animation.AnimationTimeline.prototype.width = function() {
+    return 1000;
+  };
+  // Override animation color for testing
+  // FIXME: Set animation name of Web Animation instead; not supported yet
+  Animation.AnimationUI.Color = function() {
+    return 'black';
+  };
+
+  UI.viewManager.showView('animations');
+  var timeline = self.runtime.sharedInstance(Animation.AnimationTimeline);
+  TestRunner.evaluateInPage('startAnimationWithDelay()');
+  ElementsTestRunner.waitForAnimationAdded(step2);
+
+  function step2(group) {
+    timeline._selectAnimationGroup(group);
+    timeline._render();
+    TestRunner.addResult('>>>> Animation with start delay only');
+    ElementsTestRunner.dumpAnimationTimeline(timeline);
+    timeline._reset();
+    ElementsTestRunner.waitForAnimationAdded(step3);
+    TestRunner.evaluateInPage('startAnimationWithEndDelay()');
+  }
+
+  function step3(group) {
+    timeline._selectAnimationGroup(group);
+    timeline._render();
+    TestRunner.addResult('>>>> Animation with start and end delay');
+    ElementsTestRunner.dumpAnimationTimeline(timeline);
+    ElementsTestRunner.waitForAnimationAdded(step5);
+    TestRunner.evaluateInPage('startAnimationWithStepTiming()');
+  }
+
+  function step5(group) {
+    timeline._selectAnimationGroup(group);
+    timeline._render();
+    TestRunner.addResult('>>>> Animation with step timing function');
+    ElementsTestRunner.dumpAnimationTimeline(timeline);
+    timeline._reset();
+    ElementsTestRunner.waitForAnimationAdded(step6);
+    TestRunner.evaluateInPage('startCSSAnimation()');
+  }
+
+  function step6(group) {
+    timeline._selectAnimationGroup(group);
+    timeline._render();
+    TestRunner.addResult('>>>> CSS animation started');
+    ElementsTestRunner.dumpAnimationTimeline(timeline);
+    timeline._reset();
+    ElementsTestRunner.waitForAnimationAdded(step7);
+    TestRunner.evaluateInPage('startCSSTransition()');
+  }
+
+  function step7(group) {
+    timeline._selectAnimationGroup(group);
+    timeline._render();
+    TestRunner.addResult('>>>> CSS transition started');
+    ElementsTestRunner.dumpAnimationTimeline(timeline);
+    TestRunner.completeTest();
+  }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests the display of animations on the animation timeline.
+</p>
+
+<div id="node" style="background-color: red; height: 100px"></div>
+
+</body>
+</html>

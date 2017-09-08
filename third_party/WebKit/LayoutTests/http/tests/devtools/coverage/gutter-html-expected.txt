@@ -1,0 +1,68 @@
+Tests the coverage highlight in sources after the recording finishes.
+
+0:   <html>
+1:   <head>
+2:   <script src="../../inspector/inspector-test.js"></script>
+3:   <script src="../../inspector/debugger-test.js"></script>
+4:   <script src="../resources/coverage-test.js"></script>
+5:   
+6:   <script>
+7: + function used1() {
+8: +   window.a += 4;
+9: + }
+10:   
+11: - function unused1() {
+12: -   window.a += 1;
+13: - }
+14:   </script>
+15:   
+16:   <script>
+17: - function unused2() {
+18: -   window.a += 0.5;
+19: - }
+20:   
+21: + function used2() {
+22: +   window.a += 4;
+23: + }
+24:   </script>
+25:   
+26:   <style>
+27: + .used {
+28: +   color: black;
+29: + }
+30:   
+31: - .notUsed {
+32: -   color: red;
+33: - }
+34:   </style>
+35:   
+36:   <style>
+37: - #not-used {
+38: -   color: red;
+39: - }
+40:   
+41: + #also-used {
+42: +   color: black;
+43: + }
+44:   </style>
+45:   
+46:   <script>
+47: + function performActions() {
+48: +   used1();
+49: +   used2();
+50: + }
+51:   
+52: - async function test() {
+53: -   CoverageTestRunner.startCoverage();
+54: -   await TestRunner.evaluateInPagePromise('performActions()');
+55: -   await CoverageTestRunner.stopCoverage();
+56: -   await CoverageTestRunner.dumpDecorations('gutter-html.html');
+57: -   TestRunner.completeTest();
+58: - }
+59:   </script>
+60:   </head>
+61:   <body onload="runTest()">
+62:   <p class="used" id="also-used">Tests the coverage highlight in sources after the recording finishes.</p>
+63:   </body>
+64:   </html>
+

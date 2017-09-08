@@ -1,0 +1,58 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script>
+function initialize_SegmentsMerge() {
+
+InspectorTest.preloadModule("coverage");
+
+}
+
+function test() {
+  testAndDump([], []);
+  testAndDump([{end: 10, count: 1}], []);
+  testAndDump([{end: 10, count: 1}], [{end: 10, count: 1}]);
+  testAndDump([{end: 10, count: 1}], [{end: 20, count: 1}]);
+  testAndDump([{end: 10, count: 1}, {end: 20, count: 1}], []);
+  testAndDump([{end: 30, count: 1}], [{end: 10, count: undefined}, {end: 20, count: 2}]);
+  testAndDump([{end: 30, count: undefined}], [{end: 10, count: undefined}, {end: 20, count: 2}]);
+
+  TestRunner.completeTest();
+
+  function testAndDump(a, b) {
+    dumpSegments('A: ', a);
+    dumpSegments('B: ', b);
+
+    var mergedAB = Coverage.CoverageInfo._mergeCoverage(a, b);
+    dumpSegments('merged: ', mergedAB);
+    var mergedBA = Coverage.CoverageInfo._mergeCoverage(b, a);
+    if (!rangesEqual(mergedAB, mergedBA))
+      dumpSegments('FAIL, merge(b, a) != merge(a, b): ', mergedBA);
+  }
+
+  function dumpSegments(prefix, arr) {
+    TestRunner.addResult((prefix || '') + JSON.stringify(arr));
+  }
+
+  function rangesEqual(a, b) {
+    if (a.length !== b.length)
+      return false;
+
+    for (var i = 0; i < a.length; i++) {
+      if (a[i].end !== b[i].end)
+        return false;
+      if (a[i].count !== b[i].count)
+        return false;
+    }
+    return true;
+  }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>Tests the merge of disjoint segment lists in CoverageModel.</p>
+
+</body>
+</html>

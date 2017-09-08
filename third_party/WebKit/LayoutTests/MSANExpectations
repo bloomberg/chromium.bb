@@ -15,7 +15,8 @@ crbug.com/420606 [ Linux ] fast/workers/worker-constructor.html [ Skip ]
 # Flaky under MSan (hang forever).
 crbug.com/422982 [ Linux ] virtual/threaded [ Skip ]
 
-crbug.com/700795 [ Linux ] inspector/animation/animation-transition-setTiming-crash.html [ Skip ]
+crbug.com/700795 [ Linux ] http/tests/devtools/animation/animation-transition-setTiming-crash.html [ Skip ]
+crbug.com/667560 [ Linux ] virtual/mojo-loading/http/tests/devtools/animation/animation-transition-setTiming-crash.html [ Skip ]
 
 crbug.com/454267 [ Linux ] virtual/gpu/fast/canvas/canvas-arc-360-winding.html [ Crash ]
 crbug.com/454267 [ Linux ] virtual/gpu/fast/canvas/canvas-ellipse-360-winding.html [ Crash ]
@@ -59,7 +60,8 @@ crbug.com/729136 [ Linux ] external/wpt/encoding/textdecoder-fatal-single-byte.h
 crbug.com/729136 [ Linux ] fast/css/css-selector-deeply-nested.html [ Timeout ]
 crbug.com/729136 [ Linux ] http/tests/inspector/forced-layout-in-microtask.html [ Timeout ]
 crbug.com/729136 [ Linux ] http/tests/inspector/tracing/timeline-xhr-response-type-blob-event.html [ Timeout ]
-crbug.com/729136 [ Linux ] inspector/components/file-path-scoring.html [ Timeout ]
+crbug.com/729136 [ Linux ] http/tests/devtools/components/file-path-scoring.html [ Timeout ]
+crbug.com/667560 [ Linux ] virtual/mojo-loading/http/tests/devtools/components/file-path-scoring.html [ Timeout ]
 crbug.com/729136 [ Linux ] http/tests/devtools/elements/styles-4/styles-should-not-force-sync-style-recalc.html [ Timeout ]
 crbug.com/667560 [ Linux ] virtual/mojo-loading/http/tests/devtools/elements/styles-4/styles-should-not-force-sync-style-recalc.html [ Timeout ]
 crbug.com/729136 [ Linux ] webaudio/mixing.html [ Timeout ]

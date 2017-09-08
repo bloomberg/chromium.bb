@@ -1,0 +1,5 @@
+Tests the coverage list view after finishing recording in the Coverage view.
+
+http://127.0.0.1:8000/devtools/coverage/resources/coverage.js JS used: 235 unused: 167 total: 402
+http://127.0.0.1:8000/devtools/coverage/resources/highlight-in-source.css CSS used: 67 unused: 142 total: 209
+

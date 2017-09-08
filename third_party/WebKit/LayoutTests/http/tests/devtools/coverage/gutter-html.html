@@ -1,0 +1,65 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/debugger-test.js"></script>
+<script src="../resources/coverage-test.js"></script>
+
+<script>
+function used1() {
+  window.a += 4;
+}
+
+function unused1() {
+  window.a += 1;
+}
+</script>
+
+<script>
+function unused2() {
+  window.a += 0.5;
+}
+
+function used2() {
+  window.a += 4;
+}
+</script>
+
+<style>
+.used {
+  color: black;
+}
+
+.notUsed {
+  color: red;
+}
+</style>
+
+<style>
+#not-used {
+  color: red;
+}
+
+#also-used {
+  color: black;
+}
+</style>
+
+<script>
+function performActions() {
+  used1();
+  used2();
+}
+
+async function test() {
+  CoverageTestRunner.startCoverage();
+  await TestRunner.evaluateInPagePromise('performActions()');
+  await CoverageTestRunner.stopCoverage();
+  await CoverageTestRunner.dumpDecorations('gutter-html.html');
+  TestRunner.completeTest();
+}
+</script>
+</head>
+<body onload="runTest()">
+<p class="used" id="also-used">Tests the coverage highlight in sources after the recording finishes.</p>
+</body>
+</html>
