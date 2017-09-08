@@ -9,7 +9,6 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
-import android.text.TextPaint;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,7 +17,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
@@ -344,13 +342,6 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
             @Override
             public void onClick(View view) {
                 mHistoryManager.openUrl(url, null, true);
-            }
-
-            @Override
-            public void updateDrawState(TextPaint textPaint) {
-                super.updateDrawState(textPaint);
-                textPaint.setColor(
-                        ApiCompatibilityUtils.getColor(resources, R.color.google_blue_700));
             }
         };
         return SpanApplier.applySpans(

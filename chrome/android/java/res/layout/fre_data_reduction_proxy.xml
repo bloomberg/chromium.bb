@@ -62,20 +62,17 @@
                         android:gravity="start"
                         android:lineSpacingMultiplier="1.4"
                         android:text="@string/data_reduction_promo_summary"
-                        android:textColor="@color/fre_text_color"
-                        android:textSize="@dimen/text_size_medium" />
+                        android:textAppearance="@style/BlackBodyDefault" />
 
                     <android.support.v7.widget.SwitchCompat
-                        style="@style/RobotoMediumStyle"
                         android:id="@+id/enable_data_saver_switch"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:lineSpacingMultiplier="1.4"
                         android:showText="false"
                         android:text="@string/data_reduction_enabled_switch"
-                        android:textColor="@color/fre_text_color"
-                        android:textSize="@dimen/text_size_medium" />
-                    
+                        style="@style/BlackTitle2" />
+
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>

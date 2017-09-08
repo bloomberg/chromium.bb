@@ -48,10 +48,8 @@ public class RecentTabsGroupView extends RelativeLayout {
         super(context, attrs);
         Resources res = getResources();
         mDeviceLabelExpandedColor = ApiCompatibilityUtils.getColor(res, R.color.light_active_color);
-        mDeviceLabelCollapsedColor =
-                ApiCompatibilityUtils.getColor(res, R.color.ntp_list_header_text);
-        mTimeLabelExpandedColor =
-                ApiCompatibilityUtils.getColor(res, R.color.ntp_list_header_subtext_active);
+        mDeviceLabelCollapsedColor = ApiCompatibilityUtils.getColor(res, R.color.black_alpha_87);
+        mTimeLabelExpandedColor = ApiCompatibilityUtils.getColor(res, R.color.google_blue_700);
         mTimeLabelCollapsedColor =
                 ApiCompatibilityUtils.getColor(res, R.color.ntp_list_header_subtext);
     }

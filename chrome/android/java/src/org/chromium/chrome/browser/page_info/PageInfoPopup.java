@@ -634,7 +634,7 @@ public class PageInfoPopup implements OnClickListener {
 
                 permissionIcon.setImageResource(R.drawable.exclamation_triangle);
                 permissionIcon.setColorFilter(ApiCompatibilityUtils.getColor(
-                        mContext.getResources(), R.color.page_info_popup_text_link));
+                        mContext.getResources(), R.color.google_blue_700));
 
                 permissionRow.setOnClickListener(this);
             }
@@ -716,9 +716,9 @@ public class PageInfoPopup implements OnClickListener {
             messageBuilder.append(" ");
             SpannableString detailsText =
                     new SpannableString(mContext.getString(R.string.details_link));
-            final ForegroundColorSpan blueSpan = new ForegroundColorSpan(
-                    ApiCompatibilityUtils.getColor(mContext.getResources(),
-                            R.color.page_info_popup_text_link));
+            final ForegroundColorSpan blueSpan =
+                    new ForegroundColorSpan(ApiCompatibilityUtils.getColor(
+                            mContext.getResources(), R.color.google_blue_700));
             detailsText.setSpan(
                     blueSpan, 0, detailsText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
             messageBuilder.append(detailsText);
