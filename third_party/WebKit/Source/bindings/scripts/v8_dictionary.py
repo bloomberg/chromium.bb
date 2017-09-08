@@ -29,8 +29,6 @@ DICTIONARY_CPP_INCLUDES = frozenset([
 
 def getter_name_for_dictionary_member(member):
     name = v8_utilities.cpp_name(member)
-    if 'PrefixGet' in member.extended_attributes:
-        return 'get%s' % v8_utilities.capitalize(name)
     return name
 
 

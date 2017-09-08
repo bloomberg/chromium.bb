@@ -171,12 +171,6 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   }
   void setOtherDoubleOrStringMember(const DoubleOrString&);
 
-  bool hasPrefixGetMember() const { return !(prefix_get_member_.IsEmpty() || prefix_get_member_.IsNull() || prefix_get_member_.IsUndefined()); }
-  ScriptValue getPrefixGetMember() const {
-    return prefix_get_member_;
-  }
-  void setPrefixGetMember(ScriptValue);
-
   bool hasRecordMember() const { return has_record_member_; }
   const Vector<std::pair<String, int8_t>>& recordMember() const {
     DCHECK(has_record_member_);
@@ -340,7 +334,6 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   ScriptValue object_member_;
   ScriptValue object_or_null_member_;
   DoubleOrString other_double_or_string_member_;
-  ScriptValue prefix_get_member_;
   Vector<std::pair<String, int8_t>> record_member_;
   double restricted_double_member_;
   bool runtime_member_;
