@@ -350,6 +350,19 @@
       if (!success) throw 'setNextWriteResponse failed';
     }
 
+    // Sets the next subscribe to notifications response for characteristic with
+    // |characteristic_id| in |service_id| and in |peripheral_address| to
+    // |code|. |code| could be a GATT Error Response from BT 4.2 Vol 3 Part F
+    // 3.4.1.1 Error Response or a number outside that range returned by
+    // specific platforms e.g. Android returns 0x101 to signal a GATT failure.
+    async setNextSubscribeToNotificationsResponse(gatt_code) {
+      let {success} =
+        await this.fake_central_ptr_.setNextSubscribeToNotificationsResponse(
+          gatt_code, ...this.ids_);
+
+      if (!success) throw 'setNextSubscribeToNotificationsResponse failed';
+    }
+
     // Gets the last successfully written value to the characteristic.
     // Returns null if no value has yet been written to the characteristic.
     async getLastWrittenValue() {
@@ -389,7 +402,7 @@
     // https://developer.android.com/reference/android/bluetooth/BluetoothGatt.html#GATT_FAILURE
     async setNextReadResponse(gatt_code, value=null) {
       if (gatt_code === 0 && value === null) {
-        throw '|value| can\'t be null if read should success.';
+        throw '|value| cannot be null if read should succeed.';
       }
       if (gatt_code !== 0 && value !== null) {
         throw '|value| must be null if read should fail.';
