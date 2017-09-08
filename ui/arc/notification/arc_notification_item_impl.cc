@@ -13,10 +13,10 @@
 #include "ui/arc/notification/arc_notification_delegate.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
-#include "ui/message_center/message_center_style.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_types.h"
 #include "ui/message_center/notifier_settings.h"
+#include "ui/message_center/public/cpp/message_center_constants.h"
 
 namespace arc {
 

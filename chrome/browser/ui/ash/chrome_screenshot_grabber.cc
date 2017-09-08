@@ -50,8 +50,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/message_center/message_center.h"
-#include "ui/message_center/message_center_style.h"
+#include "ui/message_center/public/cpp/message_center_constants.h"
+#include "ui/message_center/public/cpp/message_center_switches.h"
 #include "ui/strings/grit/ui_strings.h"
 
 namespace {
@@ -612,7 +612,7 @@ Notification* ChromeScreenshotGrabber::CreateNotification(
       GURL(kNotificationOriginUrl), notification_id, optional_field,
       new ScreenshotGrabberNotificationDelegate(success, GetProfile(),
                                                 screenshot_path));
-  if (message_center::MessageCenter::IsNewStyleNotificationEnabled()) {
+  if (message_center::IsNewStyleNotificationEnabled()) {
     notification->set_accent_color(
         message_center::kSystemNotificationColorNormal);
     notification->set_small_image(gfx::Image(

@@ -30,6 +30,8 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/notifier_settings.h"
+#include "ui/message_center/public/cpp/message_center_switches.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/widget/widget.h"
@@ -98,13 +100,13 @@ LoginStatus GetCurrentLoginStatus() {
 const gfx::VectorIcon& GetNotificationIcon(uint32_t enabled_accessibility) {
   if ((enabled_accessibility & A11Y_BRAILLE_DISPLAY_CONNECTED) &&
       (enabled_accessibility & A11Y_SPOKEN_FEEDBACK)) {
-    return message_center::MessageCenter::IsNewStyleNotificationEnabled()
+    return message_center::IsNewStyleNotificationEnabled()
                ? kNotificationAccessibilityIcon
                : kSystemMenuAccessibilityIcon;
   }
   if (enabled_accessibility & A11Y_BRAILLE_DISPLAY_CONNECTED)
     return kNotificationAccessibilityBrailleIcon;
-  return message_center::MessageCenter::IsNewStyleNotificationEnabled()
+  return message_center::IsNewStyleNotificationEnabled()
              ? kNotificationChromevoxIcon
              : kSystemMenuAccessibilityChromevoxIcon;
 }
@@ -486,7 +488,7 @@ void TrayAccessibility::OnAccessibilityStatusChanged(
   }
 
   std::unique_ptr<message_center::Notification> notification;
-  if (message_center::MessageCenter::IsNewStyleNotificationEnabled()) {
+  if (message_center::IsNewStyleNotificationEnabled()) {
     notification = message_center::Notification::CreateSystemNotification(
         message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId, title, text,
         gfx::Image(), base::string16(), GURL(),

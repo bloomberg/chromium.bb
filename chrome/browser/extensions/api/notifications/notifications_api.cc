@@ -49,8 +49,8 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/message_center/message_center_style.h"
 #include "ui/message_center/notifier_settings.h"
+#include "ui/message_center/public/cpp/message_center_constants.h"
 #include "url/gurl.h"
 
 using message_center::NotifierId;

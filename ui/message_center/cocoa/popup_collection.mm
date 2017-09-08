@@ -8,7 +8,7 @@
 #import "ui/message_center/cocoa/popup_controller.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
-#include "ui/message_center/message_center_style.h"
+#include "ui/message_center/public/cpp/message_center_constants.h"
 
 const float kAnimationDuration = 0.2;
 

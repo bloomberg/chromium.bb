@@ -43,8 +43,8 @@
 #include "ui/base/window_open_disposition.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
-#include "ui/message_center/message_center_style.h"
 #include "ui/message_center/notification_blocker.h"
+#include "ui/message_center/public/cpp/message_center_constants.h"
 #include "url/gurl.h"
 
 #if defined(OS_MACOSX)

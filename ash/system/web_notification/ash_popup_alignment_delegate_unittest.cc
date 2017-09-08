@@ -21,7 +21,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_util.h"
-#include "ui/message_center/message_center_style.h"
+#include "ui/message_center/public/cpp/message_center_constants.h"
 
 namespace ash {
 

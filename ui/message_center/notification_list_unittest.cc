@@ -15,10 +15,10 @@
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/fake_message_center.h"
-#include "ui/message_center/message_center_style.h"
 #include "ui/message_center/notification_blocker.h"
 #include "ui/message_center/notification_types.h"
 #include "ui/message_center/notifier_settings.h"
+#include "ui/message_center/public/cpp/message_center_constants.h"
 
 using base::UTF8ToUTF16;
 

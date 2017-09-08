@@ -900,6 +900,8 @@ static_library("extensions") {
     "//ui/display/manager",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/message_center",
+    "//ui/message_center/public/cpp",
     "//ui/native_theme",
     "//ui/resources",
     "//ui/shell_dialogs",
