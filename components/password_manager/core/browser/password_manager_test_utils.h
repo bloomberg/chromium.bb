@@ -96,9 +96,8 @@ class MockPasswordReuseDetectorConsumer : public PasswordReuseDetectorConsumer {
   MockPasswordReuseDetectorConsumer();
   ~MockPasswordReuseDetectorConsumer() override;
 
-  MOCK_METHOD4(
-      OnReuseFound,
-      void(const base::string16&, bool, const std::vector<std::string>&, int));
+  MOCK_METHOD4(OnReuseFound,
+               void(size_t, bool, const std::vector<std::string>&, int));
 };
 #endif
 

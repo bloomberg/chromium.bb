@@ -879,23 +879,23 @@ TEST_F(PasswordStoreTest, CheckPasswordReuse) {
     store->AddLogin(*credentials);
   }
 
-  static constexpr struct {
+  struct {
     const wchar_t* input;
     const char* domain;
-    const wchar_t* reused_password;  // Set to nullptr if no reuse is expected.
+    const size_t reused_password_len;  // Set to 0 if no reuse is expected.
     const char* reuse_domain;
   } kReuseTestData[] = {
-      {L"12345password", "https://evil.com", L"password", "google.com"},
-      {L"1234567890", "https://evil.com", nullptr, nullptr},
-      {L"topsecret", "https://m.facebook.com", nullptr, nullptr},
+      {L"12345password", "https://evil.com", strlen("password"), "google.com"},
+      {L"1234567890", "https://evil.com", 0, nullptr},
+      {L"topsecret", "https://m.facebook.com", 0, nullptr},
   };
 
   for (const auto& test_data : kReuseTestData) {
     MockPasswordReuseDetectorConsumer mock_consumer;
-    if (test_data.reused_password) {
+    if (test_data.reused_password_len != 0) {
       EXPECT_CALL(
           mock_consumer,
-          OnReuseFound(base::WideToUTF16(test_data.reused_password),
+          OnReuseFound(test_data.reused_password_len,
                        false /* matches_sync_password */,
                        std::vector<std::string>({test_data.reuse_domain}), 2));
     } else {
@@ -933,9 +933,9 @@ TEST_F(PasswordStoreTest, SavingClearingSyncPassword) {
 
   // Check that sync password reuse is found.
   MockPasswordReuseDetectorConsumer mock_consumer;
-  EXPECT_CALL(mock_consumer,
-              OnReuseFound(sync_password, true /* matches_sync_password */,
-                           std::vector<std::string>(), 1));
+  EXPECT_CALL(mock_consumer, OnReuseFound(sync_password.size(),
+                                          true /* matches_sync_password */,
+                                          std::vector<std::string>(), 0));
   store->CheckReuse(input, "https://facebook.com", &mock_consumer);
   WaitForPasswordStore();
   testing::Mock::VerifyAndClearExpectations(&mock_consumer);

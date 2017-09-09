@@ -70,7 +70,7 @@ void PasswordReuseDetectionManager::OnKeyPressed(const base::string16& text) {
 }
 
 void PasswordReuseDetectionManager::OnReuseFound(
-    const base::string16& password,
+    size_t password_length,
     bool matches_sync_password,
     const std::vector<std::string>& matching_domains,
     int saved_passwords) {
@@ -95,7 +95,7 @@ void PasswordReuseDetectionManager::OnReuseFound(
           ? client_->GetPasswordManager()->IsPasswordFieldDetectedOnPage()
           : false;
 
-  metrics_util::LogPasswordReuse(password.size(), saved_passwords,
+  metrics_util::LogPasswordReuse(password_length, saved_passwords,
                                  matching_domains.size(),
                                  password_field_detected);
 #if defined(SAFE_BROWSING_DB_LOCAL)

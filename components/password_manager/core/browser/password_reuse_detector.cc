@@ -69,26 +69,35 @@ void PasswordReuseDetector::CheckReuse(
   if (input.size() < kMinPasswordLengthToCheck)
     return;
 
-  if (CheckSyncPasswordReuse(input, domain, consumer))
-    return;
+  size_t sync_reused_password_length = CheckSyncPasswordReuse(input, domain);
 
-  if (CheckSavedPasswordReuse(input, domain, consumer))
-    return;
+  std::vector<std::string> matching_domains;
+  size_t saved_reused_password_length =
+      CheckSavedPasswordReuse(input, domain, &matching_domains);
+
+  size_t max_reused_password_length =
+      std::max(sync_reused_password_length, saved_reused_password_length);
+
+  if (max_reused_password_length != 0) {
+    consumer->OnReuseFound(
+        max_reused_password_length,
+        sync_reused_password_length != 0 /* matches_sync_password */,
+        matching_domains, saved_passwords_);
+  }
 }
 
-bool PasswordReuseDetector::CheckSyncPasswordReuse(
+size_t PasswordReuseDetector::CheckSyncPasswordReuse(
     const base::string16& input,
-    const std::string& domain,
-    PasswordReuseDetectorConsumer* consumer) {
+    const std::string& domain) {
   if (!sync_password_data_.has_value())
-    return false;
+    return 0;
 
   const Origin gaia_origin(GaiaUrls::GetInstance()->gaia_url().GetOrigin());
   if (Origin(GURL(domain)).IsSameOriginWith(gaia_origin))
-    return false;
+    return 0;
 
   if (input.size() < sync_password_data_->length)
-    return false;
+    return 0;
 
   size_t offset = input.size() - sync_password_data_->length;
   base::string16 reuse_candidate = input.substr(offset);
@@ -96,37 +105,47 @@ bool PasswordReuseDetector::CheckSyncPasswordReuse(
   if (password_manager_util::CalculateSyncPasswordHash(
           reuse_candidate, sync_password_data_->salt) ==
       sync_password_data_->hash) {
-    consumer->OnReuseFound(reuse_candidate, true /* matches_sync_password */,
-                           {}, 1);
-    return true;
+    return reuse_candidate.size();
   }
-  return false;
+  return 0;
 }
 
-bool PasswordReuseDetector::CheckSavedPasswordReuse(
+size_t PasswordReuseDetector::CheckSavedPasswordReuse(
     const base::string16& input,
     const std::string& domain,
-    PasswordReuseDetectorConsumer* consumer) {
+    std::vector<std::string>* matching_domains_out) {
   const std::string registry_controlled_domain =
       GetRegistryControlledDomain(GURL(domain));
-  auto passwords_iterator = FindSavedPassword(input);
-  if (passwords_iterator == passwords_.end())
-    return false;
 
-  const std::set<std::string>& domains = passwords_iterator->second;
-  DCHECK(!domains.empty());
-  // If the page's URL matches a saved domain for this password,
-  // this isn't password-reuse.
-  if (domains.find(registry_controlled_domain) != domains.end()) {
-    return false;
+  // More than one password call match |input| if they share a common suffix
+  // with |input|.  Collect the set of domains for all matches.
+  std::set<std::string> matching_domains_set;
+
+  // The longest password match is kept for metrics.
+  size_t longest_match_len = 0;
+
+  for (auto passwords_iterator = FindFirstSavedPassword(input);
+       passwords_iterator != passwords_.end();
+       passwords_iterator = FindNextSavedPassword(input, passwords_iterator)) {
+    const std::set<std::string>& domains = passwords_iterator->second;
+    DCHECK(!domains.empty());
+    // If the page's URL matches a saved domain for this password,
+    // this isn't password-reuse.
+    if (domains.find(registry_controlled_domain) != domains.end())
+      continue;
+
+    matching_domains_set.insert(domains.begin(), domains.end());
+    DCHECK(passwords_iterator->first.size());
+    if (longest_match_len < passwords_iterator->first.size())
+      longest_match_len = passwords_iterator->first.size();
   }
+  if (matching_domains_set.size() == 0)
+    return 0;
 
-  const std::vector<std::string> matching_domains(domains.begin(),
-                                                  domains.end());
-  consumer->OnReuseFound(passwords_iterator->first,
-                         false /* matches_sync_password */, matching_domains,
-                         saved_passwords_);
-  return true;
+  *matching_domains_out = std::vector<std::string>(matching_domains_set.begin(),
+                                                   matching_domains_set.end());
+
+  return longest_match_len;
 }
 
 void PasswordReuseDetector::UseSyncPasswordHash(
@@ -151,12 +170,13 @@ void PasswordReuseDetector::AddPassword(const autofill::PasswordForm& form) {
 }
 
 PasswordReuseDetector::passwords_iterator
-PasswordReuseDetector::FindSavedPassword(const base::string16& input) {
+PasswordReuseDetector::FindFirstSavedPassword(const base::string16& input) {
   // Keys in |passwords_| are ordered by lexicographical order of reversed
-  // strings. In order to check a password reuse a key of |passwords_| that is a
-  // suffix of |input| should be found. The longest such key should be the
+  // strings. In order to check a password reuse a key of |passwords_| that is
+  // a suffix of |input| should be found. The longest such key should be the
   // largest key in the |passwords_| keys order that is equal or smaller to
-  // |input|.
+  // |input|. There may be more, shorter, matches as well -- call
+  // FindNextSavedPassword(it) to find the next one.
   if (passwords_.empty())
     return passwords_.end();
 
@@ -168,9 +188,15 @@ PasswordReuseDetector::FindSavedPassword(const base::string16& input) {
   }
 
   // Otherwise the previous key is a candidate for password reuse.
+  return FindNextSavedPassword(input, it);
+}
+
+PasswordReuseDetector::passwords_iterator
+PasswordReuseDetector::FindNextSavedPassword(
+    const base::string16& input,
+    PasswordReuseDetector::passwords_iterator it) {
   if (it == passwords_.begin())
     return passwords_.end();
-
   --it;
   return IsSuffix(input, it->first) ? it : passwords_.end();
 }

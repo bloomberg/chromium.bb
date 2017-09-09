@@ -318,7 +318,7 @@ class PasswordStore : protected PasswordStoreSync,
     ~CheckReuseRequest() override;
 
     // PasswordReuseDetectorConsumer
-    void OnReuseFound(const base::string16& password,
+    void OnReuseFound(size_t password_length,
                       bool matches_sync_password,
                       const std::vector<std::string>& matches_domains,
                       int saved_passwords) override;
