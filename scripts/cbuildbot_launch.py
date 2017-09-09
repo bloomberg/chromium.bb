@@ -267,6 +267,12 @@ def ConfigureGlobalEnvironment():
   # This variable is required for repo sync's to work in all cases.
   os.environ['LANG'] = 'en_US.UTF-8'
 
+  # TODO(dgarrett): Super ugly, super temporary hack to fix release builds.
+  logging.warn('FORCING LOCAL INSTALL OF CRCMOD.')
+  cmd = ['pip', 'install', '--ignore-installed', 'crcmod']
+  result = cros_build_lib.SudoRunCommand(cmd, error_code_ok=True)
+  logging.warn('FORCED LOCAL INSTALL OF CRCMOD RETURNED: %d', result.returncode)
+
 
 def _main(argv):
   """main method of script.
