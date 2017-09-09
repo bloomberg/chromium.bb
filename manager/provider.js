@@ -58,8 +58,10 @@ mr.Provider = class {
   /**
    * Called the first time the provider is loaded.
    * Should do any one-time initialization (i.e. register event filters, etc.)
+   * @param {!mojo.MediaRouteProviderConfig=} config The config object from the
+   * browser to initialize the provider with.
    */
-  initialize() {}
+  initialize(config = undefined) {}
 
   /**
    * Queries this provider for existing routes.
@@ -236,14 +238,6 @@ mr.Provider = class {
    * @param {!Array<!mojo.Sink>} sinks list of discovered sinks
    */
   provideSinks(sinks) {}
-
-  /**
-   * Start device discovery on this provider if |discoveryEnabled| is true;
-   * otherwise disable discovery and unregister event handlers. Only implemented
-   * for DialProvider for now.
-   * @param {boolean} discoveryEnabled
-   */
-  setDiscoveryEnabled(discoveryEnabled) {}
 
   /**
    * See documentation in interface_data/mojo.js.

@@ -74,10 +74,22 @@ const DialProvider = class {
   /**
    * @override
    */
-  initialize() {
+  initialize(config) {
+    const discoveryEnabled = config ? config.enable_dial_discovery : true;
+    this.logger_.info('Dial Discovery enabled: ' + discoveryEnabled + '...');
+
     this.activityRecords_.init();
     this.sinkDiscoveryService_.init();
     this.appDiscoveryService_.init();
+
+    if (!discoveryEnabled) {
+      // We need to call stop in order to remove event listeners that were
+      // added at startup.
+      this.sinkDiscoveryService_.stop();
+      return;
+    }
+    this.sinkDiscoveryService_.start();
+    this.maybeStartAppDiscovery_();
   }
 
   /**
@@ -125,21 +137,6 @@ const DialProvider = class {
    */
   stopObservingMediaRoutes(sourceUrn) {
     this.maybeStopAppDiscovery_();
-  }
-
-  /**
-   * @override
-   */
-  setDiscoveryEnabled(discoveryEnabled) {
-    if (!discoveryEnabled) {
-      // We need to call stop in order to remove event listeners that were
-      // added at startup.
-      this.sinkDiscoveryService_.stop();
-      return;
-    }
-
-    this.sinkDiscoveryService_.start();
-    this.maybeStartAppDiscovery_();
   }
 
   /**

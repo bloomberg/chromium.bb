@@ -150,11 +150,6 @@ mr.TestProvider = class {
   /**
    * @override
    */
-  setDiscoveryEnabled(discoveryEnabled) {}
-
-  /**
-   * @override
-   */
   getSinkById(id) {
     return this.sinks_.find(s => {
       return s.id == id;

@@ -49,7 +49,6 @@ describe('DialProvider tests', function() {
     provider = new DialProvider(
         mockPmCallbacks, mockSinkDiscoveryService, mockAppDiscoveryService);
     provider.initialize();
-    provider.setDiscoveryEnabled(true);
     expect(mockSinkDiscoveryService.start).toHaveBeenCalled();
     expect(mockAppDiscoveryService.init).toHaveBeenCalled();
 
@@ -68,17 +67,19 @@ describe('DialProvider tests', function() {
     PersistentDataManager.clear();
   });
 
-  describe('setDiscoveryEnabled Test', function() {
-    it('setDiscoveryEnabled starts sink discovery', function() {
+  describe('initialize Test', function() {
+    it('initialize starts sink discovery', function() {
       mockSinkDiscoveryService.getSinkCount.and.returnValue(0);
       mockAppDiscoveryService.getAppCount.and.returnValue(0);
-      provider.setDiscoveryEnabled(true);
+      PersistentDataManager.clear();
+      provider.initialize({enable_dial_discovery: true});
       expect(mockSinkDiscoveryService.start).toHaveBeenCalled();
       expect(mockAppDiscoveryService.start).not.toHaveBeenCalled();
     });
 
-    it('setDiscoveryEnabled stops sink discovery', function() {
-      provider.setDiscoveryEnabled(false);
+    it('initialize stops sink discovery', function() {
+      PersistentDataManager.clear();
+      provider.initialize({enable_dial_discovery: false});
       expect(mockSinkDiscoveryService.stop).toHaveBeenCalled();
     });
   });

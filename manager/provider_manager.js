@@ -29,7 +29,6 @@ goog.require('mr.MojoUtils');
 goog.require('mr.PersistentData');
 goog.require('mr.PersistentDataManager');
 goog.require('mr.ProviderManagerCallbacks');
-goog.require('mr.ProviderName');
 goog.require('mr.RouteMessageSender');
 goog.require('mr.RouteRequestError');
 goog.require('mr.RouteRequestResultCode');
@@ -204,9 +203,12 @@ mr.ProviderManager = class extends mr.Module {
    * Registers and initalizes providers.
    *
    * @param {!Array<!mr.Provider>} providers
+   * @param {!mojo.MediaRouteProviderConfig=} config
    */
-  registerAllProviders(providers) {
-    providers.forEach(this.registerProvider_, this);
+  registerAllProviders(providers, config = undefined) {
+    providers.forEach(provider => {
+      this.registerProvider_(provider, config);
+    });
   }
 
   /**
@@ -214,7 +216,7 @@ mr.ProviderManager = class extends mr.Module {
    * and registers itself with PersistentDataManager.
    * @param {!mr.MediaRouterService} mediaRouterService
    * @param {!Array<!mr.Provider>} providers
-   * @param {mojo.MediaRouteProviderConfig=} config
+   * @param {!mojo.MediaRouteProviderConfig=} config
    */
   initialize(mediaRouterService, providers, config = undefined) {
     this.mirrorServiceModules_.set(
@@ -233,19 +235,7 @@ mr.ProviderManager = class extends mr.Module {
     this.mrRouteMessageSender_.init(
         this.mediaRouterService_.onRouteMessagesReceived.bind(
             this.mediaRouterService_));
-    this.registerAllProviders(providers);
-
-    const dialProvider = this.getProviderByName(mr.ProviderName.DIAL);
-    if (dialProvider) {
-      dialProvider.setDiscoveryEnabled(
-          config ? config.enable_dial_discovery : true);
-    }
-
-    const castProvider = this.getProviderByName(mr.ProviderName.CAST);
-    if (castProvider) {
-      castProvider.setDiscoveryEnabled(
-          config ? config.enable_cast_discovery : true);
-    }
+    this.registerAllProviders(providers, config);
 
     mr.PersistentDataManager.register(this);
     mr.Module.onModuleLoaded(mr.ModuleId.PROVIDER_MANAGER, this);
@@ -254,9 +244,10 @@ mr.ProviderManager = class extends mr.Module {
   /**
    * Registers a provider and initializes it.
    * @param {!mr.Provider} provider
+   * @param {!mojo.MediaRouteProviderConfig=} config
    * @private
    */
-  registerProvider_(provider) {
+  registerProvider_(provider, config = undefined) {
     if (this.getProviderByName(provider.getName())) {
       this.logger_.warning(
           'Provider ' + provider.getName() + ' already registered.');
@@ -264,7 +255,7 @@ mr.ProviderManager = class extends mr.Module {
     }
 
     try {
-      provider.initialize();
+      provider.initialize(config);
       this.providers_.push(provider);
       this.sinkAvailabilityMap_.set(
           provider.getName(), mr.SinkAvailability.UNAVAILABLE);
