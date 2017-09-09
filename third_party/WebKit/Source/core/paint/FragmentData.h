@@ -29,9 +29,14 @@ class CORE_EXPORT FragmentData {
   ObjectPaintProperties& EnsurePaintProperties();
   void ClearPaintProperties();
 
+  FragmentData* NextFragment() { return next_fragment_.get(); }
+  FragmentData& EnsureNextFragment();
+  void ClearNextFragment() { next_fragment_.reset(); }
+
   // The complete set of property nodes that should be used as a
   // starting point to paint this fragment. See also the comment for
   // |local_border_box_properties_|.
+  // LocalBorderBoxProperties() includes fragment clip.
   PropertyTreeState* LocalBorderBoxProperties() const {
     return local_border_box_properties_.get();
   }
@@ -45,15 +50,25 @@ class CORE_EXPORT FragmentData {
   // overflow clip, scroll translation) that apply to contents.
   PropertyTreeState ContentsProperties() const;
 
-  FragmentData* NextFragment() { return next_fragment_.get(); }
+  // The visual paint offset of this fragment. Similar to
+  // LayoutObject::PaintOfset, except that the one here takes into account
+  // fragmentation.
+  LayoutPoint PaintOffset() const { return paint_offset_; }
+  void SetPaintOffset(const LayoutPoint& paint_offset) {
+    paint_offset_ = paint_offset;
+  }
+
+  // The pagination offset is the additional factor to add in to map
+  // from flow thread coordinates relative to the enclosing pagination
+  // layer, to visual coordiantes relative to that pagination layer.
+  LayoutPoint PaginationOffset() const { return pagination_offset_; }
+  void SetPaginationOffset(const LayoutPoint& pagination_offset) {
+    pagination_offset_ = pagination_offset;
+  }
 
  private:
   // Holds references to the paint property nodes created by this object.
   std::unique_ptr<ObjectPaintProperties> paint_properties_;
-
-  // These are used to detect changes to clipping that might invalidate
-  // subsequence caching or paint phase optimizations.
-  RefPtr<ClipRects> previous_clip_rects_;
 
   // This is a complete set of property nodes that should be used as a
   // starting point to paint a LayoutObject. This data is cached because some
@@ -66,6 +81,9 @@ class CORE_EXPORT FragmentData {
   //   properties would have a transform node that points to the div's
   //   ancestor transform space.
   std::unique_ptr<PropertyTreeState> local_border_box_properties_;
+
+  LayoutPoint paint_offset_;
+  LayoutPoint pagination_offset_;
 
   std::unique_ptr<FragmentData> next_fragment_;
 };

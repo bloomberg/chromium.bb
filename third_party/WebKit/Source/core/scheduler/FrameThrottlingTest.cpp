@@ -911,6 +911,7 @@ TEST_P(FrameThrottlingTest, PaintingViaGraphicsLayerIsThrottled) {
 
   // Before the iframe is throttled, we should create all drawing items.
   InvalidateRecursively(WebView().RootGraphicsLayer());
+
   MockWebDisplayItemList display_items_not_throttled;
   EXPECT_CALL(display_items_not_throttled, AppendDrawingItem(_, _, _)).Times(3);
   PaintRecursively(WebView().RootGraphicsLayer(), &display_items_not_throttled);
@@ -929,6 +930,7 @@ TEST_P(FrameThrottlingTest, PaintingViaGraphicsLayerIsThrottled) {
   // If painting of the iframe is throttled, we should only receive two
   // drawing items.
   InvalidateRecursively(WebView().RootGraphicsLayer());
+
   MockWebDisplayItemList display_items_throttled;
   EXPECT_CALL(display_items_throttled, AppendDrawingItem(_, _, _)).Times(2);
   PaintRecursively(WebView().RootGraphicsLayer(), &display_items_throttled);
@@ -957,6 +959,7 @@ TEST_P(FrameThrottlingTest, ThrottleInnerCompositedLayer) {
 
   // Before the iframe is throttled, we should create all drawing items.
   InvalidateRecursively(WebView().RootGraphicsLayer());
+
   MockWebDisplayItemList display_items_not_throttled;
   EXPECT_CALL(display_items_not_throttled, AppendDrawingItem(_, _, _)).Times(4);
   PaintRecursively(WebView().RootGraphicsLayer(), &display_items_not_throttled);
@@ -971,8 +974,8 @@ TEST_P(FrameThrottlingTest, ThrottleInnerCompositedLayer) {
   EXPECT_NE(nullptr,
             inner_div->GetLayoutBox()->Layer()->GraphicsLayerBacking());
 
-  // If painting of the iframe is throttled, we should only receive two
-  // drawing items.
+  // // If painting of the iframe is throttled, we should only receive two
+  // // drawing items.
   InvalidateRecursively(WebView().RootGraphicsLayer());
   MockWebDisplayItemList display_items_throttled;
   EXPECT_CALL(display_items_throttled, AppendDrawingItem(_, _, _)).Times(2);
@@ -998,6 +1001,8 @@ TEST_P(FrameThrottlingTest, ThrottleInnerCompositedLayer) {
               inner_div->GetLayoutBox()->Layer()->GraphicsLayerBacking());
   }
 
+  InvalidateRecursively(WebView().RootGraphicsLayer());
+
   MockWebDisplayItemList display_items_throttled1;
   InvalidateRecursively(WebView().RootGraphicsLayer());
   EXPECT_CALL(display_items_throttled1, AppendDrawingItem(_, _, _)).Times(2);
@@ -1012,6 +1017,8 @@ TEST_P(FrameThrottlingTest, ThrottleInnerCompositedLayer) {
   // The inner div is no longer composited.
   EXPECT_EQ(nullptr,
             inner_div->GetLayoutBox()->Layer()->GraphicsLayerBacking());
+
+  InvalidateRecursively(WebView().RootGraphicsLayer());
 
   // After the iframe is unthrottled, we should create all drawing items.
   InvalidateRecursively(WebView().RootGraphicsLayer());

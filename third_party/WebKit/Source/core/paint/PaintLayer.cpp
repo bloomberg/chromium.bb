@@ -1624,7 +1624,11 @@ void PaintLayer::AppendSingleFragmentIgnoringPagination(
   if (respect_overflow_clip == kIgnoreOverflowClip)
     clip_rects_context.SetIgnoreOverflowClip();
   Clipper(geometry_mapper_option)
-      .CalculateRects(clip_rects_context, dirty_rect, fragment.layer_bounds,
+      .CalculateRects(clip_rects_context,
+                      geometry_mapper_option == kUseGeometryMapper
+                          ? GetLayoutObject().FirstFragment()
+                          : nullptr,
+                      dirty_rect, fragment.layer_bounds,
                       fragment.background_rect, fragment.foreground_rect,
                       offset_from_root);
   fragments.push_back(fragment);
@@ -1632,9 +1636,55 @@ void PaintLayer::AppendSingleFragmentIgnoringPagination(
 
 bool PaintLayer::ShouldFragmentCompositedBounds(
     const PaintLayer* compositing_layer) const {
+  if (!EnclosingPaginationLayer())
+    return false;
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return true;
+  if (PaintsWithTransform(kGlobalPaintNormalPhase))
+    return true;
+  if (!compositing_layer)
+    return true;
   // Composited layers may not be fragmented.
-  return EnclosingPaginationLayer() &&
-         !compositing_layer->EnclosingPaginationLayer();
+  return !compositing_layer->EnclosingPaginationLayer();
+}
+
+void PaintLayer::CollectFragmentsForPaint(
+    PaintLayerFragments& fragments,
+    const PaintLayer* root_layer,
+    const LayoutRect& dirty_rect,
+    ClipRectsCacheSlot clip_rects_cache_slot,
+    PaintLayer::GeometryMapperOption geometry_mapper_option,
+    OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior,
+    ShouldRespectOverflowClipType respect_overflow_clip,
+    const LayoutPoint* offset_from_root,
+    const LayoutSize& sub_pixel_accumulation) const {
+  // TODO(chrishtr): enable this once it works with rasterize-and-record.
+  // DCHECK_EQ(DocumentLifecycle::kInPaint,
+  //           GetLayoutObject().GetDocument().Lifecycle().GetState());
+  PaintLayerFragment fragment;
+  ClipRectsContext clip_rects_context(root_layer, clip_rects_cache_slot,
+                                      overlay_scrollbar_clip_behavior,
+                                      sub_pixel_accumulation);
+  if (respect_overflow_clip == kIgnoreOverflowClip)
+    clip_rects_context.SetIgnoreOverflowClip();
+
+  // The inherited offset_from_root does not include any pagination offsets.
+  // In the presence of fragmentation, we cannot use it.
+  bool offset_from_root_can_be_used =
+      !ShouldFragmentCompositedBounds(root_layer);
+  for (auto* fragment_data = GetLayoutObject().FirstFragment(); fragment_data;
+       fragment_data = fragment_data->NextFragment()) {
+    Clipper(geometry_mapper_option)
+        .CalculateRects(
+            clip_rects_context, fragment_data, dirty_rect,
+            fragment.layer_bounds, fragment.background_rect,
+            fragment.foreground_rect,
+            offset_from_root_can_be_used ? offset_from_root : nullptr);
+
+    fragment.pagination_offset = fragment_data->PaginationOffset();
+
+    fragments.push_back(fragment);
+  }
 }
 
 void PaintLayer::CollectFragments(
@@ -1648,6 +1698,9 @@ void PaintLayer::CollectFragments(
     const LayoutPoint* offset_from_root,
     const LayoutSize& sub_pixel_accumulation,
     const LayoutRect* layer_bounding_box) const {
+  DCHECK_NE(DocumentLifecycle::kInPaint,
+            GetLayoutObject().GetDocument().Lifecycle().GetState());
+
   // For unpaginated layers, there is only one fragment. We also avoid
   // fragmentation when compositing, due to implementation limitations.
   if (!EnclosingPaginationLayer() ||
@@ -1678,7 +1731,7 @@ void PaintLayer::CollectFragments(
   ClipRect foreground_rect_in_flow_thread;
   Clipper(geometry_mapper_option)
       .CalculateRects(
-          pagination_clip_rects_context,
+          pagination_clip_rects_context, nullptr,
           LayoutRect(LayoutRect::InfiniteIntRect()),
           layer_bounds_in_flow_thread, background_rect_in_flow_thread,
           foreground_rect_in_flow_thread, &offset_within_paginated_layer);

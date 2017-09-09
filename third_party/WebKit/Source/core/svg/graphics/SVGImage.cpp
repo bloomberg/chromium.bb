@@ -494,7 +494,8 @@ sk_sp<PaintRecord> SVGImage::PaintRecordForCurrentFrame(const IntRect& bounds,
   PaintRecordBuilder builder(bounds, nullptr, nullptr, paint_controller_.get());
 
   view->UpdateAllLifecyclePhasesExceptPaint();
-  view->Paint(builder.Context(), CullRect(bounds));
+  view->PaintWithLifecycleUpdate(builder.Context(), kGlobalPaintNormalPhase,
+                                 CullRect(bounds));
   DCHECK(!view->NeedsLayout());
 
   if (canvas) {

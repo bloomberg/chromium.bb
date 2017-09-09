@@ -510,7 +510,8 @@ TEST_P(PaintPropertyTreeUpdateTest, ClipChangesUpdateOverflowClip) {
   EXPECT_EQ(FloatRect(0, 0, 800, 0), clip_properties->ClipRect().Rect());
   div->setAttribute(HTMLNames::styleAttr, "overflow:visible;");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_TRUE(!div->GetLayoutObject()->FirstFragment()->PaintProperties() ||
+
+  EXPECT_TRUE(!div->GetLayoutObject()->FirstFragment() ||
               !div->GetLayoutObject()
                    ->FirstFragment()
                    ->PaintProperties()
@@ -590,8 +591,7 @@ TEST_P(PaintPropertyTreeUpdateTest,
   target->removeAttribute(HTMLNames::classAttr);
   GetDocument().View()->UpdateAllLifecyclePhases();
   // Ensure the paint properties object was cleared as it is no longer needed.
-  EXPECT_EQ(nullptr,
-            target->GetLayoutObject()->FirstFragment()->PaintProperties());
+  EXPECT_EQ(nullptr, target->GetLayoutObject()->FirstFragment());
 }
 
 TEST_P(PaintPropertyTreeUpdateTest,
@@ -605,8 +605,7 @@ TEST_P(PaintPropertyTreeUpdateTest,
   // Removing the animation should remove the effect node.
   target->removeAttribute(HTMLNames::classAttr);
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_EQ(nullptr,
-            target->GetLayoutObject()->FirstFragment()->PaintProperties());
+  EXPECT_EQ(nullptr, target->GetLayoutObject()->FirstFragment());
 }
 
 TEST_P(PaintPropertyTreeUpdateTest,
