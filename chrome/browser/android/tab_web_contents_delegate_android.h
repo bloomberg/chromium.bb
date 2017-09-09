@@ -83,6 +83,8 @@ class TabWebContentsDelegateAndroid
                       bool* was_blocked) override;
   void RequestAppBannerFromDevTools(
       content::WebContents* web_contents) override;
+  void OnDidBlockFramebust(content::WebContents* web_contents,
+                           const GURL& url) override;
 
  private:
   // NotificationObserver implementation.

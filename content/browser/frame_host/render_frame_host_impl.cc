@@ -2268,7 +2268,7 @@ void RenderFrameHostImpl::OnUpdateEncoding(const std::string& encoding_name) {
 }
 
 void RenderFrameHostImpl::OnDidBlockFramebust(const GURL& url) {
-  // TODO(dgn): Hook this up to UI.
+  delegate_->OnDidBlockFramebust(url);
 }
 
 void RenderFrameHostImpl::OnBeginNavigation(

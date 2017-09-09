@@ -548,6 +548,13 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Called when audio change occurs
   virtual void OnAudioStateChanged(bool audible) {}
 
+  // Called when a suspicious navigation of the main frame has been blocked.
+  // Allows the delegate to provide some UI to let the user know about the
+  // blocked navigation and give them the option to recover from it. The given
+  // URL is the blocked navigation target.
+  virtual void OnDidBlockFramebust(content::WebContents* web_contents,
+                                   const GURL& url) {}
+
   // Reports that passive mixed content was found at the specified url.
   virtual void PassiveInsecureContentFound(const GURL& resource_url) {}
 

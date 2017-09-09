@@ -490,6 +490,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       RenderFrameHost* render_frame_host,
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle* interface_pipe) override;
+  void OnDidBlockFramebust(const GURL& url) override;
   const GURL& GetMainFrameLastCommittedURL() const override;
   void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;

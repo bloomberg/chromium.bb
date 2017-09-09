@@ -1211,6 +1211,17 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
         </message>
       </if>
 
+      <!-- Framebust / Blocked Redirection intervention message -->
+      <if expr="is_android">
+        <!-- TODO(https://crbug.com/754754) only implemented in Android for now. -->
+        <message name="IDS_REDIRECT_BLOCKED_MESSAGE" desc="The message stating that a redirection was blocked on this page. This will be followed on a separate line with the address the user was being redirected to.">
+           Chrome stopped this site from taking you to
+        </message>
+        <message name="IDS_REDIRECT_BLOCKED_SHORT_MESSAGE" desc="The short message stating that a redirection was blocked on this page.">
+           Redirect blocked.
+        </message>
+      </if>
+
       <!-- OOBE -->
       <if expr="chromeos">
         <message name="IDS_INSTALLING_UPDATE" desc="Label shown on the updates installation screen during OOBE">
