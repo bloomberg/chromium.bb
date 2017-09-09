@@ -1758,15 +1758,6 @@
   <message name="IDS_SETTINGS_ON_STARTUP" desc="Name of the on startup page.">
     On startup
   </message>
-  <message name="IDS_SETTINGS_ON_STARTUP_DESCRIPTION" desc="Secondary line for IDS_SETTINGS_ON_STARTUP_MANAGE describing the OnStartup features.">
-    Restore tabs or open specific pages
-  </message>
-  <message name="IDS_SETTINGS_ON_STARTUP_MANAGE" desc="Button label to open subpage for OnStartup URLs and heading for that subpage.">
-    Manage on startup pages
-  </message>
-  <message name="IDS_SETTINGS_ON_STARTUP_PAGES" desc="Label for list of OnStartup URLs.">
-    Pages to open on startup
-  </message>
   <message name="IDS_SETTINGS_ON_STARTUP_OPEN_NEW_TAB" desc="Radio button option to open the new tab page.">
     Open the New Tab page
   </message>

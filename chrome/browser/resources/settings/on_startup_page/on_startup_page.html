@@ -1,34 +1,52 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="../settings_shared_css.html">
+<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="../controls/controlled_radio_button.html">
+<link rel="import" href="../controls/extension_controlled_indicator.html">
+<link rel="import" href="../controls/settings_radio_group.html">
+<link rel="import" href="on_startup_browser_proxy.html">
 <link rel="import" href="startup_urls_page.html">
+<link rel="import" href="../settings_shared_css.html">
 
 <dom-module id="settings-on-startup-page">
   <template>
-    <style include="settings-shared"></style>
-    <settings-animated-pages id="pages" section="onStartup"
-        focus-config="[[focusConfig_]]">
-      <neon-animatable route-path="default">
-        <div class="settings-box first two-line"
-            id="manage-startup-urls-subpage-trigger"
-            on-tap="onManageStartupUrls_" actionable>
-          <div class="start">
-            $i18n{onStartupManage}
-            <div class="secondary">$i18n{onStartupDescription}</div>
-          </div>
-          <button class="subpage-arrow" is="paper-icon-button-light"
-              aria-label="$i18n{onStartupManage}"></button>
-        </div>
-      </neon-animatable>
-      <template is="dom-if" route-path="/startupPages">
-        <settings-subpage
-            associated-control="[[$$('#manage-startup-urls-subpage-trigger')]]"
-            page-title="$i18n{onStartupManage}">
-          <settings-startup-urls-page prefs="{{prefs}}">
-          </settings-startup-urls-page>
-        </settings-subpage>
-      </template>
-    </settings-animated-pages>
+    <style include="settings-shared">
+      .block {
+        display: block;
+      }
+    </style>
+    <div class="settings-box block first">
+      <settings-radio-group id="onStartupRadioGroup"
+          pref="{{prefs.session.restore_on_startup}}">
+        <controlled-radio-button name="[[prefValues_.OPEN_NEW_TAB]]"
+            pref="[[prefs.session.restore_on_startup]]"
+            label="$i18n{onStartupOpenNewTab}"
+            no-extension-indicator>
+        </controlled-radio-button>
+        <template is="dom-if" if="[[showIndicator_(
+            ntpExtension_, prefs.session.restore_on_startup.value)]]">
+          <extension-controlled-indicator
+              extension-id="[[ntpExtension_.id]]"
+              extension-name="[[ntpExtension_.name]]"
+              extension-can-be-disabled="[[ntpExtension_.canBeDisabled]]"
+              on-extension-disable="getNtpExtension_">
+          </extension-controlled-indicator>
+        </template>
+        <controlled-radio-button name="[[prefValues_.CONTINUE]]"
+            pref="[[prefs.session.restore_on_startup]]"
+            label="$i18n{onStartupContinue}">
+        </controlled-radio-button>
+        <controlled-radio-button name="[[prefValues_.OPEN_SPECIFIC]]"
+            pref="[[prefs.session.restore_on_startup]]"
+            label="$i18n{onStartupOpenSpecific}">
+        </controlled-radio-button>
+      </settings-radio-group>
+    </div>
+    <template is="dom-if"
+        if="[[showStartupUrls_(prefs.session.restore_on_startup.value)]]">
+      <settings-startup-urls-page prefs="[[prefs]]">
+      </settings-startup-urls-page>
+    </template>
   </template>
   <script src="on_startup_page.js"></script>
 </dom-module>
