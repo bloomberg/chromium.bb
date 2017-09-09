@@ -398,30 +398,5 @@ TEST_F(TouchTest, OnTouchTilt) {
   touch.reset();
 }
 
-TEST_F(TouchTest, OnTouchInStylusOnlyWindow) {
-  auto window = exo_test_helper()->CreateWindow(10, 10, true);
-  window.surface()->SetStylusOnly();
-
-  MockTouchDelegate delegate;
-  std::unique_ptr<Touch> touch(new Touch(&delegate));
-  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
-
-  EXPECT_CALL(delegate, CanAcceptTouchEventsForSurface(window.surface()))
-      .WillRepeatedly(testing::Return(true));
-
-  EXPECT_CALL(delegate,
-              OnTouchDown(window.surface(), testing::_, testing::_, testing::_))
-      .Times(0);
-  EXPECT_CALL(delegate, OnTouchMotion(testing::_, testing::_, testing::_))
-      .Times(0);
-  EXPECT_CALL(delegate, OnTouchUp(testing::_, testing::_)).Times(0);
-  EXPECT_CALL(delegate, OnTouchFrame()).Times(0);
-  generator.set_current_location(window.origin());
-  generator.PressMoveAndReleaseTouchBy(5, 5);
-
-  EXPECT_CALL(delegate, OnTouchDestroying(touch.get()));
-  touch.reset();
-}
-
 }  // namespace
 }  // namespace exo
