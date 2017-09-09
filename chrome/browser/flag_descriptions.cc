@@ -366,6 +366,12 @@ const char kEnableHttpFormWarningDescription[] =
     "Attaches a warning UI to any password or credit card fields detected when "
     "the top-level page is not HTTPS";
 
+const char kEnableMacMaterialDesignDownloadShelfName[] =
+    "Enable Material Design download shelf";
+
+const char kEnableMacMaterialDesignDownloadShelfDescription[] =
+    "If enabled, the download shelf uses Material Design.";
+
 const char kEnableManualFallbacksFillingName[] =
     "Manual fallbacks for password manager forms filling";
 const char kEnableManualFallbacksFillingDescription[] =

@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/browser/download/download_item_model.h"
 #import "chrome/browser/ui/cocoa/download/download_item_cell.h"
 #import "chrome/browser/ui/cocoa/download/download_item_controller.h"
 #import "chrome/browser/ui/cocoa/download/download_shelf_context_menu_controller.h"
@@ -14,8 +15,24 @@
 
 @implementation DownloadItemButton
 
-@synthesize download = downloadPath_;
 @synthesize controller = controller_;
+
+// For initialization from tests.
++ (Class)cellClass {
+  return [DownloadItemCell class];
+}
+
+- (void)setStateFromDownload:(DownloadItemModel*)downloadModel {
+  [self.cell setStateFromDownload:downloadModel];
+
+  // Set path to draggable download on completion.
+  if (downloadModel->download()->GetState() == content::DownloadItem::COMPLETE)
+    downloadPath_ = downloadModel->download()->GetTargetFilePath();
+}
+
+- (void)setImage:(NSImage*)image {
+  [self.cell setImage:image];
+}
 
 // Overridden from DraggableButton.
 - (void)beginDrag:(NSEvent*)event {
@@ -89,15 +106,14 @@
   [self setNeedsDisplay:YES];
 }
 
-- (BOOL)showingContextMenu
-{
-  return contextMenu_.get() != nil;
+- (BOOL)showingContextMenu {
+  return contextMenu_ != nil;
 }
 
 - (void)viewWillMoveToWindow:(NSWindow *)newWindow {
   // If the DownloadItemButton's context menu is still visible, dismiss it.
   if (!newWindow) {
-    [contextMenu_.get() cancelTrackingWithoutAnimation];
+    [contextMenu_ cancelTrackingWithoutAnimation];
   }
 }
 

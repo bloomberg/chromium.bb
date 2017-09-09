@@ -18,6 +18,7 @@
  @private
   IBOutlet HoverCloseButton* closeButton_;
 }
++ (CGFloat)shelfHeight;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_DOWNLOAD_DOWNLOAD_SHELF_VIEW_COCOA_H_

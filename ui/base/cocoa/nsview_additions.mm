@@ -114,4 +114,13 @@ static NSView* g_childBeingDrawnTo = nil;
   return g_childBeingDrawnTo;
 }
 
+- (void)cr_setAccessibilityLabel:(NSString*)label {
+  if (@available(macOS 10.10, *)) {
+    self.accessibilityLabel = label;
+  } else {
+    [self accessibilitySetOverrideValue:label
+                           forAttribute:NSAccessibilityDescriptionAttribute];
+  }
+}
+
 @end

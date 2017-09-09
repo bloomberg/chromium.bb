@@ -23540,6 +23540,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-493551777" label="StaleWhileRevalidate2:disabled"/>
   <int value="-492864618" label="NTPForeignSessionsSuggestions:disabled"/>
   <int value="-488779992" label="blink-settings"/>
+  <int value="-482259889" label="MacMDDownloadShelf:disabled"/>
   <int value="-478462945" label="enable-ephemeral-apps"/>
   <int value="-475049740" label="disable-vr-shell"/>
   <int value="-474806100" label="DataReductionProxyMainMenu:enabled"/>
@@ -24197,6 +24198,7 @@ from previous Chrome versions.
   <int value="1505194447" label="disable-transition-compositing"/>
   <int value="1509901380" label="disable-drive-search-in-app-launcher"/>
   <int value="1510476448" label="disable-prefixed-encrypted-media"/>
+  <int value="1510659184" label="MacMDDownloadShelf:enabled"/>
   <int value="1511140997" label="OfflinePagesAsyncDownload:disabled"/>
   <int value="1511161758" label="BackgroundLoader:enabled"/>
   <int value="1512249489" label="ModuleScripts:disabled"/>

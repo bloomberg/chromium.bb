@@ -9,12 +9,28 @@
 #include "chrome/browser/ui/cocoa/hover_close_button.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
+#include "chrome/common/chrome_features.h"
+#include "chrome/grit/generated_resources.h"
 #import "ui/base/cocoa/nsview_additions.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/material_design/material_design_controller.h"
+
+namespace {
+constexpr CGFloat kMDShelfHeight = 48;
+}  // namespace
+
+@interface DownloadShelfView ()
+// AppKit declares this method as 10.10+. Explicitly declare it so that it can
+// be called on the 10.9 path.
+- (NSString*)accessibilityLabel;
+@end
 
 @implementation DownloadShelfView
 
-// For programmatic instantiations in unit tests.
++ (CGFloat)shelfHeight {
+  return kMDShelfHeight;
+}
+
 - (id)initWithFrame:(NSRect)frameRect {
   if ((self = [super initWithFrame:frameRect])) {
     self.dividerEdge = NSMaxYEdge;
@@ -22,7 +38,26 @@
   return self;
 }
 
-// For nib instantiations in production.
+- (BOOL)accessibilityIsIgnored {
+  return NO;
+}
+
+- (NSString*)accessibilityLabel {
+  return l10n_util::GetNSString(IDS_DOWNLOAD_TITLE);
+}
+
+- (id)accessibilityAttributeValue:(NSString*)attribute {
+  if ([attribute isEqualToString:NSAccessibilityRoleAttribute]) {
+    return NSAccessibilityToolbarRole;
+  } else if ([attribute isEqualToString:NSAccessibilityDescriptionAttribute]) {
+    return [self accessibilityLabel];
+  } else if ([attribute isEqualToString:NSAccessibilityOrientationAttribute]) {
+    return NSAccessibilityVerticalOrientationValue;
+  }
+  return [super accessibilityAttributeValue:attribute];
+}
+
+// For nib instantiation (pre-MD design).
 - (id)initWithCoder:(NSCoder*)decoder {
   if ((self = [super initWithCoder:decoder])) {
     self.dividerEdge = NSMaxYEdge;
@@ -40,6 +75,10 @@
 
 - (void)drawRect:(NSRect)dirtyRect {
   [self drawBackground:dirtyRect];
+
+  // The MD shelf doesn't have a top highlight.
+  if (base::FeatureList::IsEnabled(features::kMacMaterialDesignDownloadShelf))
+    return;
 
   // Draw the top highlight
   NSRect borderRect, contentRect;
@@ -63,6 +102,11 @@
 }
 
 - (void)viewWillDraw {
+  // The MD shelf's close button handles its own theming.
+  if (base::FeatureList::IsEnabled(features::kMacMaterialDesignDownloadShelf)) {
+    [super viewWillDraw];
+    return;
+  }
   if (const ui::ThemeProvider* themeProvider = [[self window] themeProvider]) {
     [closeButton_
         setIconColor:themeProvider->GetColor(ThemeProperties::COLOR_TAB_TEXT)];
@@ -82,6 +126,25 @@
 
 - (BOOL)isOpaque {
   return YES;
+}
+
+- (void)adjustHeightForDivider {
+  if (!base::FeatureList::IsEnabled(features::kMacMaterialDesignDownloadShelf))
+    return;
+  if (!self.window)
+    return;
+  [self stopAnimation];
+  if (NSHeight([self bounds])) {
+    [self setHeight:kMDShelfHeight + [self cr_lineWidth]];
+  }
+}
+
+- (void)viewDidMoveToWindow {
+  [self adjustHeightForDivider];
+}
+
+- (void)viewDidChangeBackingProperties {
+  [self adjustHeightForDivider];
 }
 
 @end

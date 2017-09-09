@@ -17,6 +17,9 @@
 // to find joy in adding support for them.
 
 @interface HarmonyButton : HoverButton
++ (instancetype)buttonWithTitle:(NSString*)title
+                         target:(id)target
+                         action:(SEL)action;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_HARMONY_BUTTON_H_

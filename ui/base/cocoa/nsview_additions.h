@@ -49,6 +49,9 @@
 // it is actually drawing to.
 - (NSView*)cr_viewBeingDrawnTo;
 
+// Set a view's accessibilityLabel in a way that's compatible with 10.9.
+- (void)cr_setAccessibilityLabel:(NSString*)label;
+
 @end
 
 #endif  // UI_BASE_COCOA_NSVIEW_ADDITIONS_H_

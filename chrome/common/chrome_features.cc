@@ -238,6 +238,12 @@ const base::Feature kMacFullSizeContentView{"MacFullSizeContentView",
 const base::Feature kMaterialDesignBookmarks{"MaterialDesignBookmarks",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
+#if defined(OS_MACOSX)
+// Enables the Material Design download shelf on Mac.
+const base::Feature kMacMaterialDesignDownloadShelf{
+    "MacMDDownloadShelf", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 // Enabled or disabled the Material Design version of chrome://extensions.
 const base::Feature kMaterialDesignExtensions{

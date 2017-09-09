@@ -2364,6 +2364,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHerbPrototypeChoicesDescription, kOsAndroid,
      MULTI_VALUE_TYPE(kHerbPrototypeChoices)},
 #endif  // OS_ANDROID
+#if defined(OS_MACOSX)
+    {"mac-md-download-shelf",
+     flag_descriptions::kEnableMacMaterialDesignDownloadShelfName,
+     flag_descriptions::kEnableMacMaterialDesignDownloadShelfDescription,
+     kOsMac, FEATURE_VALUE_TYPE(features::kMacMaterialDesignDownloadShelf)},
+#endif  // OS_MACOSX
     {"enable-md-bookmarks",
      flag_descriptions::kEnableMaterialDesignBookmarksName,
      flag_descriptions::kEnableMaterialDesignBookmarksDescription, kOsDesktop,
