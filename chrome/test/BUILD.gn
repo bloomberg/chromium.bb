@@ -4671,6 +4671,7 @@ test("unit_tests") {
         "../browser/ui/cocoa/download/download_shelf_mac_unittest.mm",
         "../browser/ui/cocoa/download/download_shelf_view_cocoa_unittest.mm",
         "../browser/ui/cocoa/download/download_util_mac_unittest.mm",
+        "../browser/ui/cocoa/download/md_download_item_view_unittest.mm",
         "../browser/ui/cocoa/draggable_button_unittest.mm",
         "../browser/ui/cocoa/extensions/browser_actions_container_view_unittest.mm",
         "../browser/ui/cocoa/extensions/chooser_dialog_cocoa_controller_unittest.mm",

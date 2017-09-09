@@ -246,6 +246,9 @@ extern const char kEnableHeapProfilingTaskProfiler[];
 extern const char kEnableHttpFormWarningName[];
 extern const char kEnableHttpFormWarningDescription[];
 
+extern const char kEnableMacMaterialDesignDownloadShelfName[];
+extern const char kEnableMacMaterialDesignDownloadShelfDescription[];
+
 extern const char kEnableManualFallbacksFillingName[];
 extern const char kEnableManualFallbacksFillingDescription[];
 

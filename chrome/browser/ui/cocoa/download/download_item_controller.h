@@ -16,6 +16,7 @@
 @class DownloadItemButton;
 class DownloadItemMac;
 class DownloadItemModel;
+@protocol DownloadItemView;
 class DownloadShelfContextMenuMac;
 @class DownloadShelfController;
 @class GTMWidthBasedTweaker;
@@ -46,9 +47,7 @@ class MenuModel;
 //  |  A container that is showing one of its child views (progressView_ or
 //  |  dangerousDownloadView_) depending on whether the download is safe or not.
 //  |
-//  +-- progressView_ (instance of DownloadItemButton)
-//  |   |
-//  |   +-- cell_ (instance of DownloadItemCell)
+//  +-- progressView_ (conforms to DownloadItemView)
 //  |
 //  +-- dangerousDownloadView_
 //      |
@@ -76,8 +75,7 @@ class MenuModel;
 //
 @interface DownloadItemController : NSViewController {
  @private
-  IBOutlet DownloadItemButton* progressView_;
-  IBOutlet DownloadItemCell* cell_;
+  IBOutlet NSView<DownloadItemView>* progressView_;
 
   // This is shown instead of progressView_ for dangerous downloads.
   IBOutlet NSView* dangerousDownloadView_;

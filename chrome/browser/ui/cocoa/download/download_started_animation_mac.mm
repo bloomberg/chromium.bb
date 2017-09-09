@@ -12,15 +12,21 @@
 #import <QuartzCore/QuartzCore.h>
 
 #include "base/logging.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #import "chrome/browser/ui/cocoa/animatable_image.h"
+#import "chrome/browser/ui/cocoa/nsview_additions.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/theme_resources.h"
 #include "content/public/browser/web_contents.h"
-#import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
-#include "third_party/skia/include/utils/mac/SkCGUtils.h"
-#include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/image/image.h"
+#include "ui/gfx/color_palette.h"
+#import "ui/gfx/image/image_skia_util_mac.h"
+#include "ui/gfx/paint_vector_icon.h"
+
+namespace {
+constexpr CGFloat kLeftMargin = 10;
+constexpr CGFloat kMDDownloadStartedImageSize = 72;
+}  // namespace
 
 class DownloadAnimationWebObserver;
 
@@ -43,7 +49,12 @@ class DownloadAnimationWebObserver;
     // Load the image of the download arrow.
     ResourceBundle& bundle = ResourceBundle::GetSharedInstance();
     NSImage* image =
-        bundle.GetNativeImageNamed(IDR_DOWNLOAD_ANIMATION_BEGIN).ToNSImage();
+        base::FeatureList::IsEnabled(features::kMacMaterialDesignDownloadShelf)
+            ? NSImageFromImageSkia(gfx::CreateVectorIcon(
+                  kFileDownloadShelfIcon, kMDDownloadStartedImageSize,
+                  gfx::kGoogleBlue500))
+            : bundle.GetNativeImageNamed(IDR_DOWNLOAD_ANIMATION_BEGIN)
+                  .ToNSImage();
 
     // Figure out the positioning in the current tab. Try to position the layer
     // against the left edge, and three times the download image's height from
@@ -67,13 +78,19 @@ class DownloadAnimationWebObserver;
       return nil;
     }
 
-    NSPoint origin = [tabContentsView frame].origin;
-    origin = [tabContentsView convertPoint:origin toView:nil];
-    origin = ui::ConvertPointFromWindowToScreen(parentWindow, origin);
+    NSRect frame = [tabContentsView frame];
+    CGFloat animationHeight = MIN(bounds.height(), 4 * imageHeight);
+    frame.size = NSMakeSize(imageWidth_, animationHeight);
+    if (base::FeatureList::IsEnabled(
+            features::kMacMaterialDesignDownloadShelf)) {
+      frame.origin.x += kLeftMargin;
+    }
+    frame =
+        [tabContentsView convertRect:[tabContentsView cr_localizedRect:frame]
+                              toView:nil];
+    frame = [parentWindow convertRectToScreen:frame];
 
     // Create the animation object to assist in animating and fading.
-    CGFloat animationHeight = MIN(bounds.height(), 4 * imageHeight);
-    NSRect frame = NSMakeRect(origin.x, origin.y, imageWidth_, animationHeight);
     animation_ = [[AnimatableImage alloc] initWithImage:image
                                          animationFrame:frame];
     [parentWindow addChildWindow:animation_ ordered:NSWindowAbove];

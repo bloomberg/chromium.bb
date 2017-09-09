@@ -75,6 +75,17 @@ constexpr NSTimeInterval kTransitionDuration = 0.25;
 
 @implementation HarmonyButton
 
++ (instancetype)buttonWithTitle:(NSString*)title
+                         target:(id)target
+                         action:(SEL)action {
+  HarmonyButton* button = [[[self alloc] initWithFrame:NSZeroRect] autorelease];
+  button.title = title;
+  button.target = target;
+  button.action = action;
+  [button sizeToFit];
+  return button;
+}
+
 + (Class)cellClass {
   return [HarmonyButtonCell class];
 }

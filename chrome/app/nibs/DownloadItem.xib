@@ -8,7 +8,6 @@
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="DownloadItemController">
             <connections>
-                <outlet property="cell_" destination="60" id="63"/>
                 <outlet property="dangerousButtonTweaker_" destination="80" id="112"/>
                 <outlet property="dangerousDownloadConfirmButton_" destination="67" id="96"/>
                 <outlet property="dangerousDownloadLabel_" destination="71" id="79"/>

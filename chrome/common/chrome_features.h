@@ -127,6 +127,10 @@ extern const base::Feature kMacFullSizeContentView;
 
 extern const base::Feature kMaterialDesignBookmarks;
 
+#if defined(OS_MACOSX)
+extern const base::Feature kMacMaterialDesignDownloadShelf;
+#endif
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 extern const base::Feature kMaterialDesignExtensions;
 extern const base::Feature kAcknowledgeNtpOverrideOnDeactivate;
