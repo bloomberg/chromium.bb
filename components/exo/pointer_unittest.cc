@@ -448,34 +448,5 @@ TEST_F(PointerTest, IgnorePointerEventDuringModal) {
   pointer.reset();
 }
 
-TEST_F(PointerTest, OnPointerInStylusOnlyWindow) {
-  std::unique_ptr<Surface> surface(new Surface);
-  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
-  gfx::Size buffer_size(10, 10);
-  std::unique_ptr<Buffer> buffer(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
-  surface->Attach(buffer.get());
-  surface->SetStylusOnly();
-  surface->Commit();
-
-  MockPointerDelegate delegate;
-  std::unique_ptr<Pointer> pointer(new Pointer(&delegate));
-  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
-
-  EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface.get()))
-      .WillRepeatedly(testing::Return(true));
-
-  EXPECT_CALL(delegate, OnPointerFrame()).Times(0);
-  EXPECT_CALL(delegate, OnPointerEnter(surface.get(), testing::_, 0)).Times(0);
-  EXPECT_CALL(delegate, OnPointerButton(testing::_, testing::_, testing::_))
-      .Times(0);
-
-  generator.MoveMouseTo(surface->window()->GetBoundsInScreen().origin());
-  generator.ClickLeftButton();
-
-  EXPECT_CALL(delegate, OnPointerDestroying(pointer.get()));
-  pointer.reset();
-}
-
 }  // namespace
 }  // namespace exo
