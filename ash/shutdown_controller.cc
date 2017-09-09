@@ -14,6 +14,7 @@
 #include "base/sys_info.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace ash {
 
@@ -33,10 +34,20 @@ void ShutdownController::ShutDownOrReboot(ShutdownReason reason) {
 
   // On real Chrome OS hardware the power manager handles shutdown.
   using chromeos::DBusThreadManager;
-  if (reboot_on_shutdown_)
-    DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
-  else
-    DBusThreadManager::Get()->GetPowerManagerClient()->RequestShutdown();
+  constexpr char kDescription[] = "UI request from ash";
+  if (reboot_on_shutdown_) {
+    DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart(
+        reason == ShutdownReason::UNKNOWN
+            ? power_manager::REQUEST_RESTART_OTHER
+            : power_manager::REQUEST_RESTART_FOR_USER,
+        kDescription);
+  } else {
+    DBusThreadManager::Get()->GetPowerManagerClient()->RequestShutdown(
+        reason == ShutdownReason::UNKNOWN
+            ? power_manager::REQUEST_SHUTDOWN_OTHER
+            : power_manager::REQUEST_SHUTDOWN_FOR_USER,
+        kDescription);
+  }
 }
 
 void ShutdownController::SetRebootOnShutdown(bool reboot_on_shutdown) {

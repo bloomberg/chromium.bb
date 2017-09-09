@@ -183,11 +183,15 @@ class CHROMEOS_EXPORT PowerManagerClient : public DBusClient {
   // Requests suspend of the system.
   virtual void RequestSuspend() = 0;
 
-  // Requests restart of the system.
-  virtual void RequestRestart() = 0;
+  // Requests restart of the system. |description| contains a human-readable
+  // string describing the source of the request that will be logged by powerd.
+  virtual void RequestRestart(power_manager::RequestRestartReason reason,
+                              const std::string& description) = 0;
 
-  // Requests shutdown of the system.
-  virtual void RequestShutdown() = 0;
+  // Requests shutdown of the system. |description| contains a human-readable
+  // string describing the source of the request that will be logged by powerd.
+  virtual void RequestShutdown(power_manager::RequestShutdownReason reason,
+                               const std::string& description) = 0;
 
   // Notifies the power manager that the user is active (i.e. generating input
   // events).

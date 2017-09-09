@@ -40,6 +40,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 
 namespace chromeos {
@@ -407,7 +408,8 @@ void AutomaticRebootManager::Reboot() {
   login_screen_idle_timer_.reset();
   grace_start_timer_.reset();
   grace_end_timer_.reset();
-  DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
+  DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart(
+      power_manager::REQUEST_RESTART_OTHER, "automatic reboot manager");
 }
 
 }  // namespace system

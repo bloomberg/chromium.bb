@@ -61,8 +61,10 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
   void IncreaseKeyboardBrightness() override;
   void RequestStatusUpdate() override;
   void RequestSuspend() override;
-  void RequestRestart() override;
-  void RequestShutdown() override;
+  void RequestRestart(power_manager::RequestRestartReason reason,
+                      const std::string& description) override;
+  void RequestShutdown(power_manager::RequestShutdownReason reason,
+                       const std::string& description) override;
   void NotifyUserActivity(power_manager::UserActivityType type) override;
   void NotifyVideoActivity(bool is_fullscreen) override;
   void SetPolicy(const power_manager::PowerManagementPolicy& policy) override;
