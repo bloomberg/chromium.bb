@@ -32,7 +32,6 @@
 #define WebURLRequest_h
 
 #include <memory>
-#include "WebAddressSpace.h"
 #include "WebCachePolicy.h"
 #include "WebCommon.h"
 #include "WebHTTPBody.h"

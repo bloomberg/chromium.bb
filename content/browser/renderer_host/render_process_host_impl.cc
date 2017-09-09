@@ -1753,18 +1753,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(service_worker_filter.get());
 
   AddFilter(new SharedWorkerMessageFilter(
-      GetID(), resource_context,
-      WorkerStoragePartition(
-          storage_partition_impl_->GetURLRequestContext(),
-          storage_partition_impl_->GetMediaURLRequestContext(),
-          storage_partition_impl_->GetAppCacheService(),
-          storage_partition_impl_->GetQuotaManager(),
-          storage_partition_impl_->GetFileSystemContext(),
-          storage_partition_impl_->GetDatabaseTracker(),
-          storage_partition_impl_->GetIndexedDBContext(),
-          storage_partition_impl_->GetServiceWorkerContext()),
-      base::Bind(&RenderWidgetHelper::GetNextRoutingID,
-                 base::Unretained(widget_helper_.get()))));
+      GetID(), base::Bind(&RenderWidgetHelper::GetNextRoutingID,
+                          base::Unretained(widget_helper_.get()))));
 
 #if BUILDFLAG(ENABLE_WEBRTC)
   p2p_socket_dispatcher_host_ = new P2PSocketDispatcherHost(

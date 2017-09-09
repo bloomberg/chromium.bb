@@ -18,6 +18,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
+#include "third_party/WebKit/public/platform/web_feature.mojom.h"
 #include "third_party/WebKit/public/web/worker_content_settings_proxy.mojom.h"
 
 namespace content {
@@ -52,7 +53,6 @@ SharedWorkerHost::SharedWorkerHost(SharedWorkerInstance* instance,
                                    SharedWorkerMessageFilter* filter,
                                    int worker_route_id)
     : instance_(instance),
-      worker_document_set_(new WorkerDocumentSet()),
       worker_render_filter_(filter),
       worker_process_id_(filter->render_process_id()),
       worker_route_id_(worker_route_id),
@@ -90,63 +90,15 @@ void SharedWorkerHost::Start(bool pause_on_start) {
   params.data_saver_enabled = instance_->data_saver_enabled();
   params.content_settings_handle = content_settings.PassHandle().release();
   Send(new WorkerProcessMsg_CreateWorker(params));
-
-  for (const FilterInfo& info : filters_)
-    info.filter()->Send(new ViewMsg_WorkerCreated(info.route_id()));
 }
 
-bool SharedWorkerHost::SendConnectToWorker(int worker_route_id,
-                                           const MessagePort& port,
-                                           SharedWorkerMessageFilter* filter) {
-  if (!IsAvailable() || !HasFilter(filter, worker_route_id))
-    return false;
-
-  int connection_request_id = next_connection_request_id_++;
-
-  SetConnectionRequestID(filter, worker_route_id, connection_request_id);
-
-  // Send the connect message with the new connection_request_id.
-  Send(new WorkerMsg_Connect(worker_route_id_, connection_request_id, port));
-  return true;
-}
-
-void SharedWorkerHost::FilterShutdown(SharedWorkerMessageFilter* filter) {
-  RemoveFilters(filter);
-  worker_document_set_->RemoveAll(filter);
-  if (worker_document_set_->IsEmpty()) {
-    // This worker has no more associated documents - shut it down.
-    TerminateWorker();
-  }
-}
-
-void SharedWorkerHost::DocumentDetached(SharedWorkerMessageFilter* filter,
-                                        unsigned long long document_id) {
-  // Walk all instances and remove the document from their document set.
-  worker_document_set_->Remove(filter, document_id);
-  if (worker_document_set_->IsEmpty()) {
-    // This worker has no more associated documents - shut it down.
-    TerminateWorker();
-  }
-}
-
-void SharedWorkerHost::RenderFrameDetached(int render_process_id,
-                                           int render_frame_id) {
-  // Walk all instances and remove all the documents in the frame from their
-  // document set.
-  worker_document_set_->RemoveRenderFrame(render_process_id, render_frame_id);
-  if (worker_document_set_->IsEmpty()) {
-    // This worker has no more associated documents - shut it down.
-    TerminateWorker();
-  }
-}
-
-void SharedWorkerHost::CountFeature(uint32_t feature) {
+void SharedWorkerHost::CountFeature(blink::mojom::WebFeature feature) {
+  // Avoid reporting a feature more than once, and enable any new clients to
+  // observe features that were historically used.
   if (!used_features_.insert(feature).second)
     return;
-  for (const auto& filter_info : filters_) {
-    filter_info.filter()->Send(new ViewMsg_CountFeatureOnSharedWorker(
-        filter_info.route_id(), feature));
-  }
+  for (const ClientInfo& info : clients_)
+    info.client->OnFeatureUsed(feature);
 }
 
 void SharedWorkerHost::WorkerContextClosed() {
@@ -159,10 +111,8 @@ void SharedWorkerHost::WorkerContextClosed() {
 }
 
 void SharedWorkerHost::WorkerContextDestroyed() {
-  for (const auto& filter_info : filters_) {
-    filter_info.filter()->Send(
-        new ViewMsg_WorkerDestroyed(filter_info.route_id()));
-  }
+  // Disconnect all clients to signal destruction of the worker.
+  clients_.clear();
 }
 
 void SharedWorkerHost::WorkerReadyForInspection() {
@@ -177,18 +127,18 @@ void SharedWorkerHost::WorkerScriptLoaded() {
 void SharedWorkerHost::WorkerScriptLoadFailed() {
   UMA_HISTOGRAM_TIMES("SharedWorker.TimeToScriptLoadFailed",
                       base::TimeTicks::Now() - creation_time_);
-  for (const FilterInfo& info : filters_)
-    info.filter()->Send(new ViewMsg_WorkerScriptLoadFailed(info.route_id()));
+  for (const ClientInfo& info : clients_)
+    info.client->OnScriptLoadFailed();
 }
 
 void SharedWorkerHost::WorkerConnected(int connection_request_id) {
   if (!instance_)
     return;
-  for (const FilterInfo& info : filters_) {
-    if (info.connection_request_id() != connection_request_id)
+  for (const ClientInfo& info : clients_) {
+    if (info.connection_request_id != connection_request_id)
       continue;
-    info.filter()->Send(
-        new ViewMsg_WorkerConnected(info.route_id(), used_features_));
+    info.client->OnConnected(std::vector<blink::mojom::WebFeature>(
+        used_features_.begin(), used_features_.end()));
     return;
   }
 }
@@ -222,15 +172,22 @@ void SharedWorkerHost::TerminateWorker() {
   Send(new WorkerMsg_TerminateWorkerContext(worker_route_id_));
 }
 
-std::vector<std::pair<int, int> >
+SharedWorkerHost::ClientInfo::ClientInfo(mojom::SharedWorkerClientPtr client,
+                                         int connection_request_id,
+                                         int process_id,
+                                         int frame_id)
+    : client(std::move(client)),
+      connection_request_id(connection_request_id),
+      process_id(process_id),
+      frame_id(frame_id) {}
+
+SharedWorkerHost::ClientInfo::~ClientInfo() {}
+
+std::vector<std::pair<int, int>>
 SharedWorkerHost::GetRenderFrameIDsForWorker() {
-  std::vector<std::pair<int, int> > result;
-  const WorkerDocumentSet::DocumentInfoSet& documents =
-      worker_document_set_->documents();
-  for (const WorkerDocumentSet::DocumentInfo& doc : documents) {
-    result.push_back(
-        std::make_pair(doc.render_process_id(), doc.render_frame_id()));
-  }
+  std::vector<std::pair<int, int>> result;
+  for (const ClientInfo& info : clients_)
+    result.push_back(std::make_pair(info.process_id, info.frame_id));
   return result;
 }
 
@@ -238,42 +195,41 @@ bool SharedWorkerHost::IsAvailable() const {
   return !termination_message_sent_ && !closed_;
 }
 
-void SharedWorkerHost::AddFilter(SharedWorkerMessageFilter* filter,
-                                 int route_id) {
-  CHECK(filter);
-  if (!HasFilter(filter, route_id)) {
-    FilterInfo info(filter, route_id);
-    filters_.push_back(info);
-  }
+void SharedWorkerHost::AddClient(mojom::SharedWorkerClientPtr client,
+                                 int process_id,
+                                 int frame_id,
+                                 const MessagePort& port) {
+  clients_.emplace_back(std::move(client), next_connection_request_id_++,
+                        process_id, frame_id);
+  ClientInfo& info = clients_.back();
+
+  // Observe when the client goes away.
+  info.client.set_connection_error_handler(base::BindOnce(
+      &SharedWorkerHost::OnClientConnectionLost, weak_factory_.GetWeakPtr()));
+
+  Send(new WorkerMsg_Connect(worker_route_id_, info.connection_request_id,
+                             port));
 }
 
-void SharedWorkerHost::RemoveFilters(SharedWorkerMessageFilter* filter) {
-  for (FilterList::iterator i = filters_.begin(); i != filters_.end();) {
-    if (i->filter() == filter)
-      i = filters_.erase(i);
-    else
-      ++i;
-  }
-}
-
-bool SharedWorkerHost::HasFilter(SharedWorkerMessageFilter* filter,
-                                 int route_id) const {
-  for (const FilterInfo& info : filters_) {
-    if (info.filter() == filter && info.route_id() == route_id)
+bool SharedWorkerHost::ServesExternalClient() {
+  for (const ClientInfo& info : clients_) {
+    if (info.process_id != worker_process_id_)
       return true;
   }
   return false;
 }
 
-void SharedWorkerHost::SetConnectionRequestID(SharedWorkerMessageFilter* filter,
-                                              int route_id,
-                                              int connection_request_id) {
-  for (FilterList::iterator i = filters_.begin(); i != filters_.end(); ++i) {
-    if (i->filter() == filter && i->route_id() == route_id) {
-      i->set_connection_request_id(connection_request_id);
-      return;
+void SharedWorkerHost::OnClientConnectionLost() {
+  // We'll get a notification for each dropped connection.
+  for (auto it = clients_.begin(); it != clients_.end(); ++it) {
+    if (it->client.encountered_error()) {
+      clients_.erase(it);
+      break;
     }
   }
+  // If there are no clients left, then it's cleanup time.
+  if (clients_.empty())
+    TerminateWorker();
 }
 
 bool SharedWorkerHost::Send(IPC::Message* message) {

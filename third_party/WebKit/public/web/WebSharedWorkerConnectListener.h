@@ -31,7 +31,8 @@
 #ifndef WebSharedWorkerConnectListener_h
 #define WebSharedWorkerConnectListener_h
 
-#include "WebSharedWorkerCreationErrors.h"
+#include "public/platform/web_feature.mojom-shared.h"
+#include "public/web/shared_worker_creation_context_type.mojom-shared.h"
 
 namespace blink {
 
@@ -41,7 +42,7 @@ class WebSharedWorkerConnectListener {
   virtual ~WebSharedWorkerConnectListener() = default;
 
   // Called when a worker is created.
-  virtual void WorkerCreated(WebWorkerCreationError) = 0;
+  virtual void WorkerCreated(mojom::SharedWorkerCreationContextType) = 0;
 
   // Called when worker script load fails.
   virtual void ScriptLoadFailed() = 0;
@@ -51,7 +52,7 @@ class WebSharedWorkerConnectListener {
 
   // Called when some API to be recorded in UseCounter is called on the worker
   // global scope.
-  virtual void CountFeature(uint32_t) = 0;
+  virtual void CountFeature(mojom::WebFeature) = 0;
 };
 
 }  // namespace blink

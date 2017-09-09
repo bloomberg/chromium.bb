@@ -26,19 +26,6 @@
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START WorkerMsgStart
 
-// Parameters structure for WorkerHostMsg_PostConsoleMessageToWorkerObject,
-// which has too many data parameters to be reasonably put in a predefined
-// IPC message. The data members directly correspond to parameters of
-// WebWorkerClient::postConsoleMessageToWorkerObject()
-IPC_STRUCT_BEGIN(WorkerHostMsg_PostConsoleMessageToWorkerObject_Params)
-  IPC_STRUCT_MEMBER(int, source_identifier)
-  IPC_STRUCT_MEMBER(int, message_type)
-  IPC_STRUCT_MEMBER(int, message_level)
-  IPC_STRUCT_MEMBER(base::string16, message)
-  IPC_STRUCT_MEMBER(int, line_number)
-  IPC_STRUCT_MEMBER(base::string16, source_url)
-IPC_STRUCT_END()
-
 // Parameter structure for WorkerProcessMsg_CreateWorker.
 IPC_STRUCT_BEGIN(WorkerProcessMsg_CreateWorker_Params)
   IPC_STRUCT_MEMBER(GURL, url)

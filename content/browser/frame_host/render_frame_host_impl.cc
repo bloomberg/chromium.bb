@@ -66,6 +66,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
+#include "content/browser/shared_worker/shared_worker_connector_impl.h"
 #include "content/browser/shared_worker/shared_worker_service_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/webauth/authenticator_impl.h"
@@ -250,12 +251,6 @@ void GrantFileAccess(int child_id,
     if (!policy->CanReadFile(child_id, file))
       policy->GrantReadFile(child_id, file);
   }
-}
-
-void NotifyRenderFrameDetachedOnIO(int render_process_id, int render_frame_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  SharedWorkerServiceImpl::GetInstance()->RenderFrameDetached(render_process_id,
-                                                              render_frame_id);
 }
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
@@ -579,10 +574,6 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
 
   if (overlay_routing_token_)
     g_token_frame_map.Get().erase(*overlay_routing_token_);
-
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::BindOnce(&NotifyRenderFrameDetachedOnIO,
-                                         GetProcess()->GetID(), routing_id_));
 
   site_instance_->RemoveObserver(this);
 
@@ -2950,6 +2941,9 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   // associated RenderFrame. This is important for showing the correct security
   // state of the page and also honoring user override of bad certificates.
   registry_->AddInterface(base::Bind(&WebSocketManager::CreateWebSocket,
+                                     process_->GetID(), routing_id_));
+
+  registry_->AddInterface(base::Bind(&SharedWorkerConnectorImpl::Create,
                                      process_->GetID(), routing_id_));
 
 #if BUILDFLAG(ENABLE_VR)

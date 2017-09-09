@@ -11,31 +11,36 @@
 #include "content/common/devtools_messages.h"
 #include "content/common/view_messages.h"
 #include "content/common/worker_messages.h"
-#include "third_party/WebKit/public/web/WebSharedWorkerCreationErrors.h"
 
 namespace content {
 namespace {
 
 const uint32_t kFilteredMessageClasses[] = {
-    ViewMsgStart, WorkerMsgStart,
+    WorkerMsgStart,
 };
 
 }  // namespace
 
 SharedWorkerMessageFilter::SharedWorkerMessageFilter(
     int render_process_id,
-    ResourceContext* resource_context,
-    const WorkerStoragePartition& partition,
     const NextRoutingIDCallback& next_routing_id_callback)
     : BrowserMessageFilter(kFilteredMessageClasses,
                            arraysize(kFilteredMessageClasses)),
       render_process_id_(render_process_id),
-      resource_context_(resource_context),
-      partition_(partition),
       next_routing_id_callback_(next_routing_id_callback) {}
 
-SharedWorkerMessageFilter::~SharedWorkerMessageFilter() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+int SharedWorkerMessageFilter::GetNextRoutingID() {
+  return next_routing_id_callback_.Run();
+}
+
+SharedWorkerMessageFilter::~SharedWorkerMessageFilter() {}
+
+void SharedWorkerMessageFilter::OnFilterAdded(IPC::Channel* channel) {
+  SharedWorkerServiceImpl::GetInstance()->AddFilter(this);
+}
+
+void SharedWorkerMessageFilter::OnFilterRemoved() {
+  SharedWorkerServiceImpl::GetInstance()->RemoveFilter(this);
 }
 
 void SharedWorkerMessageFilter::OnChannelClosing() {
@@ -46,16 +51,7 @@ void SharedWorkerMessageFilter::OnChannelClosing() {
 bool SharedWorkerMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(SharedWorkerMessageFilter, message, this)
-    // Only sent from renderer for now, until we have nested workers.
-    IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWorker, OnCreateWorker)
-    IPC_MESSAGE_FORWARD(ViewHostMsg_ConnectToWorker,
-                        SharedWorkerServiceImpl::GetInstance(),
-                        SharedWorkerServiceImpl::ConnectToWorker)
-    // Only sent from renderer.
-    IPC_MESSAGE_FORWARD(ViewHostMsg_DocumentDetached,
-                        SharedWorkerServiceImpl::GetInstance(),
-                        SharedWorkerServiceImpl::DocumentDetached)
-    // Only sent from SharedWorker in renderer.
+    // Sent from SharedWorker in renderer.
     IPC_MESSAGE_FORWARD(WorkerHostMsg_CountFeature,
                         SharedWorkerServiceImpl::GetInstance(),
                         SharedWorkerServiceImpl::CountFeature)
@@ -80,19 +76,6 @@ bool SharedWorkerMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-int SharedWorkerMessageFilter::GetNextRoutingID() {
-  return next_routing_id_callback_.Run();
-}
-
-void SharedWorkerMessageFilter::OnCreateWorker(
-    const ViewHostMsg_CreateWorker_Params& params,
-    ViewHostMsg_CreateWorker_Reply* reply) {
-  reply->route_id = GetNextRoutingID();
-  reply->error = SharedWorkerServiceImpl::GetInstance()->CreateWorker(
-      params, reply->route_id, this, resource_context_,
-      WorkerStoragePartitionId(partition_));
 }
 
 }  // namespace content
