@@ -72,7 +72,7 @@ static const int kV4TimerStartIntervalSecMin = 60;
 static const int kV4TimerStartIntervalSecMax = 300;
 
 // Maximum time, in seconds, to wait for a response to an update request.
-static const int kV4TimerUpdateWaitSecMax = 30;
+static const int kV4TimerUpdateWaitSecMax = 15 * 60;  // 15 minutes
 
 ChromeClientInfo::SafeBrowsingReportingPopulation GetReportingLevelProtoValue(
     ExtendedReportingLevel reporting_level) {
