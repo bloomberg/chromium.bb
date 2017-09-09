@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "components/prefs/base_prefs_export.h"
+#include "components/prefs/prefs_export.h"
 
 namespace base {
 class DictionaryValue;

@@ -13,9 +13,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
-#include "components/prefs/base_prefs_export.h"
 #include "components/prefs/persistent_pref_store.h"
 #include "components/prefs/pref_value_map.h"
+#include "components/prefs/prefs_export.h"
 
 // PersistentPrefStore that directs all write operations into an in-memory
 // PrefValueMap. Read operations are first answered by the PrefValueMap.
