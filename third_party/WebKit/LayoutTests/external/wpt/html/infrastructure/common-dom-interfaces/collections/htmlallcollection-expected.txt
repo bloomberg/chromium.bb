@@ -9,11 +9,15 @@ PASS named property getter with invalid name
 PASS named property getter returning collection
 PASS named property getter with "array index property name"
 PASS named property getter with invalid "array index property name"
+PASS named property getter with undefined
+PASS named property getter with null
 PASS namedItem method
 PASS namedItem method with invalid name
 PASS namedItem method returning collection
 PASS namedItem method with "array index property name"
 PASS namedItem method with invalid "array index property name"
+PASS namedItem method with undefined
+PASS namedItem method with null
 PASS namedItem method with no argument
 PASS legacy caller
 FAIL legacy caller with invalid name assert_equals: expected (object) null but got (undefined) undefined
@@ -21,13 +25,21 @@ PASS legacy caller returning collection
 PASS legacy caller with "array index property name"
 PASS legacy caller with "array index property name" as number
 FAIL legacy caller with invalid "array index property name" assert_equals: expected (object) null but got (undefined) undefined
+FAIL legacy caller with undefined assert_equals: expected null but got Element node <div id="undefined"></div>
+PASS legacy caller with null
 FAIL legacy caller with no argument assert_equals: expected (object) null but got (undefined) undefined
+FAIL legacy caller is not a constructor assert_throws: New should not work on document.all() function "function () {
+    new document.all("picture");
+  }" did not throw
+PASS legacy caller with arbitrary this value
 PASS item method
 FAIL item method with invalid name assert_equals: expected (object) null but got (undefined) undefined
 PASS item method returning collection
 PASS item method with "array index property name"
 PASS item method with "array index property name" as number
 FAIL item method with invalid "array index property name" assert_equals: expected (object) null but got (undefined) undefined
+FAIL item method with undefined assert_equals: expected null but got Element node <div id="undefined"></div>
+PASS item method with null
 FAIL item method with no argument assert_equals: expected (object) null but got (undefined) undefined
 FAIL collections are new live HTMLCollection instances assert_true: expected true got false
 Harness: the test ran to completion.
