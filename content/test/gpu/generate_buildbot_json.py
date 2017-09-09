@@ -87,6 +87,14 @@ class Predicates(object):
   def DEQP(x):
     return Types.DEQP in x
 
+# Most of the bots live in the Chrome-GPU pool as defined here (Google
+# employees only, sorry):
+# https://chrome-internal.googlesource.com/infradata/config/+/master/configs/
+#   chromium-swarm/bots.cfg
+#
+# Some of them, like the Mac Minis and Nexus 5X devices, are shared
+# resources and live in the regular Chrome pool.
+
 WATERFALL = {
   'name': 'chromium.gpu',
   'type': Types.GPU,
@@ -105,7 +113,8 @@ WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '10de:104a',
-          'os': 'Windows-2008ServerR2-SP1'
+          'os': 'Windows-2008ServerR2-SP1',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Release',
@@ -116,7 +125,8 @@ WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '10de:104a',
-          'os': 'Windows-2008ServerR2-SP1'
+          'os': 'Windows-2008ServerR2-SP1',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Debug',
@@ -153,7 +163,8 @@ WATERFALL = {
           'gpu': '1002:6821',
           'hidpi': '1',
           # TODO(crbug.com/754777): change to 10.12.6.
-          'os': 'Mac'
+          'os': 'Mac',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Release',
@@ -166,7 +177,8 @@ WATERFALL = {
           'gpu': '1002:6821',
           'hidpi': '1',
           # TODO(crbug.com/754777): change to 10.12.6.
-          'os': 'Mac'
+          'os': 'Mac',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Debug',
@@ -177,7 +189,8 @@ WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '10de:104a',
-          'os': 'Ubuntu'
+          'os': 'Ubuntu',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Release',
@@ -188,7 +201,8 @@ WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '10de:104a',
-          'os': 'Ubuntu'
+          'os': 'Ubuntu',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Debug',
@@ -219,7 +233,8 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '10de:104a',
-          'os': 'Windows-2008ServerR2-SP1'
+          'os': 'Windows-2008ServerR2-SP1',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Release',
@@ -230,7 +245,8 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '10de:104a',
-          'os': 'Windows-2008ServerR2-SP1'
+          'os': 'Windows-2008ServerR2-SP1',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Debug',
@@ -241,7 +257,8 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '10de:104a',
-          'os': 'Windows-2008ServerR2-SP1'
+          'os': 'Windows-2008ServerR2-SP1',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Release',
@@ -253,7 +270,8 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '10de:104a',
-          'os': 'Windows-10'
+          'os': 'Windows-10',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Release',
@@ -264,7 +282,8 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '10de:104a',
-          'os': 'Windows-10'
+          'os': 'Windows-10',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Debug',
@@ -275,7 +294,8 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '1002:6613',
-          'os': 'Windows-2008ServerR2-SP1'
+          'os': 'Windows-2008ServerR2-SP1',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Release',
@@ -286,7 +306,8 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '1002:6613',
-          'os': 'Windows-2008ServerR2-SP1'
+          'os': 'Windows-2008ServerR2-SP1',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Debug',
@@ -297,7 +318,8 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '1002:6613',
-          'os': 'Windows-2008ServerR2-SP1'
+          'os': 'Windows-2008ServerR2-SP1',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Release',
@@ -335,7 +357,7 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '1002:6613',
-          'os': 'Windows-2008ServerR2-SP1'
+          'os': 'Windows-2008ServerR2-SP1',
         },
       ],
       'build_config': 'Release',
@@ -348,7 +370,8 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '10de:104a',
-          'os': 'Windows-2008ServerR2-SP1'
+          'os': 'Windows-2008ServerR2-SP1',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Release_x64',
@@ -359,7 +382,8 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '10de:104a',
-          'os': 'Windows-2008ServerR2-SP1'
+          'os': 'Windows-2008ServerR2-SP1',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Debug_x64',
@@ -370,7 +394,8 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '10de:104a',
-          'os': 'Windows-2008ServerR2-SP1'
+          'os': 'Windows-2008ServerR2-SP1',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Release_x64',
@@ -434,7 +459,8 @@ FYI_WATERFALL = {
           'gpu': '10de:0fe9',
           'hidpi': '1',
           # TODO(crbug.com/754777): change to 10.12.6.
-          'os': 'Mac'
+          'os': 'Mac',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Release',
@@ -447,7 +473,8 @@ FYI_WATERFALL = {
           'gpu': '10de:0fe9',
           'hidpi': '1',
           # TODO(crbug.com/754777): change to 10.12.6.
-          'os': 'Mac'
+          'os': 'Mac',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Debug',
@@ -460,7 +487,8 @@ FYI_WATERFALL = {
           'gpu': '1002:6821',
           'hidpi': '1',
           # TODO(crbug.com/754777): change to 10.12.6.
-          'os': 'Mac'
+          'os': 'Mac',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Release',
@@ -473,7 +501,8 @@ FYI_WATERFALL = {
           'gpu': '1002:6821',
           'hidpi': '1',
           # TODO(crbug.com/754777): change to 10.12.6.
-          'os': 'Mac'
+          'os': 'Mac',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Debug',
@@ -497,7 +526,7 @@ FYI_WATERFALL = {
         {
           'gpu': '1002:6821',
           'hidpi': '1',
-          'os': 'Mac'
+          'os': 'Mac',
         },
       ],
       'build_config': 'Release',
@@ -510,7 +539,7 @@ FYI_WATERFALL = {
         {
           'gpu': '10de:0fe9',
           'hidpi': '1',
-          'os': 'Mac'
+          'os': 'Mac',
         },
       ],
       'build_config': 'Release',
@@ -530,7 +559,8 @@ FYI_WATERFALL = {
           'gpu': '1002:6821',
           'hidpi': '1',
           # TODO(crbug.com/754777): change to 10.12.6.
-          'os': 'Mac'
+          'os': 'Mac',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Release',
@@ -550,7 +580,8 @@ FYI_WATERFALL = {
           'gpu': '1002:6821',
           'hidpi': '1',
           # TODO(crbug.com/754777): change to 10.12.6.
-          'os': 'Mac'
+          'os': 'Mac',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Release',
@@ -562,7 +593,8 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '10de:104a',
-          'os': 'Ubuntu'
+          'os': 'Ubuntu',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Release',
@@ -586,7 +618,8 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '10de:104a',
-          'os': 'Ubuntu'
+          'os': 'Ubuntu',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Debug',
@@ -597,7 +630,8 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '10de:104a',
-          'os': 'Ubuntu'
+          'os': 'Ubuntu',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Release',
@@ -635,7 +669,8 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '10de:104a',
-          'os': 'Ubuntu'
+          'os': 'Ubuntu',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Release',
@@ -766,7 +801,8 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '10de:104a',
-          'os': 'Windows-2008ServerR2-SP1'
+          'os': 'Windows-2008ServerR2-SP1',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Release',
@@ -793,7 +829,8 @@ FYI_WATERFALL = {
           'gpu': '10de:0fe9',
           'hidpi': '1',
           # TODO(crbug.com/754777): change to 10.12.6.
-          'os': 'Mac'
+          'os': 'Mac',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Release',
@@ -807,7 +844,8 @@ FYI_WATERFALL = {
           'gpu': '1002:6821',
           'hidpi': '1',
           # TODO(crbug.com/754777): change to 10.12.6.
-          'os': 'Mac'
+          'os': 'Mac',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Release',
@@ -819,7 +857,8 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '10de:104a',
-          'os': 'Ubuntu'
+          'os': 'Ubuntu',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Release',
@@ -835,7 +874,8 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '1002:6613',
-          'os': 'Windows-2008ServerR2-SP1'
+          'os': 'Windows-2008ServerR2-SP1',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Release',
@@ -918,7 +958,8 @@ V8_FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '10de:104a',
-          'os': 'Windows-2008ServerR2-SP1'
+          'os': 'Windows-2008ServerR2-SP1',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Release',
@@ -941,7 +982,8 @@ V8_FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '10de:104a',
-          'os': 'Ubuntu'
+          'os': 'Ubuntu',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Release',
@@ -952,7 +994,8 @@ V8_FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '10de:104a',
-          'os': 'Ubuntu'
+          'os': 'Ubuntu',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Release',
