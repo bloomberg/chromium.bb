@@ -24,9 +24,11 @@
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/android/bluetooth_chooser_android.h"
+#include "chrome/browser/ui/android/infobars/framebust_block_infobar.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
+#include "chrome/browser/ui/interventions/framebust_block_message_delegate.h"
 #include "chrome/browser/ui/tab_helpers.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
@@ -413,6 +415,14 @@ void TabWebContentsDelegateAndroid::RequestAppBannerFromDevTools(
       banners::AppBannerManagerAndroid::FromWebContents(web_contents);
   DCHECK(manager);
   manager->RequestAppBanner(web_contents->GetLastCommittedURL(), true);
+}
+
+void TabWebContentsDelegateAndroid::OnDidBlockFramebust(
+    content::WebContents* web_contents,
+    const GURL& url) {
+  FramebustBlockInfoBar::Show(
+      web_contents,
+      base::MakeUnique<FramebustBlockMessageDelegate>(web_contents, url));
 }
 
 }  // namespace android

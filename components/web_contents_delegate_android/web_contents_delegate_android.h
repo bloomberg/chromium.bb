@@ -123,6 +123,8 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
                              const gfx::Rect& anchor_in_root_view) override;
   void RequestAppBannerFromDevTools(
       content::WebContents* web_contents) override;
+  void OnDidBlockFramebust(content::WebContents* web_contents,
+                           const GURL& url) override;
 
  protected:
   base::android::ScopedJavaLocalRef<jobject> GetJavaDelegate(JNIEnv* env) const;

@@ -321,6 +321,15 @@ public class InfoBarContainer extends SwipableOverlayView {
     }
 
     /**
+     * Adds an InfoBar to the view hierarchy.
+     * @param infoBar InfoBar to add to the View hierarchy.
+     */
+    @VisibleForTesting
+    public void addInfoBarForTesting(InfoBar infoBar) {
+        addInfoBar(infoBar);
+    }
+
+    /**
      * Notifies that an infobar's View ({@link InfoBar#getView}) has changed. If the infobar is
      * visible, a view swapping animation will be run.
      */

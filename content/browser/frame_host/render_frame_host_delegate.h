@@ -87,6 +87,12 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle* interface_pipe) {}
 
+  // Notification from the renderer host that a suspicious navigation of the
+  // main frame has been blocked. Allows the delegate to provide some UI to let
+  // the user know about the blocked navigation and give them the option to
+  // recover from it. The given URL is the blocked navigation target.
+  virtual void OnDidBlockFramebust(const GURL& url) {}
+
   // Gets the last committed URL. See WebContents::GetLastCommittedURL for a
   // description of the semantics.
   virtual const GURL& GetMainFrameLastCommittedURL() const;

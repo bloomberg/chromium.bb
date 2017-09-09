@@ -405,4 +405,8 @@ void WebContentsDelegateAndroid::RequestAppBannerFromDevTools(
     content::WebContents* web_contents) {
 }
 
+void WebContentsDelegateAndroid::OnDidBlockFramebust(
+    content::WebContents* web_contents,
+    const GURL& url) {}
+
 }  // namespace web_contents_delegate_android
