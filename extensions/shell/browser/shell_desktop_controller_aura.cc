@@ -34,6 +34,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "extensions/shell/browser/shell_screen.h"
 #include "extensions/shell/common/switches.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/chromeos/user_activity_power_manager_notifier.h"
 #include "ui/display/types/display_mode.h"
@@ -209,7 +210,8 @@ void ShellDesktopControllerAura::PowerButtonEventReceived(
   if (down) {
     chromeos::DBusThreadManager::Get()
         ->GetPowerManagerClient()
-        ->RequestShutdown();
+        ->RequestShutdown(power_manager::REQUEST_SHUTDOWN_FOR_USER,
+                          "AppShell power button");
   }
 }
 

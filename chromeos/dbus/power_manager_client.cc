@@ -202,14 +202,32 @@ class PowerManagerClientImpl : public PowerManagerClient {
     SimpleMethodCallToPowerManager(power_manager::kRequestSuspendMethod);
   }
 
-  void RequestRestart() override {
-    POWER_LOG(USER) << "RequestRestart";
-    SimpleMethodCallToPowerManager(power_manager::kRequestRestartMethod);
+  void RequestRestart(power_manager::RequestRestartReason reason,
+                      const std::string& description) override {
+    POWER_LOG(USER) << "RequestRestart: " << reason << " (" << description
+                    << ")";
+    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
+                                 power_manager::kRequestRestartMethod);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendInt32(reason);
+    writer.AppendString(description);
+    power_manager_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        dbus::ObjectProxy::EmptyResponseCallback());
   }
 
-  void RequestShutdown() override {
-    POWER_LOG(USER) << "RequestShutdown";
-    SimpleMethodCallToPowerManager(power_manager::kRequestShutdownMethod);
+  void RequestShutdown(power_manager::RequestShutdownReason reason,
+                       const std::string& description) override {
+    POWER_LOG(USER) << "RequestShutdown: " << reason << " (" << description
+                    << ")";
+    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
+                                 power_manager::kRequestShutdownMethod);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendInt32(reason);
+    writer.AppendString(description);
+    power_manager_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        dbus::ObjectProxy::EmptyResponseCallback());
   }
 
   void NotifyUserActivity(power_manager::UserActivityType type) override {

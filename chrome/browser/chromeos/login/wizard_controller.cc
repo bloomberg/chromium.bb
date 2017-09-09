@@ -103,6 +103,7 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_types.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/accelerators/accelerator.h"
 
 using content::BrowserThread;
@@ -1365,7 +1366,8 @@ void WizardController::AddNetworkRequested(const std::string& onc_spec) {
 }
 
 void WizardController::RebootHostRequested() {
-  DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
+  DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart(
+      power_manager::REQUEST_RESTART_OTHER, "login wizard reboot host");
 }
 
 void WizardController::OnEnableDebuggingScreenRequested() {

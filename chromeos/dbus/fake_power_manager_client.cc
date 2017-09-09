@@ -75,11 +75,15 @@ void FakePowerManagerClient::RequestStatusUpdate() {
 
 void FakePowerManagerClient::RequestSuspend() {}
 
-void FakePowerManagerClient::RequestRestart() {
+void FakePowerManagerClient::RequestRestart(
+    power_manager::RequestRestartReason reason,
+    const std::string& description) {
   ++num_request_restart_calls_;
 }
 
-void FakePowerManagerClient::RequestShutdown() {
+void FakePowerManagerClient::RequestShutdown(
+    power_manager::RequestShutdownReason reason,
+    const std::string& description) {
   ++num_request_shutdown_calls_;
 }
 

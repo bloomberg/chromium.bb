@@ -26,7 +26,7 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
 namespace {
@@ -208,7 +208,8 @@ void ResetScreen::OnRestart() {
   prefs->SetBoolean(prefs::kFactoryResetRequested, true);
   prefs->CommitPendingWrite();
 
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart(
+      power_manager::REQUEST_RESTART_FOR_USER, "login reset screen restart");
 }
 
 void ResetScreen::OnToggleRollback() {
@@ -273,7 +274,8 @@ void ResetScreen::UpdateStatusChanged(
     get_base_screen_delegate()->ShowErrorScreen();
   } else if (status.status ==
       UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT) {
-    DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
+    DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart(
+        power_manager::REQUEST_RESTART_FOR_UPDATE, "login reset screen update");
   }
 }
 

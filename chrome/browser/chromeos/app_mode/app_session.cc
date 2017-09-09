@@ -44,6 +44,7 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 using extensions::AppWindow;
 using extensions::AppWindowRegistry;
@@ -60,7 +61,8 @@ bool IsPepperPlugin(const base::FilePath& plugin_path) {
 }
 
 void RebootDevice() {
-  DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
+  DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart(
+      power_manager::REQUEST_RESTART_OTHER, "kiosk app session");
 }
 
 // Sends a SIGFPE signal to plugin subprocesses that matches |child_ids|

@@ -1216,7 +1216,8 @@ void SigninScreenHandler::HandleShutdownSystem() {
 }
 
 void SigninScreenHandler::HandleRebootSystem() {
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart(
+      power_manager::REQUEST_RESTART_FOR_USER, "WebUI signin screen");
 }
 
 void SigninScreenHandler::HandleRemoveUser(const AccountId& account_id) {

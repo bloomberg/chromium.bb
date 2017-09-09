@@ -39,6 +39,7 @@
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace chromeos {
@@ -314,7 +315,8 @@ void ErrorScreen::OnLocalStateErrorPowerwashButtonClicked() {
 }
 
 void ErrorScreen::OnRebootButtonClicked() {
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart(
+      power_manager::REQUEST_RESTART_FOR_USER, "login error screen");
 }
 
 void ErrorScreen::OnConnectRequested() {
