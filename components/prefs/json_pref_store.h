@@ -21,9 +21,9 @@
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "base/task_scheduler/post_task.h"
-#include "components/prefs/base_prefs_export.h"
 #include "components/prefs/persistent_pref_store.h"
 #include "components/prefs/pref_filter.h"
+#include "components/prefs/prefs_export.h"
 
 class PrefFilter;
 

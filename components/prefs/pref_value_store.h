@@ -14,8 +14,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
-#include "components/prefs/base_prefs_export.h"
 #include "components/prefs/pref_store.h"
+#include "components/prefs/prefs_export.h"
 
 class PersistentPrefStore;
 class PrefNotifier;

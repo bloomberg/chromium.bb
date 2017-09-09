@@ -15,9 +15,9 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
-#include "components/prefs/base_prefs_export.h"
 #include "components/prefs/pref_notifier.h"
 #include "components/prefs/pref_observer.h"
+#include "components/prefs/prefs_export.h"
 
 class PrefService;
 

@@ -12,8 +12,8 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "components/prefs/base_prefs_export.h"
 #include "components/prefs/pref_value_map.h"
+#include "components/prefs/prefs_export.h"
 #include "components/prefs/writeable_pref_store.h"
 
 // A basic PrefStore implementation that uses a simple name-value map for

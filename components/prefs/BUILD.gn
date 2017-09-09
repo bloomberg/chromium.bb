@@ -4,7 +4,6 @@
 
 component("prefs") {
   sources = [
-    "base_prefs_export.h",
     "command_line_pref_store.cc",
     "command_line_pref_store.h",
     "default_pref_store.cc",
@@ -40,6 +39,7 @@ component("prefs") {
     "pref_value_map.h",
     "pref_value_store.cc",
     "pref_value_store.h",
+    "prefs_export.h",
     "scoped_user_pref_update.cc",
     "scoped_user_pref_update.h",
     "value_map_pref_store.cc",

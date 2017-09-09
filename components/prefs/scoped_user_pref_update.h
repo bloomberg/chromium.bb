@@ -13,8 +13,8 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/values.h"
-#include "components/prefs/base_prefs_export.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/prefs_export.h"
 
 class PrefService;
 

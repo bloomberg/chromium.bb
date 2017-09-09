@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "components/prefs/base_prefs_export.h"
+#include "components/prefs/prefs_export.h"
 #include "components/prefs/writeable_pref_store.h"
 
 // This interface is complementary to the PrefStore interface, declaring
