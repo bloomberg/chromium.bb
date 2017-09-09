@@ -531,15 +531,6 @@ void VRDisplay::BeginPresent() {
   }
 
   if (doc) {
-    // TODO(mthiesse, crbug.com/756476): Remove this hack once crbug.com/756476
-    // is fixed. On Android, page visibilty state is set long after the page
-    // actually becomes visible, and can lead to webVR drawing frames before the
-    // page thinks it's visible. The page must be visible at this point if the
-    // presentation request was granted.
-    doc->GetPage()->SetVisibilityState(kPageVisibilityStateVisible, false);
-  }
-
-  if (doc) {
     Platform::Current()->RecordRapporURL("VR.WebVR.PresentSuccess",
                                          WebURL(doc->Url()));
   }
@@ -619,22 +610,21 @@ void VRDisplay::submitFrame() {
   TRACE_EVENT1("gpu", "submitFrame", "frame", vr_frame_id_);
 
   Document* doc = this->GetDocument();
+  if (!doc)
+    return;
+
   if (!is_presenting_) {
-    if (doc) {
-      doc->AddConsoleMessage(ConsoleMessage::Create(
-          kRenderingMessageSource, kWarningMessageLevel,
-          "submitFrame has no effect when the VRDisplay is not presenting."));
-    }
+    doc->AddConsoleMessage(ConsoleMessage::Create(
+        kRenderingMessageSource, kWarningMessageLevel,
+        "submitFrame has no effect when the VRDisplay is not presenting."));
     return;
   }
 
   if (!in_animation_frame_) {
-    if (doc) {
-      doc->AddConsoleMessage(
-          ConsoleMessage::Create(kRenderingMessageSource, kWarningMessageLevel,
-                                 "submitFrame must be called within a "
-                                 "VRDisplay.requestAnimationFrame callback."));
-    }
+    doc->AddConsoleMessage(
+        ConsoleMessage::Create(kRenderingMessageSource, kWarningMessageLevel,
+                               "submitFrame must be called within a "
+                               "VRDisplay.requestAnimationFrame callback."));
     return;
   }
 
@@ -649,6 +639,12 @@ void VRDisplay::submitFrame() {
     // submit without a frameId and associated pose data. Just drop it.
     return;
   }
+
+  // Can't submit frames when the page isn't visible. This can happen  because
+  // we don't use the unified BeginFrame rendering path for WebVR so visibility
+  // updates aren't synchronized with WebVR VSync.
+  if (!doc->GetPage()->IsPageVisible())
+    return;
 
   // Check if the canvas got resized, if yes send a bounds update.
   int current_width = rendering_context_->drawingBufferWidth();
