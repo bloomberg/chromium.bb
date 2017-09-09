@@ -5,13 +5,14 @@
 #ifndef NGOffsetMappingResult_h
 #define NGOffsetMappingResult_h
 
+#include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
 
-class LayoutText;
+class Node;
 
 enum class NGOffsetMappingUnitType { kIdentity, kCollapsed, kExpanded };
 
@@ -34,14 +35,15 @@ class NGOffsetMappingUnit {
 
  public:
   NGOffsetMappingUnit(NGOffsetMappingUnitType,
-                      const LayoutText*,
+                      const Node&,
                       unsigned dom_start,
                       unsigned dom_end,
                       unsigned text_content_start,
                       unsigned text_content_end);
+  ~NGOffsetMappingUnit();
 
   NGOffsetMappingUnitType GetType() const { return type_; }
-  const LayoutText* GetOwner() const { return owner_; }
+  const Node& GetOwner() const { return *owner_; }
   unsigned DOMStart() const { return dom_start_; }
   unsigned DOMEnd() const { return dom_end_; }
   unsigned TextContentStart() const { return text_content_start_; }
@@ -52,13 +54,7 @@ class NGOffsetMappingUnit {
  private:
   const NGOffsetMappingUnitType type_ = NGOffsetMappingUnitType::kIdentity;
 
-  // Ideally, we should store |Node| as owner, instead of |LayoutObject|.
-  // However, we need to ensure the invariant that, units of the same owner are
-  // consecutive in |NGOffsetMappingResult::units|. There is a tricky case in
-  // ::first-letter handling that, the first letter and remaining text are not
-  // even laid out in the same block. As a workaround, we store |LayoutObject|.
-  const LayoutText* const owner_;
-
+  const Persistent<const Node> owner_;
   const unsigned dom_start_;
   const unsigned dom_end_;
   const unsigned text_content_start_;
@@ -72,15 +68,17 @@ class NGOffsetMappingUnit {
 class NGOffsetMappingResult {
  public:
   using UnitVector = Vector<NGOffsetMappingUnit>;
-  using RangeMap = HashMap<const LayoutText*, std::pair<unsigned, unsigned>>;
+  using RangeMap =
+      HashMap<Persistent<const Node>, std::pair<unsigned, unsigned>>;
 
   NGOffsetMappingResult(NGOffsetMappingResult&&);
   NGOffsetMappingResult(UnitVector&&, RangeMap&&);
+  ~NGOffsetMappingResult();
 
   const UnitVector& GetUnits() const { return units_; }
   const RangeMap& GetRanges() const { return ranges_; }
 
-  const NGOffsetMappingUnit* GetMappingUnitForDOMOffset(const LayoutText*,
+  const NGOffsetMappingUnit* GetMappingUnitForDOMOffset(const Node&,
                                                         unsigned) const;
 
  private:
