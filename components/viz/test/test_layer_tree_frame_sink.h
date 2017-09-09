@@ -75,6 +75,11 @@ class TestLayerTreeFrameSink : public cc::LayerTreeFrameSink,
     enlarge_pass_texture_amount_ = s;
   }
 
+  // Forward the color space to the existant Display, or the new one when it is
+  // created.
+  void SetDisplayColorSpace(const gfx::ColorSpace& blending_color_space,
+                            const gfx::ColorSpace& output_color_space);
+
   Display* display() const { return display_.get(); }
 
   // Will be included with the next SubmitCompositorFrame.
@@ -124,6 +129,8 @@ class TestLayerTreeFrameSink : public cc::LayerTreeFrameSink,
   LocalSurfaceId local_surface_id_;
   gfx::Size display_size_;
   float device_scale_factor_ = 0;
+  gfx::ColorSpace blending_color_space_ = gfx::ColorSpace::CreateSRGB();
+  gfx::ColorSpace output_color_space_ = gfx::ColorSpace::CreateSRGB();
 
   // Uses surface_manager_.
   std::unique_ptr<CompositorFrameSinkSupport> support_;

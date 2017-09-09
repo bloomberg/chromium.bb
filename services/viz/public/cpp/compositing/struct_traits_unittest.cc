@@ -1232,6 +1232,8 @@ TEST_F(StructTraitsTest, CopyOutputResult_Texture) {
   base::test::ScopedTaskEnvironment scoped_task_environment;
 
   const gfx::Rect result_rect(12, 34, 56, 78);
+  const gfx::ColorSpace result_color_space =
+      gfx::ColorSpace::CreateDisplayP3D65();
   const int8_t mailbox_name[GL_MAILBOX_SIZE_CHROMIUM] = {
       0, 9, 8, 7, 6, 5, 4, 3, 2, 1, 9, 7, 5, 3, 1, 3};
   const uint32_t target = 3;
@@ -1250,6 +1252,7 @@ TEST_F(StructTraitsTest, CopyOutputResult_Texture) {
   gpu::Mailbox mailbox;
   mailbox.SetName(mailbox_name);
   TextureMailbox texture_mailbox(mailbox, gpu::SyncToken(), target);
+  texture_mailbox.set_color_space(result_color_space);
   std::unique_ptr<CopyOutputResult> input =
       std::make_unique<CopyOutputTextureResult>(result_rect, texture_mailbox,
                                                 std::move(callback));
@@ -1262,6 +1265,7 @@ TEST_F(StructTraitsTest, CopyOutputResult_Texture) {
   EXPECT_EQ(output->rect(), result_rect);
   ASSERT_NE(output->GetTextureMailbox(), nullptr);
   EXPECT_EQ(output->GetTextureMailbox()->mailbox(), mailbox);
+  EXPECT_EQ(output->GetTextureMailbox()->color_space(), result_color_space);
 
   std::unique_ptr<SingleReleaseCallback> out_callback =
       output->TakeTextureOwnership();

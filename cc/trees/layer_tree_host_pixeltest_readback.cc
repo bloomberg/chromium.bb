@@ -13,6 +13,7 @@
 #include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/common/quads/copy_output_result.h"
 #include "components/viz/test/paths.h"
+#include "components/viz/test/test_layer_tree_frame_sink.h"
 
 #if !defined(OS_ANDROID)
 
@@ -129,6 +130,7 @@ class LayerTreeHostReadbackPixelTest
       release_callback = result->TakeTextureOwnership();
     }
     ASSERT_TRUE(texture_mailbox.IsTexture());
+    EXPECT_EQ(texture_mailbox.color_space(), output_color_space_);
 
     const SkBitmap bitmap =
         CopyTextureMailboxToBitmap(result->size(), texture_mailbox);
@@ -140,6 +142,7 @@ class LayerTreeHostReadbackPixelTest
 
   ReadbackType readback_type_;
   gfx::Rect copy_subrect_;
+  gfx::ColorSpace output_color_space_ = gfx::ColorSpace::CreateSRGB();
   int insert_copy_request_after_frame_count_;
 };
 
@@ -555,6 +558,55 @@ INSTANTIATE_TEST_CASE_P(
                            READBACK_DEFAULT),
         ReadbackTestConfig(LayerTreeHostReadbackPixelTest::PIXEL_TEST_GL,
                            READBACK_BITMAP)));
+
+class LayerTreeHostReadbackColorSpacePixelTest
+    : public LayerTreeHostReadbackPixelTest {
+ protected:
+  LayerTreeHostReadbackColorSpacePixelTest()
+      : green_client_(SK_ColorGREEN, gfx::Size(200, 200)) {
+    output_color_space_ = gfx::ColorSpace::CreateDisplayP3D65();
+  }
+
+  std::unique_ptr<viz::TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
+      const viz::RendererSettings& renderer_settings,
+      double refresh_rate,
+      scoped_refptr<viz::ContextProvider> compositor_context_provider,
+      scoped_refptr<viz::ContextProvider> worker_context_provider) override {
+    std::unique_ptr<viz::TestLayerTreeFrameSink> frame_sink =
+        LayerTreePixelTest::CreateLayerTreeFrameSink(
+            renderer_settings, refresh_rate, compositor_context_provider,
+            worker_context_provider);
+    frame_sink->SetDisplayColorSpace(output_color_space_, output_color_space_);
+    return frame_sink;
+  }
+
+  SolidColorContentLayerClient green_client_;
+};
+
+TEST_P(LayerTreeHostReadbackColorSpacePixelTest, Readback) {
+  scoped_refptr<FakePictureLayer> background =
+      FakePictureLayer::Create(&green_client_);
+  background->SetBounds(gfx::Size(200, 200));
+  background->SetIsDrawable(true);
+
+  if (GetParam().pixel_test_type == PIXEL_TEST_SOFTWARE) {
+    // Software compositing doesn't support color conversion, so the result will
+    // come out in sRGB, regardless of the display's color properties.
+    RunReadbackTest(GetParam().pixel_test_type, GetParam().readback_type,
+                    background, base::FilePath(FILE_PATH_LITERAL("green.png")));
+  } else {
+    // GL compositing will convert the sRGB green into P3.
+    RunReadbackTest(GetParam().pixel_test_type, GetParam().readback_type,
+                    background,
+                    base::FilePath(FILE_PATH_LITERAL("srgb_green_in_p3.png")));
+  }
+}
+
+INSTANTIATE_TEST_CASE_P(LayerTreeHostReadbackColorSpacePixelTests,
+                        LayerTreeHostReadbackColorSpacePixelTest,
+                        ::testing::Values(ReadbackTestConfig(
+                            LayerTreeHostReadbackPixelTest::PIXEL_TEST_GL,
+                            READBACK_BITMAP)));
 
 }  // namespace
 }  // namespace cc

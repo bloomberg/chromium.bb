@@ -78,6 +78,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public cc::DirectRenderer {
   }
 
   void GetFramebufferPixelsAsync(const gfx::Rect& rect,
+                                 const gfx::ColorSpace& framebuffer_color_space,
                                  std::unique_ptr<CopyOutputRequest> request);
   void GetFramebufferTexture(unsigned texture_id, const gfx::Rect& device_rect);
   void ReleaseRenderPassTextures();
@@ -244,7 +245,8 @@ class VIZ_SERVICE_EXPORT GLRenderer : public cc::DirectRenderer {
       AsyncGetFramebufferPixelsCleanupCallback;
   void FinishedReadback(unsigned source_buffer,
                         unsigned query,
-                        const gfx::Size& size);
+                        const gfx::Size& size,
+                        const gfx::ColorSpace& framebuffer_color_space);
 
   void ReinitializeGLState();
   void RestoreGLState();
