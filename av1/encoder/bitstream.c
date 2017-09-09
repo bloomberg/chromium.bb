@@ -3153,10 +3153,10 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
   // send filter level for each superblock (64x64)
   if (bsize == cm->sb_size) {
     if (mi_row == 0 && mi_col == 0) {
-      aom_write_literal(
-          w,
-          cm->mi_grid_visible[mi_row * cm->mi_stride + mi_col]->mbmi.filt_lvl,
-          6);
+      aom_write_literal(w, cm->mi_grid_visible[0]->mbmi.filt_lvl, 6);
+      cm->mi_grid_visible[0]->mbmi.reuse_sb_lvl = 0;
+      cm->mi_grid_visible[0]->mbmi.delta = 0;
+      cm->mi_grid_visible[0]->mbmi.sign = 0;
     } else {
       int prev_mi_row, prev_mi_col;
       if (mi_col - MAX_MIB_SIZE < 0) {
@@ -3174,13 +3174,31 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
       const uint8_t curr_lvl = curr_mbmi->filt_lvl;
       const uint8_t prev_lvl = prev_mbmi->filt_lvl;
 
-      aom_write_literal(w, curr_lvl == prev_lvl, 1);
-      if (curr_lvl != prev_lvl) {
-        const int sign = curr_lvl > prev_lvl;
-        const unsigned int delta = abs(curr_lvl - prev_lvl) / LPF_STEP;
+      const int reuse_prev_lvl = curr_lvl == prev_lvl;
+      const int reuse_ctx = prev_mbmi->reuse_sb_lvl;
+      curr_mbmi->reuse_sb_lvl = reuse_prev_lvl;
+      aom_write_symbol(w, reuse_prev_lvl,
+                       xd->tile_ctx->lpf_reuse_cdf[reuse_ctx], 2);
 
-        aom_write_literal(w, delta, LPF_DELTA_BITS);
-        if (delta) aom_write_literal(w, sign, 1);
+      if (reuse_prev_lvl) {
+        curr_mbmi->delta = 0;
+        curr_mbmi->sign = 0;
+      } else {
+        const unsigned int delta = abs(curr_lvl - prev_lvl) / LPF_STEP;
+        const int delta_ctx = prev_mbmi->delta;
+        curr_mbmi->delta = delta;
+        aom_write_symbol(w, delta, xd->tile_ctx->lpf_delta_cdf[delta_ctx],
+                         DELTA_RANGE);
+
+        if (delta) {
+          const int sign = curr_lvl > prev_lvl;
+          const int sign_ctx = prev_mbmi->sign;
+          curr_mbmi->sign = sign;
+          aom_write_symbol(w, sign,
+                           xd->tile_ctx->lpf_sign_cdf[reuse_ctx][sign_ctx], 2);
+        } else {
+          curr_mbmi->sign = 0;
+        }
       }
     }
   }

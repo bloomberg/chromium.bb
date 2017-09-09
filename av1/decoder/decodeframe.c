@@ -2579,6 +2579,9 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
     int filt_lvl;
     if (mi_row == 0 && mi_col == 0) {
       filt_lvl = aom_read_literal(r, 6, ACCT_STR);
+      cm->mi_grid_visible[0]->mbmi.reuse_sb_lvl = 0;
+      cm->mi_grid_visible[0]->mbmi.delta = 0;
+      cm->mi_grid_visible[0]->mbmi.sign = 0;
     } else {
       int prev_mi_row, prev_mi_col;
       if (mi_col - MAX_MIB_SIZE < 0) {
@@ -2589,22 +2592,37 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
         prev_mi_col = mi_col - MAX_MIB_SIZE;
       }
 
-      const uint8_t prev_lvl =
-          cm->mi_grid_visible[prev_mi_row * cm->mi_stride + prev_mi_col]
-              ->mbmi.filt_lvl;
+      MB_MODE_INFO *curr_mbmi =
+          &cm->mi_grid_visible[mi_row * cm->mi_stride + mi_col]->mbmi;
+      MB_MODE_INFO *prev_mbmi =
+          &cm->mi_grid_visible[prev_mi_row * cm->mi_stride + prev_mi_col]->mbmi;
+      const uint8_t prev_lvl = prev_mbmi->filt_lvl;
 
-      const int reuse_prev_lvl = aom_read_literal(r, 1, ACCT_STR);
+      const int reuse_ctx = prev_mbmi->reuse_sb_lvl;
+      const int reuse_prev_lvl = aom_read_symbol(
+          r, xd->tile_ctx->lpf_reuse_cdf[reuse_ctx], 2, ACCT_STR);
+      curr_mbmi->reuse_sb_lvl = reuse_prev_lvl;
+
       if (reuse_prev_lvl) {
         filt_lvl = prev_lvl;
+        curr_mbmi->delta = 0;
+        curr_mbmi->sign = 0;
       } else {
-        unsigned int delta = aom_read_literal(r, LPF_DELTA_BITS, ACCT_STR);
+        const int delta_ctx = prev_mbmi->delta;
+        unsigned int delta = aom_read_symbol(
+            r, xd->tile_ctx->lpf_delta_cdf[delta_ctx], DELTA_RANGE, ACCT_STR);
+        curr_mbmi->delta = delta;
         delta *= LPF_STEP;
 
         if (delta) {
-          const int sign = aom_read_literal(r, 1, ACCT_STR);
+          const int sign_ctx = prev_mbmi->sign;
+          const int sign = aom_read_symbol(
+              r, xd->tile_ctx->lpf_sign_cdf[reuse_ctx][sign_ctx], 2, ACCT_STR);
+          curr_mbmi->sign = sign;
           filt_lvl = sign ? prev_lvl + delta : prev_lvl - delta;
         } else {
           filt_lvl = prev_lvl;
+          curr_mbmi->sign = 0;
         }
       }
     }

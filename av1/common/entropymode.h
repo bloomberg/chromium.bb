@@ -405,6 +405,11 @@ typedef struct frame_contexts {
   aom_cdf_prob cfl_sign_cdf[CDF_SIZE(CFL_JOINT_SIGNS)];
   aom_cdf_prob cfl_alpha_cdf[CFL_ALPHA_CONTEXTS][CDF_SIZE(CFL_ALPHABET_SIZE)];
 #endif
+#if CONFIG_LPF_SB
+  aom_cdf_prob lpf_reuse_cdf[LPF_REUSE_CONTEXT][CDF_SIZE(2)];
+  aom_cdf_prob lpf_delta_cdf[LPF_DELTA_CONTEXT][CDF_SIZE(DELTA_RANGE)];
+  aom_cdf_prob lpf_sign_cdf[LPF_REUSE_CONTEXT][LPF_SIGN_CONTEXT][CDF_SIZE(2)];
+#endif  // CONFIG_LPF_SB
 } FRAME_CONTEXT;
 
 typedef struct FRAME_COUNTS {
@@ -556,6 +561,11 @@ typedef struct FRAME_COUNTS {
 #if CONFIG_FILTER_INTRA
   unsigned int filter_intra[PLANE_TYPES][2];
 #endif  // CONFIG_FILTER_INTRA
+#if CONFIG_LPF_SB
+  unsigned int lpf_reuse[LPF_REUSE_CONTEXT][2];
+  unsigned int lpf_delta[LPF_DELTA_CONTEXT][DELTA_RANGE];
+  unsigned int lpf_sign[LPF_SIGN_CONTEXT][2];
+#endif  // CONFIG_LPF_SB
 } FRAME_COUNTS;
 
 #if CONFIG_KF_CTX
