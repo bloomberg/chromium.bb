@@ -5,6 +5,7 @@
 #include "core/layout/ng/inline/ng_offset_mapping_builder.h"
 
 #include "core/layout/LayoutText.h"
+#include "core/layout/LayoutTextFragment.h"
 #include "core/layout/ng/inline/ng_offset_mapping_result.h"
 
 namespace blink {
@@ -20,6 +21,15 @@ NGOffsetMappingUnitType GetUnitLengthMappingType(unsigned value) {
   return NGOffsetMappingUnitType::kExpanded;
 }
 
+// Returns the associated node of a possibly null LayoutText.
+const Node* GetAssociatedNode(const LayoutText* layout_text) {
+  if (!layout_text)
+    return nullptr;
+  if (layout_text->IsTextFragment())
+    return ToLayoutTextFragment(layout_text)->AssociatedTextNode();
+  return layout_text->GetNode();
+}
+
 // Finds the offset mapping unit starting from index |start|.
 std::pair<NGOffsetMappingUnitType, unsigned> GetMappingUnitTypeAndEnd(
     const Vector<unsigned>& mapping,
@@ -33,7 +43,8 @@ std::pair<NGOffsetMappingUnitType, unsigned> GetMappingUnitTypeAndEnd(
 
   unsigned end = start + 1;
   for (; end + 1 < mapping.size(); ++end) {
-    if (annotation[end] != annotation[start])
+    if (GetAssociatedNode(annotation[end]) !=
+        GetAssociatedNode(annotation[start]))
       break;
     NGOffsetMappingUnitType next_type =
         GetUnitLengthMappingType(mapping[end + 1] - mapping[end]);
@@ -106,21 +117,24 @@ NGOffsetMappingResult NGOffsetMappingBuilder::Build() const {
   NGOffsetMappingResult::UnitVector units;
   NGOffsetMappingResult::RangeMap ranges;
 
-  const LayoutText* current_node = nullptr;
+  const Node* current_node = nullptr;
   unsigned inline_start = 0;
   unsigned unit_range_start = 0;
+  unsigned remaining_text_offset = 0;
   for (unsigned start = 0; start + 1 < mapping_.size();) {
-    if (annotation_[start] != current_node) {
+    if (GetAssociatedNode(annotation_[start]) != current_node) {
       if (current_node) {
         ranges.insert(current_node,
                       std::make_pair(unit_range_start, units.size()));
       }
-      current_node = annotation_[start];
+      current_node = GetAssociatedNode(annotation_[start]);
       inline_start = start;
       unit_range_start = units.size();
+      remaining_text_offset =
+          annotation_[start] ? annotation_[start]->TextStartOffset() : 0;
     }
 
-    if (!annotation_[start]) {
+    if (!current_node) {
       // Only extra characters are not annotated.
       DCHECK_EQ(mapping_[start] + 1, mapping_[start + 1]);
       ++start;
@@ -130,11 +144,11 @@ NGOffsetMappingResult NGOffsetMappingBuilder::Build() const {
     auto type_and_end = GetMappingUnitTypeAndEnd(mapping_, annotation_, start);
     NGOffsetMappingUnitType type = type_and_end.first;
     unsigned end = type_and_end.second;
-    unsigned dom_start = start - inline_start + current_node->TextStartOffset();
-    unsigned dom_end = end - inline_start + current_node->TextStartOffset();
+    unsigned dom_start = start - inline_start + remaining_text_offset;
+    unsigned dom_end = end - inline_start + remaining_text_offset;
     unsigned text_content_start = mapping_[start];
     unsigned text_content_end = mapping_[end];
-    units.emplace_back(type, current_node, dom_start, dom_end,
+    units.emplace_back(type, *current_node, dom_start, dom_end,
                        text_content_start, text_content_end);
 
     start = end;

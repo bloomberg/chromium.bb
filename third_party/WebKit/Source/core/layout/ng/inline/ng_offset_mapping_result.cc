@@ -4,20 +4,24 @@
 
 #include "core/layout/ng/inline/ng_offset_mapping_result.h"
 
+#include "core/dom/Node.h"
+
 namespace blink {
 
 NGOffsetMappingUnit::NGOffsetMappingUnit(NGOffsetMappingUnitType type,
-                                         const LayoutText* owner,
+                                         const Node& node,
                                          unsigned dom_start,
                                          unsigned dom_end,
                                          unsigned text_content_start,
                                          unsigned text_content_end)
     : type_(type),
-      owner_(owner),
+      owner_(&node),
       dom_start_(dom_start),
       dom_end_(dom_end),
       text_content_start_(text_content_start),
       text_content_end_(text_content_end) {}
+
+NGOffsetMappingUnit::~NGOffsetMappingUnit() = default;
 
 unsigned NGOffsetMappingUnit::ConvertDOMOffsetToTextContent(
     unsigned offset) const {
@@ -44,12 +48,14 @@ NGOffsetMappingResult::NGOffsetMappingResult(UnitVector&& units,
                                              RangeMap&& ranges)
     : units_(units), ranges_(ranges) {}
 
+NGOffsetMappingResult::~NGOffsetMappingResult() = default;
+
 const NGOffsetMappingUnit* NGOffsetMappingResult::GetMappingUnitForDOMOffset(
-    const LayoutText* layout_text,
+    const Node& node,
     unsigned offset) const {
   unsigned range_start;
   unsigned range_end;
-  std::tie(range_start, range_end) = ranges_.at(layout_text);
+  std::tie(range_start, range_end) = ranges_.at(&node);
   if (range_start == range_end || units_[range_start].DOMStart() > offset)
     return nullptr;
   // Find the last unit where unit.dom_start <= offset

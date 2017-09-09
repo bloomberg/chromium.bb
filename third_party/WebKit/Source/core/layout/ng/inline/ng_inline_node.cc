@@ -773,13 +773,8 @@ Optional<NGInlineNode> GetNGInlineNodeFor(const Node& node, unsigned offset) {
 const NGOffsetMappingUnit* NGInlineNode::GetMappingUnitForDOMOffset(
     const Node& node,
     unsigned offset) {
-  const LayoutObject* layout_object = AssociatedLayoutObjectOf(node, offset);
-  if (!layout_object || !layout_object->IsText())
-    return nullptr;
-
-  DCHECK_EQ(layout_object->EnclosingBox(), GetLayoutBlockFlow());
   const auto& result = ComputeOffsetMappingIfNeeded();
-  return result.GetMappingUnitForDOMOffset(ToLayoutText(layout_object), offset);
+  return result.GetMappingUnitForDOMOffset(node, offset);
 }
 
 size_t NGInlineNode::GetTextContentOffset(const Node& node, unsigned offset) {
