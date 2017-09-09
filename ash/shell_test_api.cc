@@ -49,8 +49,7 @@ void ShellTestApi::OnLocalStatePrefServiceInitialized(
 }
 
 void ShellTestApi::ResetPowerButtonControllerForTest() {
-  shell_->power_button_controller_ =
-      std::make_unique<PowerButtonController>(shell_->lock_state_controller());
+  shell_->power_button_controller_ = std::make_unique<PowerButtonController>();
 }
 
 }  // namespace ash

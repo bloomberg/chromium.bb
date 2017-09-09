@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -30,7 +31,7 @@ class ASH_EXPORT PowerButtonController
       public chromeos::PowerManagerClient::Observer,
       public chromeos::AccelerometerReader::Observer {
  public:
-  explicit PowerButtonController(LockStateController* controller);
+  PowerButtonController();
   ~PowerButtonController() override;
 
   void set_has_legacy_power_button_for_test(bool legacy) {
@@ -58,6 +59,9 @@ class ASH_EXPORT PowerButtonController
   // Overridden from chromeos::AccelerometerReader::Observer:
   void OnAccelerometerUpdated(
       scoped_refptr<const chromeos::AccelerometerUpdate> update) override;
+
+  // Overrides the tick clock used by |this| for testing.
+  void SetTickClockForTesting(std::unique_ptr<base::TickClock> tick_clock);
 
   TabletPowerButtonController* tablet_power_button_controller_for_test() {
     return tablet_controller_.get();
@@ -96,6 +100,9 @@ class ASH_EXPORT PowerButtonController
   bool force_clamshell_power_button_ = false;
 
   LockStateController* lock_state_controller_;  // Not owned.
+
+  // Time source for performed action times.
+  std::unique_ptr<base::TickClock> tick_clock_;
 
   // Used to interact with the display.
   std::unique_ptr<PowerButtonDisplayController> display_controller_;
