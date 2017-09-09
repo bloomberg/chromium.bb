@@ -81,7 +81,7 @@ MITMSoftwareBlockingPage::MITMSoftwareBlockingPage(
           web_contents,
           request_url,
           ssl_info,
-          certificate_reporting::ErrorReport::INTERSTITIAL_CLOCK,
+          certificate_reporting::ErrorReport::INTERSTITIAL_MITM_SOFTWARE,
           false /* overridable */,
           base::Time::Now(),
           nullptr)),

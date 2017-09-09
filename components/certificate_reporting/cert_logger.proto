@@ -37,6 +37,8 @@ message CertLoggerInterstitialInfo {
     // An interstitial telling the user to remove the Superfish software from
     // their system.
     INTERSTITIAL_SUPERFISH = 4;
+    // An interstitial telling the user to fix misconfigured MITM software.
+    INTERSTITIAL_MITM_SOFTWARE = 5;
   }
 
   // The type of interstitial that was shown

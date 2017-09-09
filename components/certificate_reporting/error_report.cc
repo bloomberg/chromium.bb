@@ -131,6 +131,10 @@ void ErrorReport::SetInterstitialInfo(
       interstitial_info->set_interstitial_reason(
           CertLoggerInterstitialInfo::INTERSTITIAL_SUPERFISH);
       break;
+    case INTERSTITIAL_MITM_SOFTWARE:
+      interstitial_info->set_interstitial_reason(
+          CertLoggerInterstitialInfo::INTERSTITIAL_MITM_SOFTWARE);
+      break;
   }
 
   interstitial_info->set_user_proceeded(proceed_decision == USER_PROCEEDED);
