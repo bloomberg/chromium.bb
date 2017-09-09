@@ -658,7 +658,7 @@ void LayoutTreeAsText::WriteLayers(TextStream& ts,
   LayoutRect layer_bounds;
   ClipRect damage_rect, clip_rect_to_apply;
   layer->Clipper(PaintLayer::kDoNotUseGeometryMapper)
-      .CalculateRects(ClipRectsContext(root_layer, kUncachedClipRects),
+      .CalculateRects(ClipRectsContext(root_layer, kUncachedClipRects), nullptr,
                       paint_rect, layer_bounds, damage_rect,
                       clip_rect_to_apply);
 

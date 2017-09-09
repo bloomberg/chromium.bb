@@ -1623,6 +1623,18 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Called when the previous visual rect(s) is no longer valid.
   virtual void ClearPreviousVisualRects();
 
+  // Visual offset of this LayoutObject's top-left position from the
+  // "paint offset root":
+  // - In SPv1 mode, this is the containing composited PaintLayer, or
+  //   PaintLayer with a transform, whichever is nearer along the containing
+  //   block chain.
+  // - In SPv2 mode, this is the containing root PaintLayer of the
+  //   root LocalFrameView, or PaintLayer with a transform, whichever is nearer
+  //   along the containing block chain.
+  // LayoutObject::PaintOffset does not take into account fragmentation.
+  // See also FragmentData::PaintOffset, which does take it into account.
+  // TODO(chrishtr): remove this field in favor of FragmentData::PaintOffset
+  // once paint invalidation is fully implemented for fragmentation.
   const LayoutPoint& PaintOffset() const { return paint_offset_; }
 
   PaintInvalidationReason FullPaintInvalidationReason() const {
@@ -1784,6 +1796,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // See ../paint/README.md for more on fragments.
     FragmentData* FirstFragment();
     FragmentData& EnsureFirstFragment();
+    void ClearFirstFragment();
 
     friend class LayoutObject;
     MutableForPainting(const LayoutObject& layout_object)

@@ -390,8 +390,7 @@ TEST_P(PaintPropertyTreeBuilderTest, Transform) {
       HTMLNames::styleAttr,
       "margin-left: 50px; margin-top: 100px; width: 400px; height: 300px;");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_EQ(nullptr,
-            transform->GetLayoutObject()->FirstFragment()->PaintProperties());
+  EXPECT_EQ(nullptr, transform->GetLayoutObject()->FirstFragment());
 
   transform->setAttribute(
       HTMLNames::styleAttr,
@@ -494,8 +493,7 @@ TEST_P(PaintPropertyTreeBuilderTest, WillChangeTransform) {
       HTMLNames::styleAttr,
       "margin-left: 50px; margin-top: 100px; width: 400px; height: 300px;");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_EQ(nullptr,
-            transform->GetLayoutObject()->FirstFragment()->PaintProperties());
+  EXPECT_EQ(nullptr, transform->GetLayoutObject()->FirstFragment());
 
   transform->setAttribute(
       HTMLNames::styleAttr,
@@ -2445,7 +2443,7 @@ TEST_P(PaintPropertyTreeBuilderTest, CachedProperties) {
             a->GetLayoutObject()->FirstFragment()->PaintProperties());
   EXPECT_EQ(a_transform_node, a_properties->Transform());
 
-  EXPECT_EQ(nullptr, b->GetLayoutObject()->FirstFragment()->PaintProperties());
+  EXPECT_EQ(nullptr, b->GetLayoutObject()->FirstFragment());
 
   EXPECT_EQ(c_properties,
             c->GetLayoutObject()->FirstFragment()->PaintProperties());
@@ -3078,6 +3076,25 @@ TEST_P(PaintPropertyTreeBuilderTest, MainThreadScrollReasonsWithoutScrolling) {
             nullptr);
 }
 
+static unsigned NumFragments(LayoutObject* obj) {
+  unsigned count = 0;
+  auto* fragment = obj->FirstFragment();
+  while (fragment) {
+    count++;
+    fragment = fragment->NextFragment();
+  }
+  return count;
+}
+
+static FragmentData& FragmentAt(LayoutObject* obj, unsigned count) {
+  auto* fragment = obj->FirstFragment();
+  while (count > 0) {
+    count--;
+    fragment = fragment->NextFragment();
+  }
+  return *fragment;
+}
+
 TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetsUnderMultiColumn) {
   SetBodyInnerHTML(
       "<style>"
@@ -3086,7 +3103,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetsUnderMultiColumn) {
       "  .abs { position: absolute; width: 20px; height: 20px; }"
       "</style>"
       "<div style='columns:2; width: 200px; column-gap: 0'>"
-      "  <div style='position: relative'>"
+      "  <div id=relpos style='position: relative'>"
       "    <div id=space1 class=space></div>"
       "    <div id=space2 class=space></div>"
       "    <div id=spanner style='column-span: all'>"
@@ -3098,6 +3115,69 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetsUnderMultiColumn) {
       "    <div id=space4 class=space></div>"
       "  </div>"
       "</div>");
+
+  LayoutObject* relpos = GetLayoutObjectByElementId("relpos");
+  EXPECT_EQ(4u, NumFragments(relpos));
+  EXPECT_EQ(LayoutPoint(0, 0), FragmentAt(relpos, 0).PaintOffset());
+  EXPECT_EQ(LayoutPoint(0, 0), FragmentAt(relpos, 0).PaginationOffset());
+  EXPECT_EQ(FloatRect(-1000000, -1000000, 1000100, 1000030),
+            FragmentAt(relpos, 0)
+                .PaintProperties()
+                ->FragmentClip()
+                ->ClipRect()
+                .Rect());
+
+  EXPECT_EQ(LayoutPoint(100, -30), FragmentAt(relpos, 1).PaintOffset());
+  EXPECT_EQ(LayoutPoint(100, -30), FragmentAt(relpos, 1).PaginationOffset());
+  EXPECT_EQ(FloatRect(100, 0, 1000000, 30), FragmentAt(relpos, 1)
+                                                .PaintProperties()
+                                                ->FragmentClip()
+                                                ->ClipRect()
+                                                .Rect());
+
+  EXPECT_EQ(LayoutPoint(0, 20), FragmentAt(relpos, 2).PaintOffset());
+  EXPECT_EQ(LayoutPoint(0, 20), FragmentAt(relpos, 2).PaginationOffset());
+  EXPECT_EQ(FloatRect(-1000000, 80, 1000100, 30), FragmentAt(relpos, 2)
+                                                      .PaintProperties()
+                                                      ->FragmentClip()
+                                                      ->ClipRect()
+                                                      .Rect());
+
+  EXPECT_EQ(LayoutPoint(100, -10), FragmentAt(relpos, 3).PaintOffset());
+  EXPECT_EQ(LayoutPoint(100, -10), FragmentAt(relpos, 3).PaginationOffset());
+  EXPECT_EQ(FloatRect(100, 80, 1000000, 999910), FragmentAt(relpos, 3)
+                                                     .PaintProperties()
+                                                     ->FragmentClip()
+                                                     ->ClipRect()
+                                                     .Rect());
+
+  LayoutObject* flowthread = GetLayoutObjectByElementId("relpos")->Parent();
+  EXPECT_EQ(4u, NumFragments(flowthread));
+  EXPECT_EQ(LayoutPoint(0, 0), FragmentAt(flowthread, 0).PaintOffset());
+  EXPECT_EQ(LayoutPoint(0, 0), FragmentAt(flowthread, 0).PaginationOffset());
+  EXPECT_EQ(
+      FragmentAt(flowthread, 0).PaintProperties()->FragmentClip()->ClipRect(),
+      FragmentAt(relpos, 0).PaintProperties()->FragmentClip()->ClipRect());
+
+  EXPECT_EQ(LayoutPoint(100, -30), FragmentAt(flowthread, 1).PaintOffset());
+  EXPECT_EQ(LayoutPoint(100, -30),
+            FragmentAt(flowthread, 1).PaginationOffset());
+  EXPECT_EQ(
+      FragmentAt(flowthread, 1).PaintProperties()->FragmentClip()->ClipRect(),
+      FragmentAt(relpos, 1).PaintProperties()->FragmentClip()->ClipRect());
+
+  EXPECT_EQ(LayoutPoint(0, 20), FragmentAt(flowthread, 2).PaintOffset());
+  EXPECT_EQ(LayoutPoint(0, 20), FragmentAt(flowthread, 2).PaginationOffset());
+  EXPECT_EQ(
+      FragmentAt(flowthread, 2).PaintProperties()->FragmentClip()->ClipRect(),
+      FragmentAt(relpos, 2).PaintProperties()->FragmentClip()->ClipRect());
+
+  EXPECT_EQ(LayoutPoint(100, -10), FragmentAt(flowthread, 3).PaintOffset());
+  EXPECT_EQ(LayoutPoint(100, -10),
+            FragmentAt(flowthread, 3).PaginationOffset());
+  EXPECT_EQ(
+      FragmentAt(flowthread, 3).PaintProperties()->FragmentClip()->ClipRect(),
+      FragmentAt(relpos, 3).PaintProperties()->FragmentClip()->ClipRect());
 
   // Above the spanner.
   // Column 1.

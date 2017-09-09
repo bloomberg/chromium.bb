@@ -28,6 +28,12 @@ void FragmentData::SetLocalBorderBoxProperties(PropertyTreeState& state) {
     *local_border_box_properties_ = state;
 }
 
+FragmentData& FragmentData::EnsureNextFragment() {
+  if (!next_fragment_)
+    next_fragment_ = FragmentData::Create();
+  return *next_fragment_.get();
+}
+
 PropertyTreeState FragmentData::ContentsProperties() const {
   DCHECK(local_border_box_properties_);
   PropertyTreeState contents(*local_border_box_properties_);

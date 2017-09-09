@@ -516,7 +516,6 @@ TEST_P(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent) {
                           kPaintLayerPaintingCompositingAllPhases);
   view->GetLayoutView()->GetDocument().Lifecycle().AdvanceTo(
       DocumentLifecycle::kPaintClean);
-
   builder.EndRecording()->Playback(&canvas);
 
   // The result should be a blend of red and green.

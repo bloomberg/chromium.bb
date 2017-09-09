@@ -107,6 +107,8 @@ LayoutRect PaintInvalidator::MapLocalRectToVisualRectInBacking(
     auto container_contents_properties =
         context.paint_invalidation_container->FirstFragment()
             ->ContentsProperties();
+    DCHECK(
+        !context.paint_invalidation_container->FirstFragment()->NextFragment());
     if (context.tree_builder_context_->current.transform ==
             container_contents_properties.Transform() &&
         context.tree_builder_context_->current.clip ==
@@ -388,10 +390,10 @@ void PaintInvalidator::UpdateVisualRectIfNeeded(
 
 void PaintInvalidator::UpdateVisualRect(const LayoutObject& object,
                                         PaintInvalidatorContext& context) {
-  // The paint offset should already be updated through
-  // PaintPropertyTreeBuilder::updatePropertiesForSelf.
-  DCHECK(context.tree_builder_context_->current.paint_offset ==
-         object.PaintOffset());
+  // TODO(chrishtr): re-enable this when invalidation for fragmented
+  // content is done.
+  // DCHECK(context.tree_builder_context_->current.paint_offset ==
+  //        object.PaintOffset());
 
   LayoutRect new_visual_rect = ComputeVisualRectInBacking(object, context);
   if (object.IsBoxModelObject()) {
@@ -485,7 +487,7 @@ void PaintInvalidator::InvalidatePaint(
 
   // TODO(crbug.com/637313): Use GeometryMapper which now supports filter
   // geometry effects, after skia optimizes filter's mapRect operation.
-  // TODO(crbug.com/648274): This is a workaround for multi-column contents.
+  // TODO(crbug.com/648274): implement fast path for fragmented content.
   if (object.HasFilterInducingProperty() || object.IsLayoutFlowThread()) {
     context.subtree_flags |= PaintInvalidatorContext::kSubtreeSlowPathRect;
   }

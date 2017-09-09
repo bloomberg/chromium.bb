@@ -250,6 +250,10 @@ columns and both a parent and child `PaintLayer` have a transform, there will be
 will have its own `TransformPaintPropertyNode`, and the child's ith fragment's
 transform will point to the ith parent's transform.
 
+Each `FragmentData` receives its own `ClipPaintPropertyNode`. They
+also store a unique `PaintOffset, `PaginationOffset and
+`LocalBordreBoxProperties` object.
+
 See [`LayoutMultiColumnFlowThread.h`](../layout/LayoutMultiColumnFlowThread.h)
 for a much more detail about multicolumn/pagination.
 

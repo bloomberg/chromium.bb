@@ -30,6 +30,7 @@ class CORE_EXPORT RarePaintData {
   FragmentData* Fragment() const { return fragment_data_.get(); }
 
   FragmentData& EnsureFragment();
+  void ClearFragment() { fragment_data_.reset(); }
 
   // An id for this object that is unique for the lifetime of the WebView.
   UniqueObjectId UniqueId() const { return unique_id_; }
