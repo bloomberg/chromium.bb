@@ -84,6 +84,10 @@ class CONTENT_EXPORT MediaStreamVideoSource : public MediaStreamSource {
   // Implementations must return the capture format if available.
   virtual base::Optional<media::VideoCaptureFormat> GetCurrentFormat() const;
 
+  // Implementations must return the capture parameters if available.
+  virtual base::Optional<media::VideoCaptureParams> GetCurrentCaptureParams()
+      const;
+
   base::WeakPtr<MediaStreamVideoSource> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }

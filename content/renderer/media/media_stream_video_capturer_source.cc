@@ -184,13 +184,16 @@ MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
 }
 
 MediaStreamVideoCapturerSource::~MediaStreamVideoCapturerSource() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void MediaStreamVideoCapturerSource::RequestRefreshFrame() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   source_->RequestRefreshFrame();
 }
 
 void MediaStreamVideoCapturerSource::OnHasConsumers(bool has_consumers) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (has_consumers)
     source_->Resume();
   else
@@ -198,12 +201,14 @@ void MediaStreamVideoCapturerSource::OnHasConsumers(bool has_consumers) {
 }
 
 void MediaStreamVideoCapturerSource::OnCapturingLinkSecured(bool is_secure) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   GetMediaStreamDispatcherHost()->SetCapturingLinkSecured(
       device().session_id, device().type, is_secure);
 }
 
 void MediaStreamVideoCapturerSource::StartSourceImpl(
     const VideoCaptureDeliverFrameCB& frame_callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   is_capture_starting_ = true;
   source_->StartCapture(
       capture_params_, frame_callback,
@@ -212,16 +217,24 @@ void MediaStreamVideoCapturerSource::StartSourceImpl(
 }
 
 void MediaStreamVideoCapturerSource::StopSourceImpl() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   source_->StopCapture();
 }
 
 base::Optional<media::VideoCaptureFormat>
 MediaStreamVideoCapturerSource::GetCurrentFormat() const {
-  return base::Optional<media::VideoCaptureFormat>(
-      capture_params_.requested_format);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return capture_params_.requested_format;
+}
+
+base::Optional<media::VideoCaptureParams>
+MediaStreamVideoCapturerSource::GetCurrentCaptureParams() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return capture_params_;
 }
 
 void MediaStreamVideoCapturerSource::OnRunStateChanged(bool is_running) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (is_capture_starting_) {
     OnStartDone(is_running ? MEDIA_DEVICE_OK
                            : MEDIA_DEVICE_TRACK_START_FAILURE);
@@ -233,6 +246,7 @@ void MediaStreamVideoCapturerSource::OnRunStateChanged(bool is_running) {
 
 const mojom::MediaStreamDispatcherHostPtr&
 MediaStreamVideoCapturerSource::GetMediaStreamDispatcherHost() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!dispatcher_host_) {
     ChildThreadImpl::current()->GetConnector()->BindInterface(
         mojom::kBrowserServiceName, &dispatcher_host_);
