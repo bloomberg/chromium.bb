@@ -225,6 +225,27 @@ TEST_F(MessageLoopForIoPosixTest, WatchWritable) {
   ASSERT_TRUE(handler.is_writable_);
 }
 
+// Verify that RunUntilIdle() receives IO notifications.
+TEST_F(MessageLoopForIoPosixTest, RunUntilIdle) {
+  MessageLoopForIO message_loop;
+  MessageLoopForIO::FileDescriptorWatcher watcher(FROM_HERE);
+  TestHandler handler;
+
+  // Watch the pipe for readability.
+  ASSERT_TRUE(MessageLoopForIO::current()->WatchFileDescriptor(
+      read_fd_.get(), /*persistent=*/false, MessageLoopForIO::WATCH_READ,
+      &watcher, &handler));
+
+  // The pipe should not be readable when first created.
+  RunLoop().RunUntilIdle();
+  ASSERT_FALSE(handler.is_readable_);
+
+  TriggerReadEvent();
+
+  while (!handler.is_readable_)
+    RunLoop().RunUntilIdle();
+}
+
 void StopWatching(MessageLoopForIO::FileDescriptorWatcher* controller,
                   RunLoop* run_loop) {
   controller->StopWatchingFileDescriptor();

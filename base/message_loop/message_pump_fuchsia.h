@@ -155,6 +155,10 @@ class BASE_EXPORT MessagePumpFuchsia : public MessagePump {
   void ScheduleDelayedWork(const TimeTicks& delayed_work_time) override;
 
  private:
+  // Handles IO events from the |port_|. Returns true if any events were
+  // received.
+  bool HandleEvents(mx_time_t deadline);
+
   // This flag is set to false when Run should return.
   bool keep_running_ = true;
 
