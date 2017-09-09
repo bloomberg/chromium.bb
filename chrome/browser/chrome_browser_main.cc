@@ -128,8 +128,6 @@
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/metrics_reporting_default_state.h"
 #include "components/metrics/metrics_service.h"
-#include "components/metrics/profiler/content/content_tracking_synchronizer_delegate.h"
-#include "components/metrics/profiler/tracking_synchronizer.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/offline_pages/features/features.h"
@@ -1132,11 +1130,6 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   base::debug::SetCrashKeyValue(crash_keys::kChannel,
                                 chrome::GetChannelString());
 #endif  // defined(OS_LINUX) || defined(OS_OPENBSD)
-
-  // Initialize tracking synchronizer system.
-  tracking_synchronizer_ = new metrics::TrackingSynchronizer(
-      base::MakeUnique<base::DefaultTickClock>(),
-      base::Bind(&metrics::ContentTrackingSynchronizerDelegate::Create));
 
 #if defined(OS_MACOSX)
   // Get the Keychain API to register for distributed notifications on the main

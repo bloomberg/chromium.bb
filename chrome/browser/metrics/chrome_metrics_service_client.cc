@@ -75,8 +75,6 @@
 #include "components/metrics/net/cellular_logic_helper.h"
 #include "components/metrics/net/net_metrics_log_uploader.h"
 #include "components/metrics/net/network_metrics_provider.h"
-#include "components/metrics/profiler/profiler_metrics_provider.h"
-#include "components/metrics/profiler/tracking_synchronizer.h"
 #include "components/metrics/stability_metrics_helper.h"
 #include "components/metrics/ui/screen_info_metrics_provider.h"
 #include "components/metrics/url_constants.h"
@@ -328,12 +326,9 @@ ChromeMetricsServiceClient::ChromeMetricsServiceClient(
     : metrics_state_manager_(state_manager),
       waiting_for_collect_final_metrics_step_(false),
       num_async_histogram_fetches_in_progress_(0),
-      profiler_metrics_provider_(nullptr),
 #if BUILDFLAG(ENABLE_PLUGINS)
       plugin_metrics_provider_(nullptr),
 #endif
-      start_time_(base::TimeTicks::Now()),
-      has_uploaded_profiler_data_(false),
       weak_ptr_factory_(this) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RecordCommandLineMetrics();
@@ -455,15 +450,7 @@ void ChromeMetricsServiceClient::CollectFinalMetricsForLog(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   collect_final_metrics_done_callback_ = done_callback;
-
-  if (ShouldIncludeProfilerDataInLog()) {
-    // Fetch profiler data. This will call into
-    // |FinishedReceivingProfilerData()| when the task completes.
-    metrics::TrackingSynchronizer::FetchProfilerDataAsynchronously(
-        weak_ptr_factory_.GetWeakPtr());
-  } else {
-    CollectFinalHistograms();
-  }
+  CollectFinalHistograms();
 }
 
 std::unique_ptr<metrics::MetricsLogUploader>
@@ -574,10 +561,6 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
       base::MakeUnique<metrics::DriveMetricsProvider>(
           chrome::FILE_LOCAL_STATE));
 
-  profiler_metrics_provider_ = new metrics::ProfilerMetricsProvider();
-  metrics_service_->RegisterMetricsProvider(
-      std::unique_ptr<metrics::MetricsProvider>(profiler_metrics_provider_));
-
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(
           new metrics::CallStackProfileMetricsProvider));
@@ -679,40 +662,6 @@ void ChromeMetricsServiceClient::RegisterUKMProviders() {
   ukm_service_->RegisterMetricsProvider(
       base::MakeUnique<variations::FieldTrialsProvider>(nullptr,
                                                         kUKMFieldTrialSuffix));
-}
-
-bool ChromeMetricsServiceClient::ShouldIncludeProfilerDataInLog() {
-  // Upload profiler data at most once per session.
-  if (has_uploaded_profiler_data_)
-    return false;
-
-  // For each log, flip a fair coin. Thus, profiler data is sent with the first
-  // log with probability 50%, with the second log with probability 25%, and so
-  // on. As a result, uploaded data is biased toward earlier logs.
-  // TODO(isherman): Explore other possible algorithms, and choose one that
-  // might be more appropriate.  For example, it might be reasonable to include
-  // profiler data with some fixed probability, so that a given client might
-  // upload profiler data more than once; but on average, clients won't upload
-  // too much data.
-  if (base::RandDouble() < 0.5)
-    return false;
-
-  has_uploaded_profiler_data_ = true;
-  return true;
-}
-
-void ChromeMetricsServiceClient::ReceivedProfilerData(
-    const metrics::ProfilerDataAttributes& attributes,
-    const tracked_objects::ProcessDataPhaseSnapshot& process_data_phase,
-    const metrics::ProfilerEvents& past_events) {
-  profiler_metrics_provider_->RecordProfilerData(
-      process_data_phase, attributes.process_id, attributes.process_type,
-      attributes.profiling_phase, attributes.phase_start - start_time_,
-      attributes.phase_finish - start_time_, past_events);
-}
-
-void ChromeMetricsServiceClient::FinishedReceivingProfilerData() {
-  CollectFinalHistograms();
 }
 
 void ChromeMetricsServiceClient::CollectFinalHistograms() {

@@ -15,10 +15,6 @@
 class ApplicationContextImpl;
 class PrefService;
 
-namespace metrics {
-class TrackingSynchronizer;
-}
-
 namespace ios {
 class FieldTrialSynchronizer;
 }
@@ -50,7 +46,6 @@ class IOSChromeMainParts : public web::WebMainParts {
   const base::CommandLine& parsed_command_line_;
 
   std::unique_ptr<ApplicationContextImpl> application_context_;
-  scoped_refptr<metrics::TrackingSynchronizer> tracking_synchronizer_;
 
   // Statistical testing infrastructure for the entire browser. NULL until
   // SetUpMetricsAndFieldTrials is called.

@@ -15,8 +15,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "components/metrics/profiler/tracking_synchronizer.h"
-#include "components/metrics/proto/profiler_event.pb.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -112,9 +110,6 @@ void FirstWebContentsProfiler::DidFirstVisuallyNonEmptyPaint() {
                                   ->GetMainFrame()
                                   ->GetProcess()
                                   ->GetInitTimeForNavigationMetrics());
-
-  metrics::TrackingSynchronizer::OnProfilingPhaseCompleted(
-      metrics::ProfilerEventProto::EVENT_FIRST_NONEMPTY_PAINT);
 
   if (IsFinishedCollectingMetrics())
     FinishedCollectingMetrics(FinishReason::DONE);

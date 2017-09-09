@@ -20,7 +20,6 @@
 #include "chrome/browser/metrics/metrics_memory_details.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_service_client.h"
-#include "components/metrics/profiler/tracking_synchronizer_observer.h"
 #include "components/metrics/proto/system_profile.pb.h"
 #include "components/omnibox/browser/omnibox_event_global_tracker.h"
 #include "components/ukm/observers/history_delete_observer.h"
@@ -41,13 +40,11 @@ class TabModelListObserver;
 namespace metrics {
 class MetricsService;
 class MetricsStateManager;
-class ProfilerMetricsProvider;
 }  // namespace metrics
 
 // ChromeMetricsServiceClient provides an implementation of MetricsServiceClient
 // that depends on chrome/.
 class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
-                                   public metrics::TrackingSynchronizerObserver,
                                    public content::NotificationObserver,
                                    public ukm::HistoryDeleteObserver,
                                    public ukm::SyncDisableObserver {
@@ -121,13 +118,6 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   // side-effect when called, so it should only be called once per log.
   bool ShouldIncludeProfilerDataInLog();
 
-  // TrackingSynchronizerObserver:
-  void ReceivedProfilerData(
-      const metrics::ProfilerDataAttributes& attributes,
-      const tracked_objects::ProcessDataPhaseSnapshot& process_data_phase,
-      const metrics::ProfilerEvents& past_profiler_events) override;
-  void FinishedReceivingProfilerData() override;
-
   // Callbacks for various stages of final log info collection. Do not call
   // these directly.
   void CollectFinalHistograms();
@@ -193,10 +183,6 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   // Number of async histogram fetch requests in progress.
   int num_async_histogram_fetches_in_progress_;
 
-  // The ProfilerMetricsProvider instance that was registered with
-  // MetricsService. Has the same lifetime as |metrics_service_|.
-  metrics::ProfilerMetricsProvider* profiler_metrics_provider_;
-
 #if BUILDFLAG(ENABLE_PLUGINS)
   // The PluginMetricsProvider instance that was registered with
   // MetricsService. Has the same lifetime as |metrics_service_|.
@@ -211,17 +197,10 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   // used.
   base::Callback<void(bool*)> cellular_callback_;
 
-  // Time of this object's creation.
-  const base::TimeTicks start_time_;
-
   // Subscription for receiving callbacks that a URL was opened from the
   // omnibox.
   std::unique_ptr<base::CallbackList<void(OmniboxLog*)>::Subscription>
       omnibox_url_opened_subscription_;
-
-  // Whether this client has already uploaded profiler data during this session.
-  // Profiler data is uploaded at most once per session.
-  bool has_uploaded_profiler_data_;
 
   base::WeakPtrFactory<ChromeMetricsServiceClient> weak_ptr_factory_;
 

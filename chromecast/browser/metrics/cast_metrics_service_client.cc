@@ -31,7 +31,6 @@
 #include "components/metrics/metrics_state_manager.h"
 #include "components/metrics/net/net_metrics_log_uploader.h"
 #include "components/metrics/net/network_metrics_provider.h"
-#include "components/metrics/profiler/profiler_metrics_provider.h"
 #include "components/metrics/ui/screen_info_metrics_provider.h"
 #include "components/metrics/url_constants.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -356,9 +355,6 @@ void CastMetricsServiceClient::Initialize(CastService* cast_service) {
   }
   metrics_service_->RegisterMetricsProvider(
       base::MakeUnique<::metrics::NetworkMetricsProvider>());
-  metrics_service_->RegisterMetricsProvider(
-      std::unique_ptr<::metrics::MetricsProvider>(
-          new ::metrics::ProfilerMetricsProvider));
   shell::CastBrowserProcess::GetInstance()->browser_client()->
       RegisterMetricsProviders(metrics_service_.get());
 
