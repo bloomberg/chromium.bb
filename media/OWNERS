@@ -20,4 +20,7 @@ watk@chromium.org
 wolenetz@chromium.org
 xhwang@chromium.org
 
+# For Fuchsia-specific changes:
+per-file *_fuchsia*=file://build/fuchsia/OWNERS
+
 # COMPONENT: Internals>Media
