@@ -117,7 +117,7 @@ class RemoveFlakesOMatic(object):
             if not builder_name:
                 _log.debug('No builder with config %s', config)
                 # For many configurations, there is no matching builder in
-                # webkitpy/common/config/builders.py. We ignore these
+                # webkitpy/common/config/builders.json. We ignore these
                 # configurations and make decisions based only on configurations
                 # with actual builders.
                 continue

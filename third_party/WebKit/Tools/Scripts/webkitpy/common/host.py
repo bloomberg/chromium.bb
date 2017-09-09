@@ -30,7 +30,6 @@
 import logging
 
 from webkitpy.common.checkout.git import Git
-from webkitpy.common.config.builders import BUILDERS
 from webkitpy.common.net import web
 from webkitpy.common.net.buildbot import BuildBot
 from webkitpy.common.system.system_host import SystemHost
@@ -58,7 +57,7 @@ class Host(SystemHost):
         # FIXME: PortFactory doesn't belong on this Host object if Port is going to have a Host (circular dependency).
         self.port_factory = PortFactory(self)
 
-        self.builders = BuilderList(BUILDERS)
+        self.builders = BuilderList.load_default_builder_list(self.filesystem)
 
     def git(self, path=None):
         if path:

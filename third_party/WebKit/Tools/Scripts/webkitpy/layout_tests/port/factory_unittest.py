@@ -31,6 +31,7 @@ import unittest
 
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.path_finder import PathFinder
+from webkitpy.layout_tests.builder_list import BuilderList
 from webkitpy.layout_tests.port import android
 from webkitpy.layout_tests.port import factory
 from webkitpy.layout_tests.port import linux
@@ -77,8 +78,15 @@ class FactoryTest(unittest.TestCase):
             factory.PortFactory(MockHost(os_name='vms')).get()
 
     def test_get_from_builder_name(self):
-        self.assertEqual(factory.PortFactory(MockHost()).get_from_builder_name('WebKit Mac10.11').name(),
-                         'mac-mac10.11')
+        host = MockHost()
+        host.builders = BuilderList({
+            'My Fake Mac10.12 Builder': {
+                'port_name': 'mac-mac10.12',
+                'specifiers': ['Mac10.12', 'Release'],
+            }
+        })
+        self.assertEqual(factory.PortFactory(host).get_from_builder_name('My Fake Mac10.12 Builder').name(),
+                         'mac-mac10.12')
 
     def get_port(self, target=None, configuration=None, files=None):
         host = MockHost()

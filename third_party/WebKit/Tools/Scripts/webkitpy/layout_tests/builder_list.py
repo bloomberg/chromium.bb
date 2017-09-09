@@ -30,9 +30,11 @@
 
 This class is used to hold a list of builder bots running layout tests and their
 corresponding port names and TestExpectations specifiers.
-
-The actual constants are in webkitpy.common.config.builders.
 """
+
+import json
+
+from webkitpy.common.path_finder import PathFinder
 
 
 class BuilderList(object):
@@ -44,12 +46,21 @@ class BuilderList(object):
                 Valid values for the version specifier can be found in
                 TestExpectationsParser._configuration_tokens_list, and valid
                 values for the build type specifier include "Release" and "Debug".
+            "is_try_builder": Whether the builder is a try bot.
 
         Possible refactoring note: Potentially, it might make sense to use
         webkitpy.common.buildbot.Builder and add port_name and specifiers
         properties to that class.
         """
         self._builders = builders_dict
+
+    @staticmethod
+    def load_default_builder_list(filesystem):
+        """Loads the set of builders from a JSON file and returns the BuilderList."""
+        path = PathFinder(filesystem).path_from_tools_scripts(
+            'webkitpy', 'common', 'config', 'builders.json')
+        contents = filesystem.read_text_file(path)
+        return BuilderList(json.loads(contents))
 
     def all_builder_names(self):
         return sorted(self._builders)

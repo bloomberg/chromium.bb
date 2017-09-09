@@ -26,7 +26,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from webkitpy.common.config.builders import BUILDERS
 from webkitpy.common.checkout.git_mock import MockGit
 from webkitpy.common.net.buildbot_mock import MockBuildBot
 from webkitpy.common.net.web_mock import MockWeb
@@ -65,7 +64,29 @@ class MockHost(MockSystemHost):
         # on the list of known ports should override this with a MockPortFactory.
         self.port_factory = PortFactory(self)
 
-        self.builders = BuilderList(BUILDERS)
+        self.builders = BuilderList({
+            'Fake Test Win10': {
+                'port_name': 'win-win10',
+                'specifiers': ['Win10', 'Release']
+            },
+            'Fake Test Linux': {
+                'port_name': 'linux-trusty',
+                'specifiers': ['Trusty', 'Release']
+            },
+            'Fake Test Linux (dbg)': {
+                'port_name': 'linux-trusty',
+                'specifiers': ['Trusty', 'Debug']
+            },
+            'Fake Test Mac10.12': {
+                'port_name': 'mac-mac10.12',
+                'specifiers': ['Mac10.12', 'Release']
+            },
+            'Fake Test Linux Try Bot': {
+                'port_name': 'linux-trusty',
+                'specifiers': ['Trusty', 'Release'],
+                'is_try_builder': True,
+            },
+        })
 
     def git(self, path=None):
         if path:

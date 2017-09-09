@@ -888,7 +888,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         })
 
         # Setup the mock host and port.
-        host = MockHost()
+        host = self._host
         host.port_factory = FakePortFactory(
             host,
             all_build_types=('release', 'debug'),
@@ -987,7 +987,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         })
 
         # Set up the mock host and port.
-        host = MockHost()
+        host = self._host
         host.port_factory = FakePortFactory(
             host,
             all_build_types=('release', 'debug'),
