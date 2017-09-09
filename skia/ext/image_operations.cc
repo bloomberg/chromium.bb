@@ -328,9 +328,10 @@ ImageOperations::ResizeMethod ResizeMethodToAlgorithmMethod(
 // Resize ----------------------------------------------------------------------
 
 // static
-SkBitmap ImageOperations::Resize(const SkBitmap& source,
+SkBitmap ImageOperations::Resize(const SkPixmap& source,
                                  ResizeMethod method,
-                                 int dest_width, int dest_height,
+                                 int dest_width,
+                                 int dest_height,
                                  const SkIRect& dest_subset,
                                  SkBitmap::Allocator* allocator) {
   TRACE_EVENT2("disabled-by-default-skia", "ImageOperations::Resize",
@@ -360,7 +361,7 @@ SkBitmap ImageOperations::Resize(const SkBitmap& source,
   SkASSERT((ImageOperations::RESIZE_FIRST_ALGORITHM_METHOD <= method) &&
            (method <= ImageOperations::RESIZE_LAST_ALGORITHM_METHOD));
 
-  if (!source.readyToDraw() || source.colorType() != kN32_SkColorType)
+  if (!source.addr() || source.colorType() != kN32_SkColorType)
     return SkBitmap();
 
   ResizeFilter filter(method, source.width(), source.height(),
@@ -370,7 +371,7 @@ SkBitmap ImageOperations::Resize(const SkBitmap& source,
   // offsets and row strides such that it looks like a new bitmap, while
   // referring to the old data.
   const uint8_t* source_subset =
-      reinterpret_cast<const uint8_t*>(source.getPixels());
+      reinterpret_cast<const uint8_t*>(source.addr());
 
   // Convolve into the result.
   SkBitmap result;
@@ -389,6 +390,20 @@ SkBitmap ImageOperations::Resize(const SkBitmap& source,
   UMA_HISTOGRAM_TIMES("Image.ResampleMS", delta);
 
   return result;
+}
+
+// static
+SkBitmap ImageOperations::Resize(const SkBitmap& source,
+                                 ResizeMethod method,
+                                 int dest_width,
+                                 int dest_height,
+                                 const SkIRect& dest_subset,
+                                 SkBitmap::Allocator* allocator) {
+  SkPixmap pixmap;
+  if (!source.peekPixels(&pixmap))
+    return SkBitmap();
+  return Resize(pixmap, method, dest_width, dest_height, dest_subset,
+                allocator);
 }
 
 // static
