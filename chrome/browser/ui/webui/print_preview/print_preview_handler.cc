@@ -724,7 +724,7 @@ void PrintPreviewHandler::HandleGetExtensionOrPrivetPrinterCapabilities(
   }
 
   handler->StartGetCapability(
-      printer_name, base::Bind(&PrintPreviewHandler::OnGotPrinterCapabilities,
+      printer_name, base::Bind(&PrintPreviewHandler::SendPrinterCapabilities,
                                weak_factory_.GetWeakPtr(), callback_id));
 }
 
@@ -1058,13 +1058,13 @@ void PrintPreviewHandler::HandleGetPrinterCapabilities(
     printer_info->Set(
         printing::kPrinterCapabilities,
         GetPdfCapabilities(g_browser_process->GetApplicationLocale()));
-    SendPrinterCapabilities(callback_id, printer_name, std::move(printer_info));
+    SendPrinterCapabilities(callback_id, std::move(printer_info));
     return;
   }
 
   printing::PrinterSetupCallback cb =
       base::Bind(&PrintPreviewHandler::SendPrinterCapabilities,
-                 weak_factory_.GetWeakPtr(), callback_id, printer_name);
+                 weak_factory_.GetWeakPtr(), callback_id);
 
   printer_backend_proxy()->ConfigurePrinterAndFetchCapabilities(printer_name,
                                                                 cb);
@@ -1286,11 +1286,12 @@ void PrintPreviewHandler::SendAccessToken(const std::string& callback_id,
 
 void PrintPreviewHandler::SendPrinterCapabilities(
     const std::string& callback_id,
-    const std::string& printer_name,
     std::unique_ptr<base::DictionaryValue> settings_info) {
   // Check that |settings_info| is valid.
-  if (settings_info && settings_info->Get("capabilities", nullptr)) {
+  if (settings_info && !settings_info->empty()) {
     VLOG(1) << "Get printer capabilities finished";
+    DCHECK(settings_info->FindKeyOfType(printing::kPrinterCapabilities,
+                                        base::Value::Type::DICTIONARY));
     ResolveJavascriptCallback(base::Value(callback_id), *settings_info);
     return;
   }
@@ -1671,16 +1672,6 @@ void PrintPreviewHandler::OnGotExtensionPrinterInfo(
     return;
   }
   ResolveJavascriptCallback(base::Value(callback_id), printer_info);
-}
-
-void PrintPreviewHandler::OnGotPrinterCapabilities(
-    const std::string& callback_id,
-    const base::DictionaryValue& capabilities) {
-  if (capabilities.empty()) {
-    RejectJavascriptCallback(base::Value(callback_id), base::Value());
-    return;
-  }
-  ResolveJavascriptCallback(base::Value(callback_id), capabilities);
 }
 
 void PrintPreviewHandler::OnPrintResult(const std::string& callback_id,
