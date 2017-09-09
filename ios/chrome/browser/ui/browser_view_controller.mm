@@ -137,9 +137,9 @@
 #import "ios/chrome/browser/ui/ntp/modal_ntp.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_handset_coordinator.h"
-#include "ios/chrome/browser/ui/omnibox/page_info_model.h"
-#import "ios/chrome/browser/ui/omnibox/page_info_view_controller.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
+#import "ios/chrome/browser/ui/page_info/page_info_legacy_coordinator.h"
+#import "ios/chrome/browser/ui/page_info/requirements/page_info_presentation.h"
 #import "ios/chrome/browser/ui/page_not_available_controller.h"
 #import "ios/chrome/browser/ui/payments/payment_request_manager.h"
 #import "ios/chrome/browser/ui/print/print_controller.h"
@@ -222,10 +222,6 @@ using bookmarks::BookmarkNode;
 class BrowserBookmarkModelBridge;
 class InfoBarContainerDelegateIOS;
 
-NSString* const kPageInfoWillShowNotification =
-    @"kPageInfoWillShowNotification";
-NSString* const kPageInfoWillHideNotification =
-    @"kPageInfoWillHideNotification";
 NSString* const kLocationBarBecomesFirstResponderNotification =
     @"kLocationBarBecomesFirstResponderNotification";
 NSString* const kLocationBarResignsFirstResponderNotification =
@@ -364,6 +360,7 @@ bool IsURLAllowedInIncognito(const GURL& url) {
                                     MFMailComposeViewControllerDelegate,
                                     NewTabPageControllerObserver,
                                     OverscrollActionsControllerDelegate,
+                                    PageInfoPresentation,
                                     PassKitDialogProvider,
                                     PreloadControllerDelegate,
                                     QRScannerPresenting,
@@ -432,9 +429,6 @@ bool IsURLAllowedInIncognito(const GURL& url) {
   // Used to inject Javascript implementing the PaymentRequest API and to
   // display the UI.
   PaymentRequestManager* _paymentRequestManager;
-
-  // Used to display the Page Info UI.  Nil if not visible.
-  PageInfoViewController* _pageInfoController;
 
   // Used to display the Voice Search UI.  Nil if not visible.
   scoped_refptr<VoiceSearchController> _voiceSearchController;
@@ -544,6 +538,9 @@ bool IsURLAllowedInIncognito(const GURL& url) {
 
   // Coordinator for displaying Sad Tab.
   SadTabLegacyCoordinator* _sadTabCoordinator;
+
+  // Coordinator for Page Info UI.
+  PageInfoLegacyCoordinator* _pageInfoCoordinator;
 }
 
 // The browser's side swipe controller.  Lazily instantiated on the first call.
@@ -1756,6 +1753,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [_activityServiceCoordinator disconnect];
   [_qrScannerCoordinator disconnect];
   [_tabHistoryCoordinator disconnect];
+  [_pageInfoCoordinator disconnect];
 
   // The file remover needs the browser state, so needs to be destroyed now.
   _externalFileRemover = nil;
@@ -1878,6 +1876,14 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
   _sadTabCoordinator = [[SadTabLegacyCoordinator alloc] init];
   _sadTabCoordinator.dispatcher = _dispatcher;
+
+  _pageInfoCoordinator =
+      [[PageInfoLegacyCoordinator alloc] initWithBaseViewController:self];
+  _pageInfoCoordinator.browserState = _browserState;
+  _pageInfoCoordinator.dispatcher = _dispatcher;
+  _pageInfoCoordinator.loader = self;
+  _pageInfoCoordinator.presentationProvider = self;
+  _pageInfoCoordinator.tabModel = _model;
 
   if (base::FeatureList::IsEnabled(payments::features::kWebPayments)) {
     _paymentRequestManager = [[PaymentRequestManager alloc]
@@ -2047,7 +2053,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (void)dismissPopups {
   [_toolbarController dismissToolsMenuPopup];
-  [self hidePageInfo];
+  [self.dispatcher hidePageInfo];
   [self.tabTipBubblePresenter dismissAnimated:YES];
 }
 
@@ -4338,76 +4344,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
       });
 }
 
-- (void)showPageInfoForOriginPoint:(CGPoint)originPoint {
-  Tab* tab = [_model currentTab];
-  DCHECK([tab navigationManager]);
-  web::NavigationItem* navItem = [tab navigationManager]->GetVisibleItem();
-
-  // It is fully expected to have a navItem here, as showPageInfoPopup can only
-  // be trigerred by a button enabled when a current item matches some
-  // conditions. However a crash was seen were navItem was NULL hence this
-  // test after a DCHECK.
-  DCHECK(navItem);
-  if (!navItem)
-    return;
-
-  // Don't show if the page is native except for offline pages (to show the
-  // offline page info).
-  if ([self isTabNativePage:tab] &&
-      !reading_list::IsOfflineURL(navItem->GetURL())) {
-    return;
-  }
-
-  // Don't show the bubble twice (this can happen when tapping very quickly in
-  // accessibility mode).
-  if (_pageInfoController)
-    return;
-
-  base::RecordAction(UserMetricsAction("MobileToolbarPageSecurityInfo"));
-
-  // Dismiss the omnibox (if open).
-  [_toolbarController cancelOmniboxEdit];
-
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:kPageInfoWillShowNotification
-                    object:nil];
-
-  // TODO(crbug.com/760387): Get rid of PageInfoModel completely.
-  PageInfoModelBubbleBridge* bridge = new PageInfoModelBubbleBridge();
-  PageInfoModel* pageInfoModel = new PageInfoModel(
-      _browserState, navItem->GetURL(), navItem->GetSSL(), bridge);
-
-  UIView* view = [self view];
-  _pageInfoController = [[PageInfoViewController alloc]
-      initWithModel:pageInfoModel
-             bridge:bridge
-        sourcePoint:[view convertPoint:originPoint fromView:nil]
-         parentView:view];
-  _pageInfoController.dispatcher = self.dispatcher;
-  bridge->set_controller(_pageInfoController);
-}
-
-- (void)hidePageInfo {
-  // Early return if the PageInfoPopup is not presented.
-  if (!_pageInfoController)
-    return;
-
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:kPageInfoWillHideNotification
-                    object:nil];
-
-  [_pageInfoController dismiss];
-  _pageInfoController = nil;
-}
-
-- (void)showSecurityHelpPage {
-  [self webPageOrderedOpen:GURL(kPageInfoHelpCenterURL)
-                  referrer:web::Referrer()
-              inBackground:NO
-                  appendTo:kCurrentTab];
-  [self hidePageInfo];
-}
-
 - (void)showHelpPage {
   GURL helpUrl(l10n_util::GetStringUTF16(IDS_IOS_TOOLS_MENU_HELP_URL));
   [self webPageOrderedOpen:helpUrl
@@ -4498,7 +4434,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   [_bookmarkInteractionController dismissSnackbar];
   [_toolbarController cancelOmniboxEdit];
   [_dialogPresenter cancelAllDialogs];
-  [self hidePageInfo];
+  [self.dispatcher hidePageInfo];
   [self.tabTipBubblePresenter dismissAnimated:NO];
   if (_voiceSearchController)
     _voiceSearchController->DismissMicPermissionsHelp();
@@ -5158,6 +5094,17 @@ bubblePresenterForFeature:(const base::Feature&)feature
       initWithBaseViewController:self
                       landingURL:landingURL];
   [_captivePortalLoginCoordinator start];
+}
+
+#pragma mark - PageInfoPresentation
+
+- (UIView*)viewForPageInfoPresentation {
+  return self.view;
+}
+
+- (void)prepareForPageInfoPresentation {
+  // Dismiss the omnibox (if open).
+  [_toolbarController cancelOmniboxEdit];
 }
 
 @end

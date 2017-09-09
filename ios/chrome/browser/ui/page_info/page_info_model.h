@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_OMNIBOX_PAGE_INFO_MODEL_H_
-#define IOS_CHROME_BROWSER_UI_OMNIBOX_PAGE_INFO_MODEL_H_
+#ifndef IOS_CHROME_BROWSER_UI_PAGE_INFO_PAGE_INFO_MODEL_H_
+#define IOS_CHROME_BROWSER_UI_PAGE_INFO_PAGE_INFO_MODEL_H_
 
 #include <vector>
 
@@ -122,4 +122,4 @@ class PageInfoModel {
   DISALLOW_COPY_AND_ASSIGN(PageInfoModel);
 };
 
-#endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_PAGE_INFO_MODEL_H_
+#endif  // IOS_CHROME_BROWSER_UI_PAGE_INFO_PAGE_INFO_MODEL_H_

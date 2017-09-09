@@ -5,11 +5,11 @@
 #ifndef IOS_CHROME_BROWSER_UI_COMMANDS_BROWSER_COMMANDS_H_
 #define IOS_CHROME_BROWSER_UI_COMMANDS_BROWSER_COMMANDS_H_
 
-#include <CoreGraphics/CoreGraphics.h>
 #import <Foundation/Foundation.h>
 
 #import "ios/chrome/browser/ui/commands/activity_service_commands.h"
 #import "ios/chrome/browser/ui/commands/history_popup_commands.h"
+#import "ios/chrome/browser/ui/commands/page_info_commands.h"
 #import "ios/chrome/browser/ui/commands/qr_scanner_commands.h"
 
 @class OpenNewTabCommand;
@@ -19,6 +19,7 @@
 // which in practice is the BrowserViewController instance displaying the tab.
 @protocol BrowserCommands<NSObject,
                           ActivityServiceCommands,
+                          PageInfoCommands,
                           QRScannerCommands,
                           TabHistoryPopupCommands>
 
@@ -87,16 +88,6 @@
 // Go to the previous location of the Find In Page query string in the current
 // tab.
 - (void)findPreviousStringInPage;
-
-// Show the page security info. |originPoint| is the midpoint of the UI element
-// which triggered this command and should be in window coordinates.
-- (void)showPageInfoForOriginPoint:(CGPoint)originPoint;
-
-// Hide the page security info.
-- (void)hidePageInfo;
-
-// Show the security help page.
-- (void)showSecurityHelpPage;
 
 // Shows the online help page in a tab.
 - (void)showHelpPage;
