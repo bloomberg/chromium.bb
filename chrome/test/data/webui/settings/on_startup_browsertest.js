@@ -7,6 +7,16 @@
 GEN_INCLUDE(['settings_page_browsertest.js']);
 
 /**
+ * Radio button enum values for restore on startup.
+ * @enum
+ */
+var RestoreOnStartupEnum = {
+  CONTINUE: 1,
+  OPEN_NEW_TAB: 5,
+  OPEN_SPECIFIC: 4,
+};
+
+/**
  * Test Polymer On Startup Settings elements.
  * @constructor
  * @extends {SettingsPageBrowserTest}
@@ -29,19 +39,49 @@ OnStartupSettingsBrowserTest.prototype = {
 };
 
 TEST_F('OnStartupSettingsBrowserTest', 'uiTests', function() {
+  /**
+   * The prefs API that will get a fake implementation.
+   * @type {!SettingsPrivate}
+   */
+  var settingsPrefs;
   var self = this;
+
+  var restoreOnStartup = function() {
+    return self.getPageElement('#onStartupRadioGroup')
+        .querySelector('.iron-selected')
+        .label;
+  };
 
   suite('OnStartupHandler', function() {
     suiteSetup(function() {
       self.basicPage.set('pageVisibility.onStartup', true);
+      Polymer.dom.flush();
+
+      settingsPrefs =
+          document.querySelector('settings-ui').$$('settings-prefs');
+      assertTrue(!!settingsPrefs);
+      return CrSettingsPrefs.initialized;
     });
 
-    test('ManageStartupUrls', function() {
-      /* Test that the manage startup urls button is present on the basic page.
-       */
-      var manageButton =
-          self.getPageElement('#manage-startup-urls-subpage-trigger');
-      assertTrue(!!manageButton);
+    test('open-continue', function() {
+      settingsPrefs.set(
+          'prefs.session.restore_on_startup.value',
+          RestoreOnStartupEnum.CONTINUE);
+      assertEquals('Continue where you left off', restoreOnStartup());
+    });
+
+    test('open-ntp', function() {
+      settingsPrefs.set(
+          'prefs.session.restore_on_startup.value',
+          RestoreOnStartupEnum.OPEN_NEW_TAB);
+      assertEquals('Open the New Tab page', restoreOnStartup());
+    });
+
+    test('open-specific', function() {
+      settingsPrefs.set(
+          'prefs.session.restore_on_startup.value',
+          RestoreOnStartupEnum.OPEN_SPECIFIC);
+      assertEquals('Open a specific page or set of pages', restoreOnStartup());
     });
   });
   mocha.run();

@@ -1086,9 +1086,6 @@ void AddChromeOSUserStrings(content::WebUIDataSource* html_source,
 void AddOnStartupStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"onStartup", IDS_SETTINGS_ON_STARTUP},
-      {"onStartupDescription", IDS_SETTINGS_ON_STARTUP_DESCRIPTION},
-      {"onStartupManage", IDS_SETTINGS_ON_STARTUP_MANAGE},
-      {"onStartupPages", IDS_SETTINGS_ON_STARTUP_PAGES},
       {"onStartupOpenNewTab", IDS_SETTINGS_ON_STARTUP_OPEN_NEW_TAB},
       {"onStartupContinue", IDS_SETTINGS_ON_STARTUP_CONTINUE},
       {"onStartupOpenSpecific", IDS_SETTINGS_ON_STARTUP_OPEN_SPECIFIC},
