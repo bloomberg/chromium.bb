@@ -33887,6 +33887,9 @@ from previous Chrome versions.
   <int value="283" label="SLDM"/>
   <int value="284" label="HTM"/>
   <int value="285" label="HTML"/>
+  <int value="286" label="XHT"/>
+  <int value="287" label="XHTM"/>
+  <int value="288" label="XHTML"/>
 </enum>
 
 <enum name="SBClientDownloadIsSignedBinary">

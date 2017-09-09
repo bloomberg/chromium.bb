@@ -8,7 +8,7 @@
 ##
 ## Top level settings
 ##
-version_id: 12
+version_id: 13
 sampled_ping_probability: 0.01
 default_file_type {
   uma_value: 18
@@ -2214,6 +2214,36 @@ file_types {
     platform: PLATFORM_WINDOWS
     danger_level: DANGEROUS
     auto_open_hint: DISALLOW_AUTO_OPEN
+  }
+}
+file_types {
+  # Similar to "html".  Added for https://crbug.com/762702
+  extension: "xht"
+  uma_value: 286
+  ping_setting: FULL_PING
+  platform_settings {
+    danger_level: NOT_DANGEROUS
+    auto_open_hint: ALLOW_AUTO_OPEN
+  }
+}
+file_types {
+  # Similar to "html".  Added for https://crbug.com/762702
+  extension: "xhtm"
+  uma_value: 287
+  ping_setting: FULL_PING
+  platform_settings {
+    danger_level: NOT_DANGEROUS
+    auto_open_hint: ALLOW_AUTO_OPEN
+  }
+}
+file_types {
+  # Similar to "html".  Added for https://crbug.com/762702
+  extension: "xhtml"
+  uma_value: 288
+  ping_setting: FULL_PING
+  platform_settings {
+    danger_level: NOT_DANGEROUS
+    auto_open_hint: ALLOW_AUTO_OPEN
   }
 }
 file_types {
