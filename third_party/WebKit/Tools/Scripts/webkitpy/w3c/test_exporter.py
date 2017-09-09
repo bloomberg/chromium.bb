@@ -170,10 +170,11 @@ class TestExporter(object):
         branch = self.wpt_github.get_pr_branch(pull_request.number)
 
         try:
-            self.wpt_github.merge_pull_request(pull_request.number)
+            self.wpt_github.merge_pr(pull_request.number)
 
             # This is in the try block because if a PR can't be merged, we shouldn't
             # delete its branch.
+            _log.info('Deleting remote branch %s...', branch)
             self.wpt_github.delete_remote_branch(branch)
 
             change_id = self.wpt_github.extract_metadata('Change-Id: ', pull_request.body)
@@ -220,17 +221,10 @@ class TestExporter(object):
         self.local_wpt.create_branch_with_patch(branch_name, message, patch, author, force_push=updating)
 
         if updating:
-            response_data = self.wpt_github.update_pr(pull_request.number, subject, body)
-            _log.info('Update PR response: %s', response_data)
+            self.wpt_github.update_pr(pull_request.number, subject, body)
         else:
-            response_data = self.wpt_github.create_pr(branch_name, subject, body)
-            _log.info('Create PR response: %s', response_data)
-
-            if response_data:
-                data, status_code = self.wpt_github.add_label(response_data['number'], EXPORT_PR_LABEL)
-                _log.info('Add label response (status %s): %s', status_code, data)
-
-        return response_data
+            pr_number = self.wpt_github.create_pr(branch_name, subject, body)
+            self.wpt_github.add_label(pr_number, EXPORT_PR_LABEL)
 
     def create_or_update_pull_request_from_cl(self, cl, pull_request=None):
         """Creates or updates a PR from a Gerrit CL.
@@ -271,8 +265,7 @@ class TestExporter(object):
         self.local_wpt.create_branch_with_patch(branch_name, message, patch, author, force_push=updating)
 
         if updating:
-            response_data = self.wpt_github.update_pr(pull_request.number, cl.subject, message)
-            _log.debug('Update PR response: %s', response_data)
+            self.wpt_github.update_pr(pull_request.number, cl.subject, message)
 
             # TODO(jeffcarp): Turn PullRequest into a class with a .url method
 
@@ -284,11 +277,10 @@ class TestExporter(object):
                 pr_url='%spull/%d' % (WPT_GH_URL, pull_request.number),
             ))
         else:
-            response_data = self.wpt_github.create_pr(branch_name, cl.subject, message)
-            _log.debug('Create PR response: %s', response_data)
+            pr_number = self.wpt_github.create_pr(branch_name, cl.subject, message)
 
-            self.wpt_github.add_label(response_data['number'], EXPORT_PR_LABEL)
-            self.wpt_github.add_label(response_data['number'], PROVISIONAL_PR_LABEL)
+            self.wpt_github.add_label(pr_number, EXPORT_PR_LABEL)
+            self.wpt_github.add_label(pr_number, PROVISIONAL_PR_LABEL)
 
             cl.post_comment((
                 'Exportable changes to web-platform-tests were detected in this CL '
@@ -302,7 +294,5 @@ class TestExporter(object):
                 'https://chromium.googlesource.com/chromium/src/+/master'
                 '/docs/testing/web_platform_tests.md#Automatic-export-process'
             ).format(
-                pr_url='%spull/%d' % (WPT_GH_URL, response_data['number'])
+                pr_url='%spull/%d' % (WPT_GH_URL, pr_number)
             ))
-
-        return response_data

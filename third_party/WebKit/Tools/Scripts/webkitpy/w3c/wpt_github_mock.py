@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from webkitpy.w3c.wpt_github import MergeError
+from webkitpy.w3c.wpt_github import MergeError, WPTGitHub
 
 
 class MockWPTGitHub(object):
@@ -41,12 +41,12 @@ class MockWPTGitHub(object):
                 return index == self.merged_index
         return False
 
-    def merge_pull_request(self, number):
-        self.calls.append('merge_pull_request')
+    def merge_pr(self, number):
+        self.calls.append('merge_pr')
 
         for index, pr in enumerate(self.pull_requests):
             if pr.number == number and index == self.unsuccessful_merge_index:
-                raise MergeError()
+                raise MergeError(number)
 
         self.pull_requests_merged.append(number)
 
@@ -57,28 +57,24 @@ class MockWPTGitHub(object):
             self.pull_requests_created.append((remote_branch_name, desc_title, body))
 
         self.create_pr_index += 1
-
-        return {'number': 5678}
+        return 5678
 
     def update_pr(self, pr_number, desc_title, body):
         self.calls.append('update_pr')
-
-        return {'number': 5678}
+        return 5678
 
     def delete_remote_branch(self, _):
         self.calls.append('delete_remote_branch')
 
     def add_label(self, _, label):
         self.calls.append('add_label "%s"' % label)
-        return {}, 200
 
     def remove_label(self, _, label):
         self.calls.append('remove_label "%s"' % label)
-        return {}, 204
 
     def get_pr_branch(self, number):
         self.calls.append('get_pr_branch')
-        return 'fake branch for PR {}'.format(number)
+        return 'fake_branch_PR_%d' % number
 
     def pr_for_chromium_commit(self, commit):
         self.calls.append('pr_for_chromium_commit')
@@ -102,13 +98,4 @@ class MockWPTGitHub(object):
         return None
 
     def extract_metadata(self, tag, commit_body, all_matches=False):
-        values = []
-        for line in commit_body.splitlines():
-            if not line.startswith(tag):
-                continue
-            value = line[len(tag):]
-            if all_matches:
-                values.append(value)
-            else:
-                return value
-        return values if all_matches else None
+        return WPTGitHub.extract_metadata(tag, commit_body, all_matches)
