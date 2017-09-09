@@ -5,10 +5,47 @@
 #include "components/cryptauth/remote_device_provider_impl.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "components/cryptauth/remote_device_loader.h"
 #include "components/cryptauth/secure_message_delegate.h"
 
 namespace cryptauth {
+
+// static
+RemoteDeviceProviderImpl::Factory*
+    RemoteDeviceProviderImpl::Factory::factory_instance_ = nullptr;
+
+// static
+std::unique_ptr<RemoteDeviceProvider>
+RemoteDeviceProviderImpl::Factory::NewInstance(
+    CryptAuthDeviceManager* device_manager,
+    const std::string& user_id,
+    const std::string& user_private_key,
+    SecureMessageDelegateFactory* secure_message_delegate_factory) {
+  if (!factory_instance_) {
+    factory_instance_ = new Factory();
+  }
+  return factory_instance_->BuildInstance(device_manager, user_id,
+                                          user_private_key,
+                                          secure_message_delegate_factory);
+}
+
+// static
+void RemoteDeviceProviderImpl::Factory::SetInstanceForTesting(
+    Factory* factory) {
+  factory_instance_ = factory;
+}
+
+std::unique_ptr<RemoteDeviceProvider>
+RemoteDeviceProviderImpl::Factory::BuildInstance(
+    CryptAuthDeviceManager* device_manager,
+    const std::string& user_id,
+    const std::string& user_private_key,
+    SecureMessageDelegateFactory* secure_message_delegate_factory) {
+  return base::WrapUnique(
+      new RemoteDeviceProviderImpl(device_manager, user_id, user_private_key,
+                                   secure_message_delegate_factory));
+}
 
 RemoteDeviceProviderImpl::RemoteDeviceProviderImpl(
     CryptAuthDeviceManager* device_manager,
