@@ -68,7 +68,7 @@ void PrivetPrinterHandler::StartGetCapability(
   if (!CreateHTTP(destination_id,
                   base::Bind(&PrivetPrinterHandler::CapabilitiesUpdateClient,
                              weak_ptr_factory_.GetWeakPtr(), callback))) {
-    callback.Run(base::DictionaryValue());
+    callback.Run(nullptr);
   }
 }
 
@@ -154,7 +154,7 @@ void PrivetPrinterHandler::CapabilitiesUpdateClient(
     const PrinterHandler::GetCapabilityCallback& callback,
     std::unique_ptr<cloud_print::PrivetHTTPClient> http_client) {
   if (!UpdateClient(std::move(http_client))) {
-    callback.Run(base::DictionaryValue());
+    callback.Run(nullptr);
     return;
   }
 
@@ -170,7 +170,7 @@ void PrivetPrinterHandler::OnGotCapabilities(
     const base::DictionaryValue* capabilities) {
   if (!capabilities || capabilities->HasKey(cloud_print::kPrivetKeyError) ||
       !printer_lister_) {
-    callback.Run(base::DictionaryValue());
+    callback.Run(nullptr);
     return;
   }
 
@@ -179,20 +179,21 @@ void PrivetPrinterHandler::OnGotCapabilities(
       printer_lister_->GetDeviceDescription(name);
 
   if (!description) {
-    callback.Run(base::DictionaryValue());
+    callback.Run(nullptr);
     return;
   }
 
   std::unique_ptr<base::DictionaryValue> printer_info =
-      base::MakeUnique<base::DictionaryValue>();
+      std::make_unique<base::DictionaryValue>();
   FillPrinterDescription(name, *description, true, printer_info.get());
-  base::DictionaryValue printer_info_and_caps;
-  printer_info_and_caps.SetDictionary("printer", std::move(printer_info));
+  std::unique_ptr<base::DictionaryValue> printer_info_and_caps =
+      std::make_unique<base::DictionaryValue>();
+  printer_info_and_caps->SetDictionary("printer", std::move(printer_info));
   std::unique_ptr<base::DictionaryValue> capabilities_copy =
       capabilities->CreateDeepCopy();
-  printer_info_and_caps.SetDictionary("capabilities",
-                                      std::move(capabilities_copy));
-  callback.Run(printer_info_and_caps);
+  printer_info_and_caps->SetDictionary("capabilities",
+                                       std::move(capabilities_copy));
+  callback.Run(std::move(printer_info_and_caps));
   privet_capabilities_operation_.reset();
 }
 

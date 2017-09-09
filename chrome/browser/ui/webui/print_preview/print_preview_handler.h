@@ -251,7 +251,6 @@ class PrintPreviewHandler
   // error notification to the Web UI instead.
   void SendPrinterCapabilities(
       const std::string& callback_id,
-      const std::string& printer_name,
       std::unique_ptr<base::DictionaryValue> settings_info);
 
   // Send the result of performing printer setup. |settings_info| contains
@@ -328,13 +327,6 @@ class PrintPreviewHandler
   // |printer_info|: The data reported by the extension.
   void OnGotExtensionPrinterInfo(const std::string& callback_id,
                                  const base::DictionaryValue& printer_info);
-
-  // Called when an extension or the privet printing service reports the set of
-  // print capabilities for a printer.
-  // |callback_id|: The Javascript callback to reject or resolve
-  // |capabilities|: The printer capabilities.
-  void OnGotPrinterCapabilities(const std::string& callback_id,
-                                const base::DictionaryValue& capabilities);
 
   // Called when an extension or privet print job is completed.
   // |callback_id|: The javascript callback to run.
