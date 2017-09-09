@@ -638,6 +638,8 @@ mojom("mojo_bindings") {
     "service_worker/service_worker_installed_scripts_manager.mojom",
     "service_worker/service_worker_provider.mojom",
     "service_worker/service_worker_types.mojom",
+    "shared_worker/shared_worker_client.mojom",
+    "shared_worker/shared_worker_connector.mojom",
     "storage_partition_service.mojom",
     "video_capture.mojom",
     "web_database.mojom",

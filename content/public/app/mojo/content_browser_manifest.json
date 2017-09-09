@@ -134,6 +134,7 @@
           "content::mojom::InputInjector",
 
           "content::mojom::RendererAudioOutputStreamFactory",
+          "content::mojom::SharedWorkerConnector",
           "device::mojom::Geolocation",
           "device::mojom::GeolocationService",
           "device::mojom::NFC",

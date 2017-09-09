@@ -31,10 +31,9 @@
 #ifndef WebSharedWorkerRepositoryClient_h
 #define WebSharedWorkerRepositoryClient_h
 
-#include "WebSharedWorkerCreationContextType.h"
-#include "WebSharedWorkerCreationErrors.h"
-#include "public/platform/WebAddressSpace.h"
 #include <memory>
+#include "public/platform/WebAddressSpace.h"
+#include "public/web/shared_worker_creation_context_type.mojom-shared.h"
 
 namespace blink {
 
@@ -56,7 +55,7 @@ class WebSharedWorkerRepositoryClient {
                        const WebString& content_security_policy,
                        WebContentSecurityPolicyType,
                        WebAddressSpace,
-                       WebSharedWorkerCreationContextType,
+                       mojom::SharedWorkerCreationContextType,
                        bool data_saver_enabled,
                        std::unique_ptr<WebMessagePortChannel>,
                        std::unique_ptr<blink::WebSharedWorkerConnectListener>) {

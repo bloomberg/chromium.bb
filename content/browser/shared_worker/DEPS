@@ -1,3 +1,5 @@
 include_rules = [
+  "+third_party/WebKit/public/platform/web_feature.mojom.h",
+  "+third_party/WebKit/public/web/shared_worker_creation_context_type.mojom.h",
   "+third_party/WebKit/public/web/worker_content_settings_proxy.mojom.h",
 ]

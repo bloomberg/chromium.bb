@@ -16,7 +16,7 @@ SharedWorkerInstance::SharedWorkerInstance(
     blink::WebAddressSpace creation_address_space,
     ResourceContext* resource_context,
     const WorkerStoragePartitionId& partition_id,
-    blink::WebSharedWorkerCreationContextType creation_context_type,
+    blink::mojom::SharedWorkerCreationContextType creation_context_type,
     bool data_saver_enabled)
     : url_(url),
       name_(name),

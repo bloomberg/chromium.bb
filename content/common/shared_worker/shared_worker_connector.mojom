@@ -1,0 +1,31 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module content.mojom;
+
+import "content/common/shared_worker/shared_worker_client.mojom";
+import "third_party/WebKit/public/platform/address_space.mojom";
+import "third_party/WebKit/public/platform/content_security_policy.mojom";
+import "third_party/WebKit/public/web/shared_worker_creation_context_type.mojom";
+import "url/mojo/url.mojom";
+
+struct SharedWorkerInfo {
+  url.mojom.Url url;
+  string name;
+  string content_security_policy;
+  blink.mojom.ContentSecurityPolicyType content_security_policy_type;
+  blink.mojom.AddressSpace creation_address_space;
+  blink.mojom.SharedWorkerCreationContextType creation_context_type;
+  bool data_saver_enabled;
+};
+
+// This interface is exposed to enable a client to create and connect to a
+// shared worker.
+interface SharedWorkerConnector {
+  // Connect to (and create if necessary) a SharedWorker specified by |info|.
+  // The SharedWorker will be terminated if all clients go away.
+  Connect(SharedWorkerInfo info,
+          SharedWorkerClient client,
+          handle<message_pipe> message_port);
+};

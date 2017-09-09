@@ -15,12 +15,10 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
+#include "content/common/shared_worker/shared_worker_connector.mojom.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/worker_service.h"
-#include "third_party/WebKit/public/web/WebSharedWorkerCreationErrors.h"
-
-struct ViewHostMsg_CreateWorker_Params;
 
 namespace content {
 
@@ -39,6 +37,9 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public WorkerService {
   // Returns the SharedWorkerServiceImpl singleton.
   static SharedWorkerServiceImpl* GetInstance();
 
+  void AddFilter(SharedWorkerMessageFilter* filter);
+  void RemoveFilter(SharedWorkerMessageFilter* filter);
+
   // WorkerService implementation:
   bool TerminateWorker(int process_id, int route_id) override;
   std::vector<WorkerInfo> GetWorkers() override;
@@ -46,17 +47,13 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public WorkerService {
   void RemoveObserver(WorkerServiceObserver* observer) override;
 
   // These methods correspond to worker related IPCs.
-  blink::WebWorkerCreationError CreateWorker(
-      const ViewHostMsg_CreateWorker_Params& params,
-      int route_id,
-      SharedWorkerMessageFilter* filter,
-      ResourceContext* resource_context,
-      const WorkerStoragePartitionId& partition_id);
-  void ConnectToWorker(SharedWorkerMessageFilter* filter,
-                       int worker_route_id,
-                       const MessagePort& port);
-  void DocumentDetached(SharedWorkerMessageFilter* filter,
-                        unsigned long long document_id);
+  void CreateWorker(int process_id,
+                    int frame_id,
+                    mojom::SharedWorkerInfoPtr info,
+                    mojom::SharedWorkerClientPtr client,
+                    const MessagePort& port,
+                    ResourceContext* resource_context,
+                    const WorkerStoragePartitionId& partition_id);
   void CountFeature(SharedWorkerMessageFilter* filter,
                     int worker_route_id,
                     uint32_t feature);
@@ -76,11 +73,6 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public WorkerService {
 
   void OnSharedWorkerMessageFilterClosing(
       SharedWorkerMessageFilter* filter);
-
-  // Removes the references to shared workers from all the documents in the
-  // renderer frame. And shuts down any shared workers that are no longer
-  // referenced by active documents.
-  void RenderFrameDetached(int render_process_id, int render_frame_id);
 
   // Checks the worker dependency of renderer processes and calls
   // IncrementWorkerRefCount and DecrementWorkerRefCount of
@@ -111,13 +103,14 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public WorkerService {
 
   void ResetForTesting();
 
+  scoped_refptr<SharedWorkerMessageFilter> GetFilter(int render_process_id);
+
   // Reserves the render process to create Shared Worker. This reservation
   // procedure will be executed on UI thread and
   // RenderProcessReservedCallback() or RenderProcessReserveFailedCallback()
-  // will be called on IO thread. Returns blink::WebWorkerCreationErrorNone or
-  // blink::WebWorkerCreationErrorSecureContextMismatch on success.
+  // will be called on IO thread.
   // (SecureContextMismatch is used for UMA and should be handled as success.)
-  blink::WebWorkerCreationError ReserveRenderProcessToCreateWorker(
+  void ReserveRenderProcessToCreateWorker(
       std::unique_ptr<SharedWorkerPendingInstance> pending_instance);
 
   // Called after the render process is reserved to create Shared Worker in it.
@@ -163,6 +156,9 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public WorkerService {
   int next_pending_instance_id_;
 
   base::ObserverList<WorkerServiceObserver> observers_;
+
+  // Map from render process ID to filter.
+  std::map<int, scoped_refptr<SharedWorkerMessageFilter>> filters_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerServiceImpl);
 };

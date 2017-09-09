@@ -597,8 +597,6 @@ source_set("blink_headers") {
     "web/WebSharedWorker.h",
     "web/WebSharedWorkerClient.h",
     "web/WebSharedWorkerConnectListener.h",
-    "web/WebSharedWorkerCreationContextType.h",
-    "web/WebSharedWorkerCreationErrors.h",
     "web/WebSharedWorkerRepositoryClient.h",
     "web/WebSpeechGrammar.h",
     "web/WebSpeechRecognitionHandle.h",
@@ -775,6 +773,8 @@ mojom("mojo_bindings") {
     "//third_party/WebKit/Source/platform/loader",
   ]
   sources = [
+    "platform/address_space.mojom",
+    "platform/content_security_policy.mojom",
     "platform/display_mode.mojom",
     "platform/media_download_in_product_help.mojom",
     "platform/media_engagement.mojom",
@@ -807,6 +807,7 @@ mojom("mojo_bindings") {
     "platform/reporting.mojom",
     "platform/site_engagement.mojom",
     "web/console_message.mojom",
+    "web/shared_worker_creation_context_type.mojom",
     "web/window_features.mojom",
     "web/worker_content_settings_proxy.mojom",
   ]
