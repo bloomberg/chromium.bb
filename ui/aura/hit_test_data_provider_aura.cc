@@ -64,7 +64,7 @@ viz::mojom::HitTestRegionListPtr HitTestDataProviderAura::GetHitTestData()
 void HitTestDataProviderAura::GetHitTestDataRecursively(
     aura::Window* window,
     viz::mojom::HitTestRegionList* hit_test_region_list) const {
-  WindowTargeter* targeter =
+  WindowTargeter* parent_targeter =
       static_cast<WindowTargeter*>(window->GetEventTargeter());
 
   // TODO(varkha): Figure out if we need to add hit-test regions for |window|.
@@ -85,9 +85,13 @@ void HitTestDataProviderAura::GetHitTestDataRecursively(
       uint32_t flags = child->layer()->GetPrimarySurfaceInfo()
                            ? viz::mojom::kHitTestChildSurface
                            : viz::mojom::kHitTestMine;
-      // Use the |targeter| to query for possibly expanded hit-test area.
-      // Use the |child| bounds with mouse and touch flags when there is no
-      // |targeter|.
+      WindowTargeter* targeter =
+          static_cast<WindowTargeter*>(child->GetEventTargeter());
+      if (!targeter)
+        targeter = parent_targeter;
+      // Use the |child|'s (when set) or the |window|'s |targeter| to query for
+      // possibly expanded hit-test area. Use the |child| bounds with mouse and
+      // touch flags when there is no |targeter|.
       if (targeter &&
           targeter->GetHitTestRects(child, &rect_mouse, &rect_touch)) {
         touch_and_mouse_are_same = rect_mouse == rect_touch;
