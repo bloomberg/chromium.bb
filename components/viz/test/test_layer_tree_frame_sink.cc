@@ -53,6 +53,15 @@ TestLayerTreeFrameSink::~TestLayerTreeFrameSink() {
   DCHECK(copy_requests_.empty());
 }
 
+void TestLayerTreeFrameSink::SetDisplayColorSpace(
+    const gfx::ColorSpace& blending_color_space,
+    const gfx::ColorSpace& output_color_space) {
+  blending_color_space_ = blending_color_space;
+  output_color_space_ = output_color_space;
+  if (display_)
+    display_->SetColorSpace(blending_color_space_, output_color_space_);
+}
+
 void TestLayerTreeFrameSink::RequestCopyOfOutput(
     std::unique_ptr<CopyOutputRequest> request) {
   copy_requests_.push_back(std::move(request));
@@ -110,6 +119,7 @@ bool TestLayerTreeFrameSink::BindToClient(
   display_->Initialize(this, frame_sink_manager_->surface_manager());
   display_->renderer_for_testing()->SetEnlargePassTextureAmountForTesting(
       enlarge_pass_texture_amount_);
+  display_->SetColorSpace(blending_color_space_, output_color_space_);
   display_->SetVisible(true);
   return true;
 }

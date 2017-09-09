@@ -2619,9 +2619,12 @@ void GLRenderer::CopyDrawnRenderPass(
     std::unique_ptr<CopyOutputRequest> request) {
   TRACE_EVENT0("cc", "GLRenderer::CopyDrawnRenderPass");
   gfx::Rect copy_rect = current_frame()->current_render_pass->output_rect;
+  gfx::ColorSpace render_pass_color_space =
+      current_frame()->current_render_pass->color_space;
   if (request->has_area())
     copy_rect.Intersect(request->area());
-  GetFramebufferPixelsAsync(copy_rect, std::move(request));
+  GetFramebufferPixelsAsync(copy_rect, render_pass_color_space,
+                            std::move(request));
 }
 
 void GLRenderer::ToGLMatrix(float* gl_matrix, const gfx::Transform& transform) {
@@ -2807,6 +2810,7 @@ void GLRenderer::DidReceiveTextureInUseResponses(
 
 void GLRenderer::GetFramebufferPixelsAsync(
     const gfx::Rect& rect,
+    const gfx::ColorSpace& framebuffer_color_space,
     std::unique_ptr<CopyOutputRequest> request) {
   if (rect.IsEmpty())
     return;  // |request| auto-sends empty result on out-of-scope.
@@ -2860,7 +2864,7 @@ void GLRenderer::GetFramebufferPixelsAsync(
       gl_->GenSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
 
       TextureMailbox texture_mailbox(mailbox, sync_token, GL_TEXTURE_2D);
-      // TODO(miu): Set |texture_mailbox.color_space_|. http://crbug.com/758057
+      texture_mailbox.set_color_space(framebuffer_color_space);
 
       std::unique_ptr<SingleReleaseCallback> release_callback;
       if (own_mailbox) {
@@ -2911,7 +2915,7 @@ void GLRenderer::GetFramebufferPixelsAsync(
       context_support_->SignalQuery(
           query, base::Bind(&GLRenderer::FinishedReadback,
                             weak_ptr_factory_.GetWeakPtr(), buffer, query,
-                            window_rect.size()));
+                            window_rect.size(), framebuffer_color_space));
       return;
     }
   }
@@ -2919,9 +2923,11 @@ void GLRenderer::GetFramebufferPixelsAsync(
   NOTREACHED();
 }
 
-void GLRenderer::FinishedReadback(unsigned source_buffer,
-                                  unsigned query,
-                                  const gfx::Size& size) {
+void GLRenderer::FinishedReadback(
+    unsigned source_buffer,
+    unsigned query,
+    const gfx::Size& size,
+    const gfx::ColorSpace& framebuffer_color_space) {
   DCHECK(!pending_async_read_pixels_.empty());
 
   if (query != 0) {
