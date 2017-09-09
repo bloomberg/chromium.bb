@@ -1101,17 +1101,12 @@ TEST_P(WebMediaPlayerImplBackgroundBehaviorTest, VideoOnly) {
   // Never disable video track for a video only stream.
   EXPECT_FALSE(ShouldDisableVideoWhenHidden());
 
-  // There's no optimization criteria for video only on Android.
-  bool matches_requirements =
-      IsAndroid() ||
-      ((GetDurationSec() < GetMaxKeyframeDistanceSec()) ||
-       (GetAverageKeyframeDistanceSec() < GetMaxKeyframeDistanceSec()));
-  EXPECT_EQ(matches_requirements, IsBackgroundOptimizationCandidate());
+  // Video only is always optimized.
+  EXPECT_TRUE(IsBackgroundOptimizationCandidate());
 
   // Video is always paused when suspension is on and only if matches the
   // optimization criteria if the optimization is on.
-  bool should_pause =
-      IsMediaSuspendOn() || (IsBackgroundPauseOn() && matches_requirements);
+  bool should_pause = IsMediaSuspendOn() || IsBackgroundPauseOn();
   EXPECT_EQ(should_pause, ShouldPauseVideoWhenHidden());
 }
 

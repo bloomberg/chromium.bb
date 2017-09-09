@@ -2680,16 +2680,16 @@ bool WebMediaPlayerImpl::IsBackgroundOptimizationCandidate() const {
   // Don't optimize players being Cast.
   if (IsRemote())
     return false;
-
-  // Video-only players are always optimized (paused) on Android.
-  // Don't check the keyframe distance and duration.
-  if (!HasAudio() && HasVideo())
-    return true;
 #endif  // defined(OS_ANDROID)
 
   // Don't optimize audio-only or streaming players.
   if (!HasVideo() || IsStreaming())
     return false;
+
+  // Video-only players are always optimized (paused).
+  // Don't check the keyframe distance and duration.
+  if (!HasAudio() && HasVideo())
+    return true;
 
   // Videos shorter than the maximum allowed keyframe distance can be optimized.
   base::TimeDelta duration = GetPipelineMediaDuration();
