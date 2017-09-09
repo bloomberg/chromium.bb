@@ -2181,4 +2181,30 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessible2GetLocalizedExtendedRole) {
   EXPECT_STREQ(L"extended role", role);
 }
 
+TEST_F(AXPlatformNodeWinTest, TestIAccessibleTextGetNCharacters) {
+  AXNodeData root;
+  root.id = 0;
+  root.role = AX_ROLE_STATIC_TEXT;
+  root.child_ids.push_back(1);
+
+  AXNodeData node;
+  node.id = 1;
+  node.role = AX_ROLE_STATIC_TEXT;
+  node.SetName("Name");
+
+  Init(root, node);
+
+  AXNode* child_node = GetRootNode()->children()[0];
+  ScopedComPtr<IAccessible> child_iaccessible(IAccessibleFromNode(child_node));
+  ASSERT_NE(nullptr, child_iaccessible.Get());
+
+  ScopedComPtr<IAccessibleText> text;
+  child_iaccessible.CopyTo(text.GetAddressOf());
+  ASSERT_NE(nullptr, text.Get());
+
+  LONG count;
+  EXPECT_HRESULT_SUCCEEDED(text->get_nCharacters(&count));
+  EXPECT_EQ(4, count);
+}
+
 }  // namespace ui

@@ -2275,7 +2275,11 @@ STDMETHODIMP AXPlatformNodeWin::get_table(IUnknown** table) {
 //
 
 STDMETHODIMP AXPlatformNodeWin::get_nCharacters(LONG* n_characters) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_CHARACTERS);
   COM_OBJECT_VALIDATE_1_ARG(n_characters);
+  AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes |
+                                       ui::AXMode::kInlineTextBoxes);
+
   base::string16 text = TextForIAccessibleText();
   *n_characters = static_cast<LONG>(text.size());
 

@@ -234,17 +234,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_imageSize(LONG* height,
 //
 
 STDMETHODIMP BrowserAccessibilityComWin::get_nCharacters(LONG* n_characters) {
-  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_CHARACTERS);
-  AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes |
-                            ui::AXMode::kInlineTextBoxes);
-  if (!owner())
-    return E_FAIL;
-
-  if (!n_characters)
-    return E_INVALIDARG;
-
-  *n_characters = static_cast<LONG>(GetText().size());
-  return S_OK;
+  return AXPlatformNodeWin::get_nCharacters(n_characters);
 }
 
 STDMETHODIMP BrowserAccessibilityComWin::get_caretOffset(LONG* offset) {
