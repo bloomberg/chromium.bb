@@ -287,8 +287,13 @@ bool InterfaceEndpointClient::AcceptWithResponder(
     DCHECK(base::ContainsKey(sync_responses_, request_id));
     auto iter = sync_responses_.find(request_id);
     DCHECK_EQ(&response_received, iter->second->response_received);
-    if (response_received)
+    if (response_received) {
       ignore_result(responder->Accept(&iter->second->response));
+    } else {
+      DVLOG(1) << "Mojo sync call returns without receiving a response. "
+               << "Typcially it is because the interface has been "
+               << "disconnected.";
+    }
     sync_responses_.erase(iter);
   }
 
