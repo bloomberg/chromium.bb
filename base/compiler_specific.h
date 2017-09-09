@@ -198,7 +198,7 @@
 
 // Macro for hinting that an expression is likely to be false.
 #if !defined(UNLIKELY)
-#if defined(COMPILER_GCC)
+#if defined(COMPILER_GCC) || defined(__clang__)
 #define UNLIKELY(x) __builtin_expect(!!(x), 0)
 #else
 #define UNLIKELY(x) (x)
@@ -206,7 +206,7 @@
 #endif  // !defined(UNLIKELY)
 
 #if !defined(LIKELY)
-#if defined(COMPILER_GCC)
+#if defined(COMPILER_GCC) || defined(__clang__)
 #define LIKELY(x) __builtin_expect(!!(x), 1)
 #else
 #define LIKELY(x) (x)
