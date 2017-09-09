@@ -39,6 +39,7 @@ class ErrorReport {
     INTERSTITIAL_CAPTIVE_PORTAL,
     INTERSTITIAL_CLOCK,
     INTERSTITIAL_SUPERFISH,
+    INTERSTITIAL_MITM_SOFTWARE,
   };
 
   // Whether the user clicked through the interstitial or not.
