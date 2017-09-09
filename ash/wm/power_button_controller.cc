@@ -18,6 +18,7 @@
 #include "ash/wm/session_state_animator.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
+#include "base/time/default_tick_clock.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -26,10 +27,11 @@
 
 namespace ash {
 
-PowerButtonController::PowerButtonController(LockStateController* controller)
-    : lock_state_controller_(controller) {
+PowerButtonController::PowerButtonController()
+    : lock_state_controller_(Shell::Get()->lock_state_controller()),
+      tick_clock_(new base::DefaultTickClock) {
   ProcessCommandLine();
-  display_controller_ = base::MakeUnique<PowerButtonDisplayController>();
+  display_controller_ = std::make_unique<PowerButtonDisplayController>();
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       this);
   chromeos::AccelerometerReader::GetInstance()->AddObserver(this);
@@ -194,7 +196,13 @@ void PowerButtonController::OnAccelerometerUpdated(
   if (force_clamshell_power_button_ || tablet_controller_)
     return;
   tablet_controller_.reset(new TabletPowerButtonController(
-      lock_state_controller_, display_controller_.get()));
+      display_controller_.get(), tick_clock_.get()));
+}
+
+void PowerButtonController::SetTickClockForTesting(
+    std::unique_ptr<base::TickClock> tick_clock) {
+  DCHECK(tick_clock);
+  tick_clock_ = std::move(tick_clock);
 }
 
 void PowerButtonController::ProcessCommandLine() {

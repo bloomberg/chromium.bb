@@ -1022,8 +1022,7 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   lock_state_controller_ =
       base::MakeUnique<LockStateController>(shutdown_controller_.get());
-  power_button_controller_.reset(
-      new PowerButtonController(lock_state_controller_.get()));
+  power_button_controller_ = std::make_unique<PowerButtonController>();
   // Pass the initial display state to PowerButtonController.
   power_button_controller_->OnDisplayModeChanged(
       display_configurator_->cached_displays());
