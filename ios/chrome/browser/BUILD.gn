@@ -163,7 +163,7 @@ source_set("browser_impl") {
     "//components/history/core/browser",
     "//components/keyed_service/core",
     "//components/language_usage_metrics",
-    "//components/metrics:profiler_ios",
+    "//components/metrics",
     "//components/metrics_services_manager",
     "//components/net_log",
     "//components/network_time",

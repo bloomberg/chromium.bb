@@ -689,7 +689,6 @@ source_set("common") {
     "//components/metrics",
     "//components/metrics:gpu",
     "//components/metrics:net",
-    "//components/metrics:profiler",
     "//components/metrics:ui",
     "//components/navigation_interception",
     "//components/network_session_configurator/common",

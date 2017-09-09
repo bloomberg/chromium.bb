@@ -29,7 +29,6 @@ source_set("metrics") {
     "//components/keyed_service/ios",
     "//components/metrics",
     "//components/metrics:net",
-    "//components/metrics:profiler",
     "//components/metrics:ui",
     "//components/metrics_services_manager",
     "//components/navigation_metrics",

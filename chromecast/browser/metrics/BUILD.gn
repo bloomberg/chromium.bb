@@ -20,7 +20,6 @@ source_set("metrics") {
     "//components/metrics",
     "//components/metrics:gpu",
     "//components/metrics:net",
-    "//components/metrics:profiler",
     "//components/prefs",
     "//content/public/browser",
     "//content/public/common",

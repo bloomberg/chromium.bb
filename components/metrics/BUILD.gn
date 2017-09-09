@@ -208,26 +208,6 @@ static_library("net") {
   }
 }
 
-static_library("profiler") {
-  sources = [
-    "profiler/profiler_metrics_provider.cc",
-    "profiler/profiler_metrics_provider.h",
-    "profiler/tracking_synchronizer.cc",
-    "profiler/tracking_synchronizer.h",
-    "profiler/tracking_synchronizer_delegate.h",
-    "profiler/tracking_synchronizer_observer.cc",
-    "profiler/tracking_synchronizer_observer.h",
-  ]
-
-  public_deps = [
-    ":metrics",
-  ]
-  deps = [
-    "//base",
-    "//components/variations",
-  ]
-}
-
 static_library("ui") {
   sources = [
     "ui/screen_info_metrics_provider.cc",
@@ -243,39 +223,6 @@ static_library("ui") {
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
-}
-
-if (!is_ios) {
-  static_library("profiler_content") {
-    sources = [
-      "profiler/content/content_tracking_synchronizer_delegate.cc",
-      "profiler/content/content_tracking_synchronizer_delegate.h",
-    ]
-
-    public_deps = [
-      ":profiler",
-    ]
-    deps = [
-      "//base",
-      "//components/nacl/common:process_type",
-      "//content/public/browser",
-      "//content/public/common",
-    ]
-  }
-} else {
-  static_library("profiler_ios") {
-    sources = [
-      "profiler/ios/ios_tracking_synchronizer_delegate.cc",
-      "profiler/ios/ios_tracking_synchronizer_delegate.h",
-    ]
-
-    public_deps = [
-      ":profiler",
-    ]
-    deps = [
-      "//base",
-    ]
-  }
 }
 
 static_library("single_sample_metrics") {
@@ -387,8 +334,6 @@ source_set("unit_tests") {
     "net/network_metrics_provider_unittest.cc",
     "persisted_logs_unittest.cc",
     "persistent_system_profile_unittest.cc",
-    "profiler/profiler_metrics_provider_unittest.cc",
-    "profiler/tracking_synchronizer_unittest.cc",
     "single_sample_metrics_factory_impl_unittest.cc",
     "stability_metrics_helper_unittest.cc",
     "stability_metrics_provider_unittest.cc",
@@ -401,7 +346,6 @@ source_set("unit_tests") {
     ":component_metrics",
     ":metrics",
     ":net",
-    ":profiler",
     ":single_sample_metrics",
     ":test_support",
     ":ui",

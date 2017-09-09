@@ -34,8 +34,6 @@
 #include "components/metrics/net/cellular_logic_helper.h"
 #include "components/metrics/net/net_metrics_log_uploader.h"
 #include "components/metrics/net/network_metrics_provider.h"
-#include "components/metrics/profiler/profiler_metrics_provider.h"
-#include "components/metrics/profiler/tracking_synchronizer.h"
 #include "components/metrics/stability_metrics_helper.h"
 #include "components/metrics/ui/screen_info_metrics_provider.h"
 #include "components/metrics/url_constants.h"
@@ -68,9 +66,6 @@ IOSChromeMetricsServiceClient::IOSChromeMetricsServiceClient(
     metrics::MetricsStateManager* state_manager)
     : metrics_state_manager_(state_manager),
       stability_metrics_provider_(nullptr),
-      profiler_metrics_provider_(nullptr),
-      start_time_(base::TimeTicks::Now()),
-      has_uploaded_profiler_data_(false),
       weak_ptr_factory_(this) {
   DCHECK(thread_checker_.CalledOnValidThread());
   RegisterForNotifications();
@@ -141,15 +136,7 @@ void IOSChromeMetricsServiceClient::CollectFinalMetricsForLog(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   collect_final_metrics_done_callback_ = done_callback;
-
-  if (ShouldIncludeProfilerDataInLog()) {
-    // Fetch profiler data. This will call into
-    // |FinishedReceivingProfilerData()| when the task completes.
-    metrics::TrackingSynchronizer::FetchProfilerDataAsynchronously(
-        weak_ptr_factory_.GetWeakPtr());
-  } else {
-    CollectFinalHistograms();
-  }
+  CollectFinalHistograms();
 }
 
 std::unique_ptr<metrics::MetricsLogUploader>
@@ -215,15 +202,6 @@ void IOSChromeMetricsServiceClient::Initialize() {
   metrics_service_->RegisterMetricsProvider(
       base::MakeUnique<metrics::DriveMetricsProvider>(ios::FILE_LOCAL_STATE));
 
-  {
-    auto profiler_metrics_provider =
-        base::MakeUnique<metrics::ProfilerMetricsProvider>(
-            base::Bind(&metrics::IsCellularLogicEnabled));
-    profiler_metrics_provider_ = profiler_metrics_provider.get();
-    metrics_service_->RegisterMetricsProvider(
-        std::move(profiler_metrics_provider));
-  }
-
   metrics_service_->RegisterMetricsProvider(
       base::MakeUnique<metrics::CallStackProfileMetricsProvider>());
 
@@ -241,40 +219,6 @@ void IOSChromeMetricsServiceClient::Initialize() {
 
   metrics_service_->RegisterMetricsProvider(
       base::MakeUnique<translate::TranslateRankerMetricsProvider>());
-}
-
-bool IOSChromeMetricsServiceClient::ShouldIncludeProfilerDataInLog() {
-  // Upload profiler data at most once per session.
-  if (has_uploaded_profiler_data_)
-    return false;
-
-  // For each log, flip a fair coin. Thus, profiler data is sent with the first
-  // log with probability 50%, with the second log with probability 25%, and so
-  // on. As a result, uploaded data is biased toward earlier logs.
-  // TODO(isherman): Explore other possible algorithms, and choose one that
-  // might be more appropriate.  For example, it might be reasonable to include
-  // profiler data with some fixed probability, so that a given client might
-  // upload profiler data more than once; but on average, clients won't upload
-  // too much data.
-  if (base::RandDouble() < 0.5)
-    return false;
-
-  has_uploaded_profiler_data_ = true;
-  return true;
-}
-
-void IOSChromeMetricsServiceClient::ReceivedProfilerData(
-    const metrics::ProfilerDataAttributes& attributes,
-    const tracked_objects::ProcessDataPhaseSnapshot& process_data_phase,
-    const metrics::ProfilerEvents& past_events) {
-  profiler_metrics_provider_->RecordProfilerData(
-      process_data_phase, attributes.process_id, attributes.process_type,
-      attributes.profiling_phase, attributes.phase_start - start_time_,
-      attributes.phase_finish - start_time_, past_events);
-}
-
-void IOSChromeMetricsServiceClient::FinishedReceivingProfilerData() {
-  CollectFinalHistograms();
 }
 
 void IOSChromeMetricsServiceClient::CollectFinalHistograms() {
