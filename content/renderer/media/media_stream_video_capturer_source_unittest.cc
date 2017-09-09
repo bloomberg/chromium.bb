@@ -159,6 +159,7 @@ TEST_F(MediaStreamVideoCapturerSourceTest, StartAndStop) {
             webkit_source_.GetReadyState());
 
   EXPECT_FALSE(source_stopped_);
+  EXPECT_TRUE(source_->GetCurrentCaptureParams().has_value());
 
   EXPECT_CALL(mock_delegate(), StopCapture());
   OnStarted(false);

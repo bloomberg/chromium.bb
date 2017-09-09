@@ -138,6 +138,12 @@ MediaStreamVideoSource::GetCurrentFormat() const {
   return base::Optional<media::VideoCaptureFormat>();
 }
 
+base::Optional<media::VideoCaptureParams>
+MediaStreamVideoSource::GetCurrentCaptureParams() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return base::Optional<media::VideoCaptureParams>();
+}
+
 void MediaStreamVideoSource::DoStopSource() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(3) << "DoStopSource()";
