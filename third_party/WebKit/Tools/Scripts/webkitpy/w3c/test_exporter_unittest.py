@@ -182,12 +182,12 @@ class TestExporterTest(LoggingTestCase):
             # try to remove the provisional label from PRs it has already
             # removed it from.
             'get_pr_branch',
-            'merge_pull_request',
+            'merge_pr',
             'delete_remote_branch',
             # 5. #458479
             'pr_for_chromium_commit',
             'get_pr_branch',
-            'merge_pull_request',
+            'merge_pr',
         ])
         self.assertEqual(test_exporter.wpt_github.pull_requests_created, [
             ('chromium-export-52c3178508', 'Fake subject', 'Fake body\n\nChange-Id: I0476'),
@@ -340,7 +340,7 @@ class TestExporterTest(LoggingTestCase):
         self.assertEqual(test_exporter.wpt_github.calls, [
             'pr_for_chromium_commit',
             'get_pr_branch',
-            'merge_pull_request',
+            'merge_pr',
             'delete_remote_branch',
         ])
         self.assertEqual(test_exporter.wpt_github.pull_requests_created, [])

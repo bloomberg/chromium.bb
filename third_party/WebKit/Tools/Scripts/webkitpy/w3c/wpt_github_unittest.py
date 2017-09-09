@@ -91,6 +91,27 @@ class WPTGitHubTest(unittest.TestCase):
         with self.assertRaises(GitHubError):
             self.wpt_github.all_pull_requests()
 
+    def test_create_pr_success(self):
+        self.wpt_github.host.web.responses = [
+            {'status_code': 201,
+             'body': json.dumps({'number': 1234})},
+        ]
+        self.assertEqual(self.wpt_github.create_pr('branch', 'title', 'body'), 1234)
+
+    def test_create_pr_throws_github_error_on_non_201(self):
+        self.wpt_github.host.web.responses = [
+            {'status_code': 200},
+        ]
+        with self.assertRaises(GitHubError):
+            self.wpt_github.create_pr('branch', 'title', 'body')
+
+    def test_get_pr_branch(self):
+        self.wpt_github.host.web.responses = [
+            {'status_code': 200,
+             'body': json.dumps({'head': {'ref': 'fake_branch'}})},
+        ]
+        self.assertEqual(self.wpt_github.get_pr_branch(1234), 'fake_branch')
+
     def test_is_pr_merged_receives_204(self):
         self.wpt_github.host.web.responses = [
             {'status_code': 204},
@@ -103,16 +124,19 @@ class WPTGitHubTest(unittest.TestCase):
         ]
         self.assertFalse(self.wpt_github.is_pr_merged(1234))
 
-    def test_merge_pull_request_throws_merge_error_on_405(self):
+    def test_merge_pr_success(self):
         self.wpt_github.host.web.responses = [
             {'status_code': 200},
+        ]
+        self.wpt_github.merge_pr(1234)
+
+    def test_merge_pr_throws_merge_error_on_405(self):
+        self.wpt_github.host.web.responses = [
             {'status_code': 405},
         ]
 
-        self.wpt_github.merge_pull_request(1234)
-
         with self.assertRaises(MergeError):
-            self.wpt_github.merge_pull_request(5678)
+            self.wpt_github.merge_pr(5678)
 
     def test_remove_label_throws_github_error_on_non_200_or_204(self):
         self.wpt_github.host.web.responses = [
