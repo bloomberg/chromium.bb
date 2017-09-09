@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/ui/omnibox/page_info_model.h"
+#include "ios/chrome/browser/ui/page_info/page_info_model.h"
 
 #include <stdint.h>
 
@@ -22,7 +22,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/chrome/browser/ui/omnibox/page_info_model_observer.h"
+#include "ios/chrome/browser/ui/page_info/page_info_model_observer.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"

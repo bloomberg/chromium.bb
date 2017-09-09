@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/omnibox/page_info_view_controller.h"
+#import "ios/chrome/browser/ui/page_info/page_info_view_controller.h"
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -16,8 +16,7 @@
 #import "ios/chrome/browser/ui/animation_util.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/fancy_ui/bidi_container_view.h"
-#include "ios/chrome/browser/ui/omnibox/page_info_model.h"
-#import "ios/chrome/browser/ui/popup_menu/popup_menu_view.h"
+#include "ios/chrome/browser/ui/page_info/page_info_model.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -121,8 +120,9 @@ void PageInfoModelBubbleBridge::OnPageInfoModelChanged() {
   // the controller (and thus this bridge) get destroyed before the message
   // can be delivered.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&PageInfoModelBubbleBridge::PerformLayout,
-                            weak_ptr_factory_.GetWeakPtr()),
+      FROM_HERE,
+      base::Bind(&PageInfoModelBubbleBridge::PerformLayout,
+                 weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(1000 /* milliseconds */));
 }
 
@@ -202,7 +202,8 @@ void PageInfoModelBubbleBridge::PerformLayout() {
 - (id)initWithModel:(PageInfoModel*)model
              bridge:(PageInfoModelObserver*)bridge
         sourcePoint:(CGPoint)sourcePoint
-         parentView:(UIView*)parent {
+         parentView:(UIView*)parent
+         dispatcher:(id<BrowserCommands>)dispatcher {
   DCHECK(parent);
   self = [super init];
   if (self) {
@@ -228,6 +229,7 @@ void PageInfoModelBubbleBridge::PerformLayout() {
     model_.reset(model);
     bridge_.reset(bridge);
     origin_ = sourcePoint;
+    dispatcher_ = dispatcher;
 
     UIInterfaceOrientation orientation =
         [[UIApplication sharedApplication] statusBarOrientation];

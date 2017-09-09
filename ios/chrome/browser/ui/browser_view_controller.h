@@ -28,10 +28,6 @@ namespace ios {
 class ChromeBrowserState;
 }
 
-// Notification sent when the page info is shown.
-extern NSString* const kPageInfoWillShowNotification;
-// Notification sent when the page info is hidden.
-extern NSString* const kPageInfoWillHideNotification;
 // Notification sent when the location bar becomes first responder.
 extern NSString* const kLocationBarBecomesFirstResponderNotification;
 // Notification sent when the location bar resigns first responder.
