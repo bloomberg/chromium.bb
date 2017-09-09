@@ -363,5 +363,29 @@ TEST_F(NGInlineLayoutAlgorithmTest, PositionFloatsWithMargins) {
   EXPECT_EQ(LayoutUnit(45), inline_text_box1->X());
 }
 
+// Test glyph bounding box causes visual overflow.
+TEST_F(NGInlineLayoutAlgorithmTest, VisualRect) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      #container {
+        font: 20px/.5 Ahem;
+      }
+    </style>
+    <div id="container">Hello</div>
+  )HTML");
+  Element* element = GetElementById("container");
+  RefPtr<NGConstraintSpace> space;
+  RefPtr<NGPhysicalBoxFragment> box_fragment;
+  std::tie(box_fragment, space) = RunBlockLayoutAlgorithmForElement(element);
+
+  EXPECT_EQ(LayoutUnit(10), box_fragment->Size().height);
+
+  LayoutRect visual_rect = box_fragment->VisualRect();
+  EXPECT_EQ(LayoutUnit(-5), visual_rect.Y());
+  EXPECT_EQ(LayoutUnit(20), visual_rect.Height());
+}
+
 }  // namespace
 }  // namespace blink
