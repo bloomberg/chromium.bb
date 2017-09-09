@@ -30,7 +30,7 @@ class PasswordReuseDetectionManager : public PasswordReuseDetectorConsumer {
   void OnKeyPressed(const base::string16& text);
 
   // PasswordReuseDetectorConsumer implementation
-  void OnReuseFound(const base::string16& password,
+  void OnReuseFound(size_t password_length,
                     bool matches_sync_password,
                     const std::vector<std::string>& matching_domains,
                     int saved_passwords) override;

@@ -55304,12 +55304,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>dvadym@chromium.org</owner>
   <owner>nparker@chromium.org</owner>
   <summary>
-    A password reuse is an event when the user typed a string that is equal to a
-    saved password on another domain, and this saved password is called reused
-    password.
+    This metric shows how many saved credentials (num unique registry-controlled
+    domains) have password that's equal to the reused password.
 
-    This metric shows how many saved credentials have password that's equal to
-    the reused password.
+    Before M63 this logged a &quot;0&quot; for sync-reuse.
+
+    A &quot;password reuse&quot; is when the user typed a string that is equal
+    to a saved password on another domain or is equal to the sync password on a
+    non google-login domain.
   </summary>
 </histogram>
 
@@ -55318,12 +55320,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>dvadym@chromium.org</owner>
   <owner>nparker@chromium.org</owner>
   <summary>
-    A password reuse is an event when the user typed a string that is equal to a
-    saved password on another domain, and this saved password is called reused
-    password.
-
     This metric reports whether a password field had been detected on a page
     when a password reuse happened.
+
+    A &quot;password reuse&quot; is when the user typed a string that is equal
+    to a saved password on another domain or is equal to the sync password on a
+    non google-login domain.
+
+
   </summary>
 </histogram>
 
@@ -55332,11 +55336,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>dvadym@chromium.org</owner>
   <owner>nparker@chromium.org</owner>
   <summary>
-    A password reuse is an event when the user typed a string that is equal to a
-    saved password on another domain, and this saved password is called reused
-    password.
-
     This metric shows the length of the reused password.
+
+    Change in M63: If multiple passwords are matched simultaneously, this logs
+    the length of the longest password. Also, before M63, a &quot;0&quot; was
+    logged for sync-reuse.
+
+    A &quot;password reuse&quot; is when the user typed a string that is equal
+    to a saved password on another domain or is equal to the sync password on a
+    non google-login domain.
+
+
   </summary>
 </histogram>
 
@@ -55345,12 +55355,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>dvadym@chromium.org</owner>
   <owner>nparker@chromium.org</owner>
   <summary>
-    A password reuse is an event when the user typed a string that is equal to a
-    saved password on another domain, and this saved password is called reused
-    password.
-
     This metric shows how many credentials are stored in Password Manager when a
-    password reuse happened.
+    password reuse happened. This counts unique registry-controlled domains with
+    passwords saved.
+
+    A &quot;password reuse&quot; is when the user typed a string that is equal
+    to a saved password on another domain or is equal to the sync password on a
+    non google-login domain.
+
+    During M61/M62 this metric logged a &quot;1&quot; for every sync-reuse. It
+    was fixed in M63 such that it logs actual Password Manager credential count.
   </summary>
 </histogram>
 

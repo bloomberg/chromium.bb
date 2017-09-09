@@ -68,23 +68,30 @@ class PasswordReuseDetector : public PasswordStoreConsumer {
   // Add password from |form| to |passwords_|.
   void AddPassword(const autofill::PasswordForm& form);
 
-  // Returns true iff a reuse of a sync password is found. If reuse is found it
-  // is reported to |consumer|.
-  bool CheckSyncPasswordReuse(const base::string16& input,
-                              const std::string& domain,
-                              PasswordReuseDetectorConsumer* consumer);
+  // If sync-password reuse is found, return the length of the reused
+  // password. If no reuse is found, return 0.
+  size_t CheckSyncPasswordReuse(const base::string16& input,
+                                const std::string& domain);
 
-  // Returns true iff a reuse of a saved password is found. If reuse is found it
-  // is reported to |consumer|.
-  bool CheckSavedPasswordReuse(const base::string16& input,
-                               const std::string& domain,
-                               PasswordReuseDetectorConsumer* consumer);
+  // If saved-password reuse is found, fill in the registry-controlled
+  // domains that match any reused password, and return the length of the
+  // longest password matched.  If no reuse is found, return 0.
+  size_t CheckSavedPasswordReuse(
+      const base::string16& input,
+      const std::string& domain,
+      std::vector<std::string>* matching_domains_out);
 
   // Returns the iterator to |passwords_| that corresponds to the longest key in
   // |passwords_| that is a suffix of |input|. Returns passwords_.end() in case
   // when no key in |passwords_| is a prefix of |input|.
-  passwords_iterator FindSavedPassword(const base::string16& input);
+  passwords_iterator FindFirstSavedPassword(const base::string16& input);
 
+  // Call this repeatedly with iterator from |FindFirstSavedPassword| to
+  // find other matching passwords. This returns the iterator to |passwords_|
+  // that is the next previous matching entry that's a suffix of |input|, or
+  // passwords_.end() if there are no more.
+  passwords_iterator FindNextSavedPassword(const base::string16& input,
+                                           passwords_iterator it);
   // Contains all passwords.
   // A key is a password.
   // A value is a set of registry controlled domains on which the password
