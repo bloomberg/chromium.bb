@@ -25,6 +25,27 @@ class SecureMessageDelegateFactory {
 class RemoteDeviceProviderImpl : public RemoteDeviceProvider,
                                  public CryptAuthDeviceManager::Observer {
  public:
+  class Factory {
+   public:
+    static std::unique_ptr<RemoteDeviceProvider> NewInstance(
+        CryptAuthDeviceManager* device_manager,
+        const std::string& user_id,
+        const std::string& user_private_key,
+        SecureMessageDelegateFactory* secure_message_delegate_factory);
+
+    static void SetInstanceForTesting(Factory* factory);
+
+   protected:
+    virtual std::unique_ptr<RemoteDeviceProvider> BuildInstance(
+        CryptAuthDeviceManager* device_manager,
+        const std::string& user_id,
+        const std::string& user_private_key,
+        SecureMessageDelegateFactory* secure_message_delegate_factory);
+
+   private:
+    static Factory* factory_instance_;
+  };
+
   RemoteDeviceProviderImpl(
       CryptAuthDeviceManager* device_manager,
       const std::string& user_id,
