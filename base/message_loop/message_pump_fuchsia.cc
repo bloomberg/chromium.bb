@@ -206,6 +206,54 @@ uint32_t MessagePumpFuchsia::MxHandleWatchController::WaitEnd(
   return signals;
 }
 
+bool MessagePumpFuchsia::HandleEvents(mx_time_t deadline) {
+  mx_port_packet_t packet;
+  const mx_status_t wait_status =
+      mx_port_wait(port_.get(), deadline, &packet, 0);
+
+  if (wait_status == MX_ERR_TIMED_OUT)
+    return false;
+
+  if (wait_status != MX_OK) {
+    NOTREACHED() << "unexpected wait status: "
+                 << mx_status_get_string(wait_status);
+    return false;
+  }
+
+  if (packet.type == MX_PKT_TYPE_SIGNAL_ONE) {
+    // A watched fd caused the wakeup via mx_object_wait_async().
+    DCHECK_EQ(MX_OK, packet.status);
+    MxHandleWatchController* controller =
+        reinterpret_cast<MxHandleWatchController*>(
+            static_cast<uintptr_t>(packet.key));
+
+    DCHECK_NE(0u, packet.signal.trigger & packet.signal.observed);
+
+    mx_signals_t signals = controller->WaitEnd(packet.signal.observed);
+
+    // In the case of a persistent Watch, the Watch may be stopped and
+    // potentially deleted by the caller within the callback, in which case
+    // |controller| should not be accessed again, and we mustn't continue the
+    // watch. We check for this with a bool on the stack, which the Watch
+    // receives a pointer to.
+    bool controller_was_stopped = false;
+    controller->was_stopped_ = &controller_was_stopped;
+
+    controller->watcher_->OnMxHandleSignalled(controller->handle_, signals);
+
+    if (!controller_was_stopped) {
+      controller->was_stopped_ = nullptr;
+      if (controller->persistent_)
+        controller->WaitBegin();
+    }
+  } else {
+    // Wakeup caused by ScheduleWork().
+    DCHECK_EQ(MX_PKT_TYPE_USER, packet.type);
+  }
+
+  return true;
+}
+
 void MessagePumpFuchsia::Run(Delegate* delegate) {
   AutoReset<bool> auto_reset_keep_running(&keep_running_, true);
 
@@ -215,6 +263,10 @@ void MessagePumpFuchsia::Run(Delegate* delegate) {
       break;
 
     did_work |= delegate->DoDelayedWork(&delayed_work_time_);
+    if (!keep_running_)
+      break;
+
+    did_work |= HandleEvents(/*deadline=*/0);
     if (!keep_running_)
       break;
 
@@ -231,48 +283,7 @@ void MessagePumpFuchsia::Run(Delegate* delegate) {
     mx_time_t deadline = delayed_work_time_.is_null()
                              ? MX_TIME_INFINITE
                              : delayed_work_time_.ToMXTime();
-    mx_port_packet_t packet;
-
-    const mx_status_t wait_status =
-        mx_port_wait(port_.get(), deadline, &packet, 0);
-    if (wait_status != MX_OK) {
-      if (wait_status != MX_ERR_TIMED_OUT) {
-        NOTREACHED() << "unexpected wait status: "
-                     << mx_status_get_string(wait_status);
-      }
-      continue;
-    }
-
-    if (packet.type == MX_PKT_TYPE_SIGNAL_ONE) {
-      // A watched fd caused the wakeup via mx_object_wait_async().
-      DCHECK_EQ(MX_OK, packet.status);
-      MxHandleWatchController* controller =
-          reinterpret_cast<MxHandleWatchController*>(
-              static_cast<uintptr_t>(packet.key));
-
-      DCHECK_NE(0u, packet.signal.trigger & packet.signal.observed);
-
-      mx_signals_t signals = controller->WaitEnd(packet.signal.observed);
-
-      // In the case of a persistent Watch, the Watch may be stopped and
-      // potentially deleted by the caller within the callback, in which case
-      // |controller| should not be accessed again, and we mustn't continue the
-      // watch. We check for this with a bool on the stack, which the Watch
-      // receives a pointer to.
-      bool controller_was_stopped = false;
-      controller->was_stopped_ = &controller_was_stopped;
-
-      controller->watcher_->OnMxHandleSignalled(controller->handle_, signals);
-
-      if (!controller_was_stopped) {
-        controller->was_stopped_ = nullptr;
-        if (controller->persistent_)
-          controller->WaitBegin();
-      }
-    } else {
-      // Wakeup caused by ScheduleWork().
-      DCHECK_EQ(MX_PKT_TYPE_USER, packet.type);
-    }
+    HandleEvents(deadline);
   }
 }
 
