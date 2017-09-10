@@ -26,6 +26,8 @@ class GIN_EXPORT V8Initializer {
   // Get address and size information for currently loaded snapshot.
   // If no snapshot is loaded, the return values are null for addresses
   // and 0 for sizes.
+  static void GetV8ExternalSnapshotData(v8::StartupData* natives,
+                                        v8::StartupData* snapshot);
   static void GetV8ExternalSnapshotData(const char** natives_data_out,
                                         int* natives_size_out,
                                         const char** snapshot_data_out,
@@ -72,8 +74,7 @@ class GIN_EXPORT V8Initializer {
 
   // Get address and size information for currently loaded V8 context snapshot.
   // If no snapshot is loaded, the return values are nullptr and 0.
-  static void GetV8ContextSnapshotData(const char** snapshot_data_out,
-                                       int* snapshot_size_out);
+  static void GetV8ContextSnapshotData(v8::StartupData* snapshot);
 };
 
 }  // namespace gin
