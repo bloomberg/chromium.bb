@@ -55,7 +55,7 @@ void RunTestForURL(const GURL& url,
 // stored by host value, and can distinguish temporary zoom levels from
 // these.
 IN_PROC_BROWSER_TEST_F(HostZoomMapImplBrowserTest, GetZoomForView_Host) {
-  GURL url(embedded_test_server()->GetURL("abc.com", "/"));
+  GURL url(embedded_test_server()->GetURL("abc.com", "/title1.html"));
 
   // We must navigate so the WebContents has a committed entry.
   EXPECT_TRUE(NavigateToURL(shell(), url));
@@ -77,7 +77,7 @@ IN_PROC_BROWSER_TEST_F(HostZoomMapImplBrowserTest, GetZoomForView_Host) {
 // from these.
 IN_PROC_BROWSER_TEST_F(HostZoomMapImplBrowserTest,
                        GetZoomForView_HostAndScheme) {
-  GURL url(embedded_test_server()->GetURL("abc.com", "/"));
+  GURL url(embedded_test_server()->GetURL("abc.com", "/title1.html"));
 
   // We must navigate so the WebContents has a committed entry.
   EXPECT_TRUE(NavigateToURL(shell(), url));

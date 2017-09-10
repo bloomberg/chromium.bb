@@ -8,4 +8,5 @@ To reproduce the original crash outside of DumpRenderTree, press option-tab twic
 --------
 Frame: '<!--framePath //<!--frame1-->-->'
 --------
-
+Could not load the requested resource.
+Error code: -6 (net::ERR_FILE_NOT_FOUND)

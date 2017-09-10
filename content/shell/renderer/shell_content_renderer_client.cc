@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "components/cdm/renderer/external_clear_key_key_system_properties.h"
 #include "components/web_cache/renderer/web_cache_impl.h"
 #include "content/public/child/child_thread.h"
@@ -21,8 +22,10 @@
 #include "content/shell/renderer/shell_render_view_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "net/base/net_errors.h"
 #include "ppapi/features/features.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/web/WebTestingSupport.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
@@ -119,6 +122,41 @@ void ShellContentRendererClient::RenderThreadStarted() {
 
 void ShellContentRendererClient::RenderViewCreated(RenderView* render_view) {
   new ShellRenderViewObserver(render_view);
+}
+
+bool ShellContentRendererClient::HasErrorPage(int http_status_code) {
+  return http_status_code >= 400 && http_status_code < 600;
+}
+
+void ShellContentRendererClient::GetNavigationErrorStrings(
+    RenderFrame* render_frame,
+    const blink::WebURLRequest& failed_request,
+    const blink::WebURLError& error,
+    std::string* error_html,
+    base::string16* error_description) {
+  if (error_html) {
+    *error_html =
+        "<head><title>Error</title></head><body>Could not load the requested "
+        "resource.<br/>Error code: " +
+        base::IntToString(error.reason) +
+        (error.reason < 0 ? " (" + net::ErrorToString(error.reason) + ")"
+                          : "") +
+        "</body>";
+  }
+}
+
+void ShellContentRendererClient::GetNavigationErrorStringsForHttpStatusError(
+    content::RenderFrame* render_frame,
+    const blink::WebURLRequest& failed_request,
+    const GURL& unreachable_url,
+    int http_status,
+    std::string* error_html,
+    base::string16* error_description) {
+  if (error_html) {
+    *error_html =
+        "<head><title>Error</title></head><body>Server returned HTTP status " +
+        base::IntToString(http_status) + "</body>";
+  }
 }
 
 bool ShellContentRendererClient::IsPluginAllowedToUseCompositorAPI(
