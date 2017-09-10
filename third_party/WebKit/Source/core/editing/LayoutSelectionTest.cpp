@@ -372,4 +372,25 @@ TEST_F(LayoutSelectionTest, FirstLetterUpdateSeletion) {
   TEST_NO_NEXT_LAYOUT_OBJECT();
 }
 
+TEST_F(LayoutSelectionTest, CommitAppearanceIfNeededNotCrash) {
+  SetBodyContent("<div id='host'><span>bar<span></div><div>baz</div>");
+  SetShadowContent("foo", "host");
+  UpdateAllLifecyclePhases();
+  // <div id='host'>
+  //   #shadow-root
+  //     foo
+  //   <span>|bar</span>
+  // </div>
+  // <div>baz^</div>
+  // |span| is not in flat tree.
+  Node* const span =
+      ToElement(GetDocument().QuerySelector("#host")->firstChild());
+  DCHECK(span);
+  Node* const baz = GetDocument().body()->firstChild()->nextSibling();
+  DCHECK(baz);
+  Selection().SetSelection(SelectionInDOMTree::Builder()
+                               .SetBaseAndExtent({baz, 1}, {span, 0})
+                               .Build());
+  Selection().CommitAppearanceIfNeeded();
+}
 }  // namespace blink
