@@ -3466,7 +3466,8 @@ int AXPlatformNodeWin::MSAAState() {
       msaa_state |= STATE_SYSTEM_HOTTRACKED;
   }
 
-  // TODO(dougt) Why do we set any state on AX_ROLE_IGNORED?
+  // If the role is IGNORED, we want these elements to be invisible so that
+  // these nodes are hidden from the screen reader.
   if (data.HasState(AX_STATE_INVISIBLE) || GetData().role == AX_ROLE_IGNORED) {
     msaa_state |= STATE_SYSTEM_INVISIBLE;
   }
