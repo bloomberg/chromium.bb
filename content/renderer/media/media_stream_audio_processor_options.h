@@ -31,76 +31,7 @@ namespace content {
 
 using webrtc::AudioProcessing;
 
-// A helper class to parse audio constraints from a blink::WebMediaConstraints
-// object.
-// TODO(guidou): Remove this class. http://crbug.com/706408
-class CONTENT_EXPORT MediaAudioConstraints {
- public:
-  // Constraint keys used by audio processing.
-  static const char kEchoCancellation[];
-  static const char kGoogEchoCancellation[];
-  static const char kGoogExperimentalEchoCancellation[];
-  static const char kGoogAutoGainControl[];
-  static const char kGoogExperimentalAutoGainControl[];
-  static const char kGoogNoiseSuppression[];
-  static const char kGoogExperimentalNoiseSuppression[];
-  static const char kGoogBeamforming[];
-  static const char kGoogArrayGeometry[];
-  static const char kGoogHighpassFilter[];
-  static const char kGoogTypingNoiseDetection[];
-  static const char kGoogAudioMirroring[];
-
-  // Merge |options| with |kDefaultAudioConstraints|. For any key which
-  // exists in both, the value from |options| is maintained.
-  // New values from |kDefaultAudioConstraints| will
-  // be added.
-  // TODO(hta): Switch to an interface without "cricket::" when webrtc has one.
-
-
-  // |effects| is the bitmasks telling whether certain platform
-  // hardware audio effects are enabled, like hardware echo cancellation. If
-  // some hardware effect is enabled, the corresponding software audio
-  // processing will be disabled.
-  MediaAudioConstraints(const blink::WebMediaConstraints& constraints,
-                        int effects);
-  virtual ~MediaAudioConstraints();
-
-  bool GetGoogAudioMirroring() const;
-  bool GetGoogAutoGainControl() const;
-  bool GetGoogExperimentalEchoCancellation() const;
-  bool GetGoogTypingNoiseDetection() const;
-  bool GetGoogNoiseSuppression() const;
-  bool GetGoogExperimentalNoiseSuppression() const;
-  bool GetGoogBeamforming() const;
-  bool GetGoogHighpassFilter() const;
-  bool GetGoogExperimentalAutoGainControl() const;
-  std::string GetGoogArrayGeometry() const;
-
-  // Gets the property of echo cancellation defined in |constraints_|. The
-  // returned value depends on a combination of |effects_|, |kEchoCancellation|
-  // and |kGoogEchoCancellation| in |constraints_|.
-  bool GetEchoCancellationProperty() const;
-
-  // Returns true if all the mandatory constraints in |constraints_| are valid;
-  // Otherwise return false.
-  bool IsValid() const;
-
-  // Exposed for testing.
-  bool default_audio_processing_constraint_value() const {
-    return default_audio_processing_constraint_value_;
-  }
-
- private:
-  // Gets the default value of constraint named by |key| in |constraints|.
-  bool GetDefaultValueForConstraint(const std::string& key) const;
-  const blink::WebMediaConstraints constraints_;
-  const int effects_;
-  bool default_audio_processing_constraint_value_;
-};
-
-// Simple struct with audio-processing properties. Will substitute
-// MediaAudioConstraints once the old constraints-processing algorithm is
-// removed. http://crbug.com/706408
+// Simple struct with audio-processing properties.
 struct CONTENT_EXPORT AudioProcessingProperties {
   // Creates an AudioProcessingProperties object with fields initialized to
   // their default values.
@@ -113,11 +44,6 @@ struct CONTENT_EXPORT AudioProcessingProperties {
 
   // Disables properties that are enabled by default.
   void DisableDefaultPropertiesForTesting();
-
-  // TODO(guidou): Remove this function. http://crbug.com/706408
-  static AudioProcessingProperties FromConstraints(
-      const blink::WebMediaConstraints& constraints,
-      const media::AudioParameters& input_params);
 
   bool enable_sw_echo_cancellation = true;
   bool disable_hw_echo_cancellation = false;
@@ -207,16 +133,6 @@ void EnableAutomaticGainControl(AudioProcessing* audio_processing);
 void GetAudioProcessingStats(
     AudioProcessing* audio_processing,
     webrtc::AudioProcessorInterface::AudioProcessorStats* stats);
-
-// Returns the array geometry from the media constraints if existing and
-// otherwise that provided by the input device.
-// TODO(guidou): Remove this function. http://crbug.com/706408
-CONTENT_EXPORT std::vector<media::Point> GetArrayGeometryPreferringConstraints(
-    const MediaAudioConstraints& audio_constraints,
-    const media::AudioParameters& input_params);
-
-// TODO(guidou): Remove this function. http://crbug.com/706408
-CONTENT_EXPORT bool IsOldAudioConstraints();
 
 }  // namespace content
 
