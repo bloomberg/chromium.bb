@@ -61,13 +61,5 @@ TEST_F(MediaStreamVideoWebRtcSinkTest, NoiseReductionDefaultsToNotSet) {
   EXPECT_FALSE(my_sink.SourceNeedsDenoisingForTesting());
 }
 
-// TODO(guidou): Remove this test. http://crbug.com/706408
-TEST_F(MediaStreamVideoWebRtcSinkTest, NoiseReductionConstraintPassThrough) {
-  SetVideoTrack(base::Optional<bool>(true));
-  MediaStreamVideoWebRtcSink my_sink(track_, &dependency_factory_);
-  EXPECT_TRUE(my_sink.SourceNeedsDenoisingForTesting());
-  EXPECT_TRUE(*(my_sink.SourceNeedsDenoisingForTesting()));
-}
-
 }  // namespace
 }  // namespace content

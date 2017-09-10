@@ -28,56 +28,7 @@
 
 namespace content {
 
-const char MediaAudioConstraints::kEchoCancellation[] = "echoCancellation";
-const char MediaAudioConstraints::kGoogEchoCancellation[] =
-    "googEchoCancellation";
-const char MediaAudioConstraints::kGoogExperimentalEchoCancellation[] =
-    "googExperimentalEchoCancellation";
-const char MediaAudioConstraints::kGoogAutoGainControl[] =
-    "googAutoGainControl";
-const char MediaAudioConstraints::kGoogExperimentalAutoGainControl[] =
-    "googExperimentalAutoGainControl";
-const char MediaAudioConstraints::kGoogNoiseSuppression[] =
-    "googNoiseSuppression";
-const char MediaAudioConstraints::kGoogExperimentalNoiseSuppression[] =
-    "googExperimentalNoiseSuppression";
-const char MediaAudioConstraints::kGoogBeamforming[] = "googBeamforming";
-const char MediaAudioConstraints::kGoogArrayGeometry[] = "googArrayGeometry";
-const char MediaAudioConstraints::kGoogHighpassFilter[] = "googHighpassFilter";
-const char MediaAudioConstraints::kGoogTypingNoiseDetection[] =
-    "googTypingNoiseDetection";
-const char MediaAudioConstraints::kGoogAudioMirroring[] = "googAudioMirroring";
-
 namespace {
-
-// Controls whether the hotword audio stream is used on supported platforms.
-const char kMediaStreamAudioHotword[] = "googHotword";
-
-// Constant constraint keys which enables default audio constraints on
-// mediastreams with audio.
-struct {
-  const char* key;
-  bool value;
-} const kDefaultAudioConstraints[] = {
-  { MediaAudioConstraints::kEchoCancellation, true },
-  { MediaAudioConstraints::kGoogEchoCancellation, true },
-#if defined(OS_ANDROID)
-  { MediaAudioConstraints::kGoogExperimentalEchoCancellation, false },
-#else
-  // Enable the extended filter mode AEC on all non-mobile platforms.
-  { MediaAudioConstraints::kGoogExperimentalEchoCancellation, true },
-#endif
-  { MediaAudioConstraints::kGoogAutoGainControl, true },
-  { MediaAudioConstraints::kGoogExperimentalAutoGainControl, true },
-  { MediaAudioConstraints::kGoogNoiseSuppression, true },
-  { MediaAudioConstraints::kGoogHighpassFilter, true },
-  { MediaAudioConstraints::kGoogTypingNoiseDetection, true },
-  { MediaAudioConstraints::kGoogExperimentalNoiseSuppression, true },
-  // Beamforming will only be enabled if we are also provided with a
-  // multi-microphone geometry.
-  { MediaAudioConstraints::kGoogBeamforming, true },
-  { kMediaStreamAudioHotword, false },
-};
 
 // Used to log echo quality based on delay estimates.
 enum DelayBasedEchoQuality {
@@ -109,161 +60,7 @@ DelayBasedEchoQuality EchoDelayFrequencyToQuality(float delay_frequency) {
     return DELAY_BASED_ECHO_QUALITY_BAD;
 }
 
-// Scan the basic and advanced constraints until a value is found.
-// If nothing is found, the default is returned.
-// Argument 2 is a pointer to class data member.
-bool ScanConstraintsForBoolean(
-    const blink::WebMediaConstraints& constraints,
-    blink::BooleanConstraint blink::WebMediaTrackConstraintSet::*picker,
-    bool the_default) {
-  bool value;
-  if (GetConstraintValueAsBoolean(constraints, picker, &value)) {
-    return value;
-  }
-  return the_default;
-}
-
 }  // namespace
-
-MediaAudioConstraints::MediaAudioConstraints(
-    const blink::WebMediaConstraints& constraints, int effects)
-    : constraints_(constraints),
-      effects_(effects),
-      default_audio_processing_constraint_value_(true) {
-  DCHECK(IsOldAudioConstraints());
-  // The default audio processing constraints are turned off when
-  // - gUM has a specific kMediaStreamSource, which is used by tab capture
-  //   and screen capture.
-  // - |kEchoCancellation| is explicitly set to false.
-  bool echo_constraint;
-  std::string source_string;
-  if (GetConstraintValueAsString(
-          constraints, &blink::WebMediaTrackConstraintSet::media_stream_source,
-          &source_string) ||
-      (GetConstraintValueAsBoolean(
-           constraints, &blink::WebMediaTrackConstraintSet::echo_cancellation,
-           &echo_constraint) &&
-       echo_constraint == false)) {
-    default_audio_processing_constraint_value_ = false;
-  }
-}
-
-MediaAudioConstraints::~MediaAudioConstraints() {}
-
-bool MediaAudioConstraints::GetEchoCancellationProperty() const {
-  // If platform echo canceller is enabled, disable the software AEC.
-  if (effects_ & media::AudioParameters::ECHO_CANCELLER)
-    return false;
-
-  // If |kEchoCancellation| is specified in the constraints, it will
-  // override the value of |kGoogEchoCancellation|.
-  bool echo_value;
-  if (GetConstraintValueAsBoolean(
-          constraints_, &blink::WebMediaTrackConstraintSet::echo_cancellation,
-          &echo_value)) {
-    return echo_value;
-  }
-  return ScanConstraintsForBoolean(
-      constraints_, &blink::WebMediaTrackConstraintSet::goog_echo_cancellation,
-      GetDefaultValueForConstraint(kGoogEchoCancellation));
-}
-
-bool MediaAudioConstraints::IsValid() const {
-  std::vector<std::string> legal_names(
-      {constraints_.Basic().media_stream_source.GetName(),
-       constraints_.Basic().device_id.GetName(),
-       constraints_.Basic().render_to_associated_sink.GetName()});
-  for (size_t j = 0; j < arraysize(kDefaultAudioConstraints); ++j) {
-    legal_names.push_back(kDefaultAudioConstraints[j].key);
-  }
-  std::string failing_name;
-  if (constraints_.Basic().HasMandatoryOutsideSet(legal_names, failing_name)) {
-    DLOG(ERROR) << "Invalid MediaStream constraint for audio. Name: "
-                << failing_name;
-    return false;
-  }
-  return true;
-}
-
-bool MediaAudioConstraints::GetDefaultValueForConstraint(
-    const std::string& key) const {
-  if (!default_audio_processing_constraint_value_)
-    return false;
-
-  for (size_t i = 0; i < arraysize(kDefaultAudioConstraints); ++i) {
-    if (kDefaultAudioConstraints[i].key == key)
-      return kDefaultAudioConstraints[i].value;
-  }
-
-  return false;
-}
-
-bool MediaAudioConstraints::GetGoogAudioMirroring() const {
-  return ScanConstraintsForBoolean(
-      constraints_, &blink::WebMediaTrackConstraintSet::goog_audio_mirroring,
-      GetDefaultValueForConstraint(kGoogAudioMirroring));
-}
-
-bool MediaAudioConstraints::GetGoogAutoGainControl() const {
-  return ScanConstraintsForBoolean(
-      constraints_, &blink::WebMediaTrackConstraintSet::goog_auto_gain_control,
-      GetDefaultValueForConstraint(kGoogAutoGainControl));
-}
-
-bool MediaAudioConstraints::GetGoogExperimentalEchoCancellation() const {
-  return ScanConstraintsForBoolean(
-      constraints_,
-      &blink::WebMediaTrackConstraintSet::goog_experimental_echo_cancellation,
-      GetDefaultValueForConstraint(kGoogExperimentalEchoCancellation));
-}
-
-bool MediaAudioConstraints::GetGoogTypingNoiseDetection() const {
-  return ScanConstraintsForBoolean(
-      constraints_,
-      &blink::WebMediaTrackConstraintSet::goog_typing_noise_detection,
-      GetDefaultValueForConstraint(kGoogTypingNoiseDetection));
-}
-bool MediaAudioConstraints::GetGoogNoiseSuppression() const {
-  return ScanConstraintsForBoolean(
-      constraints_, &blink::WebMediaTrackConstraintSet::goog_noise_suppression,
-      GetDefaultValueForConstraint(kGoogNoiseSuppression));
-}
-
-bool MediaAudioConstraints::GetGoogExperimentalNoiseSuppression() const {
-  return ScanConstraintsForBoolean(
-      constraints_,
-      &blink::WebMediaTrackConstraintSet::goog_experimental_noise_suppression,
-      GetDefaultValueForConstraint(kGoogExperimentalNoiseSuppression));
-}
-
-bool MediaAudioConstraints::GetGoogBeamforming() const {
-  return ScanConstraintsForBoolean(
-      constraints_, &blink::WebMediaTrackConstraintSet::goog_beamforming,
-      GetDefaultValueForConstraint(kGoogBeamforming));
-}
-
-bool MediaAudioConstraints::GetGoogHighpassFilter() const {
-  return ScanConstraintsForBoolean(
-      constraints_, &blink::WebMediaTrackConstraintSet::goog_highpass_filter,
-      GetDefaultValueForConstraint(kGoogHighpassFilter));
-}
-
-bool MediaAudioConstraints::GetGoogExperimentalAutoGainControl() const {
-  return ScanConstraintsForBoolean(
-      constraints_,
-      &blink::WebMediaTrackConstraintSet::goog_experimental_auto_gain_control,
-      GetDefaultValueForConstraint(kGoogExperimentalAutoGainControl));
-}
-
-std::string MediaAudioConstraints::GetGoogArrayGeometry() const {
-  std::string the_value;
-  if (GetConstraintValueAsString(
-          constraints_, &blink::WebMediaTrackConstraintSet::goog_array_geometry,
-          &the_value)) {
-    return the_value;
-  }
-  return "";
-}
 
 AudioProcessingProperties::AudioProcessingProperties() = default;
 AudioProcessingProperties::AudioProcessingProperties(
@@ -286,38 +83,6 @@ void AudioProcessingProperties::DisableDefaultPropertiesForTesting() {
   goog_beamforming = false;
   goog_highpass_filter = false;
   goog_experimental_auto_gain_control = false;
-}
-
-// static
-AudioProcessingProperties AudioProcessingProperties::FromConstraints(
-    const blink::WebMediaConstraints& constraints,
-    const media::AudioParameters& input_params) {
-  DCHECK(IsOldAudioConstraints());
-  MediaAudioConstraints audio_constraints(constraints, input_params.effects());
-  AudioProcessingProperties properties;
-  properties.enable_sw_echo_cancellation =
-      audio_constraints.GetEchoCancellationProperty();
-  // |properties.disable_hw_echo_cancellation| is not used when
-  // IsOldAudioConstraints() is true.
-  properties.goog_audio_mirroring = audio_constraints.GetGoogAudioMirroring();
-  properties.goog_auto_gain_control =
-      audio_constraints.GetGoogAutoGainControl();
-  properties.goog_experimental_echo_cancellation =
-      audio_constraints.GetGoogExperimentalEchoCancellation();
-  properties.goog_typing_noise_detection =
-      audio_constraints.GetGoogTypingNoiseDetection();
-  properties.goog_noise_suppression =
-      audio_constraints.GetGoogNoiseSuppression();
-  properties.goog_experimental_noise_suppression =
-      audio_constraints.GetGoogExperimentalNoiseSuppression();
-  properties.goog_beamforming = audio_constraints.GetGoogBeamforming();
-  properties.goog_highpass_filter = audio_constraints.GetGoogHighpassFilter();
-  properties.goog_experimental_auto_gain_control =
-      audio_constraints.GetGoogExperimentalAutoGainControl();
-  properties.goog_array_geometry =
-      GetArrayGeometryPreferringConstraints(audio_constraints, input_params);
-
-  return properties;
 }
 
 EchoInformation::EchoInformation()
@@ -519,24 +284,6 @@ void GetAudioProcessingStats(
   stats->residual_echo_likelihood = apm_stats.residual_echo_likelihood;
   stats->residual_echo_likelihood_recent_max =
       apm_stats.residual_echo_likelihood_recent_max;
-}
-
-std::vector<media::Point> GetArrayGeometryPreferringConstraints(
-    const MediaAudioConstraints& audio_constraints,
-    const media::AudioParameters& input_params) {
-  const std::string constraints_geometry =
-      audio_constraints.GetGoogArrayGeometry();
-
-  // Give preference to the audio constraint over the device-supplied mic
-  // positions. This is mainly for testing purposes.
-  return constraints_geometry.empty()
-             ? input_params.mic_positions()
-             : media::ParsePointsFromString(constraints_geometry);
-}
-
-bool IsOldAudioConstraints() {
-  return base::FeatureList::IsEnabled(
-      features::kMediaStreamOldAudioConstraints);
 }
 
 }  // namespace content

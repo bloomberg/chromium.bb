@@ -44,7 +44,6 @@ CONTENT_EXPORT extern const base::Feature
 CONTENT_EXPORT extern const base::Feature kLazyInitializeMediaControls;
 CONTENT_EXPORT extern const base::Feature kLazyParseCSS;
 CONTENT_EXPORT extern const base::Feature kLoadingWithMojo;
-CONTENT_EXPORT extern const base::Feature kMediaStreamOldAudioConstraints;
 CONTENT_EXPORT extern const base::Feature kMemoryCoordinator;
 CONTENT_EXPORT extern const base::Feature kNetworkService;
 CONTENT_EXPORT extern const base::Feature kNotificationContentImage;

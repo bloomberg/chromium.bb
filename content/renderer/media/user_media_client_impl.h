@@ -120,11 +120,6 @@ class CONTENT_EXPORT UserMediaClientImpl
       const MediaStreamDevice& device,
       const MediaStreamSource::SourceStoppedCallback& stop_callback);
 
-  // Returns no value if there is no request being processed. Use only for
-  // testing.
-  // TODO(guidou): Remove this function. http://crbug.com/706408
-  base::Optional<bool> AutomaticOutputDeviceSelectionEnabledForCurrentRequest();
-
   // Intended to be used only for testing.
   const AudioCaptureSettings& AudioCaptureSettingsForTesting() const;
   const VideoCaptureSettings& VideoCaptureSettingsForTesting() const;
@@ -228,12 +223,6 @@ class CONTENT_EXPORT UserMediaClientImpl
                        bool notify_dispatcher);
 
   const ::mojom::MediaDevicesDispatcherHostPtr& GetMediaDevicesDispatcher();
-
-  // TODO(guidou): Remove these functions. http://crbug.com/706408
-  void LegacySetupAudioInput();
-  void LegacySelectAudioInputDevice(
-      const blink::WebUserMediaRequest& user_media_request,
-      const EnumerationResult& device_enumeration);
 
   void SetupAudioInput();
   void SelectAudioSettings(const blink::WebUserMediaRequest& user_media_request,
