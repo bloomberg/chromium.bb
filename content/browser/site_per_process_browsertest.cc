@@ -8296,13 +8296,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     // with the URL of the blocked page.
     EXPECT_EQ(blocked_url, root->child_at(0)->current_url());
 
-    // The page should get the title of an error page (i.e "") and not the
+    // The page should get the title of an error page (i.e "Error") and not the
     // title of the blocked page.
     std::string frame_title;
     EXPECT_TRUE(ExecuteScriptAndExtractString(
         root->child_at(0), "domAutomationController.send(document.title)",
         &frame_title));
-    EXPECT_EQ("", frame_title);
+    EXPECT_EQ("Error", frame_title);
   } else {
     // The blocked frame should stay at the old location.
     EXPECT_EQ(old_subframe_url, root->child_at(0)->current_url());
@@ -8390,13 +8390,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     // with the URL of the blocked page.
     EXPECT_EQ(blocked_url, root->child_at(0)->current_url());
 
-    // The page should get the title of an error page (i.e "") and not the
+    // The page should get the title of an error page (i.e "Error") and not the
     // title of the blocked page.
     std::string frame_title;
     EXPECT_TRUE(ExecuteScriptAndExtractString(
         root->child_at(0), "domAutomationController.send(document.title)",
         &frame_title));
-    EXPECT_EQ("", frame_title);
+    EXPECT_EQ("Error", frame_title);
   } else {
     // The blocked frame should stay at the old location.
     EXPECT_EQ(old_subframe_url, root->child_at(0)->current_url());
@@ -8478,13 +8478,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     // with the URL of the blocked page.
     EXPECT_EQ(blocked_url, navigating_frame->current_url());
 
-    // The page should get the title of an error page (i.e "") and not the
+    // The page should get the title of an error page (i.e "Error") and not the
     // title of the blocked page.
     std::string frame_title;
     EXPECT_TRUE(ExecuteScriptAndExtractString(
         navigating_frame, "domAutomationController.send(document.title)",
         &frame_title));
-    EXPECT_EQ("", frame_title);
+    EXPECT_EQ("Error", frame_title);
   } else {
     // The blocked frame should stay at the old location.
     EXPECT_EQ(old_subframe_url, navigating_frame->current_url());

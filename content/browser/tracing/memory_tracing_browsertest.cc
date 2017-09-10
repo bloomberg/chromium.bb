@@ -155,7 +155,7 @@ class MemoryTracingTest : public ContentBrowserTest {
   }
 
   void Navigate(Shell* shell) {
-    NavigateToURL(shell, GetTestUrl("", "title.html"));
+    NavigateToURL(shell, GetTestUrl("", "title1.html"));
   }
 
   MOCK_METHOD2(OnMemoryDumpDone, void(uint32_t request_index, bool successful));
@@ -166,9 +166,9 @@ class MemoryTracingTest : public ContentBrowserTest {
   bool last_callback_success_;
 };
 
-// Ignore SingleProcessMemoryTracingTests for Google Chrome builds because
-// single-process is not supported on those builds.
-#if !defined(GOOGLE_CHROME_BUILD)
+// Run SingleProcessMemoryTracingTests only on Android, since these tests are
+// intended to give coverage to Android WebView.
+#if defined(OS_ANDROID)
 
 class SingleProcessMemoryTracingTest : public MemoryTracingTest {
  public:
@@ -303,7 +303,7 @@ IN_PROC_BROWSER_TEST_F(SingleProcessMemoryTracingTest, DISABLED_QueuedDumps) {
   DisableTracing();
 }
 
-#endif  // !defined(GOOGLE_CHROME_BUILD)
+#endif  // defined(OS_ANDROID)
 
 // Non-deterministic races under TSan. crbug.com/529678
 #if defined(THREAD_SANITIZER)

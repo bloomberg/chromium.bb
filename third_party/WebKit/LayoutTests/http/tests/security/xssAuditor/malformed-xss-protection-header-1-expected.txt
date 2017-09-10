@@ -8,4 +8,5 @@ This tests that a malformed X-XSS-Protection header is not ignored when the leng
 --------
 Frame: 'frame'
 --------
-
+Could not load the requested resource.
+Error code: -28 (net::ERR_BLOCKED_BY_XSS_AUDITOR)
