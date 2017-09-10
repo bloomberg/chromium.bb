@@ -175,7 +175,7 @@ class GitCL(object):
         if match:
             build_number = match.group(1)
             return Build(builder_name, int(build_number))
-        match = re.match(r'.*/task/([0-9a-f]+)/?$', url)
+        match = re.match(r'.*/task/([0-9a-f]+)(/?|\?.*)$', url)
         assert match, '%s did not match expected format' % url
         task_id = match.group(1)
         return Build(builder_name, task_id)

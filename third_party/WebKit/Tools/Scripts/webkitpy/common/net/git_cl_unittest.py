@@ -233,10 +233,19 @@ class GitCLTest(unittest.TestCase):
                 'failure_reason': 'BUILD_FAILURE',
                 'url': 'https://luci-milo.appspot.com/swarming/task/36a767f405d9ee10',
             },
+            {
+                'builder_name': 'builder-b',
+                'status': 'COMPLETED',
+                'result': 'SUCCESS',
+                'url': 'https://ci.chromium.org/swarming/task/38740befcd9c0010?server=chromium-swarm.appspot.com',
+            },
         ]
         self.assertEqual(
             git_cl.try_job_results(),
-            {Build('builder-a', '36a767f405d9ee10'): TryJobStatus('COMPLETED', 'FAILURE')})
+            {
+                Build('builder-a', '36a767f405d9ee10'): TryJobStatus('COMPLETED', 'FAILURE'),
+                Build('builder-b', '38740befcd9c0010'): TryJobStatus('COMPLETED', 'SUCCESS'),
+            })
 
     def test_try_job_results_with_unexpected_url_format(self):
         git_cl = GitCL(MockHost())
