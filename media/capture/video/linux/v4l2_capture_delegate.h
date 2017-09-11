@@ -19,9 +19,9 @@
 #include <linux/videodev2.h>
 #endif
 
-namespace tracked_objects {
+namespace base {
 class Location;
-}  // namespace tracked_objects
+}  // namespace base
 
 namespace media {
 
@@ -74,7 +74,7 @@ class CAPTURE_EXPORT V4L2CaptureDelegate final {
 
   void DoCapture();
 
-  void SetErrorState(const tracked_objects::Location& from_here,
+  void SetErrorState(const base::Location& from_here,
                      const std::string& reason);
 
   const scoped_refptr<base::SingleThreadTaskRunner> v4l2_task_runner_;

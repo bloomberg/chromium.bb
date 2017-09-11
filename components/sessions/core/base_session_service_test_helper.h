@@ -24,7 +24,7 @@ class BaseSessionServiceTestHelper {
 
   // This posts the task to the SequencedWorkerPool, or run immediately
   // if the SequencedWorkerPool has been shutdown.
-  void RunTaskOnBackendThread(const tracked_objects::Location& from_here,
+  void RunTaskOnBackendThread(const base::Location& from_here,
                               const base::Closure& task);
 
   // Returns true if any commands got processed yet - saved or queued.

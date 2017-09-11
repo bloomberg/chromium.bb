@@ -229,7 +229,7 @@ struct BASE_EXPORT BirthOnThreadSnapshot {
   explicit BirthOnThreadSnapshot(const BirthOnThread& birth);
   ~BirthOnThreadSnapshot();
 
-  LocationSnapshot location;
+  base::LocationSnapshot location;
   std::string sanitized_thread_name;
 };
 

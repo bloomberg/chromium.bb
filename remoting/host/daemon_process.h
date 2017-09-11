@@ -27,9 +27,9 @@
 
 struct SerializedTransportRoute;
 
-namespace tracked_objects {
+namespace base {
 class Location;
-}  // namespace tracked_objects
+}  // namespace base
 
 namespace remoting {
 
@@ -104,7 +104,7 @@ class DaemonProcess
   void SetScreenResolution(int terminal_id, const ScreenResolution& resolution);
 
   // Requests the network process to crash.
-  void CrashNetworkProcess(const tracked_objects::Location& location);
+  void CrashNetworkProcess(const base::Location& location);
 
   // Reads the host configuration and launches the network process.
   void Initialize();
@@ -136,8 +136,7 @@ class DaemonProcess
       bool virtual_terminal) = 0;
 
   // Requests the network process to crash.
-  virtual void DoCrashNetworkProcess(
-      const tracked_objects::Location& location) = 0;
+  virtual void DoCrashNetworkProcess(const base::Location& location) = 0;
 
   // Launches the network process and establishes an IPC channel with it.
   virtual void LaunchNetworkProcess() = 0;

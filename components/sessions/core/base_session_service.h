@@ -106,7 +106,7 @@ class SESSIONS_EXPORT BaseSessionService {
   friend class BaseSessionServiceTestHelper;
 
   // This posts the task to the TaskRunner.
-  void RunTaskOnBackendThread(const tracked_objects::Location& from_here,
+  void RunTaskOnBackendThread(const base::Location& from_here,
                               base::OnceClosure task);
 
   // The backend object which reads and saves commands.

@@ -17,7 +17,7 @@
 #include "content/common/content_export.h"
 #include "net/base/upload_progress.h"
 
-namespace tracked_objects {
+namespace base {
 class Location;
 }
 
@@ -34,7 +34,7 @@ class CONTENT_EXPORT UploadProgressTracker {
   using UploadProgressReportCallback =
       base::RepeatingCallback<void(const net::UploadProgress&)>;
 
-  UploadProgressTracker(const tracked_objects::Location& location,
+  UploadProgressTracker(const base::Location& location,
                         UploadProgressReportCallback report_progress,
                         net::URLRequest* request,
                         scoped_refptr<base::SequencedTaskRunner> task_runner =

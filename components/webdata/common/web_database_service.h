@@ -26,7 +26,7 @@
 
 class WebDatabaseBackend;
 
-namespace tracked_objects {
+namespace base {
 class Location;
 }
 
@@ -79,13 +79,12 @@ class WEBDATA_EXPORT WebDatabaseService
   scoped_refptr<WebDatabaseBackend> GetBackend() const;
 
   // Schedule an update/write task on the DB sequence.
-  virtual void ScheduleDBTask(
-      const tracked_objects::Location& from_here,
-      const WriteTask& task);
+  virtual void ScheduleDBTask(const base::Location& from_here,
+                              const WriteTask& task);
 
   // Schedule a read task on the DB sequence.
   virtual WebDataServiceBase::Handle ScheduleDBTaskWithResult(
-      const tracked_objects::Location& from_here,
+      const base::Location& from_here,
       const ReadTask& task,
       WebDataServiceConsumer* consumer);
 

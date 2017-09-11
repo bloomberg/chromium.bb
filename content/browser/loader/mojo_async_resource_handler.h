@@ -26,7 +26,7 @@
 
 class GURL;
 
-namespace tracked_objects {
+namespace base {
 class Location;
 }
 
@@ -117,7 +117,7 @@ class CONTENT_EXPORT MojoAsyncResourceHandler : public ResourceHandler,
   // These functions can be overriden only for tests.
   virtual void ReportBadMessage(const std::string& error);
   virtual std::unique_ptr<UploadProgressTracker> CreateUploadProgressTracker(
-      const tracked_objects::Location& from_here,
+      const base::Location& from_here,
       UploadProgressTracker::UploadProgressReportCallback callback);
 
   void OnTransfer(mojom::URLLoaderRequest mojo_request,

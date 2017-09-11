@@ -11,9 +11,9 @@
 
 #include "components/sync/base/model_type.h"
 
-namespace tracked_objects {
+namespace base {
 class Location;
-}  // namespace tracked_objects
+}  // namespace base
 
 namespace syncer {
 
@@ -59,7 +59,7 @@ class SyncError {
   // Create a new Sync error of type |error_type| triggered by |model_type|
   // from the specified location. IsSet() will return true afterward. Will
   // create and print an error specific message to LOG(ERROR).
-  SyncError(const tracked_objects::Location& location,
+  SyncError(const base::Location& location,
             ErrorType error_type,
             const std::string& message,
             ModelType model_type);
@@ -74,7 +74,7 @@ class SyncError {
   // irrespective of whether IsSet() is true. After this is called, IsSet()
   // will return true.
   // Will print the new error to LOG(ERROR).
-  void Reset(const tracked_objects::Location& location,
+  void Reset(const base::Location& location,
              const std::string& message,
              ModelType type);
 
@@ -82,7 +82,7 @@ class SyncError {
   bool IsSet() const;
 
   // These must only be called if IsSet() is true.
-  const tracked_objects::Location& location() const;
+  const base::Location& location() const;
   const std::string& message() const;
   ModelType model_type() const;
   ErrorType error_type() const;
@@ -105,7 +105,7 @@ class SyncError {
 
   // Initialize the local error data with the specified error data. After this
   // is called, IsSet() will return true.
-  void Init(const tracked_objects::Location& location,
+  void Init(const base::Location& location,
             const std::string& message,
             ModelType model_type,
             ErrorType error_type);
@@ -114,7 +114,7 @@ class SyncError {
   void Clear();
 
   // unique_ptr is necessary because Location objects aren't assignable.
-  std::unique_ptr<tracked_objects::Location> location_;
+  std::unique_ptr<base::Location> location_;
   std::string message_;
   ModelType model_type_;
   ErrorType error_type_;

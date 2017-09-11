@@ -12,7 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 
-namespace tracked_objects {
+namespace base {
 
 Location::Location() = default;
 Location::Location(const Location& other) = default;
@@ -42,9 +42,9 @@ Location::Location(const char* function_name,
 std::string Location::ToString() const {
   if (has_source_info()) {
     return std::string(function_name_) + "@" + file_name_ + ":" +
-           base::IntToString(line_number_);
+           IntToString(line_number_);
   }
-  return base::StringPrintf("pc:%p", program_counter_);
+  return StringPrintf("pc:%p", program_counter_);
 }
 
 // TODO(brettw) if chrome://profiler is removed, this function can probably
@@ -52,9 +52,9 @@ std::string Location::ToString() const {
 void Location::Write(bool display_filename, bool display_function_name,
                      std::string* output) const {
   if (has_source_info()) {
-    base::StringAppendF(output, "%s[%d] ",
-                        display_filename && file_name_ ? file_name_ : "line",
-                        line_number_);
+    StringAppendF(output, "%s[%d] ",
+                  display_filename && file_name_ ? file_name_ : "line",
+                  line_number_);
 
     if (display_function_name && function_name_) {
       output->append(function_name_);
@@ -91,4 +91,4 @@ BASE_EXPORT const void* GetProgramCounter() {
 #endif
 }
 
-}  // namespace tracked_objects
+}  // namespace base

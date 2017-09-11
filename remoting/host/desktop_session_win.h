@@ -19,9 +19,9 @@
 #include "remoting/host/win/wts_terminal_observer.h"
 #include "remoting/host/worker_process_ipc_delegate.h"
 
-namespace tracked_objects {
+namespace base {
 class Location;
-}  // namespace tracked_objects
+}  // namespace base
 
 namespace remoting {
 
@@ -103,7 +103,7 @@ class DesktopSessionWin
   void OnDesktopSessionAgentAttached(const IPC::ChannelHandle& desktop_pipe);
 
   // Requests the desktop process to crash.
-  void CrashDesktopProcess(const tracked_objects::Location& location);
+  void CrashDesktopProcess(const base::Location& location);
 
   // Reports time elapsed since previous event to the debug log.
   void ReportElapsedTime(const std::string& event);

@@ -15,9 +15,9 @@
 #include "media/capture/content/thread_safe_capture_oracle.h"
 #include "media/capture/video/video_capture_device.h"
 
-namespace tracked_objects {
+namespace base {
 class Location;
-}  // namespace tracked_objects
+}  // namespace base
 
 namespace media {
 
@@ -103,8 +103,7 @@ class CAPTURE_EXPORT ScreenCaptureDeviceCore
   void CaptureStarted(bool success);
 
   // Stops capturing and notifies client_ of an error state.
-  void Error(const tracked_objects::Location& from_here,
-             const std::string& reason);
+  void Error(const base::Location& from_here, const std::string& reason);
 
   // Tracks that all activity occurs on the media stream manager's thread.
   base::ThreadChecker thread_checker_;

@@ -20,16 +20,13 @@
 #include "net/base/backoff_entry.h"
 
 namespace base {
+class Location;
 class TimeDelta;
 } // namespace base
 
 namespace IPC {
 class Message;
 } // namespace IPC
-
-namespace tracked_objects {
-class Location;
-}  // namespace tracked_objects
 
 namespace remoting {
 
@@ -72,7 +69,7 @@ class WorkerProcessLauncher : public base::win::ObjectWatcher::Delegate {
   // channel. |location| is passed to the worker so that it is on the stack in
   // the dump. Restarts the worker process forcefully, if it does
   // not exit on its own.
-  void Crash(const tracked_objects::Location& location);
+  void Crash(const base::Location& location);
 
   // Sends an IPC message to the worker process. The message will be silently
   // dropped if Send() is called before Start() or after stutdown has been

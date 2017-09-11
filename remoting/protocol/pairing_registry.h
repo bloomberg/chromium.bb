@@ -20,12 +20,9 @@
 namespace base {
 class DictionaryValue;
 class ListValue;
+class Location;
 class SingleThreadTaskRunner;
 }  // namespace base
-
-namespace tracked_objects {
-class Location;
-}  // namespace tracked_objects
 
 namespace remoting {
 namespace protocol {
@@ -142,7 +139,7 @@ class PairingRegistry : public base::RefCountedThreadSafe<PairingRegistry> {
   // Lets the tests override task posting to make all callbacks synchronous.
   virtual void PostTask(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      const tracked_objects::Location& from_here,
+      const base::Location& from_here,
       const base::Closure& task);
 
  private:

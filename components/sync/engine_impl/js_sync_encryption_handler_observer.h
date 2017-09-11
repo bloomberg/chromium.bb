@@ -13,9 +13,9 @@
 #include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/protocol/sync_protocol_error.h"
 
-namespace tracked_objects {
+namespace base {
 class Location;
-}  // namespace tracked_objects
+}  // namespace base
 
 namespace syncer {
 
@@ -47,7 +47,7 @@ class JsSyncEncryptionHandlerObserver : public SyncEncryptionHandler::Observer {
       const SyncEncryptionHandler::NigoriState& nigori_state) override;
 
  private:
-  void HandleJsEvent(const tracked_objects::Location& from_here,
+  void HandleJsEvent(const base::Location& from_here,
                      const std::string& name,
                      const JsEventDetails& details);
 

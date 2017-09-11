@@ -32,9 +32,9 @@ namespace media {
 class VideoFrame;
 }  // namespace media
 
-namespace tracked_objects {
+namespace base {
 class Location;
-}  // namespace tracked_objects
+}  // namespace base
 
 namespace media {
 
@@ -78,7 +78,7 @@ class GpuVideoEncodeAcceleratorHost
                                bool force_keyframe);
 
   // Notify |client_| of an error.  Posts a task to avoid re-entrancy.
-  void PostNotifyError(const tracked_objects::Location& location,
+  void PostNotifyError(const base::Location& location,
                        Error error,
                        const std::string& message);
 

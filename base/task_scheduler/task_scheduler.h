@@ -32,13 +32,10 @@ namespace content {
 class BrowserMainLoopTest_CreateThreadsInSingleProcess_Test;
 }  // namespace content
 
-namespace tracked_objects {
-class Location;
-}
-
 namespace base {
 
 class HistogramBase;
+class Location;
 
 // Interface for a task scheduler and static methods to manage the instance used
 // by the post_task.h API.
@@ -80,11 +77,10 @@ class BASE_EXPORT TaskScheduler {
 
   // Posts |task| with a |delay| and specific |traits|. |delay| can be zero.
   // For one off tasks that don't require a TaskRunner.
-  virtual void PostDelayedTaskWithTraits(
-      const tracked_objects::Location& from_here,
-      const TaskTraits& traits,
-      OnceClosure task,
-      TimeDelta delay) = 0;
+  virtual void PostDelayedTaskWithTraits(const Location& from_here,
+                                         const TaskTraits& traits,
+                                         OnceClosure task,
+                                         TimeDelta delay) = 0;
 
   // Returns a TaskRunner whose PostTask invocations result in scheduling tasks
   // using |traits|. Tasks may run in any order and in parallel.

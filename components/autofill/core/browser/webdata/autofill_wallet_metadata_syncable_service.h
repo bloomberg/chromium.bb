@@ -21,13 +21,13 @@
 #include "components/sync/model/syncable_service.h"
 #include "components/sync/protocol/autofill_specifics.pb.h"
 
+namespace base {
+class Location;
+}
+
 namespace syncer {
 class SyncChangeProcessor;
 class SyncErrorFactory;
-}
-
-namespace tracked_objects {
-class Location;
 }
 
 namespace autofill {
@@ -60,7 +60,7 @@ class AutofillWalletMetadataSyncableService
   void StopSyncing(syncer::ModelType type) override;
   syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
   syncer::SyncError ProcessSyncChanges(
-      const tracked_objects::Location& from_here,
+      const base::Location& from_here,
       const syncer::SyncChangeList& changes_from_sync) override;
 
   // AutofillWebDataServiceObserverOnDBSequence implementation.

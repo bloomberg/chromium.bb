@@ -26,7 +26,7 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-namespace tracked_objects {
+namespace base {
 class Location;
 }
 
@@ -375,18 +375,10 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
 
   bool IsOpen();
 
-  void Disable(
-      const tracked_objects::Location& from_here,
-      Status status);
-  void HandleOpenResult(
-      const tracked_objects::Location& from_here,
-      Status status);
-  void HandleReadResult(
-      const tracked_objects::Location& from_here,
-      Status status);
-  void HandleWriteResult(
-      const tracked_objects::Location& from_here,
-      Status status);
+  void Disable(const base::Location& from_here, Status status);
+  void HandleOpenResult(const base::Location& from_here, Status status);
+  void HandleReadResult(const base::Location& from_here, Status status);
+  void HandleWriteResult(const base::Location& from_here, Status status);
 
   const base::FilePath path_;
   std::unique_ptr<leveldb::Env> env_;

@@ -18,7 +18,7 @@ class MessageLoop;
 class RunLoop;
 }
 
-namespace tracked_objects {
+namespace base {
 class Location;
 }
 
@@ -86,7 +86,7 @@ class CONTENT_EXPORT BrowserThreadImpl : public BrowserThread,
   void IOThreadRun(base::RunLoop* run_loop);
 
   static bool PostTaskHelper(BrowserThread::ID identifier,
-                             const tracked_objects::Location& from_here,
+                             const base::Location& from_here,
                              base::OnceClosure task,
                              base::TimeDelta delay,
                              bool nestable);

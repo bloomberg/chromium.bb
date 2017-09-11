@@ -9,14 +9,13 @@
 
 // TODO(akalin): This probably belongs in base/ somewhere.
 
-namespace tracked_objects {
+namespace base {
 class Location;
-}  // namespace tracked_objects
+}  // namespace base
 
 namespace syncer {
 
-bool VlogIsOnForLocation(const tracked_objects::Location& from_here,
-                         int verbose_level);
+bool VlogIsOnForLocation(const base::Location& from_here, int verbose_level);
 
 }  // namespace syncer
 

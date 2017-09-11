@@ -14,7 +14,7 @@
 #include "base/debug/debugging_flags.h"
 #include "base/hash.h"
 
-namespace tracked_objects {
+namespace base {
 
 // Location provides basic info where of an object was constructed, or was
 // significantly brought to life.
@@ -89,7 +89,7 @@ class BASE_EXPORT Location {
 struct BASE_EXPORT LocationSnapshot {
   // The default constructor is exposed to support the IPC serialization macros.
   LocationSnapshot();
-  explicit LocationSnapshot(const tracked_objects::Location& location);
+  explicit LocationSnapshot(const Location& location);
   ~LocationSnapshot();
 
   std::string file_name;
@@ -104,20 +104,27 @@ BASE_EXPORT const void* GetProgramCounter();
 
 // Full source information should be included.
 #define FROM_HERE FROM_HERE_WITH_EXPLICIT_FUNCTION(__func__)
-#define FROM_HERE_WITH_EXPLICIT_FUNCTION(function_name)          \
-  ::tracked_objects::Location(function_name, __FILE__, __LINE__, \
-                              ::tracked_objects::GetProgramCounter())
+#define FROM_HERE_WITH_EXPLICIT_FUNCTION(function_name) \
+  ::base::Location(function_name, __FILE__, __LINE__,   \
+                   ::base::GetProgramCounter())
 
 #else
 
 // TODO(http://crbug.com/760702) remove the __FILE__ argument from these calls.
-#define FROM_HERE \
-  ::tracked_objects::Location(__FILE__, ::tracked_objects::GetProgramCounter())
-#define FROM_HERE_WITH_EXPLICIT_FUNCTION(function_name)    \
-  ::tracked_objects::Location(function_name, __FILE__, -1, \
-                              ::tracked_objects::GetProgramCounter())
+#define FROM_HERE ::base::Location(__FILE__, ::base::GetProgramCounter())
+#define FROM_HERE_WITH_EXPLICIT_FUNCTION(function_name) \
+  ::base::Location(function_name, __FILE__, -1, ::base::GetProgramCounter())
 
 #endif
+
+}  // namespace base
+
+namespace tracked_objects {
+
+// TODO(http://crbug.com/763556): Convert all uses of Location and
+// GetProgramCounter to use the base namespace and remove these lines.
+using ::base::Location;
+using ::base::GetProgramCounter;
 
 }  // namespace tracked_objects
 
@@ -125,8 +132,8 @@ namespace std {
 
 // Specialization for using Location in hash tables.
 template <>
-struct hash<::tracked_objects::Location> {
-  std::size_t operator()(const ::tracked_objects::Location& loc) const {
+struct hash<::base::Location> {
+  std::size_t operator()(const ::base::Location& loc) const {
     const void* program_counter = loc.program_counter();
     return base::Hash(&program_counter, sizeof(void*));
   }

@@ -63,9 +63,9 @@
 //   SEQUENCE_CHECKER(sequence_checker_);
 // };
 
-namespace tracked_objects {
+namespace base {
 class Location;
-}  // namespace tracked_objects
+}  // namespace base
 
 namespace syncer {
 
@@ -91,7 +91,7 @@ class WeakHandleCoreBase {
   ~WeakHandleCoreBase();
 
   // May be called on any thread.
-  void PostToOwnerThread(const tracked_objects::Location& from_here,
+  void PostToOwnerThread(const base::Location& from_here,
                          const base::Closure& fn) const;
 
  private:
@@ -119,7 +119,7 @@ class WeakHandleCore : public WeakHandleCoreBase,
   // Call(...) may be called on any thread, but all its arguments
   // should be safe to be bound and copied across threads.
   template <typename Method, typename... Args>
-  void Call(const tracked_objects::Location& from_here,
+  void Call(const base::Location& from_here,
             Method method,
             Args&&... args) const {
     PostToOwnerThread(from_here,
@@ -181,7 +181,7 @@ class WeakHandle {
   // Call(...) may be called on any thread, but all its arguments
   // should be safe to be bound and copied across threads.
   template <typename Method, typename... Args>
-  void Call(const tracked_objects::Location& from_here,
+  void Call(const base::Location& from_here,
             Method method,
             Args&&... args) const {
     CHECK(IsInitialized());

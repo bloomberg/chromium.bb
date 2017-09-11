@@ -20,13 +20,13 @@
 #include "components/sync/model/sync_merge_result.h"
 #include "components/sync/model/syncable_service.h"
 
+namespace base {
+class Location;
+}
+
 namespace syncer {
 class SyncErrorFactory;
 class SyncChangeProcessor;
-}
-
-namespace tracked_objects {
-class Location;
 }
 
 // Defines a custom dictionary where users can add their own words. All words
@@ -153,7 +153,7 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary,
   void StopSyncing(syncer::ModelType type) override;
   syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
   syncer::SyncError ProcessSyncChanges(
-      const tracked_objects::Location& from_here,
+      const base::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
 
  private:

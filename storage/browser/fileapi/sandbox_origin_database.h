@@ -19,7 +19,7 @@ class Env;
 class Status;
 }
 
-namespace tracked_objects {
+namespace base {
 class Location;
 }
 
@@ -63,7 +63,7 @@ class STORAGE_EXPORT SandboxOriginDatabase
   bool RepairDatabase(const std::string& db_path);
   // Close the database. Before this, all iterators associated with the database
   // must be deleted.
-  void HandleError(const tracked_objects::Location& from_here,
+  void HandleError(const base::Location& from_here,
                    const leveldb::Status& status);
   void ReportInitStatus(const leveldb::Status& status);
   bool GetLastPathNumber(int* number);

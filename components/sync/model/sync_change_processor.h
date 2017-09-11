@@ -12,9 +12,9 @@
 #include "components/sync/model/sync_data.h"
 #include "components/sync/model/sync_error.h"
 
-namespace tracked_objects {
+namespace base {
 class Location;
-}  // namespace tracked_objects
+}  // namespace base
 
 namespace syncer {
 
@@ -41,9 +41,8 @@ class SyncChangeProcessor {
   // Inputs:
   //   |from_here|: allows tracking of where sync changes originate.
   //   |change_list|: is the list of sync changes in need of processing.
-  virtual SyncError ProcessSyncChanges(
-      const tracked_objects::Location& from_here,
-      const SyncChangeList& change_list) = 0;
+  virtual SyncError ProcessSyncChanges(const base::Location& from_here,
+                                       const SyncChangeList& change_list) = 0;
 
   // Fills a list of SyncData. This should create an up to date representation
   // of all the data known to the ChangeProcessor for |datatype|, and
