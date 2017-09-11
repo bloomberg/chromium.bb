@@ -128,7 +128,6 @@ const NSTimeInterval kSearchShortDelay = 0.100;
 
   self.findBarView = [[FindBarView alloc]
       initWithDarkAppearance:self.isIncognito && !IsIPadIdiom()];
-  self.findBarView.dispatcher = self.dispatcher;
   [findBarBackground addSubview:self.findBarView];
   self.findBarView.translatesAutoresizingMaskIntoConstraints = NO;
   NSMutableArray* constraints = [[NSMutableArray alloc] init];
@@ -157,12 +156,21 @@ const NSTimeInterval kSearchShortDelay = 0.100;
   [self.findBarView.inputField addTarget:self
                                   action:@selector(editingChanged)
                         forControlEvents:UIControlEventEditingChanged];
+  [self.findBarView.nextButton addTarget:self.dispatcher
+                                  action:@selector(findNextStringInPage)
+                        forControlEvents:UIControlEventTouchUpInside];
   [self.findBarView.nextButton addTarget:self
                                   action:@selector(hideKeyboard:)
                         forControlEvents:UIControlEventTouchUpInside];
+  [self.findBarView.previousButton addTarget:self.dispatcher
+                                      action:@selector(findPreviousStringInPage)
+                            forControlEvents:UIControlEventTouchUpInside];
   [self.findBarView.previousButton addTarget:self
                                       action:@selector(hideKeyboard:)
                             forControlEvents:UIControlEventTouchUpInside];
+  [self.findBarView.closeButton addTarget:self.dispatcher
+                                   action:@selector(closeFindInPage)
+                         forControlEvents:UIControlEventTouchUpInside];
 
   return findBarBackground;
 }

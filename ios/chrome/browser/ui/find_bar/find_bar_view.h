@@ -47,8 +47,6 @@ extern NSString* const kFindInPageCloseButtonId;
 @property(nonatomic, weak) UIButton* nextButton;
 // Button to dismiss Find in Page.
 @property(nonatomic, weak) UIButton* closeButton;
-// Dispatcher for sending browser commands.
-@property(nonatomic, weak) id<BrowserCommands> dispatcher;
 
 @end
 
