@@ -97,7 +97,6 @@ class WindowController;
 
 namespace gfx {
 class Image;
-class Point;
 }
 
 namespace ui {
@@ -609,7 +608,6 @@ class Browser : public TabStripModelObserver,
   bool IsPopupOrPanel(const content::WebContents* source) const override;
   void UpdateTargetURL(content::WebContents* source, const GURL& url) override;
   void ContentsMouseEvent(content::WebContents* source,
-                          const gfx::Point& location,
                           bool motion,
                           bool exited) override;
   void ContentsZoomChange(bool zoom_in) override;

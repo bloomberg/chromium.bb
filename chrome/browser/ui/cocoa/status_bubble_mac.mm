@@ -435,7 +435,11 @@ void StatusBubbleMac::SetFrameAvoidingMouse(
   [window_ setFrame:window_frame display:YES];
 }
 
-void StatusBubbleMac::MouseMoved(
+void StatusBubbleMac::MouseMoved(bool left_content) {
+  MouseMovedAt(gfx::Point([NSEvent mouseLocation]), left_content);
+}
+
+void StatusBubbleMac::MouseMovedAt(
     const gfx::Point& location, bool left_content) {
   if (!left_content)
     SetFrameAvoidingMouse([window_ frame], location);
@@ -474,7 +478,7 @@ void StatusBubbleMac::Create() {
                             forAttribute:NSAccessibilityRoleAttribute];
 
   [view setCornerFlags:kRoundedTopRightCorner];
-  MouseMoved(gfx::Point(), false);
+  MouseMovedAt(gfx::Point(), false);
 }
 
 void StatusBubbleMac::Attach() {

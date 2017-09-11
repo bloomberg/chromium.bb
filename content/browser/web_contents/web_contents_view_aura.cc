@@ -1164,8 +1164,7 @@ void WebContentsViewAura::OnMouseEvent(ui::MouseEvent* event) {
   }
 
   web_contents_->GetDelegate()->ContentsMouseEvent(
-      web_contents_, display::Screen::GetScreen()->GetCursorScreenPoint(),
-      type == ui::ET_MOUSE_MOVED, type == ui::ET_MOUSE_EXITED);
+      web_contents_, type == ui::ET_MOUSE_MOVED, type == ui::ET_MOUSE_EXITED);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
