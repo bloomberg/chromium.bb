@@ -36,8 +36,6 @@ _UNSCHEDULED_TELEMETRY_BENCHMARKS = set([
   ])
 
 
-# TODO(rnephew): Remove when no tests disable using
-# expectations.PermanentlyDisableBenchmark()
 ANDROID_BOT_TO_DEVICE_TYPE_MAP = {
   'Android Swarming N5X Tester': 'Nexus 5X',
   'Android Nexus5X Perf': 'Nexus 5X',
@@ -747,11 +745,11 @@ def ShouldBenchmarksBeScheduled(
   os_name = sanitize_os_name(os_name)
   e = ExpectationData(browser_name, os_name, device_type_name)
 
-  # TODO(rnephew): Remove when no tests disable using
-  # expectations.PermanentlyDisableBenchmark()
   b = benchmark()
-  if b.GetExpectations().IsBenchmarkDisabled(e, e):
-    return False
+  # TODO(rnephew): As part of the refactoring of TestConditions this will
+  # be refactored to make more sense. SUPPORTED_PLATFORMS was not the original
+  # intended use of TestConditions, so we actually want to test the opposite.
+  # If ShouldDisable() returns true, we should schedule the benchmark here.
   return any(t.ShouldDisable(e, e) for t in b.SUPPORTED_PLATFORMS)
 
 
@@ -791,8 +789,6 @@ def generate_telemetry_tests(name, tester_config, benchmarks,
       swarming_dimensions.append(get_swarming_dimension(
           dimension, device))
 
-    # TODO(rnephew): Remove when no tests disable using
-    # expectations.PermanentlyDisableBenchmark()
     if not ShouldBenchmarksBeScheduled(
         benchmark, name, swarming_dimensions[0]['os'], browser_name):
       continue
