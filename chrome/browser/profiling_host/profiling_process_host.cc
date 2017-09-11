@@ -5,6 +5,7 @@
 #include "chrome/browser/profiling_host/profiling_process_host.h"
 
 #include "base/allocator/features.h"
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/process/process_iterator.h"
@@ -278,11 +279,19 @@ void ProfilingProcessHost::SendPipeToClientProcess(
 
 // static
 ProfilingProcessHost::Mode ProfilingProcessHost::GetCurrentMode() {
+  const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kMemlog)) {
-    std::string mode =
-        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kMemlog);
+  if (cmdline->HasSwitch(switches::kMemlog)) {
+    if (cmdline->HasSwitch(switches::kEnableHeapProfiling)) {
+      // PartitionAlloc doesn't support chained allocation hooks so we can't
+      // run both heap profilers at the same time.
+      LOG(ERROR) << "--" << switches::kEnableHeapProfiling
+                 << " specified with --" << switches::kMemlog
+                 << "which are not compatible. Memlog will be disabled.";
+      return Mode::kNone;
+    }
+
+    std::string mode = cmdline->GetSwitchValueASCII(switches::kMemlog);
     if (mode == switches::kMemlogModeAll)
       return Mode::kAll;
     if (mode == switches::kMemlogModeBrowser)
@@ -293,8 +302,7 @@ ProfilingProcessHost::Mode ProfilingProcessHost::GetCurrentMode() {
   }
   return Mode::kNone;
 #else
-  LOG_IF(ERROR,
-         base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kMemlog))
+  LOG_IF(ERROR, cmdline->HasSwitch(switches::kMemlog))
       << "--" << switches::kMemlog
       << " specified but it will have no effect because the use_allocator_shim "
       << "is not available in this build.";

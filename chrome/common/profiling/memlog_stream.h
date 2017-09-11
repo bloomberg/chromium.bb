@@ -15,7 +15,15 @@ constexpr uint32_t kStreamSignature = 0xF6103B71;
 
 constexpr uint32_t kAllocPacketType = 0xA1A1A1A1;
 constexpr uint32_t kFreePacketType = 0xFEFEFEFE;
+
 constexpr uint32_t kMaxStackEntries = 256;
+constexpr uint32_t kMaxContextLen = 256;
+
+enum class AllocatorType : uint32_t {
+  kMalloc = 0,
+  kPartitionAlloc = 1,
+  kOilpan = 2
+};
 
 #pragma pack(push, 1)
 struct StreamHeader {
@@ -25,18 +33,24 @@ struct StreamHeader {
 struct AllocPacket {
   uint32_t op = kAllocPacketType;
 
-  uint64_t time;
+  AllocatorType allocator;
+
   uint64_t address;
   uint64_t size;
 
+  // Number of stack entries following this header.
   uint32_t stack_len;
-  // Immediately followed by |stack_len| more addresses.
+
+  // Number of context bytes followint the stack;
+  uint32_t context_byte_len;
+
+  // Immediately followed by |stack_len| uint64_t addresses and
+  // |context_byte_len| bytes of context (not null terminated).
 };
 
 struct FreePacket {
   uint32_t op = kFreePacketType;
 
-  uint64_t time;
   uint64_t address;
 };
 #pragma pack(pop)

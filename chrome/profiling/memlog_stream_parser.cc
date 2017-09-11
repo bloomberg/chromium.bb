@@ -162,20 +162,30 @@ MemlogStreamParser::ReadStatus MemlogStreamParser::ParseAlloc() {
     return READ_NO_DATA;
 
   std::vector<Address> stack;
-  if (alloc_packet.stack_len > kMaxStackEntries)
+  if (alloc_packet.stack_len > kMaxStackEntries ||
+      alloc_packet.context_byte_len > kMaxContextLen)
     return READ_ERROR;  // Prevent overflow on corrupted or malicious data.
   stack.resize(alloc_packet.stack_len);
   size_t stack_byte_size = sizeof(Address) * alloc_packet.stack_len;
 
-  if (!AreBytesAvailable(sizeof(AllocPacket) + stack_byte_size))
+  if (!AreBytesAvailable(sizeof(AllocPacket) + stack_byte_size +
+                         alloc_packet.context_byte_len))
     return READ_NO_DATA;
 
-  // Everything will fit, mark packet consumed, read stack.
+  // Everything will fit, mark header consumed.
   ConsumeBytes(sizeof(AllocPacket));
+
+  // Read stack.
   if (!stack.empty())
     ReadBytes(stack_byte_size, stack.data());
 
-  receiver_->OnAlloc(alloc_packet, std::move(stack));
+  // Read context.
+  std::string context;
+  context.resize(alloc_packet.context_byte_len);
+  if (alloc_packet.context_byte_len)
+    ReadBytes(alloc_packet.context_byte_len, &context[0]);
+
+  receiver_->OnAlloc(alloc_packet, std::move(stack), std::move(context));
   return READ_OK;
 }
 
