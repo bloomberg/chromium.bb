@@ -60,6 +60,7 @@ public class ChannelsInitializerTest {
     public Features.Processor processor = new Features.Processor();
 
     @Before
+    @TargetApi(Build.VERSION_CODES.O)
     public void setUp() throws Exception {
         // Not initializing the browser process is safe because
         // UrlFormatter.formatUrlForSecurityDisplay() is stand-alone.
@@ -284,6 +285,7 @@ public class ChannelsInitializerTest {
      * (Android *might* add a default 'Misc' channel on our behalf, but we don't want to tie our
      * tests to its presence, as this could change).
      */
+    @TargetApi(Build.VERSION_CODES.O)
     private List<NotificationChannel> getChannelsIgnoringDefault() {
         List<NotificationChannel> channels = mNotificationManagerProxy.getNotificationChannels();
         for (Iterator<NotificationChannel> it = channels.iterator(); it.hasNext();) {

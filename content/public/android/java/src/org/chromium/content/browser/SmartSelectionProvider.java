@@ -5,10 +5,12 @@
 package org.chromium.content.browser;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Handler;
 import android.os.LocaleList;
 import android.support.annotation.IntDef;
@@ -132,8 +134,9 @@ public class SmartSelectionProvider {
         mTextClassifier = textClassifier;
     }
 
-    // TODO(crbug.com/739746): Remove suppression when this constant is added to lint.
+    // TODO(wnwen): Remove this suppression once the constant is added to lint.
     @SuppressLint("WrongConstant")
+    @TargetApi(Build.VERSION_CODES.O)
     public TextClassifier getTextClassifier() {
         if (mTextClassifier != null) return mTextClassifier;
 
@@ -149,6 +152,7 @@ public class SmartSelectionProvider {
         return mTextClassifier;
     }
 
+    @TargetApi(Build.VERSION_CODES.O)
     private void sendSmartSelectionRequest(
             @RequestType int requestType, CharSequence text, int start, int end, Locale[] locales) {
         TextClassifier classifier = (TextClassifier) getTextClassifier();
@@ -167,6 +171,7 @@ public class SmartSelectionProvider {
         mClassificationTask.execute();
     }
 
+    @TargetApi(Build.VERSION_CODES.O)
     private class ClassificationTask extends AsyncTask<Void, Void, Result> {
         private final TextClassifier mTextClassifier;
         private final int mRequestType;

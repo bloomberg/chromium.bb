@@ -46,6 +46,7 @@ import java.util.List;
  * blocked. Thus some of these tests use different channel ids to avoid this problem.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
+@TargetApi(Build.VERSION_CODES.O)
 public class SiteChannelsManagerTest {
     private SiteChannelsManager mSiteChannelsManager;
     @Rule
@@ -78,7 +79,6 @@ public class SiteChannelsManagerTest {
 
     @Test
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
-    @TargetApi(Build.VERSION_CODES.O)
     @SmallTest
     public void testCreateSiteChannel_enabled() throws Exception {
         mSiteChannelsManager.createSiteChannel("https://example-enabled.org", 62102180000L, true);
@@ -91,7 +91,6 @@ public class SiteChannelsManagerTest {
 
     @Test
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
-    @TargetApi(Build.VERSION_CODES.O)
     @SmallTest
     public void testCreateSiteChannel_stripsSchemaForChannelName() throws Exception {
         mSiteChannelsManager.createSiteChannel("http://127.0.0.1", 0L, true);
@@ -119,7 +118,6 @@ public class SiteChannelsManagerTest {
 
     @Test
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
-    @TargetApi(Build.VERSION_CODES.O)
     @SmallTest
     public void testDeleteSiteChannel_channelExists() throws Exception {
         NotificationSettingsBridge.SiteChannel channel =
@@ -130,7 +128,6 @@ public class SiteChannelsManagerTest {
 
     @Test
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
-    @TargetApi(Build.VERSION_CODES.O)
     @SmallTest
     public void testDeleteSiteChannel_channelDoesNotExist() throws Exception {
         mSiteChannelsManager.createSiteChannel("https://chromium.org", 0L, true);
@@ -140,7 +137,6 @@ public class SiteChannelsManagerTest {
 
     @Test
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
-    @TargetApi(Build.VERSION_CODES.O)
     @SmallTest
     public void testGetChannelStatus_channelCreatedAsEnabled() throws Exception {
         NotificationSettingsBridge.SiteChannel channel =
@@ -151,7 +147,6 @@ public class SiteChannelsManagerTest {
 
     @Test
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
-    @TargetApi(Build.VERSION_CODES.O)
     @SmallTest
     public void testGetChannelStatus_channelCreatedAsBlocked() throws Exception {
         assertThat(mSiteChannelsManager.getChannelStatus("https://example-blocked.com"),
@@ -164,7 +159,6 @@ public class SiteChannelsManagerTest {
 
     @Test
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
-    @TargetApi(Build.VERSION_CODES.O)
     @SmallTest
     public void testGetChannelStatus_channelNotCreated() throws Exception {
         assertThat(mSiteChannelsManager.getChannelStatus("invalid-channel-id"),
@@ -173,7 +167,6 @@ public class SiteChannelsManagerTest {
 
     @Test
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
-    @TargetApi(Build.VERSION_CODES.O)
     @SmallTest
     public void testGetChannelStatus_channelCreatedThenDeleted() throws Exception {
         NotificationSettingsBridge.SiteChannel channel =

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
@@ -38,6 +39,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@TargetApi(Build.VERSION_CODES.M)
 public class WebappActionsNotificationTest {
     private static final String WEB_APP_PATH = "/chrome/test/data/banners/manifest_test_page.html";
 

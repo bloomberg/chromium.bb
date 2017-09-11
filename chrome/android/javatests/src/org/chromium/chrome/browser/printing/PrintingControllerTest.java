@@ -272,6 +272,7 @@ public class PrintingControllerTest {
         });
     }
 
+    @TargetApi(Build.VERSION_CODES.KITKAT)
     private PrintAttributes createDummyPrintAttributes() {
         return new PrintAttributes.Builder()
                 .setMediaSize(PrintAttributes.MediaSize.ISO_A4)

@@ -311,6 +311,8 @@ public class VrShellImpl
     }
 
     @Override
+    // TODO(crbug.com/762588): Fix getRealMetrics and remove suppression.
+    @SuppressLint("NewApi")
     public void initializeNative(Tab currentTab, boolean forWebVr,
             boolean webVrAutopresentationExpected, boolean inCct) {
         // Get physical and pixel size of the display, which is needed by native

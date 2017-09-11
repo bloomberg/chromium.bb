@@ -4,10 +4,12 @@
 
 package org.chromium.android_webview;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.os.Build;
 import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,6 +33,7 @@ import org.chromium.ui.display.DisplayAndroid;
  * is owned by AwContents.java and AutofillProviderAndroid is owned by native
  * AwContents.
  */
+@TargetApi(Build.VERSION_CODES.O)
 public class AwAutofillProvider extends AutofillProvider {
     private static class FocusField {
         public final short fieldIndex;

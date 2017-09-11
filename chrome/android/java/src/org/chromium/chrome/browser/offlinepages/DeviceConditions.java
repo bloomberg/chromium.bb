@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.offlinepages;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -81,6 +82,8 @@ public class DeviceConditions {
     /**
      * @return true if the device is in power save mode.
      */
+    // TODO(crbug.com/763923): Fix warning and remove suppression.
+    @SuppressLint("NewApi")
     public static boolean getInPowerSaveMode(Context context) {
         PowerManager powerManager = (PowerManager) context.getSystemService(context.POWER_SERVICE);
         return powerManager.isPowerSaveMode();

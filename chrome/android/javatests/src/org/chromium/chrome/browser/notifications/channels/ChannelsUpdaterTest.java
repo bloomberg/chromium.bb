@@ -42,6 +42,7 @@ import java.util.List;
  * Tests that ChannelsUpdater correctly initializes channels on the notification manager.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
+@TargetApi(Build.VERSION_CODES.O)
 public class ChannelsUpdaterTest {
     private NotificationManagerProxy mNotificationManagerProxy;
     private InMemorySharedPreferences mMockSharedPreferences;
