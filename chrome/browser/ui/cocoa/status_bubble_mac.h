@@ -18,6 +18,10 @@
 #include "chrome/browser/ui/status_bubble.h"
 #include "url/gurl.h"
 
+namespace gfx {
+class Point;
+}
+
 class StatusBubbleMacTest;
 @class StatusBubbleWindow;
 
@@ -41,7 +45,7 @@ class StatusBubbleMac : public StatusBubble {
   void SetStatus(const base::string16& status) override;
   void SetURL(const GURL& url) override;
   void Hide() override;
-  void MouseMoved(const gfx::Point& location, bool left_content) override;
+  void MouseMoved(bool left_content) override;
   void UpdateDownloadShelfVisibility(bool visible) override;
 
   // Mac-specific method: Update the size and position of the status bubble to
@@ -60,6 +64,10 @@ class StatusBubbleMac : public StatusBubble {
   // Get the current location of the mouse. Protected so that it can be
   // stubbed out for testing.
   virtual gfx::Point GetMouseLocation();
+
+  // Notify mouse events with current mouse location. The location is (0,0) when
+  // mouse is at the bottom-left of the screen.
+  void MouseMovedAt(const gfx::Point& location, bool left_content);
 
  private:
   friend class StatusBubbleMacTest;

@@ -799,8 +799,13 @@ void StatusBubbleViews::Hide() {
     view_->Hide();
 }
 
-void StatusBubbleViews::MouseMoved(const gfx::Point& location,
-                                   bool left_content) {
+void StatusBubbleViews::MouseMoved(bool left_content) {
+  MouseMovedAt(display::Screen::GetScreen()->GetCursorScreenPoint(),
+               left_content);
+}
+
+void StatusBubbleViews::MouseMovedAt(const gfx::Point& location,
+                                     bool left_content) {
   contains_mouse_ = !left_content;
   if (left_content) {
     RepositionPopup();

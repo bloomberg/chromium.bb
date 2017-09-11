@@ -58,7 +58,6 @@ struct SecurityStyleExplanations;
 }  // namespace content
 
 namespace gfx {
-class Point;
 class Rect;
 class Size;
 }
@@ -157,12 +156,10 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual void UpdateTargetURL(WebContents* source,
                                const GURL& url) {}
 
-  // Notification that there was a mouse event, along with the absolute
-  // coordinates of the mouse pointer and the type of event. If |motion| is
-  // true, this is a normal motion event. If |exited| is true, the pointer left
-  // the contents area.
+  // Notification that there was a mouse event, along with the type of event.
+  // If |motion| is true, this is a normal motion event. If |exited| is true,
+  // the pointer left the contents area.
   virtual void ContentsMouseEvent(WebContents* source,
-                                  const gfx::Point& location,
                                   bool motion,
                                   bool exited) {}
 

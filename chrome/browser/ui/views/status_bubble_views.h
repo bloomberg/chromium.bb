@@ -58,11 +58,15 @@ class StatusBubbleViews : public StatusBubble {
   void SetStatus(const base::string16& status) override;
   void SetURL(const GURL& url) override;
   void Hide() override;
-  void MouseMoved(const gfx::Point& location, bool left_content) override;
+  void MouseMoved(bool left_content) override;
   void UpdateDownloadShelfVisibility(bool visible) override;
 
  protected:
   views::Widget* popup() { return popup_.get(); }
+
+  // Notify a mouse event with current mouse location. The location is (0,0)
+  // when the mouse is at the top-left of the screen.
+  void MouseMovedAt(const gfx::Point& location, bool left_content);
 
  private:
   class StatusView;
