@@ -4887,7 +4887,8 @@ def CMDupload(parser, args):
                     dest="emulate_svn_auto_props",
                     help="Emulate Subversion's auto properties feature.")
   parser.add_option('-c', '--use-commit-queue', action='store_true',
-                    help='tell the commit queue to commit this patchset')
+                    help='tell the commit queue to commit this patchset; '
+                          'implies --send-mail')
   parser.add_option('--private', action='store_true',
                     help='set the review private (rietveld only)')
   parser.add_option('--target_branch',
@@ -4939,6 +4940,9 @@ def CMDupload(parser, args):
 
   if options.cq_dry_run and options.use_commit_queue:
     parser.error('only one of --use-commit-queue and --cq-dry-run allowed.')
+
+  if options.use_commit_queue:
+    options.send_mail = True
 
   # For sanity of test expectations, do this otherwise lazy-loading *now*.
   settings.GetIsGerrit()
