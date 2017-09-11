@@ -3,6 +3,7 @@ font-style: normal
 font-variant-caps: normal
 font-variant-ligatures: normal
 font-variant-numeric: normal
+font-variant-east-asian: normal
 font-weight: normal
 font-stretch: normal
 font-size: 12px
@@ -14,6 +15,7 @@ font-style: normal
 font-variant-caps: normal
 font-variant-ligatures: normal
 font-variant-numeric: normal
+font-variant-east-asian: normal
 font-weight: normal
 font-stretch: normal
 font-size: 12px
@@ -25,6 +27,7 @@ font-style: normal
 font-variant-caps: normal
 font-variant-ligatures: normal
 font-variant-numeric: normal
+font-variant-east-asian: normal
 font-weight: normal
 font-stretch: normal
 font-size: 12px
@@ -36,6 +39,7 @@ font-style: normal
 font-variant-caps: normal
 font-variant-ligatures: normal
 font-variant-numeric: normal
+font-variant-east-asian: normal
 font-weight: normal
 font-stretch: normal
 font-size: 12px
@@ -47,6 +51,7 @@ font-style: normal
 font-variant-caps: normal
 font-variant-ligatures: normal
 font-variant-numeric: normal
+font-variant-east-asian: normal
 font-weight: normal
 font-stretch: normal
 font-size: 12px
@@ -58,6 +63,7 @@ font-style: italic
 font-variant-caps: small-caps
 font-variant-ligatures: normal
 font-variant-numeric: normal
+font-variant-east-asian: normal
 font-weight: normal
 font-stretch: normal
 font-size: 12px
@@ -69,6 +75,7 @@ font-style: italic
 font-variant-caps: normal
 font-variant-ligatures: normal
 font-variant-numeric: normal
+font-variant-east-asian: normal
 font-weight: bold
 font-stretch: normal
 font-size: 12px
@@ -80,6 +87,7 @@ font-style: normal
 font-variant-caps: small-caps
 font-variant-ligatures: normal
 font-variant-numeric: normal
+font-variant-east-asian: normal
 font-weight: bold
 font-stretch: normal
 font-size: 14px
@@ -91,6 +99,7 @@ font-style: italic
 font-variant-caps: small-caps
 font-variant-ligatures: normal
 font-variant-numeric: normal
+font-variant-east-asian: normal
 font-weight: bold
 font-stretch: normal
 font-size: 14px
@@ -106,6 +115,7 @@ font-stretch
 font-variant-caps
 font-variant-ligatures
 font-variant-numeric
+font-variant-east-asian
 line-height
 
 Longhands for font: icon
@@ -117,6 +127,7 @@ font-stretch
 font-variant-caps
 font-variant-ligatures
 font-variant-numeric
+font-variant-east-asian
 line-height
 
 Longhands for font: menu
@@ -128,6 +139,7 @@ font-stretch
 font-variant-caps
 font-variant-ligatures
 font-variant-numeric
+font-variant-east-asian
 line-height
 
 Longhands for font: message-box
@@ -139,6 +151,7 @@ font-stretch
 font-variant-caps
 font-variant-ligatures
 font-variant-numeric
+font-variant-east-asian
 line-height
 
 Longhands for font: small-caption
@@ -150,6 +163,7 @@ font-stretch
 font-variant-caps
 font-variant-ligatures
 font-variant-numeric
+font-variant-east-asian
 line-height
 
 Longhands for font: status-bar
@@ -161,6 +175,7 @@ font-stretch
 font-variant-caps
 font-variant-ligatures
 font-variant-numeric
+font-variant-east-asian
 line-height
 
 Longhands for font: -webkit-mini-control
@@ -172,6 +187,7 @@ font-stretch
 font-variant-caps
 font-variant-ligatures
 font-variant-numeric
+font-variant-east-asian
 line-height
 
 Longhands for font: -webkit-small-control
@@ -183,6 +199,7 @@ font-stretch
 font-variant-caps
 font-variant-ligatures
 font-variant-numeric
+font-variant-east-asian
 line-height
 
 Longhands for font: -webkit-control
@@ -194,6 +211,7 @@ font-stretch
 font-variant-caps
 font-variant-ligatures
 font-variant-numeric
+font-variant-east-asian
 line-height
 
 Longhands for font: italic small-caps bold 12px/24px

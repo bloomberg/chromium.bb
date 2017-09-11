@@ -165,7 +165,7 @@ class PLATFORM_EXPORT FontDescription {
            Family().Family() == FontFamilyNames::webkit_monospace;
   }
   Kerning GetKerning() const { return static_cast<Kerning>(fields_.kerning_); }
-  FontVariantEastAsian GetVariantEastAsian() const {
+  FontVariantEastAsian VariantEastAsian() const {
     return FontVariantEastAsian::InitializeFromUnsigned(
         fields_.variant_east_asian_);
   }

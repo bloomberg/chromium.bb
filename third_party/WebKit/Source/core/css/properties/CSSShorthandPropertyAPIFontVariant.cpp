@@ -6,6 +6,7 @@
 
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/css/parser/FontVariantEastAsianParser.h"
 #include "core/css/parser/FontVariantLigaturesParser.h"
 #include "core/css/parser/FontVariantNumericParser.h"
 
@@ -28,27 +29,42 @@ bool CSSShorthandPropertyAPIFontVariant::ParseShorthand(
         CSSPropertyFontVariantCaps, CSSPropertyFontVariant,
         *CSSIdentifierValue::Create(CSSValueNormal), important,
         CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
+    CSSPropertyParserHelpers::AddProperty(
+        CSSPropertyFontVariantNumeric, CSSPropertyFontVariant,
+        *CSSIdentifierValue::Create(CSSValueNormal), important,
+        CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
+    CSSPropertyParserHelpers::AddProperty(
+        CSSPropertyFontVariantEastAsian, CSSPropertyFontVariant,
+        *CSSIdentifierValue::Create(CSSValueNormal), important,
+        CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
     return range.AtEnd();
   }
 
   CSSIdentifierValue* caps_value = nullptr;
   FontVariantLigaturesParser ligatures_parser;
   FontVariantNumericParser numeric_parser;
+  FontVariantEastAsianParser east_asian_parser;
   do {
     FontVariantLigaturesParser::ParseResult ligatures_parse_result =
         ligatures_parser.ConsumeLigature(range);
     FontVariantNumericParser::ParseResult numeric_parse_result =
         numeric_parser.ConsumeNumeric(range);
+    FontVariantEastAsianParser::ParseResult east_asian_parse_result =
+        east_asian_parser.ConsumeEastAsian(range);
     if (ligatures_parse_result ==
             FontVariantLigaturesParser::ParseResult::kConsumedValue ||
         numeric_parse_result ==
-            FontVariantNumericParser::ParseResult::kConsumedValue)
+            FontVariantNumericParser::ParseResult::kConsumedValue ||
+        east_asian_parse_result ==
+            FontVariantEastAsianParser::ParseResult::kConsumedValue)
       continue;
 
     if (ligatures_parse_result ==
             FontVariantLigaturesParser::ParseResult::kDisallowedValue ||
         numeric_parse_result ==
-            FontVariantNumericParser::ParseResult::kDisallowedValue)
+            FontVariantNumericParser::ParseResult::kDisallowedValue ||
+        east_asian_parse_result ==
+            FontVariantEastAsianParser::ParseResult::kDisallowedValue)
       return false;
 
     CSSValueID id = range.Peek().Id();
@@ -76,6 +92,10 @@ bool CSSShorthandPropertyAPIFontVariant::ParseShorthand(
   CSSPropertyParserHelpers::AddProperty(
       CSSPropertyFontVariantNumeric, CSSPropertyFontVariant,
       *numeric_parser.FinalizeValue(), important,
+      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
+  CSSPropertyParserHelpers::AddProperty(
+      CSSPropertyFontVariantEastAsian, CSSPropertyFontVariant,
+      *east_asian_parser.FinalizeValue(), important,
       CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
   CSSPropertyParserHelpers::AddProperty(
       CSSPropertyFontVariantCaps, CSSPropertyFontVariant,

@@ -917,6 +917,55 @@ static CSSValue* ValueForFontVariantNumeric(const ComputedStyle& style) {
   return value_list;
 }
 
+static CSSValue* ValueForFontVariantEastAsian(const ComputedStyle& style) {
+  FontVariantEastAsian east_asian =
+      style.GetFontDescription().VariantEastAsian();
+  if (east_asian.IsAllNormal())
+    return CSSIdentifierValue::Create(CSSValueNormal);
+
+  CSSValueList* value_list = CSSValueList::CreateSpaceSeparated();
+  switch (east_asian.Form()) {
+    case FontVariantEastAsian::kNormalForm:
+      break;
+    case FontVariantEastAsian::kJis78:
+      value_list->Append(*CSSIdentifierValue::Create(CSSValueJis78));
+      break;
+    case FontVariantEastAsian::kJis83:
+      value_list->Append(*CSSIdentifierValue::Create(CSSValueJis83));
+      break;
+    case FontVariantEastAsian::kJis90:
+      value_list->Append(*CSSIdentifierValue::Create(CSSValueJis90));
+      break;
+    case FontVariantEastAsian::kJis04:
+      value_list->Append(*CSSIdentifierValue::Create(CSSValueJis04));
+      break;
+    case FontVariantEastAsian::kSimplified:
+      value_list->Append(*CSSIdentifierValue::Create(CSSValueSimplified));
+      break;
+    case FontVariantEastAsian::kTraditional:
+      value_list->Append(*CSSIdentifierValue::Create(CSSValueTraditional));
+      break;
+    default:
+      NOTREACHED();
+  }
+  switch (east_asian.Width()) {
+    case FontVariantEastAsian::kNormalWidth:
+      break;
+    case FontVariantEastAsian::kFullWidth:
+      value_list->Append(*CSSIdentifierValue::Create(CSSValueFullWidth));
+      break;
+    case FontVariantEastAsian::kProportionalWidth:
+      value_list->Append(
+          *CSSIdentifierValue::Create(CSSValueProportionalWidth));
+      break;
+    default:
+      NOTREACHED();
+  }
+  if (east_asian.Ruby())
+    value_list->Append(*CSSIdentifierValue::Create(CSSValueRuby));
+  return value_list;
+}
+
 static CSSValue* SpecifiedValueForGridTrackBreadth(
     const GridLength& track_breadth,
     const ComputedStyle& style) {
@@ -2008,6 +2057,7 @@ CSSValue* ComputedStyleCSSValueMapping::ValueForFont(
   // this serialization.
   CSSValue* ligatures_value = ValueForFontVariantLigatures(style);
   CSSValue* numeric_value = ValueForFontVariantNumeric(style);
+  CSSValue* east_asian_value = ValueForFontVariantEastAsian(style);
   // FIXME: Use DataEquivalent<CSSValue>(...) once http://crbug.com/729447 is
   // resolved.
   if (!DataEquivalent(
@@ -2015,6 +2065,9 @@ CSSValue* ComputedStyleCSSValueMapping::ValueForFont(
           static_cast<CSSValue*>(CSSIdentifierValue::Create(CSSValueNormal))) ||
       !DataEquivalent(
           numeric_value,
+          static_cast<CSSValue*>(CSSIdentifierValue::Create(CSSValueNormal))) ||
+      !DataEquivalent(
+          east_asian_value,
           static_cast<CSSValue*>(CSSIdentifierValue::Create(CSSValueNormal))))
     return nullptr;
 
@@ -3085,6 +3138,8 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       return ValueForFontVariantCaps(style);
     case CSSPropertyFontVariantNumeric:
       return ValueForFontVariantNumeric(style);
+    case CSSPropertyFontVariantEastAsian:
+      return ValueForFontVariantEastAsian(style);
     case CSSPropertyZIndex:
       if (style.HasAutoZIndex() || !style.IsStackingContext())
         return CSSIdentifierValue::Create(CSSValueAuto);

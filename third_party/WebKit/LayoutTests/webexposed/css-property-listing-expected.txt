@@ -199,6 +199,7 @@ All changes to this list should go through Blink's feature review process: http:
     font-stretch
     font-style
     font-variant-caps
+    font-variant-east-asian
     font-variant-ligatures
     font-variant-numeric
     font-variation-settings
@@ -536,12 +537,14 @@ All changes to this list should go through Blink's feature review process: http:
         font-stretch
         font-style
         font-variant-caps
+        font-variant-east-asian
         font-variant-ligatures
         font-variant-numeric
         font-weight
         line-height
     font-variant
         font-variant-caps
+        font-variant-east-asian
         font-variant-ligatures
         font-variant-numeric
     grid

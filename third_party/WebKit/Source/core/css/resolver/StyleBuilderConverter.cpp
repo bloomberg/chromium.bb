@@ -640,6 +640,52 @@ FontVariantNumeric StyleBuilderConverter::ConvertFontVariantNumeric(
   return variant_numeric;
 }
 
+FontVariantEastAsian StyleBuilderConverter::ConvertFontVariantEastAsian(
+    StyleResolverState&,
+    const CSSValue& value) {
+  if (value.IsIdentifierValue()) {
+    DCHECK_EQ(ToCSSIdentifierValue(value).GetValueID(), CSSValueNormal);
+    return FontVariantEastAsian();
+  }
+
+  FontVariantEastAsian variant_east_asian;
+  for (const CSSValue* feature : ToCSSValueList(value)) {
+    switch (ToCSSIdentifierValue(feature)->GetValueID()) {
+      case CSSValueJis78:
+        variant_east_asian.SetForm(FontVariantEastAsian::kJis78);
+        break;
+      case CSSValueJis83:
+        variant_east_asian.SetForm(FontVariantEastAsian::kJis83);
+        break;
+      case CSSValueJis90:
+        variant_east_asian.SetForm(FontVariantEastAsian::kJis90);
+        break;
+      case CSSValueJis04:
+        variant_east_asian.SetForm(FontVariantEastAsian::kJis04);
+        break;
+      case CSSValueSimplified:
+        variant_east_asian.SetForm(FontVariantEastAsian::kSimplified);
+        break;
+      case CSSValueTraditional:
+        variant_east_asian.SetForm(FontVariantEastAsian::kTraditional);
+        break;
+      case CSSValueFullWidth:
+        variant_east_asian.SetWidth(FontVariantEastAsian::kFullWidth);
+        break;
+      case CSSValueProportionalWidth:
+        variant_east_asian.SetWidth(FontVariantEastAsian::kProportionalWidth);
+        break;
+      case CSSValueRuby:
+        variant_east_asian.SetRuby(true);
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+  return variant_east_asian;
+}
+
 StyleSelfAlignmentData StyleBuilderConverter::ConvertSelfOrDefaultAlignmentData(
     StyleResolverState&,
     const CSSValue& value) {

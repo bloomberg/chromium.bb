@@ -495,7 +495,7 @@ void SetFontFeatures(const Font* font, FeaturesVector* features) {
   }
 
   // font-variant-east-asian:
-  const FontVariantEastAsian east_asian = description.GetVariantEastAsian();
+  const FontVariantEastAsian east_asian = description.VariantEastAsian();
   if (UNLIKELY(!east_asian.IsAllNormal())) {
     static hb_feature_t jp78 = CreateFeature(HB_TAG('j', 'p', '7', '8'), 1);
     static hb_feature_t jp83 = CreateFeature(HB_TAG('j', 'p', '8', '3'), 1);

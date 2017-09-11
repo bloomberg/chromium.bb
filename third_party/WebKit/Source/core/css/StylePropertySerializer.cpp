@@ -559,6 +559,7 @@ void StylePropertySerializer::AppendFontLonghandValueIfNotNormal(
     case CSSPropertyFontVariantCaps:
     case CSSPropertyFontVariantLigatures:
     case CSSPropertyFontVariantNumeric:
+    case CSSPropertyFontVariantEastAsian:
     case CSSPropertyFontWeight:
       prefix = ' ';
       break;
@@ -599,11 +600,14 @@ String StylePropertySerializer::FontValue() const {
       property_set_.FindPropertyIndex(CSSPropertyFontVariantLigatures);
   int font_variant_numeric_property_index =
       property_set_.FindPropertyIndex(CSSPropertyFontVariantNumeric);
+  int font_variant_east_asian_property_index =
+      property_set_.FindPropertyIndex(CSSPropertyFontVariantEastAsian);
   DCHECK_NE(font_size_property_index, -1);
   DCHECK_NE(font_family_property_index, -1);
   DCHECK_NE(font_variant_caps_property_index, -1);
   DCHECK_NE(font_variant_ligatures_property_index, -1);
   DCHECK_NE(font_variant_numeric_property_index, -1);
+  DCHECK_NE(font_variant_east_asian_property_index, -1);
 
   PropertyValueForSerializer font_size_property =
       property_set_.PropertyAt(font_size_property_index);
@@ -615,17 +619,24 @@ String StylePropertySerializer::FontValue() const {
       property_set_.PropertyAt(font_variant_ligatures_property_index);
   PropertyValueForSerializer font_variant_numeric_property =
       property_set_.PropertyAt(font_variant_numeric_property_index);
+  PropertyValueForSerializer font_variant_east_asian_property =
+      property_set_.PropertyAt(font_variant_east_asian_property_index);
 
   // Check that non-initial font-variant subproperties are not conflicting with
   // this serialization.
   const CSSValue* ligatures_value = font_variant_ligatures_property.Value();
   const CSSValue* numeric_value = font_variant_numeric_property.Value();
+  const CSSValue* east_asian_value = font_variant_east_asian_property.Value();
   if ((ligatures_value->IsIdentifierValue() &&
        ToCSSIdentifierValue(ligatures_value)->GetValueID() != CSSValueNormal) ||
       ligatures_value->IsValueList() ||
       (numeric_value->IsIdentifierValue() &&
        ToCSSIdentifierValue(numeric_value)->GetValueID() != CSSValueNormal) ||
-      numeric_value->IsValueList())
+      numeric_value->IsValueList() ||
+      (east_asian_value->IsIdentifierValue() &&
+       ToCSSIdentifierValue(east_asian_value)->GetValueID() !=
+           CSSValueNormal) ||
+      east_asian_value->IsValueList())
     return g_empty_string;
 
   StringBuilder result;
@@ -659,6 +670,7 @@ String StylePropertySerializer::FontVariantValue() const {
   AppendFontLonghandValueIfNotNormal(CSSPropertyFontVariantLigatures, result);
   AppendFontLonghandValueIfNotNormal(CSSPropertyFontVariantCaps, result);
   AppendFontLonghandValueIfNotNormal(CSSPropertyFontVariantNumeric, result);
+  AppendFontLonghandValueIfNotNormal(CSSPropertyFontVariantEastAsian, result);
 
   if (result.IsEmpty()) {
     return "normal";
