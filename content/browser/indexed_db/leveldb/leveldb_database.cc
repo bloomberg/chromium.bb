@@ -480,8 +480,9 @@ bool LevelDBDatabase::OnMemoryDump(
   DCHECK(res);
   base::StringToUint64(value, &size);
 
-  auto* dump = pmd->CreateAllocatorDump(base::StringPrintf(
-      "leveldb/index_db/0x%" PRIXPTR, reinterpret_cast<uintptr_t>(db_.get())));
+  auto* dump = pmd->CreateAllocatorDump(
+      base::StringPrintf("site_storage/index_db/0x%" PRIXPTR,
+                         reinterpret_cast<uintptr_t>(db_.get())));
   dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                   base::trace_event::MemoryAllocatorDump::kUnitsBytes, size);
 
