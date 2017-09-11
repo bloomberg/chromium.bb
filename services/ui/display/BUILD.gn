@@ -69,7 +69,7 @@ if (is_chromeos) {
       "//testing/gmock",
       "//testing/gtest",
       "//ui/base",
-      "//ui/display",
+      "//ui/display/manager",
       "//ui/events/devices",
       "//ui/gfx",
       "//ui/gfx:test_support",

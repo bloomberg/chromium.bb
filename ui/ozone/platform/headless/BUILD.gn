@@ -22,7 +22,7 @@ source_set("headless") {
     "//base",
     "//skia",
     "//ui/base",
-    "//ui/display",
+    "//ui/display/manager",
     "//ui/events",
     "//ui/events/ozone:events_ozone_layout",
     "//ui/events/platform",

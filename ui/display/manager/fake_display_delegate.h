@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_DISPLAY_FAKE_DISPLAY_DELEGATE_H_
-#define UI_DISPLAY_FAKE_DISPLAY_DELEGATE_H_
+#ifndef UI_DISPLAY_MANAGER_FAKE_DISPLAY_DELEGATE_H_
+#define UI_DISPLAY_MANAGER_FAKE_DISPLAY_DELEGATE_H_
 
 #include <memory>
 #include <queue>
@@ -14,8 +14,8 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
-#include "ui/display/display_export.h"
-#include "ui/display/fake_display_snapshot.h"
+#include "ui/display/manager/display_manager_export.h"
+#include "ui/display/manager/fake_display_snapshot.h"
 #include "ui/display/types/fake_display_controller.h"
 #include "ui/display/types/native_display_delegate.h"
 
@@ -68,8 +68,9 @@ namespace display {
 //
 // FakeDisplayDelegate also implements FakeDisplayController which provides a
 // way to change the display state at runtime.
-class DISPLAY_EXPORT FakeDisplayDelegate : public NativeDisplayDelegate,
-                                           public FakeDisplayController {
+class DISPLAY_MANAGER_EXPORT FakeDisplayDelegate
+    : public NativeDisplayDelegate,
+      public FakeDisplayController {
  public:
   FakeDisplayDelegate();
   ~FakeDisplayDelegate() override;
@@ -132,4 +133,4 @@ class DISPLAY_EXPORT FakeDisplayDelegate : public NativeDisplayDelegate,
 };
 
 }  // namespace display
-#endif  // UI_DISPLAY_FAKE_DISPLAY_DELEGATE_H_
+#endif  // UI_DISPLAY_MANAGER_FAKE_DISPLAY_DELEGATE_H_
