@@ -84,10 +84,6 @@ void DeleteAllItems(const std::string& extension_id,
                                        extension_id, callback);
 }
 
-void ReleaseValueStoreCache(std::unique_ptr<LocalValueStoreCache> cache) {
-  // Nothing to do. Used only to defer |cache| destruction to the FILE thread.
-}
-
 }  // namespace
 
 // static
@@ -131,9 +127,7 @@ LockScreenItemStorage::LockScreenItemStorage(content::BrowserContext* context,
 LockScreenItemStorage::~LockScreenItemStorage() {
   data_item_cache_.clear();
 
-  task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ReleaseValueStoreCache,
-                            base::Passed(std::move(value_store_cache_))));
+  task_runner_->DeleteSoon(FROM_HERE, value_store_cache_.release());
 
   DCHECK_EQ(g_data_item_storage, this);
   g_data_item_storage = nullptr;
