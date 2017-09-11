@@ -9,6 +9,7 @@ import android.content.res.Resources;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
@@ -34,6 +35,9 @@ public final class SuggestionsConfig {
      * @return Whether scrolling to the bottom of suggestions triggers a load.
      */
     public static boolean scrollToLoad() {
+        // The scroll to load feature does not work well for users who require accessibility mode.
+        if (AccessibilityUtil.isAccessibilityEnabled()) return false;
+
         return FeatureUtilities.isChromeHomeModernEnabled()
                 && ChromeFeatureList.isEnabled(
                            ChromeFeatureList.CONTENT_SUGGESTIONS_SCROLL_TO_LOAD);
