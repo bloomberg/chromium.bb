@@ -47,7 +47,9 @@
             <template is="dom-if" if="[[!isCharging]]">
               <div>$i18n{migrationAskChargeMessage}</div>
             </template>
-            <div>[[computeNecessaryBatteryLevelLabel_()]]</div>
+            <div>
+              [[computeNecessaryBatteryLevelLabel_(necessaryBatteryPercent)]]
+            </div>
           </div>
         </template>
         </div>

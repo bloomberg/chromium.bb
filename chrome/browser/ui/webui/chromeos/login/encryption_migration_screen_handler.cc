@@ -306,6 +306,9 @@ void EncryptionMigrationScreenHandler::SetRestartLoginCallback(
 }
 
 void EncryptionMigrationScreenHandler::SetupInitialView() {
+  // Pass constant value(s) to the UI.
+  CallJS("setNecessaryBatteryPercent", arc::kMigrationMinimumBatteryPercent);
+
   // If old encryption is detected in ARC kiosk mode, skip all checks (user
   // confirmation, battery level, and remaining space) and start migration
   // immediately.
