@@ -5092,40 +5092,6 @@ TEST_F(LayerTreeHostImplBrowserControlsTest, BrowserControlsPushUnsentRatio) {
   ASSERT_EQ(0, host_impl_->active_tree()->CurrentBrowserControlsShownRatio());
 }
 
-TEST_F(LayerTreeHostImplBrowserControlsTest, ViewportBoundsUseZoomForDSF) {
-  SetupBrowserControlsAndScrollLayerWithVirtualViewport(
-      gfx::Size(50, 50), gfx::Size(100, 100), gfx::Size(100, 100));
-  DrawFrame();
-
-  LayerImpl* inner_container =
-      host_impl_->active_tree()->InnerViewportContainerLayer();
-
-  gfx::Vector2dF scroll_delta(0.f, 10.f);
-  EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
-            host_impl_
-                ->ScrollBegin(BeginState(gfx::Point()).get(),
-                              InputHandler::TOUCHSCREEN)
-                .thread);
-  host_impl_->ScrollBy(UpdateState(gfx::Point(), scroll_delta).get());
-
-  gfx::Vector2dF bounds_delta = inner_container->ViewportBoundsDelta();
-  host_impl_->active_tree()->SetCurrentBrowserControlsShownRatio(1.f);
-  host_impl_->ScrollEnd(EndState().get());
-
-  float device_scale = 3.5f;
-  host_impl_->active_tree()->set_painted_device_scale_factor(device_scale);
-
-  EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
-            host_impl_
-                ->ScrollBegin(BeginState(gfx::Point()).get(),
-                              InputHandler::TOUCHSCREEN)
-                .thread);
-  host_impl_->ScrollBy(UpdateState(gfx::Point(), scroll_delta).get());
-
-  bounds_delta.Scale(device_scale);
-  EXPECT_EQ(bounds_delta, inner_container->ViewportBoundsDelta());
-}
-
 // Test that if only the browser controls are scrolled, we shouldn't request a
 // commit.
 TEST_F(LayerTreeHostImplBrowserControlsTest, BrowserControlsDontTriggerCommit) {

@@ -308,6 +308,14 @@ class TestView : public TestRenderWidgetHostView {
     bounds_ = bounds;
   }
 
+  void set_top_controls_height(float top_controls_height) {
+    top_controls_height_ = top_controls_height;
+  }
+
+  void set_bottom_controls_height(float bottom_controls_height) {
+    bottom_controls_height_ = bottom_controls_height;
+  }
+
   const WebTouchEvent& acked_event() const { return acked_event_; }
   int acked_event_count() const { return acked_event_count_; }
   void ClearAckedEvent() {
@@ -334,6 +342,10 @@ class TestView : public TestRenderWidgetHostView {
 
   // RenderWidgetHostView override.
   gfx::Rect GetViewBounds() const override { return bounds_; }
+  float GetTopControlsHeight() const override { return top_controls_height_; }
+  float GetBottomControlsHeight() const override {
+    return bottom_controls_height_;
+  }
   void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
                               InputEventAckState ack_result) override {
     acked_event_ = touch.event;
@@ -367,6 +379,8 @@ class TestView : public TestRenderWidgetHostView {
   bool use_fake_physical_backing_size_;
   gfx::Size mock_physical_backing_size_;
   InputEventAckState ack_result_;
+  float top_controls_height_;
+  float bottom_controls_height_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestView);
@@ -2574,6 +2588,33 @@ TEST_F(RenderWidgetHostTest, ResizeParams) {
   host_->GetResizeParams(&resize_params);
   EXPECT_EQ(bounds.size(), resize_params.new_size);
   EXPECT_EQ(physical_backing_size, resize_params.physical_backing_size);
+}
+
+TEST_F(RenderWidgetHostTest, ResizeParamsDeviceScale) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->AppendSwitchASCII(switches::kEnableUseZoomForDSF, "true");
+
+  float device_scale = 3.5f;
+  ScreenInfo screen_info;
+  screen_info.device_scale_factor = device_scale;
+
+  auto* host_delegate =
+      static_cast<MockRenderWidgetHostDelegate*>(host_->delegate());
+
+  host_delegate->SetScreenInfo(screen_info);
+  host_->WasResized();
+
+  float top_controls_height = 10.0f;
+  float bottom_controls_height = 20.0f;
+  view_->set_top_controls_height(top_controls_height);
+  view_->set_bottom_controls_height(bottom_controls_height);
+
+  ResizeParams resize_params;
+  host_->GetResizeParams(&resize_params);
+  EXPECT_EQ(top_controls_height * device_scale,
+            resize_params.top_controls_height);
+  EXPECT_EQ(bottom_controls_height * device_scale,
+            resize_params.bottom_controls_height);
 }
 
 // Make sure no dragging occurs after renderer exited. See crbug.com/704832.
