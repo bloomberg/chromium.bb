@@ -101,7 +101,7 @@ void UpdateCheckerTest::SetUp() {
   config_ = base::MakeRefCounted<TestConfigurator>();
   pref_ = base::MakeUnique<TestingPrefServiceSimple>();
   PersistedData::RegisterPrefs(pref_->registry());
-  metadata_ = base::MakeUnique<PersistedData>(pref_.get());
+  metadata_ = base::MakeUnique<PersistedData>(pref_.get(), nullptr);
   interceptor_factory_ =
       base::MakeUnique<InterceptorFactory>(base::ThreadTaskRunnerHandle::Get());
   post_interceptor_ = interceptor_factory_->CreateInterceptor();

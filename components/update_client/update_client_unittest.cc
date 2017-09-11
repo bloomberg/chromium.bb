@@ -187,7 +187,7 @@ constexpr int UpdateClientTest::kNumWorkerThreads_;
 
 UpdateClientTest::UpdateClientTest() {
   PersistedData::RegisterPrefs(pref_->registry());
-  metadata_ = base::MakeUnique<PersistedData>(pref_.get());
+  metadata_ = base::MakeUnique<PersistedData>(pref_.get(), nullptr);
 }
 
 UpdateClientTest::~UpdateClientTest() {

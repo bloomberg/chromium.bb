@@ -25,6 +25,8 @@ class URLRequestContextGetter;
 
 namespace update_client {
 
+class ActivityDataService;
+
 #define POST_INTERCEPT_SCHEME "https"
 #define POST_INTERCEPT_HOSTNAME "localhost2"
 #define POST_INTERCEPT_PATH "/update2"
@@ -80,6 +82,7 @@ class TestConfigurator : public Configurator {
   bool EnabledBackgroundDownloader() const override;
   bool EnabledCupSigning() const override;
   PrefService* GetPrefService() const override;
+  ActivityDataService* GetActivityDataService() const override;
   bool IsPerUserInstall() const override;
   std::vector<uint8_t> GetRunActionKeyHash() const override;
 

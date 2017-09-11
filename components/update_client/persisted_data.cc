@@ -15,14 +15,16 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/update_client/activity_data_service.h"
 
 const char kPersistedDataPreference[] = "updateclientdata";
-const int kDateLastRollCallUnknown = -2;
 
 namespace update_client {
 
-PersistedData::PersistedData(PrefService* pref_service)
-    : pref_service_(pref_service) {}
+PersistedData::PersistedData(PrefService* pref_service,
+                             ActivityDataService* activity_data_service)
+    : pref_service_(pref_service),
+      activity_data_service_(activity_data_service) {}
 
 PersistedData::~PersistedData() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -66,7 +68,11 @@ std::string PersistedData::GetString(const std::string& id,
 }
 
 int PersistedData::GetDateLastRollCall(const std::string& id) const {
-  return GetInt(id, "dlrc", kDateLastRollCallUnknown);
+  return GetInt(id, "dlrc", kDateUnknown);
+}
+
+int PersistedData::GetDateLastActive(const std::string& id) const {
+  return GetInt(id, "dla", kDateUnknown);
 }
 
 std::string PersistedData::GetPingFreshness(const std::string& id) const {
@@ -92,12 +98,29 @@ void PersistedData::SetDateLastRollCall(const std::vector<std::string>& ids,
   if (!pref_service_ || datenum < 0)
     return;
   DictionaryPrefUpdate update(pref_service_, kPersistedDataPreference);
-  for (auto id : ids) {
+  for (const auto& id : ids) {
     // We assume ids do not contain '.' characters.
     DCHECK_EQ(std::string::npos, id.find('.'));
     update->SetInteger(base::StringPrintf("apps.%s.dlrc", id.c_str()), datenum);
     update->SetString(base::StringPrintf("apps.%s.pf", id.c_str()),
                       base::GenerateGUID());
+  }
+}
+
+void PersistedData::SetDateLastActive(const std::vector<std::string>& ids,
+                                      int datenum) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!pref_service_ || datenum < 0)
+    return;
+  DictionaryPrefUpdate update(pref_service_, kPersistedDataPreference);
+  for (const auto& id : ids) {
+    if (GetActiveBit(id)) {
+      // We assume ids do not contain '.' characters.
+      DCHECK_EQ(std::string::npos, id.find('.'));
+      update->SetInteger(base::StringPrintf("apps.%s.dla", id.c_str()),
+                         datenum);
+      activity_data_service_->ClearActiveBit(id);
+    }
   }
 }
 
@@ -125,6 +148,24 @@ void PersistedData::SetCohortName(const std::string& id,
 void PersistedData::SetCohortHint(const std::string& id,
                                   const std::string& cohort_hint) {
   SetString(id, "cohorthint", cohort_hint);
+}
+
+bool PersistedData::GetActiveBit(const std::string& id) const {
+  return activity_data_service_ && activity_data_service_->GetActiveBit(id);
+}
+
+int PersistedData::GetDaysSinceLastRollCall(const std::string& id) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return activity_data_service_
+             ? activity_data_service_->GetDaysSinceLastRollCall(id)
+             : kDaysUnknown;
+}
+
+int PersistedData::GetDaysSinceLastActive(const std::string& id) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return activity_data_service_
+             ? activity_data_service_->GetDaysSinceLastActive(id)
+             : kDaysUnknown;
 }
 
 void PersistedData::RegisterPrefs(PrefRegistrySimple* registry) {

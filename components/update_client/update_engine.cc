@@ -4,6 +4,7 @@
 
 #include "components/update_client/update_engine.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -57,7 +58,9 @@ UpdateEngine::UpdateEngine(
       update_checker_factory_(update_checker_factory),
       crx_downloader_factory_(crx_downloader_factory),
       ping_manager_(ping_manager),
-      metadata_(new PersistedData(config->GetPrefService())),
+      metadata_(
+          std::make_unique<PersistedData>(config->GetPrefService(),
+                                          config->GetActivityDataService())),
       notify_observers_callback_(notify_observers_callback) {}
 
 UpdateEngine::~UpdateEngine() {

@@ -11,6 +11,7 @@
 
 #include "base/version.h"
 #include "components/component_updater/configurator_impl.h"
+#include "components/update_client/activity_data_service.h"
 #include "components/update_client/out_of_process_patcher.h"
 #include "components/update_client/update_query_params.h"
 #include "ios/chrome/browser/application_context.h"
@@ -49,6 +50,7 @@ class IOSConfigurator : public update_client::Configurator {
   bool EnabledBackgroundDownloader() const override;
   bool EnabledCupSigning() const override;
   PrefService* GetPrefService() const override;
+  update_client::ActivityDataService* GetActivityDataService() const override;
   bool IsPerUserInstall() const override;
   std::vector<uint8_t> GetRunActionKeyHash() const override;
 
@@ -154,6 +156,11 @@ bool IOSConfigurator::EnabledCupSigning() const {
 
 PrefService* IOSConfigurator::GetPrefService() const {
   return GetApplicationContext()->GetLocalState();
+}
+
+update_client::ActivityDataService* IOSConfigurator::GetActivityDataService()
+    const {
+  return nullptr;
 }
 
 bool IOSConfigurator::IsPerUserInstall() const {
