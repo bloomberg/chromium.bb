@@ -23,16 +23,6 @@ TestDictionaryDerivedImplementedAs::TestDictionaryDerivedImplementedAs(const Tes
 
 TestDictionaryDerivedImplementedAs& TestDictionaryDerivedImplementedAs::operator=(const TestDictionaryDerivedImplementedAs&) = default;
 
-void TestDictionaryDerivedImplementedAs::setDerivedStringMember(const String& value) {
-  derived_string_member_ = value;
-}
-void TestDictionaryDerivedImplementedAs::setDerivedStringMemberWithDefault(const String& value) {
-  derived_string_member_with_default_ = value;
-}
-void TestDictionaryDerivedImplementedAs::setRequiredLongMember(int32_t value) {
-  required_long_member_ = value;
-  has_required_long_member_ = true;
-}
 void TestDictionaryDerivedImplementedAs::setStringOrDoubleSequenceMember(const HeapVector<StringOrDouble>& value) {
   string_or_double_sequence_member_ = value;
   has_string_or_double_sequence_member_ = true;

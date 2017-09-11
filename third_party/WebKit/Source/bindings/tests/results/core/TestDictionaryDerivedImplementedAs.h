@@ -33,20 +33,20 @@ class CORE_EXPORT TestDictionaryDerivedImplementedAs : public TestDictionary {
   const String& derivedStringMember() const {
     return derived_string_member_;
   }
-  void setDerivedStringMember(const String&);
+  inline void setDerivedStringMember(const String&);
 
   bool hasDerivedStringMemberWithDefault() const { return !derived_string_member_with_default_.IsNull(); }
   const String& derivedStringMemberWithDefault() const {
     return derived_string_member_with_default_;
   }
-  void setDerivedStringMemberWithDefault(const String&);
+  inline void setDerivedStringMemberWithDefault(const String&);
 
   bool hasRequiredLongMember() const { return has_required_long_member_; }
   int32_t requiredLongMember() const {
     DCHECK(has_required_long_member_);
     return required_long_member_;
   }
-  void setRequiredLongMember(int32_t);
+  inline void setRequiredLongMember(int32_t);
 
   bool hasStringOrDoubleSequenceMember() const { return has_string_or_double_sequence_member_; }
   const HeapVector<StringOrDouble>& stringOrDoubleSequenceMember() const {
@@ -69,6 +69,19 @@ class CORE_EXPORT TestDictionaryDerivedImplementedAs : public TestDictionary {
 
   friend class V8TestDictionaryDerivedImplementedAs;
 };
+
+void TestDictionaryDerivedImplementedAs::setDerivedStringMember(const String& value) {
+  derived_string_member_ = value;
+}
+
+void TestDictionaryDerivedImplementedAs::setDerivedStringMemberWithDefault(const String& value) {
+  derived_string_member_with_default_ = value;
+}
+
+void TestDictionaryDerivedImplementedAs::setRequiredLongMember(int32_t value) {
+  required_long_member_ = value;
+  has_required_long_member_ = true;
+}
 
 }  // namespace blink
 
