@@ -6,7 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "ui/base/ui_features.h"
-#include "ui/display/fake_display_delegate.h"
+#include "ui/display/manager/fake_display_delegate.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/platform/wayland/wayland_connection.h"

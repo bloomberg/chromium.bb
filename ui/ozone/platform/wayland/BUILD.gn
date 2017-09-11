@@ -49,7 +49,7 @@ source_set("wayland") {
     "//third_party/wayland:wayland_client",
     "//third_party/wayland-protocols:xdg_shell_protocol",
     "//ui/base:ui_features",
-    "//ui/display",
+    "//ui/display/manager",
     "//ui/events",
     "//ui/events:dom_keycode_converter",
     "//ui/events/ozone:events_ozone_layout",

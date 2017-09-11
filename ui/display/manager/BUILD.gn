@@ -36,6 +36,10 @@ component("manager") {
     "display_manager_utilities.cc",
     "display_manager_utilities.h",
     "display_pref_util.h",
+    "fake_display_delegate.cc",
+    "fake_display_delegate.h",
+    "fake_display_snapshot.cc",
+    "fake_display_snapshot.h",
     "forwarding_display_delegate.cc",
     "forwarding_display_delegate.h",
     "json_converter.cc",
@@ -50,6 +54,7 @@ component("manager") {
 
   deps = [
     "//base",
+    "//third_party/re2",
     "//ui/base",
     "//ui/display/mojo:interfaces",
     "//ui/display/util",
