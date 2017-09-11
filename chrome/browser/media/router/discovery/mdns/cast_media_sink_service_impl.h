@@ -40,9 +40,11 @@ class CastMediaSinkServiceImpl
   // Initial delay (in seconds) used by backoff policy.
   static constexpr int kDelayInSeconds = 15;
 
-  CastMediaSinkServiceImpl(const OnSinksDiscoveredCallback& callback,
-                           cast_channel::CastSocketService* cast_socket_service,
-                           DiscoveryNetworkMonitor* network_monitor);
+  CastMediaSinkServiceImpl(
+      const OnSinksDiscoveredCallback& callback,
+      cast_channel::CastSocketService* cast_socket_service,
+      DiscoveryNetworkMonitor* network_monitor,
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   ~CastMediaSinkServiceImpl() override;
 
   void SetTaskRunnerForTest(
@@ -61,6 +63,11 @@ class CastMediaSinkServiceImpl
   virtual void OpenChannels(std::vector<MediaSinkInternal> cast_sinks);
 
   void OnDialSinkAdded(const MediaSinkInternal& sink);
+
+  // Tries to open cast channels for sinks found by current round of mDNS
+  // discovery, but without opened cast channels.
+  // |cast_sinks|: list of sinks found by current round of mDNS discovery.
+  void AttemptConnection(const std::vector<MediaSinkInternal>& cast_sinks);
 
  private:
   friend class CastMediaSinkServiceImplTest;
@@ -99,6 +106,7 @@ class CastMediaSinkServiceImpl
                            CacheDialDiscoveredSinks);
   FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest,
                            DualDiscoveryDoesntDuplicateCacheItems);
+  FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest, TestAttemptConnection);
 
   // CastSocket::Observer implementation.
   void OnError(const cast_channel::CastSocket& socket,
