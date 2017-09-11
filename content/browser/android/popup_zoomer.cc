@@ -97,8 +97,9 @@ void PopupZoomer::ResolveTapDisambiguation(JNIEnv* env,
   if (!rwhva_)
     return;
 
-  rwhva_->ResolveTapDisambiguation(time_ms / 1000, gfx::Point(x, y),
-                                   is_long_press);
+  float dip_scale = rwhva_->GetNativeView()->GetDipScale();
+  rwhva_->ResolveTapDisambiguation(
+      time_ms / 1000, gfx::Point(x / dip_scale, y / dip_scale), is_long_press);
 }
 
 }  // namespace content
