@@ -217,20 +217,20 @@ cr.define('extension_item_tests', function() {
       var icon = item.$$('#source-indicator iron-icon');
       assertTrue(!!icon);
       expectEquals('extensions-icons:unpacked', icon.icon);
-      extension_test_util.testIronIcons(item);
+      extension_test_util.testIcons(item);
 
       item.set('data.location', 'THIRD_PARTY');
       Polymer.dom.flush();
       expectTrue(extension_test_util.isVisible(item, '#source-indicator'));
       expectEquals('input', icon.icon);
-      extension_test_util.testIronIcons(item);
+      extension_test_util.testIcons(item);
 
       item.set('data.location', 'FROM_STORE');
       item.set('data.controlledInfo', {type: 'POLICY', text: 'policy'});
       Polymer.dom.flush();
       expectTrue(extension_test_util.isVisible(item, '#source-indicator'));
       expectEquals('communication:business', icon.icon);
-      extension_test_util.testIronIcons(item);
+      extension_test_util.testIcons(item);
 
       item.set('data.controlledInfo', null);
       Polymer.dom.flush();

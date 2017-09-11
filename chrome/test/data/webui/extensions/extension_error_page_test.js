@@ -87,7 +87,7 @@ cr.define('extension_error_page_tests', function() {
     test(assert(TestNames.Layout), function() {
       Polymer.dom.flush();
 
-      extension_test_util.testIronIcons(errorPage);
+      extension_test_util.testIcons(errorPage);
 
       var testIsVisible = extension_test_util.isVisible.bind(null, errorPage);
       expectTrue(testIsVisible('#close-button'));

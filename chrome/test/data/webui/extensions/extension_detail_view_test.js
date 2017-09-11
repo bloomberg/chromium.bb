@@ -51,7 +51,7 @@ cr.define('extension_detail_view_tests', function() {
     test(assert(TestNames.Layout), function() {
       Polymer.dom.flush();
 
-      extension_test_util.testIronIcons(item);
+      extension_test_util.testIcons(item);
 
       var testIsVisible = extension_test_util.isVisible.bind(null, item);
       expectTrue(testIsVisible('#close-button'));
