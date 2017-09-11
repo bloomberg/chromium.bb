@@ -40,7 +40,7 @@ class FakeCodecAllocator : public testing::NiceMock<AVDACodecAllocator> {
                     SurfaceTextureGLOwner*));
 
   std::unique_ptr<MediaCodecBridge> CreateMediaCodecSync(
-      scoped_refptr<CodecConfig> codec_config) override;
+      scoped_refptr<CodecConfig> config) override;
   void CreateMediaCodecAsync(base::WeakPtr<AVDACodecAllocatorClient> client,
                              scoped_refptr<CodecConfig> config) override;
   void ReleaseMediaCodec(
@@ -54,51 +54,30 @@ class FakeCodecAllocator : public testing::NiceMock<AVDACodecAllocator> {
   // Satisfies the pending codec creation with a null codec.
   void ProvideNullCodecAsync();
 
-  // Returns the most recent codec that we provided, which might already have
-  // been freed.  By default, the destruction observer will fail the test
-  // if this happens, unless the expectation is explicitly changed.  If you
-  // change it, then use this with caution.
-  MockMediaCodecBridge* most_recent_codec() { return most_recent_codec_; }
-
-  // Returns the destruction observer for the most recent codec.  We retain
-  // ownership of it.
-  DestructionObserver* codec_destruction_observer() {
-    return most_recent_codec_destruction_observer_.get();
-  }
-
-  // Returns the most recent overlay / etc. that we were given during codec
-  // allocation (sync or async).
-  AndroidOverlay* most_recent_overlay() { return most_recent_overlay_; }
-  SurfaceTextureGLOwner* most_recent_surface_texture() {
-    return most_recent_surface_texture_;
-  }
-
   // Most recent codec that we've created via CreateMockCodec, since we have
   // to assign ownership.  It may be freed already.
-  MockMediaCodecBridge* most_recent_codec_;
+  MockMediaCodecBridge* most_recent_codec = nullptr;
 
-  // DestructionObserver for |most_recent_codec_|.
-  std::unique_ptr<DestructionObserver> most_recent_codec_destruction_observer_;
+  // The DestructionObserver for |most_recent_codec|.
+  std::unique_ptr<DestructionObserver> most_recent_codec_destruction_observer;
 
   // The most recent overlay provided during codec allocation.
-  AndroidOverlay* most_recent_overlay_ = nullptr;
+  AndroidOverlay* most_recent_overlay = nullptr;
 
   // The most recent surface texture provided during codec allocation.
-  SurfaceTextureGLOwner* most_recent_surface_texture_ = nullptr;
+  SurfaceTextureGLOwner* most_recent_surface_texture = nullptr;
 
   // Whether CreateMediaCodecSync() is allowed to succeed.
   bool allow_sync_creation = true;
 
  private:
-  // Saves a reference to |config| and copies out the fields that may
-  // get modified by the client.
-  void CopyCodecAllocParams(scoped_refptr<CodecConfig> config);
-
   // Whether CreateMediaCodecAsync() has been called but a codec hasn't been
   // provided yet.
   bool codec_creation_pending_ = false;
   base::WeakPtr<AVDACodecAllocatorClient> client_;
-  scoped_refptr<CodecConfig> config_;
+
+  // The surface bundle of the pending codec creation.
+  scoped_refptr<AVDASurfaceBundle> pending_surface_bundle_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCodecAllocator);
 };
