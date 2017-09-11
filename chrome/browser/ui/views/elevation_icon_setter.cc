@@ -12,6 +12,8 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #include <shellapi.h>
+
+#include "base/task_runner_util.h"
 #include "base/win/win_util.h"
 #include "ui/display/win/dpi.h"
 #include "ui/gfx/icon_util.h"
@@ -22,9 +24,9 @@
 
 namespace {
 
+#if defined(OS_WIN)
 std::unique_ptr<SkBitmap> GetElevationIcon() {
   std::unique_ptr<SkBitmap> icon;
-#if defined(OS_WIN)
   if (!base::win::UserAccountControlIsEnabled())
     return icon;
 
@@ -46,9 +48,9 @@ std::unique_ptr<SkBitmap> GetElevationIcon() {
       icon_info.hIcon,
       gfx::Size(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON))));
   DestroyIcon(icon_info.hIcon);
-#endif
   return icon;
 }
+#endif
 
 }  // namespace
 
@@ -59,11 +61,15 @@ ElevationIconSetter::ElevationIconSetter(views::LabelButton* button,
                                          const base::Closure& callback)
     : button_(button),
       weak_factory_(this) {
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
-      base::Bind(&GetElevationIcon),
-      base::Bind(&ElevationIconSetter::SetButtonIcon,
-                 weak_factory_.GetWeakPtr(), callback));
+#if defined(OS_WIN)
+  base::PostTaskAndReplyWithResult(
+      base::CreateCOMSTATaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::USER_BLOCKING})
+          .get(),
+      FROM_HERE, base::BindOnce(&GetElevationIcon),
+      base::BindOnce(&ElevationIconSetter::SetButtonIcon,
+                     weak_factory_.GetWeakPtr(), callback));
+#endif
 }
 
 ElevationIconSetter::~ElevationIconSetter() {
