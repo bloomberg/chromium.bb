@@ -134,9 +134,11 @@ void ProfilingProcessHost::Unregister() {
 
 void ProfilingProcessHost::BrowserChildProcessLaunchedAndConnected(
     const content::ChildProcessData& data) {
-  // Ignore newly launched child process if only profiling the browser.
-  if (mode_ == Mode::kBrowser)
+  // In minimal mode, only profile the GPU process.
+  if (mode_ == Mode::kMinimal &&
+      data.process_type != content::ProcessType::PROCESS_TYPE_GPU) {
     return;
+  }
 
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
     content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::IO)
@@ -158,6 +160,7 @@ void ProfilingProcessHost::BrowserChildProcessLaunchedAndConnected(
       mojo::MakeRequest(&memlog_client);
   BindInterface(host->GetHost(), std::move(request));
   base::ProcessId pid = base::GetProcId(data.handle);
+  LOG(ERROR) << "start profiling: " << pid;
   SendPipeToProfilingService(std::move(memlog_client), pid);
 }
 
@@ -165,8 +168,9 @@ void ProfilingProcessHost::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  // Ignore newly launched renderer if only profiling the browser.
-  if (mode_ == Mode::kBrowser)
+  // Ignore newly launched renderer if only profiling a minimal set of
+  // processes.
+  if (mode_ == Mode::kMinimal)
     return;
 
   if (type != content::NOTIFICATION_RENDERER_PROCESS_CREATED)
@@ -195,15 +199,6 @@ void ProfilingProcessHost::Observe(
 bool ProfilingProcessHost::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
-  // Dump the browser process, which happens to be this process.
-  if (GetCurrentMode() == Mode::kBrowser) {
-    memlog_->DumpProcessForTracing(
-        base::Process::Current().Pid(),
-        base::BindOnce(&ProfilingProcessHost::OnDumpProcessForTracingCallback,
-                       base::Unretained(this)));
-    return true;
-  }
-
   // Attempt to dump all processes. Some of these processes will not be profiled
   // [e.g. utility processes, including the profiling process]. The profiling
   // process will gracefully handle these failures.
@@ -294,8 +289,8 @@ ProfilingProcessHost::Mode ProfilingProcessHost::GetCurrentMode() {
     std::string mode = cmdline->GetSwitchValueASCII(switches::kMemlog);
     if (mode == switches::kMemlogModeAll)
       return Mode::kAll;
-    if (mode == switches::kMemlogModeBrowser)
-      return Mode::kBrowser;
+    if (mode == switches::kMemlogModeMinimal)
+      return Mode::kMinimal;
 
     DLOG(ERROR) << "Unsupported value: \"" << mode << "\" passed to --"
                 << switches::kMemlog;

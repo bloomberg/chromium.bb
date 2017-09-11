@@ -428,8 +428,8 @@ const char kEnableOutOfProcessHeapProfilingName[] =
 const char kEnableOutOfProcessHeapProfilingDescription[] =
     "Creates a profiling service that records stacktraces for all live, "
     "malloced objects.";
-const char kEnableOutOfProcessHeapProfilingModeBrowser[] =
-    "Profile only the browser process.";
+const char kEnableOutOfProcessHeapProfilingModeMinimal[] =
+    "Profile only the browser and GPU processes.";
 const char kEnableOutOfProcessHeapProfilingModeAll[] = "Profile all processes.";
 
 const char kEnablePictureInPictureName[] = "Enable picture in picture.";

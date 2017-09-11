@@ -39,7 +39,7 @@ INSTANTIATE_TEST_CASE_P(NoMemlog,
                         ::testing::Values(static_cast<const char*>(nullptr)));
 INSTANTIATE_TEST_CASE_P(BrowserOnly,
                         MemlogBrowserTest,
-                        ::testing::Values(switches::kMemlogModeBrowser));
+                        ::testing::Values(switches::kMemlogModeMinimal));
 INSTANTIATE_TEST_CASE_P(AllProcesses,
                         MemlogBrowserTest,
                         ::testing::Values(switches::kMemlogModeAll));

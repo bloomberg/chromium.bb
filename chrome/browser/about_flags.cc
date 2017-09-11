@@ -1055,8 +1055,8 @@ const FeatureEntry::Choice kEnableHeapProfilingChoices[] = {
 
 const FeatureEntry::Choice kEnableOutOfProcessHeapProfilingChoices[] = {
     {flags_ui::kGenericExperimentChoiceDisabled, "", ""},
-    {flag_descriptions::kEnableOutOfProcessHeapProfilingModeBrowser,
-     switches::kMemlog, switches::kMemlogModeBrowser},
+    {flag_descriptions::kEnableOutOfProcessHeapProfilingModeMinimal,
+     switches::kMemlog, switches::kMemlogModeMinimal},
     {flag_descriptions::kEnableOutOfProcessHeapProfilingModeAll,
      switches::kMemlog, switches::kMemlogModeAll}};
 

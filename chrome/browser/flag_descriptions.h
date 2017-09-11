@@ -279,7 +279,7 @@ extern const char kEnableOutOfBlinkCORSDescription[];
 
 extern const char kEnableOutOfProcessHeapProfilingName[];
 extern const char kEnableOutOfProcessHeapProfilingDescription[];
-extern const char kEnableOutOfProcessHeapProfilingModeBrowser[];
+extern const char kEnableOutOfProcessHeapProfilingModeMinimal[];
 extern const char kEnableOutOfProcessHeapProfilingModeAll[];
 
 extern const char kEnablePictureInPictureName[];

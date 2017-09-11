@@ -52,8 +52,8 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
     // No profiling enabled.
     kNone,
 
-    // Only profile the browser process.
-    kBrowser,
+    // Only profile the browser and GPU processes.
+    kMinimal,
 
     // Profile all processes.
     kAll,
