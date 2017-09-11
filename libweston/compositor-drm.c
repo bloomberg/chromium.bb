@@ -4439,6 +4439,43 @@ parse_gbm_format(const char *s, uint32_t default_value, uint32_t *gbm_format)
 	return ret;
 }
 
+/** Rewrite the output's mode list
+ *
+ * @param output The output.
+ * @return 0 on success, -1 on failure.
+ *
+ * Destroy all existing modes in the list, and reconstruct a new list from
+ * scratch, based on the currently attached heads.
+ *
+ * On failure the output's mode list may contain some modes.
+ */
+static int
+drm_output_update_modelist_from_heads(struct drm_output *output)
+{
+	struct drm_backend *backend = to_drm_backend(output->base.compositor);
+	struct weston_head *head_base;
+	struct drm_head *head;
+	struct drm_mode *mode;
+	int i;
+
+	assert(!output->base.enabled);
+
+	drm_mode_list_destroy(backend, &output->base.mode_list);
+
+	/* XXX: needs a strategy for combining mode lists from multiple heads */
+	head_base = weston_output_get_first_head(&output->base);
+	assert(head_base);
+	head = to_drm_head(head_base);
+
+	for (i = 0; i < head->connector->count_modes; i++) {
+		mode = drm_output_add_mode(output, &head->connector->modes[i]);
+		if (!mode)
+			return -1;
+	}
+
+	return 0;
+}
+
 /**
  * Choose suitable mode for an output
  *
@@ -4562,6 +4599,9 @@ drm_output_set_mode(struct weston_output *base,
 	struct drm_head *head = to_drm_head(weston_output_get_first_head(base));
 
 	struct drm_mode *current;
+
+	if (drm_output_update_modelist_from_heads(output) < 0)
+		return -1;
 
 	current = drm_output_choose_initial_mode(b, output, mode, modeline,
 						 &head->inherited_mode);
@@ -5140,8 +5180,6 @@ create_output_for_connector(struct drm_backend *b,
 {
 	struct drm_output *output;
 	struct drm_head *head;
-	struct drm_mode *drm_mode;
-	int i;
 
 	output = zalloc(sizeof *output);
 	if (output == NULL)
@@ -5165,24 +5203,12 @@ create_output_for_connector(struct drm_backend *b,
 
 	output->state_cur = drm_output_state_alloc(output, NULL);
 
-	for (i = 0; i < head->connector->count_modes; i++) {
-		drm_mode = drm_output_add_mode(output, &head->connector->modes[i]);
-		if (!drm_mode) {
-			weston_log("failed to add mode\n");
-			goto err_output;
-		}
-	}
-
 	weston_compositor_add_pending_output(&output->base, b->compositor);
 
 	/* drm_head_create() made its own connector */
 	drmModeFreeConnector(connector);
 
 	return 0;
-
-err_output:
-	drm_head_destroy(head);
-	drm_output_destroy(&output->base);
 
 err_init:
 	drmModeFreeConnector(connector);
