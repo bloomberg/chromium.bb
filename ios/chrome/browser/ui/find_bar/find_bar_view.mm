@@ -44,7 +44,6 @@ NSString* const kFindInPageCloseButtonId = @"kFindInPageCloseButtonId";
 @synthesize nextButton = _nextButton;
 @synthesize closeButton = _closeButton;
 @synthesize separator = _separator;
-@synthesize dispatcher = _dispatcher;
 
 - (instancetype)initWithDarkAppearance:(BOOL)darkAppearance {
   self = [super initWithFrame:CGRectZero];
@@ -182,17 +181,6 @@ NSString* const kFindInPageCloseButtonId = @"kFindInPageCloseButtonId";
         constraintEqualToAnchor:self.nextButton.trailingAnchor],
   ]];
   self.closeButton.translatesAutoresizingMaskIntoConstraints = NO;
-
-  // Connect dispatcher.
-  [self.nextButton addTarget:self.dispatcher
-                      action:@selector(findNextStringInPage)
-            forControlEvents:UIControlEventTouchUpInside];
-  [self.previousButton addTarget:self.dispatcher
-                          action:@selector(findPreviousStringInPage)
-                forControlEvents:UIControlEventTouchUpInside];
-  [self.closeButton addTarget:self.dispatcher
-                       action:@selector(closeFindInPage)
-             forControlEvents:UIControlEventTouchUpInside];
 
   // A11y labels.
   SetA11yLabelAndUiAutomationName(self.closeButton,
