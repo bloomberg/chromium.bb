@@ -98,16 +98,6 @@ id<GREYMatcher> StaticTextWithAccessibilityLabelId(int message_id) {
       l10n_util::GetNSStringWithFixup(message_id));
 }
 
-id<GREYMatcher> WebViewContainingBlockedImage(std::string image_id) {
-  return web::WebViewContainingBlockedImage(
-      std::move(image_id), chrome_test_util::GetCurrentWebState());
-}
-
-id<GREYMatcher> WebViewContainingLoadedImage(std::string image_id) {
-  return web::WebViewContainingLoadedImage(
-      std::move(image_id), chrome_test_util::GetCurrentWebState());
-}
-
 id<GREYMatcher> CancelButton() {
   return ButtonWithAccessibilityLabelId(IDS_CANCEL);
 }
