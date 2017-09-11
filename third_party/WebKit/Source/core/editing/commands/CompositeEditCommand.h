@@ -56,7 +56,6 @@ class CORE_EXPORT CompositeEditCommand : public EditCommand {
   const SelectionForUndoStep& EndingSelection() const {
     return ending_selection_;
   }
-  VisibleSelection EndingVisibleSelection() const;
 
   void SetStartingSelection(const SelectionForUndoStep&);
   void SetStartingSelection(const VisibleSelection&);
@@ -90,6 +89,7 @@ class CORE_EXPORT CompositeEditCommand : public EditCommand {
  protected:
   explicit CompositeEditCommand(Document&);
 
+  VisibleSelection EndingVisibleSelection() const;
   //
   // sugary-sweet convenience functions to help create and apply edit commands
   // in composite commands
