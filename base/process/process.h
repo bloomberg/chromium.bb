@@ -45,6 +45,8 @@ extern const Feature kMacAllowBackgroundingProcesses;
 // end up pointing to the wrong process.
 class BASE_EXPORT Process {
  public:
+  // On Windows, this takes ownership of |handle|. On POSIX, this does not take
+  // ownership of |handle|.
   explicit Process(ProcessHandle handle = kNullProcessHandle);
 
   Process(Process&& other);
