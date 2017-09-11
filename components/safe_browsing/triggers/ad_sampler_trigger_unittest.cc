@@ -5,6 +5,7 @@
 #include "components/safe_browsing/triggers/ad_sampler_trigger.h"
 
 #include "base/metrics/field_trial_params.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing/features.h"
@@ -103,14 +104,16 @@ class AdSamplerTriggerTest : public content::RenderViewHostTestHarness {
   }
 
   MockTriggerManager* get_trigger_manager() { return &trigger_manager_; }
+  base::HistogramTester* get_histograms() { return &histograms_; }
 
  private:
   TestingPrefServiceSimple prefs_;
   MockTriggerManager trigger_manager_;
+  base::HistogramTester histograms_;
 };
 
 TEST_F(AdSamplerTriggerTest, TriggerDisabledBySamplingFrequency) {
-  // Make sure the trigger doesn't fire when the samlping frequency is set to
+  // Make sure the trigger doesn't fire when the sampling frequency is set to
   // zero, which disables the trigger.
   CreateTriggerWithFrequency(kSamplerFrequencyDisabled);
   EXPECT_CALL(*get_trigger_manager(),
@@ -125,6 +128,15 @@ TEST_F(AdSamplerTriggerTest, TriggerDisabledBySamplingFrequency) {
   RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
   CreateAndNavigateSubFrame(kAdUrl, kNonAdName, main_frame);
   CreateAndNavigateSubFrame(kNonAdUrl, kAdName, main_frame);
+
+  // Three navigations (main frame, two subframes). One frame with no ads, and
+  // two skipped ad samples.
+  get_histograms()->ExpectBucketCount(kAdSamplerTriggerActionMetricName,
+                                      TRIGGER_CHECK, 3);
+  get_histograms()->ExpectBucketCount(kAdSamplerTriggerActionMetricName,
+                                      NO_SAMPLE_NO_AD, 1);
+  get_histograms()->ExpectBucketCount(kAdSamplerTriggerActionMetricName,
+                                      NO_SAMPLE_AD_SKIPPED_FOR_FREQUENCY, 2);
 }
 
 TEST_F(AdSamplerTriggerTest, PageWithNoAds) {
@@ -141,6 +153,12 @@ TEST_F(AdSamplerTriggerTest, PageWithNoAds) {
   RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
   CreateAndNavigateSubFrame(kNonAdUrl, kNonAdName, main_frame);
   CreateAndNavigateSubFrame(kNonAdUrl, kNonAdName, main_frame);
+
+  // Three navigations (main frame, two subframes), each with no ad.
+  get_histograms()->ExpectBucketCount(kAdSamplerTriggerActionMetricName,
+                                      TRIGGER_CHECK, 3);
+  get_histograms()->ExpectBucketCount(kAdSamplerTriggerActionMetricName,
+                                      NO_SAMPLE_NO_AD, 3);
 }
 
 TEST_F(AdSamplerTriggerTest, PageWithMultipleAds) {
@@ -162,6 +180,44 @@ TEST_F(AdSamplerTriggerTest, PageWithMultipleAds) {
   RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
   CreateAndNavigateSubFrame(kAdUrl, kNonAdName, main_frame);
   CreateAndNavigateSubFrame(kNonAdUrl, kAdName, main_frame);
+
+  // Three navigations (main frame, two subframes). Main frame with no ads, and
+  // two sampled ads
+  get_histograms()->ExpectBucketCount(kAdSamplerTriggerActionMetricName,
+                                      TRIGGER_CHECK, 3);
+  get_histograms()->ExpectBucketCount(kAdSamplerTriggerActionMetricName,
+                                      NO_SAMPLE_NO_AD, 1);
+  get_histograms()->ExpectBucketCount(kAdSamplerTriggerActionMetricName,
+                                      AD_SAMPLED, 2);
+}
+
+TEST_F(AdSamplerTriggerTest, ReportRejectedByTriggerManager) {
+  // If the trigger manager rejects the report, we don't try to finish/send the
+  // report.
+  CreateTriggerWithFrequency(/*denominator=*/1);
+  EXPECT_CALL(*get_trigger_manager(),
+              StartCollectingThreatDetails(TriggerType::AD_SAMPLE,
+                                           web_contents(), _, _, _, _))
+      .Times(1)
+      .WillOnce(Return(false));
+  EXPECT_CALL(*get_trigger_manager(),
+              FinishCollectingThreatDetails(TriggerType::AD_SAMPLE,
+                                            web_contents(), _, _, _, _))
+      .Times(0);
+
+  // One ad on the page, identified by its URL.
+  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
+  CreateAndNavigateSubFrame(kAdUrl, kNonAdName, main_frame);
+  CreateAndNavigateSubFrame(kNonAdUrl, kNonAdName, main_frame);
+
+  // Three navigations (main frame, two subframes). Two frames with no ads, and
+  // one ad rejected by trigger manager.
+  get_histograms()->ExpectBucketCount(kAdSamplerTriggerActionMetricName,
+                                      TRIGGER_CHECK, 3);
+  get_histograms()->ExpectBucketCount(kAdSamplerTriggerActionMetricName,
+                                      NO_SAMPLE_NO_AD, 2);
+  get_histograms()->ExpectBucketCount(kAdSamplerTriggerActionMetricName,
+                                      NO_SAMPLE_COULD_NOT_START_REPORT, 1);
 }
 
 TEST(AdSamplerTriggerTestFinch, FrequencyDenominatorFeature) {

@@ -32,6 +32,28 @@ extern const char kAdSamplerFrequencyDenominatorParam[];
 // A frequency denominator with this value indicates sampling is disabled.
 extern const size_t kSamplerFrequencyDisabled;
 
+// Metric for tracking what the Ad Sampler trigger does on each navigation.
+extern const char kAdSamplerTriggerActionMetricName[];
+
+// Actions performed by this trigger. These values are written to logs. New enum
+// values can be added, but existing enums must never be renumbered or deleted
+// and reused.
+enum AdSamplerTriggerAction {
+  // An event occurred that caused the trigger to perform its checks.
+  TRIGGER_CHECK = 0,
+  // An ad was detected and a sample was collected.
+  AD_SAMPLED = 1,
+  // An ad was detected but no sample was taken to honour sampling frequency.
+  NO_SAMPLE_AD_SKIPPED_FOR_FREQUENCY = 2,
+  // No ad was detected.
+  NO_SAMPLE_NO_AD = 3,
+  // An ad was detected and could have been sampled, but the trigger manager
+  // rejected the report (eg: because a report was already in progress).
+  NO_SAMPLE_COULD_NOT_START_REPORT = 4,
+  // New actions must be added before MAX_ACTIONS.
+  MAX_ACTIONS
+};
+
 // This class periodically checks for Google ads on the page and may decide to
 // send a report to Google with the ad's structure for further analysis.
 class AdSamplerTrigger : public content::WebContentsObserver,
