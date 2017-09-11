@@ -55,6 +55,13 @@ void AXViewObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
   if (!view_->visible())
     out_node_data->AddState(ui::AX_STATE_INVISIBLE);
 
+  if (!out_node_data->HasStringAttribute(ui::AX_ATTR_DESCRIPTION)) {
+    base::string16 description;
+    view_->GetTooltipText(gfx::Point(), &description);
+    out_node_data->AddStringAttribute(ui::AX_ATTR_DESCRIPTION,
+                                      base::UTF16ToUTF8(description));
+  }
+
   out_node_data->location = gfx::RectF(view_->GetBoundsInScreen());
 }
 
