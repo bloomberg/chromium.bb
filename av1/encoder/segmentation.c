@@ -173,69 +173,45 @@ static void count_segs_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 
+#define CSEGS(cs_bw, cs_bh, cs_rowoff, cs_coloff)                              \
+  count_segs(cm, xd, tile, mi + mis * (cs_rowoff) + (cs_coloff),               \
+             no_pred_segcounts, temporal_predictor_count, t_unpred_seg_counts, \
+             (cs_bw), (cs_bh), mi_row + (cs_rowoff), mi_col + (cs_coloff));
+
 #if CONFIG_EXT_PARTITION_TYPES
   if (bsize == BLOCK_8X8)
     partition = PARTITION_NONE;
   else
     partition = get_partition(cm, mi_row, mi_col, bsize);
   switch (partition) {
-    case PARTITION_NONE:
-      count_segs(cm, xd, tile, mi, no_pred_segcounts, temporal_predictor_count,
-                 t_unpred_seg_counts, bs, bs, mi_row, mi_col);
-      break;
+    case PARTITION_NONE: CSEGS(bs, bs, 0, 0); break;
     case PARTITION_HORZ:
-      count_segs(cm, xd, tile, mi, no_pred_segcounts, temporal_predictor_count,
-                 t_unpred_seg_counts, bs, hbs, mi_row, mi_col);
-      count_segs(cm, xd, tile, mi + hbs * mis, no_pred_segcounts,
-                 temporal_predictor_count, t_unpred_seg_counts, bs, hbs,
-                 mi_row + hbs, mi_col);
+      CSEGS(bs, hbs, 0, 0);
+      CSEGS(bs, hbs, hbs, 0);
       break;
     case PARTITION_VERT:
-      count_segs(cm, xd, tile, mi, no_pred_segcounts, temporal_predictor_count,
-                 t_unpred_seg_counts, hbs, bs, mi_row, mi_col);
-      count_segs(cm, xd, tile, mi + hbs, no_pred_segcounts,
-                 temporal_predictor_count, t_unpred_seg_counts, hbs, bs, mi_row,
-                 mi_col + hbs);
+      CSEGS(hbs, bs, 0, 0);
+      CSEGS(hbs, bs, 0, hbs);
       break;
     case PARTITION_HORZ_A:
-      count_segs(cm, xd, tile, mi, no_pred_segcounts, temporal_predictor_count,
-                 t_unpred_seg_counts, hbs, hbs, mi_row, mi_col);
-      count_segs(cm, xd, tile, mi + hbs, no_pred_segcounts,
-                 temporal_predictor_count, t_unpred_seg_counts, hbs, hbs,
-                 mi_row, mi_col + hbs);
-      count_segs(cm, xd, tile, mi + hbs * mis, no_pred_segcounts,
-                 temporal_predictor_count, t_unpred_seg_counts, bs, hbs,
-                 mi_row + hbs, mi_col);
+      CSEGS(hbs, hbs, 0, 0);
+      CSEGS(hbs, hbs, 0, hbs);
+      CSEGS(bs, hbs, hbs, 0);
       break;
     case PARTITION_HORZ_B:
-      count_segs(cm, xd, tile, mi, no_pred_segcounts, temporal_predictor_count,
-                 t_unpred_seg_counts, bs, hbs, mi_row, mi_col);
-      count_segs(cm, xd, tile, mi + hbs * mis, no_pred_segcounts,
-                 temporal_predictor_count, t_unpred_seg_counts, hbs, hbs,
-                 mi_row + hbs, mi_col);
-      count_segs(cm, xd, tile, mi + hbs + hbs * mis, no_pred_segcounts,
-                 temporal_predictor_count, t_unpred_seg_counts, hbs, hbs,
-                 mi_row + hbs, mi_col + hbs);
+      CSEGS(bs, hbs, 0, 0);
+      CSEGS(hbs, hbs, hbs, 0);
+      CSEGS(hbs, hbs, hbs, hbs);
       break;
     case PARTITION_VERT_A:
-      count_segs(cm, xd, tile, mi, no_pred_segcounts, temporal_predictor_count,
-                 t_unpred_seg_counts, hbs, hbs, mi_row, mi_col);
-      count_segs(cm, xd, tile, mi + hbs * mis, no_pred_segcounts,
-                 temporal_predictor_count, t_unpred_seg_counts, hbs, hbs,
-                 mi_row + hbs, mi_col);
-      count_segs(cm, xd, tile, mi + hbs, no_pred_segcounts,
-                 temporal_predictor_count, t_unpred_seg_counts, hbs, bs, mi_row,
-                 mi_col + hbs);
+      CSEGS(hbs, hbs, 0, 0);
+      CSEGS(hbs, hbs, hbs, 0);
+      CSEGS(hbs, bs, 0, hbs);
       break;
     case PARTITION_VERT_B:
-      count_segs(cm, xd, tile, mi, no_pred_segcounts, temporal_predictor_count,
-                 t_unpred_seg_counts, hbs, bs, mi_row, mi_col);
-      count_segs(cm, xd, tile, mi + hbs, no_pred_segcounts,
-                 temporal_predictor_count, t_unpred_seg_counts, hbs, hbs,
-                 mi_row, mi_col + hbs);
-      count_segs(cm, xd, tile, mi + hbs + hbs * mis, no_pred_segcounts,
-                 temporal_predictor_count, t_unpred_seg_counts, hbs, hbs,
-                 mi_row + hbs, mi_col + hbs);
+      CSEGS(hbs, bs, 0, 0);
+      CSEGS(hbs, hbs, 0, hbs);
+      CSEGS(hbs, hbs, hbs, hbs);
       break;
     case PARTITION_SPLIT: {
       const BLOCK_SIZE subsize = subsize_lookup[PARTITION_SPLIT][bsize];
@@ -260,20 +236,13 @@ static void count_segs_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
   bh = mi_size_high[mi[0]->mbmi.sb_type];
 
   if (bw == bs && bh == bs) {
-    count_segs(cm, xd, tile, mi, no_pred_segcounts, temporal_predictor_count,
-               t_unpred_seg_counts, bs, bs, mi_row, mi_col);
+    CSEGS(bs, bs, 0, 0);
   } else if (bw == bs && bh < bs) {
-    count_segs(cm, xd, tile, mi, no_pred_segcounts, temporal_predictor_count,
-               t_unpred_seg_counts, bs, hbs, mi_row, mi_col);
-    count_segs(cm, xd, tile, mi + hbs * mis, no_pred_segcounts,
-               temporal_predictor_count, t_unpred_seg_counts, bs, hbs,
-               mi_row + hbs, mi_col);
+    CSEGS(bs, hbs, 0, 0);
+    CSEGS(bs, hbs, hbs, 0);
   } else if (bw < bs && bh == bs) {
-    count_segs(cm, xd, tile, mi, no_pred_segcounts, temporal_predictor_count,
-               t_unpred_seg_counts, hbs, bs, mi_row, mi_col);
-    count_segs(cm, xd, tile, mi + hbs, no_pred_segcounts,
-               temporal_predictor_count, t_unpred_seg_counts, hbs, bs, mi_row,
-               mi_col + hbs);
+    CSEGS(hbs, bs, 0, 0);
+    CSEGS(hbs, bs, 0, hbs);
   } else {
     const BLOCK_SIZE subsize = subsize_lookup[PARTITION_SPLIT][bsize];
     int n;
@@ -290,6 +259,8 @@ static void count_segs_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
     }
   }
 #endif  // CONFIG_EXT_PARTITION_TYPES
+
+#undef CSEGS
 }
 
 void av1_choose_segmap_coding_method(AV1_COMMON *cm, MACROBLOCKD *xd) {
