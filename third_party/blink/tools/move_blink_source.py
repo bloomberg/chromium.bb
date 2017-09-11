@@ -79,6 +79,11 @@ class MoveBlinkSource(object):
         # bindings/scripts/*.py
         # TODO(tkent): Rename and update *.typemap and *.mojom
 
+        # Content update for individual files
+        self._update_single_file_content('third_party/WebKit/Source/bindings/scripts/scripts.gni',
+                                         [('bindings_generate_snake_case_files = false',
+                                           'bindings_generate_snake_case_files = true')])
+
         self._move_files(file_pairs)
 
     def _create_basename_maps(self, file_pairs):
@@ -258,6 +263,18 @@ class MoveBlinkSource(object):
         # subdir is 'web' or 'platform'.
         return re.sub(r'#include\s+"(\w+\.h)"',
                       partial(self._replace_basename_only_include, subdir, source_path), content)
+
+    def _update_single_file_content(self, file_path, replace_list):
+        full_path = self._fs.join(self._repo_root, file_path)
+        original_content = self._fs.read_text_file(full_path)
+        content = original_content
+        for src, dest in replace_list:
+            content = content.replace(src, dest)
+        if content != original_content:
+            self._fs.write_text_file(full_path, content)
+            _log.info('Updated %s', file_path)
+        else:
+            _log.warning('%s does not contain specified source strings.', file_path)
 
     def _move_files(self, file_pairs):
         # TODO(tkent): Implement.

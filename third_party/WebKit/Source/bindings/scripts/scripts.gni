@@ -5,6 +5,9 @@
 import("//third_party/WebKit/Source/core/core_idl_files.gni")
 import("//third_party/WebKit/Source/modules/modules_idl_files.gni")
 
+# TODO(tkent): Remove this flag after the great mv. crbug.com/760462
+bindings_generate_snake_case_files = false
+
 bindings_scripts_dir = get_path_info(".", "abspath")
 bindings_scripts_output_dir = "$root_gen_dir/blink/bindings/scripts"
 
@@ -89,6 +92,9 @@ template("compute_interfaces_info_individual") {
       "--component-info-file",
       rebase_path(invoker.component_info_file, root_build_dir),
     ]
+    if (bindings_generate_snake_case_files) {
+      args += [ "--snake-case-generated-files" ]
+    }
 
     deps = [ "//third_party/WebKit/Source/bindings/scripts:cached_lex_yacc_tables" ] + invoker.deps
   }
@@ -198,10 +204,17 @@ template("idl_compiler") {
       outputs = []
       foreach(_source, sources) {
         _name_part = get_path_info(_source, "name")
-        outputs += [
-          "$output_dir/V8${_name_part}${output_name_suffix}.cpp",
-          "$output_dir/V8${_name_part}${output_name_suffix}.h",
-        ]
+        if (bindings_generate_snake_case_files) {
+          outputs += [
+            "$output_dir/v8_${_name_part}${output_name_suffix}.cc",
+            "$output_dir/v8_${_name_part}${output_name_suffix}.h",
+          ]
+        } else {
+          outputs += [
+            "$output_dir/V8${_name_part}${output_name_suffix}.cpp",
+            "$output_dir/V8${_name_part}${output_name_suffix}.h",
+          ]
+        }
       }
 
       idl_files_list = "$target_gen_dir/${target_name}_file_list.tmp"
@@ -220,6 +233,9 @@ template("idl_compiler") {
         "--read-idl-list-from-file",
         rebase_path(idl_files_list, root_build_dir),
       ]
+      if (bindings_generate_snake_case_files) {
+        args += [ "--snake-case-generated-files" ]
+      }
     }
   } else {
     action_foreach(target_name) {
@@ -228,10 +244,17 @@ template("idl_compiler") {
       public_deps = _public_deps
 
       sources = invoker.sources
-      outputs = [
-        "$output_dir/V8{{source_name_part}}${output_name_suffix}.cpp",
-        "$output_dir/V8{{source_name_part}}${output_name_suffix}.h",
-      ]
+      if (bindings_generate_snake_case_files) {
+        outputs = [
+          "$output_dir/v8_{{source_name_part}}${output_name_suffix}.cc",
+          "$output_dir/v8_{{source_name_part}}${output_name_suffix}.h",
+        ]
+      } else {
+        outputs = [
+          "$output_dir/V8{{source_name_part}}${output_name_suffix}.cpp",
+          "$output_dir/V8{{source_name_part}}${output_name_suffix}.h",
+        ]
+      }
 
       args = [
         "--cache-dir",
@@ -244,6 +267,9 @@ template("idl_compiler") {
         invoker.target_component,
         "{{source}}",
       ]
+      if (bindings_generate_snake_case_files) {
+        args += [ "--snake-case-generated-files" ]
+      }
     }
   }
 }
@@ -305,6 +331,9 @@ template("idl_impl") {
       "--generate-impl",
       rebase_path(idl_files_list, root_build_dir),
     ]
+    if (bindings_generate_snake_case_files) {
+      args += [ "--snake-case-generated-files" ]
+    }
 
     deps = [
       # FIXME: should be interfaces_info_core (w/o modules)
@@ -337,6 +366,9 @@ template("aggregate_generated_bindings") {
       invoker.component,
       "{{response_file_name}}",
     ]
+    if (bindings_generate_snake_case_files) {
+      args += [ "--snake-case-generated-files" ]
+    }
     args += rebase_path(outputs, root_build_dir)
 
     public_deps = invoker.public_deps

@@ -135,13 +135,23 @@ if (is_win || use_jumbo_build) {
   bindings_core_generated_interface_files =
       [ "$bindings_core_v8_output_dir/V8GeneratedCoreBindings.cpp" ]
 } else {
-  bindings_core_generated_interface_files =
-      process_file_template(
-          core_definition_idl_files,
-          [
-            "$bindings_core_v8_output_dir/V8{{source_name_part}}.cpp",
-            "$bindings_core_v8_output_dir/V8{{source_name_part}}.h",
-          ])
+  if (bindings_generate_snake_case_files) {
+    bindings_core_generated_interface_files =
+        process_file_template(
+            core_definition_idl_files,
+            [
+              "$bindings_core_v8_output_dir/v8_{{source_name_part}}.cc",
+              "$bindings_core_v8_output_dir/v8_{{source_name_part}}.h",
+            ])
+  } else {
+    bindings_core_generated_interface_files =
+        process_file_template(
+            core_definition_idl_files,
+            [
+              "$bindings_core_v8_output_dir/V8{{source_name_part}}.cpp",
+              "$bindings_core_v8_output_dir/V8{{source_name_part}}.h",
+            ])
+  }
 }
 
 group("bindings_core_v8_generated") {
@@ -189,13 +199,23 @@ idl_impl("bindings_core_impl_generated") {
 # |core_dictionary_idl_files| and |core_testing_dictionary_idl_files|, we need
 # to do some manual processing because the generated files are used in
 # different targets.
-generated_core_testing_dictionary_files =
-    process_file_template(
-        core_testing_dictionary_idl_files,
-        [
-          "$blink_core_output_dir/testing/{{source_name_part}}.cpp",
-          "$blink_core_output_dir/testing/{{source_name_part}}.h",
-        ])
+if (bindings_generate_snake_case_files) {
+  generated_core_testing_dictionary_files =
+      process_file_template(
+          core_testing_dictionary_idl_files,
+          [
+            "$blink_core_output_dir/testing/{{source_name_part}}.cc",
+            "$blink_core_output_dir/testing/{{source_name_part}}.h",
+          ])
+} else {
+  generated_core_testing_dictionary_files =
+      process_file_template(
+          core_testing_dictionary_idl_files,
+          [
+            "$blink_core_output_dir/testing/{{source_name_part}}.cpp",
+            "$blink_core_output_dir/testing/{{source_name_part}}.h",
+          ])
+}
 
 # Compile the non-test sources generated above.
 blink_core_sources("bindings_core_impl") {

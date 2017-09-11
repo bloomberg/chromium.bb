@@ -184,10 +184,11 @@ def generate_interface_dependencies():
 
 class IdlCompilerOptions(object):
     def __init__(self, output_directory, cache_directory, impl_output_directory,
-                 target_component):
+                 target_component, snake_case_generated_files):
         self.output_directory = output_directory
         self.cache_directory = cache_directory
         self.impl_output_directory = impl_output_directory
+        self.snake_case_generated_files = snake_case_generated_files
         self.target_component = target_component
 
 
@@ -281,7 +282,8 @@ def bindings_tests(output_directory, verbose, suppress_diff):
                 output_directory=output_dir,
                 impl_output_directory=output_dir,
                 cache_directory=None,
-                target_component=component)
+                target_component=component,
+                snake_case_generated_files=False)
 
             if component == 'core':
                 partial_interface_output_dir = os.path.join(output_directory,
@@ -292,7 +294,8 @@ def bindings_tests(output_directory, verbose, suppress_diff):
                     output_directory=partial_interface_output_dir,
                     impl_output_directory=None,
                     cache_directory=None,
-                    target_component='modules')
+                    target_component='modules',
+                    snake_case_generated_files=False)
 
             idl_filenames = []
             dictionary_impl_filenames = []

@@ -54,6 +54,7 @@ import re
 import sys
 from utilities import idl_filename_to_basename
 from utilities import read_idl_files_list_from_file
+from utilities import to_snake_case
 
 COPYRIGHT_TEMPLATE = """/*
  * THIS FILE WAS AUTOMATICALLY GENERATED, DO NOT EDIT.
@@ -88,6 +89,9 @@ COPYRIGHT_TEMPLATE = """/*
 def parse_options():
     parser = optparse.OptionParser()
     parser.add_option('--component')
+    # TODO(tkent): Remove the option after the great mv. crbug.com/760462
+    parser.add_option('--snake-case-generated-files',
+                      action="store_true", default=False)
 
     options, args = parser.parse_args()
     if len(args) < 2:
@@ -96,14 +100,18 @@ def parse_options():
     return options, args
 
 
-def generate_content(component, basenames):
+def generate_content(component, basenames, snake_case_generated_files):
     # Add fixed content.
     output = [COPYRIGHT_TEMPLATE,
               '#define NO_IMPLICIT_ATOMICSTRING\n\n']
 
     basenames.sort()
-    output.extend('#include "bindings/%s/v8/V8%s.cpp"\n' % (component, basename)
-                  for basename in basenames)
+    if snake_case_generated_files:
+        output.extend('#include "bindings/%s/v8/v8_%s.cc"\n' % (component, to_snake_case(basename))
+                      for basename in basenames)
+    else:
+        output.extend('#include "bindings/%s/v8/V8%s.cpp"\n' % (component, basename)
+                      for basename in basenames)
 
     return ''.join(output)
 
@@ -124,7 +132,7 @@ def main():
                                                   is_gyp_format=False)
     basenames = [idl_filename_to_basename(file_path)
                  for file_path in idl_filenames]
-    file_contents = generate_content(component, basenames)
+    file_contents = generate_content(component, basenames, options.snake_case_generated_files)
     write_content(file_contents, filenames[1])
 
 
