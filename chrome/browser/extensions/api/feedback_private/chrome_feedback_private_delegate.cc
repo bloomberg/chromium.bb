@@ -107,25 +107,34 @@ ChromeFeedbackPrivateDelegate::CreateSystemLogsFetcher(
 std::unique_ptr<system_logs::SystemLogsSource>
 ChromeFeedbackPrivateDelegate::CreateSingleLogSource(
     api::feedback_private::LogSource source_type) const {
+  using SupportedLogFileSource =
+      system_logs::SingleLogFileLogSource::SupportedSource;
+  using SupportedDebugDaemonSource =
+      system_logs::SingleDebugDaemonLogSource::SupportedSource;
+
   switch (source_type) {
+    // These map to SupportedLogFileSources.
     case api::feedback_private::LOG_SOURCE_MESSAGES:
       return base::MakeUnique<system_logs::SingleLogFileLogSource>(
-          system_logs::SingleLogFileLogSource::SupportedSource::kMessages);
+          SupportedLogFileSource::kMessages);
     case api::feedback_private::LOG_SOURCE_UILATEST:
       return base::MakeUnique<system_logs::SingleLogFileLogSource>(
-          system_logs::SingleLogFileLogSource::SupportedSource::kUiLatest);
-    case api::feedback_private::LOG_SOURCE_DRMMODETEST:
-      return base::MakeUnique<system_logs::SingleDebugDaemonLogSource>(
-          system_logs::SingleDebugDaemonLogSource::SupportedSource::kModetest);
-    case api::feedback_private::LOG_SOURCE_LSUSB:
-      return base::MakeUnique<system_logs::SingleDebugDaemonLogSource>(
-          system_logs::SingleDebugDaemonLogSource::SupportedSource::kLsusb);
+          SupportedLogFileSource::kUiLatest);
     case api::feedback_private::LOG_SOURCE_ATRUSLOG:
       return base::MakeUnique<system_logs::SingleLogFileLogSource>(
-          system_logs::SingleLogFileLogSource::SupportedSource::kAtrusLog);
+          SupportedLogFileSource::kAtrusLog);
     case api::feedback_private::LOG_SOURCE_NETLOG:
       return base::MakeUnique<system_logs::SingleLogFileLogSource>(
-          system_logs::SingleLogFileLogSource::SupportedSource::kNetLog);
+          SupportedLogFileSource::kNetLog);
+
+    // These map to SupportedDebugDaemonSources.
+    case api::feedback_private::LOG_SOURCE_DRMMODETEST:
+      return base::MakeUnique<system_logs::SingleDebugDaemonLogSource>(
+          SupportedDebugDaemonSource::kModetest);
+    case api::feedback_private::LOG_SOURCE_LSUSB:
+      return base::MakeUnique<system_logs::SingleDebugDaemonLogSource>(
+          SupportedDebugDaemonSource::kLsusb);
+
     case api::feedback_private::LOG_SOURCE_NONE:
     default:
       NOTREACHED() << "Unknown log source type.";
