@@ -15,3 +15,10 @@ per-file *.sb=rsesek@chromium.org
 # Mac Sandbox parameters.
 per-file sandbox_parameters_mac.*=rsesek@chromium.org
 per-file sandbox_parameters_mac.*=kerrnel@chromium.org
+
+# Linux sandboxing.
+per-file sandbox_host_linux.*=jln@chromium.org
+per-file sandbox_host_linux.*=jorgelo@chromium.org
+per-file sandbox_ipc_linux.*=jln@chromium.org
+per-file sandbox_ipc_linux.*=jorgelo@chromium.org
+

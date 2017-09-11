@@ -4,8 +4,8 @@
 
 // https://chromium.googlesource.com/chromium/src/+/master/docs/linux_sandbox_ipc.md
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_SANDBOX_IPC_LINUX_H_
-#define CONTENT_BROWSER_RENDERER_HOST_SANDBOX_IPC_LINUX_H_
+#ifndef CONTENT_BROWSER_SANDBOX_IPC_LINUX_H_
+#define CONTENT_BROWSER_SANDBOX_IPC_LINUX_H_
 
 #include <memory>
 #include <string>
@@ -44,7 +44,7 @@ class SandboxIPCHandler : public base::DelegateSimpleThread::Delegate {
  private:
   int FindOrAddPath(const SkString& path);
 
-  void HandleRequestFromRenderer(int fd);
+  void HandleRequestFromChild(int fd);
 
   void HandleFontMatchRequest(int fd,
                               base::PickleIterator iter,
