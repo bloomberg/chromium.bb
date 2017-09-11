@@ -481,7 +481,7 @@ bool LocalStorageContextMojo::OnMemoryDump(
     return true;
 
   std::string context_name =
-      base::StringPrintf("dom_storage/localstorage_0x%" PRIXPTR,
+      base::StringPrintf("site_storage/localstorage_0x%" PRIXPTR,
                          reinterpret_cast<uintptr_t>(this));
 
   // Account for leveldb memory usage, which actually lives in the file service.
