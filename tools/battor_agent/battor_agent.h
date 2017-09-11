@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/default_tick_clock.h"
 #include "tools/battor_agent/battor_connection.h"
 #include "tools/battor_agent/battor_error.h"
 
@@ -99,6 +100,9 @@ class BattOrAgent : public BattOrConnection::Listener,
   // protocol primitives. This is protected so that it can be replaced with a
   // fake in testing.
   std::unique_ptr<BattOrConnection> connection_;
+
+  // A source of TimeTicks. Protected so that it can be faked in testing.
+  std::unique_ptr<base::TickClock> tick_clock_;
 
   // Timeout for when an action isn't completed within the allotted time. This
   // is virtual and protected so that timeouts can be disabled in testing. The
