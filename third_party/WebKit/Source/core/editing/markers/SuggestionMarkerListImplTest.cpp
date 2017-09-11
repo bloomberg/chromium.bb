@@ -4,6 +4,7 @@
 
 #include "core/editing/markers/SuggestionMarkerListImpl.h"
 
+#include "core/editing/markers/MarkerTestUtilities.h"
 #include "core/editing/markers/SuggestionMarker.h"
 #include "core/editing/markers/SuggestionMarkerReplacementScope.h"
 #include "platform/heap/Handle.h"
@@ -25,17 +26,6 @@ class SuggestionMarkerListImplTest : public ::testing::Test {
 
   Persistent<SuggestionMarkerListImpl> marker_list_;
 };
-
-namespace {
-
-bool compare_markers(const Member<DocumentMarker>& marker1,
-                     const Member<DocumentMarker>& marker2) {
-  if (marker1->StartOffset() != marker2->StartOffset())
-    return marker1->StartOffset() < marker2->StartOffset();
-
-  return marker1->EndOffset() < marker2->EndOffset();
-}
-}  // namespace
 
 TEST_F(SuggestionMarkerListImplTest, MarkerType) {
   EXPECT_EQ(DocumentMarker::kSuggestion, marker_list_->MarkerType());
