@@ -19,10 +19,6 @@
 #include "net/http/http_byte_range.h"
 #include "net/url_request/url_request_job.h"
 
-namespace base {
-class TaskRunner;
-}
-
 namespace net {
 class HttpResponseHeaders;
 class HttpResponseInfo;
@@ -104,10 +100,6 @@ class AndroidStreamReaderURLRequestJob : public net::URLRequestJob {
 
  protected:
   ~AndroidStreamReaderURLRequestJob() override;
-
-  // Gets the TaskRunner for the worker thread.
-  // Overridden in unittests.
-  virtual base::TaskRunner* GetWorkerThreadRunner();
 
   // Creates an InputStreamReader instance.
   // Overridden in unittests to return a mock.
