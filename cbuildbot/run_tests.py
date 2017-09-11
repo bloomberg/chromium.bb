@@ -92,7 +92,12 @@ SPECIAL_TESTS = {
 
     # Tests that need to run outside the chroot.
     'lib/cgroups_unittest': OUTSIDE,
-    'scripts/cros_sdk_unittest': OUTSIDE,
+
+    # Running cros_sdk_unittest through run_tests is triggering
+    # a hang inside lvm.
+    # TODO(crbug.com/764335): Change this back to OUTSIDE once
+    # the lvm hang is resolved.
+    'scripts/cros_sdk_unittest': SKIP,
 
     # Tests that take >2 minutes to run.  All the slow tests are
     # disabled atm though ...
