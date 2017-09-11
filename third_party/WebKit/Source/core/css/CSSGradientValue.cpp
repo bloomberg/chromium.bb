@@ -29,10 +29,10 @@
 #include <algorithm>
 #include <tuple>
 #include <utility>
-#include "core/CSSValueKeywords.h"
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSToLengthConversionData.h"
+#include "core/css/CSSValueKeywords.h"
 #include "core/css/CSSValuePair.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/TextLinkColors.h"

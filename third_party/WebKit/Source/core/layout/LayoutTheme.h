@@ -23,8 +23,8 @@
 #ifndef LayoutTheme_h
 #define LayoutTheme_h
 
-#include "core/CSSValueKeywords.h"
 #include "core/CoreExport.h"
+#include "core/css/CSSValueKeywords.h"
 #include "platform/LayoutUnit.h"
 #include "platform/ThemeTypes.h"
 #include "platform/fonts/FontSelectionTypes.h"

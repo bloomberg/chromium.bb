@@ -23,8 +23,8 @@
 #ifndef FilterOperationResolver_h
 #define FilterOperationResolver_h
 
-#include "core/CSSValueKeywords.h"
 #include "core/css/CSSToLengthConversionData.h"
+#include "core/css/CSSValueKeywords.h"
 #include "core/style/FilterOperations.h"
 #include "platform/heap/Handle.h"
 

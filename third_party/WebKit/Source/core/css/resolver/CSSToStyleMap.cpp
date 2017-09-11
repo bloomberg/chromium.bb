@@ -29,7 +29,6 @@
 
 #include "core/css/resolver/CSSToStyleMap.h"
 
-#include "core/CSSValueKeywords.h"
 #include "core/animation/css/CSSAnimationData.h"
 #include "core/css/CSSBorderImageSliceValue.h"
 #include "core/css/CSSCustomIdentValue.h"
@@ -37,6 +36,7 @@
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSQuadValue.h"
 #include "core/css/CSSTimingFunctionValue.h"
+#include "core/css/CSSValueKeywords.h"
 #include "core/css/CSSValuePair.h"
 #include "core/css/resolver/StyleBuilderConverter.h"
 #include "core/css/resolver/StyleResolverState.h"

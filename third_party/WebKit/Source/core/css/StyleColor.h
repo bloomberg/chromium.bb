@@ -31,7 +31,7 @@
 #ifndef StyleColor_h
 #define StyleColor_h
 
-#include "core/CSSValueKeywords.h"
+#include "core/css/CSSValueKeywords.h"
 #include "platform/graphics/Color.h"
 #include "platform/wtf/Allocator.h"
 

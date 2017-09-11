@@ -23,8 +23,8 @@
 #include "core/html/HTMLPreElement.h"
 
 #include "core/CSSPropertyNames.h"
-#include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
+#include "core/css/CSSValueKeywords.h"
 #include "core/css/StylePropertySet.h"
 
 namespace blink {

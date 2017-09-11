@@ -24,8 +24,8 @@
 
 #include "core/layout/LayoutEmbeddedObject.h"
 
-#include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
+#include "core/css/CSSValueKeywords.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLIFrameElement.h"

@@ -24,11 +24,11 @@
 #include "core/css/StylePropertySerializer.h"
 
 #include <bitset>
-#include "core/CSSValueKeywords.h"
 #include "core/StylePropertyShorthand.h"
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSPendingSubstitutionValue.h"
+#include "core/css/CSSValueKeywords.h"
 #include "core/css/CSSValuePool.h"
 #include "core/css/properties/CSSPropertyAPI.h"
 #include "platform/wtf/StdLibExtras.h"
