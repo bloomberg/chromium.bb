@@ -19,6 +19,7 @@ namespace multidevice {
 class MultiDeviceService : public service_manager::Service {
  public:
   MultiDeviceService();
+
   ~MultiDeviceService() override;
 
   // service_manager::Service:
