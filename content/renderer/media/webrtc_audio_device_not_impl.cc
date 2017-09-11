@@ -79,16 +79,6 @@ int32_t WebRtcAudioDeviceNotImpl::InitRecording() {
   return 0;
 }
 
-int32_t WebRtcAudioDeviceNotImpl::SetWaveOutVolume(uint16_t volume_left,
-                                                   uint16_t volume_right) {
-  return 0;
-}
-
-int32_t WebRtcAudioDeviceNotImpl::WaveOutVolume(
-    uint16_t* volume_left, uint16_t* volume_right) const {
-  return 0;
-}
-
 int32_t WebRtcAudioDeviceNotImpl::InitSpeaker() {
   return 0;
 }
@@ -125,17 +115,7 @@ int32_t WebRtcAudioDeviceNotImpl::MinSpeakerVolume(uint32_t* min_volume) const {
   return 0;
 }
 
-int32_t WebRtcAudioDeviceNotImpl::SpeakerVolumeStepSize(
-    uint16_t* step_size) const {
-  return 0;
-}
-
 int32_t WebRtcAudioDeviceNotImpl::MicrophoneVolumeIsAvailable(bool* available) {
-  return 0;
-}
-
-int32_t WebRtcAudioDeviceNotImpl::MicrophoneVolumeStepSize(
-  uint16_t* step_size) const {
   return 0;
 }
 
@@ -160,18 +140,6 @@ int32_t WebRtcAudioDeviceNotImpl::SetMicrophoneMute(bool enable) {
 }
 
 int32_t WebRtcAudioDeviceNotImpl::MicrophoneMute(bool* enabled) const {
-  return 0;
-}
-
-int32_t WebRtcAudioDeviceNotImpl::MicrophoneBoostIsAvailable(bool* available) {
-  return 0;
-}
-
-int32_t WebRtcAudioDeviceNotImpl::SetMicrophoneBoost(bool enable) {
-  return 0;
-}
-
-int32_t WebRtcAudioDeviceNotImpl::MicrophoneBoost(bool* enabled) const {
   return 0;
 }
 
@@ -200,38 +168,6 @@ int32_t WebRtcAudioDeviceNotImpl::RecordingChannel(ChannelType* channel) const {
   return 0;
 }
 
-int32_t WebRtcAudioDeviceNotImpl::SetPlayoutBuffer(const BufferType type,
-                                                   uint16_t size_ms) {
-  return 0;
-}
-
-int32_t WebRtcAudioDeviceNotImpl::PlayoutBuffer(BufferType* type,
-                                                uint16_t* size_ms) const {
-  return 0;
-}
-
-int32_t WebRtcAudioDeviceNotImpl::CPULoad(uint16_t* load) const {
-  return 0;
-}
-
-int32_t WebRtcAudioDeviceNotImpl::StartRawOutputFileRecording(
-    const char pcm_file_name_utf8[webrtc::kAdmMaxFileNameSize]) {
-  return 0;
-}
-
-int32_t WebRtcAudioDeviceNotImpl::StopRawOutputFileRecording() {
-  return 0;
-}
-
-int32_t WebRtcAudioDeviceNotImpl::StartRawInputFileRecording(
-    const char pcm_file_name_utf8[webrtc::kAdmMaxFileNameSize]) {
-  return 0;
-}
-
-int32_t WebRtcAudioDeviceNotImpl::StopRawInputFileRecording() {
-  return 0;
-}
-
 int32_t WebRtcAudioDeviceNotImpl::SetRecordingSampleRate(
     const uint32_t samples_per_sec) {
   return 0;
@@ -239,10 +175,6 @@ int32_t WebRtcAudioDeviceNotImpl::SetRecordingSampleRate(
 
 int32_t WebRtcAudioDeviceNotImpl::SetPlayoutSampleRate(
     const uint32_t samples_per_sec) {
-  return 0;
-}
-
-int32_t WebRtcAudioDeviceNotImpl::ResetAudioDevice() {
   return 0;
 }
 
