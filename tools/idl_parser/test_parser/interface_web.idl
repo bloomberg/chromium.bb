@@ -417,3 +417,15 @@ interface MyIfaceFrozenArray {
 interface MyIfaceUnion {
   attribute (DOMString or long) foo;
 };
+
+/** TREE
+ *Interface(MyIfaceAttributeRestClamp)
+ *  Attribute(myLong)
+ *    Type()
+ *      PrimitiveType(long)
+ *      ExtAttributes()
+ *        ExtAttribute(Clamp)
+ */
+interface MyIfaceAttributeRestClamp {
+  attribute [Clamp] long myLong;
+};
