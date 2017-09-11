@@ -38,14 +38,13 @@ namespace favicon {
 void WebFaviconDriver::CreateForWebState(
     web::WebState* web_state,
     FaviconService* favicon_service,
-    history::HistoryService* history_service,
-    bookmarks::BookmarkModel* bookmark_model) {
+    history::HistoryService* history_service) {
   if (FromWebState(web_state))
     return;
 
-  web_state->SetUserData(UserDataKey(), base::WrapUnique(new WebFaviconDriver(
-                                            web_state, favicon_service,
-                                            history_service, bookmark_model)));
+  web_state->SetUserData(UserDataKey(),
+                         base::WrapUnique(new WebFaviconDriver(
+                             web_state, favicon_service, history_service)));
 }
 
 void WebFaviconDriver::FetchFavicon(const GURL& page_url,
@@ -133,10 +132,9 @@ void WebFaviconDriver::OnFaviconUpdated(
 
 WebFaviconDriver::WebFaviconDriver(web::WebState* web_state,
                                    FaviconService* favicon_service,
-                                   history::HistoryService* history_service,
-                                   bookmarks::BookmarkModel* bookmark_model)
+                                   history::HistoryService* history_service)
     : web::WebStateObserver(web_state),
-      FaviconDriverImpl(favicon_service, history_service, bookmark_model),
+      FaviconDriverImpl(favicon_service, history_service),
       image_fetcher_(web_state->GetBrowserState()->GetRequestContext()) {}
 
 WebFaviconDriver::~WebFaviconDriver() {

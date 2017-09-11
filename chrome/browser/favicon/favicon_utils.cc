@@ -4,7 +4,6 @@
 
 #include "chrome/browser/favicon/favicon_utils.h"
 
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -38,11 +37,11 @@ void CreateContentFaviconDriverForWebContents(
       Profile::FromBrowserContext(web_contents->GetBrowserContext())
           ->GetOriginalProfile();
   return ContentFaviconDriver::CreateForWebContents(
-      web_contents, FaviconServiceFactory::GetForProfile(
-                        original_profile, ServiceAccessType::IMPLICIT_ACCESS),
-      HistoryServiceFactory::GetForProfile(original_profile,
+      web_contents,
+      FaviconServiceFactory::GetForProfile(original_profile,
                                            ServiceAccessType::IMPLICIT_ACCESS),
-      BookmarkModelFactory::GetForBrowserContextIfExists(original_profile));
+      HistoryServiceFactory::GetForProfile(original_profile,
+                                           ServiceAccessType::IMPLICIT_ACCESS));
 }
 
 bool ShouldDisplayFavicon(content::WebContents* web_contents) {

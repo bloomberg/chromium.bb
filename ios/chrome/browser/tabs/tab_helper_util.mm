@@ -16,7 +16,6 @@
 #import "ios/chrome/browser/autofill/autofill_tab_helper.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_tab_helper.h"
 #import "ios/chrome/browser/autofill/form_suggestion_tab_helper.h"
-#include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
@@ -89,8 +88,7 @@ void AttachTabHelpers(web::WebState* web_state) {
       ios::FaviconServiceFactory::GetForBrowserState(
           original_browser_state, ServiceAccessType::IMPLICIT_ACCESS),
       ios::HistoryServiceFactory::GetForBrowserState(
-          original_browser_state, ServiceAccessType::IMPLICIT_ACCESS),
-      ios::BookmarkModelFactory::GetForBrowserState(original_browser_state));
+          original_browser_state, ServiceAccessType::IMPLICIT_ACCESS));
   history::WebStateTopSitesObserver::CreateForWebState(
       web_state,
       ios::TopSitesFactory::GetForBrowserState(original_browser_state).get());

@@ -9,7 +9,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
-#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/favicon/core/favicon_driver_observer.h"
 #include "components/favicon/core/favicon_handler.h"
 #include "components/favicon/core/favicon_service.h"
@@ -48,11 +47,8 @@ void RecordCandidateMetrics(const std::vector<FaviconURL>& candidates) {
 }  // namespace
 
 FaviconDriverImpl::FaviconDriverImpl(FaviconService* favicon_service,
-                                     history::HistoryService* history_service,
-                                     bookmarks::BookmarkModel* bookmark_model)
-    : favicon_service_(favicon_service),
-      history_service_(history_service),
-      bookmark_model_(bookmark_model) {
+                                     history::HistoryService* history_service)
+    : favicon_service_(favicon_service), history_service_(history_service) {
   if (!favicon_service_)
     return;
 
@@ -74,10 +70,6 @@ void FaviconDriverImpl::FetchFavicon(const GURL& page_url,
                                      bool is_same_document) {
   for (const std::unique_ptr<FaviconHandler>& handler : handlers_)
     handler->FetchFavicon(page_url, is_same_document);
-}
-
-bool FaviconDriverImpl::IsBookmarked(const GURL& url) {
-  return bookmark_model_ && bookmark_model_->IsBookmarked(url);
 }
 
 bool FaviconDriverImpl::HasPendingTasksForTest() {

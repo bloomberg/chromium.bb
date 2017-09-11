@@ -289,8 +289,8 @@ void FaviconHandler::SetFavicon(const GURL& icon_url,
   // Associate the icon to all URLs in |page_urls_|, which contains page URLs
   // within the same site/document that have been considered to reliably share
   // the same icon candidates.
-  for (const GURL& page_url : page_urls_) {
-    if (ShouldSaveFavicon(page_url))
+  if (!delegate_->IsOffTheRecord()) {
+    for (const GURL& page_url : page_urls_)
       service_->SetFavicons(page_url, icon_url, icon_type, image);
   }
 
@@ -579,14 +579,6 @@ bool FaviconHandler::HasPendingTasksForTest() {
          !manifest_download_request_.IsCancelled() ||
          cancelable_task_tracker_for_page_url_.HasTrackedTasks() ||
          cancelable_task_tracker_for_candidates_.HasTrackedTasks();
-}
-
-bool FaviconHandler::ShouldSaveFavicon(const GURL& page_url) const {
-  if (!delegate_->IsOffTheRecord())
-    return true;
-
-  // Always save favicon if the page is bookmarked.
-  return delegate_->IsBookmarked(page_url);
 }
 
 void FaviconHandler::OnFaviconDataForInitialURLFromFaviconService(

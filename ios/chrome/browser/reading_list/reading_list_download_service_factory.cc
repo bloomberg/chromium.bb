@@ -9,7 +9,6 @@
 #include "components/dom_distiller/core/distiller.h"
 #include "components/dom_distiller/core/distiller_url_fetcher.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
-#include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
@@ -39,7 +38,6 @@ ReadingListDownloadServiceFactory::ReadingListDownloadServiceFactory()
   DependsOn(ReadingListModelFactory::GetInstance());
   DependsOn(ios::FaviconServiceFactory::GetInstance());
   DependsOn(ios::HistoryServiceFactory::GetInstance());
-  DependsOn(ios::BookmarkModelFactory::GetInstance());
 }
 
 ReadingListDownloadServiceFactory::~ReadingListDownloadServiceFactory() {}

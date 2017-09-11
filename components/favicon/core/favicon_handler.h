@@ -123,9 +123,6 @@ class FaviconHandler {
     // Returns whether the user is operating in an off-the-record context.
     virtual bool IsOffTheRecord() = 0;
 
-    // Returns whether |url| is bookmarked.
-    virtual bool IsBookmarked(const GURL& url) = 0;
-
     // Notifies that the favicon image has been updated. Most delegates
     // propagate the notification to FaviconDriverObserver::OnFaviconUpdated().
     // See its documentation for details.
@@ -252,8 +249,6 @@ class FaviconHandler {
       const GURL& image_url,
       const std::vector<SkBitmap>& bitmaps,
       const std::vector<gfx::Size>& original_bitmap_sizes);
-
-  bool ShouldSaveFavicon(const GURL& page_url) const;
 
   // Updates |best_favicon_| and returns true if it was considered a satisfying
   // image (e.g. exact size match).
