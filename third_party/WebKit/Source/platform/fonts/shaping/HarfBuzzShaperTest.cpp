@@ -476,6 +476,90 @@ TEST_P(IncludePartialGlyphs, OffsetForPositionMatchesPositionForOffsetMixed) {
                                           include_partial_glyphs));
 }
 
+static struct ShapeResultCopyRangeTestData {
+  const char16_t* string;
+  TextDirection direction;
+  unsigned break_point;
+} shape_result_copy_range_test_data[] = {
+    {u"ABC", TextDirection::kLtr, 1},
+    {u"\u0648\u0644\u064A", TextDirection::kRtl, 1},
+    // These strings creates 3 runs. Split it in the middle of 2nd run.
+    {u"\u65E5Hello\u65E5\u65E5", TextDirection::kLtr, 3},
+    {u"\u0648\u0644\u064A AB \u0628\u062A", TextDirection::kRtl, 5}};
+
+class ShapeResultCopyRangeTest
+    : public HarfBuzzShaperTest,
+      public ::testing::WithParamInterface<ShapeResultCopyRangeTestData> {};
+
+INSTANTIATE_TEST_CASE_P(HarfBuzzShaperTest,
+                        ShapeResultCopyRangeTest,
+                        ::testing::ValuesIn(shape_result_copy_range_test_data));
+
+// Split a ShapeResult and combine them should match to the original result.
+TEST_P(ShapeResultCopyRangeTest, Split) {
+  const auto& test_data = GetParam();
+  String string(test_data.string);
+  TextDirection direction = test_data.direction;
+
+  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  RefPtr<ShapeResult> result = shaper.Shape(&font, direction);
+
+  // Split the result.
+  RefPtr<ShapeResult> result1 = ShapeResult::Create(&font, 0, direction);
+  result->CopyRange(0, test_data.break_point, result1.Get());
+  EXPECT_EQ(test_data.break_point, result1->NumCharacters());
+  RefPtr<ShapeResult> result2 = ShapeResult::Create(&font, 0, direction);
+  result->CopyRange(test_data.break_point, string.length(), result2.Get());
+  EXPECT_EQ(string.length() - test_data.break_point, result2->NumCharacters());
+
+  // Combine them.
+  RefPtr<ShapeResult> composite_result =
+      ShapeResult::Create(&font, 0, direction);
+  result1->CopyRange(0, test_data.break_point, composite_result.Get());
+  result2->CopyRange(0, string.length(), composite_result.Get());
+  EXPECT_EQ(string.length(), composite_result->NumCharacters());
+
+  // Test character indexes match.
+  Vector<unsigned> expected_character_indexes =
+      TestInfo(result)->CharacterIndexesForTesting();
+  Vector<unsigned> composite_character_indexes =
+      TestInfo(result)->CharacterIndexesForTesting();
+  EXPECT_EQ(expected_character_indexes, composite_character_indexes);
+}
+
+// Shape ranges and combine them shold match to the result of shaping the whole
+// string.
+TEST_P(ShapeResultCopyRangeTest, ShapeRange) {
+  const auto& test_data = GetParam();
+  String string(test_data.string);
+  TextDirection direction = test_data.direction;
+
+  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  RefPtr<ShapeResult> result = shaper.Shape(&font, direction);
+
+  // Shape each range.
+  RefPtr<ShapeResult> result1 =
+      shaper.Shape(&font, direction, 0, test_data.break_point);
+  EXPECT_EQ(test_data.break_point, result1->NumCharacters());
+  RefPtr<ShapeResult> result2 =
+      shaper.Shape(&font, direction, test_data.break_point, string.length());
+  EXPECT_EQ(string.length() - test_data.break_point, result2->NumCharacters());
+
+  // Combine them.
+  RefPtr<ShapeResult> composite_result =
+      ShapeResult::Create(&font, 0, direction);
+  result1->CopyRange(0, test_data.break_point, composite_result.Get());
+  result2->CopyRange(0, string.length(), composite_result.Get());
+  EXPECT_EQ(string.length(), composite_result->NumCharacters());
+
+  // Test character indexes match.
+  Vector<unsigned> expected_character_indexes =
+      TestInfo(result)->CharacterIndexesForTesting();
+  Vector<unsigned> composite_character_indexes =
+      TestInfo(result)->CharacterIndexesForTesting();
+  EXPECT_EQ(expected_character_indexes, composite_character_indexes);
+}
+
 TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeIntoLatin) {
   String string = To16Bit("Testing ShapeResult::createSubRun", 33);
   TextDirection direction = TextDirection::kLtr;

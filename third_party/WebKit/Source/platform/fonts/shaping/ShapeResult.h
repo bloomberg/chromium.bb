@@ -142,6 +142,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
                  unsigned start_glyph,
                  unsigned num_glyphs,
                  hb_buffer_t*);
+  void ReorderRtlRuns(unsigned run_size_before);
 
   float width_;
   FloatRect glyph_bounding_box_;

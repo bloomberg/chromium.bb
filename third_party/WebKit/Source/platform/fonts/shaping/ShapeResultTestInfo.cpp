@@ -52,4 +52,15 @@ SimpleFontData* ShapeResultTestInfo::FontDataForTesting(
   return runs_[run_index]->font_data_.Get();
 }
 
+Vector<unsigned> ShapeResultTestInfo::CharacterIndexesForTesting() const {
+  Vector<unsigned> character_indexes;
+  for (const auto& run : runs_) {
+    for (const auto& glyph_data : run->glyph_data_) {
+      character_indexes.push_back(run->start_index_ +
+                                  glyph_data.character_index);
+    }
+  }
+  return character_indexes;
+}
+
 }  // namespace blink

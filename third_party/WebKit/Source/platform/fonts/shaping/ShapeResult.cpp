@@ -619,6 +619,43 @@ void ShapeResult::InsertRun(std::unique_ptr<ShapeResult::RunInfo> run_to_insert,
     runs_.push_back(std::move(run));
 }
 
+// Moves runs at (run_size_before, end) to the front of |runs_|.
+//
+// Runs in RTL result are in visual order, and that new runs should be
+// prepended. This function adjusts the run order after runs were appended.
+void ShapeResult::ReorderRtlRuns(unsigned run_size_before) {
+  DCHECK(Rtl());
+  DCHECK_GT(runs_.size(), run_size_before);
+  if (runs_.size() == run_size_before + 1) {
+    if (!run_size_before)
+      return;
+    std::unique_ptr<RunInfo> new_run(std::move(runs_.back()));
+    runs_.Shrink(runs_.size() - 1);
+    runs_.push_front(std::move(new_run));
+    return;
+  }
+
+  // |push_front| is O(n) that we should not call it multiple times.
+  // Create a new list in the correct order and swap it.
+  Vector<std::unique_ptr<RunInfo>> new_runs;
+  new_runs.ReserveInitialCapacity(runs_.size());
+  for (unsigned i = run_size_before; i < runs_.size(); i++)
+    new_runs.push_back(std::move(runs_[i]));
+
+  // Recompute |start_index_| in the decreasing order.
+  unsigned index = num_characters_;
+  for (auto it = new_runs.rbegin(); it != new_runs.rend(); it++) {
+    auto& run = *it;
+    run->start_index_ = index;
+    index += run->num_characters_;
+  }
+
+  // Then append existing runs.
+  for (unsigned i = 0; i < run_size_before; i++)
+    new_runs.push_back(std::move(runs_[i]));
+  runs_.swap(new_runs);
+}
+
 void ShapeResult::CopyRange(unsigned start_offset,
                             unsigned end_offset,
                             ShapeResult* target) const {
@@ -626,6 +663,7 @@ void ShapeResult::CopyRange(unsigned start_offset,
     return;
 
   unsigned index = target->num_characters_;
+  unsigned target_run_size_before = target->runs_.size();
   float total_width = 0;
   for (const auto& run : runs_) {
     unsigned run_start = run->start_index_;
@@ -643,6 +681,15 @@ void ShapeResult::CopyRange(unsigned start_offset,
       target->runs_.push_back(std::move(sub_run));
     }
   }
+
+  if (target->runs_.size() == target_run_size_before)
+    return;
+
+  // Runs in RTL result are in visual order, and that new runs should be
+  // prepended. Reorder appended runs.
+  DCHECK_EQ(Rtl(), target->Rtl());
+  if (target->Rtl())
+    target->ReorderRtlRuns(target_run_size_before);
 
   // Compute new glyph bounding box.
   // If |start_offset| or |end_offset| are the start/end of |this|, use
