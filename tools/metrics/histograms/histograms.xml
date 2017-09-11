@@ -29409,6 +29409,44 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="LoadingPredictor.PreconnectLearningCount" units="origins">
+  <owner>alexilin@chromium.org</owner>
+  <summary>
+    When the loading predictor has origins in the local database for a given
+    navigation to preconnect and preresolve, the count of predicted origins.
+  </summary>
+</histogram>
+
+<histogram name="LoadingPredictor.PreconnectLearningPrecision" units="%">
+  <owner>alexilin@chromium.org</owner>
+  <summary>
+    When the loading predictor has origins in the local database for a given
+    navigation to preconnect and preresolve, the precision of the predictions in
+    percentage. This is computed as 100 \times \frac{correct
+    predictions}{predictions}.
+  </summary>
+</histogram>
+
+<histogram name="LoadingPredictor.PreconnectLearningRecall" units="%">
+  <owner>alexilin@chromium.org</owner>
+  <summary>
+    When the loading predictor has origins in the local database for a given
+    navigation to preconnect and preresolve, the recall of the predictions, in
+    percentage. This is computed as 100 \times \frac{correct predictions}{all
+    prefetchable subresources}.
+  </summary>
+</histogram>
+
+<histogram name="LoadingPredictor.PreconnectLearningRedirectStatus"
+    enum="ResourcePrefetchPredictorRedirectStatus">
+  <owner>alexilin@chromium.org</owner>
+  <summary>
+    When the prefetch predictor has origins in the local database for a given
+    navigation to preconnect and preresolve, records stats about whether
+    redirect was predicted correctly or incorrectly.
+  </summary>
+</histogram>
+
 <histogram name="LoadingPredictor.PreresolveCount" units="hosts">
   <owner>alexilin@chromium.org</owner>
   <summary>

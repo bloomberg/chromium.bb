@@ -16,6 +16,29 @@ namespace predictors {
 
 namespace {
 
+using RedirectStatus = ResourcePrefetchPredictor::RedirectStatus;
+
+RedirectStatus GetPredictionRedirectStatus(const GURL& initial_url,
+                                           const GURL& main_frame_url,
+                                           const std::string& prediction_key,
+                                           bool is_redirected,
+                                           bool is_host) {
+  if (main_frame_url == initial_url) {
+    // The actual navigation wasn't redirected.
+    return is_redirected ? RedirectStatus::NO_REDIRECT_BUT_PREDICTED
+                         : RedirectStatus::NO_REDIRECT;
+  }
+
+  if (!is_redirected)
+    return RedirectStatus::REDIRECT_NOT_PREDICTED;
+
+  const std::string& main_frame_key =
+      is_host ? main_frame_url.host() : main_frame_url.spec();
+  return main_frame_key == prediction_key
+             ? RedirectStatus::REDIRECT_CORRECTLY_PREDICTED
+             : RedirectStatus::REDIRECT_WRONG_PREDICTED;
+}
+
 void ReportPredictionAccuracy(
     const ResourcePrefetchPredictor::Prediction& prediction,
     const PageRequestSummary& summary) {
@@ -23,42 +46,20 @@ void ReportPredictionAccuracy(
   if (predicted_urls.empty() || summary.subresource_requests.empty())
     return;
 
-  std::set<GURL> predicted_urls_set(predicted_urls.begin(),
-                                    predicted_urls.end());
   std::set<GURL> actual_urls_set;
   for (const auto& request_summary : summary.subresource_requests)
     actual_urls_set.emplace(request_summary.resource_url);
 
   size_t correctly_predicted_count = 0;
-  for (const GURL& predicted_url : predicted_urls_set) {
+  for (const GURL& predicted_url : predicted_urls) {
     if (actual_urls_set.find(predicted_url) != actual_urls_set.end())
       correctly_predicted_count++;
   }
 
   size_t precision_percentage =
-      (100 * correctly_predicted_count) / predicted_urls_set.size();
+      (100 * correctly_predicted_count) / predicted_urls.size();
   size_t recall_percentage =
       (100 * correctly_predicted_count) / actual_urls_set.size();
-
-  using RedirectStatus = ResourcePrefetchPredictor::RedirectStatus;
-  RedirectStatus redirect_status;
-  if (summary.main_frame_url == summary.initial_url) {
-    // The actual navigation wasn't redirected.
-    redirect_status = prediction.is_redirected
-                          ? RedirectStatus::NO_REDIRECT_BUT_PREDICTED
-                          : RedirectStatus::NO_REDIRECT;
-  } else {
-    if (prediction.is_redirected) {
-      std::string main_frame_key = prediction.is_host
-                                       ? summary.main_frame_url.host()
-                                       : summary.main_frame_url.spec();
-      redirect_status = main_frame_key == prediction.main_frame_key
-                            ? RedirectStatus::REDIRECT_CORRECTLY_PREDICTED
-                            : RedirectStatus::REDIRECT_WRONG_PREDICTED;
-    } else {
-      redirect_status = RedirectStatus::REDIRECT_NOT_PREDICTED;
-    }
-  }
 
   UMA_HISTOGRAM_PERCENTAGE(
       internal::kResourcePrefetchPredictorPrecisionHistogram,
@@ -67,8 +68,57 @@ void ReportPredictionAccuracy(
                            recall_percentage);
   UMA_HISTOGRAM_COUNTS_100(internal::kResourcePrefetchPredictorCountHistogram,
                            predicted_urls.size());
+
+  RedirectStatus redirect_status = GetPredictionRedirectStatus(
+      summary.initial_url, summary.main_frame_url, prediction.main_frame_key,
+      prediction.is_redirected, prediction.is_host);
+
   UMA_HISTOGRAM_ENUMERATION(
       internal::kResourcePrefetchPredictorRedirectStatusHistogram,
+      static_cast<int>(redirect_status), static_cast<int>(RedirectStatus::MAX));
+}
+
+void ReportPreconnectPredictionAccuracy(const PreconnectPrediction& prediction,
+                                        const PageRequestSummary& summary) {
+  if ((prediction.preconnect_origins.empty() &&
+       prediction.preresolve_hosts.empty()) ||
+      summary.origins.empty()) {
+    return;
+  }
+
+  const auto& actual_origins = summary.origins;
+
+  size_t correctly_predicted_count = 0;
+  for (const GURL& predicted_origin : prediction.preconnect_origins) {
+    if (actual_origins.find(predicted_origin) != actual_origins.end())
+      ++correctly_predicted_count;
+  }
+  for (const GURL& predicted_origin : prediction.preresolve_hosts) {
+    if (actual_origins.find(predicted_origin) != actual_origins.end())
+      ++correctly_predicted_count;
+  }
+
+  size_t predicted_count =
+      prediction.preconnect_origins.size() + prediction.preresolve_hosts.size();
+  size_t precision_percentage =
+      (100 * correctly_predicted_count) / predicted_count;
+  size_t recall_percentage =
+      (100 * correctly_predicted_count) / actual_origins.size();
+
+  UMA_HISTOGRAM_PERCENTAGE(
+      internal::kLoadingPredictorPreconnectLearningPrecision,
+      precision_percentage);
+  UMA_HISTOGRAM_PERCENTAGE(internal::kLoadingPredictorPreconnectLearningRecall,
+                           recall_percentage);
+  UMA_HISTOGRAM_COUNTS_100(internal::kLoadingPredictorPreconnectLearningCount,
+                           predicted_count);
+
+  RedirectStatus redirect_status = GetPredictionRedirectStatus(
+      summary.initial_url, summary.main_frame_url, prediction.host,
+      prediction.is_redirected, true /* is_host */);
+
+  UMA_HISTOGRAM_ENUMERATION(
+      internal::kLoadingPredictorPreconnectLearningRedirectStatus,
       static_cast<int>(redirect_status), static_cast<int>(RedirectStatus::MAX));
 }
 
@@ -202,6 +252,10 @@ void LoadingStatsCollector::RecordPageRequestSummary(
   ResourcePrefetchPredictor::Prediction prediction;
   if (predictor_->GetPrefetchData(initial_url, &prediction))
     ReportPredictionAccuracy(prediction, summary);
+
+  PreconnectPrediction preconnect_prediction;
+  if (predictor_->PredictPreconnectOrigins(initial_url, &preconnect_prediction))
+    ReportPreconnectPredictionAccuracy(preconnect_prediction, summary);
 
   auto it = prefetcher_stats_.find(initial_url);
   if (it != prefetcher_stats_.end()) {
