@@ -22,6 +22,9 @@
       "app": "ios_web_view_inttests"
     },
     {
+      "app": "ios_web_view_unittests"
+    },
+    {
       "app": "skia_unittests"
     },
     {
