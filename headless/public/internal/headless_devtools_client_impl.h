@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef HEADLESS_LIB_BROWSER_HEADLESS_DEVTOOLS_CLIENT_IMPL_H_
-#define HEADLESS_LIB_BROWSER_HEADLESS_DEVTOOLS_CLIENT_IMPL_H_
+#ifndef HEADLESS_PUBLIC_INTERNAL_HEADLESS_DEVTOOLS_CLIENT_IMPL_H_
+#define HEADLESS_PUBLIC_INTERNAL_HEADLESS_DEVTOOLS_CLIENT_IMPL_H_
 
 #include <unordered_map>
 
@@ -207,4 +207,4 @@ class HeadlessDevToolsClientImpl : public HeadlessDevToolsClient,
 
 }  // namespace headless
 
-#endif  // HEADLESS_LIB_BROWSER_HEADLESS_DEVTOOLS_CLIENT_IMPL_H_
+#endif  // HEADLESS_PUBLIC_INTERNAL_HEADLESS_DEVTOOLS_CLIENT_IMPL_H_
