@@ -6,11 +6,11 @@
 #define IOS_WEB_PUBLIC_TEST_TEST_WEB_THREAD_BUNDLE_H_
 
 // TestWebThreadBundle is a convenience class for creating a set of
-// TestWebThreads, a blocking pool, and a task scheduler in unit tests. For
-// most tests, it is sufficient to just instantiate the TestWebThreadBundle as a
-// member variable. It is a good idea to put the TestWebThreadBundle as the
-// first member variable in test classes, so it is destroyed last, and the test
-// threads always exist from the perspective of other classes.
+// TestWebThreads and a task scheduler in unit tests. For most tests, it is
+// sufficient to just instantiate the TestWebThreadBundle as a member variable.
+// It is a good idea to put the TestWebThreadBundle as the first member variable
+// in test classes, so it is destroyed last, and the test threads always exist
+// from the perspective of other classes.
 //
 // By default, all of the created TestWebThreads will be backed by a single
 // shared MessageLoop. If a test truly needs separate threads, it can do so by
@@ -20,8 +20,8 @@
 // To synchronously run tasks posted to TestWebThreads that use the shared
 // MessageLoop, call RunLoop::Run/RunUntilIdle() on the thread where the
 // TestWebThreadBundle lives. The destructor of TestWebThreadBundle runs
-// remaining TestWebThreads tasks, remaining blocking pool tasks, and remaining
-// BLOCK_SHUTDOWN task scheduler tasks.
+// remaining TestWebThreads tasks and remaining BLOCK_SHUTDOWN task scheduler
+// tasks.
 //
 // Some tests using the IO thread expect a MessageLoopForIO. Passing
 // IO_MAINLOOP will use a MessageLoopForIO for the main MessageLoop.

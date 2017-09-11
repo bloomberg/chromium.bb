@@ -244,13 +244,12 @@ void WebMainLoop::ShutdownThreadsAndCleanUp() {
     }
   }
 
-  // Close the blocking I/O pool after the other threads. Other threads such
-  // as the I/O thread may need to schedule work like closing files or flushing
-  // data during shutdown, so the blocking pool needs to be available. There
-  // may also be slow operations pending that will block shutdown, so closing
-  // it here (which will block until required operations are complete) gives
-  // more head start for those operations to finish.
-  WebThreadImpl::ShutdownThreadPool();
+  // Shutdown TaskScheduler after the other threads. Other threads such as the
+  // I/O thread may need to schedule work like closing files or flushing data
+  // during shutdown, so TaskScheduler needs to be available. There may also be
+  // slow operations pending that will block shutdown, so closing it here (which
+  // will block until required operations are complete) gives more head start
+  // for those operations to finish.
   base::TaskScheduler::GetInstance()->Shutdown();
 
   URLDataManagerIOS::DeleteDataSources();
