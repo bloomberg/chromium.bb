@@ -29,7 +29,7 @@ static const CGFloat kHeaderHeight = 60.f;
 static const CGFloat kFooterHeight = 25.f;  // 80.0f for HostSetupFooterView
 
 @interface HostSetupViewController () {
-  std::vector<std::string> setupSteps;
+  NSArray<NSString*>* _setupSteps;
 }
 @end
 
@@ -54,12 +54,12 @@ static const CGFloat kFooterHeight = 25.f;  // 80.0f for HostSetupFooterView
             forSupplementaryViewOfKind:UICollectionElementKindSectionFooter
                    withReuseIdentifier:UICollectionElementKindSectionFooter];
 
-    std::string instructions =
-        l10n_util::GetStringFUTF8(IDS_HOST_SETUP_INSTRUCTIONS,
-                                  base::SysNSStringToUTF16(kInstallationLink));
-
-    setupSteps = base::SplitString(instructions, "\n", base::TRIM_WHITESPACE,
-                                   base::SPLIT_WANT_NONEMPTY);
+    _setupSteps = @[
+      base::SysUTF8ToNSString(l10n_util::GetStringFUTF8(
+          IDS_HOST_SETUP_STEP_1, base::SysNSStringToUTF16(kInstallationLink))),
+      base::SysUTF8ToNSString(l10n_util::GetStringUTF8(IDS_HOST_SETUP_STEP_2)),
+      base::SysUTF8ToNSString(l10n_util::GetStringUTF8(IDS_HOST_SETUP_STEP_3))
+    ];
   }
   return self;
 }
@@ -77,7 +77,7 @@ static const CGFloat kFooterHeight = 25.f;  // 80.0f for HostSetupFooterView
 
 - (NSInteger)collectionView:(UICollectionView*)collectionView
      numberOfItemsInSection:(NSInteger)section {
-  return setupSteps.size();
+  return _setupSteps.count;
 }
 
 - (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
@@ -85,7 +85,7 @@ static const CGFloat kFooterHeight = 25.f;  // 80.0f for HostSetupFooterView
   HostSetupViewCell* cell = [collectionView
       dequeueReusableCellWithReuseIdentifier:kReusableIdentifierItem
                                 forIndexPath:indexPath];
-  NSString* contentText = base::SysUTF8ToNSString(setupSteps[indexPath.item]);
+  NSString* contentText = _setupSteps[indexPath.item];
   [cell setContentText:contentText number:indexPath.item + 1];
   return cell;
 }
