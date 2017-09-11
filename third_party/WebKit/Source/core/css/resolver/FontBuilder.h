@@ -67,6 +67,7 @@ class CORE_EXPORT FontBuilder {
   void SetFeatureSettings(RefPtr<FontFeatureSettings>);
   void SetLocale(RefPtr<const LayoutLocale>);
   void SetVariantCaps(FontDescription::FontVariantCaps);
+  void SetVariantEastAsian(const FontVariantEastAsian);
   void SetVariantLigatures(const FontDescription::VariantLigatures&);
   void SetVariantNumeric(const FontVariantNumeric&);
   void SetTextRendering(TextRenderingMode);
@@ -99,6 +100,9 @@ class CORE_EXPORT FontBuilder {
   static FontDescription::FontVariantCaps InitialVariantCaps() {
     return FontDescription::kCapsNormal;
   }
+  static FontVariantEastAsian InitialVariantEastAsian() {
+    return FontVariantEastAsian();
+  };
   static FontDescription::VariantLigatures InitialVariantLigatures() {
     return FontDescription::VariantLigatures();
   }
@@ -145,6 +149,7 @@ class CORE_EXPORT FontBuilder {
     kStyle,
     kSizeAdjust,
     kVariantCaps,
+    kVariantEastAsian,
     kVariantLigatures,
     kVariantNumeric,
     kVariationSettings,

@@ -129,6 +129,7 @@ fontStretch
 fontStyle
 fontVariant
 fontVariantCaps
+fontVariantEastAsian
 fontVariantLigatures
 fontVariantNumeric
 fontVariationSettings

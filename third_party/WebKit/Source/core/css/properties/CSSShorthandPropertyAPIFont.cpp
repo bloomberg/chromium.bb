@@ -76,6 +76,10 @@ bool ConsumeSystemFont(bool important,
       *CSSIdentifierValue::Create(CSSValueNormal), important,
       CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
   CSSPropertyParserHelpers::AddProperty(
+      CSSPropertyFontVariantEastAsian, CSSPropertyFont,
+      *CSSIdentifierValue::Create(CSSValueNormal), important,
+      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
+  CSSPropertyParserHelpers::AddProperty(
       CSSPropertyLineHeight, CSSPropertyFont,
       *CSSIdentifierValue::Create(CSSValueNormal), important,
       CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
@@ -154,6 +158,10 @@ bool ConsumeFont(bool important,
       CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
   CSSPropertyParserHelpers::AddProperty(
       CSSPropertyFontVariantNumeric, CSSPropertyFont,
+      *CSSIdentifierValue::Create(CSSValueNormal), important,
+      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
+  CSSPropertyParserHelpers::AddProperty(
+      CSSPropertyFontVariantEastAsian, CSSPropertyFont,
       *CSSIdentifierValue::Create(CSSValueNormal), important,
       CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
 
