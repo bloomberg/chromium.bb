@@ -16,5 +16,7 @@ void {{field.setter_method_name}}({{field.wrapper_pointer_name}}<{{field.type_na
   {{field.name}} = std::move(v);
 {% endif %}
 }
+{%- endmacro %}
 
+{% macro decl_protected_methods(field) -%}
 {%- endmacro %}

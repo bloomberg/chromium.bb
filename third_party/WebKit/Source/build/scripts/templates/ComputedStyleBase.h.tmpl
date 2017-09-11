@@ -24,7 +24,6 @@
 {% import 'templates/fields/multi_keyword.tmpl' as multi_keyword %}
 {% import 'templates/fields/primitive.tmpl' as primitive %}
 {% import 'templates/fields/monotonic_flag.tmpl' as monotonic_flag %}
-{% import 'templates/fields/storage_only.tmpl' as storage_only %}
 {% import 'templates/fields/external.tmpl' as external %}
 {% import 'templates/fields/pointer.tmpl' as pointer %}
 {% from 'templates/fields/field.tmpl' import encode %}
@@ -33,7 +32,6 @@
      'multi_keyword': multi_keyword,
      'primitive': primitive,
      'monotonic_flag': monotonic_flag,
-     'storage_only': storage_only, 
      'external': external,
      'pointer': pointer
    } %}
@@ -164,7 +162,7 @@ class ComputedStyleBase {
   ComputedStyleBase();
 
   {% for field in computed_style.all_fields|sort(attribute='name') %}
-  {% if field.field_template in ('storage_only', 'monotonic_flag', 'external') %}
+  {% if field.field_template not in ('pointer',) %}
   // {{field.property_name}}
   {{field_templates[field.field_template].decl_protected_methods(field)|indent(2)}}
 

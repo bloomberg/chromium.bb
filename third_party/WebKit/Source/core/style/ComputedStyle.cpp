@@ -1569,10 +1569,6 @@ Length ComputedStyle::LineHeight() const {
   return lh;
 }
 
-void ComputedStyle::SetLineHeight(const Length& specified_line_height) {
-  SetLineHeightInternal(specified_line_height);
-}
-
 int ComputedStyle::ComputedLineHeight() const {
   const Length& lh = LineHeight();
 

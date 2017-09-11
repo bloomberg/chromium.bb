@@ -164,7 +164,7 @@ class Field(object):
 
     def __init__(self, field_role, name_for_methods, property_name, type_name, wrapper_pointer_name,
                  field_template, size, default_value, custom_copy, custom_compare, mutable,
-                 getter_method_name, setter_method_name, initial_method_name, default_generated_functions, **kwargs):
+                 getter_method_name, setter_method_name, initial_method_name, computed_style_custom_functions, **kwargs):
         """Creates a new field."""
         self.name = class_member_name(name_for_methods)
         self.property_name = property_name
@@ -201,7 +201,7 @@ class Field(object):
         self.internal_setter_method_name = method_name([setter_method_name, 'internal'])
         self.initial_method_name = initial_method_name
         self.resetter_method_name = method_name(['reset', name_for_methods])
-        self.default_generated_functions = default_generated_functions
+        self.computed_style_custom_functions = computed_style_custom_functions
         # If the size of the field is not None, it means it is a bit field
         self.is_bit_field = self.size is not None
 
@@ -353,20 +353,6 @@ def _create_property_field(property_, alias_dictionary):
         type_name = property_['type_name']
         default_value = type_name + '::' + enum_value_name(property_['default_value'])
         size = len(property_['keywords']) - 1  # Subtract 1 for 'none' keyword
-    elif property_['field_template'] == 'storage_only':
-        type_name = property_['type_name']
-        default_value = property_['default_value']
-        size = None
-        if type_name == 'bool':
-            size = 1
-        elif len(property_["keywords"]) > 0 and len(property_["include_paths"]) == 0:
-            # Assume that no property will ever have one keyword.
-            assert len(property_['keywords']) > 1, "There must be more than 1 keywords in a CSS property"
-            # Each keyword is represented as a number and the number of bit
-            # to represent the maximum number is calculated here
-            size = int(math.ceil(math.log(len(property_['keywords']), 2)))
-        else:
-            size = property_["field_size"]
     elif property_['field_template'] == 'external':
         type_name = property_['type_name']
         default_value = property_['default_value']
@@ -374,20 +360,20 @@ def _create_property_field(property_, alias_dictionary):
     elif property_['field_template'] == 'primitive':
         type_name = property_['type_name']
         default_value = property_['default_value']
-        size = 1 if type_name == 'bool' else None  # pack bools with 1 bit.
+        size = 1 if type_name == 'bool' else property_["field_size"]  # pack bools with 1 bit.
     elif property_['field_template'] == 'pointer':
         type_name = property_['type_name']
         default_value = property_['default_value']
         size = None
     else:
-        assert property_['field_template'] in ('monotonic_flag',)
+        assert property_['field_template'] == 'monotonic_flag', "Please put a valid value for field_template"
         type_name = 'bool'
         default_value = 'false'
         size = 1
 
     if property_['wrapper_pointer_name']:
-        assert property_['field_template'] in ['storage_only', 'pointer']
-        if property_['field_template'] == 'storage_only':
+        assert property_['field_template'] in ['pointer', 'external']
+        if property_['field_template'] == 'external':
             type_name = '{}<{}>'.format(property_['wrapper_pointer_name'], type_name)
 
     return Field(
@@ -407,7 +393,7 @@ def _create_property_field(property_, alias_dictionary):
         getter_method_name=property_['getter'],
         setter_method_name=property_['setter'],
         initial_method_name=property_['initial'],
-        default_generated_functions=property_['default_generated_functions'],
+        computed_style_custom_functions=property_['computed_style_custom_functions'],
     )
 
 
@@ -432,7 +418,7 @@ def _create_inherited_flag_field(property_):
         getter_method_name=method_name(name_for_methods),
         setter_method_name=method_name(['set', name_for_methods]),
         initial_method_name=method_name(['initial', name_for_methods]),
-        default_generated_functions=property_["default_generated_functions"]
+        computed_style_custom_functions=property_["computed_style_custom_functions"],
     )
 
 
@@ -487,7 +473,7 @@ def _reorder_non_bit_fields(non_bit_fields):
     # (from biggest aligned to smallest).
     for field in non_bit_fields:
         assert field.alignment_type in ALIGNMENT_ORDER, \
-            "Type {} has unknown alignment. Please update ALIGNMENT_ORDER to include it.".format(field.alignment_type)
+            "Type {} has unknown alignment. Please update ALIGNMENT_ORDER to include it.".format(field.name)
     return list(sorted(non_bit_fields, key=lambda f: ALIGNMENT_ORDER.index(f.alignment_type)))
 
 
