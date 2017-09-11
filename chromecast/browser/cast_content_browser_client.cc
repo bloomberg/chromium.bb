@@ -75,6 +75,10 @@
 #if defined(OS_ANDROID)
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/crash/content/browser/crash_dump_observer_android.h"
+#if !BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
+#include "components/cdm/browser/media_drm_storage_impl.h"
+#include "url/origin.h"
+#endif  // !BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
 #else
 #include "chromecast/browser/memory_pressure_controller_impl.h"
 #endif  // defined(OS_ANDROID)
@@ -107,6 +111,25 @@ static std::unique_ptr<service_manager::Service> CreateMediaService(
 }
 #endif  // BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
 
+#if defined(OS_ANDROID) && !BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
+void CreateMediaDrmStorage(content::RenderFrameHost* render_frame_host,
+                           ::media::mojom::MediaDrmStorageRequest request) {
+  DVLOG(1) << __func__;
+  PrefService* pref_service = CastBrowserProcess::GetInstance()->pref_service();
+  DCHECK(pref_service);
+
+  url::Origin origin = render_frame_host->GetLastCommittedOrigin();
+  if (origin.unique()) {
+    DVLOG(1) << __func__ << ": Unique origin.";
+    return;
+  }
+
+  // The object will be deleted on connection error, or when the frame navigates
+  // away.
+  new cdm::MediaDrmStorageImpl(render_frame_host, pref_service, origin,
+                               std::move(request));
+}
+#endif  // defined(OS_ANDROID) && !BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
 }  // namespace
 
 CastContentBrowserClient::CastContentBrowserClient()
@@ -523,6 +546,15 @@ void CastContentBrowserClient::ExposeInterfacesToRenderer(
                  base::Unretained(memory_pressure_controller_.get())),
       base::ThreadTaskRunnerHandle::Get());
 #endif  // !defined(OS_ANDROID)
+}
+
+void CastContentBrowserClient::ExposeInterfacesToMediaService(
+    service_manager::BinderRegistry* registry,
+    content::RenderFrameHost* render_frame_host) {
+#if defined(OS_ANDROID) && !BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
+  registry->AddInterface(
+      base::BindRepeating(&CreateMediaDrmStorage, render_frame_host));
+#endif
 }
 
 void CastContentBrowserClient::RegisterInProcessServices(
