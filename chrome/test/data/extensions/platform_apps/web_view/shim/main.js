@@ -1774,6 +1774,15 @@ function testWebRequestAPI() {
   document.body.appendChild(webview);
 }
 
+// Like above, but ensures that a webview doesn't get events for other webviews.
+function testWebRequestAPIOnlyForInstance() {
+  var tempWebview = new WebView();
+  tempWebview.request.onBeforeRequest.addListener(function(e) {
+    embedder.test.fail();
+  }, { urls: ['<all_urls>']}) ;
+  testWebRequestAPI();
+}
+
 // This test verifies that the WebRequest API onBeforeSendHeaders event fires on
 // webview and supports headers. This tests verifies that we can modify HTTP
 // headers via the WebRequest API and those modified headers will be sent to the
@@ -3183,6 +3192,7 @@ embedder.test.testList = {
       testDeclarativeWebRequestAPISendMessageSecondWebView,
   'testDisplayBlock': testDisplayBlock,
   'testWebRequestAPI': testWebRequestAPI,
+  'testWebRequestAPIOnlyForInstance': testWebRequestAPIOnlyForInstance,
   'testWebRequestAPIErrorOccurred': testWebRequestAPIErrorOccurred,
   'testWebRequestAPIWithHeaders': testWebRequestAPIWithHeaders,
   'testWebRequestAPIGoogleProperty': testWebRequestAPIGoogleProperty,
