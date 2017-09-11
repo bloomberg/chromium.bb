@@ -534,10 +534,6 @@
       status: "experimental",
     },
     {
-      name: "IntersectionObserver",
-      status: "stable",
-    },
-    {
       name: "JSImageDecode",
       status: "test",
     },
