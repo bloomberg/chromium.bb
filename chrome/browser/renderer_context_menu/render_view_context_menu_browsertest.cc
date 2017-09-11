@@ -35,6 +35,8 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/extensions/app_launch_params.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/render_messages.h"
@@ -81,7 +83,8 @@ using extensions::TestMimeHandlerViewGuest;
 
 namespace {
 
-const char kAppUrl[] = "https://www.google.com/";
+const char kAppUrl1[] = "https://www.google.com/";
+const char kAppUrl2[] = "https://docs.google.com/";
 
 class ContextMenuBrowserTest : public InProcessBrowserTest {
  public:
@@ -94,6 +97,15 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
     return CreateContextMenu(unfiltered_url, url, base::string16(),
                              blink::WebContextMenuData::kMediaTypeNone,
                              ui::MENU_SOURCE_NONE);
+  }
+
+  std::unique_ptr<TestRenderViewContextMenu>
+  CreateContextMenuMediaTypeNoneInWebContents(WebContents* web_contents,
+                                              const GURL& unfiltered_url,
+                                              const GURL& url) {
+    return CreateContextMenuInWebContents(
+        web_contents, unfiltered_url, url, base::string16(),
+        blink::WebContextMenuData::kMediaTypeNone, ui::MENU_SOURCE_NONE);
   }
 
   std::unique_ptr<TestRenderViewContextMenu> CreateContextMenuMediaTypeImage(
@@ -109,14 +121,24 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
       const base::string16& link_text,
       blink::WebContextMenuData::MediaType media_type,
       ui::MenuSourceType source_type) {
+    return CreateContextMenuInWebContents(
+        browser()->tab_strip_model()->GetActiveWebContents(), unfiltered_url,
+        url, link_text, media_type, source_type);
+  }
+
+  std::unique_ptr<TestRenderViewContextMenu> CreateContextMenuInWebContents(
+      WebContents* web_contents,
+      const GURL& unfiltered_url,
+      const GURL& url,
+      const base::string16& link_text,
+      blink::WebContextMenuData::MediaType media_type,
+      ui::MenuSourceType source_type) {
     content::ContextMenuParams params;
     params.media_type = media_type;
     params.unfiltered_link_url = unfiltered_url;
     params.link_url = url;
     params.src_url = url;
     params.link_text = link_text;
-    WebContents* web_contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
     params.page_url = web_contents->GetController().GetActiveEntry()->GetURL();
     params.source_type = source_type;
 #if defined(OS_MACOSX)
@@ -140,14 +162,14 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
     return profile_manager->GetProfile(profile_path);
   }
 
-  void InstallTestBookmarkApp() {
+  const extensions::Extension* InstallTestBookmarkApp(const GURL& app_url) {
     Profile* profile = browser()->profile();
     size_t num_extensions = extensions::ExtensionRegistry::Get(profile)
                                 ->enabled_extensions()
                                 .size();
     WebApplicationInfo web_app_info;
-    web_app_info.app_url = GURL(kAppUrl);
-    web_app_info.scope = GURL(kAppUrl);
+    web_app_info.app_url = app_url;
+    web_app_info.scope = app_url;
     web_app_info.title = base::UTF8ToUTF16("Test app");
     web_app_info.description = base::UTF8ToUTF16("Test description");
 
@@ -159,9 +181,20 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
         &web_app_info);
     windowed_observer.Wait();
 
-    ASSERT_EQ(++num_extensions, extensions::ExtensionRegistry::Get(profile)
+    EXPECT_EQ(++num_extensions, extensions::ExtensionRegistry::Get(profile)
                                     ->enabled_extensions()
                                     .size());
+    return content::Details<const extensions::Extension>(
+               windowed_observer.details())
+        .ptr();
+  }
+
+  Browser* OpenTestBookmarkApp(const extensions::Extension* bookmark_app) {
+    OpenApplication(AppLaunchParams(browser()->profile(), bookmark_app,
+                                    extensions::LAUNCH_CONTAINER_WINDOW,
+                                    WindowOpenDisposition::CURRENT_TAB,
+                                    extensions::SOURCE_CHROME_INTERNAL));
+    return chrome::FindLastActive();
   }
 };
 
@@ -280,11 +313,11 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
                        OpenInAppAbsentForURLsInScopeWhenDesktopPWAsDisabled) {
   auto feature_list = base::MakeUnique<base::test::ScopedFeatureList>();
   feature_list->InitAndEnableFeature(features::kDesktopPWAWindowing);
-  InstallTestBookmarkApp();
+  InstallTestBookmarkApp(GURL(kAppUrl1));
   feature_list.reset();
 
   std::unique_ptr<TestRenderViewContextMenu> menu =
-      CreateContextMenuMediaTypeNone(GURL(kAppUrl), GURL(kAppUrl));
+      CreateContextMenuMediaTypeNone(GURL(kAppUrl1), GURL(kAppUrl1));
 
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
@@ -299,10 +332,10 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
                        OpenInAppPresentForURLsInScopeOfBookmarkApp) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kDesktopPWAWindowing);
-  InstallTestBookmarkApp();
+  InstallTestBookmarkApp(GURL(kAppUrl1));
 
   std::unique_ptr<TestRenderViewContextMenu> menu =
-      CreateContextMenuMediaTypeNone(GURL(kAppUrl), GURL(kAppUrl));
+      CreateContextMenuMediaTypeNone(GURL(kAppUrl1), GURL(kAppUrl1));
 
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
@@ -317,7 +350,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
                        OpenEntryInAppAbsentForURLsOutOfScopeOfBookmarkApp) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kDesktopPWAWindowing);
-  InstallTestBookmarkApp();
+  InstallTestBookmarkApp(GURL(kAppUrl1));
 
   std::unique_ptr<TestRenderViewContextMenu> menu =
       CreateContextMenuMediaTypeNone(GURL("http://www.example.com/"),
@@ -326,6 +359,74 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
   ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP));
+  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKLOCATION));
+  ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKINPROFILE));
+  ASSERT_FALSE(menu->IsItemInRangePresent(IDC_OPEN_LINK_IN_PROFILE_FIRST,
+                                          IDC_OPEN_LINK_IN_PROFILE_LAST));
+}
+
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
+                       InAppOpenEntryPresentForRegularURLs) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kDesktopPWAWindowing);
+  const extensions::Extension* bookmark_app =
+      InstallTestBookmarkApp(GURL(kAppUrl1));
+  Browser* app_window = OpenTestBookmarkApp(bookmark_app);
+
+  std::unique_ptr<TestRenderViewContextMenu> menu =
+      CreateContextMenuMediaTypeNoneInWebContents(
+          app_window->tab_strip_model()->GetActiveWebContents(),
+          GURL("http://www.example.com"), GURL("http://www.example.com"));
+
+  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
+  ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
+  ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP));
+  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKLOCATION));
+  ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKINPROFILE));
+  ASSERT_FALSE(menu->IsItemInRangePresent(IDC_OPEN_LINK_IN_PROFILE_FIRST,
+                                          IDC_OPEN_LINK_IN_PROFILE_LAST));
+}
+
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
+                       InAppOpenEntryPresentForSameAppURLs) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kDesktopPWAWindowing);
+  const extensions::Extension* bookmark_app =
+      InstallTestBookmarkApp(GURL(kAppUrl1));
+  Browser* app_window = OpenTestBookmarkApp(bookmark_app);
+
+  std::unique_ptr<TestRenderViewContextMenu> menu =
+      CreateContextMenuMediaTypeNoneInWebContents(
+          app_window->tab_strip_model()->GetActiveWebContents(), GURL(kAppUrl1),
+          GURL(kAppUrl1));
+
+  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
+  ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
+  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP));
+  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKLOCATION));
+  ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKINPROFILE));
+  ASSERT_FALSE(menu->IsItemInRangePresent(IDC_OPEN_LINK_IN_PROFILE_FIRST,
+                                          IDC_OPEN_LINK_IN_PROFILE_LAST));
+}
+
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
+                       InAppOpenEntryPresentForOtherAppURLs) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kDesktopPWAWindowing);
+  const extensions::Extension* bookmark_app =
+      InstallTestBookmarkApp(GURL(kAppUrl1));
+  InstallTestBookmarkApp(GURL(kAppUrl2));
+
+  Browser* app_window = OpenTestBookmarkApp(bookmark_app);
+
+  std::unique_ptr<TestRenderViewContextMenu> menu =
+      CreateContextMenuMediaTypeNoneInWebContents(
+          app_window->tab_strip_model()->GetActiveWebContents(), GURL(kAppUrl2),
+          GURL(kAppUrl2));
+
+  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
+  ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
+  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP));
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKLOCATION));
   ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKINPROFILE));
   ASSERT_FALSE(menu->IsItemInRangePresent(IDC_OPEN_LINK_IN_PROFILE_FIRST,
@@ -535,7 +636,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenIncognitoNoneReferrer) {
 
 // Verify that "Open link in [App Name]" opens a new App window.
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenLinkInBookmarkApp) {
-  InstallTestBookmarkApp();
+  InstallTestBookmarkApp(GURL(kAppUrl1));
 
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -545,7 +646,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenLinkInBookmarkApp) {
       browser()->tab_strip_model()->GetActiveWebContents();
   const GURL initial_url = initial_tab->GetLastCommittedURL();
 
-  const GURL app_url(kAppUrl);
+  const GURL app_url(kAppUrl1);
   ui_test_utils::UrlLoadObserver url_observer(
       app_url, content::NotificationService::AllSources());
   content::ContextMenuParams params;

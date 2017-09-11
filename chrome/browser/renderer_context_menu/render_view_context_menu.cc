@@ -59,6 +59,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -67,6 +68,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
@@ -997,30 +999,39 @@ void RenderViewContextMenu::AppendDevtoolsForUnpackedExtensions() {
 void RenderViewContextMenu::AppendLinkItems() {
   if (!params_.link_url.is_empty()) {
     if (base::FeatureList::IsEnabled(features::kDesktopPWAWindowing)) {
-      const Extension* bookmark_app =
-          GetBookmarkAppForURL(browser_context_, params_.link_url);
-      if (bookmark_app) {
-        menu_model_.AddItem(
-            IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP,
-            l10n_util::GetStringFUTF16(
-                IDS_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP,
-                base::ASCIIToUTF16(bookmark_app->short_name())));
-        MenuManager* menu_manager = MenuManager::Get(browser_context_);
-        gfx::Image icon = menu_manager->GetIconForExtension(bookmark_app->id());
-        menu_model_.SetIcon(menu_model_.GetItemCount() - 1, icon);
+      AppendOpenInBookmarkAppLinkItems();
+
+      menu_model_.AddItemWithStringId(
+          IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
+          GetBrowser()->is_app() ? IDS_CONTENT_CONTEXT_OPENLINKNEWTAB_INAPP
+                                 : IDS_CONTENT_CONTEXT_OPENLINKNEWTAB);
+      if (!GetBrowser()->is_app()) {
+        menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW,
+                                        IDS_CONTENT_CONTEXT_OPENLINKNEWWINDOW);
       }
-    }
 
-    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
-                                    IDS_CONTENT_CONTEXT_OPENLINKNEWTAB);
-    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW,
-                                    IDS_CONTENT_CONTEXT_OPENLINKNEWWINDOW);
-    if (params_.link_url.is_valid()) {
-      AppendProtocolHandlerSubMenu();
-    }
+      if (params_.link_url.is_valid()) {
+        AppendProtocolHandlerSubMenu();
+      }
 
-    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD,
-                                    IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD);
+      menu_model_.AddItemWithStringId(
+          IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD,
+          GetBrowser()->is_app()
+              ? IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD_INAPP
+              : IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD);
+
+    } else {
+      menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
+                                      IDS_CONTENT_CONTEXT_OPENLINKNEWTAB);
+      menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW,
+                                      IDS_CONTENT_CONTEXT_OPENLINKNEWWINDOW);
+      if (params_.link_url.is_valid()) {
+        AppendProtocolHandlerSubMenu();
+      }
+
+      menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD,
+                                      IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD);
+    }
 
     AppendOpenWithLinkItems();
 
@@ -1128,6 +1139,30 @@ void RenderViewContextMenu::AppendOpenWithLinkItems() {
   observers_.AddObserver(open_with_menu_observer_.get());
   open_with_menu_observer_->InitMenu(params_);
 #endif
+}
+
+void RenderViewContextMenu::AppendOpenInBookmarkAppLinkItems() {
+  const Extension* bookmark_app =
+      GetBookmarkAppForURL(browser_context_, params_.link_url);
+  if (!bookmark_app)
+    return;
+
+  int open_in_app_string_id;
+  if (GetBrowser()->app_name() ==
+      web_app::GenerateApplicationNameFromExtensionId(bookmark_app->id())) {
+    open_in_app_string_id = IDS_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP_SAMEAPP;
+  } else {
+    open_in_app_string_id = IDS_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP;
+  }
+
+  menu_model_.AddItem(IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP,
+                      l10n_util::GetStringFUTF16(
+                          open_in_app_string_id,
+                          base::ASCIIToUTF16(bookmark_app->short_name())));
+
+  MenuManager* menu_manager = MenuManager::Get(browser_context_);
+  gfx::Image icon = menu_manager->GetIconForExtension(bookmark_app->id());
+  menu_model_.SetIcon(menu_model_.GetItemCount() - 1, icon);
 }
 
 void RenderViewContextMenu::AppendImageItems() {

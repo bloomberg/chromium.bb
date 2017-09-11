@@ -131,6 +131,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void AppendDevtoolsForUnpackedExtensions();
   void AppendLinkItems();
   void AppendOpenWithLinkItems();
+  void AppendOpenInBookmarkAppLinkItems();
   void AppendImageItems();
   void AppendAudioItems();
   void AppendCanvasItems();
