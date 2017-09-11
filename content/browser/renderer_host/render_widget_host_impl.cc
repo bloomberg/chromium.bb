@@ -755,14 +755,9 @@ bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
     // ScaleToCeiledSize(new_size, device_scale_factor) ??
     resize_params->physical_backing_size = view_->GetPhysicalBackingSize();
     resize_params->top_controls_height = view_->GetTopControlsHeight();
-    resize_params->bottom_controls_height = view_->GetBottomControlsHeight();
-    if (IsUseZoomForDSFEnabled()) {
-      float device_scale = resize_params->screen_info.device_scale_factor;
-      resize_params->top_controls_height *= device_scale;
-      resize_params->bottom_controls_height *= device_scale;
-    }
     resize_params->browser_controls_shrink_blink_size =
         view_->DoBrowserControlsShrinkBlinkSize();
+    resize_params->bottom_controls_height = view_->GetBottomControlsHeight();
     resize_params->visible_viewport_size = view_->GetVisibleViewportSize();
     viz::LocalSurfaceId local_surface_id = view_->GetLocalSurfaceId();
     if (local_surface_id.is_valid())
