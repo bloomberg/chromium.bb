@@ -305,7 +305,7 @@ class PerfDataGeneratorTest(unittest.TestCase):
           perf_data_generator.ShouldBenchmarksBeScheduled(
               RegularBenchmark, 'bot_name', os, None))
 
-  def testShouldBenchmarksBeScheduledShouldntRun(self):
+  def testShouldBenchmarksBeScheduledDisabledButScheduled(self):
     class RegularBenchmark(benchmark.Benchmark):
       @classmethod
       def Name(cls):
@@ -319,7 +319,7 @@ class PerfDataGeneratorTest(unittest.TestCase):
 
     valid_os_list = ['mac', 'android', 'windows', 'linux']
     for os in valid_os_list:
-      self.assertFalse(
+      self.assertTrue(
           perf_data_generator.ShouldBenchmarksBeScheduled(
               RegularBenchmark, 'bot_name', os, None))
 
