@@ -99073,6 +99073,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="download" label="Offline downloaded pages"/>
   <suffix name="ntp_suggestions" label="NTP suggestions offlined by the user"/>
   <suffix name="suggested_articles" label="Prefetched NTP suggestions"/>
+  <suffix name="browser_actions" label="Offline Browser Actions pages"/>
   <affected-histogram
       name="OfflinePages.Background.BackgroundLoadingFailedCode"/>
   <affected-histogram
