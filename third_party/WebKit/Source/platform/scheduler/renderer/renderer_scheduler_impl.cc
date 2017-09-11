@@ -1766,6 +1766,9 @@ void RendererSchedulerImpl::ResetForNavigationLocked() {
     web_view_scheduler->OnNavigation();
   }
   UpdatePolicyLocked(UpdateType::MAY_EARLY_OUT_IF_POLICY_UNCHANGED);
+
+  UMA_HISTOGRAM_COUNTS_100("RendererScheduler.WebViewsPerScheduler",
+                           main_thread_only().web_view_schedulers.size());
 }
 
 void RendererSchedulerImpl::SetTopLevelBlameContext(
