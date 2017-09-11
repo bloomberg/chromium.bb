@@ -1155,8 +1155,6 @@ TEST_F(SSLErrorAssistantTest, CaptivePortal_DisabledByBuild) {
 
 #endif  // BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 
-#if !defined(OS_IOS)
-
 // Tests that if a certificate matches the issuer common name regex of a MITM
 // software entry but not the issuer organization name a MITM software
 // interstitial will not be displayed.
@@ -1382,18 +1380,3 @@ TEST_F(SSLErrorAssistantTest, MITMSoftware_Overridable_NoInterstitial) {
                                SSLErrorHandler::SHOW_MITM_SOFTWARE_INTERSTITIAL,
                                0);
 }
-
-#else
-
-// Tests that the MITM software interstitial is not triggered on iOS, where it
-// is disabled by build.
-TEST_F(SSLErrorAssistantTest, MITMSoftware_DisabledByBuild_NoInterstitial) {
-  SetMITMSoftwareFeatureEnabled(true);
-
-  ResetErrorHandlerFromString(kMisconfiguredFirewallCert,
-                              net::CERT_STATUS_AUTHORITY_INVALID);
-  InitMITMSoftwareList();
-  TestNoMITMSoftwareInterstitial();
-}
-
-#endif  // #if !defined(OS_IOS)
