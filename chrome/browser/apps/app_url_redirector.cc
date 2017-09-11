@@ -47,15 +47,10 @@ bool ShouldOverrideNavigation(
     return false;
   }
 
-  Browser* browser = chrome::FindBrowserWithWebContents(source);
-  if (browser == nullptr) {
-    DVLOG(1) << "Don't override: No browser, can't know if already in app.";
-    return false;
-  }
-
-  if (browser->app_name() ==
-      web_app::GenerateApplicationNameFromExtensionId(app->id())) {
-    DVLOG(1) << "Don't override: Already in app.";
+  // Don't redirect same origin navigations. This matches what is done on
+  // Android.
+  if (source->GetLastCommittedURL().GetOrigin() == params.url().GetOrigin()) {
+    DVLOG(1) << "Don't override: Same origin navigation.";
     return false;
   }
 
