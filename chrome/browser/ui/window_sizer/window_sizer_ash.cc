@@ -17,7 +17,8 @@
 
 bool WindowSizer::GetBrowserBoundsAsh(gfx::Rect* bounds,
                                       ui::WindowShowState* show_state) const {
-  if (!ash_util::ShouldOpenAshOnStartup() || !browser_)
+  // TODO(crbug.com/764009): Mash support.
+  if (ash_util::IsRunningInMash() || !browser_)
     return false;
 
   bool determined = false;
