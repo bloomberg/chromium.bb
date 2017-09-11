@@ -4,8 +4,8 @@
 
 #include "core/css/properties/CSSPropertyBackgroundUtils.h"
 
+#include "core/CSSValueKeywords.h"
 #include "core/css/CSSTimingFunctionValue.h"
-#include "core/css/CSSValueKeywords.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSValuePair.h"
 #include "core/css/parser/CSSParserTokenRange.h"

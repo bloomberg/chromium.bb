@@ -5,9 +5,9 @@
 #ifndef CSSIdentifierValue_h
 #define CSSIdentifierValue_h
 
+#include "core/CSSValueKeywords.h"
 #include "core/css/CSSValue.h"
 #include "core/css/CSSValueIDMappings.h"
-#include "core/css/CSSValueKeywords.h"
 #include "platform/wtf/TypeTraits.h"
 
 namespace blink {

@@ -4,10 +4,10 @@
 
 #include "core/css/properties/CSSPropertyAPIContent.h"
 
+#include "core/CSSValueKeywords.h"
 #include "core/css/CSSCounterValue.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSStringValue.h"
-#include "core/css/CSSValueKeywords.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
