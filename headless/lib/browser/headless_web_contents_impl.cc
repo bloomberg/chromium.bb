@@ -31,8 +31,8 @@
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_browser_main_parts.h"
-#include "headless/lib/browser/headless_devtools_client_impl.h"
 #include "headless/lib/browser/headless_tab_socket_impl.h"
+#include "headless/public/internal/headless_devtools_client_impl.h"
 #include "printing/features/features.h"
 
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)

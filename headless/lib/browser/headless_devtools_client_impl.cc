@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "headless/lib/browser/headless_devtools_client_impl.h"
+#include "headless/public/internal/headless_devtools_client_impl.h"
 
 #include <memory>
 
