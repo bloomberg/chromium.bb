@@ -64,7 +64,7 @@ class AXInlineTextBox final : public AXObject {
                          SkMatrix44& out_container_transform) const override;
   AXObject* ComputeParent() const override;
   AccessibilityTextDirection GetTextDirection() const override;
-  Node* GetNode() const override { return inline_text_box_->GetNode(); }
+  Node* GetNode() const override;
   AXObject* NextOnLine() const override;
   AXObject* PreviousOnLine() const override;
 
