@@ -72,8 +72,6 @@ class MessagingBindings : public ObjectBackedNativeHandler {
 
   const base::UnguessableToken& context_id() const { return context_id_; }
 
-  base::WeakPtr<MessagingBindings> GetWeakPtr();
-
  private:
   using PortMap = std::map<int, std::unique_ptr<ExtensionPort>>;
 
