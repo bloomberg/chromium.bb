@@ -4,7 +4,6 @@
 
 #import "ios/clean/chrome/browser/ui/tab_grid/ui_button+cr_tab_grid.h"
 
-#import "ios/clean/chrome/browser/ui/actions/settings_actions.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -35,9 +34,6 @@
   [button setImage:[UIImage imageNamed:@"tabswitcher_menu"]
           forState:UIControlStateNormal];
   [button setTintColor:[UIColor whiteColor]];
-  [button addTarget:nil
-                action:@selector(showToolsMenu:)
-      forControlEvents:UIControlEventTouchUpInside];
   return button;
 }
 

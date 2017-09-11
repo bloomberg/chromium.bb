@@ -14,24 +14,19 @@
 #import "ios/chrome/browser/ui/browser_list/browser.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
-#import "ios/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/clean/chrome/browser/ui/commands/context_menu_commands.h"
-#import "ios/clean/chrome/browser/ui/commands/settings_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_grid_commands.h"
-#import "ios/clean/chrome/browser/ui/commands/tools_menu_commands.h"
 #import "ios/clean/chrome/browser/ui/dialogs/context_menu/context_menu_dialog_request.h"
 #import "ios/clean/chrome/browser/ui/overlays/overlay_service.h"
 #import "ios/clean/chrome/browser/ui/overlays/overlay_service_factory.h"
 #import "ios/clean/chrome/browser/ui/overlays/overlay_service_observer_bridge.h"
-#import "ios/clean/chrome/browser/ui/settings/settings_coordinator.h"
 #import "ios/clean/chrome/browser/ui/tab/tab_coordinator.h"
 #include "ios/clean/chrome/browser/ui/tab/tab_features.h"
 #import "ios/clean/chrome/browser/ui/tab/tab_strip_tab_coordinator.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_mediator.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
-#import "ios/clean/chrome/browser/ui/tools/tools_coordinator.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_state/web_state.h"
 #import "net/base/mac/url_conversions.h"
@@ -43,31 +38,23 @@
 
 @interface TabGridCoordinator ()<ContextMenuCommands,
                                  OverlayServiceObserving,
-                                 SettingsCommands,
-                                 TabGridCommands,
-                                 ToolsMenuCommands> {
+                                 TabGridCommands> {
   // Bridge that handles forwarding OverlayServiceObserver events.
   std::unique_ptr<OverlayServiceObserverBridge> _overlayObserverBridge;
 }
 
 @property(nonatomic, strong) TabGridViewController* viewController;
-@property(nonatomic, weak) SettingsCoordinator* settingsCoordinator;
-@property(nonatomic, weak) ToolsCoordinator* toolsMenuCoordinator;
 @property(nonatomic, weak) TabCoordinator* activeTabCoordinator;
 @property(nonatomic, readonly) WebStateList& webStateList;
 @property(nonatomic, strong) TabGridMediator* mediator;
 @property(nonatomic, readonly) SnapshotCache* snapshotCache;
 
-@property(nonatomic, readonly)
-    id<SettingsCommands, TabGridCommands, ToolsMenuCommands>
-        callableDispatcher;
+@property(nonatomic, readonly) id<TabGridCommands> callableDispatcher;
 
 @end
 
 @implementation TabGridCoordinator
 @synthesize viewController = _viewController;
-@synthesize settingsCoordinator = _settingsCoordinator;
-@synthesize toolsMenuCoordinator = _toolsMenuCoordinator;
 @synthesize activeTabCoordinator = _activeTabCoordinator;
 @synthesize mediator = _mediator;
 @dynamic callableDispatcher;
@@ -100,9 +87,7 @@
   self.mediator.webStateList = &self.webStateList;
 
   [self registerForContextMenuCommands];
-  [self registerForSettingsCommands];
   [self registerForTabGridCommands];
-  [self registerForToolsMenuCommands];
 
   self.viewController = [[TabGridViewController alloc] init];
   self.viewController.dispatcher = self.callableDispatcher;
@@ -134,18 +119,14 @@
 }
 
 - (void)childCoordinatorDidStart:(BrowserCoordinator*)childCoordinator {
-  DCHECK([childCoordinator isKindOfClass:[SettingsCoordinator class]] ||
-         [childCoordinator isKindOfClass:[TabCoordinator class]] ||
-         [childCoordinator isKindOfClass:[ToolsCoordinator class]]);
+  DCHECK([childCoordinator isKindOfClass:[TabCoordinator class]]);
   [self.viewController presentViewController:childCoordinator.viewController
                                     animated:YES
                                   completion:nil];
 }
 
 - (void)childCoordinatorWillStop:(BrowserCoordinator*)childCoordinator {
-  DCHECK([childCoordinator isKindOfClass:[SettingsCoordinator class]] ||
-         [childCoordinator isKindOfClass:[TabCoordinator class]] ||
-         [childCoordinator isKindOfClass:[ToolsCoordinator class]]);
+  DCHECK([childCoordinator isKindOfClass:[TabCoordinator class]]);
   [childCoordinator.viewController.presentingViewController
       dismissViewControllerAnimated:YES
                          completion:nil];
@@ -179,27 +160,6 @@
   }
 }
 
-#pragma mark - SettingsCommands
-
-- (void)showSettings {
-  CommandDispatcher* dispatcher = self.dispatcher;
-  [dispatcher startDispatchingToTarget:self
-                           forSelector:@selector(closeSettings)];
-  SettingsCoordinator* settingsCoordinator = [[SettingsCoordinator alloc] init];
-  [self addOverlayCoordinator:settingsCoordinator];
-  self.settingsCoordinator = settingsCoordinator;
-  [settingsCoordinator start];
-}
-
-- (void)closeSettings {
-  CommandDispatcher* dispatcher = self.dispatcher;
-  [dispatcher stopDispatchingForSelector:@selector(closeSettings)];
-  [self.settingsCoordinator stop];
-  [self.settingsCoordinator.parentCoordinator
-      removeChildCoordinator:self.settingsCoordinator];
-  // self.settingsCoordinator should be presumed to be nil after this point.
-}
-
 #pragma mark - TabGridCommands
 
 - (void)showTabGridTabAtIndex:(int)index {
@@ -214,7 +174,6 @@
   tabCoordinator.presentationKey =
       [NSIndexPath indexPathForItem:index inSection:0];
   [self addChildCoordinator:tabCoordinator];
-  [self deRegisterFromToolsMenuCommands];
   [tabCoordinator start];
 }
 
@@ -241,28 +200,8 @@
   BrowserCoordinator* child = [self.children anyObject];
   [child stop];
   [self removeChildCoordinator:child];
-  [self registerForToolsMenuCommands];
 }
 
-#pragma mark - ToolsMenuCommands
-
-- (void)showToolsMenu {
-  ToolsCoordinator* toolsCoordinator = [[ToolsCoordinator alloc] init];
-  [self addChildCoordinator:toolsCoordinator];
-  ToolsMenuConfiguration* menuConfiguration =
-      [[ToolsMenuConfiguration alloc] initWithDisplayView:nil];
-  menuConfiguration.inTabSwitcher = YES;
-  menuConfiguration.noOpenedTabs = self.browser->web_state_list().empty();
-  menuConfiguration.inNewTabPage = NO;
-  toolsCoordinator.toolsMenuConfiguration = menuConfiguration;
-  [toolsCoordinator start];
-  self.toolsMenuCoordinator = toolsCoordinator;
-}
-
-- (void)closeToolsMenu {
-  [self.toolsMenuCoordinator stop];
-  [self removeChildCoordinator:self.toolsMenuCoordinator];
-}
 
 #pragma mark - URLOpening
 
@@ -294,11 +233,6 @@
                    forSelector:@selector(openContextMenuImageInNewTab:)];
 }
 
-- (void)registerForSettingsCommands {
-  [self.dispatcher startDispatchingToTarget:self
-                                forSelector:@selector(showSettings)];
-}
-
 - (void)registerForTabGridCommands {
   [self.dispatcher startDispatchingToTarget:self
                                 forSelector:@selector(showTabGrid)];
@@ -309,18 +243,6 @@
   [self.dispatcher
       startDispatchingToTarget:self
                    forSelector:@selector(createAndShowNewTabInTabGrid)];
-}
-
-- (void)registerForToolsMenuCommands {
-  [self.dispatcher startDispatchingToTarget:self
-                                forSelector:@selector(showToolsMenu)];
-  [self.dispatcher startDispatchingToTarget:self
-                                forSelector:@selector(closeToolsMenu)];
-}
-
-- (void)deRegisterFromToolsMenuCommands {
-  [self.dispatcher stopDispatchingForSelector:@selector(showToolsMenu)];
-  [self.dispatcher stopDispatchingForSelector:@selector(closeToolsMenu)];
 }
 
 // Creates and returns a tab coordinator based on whether the tap strip is
