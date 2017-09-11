@@ -52,18 +52,24 @@ void NinePatchLayerImpl::SetLayout(const gfx::Rect& aperture,
 void NinePatchLayerImpl::AppendQuads(
     RenderPass* render_pass,
     AppendQuadsData* append_quads_data) {
+  DCHECK(!bounds().IsEmpty());
   quad_generator_.CheckGeometryLimitations();
+
   viz::SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
+  bool is_resource =
+      ui_resource_id_ &&
+      layer_tree_impl()->ResourceIdForUIResource(ui_resource_id_);
   bool are_contents_opaque =
-      contents_opaque() ||
-      layer_tree_impl()->IsUIResourceOpaque(ui_resource_id_);
+      is_resource ? layer_tree_impl()->IsUIResourceOpaque(ui_resource_id_) ||
+                        contents_opaque()
+                  : false;
   PopulateSharedQuadState(shared_quad_state, are_contents_opaque);
-
   AppendDebugBorderQuad(render_pass, bounds(), shared_quad_state,
                         append_quads_data);
 
-  DCHECK(!bounds().IsEmpty());
+  if (!is_resource)
+    return;
 
   std::vector<NinePatchGenerator::Patch> patches =
       quad_generator_.GeneratePatches();

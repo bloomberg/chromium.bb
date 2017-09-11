@@ -70,6 +70,23 @@ void PaintedOverlayScrollbarLayerImpl::AppendQuads(
   if (aperture_.IsEmpty())
     return;
 
+  viz::SharedQuadState* shared_quad_state =
+      render_pass->CreateAndAppendSharedQuadState();
+  bool is_resource =
+      thumb_ui_resource_id_ &&
+      layer_tree_impl()->ResourceIdForUIResource(thumb_ui_resource_id_);
+  bool are_contents_opaque =
+      is_resource
+          ? layer_tree_impl()->IsUIResourceOpaque(thumb_ui_resource_id_) ||
+                contents_opaque()
+          : false;
+  PopulateSharedQuadState(shared_quad_state, are_contents_opaque);
+  AppendDebugBorderQuad(render_pass, bounds(), shared_quad_state,
+                        append_quads_data);
+
+  if (!is_resource)
+    return;
+
   // For overlay scrollbars, the border should match the inset of the aperture
   // and be symmetrical.
   gfx::Rect border(aperture_.x(), aperture_.y(), aperture_.x() * 2,
@@ -89,16 +106,6 @@ void PaintedOverlayScrollbarLayerImpl::AppendQuads(
                             border, layer_occlusion, fill_center,
                             nearest_neighbor);
   quad_generator_.CheckGeometryLimitations();
-
-  viz::SharedQuadState* shared_quad_state =
-      render_pass->CreateAndAppendSharedQuadState();
-  bool are_contents_opaque =
-      contents_opaque() ||
-      layer_tree_impl()->IsUIResourceOpaque(thumb_ui_resource_id_);
-  PopulateSharedQuadState(shared_quad_state, are_contents_opaque);
-
-  AppendDebugBorderQuad(render_pass, bounds(), shared_quad_state,
-                        append_quads_data);
 
   std::vector<NinePatchGenerator::Patch> patches =
       quad_generator_.GeneratePatches();
