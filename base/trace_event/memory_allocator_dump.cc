@@ -4,6 +4,8 @@
 
 #include "base/trace_event/memory_allocator_dump.h"
 
+#include <string.h>
+
 #include "base/format_macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
@@ -30,14 +32,14 @@ MemoryAllocatorDumpGuid MemoryAllocatorDump::GetDumpIdFromName(
       "%d:%s", TraceLog::GetInstance()->process_id(), absolute_name.c_str()));
 }
 
-MemoryAllocatorDump::MemoryAllocatorDump(const std::string& absolute_name,
-                                         ProcessMemoryDump* process_memory_dump,
-                                         const MemoryAllocatorDumpGuid& guid)
+MemoryAllocatorDump::MemoryAllocatorDump(
+    const std::string& absolute_name,
+    MemoryDumpLevelOfDetail level_of_detail,
+    const MemoryAllocatorDumpGuid& guid)
     : absolute_name_(absolute_name),
-      process_memory_dump_(process_memory_dump),
       guid_(guid),
-      flags_(Flags::DEFAULT),
-      size_(0) {
+      level_of_detail_(level_of_detail),
+      flags_(Flags::DEFAULT) {
   // The |absolute_name| cannot be empty.
   DCHECK(!absolute_name.empty());
 
@@ -45,6 +47,15 @@ MemoryAllocatorDump::MemoryAllocatorDump(const std::string& absolute_name,
   // trailing ones.
   DCHECK(absolute_name[0] != '/' && *absolute_name.rbegin() != '/');
 }
+
+MemoryAllocatorDump::MemoryAllocatorDump(const std::string& absolute_name,
+                                         ProcessMemoryDump* process_memory_dump,
+                                         const MemoryAllocatorDumpGuid& guid)
+    : MemoryAllocatorDump(absolute_name,
+                          process_memory_dump
+                              ? process_memory_dump->dump_args().level_of_detail
+                              : MemoryDumpLevelOfDetail::FIRST,
+                          guid) {}
 
 // If the caller didn't provide a guid, make one up by hashing the
 // absolute_name with the current PID.
@@ -63,8 +74,6 @@ MemoryAllocatorDump::~MemoryAllocatorDump() {
 void MemoryAllocatorDump::AddScalar(const char* name,
                                     const char* units,
                                     uint64_t value) {
-  if (strcmp(kNameSize, name) == 0)
-    size_ = value;
   entries_.emplace_back(name, units, value);
 }
 
@@ -72,8 +81,7 @@ void MemoryAllocatorDump::AddString(const char* name,
                                     const char* units,
                                     const std::string& value) {
   // String attributes are disabled in background mode.
-  if (process_memory_dump_->dump_args().level_of_detail ==
-      MemoryDumpLevelOfDetail::BACKGROUND) {
+  if (level_of_detail_ == MemoryDumpLevelOfDetail::BACKGROUND) {
     NOTREACHED();
     return;
   }
@@ -114,14 +122,31 @@ void MemoryAllocatorDump::AsValueInto(TracedValue* value) const {
   value->EndDictionary();  // "allocator_name/heap_subheap": { ... }
 }
 
+uint64_t MemoryAllocatorDump::GetSizeInternal() const {
+  if (cached_size_.has_value())
+    return *cached_size_;
+  for (const auto& entry : entries_) {
+    if (entry.entry_type == Entry::kUint64 && entry.units == kUnitsBytes &&
+        strcmp(entry.name.c_str(), kNameSize) == 0) {
+      cached_size_ = entry.value_uint64;
+      return entry.value_uint64;
+    }
+  }
+  return 0;
+};
+
 std::unique_ptr<TracedValue> MemoryAllocatorDump::attributes_for_testing()
     const {
-  std::unique_ptr<TracedValue> attributes = base::MakeUnique<TracedValue>();
+  std::unique_ptr<TracedValue> attributes = MakeUnique<TracedValue>();
   DumpAttributes(attributes.get());
   return attributes;
 }
 
-MemoryAllocatorDump::Entry::Entry(Entry&& other) = default;
+MemoryAllocatorDump::Entry::Entry() : entry_type(kString), value_uint64() {}
+MemoryAllocatorDump::Entry::Entry(MemoryAllocatorDump::Entry&&) noexcept =
+    default;
+MemoryAllocatorDump::Entry& MemoryAllocatorDump::Entry::operator=(
+    MemoryAllocatorDump::Entry&&) = default;
 
 MemoryAllocatorDump::Entry::Entry(std::string name,
                                   std::string units,
@@ -143,6 +168,20 @@ bool MemoryAllocatorDump::Entry::operator==(const Entry& rhs) const {
   }
   NOTREACHED();
   return false;
+}
+
+void PrintTo(const MemoryAllocatorDump::Entry& entry, std::ostream* out) {
+  switch (entry.entry_type) {
+    case MemoryAllocatorDump::Entry::EntryType::kUint64:
+      *out << "<Entry(\"" << entry.name << "\", \"" << entry.units << "\", "
+           << entry.value_uint64 << ")>";
+      return;
+    case MemoryAllocatorDump::Entry::EntryType::kString:
+      *out << "<Entry(\"" << entry.name << "\", \"" << entry.units << "\", \""
+           << entry.value_string << "\")>";
+      return;
+  }
+  NOTREACHED();
 }
 
 }  // namespace trace_event

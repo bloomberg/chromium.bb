@@ -46,7 +46,40 @@ struct ChromeMemDump {
 };
 
 // These structs are internal only (only for the communication between
-// the service and the ClientProcess library)
+// the service and the ClientProcess library).
+// See corresponding types in //base/trace_event for comments.
+
+struct RawAllocatorDumpEdge {
+  uint64 source_id;
+  uint64 target_id;
+  int64 importance;
+  bool overridable;
+};
+
+union RawAllocatorDumpEntryValue {
+  uint64 value_uint64;
+  string value_string;
+};
+
+struct RawAllocatorDumpEntry {
+  string name;
+  string units;
+  RawAllocatorDumpEntryValue value;
+};
+
+struct RawAllocatorDump {
+  uint64 id;
+  string absolute_name;
+  bool weak;
+  LevelOfDetail level_of_detail;
+  array<RawAllocatorDumpEntry> entries;
+};
+
+struct RawProcessMemoryDump {
+  LevelOfDetail level_of_detail;
+  array<RawAllocatorDumpEdge> allocator_dump_edges;
+  array<RawAllocatorDump> allocator_dumps;
+};
 
 struct VmRegion {
   const uint32 kProtectionFlagsRead = 4;
