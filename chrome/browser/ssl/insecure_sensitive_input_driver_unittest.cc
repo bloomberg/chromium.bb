@@ -192,7 +192,7 @@ TEST_F(InsecureSensitiveInputDriverTest,
 
   controller().LoadURL(GURL("http://example2.test"), content::Referrer(),
                        ui::PAGE_TRANSITION_TYPED, std::string());
-  content::RenderFrameHost* pending_rfh = tester->GetPendingMainFrame();
+  content::RenderFrameHost* pending_rfh = pending_main_rfh();
   ASSERT_TRUE(pending_rfh);
   int entry_id = controller().GetPendingEntry()->GetUniqueID();
   tester->TestDidNavigate(pending_rfh, entry_id, true,

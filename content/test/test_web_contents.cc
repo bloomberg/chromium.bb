@@ -60,13 +60,9 @@ TestRenderViewHost* TestWebContents::GetRenderViewHost() const {
         WebContentsImpl::GetRenderViewHost());
 }
 
-TestRenderFrameHost* TestWebContents::GetPendingMainFrame() const {
-  if (IsBrowserSideNavigationEnabled()) {
-    return static_cast<TestRenderFrameHost*>(
-        GetRenderManager()->speculative_render_frame_host_.get());
-  }
+TestRenderFrameHost* TestWebContents::GetPendingMainFrame() {
   return static_cast<TestRenderFrameHost*>(
-      GetRenderManager()->pending_frame_host());
+      WebContentsImpl::GetPendingMainFrame());
 }
 
 int TestWebContents::DownloadImage(const GURL& url,

@@ -205,7 +205,7 @@ RenderFrameHost* RenderViewHostTestHarness::main_rfh() {
 }
 
 RenderFrameHost* RenderViewHostTestHarness::pending_main_rfh() {
-  return WebContentsTester::For(web_contents())->GetPendingMainFrame();
+  return static_cast<TestWebContents*>(web_contents())->GetPendingMainFrame();
 }
 
 BrowserContext* RenderViewHostTestHarness::browser_context() {

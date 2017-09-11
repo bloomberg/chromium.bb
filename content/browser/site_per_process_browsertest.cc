@@ -3446,7 +3446,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 }
 
 // Ensure that when navigating a frame cross-process RenderFrameProxyHosts are
-// created in the FrameTree skipping the subtree of the navigating frame.
+// created in the FrameTree skipping the subtree of the navigating frame (but
+// not the navigating frame itself).
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                        ProxyCreationSkipsSubtree) {
   GURL main_url(embedded_test_server()->GetURL(
@@ -3511,7 +3512,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     std::string tree = base::StringPrintf(
         " Site A ------------ proxies for B\n"
         "   |--Site A ------- proxies for B\n"
-        "   +--Site A (B %s)\n"
+        "   +--Site A (B %s) -- proxies for B\n"
         "        |--Site A\n"
         "        +--Site A\n"
         "             +--Site A\n"
@@ -3566,7 +3567,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     std::string tree = base::StringPrintf(
         " Site A ------------ proxies for B C\n"
         "   |--Site A ------- proxies for B C\n"
-        "   +--Site B (C %s) -- proxies for A\n"
+        "   +--Site B (C %s) -- proxies for A C\n"
         "Where A = http://a.com/\n"
         "      B = http://foo.com/\n"
         "      C = http://bar.com/",
@@ -5432,6 +5433,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   RenderFrameHostImpl* rfh = root->current_frame_host();
   RenderViewHostImpl* rvh = rfh->render_view_host();
   int rvh_routing_id = rvh->GetRoutingID();
+  int rvh_process_id = rvh->GetProcess()->GetID();
   SiteInstanceImpl* site_instance = rfh->GetSiteInstance();
   RenderFrameDeletedObserver deleted_observer(rfh);
 
@@ -5482,7 +5484,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
           ? root->render_manager()->speculative_frame_host()->render_view_host()
           : root->render_manager()->pending_render_view_host();
   EXPECT_EQ(site_instance, pending_rvh->GetSiteInstance());
-  EXPECT_NE(rvh_routing_id, pending_rvh->GetRoutingID());
+  EXPECT_FALSE(rvh_routing_id == pending_rvh->GetRoutingID() &&
+               rvh_process_id == pending_rvh->GetProcess()->GetID());
 
   // Make sure the last navigation finishes without crashing.
   navigation_observer.Wait();
@@ -11127,6 +11130,286 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                 ->child_at(0)
                 ->current_frame_host()
                 ->GetProcess());
+}
+
+// Check that when a main frame and a subframe start navigating to the same
+// cross-site URL at the same time, the new RenderFrame for the subframe is
+// created successfully without crashing, and the navigations complete
+// successfully.  This test checks the scenario where the main frame ends up
+// committing before the subframe, and the test below checks the case where the
+// subframe commits first.
+//
+// This used to be problematic in that the main frame navigation created an
+// active RenderViewHost with a RenderFrame already swapped into the tree, and
+// then while that navigation was still pending, the subframe navigation
+// created its RenderFrame, which crashed when referencing its parent by a
+// proxy which didn't exist.
+//
+// All cross-process navigations now require creating a RenderFrameProxy before
+// creating a RenderFrame, which makes such navigations follow the provisional
+// frame (remote-to-local navigation) paths, where such a scenario is no longer
+// possible.  See https://crbug.com/756790.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       TwoCrossSitePendingNavigationsAndMainFrameWins) {
+  // This test assumes PlzNavigate is enabled.
+  if (!IsBrowserSideNavigationEnabled())
+    return;
+
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* child = root->child_at(0);
+
+  // Navigate both frames cross-site to b.com simultaneously.
+  GURL new_url_1(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  GURL new_url_2(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  TestNavigationManager manager1(web_contents(), new_url_1);
+  TestNavigationManager manager2(web_contents(), new_url_2);
+  std::string script = "location = '" + new_url_1.spec() + "';" +
+                       "frames[0].location = '" + new_url_2.spec() + "';";
+  EXPECT_TRUE(ExecuteScript(web_contents(), script));
+
+  // Wait for main frame request, but don't commit it yet.  This should create
+  // a speculative RenderFrameHost.
+  ASSERT_TRUE(manager1.WaitForRequestStart());
+  RenderFrameHostImpl* root_speculative_rfh =
+      root->render_manager()->speculative_frame_host();
+  EXPECT_TRUE(root_speculative_rfh);
+  scoped_refptr<SiteInstanceImpl> b_site_instance(
+      root_speculative_rfh->GetSiteInstance());
+
+  // There should now be a live b.com proxy for the root, since it is doing a
+  // cross-process navigation.
+  RenderFrameProxyHost* root_proxy =
+      root->render_manager()->GetRenderFrameProxyHost(b_site_instance.get());
+  EXPECT_TRUE(root_proxy);
+  EXPECT_TRUE(root_proxy->is_render_frame_proxy_live());
+
+  // Wait for subframe request, but don't commit it yet.
+  ASSERT_TRUE(manager2.WaitForRequestStart());
+  EXPECT_TRUE(child->render_manager()->speculative_frame_host());
+
+  // Similarly, the subframe should also have a b.com proxy (unused in this
+  // test), since it is also doing a cross-process navigation.
+  RenderFrameProxyHost* child_proxy =
+      child->render_manager()->GetRenderFrameProxyHost(b_site_instance.get());
+  EXPECT_TRUE(child_proxy);
+  EXPECT_TRUE(child_proxy->is_render_frame_proxy_live());
+
+  // Now let the main frame commit.
+  manager1.WaitForNavigationFinished();
+
+  // Make sure the process is live and at the new URL.
+  EXPECT_TRUE(b_site_instance->GetProcess()->HasConnection());
+  EXPECT_TRUE(root->current_frame_host()->IsRenderFrameLive());
+  EXPECT_EQ(root_speculative_rfh, root->current_frame_host());
+  EXPECT_EQ(new_url_1, root->current_frame_host()->GetLastCommittedURL());
+
+  // The subframe should be gone, so the second navigation should have no
+  // effect.
+  manager2.WaitForNavigationFinished();
+
+  // The new commit should have detached the old child frame.
+  EXPECT_EQ(0U, root->child_count());
+  int length = -1;
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      web_contents(), "domAutomationController.send(frames.length);", &length));
+  EXPECT_EQ(0, length);
+
+  // The root proxy should be gone.
+  EXPECT_FALSE(
+      root->render_manager()->GetRenderFrameProxyHost(b_site_instance.get()));
+}
+
+// Similar to TwoCrossSitePendingNavigationsAndMainFrameWins, but checks the
+// case where the subframe navigation commits before the main frame.  See
+// https://crbug.com/756790.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       TwoCrossSitePendingNavigationsAndSubframeWins) {
+  // This test assumes PlzNavigate is enabled.
+  if (!IsBrowserSideNavigationEnabled())
+    return;
+
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a,a)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* child = root->child_at(0);
+  FrameTreeNode* child2 = root->child_at(1);
+
+  // Install postMessage handlers in main frame and second subframe for later
+  // use.
+  EXPECT_TRUE(
+      ExecuteScript(root->current_frame_host(),
+                    "window.addEventListener('message', function(event) {\n"
+                    "  event.source.postMessage(event.data + '-reply', '*');\n"
+                    "});"));
+  EXPECT_TRUE(ExecuteScript(
+      child2->current_frame_host(),
+      "window.addEventListener('message', function(event) {\n"
+      "  event.source.postMessage(event.data + '-subframe-reply', '*');\n"
+      "});"));
+
+  // Start a main frame navigation to b.com.
+  GURL new_url_1(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  TestNavigationManager manager1(web_contents(), new_url_1);
+  EXPECT_TRUE(
+      ExecuteScript(web_contents(), "location = '" + new_url_1.spec() + "';"));
+
+  // Wait for main frame request and check the frame tree.  There should be a
+  // proxy for b.com at the root, but nowhere else at this point.
+  ASSERT_TRUE(manager1.WaitForRequestStart());
+  EXPECT_EQ(
+      " Site A (B speculative) -- proxies for B\n"
+      "   |--Site A\n"
+      "   +--Site A\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/",
+      DepictFrameTree(root));
+
+  // Now start navigating the first subframe to b.com.
+  GURL new_url_2(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  TestNavigationManager manager2(web_contents(), new_url_2);
+  EXPECT_TRUE(ExecuteScript(
+      web_contents(), "frames[0].location = '" + new_url_2.spec() + "';"));
+
+  // Wait for subframe request.
+  ASSERT_TRUE(manager2.WaitForRequestStart());
+  RenderFrameHostImpl* child_speculative_rfh =
+      child->render_manager()->speculative_frame_host();
+  EXPECT_TRUE(child_speculative_rfh);
+  scoped_refptr<SiteInstanceImpl> b_site_instance(
+      child_speculative_rfh->GetSiteInstance());
+
+  // Check that all frames have proxies for b.com at this point.  The proxy for
+  // |child2| is important to create since |child| has to use it to communicate
+  // with |child2| if |child| commits first.
+  EXPECT_EQ(
+      " Site A (B speculative) -- proxies for B\n"
+      "   |--Site A (B speculative) -- proxies for B\n"
+      "   +--Site A ------- proxies for B\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/",
+      DepictFrameTree(root));
+
+  // Now let the subframe commit.
+  manager2.WaitForNavigationFinished();
+
+  // Make sure the process is live and at the new URL.
+  EXPECT_TRUE(b_site_instance->GetProcess()->HasConnection());
+  ASSERT_EQ(2U, root->child_count());
+  EXPECT_TRUE(child->current_frame_host()->IsRenderFrameLive());
+  EXPECT_EQ(child_speculative_rfh, child->current_frame_host());
+  EXPECT_EQ(new_url_2, child->current_frame_host()->GetLastCommittedURL());
+
+  // Recheck the proxies.  Main frame should still be pending.
+  EXPECT_EQ(
+      " Site A (B speculative) -- proxies for B\n"
+      "   |--Site B ------- proxies for A\n"
+      "   +--Site A ------- proxies for B\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/",
+      DepictFrameTree(root));
+
+  // Make sure the subframe can communicate to both the root remote frame
+  // (where the postMessage should go to the current RenderFrameHost rather
+  // than the pending one) and its sibling remote frame in the a.com process.
+  EXPECT_TRUE(
+      ExecuteScript(child->current_frame_host(),
+                    "window.addEventListener('message', function(event) {\n"
+                    "  domAutomationController.send(event.data);\n"
+                    "});"));
+  std::string response;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      child, "parent.postMessage('root-ping', '*')", &response));
+  EXPECT_EQ("root-ping-reply", response);
+
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      child, "parent.frames[1].postMessage('sibling-ping', '*')", &response));
+  EXPECT_EQ("sibling-ping-subframe-reply", response);
+
+  // Cancel the pending main frame navigation, and verify that the subframe can
+  // still communicate with the (old) main frame.
+  root->navigator()->CancelNavigation(root, true /* inform_renderer */);
+  EXPECT_FALSE(root->render_manager()->speculative_frame_host());
+  response = "";
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      child, "parent.postMessage('root-ping', '*')", &response));
+  EXPECT_EQ("root-ping-reply", response);
+}
+
+// Similar to TwoCrossSitePendingNavigations* tests above, but checks the case
+// where the current window and its opener navigate simultaneously.
+// See https://crbug.com/756790.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       TwoCrossSitePendingNavigationsWithOpener) {
+  // This test assumes PlzNavigate is enabled.
+  if (!IsBrowserSideNavigationEnabled())
+    return;
+
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+
+  // Install a postMessage handler in main frame for later use.
+  EXPECT_TRUE(
+      ExecuteScript(web_contents(),
+                    "window.addEventListener('message', function(event) {\n"
+                    "  event.source.postMessage(event.data + '-reply', '*');\n"
+                    "});"));
+
+  Shell* popup_shell =
+      OpenPopup(shell()->web_contents(), GURL(url::kAboutBlankURL), "popup");
+
+  // Start a navigation to b.com in the first (opener) tab.
+  GURL new_url_1(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  TestNavigationManager manager(web_contents(), new_url_1);
+  EXPECT_TRUE(
+      ExecuteScript(web_contents(), "location = '" + new_url_1.spec() + "';"));
+  ASSERT_TRUE(manager.WaitForRequestStart());
+
+  // Before it commits, start and commit a navigation to b.com in the second
+  // tab.
+  GURL new_url_2(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  EXPECT_TRUE(NavigateToURL(popup_shell, new_url_2));
+
+  // Check that the opener still has a speculative RenderFrameHost and a
+  // corresponding proxy for b.com.
+  RenderFrameHostImpl* speculative_rfh =
+      root->render_manager()->speculative_frame_host();
+  EXPECT_TRUE(speculative_rfh);
+  scoped_refptr<SiteInstanceImpl> b_site_instance(
+      speculative_rfh->GetSiteInstance());
+  RenderFrameProxyHost* proxy =
+      root->render_manager()->GetRenderFrameProxyHost(b_site_instance.get());
+  EXPECT_TRUE(proxy);
+  EXPECT_TRUE(proxy->is_render_frame_proxy_live());
+
+  // Make sure the second tab can communicate to its (old) opener remote frame.
+  // The postMessage should go to the current RenderFrameHost rather than the
+  // pending one in the first tab's main frame.
+  EXPECT_TRUE(
+      ExecuteScript(popup_shell->web_contents(),
+                    "window.addEventListener('message', function(event) {\n"
+                    "  domAutomationController.send(event.data);\n"
+                    "});"));
+
+  std::string response;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      popup_shell->web_contents(), "opener.postMessage('opener-ping', '*');",
+      &response));
+  EXPECT_EQ("opener-ping-reply", response);
+
+  // Cancel the pending main frame navigation, and verify that the subframe can
+  // still communicate with the (old) main frame.
+  root->navigator()->CancelNavigation(root, true /* inform_renderer */);
+  EXPECT_FALSE(root->render_manager()->speculative_frame_host());
+  response = "";
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      popup_shell->web_contents(), "opener.postMessage('opener-ping', '*')",
+      &response));
+  EXPECT_EQ("opener-ping-reply", response);
 }
 
 #if defined(OS_ANDROID)

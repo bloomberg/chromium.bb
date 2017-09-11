@@ -73,7 +73,7 @@ DocumentInit::~DocumentInit() {}
 
 bool DocumentInit::ShouldSetURL() const {
   LocalFrame* frame = FrameForSecurityContext();
-  return (frame && frame->Owner()) || !url_.IsEmpty();
+  return (frame && frame->Tree().Parent()) || !url_.IsEmpty();
 }
 
 bool DocumentInit::ShouldTreatURLAsSrcdocDocument() const {

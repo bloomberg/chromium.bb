@@ -1591,9 +1591,15 @@ void RenderFrameHostManager::CreatePendingRenderFrameHost(
 
   CreateProxiesForNewRenderFrameHost(old_instance, new_instance);
 
-  // Create a non-swapped-out RFH with the given opener.
   pending_render_frame_host_ =
       CreateRenderFrame(new_instance, delegate_->IsHidden(), nullptr);
+
+  // If RenderViewHost was created along with the pending RenderFrameHost,
+  // ensure that RenderViewCreated is fired for it.  It is important to do this
+  // after pending_render_frame_host_ is assigned, so that observers processing
+  // RenderViewCreated can find it via RenderViewHostImpl::GetMainFrame().
+  if (pending_render_frame_host_)
+    pending_render_frame_host_->render_view_host()->DispatchRenderViewCreated();
 }
 
 void RenderFrameHostManager::CreateProxiesForNewRenderFrameHost(
@@ -1604,13 +1610,12 @@ void RenderFrameHostManager::CreateProxiesForNewRenderFrameHost(
     CreateOpenerProxies(new_instance, frame_tree_node_);
   } else {
     // Ensure that the frame tree has RenderFrameProxyHosts for the
-    // new SiteInstance in all nodes except the current one.  We do this for
-    // all frames in the tree, whether they are in the same BrowsingInstance or
-    // not.  If |new_instance| is in the same BrowsingInstance as
-    // |old_instance|, this will be done as part of CreateOpenerProxies above;
-    // otherwise, we do this here.  We will still check whether two frames are
-    // in the same BrowsingInstance before we allow them to interact (e.g.,
-    // postMessage).
+    // new SiteInstance in all necessary nodes.  We do this for all frames in
+    // the tree, whether they are in the same BrowsingInstance or not.  If
+    // |new_instance| is in the same BrowsingInstance as |old_instance|, this
+    // will be done as part of CreateOpenerProxies above; otherwise, we do this
+    // here.  We will still check whether two frames are in the same
+    // BrowsingInstance before we allow them to interact (e.g., postMessage).
     frame_tree_node_->frame_tree()->CreateProxiesForSiteInstance(
         frame_tree_node_, new_instance);
   }
@@ -1702,6 +1707,16 @@ bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
   speculative_render_frame_host_ =
       CreateRenderFrame(new_instance, delegate_->IsHidden(), nullptr);
 
+  // If RenderViewHost was created along with the speculative RenderFrameHost,
+  // ensure that RenderViewCreated is fired for it.  It is important to do this
+  // after speculative_render_frame_host_ is assigned, so that observers
+  // processing RenderViewCreated can find it via
+  // RenderViewHostImpl::GetMainFrame().
+  if (speculative_render_frame_host_) {
+    speculative_render_frame_host_->render_view_host()
+        ->DispatchRenderViewCreated();
+  }
+
   return !!speculative_render_frame_host_;
 }
 
@@ -1719,8 +1734,8 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
   if (view_routing_id_ptr)
     *view_routing_id_ptr = MSG_ROUTING_NONE;
 
-  // We are creating a pending, speculative or swapped out RFH here. We should
-  // never create it in the same SiteInstance as our current RFH.
+  // We are creating a pending or speculative RFH here. We should never create
+  // it in the same SiteInstance as our current RFH.
   CHECK_NE(render_frame_host_->GetSiteInstance(), instance);
 
   // A RenderFrame in a different process from its parent RenderFrame
@@ -2583,9 +2598,6 @@ void RenderFrameHostManager::CreateOpenerProxiesForFrameTree(
   // actually work correctly for subframes as well, so if that need ever
   // arises, it should be sufficient to remove this DCHECK.
   DCHECK(frame_tree_node_->IsMainFrame());
-
-  if (frame_tree_node_ == skip_this_node)
-    return;
 
   FrameTree* frame_tree = frame_tree_node_->frame_tree();
 

@@ -163,8 +163,9 @@ class RenderViewSizeObserver : public WebContentsObserver {
   }
 
   // WebContentsObserver:
-  void RenderViewCreated(RenderViewHost* rvh) override {
-    rwhv_create_size_ = rvh->GetWidget()->GetView()->GetViewBounds().size();
+  void RenderFrameCreated(RenderFrameHost* rfh) override {
+    if (!rfh->GetParent())
+      rwhv_create_size_ = rfh->GetView()->GetViewBounds().size();
   }
 
   void DidStartNavigation(NavigationHandle* navigation_handle) override {

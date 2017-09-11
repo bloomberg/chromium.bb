@@ -635,6 +635,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool ShouldIgnoreUnresponsiveRenderer() override;
   bool HideDownloadUI() const override;
   bool HasPersistentVideo() const override;
+  RenderFrameHost* GetPendingMainFrame() override;
 
   // NavigatorDelegate ---------------------------------------------------------
 

@@ -69,4 +69,8 @@ bool RenderViewHostDelegate::HasPersistentVideo() const {
   return false;
 }
 
+RenderFrameHost* RenderViewHostDelegate::GetPendingMainFrame() {
+  return nullptr;
+}
+
 }  // namespace content

@@ -72,12 +72,6 @@ class WebContentsTester {
   // sending a navigate notification for the NavigationController pending entry.
   virtual void CommitPendingNavigation() = 0;
 
-  // Gets the pending RenderFrameHost, if any, for the main frame. For the
-  // current RenderFrameHost of the main frame, use WebContents::GetMainFrame().
-  // PlzNavigate: When browser side navigation is enabled it returns the
-  // speculative RenderFrameHost for the main frame if one exists.
-  virtual RenderFrameHost* GetPendingMainFrame() const = 0;
-
   // Creates a pending navigation to the given URL with the default parameters
   // and then commits the load with a page ID one larger than any seen. This
   // emulates what happens on a new navigation.
