@@ -301,12 +301,12 @@ InputMethodController::InputMethodController(LocalFrame& frame)
 InputMethodController::~InputMethodController() = default;
 
 bool InputMethodController::IsAvailable() const {
-  return GetFrame().GetDocument();
+  return LifecycleContext();
 }
 
 Document& InputMethodController::GetDocument() const {
   DCHECK(IsAvailable());
-  return *GetFrame().GetDocument();
+  return *LifecycleContext();
 }
 
 bool InputMethodController::HasComposition() const {
@@ -1184,6 +1184,9 @@ int InputMethodController::TextInputFlags() const {
 }
 
 int InputMethodController::ComputeWebTextInputNextPreviousFlags() const {
+  if (!IsAvailable())
+    return kWebTextInputFlagNone;
+
   Element* const element = GetDocument().FocusedElement();
   if (!element)
     return kWebTextInputFlagNone;
