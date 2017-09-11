@@ -5543,10 +5543,12 @@ class SpdySessionReadIfReadyTest
       public testing::WithParamInterface<ReadIfReadySupport> {
  public:
   void SetUp() override {
-    if (GetParam() != READ_IF_READY_DISABLED)
-      scoped_feature_list_.InitAndEnableFeature(Socket::kReadIfReadyExperiment);
-    if (GetParam() == READ_IF_READY_ENABLED_SUPPORTED)
+    if (GetParam() == READ_IF_READY_DISABLED) {
+      scoped_feature_list_.InitAndDisableFeature(
+          Socket::kReadIfReadyExperiment);
+    } else if (GetParam() == READ_IF_READY_ENABLED_SUPPORTED) {
       session_deps_.socket_factory->set_enable_read_if_ready(true);
+    }
     SpdySessionTest::SetUp();
   }
 
