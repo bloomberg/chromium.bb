@@ -871,10 +871,6 @@ void RemoteSuggestionsProviderImpl::OnFetchFinished(
     DeleteCategories(categories_to_delete);
   }
 
-  // TODO(tschumann): The suggestions fetcher needs to signal errors so that we
-  // know why we received no data. If an error occured, none of the following
-  // should take place.
-
   // We might have gotten new categories (or updated the titles of existing
   // ones), so update the pref.
   StoreCategoriesToPrefs();
