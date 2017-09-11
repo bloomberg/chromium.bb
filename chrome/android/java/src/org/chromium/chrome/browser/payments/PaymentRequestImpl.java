@@ -748,7 +748,8 @@ public class PaymentRequestImpl
         for (Map.Entry<PaymentApp, Map<String, PaymentMethodData>> q : queryApps.entrySet()) {
             q.getKey().getInstruments(q.getValue(), mTopLevelOrigin, mPaymentRequestOrigin,
                     mCertificateChain,
-                    mModifiers == null ? null : Collections.unmodifiableMap(mModifiers), this);
+                    mModifiers == null ? new HashMap() : Collections.unmodifiableMap(mModifiers),
+                    this);
         }
     }
 

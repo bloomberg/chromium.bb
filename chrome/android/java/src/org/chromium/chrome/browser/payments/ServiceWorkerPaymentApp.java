@@ -8,7 +8,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.text.TextUtils;
 
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
@@ -41,7 +40,6 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
     private final boolean mCanPreselect;
     private final Set<String> mPreferredRelatedApplicationIds;
     private final boolean mIsIncognito;
-    private static boolean sCanMakePaymentForTesting;
 
     /**
      * Build a service worker payment app instance per origin.
@@ -91,7 +89,7 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
     public void getInstruments(Map<String, PaymentMethodData> methodDataMap, String origin,
             String iframeOrigin, byte[][] unusedCertificateChain,
             Map<String, PaymentDetailsModifier> modifiers, final InstrumentsCallback callback) {
-        if (mIsIncognito || sCanMakePaymentForTesting) {
+        if (mIsIncognito) {
             new Handler().post(() -> {
                 List<PaymentInstrument> instruments = new ArrayList();
                 instruments.add(ServiceWorkerPaymentApp.this);
@@ -159,15 +157,5 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
     @Override
     public boolean canPreselect() {
         return mCanPreselect;
-    }
-
-    /**
-     * Make canMakePayment() return true always for testing purpose.
-     *
-     * @param canMakePayment Indicates whether a SW payment app can make payment.
-     */
-    @VisibleForTesting
-    public static void setCanMakePaymentForTesting(boolean canMakePayment) {
-        sCanMakePaymentForTesting = canMakePayment;
     }
 }

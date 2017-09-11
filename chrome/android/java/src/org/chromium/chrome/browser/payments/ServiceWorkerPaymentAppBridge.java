@@ -10,6 +10,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.text.TextUtils;
 
 import org.chromium.base.Log;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -32,6 +33,7 @@ import javax.annotation.Nullable;
         "UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD", "UUF_UNUSED_PUBLIC_OR_PROTECTED_FIELD"})
 public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentAppFactoryAddition {
     private static final String TAG = "SWPaymentApp";
+    private static boolean sCanMakePaymentForTesting;
 
     /**
      * The interface for the requester to check whether a SW payment app can make payment.
@@ -67,9 +69,23 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
     public static void canMakePayment(WebContents webContents, long registrationId, String origin,
             String iframeOrigin, Set<PaymentMethodData> methodData,
             Set<PaymentDetailsModifier> modifiers, CanMakePaymentCallback callback) {
+        if (sCanMakePaymentForTesting) {
+            callback.onCanMakePaymentResponse(true);
+            return;
+        }
         nativeCanMakePayment(webContents, registrationId, origin, iframeOrigin,
                 methodData.toArray(new PaymentMethodData[0]),
                 modifiers.toArray(new PaymentDetailsModifier[0]), callback);
+    }
+
+    /**
+     * Make canMakePayment() return true always for testing purpose.
+     *
+     * @param canMakePayment Indicates whether a SW payment app can make payment.
+     */
+    @VisibleForTesting
+    public static void setCanMakePaymentForTesting(boolean canMakePayment) {
+        sCanMakePaymentForTesting = canMakePayment;
     }
 
     /**
