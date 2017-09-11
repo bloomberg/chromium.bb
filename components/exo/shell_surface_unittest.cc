@@ -574,7 +574,26 @@ TEST_F(ShellSurfaceTest, ConfigureCallback) {
   EXPECT_TRUE(is_resizing);
 }
 
-TEST_F(ShellSurfaceTest, ModalWindow) {
+TEST_F(ShellSurfaceTest, ModalWindowDefaultActive) {
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(
+      surface.get(), nullptr, ShellSurface::BoundsMode::SHELL, gfx::Point(),
+      true, false, ash::kShellWindowId_SystemModalContainer));
+  gfx::Size desktop_size(640, 480);
+  std::unique_ptr<Buffer> desktop_buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(desktop_size)));
+  surface->Attach(desktop_buffer.get());
+  surface->SetInputRegion(
+      SkRegion(gfx::RectToSkIRect(gfx::Rect(10, 10, 100, 100))));
+  ASSERT_FALSE(shell_surface->GetWidget());
+  shell_surface->SetSystemModal(true);
+  surface->Commit();
+
+  EXPECT_TRUE(ash::ShellPort::Get()->IsSystemModalWindowOpen());
+  EXPECT_TRUE(shell_surface->GetWidget()->IsActive());
+}
+
+TEST_F(ShellSurfaceTest, UpdateModalWindow) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(
       surface.get(), nullptr, ShellSurface::BoundsMode::SHELL, gfx::Point(),
@@ -587,6 +606,7 @@ TEST_F(ShellSurfaceTest, ModalWindow) {
   surface->Commit();
 
   EXPECT_FALSE(ash::ShellPort::Get()->IsSystemModalWindowOpen());
+  EXPECT_FALSE(shell_surface->GetWidget()->IsActive());
 
   // Creating a surface without input region should not make it modal.
   std::unique_ptr<Display> display(new Display);
@@ -601,25 +621,44 @@ TEST_F(ShellSurfaceTest, ModalWindow) {
   child->Commit();
   surface->Commit();
   EXPECT_FALSE(ash::ShellPort::Get()->IsSystemModalWindowOpen());
+  EXPECT_FALSE(shell_surface->GetWidget()->IsActive());
 
   // Making the surface opaque shouldn't make it modal either.
   child->SetBlendMode(SkBlendMode::kSrc);
   child->Commit();
   surface->Commit();
   EXPECT_FALSE(ash::ShellPort::Get()->IsSystemModalWindowOpen());
+  EXPECT_FALSE(shell_surface->GetWidget()->IsActive());
 
   // Setting input regions won't make it modal either.
   surface->SetInputRegion(
       SkRegion(gfx::RectToSkIRect(gfx::Rect(10, 10, 100, 100))));
   surface->Commit();
   EXPECT_FALSE(ash::ShellPort::Get()->IsSystemModalWindowOpen());
+  EXPECT_FALSE(shell_surface->GetWidget()->IsActive());
 
   // Only SetSystemModal changes modality.
   shell_surface->SetSystemModal(true);
+
   EXPECT_TRUE(ash::ShellPort::Get()->IsSystemModalWindowOpen());
+  EXPECT_TRUE(shell_surface->GetWidget()->IsActive());
+
+  shell_surface->SetSystemModal(false);
+
+  EXPECT_FALSE(ash::ShellPort::Get()->IsSystemModalWindowOpen());
+  EXPECT_FALSE(shell_surface->GetWidget()->IsActive());
+
+  // If the non modal system window was active,
+  shell_surface->GetWidget()->Activate();
+  EXPECT_TRUE(shell_surface->GetWidget()->IsActive());
+
+  shell_surface->SetSystemModal(true);
+  EXPECT_TRUE(ash::ShellPort::Get()->IsSystemModalWindowOpen());
+  EXPECT_TRUE(shell_surface->GetWidget()->IsActive());
 
   shell_surface->SetSystemModal(false);
   EXPECT_FALSE(ash::ShellPort::Get()->IsSystemModalWindowOpen());
+  EXPECT_TRUE(shell_surface->GetWidget()->IsActive());
 }
 
 TEST_F(ShellSurfaceTest, ModalWindowSetSystemModalBeforeCommit) {

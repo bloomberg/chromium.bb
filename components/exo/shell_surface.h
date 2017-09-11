@@ -409,6 +409,7 @@ class ShellSurface : public SurfaceTreeHost,
   Orientation expected_orientation_ = Orientation::LANDSCAPE;
   std::unique_ptr<ui::CompositorLock> compositor_lock_;
   bool system_modal_ = false;
+  bool non_system_modal_window_was_active_ = false;
   gfx::ImageSkia icon_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellSurface);

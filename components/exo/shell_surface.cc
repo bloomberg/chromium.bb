@@ -545,10 +545,19 @@ void ShellSurface::SetSystemModal(bool system_modal) {
   if (system_modal == system_modal_)
     return;
 
+  bool non_system_modal_window_was_active = !system_modal_ && widget_ && widget_->IsActive();
+
   system_modal_ = system_modal;
 
-  if (widget_)
+  if (widget_) {
     UpdateSystemModal();
+    // Deactivate to give the focus back to normal windows.
+    if (!system_modal_ && !non_system_modal_window_was_active_) {
+      widget_->Deactivate();
+    }
+  }
+
+  non_system_modal_window_was_active_ = non_system_modal_window_was_active;
 }
 
 void ShellSurface::UpdateSystemModal() {
@@ -775,10 +784,17 @@ void ShellSurface::OnSurfaceCommit() {
       if (activatable != CanActivate()) {
         set_can_activate(activatable);
         // Activate or deactivate window if activation state changed.
-        if (activatable)
-          wm::ActivateWindow(widget_->GetNativeWindow());
-        else if (widget_->IsActive())
+        if (activatable) {
+          // Automatically activate only if the window is modal.
+          // Non modal window should be activated by a user action.
+          // TODO(oshima): Non modal system window does not have an associated
+          // task ID, and as a result, it cannot be activated from client side.
+          // Fix this (b/65460424) and remove this if condition.
+          if (system_modal_)
+            wm::ActivateWindow(widget_->GetNativeWindow());
+        } else if (widget_->IsActive()) {
           wm::DeactivateWindow(widget_->GetNativeWindow());
+        }
       }
     }
 
