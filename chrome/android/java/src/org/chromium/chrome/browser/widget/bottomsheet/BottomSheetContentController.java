@@ -247,8 +247,10 @@ public class BottomSheetContentController extends BottomNavigationView
      * menu items are spaced apart appropriately.
      */
     private void updateMenuItemSpacing() {
-        getMenuView().updateMenuItemSpacingForMinWidth(
-                mBottomSheet.getWidth(), mBottomSheet.getHeight());
+        Resources res = getContext().getResources();
+        getMenuView().updateMenuItemSpacingForMinWidth(mBottomSheet.getWidth(),
+                mBottomSheet.getHeight(),
+                res.getDimensionPixelSize(R.dimen.bottom_nav_menu_item_size));
     }
 
     /**
