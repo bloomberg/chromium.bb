@@ -18,7 +18,9 @@ import android.widget.ProgressBar;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
@@ -59,6 +61,8 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
     private static final float THEMED_BACKGROUND_WHITE_FRACTION = 0.2f;
     private static final float ANIMATION_WHITE_FRACTION = 0.4f;
 
+    private static final long PROGRESS_THROTTLE_UPDATE_INTERVAL = 50;
+
     private static final long PROGRESS_FRAME_TIME_CAP_MS = 50;
     private long mAlphaAnimationDurationMs = 140;
     private long mHidingDelayMs = 100;
@@ -92,6 +96,12 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
 
     /** Whether the smooth animation should be started if it is stopped. */
     private boolean mStartSmoothAnimation;
+
+    /** The animator responsible for updating progress once it has been throttled. */
+    private TimeAnimator mProgressThrottle;
+
+    /** The listener for the progress throttle. */
+    private ThrottleTimeListener mProgressThrottleListener;
 
     /**
      * The indeterminate animating view for the progress bar. This will be null for Android
@@ -153,6 +163,27 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
                 }
             }
         });
+    }
+
+    /** A {@link TimeListener} responsible for updating progress once throttling has started. */
+    private final class ThrottleTimeListener implements TimeListener {
+        /** The time the throttled progress animator was last updated. */
+        private float mLastUpdateTime;
+
+        /** The target progress for the throttle animator. */
+        private float mThrottledProgressTarget;
+
+        @Override
+        public void onTimeUpdate(TimeAnimator animation, long totalTime, long deltaTime) {
+            if (totalTime - mLastUpdateTime < PROGRESS_THROTTLE_UPDATE_INTERVAL) return;
+            mLastUpdateTime = totalTime;
+            float updatedProgress = getProgress() + 0.05f;
+            setProgressInternal(MathUtils.clamp(updatedProgress, 0f, mThrottledProgressTarget));
+
+            if (updatedProgress >= mThrottledProgressTarget) animation.end();
+
+            if (updatedProgress >= 1f) finish(true);
+        }
     }
 
     /**
@@ -280,6 +311,8 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
      * @param delayed Whether a delayed fading out animation should be posted.
      */
     public void finish(boolean delayed) {
+        if (mProgressThrottle != null && mProgressThrottle.isRunning()) return;
+
         mIsStarted = false;
 
         if (delayed) {
@@ -367,6 +400,34 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
 
     @Override
     public void setProgress(float progress) {
+        // TODO(mdjones): Maybe subclass this to be ThrottledToolbarProgressBar.
+        if (mProgressThrottle == null && ChromeFeatureList.isInitialized()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.PROGRESS_BAR_THROTTLE)) {
+            mProgressThrottle = new TimeAnimator();
+            mProgressThrottleListener = new ThrottleTimeListener();
+            mProgressThrottle.setTimeListener(mProgressThrottleListener);
+        }
+
+        // Throttle progress if the increment was greater than 5%.
+        if (mProgressThrottle != null
+                && (progress - getProgress() > 0.05f || mProgressThrottle.isRunning())) {
+            mProgressThrottleListener.mThrottledProgressTarget = progress;
+
+            if (!mProgressThrottle.isRunning()) {
+                mProgressThrottleListener.mLastUpdateTime = 0;
+                mProgressThrottle.start();
+                setProgressInternal(getProgress() + 0.05f);
+            }
+        } else {
+            setProgressInternal(progress);
+        }
+    }
+
+    /**
+     * Set the progress bar state based on the external updates coming in.
+     * @param progress The current progress.
+     */
+    private void setProgressInternal(float progress) {
         if (!mIsStarted || mTargetProgress == progress) return;
 
         // If the progress bar was updated, reset the callback that triggers the

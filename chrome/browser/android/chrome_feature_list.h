@@ -54,6 +54,7 @@ extern const base::Feature kOmniboxSpareRenderer;
 extern const base::Feature kPayWithGoogleV1;
 extern const base::Feature kPhysicalWebFeature;
 extern const base::Feature kPhysicalWebSharing;
+extern const base::Feature kProgressBarThrottleFeature;
 extern const base::Feature kPwaImprovedSplashScreen;
 extern const base::Feature kPwaPersistentNotification;
 extern const base::Feature kReaderModeInCCT;
