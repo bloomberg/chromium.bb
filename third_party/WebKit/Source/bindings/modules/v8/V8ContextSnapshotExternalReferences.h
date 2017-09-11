@@ -21,7 +21,7 @@ class MODULES_EXPORT V8ContextSnapshotExternalReferences {
  public:
   // The definition of this method is auto-generated in
   // V8ContextSnapshotExternalReferences.cpp.
-  static intptr_t* GetTable();
+  static const intptr_t* GetTable();
 };
 
 }  // namespace blink

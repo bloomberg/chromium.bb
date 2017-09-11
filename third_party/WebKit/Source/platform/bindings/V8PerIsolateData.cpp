@@ -60,7 +60,7 @@ static void MicrotasksCompletedCallback(v8::Isolate* isolate) {
 
 V8PerIsolateData::V8PerIsolateData(
     WebTaskRunner* task_runner,
-    intptr_t* table,
+    const intptr_t* table,
     V8ContextSnapshotMode v8_context_snapshot_mode)
     : v8_context_snapshot_mode_(v8_context_snapshot_mode),
       isolate_holder_(
@@ -96,7 +96,7 @@ V8PerIsolateData::V8PerIsolateData(
 
 // This constructor is used for taking a V8 context snapshot. It must run on the
 // main thread.
-V8PerIsolateData::V8PerIsolateData(intptr_t* reference_table)
+V8PerIsolateData::V8PerIsolateData(const intptr_t* reference_table)
     : v8_context_snapshot_mode_(V8ContextSnapshotMode::kTakeSnapshot),
       isolate_holder_(reference_table, nullptr),
       interface_template_map_for_v8_context_snapshot_(GetIsolate()),
@@ -120,7 +120,7 @@ v8::Isolate* V8PerIsolateData::MainThreadIsolate() {
 }
 
 v8::Isolate* V8PerIsolateData::Initialize(WebTaskRunner* task_runner,
-                                          intptr_t* reference_table,
+                                          const intptr_t* reference_table,
                                           V8ContextSnapshotMode context_mode) {
   DCHECK(context_mode == V8ContextSnapshotMode::kDontUseSnapshot ||
          reference_table);

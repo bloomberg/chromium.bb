@@ -12,8 +12,8 @@
 
 namespace blink {
 
-intptr_t* {{class}}::GetTable() {
-  static intptr_t reference_table[] = {
+const intptr_t* {{class}}::GetTable() {
+  static const intptr_t reference_table[] = {
 #if !defined(OS_ANDROID)
     // Android is sensitive on its APK size, and this table improves it.
     // So we drop the table entries until the V8 context snapshot feature

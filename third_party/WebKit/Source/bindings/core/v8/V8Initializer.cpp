@@ -464,7 +464,7 @@ static void AdjustAmountOfExternalAllocatedMemory(int64_t diff) {
   v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(diff);
 }
 
-void V8Initializer::InitializeMainThread(intptr_t* reference_table) {
+void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
   DCHECK(IsMainThread());
 
   WTF::ArrayBufferContents::Initialize(AdjustAmountOfExternalAllocatedMemory);

@@ -108,7 +108,7 @@ class PLATFORM_EXPORT V8PerIsolateData {
   };
 
   static v8::Isolate* Initialize(WebTaskRunner*,
-                                 intptr_t* refernce_table,
+                                 const intptr_t* reference_table,
                                  V8ContextSnapshotMode);
 
   static V8PerIsolateData* From(v8::Isolate* isolate) {
@@ -244,9 +244,9 @@ class PLATFORM_EXPORT V8PerIsolateData {
 
  private:
   V8PerIsolateData(WebTaskRunner*,
-                   intptr_t* reference_table,
+                   const intptr_t* reference_table,
                    V8ContextSnapshotMode);
-  explicit V8PerIsolateData(intptr_t* reference_table);
+  explicit V8PerIsolateData(const intptr_t* reference_table);
   ~V8PerIsolateData();
 
   using V8FunctionTemplateMap =
