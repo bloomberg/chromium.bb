@@ -36,8 +36,6 @@ TestWebThreadBundle::~TestWebThreadBundle() {
   base::RunLoop().RunUntilIdle();
   io_thread_.reset();
   base::RunLoop().RunUntilIdle();
-  file_thread_.reset();
-  base::RunLoop().RunUntilIdle();
   db_thread_.reset();
   base::RunLoop().RunUntilIdle();
   // This is the point at which the cache pool is normally shut down. So flush
@@ -67,14 +65,6 @@ void TestWebThreadBundle::Init(int options) {
   } else {
     db_thread_.reset(
         new TestWebThread(WebThread::DB, base::MessageLoop::current()));
-  }
-
-  if (options & TestWebThreadBundle::REAL_FILE_THREAD) {
-    file_thread_.reset(new TestWebThread(WebThread::FILE));
-    file_thread_->Start();
-  } else {
-    file_thread_.reset(
-        new TestWebThread(WebThread::FILE, base::MessageLoop::current()));
   }
 
   if (options & TestWebThreadBundle::REAL_IO_THREAD) {

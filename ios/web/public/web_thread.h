@@ -68,12 +68,8 @@ class WebThread {
     // This is the thread that interacts with the database.
     DB,
 
-    // This is the thread that interacts with the file system.
-    FILE,
-
     // This is the thread that processes non-blocking IO, i.e. IPC and network.
-    // Blocking IO should happen on other threads like DB, FILE,
-    // FILE_USER_BLOCKING and CACHE depending on the usage.
+    // Blocking IO should happen in TaskScheduler.
     IO,
 
     // NOTE: do not add new threads here that are only used by a small number of
@@ -169,11 +165,11 @@ class WebThread {
   // Use these templates in conjunction with RefCountedThreadSafe or
   // std::unique_ptr when you want to ensure that an object is deleted on a
   // specific thread. This is needed when an object can hop between threads
-  // (i.e. IO -> FILE -> IO), and thread switching delays can mean that the
-  // final IO tasks executes before the FILE task's stack unwinds.
-  // This would lead to the object destructing on the FILE thread, which often
-  // is not what you want (i.e. to unregister from NotificationService, to
-  // notify other objects on the creating thread etc).
+  // (i.e. IO -> UI -> IO), and thread switching delays can mean that the final
+  // IO tasks executes before the UI task's stack unwinds. This would lead to
+  // the object destructing on the UI thread, which often is not what you want
+  // (i.e. to unregister from NotificationService, to notify other objects on
+  // the creating thread etc).
   template <ID thread>
   struct DeleteOnThread {
     template <typename T>
@@ -210,7 +206,6 @@ class WebThread {
   // std::unique_ptr<Foo, web::WebThread::DeleteOnIOThread> ptr;
   struct DeleteOnUIThread : public DeleteOnThread<UI> {};
   struct DeleteOnIOThread : public DeleteOnThread<IO> {};
-  struct DeleteOnFileThread : public DeleteOnThread<FILE> {};
   struct DeleteOnDBThread : public DeleteOnThread<DB> {};
 
  private:

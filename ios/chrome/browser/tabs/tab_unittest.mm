@@ -151,8 +151,7 @@ HistoryQueryResultsObserver::~HistoryQueryResultsObserver() {}
 class TabTest : public BlockCleanupTest {
  public:
   TabTest()
-      : thread_bundle_(web::TestWebThreadBundle::REAL_FILE_THREAD),
-        scoped_browser_state_manager_(
+      : scoped_browser_state_manager_(
             base::MakeUnique<TestChromeBrowserStateManager>(base::FilePath())),
         web_state_impl_(nullptr) {}
 
