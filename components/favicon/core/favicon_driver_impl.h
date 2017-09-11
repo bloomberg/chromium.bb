@@ -13,10 +13,6 @@
 #include "components/favicon/core/favicon_handler.h"
 
 class GURL;
-namespace bookmarks {
-class BookmarkModel;
-}
-
 
 namespace history {
 class HistoryService;
@@ -40,17 +36,13 @@ class FaviconDriverImpl : public FaviconDriver,
   // FaviconDriver implementation.
   void FetchFavicon(const GURL& page_url, bool is_same_document) override;
 
-  // FaviconHandler::Delegate implementation.
-  bool IsBookmarked(const GURL& url) override;
-
   // Returns whether the driver is waiting for a download to complete or for
   // data from the FaviconService. Reserved for testing.
   bool HasPendingTasksForTest();
 
  protected:
   FaviconDriverImpl(FaviconService* favicon_service,
-                    history::HistoryService* history_service,
-                    bookmarks::BookmarkModel* bookmark_model);
+                    history::HistoryService* history_service);
   ~FaviconDriverImpl() override;
 
   // Informs FaviconService that the favicon for |url| is out of date. If
@@ -73,7 +65,6 @@ class FaviconDriverImpl : public FaviconDriver,
   // but if they are defined, they must outlive the FaviconDriverImpl.
   FaviconService* favicon_service_;
   history::HistoryService* history_service_;
-  bookmarks::BookmarkModel* bookmark_model_;
 
   // FaviconHandlers used to download the different kind of favicons.
   std::vector<std::unique_ptr<FaviconHandler>> handlers_;

@@ -43,18 +43,16 @@ void ExtractManifestIcons(
 void ContentFaviconDriver::CreateForWebContents(
     content::WebContents* web_contents,
     FaviconService* favicon_service,
-    history::HistoryService* history_service,
-    bookmarks::BookmarkModel* bookmark_model) {
+    history::HistoryService* history_service) {
   if (FromWebContents(web_contents))
     return;
 
   web_contents->SetUserData(
-      UserDataKey(),
-      base::WrapUnique(new ContentFaviconDriver(
-          web_contents, favicon_service, history_service, bookmark_model)));
+      UserDataKey(), base::WrapUnique(new ContentFaviconDriver(
+                         web_contents, favicon_service, history_service)));
 }
 
-void ContentFaviconDriver::SaveFavicon() {
+void ContentFaviconDriver::SaveFaviconEvenIfInIncognito() {
   content::NavigationEntry* entry =
       web_contents()->GetController().GetLastCommittedEntry();
   if (!entry)
@@ -115,11 +113,9 @@ GURL ContentFaviconDriver::GetActiveURL() {
 ContentFaviconDriver::ContentFaviconDriver(
     content::WebContents* web_contents,
     FaviconService* favicon_service,
-    history::HistoryService* history_service,
-    bookmarks::BookmarkModel* bookmark_model)
+    history::HistoryService* history_service)
     : content::WebContentsObserver(web_contents),
-      FaviconDriverImpl(favicon_service, history_service, bookmark_model) {
-}
+      FaviconDriverImpl(favicon_service, history_service) {}
 
 ContentFaviconDriver::~ContentFaviconDriver() {
 }

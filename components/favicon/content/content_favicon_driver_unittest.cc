@@ -50,8 +50,8 @@ class ContentFaviconDriverTest : public content::RenderViewHostTestHarness {
   void SetUp() override {
     RenderViewHostTestHarness::SetUp();
 
-    ContentFaviconDriver::CreateForWebContents(
-        web_contents(), &favicon_service_, nullptr, nullptr);
+    ContentFaviconDriver::CreateForWebContents(web_contents(),
+                                               &favicon_service_, nullptr);
   }
 
   content::WebContentsTester* web_contents_tester() {

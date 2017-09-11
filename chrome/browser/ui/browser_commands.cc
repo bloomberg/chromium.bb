@@ -766,7 +766,8 @@ void BookmarkCurrentPageIgnoringExtensionOverrides(Browser* browser) {
       web_contents->GetBrowserContext()->IsOffTheRecord()) {
     // If we're incognito the favicon may not have been saved. Save it now
     // so that bookmarks have an icon for the page.
-    favicon::ContentFaviconDriver::FromWebContents(web_contents)->SaveFavicon();
+    favicon::ContentFaviconDriver::FromWebContents(web_contents)
+        ->SaveFaviconEvenIfInIncognito();
   }
   bool was_bookmarked_by_user = bookmarks::IsBookmarkedByUser(model, url);
   bookmarks::AddIfNotBookmarked(model, url, title);

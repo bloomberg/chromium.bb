@@ -6,7 +6,6 @@
 
 #include "components/favicon/ios/web_favicon_driver.h"
 #include "components/keyed_service/core/service_access_type.h"
-#include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
@@ -46,8 +45,7 @@ FaviconWebStateDispatcherImpl::RequestWebState() {
       ios::FaviconServiceFactory::GetForBrowserState(
           original_browser_state, ServiceAccessType::EXPLICIT_ACCESS),
       ios::HistoryServiceFactory::GetForBrowserState(
-          original_browser_state, ServiceAccessType::EXPLICIT_ACCESS),
-      ios::BookmarkModelFactory::GetForBrowserState(original_browser_state));
+          original_browser_state, ServiceAccessType::EXPLICIT_ACCESS));
 
   return web_state;
 }
