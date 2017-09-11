@@ -17,5 +17,19 @@ void {{field.setter_method_name}}({{field.type_name}}&& v) {
 {% endmacro %}
 
 {% macro decl_protected_methods(field) -%}
+{{base.decl_internal_getter_method(field)}}
+{% if not field.wrapper_pointer_name %}
+{{base.decl_internal_setter_method(field)}}
+{% endif %}
+{% if not field.is_bit_field %}
+void {{field.internal_setter_method_name}}({{field.type_name}}&& v) {
+{% if field.group.parent %}
+  if (!({{getter_expression(field)}} == v))
+    {{setter_expression(field)}} = std::move(v);
+{% else %}
+  {{field.name}} = std::move(v);
+{% endif %}
+}
+{% endif %}
 {{base.decl_mutable_method(field)}}
 {%- endmacro %}

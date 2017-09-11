@@ -241,7 +241,7 @@ class ComputedStyle : public ComputedStyleBase,
                    IsAtShadowBoundary = kNotAtShadowBoundary);
   void CopyNonInheritedFromCached(const ComputedStyle&);
 
-  PseudoId StyleType() const { return StyleTypeInternal(); }
+  PseudoId StyleType() const { return static_cast<PseudoId>(StyleTypeInternal()); }
   void SetStyleType(PseudoId style_type) { SetStyleTypeInternal(style_type); }
 
   ComputedStyle* GetCachedPseudoStyle(PseudoId) const;
@@ -827,13 +827,13 @@ class ComputedStyle : public ComputedStyleBase,
   static EVerticalAlign InitialVerticalAlign() {
     return EVerticalAlign::kBaseline;
   }
-  EVerticalAlign VerticalAlign() const { return VerticalAlignInternal(); }
+  EVerticalAlign VerticalAlign() const { return static_cast<EVerticalAlign>(VerticalAlignInternal()); }
   const Length& GetVerticalAlignLength() const {
     return VerticalAlignLengthInternal();
   }
-  void SetVerticalAlign(EVerticalAlign v) { SetVerticalAlignInternal(v); }
+  void SetVerticalAlign(EVerticalAlign v) { SetVerticalAlignInternal(static_cast<unsigned>(v)); }
   void SetVerticalAlignLength(const Length& length) {
-    SetVerticalAlignInternal(EVerticalAlign::kLength);
+    SetVerticalAlignInternal(static_cast<unsigned>(EVerticalAlign::kLength));
     SetVerticalAlignLengthInternal(length);
   }
 
@@ -903,9 +903,7 @@ class ComputedStyle : public ComputedStyleBase,
   void SetColor(const Color&);
 
   // line-height
-  static Length InitialLineHeight() { return Length(-100.0, kPercent); }
   Length LineHeight() const;
-  CORE_EXPORT void SetLineHeight(const Length& specified_line_height);
 
   // List style properties.
   // list-style-image
