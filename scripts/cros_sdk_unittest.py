@@ -15,6 +15,36 @@ from chromite.lib import osutils
 from chromite.lib import sudo
 
 
+class CrosSdkPrerequisitesTest(cros_test_lib.TempDirTestCase):
+  """Tests for required packages on the host machine.
+
+  These are not real unit tests.  If these tests fail, it means your machine is
+  missing necessary commands to support image-backed chroots.  Run cros_sdk in
+  a terminal to get info about what you need to install.
+  """
+
+  def testLvmCommandsPresent(self):
+    """Check for commands from the lvm2 package."""
+    with sudo.SudoKeepAlive():
+      cmd = ['lvs', '--version']
+      result = cros_build_lib.RunCommand(cmd, error_code_ok=True)
+      self.assertEqual(result.returncode, 0)
+
+  def testThinProvisioningToolsPresent(self):
+    """Check for commands from the thin-provisioning-tools package."""
+    with sudo.SudoKeepAlive():
+      cmd = ['thin_check', '-V']
+      result = cros_build_lib.RunCommand(cmd, error_code_ok=True)
+      self.assertEqual(result.returncode, 0)
+
+  def testLosetupCommandPresent(self):
+    """Check for commands from the mount package."""
+    with sudo.SudoKeepAlive():
+      cmd = ['losetup', '--help']
+      result = cros_build_lib.RunCommand(cmd, error_code_ok=True)
+      self.assertEqual(result.returncode, 0)
+
+
 # TODO(bmgordon): Figure out how to mock out --create and --enter and then
 # add tests that combine those with snapshots.
 class CrosSdkSnapshotTest(cros_test_lib.TempDirTestCase):
