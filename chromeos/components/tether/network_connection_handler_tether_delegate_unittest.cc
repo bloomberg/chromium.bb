@@ -20,28 +20,6 @@ namespace tether {
 
 namespace {
 
-const char kSuccessResult[] = "success";
-
-// Does nothing when a connection is requested.
-class DummyTetherConnector : public FakeTetherConnector {
- public:
-  // TetherConnector:
-  void ConnectToNetwork(
-      const std::string& tether_network_guid,
-      const base::Closure& success_callback,
-      const network_handler::StringResultCallback& error_callback) override {}
-};
-
-// Does nothing when a disconnection is requested.
-class DummyTetherDisconnector : public FakeTetherDisconnector {
- public:
-  // TetherDisconnector:
-  void DisconnectFromNetwork(
-      const std::string& tether_network_guid,
-      const base::Closure& success_callback,
-      const network_handler::StringResultCallback& error_callback) override {}
-};
-
 class TestNetworkConnectionHandler : public NetworkConnectionHandler {
  public:
   TestNetworkConnectionHandler() : NetworkConnectionHandler() {}
@@ -92,7 +70,7 @@ class NetworkConnectionHandlerTetherDelegateTest : public testing::Test {
   NetworkConnectionHandlerTetherDelegateTest() {}
 
   void SetUp() override {
-    result_.clear();
+    error_occurred_during_test_ = false;
 
     test_network_connection_handler_ =
         base::WrapUnique(new TestNetworkConnectionHandler());
@@ -106,41 +84,27 @@ class NetworkConnectionHandlerTetherDelegateTest : public testing::Test {
         fake_tether_connector_.get(), fake_tether_disconnector_.get());
   }
 
-  void TearDown() override {
-    // No more callbacks should occur after deletion.
-    delegate_.reset();
-    EXPECT_EQ(std::string(), GetResultAndReset());
-  }
-
   void CallTetherConnect(const std::string& guid) {
     test_network_connection_handler_->CallTetherConnect(
-        guid,
-        base::Bind(&NetworkConnectionHandlerTetherDelegateTest::OnSuccess,
-                   base::Unretained(this)),
+        guid, base::Closure(),
         base::Bind(&NetworkConnectionHandlerTetherDelegateTest::OnError,
                    base::Unretained(this)));
   }
 
   void CallTetherDisconnect(const std::string& guid) {
     test_network_connection_handler_->CallTetherDisconnect(
-        guid,
-        base::Bind(&NetworkConnectionHandlerTetherDelegateTest::OnSuccess,
-                   base::Unretained(this)),
+        guid, base::Closure(),
         base::Bind(&NetworkConnectionHandlerTetherDelegateTest::OnError,
                    base::Unretained(this)));
   }
 
-  void OnSuccess() { result_ = kSuccessResult; }
-
   void OnError(const std::string& error,
                std::unique_ptr<base::DictionaryValue> error_data) {
-    result_ = error;
+    error_occurred_during_test_ = true;
   }
 
-  std::string GetResultAndReset() {
-    std::string result;
-    result.swap(result_);
-    return result;
+  void VerifyErrorExpected(bool expected) {
+    EXPECT_EQ(expected, error_occurred_during_test_);
   }
 
   std::unique_ptr<TestNetworkConnectionHandler>
@@ -149,7 +113,7 @@ class NetworkConnectionHandlerTetherDelegateTest : public testing::Test {
   std::unique_ptr<FakeTetherConnector> fake_tether_connector_;
   std::unique_ptr<FakeTetherDisconnector> fake_tether_disconnector_;
 
-  std::string result_;
+  bool error_occurred_during_test_;
 
   std::unique_ptr<NetworkConnectionHandlerTetherDelegate> delegate_;
 
@@ -162,7 +126,7 @@ TEST_F(NetworkConnectionHandlerTetherDelegateTest,
   CallTetherConnect("tetherNetworkGuid");
   EXPECT_EQ("tetherNetworkGuid",
             fake_tether_connector_->last_connected_tether_network_guid());
-  EXPECT_EQ(kSuccessResult, GetResultAndReset());
+  VerifyErrorExpected(false);
 }
 
 TEST_F(NetworkConnectionHandlerTetherDelegateTest,
@@ -174,7 +138,7 @@ TEST_F(NetworkConnectionHandlerTetherDelegateTest,
       fake_tether_connector_->last_connected_tether_network_guid().empty());
   EXPECT_TRUE(fake_tether_disconnector_->last_disconnected_tether_network_guid()
                   .empty());
-  EXPECT_EQ(NetworkConnectionHandler::kErrorConnected, GetResultAndReset());
+  VerifyErrorExpected(true);
 }
 
 TEST_F(NetworkConnectionHandlerTetherDelegateTest,
@@ -187,38 +151,14 @@ TEST_F(NetworkConnectionHandlerTetherDelegateTest,
             fake_tether_disconnector_->last_disconnected_tether_network_guid());
   EXPECT_EQ("newTetherNetworkGuid",
             fake_tether_connector_->last_connected_tether_network_guid());
-  EXPECT_EQ(kSuccessResult, GetResultAndReset());
+  VerifyErrorExpected(false);
 }
 
 TEST_F(NetworkConnectionHandlerTetherDelegateTest, TestDisconnect) {
   CallTetherDisconnect("tetherNetworkGuid");
   EXPECT_EQ("tetherNetworkGuid",
             fake_tether_disconnector_->last_disconnected_tether_network_guid());
-  EXPECT_EQ(kSuccessResult, GetResultAndReset());
-}
-
-TEST_F(NetworkConnectionHandlerTetherDelegateTest,
-       TestPendingCallbacksInvokedWhenDeleted) {
-  // Use "dummy" connector/disconnector.
-  std::unique_ptr<DummyTetherConnector> dummy_connector =
-      base::WrapUnique(new DummyTetherConnector());
-  std::unique_ptr<DummyTetherDisconnector> dummy_disconnector =
-      base::WrapUnique(new DummyTetherDisconnector());
-
-  test_network_connection_handler_ =
-      base::WrapUnique(new TestNetworkConnectionHandler());
-  delegate_ = base::MakeUnique<NetworkConnectionHandlerTetherDelegate>(
-      test_network_connection_handler_.get(), fake_active_host_.get(),
-      dummy_connector.get(), dummy_disconnector.get());
-
-  CallTetherConnect("tetherNetworkGuid");
-
-  // No callbacks should have been invoked.
-  EXPECT_TRUE(result_.empty());
-
-  // Now, delete the delegate. It should fire the error callback.
-  delegate_.reset();
-  EXPECT_EQ(NetworkConnectionHandler::kErrorConnectFailed, GetResultAndReset());
+  VerifyErrorExpected(false);
 }
 
 }  // namespace tether
