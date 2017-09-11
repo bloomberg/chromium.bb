@@ -53,13 +53,16 @@ class Isolate;
 namespace blink {
 
 class BasePage;
-class GarbageCollectedMixinConstructorMarker;
+class GarbageCollectedMixinConstructorMarkerBase;
 class PersistentNode;
 class PersistentRegion;
 class BaseArena;
 class ThreadHeap;
 class ThreadState;
 class Visitor;
+
+template <ThreadAffinity affinity>
+class ThreadStateFor;
 
 // Declare that a class has a pre-finalizer. The pre-finalizer is called
 // before any object gets swept, so it is safe to touch on-heap objects
@@ -454,7 +457,7 @@ class PLATFORM_EXPORT ThreadState {
   // fully should a GC be allowed while its subclasses are being
   // constructed.
   void EnterGCForbiddenScopeIfNeeded(
-      GarbageCollectedMixinConstructorMarker* gc_mixin_marker) {
+      GarbageCollectedMixinConstructorMarkerBase* gc_mixin_marker) {
     DCHECK(CheckThread());
     if (!gc_mixin_marker_) {
       EnterMixinConstructionScope();
@@ -462,7 +465,7 @@ class PLATFORM_EXPORT ThreadState {
     }
   }
   void LeaveGCForbiddenScopeIfNeeded(
-      GarbageCollectedMixinConstructorMarker* gc_mixin_marker) {
+      GarbageCollectedMixinConstructorMarkerBase* gc_mixin_marker) {
     DCHECK(CheckThread());
     if (gc_mixin_marker_ == gc_mixin_marker) {
       LeaveMixinConstructionScope();
@@ -557,7 +560,8 @@ class PLATFORM_EXPORT ThreadState {
     PrefinalizerRegistration(T* self) {
       static_assert(sizeof(&T::InvokePreFinalizer) > 0,
                     "USING_PRE_FINALIZER(T) must be defined.");
-      ThreadState* state = ThreadState::Current();
+      ThreadState* state =
+          ThreadStateFor<ThreadingTrait<T>::kAffinity>::GetState();
 #if DCHECK_IS_ON()
       DCHECK(state->CheckThread());
 #endif
@@ -699,7 +703,7 @@ class PLATFORM_EXPORT ThreadState {
   size_t arena_ages_[BlinkGC::kNumberOfArenas];
   size_t current_arena_ages_;
 
-  GarbageCollectedMixinConstructorMarker* gc_mixin_marker_;
+  GarbageCollectedMixinConstructorMarkerBase* gc_mixin_marker_;
 
   bool should_flush_heap_does_not_contain_cache_;
   GCState gc_state_;
@@ -751,9 +755,6 @@ class PLATFORM_EXPORT ThreadState {
 
   int gc_age_ = 0;
 };
-
-template <ThreadAffinity affinity>
-class ThreadStateFor;
 
 template <>
 class ThreadStateFor<kMainThreadOnly> {
