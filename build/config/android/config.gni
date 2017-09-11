@@ -177,6 +177,12 @@ if (is_android) {
   # We need a second declare_args block to make sure we are using the overridden
   # value of the arguments set above.
   declare_args() {
+    if (defined(default_android_sdk_platform_version)) {
+      android_sdk_platform_version = default_android_sdk_platform_version
+    } else {
+      android_sdk_platform_version = android_sdk_version
+    }
+
     # Speed up dexing using dx --incremental.
     enable_incremental_dx = is_java_debug
   }
@@ -218,7 +224,8 @@ if (is_android) {
   # than just the current one) since these are needed by the Android toolchain
   # file to define toolchains for all possible targets in one pass.
 
-  android_sdk = "${android_sdk_root}/platforms/android-${android_sdk_version}"
+  android_sdk =
+      "${android_sdk_root}/platforms/android-${android_sdk_platform_version}"
 
   # Path to the Android NDK and SDK.
   android_ndk_include_dir = "$android_ndk_root/usr/include"
