@@ -1084,8 +1084,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
   EXPECT_FALSE(password_form);
 }
 
-TEST_F(MAYBE_PasswordFormConversionUtilsTest,
-       InvalidFormsDueToConfusingPasswordFields) {
+TEST_F(MAYBE_PasswordFormConversionUtilsTest, ConfusingPasswordFields) {
   // Each test case consists of a set of parameters to be plugged into the
   // PasswordFormBuilder below.
   const char* cases[][3] = {
@@ -1111,12 +1110,16 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
 
     std::unique_ptr<PasswordForm> password_form =
         LoadHTMLAndConvertForm(html, nullptr, false);
-    EXPECT_FALSE(password_form);
+    ASSERT_TRUE(password_form);
+    EXPECT_EQ(base::UTF8ToUTF16("username1"), password_form->username_element);
+    EXPECT_EQ(base::UTF8ToUTF16("John"), password_form->username_value);
+    EXPECT_EQ(base::UTF8ToUTF16("password1"), password_form->password_element);
+    EXPECT_EQ(base::UTF8ToUTF16(cases[i][0]), password_form->password_value);
   }
 }
 
 TEST_F(MAYBE_PasswordFormConversionUtilsTest,
-       InvalidFormDueToTooManyPasswordFieldsWithoutAutocompleteAttributes) {
+       ManyPasswordFieldsWithoutAutocompleteAttributes) {
   PasswordFormBuilder builder(kTestFormActionURL);
   builder.AddTextField("username1", "John", nullptr);
   builder.AddPasswordField("password1", "alpha", nullptr);
@@ -1128,7 +1131,11 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
 
   std::unique_ptr<PasswordForm> password_form =
       LoadHTMLAndConvertForm(html, nullptr, false);
-  EXPECT_FALSE(password_form);
+  ASSERT_TRUE(password_form);
+  EXPECT_EQ(base::UTF8ToUTF16("username1"), password_form->username_element);
+  EXPECT_EQ(base::UTF8ToUTF16("John"), password_form->username_value);
+  EXPECT_EQ(base::UTF8ToUTF16("password1"), password_form->password_element);
+  EXPECT_EQ(base::UTF8ToUTF16("alpha"), password_form->password_value);
 }
 
 TEST_F(MAYBE_PasswordFormConversionUtilsTest,

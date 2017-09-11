@@ -1025,14 +1025,7 @@ TEST_F(PasswordAutofillAgentTest,
   // This test checks that a request to the store is sent even if we fail to
   // create a |PasswordForm|.
   fake_driver_.reset_password_forms_calls();
-  const char kInvalidFormHTML[] =
-      "<FORM name='ChangeWithUsernameForm' action='http://www.bidule.com'>"
-      "  <INPUT type='password' id='pwd1' value='1'/>"
-      "  <INPUT type='password' id='pwd1' value='2'/>"
-      "  <INPUT type='password' id='pwd2' value='3'/>"
-      "  <INPUT type='submit' value='Login'/>"
-      "</FORM>";
-  LoadHTML(kInvalidFormHTML);
+  LoadHTML(kCreditCardFormHTML);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(fake_driver_.called_password_forms_parsed());
   ASSERT_TRUE(fake_driver_.password_forms_parsed());

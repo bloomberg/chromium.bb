@@ -162,10 +162,11 @@ void ExcludeUsernameFromOtherUsernamesList(
 // the new password (e.g., on a sign-up or change password form), if any. If the
 // new password is found and there is another password field with the same user
 // input, the function also sets |confirmation_password| to this field.
-bool LocateSpecificPasswords(std::vector<WebInputElement> passwords,
+void LocateSpecificPasswords(std::vector<WebInputElement> passwords,
                              WebInputElement* current_password,
                              WebInputElement* new_password,
                              WebInputElement* confirmation_password) {
+  DCHECK(!passwords.empty());
   DCHECK(current_password && current_password->IsNull());
   DCHECK(new_password && new_password->IsNull());
   DCHECK(confirmation_password && confirmation_password->IsNull());
@@ -192,10 +193,7 @@ bool LocateSpecificPasswords(std::vector<WebInputElement> passwords,
   // purposes, e.g., PINs, OTPs, and the like. So we skip all the heuristics we
   // normally do, and ignore the rest of the password fields.
   if (!current_password->IsNull() || !new_password->IsNull())
-    return true;
-
-  if (passwords.empty())
-    return false;
+    return;
 
   switch (passwords.size()) {
     case 1:
@@ -223,9 +221,10 @@ bool LocateSpecificPasswords(std::vector<WebInputElement> passwords,
       if (!passwords[0].Value().IsEmpty() &&
           passwords[0].Value() == passwords[1].Value() &&
           passwords[0].Value() == passwords[2].Value()) {
-        // All three passwords are the same and non-empty? This does not make
-        // any sense, give up.
-        return false;
+        // All three passwords are the same and non-empty? It may be a change
+        // password form where old and new passwords are the same. It doesn't
+        // matter what field is correct, let's save the value.
+        *current_password = passwords[0];
       } else if (passwords[1].Value() == passwords[2].Value()) {
         // New password is the duplicated one, and comes second; or empty form
         // with 3 password fields, in which case we will assume this layout.
@@ -241,11 +240,11 @@ bool LocateSpecificPasswords(std::vector<WebInputElement> passwords,
         *confirmation_password = passwords[1];
       } else {
         // Three different passwords, or first and last match with middle
-        // different. No idea which is which, so no luck.
-        return false;
+        // different. No idea which is which. Let's save the first password.
+        // Password selection in a prompt will allow to correct the choice.
+        *current_password = passwords[0];
       }
   }
-  return true;
 }
 
 // Checks the |form_predictions| map to see if there is a key associated with
@@ -523,34 +522,35 @@ bool GetPasswordForm(
     }
   }
 
-  // Add non-empty possible passwords to the set.
-  for (const WebInputElement& password_element : passwords) {
-    if (!password_element.Value().IsEmpty()) {
-      other_possible_passwords.insert(password_element.Value().Utf16());
-    }
-  }
+  if (passwords.empty())
+    return false;
 
   WebInputElement password;
   WebInputElement new_password;
   WebInputElement confirmation_password;
-  if (!LocateSpecificPasswords(passwords, &password, &new_password,
-                               &confirmation_password)) {
-    // If there are multiple passwords, let password selection handle the rest.
-    if (base::FeatureList::IsEnabled(
-            password_manager::features::kEnablePasswordSelection) &&
-        other_possible_passwords.size() > 0) {
-      password = passwords[0];
-      password_form->password_value = password.Value().Utf16();
-      other_possible_passwords.erase(password_form->password_value);
-      std::vector<base::string16>().swap(
-          password_form->other_possible_passwords);
+  LocateSpecificPasswords(passwords, &password, &new_password,
+                          &confirmation_password);
+
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kEnablePasswordSelection)) {
+    // Add non-empty possible passwords to the set.
+    for (const WebInputElement& password_element : passwords) {
+      if (!password_element.Value().IsEmpty())
+        other_possible_passwords.insert(password_element.Value().Utf16());
+    }
+
+    DCHECK(!new_password.IsNull() || !password.IsNull());
+    base::string16 password_to_save =
+        (new_password.IsNull() ? password : new_password).Value().Utf16();
+    other_possible_passwords.erase(password_to_save);
+
+    if (!other_possible_passwords.empty()) {
       std::move(other_possible_passwords.begin(),
                 other_possible_passwords.end(),
                 std::back_inserter(password_form->other_possible_passwords));
-    } else {
-      return false;
     }
   }
+
   DCHECK_EQ(passwords.size(), last_text_input_before_password.size());
   if (username_element.IsNull()) {
     if (!password.IsNull())
