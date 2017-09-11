@@ -42,9 +42,6 @@ class PrefRegistrySyncable;
 // Returns true if a bookmarks promo cell should be shown.
 - (BOOL)bookmarkTableViewShouldShowPromoCell:(BookmarkTableView*)view;
 
-// Shows a sign-in view controller.
-- (void)bookmarkTableViewShowSignIn:(BookmarkTableView*)view;
-
 // Dismisses the promo.
 - (void)bookmarkTableViewDismissPromo:(BookmarkTableView*)view;
 
@@ -57,6 +54,10 @@ class PrefRegistrySyncable;
 - (void)bookmarkTableView:(BookmarkTableView*)view
     showContextMenuForNode:(const bookmarks::BookmarkNode*)node;
 
+// Tells the delegate that |node| was moved to a new |position|.
+- (void)bookmarkTableView:(BookmarkTableView*)view
+              didMoveNode:(const bookmarks::BookmarkNode*)node
+               toPosition:(int)position;
 @end
 
 @interface BookmarkTableView : UIView

@@ -95,6 +95,14 @@ void CreateOrUpdateBookmarkWithUndoToast(
     bookmarks::BookmarkModel* bookmark_model,
     ios::ChromeBrowserState* browser_state);
 
+// Updates a bookmark node position, with undo toast.
+void UpdateBookmarkPositionWithUndoToast(
+    const bookmarks::BookmarkNode* node,
+    const bookmarks::BookmarkNode* folder,
+    int position,
+    bookmarks::BookmarkModel* bookmark_model,
+    ios::ChromeBrowserState* browser_state);
+
 // Deletes all bookmarks in |model| that are in |bookmarks|, and presents a
 // snackbar with an undo action.
 void DeleteBookmarksWithUndoToast(

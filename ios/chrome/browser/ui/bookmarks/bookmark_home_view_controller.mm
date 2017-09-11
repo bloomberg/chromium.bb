@@ -403,10 +403,6 @@ const CGFloat kSpacer = 50;
   return self.bookmarkPromoController.promoState;
 }
 
-- (void)bookmarkTableViewShowSignIn:(BookmarkTableView*)view {
-  [self.bookmarkPromoController showSignIn];
-}
-
 - (void)bookmarkTableViewDismissPromo:(BookmarkTableView*)view {
   [self.bookmarkPromoController hidePromoCell];
 }
@@ -485,6 +481,13 @@ const CGFloat kSpacer = 50;
     return;
   }
   NOTREACHED();
+}
+
+- (void)bookmarkTableView:(BookmarkTableView*)view
+              didMoveNode:(const bookmarks::BookmarkNode*)node
+               toPosition:(int)position {
+  bookmark_utils_ios::UpdateBookmarkPositionWithUndoToast(
+      node, _rootNode, position, self.bookmarks, self.browserState);
 }
 
 #pragma mark - BookmarkFolderViewControllerDelegate
