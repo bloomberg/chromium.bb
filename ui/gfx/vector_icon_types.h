@@ -8,6 +8,7 @@
 #ifndef UI_GFX_VECTOR_ICON_TYPES_H_
 #define UI_GFX_VECTOR_ICON_TYPES_H_
 
+#include "base/macros.h"
 #include "third_party/skia/include/core/SkScalar.h"
 #include "ui/gfx/animation/tween.h"
 
@@ -79,10 +80,15 @@ struct PathElement {
 };
 
 struct VectorIcon {
+  VectorIcon() = default;
+
   bool is_empty() const { return !path; }
 
   const gfx::PathElement* path;
   const gfx::PathElement* path_1x;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(VectorIcon);
 };
 
 }  // namespace gfx
