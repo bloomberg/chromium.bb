@@ -199,7 +199,8 @@ base::TimeDelta AppListPresenterDelegate::GetVisibilityAnimationDuration(
     if (view_->GetBoundsInScreen().y() >
         Shelf::ForWindow(root_window)->GetIdealBounds().y())
       return base::TimeDelta::FromMilliseconds(0);
-    return animation_duration_fullscreen(IsSideShelf(root_window));
+    return GetAnimationDurationFullscreen(IsSideShelf(root_window),
+                                          view_->is_fullscreen());
   }
   return is_visible ? base::TimeDelta::FromMilliseconds(0)
                     : animation_duration();

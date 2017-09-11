@@ -65,9 +65,10 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterDelegate {
   // Gets the duration for the show/hide animation in Ms.
   static base::TimeDelta animation_duration();
 
-  // Gets the duration for the show/hide animation for the fullscreen version of
+  // Gets the duration for the hide animation for the fullscreen version of
   // the app list in Ms.
-  static base::TimeDelta animation_duration_fullscreen(bool is_side_shelf);
+  static base::TimeDelta GetAnimationDurationFullscreen(bool is_side_shelf,
+                                                        bool is_fullscreen);
 
   // Offset in pixels to animation away/towards the shelf.
   static const int kAnimationOffset = 8;

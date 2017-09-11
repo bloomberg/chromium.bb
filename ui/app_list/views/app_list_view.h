@@ -209,9 +209,8 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
     return app_list_y_position_in_screen_;
   }
 
-  void set_app_list_animation_duration_ms_for_testing(
-      int app_list_animation_duration_ms) {
-    app_list_animation_duration_ms_ = app_list_animation_duration_ms;
+  void set_short_animation_for_testing() {
+    short_animations_for_testing_ = true;
   }
 
   bool drag_started_from_peeking() const { return drag_started_from_peeking_; }
@@ -323,6 +322,9 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   // or dragging the app list from shelf.
   bool is_in_drag_ = false;
 
+  // Set animation durations to 0 for testing.
+  bool short_animations_for_testing_;
+
   // Y position of the app list in screen space coordinate during dragging.
   int app_list_y_position_in_screen_ = 0;
 
@@ -358,9 +360,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
 
   // For UMA and testing. If non-null, triggered when the app list is painted.
   base::Closure next_paint_callback_;
-
-  // Animation duration in milliseconds.
-  int app_list_animation_duration_ms_;
 
   // True if the dragging started from PEEKING state.
   bool drag_started_from_peeking_ = false;

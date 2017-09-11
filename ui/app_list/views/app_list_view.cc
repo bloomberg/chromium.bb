@@ -92,7 +92,9 @@ constexpr int kAppInfoDialogHeight = 384;
 constexpr float kSpeechUIAppearingPosition = 12;
 
 // The animation duration for app list movement.
-constexpr float kAppListAnimationDurationMs = 300;
+constexpr float kAppListAnimationDurationTestMs = 0;
+constexpr float kAppListAnimationDurationMs = 200;
+constexpr float kAppListAnimationDurationFromFullscreenMs = 250;
 
 // This view forwards the focus to the search box widget by providing it as a
 // FocusTraversable when a focus search is provided.
@@ -226,11 +228,11 @@ class HideViewAnimationObserver : public ui::ImplicitAnimationObserver {
 AppListView::AppListView(AppListViewDelegate* delegate)
     : delegate_(delegate),
       model_(delegate->GetModel()),
+      short_animations_for_testing_(false),
       is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()),
       is_background_blur_enabled_(features::IsBackgroundBlurEnabled()),
       display_observer_(this),
-      animation_observer_(new HideViewAnimationObserver()),
-      app_list_animation_duration_ms_(kAppListAnimationDurationMs) {
+      animation_observer_(new HideViewAnimationObserver()) {
   CHECK(delegate);
   delegate_->GetSpeechUI()->AddObserver(this);
 
@@ -1193,10 +1195,21 @@ void AppListView::StartAnimationForState(AppListState target_state) {
   gfx::Rect target_bounds = fullscreen_widget_->GetNativeView()->bounds();
   target_bounds.set_y(target_state_y);
 
+  int animation_duration;
+  // If animating to or from a fullscreen state, animate over 250ms, else
+  // animate over 200 ms.
+  if (short_animations_for_testing_) {
+    animation_duration = kAppListAnimationDurationTestMs;
+  } else if (is_fullscreen() || target_state == FULLSCREEN_ALL_APPS ||
+             target_state == FULLSCREEN_SEARCH) {
+    animation_duration = kAppListAnimationDurationFromFullscreenMs;
+  } else {
+    animation_duration = kAppListAnimationDurationMs;
+  }
+
   std::unique_ptr<ui::LayerAnimationElement> bounds_animation_element =
       ui::LayerAnimationElement::CreateBoundsElement(
-          target_bounds,
-          base::TimeDelta::FromMilliseconds(app_list_animation_duration_ms_));
+          target_bounds, base::TimeDelta::FromMilliseconds(animation_duration));
 
   bounds_animation_element->set_tween_type(gfx::Tween::EASE_OUT);
 
