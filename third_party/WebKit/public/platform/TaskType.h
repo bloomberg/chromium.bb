@@ -53,7 +53,7 @@ enum class TaskType : unsigned {
   // https://html.spec.whatwg.org/multipage/webappapis.html#timers
   // This task source is used to queue tasks queued by setInterval() and similar
   // APIs.
-  kTimer,
+  kJavascriptTimer,
 
   // https://html.spec.whatwg.org/multipage/comms.html#sse-processing-model
   // This task source is used for any tasks that are queued by EventSource

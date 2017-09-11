@@ -77,7 +77,7 @@ DOMTimer::DOMTimer(ExecutionContext* context,
                    int interval,
                    bool single_shot,
                    int timeout_id)
-    : SuspendableTimer(context, TaskType::kTimer),
+    : SuspendableTimer(context, TaskType::kJavascriptTimer),
       timeout_id_(timeout_id),
       nesting_level_(context->Timers()->TimerNestingLevel() + 1),
       action_(action) {

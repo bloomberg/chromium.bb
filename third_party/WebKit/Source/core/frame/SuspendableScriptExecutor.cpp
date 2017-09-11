@@ -172,7 +172,7 @@ SuspendableScriptExecutor::SuspendableScriptExecutor(
     ScriptState* script_state,
     WebScriptExecutionCallback* callback,
     Executor* executor)
-    : SuspendableTimer(frame->GetDocument(), TaskType::kTimer),
+    : SuspendableTimer(frame->GetDocument(), TaskType::kJavascriptTimer),
       script_state_(script_state),
       callback_(callback),
       blocking_option_(kNonBlocking),
