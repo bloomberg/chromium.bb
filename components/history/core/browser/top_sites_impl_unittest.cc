@@ -326,7 +326,7 @@ class TopSitesImplTest : public HistoryUnitTestBase {
 
 // Helper function for appending a URL to a vector of "most visited" URLs,
 // using the default values for everything but the URL.
-void AppendMostVisitedURL(std::vector<MostVisitedURL>* list, const GURL& url) {
+void AppendMostVisitedURL(const GURL& url, std::vector<MostVisitedURL>* list) {
   MostVisitedURL mv;
   mv.url = url;
   mv.redirects.push_back(url);
@@ -335,9 +335,9 @@ void AppendMostVisitedURL(std::vector<MostVisitedURL>* list, const GURL& url) {
 
 // Helper function for appending a URL to a vector of "most visited" URLs,
 // using the default values for everything but the URL.
-void AppendForcedMostVisitedURL(std::vector<MostVisitedURL>* list,
-                                const GURL& url,
-                                double last_forced_time) {
+void AppendForcedMostVisitedURL(const GURL& url,
+                                double last_forced_time,
+                                std::vector<MostVisitedURL>* list) {
   MostVisitedURL mv;
   mv.url = url;
   mv.last_forced_time = base::Time::FromJsTime(last_forced_time);
@@ -347,9 +347,9 @@ void AppendForcedMostVisitedURL(std::vector<MostVisitedURL>* list,
 
 // Same as AppendMostVisitedURL except that it adds a redirect from the first
 // URL to the second.
-void AppendMostVisitedURLWithRedirect(std::vector<MostVisitedURL>* list,
-                                      const GURL& redirect_source,
-                                      const GURL& redirect_dest) {
+void AppendMostVisitedURLWithRedirect(const GURL& redirect_source,
+                                      const GURL& redirect_dest,
+                                      std::vector<MostVisitedURL>* list) {
   MostVisitedURL mv;
   mv.url = redirect_dest;
   mv.redirects.push_back(redirect_source);
@@ -379,8 +379,8 @@ TEST_F(TopSitesImplTest, GetCanonicalURL) {
   GURL dest("http://www.google.com/");
 
   std::vector<MostVisitedURL> most_visited;
-  AppendMostVisitedURLWithRedirect(&most_visited, source, dest);
-  AppendMostVisitedURL(&most_visited, news);
+  AppendMostVisitedURLWithRedirect(source, dest, &most_visited);
+  AppendMostVisitedURL(news, &most_visited);
   SetTopSites(most_visited);
 
   // Random URLs not in the database are returned unchanged.
@@ -473,15 +473,15 @@ TEST_F(TopSitesImplTest, DiffMostVisited) {
   GURL gets_moved_1("http://getsmoved1/");
 
   std::vector<MostVisitedURL> old_list;
-  AppendMostVisitedURL(&old_list, stays_the_same);  // 0  (unchanged)
-  AppendMostVisitedURL(&old_list, gets_deleted_1);  // 1  (deleted)
-  AppendMostVisitedURL(&old_list, gets_moved_1);    // 2  (moved to 3)
+  AppendMostVisitedURL(stays_the_same, &old_list);  // 0  (unchanged)
+  AppendMostVisitedURL(gets_deleted_1, &old_list);  // 1  (deleted)
+  AppendMostVisitedURL(gets_moved_1, &old_list);    // 2  (moved to 3)
 
   std::vector<MostVisitedURL> new_list;
-  AppendMostVisitedURL(&new_list, stays_the_same);  // 0  (unchanged)
-  AppendMostVisitedURL(&new_list, gets_added_1);    // 1  (added)
-  AppendMostVisitedURL(&new_list, gets_added_2);    // 2  (added)
-  AppendMostVisitedURL(&new_list, gets_moved_1);    // 3  (moved from 2)
+  AppendMostVisitedURL(stays_the_same, &new_list);  // 0  (unchanged)
+  AppendMostVisitedURL(gets_added_1, &new_list);    // 1  (added)
+  AppendMostVisitedURL(gets_added_2, &new_list);    // 2  (added)
+  AppendMostVisitedURL(gets_moved_1, &new_list);    // 3  (moved from 2)
 
   history::TopSitesDelta delta;
   history::TopSitesImpl::DiffMostVisited(old_list, new_list, &delta);
@@ -517,26 +517,26 @@ TEST_F(TopSitesImplTest, DiffMostVisitedWithForced) {
   GURL gets_moved_1("http://getsmoved1/");
 
   std::vector<MostVisitedURL> old_list;
-  AppendForcedMostVisitedURL(&old_list, stays_the_same_1, 1000);
-  AppendForcedMostVisitedURL(&old_list, new_last_forced_time, 2000);
-  AppendForcedMostVisitedURL(&old_list, stays_the_same_2, 3000);
-  AppendForcedMostVisitedURL(&old_list, move_to_nonforced, 4000);
-  AppendForcedMostVisitedURL(&old_list, gets_deleted_1, 5000);
-  AppendMostVisitedURL(&old_list, move_to_forced);
-  AppendMostVisitedURL(&old_list, stays_the_same_3);
-  AppendMostVisitedURL(&old_list, gets_deleted_2);
-  AppendMostVisitedURL(&old_list, gets_moved_1);
+  AppendForcedMostVisitedURL(stays_the_same_1, 1000, &old_list);
+  AppendForcedMostVisitedURL(new_last_forced_time, 2000, &old_list);
+  AppendForcedMostVisitedURL(stays_the_same_2, 3000, &old_list);
+  AppendForcedMostVisitedURL(move_to_nonforced, 4000, &old_list);
+  AppendForcedMostVisitedURL(gets_deleted_1, 5000, &old_list);
+  AppendMostVisitedURL(move_to_forced, &old_list);
+  AppendMostVisitedURL(stays_the_same_3, &old_list);
+  AppendMostVisitedURL(gets_deleted_2, &old_list);
+  AppendMostVisitedURL(gets_moved_1, &old_list);
 
   std::vector<MostVisitedURL> new_list;
-  AppendForcedMostVisitedURL(&new_list, stays_the_same_1, 1000);
-  AppendForcedMostVisitedURL(&new_list, stays_the_same_2, 3000);
-  AppendForcedMostVisitedURL(&new_list, new_last_forced_time, 4000);
-  AppendForcedMostVisitedURL(&new_list, gets_added_1, 5000);
-  AppendForcedMostVisitedURL(&new_list, move_to_forced, 6000);
-  AppendMostVisitedURL(&new_list, move_to_nonforced);
-  AppendMostVisitedURL(&new_list, stays_the_same_3);
-  AppendMostVisitedURL(&new_list, gets_added_2);
-  AppendMostVisitedURL(&new_list, gets_moved_1);
+  AppendForcedMostVisitedURL(stays_the_same_1, 1000, &new_list);
+  AppendForcedMostVisitedURL(stays_the_same_2, 3000, &new_list);
+  AppendForcedMostVisitedURL(new_last_forced_time, 4000, &new_list);
+  AppendForcedMostVisitedURL(gets_added_1, 5000, &new_list);
+  AppendForcedMostVisitedURL(move_to_forced, 6000, &new_list);
+  AppendMostVisitedURL(move_to_nonforced, &new_list);
+  AppendMostVisitedURL(stays_the_same_3, &new_list);
+  AppendMostVisitedURL(gets_added_2, &new_list);
+  AppendMostVisitedURL(gets_moved_1, &new_list);
 
   history::TopSitesDelta delta;
   history::TopSitesImpl::DiffMostVisited(old_list, new_list, &delta);
@@ -571,7 +571,7 @@ TEST_F(TopSitesImplTest, SetPageThumbnail) {
   GURL invalid_url("application://favicon/http://google.com/");
 
   std::vector<MostVisitedURL> list;
-  AppendMostVisitedURL(&list, url2);
+  AppendMostVisitedURL(url2, &list);
 
   MostVisitedURL mv;
   mv.url = url1b;
@@ -614,7 +614,7 @@ TEST_F(TopSitesImplTest, ThumbnailRemoved) {
 
   // Configure top sites with 'google.com'.
   std::vector<MostVisitedURL> list;
-  AppendMostVisitedURL(&list, url);
+  AppendMostVisitedURL(url, &list);
   SetTopSites(list);
 
   // Create a dummy thumbnail.
@@ -815,11 +815,11 @@ TEST_F(TopSitesImplTest, SaveForcedToDB) {
 
   // Add a number of forced URLs.
   std::vector<MostVisitedURL> list;
-  AppendForcedMostVisitedURL(&list, GURL("http://forced1"), 1000);
+  AppendForcedMostVisitedURL(GURL("http://forced1"), 1000, &list);
   list[0].title = base::ASCIIToUTF16("forced1");
-  AppendForcedMostVisitedURL(&list, GURL("http://forced2"), 2000);
-  AppendForcedMostVisitedURL(&list, GURL("http://forced3"), 3000);
-  AppendForcedMostVisitedURL(&list, GURL("http://forced4"), 4000);
+  AppendForcedMostVisitedURL(GURL("http://forced2"), 2000, &list);
+  AppendForcedMostVisitedURL(GURL("http://forced3"), 3000, &list);
+  AppendForcedMostVisitedURL(GURL("http://forced4"), 4000, &list);
   SetTopSites(list);
 
   // Add a thumbnail.
@@ -1426,42 +1426,42 @@ TEST_F(TopSitesImplTest, AddPrepopulatedPages) {
 TEST_F(TopSitesImplTest, SetForcedTopSites) {
   // Create forced elements in old URL list.
   MostVisitedURLList old_url_list;
-  AppendForcedMostVisitedURL(&old_url_list, GURL("http://oldforced/0"), 1000);
-  AppendForcedMostVisitedURL(&old_url_list, GURL("http://oldforced/1"), 4000);
-  AppendForcedMostVisitedURL(&old_url_list, GURL("http://oldforced/2"), 7000);
-  AppendForcedMostVisitedURL(&old_url_list, GURL("http://oldforced/3"), 10000);
-  AppendForcedMostVisitedURL(&old_url_list, GURL("http://oldforced/4"), 11000);
-  AppendForcedMostVisitedURL(&old_url_list, GURL("http://oldforced/5"), 12000);
-  AppendForcedMostVisitedURL(&old_url_list, GURL("http://oldforced/6"), 13000);
-  AppendForcedMostVisitedURL(&old_url_list, GURL("http://oldforced/7"), 18000);
-  AppendForcedMostVisitedURL(&old_url_list, GURL("http://oldforced/8"), 21000);
+  AppendForcedMostVisitedURL(GURL("http://oldforced/0"), 1000, &old_url_list);
+  AppendForcedMostVisitedURL(GURL("http://oldforced/1"), 4000, &old_url_list);
+  AppendForcedMostVisitedURL(GURL("http://oldforced/2"), 7000, &old_url_list);
+  AppendForcedMostVisitedURL(GURL("http://oldforced/3"), 10000, &old_url_list);
+  AppendForcedMostVisitedURL(GURL("http://oldforced/4"), 11000, &old_url_list);
+  AppendForcedMostVisitedURL(GURL("http://oldforced/5"), 12000, &old_url_list);
+  AppendForcedMostVisitedURL(GURL("http://oldforced/6"), 13000, &old_url_list);
+  AppendForcedMostVisitedURL(GURL("http://oldforced/7"), 18000, &old_url_list);
+  AppendForcedMostVisitedURL(GURL("http://oldforced/8"), 21000, &old_url_list);
   const size_t kNumOldForcedURLs = 9;
 
   // Create forced elements in new URL list.
   MostVisitedURLList new_url_list;
-  AppendForcedMostVisitedURL(&new_url_list, GURL("http://newforced/0"), 2000);
-  AppendForcedMostVisitedURL(&new_url_list, GURL("http://newforced/1"), 3000);
-  AppendForcedMostVisitedURL(&new_url_list, GURL("http://newforced/2"), 5000);
-  AppendForcedMostVisitedURL(&new_url_list, GURL("http://newforced/3"), 6000);
-  AppendForcedMostVisitedURL(&new_url_list, GURL("http://newforced/4"), 8000);
-  AppendForcedMostVisitedURL(&new_url_list, GURL("http://newforced/5"), 9000);
-  AppendForcedMostVisitedURL(&new_url_list, GURL("http://newforced/6"), 14000);
-  AppendForcedMostVisitedURL(&new_url_list, GURL("http://newforced/7"), 15000);
-  AppendForcedMostVisitedURL(&new_url_list, GURL("http://newforced/8"), 16000);
-  AppendForcedMostVisitedURL(&new_url_list, GURL("http://newforced/9"), 17000);
-  AppendForcedMostVisitedURL(&new_url_list, GURL("http://newforced/10"), 19000);
-  AppendForcedMostVisitedURL(&new_url_list, GURL("http://newforced/11"), 20000);
-  AppendForcedMostVisitedURL(&new_url_list, GURL("http://newforced/12"), 22000);
+  AppendForcedMostVisitedURL(GURL("http://newforced/0"), 2000, &new_url_list);
+  AppendForcedMostVisitedURL(GURL("http://newforced/1"), 3000, &new_url_list);
+  AppendForcedMostVisitedURL(GURL("http://newforced/2"), 5000, &new_url_list);
+  AppendForcedMostVisitedURL(GURL("http://newforced/3"), 6000, &new_url_list);
+  AppendForcedMostVisitedURL(GURL("http://newforced/4"), 8000, &new_url_list);
+  AppendForcedMostVisitedURL(GURL("http://newforced/5"), 9000, &new_url_list);
+  AppendForcedMostVisitedURL(GURL("http://newforced/6"), 14000, &new_url_list);
+  AppendForcedMostVisitedURL(GURL("http://newforced/7"), 15000, &new_url_list);
+  AppendForcedMostVisitedURL(GURL("http://newforced/8"), 16000, &new_url_list);
+  AppendForcedMostVisitedURL(GURL("http://newforced/9"), 17000, &new_url_list);
+  AppendForcedMostVisitedURL(GURL("http://newforced/10"), 19000, &new_url_list);
+  AppendForcedMostVisitedURL(GURL("http://newforced/11"), 20000, &new_url_list);
+  AppendForcedMostVisitedURL(GURL("http://newforced/12"), 22000, &new_url_list);
 
   // Setup a number non-forced URLs in both old and new list.
   const size_t kNumNonForcedURLs = 20;  // Maximum number of non-forced URLs.
   for (size_t i = 0; i < kNumNonForcedURLs; ++i) {
     std::ostringstream url;
     url << "http://oldnonforced/" << i;
-    AppendMostVisitedURL(&old_url_list, GURL(url.str()));
+    AppendMostVisitedURL(GURL(url.str()), &old_url_list);
     url.str("");
     url << "http://newnonforced/" << i;
-    AppendMostVisitedURL(&new_url_list, GURL(url.str()));
+    AppendMostVisitedURL(GURL(url.str()), &new_url_list);
   }
 
   // Set the initial list of URLs.
@@ -1547,25 +1547,25 @@ TEST_F(TopSitesImplTest, SetForcedTopSites) {
 TEST_F(TopSitesImplTest, SetForcedTopSitesWithCollisions) {
   // Setup an old URL list in order to generate some collisions.
   MostVisitedURLList old_url_list;
-  AppendForcedMostVisitedURL(&old_url_list, GURL("http://url/0"), 1000);
+  AppendForcedMostVisitedURL(GURL("http://url/0"), 1000, &old_url_list);
   // The following three will be evicted.
-  AppendForcedMostVisitedURL(&old_url_list, GURL("http://collision/0"), 4000);
-  AppendForcedMostVisitedURL(&old_url_list, GURL("http://collision/1"), 6000);
-  AppendForcedMostVisitedURL(&old_url_list, GURL("http://collision/2"), 7000);
+  AppendForcedMostVisitedURL(GURL("http://collision/0"), 4000, &old_url_list);
+  AppendForcedMostVisitedURL(GURL("http://collision/1"), 6000, &old_url_list);
+  AppendForcedMostVisitedURL(GURL("http://collision/2"), 7000, &old_url_list);
   // The following is evicted since all non-forced URLs are, therefore it
   // doesn't cause a collision.
-  AppendMostVisitedURL(&old_url_list, GURL("http://noncollision/0"));
+  AppendMostVisitedURL(GURL("http://noncollision/0"), &old_url_list);
   SetTopSites(old_url_list);
 
   // Setup a new URL list that will cause collisions.
   MostVisitedURLList new_url_list;
-  AppendForcedMostVisitedURL(&new_url_list, GURL("http://collision/1"), 2000);
-  AppendForcedMostVisitedURL(&new_url_list, GURL("http://url/2"), 3000);
-  AppendForcedMostVisitedURL(&new_url_list, GURL("http://collision/0"), 5000);
-  AppendForcedMostVisitedURL(&new_url_list, GURL("http://noncollision/0"),
-                             9000);
-  AppendMostVisitedURL(&new_url_list, GURL("http://collision/2"));
-  AppendMostVisitedURL(&new_url_list, GURL("http://url/3"));
+  AppendForcedMostVisitedURL(GURL("http://collision/1"), 2000, &new_url_list);
+  AppendForcedMostVisitedURL(GURL("http://url/2"), 3000, &new_url_list);
+  AppendForcedMostVisitedURL(GURL("http://collision/0"), 5000, &new_url_list);
+  AppendForcedMostVisitedURL(GURL("http://noncollision/0"), 9000,
+                             &new_url_list);
+  AppendMostVisitedURL(GURL("http://collision/2"), &new_url_list);
+  AppendMostVisitedURL(GURL("http://url/3"), &new_url_list);
   SetTopSites(new_url_list);
 
   // Query all URLs.
@@ -1594,9 +1594,9 @@ TEST_F(TopSitesImplTest, SetForcedTopSitesWithCollisions) {
 TEST_F(TopSitesImplTest, SetTopSitesIdentical) {
   // Set the initial list of URLs.
   MostVisitedURLList url_list;
-  AppendForcedMostVisitedURL(&url_list, GURL("http://url/0"), 1000);
-  AppendMostVisitedURL(&url_list, GURL("http://url/1"));
-  AppendMostVisitedURL(&url_list, GURL("http://url/2"));
+  AppendForcedMostVisitedURL(GURL("http://url/0"), 1000, &url_list);
+  AppendMostVisitedURL(GURL("http://url/1"), &url_list);
+  AppendMostVisitedURL(GURL("http://url/2"), &url_list);
   SetTopSites(url_list);
 
   // Set the new list of URLs to be exactly the same.
@@ -1618,15 +1618,15 @@ TEST_F(TopSitesImplTest, SetTopSitesIdentical) {
 TEST_F(TopSitesImplTest, SetTopSitesWithAlreadyExistingForcedURLs) {
   // Set the initial list of URLs.
   MostVisitedURLList old_url_list;
-  AppendForcedMostVisitedURL(&old_url_list, GURL("http://url/0/redir"), 1000);
-  AppendForcedMostVisitedURL(&old_url_list, GURL("http://url/1"), 2000);
+  AppendForcedMostVisitedURL(GURL("http://url/0/redir"), 1000, &old_url_list);
+  AppendForcedMostVisitedURL(GURL("http://url/1"), 2000, &old_url_list);
   SetTopSites(old_url_list);
 
   // Setup a new URL list that will cause collisions.
   MostVisitedURLList new_url_list;
-  AppendMostVisitedURLWithRedirect(&new_url_list, GURL("http://url/0/redir"),
-                                   GURL("http://url/0"));
-  AppendMostVisitedURL(&new_url_list, GURL("http://url/1"));
+  AppendMostVisitedURLWithRedirect(GURL("http://url/0/redir"),
+                                   GURL("http://url/0"), &new_url_list);
+  AppendMostVisitedURL(GURL("http://url/1"), &new_url_list);
   SetTopSites(new_url_list);
 
   // Query all URLs.
@@ -1646,11 +1646,11 @@ TEST_F(TopSitesImplTest, SetTopSitesWithAlreadyExistingForcedURLs) {
 TEST_F(TopSitesImplTest, AddForcedURL) {
   // Set the initial list of URLs.
   MostVisitedURLList url_list;
-  AppendForcedMostVisitedURL(&url_list, GURL("http://forced/0"), 2000);
-  AppendForcedMostVisitedURL(&url_list, GURL("http://forced/1"), 4000);
-  AppendMostVisitedURL(&url_list, GURL("http://nonforced/0"));
-  AppendMostVisitedURL(&url_list, GURL("http://nonforced/1"));
-  AppendMostVisitedURL(&url_list, GURL("http://nonforced/2"));
+  AppendForcedMostVisitedURL(GURL("http://forced/0"), 2000, &url_list);
+  AppendForcedMostVisitedURL(GURL("http://forced/1"), 4000, &url_list);
+  AppendMostVisitedURL(GURL("http://nonforced/0"), &url_list);
+  AppendMostVisitedURL(GURL("http://nonforced/1"), &url_list);
+  AppendMostVisitedURL(GURL("http://nonforced/2"), &url_list);
   SetTopSites(url_list);
 
   // Add forced sites here and there to exercise a couple of cases.
