@@ -5,45 +5,11 @@
 #include "gpu/command_buffer/service/service_discardable_manager.h"
 
 #include "base/memory/singleton.h"
-#include "base/sys_info.h"
-#include "build/build_config.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 
 namespace gpu {
-namespace {
-size_t CacheSizeLimit() {
-// Cache size values are designed to roughly correspond to existing image cache
-// sizes for 2-3 renderers. These will be updated as more types of data are
-// moved to this cache.
-#if defined(OS_ANDROID)
-  const size_t kLowEndCacheSizeBytes = 512 * 1024;
-  const size_t kNormalCacheSizeBytes = 128 * 1024 * 1024;
-#else
-  const size_t kNormalCacheSizeBytes = 384 * 1024 * 1024;
-  const size_t kLargeCacheSizeBytes = 512 * 1024 * 1024;
-  // Device ram threshold at which we move from a normal cache to a large cache.
-  // While this is a GPU memory cache, we can't read GPU memory reliably, so we
-  // use system ram as a proxy.
-  const int kLargeCacheSizeMemoryThresholdMB = 4 * 1024;
-#endif  // defined(OS_ANDROID)
 
-#if defined(OS_ANDROID)
-  if (base::SysInfo::IsLowEndDevice()) {
-    return kLowEndCacheSizeBytes;
-  } else {
-    return kNormalCacheSizeBytes;
-  }
-#else
-  if (base::SysInfo::AmountOfPhysicalMemoryMB() <
-      kLargeCacheSizeMemoryThresholdMB) {
-    return kNormalCacheSizeBytes;
-  } else {
-    return kLargeCacheSizeBytes;
-  }
-#endif
-}
-
-}  // namespace
+const size_t ServiceDiscardableManager::kMaxSize;
 
 ServiceDiscardableManager::GpuDiscardableEntry::GpuDiscardableEntry(
     ServiceDiscardableHandle handle,
@@ -57,9 +23,7 @@ ServiceDiscardableManager::GpuDiscardableEntry::~GpuDiscardableEntry() =
     default;
 
 ServiceDiscardableManager::ServiceDiscardableManager()
-    : entries_(EntryCache::NO_AUTO_EVICT),
-      cache_size_limit_(CacheSizeLimit()) {}
-
+    : entries_(EntryCache::NO_AUTO_EVICT) {}
 ServiceDiscardableManager::~ServiceDiscardableManager() {
 #if DCHECK_IS_ON()
   for (const auto& entry : entries_) {
@@ -168,7 +132,7 @@ void ServiceDiscardableManager::OnTextureSizeChanged(
 
 void ServiceDiscardableManager::EnforceLimits() {
   for (auto it = entries_.rbegin(); it != entries_.rend();) {
-    if (total_size_ <= cache_size_limit_) {
+    if (total_size_ <= kMaxSize) {
       return;
     }
     if (!it->second.handle.Delete()) {
