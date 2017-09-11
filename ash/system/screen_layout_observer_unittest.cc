@@ -146,7 +146,9 @@ TEST_F(ScreenLayoutObserverTest, DisplayNotifications) {
                 IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED,
                 GetFirstDisplayName(), base::UTF8ToUTF16("600x600")),
             GetDisplayNotificationAdditionalText());
-  EXPECT_TRUE(GetDisplayNotificationText().empty());
+  EXPECT_EQ(l10n_util::GetStringUTF16(
+                IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED_TITLE),
+            GetDisplayNotificationText());
 
   // UI-scale to 1.0
   CloseNotification();
@@ -155,7 +157,9 @@ TEST_F(ScreenLayoutObserverTest, DisplayNotifications) {
                 IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED,
                 GetFirstDisplayName(), base::UTF8ToUTF16("400x400")),
             GetDisplayNotificationAdditionalText());
-  EXPECT_TRUE(GetDisplayNotificationText().empty());
+  EXPECT_EQ(l10n_util::GetStringUTF16(
+                IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED_TITLE),
+            GetDisplayNotificationText());
 
   // No-update
   CloseNotification();
@@ -195,7 +199,9 @@ TEST_F(ScreenLayoutObserverTest, DisplayNotifications) {
                 IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED,
                 GetFirstDisplayName(), base::UTF8ToUTF16("600x600")),
             GetDisplayNotificationAdditionalText());
-  EXPECT_TRUE(GetDisplayNotificationText().empty());
+  EXPECT_EQ(l10n_util::GetStringUTF16(
+                IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED_TITLE),
+            GetDisplayNotificationText());
 
   // Rotate the second.
   UpdateDisplay("400x400@1.5,200x200/r");
