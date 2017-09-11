@@ -3721,6 +3721,7 @@ test("unit_tests") {
 
       # The autofill popup is implemented in mostly native code on Android.
       "../browser/ui/autofill/autofill_popup_controller_unittest.cc",
+      "../browser/ui/blocked_content/scoped_visibility_tracker_unittest.cc",
       "../browser/ui/bookmarks/bookmark_context_menu_controller_unittest.cc",
       "../browser/ui/bookmarks/bookmark_unittest.cc",
       "../browser/ui/browser_close_unittest.cc",

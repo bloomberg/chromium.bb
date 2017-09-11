@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
 #include "chrome/browser/ui/blocked_content/blocked_window_params.h"
+#include "chrome/browser/ui/blocked_content/popup_tracker.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
@@ -198,14 +199,17 @@ void PopupBlockerTabHelper::ShowBlockedPopup(
 #else
   chrome::Navigate(&popup->params);
 #endif
-  if (popup->params.disposition == WindowOpenDisposition::NEW_POPUP &&
-      popup->params.target_contents) {
-    content::RenderFrameHost* host =
-        popup->params.target_contents->GetMainFrame();
-    DCHECK(host);
-    chrome::mojom::ChromeRenderFrameAssociatedPtr client;
-    host->GetRemoteAssociatedInterfaces()->GetInterface(&client);
-    client->SetWindowFeatures(popup->window_features.Clone());
+  if (popup->params.target_contents) {
+    PopupTracker::CreateForWebContents(popup->params.target_contents);
+
+    if (popup->params.disposition == WindowOpenDisposition::NEW_POPUP) {
+      content::RenderFrameHost* host =
+          popup->params.target_contents->GetMainFrame();
+      DCHECK(host);
+      chrome::mojom::ChromeRenderFrameAssociatedPtr client;
+      host->GetRemoteAssociatedInterfaces()->GetInterface(&client);
+      client->SetWindowFeatures(popup->window_features.Clone());
+    }
   }
 
   blocked_popups_.erase(id);
