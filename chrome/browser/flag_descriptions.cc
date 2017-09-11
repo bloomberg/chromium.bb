@@ -1900,6 +1900,10 @@ extern const char kPayWithGoogleV1Description[] =
     "Enable Pay with Google integration into Web Payments with API version "
     "'1'.";
 
+const char kProgressBarThrottleName[] = "Android progress update throttling.";
+const char kProgressBarThrottleDescription[] =
+    "Limit the maximum progress update to make progress appear smoother.";
+
 const char kProgressBarCompletionName[] =
     "Android phone page load progress bar completion time.";
 const char kProgressBarCompletionDescription[] =
