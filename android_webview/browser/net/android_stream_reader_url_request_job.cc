@@ -17,11 +17,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task_runner.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_util.h"
 #include "net/http/http_response_headers.h"
@@ -31,8 +29,6 @@
 #include "net/url_request/url_request_job_manager.h"
 
 using base::android::AttachCurrentThread;
-using base::PostTaskAndReplyWithResult;
-using content::BrowserThread;
 
 namespace android_webview {
 
@@ -190,11 +186,9 @@ void AndroidStreamReaderURLRequestJob::OnInputStreamOpened(
   input_stream_reader_wrapper_ = new InputStreamReaderWrapper(
       std::move(input_stream), std::move(input_stream_reader));
 
-  PostTaskAndReplyWithResult(
-      GetWorkerThreadRunner(),
-      FROM_HERE,
-      base::Bind(&InputStreamReaderWrapper::Seek,
-                 input_stream_reader_wrapper_,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
+      base::Bind(&InputStreamReaderWrapper::Seek, input_stream_reader_wrapper_,
                  byte_range_),
       base::Bind(&AndroidStreamReaderURLRequestJob::OnReaderSeekCompleted,
                  weak_factory_.GetWeakPtr()));
@@ -217,10 +211,6 @@ void AndroidStreamReaderURLRequestJob::OnReaderReadCompleted(int result) {
   ReadRawDataComplete(result);
 }
 
-base::TaskRunner* AndroidStreamReaderURLRequestJob::GetWorkerThreadRunner() {
-  return static_cast<base::TaskRunner*>(BrowserThread::GetBlockingPool());
-}
-
 int AndroidStreamReaderURLRequestJob::ReadRawData(net::IOBuffer* dest,
                                                   int dest_size) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -231,8 +221,8 @@ int AndroidStreamReaderURLRequestJob::ReadRawData(net::IOBuffer* dest,
     return 0;
   }
 
-  PostTaskAndReplyWithResult(
-      GetWorkerThreadRunner(), FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::Bind(&InputStreamReaderWrapper::ReadRawData,
                  input_stream_reader_wrapper_, base::RetainedRef(dest),
                  dest_size),
@@ -293,8 +283,8 @@ void AndroidStreamReaderURLRequestJob::DoStart() {
 
   // This could be done in the InputStreamReader but would force more
   // complex synchronization in the delegate.
-  GetWorkerThreadRunner()->PostTask(
-      FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {base::MayBlock()},
       base::Bind(
           &OpenInputStreamOnWorkerThread, base::ThreadTaskRunnerHandle::Get(),
           // This is intentional - the job could be deleted while the callback
