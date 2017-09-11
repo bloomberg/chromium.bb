@@ -67,6 +67,8 @@ KeyedService* ContentSuggestionsNotifierServiceFactory::BuildServiceInstanceFor(
     return new ContentSuggestionsNotifierService(
         profile->GetPrefs(), suggestions,
         base::MakeUnique<AndroidContentSuggestionsNotifier>());
+  } else {
+    AndroidContentSuggestionsNotifier().UnregisterChannel();
   }
 #endif
   return nullptr;
