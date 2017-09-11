@@ -7,6 +7,7 @@
 #import "base/ios/crb_protocol_observers.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
+#import "ios/chrome/browser/ui/ntp/modal_ntp.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar_item.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
@@ -24,16 +25,19 @@
 @interface NTPViewController ()<UIScrollViewDelegate, NewTabPageBarDelegate>
 @property(nonatomic, strong) NewTabPageView* NTPView;
 @property(nonatomic, strong) NSArray* tabBarItems;
+@property(nonatomic, strong) NewTabPageBarItem* itemToDisplay;
 @end
 
 @implementation NTPViewController
 
+@synthesize incognitoViewController = _incognitoViewController;
 @synthesize bookmarksViewController = _bookmarksViewController;
 @synthesize dispatcher = _dispatcher;
 @synthesize homeViewController = _homeViewController;
 @synthesize NTPView = _NTPView;
 @synthesize recentTabsViewController = _recentTabsViewController;
 @synthesize tabBarItems = _tabBarItems;
+@synthesize itemToDisplay = _itemToDisplay;
 @synthesize selectedNTPPanel = _selectedNTPPanel;
 
 #pragma mark - UIViewController
@@ -81,21 +85,14 @@
   if (!self.homeViewController) {
     // Make sure scrollView is properly set up.
     [self.NTPView layoutIfNeeded];
-    // PLACEHOLDER: This should come from the mediator.
-    if (IsIPadIdiom()) {
-      self.selectedNTPPanel = ntp_home::HOME_PANEL;
-      CGRect itemFrame = [self.NTPView panelFrameForItemAtIndex:1];
-      CGPoint point = CGPointMake(CGRectGetMinX(itemFrame), 0);
-      [self.NTPView.scrollView setContentOffset:point animated:NO];
-    } else {
-      [self.dispatcher showNTPHomePanel];
-    }
+
+    [self loadPanel:self.itemToDisplay];
   }
 }
 
 - (void)setHomeViewController:(UIViewController*)controller {
   _homeViewController = controller;
-  if (IsIPadIdiom()) {
+  if (!PresentNTPPanelModally()) {
     controller.view.frame = [self.NTPView panelFrameForItemAtIndex:1];
   } else {
     controller.view.frame = [self.NTPView panelFrameForItemAtIndex:0];
@@ -124,6 +121,19 @@
   [self addControllerToScrollView:_recentTabsViewController];
 }
 
+- (void)setIncognitoViewController:(UIViewController*)controller {
+  _incognitoViewController = controller;
+  if (!PresentNTPPanelModally()) {
+    controller.view.frame = [self.NTPView panelFrameForItemAtIndex:1];
+    NewTabPageBarItem* item = self.NTPView.tabBar.items[1];
+    item.view = controller.view;
+  } else {
+    controller.view.frame = [self.NTPView panelFrameForItemAtIndex:0];
+  }
+  self.selectedNTPPanel = ntp_home::INCOGNITO_PANEL;
+  [self addControllerToScrollView:_incognitoViewController];
+}
+
 #pragma mark - Private
 
 // Add the view controller to vc hierarchy and add the view to the scrollview.
@@ -133,10 +143,33 @@
   [controller didMoveToParentViewController:self];
 }
 
+- (void)loadPanel:(NewTabPageBarItem*)selectedItem {
+  if (!PresentNTPPanelModally()) {
+    NSUInteger index = [self.NTPView.tabBar.items indexOfObject:selectedItem];
+    CGRect itemFrame = [self.NTPView panelFrameForItemAtIndex:index];
+    CGPoint point = CGPointMake(CGRectGetMinX(itemFrame), 0);
+    [self.NTPView.scrollView setContentOffset:point animated:YES];
+  } else {
+    if (selectedItem.identifier == ntp_home::HOME_PANEL) {
+      [self.dispatcher showNTPHomePanel];
+    } else if (selectedItem.identifier == ntp_home::BOOKMARKS_PANEL) {
+      [self.dispatcher showNTPBookmarksPanel];
+    } else if (selectedItem.identifier == ntp_home::RECENT_TABS_PANEL) {
+      [self.dispatcher showNTPRecentTabsPanel];
+    } else if (selectedItem.identifier == ntp_home::INCOGNITO_PANEL) {
+      [self.dispatcher showNTPIncognitoPanel];
+    }
+  }
+}
+
 #pragma mark - NTPConsumer
 
 - (void)setBarItems:(NSArray*)items {
   self.tabBarItems = items;
+}
+
+- (void)setFirstItemToDisplay:(NewTabPageBarItem*)itemToDisplay {
+  self.itemToDisplay = itemToDisplay;
 }
 
 #pragma mark - UIScrollViewDelegate
@@ -165,6 +198,9 @@
   } else if (item.identifier == ntp_home::RECENT_TABS_PANEL &&
              !self.recentTabsViewController) {
     [self.dispatcher showNTPRecentTabsPanel];
+  } else if (item.identifier == ntp_home::BOOKMARKS_PANEL &&
+             !self.incognitoViewController) {
+    [self.dispatcher showNTPIncognitoPanel];
   }
   self.selectedNTPPanel = item.identifier;
 
@@ -185,18 +221,7 @@
 
 - (void)newTabBarItemDidChange:(NewTabPageBarItem*)selectedItem
                    changePanel:(BOOL)changePanel {
-  if (IsIPadIdiom()) {
-    NSUInteger index = [self.NTPView.tabBar.items indexOfObject:selectedItem];
-    CGRect itemFrame = [self.NTPView panelFrameForItemAtIndex:index];
-    CGPoint point = CGPointMake(CGRectGetMinX(itemFrame), 0);
-    [self.NTPView.scrollView setContentOffset:point animated:YES];
-  } else {
-    if (selectedItem.identifier == ntp_home::BOOKMARKS_PANEL) {
-      [self.dispatcher showNTPBookmarksPanel];
-    } else if (selectedItem.identifier == ntp_home::RECENT_TABS_PANEL) {
-      [self.dispatcher showNTPRecentTabsPanel];
-    }
-  }
+  [self loadPanel:selectedItem];
 }
 
 @end

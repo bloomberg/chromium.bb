@@ -13,7 +13,7 @@
 // various data sources.
 @interface NTPMediator : NSObject
 - (instancetype)initWithConsumer:(id<NTPConsumer>)consumer
-    NS_DESIGNATED_INITIALIZER;
+                     inIncognito:(BOOL)incognito NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 @end
 

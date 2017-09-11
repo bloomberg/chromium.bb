@@ -22,6 +22,8 @@
 // The tab grid to be displayed. Setting this property displays the |tabGrid|.
 @property(nonatomic, weak) UIViewController* tabGrid;
 
+@property(nonatomic, assign, getter=isIncognito) BOOL incognito;
+
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_TAB_GRID_TAB_GRID_CONTAINER_VIEW_CONTROLLER_H_
