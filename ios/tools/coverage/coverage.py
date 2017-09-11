@@ -458,6 +458,10 @@ def _ParseCommandArguments():
                                'based on CPUs availability. Please refer to '
                                '\'ninja -h\' for more details.')
 
+  arg_parser.add_argument('-r', '--reuse-profdata', type=str,
+                          help='Skip building test target and running tests '
+                               'and re-use the specified profile data file.')
+
   arg_parser.add_argument('target', nargs='+',
                           help='The name of the test target to run.')
 
@@ -513,7 +517,10 @@ def Main():
   if args.filter:
     _AssertFilterPathsExist(args.filter)
 
-  profdata_path = _CreateCoverageProfileDataForTarget(target, jobs)
+  profdata_path = args.reuse_profdata
+  if not profdata_path:
+    profdata_path = _CreateCoverageProfileDataForTarget(target, jobs)
+
   _DisplayLineCoverageReport(target, profdata_path,
                              args.filter or DEFAULT_FILTER_PATHS)
 
