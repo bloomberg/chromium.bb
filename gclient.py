@@ -1165,6 +1165,7 @@ _PLATFORM_MAPPING = {
   'darwin': 'mac',
   'linux2': 'linux',
   'win32': 'win',
+  'aix6': 'aix',
 }
 
 
@@ -1177,6 +1178,7 @@ class GClient(Dependency):
   solution or DEPS entry."""
 
   DEPS_OS_CHOICES = {
+    "aix6": "unix",
     "win32": "win",
     "win": "win",
     "cygwin": "win",
