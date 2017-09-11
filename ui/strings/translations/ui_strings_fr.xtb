@@ -13,7 +13,6 @@
 <translation id="1413622004203049571">Désactiver les notifications <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minute et  }one{# minute et  }other{# minutes et  }}</translation>
 <translation id="1643823602425662293">Notification</translation>
-<translation id="1685967565548146460">Enquête sur la satisfaction</translation>
 <translation id="1710340000377843106">maintenant</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minute}one{# minute}other{# minutes}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> o</translation>
@@ -30,8 +29,10 @@
 <translation id="2148716181193084225">Aujourd'hui</translation>
 <translation id="2168039046890040389">Page précédente</translation>
 <translation id="2190355936436201913">(vide)</translation>
+<translation id="219905428774326614">Lanceur d'applications, toutes les applications</translation>
 <translation id="2289052229480071835">Appuyez sur les cibles tactiles affichées à l'écran.</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> To/s</translation>
+<translation id="24452542372838207">Développer la notification</translation>
 <translation id="2482878487686419369">Notifications</translation>
 <translation id="2497284189126895209">Tous les fichiers</translation>
 <translation id="2522350507219695259">Calibrage terminé</translation>
@@ -72,7 +73,6 @@
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 seconde}one{# seconde}other{# secondes}}</translation>
 <translation id="4971687151119236543">Contenu multimédia : titre précédent</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="5016049845330225051">Bouton pour effacer le texte du champ de recherche</translation>
 <translation id="5046499563572181734">Appuyez ici</translation>
 <translation id="5076340679995252485">C&amp;oller</translation>
 <translation id="5120799197269191491">Recherche + <ph name="KEY_COMBO_NAME" /></translation>
@@ -92,6 +92,7 @@
 <translation id="5943826764092288734">{HOURS,plural, =1{1 heure}one{# heure}other{# heures}}</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">Toutes les applications</translation>
+<translation id="6022924867608035986">Effacer le texte de la zone de recherche</translation>
 <translation id="6040143037577758943">Fermer</translation>
 <translation id="6119846243427417423">activer</translation>
 <translation id="6129953537138746214">Espace</translation>
@@ -162,6 +163,7 @@
 <translation id="9002566407876343676">ouvrir</translation>
 <translation id="9038489124413477075">Dossier sans nom</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}one{# s}other{# s}}</translation>
+<translation id="9059834730836941392">Réduire la notification</translation>
 <translation id="9150735707954472829">Onglet</translation>
 <translation id="9161053988251441839">APPLICATIONS SUGGÉRÉES</translation>
 <translation id="9170848237812810038">Ann&amp;uler</translation>

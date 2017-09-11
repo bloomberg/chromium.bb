@@ -70,11 +70,18 @@ Il fattore di regolazione minimo deve essere 100%.</translation>
 <translation id="1330145147221172764">Attiva tastiera sullo schermo</translation>
 <translation id="1330985749576490863">Consente di disattivare Google Drive su connessioni alla rete dati nell'app File di <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="13356285923490863">Nome norma</translation>
+<translation id="134402861816424823">Consente di specificare le stampanti che non possono essere usate dagli utenti.
+
+      Questa norma viene usata soltanto se viene selezionata l'opzione BlacklistRestriction per la norma DeviceNativePrintersAccessMode.
+
+      Se viene usata questa norma, gli utenti potranno usare tutte le stampanti tranne quelle i cui ID sono elencati in questa norma.
+      </translation>
 <translation id="1353966721814789986">Pagine di avvio</translation>
 <translation id="1359553908012294236">Se questa norma viene impostata su true o non viene configurata, in <ph name="PRODUCT_NAME" /> verranno attivati gli accessi come ospite, che sono profili <ph name="PRODUCT_NAME" /> in cui tutte le finestre sono in modalità di navigazione in incognito.
 
       Se questa norma viene impostata su false, in <ph name="PRODUCT_NAME" /> non sarà possibile avviare profili ospite.</translation>
 <translation id="1363275621236827384">Attiva le query in Quirks Server per i profili hardware</translation>
+<translation id="1393485621820363363">Stampanti aziendali associate ai dispositivi attive</translation>
 <translation id="1397855852561539316">URL di suggerimento del provider di ricerca predefinito</translation>
 <translation id="1426410128494586442">Sì</translation>
 <translation id="1427655258943162134">Indirizzo o URL del server proxy</translation>
@@ -238,6 +245,21 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="209586405398070749">Canale stabile</translation>
 <translation id="2098658257603918882">Attiva rapporti sull'utilizzo e sui dati relativi agli arresti anomali</translation>
 <translation id="2113068765175018713">Limita il tempo di attività del dispositivo riavviandolo automaticamente</translation>
+<translation id="2126314858836465216">Consente di specificare le configurazioni delle stampanti aziendali associate ai dispositivi.
+
+      Questa norma ti consente di specificare le configurazioni delle stampanti per i dispositivi <ph name="PRODUCT_OS_NAME" />.
+Le dimensioni del file non devono superare 5 MB e il file deve essere codificato in JSON.
+Il formato corrisponde a quello del dizionario NativePrinters. È stato stimato che un file contenente circa 21.000 stampanti viene codificato come file di 5 MB. L'hash crittografico viene usato per verificare l'integrità del download.
+
+      Il file viene scaricato e memorizzato nella cache. Verrà scaricato di nuovo ogni volta che cambierà l'URL o l'hash.
+
+      Se questa norma viene impostata, <ph name="PRODUCT_OS_NAME" /> scaricherà il file per le configurazioni delle stampanti e renderà disponibili le stampanti in base alle norme DeviceNativePrintersAccessMode, DeviceNativePrintersWhitelist e DeviceNativePrintersBlacklist.
+
+      Questa norma non influisce sulla possibilità per gli utenti di configurare le stampanti su singoli dispositivi. È supplementare alla configurazione di stampanti da parte dei singoli utenti.
+
+      Si tratta di una norma aggiuntiva alla norma NativePrintersBulkConfiguration.
+
+      Se questa norma non viene impostata, non ci saranno stampanti per i dispositivi e le altre norme NativeDevicePrinter* verranno ignorate.</translation>
 <translation id="2127599828444728326">Consenti notifiche su questi siti</translation>
 <translation id="2131902621292742709">Ritardo oscuramento schermo in caso di utilizzo della batteria</translation>
 <translation id="2134437727173969994">Consenti blocco dello schermo</translation>
@@ -457,6 +479,11 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
       Ogni voce in elenco specifica un identificatore che viene utilizzato internamente per distinguere i vari account del dispositivo.</translation>
 <translation id="2769952903507981510">Configura il nome di dominio richiesto per gli host di accesso remoto</translation>
 <translation id="2787173078141616821">Segnala informazioni sullo stato di Android</translation>
+<translation id="2789419769822054691">Consente di specificare le stampanti utilizzabili dagli utenti.
+
+      Questa norma viene usata soltanto se viene selezionata l'opzione WhitelistPrintersOnly per la norma DeviceNativePrintersAccessMode.
+
+      Se viene usata questa norma, solo le stampanti con ID corrispondenti ai valori di questa norma saranno disponibili per gli utenti. Gli ID devono corrispondere alle voci del file specificato nella norma DeviceNativePrinters.</translation>
 <translation id="2801230735743888564">Consente di attivare il gioco del dinosauro quando il dispositivo è offline.
 
       Se questa norma viene impostata su False, gli utenti non potranno giocare al gioco del dinosauro quando il dispositivo è offline. Se viene impostata su True, gli utenti potranno giocare. Se la norma non viene impostata, gli utenti non potranno giocare al gioco del dinosauro su sistemi Chrome OS registrati, ma potranno giocarvi in altre circostanze.</translation>
@@ -511,13 +538,6 @@ Se questa norma non viene impostata, viene utilizzato un periodo di tempo predef
 Il valore della norma deve essere specificato in millisecondi. I valori devono essere inferiori o uguali al ritardo di disattivazione dello schermo (se impostato) e al ritardo di inattività.</translation>
 <translation id="2987155890997901449">Attiva ARC</translation>
 <translation id="2987227569419001736">Controlla l'utilizzo dell'API Web Bluetooth</translation>
-<translation id="2998881342848488968">Questa norma consente a <ph name="PRODUCT_OS_NAME" /> di aggirare qualsiasi proxy per l'autenticazione tramite captive portal.
-
-      Questa norma viene applicata soltanto se viene configurato un proxy (ad esempio tramite la norma, dall'utente in chrome://settings o tramite estensioni).
-
-      Se questa impostazione viene attivata, qualsiasi pagina di autenticazione tramite captive portal (vale a dire tutte le pagine web per cui viene inizialmente visualizzata una pagina di accesso tramite captive portal finché <ph name="PRODUCT_NAME" /> rileva una connessione Internet attiva) viene visualizzata in una finestra separata e vengono ignorate tutte le impostazioni delle norme/le restrizioni relative all'utente corrente.
-
-      Se questa impostazione viene disattivata o non viene configurata, qualsiasi pagina di autenticazione tramite captive portal viene visualizzata in una nuova (e normale) scheda del browser utilizzando le impostazioni proxy dell'utente corrente.</translation>
 <translation id="3001534538097271560">L'impostazione di questa norma su false impedisce agli utenti di decidere di inviare ai server di Google alcune informazioni sul sistema e alcuni contenuti delle pagine. Se questa norma viene impostata su true o non viene configurata, gli utenti potranno inviare alcune informazioni sul sistema e alcuni contenuti delle pagine alla funzione Navigazione sicura per contribuire a rilevare app e siti pericolosi.
 
       Visita il sito https://developers.google.com/safe-browsing per avere ulteriori informazioni sulla funzione Navigazione sicura.</translation>
@@ -645,6 +665,7 @@ Questa norma è facoltativa. Se non viene impostata, non verrà utilizzata la ri
 
 Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearchProviderEnabled".</translation>
 <translation id="350797926066071931">Abilita traduzione</translation>
+<translation id="3512226956150568738">Se il modello del dispositivo client supportava già ARC prima che fosse necessaria la migrazione a ext4 per eseguire ARC e se la norma ArcEnabled è impostata su true, questa opzione si comporterà come AskUser (valore 3). In tutti gli altri casi (se il modello del dispositivo non supportava ARC in precedenza o se la norma ArcEnabled è impostata su false), questo valore equivale a DisallowArc (valore 0).</translation>
 <translation id="3528000905991875314">Attiva pagine di errore sostitutive</translation>
 <translation id="3547954654003013442">Impostazioni proxy</translation>
 <translation id="3591584750136265240">Configura il comportamento di autenticazione dell'accesso</translation>
@@ -689,6 +710,11 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
           Se il criterio "EnableMediaRouter" è impostato su false, il valore del criterio non avrà effetto e l'icona della barra degli strumenti non sarà mostrata.</translation>
 <translation id="3788662722837364290">Impostazioni di gestione dell'alimentazione quando l'utente diventa inattivo</translation>
 <translation id="3793095274466276777">Configura i controlli del browser predefinito in <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificarli. Se attivi questa impostazione, all'avvio <ph name="PRODUCT_NAME" /> verifica sempre di essere il browser predefinito e, se possibile, si registra automaticamente. Se l'impostazione è disattivata, <ph name="PRODUCT_NAME" /> non potrà mai verificare di essere il browser predefinitoe disattiva i controlli utente per rendere attiva l'opzione. Se l'impostazione non è configurata, <ph name="PRODUCT_NAME" /> consente all'utente di controllare se il browser predefinito è impostato e, in caso contrario, se devono essere visualizzate le notifiche per gli utenti.</translation>
+<translation id="379602782757302612">Consente di specificare le estensioni che gli utenti NON possono installare. Se presenti nella lista nera, le estensioni precedentemente installate verranno rimosse, senza che l'utente possa attivarle. Quando un'estensione viene tolta dalla lista nera, viene riattivata automaticamente.
+
+          Un valore di * riportato nella lista nera indica che tutte le estensioni sono state inserite nella lista nera, a meno che non siano esplicitamente elencate nella whitelist.
+
+          Se questa norma non viene impostata, gli utenti potranno installare qualsiasi estensione in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3800626789999016379">Consente di configurare la directory che <ph name="PRODUCT_NAME" /> utilizza per il download dei file.
 
       Se la norma viene impostata, <ph name="PRODUCT_NAME" /> utilizza la directory fornita, indipendentemente dal fatto che l'utente ne abbia specificata una o abbia attivato il flag da attivare ogni volta per il percorso di download.
@@ -1018,8 +1044,10 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="5052081091120171147">Se è attiva, questa norma impone l'importazione della cronologia di navigazione dal browser predefinito corrente. Se la norma è attiva incide anche sulla finestra di dialogo di importazione. Se non è attiva, la cronologia di navigazione non viene importata. Se non viene impostata, all'utente potrebbe essere chiesto se desidera effettuare l'importazione, oppure l'importazione potrebbe avvenire automaticamente.</translation>
 <translation id="5056708224511062314">Ingrandimento dello schermo disattivato</translation>
 <translation id="5067143124345820993">Whitelist di utenti con accesso</translation>
+<translation id="5068140065960598044">La norma cloud di <ph name="PRODUCT_NAME" /> prevale sulla norma della macchina.</translation>
 <translation id="5085647276663819155">Disattiva anteprima di stampa</translation>
 <translation id="5105313908130842249">Ritardo blocco schermo in caso di utilizzo della batteria</translation>
+<translation id="5108031557082757679">Stampanti aziendali associate ai dispositivi disattivate</translation>
 <translation id="5130288486815037971">Attiva o meno i pacchetti di crittografia RC4 in TLS</translation>
 <translation id="5141670636904227950">Impostazione tipo di ingrandimento dello schermo predefinito attivato nella schermata di accesso</translation>
 <translation id="5142301680741828703">Visualizza sempre i seguenti schemi di URL in <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1448,6 +1476,13 @@ Se la norma viene impostata su false, la lettura vocale sarà sempre disattivata
 Se la norma viene impostata, gli utenti non potranno modificarla o ignorarla.
 
 Se la norma non viene configurata, la lettura vocale viene inizialmente disattivata ma potrà essere attivata dagli utenti in qualsiasi momento.</translation>
+<translation id="6922040258551909078">
+      Se la norma è impostata su true, la norma cloud ha la precedenza in caso di conflitto con la norma della macchina.
+      Se la norma è impostata su false o non è configurata, la norma della macchina ha la precedenza in caso di conflitto con la norma cloud.
+      Per ulteriori informazioni riguardo alla priorità delle norme, visita il sito all'indirizzo: https://support.google.com/chrome?p=set_chrome_policies_for_devices
+
+      Questa norma non è disponibile su istanze di Windows che non fanno parte di un dominio <ph name="MS_AD_NAME" />.
+      </translation>
 <translation id="6922884955650325312">Blocca il plug-in <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="6923366716660828830">Consente di specificare il nome del provider di ricerca predefinito. Se il nome non viene impostato verrà utilizzato il nome host specificato nell'URL di ricerca. Questa norma viene considerata soltanto se è attiva la norma "DefaultSearchProviderEnabled".</translation>
 <translation id="6931242315485576290">Disattiva la sincronizzazione dei dati con Google</translation>
@@ -1558,6 +1593,7 @@ Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</tra
 
       Se viene impostata su false, i suggerimenti di contenuti generati automaticamente non vengono mostrati nella pagina Nuova scheda.</translation>
 <translation id="7323896582714668701">Parametri aggiuntivi della riga di comando per <ph name="PRODUCT_NAME" /></translation>
+<translation id="7326394567531622570">Simile a Wipe (valore 2), ma prova a mantenere i token di accesso per evitare all'utente di dover accedere di nuovo.</translation>
 <translation id="7329842439428490522">Consente di specificare il periodo di tempo senza input dell'utente trascorso il quale lo schermo viene disattivato quando viene utilizzata la batteria.
 
 Se questa norma viene impostata su un valore maggiore di zero, consente di specificare il periodo di tempo per cui l'utente deve rimanere inattivo prima che <ph name="PRODUCT_OS_NAME" /> disattivi lo schermo.
@@ -1582,6 +1618,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
       Se questa norma non viene impostata, la pulizia automatica utilizza la strategia incorporata predefinita, che al momento è "RemoveLRUIfDormant".</translation>
 <translation id="7336878834592315572">Conserva cookie per tutta la durata della sessione</translation>
 <translation id="7340034977315324840">Indicazione tempi di attività del dispositivo</translation>
+<translation id="7343497214039883642">File di configurazione delle stampanti aziendali per i dispositivi</translation>
 <translation id="7384999953864505698">Consente il protocollo QUIC</translation>
 <translation id="7417972229667085380">Percentuale di regolazione del ritardo di inattività in modalità di presentazione (obsoleta)</translation>
 <translation id="7421483919690710988">Imposta le dimensioni della cache su disco multimediale in byte</translation>
@@ -1762,6 +1799,7 @@ Se questa norma non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà il v
       Se questa norma non viene impostata, sul dispositivo viene utilizzato il formato predefinito di 24 ore.</translation>
 <translation id="8114382167597081590">Non imporre la Modalità con restrizioni su YouTube</translation>
 <translation id="8118665053362250806">Imposta le dimensioni della cache su disco di supporto</translation>
+<translation id="8124468781472887384">Norma di accesso alla configurazione delle stampanti per i dispositivi.</translation>
 <translation id="8135937294926049787">Consente di specificare il periodo di tempo senza input dell'utente trascorso il quale lo schermo viene disattivato quando viene utilizzata la corrente alternata.
 
 Se questa norma viene impostata su un valore maggiore di zero, consente di specificare il periodo di tempo per cui l'utente deve rimanere inattivo prima che <ph name="PRODUCT_OS_NAME" /> disattivi lo schermo.
@@ -1862,7 +1900,6 @@ Se la norma viene impostata su false o non viene configurata, l'utente può util
 <translation id="8424255554404582727">Imposta la rotazione predefinita dello schermo, riapplicata a ogni riavvio</translation>
 <translation id="8426231401662877819">Ruota lo schermo in senso orario di 90°</translation>
 <translation id="8451988835943702790">Usa la pagina Nuova scheda come Pagina iniziale</translation>
-<translation id="8458790683633857482">Consente di specificare un insieme di norme che saranno trasferite al runtime ARC. Il valore deve essere un JSON valido.</translation>
 <translation id="8465065632133292531">Parametri per l'URL istantaneo che utilizza POST</translation>
 <translation id="847472800012384958">Non consentire la visualizzazione di popup nei siti</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
@@ -1927,6 +1964,13 @@ Se la norma non viene impostata o viene impostata su false, la posizione non vie
 <translation id="8864975621965365890">Consente di eliminare il messaggio di richiesta di turndown che compare quando un sito viene visualizzato da <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Pagina iniziale</translation>
 <translation id="8882006618241293596">Blocca il plug-in <ph name="FLASH_PLUGIN_NAME" /> su questi siti</translation>
+<translation id="8887644176044431146">Consente di stabilire quali stampanti della norma DeviceNativePrintersConfiguration mettere a disposizione degli utenti.
+
+      Consente di stabilire quale norma di accesso usare per la configurazione collettiva delle stampanti.
+      Se viene selezionata l'opzione AllowAll, vengono mostrate tutte le stampanti. Se viene selezionata l'opzione BlacklistRestrction, viene usata la norma DeviceNativePrintersBlacklist per limitare l'accesso a stampanti specifiche. Se viene selezionata l'opzione WhitelistPrintersOnly, la norma DeviceNativePrintersWhitelist stabilisce soltanto le stampanti selezionabili.
+
+      Se questa norma non viene impostata, viene usata l'opzione BlacklistRestriction.
+      </translation>
 <translation id="8906768759089290519">Attiva modalità ospite</translation>
 <translation id="8908294717014659003">Consente di stabilire se i siti web possono accedere ai dispositivi di acquisizione dei contenuti multimediali. L'accesso ai dispositivi di acquisizione dei contenuti multimediali può essere consentito per impostazione predefinita oppure l'utente può visualizzare una richiesta ogni volta che un sito web vuole accedere ai dispositivi di acquisizione dei contenuti multimediali.
 

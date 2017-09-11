@@ -3,6 +3,8 @@
 <translationbundle lang="zh-TW">
 <translation id="1012876632442809908">USB-C 裝置 (前方連接埠)</translation>
 <translation id="1013923882670373915">藍牙裝置「<ph name="DEVICE_NAME" />」要求配對權限，請在裝置上輸入以下 PIN 碼：<ph name="PINCODE" /></translation>
+<translation id="1032891413405719768">觸控筆電量偏低</translation>
+<translation id="1059194134494239015"><ph name="DISPLAY_NAME" />：<ph name="RESOLUTION" /></translation>
 <translation id="112308213915226829">自動隱藏檔案櫃</translation>
 <translation id="1153356358378277386">配對裝置</translation>
 <translation id="1195412055398077112">遮視區域</translation>
@@ -21,6 +23,7 @@
 <translation id="15373452373711364">大型滑鼠游標</translation>
 <translation id="1550523713251050646">按一下即可查看更多選項</translation>
 <translation id="1621499497873603021">電池剩餘使用時間：<ph name="TIME_LEFT" /></translation>
+<translation id="16620462294541761">很抱歉，系統無法驗證你的密碼，請再試一次。</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> 後用盡</translation>
 <translation id="1698760176351776263">IPv6 位址：<ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">這個裝置受到企業管理</translation>
@@ -104,7 +107,6 @@
 <translation id="3621202678540785336">輸入</translation>
 <translation id="3625258641415618104">已停用螢幕擷取畫面</translation>
 <translation id="3626281679859535460">亮度</translation>
-<translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> 的解析度已變更為 <ph name="RESOLUTION" /></translation>
 <translation id="3712407551474845318">擷取部分畫面</translation>
 <translation id="371370241367527062">前置麥克風</translation>
 <translation id="3742055079367172538">已拍攝螢幕擷取畫面</translation>
@@ -137,6 +139,7 @@
 <translation id="453661520163887813"><ph name="TIME" /> 後充飽</translation>
 <translation id="4544944664594876241">螢幕鎖定快速鍵已變更，請改用 <ph name="NEW_SHORTCUT" /> (停用 <ph name="OLD_SHORTCUT" />)。</translation>
 <translation id="4659419629803378708">ChromeVox 已啟用</translation>
+<translation id="4729904664295161097">個人助理僅適用於主要設定檔。</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">中斷連線</translation>
 <translation id="4849058404725798627">醒目顯示鍵盤焦點所在物件</translation>
@@ -161,6 +164,7 @@
 <translation id="5571066253365925590">藍牙已啟用</translation>
 <translation id="5597451508971090205"><ph name="DATE" /><ph name="SHORT_WEEKDAY" /></translation>
 <translation id="5600837773213129531">按下 Ctrl + Alt + Z 鍵即可停用互動朗讀功能。</translation>
+<translation id="5612734644261457353">很抱歉，系統仍然無法驗證你的密碼。注意：如果你的密碼最近有所異動，新密碼會在你登出後立即生效，目前請在這裡使用舊密碼。</translation>
 <translation id="5648021990716966815">麥克風插孔</translation>
 <translation id="5744083938413354016">輕觸拖曳</translation>
 <translation id="5777841717266010279">停止共用螢幕？</translation>
@@ -225,6 +229,7 @@
 <translation id="7256634071279256947">後置麥克風</translation>
 <translation id="7348093485538360975">螢幕小鍵盤</translation>
 <translation id="735745346212279324">已中斷 VPN 連線</translation>
+<translation id="7377169924702866686">大寫鍵已啟用。</translation>
 <translation id="742594950370306541">攝影機正在使用中。</translation>
 <translation id="743058460480092004">攝影機和麥克風正在使用中。</translation>
 <translation id="7510334386202674593">Ctrl + Shift + L 鍵</translation>
@@ -256,6 +261,7 @@
 <translation id="8190698733819146287">自訂語言與輸入法...</translation>
 <translation id="8308637677604853869">前一個選單</translation>
 <translation id="8351131234907093545">寫筆記</translation>
+<translation id="8392234662362215700">按下 Ctrl + Shift + 空格鍵可切換鍵盤配置。</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8433186206711564395">網路設定</translation>
 <translation id="8433977262951327081">在檔案櫃中顯示輸入選項選單方塊的快速鍵已變更，請改用：<ph name="NEW_SHORTCUT" /> (停用 <ph name="OLD_SHORTCUT" />)。</translation>

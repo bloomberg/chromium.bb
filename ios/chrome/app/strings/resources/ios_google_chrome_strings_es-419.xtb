@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
-<translation id="1326317727527857210">Accede a Chrome para obtener las pestañas de tus otros dispositivos.</translation>
 <translation id="1685087038067318291">Descubre las páginas web que envían los objetos cercanos. Cuando Bluetooth está activado, Chrome puede identificar las páginas web asociadas con los objetos cercanos y enviarlas de forma anónima a Google para determinar cuáles son las más útiles. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">Chrome verificó que <ph name="ISSUER" /> emitió el certificado de este sitio web.</translation>

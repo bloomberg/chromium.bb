@@ -18,6 +18,7 @@
 <translation id="1209206284964581585">Приховати</translation>
 <translation id="1219674500290482172">Неможливо під’єднатися до Інтернету.</translation>
 <translation id="1254117744268754948">Вибрати папку</translation>
+<translation id="1265739287306757398">Докладніше</translation>
 <translation id="1272079795634619415">Зупинити</translation>
 <translation id="129553762522093515">Нещодавно закриті</translation>
 <translation id="1323735185997015385">Видалити</translation>
@@ -47,7 +48,6 @@
 <translation id="1690731385917361335">Нічого немає</translation>
 <translation id="1700629756560807968">Вибрано <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="1740468249224277719">Торкніться двічі, щоб установити.</translation>
-<translation id="1749561566933687563">Синхронізуйте свої закладки</translation>
 <translation id="1752547299766512813">Зберігати паролі</translation>
 <translation id="1753905327828125965">Часто відвідувані</translation>
 <translation id="1809939268435598390">Видалити папку</translation>
@@ -60,12 +60,14 @@
 <translation id="1952728750904661634">Увійти в керований обліковий запис</translation>
 <translation id="1974060860693918893">Розширені</translation>
 <translation id="1989112275319619282">Переглянути</translation>
+<translation id="2015722694326466240">Щоб переглядати паролі, спершу потрібно налаштувати код доступу на пристрої.</translation>
 <translation id="2068952045031577364">Останній тиждень</translation>
 <translation id="2079545284768500474">Відмінити</translation>
 <translation id="209018056901015185">Повна версія сайту</translation>
 <translation id="2103075008456228677">Відкрити history.google.com</translation>
 <translation id="2116625576999540962">Переміщено елементів: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="2149973817440762519">Редагувати закладку</translation>
+<translation id="2154710561487035718">Копіювати URL-адресу</translation>
 <translation id="2230173723195178503">Веб-сторінку завантажено</translation>
 <translation id="2267753748892043616">Додати обліковий запис</translation>
 <translation id="2273327106802955778">Більше опцій</translation>
@@ -134,7 +136,6 @@
 <translation id="3474649192738347024">Форми заповнено.</translation>
 <translation id="3478058380795961209">Місяць закінчення терміну дії</translation>
 <translation id="3482959374254649722">Синхронізація вкладок…</translation>
-<translation id="3487093336331957349">Пропозиції пошукових термінів і сайтів</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /> про пропонований вміст</translation>
 <translation id="3494788280727468875">Підтвердити очищення даних веб-перегляду</translation>
 <translation id="3519193562722059437">Щоб переглядати веб-сторінки, відкрийте вкладку.</translation>
@@ -155,6 +156,7 @@
 <translation id="3779810277399252432">Немає з’єднання з Інтернетом</translation>
 <translation id="3783017676699494206">Зберегти зображення</translation>
 <translation id="385051799172605136">Назад</translation>
+<translation id="3857761338463387655">Створити електронний лист у додатку:</translation>
 <translation id="3897092660631435901">Меню</translation>
 <translation id="3928666092801078803">Об’єднати мої дані</translation>
 <translation id="3950820424414687140">Увійти</translation>
@@ -182,6 +184,8 @@
 <translation id="4508750114462689118">Закрити заклик до входу</translation>
 <translation id="4526249700380860531">Переглядайте збережені паролі та керуйте ними на сторінці <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Спробуйте ввійти ще раз.</translation>
+<translation id="457386861538956877">Інші...</translation>
+<translation id="461440297010471931">Пошук у Google</translation>
 <translation id="4620246317052452550">Прочитані сторінки</translation>
 <translation id="4636930964841734540">Інформація</translation>
 <translation id="4659667755519643272">Відкрити перемикач вкладок</translation>
@@ -190,6 +194,7 @@
 Ваші дані зашифровано за допомогою парольної фрази. Введіть її, щоб почати синхронізацію.</translation>
 <translation id="473775607612524610">Оновити</translation>
 <translation id="481968316161811770">Файли cookie й дані із сайтів</translation>
+<translation id="4854345657858711387">Налаштуйте код доступу</translation>
 <translation id="4860895144060829044">Зателефонувати</translation>
 <translation id="4875622588773761625">Оновити пароль для цього сайту в <ph name="PASSWORD_MANAGER_BRAND" />?</translation>
 <translation id="4881695831933465202">Відкрити</translation>
@@ -242,6 +247,7 @@
 <translation id="5871497086027727873">Переміщено 1 елемент</translation>
 <translation id="5911030830365207728">Перекладач Google</translation>
 <translation id="5916664084637901428">Увімкнути</translation>
+<translation id="5948291296578561264">Ви зможете зберігати знімки в бібліотеці фотографій.</translation>
 <translation id="5953603475187800576">Показувати адреси та дані кредитних карток із Google Payments</translation>
 <translation id="5955891643922670672">Перегляд офлайн-версії</translation>
 <translation id="5964480694698977962">Створити анонімну вкладку.</translation>
@@ -342,6 +348,7 @@
 <translation id="7649070708921625228">Довідка</translation>
 <translation id="7658239707568436148">Скасувати</translation>
 <translation id="7671141431838911305">INSTALL</translation>
+<translation id="7677825787905683892">Вибрати поштовий додаток за умовчанням</translation>
 <translation id="7765158879357617694">Перемістити</translation>
 <translation id="7769602470925380267">Прийняти та вийти</translation>
 <translation id="7772032839648071052">Підтвердити парольну фразу</translation>
@@ -405,6 +412,7 @@
 <translation id="9083392325882095631">1 закладка</translation>
 <translation id="9100610230175265781">Потрібно вказати парольну фразу</translation>
 <translation id="9148126808321036104">Увійти знову</translation>
+<translation id="914898748153555155">Цей параметр можна будь-коли змінити в налаштуваннях Chrome</translation>
 <translation id="9157836665414082580">Заблокувати діалогові вікна</translation>
 <translation id="9188680907066685419">Вийти з керованого облікового запису</translation>
 <translation id="9203116392574189331">Handoff</translation>

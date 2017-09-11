@@ -546,13 +546,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Phải chỉ định giá trị chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng độ trễ tắt màn hình (nếu được đặt) và độ trễ khi không sử dụng.</translation>
 <translation id="2987155890997901449">Bật ARC</translation>
 <translation id="2987227569419001736">Kiểm soát việc sử dụng API Web Bluetooth</translation>
-<translation id="2998881342848488968">Chính sách này cho phép <ph name="PRODUCT_OS_NAME" /> bỏ qua proxy bất kỳ để xác thực cổng cố định.
-
-      Chính sách này chỉ có hiệu lực khi một proxy được định cấu hình (ví dụ: thông qua chính sách, bởi người dùng trong chrome://settings hoặc bởi các tiện ích).
-
-      Nếu bạn bật cài đặt này, mọi trang xác thực cổng cố định (nghĩa là tất cả các trang web bắt đầu từ trang đăng nhập cổng cố định cho đến <ph name="PRODUCT_NAME" /> phát hiện kết nối internet thành công) sẽ được hiển thị trong một cửa sổ riêng, bỏ qua tất cả cài đặt chính sách và hạn chế cho người dùng hiện tại.
-
-      Nếu bạn tắt hoặc không thiết lập cài đặt này, mọi trang xác thực cổng cố định sẽ được hiển thị trong tab trình duyệt mới (thông thường) bằng các cài đặt proxy của người dùng hiện tại.</translation>
 <translation id="3001534538097271560">Đặt chính sách này thành false sẽ ngăn người dùng chọn gửi nội dung trang và thông tin hệ thống nhất định tới máy chủ Google. Nếu cài đặt này là true hoặc không được định cấu hình, thì người dùng sẽ được phép gửi nội dung trang và thông tin hệ thống nhất định tới dịch vụ Duyệt web an toàn nhằm giúp phát hiện các ứng dụng cũng như trang web nguy hiểm.
 
       Hãy xem https://developers.google.com/safe-browsing để biết thêm thông tin về Duyệt web an toàn.</translation>
@@ -687,6 +680,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Chính sách này chỉ được tuân theo nếu kích hoạt chính sách 'DefaultSearchProviderEnabled'.</translation>
 <translation id="350797926066071931">Bật tính năng Dịch</translation>
+<translation id="3512226956150568738">Nếu kiểu thiết bị của khách hàng đã hỗ trợ ARC trước khi di chuyển sang ext4 là điều kiện cần để chạy ARC và nếu chính sách ArcEnabled được đặt thành true thì tùy chọn này sẽ hoạt động giống như AskUser (giá trị 3). Trong tất cả các trường hợp khác (nếu kiểu thiết bị không hỗ trợ ARC từ trước hoặc nếu chính sách ArcEnabled được đặt thành false), thì giá trị này sẽ tương đương với DisallowArc (giá trị 0).</translation>
 <translation id="3528000905991875314">Bật các trang lỗi thay thế</translation>
 <translation id="3547954654003013442">Cài đặt proxy</translation>
 <translation id="3591584750136265240">Định cấu hình hành vi xác thực thông tin đăng nhập</translation>
@@ -731,6 +725,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu chính sách "EnableMediaRouter" được đặt thành false thì giá trị của chính sách này sẽ không có hiệu lực và biểu tượng thanh công cụ sẽ không được hiển thị.</translation>
 <translation id="3788662722837364290">Cài đặt quản lý nguồn khi người dùng không sử dụng</translation>
 <translation id="3793095274466276777">Định cấu hình kiểm tra trình duyệt mặc định trong <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi cấu hình này. Nếu bạn bật cài đặt này, <ph name="PRODUCT_NAME" /> sẽ luôn kiểm tra khi khởi động để xem đó có phải là trình duyệt mặc định không và tự động đăng ký chính nó nếu có thể. Nếu bạn tắt cài đặt này, <ph name="PRODUCT_NAME" /> sẽ không bao giờ kiểm tra xem đó có phải là trình duyệt mặc định không và vô hiệu hóa kiểm soát của người dùng để đặt tùy chọn này. Nếu cài đặt này không được thiết lập, <ph name="PRODUCT_NAME" /> sẽ cho phép người dùng kiểm soát xem đó có phải là trình duyệt mặc định không và có nên hiển thị thông báo cho người dùng hay không khi không phải là trình duyệt mặc định.</translation>
+<translation id="379602782757302612">Cho phép bạn chỉ định tiện ích mà người dùng KHÔNG thể cài đặt. Những tiện ích đã cài đặt sẽ bị tắt nếu nằm trong danh sách cấm và người dùng không thể bật các tiện ích đó. Khi tiện ích bị tắt do thuộc danh sách cấm được loại bỏ khỏi danh sách này, tiện ích đó sẽ tự động được bật lại.
+
+          Giá trị danh sách cấm '*' có nghĩa là tất cả các tiện ích đều được đưa vào danh sách cấm trừ khi chúng được liệt kê rõ ràng trong danh sách cho phép.
+
+          Nếu chính sách này không được đặt thì người dùng có thể cài đặt mọi tiện ích trong <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3800626789999016379">Định cấu hình thư mục mà <ph name="PRODUCT_NAME" /> sẽ sử dụng để tải xuống tệp.
 
       Nếu bạn đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ sử dụng thư mục được cung cấp bất kể người dùng đã chỉ định một thư mục hay đã bật cờ để được nhắc vị trí cho mỗi lần tải xuống.
@@ -1085,6 +1084,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu không thiết lập chính sách này, người dùng có thể được hỏi có nhập hay không hoặc quá trình nhập có thể diễn ra tự động.</translation>
 <translation id="5056708224511062314">Đã tắt kính lúp màn hình</translation>
 <translation id="5067143124345820993">Danh sách trắng những người dùng được phép đăng nhập</translation>
+<translation id="5068140065960598044">Chính sách đám mây của <ph name="PRODUCT_NAME" /> ghi đè Chính sách máy.</translation>
 <translation id="5085647276663819155">Vô hiệu hóa xem trước bản in</translation>
 <translation id="5105313908130842249">Độ trễ khóa màn hình khi chạy trên nguồn pin</translation>
 <translation id="5130288486815037971">Bộ mã hóa RC4 trong TLS có được bật không</translation>
@@ -1561,6 +1561,13 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu bạn đặt chính sách này, người dùng không thể thay đổi hoặc ghi đè chính sách.
 
           Nếu không đặt chính sách này, phản hồi bằng giọng nói bị tắt ngay từ đầu nhưng người dùng có thể bật tính năng này bất cứ lúc nào.</translation>
+<translation id="6922040258551909078">
+      Nếu đặt chính sách thành true, thì chính sách đám mây sẽ được ưu tiên trong trường hợp xung đột với chính sách máy.
+      Nếu đặt chính sách thành false hoặc không định cấu hình chính sách, thì chính sách máy sẽ được ưu tiên trong trường hợp xung đột với chính sách đám mây.
+      Để biết thêm chi tiết về ưu tiên chính sách, vui lòng truy cập vào: https://support.google.com/chrome?p=set_chrome_policies_for_devices
+
+      Chính sách này không áp dụng trên các phiên bản Windows không tham gia vào miền <ph name="MS_AD_NAME" />.
+      </translation>
 <translation id="6922884955650325312">Chặn plugin <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="6923366716660828830">Chỉ định tên của nhà cung cấp dịch vụ tìm kiếm mặc định. Nếu để trống hoặc không đặt, tên máy chủ lưu trữ do URL tìm kiếm chỉ định sẽ được sử dụng.
 
@@ -1683,6 +1690,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu giá trị này được đặt thành false, các đề xuất nội dung được tạo tự động sẽ không hiển thị trên trang Tab mới.</translation>
 <translation id="7323896582714668701">Tham số dòng lệnh bổ sung cho <ph name="PRODUCT_NAME" /></translation>
+<translation id="7326394567531622570">Tương tự như Wipe (giá trị 2) nhưng tìm cách lưu giữ mã đăng nhập để người dùng không phải đăng nhập lại.</translation>
 <translation id="7329842439428490522">Chỉ định khoảng thời gian không có thao tác nhập của người dùng mà sau khoảng thời gian đó màn hình bị tắt khi chạy trên nguồn pin.
 
           Khi được đặt thành một giá trị lớn hơn không, chính sách này chỉ định khoảng thời gian người dùng phải duy trì chế độ không sử dụng trước khi <ph name="PRODUCT_OS_NAME" /> tắt màn hình.
@@ -2015,7 +2023,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="8424255554404582727">Đặt chế độ xoay màn hình mặc định, được áp dụng lại mỗi lần khởi động lại</translation>
 <translation id="8426231401662877819">Xoay màn hình 90 độ theo chiều kim đồng hồ</translation>
 <translation id="8451988835943702790">Sử dụng trang Tab mới làm trang chủ</translation>
-<translation id="8458790683633857482">Chỉ định nhóm chính sách sẽ được chuyển giao trong thời gian chạy ARC. Giá trị phải là JSON hợp lệ.</translation>
 <translation id="8465065632133292531">Tham số cho URL tức thì sử dụng POST</translation>
 <translation id="847472800012384958">Không cho phép bất kỳ trang web nào hiển thị cửa sổ bật lên</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>

@@ -73,11 +73,20 @@
 <translation id="1330145147221172764">Enable on-screen keyboard</translation>
 <translation id="1330985749576490863">Disables Google Drive over mobile connections in the <ph name="PRODUCT_OS_NAME" /> Files app</translation>
 <translation id="13356285923490863">Policy Name</translation>
+<translation id="134402861816424823">Specifies the printers which a user cannot use.
+
+      This policy is only used if BlacklistRestriction is chosen for
+      DeviceNativePrintersAccessMode.
+
+      If this policy is used, all printers are provided to the user except
+      for the ids listed in this policy.
+      </translation>
 <translation id="1353966721814789986">Startup pages:</translation>
 <translation id="1359553908012294236">If this policy is set to true or not configured, <ph name="PRODUCT_NAME" /> will enable guest logins. Guest logins are <ph name="PRODUCT_NAME" /> profiles where all windows are in incognito mode.
 
       If this policy is set to false, <ph name="PRODUCT_NAME" /> will not allow guest profiles to be started.</translation>
 <translation id="1363275621236827384">Enable queries to Quirks Server for hardware profiles</translation>
+<translation id="1393485621820363363">Enabled enterprise device printers</translation>
 <translation id="1397855852561539316">Default search provider suggest URL</translation>
 <translation id="1426410128494586442">Yes</translation>
 <translation id="1427655258943162134">Address or URL of proxy server</translation>
@@ -257,6 +266,33 @@
 <translation id="209586405398070749">Stable channel</translation>
 <translation id="2098658257603918882">Enable reporting of usage and crash-related data</translation>
 <translation id="2113068765175018713">Limit device uptime by automatically rebooting</translation>
+<translation id="2126314858836465216">Provides configurations for enterprise printers bound to devices.
+
+      This policy allows you to provide printer configurations to
+      <ph name="PRODUCT_OS_NAME" /> devices.
+      The size of the file must not exceed 5 MB and must be encoded in JSON.
+      The format is the same as the NativePrinters dictionary. It is estimated
+      that a file containing approximately 21,000 printers will encode as a 5-MB
+      file. The cryptographic hash is used to verify the integrity of the
+      download.
+
+      The file is downloaded and cached. It will be re-downloaded whenever
+      the URL or the hash changes.
+
+      If this policy is set,
+      <ph name="PRODUCT_OS_NAME" /> will download
+      the file for printer configurations and make printers available in
+      accordance with DeviceNativePrintersAccessMode, DeviceNativePrintersWhitelist
+      and DeviceNativePrintersBlacklist.
+
+      This policy has no effect on whether users can configure printers on
+      individual devices. It is intended to be supplementary to the
+      configuration of printers by individual users.
+
+      This policy is additive to the NativePrintersBulkConfiguration.
+
+      If this policy is unset, there will be no device printers and the other
+      NativeDevicePrinter* policies will be ignored.</translation>
 <translation id="2127599828444728326">Allow notifications on these sites</translation>
 <translation id="2131902621292742709">Screen dim delay when running on battery power</translation>
 <translation id="2134437727173969994">Permit locking the screen</translation>
@@ -500,6 +536,14 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       Every list entry specifies an identifier, which is used internally to tell the different device-local accounts apart.</translation>
 <translation id="2769952903507981510">Configure the required domain name for remote access hosts</translation>
 <translation id="2787173078141616821">Report information about status of Android</translation>
+<translation id="2789419769822054691">Specifies the printers which a user can use.
+
+      This policy is only used if WhitelistPrintersOnly is chosen for
+      DeviceNativePrintersAccessMode.
+
+      If this policy is used, only the printers with ids matching the values
+      in this policy are available to the user. The ids must correspond to
+      the entries in the file specified in DeviceNativePrinters.</translation>
 <translation id="2801230735743888564">Allow users to play dinosaur easter egg game when device is offline.
 
       If this policy is set to False, users will not be able to play the dinosaur Easter egg game when device is offline. If this setting is set to True, users are allowed to play the dinosaur game. If this policy is not set, users are not allowed to play the dinosaur Easter egg game on enrolled Chrome OS, but are allowed to play it under other circumstances.</translation>
@@ -554,13 +598,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           The policy value should be specified in milliseconds. Values are clamped to be less than or equal the screen off delay (if set) and the idle delay.</translation>
 <translation id="2987155890997901449">Enable ARC</translation>
 <translation id="2987227569419001736">Control use of the Web Bluetooth API</translation>
-<translation id="2998881342848488968">This policy allows <ph name="PRODUCT_OS_NAME" /> to bypass any proxy for captive portal authentication.
-
-      This policy only takes effect if a proxy is configured (for example through policy, by the user in chrome://settings or by extensions).
-
-      If you enable this setting, any captive portal authentication pages (i.e. all web pages starting from captive portal sign in page until <ph name="PRODUCT_NAME" /> detects successful Internet connection) will be displayed in a separate window ignoring all policy settings and restrictions for the current user.
-
-      If you disable this setting or leave it unset, any captive portal authentication pages will be shown in a (regular) new browser tab, using the current user's proxy settings.</translation>
 <translation id="3001534538097271560">Setting this policy to false stops users from choosing to send some system information and page content to Google servers. If this setting is true or not configured, users will be allowed to send some system information and page content to Safe Browsing to help detect dangerous apps and sites.
 
       See https://developers.google.com/safe-browsing for more info on SafeBrowsing.</translation>
@@ -696,6 +733,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="350797926066071931">Enable Translate</translation>
+<translation id="3512226956150568738">If the client device model already supported ARC before migration to ext4 was necessary to run ARC, and if the ArcEnabled policy is set to true, this option will behave as AskUser (value 3). In all other cases (if the device model did not support ARC before, or if ArcEnabled policy is set to false), this value is equivalent to DisallowArc (value 0).</translation>
 <translation id="3528000905991875314">Enable alternate error pages</translation>
 <translation id="3547954654003013442">Proxy settings</translation>
 <translation id="3591584750136265240">Configure the login authentication behaviour</translation>
@@ -1110,6 +1148,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="5068140065960598044"><ph name="PRODUCT_NAME" /> cloud policy overrides Machine policy.</translation>
 <translation id="5085647276663819155">Disable Print Preview</translation>
 <translation id="5105313908130842249">Screen lock delay when running on battery power</translation>
+<translation id="5108031557082757679">Disabled enterprise device printers</translation>
 <translation id="5130288486815037971">Whether RC4 cipher suites in TLS are enabled</translation>
 <translation id="5141670636904227950">Set the default screen magnifier type enabled on the login screen</translation>
 <translation id="5142301680741828703">Always render the following URL patterns in <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1716,6 +1755,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If this is set to false, automatically-generated content suggestions are not shown on the New Tab page.</translation>
 <translation id="7323896582714668701">Additional command line parameters for <ph name="PRODUCT_NAME" /></translation>
+<translation id="7326394567531622570">Similar to Wipe (value 2), but tries to preserve login tokens so that the user does not have to sign in again.</translation>
 <translation id="7329842439428490522">Specifies the length of time without user input after which the screen is turned off when running on battery power.
 
           When this policy is set to a value greater than zero, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME" /> turns off the screen.
@@ -1742,6 +1782,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this policy is not set, automatic clean-up uses the default built-in strategy. Currently, it is the 'RemoveLRUIfDormant' strategy.</translation>
 <translation id="7336878834592315572">Keep cookies for the duration of the session.</translation>
 <translation id="7340034977315324840">Report device activity times</translation>
+<translation id="7343497214039883642">Enterprise printer configuration file for devices</translation>
 <translation id="7384999953864505698">Allows QUIC protocol</translation>
 <translation id="7417972229667085380">Percentage by which to scale the idle delay in presentation mode (deprecated)</translation>
 <translation id="7421483919690710988">Set media disk cache size in bytes</translation>
@@ -1936,6 +1977,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this policy is not set, the device will default to a 24-hour clock format.</translation>
 <translation id="8114382167597081590">Do not enforce Restricted Mode on YouTube</translation>
 <translation id="8118665053362250806">Set media disk cache size</translation>
+<translation id="8124468781472887384">Device printers configuration access policy.</translation>
 <translation id="8135937294926049787">Specifies the length of time without user input after which the screen is turned off when running on AC power.
 
           When this policy is set to a value greater than zero, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME" /> turns off the screen.
@@ -2055,7 +2097,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="8424255554404582727">Set default display rotation, reapplied on every reboot</translation>
 <translation id="8426231401662877819">Rotate screen clockwise by 90 degrees</translation>
 <translation id="8451988835943702790">Use New Tab Page as homepage</translation>
-<translation id="8458790683633857482">Specifies a set of policies that will be handed over to the ARC runtime. The value must be valid JSON.</translation>
 <translation id="8465065632133292531">Parameters for instant URL which uses POST</translation>
 <translation id="847472800012384958">Do not allow any site to show pop-ups</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
@@ -2130,6 +2171,18 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="8864975621965365890">Suppresses the turn-down prompt that appears when a site is rendered by <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Homepage</translation>
 <translation id="8882006618241293596">Block the <ph name="FLASH_PLUGIN_NAME" /> plug-in on these sites</translation>
+<translation id="8887644176044431146">Controls which printers from the
+      DeviceNativePrintersConfiguration are available to users.
+
+      Designates which access policy is used for bulk printer configuration.
+      If AllowAll is selected, all printers are shown. If BlacklistRestriction
+      is selected, DeviceNativePrintersBlacklist is used to restrict access to
+      the specified printers. If WhitelistPrintersOnly is selected,
+      DeviceNativePrintersWhitelist designates only those printers which are
+      selectable.
+
+      If this policy is not set, BlacklistRestriction is assumed.
+      </translation>
 <translation id="8906768759089290519">Enable guest mode</translation>
 <translation id="8908294717014659003">Allows you to set whether websites are allowed to get access to media capture devices. Access to media capture devices can be allowed by default, or the user can be asked every time a website wants to get access to media capture devices.
 

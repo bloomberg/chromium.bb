@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
 <translation id="1006017844123154345">เปิดแบบออนไลน์</translation>
+<translation id="1036727731225946849">กำลังเพิ่ม <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1049743911850919806">โหมดไม่ระบุตัวตน</translation>
 <translation id="10614374240317010">ไม่เคยบันทึก</translation>
 <translation id="1068672505746868501">ไม่ต้องแปลหน้าเว็บภาษา<ph name="SOURCE_LANGUAGE" /></translation>
@@ -34,7 +35,6 @@
 <translation id="129553762522093515">เพิ่งปิด</translation>
 <translation id="1303671224831497365">ไม่พบอุปกรณ์บลูทูธ</translation>
 <translation id="1326317727527857210">ลงชื่อเข้าใช้ Chrome เพื่อรับแท็บจากอุปกรณ์เครื่องอื่นๆ ของคุณ</translation>
-<translation id="132830257261478853">แถบที่อยู่เว็บ ดึงลงเพื่อปิดแผงการนำทาง</translation>
 <translation id="1332501820983677155">แป้นพิมพ์ลัดสำหรับฟีเจอร์ของ Google Chrome</translation>
 <translation id="1369915414381695676">เพิ่มเว็บไซต์ <ph name="SITE_NAME" /> แล้ว</translation>
 <translation id="1373696734384179344">หน่วยความจำไม่เพียงพอที่จะดาวน์โหลดเนื้อหาที่เลือก</translation>
@@ -92,7 +92,6 @@
 <translation id="1832521218263067499">เหตุการณ์ด้านความปลอดภัย</translation>
 <translation id="1853692000353488670">แท็บใหม่ที่ไม่ระบุตัวตน</translation>
 <translation id="189172778771606813">ปิดลิ้นชักการนำทาง</translation>
-<translation id="1892551174703874605">แถบที่อยู่เว็บ ดึงขึ้นเพื่อดูบุ๊กมาร์ก การดาวน์โหลด และประวัติ</translation>
 <translation id="1897409700584096124">เว็บไซต์กำลังออกอากาศ</translation>
 <translation id="1919345977826869612">โฆษณา</translation>
 <translation id="1933845786846280168">แท็บที่เลือก</translation>
@@ -133,7 +132,9 @@
 <translation id="2227444325776770048">ดำเนินการต่อในชื่อ <ph name="USER_FULL_NAME" /></translation>
 <translation id="2266890032547182881">รายละเอียดปริมาณการใช้อินเทอร์เน็ต</translation>
 <translation id="2268044343513325586">ปรับแต่ง</translation>
+<translation id="2283599456633275070">การเดินทาง</translation>
 <translation id="2286841657746966508">ที่อยู่สำหรับเรียกเก็บเงิน</translation>
+<translation id="2301209717432756327">เพิ่มไว้ในหน้าจอหลักแล้ว</translation>
 <translation id="2315043854645842844">ระบบปฏิบัติการไม่สนับสนุนการเลือกใบรับรองฝั่งลูกค้า</translation>
 <translation id="2321958826496381788">ลากแถบเลื่อนจนกว่าคุณจะสามารถอ่านได้อย่างสะดวก ข้อความควรมีขนาดเท่านี้เป็นอย่างน้อยหลังจากแตะ 2 ครั้งบนย่อหน้า</translation>
 <translation id="2323763861024343754">พื้นที่เก็บข้อมูลเว็บไซต์</translation>
@@ -271,6 +272,7 @@
 <translation id="3661699943263275414">เว็บไซต์ของบุคคลที่สามสามารถบันทึกและอ่านข้อมูลคุกกี้ได้</translation>
 <translation id="3662546969139119822">ไม่มีประวัติการเข้าชมที่นี่</translation>
 <translation id="3672452749423051839">คำแนะนำเมื่อเกิดข้อผิดพลาดในการนำทาง</translation>
+<translation id="3706423975342040244">ความบันเทิง</translation>
 <translation id="3714981814255182093">เปิดแถบค้นหา</translation>
 <translation id="3734660163659757482">ดึงขึ้นเพื่อดูบุ๊กมาร์กและอื่นๆ</translation>
 <translation id="3738139272394829648">แตะเพื่อค้นหา</translation>
@@ -303,6 +305,7 @@
 <translation id="3988213473815854515">อนุญาตตำแหน่ง</translation>
 <translation id="3997476611815694295">พื้นที่เก็บข้อมูลที่ไม่สำคัญ</translation>
 <translation id="4002066346123236978">ชื่อ</translation>
+<translation id="4013356575049925793">อีคอมเมิร์ซ</translation>
 <translation id="4042870126885713738">แสดงคำแนะนำเมื่อไม่สามารถระบุที่อยู่เว็บหรือไม่สามารถเชื่อมต่อได้</translation>
 <translation id="4046123991198612571">แทร็กถัดไป</translation>
 <translation id="4056223980640387499">ซีเปีย</translation>
@@ -317,8 +320,10 @@
 <translation id="410351446219883937">เล่นอัตโนมัติ</translation>
 <translation id="4113030288477039509">มีการจัดการโดยผู้ดูแลระบบ</translation>
 <translation id="4116038641877404294">ดาวน์โหลดหน้าเพื่อใช้งานแบบออฟไลน์</translation>
+<translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d บุ๊กมาร์ก}other{%1$d บุ๊กมาร์ก}}</translation>
 <translation id="4165986682804962316">การตั้งค่าไซต์</translation>
 <translation id="4170011742729630528">บริการนี้ยังไม่สามารถใช้ได้ โปรดลองอีกครั้งในภายหลัง</translation>
+<translation id="4183813635650697113"><ph name="WEB_APP_NAME" /> ทำงานใน Chrome</translation>
 <translation id="4195643157523330669">เปิดในแท็บใหม่</translation>
 <translation id="4226663524361240545">การแจ้งเตือนอาจทำให้อุปกรณ์สั่น</translation>
 <translation id="4242533952199664413">เปิดการตั้งค่า</translation>
@@ -335,10 +340,12 @@
 <translation id="4351244548802238354">ปิดหน้าต่างโต้ตอบ</translation>
 <translation id="4378154925671717803">โทรศัพท์</translation>
 <translation id="4384468725000734951">กำลังใช้ Sogou ในการค้นหา</translation>
+<translation id="4404568932422911380">ไม่มีบุ๊กมาร์ก</translation>
 <translation id="4412992751769744546">อนุญาตคุกกี้ของบุคคลที่สาม</translation>
 <translation id="443008484043213881">เครื่องมือ</translation>
 <translation id="4432792777822557199">จากนี้ไประบบจะแปลหน้าภาษา<ph name="SOURCE_LANGUAGE" />เป็นภาษา<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4445444302979002552">ใช้บริการการคาดคะเนเพื่อแนะนำข้อความค้นหาและเว็บไซต์</translation>
+<translation id="4452411734226507615">ปิดแท็บ <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">เพิ่มบุ๊กมาร์กไปยัง <ph name="FOLDER_NAME" /> แล้ว</translation>
 <translation id="4453340223357552416">ดาวน์โหลด <ph name="FILE_NAME" /> ไว้ใน <ph name="PRODUCT_NAME" /> แล้ว</translation>
 <translation id="4479647676395637221">ถามก่อน ก่อนที่จะอนุญาตให้เว็บไซต์ใช้กล้องถ่ายรูปของคุณ (แนะนำ)</translation>
@@ -351,6 +358,7 @@
 <translation id="4532845899244822526">เลือกโฟลเดอร์</translation>
 <translation id="4550003330909367850">หากต้องการดูหรือคัดลอกรหัสผ่านที่นี่ ให้ตั้งค่าการล็อกหน้าจอในอุปกรณ์นี้</translation>
 <translation id="4558311620361989323">แป้นพิมพ์ลัดสำหรับหน้าเว็บ</translation>
+<translation id="4565377596337484307">ซ่อนรหัสผ่าน</translation>
 <translation id="4572422548854449519">ลงชื่อเข้าใช้บัญชีที่มีการจัดการ</translation>
 <translation id="4581964774250883625">คุณเข้าสู่โหมดไม่ระบุตัวตนแล้ว</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# นาทีที่ผ่านมา}other{# นาทีที่ผ่านมา}}</translation>
@@ -381,6 +389,8 @@
 <translation id="4842092870884894799">กำลังแสดงป๊อปอัปการสร้างรหัสผ่าน</translation>
 <translation id="4850886885716139402">มุมมอง</translation>
 <translation id="4860895144060829044">โทร</translation>
+<translation id="4874967477260347223">ใบอนุญาตสื่อ</translation>
+<translation id="4875775213178255010">การแนะนำเนื้อหา</translation>
 <translation id="4881695831933465202">เปิด</translation>
 <translation id="4885273946141277891">อินสแตนซ์ของ Chrome เกินจำนวนที่สนับสนุน</translation>
 <translation id="4910889077668685004">แอปชำระเงิน</translation>
@@ -475,7 +485,6 @@
 <translation id="5676636989614905379">ไม่สามารถเล่นวิดีโอบน <ph name="SCREEN_NAME" /></translation>
 <translation id="5677928146339483299">ถูกบล็อก</translation>
 <translation id="5684874026226664614">อ๊ะ หน้านี้ไม่สามารถแปลได้</translation>
-<translation id="5718200072127758424">ดึงขึ้นในแถบที่อยู่เว็บเพื่อดูบุ๊กมาร์ก การดาวน์โหลด และประวัติ</translation>
 <translation id="5719837394786370183">หน้าที่คุณดูในแท็บแบบไม่ระบุตัวตนจะไม่เก็บอยู่ในประวัติของเบราว์เซอร์ การจัดเก็บคุกกี้ หรือประวัติการค้นหาหลังจากที่คุณปิดแท็บที่ไม่ระบุตัวตนทั้งหมดแล้ว แต่จะมีการเก็บไฟล์ใดๆ ที่คุณดาวน์โหลดหรือบุ๊กมาร์กที่คุณสร้างไว้
 
 อย่างไรก็ตาม คนอื่นจะยังสามารถมองเห็นคุณ การเข้าสู่โหมดไม่ระบุตัวตนไม่ได้เป็นการซ่อนการท่องเว็บจากนายจ้าง ผู้ให้บริการอินเทอร์เน็ต หรือเว็บไซต์ที่คุณเข้าชม</translation>
@@ -562,6 +571,7 @@
 <translation id="6448273550210938826">การค้นหาและคำแนะนำ URL</translation>
 <translation id="6475951671322991020">ดาวน์โหลดวิดีโอ</translation>
 <translation id="6482749332252372425">การดาวน์โหลด <ph name="FILE_NAME" /> ล้มเหลวเพราะพื้นที่เก็บข้อมูลไม่เพียงพอ</translation>
+<translation id="6496823230996795692">โปรดเชื่อมต่ออินเทอร์เน็ตเพื่อใช้ <ph name="APP_NAME" /> เป็นครั้งแรก</translation>
 <translation id="6508332297647760142">การแชร์ Physical Web</translation>
 <translation id="6527303717912515753">แชร์</translation>
 <translation id="6534565668554028783">Google ใช้เวลาตอบกลับนานเกินไป</translation>
@@ -597,6 +607,7 @@
 <translation id="6762156594045689028">หากต้องการเปลี่ยนการตั้งค่านี้ โปรด<ph name="BEGIN_LINK" />รีเซ็ตการซิงค์<ph name="END_LINK" /></translation>
 <translation id="6764789522080107716">ไม่สามารถเปิดไฟล์ได้</translation>
 <translation id="6770414673596662518">ระบบ Safe Browsing ของ Chrome ยังใช้ในการตรวจหาหน้าเว็บที่ไม่ปลอดภัยและปกป้องคุณจากฟิชชิง มัลแวร์ และการดาวน์โหลดที่เป็นอันตราย</translation>
+<translation id="6776813977906306442">ดาวน์โหลดวิดีโอไว้ดูภายหลังโดยใช้ปุ่ม "ดาวน์โหลด"</translation>
 <translation id="6790428901817661496">เล่น</translation>
 <translation id="679325081238418596">รับบุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ ในอุปกรณ์ทุกเครื่องของคุณ</translation>
 <translation id="6820607729870073286">คุณไม่มีการตั้งค่าเว็บไซต์ที่บันทึกไว้</translation>
@@ -646,7 +657,6 @@
 <translation id="7191430249889272776">แท็บเปิดในพื้นหลัง</translation>
 <translation id="723171743924126238">เลือกภาพ</translation>
 <translation id="7243308994586599757">มีตัวเลือกอยู่ทางด้านล่างของหน้าจอ</translation>
-<translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> ใช้ตำแหน่งเพื่อแสดงผลการค้นหาในท้องถิ่น</translation>
 <translation id="7251326866581677552">บล็อกจากบางไซต์</translation>
 <translation id="7253272406652746122">เพิ่มบัญชี Google จากหน้า "บัญชี" ในแอปการตั้งค่าของอุปกรณ์</translation>
 <translation id="7274013316676448362">เว็บไซต์ที่ถูกบล็อก</translation>
@@ -696,6 +706,7 @@
 <translation id="7665369617277396874">เพิ่มบัญชี</translation>
 <translation id="7698359219371678927">สร้างอีเมลใน <ph name="APP_NAME" /></translation>
 <translation id="773466115871691567">แปลหน้าเว็บภาษา<ph name="SOURCE_LANGUAGE" />ทุกครั้ง</translation>
+<translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="7764225426217299476">เพิ่มที่อยู่</translation>
 <translation id="7765158879357617694">ย้าย</translation>
 <translation id="7769602470925380267">ยอมรับและออกจากระบบ</translation>
@@ -753,10 +764,10 @@
 <translation id="8250920743982581267">เอกสาร</translation>
 <translation id="8260126382462817229">ลองลงชื่อเข้าใช้อีกครั้ง</translation>
 <translation id="8261506727792406068">ลบ</translation>
-<translation id="8275818695183729150">อนุญาต (สำหรับการค้นหาในแถบที่อยู่เว็บ)</translation>
 <translation id="8283853025636624853">กำลังซิงค์กับ <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">แท็บมาตรฐาน</translation>
 <translation id="8339163506404995330">ระบบจะไม่แปลหน้าเว็บภาษา<ph name="LANGUAGE" /></translation>
+<translation id="8372721116225477180">โซเชียล</translation>
 <translation id="8372893542064058268">อนุญาตให้ใช้การซิงค์ในแบ็กกราวด์สำหรับเว็บไซต์ที่เจาะจง</translation>
 <translation id="8374821112118309944">คุณต้องอัปเดต TalkBack เป็นเวอร์ชันใหม่</translation>
 <translation id="8393700583063109961">ส่งข้อความ</translation>
@@ -815,6 +826,7 @@
 <translation id="8959122750345127698">ไม่สามารถเข้าถึงการนำทางได้: <ph name="URL" /></translation>
 <translation id="896250263197055929">เลือกแท็บดาวน์โหลดแล้ว</translation>
 <translation id="8979340629087822094">วันที่ผ่านมา</translation>
+<translation id="8979405271719829084">ดาวน์โหลดวิดีโอไว้ดูภายหลัง</translation>
 <translation id="8981454092730389528">ส่วนควบคุมกิจกรรมของ Google</translation>
 <translation id="8986494364107987395">ส่งสถิติการใช้งานและรายงานข้อขัดข้องไปยัง Google โดยอัตโนมัติ</translation>
 <translation id="8993760627012879038">เปิดแท็บใหม่ในโหมดไม่ระบุตัวตน</translation>

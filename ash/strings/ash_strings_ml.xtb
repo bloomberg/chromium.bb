@@ -3,6 +3,8 @@
 <translationbundle lang="ml">
 <translation id="1012876632442809908">USB-C ഉപകരണം (മുൻവശത്തെ പോർട്ട്)</translation>
 <translation id="1013923882670373915">"<ph name="DEVICE_NAME" />" എന്ന Bluetooth ഉപകരണം ജോടിയാക്കുന്നതിനുള്ള അനുമതി ആവശ്യപ്പെടുന്നു. ആ ഉപകരണത്തിൽ ഈ പിൻ കോഡ് നൽകുക: <ph name="PINCODE" /></translation>
+<translation id="1032891413405719768">സ്‌റ്റൈലസ് ബാറ്ററി കുറവാണ്</translation>
+<translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="112308213915226829">ഷെൽഫ് സ്വയമേവ മറയ്‌ക്കുക</translation>
 <translation id="1153356358378277386">ജോടിയാക്കിയ ഉപകരണങ്ങൾ</translation>
 <translation id="1195412055398077112">ഓവർസ്‌കാൻ</translation>
@@ -21,6 +23,7 @@
 <translation id="15373452373711364">വലിയ മൗസ് കഴ്‌സർ</translation>
 <translation id="1550523713251050646">കൂടുതൽ ഓപ്‌ഷനുകൾക്ക് ക്ലിക്കുചെയ്യുക</translation>
 <translation id="1621499497873603021">ബാറ്ററി ശൂന്യമാകുന്നതിന് ശേഷിക്കുന്ന സമയം, <ph name="TIME_LEFT" /></translation>
+<translation id="16620462294541761">ക്ഷമിക്കൂ, നിങ്ങളുടെ രഹസ്യവാക്ക് പരിശോധിക്കാന്‍ കഴിഞ്ഞില്ല. ദയവായി വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> ശേഷിക്കുന്നു</translation>
 <translation id="1698760176351776263">IPv6 വിലാസം: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">ഈ ഉപകരണം മാനേജുചെയ്യുന്നത് എന്റർപ്രൈസാണ്</translation>
@@ -104,7 +107,6 @@
 <translation id="3621202678540785336">ഇൻപുട്ട്</translation>
 <translation id="3625258641415618104">സ്‌ക്രീൻഷോട്ടുകൾ പ്രവർത്തനരഹിതമാക്കി</translation>
 <translation id="3626281679859535460">മിഴിവ്</translation>
-<translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> മിഴിവ് <ph name="RESOLUTION" /> എന്നതിലേയ്‌ക്ക് മാറ്റി</translation>
 <translation id="3712407551474845318">ആവശ്യമുള്ള ഏരിയ ക്യാപ്‌ചർ ചെയ്യുക</translation>
 <translation id="371370241367527062">മുൻവശത്തുള്ള മൈക്രോഫോൺ</translation>
 <translation id="3742055079367172538">സ്‌ക്രീൻഷോട്ട് എടുത്തു</translation>
@@ -137,6 +139,7 @@
 <translation id="453661520163887813">പൂർത്തിയാകാൻ ശേഷിക്കുന്ന സമയം <ph name="TIME" /></translation>
 <translation id="4544944664594876241">സ്‌ക്രീൻ ലോക്കുചെയ്യുന്നതിനുള്ള കുറുക്കുവഴി മാറ്റി. <ph name="OLD_SHORTCUT" /> എന്നതിന് പകരം <ph name="NEW_SHORTCUT" /> ഉപയോഗിക്കുക.</translation>
 <translation id="4659419629803378708">ChromeVox പ്രവർത്തനക്ഷമമാക്കി</translation>
+<translation id="4729904664295161097">പ്രാഥമിക പ്രൊഫൈലിന് മാത്രമേ Assistant ലഭ്യമാകൂ.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">വിച്ഛേദിക്കുക</translation>
 <translation id="4849058404725798627">കീബോർഡ് ഫോക്കസ് ഉപയോഗിച്ച് ഒബ്‌ജക്‌റ്റിനെ ഹൈലൈറ്റുചെയ്യുക</translation>
@@ -161,6 +164,7 @@
 <translation id="5571066253365925590">Bluetooth പ്രാപ്‌തമാക്കി</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">സംഭാഷണ ഫീഡ്‌ബാക്ക് പ്രവർത്തനരഹിതമാക്കാൻ Ctrl + Alt + Z അമർത്തുക.</translation>
+<translation id="5612734644261457353">ക്ഷമിക്കണം, ഇപ്പോഴും നിങ്ങളുടെ പാസ്‌വേഡ് സ്ഥിരീകരിക്കാൻ കഴിഞ്ഞില്ല. ശ്രദ്ധിക്കുക: സമീപകാലത്ത് നിങ്ങൾ പാസ്‌വേഡ് മാറ്റിയിട്ടുണ്ടെങ്കിൽ, പുതിയ പാസ്‌വേഡ് സൈൻ ഔട്ട് ചെയ്‌തുകഴിഞ്ഞാൽ ബാധകമാകും, പഴയ പാസ്‌വേഡ് ഇവിടെ ഉപയോഗിക്കുക.</translation>
 <translation id="5648021990716966815">Mic jack</translation>
 <translation id="5744083938413354016">ടാപ്പുചെയ്‌ത് വലിച്ചിടൽ</translation>
 <translation id="5777841717266010279">സ്‌ക്രീൻ പങ്കിടൽ നിർത്തണോ?</translation>
@@ -225,6 +229,7 @@
 <translation id="7256634071279256947">പിൻഭാഗത്തെ മൈക്രോഫോൺ</translation>
 <translation id="7348093485538360975">ഓൺ-സ്‌ക്രീൻ കീബോർഡ്</translation>
 <translation id="735745346212279324">VPN വിച്ഛേദിച്ചു</translation>
+<translation id="7377169924702866686">Caps Lock ഓൺ ആണ്.</translation>
 <translation id="742594950370306541">ക്യാമറ ഉപയോഗത്തിലാണ്.</translation>
 <translation id="743058460480092004">ക്യാമറയും മൈക്രോഫോണും ഉപയോഗത്തിലാണ്.</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
@@ -256,6 +261,7 @@
 <translation id="8190698733819146287">ഭാഷകൾ‌ ഇച്ഛാനുസൃതമാക്കി നല്‍‌കുക...</translation>
 <translation id="8308637677604853869">മുൻ മെനു</translation>
 <translation id="8351131234907093545">കുറിപ്പ് സൃഷ്‌ടിക്കുക</translation>
+<translation id="8392234662362215700">കീബോർഡ് ലേഔട്ട് മാറ്റുന്നതിന് Control-Shift-Space അമർത്തുക.</translation>
 <translation id="8428213095426709021">ക്രമീകരണങ്ങള്‍</translation>
 <translation id="8433186206711564395">നെറ്റ്‍വര്‍ക്ക് ക്രമീകരണങ്ങള്‍</translation>
 <translation id="8433977262951327081">ഷെൽഫിലെ ഇൻപുട്ട് ഓപ്ഷൻ മെനു ബബിൾ കാണുന്നതിനുള്ള കുറുക്കുവഴി മാറ്റി. <ph name="OLD_SHORTCUT" /> എന്നതിന് പകരം <ph name="NEW_SHORTCUT" /> ഉപയോഗിക്കുക.</translation>

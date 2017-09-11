@@ -13,6 +13,7 @@
 <translation id="106701514854093668">Закладки для настільного комп’ютера</translation>
 <translation id="1074497978438210769">Не конфіденційний</translation>
 <translation id="1080116354587839789">За шириною сторінки</translation>
+<translation id="1088860948719068836">Додайте ім’я на картці</translation>
 <translation id="1103523840287552314">Завжди перекладати з такої мови: <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Якщо вибрати цю опцію, Chrome зберігатиме копію даних вашої картки на цьому пристрої для швидшого заповнення форм.</translation>
 <translation id="1111153019813902504">Останні закладки</translation>
@@ -43,6 +44,7 @@
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (синхронізовано)</translation>
 <translation id="1263231323834454256">Список читання</translation>
 <translation id="1264126396475825575">Звіт про аварійне завершення роботи о <ph name="CRASH_TIME" /> (ще не завантажено або пропущено)</translation>
+<translation id="1270502636509132238">Спосіб отримання</translation>
 <translation id="1281526147609854549">Видано <ph name="ISSUER" /></translation>
 <translation id="1285320974508926690">Ніколи не перекладати цей сайт</translation>
 <translation id="129553762522093515">Нещодавно закриті</translation>
@@ -94,6 +96,7 @@
 <translation id="1710259589646384581">ОС</translation>
 <translation id="1721312023322545264">Вам потрібен дозвіл адміністратора <ph name="NAME" />, щоб перейти на цей сайт</translation>
 <translation id="1721424275792716183">* Обов’язкове поле</translation>
+<translation id="1727741090716970331">Додайте дійсний номер картки</translation>
 <translation id="1728677426644403582">Ви переглядаєте джерело веб-сторінки</translation>
 <translation id="173080396488393970">Цей тип картки не підтримується</translation>
 <translation id="1734864079702812349">Amex</translation>
@@ -138,6 +141,7 @@
 <translation id="2079545284768500474">Відмінити</translation>
 <translation id="20817612488360358">Системні параметри проксі-сервера налаштовано для використання, але чітко вказано налаштування проксі-сервера.</translation>
 <translation id="2086652334978798447">Щоб отримувати персоналізовані пропозиції від Google, увійдіть в обліковий запис Chrome.</translation>
+<translation id="2091887806945687916">Сигнал</translation>
 <translation id="2094505752054353250">Невідповідність домену</translation>
 <translation id="2096368010154057602">Департамент</translation>
 <translation id="2108755909498034140">Перезавантажте комп’ютер</translation>
@@ -145,7 +149,9 @@
 <translation id="2114841414352855701">Правило ігнорується, оскільки його замінено правилом <ph name="POLICY_NAME" />.</translation>
 <translation id="2138201775715568214">Пошук веб-сторінок у сервісі "Інтернет навколо нас"</translation>
 <translation id="213826338245044447">Закладки для мобільних пристроїв</translation>
+<translation id="214556005048008348">Скасувати оплату</translation>
 <translation id="2147827593068025794">Фонова синхронізація</translation>
+<translation id="2148613324460538318">Додати картку</translation>
 <translation id="2154054054215849342">Синхронізація недоступна для вашого домену</translation>
 <translation id="2154484045852737596">Редагувати картку</translation>
 <translation id="2166049586286450108">Повний адміністративний доступ</translation>
@@ -194,6 +200,8 @@
 <translation id="2501278716633472235">Назад</translation>
 <translation id="2503184589641749290">Прийнятні дебетові та передплачені картки</translation>
 <translation id="2515629240566999685">перевірити сигнал у своїй місцевості</translation>
+<translation id="2524461107774643265">Додайте більше інформації</translation>
+<translation id="2536110899380797252">Додати адресу</translation>
 <translation id="2539524384386349900">Визначити</translation>
 <translation id="255002559098805027">Хост <ph name="HOST_NAME" /> надіслав недійсну відповідь.</translation>
 <translation id="2556876185419854533">&amp;Відмінити редагування</translation>
@@ -240,6 +248,7 @@
 <translation id="2909946352844186028">Виявлено зміну в мережі.</translation>
 <translation id="2916038427272391327">Закрийте інші програми</translation>
 <translation id="2922350208395188000">Сертифікат сервера неможливо перевірити.</translation>
+<translation id="2925673989565098301">Спосіб доставки</translation>
 <translation id="2928905813689894207">Платіжна адреса</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}one{<ph name="SHIPPING_ADDRESS_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}few{<ph name="SHIPPING_ADDRESS_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}many{<ph name="SHIPPING_ADDRESS_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
 <translation id="2941952326391522266">Цей сервер не зміг довести, що він – домен <ph name="DOMAIN" />. Його сертифікат безпеки походить із домену <ph name="DOMAIN2" />. Імовірні причини: неправильна конфігурація або хтось намагається перехопити ваше з’єднання.</translation>
@@ -262,6 +271,7 @@
 <translation id="3024663005179499861">Неправильний тип правила</translation>
 <translation id="3032412215588512954">Оновити цей сайт?</translation>
 <translation id="3037605927509011580">От халепа!</translation>
+<translation id="3039538478787849737">Зберегти картку в Google?</translation>
 <translation id="3041612393474885105">Інформація про сертифікат</translation>
 <translation id="3063697135517575841">Chrome не вдалося підтвердити дані вашої картки. Спробуйте пізніше.</translation>
 <translation id="3064966200440839136">Щоб оплатити в зовнішньому додатку, ви вийдете з режиму анонімного перегляду. Продовжити?</translation>
@@ -285,6 +295,7 @@
       <ph name="PLATFORM_TEXT" /></translation>
 <translation id="320323717674993345">Скасувати оплату</translation>
 <translation id="3207960819495026254">Створено закладку</translation>
+<translation id="3211223744486044430">Щоб наступного разу платити швидше, збережіть цю картку у своєму обліковому записі Google і на цьому пристрої.</translation>
 <translation id="3225919329040284222">Сервер надав сертифікат, який не відповідає очікуваним вбудованим параметрам. Ці очікувані параметри встановлено для певних веб-сайтів із високим рівнем безпеки, щоб захистити вас.</translation>
 <translation id="3226128629678568754">Натисніть кнопку перезавантаження, щоб повторно надіслати дані, потрібні для завантаження сторінки.</translation>
 <translation id="3227137524299004712">Мікрофон</translation>
@@ -317,6 +328,7 @@
 <translation id="3380864720620200369">Ідентифікатор клієнта:</translation>
 <translation id="3391030046425686457">Адреса доставки</translation>
 <translation id="3395827396354264108">Спосіб отримання</translation>
+<translation id="3399952811970034796">Адреса доставки</translation>
 <translation id="3422248202833853650">Щоб звільнити пам’ять, закрийте інші програми.</translation>
 <translation id="3422472998109090673">Хост <ph name="HOST_NAME" /> зараз недоступний.</translation>
 <translation id="3427092606871434483">Дозволяти (за умовчанням)</translation>
@@ -402,6 +414,7 @@
 <translation id="4030383055268325496">&amp;Відмінити додавання</translation>
 <translation id="404928562651467259">ЗАСТЕРЕЖЕННЯ</translation>
 <translation id="4058922952496707368">Ключ "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
+<translation id="4067947977115446013">Додайте дійсну адресу</translation>
 <translation id="4072486802667267160">Не вдалось обробити ваше замовлення. Повторіть спробу.</translation>
 <translation id="4075732493274867456">Клієнт і сервер підтримують різні версії протоколу SSL або набору шифрів.</translation>
 <translation id="4079302484614802869">Конфігурацію проксі-сервера налаштовано на використання URL-адреси сценарію .pac, а не фіксованих проксі-серверів.</translation>
@@ -446,6 +459,7 @@
 <translation id="4377125064752653719">Ви пробували зв’язатися з доменом <ph name="DOMAIN" />, проте сервер надав сертифікат, відкликаний його видавцем. Це означає, що не варто довіряти обліковим даним системи захисту, наданим сервером. Можливо, ви обмінюєтеся даними зі зловмисником.</translation>
 <translation id="4394049700291259645">Вимкнути</translation>
 <translation id="4406896451731180161">результати пошуку</translation>
+<translation id="4415426530740016218">Адреса отримання</translation>
 <translation id="4424024547088906515">Цей сервер не зміг довести, що він – домен <ph name="DOMAIN" />. Chrome не вважає його сертифікат безпеки надійним. Імовірні причини: неправильна конфігурація або хтось намагається перехопити ваше з’єднання.</translation>
 <translation id="4432688616882109544">Хост <ph name="HOST_NAME" /> не прийняв ваш сертифікат входу або ви не надали цей сертифікат.</translation>
 <translation id="443673843213245140">Використання проксі-сервера вимкнено, але чітко вказано налаштування проксі-сервера.</translation>
@@ -574,11 +588,13 @@
 <translation id="5492298309214877701">URL-адреса цього сайту в інтранеті компанії, організації чи навчального закладу збігається з адресою зовнішнього веб-сайту.
     <ph name="LINE_BREAK" />
     Зв’яжіться зі своїм системним адміністратором.</translation>
+<translation id="5499929369096410817">Введіть код безпеки для картки <ph name="CREDIT_CARD" />. Цей код не буде збережено.</translation>
 <translation id="5509780412636533143">Закладки, якими керує адміністратор</translation>
 <translation id="5510766032865166053">Можливо, його переміщено або видалено.</translation>
 <translation id="5523118979700054094">Назва правила</translation>
 <translation id="552553974213252141">Текст отримано правильно?</translation>
 <translation id="5540224163453853">Не вдалося знайти потрібну статтю.</translation>
+<translation id="5541546772353173584">Додайте електронну адресу</translation>
 <translation id="5544037170328430102">Повідомлення з вбудованої сторінки сайту <ph name="SITE" />:</translation>
 <translation id="5556459405103347317">Перезавантажити</translation>
 <translation id="5560088892362098740">Термін дії</translation>
@@ -615,6 +631,7 @@
 <translation id="5810442152076338065">З’єднання з доменом <ph name="DOMAIN" /> шифрується за допомогою застарілого набору шифрів.</translation>
 <translation id="5813119285467412249">&amp;Повторити додавання</translation>
 <translation id="5838278095973806738">Не вводьте конфіденційну інформацію на цьому сайті (як-от паролі й дані кредитних карток). Зловмисники можуть викрасти її.</translation>
+<translation id="5866257070973731571">Додайте номер телефону</translation>
 <translation id="5869405914158311789">Немає зв’язку із сайтом</translation>
 <translation id="5869522115854928033">Збережені паролі</translation>
 <translation id="5872918882028971132">Поради для батьків</translation>
@@ -622,8 +639,10 @@
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (синхронізовано)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{Використовується 1 файл}one{Використовується # файл}few{Використовуються # файли}many{Використовуються # файлів}other{Використовуються # файлу}}</translation>
 <translation id="5959728338436674663">Автоматично надсилати в Google деяку <ph name="BEGIN_WHITEPAPER_LINK" />інформацію про систему та вміст сторінок<ph name="END_WHITEPAPER_LINK" />, щоб допомогти виявляти небезпечні додатки й сайти<ph name="PRIVACY_PAGE_LINK" />.</translation>
+<translation id="5967592137238574583">Змініть контактну інформацію</translation>
 <translation id="5967867314010545767">Видалити з історії</translation>
 <translation id="5975083100439434680">Зменшити масштаб</translation>
+<translation id="597552863672748783">Підтвердьте код безпеки</translation>
 <translation id="598637245381783098">Неможливо відкрити додаток для платежів</translation>
 <translation id="5989320800837274978">Не вказано ні фіксованих проксі-серверів, ні URL-адрес сценарію .pac.</translation>
 <translation id="5990559369517809815">Надсилання запитів на сервер заблоковано розширенням.</translation>
@@ -699,6 +718,7 @@
 <translation id="6569060085658103619">Ви переглядаєте сторінку розширень</translation>
 <translation id="6596325263575161958">Параметри шифрування</translation>
 <translation id="662080504995468778">Залишитися</translation>
+<translation id="6624427990725312378">Контактна інформація</translation>
 <translation id="6626291197371920147">Додати дійсний номер картки</translation>
 <translation id="6628463337424475685">Пошук <ph name="ENGINE" /></translation>
 <translation id="6630809736994426279">Зловмисники на сайті <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> можуть установити на ваш комп’ютер Mac небезпечні програми, що викрадають або видаляють інформацію (як-от фотографії, паролі, повідомлення та дані кредитних карток). <ph name="BEGIN_LEARN_MORE_LINK" />Докладніше<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -777,6 +797,7 @@
 <translation id="7400418766976504921">URL-адреса</translation>
 <translation id="7419106976560586862">Шлях до профілю</translation>
 <translation id="7424977062513257142">Повідомлення з вбудованої сторінки на цій веб-сторінці:</translation>
+<translation id="7437289804838430631">Додати контактну інформацію</translation>
 <translation id="7441627299479586546">Неправильна тема правила</translation>
 <translation id="7444046173054089907">Цей сайт заблоковано</translation>
 <translation id="7445762425076701745">Ідентифікацію сервера, з яким ви з'єднані, не можна повністю підтвердити. Ви з'єднані із сервером за допомогою імені, дійсного лише у вашій мережі, і зовнішній центр сертифікації не має способів підтвердити право власності на це ім'я. Хоча деякі центри сертифікації, попри все, видають сертифікати на такі імена, неможливо цілком упевнитися, що ви з'єднані з безпечним сайтом, а не зі зловмисником.</translation>
@@ -826,6 +847,7 @@
 <translation id="7714464543167945231">Сертифікат</translation>
 <translation id="7716147886133743102">Заблоковано адміністратором</translation>
 <translation id="7716424297397655342">Не вдається завантажити цей сайт із кешу</translation>
+<translation id="7723047071702270851">Відредагуйте картку</translation>
 <translation id="774634243536837715">Заблоковано небезпечний вміст.</translation>
 <translation id="7752995774971033316">Некерований клієнт</translation>
 <translation id="7755287808199759310">Хтось із батьків може розблокувати його</translation>
@@ -836,6 +858,7 @@
 <translation id="7764225426217299476">Додати адресу</translation>
 <translation id="777702478322588152">Префектура</translation>
 <translation id="7791543448312431591">Додати</translation>
+<translation id="7793553086574152071">Щоб наступного разу платити швидше, збережіть цю картку у своєму обліковому записі Google.</translation>
 <translation id="7793809570500803535">Веб-сторінка на сайті <ph name="SITE" /> може бути тимчасово недоступна або її назавжди переміщено за новою веб-адресою.</translation>
 <translation id="7800304661137206267">З'єднання зашифровано з використанням <ph name="CIPHER" /> з алгоритмом <ph name="MAC" /> для автентифікації повідомлення та кодування <ph name="KX" /> як механізму обміну ключами.</translation>
 <translation id="7802523362929240268">Сайт законно зареєстрований</translation>
@@ -869,6 +892,7 @@
 <translation id="8088680233425245692">Не вдалося переглянути статтю.</translation>
 <translation id="8091372947890762290">Активація очікує на сервері</translation>
 <translation id="8094917007353911263">Можливо, щоб під’єднатися до цієї мережі, потрібно відвідати сторінку <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
+<translation id="8103161714697287722">Спосіб оплати</translation>
 <translation id="8118489163946903409">Спосіб оплати</translation>
 <translation id="8131740175452115882">Підтвердити</translation>
 <translation id="8134994873729925007">Не вдалося знайти <ph name="BEGIN_ABBR" />адресу DNS-сервера<ph name="END_ABBR" /> хосту <ph name="HOST_NAME" />.</translation>
@@ -951,6 +975,7 @@
 <translation id="8903921497873541725">Збільшити масштаб</translation>
 <translation id="8931333241327730545">Зберегти цю картку у вашому обліковому записі Google?</translation>
 <translation id="8932102934695377596">Ваш годинник запізнюється</translation>
+<translation id="893332455753468063">Додайте ім’я</translation>
 <translation id="8938939909778640821">Прийнятні кредитні та передплачені картки</translation>
 <translation id="8957210676456822347">Авторизація приєднаного порталу</translation>
 <translation id="8971063699422889582">Термін дії сертифіката сервера завершився.</translation>
@@ -974,6 +999,7 @@
 <translation id="9078964945751709336">Потрібно більше інформації</translation>
 <translation id="9080712759204168376">Підсумок замовлення</translation>
 <translation id="9103872766612412690">Веб-сайт <ph name="SITE" /> зазвичай використовує шифрування для захисту вашої інформації. Під час цієї спроби Chromium під’єднатися до сторінки <ph name="SITE" /> з неї отримано незвичні й неправильні облікові дані. Це може статися, коли зловмисник намагається видавати себе за веб-сайт <ph name="SITE" /> або з’єднання перервано екраном входу Wi-Fi. Ваша інформація залишається захищеною, оскільки Chromium припинив з’єднання до того, як почався обмін будь-якими даними.</translation>
+<translation id="9106062320799175032">Додайте платіжну адресу</translation>
 <translation id="910908805481542201">Допоможіть вирішити цю проблему</translation>
 <translation id="9128870381267983090">З'єднатися з мережею</translation>
 <translation id="9137013805542155359">Показати оригінал</translation>
@@ -987,6 +1013,7 @@
 <translation id="9183425211371246419">Протокол, який використовує хост <ph name="HOST_NAME" />, не підтримується.</translation>
 <translation id="9205078245616868884">Ваші дані зашифровано за допомогою парольної фрази. Введіть її, щоб почати синхронізацію.</translation>
 <translation id="9207861905230894330">Не вдалося додати статтю.</translation>
+<translation id="9215416866750762878">Додаток перешкоджає Chrome безпечно під’єднуватися до цього сайту</translation>
 <translation id="9219103736887031265">Зображення</translation>
 <translation id="933612690413056017">Немає з’єднання з Інтернетом</translation>
 <translation id="933712198907837967">Diners Club</translation>

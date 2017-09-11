@@ -13,7 +13,6 @@
 <translation id="1413622004203049571"><ph name="NOTIFIER_NAME" /> से सूचनाएं अक्षम करें</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 मिनट और }one{# मिनट और }other{# मिनट और }}</translation>
 <translation id="1643823602425662293">नोटिफ़िकेशन</translation>
-<translation id="1685967565548146460">हैट</translation>
 <translation id="1710340000377843106">अभी</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 मिनट}one{# मिनट}other{# मिनट}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> बाइट</translation>
@@ -30,8 +29,10 @@
 <translation id="2148716181193084225">आज</translation>
 <translation id="2168039046890040389">पेज ऊपर</translation>
 <translation id="2190355936436201913">(खाली)</translation>
+<translation id="219905428774326614">लॉन्चर, सभी ऐप्लिकेशन</translation>
 <translation id="2289052229480071835">अपनी स्क्रीन पर स्पर्श लक्ष्य पर टैप करें.</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="24452542372838207">सूचना को विस्तृत करें</translation>
 <translation id="2482878487686419369">अधिसूचनाएं</translation>
 <translation id="2497284189126895209">सभी फ़ाइलें</translation>
 <translation id="2522350507219695259">कैलिब्रेशन पूरा हो गया</translation>
@@ -72,7 +73,6 @@
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 सेकंड}one{# सेकंड}other{# सेकंड}}</translation>
 <translation id="4971687151119236543">मीडिया पिछला ट्रैक</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="5016049845330225051">खोज बॉक्स लेख साफ़ करें बटन</translation>
 <translation id="5046499563572181734">यहां टैप करें</translation>
 <translation id="5076340679995252485">&amp;चिपकाएं</translation>
 <translation id="5120799197269191491">Search+<ph name="KEY_COMBO_NAME" /></translation>
@@ -92,6 +92,7 @@
 <translation id="5943826764092288734">{HOURS,plural, =1{1 घंटा}one{# घंटे}other{# घंटे}}</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">सभी ऐप्स</translation>
+<translation id="6022924867608035986">खोज बॉक्स का लेख साफ़ करें</translation>
 <translation id="6040143037577758943">बंद करें</translation>
 <translation id="6119846243427417423">सक्रिय करें</translation>
 <translation id="6129953537138746214">Space</translation>
@@ -162,6 +163,7 @@
 <translation id="9002566407876343676">खोलें</translation>
 <translation id="9038489124413477075">अनाम फ़ोल्डर</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 सेकंड}one{# सेकंड}other{# सेकंड}}</translation>
+<translation id="9059834730836941392">सूचना को छोटा करें</translation>
 <translation id="9150735707954472829">टैब</translation>
 <translation id="9161053988251441839">सुझाए गए ऐप्लिकेशन</translation>
 <translation id="9170848237812810038">&amp;पूर्ववत् करें</translation>

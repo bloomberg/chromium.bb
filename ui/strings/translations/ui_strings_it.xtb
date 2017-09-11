@@ -13,7 +13,6 @@
 <translation id="1413622004203049571">Disabilita notifiche da <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuto e }other{# minuti e }}</translation>
 <translation id="1643823602425662293">Notifica</translation>
-<translation id="1685967565548146460">HaTS</translation>
 <translation id="1710340000377843106">ora</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minuto}other{# minuti}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
@@ -30,8 +29,10 @@
 <translation id="2148716181193084225">Oggi</translation>
 <translation id="2168039046890040389">Pagina su</translation>
 <translation id="2190355936436201913">(vuoto)</translation>
+<translation id="219905428774326614">Avvio applicazioni, tutte le app</translation>
 <translation id="2289052229480071835">Tocca i touch target sul tuo schermo.</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="24452542372838207">Espandi la notifica</translation>
 <translation id="2482878487686419369">Notifiche</translation>
 <translation id="2497284189126895209">Tutti i file</translation>
 <translation id="2522350507219695259">Calibrazione completata</translation>
@@ -72,7 +73,6 @@
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 secondo}other{# secondi}}</translation>
 <translation id="4971687151119236543">Traccia precedente contenuti multimediali</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="5016049845330225051">Pulsante Cancella testo dalla casella di ricerca</translation>
 <translation id="5046499563572181734">Tocca qui</translation>
 <translation id="5076340679995252485">&amp;Incolla</translation>
 <translation id="5120799197269191491">Ricerca+<ph name="KEY_COMBO_NAME" /></translation>
@@ -92,6 +92,7 @@
 <translation id="5943826764092288734">{HOURS,plural, =1{1 ora}other{# ore}}</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">Tutte le app</translation>
+<translation id="6022924867608035986">Cancella testo dalla casella di ricerca</translation>
 <translation id="6040143037577758943">Chiudi</translation>
 <translation id="6119846243427417423">attiva</translation>
 <translation id="6129953537138746214">Spazio</translation>
@@ -162,6 +163,7 @@
 <translation id="9002566407876343676">apri</translation>
 <translation id="9038489124413477075">Cartella senza nome</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 sec}other{# sec}}</translation>
+<translation id="9059834730836941392">Comprimi la notifica</translation>
 <translation id="9150735707954472829">Scheda</translation>
 <translation id="9161053988251441839">APP CONSIGLIATE</translation>
 <translation id="9170848237812810038">&amp;Annulla</translation>

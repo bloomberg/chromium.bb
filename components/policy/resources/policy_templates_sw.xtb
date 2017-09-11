@@ -72,11 +72,19 @@ Mfumo wa kipimo lazima uwe 100% au zaidi.</translation>
 <translation id="1330145147221172764">Washa kibodi ya skrini</translation>
 <translation id="1330985749576490863">Huzima Hifadhi ya Google kupitia miunganisho ya simu za mkononi katika programu ya Faili za <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="13356285923490863">Jina la Sera</translation>
+<translation id="134402861816424823">Hubainisha printa ambazo mtumiaji hawezi kutumia.
+
+      Sera hii hutumika tu ikiwa BlacklistRestriction imechaguliwa badala ya
+      DeviceNativePrintersAccessMode.
+
+      Ikiwa sera hii itatumika, printa zote zitatolewa kwa mtumiaji isipokuwa zenye vitambulisho vilivyotajwa kwenye sera.
+      </translation>
 <translation id="1353966721814789986">Kurasa za kuanza</translation>
 <translation id="1359553908012294236">Sera hii ikiwekwa kuwa ndivyo au isisanidiwe, <ph name="PRODUCT_NAME" /> itawasha kipengee cha wageni kuingia katika akaunti. Kuingia katika akaunti kwa wageni ni wasifu wa <ph name="PRODUCT_NAME" /> ambapo madirisha yote yako katika hali fiche.
 
       Sera hii ikiwekwa kuwa sivyo, <ph name="PRODUCT_NAME" /> haitaruhusu wasifu wa wageni kuanzishwa.</translation>
 <translation id="1363275621236827384">Washa kipengele cha hoja za Seva ya Quirks ya wasifu wa maunzi</translation>
+<translation id="1393485621820363363">Printa za biashara zinazotumia sera</translation>
 <translation id="1397855852561539316">Mtoa huduma chaguo-msingi wa utafutaji anapendekeza URL</translation>
 <translation id="1426410128494586442">Ndio</translation>
 <translation id="1427655258943162134">Anwani au URL ya seva ya proksi</translation>
@@ -250,6 +258,29 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
 <translation id="209586405398070749">Kituo imara</translation>
 <translation id="2098658257603918882">Wezesha kuripoti kwa matumizi na data zinazohusu mvurugiko</translation>
 <translation id="2113068765175018713">Wekea kifaa vizuizi vya muda wa kuwaka kwa kuzima na kuwasha kiotomatiki</translation>
+<translation id="2126314858836465216">Hutoa mipangilio ya printa za biashara zilizopachikwa kwenye vifaa.
+
+      Huduma hii inakuruhusu kuweka mipangilio ya printa kwenye vifaa
+      <ph name="PRODUCT_OS_NAME" /> 
+      Ukubwa wa faili haupaswi kuzidi MB 5 na ni lazima uwe umesimbwa kwa JSON.
+      Muundo huu ni sawa na ule wa kamusi ya NativePrinters dictionary.  
+Inakadiriwa kuwa faili iliyo na takribani printa 21,000 itasimbwa kuwa faili ya MB 5. Hashi ya kriptografia inatumika kuthibitisha hadhi ya upakuaji.
+
+      Faili imepakuliwa na kuwekwa kwenye akiba. Itapakuliwa tena wakati hashi au  URL imebadilishwa.
+
+      Ikiwa sera hii imewekwa kuwa
+      <ph name="PRODUCT_OS_NAME" /> 
+itapakua faili kwa ajili ya mipangilio ya printa na kufanya printa ipatikane kulingana na sera za DeviceNativePrintersAccessMode, DeviceNativePrintersWhitelist,
+      na DeviceNativePrintersBlacklist.
+
+      
+Sera hii haina madhara yoyote ikiwa watumiaji wanaweka mipangilio ya printa kwenye vifaa vyao mahususi. Imewekwa ili kutumika badala ya mipangilio ya printa ya wahusika mahususi.
+.
+
+      Sera hii inafuata NativePrintersBulkConfiguration.
+
+      Ikiwa sera hii haijawekwa, hakutakuwa na printa za vifaa na sera zingine za 
+      NativeDevicePrinter* hazitafuatwa</translation>
 <translation id="2127599828444728326">Ruhusu arifa katika tovuti hizi</translation>
 <translation id="2131902621292742709">Ufifili wa skrini unachelewa wakati wa kuendesha kwa nishati ya betri</translation>
 <translation id="2134437727173969994">Ruhusu kufunga skrini</translation>
@@ -487,6 +518,15 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
       Kila ingizo la orodha hubainisha kitambulishi, kinachotumiwa ndani kutambua akaunti tofauti za kifaa cha karibu nawe zilizo mbali.</translation>
 <translation id="2769952903507981510">Sanidi jina la kikoa linalohitajika kwa wapangishaji wa ufikivu wa mbali</translation>
 <translation id="2787173078141616821">Ripoti maelezo kuhusu hali ya Android</translation>
+<translation id="2789419769822054691">Inabainisha printa ambazo mtumiaji anaweza kutumia.
+
+      Sera hii hutumika tu ikiwa mipangilio ya WhitelistPrintersOnly imechaguliwa katika
+      DeviceNativePrintersAccessMode.
+
+      
+Ikiwa sera hii imetumiwa, vitambulisho vinavyolingana na thamani iliyo katika sera ndivyo pekee vitapatikana kwa watumiaji.
+. 
+Ni lazima vitambulisho vilingane na data iliyowekwa katika faili iliyowekwa kwenye DeviceNativePrinters.</translation>
 <translation id="2801230735743888564">Ruruhusu watumiaji wacheze mchezo fiche wa dinosau kifaa kinapokuwa nje ya mtandao.
 
       Sera hii ikiwekwa kuwa Sivyo, watumiaji hawataweza kucheza mchezo mchezo fiche wa dinosau kifaa kinapokuwa nje ya mtandao. Mipangilio hii ikiwekwa kuwa Ndivyo, watumiaji wanaruhusiwa kucheza mchezo wa dinosau. Sera hii isipowekwa, watumiaji hawaruhusiwi kucheza mchezo fiche wa dinosau kwenye Mfumo wa Uendeshaji wa Chrome uliosajiliwa, lakini wanaruhusiwa kuucheza chini ya hali nyingine.</translation>
@@ -541,13 +581,6 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
           Sera ya thamani inastahili kubainishwa kwa nukta. Thamani zinabanwa ili kuwa chini ya ucheleweshaji wa kutokuwa na shughuli.</translation>
 <translation id="2987155890997901449">Washa kipengele cha ARC</translation>
 <translation id="2987227569419001736">Dhibiti matumizi ya API ya Bluetooth ya Wavuti</translation>
-<translation id="2998881342848488968">Sera hii inaruhusu <ph name="PRODUCT_OS_NAME" /> kukwepa seva mbadala yoyote kwa uthibitishaji wa ukurasa wa kwanza wa kuingia kwenye wavuti.
-
-      Sera hii inatumika tu ikiwa seva mbadala imesanidiwa (kwa mfano kupitia sera, na mtumiaji katika mipangilio ya://chrome, au kwa kiendelezi).
-
-     Ukiwasha mipangilio hii, kurasa zozote za kwanza za kuthibitisha kuingia kwenye wavuti (yaani kurasa zote za wavuti kuanzia ukurasa wa kuingia kwenye wavuti hadi <ph name="PRODUCT_NAME" /> igundue muunganisho bora wa intaneti) zitaonyeshwa kwenye dirisha tofauti bila kujali mipangilio na vikwazo vyote vya sera kwa mtumiaji wa sasa.
-
-     Ukizima mipangilio hii au uiache bila kuiweka, kurasa zozote za kwanza za kuthibitisha kuingia kwenye wavuti zitaonyeshwa katika kichupo kipya cha kivinjari (cha kawaida), kwa kutumia mipangilio ya sasa ya seva mbadala ya mtumiaji.</translation>
 <translation id="3001534538097271560">Kuweka sera hii kuwa sivyo kunazuia watumiaji kuchagua kutuma baadhi ya maelezo ya mfumo na maudhui ya ukurasa kwenye seva za Google. Ikiwa mipangilio hii imewekwa kuwa ndivyo au haijawekwa, basi watumiaji wataruhusiwa kutuma baadhi ya maelezo ya mfumo na maudhui ya ukurasa kwenye Kuvinjari Salama ili kusaidia kugundua programu na tovuti hatari.
 
       Angalia https://developers.google.com/safe-browsing kwa maelezo zaidi kuhusu  SafeBrowsing.</translation>
@@ -684,6 +717,7 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
 
           Sera hii itatumika tu endapo sera ya 'DefaultSearchProviderEnabled' imewashwa.</translation>
 <translation id="350797926066071931">Wezesha Tafsiri</translation>
+<translation id="3512226956150568738">Ikiwa muundo wa kifaa teja tayari unatumia ARC kabla ya kuhamishiwa kwenye ext4 ili kutumia ARC na sera ya ArcEnabled imewekwa kuwa ndivyo, chaguo hili litafanya kazi kama AskUser (thamani ya 3). Katika hali zingine zote (ikiwa muundo wa kifaa haukuwa unatumia ARC hapo awali, au kama sera ya ArcEnabled imewekwa kuwa sivyo), thamani hii inalingana na DisallowArc (thamani ya 0).</translation>
 <translation id="3528000905991875314">Wezesha kurasa badala za hitilafu</translation>
 <translation id="3547954654003013442">Mipangilio ya proksi</translation>
 <translation id="3591584750136265240">Weka mipangilio ya tabia ya kithibitishaji cha kuingia katika akaunti</translation>
@@ -735,6 +769,11 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
       Ikiwa mpangilio huu umelemazwa, <ph name="PRODUCT_NAME" /> haitakagua ikiwa ni kivinjari chaguo-msingi na italemaza vidhibiti vya mtumiaji vya kuweka chaguo hili.
 
       Ikiwa mpangilio huu haujawekwa, <ph name="PRODUCT_NAME" /> itaruhusu mtumiaji kudhibiti iwapo ni kivinjari chaguo-msingi na iwapo arifa za mtumiaji zitaonyeshwa wakati siyo.</translation>
+<translation id="379602782757302612">Hukuruhusu kubainisha viendelezi ambavyo watumiaji HAWAWEZI kusakinisha.  Tutazima viendelezi ambavyo tayari vimesakinishwa ikiwa havijaidhinishwa. Hatutampa mtumiaji uwezo wa kuviwasha. Tutawasha kiotomatiki kiendelezi ambacho kimeidhinishwa ikiwa kilikuwa kimezimwa awali kwa kukosa idhini.
+
+Thamani ya kukosa idhini ya '*' inamaanisha kwamba viendelezi vyote havijaidhinishwa isipokuwa viwe vimebainishwa kwa njia dhahiri kwenye orodha ya viendelezi vilivyoidhinishwa.
+
+Sera hii isipowekwa, mtumiaji bado anaweza kusakinisha kiendelezi chochote katika <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3800626789999016379">Hupangilia saraka ambayo <ph name="PRODUCT_NAME" /> itatumia kwa kupakua faili.
 
       Ukiweka sera hii, <ph name="PRODUCT_NAME" /> itatumia saraka iliyotolewa bila kujali iwapo mtumiaji amebainisha moja au amewasha alamisho ya kuchochewa kwa eneo la upakuaji kila wakati.
@@ -1085,8 +1124,10 @@ Iwapo sera hii haijawekwa, kiteuzi kikubwa kitazimwa mwanzoni lakini kitawashwa 
       Ikiwa haijawekwa, mtumiaji anaweza kuombwa iwapo anataka kuleta, au uletaji unaweza kufanyika kiotomatiki.</translation>
 <translation id="5056708224511062314">Kikuza skrini kimezimwa</translation>
 <translation id="5067143124345820993">Ingia kwenye orodha ya kutoa idhini ya mtumiaji</translation>
+<translation id="5068140065960598044">Sera ya wingu ya <ph name="PRODUCT_NAME" /> inabatilisha Sera ya Mashine</translation>
 <translation id="5085647276663819155">Lemaza Uhakiki wa Uchapishaji</translation>
 <translation id="5105313908130842249">Ufungaji wa skrini unachelewa wakati wa kuendesha kwa nishati ya betri</translation>
+<translation id="5108031557082757679">Printa za biashara zisizotumia sera</translation>
 <translation id="5130288486815037971">Ikiwa mipangilio ya kriptografia ya RC4 katika TLS imewashwa</translation>
 <translation id="5141670636904227950">Weka aina ya kikuza skrini cha msingi kama kimewashwa kwenye skrini ya kuingia katika skrini</translation>
 <translation id="5142301680741828703">Onyesha ruwaza zifuatazo za URL mara kwa mara katika <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1558,6 +1599,15 @@ Iwapo sera itawekwa kuwa haitumiki, maoni yanayotamkwa yatazimwa kila wakati.
 Iwapo utaweka sera hii, watumiaji hawezi kuibadilisha au kuipuuza. 
 
 Iwapo sera hii haijawekwa, maoni yanayotamkwaa yatazimwa mwanzoni lakini yanaweza kuwashwa na mtumiaji wakati wowote.</translation>
+<translation id="6922040258551909078">
+      Ikiwa sera imewekwa kuwa 'ndivyo', sera ya wingu inapewa kipaumbele ikiwa inakinzana na sera ya mashine.
+
+Ikiwa sera imewekwa kuwa 'sivyo' au haijawekwa, sera ya mashine inapewa kipaumbele ikiwa inakinzana na sera ya wingu.
+      
+Kwa maelezo zaidi kuhusu kuipa sera kipaumbele, tafadhali tembelea: https://support.google.com/chrome?p=set_chrome_policies_for_devices
+
+Sera hii haipatikani kwenye Windows ambazo hazijaunganishwa kwenye kikoa cha <ph name="MS_AD_NAME" />.
+      </translation>
 <translation id="6922884955650325312">Zuia programu-jalizi ya <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="6923366716660828830">Inabainisha jina la mtoaji wa utafutaji chaguo -msingi. Likiachwa tupu au bila kuwekwa, jina la mpangishaji lililobainishwa na URL ya utafutaji litatumiwa.
 
@@ -1681,6 +1731,7 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
 
       Sera hii ikiwekwa kuwa sivyo, mapendekezo ya maudhui yanayozalishwa kiotomatiki hayataonyeshwa katika ukurasa wa Kichupo Kipya.</translation>
 <translation id="7323896582714668701">Vigezo vya ziada vya mstari wa amri vya <ph name="PRODUCT_NAME" /></translation>
+<translation id="7326394567531622570">Inafanya kazi kama kipengele cha Kuondoa data iliyo kwenye kifaa isipatikane kabisa (thamani ya 2), lakini hujaribu kuhifadhi tokeni za kuingia katika akaunti, kwa hivyo si lazima mtumiaji aingie katika akaunti tena.</translation>
 <translation id="7329842439428490522">Hubainisha urefu wa muda bila mchango wa mtumiaji ambapo baadaye skrini inazimwa inapoendeshwa kwenye nishati ya betri.
 
           Sera hii inapowekwa kwenye thamani kubwa zaidi ya sufuri, hubainisha urefu wa muda ambao lazima mtumiaji asalie bila shughuli kabla ya <ph name="PRODUCT_OS_NAME" /> kuzima skrini.
@@ -1707,6 +1758,7 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
       Ikiwa sera hii haitawekwa, kufuta kiotomatiki hutumia mkakati wa chaguo-msingi uliojengwa ndani. Kwa sasa, ni mkakati wa 'RemoveLRUIfDormant'.</translation>
 <translation id="7336878834592315572">Weka vidakuzi katika muda wa kipindi</translation>
 <translation id="7340034977315324840">Ripoti muda wa shughuli za kifaa</translation>
+<translation id="7343497214039883642">Faili za mipangilio ya printa ya biashara kwenye vifaa</translation>
 <translation id="7384999953864505698">Huruhusu itifaki ya QUIC</translation>
 <translation id="7417972229667085380">Asilimia ya kupima kuchelewesha kwa mwanga wa skrini katika modi ya wasilisho (kimewacha kuendesha huduma)</translation>
 <translation id="7421483919690710988">Weka ukubwa wa akiba ya diski ya media katika vipimo vya baiti</translation>
@@ -1901,6 +1953,7 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
       Ikiwa sera hii haitawekwa, kifaa kitapuuza kuwa muundo wa saa ya saa 24.</translation>
 <translation id="8114382167597081590">Usitekeleze Hali yenye Mipaka kwenye YouTube</translation>
 <translation id="8118665053362250806">Weka ukubwa wa media ya akiba ya diski</translation>
+<translation id="8124468781472887384">Sera ya kufikia mipangilio ya printa za vifaa.</translation>
 <translation id="8135937294926049787">Hubainisha urefu wa muda bila mchango wa mtumiaji ambapo baadaye skrini huzimwa inapoendeshwa kwa nishati ya AC.
 
           Sera hii inapowekwa kwenye thamani kubwa zaidi ya sufuri, hubainisha urefu wa muda ambao lazima mtumiaji asalie bila shughuli kabla ya <ph name="PRODUCT_OS_NAME" /> kuzima skrini.
@@ -2011,7 +2064,6 @@ Kama sera hii haitawekwa, hali ya juu ya utofautishaji itazimwa mwanzoni lakini 
 <translation id="8424255554404582727">Weka mzunguko chaguo-msingi wa onyesho, unaotumika kila unapowashwa tena</translation>
 <translation id="8426231401662877819">Zungusha skrini kwa mwendo wa saa kwa digrii 90</translation>
 <translation id="8451988835943702790">Tumia Ukurasa Mpya wa Kichupo kama ukurasa wa kwanza</translation>
-<translation id="8458790683633857482">Hubainisha kikundi cha sera zitakazotolewa kwa muda wa kutekeleza ARC. Lazima thamani iwe JSON sahihi.</translation>
 <translation id="8465065632133292531">Vigezo vya URL ya papo hapo inayotumia POST</translation>
 <translation id="847472800012384958">Usiruhusu tovuti yoyote kuonyesha madirisha ibukizi</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
@@ -2086,6 +2138,17 @@ Mfumo wa kipimo  lazima uwe 100% au zaidi. Thamani zitakazofupisha kuchelewa kwa
 <translation id="8864975621965365890">Didimiza kukataa kuuliza ambako huonekana tovuti inapotolewa na <ph name="PRODUCT_FRAME_NAME" /> .</translation>
 <translation id="8870318296973696995">Ukurasa wa Kwanza</translation>
 <translation id="8882006618241293596">Zuia programu-jalizi ya <ph name="FLASH_PLUGIN_NAME" /> kwenye tovuti hizi</translation>
+<translation id="8887644176044431146">Hudhibiti aina ya printa kutoka
+      DeviceNativePrintersConfiguration zinazopatikana kwa watumiaji.
+
+Hubainisha sera ya ufikiaji inayotumiwa katika mipangilio ya printa ya kina. Ikiwa AllowAll imechaguliwa, printa zote zitaonyeshwa. Ikiwa BlacklistRestrction imechaguliwa, DeviceNativePrintersBlacklist 
+itatumika kudhibiti uwezo wa kufikia printa zilizobainishwa. Ikiwa WhitelistPrintersOnly imechaguliwa,
+      DeviceNativePrintersWhitelist 
+itabainisha printa ambazo zimechaguliwa pekee.
+.
+
+   Ikiwa sera hii haijawekwa BlacklistRestriction itaendelea kufuatwa.
+      </translation>
 <translation id="8906768759089290519">Wezesha modi ya wageni</translation>
 <translation id="8908294717014659003">Inakuruhusu kuweka ikiwa tovuti zinaruhusiwa kufikia vifaa vya media vya kunasa. Ufikivu wa vifaa vya media vya kunasa unaweza kuruhusiwa kwa chaguo-msingi, au mtumiaji anaweza kuulizwa kila wakati  tovuti inapotaka kufikia vifaa vya media vya kunasa.
 

@@ -69,11 +69,20 @@
 <translation id="1330145147221172764">Ativar o teclado na tela</translation>
 <translation id="1330985749576490863">Desativar o Google Drive por conexões de rede celular no aplicativo Arquivos do <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="13356285923490863">Nome da política</translation>
+<translation id="134402861816424823">Especifica as impressoras que um usuário não pode usar.
+
+      Esta política é usada apenas se BlacklistRestriction é escolhida para 
+      DeviceNativePrintersAccessMode.
+
+      Se esta política for usada, todas as impressoras serão fornecidas ao usuário, com exceção
+      dos códigos listados nesta política.
+      </translation>
 <translation id="1353966721814789986">Páginas de inicialização</translation>
 <translation id="1359553908012294236">Se esta política é definida como "true" ou não é configurada, o <ph name="PRODUCT_NAME" /> ativa os logins de convidados. Os logins de convidados são perfis do <ph name="PRODUCT_NAME" /> nos quais todas as janelas ficam no modo sem rastros.
 
       Se esta política é definida como "false", o <ph name="PRODUCT_NAME" /> não permite que perfis de convidados sejam iniciados.</translation>
 <translation id="1363275621236827384">Permitir consultas no Servidor Quirks para perfis de hardware</translation>
+<translation id="1393485621820363363">Impressoras empresariais ativadas</translation>
 <translation id="1397855852561539316">URL sugerido do provedor de pesquisa padrão</translation>
 <translation id="1426410128494586442">Sim</translation>
 <translation id="1427655258943162134">Endereço ou URL do servidor proxy</translation>
@@ -245,6 +254,33 @@
 <translation id="209586405398070749">Canal Stable</translation>
 <translation id="2098658257603918882">Ativar relato de uso e dados relacionados a falhas</translation>
 <translation id="2113068765175018713">Limitar tempo de execução do dispositivo reiniciando automaticamente</translation>
+<translation id="2126314858836465216">Fornece configurações para impressoras empresariais vinculadas a dispositivos.
+
+      Esta política permite que você forneça configurações de impressora para
+      dispositivos <ph name="PRODUCT_OS_NAME" />.
+      O tamanho do arquivo não pode exceder a 5 MB e precisa estar codificado em JSON.
+      O formato é o mesmo que o do dicionário NativePrinters. Estima-se 
+      que um arquivo contendo aproximadamente 21.000 impressoras será codificado como um arquivo de
+      5 MB. O hash criptográfico é usado para verificar a integridade do
+      download.
+
+      O arquivo é transferido por download e armazenado em cache. O download dele será feito novamente sempre que
+      o URL ou o hash forem alterados.
+
+      Se esta política for definida,
+      o <ph name="PRODUCT_OS_NAME" /> fará o download
+      do arquivo para as configurações de impressora e disponibilizará as impressoras de
+      acordo com DeviceNativePrintersAccessMode, DeviceNativePrintersWhitelist
+      e DeviceNativePrintersBlacklist.
+
+      Esta política não afeta se os usuários podem configurar impressoras em
+      dispositivos individuais. Ela se destina a complementar a
+      configuração de impressoras por usuários individuais.
+
+      Esta política é adicional a NativePrintersBulkConfiguration.
+
+      Se esta política for deixada sem definição, não haverá nenhuma impressora, e as outras
+      políticas NativeDevicePrinter* serão ignoradas.</translation>
 <translation id="2127599828444728326">Permitir notificações nesses sites</translation>
 <translation id="2131902621292742709">Intervalo de escurecimento de tela no funcionamento com energia da bateria</translation>
 <translation id="2134437727173969994">Autorizar bloqueio da tela</translation>
@@ -469,6 +505,14 @@
       Cada entrada da lista especifica um identificador, que é usado internamente para diferenciar as contas locais de dispositivo.</translation>
 <translation id="2769952903507981510">Configurar o nome de domínio obrigatório para hosts de acesso remoto</translation>
 <translation id="2787173078141616821">Informações de relatório sobre o status do Android</translation>
+<translation id="2789419769822054691">Especifica as impressoras que o usuário pode utilizar.
+
+      Esta política é usada apenas se WhitelistPrintersOnly é escolhida para
+      DeviceNativePrintersAccessMode.
+
+      Se esta política for usada, apenas as impressoras com códigos correspondentes aos valores
+      contidos nesta política serão disponibilizadas para o usuário. Os códigos precisam corresponder
+      às entradas no arquivo especificado em DeviceNativePrinters.</translation>
 <translation id="2801230735743888564">Permite que os usuários joguem o easter egg de dinossauro quando o dispositivo estiver off-line.
 
       Se esta política for configurada como "False", não será possível jogar o easter egg de dinossauro quando o dispositivo estiver off-line. Se esta configuração for definida como "True", os usuários estarão autorizados a jogar o easter egg de dinossauro. Se esta política não for configurada, os usuários não terão autorização para jogar o easter egg de dinossauro em Chrome OS registrados, mas poderão jogá-lo em outras circunstâncias.</translation>
@@ -523,13 +567,6 @@
           O valor da política deve ser especificado em milissegundos. Os valores são fixos de modo a serem inferiores ou iguais ao intervalo de desligamento da tela (se definido) e ao intervalo de inatividade.</translation>
 <translation id="2987155890997901449">Ativar ARC</translation>
 <translation id="2987227569419001736">Controla o uso da API Web Bluetooth</translation>
-<translation id="2998881342848488968">Esta política permite que o <ph name="PRODUCT_OS_NAME" /> ignore qualquer proxy de autenticação de portal cativo.
-
-      Esta política só entra em vigor se um proxy é configurado (por exemplo, por meio de política pelo usuário em chrome://settings ou por extensões).
-
-      Se você ativa esta configuração, todas as páginas de autenticação de portal cativo (ou seja, todas as páginas da Web iniciadas por uma página de login de portal cativo até que o <ph name="PRODUCT_NAME" /> detecte uma conexão com a Internet) são exibidas em uma janela separada, ignorando todas as configurações e restrições de política para o usuário atual.
-
-      Se você desativa esta configuração ou não a define, todas as páginas de autenticação de portal cativo são exibidas em uma nova guia (normal) do navegador, usando as configurações de proxy de usuário atuais.</translation>
 <translation id="3001534538097271560">A configuração desta política como False impede que os usuários optem por enviar informações do sistema e conteúdo de páginas aos servidores do Google. Se essa configuração for definida como True ou não for configurada, os usuários terão permissão para enviar informações do sistema e conteúdo de página ao recurso "Navegação segura" para ajudar a detectar apps e sites perigosos.
 
       Consulte https://developers.google.com/safe-browsing (em inglês) para ver mais informações sobre o recurso "Navegação segura".</translation>
@@ -657,6 +694,7 @@
 
           Esta política só é respeitada se a política "DefaultSearchProviderEnabled" policy estiver ativada.</translation>
 <translation id="350797926066071931">Ativar Traduzir</translation>
+<translation id="3512226956150568738">Se o modelo do dispositivo do cliente já era compatível com ARC antes de a migração para ext4 ser necessária para executar ARC e se a política ArcEnabled estiver definida como true, esta opção se comportará como AskUser (valor 3). Em todos os outros casos (se o modelo do dispositivo não era compatível com ARC anteriormente ou se a política ArcEnabled estiver definida como false), esse valor será equivalente a DisallowArc (valor 0).</translation>
 <translation id="3528000905991875314">Ativar páginas de erro alternativas</translation>
 <translation id="3547954654003013442">Configurações de proxy</translation>
 <translation id="3591584750136265240">Configura o comportamento de autenticação de login</translation>
@@ -701,6 +739,11 @@
           Se a política "EnableMediaRouter" for definida como false, o valor desta política não terá nenhum efeito, e o ícone da barra de ferramentas não será exibido.</translation>
 <translation id="3788662722837364290">Configurações de gerenciamento de energia quando o usuário se torna inativo</translation>
 <translation id="3793095274466276777">Configura as verificações do navegador padrão no <ph name="PRODUCT_NAME" /> e impede que os usuários as modifiquem. Se você ativar essa configuração, o <ph name="PRODUCT_NAME" /> sempre verificará, na inicialização, se ele é o navegador padrão e automaticamente se registrará, se possível. Se essa configuração for desativada, o <ph name="PRODUCT_NAME" /> nunca verificará se ele é o navegador padrão e desativará controles do usuário para configurar essa opção. Se essa configuração não for definida, o <ph name="PRODUCT_NAME" /> permitirá ao usuário controlar se ele é o navegador padrão e se as notificações do usuário devem ser exibidas quando não forem exibidas.</translation>
+<translation id="379602782757302612">Permite que você especifique quais extensões os usuários NÃO podem instalar. As extensões já instaladas serão desativadas se estiverem na lista negra, e o usuário não poderá ativá-las novamente. Quando uma extensão desativada por esse motivo é removida da lista negra, ela é reativada automaticamente.
+
+          O valor "*" na lista negra significa que todas as extensões foram incluídas nessa lista, a menos que estejam explicitamente mencionadas na lista de permissões.
+
+          Se esta política não for definida, o usuário poderá instalar qualquer extensão no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3800626789999016379">Configura o diretório que o <ph name="PRODUCT_NAME" /> usará para fazer o download de arquivos.
 
       Se você definir esta política, o <ph name="PRODUCT_NAME" /> usará o diretório fornecido, independentemente de o usuário ter especificado um ou ter definido que a sinalização deve ser sempre solicitada para o local do download.
@@ -1039,8 +1082,10 @@
 <translation id="5052081091120171147">Se ativada, esta política força a importação do histórico de navegação a partir do navegador padrão atual. Se ativada, esta política também afeta a caixa de diálogo de importação. Se desativada, nenhum histórico de navegação é importado. Caso não seja definida, o usuário pode ser solicitado a responder se deseja importar ou permitir a importação automática.</translation>
 <translation id="5056708224511062314">Lupa desativada</translation>
 <translation id="5067143124345820993">Lista de permissões de login de usuário</translation>
+<translation id="5068140065960598044">A política de nuvem do <ph name="PRODUCT_NAME" /> modifica a política do computador.</translation>
 <translation id="5085647276663819155">Desativar visualização da impressão</translation>
 <translation id="5105313908130842249">Intervalo de bloqueio da tela no funcionamento com energia da bateria</translation>
+<translation id="5108031557082757679">Impressoras empresariais desativadas</translation>
 <translation id="5130288486815037971">Se os pacotes de criptografia RC4 em TLS estão ativados ou não</translation>
 <translation id="5141670636904227950">Definir o tipo de lupa padrão ativada na tela de login</translation>
 <translation id="5142301680741828703">Sempre renderizar os seguintes padrões de URL no <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1450,7 +1495,7 @@
 <translation id="6786967369487349613">Configurar o diretório do perfil de roaming</translation>
 <translation id="6810445994095397827">Bloquear o JavaScript nestes sites</translation>
 <translation id="681446116407619279">Esquemas de autenticação compatíveis</translation>
-<translation id="685769593149966548">Aplicar Modo restrito rigoroso para o YouTube</translation>
+<translation id="685769593149966548">Aplicar o Modo restrito rigoroso para o YouTube</translation>
 <translation id="687046793986382807">Esta política foi desativada a partir da versão 35 do <ph name="PRODUCT_NAME" />.
 
       De alguma forma, as informações da memória são reportadas à página, independentemente do valor da opção. No entanto, os tamanhos reportados são
@@ -1469,6 +1514,13 @@
           Se você definir esta política, os usuários não poderão alterá-la ou substituí-la.
 
           Se essa política não for definida, o feedback falado ficará desativado inicialmente, mas o usuário poderá ativá-lo a qualquer momento.</translation>
+<translation id="6922040258551909078">
+      Se a política for definida como verdadeira, a política de nuvem terá precedência em caso de conflito com a política de computador.
+      Se a política for definida como falsa ou não for configurada, a política de computador terá precedência em caso de conflito com a política de nuvem.
+      Para ver mais detalhes sobre a prioridade das políticas, acesse: https://support.google.com/chrome?p=set_chrome_policies_for_devices
+
+      Esta política não está disponível em instâncias do Windows que não estejam vinculadas a um domínio <ph name="MS_AD_NAME" />.
+      </translation>
 <translation id="6922884955650325312">Bloquear o plug-in <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="6923366716660828830">Especifica o nome do mecanismo de pesquisa padrão. Se deixado em branco ou não definido, o nome do host especificado pelo URL de pesquisa será utilizado. Esta política só é considerada caso a política "DefaultSearchProviderEnabled" seja ativada.</translation>
 <translation id="6931242315485576290">Desativar a sincronização de dados com o Google</translation>
@@ -1579,6 +1631,7 @@
 
       Se a política for definida como false, as sugestões de conteúdo geradas automaticamente não serão mostradas na página "Nova guia".</translation>
 <translation id="7323896582714668701">Parâmetros de linha de comando adicionais para o <ph name="PRODUCT_NAME" /></translation>
+<translation id="7326394567531622570">Semelhante a Wipe (valor 2), mas tenta preservar os tokens de login para que o usuário não precise fazer login novamente.</translation>
 <translation id="7329842439428490522">Especifica o período de inatividade do usuário após o qual a tela é desligada no funcionamento com a energia da bateria.
 
           Quando esta política está definida para um valor superior a zero, especifica por qual período o usuário deve permanecer inativo antes que o <ph name="PRODUCT_OS_NAME" /> desligue a tela.
@@ -1603,6 +1656,7 @@
       Se esta política não for configurada, a limpeza automática usa a estratégia integrada padrão, que atualmente é a estratégia "RemoveLRUIfDormant".</translation>
 <translation id="7336878834592315572">Manter cookies enquanto durar a sessão</translation>
 <translation id="7340034977315324840">Informar horário das atividades do dispositivo</translation>
+<translation id="7343497214039883642">Arquivo de configuração de impressora empresarial para dispositivos</translation>
 <translation id="7384999953864505698">Permite o protocolo QUIC</translation>
 <translation id="7417972229667085380">Percentual pelo qual calcular o intervalo de inatividade no modo de apresentação (uso suspenso)</translation>
 <translation id="7421483919690710988">Define o tamanho do cache de disco de mídia em bytes</translation>
@@ -1784,6 +1838,7 @@
       Se essa política não é definida, o dispositivo usa o padrão do formato de hora de 24 horas.</translation>
 <translation id="8114382167597081590">Não aplicar o Modo restrito no YouTube</translation>
 <translation id="8118665053362250806">Definir tamanho do cache de disco da mídia</translation>
+<translation id="8124468781472887384">Política de acesso à configuração de impressoras do dispositivo.</translation>
 <translation id="8135937294926049787">Especifica o período de inatividade do usuário após o qual a tela é desligada no funcionamento com alimentação CA.
 
           Quando esta política é definida para um valor superior a zero, especifica por qual período o usuário deve permanecer inativo antes que o <ph name="PRODUCT_OS_NAME" /> desligue a tela.
@@ -1891,7 +1946,6 @@
 <translation id="8424255554404582727">Definir rotação padrão da tela, reaplicada em cada reinicialização</translation>
 <translation id="8426231401662877819">Girar tela no sentido horário em 90 graus</translation>
 <translation id="8451988835943702790">Usar a página "Nova guia" como página inicial</translation>
-<translation id="8458790683633857482">Especifica um conjunto de políticas que serão entregues ao tempo de execução de ARC. O valor deve ser um JSON válido.</translation>
 <translation id="8465065632133292531">Parâmetros para URL de instantâneos que usa POST</translation>
 <translation id="847472800012384958">Não permite que nenhum site exiba pop-ups</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
@@ -1956,6 +2010,18 @@
 <translation id="8864975621965365890">Remove a solicitação de recusa que aparece quando um site é processado pelo <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Página inicial</translation>
 <translation id="8882006618241293596">Bloquear o plug-in <ph name="FLASH_PLUGIN_NAME" /> nestes sites</translation>
+<translation id="8887644176044431146">Controla quais impressoras de
+      DeviceNativePrintersConfiguration são disponibilizadas para os usuários.
+
+      Determina qual política de acesso é usada para a configuração em massa de impressoras.
+      Se AllowAll for selecionada, todas as impressoras serão exibidas. Se BlacklistRestrction
+      for selecionada, DeviceNativePrintersBlacklist será usada para restringir o acesso às
+      impressoras especificadas. Se WhitelistPrintersOnly for selecionada,
+      DeviceNativePrintersWhitelist determinará apenas as impressoras que podem ser
+      selecionadas.
+
+      Se esta política for deixada sem definição, BlacklistRestriction será aplicada.
+      </translation>
 <translation id="8906768759089290519">Ativa o modo visitante</translation>
 <translation id="8908294717014659003">Permite definir se os sites podem ter acesso a dispositivos de captura de mídia. O acesso a dispositivos de captura de mídia pode ser permitido por padrão, ou uma pergunta será feita ao usuário cada vez que um site quiser ter acesso a dispositivos de captura de mídia.
 

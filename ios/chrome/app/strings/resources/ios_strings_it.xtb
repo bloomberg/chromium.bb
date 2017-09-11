@@ -18,6 +18,7 @@
 <translation id="1209206284964581585">Nascondi per ora</translation>
 <translation id="1219674500290482172">Impossibile connettersi a Internet.</translation>
 <translation id="1254117744268754948">Scegli cartella</translation>
+<translation id="1265739287306757398">Scopri come</translation>
 <translation id="1272079795634619415">Interrompi</translation>
 <translation id="129553762522093515">Chiuse di recente</translation>
 <translation id="1323735185997015385">Elimina</translation>
@@ -47,7 +48,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta visualizzando a
 <translation id="1690731385917361335">Nessun elemento</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> selezionati</translation>
 <translation id="1740468249224277719">Tocca due volte per installare.</translation>
-<translation id="1749561566933687563">Sincronizza i tuoi preferiti</translation>
 <translation id="1752547299766512813">Salva password</translation>
 <translation id="1753905327828125965">Più visitati</translation>
 <translation id="1809939268435598390">Elimina cartella</translation>
@@ -60,12 +60,14 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta visualizzando a
 <translation id="1952728750904661634">Accedi con l'account gestito</translation>
 <translation id="1974060860693918893">Avanzate</translation>
 <translation id="1989112275319619282">Esplora</translation>
+<translation id="2015722694326466240">Per visualizzare le password, per prima cosa imposta un passcode sul tuo dispositivo.</translation>
 <translation id="2068952045031577364">Ultima settimana</translation>
 <translation id="2079545284768500474">Annulla</translation>
 <translation id="209018056901015185">Richiedi sito desktop</translation>
 <translation id="2103075008456228677">Apri la pagina history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementi spostati</translation>
 <translation id="2149973817440762519">Modifica Preferito</translation>
+<translation id="2154710561487035718">Copia URL</translation>
 <translation id="2230173723195178503">Pagina web caricata</translation>
 <translation id="2267753748892043616">Aggiungi account</translation>
 <translation id="2273327106802955778">Menu Altro</translation>
@@ -134,7 +136,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta visualizzando a
 <translation id="3474649192738347024">Moduli compilati.</translation>
 <translation id="3478058380795961209">Mese di scadenza</translation>
 <translation id="3482959374254649722">Sincronizzazione delle schede...</translation>
-<translation id="3487093336331957349">Suggerimenti di termini di ricerca e siti</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /> sui contenuti suggeriti</translation>
 <translation id="3494788280727468875">Conferma cancellazione dati di navigazione</translation>
 <translation id="3519193562722059437">Apri una scheda per navigare sul Web.</translation>
@@ -155,6 +156,7 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="3779810277399252432">Nessuna connessione a Internet.</translation>
 <translation id="3783017676699494206">Salva immagine</translation>
 <translation id="385051799172605136">Indietro</translation>
+<translation id="3857761338463387655">Crea email con:</translation>
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3928666092801078803">Unisci i miei dati</translation>
 <translation id="3950820424414687140">Accedi</translation>
@@ -182,6 +184,8 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4508750114462689118">Chiudi promo accesso</translation>
 <translation id="4526249700380860531">Controlla e gestisci le password salvate all'indirizzo <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Prova ad accedere nuovamente.</translation>
+<translation id="457386861538956877">Altro...</translation>
+<translation id="461440297010471931">Ricerca con Google</translation>
 <translation id="4620246317052452550">Pagine che hai letto</translation>
 <translation id="4636930964841734540">Info</translation>
 <translation id="4659667755519643272">Apri selettore di schede</translation>
@@ -190,6 +194,7 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 I tuoi dati vengono criptati con la tua passphrase di sincronizzazione. Inseriscila per avviare la sincronizzazione.</translation>
 <translation id="473775607612524610">Aggiorna</translation>
 <translation id="481968316161811770">Cookie, dati dei siti</translation>
+<translation id="4854345657858711387">Imposta un passcode</translation>
 <translation id="4860895144060829044">Chiama</translation>
 <translation id="4875622588773761625">Vuoi che <ph name="PASSWORD_MANAGER_BRAND" /> aggiorni la password di questo sito?</translation>
 <translation id="4881695831933465202">Apri</translation>
@@ -242,6 +247,7 @@ La funzione Handoff deve anche essere attivata nella sezione Generali di Imposta
 <translation id="5871497086027727873">1 elemento spostato</translation>
 <translation id="5911030830365207728">Google Traduttore</translation>
 <translation id="5916664084637901428">On</translation>
+<translation id="5948291296578561264">In questo modo puoi salvare le foto nella raccolta di foto.</translation>
 <translation id="5953603475187800576">Mostra indirizzi e carte di credito di Google Payments</translation>
 <translation id="5955891643922670672">È visualizzata la versione offline</translation>
 <translation id="5964480694698977962">Crea nuova scheda in incognito.</translation>
@@ -342,6 +348,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="7649070708921625228">Guida</translation>
 <translation id="7658239707568436148">Annulla</translation>
 <translation id="7671141431838911305">INSTALLA</translation>
+<translation id="7677825787905683892">Scegli l'app email predefinita</translation>
 <translation id="7765158879357617694">Sposta</translation>
 <translation id="7769602470925380267">Accetta ed esci</translation>
 <translation id="7772032839648071052">Conferma passphrase</translation>
@@ -405,6 +412,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="9083392325882095631">1 elemento</translation>
 <translation id="9100610230175265781">Passphrase obbligatoria</translation>
 <translation id="9148126808321036104">Esegui di nuovo l'accesso</translation>
+<translation id="914898748153555155">Puoi cambiare questa preferenza in qualsiasi momento nelle impostazioni Chrome</translation>
 <translation id="9157836665414082580">Elimina finestre di dialogo</translation>
 <translation id="9188680907066685419">Esci dall'account gestito</translation>
 <translation id="9203116392574189331">Handoff</translation>

@@ -101,6 +101,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="4271805377592243930">Gaukite pagalbos dėl „Chromium“</translation>
 <translation id="4285930937574705105">Diegimas nepavyko dėl nežinomos klaidos. Jei šiuo metu veikia „Chromium“, uždarykite ir pabandykite iš naujo.</translation>
 <translation id="4330585738697551178">Šis modulis žinomas kaip prieštaraujantis „Chromium“.</translation>
+<translation id="4421155425831608516">Prisijungimo prie „Chromium“ funkciją išjungė šio įrenginio administratorius.</translation>
 <translation id="4423735387467980091">Tinkinkite ir valdykite „Chromium“</translation>
 <translation id="4458285410772214805">Atsijunkite ir prisijunkite iš naujo, kad šis pakeitimas būtų pritaikytas.</translation>
 <translation id="4469812139324097969">„Chromium“ pasenusi, nes kurį laiką nebuvo paleista iš naujo. Naujinys pasiekiamas ir jis bus pritaikytas, kai paleisite „Chromium“ iš naujo.</translation>
@@ -203,7 +204,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="734373864078049451">Čia saugoma žiniatinklio informacija, žymės ir kiti „Chromium“ duomenys.</translation>
 <translation id="7344413941077984497">Jei norite nustatyti, kokias svetaines <ph name="NEW_PROFILE_NAME" /> gali peržiūrėti, konfigūruokite apribojimus ir nustatymus apsilankę adresu <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Jei nepakeisite numatytųjų nustatymų, <ph name="NEW_PROFILE_NAME" /> galės naršyti visą žiniatinklį.
 
-Kad <ph name="NEW_PROFILE_NAME" /> negalėtų pasiekti jūsų paskyros, būtinai užrakinkite profilį, kai nenaudojate „Chromium“. Norėdami tai atlikti, spustelėkite profilio pavadinimą viršutiniame dešiniajame naršyklės kampe ir pasirinkite „Išeiti ir saugiai užrakinti“.
+Kad <ph name="NEW_PROFILE_NAME" /> negalėtų pasiekti jūsų paskyros, būtinai užrakinkite profilį, kai nenaudojate „Chromium“. Norėdami tai atlikti, spustelėkite profilio pavadinimą viršutiniame dešiniajame naršyklės kampe ir pasirinkite „Išeiti ir užrakinti nuo vaikų“.
 <ph name="BEGIN_LINK_2" />Sužinokite daugiau<ph name="END_LINK_2" />
 
 Patikrinkite el. pašto adresu <ph name="ACCOUNT_EMAIL" /> išsiųstą laišką, kuriame rasite daugiau instrukcijų.</translation>

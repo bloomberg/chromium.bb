@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
 <translation id="1006017844123154345">باز کردن نسخه آنلاین</translation>
+<translation id="1036727731225946849">درحال افزودن <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1049743911850919806">ناشناس</translation>
 <translation id="10614374240317010">هرگز ذخیره نمی‌شود</translation>
 <translation id="1068672505746868501">هرگز صفحه‌های <ph name="SOURCE_LANGUAGE" /> ترجمه نشوند</translation>
@@ -34,7 +35,6 @@
 <translation id="129553762522093515">اخیراً بسته‌شده</translation>
 <translation id="1303671224831497365">هیچ دستگاه بلوتوثی یافت نشد</translation>
 <translation id="1326317727527857210">‏برای دسترسی به برگه‌هایتان در دستگاه‌های دیگر، به سیستم Chrome وارد شوید.</translation>
-<translation id="132830257261478853">نوار نشانی. برای بستن پانل پیمایش، به پایین بکشید.</translation>
 <translation id="1332501820983677155">‏میان‌برهای ویژه Google Chrome</translation>
 <translation id="1369915414381695676">سایت <ph name="SITE_NAME" /> اضافه شد</translation>
 <translation id="1373696734384179344">حافظه برای بارگیری محتوای انتخابی کافی نیست.</translation>
@@ -92,7 +92,6 @@
 <translation id="1832521218263067499">حوادث امنیتی</translation>
 <translation id="1853692000353488670">برگه جدید ناشناس</translation>
 <translation id="189172778771606813">بستن کشوی پیمایش</translation>
-<translation id="1892551174703874605">نوار نشانی. برای دیدن نشانک‌ها، بارگیری‌ها و سابقه تند به بالا بکشید.</translation>
 <translation id="1897409700584096124">وب‌سایت درحال پخش است</translation>
 <translation id="1919345977826869612">آگهی‌ها</translation>
 <translation id="1933845786846280168">برگه انتخاب‌شده</translation>
@@ -133,7 +132,9 @@
 <translation id="2227444325776770048">ادامه دادن به‌عنوان <ph name="USER_FULL_NAME" /></translation>
 <translation id="2266890032547182881">مصرف داده به تفکیک</translation>
 <translation id="2268044343513325586">فیلتر</translation>
+<translation id="2283599456633275070">سفر</translation>
 <translation id="2286841657746966508">آدرس ارسال صورتحساب</translation>
+<translation id="2301209717432756327">به صفحه اصلی اضافه شد.</translation>
 <translation id="2315043854645842844">انتخاب گواهی سمت کلاینت توسط سیستم‌عامل پشتیبانی نمی‌شود.</translation>
 <translation id="2321958826496381788">لغزنده را بکشید تا زمانی که بتوانید این متن را به راحتی بخوانید. بعد از دو ضربه متوالی روی یک پاراگراف، اندازه نوشتار حداقل باید به این بزرگی باشد.</translation>
 <translation id="2323763861024343754">فضای ذخیره‌سازی سایت</translation>
@@ -271,6 +272,7 @@
 <translation id="3661699943263275414">وب‌سایت‌های طرف ثالث می‌توانند داده‌های کوکی را ذخیره کنند و بخوانند</translation>
 <translation id="3662546969139119822">سابقه‌ای اینجا نیست</translation>
 <translation id="3672452749423051839">پیشنهادات خطای پیمایش</translation>
+<translation id="3706423975342040244">سرگرمی</translation>
 <translation id="3714981814255182093">باز کردن «نوار پیدا کردن»</translation>
 <translation id="3734660163659757482">برای دیدن نشانک‌ها و موارد بیشتر، به بالا بکشید</translation>
 <translation id="3738139272394829648">لمس کردن برای جستجو</translation>
@@ -303,6 +305,7 @@
 <translation id="3988213473815854515">مکان مجاز است</translation>
 <translation id="3997476611815694295">فضای ذخیره غیرمهم</translation>
 <translation id="4002066346123236978">عنوان</translation>
+<translation id="4013356575049925793">تجارت الکترونیک</translation>
 <translation id="4042870126885713738">وقتی آدرس وب شناسایی نمی‌شود یا اتصال برقرار نمی‌شود، پیشنهاداتی نشان داده می‌شود</translation>
 <translation id="4046123991198612571">آهنگ بعدی</translation>
 <translation id="4056223980640387499">سپیا</translation>
@@ -317,8 +320,10 @@
 <translation id="410351446219883937">پخش خودکار</translation>
 <translation id="4113030288477039509">مدیریت شده توسط سرپرست‌تان</translation>
 <translation id="4116038641877404294">برای استفاده از صفحه‌ها در حالت آفلاین، آن‌ها را بارگیری کنید</translation>
+<translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{‏%1$d نشانک}one{‏%1$d نشانک}other{‏%1$d نشانک}}</translation>
 <translation id="4165986682804962316">تنظیمات سایت</translation>
 <translation id="4170011742729630528">این سرویس در دسترس نیست؛ بعداً دوباره امتحان کنید.</translation>
+<translation id="4183813635650697113">‏<ph name="WEB_APP_NAME" /> در Chrome اجرا می‌شود</translation>
 <translation id="4195643157523330669">باز کردن در برگهٔ جدید</translation>
 <translation id="4226663524361240545">اعلان‌ها ممکن است دستگاه را بلرزانند</translation>
 <translation id="4242533952199664413">باز کردن تنظیمات</translation>
@@ -335,10 +340,12 @@
 <translation id="4351244548802238354">بستن کادر گفتگو</translation>
 <translation id="4378154925671717803">تلفن</translation>
 <translation id="4384468725000734951">‏استفاده از Sogou برای جستجو</translation>
+<translation id="4404568932422911380">هیچ نشانکی موجود نیست</translation>
 <translation id="4412992751769744546">اجازه به کوکی‌های طرف ثالث</translation>
 <translation id="443008484043213881">ابزارها</translation>
 <translation id="4432792777822557199">از این به بعد، صفحه‌های <ph name="SOURCE_LANGUAGE" />، به <ph name="TARGET_LANGUAGE" /> ترجمه خواهند شد</translation>
 <translation id="4445444302979002552">استفاده از سرویس‌های پیش‌بینی برای پیشنهاد عبارت‌های جستجو و وب‌سایت‌ها</translation>
+<translation id="4452411734226507615">بستن برگه <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">در <ph name="FOLDER_NAME" /> نشانک گذاشته شد</translation>
 <translation id="4453340223357552416"><ph name="FILE_NAME" /> در <ph name="PRODUCT_NAME" /> بارگیری شد</translation>
 <translation id="4479647676395637221">قبل از اجازه به سایت‌ها برای استفاده از دوربین، ابتدا سؤال شود (توصیه می‌شود)</translation>
@@ -351,6 +358,7 @@
 <translation id="4532845899244822526">انتخاب پوشه</translation>
 <translation id="4550003330909367850">برای مشاهده یا کپی کردن گذرواژه‌تان در اینجا، قفل صفحه را در این دستگاه تنظیم کنید.</translation>
 <translation id="4558311620361989323">میان‌برهای صفحه وب</translation>
+<translation id="4565377596337484307">عدم نمایش گذرواژه</translation>
 <translation id="4572422548854449519">به حساب مدیریت‌شده وارد شوید</translation>
 <translation id="4581964774250883625">اکنون در حالت ناشناس هستید.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# دقیقه قبل}one{# دقیقه قبل}other{# دقیقه قبل}}</translation>
@@ -381,6 +389,8 @@
 <translation id="4842092870884894799">نمایش پنجره تولید گذرواژه</translation>
 <translation id="4850886885716139402">نما</translation>
 <translation id="4860895144060829044">تماس</translation>
+<translation id="4874967477260347223">مجوزهای رسانه</translation>
+<translation id="4875775213178255010">محتواهای پیشنهادی</translation>
 <translation id="4881695831933465202">باز کردن</translation>
 <translation id="4885273946141277891">‏این تعداد از نسخه‌های Chrome پشتیبانی نمی‌شود.</translation>
 <translation id="4910889077668685004">برنامه‌های پرداخت</translation>
@@ -475,7 +485,6 @@
 <translation id="5676636989614905379">ویدئو در <ph name="SCREEN_NAME" /> پخش نمی‌شود.</translation>
 <translation id="5677928146339483299">مسدود است</translation>
 <translation id="5684874026226664614">متأسفیم. این صفحه ترجمه نشد.</translation>
-<translation id="5718200072127758424">برای دیدن نشانک‌ها، بارگیری‌ها و سابقه، در نوار نشانی تند به بالا بکشید</translation>
 <translation id="5719837394786370183">صفحاتی که در برگه‌های ناشناس می‌بینید بعد از بستن برگه‌های ناشناس، در سابقه مرور، فضای ذخیره کوکی یا سابقه جستجویتان به‌جا نمی‌مانند. هر فایلی که بارگیری می‌کنید یا نشانک‌هایی که ایجاد می‌کنید، حفظ می‌شوند.
 با این حال، نامرئی نیستید. رفتن به حالت ناشناس، مرورتان را از کارفرما، ارائه‌کننده خدمات اینترنتی یا وب‌سایت‌هایی که بازید می‌کنید، پنهان نمی‌کند.</translation>
 <translation id="572328651809341494">برگه‌های اخیر</translation>
@@ -561,6 +570,7 @@
 <translation id="6448273550210938826">پیشنهادات جستجو و نشانی وب</translation>
 <translation id="6475951671322991020">بارگیری ویدیو</translation>
 <translation id="6482749332252372425">به‌دلیل نبودن فضای ذخیره‌سازی، بارگیری <ph name="FILE_NAME" /> انجام نشد.</translation>
+<translation id="6496823230996795692">برای استفاده از <ph name="APP_NAME" /> برای اولین‌ بار، لطفاً به اینترنت وصل شوید.</translation>
 <translation id="6508332297647760142">اشتراک‌گذاری وب فیزیکی</translation>
 <translation id="6527303717912515753">اشتراک‌گذاری</translation>
 <translation id="6534565668554028783">‏پاسخ Google بیش از حد طول کشیده است</translation>
@@ -589,12 +599,14 @@
 <translation id="6697947395630195233">‏Chrome برای اشتراک‌گذاری مکانتان با این سایت باید به مکانتان دسترسی داشته باشد.</translation>
 <translation id="6698801883190606802">مدیریت داده‌های همگام‌سازی شده</translation>
 <translation id="6701279291835318271">گزارش‌های امنیتی</translation>
+<translation id="6709133671862442373">اخبار</translation>
 <translation id="6710213216561001401">قبلی</translation>
 <translation id="6727612981472093924">پانل پیمایش باز شد</translation>
 <translation id="6738867403308150051">در حال بارگیری…</translation>
 <translation id="6762156594045689028">برای تغییر این تنظیم، <ph name="BEGIN_LINK" />همگام‌سازی را بازنشانی کنید<ph name="END_LINK" /></translation>
 <translation id="6764789522080107716">فایل باز نمی‌شود</translation>
 <translation id="6770414673596662518">‏همچنین از سیستم مرور ایمن Chrome برای تشخیص صفحات مخرب و محافظت از شما در برابر فیشینگ، بدافزار و بارگیری‌های خطرناک استفاده می‌شود.</translation>
+<translation id="6776813977906306442">با استفاده از دکمه «بارگیری»، ویدیوها را برای تماشا در فرصتی دیگر بارگیری کنید</translation>
 <translation id="6790428901817661496">پخش</translation>
 <translation id="679325081238418596">نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیماتتان را در تمام دستگاه‌های خود دریافت کنید</translation>
 <translation id="6820607729870073286">شما تنظیمات ذخیره شده‌ای برای وب سایت ندارید.</translation>
@@ -644,7 +656,6 @@
 <translation id="7191430249889272776">برگه در پس‌زمینه باز شد.</translation>
 <translation id="723171743924126238">انتخاب تصاویر</translation>
 <translation id="7243308994586599757">گزینه‌ها در نزدیک پایین صفحه نمایش در دسترس هستند</translation>
-<translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> از موقعیت مکانی شما برای نمایش نتایج جستجوی محلی استفاده می‌کند</translation>
 <translation id="7251326866581677552">در برخی از سایت‌ها مسدود شد</translation>
 <translation id="7253272406652746122">‏از صفحه «حساب‌ها» در برنامه «تنظیمات» دستگاه، یک حساب Google اضافه کنید.</translation>
 <translation id="7274013316676448362">سایت مسدودشده</translation>
@@ -694,6 +705,7 @@
 <translation id="7665369617277396874">افزودن حساب</translation>
 <translation id="7698359219371678927">ایجاد رایانامه در <ph name="APP_NAME" /></translation>
 <translation id="773466115871691567">صفحه‌های <ph name="SOURCE_LANGUAGE" /> همیشه ترجمه شوند</translation>
+<translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="7764225426217299476">افزودن آدرس</translation>
 <translation id="7765158879357617694">انتقال</translation>
 <translation id="7769602470925380267">پذیرش و خروج از سیستم</translation>
@@ -751,10 +763,10 @@
 <translation id="8250920743982581267">اسناد</translation>
 <translation id="8260126382462817229">دوباره سعی کنید به سیستم وارد شوید</translation>
 <translation id="8261506727792406068">حذف</translation>
-<translation id="8275818695183729150">اجازه دادن (برای جستجوهای نوار آدرس)</translation>
 <translation id="8283853025636624853">در حال همگام‌سازی در <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">برگه‌های استاندارد</translation>
 <translation id="8339163506404995330">صفحه‌های <ph name="LANGUAGE" /> ترجمه نخواند شد</translation>
+<translation id="8372721116225477180">اجتماعی</translation>
 <translation id="8372893542064058268">«همگام‌سازی پس‌زمینه» را برای یک سایت خاص مجاز کنید.</translation>
 <translation id="8374821112118309944">‏باید TalkBack را به نسخه جدیدتری به‌روزرسانی کنید.</translation>
 <translation id="8393700583063109961">ارسال پیام</translation>
@@ -813,6 +825,7 @@
 <translation id="8959122750345127698">پیمایش غیرقابل دسترسی است: <ph name="URL" /></translation>
 <translation id="896250263197055929">برگه بارگیری‌ها انتخاب شد</translation>
 <translation id="8979340629087822094">روز گذشته</translation>
+<translation id="8979405271719829084">ویدیوها را برای تماشا در فرصتی دیگر بارگیری کنید</translation>
 <translation id="8981454092730389528">‏کنترل‌های فعالیت Google</translation>
 <translation id="8986494364107987395">‏ارسال خودکار آمار کاربرد و گزارش‌های خرابی به Google</translation>
 <translation id="8993760627012879038">باز کردن برگه جدیدی در حالت ناشناس</translation>

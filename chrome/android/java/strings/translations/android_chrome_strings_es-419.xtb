@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
 <translation id="1006017844123154345">Abrir en línea</translation>
+<translation id="1036727731225946849">Agregando <ph name="WEBAPK_NAME" />…</translation>
 <translation id="1049743911850919806">Incógnito</translation>
 <translation id="10614374240317010">Nunca guardado</translation>
 <translation id="1068672505746868501">No traducir nunca páginas en <ph name="SOURCE_LANGUAGE" /></translation>
@@ -34,7 +35,6 @@ Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</tra
 <translation id="129553762522093515">Cerrado recientemente</translation>
 <translation id="1303671224831497365">No se encontraron dispositivos Bluetooth</translation>
 <translation id="1326317727527857210">Accede a Chrome para obtener las pestañas de tus otros dispositivos.</translation>
-<translation id="132830257261478853">Barra de direcciones. Ábrela para cerrar el panel de navegación.</translation>
 <translation id="1332501820983677155">Accesos directos a las funciones de Google Chrome</translation>
 <translation id="1369915414381695676">Se agregó el sitio <ph name="SITE_NAME" />.</translation>
 <translation id="1373696734384179344">Memoria insuficiente para descargar el contenido seleccionado</translation>
@@ -92,7 +92,6 @@ Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</tra
 <translation id="1832521218263067499">Incidentes de seguridad</translation>
 <translation id="1853692000353488670">Nueva pestaña de incógnito</translation>
 <translation id="189172778771606813">Cerrar panel lateral de navegación</translation>
-<translation id="1892551174703874605">Barra de direcciones. Ábrela para ver los favoritos, las descargas y el historial.</translation>
 <translation id="1897409700584096124">El sitio web está transmitiendo</translation>
 <translation id="1919345977826869612">Anuncios</translation>
 <translation id="1933845786846280168">Pestaña seleccionada</translation>
@@ -133,7 +132,9 @@ Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</tra
 <translation id="2227444325776770048">Continuar como <ph name="USER_FULL_NAME" /></translation>
 <translation id="2266890032547182881">Desglose del uso de datos</translation>
 <translation id="2268044343513325586">Definir mejor</translation>
+<translation id="2283599456633275070">Viajes</translation>
 <translation id="2286841657746966508">Dirección de facturación</translation>
+<translation id="2301209717432756327">Se agregó a la pantalla principal.</translation>
 <translation id="2315043854645842844">El sistema operativo no admite la selección de certificados del lado del cliente.</translation>
 <translation id="2321958826496381788">Arrastra el control deslizante hasta que puedas leer esto cómodamente. El texto debería verse, al menos, de este tamaño al tocar dos veces un párrafo.</translation>
 <translation id="2323763861024343754">Almacenamiento del sitio</translation>
@@ -271,6 +272,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="3661699943263275414">Los sitios web de terceros pueden guardar y leer datos de cookies.</translation>
 <translation id="3662546969139119822">Aquí no hay elementos en el historial</translation>
 <translation id="3672452749423051839">Sugerencias relacionadas con errores de navegación</translation>
+<translation id="3706423975342040244">Entretenimiento</translation>
 <translation id="3714981814255182093">Abrir la barra de búsqueda</translation>
 <translation id="3734660163659757482">Desliza hacia arriba para ver los favoritos y más contenido</translation>
 <translation id="3738139272394829648">Tocar para buscar</translation>
@@ -303,6 +305,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="3988213473815854515">Se admite la ubicación.</translation>
 <translation id="3997476611815694295">Almacenamiento no importante</translation>
 <translation id="4002066346123236978">Título</translation>
+<translation id="4013356575049925793">Comercio electrónico</translation>
 <translation id="4042870126885713738">Mostrar sugerencias cuando no se resuelve una dirección web o cuando no se puede establecer una conexión</translation>
 <translation id="4046123991198612571">Siguiente pista</translation>
 <translation id="4056223980640387499">Sepia</translation>
@@ -317,8 +320,10 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="410351446219883937">Reproducción automática</translation>
 <translation id="4113030288477039509">Administrado por tu administrador</translation>
 <translation id="4116038641877404294">Descarga las páginas para usarlas sin conexión</translation>
+<translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d favorito}other{%1$d favoritos}}</translation>
 <translation id="4165986682804962316">Configuración del sitio</translation>
 <translation id="4170011742729630528">El servicio no se encuentra disponible; vuelve a intentarlo más tarde.</translation>
+<translation id="4183813635650697113"><ph name="WEB_APP_NAME" /> se ejecuta en Chrome</translation>
 <translation id="4195643157523330669">Abrir en una pestaña nueva</translation>
 <translation id="4226663524361240545">Es posible que las notificaciones hagan vibrar el dispositivo</translation>
 <translation id="4242533952199664413">Abrir la configuración</translation>
@@ -335,10 +340,12 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4351244548802238354">Cerrar cuadro de diálogo</translation>
 <translation id="4378154925671717803">Teléfono</translation>
 <translation id="4384468725000734951">Se usa Sogou para la búsqueda</translation>
+<translation id="4404568932422911380">No hay favoritos</translation>
 <translation id="4412992751769744546">Permitir cookies de terceros</translation>
 <translation id="443008484043213881">Herramientas</translation>
 <translation id="4432792777822557199">De ahora en más, las páginas en <ph name="SOURCE_LANGUAGE" /> se traducirán al <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4445444302979002552">Usar los servicios de predicción para sugerir términos de búsqueda y sitios web</translation>
+<translation id="4452411734226507615">Cierra la pestaña <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Se agregó a favoritos en <ph name="FOLDER_NAME" /></translation>
 <translation id="4453340223357552416">Se descargó <ph name="FILE_NAME" /> en <ph name="PRODUCT_NAME" /></translation>
 <translation id="4479647676395637221">Preguntar primero antes de permitir que los sitios usen tu cámara (recomendado)</translation>
@@ -351,6 +358,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4532845899244822526">Seleccionar carpeta</translation>
 <translation id="4550003330909367850">Para ver o copiar tu contraseña aquí, establece un bloqueo de pantalla en este dispositivo.</translation>
 <translation id="4558311620361989323">Accesos directos a páginas web</translation>
+<translation id="4565377596337484307">Ocultar contraseña</translation>
 <translation id="4572422548854449519">Acceder a una cuenta administrada</translation>
 <translation id="4581964774250883625">Estás en modo incógnito.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{Hace # minuto}other{Hace # minutos}}</translation>
@@ -381,6 +389,8 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4842092870884894799">Mostrando mensaje emergente de generación de contraseña</translation>
 <translation id="4850886885716139402">Ver</translation>
 <translation id="4860895144060829044">Llamar</translation>
+<translation id="4874967477260347223">Licencias de medios</translation>
+<translation id="4875775213178255010">Sugerencias de contenido</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4885273946141277891">Cantidad de instancias de Chrome no admitidas</translation>
 <translation id="4910889077668685004">Apps de pago</translation>
@@ -475,7 +485,6 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="5676636989614905379">No se puede reproducir el video en <ph name="SCREEN_NAME" />.</translation>
 <translation id="5677928146339483299">Bloqueado</translation>
 <translation id="5684874026226664614">No se puede traducir esta página.</translation>
-<translation id="5718200072127758424">Abre la barra de direcciones para ver los favoritos, las descargas y el historial</translation>
 <translation id="5719837394786370183">Una vez que cierres todas las pestañas de incógnito, los datos de las páginas que hayas visitado en ese modo no se guardarán en el historial del navegador, en la lista de cookies ni en el historial de búsquedas. Sí se guardarán los archivos que descargues y los favoritos que crees.
 
 Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación de incógnito no oculta tu información de navegación de un empleador, del proveedor de servicios de Internet ni de los sitios web que visitas.</translation>
@@ -562,6 +571,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6448273550210938826">Sugerencias de URL y de búsqueda</translation>
 <translation id="6475951671322991020">Descargar video</translation>
 <translation id="6482749332252372425"><ph name="FILE_NAME" /> no se pudo descargar debido a la falta de espacio de almacenamiento.</translation>
+<translation id="6496823230996795692">Para usar <ph name="APP_NAME" /> por primera vez, conéctate a Internet.</translation>
 <translation id="6508332297647760142">Uso compartido de la Web física</translation>
 <translation id="6527303717912515753">Compartir</translation>
 <translation id="6534565668554028783">Google tardó demasiado en responder</translation>
@@ -597,6 +607,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6762156594045689028">Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincronización<ph name="END_LINK" /></translation>
 <translation id="6764789522080107716">No se puede abrir el archivo</translation>
 <translation id="6770414673596662518">El sistema de navegación segura de Chrome también se puede utilizar para detectar páginas maliciosas y protegerte de la suplantación de identidad (phishing), el software malicioso y las descargas peligrosas.</translation>
+<translation id="6776813977906306442">Descarga videos con el botón Descargar para verlos más tarde</translation>
 <translation id="6790428901817661496">Reproducir</translation>
 <translation id="679325081238418596">Accede a tus favoritos, historial, contraseñas y otras opciones de configuración en todos los dispositivos</translation>
 <translation id="6820607729870073286">No tienes configuraciones de sitio web guardadas.</translation>
@@ -646,7 +657,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7191430249889272776">Pestaña abierta en segundo plano</translation>
 <translation id="723171743924126238">Seleccionar imágenes</translation>
 <translation id="7243308994586599757">Opciones disponibles junto a la parte inferior de la pantalla</translation>
-<translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> usa tu ubicación para mostrar resultados de la búsqueda a nivel local.</translation>
 <translation id="7251326866581677552">Bloqueados de algunos sitios</translation>
 <translation id="7253272406652746122">Agrega una cuenta de Google desde la página Cuentas en la app de Configuración del dispositivo.</translation>
 <translation id="7274013316676448362">Sitio bloqueado</translation>
@@ -696,6 +706,7 @@ Es posible que tu cuenta de Google tenga otros formularios del historial de nave
 <translation id="7665369617277396874">Agregar cuenta</translation>
 <translation id="7698359219371678927">Crear correo electrónico en <ph name="APP_NAME" /></translation>
 <translation id="773466115871691567">Traducir siempre las páginas en <ph name="SOURCE_LANGUAGE" /></translation>
+<translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="7764225426217299476">Agregar dirección</translation>
 <translation id="7765158879357617694">Mover</translation>
 <translation id="7769602470925380267">Aceptar y salir</translation>
@@ -753,10 +764,10 @@ Es posible que tu cuenta de Google tenga otros formularios del historial de nave
 <translation id="8250920743982581267">Documentos</translation>
 <translation id="8260126382462817229">Intenta volver a acceder</translation>
 <translation id="8261506727792406068">Borrar</translation>
-<translation id="8275818695183729150">Permitir (en búsquedas de la barra de direcciones)</translation>
 <translation id="8283853025636624853">Sincronizando con <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Pestañas estándar</translation>
 <translation id="8339163506404995330">No se traducirán las páginas en <ph name="LANGUAGE" /></translation>
+<translation id="8372721116225477180">Social</translation>
 <translation id="8372893542064058268">Permite la sincronización en segundo plano para un sitio específico.</translation>
 <translation id="8374821112118309944">Debes actualizar a una versión más reciente de TalkBack</translation>
 <translation id="8393700583063109961">Enviar mensaje</translation>
@@ -815,6 +826,7 @@ Conéctate a Internet y reproduce el contenido descargado para obtener licencias
 <translation id="8959122750345127698">Navegación inaccesible: <ph name="URL" /></translation>
 <translation id="896250263197055929">Se seleccionó la pestaña de descargas</translation>
 <translation id="8979340629087822094">ayer</translation>
+<translation id="8979405271719829084">Descarga videos para verlos más tarde</translation>
 <translation id="8981454092730389528">Controles de actividad de Google</translation>
 <translation id="8986494364107987395">Enviar automáticamente estadísticas de uso e informes sobre fallos a Google</translation>
 <translation id="8993760627012879038">Abrir ventana nueva en modo de navegación incógnito</translation>

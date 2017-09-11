@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
-<translation id="1326317727527857210">Pentru a accesa filele de pe alte dispozitive, conectează-te la Chrome.</translation>
 <translation id="1685087038067318291">Descoperă paginile web trimise de obiectele din apropiere. Când conexiunea Bluetooth este activată, Chrome poate să preia paginile web asociate obiectelor din jur și le poate trimite anonim la Google pentru a le găsi pe cele mai utile. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">Chrome s-a asigurat că certificatul acestui site a fost emis de <ph name="ISSUER" />.</translation>

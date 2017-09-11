@@ -3,6 +3,8 @@
 <translationbundle lang="uk">
 <translation id="1012876632442809908">Пристрій із портом USB типу C (на передній панелі)</translation>
 <translation id="1013923882670373915">Пристрою Bluetooth "<ph name="DEVICE_NAME" />" потрібен дозвіл на підключення. Введіть на пристрої цей PIN-код: <ph name="PINCODE" /></translation>
+<translation id="1032891413405719768">Акумулятор стилуса розряджений</translation>
+<translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="112308213915226829">Автоматично ховати полицю</translation>
 <translation id="1153356358378277386">Підключені пристрої</translation>
 <translation id="1195412055398077112">облямівка екрана</translation>
@@ -21,6 +23,7 @@
 <translation id="15373452373711364">Великий курсор миші</translation>
 <translation id="1550523713251050646">Натисніть, щоб побачити більше опцій</translation>
 <translation id="1621499497873603021">До розрядження акумулятора залишилося <ph name="TIME_LEFT" /></translation>
+<translation id="16620462294541761">На жаль, не вдалося підтвердити ваш пароль. Повторіть спробу.</translation>
 <translation id="1677472565718498478">Залишилося <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Адреса IPv6: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Цим пристроєм керує адміністратор підприємства</translation>
@@ -104,7 +107,6 @@
 <translation id="3621202678540785336">Вхід</translation>
 <translation id="3625258641415618104">Знімки екрана вимкнено</translation>
 <translation id="3626281679859535460">Яскравість</translation>
-<translation id="3683428399328702079"><ph name="DISPLAY_NAME" />: установлено роздільну здатність <ph name="RESOLUTION" /></translation>
 <translation id="3712407551474845318">Зробити знімок певної області</translation>
 <translation id="371370241367527062">Мікрофон на передній панелі</translation>
 <translation id="3742055079367172538">Знімок екрана зроблено</translation>
@@ -137,6 +139,7 @@
 <translation id="453661520163887813"><ph name="TIME" /> до повного заряду</translation>
 <translation id="4544944664594876241">Комбінація клавіш для блокування екрана змінилася. Тепер це <ph name="NEW_SHORTCUT" />, а не <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4659419629803378708">ChromeVox увімкнено</translation>
+<translation id="4729904664295161097">Помічник доступний лише в основному профілі.</translation>
 <translation id="479989351350248267">пошук</translation>
 <translation id="4804818685124855865">Від'єднатися</translation>
 <translation id="4849058404725798627">Підсвічувати об’єкт, вибраний на клавіатурі</translation>
@@ -161,6 +164,7 @@
 <translation id="5571066253365925590">Bluetooth увімкнено</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Натисніть Ctrl + Alt + Z, щоб вимкнути голосові підказки.</translation>
+<translation id="5612734644261457353">На жаль, поки не вдалося підтвердити ваш пароль. Зверніть увагу: якщо ви нещодавно змінили пароль, новий пароль буде застосовано, щойно ви вийдете з облікового запису. Скористайтеся тут старим паролем.</translation>
 <translation id="5648021990716966815">Гніздо для мікрофона</translation>
 <translation id="5744083938413354016">Перетягування дотиком</translation>
 <translation id="5777841717266010279">Скасувати спільний доступ до екрана?</translation>
@@ -225,6 +229,7 @@
 <translation id="7256634071279256947">Мікрофон на задній панелі</translation>
 <translation id="7348093485538360975">Екранна клавіатура</translation>
 <translation id="735745346212279324">VPN від’єднано</translation>
+<translation id="7377169924702866686">Клавішу Caps Lock увімкнено.</translation>
 <translation id="742594950370306541">Камера використовується.</translation>
 <translation id="743058460480092004">Камера та мікрофон використовуються.</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
@@ -256,6 +261,7 @@
 <translation id="8190698733819146287">Налаштувати мови та введення тексту...</translation>
 <translation id="8308637677604853869">Попереднє меню</translation>
 <translation id="8351131234907093545">Створити нотатку</translation>
+<translation id="8392234662362215700">Натисніть комбінацію клавіш Control-Shift-Space, щоб змінити розкладку клавіатури.</translation>
 <translation id="8428213095426709021">Налаштування</translation>
 <translation id="8433186206711564395">Налаштування мережі</translation>
 <translation id="8433977262951327081">Комбінація клавіш для виклику спливаючої підказки з опціями введення змінилась. Тепер це <ph name="NEW_SHORTCUT" />, а не <ph name="OLD_SHORTCUT" />.</translation>

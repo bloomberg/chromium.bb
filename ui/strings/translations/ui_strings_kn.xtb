@@ -13,7 +13,6 @@
 <translation id="1413622004203049571"><ph name="NOTIFIER_NAME" /> ಅವರ ಅಧಿಸೂಚನೆಗಳನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 ನಿಮಿಷ ಮತ್ತು }one{# ನಿಮಿಷಗಳು ಮತ್ತು }other{# ನಿಮಿಷಗಳು ಮತ್ತು }}</translation>
 <translation id="1643823602425662293">ಅಧಿಸೂಚನೆ</translation>
-<translation id="1685967565548146460">ಹ್ಯಾಟ್ಸ್</translation>
 <translation id="1710340000377843106">ಈಗ</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 ನಿಮಿಷ}one{# ನಿಮಿಷಗಳು}other{# ನಿಮಿಷಗಳು}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
@@ -30,8 +29,10 @@
 <translation id="2148716181193084225">ಇಂದು</translation>
 <translation id="2168039046890040389">ಪುಟ ಮೇಲೆ</translation>
 <translation id="2190355936436201913">(ಖಾಲಿ)</translation>
+<translation id="219905428774326614">ಲಾಂಚರ್‌, ಎಲ್ಲಾ ಅಪ್ಲಿಕೇಶನ್‌ಗಳು</translation>
 <translation id="2289052229480071835">ನಿಮ್ಮ ಪರದೆಯಲ್ಲಿ ಸ್ಪರ್ಶ ಟಾರ್ಗೆಟ್‌ಗಳನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ.</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="24452542372838207">ವಿಸ್ತರಿಸುವ ಅಧಿಸೂಚನೆ</translation>
 <translation id="2482878487686419369">ಸೂಚನೆಗಳು</translation>
 <translation id="2497284189126895209">ಎಲ್ಲ ಫೈಲ್‌ಗಳು</translation>
 <translation id="2522350507219695259">ಮಾಪನಾಂಕವು ಪೂರ್ಣಗೊಂಡಿದೆ</translation>
@@ -72,7 +73,6 @@
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 ಸೆಕೆಂಡ್}one{# ಸೆಕೆಂಡುಗಳು}other{# ಸೆಕೆಂಡುಗಳು}}</translation>
 <translation id="4971687151119236543">ಮೀಡಿಯಾದ ಹಿಂದಿನ ಟ್ರ್ಯಾಕ್</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="5016049845330225051">ಹುಡುಕಾಟ ಬಾಕ್ಸ್‌ ಪಠ್ಯದ ಬಟನ್‌ ಅನ್ನು ತೆರವುಗೊಳಿಸಿ</translation>
 <translation id="5046499563572181734">ಇಲ್ಲಿ ಟ್ಯಾಪ್ ಮಾಡಿ</translation>
 <translation id="5076340679995252485">&amp;ಅಂಟಿಸಿ</translation>
 <translation id="5120799197269191491">ಹುಡುಕಾಟ + <ph name="KEY_COMBO_NAME" /></translation>
@@ -92,6 +92,7 @@
 <translation id="5943826764092288734">{HOURS,plural, =1{1 ಗಂಟೆ}one{# ಗಂಟೆಗಳು}other{# ಗಂಟೆಗಳು}}</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">ಎಲ್ಲಾ ಅಪ್ಲಿಕೇಶನ್‌ಗಳು</translation>
+<translation id="6022924867608035986">ಹುಡುಕಾಟ ಬಾಕ್ಸ್ ಪಠ್ಯವನ್ನು ತೆರವುಗೊಳಿಸಿ</translation>
 <translation id="6040143037577758943">ಮುಚ್ಚಿರಿ</translation>
 <translation id="6119846243427417423">ಸಕ್ರಿಯಗೊಳಿಸು</translation>
 <translation id="6129953537138746214">ಸ್ಪೇಸ್</translation>
@@ -162,6 +163,7 @@
 <translation id="9002566407876343676">ತೆರೆ</translation>
 <translation id="9038489124413477075">ಹೆಸರಿಸದ ಫೋಲ್ಡರ್</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 ಸೆಕೆಂಡ್}one{# ಸೆಕೆಂಡುಗಳು}other{# ಸೆಕೆಂಡುಗಳು}}</translation>
+<translation id="9059834730836941392">ಕುಗ್ಗಿಸುವ ಅಧಿಸೂಚನೆ</translation>
 <translation id="9150735707954472829">ಟ್ಯಾಬ್</translation>
 <translation id="9161053988251441839">ಸಲಹೆ ಮಾಡಿರುವ ಅಪ್ಲಿಕೇಶನ್‌ಗಳು</translation>
 <translation id="9170848237812810038">&amp;ರದ್ದುಮಾಡು</translation>

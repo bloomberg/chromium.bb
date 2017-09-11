@@ -3,6 +3,8 @@
 <translationbundle lang="kn">
 <translation id="1012876632442809908">USB-C ಸಾಧನ (ಮುಂದಿನ ಪೋರ್ಟ್)</translation>
 <translation id="1013923882670373915">ಬ್ಲೂಟೂತ್‌ ಸಾಧನವು "<ph name="DEVICE_NAME" />" ಜೋಡಣೆಗಾಗಿ ಅನುಮತಿಯನ್ನು ಬಯಸುತ್ತದೆ. ದಯವಿಟ್ಟು ಆ ಸಾಧನದಲ್ಲಿ ಈ PIN ಕೋಡ್ ನಮೂದಿಸಿ: <ph name="PINCODE" /></translation>
+<translation id="1032891413405719768">ಸ್ಟೈಲಸ್ ಬ್ಯಾಟರಿ ಕಡಿಮೆಯಾಗಿದೆ</translation>
+<translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="112308213915226829">ಶೆಲ್ಫ್ ಅನ್ನು ಸ್ವಯಂಮರೆಮಾಡು</translation>
 <translation id="1153356358378277386">ಜೋಡಿ ಮಾಡಲಾದ ಸಾಧನಗಳು</translation>
 <translation id="1195412055398077112">ಓವರ್‌ಸ್ಕ್ಯಾನ್</translation>
@@ -21,6 +23,7 @@
 <translation id="15373452373711364">ದೊಡ್ಡ ಮೌಸ್ ಕರ್ಸರ್</translation>
 <translation id="1550523713251050646">ಇನ್ನಷ್ಟು ಆಯ್ಕೆಗಳಿಗೆ ಕ್ಲಿಕ್ ಮಾಡಿ</translation>
 <translation id="1621499497873603021">ಬ್ಯಾಟರಿ ಖಾಲಿ ಆಗುವವರೆಗೆ ಉಳಿದಿರುವ ಸಮಯ, <ph name="TIME_LEFT" /></translation>
+<translation id="16620462294541761">ಕ್ಷಮಿಸಿ, ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ ಅನ್ನು ಪರಿಶೀಲಿಸಲಾಗುವುದಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> ಬಾಕಿ ಉಳಿದಿದೆ</translation>
 <translation id="1698760176351776263">IPv6 ವಿಳಾಸ: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">ಈ ಸಾಧನವನ್ನು ಎಂಟರ್‌ಪ್ರೈಸ್ ನಿರ್ವಹಣೆ ಮಾಡುತ್ತಿದೆ</translation>
@@ -104,7 +107,6 @@
 <translation id="3621202678540785336">ಇನ್‌ಪುಟ್</translation>
 <translation id="3625258641415618104">ಸ್ಕ್ರೀನ್‌ಶಾಟ್‌ಗಳನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="3626281679859535460">ಪ್ರಕಾಶಮಾನ</translation>
-<translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> ರೆಸಲ್ಯೂಷನ್ ಅನ್ನು <ph name="RESOLUTION" /> ಗೆ ಬದಲಿಸಲಾಗಿದೆ</translation>
 <translation id="3712407551474845318">ಸೆರೆಹಿಡಿಯುವ ಪ್ರದೇಶ</translation>
 <translation id="371370241367527062">ಮುಂಭಾಗದ ಮೈಕ್ರೊಫೋನ್</translation>
 <translation id="3742055079367172538">ಸ್ಕ್ರಿನ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳಲಾಗಿದೆ</translation>
@@ -137,6 +139,7 @@
 <translation id="453661520163887813"><ph name="TIME" /> ಪೂರ್ಣಗೊಳ್ಳುವವರೆಗೆ</translation>
 <translation id="4544944664594876241">ಸ್ಕ್ರೀನ್ ಅನ್ನು ಲಾಕ್ ಮಾಡುವ ಶಾರ್ಟ್‌ಕಟ್ ಬದಲಾಗಿದೆ. <ph name="OLD_SHORTCUT" /> ಬದಲಿಗೆ <ph name="NEW_SHORTCUT" /> ಬಳಸಿ.</translation>
 <translation id="4659419629803378708">ChromeVox ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
+<translation id="4729904664295161097">ಪ್ರಾಥಮಿಕ ಪ್ರೊಫೈಲ್‌ಗೆ ಮಾತ್ರ ಸಹಾಯಕ ಲಭ್ಯವಿದೆ.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">ಡಿಸ್‌ಕನೆಕ್ಟ್</translation>
 <translation id="4849058404725798627">ಕೀಬೋರ್ಡ್‌ ಫೋಕಸ್‌ ಮೂಲಕ ವಿಷಯವನ್ನು ಎದ್ದುಗಾಣಿಸಿ</translation>
@@ -161,6 +164,7 @@
 <translation id="5571066253365925590">ಬ್ಲೂಟೂತ್‌ ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">ಮಾತಿನ ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲು Ctrl + Alt + Z ಒತ್ತಿ.</translation>
+<translation id="5612734644261457353">ಕ್ಷಮಿಸಿ, ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಇನ್ನೂ ಪರಿಶೀಲಿಸಲಾಗಲಿಲ್ಲ. ಗಮನಿಸಿ: ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ನೀವು ಇತ್ತೀಚೆಗೆ ಬದಲಾಯಿಸಿದ್ದರೆ, ನೀವು ಸೈನ್ ಔಟ್ ಮಾಡಿದ ನಂತರ ನಿಮ್ಮ ಹೊಸ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಜಾರಿಗೆ ತರಲಾಗುತ್ತದೆ, ದಯವಿಟ್ಟು ಇಲ್ಲಿ ಹಳೆಯ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು  ಬಳಸಿ.</translation>
 <translation id="5648021990716966815">ಮೈಕ್ ಜ್ಯಾಕ್</translation>
 <translation id="5744083938413354016">ಟ್ಯಾಪ್ ಎಳೆಯುವಿಕೆ</translation>
 <translation id="5777841717266010279">ಸ್ಕ್ರೀನ್ ಹಂಚಿಕೆ ನಿಲ್ಲಿಸುವುದೇ?</translation>
@@ -226,6 +230,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="7256634071279256947">ಹಿಂಭಾಗದ ಮೈಕ್ರೊಫೋನ್</translation>
 <translation id="7348093485538360975">ಆನ್ ಸ್ಕ್ರೀನ್ ಕೀಬೋರ್ಡ್</translation>
 <translation id="735745346212279324">VPN ಸಂಪರ್ಕ ಕಡಿತಗೊಳಿಸಲಾಗಿದೆ</translation>
+<translation id="7377169924702866686">CAPS LOCK ಆನ್ ಆಗಿದೆ.</translation>
 <translation id="742594950370306541">ಕ್ಯಾಮರಾ ಬಳಕೆಯಲ್ಲಿದೆ.</translation>
 <translation id="743058460480092004">ಕ್ಯಾಮರಾ ಮತ್ತು ಮೈಕ್ರೋಫೋನ್ ಬಳಕೆಯಲ್ಲಿವೆ.</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
@@ -257,6 +262,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="8190698733819146287">ಭಾಷೆಗಳು ಮತ್ತು ಇನ್‌ಪುಟ್ ಅನ್ನು ಕಸ್ಟಮೈಸ್ ಮಾಡಿ...</translation>
 <translation id="8308637677604853869">ಹಿಂದಿನ ಮೆನು</translation>
 <translation id="8351131234907093545">ಟಿಪ್ಪಣಿ ರಚಿಸಿ</translation>
+<translation id="8392234662362215700">ಕೀಬೋರ್ಡ್ ಲೇಔಟ್ ಬದಲಾಯಿಸಲು Control-Shift-Space ಒತ್ತಿರಿ.</translation>
 <translation id="8428213095426709021">ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="8433186206711564395">ನೆಟ್‌ವರ್ಕ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="8433977262951327081">ಶೆಲ್ಫ್‌ನಲ್ಲಿ ಇನ್‌ಪುಟ್ ಆಯ್ಕೆಗಳ ಮೆನು ಬಬಲ್ ತೋರಿಸುವ ಶಾರ್ಟ್‌ಕಟ್ ಬದಲಾಗಿದೆ. <ph name="OLD_SHORTCUT" /> ಬದಲಿಗೆ <ph name="NEW_SHORTCUT" /> ಬಳಸಿ.</translation>

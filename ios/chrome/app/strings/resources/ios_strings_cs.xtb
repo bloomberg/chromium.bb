@@ -18,6 +18,7 @@
 <translation id="1209206284964581585">Prozatím skrýt</translation>
 <translation id="1219674500290482172">Nelze se připojit k internetu.</translation>
 <translation id="1254117744268754948">Výběr složky</translation>
+<translation id="1265739287306757398">Postup</translation>
 <translation id="1272079795634619415">Zastavit</translation>
 <translation id="129553762522093515">Nedávno zavřené</translation>
 <translation id="1323735185997015385">Smazat</translation>
@@ -47,7 +48,6 @@ Některé webové stránky na tento požadavek mohou reagovat například tím, 
 <translation id="1690731385917361335">Žádné položky</translation>
 <translation id="1700629756560807968">Počet vybraných položek: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="1740468249224277719">Dvojitým klepnutím spustíte instalaci.</translation>
-<translation id="1749561566933687563">Synchronizace záložek</translation>
 <translation id="1752547299766512813">Ukládání hesel</translation>
 <translation id="1753905327828125965">Nejnavštěvovanější</translation>
 <translation id="1809939268435598390">Smazat složku</translation>
@@ -60,12 +60,14 @@ Některé webové stránky na tento požadavek mohou reagovat například tím, 
 <translation id="1952728750904661634">Přihlášení pomocí spravovaného účtu</translation>
 <translation id="1974060860693918893">Rozšířená nastavení</translation>
 <translation id="1989112275319619282">Procházet</translation>
+<translation id="2015722694326466240">Chcete-li zobrazit hesla, musíte nejdříve na zařízení nastavit heslo.</translation>
 <translation id="2068952045031577364">Z uplynulého týdne</translation>
 <translation id="2079545284768500474" />
 <translation id="209018056901015185">Verze webu pro PC</translation>
 <translation id="2103075008456228677">Otevřít history.google.com</translation>
 <translation id="2116625576999540962">Počet přesunutých položek: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="2149973817440762519">Upravit záložku</translation>
+<translation id="2154710561487035718">Kopírovat adresu URL</translation>
 <translation id="2230173723195178503">Webová stránka byla načtena</translation>
 <translation id="2267753748892043616">Přidat účet</translation>
 <translation id="2273327106802955778">Nabídka Další</translation>
@@ -134,7 +136,6 @@ Některé webové stránky na tento požadavek mohou reagovat například tím, 
 <translation id="3474649192738347024">Formuláře byly vyplněny.</translation>
 <translation id="3478058380795961209">Měsíc vypršení platnosti</translation>
 <translation id="3482959374254649722">Probíhá synchronizace karet…</translation>
-<translation id="3487093336331957349">Návrhy vyhledávacích dotazů a webů</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /> o navrhovaném obsahu</translation>
 <translation id="3494788280727468875">Potvrdit vymazání údajů o prohlížení</translation>
 <translation id="3519193562722059437">Chcete-li prohlížet internet, otevřete novou kartu.</translation>
@@ -155,6 +156,7 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="3779810277399252432">Nejste připojeni k internetu</translation>
 <translation id="3783017676699494206">Uložit obrázek</translation>
 <translation id="385051799172605136">Zpět</translation>
+<translation id="3857761338463387655">Klient pro připojení k e-mailu:</translation>
 <translation id="3897092660631435901">Nabídka</translation>
 <translation id="3928666092801078803">Sloučit má data</translation>
 <translation id="3950820424414687140">Přihlaste se</translation>
@@ -182,6 +184,8 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="4508750114462689118">Zavřít propagační zprávu ohledně přihlášení</translation>
 <translation id="4526249700380860531">Uložená hesla můžete zobrazit a upravit na adrese <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Zkuste se přihlásit znovu.</translation>
+<translation id="457386861538956877">Další...</translation>
+<translation id="461440297010471931">Vyhledává se pomocí Googlu</translation>
 <translation id="4620246317052452550">Stránky, které jste si přečetli</translation>
 <translation id="4636930964841734540">Informace</translation>
 <translation id="4659667755519643272">Přejít do přepínače karet</translation>
@@ -190,6 +194,7 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 Vaše data jsou šifrována pomocí heslové fráze pro synchronizaci. Chcete-li zahájit synchronizaci, zadejte ji.</translation>
 <translation id="473775607612524610">Aktualizovat</translation>
 <translation id="481968316161811770">Soubory cookie a data webů</translation>
+<translation id="4854345657858711387">Nastavte heslo</translation>
 <translation id="4860895144060829044">Volat</translation>
 <translation id="4875622588773761625">Chcete, aby aplikace <ph name="PASSWORD_MANAGER_BRAND" /> aktualizovala vaše heslo pro tento web?</translation>
 <translation id="4881695831933465202">Otevřít</translation>
@@ -242,6 +247,7 @@ Funkce Handoff musí být povolena také v Nastavení v sekci Obecné a zaříze
 <translation id="5871497086027727873">Přesunuta 1 položka</translation>
 <translation id="5911030830365207728">Překladač Google</translation>
 <translation id="5916664084637901428">Zapnuto</translation>
+<translation id="5948291296578561264">Toto umožňuje ukládat fotky do vaší knihovny fotek.</translation>
 <translation id="5953603475187800576">Zobrazit adresy a platební karty ze služby Google Payments</translation>
 <translation id="5955891643922670672">Zobrazuje se offline verze</translation>
 <translation id="5964480694698977962">Vytvořit novou anonymní kartu</translation>
@@ -342,6 +348,7 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="7649070708921625228">Nápověda</translation>
 <translation id="7658239707568436148">Zrušit</translation>
 <translation id="7671141431838911305">INSTALOVAT</translation>
+<translation id="7677825787905683892">Vyberte výchozí e-mailovou aplikaci</translation>
 <translation id="7765158879357617694">Přesunout</translation>
 <translation id="7769602470925380267">Přijmout a odhlásit se</translation>
 <translation id="7772032839648071052">Potvrďte heslovou frázi</translation>
@@ -405,6 +412,7 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="9083392325882095631">1 položka</translation>
 <translation id="9100610230175265781">Je vyžadována heslová fráze</translation>
 <translation id="9148126808321036104">Znovu přihlásit</translation>
+<translation id="914898748153555155">Tuto předvolbu můžete kdykoliv změnit v nastavení Chromu</translation>
 <translation id="9157836665414082580">Potlačit dialogová okna</translation>
 <translation id="9188680907066685419">Odhlásit se ze spravovaného účtu</translation>
 <translation id="9203116392574189331">Handoff</translation>

@@ -72,11 +72,20 @@ Si no se establece ningún valor para esta política, la frecuencia predetermina
 <translation id="1330145147221172764">Habilitar teclado en pantalla</translation>
 <translation id="1330985749576490863">Inhabilita Google Drive a través de conexiones móviles en la aplicación Archivos de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="13356285923490863">Nombre de la política</translation>
+<translation id="134402861816424823">Especifica las impresoras que un usuario no puede utilizar.
+
+      Esta política solo se usa si se asigna BlacklistRestriction a
+      DeviceNativePrintersAccessMode.
+
+      Si se usa esta política, el usuario tendrá acceso a todas las impresoras, excepto
+      a los ID indicados en ella.
+      </translation>
 <translation id="1353966721814789986">Páginas de inicio</translation>
 <translation id="1359553908012294236">Si se asigna el valor true a esta política o si esta no se configura, <ph name="PRODUCT_NAME" /> habilitará los inicios de sesión como invitado. Los inicios de sesión como invitado son perfiles de <ph name="PRODUCT_NAME" /> en los que todas las ventanas están en modo incógnito.
 
       Si se asigna el valor false a esta política, <ph name="PRODUCT_NAME" /> no permitirá que se inicien los perfiles de invitado.</translation>
 <translation id="1363275621236827384">Habilitar consultas a Quirks Server para los perfiles de hardware</translation>
+<translation id="1393485621820363363">Impresoras de dispositivos de empresa habilitadas</translation>
 <translation id="1397855852561539316">URL de sugerencia del proveedor de búsquedas predeterminadas</translation>
 <translation id="1426410128494586442">Sí</translation>
 <translation id="1427655258943162134">Dirección o URL de servidor proxy</translation>
@@ -252,6 +261,33 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
 <translation id="209586405398070749">Canal estable</translation>
 <translation id="2098658257603918882">Habilitar informes de uso y de datos sobre fallos</translation>
 <translation id="2113068765175018713">Limitar tiempo de actividad de dispositivo mediante reinicio automático</translation>
+<translation id="2126314858836465216">Proporciona opciones de configuración de impresoras de empresa vinculadas con los dispositivos.
+
+      Esta política permite proporcionar opciones de configuración de los
+      dispositivos <ph name="PRODUCT_OS_NAME" />.
+      El tamaño máximo del archivo es de 5 MB y se debe codificar con formato JSON.
+      El formato es el mismo que el del diccionario de NativePrinters. Se estima
+      que un archivo que contiene aproximadamente 21.000 impresoras tiene un tamaño de
+      5 MB. El hash criptográfico se utiliza para verificar la integridad de la
+      descarga.
+
+      El archivo se descarga y almacena en la memoria caché, y se vuelve a descargar cada vez que
+      la URL o el hash cambian.
+
+      Si se establece esta política,
+      <ph name="PRODUCT_OS_NAME" /> descargará
+      el archivo con las configuraciones de las impresoras y estas estarán disponibles
+      según lo especificado en las políticas DeviceNativePrintersAccessMode, DeviceNativePrintersWhitelist
+      y DeviceNativePrintersBlacklist.
+
+      Esta política no afecta a la capacidad de los usuarios para configurar impresoras en
+      determinados dispositivos. La política se ha diseñado como complemento a la
+      configuración de impresoras que realizan los usuarios.
+
+      Esta política es complementaria a NativePrintersBulkConfiguration.
+
+      Si no se establece esta política, no habrá impresoras para los dispositivos y se ignorará
+      el resto de las políticas NativeDevicePrinter.*</translation>
 <translation id="2127599828444728326">Permitir notificaciones en estos sitios</translation>
 <translation id="2131902621292742709">Retraso de atenuado de pantalla cuando el dispositivo funciona con la batería</translation>
 <translation id="2134437727173969994">Permitir que se bloquee la pantalla</translation>
@@ -495,6 +531,14 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Cada entrada de la lista especifica un identificador, que se utiliza de forma interna para diferenciar las cuentas locales del dispositivo.</translation>
 <translation id="2769952903507981510">Configurar el nombre de dominio obligatorio para hosts de acceso remoto</translation>
 <translation id="2787173078141616821">Proporcionar información sobre el estado de Android</translation>
+<translation id="2789419769822054691">Especifica las impresoras que puede utilizar un usuario.
+
+      Esta política solo se usará si se asigna WhitelistPrintersOnly a
+      DeviceNativePrintersAccessMode.
+
+      Si se usa esta política, el usuario solo podrá acceder a las impresoras cuyos ID se correspondan
+      con los valores incluidos en ella. Los IDs se deben corresponder con
+      las entradas del archivo especificado en la política DeviceNativePrinters.</translation>
 <translation id="2801230735743888564">Permite que los usuarios jueguen al juego del huevo de pascua de dinosaurio sin conexión.
 
       Si se asigna el valor False a esta política, los usuarios no podrán jugar al juego del huevo de pascua de dinosaurio sin conexión. Si se le asigna el valor True, los usuarios podrán jugar al juego del dinosaurio. Si no se establece esta política, los usuarios no podrán jugar a este juego en el dispositivo Chrome OS registrado, aunque podrán hacerlo en otras circunstancias.</translation>
@@ -549,13 +593,6 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
           El valor de la política se debe especificar en milisegundos. Los valores están establecidos para ser inferiores o iguales al retraso de desconexión de pantalla (si está establecido) y al retraso de inactividad.</translation>
 <translation id="2987155890997901449">Habilitar ARC</translation>
 <translation id="2987227569419001736">Controlar el uso de la API Bluetooth web</translation>
-<translation id="2998881342848488968">Esta política permite a <ph name="PRODUCT_OS_NAME" /> omitir cualquier proxy para la autenticación de portal cautivo.
-
-      Esta política solo tendrá validez si se ha configurado un proxy (por ejemplo, a través de una política o de las extensiones, o si lo ha configurado el usuario en chrome://settings).
-
-      Si habilitas esta opción, las páginas de autenticación de portal cautivo (es decir, las páginas web que empiezan con una página de inicio de sesión de portal cautivo hasta que <ph name="PRODUCT_NAME" /> detecta que la conexión a Internet se ha realizado correctamente) se mostrarán en una ventana independiente ignorando la configuración de la política y las restricciones del usuario actual.
-
-      Si inhabilitas esta opción o no la configuras, las páginas de autenticación de portal cautivo se mostrarán en una nueva pestaña del navegador (como habitualmente) utilizando la configuración del proxy del usuario actual.</translation>
 <translation id="3001534538097271560">Si se asigna el valor false a esta política, los usuarios no podrán elegir si quieren enviar información y contenido de las páginas a los servidores de Google. Si se le asigna el valor true o no se configura, los usuarios podrán enviar información del sistema y contenido de las páginas a la función Navegación Segura para que detecte aplicaciones y sitios web peligrosos.
 
       Consulta la página https://developers.google.com/safe-browsing para obtener más información sobre la función Navegación Segura.</translation>
@@ -691,6 +728,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 
           Esta política solo se respeta si se habilita la política "DefaultSearchProviderEnabled".</translation>
 <translation id="350797926066071931">Habilitar el Traductor</translation>
+<translation id="3512226956150568738">Si el modelo de dispositivo del cliente ya admitía ARC antes de que fuera necesario realizar la migración a ext4 para ejecutar ese formato y si se ha asignado el valor "True" a la política ArcEnabled, esta opción se comportará como AskUser (valor 3). En el resto de los casos (si el modelo de dispositivo no admitía ARC antes o si se ha asignado el valor "False" a la política ArcEnabled), este valor es equivalente a DisallowArc (valor 0).</translation>
 <translation id="3528000905991875314">Habilitar páginas de error alternativas</translation>
 <translation id="3547954654003013442">Configuración de proxy</translation>
 <translation id="3591584750136265240">Configurar el comportamiento de la autenticación de inicio de sesión</translation>
@@ -740,6 +778,11 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si inhabilitas esta opción, nunca se comprobará si <ph name="PRODUCT_NAME" /> es el navegador predeterminado y se inhabilitará el control de los usuarios sobre la configuración de esta opción.
 
       Si no se configura esta opción, los usuarios de <ph name="PRODUCT_NAME" /> podrán decidir si quieren que este sea el navegador predeterminado y si deben aparecer notificaciones cuando no lo sea.</translation>
+<translation id="379602782757302612">Te permite especificar las extensiones que los usuarios no pueden instalar. Se inhabilitarán las extensiones ya instaladas si se encuentran en una lista negra, y el usuario no las podrá habilitar. Si se elimina una extensión de la lista negra, se volverá a habilitar automáticamente.
+
+          El valor "*" en una lista negra indica que todas las extensiones están en la lista negra a menos que aparezcan explícitamente en la lista blanca.
+
+          Si no se establece esta política, el usuario podrá instalar cualquier extensión en <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3800626789999016379">Configura el directorio que <ph name="PRODUCT_NAME" /> utilizará para descargar archivos.
 
       Si se establece esta política, <ph name="PRODUCT_NAME" /> utilizará el directorio proporcionado independientemente de que el usuario haya especificado un directorio o habilitado el indicador para seleccionar siempre la ubicación de la descarga.
@@ -1095,8 +1138,10 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Si no se establece, es posible que se le pida al usuario que haga la importación o que el historial de navegación se importe automáticamente.</translation>
 <translation id="5056708224511062314">Aumento de pantalla inhabilitado</translation>
 <translation id="5067143124345820993">Lista de admisión de usuarios con permiso para iniciar sesión</translation>
+<translation id="5068140065960598044">La política de la nube de <ph name="PRODUCT_NAME" /> anula la política del equipo.</translation>
 <translation id="5085647276663819155">Inhabilitar vista previa de impresión</translation>
 <translation id="5105313908130842249">Retraso de bloqueo de pantalla cuando el dispositivo funciona con la batería</translation>
+<translation id="5108031557082757679">Impresoras de dispositivos de empresa habilitadas</translation>
 <translation id="5130288486815037971">Indicar si se han habilitado los conjuntos de cifrado de RC4 en TLS</translation>
 <translation id="5141670636904227950">Establecer el tipo de aumento de pantalla predeterminado habilitado en la pantalla de inicio de sesión</translation>
 <translation id="5142301680741828703">Mostrar siempre los patrones de URL indicados a continuación en <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1574,6 +1619,13 @@ Al habilitar esta política, se inhabilita la sincronización en la nube.
           Si estableces esta política, los usuarios no podrán modificarla o anularla.
 
           Si no se establece esta política, los comentarios por voz se inhabilitarán de forma inicial, pero el usuario podrá habilitarlos en cualquier momento.</translation>
+<translation id="6922040258551909078">
+      Si se le asigna el valor "true" a esta política, la política de la nube prevalecerá si entra en conflicto con la política del equipo.
+      Si se le asigna el valor "false" o no se le asigna ningún valor, la política del equipo prevalecerá si entra en conflicto con la política de la nube.
+      Para obtener más información sobre la prioridad de las políticas, consulta: https://support.google.com/chrome?p=set_chrome_policies_for_devices.
+
+      Esta política no está disponible en instancias de Windows que no estén vinculadas a un dominio <ph name="MS_AD_NAME" />.
+      </translation>
 <translation id="6922884955650325312">Bloquear el complemento <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="6923366716660828830">Permite especificar el nombre del proveedor de búsquedas predeterminado. Si se deja en blanco, se utilizará el nombre del host especificado por la URL de búsqueda.
 
@@ -1698,6 +1750,7 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
 
      Si se asigna el valor False, no se mostrarán las sugerencias de contenido generadas automáticamente en la página Nueva pestaña.</translation>
 <translation id="7323896582714668701">Parámetros de línea de comandos adicionales para <ph name="PRODUCT_NAME" /></translation>
+<translation id="7326394567531622570">Similar a Wipe (valor 2), pero intenta conservar los tokens de inicio de sesión para que el usuario no tenga que volver a iniciar sesión.</translation>
 <translation id="7329842439428490522">Permite especificar el tiempo transcurrido hasta la desconexión de la pantalla (sin que el usuario realice ninguna acción) cuando el dispositivo funciona con la batería.
 
           Cuando esta política se establece en un valor superior a cero, especifica el tiempo en que el usuario debe permanecer inactivo antes de que <ph name="PRODUCT_OS_NAME" /> desconecte la pantalla.
@@ -1724,6 +1777,7 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
       Si esta política no se establece, la limpieza automática utilizará la estrategia integrada predeterminada. Actualmente, se trata de la estrategia RemoveLRUIfDormant.</translation>
 <translation id="7336878834592315572">Guardar las cookies durante la duración de la sesión</translation>
 <translation id="7340034977315324840">Notificar tiempo de actividad del dispositivo</translation>
+<translation id="7343497214039883642">Archivo de configuración de las impresoras de empresa para los dispositivos</translation>
 <translation id="7384999953864505698">Permitir protocolo QUIC</translation>
 <translation id="7417972229667085380">Porcentaje que permite ajustar el retraso de inactividad en el modo de presentación (política obsoleta)</translation>
 <translation id="7421483919690710988">Establecer tamaño de caché de disco de medios en bytes</translation>
@@ -1918,6 +1972,7 @@ Si la política está establecida en True, el dispositivo utilizará un formato 
 Si no se establece la política, el dispositivo tendrá un formato de reloj de 24 horas de forma predeterminada.</translation>
 <translation id="8114382167597081590">No aplicar el modo restringido en YouTube</translation>
 <translation id="8118665053362250806">Establecer tamaño de caché de disco de medios</translation>
+<translation id="8124468781472887384">Política de acceso a la configuración de las impresoras de dispositivos.</translation>
 <translation id="8135937294926049787">Permite especificar el tiempo transcurrido hasta la desconexión de la pantalla (sin que el usuario realice ninguna acción) cuando el dispositivo está conectado a la red.
 
            Cuando esta política se establece en un valor superior a cero, especifica el tiempo en que el usuario debe permanecer inactivo antes de que <ph name="PRODUCT_OS_NAME" /> desconecte la pantalla.
@@ -2037,7 +2092,6 @@ Si la política está establecida en False, no se informará sobre la lista de i
 <translation id="8424255554404582727">Establecer rotación de pantalla predeterminada y volver a aplicarla cada vez que se reinicie el dispositivo</translation>
 <translation id="8426231401662877819">Rotar la pantalla 90 grados hacia la derecha</translation>
 <translation id="8451988835943702790">Utilizar página Nueva pestaña como página principal</translation>
-<translation id="8458790683633857482">Especifica las políticas que se transmitirán al tiempo de ejecución ARC. Debe usarse un valor JSON válido.</translation>
 <translation id="8465065632133292531">Parámetros para URL instantánea que utiliza POST</translation>
 <translation id="847472800012384958">No permitir que ningún sitio muestre pop-ups</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
@@ -2112,6 +2166,18 @@ Si la política está establecida en False, no se informará sobre la lista de i
 <translation id="8864975621965365890">Elimina el mensaje de desactivación que aparece cuando <ph name="PRODUCT_FRAME_NAME" /> muestra un sitio.</translation>
 <translation id="8870318296973696995">Página de inicio</translation>
 <translation id="8882006618241293596">Bloquear el complemento <ph name="FLASH_PLUGIN_NAME" /> en estos sitios web</translation>
+<translation id="8887644176044431146">Controla a qué impresoras de la política
+      DeviceNativePrintersConfiguration tienen acceso los usuarios.
+
+      Designa qué política de acceso se utiliza para configurar impresoras en bloque.
+      Si se selecciona AllowAll, se mostrarán todas las impresoras. Si se selecciona BlacklistRestrction,
+      se utilizará DeviceNativePrintersBlacklist para restringir el acceso
+      a impresoras específicas. Si se selecciona WhitelistPrintersOnly,
+      DeviceNativePrintersWhitelist designará únicamente las impresoras
+      que se puedan seleccionar.
+
+      Si no se establece esta política, se utilizará BlacklistRestriction.
+      </translation>
 <translation id="8906768759089290519">Habilitar el modo de invitado</translation>
 <translation id="8908294717014659003">Te permite establecer si los sitios web pueden acceder a los dispositivos de captura multimedia. El acceso a los dispositivos de captura multimedia se puede establecer de forma predeterminada o se puede configurar para que el usuario reciba un mensaje cada vez que un sitio web quiera acceder a estos dispositivos.
 

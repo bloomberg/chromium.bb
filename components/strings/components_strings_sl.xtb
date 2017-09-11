@@ -13,6 +13,7 @@
 <translation id="106701514854093668">Zaznamki namizja</translation>
 <translation id="1074497978438210769">Ni varno</translation>
 <translation id="1080116354587839789">Prilagoditev prikaza širini</translation>
+<translation id="1088860948719068836">Dodajanje imena na kartico</translation>
 <translation id="1103523840287552314">Vedno prevedi ta jezik: <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Če je izbrana ta možnost, bo shranil kopijo kartice v tej napravi za hitrejše izpolnjevanje obrazcev.</translation>
 <translation id="1111153019813902504">Nedavni zaznamki</translation>
@@ -43,6 +44,7 @@
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (sinhronizirano)</translation>
 <translation id="1263231323834454256">Bralni seznam</translation>
 <translation id="1264126396475825575">Poročilo o zrušitvi je bilo zajeto takrat: <ph name="CRASH_TIME" /> (ni še naloženo ali je prezrto)</translation>
+<translation id="1270502636509132238">Način prevzema</translation>
 <translation id="1281526147609854549">Izdal: <ph name="ISSUER" /></translation>
 <translation id="1285320974508926690">Nikoli ne prevedi tega spletnega mesta</translation>
 <translation id="129553762522093515">Nedavno zaprto</translation>
@@ -94,6 +96,7 @@
 <translation id="1710259589646384581">Operacijski sistem</translation>
 <translation id="1721312023322545264"><ph name="NAME" /> vam mora odobriti obisk tega spletnega mesta</translation>
 <translation id="1721424275792716183">*Polje je obvezno</translation>
+<translation id="1727741090716970331">Dodajanje veljavne številke kartice</translation>
 <translation id="1728677426644403582">Ogledujete si izvorno kodo spletne strani</translation>
 <translation id="173080396488393970">Ta vrsta kartice ni podprta</translation>
 <translation id="1734864079702812349">Amex</translation>
@@ -138,6 +141,7 @@
 <translation id="2079545284768500474">Razveljavi</translation>
 <translation id="20817612488360358">Za uporabo so nastavljene sistemske nastavitve strežnika proxy, vendar je navedena tudi izrecna konfiguracija proxyja.</translation>
 <translation id="2086652334978798447">Če želite prejemati prilagojeno vsebino, ki jo predlaga Google, se prijavite v Chrome.</translation>
+<translation id="2091887806945687916">Zvok</translation>
 <translation id="2094505752054353250">Neujemanje domen</translation>
 <translation id="2096368010154057602">Departma</translation>
 <translation id="2108755909498034140">Znova zaženite računalnik</translation>
@@ -145,7 +149,9 @@
 <translation id="2114841414352855701">Prezrto, ker je to preglasil pravilnik <ph name="POLICY_NAME" />.</translation>
 <translation id="2138201775715568214">Iskanje strani za Fizični splet v bližini</translation>
 <translation id="213826338245044447">Zaznamki mobilne naprave</translation>
+<translation id="214556005048008348">Prekliči plačilo</translation>
 <translation id="2147827593068025794">Sinhroniziranje v ozadju</translation>
+<translation id="2148613324460538318">Dodaj kartico</translation>
 <translation id="2154054054215849342">Sinhronizacija ni na voljo za vašo domeno</translation>
 <translation id="2154484045852737596">Urejanje kartice</translation>
 <translation id="2166049586286450108">Polni skrbniški dostop</translation>
@@ -194,6 +200,8 @@
 <translation id="2501278716633472235">Nazaj</translation>
 <translation id="2503184589641749290">Sprejete debetne in predplačniške kartice</translation>
 <translation id="2515629240566999685">preveriti signal na svojem območju</translation>
+<translation id="2524461107774643265">Dodajanje več podatkov</translation>
+<translation id="2536110899380797252">Dodaj naslov</translation>
 <translation id="2539524384386349900">Zaznava</translation>
 <translation id="255002559098805027">Spletno mesto <ph name="HOST_NAME" /> je poslalo neveljaven odgovor.</translation>
 <translation id="2556876185419854533">&amp;Razveljavi urejanje</translation>
@@ -240,6 +248,7 @@
 <translation id="2909946352844186028">Zaznana je bila sprememba omrežja.</translation>
 <translation id="2916038427272391327">Zaprite druge programe</translation>
 <translation id="2922350208395188000">Potrdila strežnika ni mogoče preveriti.</translation>
+<translation id="2925673989565098301">Način dostave</translation>
 <translation id="2928905813689894207">Naslov za izstavitev računa</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> in še <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}one{<ph name="SHIPPING_ADDRESS_PREVIEW" /> in še <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}two{<ph name="SHIPPING_ADDRESS_PREVIEW" /> in še <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}few{<ph name="SHIPPING_ADDRESS_PREVIEW" /> in še <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> in še <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
 <translation id="2941952326391522266">Strežniku ni uspelo dokazati, da je res <ph name="DOMAIN" />; njegovo varnostno potrdilo je od <ph name="DOMAIN2" />. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>
@@ -262,6 +271,7 @@
 <translation id="3024663005179499861">Napačna vrsta pravilnika</translation>
 <translation id="3032412215588512954">Ali želite znova naložiti to spletno mesto?</translation>
 <translation id="3037605927509011580">Ti šment!</translation>
+<translation id="3039538478787849737">Želite shraniti kartico v Googlu?</translation>
 <translation id="3041612393474885105">Informacije o potrdilu</translation>
 <translation id="3063697135517575841">Chrome trenutno ni mogel potrditi vaše kartice. Poskusite znova pozneje.</translation>
 <translation id="3064966200440839136">Zaradi plačila v zunanji aplikaciji boste zapustili način brez beleženja zgodovine. Želite nadaljevati?</translation>
@@ -285,6 +295,7 @@
       <ph name="PLATFORM_TEXT" /></translation>
 <translation id="320323717674993345">Prekliči plačilo</translation>
 <translation id="3207960819495026254">Zaznamovano</translation>
+<translation id="3211223744486044430">Če želite naslednjič hitreje plačati, shranite to kartico v Google Računu in v tej napravi.</translation>
 <translation id="3225919329040284222">Strežnik je poslal potrdilo, ki se ne ujema z vgrajenimi pričakovanji. Ta pričakovanja so zaradi vaše varnosti vključena za nekatera strogo zavarovana spletna mesta.</translation>
 <translation id="3226128629678568754">Pritisnite gumb za vnovično nalaganje, da znova pošljete podatke za nalaganje strani.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
@@ -317,6 +328,7 @@
 <translation id="3380864720620200369">ID odjemalca:</translation>
 <translation id="3391030046425686457">Naslov za dostavo</translation>
 <translation id="3395827396354264108">Način prevzema</translation>
+<translation id="3399952811970034796">Naslov za dostavo</translation>
 <translation id="3422248202833853650">Poskusite zapreti druge programe, da boste tako sprostili pomnilnik.</translation>
 <translation id="3422472998109090673">Spletno mesto <ph name="HOST_NAME" /> trenutno ni dosegljivo.</translation>
 <translation id="3427092606871434483">Dovoli (privzeto)</translation>
@@ -402,6 +414,7 @@
 <translation id="4030383055268325496">&amp;Razveljavi dodajanje</translation>
 <translation id="404928562651467259">OPOZORILO</translation>
 <translation id="4058922952496707368">Ključ »<ph name="SUBKEY" />«: <ph name="ERROR" /></translation>
+<translation id="4067947977115446013">Dodajanje veljavnega naslova</translation>
 <translation id="4072486802667267160">Pri obdelavi naročila je prišlo do napake. Poskusite znova.</translation>
 <translation id="4075732493274867456">Odjemalec in strežnik ne podpirata skupne različice protokola SSL ali šifrirne zbirke.</translation>
 <translation id="4079302484614802869">Konfiguracija strežnika proxy je nastavljena na uporabo URL-ja skripta .pac, ne na stalne strežnike proxy.</translation>
@@ -446,6 +459,7 @@
 <translation id="4377125064752653719">Poskusili ste dostopati do domene <ph name="DOMAIN" />, vendar je izdajatelj preklical potrdilo, ki ga je poslal strežnik. To pomeni, da varnostnim poverilnicam, ki jih je poslal strežnik, nikakor ne smete zaupati. Morda komunicirate z napadalcem.</translation>
 <translation id="4394049700291259645">Onemogoči</translation>
 <translation id="4406896451731180161">rezultati iskanja</translation>
+<translation id="4415426530740016218">Naslov za prevzem</translation>
 <translation id="4424024547088906515">Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; Chrome ne zaupa njegovemu varnostnemu potrdilu. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>
 <translation id="4432688616882109544">Spletno mesto <ph name="HOST_NAME" /> ni sprejelo potrdila za prijavo ali pa to ni bilo posredovano.</translation>
 <translation id="443673843213245140">Uporaba strežnika proxy je onemogočena, vendar je njegova konfiguracija izrecno določena.</translation>
@@ -574,11 +588,13 @@
 <translation id="5492298309214877701">To spletno mesto v intranetu podjetja, organizacije ali šole ima enak URL kot zunanje spletno mesto.
     <ph name="LINE_BREAK" />
     Poskusite se obrniti na skrbnika sistema.</translation>
+<translation id="5499929369096410817">Vnesite varnostno kodo za kartico <ph name="CREDIT_CARD" />. Ta koda ne bo shranjena.</translation>
 <translation id="5509780412636533143">Upravljani zaznamki</translation>
 <translation id="5510766032865166053">Morda je premaknjena ali izbrisana.</translation>
 <translation id="5523118979700054094">Ime pravilnika</translation>
 <translation id="552553974213252141">Ali je bilo besedilo pravilno izvlečeno?</translation>
 <translation id="5540224163453853">Zahtevanega članka ni bilo mogoče najti.</translation>
+<translation id="5541546772353173584">Dodajanje e-poštnega naslova</translation>
 <translation id="5544037170328430102">Vdelana stran na spletnem mestu <ph name="SITE" /> sporoča:</translation>
 <translation id="5556459405103347317">Ponovno naloži</translation>
 <translation id="5560088892362098740">Datum poteka</translation>
@@ -615,6 +631,7 @@
 <translation id="5810442152076338065">Povezava z domeno <ph name="DOMAIN" /> je šifrirana z zastarelo šifrirno zbirko.</translation>
 <translation id="5813119285467412249">&amp;Uveljavi dodajanje</translation>
 <translation id="5838278095973806738">Na tem spletnem mestu ne vnašajte občutljivih informacij (npr. gesel ali številk kreditnih kartic), ker jih lahko ukradejo napadalci.</translation>
+<translation id="5866257070973731571">Dodajanje telefonske številke</translation>
 <translation id="5869405914158311789">Tega spletnega mesta ni mogoče doseči</translation>
 <translation id="5869522115854928033">Shranjena gesla</translation>
 <translation id="5872918882028971132">Predlogi staršev</translation>
@@ -622,8 +639,10 @@
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (sinhronizirano)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 v uporabi}one{# v uporabi}two{# v uporabi}few{# v uporabi}other{# v uporabi}}</translation>
 <translation id="5959728338436674663">Samodejno pošlji Googlu nekatere <ph name="BEGIN_WHITEPAPER_LINK" />sistemske podatke in vsebino strani<ph name="END_WHITEPAPER_LINK" /> zaradi zaznavanja nevarnih aplikacij in spletnih mest. <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="5967592137238574583">Urejanje podatkov o stiku</translation>
 <translation id="5967867314010545767">Odstrani iz zgodovine</translation>
 <translation id="5975083100439434680">Pomanjšaj</translation>
+<translation id="597552863672748783">Potrditev varnostne kode</translation>
 <translation id="598637245381783098">Plačilne aplikacije ni mogoče odpreti</translation>
 <translation id="5989320800837274978">Določeni niso ne stalni strežniki proxy ne URL skripta .pac.</translation>
 <translation id="5990559369517809815">Zahteve za strežnik je blokirala razširitev.</translation>
@@ -699,6 +718,7 @@
 <translation id="6569060085658103619">Ogledujete si stran razširitve</translation>
 <translation id="6596325263575161958">Možnosti šifriranja</translation>
 <translation id="662080504995468778">Ostani</translation>
+<translation id="6624427990725312378">Podatki o stiku</translation>
 <translation id="6626291197371920147">Dodajanje veljavne številke kartice</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Iskanje</translation>
 <translation id="6630809736994426279">Napadalci, ki so trenutno na spletnem mestu <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />, lahko poskusijo v vašem računalniku Mac namestiti nevarne programe, ki kradejo ali brišejo podatke (na primer fotografije, gesla, sporočila in podatke kreditnih kartic). <ph name="BEGIN_LEARN_MORE_LINK" />Več o tem<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -777,6 +797,7 @@
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">Pot profila</translation>
 <translation id="7424977062513257142">Vdelana stran na tej spletni strani sporoča:</translation>
+<translation id="7437289804838430631">Dodaj podatke o stiku</translation>
 <translation id="7441627299479586546">Napačen subjekt pravilnika</translation>
 <translation id="7444046173054089907">To spletno mesto je blokirano</translation>
 <translation id="7445762425076701745">Identitete strežnika, s katerim ste povezani, ni mogoče v celoti preveriti. S strežnikom ste povezani z uporabo imena, ki je veljavno samo v vašem omrežju, zato zunanji overitelj potrdil ne more preveriti njegovega lastništva. Ker nekateri overitelji potrdil kljub temu izdajajo potrdila za takšna imena, ni mogoče zagotoviti, da ste povezani z želenim spletnim mestom in ne z napadalcem.</translation>
@@ -826,6 +847,7 @@
 <translation id="7714464543167945231">Potrdilo</translation>
 <translation id="7716147886133743102">Blokiral skrbnik</translation>
 <translation id="7716424297397655342">Tega spletnega mesta ni mogoče naložiti iz predpomnilnika</translation>
+<translation id="7723047071702270851">Urejanje kartice</translation>
 <translation id="774634243536837715">Nevarna vsebina blokirana.</translation>
 <translation id="7752995774971033316">Odstranjen iz uporabe</translation>
 <translation id="7755287808199759310">Starš ga lahko odblokira</translation>
@@ -836,6 +858,7 @@
 <translation id="7764225426217299476">Dodaj naslov</translation>
 <translation id="777702478322588152">Prefektura</translation>
 <translation id="7791543448312431591">Dodaj</translation>
+<translation id="7793553086574152071">Če želite naslednjič hitreje plačati, shranite to kartico v Google Računu.</translation>
 <translation id="7793809570500803535">Spletna stran na <ph name="SITE" /> morda začasno ne deluje ali pa je trajno premaknjena na nov spletni naslov.</translation>
 <translation id="7800304661137206267">Povezava je šifrirana s <ph name="CIPHER" /> in uporablja <ph name="MAC" /> za preverjanje pristnosti sporočil ter <ph name="KX" /> kot mehanizem za izmenjavo ključev.</translation>
 <translation id="7802523362929240268">Spletno mesto je legitimno</translation>
@@ -869,6 +892,7 @@
 <translation id="8088680233425245692">Članka si ni bilo mogoče ogledati.</translation>
 <translation id="8091372947890762290">Čakanje na aktivacijo v strežniku</translation>
 <translation id="8094917007353911263">Omrežje, ki ga uporabljate, morda zahteva, da obiščete <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
+<translation id="8103161714697287722">Plačilno sredstvo</translation>
 <translation id="8118489163946903409">Plačilno sredstvo</translation>
 <translation id="8131740175452115882">Potrdi</translation>
 <translation id="8134994873729925007"><ph name="BEGIN_ABBR" />Naslova DNS<ph name="END_ABBR" /> strežnika spletnega mesta <ph name="HOST_NAME" /> ni bilo mogoče najti.</translation>
@@ -950,6 +974,7 @@
 <translation id="8903921497873541725">Povečaj</translation>
 <translation id="8931333241327730545">Ali želite to kartico shraniti v Google Račun?</translation>
 <translation id="8932102934695377596">Ura zaostaja</translation>
+<translation id="893332455753468063">Dodajanje imena</translation>
 <translation id="8938939909778640821">Sprejete kreditne in predplačniške kartice</translation>
 <translation id="8957210676456822347">Odobritev prestreznega portala</translation>
 <translation id="8971063699422889582">Potrdilo strežnika je poteklo.</translation>
@@ -973,6 +998,7 @@
 <translation id="9078964945751709336">Vnesti morate več podatkov</translation>
 <translation id="9080712759204168376">Povzetek naročila</translation>
 <translation id="9103872766612412690">Spletno mesto <ph name="SITE" /> za zaščito vaših podatkov običajno uporablja šifriranje. Ko se je Chromium tokrat poskusil povezati s spletnim mestom <ph name="SITE" />, je to vrnilo nenavadne in nepravilne poverilnice. Do tega lahko pride, če se napadalec lažno predstavlja za spletno mesto <ph name="SITE" /> ali če je povezavo prekinil zaslon za prijavo v omrežje Wi-Fi. Vaši podatki so še vedno varni, saj je Chromium pred izmenjavo podatkov prekinil povezavo.</translation>
+<translation id="9106062320799175032">Dodajanje naslova za izstavitev računa</translation>
 <translation id="910908805481542201">Pomagajte mi odpraviti težavo</translation>
 <translation id="9128870381267983090">Vzpostavi povezavo z omrežjem</translation>
 <translation id="9137013805542155359">Pokaži izvirno besedilo</translation>
@@ -986,6 +1012,7 @@
 <translation id="9183425211371246419">Spletno mesto <ph name="HOST_NAME" /> uporablja nepodprt protokol.</translation>
 <translation id="9205078245616868884">Podatki so šifrirani z vašim geslom za sinhronizacijo. Vnesite ga, če želite začeti sinhronizacijo.</translation>
 <translation id="9207861905230894330">Članka ni bilo mogoče dodati.</translation>
+<translation id="9215416866750762878">Aplikacija Chromu preprečuje vzpostavitev varne povezave s tem mestom</translation>
 <translation id="9219103736887031265">Slike</translation>
 <translation id="933612690413056017">Ni internetne povezave</translation>
 <translation id="933712198907837967">Diners Club</translation>

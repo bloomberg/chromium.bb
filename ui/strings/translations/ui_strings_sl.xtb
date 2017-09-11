@@ -12,7 +12,6 @@
 <translation id="1413622004203049571">Izklop obvestil za <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 min in }one{# min in }two{# min in }few{# min in }other{# min in }}</translation>
 <translation id="1643823602425662293">Obvestilo</translation>
-<translation id="1685967565548146460">Klobuki</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 min}one{# min}two{# min}few{# min}other{# min}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1801827354178857021">Obdobje</translation>
@@ -26,8 +25,10 @@
 <translation id="2148716181193084225">Danes</translation>
 <translation id="2168039046890040389">Stran gor</translation>
 <translation id="2190355936436201913">(prazno)</translation>
+<translation id="219905428774326614">Zaganjalnik, vse aplikacije</translation>
 <translation id="2289052229480071835">Dotaknite se ciljev za dotik na zaslonu.</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="24452542372838207">Razširi obvestilo</translation>
 <translation id="2482878487686419369">Obvestila</translation>
 <translation id="2497284189126895209">Vse datoteke</translation>
 <translation id="2522350507219695259">Umerjanje je končano</translation>
@@ -68,7 +69,6 @@
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 s}one{# s}two{# s}few{# s}other{# s}}</translation>
 <translation id="4971687151119236543">Prejšnja skladba</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="5016049845330225051">Gumb za izbris besedila v iskalnem polju</translation>
 <translation id="5046499563572181734">Dotaknite se tukaj</translation>
 <translation id="5076340679995252485">&amp;Prilepi</translation>
 <translation id="5120799197269191491">Tipka za iskanje + <ph name="KEY_COMBO_NAME" /></translation>
@@ -86,6 +86,7 @@
 <translation id="5943826764092288734">{HOURS,plural, =1{1 h}one{# h}two{# h}few{# h}other{# h}}</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">Vse aplikacije</translation>
+<translation id="6022924867608035986">Izbris besedila v iskalnem polju</translation>
 <translation id="6040143037577758943">Zapri</translation>
 <translation id="6119846243427417423">aktiviraj</translation>
 <translation id="6129953537138746214">Presledek</translation>
@@ -152,6 +153,7 @@
 <translation id="9002566407876343676">odpreti</translation>
 <translation id="9038489124413477075">Neimenovana mapa</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}one{# s}two{# s}few{# s}other{# s}}</translation>
+<translation id="9059834730836941392">Strni obvestilo</translation>
 <translation id="9150735707954472829">Zavihek</translation>
 <translation id="9161053988251441839">PREDLAGANE APLIKACIJE</translation>
 <translation id="9170848237812810038">&amp;Razveljavi</translation>
