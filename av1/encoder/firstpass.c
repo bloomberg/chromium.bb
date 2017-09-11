@@ -1677,8 +1677,6 @@ static void get_arf_buffer_indices(unsigned char *arf_buffer_indices) {
 #endif  // !CONFIG_EXT_REFS
 
 #if CONFIG_EXT_REFS
-#define USE_GF16_MULTI_LAYER 0
-
 #if USE_GF16_MULTI_LAYER
 // === GF Group of 16 ===
 #define GF_INTERVAL_16 16
@@ -2193,6 +2191,31 @@ static void define_gf_group_structure(AV1_COMP *cpi) {
 #if USE_GF16_MULTI_LAYER
   if (rc->baseline_gf_interval == 16) {
     define_gf_group_structure_16(cpi);
+
+    // Mark the ARF_UPDATE / INTNL_ARF_UPDATE and OVERLAY_UPDATE /
+    // INTNL_OVERLAY_UPDATE for rate allocation
+    // NOTE: Indexes are designed in the display order backward:
+    //       ALT[3] .. ALT[2] .. ALT[1] .. ALT[0],
+    //       but their coding order is as follows:
+    // ALT0-ALT2-ALT3 .. OVERLAY3 .. OVERLAY2-ALT1 .. OVERLAY1 .. OVERLAY0
+
+    const int num_arfs_in_gf = cpi->num_extra_arfs + 1;
+    const int sub_arf_interval = rc->baseline_gf_interval / num_arfs_in_gf;
+
+    // arf_pos_for_ovrly[]: Position for OVERLAY
+    for (int arf_idx = 0; arf_idx < num_arfs_in_gf; arf_idx++) {
+      const int prior_num_arfs =
+          (arf_idx <= 1) ? num_arfs_in_gf : (num_arfs_in_gf - 1);
+      cpi->arf_pos_for_ovrly[arf_idx] =
+          sub_arf_interval * (num_arfs_in_gf - arf_idx) + prior_num_arfs;
+    }
+
+    // arf_pos_in_gf[]:     Position for ALTREF
+    cpi->arf_pos_in_gf[0] = 1;
+    cpi->arf_pos_in_gf[1] = cpi->arf_pos_for_ovrly[2] + 1;
+    cpi->arf_pos_in_gf[2] = 2;
+    cpi->arf_pos_in_gf[3] = 3;
+
     return;
   }
 #endif  // USE_GF16_MULTI_LAYER
@@ -2294,6 +2317,9 @@ static void define_gf_group_structure(AV1_COMP *cpi) {
     // We index ALTREF's as: KEY ----- ALT2 ----- ALT1 ----- ALT0
     // but code them in the following order:
     // KEY-ALT0-ALT2 ----- OVERLAY2-ALT1 ----- OVERLAY1 ----- OVERLAY0
+    //
+    // arf_pos_for_ovrly[]: Position for OVERLAY
+    // arf_pos_in_gf[]:     Position for ALTREF
     cpi->arf_pos_for_ovrly[0] = frame_index + cpi->num_extra_arfs +
                                 gf_group->arf_src_offset[frame_index] + 1;
     for (i = 0; i < cpi->num_extra_arfs; ++i) {
