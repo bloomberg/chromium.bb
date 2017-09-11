@@ -5845,7 +5845,7 @@ static int rd_pick_intra_angle_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
 #endif  // CONFIG_EXT_INTRA
 
 #if CONFIG_CFL
-static int64_t cfl_alpha_dist(const int *y_pix_q3, const uint8_t *src,
+static int64_t cfl_alpha_dist(const int16_t *pred_buf_q3, const uint8_t *src,
                               int src_stride, int width, int height,
                               int dc_pred, int alpha_q3,
                               int64_t *dist_neg_out) {
@@ -5870,7 +5870,7 @@ static int64_t cfl_alpha_dist(const int *y_pix_q3, const uint8_t *src,
   for (int j = 0; j < height; j++) {
     for (int i = 0; i < width; i++) {
       const int uv = src[i];
-      const int scaled_luma = get_scaled_luma_q0(alpha_q3, y_pix_q3[i]);
+      const int scaled_luma = get_scaled_luma_q0(alpha_q3, pred_buf_q3[i]);
 
       // TODO(ltrudeau) add support for HBD.
       diff = uv - clamp(scaled_luma + dc_pred, 0, 255);
@@ -5880,7 +5880,7 @@ static int64_t cfl_alpha_dist(const int *y_pix_q3, const uint8_t *src,
       diff = uv - clamp(-scaled_luma + dc_pred, 0, 255);
       dist_neg += diff * diff;
     }
-    y_pix_q3 += MAX_SB_SIZE;
+    pred_buf_q3 += MAX_SB_SIZE;
     src += src_stride;
   }
 
@@ -5906,23 +5906,23 @@ static int cfl_rd_pick_alpha(MACROBLOCK *const x, TX_SIZE tx_size) {
   const int height = cfl->uv_height;
   const int dc_pred_u = cfl->dc_pred[CFL_PRED_U];
   const int dc_pred_v = cfl->dc_pred[CFL_PRED_V];
-  const int *y_pix_q3 = cfl->y_down_pix_q3;
+  const int16_t *pred_buf_q3 = cfl->pred_buf_q3;
 
   int64_t sse[CFL_PRED_PLANES][CFL_MAGS_SIZE];
-  sse[CFL_PRED_U][0] = cfl_alpha_dist(y_pix_q3, src_u, src_stride_u, width,
+  sse[CFL_PRED_U][0] = cfl_alpha_dist(pred_buf_q3, src_u, src_stride_u, width,
                                       height, dc_pred_u, 0, NULL);
-  sse[CFL_PRED_V][0] = cfl_alpha_dist(y_pix_q3, src_v, src_stride_v, width,
+  sse[CFL_PRED_V][0] = cfl_alpha_dist(pred_buf_q3, src_v, src_stride_v, width,
                                       height, dc_pred_v, 0, NULL);
 
   for (int c = 0; c < CFL_ALPHABET_SIZE; c++) {
     const int m = c * 2 + 1;
     const int abs_alpha_q3 = c + 1;
     sse[CFL_PRED_U][m] =
-        cfl_alpha_dist(y_pix_q3, src_u, src_stride_u, width, height, dc_pred_u,
-                       abs_alpha_q3, &sse[CFL_PRED_U][m + 1]);
+        cfl_alpha_dist(pred_buf_q3, src_u, src_stride_u, width, height,
+                       dc_pred_u, abs_alpha_q3, &sse[CFL_PRED_U][m + 1]);
     sse[CFL_PRED_V][m] =
-        cfl_alpha_dist(y_pix_q3, src_v, src_stride_v, width, height, dc_pred_v,
-                       abs_alpha_q3, &sse[CFL_PRED_V][m + 1]);
+        cfl_alpha_dist(pred_buf_q3, src_v, src_stride_v, width, height,
+                       dc_pred_v, abs_alpha_q3, &sse[CFL_PRED_V][m + 1]);
   }
 
   int64_t dist;
