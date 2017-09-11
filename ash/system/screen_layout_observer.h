@@ -47,9 +47,9 @@ class ASH_EXPORT ScreenLayoutObserver : public WindowTreeHostManager::Observer {
   // Compares the current display settings with |old_info| and determine what
   // message should be shown for notification. Returns true if there's a
   // meaningful change. Note that it's possible to return true and set
-  // |message_out| to empty, which means the notification should be removed. It
-  // also sets |additional_message_out| which appears in the notification with
-  // the |message_out|.
+  // |out_message| to empty, which means the notification should be removed. It
+  // also sets |out_additional_message| which appears in the notification with
+  // the |out_message|.
   bool GetDisplayMessageForNotification(const DisplayInfoMap& old_info,
                                         base::string16* out_message,
                                         base::string16* out_additional_message);

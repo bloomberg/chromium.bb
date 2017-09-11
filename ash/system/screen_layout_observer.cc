@@ -267,6 +267,8 @@ bool ScreenLayoutObserver::GetDisplayMessageForNotification(
 
     if (iter.second.configured_ui_scale() !=
         old_iter->second.configured_ui_scale()) {
+      *out_message = l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED_TITLE);
       *out_additional_message = l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED,
           GetDisplayName(iter.first), GetDisplaySize(iter.first));
