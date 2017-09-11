@@ -28284,6 +28284,55 @@ from previous Chrome versions.
   </int>
 </enum>
 
+<enum name="OfflinePrefetchItemState">
+  <summary>
+    Error codes representing the reason why a prefetch item was finalized. This
+    must be kept in sync with offline_pages::PrefetchItemState
+  </summary>
+  <int value="0" label="NEW_REQUEST">
+    New request just received from the client.
+  </int>
+  <int value="10" label="SENT_GENERATE_PAGE_BUNDLE">
+    The item has been included in a GeneratePageBundle RPC requesting the
+    creation of an archive for its URL.
+  </int>
+  <int value="20" label="AWAITING_GCM">
+    The archive was not immediately available (cached) upon the request and is
+    now waiting for a GCM message notifying of its archiving operation
+    completion.
+  </int>
+  <int value="30" label="RECEIVED_GCM">
+    The GCM message notifying of the archiving operation completion was received
+    for this item.
+  </int>
+  <int value="40" label="SENT_GET_OPERATION">
+    A GetOperation RPC was sent for this item to query for the final results of
+    its archiving request.
+  </int>
+  <int value="50" label="RECEIVED_BUNDLE">
+    Information was received about a successfully created archive for this item
+    that can now be downloaded.
+  </int>
+  <int value="60" label="DOWNLOADING">
+    This item's archive is currently being downloaded.
+  </int>
+  <int value="70" label="DOWNLOADED">
+    The archive has been downloaded, waiting to be imported into offline pages
+    model.
+  </int>
+  <int value="80" label="IMPORTING">
+    The archive is being imported into offline pages model.
+  </int>
+  <int value="90" label="FINSIHED">
+    Item has finished processing, successfully or otherwise, and is waiting to
+    be processed for stats reporting to UMA.
+  </int>
+  <int value="100" label="ZOMBIE">
+    UMA stats have been reported and the item is being kept just long enough to
+    confirm that the same URL is not being repeatedly requested by its client.
+  </int>
+</enum>
+
 <enum name="OfflinePrefetchPageImportResult">
   <summary>
     All possible outcomes of an attempt to import a prefetched page archive into

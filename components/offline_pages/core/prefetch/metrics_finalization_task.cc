@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/sparse_histogram.h"
 #include "components/offline_pages/core/offline_time_utils.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
@@ -91,6 +92,28 @@ bool MarkUrlAsZombie(sql::Connection* db,
   statement.BindInt(1, ToDatabaseTime(freshness_time));
   statement.BindInt64(2, offline_id);
   return statement.Run();
+}
+
+void LogStateCountMetrics(PrefetchItemState state, int count) {
+  // The histogram below is an expansion of the UMA_HISTOGRAM_ENUMERATION
+  // macro adapted to allow for setting a count.
+  // Note: The factory creates and owns the histogram.
+  base::HistogramBase* histogram = base::SparseHistogram::FactoryGet(
+      "OfflinePages.Prefetching.StateCounts",
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  histogram->AddCount(static_cast<int>(state), count);
+}
+
+void CountEntriesInEachState(sql::Connection* db) {
+  static const char kSql[] =
+      "SELECT state, COUNT (*) FROM prefetch_items GROUP BY state";
+  sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
+  while (statement.Step()) {
+    PrefetchItemState state =
+        static_cast<PrefetchItemState>(statement.ColumnInt(0));
+    int count = statement.ColumnInt(1);
+    LogStateCountMetrics(state, count);
+  }
 }
 
 // These constants represent important indexes in the
@@ -185,6 +208,11 @@ bool ReportMetricsAndFinalizeSync(sql::Connection* db) {
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return false;
+
+  // Gather metrics about the current number of entries with each state.  Check
+  // before zombification so that we will be able to see entries in the finished
+  // state, otherwise we will only see zombies, never finished entries.
+  CountEntriesInEachState(db);
 
   const std::vector<PrefetchItemStats> urls = FetchUrlsSync(db);
 
