@@ -454,6 +454,7 @@ TEST_F(PlatformSensorAndProviderTestWin, StartFails) {
   EXPECT_FALSE(sensor->StartListening(client.get(), configuration));
 }
 
+// See http://crbug.com/756986
 #if defined(OS_WIN)
 #define MAYBE_SensorStarted DISABLED_SensorStarted
 #define MAYBE_SensorRemoved DISABLED_SensorRemoved
