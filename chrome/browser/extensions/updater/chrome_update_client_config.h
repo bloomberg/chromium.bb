@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -17,6 +18,10 @@
 
 namespace content {
 class BrowserContext;
+}
+
+namespace update_client {
+class ActivityDataService;
 }
 
 namespace extensions {
@@ -47,6 +52,7 @@ class ChromeUpdateClientConfig : public update_client::Configurator {
   bool EnabledBackgroundDownloader() const override;
   bool EnabledCupSigning() const override;
   PrefService* GetPrefService() const override;
+  update_client::ActivityDataService* GetActivityDataService() const override;
   bool IsPerUserInstall() const override;
   std::vector<uint8_t> GetRunActionKeyHash() const override;
 
@@ -56,6 +62,8 @@ class ChromeUpdateClientConfig : public update_client::Configurator {
 
  private:
   component_updater::ConfiguratorImpl impl_;
+  PrefService* pref_service_;
+  std::unique_ptr<update_client::ActivityDataService> activity_data_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeUpdateClientConfig);
 };

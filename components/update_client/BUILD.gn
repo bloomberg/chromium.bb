@@ -9,6 +9,7 @@ static_library("update_client") {
     "action_runner.cc",
     "action_runner.h",
     "action_runner_win.cc",
+    "activity_data_service.h",
     "background_downloader_win.cc",
     "background_downloader_win.h",
     "component.cc",

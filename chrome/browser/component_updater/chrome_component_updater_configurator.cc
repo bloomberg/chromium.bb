@@ -22,6 +22,7 @@
 #include "components/component_updater/configurator_impl.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/update_client/activity_data_service.h"
 #include "components/update_client/update_query_params.h"
 
 #if defined(OS_WIN)
@@ -62,6 +63,7 @@ class ChromeConfigurator : public update_client::Configurator {
   bool EnabledBackgroundDownloader() const override;
   bool EnabledCupSigning() const override;
   PrefService* GetPrefService() const override;
+  update_client::ActivityDataService* GetActivityDataService() const override;
   bool IsPerUserInstall() const override;
   std::vector<uint8_t> GetRunActionKeyHash() const override;
 
@@ -179,8 +181,12 @@ bool ChromeConfigurator::EnabledCupSigning() const {
 }
 
 PrefService* ChromeConfigurator::GetPrefService() const {
-  DCHECK(pref_service_);
   return pref_service_;
+}
+
+update_client::ActivityDataService* ChromeConfigurator::GetActivityDataService()
+    const {
+  return nullptr;
 }
 
 bool ChromeConfigurator::IsPerUserInstall() const {
