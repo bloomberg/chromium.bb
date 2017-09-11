@@ -11,7 +11,6 @@
 #include <map>
 #include <memory>
 
-#include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
@@ -38,6 +37,17 @@ class PopupBlockerTabHelper
   // Mapping from popup IDs to blocked popup requests.
   typedef std::map<int32_t, GURL> PopupIdMap;
 
+  // This class backs a histogram. Make sure you update enums.xml if you make
+  // any changes.
+  enum class PopupPosition : int {
+    kOnlyPopup,
+    kFirstPopup,
+    kMiddlePopup,
+    kLastPopup,
+
+    // Any new values should go before this one.
+    kLast,
+  };
   class Observer {
    public:
     virtual void BlockedPopupAdded(int32_t id, const GURL& url) {}
@@ -96,9 +106,15 @@ class PopupBlockerTabHelper
   // Called when the blocked popup notification is shown or hidden.
   void PopupNotificationVisibilityChanged(bool visible);
 
-  base::IDMap<std::unique_ptr<BlockedRequest>> blocked_popups_;
+  PopupPosition GetPopupPosition(int32_t id) const;
+
+  // Note, this container should be sorted based on the position in the popup
+  // list, so it is keyed by an id which is continually increased.
+  std::map<int32_t, std::unique_ptr<BlockedRequest>> blocked_popups_;
 
   base::ObserverList<Observer> observers_;
+
+  int32_t next_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(PopupBlockerTabHelper);
 };
