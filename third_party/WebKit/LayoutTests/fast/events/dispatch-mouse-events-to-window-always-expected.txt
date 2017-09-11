@@ -1,5 +1,8 @@
 Test that wheel and mouse events are dispatched to document and window even if they do not hit any element in the page.
+
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
 outside body, inside element
 eventType: mousedown
 PASS objectsToString(actualReceivers) is "HTMLDivElement,HTMLBodyElement,HTMLDocument,Window"

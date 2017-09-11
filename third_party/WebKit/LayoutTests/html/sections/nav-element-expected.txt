@@ -4,10 +4,12 @@ Test that nav closes p. This paragraph should be surrounded by a thin green bord
 
 Test that p does not close nav. This paragraph should have a double green border.
 
+
 Test that nav can nest inside itself. This paragraph should have a double green border.
 
 Test of residual style. This text should be bold.
 This should be bold too.
+
 
 Test of FormatBlock behavior. This text should have a green border.
 
