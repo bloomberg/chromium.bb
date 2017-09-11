@@ -62,27 +62,27 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
     DCHECK(has_applicable_to_type_long_member_);
     return applicable_to_type_long_member_;
   }
-  void setApplicableToTypeLongMember(int32_t);
+  inline void setApplicableToTypeLongMember(int32_t);
 
   bool hasApplicableToTypeStringMember() const { return !applicable_to_type_string_member_.IsNull(); }
   const String& applicableToTypeStringMember() const {
     return applicable_to_type_string_member_;
   }
-  void setApplicableToTypeStringMember(const String&);
+  inline void setApplicableToTypeStringMember(const String&);
 
   bool hasBooleanMember() const { return has_boolean_member_; }
   bool booleanMember() const {
     DCHECK(has_boolean_member_);
     return boolean_member_;
   }
-  void setBooleanMember(bool);
+  inline void setBooleanMember(bool);
 
   bool hasCreateMember() const { return has_create_member_; }
   bool createMember() const {
     DCHECK(has_create_member_);
     return create_member_;
   }
-  void setCreateMember(bool);
+  inline void setCreateMember(bool);
 
   bool hasDictionaryMember() const { return !dictionary_member_.IsUndefinedOrNull(); }
   Dictionary dictionaryMember() const {
@@ -95,8 +95,8 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
     DCHECK(has_double_or_null_member_);
     return double_or_null_member_;
   }
-  void setDoubleOrNullMember(double);
-  void setDoubleOrNullMemberToNull();
+  inline void setDoubleOrNullMember(double);
+  inline void setDoubleOrNullMemberToNull();
 
   bool hasDoubleOrStringMember() const { return !double_or_string_member_.isNull(); }
   const DoubleOrString& doubleOrStringMember() const {
@@ -115,14 +115,14 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   Element* elementOrNullMember() const {
     return element_or_null_member_;
   }
-  void setElementOrNullMember(Element*);
-  void setElementOrNullMemberToNull();
+  inline void setElementOrNullMember(Element*);
+  inline void setElementOrNullMemberToNull();
 
   bool hasEnumMember() const { return !enum_member_.IsNull(); }
   const String& enumMember() const {
     return enum_member_;
   }
-  void setEnumMember(const String&);
+  inline void setEnumMember(const String&);
 
   bool hasEnumSequenceMember() const { return has_enum_sequence_member_; }
   const Vector<String>& enumSequenceMember() const {
@@ -135,7 +135,7 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   EventTarget* eventTargetMember() const {
     return event_target_member_;
   }
-  void setEventTargetMember(EventTarget*);
+  inline void setEventTargetMember(EventTarget*);
 
   bool hasGarbageCollectedRecordMember() const { return has_garbage_collected_record_member_; }
   const HeapVector<std::pair<String, Member<TestObject>>>& garbageCollectedRecordMember() const {
@@ -156,14 +156,14 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
     DCHECK(has_is_public_);
     return is_public_;
   }
-  void setIsPublic(bool);
+  inline void setIsPublic(bool);
 
   bool hasLongMember() const { return has_long_member_; }
   int32_t longMember() const {
     DCHECK(has_long_member_);
     return long_member_;
   }
-  void setLongMember(int32_t);
+  inline void setLongMember(int32_t);
 
   bool hasObjectMember() const { return !(object_member_.IsEmpty() || object_member_.IsNull() || object_member_.IsUndefined()); }
   ScriptValue objectMember() const {
@@ -196,27 +196,27 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
     DCHECK(has_restricted_double_member_);
     return restricted_double_member_;
   }
-  void setRestrictedDoubleMember(double);
+  inline void setRestrictedDoubleMember(double);
 
   bool hasRuntimeMember() const { return has_runtime_member_; }
   bool runtimeMember() const {
     DCHECK(has_runtime_member_);
     return runtime_member_;
   }
-  void setRuntimeMember(bool);
+  inline void setRuntimeMember(bool);
 
   bool hasStringMember() const { return !string_member_.IsNull(); }
   const String& stringMember() const {
     return string_member_;
   }
-  void setStringMember(const String&);
+  inline void setStringMember(const String&);
 
   bool hasStringOrNullMember() const { return !string_or_null_member_.IsNull(); }
   const String& stringOrNullMember() const {
     return string_or_null_member_;
   }
-  void setStringOrNullMember(const String&);
-  void setStringOrNullMemberToNull();
+  inline void setStringOrNullMember(const String&);
+  inline void setStringOrNullMemberToNull();
 
   bool hasStringSequenceMember() const { return has_string_sequence_member_; }
   const Vector<String>& stringSequenceMember() const {
@@ -235,14 +235,14 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   TestInterfaceGarbageCollected* testInterfaceGarbageCollectedMember() const {
     return test_interface_garbage_collected_member_;
   }
-  void setTestInterfaceGarbageCollectedMember(TestInterfaceGarbageCollected*);
+  inline void setTestInterfaceGarbageCollectedMember(TestInterfaceGarbageCollected*);
 
   bool hasTestInterfaceGarbageCollectedOrNullMember() const { return test_interface_garbage_collected_or_null_member_; }
   TestInterfaceGarbageCollected* testInterfaceGarbageCollectedOrNullMember() const {
     return test_interface_garbage_collected_or_null_member_;
   }
-  void setTestInterfaceGarbageCollectedOrNullMember(TestInterfaceGarbageCollected*);
-  void setTestInterfaceGarbageCollectedOrNullMemberToNull();
+  inline void setTestInterfaceGarbageCollectedOrNullMember(TestInterfaceGarbageCollected*);
+  inline void setTestInterfaceGarbageCollectedOrNullMemberToNull();
 
   bool hasTestInterfaceGarbageCollectedSequenceMember() const { return has_test_interface_garbage_collected_sequence_member_; }
   const HeapVector<Member<TestInterfaceGarbageCollected>>& testInterfaceGarbageCollectedSequenceMember() const {
@@ -255,14 +255,14 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   TestInterfaceImplementation* testInterfaceMember() const {
     return test_interface_member_;
   }
-  void setTestInterfaceMember(TestInterfaceImplementation*);
+  inline void setTestInterfaceMember(TestInterfaceImplementation*);
 
   bool hasTestInterfaceOrNullMember() const { return test_interface_or_null_member_; }
   TestInterfaceImplementation* testInterfaceOrNullMember() const {
     return test_interface_or_null_member_;
   }
-  void setTestInterfaceOrNullMember(TestInterfaceImplementation*);
-  void setTestInterfaceOrNullMemberToNull();
+  inline void setTestInterfaceOrNullMember(TestInterfaceImplementation*);
+  inline void setTestInterfaceOrNullMemberToNull();
 
   bool hasTestInterfaceSequenceMember() const { return has_test_interface_sequence_member_; }
   const HeapVector<Member<TestInterfaceImplementation>>& testInterfaceSequenceMember() const {
@@ -282,7 +282,7 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   NotShared<DOMUint8Array> uint8ArrayMember() const {
     return uint8_array_member_;
   }
-  void setUint8ArrayMember(NotShared<DOMUint8Array>);
+  inline void setUint8ArrayMember(NotShared<DOMUint8Array>);
 
   bool hasUnionInRecordMember() const { return has_union_in_record_member_; }
   const HeapVector<std::pair<String, LongOrBoolean>>& unionInRecordMember() const {
@@ -302,7 +302,7 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
     DCHECK(has_unrestricted_double_member_);
     return unrestricted_double_member_;
   }
-  void setUnrestrictedDoubleMember(double);
+  inline void setUnrestrictedDoubleMember(double);
 
   v8::Local<v8::Value> ToV8Impl(v8::Local<v8::Object>, v8::Isolate*) const override;
   DECLARE_VIRTUAL_TRACE();
@@ -371,6 +371,110 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
 
   friend class V8TestDictionary;
 };
+
+void TestDictionary::setApplicableToTypeLongMember(int32_t value) {
+  applicable_to_type_long_member_ = value;
+  has_applicable_to_type_long_member_ = true;
+}
+
+void TestDictionary::setApplicableToTypeStringMember(const String& value) {
+  applicable_to_type_string_member_ = value;
+}
+
+void TestDictionary::setBooleanMember(bool value) {
+  boolean_member_ = value;
+  has_boolean_member_ = true;
+}
+
+void TestDictionary::setCreateMember(bool value) {
+  create_member_ = value;
+  has_create_member_ = true;
+}
+
+void TestDictionary::setDoubleOrNullMember(double value) {
+  double_or_null_member_ = value;
+  has_double_or_null_member_ = true;
+}
+void TestDictionary::setDoubleOrNullMemberToNull() {
+  has_double_or_null_member_ = false;
+}
+
+void TestDictionary::setElementOrNullMember(Element* value) {
+  element_or_null_member_ = value;
+}
+void TestDictionary::setElementOrNullMemberToNull() {
+  element_or_null_member_ = Member<Element>();
+}
+
+void TestDictionary::setEnumMember(const String& value) {
+  enum_member_ = value;
+}
+
+void TestDictionary::setEventTargetMember(EventTarget* value) {
+  event_target_member_ = value;
+}
+
+void TestDictionary::setIsPublic(bool value) {
+  is_public_ = value;
+  has_is_public_ = true;
+}
+
+void TestDictionary::setLongMember(int32_t value) {
+  long_member_ = value;
+  has_long_member_ = true;
+}
+
+void TestDictionary::setRestrictedDoubleMember(double value) {
+  restricted_double_member_ = value;
+  has_restricted_double_member_ = true;
+}
+
+void TestDictionary::setRuntimeMember(bool value) {
+  runtime_member_ = value;
+  has_runtime_member_ = true;
+}
+
+void TestDictionary::setStringMember(const String& value) {
+  string_member_ = value;
+}
+
+void TestDictionary::setStringOrNullMember(const String& value) {
+  string_or_null_member_ = value;
+}
+void TestDictionary::setStringOrNullMemberToNull() {
+  string_or_null_member_ = String();
+}
+
+void TestDictionary::setTestInterfaceGarbageCollectedMember(TestInterfaceGarbageCollected* value) {
+  test_interface_garbage_collected_member_ = value;
+}
+
+void TestDictionary::setTestInterfaceGarbageCollectedOrNullMember(TestInterfaceGarbageCollected* value) {
+  test_interface_garbage_collected_or_null_member_ = value;
+}
+void TestDictionary::setTestInterfaceGarbageCollectedOrNullMemberToNull() {
+  test_interface_garbage_collected_or_null_member_ = Member<TestInterfaceGarbageCollected>();
+}
+
+void TestDictionary::setTestInterfaceMember(TestInterfaceImplementation* value) {
+  test_interface_member_ = value;
+}
+
+void TestDictionary::setTestInterfaceOrNullMember(TestInterfaceImplementation* value) {
+  test_interface_or_null_member_ = value;
+}
+void TestDictionary::setTestInterfaceOrNullMemberToNull() {
+  test_interface_or_null_member_ = Member<TestInterfaceImplementation>();
+}
+
+void TestDictionary::setUint8ArrayMember(NotShared<DOMUint8Array> value) {
+  uint8_array_member_ = value.View();
+}
+
+void TestDictionary::setUnrestrictedDoubleMember(double value) {
+  unrestricted_double_member_ = value;
+  has_unrestricted_double_member_ = true;
+}
 
 }  // namespace blink
 

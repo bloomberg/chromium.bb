@@ -22,11 +22,6 @@ TestPermissiveDictionary::TestPermissiveDictionary(const TestPermissiveDictionar
 
 TestPermissiveDictionary& TestPermissiveDictionary::operator=(const TestPermissiveDictionary&) = default;
 
-void TestPermissiveDictionary::setBooleanMember(bool value) {
-  boolean_member_ = value;
-  has_boolean_member_ = true;
-}
-
 DEFINE_TRACE(TestPermissiveDictionary) {
   IDLDictionaryBase::Trace(visitor);
 }

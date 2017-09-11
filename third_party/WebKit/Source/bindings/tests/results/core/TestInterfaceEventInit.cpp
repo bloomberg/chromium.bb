@@ -22,10 +22,6 @@ TestInterfaceEventInit::TestInterfaceEventInit(const TestInterfaceEventInit&) = 
 
 TestInterfaceEventInit& TestInterfaceEventInit::operator=(const TestInterfaceEventInit&) = default;
 
-void TestInterfaceEventInit::setStringMember(const String& value) {
-  string_member_ = value;
-}
-
 DEFINE_TRACE(TestInterfaceEventInit) {
   EventInit::Trace(visitor);
 }

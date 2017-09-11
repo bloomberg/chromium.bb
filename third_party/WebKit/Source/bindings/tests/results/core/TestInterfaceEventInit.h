@@ -31,7 +31,7 @@ class CORE_EXPORT TestInterfaceEventInit : public EventInit {
   const String& stringMember() const {
     return string_member_;
   }
-  void setStringMember(const String&);
+  inline void setStringMember(const String&);
 
   v8::Local<v8::Value> ToV8Impl(v8::Local<v8::Object>, v8::Isolate*) const override;
   DECLARE_VIRTUAL_TRACE();
@@ -42,6 +42,10 @@ class CORE_EXPORT TestInterfaceEventInit : public EventInit {
 
   friend class V8TestInterfaceEventInit;
 };
+
+void TestInterfaceEventInit::setStringMember(const String& value) {
+  string_member_ = value;
+}
 
 }  // namespace blink
 

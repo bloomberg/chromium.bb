@@ -43,156 +43,90 @@ void TestDictionary::setAnyInRecordMember(const Vector<std::pair<String, ScriptV
   any_in_record_member_ = value;
   has_any_in_record_member_ = true;
 }
+
 void TestDictionary::setAnyMember(ScriptValue value) {
   any_member_ = value;
 }
-void TestDictionary::setApplicableToTypeLongMember(int32_t value) {
-  applicable_to_type_long_member_ = value;
-  has_applicable_to_type_long_member_ = true;
-}
-void TestDictionary::setApplicableToTypeStringMember(const String& value) {
-  applicable_to_type_string_member_ = value;
-}
-void TestDictionary::setBooleanMember(bool value) {
-  boolean_member_ = value;
-  has_boolean_member_ = true;
-}
-void TestDictionary::setCreateMember(bool value) {
-  create_member_ = value;
-  has_create_member_ = true;
-}
+
 void TestDictionary::setDictionaryMember(Dictionary value) {
   dictionary_member_ = value;
 }
-void TestDictionary::setDoubleOrNullMember(double value) {
-  double_or_null_member_ = value;
-  has_double_or_null_member_ = true;
-}
-void TestDictionary::setDoubleOrNullMemberToNull() {
-  has_double_or_null_member_ = false;
-}
+
 void TestDictionary::setDoubleOrStringMember(const DoubleOrString& value) {
   double_or_string_member_ = value;
 }
+
 void TestDictionary::setDoubleOrStringSequenceMember(const HeapVector<DoubleOrString>& value) {
   double_or_string_sequence_member_ = value;
   has_double_or_string_sequence_member_ = true;
 }
-void TestDictionary::setElementOrNullMember(Element* value) {
-  element_or_null_member_ = value;
-}
-void TestDictionary::setElementOrNullMemberToNull() {
-  element_or_null_member_ = Member<Element>();
-}
-void TestDictionary::setEnumMember(const String& value) {
-  enum_member_ = value;
-}
+
 void TestDictionary::setEnumSequenceMember(const Vector<String>& value) {
   enum_sequence_member_ = value;
   has_enum_sequence_member_ = true;
 }
-void TestDictionary::setEventTargetMember(EventTarget* value) {
-  event_target_member_ = value;
-}
+
 void TestDictionary::setGarbageCollectedRecordMember(const HeapVector<std::pair<String, Member<TestObject>>>& value) {
   garbage_collected_record_member_ = value;
   has_garbage_collected_record_member_ = true;
 }
+
 void TestDictionary::setInternalDictionarySequenceMember(const HeapVector<InternalDictionary>& value) {
   internal_dictionary_sequence_member_ = value;
   has_internal_dictionary_sequence_member_ = true;
 }
-void TestDictionary::setIsPublic(bool value) {
-  is_public_ = value;
-  has_is_public_ = true;
-}
-void TestDictionary::setLongMember(int32_t value) {
-  long_member_ = value;
-  has_long_member_ = true;
-}
+
 void TestDictionary::setObjectMember(ScriptValue value) {
   object_member_ = value;
 }
+
 void TestDictionary::setObjectOrNullMember(ScriptValue value) {
   object_or_null_member_ = value;
 }
 void TestDictionary::setObjectOrNullMemberToNull() {
   object_or_null_member_ = ScriptValue();
 }
+
 void TestDictionary::setOtherDoubleOrStringMember(const DoubleOrString& value) {
   other_double_or_string_member_ = value;
 }
+
 void TestDictionary::setRecordMember(const Vector<std::pair<String, int8_t>>& value) {
   record_member_ = value;
   has_record_member_ = true;
 }
-void TestDictionary::setRestrictedDoubleMember(double value) {
-  restricted_double_member_ = value;
-  has_restricted_double_member_ = true;
-}
-void TestDictionary::setRuntimeMember(bool value) {
-  runtime_member_ = value;
-  has_runtime_member_ = true;
-}
-void TestDictionary::setStringMember(const String& value) {
-  string_member_ = value;
-}
-void TestDictionary::setStringOrNullMember(const String& value) {
-  string_or_null_member_ = value;
-}
-void TestDictionary::setStringOrNullMemberToNull() {
-  string_or_null_member_ = String();
-}
+
 void TestDictionary::setStringSequenceMember(const Vector<String>& value) {
   string_sequence_member_ = value;
   has_string_sequence_member_ = true;
 }
+
 void TestDictionary::setTestInterface2OrUint8ArrayMember(const TestInterface2OrUint8Array& value) {
   test_interface_2_or_uint8_array_member_ = value;
 }
-void TestDictionary::setTestInterfaceGarbageCollectedMember(TestInterfaceGarbageCollected* value) {
-  test_interface_garbage_collected_member_ = value;
-}
-void TestDictionary::setTestInterfaceGarbageCollectedOrNullMember(TestInterfaceGarbageCollected* value) {
-  test_interface_garbage_collected_or_null_member_ = value;
-}
-void TestDictionary::setTestInterfaceGarbageCollectedOrNullMemberToNull() {
-  test_interface_garbage_collected_or_null_member_ = Member<TestInterfaceGarbageCollected>();
-}
+
 void TestDictionary::setTestInterfaceGarbageCollectedSequenceMember(const HeapVector<Member<TestInterfaceGarbageCollected>>& value) {
   test_interface_garbage_collected_sequence_member_ = value;
   has_test_interface_garbage_collected_sequence_member_ = true;
 }
-void TestDictionary::setTestInterfaceMember(TestInterfaceImplementation* value) {
-  test_interface_member_ = value;
-}
-void TestDictionary::setTestInterfaceOrNullMember(TestInterfaceImplementation* value) {
-  test_interface_or_null_member_ = value;
-}
-void TestDictionary::setTestInterfaceOrNullMemberToNull() {
-  test_interface_or_null_member_ = Member<TestInterfaceImplementation>();
-}
+
 void TestDictionary::setTestInterfaceSequenceMember(const HeapVector<Member<TestInterfaceImplementation>>& value) {
   test_interface_sequence_member_ = value;
   has_test_interface_sequence_member_ = true;
 }
+
 void TestDictionary::setTestObjectSequenceMember(const HeapVector<Member<TestObject>>& value) {
   test_object_sequence_member_ = value;
   has_test_object_sequence_member_ = true;
 }
-void TestDictionary::setUint8ArrayMember(NotShared<DOMUint8Array> value) {
-  uint8_array_member_ = value.View();
-}
+
 void TestDictionary::setUnionInRecordMember(const HeapVector<std::pair<String, LongOrBoolean>>& value) {
   union_in_record_member_ = value;
   has_union_in_record_member_ = true;
 }
+
 void TestDictionary::setUnionWithTypedefs(const FloatOrBoolean& value) {
   union_with_typedefs_ = value;
-}
-void TestDictionary::setUnrestrictedDoubleMember(double value) {
-  unrestricted_double_member_ = value;
-  has_unrestricted_double_member_ = true;
 }
 
 DEFINE_TRACE(TestDictionary) {

@@ -1,3 +1,4 @@
+{% from 'dictionary_impl_common.cpp.tmpl' import dictionary_setter_impl with context %}
 {% filter format_blink_cpp_source_code %}
 
 {% include 'copyright_block.txt' %}
@@ -31,9 +32,9 @@ class {{exported}}{{cpp_class}}{% if parent_cpp_class %} : public {{parent_cpp_c
     {% endif %}
     return {{member.getter_expression}};
   }
-  void {{member.setter_name}}({{member.rvalue_cpp_type}});
+  {{member.setter_inline}}void {{member.setter_name}}({{member.rvalue_cpp_type}});
   {% if member.null_setter_name %}
-  void {{member.null_setter_name}}();
+  {{member.setter_inline}}void {{member.null_setter_name}}();
   {% endif %}
 
   {% endfor %}
@@ -51,6 +52,10 @@ class {{exported}}{{cpp_class}}{% if parent_cpp_class %} : public {{parent_cpp_c
 
   friend class V8{{cpp_class}};
 };
+
+{% for member in members if member.setter_inline %}
+{{dictionary_setter_impl(member)}}
+{% endfor %}
 
 }  // namespace blink
 

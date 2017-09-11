@@ -234,6 +234,12 @@ def member_impl_context(member, interfaces_info, header_includes,
     if idl_type.is_array_buffer_view_or_typed_array:
         setter_value += '.View()'
 
+    non_null_type = idl_type.inner_type if idl_type.is_nullable else idl_type
+    setter_inline = 'inline ' if (
+        non_null_type.is_basic_type or
+        non_null_type.is_enum or
+        non_null_type.is_wrapper_type) else ''
+
     return {
         'cpp_default_value': cpp_default_value,
         'cpp_name': cpp_name,
@@ -247,6 +253,7 @@ def member_impl_context(member, interfaces_info, header_includes,
         'null_setter_name': null_setter_name_for_dictionary_member(member),
         'nullable_indicator_name': nullable_indicator_name,
         'rvalue_cpp_type': idl_type.cpp_type_args(used_as_rvalue_type=True),
+        'setter_inline': setter_inline,
         'setter_name': setter_name_for_dictionary_member(member),
         'setter_value': setter_value,
     }
