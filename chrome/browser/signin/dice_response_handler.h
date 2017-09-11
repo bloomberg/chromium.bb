@@ -12,6 +12,7 @@
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/signin/core/browser/account_reconcilor.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 
 namespace signin {
@@ -39,7 +40,8 @@ class DiceResponseHandler : public KeyedService {
   DiceResponseHandler(SigninClient* signin_client,
                       SigninManager* signin_manager,
                       ProfileOAuth2TokenService* profile_oauth2_token_service,
-                      AccountTrackerService* account_tracker_service);
+                      AccountTrackerService* account_tracker_service,
+                      AccountReconcilor* account_reconcilor);
   ~DiceResponseHandler() override;
 
   // Must be called when receiving a Dice response header.
@@ -56,6 +58,7 @@ class DiceResponseHandler : public KeyedService {
                      const std::string& email,
                      const std::string& authorization_code,
                      SigninClient* signin_client,
+                     AccountReconcilor* account_reconcilor,
                      DiceResponseHandler* dice_response_handler);
     ~DiceTokenFetcher() override;
 
@@ -73,6 +76,9 @@ class DiceResponseHandler : public KeyedService {
     void OnClientOAuthSuccess(
         const GaiaAuthConsumer::ClientOAuthResult& result) override;
     void OnClientOAuthFailure(const GoogleServiceAuthError& error) override;
+
+    // Lock the account reconcilor while tokens are being fetched.
+    std::unique_ptr<AccountReconcilor::Lock> account_reconcilor_lock_;
 
     std::string gaia_id_;
     std::string email_;
@@ -115,6 +121,7 @@ class DiceResponseHandler : public KeyedService {
   SigninClient* signin_client_;
   ProfileOAuth2TokenService* token_service_;
   AccountTrackerService* account_tracker_service_;
+  AccountReconcilor* account_reconcilor_;
   std::vector<std::unique_ptr<DiceTokenFetcher>> token_fetchers_;
 
   DISALLOW_COPY_AND_ASSIGN(DiceResponseHandler);

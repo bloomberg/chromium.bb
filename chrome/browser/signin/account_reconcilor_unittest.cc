@@ -7,7 +7,9 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
@@ -33,8 +35,6 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/test_signin_client.h"
-#include "components/signin/core/common/profile_management_switches.h"
-#include "components/signin/core/common/signin_switches.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
@@ -762,6 +762,77 @@ TEST_F(AccountReconcilorTest, StartReconcileOnlyOnce) {
 
   base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
+}
+
+TEST_F(AccountReconcilorTest, Lock) {
+  const std::string account_id =
+      ConnectProfileToAccount("12345", "user@gmail.com");
+  cookie_manager_service()->SetListAccountsResponseOneAccount("user@gmail.com",
+                                                              "12345");
+  AccountReconcilor* reconcilor =
+      AccountReconcilorFactory::GetForProfile(profile());
+  ASSERT_TRUE(reconcilor);
+  ASSERT_FALSE(reconcilor->is_reconcile_started_);
+  EXPECT_EQ(0, reconcilor->account_reconcilor_lock_count_);
+
+  class TestAccountReconcilorObserver : public AccountReconcilor::Observer {
+   public:
+    void OnStartReconcile() override { ++started_count_; }
+    void OnBlockReconcile() override { ++blocked_count_; }
+    void OnUnblockReconcile() override { ++unblocked_count_; }
+
+    int started_count_ = 0;
+    int blocked_count_ = 0;
+    int unblocked_count_ = 0;
+  };
+
+  TestAccountReconcilorObserver observer;
+  ScopedObserver<AccountReconcilor, AccountReconcilor::Observer>
+      scoped_observer(&observer);
+  scoped_observer.Add(reconcilor);
+
+  // Lock prevents reconcile from starting, as long as one instance is alive.
+  std::unique_ptr<AccountReconcilor::Lock> lock_1 =
+      base::MakeUnique<AccountReconcilor::Lock>(reconcilor);
+  EXPECT_EQ(1, reconcilor->account_reconcilor_lock_count_);
+  reconcilor->StartReconcile();
+  // lock_1 is blocking the reconcile.
+  EXPECT_FALSE(reconcilor->is_reconcile_started_);
+  {
+    AccountReconcilor::Lock lock_2(reconcilor);
+    EXPECT_EQ(2, reconcilor->account_reconcilor_lock_count_);
+    EXPECT_FALSE(reconcilor->is_reconcile_started_);
+    lock_1.reset();
+    // lock_1 is no longer blocking, but lock_2 is still alive.
+    EXPECT_EQ(1, reconcilor->account_reconcilor_lock_count_);
+    EXPECT_FALSE(reconcilor->is_reconcile_started_);
+    EXPECT_EQ(0, observer.started_count_);
+    EXPECT_EQ(0, observer.unblocked_count_);
+    EXPECT_EQ(1, observer.blocked_count_);
+  }
+
+  // All locks are deleted, reconcile starts.
+  EXPECT_EQ(0, reconcilor->account_reconcilor_lock_count_);
+  ASSERT_TRUE(reconcilor->is_reconcile_started_);
+  EXPECT_EQ(1, observer.started_count_);
+  EXPECT_EQ(1, observer.unblocked_count_);
+  EXPECT_EQ(1, observer.blocked_count_);
+
+  // Lock aborts current reconcile, and restarts it later.
+  {
+    AccountReconcilor::Lock lock(reconcilor);
+    EXPECT_EQ(1, reconcilor->account_reconcilor_lock_count_);
+    EXPECT_FALSE(reconcilor->is_reconcile_started_);
+  }
+  EXPECT_EQ(0, reconcilor->account_reconcilor_lock_count_);
+  EXPECT_TRUE(reconcilor->is_reconcile_started_);
+  EXPECT_EQ(2, observer.started_count_);
+  EXPECT_EQ(2, observer.unblocked_count_);
+  EXPECT_EQ(2, observer.blocked_count_);
+
+  // Reconcile can complete successfully after being restarted.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(reconcilor->is_reconcile_started_);
 }
 
 TEST_F(AccountReconcilorTest, StartReconcileWithSessionInfoExpiredDefault) {

@@ -22,6 +22,10 @@ class ProfileIOData;
 // handle signin accordingly.
 namespace signin {
 
+// When Dice is enabled, the AccountReconcilor is blocked for a short delay
+// after sending requests to Gaia. Exposed for testing.
+void SetDiceAccountReconcilorBlockDelayForTesting(int delay_ms);
+
 // Adds an account consistency header to Gaia requests from a connected profile,
 // with the exception of requests from gaia webview. Must be called on IO
 // thread.

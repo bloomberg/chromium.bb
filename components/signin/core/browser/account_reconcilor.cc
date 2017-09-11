@@ -54,6 +54,16 @@ gaia::ListedAccount AccountForId(const std::string& account_id) {
 
 }  // namespace
 
+AccountReconcilor::Lock::Lock(AccountReconcilor* reconcilor)
+    : reconcilor_(reconcilor) {
+  DCHECK(reconcilor_);
+  reconcilor_->IncrementLockCount();
+}
+
+AccountReconcilor::Lock::~Lock() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  reconcilor_->DecrementLockCount();
+}
 
 AccountReconcilor::AccountReconcilor(
     ProfileOAuth2TokenService* token_service,
@@ -70,7 +80,9 @@ AccountReconcilor::AccountReconcilor(
       is_reconcile_started_(false),
       first_execution_(true),
       error_during_last_reconcile_(false),
-      chrome_accounts_changed_(false) {
+      chrome_accounts_changed_(false),
+      account_reconcilor_lock_count_(0),
+      reconcile_on_unblock_(false) {
   VLOG(1) << "AccountReconcilor::AccountReconcilor";
 }
 
@@ -192,6 +204,14 @@ signin_metrics::AccountReconcilorState AccountReconcilor::GetState() {
   return signin_metrics::ACCOUNT_RECONCILOR_RUNNING;
 }
 
+void AccountReconcilor::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void AccountReconcilor::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 void AccountReconcilor::OnContentSettingChanged(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
@@ -239,8 +259,13 @@ void AccountReconcilor::GoogleSignedOut(const std::string& account_id,
   PerformLogoutAllAccountsAction();
 }
 
+bool AccountReconcilor::IsAccountConsistencyEnabled() {
+  return signin::IsAccountConsistencyMirrorEnabled() ||
+         signin::IsAccountConsistencyDiceEnabled();
+}
+
 void AccountReconcilor::PerformMergeAction(const std::string& account_id) {
-  if (!signin::IsAccountConsistencyMirrorEnabled()) {
+  if (!IsAccountConsistencyEnabled()) {
     MarkAccountAsAddedToCookie(account_id);
     return;
   }
@@ -249,13 +274,24 @@ void AccountReconcilor::PerformMergeAction(const std::string& account_id) {
 }
 
 void AccountReconcilor::PerformLogoutAllAccountsAction() {
-  if (!signin::IsAccountConsistencyMirrorEnabled())
+  if (!IsAccountConsistencyEnabled())
     return;
   VLOG(1) << "AccountReconcilor::PerformLogoutAllAccountsAction";
   cookie_manager_service_->LogOutAllAccounts(kSource);
 }
 
 void AccountReconcilor::StartReconcile() {
+  if (IsReconcileBlocked()) {
+    VLOG(1) << "AccountReconcilor::StartReconcile: "
+            << "Reconcile is blocked, scheduling for later.";
+    // Reconcile is locked, it will be restarted when the lock count reaches 0.
+    reconcile_on_unblock_ = true;
+    return;
+  }
+
+  for (auto& observer : observer_list_)
+    observer.OnStartReconcile();
+
   reconcile_start_time_ = base::Time::Now();
 
   if (!IsProfileConnected() || !client_->AreSigninCookiesAllowed()) {
@@ -509,5 +545,46 @@ void AccountReconcilor::OnAddAccountToCookieCompleted(
       error_during_last_reconcile_ = true;
     CalculateIfReconcileIsDone();
     ScheduleStartReconcileIfChromeAccountsChanged();
+  }
+}
+
+void AccountReconcilor::IncrementLockCount() {
+  DCHECK_GE(account_reconcilor_lock_count_, 0);
+  ++account_reconcilor_lock_count_;
+  if (account_reconcilor_lock_count_ == 1)
+    BlockReconcile();
+}
+
+void AccountReconcilor::DecrementLockCount() {
+  DCHECK_GT(account_reconcilor_lock_count_, 0);
+  --account_reconcilor_lock_count_;
+  if (account_reconcilor_lock_count_ == 0)
+    UnblockReconcile();
+}
+
+bool AccountReconcilor::IsReconcileBlocked() const {
+  DCHECK_GE(account_reconcilor_lock_count_, 0);
+  return account_reconcilor_lock_count_ > 0;
+}
+
+void AccountReconcilor::BlockReconcile() {
+  DCHECK(IsReconcileBlocked());
+  VLOG(1) << "AccountReconcilor::BlockReconcile.";
+  if (is_reconcile_started_) {
+    AbortReconcile();
+    reconcile_on_unblock_ = true;
+  }
+  for (auto& observer : observer_list_)
+    observer.OnBlockReconcile();
+}
+
+void AccountReconcilor::UnblockReconcile() {
+  DCHECK(!IsReconcileBlocked());
+  VLOG(1) << "AccountReconcilor::UnblockReconcile.";
+  for (auto& observer : observer_list_)
+    observer.OnUnblockReconcile();
+  if (reconcile_on_unblock_) {
+    reconcile_on_unblock_ = false;
+    StartReconcile();
   }
 }

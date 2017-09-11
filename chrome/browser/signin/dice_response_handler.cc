@@ -13,6 +13,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -84,6 +85,7 @@ class DiceResponseHandlerFactory : public BrowserContextKeyedServiceFactory {
       : BrowserContextKeyedServiceFactory(
             "DiceResponseHandler",
             BrowserContextDependencyManager::GetInstance()) {
+    DependsOn(AccountReconcilorFactory::GetInstance());
     DependsOn(AccountTrackerServiceFactory::GetInstance());
     DependsOn(ChromeSigninClientFactory::GetInstance());
     DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
@@ -103,7 +105,8 @@ class DiceResponseHandlerFactory : public BrowserContextKeyedServiceFactory {
         ChromeSigninClientFactory::GetForProfile(profile),
         SigninManagerFactory::GetForProfile(profile),
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-        AccountTrackerServiceFactory::GetForProfile(profile));
+        AccountTrackerServiceFactory::GetForProfile(profile),
+        AccountReconcilorFactory::GetForProfile(profile));
   }
 };
 
@@ -131,6 +134,7 @@ DiceResponseHandler::DiceTokenFetcher::DiceTokenFetcher(
     const std::string& email,
     const std::string& authorization_code,
     SigninClient* signin_client,
+    AccountReconcilor* account_reconcilor,
     DiceResponseHandler* dice_response_handler)
     : gaia_id_(gaia_id),
       email_(email),
@@ -140,6 +144,10 @@ DiceResponseHandler::DiceTokenFetcher::DiceTokenFetcher(
           base::Bind(&DiceResponseHandler::DiceTokenFetcher::OnTimeout,
                      base::Unretained(this))) {
   DCHECK(dice_response_handler_);
+  if (signin::IsAccountConsistencyDiceEnabled()) {
+    account_reconcilor_lock_ =
+        base::MakeUnique<AccountReconcilor::Lock>(account_reconcilor);
+  }
   gaia_auth_fetcher_ = signin_client->CreateGaiaAuthFetcher(
       this, GaiaConstants::kChromeSource,
       signin_client->GetURLRequestContext());
@@ -192,15 +200,18 @@ DiceResponseHandler::DiceResponseHandler(
     SigninClient* signin_client,
     SigninManager* signin_manager,
     ProfileOAuth2TokenService* profile_oauth2_token_service,
-    AccountTrackerService* account_tracker_service)
+    AccountTrackerService* account_tracker_service,
+    AccountReconcilor* account_reconcilor)
     : signin_manager_(signin_manager),
       signin_client_(signin_client),
       token_service_(profile_oauth2_token_service),
-      account_tracker_service_(account_tracker_service) {
+      account_tracker_service_(account_tracker_service),
+      account_reconcilor_(account_reconcilor) {
   DCHECK(signin_client_);
   DCHECK(signin_manager_);
   DCHECK(token_service_);
   DCHECK(account_tracker_service_);
+  DCHECK(account_reconcilor_);
 }
 
 DiceResponseHandler::~DiceResponseHandler() {}
@@ -277,7 +288,8 @@ void DiceResponseHandler::ProcessDiceSigninHeader(
   }
 
   token_fetchers_.push_back(base::MakeUnique<DiceTokenFetcher>(
-      gaia_id, email, authorization_code, signin_client_, this));
+      gaia_id, email, authorization_code, signin_client_, account_reconcilor_,
+      this));
 }
 
 void DiceResponseHandler::ProcessDiceSignoutHeader(

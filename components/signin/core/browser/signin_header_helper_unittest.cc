@@ -58,9 +58,12 @@ class SigninHeaderHelperTest : public testing::Test {
     std::unique_ptr<net::URLRequest> url_request =
         url_request_context_.CreateRequest(url, net::DEFAULT_PRIORITY, nullptr,
                                            TRAFFIC_ANNOTATION_FOR_TESTS);
-    AppendOrRemoveAccountConsistencyRequestHeader(
-        url_request.get(), GURL(), account_id, sync_enabled_,
-        sync_has_auth_error_, cookie_settings_.get(), PROFILE_MODE_DEFAULT);
+    AppendOrRemoveMirrorRequestHeader(url_request.get(), GURL(), account_id,
+                                      cookie_settings_.get(),
+                                      PROFILE_MODE_DEFAULT);
+    AppendOrRemoveDiceRequestHeader(url_request.get(), GURL(), account_id,
+                                    sync_enabled_, sync_has_auth_error_,
+                                    cookie_settings_.get());
     return url_request;
   }
 
@@ -347,9 +350,9 @@ TEST_F(SigninHeaderHelperTest, TestMirrorHeaderEligibleRedirectURL) {
   std::unique_ptr<net::URLRequest> url_request =
       url_request_context_.CreateRequest(url, net::DEFAULT_PRIORITY, nullptr,
                                          TRAFFIC_ANNOTATION_FOR_TESTS);
-  AppendOrRemoveAccountConsistencyRequestHeader(
-      url_request.get(), redirect_url, account_id, sync_enabled_,
-      sync_has_auth_error_, cookie_settings_.get(), PROFILE_MODE_DEFAULT);
+  AppendOrRemoveMirrorRequestHeader(url_request.get(), redirect_url, account_id,
+                                    cookie_settings_.get(),
+                                    PROFILE_MODE_DEFAULT);
   EXPECT_TRUE(
       url_request->extra_request_headers().HasHeader(kChromeConnectedHeader));
 }
@@ -364,9 +367,9 @@ TEST_F(SigninHeaderHelperTest, TestMirrorHeaderNonEligibleRedirectURL) {
   std::unique_ptr<net::URLRequest> url_request =
       url_request_context_.CreateRequest(url, net::DEFAULT_PRIORITY, nullptr,
                                          TRAFFIC_ANNOTATION_FOR_TESTS);
-  AppendOrRemoveAccountConsistencyRequestHeader(
-      url_request.get(), redirect_url, account_id, sync_enabled_,
-      sync_has_auth_error_, cookie_settings_.get(), PROFILE_MODE_DEFAULT);
+  AppendOrRemoveMirrorRequestHeader(url_request.get(), redirect_url, account_id,
+                                    cookie_settings_.get(),
+                                    PROFILE_MODE_DEFAULT);
   EXPECT_FALSE(
       url_request->extra_request_headers().HasHeader(kChromeConnectedHeader));
 }
@@ -384,9 +387,9 @@ TEST_F(SigninHeaderHelperTest, TestIgnoreMirrorHeaderNonEligibleURLs) {
                                          TRAFFIC_ANNOTATION_FOR_TESTS);
   url_request->SetExtraRequestHeaderByName(kChromeConnectedHeader, fake_header,
                                            false);
-  AppendOrRemoveAccountConsistencyRequestHeader(
-      url_request.get(), redirect_url, account_id, sync_enabled_,
-      sync_has_auth_error_, cookie_settings_.get(), PROFILE_MODE_DEFAULT);
+  AppendOrRemoveMirrorRequestHeader(url_request.get(), redirect_url, account_id,
+                                    cookie_settings_.get(),
+                                    PROFILE_MODE_DEFAULT);
   std::string header;
   EXPECT_TRUE(url_request->extra_request_headers().GetHeader(
       kChromeConnectedHeader, &header));
