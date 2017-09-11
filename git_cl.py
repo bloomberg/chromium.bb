@@ -4007,7 +4007,9 @@ def CMDcreds_check(parser, args):
   _, _ = parser.parse_args(args)
 
   if gerrit_util.GceAuthenticator.is_gce():
-    DieWithError('this command is not designed for GCE, are you on a bot?')
+    DieWithError(
+        'This command is not designed for GCE, are you on a bot?\n'
+        'If you need to run this, export SKIP_GCE_AUTH_FOR_GIT=1 in your env.')
 
   checker = _GitCookiesChecker()
   checker.ensure_configured_gitcookies()
