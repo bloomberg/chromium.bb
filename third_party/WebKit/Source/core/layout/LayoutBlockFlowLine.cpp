@@ -182,6 +182,19 @@ InlineFlowBox* LayoutBlockFlow::CreateLineBoxes(LineLayoutItem line_layout_item,
   InlineFlowBox* parent_box = nullptr;
   InlineFlowBox* result = nullptr;
   do {
+    if (line_depth++ >= kCMaxLineDepth ||
+        (IsLayoutNGBlockFlow() && line_layout_item.IsLayoutBlockFlow())) {
+      // If we've exceeded our line depth, then jump straight to the root and
+      // skip all the remaining intermediate inline flows. Additionally, if
+      // we're in LayoutNG, abort once we find a block in the ancestry. It may
+      // be that it's not |this|. This happens in multicol, because LayoutNG
+      // doesn't see the flow thread, and treats DOM children of the multicol
+      // container as actual children of the multicol container, without any
+      // intervening flow thread block (although that block does exist in the
+      // layout tree).
+      line_layout_item = LineLayoutItem(this);
+    }
+
     SECURITY_DCHECK(line_layout_item.IsLayoutInline() ||
                     line_layout_item.IsEqual(this));
 
@@ -232,12 +245,7 @@ InlineFlowBox* LayoutBlockFlow::CreateLineBoxes(LineLayoutItem line_layout_item,
       child_box = parent_box;
     }
 
-    // If we've exceeded our line depth, then jump straight to the root and skip
-    // all the remaining intermediate inline flows.
-    line_layout_item = (++line_depth >= kCMaxLineDepth)
-                           ? LineLayoutItem(this)
-                           : line_layout_item.Parent();
-
+    line_layout_item = line_layout_item.Parent();
   } while (true);
 
   return result;
