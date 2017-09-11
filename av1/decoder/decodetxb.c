@@ -231,7 +231,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
         //        int br_offset = aom_read_literal(r, extra_bits, ACCT_STR);
         int br_offset = 0;
         int tok;
-        if (counts) ++counts->coeff_br[txs_ctx][plane_type][ctx][idx][1];
+        if (counts) ++counts->coeff_br[txs_ctx][plane_type][idx][ctx][1];
         for (tok = 0; tok < extra_bits; ++tok) {
 #if LV_MAP_PROB
           if (aom_read_symbol(r,
@@ -257,7 +257,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
         if (sign) *v = -(*v);
         break;
       }
-      if (counts) ++counts->coeff_br[txs_ctx][plane_type][ctx][idx][0];
+      if (counts) ++counts->coeff_br[txs_ctx][plane_type][idx][ctx][0];
     }
 
     if (idx < BASE_RANGE_SETS) continue;
