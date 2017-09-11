@@ -10,12 +10,18 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "build/build_config.h"
 #include "chromecast/base/cast_paths.h"
 #include "chromecast/base/pref_names.h"
+#include "chromecast/chromecast_features.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service_factory.h"
 #include "components/prefs/pref_store.h"
+
+#if defined(OS_ANDROID) && !BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
+#include "components/cdm/browser/media_drm_storage_impl.h"
+#endif  // defined(OS_ANDROID) && !BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
 
 namespace chromecast {
 namespace shell {
@@ -53,6 +59,10 @@ std::unique_ptr<PrefService> PrefServiceHelper::CreatePrefService(
   registry->RegisterBooleanPref(prefs::kOptInStats, true);
   registry->RegisterListPref(prefs::kActiveDCSExperiments);
   registry->RegisterDictionaryPref(prefs::kLatestDCSFeatures);
+
+#if defined(OS_ANDROID) && !BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
+  cdm::MediaDrmStorageImpl::RegisterProfilePrefs(registry);
+#endif  // defined(OS_ANDROID) && !BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
 
   RegisterPlatformPrefs(registry);
 
