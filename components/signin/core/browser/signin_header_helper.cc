@@ -126,26 +126,13 @@ bool SigninHeaderHelper::ShouldBuildRequestHeader(
   return true;
 }
 
-void AppendOrRemoveAccountConsistencyRequestHeader(
+void AppendOrRemoveMirrorRequestHeader(
     net::URLRequest* request,
     const GURL& redirect_url,
     const std::string& account_id,
-    bool sync_enabled,
-    bool sync_has_auth_error,
     const content_settings::CookieSettings* cookie_settings,
     int profile_mode_mask) {
   const GURL& url = redirect_url.is_empty() ? request->url() : redirect_url;
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  DiceHeaderHelper dice_helper(!account_id.empty() && sync_has_auth_error);
-  std::string dice_header_value;
-  if (dice_helper.ShouldBuildRequestHeader(url, cookie_settings)) {
-    dice_header_value =
-        dice_helper.BuildRequestHeader(account_id, sync_enabled);
-  }
-  dice_helper.AppendOrRemoveRequestHeader(
-      request, redirect_url, kDiceRequestHeader, dice_header_value);
-#endif
-
   ChromeConnectedHeaderHelper chrome_connected_helper;
   std::string chrome_connected_header_value;
   if (chrome_connected_helper.ShouldBuildRequestHeader(url, cookie_settings)) {
@@ -155,6 +142,28 @@ void AppendOrRemoveAccountConsistencyRequestHeader(
   chrome_connected_helper.AppendOrRemoveRequestHeader(
       request, redirect_url, kChromeConnectedHeader,
       chrome_connected_header_value);
+}
+
+bool AppendOrRemoveDiceRequestHeader(
+    net::URLRequest* request,
+    const GURL& redirect_url,
+    const std::string& account_id,
+    bool sync_enabled,
+    bool sync_has_auth_error,
+    const content_settings::CookieSettings* cookie_settings) {
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  const GURL& url = redirect_url.is_empty() ? request->url() : redirect_url;
+  DiceHeaderHelper dice_helper(!account_id.empty() && sync_has_auth_error);
+  std::string dice_header_value;
+  if (dice_helper.ShouldBuildRequestHeader(url, cookie_settings)) {
+    dice_header_value =
+        dice_helper.BuildRequestHeader(account_id, sync_enabled);
+  }
+  return dice_helper.AppendOrRemoveRequestHeader(
+      request, redirect_url, kDiceRequestHeader, dice_header_value);
+#else
+  return false;
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 }
 
 ManageAccountsParams BuildManageAccountsParams(

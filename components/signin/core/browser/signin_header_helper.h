@@ -117,6 +117,7 @@ struct DiceResponseParams {
 class SigninHeaderHelper {
  public:
   // Appends or remove the header to a network request if necessary.
+  // Returns whether the request has the request header.
   bool AppendOrRemoveRequestHeader(net::URLRequest* request,
                                    const GURL& redirect_url,
                                    const char* header_name,
@@ -157,17 +158,27 @@ std::string BuildMirrorRequestCookieIfPossible(
     const content_settings::CookieSettings* cookie_settings,
     int profile_mode_mask);
 
-// Adds account consistency header to all Gaia requests from a connected
-// profile, with the exception of requests from gaia webview.
+// Adds the mirror header to all Gaia requests from a connected profile, with
+// the exception of requests from gaia webview.
 // Removes the header in case it should not be transfered to a redirected url.
-void AppendOrRemoveAccountConsistencyRequestHeader(
+void AppendOrRemoveMirrorRequestHeader(
+    net::URLRequest* request,
+    const GURL& redirect_url,
+    const std::string& account_id,
+    const content_settings::CookieSettings* cookie_settings,
+    int profile_mode_mask);
+
+// Adds the Dice to all Gaia requests from a connected profile, with the
+// exception of requests from gaia webview.
+// Removes the header in case it should not be transfered to a redirected url.
+// Returns whether the request has the Dice request header.
+bool AppendOrRemoveDiceRequestHeader(
     net::URLRequest* request,
     const GURL& redirect_url,
     const std::string& account_id,
     bool sync_enabled,
     bool sync_has_auth_error,
-    const content_settings::CookieSettings* cookie_settings,
-    int profile_mode_mask);
+    const content_settings::CookieSettings* cookie_settings);
 
 // Returns the parameters contained in the X-Chrome-Manage-Accounts response
 // header.

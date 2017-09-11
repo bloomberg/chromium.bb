@@ -4,8 +4,14 @@
 
 #include "chrome/browser/signin/chrome_signin_helper.h"
 
+#include <memory>
+
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/strings/string_util.h"
+#include "base/supports_user_data.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_io_data.h"
@@ -22,7 +28,9 @@
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/signin/core/common/signin_features.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/resource_type.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
@@ -44,6 +52,116 @@ const char kChromeManageAccountsHeader[] = "X-Chrome-Manage-Accounts";
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 const char kGoogleSignoutResponseHeader[] = "Google-Accounts-SignOut";
 #endif
+
+// Key for DiceURLRequestUserData.
+const void* const kDiceURLRequestUserDataKey = &kDiceURLRequestUserDataKey;
+
+// Resource type for the request containing the account consistency response
+// headers.
+constexpr content::ResourceType kAccountConsistencyResponseType =
+    content::RESOURCE_TYPE_MAIN_FRAME;
+
+// TODO(droger): Remove this delay when the Dice implementation is finished on
+// the server side.
+int g_dice_account_reconcilor_blocked_delay_ms = 1000;
+
+// Refcounted wrapper to allow creating and deleting a AccountReconcilor::Lock
+// from the IO thread.
+class AccountReconcilorLockWrapper
+    : public base::RefCountedThreadSafe<AccountReconcilorLockWrapper> {
+ public:
+  AccountReconcilorLockWrapper() {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    // Do nothing on the IO thread. The real work is done in CreateLockOnUI().
+  }
+
+  // Creates the account reconcilor lock on the UI thread. The lock will be
+  // deleted on the UI thread when this wrapper is deleted.
+  void CreateLockOnUI(const content::ResourceRequestInfo::WebContentsGetter&
+                          web_contents_getter) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    content::WebContents* web_contents = web_contents_getter.Run();
+    if (!web_contents)
+      return;
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents->GetBrowserContext());
+    AccountReconcilor* account_reconcilor =
+        AccountReconcilorFactory::GetForProfile(profile);
+    account_reconcilor_lock_.reset(
+        new AccountReconcilor::Lock(account_reconcilor));
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<AccountReconcilorLockWrapper>;
+  ~AccountReconcilorLockWrapper() {}
+
+  // The account reconcilor lock is created and deleted on UI thread.
+  std::unique_ptr<AccountReconcilor::Lock,
+                  content::BrowserThread::DeleteOnUIThread>
+      account_reconcilor_lock_;
+
+  DISALLOW_COPY_AND_ASSIGN(AccountReconcilorLockWrapper);
+};
+
+// The AccountReconcilor is suspended while a Dice request is in flight. This
+// allows the DiceResponseHandler to see the response before the
+// AccountReconcilor starts.
+class DiceURLRequestUserData : public base::SupportsUserData::Data {
+ public:
+  // Attaches a DiceURLRequestUserData to the request if it needs to block the
+  // AccountReconcilor.
+  static void AttachToRequest(net::URLRequest* request) {
+    if (!IsAccountConsistencyDiceEnabled())
+      return;
+
+    const content::ResourceRequestInfo* info =
+        content::ResourceRequestInfo::ForRequest(request);
+    content::ResourceType resource_type = info->GetResourceType();
+    // Requests from the Dice flow are either main resources or XHR from a Gaia
+    // referer.
+    if ((resource_type == kAccountConsistencyResponseType) ||
+        ((resource_type == content::RESOURCE_TYPE_XHR) &&
+         gaia::IsGaiaSignonRealm(GURL(request->referrer()).GetOrigin()))) {
+      request->SetUserData(kDiceURLRequestUserDataKey,
+                           base::MakeUnique<DiceURLRequestUserData>(
+                               info->GetWebContentsGetterForRequest()));
+    }
+  }
+
+  explicit DiceURLRequestUserData(
+      const content::ResourceRequestInfo::WebContentsGetter&
+          web_contents_getter)
+      : account_reconcilor_lock_wrapper_(new AccountReconcilorLockWrapper) {
+    // The task takes a reference on the wrapper, because DiceRequestUserData
+    // may be deleted before the task is run.
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&AccountReconcilorLockWrapper::CreateLockOnUI,
+                       account_reconcilor_lock_wrapper_, web_contents_getter));
+  }
+
+  // The Gaia cookie is received in one request, and the Dice response in
+  // another request that is immediately following.
+  // Start locking the reconcilor on the first request, and keep it locked for a
+  // short time afterwards, to give the second request some time to start and
+  // lock the reconcilor from there.
+  ~DiceURLRequestUserData() override {
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&DiceURLRequestUserData::DoNothing,
+                       account_reconcilor_lock_wrapper_),
+        base::TimeDelta::FromMilliseconds(
+            g_dice_account_reconcilor_blocked_delay_ms));
+  }
+
+ private:
+  // Dummy function used to extend the lifetime of the wrapper by keeping a
+  // reference on it.
+  static void DoNothing(scoped_refptr<AccountReconcilorLockWrapper> wrapper) {}
+
+  scoped_refptr<AccountReconcilorLockWrapper> account_reconcilor_lock_wrapper_;
+  DISALLOW_COPY_AND_ASSIGN(DiceURLRequestUserData);
+};
 
 // Processes the mirror response header on the UI thread. Currently depending
 // on the value of |header_value|, it either shows the profile avatar menu, or
@@ -138,7 +256,7 @@ void ProcessMirrorResponseHeaderIfExists(net::URLRequest* request,
 
   const content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request);
-  if (!(info && info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME))
+  if (!info || (info->GetResourceType() != kAccountConsistencyResponseType))
     return;
 
   if (!gaia::IsGaiaSignonRealm(request->url().GetOrigin()))
@@ -188,7 +306,7 @@ void ProcessDiceResponseHeaderIfExists(net::URLRequest* request,
 
   const content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request);
-  if (!(info && info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME))
+  if (!info || (info->GetResourceType() != kAccountConsistencyResponseType))
     return;
 
   if (!gaia::IsGaiaSignonRealm(request->url().GetOrigin()))
@@ -229,6 +347,10 @@ void ProcessDiceResponseHeaderIfExists(net::URLRequest* request,
 
 }  // namespace
 
+void SetDiceAccountReconcilorBlockDelayForTesting(int delay_ms) {
+  g_dice_account_reconcilor_blocked_delay_ms = delay_ms;
+}
+
 void FixAccountConsistencyRequestHeader(net::URLRequest* request,
                                         const GURL& redirect_url,
                                         ProfileIOData* io_data) {
@@ -255,10 +377,22 @@ void FixAccountConsistencyRequestHeader(net::URLRequest* request,
   std::string account_id = io_data->google_services_account_id()->GetValue();
 
   // If new url is eligible to have the header, add it, otherwise remove it.
-  AppendOrRemoveAccountConsistencyRequestHeader(
+
+  // Dice header:
+  bool dice_header_added = AppendOrRemoveDiceRequestHeader(
       request, redirect_url, account_id, io_data->IsSyncEnabled(),
-      io_data->SyncHasAuthError(), io_data->GetCookieSettings(),
-      profile_mode_mask);
+      io_data->SyncHasAuthError(), io_data->GetCookieSettings());
+
+  // Block the AccountReconcilor while the Dice requests are in flight. This
+  // allows the DiceReponseHandler to process the response before the reconcilor
+  // starts.
+  if (dice_header_added)
+    DiceURLRequestUserData::AttachToRequest(request);
+
+  // Mirror header:
+  AppendOrRemoveMirrorRequestHeader(request, redirect_url, account_id,
+                                    io_data->GetCookieSettings(),
+                                    profile_mode_mask);
 }
 
 void ProcessAccountConsistencyResponseHeaders(net::URLRequest* request,
