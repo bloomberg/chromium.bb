@@ -29,12 +29,6 @@
 -DownloadFile/DownloadFileTestWithRename.RenameWithErrorRetry/0
 -DownloadFile/DownloadFileTestWithRename.RenameWithErrorRetry/1
 
-# lstat() errno is incorrect for empty file, https://crbug.com/759691.
--BackgroundSyncManagerTest.DeleteAndStartOverServiceWorkerContext
--BackgroundSyncManagerTest.DisabledManagerWorksAfterDeleteAndStartOver
--BackgroundSyncManagerTest.DisabledPermanently
--ServiceWorkerContextRecoveryTest/ServiceWorkerContextRecoveryTest.DeleteAndStartOver/0
-
 # See https://crbug.com/758634 on advisory file locks.
 -AppCacheDatabaseTest.ExperimentalFlags
 -AppCacheDatabaseTest.QuickIntegrityCheck
