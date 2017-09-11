@@ -94,30 +94,28 @@ bool UIResourceLayerImpl::WillDraw(DrawMode draw_mode,
 void UIResourceLayerImpl::AppendQuads(
     RenderPass* render_pass,
     AppendQuadsData* append_quads_data) {
+  DCHECK(!bounds().IsEmpty());
+
   viz::SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  bool are_contents_opaque =
-      layer_tree_impl()->IsUIResourceOpaque(ui_resource_id_) ||
-      contents_opaque();
-  PopulateSharedQuadState(shared_quad_state, are_contents_opaque);
-
-  AppendDebugBorderQuad(render_pass, bounds(), shared_quad_state,
-                        append_quads_data);
-
-  if (!ui_resource_id_)
-    return;
 
   viz::ResourceId resource =
       layer_tree_impl()->ResourceIdForUIResource(ui_resource_id_);
+  bool is_resource = ui_resource_id_ && resource;
+  bool are_contents_opaque =
+      is_resource ? (layer_tree_impl()->IsUIResourceOpaque(ui_resource_id_) ||
+                     contents_opaque())
+                  : false;
+  PopulateSharedQuadState(shared_quad_state, are_contents_opaque);
+  AppendDebugBorderQuad(render_pass, bounds(), shared_quad_state,
+                        append_quads_data);
 
-  if (!resource)
+  if (!is_resource)
     return;
 
   static const bool flipped = false;
   static const bool nearest_neighbor = false;
   static const bool premultiplied_alpha = true;
-
-  DCHECK(!bounds().IsEmpty());
 
   gfx::Rect quad_rect(bounds());
   bool needs_blending = are_contents_opaque ? false : true;
