@@ -110,6 +110,8 @@ bool PopupBlockerTabHelper::MaybeBlockPopup(
   DCHECK(!open_url_params ||
          open_url_params->user_gesture == params.user_gesture);
 
+  LogAction(Action::kInitiated);
+
   const bool user_gesture = params.user_gesture;
   if (!web_contents)
     return false;
@@ -160,6 +162,7 @@ bool PopupBlockerTabHelper::MaybeBlockPopup(
 void PopupBlockerTabHelper::AddBlockedPopup(
     const chrome::NavigateParams& params,
     const blink::mojom::WindowFeatures& window_features) {
+  LogAction(Action::kBlocked);
   if (blocked_popups_.size() >= kMaximumNumberOfPopups)
     return;
 
@@ -208,6 +211,7 @@ void PopupBlockerTabHelper::ShowBlockedPopup(
   blocked_popups_.erase(id);
   if (blocked_popups_.empty())
     PopupNotificationVisibilityChanged(false);
+  LogAction(Action::kClickedThrough);
 }
 
 size_t PopupBlockerTabHelper::GetBlockedPopupsCount() const {
@@ -236,4 +240,10 @@ PopupBlockerTabHelper::PopupPosition PopupBlockerTabHelper::GetPopupPosition(
     return PopupPosition::kLastPopup;
 
   return PopupPosition::kMiddlePopup;
+}
+
+// static
+void PopupBlockerTabHelper::LogAction(Action action) {
+  UMA_HISTOGRAM_ENUMERATION("ContentSettings.Popups.BlockerActions", action,
+                            Action::kLast);
 }

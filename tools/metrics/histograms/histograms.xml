@@ -10268,6 +10268,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ContentSettings.Popups.BlockerActions"
+    enum="PopupBlockerAction">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Counts of various events related to the popup blocker. Including blocked
+    popups and overridden (clicked through) popups. This is similar to the
+    ContentSettings.Popups but is at the per-popup layer rather than at the UI
+    layer.
+  </summary>
+</histogram>
+
 <histogram name="ContentSettings.Popups.ClickThroughPosition"
     enum="PopupPosition">
   <owner>csharrison@chromium.org</owner>

@@ -48,6 +48,24 @@ class PopupBlockerTabHelper
     // Any new values should go before this one.
     kLast,
   };
+
+  // This enum is backed by a histogram. Make sure enums.xml is updated if this
+  // is updated.
+  enum class Action : int {
+    // A popup was initiated and was sent to the popup blocker for
+    // consideration.
+    kInitiated,
+
+    // A popup was blocked by the popup blocker.
+    kBlocked,
+
+    // A previously blocked popup was clicked through.
+    kClickedThrough,
+
+    // Add new elements before this value.
+    kLast
+  };
+
   class Observer {
    public:
     virtual void BlockedPopupAdded(int32_t id, const GURL& url) {}
@@ -107,6 +125,8 @@ class PopupBlockerTabHelper
   void PopupNotificationVisibilityChanged(bool visible);
 
   PopupPosition GetPopupPosition(int32_t id) const;
+
+  static void LogAction(Action action);
 
   // Note, this container should be sorted based on the position in the popup
   // list, so it is keyed by an id which is continually increased.

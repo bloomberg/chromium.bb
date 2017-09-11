@@ -348,6 +348,45 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, PopupPositionMetrics) {
   tester.ExpectTotalCount(kClickThroughPosition, 4);
 }
 
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, PopupMetrics) {
+  const char kPopupActions[] = "ContentSettings.Popups.BlockerActions";
+  base::HistogramTester tester;
+
+  const GURL url(
+      embedded_test_server()->GetURL("/popup_blocker/popup-many.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_EQ(2, GetBlockedContentsCount());
+
+  tester.ExpectBucketCount(
+      kPopupActions,
+      static_cast<int>(PopupBlockerTabHelper::Action::kInitiated), 2);
+  tester.ExpectBucketCount(
+      kPopupActions, static_cast<int>(PopupBlockerTabHelper::Action::kBlocked),
+      2);
+
+  // Click through one of them.
+  auto* popup_blocker = PopupBlockerTabHelper::FromWebContents(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  popup_blocker->ShowBlockedPopup(
+      popup_blocker->GetBlockedPopupRequests().begin()->first,
+      WindowOpenDisposition::NEW_BACKGROUND_TAB);
+
+  tester.ExpectBucketCount(
+      kPopupActions,
+      static_cast<int>(PopupBlockerTabHelper::Action::kClickedThrough), 1);
+
+  // Whitelist the site and navigate again.
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->SetContentSettingDefaultScope(url, GURL(), CONTENT_SETTINGS_TYPE_POPUPS,
+                                      std::string(), CONTENT_SETTING_ALLOW);
+  ui_test_utils::NavigateToURL(browser(), url);
+  tester.ExpectBucketCount(
+      kPopupActions,
+      static_cast<int>(PopupBlockerTabHelper::Action::kInitiated), 4);
+  // 4 initiated popups, 2 blocked, and 1 clicked through.
+  tester.ExpectTotalCount(kPopupActions, 4 + 2 + 1);
+}
+
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, MultiplePopups) {
   GURL url(embedded_test_server()->GetURL("/popup_blocker/popup-many.html"));
   ui_test_utils::NavigateToURL(browser(), url);
