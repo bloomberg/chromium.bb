@@ -15,10 +15,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "ios/web/public/web_thread_delegate.h"
-#include "net/disk_cache/simple/simple_backend_impl.h"
 #include "net/url_request/url_fetcher.h"
 
 namespace web {
@@ -87,11 +85,7 @@ base::LazyInstance<WebThreadTaskRunners>::Leaky g_task_runners =
     LAZY_INSTANCE_INITIALIZER;
 
 struct WebThreadGlobals {
-  WebThreadGlobals()
-      : blocking_pool(
-            new base::SequencedWorkerPool(3,
-                                          "WebBlocking",
-                                          base::TaskPriority::USER_VISIBLE)) {
+  WebThreadGlobals() {
     memset(threads, 0, WebThread::ID_COUNT * sizeof(threads[0]));
     memset(thread_delegates, 0,
            WebThread::ID_COUNT * sizeof(thread_delegates[0]));
@@ -110,8 +104,6 @@ struct WebThreadGlobals {
   // Only atomic operations are used on this array. The delegates are not owned
   // by this array, rather by whoever calls WebThread::SetDelegate.
   WebThreadDelegate* thread_delegates[WebThread::ID_COUNT];
-
-  const scoped_refptr<base::SequencedWorkerPool> blocking_pool;
 };
 
 base::LazyInstance<WebThreadGlobals>::Leaky g_globals =
@@ -128,26 +120,6 @@ WebThreadImpl::WebThreadImpl(ID identifier, base::MessageLoop* message_loop)
     : Thread(GetThreadName(identifier)), identifier_(identifier) {
   SetMessageLoop(message_loop);
   Initialize();
-}
-
-// static
-void WebThreadImpl::ShutdownThreadPool() {
-  // The goal is to make it impossible to 'infinite loop' during shutdown,
-  // but to reasonably expect that all BLOCKING_SHUTDOWN tasks queued during
-  // shutdown get run. There's nothing particularly scientific about the
-  // number chosen.
-  const int kMaxNewShutdownBlockingTasks = 1000;
-  WebThreadGlobals& globals = g_globals.Get();
-  globals.blocking_pool->Shutdown(kMaxNewShutdownBlockingTasks);
-}
-
-// static
-void WebThreadImpl::FlushThreadPoolHelperForTesting() {
-  // We don't want to create a pool if none exists.
-  if (g_globals == nullptr)
-    return;
-  g_globals.Get().blocking_pool->FlushForTesting();
-  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
 }
 
 void WebThreadImpl::Init() {
@@ -308,36 +280,6 @@ bool WebThreadImpl::PostTaskHelper(WebThread::ID identifier,
     globals.lock.Release();
 
   return !!message_loop;
-}
-
-// static
-bool WebThread::PostBlockingPoolTask(const tracked_objects::Location& from_here,
-                                     base::OnceClosure task) {
-  return g_globals.Get().blocking_pool->PostWorkerTask(from_here,
-                                                       std::move(task));
-}
-
-// static
-bool WebThread::PostBlockingPoolTaskAndReply(
-    const tracked_objects::Location& from_here,
-    base::OnceClosure task,
-    base::OnceClosure reply) {
-  return g_globals.Get().blocking_pool->PostTaskAndReply(
-      from_here, std::move(task), std::move(reply));
-}
-
-// static
-bool WebThread::PostBlockingPoolSequencedTask(
-    const std::string& sequence_token_name,
-    const tracked_objects::Location& from_here,
-    base::OnceClosure task) {
-  return g_globals.Get().blocking_pool->PostNamedSequencedWorkerTask(
-      sequence_token_name, from_here, std::move(task));
-}
-
-// static
-base::SequencedWorkerPool* WebThread::GetBlockingPool() {
-  return g_globals.Get().blocking_pool.get();
 }
 
 // static

@@ -25,8 +25,6 @@ class WebThreadImpl : public WebThread, public base::Thread {
   WebThreadImpl(WebThread::ID identifier, base::MessageLoop* message_loop);
   ~WebThreadImpl() override;
 
-  static void ShutdownThreadPool();
-
  protected:
   void Init() override;
   void Run(base::RunLoop* run_loop) override;
@@ -64,7 +62,6 @@ class WebThreadImpl : public WebThread, public base::Thread {
   friend class TestWebThreadBundle;
   friend class TestWebThreadBundleImpl;
   friend class WebTestSuiteListener;
-  static void FlushThreadPoolHelperForTesting();
 
   // The identifier of this thread.  Only one thread can exist with a given
   // identifier at a given time.
