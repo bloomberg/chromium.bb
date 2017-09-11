@@ -15,6 +15,7 @@
 #include "base/mac/mach_logging.h"
 #include "base/mac/scoped_dispatch_object.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 
@@ -111,6 +112,7 @@ bool WaitableEvent::TimedWait(const TimeDelta& wait_delta) {
 
 bool WaitableEvent::TimedWaitUntil(const TimeTicks& end_time) {
   ThreadRestrictions::AssertWaitAllowed();
+  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
   // Record the event that this thread is blocking upon (for hang diagnosis).
   debug::ScopedEventWaitActivity event_activity(this);
 
@@ -166,7 +168,7 @@ bool WaitableEvent::UseSlowWatchList(ResetPolicy policy) {
 size_t WaitableEvent::WaitMany(WaitableEvent** raw_waitables, size_t count) {
   ThreadRestrictions::AssertWaitAllowed();
   DCHECK(count) << "Cannot wait on no events";
-
+  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
   // Record an event (the first) that this thread is blocking upon.
   debug::ScopedEventWaitActivity event_activity(raw_waitables[0]);
 
