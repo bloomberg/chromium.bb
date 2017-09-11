@@ -398,6 +398,9 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
           return false;
         }
 
+        RCHECK(std::numeric_limits<int64_t>::max() - tri.samples[k].duration >
+               run_start_dts);
+
         run_start_dts += tri.samples[k].duration;
 
         if (!is_sample_to_group_valid) {
