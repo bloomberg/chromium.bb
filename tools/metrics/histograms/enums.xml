@@ -30799,6 +30799,12 @@ from previous Chrome versions.
   <int value="11" label="Bad Key Validation Signature"/>
 </enum>
 
+<enum name="PopupBlockerAction">
+  <int value="0" label="Popup initiated"/>
+  <int value="1" label="Popup blocked"/>
+  <int value="2" label="Popup clicked through"/>
+</enum>
+
 <enum name="PopupPosition">
   <int value="0" label="Only popup"/>
   <int value="1" label="First popup"/>
