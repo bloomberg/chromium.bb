@@ -20,19 +20,6 @@ LazyInstance<ThreadLocalPointer<ScopedBlockingCall>>::Leaky
 
 }  // namespace
 
-namespace internal {
-
-void SetBlockingObserverForCurrentThread(BlockingObserver* blocking_observer) {
-  DCHECK(!tls_blocking_observer.Get().Get());
-  tls_blocking_observer.Get().Set(blocking_observer);
-}
-
-void ClearBlockingObserverForTesting() {
-  tls_blocking_observer.Get().Set(nullptr);
-}
-
-}  // namespace internal
-
 ScopedBlockingCall::ScopedBlockingCall(BlockingType blocking_type)
     : blocking_observer_(tls_blocking_observer.Get().Get()),
       previous_scoped_blocking_call_(tls_last_scoped_blocking_call.Get().Get()),
@@ -57,5 +44,29 @@ ScopedBlockingCall::~ScopedBlockingCall() {
   if (blocking_observer_ && !previous_scoped_blocking_call_)
     blocking_observer_->BlockingEnded();
 }
+
+namespace internal {
+
+void SetBlockingObserverForCurrentThread(BlockingObserver* blocking_observer) {
+  DCHECK(!tls_blocking_observer.Get().Get());
+  tls_blocking_observer.Get().Set(blocking_observer);
+}
+
+void ClearBlockingObserverForTesting() {
+  tls_blocking_observer.Get().Set(nullptr);
+}
+
+ScopedClearBlockingObserverForTesting::ScopedClearBlockingObserverForTesting()
+    : blocking_observer_(tls_blocking_observer.Get().Get()) {
+  tls_blocking_observer.Get().Set(nullptr);
+}
+
+ScopedClearBlockingObserverForTesting::
+    ~ScopedClearBlockingObserverForTesting() {
+  DCHECK(!tls_blocking_observer.Get().Get());
+  tls_blocking_observer.Get().Set(blocking_observer_);
+}
+
+}  // namespace internal
 
 }  // namespace base

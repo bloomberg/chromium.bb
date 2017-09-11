@@ -846,7 +846,14 @@ class TaskSchedulerWorkerPoolBlockingTest
                 NestedScopedBlockingCall nested_scoped_blocking_call(
                     nested_blocking_type);
                 blocking_thread_running_closure->Run();
-                blocking_thread_continue_->Wait();
+
+                {
+                  // Use ScopedClearBlockingObserverForTesting to avoid
+                  // affecting the worker capacity with this WaitableEvent.
+                  internal::ScopedClearBlockingObserverForTesting
+                      scoped_clear_blocking_observer;
+                  blocking_thread_continue_->Wait();
+                }
 
               },
               Unretained(&blocking_thread_running_closure),
@@ -933,10 +940,24 @@ TEST_P(TaskSchedulerWorkerPoolBlockingTest, PostBeforeBlocking) {
                WaitableEvent* thread_running, WaitableEvent* thread_can_block,
                WaitableEvent* thread_continue) {
               thread_running->Signal();
-              thread_can_block->Wait();
+              {
+                // Use ScopedClearBlockingObserverForTesting to avoid affecting
+                // the worker capacity with this WaitableEvent.
+                internal::ScopedClearBlockingObserverForTesting
+                    scoped_clear_blocking_observer;
+                thread_can_block->Wait();
+              }
+
               NestedScopedBlockingCall nested_scoped_blocking_call(
                   nested_blocking_type);
-              thread_continue->Wait();
+
+              {
+                // Use ScopedClearBlockingObserverForTesting to avoid affecting
+                // the worker capacity with this WaitableEvent.
+                internal::ScopedClearBlockingObserverForTesting
+                    scoped_clear_blocking_observer;
+                thread_continue->Wait();
+              }
             },
             GetParam(), Unretained(&thread_running),
             Unretained(&thread_can_block), Unretained(&thread_continue)));
@@ -963,7 +984,15 @@ TEST_P(TaskSchedulerWorkerPoolBlockingTest, PostBeforeBlocking) {
                                [](Closure* extra_threads_running_barrier,
                                   WaitableEvent* extra_threads_continue) {
                                  extra_threads_running_barrier->Run();
-                                 extra_threads_continue->Wait();
+                                 {
+                                   // Use ScopedClearBlockingObserverForTesting
+                                   // to avoid affecting the worker capacity
+                                   // with this WaitableEvent.
+                                   internal::
+                                       ScopedClearBlockingObserverForTesting
+                                           scoped_clear_blocking_observer;
+                                   extra_threads_continue->Wait();
+                                 }
                                },
                                Unretained(&extra_threads_running_barrier),
                                Unretained(&extra_threads_continue)));
@@ -1012,14 +1041,19 @@ TEST_P(TaskSchedulerWorkerPoolBlockingTest, WorkersIdleWhenOverCapacity) {
       BindOnce(&WaitableEvent::Signal, Unretained(&thread_running)));
   // Posting these tasks should cause new workers to be created.
   for (size_t i = 0; i < kNumWorkersInWorkerPool; ++i) {
-    task_runner_->PostTask(FROM_HERE, BindOnce(
-                                          [](Closure* thread_running_barrier,
-                                             WaitableEvent* thread_continue) {
-                                            thread_running_barrier->Run();
-                                            thread_continue->Wait();
-                                          },
-                                          Unretained(&thread_running_barrier),
-                                          Unretained(&thread_continue)));
+    auto callback = BindOnce(
+        [](Closure* thread_running_barrier, WaitableEvent* thread_continue) {
+          thread_running_barrier->Run();
+          {
+            // Use ScopedClearBlockingObserver ForTesting to avoid affecting the
+            // worker capacity with this WaitableEvent.
+            internal::ScopedClearBlockingObserverForTesting
+                scoped_clear_blocking_observer;
+            thread_continue->Wait();
+          }
+        },
+        Unretained(&thread_running_barrier), Unretained(&thread_continue));
+    task_runner_->PostTask(FROM_HERE, std::move(callback));
   }
   thread_running.Wait();
 
@@ -1122,8 +1156,17 @@ TEST_F(TaskSchedulerWorkerPoolBlockingTest,
   // Saturate the pool so that a MAY_BLOCK ScopedBlockingCall would increment
   // the worker capacity.
   for (size_t i = 0; i < kNumWorkersInWorkerPool - 1; ++i) {
-    task_runner->PostTask(
-        FROM_HERE, BindOnce(&WaitableEvent::Wait, Unretained(&can_return)));
+    task_runner->PostTask(FROM_HERE,
+                          BindOnce(
+                              [](WaitableEvent* can_return) {
+                                // Use ScopedClearBlockingObserverForTesting to
+                                // avoid affecting the worker capacity with this
+                                // WaitableEvent.
+                                internal::ScopedClearBlockingObserverForTesting
+                                    scoped_clear_blocking_observer;
+                                can_return->Wait();
+                              },
+                              Unretained(&can_return)));
   }
 
   WaitableEvent can_instantiate_will_block(
@@ -1141,10 +1184,22 @@ TEST_F(TaskSchedulerWorkerPoolBlockingTest,
              WaitableEvent* did_instantiate_will_block,
              WaitableEvent* can_return) {
             ScopedBlockingCall may_block(BlockingType::MAY_BLOCK);
-            can_instantiate_will_block->Wait();
+            {
+              // Use ScopedClearBlockingObserverForTesting to avoid affecting
+              // the worker capacity with this WaitableEvent.
+              internal::ScopedClearBlockingObserverForTesting
+                  scoped_clear_blocking_observer;
+              can_instantiate_will_block->Wait();
+            }
             ScopedBlockingCall will_block(BlockingType::WILL_BLOCK);
             did_instantiate_will_block->Signal();
-            can_return->Wait();
+            {
+              // Use ScopedClearBlockingObserverForTesting to avoid affecting
+              // the worker capacity with this WaitableEvent.
+              internal::ScopedClearBlockingObserverForTesting
+                  scoped_clear_blocking_observer;
+              can_return->Wait();
+            }
           },
           Unretained(&can_instantiate_will_block),
           Unretained(&did_instantiate_will_block), Unretained(&can_return)));
