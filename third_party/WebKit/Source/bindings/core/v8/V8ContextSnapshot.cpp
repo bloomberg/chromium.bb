@@ -25,7 +25,7 @@ namespace blink {
 
 namespace {
 
-intptr_t* g_v8_context_snapshot_reference_table = nullptr;
+const intptr_t* g_v8_context_snapshot_reference_table = nullptr;
 
 // TODO(peria): This method is almost a copy of
 // V8PerContext::ConstructorForTypeSlowCase(), so merge with it.
@@ -150,7 +150,7 @@ int CountExternalReferenceEntries() {
     return 0;
 
   int count = 0;
-  for (intptr_t* p = g_v8_context_snapshot_reference_table; *p; ++p)
+  for (const intptr_t* p = g_v8_context_snapshot_reference_table; *p; ++p)
     ++count;
   return count;
 }
@@ -278,12 +278,12 @@ void V8ContextSnapshot::EnsureInterfaceTemplates(v8::Isolate* isolate) {
   EnsureInterfaceTemplatesForWorld(isolate, *isolated_world);
 }
 
-void V8ContextSnapshot::SetReferenceTable(intptr_t* table) {
+void V8ContextSnapshot::SetReferenceTable(const intptr_t* table) {
   DCHECK(!g_v8_context_snapshot_reference_table);
   g_v8_context_snapshot_reference_table = table;
 }
 
-intptr_t* V8ContextSnapshot::GetReferenceTable() {
+const intptr_t* V8ContextSnapshot::GetReferenceTable() {
   return g_v8_context_snapshot_reference_table;
 }
 

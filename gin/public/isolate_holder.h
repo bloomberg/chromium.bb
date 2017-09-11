@@ -60,12 +60,13 @@ class GIN_EXPORT IsolateHolder {
   IsolateHolder(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                 AccessMode access_mode,
                 AllowAtomicsWaitMode atomics_wait_mode,
-                intptr_t* reference_table,
+                const intptr_t* reference_table,
                 v8::StartupData* startup_data);
 
   // This constructor is to create V8 snapshot for Blink.
   // Note this constructor calls isolate->Enter() internally.
-  IsolateHolder(intptr_t* reference_table, v8::StartupData* existing_blob);
+  IsolateHolder(const intptr_t* reference_table,
+                v8::StartupData* existing_blob);
 
   ~IsolateHolder();
 

@@ -46,7 +46,7 @@ IsolateHolder::IsolateHolder(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     AccessMode access_mode,
     AllowAtomicsWaitMode atomics_wait_mode,
-    intptr_t* reference,
+    const intptr_t* reference,
     v8::StartupData* startup_data)
     : access_mode_(access_mode) {
   v8::ArrayBuffer::Allocator* allocator = g_array_buffer_allocator;
@@ -73,7 +73,7 @@ IsolateHolder::IsolateHolder(
   SetUp(std::move(task_runner));
 }
 
-IsolateHolder::IsolateHolder(intptr_t* reference_table,
+IsolateHolder::IsolateHolder(const intptr_t* reference_table,
                              v8::StartupData* existing_blob)
     : snapshot_creator_(
           new v8::SnapshotCreator(reference_table, existing_blob)),
