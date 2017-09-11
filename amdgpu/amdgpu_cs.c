@@ -615,6 +615,18 @@ int amdgpu_cs_destroy_syncobj(amdgpu_device_handle dev,
 	return drmSyncobjDestroy(dev->fd, handle);
 }
 
+int amdgpu_cs_syncobj_wait(amdgpu_device_handle dev,
+			   uint32_t *handles, unsigned num_handles,
+			   int64_t timeout_nsec, unsigned flags,
+			   uint32_t *first_signaled)
+{
+	if (NULL == dev)
+		return -EINVAL;
+
+	return drmSyncobjWait(dev->fd, handles, num_handles, timeout_nsec,
+			      flags, first_signaled);
+}
+
 int amdgpu_cs_export_syncobj(amdgpu_device_handle dev,
 			     uint32_t handle,
 			     int *shared_fd)
