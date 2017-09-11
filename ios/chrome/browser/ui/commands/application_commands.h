@@ -18,6 +18,12 @@
 // Shows the accounts settings.
 - (void)showAccountsSettings;
 
+// Shows the sync settings UI.
+- (void)showSyncSettings;
+
+// Shows the sync encryption passphrase UI.
+- (void)showSyncPassphraseSettings;
+
 @end
 
 // Protocol for commands that will generally be handled by the application,

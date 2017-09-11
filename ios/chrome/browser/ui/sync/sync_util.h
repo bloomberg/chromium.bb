@@ -10,6 +10,7 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 
+@protocol ApplicationSettingsCommands;
 @class GenericChromeCommand;
 @class Tab;
 
@@ -33,13 +34,26 @@ NSString* GetSyncErrorMessageForBrowserState(
 NSString* GetSyncErrorButtonTitleForBrowserState(
     ios::ChromeBrowserState* browserState);
 
-// Gets the command associated with the sync state of |browserState|.
-GenericChromeCommand* GetSyncCommandForBrowserState(
+// Gets the sync state of |browserState|.
+SyncSetupService::SyncServiceState GetSyncStateForBrowserState(
     ios::ChromeBrowserState* browserState);
+
+// Returns true if sync signin should be displayed based on |syncState|.
+bool ShouldShowSyncSignin(SyncSetupService::SyncServiceState syncState);
+
+// Returns true if sync passphrase settings should be displayed based on
+// |syncState|.
+bool ShouldShowSyncPassphraseSettings(
+    SyncSetupService::SyncServiceState syncState);
+
+// Returns true if sync settings should be displayed based on |syncState|.
+bool ShouldShowSyncSettings(SyncSetupService::SyncServiceState syncState);
 
 // Check for sync errors, and display any that ought to be shown to the user.
 // Returns true if an infobar was brought up.
-bool DisplaySyncErrors(ios::ChromeBrowserState* browser_state, Tab* tab);
+bool DisplaySyncErrors(ios::ChromeBrowserState* browser_state,
+                       Tab* tab,
+                       id<ApplicationSettingsCommands> dispatcher);
 
 // Returns true if |errorState| corresponds to a transient sync error.
 bool IsTransientSyncError(SyncSetupService::SyncServiceState errorState);

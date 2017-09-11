@@ -7,6 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol ApplicationSettingsCommands;
+
 namespace ios {
 class ChromeBrowserState;
 }
@@ -16,7 +18,12 @@ class ChromeBrowserState;
 
 // Designated initializer.
 - (instancetype)initWithFrame:(CGRect)aRect
-                 browserState:(ios::ChromeBrowserState*)browserState;
+                 browserState:(ios::ChromeBrowserState*)browserState
+                   dispatcher:(id<ApplicationSettingsCommands>)dispatcher
+    NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
+- (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 
 // Returns the desired height when included in a UITableViewCell.
 + (CGFloat)desiredHeightInUITableViewCell;

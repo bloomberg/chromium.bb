@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
@@ -92,7 +93,8 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
 
 - (instancetype)initWithFrame:(CGRect)frame
                  browserState:(ios::ChromeBrowserState*)browserState
-                   dispatcher:(id<BrowserCommands>)dispatcher {
+                   dispatcher:
+                       (id<ApplicationCommands, BrowserCommands>)dispatcher {
   self = [super initWithFrame:frame];
   if (self) {
     _browserState = browserState;
@@ -448,7 +450,19 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
 }
 
 - (void)showSyncSettings {
-  [self chromeExecuteCommand:GetSyncCommandForBrowserState(_browserState)];
+  SyncSetupService::SyncServiceState syncState =
+      GetSyncStateForBrowserState(_browserState);
+  if (ShouldShowSyncSignin(syncState)) {
+    [self chromeExecuteCommand:
+              [[ShowSigninCommand alloc]
+                  initWithOperation:AUTHENTICATION_OPERATION_REAUTHENTICATE
+                        accessPoint:signin_metrics::AccessPoint::
+                                        ACCESS_POINT_UNKNOWN]];
+  } else if (ShouldShowSyncSettings(syncState)) {
+    [self.dispatcher showSyncSettings];
+  } else if (ShouldShowSyncPassphraseSettings(syncState)) {
+    [self.dispatcher showSyncPassphraseSettings];
+  }
 }
 
 - (void)sendNewTabCommand:(id)sender {

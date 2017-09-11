@@ -355,8 +355,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 - (void)activateBVCAndMakeCurrentBVCPrimary;
 // Sets |currentBVC| as the root view controller for the window.
 - (void)displayCurrentBVC;
-// Shows the Sync settings UI.
-- (void)showSyncSettings;
 // Invokes the sign in flow with the specified authentication operation and
 // invokes |callback| when finished.
 - (void)showSigninWithOperation:(AuthenticationOperation)operation
@@ -368,8 +366,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 // successfully and the profile wasn't swapped before invoking.
 - (ShowSigninCommandCompletionCallback)successfulSigninCompletion:
     (ProceduralBlock)callback;
-// Shows the Sync encryption passphrase (part of Settings).
-- (void)showSyncEncryptionPassphrase;
 // Shows the tab switcher UI.
 - (void)showTabSwitcher;
 // Starts a voice search on the current BVC.
@@ -1458,6 +1454,55 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   }
 }
 
+#pragma mark - ApplicationSettingsCommands
+
+- (void)showAccountsSettings {
+  if ([self currentBrowserState]->IsOffTheRecord()) {
+    NOTREACHED();
+    return;
+  }
+  if (_settingsNavigationController) {
+    [_settingsNavigationController showAccountsSettings];
+    return;
+  }
+  _settingsNavigationController = [SettingsNavigationController
+      newAccountsController:self.currentBrowserState
+                   delegate:self];
+  [[self topPresentedViewController]
+      presentViewController:_settingsNavigationController
+                   animated:YES
+                 completion:nil];
+}
+
+- (void)showSyncSettings {
+  if (_settingsNavigationController) {
+    [_settingsNavigationController showSyncSettings];
+    return;
+  }
+  _settingsNavigationController =
+      [SettingsNavigationController newSyncController:_mainBrowserState
+                               allowSwitchSyncAccount:YES
+                                             delegate:self];
+  [[self topPresentedViewController]
+      presentViewController:_settingsNavigationController
+                   animated:YES
+                 completion:nil];
+}
+
+- (void)showSyncPassphraseSettings {
+  if (_settingsNavigationController) {
+    [_settingsNavigationController showSyncPassphraseSettings];
+    return;
+  }
+  _settingsNavigationController = [SettingsNavigationController
+      newSyncEncryptionPassphraseController:_mainBrowserState
+                                   delegate:self];
+  [[self topPresentedViewController]
+      presentViewController:_settingsNavigationController
+                   animated:YES
+                 completion:nil];
+}
+
 #pragma mark - chromeExecuteCommand
 
 - (IBAction)chromeExecuteCommand:(id)sender {
@@ -1478,12 +1523,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
       }
       break;
     }
-    case IDC_SHOW_SYNC_SETTINGS:
-      [self showSyncSettings];
-      break;
-    case IDC_SHOW_SYNC_PASSPHRASE_SETTINGS:
-      [self showSyncEncryptionPassphrase];
-      break;
     case IDC_SHOW_MAIL_COMPOSER:
       [self.currentBVC chromeExecuteCommand:sender];
       break;
@@ -1924,49 +1963,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   _settingsNavigationController = [SettingsNavigationController
       newSettingsMainControllerWithBrowserState:_mainBrowserState
                                        delegate:self];
-  [[self topPresentedViewController]
-      presentViewController:_settingsNavigationController
-                   animated:YES
-                 completion:nil];
-}
-
-- (void)showAccountsSettings {
-  if ([self currentBrowserState]->IsOffTheRecord()) {
-    NOTREACHED();
-    return;
-  }
-  if (_settingsNavigationController) {
-    [_settingsNavigationController showAccountsSettings];
-    return;
-  }
-  _settingsNavigationController = [SettingsNavigationController
-      newAccountsController:self.currentBrowserState
-                   delegate:self];
-  [[self topPresentedViewController]
-      presentViewController:_settingsNavigationController
-                   animated:YES
-                 completion:nil];
-}
-
-- (void)showSyncSettings {
-  if (_settingsNavigationController)
-    return;
-  _settingsNavigationController =
-      [SettingsNavigationController newSyncController:_mainBrowserState
-                               allowSwitchSyncAccount:YES
-                                             delegate:self];
-  [[self topPresentedViewController]
-      presentViewController:_settingsNavigationController
-                   animated:YES
-                 completion:nil];
-}
-
-- (void)showSyncEncryptionPassphrase {
-  if (_settingsNavigationController)
-    return;
-  _settingsNavigationController = [SettingsNavigationController
-      newSyncEncryptionPassphraseController:_mainBrowserState
-                                   delegate:self];
   [[self topPresentedViewController]
       presentViewController:_settingsNavigationController
                    animated:YES

@@ -1582,7 +1582,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [[UpgradeCenter sharedInstance] addInfoBarToManager:infoBarManager
                                              forTabId:[tab tabId]];
   if (!ReSignInInfoBarDelegate::Create(_browserState, tab)) {
-    DisplaySyncErrors(_browserState, tab);
+    DisplaySyncErrors(_browserState, tab, self.dispatcher);
   }
 
   // The rest of this function initiates the new tab animation, which is

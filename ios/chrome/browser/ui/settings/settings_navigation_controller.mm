@@ -481,23 +481,6 @@ initWithRootViewController:(UIViewController*)rootViewController
       CHECK_EQ(commandBrowserState, [self mainBrowserState]);
       break;
     }
-    case IDC_SHOW_SYNC_SETTINGS: {
-      SyncSettingsCollectionViewController* controller =
-          [[SyncSettingsCollectionViewController alloc]
-                initWithBrowserState:mainBrowserState_
-              allowSwitchSyncAccount:YES];
-      controller.dispatcher = [delegate_ dispatcherForSettings];
-      [self pushViewController:controller animated:YES];
-      return;
-    }
-    case IDC_SHOW_SYNC_PASSPHRASE_SETTINGS: {
-      SyncEncryptionPassphraseCollectionViewController* controller =
-          [[SyncEncryptionPassphraseCollectionViewController alloc]
-              initWithBrowserState:mainBrowserState_];
-      controller.dispatcher = [delegate_ dispatcherForSettings];
-      [self pushViewController:controller animated:YES];
-      return;
-    }
     default:
       NOTREACHED()
           << "Unexpected command " << [sender tag]
@@ -530,6 +513,23 @@ initWithRootViewController:(UIViewController*)rootViewController
       [[AccountsCollectionViewController alloc]
                initWithBrowserState:mainBrowserState_
           closeSettingsOnAddAccount:NO];
+  controller.dispatcher = [delegate_ dispatcherForSettings];
+  [self pushViewController:controller animated:YES];
+}
+
+- (void)showSyncSettings {
+  SyncSettingsCollectionViewController* controller =
+      [[SyncSettingsCollectionViewController alloc]
+            initWithBrowserState:mainBrowserState_
+          allowSwitchSyncAccount:YES];
+  controller.dispatcher = [delegate_ dispatcherForSettings];
+  [self pushViewController:controller animated:YES];
+}
+
+- (void)showSyncPassphraseSettings {
+  SyncEncryptionPassphraseCollectionViewController* controller =
+      [[SyncEncryptionPassphraseCollectionViewController alloc]
+          initWithBrowserState:mainBrowserState_];
   controller.dispatcher = [delegate_ dispatcherForSettings];
   [self pushViewController:controller animated:YES];
 }
