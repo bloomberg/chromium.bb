@@ -140,16 +140,16 @@ void InsertListCommand::DoApply(EditingState* editing_state) {
   // IndentOutdentCommand::outdentParagraph, both of which ensure clean layout.
   DCHECK(!GetDocument().NeedsLayoutTreeUpdate());
 
-  if (EndingVisibleSelection().IsNone() ||
-      EndingVisibleSelection().Start().IsOrphan() ||
-      EndingVisibleSelection().End().IsOrphan())
+  const VisibleSelection& visible_selection = EndingVisibleSelection();
+  if (visible_selection.IsNone() || visible_selection.Start().IsOrphan() ||
+      visible_selection.End().IsOrphan())
     return;
 
   if (!RootEditableElementOf(EndingSelection().Base()))
     return;
 
-  VisiblePosition visible_end = EndingVisibleSelection().VisibleEnd();
-  VisiblePosition visible_start = EndingVisibleSelection().VisibleStart();
+  VisiblePosition visible_end = visible_selection.VisibleEnd();
+  VisiblePosition visible_start = visible_selection.VisibleStart();
   // When a selection ends at the start of a paragraph, we rarely paint
   // the selection gap before that paragraph, because there often is no gap.
   // In a case like this, it's not obvious to the user that the selection
