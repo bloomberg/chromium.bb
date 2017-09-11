@@ -492,6 +492,15 @@ uploading your change for review.  These are checked by presubmit scripts.
       label="The user saw the dialog but closed it without adding an engine"/>
 </enum>
 
+<enum name="AdSamplerTriggerAction">
+  <int value="0" label="The trigger was activated"/>
+  <int value="1" label="An ad was found and data was collected"/>
+  <int value="2"
+      label="An ad was found but no sample taken to limit frequency"/>
+  <int value="3" label="No ad was found"/>
+  <int value="4" label="An ad was found but data collection was rejected"/>
+</enum>
+
 <enum name="AffiliationFetchResult">
   <int value="0" label="Success"/>
   <int value="1" label="Network/server error"/>

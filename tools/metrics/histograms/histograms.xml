@@ -67098,6 +67098,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SafeBrowsing.Triggers.AdSampler.Action"
+    enum="AdSamplerTriggerAction">
+  <owner>lpz@chromium.org</owner>
+  <summary>
+    Tracks the actions taken by the Ad Sampling trigger whenever it is executed.
+  </summary>
+</histogram>
+
 <histogram name="SafeBrowsing.UnverifiedDownloads.Allowed"
     enum="SBClientDownloadExtensions">
   <owner>asanka@chromium.org</owner>

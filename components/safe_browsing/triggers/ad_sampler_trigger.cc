@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/safe_browsing/features.h"
@@ -31,6 +32,10 @@ const size_t kSamplerFrequencyDisabled = 0;
 // Number of milliseconds to allow data collection to run before sending a
 // report (since this trigger runs in the background).
 const int64_t kAdSampleCollectionPeriodMilliseconds = 5000;
+
+// Metric for tracking what the Ad Sampler trigger does on each navigation.
+const char kAdSamplerTriggerActionMetricName[] =
+    "SafeBrowsing.Triggers.AdSampler.Action";
 
 namespace {
 
@@ -78,7 +83,7 @@ bool DetectGoogleAd(content::NavigationHandle* navigation_handle) {
                           base::CompareCase::SENSITIVE);
 }
 
-bool ShouldCheckForAd(const size_t frequency_denominator) {
+bool ShouldSampleAd(const size_t frequency_denominator) {
   return frequency_denominator != kSamplerFrequencyDisabled &&
          (base::RandUint64() % frequency_denominator) == 0;
 }
@@ -120,39 +125,52 @@ void AdSamplerTrigger::CreateForWebContents(
 // loading on the page. Investigate later events or possible timer delays.
 void AdSamplerTrigger::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  // TODO(lpz): Add UMA metrics for how often we skip checking, find nothing, or
-  // take a sample.
-  if (ShouldCheckForAd(sampler_frequency_denominator_) &&
-      DetectGoogleAd(navigation_handle)) {
-    SBErrorOptions error_options =
-        TriggerManager::GetSBErrorDisplayOptions(*prefs_, *web_contents());
-
-    security_interstitials::UnsafeResource resource;
-    resource.threat_type = SB_THREAT_TYPE_AD_SAMPLE;
-    resource.url = web_contents()->GetURL();
-    resource.web_contents_getter = resource.GetWebContentsGetter(
-        web_contents()->GetRenderProcessHost()->GetID(),
-        web_contents()->GetMainFrame()->GetRoutingID());
-
-    if (!trigger_manager_->StartCollectingThreatDetails(
-            TriggerType::AD_SAMPLE, web_contents(), resource, request_context_,
-            history_service_, error_options)) {
-      return;
-    }
-
-    // Immediately call FinishCollection but include a short delay to allow data
-    // collection to happen.
-    // TODO(lpz): This is suboptimal because we can send duplicate reports if
-    // there are multiple ads on the page. To improve this, the delay should be
-    // before calling into trigger_manager_, which requires TriggerManager to be
-    // Bind-able.
-    trigger_manager_->FinishCollectingThreatDetails(
-        TriggerType::AD_SAMPLE, web_contents(),
-        base::TimeDelta::FromMilliseconds(
-            kAdSampleCollectionPeriodMilliseconds),
-        /*did_proceed=*/false,
-        /*num_visits=*/0, error_options);
+  UMA_HISTOGRAM_ENUMERATION(kAdSamplerTriggerActionMetricName, TRIGGER_CHECK,
+                            MAX_ACTIONS);
+  // We are using light-weight ad detection logic here so it's safe to do the
+  // check on each navigation for the sake of metrics.
+  if (!DetectGoogleAd(navigation_handle)) {
+    UMA_HISTOGRAM_ENUMERATION(kAdSamplerTriggerActionMetricName,
+                              NO_SAMPLE_NO_AD, MAX_ACTIONS);
+    return;
   }
+  if (!ShouldSampleAd(sampler_frequency_denominator_)) {
+    UMA_HISTOGRAM_ENUMERATION(kAdSamplerTriggerActionMetricName,
+                              NO_SAMPLE_AD_SKIPPED_FOR_FREQUENCY, MAX_ACTIONS);
+    return;
+  }
+
+  SBErrorOptions error_options =
+      TriggerManager::GetSBErrorDisplayOptions(*prefs_, *web_contents());
+
+  security_interstitials::UnsafeResource resource;
+  resource.threat_type = SB_THREAT_TYPE_AD_SAMPLE;
+  resource.url = web_contents()->GetURL();
+  resource.web_contents_getter = resource.GetWebContentsGetter(
+      web_contents()->GetRenderProcessHost()->GetID(),
+      web_contents()->GetMainFrame()->GetRoutingID());
+
+  if (!trigger_manager_->StartCollectingThreatDetails(
+          TriggerType::AD_SAMPLE, web_contents(), resource, request_context_,
+          history_service_, error_options)) {
+    UMA_HISTOGRAM_ENUMERATION(kAdSamplerTriggerActionMetricName,
+                              NO_SAMPLE_COULD_NOT_START_REPORT, MAX_ACTIONS);
+    return;
+  }
+
+  // Immediately call FinishCollection but include a short delay to allow data
+  // collection to happen.
+  // TODO(lpz): This is suboptimal because we can send duplicate reports if
+  // there are multiple ads on the page. To improve this, the delay should be
+  // before calling into trigger_manager_, which requires TriggerManager to be
+  // Bind-able.
+  trigger_manager_->FinishCollectingThreatDetails(
+      TriggerType::AD_SAMPLE, web_contents(),
+      base::TimeDelta::FromMilliseconds(kAdSampleCollectionPeriodMilliseconds),
+      /*did_proceed=*/false,
+      /*num_visits=*/0, error_options);
+  UMA_HISTOGRAM_ENUMERATION(kAdSamplerTriggerActionMetricName, AD_SAMPLED,
+                            MAX_ACTIONS);
 }
 
 }  // namespace safe_browsing
