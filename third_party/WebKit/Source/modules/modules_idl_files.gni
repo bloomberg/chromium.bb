@@ -436,6 +436,7 @@ modules_dictionary_idl_files =
                     "credentialmanager/PublicKeyCredentialParameters.idl",
                     "credentialmanager/PublicKeyCredentialRequestOptions.idl",
                     "credentialmanager/PublicKeyCredentialUserEntity.idl",
+                    "csspaint/PaintRenderingContext2DSettings.idl",
                     "device_orientation/DeviceAccelerationInit.idl",
                     "device_orientation/DeviceMotionEventInit.idl",
                     "device_orientation/DeviceOrientationEventInit.idl",
