@@ -97,7 +97,6 @@ void WriteDumpsFooter(std::ostream& out) {
 // Writes the dictionary keys to preceed a "heaps_v2" trace argument inside a
 // "dumps". This is "v2" heap dump format.
 void WriteHeapsV2Header(std::ostream& out) {
-  out << "\"level_of_detail\":\"detailed\",\n";
   out << "\"heaps_v2\": {\n";
 }
 

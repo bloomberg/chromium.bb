@@ -333,7 +333,8 @@ void ProfilingProcessHost::ConfigureBackgroundProfilingTriggers() {
 }
 
 void ProfilingProcessHost::RequestProcessDump(base::ProcessId pid,
-                                              const base::FilePath& dest) {
+                                              const base::FilePath& dest,
+                                              base::OnceClosure done) {
   if (!connector_) {
     DLOG(ERROR)
         << "Requesting process dump when profiling process hasn't started.";
@@ -345,7 +346,7 @@ void ProfilingProcessHost::RequestProcessDump(base::ProcessId pid,
       FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
       base::BindOnce(&ProfilingProcessHost::GetOutputFileOnBlockingThread,
                      base::Unretained(this), pid, dest, kNoTriggerName,
-                     kNoUpload));
+                     kNoUpload, std::move(done)));
 }
 
 void ProfilingProcessHost::RequestProcessReport(base::ProcessId pid,
@@ -367,7 +368,7 @@ void ProfilingProcessHost::RequestProcessReport(base::ProcessId pid,
       FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
       base::BindOnce(&ProfilingProcessHost::GetOutputFileOnBlockingThread,
                      base::Unretained(this), pid, std::move(output_path),
-                     std::move(trigger_name), kUpload));
+                     std::move(trigger_name), kUpload, base::OnceClosure()));
 }
 
 void ProfilingProcessHost::MakeConnector(
@@ -410,33 +411,38 @@ void ProfilingProcessHost::GetOutputFileOnBlockingThread(
     base::ProcessId pid,
     const base::FilePath& dest,
     std::string trigger_name,
-    bool upload) {
+    bool upload,
+    base::OnceClosure done) {
   base::File file(dest,
                   base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::BindOnce(&ProfilingProcessHost::HandleDumpProcessOnIOThread,
                      base::Unretained(this), pid, std::move(dest),
-                     std::move(file), std::move(trigger_name), upload));
+                     std::move(file), std::move(trigger_name), upload,
+                     std::move(done)));
 }
 
 void ProfilingProcessHost::HandleDumpProcessOnIOThread(base::ProcessId pid,
                                                        base::FilePath file_path,
                                                        base::File file,
                                                        std::string trigger_name,
-                                                       bool upload) {
+                                                       bool upload,
+                                                       base::OnceClosure done) {
   mojo::ScopedHandle handle = mojo::WrapPlatformFile(file.TakePlatformFile());
   memlog_->DumpProcess(
       pid, std::move(handle), GetMetadataJSONForTrace(),
       base::BindOnce(&ProfilingProcessHost::OnProcessDumpComplete,
                      base::Unretained(this), std::move(file_path),
-                     std::move(trigger_name), upload));
+                     std::move(trigger_name), upload, std::move(done)));
 }
 
 void ProfilingProcessHost::OnProcessDumpComplete(base::FilePath file_path,
                                                  std::string trigger_name,
                                                  bool upload,
+                                                 base::OnceClosure done,
                                                  bool success) {
+  base::ScopedClosureRunner done_runner(std::move(done));
   if (!success) {
     DLOG(ERROR) << "Cannot dump process.";
     // On any errors, the requested trace output file is deleted.

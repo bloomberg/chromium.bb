@@ -80,7 +80,9 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
 
   // Sends a message to the profiling process that it dump the given process'
   // memory data to the given file.
-  void RequestProcessDump(base::ProcessId pid, const base::FilePath& dest);
+  void RequestProcessDump(base::ProcessId pid,
+                          const base::FilePath& dest,
+                          base::OnceClosure done);
 
   // Sends a message to the profiling process that it report the given process'
   // memory data to the crash server (slow-report).
@@ -134,15 +136,18 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   void GetOutputFileOnBlockingThread(base::ProcessId pid,
                                      const base::FilePath& dest,
                                      std::string trigger_name,
-                                     bool upload);
+                                     bool upload,
+                                     base::OnceClosure done);
   void HandleDumpProcessOnIOThread(base::ProcessId pid,
                                    base::FilePath file_path,
                                    base::File file,
                                    std::string trigger_name,
-                                   bool upload);
+                                   bool upload,
+                                   base::OnceClosure done);
   void OnProcessDumpComplete(base::FilePath file_path,
                              std::string trigger_name,
                              bool upload,
+                             base::OnceClosure done,
                              bool success);
 
   // Returns the metadata for the trace. This is the minimum amount of metadata
