@@ -42,6 +42,19 @@ enum VAVDADecoderFailure {
   VAAPI_ERROR = 0,
   VAVDA_DECODER_FAILURES_MAX,
 };
+// from ITU-T REC H.264 spec
+// section 8.5.6
+// "Inverse scanning process for 4x4 transform coefficients and scaling lists"
+static const int kZigzagScan4x4[16] = {0, 1,  4,  8,  5, 2,  3,  6,
+                                       9, 12, 13, 10, 7, 11, 14, 15};
+
+// section 8.5.7
+// "Inverse scanning process for 8x8 transform coefficients and scaling lists"
+static const uint8_t kZigzagScan8x8[64] = {
+    0,  1,  8,  16, 9,  2,  3,  10, 17, 24, 32, 25, 18, 11, 4,  5,
+    12, 19, 26, 33, 40, 48, 41, 34, 27, 20, 13, 6,  7,  14, 21, 28,
+    35, 42, 49, 56, 57, 50, 43, 36, 29, 22, 15, 23, 30, 37, 44, 51,
+    58, 59, 52, 45, 38, 31, 39, 46, 53, 60, 61, 54, 47, 55, 62, 63};
 
 // Buffer format to use for output buffers backing PictureBuffers. This is the
 // format decoded frames in VASurfaces are converted into.
@@ -1298,22 +1311,26 @@ bool VaapiVideoDecodeAccelerator::VaapiH264Accelerator::SubmitFrameMetadata(
   if (pps->pic_scaling_matrix_present_flag) {
     for (int i = 0; i < 6; ++i) {
       for (int j = 0; j < 16; ++j)
-        iq_matrix_buf.ScalingList4x4[i][j] = pps->scaling_list4x4[i][j];
+        iq_matrix_buf.ScalingList4x4[i][kZigzagScan4x4[j]] =
+            pps->scaling_list4x4[i][j];
     }
 
     for (int i = 0; i < 2; ++i) {
       for (int j = 0; j < 64; ++j)
-        iq_matrix_buf.ScalingList8x8[i][j] = pps->scaling_list8x8[i][j];
+        iq_matrix_buf.ScalingList8x8[i][kZigzagScan8x8[j]] =
+            pps->scaling_list8x8[i][j];
     }
   } else {
     for (int i = 0; i < 6; ++i) {
       for (int j = 0; j < 16; ++j)
-        iq_matrix_buf.ScalingList4x4[i][j] = sps->scaling_list4x4[i][j];
+        iq_matrix_buf.ScalingList4x4[i][kZigzagScan4x4[j]] =
+            sps->scaling_list4x4[i][j];
     }
 
     for (int i = 0; i < 2; ++i) {
       for (int j = 0; j < 64; ++j)
-        iq_matrix_buf.ScalingList8x8[i][j] = sps->scaling_list8x8[i][j];
+        iq_matrix_buf.ScalingList8x8[i][kZigzagScan8x8[j]] =
+            sps->scaling_list8x8[i][j];
     }
   }
 
