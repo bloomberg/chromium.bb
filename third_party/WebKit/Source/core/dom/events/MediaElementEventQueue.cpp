@@ -32,14 +32,16 @@
 
 namespace blink {
 
-MediaElementEventQueue* MediaElementEventQueue::Create(EventTarget* owner) {
-  return new MediaElementEventQueue(owner);
+MediaElementEventQueue* MediaElementEventQueue::Create(
+    EventTarget* owner,
+    ExecutionContext* context) {
+  return new MediaElementEventQueue(owner, context);
 }
 
-MediaElementEventQueue::MediaElementEventQueue(EventTarget* owner)
+MediaElementEventQueue::MediaElementEventQueue(EventTarget* owner,
+                                               ExecutionContext* context)
     : owner_(owner),
-      timer_(TaskRunnerHelper::Get(TaskType::kMediaElementEvent,
-                                   owner->GetExecutionContext()),
+      timer_(TaskRunnerHelper::Get(TaskType::kMediaElementEvent, context),
              this,
              &MediaElementEventQueue::TimerFired),
       is_closed_(false) {}
