@@ -10,6 +10,7 @@ login.createScreen(
           'setMigrationProgress',
           'setIsResuming',
           'setBatteryState',
+          'setNecessaryBatteryPercent',
           'setAvailableSpaceInString',
           'setNecessarySpaceInString',
         ],
@@ -96,6 +97,15 @@ login.createScreen(
           element.batteryPercent = Math.floor(batteryPercent);
           element.isEnoughBattery = isEnoughBattery;
           element.isCharging = isCharging;
+        },
+
+        /**
+         * Update the necessary battery percent to start migration in the UI.
+         * @param {number} necessaryBatteryPercent Necessary battery level.
+         */
+        setNecessaryBatteryPercent: function(necessaryBatteryPercent) {
+          $('encryption-migration-element').necessaryBatteryPercent =
+              necessaryBatteryPercent;
         },
 
         /**

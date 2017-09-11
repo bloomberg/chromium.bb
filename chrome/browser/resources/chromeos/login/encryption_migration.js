@@ -50,6 +50,11 @@ Polymer({
     batteryPercent: {type: Number, value: 0},
 
     /**
+     * Necessary battery level to start migration in percent.
+     */
+    necessaryBatteryPercent: {type: Number, value: 0},
+
+    /**
      * True if the battery level is enough to start migration.
      */
     isEnoughBattery: {type: Boolean, value: true},
@@ -170,11 +175,13 @@ Polymer({
 
   /**
    * Computes the label to show the necessary battery level for migration.
+   * @param {number} necessaryBatteryPercent
    * @return {string}
    * @private
    */
-  computeNecessaryBatteryLevelLabel_: function() {
-    return this.i18n('migrationNecessaryBatteryLevelLabel', 30);
+  computeNecessaryBatteryLevelLabel_: function(necessaryBatteryPercent) {
+    return this.i18n(
+        'migrationNecessaryBatteryLevelLabel', necessaryBatteryPercent);
   },
 
   /**
