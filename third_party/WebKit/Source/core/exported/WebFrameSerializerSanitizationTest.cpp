@@ -262,6 +262,15 @@ TEST_F(WebFrameSerializerSanitizationTest, RemoveHiddenElements) {
   EXPECT_NE(WTF::kNotFound, mhtml.Find("<div"));
 }
 
+TEST_F(WebFrameSerializerSanitizationTest, RemoveIframeInHead) {
+  String mhtml =
+      GenerateMHTMLFromHtml("http://www.test.com", "iframe_in_head.html");
+
+  // The iframe elements could only be found after body. Any iframes injected to
+  // head should be removed.
+  EXPECT_GT(mhtml.Find("<iframe"), mhtml.Find("<body"));
+}
+
 // Regression test for crbug.com/678893, where in some cases serializing an
 // image document could cause code to pick an element from an empty container.
 TEST_F(WebFrameSerializerSanitizationTest, FromBrokenImageDocument) {
