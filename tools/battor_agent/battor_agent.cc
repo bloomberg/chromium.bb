@@ -121,9 +121,8 @@ BattOrAgent::BattOrAgent(
     const std::string& path,
     Listener* listener,
     scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner)
-    : connection_(new BattOrConnectionImpl(path,
-                                           this,
-                                           ui_thread_task_runner)),
+    : connection_(new BattOrConnectionImpl(path, this, ui_thread_task_runner)),
+      tick_clock_(std::make_unique<base::DefaultTickClock>()),
       listener_(listener),
       last_action_(Action::INVALID),
       command_(Command::INVALID),
@@ -315,8 +314,9 @@ void BattOrAgent::OnMessageRead(bool success,
       base::TimeTicks min_request_samples_time =
           last_clock_sync_time_ + base::TimeDelta::FromMilliseconds(
                                       kStopTracingClockSyncDelayMilliseconds);
-      base::TimeDelta request_samples_delay = std::max(
-          min_request_samples_time - base::TimeTicks::Now(), base::TimeDelta());
+      base::TimeDelta request_samples_delay =
+          std::max(min_request_samples_time - tick_clock_->NowTicks(),
+                   base::TimeDelta());
 
       PerformDelayedAction(Action::SEND_SAMPLES_REQUEST, request_samples_delay);
       return;
@@ -373,7 +373,7 @@ void BattOrAgent::OnMessageRead(bool success,
       uint32_t sample_num;
       memcpy(&sample_num, bytes->data(), sizeof(uint32_t));
       clock_sync_markers_[sample_num] = pending_clock_sync_marker_;
-      last_clock_sync_time_ = base::TimeTicks::Now();
+      last_clock_sync_time_ = tick_clock_->NowTicks();
       CompleteCommand(BATTOR_ERROR_NONE);
       return;
 
