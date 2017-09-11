@@ -635,6 +635,26 @@ int amdgpu_cs_import_syncobj(amdgpu_device_handle dev,
 	return drmSyncobjFDToHandle(dev->fd, shared_fd, handle);
 }
 
+int amdgpu_cs_syncobj_export_sync_file(amdgpu_device_handle dev,
+				       uint32_t syncobj,
+				       int *sync_file_fd)
+{
+	if (NULL == dev)
+		return -EINVAL;
+
+	return drmSyncobjExportSyncFile(dev->fd, syncobj, sync_file_fd);
+}
+
+int amdgpu_cs_syncobj_import_sync_file(amdgpu_device_handle dev,
+				       uint32_t syncobj,
+				       int sync_file_fd)
+{
+	if (NULL == dev)
+		return -EINVAL;
+
+	return drmSyncobjImportSyncFile(dev->fd, syncobj, sync_file_fd);
+}
+
 int amdgpu_cs_submit_raw(amdgpu_device_handle dev,
 			 amdgpu_context_handle context,
 			 amdgpu_bo_list_handle bo_list_handle,

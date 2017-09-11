@@ -1383,6 +1383,36 @@ int amdgpu_cs_import_syncobj(amdgpu_device_handle dev,
 			     uint32_t *syncobj);
 
 /**
+ *  Export kernel sync object to a sync_file.
+ *
+ * \param   dev	       - \c [in] device handle
+ * \param   syncobj    - \c [in] sync object handle
+ * \param   sync_file_fd - \c [out] sync_file file descriptor.
+ *
+ * \return   0 on success\n
+ *          <0 - Negative POSIX Error code
+ *
+ */
+int amdgpu_cs_syncobj_export_sync_file(amdgpu_device_handle dev,
+				       uint32_t syncobj,
+				       int *sync_file_fd);
+
+/**
+ *  Import kernel sync object from a sync_file.
+ *
+ * \param   dev	       - \c [in] device handle
+ * \param   syncobj    - \c [in] sync object handle
+ * \param   sync_file_fd - \c [in] sync_file file descriptor.
+ *
+ * \return   0 on success\n
+ *          <0 - Negative POSIX Error code
+ *
+ */
+int amdgpu_cs_syncobj_import_sync_file(amdgpu_device_handle dev,
+				       uint32_t syncobj,
+				       int sync_file_fd);
+
+/**
  *  Submit raw command submission to kernel
  *
  * \param   dev	       - \c [in] device handle
