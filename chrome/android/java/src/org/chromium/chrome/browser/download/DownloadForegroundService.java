@@ -9,6 +9,7 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
@@ -34,6 +35,11 @@ public class DownloadForegroundService extends Service {
      * @param notification The new notification to be pinned to.
      */
     public void startOrUpdateForegroundService(int notificationId, Notification notification) {
+        // If possible, detach notification so it doesn't get cancelled by accident.
+        if (Build.VERSION.SDK_INT >= 24) {
+            stopForeground(STOP_FOREGROUND_DETACH);
+        }
+
         startForeground(notificationId, notification);
     }
 
