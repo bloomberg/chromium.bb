@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -298,6 +299,53 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
       WindowOpenDisposition::CURRENT_TAB,
       ExpectForegroundTab,
       DontCheckTitle);
+}
+
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, PopupPositionMetrics) {
+  const GURL url(
+      embedded_test_server()->GetURL("/popup_blocker/popup-many.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_EQ(2, GetBlockedContentsCount());
+
+  // Open two more popups.
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(web_contents, "test()"));
+  EXPECT_EQ(4, GetBlockedContentsCount());
+
+  auto* popup_blocker = PopupBlockerTabHelper::FromWebContents(web_contents);
+  std::vector<int32_t> ids;
+  for (const auto& it : popup_blocker->GetBlockedPopupRequests())
+    ids.push_back(it.first);
+  ASSERT_EQ(4u, ids.size());
+
+  WindowOpenDisposition disposition = WindowOpenDisposition::NEW_BACKGROUND_TAB;
+
+  base::HistogramTester tester;
+  const char kClickThroughPosition[] =
+      "ContentSettings.Popups.ClickThroughPosition";
+
+  popup_blocker->ShowBlockedPopup(ids[1], disposition);
+  tester.ExpectBucketCount(
+      kClickThroughPosition,
+      static_cast<int>(PopupBlockerTabHelper::PopupPosition::kMiddlePopup), 1);
+
+  popup_blocker->ShowBlockedPopup(ids[0], disposition);
+  tester.ExpectBucketCount(
+      kClickThroughPosition,
+      static_cast<int>(PopupBlockerTabHelper::PopupPosition::kFirstPopup), 1);
+
+  popup_blocker->ShowBlockedPopup(ids[3], disposition);
+  tester.ExpectBucketCount(
+      kClickThroughPosition,
+      static_cast<int>(PopupBlockerTabHelper::PopupPosition::kLastPopup), 1);
+
+  popup_blocker->ShowBlockedPopup(ids[2], disposition);
+  tester.ExpectBucketCount(
+      kClickThroughPosition,
+      static_cast<int>(PopupBlockerTabHelper::PopupPosition::kOnlyPopup), 1);
+
+  tester.ExpectTotalCount(kClickThroughPosition, 4);
 }
 
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, MultiplePopups) {

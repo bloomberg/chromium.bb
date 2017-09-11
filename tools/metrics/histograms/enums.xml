@@ -30799,6 +30799,13 @@ from previous Chrome versions.
   <int value="11" label="Bad Key Validation Signature"/>
 </enum>
 
+<enum name="PopupPosition">
+  <int value="0" label="Only popup"/>
+  <int value="1" label="First popup"/>
+  <int value="2" label="Any middle popup"/>
+  <int value="3" label="Last popup"/>
+</enum>
+
 <enum name="Ports">
   <int value="80" label="Port 80"/>
   <int value="443" label="Port 443"/>
