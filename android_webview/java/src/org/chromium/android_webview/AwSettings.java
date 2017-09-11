@@ -15,7 +15,6 @@ import android.util.Log;
 import android.webkit.WebSettings;
 import android.webkit.WebSettings.LayoutAlgorithm;
 import android.webkit.WebSettings.PluginState;
-import android.webkit.WebSettings.ZoomDensity;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ThreadUtils;
@@ -669,17 +668,6 @@ public class AwSettings {
         synchronized (mAwSettingsLock) {
             return getTextSizePercentLocked();
         }
-    }
-
-    public void setDefaultZoom(ZoomDensity zoom) {
-        if (zoom != ZoomDensity.MEDIUM) {
-            Log.w(LOGTAG, "setDefaultZoom not supported, zoom=" + zoom);
-        }
-    }
-
-    public ZoomDensity getDefaultZoom() {
-        // Intentional no-op.
-        return ZoomDensity.MEDIUM;
     }
 
     @CalledByNative
