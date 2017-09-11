@@ -30,14 +30,13 @@
 #include "platform/wtf/allocator/Partitions.h"
 #include <string.h>
 
-using namespace std;
-
 namespace WTF {
 
 RefPtr<CStringImpl> CStringImpl::CreateUninitialized(size_t length,
                                                      char*& data) {
   // TODO(esprehn): This doesn't account for the NUL.
-  CHECK_LT(length, (numeric_limits<unsigned>::max() - sizeof(CStringImpl)));
+  CHECK_LT(length,
+           (std::numeric_limits<unsigned>::max() - sizeof(CStringImpl)));
 
   // The +1 is for the terminating NUL character.
   size_t size = sizeof(CStringImpl) + length + 1;

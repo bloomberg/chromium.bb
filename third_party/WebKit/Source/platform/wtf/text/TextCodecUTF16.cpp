@@ -32,8 +32,6 @@
 #include "platform/wtf/text/WTFString.h"
 #include <memory>
 
-using namespace std;
-
 namespace WTF {
 
 void TextCodecUTF16::RegisterEncodingNames(EncodingNameRegistrar registrar) {
@@ -160,7 +158,7 @@ CString TextCodecUTF16::Encode(const UChar* characters,
   // the buffer doesn't occupy the entire address space, we can
   // assert here that doubling the length does not overflow size_t
   // and there's no need for a runtime check.
-  DCHECK_LE(length, numeric_limits<size_t>::max() / 2);
+  DCHECK_LE(length, std::numeric_limits<size_t>::max() / 2);
 
   char* bytes;
   CString result = CString::CreateUninitialized(length * 2, bytes);
@@ -189,7 +187,7 @@ CString TextCodecUTF16::Encode(const LChar* characters,
                                size_t length,
                                UnencodableHandling) {
   // In the LChar case, we do actually need to perform this check in release. :)
-  CHECK_LE(length, numeric_limits<size_t>::max() / 2);
+  CHECK_LE(length, std::numeric_limits<size_t>::max() / 2);
 
   char* bytes;
   CString result = CString::CreateUninitialized(length * 2, bytes);

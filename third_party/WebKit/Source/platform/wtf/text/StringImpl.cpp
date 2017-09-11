@@ -41,7 +41,7 @@
 #include <algorithm>
 #include <memory>
 
-using namespace std;
+using std::numeric_limits;
 
 namespace WTF {
 
@@ -1119,7 +1119,7 @@ size_t StringImpl::Find(const StringView& match_string, unsigned index) {
   }
 
   if (UNLIKELY(!match_length))
-    return min(index, length());
+    return std::min(index, length());
 
   // Check index & matchLength are in range.
   if (index > length())
@@ -1171,7 +1171,7 @@ size_t StringImpl::FindIgnoringCase(const StringView& match_string,
 
   unsigned match_length = match_string.length();
   if (!match_length)
-    return min(index, length());
+    return std::min(index, length());
 
   // Check index & matchLength are in range.
   if (index > length())
@@ -1227,7 +1227,7 @@ size_t StringImpl::FindIgnoringASCIICase(const StringView& match_string,
 
   unsigned match_length = match_string.length();
   if (!match_length)
-    return min(index, length());
+    return std::min(index, length());
 
   // Check index & matchLength are in range.
   if (index > length())
@@ -1272,7 +1272,7 @@ ALWAYS_INLINE static size_t ReverseFindInternal(
 
   // delta is the number of additional times to test; delta == 0 means test only
   // once.
-  unsigned delta = min(index, length - match_length);
+  unsigned delta = std::min(index, length - match_length);
 
   unsigned search_hash = 0;
   unsigned match_hash = 0;
@@ -1300,7 +1300,7 @@ size_t StringImpl::ReverseFind(const StringView& match_string, unsigned index) {
   unsigned match_length = match_string.length();
   unsigned our_length = length();
   if (!match_length)
-    return min(index, our_length);
+    return std::min(index, our_length);
 
   // Optimization 1: fast case for strings of length 1.
   if (match_length == 1) {
@@ -1499,8 +1499,8 @@ RefPtr<StringImpl> StringImpl::Replace(UChar old_c, UChar new_c) {
 RefPtr<StringImpl> StringImpl::Replace(unsigned position,
                                        unsigned length_to_replace,
                                        const StringView& string) {
-  position = min(position, length());
-  length_to_replace = min(length_to_replace, length() - position);
+  position = std::min(position, length());
+  length_to_replace = std::min(length_to_replace, length() - position);
   unsigned length_to_insert = string.length();
   if (!length_to_replace && !length_to_insert)
     return this;
