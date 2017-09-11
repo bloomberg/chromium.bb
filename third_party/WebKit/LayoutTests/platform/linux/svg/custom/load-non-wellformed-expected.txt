@@ -8,9 +8,9 @@ layer at (0,0) size 785x600
           LayoutText {#text} at (0,0) size 324x22
             text run at (0,0) width 324: "This page contains the following errors:"
         LayoutBlockFlow {div} at (18,62.44) size 701x15
-          LayoutText {#text} at (0,0) size 561x15
-            text run at (0,0) width 561: "error on line 6 at column 7: Opening and ending tag mismatch: use line 0 and svg"
-            text run at (561,0) width 0: " "
+          LayoutText {#text} at (0,0) size 560x15
+            text run at (0,0) width 560: "error on line 6 at column 7: Opening and ending tag mismatch: use line 0 and svg"
+            text run at (560,0) width 0: " "
         LayoutBlockFlow {h3} at (18,96.16) size 701x23
           LayoutText {#text} at (0,0) size 427x22
             text run at (0,0) width 427: "Below is a rendering of the page up to the first error."

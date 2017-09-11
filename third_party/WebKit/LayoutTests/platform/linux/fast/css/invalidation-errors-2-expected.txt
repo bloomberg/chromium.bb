@@ -16,8 +16,8 @@ layer at (0,0) size 800x600
 layer at (8,44) size 200x200
   LayoutBlockFlow (floating) {DIV} at (0,0) size 200x200 [color=#FFFFFF] [bgcolor=#006400]
     LayoutText {#text} at (0,0) size 194x128
-      text run at (0,0) width 159: "this text should be left-"
-      text run at (0,16) width 156: "aligned, all lower-case,"
+      text run at (0,0) width 160: "this text should be left-"
+      text run at (0,16) width 157: "aligned, all lower-case,"
       text run at (0,32) width 169: "normal font, white, 14px,"
       text run at (0,48) width 182: "bold, normally spaced and"
       text run at (0,64) width 165: "wrapped, in a darkgreen"

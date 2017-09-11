@@ -8,8 +8,8 @@ layer at (0,0) size 785x4396 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,0) width 264: "The style declarations which apply to the text below are:"
       LayoutBlockFlow {PRE} at (0,28) size 769x180
         LayoutText {#text} at (0,0) size 399x180
-          text run at (0,0) width 162: "BODY {font-size: 12px;}"
-          text run at (162,0) width 0: " "
+          text run at (0,0) width 161: "BODY {font-size: 12px;}"
+          text run at (161,0) width 0: " "
           text run at (0,15) width 322: ".one {font: italic small-caps 13pt Helvetica;}"
           text run at (322,15) width 0: " "
           text run at (0,30) width 203: ".two {font: 150%/150% serif;}"
