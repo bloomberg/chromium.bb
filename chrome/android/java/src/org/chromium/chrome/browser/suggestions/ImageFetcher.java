@@ -9,7 +9,6 @@ import android.graphics.Bitmap;
 import android.os.SystemClock;
 
 import org.chromium.base.Callback;
-import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.Promise;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.NativePageHost;
@@ -61,16 +60,13 @@ public class ImageFetcher {
 
     private final SuggestionsSource mSuggestionsSource;
     private final Profile mProfile;
-    private final DiscardableReferencePool mReferencePool;
     private ThumbnailProvider mThumbnailProvider;
     private FaviconHelper mFaviconHelper;
     private LargeIconBridge mLargeIconBridge;
 
-    public ImageFetcher(SuggestionsSource suggestionsSource, Profile profile,
-            DiscardableReferencePool referencePool, NativePageHost host) {
+    public ImageFetcher(SuggestionsSource suggestionsSource, Profile profile, NativePageHost host) {
         mSuggestionsSource = suggestionsSource;
         mProfile = profile;
-        mReferencePool = referencePool;
         mUseFaviconService = CardsVariationParameters.isFaviconServiceEnabled();
         mHost = host;
     }
@@ -302,8 +298,8 @@ public class ImageFetcher {
      */
     private ThumbnailProvider getThumbnailProvider() {
         if (mThumbnailProvider == null) {
-            mThumbnailProvider = SuggestionsDependencyFactory.getInstance().createThumbnailProvider(
-                    mReferencePool);
+            mThumbnailProvider =
+                    SuggestionsDependencyFactory.getInstance().createThumbnailProvider();
         }
         return mThumbnailProvider;
     }

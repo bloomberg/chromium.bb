@@ -7,13 +7,14 @@ package org.chromium.chrome.browser.download.ui;
 import android.graphics.Bitmap;
 import android.support.test.filters.MediumTest;
 
-import org.junit.Assert;
+import junit.framework.Assert;
+
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -39,12 +40,17 @@ public class ThumbnailProviderImplTest {
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     private ThumbnailProviderImpl mThumbnailProvider;
-    private DiscardableReferencePool mReferencePool = new DiscardableReferencePool();
 
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
-        mThumbnailProvider = new ThumbnailProviderImpl(mReferencePool);
+        mThumbnailProvider = new ThumbnailProviderImpl();
+        clearThumbnailCache();
+    }
+
+    @After
+    public void tearDown() {
+        clearThumbnailCache();
     }
 
     @Test
@@ -59,8 +65,10 @@ public class ThumbnailProviderImplTest {
         final TestThumbnailRequest request = new TestThumbnailRequest(
                 testFilePath, requiredSize, thumbnailRetrievedCallbackHelper);
 
-        ThreadUtils.runOnUiThread(() -> {
-            mThumbnailProvider.getThumbnail(request);
+        ThreadUtils.runOnUiThread(new Runnable() {
+            public void run() {
+                mThumbnailProvider.getThumbnail(request);
+            }
         });
 
         thumbnailRetrievedCallbackHelper.waitForCallback(
@@ -81,8 +89,10 @@ public class ThumbnailProviderImplTest {
         final TestThumbnailRequest request = new TestThumbnailRequest(
                 testFilePath, requiredSize, thumbnailRetrievedCallbackHelper);
 
-        ThreadUtils.runOnUiThread(() -> {
-            mThumbnailProvider.getThumbnail(request);
+        ThreadUtils.runOnUiThread(new Runnable() {
+            public void run() {
+                mThumbnailProvider.getThumbnail(request);
+            }
         });
 
         thumbnailRetrievedCallbackHelper.waitForCallback(
@@ -103,8 +113,10 @@ public class ThumbnailProviderImplTest {
         final TestThumbnailRequest request = new TestThumbnailRequest(
                 testFilePath, requiredSize, thumbnailRetrievedCallbackHelper);
 
-        ThreadUtils.runOnUiThread(() -> {
-            mThumbnailProvider.getThumbnail(request);
+        ThreadUtils.runOnUiThread(new Runnable() {
+            public void run() {
+                mThumbnailProvider.getThumbnail(request);
+            }
         });
 
         thumbnailRetrievedCallbackHelper.waitForCallback(
@@ -125,8 +137,10 @@ public class ThumbnailProviderImplTest {
         final TestThumbnailRequest request = new TestThumbnailRequest(
                 testFilePath, requiredSize, thumbnailRetrievedCallbackHelper);
 
-        ThreadUtils.runOnUiThread(() -> {
-            mThumbnailProvider.getThumbnail(request);
+        ThreadUtils.runOnUiThread(new Runnable() {
+            public void run() {
+                mThumbnailProvider.getThumbnail(request);
+            }
         });
 
         thumbnailRetrievedCallbackHelper.waitForCallback(
@@ -147,8 +161,10 @@ public class ThumbnailProviderImplTest {
         final TestThumbnailRequest request = new TestThumbnailRequest(
                 testFilePath, requiredSize, thumbnailRetrievedCallbackHelper);
 
-        ThreadUtils.runOnUiThread(() -> {
-            mThumbnailProvider.getThumbnail(request);
+        ThreadUtils.runOnUiThread(new Runnable() {
+            public void run() {
+                mThumbnailProvider.getThumbnail(request);
+            }
         });
 
         thumbnailRetrievedCallbackHelper.waitForCallback(
@@ -161,6 +177,15 @@ public class ThumbnailProviderImplTest {
             int expectedWidth, int expectedHeight, final TestThumbnailRequest request) {
         Assert.assertEquals(expectedWidth, request.getRetrievedThumbnail().getWidth());
         Assert.assertEquals(expectedHeight, request.getRetrievedThumbnail().getHeight());
+    }
+
+    private void clearThumbnailCache() {
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ThumbnailProviderImpl.clearCache();
+            }
+        });
     }
 
     private static class TestThumbnailRequest implements ThumbnailRequest {
