@@ -12,6 +12,8 @@ if (!is_ios && !is_android) {
     sources = [
       "device_sync_impl.cc",
       "device_sync_impl.h",
+      "fake_device_sync.cc",
+      "fake_device_sync.h",
       "multidevice_service.cc",
       "multidevice_service.h",
     ]
@@ -35,7 +37,7 @@ if (!is_ios && !is_android) {
 
   service("multidevice") {
     sources = [
-      "main.cc",
+      "test_main.cc",
     ]
 
     deps = [

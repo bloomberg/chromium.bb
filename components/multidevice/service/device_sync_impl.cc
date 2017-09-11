@@ -6,6 +6,32 @@
 
 namespace multidevice {
 
+// static
+DeviceSyncImpl::Factory* DeviceSyncImpl::Factory::factory_instance_ = nullptr;
+
+// static
+std::unique_ptr<device_sync::mojom::DeviceSync>
+DeviceSyncImpl::Factory::NewInstance(
+    std::unique_ptr<service_manager::ServiceContextRef> service_ref) {
+  if (!factory_instance_) {
+    factory_instance_ = new Factory();
+  }
+  return factory_instance_->BuildInstance(std::move(service_ref));
+}
+
+DeviceSyncImpl::Factory::~Factory() {}
+
+// static
+void DeviceSyncImpl::Factory::SetInstanceForTesting(Factory* factory) {
+  factory_instance_ = factory;
+}
+
+std::unique_ptr<device_sync::mojom::DeviceSync>
+DeviceSyncImpl::Factory::BuildInstance(
+    std::unique_ptr<service_manager::ServiceContextRef> service_ref) {
+  return base::WrapUnique(new DeviceSyncImpl(std::move(service_ref)));
+}
+
 DeviceSyncImpl::DeviceSyncImpl(
     std::unique_ptr<service_manager::ServiceContextRef> service_ref)
     : service_ref_(std::move(service_ref)) {}

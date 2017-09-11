@@ -20,6 +20,23 @@ namespace multidevice {
 // and sync down new data about other devices.
 class DeviceSyncImpl : public device_sync::mojom::DeviceSync {
  public:
+  class Factory {
+   public:
+    virtual ~Factory();
+
+    static std::unique_ptr<device_sync::mojom::DeviceSync> NewInstance(
+        std::unique_ptr<service_manager::ServiceContextRef> service_ref);
+
+    static void SetInstanceForTesting(Factory* factory);
+
+   protected:
+    virtual std::unique_ptr<device_sync::mojom::DeviceSync> BuildInstance(
+        std::unique_ptr<service_manager::ServiceContextRef> service_ref);
+
+   private:
+    static Factory* factory_instance_;
+  };
+
   explicit DeviceSyncImpl(
       std::unique_ptr<service_manager::ServiceContextRef> service_ref);
 

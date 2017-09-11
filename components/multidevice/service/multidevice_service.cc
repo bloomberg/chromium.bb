@@ -32,9 +32,9 @@ void MultiDeviceService::OnBindInterface(
 void MultiDeviceService::CreateDeviceSyncImpl(
     service_manager::ServiceContextRefFactory* ref_factory,
     device_sync::mojom::DeviceSyncRequest request) {
-  mojo::MakeStrongBinding(
-      base::MakeUnique<DeviceSyncImpl>(ref_factory->CreateRef()),
-      std::move(request));
+  mojo::MakeStrongBinding(multidevice::DeviceSyncImpl::Factory::NewInstance(
+                              ref_factory->CreateRef()),
+                          std::move(request));
 }
 
 }  // namespace multidevice
