@@ -542,7 +542,6 @@ bool GetPasswordForm(
     DCHECK(!new_password.IsNull() || !password.IsNull());
     base::string16 password_to_save =
         (new_password.IsNull() ? password : new_password).Value().Utf16();
-    other_possible_passwords.erase(password_to_save);
 
     if (!other_possible_passwords.empty()) {
       std::move(other_possible_passwords.begin(),

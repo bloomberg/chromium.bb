@@ -232,12 +232,11 @@ std::unique_ptr<views::ToggleImageButton> GeneratePasswordViewButton(
   return button;
 }
 
-// Creates a dropdown from the password value & other possible passwords.
+// Creates a dropdown from the other possible passwords.
 // The items are made of '*'s.
 std::unique_ptr<views::Combobox> GeneratePasswordDropdownView(
     const autofill::PasswordForm& form) {
-  std::vector<base::string16> passwords = {
-      base::string16(form.password_value.length(), '*')};
+  std::vector<base::string16> passwords;
   for (const base::string16& possible_password :
        form.other_possible_passwords) {
     passwords.push_back(base::string16(possible_password.length(), '*'));
@@ -494,7 +493,7 @@ void ManagePasswordsBubbleView::PendingView::CreateAndSetLayout() {
 
     DCHECK(!password_field_);
     if (password_view_button_ && editing_ &&
-        !password_form->other_possible_passwords.empty()) {
+        password_form->other_possible_passwords.size() > 1) {
       password_field_ = GeneratePasswordDropdownView(*password_form).release();
     } else {
       password_field_ = GeneratePasswordLabel(*password_form).release();
