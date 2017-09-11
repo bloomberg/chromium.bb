@@ -1447,6 +1447,7 @@ class CONTENT_EXPORT RenderFrameImpl
   bool name_changed_before_first_commit_ = false;
 
   bool browser_side_navigation_pending_ = false;
+  GURL browser_side_navigation_pending_url_;
 
   // A bitwise OR of bindings types that have been enabled for this RenderFrame.
   // See BindingsPolicy for details.

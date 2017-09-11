@@ -5,6 +5,7 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 
 #include "base/macros.h"
+#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/public/browser/javascript_dialog_manager.h"
@@ -540,6 +541,67 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, POSTNavigation) {
   EXPECT_EQ("text=&select=a",
             base::UTF16ToASCII(shell()->web_contents()->GetTitle()));
   CHECK_EQ(2, post_counter);
+}
+
+namespace {
+
+class NavigationHandleGrabber : public WebContentsObserver {
+ public:
+  explicit NavigationHandleGrabber(WebContents* web_contents)
+      : WebContentsObserver(web_contents) {}
+
+  void ReadyToCommitNavigation(NavigationHandle* navigation_handle) override {
+    if (navigation_handle->GetURL().path() != "/title2.html")
+      return;
+    static_cast<NavigationHandleImpl*>(navigation_handle)
+        ->set_complete_callback_for_testing(
+            base::Bind(&NavigationHandleGrabber::SendingNavigationCommitted,
+                       base::Unretained(this), navigation_handle));
+  }
+
+  void SendingNavigationCommitted(
+      NavigationHandle* navigation_handle,
+      NavigationThrottle::ThrottleCheckResult result) {
+    if (navigation_handle->GetURL().path() != "/title2.html")
+      return;
+    ExecuteScriptAsync(web_contents(), "document.open();");
+  }
+
+  void DidFinishNavigation(NavigationHandle* navigation_handle) override {
+    if (navigation_handle->GetURL().path() != "/title2.html")
+      return;
+    if (navigation_handle->HasCommitted())
+      committed_title2_ = true;
+    run_loop_.QuitClosure().Run();
+  }
+
+  void WaitForTitle2() { run_loop_.Run(); }
+
+  bool committed_title2() { return committed_title2_; }
+
+ private:
+  bool committed_title2_ = false;
+  base::RunLoop run_loop_;
+};
+}  // namespace
+
+// Verifies that if a frame aborts a navigation right after it starts, it is
+// cancelled.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, FastNavigationAbort) {
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  NavigateToURL(shell(), url);
+
+  // Now make a navigation.
+  NavigationHandleGrabber observer(shell()->web_contents());
+  const base::string16 title = base::ASCIIToUTF16("done");
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
+                            "window.location.href='/title2.html'"));
+  observer.WaitForTitle2();
+  // Flush IPCs to make sure the renderer didn't tell us to navigate. Need to
+  // make two round trips.
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), ""));
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), ""));
+  EXPECT_FALSE(observer.committed_title2());
 }
 
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
