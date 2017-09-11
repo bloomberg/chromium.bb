@@ -212,6 +212,7 @@ RenderViewHostImpl::RenderViewHostImpl(
       sudden_termination_allowed_(false),
       render_view_termination_status_(base::TERMINATION_STATUS_STILL_RUNNING),
       updating_web_preferences_(false),
+      has_notified_about_creation_(false),
       weak_factory_(this) {
   DCHECK(instance_.get());
   CHECK(delegate_);  // http://crbug.com/82827
@@ -348,7 +349,7 @@ bool RenderViewHostImpl::CreateRenderView(
   GetProcess()->GetRendererInterface()->CreateView(std::move(params));
 
   // Let our delegate know that we created a RenderView.
-  delegate_->RenderViewCreated(this);
+  DispatchRenderViewCreated();
 
   // Since this method can create the main RenderFrame in the renderer process,
   // set the proper state on its corresponding RenderFrameHost.
@@ -560,6 +561,28 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
   return prefs;
 }
 
+void RenderViewHostImpl::DispatchRenderViewCreated() {
+  if (has_notified_about_creation_)
+    return;
+
+  // Only send RenderViewCreated if there is a current or pending main frame
+  // RenderFrameHost (current or pending).  Don't send notifications if this is
+  // an inactive RVH that is either used by subframe RFHs or not used by any
+  // RFHs at all (e.g., when created for the opener chain).
+  //
+  // While it would be nice to uniformly dispatch RenderViewCreated for all
+  // cases, some existing code (e.g., ExtensionViewHost) assumes it won't
+  // hear RenderViewCreated for a RVH created for an OOPIF.
+  //
+  // TODO(alexmos, creis): Revisit this as part of migrating RenderViewCreated
+  // usage to RenderFrameCreated.  See https://crbug.com/763548.
+  if (!GetMainFrame())
+    return;
+
+  delegate_->RenderViewCreated(this);
+  has_notified_about_creation_ = true;
+}
+
 void RenderViewHostImpl::ClosePage() {
   is_waiting_for_close_ack_ = true;
 
@@ -621,7 +644,21 @@ int RenderViewHostImpl::GetRoutingID() const {
 }
 
 RenderFrameHost* RenderViewHostImpl::GetMainFrame() {
-  return RenderFrameHost::FromID(GetProcess()->GetID(), main_frame_routing_id_);
+  // If the RenderViewHost is active, it should always have a main frame
+  // RenderFrameHost.  If it is inactive, it could've been created for a
+  // pending main frame navigation, in which case it will transition to active
+  // once that navigation commits. In this case, return the pending main frame
+  // RenderFrameHost, as that's expected by certain code paths,
+  // such as RenderViewHostImpl::SetUIProperty().  If there's no pending main
+  // frame navigation, return nullptr.
+  //
+  // TODO(alexmos, creis): Migrate these code paths to use RenderFrameHost APIs
+  // and remove this fallback.  See https://crbug.com/763548.
+  if (is_active()) {
+    return RenderFrameHost::FromID(GetProcess()->GetID(),
+                                   main_frame_routing_id_);
+  }
+  return delegate_->GetPendingMainFrame();
 }
 
 void RenderViewHostImpl::SetWebUIProperty(const std::string& name,

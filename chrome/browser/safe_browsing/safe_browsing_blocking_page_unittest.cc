@@ -256,10 +256,8 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
   void DidNavigateCrossSite(const char* url,
                             int nav_entry_id,
                             bool did_create_new_entry) {
-    content::RenderFrameHost* render_frame_host =
-        content::WebContentsTester::For(web_contents())->GetPendingMainFrame();
     content::WebContentsTester::For(web_contents())
-        ->TestDidNavigate(render_frame_host, nav_entry_id,
+        ->TestDidNavigate(pending_main_rfh(), nav_entry_id,
                           did_create_new_entry, GURL(url),
                           ui::PAGE_TRANSITION_TYPED);
   }
@@ -271,9 +269,8 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
     web_contents()->GetController().GoBack();
 
     // The pending RVH should commit for cross-site navigations.
-    content::RenderFrameHost* rfh = is_cross_site ?
-        WebContentsTester::For(web_contents())->GetPendingMainFrame() :
-        web_contents()->GetMainFrame();
+    content::RenderFrameHost* rfh =
+        is_cross_site ? pending_main_rfh() : web_contents()->GetMainFrame();
     WebContentsTester::For(web_contents())->TestDidNavigate(
         rfh,
         entry->GetUniqueID(),

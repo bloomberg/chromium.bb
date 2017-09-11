@@ -1818,7 +1818,7 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   // Ensure observers are notified about this.
   if (params.renderer_initiated_creation) {
     GetRenderViewHost()->GetWidget()->set_renderer_initialized(true);
-    RenderViewCreated(GetRenderViewHost());
+    GetRenderViewHost()->DispatchRenderViewCreated();
     GetRenderManager()->current_frame_host()->SetRenderFrameCreated(true);
   }
 
@@ -4734,6 +4734,12 @@ bool WebContentsImpl::HasPersistentVideo() const {
   return has_persistent_video_;
 }
 
+RenderFrameHost* WebContentsImpl::GetPendingMainFrame() {
+  if (IsBrowserSideNavigationEnabled())
+    return GetRenderManager()->speculative_frame_host();
+  return GetRenderManager()->pending_frame_host();
+}
+
 bool WebContentsImpl::HasActiveEffectivelyFullscreenVideo() const {
   return media_web_contents_observer_->HasActiveEffectivelyFullscreenVideo();
 }
@@ -4836,12 +4842,6 @@ void WebContentsImpl::FocusOuterAttachmentFrameChain() {
 }
 
 void WebContentsImpl::RenderViewCreated(RenderViewHost* render_view_host) {
-  // Don't send notifications if we are just creating a swapped-out RVH for
-  // the opener chain.  These won't be used for view-source or WebUI, so it's
-  // ok to return early.
-  if (!static_cast<RenderViewHostImpl*>(render_view_host)->is_active())
-    return;
-
   if (delegate_)
     view_->SetOverscrollControllerEnabled(CanOverscrollContent());
 

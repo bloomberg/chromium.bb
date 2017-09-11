@@ -278,10 +278,15 @@ class RenderViewSizeObserver : public content::WebContentsObserver {
     wcv_resize_insets_ = wcv_resize_insets;
   }
 
-  // Cache the size when RenderViewHost is first created.
-  void RenderViewCreated(content::RenderViewHost* render_view_host) override {
-    render_view_sizes_[render_view_host].rwhv_create_size =
-        render_view_host->GetWidget()->GetView()->GetViewBounds().size();
+  // Cache the size when RenderViewHost's main frame is first created.
+  void RenderFrameCreated(
+      content::RenderFrameHost* render_frame_host) override {
+    if (!render_frame_host->GetParent()) {
+      content::RenderViewHost* render_view_host =
+          render_frame_host->GetRenderViewHost();
+      render_view_sizes_[render_view_host].rwhv_create_size =
+          render_view_host->GetWidget()->GetView()->GetViewBounds().size();
+    }
   }
 
   void DidStartNavigationToPendingEntry(

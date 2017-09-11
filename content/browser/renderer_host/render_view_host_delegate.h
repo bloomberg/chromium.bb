@@ -33,6 +33,7 @@ namespace content {
 
 class BrowserContext;
 class FrameTree;
+class RenderFrameHost;
 class RenderViewHost;
 class RenderViewHostImpl;
 class RenderViewHostDelegateView;
@@ -194,6 +195,10 @@ class CONTENT_EXPORT RenderViewHostDelegate {
 
   // Whether the WebContents as a persistent video.
   virtual bool HasPersistentVideo() const;
+
+  // Returns the RenderFrameHost for a pending or speculative main frame
+  // navigation for the page.  Returns nullptr if there is no such navigation.
+  virtual RenderFrameHost* GetPendingMainFrame();
 
  protected:
   virtual ~RenderViewHostDelegate() {}

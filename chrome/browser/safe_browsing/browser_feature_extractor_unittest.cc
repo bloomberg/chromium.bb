@@ -134,8 +134,7 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
     int pending_id =
         web_contents()->GetController().GetPendingEntry()->GetUniqueID();
 
-    content::RenderFrameHost* rfh =
-        WebContentsTester::For(web_contents())->GetPendingMainFrame();
+    content::RenderFrameHost* rfh = pending_main_rfh();
     if (!rfh) {
       rfh = web_contents()->GetMainFrame();
     }
