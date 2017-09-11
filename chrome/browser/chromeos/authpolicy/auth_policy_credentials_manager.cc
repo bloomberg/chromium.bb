@@ -30,6 +30,7 @@
 #include "dbus/message.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/message_center/public/cpp/message_center_constants.h"
 
 namespace {
 
@@ -330,9 +331,10 @@ void AuthPolicyCredentialsManager::ShowNotification(int message_id) {
       l10n_util::GetStringUTF16(message_id),
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           IDR_NOTIFICATION_ALERT),
-      notifier_id,
-      base::string16(),  // display_source
+      notifier_id, l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_DISPLAY_SOURCE),
       GURL(notification_id), notification_id, data, delegate);
+  notification.set_accent_color(
+      message_center::kSystemNotificationColorCriticalWarning);
   notification.SetSystemPriority();
 
   NotificationUIManager* notification_ui_manager =
