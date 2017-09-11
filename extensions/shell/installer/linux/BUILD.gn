@@ -176,7 +176,7 @@ template("linux_package") {
   deb_target_name = "${target_name}_deb"
   action(deb_target_name) {
     visibility = [ ":*" ]
-    script = "//chrome/installer/linux/flock_make_package.py"
+    script = "//chrome/installer/linux/make_package.py"
     deb_arch = "amd64"
 
     inputs = packaging_files_binaries
@@ -185,7 +185,6 @@ template("linux_package") {
     ]
 
     args = [
-      rebase_path("$root_out_dir/linux_package.lock", root_build_dir),
       rebase_path("$root_out_dir/app_shell_installer/debian/build.sh",
                   root_build_dir),
       "-a",
