@@ -35,6 +35,9 @@ extern const base::FilePath::CharType kVerifiedContentsFilename[];
 // Name of the computed hashes file within the metadata folder.
 extern const base::FilePath::CharType kComputedHashesFilename[];
 
+// Name of the indexed ruleset file for the Declarative Net Request API.
+extern const base::FilePath::CharType kIndexedRulesetFilename[];
+
 // The name of the directory inside the profile where extensions are
 // installed to.
 extern const char kInstallDirectoryName[];

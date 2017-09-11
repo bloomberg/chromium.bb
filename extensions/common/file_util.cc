@@ -279,8 +279,7 @@ bool ValidateExtension(const Extension* extension,
   // not on the reserved list. We only warn, and do not block the loading of the
   // extension.
   std::string warning;
-  CheckForIllegalFilenames(extension->path(), &warning);
-  if (!warning.empty())
+  if (!CheckForIllegalFilenames(extension->path(), &warning))
     warnings->push_back(InstallWarning(warning));
 
   // Check that the extension does not include any Windows reserved filenames.
@@ -364,13 +363,8 @@ bool CheckForIllegalFilenames(const base::FilePath& extension_path,
     // Skip all that don't start with "_".
     if (filename.find_first_of(FILE_PATH_LITERAL("_")) != 0)
       continue;
-    // Treat inclusion of the kMetadataFolder as a warning, not a hard error.
-    if (filename == kMetadataFolder) {
-      *error =
-          "_metadata is a reserved directory that will not be allowed at "
-          "the time of Chrome Web Store upload.";
-    } else if (reserved_underscore_names.find(filename) ==
-               reserved_underscore_names.end()) {
+    if (reserved_underscore_names.find(filename) ==
+        reserved_underscore_names.end()) {
       *error = base::StringPrintf(
           "Cannot load extension with file or directory name %s. "
           "Filenames starting with \"_\" are reserved for use by the system.",
@@ -569,6 +563,18 @@ base::FilePath GetVerifiedContentsPath(const base::FilePath& extension_path) {
 }
 base::FilePath GetComputedHashesPath(const base::FilePath& extension_path) {
   return extension_path.Append(kMetadataFolder).Append(kComputedHashesFilename);
+}
+base::FilePath GetIndexedRulesetPath(const base::FilePath& extension_path) {
+  return extension_path.Append(kMetadataFolder).Append(kIndexedRulesetFilename);
+}
+
+std::vector<base::FilePath> GetReservedMetadataFilePaths(
+    const base::FilePath& extension_path) {
+  return {
+      GetVerifiedContentsPath(extension_path),
+      GetComputedHashesPath(extension_path),
+      GetIndexedRulesetPath(extension_path),
+  };
 }
 
 }  // namespace file_util
