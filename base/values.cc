@@ -127,30 +127,20 @@ Value::Value(double in_double) : type_(Type::DOUBLE), double_value_(in_double) {
   }
 }
 
-Value::Value(const char* in_string) : type_(Type::STRING) {
-  string_value_.Init(in_string);
-  DCHECK(IsStringUTF8(*string_value_));
-}
+Value::Value(const char* in_string) : Value(std::string(in_string)) {}
 
-Value::Value(const std::string& in_string) : type_(Type::STRING) {
-  string_value_.Init(in_string);
-  DCHECK(IsStringUTF8(*string_value_));
-}
+Value::Value(StringPiece in_string) : Value(std::string(in_string)) {}
 
 Value::Value(std::string&& in_string) noexcept : type_(Type::STRING) {
   string_value_.Init(std::move(in_string));
   DCHECK(IsStringUTF8(*string_value_));
 }
 
-Value::Value(const char16* in_string) : type_(Type::STRING) {
-  string_value_.Init(UTF16ToUTF8(in_string));
-}
+Value::Value(const char16* in_string16) : Value(StringPiece16(in_string16)) {}
 
-Value::Value(const string16& in_string) : type_(Type::STRING) {
-  string_value_.Init(UTF16ToUTF8(in_string));
+Value::Value(StringPiece16 in_string16) : type_(Type::STRING) {
+  string_value_.Init(UTF16ToUTF8(in_string16));
 }
-
-Value::Value(StringPiece in_string) : Value(in_string.as_string()) {}
 
 Value::Value(const BlobStorage& in_blob) : type_(Type::BINARY) {
   binary_value_.Init(in_blob);
@@ -164,8 +154,8 @@ Value::Value(const DictStorage& in_dict) : type_(Type::DICTIONARY) {
   dict_.Init();
   dict_->reserve(in_dict.size());
   for (const auto& it : in_dict) {
-    dict_->emplace_hint(dict_->end(), it.first,
-                        MakeUnique<Value>(it.second->Clone()));
+    dict_->try_emplace(dict_->end(), it.first,
+                       std::make_unique<Value>(it.second->Clone()));
   }
 }
 
@@ -297,14 +287,23 @@ bool Value::RemoveKey(StringPiece key) {
 
 Value* Value::SetKey(StringPiece key, Value value) {
   CHECK(is_dict());
-  return ((*dict_)[key.as_string()] = std::make_unique<Value>(std::move(value)))
-      .get();
+  // NOTE: We can't use |insert_or_assign| here, as only |try_emplace| does
+  // an explicit conversion from StringPiece to std::string if necessary.
+  auto val_ptr = std::make_unique<Value>(std::move(value));
+  auto result = dict_->try_emplace(key, std::move(val_ptr));
+  if (!result.second) {
+    // val_ptr is guaranteed to be still intact at this point.
+    result.first->second = std::move(val_ptr);
+  }
+  return result.first->second.get();
 }
 
 Value* Value::SetKey(std::string&& key, Value value) {
   CHECK(is_dict());
-  return ((*dict_)[std::move(key)] = std::make_unique<Value>(std::move(value)))
-      .get();
+  return dict_
+      ->insert_or_assign(std::move(key),
+                         std::make_unique<Value>(std::move(value)))
+      .first->second.get();
 }
 
 Value* Value::SetKey(const char* key, Value value) {
@@ -376,9 +375,8 @@ Value* Value::SetPath(span<const StringPiece> path, Value value) {
     auto found = cur->dict_->lower_bound(path_component);
     if (found == cur->dict_->end() || found->first != path_component) {
       // No key found, insert one.
-      auto inserted =
-          cur->dict_->emplace_hint(found, path_component.as_string(),
-                                   std::make_unique<Value>(Type::DICTIONARY));
+      auto inserted = cur->dict_->try_emplace(
+          found, path_component, std::make_unique<Value>(Type::DICTIONARY));
       cur = inserted->second.get();
     } else {
       cur = found->second.get();
@@ -758,7 +756,14 @@ ListValue* DictionaryValue::SetList(StringPiece path,
 Value* DictionaryValue::SetWithoutPathExpansion(
     StringPiece key,
     std::unique_ptr<Value> in_value) {
-  return ((*dict_)[key.as_string()] = std::move(in_value)).get();
+  // NOTE: We can't use |insert_or_assign| here, as only |try_emplace| does
+  // an explicit conversion from StringPiece to std::string if necessary.
+  auto result = dict_->try_emplace(key, std::move(in_value));
+  if (!result.second) {
+    // in_value is guaranteed to be still intact at this point.
+    result.first->second = std::move(in_value);
+  }
+  return result.first->second.get();
 }
 
 DictionaryValue* DictionaryValue::SetDictionaryWithoutPathExpansion(

@@ -115,17 +115,14 @@ class BASE_EXPORT Value {
   explicit Value(double in_double);
 
   // Value(const char*) and Value(const char16*) are required despite
-  // Value(const std::string&) and Value(const string16&) because otherwise the
+  // Value(StringPiece) and Value(StringPiece16) because otherwise the
   // compiler will choose the Value(bool) constructor for these arguments.
   // Value(std::string&&) allow for efficient move construction.
-  // Value(StringPiece) exists due to many callsites passing StringPieces as
-  // arguments.
   explicit Value(const char* in_string);
-  explicit Value(const std::string& in_string);
-  explicit Value(std::string&& in_string) noexcept;
-  explicit Value(const char16* in_string);
-  explicit Value(const string16& in_string);
   explicit Value(StringPiece in_string);
+  explicit Value(std::string&& in_string) noexcept;
+  explicit Value(const char16* in_string16);
+  explicit Value(StringPiece16 in_string16);
 
   explicit Value(const BlobStorage& in_blob);
   explicit Value(BlobStorage&& in_blob) noexcept;
