@@ -74,6 +74,12 @@ class ArcAuthNotificationDelegate
     }
   }
 
+  void Click() override {
+    StopObserving();
+    UpdateOptInActionUMA(arc::OptInActionType::NOTIFICATION_ACCEPTED);
+    arc::SetArcPlayStoreEnabledForProfile(profile_, true);
+  }
+
   void Close(bool by_user) override { StopObserving(); }
 
  private:
