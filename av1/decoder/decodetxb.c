@@ -220,10 +220,10 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     for (idx = 0; idx < BASE_RANGE_SETS; ++idx) {
 #if LV_MAP_PROB
       if (aom_read_symbol(r,
-                          cm->fc->coeff_br_cdf[txs_ctx][plane_type][idx][ctx],
+                          ec_ctx->coeff_br_cdf[txs_ctx][plane_type][idx][ctx],
                           2, ACCT_STR))
 #else   // LV_MAP_PROB
-      if (aom_read(r, cm->fc->coeff_br[txs_ctx][plane_type][idx][ctx],
+      if (aom_read(r, ec_ctx->coeff_br[txs_ctx][plane_type][idx][ctx],
                    ACCT_STR))
 #endif  // LV_MAP_PROB
       {
@@ -235,10 +235,10 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
         for (tok = 0; tok < extra_bits; ++tok) {
 #if LV_MAP_PROB
           if (aom_read_symbol(r,
-                              cm->fc->coeff_lps_cdf[txs_ctx][plane_type][ctx],
+                              ec_ctx->coeff_lps_cdf[txs_ctx][plane_type][ctx],
                               2, ACCT_STR))
 #else
-          if (aom_read(r, cm->fc->coeff_lps[txs_ctx][plane_type][ctx],
+          if (aom_read(r, ec_ctx->coeff_lps[txs_ctx][plane_type][ctx],
                        ACCT_STR))
 #endif
           {

@@ -245,7 +245,7 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
     for (idx = 0; idx < BASE_RANGE_SETS; ++idx) {
       aom_write_symbol(w, idx == br_set_idx,
-                       cm->fc->coeff_br_cdf[txs_ctx][plane_type][idx][ctx], 2);
+                       ec_ctx->coeff_br_cdf[txs_ctx][plane_type][idx][ctx], 2);
       if (idx == br_set_idx) {
         br_base = br_index_to_coeff[br_set_idx];
         br_offset = base_range - br_base;
@@ -253,11 +253,11 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
         for (int tok = 0; tok < extra_bits; ++tok) {
           if (tok == br_offset) {
             aom_write_symbol(
-                w, 1, cm->fc->coeff_lps_cdf[txs_ctx][plane_type][ctx], 2);
+                w, 1, ec_ctx->coeff_lps_cdf[txs_ctx][plane_type][ctx], 2);
             break;
           }
           aom_write_symbol(w, 0,
-                           cm->fc->coeff_lps_cdf[txs_ctx][plane_type][ctx], 2);
+                           ec_ctx->coeff_lps_cdf[txs_ctx][plane_type][ctx], 2);
         }
         //        aom_write_literal(w, br_offset, br_extra_bits[idx]);
         break;
