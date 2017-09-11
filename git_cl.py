@@ -966,6 +966,8 @@ def _is_git_numberer_enabled(remote_url, remote_ref):
       'external/webrtc',
       'v8/v8',
       'infra/experimental',
+      # For webrtc.googlesource.com/src.
+      'src',
   ]
 
   assert remote_ref and remote_ref.startswith('refs/'), remote_ref
