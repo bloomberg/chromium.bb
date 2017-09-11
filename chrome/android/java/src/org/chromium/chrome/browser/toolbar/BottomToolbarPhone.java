@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.toolbar;
 
 import android.animation.Animator;
-import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -20,9 +19,9 @@ import android.os.SystemClock;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.AttributeSet;
-import android.util.Property;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
@@ -41,7 +40,6 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.ToolbarProgressBar;
-import org.chromium.chrome.browser.widget.animation.CancelAwareAnimatorListener;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetMetrics;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
@@ -94,22 +92,7 @@ public class BottomToolbarPhone extends ToolbarPhone {
         @Override
         public void onSheetOffsetChanged(float heightFraction) {
             boolean isMovingDown = heightFraction < mLastHeightFraction;
-            boolean isMovingUp = heightFraction > mLastHeightFraction;
             mLastHeightFraction = heightFraction;
-
-            // TODO(twellington): Ideally we would wait to kick off an animation until the sheet is
-            // released if we know it was opened via swipe.
-            if (isMovingUp && !mAnimatingToolbarButtonDisappearance
-                    && mToolbarButtonVisibilityPercent != 0.f) {
-                animateToolbarButtonVisibility(false);
-            } else if (isMovingDown && heightFraction < 0.40f && !mAnimatingToolbarButtonAppearance
-                    && mToolbarButtonVisibilityPercent != 1.f) {
-                // If the sheet is moving down and the height is less than 45% of the max, start
-                // showing the toolbar buttons. 45% is used rather than 50% so that the buttons
-                // aren't shown in the half height state if the user is dragging the sheet down
-                // slowly and releases at exactly the half way point.
-                animateToolbarButtonVisibility(true);
-            }
 
             // The only time the omnibox should have focus is when the sheet is fully expanded. Any
             // movement of the sheet should unfocus it.
@@ -122,25 +105,16 @@ public class BottomToolbarPhone extends ToolbarPhone {
             updateMenuButtonClickableState();
             if (!mUseToolbarHandle) mExpandButton.setClickable(buttonsClickable);
         }
+
+        @Override
+        public void onTransitionPeekToHalf(float transitionFraction) {
+            if (mLastPeekToHalfHeightFraction == transitionFraction) return;
+
+            boolean isMovingUp = transitionFraction > mLastPeekToHalfHeightFraction;
+            mLastPeekToHalfHeightFraction = transitionFraction;
+            updateToolbarButtonAnimation(isMovingUp);
+        }
     };
-
-    /**
-     * A property for animating the disappearance of toolbar bar buttons. 1.f is fully visible
-     * and 0.f is fully hidden.
-     */
-    private final Property<BottomToolbarPhone, Float> mToolbarButtonVisibilityProperty =
-            new Property<BottomToolbarPhone, Float>(Float.class, "") {
-                @Override
-                public Float get(BottomToolbarPhone object) {
-                    return object.mToolbarButtonVisibilityPercent;
-                }
-
-                @Override
-                public void set(BottomToolbarPhone object, Float value) {
-                    object.mToolbarButtonVisibilityPercent = value;
-                    if (!mUrlFocusChangeInProgress) updateToolbarButtonVisibility();
-                }
-            };
 
     /** The time a transition for the top toolbar shadow should take in ms. */
     private static final int DURATION_SHADOW_TRANSITION_MS = 250;
@@ -176,6 +150,12 @@ public class BottomToolbarPhone extends ToolbarPhone {
      */
     private float mLastHeightFraction;
 
+    /**
+     * This tracks the peek-to-half height fraction of the bottom bar to determine if it is moving
+     * up or down.
+     */
+    private float mLastPeekToHalfHeightFraction;
+
     /** The toolbar handle view that indicates the toolbar can be pulled upward. */
     private ImageView mToolbarHandleView;
 
@@ -191,8 +171,11 @@ public class BottomToolbarPhone extends ToolbarPhone {
      */
     private float mToolbarButtonVisibilityPercent;
 
-    /** Animates toolbar button visibility. */
-    private Animator mToolbarButtonVisibilityAnimator;
+    /**
+     * The interpolator for the toolbar button animation. It will either be a fade-in or fade-out
+     * curve depending on whether the buttons are being shown or hidden.
+     */
+    private Interpolator mToolbarButtonAnimationIterpolator;
 
     /** Whether the appearance of the toolbar buttons is currently animating. */
     private boolean mAnimatingToolbarButtonAppearance;
@@ -262,6 +245,7 @@ public class BottomToolbarPhone extends ToolbarPhone {
         mUseModernDesign = true;
         mToolbarShadowPermanentlyHidden = true;
         mToolbarButtonVisibilityPercent = 1.f;
+        mToolbarButtonAnimationIterpolator = BakedBezierInterpolator.FADE_OUT_CURVE;
 
         mInfoBarContainerObserver = new InfoBarContainerObserver() {
             @Override
@@ -316,8 +300,8 @@ public class BottomToolbarPhone extends ToolbarPhone {
     private void initBottomToolbarTopShadow() {
         mBottomToolbarTopShadow =
                 (ImageView) getRootView().findViewById(R.id.bottom_toolbar_shadow);
-        mBottomToolbarTopShadowDrawable =
-                (LayerDrawable) getResources().getDrawable(R.drawable.bottom_toolbar_shadow);
+        mBottomToolbarTopShadowDrawable = (LayerDrawable) ApiCompatibilityUtils.getDrawable(
+                getResources(), R.drawable.bottom_toolbar_shadow);
 
         mBottomToolbarTopShadowDrawable.getDrawable(0).setAlpha(255);
         mBottomToolbarTopShadowDrawable.getDrawable(1).setAlpha(0);
@@ -482,11 +466,6 @@ public class BottomToolbarPhone extends ToolbarPhone {
         if (currentTab != null) {
             currentTab.getActivity().getBottomSheetContentController().onOmniboxFocusChange(
                     hasFocus);
-        }
-
-        if (mToolbarButtonVisibilityAnimator != null
-                && mToolbarButtonVisibilityAnimator.isRunning()) {
-            mToolbarButtonVisibilityAnimator.end();
         }
 
         super.onUrlFocusChange(hasFocus);
@@ -1029,11 +1008,46 @@ public class BottomToolbarPhone extends ToolbarPhone {
                 ApiCompatibilityUtils.getPaddingEnd(otherToolbar), otherToolbar.getPaddingBottom());
     }
 
-    private void animateToolbarButtonVisibility(final boolean visible) {
-        if (mToolbarButtonVisibilityAnimator != null
-                && mToolbarButtonVisibilityAnimator.isRunning()) {
-            mToolbarButtonVisibilityAnimator.cancel();
-            mToolbarButtonVisibilityAnimator = null;
+    /**
+     * Called when the sheet is transitioning from peek <-> half to update the toolbar button
+     * animation.
+     * @param isMovingUp Whether the sheet is currently moving up.
+     */
+    private void updateToolbarButtonAnimation(boolean isMovingUp) {
+        // Update the interpolator if the toolbar buttons are fully visible or fully hidden.
+        if (mToolbarButtonVisibilityPercent == 0.f || mToolbarButtonVisibilityPercent == 1.f) {
+            mToolbarButtonAnimationIterpolator = isMovingUp ? BakedBezierInterpolator.FADE_OUT_CURVE
+                                                            : BakedBezierInterpolator.FADE_IN_CURVE;
+        }
+
+        if (isMovingUp && !mAnimatingToolbarButtonDisappearance
+                && mToolbarButtonVisibilityPercent != 0.f) {
+            onToolbarButtonAnimationStart(false);
+        } else if (!mAnimatingToolbarButtonAppearance && mToolbarButtonVisibilityPercent != 1.f) {
+            onToolbarButtonAnimationStart(true);
+        }
+
+        if (!mAnimatingToolbarButtonDisappearance && !mAnimatingToolbarButtonAppearance) return;
+
+        mToolbarButtonVisibilityPercent = mToolbarButtonAnimationIterpolator.getInterpolation(
+                1.f - mLastPeekToHalfHeightFraction);
+        updateToolbarButtonVisibility();
+
+        if ((mAnimatingToolbarButtonDisappearance
+                    && MathUtils.areFloatsEqual(mToolbarButtonVisibilityPercent, 0.f))
+                || (mAnimatingToolbarButtonAppearance
+                           && MathUtils.areFloatsEqual(mToolbarButtonVisibilityPercent, 1.f))) {
+            onToolbarButtonAnimationEnd(mAnimatingToolbarButtonAppearance);
+        }
+    }
+
+    private void onToolbarButtonAnimationStart(boolean visible) {
+        if (mAnimatingToolbarButtonAppearance || mAnimatingToolbarButtonDisappearance) {
+            // Cancel any previously running animations.
+            if (mAnimatingToolbarButtonAppearance) mDisableLocationBarRelayout = false;
+
+            mAnimatingToolbarButtonDisappearance = false;
+            mAnimatingToolbarButtonAppearance = false;
         }
 
         if (mUrlFocusChangeInProgress) {
@@ -1063,57 +1077,31 @@ public class BottomToolbarPhone extends ToolbarPhone {
             return;
         }
 
-        mToolbarButtonVisibilityAnimator = ObjectAnimator.ofFloat(
-                BottomToolbarPhone.this, mToolbarButtonVisibilityProperty, visible ? 1.f : 0.f);
+        mAnimatingToolbarButtonDisappearance = !visible;
+        mAnimatingToolbarButtonAppearance = visible;
 
-        mToolbarButtonVisibilityAnimator.setDuration(BottomSheet.BASE_ANIMATION_DURATION_MS);
-        mToolbarButtonVisibilityAnimator.setInterpolator(visible
-                        ? BakedBezierInterpolator.FADE_IN_CURVE
-                        : BakedBezierInterpolator.FADE_OUT_CURVE);
+        if (!visible) {
+            mShowMenuButtonWhenSheetOpen = mBottomSheet.isShowingNewTab();
+            mHidingSomeToolbarButtons = true;
+            mLayoutLocationBarInFocusedMode = true;
+            requestLayout();
+        } else {
+            mDisableLocationBarRelayout = true;
+        }
+    }
 
-        mToolbarButtonVisibilityAnimator.addListener(new CancelAwareAnimatorListener() {
-            @Override
-            public void onStart(Animator animation) {
-                mAnimatingToolbarButtonDisappearance = !visible;
-                mAnimatingToolbarButtonAppearance = visible;
+    private void onToolbarButtonAnimationEnd(boolean visible) {
+        if (visible) {
+            mHidingSomeToolbarButtons = false;
+            mDisableLocationBarRelayout = false;
+            mLayoutLocationBarInFocusedMode = false;
+            mShowMenuButtonWhenSheetOpen = false;
+            requestLayout();
+        }
 
-                if (!visible) {
-                    mShowMenuButtonWhenSheetOpen = mBottomSheet.isShowingNewTab();
-                    mHidingSomeToolbarButtons = true;
-                    mLayoutLocationBarInFocusedMode = true;
-                    requestLayout();
-                } else {
-                    mDisableLocationBarRelayout = true;
-                }
-            }
-
-            @Override
-            public void onCancel(Animator animation) {
-                if (visible) mDisableLocationBarRelayout = false;
-
-                mAnimatingToolbarButtonDisappearance = false;
-                mAnimatingToolbarButtonAppearance = false;
-                mToolbarButtonVisibilityAnimator = null;
-            }
-
-            @Override
-            public void onEnd(Animator animation) {
-                if (visible) {
-                    mHidingSomeToolbarButtons = false;
-                    mDisableLocationBarRelayout = false;
-                    mLayoutLocationBarInFocusedMode = false;
-                    mShowMenuButtonWhenSheetOpen = false;
-                    requestLayout();
-                }
-
-                mAnimatingToolbarButtonDisappearance = false;
-                mAnimatingToolbarButtonAppearance = false;
-                mToolbarButtonVisibilityAnimator = null;
-                mLocationBar.scrollUrlBarToTld();
-            }
-        });
-
-        mToolbarButtonVisibilityAnimator.start();
+        mAnimatingToolbarButtonDisappearance = false;
+        mAnimatingToolbarButtonAppearance = false;
+        mLocationBar.scrollUrlBarToTld();
     }
 
     @Override
@@ -1139,6 +1127,11 @@ public class BottomToolbarPhone extends ToolbarPhone {
         return super.getToolbarColorForVisualState(visualState);
     }
 
+    /**
+     * Updates the visibility and translation of the toolbar buttons by calling
+     * {@link #updateButtonsContainerVisibilityAndTranslation()} and manipulating the LocationBar's
+     * translation X.
+     */
     private void updateToolbarButtonVisibility() {
         boolean isRtl = ApiCompatibilityUtils.isLayoutRtl(this);
 
