@@ -531,13 +531,15 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
   }
 
   // On desktop, if there's over 4GB of memory on the machine, increase the
-  // working set size to 256MB for both gpu and software.
+  // image decode budget to 256MB for both gpu and software.
   const int kImageDecodeMemoryThresholdMB = 4 * 1024;
   if (base::SysInfo::AmountOfPhysicalMemoryMB() >=
       kImageDecodeMemoryThresholdMB) {
+    settings.decoded_image_cache_budget_bytes = 256 * 1024 * 1024;
     settings.decoded_image_working_set_budget_bytes = 256 * 1024 * 1024;
   } else {
-    // This is the default, but recorded here as well.
+    // These are the defaults, but recorded here as well.
+    settings.decoded_image_cache_budget_bytes = 128 * 1024 * 1024;
     settings.decoded_image_working_set_budget_bytes = 128 * 1024 * 1024;
   }
 #endif  // defined(OS_ANDROID)
@@ -552,6 +554,11 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
         !using_synchronous_compositor) {
       settings.preferred_tile_format = viz::RGBA_4444;
     }
+
+    // When running on a low end device, we limit cached bytes to 512KB.
+    // This allows pages which are light on images to stay in cache, but
+    // prevents most long-term caching.
+    settings.decoded_image_cache_budget_bytes = 512 * 1024;
   }
 
   if (cmd.HasSwitch(switches::kEnableLowResTiling))
