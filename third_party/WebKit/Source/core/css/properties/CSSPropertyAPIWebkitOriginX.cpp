@@ -4,7 +4,7 @@
 
 #include "core/css/properties/CSSPropertyAPIWebkitOriginX.h"
 
-#include "core/CSSValueKeywords.h"
+#include "core/css/CSSValueKeywords.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/properties/CSSPropertyPositionUtils.h"
 

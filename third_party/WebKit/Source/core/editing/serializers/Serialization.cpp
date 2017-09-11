@@ -30,10 +30,10 @@
 #include "core/editing/serializers/Serialization.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSValue.h"
+#include "core/css/CSSValueKeywords.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/CDATASection.h"
 #include "core/dom/ChildListMutationScope.h"

@@ -25,7 +25,7 @@
 
 #include "core/layout/LayoutThemeFontProvider.h"
 
-#include "core/CSSValueKeywords.h"
+#include "core/css/CSSValueKeywords.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/wtf/text/WTFString.h"
