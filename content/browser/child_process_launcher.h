@@ -162,8 +162,6 @@ class CONTENT_EXPORT ChildProcessLauncher {
  private:
   friend class internal::ChildProcessLauncherHelper;
 
-  void UpdateTerminationStatus(bool known_dead);
-
   // Notifies the client about the result of the operation.
   void Notify(internal::ChildProcessLauncherHelper::Process process,
               mojo::edk::ScopedPlatformHandle server_handle,
