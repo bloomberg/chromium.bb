@@ -209,7 +209,10 @@ void DeleteSelectionCommand::SetStartingSelectionOnSmartDelete(
       .SetBaseAndExtentDeprecated(new_base.DeepEquivalent(),
                                   new_extent.DeepEquivalent())
       .SetIsDirectional(StartingSelection().IsDirectional());
-  SetStartingSelection(CreateVisibleSelection(builder.Build()));
+  const VisibleSelection& visible_selection =
+      CreateVisibleSelection(builder.Build());
+  SetStartingSelection(
+      SelectionForUndoStep::From(visible_selection.AsSelection()));
 }
 
 void DeleteSelectionCommand::InitializePositionData(
@@ -1129,7 +1132,10 @@ void DeleteSelectionCommand::DoApply(EditingState* editing_state) {
     builder.SetIsDirectional(EndingSelection().IsDirectional());
     if (ending_position_.IsNotNull())
       builder.Collapse(ending_position_);
-    SetEndingSelection(builder.Build());
+    const VisibleSelection& visible_selection =
+        CreateVisibleSelection(builder.Build());
+    SetEndingSelection(
+        SelectionForUndoStep::From(visible_selection.AsSelection()));
     ClearTransientState();
     RebalanceWhitespace();
     return;
@@ -1190,7 +1196,10 @@ void DeleteSelectionCommand::DoApply(EditingState* editing_state) {
   builder.SetIsDirectional(EndingSelection().IsDirectional());
   if (ending_position_.IsNotNull())
     builder.Collapse(ending_position_);
-  SetEndingSelection(builder.Build());
+  const VisibleSelection& visible_selection =
+      CreateVisibleSelection(builder.Build());
+  SetEndingSelection(
+      SelectionForUndoStep::From(visible_selection.AsSelection()));
 
   if (relocatable_reference_position.GetPosition().IsNull()) {
     ClearTransientState();
