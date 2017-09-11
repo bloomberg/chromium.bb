@@ -208,10 +208,11 @@ cr.define('extension_test_util', function() {
 
   /**
    * Tests that any visible iron-icon child of an HTML element has a
-   * corresponding non-empty svg element.
+   * corresponding non-empty svg element, and all the paper-icon-button-light
+   * elements have a valid CSS-class to apply an icon as background.
    * @param {HTMLElement} e The element to check the iron icons in.
    */
-  function testIronIcons(e) {
+  function testIcons(e) {
     e.querySelectorAll('* /deep/ iron-icon').forEach(function(icon) {
       if(isElementVisible(icon)) {
         var svg = icon.$$('svg');
@@ -219,6 +220,15 @@ cr.define('extension_test_util', function() {
                    'icon "' + icon.icon + '" is not present');
       }
     });
+
+    e.querySelectorAll('* /deep/ [is=paper-icon-button-light]')
+        .forEach(function(button) {
+          if (isElementVisible(button)) {
+            expectTrue(
+                window.getComputedStyle(button)['background-image'] != 'none',
+                'button ' + button + ' doesn\'t have a valid icon class');
+          }
+        });
   }
 
   return {
@@ -229,6 +239,6 @@ cr.define('extension_test_util', function() {
     isVisible: isVisible,
     testVisible: testVisible,
     createExtensionInfo: createExtensionInfo,
-    testIronIcons: testIronIcons,
+    testIcons: testIcons,
   };
 });

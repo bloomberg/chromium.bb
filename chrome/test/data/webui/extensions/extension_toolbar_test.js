@@ -45,7 +45,7 @@ cr.define('extension_toolbar_tests', function() {
     });
 
     test(assert(TestNames.Layout), function() {
-      extension_test_util.testIronIcons(toolbar);
+      extension_test_util.testIcons(toolbar);
 
       var testVisible = extension_test_util.testVisible.bind(null, toolbar);
       testVisible('#dev-mode', true);
