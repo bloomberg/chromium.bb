@@ -84,13 +84,13 @@ const net::BackoffEntry::Policy CastMediaSinkServiceImpl::kBackoffPolicy = {
 CastMediaSinkServiceImpl::CastMediaSinkServiceImpl(
     const OnSinksDiscoveredCallback& callback,
     cast_channel::CastSocketService* cast_socket_service,
-    DiscoveryNetworkMonitor* network_monitor)
+    DiscoveryNetworkMonitor* network_monitor,
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : MediaSinkServiceBase(callback),
       cast_socket_service_(cast_socket_service),
       network_monitor_(network_monitor),
       backoff_policy_(&kBackoffPolicy),
-      task_runner_(content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::IO)) {
+      task_runner_(task_runner) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(cast_socket_service_);
   DCHECK(network_monitor_);
@@ -166,7 +166,6 @@ void CastMediaSinkServiceImpl::OnError(const cast_channel::CastSocket& socket,
            << " [channel_id]: " << socket.id();
 
   net::IPEndPoint ip_endpoint = socket.ip_endpoint();
-
   // Need a PostTask() here because RemoveSocket() will release the memory of
   // |socket|. Need to make sure all tasks on |socket| finish before deleting
   // the object.
@@ -343,6 +342,19 @@ void CastMediaSinkServiceImpl::OnDialSinkAdded(const MediaSinkInternal& sink) {
   // for non-Cast device.
   OpenChannel(ip_endpoint, CreateCastSinkFromDialSink(sink),
               base::MakeUnique<net::BackoffEntry>(backoff_policy_));
+}
+
+void CastMediaSinkServiceImpl::AttemptConnection(
+    const std::vector<MediaSinkInternal>& cast_sinks) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  for (const auto& cast_sink : cast_sinks) {
+    const net::IPEndPoint& ip_endpoint = cast_sink.cast_data().ip_endpoint;
+    if (!base::ContainsKey(current_sinks_map_, ip_endpoint.address())) {
+      OpenChannel(ip_endpoint, cast_sink,
+                  base::MakeUnique<net::BackoffEntry>(backoff_policy_));
+    }
+  }
 }
 
 }  // namespace media_router

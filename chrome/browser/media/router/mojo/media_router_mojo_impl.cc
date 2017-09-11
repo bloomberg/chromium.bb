@@ -833,7 +833,9 @@ void MediaRouterMojoImpl::StartDiscovery() {
       cast_media_sink_service_ = new CastMediaSinkService(
           base::Bind(&MediaRouterMojoImpl::ProvideSinks,
                      weak_factory_.GetWeakPtr(), "cast"),
-          context_);
+          context_,
+          content::BrowserThread::GetTaskRunnerForThread(
+              content::BrowserThread::IO));
     }
     cast_media_sink_service_->Start();
   }

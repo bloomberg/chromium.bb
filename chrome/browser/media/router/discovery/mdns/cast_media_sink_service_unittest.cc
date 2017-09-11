@@ -6,6 +6,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/mock_callback.h"
+#include "base/test/test_simple_task_runner.h"
 #include "base/timer/mock_timer.h"
 #include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service_impl.h"
 #include "chrome/browser/media/router/discovery/mdns/mock_dns_sd_registry.h"
@@ -56,10 +57,12 @@ class MockCastMediaSinkServiceImpl : public CastMediaSinkServiceImpl {
   MockCastMediaSinkServiceImpl(
       const OnSinksDiscoveredCallback& callback,
       cast_channel::CastSocketService* cast_socket_service,
-      DiscoveryNetworkMonitor* network_monitor)
+      DiscoveryNetworkMonitor* network_monitor,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
       : CastMediaSinkServiceImpl(callback,
                                  cast_socket_service,
-                                 network_monitor) {}
+                                 network_monitor,
+                                 task_runner) {}
   ~MockCastMediaSinkServiceImpl() override {}
 
   MOCK_METHOD0(Start, void());
@@ -71,12 +74,15 @@ class CastMediaSinkServiceTest : public ::testing::Test {
  public:
   CastMediaSinkServiceTest()
       : mock_cast_socket_service_(new cast_channel::MockCastSocketService()),
+        task_runner_(new base::TestSimpleTaskRunner()),
         mock_media_sink_service_impl_(
             new MockCastMediaSinkServiceImpl(mock_sink_discovered_io_cb_.Get(),
                                              mock_cast_socket_service_.get(),
-                                             discovery_network_monitor_)),
+                                             discovery_network_monitor_,
+                                             task_runner_)),
         media_sink_service_(new CastMediaSinkService(
             mock_sink_discovered_ui_cb_.Get(),
+            task_runner_,
             std::unique_ptr<CastMediaSinkServiceImpl,
                             content::BrowserThread::DeleteOnIOThread>(
                 mock_media_sink_service_impl_))),
@@ -98,6 +104,7 @@ class CastMediaSinkServiceTest : public ::testing::Test {
       mock_sink_discovered_ui_cb_;
   std::unique_ptr<cast_channel::MockCastSocketService>
       mock_cast_socket_service_;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   MockCastMediaSinkServiceImpl* mock_media_sink_service_impl_;
 
   scoped_refptr<CastMediaSinkService> media_sink_service_;
@@ -181,7 +188,7 @@ TEST_F(CastMediaSinkServiceTest, TestOnDnsSdEvent) {
       .WillOnce(SaveArg<0>(&sinks));
 
   // Invoke OpenChannels on the IO thread.
-  base::RunLoop().RunUntilIdle();
+  task_runner_->RunUntilIdle();
   // Verify sink content
   EXPECT_EQ(2u, sinks.size());
 

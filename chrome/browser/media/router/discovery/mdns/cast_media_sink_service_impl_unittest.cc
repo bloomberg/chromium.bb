@@ -72,10 +72,11 @@ class CastMediaSinkServiceImplTest : public ::testing::Test {
   CastMediaSinkServiceImplTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         mock_cast_socket_service_(new cast_channel::MockCastSocketService()),
+        mock_time_task_runner_(new base::TestMockTimeTaskRunner()),
         media_sink_service_impl_(mock_sink_discovered_cb_.Get(),
                                  mock_cast_socket_service_.get(),
-                                 discovery_network_monitor_.get()),
-        mock_time_task_runner_(new base::TestMockTimeTaskRunner()) {}
+                                 discovery_network_monitor_.get(),
+                                 mock_time_task_runner_.get()) {}
 
   void SetUp() override {
     fake_network_info_.clear();
@@ -127,9 +128,9 @@ class CastMediaSinkServiceImplTest : public ::testing::Test {
       mock_sink_discovered_cb_;
   std::unique_ptr<cast_channel::MockCastSocketService>
       mock_cast_socket_service_;
-  CastMediaSinkServiceImpl media_sink_service_impl_;
   base::MockTimer* mock_timer_;
   scoped_refptr<base::TestMockTimeTaskRunner> mock_time_task_runner_;
+  CastMediaSinkServiceImpl media_sink_service_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(CastMediaSinkServiceImplTest);
 };
@@ -395,6 +396,8 @@ TEST_F(CastMediaSinkServiceImplTest, TestOnChannelErrorMayRetryForCastSink) {
               OpenSocketInternal(ip_endpoint1, _, _, _));
   mock_time_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(16));
   EXPECT_TRUE(media_sink_service_impl_.current_sinks_map_.empty());
+
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(CastMediaSinkServiceImplTest, TestOnChannelErrorNoRetryForMissingSink) {
@@ -486,6 +489,27 @@ TEST_F(CastMediaSinkServiceImplTest, TestOnFetchCompleted) {
   EXPECT_TRUE(base::ContainsValue(sinks, cast_sink1));
   EXPECT_TRUE(base::ContainsValue(sinks, cast_sink2));
   EXPECT_TRUE(base::ContainsValue(sinks, cast_sink3));
+}
+
+TEST_F(CastMediaSinkServiceImplTest, TestAttemptConnection) {
+  auto cast_sink1 = CreateCastSink(1);
+  auto cast_sink2 = CreateCastSink(2);
+  net::IPEndPoint ip_endpoint1 = CreateIPEndPoint(1);
+  net::IPEndPoint ip_endpoint2 = CreateIPEndPoint(2);
+
+  // Find Cast sink 1
+  media_sink_service_impl_.current_sinks_map_[ip_endpoint1.address()] =
+      cast_sink1;
+
+  EXPECT_CALL(*mock_cast_socket_service_,
+              OpenSocketInternal(ip_endpoint1, _, _, _))
+      .Times(0);
+  EXPECT_CALL(*mock_cast_socket_service_,
+              OpenSocketInternal(ip_endpoint2, _, _, _));
+
+  // Attempt to connect to Cast sink 1, 2
+  std::vector<MediaSinkInternal> sinks{cast_sink1, cast_sink2};
+  media_sink_service_impl_.AttemptConnection(sinks);
 }
 
 TEST_F(CastMediaSinkServiceImplTest, CacheSinksForKnownNetwork) {

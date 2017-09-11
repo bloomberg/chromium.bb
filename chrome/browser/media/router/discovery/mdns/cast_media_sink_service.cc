@@ -89,18 +89,22 @@ const char CastMediaSinkService::kCastServiceType[] = "_googlecast._tcp.local";
 
 CastMediaSinkService::CastMediaSinkService(
     const OnSinksDiscoveredCallback& callback,
-    content::BrowserContext* browser_context)
-    : MediaSinkService(callback) {
+    content::BrowserContext* browser_context,
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
+    : MediaSinkService(callback), task_runner_(task_runner) {
   // TODO(crbug.com/749305): Migrate the discovery code to use sequences.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(task_runner_);
 }
 
 CastMediaSinkService::CastMediaSinkService(
     const OnSinksDiscoveredCallback& callback,
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     std::unique_ptr<CastMediaSinkServiceImpl,
                     content::BrowserThread::DeleteOnIOThread>
         cast_media_sink_service_impl)
     : MediaSinkService(callback),
+      task_runner_(task_runner),
       cast_media_sink_service_impl_(std::move(cast_media_sink_service_impl)) {}
 
 CastMediaSinkService::~CastMediaSinkService() {}
@@ -116,13 +120,12 @@ void CastMediaSinkService::Start() {
         base::BindRepeating(&CastMediaSinkService::OnSinksDiscoveredOnIOThread,
                             this),
         cast_channel::CastSocketService::GetInstance(),
-        DiscoveryNetworkMonitor::GetInstance()));
+        DiscoveryNetworkMonitor::GetInstance(), task_runner_));
   }
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&CastMediaSinkServiceImpl::Start,
-                     cast_media_sink_service_impl_->AsWeakPtr()));
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&CastMediaSinkServiceImpl::Start,
+                                cast_media_sink_service_impl_->AsWeakPtr()));
 
   dns_sd_registry_ = DnsSdRegistry::GetInstance();
   dns_sd_registry_->AddObserver(this);
@@ -139,10 +142,9 @@ void CastMediaSinkService::Stop() {
   dns_sd_registry_->RemoveObserver(this);
   dns_sd_registry_ = nullptr;
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&CastMediaSinkServiceImpl::Stop,
-                     cast_media_sink_service_impl_->AsWeakPtr()));
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&CastMediaSinkServiceImpl::Stop,
+                                cast_media_sink_service_impl_->AsWeakPtr()));
 
   cast_media_sink_service_impl_.reset();
 }
@@ -155,8 +157,18 @@ void CastMediaSinkService::SetDnsSdRegistryForTest(DnsSdRegistry* registry) {
 }
 
 void CastMediaSinkService::ForceDiscovery() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (dns_sd_registry_)
     dns_sd_registry_->ForceDiscovery();
+
+  if (!cast_media_sink_service_impl_)
+    return;
+
+  DVLOG(2) << "ForceDiscovery on " << cast_sinks_.size() << " sinks";
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&CastMediaSinkServiceImpl::AttemptConnection,
+                     cast_media_sink_service_impl_->AsWeakPtr(), cast_sinks_));
 }
 
 void CastMediaSinkService::OnDnsSdEvent(
@@ -167,7 +179,7 @@ void CastMediaSinkService::OnDnsSdEvent(
   DVLOG(2) << "CastMediaSinkService::OnDnsSdEvent found " << services.size()
            << " services";
 
-  std::vector<MediaSinkInternal> cast_sinks;
+  cast_sinks_.clear();
 
   for (const auto& service : services) {
     // Create Cast sink from mDNS service description.
@@ -178,14 +190,13 @@ void CastMediaSinkService::OnDnsSdEvent(
       continue;
     }
 
-    cast_sinks.push_back(std::move(cast_sink));
+    cast_sinks_.push_back(std::move(cast_sink));
   }
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+  task_runner_->PostTask(
+      FROM_HERE,
       base::BindOnce(&CastMediaSinkServiceImpl::OpenChannels,
-                     cast_media_sink_service_impl_->AsWeakPtr(),
-                     std::move(cast_sinks)));
+                     cast_media_sink_service_impl_->AsWeakPtr(), cast_sinks_));
 }
 
 void CastMediaSinkService::OnDialSinkAdded(const MediaSinkInternal& sink) {
