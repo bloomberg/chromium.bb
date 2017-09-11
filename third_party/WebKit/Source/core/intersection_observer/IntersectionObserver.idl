@@ -13,7 +13,6 @@ callback IntersectionObserverCallback = void (sequence<IntersectionObserverEntry
     ConstructorCallWith=ScriptState,
     MeasureAs=IntersectionObserver_Constructor,
     RaisesException=Constructor,
-    RuntimeEnabled=IntersectionObserver,
     DependentLifetime
 ] interface IntersectionObserver {
     readonly attribute Element? root;
