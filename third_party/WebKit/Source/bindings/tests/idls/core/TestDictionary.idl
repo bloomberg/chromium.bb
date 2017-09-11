@@ -42,4 +42,6 @@ dictionary TestDictionary {
     record<ByteString, (long or boolean)> unionInRecordMember;
     record<DOMString, any> anyInRecordMember;
     (Float or BooleanType) unionWithTypedefs;
+    [Clamp] long applicableToTypeLongMember;
+    [TreatNullAs=EmptyString] DOMString applicableToTypeStringMember;
 };

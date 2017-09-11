@@ -108,3 +108,183 @@ dictionary MyDictNull {
 dictionary MyDictUnexpectedAttribute {
   attribute DOMString foo = "";
 };
+
+/** TREE
+ *Dictionary(MyDictRequiredClampNotAppliedToType)
+ *  Key(setLong)
+ *    Type()
+ *      PrimitiveType(long)
+ *    ExtAttributes()
+ *      ExtAttribute(Clamp)
+ */
+dictionary MyDictRequiredClampNotAppliedToType {
+  [Clamp] required long setLong;
+};
+
+/** TREE
+ *Dictionary(MyDictRequired)
+ *  Key(setLong)
+ *    Type()
+ *      PrimitiveType(long)
+ *    ExtAttributes()
+ *      ExtAttribute(XAttr) = "foo"
+ */
+dictionary MyDictRequired {
+  [XAttr = foo] required long setLong;
+};
+
+/** TREE
+ *Dictionary(MyDictRequired)
+ *  Key(setLong)
+ *    Type()
+ *      PrimitiveType(long)
+ *    ExtAttributes()
+ *      ExtAttribute(XAttr1)
+ *      ExtAttribute(XAttr2)
+ */
+dictionary MyDictRequired {
+  [XAttr1, XAttr2] required long setLong;
+};
+
+/** TREE
+ *Dictionary(MyDictRequired)
+ *  Key(setLong)
+ *    Type()
+ *      PrimitiveType(long)
+ *      ExtAttributes()
+ *        ExtAttribute(EnforceRange)
+ *    ExtAttributes()
+ *      ExtAttribute(Clamp)
+ */
+dictionary MyDictRequired {
+  [Clamp] required [EnforceRange] long setLong;
+};
+
+/** TREE
+ *Dictionary(MyDictRequired)
+ *  Key(setLong)
+ *    Type()
+ *      PrimitiveType(long)
+ *      ExtAttributes()
+ *        ExtAttribute(XAttr) = "foo"
+ *    ExtAttributes()
+ *      ExtAttribute(Clamp)
+ */
+dictionary MyDictRequired {
+  [Clamp] required [XAttr = foo] long setLong;
+};
+
+/** TREE
+ *Dictionary(MyDictRequired)
+ *  Key(setLong)
+ *    Type()
+ *      PrimitiveType(long)
+ *      ExtAttributes()
+ *        ExtAttribute(XAttr1)
+ *        ExtAttribute(XAttr2)
+ *    ExtAttributes()
+ *      ExtAttribute(Clamp)
+ */
+dictionary MyDictRequired {
+  [Clamp] required [XAttr1, XAttr2] long setLong;
+};
+
+/** TREE
+ *Dictionary(MyDict)
+ *  Key(setLong)
+ *    Type()
+ *      PrimitiveType(long)
+ *      ExtAttributes()
+ *        ExtAttribute(Clamp)
+ */
+dictionary MyDict {
+  [Clamp] long setLong;
+};
+
+/** TREE
+ *Dictionary(MyDict)
+ *  Key(setLong)
+ *    Type()
+ *      PrimitiveType(long)
+ *    ExtAttributes()
+ *      ExtAttribute(XAttr)
+ */
+dictionary MyDict {
+  [XAttr] long setLong;
+};
+
+/** TREE
+ *Dictionary(MyDict)
+ *  Key(setLong)
+ *    Type()
+ *      PrimitiveType(long)
+ *    ExtAttributes()
+ *      ExtAttribute(XAttr) = "foo"
+ */
+dictionary MyDict {
+  [XAttr = foo] long setLong;
+};
+
+/** TREE
+ *Dictionary(MyDict)
+ *  Key(setLong)
+ *    Type()
+ *      PrimitiveType(long)
+ *      ExtAttributes()
+ *        ExtAttribute(Clamp)
+ *    ExtAttributes()
+ *      ExtAttribute(XAttr)
+ */
+dictionary MyDict {
+  [XAttr, Clamp] long setLong;
+};
+
+/** TREE
+ *Dictionary(MyDict)
+ *  Key(foo)
+ *    Type()
+ *      PrimitiveType(long)
+ *      ExtAttributes()
+ *        ExtAttribute(Clamp)
+ *    Default() = "2"
+ */
+dictionary MyDict {
+  [Clamp] long foo = 2;
+};
+
+/** TREE
+ *Dictionary(MyDict)
+ *  Key(setString)
+ *    Type()
+ *      StringType(DOMString)
+ *    ExtAttributes()
+ *      ExtAttribute(XAttr)
+ */
+dictionary MyDict {
+  [XAttr] DOMString setString;
+};
+
+/** TREE
+ *Dictionary(MyDict)
+ *  Key(setLong)
+ *    Type()
+ *      PrimitiveType(long)
+ *    ExtAttributes()
+ *      ExtAttribute(XAttr) = "bar"
+ */
+dictionary MyDict {
+  [XAttr = bar] long setLong;
+};
+
+/** TREE
+ *Dictionary(MyDict)
+ *  Key(setLong)
+ *    Type()
+ *      PrimitiveType(long)
+ *    ExtAttributes()
+ *      ExtAttribute(XAttr1)
+ *      ExtAttribute(XAttr2)
+ */
+dictionary MyDict {
+  [XAttr1, XAttr2] long setLong;
+};

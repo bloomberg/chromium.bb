@@ -59,6 +59,9 @@ ERROR_REMAP = {
   'Unexpected "{" after keyword "interface".' : 'Interface missing name.',
 }
 
+_EXTENDED_ATTRIBUTES_APPLICABLE_TO_TYPES = [
+    'Clamp', 'EnforceRange', 'TreatNullAs']
+
 
 def Boolean(val):
   """Convert to strict boolean type."""
@@ -134,6 +137,24 @@ def ExtractSpecialComment(comment):
     lines.append(line)
   return '\n'.join(lines)
 
+# There are two groups of ExtendedAttributes.
+# One group can apply to types (It is said "applicable to types"),
+# but the other cannot apply to types.
+# This function is intended to divide ExtendedAttributes into those 2 groups.
+# For more details at
+#    https://heycam.github.io/webidl/#extended-attributes-applicable-to-types
+def DivideExtAttrsIntoApplicableAndNonApplicable(extended_attribute_list):
+  if not extended_attribute_list:
+    return [[], []]
+  else:
+    applicable_to_types = []
+    non_applicable_to_types = []
+    for ext_attribute in extended_attribute_list.GetChildren():
+      if ext_attribute.GetName() in _EXTENDED_ATTRIBUTES_APPLICABLE_TO_TYPES:
+        applicable_to_types.append(ext_attribute)
+      else:
+        non_applicable_to_types.append(ext_attribute)
+    return [applicable_to_types, non_applicable_to_types]
 
 #
 # IDL Parser
@@ -329,11 +350,10 @@ class IDLParser(object):
     p[0] = self.BuildError(p, 'Dictionary')
 
   def p_DictionaryMembers(self, p):
-    """DictionaryMembers : ExtendedAttributeList DictionaryMember DictionaryMembers
+    """DictionaryMembers : DictionaryMember DictionaryMembers
                          |"""
     if len(p) > 1:
-      p[2].AddChildren(p[1])
-      p[0] = ListFromConcat(p[2], p[3])
+      p[0] = ListFromConcat(p[1], p[2])
 
   # Error recovery for DictionaryMembers
   def p_DictionaryMembersError(self, p):
@@ -341,14 +361,24 @@ class IDLParser(object):
     p[0] = self.BuildError(p, 'DictionaryMembers')
 
   def p_DictionaryMember(self, p):
-    """DictionaryMember : Required Type identifier Default ';'"""
-    p[0] = self.BuildNamed('Key', p, 3, ListFromConcat(p[1], p[2], p[4]))
-
-  def p_Required(self, p):
-    """Required : REQUIRED
-                |"""
-    if len(p) > 1:
-      p[0] = self.BuildTrue('REQUIRED')
+    """DictionaryMember : ExtendedAttributeList REQUIRED TypeWithExtendedAttributes identifier Default ';'
+                        | ExtendedAttributeList Type identifier Default ';'"""
+    if len(p) > 6:
+      p[2] = self.BuildTrue('REQUIRED')
+      p[0] = self.BuildNamed('Key', p, 4, ListFromConcat(p[2], p[3], p[5]))
+      p[0].AddChildren(p[1])
+    else:
+      applicable_to_types, non_applicable_to_types = \
+          DivideExtAttrsIntoApplicableAndNonApplicable(p[1])
+      if applicable_to_types:
+        attributes = self.BuildProduction('ExtAttributes', p, 1,
+            applicable_to_types)
+        p[2].AddChildren(attributes)
+      p[0] = self.BuildNamed('Key', p, 3, ListFromConcat(p[2], p[4]))
+      if non_applicable_to_types:
+        attributes = self.BuildProduction('ExtAttributes', p, 1,
+            non_applicable_to_types)
+        p[0].AddChildren(attributes)
 
   def p_PartialDictionary(self, p):
     """PartialDictionary : DICTIONARY identifier '{' DictionaryMembers '}' ';'"""
@@ -787,6 +817,15 @@ class IDLParser(object):
       p[0] = self.BuildProduction('Type', p, 1, p[1])
     else:
       p[0] = self.BuildProduction('Type', p, 1, ListFromConcat(p[1], p[2]))
+
+  def p_TypeWithExtendedAttributes(self, p):
+    """ TypeWithExtendedAttributes : ExtendedAttributeList SingleType
+                                   | ExtendedAttributeList UnionType Null"""
+    if len(p) < 4:
+      p[0] = self.BuildProduction('Type', p, 2, p[2])
+    else:
+      p[0] = self.BuildProduction('Type', p, 2, ListFromConcat(p[2], p[3]))
+    p[0].AddChildren(p[1])
 
   def p_SingleType(self, p):
     """SingleType : NonAnyType

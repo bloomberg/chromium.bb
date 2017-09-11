@@ -143,12 +143,13 @@ class IdlType(IdlTypeBase):
     dictionaries = set()
     enums = {}  # name -> values
 
-    def __init__(self, base_type, is_unrestricted=False):
+    def __init__(self, base_type, is_unrestricted=False, extended_attributes=None):
         super(IdlType, self).__init__()
         if is_unrestricted:
             self.base_type = 'unrestricted %s' % base_type
         else:
             self.base_type = base_type
+        self.extended_attributes = extended_attributes
 
     def __str__(self):
         return self.base_type
@@ -156,10 +157,15 @@ class IdlType(IdlTypeBase):
     def __getstate__(self):
         return {
             'base_type': self.base_type,
+            'extended_attributes': self.extended_attributes,
         }
 
     def __setstate__(self, state):
         self.base_type = state['base_type']
+        self.extended_attributes = state['extended_attributes']
+
+    def set_extended_attributes(self, extended_attributes):
+        self.extended_attributes = extended_attributes
 
     @property
     def is_basic_type(self):

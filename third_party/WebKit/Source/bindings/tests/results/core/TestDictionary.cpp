@@ -46,6 +46,13 @@ void TestDictionary::setAnyInRecordMember(const Vector<std::pair<String, ScriptV
 void TestDictionary::setAnyMember(ScriptValue value) {
   any_member_ = value;
 }
+void TestDictionary::setApplicableToTypeLongMember(int32_t value) {
+  applicable_to_type_long_member_ = value;
+  has_applicable_to_type_long_member_ = true;
+}
+void TestDictionary::setApplicableToTypeStringMember(const String& value) {
+  applicable_to_type_string_member_ = value;
+}
 void TestDictionary::setBooleanMember(bool value) {
   boolean_member_ = value;
   has_boolean_member_ = true;
