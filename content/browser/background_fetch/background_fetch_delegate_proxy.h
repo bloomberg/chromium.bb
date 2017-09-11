@@ -38,6 +38,8 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
     // Called when the given |request| has been completed.
     virtual void DidCompleteRequest(
         const scoped_refptr<BackgroundFetchRequestInfo>& request) = 0;
+
+    virtual ~Controller() {}
   };
 
   explicit BackgroundFetchDelegateProxy(

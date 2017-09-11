@@ -40,7 +40,7 @@ class CONTENT_EXPORT BackgroundFetchJobController final
       const BackgroundFetchOptions& options,
       BackgroundFetchDataManager* data_manager,
       CompletedCallback completed_callback);
-  ~BackgroundFetchJobController();
+  ~BackgroundFetchJobController() override;
 
   // Starts fetching the first few requests. The controller will continue to
   // fetch new content until all requests have been handled.
