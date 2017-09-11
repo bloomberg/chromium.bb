@@ -24,7 +24,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
-#include "base/sys_info.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 
@@ -256,7 +255,7 @@ bool ProcessMetrics::GetWorkingSetKBytes(WorkingSetKBytes* ws_usage) const {
   return GetWorkingSetKBytesStatm(ws_usage);
 }
 
-double ProcessMetrics::GetCPUUsage() {
+double ProcessMetrics::GetPlatformIndependentCPUUsage() {
   TimeTicks time = TimeTicks::Now();
 
   if (last_cpu_ == 0) {
@@ -405,7 +404,6 @@ ProcessMetrics::ProcessMetrics(ProcessHandle process)
       last_absolute_idle_wakeups_(0),
 #endif
       last_cpu_(0) {
-  processor_count_ = SysInfo::NumberOfProcessors();
 }
 
 #if defined(OS_CHROMEOS)

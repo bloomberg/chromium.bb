@@ -144,7 +144,9 @@ void ResourceReporter::OnTasksRefreshedWithBackgroundCalculations(
   task_records_.reserve(task_ids.size());
 
   for (const auto& id : task_ids) {
-    const double cpu_usage = observed_task_manager()->GetCpuUsage(id);
+    const double cpu_usage =
+        (observed_task_manager()->GetPlatformIndependentCPUUsage(id) /
+         base::SysInfo::NumberOfProcessors());
     const int64_t memory_usage =
         observed_task_manager()->GetPhysicalMemoryUsage(id);
 

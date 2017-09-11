@@ -26,7 +26,7 @@ bool TestTaskManager::IsTaskKillable(TaskId task_id) {
 void TestTaskManager::KillTask(TaskId task_id) {
 }
 
-double TestTaskManager::GetCpuUsage(TaskId task_id) const {
+double TestTaskManager::GetPlatformIndependentCPUUsage(TaskId task_id) const {
   return 0.0;
 }
 

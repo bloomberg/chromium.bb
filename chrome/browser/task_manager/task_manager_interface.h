@@ -73,9 +73,10 @@ class TaskManagerInterface {
   // Kills the task with |task_id|.
   virtual void KillTask(TaskId task_id) = 0;
 
-  // Returns the CPU usage in percent for the process on which the task with
-  // |task_id| is running during the current refresh cycle.
-  virtual double GetCpuUsage(TaskId task_id) const = 0;
+  // Returns the CPU usage of the process on which |task_id| is running, over
+  // the most recent refresh cycle. The value is in the range zero to
+  // base::SysInfo::NumberOfProcessors() * 100%.
+  virtual double GetPlatformIndependentCPUUsage(TaskId task_id) const = 0;
 
   // Returns the start time for the process on which the task
   // with |task_id| is running. Only implemented in Windows now.

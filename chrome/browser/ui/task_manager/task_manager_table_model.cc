@@ -354,7 +354,7 @@ base::string16 TaskManagerTableModel::GetText(int row, int column) {
 
     case IDS_TASK_MANAGER_CPU_COLUMN:
       return stringifier_->GetCpuUsageText(
-          observed_task_manager()->GetCpuUsage(tasks_[row]));
+          observed_task_manager()->GetPlatformIndependentCPUUsage(tasks_[row]));
 
     case IDS_TASK_MANAGER_CPU_TIME_COLUMN:
       return stringifier_->GetCpuTimeText(
@@ -504,8 +504,10 @@ int TaskManagerTableModel::CompareValues(int row1,
           observed_task_manager()->GetNetworkUsage(tasks_[row2]));
 
     case IDS_TASK_MANAGER_CPU_COLUMN:
-      return ValueCompare(observed_task_manager()->GetCpuUsage(tasks_[row1]),
-                          observed_task_manager()->GetCpuUsage(tasks_[row2]));
+      return ValueCompare(
+          observed_task_manager()->GetPlatformIndependentCPUUsage(tasks_[row1]),
+          observed_task_manager()->GetPlatformIndependentCPUUsage(
+              tasks_[row2]));
 
     case IDS_TASK_MANAGER_CPU_TIME_COLUMN:
       return ValueCompare(observed_task_manager()->GetCpuTime(tasks_[row1]),

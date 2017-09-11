@@ -118,7 +118,7 @@ TaskGroupSampler::~TaskGroupSampler() {
 double TaskGroupSampler::RefreshCpuUsage() {
   DCHECK(worker_pool_sequenced_checker_.CalledOnValidSequence());
 
-  return process_metrics_->GetCPUUsage();
+  return process_metrics_->GetPlatformIndependentCPUUsage();
 }
 
 MemoryUsageStats TaskGroupSampler::RefreshMemoryUsage() {

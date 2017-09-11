@@ -69,7 +69,9 @@ class TaskGroup {
   size_t num_tasks() const { return tasks().size(); }
   bool empty() const { return tasks().empty(); }
 
-  double cpu_usage() const { return cpu_usage_; }
+  double platform_independent_cpu_usage() const {
+    return platform_independent_cpu_usage_;
+  }
   base::Time start_time() const { return start_time_; }
   base::TimeDelta cpu_time() const { return cpu_time_; }
   int64_t private_bytes() const { return memory_usage_.private_bytes; }
@@ -158,7 +160,7 @@ class TaskGroup {
   int64_t current_on_bg_done_flags_;
 
   // The per process resources usages.
-  double cpu_usage_;
+  double platform_independent_cpu_usage_;
   base::Time start_time_;     // Only calculated On Windows now.
   base::TimeDelta cpu_time_;  // Only calculated On Windows now.
   MemoryUsageStats memory_usage_;
