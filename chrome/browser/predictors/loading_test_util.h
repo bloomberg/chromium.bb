@@ -36,6 +36,8 @@ class MockResourcePrefetchPredictor : public ResourcePrefetchPredictor {
 
   MOCK_CONST_METHOD2(GetPrefetchData,
                      bool(const GURL&, ResourcePrefetchPredictor::Prediction*));
+  MOCK_CONST_METHOD2(PredictPreconnectOrigins,
+                     bool(const GURL&, PreconnectPrediction*));
   MOCK_METHOD1(RecordPageRequestSummaryProxy, void(PageRequestSummary*));
 };
 

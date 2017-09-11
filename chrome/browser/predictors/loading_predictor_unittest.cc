@@ -62,6 +62,12 @@ void LoadingPredictorTest::SetUp() {
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock, GetPrefetchData(GURL(kUrl3), _))
       .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock, PredictPreconnectOrigins(GURL(kUrl), _))
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock, PredictPreconnectOrigins(GURL(kUrl2), _))
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock, PredictPreconnectOrigins(GURL(kUrl3), _))
+      .WillRepeatedly(Return(false));
 
   predictor_->set_mock_resource_prefetch_predictor(std::move(mock));
   predictor_->StartInitialization();

@@ -23,8 +23,8 @@ namespace predictors {
 
 namespace {
 const char kInitialUrl[] = "http://www.google.com/cats";
-const char kRedirectedUrl[] = "http://www.google.com/dogs";
-const char kRedirectedUrl2[] = "http://www.google.com/raccoons";
+const char kRedirectedUrl[] = "http://www.google.fr/chats";
+const char kRedirectedUrl2[] = "http://www.google.de/katzen";
 }
 
 using Prediction = ResourcePrefetchPredictor::Prediction;
@@ -76,11 +76,22 @@ void LoadingStatsCollectorTest::TestRedirectStatusHistogram(
   // Prediction setting.
   // We need at least one resource for prediction.
   const std::string& script_url = "https://cdn.google.com/script.js";
-  Prediction prediction = CreatePrediction(prediction_url, {GURL(script_url)});
-  prediction.is_host = false;
-  prediction.is_redirected = initial_url != prediction_url;
-  EXPECT_CALL(*mock_predictor_, GetPrefetchData(GURL(initial_url), _))
-      .WillOnce(DoAll(SetArgPointee<1>(prediction), Return(true)));
+  {
+    Prediction prediction =
+        CreatePrediction(prediction_url, {GURL(script_url)});
+    prediction.is_host = false;
+    prediction.is_redirected = initial_url != prediction_url;
+    EXPECT_CALL(*mock_predictor_, GetPrefetchData(GURL(initial_url), _))
+        .WillOnce(DoAll(SetArgPointee<1>(prediction), Return(true)));
+  }
+  {
+    PreconnectPrediction prediction = CreatePreconnectPrediction(
+        GURL(prediction_url).host(), initial_url != prediction_url,
+        {GURL(script_url).GetOrigin()}, {});
+    EXPECT_CALL(*mock_predictor_,
+                PredictPreconnectOrigins(GURL(initial_url), _))
+        .WillOnce(DoAll(SetArgPointee<1>(prediction), Return(true)));
+  }
 
   // Navigation simulation.
   URLRequestSummary script = CreateURLRequestSummary(
@@ -94,6 +105,9 @@ void LoadingStatsCollectorTest::TestRedirectStatusHistogram(
   histogram_tester_->ExpectUniqueSample(
       internal::kResourcePrefetchPredictorRedirectStatusHistogram,
       static_cast<int>(expected_status), 1);
+  histogram_tester_->ExpectUniqueSample(
+      internal::kLoadingPredictorPreconnectLearningRedirectStatus,
+      static_cast<int>(expected_status), 1);
 }
 
 TEST_F(LoadingStatsCollectorTest, TestPrecisionRecallHistograms) {
@@ -106,6 +120,9 @@ TEST_F(LoadingStatsCollectorTest, TestPrecisionRecallHistograms) {
       {GURL(script_url), GURL(script_url + "foo"), GURL(script_url + "bar")});
   EXPECT_CALL(*mock_predictor_, GetPrefetchData(GURL(main_frame_url), _))
       .WillOnce(DoAll(SetArgPointee<1>(prediction), Return(true)));
+  EXPECT_CALL(*mock_predictor_,
+              PredictPreconnectOrigins(GURL(main_frame_url), _))
+      .WillOnce(Return(false));
 
   // Simulate a page load with 2 resources, one we know, one we don't.
   URLRequestSummary script = CreateURLRequestSummary(
@@ -123,6 +140,41 @@ TEST_F(LoadingStatsCollectorTest, TestPrecisionRecallHistograms) {
       internal::kResourcePrefetchPredictorPrecisionHistogram, 33, 1);
   histogram_tester_->ExpectUniqueSample(
       internal::kResourcePrefetchPredictorCountHistogram, 3, 1);
+}
+
+TEST_F(LoadingStatsCollectorTest, TestPreconnectPrecisionRecallHistograms) {
+  const std::string main_frame_url = "http://google.com/?query=cats";
+  auto gen = [](int index) {
+    return base::StringPrintf("http://cdn%d.google.com/script.js", index);
+  };
+
+  // Predicts 3 origins: 1 useful, 2 useless.
+  PreconnectPrediction prediction = CreatePreconnectPrediction(
+      GURL(main_frame_url).host(), false,
+      {GURL(gen(1)).GetOrigin(), GURL(gen(2)).GetOrigin()},
+      {GURL(gen(3)).GetOrigin()});
+  EXPECT_CALL(*mock_predictor_,
+              PredictPreconnectOrigins(GURL(main_frame_url), _))
+      .WillOnce(DoAll(SetArgPointee<1>(prediction), Return(true)));
+  EXPECT_CALL(*mock_predictor_, GetPrefetchData(GURL(main_frame_url), _))
+      .WillOnce(Return(false));
+
+  // Simulate a page load with 2 resources, one we know, one we don't.
+  URLRequestSummary script = CreateURLRequestSummary(
+      1, main_frame_url, gen(1), content::RESOURCE_TYPE_SCRIPT);
+  URLRequestSummary new_script = CreateURLRequestSummary(
+      1, main_frame_url, gen(100), content::RESOURCE_TYPE_SCRIPT);
+  PageRequestSummary summary = CreatePageRequestSummary(
+      main_frame_url, main_frame_url, {script, new_script});
+
+  stats_collector_->RecordPageRequestSummary(summary);
+
+  histogram_tester_->ExpectUniqueSample(
+      internal::kLoadingPredictorPreconnectLearningRecall, 50, 1);
+  histogram_tester_->ExpectUniqueSample(
+      internal::kLoadingPredictorPreconnectLearningPrecision, 33, 1);
+  histogram_tester_->ExpectUniqueSample(
+      internal::kLoadingPredictorPreconnectLearningCount, 3, 1);
 }
 
 TEST_F(LoadingStatsCollectorTest, TestRedirectStatusNoRedirect) {
@@ -155,6 +207,9 @@ TEST_F(LoadingStatsCollectorTest, TestPrefetchHitsMissesHistograms) {
   const std::string main_frame_url = "http://google.com/?query=cats";
   const std::string& script_url = "https://cdn.google.com/script.js";
   EXPECT_CALL(*mock_predictor_, GetPrefetchData(GURL(main_frame_url), _))
+      .WillOnce(Return(false));
+  EXPECT_CALL(*mock_predictor_,
+              PredictPreconnectOrigins(GURL(main_frame_url), _))
       .WillOnce(Return(false));
 
   {
@@ -203,6 +258,9 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectHistograms) {
     return base::StringPrintf("http://cdn%d.google.com/script.js", index);
   };
   EXPECT_CALL(*mock_predictor_, GetPrefetchData(GURL(main_frame_url), _))
+      .WillOnce(Return(false));
+  EXPECT_CALL(*mock_predictor_,
+              PredictPreconnectOrigins(GURL(main_frame_url), _))
       .WillOnce(Return(false));
 
   {
