@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "components/guest_view/browser/guest_view_message_filter.h"
+#include "components/nacl/common/features.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -42,7 +43,7 @@
 #include "storage/browser/quota/quota_settings.h"
 #include "url/gurl.h"
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/browser/nacl_host_message_filter.h"
 #include "components/nacl/browser/nacl_process_host.h"
@@ -104,7 +105,7 @@ void ShellContentBrowserClient::RenderProcessWillLaunch(
           render_process_id, browser_context));
   // PluginInfoMessageFilter is not required because app_shell does not have
   // the concept of disabled plugins.
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
   host->AddFilter(new nacl::NaClHostMessageFilter(
       render_process_id,
       browser_context->IsOffTheRecord(),
@@ -217,7 +218,7 @@ ShellContentBrowserClient::CreateSpeechRecognitionManagerDelegate() {
 
 content::BrowserPpapiHost*
 ShellContentBrowserClient::GetExternalBrowserPpapiHost(int plugin_process_id) {
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
   content::BrowserChildProcessHostIterator iter(PROCESS_TYPE_NACL_LOADER);
   while (!iter.Done()) {
     nacl::NaClProcessHost* host = static_cast<nacl::NaClProcessHost*>(
@@ -278,7 +279,7 @@ void ShellContentBrowserClient::AppendRendererSwitches(
   command_line->CopySwitchesFrom(*base::CommandLine::ForCurrentProcess(),
                                  kSwitchNames, arraysize(kSwitchNames));
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
   // NOTE: app_shell does not support non-SFI mode, so it does not pass through
   // SFI switches either here or for the zygote process.
   static const char* const kNaclSwitchNames[] = {
@@ -286,7 +287,7 @@ void ShellContentBrowserClient::AppendRendererSwitches(
   };
   command_line->CopySwitchesFrom(*base::CommandLine::ForCurrentProcess(),
                                  kNaclSwitchNames, arraysize(kNaclSwitchNames));
-#endif  // !defined(DISABLE_NACL)
+#endif  // BUILDFLAG(ENABLE_NACL)
 }
 
 const Extension* ShellContentBrowserClient::GetExtension(

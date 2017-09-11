@@ -6,13 +6,14 @@
 
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/nacl/common/features.h"
 #include "content/public/common/user_agent.h"
 #include "extensions/common/constants.h"
 #include "extensions/shell/common/version.h"  // Generated file.
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
 #include "base/base_paths.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
@@ -25,7 +26,7 @@
 namespace extensions {
 namespace {
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
 bool GetNaClPluginPath(base::FilePath* path) {
   // On Posix, plugins live in the module directory.
   base::FilePath module;
@@ -34,7 +35,7 @@ bool GetNaClPluginPath(base::FilePath* path) {
   *path = module.Append(nacl::kInternalNaClPluginFileName);
   return true;
 }
-#endif  // !defined(DISABLE_NACL)
+#endif  // BUILDFLAG(ENABLE_NACL)
 
 }  // namespace
 
@@ -46,7 +47,7 @@ ShellContentClient::~ShellContentClient() {
 
 void ShellContentClient::AddPepperPlugins(
     std::vector<content::PepperPluginInfo>* plugins) {
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
   base::FilePath path;
   if (!GetNaClPluginPath(&path))
     return;
@@ -71,7 +72,7 @@ void ShellContentClient::AddPepperPlugins(
       nacl_plugin::PPP_ShutdownModule;
   nacl.permissions = ppapi::PERMISSION_PRIVATE | ppapi::PERMISSION_DEV;
   plugins->push_back(nacl);
-#endif  // !defined(DISABLE_NACL)
+#endif  // BUILDFLAG(ENABLE_NACL)
 }
 
 void ShellContentClient::AddAdditionalSchemes(Schemes* schemes) {

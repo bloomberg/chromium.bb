@@ -24,6 +24,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/features.h"
 #include "components/keep_alive_registry/keep_alive_state_observer.h"
+#include "components/nacl/common/features.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "extensions/features/features.h"
 #include "media/media_features.h"
@@ -316,7 +317,7 @@ class BrowserProcessImpl : public BrowserProcess,
   std::unique_ptr<component_updater::ComponentUpdateService> component_updater_;
   scoped_refptr<CRLSetFetcher> crl_set_fetcher_;
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
   scoped_refptr<component_updater::PnaclComponentInstaller>
       pnacl_component_installer_;
 #endif

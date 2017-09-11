@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/scoped_observer.h"
+#include "components/nacl/common/features.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/manifest_handlers/nacl_modules_handler.h"
@@ -35,7 +36,7 @@ class PluginManager : public BrowserContextKeyedAPI,
  private:
   friend class BrowserContextKeyedAPIFactory<PluginManager>;
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
 
   // We implement some Pepper plugins using NaCl to take advantage of NaCl's
   // strong sandbox. Typically, these NaCl modules are stored in extensions
@@ -52,7 +53,7 @@ class PluginManager : public BrowserContextKeyedAPI,
 
   extensions::NaClModuleInfo::List::iterator FindNaClModule(const GURL& url);
 
-#endif  // !defined(DISABLE_NACL)
+#endif  // BUILDFLAG(ENABLE_NACL)
 
   // ExtensionRegistryObserver implementation.
   void OnExtensionLoaded(content::BrowserContext* browser_context,

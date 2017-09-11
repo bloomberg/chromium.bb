@@ -2623,7 +2623,7 @@ const char kWebvrExperimentalRenderingDescription[] =
 
 #endif  // ENABLE_VR
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
 
 const char kNaclDebugMaskName[] =
     "Restrict Native Client GDB-based debugging by pattern";
@@ -2651,7 +2651,7 @@ const char kPnaclSubzeroName[] = "Force PNaCl Subzero";
 const char kPnaclSubzeroDescription[] =
     "Force the use of PNaCl's fast Subzero translator for all pexe files.";
 
-#endif  // !defined(DISABLE_NACL)
+#endif  // BUILDFLAG(ENABLE_NACL)
 
 #if BUILDFLAG(ENABLE_WEBRTC)
 

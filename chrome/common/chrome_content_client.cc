@@ -67,7 +67,7 @@
 #include "base/win/windows_version.h"
 #endif
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
 #include "components/nacl/common/nacl_constants.h"
 #include "components/nacl/common/nacl_process_type.h"
 #include "components/nacl/common/nacl_sandbox_type.h"
@@ -113,7 +113,7 @@ content::PepperPluginInfo::GetInterfaceFunc g_pdf_get_interface;
 content::PepperPluginInfo::PPP_InitializeModuleFunc g_pdf_initialize_module;
 content::PepperPluginInfo::PPP_ShutdownModuleFunc g_pdf_shutdown_module;
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
 content::PepperPluginInfo::GetInterfaceFunc g_nacl_get_interface;
 content::PepperPluginInfo::PPP_InitializeModuleFunc g_nacl_initialize_module;
 content::PepperPluginInfo::PPP_ShutdownModuleFunc g_nacl_shutdown_module;
@@ -181,7 +181,7 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
   plugins->push_back(pdf_info);
 #endif  // BUILDFLAG(ENABLE_PDF)
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
   // Handle Native Client just like the PDF plugin. This means that it is
   // enabled by default for the non-portable case.  This allows apps installed
   // from the Chrome Web Store to use NaCl even if the command line switch
@@ -207,7 +207,7 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
     nacl.permissions = ppapi::PERMISSION_PRIVATE | ppapi::PERMISSION_DEV;
     plugins->push_back(nacl);
   }
-#endif  // !defined(DISABLE_NACL)
+#endif  // BUILDFLAG(ENABLE_NACL)
 
 #if defined(WIDEVINE_CDM_AVAILABLE_NOT_COMPONENT)
   base::FilePath adapter_path;
@@ -424,7 +424,7 @@ ChromeContentClient::ChromeContentClient() {
 ChromeContentClient::~ChromeContentClient() {
 }
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
 void ChromeContentClient::SetNaClEntryFunctions(
     content::PepperPluginInfo::GetInterfaceFunc get_interface,
     content::PepperPluginInfo::PPP_InitializeModuleFunc initialize_module,
@@ -652,7 +652,7 @@ gfx::Image& ChromeContentClient::GetNativeImageNamed(int resource_id) const {
 }
 
 std::string ChromeContentClient::GetProcessTypeNameInEnglish(int type) {
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
   switch (type) {
     case PROCESS_TYPE_NACL_LOADER:
       return "Native Client module";
@@ -670,7 +670,7 @@ bool ChromeContentClient::GetSandboxProfileForSandboxType(
     int sandbox_type,
     int* sandbox_profile_resource_id) const {
   DCHECK(sandbox_profile_resource_id);
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
   if (sandbox_type == NACL_SANDBOX_TYPE_NACL_LOADER) {
     *sandbox_profile_resource_id = IDR_NACL_SANDBOX_PROFILE;
     return true;

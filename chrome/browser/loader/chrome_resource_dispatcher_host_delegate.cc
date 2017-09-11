@@ -49,6 +49,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/nacl/common/features.h"
 #include "components/offline_pages/features/features.h"
 #include "components/policy/core/common/cloud/policy_header_io_helper.h"
 #include "components/previews/core/previews_experiments.h"
@@ -81,7 +82,7 @@
 #include "net/url_request/url_request.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
 #include "chrome/browser/component_updater/pnacl_component_installer.h"
 #endif
 
@@ -255,7 +256,7 @@ void LaunchURL(
   }
 }
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
 void AppendComponentUpdaterThrottles(
     net::URLRequest* request,
     const ResourceRequestInfo& info,
@@ -290,7 +291,7 @@ void AppendComponentUpdaterThrottles(
         component_updater::GetOnDemandResourceThrottle(cus, crx_id)));
   }
 }
-#endif  // !defined(DISABLE_NACL)
+#endif  // BUILDFLAG(ENABLE_NACL)
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 // Translate content::ResourceType to a type to use for Offliners.
@@ -515,10 +516,10 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
                                   resource_context,
                                   resource_type,
                                   throttles);
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
   AppendComponentUpdaterThrottles(request, *info, resource_context,
                                   resource_type, throttles);
-#endif  // !defined(DISABLE_NACL)
+#endif  // BUILDFLAG(ENABLE_NACL)
 
   if (io_data->loading_predictor_observer()) {
     io_data->loading_predictor_observer()->OnRequestStarted(

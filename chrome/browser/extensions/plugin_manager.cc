@@ -20,7 +20,7 @@
 #include "extensions/common/manifest_handlers/plugins_handler.h"
 #include "url/gurl.h"
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
 #include "components/nacl/common/nacl_constants.h"
 #endif
 
@@ -50,7 +50,7 @@ PluginManager::GetFactoryInstance() {
 void PluginManager::OnExtensionLoaded(content::BrowserContext* browser_context,
                                       const Extension* extension) {
   bool plugins_or_nacl_changed = false;
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
   const NaClModuleInfo::List* nacl_modules =
       NaClModuleInfo::GetNaClModules(extension);
   if (nacl_modules) {
@@ -99,7 +99,7 @@ void PluginManager::OnExtensionUnloaded(
     const Extension* extension,
     UnloadedExtensionReason reason) {
   bool plugins_or_nacl_changed = false;
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
   const NaClModuleInfo::List* nacl_modules =
       NaClModuleInfo::GetNaClModules(extension);
   if (nacl_modules) {
@@ -125,7 +125,7 @@ void PluginManager::OnExtensionUnloaded(
     PluginService::GetInstance()->PurgePluginListCache(profile_, false);
 }
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
 
 void PluginManager::RegisterNaClModule(const NaClModuleInfo& info) {
   DCHECK(FindNaClModule(info.url) == nacl_module_list_.end());
@@ -195,6 +195,6 @@ NaClModuleInfo::List::iterator PluginManager::FindNaClModule(const GURL& url) {
   return nacl_module_list_.end();
 }
 
-#endif  // !defined(DISABLE_NACL)
+#endif  // BUILDFLAG(ENABLE_NACL)
 
 }  // namespace extensions

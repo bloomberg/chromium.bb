@@ -48,6 +48,7 @@
 #include "components/component_updater/component_updater_paths.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/crash/content/app/crash_reporter_client.h"
+#include "components/nacl/common/features.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
@@ -95,7 +96,7 @@
 #include "chrome/app/shutdown_signal_handlers_posix.h"
 #endif
 
-#if !defined(DISABLE_NACL) && defined(OS_LINUX)
+#if BUILDFLAG(ENABLE_NACL) && defined(OS_LINUX)
 #include "components/nacl/common/nacl_paths.h"
 #include "components/nacl/zygote/nacl_fork_delegate_linux.h"
 #endif
@@ -154,7 +155,7 @@
 #include "components/metrics/leak_detector/leak_detector.h"
 #endif
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
 #include "components/nacl/common/nacl_switches.h"
 #include "components/nacl/renderer/plugin/ppapi_entrypoints.h"
 #endif
@@ -281,7 +282,7 @@ void AdjustLinuxOOMScore(const std::string& process_type) {
              process_type == switches::kCloudPrintServiceProcess ||
              process_type == service_manager::switches::kProcessTypeService) {
     score = kMiscScore;
-#ifndef DISABLE_NACL
+#if BUILDFLAG(ENABLE_NACL)
   } else if (process_type == switches::kNaClLoaderProcess ||
              process_type == switches::kNaClLoaderNonSfiProcess) {
     score = kPluginScore;
@@ -322,7 +323,7 @@ bool SubprocessNeedsResourceBundle(const std::string& process_type) {
 #if defined(OS_MACOSX)
       // Mac needs them too for scrollbar related images and for sandbox
       // profiles.
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
       process_type == switches::kNaClLoaderProcess ||
 #endif
       process_type == switches::kPpapiPluginProcess ||
@@ -599,7 +600,7 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
 #if defined(OS_CHROMEOS)
   chromeos::RegisterPathProvider();
 #endif
-#if !defined(DISABLE_NACL) && defined(OS_LINUX)
+#if BUILDFLAG(ENABLE_NACL) && defined(OS_LINUX)
   nacl::RegisterPathProvider();
 #endif
 
@@ -843,7 +844,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
     // Initialize ResourceBundle which handles files loaded from external
     // sources.  The language should have been passed in to us from the
     // browser process as a command line flag.
-#if defined(DISABLE_NACL)
+#if !BUILDFLAG(ENABLE_NACL)
     DCHECK(command_line.HasSwitch(switches::kLang) ||
            process_type == switches::kZygoteProcess ||
            process_type == switches::kGpuProcess ||
@@ -957,7 +958,7 @@ void ChromeMainDelegate::SandboxInitialized(const std::string& process_type) {
 #endif
 
 #if defined(CHROME_MULTIPLE_DLL_CHILD) || !defined(CHROME_MULTIPLE_DLL_BROWSER)
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
   ChromeContentClient::SetNaClEntryFunctions(
       nacl_plugin::PPP_GetInterface,
       nacl_plugin::PPP_InitializeModule,
@@ -990,13 +991,13 @@ int ChromeMainDelegate::RunProcess(
 
     // This entry is not needed on Linux, where the NaCl loader
     // process is launched via nacl_helper instead.
-#if !defined(DISABLE_NACL) && !defined(CHROME_MULTIPLE_DLL_BROWSER) && \
+#if BUILDFLAG(ENABLE_NACL) && !defined(CHROME_MULTIPLE_DLL_BROWSER) && \
     !defined(OS_LINUX)
     {switches::kNaClLoaderProcess, NaClMain},
 #else
-    { "<invalid>", NULL },  // To avoid constant array of size 0
-                            // when DISABLE_NACL and CHROME_MULTIPLE_DLL_CHILD
-#endif  // DISABLE_NACL
+    {"<invalid>", NULL},  // To avoid constant array of size 0
+                          // when NaCl disabled and CHROME_MULTIPLE_DLL_CHILD
+#endif
   };
 
   for (size_t i = 0; i < arraysize(kMainFunctions); ++i) {
@@ -1022,7 +1023,7 @@ void ChromeMainDelegate::ProcessExiting(const std::string& process_type) {
 #if defined(OS_MACOSX)
 bool ChromeMainDelegate::ProcessRegistersWithSystemProcess(
     const std::string& process_type) {
-#if defined(DISABLE_NACL)
+#if !BUILDFLAG(ENABLE_NACL)
   return false;
 #else
   return process_type == switches::kNaClLoaderProcess;
@@ -1036,7 +1037,7 @@ bool ChromeMainDelegate::ShouldSendMachPort(const std::string& process_type) {
 
 bool ChromeMainDelegate::DelaySandboxInitialization(
     const std::string& process_type) {
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
   // NaClLoader does this in NaClMainPlatformDelegate::EnableSandbox().
   // No sandbox needed for relauncher.
   if (process_type == switches::kNaClLoaderProcess)
@@ -1051,8 +1052,8 @@ void ChromeMainDelegate::ZygoteStarting(
     chromeos::ReloadElfTextInHugePages();
 #endif
 
-#if !defined(DISABLE_NACL)
-  nacl::AddNaClZygoteForkDelegates(delegates);
+#if BUILDFLAG(ENABLE_NACL)
+    nacl::AddNaClZygoteForkDelegates(delegates);
 #endif
 }
 

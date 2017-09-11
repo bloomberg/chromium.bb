@@ -327,6 +327,7 @@ static_library("test_support") {
     "//components/crash/content/app",
     "//components/crash/content/app:lib",
     "//components/crash/content/app:test_support",
+    "//components/nacl/common:features",
     "//components/startup_metric_utils/browser:lib",
     "//content/public/app:both",
     "//content/public/common",

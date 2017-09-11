@@ -26,6 +26,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/nacl/common/features.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_observer.h"
@@ -364,7 +365,7 @@ class PepperContentSettingsSpecialCasesTest : public ContentSettingsTest {
     command_line->AppendSwitchASCII(
         switches::kOverridePluginPowerSaverForTesting, "never");
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
     // Ensure NaCl can run.
     command_line->AppendSwitch(switches::kEnableNaCl);
 #endif
@@ -510,12 +511,12 @@ IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesPluginsBlockedTest,
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS) && defined(WIDEVINE_CDM_AVAILABLE) &&
         // !defined(OS_CHROMEOS)
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
 IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesPluginsBlockedTest,
                        NaCl) {
   RunLoadPepperPluginTest("application/x-nacl", true);
 }
-#endif  // !defined(DISABLE_NACL)
+#endif  // BUILDFLAG(ENABLE_NACL)
 
 // The following tests verify that those same Pepper plugins do not work when
 // JavaScript is blocked.
@@ -538,11 +539,11 @@ IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesJavaScriptBlockedTest,
 }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS) && defined(WIDEVINE_CDM_AVAILABLE)
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
 IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesJavaScriptBlockedTest,
                        NaCl) {
   RunJavaScriptBlockedTest("/load_nacl_no_js.html", true);
 }
-#endif  // !defined(DISABLE_NACL)
+#endif  // BUILDFLAG(ENABLE_NACL)
 
 #endif  // BUILDFLAG(ENABLE_PLUGINS)

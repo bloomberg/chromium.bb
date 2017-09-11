@@ -38,6 +38,7 @@ source_set("app_shell_lib") {
     "//components/guest_view/browser",
     "//components/guest_view/common",
     "//components/guest_view/renderer",
+    "//components/nacl/common:features",
     "//components/network_session_configurator/common",
     "//components/pref_registry",
     "//components/prefs",

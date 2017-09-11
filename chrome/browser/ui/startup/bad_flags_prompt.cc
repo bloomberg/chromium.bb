@@ -23,6 +23,7 @@
 #include "components/infobars/core/infobar_delegate.h"
 #include "components/infobars/core/simple_alert_infobar_delegate.h"
 #include "components/invalidation/impl/invalidation_switches.h"
+#include "components/nacl/common/features.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
@@ -90,7 +91,7 @@ void ShowBadFlagsPrompt(Browser* browser) {
     switches::kDisableSeccompFilterSandbox,
     switches::kDisableSetuidSandbox,
     switches::kDisableWebSecurity,
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
     switches::kNaClDangerousNoSandboxNonSfi,
 #endif
     switches::kNoSandbox,

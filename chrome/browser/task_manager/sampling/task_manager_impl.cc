@@ -21,6 +21,7 @@
 #include "chrome/browser/task_manager/providers/web_contents/web_contents_task_provider.h"
 #include "chrome/browser/task_manager/sampling/shared_sampler.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/nacl/common/features.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/render_frame_host.h"
@@ -154,11 +155,11 @@ int TaskManagerImpl::GetIdleWakeupsPerSecond(TaskId task_id) const {
 }
 
 int TaskManagerImpl::GetNaClDebugStubPort(TaskId task_id) const {
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
   return GetTaskGroupByTaskId(task_id)->nacl_debug_stub_port();
 #else
   return -2;
-#endif  // !defined(DISABLE_NACL)
+#endif  // BUILDFLAG(ENABLE_NACL)
 }
 
 void TaskManagerImpl::GetGDIHandles(TaskId task_id,

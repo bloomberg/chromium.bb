@@ -19,6 +19,7 @@
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/nacl/common/features.h"
 #include "content/common/frame_messages.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/pepper/host_dispatcher_wrapper.h"
@@ -751,9 +752,9 @@ bool PluginModule::InitializeModule(
   DCHECK(entry_points.initialize_module != NULL);
   int retval = entry_points.initialize_module(pp_module(), &GetInterface);
   if (retval != 0) {
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
     LOG(WARNING) << "PPP_InitializeModule returned failure " << retval;
-#endif  // !defined(DISABLE_NACL)
+#endif  // BUILDFLAG(ENABLE_NACL)
     return false;
   }
   return true;

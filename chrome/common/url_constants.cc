@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/common/features.h"
+#include "components/nacl/common/features.h"
 #include "components/safe_browsing/web_ui/constants.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/features/features.h"
@@ -735,7 +736,7 @@ const char* const kChromeHostURLs[] = {
 #if defined(OS_WIN)
     kChromeUIConflictsHost,
 #endif
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
     kChromeUINaClHost,
 #endif
 #if BUILDFLAG(ENABLE_EXTENSIONS)

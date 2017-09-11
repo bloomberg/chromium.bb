@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_paths.h"
+#include "components/nacl/common/features.h"
 #include "components/storage_monitor/storage_info.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/web_contents.h"
@@ -44,7 +45,7 @@
 #include "base/strings/sys_string_conversions.h"
 #endif  // OS_MACOSX
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
 #include "base/command_line.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
@@ -241,7 +242,7 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
       ensure_media_directories_exists_;
 };
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
 class MediaGalleriesPlatformAppPpapiTest
     : public MediaGalleriesPlatformAppBrowserTest {
  protected:
@@ -292,7 +293,7 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppPpapiTest, SendFilesystem) {
   ASSERT_TRUE(result) << message_;
 }
 
-#endif  // !defined(DISABLE_NACL)
+#endif  // BUILDFLAG(ENABLE_NACL)
 
 // Test is flaky, it fails on certain bots, namely WinXP Tests(1) and Linux
 // (dbg)(1)(32).  See crbug.com/354425.

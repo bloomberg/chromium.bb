@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "build/build_config.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/nacl/common/features.h"
 #include "components/prefs/pref_service.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "components/update_client/update_query_params.h"
@@ -65,7 +66,7 @@
 #include "extensions/shell/browser/shell_browser_main_parts_mac.h"
 #endif
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/browser/nacl_process_host.h"
 #include "content/public/browser/browser_thread.h"
@@ -79,7 +80,7 @@
 using base::CommandLine;
 using content::BrowserContext;
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
 using content::BrowserThread;
 #endif
 
@@ -217,7 +218,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
       cmd->GetSwitchValueASCII(switches::kAppShellUser),
       cmd->GetSwitchValueASCII(switches::kAppShellRefreshToken)));
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
   nacl::NaClBrowser::SetDelegate(
       std::make_unique<ShellNaClBrowserDelegate>(browser_context_.get()));
   // Track the task so it can be canceled if app_shell shuts down very quickly,
@@ -255,7 +256,7 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
   browser_main_delegate_->Shutdown();
   content::ShellDevToolsManagerDelegate::StopHttpHandler();
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
   task_tracker_.TryCancelAll();
 #endif
 

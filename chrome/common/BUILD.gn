@@ -228,6 +228,7 @@ static_library("common") {
     "//components/json_schema",
     "//components/metrics",
     "//components/metrics:net",
+    "//components/nacl/common:features",
     "//components/nacl/common:process_type",
     "//components/nacl/common:switches",
     "//components/network_session_configurator/common",

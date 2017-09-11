@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/nacl/common/features.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/test/browser_test_utils.h"
@@ -37,7 +38,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
 #include "components/nacl/browser/nacl_process_host.h"
 #endif
 
@@ -586,7 +587,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, UnloadExtensionWhileHidden) {
   ASSERT_TRUE(WaitForBackgroundMode(false));
 }
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
 
 // Verify that active NaCl embeds raise the keepalive count.
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageNaClTest, BackgroundKeepaliveActive) {
@@ -645,4 +646,4 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageNaClTest, DISABLED_CreateNaClModule) {
   EXPECT_TRUE(created_listener.WaitUntilSatisfied());
 }
 
-#endif  //  !defined(DISABLE_NACL)
+#endif  //  BUILDFLAG(ENABLE_NACL)

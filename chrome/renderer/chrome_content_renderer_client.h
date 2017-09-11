@@ -17,6 +17,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
 #include "chrome/renderer/media/chrome_key_systems_provider.h"
+#include "components/nacl/common/features.h"
 #include "components/rappor/public/interfaces/rappor_recorder.mojom.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/spellcheck/spellcheck_build_features.h"
@@ -252,7 +253,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   // which the RendererMain function was entered.
   base::TimeTicks main_entry_time_;
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
   // Determines if a NaCl app is allowed, and modifies params to pass the app's
   // permissions to the trusted NaCl plugin.
   static bool IsNaClAllowed(const GURL& manifest_url,

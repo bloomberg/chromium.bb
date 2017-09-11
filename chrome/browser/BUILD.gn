@@ -1517,6 +1517,7 @@ split_static_library("browser") {
     "//base",
     "//chrome/common",
     "//components/autofill/core/browser",
+    "//components/nacl/common:features",
     "//components/payments/core",
     "//components/sync",
     "//content/public/browser",

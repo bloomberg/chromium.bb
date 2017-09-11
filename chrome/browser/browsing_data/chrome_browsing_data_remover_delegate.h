@@ -16,6 +16,7 @@
 #include "chrome/common/features.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/nacl/common/features.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/browsing_data_remover.h"
@@ -265,7 +266,7 @@ class ChromeBrowsingDataRemoverDelegate
   SubTask clear_form_;
   SubTask clear_history_;
   SubTask clear_keyword_data_;
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
   SubTask clear_nacl_cache_;
   SubTask clear_pnacl_cache_;
 #endif

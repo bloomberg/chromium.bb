@@ -20,6 +20,7 @@
 #include "chrome/install_static/policy_path_parser.h"
 #include "chrome/install_static/user_data_dir.h"
 #include "chrome_elf/nt_registry/nt_registry.h"
+#include "components/nacl/common/features.h"
 #include "components/version_info/channel.h"
 
 namespace install_static {
@@ -29,7 +30,7 @@ enum class ProcessType {
   OTHER_PROCESS,
   BROWSER_PROCESS,
   CLOUD_PRINT_SERVICE_PROCESS,
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
   NACL_BROKER_PROCESS,
   NACL_LOADER_PROCESS,
 #endif
@@ -77,7 +78,7 @@ constexpr wchar_t kRegValueUsageStats[] = L"usagestats";
 constexpr wchar_t kMetricsReportingEnabled[] = L"MetricsReportingEnabled";
 
 constexpr wchar_t kCloudPrintServiceProcess[] = L"service";
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
 constexpr wchar_t kNaClBrokerProcess[] = L"nacl-broker";
 constexpr wchar_t kNaClLoaderProcess[] = L"nacl-loader";
 #endif
@@ -312,7 +313,7 @@ ProcessType GetProcessType(const std::wstring& process_type) {
     return ProcessType::BROWSER_PROCESS;
   if (process_type == kCloudPrintServiceProcess)
     return ProcessType::CLOUD_PRINT_SERVICE_PROCESS;
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
   if (process_type == kNaClBrokerProcess)
     return ProcessType::NACL_BROKER_PROCESS;
   if (process_type == kNaClLoaderProcess)
@@ -329,7 +330,7 @@ bool ProcessNeedsProfileDir(ProcessType process_type) {
   switch (process_type) {
     case ProcessType::BROWSER_PROCESS:
     case ProcessType::CLOUD_PRINT_SERVICE_PROCESS:
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
     case ProcessType::NACL_BROKER_PROCESS:
     case ProcessType::NACL_LOADER_PROCESS:
 #endif

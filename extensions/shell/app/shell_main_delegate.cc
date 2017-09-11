@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
+#include "components/nacl/common/features.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/common/shell_switches.h"
@@ -29,7 +30,7 @@
 #include "extensions/shell/app/paths_mac.h"
 #endif
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
 #include "components/nacl/common/nacl_switches.h"
 #if defined(OS_LINUX)
 #include "components/nacl/common/nacl_paths.h"
@@ -37,7 +38,7 @@
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 #include "components/nacl/zygote/nacl_fork_delegate_linux.h"
 #endif  // OS_POSIX && !OS_MACOSX && !OS_ANDROID
-#endif  // !DISABLE_NACL
+#endif  // BUILDFLAG(ENABLE_NACL)
 
 #if defined(OS_WIN)
 #include "base/base_paths_win.h"
@@ -136,7 +137,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
 #if defined(OS_CHROMEOS)
   chromeos::RegisterPathProvider();
 #endif
-#if !defined(DISABLE_NACL) && defined(OS_LINUX)
+#if BUILDFLAG(ENABLE_NACL) && defined(OS_LINUX)
   nacl::RegisterPathProvider();
 #endif
   extensions::RegisterPathProvider();
@@ -174,9 +175,9 @@ void ShellMainDelegate::ProcessExiting(const std::string& process_type) {
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 void ShellMainDelegate::ZygoteStarting(
     std::vector<std::unique_ptr<content::ZygoteForkDelegate>>* delegates) {
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
   nacl::AddNaClZygoteForkDelegates(delegates);
-#endif  // DISABLE_NACL
+#endif  // BUILDFLAG(ENABLE_NACL)
 }
 #endif  // OS_POSIX && !OS_MACOSX && !OS_ANDROID
 
@@ -209,10 +210,9 @@ bool ShellMainDelegate::ProcessNeedsResourceBundle(
     const std::string& process_type) {
   // The browser process has no process type flag, but needs resources.
   // On Linux the zygote process opens the resources for the renderers.
-  return process_type.empty() ||
-         process_type == switches::kZygoteProcess ||
+  return process_type.empty() || process_type == switches::kZygoteProcess ||
          process_type == switches::kRendererProcess ||
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
          process_type == switches::kNaClLoaderProcess ||
 #endif
 #if defined(OS_MACOSX)
