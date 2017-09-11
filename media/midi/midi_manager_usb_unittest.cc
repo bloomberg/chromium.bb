@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "media/midi/midi_service.h"
 #include "media/midi/usb_midi_device.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -168,9 +169,10 @@ class TestUsbMidiDeviceFactory : public UsbMidiDevice::Factory {
 
 class MidiManagerUsbForTesting : public MidiManagerUsb {
  public:
-  explicit MidiManagerUsbForTesting(
-      std::unique_ptr<UsbMidiDevice::Factory> device_factory)
-      : MidiManagerUsb(nullptr, std::move(device_factory)) {}
+  MidiManagerUsbForTesting(
+      std::unique_ptr<UsbMidiDevice::Factory> device_factory,
+      MidiService* service)
+      : MidiManagerUsb(service, std::move(device_factory)) {}
   ~MidiManagerUsbForTesting() override {}
 
   void CallCompleteInitialization(Result result) {
@@ -183,16 +185,49 @@ class MidiManagerUsbForTesting : public MidiManagerUsb {
   DISALLOW_COPY_AND_ASSIGN(MidiManagerUsbForTesting);
 };
 
+class MidiManagerFactoryForTesting : public midi::MidiService::ManagerFactory {
+ public:
+  MidiManagerFactoryForTesting() = default;
+  ~MidiManagerFactoryForTesting() override = default;
+  std::unique_ptr<midi::MidiManager> Create(
+      midi::MidiService* service) override {
+    std::unique_ptr<TestUsbMidiDeviceFactory> device_factory =
+        std::make_unique<TestUsbMidiDeviceFactory>();
+    device_factory_ = device_factory.get();
+    std::unique_ptr<MidiManagerUsbForTesting> manager =
+        std::make_unique<MidiManagerUsbForTesting>(std::move(device_factory),
+                                                   service);
+    // |manager| will be owned by the caller MidiService instance, and valid
+    // while the MidiService instance is running.
+    // MidiService::Shutdown() or destructor will destruct it, and |manager_|
+    // get to be invalid after that.
+    manager_ = manager.get();
+    return manager;
+  }
+  MidiManagerUsb* manager() {
+    DCHECK(manager_);
+    return manager_;
+  }
+  TestUsbMidiDeviceFactory* device_factory() {
+    DCHECK(device_factory_);
+    return device_factory_;
+  }
+
+ private:
+  TestUsbMidiDeviceFactory* device_factory_ = nullptr;
+  MidiManagerUsbForTesting* manager_ = nullptr;
+};
+
 class MidiManagerUsbTest : public ::testing::Test {
  public:
   MidiManagerUsbTest() : message_loop_(new base::MessageLoop) {
-    std::unique_ptr<TestUsbMidiDeviceFactory> factory(
-        new TestUsbMidiDeviceFactory);
+    std::unique_ptr<MidiManagerFactoryForTesting> factory =
+        std::make_unique<MidiManagerFactoryForTesting>();
     factory_ = factory.get();
-    manager_.reset(new MidiManagerUsbForTesting(std::move(factory)));
+    service_ = std::make_unique<MidiService>(std::move(factory));
   }
   ~MidiManagerUsbTest() override {
-    manager_->Shutdown();
+    manager()->Shutdown();
     base::RunLoop run_loop;
     run_loop.RunUntilIdle();
 
@@ -205,12 +240,10 @@ class MidiManagerUsbTest : public ::testing::Test {
  protected:
   void Initialize() {
     client_.reset(new FakeMidiManagerClient(&logger_));
-    manager_->StartSession(client_.get());
+    manager()->StartSession(client_.get());
   }
 
-  void Finalize() {
-    manager_->EndSession(client_.get());
-  }
+  void Finalize() { manager()->EndSession(client_.get()); }
 
   bool IsInitializationCallbackInvoked() {
     return client_->complete_start_session_;
@@ -220,7 +253,7 @@ class MidiManagerUsbTest : public ::testing::Test {
 
   void RunCallbackUntilCallbackInvoked(
       bool result, UsbMidiDevice::Devices* devices) {
-    factory_->callback_.Run(result, devices);
+    std::move(factory_->device_factory()->callback_).Run(result, devices);
     while (!client_->complete_start_session_) {
       base::RunLoop run_loop;
       run_loop.RunUntilIdle();
@@ -230,13 +263,14 @@ class MidiManagerUsbTest : public ::testing::Test {
   const MidiPortInfoList& input_ports() { return client_->input_ports_; }
   const MidiPortInfoList& output_ports() { return client_->output_ports_; }
 
-  std::unique_ptr<MidiManagerUsbForTesting> manager_;
+  MidiManagerUsb* manager() { return factory_->manager(); }
+
+  MidiManagerFactoryForTesting* factory_;
   std::unique_ptr<FakeMidiManagerClient> client_;
-  // Owned by manager_.
-  TestUsbMidiDeviceFactory* factory_;
   Logger logger_;
 
  private:
+  std::unique_ptr<MidiService> service_;
   std::unique_ptr<base::MessageLoop> message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(MidiManagerUsbTest);
@@ -287,11 +321,11 @@ TEST_F(MidiManagerUsbTest, Initialize) {
   EXPECT_EQ("device1", output_ports()[1].name);
   EXPECT_EQ("1.02", output_ports()[1].version);
 
-  ASSERT_TRUE(manager_->input_stream());
-  std::vector<UsbMidiJack> jacks = manager_->input_stream()->jacks();
-  ASSERT_EQ(2u, manager_->output_streams().size());
-  EXPECT_EQ(2u, manager_->output_streams()[0]->jack().jack_id);
-  EXPECT_EQ(3u, manager_->output_streams()[1]->jack().jack_id);
+  ASSERT_TRUE(manager()->input_stream());
+  std::vector<UsbMidiJack> jacks = manager()->input_stream()->jacks();
+  ASSERT_EQ(2u, manager()->output_streams().size());
+  EXPECT_EQ(2u, manager()->output_streams()[0]->jack().jack_id);
+  EXPECT_EQ(3u, manager()->output_streams()[1]->jack().jack_id);
   ASSERT_EQ(1u, jacks.size());
   EXPECT_EQ(2, jacks[0].endpoint_number());
 
@@ -360,11 +394,11 @@ TEST_F(MidiManagerUsbTest, InitializeMultipleDevices) {
   EXPECT_EQ("device2", output_ports()[3].name);
   EXPECT_EQ("98.76", output_ports()[3].version);
 
-  ASSERT_TRUE(manager_->input_stream());
-  std::vector<UsbMidiJack> jacks = manager_->input_stream()->jacks();
-  ASSERT_EQ(4u, manager_->output_streams().size());
-  EXPECT_EQ(2u, manager_->output_streams()[0]->jack().jack_id);
-  EXPECT_EQ(3u, manager_->output_streams()[1]->jack().jack_id);
+  ASSERT_TRUE(manager()->input_stream());
+  std::vector<UsbMidiJack> jacks = manager()->input_stream()->jacks();
+  ASSERT_EQ(4u, manager()->output_streams().size());
+  EXPECT_EQ(2u, manager()->output_streams()[0]->jack().jack_id);
+  EXPECT_EQ(3u, manager()->output_streams()[1]->jack().jack_id);
   ASSERT_EQ(2u, jacks.size());
   EXPECT_EQ(2, jacks[0].endpoint_number());
 
@@ -424,9 +458,9 @@ TEST_F(MidiManagerUsbTest, Send) {
   EXPECT_FALSE(IsInitializationCallbackInvoked());
   RunCallbackUntilCallbackInvoked(true, &devices);
   EXPECT_EQ(Result::OK, GetInitializationResult());
-  ASSERT_EQ(2u, manager_->output_streams().size());
+  ASSERT_EQ(2u, manager()->output_streams().size());
 
-  manager_->DispatchSendMidiData(client_.get(), 1, ToVector(data), 0);
+  manager()->DispatchSendMidiData(client_.get(), 1, ToVector(data), 0);
   // Since UsbMidiDevice::Send is posted as a task, RunLoop should run to
   // invoke the task.
   base::RunLoop run_loop;
@@ -468,15 +502,15 @@ TEST_F(MidiManagerUsbTest, SendFromCompromizedRenderer) {
   EXPECT_FALSE(IsInitializationCallbackInvoked());
   RunCallbackUntilCallbackInvoked(true, &devices);
   EXPECT_EQ(Result::OK, GetInitializationResult());
-  ASSERT_EQ(2u, manager_->output_streams().size());
+  ASSERT_EQ(2u, manager()->output_streams().size());
   EXPECT_EQ("UsbMidiDevice::GetDescriptors\n", logger_.TakeLog());
 
   // The specified port index is invalid. The manager must ignore the request.
-  manager_->DispatchSendMidiData(client_.get(), 99, ToVector(data), 0);
+  manager()->DispatchSendMidiData(client_.get(), 99, ToVector(data), 0);
   EXPECT_EQ("", logger_.TakeLog());
 
   // The specified port index is invalid. The manager must ignore the request.
-  manager_->DispatchSendMidiData(client_.get(), 2, ToVector(data), 0);
+  manager()->DispatchSendMidiData(client_.get(), 2, ToVector(data), 0);
   EXPECT_EQ("", logger_.TakeLog());
 }
 
@@ -512,8 +546,8 @@ TEST_F(MidiManagerUsbTest, Receive) {
   RunCallbackUntilCallbackInvoked(true, &devices);
   EXPECT_EQ(Result::OK, GetInitializationResult());
 
-  manager_->ReceiveUsbMidiData(device_raw, 2, data, arraysize(data),
-                               base::TimeTicks());
+  manager()->ReceiveUsbMidiData(device_raw, 2, data, arraysize(data),
+                                base::TimeTicks());
   Finalize();
 
   EXPECT_EQ(
@@ -550,24 +584,24 @@ TEST_F(MidiManagerUsbTest, AttachDevice) {
 
   ASSERT_EQ(0u, input_ports().size());
   ASSERT_EQ(0u, output_ports().size());
-  ASSERT_TRUE(manager_->input_stream());
-  std::vector<UsbMidiJack> jacks = manager_->input_stream()->jacks();
-  ASSERT_EQ(0u, manager_->output_streams().size());
+  ASSERT_TRUE(manager()->input_stream());
+  std::vector<UsbMidiJack> jacks = manager()->input_stream()->jacks();
+  ASSERT_EQ(0u, manager()->output_streams().size());
   ASSERT_EQ(0u, jacks.size());
   EXPECT_EQ("", logger_.TakeLog());
 
   std::unique_ptr<FakeUsbMidiDevice> new_device(
       new FakeUsbMidiDevice(&logger_));
   new_device->SetDescriptors(ToVector(descriptors));
-  manager_->OnDeviceAttached(std::move(new_device));
+  manager()->OnDeviceAttached(std::move(new_device));
 
   ASSERT_EQ(1u, input_ports().size());
   ASSERT_EQ(2u, output_ports().size());
-  ASSERT_TRUE(manager_->input_stream());
-  jacks = manager_->input_stream()->jacks();
-  ASSERT_EQ(2u, manager_->output_streams().size());
-  EXPECT_EQ(2u, manager_->output_streams()[0]->jack().jack_id);
-  EXPECT_EQ(3u, manager_->output_streams()[1]->jack().jack_id);
+  ASSERT_TRUE(manager()->input_stream());
+  jacks = manager()->input_stream()->jacks();
+  ASSERT_EQ(2u, manager()->output_streams().size());
+  EXPECT_EQ(2u, manager()->output_streams()[0]->jack().jack_id);
+  EXPECT_EQ(3u, manager()->output_streams()[1]->jack().jack_id);
   ASSERT_EQ(1u, jacks.size());
   EXPECT_EQ(2, jacks[0].endpoint_number());
   EXPECT_EQ("UsbMidiDevice::GetDescriptors\n", logger_.TakeLog());
