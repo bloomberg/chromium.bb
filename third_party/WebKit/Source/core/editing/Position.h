@@ -230,6 +230,9 @@ extern template class CORE_EXTERN_TEMPLATE_EXPORT
 using Position = PositionTemplate<EditingStrategy>;
 using PositionInFlatTree = PositionTemplate<EditingInFlatTreeStrategy>;
 
+bool IsPositionValidFor(const Position&, const Document&);
+bool IsPositionValidFor(const PositionInFlatTree&, const Document&);
+
 template <typename Strategy>
 bool operator==(const PositionTemplate<Strategy>& a,
                 const PositionTemplate<Strategy>& b) {
