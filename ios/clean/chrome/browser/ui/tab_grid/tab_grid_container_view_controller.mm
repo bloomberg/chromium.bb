@@ -21,6 +21,7 @@
 @synthesize toolbar = _toolbar;
 @synthesize dispatcher = _dispatcher;
 @synthesize tabGrid = _tabGrid;
+@synthesize incognito = _incognito;
 
 - (void)setTabGrid:(UIViewController*)tabGrid {
   [_tabGrid willMoveToParentViewController:nil];
@@ -33,6 +34,7 @@
     return;
 
   [self addChildViewController:tabGrid];
+
   [self.view addSubview:tabGrid.view];
   tabGrid.view.translatesAutoresizingMaskIntoConstraints = NO;
   [NSLayoutConstraint activateConstraints:@[
@@ -41,12 +43,18 @@
     [tabGrid.view.rightAnchor constraintEqualToAnchor:self.view.rightAnchor],
     [tabGrid.view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
   ]];
+
   [tabGrid didMoveToParentViewController:self];
 }
 
 - (void)setDispatcher:(id<TabGridToolbarCommands>)dispatcher {
   _dispatcher = dispatcher;
   self.toolbar.dispatcher = dispatcher;
+}
+
+- (void)setIncognito:(BOOL)incognito {
+  _incognito = incognito;
+  [self.toolbar setIncognito:incognito];
 }
 
 #pragma mark - View lifecyle

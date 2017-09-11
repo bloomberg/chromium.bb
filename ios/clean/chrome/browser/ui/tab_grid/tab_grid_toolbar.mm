@@ -20,12 +20,14 @@ const CGFloat kSpacing = 16.0f;
 
 @interface TabGridToolbar ()
 @property(nonatomic, weak) UIStackView* toolbarContent;
+@property(nonatomic, weak) UIVisualEffectView* toolbarView;
 @end
 
 @implementation TabGridToolbar
 
 @synthesize toolbarContent = _toolbarContent;
 @synthesize dispatcher = _dispatcher;
+@synthesize toolbarView = _toolbarView;
 
 - (instancetype)init {
   if (self = [super init]) {
@@ -39,6 +41,7 @@ const CGFloat kSpacing = 16.0f;
 
     UIStackView* toolbarContent = [self content];
     [toolbarView.contentView addSubview:toolbarContent];
+    _toolbarView = toolbarView;
     _toolbarContent = toolbarContent;
     // Sets the stackview to a fixed height, anchored to the bottom of the
     // blur view.
@@ -54,6 +57,19 @@ const CGFloat kSpacing = 16.0f;
     ]];
   }
   return self;
+}
+
+- (void)setIncognito:(BOOL)incognito {
+  // TODO: Add correct colors.
+  if (incognito) {
+    UIVisualEffect* blurEffect =
+        [UIBlurEffect effectWithStyle:UIBlurEffectStyleLight];
+    self.toolbarView.effect = blurEffect;
+  } else {
+    UIVisualEffect* blurEffect =
+        [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
+    self.toolbarView.effect = blurEffect;
+  }
 }
 
 #pragma mark - ZoomTransitionDelegate
@@ -80,6 +96,10 @@ const CGFloat kSpacing = 16.0f;
   [self.dispatcher showToolsMenu];
 }
 
+- (void)toggleIncognito {
+  [self.dispatcher toggleIncognito];
+}
+
 #pragma mark - Private
 
 // Returns a stack view containing the elements of the toolbar.
@@ -92,9 +112,14 @@ const CGFloat kSpacing = 16.0f;
                  action:@selector(showToolsMenu)
        forControlEvents:UIControlEventTouchUpInside];
 
+  UIButton* incognitoButton = [UIButton cr_tabGridToolbarIncognitoButton];
+  [incognitoButton addTarget:self
+                      action:@selector(toggleIncognito)
+            forControlEvents:UIControlEventTouchUpInside];
+
   NSArray* items = @[
-    [UIButton cr_tabGridToolbarDoneButton],
-    [UIButton cr_tabGridToolbarIncognitoButton], spacerView, menuButton
+    [UIButton cr_tabGridToolbarDoneButton], incognitoButton, spacerView,
+    menuButton
   ];
   UIStackView* content = [[UIStackView alloc] initWithArrangedSubviews:items];
   content.layoutMarginsRelativeArrangement = YES;

@@ -10,6 +10,8 @@ source_set("ntp") {
     "ntp_home_coordinator.mm",
     "ntp_home_header_coordinator.h",
     "ntp_home_header_coordinator.mm",
+    "ntp_incognito_coordinator.h",
+    "ntp_incognito_coordinator.mm",
     "ntp_mediator.h",
     "ntp_mediator.mm",
   ]
@@ -94,6 +96,7 @@ source_set("unit_tests") {
     "ntp_home_coordinator_unittest.mm",
     "ntp_home_header_coordinator_unittest.mm",
     "ntp_home_header_view_controller_unittest.mm",
+    "ntp_incognito_coordinator_unittest.mm",
     "ntp_mediator_unittest.mm",
     "ntp_view_controller_unittest.mm",
   ]

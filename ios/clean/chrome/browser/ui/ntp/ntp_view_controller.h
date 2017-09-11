@@ -18,6 +18,9 @@
 // The dispatcher for this view controller
 @property(nonatomic, weak) id<NTPCommands> dispatcher;
 
+// Setting this property adds an Incognito panel.
+@property(nonatomic, strong) UIViewController* incognitoViewController;
+
 // Setting this property adds a Chrome Home panel.
 @property(nonatomic, strong) UIViewController* homeViewController;
 
