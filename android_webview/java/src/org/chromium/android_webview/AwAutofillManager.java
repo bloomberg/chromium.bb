@@ -4,8 +4,10 @@
 
 package org.chromium.android_webview;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Rect;
+import android.os.Build;
 import android.view.View;
 import android.view.autofill.AutofillManager;
 import android.view.autofill.AutofillValue;
@@ -18,6 +20,7 @@ import java.lang.ref.WeakReference;
  * The class to call Android's AutofillManager.
  */
 // TODO(michaelbai): Extend this class to provide instrumentation test. http://crbug.com/717658.
+@TargetApi(Build.VERSION_CODES.O)
 public class AwAutofillManager {
     private static final String TAG = "AwAutofillManager";
 

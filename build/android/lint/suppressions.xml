@@ -190,12 +190,15 @@ Still reading?
   <issue id="MissingVersion">
     <ignore path="AndroidManifest.xml"/>
   </issue>
-  <!-- TODO(crbug.com/739746): Remove once platform-tools is updated. -->
-  <issue id="NewApi" severity="ignore"/>
   <issue id="NewApi">
-    <ignore regexp="Attribute `paddingStart` referenced here can result in a crash on some specific devices older than API 17"/>
+    <!-- AutoCloseable has been available since API 15, just hidden. -->
+    <ignore regexp="Class requires API level 19.*java.lang.AutoCloseable"/>
     <!-- We support try-with-resources via desugar. -->
     <ignore regexp="Try-with-resources requires API level 19"/>
+    <ignore regexp="Call requires API level 19.*`java.lang.Throwable#addSuppressed`"/>
+    <!-- We support default methods via desugar. -->
+    <ignore regexp="Default method requires API level 24"/>
+    <ignore regexp="Attribute `paddingStart` referenced here can result in a crash on some specific devices older than API 17"/>
     <ignore regexp="chrome/android/java/res/values-v17/styles.xml"/>
     <ignore regexp="chromecast/internal"/>
     <ignore regexp="com/android/tv"/>

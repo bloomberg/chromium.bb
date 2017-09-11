@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.init;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -655,9 +656,10 @@ public class ProcessInitializationHandler {
     /**
      * Logs a histogram with the size of the Android EGL shader cache.
      */
+    @TargetApi(Build.VERSION_CODES.N)
     private static void logEGLShaderCacheSizeHistogram() {
         // To simplify logic, only log this value on Android N+.
-        if (Build.VERSION.SDK_INT < 24) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             return;
         }
         final Context cacheContext =

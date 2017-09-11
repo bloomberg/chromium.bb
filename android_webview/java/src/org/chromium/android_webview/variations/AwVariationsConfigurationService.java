@@ -4,6 +4,7 @@
 
 package org.chromium.android_webview.variations;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Service;
 import android.app.job.JobInfo;
@@ -142,6 +143,8 @@ public class AwVariationsConfigurationService extends Service {
         }
     }
 
+    // TODO(crbug.com/762607): Fix getPendingJob API level and remove suppression.
+    @SuppressLint("NewApi")
     private static boolean pendingJobExists() {
         Context context = ContextUtils.getApplicationContext();
         JobScheduler scheduler =

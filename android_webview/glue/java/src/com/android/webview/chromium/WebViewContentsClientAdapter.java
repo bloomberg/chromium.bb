@@ -1217,6 +1217,7 @@ class WebViewContentsClientAdapter extends AwContentsClient {
     }
 
     @Override
+    @TargetApi(Build.VERSION_CODES.O)
     public boolean onRenderProcessGone(final AwRenderProcessGoneDetail detail) {
         // WebViewClient.onRenderProcessGone was added in O.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return false;

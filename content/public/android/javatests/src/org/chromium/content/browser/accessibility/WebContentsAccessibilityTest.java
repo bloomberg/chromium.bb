@@ -8,6 +8,7 @@ import static android.view.accessibility.AccessibilityNodeInfo.EXTRA_DATA_TEXT_C
 import static android.view.accessibility.AccessibilityNodeInfo.EXTRA_DATA_TEXT_CHARACTER_LOCATION_ARG_START_INDEX;
 import static android.view.accessibility.AccessibilityNodeInfo.EXTRA_DATA_TEXT_CHARACTER_LOCATION_KEY;
 
+import android.annotation.TargetApi;
 import android.graphics.RectF;
 import android.os.Build;
 import android.os.Bundle;
@@ -25,6 +26,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
@@ -62,10 +64,9 @@ public class WebContentsAccessibilityTest {
      */
     @Test
     @MediumTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    @TargetApi(Build.VERSION_CODES.O)
     public void testAddExtraDataToAccessibilityNodeInfo() throws Throwable {
-        // The API we want to test only exists on O and higher.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
-
         // Load a really simple webpage.
         final String data = "<h1>Simple test page</h1>"
                 + "<section><p>Text</p></section>";

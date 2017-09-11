@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.ntp;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.res.Resources;
 import android.view.Gravity;
@@ -32,6 +33,8 @@ public class IncognitoBottomSheetContent extends IncognitoNewTabPage implements 
      * Constructs a new IncognitoBottomSheetContent.
      * @param activity The {@link Activity} displaying this bottom sheet content.
      */
+    // TODO(crbug.com/762591): Fix and remove NewApi suppression.
+    @SuppressLint("NewApi")
     public IncognitoBottomSheetContent(final Activity activity) {
         super(activity);
 
