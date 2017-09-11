@@ -692,6 +692,7 @@ void NGLineBreaker::HandleOverflow(NGLineInfo* line_info) {
       // must not be at the end.
       LayoutUnit item_available_width =
           std::min(-next_width_to_rewind, item_result->inline_size - 1);
+      SetCurrentStyle(*item.Style());
       BreakText(item_result, item, item_available_width);
       if (item_result->inline_size <= item_available_width) {
         DCHECK(item_result->end_offset < item.EndOffset() ||
@@ -718,6 +719,7 @@ void NGLineBreaker::HandleOverflow(NGLineInfo* line_info) {
     // that depend on old available width, but it's not trivial to rewind all
     // the states. For the simplicity, rewind to the beginning of the line.
     Rewind(line_info, 0);
+    SetCurrentStyle(line_info->LineStyle());
     line_.position = line_info->TextIndent();
     BreakLine(line_info);
     return;
