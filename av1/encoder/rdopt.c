@@ -10141,7 +10141,7 @@ static void pick_filter_intra_interframe(
   rate2 += write_uniform_cost(
       FILTER_INTRA_MODES, mbmi->filter_intra_mode_info.filter_intra_mode[0]);
 #if CONFIG_EXT_INTRA
-  if (av1_is_directional_mode(mbmi->uv_mode, bsize) &&
+  if (av1_is_directional_mode(get_uv_mode(mbmi->uv_mode), bsize) &&
       av1_use_angle_delta(bsize)) {
     rate2 += write_uniform_cost(2 * MAX_ANGLE_DELTA + 1,
                                 MAX_ANGLE_DELTA + mbmi->angle_delta[1]);
@@ -10979,7 +10979,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
                                       MAX_ANGLE_DELTA + mbmi->angle_delta[0]);
         }
       }
-      if (av1_is_directional_mode(mbmi->uv_mode, bsize) &&
+      if (av1_is_directional_mode(get_uv_mode(mbmi->uv_mode), bsize) &&
           av1_use_angle_delta(bsize)) {
         rate2 += write_uniform_cost(2 * MAX_ANGLE_DELTA + 1,
                                     MAX_ANGLE_DELTA + mbmi->angle_delta[1]);
