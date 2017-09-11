@@ -14,7 +14,7 @@ class WebRTC(config_util.Config):
 
   @staticmethod
   def fetch_spec(props):
-    url = 'https://chromium.googlesource.com/external/webrtc.git'
+    url = 'https://webrtc.googlesource.com/src.git'
     spec = {
       'solutions': [
         {
