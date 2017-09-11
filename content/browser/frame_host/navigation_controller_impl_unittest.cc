@@ -683,7 +683,10 @@ void CheckNavigationEntryMatchLoadParams(
   EXPECT_EQ(load_params.referrer.policy, entry->GetReferrer().policy);
   EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
       entry->GetTransitionType(), load_params.transition_type));
-  EXPECT_EQ(load_params.extra_headers, entry->extra_headers());
+  std::string extra_headers_crlf;
+  base::ReplaceChars(load_params.extra_headers, "\n", "\r\n",
+                     &extra_headers_crlf);
+  EXPECT_EQ(extra_headers_crlf, entry->extra_headers());
 
   EXPECT_EQ(load_params.is_renderer_initiated, entry->is_renderer_initiated());
   EXPECT_EQ(load_params.base_url_for_data_url, entry->GetBaseURLForDataURL());
@@ -720,7 +723,7 @@ TEST_F(NavigationControllerTest, LoadURLWithParams) {
   load_params.referrer =
       Referrer(GURL("http://referrer"), blink::kWebReferrerPolicyDefault);
   load_params.transition_type = ui::PAGE_TRANSITION_GENERATED;
-  load_params.extra_headers = "content-type: text/plain";
+  load_params.extra_headers = "content-type: text/plain;\nX-Foo: Bar";
   load_params.load_type = NavigationController::LOAD_TYPE_DEFAULT;
   load_params.is_renderer_initiated = true;
   load_params.override_user_agent = NavigationController::UA_OVERRIDE_TRUE;
@@ -814,7 +817,7 @@ TEST_F(NavigationControllerTest, LoadURL_SamePage) {
   const base::Time timestamp = controller.GetVisibleEntry()->GetTimestamp();
   EXPECT_FALSE(timestamp.is_null());
 
-  const std::string new_extra_headers("Foo: Bar");
+  const std::string new_extra_headers("Foo: Bar\nBar: Baz");
   controller.LoadURL(
       url1, Referrer(), ui::PAGE_TRANSITION_TYPED, new_extra_headers);
   entry_id = controller.GetPendingEntry()->GetUniqueID();
@@ -837,7 +840,10 @@ TEST_F(NavigationControllerTest, LoadURL_SamePage) {
   EXPECT_FALSE(controller.CanGoForward());
 
   // The extra headers should have been updated.
-  EXPECT_EQ(new_extra_headers, controller.GetVisibleEntry()->extra_headers());
+  std::string new_extra_headers_crlf;
+  base::ReplaceChars(new_extra_headers, "\n", "\r\n", &new_extra_headers_crlf);
+  EXPECT_EQ(new_extra_headers_crlf,
+            controller.GetVisibleEntry()->extra_headers());
 
   // The timestamp should have been updated.
   //

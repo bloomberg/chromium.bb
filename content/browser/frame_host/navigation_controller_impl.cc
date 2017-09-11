@@ -758,9 +758,12 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
 
   // Otherwise, create a pending entry for the main frame.
   if (!entry) {
+    // extra_headers in params are \n separated, navigation entries want \r\n.
+    std::string extra_headers_crlf;
+    base::ReplaceChars(params.extra_headers, "\n", "\r\n", &extra_headers_crlf);
     entry = NavigationEntryImpl::FromNavigationEntry(CreateNavigationEntry(
         params.url, params.referrer, params.transition_type,
-        params.is_renderer_initiated, params.extra_headers, browser_context_));
+        params.is_renderer_initiated, extra_headers_crlf, browser_context_));
     entry->set_source_site_instance(
         static_cast<SiteInstanceImpl*>(params.source_site_instance.get()));
     entry->SetRedirectChain(params.redirect_chain);

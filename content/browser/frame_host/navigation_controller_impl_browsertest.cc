@@ -6634,7 +6634,9 @@ IN_PROC_BROWSER_TEST_F(RequestMonitoringNavigationBrowserTest,
   // Navigate via LoadURLWithParams (setting |extra_headers| field).
   WebContentsLoadFinishedWaiter waiter(shell()->web_contents(), page_url);
   NavigationController::LoadURLParams load_url_params(page_url);
-  load_url_params.extra_headers = "X-ExtraHeadersVsSubresources: 1";
+  load_url_params.extra_headers =
+      "X-ExtraHeadersVsSubresources: 1\n"
+      "X-2ExtraHeadersVsSubresources: 2";
   shell()->web_contents()->GetController().LoadURLWithParams(load_url_params);
   waiter.Wait();
   EXPECT_EQ(page_url, shell()->web_contents()->GetLastCommittedURL());
@@ -6645,6 +6647,8 @@ IN_PROC_BROWSER_TEST_F(RequestMonitoringNavigationBrowserTest,
   ASSERT_TRUE(page_request);
   EXPECT_THAT(page_request->headers,
               testing::Contains(testing::Key("X-ExtraHeadersVsSubresources")));
+  EXPECT_THAT(page_request->headers,
+              testing::Contains(testing::Key("X-2ExtraHeadersVsSubresources")));
 
   // Verify that the extra header was NOT present for the subresource.
   const net::test_server::HttpRequest* image_request =
@@ -6653,6 +6657,9 @@ IN_PROC_BROWSER_TEST_F(RequestMonitoringNavigationBrowserTest,
   EXPECT_THAT(image_request->headers,
               testing::Not(testing::Contains(
                   testing::Key("X-ExtraHeadersVsSubresources"))));
+  EXPECT_THAT(image_request->headers,
+              testing::Not(testing::Contains(
+                  testing::Key("X-2ExtraHeadersVsSubresources"))));
 }
 
 // Test that a same document navigation does not lead to the deletion of the
