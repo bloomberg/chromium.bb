@@ -407,6 +407,12 @@ void ManagePasswordsBubbleModel::OnUsernameEdited(base::string16 new_username) {
   pending_password_.username_value = std::move(new_username);
 }
 
+void ManagePasswordsBubbleModel::OnPasswordSelected(
+    base::string16 new_password) {
+  DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_STATE, state_);
+  pending_password_.password_value = std::move(new_password);
+}
+
 void ManagePasswordsBubbleModel::OnSaveClicked() {
   DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_STATE, state_);
   interaction_keeper_->set_dismissal_reason(metrics_util::CLICKED_SAVE);

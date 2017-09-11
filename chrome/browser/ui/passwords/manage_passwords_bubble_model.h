@@ -50,6 +50,10 @@ class ManagePasswordsBubbleModel {
   // in PendingView.
   void OnUsernameEdited(base::string16 new_username);
 
+  // Called by the view code when a password is selected from the dropdown list
+  // of the password selection feature in PendingView.
+  void OnPasswordSelected(base::string16 new_password);
+
   // Called by the view code when the save button is clicked by the user.
   void OnSaveClicked();
 
