@@ -41,10 +41,12 @@ class SocketBIOAdapterTest : public testing::TestWithParam<ReadIfReadySupport>,
                              public SocketBIOAdapter::Delegate {
  protected:
   void SetUp() override {
-    if (GetParam() != READ_IF_READY_DISABLED)
-      scoped_feature_list_.InitAndEnableFeature(Socket::kReadIfReadyExperiment);
-    if (GetParam() == READ_IF_READY_ENABLED_SUPPORTED)
+    if (GetParam() == READ_IF_READY_DISABLED) {
+      scoped_feature_list_.InitAndDisableFeature(
+          Socket::kReadIfReadyExperiment);
+    } else if (GetParam() == READ_IF_READY_ENABLED_SUPPORTED) {
       factory_.set_enable_read_if_ready(true);
+    }
   }
 
   std::unique_ptr<StreamSocket> MakeTestSocket(SocketDataProvider* data) {
