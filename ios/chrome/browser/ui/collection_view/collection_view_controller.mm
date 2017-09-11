@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 
+#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
@@ -36,6 +37,13 @@
 
 - (void)viewDidLoad {
   [super viewDidLoad];
+
+  if (base::ios::IsRunningOnIOS11OrLater()) {
+    if (@available(iOS 11, *)) {
+      self.collectionView.contentInsetAdjustmentBehavior =
+          UIScrollViewContentInsetAdjustmentNever;
+    }
+  }
 
   // Configure the app bar, if there is one.
   if (self.appBar) {
