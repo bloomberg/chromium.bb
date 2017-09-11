@@ -396,7 +396,10 @@ bool SelectionController::HandleSingleClick(
     return false;
   }
 
-  if (has_editable_style && event.Event().FromTouch()) {
+  // SelectionControllerTest_SetCaretAtHitTestResultWithDisconnectedPosition
+  // makes the IsValidFor() check fail.
+  if (has_editable_style && event.Event().FromTouch() &&
+      position_to_use.IsValidFor(*frame_->GetDocument())) {
     frame_->GetTextSuggestionController().HandlePotentialMisspelledWordTap(
         position_to_use.GetPosition());
   }
