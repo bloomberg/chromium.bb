@@ -49,6 +49,13 @@ void FirstRunBubble::Init() {
                 TemplateURLServiceFactory::GetForProfile(browser_->profile()))
           : base::string16();
 
+  // Additional padding to make the content appear centered in the bubble.
+  constexpr int kTopInset = 1;
+  constexpr int kHorizontalInset = 2;
+  constexpr int kBottomInset = 7;
+  SetBorder(views::CreateEmptyBorder(kTopInset, kHorizontalInset, kBottomInset,
+                                     kHorizontalInset));
+
   // TODO(tapted): Update these when there are mocks. http://crbug.com/699338.
   views::Label* title = new views::Label(
       l10n_util::GetStringFUTF16(IDS_FR_BUBBLE_TITLE, search_engine_name),
@@ -91,11 +98,8 @@ FirstRunBubble::FirstRunBubble(Browser* browser,
     : views::BubbleDialogDelegateView(nullptr, views::BubbleBorder::TOP_LEFT),
       browser_(browser),
       bubble_closer_(this, parent_window) {
-  constexpr int kTopInset = 1;
-  constexpr int kHorizontalInset = 2;
-  constexpr int kBottomInset = 7;
   set_margins(
-      gfx::Insets(kTopInset, kHorizontalInset, kBottomInset, kHorizontalInset));
+      ChromeLayoutProvider::Get()->GetInsetsMetric(views::INSETS_DIALOG));
   if (anchor_view) {
     // Compensate for built-in vertical padding in the anchor view's image.
     set_anchor_view_insets(gfx::Insets(
