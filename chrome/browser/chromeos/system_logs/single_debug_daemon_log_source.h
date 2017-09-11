@@ -22,6 +22,12 @@ class SingleDebugDaemonLogSource : public SystemLogsSource {
 
     // For "lsusb" command.
     kLsusb,
+
+    // For "lspci" command.
+    kLspci,
+
+    // For "ifconfig" command.
+    kIfconfig,
   };
 
   explicit SingleDebugDaemonLogSource(SupportedSource source);
