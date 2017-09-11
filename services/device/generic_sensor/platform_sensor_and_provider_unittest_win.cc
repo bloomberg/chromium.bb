@@ -13,7 +13,6 @@
 #include "base/run_loop.h"
 #include "base/win/iunknown_impl.h"
 #include "base/win/scoped_propvariant.h"
-#include "build/build_config.h"
 #include "services/device/generic_sensor/generic_sensor_consts.h"
 #include "services/device/generic_sensor/platform_sensor_provider_win.h"
 #include "services/device/public/interfaces/sensor_provider.mojom.h"
@@ -235,7 +234,8 @@ class PlatformSensorAndProviderTestWin : public ::testing::Test {
                       const PlatformSensorConfiguration& config) {
     run_loop_ = base::MakeUnique<base::RunLoop>();
     bool ret = sensor->StartListening(client, config);
-    run_loop_->Run();
+    if (ret)
+      run_loop_->Run();
     run_loop_ = nullptr;
     return ret;
   }
@@ -454,41 +454,9 @@ TEST_F(PlatformSensorAndProviderTestWin, StartFails) {
   EXPECT_FALSE(sensor->StartListening(client.get(), configuration));
 }
 
-// See http://crbug.com/756986
-#if defined(OS_WIN)
-#define MAYBE_SensorStarted DISABLED_SensorStarted
-#define MAYBE_SensorRemoved DISABLED_SensorRemoved
-#define MAYBE_SensorStateChangedToError DISABLED_SensorStateChangedToError
-#define MAYBE_SensorStateChangedToReady DISABLED_SensorStateChangedToReady
-#define MAYBE_CheckAccelerometerReadingConversion \
-  DISABLED_CheckAccelerometerReadingConversion
-#define MAYBE_CheckGyroscopeReadingConversion \
-  DISABLED_CheckGyroscopeReadingConversion
-#define MAYBE_CheckMagnetometerReadingConversion \
-  DISABLED_CheckMagnetometerReadingConversion
-#define MAYBE_CheckDeviceOrientationEulerAnglesReadingConversion \
-  DISABLED_CheckDeviceOrientationEulerAnglesReadingConversion
-#define MAYBE_CheckDeviceOrientationQuaternionReadingConversion \
-  DISABLED_CheckDeviceOrientationQuaternionReadingConversion
-#else
-#define MAYBE_SensorStarted SensorStarted
-#define MAYBE_SensorRemoved SensorRemoved
-#define MAYBE_SensorStateChangedToError SensorStateChangedToError
-#define MAYBE_SensorStateChangedToReady SensorStateChangedToReady
-#define MAYBE_CheckAccelerometerReadingConversion \
-  CheckAccelerometerReadingConversion
-#define MAYBE_CheckGyroscopeReadingConversion CheckGyroscopeReadingConversion
-#define MAYBE_CheckMagnetometerReadingConversion \
-  CheckMagnetometerReadingConversion
-#define MAYBE_CheckDeviceOrientationEulerAnglesReadingConversion \
-  CheckDeviceOrientationEulerAnglesReadingConversion
-#define MAYBE_CheckDeviceOrientationQuaternionReadingConversion \
-  CheckDeviceOrientationQuaternionReadingConversion
-#endif
-
 // Tests that PlatformSensor::StartListening succeeds and notification about
 // modified sensor reading is sent to the PlatformSensor::Client interface.
-TEST_F(PlatformSensorAndProviderTestWin, MAYBE_SensorStarted) {
+TEST_F(PlatformSensorAndProviderTestWin, SensorStarted) {
   SetSupportedReportingFrequency(10);
   SetSupportedSensor(SENSOR_TYPE_AMBIENT_LIGHT);
 
@@ -522,7 +490,7 @@ TEST_F(PlatformSensorAndProviderTestWin, MAYBE_SensorStarted) {
 }
 
 // Tests that OnSensorError is called when sensor is disconnected.
-TEST_F(PlatformSensorAndProviderTestWin, MAYBE_SensorRemoved) {
+TEST_F(PlatformSensorAndProviderTestWin, SensorRemoved) {
   SetSupportedSensor(SENSOR_TYPE_AMBIENT_LIGHT);
   auto sensor = CreateSensor(SensorType::AMBIENT_LIGHT);
   EXPECT_TRUE(sensor);
@@ -537,7 +505,7 @@ TEST_F(PlatformSensorAndProviderTestWin, MAYBE_SensorRemoved) {
 }
 
 // Tests that OnSensorError is called when sensor is in an error state.
-TEST_F(PlatformSensorAndProviderTestWin, MAYBE_SensorStateChangedToError) {
+TEST_F(PlatformSensorAndProviderTestWin, SensorStateChangedToError) {
   SetSupportedSensor(SENSOR_TYPE_AMBIENT_LIGHT);
   auto sensor = CreateSensor(SensorType::AMBIENT_LIGHT);
   EXPECT_TRUE(sensor);
@@ -552,7 +520,7 @@ TEST_F(PlatformSensorAndProviderTestWin, MAYBE_SensorStateChangedToError) {
 }
 
 // Tests that OnSensorError is not called when sensor is in a ready state.
-TEST_F(PlatformSensorAndProviderTestWin, MAYBE_SensorStateChangedToReady) {
+TEST_F(PlatformSensorAndProviderTestWin, SensorStateChangedToReady) {
   SetSupportedSensor(SENSOR_TYPE_AMBIENT_LIGHT);
   auto sensor = CreateSensor(SensorType::AMBIENT_LIGHT);
   EXPECT_TRUE(sensor);
@@ -585,8 +553,7 @@ TEST_F(PlatformSensorAndProviderTestWin, GetMaximumSupportedFrequencyFallback) {
 }
 
 // Tests that Accelerometer readings are correctly converted.
-TEST_F(PlatformSensorAndProviderTestWin,
-       MAYBE_CheckAccelerometerReadingConversion) {
+TEST_F(PlatformSensorAndProviderTestWin, CheckAccelerometerReadingConversion) {
   mojo::ScopedSharedBufferHandle handle =
       PlatformSensorProviderWin::GetInstance()->CloneSharedBufferHandle();
   mojo::ScopedSharedBufferMapping mapping = handle->MapAtOffset(
@@ -625,8 +592,7 @@ TEST_F(PlatformSensorAndProviderTestWin,
 }
 
 // Tests that Gyroscope readings are correctly converted.
-TEST_F(PlatformSensorAndProviderTestWin,
-       MAYBE_CheckGyroscopeReadingConversion) {
+TEST_F(PlatformSensorAndProviderTestWin, CheckGyroscopeReadingConversion) {
   mojo::ScopedSharedBufferHandle handle =
       PlatformSensorProviderWin::GetInstance()->CloneSharedBufferHandle();
   mojo::ScopedSharedBufferMapping mapping = handle->MapAtOffset(
@@ -666,8 +632,7 @@ TEST_F(PlatformSensorAndProviderTestWin,
 }
 
 // Tests that Magnetometer readings are correctly converted.
-TEST_F(PlatformSensorAndProviderTestWin,
-       MAYBE_CheckMagnetometerReadingConversion) {
+TEST_F(PlatformSensorAndProviderTestWin, CheckMagnetometerReadingConversion) {
   mojo::ScopedSharedBufferHandle handle =
       PlatformSensorProviderWin::GetInstance()->CloneSharedBufferHandle();
   mojo::ScopedSharedBufferMapping mapping = handle->MapAtOffset(
@@ -709,7 +674,7 @@ TEST_F(PlatformSensorAndProviderTestWin,
 // Tests that AbsoluteOrientationEulerAngles sensor readings are correctly
 // provided.
 TEST_F(PlatformSensorAndProviderTestWin,
-       MAYBE_CheckDeviceOrientationEulerAnglesReadingConversion) {
+       CheckDeviceOrientationEulerAnglesReadingConversion) {
   mojo::ScopedSharedBufferHandle handle =
       PlatformSensorProviderWin::GetInstance()->CloneSharedBufferHandle();
   mojo::ScopedSharedBufferMapping mapping =
@@ -752,7 +717,7 @@ TEST_F(PlatformSensorAndProviderTestWin,
 // Tests that AbsoluteOrientationQuaternion sensor readings are correctly
 // provided.
 TEST_F(PlatformSensorAndProviderTestWin,
-       MAYBE_CheckDeviceOrientationQuaternionReadingConversion) {
+       CheckDeviceOrientationQuaternionReadingConversion) {
   mojo::ScopedSharedBufferHandle handle =
       PlatformSensorProviderWin::GetInstance()->CloneSharedBufferHandle();
   mojo::ScopedSharedBufferMapping mapping =

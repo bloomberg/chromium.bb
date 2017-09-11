@@ -1502,6 +1502,9 @@
         "test": "sbox_validation_tests"
       },
       {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/win10.services_unittests.filter"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
