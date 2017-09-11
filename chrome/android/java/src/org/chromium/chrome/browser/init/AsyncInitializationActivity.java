@@ -397,10 +397,13 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     @Override
     public void onResume() {
         super.onResume();
-        mNativeInitializationController.onResume();
-        if (mLaunchBehindWorkaround != null) mLaunchBehindWorkaround.onResume();
+
+        // Start by setting the launch as cold or warm. It will be used in some resume handlers.
         mIsWarmOnResume = !mFirstResumePending || hadWarmStart();
         mFirstResumePending = false;
+
+        mNativeInitializationController.onResume();
+        if (mLaunchBehindWorkaround != null) mLaunchBehindWorkaround.onResume();
     }
 
     @CallSuper
