@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/sandbox_ipc_linux.h"
+#include "content/browser/sandbox_ipc_linux.h"
 
 #include <fcntl.h>
 #include <stddef.h>
@@ -41,10 +41,14 @@ SandboxIPCHandler::TestObserver* g_test_observer = nullptr;
 // Returns an int for serialization, but the underlying Blink type is a char.
 int ConvertHinting(gfx::FontRenderParams::Hinting hinting) {
   switch (hinting) {
-    case gfx::FontRenderParams::HINTING_NONE:   return 0;
-    case gfx::FontRenderParams::HINTING_SLIGHT: return 1;
-    case gfx::FontRenderParams::HINTING_MEDIUM: return 2;
-    case gfx::FontRenderParams::HINTING_FULL:   return 3;
+    case gfx::FontRenderParams::HINTING_NONE:
+      return 0;
+    case gfx::FontRenderParams::HINTING_SLIGHT:
+      return 1;
+    case gfx::FontRenderParams::HINTING_MEDIUM:
+      return 2;
+    case gfx::FontRenderParams::HINTING_FULL:
+      return 3;
   }
   NOTREACHED() << "Unexpected hinting value " << hinting;
   return 0;
@@ -56,11 +60,16 @@ int ConvertHinting(gfx::FontRenderParams::Hinting hinting) {
 int ConvertSubpixelRendering(
     gfx::FontRenderParams::SubpixelRendering rendering) {
   switch (rendering) {
-    case gfx::FontRenderParams::SUBPIXEL_RENDERING_NONE: return 0;
-    case gfx::FontRenderParams::SUBPIXEL_RENDERING_RGB:  return 1;
-    case gfx::FontRenderParams::SUBPIXEL_RENDERING_BGR:  return 1;
-    case gfx::FontRenderParams::SUBPIXEL_RENDERING_VRGB: return 1;
-    case gfx::FontRenderParams::SUBPIXEL_RENDERING_VBGR: return 1;
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_NONE:
+      return 0;
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_RGB:
+      return 1;
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_BGR:
+      return 1;
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_VRGB:
+      return 1;
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_VBGR:
+      return 1;
   }
   NOTREACHED() << "Unexpected subpixel rendering value " << rendering;
   return 0;
@@ -75,9 +84,7 @@ void SandboxIPCHandler::SetObserverForTests(
 }
 
 SandboxIPCHandler::SandboxIPCHandler(int lifeline_fd, int browser_socket)
-    : lifeline_fd_(lifeline_fd),
-      browser_socket_(browser_socket) {
-}
+    : lifeline_fd_(lifeline_fd), browser_socket_(browser_socket) {}
 
 void SandboxIPCHandler::Run() {
   struct pollfd pfds[2];
@@ -116,14 +123,14 @@ void SandboxIPCHandler::Run() {
     }
 
     if (pfds[1].revents & POLLIN) {
-      HandleRequestFromRenderer(browser_socket_);
+      HandleRequestFromChild(browser_socket_);
     }
   }
 
   VLOG(1) << "SandboxIPCHandler stopping.";
 }
 
-void SandboxIPCHandler::HandleRequestFromRenderer(int fd) {
+void SandboxIPCHandler::HandleRequestFromChild(int fd) {
   std::vector<base::ScopedFD> fds;
 
   // A FontConfigIPC::METHOD_MATCH message could be kMaxFontFamilyLength
@@ -192,11 +199,8 @@ void SandboxIPCHandler::HandleFontMatchRequest(
   SkFontConfigInterface* fc =
       SkFontConfigInterface::GetSingletonDirectInterface();
   const bool r =
-      fc->matchFamilyName(family.c_str(),
-                          requested_style,
-                          &result_identity,
-                          &result_family,
-                          &result_style);
+      fc->matchFamilyName(family.c_str(), requested_style, &result_identity,
+                          &result_family, &result_style);
 
   base::Pickle reply;
   if (!r) {
@@ -284,10 +288,8 @@ void SandboxIPCHandler::HandleGetStyleForStrike(
   bool italic;
   uint16_t pixel_size;
 
-  if (!iter.ReadString(&family) ||
-      !iter.ReadBool(&bold) ||
-      !iter.ReadBool(&italic) ||
-      !iter.ReadUInt16(&pixel_size)) {
+  if (!iter.ReadString(&family) || !iter.ReadBool(&bold) ||
+      !iter.ReadBool(&italic) || !iter.ReadUInt16(&pixel_size)) {
     return;
   }
 
@@ -371,16 +373,14 @@ void SandboxIPCHandler::HandleMatchWithFallback(
   uint32_t charset;
   uint32_t fallback_family;
 
-  if (!iter.ReadString(&face) || face.empty() ||
-      !iter.ReadBool(&is_bold) ||
-      !iter.ReadBool(&is_italic) ||
-      !iter.ReadUInt32(&charset) ||
+  if (!iter.ReadString(&face) || face.empty() || !iter.ReadBool(&is_bold) ||
+      !iter.ReadBool(&is_italic) || !iter.ReadUInt32(&charset) ||
       !iter.ReadUInt32(&fallback_family)) {
     return;
   }
 
-  int font_fd = MatchFontFaceWithFallback(
-      face, is_bold, is_italic, charset, fallback_family);
+  int font_fd = MatchFontFaceWithFallback(face, is_bold, is_italic, charset,
+                                          fallback_family);
 
   base::Pickle reply;
   SendRendererReply(fds, reply, font_fd);

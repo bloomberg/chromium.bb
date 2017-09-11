@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
-#include "content/browser/renderer_host/sandbox_ipc_linux.h"
+#include "content/browser/sandbox_ipc_linux.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"

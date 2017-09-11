@@ -196,7 +196,7 @@
 #endif  // defined(OS_FUCHSIA)
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-#include "content/browser/renderer_host/render_sandbox_host_linux.h"
+#include "content/browser/sandbox_host_linux.h"
 #include "content/browser/zygote_host/zygote_host_impl_linux.h"
 
 #if !defined(OS_ANDROID)
@@ -249,9 +249,9 @@ bool IsUsingMus() {
     !defined(OS_FUCHSIA)
 void SetupSandbox(const base::CommandLine& parsed_command_line) {
   TRACE_EVENT0("startup", "SetupSandbox");
-  // RenderSandboxHostLinux needs to be initialized even if the sandbox and
-  // zygote are both disabled. It initializes the renderer socket.
-  RenderSandboxHostLinux::GetInstance()->Init();
+  // SandboxHostLinux needs to be initialized even if the sandbox and
+  // zygote are both disabled. It initializes the sandboxed process socket.
+  SandboxHostLinux::GetInstance()->Init();
 
   if (parsed_command_line.HasSwitch(switches::kNoZygote) &&
       !parsed_command_line.HasSwitch(switches::kNoSandbox)) {

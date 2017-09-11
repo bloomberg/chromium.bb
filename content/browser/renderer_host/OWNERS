@@ -22,12 +22,6 @@ tdresser@chromium.org
 # For surface ID propagation and synchronization
 fsamuel@chromium.org
 
-# Linux sandboxing
-per-file render_sandbox_host_linux.*=jln@chromium.org
-per-file render_sandbox_host_linux.*=jorgelo@chromium.org
-per-file sandbox_ipc_linux.*=jln@chromium.org
-per-file sandbox_ipc_linux.*=jorgelo@chromium.org
-
 # DelegatedFrame*
 per-file *delegated_frame*=jbauman@chromium.org
 per-file *delegated_frame*=fsamuel@chromium.org
