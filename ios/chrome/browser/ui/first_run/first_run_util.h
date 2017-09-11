@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol ApplicationSettingsCommands;
 @class FirstRunConfiguration;
 @class Tab;
 
@@ -45,7 +46,8 @@ void WriteFirstRunSentinelAndRecordMetrics(
 // Methods for writing sentinel and recording metrics and posting notifications
 void FinishFirstRun(ios::ChromeBrowserState* browserState,
                     Tab* tab,
-                    FirstRunConfiguration* config);
+                    FirstRunConfiguration* config,
+                    id<ApplicationSettingsCommands> dispatcher);
 
 // Records Product tour timing metrics using histogram.
 void RecordProductTourTimingMetrics(NSString* timer_name,

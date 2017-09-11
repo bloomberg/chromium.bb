@@ -99,7 +99,8 @@ NSString* const kSignInSkipButtonAccessibilityIdentifier =
 
 - (void)finishFirstRunAndDismiss {
   DCHECK(self.presentingViewController);
-  FinishFirstRun(self.browserState, [_tabModel currentTab], _firstRunConfig);
+  FinishFirstRun(self.browserState, [_tabModel currentTab], _firstRunConfig,
+                 self.dispatcher);
   [self.presentingViewController dismissViewControllerAnimated:YES
                                                     completion:^{
                                                       FirstRunDismissed();

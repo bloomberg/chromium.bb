@@ -803,7 +803,8 @@ enum CellType {
     }
     case CELL_OTHER_DEVICES_SIGNED_IN_SYNC_OFF:
       subview = [[SignedInSyncOffView alloc] initWithFrame:CGRectZero
-                                              browserState:_browserState];
+                                              browserState:_browserState
+                                                dispatcher:self.dispatcher];
       [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
       break;
     case CELL_OTHER_DEVICES_SIGNED_IN_SYNC_ON_NO_SESSIONS:

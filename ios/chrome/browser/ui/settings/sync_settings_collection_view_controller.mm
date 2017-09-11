@@ -37,6 +37,7 @@
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
+#import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/text_and_error_item.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
@@ -590,8 +591,19 @@ typedef NS_ENUM(NSInteger, ItemType) {
     return;
   }
 
-  GenericChromeCommand* command = GetSyncCommandForBrowserState(_browserState);
-  [self chromeExecuteCommand:command];
+  SyncSetupService::SyncServiceState syncState =
+      GetSyncStateForBrowserState(_browserState);
+  if (ShouldShowSyncSignin(syncState)) {
+    [self chromeExecuteCommand:
+              [[ShowSigninCommand alloc]
+                  initWithOperation:AUTHENTICATION_OPERATION_REAUTHENTICATE
+                        accessPoint:signin_metrics::AccessPoint::
+                                        ACCESS_POINT_UNKNOWN]];
+  } else if (ShouldShowSyncSettings(syncState)) {
+    [self.dispatcher showSyncSettings];
+  } else if (ShouldShowSyncPassphraseSettings(syncState)) {
+    [self.dispatcher showSyncPassphraseSettings];
+  }
 }
 
 - (void)startSwitchAccountForIdentity:(ChromeIdentity*)identity

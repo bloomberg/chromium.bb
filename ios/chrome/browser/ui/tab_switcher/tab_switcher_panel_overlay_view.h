@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol ApplicationCommands;
 @protocol BrowserCommands;
 
 namespace ios {
@@ -31,11 +32,13 @@ TabSwitcherPanelOverlayType PanelOverlayTypeFromSignInPanelsType(
 @interface TabSwitcherPanelOverlayView : UIView
 
 @property(nonatomic, assign) TabSwitcherPanelOverlayType overlayType;
-@property(nonatomic, readonly, weak) id<BrowserCommands> dispatcher;
+@property(nonatomic, readonly, weak) id<ApplicationCommands, BrowserCommands>
+    dispatcher;
 
 - (instancetype)initWithFrame:(CGRect)frame
                  browserState:(ios::ChromeBrowserState*)browserState
-                   dispatcher:(id<BrowserCommands>)dispatcher;
+                   dispatcher:
+                       (id<ApplicationCommands, BrowserCommands>)dispatcher;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TAB_SWITCHER_TAB_SWITCHER_PANEL_OVERLAY_VIEW_H_

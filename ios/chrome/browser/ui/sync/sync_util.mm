@@ -102,30 +102,38 @@ NSString* GetSyncErrorButtonTitleForBrowserState(
   }
 }
 
-GenericChromeCommand* GetSyncCommandForBrowserState(
+SyncSetupService::SyncServiceState GetSyncStateForBrowserState(
     ios::ChromeBrowserState* browserState) {
   SyncSetupService* syncSetupService =
       SyncSetupServiceFactory::GetForBrowserState(browserState);
   DCHECK(syncSetupService);
-  SyncSetupService::SyncServiceState syncState =
-      syncSetupService->GetSyncServiceState();
+  return syncSetupService->GetSyncServiceState();
+}
+
+bool ShouldShowSyncSignin(SyncSetupService::SyncServiceState syncState) {
+  return syncState == SyncSetupService::kSyncServiceSignInNeedsUpdate;
+}
+
+bool ShouldShowSyncPassphraseSettings(
+    SyncSetupService::SyncServiceState syncState) {
+  return syncState == SyncSetupService::kSyncServiceNeedsPassphrase;
+}
+
+bool ShouldShowSyncSettings(SyncSetupService::SyncServiceState syncState) {
   switch (syncState) {
-    case SyncSetupService::kSyncServiceSignInNeedsUpdate:
-      return [[ShowSigninCommand alloc]
-          initWithOperation:AUTHENTICATION_OPERATION_REAUTHENTICATE
-                accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN];
-    case SyncSetupService::kSyncServiceNeedsPassphrase:
-      return [[GenericChromeCommand alloc]
-          initWithTag:IDC_SHOW_SYNC_PASSPHRASE_SETTINGS];
     case SyncSetupService::kSyncServiceCouldNotConnect:
     case SyncSetupService::kSyncServiceServiceUnavailable:
     case SyncSetupService::kSyncServiceUnrecoverableError:
     case SyncSetupService::kNoSyncServiceError:
-      return [[GenericChromeCommand alloc] initWithTag:IDC_SHOW_SYNC_SETTINGS];
+      return true;
+    default:
+      return false;
   }
 }
 
-bool DisplaySyncErrors(ios::ChromeBrowserState* browser_state, Tab* tab) {
+bool DisplaySyncErrors(ios::ChromeBrowserState* browser_state,
+                       Tab* tab,
+                       id<ApplicationSettingsCommands> dispatcher) {
   // Avoid displaying sync errors on incognito tabs.
   if (browser_state->IsOffTheRecord())
     return false;
@@ -164,7 +172,8 @@ bool DisplaySyncErrors(ios::ChromeBrowserState* browser_state, Tab* tab) {
   infobars::InfoBarManager* infoBarManager =
       InfoBarManagerImpl::FromWebState(tab.webState);
   DCHECK(infoBarManager);
-  return SyncErrorInfoBarDelegate::Create(infoBarManager, browser_state);
+  return SyncErrorInfoBarDelegate::Create(infoBarManager, browser_state,
+                                          dispatcher);
 }
 
 bool IsTransientSyncError(SyncSetupService::SyncServiceState errorState) {
