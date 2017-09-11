@@ -696,7 +696,9 @@ class WebContents : public PageNavigator,
   // Returns true if this WebContents was opened by another WebContents, even
   // if the opener was suppressed. In contrast to HasOpener/GetOpener, the
   // original opener doesn't reflect window.opener which can be suppressed or
-  // updated.
+  // updated. This traces all the way back, so if the original owner was closed,
+  // but _it_ had an original owner, this will return the original owner's
+  // original owner, etc.
   virtual bool HasOriginalOpener() const = 0;
 
   // Returns the original opener if HasOriginalOpener() is true, or nullptr
