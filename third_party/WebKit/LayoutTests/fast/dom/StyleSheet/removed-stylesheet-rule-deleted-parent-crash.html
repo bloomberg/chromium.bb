@@ -13,14 +13,14 @@ function runTest()
     style = document.createElement('style');
     style.textContent = 'body { color: red }';
     document.head.appendChild(style);
-    ruleList = getMatchedCSSRules(document.body);
+    rule = document.styleSheets[0].rules[0];
   
     document.styleSheets[0].deleteRule(0);
     document.head.removeChild(style);
 
     gc();
 
-    if (!ruleList[0].parentStyleSheet)
+    if (!rule.parentStyleSheet)
         document.getElementById('result').innerHTML = "PASS";
     if (window.testRunner)
         testRunner.notifyDone();

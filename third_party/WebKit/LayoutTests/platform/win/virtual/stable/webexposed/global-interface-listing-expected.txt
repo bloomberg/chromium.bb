@@ -8058,7 +8058,6 @@ interface webkitURL
     method focus
     method gc
     method getComputedStyle
-    method getMatchedCSSRules
     method getSelection
     method matchMedia
     method moveBy

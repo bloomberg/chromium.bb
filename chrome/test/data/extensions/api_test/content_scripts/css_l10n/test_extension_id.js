@@ -8,7 +8,14 @@
 
 var message = 'Test failed to complete';
 try {
-  var rules = getMatchedCSSRules(document.getElementById('bodyId'));
+  var elem = document.getElementById('bodyId');
+  var rules = [];
+  for (var i = 0; i < document.styleSheets.length; ++i) {
+    for (var j = 0; j < sheets[i].rules; ++j) {
+      rules.push(sheets[i].rules[j]);
+    }
+  }
+
   if (rules != null) {
     message = 'passed';
     for (var i = 0; i < rules.length; ++i) {

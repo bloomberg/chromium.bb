@@ -165,7 +165,7 @@ ALERT: PASS: window.eval should be 'function eval() { [native code] }' and is.
 ALERT: PASS: window.find should be 'function find() { [native code] }' and is.
 ALERT: PASS: window.focus should be 'function () { [native code] }' and is.
 ALERT: PASS: window.getComputedStyle should be 'function getComputedStyle() { [native code] }' and is.
-ALERT: PASS: window.getMatchedCSSRules should be 'function getMatchedCSSRules() { [native code] }' and is.
+ALERT: PASS: window.getMatchedCSSRules should be 'undefined' and is.
 ALERT: PASS: window.getSelection should be 'function getSelection() { [native code] }' and is.
 ALERT: PASS: window.moveBy should be 'function moveBy() { [native code] }' and is.
 ALERT: PASS: window.moveTo should be 'function moveTo() { [native code] }' and is.

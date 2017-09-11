@@ -4,15 +4,9 @@
         if (window.testRunner)
             testRunner.dumpAsText();
 
-        var rules = getMatchedCSSRules(document.body, "");
-        if (rules && rules.length) {
-            log("FAIL: Expected 0 matched rules, but found " + rules.length + ":");
-            for (var i = 0; i < rules.length; ++i)
-                log(rules[i].cssText);
-            return;
-        }
-
-        log("PASS");
+        var style = window.getComputedStyle(document.body);
+        log(style['word-break'])
+        log(style['-webkit-user-modify'])
     }
 
     function log(msg)
