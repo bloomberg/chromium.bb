@@ -50,7 +50,7 @@ namespace {
 
 constexpr char kSRTPromptGroup[] = "SRTGroup";
 
-// Parameter for this test:
+// Parameters for this test:
 //  - bool in_browser_cleaner_ui_: indicates if InBrowserCleanerUI feature
 //    is enabled;
 //
@@ -333,8 +333,7 @@ IN_PROC_BROWSER_TEST_P(ReporterRunnerTest, NothingFound) {
 }
 
 IN_PROC_BROWSER_TEST_P(ReporterRunnerTest, CleanupNeeded) {
-  bool expect_prompt =
-      incoming_seed_.empty() ? true : incoming_seed_ != old_seed_;
+  bool expect_prompt = incoming_seed_.empty() || (incoming_seed_ != old_seed_);
 
   RunReporter(chrome_cleaner::kSwReporterCleanupNeeded);
   ExpectReporterLaunches(0, 1, expect_prompt);
