@@ -21,7 +21,7 @@
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/api/declarative_net_request/dnr_manifest_data.h"
 #include "extensions/common/api/declarative_net_request/utils.h"
-#include "extensions/common/constants.h"
+#include "extensions/common/file_util.h"
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest_constants.h"
 
@@ -29,16 +29,13 @@ namespace extensions {
 namespace declarative_net_request {
 namespace {
 
-// Name of the indexed ruleset file for the Declarative Net Request API.
-const base::FilePath::CharType kIndexedRulesetFilename[] =
-    FILE_PATH_LITERAL("_generated_indexed_ruleset");
-
 namespace dnr_api = extensions::api::declarative_net_request;
 
 // Helper function to persist the indexed ruleset |data| for |extension|.
 bool PersistRuleset(const Extension& extension,
                     const FlatRulesetIndexer::SerializedData& data) {
-  const base::FilePath path = GetIndexedRulesetPath(extension.path());
+  const base::FilePath path =
+      file_util::GetIndexedRulesetPath(extension.path());
 
   // Create the directory corresponding to |path| if it does not exist and then
   // persist the ruleset.
@@ -144,12 +141,6 @@ bool IndexAndPersistRules(const base::Value& rules,
   if (error)
     *error = info.GetErrorDescription(GetJSONRulesetFilename(extension));
   return false;
-}
-
-base::FilePath GetIndexedRulesetPath(const base::FilePath& extension_path) {
-  DCHECK(IsAPIAvailable());
-
-  return extension_path.Append(kMetadataFolder).Append(kIndexedRulesetFilename);
 }
 
 }  // namespace declarative_net_request
