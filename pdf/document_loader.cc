@@ -381,7 +381,6 @@ pp::URLRequestInfo DocumentLoader::GetRequest(uint32_t position,
 
 void DocumentLoader::DidOpen(int32_t result) {
   if (result != PP_OK) {
-    NOTREACHED();
     client_->OnDocumentFailed();
     return;
   }
