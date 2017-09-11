@@ -54,13 +54,13 @@ class TimelineController(object):
     # Stop tracing.
     timeline_data = tab.browser.platform.tracing_controller.StopTracing()
 
-    # TODO(#763375): Rely on results.telemetry_info.file_path/etc.
+    # TODO(#763375): Rely on results.telemetry_info.trace_local_path/etc.
     kwargs = {}
-    if hasattr(results.telemetry_info, 'file_path'):
-      kwargs['file_path'] = results.telemetry_info.file_path
-      kwargs['remote_path'] = results.telemetry_info.remote_path
+    if hasattr(results.telemetry_info, 'trace_local_path'):
+      kwargs['file_path'] = results.telemetry_info.trace_local_path
+      kwargs['remote_path'] = results.telemetry_info.trace_remote_path
       kwargs['upload_bucket'] = results.telemetry_info.upload_bucket
-      kwargs['cloud_url'] = results.telemetry_info.cloud_url
+      kwargs['cloud_url'] = results.telemetry_info.trace_remote_url
     results.AddValue(trace.TraceValue(
         results.current_page, timeline_data, **kwargs))
 
