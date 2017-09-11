@@ -99,22 +99,6 @@ IPC_MESSAGE_CONTROL0(ChildProcessMsg_Shutdown)
 IPC_MESSAGE_CONTROL1(ChildProcessMsg_SetIPCLoggingEnabled,
                      bool /* on or off */)
 #endif
-
-// Tell the child process to enable or disable the profiler status.
-IPC_MESSAGE_CONTROL1(ChildProcessMsg_SetProfilerStatus,
-                     tracked_objects::ThreadData::Status /* profiler status */)
-
-// Send to all the child processes to send back profiler data (ThreadData in
-// tracked_objects).
-IPC_MESSAGE_CONTROL2(ChildProcessMsg_GetChildProfilerData,
-                     int /* sequence_number */,
-                     int /* current_profiling_phase */)
-
-// Send to all the child processes to mark the current profiling phase as
-// finished and start a new phase.
-IPC_MESSAGE_CONTROL1(ChildProcessMsg_ProfilingPhaseCompleted,
-                     int /* profiling_phase */)
-
 // Sent to set the shared memory buffer to be used for storing histograms that
 // are to be reported by the browser process to UMA. The following message
 // (GetChildNonPersistentHistogramData) will return any histograms created
@@ -145,12 +129,6 @@ IPC_SYNC_MESSAGE_CONTROL0_1(ChildProcessHostMsg_HasGpuProcess,
                             bool /* result */)
 
 IPC_MESSAGE_CONTROL0(ChildProcessHostMsg_ShutdownRequest)
-
-// Send back profiler data (ThreadData in tracked_objects).
-IPC_MESSAGE_CONTROL2(
-    ChildProcessHostMsg_ChildProfilerData,
-    int, /* sequence_number */
-    tracked_objects::ProcessDataSnapshot /* process_data_snapshot */)
 
 // Send back histograms as vector of pickled-histogram strings.
 IPC_MESSAGE_CONTROL2(ChildProcessHostMsg_ChildHistogramData,

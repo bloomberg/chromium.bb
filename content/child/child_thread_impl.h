@@ -228,9 +228,6 @@ class CONTENT_EXPORT ChildThreadImpl
 
   // IPC message handlers.
   void OnShutdown();
-  void OnSetProfilerStatus(tracked_objects::ThreadData::Status status);
-  void OnGetChildProfilerData(int sequence_number, int current_profiling_phase);
-  void OnProfilingPhaseCompleted(int profiling_phase);
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
   void OnSetIPCLoggingEnabled(bool enable);
 #endif

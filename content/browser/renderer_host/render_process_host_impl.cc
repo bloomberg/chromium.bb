@@ -103,7 +103,6 @@
 #include "content/browser/payments/payment_manager.h"
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/browser/permissions/permission_service_impl.h"
-#include "content/browser/profiler_message_filter.h"
 #include "content/browser/push_messaging/push_messaging_manager.h"
 #include "content/browser/quota_dispatcher_host.h"
 #include "content/browser/renderer_host/clipboard_message_filter.h"
@@ -1776,7 +1775,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       resource_context, service_worker_context, browser_context);
   AddFilter(notification_message_filter_.get());
 
-  AddFilter(new ProfilerMessageFilter(PROCESS_TYPE_RENDERER));
   AddFilter(new HistogramMessageFilter());
 #if defined(OS_ANDROID)
   synchronous_compositor_filter_ =
@@ -2906,10 +2904,6 @@ void RenderProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
   Send(new ChildProcessMsg_SetIPCLoggingEnabled(
       IPC::Logging::GetInstance()->Enabled()));
 #endif
-
-  tracked_objects::ThreadData::Status status =
-      tracked_objects::ThreadData::status();
-  Send(new ChildProcessMsg_SetProfilerStatus(status));
 
   // Inform AudioInputRendererHost about the new render process PID.
   // AudioInputRendererHost is reference counted, so its lifetime is
