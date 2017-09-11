@@ -10292,6 +10292,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ContentSettings.Popups.FirstDocumentEngagementTime" units="ms">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Measures the total duration a popup WebContents is visible / foregrounded
+    for the duration of its first document load. This time is measured from the
+    first navigation commit to the time either the WebContents is destroyed or
+    when a new navigation commits.
+  </summary>
+</histogram>
+
 <histogram name="ContextMenu.SaveLinkType" enum="ContextMenuSaveLinkType">
   <owner>qinmin@chromium.org</owner>
   <summary>
