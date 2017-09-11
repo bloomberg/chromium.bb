@@ -134,6 +134,12 @@ if (is_linux) {
 
     ldflags = [ "-pie" ]
 
+    if (is_chromeos) {
+      # NaCl is not working with compiler-rt in ChromeOS.
+      # Force libgcc as a workaround. See https://crbug.com/761103
+      ldflags += [ "-rtlib=libgcc" ]
+    }
+
     data_deps = [
       "//native_client/src/trusted/service_runtime/linux:bootstrap",
     ]
