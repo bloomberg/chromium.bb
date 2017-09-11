@@ -61,6 +61,23 @@ class NGOffsetMappingUnit {
   const unsigned text_content_end_;
 };
 
+class NGMappingUnitRange {
+  STACK_ALLOCATED();
+
+ public:
+  const NGOffsetMappingUnit* begin() const { return begin_; }
+  const NGOffsetMappingUnit* end() const { return end_; }
+
+  NGMappingUnitRange() : begin_(nullptr), end_(nullptr) {}
+  NGMappingUnitRange(const NGOffsetMappingUnit* begin,
+                     const NGOffsetMappingUnit* end)
+      : begin_(begin), end_(end) {}
+
+ private:
+  const NGOffsetMappingUnit* begin_;
+  const NGOffsetMappingUnit* end_;
+};
+
 // An NGOffsetMappingResult stores the units of a LayoutNGBlockFlow in sorted
 // order in a vector. For each text node, the index range of the units owned by
 // the node is also stored.
@@ -78,8 +95,16 @@ class NGOffsetMappingResult {
   const UnitVector& GetUnits() const { return units_; }
   const RangeMap& GetRanges() const { return ranges_; }
 
+  // Returns the NGOffsetMappingUnit that contains the given offset in the DOM
+  // node. If there are multiple qualifying units, returns the last one.
   const NGOffsetMappingUnit* GetMappingUnitForDOMOffset(const Node&,
                                                         unsigned) const;
+
+  // Returns all NGOffsetMappingUnits whose DOM ranges has non-empty (but
+  // possibly collapsed) intersections with the passed in DOM offset range.
+  NGMappingUnitRange GetMappingUnitsForDOMOffsetRange(const Node&,
+                                                      unsigned,
+                                                      unsigned) const;
 
  private:
   UnitVector units_;
