@@ -217,7 +217,6 @@ TEST(MemoryAllocatorDumpTest, ForbidStringsInBackgroundModeDeathTest) {
   MemoryAllocatorDump* dump = pmd.CreateAllocatorDump("malloc");
   ASSERT_DEATH(dump->AddString("foo", "bar", "baz"), "");
 }
-
 #endif
 
 }  // namespace trace_event

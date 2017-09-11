@@ -8,13 +8,16 @@
 #include <stdint.h>
 
 #include <memory>
+#include <ostream>
 #include <string>
 
 #include "base/base_export.h"
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/trace_event/memory_allocator_dump_guid.h"
+#include "base/trace_event/memory_dump_request_args.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
 
@@ -47,9 +50,11 @@ class BASE_EXPORT MemoryAllocatorDump {
     // indefinitely lived const char* strings, the only reason we copy
     // them into a std::string is to handle Mojo (de)serialization.
     // TODO(hjd): Investigate optimization (e.g. using StringPiece).
+    Entry();  // Only for deserialization.
     Entry(std::string name, std::string units, uint64_t value);
     Entry(std::string name, std::string units, std::string value);
-    Entry(Entry&& other);
+    Entry(Entry&& other) noexcept;
+    Entry& operator=(Entry&& other);
     bool operator==(const Entry& rhs) const;
 
     std::string name;
@@ -69,11 +74,15 @@ class BASE_EXPORT MemoryAllocatorDump {
       const std::string& absolute_name);
 
   // MemoryAllocatorDump is owned by ProcessMemoryDump.
+  // TODO(primiano): remove this constructor, ProcessMemoryDump* is not used
+  // for anything other than extracting the MemoryDumpLevelOfDetail these days.
   MemoryAllocatorDump(const std::string& absolute_name,
-                      ProcessMemoryDump* process_memory_dump,
-                      const MemoryAllocatorDumpGuid& guid);
+                      ProcessMemoryDump*,
+                      const MemoryAllocatorDumpGuid&);
   MemoryAllocatorDump(const std::string& absolute_name,
-                      ProcessMemoryDump* process_memory_dump);
+                      MemoryDumpLevelOfDetail,
+                      const MemoryAllocatorDumpGuid&);
+  MemoryAllocatorDump(const std::string& absolute_name, ProcessMemoryDump*);
   ~MemoryAllocatorDump();
 
   // Standard attribute |name|s for the AddScalar and AddString() methods.
@@ -106,13 +115,15 @@ class BASE_EXPORT MemoryAllocatorDump {
 
   // Get the size for this dump.
   // The size is the value set with AddScalar(kNameSize, kUnitsBytes, size);
-  // TODO(hjd): Transitional until we send the full PMD. See crbug.com/704203
-  uint64_t GetSizeInternal() const { return size_; };
+  // TODO(hjd): this should return an Optional<uint64_t>.
+  uint64_t GetSizeInternal() const;
+
+  MemoryDumpLevelOfDetail level_of_detail() const { return level_of_detail_; }
 
   // Use enum Flags to set values.
   void set_flags(int flags) { flags_ |= flags; }
   void clear_flags(int flags) { flags_ &= ~flags; }
-  int flags() { return flags_; }
+  int flags() const { return flags_; }
 
   // |guid| is an optional global dump identifier, unique across all processes
   // within the scope of a global dump. It is only required when using the
@@ -124,6 +135,15 @@ class BASE_EXPORT MemoryAllocatorDump {
 
   const std::vector<Entry>& entries_for_testing() const { return entries_; }
 
+  // Only for mojo serialization, which can mutate the collection.
+  std::vector<Entry>* mutable_entries_for_serialization() const {
+    cached_size_.reset();  // The caller can mutate the collection.
+
+    // Mojo takes a const input argument even for move-only types that can be
+    // mutate while serializing (like this one). Hence the const_cast.
+    return const_cast<std::vector<Entry>*>(&entries_);
+  }
+
   // Decprecated testing method. Use entries_for_testing instead.
   // TODO(hjd): Remove this and refactor callers to use entries_for_testing then
   // inline DumpAttributes.
@@ -133,15 +153,17 @@ class BASE_EXPORT MemoryAllocatorDump {
   void DumpAttributes(TracedValue* value) const;
 
   const std::string absolute_name_;
-  ProcessMemoryDump* const process_memory_dump_;  // Not owned (PMD owns this).
   MemoryAllocatorDumpGuid guid_;
+  MemoryDumpLevelOfDetail level_of_detail_;
   int flags_;  // See enum Flags.
-  uint64_t size_;
-
+  mutable Optional<uint64_t> cached_size_;  // Lazy, for GetSizeInternal().
   std::vector<Entry> entries_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryAllocatorDump);
 };
+
+// This is required by gtest to print a readable output on test failures.
+void BASE_EXPORT PrintTo(const MemoryAllocatorDump::Entry&, std::ostream*);
 
 }  // namespace trace_event
 }  // namespace base
