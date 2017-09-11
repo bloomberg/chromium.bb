@@ -283,6 +283,12 @@ crbug.com/642912 virtual/mojo-loading/http/tests/wasm/ [ WontFix ]
 webaudio/codec-tests/mp3 [ WontFix ]
 webaudio/codec-tests/aac [ WontFix ]
 
+# WPT for CSS cascade
+crbug.com/763610 external/wpt/css/CSS2/cascade [ WontFix ]
+crbug.com/763610 external/wpt/css/CSS2/cascade-import [ WontFix ]
+crbug.com/763610 external/wpt/css/css-cascade-3 [ WontFix ]
+crbug.com/763610 external/wpt/css/css-cascade-4 [ WontFix ]
+
 # WPT subdirectories without owners.
 external/wpt/accelerometer [ WontFix ]
 external/wpt/assumptions [ WontFix ]
