@@ -56,12 +56,6 @@ base::LazyInstance<base::TimeTicks>::Leaky
 base::LazyInstance<base::TimeTicks>::Leaky g_message_loop_start_ticks =
     LAZY_INSTANCE_INITIALIZER;
 
-// Only used by RecordMainEntryTimeHistogram(), should go away with it (do not
-// add new uses of this), see crbug.com/317481 for discussion on why it was kept
-// as-is for now.
-base::LazyInstance<base::Time>::Leaky g_browser_main_entry_point_time =
-    LAZY_INSTANCE_INITIALIZER;
-
 // An enumeration of startup temperatures. This must be kept in sync with the
 // UMA StartupType enumeration defined in histograms.xml.
 enum StartupTemperature {
@@ -427,35 +421,6 @@ base::TimeTicks StartupTimeToTimeTicks(base::Time time) {
   return trace_ticks_base - delta_since_base;
 }
 
-// Record time of main entry so it can be read from Telemetry performance tests.
-// TODO(jeremy): Remove once crbug.com/317481 is fixed.
-void RecordMainEntryTimeHistogram() {
-  const int kLowWordMask = 0xFFFFFFFF;
-  const int kLower31BitsMask = 0x7FFFFFFF;
-  DCHECK(!g_browser_main_entry_point_time.Get().is_null());
-  const base::TimeDelta browser_main_entry_time_absolute =
-      g_browser_main_entry_point_time.Get() - base::Time::UnixEpoch();
-
-  const uint64_t browser_main_entry_time_raw_ms =
-      browser_main_entry_time_absolute.InMilliseconds();
-
-  const base::TimeDelta browser_main_entry_time_raw_ms_high_word =
-      base::TimeDelta::FromMilliseconds(
-          (browser_main_entry_time_raw_ms >> 32) & kLowWordMask);
-  // Shift by one because histograms only support non-negative values.
-  const base::TimeDelta browser_main_entry_time_raw_ms_low_word =
-      base::TimeDelta::FromMilliseconds(
-          (browser_main_entry_time_raw_ms >> 1) & kLower31BitsMask);
-
-  // A timestamp is a 64 bit value, yet histograms can only store 32 bits.
-  // TODO(gabadie): Once startup_with_url.* benchmarks are replaced by
-  //    startup_with_url2.*, remove this dirty hack (crbug.com/539287).
-  LOCAL_HISTOGRAM_TIMES("Startup.BrowserMainEntryTimeAbsoluteHighWord",
-      browser_main_entry_time_raw_ms_high_word);
-  LOCAL_HISTOGRAM_TIMES("Startup.BrowserMainEntryTimeAbsoluteLowWord",
-      browser_main_entry_time_raw_ms_low_word);
-}
-
 // Record renderer main entry time histogram.
 void RecordRendererMainEntryHistogram() {
   const base::TimeTicks browser_main_entry_point_ticks =
@@ -587,12 +552,6 @@ void RecordMainEntryPointTime(base::Time time) {
   DCHECK(g_browser_main_entry_point_ticks.Get().is_null());
   g_browser_main_entry_point_ticks.Get() = StartupTimeToTimeTicks(time);
   DCHECK(!g_browser_main_entry_point_ticks.Get().is_null());
-
-  // TODO(jeremy): Remove this with RecordMainEntryTimeHistogram() when
-  // resolving crbug.com/317481.
-  DCHECK(g_browser_main_entry_point_time.Get().is_null());
-  g_browser_main_entry_point_time.Get() = time;
-  DCHECK(!g_browser_main_entry_point_time.Get().is_null());
 }
 
 void RecordExeMainEntryPointTicks(base::TimeTicks ticks) {
@@ -647,7 +606,6 @@ void RecordBrowserMainMessageLoopStart(base::TimeTicks ticks,
   AddStartupEventsForTelemetry();
   RecordTimeSinceLastStartup(pref_service);
   RecordSystemUptimeHistogram();
-  RecordMainEntryTimeHistogram();
 
   // Record timings between process creation, the main() in the executable being
   // reached and the main() in the shared library being reached.
