@@ -74,8 +74,8 @@ bool ThemePainterMac::PaintTextField(const LayoutObject& o,
   // https://bugs.chromium.org/p/chromium/issues/detail?id=658085#c3
   if (!use_ns_text_field_cell) {
     _NSDrawCarbonThemeBezel(
-        r, LayoutTheme::IsEnabled(o) && !LayoutTheme::IsReadOnlyControl(o),
-        YES);
+        CGRect(r),
+        LayoutTheme::IsEnabled(o) && !LayoutTheme::IsReadOnlyControl(o), YES);
     return false;
   }
 
@@ -132,7 +132,7 @@ bool ThemePainterMac::PaintCapsLockIndicator(const LayoutObject& o,
   CGPathAddLineToPoint(shape, NULL, 10.75, 12);
 
   // Scale and translate the shape.
-  CGRect cgr = r;
+  CGRect cgr = CGRect(r);
   CGFloat max_x = CGRectGetMaxX(cgr);
   CGFloat min_x = CGRectGetMinX(cgr);
   CGFloat min_y = CGRectGetMinY(cgr);
@@ -161,7 +161,8 @@ bool ThemePainterMac::PaintTextArea(const LayoutObject& o,
                                     const IntRect& r) {
   LocalCurrentGraphicsContext local_context(paint_info.context, r);
   _NSDrawCarbonThemeListBox(
-      r, LayoutTheme::IsEnabled(o) && !LayoutTheme::IsReadOnlyControl(o), YES,
+      CGRect(r),
+      LayoutTheme::IsEnabled(o) && !LayoutTheme::IsReadOnlyControl(o), YES,
       YES);
   return false;
 }
@@ -196,9 +197,9 @@ bool ThemePainterMac::PaintMenuList(const LayoutObject& o,
   }
 
   NSView* view = layout_theme_.DocumentViewFor(o);
-  [popup_button drawWithFrame:inflated_rect inView:view];
+  [popup_button drawWithFrame:CGRect(inflated_rect) inView:view];
   if (LayoutTheme::IsFocused(o) && o.StyleRef().OutlineStyleIsAuto())
-    [popup_button cr_drawFocusRingWithFrame:inflated_rect inView:view];
+    [popup_button cr_drawFocusRingWithFrame:CGRect(inflated_rect) inView:view];
   [popup_button setControlView:nil];
 
   return false;
@@ -224,7 +225,7 @@ bool ThemePainterMac::PaintProgressBar(const LayoutObject& layout_object,
                           ? kThemeMediumIndeterminateBar
                           : kThemeMediumProgressBar;
 
-  track_info.bounds = IntRect(IntPoint(), rect.Size());
+  track_info.bounds = CGRect(IntRect(IntPoint(), rect.Size()));
   track_info.min = 0;
   track_info.max = std::numeric_limits<SInt32>::max();
   track_info.value =

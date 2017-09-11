@@ -190,7 +190,7 @@ class PLATFORM_EXPORT IntRect {
   }
 
 #if defined(OS_MACOSX)
-  operator CGRect() const;
+  explicit operator CGRect() const;
 #endif
 
   operator SkRect() const;
