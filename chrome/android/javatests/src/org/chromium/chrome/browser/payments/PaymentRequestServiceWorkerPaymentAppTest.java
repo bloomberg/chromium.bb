@@ -40,7 +40,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     private void installMockServiceWorkerPaymentApp(final boolean hasSupportedMethods) {
         PaymentAppFactory.getInstance().addAdditionalFactory(
                 (webContents, methodNames, callback) -> {
-                    ServiceWorkerPaymentApp.setCanMakePaymentForTesting(true);
+                    ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
                     String[] supportedMethodNames = {"https://bobpay.com", "basic-card"};
                     callback.onPaymentAppCreated(
                             new ServiceWorkerPaymentApp(webContents, 0 /* registrationId */,
