@@ -43,6 +43,7 @@ function getChromeUILanguage() {
 const KEYCODE = {
   ENTER: 'Enter',
   ESC: 'Escape',
+  NUMPAD_ENTER: 'NumpadEnter',
   PERIOD: 'Period'
 };
 
@@ -279,6 +280,12 @@ speech.init = function(
     // If propagated, closes the overlay (click on the background).
     event.stopPropagation();
     speech.toggleStartStop();
+  };
+  fakeboxMicrophoneElem.onkeydown = function(event) {
+    if (!event.repeat &&
+        (event.code == KEYCODE.ENTER || event.code == KEYCODE.NUMPAD_ENTER)) {
+      speech.toggleStartStop();
+    }
   };
   window.addEventListener('keydown', speech.onKeyDown);
   if (searchboxApiHandle.onfocuschange) {
@@ -586,7 +593,9 @@ speech.onKeyDown = function(event) {
     event.stopPropagation();
     if (event.code == KEYCODE.ESC) {
       speech.stop_();
-    } else if (event.code == KEYCODE.ENTER && speech.finalResult_) {
+    } else if (
+        (event.code == KEYCODE.ENTER || event.code == KEYCODE.NUMPAD_ENTER) &&
+        speech.finalResult_) {
       speech.submitFinalResult_();
     }
   }
