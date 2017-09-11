@@ -189,14 +189,15 @@ function elementIsVisible(elem) {
 }
 
 
-// ***************************** HELPER OBJECTS *****************************
-// Helper objects used for mocking in tests.
+// ***************************** HELPER CLASSES *****************************
+// Helper classes used for mocking in tests.
 
 
 /**
- * A property replacer utility object. Useful for substituting real functions
+ * A property replacer utility class. Useful for substituting real functions
  * and properties with mocks and then reverting the changes. Inspired by
  * Closure's PropertyReplacer class.
+ * @constructor
  */
 function Replacer() {
   /**
@@ -205,44 +206,45 @@ function Replacer() {
    * original value (|value|).
    */
   this.old_ = {};
-
-
-  /**
-   * Replaces the property |propertyName| of the object |parent| with the
-   * |newValue|. Stores the old value of the property to enable resetting
-   * in |reset()|.
-   * @param {!object} parent The object containg the property |propertyName|.
-   * @param {!string} propertyName The name of the property.
-   * @param {object} newValue The new value of the property.
-   */
-  this.replace = function(parent, propertyName, newValue) {
-    if (!(propertyName in parent)) {
-      throw new Error(
-          `Cannot replace missing property "${propertyName}" in parent.`);
-    }
-    this.old_[propertyName] = {};
-    this.old_[propertyName].value = parent[propertyName];
-    this.old_[propertyName].parent = parent;
-    parent[propertyName] = newValue;
-  };
-
-
-  /**
-   * Resets every property that was overriden by |replace()| to its original
-   * value.
-   */
-  this.reset = function() {
-    Object.entries(this.old_).forEach(([propertyName, saved]) => {
-      saved.parent[propertyName] = saved.value;
-    });
-    this.old_ = {};
-  };
 }
+
+
+/**
+ * Replaces the property |propertyName| of the object |parent| with the
+ * |newValue|. Stores the old value of the property to enable resetting
+ * in |reset()|.
+ * @param {!object} parent The object containg the property |propertyName|.
+ * @param {!string} propertyName The name of the property.
+ * @param {object} newValue The new value of the property.
+ */
+Replacer.prototype.replace = function(parent, propertyName, newValue) {
+  if (!(propertyName in parent)) {
+    throw new Error(
+        `Cannot replace missing property "${propertyName}" in parent.`);
+  }
+  this.old_[propertyName] = {};
+  this.old_[propertyName].value = parent[propertyName];
+  this.old_[propertyName].parent = parent;
+  parent[propertyName] = newValue;
+};
+
+
+/**
+ * Resets every property that was overriden by |replace()| to its original
+ * value.
+ */
+Replacer.prototype.reset = function() {
+  Object.entries(this.old_).forEach(([propertyName, saved]) => {
+    saved.parent[propertyName] = saved.value;
+  });
+  this.old_ = {};
+};
 
 
 /**
  * Utility for testing code that uses |setTimeout()| and |clearTimeout()|.
  * Inspired by Closure's MockClock class.
+ * @constructor
  */
 function MockClock() {
   /**
@@ -268,79 +270,79 @@ function MockClock() {
    * Property replacer, used for replacing |setTimeout()| and |clearTimeout()|.
    */
   this.stubs_ = new Replacer();
+}
 
 
-  /**
-   * Sets the current time that sbox.getTime returns.
-   * @param {!number} msec The time in milliseconds.
-   */
-  this.setTime = function(msec) {
-    assert(this.time <= msec);
-    this.time = msec;
-  };
+/**
+ * Sets the current time that sbox.getTime returns.
+ * @param {!number} msec The time in milliseconds.
+ */
+MockClock.prototype.setTime = function(msec) {
+  assert(this.time <= msec);
+  this.time = msec;
+};
 
 
-  /**
-   * Advances the current time by the specified number of milliseconds.
-   * @param {!number} msec The length of time to advance the current time by.
-   */
-  this.advanceTime = function(msec) {
-    assert(msec >= 0);
-    this.time += msec;
-  };
+/**
+ * Advances the current time by the specified number of milliseconds.
+ * @param {!number} msec The length of time to advance the current time by.
+ */
+MockClock.prototype.advanceTime = function(msec) {
+  assert(msec >= 0);
+  this.time += msec;
+};
 
 
-  /**
-   * Restores the |setTimeout()| and |clearTimeout()| functions back to their
-   * original implementation.
-   */
-  this.reset = function() {
-    this.time = 0;
-    this.pendingTimeouts = [];
-    this.nextTimeoutId_ = 1;
-    this.stubs_.reset();
-  };
+/**
+ * Restores the |setTimeout()| and |clearTimeout()| functions back to their
+ * original implementation.
+ */
+MockClock.prototype.reset = function() {
+  this.time = 0;
+  this.pendingTimeouts = [];
+  this.nextTimeoutId_ = 1;
+  this.stubs_.reset();
+};
 
 
-  /**
-   * Checks whether a timeout with this id has been set.
-   * @param {!number} id The timeout id.
-   * @return True iff a timeout with this id has been set and the timeout
-   *    has not yet fired.
-   */
-  this.isTimeoutSet = function(id) {
-    return 0 < id && id < this.nextTimeoutId_ &&
-        this.pendingTimeouts.map(t => t.id).includes(id);
-  };
+/**
+ * Checks whether a timeout with this id has been set.
+ * @param {!number} id The timeout id.
+ * @return True iff a timeout with this id has been set and the timeout
+ *    has not yet fired.
+ */
+MockClock.prototype.isTimeoutSet = function(id) {
+  return 0 < id && id <= this.nextTimeoutId_ &&
+      this.pendingTimeouts.map(t => t.id).includes(id);
+};
 
 
-  /**
-   * Substitutes the global |setTimeout()| and |clearTimeout()| functions
-   * with their mocked variants, until |reset()| is called.
-   */
-  this.install = function() {
-    this.stubs_.replace(window, 'clearTimeout', (id) => {
-      if (!id) {
+/**
+ * Substitutes the global |setTimeout()| and |clearTimeout()| functions
+ * with their mocked variants, until |reset()| is called.
+ */
+MockClock.prototype.install = function() {
+  this.stubs_.replace(window, 'clearTimeout', (id) => {
+    if (!id) {
+      return;
+    }
+    for (let i = 0; i < this.pendingTimeouts.length; ++i) {
+      if (this.pendingTimeouts[i].id == id) {
+        this.pendingTimeouts.splice(i, 1);
         return;
       }
-      for (let i = 0; i < this.pendingTimeouts.length; ++i) {
-        if (this.pendingTimeouts[i].id == id) {
-          this.pendingTimeouts.splice(i, 1);
-          return;
-        }
-      }
+    }
+  });
+  this.stubs_.replace(window, 'setTimeout', (callback, interval) => {
+    const timeoutId = this.nextTimeoutId_++;
+    this.pendingTimeouts.push({
+      'callback': callback,
+      'activationTime': this.time + interval,
+      'id': timeoutId
     });
-    this.stubs_.replace(window, 'setTimeout', (callback, interval) => {
-      const timeoutId = this.nextTimeoutId_++;
-      this.pendingTimeouts.push({
-        'callback': callback,
-        'activationTime': this.time + interval,
-        'id': timeoutId
-      });
-      this.pendingTimeouts.sort(function(a, b) {
-        return a.activationTime - b.activationTime;
-      });
-      return timeoutId;
+    this.pendingTimeouts.sort(function(a, b) {
+      return a.activationTime - b.activationTime;
     });
-  };
-}
+    return timeoutId;
+  });
+};

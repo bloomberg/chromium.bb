@@ -39,7 +39,7 @@ test.microphone.setUp = function() {
  * Makes sure the microphone module sets up with the correct settings.
  */
 test.microphone.testInitialization = function() {
-  assert(!microphone.isLevelAnimating_);
+  assertFalse(microphone.isLevelAnimating_);
 };
 
 
@@ -48,7 +48,7 @@ test.microphone.testInitialization = function() {
  */
 test.microphone.testStartLevelAnimationFromInactive = function() {
   microphone.startInputAnimation();
-  assert(microphone.isLevelAnimating_);
+  assertTrue(microphone.isLevelAnimating_);
 };
 
 
@@ -58,7 +58,7 @@ test.microphone.testStartLevelAnimationFromInactive = function() {
 test.microphone.testStopLevelAnimationFromActive = function() {
   microphone.startInputAnimation();
   microphone.stopInputAnimation();
-  assert(!microphone.isLevelAnimating_);
+  assertFalse(microphone.isLevelAnimating_);
 };
 
 
@@ -69,13 +69,13 @@ test.microphone.testStartLevelAnimationFromActive = function() {
   // Start the animation.
   test.microphone.clock.setTime(1);
   microphone.startInputAnimation();
-  assert(microphone.isLevelAnimating_);
+  assertTrue(microphone.isLevelAnimating_);
   assertEquals(1, test.microphone.clock.pendingTimeouts.length);
   const stepOneTimeoutId = test.microphone.clock.pendingTimeouts[0].id;
 
   // Try to start the animation again and observe that it hasn't restarted.
   microphone.startInputAnimation();
-  assert(microphone.isLevelAnimating_);
+  assertTrue(microphone.isLevelAnimating_);
   assertEquals(1, test.microphone.clock.pendingTimeouts.length);
   assertEquals(stepOneTimeoutId, test.microphone.clock.pendingTimeouts[0].id);
 };
