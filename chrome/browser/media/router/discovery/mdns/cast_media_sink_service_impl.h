@@ -194,6 +194,9 @@ class CastMediaSinkServiceImpl
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
+  // Owned by |g_browser_process|.
+  net::NetLog* const net_log_;
+
   SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(CastMediaSinkServiceImpl);

@@ -90,7 +90,8 @@ CastMediaSinkServiceImpl::CastMediaSinkServiceImpl(
       cast_socket_service_(cast_socket_service),
       network_monitor_(network_monitor),
       backoff_policy_(&kBackoffPolicy),
-      task_runner_(task_runner) {
+      task_runner_(task_runner),
+      net_log_(g_browser_process->net_log()) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(cast_socket_service_);
   DCHECK(network_monitor_);
@@ -244,7 +245,7 @@ void CastMediaSinkServiceImpl::OpenChannel(
            << " name: " << cast_sink.sink().name();
 
   cast_socket_service_->OpenSocket(
-      ip_endpoint, g_browser_process->net_log(),
+      ip_endpoint, net_log_,
       base::BindOnce(&CastMediaSinkServiceImpl::OnChannelOpened, AsWeakPtr(),
                      cast_sink, std::move(backoff_entry)),
       this);
