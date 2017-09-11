@@ -264,7 +264,15 @@ void vp9_scale_and_extend_frame_c(const struct yv12_buffer_config* src,
                                   struct yv12_buffer_config* dst,
                                   INTERP_FILTER filter_type,
                                   int phase_scaler);
-#define vp9_scale_and_extend_frame vp9_scale_and_extend_frame_c
+void vp9_scale_and_extend_frame_neon(const struct yv12_buffer_config* src,
+                                     struct yv12_buffer_config* dst,
+                                     INTERP_FILTER filter_type,
+                                     int phase_scaler);
+RTCD_EXTERN void (*vp9_scale_and_extend_frame)(
+    const struct yv12_buffer_config* src,
+    struct yv12_buffer_config* dst,
+    INTERP_FILTER filter_type,
+    int phase_scaler);
 
 void vp9_rtcd(void);
 
@@ -298,6 +306,9 @@ static void setup_rtcd_internal(void) {
   vp9_quantize_fp_32x32 = vp9_quantize_fp_32x32_c;
   if (flags & HAS_NEON)
     vp9_quantize_fp_32x32 = vp9_quantize_fp_32x32_neon;
+  vp9_scale_and_extend_frame = vp9_scale_and_extend_frame_c;
+  if (flags & HAS_NEON)
+    vp9_scale_and_extend_frame = vp9_scale_and_extend_frame_neon;
 }
 #endif
 

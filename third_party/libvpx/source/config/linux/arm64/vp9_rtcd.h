@@ -216,7 +216,11 @@ void vp9_scale_and_extend_frame_c(const struct yv12_buffer_config* src,
                                   struct yv12_buffer_config* dst,
                                   INTERP_FILTER filter_type,
                                   int phase_scaler);
-#define vp9_scale_and_extend_frame vp9_scale_and_extend_frame_c
+void vp9_scale_and_extend_frame_neon(const struct yv12_buffer_config* src,
+                                     struct yv12_buffer_config* dst,
+                                     INTERP_FILTER filter_type,
+                                     int phase_scaler);
+#define vp9_scale_and_extend_frame vp9_scale_and_extend_frame_neon
 
 void vp9_rtcd(void);
 
