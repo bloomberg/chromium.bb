@@ -733,7 +733,7 @@ void ArcSessionManager::RequestArcDataRemoval() {
 void ArcSessionManager::MaybeStartTermsOfServiceNegotiation() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile_);
-  DCHECK(arc_session_runner_->IsStopped());
+  DCHECK(arc_session_runner_->IsStopped() || arc_session_runner_->IsStopping());
   DCHECK(!terms_of_service_negotiator_);
   // In Kiosk-mode, Terms of Service negotiation should be skipped.
   // See also RequestEnableImpl().
