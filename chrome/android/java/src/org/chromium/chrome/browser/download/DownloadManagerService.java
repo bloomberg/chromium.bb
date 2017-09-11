@@ -933,7 +933,14 @@ public class DownloadManagerService
     @Override
     public void cancelDownload(ContentId id, boolean isOffTheRecord) {
         nativeCancelDownload(getNativeDownloadManagerService(), id.id, isOffTheRecord);
-        removeDownloadProgress(id.id);
+        DownloadProgress progress = mDownloadProgressMap.get(id.id);
+        if (progress != null) {
+            DownloadInfo info =
+                    DownloadInfo.Builder.fromDownloadInfo(progress.mDownloadItem.getDownloadInfo())
+                            .build();
+            onDownloadCancelled(info);
+            removeDownloadProgress(id.id);
+        }
         recordDownloadFinishedUMA(DOWNLOAD_STATUS_CANCELLED, id.id, 0);
     }
 
