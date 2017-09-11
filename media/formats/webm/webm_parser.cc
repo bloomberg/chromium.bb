@@ -985,17 +985,17 @@ bool WebMListParser::OnListEnd() {
 }
 
 bool WebMListParser::IsSiblingOrAncestor(int id_a, int id_b) const {
-  DCHECK((id_a == kWebMIdSegment) || (id_a == kWebMIdCluster));
-
   if (id_a == kWebMIdCluster) {
     // kWebMIdCluster siblings.
     for (size_t i = 0; i < arraysize(kSegmentIds); i++) {
       if (kSegmentIds[i].id_ == id_b)
         return true;
     }
+  } else if (id_a != kWebMIdSegment) {
+    return false;
   }
 
-  // kWebMIdSegment siblings.
+  // kWebMIdSegment sibling or ancestor, respectively; kWebMIdCluster ancestors.
   return ((id_b == kWebMIdSegment) || (id_b == kWebMIdEBMLHeader));
 }
 

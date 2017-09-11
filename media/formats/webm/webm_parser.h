@@ -130,6 +130,10 @@ class MEDIA_EXPORT WebMListParser {
   bool OnListEnd();
 
   // Checks to see if |id_b| is a sibling or ancestor of |id_a|.
+  // This method is used to determine whether or not a new element |id_b| is a
+  // valid continuation or valid terminator of an unknown-sized list element
+  // |id_a|.  This parser doesn't allow other element types than kWebMIdCluster
+  // or kWebMIdSegment to have unknown size.
   bool IsSiblingOrAncestor(int id_a, int id_b) const;
 
   State state_;
