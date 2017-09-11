@@ -1624,6 +1624,8 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
   [BookmarksNewGenTestCase waitForDeletionOfBookmarkWithTitle:titleIdentifier];
 }
 
-// TODO(crbug.com/695749): Add egtest for spinner and empty background
+// TODO(crbug.com/695749): Add egtests for:
+// 1. Spinner and empty background.
+// 2. Reorder bookmarks.
 
 @end

@@ -259,6 +259,42 @@ void CreateOrUpdateBookmarkWithUndoToast(
   PresentUndoToastWithWrapper(wrapper, text);
 }
 
+void UpdateBookmarkPositionWithUndoToast(
+    const bookmarks::BookmarkNode* node,
+    const bookmarks::BookmarkNode* folder,
+    int position,
+    bookmarks::BookmarkModel* bookmark_model,
+    ios::ChromeBrowserState* browser_state) {
+  DCHECK(node);
+  DCHECK(folder);
+  DCHECK(!folder->HasAncestor(node));
+  // Early return if node is not valid.
+  if (!node && !folder) {
+    return;
+  }
+
+  int old_index = node->parent()->GetIndexOf(node);
+  // Early return if no change in position.
+  if (node->parent() == folder && old_index == position) {
+    return;
+  }
+
+  // Secondly, create an Undo group for all undoable actions.
+  UndoManagerWrapper* wrapper =
+      [[UndoManagerWrapper alloc] initWithBrowserState:browser_state];
+
+  // Update the bookmark.
+  [wrapper startGroupingActions];
+  bookmark_model->Move(node, folder, position);
+
+  [wrapper stopGroupingActions];
+  [wrapper resetUndoManagerChanged];
+
+  NSString* text =
+      l10n_util::GetNSString(IDS_IOS_BOOKMARK_NEW_BOOKMARK_UPDATED);
+  PresentUndoToastWithWrapper(wrapper, text);
+}
+
 void PresentUndoToastWithWrapper(UndoManagerWrapper* wrapper, NSString* text) {
   // Create the block that will be executed if the user taps the undo button.
   MDCSnackbarMessageAction* action = [[MDCSnackbarMessageAction alloc] init];
