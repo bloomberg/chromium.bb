@@ -25,7 +25,11 @@ action("remoting_me2me_host_archive") {
     "//remoting/host/security_key:remote_security_key",
   ]
 
-  _output = "$root_out_dir/remoting-me2me-host-$target_os.zip"
+  if (target_cpu == "x86") {
+    _output = "$root_out_dir/remoting-me2me-host-$target_os.zip"
+  } else {
+    _output = "$root_out_dir/remoting-me2me-host-$target_os-unsupported.zip"
+  }
 
   outputs = [
     _output,
