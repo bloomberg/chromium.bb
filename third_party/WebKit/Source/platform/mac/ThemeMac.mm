@@ -157,7 +157,8 @@ static void UpdateStates(NSCell* cell, ControlStates states) {
 NSView* ThemeMac::EnsuredView(ScrollableArea* scrollable_area) {
   // Use a fake flipped view.
   static NSView* flipped_view = [[BlinkFlippedControl alloc] init];
-  [flipped_view setFrameSize:NSSizeFromCGSize(scrollable_area->ContentsSize())];
+  [flipped_view
+      setFrameSize:NSSizeFromCGSize(CGSize(scrollable_area->ContentsSize()))];
 
   return flipped_view;
 }

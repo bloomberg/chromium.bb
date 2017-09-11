@@ -109,8 +109,8 @@ class PLATFORM_EXPORT IntSize {
   IntSize TransposedSize() const { return IntSize(height_, width_); }
 
 #if defined(OS_MACOSX)
-  explicit IntSize(const CGSize&);  // don't do this implicitly since it's lossy
-  operator CGSize() const;
+  explicit IntSize(const CGSize&);
+  explicit operator CGSize() const;
 #endif
 
   operator gfx::Size() const;
