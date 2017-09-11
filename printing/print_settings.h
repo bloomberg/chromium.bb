@@ -108,7 +108,7 @@ class PRINTING_EXPORT PrintSettings {
     dpi_[0] = dpi_horizontal;
     dpi_[1] = dpi_vertical;
   }
-  int dpi() const { return std::min(dpi_[0], dpi_[1]); }
+  int dpi() const { return std::max(dpi_[0], dpi_[1]); }
   int dpi_horizontal() const { return dpi_[0]; }
   int dpi_vertical() const { return dpi_[1]; }
 
