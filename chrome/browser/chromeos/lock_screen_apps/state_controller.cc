@@ -31,6 +31,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/session_manager/core/session_manager.h"
+#include "components/user_manager/user.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
 #include "crypto/symmetric_key.h"
@@ -138,6 +139,16 @@ void StateController::Initialize() {
 }
 
 void StateController::SetPrimaryProfile(Profile* profile) {
+  const user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+  if (!user || !user->HasGaiaAccount()) {
+    if (!ready_callback_.is_null()) {
+      ready_callback_.Run();
+      ready_callback_.Reset();
+    }
+    return;
+  }
+
   g_browser_process->profile_manager()->CreateProfileAsync(
       chromeos::ProfileHelper::GetLockScreenAppProfilePath(),
       base::Bind(&StateController::OnProfilesReady,
