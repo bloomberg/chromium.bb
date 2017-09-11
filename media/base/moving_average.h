@@ -31,7 +31,7 @@ class MEDIA_EXPORT MovingAverage {
   // Returns the current average of all held samples.
   base::TimeDelta Average() const;
 
-  // Returns the standard deviation of all held samples.
+  // Returns the population standard deviation of all held samples.
   base::TimeDelta Deviation() const;
 
   // Resets the state of the class to its initial post-construction state.
@@ -50,7 +50,6 @@ class MEDIA_EXPORT MovingAverage {
   uint64_t count_ = 0;
 
   base::TimeDelta total_;
-  uint64_t square_sum_us_ = 0;
 
   // Maximum value ever seen.
   base::TimeDelta max_ = kNoTimestamp;
