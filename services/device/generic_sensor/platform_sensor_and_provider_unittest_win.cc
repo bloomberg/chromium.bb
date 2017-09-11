@@ -469,7 +469,7 @@ TEST_F(PlatformSensorAndProviderTestWin, StartFails) {
 #define MAYBE_CheckDeviceOrientationEulerAnglesReadingConversion \
   DISABLED_CheckDeviceOrientationEulerAnglesReadingConversion
 #define MAYBE_CheckDeviceOrientationQuaternionReadingConversion \
-  DISABLE_CheckDeviceOrientationQuaternionReadingConversion
+  DISABLED_CheckDeviceOrientationQuaternionReadingConversion
 #else
 #define MAYBE_SensorStarted SensorStarted
 #define MAYBE_SensorRemoved SensorRemoved
