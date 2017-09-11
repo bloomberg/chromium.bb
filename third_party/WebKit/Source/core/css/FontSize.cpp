@@ -30,7 +30,7 @@
 
 #include "core/css/FontSize.h"
 
-#include "core/css/CSSValueKeywords.h"
+#include "core/CSSValueKeywords.h"
 #include "core/dom/Document.h"
 #include "core/frame/Settings.h"
 

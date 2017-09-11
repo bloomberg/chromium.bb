@@ -24,8 +24,8 @@
 #ifndef FontBuilder_h
 #define FontBuilder_h
 
+#include "core/CSSValueKeywords.h"
 #include "core/CoreExport.h"
-#include "core/css/CSSValueKeywords.h"
 #include "core/css/FontSize.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontVariantNumeric.h"

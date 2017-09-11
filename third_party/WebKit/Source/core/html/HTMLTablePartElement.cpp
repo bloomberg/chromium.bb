@@ -25,9 +25,9 @@
 #include "core/html/HTMLTablePartElement.h"
 
 #include "core/CSSPropertyNames.h"
+#include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
 #include "core/css/CSSImageValue.h"
-#include "core/css/CSSValueKeywords.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Document.h"
 #include "core/dom/FlatTreeTraversal.h"

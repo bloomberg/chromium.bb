@@ -31,12 +31,12 @@
 #ifndef CSSPrimitiveValueMappings_h
 #define CSSPrimitiveValueMappings_h
 
+#include "core/CSSValueKeywords.h"
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSReflectionDirection.h"
 #include "core/css/CSSToLengthConversionData.h"
-#include "core/css/CSSValueKeywords.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "core/style/LineClampValue.h"
 #include "core/style/SVGComputedStyleDefs.h"

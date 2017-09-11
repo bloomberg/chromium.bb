@@ -4,7 +4,7 @@
 
 #include "core/css/properties/CSSPropertyAPIAnimationIterationCount.h"
 
-#include "core/css/CSSValueKeywords.h"
+#include "core/CSSValueKeywords.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/properties/CSSPropertyAnimationIterationCountUtils.h"
 

@@ -787,8 +787,8 @@ code_generator("make_core_generated_css_value_keywords") {
   ]
   templates = []
   outputs = [
-    "$blink_core_output_dir/css/CSSValueKeywords.cpp",
-    "$blink_core_output_dir/css/CSSValueKeywords.h",
+    "$blink_core_output_dir/CSSValueKeywords.cpp",
+    "$blink_core_output_dir/CSSValueKeywords.h",
   ]
   other_args = [
     "--gperf",
