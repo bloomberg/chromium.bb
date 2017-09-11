@@ -3202,7 +3202,8 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
         models.append(config_lib.ModelTestConfig(
             name, model[config_lib.CONFIG_TEMPLATE_MODEL_TEST_SUITES]))
       else:
-        models.append(config_lib.ModelTestConfig(name))
+        no_model_test_suites = []
+        models.append(config_lib.ModelTestConfig(name, no_model_test_suites))
 
     reference_board_name = unibuild[
         config_lib.CONFIG_TEMPLATE_REFERENCE_BOARD_NAME]

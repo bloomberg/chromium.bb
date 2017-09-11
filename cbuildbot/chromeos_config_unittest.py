@@ -266,7 +266,7 @@ class UnifiedBuildReleaseBuilders(
     reef_uni_release = self._site_config['reef-uni-release']
     self.assertIsNotNone(reef_uni_release)
     models = reef_uni_release['models']
-    self.assertIn(config_lib.ModelTestConfig('reef'), models)
+    self.assertIn(config_lib.ModelTestConfig('reef', []), models)
     self.assertIn(config_lib.ModelTestConfig('pyro', ['sanity']), models)
 
     master_release = self._site_config['master-release']
