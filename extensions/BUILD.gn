@@ -295,7 +295,6 @@ source_set("chrome_extensions_browsertests") {
     "//media/cast:test_support",
     "//net",
     "//net:test_support",
-    "//sdch",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
