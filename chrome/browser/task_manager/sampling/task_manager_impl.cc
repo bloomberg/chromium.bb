@@ -96,8 +96,8 @@ void TaskManagerImpl::KillTask(TaskId task_id) {
   GetTaskByTaskId(task_id)->Kill();
 }
 
-double TaskManagerImpl::GetCpuUsage(TaskId task_id) const {
-  return GetTaskGroupByTaskId(task_id)->cpu_usage();
+double TaskManagerImpl::GetPlatformIndependentCPUUsage(TaskId task_id) const {
+  return GetTaskGroupByTaskId(task_id)->platform_independent_cpu_usage();
 }
 
 base::Time TaskManagerImpl::GetStartTime(TaskId task_id) const {

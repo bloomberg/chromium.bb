@@ -26,7 +26,7 @@ class TestTaskManager : public TaskManagerInterface {
   void ActivateTask(TaskId task_id) override;
   bool IsTaskKillable(TaskId task_id) override;
   void KillTask(TaskId task_id) override;
-  double GetCpuUsage(TaskId task_id) const override;
+  double GetPlatformIndependentCPUUsage(TaskId task_id) const override;
   base::Time GetStartTime(TaskId task_id) const override;
   base::TimeDelta GetCpuTime(TaskId task_id) const override;
   int64_t GetPhysicalMemoryUsage(TaskId task_id) const override;

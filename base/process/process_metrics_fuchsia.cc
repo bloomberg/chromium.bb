@@ -19,7 +19,7 @@ std::unique_ptr<ProcessMetrics> ProcessMetrics::CreateProcessMetrics(
   return nullptr;
 }
 
-double ProcessMetrics::GetCPUUsage() {
+double ProcessMetrics::GetPlatformIndependentCPUUsage() {
   NOTIMPLEMENTED();  // TODO(fuchsia): https://crbug.com/706592.
   return 0.0;
 }

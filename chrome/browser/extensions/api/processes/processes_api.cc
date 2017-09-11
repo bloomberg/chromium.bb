@@ -137,8 +137,8 @@ void FillProcessData(
   if (!include_optional)
     return;
 
-  out_process->cpu.reset(new double(task_manager->GetCpuUsage(id)));
-
+  out_process->cpu.reset(
+      new double(task_manager->GetPlatformIndependentCPUUsage(id)));
   out_process->network.reset(new double(static_cast<double>(
       task_manager->GetProcessTotalNetworkUsage(id))));
 

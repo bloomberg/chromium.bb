@@ -88,7 +88,7 @@ TaskGroup::TaskGroup(
       shared_sampler_(shared_sampler),
       expected_on_bg_done_flags_(kBackgroundRefreshTypesMask),
       current_on_bg_done_flags_(0),
-      cpu_usage_(0.0),
+      platform_independent_cpu_usage_(0.0),
       gpu_memory_(-1),
       memory_state_(base::MemoryState::UNKNOWN),
       per_process_network_usage_rate_(-1),
@@ -291,7 +291,7 @@ void TaskGroup::OnRefreshNaClDebugStubPortDone(int nacl_debug_stub_port) {
 void TaskGroup::OnCpuRefreshDone(double cpu_usage) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  cpu_usage_ = cpu_usage;
+  platform_independent_cpu_usage_ = cpu_usage;
   OnBackgroundRefreshTypeFinished(REFRESH_TYPE_CPU);
 }
 

@@ -361,15 +361,15 @@ TEST_F(SystemMetricsTest, ParseVmstat) {
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
 
-// Test that ProcessMetrics::GetCPUUsage() doesn't return negative values when
-// the number of threads running on the process decreases between two successive
-// calls to it.
+// Test that ProcessMetrics::GetPlatformIndependentCPUUsage() doesn't return
+// negative values when the number of threads running on the process decreases
+// between two successive calls to it.
 TEST_F(SystemMetricsTest, TestNoNegativeCpuUsage) {
   ProcessHandle handle = GetCurrentProcessHandle();
   std::unique_ptr<ProcessMetrics> metrics(
       ProcessMetrics::CreateProcessMetrics(handle));
 
-  EXPECT_GE(metrics->GetCPUUsage(), 0.0);
+  EXPECT_GE(metrics->GetPlatformIndependentCPUUsage(), 0.0);
   Thread thread1("thread1");
   Thread thread2("thread2");
   Thread thread3("thread3");
@@ -390,16 +390,16 @@ TEST_F(SystemMetricsTest, TestNoNegativeCpuUsage) {
   thread2.task_runner()->PostTask(FROM_HERE, BindOnce(&BusyWork, &vec2));
   thread3.task_runner()->PostTask(FROM_HERE, BindOnce(&BusyWork, &vec3));
 
-  EXPECT_GE(metrics->GetCPUUsage(), 0.0);
+  EXPECT_GE(metrics->GetPlatformIndependentCPUUsage(), 0.0);
 
   thread1.Stop();
-  EXPECT_GE(metrics->GetCPUUsage(), 0.0);
+  EXPECT_GE(metrics->GetPlatformIndependentCPUUsage(), 0.0);
 
   thread2.Stop();
-  EXPECT_GE(metrics->GetCPUUsage(), 0.0);
+  EXPECT_GE(metrics->GetPlatformIndependentCPUUsage(), 0.0);
 
   thread3.Stop();
-  EXPECT_GE(metrics->GetCPUUsage(), 0.0);
+  EXPECT_GE(metrics->GetPlatformIndependentCPUUsage(), 0.0);
 }
 
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
