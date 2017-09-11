@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/translate/translate_bubble_view.h"
 
 #include <memory>
+#include <string>
 
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -17,6 +18,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/common/language_detection_details.h"
 #include "content/public/browser/notification_details.h"
 
@@ -25,27 +27,47 @@ class TranslateBubbleViewBrowserTest : public InProcessBrowserTest {
   TranslateBubbleViewBrowserTest() {}
   ~TranslateBubbleViewBrowserTest() override {}
 
+  void SetUp() override {
+    set_open_about_blank_on_browser_launch(true);
+    translate::TranslateManager::SetIgnoreMissingKeyForTesting(true);
+    InProcessBrowserTest::SetUp();
+  }
+
+ protected:
+  void NavigateAndWaitForLanguageDetection(const GURL& url,
+                                           const std::string& expected_lang) {
+    expected_lang_ = expected_lang;
+    content::WindowedNotificationObserver language_detected_signal(
+        chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
+        base::Bind(&TranslateBubbleViewBrowserTest::OnLanguageDetermined,
+                   base::Unretained(this)));
+
+    ui_test_utils::NavigateToURL(browser(), url);
+    language_detected_signal.Wait();
+  }
+
  private:
+  std::string expected_lang_;
+
+  bool OnLanguageDetermined(const content::NotificationSource& source,
+                            const content::NotificationDetails& details) {
+    const std::string& language =
+        content::Details<translate::LanguageDetectionDetails>(details)
+            ->cld_language;
+    return language == expected_lang_;
+  }
+
   DISALLOW_COPY_AND_ASSIGN(TranslateBubbleViewBrowserTest);
 };
 
-// Flaky: crbug.com/394066
 IN_PROC_BROWSER_TEST_F(TranslateBubbleViewBrowserTest,
-                       DISABLED_CloseBrowserWithoutTranslating) {
+                       CloseBrowserWithoutTranslating) {
   EXPECT_FALSE(TranslateBubbleView::GetCurrentBubble());
 
   // Show a French page and wait until the bubble is shown.
-  content::WebContents* current_web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  content::Source<content::WebContents> source(current_web_contents);
-  ui_test_utils::WindowedNotificationObserverWithDetails<
-      translate::LanguageDetectionDetails>
-      fr_language_detected_signal(chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
-                                  source);
   GURL french_url = ui_test_utils::GetTestUrl(
       base::FilePath(), base::FilePath(FILE_PATH_LITERAL("french_page.html")));
-  ui_test_utils::NavigateToURL(browser(), french_url);
-  fr_language_detected_signal.Wait();
+  NavigateAndWaitForLanguageDetection(french_url, "fr");
   EXPECT_TRUE(TranslateBubbleView::GetCurrentBubble());
 
   // Close the window without translating.
@@ -53,23 +75,16 @@ IN_PROC_BROWSER_TEST_F(TranslateBubbleViewBrowserTest,
   EXPECT_FALSE(TranslateBubbleView::GetCurrentBubble());
 }
 
-// http://crbug.com/378061
 IN_PROC_BROWSER_TEST_F(TranslateBubbleViewBrowserTest,
-                       DISABLED_CloseLastTabWithoutTranslating) {
+                       CloseLastTabWithoutTranslating) {
   EXPECT_FALSE(TranslateBubbleView::GetCurrentBubble());
 
   // Show a French page and wait until the bubble is shown.
   content::WebContents* current_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  content::Source<content::WebContents> source(current_web_contents);
-  ui_test_utils::WindowedNotificationObserverWithDetails<
-      translate::LanguageDetectionDetails>
-      fr_language_detected_signal(chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
-                                  source);
   GURL french_url = ui_test_utils::GetTestUrl(
       base::FilePath(), base::FilePath(FILE_PATH_LITERAL("french_page.html")));
-  ui_test_utils::NavigateToURL(browser(), french_url);
-  fr_language_detected_signal.Wait();
+  NavigateAndWaitForLanguageDetection(french_url, "fr");
   EXPECT_TRUE(TranslateBubbleView::GetCurrentBubble());
 
   // Close the tab without translating.
