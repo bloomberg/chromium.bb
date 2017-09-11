@@ -122,7 +122,7 @@ class AppsGridViewTest : public views::ViewsTestBase,
     gfx::NativeView parent = GetContext();
     delegate_.reset(new AppListTestViewDelegate);
     app_list_view_ = new AppListView(delegate_.get());
-    app_list_view_->set_app_list_animation_duration_ms_for_testing(0);
+    app_list_view_->set_short_animation_for_testing();
 
     app_list_view_->Initialize(parent, 0, false, false);
     contents_view_ = app_list_view_->app_list_main_view()->contents_view();
