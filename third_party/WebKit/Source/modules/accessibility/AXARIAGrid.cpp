@@ -49,8 +49,8 @@ bool AXARIAGrid::AddRow(AXObject* possible_row) {
   if (!possible_row || possible_row->RoleValue() != kRowRole)
     return false;
 
-  DCHECK(possible_row->IsARIARow());
-  AXARIAGridRow* row = ToAXARIAGridRow(possible_row);
+  DCHECK(possible_row->IsTableRow());
+  AXTableRow* row = ToAXTableRow(possible_row);
   row->SetRowIndex(static_cast<int>(rows_.size()));
   rows_.push_back(possible_row);
   return true;
