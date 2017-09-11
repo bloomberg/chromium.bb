@@ -38,8 +38,14 @@ class BASE_EXPORT ScopedBlockingCall {
   ~ScopedBlockingCall();
 
  private:
-  BlockingType blocking_type_;
-  internal::BlockingObserver* blocking_observer_;
+  internal::BlockingObserver* const blocking_observer_;
+
+  // Previous ScopedBlockingCall instantiated on this thread.
+  ScopedBlockingCall* const previous_scoped_blocking_call_;
+
+  // Whether the BlockingType of the current thread was WILL_BLOCK after this
+  // ScopedBlockingCall was instantiated.
+  const bool is_will_block_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedBlockingCall);
 };
@@ -47,17 +53,31 @@ class BASE_EXPORT ScopedBlockingCall {
 namespace internal {
 
 // Interface for an observer to be informed when a thread enters or exits
-// the scope of a ScopedBlockingCall object.
+// the scope of ScopedBlockingCall objects.
 class BASE_EXPORT BlockingObserver {
  public:
   virtual ~BlockingObserver() = default;
 
-  virtual void BlockingScopeEntered(BlockingType blocking_type) = 0;
-  virtual void BlockingScopeExited(BlockingType blocking_type) = 0;
+  // Invoked when a ScopedBlockingCall is instantiated on the observed thread
+  // where there wasn't an existing ScopedBlockingCall.
+  virtual void BlockingStarted(BlockingType blocking_type) = 0;
+
+  // Invoked when a WILL_BLOCK ScopedBlockingCall is instantiated on the
+  // observed thread where there was a MAY_BLOCK ScopedBlockingCall but not a
+  // WILL_BLOCK ScopedBlockingCall.
+  virtual void BlockingTypeUpgraded() = 0;
+
+  // Invoked when the last ScopedBlockingCall on the observed thread is
+  // destroyed.
+  virtual void BlockingEnded() = 0;
 };
 
-void SetBlockingObserverForCurrentThread(BlockingObserver* blocking_observer);
-void ClearBlockingObserverForTesting();
+// Registers |blocking_observer| on the current thread. It is invalid to call
+// this on a thread where there is an active ScopedBlockingCall.
+BASE_EXPORT void SetBlockingObserverForCurrentThread(
+    BlockingObserver* blocking_observer);
+
+BASE_EXPORT void ClearBlockingObserverForTesting();
 
 }  // namespace internal
 

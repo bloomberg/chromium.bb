@@ -2185,6 +2185,7 @@ test("base_unittests") {
     "test/user_action_tester_unittest.cc",
     "threading/platform_thread_unittest.cc",
     "threading/post_task_and_reply_impl_unittest.cc",
+    "threading/scoped_blocking_call_unittest.cc",
     "threading/sequence_local_storage_map_unittest.cc",
     "threading/sequence_local_storage_slot_unittest.cc",
     "threading/sequenced_task_runner_handle_unittest.cc",
