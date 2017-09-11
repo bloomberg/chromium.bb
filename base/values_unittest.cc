@@ -74,14 +74,14 @@ TEST(ValuesTest, ConstructStringFromConstCharPtr) {
   EXPECT_EQ("foobar", value.GetString());
 }
 
-TEST(ValuesTest, ConstructStringFromStdStringConstRef) {
+TEST(ValuesTest, ConstructStringFromStringPiece) {
   std::string str = "foobar";
-  Value value(str);
+  Value value{StringPiece(str)};
   EXPECT_EQ(Value::Type::STRING, value.type());
   EXPECT_EQ("foobar", value.GetString());
 }
 
-TEST(ValuesTest, ConstructStringFromStdStringRefRef) {
+TEST(ValuesTest, ConstructStringFromStdStringRRef) {
   std::string str = "foobar";
   Value value(std::move(str));
   EXPECT_EQ(Value::Type::STRING, value.type());
@@ -95,16 +95,9 @@ TEST(ValuesTest, ConstructStringFromConstChar16Ptr) {
   EXPECT_EQ("foobar", value.GetString());
 }
 
-TEST(ValuesTest, ConstructStringFromString16) {
+TEST(ValuesTest, ConstructStringFromStringPiece16) {
   string16 str = ASCIIToUTF16("foobar");
-  Value value(str);
-  EXPECT_EQ(Value::Type::STRING, value.type());
-  EXPECT_EQ("foobar", value.GetString());
-}
-
-TEST(ValuesTest, ConstructStringFromStringPiece) {
-  StringPiece str = "foobar";
-  Value value(str);
+  Value value{StringPiece16(str)};
   EXPECT_EQ(Value::Type::STRING, value.type());
   EXPECT_EQ("foobar", value.GetString());
 }
