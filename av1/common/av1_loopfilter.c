@@ -2751,7 +2751,11 @@ static const uint32_t av1_prediction_masks[NUM_EDGE_DIRS][BLOCK_SIZES_ALL] = {
       8 - 1,    // BLOCK_8X32,
       32 - 1,   // BLOCK_32X8,
       16 - 1,   // BLOCK_16X64,
-      64 - 1    // BLOCK_64X16
+      64 - 1,   // BLOCK_64X16
+#if CONFIG_EXT_PARTITION
+      32 - 1,   // BLOCK_32X128
+      128 - 1,  // BLOCK_128X32
+#endif          // CONFIG_EXT_PARTITION
   },
   // mask for horizontal edges filtering
   {
@@ -2783,7 +2787,11 @@ static const uint32_t av1_prediction_masks[NUM_EDGE_DIRS][BLOCK_SIZES_ALL] = {
       32 - 1,   // BLOCK_8X32,
       8 - 1,    // BLOCK_32X8,
       64 - 1,   // BLOCK_16X64,
-      16 - 1    // BLOCK_64X16
+      16 - 1,   // BLOCK_64X16
+#if CONFIG_EXT_PARTITION
+      128 - 1,  // BLOCK_32X128
+      32 - 1,   // BLOCK_128X32
+#endif          // CONFIG_EXT_PARTITION
   },
 };
 

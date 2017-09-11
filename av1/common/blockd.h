@@ -1087,6 +1087,10 @@ static INLINE int is_rect_tx_allowed_bsize(BLOCK_SIZE bsize) {
     0,  // BLOCK_32X8
     0,  // BLOCK_16X64
     0,  // BLOCK_64X16
+#if CONFIG_EXT_PARTITION
+    0,  // BLOCK_32X128
+    0,  // BLOCK_128X32
+#endif  // CONFIG_EXT_PARTITION
   };
 
   return LUT[bsize];
@@ -1132,6 +1136,10 @@ static INLINE int is_quarter_tx_allowed_bsize(BLOCK_SIZE bsize) {
     0,  // BLOCK_32X8
     0,  // BLOCK_16X64
     0,  // BLOCK_64X16
+#if CONFIG_EXT_PARTITION
+    0,  // BLOCK_32X128
+    0,  // BLOCK_128X32
+#endif  // CONFIG_EXT_PARTITION
   };
 
   return LUT_QTTX[bsize];

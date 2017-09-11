@@ -215,6 +215,10 @@ SUBTRACT_FUN(8x32) { STACK_V(16, subtract_8x16); }
 SUBTRACT_FUN(32x8) { STACK_H(16, subtract_16x8); }
 SUBTRACT_FUN(16x64) { STACK_V(32, subtract_16x32); }
 SUBTRACT_FUN(64x16) { STACK_H(32, subtract_32x16); }
+#if CONFIG_EXT_PARTITION
+SUBTRACT_FUN(32x128) { STACK_V(64, subtract_32x64); }
+SUBTRACT_FUN(128x32) { STACK_H(64, subtract_64x32); }
+#endif
 
 static SubtractWxHFuncType getSubtractFunc(int rows, int cols) {
   if (rows == 4) {
@@ -240,6 +244,9 @@ static SubtractWxHFuncType getSubtractFunc(int rows, int cols) {
     if (cols == 16) return subtract_16x32;
     if (cols == 32) return subtract_32x32;
     if (cols == 64) return subtract_64x32;
+#if CONFIG_EXT_PARTITION
+    if (cols == 128) return subtract_128x32;
+#endif  // CONFIG_EXT_PARTITION
   }
   if (rows == 64) {
     if (cols == 16) return subtract_16x64;
@@ -251,6 +258,7 @@ static SubtractWxHFuncType getSubtractFunc(int rows, int cols) {
   }
 #if CONFIG_EXT_PARTITION
   if (rows == 128) {
+    if (cols == 32) return subtract_32x128;
     if (cols == 64) return subtract_64x128;
     if (cols == 128) return subtract_128x128;
   }

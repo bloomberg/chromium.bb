@@ -2247,14 +2247,15 @@ static PARTITION_TYPE read_partition(AV1_COMMON *cm, MACROBLOCKD *xd,
 
   if (has_rows && has_cols) {
 #if CONFIG_EXT_PARTITION_TYPES
-    const int bsl =
-        mi_width_log2_lookup[bsize] - mi_width_log2_lookup[BLOCK_8X8];
-    p = (PARTITION_TYPE)aom_read_symbol(r, partition_cdf,
-                                        av1_num_partition_types[bsl], ACCT_STR);
+    const int num_partition_types =
+        (mi_width_log2_lookup[bsize] > mi_width_log2_lookup[BLOCK_8X8])
+            ? EXT_PARTITION_TYPES
+            : PARTITION_TYPES;
 #else
-    p = (PARTITION_TYPE)aom_read_symbol(r, partition_cdf, PARTITION_TYPES,
-                                        ACCT_STR);
+    const int num_partition_types = PARTITION_TYPES;
 #endif  // CONFIG_EXT_PARTITION_TYPES
+    p = (PARTITION_TYPE)aom_read_symbol(r, partition_cdf, num_partition_types,
+                                        ACCT_STR);
   } else if (!has_rows && has_cols) {
     assert(bsize > BLOCK_8X8);
     aom_cdf_prob cdf[2];

@@ -2853,13 +2853,14 @@ static void write_partition(const AV1_COMMON *const cm,
 
   if (has_rows && has_cols) {
 #if CONFIG_EXT_PARTITION_TYPES
-    const int bsl =
-        mi_width_log2_lookup[bsize] - mi_width_log2_lookup[BLOCK_8X8];
-    aom_write_symbol(w, p, ec_ctx->partition_cdf[ctx],
-                     av1_num_partition_types[bsl]);
+    const int num_partition_types =
+        (mi_width_log2_lookup[bsize] > mi_width_log2_lookup[BLOCK_8X8])
+            ? EXT_PARTITION_TYPES
+            : PARTITION_TYPES;
 #else
-    aom_write_symbol(w, p, ec_ctx->partition_cdf[ctx], PARTITION_TYPES);
-#endif  // CONFIG_EXT_PARTITION_TYPES
+    const int num_partition_types = PARTITION_TYPES;
+#endif
+    aom_write_symbol(w, p, ec_ctx->partition_cdf[ctx], num_partition_types);
   } else if (!has_rows && has_cols) {
     assert(p == PARTITION_SPLIT || p == PARTITION_HORZ);
     assert(bsize > BLOCK_8X8);

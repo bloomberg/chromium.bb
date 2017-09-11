@@ -157,14 +157,14 @@ static const uint16_t orders_4x16[256] = {
   232, 233, 234, 235, 236, 237, 238, 239, 248, 249, 250, 251, 252, 253, 254,
   255,
 };
-#else
+#endif
+
 static const uint16_t orders_32x128[4] = {
   0, 1, 2, 3,
 };
 static const uint16_t orders_128x32[4] = {
   0, 1, 2, 3,
 };
-#endif
 
 #if CONFIG_CB4X4 || CONFIG_EXT_PARTITION
 static const uint16_t orders_16x8[128] = {
@@ -398,7 +398,9 @@ static const uint16_t *const orders[BLOCK_SIZES_ALL] = {
   // 4x16,        16x4,           8x32
   orders_4x16,    orders_16x4,    orders_8x32,
   // 32x8,        16x64,          64x16
-  orders_32x8,    orders_16x64,   orders_64x16
+  orders_32x8,    orders_16x64,   orders_64x16,
+  // 32x128,      128x32
+  orders_32x128,  orders_128x32
 };
 /* clang-format on */
 #else

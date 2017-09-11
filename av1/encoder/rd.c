@@ -57,11 +57,14 @@ static const uint8_t rd_thresh_block_size_factor[BLOCK_SIZES_ALL] = {
 #if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
   2,  2,  2,
 #endif
-  2,  3,  3,  4, 6,  6, 8, 12, 12, 16, 24, 24, 32,
+  2,  3,  3,  4, 6,  6,  8, 12, 12, 16, 24, 24, 32,
 #if CONFIG_EXT_PARTITION
   48, 48, 64,
 #endif  // CONFIG_EXT_PARTITION
-  4,  4,  8,  8, 16, 16
+  4,  4,  8,  8, 16, 16,
+#if CONFIG_EXT_PARTITION
+  32, 32
+#endif  // CONFIG_EXT_PARTITION
 };
 
 #if CONFIG_EXT_TX

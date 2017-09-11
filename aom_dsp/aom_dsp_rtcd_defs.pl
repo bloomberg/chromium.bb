@@ -47,6 +47,10 @@ if (aom_config("CONFIG_EXT_PARTITION_TYPES") eq "yes") {
   push @block_sizes, [32, 8];
   push @block_sizes, [16, 64];
   push @block_sizes, [64, 16];
+  if (aom_config("CONFIG_EXT_PARTITION") eq "yes") {
+      push @block_sizes, [32, 128];
+      push @block_sizes, [128, 32];
+  }
 }
 
 @tx_dims = (2, 4, 8, 16, 32);
@@ -820,14 +824,18 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
     foreach (@block_sizes) {
       ($w, $h) = @$_;
       add_proto qw/unsigned int/, "aom_obmc_sad${w}x${h}", "const uint8_t *pre, int pre_stride, const int32_t *wsrc, const int32_t *mask";
-      specialize "aom_obmc_sad${w}x${h}", qw/sse4_1/;
+      if (! (($w == 128 && $h == 32) || ($w == 32 && $h == 128))) {
+         specialize "aom_obmc_sad${w}x${h}", qw/sse4_1/;
+      }
     }
 
     if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
       foreach (@block_sizes) {
         ($w, $h) = @$_;
         add_proto qw/unsigned int/, "aom_highbd_obmc_sad${w}x${h}", "const uint8_t *pre, int pre_stride, const int32_t *wsrc, const int32_t *mask";
-        specialize "aom_highbd_obmc_sad${w}x${h}", qw/sse4_1/;
+        if (! (($w == 128 && $h == 32) || ($w == 32 && $h == 128))) {
+          specialize "aom_highbd_obmc_sad${w}x${h}", qw/sse4_1/;
+        }
       }
     }
   }

@@ -606,10 +606,6 @@ extern const aom_tree_index
     av1_switchable_restore_tree[TREE_SIZE(RESTORE_SWITCHABLE_TYPES)];
 #endif  // CONFIG_LOOP_RESTORATION
 
-#if CONFIG_EXT_PARTITION_TYPES
-extern int av1_num_partition_types[PARTITION_BLOCK_SIZES];
-#endif
-
 void av1_setup_past_independence(struct AV1Common *cm);
 
 void av1_adapt_intra_frame_probs(struct AV1Common *cm);

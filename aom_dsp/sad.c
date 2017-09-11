@@ -167,11 +167,15 @@ sadMxN(16, 64)
 sadMxNx4D(16, 64)
 sadMxN(64, 16)
 sadMxNx4D(64, 16)
+sadMxN(32, 128)
+sadMxNx4D(32, 128)
+sadMxN(128, 32)
+sadMxNx4D(128, 32)
 #endif
 /* clang-format on */
 
 #if CONFIG_HIGHBITDEPTH
-                        static INLINE
+                            static INLINE
     unsigned int highbd_sad(const uint8_t *a8, int a_stride, const uint8_t *b8,
                             int b_stride, int width, int height) {
   int y, x;
@@ -336,12 +340,16 @@ highbd_sadMxN(16, 64)
 highbd_sadMxNx4D(16, 64)
 highbd_sadMxN(64, 16)
 highbd_sadMxNx4D(64, 16)
+highbd_sadMxN(32, 128)
+highbd_sadMxNx4D(32, 128)
+highbd_sadMxN(128, 32)
+highbd_sadMxNx4D(128, 32)
 #endif
 /* clang-format on */
 #endif  // CONFIG_HIGHBITDEPTH
 
 #if CONFIG_AV1 && CONFIG_EXT_INTER
-                                    static INLINE
+                                                static INLINE
     unsigned int masked_sad(const uint8_t *src, int src_stride,
                             const uint8_t *a, int a_stride, const uint8_t *b,
                             int b_stride, const uint8_t *m, int m_stride,
@@ -405,11 +413,13 @@ MASKSADMxN(8, 32)
 MASKSADMxN(32, 8)
 MASKSADMxN(16, 64)
 MASKSADMxN(64, 16)
+MASKSADMxN(32, 128)
+MASKSADMxN(128, 32)
 #endif
 /* clang-format on */
 
 #if CONFIG_HIGHBITDEPTH
-                            static INLINE
+                                static INLINE
     unsigned int highbd_masked_sad(const uint8_t *src8, int src_stride,
                                    const uint8_t *a8, int a_stride,
                                    const uint8_t *b8, int b_stride,
@@ -476,6 +486,8 @@ HIGHBD_MASKSADMXN(8, 32)
 HIGHBD_MASKSADMXN(32, 8)
 HIGHBD_MASKSADMXN(16, 64)
 HIGHBD_MASKSADMXN(64, 16)
+HIGHBD_MASKSADMXN(32, 128)
+HIGHBD_MASKSADMXN(128, 32)
 #endif
 #endif  // CONFIG_HIGHBITDEPTH
 #endif  // CONFIG_AV1 && CONFIG_EXT_INTER
@@ -536,11 +548,13 @@ OBMCSADMxN(8, 32)
 OBMCSADMxN(32, 8)
 OBMCSADMxN(16, 64)
 OBMCSADMxN(64, 16)
+OBMCSADMxN(32, 128)
+OBMCSADMxN(128, 32)
 #endif
 /* clang-format on */
 
 #if CONFIG_HIGHBITDEPTH
-                            static INLINE
+                                static INLINE
     unsigned int highbd_obmc_sad(const uint8_t *pre8, int pre_stride,
                                  const int32_t *wsrc, const int32_t *mask,
                                  int width, int height) {
@@ -594,6 +608,8 @@ HIGHBD_OBMCSADMXN(8, 32)
 HIGHBD_OBMCSADMXN(32, 8)
 HIGHBD_OBMCSADMXN(16, 64)
 HIGHBD_OBMCSADMXN(64, 16)
+HIGHBD_OBMCSADMXN(32, 128)
+HIGHBD_OBMCSADMXN(128, 32)
 #endif
 /* clang-format on */
 #endif  // CONFIG_HIGHBITDEPTH

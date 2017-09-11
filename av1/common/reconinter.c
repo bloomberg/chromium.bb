@@ -414,6 +414,10 @@ const wedge_params_type wedge_params_lookup[BLOCK_SIZES_ALL] = {
 #endif  // CONFIG_WEDGE
   { 0, NULL, NULL, 0, NULL },
   { 0, NULL, NULL, 0, NULL },
+#if CONFIG_EXT_PARTITION
+  { 0, NULL, NULL, 0, NULL },
+  { 0, NULL, NULL, 0, NULL },
+#endif  // CONFIG_EXT_PARTITION
 };
 
 static const uint8_t *get_wedge_mask_inplace(int wedge_index, int neg,
@@ -2948,7 +2952,7 @@ static int ii_size_scales[BLOCK_SIZES_ALL] = {
 #endif
     32, 16, 16, 16, 8, 8, 8, 4,
     4,  4,  2,  2,  2, 1, 1, 1,
-    16, 16, 8, 8, 4, 4,
+    16, 16, 8, 8, 4, 4, 2, 2
 };
 #else
 static const int ii_weights1d[MAX_SB_SIZE] = {
