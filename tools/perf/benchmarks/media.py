@@ -106,6 +106,9 @@ class _MediaTBMv2Benchmark(perf_benchmark.PerfBenchmark):
     # time to different activities, such as video_animation, etc.
     category_filter.AddIncludedCategory('rail')
 
+    # Collect media related events required by mediaMetric.
+    category_filter.AddIncludedCategory('media')
+
     # Collect memory data.
     category_filter.AddDisabledByDefault('disabled-by-default-memory-infra')
 
@@ -117,7 +120,7 @@ class _MediaTBMv2Benchmark(perf_benchmark.PerfBenchmark):
     options.config.chrome_trace_config.SetMemoryDumpConfig(
         chrome_trace_config.MemoryDumpConfig())
 
-    options.SetTimelineBasedMetrics(['powerMetric',
+    options.SetTimelineBasedMetrics(['powerMetric', 'mediaMetric',
                                      'cpuTimeMetric', 'memoryMetric'])
     return options
 
