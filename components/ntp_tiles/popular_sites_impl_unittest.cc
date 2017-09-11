@@ -440,6 +440,19 @@ TEST_F(PopularSitesTest, DoesntUseCacheWithDeprecatedVersion) {
   EXPECT_THAT(prefs_->GetInteger(prefs::kPopularSitesVersionPref), Eq(6));
 }
 
+TEST_F(PopularSitesTest, FallsBackToDefaultParserIfVersionContainsNoNumber) {
+  SetCountryAndVersion("ZZ", "staging");
+  // The version is used in the URL, as planned when setting it.
+  RespondWithV5JSON(
+      "https://www.gstatic.com/chrome/ntp/suggested_sites_ZZ_staging.json",
+      {kChromium});
+  PopularSites::SitesVector sites;
+  EXPECT_THAT(FetchPopularSites(/*force_download=*/false, &sites),
+              Eq(base::Optional<bool>(true)));
+  ASSERT_THAT(sites.size(), Eq(1u));
+  EXPECT_THAT(sites[0].url, URLEq("https://www.chromium.org/"));
+}
+
 TEST_F(PopularSitesTest, RefetchesAfterCountryMoved) {
   RespondWithV5JSON(
       "https://www.gstatic.com/chrome/ntp/suggested_sites_ZZ_5.json",
