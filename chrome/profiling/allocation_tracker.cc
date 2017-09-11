@@ -26,7 +26,9 @@ AllocationTracker::~AllocationTracker() {
 void AllocationTracker::OnHeader(const StreamHeader& header) {}
 
 void AllocationTracker::OnAlloc(const AllocPacket& alloc_packet,
-                                std::vector<Address>&& bt) {
+                                std::vector<Address>&& bt,
+                                std::string&& context) {
+  // TODO(http://crbug.com/763173): uniquify and save context string.
   const Backtrace* backtrace = backtrace_storage_->Insert(std::move(bt));
   live_allocs_.emplace(Address(alloc_packet.address), alloc_packet.size,
                        backtrace);

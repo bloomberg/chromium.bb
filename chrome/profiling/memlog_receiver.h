@@ -21,7 +21,8 @@ class MemlogReceiver {
 
   virtual void OnHeader(const StreamHeader& header) = 0;
   virtual void OnAlloc(const AllocPacket& alloc_packet,
-                       std::vector<Address>&& stack) = 0;
+                       std::vector<Address>&& stack,
+                       std::string&& context) = 0;
   virtual void OnFree(const FreePacket& free_packet) = 0;
   virtual void OnComplete() = 0;
 };

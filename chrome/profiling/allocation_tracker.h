@@ -27,7 +27,8 @@ class AllocationTracker : public MemlogReceiver {
 
   void OnHeader(const StreamHeader& header) override;
   void OnAlloc(const AllocPacket& alloc_packet,
-               std::vector<Address>&& bt) override;
+               std::vector<Address>&& bt,
+               std::string&& context) override;
   void OnFree(const FreePacket& free_packet) override;
   void OnComplete() override;
 

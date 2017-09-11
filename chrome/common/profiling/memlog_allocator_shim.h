@@ -6,6 +6,7 @@
 #define CHROME_COMMON_PROFILING_MEMLOG_ALLOCATOR_SHIM_H_
 
 #include "chrome/common/profiling/memlog_sender_pipe.h"
+#include "chrome/common/profiling/memlog_stream.h"
 
 // This is a temporary allocator shim for testing out-of-process heap
 // profiling.
@@ -29,7 +30,14 @@ void InitAllocatorShim(MemlogSenderPipe* sender_pipe);
 // the process of forming a message.
 void StopAllocatorShimDangerous();
 
-void AllocatorShimLogAlloc(void* address, size_t sz);
+// Logs an allocation. The context is a null-terminated string of
+// allocator-specific context information. It can be null if there is no
+// context.
+void AllocatorShimLogAlloc(AllocatorType type,
+                           void* address,
+                           size_t sz,
+                           const char* context);
+
 void AllocatorShimLogFree(void* address);
 
 }  // namespace profiling
