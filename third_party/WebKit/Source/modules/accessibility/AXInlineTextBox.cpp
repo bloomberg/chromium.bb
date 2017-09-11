@@ -162,6 +162,13 @@ AccessibilityTextDirection AXInlineTextBox::GetTextDirection() const {
   return AXObject::GetTextDirection();
 }
 
+Node* AXInlineTextBox::GetNode() const {
+  if (!inline_text_box_)
+    return nullptr;
+
+  return inline_text_box_->GetNode();
+}
+
 AXObject* AXInlineTextBox::NextOnLine() const {
   RefPtr<AbstractInlineTextBox> next_on_line = inline_text_box_->NextOnLine();
   if (next_on_line)
