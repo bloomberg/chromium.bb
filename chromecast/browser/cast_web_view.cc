@@ -59,7 +59,8 @@ CastWebView::CastWebView(Delegate* delegate,
                          CastWebContentsManager* web_contents_manager,
                          content::BrowserContext* browser_context,
                          scoped_refptr<content::SiteInstance> site_instance,
-                         bool transparent)
+                         bool transparent,
+                         bool allow_media_access)
     : delegate_(delegate),
       web_contents_manager_(web_contents_manager),
       browser_context_(browser_context),
@@ -68,6 +69,7 @@ CastWebView::CastWebView(Delegate* delegate,
       web_contents_(CreateWebContents(browser_context_, site_instance_)),
       window_(shell::CastContentWindow::Create(delegate)),
       did_start_navigation_(false),
+      allow_media_access_(allow_media_access),
       weak_factory_(this) {
   DCHECK(delegate_);
   DCHECK(web_contents_manager_);
@@ -139,7 +141,8 @@ void CastWebView::ActivateContents(content::WebContents* contents) {
 bool CastWebView::CheckMediaAccessPermission(content::WebContents* web_contents,
                                              const GURL& security_origin,
                                              content::MediaStreamType type) {
-  if (!base::FeatureList::IsEnabled(kAllowUserMediaAccess)) {
+  if (!base::FeatureList::IsEnabled(kAllowUserMediaAccess) &&
+      !allow_media_access_) {
     LOG(WARNING) << __func__ << ": media access is disabled.";
     return false;
   }
@@ -168,7 +171,8 @@ void CastWebView::RequestMediaAccessPermission(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
-  if (!base::FeatureList::IsEnabled(kAllowUserMediaAccess)) {
+  if (!base::FeatureList::IsEnabled(kAllowUserMediaAccess) &&
+      !allow_media_access_) {
     LOG(WARNING) << __func__ << ": media access is disabled.";
     callback.Run(content::MediaStreamDevices(),
                  content::MEDIA_DEVICE_NOT_SUPPORTED,
