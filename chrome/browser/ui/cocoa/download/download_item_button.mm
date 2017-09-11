@@ -106,10 +106,6 @@
   [self setNeedsDisplay:YES];
 }
 
-- (BOOL)showingContextMenu {
-  return contextMenu_ != nil;
-}
-
 - (void)viewWillMoveToWindow:(NSWindow *)newWindow {
   // If the DownloadItemButton's context menu is still visible, dismiss it.
   if (!newWindow) {

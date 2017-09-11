@@ -10,7 +10,6 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/run_loop.h"
-#import "chrome/browser/ui/cocoa/download/download_item_button.h"
 #import "chrome/browser/ui/cocoa/download/download_shelf_controller.h"
 #include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
 #include "content/public/test/mock_download_item.h"
@@ -37,12 +36,6 @@ using ::testing::ReturnRefOfCopy;
 }
 @end
 
-@interface DownloadItemButton(DownloadItemButtonTest)
-
-- (BOOL)showingContextMenu;
-
-@end
-
 namespace {
 
 class DownloadItemControllerTest : public CocoaProfileTest {
@@ -50,10 +43,6 @@ class DownloadItemControllerTest : public CocoaProfileTest {
   void SetUp() override {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(browser());
-
-    id shelf_controller =
-        [OCMockObject mockForClass:[DownloadShelfController class]];
-    shelf_.reset([shelf_controller retain]);
 
     download_item_.reset(new ::testing::NiceMock<content::MockDownloadItem>);
     ON_CALL(*download_item_, GetState())
@@ -71,123 +60,101 @@ class DownloadItemControllerTest : public CocoaProfileTest {
         .WillByDefault(ReturnRefOfCopy(GURL()));
     ON_CALL(*download_item_, GetTargetDisposition()).WillByDefault(
         Return(content::DownloadItem::TARGET_DISPOSITION_OVERWRITE));
+
+    id shelf_controller =
+        [OCMockObject mockForClass:[DownloadShelfController class]];
+    shelf_controller_.reset([shelf_controller retain]);
+
+    item_controller_.reset([[DownloadItemController alloc]
+        initWithDownload:download_item_.get()
+               navigator:NULL]);
+    [item_controller_ setShelf:shelf_controller_];
+    [[test_window() contentView] addSubview:[item_controller_ view]];
   }
 
   void TearDown() override {
-    download_item_.reset();
-    [(id)shelf_ verify];
+    [(id)shelf_controller_ verify];
+    [item_controller_ setShelf:nil];
     CocoaProfileTest::TearDown();
-  }
-
-  DownloadItemController* CreateItemController() {
-    // In OSX 10.10, the owner of a nib file is retain/autoreleased during the
-    // initialization of the nib. Wrapping the constructor in an
-    // autoreleasepool ensures that tests can control the destruction timing of
-    // the DownloadItemController.
-    @autoreleasepool {
-      base::RunLoop run_loop;
-      base::scoped_nsobject<DownloadItemController> item(
-          [[DownloadItemController alloc] initWithDownload:download_item_.get()
-                                                     shelf:shelf_.get()
-                                                 navigator:NULL]);
-
-      [[test_window() contentView] addSubview:[item view]];
-      run_loop.RunUntilIdle();
-      return item.release();
-    }
   }
 
  protected:
   std::unique_ptr<content::MockDownloadItem> download_item_;
-  base::scoped_nsobject<DownloadShelfController> shelf_;
+  base::scoped_nsobject<DownloadShelfController> shelf_controller_;
+  base::scoped_nsobject<DownloadItemController> item_controller_;
 };
 
-// TODO(crbug.com/762405): Disabled because it's flaky (crashing).
-TEST_F(DownloadItemControllerTest, DISABLED_ShelfNotifiedOfOpenedDownload) {
-  base::scoped_nsobject<DownloadItemController> item(CreateItemController());
-  [[(id)shelf_ expect] downloadWasOpened:[OCMArg any]];
+TEST_F(DownloadItemControllerTest, ShelfNotifiedOfOpenedDownload) {
+  [[(id)shelf_controller_ expect] downloadWasOpened:[OCMArg any]];
   download_item_->NotifyObserversDownloadOpened();
 }
 
 TEST_F(DownloadItemControllerTest, RemovesSelfWhenDownloadIsDestroyed) {
-  base::scoped_nsobject<DownloadItemController> item(CreateItemController());
-  [[(id)shelf_ expect] remove:[OCMArg any]];
+  [[(id)shelf_controller_ expect] remove:[OCMArg any]];
   download_item_.reset();
 }
 
-// TODO(crbug.com/762405): Disabled because it's flaky (crashing).
-TEST_F(DownloadItemControllerTest, DISABLED_NormalDownload) {
-  base::scoped_nsobject<DownloadItemController> item(CreateItemController());
-
-  [item verifyProgressViewIsVisible:true];
-  [item verifyDangerousDownloadPromptIsVisible:false];
+TEST_F(DownloadItemControllerTest, NormalDownload) {
+  [item_controller_ verifyProgressViewIsVisible:true];
+  [item_controller_ verifyDangerousDownloadPromptIsVisible:false];
 }
 
 TEST_F(DownloadItemControllerTest, DangerousDownload) {
-  [[(id)shelf_ expect] layoutItems];
   ON_CALL(*download_item_, GetDangerType())
       .WillByDefault(Return(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE));
   ON_CALL(*download_item_, IsDangerous()).WillByDefault(Return(true));
-  base::scoped_nsobject<DownloadItemController> item(CreateItemController());
+  [[(id)shelf_controller_ expect] layoutItems];
+  download_item_->NotifyObserversDownloadUpdated();
 
-  [item verifyProgressViewIsVisible:false];
-  [item verifyDangerousDownloadPromptIsVisible:true];
+  [item_controller_ verifyProgressViewIsVisible:false];
+  [item_controller_ verifyDangerousDownloadPromptIsVisible:true];
 }
 
-// TODO(crbug.com/762405): Disabled because it's flaky (crashing).
-TEST_F(DownloadItemControllerTest, DISABLED_NormalDownloadBecomesDangerous) {
-  base::scoped_nsobject<DownloadItemController> item(CreateItemController());
-
-  [item verifyProgressViewIsVisible:true];
-  [item verifyDangerousDownloadPromptIsVisible:false];
+TEST_F(DownloadItemControllerTest, NormalDownloadBecomesDangerous) {
+  [item_controller_ verifyProgressViewIsVisible:true];
+  [item_controller_ verifyDangerousDownloadPromptIsVisible:false];
 
   // The download is now marked as dangerous.
-  [[(id)shelf_ expect] layoutItems];
+  [[(id)shelf_controller_ expect] layoutItems];
   ON_CALL(*download_item_, GetDangerType())
       .WillByDefault(Return(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE));
   ON_CALL(*download_item_, IsDangerous()).WillByDefault(Return(true));
   download_item_->NotifyObserversDownloadUpdated();
 
-  [item verifyProgressViewIsVisible:false];
-  [item verifyDangerousDownloadPromptIsVisible:true];
-  [(id)shelf_ verify];
+  [item_controller_ verifyProgressViewIsVisible:false];
+  [item_controller_ verifyDangerousDownloadPromptIsVisible:true];
+  [(id)shelf_controller_ verify];
 
   // And then marked as safe again.
-  [[(id)shelf_ expect] layoutItems];
+  [[(id)shelf_controller_ expect] layoutItems];
   ON_CALL(*download_item_, GetDangerType())
       .WillByDefault(Return(content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS));
   ON_CALL(*download_item_, IsDangerous()).WillByDefault(Return(false));
   download_item_->NotifyObserversDownloadUpdated();
 
-  [item verifyProgressViewIsVisible:true];
-  [item verifyDangerousDownloadPromptIsVisible:false];
-  [(id)shelf_ verify];
+  [item_controller_ verifyProgressViewIsVisible:true];
+  [item_controller_ verifyDangerousDownloadPromptIsVisible:false];
+  [(id)shelf_controller_ verify];
 }
 
 TEST_F(DownloadItemControllerTest, DismissesContextMenuWhenRemovedFromWindow) {
-  base::scoped_nsobject<DownloadItemController> item(CreateItemController());
-  DownloadItemButton* downloadItemButton = nil;
-  for (NSView *nextSubview in [[item view] subviews]) {
-    if ([nextSubview isKindOfClass:[DownloadItemButton class]]) {
-      downloadItemButton = static_cast<DownloadItemButton *>(nextSubview);
-      break;
-    }
-  }
-
   // showContextMenu: calls [NSMenu popUpContextMenu:...], which blocks until
   // the menu is dismissed. Use a block to cancel the menu while waiting for
   // [NSMenu popUpContextMenu:...] to return (this block will execute on the
   // main thread, on the next pass through the run loop).
+  __block bool did_block = false;
   [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-    EXPECT_TRUE([downloadItemButton showingContextMenu]);
     // Simulate the item's removal from the shelf. Ideally we would call an
-    // actual shelf removal method like [item remove] but the shelf and
-    // download item are mock objects.
-    [downloadItemButton removeFromSuperview];
+    // actual shelf removal method like [item_controller_ remove] but the shelf
+    // and download item are mock objects.
+    [[item_controller_ view] removeFromSuperview];
+    did_block = true;
   }];
   // The unit test will stop here until the block causes the DownloadItemButton
   // to dismiss the menu.
-  [item showContextMenu:nil];
+  [item_controller_ showContextMenu:nil];
+  // Otherwise, the menu was probably never shown.
+  EXPECT_TRUE(did_block);
 }
 
 

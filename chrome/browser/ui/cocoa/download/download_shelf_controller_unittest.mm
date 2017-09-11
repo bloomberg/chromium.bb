@@ -161,6 +161,7 @@ id DownloadShelfControllerTest::CreateItemController() {
   [[[item_controller stub] andReturn:view.get()] view];
   [[[item_controller stub]
      andReturn:wrappedMockDownload.get()] wrappedMockDownload];
+  [[item_controller stub] setShelf:[OCMArg any]];
   return [item_controller retain];
 }
 
