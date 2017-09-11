@@ -281,6 +281,7 @@ scoped_refptr<VideoFrame> VideoRendererImpl::Render(
     base::TimeTicks deadline_min,
     base::TimeTicks deadline_max,
     bool background_rendering) {
+  TRACE_EVENT0("media", "VideoRendererImpl::Render");
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(state_, kPlaying);
 

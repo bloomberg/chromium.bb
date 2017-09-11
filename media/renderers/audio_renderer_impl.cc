@@ -17,6 +17,7 @@
 #include "base/power_monitor/power_monitor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/default_tick_clock.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_buffer_converter.h"
@@ -878,6 +879,7 @@ int AudioRendererImpl::Render(base::TimeDelta delay,
                               base::TimeTicks delay_timestamp,
                               int prior_frames_skipped,
                               AudioBus* audio_bus) {
+  TRACE_EVENT0("media", "AudioRendererImpl::Render");
   int frames_requested = audio_bus->frames();
   DVLOG(4) << __func__ << " delay:" << delay
            << " prior_frames_skipped:" << prior_frames_skipped

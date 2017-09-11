@@ -507,6 +507,7 @@ void WebMediaPlayerImpl::OnDisplayTypeChanged(
 void WebMediaPlayerImpl::DoLoad(LoadType load_type,
                                 const blink::WebURL& url,
                                 CORSMode cors_mode) {
+  TRACE_EVENT0("media", "WebMediaPlayerImpl::DoLoad");
   DVLOG(1) << __func__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
