@@ -1281,6 +1281,8 @@ void InlineFlowBox::ComputeOverflow(
             flow->LogicalVisualOverflowRect(line_top, line_bottom));
       LayoutRect child_layout_overflow =
           flow->LogicalLayoutOverflowRect(line_top, line_bottom);
+      child_layout_overflow.Unite(
+          LogicalFrameRectIncludingLineHeight(line_top, line_bottom));
       child_layout_overflow.Move(
           flow->BoxModelObject().RelativePositionLogicalOffset());
       logical_layout_overflow.Unite(child_layout_overflow);
