@@ -633,7 +633,6 @@ TEST_F(AcceleratorControllerTest, DontRepeatToggleFullscreen) {
 }
 
 // TODO(oshima): Fix this test to use EventGenerator.
-#if defined(USE_X11)
 TEST_F(AcceleratorControllerTest, ProcessOnce) {
   // The IME event filter interferes with the basic key event propagation we
   // attempt to do here, so we disable it.
@@ -645,9 +644,7 @@ TEST_F(AcceleratorControllerTest, ProcessOnce) {
   // The accelerator is processed only once.
   ui::EventSink* sink = Shell::GetPrimaryRootWindow()->GetHost()->event_sink();
 
-  ui::ScopedXI2Event key_event;
-  key_event.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_A, 0);
-  ui::KeyEvent key_event1(key_event);
+  ui::KeyEvent key_event1(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
   ui::EventDispatchDetails details = sink->OnEventFromSource(&key_event1);
   EXPECT_TRUE(key_event1.handled() || details.dispatcher_destroyed);
 
@@ -655,13 +652,11 @@ TEST_F(AcceleratorControllerTest, ProcessOnce) {
   details = sink->OnEventFromSource(&key_event2);
   EXPECT_FALSE(key_event2.handled() || details.dispatcher_destroyed);
 
-  key_event.InitKeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_A, 0);
-  ui::KeyEvent key_event3(key_event);
+  ui::KeyEvent key_event3(ui::ET_KEY_RELEASED, ui::VKEY_A, ui::EF_NONE);
   details = sink->OnEventFromSource(&key_event3);
   EXPECT_FALSE(key_event3.handled() || details.dispatcher_destroyed);
   EXPECT_EQ(1, target.accelerator_pressed_count());
 }
-#endif
 
 TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   // TODO: TestScreenshotDelegate is null in mash http://crbug.com/632111.
