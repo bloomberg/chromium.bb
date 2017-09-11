@@ -143,6 +143,11 @@ bool ArcSessionRunner::IsStopped() const {
   return state_ == State::STOPPED;
 }
 
+bool ArcSessionRunner::IsStopping() const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  return state_ == State::STOPPING;
+}
+
 bool ArcSessionRunner::IsLoginScreenInstanceStarting() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return state_ == State::STARTING_FOR_LOGIN_SCREEN;
