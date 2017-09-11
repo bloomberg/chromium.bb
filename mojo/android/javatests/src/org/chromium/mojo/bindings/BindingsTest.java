@@ -6,8 +6,11 @@ package org.chromium.mojo.bindings;
 
 import android.support.test.filters.SmallTest;
 
-import junit.framework.TestCase;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.mojo.HandleMock;
 import org.chromium.mojo.bindings.test.mojom.imported.Color;
 import org.chromium.mojo.bindings.test.mojom.imported.Point;
@@ -34,8 +37,8 @@ import java.util.Map;
 /**
  * Testing generated classes and associated features.
  */
-public class BindingsTest extends TestCase {
-
+@RunWith(BaseJUnit4ClassRunner.class)
+public class BindingsTest {
     /**
      * Create a new typical Bar instance.
      */
@@ -95,26 +98,27 @@ public class BindingsTest extends TestCase {
 
     private static <T> void checkConstantField(
             Field field, Class<T> expectedClass, T value) throws IllegalAccessException {
-        assertEquals(expectedClass, field.getType());
-        assertEquals(Modifier.FINAL, field.getModifiers() & Modifier.FINAL);
-        assertEquals(Modifier.STATIC, field.getModifiers() & Modifier.STATIC);
-        assertEquals(value, field.get(null));
+        Assert.assertEquals(expectedClass, field.getType());
+        Assert.assertEquals(Modifier.FINAL, field.getModifiers() & Modifier.FINAL);
+        Assert.assertEquals(Modifier.STATIC, field.getModifiers() & Modifier.STATIC);
+        Assert.assertEquals(value, field.get(null));
     }
 
     private static <T> void checkField(Field field, Class<T> expectedClass,
             Object object, T value) throws IllegalArgumentException, IllegalAccessException {
-        assertEquals(expectedClass, field.getType());
-        assertEquals(0, field.getModifiers() & Modifier.FINAL);
-        assertEquals(0, field.getModifiers() & Modifier.STATIC);
-        assertEquals(value, field.get(object));
+        Assert.assertEquals(expectedClass, field.getType());
+        Assert.assertEquals(0, field.getModifiers() & Modifier.FINAL);
+        Assert.assertEquals(0, field.getModifiers() & Modifier.STATIC);
+        Assert.assertEquals(value, field.get(object));
     }
 
     /**
      * Testing constants are correctly generated.
      */
+    @Test
     @SmallTest
-    public void testConstants() throws NoSuchFieldException, SecurityException,
-            IllegalAccessException {
+    public void testConstants()
+            throws NoSuchFieldException, SecurityException, IllegalAccessException {
         checkConstantField(SampleServiceConstants.class.getField("TWELVE"), byte.class, (byte) 12);
         checkConstantField(InterfaceConstants.class.getField("LONG"), long.class, 4405L);
     }
@@ -122,9 +126,9 @@ public class BindingsTest extends TestCase {
     /**
      * Testing enums are correctly generated.
      */
+    @Test
     @SmallTest
-    public void testEnums() throws NoSuchFieldException, SecurityException,
-            IllegalAccessException {
+    public void testEnums() throws NoSuchFieldException, SecurityException, IllegalAccessException {
         checkConstantField(Color.class.getField("RED"), int.class, 0);
         checkConstantField(Color.class.getField("BLACK"), int.class, 1);
 
@@ -141,9 +145,10 @@ public class BindingsTest extends TestCase {
      * @throws IllegalAccessException
      * @throws IllegalArgumentException
      */
+    @Test
     @SmallTest
     public void testStructDefaults() throws NoSuchFieldException, SecurityException,
-            IllegalArgumentException, IllegalAccessException {
+                                            IllegalArgumentException, IllegalAccessException {
         // Check default values.
         DefaultsTest test = new DefaultsTest();
 
@@ -171,7 +176,7 @@ public class BindingsTest extends TestCase {
         checkField(DefaultsTest.class.getField("a20"), int.class, test, Bar.Type.BOTH);
         checkField(DefaultsTest.class.getField("a21"), Point.class, test, null);
 
-        assertNotNull(test.a22);
+        Assert.assertNotNull(test.a22);
         checkField(DefaultsTest.class.getField("a22"), Thing.class, test, test.a22);
         checkField(DefaultsTest.class.getField("a23"), long.class, test, -1L);
         checkField(DefaultsTest.class.getField("a24"), long.class, test, 0x123456789L);
@@ -183,9 +188,10 @@ public class BindingsTest extends TestCase {
      *
      * @throws IllegalAccessException
      */
+    @Test
     @SmallTest
-    public void testFooGeneration() throws NoSuchFieldException, SecurityException,
-            IllegalAccessException {
+    public void testFooGeneration()
+            throws NoSuchFieldException, SecurityException, IllegalAccessException {
         // Checking Foo constants.
         checkConstantField(Foo.class.getField("FOOBY"), String.class, "Fooby");
 
@@ -193,32 +199,34 @@ public class BindingsTest extends TestCase {
         Foo foo = new Foo();
         checkField(Foo.class.getField("name"), String.class, foo, Foo.FOOBY);
 
-        assertNotNull(foo.source);
-        assertFalse(foo.source.isValid());
+        Assert.assertNotNull(foo.source);
+        Assert.assertFalse(foo.source.isValid());
         checkField(Foo.class.getField("source"), MessagePipeHandle.class, foo, foo.source);
     }
 
     /**
      * Testing serialization of the Foo class.
      */
+    @Test
     @SmallTest
     public void testFooSerialization() {
         // Checking serialization and deserialization of a Foo object.
         Foo typicalFoo = createFoo();
         Message serializedFoo = typicalFoo.serialize(null);
         Foo deserializedFoo = Foo.deserialize(serializedFoo);
-        assertEquals(typicalFoo, deserializedFoo);
+        Assert.assertEquals(typicalFoo, deserializedFoo);
     }
 
     /**
      * Testing serialization of the EmptyStruct class.
      */
+    @Test
     @SmallTest
     public void testEmptyStructSerialization() {
         // Checking serialization and deserialization of a EmptyStruct object.
         Message serializedStruct = new EmptyStruct().serialize(null);
         EmptyStruct emptyStruct = EmptyStruct.deserialize(serializedStruct);
-        assertNotNull(emptyStruct);
+        Assert.assertNotNull(emptyStruct);
     }
 
     // In testing maps we want to make sure that the key used when inserting an
@@ -226,16 +234,17 @@ public class BindingsTest extends TestCase {
     // has default implementations of equals and hashCode that use reference
     // equality and hashing, respectively, and that's not what we want for our
     // mojom values.
+    @Test
     @SmallTest
     public void testHashMapStructKey() {
         Map<Rect, Integer> map = new HashMap<>();
         map.put(createRect(1, 2, 3, 4), 123);
 
         Rect key = createRect(1, 2, 3, 4);
-        assertNotNull(map.get(key));
-        assertEquals(123, map.get(key).intValue());
+        Assert.assertNotNull(map.get(key));
+        Assert.assertEquals(123, map.get(key).intValue());
 
         map.remove(key);
-        assertTrue(map.isEmpty());
+        Assert.assertTrue(map.isEmpty());
     }
 }

@@ -6,8 +6,11 @@ package org.chromium.mojo.bindings;
 
 import android.support.test.filters.SmallTest;
 
-import junit.framework.TestCase;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.mojo.HandleMock;
 import org.chromium.mojo.bindings.test.mojom.mojo.Struct1;
 import org.chromium.mojo.bindings.test.mojom.mojo.Struct2;
@@ -23,12 +26,12 @@ import java.nio.ByteBuffer;
  * Tests for the serialization logic of the generated structs, using structs defined in
  * mojo/public/interfaces/bindings/tests/serialization_test_structs.mojom .
  */
-public class SerializationTest extends TestCase {
-
+@RunWith(BaseJUnit4ClassRunner.class)
+public class SerializationTest {
     private static void assertThrowsSerializationException(Struct struct) {
         try {
             struct.serialize(null);
-            fail("Serialization of invalid struct should have thrown an exception.");
+            Assert.fail("Serialization of invalid struct should have thrown an exception.");
         } catch (SerializationException ex) {
             // Expected.
         }
@@ -38,10 +41,11 @@ public class SerializationTest extends TestCase {
      * Verifies that serializing a struct with an invalid handle of a non-nullable type throws an
      * exception.
      */
+    @Test
     @SmallTest
     public void testHandle() {
         Struct2 struct = new Struct2();
-        assertFalse(struct.hdl.isValid());
+        Assert.assertFalse(struct.hdl.isValid());
         assertThrowsSerializationException(struct);
 
         // Make the struct valid and verify that it serializes without an exception.
@@ -52,10 +56,11 @@ public class SerializationTest extends TestCase {
     /**
      * Verifies that serializing a struct with a null struct pointer throws an exception.
      */
+    @Test
     @SmallTest
     public void testStructPointer() {
         Struct3 struct = new Struct3();
-        assertNull(struct.struct1);
+        Assert.assertNull(struct.struct1);
         assertThrowsSerializationException(struct);
 
         // Make the struct valid and verify that it serializes without an exception.
@@ -67,10 +72,11 @@ public class SerializationTest extends TestCase {
      * Verifies that serializing a struct with an array of structs throws an exception when the
      * struct is invalid.
      */
+    @Test
     @SmallTest
     public void testStructArray() {
         Struct4 struct = new Struct4();
-        assertNull(struct.data);
+        Assert.assertNull(struct.data);
         assertThrowsSerializationException(struct);
 
         // Create the (1-element) array but have the element null.
@@ -86,10 +92,11 @@ public class SerializationTest extends TestCase {
      * Verifies that serializing a struct with a fixed-size array of incorrect length throws an
      * exception.
      */
+    @Test
     @SmallTest
     public void testFixedSizeArray() {
         Struct5 struct = new Struct5();
-        assertNull(struct.pair);
+        Assert.assertNull(struct.pair);
         assertThrowsSerializationException(struct);
 
         // Create the (1-element) array, 2-element array is required.
@@ -107,10 +114,11 @@ public class SerializationTest extends TestCase {
     /**
      * Verifies that serializing a struct with a null string throws an exception.
      */
+    @Test
     @SmallTest
     public void testString() {
         Struct6 struct = new Struct6();
-        assertNull(struct.str);
+        Assert.assertNull(struct.str);
         assertThrowsSerializationException(struct);
 
         // Make the struct valid and verify that it serializes without an exception.
@@ -122,18 +130,20 @@ public class SerializationTest extends TestCase {
      * Verifies that a struct with an invalid nullable handle, null nullable struct pointer and null
      * nullable string serializes without an exception.
      */
+    @Test
     @SmallTest
     public void testNullableFields() {
         StructOfNullables struct = new StructOfNullables();
-        assertFalse(struct.hdl.isValid());
-        assertNull(struct.struct1);
-        assertNull(struct.str);
+        Assert.assertFalse(struct.hdl.isValid());
+        Assert.assertNull(struct.struct1);
+        Assert.assertNull(struct.str);
         struct.serialize(null);
     }
 
     /**
      * Verifies that a struct can be serialized to and deserialized from a ByteBuffer.
      */
+    @Test
     @SmallTest
     public void testByteBufferSerialization() {
         Struct1 input = new Struct1();
@@ -143,21 +153,22 @@ public class SerializationTest extends TestCase {
 
         byte[] expected_raw_bytes = {16, 0, 0, 0, 0, 0, 0, 0, 0x7F, 0, 0, 0, 0, 0, 0, 0};
         ByteBuffer expected_buf = ByteBuffer.wrap(expected_raw_bytes);
-        assertEquals(expected_buf, buf);
+        Assert.assertEquals(expected_buf, buf);
 
         Struct1 output = Struct1.deserialize(buf);
-        assertEquals(0x7F, output.i);
+        Assert.assertEquals(0x7F, output.i);
     }
 
     /**
      * Verifies that a struct with handles cannot be serialized to a ByteBuffer.
      */
+    @Test
     @SmallTest
     public void testByteBufferSerializationWithHandles() {
         StructOfNullables struct = new StructOfNullables();
-        assertFalse(struct.hdl.isValid());
-        assertNull(struct.struct1);
-        assertNull(struct.str);
+        Assert.assertFalse(struct.hdl.isValid());
+        Assert.assertNull(struct.struct1);
+        Assert.assertNull(struct.str);
 
         // It is okay to serialize invalid handles.
         struct.serialize();
@@ -166,7 +177,7 @@ public class SerializationTest extends TestCase {
 
         try {
             struct.serialize();
-            fail("Serializing a struct with handles to a ByteBuffer should have thrown an "
+            Assert.fail("Serializing a struct with handles to a ByteBuffer should have thrown an "
                     + "exception.");
         } catch (UnsupportedOperationException ex) {
             // Expected.
