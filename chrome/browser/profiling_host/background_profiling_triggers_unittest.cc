@@ -78,6 +78,8 @@ GlobalMemoryDumpPtr GetLargeMemoryDump() {
   PopulateMetrics(dump, 2, ProcessType::RENDERER, kProcessMallocTriggerKb,
                   kProcessMallocTriggerKb);
   PopulateMetrics(dump, 3, ProcessType::RENDERER, 1, 1);
+  PopulateMetrics(dump, 4, ProcessType::GPU, kProcessMallocTriggerKb,
+                  kProcessMallocTriggerKb);
   return dump;
 }
 
@@ -87,7 +89,7 @@ TEST(BackgroungProfilingTriggersTest, OnReceivedMemoryDump) {
   TestBackgroundProfilingTriggers triggers;
 
   // Validate triggers for browser processes only.
-  triggers.host_.SetMode(ProfilingProcessHost::Mode::kBrowser);
+  triggers.host_.SetMode(ProfilingProcessHost::Mode::kMinimal);
 
   GlobalMemoryDumpPtr dump_empty(
       memory_instrumentation::mojom::GlobalMemoryDump::New());
@@ -101,17 +103,25 @@ TEST(BackgroungProfilingTriggersTest, OnReceivedMemoryDump) {
   triggers.OnReceivedMemoryDump(true, std::move(dump_browser));
   EXPECT_TRUE(triggers.pids_.empty());
 
-  // A larger browser process must trigger a report. Renderers are not reported.
+  // A larger browser and GPU process must trigger a report. Renderers are not
+  // reported.
   triggers.OnReceivedMemoryDump(true, GetLargeMemoryDump());
-  EXPECT_THAT(triggers.pids_, testing::ElementsAre(1));
+  EXPECT_THAT(triggers.pids_, testing::ElementsAre(1, 4));
   triggers.Reset();
+
+  // A small gpu process doesn't trigger a report.
+  GlobalMemoryDumpPtr dump_gpu(
+      memory_instrumentation::mojom::GlobalMemoryDump::New());
+  PopulateMetrics(dump_gpu, 1, ProcessType::GPU, 1, 1);
+  triggers.OnReceivedMemoryDump(true, std::move(dump_gpu));
+  EXPECT_TRUE(triggers.pids_.empty());
 
   // Validate triggers for all processes.
   triggers.host_.SetMode(ProfilingProcessHost::Mode::kAll);
 
   // Both browser and renderer must be reported.
   triggers.OnReceivedMemoryDump(true, GetLargeMemoryDump());
-  EXPECT_THAT(triggers.pids_, testing::ElementsAre(1, 2));
+  EXPECT_THAT(triggers.pids_, testing::ElementsAre(1, 2, 4));
   triggers.Reset();
 
   // Validate triggers when off.

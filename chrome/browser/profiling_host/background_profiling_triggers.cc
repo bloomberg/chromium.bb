@@ -15,8 +15,9 @@ namespace {
 // Check memory usage every hour. Trigger slow report if needed.
 const int kRepeatingCheckMemoryDelayInHours = 1;
 const int kSecondReportRepeatingCheckMemoryDelayInHours = 12;
-const size_t kBrowserProcessMallocTriggerKb = 600 * 1024;    // 600 Meg
-const size_t kRendererProcessMallocTriggerKb = 2000 * 1024;  // 2 Gig
+const size_t kBrowserProcessMallocTriggerKb = 600 * 1024;    // 600 MB
+const size_t kGPUProcessMallocTriggerKb = 1000 * 1024;       // 1 GB
+const size_t kRendererProcessMallocTriggerKb = 2000 * 1024;  // 2 GB
 }  // namespace
 
 BackgroundProfilingTriggers::BackgroundProfilingTriggers(
@@ -62,10 +63,17 @@ void BackgroundProfilingTriggers::OnReceivedMemoryDump(
 
     if (proc->process_type ==
             memory_instrumentation::mojom::ProcessType::BROWSER &&
-        (mode == profiling::ProfilingProcessHost::Mode::kBrowser ||
+        (mode == profiling::ProfilingProcessHost::Mode::kMinimal ||
          mode == profiling::ProfilingProcessHost::Mode::kAll)) {
       trigger_report =
           proc->os_dump->private_footprint_kb > kBrowserProcessMallocTriggerKb;
+    }
+
+    if (proc->process_type == memory_instrumentation::mojom::ProcessType::GPU &&
+        (mode == profiling::ProfilingProcessHost::Mode::kMinimal ||
+         mode == profiling::ProfilingProcessHost::Mode::kAll)) {
+      trigger_report =
+          proc->os_dump->private_footprint_kb > kGPUProcessMallocTriggerKb;
     }
 
     if (proc->process_type ==

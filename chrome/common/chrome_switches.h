@@ -156,7 +156,7 @@ extern const char kMakeDefaultBrowser[];
 extern const char kMediaCacheSize[];
 extern const char kMemlog[];
 extern const char kMemlogModeAll[];
-extern const char kMemlogModeBrowser[];
+extern const char kMemlogModeMinimal[];
 extern const char kMonitoringDestinationID[];
 extern const char kNetLogCaptureMode[];
 extern const char kNoDefaultBrowserCheck[];
