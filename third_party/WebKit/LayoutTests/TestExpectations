@@ -1726,11 +1726,13 @@ crbug.com/723826 virtual/mojo-loading/http/tests/security/w3c/cross-origin-objec
 
 crbug.com/724251 virtual/threaded/animations/svg-attribute-interpolation/svg-startOffset-interpolation.html [ Failure Pass ]
 
-# Failures in non-wpt tests from:
-# https://chromium-review.googlesource.com/c/543695/
-# Possibly became flaky after a change in testharness.js.
-crbug.com/626703 http/tests/inspector/bindings/livelocation-main-frame-navigated.html [ Pass Failure ]
-crbug.com/626703 virtual/mojo-loading/http/tests/inspector/bindings/livelocation-main-frame-navigated.html [ Pass Failure ]
+# These tests have machine-dependent names in the output (e.g. ... debugger:///VM37 ...)
+# # which makes them have different results on different machines.
+crbug.com/763718 http/tests/inspector/bindings/livelocation-main-frame-navigated.html [ Pass Failure ]
+crbug.com/763718 virtual/mojo-loading/http/tests/inspector/bindings/livelocation-main-frame-navigated.html [ Pass Failure ]
+
+# Untriaged failures after https://crrev.com/c/543695/.
+# These need to be updated but appear not to be related to that change.
 crbug.com/626703 http/tests/inspector/indexeddb/database-refresh-view.html [ Pass Failure ]
 crbug.com/626703 virtual/mojo-loading/http/tests/inspector/indexeddb/database-refresh-view.html [ Pass Failure ]
 crbug.com/626703 http/tests/inspector/network/network-filters.html [ Pass Failure ]
@@ -1744,24 +1746,18 @@ crbug.com/626703 virtual/mojo-loading/http/tests/inspector/network/network-colum
 crbug.com/626703 http/tests/inspector/persistence/persistence-tabbed-editor-opens-filesystem-uisourcecode.html [ Pass Failure ]
 crbug.com/626703 virtual/mojo-loading/http/tests/inspector/persistence/persistence-tabbed-editor-opens-filesystem-uisourcecode.html [ Pass Failure ]
 crbug.com/626703 virtual/threaded/transitions/transition-end-event-multiple-03.html [ Pass Failure ]
-
-crbug.com/761952 external/wpt/editing/run/forwarddelete.html [ Failure Pass Timeout ]
-crbug.com/761952 external/wpt/beacon/headers/header-content-type.html [ Failure Pass Timeout ]
-crbug.com/761952 fast/text/international/complex-text-rectangle.html [ Timeout Pass ]
-
+crbug.com/751952 external/wpt/editing/run/forwarddelete.html [ Failure Pass Timeout ]
+crbug.com/751952 external/wpt/beacon/headers/header-content-type.html [ Failure Pass Timeout ]
+crbug.com/751952 fast/text/international/complex-text-rectangle.html [ Timeout Pass ]
 crbug.com/751952 editing/selection/modify_extend/extend_by_character.html [ Pass Failure ]
-crbug.com/751952 external/wpt/service-workers/service-worker/link-element-register-security-error.https.html [ Pass Failure ]
 crbug.com/751952 fast/dom/Range/getClientRects.html [ Pass Failure ]
 crbug.com/751952 http/tests/devtools/console/console-format.html [ Pass Failure ]
 crbug.com/751952 virtual/mojo-loading/http/tests/devtools/console/console-format.html [ Pass Failure ]
 crbug.com/751952 http/tests/inspector-unit/datagrid-editable-longtext.js [ Pass Failure ]
-crbug.com/751952 virtual/mojo-blobs/external/wpt/service-workers/service-worker/link-element-register-security-error.https.html [ Pass Failure ]
 crbug.com/751952 http/tests/devtools/console/console-uncaught-promise.html [ Pass Failure ]
 crbug.com/751952 virtual/mojo-loading/http/tests/devtools/console/console-uncaught-promise.html [ Pass Failure ]
 crbug.com/751952 virtual/mojo-loading/http/tests/inspector-unit/datagrid-editable-longtext.js [ Pass Failure ]
 crbug.com/751952 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/budget-api-origin-trial-interfaces.html [ Pass Failure ]
-crbug.com/751952 virtual/service-worker-script-streaming/external/wpt/service-workers/service-worker/link-element-register-security-error.https.html [ Pass Failure ]
-crbug.com/761952 virtual/outofblink-cors/external/wpt/service-workers/service-worker/link-element-register-security-error.https.html [ Failure Pass ]
 
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 external/wpt/html/semantics/embedded-content/the-embed-element/embed-represent-nothing-02.html [ Failure ]
