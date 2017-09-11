@@ -22,6 +22,10 @@ SysInternalsUI::SysInternalsUI(content::WebUI* web_ui)
       content::WebUIDataSource::Create(chrome::kChromeUISysInternalsHost);
   html_source->AddResourcePath("index.css", IDR_SYS_INTERNALS_CSS);
   html_source->AddResourcePath("index.js", IDR_SYS_INTERNALS_JS);
+  html_source->AddResourcePath("line_chart.css",
+                               IDR_SYS_INTERNALS_LINE_CHART_CSS);
+  html_source->AddResourcePath("line_chart.js",
+                               IDR_SYS_INTERNALS_LINE_CHART_JS);
   html_source->SetDefaultResource(IDR_SYS_INTERNALS_HTML);
 
   Profile* profile = Profile::FromWebUI(web_ui);

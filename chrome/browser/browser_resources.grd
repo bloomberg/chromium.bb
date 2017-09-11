@@ -679,7 +679,9 @@
       <if expr="chromeos">
         <include name="IDR_SYS_INTERNALS_HTML" file="resources\sys_internals\index.html" type="BINDATA" />
         <include name="IDR_SYS_INTERNALS_CSS" file="resources\sys_internals\index.css" type="BINDATA" />
-        <include name="IDR_SYS_INTERNALS_JS" file="resources\sys_internals\index.js" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_SYS_INTERNALS_JS" file="resources\sys_internals\index.js" type="BINDATA" />
+        <include name="IDR_SYS_INTERNALS_LINE_CHART_CSS" file="resources\sys_internals\line_chart\line_chart.css" type="BINDATA" />
+        <include name="IDR_SYS_INTERNALS_LINE_CHART_JS" file="resources\sys_internals\line_chart\index.js" flattenhtml="true" type="BINDATA" />
       </if>
     </includes>
   </release>

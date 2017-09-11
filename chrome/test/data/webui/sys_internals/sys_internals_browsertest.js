@@ -7,6 +7,9 @@
  */
 const ROOT_PATH = '../../../../../';
 
+/* Set up this global variable to disable sending the update request. */
+DONT_SEND_UPDATE_REQUEST = true;
+
 function SysInternalsBrowserTest() {}
 
 SysInternalsBrowserTest.prototype = {
@@ -22,81 +25,45 @@ SysInternalsBrowserTest.prototype = {
       [{switchName: 'enable-features', switchValue: 'SysInternals'}],
 
   extraLibraries: [
+    'api_test.js',
+    'line_chart/data_series_test.js',
+    'line_chart/line_chart_test.js',
+    'line_chart/menu_test.js',
+    'line_chart/scrollbar_test.js',
+    'line_chart/sub_chart_test.js',
+    'line_chart/unit_label_test.js',
+    'test_util.js',
     ROOT_PATH + 'third_party/mocha/mocha.js',
+    ROOT_PATH + 'third_party/polymer/v1_0/components-chromium/' +
+        'iron-test-helpers/mock-interactions.js',
     ROOT_PATH + 'chrome/test/data/webui/mocha_adapter.js',
   ],
-
-  /** @override */
-  setUp: function() {
-    testing.Test.prototype.setUp.call(this);
-  },
 };
 
-// TODO : move this test into its own file.
 TEST_F('SysInternalsBrowserTest', 'getSysInfo', function() {
-  test('message handler integration test', function(done) {
-    function checkConst(constVal) {
-      if (!Number.isInteger(constVal.counterMax)) {
-        throw `result.const.counterMax is invalid : ${counterMax}`;
-      }
-    }
+  ApiTest.getSysInfo();
+});
 
-    function isCounter(number) {
-      return Number.isInteger(number) && number >= 0;
-    }
+TEST_F('SysInternalsBrowserTest', 'LineChart_DataSeries', function() {
+  LineChartTest.DataSeries();
+});
 
-    function checkCpu(cpu) {
-      return isCounter(cpu.user) && isCounter(cpu.kernel) &&
-          isCounter(cpu.idle) && isCounter(cpu.total);
-    }
+TEST_F('SysInternalsBrowserTest', 'LineChart_LineChart', function() {
+  LineChartTest.LineChart();
+});
 
-    function checkCpus(cpus) {
-      if (!Array.isArray(cpus)) {
-        throw 'result.cpus is not an Array.';
-        return;
-      }
-      for (let i = 0; i < cpus.length; ++i) {
-        if (!checkCpu(cpus[i])) {
-          throw `result.cpus[${i}] : ${JSON.stringify(cpus[i])}`;
-        }
-      }
-    }
+TEST_F('SysInternalsBrowserTest', 'LineChart_Menu', function() {
+  LineChartTest.Menu();
+});
 
-    function isMemoryByte(number) {
-      return typeof number === 'number' && number >= 0;
-    }
+TEST_F('SysInternalsBrowserTest', 'LineChart_Scrollbar', function() {
+  LineChartTest.Scrollbar();
+});
 
-    function checkMemory(memory) {
-      if (!memory || typeof memory !== 'object' ||
-          !isMemoryByte(memory.available) || !isMemoryByte(memory.total) ||
-          !isMemoryByte(memory.swapFree) || !isMemoryByte(memory.swapTotal) ||
-          !isCounter(memory.pswpin) || !isCounter(memory.pswpout)) {
-        throw `result.memory is invalid : ${JSON.stringify(memory)}`;
-      }
-    }
+TEST_F('SysInternalsBrowserTest', 'LineChart_SubChart', function() {
+  LineChartTest.SubChart();
+});
 
-    function checkZram(zram) {
-      if (!zram || typeof zram !== 'object' ||
-          !isMemoryByte(zram.comprDataSize) ||
-          !isMemoryByte(zram.origDataSize) ||
-          !isMemoryByte(zram.memUsedTotal) || !isCounter(zram.numReads) ||
-          !isCounter(zram.numWrites)) {
-        throw `result.zram is invalid : ${JSON.stringify(zram)}`;
-      }
-    }
-
-    cr.sendWithPromise('getSysInfo').then(function(result) {
-      try {
-        checkConst(result.const);
-        checkCpus(result.cpus);
-        checkMemory(result.memory);
-        checkZram(result.zram);
-        done();
-      } catch (err) {
-        done(new Error(err));
-      }
-    });
-  });
-
-  mocha.run();
+TEST_F('SysInternalsBrowserTest', 'LineChart_UnitLabel', function() {
+  LineChartTest.UnitLabel();
 });
