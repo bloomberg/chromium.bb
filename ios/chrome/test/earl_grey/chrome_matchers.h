@@ -31,14 +31,6 @@ id<GREYMatcher> StaticTextWithAccessibilityLabelId(int message_id);
 // accessibility trait UIAccessibilityTraitStaticText.
 id<GREYMatcher> StaticTextWithAccessibilityLabel(NSString* label);
 
-// Returns matcher for WKWebView containing a blocked |image_id|.  When blocked,
-// the image element will be smaller than actual image.
-id<GREYMatcher> WebViewContainingBlockedImage(std::string image_id);
-
-// Returns matcher for WKWebView containing loaded image with |image_id|.  When
-// loaded, the image element will have the same size as actual image.
-id<GREYMatcher> WebViewContainingLoadedImage(std::string image_id);
-
 // Returns matcher for a cancel button.
 id<GREYMatcher> CancelButton();
 
