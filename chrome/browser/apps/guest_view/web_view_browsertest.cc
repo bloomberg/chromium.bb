@@ -1557,6 +1557,11 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestWebRequestAPI) {
   TestHelper("testWebRequestAPI", "web_view/shim", NEEDS_TEST_SERVER);
 }
 
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestWebRequestAPIOnlyForInstance) {
+  TestHelper("testWebRequestAPIOnlyForInstance", "web_view/shim",
+             NEEDS_TEST_SERVER);
+}
+
 IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestWebRequestAPIWithHeaders) {
   TestHelper("testWebRequestAPIWithHeaders",
              "web_view/shim",

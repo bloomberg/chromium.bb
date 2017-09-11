@@ -1438,14 +1438,21 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
       continue;
     }
 
-    // If this is a PlzNavigate request, then |navigation_ui_data| will be valid
-    // and the IDs will be -1. We can skip this verification since
-    // |navigation_ui_data| was created and set in the browser so it's trusted.
-    if (is_web_view_guest && !navigation_ui_data &&
-        (listener->id.embedder_process_id !=
-             web_view_info.embedder_process_id ||
-         listener->id.web_view_instance_id != web_view_info.instance_id)) {
-      continue;
+    if (is_web_view_guest) {
+      // If this is a PlzNavigate request, then |navigation_ui_data| will be
+      // valid and the IDs will be -1. We can skip this verification since
+      // |navigation_ui_data| was created and set in the browser so it's
+      // trusted.
+      if (!navigation_ui_data && (listener->id.embedder_process_id !=
+                                  web_view_info.embedder_process_id)) {
+        continue;
+      }
+
+      int instance_id = navigation_ui_data
+                            ? navigation_ui_data->web_view_instance_id()
+                            : web_view_info.instance_id;
+      if (listener->id.web_view_instance_id != instance_id)
+        continue;
     }
 
     // Filter requests from other extensions / apps. This does not work for
