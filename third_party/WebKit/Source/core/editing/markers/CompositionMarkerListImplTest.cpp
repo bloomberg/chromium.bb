@@ -6,6 +6,7 @@
 
 #include "core/editing/EditingTestBase.h"
 #include "core/editing/markers/CompositionMarker.h"
+#include "core/editing/markers/MarkerTestUtilities.h"
 
 namespace blink {
 
@@ -22,18 +23,6 @@ class CompositionMarkerListImplTest : public EditingTestBase {
 
   Persistent<CompositionMarkerListImpl> marker_list_;
 };
-
-namespace {
-
-bool compare_markers(const Member<DocumentMarker>& marker1,
-                     const Member<DocumentMarker>& marker2) {
-  if (marker1->StartOffset() != marker2->StartOffset())
-    return marker1->StartOffset() < marker2->StartOffset();
-
-  return marker1->EndOffset() < marker2->EndOffset();
-}
-
-}  // namespace
 
 TEST_F(CompositionMarkerListImplTest, AddOverlapping) {
   // Add some overlapping markers in an arbitrary order and verify that the

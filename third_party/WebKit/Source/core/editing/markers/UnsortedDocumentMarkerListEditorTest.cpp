@@ -4,6 +4,7 @@
 
 #include "core/editing/markers/UnsortedDocumentMarkerListEditor.h"
 
+#include "core/editing/markers/MarkerTestUtilities.h"
 #include "core/editing/markers/SuggestionMarker.h"
 #include "core/editing/markers/SuggestionMarkerListImpl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,18 +22,6 @@ class UnsortedDocumentMarkerListEditorTest : public ::testing::Test {
 
   PersistentHeapVector<Member<DocumentMarker>> marker_list_;
 };
-
-namespace {
-
-bool compare_markers(const Member<DocumentMarker>& marker1,
-                     const Member<DocumentMarker>& marker2) {
-  if (marker1->StartOffset() != marker2->StartOffset())
-    return marker1->StartOffset() < marker2->StartOffset();
-
-  return marker1->EndOffset() < marker2->EndOffset();
-}
-
-}  // namespace
 
 TEST_F(UnsortedDocumentMarkerListEditorTest, MoveMarkers) {
   marker_list_.push_back(CreateMarker(30, 40));
