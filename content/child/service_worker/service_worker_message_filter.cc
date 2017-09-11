@@ -27,15 +27,6 @@ void SendServiceWorkerObjectDestroyed(
       new ServiceWorkerHostMsg_DecrementServiceWorkerRefCount(handle_id));
 }
 
-void SendRegistrationObjectDestroyed(
-    ThreadSafeSender* sender,
-    int handle_id) {
-  if (handle_id == kInvalidServiceWorkerRegistrationHandleId)
-    return;
-  sender->Send(
-      new ServiceWorkerHostMsg_DecrementRegistrationRefCount(handle_id));
-}
-
 }  // namespace
 
 ServiceWorkerMessageFilter::ServiceWorkerMessageFilter(ThreadSafeSender* sender)
@@ -67,8 +58,6 @@ void ServiceWorkerMessageFilter::OnStaleMessageReceived(
   // Specifically handle some messages in case we failed to post task
   // to the thread (meaning that the context on the thread is now gone).
   IPC_BEGIN_MESSAGE_MAP(ServiceWorkerMessageFilter, msg)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetRegistrationForReady,
-                        OnStaleGetRegistration)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetVersionAttributes,
                         OnStaleSetVersionAttributes)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetControllerServiceWorker,
@@ -76,20 +65,6 @@ void ServiceWorkerMessageFilter::OnStaleMessageReceived(
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_MessageToDocument,
                         OnStaleMessageToDocument)
   IPC_END_MESSAGE_MAP()
-}
-
-void ServiceWorkerMessageFilter::OnStaleGetRegistration(
-    int thread_id,
-    int request_id,
-    const ServiceWorkerRegistrationObjectInfo& info,
-    const ServiceWorkerVersionAttributes& attrs) {
-  SendServiceWorkerObjectDestroyed(thread_safe_sender(),
-                                   attrs.installing.handle_id);
-  SendServiceWorkerObjectDestroyed(thread_safe_sender(),
-                                   attrs.waiting.handle_id);
-  SendServiceWorkerObjectDestroyed(thread_safe_sender(),
-                                   attrs.active.handle_id);
-  SendRegistrationObjectDestroyed(thread_safe_sender(), info.handle_id);
 }
 
 void ServiceWorkerMessageFilter::OnStaleSetVersionAttributes(

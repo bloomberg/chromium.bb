@@ -43,8 +43,15 @@ interface ServiceWorkerContainerHost {
         array<ServiceWorkerRegistrationObjectInfo>? infos,
         array<ServiceWorkerVersionAttributes>? attrs);
 
+  // Corresponds to navigator.serviceWorker.ready.
+  // Returns the service worker registration for the ServiceWorkerContainer that
+  // this interface hosts, once such a registration exists and has an active
+  // service worker.
+  GetRegistrationForReady()
+    => (ServiceWorkerRegistrationObjectInfo? registration,
+        ServiceWorkerVersionAttributes? attributes);
+
   // TODO(leonhsl): implement this interface.
-  // GetRegistrationForReady();
   // GetControllerServiceWorker();
 };
 

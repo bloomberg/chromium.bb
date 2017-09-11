@@ -183,11 +183,6 @@ IPC_MESSAGE_CONTROL4(ServiceWorkerHostMsg_UnregisterServiceWorker,
                      int /* provider_id */,
                      int64_t /* registration_id */)
 
-IPC_MESSAGE_CONTROL3(ServiceWorkerHostMsg_GetRegistrationForReady,
-                     int /* thread_id */,
-                     int /* request_id */,
-                     int /* provider_id */)
-
 // Asks the browser to enable/disable navigation preload for a registration.
 IPC_MESSAGE_CONTROL5(ServiceWorkerHostMsg_EnableNavigationPreload,
                      int /* thread_id */,
@@ -316,13 +311,6 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_ServiceWorkerUnregistered,
                      int /* thread_id */,
                      int /* request_id */,
                      bool /* is_success */)
-
-// Response to ServiceWorkerHostMsg_GetRegistrationForReady.
-IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_DidGetRegistrationForReady,
-                     int /* thread_id */,
-                     int /* request_id */,
-                     content::ServiceWorkerRegistrationObjectInfo,
-                     content::ServiceWorkerVersionAttributes)
 
 // Sent when any kind of update error occurs during a
 // UpdateServiceWorker handler above.

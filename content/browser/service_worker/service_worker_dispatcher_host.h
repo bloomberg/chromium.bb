@@ -149,9 +149,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
                                  int request_id,
                                  int provider_id,
                                  int64_t registration_id);
-  void OnGetRegistrationForReady(int thread_id,
-                                 int request_id,
-                                 int provider_id);
   void OnEnableNavigationPreload(int thread_id,
                                  int request_id,
                                  int provider_id,
@@ -227,11 +224,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   void UnregistrationComplete(int thread_id,
                               int request_id,
                               ServiceWorkerStatusCode status);
-  void GetRegistrationForReadyComplete(
-      int thread_id,
-      int request_id,
-      base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-      ServiceWorkerRegistration* registration);
 
   ServiceWorkerContextCore* GetContext();
   // Returns the provider host with id equal to |provider_id|, or nullptr

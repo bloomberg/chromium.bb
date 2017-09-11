@@ -35,8 +35,11 @@ WebServiceWorkerProviderImpl::WebServiceWorkerProviderImpl(
     ThreadSafeSender* thread_safe_sender,
     ServiceWorkerProviderContext* context)
     : thread_safe_sender_(thread_safe_sender),
-      context_(context) {
+      context_(context),
+      weak_factory_(this) {
   DCHECK(context_);
+  DCHECK(context_->provider_type() != SERVICE_WORKER_PROVIDER_FOR_WINDOW ||
+         context_->container_host());
 }
 
 WebServiceWorkerProviderImpl::~WebServiceWorkerProviderImpl() {
@@ -104,13 +107,10 @@ void WebServiceWorkerProviderImpl::RegisterServiceWorker(
       "ServiceWorker", "WebServiceWorkerProviderImpl::RegisterServiceWorker",
       this, "Scope", pattern.spec(), "Script URL", script_url.spec());
   ServiceWorkerRegistrationOptions options(pattern);
-  // As |this| owns |context_| which owns the
-  // mojom::ServiceWorkerContainerHostAssociatedPtr, using Unretained() here
-  // should be guaranteed safe.
   context_->container_host()->Register(
       script_url, options,
       base::BindOnce(&WebServiceWorkerProviderImpl::OnRegistered,
-                     base::Unretained(this), std::move(callbacks)));
+                     weak_factory_.GetWeakPtr(), std::move(callbacks)));
 }
 
 void WebServiceWorkerProviderImpl::GetRegistration(
@@ -139,13 +139,10 @@ void WebServiceWorkerProviderImpl::GetRegistration(
   TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker",
                            "WebServiceWorkerProviderImpl::GetRegistration",
                            this, "Document URL", document_url.spec());
-  // As |this| owns |context_| which owns the
-  // mojom::ServiceWorkerContainerHostAssociatedPtr, using Unretained() here
-  // should be guaranteed safe.
   context_->container_host()->GetRegistration(
       document_url,
       base::BindOnce(&WebServiceWorkerProviderImpl::OnDidGetRegistration,
-                     base::Unretained(this), std::move(callbacks)));
+                     weak_factory_.GetWeakPtr(), std::move(callbacks)));
 }
 
 void WebServiceWorkerProviderImpl::GetRegistrations(
@@ -162,19 +159,24 @@ void WebServiceWorkerProviderImpl::GetRegistrations(
 
   TRACE_EVENT_ASYNC_BEGIN0(
       "ServiceWorker", "WebServiceWorkerProviderImpl::GetRegistrations", this);
-  // As |this| owns |context_| which owns the
-  // mojom::ServiceWorkerContainerHostAssociatedPtr, using Unretained() here
-  // should be guaranteed safe.
   context_->container_host()->GetRegistrations(
       base::BindOnce(&WebServiceWorkerProviderImpl::OnDidGetRegistrations,
-                     base::Unretained(this), std::move(callbacks)));
+                     weak_factory_.GetWeakPtr(), std::move(callbacks)));
 }
 
 void WebServiceWorkerProviderImpl::GetRegistrationForReady(
     std::unique_ptr<WebServiceWorkerGetRegistrationForReadyCallbacks>
         callbacks) {
-  GetDispatcher()->GetRegistrationForReady(context_->provider_id(),
-                                           std::move(callbacks));
+  if (!context_->container_host()) {
+    return;
+  }
+
+  TRACE_EVENT_ASYNC_BEGIN0(
+      "ServiceWorker", "WebServiceWorkerProviderImpl::GetRegistrationForReady",
+      this);
+  context_->container_host()->GetRegistrationForReady(base::BindOnce(
+      &WebServiceWorkerProviderImpl::OnDidGetRegistrationForReady,
+      weak_factory_.GetWeakPtr(), std::move(callbacks)));
 }
 
 bool WebServiceWorkerProviderImpl::ValidateScopeAndScriptURL(
@@ -297,6 +299,29 @@ void WebServiceWorkerProviderImpl::OnDidGetRegistrations(
         GetDispatcher()->GetOrAdoptRegistration((*infos)[i], (*attrs)[i]));
   }
   callbacks->OnSuccess(std::move(registrations));
+}
+
+void WebServiceWorkerProviderImpl::OnDidGetRegistrationForReady(
+    std::unique_ptr<WebServiceWorkerGetRegistrationForReadyCallbacks> callbacks,
+    const base::Optional<ServiceWorkerRegistrationObjectInfo>& registration,
+    const base::Optional<ServiceWorkerVersionAttributes>& attributes) {
+  TRACE_EVENT_ASYNC_END0(
+      "ServiceWorker", "WebServiceWorkerProviderImpl::GetRegistrationForReady",
+      this);
+  // TODO(leonhsl): Currently the only reason that we allow nullable
+  // |registration| and |attributes| is: impl of the mojo method
+  // GetRegistrationForReady() needs to respond some non-sense params even if it
+  // has found that the request is a bad message and has called
+  // mojo::ReportBadMessage(), this is forced by Mojo, please see
+  // content::ServiceWorkerProviderHost::GetRegistrationForReady(). We'll find a
+  // better solution once the discussion at
+  // https://groups.google.com/a/chromium.org/forum/#!topic/chromium-mojo/NNsogKNurlA
+  // settled.
+  CHECK(registration);
+  CHECK(attributes);
+  DCHECK_NE(kInvalidServiceWorkerRegistrationHandleId, registration->handle_id);
+  callbacks->OnSuccess(WebServiceWorkerRegistrationImpl::CreateHandle(
+      GetDispatcher()->GetOrAdoptRegistration(*registration, *attributes)));
 }
 
 }  // namespace content

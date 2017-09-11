@@ -72,8 +72,6 @@ void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerUpdated, OnUpdated)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerUnregistered,
                         OnUnregistered)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetRegistrationForReady,
-                        OnDidGetRegistrationForReady)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidEnableNavigationPreload,
                         OnDidEnableNavigationPreload)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetNavigationPreloadState,
@@ -127,18 +125,6 @@ void ServiceWorkerDispatcher::UnregisterServiceWorker(
                            request_id, "Registration ID", registration_id);
   thread_safe_sender_->Send(new ServiceWorkerHostMsg_UnregisterServiceWorker(
       CurrentWorkerId(), request_id, provider_id, registration_id));
-}
-
-void ServiceWorkerDispatcher::GetRegistrationForReady(
-    int provider_id,
-    std::unique_ptr<WebServiceWorkerGetRegistrationForReadyCallbacks>
-        callbacks) {
-  int request_id = get_for_ready_callbacks_.Add(std::move(callbacks));
-  TRACE_EVENT_ASYNC_BEGIN0("ServiceWorker",
-                           "ServiceWorkerDispatcher::GetRegistrationForReady",
-                           request_id);
-  thread_safe_sender_->Send(new ServiceWorkerHostMsg_GetRegistrationForReady(
-      CurrentWorkerId(), request_id, provider_id));
 }
 
 void ServiceWorkerDispatcher::EnableNavigationPreload(
@@ -342,30 +328,6 @@ void ServiceWorkerDispatcher::OnUnregistered(int thread_id,
     return;
   callbacks->OnSuccess(is_success);
   pending_unregistration_callbacks_.Remove(request_id);
-}
-
-void ServiceWorkerDispatcher::OnDidGetRegistrationForReady(
-    int thread_id,
-    int request_id,
-    const ServiceWorkerRegistrationObjectInfo& info,
-    const ServiceWorkerVersionAttributes& attrs) {
-  TRACE_EVENT_ASYNC_STEP_INTO0(
-      "ServiceWorker",
-      "ServiceWorkerDispatcher::GetRegistrationForReady",
-      request_id,
-      "OnDidGetRegistrationForReady");
-  TRACE_EVENT_ASYNC_END0("ServiceWorker",
-                         "ServiceWorkerDispatcher::GetRegistrationForReady",
-                         request_id);
-  WebServiceWorkerGetRegistrationForReadyCallbacks* callbacks =
-      get_for_ready_callbacks_.Lookup(request_id);
-  DCHECK(callbacks);
-  if (!callbacks)
-    return;
-
-  callbacks->OnSuccess(WebServiceWorkerRegistrationImpl::CreateHandle(
-      GetOrAdoptRegistration(info, attrs)));
-  get_for_ready_callbacks_.Remove(request_id);
 }
 
 void ServiceWorkerDispatcher::OnDidEnableNavigationPreload(int thread_id,

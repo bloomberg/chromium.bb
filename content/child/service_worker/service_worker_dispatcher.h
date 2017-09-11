@@ -57,9 +57,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
   typedef blink::WebServiceWorkerRegistration::
       WebServiceWorkerUnregistrationCallbacks
           WebServiceWorkerUnregistrationCallbacks;
-  typedef blink::WebServiceWorkerProvider::
-      WebServiceWorkerGetRegistrationForReadyCallbacks
-          WebServiceWorkerGetRegistrationForReadyCallbacks;
   using WebEnableNavigationPreloadCallbacks =
       blink::WebServiceWorkerRegistration::WebEnableNavigationPreloadCallbacks;
   using WebGetNavigationPreloadStateCallbacks = blink::
@@ -84,11 +81,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
       int provider_id,
       int64_t registration_id,
       std::unique_ptr<WebServiceWorkerUnregistrationCallbacks> callbacks);
-
-  void GetRegistrationForReady(
-      int provider_id,
-      std::unique_ptr<WebServiceWorkerGetRegistrationForReadyCallbacks>
-          callbacks);
 
   // Corresponds to NavigationPreloadManager.enable/disable.
   void EnableNavigationPreload(
@@ -157,8 +149,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
       base::IDMap<std::unique_ptr<WebServiceWorkerUpdateCallbacks>>;
   using UnregistrationCallbackMap =
       base::IDMap<std::unique_ptr<WebServiceWorkerUnregistrationCallbacks>>;
-  using GetRegistrationForReadyCallbackMap = base::IDMap<
-      std::unique_ptr<WebServiceWorkerGetRegistrationForReadyCallbacks>>;
   using EnableNavigationPreloadCallbackMap =
       base::IDMap<std::unique_ptr<WebEnableNavigationPreloadCallbacks>>;
   using GetNavigationPreloadStateCallbackMap =
@@ -185,11 +175,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
   void OnUnregistered(int thread_id,
                       int request_id,
                       bool is_success);
-  void OnDidGetRegistrationForReady(
-      int thread_id,
-      int request_id,
-      const ServiceWorkerRegistrationObjectInfo& info,
-      const ServiceWorkerVersionAttributes& attrs);
   void OnDidEnableNavigationPreload(int thread_id, int request_id);
   void OnDidGetNavigationPreloadState(int thread_id,
                                       int request_id,
@@ -252,7 +237,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
 
   UpdateCallbackMap pending_update_callbacks_;
   UnregistrationCallbackMap pending_unregistration_callbacks_;
-  GetRegistrationForReadyCallbackMap get_for_ready_callbacks_;
   EnableNavigationPreloadCallbackMap enable_navigation_preload_callbacks_;
   GetNavigationPreloadStateCallbackMap get_navigation_preload_state_callbacks_;
   SetNavigationPreloadHeaderCallbackMap

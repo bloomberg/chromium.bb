@@ -54,6 +54,9 @@ const char kBadMessageInproperOrigins[] =
     "Origins are not matching, or some cannot access service worker.";
 const char kBadMessageFromNonWindow[] =
     "The request message should not come from a non-window client.";
+const char kBadMessageGetRegistrationForReadyDuplicated[] =
+    "There's already a completed or ongoing request to get the ready "
+    "registration.";
 
 // Provider host for navigation with PlzNavigate or when service worker's
 // context is created on the browser side. This function provides the next
@@ -121,15 +124,6 @@ WebContents* GetWebContents(int render_process_id, int render_frame_id) {
 }
 
 }  // anonymous namespace
-
-ServiceWorkerProviderHost::OneShotGetReadyCallback::OneShotGetReadyCallback(
-    const GetRegistrationForReadyCallback& callback)
-    : callback(callback),
-      called(false) {
-}
-
-ServiceWorkerProviderHost::OneShotGetReadyCallback::~OneShotGetReadyCallback() {
-}
 
 // static
 std::unique_ptr<ServiceWorkerProviderHost>
@@ -264,7 +258,7 @@ void ServiceWorkerProviderHost::OnVersionAttributesChanged(
     ServiceWorkerRegistration* registration,
     ChangedVersionAttributesMask changed_mask,
     const ServiceWorkerRegistrationInfo& /* info */) {
-  if (!get_ready_callback_ || get_ready_callback_->called)
+  if (!get_ready_callback_ || get_ready_callback_->is_null())
     return;
   if (changed_mask.active_changed() && registration->active_version()) {
     // Wait until the state change so we don't send the get for ready
@@ -553,15 +547,6 @@ void ServiceWorkerProviderHost::ClaimedByRegistration(
   }
 }
 
-bool ServiceWorkerProviderHost::GetRegistrationForReady(
-    const GetRegistrationForReadyCallback& callback) {
-  if (get_ready_callback_)
-    return false;
-  get_ready_callback_.reset(new OneShotGetReadyCallback(callback));
-  ReturnRegistrationForReadyIfNeeded();
-  return true;
-}
-
 std::unique_ptr<ServiceWorkerProviderHost>
 ServiceWorkerProviderHost::PrepareForCrossSiteTransfer() {
   DCHECK(!IsBrowserSideNavigationEnabled());
@@ -846,17 +831,25 @@ void ServiceWorkerProviderHost::DecreaseProcessReference(
 }
 
 void ServiceWorkerProviderHost::ReturnRegistrationForReadyIfNeeded() {
-  if (!get_ready_callback_ || get_ready_callback_->called)
+  if (!get_ready_callback_ || get_ready_callback_->is_null())
     return;
   ServiceWorkerRegistration* registration = MatchRegistration();
-  if (!registration)
+  if (!registration || !registration->active_version())
     return;
-  if (registration->active_version()) {
-    get_ready_callback_->callback.Run(registration);
-    get_ready_callback_->callback.Reset();
-    get_ready_callback_->called = true;
+  TRACE_EVENT_ASYNC_END1("ServiceWorker",
+                         "ServiceWorkerProviderHost::GetRegistrationForReady",
+                         this, "Registration ID", registration->id());
+  if (!dispatcher_host_ || !IsContextAlive()) {
+    // Here no need to run or destroy |get_ready_callback_|, which will destroy
+    // together with |binding_| when |this| destroys.
     return;
   }
+
+  ServiceWorkerRegistrationObjectInfo info;
+  ServiceWorkerVersionAttributes attrs;
+  dispatcher_host_->GetRegistrationObjectInfoAndVersionAttributes(
+      AsWeakPtr(), registration, &info, &attrs);
+  std::move(*get_ready_callback_).Run(info, attrs);
 }
 
 bool ServiceWorkerProviderHost::IsReadyToSendMessages() const {
@@ -1193,6 +1186,26 @@ void ServiceWorkerProviderHost::GetRegistrationsComplete(
                           base::nullopt, object_infos, version_attrs);
 }
 
+void ServiceWorkerProviderHost::GetRegistrationForReady(
+    GetRegistrationForReadyCallback callback) {
+  std::string error_message;
+  if (!IsValidGetRegistrationForReadyMessage(&error_message)) {
+    mojo::ReportBadMessage(error_message);
+    // ReportBadMessage() will kill the renderer process, but Mojo complains if
+    // the callback is not run. Just run it with nonsense arguments.
+    std::move(callback).Run(base::nullopt, base::nullopt);
+    return;
+  }
+
+  TRACE_EVENT_ASYNC_BEGIN0("ServiceWorker",
+                           "ServiceWorkerProviderHost::GetRegistrationForReady",
+                           this);
+  DCHECK(!get_ready_callback_);
+  get_ready_callback_ =
+      base::MakeUnique<GetRegistrationForReadyCallback>(std::move(callback));
+  ReturnRegistrationForReadyIfNeeded();
+}
+
 bool ServiceWorkerProviderHost::IsValidRegisterMessage(
     const GURL& script_url,
     const ServiceWorkerRegistrationOptions& options,
@@ -1246,6 +1259,21 @@ bool ServiceWorkerProviderHost::IsValidGetRegistrationsMessage(
   }
   if (!OriginCanAccessServiceWorkers(document_url())) {
     *out_error = kBadMessageInproperOrigins;
+    return false;
+  }
+
+  return true;
+}
+
+bool ServiceWorkerProviderHost::IsValidGetRegistrationForReadyMessage(
+    std::string* out_error) const {
+  if (client_type() != blink::kWebServiceWorkerClientTypeWindow) {
+    *out_error = kBadMessageFromNonWindow;
+    return false;
+  }
+
+  if (get_ready_callback_) {
+    *out_error = kBadMessageGetRegistrationForReadyDuplicated;
     return false;
   }
 
