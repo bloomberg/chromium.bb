@@ -40,7 +40,7 @@ namespace blink {
 // "media element event" task type according to the spec.
 class CORE_EXPORT MediaElementEventQueue final : public EventQueue {
  public:
-  static MediaElementEventQueue* Create(EventTarget*);
+  static MediaElementEventQueue* Create(EventTarget*, ExecutionContext*);
   ~MediaElementEventQueue() override;
 
   // EventQueue
@@ -53,7 +53,7 @@ class CORE_EXPORT MediaElementEventQueue final : public EventQueue {
   bool HasPendingEvents() const;
 
  private:
-  explicit MediaElementEventQueue(EventTarget*);
+  MediaElementEventQueue(EventTarget*, ExecutionContext*);
   void TimerFired(TimerBase*);
 
   Member<EventTarget> owner_;
