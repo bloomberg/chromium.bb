@@ -3169,7 +3169,6 @@ crbug.com/755405 [ Android ] external/wpt/css-typed-om/declared-styleMap-accepts
 crbug.com/755405 [ Android ] external/wpt/cssom/cssom-cssText-serialize.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/cssom/medialist-interfaces-004.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/cssom-view/cssom-view-window-screen-interface.html [ Failure ]
-crbug.com/755405 [ Android ] external/wpt/cssom-view/ttwf-scrollintoview.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/cssom-view/cssom-view/media-query-list-interface.xht [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/custom-elements/HTMLElement-constructor.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/custom-elements/parser/parser-constructs-custom-element-in-document-write.html [ Failure ]
