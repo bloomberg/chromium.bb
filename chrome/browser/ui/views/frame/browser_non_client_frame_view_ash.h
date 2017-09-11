@@ -21,6 +21,7 @@ class FrameCaptionButtonContainerView;
 class HeaderPainter;
 }
 
+// Provides the BrowserNonClientFrameView for Chrome OS.
 class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
                                      public ash::ShellObserver,
                                      public ash::TabletModeObserver,

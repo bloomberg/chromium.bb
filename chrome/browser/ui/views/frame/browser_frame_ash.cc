@@ -4,7 +4,8 @@
 
 #include "chrome/browser/ui/views/frame/browser_frame_ash.h"
 
-#include "ash/ash_switches.h"
+#include <memory>
+
 #include "ash/shell.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
@@ -52,14 +53,11 @@ class BrowserWindowStateDelegate : public ash::wm::WindowStateDelegate {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserFrameAsh, public:
 
-// static
-const char BrowserFrameAsh::kWindowName[] = "BrowserFrameAsh";
-
 BrowserFrameAsh::BrowserFrameAsh(BrowserFrame* browser_frame,
                                  BrowserView* browser_view)
     : views::NativeWidgetAura(browser_frame),
       browser_view_(browser_view) {
-  GetNativeWindow()->SetName(kWindowName);
+  GetNativeWindow()->SetName("BrowserFrameAsh");
   Browser* browser = browser_view->browser();
   ash::wm::WindowState* window_state =
       ash::wm::GetWindowState(GetNativeWindow());
@@ -70,13 +68,14 @@ BrowserFrameAsh::BrowserFrameAsh(BrowserFrame* browser_frame,
   // This way the requested bounds are honored.
   if (!browser->bounds_overridden() && !browser->is_session_restore())
     SetWindowAutoManaged();
-#if defined(OS_CHROMEOS)
+
   // For legacy reasons v1 apps (like Secure Shell) are allowed to consume keys
   // like brightness, volume, etc. Otherwise these keys are handled by the
   // Ash window manager.
   window_state->set_can_consume_system_keys(browser->is_app());
-#endif  // defined(OS_CHROMEOS)
 }
+
+BrowserFrameAsh::~BrowserFrameAsh() {}
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserFrameAsh, views::NativeWidgetAura overrides:
@@ -132,13 +131,7 @@ bool BrowserFrameAsh::HandleKeyboardEvent(
 views::Widget::InitParams BrowserFrameAsh::GetWidgetParams() {
   views::Widget::InitParams params;
   params.native_widget = this;
-
   params.context = ash::Shell::GetPrimaryRootWindow();
-#if defined(OS_WIN)
-  // If this window is under ASH on Windows, we need it to be translucent.
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-#endif
-
   return params;
 }
 
@@ -152,9 +145,6 @@ bool BrowserFrameAsh::UsesNativeSystemMenu() const {
 
 int BrowserFrameAsh::GetMinimizeButtonOffset() const {
   return 0;
-}
-
-BrowserFrameAsh::~BrowserFrameAsh() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////

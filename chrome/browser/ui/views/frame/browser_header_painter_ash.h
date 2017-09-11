@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "ash/frame/header_painter.h"
-#include "base/compiler_specific.h"  // override
 #include "base/macros.h"
 #include "ui/gfx/animation/animation_delegate.h"
 
