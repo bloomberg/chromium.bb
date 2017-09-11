@@ -75,6 +75,10 @@ class ProviderHostEndpoints : public mojom::ServiceWorkerContainerHost {
   void GetRegistrations(GetRegistrationsCallback callback) override {
     NOTIMPLEMENTED();
   }
+  void GetRegistrationForReady(
+      GetRegistrationForReadyCallback callback) override {
+    NOTIMPLEMENTED();
+  }
 
   mojom::ServiceWorkerContainerAssociatedPtr client_;
   mojo::AssociatedBinding<mojom::ServiceWorkerContainerHost> binding_;

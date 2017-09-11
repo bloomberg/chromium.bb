@@ -163,8 +163,6 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
                         OnUpdateServiceWorker)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_UnregisterServiceWorker,
                         OnUnregisterServiceWorker)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_GetRegistrationForReady,
-                        OnGetRegistrationForReady)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_PostMessageToWorker,
                         OnPostMessageToWorker)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_CountFeature, OnCountFeature)
@@ -407,35 +405,6 @@ void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
       registration->pattern(),
       base::Bind(&ServiceWorkerDispatcherHost::UnregistrationComplete, this,
                  thread_id, request_id));
-}
-
-void ServiceWorkerDispatcherHost::OnGetRegistrationForReady(
-    int thread_id,
-    int request_id,
-    int provider_id) {
-  TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerDispatcherHost::OnGetRegistrationForReady");
-  if (!GetContext())
-    return;
-  ServiceWorkerProviderHost* provider_host =
-      GetContext()->GetProviderHost(render_process_id_, provider_id);
-  if (!provider_host) {
-    bad_message::ReceivedBadMessage(
-        this, bad_message::SWDH_GET_REGISTRATION_FOR_READY_NO_HOST);
-    return;
-  }
-  if (!provider_host->IsContextAlive())
-    return;
-
-  TRACE_EVENT_ASYNC_BEGIN0(
-      "ServiceWorker", "ServiceWorkerDispatcherHost::GetRegistrationForReady",
-      request_id);
-  if (!provider_host->GetRegistrationForReady(base::Bind(
-          &ServiceWorkerDispatcherHost::GetRegistrationForReadyComplete,
-          this, thread_id, request_id, provider_host->AsWeakPtr()))) {
-    bad_message::ReceivedBadMessage(
-        this, bad_message::SWDH_GET_REGISTRATION_FOR_READY_ALREADY_IN_PROGRESS);
-  }
 }
 
 void ServiceWorkerDispatcherHost::OnEnableNavigationPreload(
@@ -1052,27 +1021,6 @@ void ServiceWorkerDispatcherHost::UnregistrationComplete(
   Send(new ServiceWorkerMsg_ServiceWorkerUnregistered(thread_id,
                                                       request_id,
                                                       is_success));
-}
-
-void ServiceWorkerDispatcherHost::GetRegistrationForReadyComplete(
-    int thread_id,
-    int request_id,
-    base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-    ServiceWorkerRegistration* registration) {
-  DCHECK(registration);
-  TRACE_EVENT_ASYNC_END1(
-      "ServiceWorker", "ServiceWorkerDispatcherHost::GetRegistrationForReady",
-      request_id, "Registration ID",
-      registration ? registration->id() : kInvalidServiceWorkerRegistrationId);
-  if (!GetContext())
-    return;
-
-  ServiceWorkerRegistrationObjectInfo info;
-  ServiceWorkerVersionAttributes attrs;
-  GetRegistrationObjectInfoAndVersionAttributes(
-      provider_host, registration, &info, &attrs);
-  Send(new ServiceWorkerMsg_DidGetRegistrationForReady(
-        thread_id, request_id, info, attrs));
 }
 
 ServiceWorkerContextCore* ServiceWorkerDispatcherHost::GetContext() {

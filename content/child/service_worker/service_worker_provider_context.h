@@ -77,6 +77,8 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
       ServiceWorkerDispatcher* dispatcher,
       scoped_refptr<ChildURLLoaderFactoryGetter> default_loader_factory_getter);
 
+  ServiceWorkerProviderType provider_type() const { return provider_type_; }
+
   int provider_id() const { return provider_id_; }
 
   // For service worker execution contexts. Sets the registration for

@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_error_type.mojom.h"
 
@@ -82,8 +83,16 @@ class WebServiceWorkerProviderImpl : public blink::WebServiceWorkerProvider {
           infos,
       const base::Optional<std::vector<ServiceWorkerVersionAttributes>>& attrs);
 
+  void OnDidGetRegistrationForReady(
+      std::unique_ptr<WebServiceWorkerGetRegistrationForReadyCallbacks>
+          callbacks,
+      const base::Optional<ServiceWorkerRegistrationObjectInfo>& registration,
+      const base::Optional<ServiceWorkerVersionAttributes>& attributes);
+
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   scoped_refptr<ServiceWorkerProviderContext> context_;
+
+  base::WeakPtrFactory<WebServiceWorkerProviderImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebServiceWorkerProviderImpl);
 };
