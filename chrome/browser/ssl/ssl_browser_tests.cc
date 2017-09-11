@@ -44,6 +44,7 @@
 #include "chrome/browser/ssl/certificate_reporting_test_utils.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/common_name_mismatch_handler.h"
+#include "chrome/browser/ssl/mitm_software_blocking_page.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ssl/ssl_error_assistant.pb.h"
@@ -136,10 +137,6 @@
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 #include "chrome/browser/ssl/captive_portal_blocking_page.h"
-#endif
-
-#if !defined(OS_IOS)
-#include "chrome/browser/ssl/mitm_software_blocking_page.h"
 #endif
 
 #if defined(USE_NSS_CERTS)
@@ -5383,8 +5380,6 @@ IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListTest, PortalChecksDisabled) {
 
 #endif  // BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 
-// The MITM software interstitial is not yet supported on iOS.
-#if !defined(OS_IOS)
 namespace {
 
 char kTestHostName[] = "example.test";
@@ -5835,18 +5830,6 @@ IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareEnabledTest, NotEnterpriseManaged) {
   EXPECT_TRUE(chrome_browser_interstitials::IsInterstitialDisplayingText(
       interstitial_page, expected_explanation));
 }
-
-#else
-
-// Tests that the MITM software interstitial does not render on iOS, where it
-// is disabled by build.
-IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareEnabledTest,
-                       DisabledByBuild_NoMITMSoftwareInterstitial) {
-  SetUpCertVerifier(net::CERT_STATUS_AUTHORITY_INVALID);
-  TestNoMITMSoftwareInterstitial();
-}
-
-#endif  // #if !defined(OS_IOS)
 
 class SuperfishSSLUITest : public CertVerifierBrowserTest {
  public:
