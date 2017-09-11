@@ -39,7 +39,6 @@ std::unique_ptr<base::DictionaryValue> FetchCapabilitiesAsync(
 
   VLOG(1) << "Get printer capabilities start for " << device_name;
 
-  std::unique_ptr<base::DictionaryValue> printer_info;
   if (!print_backend->IsValidPrinter(device_name)) {
     LOG(WARNING) << "Invalid printer " << device_name;
     return nullptr;
