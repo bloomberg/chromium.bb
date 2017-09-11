@@ -114,10 +114,10 @@ test.text.testShowErrorMessageWithCallback = function() {
   assertEquals('', text.final_.innerHTML);
 
   // Assert the callback is called when the link element is clicked.
-  assert(!restartCalled);
+  assertFalse(restartCalled);
   assertEquals(1, text.interim_.children.length);
   text.interim_.children[0].click();
-  assert(restartCalled);
+  assertTrue(restartCalled);
 };
 
 
