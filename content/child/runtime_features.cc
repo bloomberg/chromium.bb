@@ -419,6 +419,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
        FeaturesFromSwitch(command_line, switches::kDisableBlinkFeatures)) {
     WebRuntimeFeatures::EnableFeatureFromString(feature, false);
   }
-}
+
+  if (base::FeatureList::IsEnabled(features::kV8ContextSnapshot))
+    WebRuntimeFeatures::EnableV8ContextSnapshot(true);
+};
 
 }  // namespace content

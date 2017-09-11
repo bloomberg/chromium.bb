@@ -452,6 +452,10 @@ const base::Feature kMacV2Sandbox{"MacV2Sandbox",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_MACOSX)
 
+// Enables to use a snapshot file in creating V8 contexts.
+const base::Feature kV8ContextSnapshot{"V8ContextSnapshot",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsMojoBlobsEnabled() {
   return base::FeatureList::IsEnabled(features::kMojoBlobs) ||
          base::FeatureList::IsEnabled(features::kNetworkService);
