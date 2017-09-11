@@ -15,11 +15,8 @@
 #include "content/public/browser/global_request_id.h"
 
 namespace base {
-class TaskRunner;
-}
-
-namespace tracked_objects {
 class Location;
+class TaskRunner;
 }
 
 namespace chrome_browser_data_usage {
@@ -53,7 +50,7 @@ class TabIdProvider : public base::SupportsUserData::Data {
   // Constructs a tab ID provider, posting the |tab_id_getter| task onto
   // |task_runner|.
   TabIdProvider(base::TaskRunner* task_runner,
-                const tracked_objects::Location& from_here,
+                const base::Location& from_here,
                 const base::Callback<int32_t(void)>& tab_id_getter);
 
   ~TabIdProvider() override;

@@ -16,7 +16,7 @@ class FileSystemContext;
 class FileSystemURL;
 }
 
-namespace tracked_objects {
+namespace base {
 class Location;
 }
 
@@ -81,8 +81,7 @@ bool DeserializeSyncableFileSystemURL(const std::string& serialized_url,
 base::FilePath GetSyncFileSystemDir(const base::FilePath& profile_base_dir);
 
 // Posts |callback| to the current thread.
-void RunSoon(const tracked_objects::Location& from_here,
-             const base::Closure& callback);
+void RunSoon(const base::Location& from_here, const base::Closure& callback);
 
 base::Closure NoopClosure();
 

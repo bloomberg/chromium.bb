@@ -23,11 +23,8 @@
 #include "chrome/browser/sync_file_system/task_logger.h"
 
 namespace base {
-class SequencedTaskRunner;
-}
-
-namespace tracked_objects {
 class Location;
+class SequencedTaskRunner;
 }
 
 namespace sync_file_system {
@@ -85,21 +82,21 @@ class SyncTaskManager {
   void Initialize(SyncStatusCode status);
 
   // Schedules a task at the given priority.
-  void ScheduleTask(const tracked_objects::Location& from_here,
+  void ScheduleTask(const base::Location& from_here,
                     const Task& task,
                     Priority priority,
                     const SyncStatusCallback& callback);
-  void ScheduleSyncTask(const tracked_objects::Location& from_here,
+  void ScheduleSyncTask(const base::Location& from_here,
                         std::unique_ptr<SyncTask> task,
                         Priority priority,
                         const SyncStatusCallback& callback);
 
   // Runs the posted task only when we're idle.  Returns true if tha task is
   // scheduled.
-  bool ScheduleTaskIfIdle(const tracked_objects::Location& from_here,
+  bool ScheduleTaskIfIdle(const base::Location& from_here,
                           const Task& task,
                           const SyncStatusCallback& callback);
-  bool ScheduleSyncTaskIfIdle(const tracked_objects::Location& from_here,
+  bool ScheduleSyncTaskIfIdle(const base::Location& from_here,
                               std::unique_ptr<SyncTask> task,
                               const SyncStatusCallback& callback);
 
@@ -158,12 +155,11 @@ class SyncTaskManager {
       const Continuation& continuation);
 
   // This should be called when an async task needs to get a task token.
-  std::unique_ptr<SyncTaskToken> GetToken(
-      const tracked_objects::Location& from_here,
-      const SyncStatusCallback& callback);
+  std::unique_ptr<SyncTaskToken> GetToken(const base::Location& from_here,
+                                          const SyncStatusCallback& callback);
 
   std::unique_ptr<SyncTaskToken> GetTokenForBackgroundTask(
-      const tracked_objects::Location& from_here,
+      const base::Location& from_here,
       const SyncStatusCallback& callback,
       std::unique_ptr<TaskBlocker> task_blocker);
 

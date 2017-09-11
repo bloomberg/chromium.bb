@@ -22,9 +22,9 @@ namespace {
 class DeckLinkCaptureDelegate;
 }  // namespace
 
-namespace tracked_objects {
+namespace base {
 class Location;
-}  // namespace tracked_objects
+}  // namespace base
 
 namespace media {
 
@@ -62,7 +62,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceDeckLinkMac : public VideoCaptureDevice {
                               base::TimeDelta timestamp);
 
   // Forwarder to VideoCaptureDevice::Client::OnError().
-  void SendErrorString(const tracked_objects::Location& from_here,
+  void SendErrorString(const base::Location& from_here,
                        const std::string& reason);
 
   // Forwarder to VideoCaptureDevice::Client::OnLog().

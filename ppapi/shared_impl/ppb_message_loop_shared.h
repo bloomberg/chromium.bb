@@ -16,11 +16,8 @@
 #include "ppapi/thunk/ppb_message_loop_api.h"
 
 namespace base {
-class SingleThreadTaskRunner;
-}
-
-namespace tracked_objects {
 class Location;
+class SingleThreadTaskRunner;
 }
 
 namespace ppapi {
@@ -46,7 +43,7 @@ class PPAPI_SHARED_EXPORT MessageLoopShared
   // NOTE: The given closure will be run *WITHOUT* acquiring the Proxy lock.
   //       This only makes sense for user code and completely thread-safe
   //       proxy operations (e.g., MessageLoop::QuitClosure).
-  virtual void PostClosure(const tracked_objects::Location& from_here,
+  virtual void PostClosure(const base::Location& from_here,
                            const base::Closure& closure,
                            int64_t delay_ms) = 0;
 

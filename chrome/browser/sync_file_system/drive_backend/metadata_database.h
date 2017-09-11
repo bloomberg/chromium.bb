@@ -32,7 +32,7 @@ class ChangeResource;
 class FileResource;
 }
 
-namespace tracked_objects {
+namespace base {
 class Location;
 }
 
@@ -373,7 +373,7 @@ class MetadataDatabase {
                                const std::string& title) const;
 
   void RemoveUnneededTrackersForMissingFile(const std::string& file_id);
-  void UpdateByFileMetadata(const tracked_objects::Location& from_where,
+  void UpdateByFileMetadata(const base::Location& from_where,
                             std::unique_ptr<FileMetadata> file,
                             UpdateOption option);
 

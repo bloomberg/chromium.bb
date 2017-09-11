@@ -24,9 +24,9 @@
 
 interface IMFSourceReader;
 
-namespace tracked_objects {
+namespace base {
 class Location;
-}  // namespace tracked_objects
+}  // namespace base
 
 namespace media {
 
@@ -60,7 +60,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceMFWin : public VideoCaptureDevice {
                               base::TimeDelta timestamp);
 
  private:
-  void OnError(const tracked_objects::Location& from_here, HRESULT hr);
+  void OnError(const base::Location& from_here, HRESULT hr);
 
   VideoCaptureDeviceDescriptor descriptor_;
   base::win::ScopedComPtr<IMFActivate> device_;

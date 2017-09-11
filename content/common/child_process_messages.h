@@ -36,7 +36,7 @@
 IPC_ENUM_TRAITS_MAX_VALUE(tracked_objects::ThreadData::Status,
                           tracked_objects::ThreadData::STATUS_LAST)
 
-IPC_STRUCT_TRAITS_BEGIN(tracked_objects::LocationSnapshot)
+IPC_STRUCT_TRAITS_BEGIN(base::LocationSnapshot)
   IPC_STRUCT_TRAITS_MEMBER(file_name)
   IPC_STRUCT_TRAITS_MEMBER(function_name)
   IPC_STRUCT_TRAITS_MEMBER(line_number)

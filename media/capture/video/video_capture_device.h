@@ -34,9 +34,9 @@
 #include "media/capture/video_capture_types.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
-namespace tracked_objects {
+namespace base {
 class Location;
-}  // namespace tracked_objects
+}  // namespace base
 
 namespace media {
 
@@ -194,7 +194,7 @@ class CAPTURE_EXPORT VideoCaptureDevice
 
     // An error has occurred that cannot be handled and VideoCaptureDevice must
     // be StopAndDeAllocate()-ed. |reason| is a text description of the error.
-    virtual void OnError(const tracked_objects::Location& from_here,
+    virtual void OnError(const base::Location& from_here,
                          const std::string& reason) = 0;
 
     // VideoCaptureDevice requests the |message| to be logged.

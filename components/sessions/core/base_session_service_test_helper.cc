@@ -19,7 +19,7 @@ BaseSessionServiceTestHelper::~BaseSessionServiceTestHelper() {
 }
 
 void BaseSessionServiceTestHelper::RunTaskOnBackendThread(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const base::Closure& task) {
   base_session_service_->RunTaskOnBackendThread(from_here, task);
 }

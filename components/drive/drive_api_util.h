@@ -14,12 +14,9 @@
 #include "google_apis/drive/drive_api_error_codes.h"
 #include "google_apis/drive/drive_common_callbacks.h"
 
-namespace tracked_objects {
-class Location;
-}  // namespace tracked_objects
-
 namespace base {
 class CancellationFlag;
+class Location;
 class FilePath;
 class TaskRunner;
 }  // namespace base
@@ -79,7 +76,7 @@ bool HasHostedDocumentExtension(const base::FilePath& path);
 // Runs |task| on |task_runner|, then runs |reply| on the original thread with
 // the resulting error code.
 void RunAsyncTask(base::TaskRunner* task_runner,
-                  const tracked_objects::Location& from_here,
+                  const base::Location& from_here,
                   base::OnceCallback<FileError()> task,
                   base::OnceCallback<void(FileError)> reply);
 

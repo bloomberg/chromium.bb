@@ -11,7 +11,7 @@
 
 #include "components/sync/syncable/directory.h"
 
-namespace tracked_objects {
+namespace base {
 class Location;
 }
 
@@ -30,7 +30,7 @@ void ChangeEntryIDAndUpdateChildren(BaseWriteTransaction* trans,
 bool IsLegalNewParent(BaseTransaction* trans, const Id& id, const Id& parentid);
 
 bool SyncAssert(bool condition,
-                const tracked_objects::Location& location,
+                const base::Location& location,
                 const char* msg,
                 BaseTransaction* trans);
 

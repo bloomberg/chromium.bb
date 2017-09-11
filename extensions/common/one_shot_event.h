@@ -14,12 +14,9 @@
 #include "base/threading/thread_checker.h"
 
 namespace base {
+class Location;
 class SingleThreadTaskRunner;
 class TimeDelta;
-}
-
-namespace tracked_objects {
-class Location;
 }
 
 namespace extensions {
@@ -76,19 +73,18 @@ class OneShotEvent {
   //
   // Const because Post() doesn't modify the logical state of this
   // object (which is just the is_signaled() bit).
-  void Post(const tracked_objects::Location& from_here,
-            const base::Closure& task) const;
-  void Post(const tracked_objects::Location& from_here,
+  void Post(const base::Location& from_here, const base::Closure& task) const;
+  void Post(const base::Location& from_here,
             const base::Closure& task,
             const scoped_refptr<base::SingleThreadTaskRunner>& runner) const;
-  void PostDelayed(const tracked_objects::Location& from_here,
+  void PostDelayed(const base::Location& from_here,
                    const base::Closure& task,
                    const base::TimeDelta& delay) const;
 
  private:
   struct TaskInfo;
 
-  void PostImpl(const tracked_objects::Location& from_here,
+  void PostImpl(const base::Location& from_here,
                 const base::Closure& task,
                 const scoped_refptr<base::SingleThreadTaskRunner>& runner,
                 const base::TimeDelta& delay) const;

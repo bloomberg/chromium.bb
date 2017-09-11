@@ -66,7 +66,7 @@ class SyncableService : public SyncChangeProcessor,
   // Returns: A default SyncError (IsSet() == false) if no errors were
   //          encountered, and a filled SyncError (IsSet() == true)
   //          otherwise.
-  SyncError ProcessSyncChanges(const tracked_objects::Location& from_here,
+  SyncError ProcessSyncChanges(const base::Location& from_here,
                                const SyncChangeList& change_list) override = 0;
 
   // Returns AttachmentStore for use by sync when uploading or downloading

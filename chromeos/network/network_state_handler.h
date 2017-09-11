@@ -25,11 +25,8 @@
 namespace base {
 class DictionaryValue;
 class ListValue;
-class Value;
-}
-
-namespace tracked_objects {
 class Location;
+class Value;
 }
 
 namespace chromeos {
@@ -94,9 +91,9 @@ class CHROMEOS_EXPORT NetworkStateHandler
 
   // Add/remove observers.
   void AddObserver(NetworkStateHandlerObserver* observer,
-                   const tracked_objects::Location& from_here);
+                   const base::Location& from_here);
   void RemoveObserver(NetworkStateHandlerObserver* observer,
-                      const tracked_objects::Location& from_here);
+                      const base::Location& from_here);
 
   // Returns the state for technology |type|. Only
   // NetworkTypePattern::Primitive, ::Mobile, ::Ethernet, and ::Tether are

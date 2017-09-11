@@ -15,9 +15,9 @@
 #include "components/sync/model/attachments/attachment_id.h"
 #include "components/sync/syncable/base_transaction.h"
 
-namespace tracked_objects {
+namespace base {
 class Location;
-}  // namespace tracked_objects
+}  // namespace base
 
 namespace sync_pb {
 class DataTypeContext;
@@ -32,7 +32,7 @@ struct UserShare;
 class ReadTransaction : public BaseTransaction {
  public:
   // Start a new read-only transaction on the specified repository.
-  ReadTransaction(const tracked_objects::Location& from_here, UserShare* share);
+  ReadTransaction(const base::Location& from_here, UserShare* share);
 
   // Resume the middle of a transaction. Will not close transaction.
   ReadTransaction(UserShare* share, syncable::BaseTransaction* trans);

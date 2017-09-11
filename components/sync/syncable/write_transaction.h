@@ -15,9 +15,9 @@
 #include "components/sync/model/sync_change_processor.h"
 #include "components/sync/syncable/base_transaction.h"
 
-namespace tracked_objects {
+namespace base {
 class Location;
-}  // namespace tracked_objects
+}  // namespace base
 
 namespace syncer {
 
@@ -34,13 +34,12 @@ class WriteTransaction;
 class WriteTransaction : public BaseTransaction {
  public:
   // Start a new read/write transaction.
-  WriteTransaction(const tracked_objects::Location& from_here,
-                   UserShare* share);
+  WriteTransaction(const base::Location& from_here, UserShare* share);
   // |transaction_version| stores updated model and nodes version if model
   // is changed by the transaction, or syncable::kInvalidTransaction
   // if not after transaction is closed. This constructor is used for model
   // types that support embassy data.
-  WriteTransaction(const tracked_objects::Location& from_here,
+  WriteTransaction(const base::Location& from_here,
                    UserShare* share,
                    int64_t* transaction_version);
   ~WriteTransaction() override;

@@ -19,12 +19,9 @@
 #include "media/capture/video/video_capture_device.h"
 
 namespace base {
+class Location;
 class SingleThreadTaskRunner;
 }
-
-namespace tracked_objects {
-class Location;
-}  // namespace tracked_objects
 
 namespace media {
 
@@ -131,7 +128,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
   };
 
   VideoPixelFormat GetColorspace();
-  void SetErrorState(const tracked_objects::Location& from_here,
+  void SetErrorState(const base::Location& from_here,
                      const std::string& reason);
 
   void DoGetPhotoState(GetPhotoStateCallback callback);

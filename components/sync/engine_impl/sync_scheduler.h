@@ -15,9 +15,9 @@
 #include "components/sync/engine_impl/cycle/sync_cycle.h"
 #include "components/sync/engine_impl/nudge_source.h"
 
-namespace tracked_objects {
+namespace base {
 class Location;
-}  // namespace tracked_objects
+}  // namespace base
 
 namespace syncer {
 
@@ -109,9 +109,8 @@ class SyncScheduler : public SyncCycle::Delegate {
 
   // The LocalNudge indicates that we've made a local change, and that the
   // syncer should plan to commit this to the server some time soon.
-  virtual void ScheduleLocalNudge(
-      ModelTypeSet types,
-      const tracked_objects::Location& nudge_location) = 0;
+  virtual void ScheduleLocalNudge(ModelTypeSet types,
+                                  const base::Location& nudge_location) = 0;
 
   // The LocalRefreshRequest occurs when we decide for some reason to manually
   // request updates.  This should be used sparingly.  For example, one of its
@@ -119,7 +118,7 @@ class SyncScheduler : public SyncCycle::Delegate {
   // platforms where tab sync is not registered for invalidations.
   virtual void ScheduleLocalRefreshRequest(
       ModelTypeSet types,
-      const tracked_objects::Location& nudge_location) = 0;
+      const base::Location& nudge_location) = 0;
 
   // Invalidations are notifications the server sends to let us know when other
   // clients have committed data.  We need to contact the sync server (being
@@ -128,7 +127,7 @@ class SyncScheduler : public SyncCycle::Delegate {
   virtual void ScheduleInvalidationNudge(
       ModelType type,
       std::unique_ptr<InvalidationInterface> invalidation,
-      const tracked_objects::Location& nudge_location) = 0;
+      const base::Location& nudge_location) = 0;
 
   // Requests a non-blocking initial sync request for the specified type.
   //

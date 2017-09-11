@@ -18,7 +18,7 @@
 #include "chrome/browser/predictors/resource_prefetch_common.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.pb.h"
 
-namespace tracked_objects {
+namespace base {
 class Location;
 }
 
@@ -38,8 +38,7 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
  public:
   typedef base::OnceCallback<void(sql::Connection*)> DBTask;
 
-  virtual void ScheduleDBTask(const tracked_objects::Location& from_here,
-                              DBTask task);
+  virtual void ScheduleDBTask(const base::Location& from_here, DBTask task);
 
   virtual void ExecuteDBTaskOnDBSequence(DBTask task);
 

@@ -21,7 +21,7 @@ namespace content {
 class SandboxDirectoryDatabaseTest;
 }
 
-namespace tracked_objects {
+namespace base {
 class Location;
 }
 
@@ -125,7 +125,7 @@ class STORAGE_EXPORT SandboxDirectoryDatabase {
   bool RemoveFileInfoHelper(FileId file_id, leveldb::WriteBatch* batch);
   // Close the database. Before this, all iterators associated with the database
   // must be deleted.
-  void HandleError(const tracked_objects::Location& from_here,
+  void HandleError(const base::Location& from_here,
                    const leveldb::Status& status);
 
   const base::FilePath filesystem_data_directory_;

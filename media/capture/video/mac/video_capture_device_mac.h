@@ -28,9 +28,9 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
-namespace tracked_objects {
+namespace base {
 class Location;
-}  // namespace tracked_objects
+}  // namespace base
 
 // Small class to bundle device name and connection type into a dictionary.
 CAPTURE_EXPORT
@@ -87,8 +87,7 @@ class VideoCaptureDeviceMac : public VideoCaptureDevice {
   void OnPhotoError();
 
   // Forwarder to VideoCaptureDevice::Client::OnError().
-  void ReceiveError(const tracked_objects::Location& from_here,
-                    const std::string& reason);
+  void ReceiveError(const base::Location& from_here, const std::string& reason);
 
   // Forwarder to VideoCaptureDevice::Client::OnLog().
   void LogMessage(const std::string& message);
@@ -98,7 +97,7 @@ class VideoCaptureDeviceMac : public VideoCaptureDevice {
                                       VideoCaptureTransportType transport_type);
 
  private:
-  void SetErrorState(const tracked_objects::Location& from_here,
+  void SetErrorState(const base::Location& from_here,
                      const std::string& reason);
   bool UpdateCaptureResolution();
 
