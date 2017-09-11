@@ -55,6 +55,9 @@ public class BrowserActionsContextMenuHelper implements OnCreateContextMenuListe
         /** Called when Browser Actions start opening a tab in background */
         void onOpenTabInBackgroundStart();
 
+        /** Called when Browser Actions start downloading a url */
+        void onDownloadStart();
+
         /** Initializes data needed for testing. */
         void initialize(BrowserActionsContextMenuItemDelegate delegate,
                 SparseArray<PendingIntent> customActions,
@@ -92,7 +95,7 @@ public class BrowserActionsContextMenuHelper implements OnCreateContextMenuListe
     private final ProgressDialog mProgressDialog;
 
     private BrowserActionsTestDelegate mTestDelegate;
-    private boolean mIsOpenInBackgroundPending;
+    private int mPendingItemId;
     private boolean mIsNativeInitialized;
 
     public BrowserActionsContextMenuHelper(Activity activity, ContextMenuParams params,
@@ -113,7 +116,7 @@ public class BrowserActionsContextMenuHelper implements OnCreateContextMenuListe
         mOnMenuClosed = new Runnable() {
             @Override
             public void run() {
-                if (!mIsOpenInBackgroundPending) {
+                if (mPendingItemId == 0) {
                     mActivity.finish();
                 }
             }
@@ -189,15 +192,19 @@ public class BrowserActionsContextMenuHelper implements OnCreateContextMenuListe
             if (mIsNativeInitialized) {
                 handleOpenInBackground();
             } else {
-                mIsOpenInBackgroundPending = true;
+                mPendingItemId = itemId;
                 waitNativeInitialized();
             }
         } else if (itemId == R.id.browser_actions_open_in_incognito_tab) {
             mMenuItemDelegate.onOpenInIncognitoTab(mCurrentContextMenuParams.getLinkUrl());
             notifyBrowserActionSelected(BrowserActionsIntent.ITEM_OPEN_IN_INCOGNITO);
         } else if (itemId == R.id.browser_actions_save_link_as) {
-            mMenuItemDelegate.startDownload(mCurrentContextMenuParams.getLinkUrl());
-            notifyBrowserActionSelected(BrowserActionsIntent.ITEM_DOWNLOAD);
+            if (mIsNativeInitialized) {
+                handleDownload();
+            } else {
+                mPendingItemId = itemId;
+                waitNativeInitialized();
+            }
         } else if (itemId == R.id.browser_actions_copy_address) {
             mMenuItemDelegate.onSaveToClipboard(mCurrentContextMenuParams.getLinkUrl());
             notifyBrowserActionSelected(BrowserActionsIntent.ITEM_COPY);
@@ -282,10 +289,10 @@ public class BrowserActionsContextMenuHelper implements OnCreateContextMenuListe
         if (mTestDelegate != null) {
             mTestDelegate.onFinishNativeInitialization();
         }
-        if (mIsOpenInBackgroundPending) {
-            mIsOpenInBackgroundPending = false;
+        if (mPendingItemId != 0) {
             dismissProgressDialog();
-            handleOpenInBackground();
+            onItemSelected(mPendingItemId);
+            mPendingItemId = 0;
             mActivity.finish();
         }
     }
@@ -296,5 +303,13 @@ public class BrowserActionsContextMenuHelper implements OnCreateContextMenuListe
             mTestDelegate.onOpenTabInBackgroundStart();
         }
         notifyBrowserActionSelected(BrowserActionsIntent.ITEM_OPEN_IN_NEW_TAB);
+    }
+
+    private void handleDownload() {
+        mMenuItemDelegate.startDownload(mCurrentContextMenuParams.getLinkUrl());
+        if (mTestDelegate != null) {
+            mTestDelegate.onDownloadStart();
+        }
+        notifyBrowserActionSelected(BrowserActionsIntent.ITEM_DOWNLOAD);
     }
 }
