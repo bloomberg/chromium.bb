@@ -88,8 +88,8 @@ bool NGLineBreaker::NextLine(const NGLogicalOffset& content_offset,
   content_offset_ = content_offset;
 
   PrepareNextLine(exclusion_space, line_info);
-
   BreakLine(line_info);
+  line_info->SetEndOffset(offset_);
 
   // TODO(kojii): When editing, or caret is enabled, trailing spaces at wrap
   // point should not be removed. For other cases, we can a) remove, b) leave
@@ -104,8 +104,6 @@ bool NGLineBreaker::NextLine(const NGLogicalOffset& content_offset,
   // line boxes. These cases need to be reviewed.
   if (line_.should_create_line_box)
     ComputeLineLocation(line_info);
-
-  line_info->SetEndOffset(offset_);
 
   return true;
 }
