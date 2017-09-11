@@ -306,9 +306,8 @@ void FaviconDriverObserverBridge::OnFaviconUpdated(
 // Observer class that listens for infobar signals.
 class TabInfoBarObserver : public infobars::InfoBarManager::Observer {
  public:
-  explicit TabInfoBarObserver(Tab* owner);
+  TabInfoBarObserver(Tab* owner, infobars::InfoBarManager* infobar_manager);
   ~TabInfoBarObserver() override;
-  void SetShouldObserveInfoBarManager(bool should_observe);
   void OnInfoBarAdded(infobars::InfoBar* infobar) override;
   void OnInfoBarRemoved(infobars::InfoBar* infobar, bool animate) override;
   void OnInfoBarReplaced(infobars::InfoBar* old_infobar,
@@ -320,28 +319,15 @@ class TabInfoBarObserver : public infobars::InfoBarManager::Observer {
   DISALLOW_COPY_AND_ASSIGN(TabInfoBarObserver);
 };
 
-TabInfoBarObserver::TabInfoBarObserver(Tab* owner)
-    : owner_(owner), scoped_observer_(this) {}
+TabInfoBarObserver::TabInfoBarObserver(
+    Tab* owner,
+    infobars::InfoBarManager* infobar_manager)
+    : owner_(owner), scoped_observer_(this) {
+  DCHECK(infobar_manager);
+  scoped_observer_.Add(infobar_manager);
+}
 
 TabInfoBarObserver::~TabInfoBarObserver() {}
-
-void TabInfoBarObserver::SetShouldObserveInfoBarManager(bool should_observe) {
-  if (!owner_)
-    return;
-
-  DCHECK(owner_.webState);
-  infobars::InfoBarManager* infobar_manager =
-      InfoBarManagerImpl::FromWebState(owner_.webState);
-  if (!infobar_manager)
-    return;
-
-  if (should_observe) {
-    if (!scoped_observer_.IsObserving(infobar_manager))
-      scoped_observer_.Add(infobar_manager);
-  } else {
-    scoped_observer_.Remove(infobar_manager);
-  }
-}
 
 void TabInfoBarObserver::OnInfoBarAdded(infobars::InfoBar* infobar) {
   // Update snapshots after the infobar has been added.
@@ -409,10 +395,11 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 - (void)attachTabHelpers {
-  _tabInfoBarObserver = base::MakeUnique<TabInfoBarObserver>(self);
-  _tabInfoBarObserver->SetShouldObserveInfoBarManager(true);
+  _tabInfoBarObserver = std::make_unique<TabInfoBarObserver>(
+      self, InfoBarManagerImpl::FromWebState(self.webState));
 
-  [self setShouldObserveFaviconChanges:YES];
+  _faviconDriverObserverBridge = std::make_unique<FaviconDriverObserverBridge>(
+      self, favicon::WebFaviconDriver::FromWebState(self.webState));
 }
 
 // Attach any tab helpers which are dependent on the dispatcher having been
@@ -835,25 +822,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 - (void)dismissModals {
   [_openInController disable];
   [self.webController dismissModals];
-}
-
-- (void)setShouldObserveInfoBarManager:(BOOL)shouldObserveInfoBarManager {
-  _tabInfoBarObserver->SetShouldObserveInfoBarManager(
-      shouldObserveInfoBarManager);
-}
-
-- (void)setShouldObserveFaviconChanges:(BOOL)shouldObserveFaviconChanges {
-  if (shouldObserveFaviconChanges) {
-    favicon::FaviconDriver* faviconDriver =
-        favicon::WebFaviconDriver::FromWebState(self.webState);
-    // Some MockWebContents used in tests do not support the FaviconDriver.
-    if (faviconDriver) {
-      _faviconDriverObserverBridge =
-          base::MakeUnique<FaviconDriverObserverBridge>(self, faviconDriver);
-    }
-  } else {
-    _faviconDriverObserverBridge.reset();
-  }
 }
 
 - (void)goBack {

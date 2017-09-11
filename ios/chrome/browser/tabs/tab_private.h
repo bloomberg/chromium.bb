@@ -18,8 +18,6 @@ class WebStateImpl;
 @interface Tab ()<CRWWebDelegate>
 
 - (OpenInController*)openInController;
-- (void)setShouldObserveInfoBarManager:(BOOL)shouldObserveInfoBarManager;
-- (void)setShouldObserveFaviconChanges:(BOOL)shouldObserveFaviconChanges;
 
 @end
 
