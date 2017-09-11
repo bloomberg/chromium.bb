@@ -12,7 +12,7 @@
 <script>
 description("Test that detached CSSOM subtrees keeps a reference to CSS stylesheets lacking wrappers.");
 
-var rule = getMatchedCSSRules(document.getElementById("test-element")).item(0);
+var rule = document.styleSheets[0].rules.item(0);
 document.documentElement.removeChild(document.head);
 shouldNotBe("rule.parentStyleSheet", "null");
 </script>

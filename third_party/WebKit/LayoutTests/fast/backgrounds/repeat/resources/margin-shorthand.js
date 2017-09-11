@@ -9,7 +9,7 @@ description('This layouttest was initially there to test that' +
 function iconMarginValue()
 {
     var iconDiv = document.getElementById('icon');
-    var rules = window.getMatchedCSSRules(iconDiv,'',false);
+    var rules = document.styleSheets[0].rules;
     return rules[1] ? rules[1].style.getPropertyValue('margin') : 'null';
 }
 

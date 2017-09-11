@@ -13,7 +13,7 @@ function runTest()
     style = document.createElement('style');
     style.textContent = '@media all { body { color: red } }';
     document.head.appendChild(style);
-    ruleList = getMatchedCSSRules(document.body);
+    ruleList = style.sheet.cssRules;
  
     document.styleSheets[0].cssRules[0].deleteRule(0);
     document.head.removeChild(style);
