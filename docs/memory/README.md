@@ -75,8 +75,8 @@ Second, familiarize yourself with the following:
 ## Key knowledge areas and contacts
 | Knowledge Area | Contact points |
 |----------------|----------------|
-| Chrome on Android | mariahkomenko, dskiba, ssid |
-| Browser Process | mariahkomenko, dskiba, ssid |
+| Chrome on Android | mariakhomenko, dskiba, ssid |
+| Browser Process | mariakhomenko, dskiba, ssid |
 | GPU/cc | ericrk |
 | Memory metrics | erikchen, primano, ajwong, wez |
 | Native Heap Profiling | primiano, dskiba, ajwong |
