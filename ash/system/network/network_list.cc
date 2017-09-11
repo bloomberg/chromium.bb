@@ -14,6 +14,7 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/bluetooth/bluetooth_power_controller.h"
 #include "ash/system/network/network_icon.h"
 #include "ash/system/network/network_icon_animation.h"
 #include "ash/system/network/network_info.h"
@@ -34,6 +35,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/timer/timer.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
@@ -71,6 +73,8 @@ using chromeos::NetworkTypePattern;
 namespace ash {
 namespace tray {
 namespace {
+
+const int64_t kBluetoothTimeoutDelaySeconds = 2;
 
 bool IsProhibitedByPolicy(const chromeos::NetworkState* network) {
   if (!NetworkTypePattern::WiFi().MatchesType(network->type()))
@@ -191,6 +195,7 @@ class NetworkListView::SectionHeaderRowView : public views::View,
 
 namespace {
 
+// "Mobile Data" header row.
 class MobileHeaderRowView : public NetworkListView::SectionHeaderRowView,
                             public chromeos::NetworkStateHandlerObserver {
  public:
@@ -218,8 +223,6 @@ class MobileHeaderRowView : public NetworkListView::SectionHeaderRowView,
  protected:
   enum class Status {
     IDLE,
-    FETCHING_BLUETOOTH_ADAPTER,
-    ENABLING_BLUETOOTH_ADAPTER,
     WAITING_FOR_DEVICE_LIST_CHANGE
   };
 
@@ -250,12 +253,12 @@ class MobileHeaderRowView : public NetworkListView::SectionHeaderRowView,
             NetworkTypePattern::Tether())) {
       DCHECK(is_on);
 
-      if (bluetooth_adapter_ && status_ != Status::ENABLING_BLUETOOTH_ADAPTER) {
-        EnableBluetooth();
-      } else if (!bluetooth_adapter_ &&
-                 status_ != Status::FETCHING_BLUETOOTH_ADAPTER) {
-        FetchBluetoothAdapter();
-      }
+      // If Bluetooth is in the process of being enabled, continue waiting for
+      // this to occur.
+      if (status_ != Status::IDLE)
+        return;
+
+      EnableBluetooth();
       return;
     }
 
@@ -272,8 +275,6 @@ class MobileHeaderRowView : public NetworkListView::SectionHeaderRowView,
       status_ = Status::IDLE;
       SetIsOn(network_state_handler_->IsTechnologyEnabled(
           NetworkTypePattern::Cellular()));
-      // Cancel any pending Bluetooth adapter callbacks.
-      weak_ptr_factory_.InvalidateWeakPtrs();
       return;
     }
 
@@ -283,8 +284,6 @@ class MobileHeaderRowView : public NetworkListView::SectionHeaderRowView,
       // (e.g., the device could be in the process of being shut down).
       status_ = Status::IDLE;
       SetIsOn(false);
-      // Cancel any pending Bluetooth adapter callbacks.
-      weak_ptr_factory_.InvalidateWeakPtrs();
       return;
     }
 
@@ -295,52 +294,29 @@ class MobileHeaderRowView : public NetworkListView::SectionHeaderRowView,
       return;
     }
 
-    EnableTether();
+    OnEnableBluetoothSuccess();
   }
 
  private:
-  void FetchBluetoothAdapter() {
-    status_ = Status::FETCHING_BLUETOOTH_ADAPTER;
-    device::BluetoothAdapterFactory::Get().GetAdapter(
-        base::Bind(&MobileHeaderRowView::OnAdapterFetched,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
-
-  void OnAdapterFetched(scoped_refptr<device::BluetoothAdapter> adapter) {
-    DCHECK(status_ == Status::FETCHING_BLUETOOTH_ADAPTER);
-    bluetooth_adapter_ = adapter;
-    status_ = Status::IDLE;
-    EnableBluetooth();
-  }
-
+  // When Tether is disabled because Bluetooth is off, then enabling Bluetooth
+  // will enable Tether. If enabling Bluetooth takes longer than some timeout
+  // period, it is assumed that there was an error. In that case, Tether will
+  // remain uninitialized and Mobile Data will remain toggled off.
   void EnableBluetooth() {
     DCHECK(status_ == Status::IDLE);
-    DCHECK(bluetooth_adapter_);
-    status_ = Status::ENABLING_BLUETOOTH_ADAPTER;
-    bluetooth_adapter_->SetPowered(
-        true /* powered */,
-        base::Bind(&MobileHeaderRowView::OnSetPoweredSuccess,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&MobileHeaderRowView::OnSetPoweredError,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
 
-  void OnSetPoweredSuccess() {
-    DCHECK(status_ == Status::ENABLING_BLUETOOTH_ADAPTER);
-
+    Shell::Get()
+        ->bluetooth_power_controller()
+        ->SetPrimaryUserBluetoothPowerSetting(true /* enabled */);
     status_ = Status::WAITING_FOR_DEVICE_LIST_CHANGE;
-
-    if (!network_state_handler_->IsTechnologyUninitialized(
-            NetworkTypePattern::Tether())) {
-      // If Tether has already updated its TechnologyState and it is no longer
-      // UNINITIALIZED, the device list update has already occurred and has been
-      // missed, so enable Tether explicitly.
-      EnableTether();
-    }
+    timer_.Start(FROM_HERE,
+                 base::TimeDelta::FromSeconds(kBluetoothTimeoutDelaySeconds),
+                 base::Bind(&MobileHeaderRowView::OnEnableBluetoothTimeout,
+                            weak_ptr_factory_.GetWeakPtr()));
   }
 
-  void OnSetPoweredError() {
-    DCHECK(status_ == Status::ENABLING_BLUETOOTH_ADAPTER);
+  void OnEnableBluetoothTimeout() {
+    DCHECK(status_ == Status::WAITING_FOR_DEVICE_LIST_CHANGE);
     status_ = Status::IDLE;
     SetIsOn(false);
 
@@ -348,7 +324,10 @@ class MobileHeaderRowView : public NetworkListView::SectionHeaderRowView,
                << "data.";
   }
 
-  void EnableTether() {
+  void OnEnableBluetoothSuccess() {
+    DCHECK(timer_.IsRunning());
+    timer_.Stop();
+
     status_ = Status::IDLE;
     network_state_handler_->SetTechnologyEnabled(
         NetworkTypePattern::Tether(), true /* enabled */,
@@ -356,8 +335,10 @@ class MobileHeaderRowView : public NetworkListView::SectionHeaderRowView,
   }
 
   NetworkStateHandler* network_state_handler_;
+
   Status status_ = Status::IDLE;
-  scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
+  base::OneShotTimer timer_;
+
   base::WeakPtrFactory<MobileHeaderRowView> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MobileHeaderRowView);
