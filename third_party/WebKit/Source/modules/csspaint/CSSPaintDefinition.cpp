@@ -40,10 +40,10 @@ CSSPaintDefinition* CSSPaintDefinition::Create(
     const Vector<CSSPropertyID>& native_invalidation_properties,
     const Vector<AtomicString>& custom_invalidation_properties,
     const Vector<CSSSyntaxDescriptor>& input_argument_types,
-    bool has_alpha) {
+    const PaintRenderingContext2DSettings& context_settings) {
   return new CSSPaintDefinition(
       script_state, constructor, paint, native_invalidation_properties,
-      custom_invalidation_properties, input_argument_types, has_alpha);
+      custom_invalidation_properties, input_argument_types, context_settings);
 }
 
 CSSPaintDefinition::CSSPaintDefinition(
@@ -53,13 +53,13 @@ CSSPaintDefinition::CSSPaintDefinition(
     const Vector<CSSPropertyID>& native_invalidation_properties,
     const Vector<AtomicString>& custom_invalidation_properties,
     const Vector<CSSSyntaxDescriptor>& input_argument_types,
-    bool has_alpha)
+    const PaintRenderingContext2DSettings& context_settings)
     : script_state_(script_state),
       constructor_(script_state->GetIsolate(), this, constructor),
       paint_(script_state->GetIsolate(), this, paint),
       instance_(this),
       did_call_constructor_(false),
-      has_alpha_(has_alpha) {
+      context_settings_(context_settings) {
   native_invalidation_properties_ = native_invalidation_properties;
   custom_invalidation_properties_ = custom_invalidation_properties;
   input_argument_types_ = input_argument_types;
@@ -96,8 +96,8 @@ PassRefPtr<Image> CSSPaintDefinition::Paint(
   PaintRenderingContext2D* rendering_context = PaintRenderingContext2D::Create(
       ImageBuffer::Create(WTF::WrapUnique(new RecordingImageBufferSurface(
           size, RecordingImageBufferSurface::kDisallowFallback,
-          has_alpha_ ? kNonOpaque : kOpaque))),
-      has_alpha_, zoom);
+          context_settings_.alpha() ? kNonOpaque : kOpaque))),
+      context_settings_, zoom);
   PaintSize* paint_size = PaintSize::Create(specified_size);
   StylePropertyMapReadonly* style_map =
       FilteredComputedStylePropertyMap::Create(

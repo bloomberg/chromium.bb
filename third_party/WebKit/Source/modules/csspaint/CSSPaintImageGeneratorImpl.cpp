@@ -67,7 +67,7 @@ CSSPaintImageGeneratorImpl::NativeInvalidationProperties() const {
     return empty_vector;
   DocumentPaintDefinition* definition =
       paint_worklet_->GetDocumentDefinitionMap().at(name_);
-  return definition ? definition->NativeInvalidationProperties() : empty_vector;
+  return definition->NativeInvalidationProperties();
 }
 
 const Vector<AtomicString>&
@@ -77,7 +77,7 @@ CSSPaintImageGeneratorImpl::CustomInvalidationProperties() const {
     return empty_vector;
   DocumentPaintDefinition* definition =
       paint_worklet_->GetDocumentDefinitionMap().at(name_);
-  return definition ? definition->CustomInvalidationProperties() : empty_vector;
+  return definition->CustomInvalidationProperties();
 }
 
 bool CSSPaintImageGeneratorImpl::HasAlpha() const {
@@ -85,7 +85,7 @@ bool CSSPaintImageGeneratorImpl::HasAlpha() const {
     return false;
   DocumentPaintDefinition* definition =
       paint_worklet_->GetDocumentDefinitionMap().at(name_);
-  return definition && definition->HasAlpha();
+  return definition->GetPaintRenderingContext2DSettings().alpha();
 }
 
 const Vector<CSSSyntaxDescriptor>&
@@ -95,7 +95,7 @@ CSSPaintImageGeneratorImpl::InputArgumentTypes() const {
     return empty_vector;
   DocumentPaintDefinition* definition =
       paint_worklet_->GetDocumentDefinitionMap().at(name_);
-  return definition ? definition->InputArgumentTypes() : empty_vector;
+  return definition->InputArgumentTypes();
 }
 
 bool CSSPaintImageGeneratorImpl::IsImageGeneratorReady() const {
