@@ -12,7 +12,7 @@ namespace {
 
 using Mode = ParsedContentDisposition::Mode;
 
-bool IsValid(const String& input, Mode mode = Mode::kNormal) {
+bool IsValidContentDisposition(const String& input, Mode mode = Mode::kNormal) {
   return ParsedContentDisposition(input, mode).IsValid();
 }
 
@@ -65,26 +65,27 @@ TEST(ParsedContentDispositionTest, CaseInsensitiveFilename) {
 }
 
 TEST(ParsedContentDispositionTest, Validity) {
-  EXPECT_TRUE(IsValid("attachment"));
-  EXPECT_TRUE(IsValid("attachment; filename=file1"));
-  EXPECT_TRUE(IsValid("attachment; filename*=UTF-8'en'file1"));
-  EXPECT_TRUE(IsValid(" attachment ;filename=file1 "));
-  EXPECT_TRUE(IsValid("  attachment  "));
-  EXPECT_TRUE(IsValid("unknown-unknown"));
-  EXPECT_TRUE(IsValid("unknown-unknown; unknown=unknown"));
+  EXPECT_TRUE(IsValidContentDisposition("attachment"));
+  EXPECT_TRUE(IsValidContentDisposition("attachment; filename=file1"));
+  EXPECT_TRUE(
+      IsValidContentDisposition("attachment; filename*=UTF-8'en'file1"));
+  EXPECT_TRUE(IsValidContentDisposition(" attachment ;filename=file1 "));
+  EXPECT_TRUE(IsValidContentDisposition("  attachment  "));
+  EXPECT_TRUE(IsValidContentDisposition("unknown-unknown"));
+  EXPECT_TRUE(IsValidContentDisposition("unknown-unknown; unknown=unknown"));
 
-  EXPECT_FALSE(IsValid("A/B"));
-  EXPECT_FALSE(IsValid("attachment\r"));
-  EXPECT_FALSE(IsValid("attachment\n"));
-  EXPECT_FALSE(IsValid("attachment filename=file1"));
-  EXPECT_FALSE(IsValid("attachment;filename=file1;"));
-  EXPECT_FALSE(IsValid(""));
-  EXPECT_FALSE(IsValid("   "));
-  EXPECT_FALSE(IsValid("\"x\""));
-  EXPECT_FALSE(IsValid("attachment;"));
-  EXPECT_FALSE(IsValid("attachment;  "));
-  EXPECT_FALSE(IsValid("attachment; filename"));
-  EXPECT_FALSE(IsValid("attachment; filename;"));
+  EXPECT_FALSE(IsValidContentDisposition("A/B"));
+  EXPECT_FALSE(IsValidContentDisposition("attachment\r"));
+  EXPECT_FALSE(IsValidContentDisposition("attachment\n"));
+  EXPECT_FALSE(IsValidContentDisposition("attachment filename=file1"));
+  EXPECT_FALSE(IsValidContentDisposition("attachment;filename=file1;"));
+  EXPECT_FALSE(IsValidContentDisposition(""));
+  EXPECT_FALSE(IsValidContentDisposition("   "));
+  EXPECT_FALSE(IsValidContentDisposition("\"x\""));
+  EXPECT_FALSE(IsValidContentDisposition("attachment;"));
+  EXPECT_FALSE(IsValidContentDisposition("attachment;  "));
+  EXPECT_FALSE(IsValidContentDisposition("attachment; filename"));
+  EXPECT_FALSE(IsValidContentDisposition("attachment; filename;"));
 }
 
 }  // namespace
