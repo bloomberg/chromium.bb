@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/common/chrome_paths.h"
+#include "components/nacl/common/features.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -57,7 +58,7 @@ void JavaScriptBrowserTest::SetUpOnMainThread() {
 // js2gtest GN template.
 #if (!defined(MEMORY_SANITIZER) && !defined(ADDRESS_SANITIZER) && \
      !defined(LEAK_SANITIZER) && !defined(SYZYASAN)) ||           \
-    !defined(DISABLE_NACL) || defined(OS_CHROMEOS)
+    BUILDFLAG(ENABLE_NACL) || defined(OS_CHROMEOS)
   base::FilePath gen_test_data_directory;
   ASSERT_TRUE(
       PathService::Get(chrome::DIR_GEN_TEST_DATA, &gen_test_data_directory));

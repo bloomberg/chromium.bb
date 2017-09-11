@@ -30,7 +30,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
-
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -74,6 +73,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/favicon/core/favicon_driver_observer.h"
+#include "components/nacl/common/features.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
@@ -3908,8 +3908,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderOmniboxBrowserTest,
       GetAutocompleteActionPredictor()->IsPrerenderAbandonedForTesting());
 }
 
-// Can't run tests with NaCl plugins if built with DISABLE_NACL.
-#if !defined(DISABLE_NACL)
+// Can't run tests with NaCl plugins if built without ENABLE_NACL.
+#if BUILDFLAG(ENABLE_NACL)
 class PrerenderBrowserTestWithNaCl : public PrerenderBrowserTest {
  public:
   PrerenderBrowserTestWithNaCl() {}
@@ -3944,7 +3944,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithNaCl,
                                                    &display_test_result));
   ASSERT_TRUE(display_test_result);
 }
-#endif  // !defined(DISABLE_NACL)
+#endif  // BUILDFLAG(ENABLE_NACL)
 
 }  // namespace prerender
 

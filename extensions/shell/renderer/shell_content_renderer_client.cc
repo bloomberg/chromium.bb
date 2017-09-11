@@ -4,6 +4,7 @@
 
 #include "extensions/shell/renderer/shell_content_renderer_client.h"
 
+#include "components/nacl/common/features.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
@@ -20,7 +21,7 @@
 #include "extensions/shell/renderer/shell_extensions_renderer_client.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
 #include "components/nacl/common/nacl_constants.h"
 #include "components/nacl/renderer/nacl_helper.h"
 #endif
@@ -64,7 +65,7 @@ void ShellContentRendererClient::RenderFrameCreated(
   // TODO(jamescook): Do we need to add a new PepperHelper(render_frame) here?
   // It doesn't seem necessary for either Pepper or NaCl.
   // http://crbug.com/403004
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
   new nacl::NaClHelper(render_frame);
 #endif
 }
@@ -102,7 +103,7 @@ bool ShellContentRendererClient::WillSendRequest(
 
 bool ShellContentRendererClient::IsExternalPepperPlugin(
     const std::string& module_name) {
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
   // TODO(bbudge) remove this when the trusted NaCl plugin has been removed.
   // We must defer certain plugin events for NaCl instances since we switch
   // from the in-process to the out-of-process proxy after instantiating them.

@@ -26,6 +26,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/nacl/common/features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/service_worker_context.h"
@@ -37,7 +38,7 @@
 
 namespace {
 
-const std::string kInstallAndWaitForActivatedPage =
+const char kInstallAndWaitForActivatedPage[] =
     "<script>"
     "navigator.serviceWorker.register('./sw.js', {scope: './scope/'})"
     "  .then(function(reg) {"
@@ -414,7 +415,7 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerManifestFetchTest,
                                "use-credentials"));
 }
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
 class ChromeServiceWorkerFetchPPAPITest : public ChromeServiceWorkerFetchTest {
  protected:
   ChromeServiceWorkerFetchPPAPITest() {}
@@ -603,7 +604,7 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPIPrivateTest,
   EXPECT_EQ(GetRequestStringForPNACL("#OtherCORSCredentials"),
             ExecutePNACLUrlLoaderTest("OtherCORSCredentials"));
 }
-#endif  // !defined(DISABLE_NACL)
+#endif  // BUILDFLAG(ENABLE_NACL)
 
 class ChromeServiceWorkerNavigationHintTest : public ChromeServiceWorkerTest {
  protected:

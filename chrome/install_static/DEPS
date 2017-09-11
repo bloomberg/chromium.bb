@@ -11,6 +11,8 @@ include_rules = [
   "+chrome/install_static",
   # All registry access should go through nt_registry.
   "+chrome_elf/nt_registry/nt_registry.h",
+  # For BUILDFLAG(ENABLE_NACL)
+  "+components/nacl/common/features.h",
   # For the version_info::Channel enum.
   "+components/version_info/channel.h",
   # For the compile-time PRODUCT_VERSION macro.

@@ -154,14 +154,14 @@ TEST_F(TaskGroupTest, NaclRefreshWithTask) {
 
   task_group_.Refresh(gpu::VideoMemoryUsageStats(), base::TimeDelta(),
                       REFRESH_TYPE_NACL);
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
   EXPECT_FALSE(task_group_.AreBackgroundCalculationsDone());
 
   ASSERT_FALSE(background_refresh_complete_);
   run_loop_->Run();
 
   EXPECT_TRUE(background_refresh_complete_);
-#endif  // !defined(DISABLE_NACL)
+#endif  // BUILDFLAG(ENABLE_NACL)
 
   EXPECT_TRUE(task_group_.AreBackgroundCalculationsDone());
 }

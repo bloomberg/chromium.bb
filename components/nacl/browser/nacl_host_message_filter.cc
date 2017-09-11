@@ -16,6 +16,7 @@
 #include "components/nacl/browser/nacl_file_host.h"
 #include "components/nacl/browser/nacl_process_host.h"
 #include "components/nacl/browser/pnacl_host.h"
+#include "components/nacl/common/features.h"
 #include "components/nacl/common/nacl_host_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
@@ -96,7 +97,7 @@ void NaClHostMessageFilter::OnChannelClosing() {
 bool NaClHostMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(NaClHostMessageFilter, message)
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(NaClHostMsg_LaunchNaCl, OnLaunchNaCl)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(NaClHostMsg_GetReadonlyPnaclFD,
                                     OnGetReadonlyPnaclFd)

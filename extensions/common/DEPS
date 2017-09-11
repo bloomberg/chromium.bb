@@ -1,5 +1,6 @@
 include_rules = [
   "+components/url_formatter",
+  "+components/nacl/common/features.h",
   "+device/bluetooth",  # For BluetoothPermission
   "+device/usb",
   "+grit/extensions_strings.h",

@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "chrome/common/features.h"
 #include "chrome/common/origin_trials/chrome_origin_trial_policy.h"
+#include "components/nacl/common/features.h"
 #include "content/public/common/content_client.h"
 #include "ppapi/features/features.h"
 
@@ -46,7 +47,7 @@ class ChromeContentClient : public content::ContentClient {
   // pointers for built-in plugins. We avoid linking these plugins into
   // chrome_common because then on Windows we would ship them twice because of
   // the split DLL.
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
   static void SetNaClEntryFunctions(
       content::PepperPluginInfo::GetInterfaceFunc get_interface,
       content::PepperPluginInfo::PPP_InitializeModuleFunc initialize_module,

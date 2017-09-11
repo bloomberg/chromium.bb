@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "build/build_config.h"
+#include "components/nacl/common/features.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/common/main_function_params.h"
 #include "ui/aura/window_tree_host_observer.h"
@@ -105,7 +106,7 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
 
   std::unique_ptr<ShellBrowserMainDelegate> browser_main_delegate_;
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
   base::CancelableTaskTracker task_tracker_;
 #endif
 

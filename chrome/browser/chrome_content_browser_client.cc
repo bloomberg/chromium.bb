@@ -149,6 +149,7 @@
 #include "components/google/core/browser/google_util.h"
 #include "components/metrics/call_stack_profile_collector.h"
 #include "components/metrics/client_info.h"
+#include "components/nacl/common/features.h"
 #include "components/nacl/common/nacl_constants.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
@@ -329,7 +330,7 @@
 #include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
 #endif
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/browser/nacl_host_message_filter.h"
 #include "components/nacl/browser/nacl_process_host.h"
@@ -1042,7 +1043,7 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
           audio_debug_recordings_handler));
 
 #endif
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
   net::URLRequestContextGetter* context =
       host->GetStoragePartition()->GetURLRequestContext();
   host->AddFilter(new nacl::NaClHostMessageFilter(
@@ -1735,12 +1736,12 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       variations::switches::kEnableBenchmarking,
       switches::kEnableDistillabilityService,
       switches::kEnableNaCl,
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
       switches::kEnableNaClDebug,
       switches::kEnableNaClNonSfiMode,
 #endif
       switches::kEnableNetBenchmarking,
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
       switches::kForcePNaClSubzero,
 #endif
       switches::kForceUIDirection,
@@ -1777,7 +1778,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     static const char* const kSwitchNames[] = {
       // Load (in-process) Pepper plugins in-process in the zygote pre-sandbox.
       switches::kDisableBundledPpapiFlash,
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
       switches::kEnableNaClDebug,
       switches::kEnableNaClNonSfiMode,
       switches::kForcePNaClSubzero,
@@ -2588,7 +2589,7 @@ void ChromeContentBrowserClient::DidCreatePpapiPlugin(
 content::BrowserPpapiHost*
     ChromeContentBrowserClient::GetExternalBrowserPpapiHost(
         int plugin_process_id) {
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
   content::BrowserChildProcessHostIterator iter(PROCESS_TYPE_NACL_LOADER);
   while (!iter.Done()) {
     nacl::NaClProcessHost* host = static_cast<nacl::NaClProcessHost*>(
@@ -2803,7 +2804,7 @@ base::string16 ChromeContentBrowserClient::GetAppContainerSidForSandboxType(
       return base::string16();
     case content::SANDBOX_TYPE_PPAPI:
       return sid + L"129201925";
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
     case PROCESS_TYPE_NACL_LOADER:
       return base::string16();
     case PROCESS_TYPE_NACL_BROKER:
@@ -3038,12 +3039,12 @@ ChromeContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
 std::vector<content::ContentBrowserClient::ServiceManifestInfo>
 ChromeContentBrowserClient::GetExtraServiceManifests() {
   return std::vector<content::ContentBrowserClient::ServiceManifestInfo>({
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
     {nacl::kNaClLoaderServiceName, IDR_NACL_LOADER_MANIFEST},
 #if defined(OS_WIN)
         {nacl::kNaClBrokerServiceName, IDR_NACL_BROKER_MANIFEST},
 #endif  // defined(OS_WIN)
-#endif  // !defined(DISABLE_NACL)
+#endif  // BUILDFLAG(ENABLE_NACL)
 #if BUILDFLAG(ENABLE_PRINTING)
         {printing::mojom::kServiceName, IDR_PDF_COMPOSITOR_MANIFEST},
 #endif

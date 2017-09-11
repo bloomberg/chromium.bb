@@ -52,6 +52,7 @@
 #include "components/flags_ui/feature_entry_macros.h"
 #include "components/flags_ui/flags_storage.h"
 #include "components/flags_ui/flags_ui_switches.h"
+#include "components/nacl/common/features.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "components/network_session_configurator/common/network_features.h"
 #include "components/network_session_configurator/common/network_switches.h"
@@ -216,7 +217,7 @@ const FeatureEntry::Choice kTraceUploadURL[] = {
     {flag_descriptions::kTraceUploadUrlChoiceTesting, switches::kTraceUploadURL,
      "https://performance-insights.appspot.com/upload?tags=flags,TestingTeam"}};
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
 const FeatureEntry::Choice kNaClDebugMaskChoices[] = {
     // Secure shell can be used on ChromeOS for forwarding the TCP port opened
     // by
@@ -230,7 +231,7 @@ const FeatureEntry::Choice kNaClDebugMaskChoices[] = {
      "*://*"},
     {flag_descriptions::kNaclDebugMaskChoiceIncludeDebug,
      switches::kNaClDebugMask, "*://*/*debug.nmf"}};
-#endif  // DISABLE_NACL
+#endif  // ENABLE_NACL
 
 const FeatureEntry::Choice kPassiveListenersChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
@@ -1279,8 +1280,8 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMediaScreenCaptureDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kUserMediaScreenCapturing)},
 #endif  // OS_ANDROID
-// Native client is compiled out when DISABLE_NACL is defined.
-#if !defined(DISABLE_NACL)
+// Native client is compiled out if ENABLE_NACL is not set.
+#if BUILDFLAG(ENABLE_NACL)
     {"enable-nacl", flag_descriptions::kNaclName,
      flag_descriptions::kNaclDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableNaCl)},
@@ -1293,7 +1294,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"nacl-debug-mask", flag_descriptions::kNaclDebugMaskName,
      flag_descriptions::kNaclDebugMaskDescription, kOsDesktop,
      MULTI_VALUE_TYPE(kNaClDebugMaskChoices)},
-#endif  // DISABLE_NACL
+#endif  // ENABLE_NACL
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     {"extension-apis", flag_descriptions::kExperimentalExtensionApisName,
      flag_descriptions::kExperimentalExtensionApisDescription, kOsDesktop,

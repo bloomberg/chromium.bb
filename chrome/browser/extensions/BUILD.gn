@@ -826,6 +826,7 @@ static_library("extensions") {
     "//components/history/core/browser",
     "//components/infobars/core",
     "//components/keyed_service/content",
+    "//components/nacl/common:features",
     "//components/navigation_interception",
     "//components/net_log",
     "//components/omnibox/browser",

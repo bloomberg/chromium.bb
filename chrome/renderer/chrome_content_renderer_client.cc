@@ -142,7 +142,7 @@
 #include "chrome/renderer/sandbox_status_extension_android.h"
 #endif
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
 #include "components/nacl/common/nacl_constants.h"
 #include "components/nacl/renderer/nacl_helper.h"
 #endif
@@ -555,7 +555,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
   new PepperHelper(render_frame);
 #endif
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
   new nacl::NaClHelper(render_frame);
 #endif
 
@@ -804,7 +804,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kAllowed:
       case ChromeViewHostMsg_GetPluginInfo_Status::kPlayImportantContent: {
-#if !defined(DISABLE_NACL) && BUILDFLAG(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_NACL) && BUILDFLAG(ENABLE_EXTENSIONS)
         const bool is_nacl_plugin =
             info.name == ASCIIToUTF16(nacl::kNaClPluginName);
         const bool is_nacl_mime_type =
@@ -862,7 +862,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             break;
           }
         }
-#endif  // !defined(DISABLE_NACL) && BUILDFLAG(ENABLE_EXTENSIONS)
+#endif  // BUILDFLAG(ENABLE_NACL) && BUILDFLAG(ENABLE_EXTENSIONS)
 
         // Report PDF load metrics. Since the PDF plugin is comprised of an
         // extension that loads a second plugin, avoid double counting by
@@ -1053,7 +1053,7 @@ GURL ChromeContentRendererClient::GetNaClContentHandlerURL(
   return GURL();
 }
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
 //  static
 bool ChromeContentRendererClient::IsNaClAllowed(
     const GURL& manifest_url,
@@ -1130,7 +1130,7 @@ bool ChromeContentRendererClient::IsNaClAllowed(
   }
   return is_nacl_allowed;
 }
-#endif  // defined(DISABLE_NACL)
+#endif  // BUILDFLAG(ENABLE_NACL)
 
 bool ChromeContentRendererClient::HasErrorPage(int http_status_code) {
   // Use an internal error page, if we have one for the status code.

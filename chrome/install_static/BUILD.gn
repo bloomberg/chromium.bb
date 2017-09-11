@@ -11,6 +11,7 @@ assert(is_win)
 # Please don't add dependencies on other system libraries.
 static_library("install_static_util") {
   deps = [
+    "//components/nacl/common:features",
     "//components/version_info:channel",
     "//components/version_info:generate_version_info",
   ]

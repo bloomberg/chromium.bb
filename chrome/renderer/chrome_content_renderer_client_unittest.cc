@@ -32,13 +32,13 @@
 #include "extensions/common/manifest_constants.h"
 #endif
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
 #endif
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
 using blink::WebPluginParams;
 using blink::WebString;
 using blink::WebVector;
@@ -49,7 +49,7 @@ using content::WebPluginMimeType;
 
 namespace {
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
 const bool kNaClRestricted = false;
 const bool kNaClUnrestricted = true;
 const bool kExtensionNotFromWebStore = false;
@@ -61,7 +61,7 @@ const bool kNotHostedApp = false;
 const bool kHostedApp = true;
 #endif
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
 const char kExtensionUrl[] = "chrome-extension://extension_id/background.html";
 
 const char kChatManifestFS[] = "filesystem:https://talkgadget.google.com/foo";
@@ -69,7 +69,7 @@ const char kChatManifestFS[] = "filesystem:https://talkgadget.google.com/foo";
 
 const char kChatAppURL[] = "https://talkgadget.google.com/hangouts/foo";
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
 bool AllowsDevInterfaces(const WebPluginParams& params) {
   for (size_t i = 0; i < params.attribute_names.size(); ++i) {
     if (params.attribute_names[i] == "@dev")
@@ -165,7 +165,7 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
               ChromeContentRendererClient::GetNaClContentHandlerURL(
                   "application/x-foo", info));
   }
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
   // --enable-nacl allows all NaCl apps, with 'dev' interfaces.
   {
     WebPluginParams params;
@@ -363,7 +363,7 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
                         "http://example.com/").get(),
         &params));
   }
-#endif  // !defined(DISABLE_NACL)
+#endif  // BUILDFLAG(ENABLE_NACL)
 }
 
 TEST_F(ChromeContentRendererClientTest, AllowPepperMediaStreamAPI) {

@@ -117,9 +117,6 @@ config("feature_flags") {
   if (is_ubsan || is_ubsan_null || is_ubsan_vptr || is_ubsan_security) {
     defines += [ "UNDEFINED_SANITIZER" ]
   }
-  if (!enable_nacl) {
-    defines += [ "DISABLE_NACL" ]
-  }
   if (safe_browsing_mode == 1) {
     defines += [ "FULL_SAFE_BROWSING" ]
     defines += [ "SAFE_BROWSING_CSD" ]

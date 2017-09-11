@@ -162,7 +162,7 @@
 #include "extensions/common/extension_l10n_util.h"
 #endif
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
 #include "chrome/browser/component_updater/pnacl_component_installer.h"
 #endif
 
@@ -985,7 +985,7 @@ CRLSetFetcher* BrowserProcessImpl::crl_set_fetcher() {
 
 component_updater::PnaclComponentInstaller*
 BrowserProcessImpl::pnacl_component_installer() {
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
   if (!pnacl_component_installer_) {
     pnacl_component_installer_ =
         base::MakeRefCounted<component_updater::PnaclComponentInstaller>();

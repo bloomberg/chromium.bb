@@ -333,6 +333,7 @@ if (!is_android) {
     ]
     deps = [
       "//components/metrics:test_support",
+      "//components/nacl/common:features",
       "//components/os_crypt:test_support",
       "//content/public/browser:browser",
       "//skia",
@@ -1123,6 +1124,7 @@ test("browser_tests") {
     ":test_support",
     "//base",
     "//chrome/browser/profiling_host:profiling_browsertests",
+    "//components/nacl/common:features",
     "//components/spellcheck:build_features",
     "//components/sync:test_support_model",
     "//extensions/features",
@@ -3529,6 +3531,7 @@ test("unit_tests") {
     "//components/data_reduction_proxy/core/browser:test_support",
     "//components/data_use_measurement/core",
     "//components/metrics/proto",
+    "//components/nacl/common:features",
     "//components/ntp_snippets:test_support",
     "//components/os_crypt:test_support",
     "//components/resources",

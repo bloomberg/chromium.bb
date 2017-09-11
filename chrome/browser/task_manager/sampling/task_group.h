@@ -20,6 +20,7 @@
 #include "chrome/browser/task_manager/providers/task.h"
 #include "chrome/browser/task_manager/sampling/task_group_sampler.h"
 #include "chrome/browser/task_manager/task_manager_observer.h"
+#include "components/nacl/common/features.h"
 
 namespace gpu {
 struct VideoMemoryUsageStats;
@@ -95,9 +96,9 @@ class TaskGroup {
   int64_t user_peak_handles() const { return user_peak_handles_; }
 #endif  // defined(OS_WIN)
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
   int nacl_debug_stub_port() const { return nacl_debug_stub_port_; }
-#endif  // !defined(DISABLE_NACL)
+#endif  // BUILDFLAG(ENABLE_NACL)
 
 #if defined(OS_LINUX)
   int open_fd_count() const { return open_fd_count_; }
@@ -110,7 +111,7 @@ class TaskGroup {
 
   void RefreshWindowsHandles();
 
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
   // |child_process_unique_id| see Task::GetChildProcessUniqueID().
   void RefreshNaClDebugStubPort(int child_process_unique_id);
   void OnRefreshNaClDebugStubPortDone(int port);
@@ -178,9 +179,9 @@ class TaskGroup {
   int64_t user_current_handles_;
   int64_t user_peak_handles_;
 #endif  // defined(OS_WIN)
-#if !defined(DISABLE_NACL)
+#if BUILDFLAG(ENABLE_NACL)
   int nacl_debug_stub_port_;
-#endif  // !defined(DISABLE_NACL)
+#endif  // BUILDFLAG(ENABLE_NACL)
   int idle_wakeups_per_second_;
 #if defined(OS_LINUX)
   // The number of file descriptors currently open by the process.
