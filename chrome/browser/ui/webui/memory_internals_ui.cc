@@ -183,7 +183,7 @@ void MemoryInternalsDOMHandler::HandleDumpProcess(const base::ListValue* args) {
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   base::FilePath output_path = user_data_dir.Append(default_file);
   profiling::ProfilingProcessHost::GetInstance()->RequestProcessDump(
-      pid, output_path);
+      pid, output_path, base::OnceClosure());
   (void)web_ui_;  // Avoid warning about not using private web_ui_ member.
 #else
   if (select_file_dialog_)
@@ -298,7 +298,8 @@ void MemoryInternalsDOMHandler::FileSelected(const base::FilePath& path,
                                              void* params) {
   // The PID to dump was stashed in the params.
   int pid = reinterpret_cast<intptr_t>(params);
-  profiling::ProfilingProcessHost::GetInstance()->RequestProcessDump(pid, path);
+  profiling::ProfilingProcessHost::GetInstance()->RequestProcessDump(
+      pid, path, base::OnceClosure());
   select_file_dialog_ = nullptr;
 }
 
