@@ -3754,6 +3754,20 @@ drm_output_destroy_mode(struct drm_backend *backend, struct drm_mode *mode)
 	free(mode);
 }
 
+/** Destroy a list of drm_modes
+ *
+ * @param backend The backend for releasing mode property blobs.
+ * @param mode_list The list linked by drm_mode::base.link.
+ */
+static void
+drm_mode_list_destroy(struct drm_backend *backend, struct wl_list *mode_list)
+{
+	struct drm_mode *mode, *next;
+
+	wl_list_for_each_safe(mode, next, mode_list, base.link)
+		drm_output_destroy_mode(backend, mode);
+}
+
 static int
 drm_subpixel_to_wayland(int drm_value)
 {
@@ -4806,7 +4820,6 @@ drm_output_destroy(struct weston_output *base)
 {
 	struct drm_output *output = to_drm_output(base);
 	struct drm_backend *b = to_drm_backend(base->compositor);
-	struct drm_mode *drm_mode, *next;
 
 	if (output->page_flip_pending || output->vblank_pending ||
 	    output->atomic_complete_pending) {
@@ -4818,9 +4831,7 @@ drm_output_destroy(struct weston_output *base)
 	if (output->base.enabled)
 		drm_output_deinit(&output->base);
 
-	wl_list_for_each_safe(drm_mode, next, &output->base.mode_list,
-			      base.link)
-		drm_output_destroy_mode(b, drm_mode);
+	drm_mode_list_destroy(b, &output->base.mode_list);
 
 	if (output->pageflip_timer)
 		wl_event_source_remove(output->pageflip_timer);
