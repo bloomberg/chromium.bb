@@ -151,11 +151,6 @@ int WebMainLoop::CreateThreads(
         thread_to_start = &db_thread_;
         options.timer_slack = base::TIMER_SLACK_MAXIMUM;
         break;
-      case WebThread::FILE:
-        thread_to_start = &file_thread_;
-        options = io_message_loop_options;
-        options.timer_slack = base::TIMER_SLACK_MAXIMUM;
-        break;
       case WebThread::IO:
         thread_to_start = &io_thread_;
         options = io_message_loop_options;
@@ -229,9 +224,6 @@ void WebMainLoop::ShutdownThreadsAndCleanUp() {
     switch (thread_id) {
       case WebThread::DB:
         db_thread_.reset();
-        break;
-      case WebThread::FILE:
-        file_thread_.reset();
         break;
       case WebThread::IO:
         io_thread_.reset();

@@ -50,8 +50,7 @@ class TestWebThreadBundle {
     DEFAULT = 0,
     IO_MAINLOOP = 1 << 0,
     REAL_DB_THREAD = 1 << 1,
-    REAL_FILE_THREAD = 1 << 2,
-    REAL_IO_THREAD = 1 << 3,
+    REAL_IO_THREAD = 1 << 2,
   };
 
   TestWebThreadBundle();
@@ -65,7 +64,6 @@ class TestWebThreadBundle {
   std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
   std::unique_ptr<TestWebThread> ui_thread_;
   std::unique_ptr<TestWebThread> db_thread_;
-  std::unique_ptr<TestWebThread> file_thread_;
   std::unique_ptr<TestWebThread> io_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebThreadBundle);
