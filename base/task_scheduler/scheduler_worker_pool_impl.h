@@ -119,7 +119,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
 
   // Friend tests so that they can access |kBlockedWorkersPollPeriod| and
   // BlockedThreshold().
-  friend class TaskSchedulerWorkerPoolBlockingEnterExitTest;
+  friend class TaskSchedulerWorkerPoolBlockingTest;
   friend class TaskSchedulerWorkerPoolMayBlockTest;
 
   // The period between calls to AdjustWorkerCapacity() when the pool is at
