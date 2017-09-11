@@ -28,7 +28,8 @@ config("crc32c_config") {
   }
 
   if (current_cpu == "arm64") {
-    defines += [ "HAVE_ARM64_CRC32C=1" ]
+    # Temporarily disabled for http://crbug.com/763848
+    # defines += [ "HAVE_ARM64_CRC32C=0" ]
   }
 
   if (is_linux || is_chromeos) {
