@@ -374,10 +374,6 @@ ExtensionPort* MessagingBindings::CreateNewPortWithId(const PortId& id) {
       .first->second.get();
 }
 
-base::WeakPtr<MessagingBindings> MessagingBindings::GetWeakPtr() {
-  return weak_ptr_factory_.GetWeakPtr();
-}
-
 void MessagingBindings::PostMessage(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   // Arguments are (int32_t port_id, string message).
