@@ -950,6 +950,31 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, NewNamedWindow) {
   }
 }
 
+// Test that HasOriginalOpener() tracks provenance through closed WebContentses.
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       HasOriginalOpenerTracksThroughClosedWebContents) {
+  const GURL blank_url = GURL("about:blank");
+
+  Shell* shell1 = shell();
+  EXPECT_TRUE(NavigateToURL(shell1, blank_url));
+
+  Shell* shell2 = OpenPopup(shell1, blank_url, "window2");
+  Shell* shell3 = OpenPopup(shell2, blank_url, "window3");
+
+  EXPECT_EQ(shell2->web_contents(),
+            WebContents::FromRenderFrameHost(
+                shell3->web_contents()->GetOriginalOpener()));
+  EXPECT_EQ(shell1->web_contents(),
+            WebContents::FromRenderFrameHost(
+                shell2->web_contents()->GetOriginalOpener()));
+
+  shell2->Close();
+
+  EXPECT_EQ(shell1->web_contents(),
+            WebContents::FromRenderFrameHost(
+                shell3->web_contents()->GetOriginalOpener()));
+}
+
 // TODO(clamy): Make the test work on Windows and on Mac. On Mac and Windows,
 // there seem to be an issue with the ShellJavascriptDialogManager.
 // Flaky on all platforms: https://crbug.com/655628
