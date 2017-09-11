@@ -1069,7 +1069,7 @@ bool AppListView::HandleScroll(int offset, ui::EventType type) {
       return true;
     case ui::ET_SCROLL:
     case ui::ET_SCROLL_FLING_START: {
-      if (fabs(offset) > kAppListMinScrollToSwitchStates) {
+      if (abs(offset) > kAppListMinScrollToSwitchStates) {
         SetState(offset < 0 ? FULLSCREEN_ALL_APPS : CLOSED);
         if (app_list_state_ == FULLSCREEN_ALL_APPS) {
           UMA_HISTOGRAM_ENUMERATION(kAppListPeekingToFullscreenHistogram,
