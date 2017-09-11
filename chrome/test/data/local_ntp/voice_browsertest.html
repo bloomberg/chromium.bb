@@ -4,13 +4,14 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 <head>
-  <script src="chrome-search://local-ntp/voice.js"></script>
+  <script src="chrome-search://local-ntp/voice.js" charset="utf-8"></script>
   <link rel="stylesheet" href="chrome-search://local-ntp/voice.css"></link>
-  <script src="test_utils.js"></script>
+  <script src="test_utils.js" charset="utf-8"></script>
   <!-- Browser test script files for individual modules: -->
-  <script src="voice_microphone_browsertest.js"></script>
-  <script src="voice_text_browsertest.js"></script>
-  <script src="voice_view_browsertest.js"></script>
+  <script src="voice_microphone_browsertest.js" charset="utf-8"></script>
+  <script src="voice_text_browsertest.js" charset="utf-8"></script>
+  <script src="voice_view_browsertest.js" charset="utf-8"></script>
+  <script src="voice_speech_browsertest.js" charset="utf-8"></script>
   <!-- Templates: (keep in sync with local_ntp.html) -->
   <template id="voice-microphone-template">
     <div id="voice-button-container" class="button-container">
@@ -59,6 +60,19 @@
         </div>
       </div>
       <div id="voice-close-button" class="close-button">&times;</div>
+    </div>
+  </template>
+  <template id="voice-speech-template">
+    <div id="ntp-contents">
+      <div id="search">
+        <div id="fakebox">
+          <div id="fakebox-text"></div>
+          <input id="fakebox-input" autocomplete="off" tabIndex="-1" type="url"
+              aria-hidden="true">
+          <div id="fakebox-cursor"></div>
+          <div id="fakebox-microphone" tabIndex="0" hidden></div>
+        </div>
+      </div>
     </div>
   </template>
 </head>

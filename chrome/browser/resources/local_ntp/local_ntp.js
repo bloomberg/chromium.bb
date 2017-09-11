@@ -82,7 +82,7 @@ var IDS = {
   FAKEBOX: 'fakebox',
   FAKEBOX_INPUT: 'fakebox-input',
   FAKEBOX_TEXT: 'fakebox-text',
-  FAKEBOX_SPEECH: 'fakebox-speech',
+  FAKEBOX_MICROPHONE: 'fakebox-microphone',
   LOGO: 'logo',
   NOTIFICATION: 'mv-notice',
   NOTIFICATION_CLOSE_BUTTON: 'mv-notice-x',
@@ -428,7 +428,7 @@ function isFakeboxFocused() {
  */
 function isFakeboxClick(event) {
   return $(IDS.FAKEBOX).contains(event.target) &&
-      !$(IDS.FAKEBOX_SPEECH).contains(event.target);
+      !$(IDS.FAKEBOX_MICROPHONE).contains(event.target);
 }
 
 
@@ -522,7 +522,7 @@ function init() {
     if (configData.isVoiceSearchEnabled) {
       speech.init(
           configData.googleBaseUrl, configData.translatedStrings,
-          $(IDS.FAKEBOX_SPEECH), searchboxApiHandle);
+          $(IDS.FAKEBOX_MICROPHONE), searchboxApiHandle);
     }
 
     // Listener for updating the key capture state.

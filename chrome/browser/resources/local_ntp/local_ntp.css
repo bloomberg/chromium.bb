@@ -168,7 +168,7 @@ html[dir=rtl] #fakebox-cursor {
   right: 13px;
 }
 
-#fakebox-speech {
+#fakebox-microphone {
   background: url(googlemic_clr_24px.svg) no-repeat center;
   background-size: 24px 24px;
   cursor: pointer;
@@ -179,7 +179,7 @@ html[dir=rtl] #fakebox-cursor {
   width: 17px;
 }
 
-html[dir=rtl] #fakebox-speech {
+html[dir=rtl] #fakebox-microphone {
   left: 0;
   right: auto;
 }

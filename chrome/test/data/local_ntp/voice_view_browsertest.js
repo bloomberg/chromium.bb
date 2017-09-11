@@ -450,6 +450,21 @@ test.view.testClickSupportLinkWithError = function() {
 };
 
 
+/**
+ * Test that showing an unknown error message is handled gracefully.
+ */
+test.view.testShowingUnknownErrorDoesNotProduceAnError = function() {
+  view.show();
+  view.showError(RecognitionError.OTHER);
+
+  test.view.assertViewActive(
+      /*interim=*/test.view.Text.BLANK,
+      /*final=*/test.view.Text.BLANK,
+      /*containerClass=*/view.ERROR_RECEIVED_CLASS_,
+      /*levelAnimationActive=*/false);
+};
+
+
 // ***************************** HELPER FUNCTIONS *****************************
 // Helper functions used in tests.
 

@@ -361,6 +361,17 @@ IN_PROC_BROWSER_TEST_F(LocalNTPVoiceJavascriptTest, TextTests) {
   EXPECT_TRUE(success);
 }
 
+IN_PROC_BROWSER_TEST_F(LocalNTPVoiceJavascriptTest, SpeechTests) {
+  content::WebContents* active_tab =
+      OpenNewTab(browser(), GURL(chrome::kChromeUINewTabURL));
+
+  // Run the tests.
+  bool success = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      active_tab, "!!runSimpleTests('speech')", &success));
+  EXPECT_TRUE(success);
+}
+
 IN_PROC_BROWSER_TEST_F(LocalNTPVoiceJavascriptTest, ViewTests) {
   content::WebContents* active_tab =
       OpenNewTab(browser(), GURL(chrome::kChromeUINewTabURL));
@@ -600,13 +611,13 @@ IN_PROC_BROWSER_TEST_F(LocalNTPVoiceSearchSmokeTest,
             active_tab->GetController().GetVisibleEntry()->GetURL());
 
   // Make sure the microphone icon in the fakebox is present and visible.
-  bool fakebox_speech_is_visible = false;
+  bool fakebox_microphone_is_visible = false;
   ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
       active_tab,
-      "!!document.getElementById('fakebox-speech') && "
-      "!document.getElementById('fakebox-speech').hidden",
-      &fakebox_speech_is_visible));
-  EXPECT_TRUE(fakebox_speech_is_visible);
+      "!!document.getElementById('fakebox-microphone') && "
+      "!document.getElementById('fakebox-microphone').hidden",
+      &fakebox_microphone_is_visible));
+  EXPECT_TRUE(fakebox_microphone_is_visible);
 
   // We shouldn't have gotten any console error messages.
   EXPECT_TRUE(console_observer.message().empty()) << console_observer.message();

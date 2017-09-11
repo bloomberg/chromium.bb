@@ -36,20 +36,20 @@ function getChromeUILanguage() {
 
 
 /**
- * Enum for keycodes.
- * @enum {number}
+ * Enum for keyboard event codes.
+ * @enum {!string}
  * @const
  */
 const KEYCODE = {
-  ENTER: 13,
-  ESC: 27,
-  PERIOD: 190
+  ENTER: 'Enter',
+  ESC: 'Escape',
+  PERIOD: 'Period'
 };
 
 
 /**
  * The set of possible recognition errors.
- * @enum {number}
+ * @enum {!number}
  * @const
  */
 const RecognitionError = {
@@ -113,7 +113,7 @@ speech.messages = {
  * @private
  */
 speech.State_ = {
-  // Initial state of the controller. Is never re-entered.
+  // Initial state of the controller. It is never re-entered.
   // The only state from which the |speech.init()| method can be called.
   // The UI overlay is hidden, recognition is inactive.
   UNINITIALIZED: -1,
@@ -258,7 +258,7 @@ speech.recognition_;
 
 /**
  * Initialize the speech module as part of the local NTP. Adds event handlers
- * and shows the fakebox speech microphone icon.
+ * and shows the fakebox microphone icon.
  * @param {!string} googleBaseUrl Base URL for sending queries to Search.
  * @param {!Object} translatedStrings Dictionary of localized string messages.
  * @param {!HTMLElement} fakeboxMicrophoneElem Fakebox microphone icon element.
@@ -309,27 +309,6 @@ speech.init = function(
 
 
 /**
- * Resets the internal state of Voice Search and disables the speech
- * recognition interface. Only used for testing.
- * @param {HTMLElement} fakeboxMicrophoneElem Fakebox microphone icon element.
- * @param {!Object} searchboxApiHandle SearchBox API handle.
- * @private
- */
-speech.uninit_ = function(fakeboxMicrophoneElem, searchboxApiHandle) {
-  speech.reset_();
-  speech.googleBaseUrl_ = null;
-  speech.messages = {};
-  speech.currentState_ = speech.State_.UNINITIALIZED;
-  fakeboxMicrophoneElem.hidden = true;
-  fakeboxMicrophoneElem.title = '';
-  fakeboxMicrophoneElem.onmouseup = null;
-  window.removeEventListener('keydown', speech.onKeyDown);
-  searchboxApiHandle.onfocuschange = null;
-  speech.recognition_ = null;
-};
-
-
-/**
  * Initializes and configures the speech recognition API.
  * @private
  */
@@ -361,14 +340,14 @@ speech.start_ = function() {
   document.addEventListener(
       'webkitvisibilitychange', speech.onVisibilityChange_, false);
 
-  if (!speech.isRecognitionInitialized_()) {
+  // Initialize |speech.recognition_| if it isn't already.
+  if (!speech.recognition_) {
     speech.initWebkitSpeech_();
   }
 
   // If |speech.start_()| is called too soon after |speech.stop_()| then the
   // recognition interface hasn't yet reset and an error occurs. In this case
   // we need to hard-reset it and reissue the |recognition_.start()| command.
-  // TODO(oskopek): Add tests + possibly fix the root cause.
   try {
     speech.recognition_.start();
     speech.currentState_ = speech.State_.STARTED;
@@ -378,7 +357,6 @@ speech.start_ = function() {
       speech.recognition_.start();
       speech.currentState_ = speech.State_.STARTED;
     } catch (error2) {
-      speech.currentState_ = speech.State_.STOPPED;
       speech.stop_();
     }
   }
@@ -390,19 +368,10 @@ speech.start_ = function() {
  * @private
  */
 speech.stop_ = function() {
+  speech.recognition_.abort();
   speech.currentState_ = speech.State_.STOPPED;
   view.hide();
   speech.reset_();
-};
-
-
-/**
- * Aborts speech recognition and calls |speech.stop_()|.
- * @private
- */
-speech.abort_ = function() {
-  speech.recognition_.abort();
-  speech.stop_();
 };
 
 
@@ -558,7 +527,6 @@ speech.handleRecognitionOnNoMatch_ = function() {
  */
 speech.handleRecognitionEnd_ = function() {
   window.clearTimeout(speech.idleTimer_);
-  window.clearTimeout(speech.permissionTimer_);
 
   let error;
   switch (speech.currentState_) {
@@ -589,6 +557,16 @@ speech.handleRecognitionEnd_ = function() {
 
 
 /**
+ * Determines whether the user's browser is probably running on a Mac.
+ * @return {boolean} True iff the user's browser is running on a Mac.
+ * @private
+ */
+speech.isUserAgentMac_ = function() {
+  return window.navigator.userAgent.includes('Macintosh');
+};
+
+
+/**
  * Handles the following keyboard actions.
  * - <CTRL> + <SHIFT> + <.> starts voice input(<CMD> + <SHIFT> + <.> on mac).
  * - <ESC> aborts voice input when the recognition interface is active.
@@ -596,23 +574,19 @@ speech.handleRecognitionEnd_ = function() {
  * @param {KeyboardEvent} event The keydown event.
  */
 speech.onKeyDown = function(event) {
-  function isUserAgentMac(userAgent) {
-    return userAgent.includes('Macintosh');
-  }
-
   if (!speech.isRecognizing_()) {
-    const ctrlKeyPressed = event.ctrlKey ||
-        (isUserAgentMac(window.navigator.userAgent) && event.metaKey);
+    const ctrlKeyPressed =
+        event.ctrlKey || (speech.isUserAgentMac_() && event.metaKey);
     if (speech.currentState_ == speech.State_.READY &&
-        event.keyCode == KEYCODE.PERIOD && event.shiftKey && ctrlKeyPressed) {
+        event.code == KEYCODE.PERIOD && event.shiftKey && ctrlKeyPressed) {
       speech.toggleStartStop();
     }
   } else {
     // Ensures that keyboard events are not propagated during voice input.
     event.stopPropagation();
-    if (event.keyCode == KEYCODE.ESC) {
-      speech.abort_();
-    } else if (event.keyCode == KEYCODE.ENTER && speech.finalResult_) {
+    if (event.code == KEYCODE.ESC) {
+      speech.stop_();
+    } else if (event.code == KEYCODE.ENTER && speech.finalResult_) {
       speech.submitFinalResult_();
     }
   }
@@ -638,7 +612,7 @@ speech.onIdleTimeout_ = function() {
     case speech.State_.SPEECH_RECEIVED:
     case speech.State_.RESULT_RECEIVED:
     case speech.State_.ERROR_RECEIVED:
-      speech.abort_();
+      speech.stop_();
       break;
   }
 };
@@ -655,7 +629,7 @@ speech.onVisibilityChange_ = function() {
   }
 
   if (document.webkitHidden) {
-    speech.abort_();
+    speech.stop_();
   }
 };
 
@@ -665,8 +639,18 @@ speech.onVisibilityChange_ = function() {
  */
 speech.onOmniboxFocused = function() {
   if (!speech.isUiDefinitelyHidden_()) {
-    speech.abort_();
+    speech.stop_();
   }
+};
+
+
+/**
+ * Change the location of this tab to the new URL. Used for query submission.
+ * @param {!URL} The URL to navigate to.
+ * @private
+ */
+speech.navigateToUrl_ = function(url) {
+  window.location.href = url.href;
 };
 
 
@@ -676,22 +660,23 @@ speech.onOmniboxFocused = function() {
  */
 speech.submitFinalResult_ = function() {
   window.clearTimeout(speech.idleTimer_);
-
   if (!speech.finalResult_) {
     throw new Error('Submitting empty query.');
   }
 
-  // Getting |speech.finalResult_| needs to happen before stopping speech.
-  const encodedQuery =
-      encodeURIComponent(speech.finalResult_).replace(/%20/g, '+');
-  const queryUrl = speech.googleBaseUrl_ +
-      // Add the actual query.
-      'search?q=' + encodedQuery +
-      // Add a parameter to indicate that this request is a voice search.
-      '&gs_ivs=1';
+  const searchParams = new URLSearchParams();
+  // Add the encoded query. Getting |speech.finalResult_| needs to happen
+  // before stopping speech.
+  searchParams.append('q', speech.finalResult_);
+  // Add a parameter to indicate that this request is a voice search.
+  searchParams.append('gs_ivs', 1);
+
+  // Build the query URL.
+  const queryUrl = new URL('/search', speech.googleBaseUrl_);
+  queryUrl.search = searchParams;
 
   speech.stop_();
-  window.location.href = queryUrl;
+  speech.navigateToUrl_(queryUrl);
 };
 
 
@@ -808,24 +793,13 @@ speech.isUiDefinitelyHidden_ = function() {
 
 
 /**
- * Check if the Web Speech API is initialized and event functions are set.
- * @return {boolean} True if recognition is initialized.
- * @private
- */
-speech.isRecognitionInitialized_ = function() {
-  // TODO(oskopek): Do handlers of |recognition_| get reset? Verify and test.
-  return !!speech.recognition_;
-};
-
-
-/**
  * Toggles starting and stopping of speech recognition by the speech tool.
  */
 speech.toggleStartStop = function() {
   if (speech.currentState_ == speech.State_.READY) {
     speech.start_();
   } else {
-    speech.abort_();
+    speech.stop_();
   }
 };
 
@@ -847,7 +821,7 @@ speech.onClick_ = function(shouldSubmit, shouldRetry, navigatingAway) {
     // If the user clicks on a "Learn more" or "Details" support page link
     // from an error message, do nothing, and let Chrome navigate to that page.
   } else {
-    speech.abort_();
+    speech.stop_();
   }
 };
 
@@ -1078,7 +1052,7 @@ text.getErrorMessage_ = function(error) {
     case RecognitionError.LANGUAGE_NOT_SUPPORTED:
       return speech.messages.languageError;
     default:
-      throw new Error('Illegal RecognitionError value: ' + error);
+      return '';
   }
 };
 
