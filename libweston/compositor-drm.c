@@ -416,6 +416,8 @@ struct drm_head {
 	struct drm_property_info props_conn[WDRM_CONNECTOR__COUNT];
 
 	struct backlight *backlight;
+
+	drmModeModeInfo inherited_mode;	/**< Original mode on the connector */
 };
 
 struct drm_output {
@@ -4560,12 +4562,9 @@ drm_output_set_mode(struct weston_output *base,
 	struct drm_head *head = to_drm_head(weston_output_get_first_head(base));
 
 	struct drm_mode *current;
-	drmModeModeInfo crtc_mode;
 
-	if (connector_get_current_mode(head->connector, b->drm.fd, &crtc_mode) < 0)
-		return -1;
-
-	current = drm_output_choose_initial_mode(b, output, mode, modeline, &crtc_mode);
+	current = drm_output_choose_initial_mode(b, output, mode, modeline,
+						 &head->inherited_mode);
 	if (!current)
 		return -1;
 
@@ -5078,6 +5077,13 @@ drm_head_create(struct drm_backend *backend, uint32_t connector_id,
 	if (head->connector->connector_type == DRM_MODE_CONNECTOR_LVDS ||
 	    head->connector->connector_type == DRM_MODE_CONNECTOR_eDP)
 		weston_head_set_internal(&head->base);
+
+	if (connector_get_current_mode(head->connector, backend->drm.fd,
+				       &head->inherited_mode) < 0) {
+		weston_log("Failed to retrieve current mode from connector %d.\n",
+			   head->connector_id);
+		/* Continue, inherited_mode was memset to zero. */
+	}
 
 	weston_compositor_add_head(backend->compositor, &head->base);
 
