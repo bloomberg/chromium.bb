@@ -18,6 +18,7 @@
 <translation id="1209206284964581585">Pagaidām slēpt</translation>
 <translation id="1219674500290482172">Nevar izveidot savienojumu ar internetu.</translation>
 <translation id="1254117744268754948">Mapes izvēle</translation>
+<translation id="1265739287306757398">Uzzināt, kā to izdarīt</translation>
 <translation id="1272079795634619415">Apturēt</translation>
 <translation id="129553762522093515">Nesen aizvērtas</translation>
 <translation id="1323735185997015385">Dzēst</translation>
@@ -47,7 +48,6 @@ Piemēram, dažas vietnes var atbildēt uz šo pieprasījumu un rādīt reklāma
 <translation id="1690731385917361335">Nav neviena vienuma</translation>
 <translation id="1700629756560807968">Atlasītas: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="1740468249224277719">Divreiz pieskarieties, lai instalētu.</translation>
-<translation id="1749561566933687563">Sinhronizējiet grāmatzīmes</translation>
 <translation id="1752547299766512813">Sagl. paroles</translation>
 <translation id="1753905327828125965">Visapmeklētākais</translation>
 <translation id="1809939268435598390">Dzēst mapi</translation>
@@ -60,12 +60,14 @@ Piemēram, dažas vietnes var atbildēt uz šo pieprasījumu un rādīt reklāma
 <translation id="1952728750904661634">Pierakstīšanās pārvaldītā kontā</translation>
 <translation id="1974060860693918893">Papildu</translation>
 <translation id="1989112275319619282">Pārlūkot</translation>
+<translation id="2015722694326466240">Lai skatītu paroles, vispirms ierīcei ir jāiestata piekļuves kods.</translation>
 <translation id="2068952045031577364">Iepriekšējā nedēļa</translation>
 <translation id="2079545284768500474">Atsaukt</translation>
 <translation id="209018056901015185">Pieprasīt datora vietni</translation>
 <translation id="2103075008456228677">Atvērt history.google.com</translation>
 <translation id="2116625576999540962">Pārvietoti vienumi: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="2149973817440762519">Rediģēt grāmatzīmes</translation>
+<translation id="2154710561487035718">Kopēt URL</translation>
 <translation id="2230173723195178503">Tīmekļa lapa ielādēta</translation>
 <translation id="2267753748892043616">Pievienot kontu</translation>
 <translation id="2273327106802955778">Izvēlne Vairāk</translation>
@@ -134,7 +136,6 @@ Piemēram, dažas vietnes var atbildēt uz šo pieprasījumu un rādīt reklāma
 <translation id="3474649192738347024">Veidlapas aizpildītas.</translation>
 <translation id="3478058380795961209">Der. term. mēn.</translation>
 <translation id="3482959374254649722">Notiek ciļņu sinhronizācija...</translation>
-<translation id="3487093336331957349">Meklēšanas un vietņu ieteikumi</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" /> par ieteikto saturu.</translation>
 <translation id="3494788280727468875">Apstiprināt pārlūkošanas datu notīrīšanu</translation>
 <translation id="3519193562722059437">Atveriet cilni, lai pārlūkotu tīmekli.</translation>
@@ -155,6 +156,7 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="3779810277399252432">Nav interneta savienojuma.</translation>
 <translation id="3783017676699494206">Saglabāt attēlu</translation>
 <translation id="385051799172605136">Atpakaļ</translation>
+<translation id="3857761338463387655">Izveidot e-pastu ar:</translation>
 <translation id="3897092660631435901">Izvēlne</translation>
 <translation id="3928666092801078803">Datu apvienošana</translation>
 <translation id="3950820424414687140">Pierakstīties</translation>
@@ -182,6 +184,8 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="4508750114462689118">Aizvērt pierakstīšanās piedāvājumu</translation>
 <translation id="4526249700380860531">Skatīt un pārvaldīt saglabātās paroles vietnē <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Mēģiniet pierakstīties vēlreiz.</translation>
+<translation id="457386861538956877">Vēl...</translation>
+<translation id="461440297010471931">Google meklēšana</translation>
 <translation id="4620246317052452550">Lapas, kuras esat lasījis</translation>
 <translation id="4636930964841734540">Informācija</translation>
 <translation id="4659667755519643272">Atvērt ciļņu pārslēdzēju</translation>
@@ -190,6 +194,7 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 Jūsu dati ir šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi. Lai sāktu sinhronizēšanu, ievadiet ieejas frāzi.</translation>
 <translation id="473775607612524610">Atjaunināt</translation>
 <translation id="481968316161811770">Sīkfaili, vietņu dati</translation>
+<translation id="4854345657858711387">Piekļuves koda iestatīšana</translation>
 <translation id="4860895144060829044">Zvanīt</translation>
 <translation id="4875622588773761625">Vai vēlaties, lai <ph name="PASSWORD_MANAGER_BRAND" /> atjauninātu jūsu paroli šai vietnei?</translation>
 <translation id="4881695831933465202">Atvērt</translation>
@@ -242,6 +247,7 @@ Funkcija Handoff ir jāiespējo arī iestatījumu sadaļā General (Vispārīgi)
 <translation id="5871497086027727873">Tika pārvietots 1 vienums.</translation>
 <translation id="5911030830365207728">Google tulkotājs</translation>
 <translation id="5916664084637901428">Iesl.</translation>
+<translation id="5948291296578561264">Šādi varat saglabāt fotoattēlus savā fotoattēlu bibliotēkā.</translation>
 <translation id="5953603475187800576">Rādīt adreses un kredītkartes no pakalpojuma Google Payments</translation>
 <translation id="5955891643922670672">Tiek skatīta bezsaistes versija</translation>
 <translation id="5964480694698977962">Izveidot jaunu inkognito cilni.</translation>
@@ -342,6 +348,7 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="7649070708921625228">Palīdzība</translation>
 <translation id="7658239707568436148">Atcelt</translation>
 <translation id="7671141431838911305">INSTALĒT</translation>
+<translation id="7677825787905683892">Noklusējuma e-pasta lietotnes atlasīšana</translation>
 <translation id="7765158879357617694">Pārvietot</translation>
 <translation id="7769602470925380267">Piekrist un izrakstīties</translation>
 <translation id="7772032839648071052">Apstipriniet ieejas frāzi</translation>
@@ -405,6 +412,7 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="9083392325882095631">1 vienums</translation>
 <translation id="9100610230175265781">Jāievada ieejas frāze.</translation>
 <translation id="9148126808321036104">Pierakstieties vēlreiz</translation>
+<translation id="914898748153555155">Jebkurā brīdī varat mainīt šo preferenci Chrome iestatījumos.</translation>
 <translation id="9157836665414082580">Nerādīt dialoglodziņus</translation>
 <translation id="9188680907066685419">Izrakstīšanās no pārvaldīta konta</translation>
 <translation id="9203116392574189331">Handoff</translation>

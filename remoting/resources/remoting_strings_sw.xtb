@@ -26,6 +26,7 @@ Kwa maelezo kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (http://
 <translation id="1643640058022401035">Kuondoka kwenye ukurasa huu kutakamilisha kipindi chako cha Chromoting.</translation>
 <translation id="1654128982815600832">Inawasha miunganisho ya mbali kwa kompyuta hii...</translation>
 <translation id="170207782578677537">Ilishindwa kusajili kompyuta hii.</translation>
+<translation id="1727412735341161734">Kompyuta ya Mbali</translation>
 <translation id="174018511426417793">Huna kompyuta zilizosajiliwa. Ili uwashe miunganisho ya mbali, sakinisha Eneo-kazi la Mbali la Chrome hapo na ubofye “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="1742469581923031760">Inaunganisha...</translation>
 <translation id="1770394049404108959">Siwezi kuifungua programu.</translation>
@@ -41,7 +42,7 @@ Kwa maelezo kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (http://
 <translation id="2038229918502634450">Pangishi inazima halafu iwashe, ili izingatie mabadiliko ya sera.</translation>
 <translation id="2046651113449445291">Viteja vifuatavyo vimeoanishwa na kompyuta hii na vinaweza kuunganisha bila kutoa PIN. Unaweza kufuta ruhusa hii wakati wowote, iwe kwa kimoja, au viteja vyote.</translation>
 <translation id="2078880767960296260">Mchakato wa Seva Pangishi</translation>
-<translation id="20876857123010370">Hali ya padi ya ufuatiliaji</translation>
+<translation id="20876857123010370">Hali ya padi ya kusogeza</translation>
 <translation id="2089514346391228378">Miunganisho ya mbali ya kompyuta hii imefungwa.</translation>
 <translation id="2118549242412205620">Fikia kompyuta zako kwa usalama kutoka kifaa chako cha Android.
 
@@ -94,8 +95,11 @@ Kwa maelezo kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (http://
 <translation id="3150823315463303127">Pangishi haijafaulu kusoma sera.</translation>
 <translation id="3194245623920924351">Kompyuta ya Mbali ya Chrome</translation>
 <translation id="3197730452537982411">Kompyuta ya Mbali</translation>
+<translation id="324272851072175193">Tuma maelezo haya kupitia barua pepe</translation>
 <translation id="3258789396564295715">Unaweza kufikia kompyuta hii kwa usalama kutumia Eneo-kazi la Mbali la Chrome.</translation>
 <translation id="3286521253923406898">Kidhibiti cha Seva Pangishi ya Chromoting</translation>
+<translation id="3305934114213025800"><ph name="PRODUCT_NAME" /> ingependa kufanya mabadiliko.</translation>
+<translation id="331779822864701136">• Tumeongeza uwezo wa kutumia Android 8.0 Oreo.</translation>
 <translation id="332624996707057614">Badilisha jina la kompyuta</translation>
 <translation id="3339299787263251426">Fikia kompyuta yako kwa njia salama kwenye Intaneti</translation>
 <translation id="3360306038446926262">Windows</translation>
@@ -104,6 +108,12 @@ Kwa maelezo kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (http://
 <translation id="3385242214819933234">Mmiliki wa seva pangishi si sahihi.</translation>
 <translation id="3403830762023901068">Mipangilio ya sera hairuhusu kushiriki kompyuta hii kama mpangishaji wa Chromoting. Wasiliana na msimamizi wa mfumo wako kwa usaidizi.</translation>
 <translation id="3423542133075182604">Mchakato wa Mbali wa Ufunguo wa Usalama</translation>
+<translation id="3426467947138417795">Programu ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali
+Kompyuta ya Mbali
+Kufikia Kompyuta ya Mbali
+Ufikiaji wa Mbali
+Ufikiaji Kutoka Mbali
+Usaidizi wa Kompyuta kutoka Mbali</translation>
 <translation id="3581045510967524389">Haikuweza kuunganisha kwenye mtandao. Tafadhali angalia kuwa kifaa chako kipo mtandaoni.</translation>
 <translation id="3596628256176442606">Huduma hii inawasha miunganisho inayoingia kutoka kwenye viteja vya Chromoting.</translation>
 <translation id="3606997049964069799">Hujaingia kwenye Chromium. Tafadhali ingia na ujaribu tena.</translation>
@@ -112,6 +122,13 @@ Kwa maelezo kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (http://
 <translation id="3695446226812920698">Pata maelezo</translation>
 <translation id="3718805989288361841">Kuna hitilafu ya mipangilio ya sera ya Programu ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali.  Wasiliana na msimamizi wako ili upate usaidizi.</translation>
 <translation id="3776024066357219166">Kipindi chako cha Eneo-kazi la Mbali la Chrome kimekamilika.</translation>
+<translation id="3788372335219293587">Fikia kompyuta yako kwa usalama ukitumia kifaa chako cha iOS. Ni huduma isiyolipishwa ambayo inafanya kazi haraka na kwa urahisi.
+
+• Kwenye kompyuta ambayo ungependa kufikia kwa mbali, tafuta Programu ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali katika Duka la Chrome kwenye Wavuti https://chrome.google.com/remotedesktop
+• Sakinisha Programu ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali na ufuate maagizo ili ukamilishe shughuli ya kusakinisha.
+• Kwenye kifaa chako cha iOS, fungua programu na ugonge kompyuta yako yoyote iliyo mtandaoni ili uunganishe.
+
+Kwa maelezo zaidi kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (http://goo.gl/SyrVzj).</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Tafadhali thibitisha akaunti yako na PIN hapa chini ili kuruhusu ufikiaji kwa Kompyuta ya Mbali ya Chrome</translation>
 <translation id="3897092660631435901">Menyu</translation>
@@ -125,6 +142,7 @@ Kwa maelezo kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (http://
 <translation id="405887016757208221">Kompyuta ya mbali imeshindwa kuanzisha kipindi. Tatizo likiendelea tafadhali jaribu kuweka mipangilio ya seva pangishi tena.</translation>
 <translation id="4068946408131579958">Miunganisho yote</translation>
 <translation id="409800995205263688">DOKEZO: Mipangilio ya sera inakubali miunganisho kati ya kompyuta zilizo katika mtandao wako.</translation>
+<translation id="4145029455188493639">Umeingia katika akaunti ukitumia <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Baadhi ya vipengele vinavyohitajika havipo. Tafadhali hakikisha kuwa umesakinisha toleo jipya la programu na ujaribu tena.</translation>
 <translation id="4156740505453712750">Ili ulinde ufikiaji kwenye kompyuta hii, tafadhali chagua PIN ya <ph name="BOLD_START" />angalau tarakimu sita<ph name="BOLD_END" />. PIN hii itahitajika utakapounganisha kutoka eneo jingine.</translation>
 <translation id="4176825807642096119">Msimbo wa ufikiaji</translation>
@@ -189,9 +207,10 @@ Kwa maelezo kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (http://
 <translation id="5625493749705183369">Fikia kompyuta zingine au uruhusu mtumiaji mwingine kufikia kompyuta yako kwa usalama kwenye Intaneti.</translation>
 <translation id="5702987232842159181">Umeunganishwa:</translation>
 <translation id="5708869785009007625">Kwa sasa kompyuta yako inashirikiwa na <ph name="USER" />.</translation>
+<translation id="5750083143895808682">Umeingia katika akaunti ukitumia <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="5773590752998175013">Tarehe ya kuoanisha</translation>
 <translation id="579702532610384533">Unganisha upya</translation>
-<translation id="5810269635982033450">Skrini inafanya kazi kama padi ya ufuatiliaji</translation>
+<translation id="5810269635982033450">Skrini inafanya kazi kama padi ya kusogeza</translation>
 <translation id="5841343754884244200">Onyesha chaguo</translation>
 <translation id="5843054235973879827">Kwa nini hii ni salama?</translation>
 <translation id="5859141382851488196">Dirisha jipya...</translation>
@@ -244,9 +263,13 @@ Kwa maelezo kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (http://
 <translation id="701976023053394610">Usaidizi wa Mbali</translation>
 <translation id="7038683108611689168">Tusaidie kuboresha Chromoting kwa kuturuhusu tukusanye takwimu za matumizi na ripoti za hitilafu.</translation>
 <translation id="7067321367069083429">Skrini inafanya kazi kama skrini ya kugusa</translation>
+<translation id="7116737094673640201">Karibu kwenye Programu ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali</translation>
 <translation id="7144878232160441200">Jaribu tena</translation>
 <translation id="7149517134817561223">Programu ya kupeleka amri kwa mpangishi wa kompyuta ya mbali kwenye Chrome.</translation>
 <translation id="7215059001581613786">Tafadhali ingiza PIN iliyo na tarakimu sita au zaidi.</translation>
+<translation id="7237767047212540055">Kwenye kompyuta ambayo ungependa kufikia kwa mbali, fungua Chrome na uende kwenye <ph name="INSTALLATION_LINK" />
+Sakinisha Programu ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali na ufuate maagizo ili ukamilishe shughuli ya kusakinisha.
+Baada ya kusakinisha, utaweza kufikia kompyuta kwenye ukurasa huu kwa kuweka PIN au msimbo wa ufikiaji</translation>
 <translation id="7312846573060934304">Seva pangishi iko nje ya mtandao.</translation>
 <translation id="7319983568955948908">Acha Kushiriki</translation>
 <translation id="7401733114166276557">Eneo-kazi la Mbali la Chrome</translation>

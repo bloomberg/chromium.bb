@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
-<translation id="1326317727527857210">Чтобы получить доступ к вкладкам на всех ваших устройствах, войдите в Chrome.</translation>
 <translation id="1685087038067318291">Если на устройстве включен Bluetooth, Chrome находит и анонимно отправляет в Google веб-страницы, связанные с находящимися рядом объектами, а затем предлагает вам интересные и полезные ресурсы. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">Chrome определил, что сертификат сайта выпущен компанией <ph name="ISSUER" />.</translation>

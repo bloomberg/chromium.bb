@@ -74,11 +74,18 @@
 <translation id="1330145147221172764">Ekran klavyesini etkinleştir</translation>
 <translation id="1330985749576490863"><ph name="PRODUCT_OS_NAME" />, Files uygulamasında hücresel bağlantılar üzerinden Google Drive erişimini devre dışı bırakır</translation>
 <translation id="13356285923490863">Politika Adı</translation>
+<translation id="134402861816424823">Kullanıcının kullanamayacağı yazıcıları belirtir.
+
+      Bu politika yalnızca DeviceNativePrintersAccessMode için BlacklistRestriction değeri seçilirse kullanılır.
+
+      Bu politika kullanılırsa, bu politikada listelenen kimlikler dışında kalan tüm yazıcılar kullanıcıya sağlanır.
+      </translation>
 <translation id="1353966721814789986">Başlangıç sayfaları</translation>
 <translation id="1359553908012294236">Bu politika doğru seçeneğine ayarlanırsa veya yapılandırılmazsa <ph name="PRODUCT_NAME" />, misafir modunda giriş yapılmasına izin verir. Misafir modunda girişler, tüm pencerelerin gizli modda açıldığı <ph name="PRODUCT_NAME" /> profilleridir.
 
       Bu politika yanlış seçeneğine ayarlanırsa, <ph name="PRODUCT_NAME" /> misafir profillerinin başlatılmasına izin vermez.</translation>
 <translation id="1363275621236827384">Quirks Server'dan donanım profillerini sorgulamayı etkinleştir</translation>
+<translation id="1393485621820363363">Etkinleştirilmiş kurumsal cihaz yazıcıları</translation>
 <translation id="1397855852561539316">Arama önerileri için varsayılan arama sağlayıcı URL'si</translation>
 <translation id="1426410128494586442">Evet</translation>
 <translation id="1427655258943162134">Proxy sunucunun adresi veya URL'si</translation>
@@ -260,6 +267,19 @@
 <translation id="209586405398070749">Mevcut ürün kanalı</translation>
 <translation id="2098658257603918882">Kullanım ve kilitlenme ile ilgili verilerin raporlanmasını etkinleştir</translation>
 <translation id="2113068765175018713">Otomatik bir şekilde yeniden başlatarak cihazın açık kalma süresini sınırlandır</translation>
+<translation id="2126314858836465216">Cihazlara bağlı kurumsal yazıcılar için yapılandırmalar sağlar.
+
+      Bu politika, <ph name="PRODUCT_OS_NAME" /> cihazlarına yazıcı yapılandırmaları sağlamanıza olanak tanır. Dosya 5 MB'tan daha büyük olmamalı ve JSON olarak kodlanmamalıdır. Biçim, NativePrinters sözlüğü ile aynıdır. Yaklaşık 21.000 yazıcı içeren bir dosyanın 5 MB olacağı tahmin edilmektedir. İndirmenin bütünlüğünü doğrulamak için şifreleme karma değeri kullanılır.
+
+      Dosya indirilir ve önbelleğe alınır. URL veya karma değer değiştiğinde yeniden indirilir.
+
+      Bu politika ayarlanırsa <ph name="PRODUCT_OS_NAME" />, yazıcı yapılandırmalarına ilişkin dosyayı indirir ve yazıcıları DeviceNativePrintersAccessMode, DeviceNativePrintersWhitelist ve DeviceNativePrintersBlacklist ile uyumlu bir şekilde kullanıma sunar.
+
+      Bu politikanın, kullanıcıların bağımsız cihazlardaki yazıcıları yapılandırıp yapılandıramamaları üzerinde herhangi bir etkisi yoktur. Bağımsız kullanıcıların yazıcı yapılandırmalarını tamamlaması amaçlanmıştır.
+
+      Bu politika, NativePrintersBulkConfiguration politikasına ektir.
+
+      Bu politika ayarlanmazsa cihaz yazıcısı olmaz ve diğer NativeDevicePrinter* politikaları yoksayılır.</translation>
 <translation id="2127599828444728326">Bu sitelerde bildirimlere izin ver</translation>
 <translation id="2131902621292742709">Pil gücüyle çalışırken ekran karartma gecikmesi</translation>
 <translation id="2134437727173969994">Ekranı kilitlemeye izin ver</translation>
@@ -501,6 +521,11 @@
       Her liste girişi, farklı cihaz-yerel hesaplarını ayırt etmek için dahili olarak kullanılan bir tanımlayıcıyı belirtir.</translation>
 <translation id="2769952903507981510">Uzaktan erişim ana makineleri için gerekli alan adını yapılandır</translation>
 <translation id="2787173078141616821">Android'in durumu hakkında rapor bilgileri</translation>
+<translation id="2789419769822054691">Kullanıcının kullanabileceği yazıcıları belirtir.
+
+      Bu politika yalnızca DeviceNativePrintersAccessMode için WhitelistPrintersOnly değeri seçilirse kullanılır.
+
+      Bu politika kullanılırsa, kullanıcı yalnızca kimlikleri bu politikadaki değerlerle eşleşen yazıcıları kullanabilir. Kimliklerin, DeviceNativePrinters politikasında belirtilen dosyadaki girişlere karşılık gelmesi gerekir.</translation>
 <translation id="2801230735743888564">Cihaz çevrimdışıyken kullanıcıların dinozor paskalya yumurtası oyununu oynamasına izin ver.
 
       Bu politika Yanlış seçeneğine ayarlanırsa kullanıcılar, cihaz çevrimdışıyken dinozor paskalya yumurtası oyununu oynayamaz. Bu ayar Doğru seçeneğine ayarlanırsa kullanıcıların dinozor oyununu oynamalarına izin verilir. Bu politika ayarlanmazsa kullanıcıların dinozor paskalya yumurtası oyununu oynamalarına kayıtlı Chrome OS'de izin verilmez, ancak diğer durumlarda izin verilir.</translation>
@@ -555,13 +580,6 @@
           Politika değeri milisaniye olarak belirtilmelidir. Değerler ekran kapanma gecikmesinden (ayarlanmışsa) ve boşta kalma gecikmesinden küçük veya ona eşit olacak şekilde bir aralığa sıkıştırılır.</translation>
 <translation id="2987155890997901449">ARC'yi etkinleştir</translation>
 <translation id="2987227569419001736">Web Bluetooth API'sının kullanımını kontrol et</translation>
-<translation id="2998881342848488968">Bu politika <ph name="PRODUCT_OS_NAME" /> ürününün, giriş portalı kimlik doğrulaması için proxy'leri atlamasına izin verir.
-
-      Bu politika sadece bir proxy yapılandırıldığında geçerli olur (örneğin, politika aracılığıyla, kullanıcı tarafından chrome://settings bölümünden veya uzantılar tarafından).
-
-      Bu ayarı etkinleştirirseniz, geçerli kullanıcıya yönelik tüm politika ayarları ve kısıtlamalar yoksayılarak, giriş portalı kimlik doğrulama sayfaları (yani giriş portalı oturum açma sayfasından itibaren <ph name="PRODUCT_NAME" /> başarılı bir İnternet bağlantısı algılayana kadar tüm web sayfaları) ayrı bir pencerede görüntülenir.
-
-      Bu ayarı devre dışı bırakırsanız veya hiç ayarlamazsanız, giriş portalı kimlik doğrulama sayfaları, geçerli kullanıcının proxy ayarları kullanılarak yeni bir (normal) tarayıcı sekmesinde görüntülenir.</translation>
 <translation id="3001534538097271560">Bu politika yanlış seçeneğine ayarlandığında, kullanıcıların, bazı sistem bilgilerini ve sayfa içeriğini Google sunucularına göndermeyi seçmeleri engellenir. Bu ayar doğru seçeneğine ayarlanırsa veya hiç yapılandırılmazsa kullanıcılar, tehlikeli uygulamaların ve sitelerin tespit edilmesine yardımcı olmak amacıyla bazı sistem bilgilerini ve sayfa içeriğini Güvenli Tarama'ya gönderebilir.
 
       Güvenli Tarama ile ilgili daha fazla bilgi için https://developers.google.com/safe-browsing adresine bakın.</translation>
@@ -695,6 +713,7 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
 
           Bu politika sadece "DefaultSearchProviderEnabled" politikası etkinleştirilmişse dikkate alınır.</translation>
 <translation id="350797926066071931">Google Çeviri'yi etkinleştir</translation>
+<translation id="3512226956150568738">ARC'nin çalışması için ext4'e geçiş gerekmeden önce istemci cihaz modeli ARC'yi zaten destekliyorduysa ve ArcEnabled politikası doğru (true) değerine ayarlıysa, bu seçenek AskUser (3 değeri) şeklinde davranacaktır. Diğer tüm durumlarda (model önceden ARC'yi desteklemiyorduysa veya ArcEnabled politikası yanlış (false) değerine ayarlıysa), bu değer DisallowArc (0 değeri) ile aynı olacaktır.</translation>
 <translation id="3528000905991875314">Alternatif hata sayfalarını etkinleştir</translation>
 <translation id="3547954654003013442">Proxy ayarları</translation>
 <translation id="3591584750136265240">Giriş için kimlik doğrulama yöntemini yapılandır</translation>
@@ -739,6 +758,11 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
           "EnableMediaRouter" politikası yanlış değerine ayarlanırsa bu politikanın değerinin herhangi bir etkisi olmaz ve araç çubuğu simgesi gösterilmez.</translation>
 <translation id="3788662722837364290">Kullanıcının işlem yapmadığı zaman için güç yönetimi ayarları</translation>
 <translation id="3793095274466276777"><ph name="PRODUCT_NAME" /> içindeki varsayılan tarayıcı denetimlerini yapılandırır ve kullanıcıların bu ayarı değiştirmelerini önler. Bu ayarı etkinleştirirseniz, <ph name="PRODUCT_NAME" /> her zaman başlangıçta varsayılan tarayıcı olup olmadığını denetler ve mümkünse kendini otomatik olarak kaydeder. Bu ayar devre dışı bırakılırsa, <ph name="PRODUCT_NAME" /> varsayılan tarayıcı olup olmadığını hiçbir zaman denetlemez ve bu seçeneği ayarlamaya yönelik kullanıcı denetimlerini devre dışı bırakır. Bu ayar belirtilmezse, <ph name="PRODUCT_NAME" /> varsayılan tarayıcı olup olmadığını ve varsayılan tarayıcı değilse kullanıcı bildirimlerinin gösterilip gösterilmeyeceğini kullanıcının denetlemesine izin verir.</translation>
+<translation id="379602782757302612">Kullanıcıların hangi uzantıları YÜKLEYEMEYECEĞİNİ belirlemenize olanak tanır. Halihazırda yüklü olan uzantılar kara listede bulunuyorsa devre dışı bırakılır ve kullanıcı hiçbir şekilde onları yeniden etkinleştiremez. Kara liste nedeniyle devre dışı bırakılan bir uzantı, kara listeden çıkarılması halinde otomatik olarak yeniden etkinleştirilir.
+
+          Kara liste değerinin * olması, açıkça beyaz listede bulunmayan tüm uzantıların kara listeye alınacağı anlamına gelir.
+
+          Bu politika ayarlanmadan bırakılırsa kullanıcı <ph name="PRODUCT_NAME" /> ürününe herhangi bir uzantıyı yükleyebilir.</translation>
 <translation id="3800626789999016379"><ph name="PRODUCT_NAME" /> ürününün, dosyaları indirmek için kullanacağı dizini yapılandırır.
 
       Bu politikayı ayarlarsanız <ph name="PRODUCT_NAME" />, kullanıcının bir dizin belirtip belirtmediğine veya her defasında indirme konumunun sorulmasıyla ilgili işareti etkinleştirip etkinleştirmediğine bakmaksızın sağlanan dizini kullanır.
@@ -1093,8 +1117,10 @@ politikayı geçersiz kılamaz.
       Ayarlanmazsa, kullanıcıdan içe aktarma işlemini gerçekleştirmesi istenebilir veya içe aktarma otomatik olarak gerçekleşebilir.</translation>
 <translation id="5056708224511062314">Ekran büyüteci devre dışı</translation>
 <translation id="5067143124345820993">Kullanıcı beyaz listesine giriş yap</translation>
+<translation id="5068140065960598044"><ph name="PRODUCT_NAME" /> bulut politikası, Makine politikasını geçersiz kılar.</translation>
 <translation id="5085647276663819155">Baskı Önizlemeyi Devre Dışı Bırak</translation>
 <translation id="5105313908130842249">Pil gücüyle çalışırken ekran kilidi gecikmesi</translation>
+<translation id="5108031557082757679">Devre dışı bırakılmış kurumsal cihaz yazıcıları</translation>
 <translation id="5130288486815037971">TLS'deki RC4 şifre paketlerinin etkinleştirilip etkinleştirilmediği</translation>
 <translation id="5141670636904227950">Giriş ekranında varsayılan ekran büyüteci türünü etkin olarak ayarla</translation>
 <translation id="5142301680741828703"><ph name="PRODUCT_FRAME_NAME" /> içinde aşağıdaki URL kalıplarını her zaman oluştur</translation>
@@ -1568,6 +1594,13 @@ politikayı geçersiz kılamaz.
           Bu politikayı ayarlarsanız, kullanıcılar bunu değiştiremez ve geçersiz kılamaz.
 
           Bu politika ayarlanmadan bırakılırsa, sesli geri bildirim başta devre dışıdır, ancak istenildiğinde kullanıcı tarafından etkinleştirilebilir.</translation>
+<translation id="6922040258551909078">
+      Bu politika true (doğru) değerine ayarlanırsa, makine politikasıyla çelişmesi halinde bulut politikası öncelikli olur.
+      Politika false (yanlış) değerine ayarlanırsa veya yapılandırılmazsa, bulut politikasıyla çelişmesi halinde makine politikası öncelikli olur.
+      Politika önceliği hakkında daha fazla bilgi edinmek için lütfen şu adresi ziyaret edin: https://support.google.com/chrome?p=set_chrome_policies_for_devices
+
+      Bu politika bir <ph name="MS_AD_NAME" /> alanına katılmamış Windows örneklerinde kullanılamaz.
+      </translation>
 <translation id="6922884955650325312"><ph name="FLASH_PLUGIN_NAME" /> eklentisini engelle</translation>
 <translation id="6923366716660828830">Varsayılan arama sağlayıcısının adını belirtir. Boş bırakılır veya ayarlanmazsa, arama URL'sinin belirttiği ana makine adı kullanılır.
 
@@ -1690,6 +1723,7 @@ politikayı geçersiz kılamaz.
 
 Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otomatik oluşturulan içerik önerileri gösterilmez.</translation>
 <translation id="7323896582714668701"><ph name="PRODUCT_NAME" /> için ek komut satırı parametreleri</translation>
+<translation id="7326394567531622570">Sil (2 değeri) seçeneğine benzer, ancak kullanıcının tekrar oturum açmak zorunda kalmaması için giriş jetonlarını saklar.</translation>
 <translation id="7329842439428490522">Pil gücüyle çalışırken, ekran kapatılmadan önce kullanıcı girişi olmadan geçecek süreyi belirtir.
 
           Bu politika sıfırdan büyük bir değere ayarlanırsa, <ph name="PRODUCT_OS_NAME" /> tarafından ekran kapatılmadan önce kullanıcının ne kadar süre boşta kalması gerektiğini belirtir.
@@ -1716,6 +1750,7 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
       Bu politika ayarlanmazsa, otomatik temizleme varsayılan yerleşik stratejiyi kullanır. Şu an bu "RemoveLRUIfDormant" stratejisidir.</translation>
 <translation id="7336878834592315572">Oturum süresince çerezleri tutma</translation>
 <translation id="7340034977315324840">Cihaz etkinlik zamanlarını rapor et</translation>
+<translation id="7343497214039883642">Cihazlar için kurumsal yazıcı yapılandırma dosyası</translation>
 <translation id="7384999953864505698">QUIC protokolüne izin verir</translation>
 <translation id="7417972229667085380">Sunum modundayken boşta gecikme süresini ölçekleme yüzdesi (kullanımdan kaldırıldı)</translation>
 <translation id="7421483919690710988">Medya disk önbelleği boyutunu bayt olarak ayarla</translation>
@@ -1910,6 +1945,7 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
       Bu politika ayarlanmazsa cihaz varsayılan olarak 24 saat biçimini kullanır.</translation>
 <translation id="8114382167597081590">YouTube'da Kısıtlı Mod'u zorunlu kılma</translation>
 <translation id="8118665053362250806">Medya diski önbellek boyutunu ayarla</translation>
+<translation id="8124468781472887384">Cihaz yazıcı yapılandırması erişim politikası.</translation>
 <translation id="8135937294926049787">AC güçle çalışırken, ekran kapatılmadan önce kullanıcı girişi olmadan geçecek süreyi belirtir.
 
           Bu politika sıfırdan büyük bir değere ayarlanırsa, <ph name="PRODUCT_OS_NAME" /> tarafından ekran kapatılmadan önce kullanıcının ne kadar süre boşta kalması gerektiğini belirtir.
@@ -2032,7 +2068,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="8424255554404582727">Her yeniden başlatmada tekrar uygulanacak varsayılan ekran döndürmesini ayarla</translation>
 <translation id="8426231401662877819">Ekranı saat yönünde 90 derece döndür</translation>
 <translation id="8451988835943702790">Ana sayfa olarak Yeni Sekme Sayfası'nı kullan</translation>
-<translation id="8458790683633857482">ARC çalışma zamanına devredilecek politika grubunu belirtir. Değer, geçerli JSON olmalıdır.</translation>
 <translation id="8465065632133292531">POST kullanan anlık URL parametreleri</translation>
 <translation id="847472800012384958">Hiçbir sitenin pop-up göstermesine izin verme</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
@@ -2105,6 +2140,12 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="8864975621965365890">Bir site <ph name="PRODUCT_FRAME_NAME" /> tarafından oluşturulduğunda görülen reddetme sorusunu engeller.</translation>
 <translation id="8870318296973696995">Ana sayfa</translation>
 <translation id="8882006618241293596">Bu sitelerde <ph name="FLASH_PLUGIN_NAME" /> eklentisini engelle</translation>
+<translation id="8887644176044431146">Kullanıcıların DeviceNativePrintersConfiguration politikasındaki hangi yazıcıları kullanabileceğini kontrol eder.
+
+      Toplu yazıcı yapılandırması için hangi erişim politikasının kullanılacağını belirler. AllowAll seçilirse tüm yazıcılar gösterilir. BlacklistRestriction seçilirse, belirtilen yazıcılara erişimi kısıtlamak için DeviceNativePrintersBlacklist kullanılır. WhitelistPrintersOnly seçilirse DeviceNativePrintersWhitelist, yalnızca seçilebilir yazıcıları gösterir.
+
+      Bu politika ayarlanmazsa BlacklistRestriction uygulanır.
+      </translation>
 <translation id="8906768759089290519">Misafir modunu etkinleştir</translation>
 <translation id="8908294717014659003">Web sitelerinin medya yakalama cihazlarına erişmelerine izin verilip verilmeyeceğini ayarlamanıza olanak sağlar. Medya yakalama cihazlarına erişime varsayılan olarak izin verilebilir veya bir web sitesinin medya yakalama cihazlarına erişmek istediği her defasında kullanıcıya sorulabilir.
 

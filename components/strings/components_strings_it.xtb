@@ -13,6 +13,7 @@
 <translation id="106701514854093668">Preferiti desktop</translation>
 <translation id="1074497978438210769">Non sicuro</translation>
 <translation id="1080116354587839789">Adatta in larghezza</translation>
+<translation id="1088860948719068836">Aggiungi il nome indicato sulla carta</translation>
 <translation id="1103523840287552314">Traduci sempre <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Se questa opzione viene selezionata, Chrome memorizza una copia della carta sul dispositivo per velocizzare la compilazione dei moduli.</translation>
 <translation id="1111153019813902504">Preferiti aggiunti di recente</translation>
@@ -43,6 +44,7 @@
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (sincronizzati)</translation>
 <translation id="1263231323834454256">Elenco di lettura</translation>
 <translation id="1264126396475825575">Rapporto sugli arresti anomali generato il giorno <ph name="CRASH_TIME" /> (non ancora caricato o ignorato)</translation>
+<translation id="1270502636509132238">Metodo di ritiro</translation>
 <translation id="1281526147609854549">Emesso da <ph name="ISSUER" /></translation>
 <translation id="1285320974508926690">Non tradurre mai questo sito</translation>
 <translation id="129553762522093515">Chiuse di recente</translation>
@@ -94,6 +96,7 @@
 <translation id="1710259589646384581">Sistema operativo</translation>
 <translation id="1721312023322545264">Ti occorre l'autorizzazione di <ph name="NAME" /> per poter visitare il sito</translation>
 <translation id="1721424275792716183">* Campo obbligatorio</translation>
+<translation id="1727741090716970331">Aggiungi un numero di carta valido</translation>
 <translation id="1728677426644403582">È visualizzata l'origine di una pagina web</translation>
 <translation id="173080396488393970">Questo tipo di carta non è supportato</translation>
 <translation id="1734864079702812349">Amex</translation>
@@ -138,6 +141,7 @@
 <translation id="2079545284768500474">Annulla</translation>
 <translation id="20817612488360358">Devono essere utilizzate le impostazioni del proxy di sistema ma è stata specificata anche una configurazione proxy esplicita.</translation>
 <translation id="2086652334978798447">Per ricevere contenuti suggeriti appositamente per te da Google, accedi a Chrome.</translation>
+<translation id="2091887806945687916">Audio</translation>
 <translation id="2094505752054353250">Dominio non corrispondente</translation>
 <translation id="2096368010154057602">Dipartimento</translation>
 <translation id="2108755909498034140">Riavvia il computer</translation>
@@ -145,7 +149,9 @@
 <translation id="2114841414352855701">Ignorata perché è stata sostituita da <ph name="POLICY_NAME" />.</translation>
 <translation id="2138201775715568214">Ricerca di pagine Physical Web nelle vicinanze in corso</translation>
 <translation id="213826338245044447">Preferiti su disp. mobili</translation>
+<translation id="214556005048008348">Annulla pagamento</translation>
 <translation id="2147827593068025794">Sincronizzazione in background</translation>
+<translation id="2148613324460538318">Aggiungi carta</translation>
 <translation id="2154054054215849342">Il servizio di sincronizzazione non è disponibile per il tuo dominio</translation>
 <translation id="2154484045852737596">Modifica la carta</translation>
 <translation id="2166049586286450108">Accesso amministrativo completo</translation>
@@ -194,6 +200,8 @@
 <translation id="2501278716633472235">Indietro</translation>
 <translation id="2503184589641749290">Carte di debito e prepagate accettate</translation>
 <translation id="2515629240566999685">Controllare il segnale nella tua area</translation>
+<translation id="2524461107774643265">Aggiungi altre informazioni</translation>
+<translation id="2536110899380797252">Aggiungi indirizzo</translation>
 <translation id="2539524384386349900">Rileva</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> ha inviato una risposta non valida.</translation>
 <translation id="2556876185419854533">&amp;Annulla modifica</translation>
@@ -240,6 +248,7 @@
 <translation id="2909946352844186028">È stato rilevato un cambio di rete.</translation>
 <translation id="2916038427272391327">Chiudi altri programmi</translation>
 <translation id="2922350208395188000">Il certificato del server non può essere verificato.</translation>
+<translation id="2925673989565098301">Metodo di consegna</translation>
 <translation id="2928905813689894207">Indirizzo di fatturazione</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> e <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> altro}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> e altri <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
 <translation id="2941952326391522266">Questo server non è riuscito a dimostrare che si tratta di <ph name="DOMAIN" />; il relativo certificato di sicurezza proviene da <ph name="DOMAIN2" />. Il problema potrebbe essere dovuto a un'errata configurazione o a un malintenzionato che intercetta la connessione.</translation>
@@ -262,6 +271,7 @@
 <translation id="3024663005179499861">Tipo di criterio errato</translation>
 <translation id="3032412215588512954">Vuoi ricaricare questo sito?</translation>
 <translation id="3037605927509011580">Uffa!</translation>
+<translation id="3039538478787849737">Vuoi salvare la carta in Google?</translation>
 <translation id="3041612393474885105">Informazioni certificato</translation>
 <translation id="3063697135517575841">Al momento non è possibile confermare la carta in Chrome. Riprova più tardi.</translation>
 <translation id="3064966200440839136">Per procedere al pagamento tramite un'applicazione esterna, uscirai dalla modalità di navigazione in incognito. Continuare?</translation>
@@ -282,6 +292,7 @@
 <translation id="3176929007561373547">Controlla le impostazioni del proxy o contatta il tuo amministratore di rete per verificare che il server proxy funzioni. Se non ritieni di dover utilizzare un server proxy: <ph name="PLATFORM_TEXT" /></translation>
 <translation id="320323717674993345">Annulla pagamento</translation>
 <translation id="3207960819495026254">Aggiunto ai Preferiti</translation>
+<translation id="3211223744486044430">Per pagare più velocemente la prossima volta, salva questa carta sul tuo account Google e su questo dispositivo.</translation>
 <translation id="3225919329040284222">Il server ha presentato un certificato che non corrisponde alle previsioni integrate. Queste previsioni sono incluse per determinati siti web con protezione elevata allo scopo di proteggerti.</translation>
 <translation id="3226128629678568754">Premi il pulsante Ricarica per inviare di nuovo i dati necessari per caricare la pagina.</translation>
 <translation id="3227137524299004712">Microfono</translation>
@@ -314,6 +325,7 @@
 <translation id="3380864720620200369">ID client:</translation>
 <translation id="3391030046425686457">Indirizzo di consegna</translation>
 <translation id="3395827396354264108">Metodo di ritiro</translation>
+<translation id="3399952811970034796">Indirizzo di consegna</translation>
 <translation id="3422248202833853650">Prova a uscire da altri programmi per liberare spazio nella memoria.</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> non è attualmente raggiungibile.</translation>
 <translation id="3427092606871434483">Consenti (predefinita)</translation>
@@ -399,6 +411,7 @@
 <translation id="4030383055268325496">&amp;Annulla aggiunta</translation>
 <translation id="404928562651467259">AVVISO</translation>
 <translation id="4058922952496707368">Chiave "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
+<translation id="4067947977115446013">Aggiungi un indirizzo valido</translation>
 <translation id="4072486802667267160">Si è verificato un errore durante l'elaborazione dell'ordine. Riprova.</translation>
 <translation id="4075732493274867456">Il client e il server non supportano un pacchetto di crittografia o una versione del protocollo SSL comuni.</translation>
 <translation id="4079302484614802869">L'impostazione della configurazione proxy prevede l'utilizzo di un URL script .pac, non di server proxy fissi.</translation>
@@ -443,6 +456,7 @@
 <translation id="4377125064752653719">Hai tentato di accedere a <ph name="DOMAIN" /> ma il server ha presentato un certificato revocato dall'autorità di certificazione. Ciò significa che le credenziali di sicurezza presentate dal server non sono assolutamente attendibili. Potresti avere stabilito una comunicazione con un utente malintenzionato.</translation>
 <translation id="4394049700291259645">Disabilita</translation>
 <translation id="4406896451731180161">risultati di ricerca</translation>
+<translation id="4415426530740016218">Indirizzo di ritiro</translation>
 <translation id="4424024547088906515">Questo server non è riuscito a dimostrare che si tratta di <ph name="DOMAIN" />; il relativo certificato di sicurezza non è considerato attendibile da Chrome. Il problema potrebbe essere dovuto a un'errata configurazione o a un malintenzionato che intercetta la connessione.</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> non ha accettato il certificato di accesso oppure non ne è stato fornito uno.</translation>
 <translation id="443673843213245140">L'utilizzo di un proxy è stato disattivato ma è stata specificata una configurazione proxy esplicita.</translation>
@@ -571,11 +585,13 @@
 <translation id="5492298309214877701">Il sito nell'Intranet dell'azienda, dell'organizzazione o della scuola ha lo stesso URL del sito web esterno.
     <ph name="LINE_BREAK" />
     Prova a contattare l'amministratore di sistema.</translation>
+<translation id="5499929369096410817">Inserisci il codice di sicurezza della carta <ph name="CREDIT_CARD" />. Il codice non verrà salvato.</translation>
 <translation id="5509780412636533143">Preferiti gestiti</translation>
 <translation id="5510766032865166053">Potrebbe essere stato spostato o eliminato.</translation>
 <translation id="5523118979700054094">Nome norma</translation>
 <translation id="552553974213252141">Il testo è stato estratto correttamente?</translation>
 <translation id="5540224163453853">Impossibile trovare l'articolo richiesto.</translation>
+<translation id="5541546772353173584">Aggiungi email</translation>
 <translation id="5544037170328430102">Una pagina incorporata in <ph name="SITE" /> dice:</translation>
 <translation id="5556459405103347317">Ricarica</translation>
 <translation id="5560088892362098740">Data di scadenza</translation>
@@ -612,6 +628,7 @@
 <translation id="5810442152076338065">La connessione a <ph name="DOMAIN" /> è criptata tramite un pacchetto di crittografia obsoleto.</translation>
 <translation id="5813119285467412249">&amp;Ripeti aggiunta</translation>
 <translation id="5838278095973806738">Non dovresti inserire dati sensibili in questo sito (ad esempio password o carte di credito) perché potrebbero essere intercettati da utenti malintenzionati.</translation>
+<translation id="5866257070973731571">Aggiungi numero di telefono</translation>
 <translation id="5869405914158311789">Impossibile raggiungere il sito</translation>
 <translation id="5869522115854928033">Password salvate</translation>
 <translation id="5872918882028971132">Suggerimenti per i genitori</translation>
@@ -619,8 +636,10 @@
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (sincronizzati)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 in uso}other{# in uso}}</translation>
 <translation id="5959728338436674663">Invia automaticamente a Google <ph name="BEGIN_WHITEPAPER_LINK" />alcune informazioni sul sistema e alcuni contenuti delle pagine<ph name="END_WHITEPAPER_LINK" /> per contribuire a rilevare app e siti pericolosi. <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="5967592137238574583">Modifica informazioni di contatto</translation>
 <translation id="5967867314010545767">Rimuovi da cronologia</translation>
 <translation id="5975083100439434680">Diminuisci lo zoom</translation>
+<translation id="597552863672748783">Conferma codice di sicurezza</translation>
 <translation id="598637245381783098">Impossibile aprire l'app per i pagamenti</translation>
 <translation id="5989320800837274978">Non sono stati specificati né server proxy fissi né un URL script .pac.</translation>
 <translation id="5990559369517809815">Le richieste al server sono state bloccate da un'estensione.</translation>
@@ -695,6 +714,7 @@
 <translation id="6569060085658103619">È visualizzata la pagina di un'estensione</translation>
 <translation id="6596325263575161958">Opzioni di crittografia</translation>
 <translation id="662080504995468778">Rimani</translation>
+<translation id="6624427990725312378">Informazioni di contatto</translation>
 <translation id="6626291197371920147">Aggiungi un numero di carta valido</translation>
 <translation id="6628463337424475685">Ricerca <ph name="ENGINE" /></translation>
 <translation id="6630809736994426279">Gli utenti malintenzionati attualmente presenti sul sito <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> potrebbero cercare di installare sul tuo Mac programmi pericolosi che carpiscono o eliminano le tue informazioni (ad esempio, foto, password, messaggi e carte di credito). <ph name="BEGIN_LEARN_MORE_LINK" />Ulteriori informazioni<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -773,6 +793,7 @@
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">Percorso profilo</translation>
 <translation id="7424977062513257142">Una pagina incorporata in questa pagina web dice:</translation>
+<translation id="7437289804838430631">Aggiungi informazioni di contatto</translation>
 <translation id="7441627299479586546">Oggetto del criterio errato</translation>
 <translation id="7444046173054089907">Questo sito è bloccato</translation>
 <translation id="7445762425076701745">Impossibile convalidare completamente l'identità del server a cui sei collegato. Sei collegato a un server con un nome valido soltanto nella tua rete, di cui un'autorità di certificazione esterna non può convalidare in alcun modo la proprietà. Poiché alcune autorità di certificazione emettono comunque certificati per questi nomi, non è in alcun modo possibile garantire che tu sia collegato al sito web desiderato anziché a un sito dannoso.</translation>
@@ -822,6 +843,7 @@
 <translation id="7714464543167945231">Certificato</translation>
 <translation id="7716147886133743102">Bloccata dall'amministratore</translation>
 <translation id="7716424297397655342">Impossibile caricare il sito dalla cache</translation>
+<translation id="7723047071702270851">Modifica la carta</translation>
 <translation id="774634243536837715">Contenuti pericolosi bloccati.</translation>
 <translation id="7752995774971033316">Non gestito</translation>
 <translation id="7755287808199759310">Il tuo genitore può sbloccarlo per te</translation>
@@ -832,6 +854,7 @@
 <translation id="7764225426217299476">Aggiungi indirizzo</translation>
 <translation id="777702478322588152">Prefettura</translation>
 <translation id="7791543448312431591">Aggiungi</translation>
+<translation id="7793553086574152071">Per pagare più velocemente la prossima volta, salva questa carta sul tuo account Google.</translation>
 <translation id="7793809570500803535">La pagina web all'indirizzo <ph name="SITE" /> potrebbe non essere momentaneamente disponibile o potrebbe essere stata spostata definitivamente su un nuovo indirizzo web.</translation>
 <translation id="7800304661137206267">La connessione è stata criptata utilizzando <ph name="CIPHER" />, con <ph name="MAC" /> per l'autenticazione dei messaggi e <ph name="KX" /> come meccanismo principale di scambio delle chiavi.</translation>
 <translation id="7802523362929240268">Il sito è legittimo</translation>
@@ -865,6 +888,7 @@
 <translation id="8088680233425245692">Impossibile visualizzare l'articolo.</translation>
 <translation id="8091372947890762290">Attivazione in attesa sul server</translation>
 <translation id="8094917007353911263">La rete in uso potrebbe richiedere la visita della pagina <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
+<translation id="8103161714697287722">Metodo di pagamento</translation>
 <translation id="8118489163946903409">Metodo di pagamento</translation>
 <translation id="8131740175452115882">Conferma</translation>
 <translation id="8134994873729925007">Impossibile trovare l'<ph name="BEGIN_ABBR" />indirizzo DNS<ph name="END_ABBR" /> del server <ph name="HOST_NAME" />.</translation>
@@ -946,6 +970,7 @@
 <translation id="8903921497873541725">Aumenta lo zoom</translation>
 <translation id="8931333241327730545">Vuoi salvare la scheda nel tuo account Google?</translation>
 <translation id="8932102934695377596">L'orologio è indietro</translation>
+<translation id="893332455753468063">Aggiungi nome</translation>
 <translation id="8938939909778640821">Carte di credito e prepagate accettate</translation>
 <translation id="8957210676456822347">Autorizzazione Captive Portal</translation>
 <translation id="8971063699422889582">Il certificato del server è scaduto.</translation>
@@ -969,6 +994,7 @@
 <translation id="9078964945751709336">Sono necessarie maggiori informazioni</translation>
 <translation id="9080712759204168376">Riepilogo dell'ordine</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> in genere utilizza la crittografia per proteggere le tue informazioni. Questa volta, quando Chromium ha provato a connettersi a <ph name="SITE" />, il sito web ha restituito credenziali insolite e sbagliate. È possibile che un malintenzionato stia cercando di spacciarsi per il sito <ph name="SITE" /> oppure che una schermata di accesso alla rete Wi-Fi abbia interrotto la connessione. Le tue informazioni sono ancora al sicuro perché Chromium ha interrotto la connessione prima che avvenissero scambi di dati.</translation>
+<translation id="9106062320799175032">Aggiungi indirizzo di fatturazione</translation>
 <translation id="910908805481542201">Aiutami a risolvere il problema</translation>
 <translation id="9128870381267983090">Collegati alla rete</translation>
 <translation id="9137013805542155359">Mostra originale</translation>
@@ -982,6 +1008,7 @@
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> utilizza un protocollo non supportato.</translation>
 <translation id="9205078245616868884">I tuoi dati vengono criptati con la tua passphrase di sincronizzazione. Inseriscila per avviare la sincronizzazione.</translation>
 <translation id="9207861905230894330">Impossibile aggiungere l'articolo.</translation>
+<translation id="9215416866750762878">Un'applicazione sta impedendo a Chrome di connettersi in sicurezza a questo sito.</translation>
 <translation id="9219103736887031265">Immagini</translation>
 <translation id="933612690413056017">Connessione Internet assente</translation>
 <translation id="933712198907837967">Diners Club</translation>

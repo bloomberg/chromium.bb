@@ -26,6 +26,7 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="1643640058022401035">Tatapusin ng pag-alis sa pahinang ito ang iyong session ng Chromoting.</translation>
 <translation id="1654128982815600832">Pinapagana ang mga malayuang koneksyon para sa computer na ito…</translation>
 <translation id="170207782578677537">Nabigong irehistro ang computer na ito.</translation>
+<translation id="1727412735341161734">Remote na Desktop ng Chrome</translation>
 <translation id="174018511426417793">Wala kang mga nakarehistrong computer. Upang paganahin ang mga malayuang koneksyon sa isang computer, i-install ang Remote na Desktop ng Chrome doon at i-click ang “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="1742469581923031760">Kumokonekta…</translation>
 <translation id="1770394049404108959">Hindi ko mabuksan ang application.</translation>
@@ -94,8 +95,11 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="3150823315463303127">Hindi nabasa ng host ang patakaran.</translation>
 <translation id="3194245623920924351">Remote na Desktop ng Chrome</translation>
 <translation id="3197730452537982411">Remote na Desktop</translation>
+<translation id="324272851072175193">I-email ang mga tagubiling ito</translation>
 <translation id="3258789396564295715">Maaari mong ligtas na ma-access ang computer na ito gamit ang Remote na Desktop ng Chrome.</translation>
 <translation id="3286521253923406898">Controller ng Chromoting Host</translation>
+<translation id="3305934114213025800">Gusto ng <ph name="PRODUCT_NAME" /> na gumawa ng mga pagbabago.</translation>
+<translation id="331779822864701136">• Nagdagdag ng suporta para sa Android 8.0 Oreo.</translation>
 <translation id="332624996707057614">I-edit ang pangalan ng computer</translation>
 <translation id="3339299787263251426">I-access ang iyong computer nang secure sa pamamagitan ng Internet</translation>
 <translation id="3360306038446926262">Mga Window</translation>
@@ -104,6 +108,12 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="3385242214819933234">Di-wastong may-ari ng host.</translation>
 <translation id="3403830762023901068">Hindi pinapahintulutan ng mga setting ng patakaran ang pagbabahagi sa computer na ito bilang host ng Chromoting. Makipag-ugnay sa iyong system administrator para sa tulong.</translation>
 <translation id="3423542133075182604">Proseso ng Pagre-remote sa Security Key</translation>
+<translation id="3426467947138417795">Remote na Desktop ng Chrome
+Remote Desktop
+Remote PC
+Remote Computer
+Remote Access
+Remote Support</translation>
 <translation id="3581045510967524389">Hindi makakonekta sa network. Pakitiyak na on-line ang iyong device.</translation>
 <translation id="3596628256176442606">Ini-enable ng serbisyong ito ang mga papasok na koneksyon mula sa mga client ng Chromoting.</translation>
 <translation id="3606997049964069799">Hindi ka naka-sign in sa Chromium. Mangyaring mag-sign in at subukang muli.</translation>
@@ -112,6 +122,13 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="3695446226812920698">Alamin kung paano</translation>
 <translation id="3718805989288361841">Mayroong error sa mga setting ng patakaran para sa Remote na Desktop ng Chrome. Makipag-ugnayan sa iyong system administrator para sa tulong.</translation>
 <translation id="3776024066357219166">Natapos na ang iyong session sa Remote na Desktop ng Chrome.</translation>
+<translation id="3788372335219293587">I-access nang secure ang iyong mga computer mula sa iOS device mo. Mabilis, simple, at libre ito.
+
+• Sa computer na gusto mong i-access nang malayuan, hanapin ang app na Remote na Desktop ng Chrome sa Chrome Web Store: https://chrome.google.com/remotedesktop
+• I-install ang software na Remote na Desktop ng Chrome at sundin ang mga tagubilin upang kumpletuhin ang pag-setup.
+• Sa iyong iOS device, buksan ang app at mag-tap sa alinman sa iyong mga online na computer upang kumonekta.
+
+Para sa impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa Privacy ng Google (http://goo.gl/SyrVzj).</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Pakikumpirma ang iyong account at PIN sa ibaba upang payagan ang pag-access ng Remote na Desktop ng Chrome.</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -125,6 +142,7 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="405887016757208221">Hindi nasimulan ng remote na computer ang session. Kung ayaw mawala ng problema, pakisubukang i-configure muli ang host.</translation>
 <translation id="4068946408131579958">Lahat ng koneksyon</translation>
 <translation id="409800995205263688">TANDAAN: Ang pinapayagan ng mga setting ng patakaran ay mga koneksyon lang sa pagitan ng mga computer sa loob ng iyong network.</translation>
+<translation id="4145029455188493639">Naka-sign in bilang <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Nawawala ang ilang bahagi na kinakailangan. Pakitiyak na na-install mo ang pinakabagong bersyon ng software at subukang muli.</translation>
 <translation id="4156740505453712750">Upang protektahan ang access sa computer na ito, mangyaring pumili ng PIN na may <ph name="BOLD_START" />hindi bababa sa anim na digit<ph name="BOLD_END" />. Kakailanganin ang PIN na ito kapag kumokonekta mula sa isa pang lokasyon.</translation>
 <translation id="4176825807642096119">Access code</translation>
@@ -189,6 +207,7 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="5625493749705183369">Mag-access ng iba pang mga computer o payagan ang isa pang user na ligtas na i-access sa Internet ang iyong computer.</translation>
 <translation id="5702987232842159181">Nakakonekta:</translation>
 <translation id="5708869785009007625">Kasalukuyang nakabahagi ang iyong desktop kay <ph name="USER" />.</translation>
+<translation id="5750083143895808682">Naka-sign in bilang <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="5773590752998175013">Petsa ng pagpapares</translation>
 <translation id="579702532610384533">Muling kumonekta</translation>
 <translation id="5810269635982033450">Gumagana ang screen tulad ng trackpad</translation>
@@ -244,9 +263,13 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="701976023053394610">Malayuang Tulong</translation>
 <translation id="7038683108611689168">Tumulong sa amin na pahusayin ang Chromoting sa pamamagitan ng pagbibigay-daan sa amin na mangolekta ng mga statistics sa paggamit at mga ulat ng pag-crash.</translation>
 <translation id="7067321367069083429">Gumagana ang screen tulad ng touch screen</translation>
+<translation id="7116737094673640201">Welcome sa Remote na Desktop ng Chrome</translation>
 <translation id="7144878232160441200">Subukang muli</translation>
 <translation id="7149517134817561223">Application na magbibigay ng mga command sa host ng remote na desktop ng Chrome.</translation>
 <translation id="7215059001581613786">Mangyaring maglagay ng PIN na binubuo ng anim o higit pang mga digit.</translation>
+<translation id="7237767047212540055">Sa computer na gusto mong i-access nang malayuan, buksan ang Chrome at bisitahin ang <ph name="INSTALLATION_LINK" />
+I-install ang software na Remote na Desktop ng Chrome at sundin ang mga tagubilin upang kumpletuhin ang pag-set up
+Pagkatapos makumpleto ang pag-set up, maa-access mo ang computer mula sa page na ito sa pamamagitan ng paglalagay ng PIN o access code</translation>
 <translation id="7312846573060934304">Naka-offline ang host.</translation>
 <translation id="7319983568955948908">Ihinto ang Pagbabahagi</translation>
 <translation id="7401733114166276557">Remote na Desktop ng Chrome</translation>

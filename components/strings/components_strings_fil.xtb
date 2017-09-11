@@ -13,6 +13,7 @@
 <translation id="106701514854093668">Mga Bookmark sa Desktop</translation>
 <translation id="1074497978438210769">Hindi secure</translation>
 <translation id="1080116354587839789">Pagkasyahin sa lapad</translation>
+<translation id="1088860948719068836">Magdagdag ng Pangalan sa Card</translation>
 <translation id="1103523840287552314">Palaging i-translate ang <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Kung lalagyan ng check, mag-iimbak ang Chrome ng kopya ng iyong card sa device na ito para sa mas mabilis na pagsagot sa form.</translation>
 <translation id="1111153019813902504">Mga kamakailang bookmark</translation>
@@ -43,6 +44,7 @@
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (naka-sync)</translation>
 <translation id="1263231323834454256">Listahan ng babasahin</translation>
 <translation id="1264126396475825575">Ulat ng pag-crash na nakuha noong <ph name="CRASH_TIME" /> (hindi pa naa-upload o nababalewala)</translation>
+<translation id="1270502636509132238">Paraan sa Pag-pick up</translation>
 <translation id="1281526147609854549">Inisyu ng <ph name="ISSUER" /></translation>
 <translation id="1285320974508926690">Huwag isalin kailanman ang site na ito</translation>
 <translation id="129553762522093515">Kamakailang isinara</translation>
@@ -94,6 +96,7 @@
 <translation id="1710259589646384581">OS</translation>
 <translation id="1721312023322545264">Kailangan mo ng pahintulot mula kay <ph name="NAME" /> upang mabisita ang site na ito</translation>
 <translation id="1721424275792716183">Kinakailangan ang field na may *</translation>
+<translation id="1727741090716970331">Magdagdag ng Wastong Numero ng Card</translation>
 <translation id="1728677426644403582">Pinagmulan ng isang web page ang tinitingnan mo</translation>
 <translation id="173080396488393970">Hindi sinusuportahan ang uri ng card na ito</translation>
 <translation id="1734864079702812349">Amex</translation>
@@ -138,6 +141,7 @@
 <translation id="2079545284768500474">I-undo</translation>
 <translation id="20817612488360358">Itinatakda ang mga setting ng proxy ng system upang magamit ngunit tinutukoy rin ang isang tahasang configuration ng proxy.</translation>
 <translation id="2086652334978798447">Upang makakuha ng naka-personalize na content na iminumungkahi ng Google, mag-sign in sa Chrome.</translation>
+<translation id="2091887806945687916">Tunog</translation>
 <translation id="2094505752054353250">Maling pagtutugma sa domain</translation>
 <translation id="2096368010154057602">Departamento</translation>
 <translation id="2108755909498034140">I-restart ang iyong computer</translation>
@@ -145,7 +149,9 @@
 <translation id="2114841414352855701">Binalewala dahil na-override ito ng <ph name="POLICY_NAME" />.</translation>
 <translation id="2138201775715568214">Naghahanap ng mga kalapit na page sa Pisikal na Web</translation>
 <translation id="213826338245044447">Mga Bookmark sa Mobile</translation>
+<translation id="214556005048008348">Kanselahin ang pagbabayad</translation>
 <translation id="2147827593068025794">Pag-sync sa Background</translation>
+<translation id="2148613324460538318">Magdagdag ng Card</translation>
 <translation id="2154054054215849342">Hindi available ang pag-sync para sa iyong domain</translation>
 <translation id="2154484045852737596">I-edit ang card</translation>
 <translation id="2166049586286450108">Ganap na Access ng Admin</translation>
@@ -194,6 +200,8 @@
 <translation id="2501278716633472235">Bumalik</translation>
 <translation id="2503184589641749290">Mga tinatanggap na debit at prepaid card</translation>
 <translation id="2515629240566999685">Suriin ang signal sa iyong lugar</translation>
+<translation id="2524461107774643265">Magdagdag ng Higit Pang Impormasyon</translation>
+<translation id="2536110899380797252">Magdagdag ng Address</translation>
 <translation id="2539524384386349900">Tukuyin</translation>
 <translation id="255002559098805027">Nagpadala ng di-wastong tugon ang <ph name="HOST_NAME" />.</translation>
 <translation id="2556876185419854533">&amp;I-undo ang Pag-e-edit</translation>
@@ -240,6 +248,7 @@
 <translation id="2909946352844186028">May nakitang pagbabago sa network.</translation>
 <translation id="2916038427272391327">Isara ang iba pang program</translation>
 <translation id="2922350208395188000">Hindi masuri ang certificate ng server.</translation>
+<translation id="2925673989565098301">Paraan ng Paghahatid</translation>
 <translation id="2928905813689894207">Billing Address</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> at <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> pa}one{<ph name="SHIPPING_ADDRESS_PREVIEW" /> at <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> pa}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> at <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> pa}}</translation>
 <translation id="2941952326391522266">Hindi mapatunayan ng server na ito na ito ay <ph name="DOMAIN" />; mula sa <ph name="DOMAIN2" /> ang certificate ng seguridad nito. Maaaring dulot ito ng maling configuration o isang umaatake na hinahadlangan ang iyong koneksyon.</translation>
@@ -262,6 +271,7 @@
 <translation id="3024663005179499861">Maling uri ng patakaran</translation>
 <translation id="3032412215588512954">Gusto mo bang i-reload ang site na ito?</translation>
 <translation id="3037605927509011580">Ay, Naku!</translation>
+<translation id="3039538478787849737">I-save ang card sa Google?</translation>
 <translation id="3041612393474885105">Impormasyon sa Certificate</translation>
 <translation id="3063697135517575841">Hindi nakumpirma ng Chrome ang iyong card sa pagkakataong ito. Pakisubukang muli sa ibang pagkakataon.</translation>
 <translation id="3064966200440839136">Aalis sa incognito mode upang magbayad sa pamamagitan ng external na application. Magpatuloy?</translation>
@@ -285,6 +295,7 @@
       <ph name="PLATFORM_TEXT" /></translation>
 <translation id="320323717674993345">Kanselahin ang Pagbabayad</translation>
 <translation id="3207960819495026254">Naka-bookmark</translation>
+<translation id="3211223744486044430">Upang mas mabilis na makapagbayad sa susunod, i-save ang card na ito sa iyong Google Account at sa device na ito.</translation>
 <translation id="3225919329040284222">Nagpakita ang server ng certificate na hindi tumutugma sa mga built-in na inaasahan. Ang mga inaasahang ito ay isinama para sa ilang partikular na website na may mataas na antas ng seguridad upang maprotektahan ka.</translation>
 <translation id="3226128629678568754">Pindutin ang button na i-reload upang isumiteng muli ang data na kailangan upang ma-load ang pahina.</translation>
 <translation id="3227137524299004712">Mikropono</translation>
@@ -317,6 +328,7 @@
 <translation id="3380864720620200369">Client ID:</translation>
 <translation id="3391030046425686457">Address kung saan maghahatid</translation>
 <translation id="3395827396354264108">Pamamaraan sa pag-pick up</translation>
+<translation id="3399952811970034796">Delivery Address</translation>
 <translation id="3422248202833853650">Subukang lumabas sa iba pang program upang magbakante ng memory.</translation>
 <translation id="3422472998109090673">Hindi makakonekta sa <ph name="HOST_NAME" /> sa kasalukuyan.</translation>
 <translation id="3427092606871434483">Payagan (default)</translation>
@@ -402,6 +414,7 @@
 <translation id="4030383055268325496">&amp;I-undo ang pagdagdag</translation>
 <translation id="404928562651467259">BABALA</translation>
 <translation id="4058922952496707368">Key "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
+<translation id="4067947977115446013">Magdagdag ng Wastong Address</translation>
 <translation id="4072486802667267160">Nagkaroon ng error sa pagproseso ng iyong order. Pakisubukang muli.</translation>
 <translation id="4075732493274867456">Hindi sinusuportahan ng client at server ang isang karaniwang bersyon o cipher suite ng SSL protocol.</translation>
 <translation id="4079302484614802869">Nakatakda ang configuration ng proxy upang gumamit ng isang .pac script URL, hindi ng mga hindi nababagong proxy server.</translation>
@@ -446,6 +459,7 @@
 <translation id="4377125064752653719">Tinangka mong maabot ang <ph name="DOMAIN" />, subalit ang certificate na ipinakita ng server ay binawi ng nagbigay nito. Nangangahulugan ito na ang mga kredensyal sa seguridad na ipinakita ng server ay talagang hindi dapat pagkatiwalaan. Maaaring nakikipag-ugnay ka sa isang nang-aatake.</translation>
 <translation id="4394049700291259645">Huwag paganahin</translation>
 <translation id="4406896451731180161">mga resulta ng paghahanap</translation>
+<translation id="4415426530740016218">Address sa Pag-pick up</translation>
 <translation id="4424024547088906515">Hindi mapatunayan ng server na ito na ito ay <ph name="DOMAIN" />; hindi pinagkakatiwalaan ng Chrome ang certificate ng seguridad nito. Maaaring dulot ito ng maling configuration o isang umaatake na hinahadlangan ang iyong koneksyon.</translation>
 <translation id="4432688616882109544">Hindi tinanggap ng <ph name="HOST_NAME" /> ang iyong certificate sa pag-log in o maaaring walang ibinigay.</translation>
 <translation id="443673843213245140">Hindi pinagana ang paggamit ng isang proxy ngunit tinutukoy ang isang tahasang configuration ng proxy.</translation>
@@ -574,11 +588,13 @@
 <translation id="5492298309214877701">Ang URL ng site na ito sa intranet ng kumpanya, organisasyon o paaralan ay kapareho ng URL ng isang external na website.
     <ph name="LINE_BREAK" />
     Subukang makipag-ugnayan sa iyong system administrator.</translation>
+<translation id="5499929369096410817">Ilagay ang panseguridad na code na para sa <ph name="CREDIT_CARD" />. Hindi ise-save ang code na ito.</translation>
 <translation id="5509780412636533143">Mga pinamamahalaang bookmark</translation>
 <translation id="5510766032865166053">Maaaring inilipat o na-delete ito.</translation>
 <translation id="5523118979700054094">Pangalan ng patakaran</translation>
 <translation id="552553974213252141">Nakuha ba nang tama ang text?</translation>
 <translation id="5540224163453853">Hindi mahanap ang hiniling na artikulo.</translation>
+<translation id="5541546772353173584">Magdagdag ng Email</translation>
 <translation id="5544037170328430102">Isinasaad ng isang naka-embed na page sa <ph name="SITE" /> na:</translation>
 <translation id="5556459405103347317">I-reload</translation>
 <translation id="5560088892362098740">Petsa ng Pag-expire</translation>
@@ -615,6 +631,7 @@
 <translation id="5810442152076338065">Naka-encrypt ang iyong koneksyon sa <ph name="DOMAIN" /> gamit ang isang hindi na ginagamit na cipher suite.</translation>
 <translation id="5813119285467412249">&amp;Gawing Muli ang Pagdagdag</translation>
 <translation id="5838278095973806738">Hindi ka dapat maglagay ng anumang sensitibong impormasyon sa site na ito (halimbawa, mga password o credit card), dahil maaari itong nakawin ng mga umaatake.</translation>
+<translation id="5866257070973731571">Magdagdag ng Numero ng Telepono</translation>
 <translation id="5869405914158311789">Hindi makakonekta sa site na ito</translation>
 <translation id="5869522115854928033">Mga naka-save na password</translation>
 <translation id="5872918882028971132">Mga Suhestyon ng Magulang</translation>
@@ -622,8 +639,10 @@
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (naka-sync)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 ang ginagamit}one{# ang ginagamit}other{# ang ginagamit}}</translation>
 <translation id="5959728338436674663">Awtomatikong magpadala ng ilang <ph name="BEGIN_WHITEPAPER_LINK" />impormasyon sa system at content ng page<ph name="END_WHITEPAPER_LINK" /> sa Google upang makatulong na tumukoy ng mapapanganib na app at site. <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="5967592137238574583">I-edit ang Impormasyon ng Contact</translation>
 <translation id="5967867314010545767">Alisin sa history</translation>
 <translation id="5975083100439434680">Mag-zoom out</translation>
+<translation id="597552863672748783">Kumpirmahin ang panseguridad na code</translation>
 <translation id="598637245381783098">Hindi mabuksan ang app sa pagbabayad</translation>
 <translation id="5989320800837274978">Hindi tunukoy ang alinman sa mga hindi nababagong proxy server o isang .pac script URL.</translation>
 <translation id="5990559369517809815">Na-block ng isang extension ang mga kahilingan sa server.</translation>
@@ -699,6 +718,7 @@
 <translation id="6569060085658103619">Isang page ng extension ang tinitingnan mo</translation>
 <translation id="6596325263575161958">Mga pagpipilian sa pag-encrypt</translation>
 <translation id="662080504995468778">Manatili</translation>
+<translation id="6624427990725312378">Impormasyon ng Contact</translation>
 <translation id="6626291197371920147">Magdagdag ng wastong card number</translation>
 <translation id="6628463337424475685">Paghahanap ng <ph name="ENGINE" /></translation>
 <translation id="6630809736994426279">Maaaring magtangka ang mga attacker na kasalukuyang nasa <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> na mag-install ng mga mapanganib na program sa iyong Mac na magnanakaw o magde-delete ng impormasyon mo (halimbawa, mga larawan, password, mensahe, at credit card). <ph name="BEGIN_LEARN_MORE_LINK" />Matuto pa<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -777,6 +797,7 @@
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">Path ng Profile</translation>
 <translation id="7424977062513257142">Isinasaad ng isang naka-embed na page sa webpage na ito na:</translation>
+<translation id="7437289804838430631">Magdagdag ng Impormasyon ng Contact</translation>
 <translation id="7441627299479586546">Maling paksa ng patakaran</translation>
 <translation id="7444046173054089907">Naka-block ang site na ito</translation>
 <translation id="7445762425076701745">Hindi ganap na mapatunayan ang pagkakakilanlan ng server na konektado ka. Konektado ka sa server gamit ang pangalan na angkop lamang sa loob ng iyong network, na walang paraan ang panglabas na certificate authority na patunayan ang pagmamay-ari. Dahil magbibigay ang ilang kinauukulan sa certificate para sa mga pangalang ito, walang paraan upang matiyak na konektado ka sa nilayong website at hindi isang umaatake.</translation>
@@ -826,6 +847,7 @@
 <translation id="7714464543167945231">Certificate</translation>
 <translation id="7716147886133743102">Na-block ng iyong administrator</translation>
 <translation id="7716424297397655342">Hindi maaaring i-load ang site na ito mula sa cache</translation>
+<translation id="7723047071702270851">I-edit ang Card</translation>
 <translation id="774634243536837715">Na-block ang mapanganib na content.</translation>
 <translation id="7752995774971033316">Hindi pinamamahalaan</translation>
 <translation id="7755287808199759310">Maaari itong alisin sa pagkaka-block ng iyong magulang para sa iyo</translation>
@@ -836,6 +858,7 @@
 <translation id="7764225426217299476">Magdagdag ng address</translation>
 <translation id="777702478322588152">Prefecture</translation>
 <translation id="7791543448312431591">Magdagdag</translation>
+<translation id="7793553086574152071">Upang mas mabilis na makapagbayad sa susunod, i-save ang card na ito sa iyong Google Account.</translation>
 <translation id="7793809570500803535">Maaaring pansamantalang sira ang webpage sa <ph name="SITE" /> o maaaring permanente itong inilipat sa isang bagong web address.</translation>
 <translation id="7800304661137206267">Na-encrypt ang koneksyon gamit ang <ph name="CIPHER" />, kasama ang <ph name="MAC" /> para sa pagpapatunay ng mensahe at <ph name="KX" /> bilang mekanismo ng pangunahing pagpapalit.</translation>
 <translation id="7802523362929240268">Lehitimo ang site</translation>
@@ -869,6 +892,7 @@
 <translation id="8088680233425245692">Hindi natingnan ang artikulo.</translation>
 <translation id="8091372947890762290">Nakabinbin sa server ang pag-activate</translation>
 <translation id="8094917007353911263">Maaaring hilingin ng network na ginagamit mo na bisitahin mo ang <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
+<translation id="8103161714697287722">Paraan ng Pagbabayad</translation>
 <translation id="8118489163946903409">Paraan ng pagbabayad</translation>
 <translation id="8131740175452115882">Kumpirmahin</translation>
 <translation id="8134994873729925007">Hindi makita ang <ph name="BEGIN_ABBR" />DNS address<ph name="END_ABBR" /> ng server ng <ph name="HOST_NAME" />.</translation>
@@ -950,6 +974,7 @@
 <translation id="8903921497873541725">Mag-zoom in</translation>
 <translation id="8931333241327730545">Gusto mo bang i-save ang card na ito sa iyong Google Account?</translation>
 <translation id="8932102934695377596">Nahuhuli ang iyong orasan</translation>
+<translation id="893332455753468063">Magdagdag ng Pangalan</translation>
 <translation id="8938939909778640821">Mga tinatanggap na credit at prepaid card</translation>
 <translation id="8957210676456822347">Pagpapahintulot sa Captive Portal</translation>
 <translation id="8971063699422889582">Nag-expire na ang certificate ng server.</translation>
@@ -973,6 +998,7 @@
 <translation id="9078964945751709336">Nangangailangan ng higit pang impormasyon</translation>
 <translation id="9080712759204168376">Buod ng Order</translation>
 <translation id="9103872766612412690">Karaniwang gumagamit ang <ph name="SITE" /> ng pag-encrypt upang protektahan ang iyong impormasyon. Noong sinubukang kumonekta ng Chromium sa <ph name="SITE" /> sa pagkakataong ito, nagbalik ang website ng mga hindi pangkaraniwan at maling kredensyal. Maaari itong mangyari kapag sinusubukan ng isang attacker na magpanggap bilang <ph name="SITE" />, o naputol ang koneksyon dahil sa isang screen ng pag-sign in sa Wi-Fi. Secure pa rin ang iyong impormasyon dahil inihinto ng Chromium ang koneksyon bago magkaroon ng palitan ng anumang data.</translation>
+<translation id="9106062320799175032">Magdagdag ng Billing Address</translation>
 <translation id="910908805481542201">Tulungan akong ayusin ito</translation>
 <translation id="9128870381267983090">Kumonekta sa network</translation>
 <translation id="9137013805542155359">Ipakita ang orihinal</translation>
@@ -986,6 +1012,7 @@
 <translation id="9183425211371246419">Gumagamit ng hindi sinusuportahang protocol ang <ph name="HOST_NAME" />.</translation>
 <translation id="9205078245616868884">Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync. Ilagay ito upang simulan ang pag-sync.</translation>
 <translation id="9207861905230894330">Hindi naidagdag ang artikulo.</translation>
+<translation id="9215416866750762878">Pinipigilan ng isang application na makakonekta nang ligtas ang Chrome sa site na ito</translation>
 <translation id="9219103736887031265">Mga Larawan</translation>
 <translation id="933612690413056017">Walang koneksyon sa Internet</translation>
 <translation id="933712198907837967">Diners Club</translation>

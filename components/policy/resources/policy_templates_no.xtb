@@ -73,11 +73,20 @@
 <translation id="1330145147221172764">Slå på skjermtastaturet</translation>
 <translation id="1330985749576490863">Slår av Google Disk over mobiltilkoblinger i Filer-appen for <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="13356285923490863">Navn på retningslinje</translation>
+<translation id="134402861816424823">Angir skriverne som en bruker ikke kan bruke.
+
+      Disse retningslinjene brukes bare hvis BlacklistRestriction er valgt for
+      DeviceNativePrintersAccessMode.
+
+      Hvis disse retningslinjene brukes, er alle skriverne tilgjengelige for brukeren,
+      med unntak av ID-ene som er oppført i retningslinjene.
+      </translation>
 <translation id="1353966721814789986">Oppstartsider</translation>
 <translation id="1359553908012294236">Hvis denne regelen settes til true (sann) eller ikke konfigureres, slås gjestepålogginger på i <ph name="PRODUCT_NAME" />. Gjestepålogginger er <ph name="PRODUCT_NAME" />-profiler der alle vinduene er i inkognitomodus.
 
       Hvis denne regelen settes til false (usann), tillater ikke <ph name="PRODUCT_NAME" /> at gjesteprofiler startes.</translation>
 <translation id="1363275621236827384">Slå på forespørsler til Quirks Server for maskinvareprofiler</translation>
+<translation id="1393485621820363363">Aktiverte bedriftsskrivere</translation>
 <translation id="1397855852561539316">Foreslått nettadresse for standard søkeleverandør</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Adresse eller nettadresse for proxy-tjener</translation>
@@ -255,6 +264,33 @@
 <translation id="209586405398070749">Stabil kanal</translation>
 <translation id="2098658257603918882">Aktiver rapportering av bruk og programstopprelaterte data</translation>
 <translation id="2113068765175018713">Begrens enhetens driftstid ved å bruke automatisk omstart</translation>
+<translation id="2126314858836465216">Gir konfigurasjoner for bedriftsskrivere som er knyttet til enheter.
+
+      Med disse retningslinjene kan du gi skriverkonfigurasjoner til
+      <ph name="PRODUCT_OS_NAME" />-enheter.
+      Filstørrelsen kan ikke overskride 5 MB og må være kodet i JSON.
+      Formatet er det samme som NativePrinters-ordlisten. Det anslås
+      at en fil som inneholder omtrent 21 000 skrivere, omgjøres til en fil
+      på 5 MB. Den kryptografiske hash-koden brukes til å sikre integriteten til
+      nedlastingen.
+
+      Filen lastes ned og bufres. Den lastes ned på nytt hver gang
+      nettadressen eller hash-koden endres.
+
+      Hvis disse retningslinjene er angitt,
+      kommer <ph name="PRODUCT_OS_NAME" /> til å laste ned
+      filen for skriverkonfigurasjoner og gjøre skrivere tilgjengelige i
+      henhold til DeviceNativePrintersAccessMode, DeviceNativePrintersWhitelist
+      og DeviceNativePrintersBlacklist.
+
+      Disse retningslinjene påvirker ikke hvorvidt brukere kan konfigurere skrivere på
+      ulike enheter. Den er ment å være et tillegg til
+      konfigurering av skrivere som gjøres av individuelle brukere.
+
+      Disse retningslinjene er i tillegg til NativePrintersBulkConfiguration.
+
+      Hvis disse retningslinjene ikke spesifiseres, er det ingen enhetsskrivere, og de andre
+      NativeDevicePrinter*-retningslinjene ignoreres.</translation>
 <translation id="2127599828444728326">Tillat varslinger på disse nettstedene</translation>
 <translation id="2131902621292742709">Forsinkelse for nedtonet skjerm når enheten kjører på batteristrøm</translation>
 <translation id="2134437727173969994">Tillat låsing av skjermen</translation>
@@ -488,6 +524,14 @@
       Hvert bidrag på listen spesifiserer en identifikator, som brukes internt for å skille de ulike lokale kontoene på enheten fra hverandre.</translation>
 <translation id="2769952903507981510">Konfigurer det ønskede domenenavnet for verter med ekstern adgang</translation>
 <translation id="2787173078141616821">Rapportér informasjon om Android-status</translation>
+<translation id="2789419769822054691">Angir hvilke skrivere en bruker kan bruke.
+
+      Disse retningslinjene brukes bare hvis WhitelistPrintersOnly er valgt for
+      DeviceNativePrintersAccessMode.
+
+      Hvis disse retningslinjene brukes, er bare skriverne med ID-er som samsvarer
+      med verdiene i disse retningslinjene, tilgjengelige for brukeren. ID-ene må
+      samsvare med oppføringene i filen som er spesifisert i DeviceNativePrinters.</translation>
 <translation id="2801230735743888564">Gir brukerne mulighet til å spille dinosaurspill-påskeegget når enheten ikke er koblet til.
 
       Hvis denne regelen er satt til false (usann), kan ikke brukerne spille dinosaurspillet når enheten ikke er koblet til. Hvis regelen er satt til true (sann), kan brukerne spille dinosaurspillet. Hvis denne regelen ikke er angitt, kan ikke brukerne spille dinosaurspillet på registrerte Chrome OS-installasjoner, men de kan spille det i andre situasjoner.</translation>
@@ -542,13 +586,6 @@
           Innstillingsverdien må spesifiseres i millisekunder. Verdien er låst til å være lavere enn eller samsvarende med forsinkelsen for å slå av skjermen (hvis den er konfigurert) og inaktivitetsforsinkelsen.</translation>
 <translation id="2987155890997901449">Slå på ARC</translation>
 <translation id="2987227569419001736">Kontrollér bruken av Web Bluetooth API</translation>
-<translation id="2998881342848488968">Med denne innstillingen kan <ph name="PRODUCT_OS_NAME" /> omgå eventuelle proxy-tjenere for autentisering via obligatoriske sider.
-
-      Denne regelen trer bare i kraft hvis en proxy-tjener er konfigurert (for eksempel gjennom administratorinnstillingene, av brukeren i chrome://settings eller av utvidelser).
-
-      Hvis du slår på denne regelen, blir alle obligatoriske autentiseringssider (det vil si alle nettsider fra den obligatoriske påloggingssiden og frem til <ph name="PRODUCT_NAME" /> registrerer at enheten er koblet til Internett) vist i separate vinduer, og alle administratorinnstillinger og begrensninger for den aktive brukeren blir ignorert.
-
-      Hvis du slår av denne regelen eller ikke spesifiserer den, blir alle obligatoriske autentiseringssider vist i (vanlige) nye nettleserfaner, med den aktive brukerens proxy-tjenerinnstillinger.</translation>
 <translation id="3001534538097271560">Hvis denne regelen settes til «false» (usann), kan ikke brukerne velge å sende enkelte typer systeminformasjon og sideinnhold til Google-tjenere. Hvis denne regelen settes til «true» (sann) eller ikke konfigureres, kan brukerne sende enkelte typer systeminformasjon og sideinnhold til Safe Browsing for å bidra til å oppdage farlige apper og nettsteder.
 
       Gå til https://developers.google.com/safe-browsing for å få mer informasjon om Safe Browsing.</translation>
@@ -675,6 +712,7 @@
 
           Denne innstillingen brukes bare hvis «DefaultSearchProviderEnabled»-innstillingen er aktivert.</translation>
 <translation id="350797926066071931">Aktiver oversettelse</translation>
+<translation id="3512226956150568738">Hvis klientens enhetsmodell allerede støttet ARC før overføringen til ext4 var nødvendig for å kjøre ARC, og hvis ArcEnabled-retningslinjene er satt til sann, har dette alternativet samme effekt som AskUser (verdi 3). I alle andre tilfeller (hvis enhetsmodellen ikke støttet ARC tidligere, eller hvis ArcEnabled-retningslinjene er satt til usann), tilsvarer denne verdien DisallowArc (verdi 0).</translation>
 <translation id="3528000905991875314">Aktiver alternative feilsider</translation>
 <translation id="3547954654003013442">Innstillinger for proxy-tjener</translation>
 <translation id="3591584750136265240">Konfigurer autentiseringsatferden ved pålogging</translation>
@@ -719,6 +757,11 @@
           Hvis regelen «EnableMediaRouter» angis som «false», har denne regelens verdi ingen virkning, og verktøyradikonet vises ikke.</translation>
 <translation id="3788662722837364290">Innstillinger for strømstyring når brukeren er inaktiv</translation>
 <translation id="3793095274466276777">Konfigurerer standard nettleserkontroller i <ph name="PRODUCT_NAME" /> og hindrer brukere i å endre dem. Hvis du aktiverer denne innstillingen, sjekker <ph name="PRODUCT_NAME" /> alltid ved oppstart om den er standardnettleser, og registrerer seg selv automatisk om mulig. Hvis denne innstillingen er deaktivert, sjekker <ph name="PRODUCT_NAME" /> aldri om den er standardnettleser, og deaktiverer brukerstyrt kontroll av dette alternativet. Hvis denne innstillingen ikke er angitt, lar <ph name="PRODUCT_NAME" /> brukeren kontrollere om den er standardnettleser, og hvorvidt brukervarslinger skal vises når den ikke er det.</translation>
+<translation id="379602782757302612">Lar deg angi hvilke utvidelser brukerne IKKE kan installere. Utvidelser som allerede er installert, blir deaktivert hvis de er svartelistet – uten at brukeren kan aktivere dem. Når en utvidelse som er deaktivert på grunn av svartelisten, fjernes fra svartelisten, aktiveres den automatisk igjen.
+
+          En svartelisteverdi på «*» betyr at alle utvidelser er svartelistet, med mindre de er uttrykkelig oppført i godkjenningslisten.
+
+          Hvis denne regelen ikke er angitt, kan brukeren installere alle utvidelser i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3800626789999016379">Konfigurerer katalogen <ph name="PRODUCT_NAME" /> bruker for å laste ned filer. 
 
       Hvis du angir denne regelen, bruker <ph name="PRODUCT_NAME" /> den oppgitte katalogen uansett om brukeren har angitt en annen katalog eller slått på flagget for å velge lagringsplass for hver nedlasting.
@@ -1069,8 +1112,10 @@
 <translation id="5052081091120171147">Denne retningslinjen tvinger import av nettleserloggen fra den aktuelle standardnettleseren hvis den er aktivert. Hvis den er aktivert, påvirker denne retningslinjen også importdialogen. Hvis den er deaktivert, importeres ingen nettleserlogg. Hvis den ikke er angitt, er det mulig at brukeren får spørsmål om hvorvidt vedkommende ønsker å importere, eller så kan importeringen skje automatisk.</translation>
 <translation id="5056708224511062314">Skjermforstørrelse deaktivert</translation>
 <translation id="5067143124345820993">Godkjenningsliste for brukerpålogging</translation>
+<translation id="5068140065960598044"><ph name="PRODUCT_NAME" />-regelen for nettskyen overstyrer maskinens retningslinjer.</translation>
 <translation id="5085647276663819155">Deaktiver forhåndsvisning av utskrift</translation>
 <translation id="5105313908130842249">Forsinkelse for låst skjerm når enheten kjører på batteristrøm</translation>
+<translation id="5108031557082757679">Deaktiverte bedriftsskrivere</translation>
 <translation id="5130288486815037971">Definerer om RC4-chifferserier i TLS er slått på</translation>
 <translation id="5141670636904227950">Angi standard skjermforstørrelsestype som er aktivert på påloggingssiden</translation>
 <translation id="5142301680741828703">Alltid gjengi følgende nettadressemønstre i <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1544,6 +1589,13 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
           Hvis du angir denne innstillingen, kan ikke brukere endre eller overstyre den.
 
           Hvis denne innstillingen ikke angis, deaktiveres muntlig tilbakemelding til å begynne med, men brukere kan aktivere den når som helst.</translation>
+<translation id="6922040258551909078">
+      Hvis regelen er satt til Sann, prioriteres den foran maskinens retningslinjer hvis de er i konflikt med hverandre.
+      Hvis regelen er satt til Usann eller ikke er konfigurert, prioriteres maskinens retningslinjer hvis de er i konflikt med hverandre.
+      Hvis du vil vite mer om retningslinjenes prioritet, kan du besøke: https://support.google.com/chrome?p=set_chrome_policies_for_devices
+
+      Denne regelen er ikke tilgjengelig på Windows-forekomster som ikke er knyttet til et <ph name="MS_AD_NAME" />-domene.
+      </translation>
 <translation id="6922884955650325312">Blokkér <ph name="FLASH_PLUGIN_NAME" />-programtillegget</translation>
 <translation id="6923366716660828830">Angir navnet på standard søkeleverandør. Hvis dette ikke angis, brukes vertsnavnet angitt av søkenettadressen.
 
@@ -1664,6 +1716,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       Hvis den er angitt som «false» (usann), vises ikke automatisk genererte innholdsforslag på nye faner.</translation>
 <translation id="7323896582714668701">Ytterligere kommandolinjeparametere for <ph name="PRODUCT_NAME" /></translation>
+<translation id="7326394567531622570">Ligner på Fjern (verdi 2), men forsøker å beholde påloggingstoken, slik at brukeren ikke må logge på igjen.</translation>
 <translation id="7329842439428490522">Angir hvor lenge brukeren må være inaktiv før skjermen låses når enheten kjører på batteristrøm.
 
           Når denne innstillingen er konfigurert til en verdi som er større en null, angir den hvor lenge brukeren må være inaktiv før <ph name="PRODUCT_OS_NAME" /> slår av skjermen.
@@ -1690,6 +1743,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis denne innstillingen ikke angis, tar automatisk opprydding i bruk den innebygde standardstrategien. For øyeblikket er det «RemoveLRUIfDormant»-strategien.</translation>
 <translation id="7336878834592315572">Behold informasjonskapsler så lenge økten varer</translation>
 <translation id="7340034977315324840">Rapportering av aktivitetstider for enhet</translation>
+<translation id="7343497214039883642">Konfigurasjonsfil for enheter på bedriftsskriver</translation>
 <translation id="7384999953864505698">Tillater QUIC-protokollen</translation>
 <translation id="7417972229667085380">Prosentandelen for skalering av inaktivitetsforsinkelsen i presentasjonsmodus (avviklet)</translation>
 <translation id="7421483919690710988">Angi størrelse på mediediskbuffer i byte</translation>
@@ -1879,6 +1933,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis innstillingen ikke er angitt, bruker enheten 24-timers klokkeformat som standard.</translation>
 <translation id="8114382167597081590">Fremtvinger ikke bruk av Begrenset innhold-modusen på YouTube</translation>
 <translation id="8118665053362250806">Angi størrelse på mediediskbuffer</translation>
+<translation id="8124468781472887384">Retningslinjer for tilgang til konfigurering av enhetsskrivere.</translation>
 <translation id="8135937294926049787">Angir hvor lenge brukeren må være inaktiv før skjermen låses når enheten kjører på batteristrøm.
 
           Når denne innstillingen er konfigurert til en verdi som er større en null, angir den hvor lenge brukeren må være inaktiv før <ph name="PRODUCT_OS_NAME" /> slår av skjermen.
@@ -1999,7 +2054,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="8424255554404582727">Angi standardverdien for skjermrotasjon. Denne brukes hver gang enheten starter på nytt</translation>
 <translation id="8426231401662877819">Rotér skjermen 90 grader med klokken</translation>
 <translation id="8451988835943702790">Bruk siden Ny fane som startside</translation>
-<translation id="8458790683633857482">Spesifiserer et sett med regler som overleveres til ARC-kjøringen. Verdien må være gyldig JSON.</translation>
 <translation id="8465065632133292531">Parametere for Instant-nettadresser som bruker POST</translation>
 <translation id="847472800012384958">Ikke la noen nettsteder vise forgrunnsvinduer</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
@@ -2068,6 +2122,18 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="8864975621965365890">Ignorerer avslagsforespørselen som vises når et nettsted gjengis av <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Startside</translation>
 <translation id="8882006618241293596">Blokkér <ph name="FLASH_PLUGIN_NAME" />-programtillegget på disse nettstedene</translation>
+<translation id="8887644176044431146">Kontrollerer hvilke skrivere fra
+      DeviceNativePrintersConfiguration som er tilgjengelige for brukere.
+
+      Angir hvilke retningslinjer for tilgang som brukes for massekonfigurering av skrivere.
+      Hvis AllowAll er valgt, vises alle skrivere. Hvis BlacklistRestrction
+      er valgt, brukes DeviceNativePrintersBlacklist til å begrense tilgangen til
+      de spesifiserte skriverne. Hvis WhitelistPrintersOnly er valgt,
+      angir DeviceNativePrintersWhitelist bare skriverne som kan
+      velges.
+
+      Hvis disse retningslinjene ikke spesifiseres, antas det at BlacklistRestriction brukes.
+      </translation>
 <translation id="8906768759089290519">Aktiver gjestemodus</translation>
 <translation id="8908294717014659003">Lar deg angi om nettsteder skal gis tillatelse til å bruke digitaliseringsenhetene dine. Bruk av digitaliseringsenheter kan tillates som standard, eller angis slik at brukeren blir spurt om tillatelse hver gang et nettsted ønsker å bruke slike enheter.
 

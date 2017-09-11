@@ -26,6 +26,7 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="1643640058022401035">Napuštanjem ove stranice završit ćete svoju sesiju aplikacije Chromoting.</translation>
 <translation id="1654128982815600832">Omogućavanje daljinskih veza za ovo računalo…</translation>
 <translation id="170207782578677537">Nisam uspio registrirati ovo računalo.</translation>
+<translation id="1727412735341161734">Udaljena radna površina Chrome</translation>
 <translation id="174018511426417793">Nije registrirano nijedno računalo. Da biste omogućili daljinske veze s računalom, instalirajte Udaljenu radnu površinu Chrome pa kliknite "<ph name="BUTTON_NAME" />".</translation>
 <translation id="1742469581923031760">Povezivanje…</translation>
 <translation id="1770394049404108959">Ne mogu otvoriti aplikaciju.</translation>
@@ -94,8 +95,11 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="3150823315463303127">Host nije uspio pročitati pravila.</translation>
 <translation id="3194245623920924351">Udaljena radna površina Chrome</translation>
 <translation id="3197730452537982411">Udaljena radna površina</translation>
+<translation id="324272851072175193">Pošalji te upute e-poštom</translation>
 <translation id="3258789396564295715">Ovom računalu možete sigurno pristupiti pomoću Udaljene radne površine Chrome.</translation>
 <translation id="3286521253923406898">Kontroler hosta usluge Chromoting</translation>
+<translation id="3305934114213025800"><ph name="PRODUCT_NAME" /> želi napraviti promjene.</translation>
+<translation id="331779822864701136">• Dodana je podrška za Android 8.0 Oreo.</translation>
 <translation id="332624996707057614">Uredi naziv računala</translation>
 <translation id="3339299787263251426">Siguran pristup računalu putem interneta</translation>
 <translation id="3360306038446926262">Windows</translation>
@@ -104,6 +108,12 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="3385242214819933234">Nevažeći vlasnik hosta.</translation>
 <translation id="3403830762023901068">Postavke pravila ne dopuštaju dijeljenje ovog računala kao hosta za Chromoting. Obratite se administratoru sustava za pomoć.</translation>
 <translation id="3423542133075182604">Postupak daljinskog postavljanja sigurnosnog ključa</translation>
+<translation id="3426467947138417795">Udaljena radna površina Chrome
+Udaljena radna površina
+Udaljeni PC
+Udaljeno računalo
+Daljinski pristup
+Daljinska podrška</translation>
 <translation id="3581045510967524389">Nije bilo moguće povezati se s mrežom. Provjerite je li uređaj na mreži.</translation>
 <translation id="3596628256176442606">Ta usluga omogućuje dolazne veze s klijenata usluge Chromoting.</translation>
 <translation id="3606997049964069799">Niste prijavljeni u Chromium. Prijavite se i pokušajte ponovo.</translation>
@@ -112,6 +122,13 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="3695446226812920698">Saznajte kako</translation>
 <translation id="3718805989288361841">Došlo je do pogreške s postavkama pravila za Udaljenu radnu površinu Chrome. Obratite se administratoru sustava za pomoć.</translation>
 <translation id="3776024066357219166">Završila je vaša sesija u aplikaciji Udaljena radna površina Chrome.</translation>
+<translation id="3788372335219293587">Sigurno pristupajte računalu s iOS uređaja. Brzo je, jednostavno i besplatno.
+
+• Na računalu kojemu želite daljinski pristupiti pronađite aplikaciju Udaljena radna površina Chrome u Chrome web-trgovini https://chrome.google.com/remotedesktop
+• Instalirajte softver Udaljena radna površina Chrome i slijedite upute da biste dovršili postavljanje.
+• Na iOS uređaju otvorite aplikaciju i dodirnite bilo koje od svojih online računala da biste se povezali.
+
+Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http://goo.gl/SyrVzj).</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Potvrdite svoj račun i PIN u nastavku da biste usluzi Udaljena radna površina Chrome dozvolili pristup.</translation>
 <translation id="3897092660631435901">Izbornik</translation>
@@ -125,6 +142,7 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="405887016757208221">Udaljeno računalo nije uspjelo inicijalizirati sesiju. Ako se problem ne riješi, pokušajte ponovo konfigurirati host.</translation>
 <translation id="4068946408131579958">Sve veze</translation>
 <translation id="409800995205263688">NAPOMENA: postavke pravila dopuštaju jedino veze između računala u vašoj mreži.</translation>
+<translation id="4145029455188493639">Prijavljeni ste kao <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Nedostaju neke obavezne komponente. Provjerite jeste li instalirali najnoviju verziju softvera i pokušajte ponovo.</translation>
 <translation id="4156740505453712750">Da biste zaštitili pristup ovom računalu, odaberite PIN s <ph name="BOLD_START" />najmanje šest brojeva<ph name="BOLD_END" />. Taj će PIN biti potreban pri povezivanju s druge lokacije.</translation>
 <translation id="4176825807642096119">Pristupni kôd</translation>
@@ -189,6 +207,7 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="5625493749705183369">Putem interneta pristupajte drugim računalima ili drugim korisnicima omogućite siguran pristup svojem računalu.</translation>
 <translation id="5702987232842159181">Povezan:</translation>
 <translation id="5708869785009007625">Vaša se radna površina trenutačno dijeli s korisnikom <ph name="USER" />.</translation>
+<translation id="5750083143895808682">Prijavljeni ste kao <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="5773590752998175013">Datum uparivanja</translation>
 <translation id="579702532610384533">Ponovno povezivanje</translation>
 <translation id="5810269635982033450">Zaslon se ponaša kao dodirna podloga</translation>
@@ -244,9 +263,13 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="701976023053394610">Daljinska pomoć</translation>
 <translation id="7038683108611689168">Pomognite nam da poboljšamo Chromoting tako da nam dopustite prikupljanje statistika o upotrebi i izvješća o padovima.</translation>
 <translation id="7067321367069083429">Zaslon se ponaša kao dodirni zaslon</translation>
+<translation id="7116737094673640201">Dobro došli na Udaljenu radnu površinu Chrome</translation>
 <translation id="7144878232160441200">Pokušaj ponovo</translation>
 <translation id="7149517134817561223">Aplikacija za izdavanje naredbi hostu Udaljene radne površine Chrome.</translation>
 <translation id="7215059001581613786">Unesite PIN koji se sastoji od šest ili više znamenki.</translation>
+<translation id="7237767047212540055">Na računalu kojemu želite daljinski pristupiti otvorite Chrome i posjetite <ph name="INSTALLATION_LINK" />
+Instalirajte softver Udaljena radna površina Chrome i slijedite upute da biste dovršili postavljanje
+Nakon dovršetka postavljanja moći ćete pristupiti računalu s te stranice unosom PIN-a ili pristupnog koda</translation>
 <translation id="7312846573060934304">Host je izvan mreže.</translation>
 <translation id="7319983568955948908">Zaustavi dijeljenje</translation>
 <translation id="7401733114166276557">Udaljena radna površine Chrome</translation>

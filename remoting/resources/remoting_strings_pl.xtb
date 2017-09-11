@@ -26,6 +26,7 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="1643640058022401035">Jeśli opuścisz tę stronę, sesja Chromoting zostanie zakończona.</translation>
 <translation id="1654128982815600832">Włączam połączenia zdalne z tym komputerem…</translation>
 <translation id="170207782578677537">Nie udało się zarejestrować tego komputera.</translation>
+<translation id="1727412735341161734">Pulpit zdalny Chrome</translation>
 <translation id="174018511426417793">Nie masz zarejestrowanych komputerów. Aby umożliwić zdalne połączenia z komputerem, zainstaluj na nim Pulpit zdalny Chrome i kliknij „<ph name="BUTTON_NAME" />”.</translation>
 <translation id="1742469581923031760">Łączę…</translation>
 <translation id="1770394049404108959">Nie mogę otworzyć aplikacji.</translation>
@@ -94,8 +95,11 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="3150823315463303127">Host nie może odczytać zasad.</translation>
 <translation id="3194245623920924351">Pulpit zdalny Chrome</translation>
 <translation id="3197730452537982411">Pulpit zdalny</translation>
+<translation id="324272851072175193">Prześlij te instrukcje e-mailem</translation>
 <translation id="3258789396564295715">Możesz bezpiecznie korzystać z tego komputera przez Pulpit zdalny Chrome.</translation>
 <translation id="3286521253923406898">Kontroler hosta funkcji Chromoting</translation>
+<translation id="3305934114213025800"><ph name="PRODUCT_NAME" /> chce wprowadzić zmiany.</translation>
+<translation id="331779822864701136">• Dodano obsługę Androida 8.0 Oreo.</translation>
 <translation id="332624996707057614">Edytuj nazwę komputera</translation>
 <translation id="3339299787263251426">Bezpieczny dostęp online do komputera</translation>
 <translation id="3360306038446926262">Okna</translation>
@@ -104,6 +108,12 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="3385242214819933234">Nieprawidłowy właściciel hosta.</translation>
 <translation id="3403830762023901068">Ustawienia zasad nie zezwalają na udostępnianie tego komputera jako hosta Chromoting. Aby uzyskać pomoc, skontaktuj się z administratorem systemu.</translation>
 <translation id="3423542133075182604">Proces zdalnego stosowania klucza bezpieczeństwa</translation>
+<translation id="3426467947138417795">Pulpit zdalny Chrome
+Pulpit zdalny
+Zdalny pecet
+Zdalny komputer
+Zdalny dostęp
+Pomoc zdalna</translation>
 <translation id="3581045510967524389">Nie można połączyć się z siecią. Sprawdź, czy urządzenie jest online.</translation>
 <translation id="3596628256176442606">Ta usługa umożliwia obsługę połączeń przychodzących z klientów funkcji Chromoting.</translation>
 <translation id="3606997049964069799">Nie jesteś zalogowany do Chromium. Zaloguj się i spróbuj ponownie.</translation>
@@ -112,6 +122,13 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="3695446226812920698">Instrukcje</translation>
 <translation id="3718805989288361841">Wystąpił błąd związany z ustawieniami zasad dla Pulpitu zdalnego Chrome. Aby uzyskać pomoc, skontaktuj się z administratorem systemu.</translation>
 <translation id="3776024066357219166">Sesja Pulpitu zdalnego Chrome została zakończona.</translation>
+<translation id="3788372335219293587">Uzyskaj bezpieczny dostęp do swojego komputera z urządzenia z iOS. To rozwiązanie proste, szybkie i bezpłatne.
+
+• Na komputerze, do którego chcesz uzyskać zdalny dostęp, pobierz aplikację Pulpit zdalny Chrome ze sklepu Chrome Web Store: https://chrome.google.com/remotedesktop
+• Zainstaluj Pulpit zdalny Chrome i postępuj zgodnie z instrukcją, by zakończyć instalację.
+• Otwórz aplikację na urządzeniu z iOS i wybierz jeden z dostępnych komputerów, by się połączyć.
+
+Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http://goo.gl/SyrVzj).</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Potwierdź poniżej swoje konto i kod PIN, by pozwolić na dostęp przez Pulpit zdalny Chrome.</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -125,6 +142,7 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="405887016757208221">Komputerowi zdalnemu nie udało się zainicjować sesji. Jeśli problem nie zniknie, spróbuj ponownie skonfigurować hosta.</translation>
 <translation id="4068946408131579958">Wszystkie połączenia</translation>
 <translation id="409800995205263688">UWAGA: ustawienia zasad zezwalają wyłącznie na połączenia między komputerami w Twojej sieci.</translation>
+<translation id="4145029455188493639">W tej chwili używasz konta <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Brak niektórych wymaganych komponentów. Upewnij się, że masz zainstalowaną najnowszą wersję oprogramowania, i spróbuj ponownie.</translation>
 <translation id="4156740505453712750">Aby zabezpieczyć dostęp do tego komputera, wybierz PIN złożony z <ph name="BOLD_START" />co najmniej sześciu cyfr<ph name="BOLD_END" />. Będzie on wymagany przy łączeniu się z innej lokalizacji.</translation>
 <translation id="4176825807642096119">Kod dostępu</translation>
@@ -189,6 +207,7 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="5625493749705183369">Uzyskuj dostęp do innych komputerów lub zezwalaj innym użytkownikom na bezpieczny dostęp do swojego komputera przez internet.</translation>
 <translation id="5702987232842159181">Połączono:</translation>
 <translation id="5708869785009007625">Twój pulpit jest obecnie udostępniany użytkownikowi: <ph name="USER" />.</translation>
+<translation id="5750083143895808682">W tej chwili używasz konta <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="5773590752998175013">Data parowania</translation>
 <translation id="579702532610384533">Połącz ponownie</translation>
 <translation id="5810269635982033450">Ekran działa jak trackpad</translation>
@@ -244,9 +263,13 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="701976023053394610">Pomoc zdalna</translation>
 <translation id="7038683108611689168">Pomóż nam udoskonalić Chromoting, zezwalając na gromadzenie przez nas statystyk użytkowania i raportów o awariach.</translation>
 <translation id="7067321367069083429">Ekran działa jak ekran dotykowy</translation>
+<translation id="7116737094673640201">Witamy w Pulpicie zdalnym Chrome</translation>
 <translation id="7144878232160441200">Ponów próbę</translation>
 <translation id="7149517134817561223">Aplikacja do wysyłania poleceń do hosta Pulpitu zdalnego Chrome.</translation>
 <translation id="7215059001581613786">Wpisz PIN złożony z co najmniej sześciu cyfr.</translation>
+<translation id="7237767047212540055">Na komputerze, do którego chcesz uzyskać zdalnych dostęp, otwórz Chrome i wejdź na stronę <ph name="INSTALLATION_LINK" />
+Zainstaluj aplikację Pulpit zdalny Chrome i postępuj zgodnie z instrukcją, by dokończyć instalację.
+Po zakończeniu instalacji możesz na tej stronie uzyskać dostęp do komputera. Wystarczy, że wpiszesz kod dostępu lub PIN.</translation>
 <translation id="7312846573060934304">Host jest offline.</translation>
 <translation id="7319983568955948908">Zatrzymaj udostępnianie</translation>
 <translation id="7401733114166276557">Pulpit zdalny Chrome</translation>
@@ -284,7 +307,7 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="8178433417677596899">Dzielenie się ekranem z innym użytkownikiem – doskonałe do zdalnej pomocy technicznej.</translation>
 <translation id="8187079423890319756">Copyright 2013 Autorzy Chromium. Wszelkie prawa zastrzeżone.</translation>
 <translation id="8196755618196986400">Aby umożliwić nam skontaktowanie się z Tobą w sprawie dodatkowych informacji, Twój adres e-mail zostanie dołączony do każdego zgłoszenia, które prześlesz.</translation>
-<translation id="8244400547700556338">Dowiedz się jak.</translation>
+<translation id="8244400547700556338">Instrukcje</translation>
 <translation id="8261506727792406068">Usuń</translation>
 <translation id="8355326866731426344">Ten kod dostępu wygasa za <ph name="TIMEOUT" /></translation>
 <translation id="8355485110405946777">Dołącz dzienniki aplikacji, by pomóc nam rozwiązać ten problem (dzienniki mogą zawierać informacje prywatne).</translation>

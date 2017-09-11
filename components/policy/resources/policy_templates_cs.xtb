@@ -72,11 +72,20 @@ Hodnota prodloužení musí být 100 % nebo více.</translation>
 <translation id="1330145147221172764">Povolit softwarovou klávesnici</translation>
 <translation id="1330985749576490863">Zakáže v aplikaci Soubory v systému <ph name="PRODUCT_OS_NAME" /> přístup k Disku Google přes mobilní připojení</translation>
 <translation id="13356285923490863">Název zásady</translation>
+<translation id="134402861816424823">Určuje, které tiskárny uživatel nesmí používat.
+
+      Tato zásada se použije, jen pokud je u zásady DeviceNativePrintersAccessMode
+      nastavena možnost BlacklistRestriction.
+
+      Je-li tato zásada použita, uživatel bude mít k dispozici všechny tiskárny
+      kromě těch, jejichž ID jsou uvedena v této zásadě.
+      </translation>
 <translation id="1353966721814789986">Stránky otevírané při spuštění</translation>
 <translation id="1359553908012294236">Pokud je tato zásada nastavena na hodnotu True nebo nastavena není, prohlížeč <ph name="PRODUCT_NAME" /> povolí přihlášení hosta. Přihlášení hosta v prohlížeči <ph name="PRODUCT_NAME" /> jsou profily, ve kterých jsou všechna okna v anonymním režimu.
 
 Pokud je tato zásada nastavena na hodnotu False, <ph name="PRODUCT_NAME" /> vytváření profilů hosta nepovolí.</translation>
 <translation id="1363275621236827384">Povolit dotazy na server Quirks pro hardwarové profily</translation>
+<translation id="1393485621820363363">Povolené podnikové tiskárny pro zařízení</translation>
 <translation id="1397855852561539316">URL výchozího vyhledávače pro návrhy</translation>
 <translation id="1426410128494586442">Ano</translation>
 <translation id="1427655258943162134">Adresa (nebo adresa URL) proxy serveru</translation>
@@ -243,6 +252,32 @@ Hodnota je analyzována jako slovník JSON s mapováním názvu zásady na hodno
 <translation id="209586405398070749">Stabilní verze</translation>
 <translation id="2098658257603918882">Aktivovat odesílání dat o využití nebo selhání</translation>
 <translation id="2113068765175018713">Omezit provozní dobu zařízení automatickým restartováním</translation>
+<translation id="2126314858836465216">Poskytuje konfigurace pro podnikové tiskárny svázané se zařízeními.
+
+      Tato zásada umožňuje poskytnout zařízením <ph name="PRODUCT_OS_NAME" />
+      konfigurace tiskáren.
+      Soubor nesmí být větší než 5 MB a musí být zakódován ve formátu JSON.
+      Formát je stejný jako ve slovníku NativePrinters. Podle odhadů
+      by zakódovaný soubor obsahující asi 21 000 tiskáren měl mít velikost 5MB.
+      Kryptografický hašovací klíč slouží k ověření integrity stahování.
+
+      Soubor bude stažen a uložen do mezipaměti. Při každé změně adresy URL
+      nebo hašovacího klíče se soubor stáhne znovu.
+
+      Je-li tato zásada nastavena,
+      zařízení <ph name="PRODUCT_OS_NAME" /> stáhne
+      soubor s konfiguracemi tiskáren a zpřístupní tiskárny v souladu
+      se zásadami DeviceNativePrintersAccessMode, DeviceNativePrintersWhitelist,
+      a DeviceNativePrintersBlacklist.
+
+      Tato zásada nemá vliv na to, zda uživatelé mohou konfigurovat tiskárny
+      na jednotlivých zařízeních. Je zamýšlena jako doplněk ke konfiguraci
+      tiskáren ze strany jednotlivých uživatelů.
+
+      Tato zásada doplňuje zásadu NativePrintersBulkConfiguration.
+
+      Pokud tato zásada není nastavena, zařízení nebude mít žádné tiskárny
+      a ostatní zásady NativeDevicePrinter* budou ignorovány.</translation>
 <translation id="2127599828444728326">Povolit na těchto stránkách oznámení</translation>
 <translation id="2131902621292742709">Prodleva snížení jasu obrazovky při napájení z baterie</translation>
 <translation id="2134437727173969994">Povolit uzamknutí obrazovky</translation>
@@ -479,6 +514,14 @@ Pokud je zásada nastavena na hodnotu False nebo nastavena není, budou ikony vi
       Každá položka v seznamu uvádí identifikátor, který se používá k internímu rozlišení různých místních účtů v zařízení.</translation>
 <translation id="2769952903507981510">Konfigurovat povinný název domény pro hostitele vzdáleného přístupu</translation>
 <translation id="2787173078141616821">Hlásit informace o stavu systému Android</translation>
+<translation id="2789419769822054691">Určuje, které tiskárny uživatel může používat.
+
+      Tato zásada se použije, jen pokud je u zásady DeviceNativePrintersAccessMode
+      vybrána možnost WhitelistPrintersOnly.
+
+      Je-li tato zásada použita, uživatel bude mít k dispozici pouze tiskárny,
+      jejichž ID se shodují s hodnotami v této zásadě. ID musejí souhlasit
+      s položkami v souboru uvedeném v zásadě DeviceNativePrinters.</translation>
 <translation id="2801230735743888564">Povolit uživatelům hrát hru s dinosaurem, když je zařízení offline.
 
       Je-li tato zásada nastavena na hodnotu False, uživatelé nemohou hrát hru s dinosaurem, když je zařízení offline. Pokud je tato zásada nastavena na hodnotu True, uživatelé hru s dinosaurem hrát mohou. Pokud tato zásada není nastavena, v zaregistrovaném systému Chrome OS uživatelé hru s dinosaurem hrát nemohou, ale za všech jiných okolností ji hrát mohou.</translation>
@@ -533,13 +576,6 @@ Pokud zásadu nenastavíte, bude se považovat za aktivované (viz popis výše)
           Hodnotu zásady zadávejte v milisekundách. Maximální hodnota je stejná jako prodleva vypnutí obrazovky (pokud je nastavena) a prodleva režimu spánku.</translation>
 <translation id="2987155890997901449">Povolit rozšíření ARC</translation>
 <translation id="2987227569419001736">Ovládat používání rozhraní Web Bluetooth API</translation>
-<translation id="2998881342848488968">Tato zásada umožňuje operačnímu systému <ph name="PRODUCT_OS_NAME" /> obejít jakýkoliv proxy server pro ověření captive portálu.
-
-Tato zásada bude použita pouze v případě, že je proxy server nakonfigurován (například pomocí zásady, uživatelským nastavením na stránce chrome://settings nebo pomocí rozšíření).
-
-Pokud toto nastavení povolíte, všechny stránky ověření captive portálu (tj. všechny webové stránky počínaje přihlašovací stránkou captive portálu až do doby, dokud prohlížeč <ph name="PRODUCT_NAME" /> nezjistí úspěšné připojení k internetu) budou zobrazeny v samostatném okně ignorujícím všechna nastavení zásad a omezení aktuálního uživatele.
-
-Pokud toto nastavení zakážete nebo ponecháte bez nastavení, stránky ověření captive portálu budou zobrazeny v běžné nové kartě prohlížeče s použitím nastavení proxy serveru aktuálního uživatele.</translation>
 <translation id="3001534538097271560">Pokud tuto zásadu nastavíte na hodnotu false, uživatelé nebudou moci zvolit, že se mají některé informace o systému a obsahu stránek odeslat na servery Google. Pokud je tato zásada nastavena na hodnotu true nebo není nakonfigurována, uživatelé budou moci odesílat část informací o systému a obsahu stránek do Bezpečného prohlížení a pomoci tak zjišťovat nebezpečné aplikace a weby.
 
       Další informace o Bezpečném prohlížení najdete na stránce https://developers.google.com/safe-browsing.</translation>
@@ -673,6 +709,7 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
 
           Tato zásada je respektována pouze v případě, že je aktivována zásada DefaultSearchProviderEnabled.</translation>
 <translation id="350797926066071931">Aktivovat Překladač</translation>
+<translation id="3512226956150568738">Pokud model zařízení klienta podporoval ARC již předtím, než kvůli spuštění ARC bylo potřeba migrovat na ext4, a zásada ArcEnabled je nastavena na hodnotu true, bude se tato možnost chovat jako AskUser (hodnota 3). Ve všech ostatních případech (model zařízení dříve ARC nepodporoval nebo je zásada ArcEnabled nastavena na hodnotu false) se tato možnost bude chovat jako DisallowArc (hodnota 0).</translation>
 <translation id="3528000905991875314">Aktivovat alternativní chybové stránky</translation>
 <translation id="3547954654003013442">Nastavení proxy serveru</translation>
 <translation id="3591584750136265240">Konfigurace chování přihlašovacího ověření</translation>
@@ -723,6 +760,11 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
       Pokud je toto nastavení deaktivováno, <ph name="PRODUCT_NAME" /> nebude kontrolovat, zda je výchozím prohlížečem, a deaktivuje uživatelské ovládací prvky pro nastavení této možnosti.
 
       Pokud toto nastavení není nakonfigurováno, může uživatel v prohlížeči <ph name="PRODUCT_NAME" /> určit, zda jej chce nastavit jako výchozí prohlížeč a zda se má zobrazit oznámení v případě, že jím není.</translation>
+<translation id="379602782757302612">Umožňuje zadat, která rozšíření uživatelé NEMOHOU instalovat. Již nainstalovaná rozšíření uvedená na seznamu zakázaných budou deaktivována. Když bude takto deaktivované rozšíření ze seznamu odstraněno, automaticky se znovu aktivuje.
+
+          Hodnota * v seznamu zakázaných znamená, že jsou zakázána všechna rozšíření, která nejsou uvedena na seznamu povolených.
+
+          Pokud tato zásada není nastavena, může uživatel v prohlížeči <ph name="PRODUCT_NAME" /> nainstalovat libovolné rozšíření.</translation>
 <translation id="3800626789999016379">Slouží ke konfiguraci adresáře, do kterého bude prohlížeč <ph name="PRODUCT_NAME" /> stahovat soubory.
 
       Pokud tuto zásadu nastavíte, použije <ph name="PRODUCT_NAME" /> zadaný adresář i v případě, že uživatel zadal jiný adresář nebo zvolil, že chce pokaždé zobrazit výzvu k zadání umístění stahovaného souboru.
@@ -1073,8 +1115,10 @@ Pokud ji ponecháte nenastavenou, velký kurzor bude ve výchozím nastavení de
       Není-li nastavena, může se uživatelům zobrazit výzva, zda chtějí historii importovat, nebo může import probíhat automaticky.</translation>
 <translation id="5056708224511062314">Deaktivace lupy</translation>
 <translation id="5067143124345820993">Seznam povolených uživatelů k přihlášení</translation>
+<translation id="5068140065960598044">Cloudové zásady prohlížeče <ph name="PRODUCT_NAME" /> přepisují zásady pro počítač.</translation>
 <translation id="5085647276663819155">Deaktivovat náhled tisku</translation>
 <translation id="5105313908130842249">Prodleva uzamčení obrazovky při napájení z baterie</translation>
+<translation id="5108031557082757679">Zakázané podnikové tiskárny pro zařízení</translation>
 <translation id="5130288486815037971">Zda jsou v protokolu TLS povoleny šifrovací sady RC4</translation>
 <translation id="5141670636904227950">Nastavení výchozího typu lupy, který je aktivován na přihlašovací obrazovce</translation>
 <translation id="5142301680741828703">Následující vzory adres URL vykreslovat vždy v pluginu <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1546,6 +1590,13 @@ Pokud je tato zásada nastavena na hodnotu false, bude hlasová odezva vždy dea
 Pokud tuto zásadu nastavíte, uživatelé ji nebudou moci změnit ani přepsat.
 
 Pokud ji ponecháte nenastavenou, bude hlasová odezva ve výchozím nastavení deaktivována, ale uživatelé ji budou moci kdykoli aktivovat.</translation>
+<translation id="6922040258551909078">
+      Je-li tato zásada nastavena na hodnotu true, mají cloudové zásady v případě konfliktu přednost před zásadami pro počítač.
+      Pokud je tato zásada nastavena na hodnotu false nebo není nakonfigurována, mají v případě konfliktu zásady pro počítač přednost před cloudovými zásadami.
+      Další informace o prioritě zásad naleznete na stránce https://support.google.com/chrome?p=set_chrome_policies_for_devices.
+
+      V instancích systému Windows, které nejsou zařazeny do domény <ph name="MS_AD_NAME" />, tato zásada není k dispozici.
+      </translation>
 <translation id="6922884955650325312">Blokovat plugin <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="6923366716660828830">Určuje název výchozího poskytovatele vyhledávání. Je-li toto pole ponecháno prázdné, bude použit název hostitele určený adresou URL vyhledávání.
 
@@ -1670,6 +1721,7 @@ Pokud tuto zásadu nenastavíte, bude při prvním zobrazení přihlašovací ob
 
       Pokud je tato zásada nastavena na hodnotu False, automaticky generované návrhy obsahu se na stránce Nová karta nezobrazují.</translation>
 <translation id="7323896582714668701">Dodatečné parametry příkazového řádku pro <ph name="PRODUCT_NAME" /></translation>
+<translation id="7326394567531622570">Podobné jako možnost Wipe (hodnota 2), ale pokusí se zachovat přihlašovací tokeny, aby se uživatel nemusel znovu přihlašovat.</translation>
 <translation id="7329842439428490522">Udává dobu nečinnosti uživatele, po které bude obrazovka při napájení z baterie vypnuta.
 
            Pokud je tato zásada nastavena hodnotu větší než nula, jedná se o dobu, po kterou musí uživatel zůstat v nečinnosti, než systém <ph name="PRODUCT_OS_NAME" /> obrazovku vypne.
@@ -1696,6 +1748,7 @@ Pokud nezadáte žádné nastavení, ověření protokolu <ph name="HTTP_NEGOTIA
       Pokud tato zásada nastavena není, bude při automatickém čištění použita výchozí integrovaná strategie. Aktuálně je to strategie RemoveLRUIfDormant.</translation>
 <translation id="7336878834592315572">Uchovat soubory cookie po dobu trvání relace</translation>
 <translation id="7340034977315324840">Hlásit časy aktivity zařízení</translation>
+<translation id="7343497214039883642">Konfigurační soubor podnikových tiskáren pro zařízení</translation>
 <translation id="7384999953864505698">Povoluje protokol QUIC</translation>
 <translation id="7417972229667085380">Procento prodloužení prodlevy režimu nečinnosti v režimu prezentace (podpora ukončena)</translation>
 <translation id="7421483919690710988">Nastavit velikost diskové mezipaměti médií v bajtech</translation>
@@ -1887,6 +1940,7 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
       Pokud zásadu nenastavíte, zařízení ve výchozím nastavení použije 24hodinový formát hodin.</translation>
 <translation id="8114382167597081590">Nevynucovat na YouTube omezený režim</translation>
 <translation id="8118665053362250806">Nastaví velikost mezipaměti médií na disku</translation>
+<translation id="8124468781472887384">Zásady přístupu ke konfiguraci tiskáren pro zařízení.</translation>
 <translation id="8135937294926049787">Udává dobu nečinnosti uživatele, po které bude obrazovka při napájení ze sítě vypnuta.
 
            Pokud je tato zásada nastavena hodnotu větší než nula, jedná se o dobu, po kterou musí uživatel zůstat v nečinnosti, než systém <ph name="PRODUCT_OS_NAME" /> obrazovku vypne.
@@ -1997,7 +2051,6 @@ Pokud tuto zásadu nenastavíte, použije se zásada BlockKeygen a uživatel ji
 <translation id="8424255554404582727">Nastavit výchozí otočení displeje, které se použije při každém restartu</translation>
 <translation id="8426231401662877819">Otočit obrazovku ve směru hodinových ručiček o 90 stupňů</translation>
 <translation id="8451988835943702790">Jako domovskou použít stránku Nová karta</translation>
-<translation id="8458790683633857482">Určuje sadu zásad, které budou předány běhovému prostředí ARC. Hodnota musí být platný objekt JSON.</translation>
 <translation id="8465065632133292531">Parametry pro adresu URL dynamického vyhledávání používající metodu POST</translation>
 <translation id="847472800012384958">Nepovolit zobrazení vyskakovacích oken žádným webovým stránkám</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
@@ -2072,6 +2125,18 @@ Pokud tato zásada není nakonfigurována nebo je hodnota nižší než 1 MB, <p
 <translation id="8864975621965365890">Potlačuje oznámení o ukončení podpory, která se zobrazuje, když je web vykreslován pomocí pluginu <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Domovská stránka</translation>
 <translation id="8882006618241293596">Blokovat plugin <ph name="FLASH_PLUGIN_NAME" /> na těchto webech</translation>
+<translation id="8887644176044431146">Určuje, které tiskárny ze zásady
+      DeviceNativePrintersConfiguration budou uživatelům dostupné.
+
+      Stanovuje, které zásady přístupu budou použity pro hromadnou konfiguraci tiskáren.
+      Je-li vybrána možnost AllowAll, budou zobrazeny všechny tiskárny. Je-li vybrána
+      možnost BlacklistRestrction, k určitým tiskárnám bude zakázán přístup pomocí
+      zásady DeviceNativePrintersBlacklist. Je-li vybrána možnost WhitelistPrintersOnly,
+      zásada DeviceNativePrintersWhitelist určí, které tiskárny lze vybrat.
+
+      Pokud tato zásada není nastavena, předpokládá se použití možnosti
+      BlacklistRestriction.
+      </translation>
 <translation id="8906768759089290519">Aktivovat režim hosta</translation>
 <translation id="8908294717014659003">Umožňuje nastavit, zda webové stránky smějí používat zařízení pro pořizování mediálního obsahu. Přístup k zařízením pro pořizování mediálního obsahu může být povolen ve výchozím nastavení, nebo se uživateli může zobrazit dotaz pokaždé, když nějaké webové stránky budou chtít použít zařízení pro pořízení mediálního obsahu.
 

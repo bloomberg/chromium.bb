@@ -18,6 +18,7 @@
 <translation id="1209206284964581585">Dölj för tillfället</translation>
 <translation id="1219674500290482172">Det går inte att ansluta till internet.</translation>
 <translation id="1254117744268754948">Välj mapp</translation>
+<translation id="1265739287306757398">Läs mer</translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="129553762522093515">Nyligen stängda</translation>
 <translation id="1323735185997015385">Radera</translation>
@@ -47,7 +48,6 @@ En del webbplatser kan till exempel svara genom att visa annonser som inte baser
 <translation id="1690731385917361335">Det finns inga objekt</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> valda</translation>
 <translation id="1740468249224277719">Tryck snabbt två gånger här om du vill installera.</translation>
-<translation id="1749561566933687563">Synkronisera bokmärken</translation>
 <translation id="1752547299766512813">Spara lösenord</translation>
 <translation id="1753905327828125965">Mest besökta</translation>
 <translation id="1809939268435598390">Ta bort mapp</translation>
@@ -60,12 +60,14 @@ En del webbplatser kan till exempel svara genom att visa annonser som inte baser
 <translation id="1952728750904661634">Logga in med ett hanterat konto</translation>
 <translation id="1974060860693918893">Avancerat</translation>
 <translation id="1989112275319619282">Bläddra</translation>
+<translation id="2015722694326466240">Du måste ställa in ett lösenord på enheten om du vill kunna se lösenorden.</translation>
 <translation id="2068952045031577364">Senaste veckan</translation>
 <translation id="2079545284768500474">Ångra</translation>
 <translation id="209018056901015185">Använd skrivbordsversion</translation>
 <translation id="2103075008456228677">Öppna history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> objekt flyttades</translation>
 <translation id="2149973817440762519">Redigera bokmärke</translation>
+<translation id="2154710561487035718">Kopiera webbadress</translation>
 <translation id="2230173723195178503">Webbsidan har lästs in</translation>
 <translation id="2267753748892043616">Lägg till konto</translation>
 <translation id="2273327106802955778">Mer-menyn</translation>
@@ -134,7 +136,6 @@ En del webbplatser kan till exempel svara genom att visa annonser som inte baser
 <translation id="3474649192738347024">Formulären har fyllts i.</translation>
 <translation id="3478058380795961209">Sista giltighetsmånad</translation>
 <translation id="3482959374254649722">Flikarna synkroniseras ...</translation>
-<translation id="3487093336331957349">Sök- och webbplatsförslag</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /> om förslag på innehåll</translation>
 <translation id="3494788280727468875">Bekräfta rensning av webbinformation</translation>
 <translation id="3519193562722059437">Öppna en flik om du vill surfa på webben.</translation>
@@ -155,6 +156,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="3779810277399252432">Ingen internetanslutning.</translation>
 <translation id="3783017676699494206">Spara bild</translation>
 <translation id="385051799172605136">Bakåt</translation>
+<translation id="3857761338463387655">Skriv e-post med:</translation>
 <translation id="3897092660631435901">Meny</translation>
 <translation id="3928666092801078803">Slå ihop data</translation>
 <translation id="3950820424414687140">Logga in</translation>
@@ -182,6 +184,8 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4508750114462689118">Stäng inloggningskampanj</translation>
 <translation id="4526249700380860531">Visa och hantera sparade lösenord på <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Försök att logga in igen.</translation>
+<translation id="457386861538956877">Mer...</translation>
+<translation id="461440297010471931">Söker med Google</translation>
 <translation id="4620246317052452550">Sidor du har läst</translation>
 <translation id="4636930964841734540">Info</translation>
 <translation id="4659667755519643272">Öppna funktionen för flikbyte</translation>
@@ -190,6 +194,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 Din data har krypterats med lösenfrasen för synkronisering. Ange den om du vill starta synkroniseringen.</translation>
 <translation id="473775607612524610">Uppdatera</translation>
 <translation id="481968316161811770">Cookies, webbplatsdata</translation>
+<translation id="4854345657858711387">Ställ in ett lösenord</translation>
 <translation id="4860895144060829044">Ring</translation>
 <translation id="4875622588773761625">Vill du att lösenordet för den här webbplatsen ska uppdateras med <ph name="PASSWORD_MANAGER_BRAND" />?</translation>
 <translation id="4881695831933465202">Öppna</translation>
@@ -242,6 +247,7 @@ Du måste även aktivera Handoff i avsnittet Allmänt i inställningarna och sam
 <translation id="5871497086027727873">1 objekt flyttades</translation>
 <translation id="5911030830365207728">Google Översätt</translation>
 <translation id="5916664084637901428">På</translation>
+<translation id="5948291296578561264">Gör så att du kan spara foton i fotobiblioteket.</translation>
 <translation id="5953603475187800576">Visa adresser och kreditkort från Google Payments</translation>
 <translation id="5955891643922670672">Offlineversionen visas</translation>
 <translation id="5964480694698977962">Skapa en ny inkognitoflik.</translation>
@@ -342,6 +348,7 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="7649070708921625228">Hjälp</translation>
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7671141431838911305">INSTALLERA</translation>
+<translation id="7677825787905683892">Välj standardapp för e-post</translation>
 <translation id="7765158879357617694">Flytta</translation>
 <translation id="7769602470925380267">Godkänn och logga ut</translation>
 <translation id="7772032839648071052">Bekräfta lösenfras</translation>
@@ -405,6 +412,7 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="9083392325882095631">1 objekt</translation>
 <translation id="9100610230175265781">Lösenfras krävs</translation>
 <translation id="9148126808321036104">Logga in igen</translation>
+<translation id="914898748153555155">Du kan när som helst ändra detta i inställningarna för Chrome</translation>
 <translation id="9157836665414082580">Visa inte dialogrutor</translation>
 <translation id="9188680907066685419">Logga ut från hanterat konto</translation>
 <translation id="9203116392574189331">Handoff</translation>

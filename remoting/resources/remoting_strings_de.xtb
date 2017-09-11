@@ -26,6 +26,7 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="1643640058022401035">Wenn Sie diese Seite verlassen, wird Ihre Chromoting-Sitzung beendet.</translation>
 <translation id="1654128982815600832">Remote-Verbindungen für diesen Computer werden aktiviert…</translation>
 <translation id="170207782578677537">Fehler beim Registrieren dieses Computers</translation>
+<translation id="1727412735341161734">Chrome Remote Desktop</translation>
 <translation id="174018511426417793">Sie haben noch keine Computer registriert. Um Remote-Verbindungen zu einem Computer zu ermöglichen, installieren Sie Chrome Remote Desktop auf dem betreffenden Computer und klicken Sie auf "<ph name="BUTTON_NAME" />".</translation>
 <translation id="1742469581923031760">Verbindung wird hergestellt…</translation>
 <translation id="1770394049404108959">Ich kann die Anwendung nicht öffnen.</translation>
@@ -94,8 +95,11 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="3150823315463303127">Die Richtlinie konnte vom Host nicht gelesen werden.</translation>
 <translation id="3194245623920924351">Chrome Remote Desktop</translation>
 <translation id="3197730452537982411">Remote Desktop</translation>
+<translation id="324272851072175193">Anleitung per E-Mail senden</translation>
 <translation id="3258789396564295715">Mit Chrome Remote Desktop erhalten Sie sicheren Zugriff auf diesen Computer.</translation>
 <translation id="3286521253923406898">Chromoting Host-Controller</translation>
+<translation id="3305934114213025800"><ph name="PRODUCT_NAME" /> möchte Änderungen vornehmen.</translation>
+<translation id="331779822864701136">• Zusätzlich wird nun Android 8.0 Oreo unterstützt.</translation>
 <translation id="332624996707057614">Computernamen bearbeiten</translation>
 <translation id="3339299787263251426">Sicherer Zugriff auf Ihren Computer über das Internet</translation>
 <translation id="3360306038446926262">Fenster</translation>
@@ -104,6 +108,12 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="3385242214819933234">Ungültiger Hostinhaber</translation>
 <translation id="3403830762023901068">Gemäß den Richtlinieneinstellungen können Sie diesen Computer nicht als Chromoting-Host verwenden. Wenden Sie sich für weitere Hilfe an Ihren Systemadministrator.</translation>
 <translation id="3423542133075182604">Remoting-Prozess für Sicherheitsschlüssel</translation>
+<translation id="3426467947138417795">Chrome Remote Desktop
+Remote Desktop
+Remote-PC
+Remote-Computer
+Remote-Zugriff
+Remote-Unterstützung</translation>
 <translation id="3581045510967524389">Es konnte keine Verbindung zum Netzwerk hergestellt werden. Überprüfen Sie, ob Ihr Gerät online ist.</translation>
 <translation id="3596628256176442606">Dieser Dienst ermöglicht eingehende Verbindungen von Chromoting-Clients.</translation>
 <translation id="3606997049964069799">Sie sind nicht in Chromium angemeldet. Melden Sie sich an und versuchen Sie es erneut.</translation>
@@ -112,6 +122,13 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="3695446226812920698">Weitere Informationen</translation>
 <translation id="3718805989288361841">Die Richtlinieneinstellungen für Chrome Remote Desktop sind fehlerhaft. Wenden Sie sich an Ihren Systemadministrator.</translation>
 <translation id="3776024066357219166">Ihre Chrome Remote Desktop-Sitzung wurde beendet.</translation>
+<translation id="3788372335219293587">Sicherer Zugriff auf Ihre Computer über Ihr iOS-Gerät. Schnell, einfach und kostenlos.
+
+• Suchen Sie auf dem Computer, für den Sie den Remote-Zugriff einrichten möchten, im Chrome Web Store nach der Chrome Remote Desktop App: https://chrome.google.com/remotedesktop.
+• Installieren Sie die Chrome Remote Desktop-Software und führen Sie die Anweisungen aus, um die Einrichtung abzuschließen.
+• Öffnen Sie die App auf Ihrem iOS-Gerät und tippen Sie auf einen Ihrer Computer mit Onlinestatus, um eine Verbindung herzustellen.
+
+Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (http://goo.gl/SyrVzj).</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Bestätigen Sie unten Ihr Konto und Ihre PIN, um Zugriff über Chrome Remote Desktop zu gewähren.</translation>
 <translation id="3897092660631435901">Menü</translation>
@@ -125,6 +142,7 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="405887016757208221">Der Remote-Computer konnte die Sitzung nicht initialisieren. Sollte das Problem weiter bestehen, versuchen Sie bitte, den Host nochmals zu konfigurieren.</translation>
 <translation id="4068946408131579958">Alle Verbindungen</translation>
 <translation id="409800995205263688">Hinweis: Die Richtlinieneinstellungen erlauben nur Verbindungen zwischen Computern in Ihrem Netzwerk.</translation>
+<translation id="4145029455188493639">Angemeldet als <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Es fehlen einige erforderliche Komponenten. Überprüfen Sie, ob Sie die neueste Version der Software installiert haben, und versuchen Sie es erneut.</translation>
 <translation id="4156740505453712750">Um den Zugriff auf diesen Computer zu schützen, wählen Sie eine PIN mit <ph name="BOLD_START" />mindestens 6 Ziffern<ph name="BOLD_END" /> aus. Die Eingabe dieser PIN ist erforderlich, wenn eine Verbindung von einem anderen Ort aus hergestellt wird.</translation>
 <translation id="4176825807642096119">Zugriffscode</translation>
@@ -189,6 +207,7 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="5625493749705183369">Greifen Sie sicher über das Internet auf andere Computer zu oder gewähren Sie anderen Nutzern Zugriff auf Ihren Computer.</translation>
 <translation id="5702987232842159181">Verbunden:</translation>
 <translation id="5708869785009007625">Ihr Desktop ist zurzeit für <ph name="USER" /> freigegeben.</translation>
+<translation id="5750083143895808682">Angemeldet als <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="5773590752998175013">Datum der Kopplung</translation>
 <translation id="579702532610384533">Erneut verbinden</translation>
 <translation id="5810269635982033450">Bildschirm funktioniert wie ein Touchpad</translation>
@@ -244,9 +263,13 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="701976023053394610">Remote-Unterstützung</translation>
 <translation id="7038683108611689168">Helfen Sie uns bei der Verbesserung von Chromoting, indem Sie zulassen, dass wir Nutzungsstatistiken und Absturzberichte erfassen.</translation>
 <translation id="7067321367069083429">Bildschirm funktioniert wie ein Touchscreen</translation>
+<translation id="7116737094673640201">Willkommen bei Chrome Remote Desktop</translation>
 <translation id="7144878232160441200">Wiederholen</translation>
 <translation id="7149517134817561223">Anwendung, die Befehle an den Host von Chrome Remote Desktop weitergibt</translation>
 <translation id="7215059001581613786">Die PIN muss aus mindestens 6 Ziffern bestehen.</translation>
+<translation id="7237767047212540055">Öffnen Sie Chrome auf dem Computer, für den Sie den Remote-Zugriff einrichten möchten, und rufen Sie <ph name="INSTALLATION_LINK" /> auf.
+Installieren Sie die Chrome Remote Desktop-Software und führen Sie die Anweisungen aus, um die Einrichtung abzuschließen.
+Nach der Einrichtung können Sie über diese Seite auf den Computer zugreifen, indem Sie die PIN oder den Zugriffscode eingeben.</translation>
 <translation id="7312846573060934304">Host ist offline.</translation>
 <translation id="7319983568955948908">Freigabe beenden</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>

@@ -3,6 +3,8 @@
 <translationbundle lang="ko">
 <translation id="1012876632442809908">USB-C 기기(전면 포트)</translation>
 <translation id="1013923882670373915">블루투스 기기 '<ph name="DEVICE_NAME" />'에서 페어링 허가를 요청합니다. 기기에서 다음 PIN 코드를 입력하세요. <ph name="PINCODE" /></translation>
+<translation id="1032891413405719768">스타일러스 배터리 부족</translation>
+<translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="112308213915226829">실행기 자동 숨김</translation>
 <translation id="1153356358378277386">페어링된 기기</translation>
 <translation id="1195412055398077112">오버스캔</translation>
@@ -21,6 +23,7 @@
 <translation id="15373452373711364">큰 마우스 커서</translation>
 <translation id="1550523713251050646">더 많은 옵션을 확인하려면 클릭하세요.</translation>
 <translation id="1621499497873603021">남은 배터리 사용 시간은 <ph name="TIME_LEFT" />입니다.</translation>
+<translation id="16620462294541761">비밀번호가 일치하지 않습니다. 다시 시도해 주세요.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> 남음</translation>
 <translation id="1698760176351776263">IPv6 주소: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">기업에서 관리하는 기기입니다.</translation>
@@ -104,7 +107,6 @@
 <translation id="3621202678540785336">입력</translation>
 <translation id="3625258641415618104">스크린샷 캡쳐 사용 중지됨</translation>
 <translation id="3626281679859535460">밝기</translation>
-<translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> 해상도가 <ph name="RESOLUTION" />(으)로 변경되었습니다.</translation>
 <translation id="3712407551474845318">영역 캡처</translation>
 <translation id="371370241367527062">전면 마이크</translation>
 <translation id="3742055079367172538">찍은 캡처화면</translation>
@@ -137,6 +139,7 @@
 <translation id="453661520163887813">충전 완료까지 <ph name="TIME" /> 남음</translation>
 <translation id="4544944664594876241">화면 잠금 단축키가 변경되었습니다. <ph name="OLD_SHORTCUT" /> 대신 <ph name="NEW_SHORTCUT" />을(를) 사용하세요.</translation>
 <translation id="4659419629803378708">ChromeVox가 사용 설정됨</translation>
+<translation id="4729904664295161097">어시스턴트는 기본 프로필에서만 사용할 수 있습니다.</translation>
 <translation id="479989351350248267">검색</translation>
 <translation id="4804818685124855865">연결 해제</translation>
 <translation id="4849058404725798627">키보드 포커스로 개체 강조표시</translation>
@@ -161,6 +164,7 @@
 <translation id="5571066253365925590">블루투스를 사용함</translation>
 <translation id="5597451508971090205"><ph name="DATE" /> <ph name="SHORT_WEEKDAY" /></translation>
 <translation id="5600837773213129531">음성 피드백을 사용 중지하려면 Ctrl + Alt + Z를 누르세요.</translation>
+<translation id="5612734644261457353">비밀번호를 여전히 확인할 수 없습니다. 참고: 최근에 비밀번호를 변경한 경우 로그아웃해야 새로운 비밀번호가 적용됩니다. 이전 비밀번호를 사용해 보세요.</translation>
 <translation id="5648021990716966815">마이크 잭</translation>
 <translation id="5744083938413354016">탭 드래그</translation>
 <translation id="5777841717266010279">화면 공유를 중단하시겠습니까?</translation>
@@ -225,6 +229,7 @@
 <translation id="7256634071279256947">후면 마이크</translation>
 <translation id="7348093485538360975">터치 키보드</translation>
 <translation id="735745346212279324">VPN 연결 끊김</translation>
+<translation id="7377169924702866686">Caps Lock이 켜져 있습니다.</translation>
 <translation id="742594950370306541">카메라가 사용 중입니다.</translation>
 <translation id="743058460480092004">카메라와 마이크가 사용 중입니다.</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
@@ -256,6 +261,7 @@
 <translation id="8190698733819146287">언어 및 입력 설정...</translation>
 <translation id="8308637677604853869">이전 메뉴</translation>
 <translation id="8351131234907093545">메모 만들기</translation>
+<translation id="8392234662362215700">키보드 레이아웃을 전환하려면 Control-Shift-Space 키를 누르세요.</translation>
 <translation id="8428213095426709021">설정</translation>
 <translation id="8433186206711564395">네트워크 설정</translation>
 <translation id="8433977262951327081">실행기에서 입력 옵션 메뉴 도움말 풍선을 표시하는 단축키가 변경되었습니다. <ph name="OLD_SHORTCUT" /> 대신 <ph name="NEW_SHORTCUT" />을(를) 사용하세요.</translation>

@@ -13,7 +13,6 @@
 <translation id="1413622004203049571">ከ<ph name="NOTIFIER_NAME" /> የሚመጡ ማሳወቂያዎችን አሰናክል</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 ደቂቃ እና }one{# ደቂቃዎች እና }other{# ደቂቃዎች እና }}</translation>
 <translation id="1643823602425662293">ማሳወቂያ</translation>
-<translation id="1685967565548146460">ኮፍያዎች</translation>
 <translation id="1710340000377843106">አሁን</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 ደቂቃ}one{# ደቂቃዎች}other{# ደቂቃዎች}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> ባ</translation>
@@ -30,8 +29,10 @@
 <translation id="2148716181193084225">ዛሬ</translation>
 <translation id="2168039046890040389">ወደላይ አንቀሳቅስ</translation>
 <translation id="2190355936436201913">(ባዶ)</translation>
+<translation id="219905428774326614">ማስጀመሪያ፣ ሁሉም መተግበሪያዎች</translation>
 <translation id="2289052229480071835">በማያ ገጽዎ ላይ ያሉት የንክኪ ዒላማዎችን መታ ያድርጉ።</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> ቴባ/ሰ</translation>
+<translation id="24452542372838207">ማሳወቂያን ዘርጋ</translation>
 <translation id="2482878487686419369">ማስታወቂያዎች</translation>
 <translation id="2497284189126895209">ሁሉም ፋይሎች</translation>
 <translation id="2522350507219695259">ልኬት ማስተካከል ተጠናቅቋል</translation>
@@ -72,7 +73,6 @@
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 ሰከንድ}one{# ሰከንዶች}other{# ሰከንዶች}}</translation>
 <translation id="4971687151119236543">የሚዲያ ቀዳሚ ትራክ</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="5016049845330225051">የፍለጋ ሳጥን የጽሑፍ አዝራርን አጽዳ</translation>
 <translation id="5046499563572181734">እዚህ መታ ያድርጉ</translation>
 <translation id="5076340679995252485">&amp;ለጥፍ</translation>
 <translation id="5120799197269191491">ፈልግ+<ph name="KEY_COMBO_NAME" /></translation>
@@ -92,6 +92,7 @@
 <translation id="5943826764092288734">{HOURS,plural, =1{1 ሰዓት}one{# ሰዓቶች}other{# ሰዓቶች}}</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">ሁሉም መተግበሪያዎች</translation>
+<translation id="6022924867608035986">የፍለጋ ሳጥን ጽሑፍን አጽዳ</translation>
 <translation id="6040143037577758943">ዝጋ</translation>
 <translation id="6119846243427417423">አንቃ</translation>
 <translation id="6129953537138746214">ባዶ ቦታ</translation>
@@ -162,6 +163,7 @@
 <translation id="9002566407876343676">ክፈት</translation>
 <translation id="9038489124413477075">ያልተሰየመ አቃፊ</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 ሰከን}one{# ሰከን}other{# ሰከን}}</translation>
+<translation id="9059834730836941392">ማሳወቂያን ሰብስብ</translation>
 <translation id="9150735707954472829">ትር</translation>
 <translation id="9161053988251441839">በአስተያየት የተጠቆሙ መተግበሪያዎች</translation>
 <translation id="9170848237812810038">&amp;ቀልብስ</translation>

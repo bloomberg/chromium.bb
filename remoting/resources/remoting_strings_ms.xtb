@@ -26,6 +26,7 @@ Untuk mendapatkan maklumat tentang privasi, sila lihat Dasar Privasi Google (htt
 <translation id="1643640058022401035">Tindakan meninggalkan halaman ini akan menamatkan sesi Chromoting anda.</translation>
 <translation id="1654128982815600832">Mendayakan sambungan jauh untuk komputer ini…</translation>
 <translation id="170207782578677537">Gagal mendaftarkan komputer ini.</translation>
+<translation id="1727412735341161734">Desktop Jauh Chrome</translation>
 <translation id="174018511426417793">Anda tidak mempunyai komputer yang berdaftar. Untuk mendayakan sambungan jauh pada komputer, pasang Desktop Jauh Chrome pada komputer tersebut dan klik “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="1742469581923031760">Menyambung…</translation>
 <translation id="1770394049404108959">Saya tidak boleh membuka aplikasi ini.</translation>
@@ -94,8 +95,11 @@ Untuk mendapatkan maklumat tentang privasi, sila lihat Dasar Privasi Google (htt
 <translation id="3150823315463303127">Hos gagal membaca dasar.</translation>
 <translation id="3194245623920924351">Desktop Jauh Chrome</translation>
 <translation id="3197730452537982411">Desktop Jauh</translation>
+<translation id="324272851072175193">E-melkan arahan ini</translation>
 <translation id="3258789396564295715">Anda boleh mengakses komputer ini dengan selamat menggunakan Desktop Jauh Chrome.</translation>
 <translation id="3286521253923406898">Alat Kawalan Hos Chromoting</translation>
+<translation id="3305934114213025800"><ph name="PRODUCT_NAME" /> mahu membuat perubahan.</translation>
+<translation id="331779822864701136">• Sokongan tambahan untuk Android 8.0 Oreo.</translation>
 <translation id="332624996707057614">Edit nama komputer</translation>
 <translation id="3339299787263251426">Akses komputer anda dengan selamat melalui Internet</translation>
 <translation id="3360306038446926262">Windows</translation>
@@ -104,6 +108,12 @@ Untuk mendapatkan maklumat tentang privasi, sila lihat Dasar Privasi Google (htt
 <translation id="3385242214819933234">Pemilik hos tidak sah.</translation>
 <translation id="3403830762023901068">Tetapan dasar tidak membenarkan komputer ini dikongsi sebagai hos Chromoting. Hubungi pentadbir sistem anda untuk mendapatkan bantuan.</translation>
 <translation id="3423542133075182604">Proses Kaedah Jauh Kunci Keselamatan</translation>
+<translation id="3426467947138417795">Desktop Jauh Chrome
+Desktop Jauh
+PC Jauh
+Komputer Jauh
+Akses Jauh
+Sokongan Jauh</translation>
 <translation id="3581045510967524389">Tidak dapat menyambung ke rangkaian. Sila pastikan peranti anda berada dalam talian.</translation>
 <translation id="3596628256176442606">Perkhidmatan ini membolehkan sambungan masuk daripada klien Chromoting.</translation>
 <translation id="3606997049964069799">Anda tidak log masuk ke Chromium. Sila log masuk dan cuba lagi.</translation>
@@ -112,6 +122,13 @@ Untuk mendapatkan maklumat tentang privasi, sila lihat Dasar Privasi Google (htt
 <translation id="3695446226812920698">Ketahui caranya</translation>
 <translation id="3718805989288361841">Terdapat ralat dalam tetapan dasar untuk Desktop Jauh Chrome. Hubungi pentadbir sistem anda untuk mendapatkan bantuan.</translation>
 <translation id="3776024066357219166">Sesi Desktop Jauh Chrome anda telah tamat.</translation>
+<translation id="3788372335219293587">Akses komputer dengan selamat daripada peranti iOS anda. Cara ini cepat, mudah dan percuma.
+
+• Pada komputer yang ingin diakses dari jauh, cari apl Desktop Jauh Chrome dalam Gedung Web Chrome  https://chrome.google.com/remotedesktop
+• Pasang perisian Desktop Jauh Chrome dan ikut arahan untuk menyelesaikan penyediaan.
+• Pada peranti iOS anda, buka apl dan ketik mana-mana komputer yang berada dalam talian untuk menyambung.
+
+Untuk mendapatkan maklumat tentang privasi, sila lihat Dasar Privasi Google (http://goo.gl/SyrVzj).</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Sila sahkan akaun dan PIN anda di bawah untuk membenarkan akses melalui Desktop Jauh Chrome.</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -125,6 +142,7 @@ Untuk mendapatkan maklumat tentang privasi, sila lihat Dasar Privasi Google (htt
 <translation id="405887016757208221">Komputer jauh gagal memulakan sesi. Jika masalah berterusan, sila cuba mengkonfigurasi hos sekali lagi.</translation>
 <translation id="4068946408131579958">Semua sambungan</translation>
 <translation id="409800995205263688">NOTA: Tetapan dasar membenarkan sambungan antara komputer dalam rangkaian anda sahaja.</translation>
+<translation id="4145029455188493639">Log masuk sebagai <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Sesetengah komponen yang diperlukan hilang. Sila pastikan anda telah memasang versi terkini perisian dan cuba lagi.</translation>
 <translation id="4156740505453712750">Untuk melindungi akses kepada komputer ini, sila pilih PIN <ph name="BOLD_START" />sekurang-kurangnya enam digit<ph name="BOLD_END" />. PIN ini akan diperlukan apabila menyambung dari lokasi lain.</translation>
 <translation id="4176825807642096119">Kod akses</translation>
@@ -189,6 +207,7 @@ Untuk mendapatkan maklumat tentang privasi, sila lihat Dasar Privasi Google (htt
 <translation id="5625493749705183369">Akses komputer lain atau benarkan pengguna lain mengakses komputer anda dengan selamat melalui Internet.</translation>
 <translation id="5702987232842159181">Disambungkan:</translation>
 <translation id="5708869785009007625">Desktop anda sedang dikongsi dengan <ph name="USER" />.</translation>
+<translation id="5750083143895808682">Log masuk sebagai <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="5773590752998175013">Tarikh berpasangan</translation>
 <translation id="579702532610384533">Sambung semula</translation>
 <translation id="5810269635982033450">Skrin bertindak seperti pad jejak</translation>
@@ -244,9 +263,13 @@ Untuk mendapatkan maklumat tentang privasi, sila lihat Dasar Privasi Google (htt
 <translation id="701976023053394610">Bantuan Jauh</translation>
 <translation id="7038683108611689168">Bantu kami mempertingkatkan Chromoting dengan membenarkan kami mengumpulkan perangkaan penggunaan dan laporan keranapan.</translation>
 <translation id="7067321367069083429">Skrin bertindak seperti skrin sentuh</translation>
+<translation id="7116737094673640201">Selamat Datang ke Desktop Jauh Chrome</translation>
 <translation id="7144878232160441200">Cuba semula</translation>
 <translation id="7149517134817561223">Aplikasi untuk mengeluarkan perintah kepada hos desktop jauh Chrome.</translation>
 <translation id="7215059001581613786">Sila masukkan PIN yang mengandungi enam atau lebih angka.</translation>
+<translation id="7237767047212540055">Pada komputer yang ingin diakses dari jauh, buka Chrome dan lawati <ph name="INSTALLATION_LINK" />
+Pasang perisian Desktop Jauh Chrome dan ikut arahan untuk menyelesaikan penyediaan
+Selepas penyediaan selesai, anda akan dapat mengakses komputer itu daripada halaman ini dengan memasukkan PIN atau kod akses</translation>
 <translation id="7312846573060934304">Hos di luar talian.</translation>
 <translation id="7319983568955948908">Hentikan Perkongsian</translation>
 <translation id="7401733114166276557">Desktop Jauh Chrome</translation>

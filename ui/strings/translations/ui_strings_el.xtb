@@ -13,7 +13,6 @@
 <translation id="1413622004203049571">Απενεργοποίηση ειδοποιήσεων από <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 λεπτό και }other{# λεπτά και }}</translation>
 <translation id="1643823602425662293">Ειδοποίηση</translation>
-<translation id="1685967565548146460">Έρευνα ικανοποίησης (HaTS)</translation>
 <translation id="1710340000377843106">τώρα</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 λεπτό}other{# λεπτά}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> Β</translation>
@@ -30,8 +29,10 @@
 <translation id="2148716181193084225">Σήμερα</translation>
 <translation id="2168039046890040389">Προηγούμενη σελίδα</translation>
 <translation id="2190355936436201913">(κενό)</translation>
+<translation id="219905428774326614">Εφαρμογή εκκίνησης, όλες οι εφαρμογές</translation>
 <translation id="2289052229480071835">Πατήστε τους στόχους αφής στην οθόνη σας.</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="24452542372838207">Ανάπτυξη ειδοποίησης</translation>
 <translation id="2482878487686419369">Ειδοποιήσεις</translation>
 <translation id="2497284189126895209">Όλα τα αρχεία</translation>
 <translation id="2522350507219695259">Η βαθμονόμηση ολοκληρώθηκε</translation>
@@ -72,7 +73,6 @@
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 δευτερόλεπτο}other{# δευτερόλεπτα}}</translation>
 <translation id="4971687151119236543">Προηγούμενο κομμάτι πολυμέσων</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="5016049845330225051">Κουμπί διαγραφής κειμένου πλαισίου αναζήτησης</translation>
 <translation id="5046499563572181734">Πατήστε εδώ</translation>
 <translation id="5076340679995252485">&amp;Επικόλληση</translation>
 <translation id="5120799197269191491">Αναζήτηση+<ph name="KEY_COMBO_NAME" /></translation>
@@ -92,6 +92,7 @@
 <translation id="5943826764092288734">{HOURS,plural, =1{1 ώρα}other{# ώρες}}</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">Όλες οι εφαρμογές</translation>
+<translation id="6022924867608035986">Διαγραφή κειμένου πλαισίου αναζήτησης</translation>
 <translation id="6040143037577758943">Κλείσιμο</translation>
 <translation id="6119846243427417423">ενεργοποίηση</translation>
 <translation id="6129953537138746214">Κενό</translation>
@@ -162,6 +163,7 @@
 <translation id="9002566407876343676">ανοίγω</translation>
 <translation id="9038489124413477075">Φάκελος χωρίς όνομα</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 δευτ.}other{# δευτ.}}</translation>
+<translation id="9059834730836941392">Σύμπτυξη ειδοποίησης</translation>
 <translation id="9150735707954472829">Καρτέλα</translation>
 <translation id="9161053988251441839">ΠΡΟΤΕΙΝΟΜΕΝΕΣ ΕΦΑΡΜΟΓΕΣ</translation>
 <translation id="9170848237812810038">Αναί&amp;ρεση</translation>

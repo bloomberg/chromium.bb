@@ -17,7 +17,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="1393853151966637042">Získajte pomoc pri používaní prehliadača Chrome</translation>
 <translation id="1399397803214730675">Tento počítač už obsahuje novšiu verziu prehliadača Google Chrome. Ak softvér nefunguje, odinštalujte prehliadač Google Chrome a skúste to znova.</translation>
 <translation id="1434626383986940139">Aplikácie Chrome Canary</translation>
-<translation id="1457721931618994305">Prebieha aktualizácia prehliadača Google Chrome...</translation>
+<translation id="1457721931618994305">Google Chrome sa aktualizuje…</translation>
 <translation id="1469002951682717133">Spúšťač aplikácií Chrome</translation>
 <translation id="1553358976309200471">Aktualizovať Chrome</translation>
 <translation id="1587223624401073077">Google Chrome používa vašu kameru.</translation>
@@ -133,6 +133,7 @@ Ak chcete profilu <ph name="NEW_PROFILE_NAME" /> zabrániť pristupovať do vá�
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Tento súbor môže byť nebezpečný, a preto ho Chrome zablokoval.</translation>
 <translation id="4794050651896644714">Uložiť podrobnosti v prehliadači Chrome</translation>
+<translation id="4804732725083176494">Prihlásenie do prehliadača Chrome je zakázané správcom tohto zariadenia.</translation>
 <translation id="4891791193823137474">Povoliť prehliadaču Google Chrome spustenie na pozadí</translation>
 <translation id="4921569541910214635">Zdieľať počítač? Teraz si môžete prehliadač Chrome nastaviť podľa vlastných predstáv.</translation>
 <translation id="4953650215774548573">Nastaviť Google Chrome ako predvolený prehliadač</translation>
@@ -176,7 +177,7 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="5931853610562009806">Na počítačoch Mac sa heslá môžu ukladať do aplikácie Keychain. Ostatní používatelia prehliadača Chrome, ktorí zdieľajú tento účet systému OS X, k nim môžu pristupovať a môžu ich synchronizovať.</translation>
 <translation id="5940385492829620908">Tu nájdete svoj obsah na webe, záložky a ďalšie položky prehliadača Chrome.</translation>
 <translation id="5941830788786076944">Nastaviť prehľadávač Google Chrome ako predvolený</translation>
-<translation id="6014844626092547096">Prihlásili ste sa do prehliadača Chrome. Synchronizácia je zakázaná administrátorom.</translation>
+<translation id="6014844626092547096">Prihlásili ste sa do prehliadača Chrome. Synchronizácia je ale zakázaná administrátorom.</translation>
 <translation id="6070348360322141662">V záujme vyššej miery zabezpečenia budú dáta v prehliadači Google Chrome šifrované</translation>
 <translation id="6113794647360055231">Prehliadač Chrome bol práve vylepšený</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>

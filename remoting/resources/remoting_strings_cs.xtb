@@ -26,6 +26,7 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="1643640058022401035">Pokud opustíte tuto stránku, relace funkce Chromoting bude ukončena.</translation>
 <translation id="1654128982815600832">Povolování vzdálených připojení k tomuto počítači…</translation>
 <translation id="170207782578677537">Registrace tohoto počítače se nezdařila.</translation>
+<translation id="1727412735341161734">Vzdálená plocha Chrome</translation>
 <translation id="174018511426417793">Nemáte zaregistrované žádné počítače. Chcete-li umožnit vzdálené připojení k jinému počítači, nainstalujte do něj Vzdálenou plochu Chrome a klikněte na tlačítko <ph name="BUTTON_NAME" />.</translation>
 <translation id="1742469581923031760">Připojování...</translation>
 <translation id="1770394049404108959">Aplikaci nelze otevřít.</translation>
@@ -94,8 +95,11 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="3150823315463303127">Hostiteli se nezdařilo přečíst zásady.</translation>
 <translation id="3194245623920924351">Vzdálená plocha Chrome</translation>
 <translation id="3197730452537982411">Vzdálená plocha</translation>
+<translation id="324272851072175193">Zaslat tyto pokyny e-mailem</translation>
 <translation id="3258789396564295715">K tomuto počítači se můžete bezpečně připojit pomocí Vzdálené plochy Chrome.</translation>
 <translation id="3286521253923406898">Hostitelský kontroler funkce Chromoting</translation>
+<translation id="3305934114213025800">Aplikace <ph name="PRODUCT_NAME" /> chce provést změny.</translation>
+<translation id="331779822864701136">• Přidána podpora platformy Android 8.0 Oreo.</translation>
 <translation id="332624996707057614">Upravit název počítače</translation>
 <translation id="3339299787263251426">Přistupujte ke svému počítači bezpečně přes internet</translation>
 <translation id="3360306038446926262">Windows</translation>
@@ -104,6 +108,12 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="3385242214819933234">Neplatný vlastník hostitele.</translation>
 <translation id="3403830762023901068">Nastavení zásad neumožňuje sdílet tento počítač jako hostitel funkce Chromoting. Kontaktujte administrátora systému a požádejte ho o pomoc.</translation>
 <translation id="3423542133075182604">Proces vzdálené komunikace Bezpečnostního klíče</translation>
+<translation id="3426467947138417795">Vzdálená plocha Chrome
+Vzdálená plocha
+Vzdálené PC
+Vzdálený počítač
+Vzdálený přístup
+Vzdálená podpora</translation>
 <translation id="3581045510967524389">Nelze se připojit k síti. Zkontrolujte prosím, zda je zařízení online.</translation>
 <translation id="3596628256176442606">Tato služba umožňuje příchozí připojení od klientů funkce Chromoting.</translation>
 <translation id="3606997049964069799">Nejste do prohlížeče Chromium přihlášeni. Přihlaste se a zkuste to znovu.</translation>
@@ -112,6 +122,13 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="3695446226812920698">Postup</translation>
 <translation id="3718805989288361841">Nastavení zásad Vzdálené plochy Chrome je chybné. Požádejte o pomoc administrátora systému.</translation>
 <translation id="3776024066357219166">Relace Vzdálené plochy Chrome byla ukončena.</translation>
+<translation id="3788372335219293587">Bezpečně ze svého zařízení iOS přistupujte k počítači. Je to rychlé, jednoduché a zdarma.
+
+• Na počítači, ke kterému chcete vzdáleně přistupovat, najděte v Internetovém obchodě Chrome aplikaci Vzdálená plocha Chrome: https://chrome.google.com/remotedesktop.
+• Nainstalujte software Vzdálená plocha Chrome a podle pokynů dokončete nastavení.
+• Na zařízení iOS otevřete příslušnou aplikaci a klepnutím na některý ze svých online počítačů se připojte.
+
+Informace o ochraně soukromí naleznete v zásadách ochrany soukromí společnosti Google (http://goo.gl/SyrVzj).</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">K povolení přístupu prostřednictvím Vzdálené plochy Chrome je třeba potvrdit účet a kód PIN níže.</translation>
 <translation id="3897092660631435901">Nabídka</translation>
@@ -125,6 +142,7 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="405887016757208221">Vzdálený počítač relaci neinicializoval. Pokud problém přetrvává, zkuste hostitele nakonfigurovat znovu.</translation>
 <translation id="4068946408131579958">Všechna připojení</translation>
 <translation id="409800995205263688">POZNÁMKA: Nastavení zásad umožňují spojení pouze mezi počítači v rámci vaší sítě.</translation>
+<translation id="4145029455188493639">Jste přihlášeni pomocí účtu <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Chybí některé povinné komponenty. Zkontrolujte, zda máte nainstalovanou nejnovější verzi softwaru, a zkuste to znovu.</translation>
 <translation id="4156740505453712750">Pokud chcete přístup k tomuto počítači zabezpečit, zvolte prosím kód PIN v délce <ph name="BOLD_START" />alespoň šesti číslic<ph name="BOLD_END" />. Tento kód PIN bude vyžadován při připojení z jiného místa.</translation>
 <translation id="4176825807642096119">Přístupový kód</translation>
@@ -189,6 +207,7 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="5625493749705183369">Přistupujte k jiným počítačům nebo umožněte dalšímu uživateli přistupovat k vašemu počítači bezpečně přes internet.</translation>
 <translation id="5702987232842159181">Připojeno:</translation>
 <translation id="5708869785009007625">Aktuálně sdílíte plochu s uživatelem <ph name="USER" />.</translation>
+<translation id="5750083143895808682">Jste přihlášeni pomocí účtu <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="5773590752998175013">Datum spárování</translation>
 <translation id="579702532610384533">Znovu připojit</translation>
 <translation id="5810269635982033450">Obrazovka se chová jako trackpad</translation>
@@ -244,9 +263,13 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="701976023053394610">Vzdálená pomoc</translation>
 <translation id="7038683108611689168">Pomozte nám funkci Chromoting vylepšit tím, že nám povolíte shromažďovat statistiky využití a zprávy o selhání.</translation>
 <translation id="7067321367069083429">Obrazovka se chová jako dotyková obrazovka</translation>
+<translation id="7116737094673640201">Vítá vás Vzdálená plocha Chrome</translation>
 <translation id="7144878232160441200">Opakovat</translation>
 <translation id="7149517134817561223">Aplikace, která vydává příkazy hostiteli vzdálené plochy Chrome.</translation>
 <translation id="7215059001581613786">Zadejte kód PIN obsahující 6 nebo více číslic.</translation>
+<translation id="7237767047212540055">Na počítači, ke kterému chcete vzdáleně přistupovat, otevřete Chrome a navštivte stránku <ph name="INSTALLATION_LINK" />.
+Nainstalujte software Vzdálená plocha Chrome a podle pokynů dokončete nastavení.
+Po dokončení nastavení k počítači budete moci přistupovat z této stránky tím, že zadáte PIN nebo přístupový kód.</translation>
 <translation id="7312846573060934304">Hostitel je offline.</translation>
 <translation id="7319983568955948908">Ukončit sdílení</translation>
 <translation id="7401733114166276557">Vzdálená plocha Chrome</translation>

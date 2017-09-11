@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
-<translation id="1326317727527857210">Inicieu la sessió a Chrome per accedir a les vostres pestanyes des dels altres dispositius que tingueu.</translation>
 <translation id="1685087038067318291">Descobreix les pàgines web enviades pels objectes propers. Quan el Bluetooth està activat, Chrome pot recopilar les pàgines web associades als objectes que t'envolten i enviar-les de manera anònima a Google per trobar les més útils. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">Chrome ha verificat que <ph name="ISSUER" /> ha emès el certificat d'aquest lloc web.</translation>

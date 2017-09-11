@@ -13,7 +13,6 @@
 <translation id="1413622004203049571"><ph name="NOTIFIER_NAME" /> నుండి వచ్చే నోటిఫికేషన్‌లను నిలిపివేయి</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 నిమిషం మరియు }other{# నిమిషాలు మరియు }}</translation>
 <translation id="1643823602425662293">నోటిఫికేషన్</translation>
-<translation id="1685967565548146460">హ్యాట్స్</translation>
 <translation id="1710340000377843106">ఇప్పుడు</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 నిమిషం}other{# నిమిషాలు}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
@@ -30,8 +29,10 @@
 <translation id="2148716181193084225">ఈ రోజు</translation>
 <translation id="2168039046890040389">పేజీ పైకి</translation>
 <translation id="2190355936436201913">(ఖాళీ)</translation>
+<translation id="219905428774326614">లాంచర్, అన్ని యాప్‌లు</translation>
 <translation id="2289052229480071835">మీ స్క్రీన్‌పై ఉన్న స్పర్శ లక్ష్యాలను నొక్కండి.</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="24452542372838207">నోటిఫికేషన్‌ని విస్తరించు</translation>
 <translation id="2482878487686419369">ప్రకటనలు</translation>
 <translation id="2497284189126895209">మొత్తం ఫైళ్లు</translation>
 <translation id="2522350507219695259">క్రమాంకనం పూర్తయింది</translation>
@@ -72,7 +73,6 @@
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 సెకను}other{# సెకన్లు}}</translation>
 <translation id="4971687151119236543">మీడియా మునుపటి ట్రాక్</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="5016049845330225051">శోధన పెట్టె వచనం బటన్‌ను క్లియర్ చేస్తుంది</translation>
 <translation id="5046499563572181734">ఇక్కడ నొక్కండి</translation>
 <translation id="5076340679995252485">&amp;అతికించు</translation>
 <translation id="5120799197269191491">Search+<ph name="KEY_COMBO_NAME" /></translation>
@@ -92,6 +92,7 @@
 <translation id="5943826764092288734">{HOURS,plural, =1{1 గంట}other{# గంటలు}}</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">అన్ని అనువర్తనాలు</translation>
+<translation id="6022924867608035986">శోధన పెట్టె వచనాన్ని క్లియర్ చేయండి</translation>
 <translation id="6040143037577758943">మూసివేయి</translation>
 <translation id="6119846243427417423">ఆక్టివేట్ చెయ్యి</translation>
 <translation id="6129953537138746214">ఖాళీ</translation>
@@ -162,6 +163,7 @@
 <translation id="9002566407876343676">తెరువు</translation>
 <translation id="9038489124413477075">పేరులేని ఫోల్డర్</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 సెక.}other{# సెక.}}</translation>
+<translation id="9059834730836941392">నోటిఫికేషన్‌ని కుదించు</translation>
 <translation id="9150735707954472829">ట్యాబ్</translation>
 <translation id="9161053988251441839">సూచించబడిన అనువర్తనాలు</translation>
 <translation id="9170848237812810038">&amp;అన్డు</translation>

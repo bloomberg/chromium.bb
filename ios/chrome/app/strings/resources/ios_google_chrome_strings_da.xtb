@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
-<translation id="1326317727527857210">Log ind på Chrome for at få adgang til dine faner på dine andre enheder.</translation>
 <translation id="1685087038067318291">Find websider, som genstande i nærheden sender. Når Bluetooth er slået til, kan Chrome samle websider, der er tilknyttet genstande omkring dig, og sende dem anonymt til Google for at finde de mest nyttige. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">Chrome bekræftede, at <ph name="ISSUER" /> har udstedt certifikatet for dette website.</translation>

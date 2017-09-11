@@ -13,7 +13,6 @@
 <translation id="1413622004203049571">Lumpuhkan pemberitahuan daripada <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minit dan }other{# minit dan }}</translation>
 <translation id="1643823602425662293">Pemberitahuan</translation>
-<translation id="1685967565548146460">Topi</translation>
 <translation id="1710340000377843106">sekarang</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minit}other{# minit}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
@@ -30,8 +29,10 @@
 <translation id="2148716181193084225">Hari ini</translation>
 <translation id="2168039046890040389">Halaman Ke Atas</translation>
 <translation id="2190355936436201913">(kosong)</translation>
+<translation id="219905428774326614">Pelancar, semua apl</translation>
 <translation id="2289052229480071835">Ketik sasaran sentuhan pada skrin anda.</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="24452542372838207">Kembangkan pemberitahuan</translation>
 <translation id="2482878487686419369">Pemberitahuan</translation>
 <translation id="2497284189126895209">Semua Fail</translation>
 <translation id="2522350507219695259">Penentukuran telah selesai</translation>
@@ -72,7 +73,6 @@
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 saat}other{# saat}}</translation>
 <translation id="4971687151119236543">Lagu Media Sebelumnya</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="5016049845330225051">Butang kosongkan teks kotak carian</translation>
 <translation id="5046499563572181734">Ketik di sini</translation>
 <translation id="5076340679995252485">&amp;Tampal</translation>
 <translation id="5120799197269191491">Carian+<ph name="KEY_COMBO_NAME" /></translation>
@@ -92,6 +92,7 @@
 <translation id="5943826764092288734">{HOURS,plural, =1{1 jam}other{# jam}}</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">Semua Apl</translation>
+<translation id="6022924867608035986">Kosongkan teks kotak carian</translation>
 <translation id="6040143037577758943">Tutup</translation>
 <translation id="6119846243427417423">aktifkan</translation>
 <translation id="6129953537138746214">Ruang</translation>
@@ -162,6 +163,7 @@
 <translation id="9002566407876343676">buka</translation>
 <translation id="9038489124413477075">Folder Tanpa Nama</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 saat}other{# saat}}</translation>
+<translation id="9059834730836941392">Runtuhkan pemberitahuan</translation>
 <translation id="9150735707954472829">Tab</translation>
 <translation id="9161053988251441839">APL DISYORKAN</translation>
 <translation id="9170848237812810038">&amp;Buat asal</translation>

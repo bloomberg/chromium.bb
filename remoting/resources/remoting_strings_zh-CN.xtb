@@ -26,6 +26,7 @@
 <translation id="1643640058022401035">如果您离开此页，那么您的 Chrome 远程访问会话就会结束。</translation>
 <translation id="1654128982815600832">正在对此计算机启用远程连接…</translation>
 <translation id="170207782578677537">无法注册此计算机。</translation>
+<translation id="1727412735341161734">Chrome 远程桌面</translation>
 <translation id="174018511426417793">您未注册任何计算机。要启用到某台计算机的远程连接，请在该计算机上安装 Chrome 远程桌面并点击“<ph name="BUTTON_NAME" />”。</translation>
 <translation id="1742469581923031760">正在连接…</translation>
 <translation id="1770394049404108959">我无法打开此应用。</translation>
@@ -94,8 +95,11 @@
 <translation id="3150823315463303127">主机无法读取政策。</translation>
 <translation id="3194245623920924351">Chrome远程桌面</translation>
 <translation id="3197730452537982411">远程桌面</translation>
+<translation id="324272851072175193">通过电子邮件发送这些说明</translation>
 <translation id="3258789396564295715">您可使用 Chrome 远程桌面安全地访问此计算机。</translation>
 <translation id="3286521253923406898">Chrome 远程访问主机控制器</translation>
+<translation id="3305934114213025800"><ph name="PRODUCT_NAME" />想进行更改。</translation>
+<translation id="331779822864701136">• 添加了对 Android 8.0 Oreo 的支持。</translation>
 <translation id="332624996707057614">修改计算机名称</translation>
 <translation id="3339299787263251426">通过互联网安全地访问您的计算机</translation>
 <translation id="3360306038446926262">窗口</translation>
@@ -104,6 +108,12 @@
 <translation id="3385242214819933234">主机所有者无效。</translation>
 <translation id="3403830762023901068">策略设置不允许以 Chrome 远程访问主机的形式共享此计算机。请与您的系统管理员联系寻求帮助。</translation>
 <translation id="3423542133075182604">安全密钥远程处理</translation>
+<translation id="3426467947138417795">Chrome 远程桌面
+远程桌面
+远程 PC
+远程计算机
+远程访问
+远程支持</translation>
 <translation id="3581045510967524389">无法连接到网络。请检查您的设备是否已连接到网络。</translation>
 <translation id="3596628256176442606">此服务允许来自 Chrome 远程访问客户端的连接。</translation>
 <translation id="3606997049964069799">您尚未登录 Chromium。请登录，然后重试。</translation>
@@ -112,6 +122,13 @@
 <translation id="3695446226812920698">如何解决</translation>
 <translation id="3718805989288361841">Chrome 远程桌面的政策设置有误。请与您的系统管理员联系寻求帮助。</translation>
 <translation id="3776024066357219166">您的 Chrome 远程桌面会话已结束。</translation>
+<translation id="3788372335219293587">从您的 iOS 设备安全地访问您的计算机。不仅快速、简单，而且免费。
+
+• 在您要远程访问的计算机上，从 Chrome 网上应用店中找到“Chrome 远程桌面”应用（下载地址：https://chrome.google.com/remotedesktop）
+• 安装“Chrome 远程桌面”软件，并按照说明完成设置。
+• 在您的 iOS 设备上，打开该应用，然后点按任一台已联网的计算机以建立连接。
+
+有关隐私权方面的信息，请参阅 Google 隐私权政策 (http://goo.gl/SyrVzj)。</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">请在下方确认您的帐号和 PIN，以便允许通过 Chrome 远程桌面进行访问。</translation>
 <translation id="3897092660631435901">菜单</translation>
@@ -125,6 +142,7 @@
 <translation id="405887016757208221">远程计算机未能将该会话初始化。如果问题仍然存在，请尝试重新配置主机。</translation>
 <translation id="4068946408131579958">所有连接</translation>
 <translation id="409800995205263688">注意：策略设置仅允许您网络内的计算机之间建立连接。</translation>
+<translation id="4145029455188493639">以 <ph name="EMAIL_ADDRESS" /> 的身份登录。</translation>
 <translation id="4155497795971509630">缺少某些必需的组件。请确保您已安装该软件的最新版本，然后重试。</translation>
 <translation id="4156740505453712750">为防止他人擅自访问此计算机，请选用一个<ph name="BOLD_START" />至少 6 位数<ph name="BOLD_END" />的 PIN。当从其他位置连接时，将需要输入此 PIN。</translation>
 <translation id="4176825807642096119">访问代码</translation>
@@ -189,6 +207,7 @@
 <translation id="5625493749705183369">通过互联网安全访问其他计算机，或允许其他用户通过互联网安全访问您的计算机。</translation>
 <translation id="5702987232842159181">已连接：</translation>
 <translation id="5708869785009007625">您目前正与 <ph name="USER" /> 共享您的桌面。</translation>
+<translation id="5750083143895808682">以 <ph name="EMAIL_ADDRESS" /> 的身份登录。</translation>
 <translation id="5773590752998175013">配对日期</translation>
 <translation id="579702532610384533">重新连接</translation>
 <translation id="5810269635982033450">屏幕充当触控板</translation>
@@ -244,9 +263,13 @@
 <translation id="701976023053394610">远程协助</translation>
 <translation id="7038683108611689168">允许我们收集使用情况统计信息和崩溃报告，以帮助改进 Chrome 远程访问。</translation>
 <translation id="7067321367069083429">屏幕充当触摸屏</translation>
+<translation id="7116737094673640201">欢迎使用 Chrome 远程桌面</translation>
 <translation id="7144878232160441200">重试</translation>
 <translation id="7149517134817561223">向 Chrome 远程桌面主机发出命令的应用。</translation>
 <translation id="7215059001581613786">请输入至少包含 6 位数的 PIN。</translation>
+<translation id="7237767047212540055">在您要远程访问的计算机上，打开 Chrome 并访问 <ph name="INSTALLATION_LINK" />
+安装“Chrome 远程桌面”软件，并按照说明完成设置
+设置完毕后，您只需输入相应的 PIN 码或访问代码，便可从此页面访问这台计算机</translation>
 <translation id="7312846573060934304">主机未连接到网络。</translation>
 <translation id="7319983568955948908">停止共享</translation>
 <translation id="7401733114166276557">Chrome 远程桌面</translation>

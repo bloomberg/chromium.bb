@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
-<translation id="1326317727527857210">Pierakstieties pārlūkā Chrome, lai būtu pieejamas cilnes no citām jūsu ierīcēm.</translation>
 <translation id="1685087038067318291">Atklājiet tīmekļa lapas, ko nosūtījuši tuvumā esoši objekti. Ja ir ieslēgts Bluetooth savienojums, Chrome var apkopot tīmekļa lapas, kas ir saistītas ar jums apkārt esošajiem objektiem, un anonīmi nosūtīt tās uz Google serveriem, lai atrastu visnoderīgākās lapas. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">Chrome apstiprināja, ka <ph name="ISSUER" /> izsniedza šīs vietnes sertifikātu.</translation>

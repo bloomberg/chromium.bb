@@ -73,11 +73,20 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
 <translation id="1330145147221172764">Bildschirmtastatur aktivieren</translation>
 <translation id="1330985749576490863">Synchronisierung zwischen Google Drive und der App "Dateien" von <ph name="PRODUCT_OS_NAME" /> per Mobilfunkverbindung deaktivieren</translation>
 <translation id="13356285923490863">Richtlinienname</translation>
+<translation id="134402861816424823">Gibt die Drucker an, die vom Nutzer nicht verwendet werden können.
+
+      Diese Richtlinie wird nur verwendet, wenn "BlacklistRestriction" für
+      "DeviceNativePrintersAccessMode" ausgewählt wurde.
+
+      Wenn diese Richtlinie verwendet wird, werden dem Nutzer alle Drucker zur
+      Verfügung gestellt, mit Ausnahme der in dieser Richtlinie aufgeführten IDs.
+      </translation>
 <translation id="1353966721814789986">"Beim Start"-Seiten</translation>
 <translation id="1359553908012294236">Wenn für diese Richtlinie "true" festgelegt oder wenn sie nicht konfiguriert ist, sind Gastanmeldungen in <ph name="PRODUCT_NAME" /> möglich. Anmeldungen als Gast entsprechen <ph name="PRODUCT_NAME" />-Profilen, in denen sich alle Fenster im Inkognitomodus befinden.
 
       Ist für die Richtlinie "false" festgelegt, erlaubt <ph name="PRODUCT_NAME" /> das Erstellen von Gastprofilen nicht.</translation>
 <translation id="1363275621236827384">Abfragen an Quirks-Server für Hardwareprofile aktivieren</translation>
+<translation id="1393485621820363363">Aktivierte, an Geräte gebundene Unternehmensdrucker</translation>
 <translation id="1397855852561539316">Vorschlags-URL für die Standardsuchmaschine</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Adresse oder URL des Proxyservers</translation>
@@ -243,6 +252,33 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
 <translation id="209586405398070749">Stabiler Kanal</translation>
 <translation id="2098658257603918882">Berichte mit Nutzungs- und Absturzdaten erstellen</translation>
 <translation id="2113068765175018713">Betriebsdauer der Geräte durch automatische Neustarts begrenzen</translation>
+<translation id="2126314858836465216">Stellt Konfigurationen für an Geräte gebundene Unternehmensdrucker zur Verfügung.
+
+      Mit dieser Richtlinie können Druckerkonfigurationen für
+      <ph name="PRODUCT_OS_NAME" />-Geräte zur Verfügung gestellt werden.
+      Die Größe der Datei darf 5 MB nicht überschreiben und sie muss in JSON codiert sein.
+      Das Format stimmt mit dem des "NativePrinters"-Wörterbuchs überein. Eine Datei
+      mit ungefähr 21.000 Druckern ergibt nach dem Codieren eine Datei mit schätzungsweise
+      5 MB. Der kryptografische Hash wird dazu verwendet, die Integrität des Downloads
+      zu prüfen.
+
+      Die Datei wird heruntergeladen und im Cache gespeichert. Sie wird immer dann neu heruntergeladen,
+      wenn sich URL oder Hash verändern.
+
+      Wenn diese Richtlinie festgelegt wird,
+      lädt <ph name="PRODUCT_OS_NAME" /> die Datei für
+      Druckerkonfigurationen herunter und macht die Drucker gemäß
+      "DeviceNativePrintersAccessMode", "DeviceNativePrintersWhitelist" und
+      "DeviceNativePrintersBlacklist" verfügbar.
+
+      Diese Richtlinie hat keinen Einfluss darauf, ob Drucker von Nutzern auf einzelnen
+      Geräten konfiguriert werden können. Sie ist als Ergänzung zur Konfiguration
+      von Druckern durch einzelne Nutzer vorgesehen.
+
+      Diese Richtlinie ist ein Zusatz zu "NativePrintersBulkConfiguration".
+
+      Wenn diese Richtlinie nicht festgelegt wird, gibt es keine an Geräte gebundene
+      Drucker und "NativeDevicePrinter"-Richtlinien* werden ignoriert.</translation>
 <translation id="2127599828444728326">Benachrichtigungen auf diesen Websites zulassen</translation>
 <translation id="2131902621292742709">Verzögerung für die Bildschirmabdunkelung im Akkubetrieb</translation>
 <translation id="2134437727173969994">Sperren des Bildschirms erlauben</translation>
@@ -469,6 +505,14 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
       Jeder Listeneintrag besteht aus einer Kennung, die intern dazu verwendet wird, die verschiedenen lokalen Gerätekonten auseinanderzuhalten.</translation>
 <translation id="2769952903507981510">Erforderlichen Domain-Namen für Remote-Zugriff-Hosts konfigurieren</translation>
 <translation id="2787173078141616821">Informationen zum Status von Android senden</translation>
+<translation id="2789419769822054691">Gibt die Drucker an, die ein Nutzer verwenden kann.
+
+      Diese Richtlinie wird nur verwendet, wenn "WhitelistPrintersOnly" für
+      "DeviceNativePrintersAccessMode" ausgewählt wurde.
+
+      Wenn diese Richtlinie verwendet wird, stehen dem Nutzer nur die Drucker zur Verfügung, deren IDs
+      mit den Werten in dieser Richtlinie übereinstimmen. Die IDs müssen den
+      Einträgen in der Datei entsprechen, die in "DeviceNativePrinters" angegebenen ist.</translation>
 <translation id="2801230735743888564">Nutzern erlauben, das Easter Egg-Dinosaurierspiel zu spielen, wenn das Gerät offline ist.
 
       Wenn diese Richtlinie auf "false" eingestellt ist, können Nutzer das Easter Egg-Dinosaurierspiel nicht spielen, wenn das Gerät offline ist. Ist es auf "true" eingestellt, können Nutzer das Dinosaurierspiel spielen. Falls die Richtlinie nicht konfiguriert ist, können Nutzer das Easter Egg-Dinosaurierspiel nicht unter einer registrierten Version von Chrome OS spielen, unter anderen Umständen jedoch schon.</translation>
@@ -523,13 +567,6 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
           Der Wert für die Richtlinie muss in Millisekunden angegeben werden. Werte müssen kleiner oder gleich dem Wert der Verzögerung für die Bildschirmabschaltung (falls angegeben) und der Inaktivitätsverzögerung sein.</translation>
 <translation id="2987155890997901449">ARC aktivieren</translation>
 <translation id="2987227569419001736">Verwendung der Web Bluetooth API steuern</translation>
-<translation id="2998881342848488968">Diese Richtlinie ermöglicht <ph name="PRODUCT_OS_NAME" />, zur Captive-Portal-Authentifizierung alle Proxys zu umgehen.
-
-      Die Richtlinie kommt nur dann zum Einsatz, wenn ein Proxy konfiguriert ist, zum Beispiel über eine Richtlinie, vom Nutzer unter chrome://settings oder von Erweiterungen.
-
-      Wenn diese Einstellung aktiviert ist, werden alle Seiten der Captive-Portal-Authentifizierung – also alle Webseiten ab der Anmeldeseite, bis <ph name="PRODUCT_NAME" /> eine funktionierende Internetverbindung erkennt – in einem separaten Fenster angezeigt und alle Richtlinieneinstellungen und -beschränkungen für den aktuellen Nutzer ignoriert.
-
-      Wenn Sie diese Einstellung deaktivieren oder nicht konfigurieren, werden alle Seiten der Captive-Portal-Authentifizierung auf einem regulären neuen Browsertab angezeigt und es kommen die Proxy-Einstellungen des aktuellen Nutzers zum Einsatz.</translation>
 <translation id="3001534538097271560">Wenn diese Richtlinie auf "false" eingestellt ist, können Nutzer nicht mehr auswählen, ob sie ausgewählte Systeminformationen und Seiteninhalte an die Google-Server senden möchten. Ist die Richtlinie auf "true" eingestellt oder nicht konfiguriert, können Nutzer einige Systeminformationen und Seiteninhalte an Safe Browsing senden, um bei der Erfassung schädlicher Apps und Websites zu helfen.
 
       Weitere Informationen zu Safe Browsing finden Sie auf https://developers.google.com/safe-browsing.</translation>
@@ -633,7 +670,7 @@ Wenn diese Einstellung auf "Strikt" festgelegt wird, ist der strikte eingeschrä
 Wird diese Einstellung auf "Moderat" festgelegt, kann der Nutzer auf YouTube nur den moderaten eingeschränkten Modus und den strikten eingeschränkten Modus auswählen, den eingeschränkten Modus aber nicht deaktivieren.
 
 Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der eingeschränkte Modus auf YouTube nicht durch <ph name="PRODUCT_NAME" /> erzwungen. Der eingeschränkte Modus wird jedoch möglicherweise trotzdem durch externe Richtlinien wie YouTube-Richtlinien erzwungen.</translation>
-<translation id="3428247105888806363">Netzwerkvervollständigung aktivieren</translation>
+<translation id="3428247105888806363">Netzwerkvorhersage aktivieren</translation>
 <translation id="3449886121729668969">Hiermit werden die Proxy-Einstellungen für <ph name="PRODUCT_NAME" /> konfiguriert. Diese Proxy-Einstellungen können auch von ARC-Apps verwendet werden.
 
       Diese Richtlinie ist noch nicht einsatzbereit und sollte daher nicht verwendet werden.</translation>
@@ -656,6 +693,7 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
 
           Diese Richtlinie wird nur berücksichtigt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
 <translation id="350797926066071931">Übersetzung aktivieren</translation>
+<translation id="3512226956150568738">Wenn das Client-Gerätemodell ARC bereits unterstützt hat, bevor die Migration zu ext4 für die ARC-Ausführung erforderlich war, verhält sich diese Option so, als ob "AskUser" (Wert 3) festgelegt wurde. Beachten Sie, dass die ArcEnabled-Richtlinie hierbei auf "true" festgelegt werden muss. In allen anderen Fällen entspricht dieser Wert "DisallowArc" (Wert 0) – beispielsweise, wenn das Gerätemodell ARC zuvor nicht unterstützt hat, oder wenn die ArcEnabled-Richtlinie auf "false" gesetzt wird.</translation>
 <translation id="3528000905991875314">Alternative Fehlerseiten aktivieren</translation>
 <translation id="3547954654003013442">Proxy-Einstellungen</translation>
 <translation id="3591584750136265240">Verhalten der Log-in-Authentifizierung konfigurieren</translation>
@@ -700,6 +738,11 @@ Ist die Einstellung deaktiviert oder nicht konfiguriert, können Nutzer zu der g
           Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt wird, hat der Wert dieser Richtlinie keine Auswirkungen und das Symbol wird nicht auf der Symbolleiste angezeigt.</translation>
 <translation id="3788662722837364290">Einstellungen für die Energieverwaltung bei Inaktivität des Nutzers</translation>
 <translation id="3793095274466276777">Konfiguriert den Standardbrowser, führt in <ph name="PRODUCT_NAME" /> eine Überprüfung durch und verhindert, dass Nutzer die Einstellung ändern. Falls Sie diese Einstellung aktivieren, überprüft <ph name="PRODUCT_NAME" /> bei jedem Start, ob es der Standardbrowser ist. Nach Möglichkeit registriert sich die Anwendung dann automatisch. Ist diese Einstellung deaktiviert, überprüft <ph name="PRODUCT_NAME" /> nie, ob es der Standardbrowser ist. Außerdem werden alle Nutzersteuerelemente zum Einstellen dieser Option deaktiviert. Falls diese Einstellung nicht festgelegt ist, kann der Nutzer selbst steuern, ob <ph name="PRODUCT_NAME" /> der Standardbrowser ist und ob Nutzerbenachrichtigungen angezeigt werden sollen, wenn dies nicht der Fall ist.</translation>
+<translation id="379602782757302612">Mit dieser Richtlinie können Sie festlegen, welche Erweiterungen Nutzer NICHT installieren dürfen. Bereits installierte Erweiterungen, die auf die schwarze Liste gesetzt werden, werden entfernt. Der Nutzer hat keine Möglichkeit, diese zu aktivieren. Sollte eine aufgrund der schwarzen Liste deaktivierte Erweiterung aus dieser entfernt werden, wird sie automatisch wieder aktiviert.
+
+          Der Wert "*" in der schwarzen Liste gibt an, dass alle Erweiterungen ausgeschlossen werden, sofern diese nicht ausdrücklich auf die weiße Liste gesetzt wurden.
+
+          Wenn diese Richtlinie nicht konfiguriert ist, kann der Nutzer jede Erweiterung in <ph name="PRODUCT_NAME" /> installieren.</translation>
 <translation id="3800626789999016379">Konfiguriert das Verzeichnis, das <ph name="PRODUCT_NAME" /> zum Herunterladen von Dateien verwendet.
 
       Wenn Sie diese Richtlinie festlegen, verwendet <ph name="PRODUCT_NAME" /> das angegebene Verzeichnis unabhängig davon, ob der Nutzer selbst eines angegeben oder festgelegt hat, dass er den Downloadpfad jedes Mal selbst angeben möchte.
@@ -1038,8 +1081,10 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
 <translation id="5052081091120171147">Diese Richtlinie erzwingt, sofern aktiv, den Import des Browserverlaufs aus dem aktuellen Standardbrowser. Ist die Richtlinie aktiviert, wirkt sie sich auch auf den Importdialog aus. Wenn sie deaktiviert ist, erfolgt kein Import des Browserverlaufs. Sollte sie nicht konfiguriert sein, so wird der Nutzer möglicherweise gefragt, ob ein Import erfolgen soll, oder der Import findet automatisch statt.</translation>
 <translation id="5056708224511062314">Lupe deaktiviert</translation>
 <translation id="5067143124345820993">Weiße Liste für Nutzer bei der Anmeldung</translation>
+<translation id="5068140065960598044">Die Cloud-Richtlinie für <ph name="PRODUCT_NAME" /> überschreibt die Computerrichtlinie.</translation>
 <translation id="5085647276663819155">Druckvorschau deaktivieren</translation>
 <translation id="5105313908130842249">Verzögerung für die Bildschirmsperre im Akkubetrieb</translation>
+<translation id="5108031557082757679">Deaktivierte, an Geräte gebundene Unternehmensdrucker</translation>
 <translation id="5130288486815037971">Legt fest, ob RC4-Verschlüsselungssammlungen in TLS aktiviert sind</translation>
 <translation id="5141670636904227950">Standardtyp für die Lupe festlegen, die auf der Anmeldeseite aktiviert ist</translation>
 <translation id="5142301680741828703">Folgende URL-Muster immer in <ph name="PRODUCT_FRAME_NAME" /> darstellen</translation>
@@ -1431,13 +1476,13 @@ Ein Teil der Proxyeinstellungen ist für Android-Apps verfügbar und kann auf fr
 
       Wenn diese Richtlinie nicht konfiguriert wird oder die Liste leer ist, sind alle Schemata in <ph name="PRODUCT_NAME" /> zugänglich.</translation>
 <translation id="6652197835259177259">Einstellungen für lokal verwaltete Nutzer</translation>
-<translation id="6654559957643809067">Diese Richtlinie aktiviert die Netzwerkvervollständigung in <ph name="PRODUCT_NAME" /> und verhindert, dass die Einstellung von Nutzern geändert wird.
+<translation id="6654559957643809067">Diese Richtlinie aktiviert die Netzwerkvorhersage in <ph name="PRODUCT_NAME" /> und verhindert, dass die Einstellung von Nutzern geändert wird. 
 
-      Hiermit werden DNS-Vorabruf, TCP- und SSL-Vorverbindung und das Pre-Rendering von Webseiten gesteuert.
+Hiermit werden DNS-Vorabruf, TCP- und SSL-Vorverbindung und das Pre-Rendering von Webseiten gesteuert. 
 
-      Wenn Sie diese Einstellung auf "Immer", "Nie" oder "Nur WLAN" festlegen, können sie Nutzer in <ph name="PRODUCT_NAME" /> nicht ändern oder überschreiben.
+Wenn Sie diese Einstellung auf "Immer", "Nie" oder "Nur WLAN" festlegen, können sie Nutzer in <ph name="PRODUCT_NAME" /> nicht ändern oder überschreiben. 
 
-      Ist die Richtlinie nicht konfiguriert, wird die Netzwerkvervollständigung aktiviert, kann jedoch vom Nutzer geändert werden.</translation>
+Ist die Richtlinie nicht konfiguriert, wird die Netzwerkvorhersage aktiviert, kann jedoch vom Nutzer geändert werden. </translation>
 <translation id="6658245400435704251">Legt die Anzahl von Sekunden fest, die eine Verzögerung ab dem Übertragungszeitpunkt an den Server maximal betragen darf, wenn ein Gerät ein Update herunterlädt. Die Verzögerungszeit setzt sich aus der Istzeit und der auf die Anzahl der Überprüfungen auf Updates verwendeten Zeit zusammen. Die obere Grenze für den Streufaktor bildet ein konstanter Zeitraum, sodass ein Gerät nur eine begrenzte Zeit lang auf den Download eines Updates wartet.</translation>
 <translation id="6689792153960219308">Hardwarestatus senden</translation>
 <translation id="6693751878507293182">Wenn Sie diese Einstellung aktivieren, wird die automatische Suche und Installation fehlender Plug-ins in <ph name="PRODUCT_NAME" /> deaktiviert. Ist sie deaktiviert oder nicht konfiguriert, so ist die Plug-in-Suche aktiv.</translation>
@@ -1475,6 +1520,13 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
           Wenn Sie diese Richtlinie konfigurieren, können die Nutzer sie nicht ändern oder außer Kraft setzen.
 
           Wird diese Richtlinie nicht konfiguriert, ist das gesprochene Feedback zunächst deaktiviert, kann aber von den Nutzern jederzeit aktiviert werden.</translation>
+<translation id="6922040258551909078">
+      Ist die Richtlinie auf "True" festgelegt, hat die Cloud-Richtlinie Vorrang, wenn sie mit der Computerrichtlinie in Konflikt steht.
+      Ist die Richtlinie auf "False" festgelegt oder nicht konfiguriert, hat die Computerrichtlinie Vorrang, wenn sie mit der Cloud-Richtlinie in Konflikt steht.
+      Weitere Informationen zu Richtlinienprioritäten finden Sie unter: https://support.google.com/chrome?p=set_chrome_policies_for_devices.
+
+      Diese Richtlinie ist nur in Windows-Instanzen verfügbar, die nicht mit einer <ph name="MS_AD_NAME" />-Domain verbunden sind.
+      </translation>
 <translation id="6922884955650325312">Das Plug-in "<ph name="FLASH_PLUGIN_NAME" />" blockieren</translation>
 <translation id="6923366716660828830">Gibt den Namen des Standardsuchanbieters an. Wenn die Richtlinie leer oder nicht konfiguriert ist, so wird der durch die Such-URL angegebene Hostname verwendet. Diese Richtlinie wird nur dann umgesetzt, wenn "DefaultSearchProviderEnabled" aktiviert ist.</translation>
 <translation id="6931242315485576290">Synchronisierung der Daten mit Google deaktivieren</translation>
@@ -1585,6 +1637,7 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 
       Wenn für diese Richtlinie "false" festgelegt wird, werden auf der "Neuer Tab"-Seite keine automatisch generierten Inhaltsvorschläge angezeigt.</translation>
 <translation id="7323896582714668701">Zusätzliche Befehlszeilenparameter für <ph name="PRODUCT_NAME" /></translation>
+<translation id="7326394567531622570">Ähnlich wie bei den Werkseinstellungen (Wert 2); hier wird jedoch versucht, die Log-in-Tokens zu übernehmen, sodass der Nutzer sich nicht noch einmal anmelden muss.</translation>
 <translation id="7329842439428490522">Hiermit wird angegeben, nach welchem Zeitraum ohne Nutzereingabe der Bildschirm im Akkubetrieb abgeschaltet wird.
 
           Wenn für diese Richtlinie ein höherer Wert als null festgelegt wird, gibt dieser an, wie lange ein Nutzer inaktiv sein muss, bevor <ph name="PRODUCT_OS_NAME" /> den Bildschirm abschaltet.
@@ -1609,6 +1662,7 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
       Ist die Richtlinie nicht konfiguriert, erfolgt die automatische Bereinigung auf Grundlage der integrierten Standardstrategie. Zurzeit handelt es sich dabei um die "RemoveLRUIfDormant"-Strategie.</translation>
 <translation id="7336878834592315572">Cookies für die Dauer der Sitzung beibehalten</translation>
 <translation id="7340034977315324840">Aktivitätszeit von Geräten melden</translation>
+<translation id="7343497214039883642">Unternehmensdrucker-Konfigurationsdatei für Geräte</translation>
 <translation id="7384999953864505698">Lässt das QUIC-Protokoll zu</translation>
 <translation id="7417972229667085380">Prozentsatz für die Skalierung der Inaktivitätsspanne im Präsentationsmodus (veraltet)</translation>
 <translation id="7421483919690710988">Cache-Größe für Mediendatenträger in Byte festlegen</translation>
@@ -1790,6 +1844,7 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
       Ist die Richtlinie nicht konfiguriert, wird standardmäßig das 24-Stunden-Uhrzeitformat verwendet.</translation>
 <translation id="8114382167597081590">Eingeschränkten Modus auf YouTube nicht erzwingen</translation>
 <translation id="8118665053362250806">Cache-Größe für Mediendatenträger festlegen</translation>
+<translation id="8124468781472887384">Richtlinie für den Zugriff auf die Konfiguration von an Geräte gebundenen Druckern.</translation>
 <translation id="8135937294926049787">Hiermit wird angegeben, nach welchem Zeitraum ohne Nutzereingabe der Bildschirm im Netzbetrieb abgeschaltet wird.
 
           Wenn für diese Richtlinie ein höherer Wert als null festgelegt wird, gibt dieser an, wie lange ein Nutzer inaktiv sein muss, bevor <ph name="PRODUCT_OS_NAME" /> den Bildschirm abschaltet.
@@ -1892,7 +1947,6 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
 <translation id="8424255554404582727">Standarddrehung des Bildschirms festlegen, die bei jedem Neustart erneut angewendet wird</translation>
 <translation id="8426231401662877819">Bildschirm um 90 Grad im Uhrzeigersinn drehen</translation>
 <translation id="8451988835943702790">"Neuer Tab"-Seite als Startseite verwenden</translation>
-<translation id="8458790683633857482">Gibt die Richtlinien an, die für die ARC-Laufzeit übergeben werden. Es muss ein gültiger JSON-Wert angegeben werden.</translation>
 <translation id="8465065632133292531">Parameter für URL der Suche im Voraus, die POST verwendet</translation>
 <translation id="847472800012384958">Anzeige von Pop-ups für keine Website zulassen</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
@@ -1957,6 +2011,18 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
 <translation id="8864975621965365890">Unterdrückung des Hinweises auf Einstellung des Frames, der beim Rendern einer Website durch <ph name="PRODUCT_FRAME_NAME" /> erscheint</translation>
 <translation id="8870318296973696995">Startseite</translation>
 <translation id="8882006618241293596">Das Plug-in "<ph name="FLASH_PLUGIN_NAME" />" auf diesen Websites blockieren</translation>
+<translation id="8887644176044431146">Bestimmt, welche Drucker aus
+      "DeviceNativePrintersConfiguration" Nutzern zur Verfügung stehen.
+
+      Gibt an, welche Zugriffsrichtlinie für die Massenkonfiguration von Druckern verwendet wird.
+      Wenn "AllowAll" ausgewählt wird, werden alle Drucker angezeigt. Wenn "BlacklistRestriction"
+      ausgewählt wird, kommt "DeviceNativePrintersBlacklist" zum Einsatz, um den Zugriff auf
+      die angegebenen Drucker einzuschränken. Wenn "WhitelistPrintersOnly" ausgewählt wird, gibt
+      "DeviceNativePrintersWhitelist" nur die Drucker an, die ausgewählt werden
+      können.
+
+      Wenn diese Richtlinie nicht festgelegt wird, wird "BlacklistRestriction" verwendet.
+      </translation>
 <translation id="8906768759089290519">Gastmodus aktivieren</translation>
 <translation id="8908294717014659003">Hier können Sie festlegen, ob Websites der Zugriff auf Medienaufnahmegeräte erlaubt werden soll. Der Zugriff auf Medienaufnahmegeräte kann standardmäßig zugelassen werden oder Sie können einstellen, dass der Nutzer jedes Mal gefragt wird, wenn eine Website auf Medienaufnahmegeräte zugreifen möchte.
 

@@ -14,11 +14,6 @@
 <translation id="1074497978438210769">Not secure</translation>
 <translation id="1080116354587839789">Fit to width</translation>
 <translation id="1088860948719068836">Add Name on Card</translation>
-<translation id="1092563096751750415">'<ph name="SOFTWARE_NAME" />' wasn’t installed properly on your computer or the network:
-    &lt;ul&gt;
-    &lt;li&gt;Try uninstalling '<ph name="SOFTWARE_NAME" />'&lt;/li&gt;
-    &lt;li&gt;Try connecting to another Wi-Fi network&lt;/li&gt;
-    &lt;/ul&gt;</translation>
 <translation id="1103523840287552314">Always translate <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">If ticked, Chrome will store a copy of your card on this device for faster form filling.</translation>
 <translation id="1111153019813902504">Recent bookmarks</translation>
@@ -146,6 +141,7 @@
 <translation id="2079545284768500474">Undo</translation>
 <translation id="20817612488360358">System proxy settings are set to be used but an explicit proxy configuration is also specified.</translation>
 <translation id="2086652334978798447">To get personalised content suggested by Google, sign in to Chrome.</translation>
+<translation id="2091887806945687916">Sound</translation>
 <translation id="2094505752054353250">Domain mismatch</translation>
 <translation id="2096368010154057602">Department</translation>
 <translation id="2108755909498034140">Restart your computer</translation>
@@ -234,7 +230,6 @@
 <translation id="2721148159707890343">Request succeeded</translation>
 <translation id="2728127805433021124">Server's certificate is signed using a weak signature algorithm.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Running Connectivity Diagnostics<ph name="END_LINK" /></translation>
-<translation id="2734765935192287616">'<ph name="SOFTWARE_NAME" />' wasn’t installed properly on your computer or network. Ask your administrator to resolve this issue.</translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2742870351467570537">Remove selected items</translation>
 <translation id="277133753123645258">Delivery method</translation>
@@ -251,7 +246,6 @@
 <translation id="2856444702002559011">Attackers might be trying to steal your information from <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (for example, passwords, messages or credit cards). <ph name="BEGIN_LEARN_MORE_LINK" />Learn more<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2889159643044928134">Don't reload</translation>
 <translation id="2909946352844186028">A network change was detected.</translation>
-<translation id="2910057247648935477">'<ph name="SOFTWARE_NAME" />' isn’t configured correctly. Uninstalling '<ph name="SOFTWARE_NAME" />' usually fixes the problem. Applications that can cause this error includes antivirus, firewall and web-filtering or proxy software.</translation>
 <translation id="2916038427272391327">Close other programmes</translation>
 <translation id="2922350208395188000">Server's certificate cannot be checked.</translation>
 <translation id="2925673989565098301">Delivery Method</translation>
@@ -850,7 +844,6 @@
 <translation id="7699293099605015246">Articles aren't available at the moment.</translation>
 <translation id="7701040980221191251">None</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Proceed to <ph name="SITE" /> (unsafe)<ph name="END_LINK" /></translation>
-<translation id="7708490115678445973">A root certificate for '<ph name="SOFTWARE_NAME" />' is required but isn’t installed. Your network administrator should look at configuration instructions for '<ph name="SOFTWARE_NAME" />' to fix this problem. Applications that can cause this error includes antivirus, firewall and web-filtering or proxy software.</translation>
 <translation id="7714464543167945231">Certificate</translation>
 <translation id="7716147886133743102">Blocked by your administrator</translation>
 <translation id="7716424297397655342">This site can’t be loaded from the cache</translation>

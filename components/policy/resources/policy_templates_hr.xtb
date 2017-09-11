@@ -73,11 +73,20 @@
 <translation id="1330145147221172764">Omogući tipkovnicu na zaslonu</translation>
 <translation id="1330985749576490863">Onemogućuje Google disk putem mobilne veze u aplikaciji Datoteke za <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="13356285923490863">Naziv pravila</translation>
+<translation id="134402861816424823">Određuje pisače koje korisnik ne može upotrebljavati.
+
+      To se pravilo upotrebljava samo ako je BlacklistRestriction odabrano
+      za DeviceNativePrintersAccessMode.
+
+      Ako se to pravilo upotrebljava, korisniku se pružaju svi pisači osim
+      ID-ova navedenih u tom pravilu.
+      </translation>
 <translation id="1353966721814789986">Početne stranice</translation>
 <translation id="1359553908012294236">Ako se pravilo postavi na "True" ili se ne konfigurira, <ph name="PRODUCT_NAME" /> omogućit će prijave gostiju. Prijave gostiju predstavljaju profile preglednika <ph name="PRODUCT_NAME" /> u kojima se svi prozori otvaraju u anonimnom načinu.
 
       Ako se pravilo postavi na "False", <ph name="PRODUCT_NAME" /> neće dopustiti pokretanje profila gostiju.</translation>
 <translation id="1363275621236827384">Omogući slanje upita na Quirks Server za hardverske profile</translation>
+<translation id="1393485621820363363">Omogućeni pisači za uređaje tvrtke</translation>
 <translation id="1397855852561539316">Predloženi URL zadanog davatelja usluge pretraživanja</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="1427655258943162134">Adresa ili URL proxy poslužitelja</translation>
@@ -249,6 +258,33 @@
 <translation id="209586405398070749">Stabilan kanal</translation>
 <translation id="2098658257603918882">Omogući izvješćivanje o upotrebi i podatke o rušenjima programa</translation>
 <translation id="2113068765175018713">Ograničavanje vremena rada uređaja automatskim ponovnim pokretanjem sustava</translation>
+<translation id="2126314858836465216">Pruža konfiguracije za pisače tvrtke povezane s uređajima.
+
+      To vam pravilo omogućuje da pružite konfiguracije pisača za
+      <ph name="PRODUCT_OS_NAME" /> uređaje.
+      Datoteka ne smije biti veća od 5 MB i mora se kodirati u JSON-u.
+      Format je jednak kao za rječnik NativePrinters. Procjenjuje se
+      da će se datoteka koja sadrži približno 21.000 pisača kodirati kao datoteka
+      od 5 MB. Kriptografsko raspršivanje upotrebljava se za potvrdu integriteta
+      preuzimanja.
+
+      Datoteka se preuzima i predmemorira. Ponovo će se preuzeti svaki put kada
+      se URL ili raspršivanje promijene.
+
+      Ako se to pravilo postavi,
+      <ph name="PRODUCT_OS_NAME" /> preuzet će
+      datoteku za konfiguracije pisača i učiniti pisače dostupnima u skladu s
+      pravilima DeviceNativePrintersAccessMode, DeviceNativePrintersWhitelist
+      i DeviceNativePrintersBlacklist.
+
+      To pravilo ne utječe na to mogu li korisnici konfigurirati pisače na
+      pojedinačnim uređajima. Služi kao dodatno pravilo za konfiguraciju
+      pisača koju vrše pojedinačni korisnici.
+
+      To je pravilo dodatno pravilo za NativePrintersBulkConfiguration.
+
+      Ako se to pravilo ne postavi, neće biti pisača za uređaje i ostala će se
+      pravila za NativeDevicePrinter* zanemariti.</translation>
 <translation id="2127599828444728326">Dopuštanje obavijesti na ovim web-lokacijama</translation>
 <translation id="2131902621292742709">Odgoda zatamnjivanja zaslona za vrijeme baterijskog napajanja</translation>
 <translation id="2134437727173969994">Dopusti zaključavanje zaslona</translation>
@@ -474,6 +510,14 @@
       Svaki unos na popisu navodi identifikator, koji se upotrebljava interno da bi se razlikovali lokalni računi na uređaju.</translation>
 <translation id="2769952903507981510">Konfiguriraj traženi naziv domene za hostove daljinskog pristupa</translation>
 <translation id="2787173078141616821">Prijavi informacije o statusu Androida</translation>
+<translation id="2789419769822054691">Određuje pisače koje korisnik može upotrebljavati.
+
+      To se pravilo upotrebljava samo ako je pravilo WhitelistPrintersOnly
+      odabrano za DeviceNativePrintersAccessMode.
+
+      Ako se to pravilo upotrebljava, korisniku su dostupni samo pisači s ID-ovima
+      podudarnim s vrijednostima u tom pravilu. ID-ovi se moraju podudarati s
+      unosima u datoteci navedenoj u pravilu DeviceNativePrinters.</translation>
 <translation id="2801230735743888564">Dopusti korisnicima igranje skrivene igre s dinosaurom kada je uređaj izvan mreže.
 
       Ako se to pravilo postavi na "False", korisnici neće moći igrati skrivenu igru s dinosaurom kada uređaj nije povezan s mrežom. Ako se ta postavka postavi na "True", korisnici će moći igrati igru s dinosaurom. Ako se to pravilo ne postavi, korisnici neće moći igrati skrivenu igru s dinosaurom u prijavljenom OS-u Chrome, ali će je moći igrati u drugim okolnostima.</translation>
@@ -528,13 +572,6 @@
           Vrijednost pravila treba navesti u milisekundama. Vrijednosti su ograničene na vrijeme kraće od odgode isključivanja zaslona i odgode neaktivnosti ili jednako tom vremenu (ako je postavljeno).</translation>
 <translation id="2987155890997901449">Omogući ARC</translation>
 <translation id="2987227569419001736">Upravljanje upotrebom API-ja Web Bluetooth</translation>
-<translation id="2998881342848488968">To pravilo omogućuje proizvodu <ph name="PRODUCT_OS_NAME" /> da zaobiđe bilo koji proxy za autentifikaciju zaštitnim portalom.
-
-      To pravilo djeluje samo ako je proxy konfiguriran (na primjer, pravilom, korisnički u chrome://settings ili proširenjima).
-
-      Ako omogućite tu postavku, sve autentifikacijske stranice zaštitnog portala (tj., sve web-stranice koje se pokreću sa stranice za prijavu na zaštitnom portalu dok <ph name="PRODUCT_NAME" /> ne otkrije uspješnu internetsku vezu) prikazivat će se u zasebnom prozoru, zanemarujući sve postavke i ograničenja pravila za trenutačnog korisnika.
-
-      Ako onemogućite tu postavku ili je ostavite nepostavljenu, sve autentifikacijske stranice zaštitnog portala prikazivat će se u (uobičajenoj) novoj kartici preglednika, na temelju trenutačnih korisničkih postavki proxyja.</translation>
 <translation id="3001534538097271560">Ako se to pravilo postavi na "false", korisnici neće moći odabrati slanje nekih informacija sustava i sadržaja stranice Googleovim poslužiteljima. Ako se ta postavka postavi na "true" ili se ne konfigurira, korisnici će moći slati neke informacije sustava i sadržaj stranice Sigurnom pregledavanju radi boljeg otkrivanja opasnih aplikacija i web-lokacija.
 
       Više informacija o Sigurnom pregledavanju potražite na stranici https://developers.google.com/safe-browsing.</translation>
@@ -661,6 +698,7 @@
 
           To se pravilo poštuje samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
 <translation id="350797926066071931">Omogući Prevoditelj</translation>
+<translation id="3512226956150568738">Ako je klijentov model uređaja već podržavao ARC prije nego što je premještanje na ext4 bilo obavezno za izvođenje ARC-a i ako je pravilo ArcEnabled postavljeno na točno, ta će se opcija ponašati kao AskUser (vrijednost 3). U svim ostalim slučajevima (ako model uređaja nije podržavao ARC ili ako je pravilo ArcEnabled postavljeno na netočno), ta je vrijednost ekvivalentna pravilu DisallowArc (vrijednost 0).</translation>
 <translation id="3528000905991875314">Omogući alternativne stranice pogrešaka</translation>
 <translation id="3547954654003013442">Proxy postavke</translation>
 <translation id="3591584750136265240">Konfiguriraj ponašanje autentifikacije tijekom prijave</translation>
@@ -705,6 +743,11 @@
           Ako se pravilo "EnableMediaRouter" postavi na "neistinito", tada vrijednost tog pravila nema učinka i ikona na alatnoj traci neće se prikazivati.</translation>
 <translation id="3788662722837364290">Postavke upravljanja napajanjem kada korisnik postane neaktivan</translation>
 <translation id="3793095274466276777">Konfigurira zadane provjere preglednika u proizvodu <ph name="PRODUCT_NAME" /> i sprječava korisnike da ih promijene. Ako omogućite ovu postavku, <ph name="PRODUCT_NAME" /> će prilikom svakog pokretanja provjeriti je li zadani preglednik i automatski se registrirati ako je moguće. Ako je ova postavka onemogućena, <ph name="PRODUCT_NAME" /> neće nikad provjeravati je li zadani preglednik i onemogućit će korisničke kontrole za postavljanje ove opcije. Ako ova postavka nije podešena, korisnik će moći odrediti je li <ph name="PRODUCT_NAME" /> zadani preglednik i trebaju li korisničke obavijesti biti prikazane kada to nije slučaj.</translation>
+<translation id="379602782757302612">Omogućuje da odredite koja proširenja korisnici NE mogu instalirati. Prethodno instalirana proširenja koja stavite na popis zabranjenih bit će onemogućena i korisnici ih neće moći omogućiti. Kad se proširenje koje je onemogućeno zbog toga što se nalazi na popisu zabranjenih ukloni s tog popisa, automatski će biti ponovo omogućeno.
+
+          Vrijednost "*" na popisu zabranjenih znači da nije dopušteno nijedno proširenje osim onih koja su izričito navedena na popisu dopuštenih.
+
+          Ako to pravilo nije postavljeno, korisnik može instalirati bilo koje proširenje u <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3800626789999016379">Konfigurira direktorij koji će <ph name="PRODUCT_NAME" /> upotrebljavati za preuzimanje datoteka.
 
       Ako postavite to pravilo, preglednik <ph name="PRODUCT_NAME" /> upotrebljavat će navedeni direktorij bez obzira je li ga je korisnik naveo ili je označio okvir da se mjesto preuzimanja treba svaki put ponovo navesti.
@@ -1044,8 +1087,10 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="5052081091120171147">Ako je omogućeno, ovo pravilo prisilno uvozi povijest pregledavanja iz trenutačno zadanog preglednika. Ako je omogućeno, ovo pravilo također utječe na dijaloški okvir za uvoz. Ako je onemogućeno, povijest pregledavanja se ne uvozi. Ako nije postavljeno, korisniku može biti postavljen upit želi li uvesti povijest pregledavanja ili do uvoza može doći automatski.</translation>
 <translation id="5056708224511062314">Povećalo je onemogućeno</translation>
 <translation id="5067143124345820993">Popis korisnika kojima je dopuštena prijava</translation>
+<translation id="5068140065960598044">Pravila oblaka za <ph name="PRODUCT_NAME" /> nadjačavaju pravila računala.</translation>
 <translation id="5085647276663819155">Onemogući pregled ispisa</translation>
 <translation id="5105313908130842249">Odgoda zaključavanja zaslona za vrijeme baterijskog napajanja</translation>
+<translation id="5108031557082757679">Onemogućeni pisači za uređaje tvrtke</translation>
 <translation id="5130288486815037971">Omogućivanje RC4 paketa šifri u TLS-u</translation>
 <translation id="5141670636904227950">Postavljanje zadane vrste povećala na "omogućeno" na zaslonu za prijavu</translation>
 <translation id="5142301680741828703">Uvijek prikaži sljedeće URL obrasce u okviru <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1484,6 +1529,13 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
           Ako postavite to pravilo, korisnici ga ne mogu promijeniti ili premostiti.
 
           Ako se to pravilo ne postavi, izgovaranje povratnih informacija u početku je onemogućeno, ali korisnik ga može omogućiti u bilo kojem trenutku.</translation>
+<translation id="6922040258551909078">
+      Ako je pravilo postavljeno na točno, pravila oblaka imaju prednost u slučaju sukoba s pravilima računala.
+      Ako je pravilo postavljeno na netočno ili nije konfigurirano, pravila računala imaju prednost u slučaju sukoba s pravilima oblaka.
+      Za više pojedinosti o prioritetu pravila posjetite: https://support.google.com/chrome?p=set_chrome_policies_for_devices
+
+      To pravilo nije dostupno u instancama Windowsa koje nisu pridružene <ph name="MS_AD_NAME" /> domeni.
+      </translation>
 <translation id="6922884955650325312">Blokiraj dodatak <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="6923366716660828830">Određuje naziv zadanog davatelja usluga pretraživanja. Ako naziv ostane prazan ili nije postavljen, upotrebljavat će se naziv hosta određen URL-om pretraživanja. Ovo će pravilo biti uzeto u obzir samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
 <translation id="6931242315485576290">Onemogući sinkronizaciju podataka s Googleom</translation>
@@ -1594,6 +1646,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 
       Ako se postavi na neistinito, automatski generirani prijedlozi sadržaja neće se prikazivati na web-stranici nove kartice.</translation>
 <translation id="7323896582714668701">Dodatni parametri naredbenog retka za uslugu <ph name="PRODUCT_NAME" /></translation>
+<translation id="7326394567531622570">Slično pravilu Wipe (vrijednost 2), no pokušava zadržati tokene za prijavu kako se korisnik ne bi morao ponovo prijavljivati.</translation>
 <translation id="7329842439428490522">Određuje koliko vremena treba proteći bez aktivnosti korisnika da bi se zaslon isključio tijekom baterijskog napajanja.
 
           Kada je postavljeno na vrijednost veću od nule, ovo pravilo određuje koliko vremena treba proteći u neaktivnosti prije nego što <ph name="PRODUCT_OS_NAME" /> isključi zaslon.
@@ -1618,6 +1671,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
       Ako se to pravilo ne postavi, automatsko čišćenje upotrebljava zadanu ugrađenu strategiju. Ta je strategija trenutačno "RemoveLRUIfDormant".</translation>
 <translation id="7336878834592315572">Zadrži kolačiće za vrijeme trajanja sesije</translation>
 <translation id="7340034977315324840">Izvješće o vremenima aktivnosti uređaja</translation>
+<translation id="7343497214039883642">Datoteka za konfiguraciju pisača tvrtke za uređaje</translation>
 <translation id="7384999953864505698">Omogući QUIC protokol</translation>
 <translation id="7417972229667085380">Postotak za skaliranje odgode u stanju mirovanja u načinu prezentacije (obustavljeno)</translation>
 <translation id="7421483919690710988">Postavite veličinu predmemorije medijskog diska u bajtovima</translation>
@@ -1799,6 +1853,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
       Ako se to pravilo ne postavi, uređaj će prema zadanom upotrebljavati 24-satni oblik sata.</translation>
 <translation id="8114382167597081590">Ne primjenjuj Ograničeni način rada na YouTubeu</translation>
 <translation id="8118665053362250806">Postavi veličinu predmemorije medijskog diska</translation>
+<translation id="8124468781472887384">Pravila za pristup konfiguraciji pisača za uređaje.</translation>
 <translation id="8135937294926049787">Određuje koliko vremena treba proteći bez aktivnosti korisnika da bi se zaslon isključio tijekom napajanja izmjeničnom strujom.
 
           Kada je postavljeno na vrijednost veću od nule, ovo pravilo određuje koliko vremena treba proteći u neaktivnosti prije nego što <ph name="PRODUCT_OS_NAME" /> isključi zaslon.
@@ -1910,7 +1965,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="8424255554404582727">Postavi zadano zakretanje zaslona koje će se primjenjivati nakon svakog ponovnog pokretanja</translation>
 <translation id="8426231401662877819">Zakreni zaslon u smjeru kazaljke na satu 90 stupnjeva</translation>
 <translation id="8451988835943702790">Upotrijebi web-stranicu nove kartice kao početnu stranicu</translation>
-<translation id="8458790683633857482">Određuje skup pravila koja će se prenijeti na vrijeme izvođenja ARC-a. Vrijednost mora biti važeći JSON.</translation>
 <translation id="8465065632133292531">Parametri za URL usluge Instant koji upotrebljava POST</translation>
 <translation id="847472800012384958">Ne dopusti web-lokacijama prikazivanje skočnih prozora</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
@@ -1979,6 +2033,18 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="8864975621965365890">Zaustavlja upit za odbijanje koji se pojavljuje kada web-lokaciju generira <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Početna stranica</translation>
 <translation id="8882006618241293596">Blokiraj dodatak <ph name="FLASH_PLUGIN_NAME" /> na ovim web-lokacijama</translation>
+<translation id="8887644176044431146">Upravlja time koji su pisači iz pravila
+      DeviceNativePrintersConfiguration dostupni korisnicima.
+
+      Određuje koje se pravilo za pristup upotrebljava za skupnu konfiguraciju
+      pisača. Ako se odabere AllowAll, prikazuju se svi pisači. Ako se odabere
+      BlacklistRestrction, DeviceNativePrintersBlacklist upotrebljava se za
+      ograničenje pristupa navedenim pisačima. Ako se odabere
+      WhitelistPrintersOnly, DeviceNativePrintersWhitelist određuje samo one
+      pisače koji se mogu odabrati.
+
+      Ako se to pravilo ne postavi, pretpostavlja se da vrijedi BlacklistRestriction.
+      </translation>
 <translation id="8906768759089290519">Omogući način gosta</translation>
 <translation id="8908294717014659003">Omogućuje vam da postavite hoće li web-lokacijama biti dopušten pristup medijskim uređajima za snimanje. Pristup medijskim uređajima za snimanje može biti dopušten prema zadanim postavkama ili se korisniku može postaviti pitanje svaki put kada web-lokacija želi pristupiti tim uređajima.
 

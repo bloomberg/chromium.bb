@@ -99,6 +99,7 @@
 <translation id="4271805377592243930">获取有关 Chromium 的帮助</translation>
 <translation id="4285930937574705105">未知错误导致安装失败。如果 Chromium 正在运行，请将其关闭，然后重试。</translation>
 <translation id="4330585738697551178">已知此模块与 Chromium 存在冲突。</translation>
+<translation id="4421155425831608516">此设备的管理员已禁止登录 Chromium。</translation>
 <translation id="4423735387467980091">自定义及控制 Chromium</translation>
 <translation id="4458285410772214805">请先退出，然后重新登录，以便此更改生效。</translation>
 <translation id="4469812139324097969">Chromium 已有一段时间未重新启动，因此现在已不是最新版本。目前有可用更新，系统会在您重新启动 Chromium 后应用这些更新。</translation>

@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
-<translation id="1326317727527857210">ลงชื่อเข้าใช้ Chrome เพื่อรับแท็บจากอุปกรณ์เครื่องอื่นๆ ของคุณ</translation>
 <translation id="1685087038067318291">อ่านหน้าเว็บที่ส่งมาจากออบเจ็กต์ใกล้เคียง เมื่อบลูทูธเปิดอยู่ Chrome สามารถรวบรวมหน้าเว็บที่เชื่อมโยงกับออบเจ็กต์รอบตัวคุณ และส่งหน้าเว็บเหล่านั้นแบบไม่ระบุตัวตนไปยัง Google เพื่อค้นหาหน้าที่มีประโยชน์ต่อคุณมากที่สุด <ph name="BEGIN_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">Chrome ยืนยันว่า <ph name="ISSUER" /> ได้ออกใบรับรองของเว็บไซต์นี้</translation>

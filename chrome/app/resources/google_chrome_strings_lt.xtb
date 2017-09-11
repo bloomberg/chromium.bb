@@ -83,7 +83,7 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="3180085900771989961">Valdytojas turi jus pašalinti ir vėl pridėti prie „Chrome“.</translation>
 <translation id="3251381707915721925">Jei norite nustatyti, kokias svetaines <ph name="NEW_PROFILE_NAME" /> gali peržiūrėti, konfigūruokite apribojimus ir nustatymus apsilankę adresu <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Jei nepakeisite numatytųjų nustatymų, <ph name="NEW_PROFILE_NAME" /> galės naršyti visą žiniatinklį.
 
-Kad <ph name="NEW_PROFILE_NAME" /> negalėtų pasiekti jūsų paskyros, būtinai užrakinkite profilį, kai nenaudojate „Chrome“. Norėdami tai atlikti, spustelėkite profilio pavadinimą viršutiniame dešiniajame naršyklės kampe ir pasirinkite „Išeiti ir saugiai užrakinti“.
+Kad <ph name="NEW_PROFILE_NAME" /> negalėtų pasiekti jūsų paskyros, būtinai užrakinkite profilį, kai nenaudojate „Chrome“. Norėdami tai atlikti, spustelėkite profilio pavadinimą viršutiniame dešiniajame naršyklės kampe ir pasirinkite „Išeiti ir užrakinti nuo vaikų“.
 <ph name="BEGIN_LINK_2" />Sužinokite daugiau<ph name="END_LINK_2" />
 
 Patikrinkite el. pašto adresu <ph name="ACCOUNT_EMAIL" /> išsiųstą laišką, kuriame rasite daugiau instrukcijų.</translation>
@@ -136,6 +136,7 @@ Patikrinkite el. pašto adresu <ph name="ACCOUNT_EMAIL" /> išsiųstą laišką,
 <translation id="4754614261631455953">„Canary“ versijos „Google Chrome“ (mDNS-In)</translation>
 <translation id="4771048833395599659">Šis failas gali būti pavojingas, todėl „Chrome“ jį užblokavo.</translation>
 <translation id="4794050651896644714">Išsaugoti išsamią informaciją „Chrome“</translation>
+<translation id="4804732725083176494">Prisijungimo prie „Chrome“ funkciją išjungė šio įrenginio administratorius.</translation>
 <translation id="4891791193823137474">Paleisti „Google Chrome“ fone</translation>
 <translation id="4921569541910214635">Bendrinate kompiuterį? Dabar galite nustatyti „Chrome“ kaip tik norite.</translation>
 <translation id="4953650215774548573">Nustatyti „Google Chrome“ kaip numatytąją naršyklę</translation>

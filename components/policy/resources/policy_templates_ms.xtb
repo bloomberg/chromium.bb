@@ -73,11 +73,20 @@
 <translation id="1330145147221172764">Dayakan papan kekunci pada skrin</translation>
 <translation id="1330985749576490863">Melumpuhkan Google Drive melalui sambungan selular dalam apl Fail <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="13356285923490863">Nama Dasar</translation>
+<translation id="134402861816424823">Menentukan pencetak yang tidak boleh digunakan oleh pengguna.
+
+      Dasar ini hanya digunakan jika BlacklistRestriction dipiliih untuk
+      DeviceNativePrintersAccessMode.
+
+      Jika dasar ini digunakan, semua pencetak akan disediakan kepada
+      pengguna kecuali ID yang disenaraikan dalam dasar ini.
+      </translation>
 <translation id="1353966721814789986">Halaman permulaan</translation>
 <translation id="1359553908012294236">Jika dasar ini ditetapkan kepada benar atau tidak dikonfigurasi, <ph name="PRODUCT_NAME" /> akan mendayakan log masuk tetamu. Log masuk tetamu merupakan profil <ph name="PRODUCT_NAME" /> yang semua tetingkapnya dalam mod inkognito.
 
       Jika dasar ini ditetapkan kepada palsu, <ph name="PRODUCT_NAME" /> tidak akan membenarkan profil tetamu dimulakan.</translation>
 <translation id="1363275621236827384">Dayakan pertanyaan ke Pelayan Quirks untuk mendapatkan profil perkakasan</translation>
+<translation id="1393485621820363363">Pencetak peranti perusahaan didayakan</translation>
 <translation id="1397855852561539316">Pembekal carian lalai mencadangkan URL</translation>
 <translation id="1426410128494586442">Ya</translation>
 <translation id="1427655258943162134">Alamat atau URL pelayan proksi</translation>
@@ -257,6 +266,33 @@
 <translation id="209586405398070749">Saluran stabil</translation>
 <translation id="2098658257603918882">Dayakan laporan penggunaan dan data berkaitan nahas</translation>
 <translation id="2113068765175018713">Hadkan masa hidup peranti melalui but semula automatik.</translation>
+<translation id="2126314858836465216">Menyediakan konfigurasi untuk pencetak perusahaan yang dihubungkan pada peranti.
+
+      Dasar ini membenarkan anda menyediakan konfigurasi pencetak kepada
+      peranti <ph name="PRODUCT_OS_NAME" />.
+      Saiz fail tidak boleh melebihi 5MB dan mesti dikodkan dalam JSON.
+      Format adalah sama dengan kamus NativePrinters.  Fail yang
+      mengandungi kira-kira 21,000 pencetak dianggar akan mengekod
+      sebagai fail 5MB.  Cincangan kriptografi digunakan untuk mengesahkan
+      integriti muat turun.
+
+      Fail dimuat turun dan dicache. Fail tersebut akan dimuat turun semula apabila
+      URL atau cincangan berubah.
+
+      Jika dasar ini ditetapkan,
+      <ph name="PRODUCT_OS_NAME" /> akan memuat turun
+      fail untuk konfigurasi pencetak dan menjadikan pencetak tersedia menurut
+      DeviceNativePrintersAccessMode, DeviceNativePrintersWhitelist
+      dan DeviceNativePrintersBlacklist.
+
+      Dasar ini tidak mempengaruhi sama ada pengguna boleh mengkonfigurasi
+      pencetak pada peranti individu.  Tujuan dasar ini ialah sebagai tambahan
+      kepada konfigurasi pencetak oleh pengguna individu.
+
+      Dasar ini adalah tambahan kepada NativePrintersBulkConfiguration.
+
+      Jika dasar ini tidak ditetapkan, maka tiada pencetak peranti dan dasar
+      NativeDevicePrinter* yang lain akan diabaikan.</translation>
 <translation id="2127599828444728326">Benarkan pemberitahuan pada tapak ini</translation>
 <translation id="2131902621292742709">Kelewatan pemalapan skrin apabila dijalankan dengan kuasa bateri</translation>
 <translation id="2134437727173969994">Benarkan mengunci skrin</translation>
@@ -498,6 +534,14 @@
       Setiap masukan senarai menetapkan pengecam, yang digunakan secara dalaman untuk membezakan akaun setempat peranti.</translation>
 <translation id="2769952903507981510">Konfigurasi nama domain yang diperlukan untuk hos akses jauh</translation>
 <translation id="2787173078141616821">Laporkan maklumat tentang status Android</translation>
+<translation id="2789419769822054691">Menentukan pencetak yang boleh digunakan oleh pengguna.
+
+      Dasar ini hanya digunakan jika WhitelistPrintersOnly dipilih untuk
+      DeviceNativePrintersAccessMode.
+
+      Jika dasar ini digunakan, hanya pencetak dengan ID yang sepadan dengan
+      nilai dalam dasar ini akan tersedia kepada pengguna. ID mesti sepadan
+      dengan masukan dalam fail yang dinyatakan dalam DeviceNativePrinters.</translation>
 <translation id="2801230735743888564">Membolehkan pengguna bermain permainan telur easter dinosaur apabila peranti di luar talian.
 
       Jika dasar ini ditetapkan kepada Palsu, pengguna tidak akan dapat bermain permainan telur easter dinosaur apabila peranti di luar talian. Jika tetapan ini ditetapkan kepada Benar, pengguna dibenarkan bermain permainan dinosaur. Jika dasar ini tidak ditetapkan, pengguna tidak dibenarkan bermain permainan telur easter dinosaur pada OS Chrome berdaftar, tetapi dibenarkan bermain menurut keadaan lain.</translation>
@@ -552,13 +596,6 @@
           Nilai dasar ini harus ditetapkan dalam milisaat. Nilai diapit supaya kurang daripada atau sama dengan kelewatan pemadaman skrin (jika ditetapkan) dan kelewatan melahu.</translation>
 <translation id="2987155890997901449">Dayakan ARC</translation>
 <translation id="2987227569419001736">Kawal penggunaan API Bluetooth Web</translation>
-<translation id="2998881342848488968">Dasar ini membenarkan <ph name="PRODUCT_OS_NAME" /> memintas mana-mana proksi untuk pengesahan portal tawanan.
-
-      Dasar ini hanya berkuat kuasa jika proksi dikonfigurasikan (contohnya menerusi dasar, oleh pengguna dalam chrome://settings atau oleh sambungan).
-
-      Jika anda mendayakan tetapan ini, mana-mana halaman pengesahan portal tawanan (iaitu semua halaman web bermula daripada halaman log masuk portal tawanan sehingga <ph name="PRODUCT_NAME" /> mengesan sambungan internet yang berjaya dilakukan) akan dipaparkan dalam tetingkap yang lain dengan mengabaikan semua tetapan dasar dan sekatan untuk pengguna semasa.
-
-      Jika anda melumpuhkan tetapan ini atau membiarkannya tidak ditetapkan, mana-mana halaman pengesahan portal tawanan akan ditunjukkan dalam tab penyemak imbas yang baharu (biasa), menggunakan tetapan proksi pengguna semasa.</translation>
 <translation id="3001534538097271560">Penetapan dasar ini kepada palsu akan menghentikan pengguna daripada memilih untuk menghantar beberapa maklumat sistem dan kandungan halaman kepada pelayan Google. Jika tetapan ini benar atau tidak dikonfigurasikan, maka pengguna akan dibenarkan menghantar beberapa maklumat sistem dan kandungan halaman kepada Penyemakan Imbas Selamat untuk mengesan apl dan tapak yang berbahaya.
 
       Lihat https://developers.google.com/safe-browsing untuk mendapatkan maklumat tentang Penyemakan Imbas Selamat.</translation>
@@ -694,6 +731,7 @@
 
           Dasar ini hanya dipatuhi jika dasar 'DefaultSearchProviderEnabled' didayakan.</translation>
 <translation id="350797926066071931">Dayakan Terjemahan</translation>
+<translation id="3512226956150568738">Jika model peranti pelanggan sudah menyokong ARC sebelum penghijrahan kepada ext4 yang diperlukan untuk menjalankan ARC dan jika dasar ArcEnabled ditetapkan kepada benar, pilihan ini akan berkelakuan seperti AskUser (nilai 3). Dalam semua hal lain, (jika model peranti tidak menyokong ARC sebelum ini atau jika dasar ArcEnabled ditetapkan kepada palsu), nilai ini bersamaan dengan DisallowArc (nilai 0).</translation>
 <translation id="3528000905991875314">Dayakan halaman ralat ganti</translation>
 <translation id="3547954654003013442">Tetapan proksi</translation>
 <translation id="3591584750136265240">Konfigurasikan gelagat pengesahan log masuk</translation>
@@ -743,6 +781,11 @@
       Jika tetapan ini dilumpuhkan, <ph name="PRODUCT_NAME" /> tidak akan sesekali memeriksa jika ia adalah penyemak imbas lalai dan akan melumpuhkan kawalan pengguna untuk menetapkan pilihan ini.
 
       Jika tetapan ini tidak ditetapkan, <ph name="PRODUCT_NAME" /> akan membenarkan pengguna untuk mengawal sama ada ia adalah penyemak imbas lalai dan sama ada pemberitahuan pengguna perlu dipaparkan apabila ia tidak perlu.</translation>
+<translation id="379602782757302612">Membolehkan anda menentukan sambungan yang TIDAK boleh dipasang oleh pengguna. Sambungan yang telah dipasang akan dilumpuhkan jika disenaraihitamkan dan pengguna tidak akan ada cara untuk mendayakan sambungan tersebut. Sebaik sahaja sambungan yang dilumpuhkan kerana senarai hitam itu dialih keluar daripada senarai tersebut, sambungan itu akan didayakan semula secara automatik.
+
+          Nilai senarai hitam '*' bermakna semua sambungan akan disenaraihitamkan melainkan sambungan itu disenaraikan dalam senarai putih dengan jelas.
+
+          Jika dasar ini dibiarkan tidak ditetapkan, pengguna boleh memasang sebarang sambungan dalam <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3800626789999016379">Mengkonfigurasi direktori yang <ph name="PRODUCT_NAME" /> akan gunakan untuk memuat turun fail.
 
       Jika anda menetapkan dasar ini, <ph name="PRODUCT_NAME" /> akan menggunakan direktori yang disediakan tidak kira sama ada pengguna telah menetapkan satu direktori atau mendayakan bendera untuk digesa bagi lokasi muat turun pada setiap kali.
@@ -1099,8 +1142,10 @@
       Jika ia tidak ditetapkan, pengguna mungkin ditanya sama ada hendak mengimport atau import boleh berlaku secara automatik.</translation>
 <translation id="5056708224511062314">Penggadang skrin dilumpuhkan</translation>
 <translation id="5067143124345820993">Log masuk senarai putih pengguna</translation>
+<translation id="5068140065960598044">Dasar awan <ph name="PRODUCT_NAME" /> mengatasi dasar Mesin.</translation>
 <translation id="5085647276663819155">Lumpuhkan Pratonton Cetakan</translation>
 <translation id="5105313908130842249">Kelewatan kunci skrin apabila dijalankan dengan kuasa bateri</translation>
+<translation id="5108031557082757679">Pencetak peranti perusahaan dilumpuhkan</translation>
 <translation id="5130288486815037971">Sama ada suit sifer RC4 dalam TLS didayakan</translation>
 <translation id="5141670636904227950">Tetapkan jenis penggadang skrin lalai yang didayakan pada skrin log masuk</translation>
 <translation id="5142301680741828703">Sentiasa paparkan corak URL berikut dalam <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1574,6 +1619,13 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
           Jika anda menetapkan dasar ini, pengguna tidak boleh mengubah atau mengatasinya.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, maklum balas pertuturan dilumpuhkan pada mulanya tetapi boleh didayakan oleh pengguna pada bila-bila masa.</translation>
+<translation id="6922040258551909078">
+      Jika dasar ini ditetapkan kepada benar, dasar awan akan diutamakan sekiranya bercanggah dengan dasar mesin.
+      Jika dasar ini ditetapkan kepada palsu atau tidak dikonfigurasikan, dasar mesin akan diutamakan sekiranya bercanggah dengan dasar awan.
+      Untuk mendapatkan butiran lanjut tentang keutamaan dasar, sila lawati: https://support.google.com/chrome?p=set_chrome_policies_for_devices
+
+      Dasar ini tidak tersedia pada tika Windows yang tidak dihubungkan ke domain <ph name="MS_AD_NAME" />.
+      </translation>
 <translation id="6922884955650325312">Sekat pemalam <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="6923366716660828830">Menentukan nama penyedia carian lalai. Jika dibiarkan kosong atau tidak ditetapkan, nama hos yang ditentukan oleh URL carian akan digunakan.
 
@@ -1699,6 +1751,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
       Jika dasar ini ditetapkan kepada palsu, cadangan kandungan yang dihasilkan secara automatik tidak ditunjukkan pada halaman Tab Baharu.</translation>
 <translation id="7323896582714668701">Parameter baris perintah tambahan untuk <ph name="PRODUCT_NAME" /></translation>
+<translation id="7326394567531622570">Sama dengan Wipe (nilai 2), tetapi cuba mengekalkan token log masuk supaya pengguna tidak perlu mengelog masuk semula.</translation>
 <translation id="7329842439428490522">Menyatakan panjang masa tanpa input pengguna dan skrin akan dimatikan selepas masa ini tamat apabila dijalankan dengan kuasa bateri.
 
           Apabila dasar ini ditetapkan kepada nilai yang lebih besar daripada sifar, ia menyatakan panjang masa pengguna mesti kekal melahu sebelum <ph name="PRODUCT_OS_NAME" /> mematikan skrin.
@@ -1725,6 +1778,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika dasar ini tidak ditetapkan, pembersihan autimatik menggunakan strategi terbina dalam lalai. Pada masa ini, itu adalah strategi 'RemoveLRUIfDormant'.</translation>
 <translation id="7336878834592315572">Simpan kuki sepanjang tempoh sesi</translation>
 <translation id="7340034977315324840">Laporkan masa aktiviti peranti</translation>
+<translation id="7343497214039883642">Fail konfigurasi pencetak perusahaan untuk peranti</translation>
 <translation id="7384999953864505698">Membenarkan protokol QUIC</translation>
 <translation id="7417972229667085380">Peratusan yang digunakan untuk skala kelewatan melahu dalam mod penyampaian (tidak akan digunakan lagi)</translation>
 <translation id="7421483919690710988">Tetapkan saiz cache cakera media dalam bait</translation>
@@ -1919,6 +1973,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika dasar ini tidak ditetapkan, peranti akan menggunakan format lalai 24 jam.</translation>
 <translation id="8114382167597081590">Jangan kuatkuasakan Mod Sekatan di YouTube</translation>
 <translation id="8118665053362250806">Tetapkan saiz cache cakera media</translation>
+<translation id="8124468781472887384">Dasar akses konfigurasi pencetak peranti.</translation>
 <translation id="8135937294926049787">Menyatakan panjang masa tanpa input pengguna dan skrin akan dimatikan selepas masa ini tamat apabila dijalankan dengan kuasa AC.
 
           Apabila dasar ini ditetapkan kepada nilai yang lebih besar daripada sifar, ia menyatakan panjang masa pengguna mesti kekal melahu sebelum <ph name="PRODUCT_OS_NAME" /> mematikan skrin.
@@ -2038,7 +2093,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="8424255554404582727">Tetapkan putaran paparan lalai yang digunakan semula pada setiap but semula</translation>
 <translation id="8426231401662877819">Putar skrin 90 darjah mengikut arah jam</translation>
 <translation id="8451988835943702790">Gunakan Halaman Tab Baharu sebagai halaman utama</translation>
-<translation id="8458790683633857482">Menentukan set dasar yang akan diserahkan kepada waktu jalan ARC. Nilainya mestilah JSON sah.</translation>
 <translation id="8465065632133292531">Parameter untuk URL semerta yang menggunakan POST</translation>
 <translation id="847472800012384958">Jangan benarkan mana-mana tapak untuk menunjukkan pop muncul</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
@@ -2114,6 +2168,18 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="8864975621965365890">Menyekat gesaan penolakan yang dipaparkan apabila tapak dipaparkan oleh <ph name="PRODUCT_FRAME_NAME" /> .</translation>
 <translation id="8870318296973696995">Halaman utama</translation>
 <translation id="8882006618241293596">Sekat pemalam <ph name="FLASH_PLUGIN_NAME" /> pada tapak ini</translation>
+<translation id="8887644176044431146">Mengawal peranti daripada
+      DeviceNativePrintersConfiguration yang tersedia kepada pengguna.
+
+      Menetapkan dasar akses yang digunakan untuk konfigurasi pencetak pukal.
+      Jika AllowAll dipilih, semua pencetak akan dipaparkan. Jika BlacklistRestrction
+      dipilih, DeviceNativePrintersBlacklist digunakan untuk mengehadkan akses
+      kepada pencetak yang ditetapkan.  Jika WhitelistPrintersOnly dipilih,
+      DeviceNativePrintersWhitelist menetapkan pencetak yang boleh dipilih
+      sahaja.
+
+      Jika dasar ini tidak ditetapkan, BlacklistRestriction akan digunakan.
+      </translation>
 <translation id="8906768759089290519">Dayakan mod tetamu</translation>
 <translation id="8908294717014659003">Membenarkan anda menetapkan sama ada laman web dibenarkan untuk mendapatkan akses kepada peranti tangkapan media. Akses kepada peranti tangkapan media boleh dibenarkan secara lalai atau pengguna boleh ditanya setiap kali laman web ingin mendapatkan akses kepada peranti tangkapan media.
 
