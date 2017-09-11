@@ -2,21 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-CANVAS_DIMENSIONS, 32,
-MOVE_TO, 2, 3.99f,
-CUBIC_TO, 2, 2.89f, 2.9f, 2, 3.99f, 2,
-R_H_LINE_TO, 24.02f,
-CUBIC_TO, 29.11f, 2, 30, 2.9f, 30, 3.99f,
-R_V_LINE_TO, 24.02f,
-R_CUBIC_TO, 0, 1.1f, -0.9f, 1.99f, -1.99f, 1.99f,
-H_LINE_TO, 3.99f,
-CUBIC_TO, 2.89f, 30, 2, 29.1f, 2, 28.01f,
-V_LINE_TO, 3.99f,
+// From checkbox_off.svg sha1sum = 3822031f7936fbb69283618e7966281139e1a243
+
+CANVAS_DIMENSIONS, 16,
+
+MOVE_TO, 12.5f, 3.5f,
+R_V_LINE_TO, 9,
+R_H_LINE_TO, -9,
+R_V_LINE_TO, -9,
+H_LINE_TO, 12.5f,
+
+MOVE_TO, 12.996f, 2,
+H_LINE_TO, 3.004f,
+CUBIC_TO, 2.449f, 2, 2, 2.449f, 2, 3.004f,
+R_V_LINE_TO, 9.993f,
+CUBIC_TO, 2, 13.551f, 2.449f, 14, 3.004f, 14,
+R_H_LINE_TO, 9.993f,
+CUBIC_TO, 13.551f, 14, 14, 13.551f, 14, 12.996f,
+V_LINE_TO, 3.004f,
+CUBIC_TO, 14, 2.449f, 13.551f, 2, 12.996f, 2,
+LINE_TO, 12.996f, 2,
 CLOSE,
-MOVE_TO, 5, 5,
-R_H_LINE_TO, 22,
-R_V_LINE_TO, 22,
-H_LINE_TO, 5,
-V_LINE_TO, 5,
-CLOSE,
+
 END
