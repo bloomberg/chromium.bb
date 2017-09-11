@@ -154,12 +154,22 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_
             bool, True if the C++ type is used as an element of a container.
             Containers can be an array, a sequence, a dictionary or a record.
     """
+
     def string_mode():
         if idl_type.is_nullable:
             return 'kTreatNullAndUndefinedAsNullString'
+        # TODO(lisabelle): Remove these 4 lines when we have fully supported
+        # annoteted types. (crbug.com/714866)
+        # It is because at that time 'TreatNullAs' will only appear in
+        # type_extended_attributes, not in extended_attributes.
         if extended_attributes.get('TreatNullAs') == 'EmptyString':
             return 'kTreatNullAsEmptyString'
         if extended_attributes.get('TreatNullAs') == 'NullString':
+            return 'kTreatNullAsNullString'
+        type_extended_attributes = idl_type.extended_attributes or {}
+        if type_extended_attributes.get('TreatNullAs') == 'EmptyString':
+            return 'kTreatNullAsEmptyString'
+        if type_extended_attributes.get('TreatNullAs') == 'NullString':
             return 'kTreatNullAsNullString'
         return ''
 
@@ -594,6 +604,7 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
     # Simple types
     idl_type = idl_type.preprocessed_type
     base_idl_type = idl_type.as_union_type.name if idl_type.is_union_type else idl_type.base_type
+    type_extended_attributes = idl_type.extended_attributes or {}
 
     if 'FlexibleArrayBufferView' in extended_attributes:
         if base_idl_type not in ARRAY_BUFFER_VIEW_AND_TYPED_ARRAY_TYPES:
@@ -605,9 +616,17 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
 
     if idl_type.is_integer_type:
         configuration = 'kNormalConversion'
+        # TODO(lisabelle): Remove these 4 lines when we have fully supported
+        # annoteted types.
+        # It is because at that time 'Clamp' and 'EnforceRange' will only
+        # appear in type_extended_attributes, not in extended_attributes.
         if 'EnforceRange' in extended_attributes:
             configuration = 'kEnforceRange'
         elif 'Clamp' in extended_attributes:
+            configuration = 'kClamp'
+        if 'EnforceRange' in type_extended_attributes:
+            configuration = 'kEnforceRange'
+        elif 'Clamp' in type_extended_attributes:
             configuration = 'kClamp'
         arguments = ', '.join([v8_value, 'exceptionState', configuration])
     elif base_idl_type == 'SerializedScriptValue':
@@ -735,13 +754,14 @@ IdlTypeBase.use_output_parameter_for_result = property(use_output_parameter_for_
 ################################################################################
 
 def preprocess_idl_type(idl_type):
+    extended_attributes = idl_type.extended_attributes
     if idl_type.is_nullable:
         return IdlNullableType(idl_type.inner_type.preprocessed_type)
     if idl_type.is_enum:
         # Enumerations are internally DOMStrings
-        return IdlType('DOMString')
+        return IdlType('DOMString', extended_attributes)
     if idl_type.base_type in ['any', 'object'] or idl_type.is_custom_callback_function:
-        return IdlType('ScriptValue')
+        return IdlType('ScriptValue', extended_attributes)
     if idl_type.is_callback_function:
         return idl_type
     return idl_type

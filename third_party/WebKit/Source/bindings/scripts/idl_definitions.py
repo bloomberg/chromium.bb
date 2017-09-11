@@ -940,10 +940,13 @@ def clear_constructor_attributes(extended_attributes):
 
 def type_node_to_type(node):
     children = node.GetChildren()
-    if len(children) != 1:
-        raise ValueError('Type node expects 1 child, got %d.' % len(children))
+    if len(children) != 1 and len(children) != 2:
+        raise ValueError('Type node expects 1 or 2 child(ren), got %d.' % len(children))
 
     base_type = type_node_inner_to_type(children[0])
+    if len(children) == 2:
+        extended_attributes = ext_attributes_node_to_extended_attributes(children[1])
+        base_type.set_extended_attributes(extended_attributes)
 
     if node.GetProperty('NULLABLE'):
         base_type = IdlNullableType(base_type)
