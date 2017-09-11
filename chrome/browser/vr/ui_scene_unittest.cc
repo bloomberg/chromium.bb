@@ -40,6 +40,32 @@ size_t NumElementsInSubtree(UiElement* element) {
   return count;
 }
 
+void MakeViewportAwareElements(UiScene* scene,
+                               UiElement** child,
+                               UiElement** grandchild) {
+  auto element = base::MakeUnique<UiElement>();
+  UiElement* container = element.get();
+  element->set_draw_phase(0);
+  scene->AddUiElement(kRoot, std::move(element));
+
+  auto root = base::MakeUnique<ViewportAwareRoot>();
+  UiElement* viewport_aware_root = root.get();
+  root->set_draw_phase(0);
+  container->AddChild(std::move(root));
+
+  element = base::MakeUnique<UiElement>();
+  *child = element.get();
+  element->set_viewport_aware(true);
+  element->set_draw_phase(0);
+  viewport_aware_root->AddChild(std::move(element));
+
+  element = base::MakeUnique<UiElement>();
+  *grandchild = element.get();
+  element->set_viewport_aware(false);
+  element->set_draw_phase(0);
+  (*child)->AddChild(std::move(element));
+}
+
 }  // namespace
 
 TEST(UiScene, AddRemoveElements) {
@@ -144,27 +170,24 @@ TEST(UiScene, Opacity) {
 
 TEST(UiScene, ViewportAware) {
   UiScene scene;
-
-  auto root = base::MakeUnique<ViewportAwareRoot>();
-  UiElement* viewport_aware_root = root.get();
-  root->set_draw_phase(0);
-  scene.AddUiElement(kRoot, std::move(root));
-
-  auto element = base::MakeUnique<UiElement>();
-  UiElement* parent = element.get();
-  element->set_viewport_aware(true);
-  element->set_draw_phase(0);
-  viewport_aware_root->AddChild(std::move(element));
-
-  element = base::MakeUnique<UiElement>();
-  UiElement* child = element.get();
-  element->set_viewport_aware(false);
-  element->set_draw_phase(0);
-  parent->AddChild(std::move(element));
+  UiElement* child = nullptr;
+  UiElement* grandchild = nullptr;
+  MakeViewportAwareElements(&scene, &child, &grandchild);
 
   scene.OnBeginFrame(MicrosecondsToTicks(0), gfx::Vector3dF(0.f, 0.f, -1.0f));
-  EXPECT_TRUE(parent->computed_viewport_aware());
   EXPECT_TRUE(child->computed_viewport_aware());
+  EXPECT_TRUE(grandchild->computed_viewport_aware());
+}
+
+TEST(UiScene, NoViewportAwareElementWhenNoVisibleChild) {
+  UiScene scene;
+  UiElement* child = nullptr;
+  UiElement* grandchild = nullptr;
+  MakeViewportAwareElements(&scene, &child, &grandchild);
+
+  EXPECT_FALSE(scene.GetViewportAwareElements().empty());
+  child->SetVisible(false);
+  EXPECT_TRUE(scene.GetViewportAwareElements().empty());
 }
 
 typedef struct {
