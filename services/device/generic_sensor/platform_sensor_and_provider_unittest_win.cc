@@ -234,8 +234,7 @@ class PlatformSensorAndProviderTestWin : public ::testing::Test {
                       const PlatformSensorConfiguration& config) {
     run_loop_ = base::MakeUnique<base::RunLoop>();
     bool ret = sensor->StartListening(client, config);
-    if (ret)
-      run_loop_->Run();
+    run_loop_->Run();
     run_loop_ = nullptr;
     return ret;
   }
