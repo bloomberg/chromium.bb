@@ -35,6 +35,7 @@
         '<(DEPTH)/chrome/browser/resources/pdf/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/print_preview/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/settings/compiled_resources2.gyp:*',
+        '<(DEPTH)/chrome/browser/resources/sys_internals/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/uber/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/webapks/compiled_resources2.gyp:*',
         '<(DEPTH)/ui/file_manager/compiled_resources2.gyp:*',
