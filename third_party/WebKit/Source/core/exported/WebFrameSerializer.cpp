@@ -45,6 +45,7 @@
 #include "core/html/HTMLAllCollection.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/html/HTMLHeadElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLTableElement.h"
@@ -147,6 +148,15 @@ bool MHTMLFrameSerializerDelegate::ShouldIgnoreElement(const Element& element) {
 
 bool MHTMLFrameSerializerDelegate::ShouldIgnoreHiddenElement(
     const Element& element) {
+  // If an iframe is in the head, it will be moved to the body when the page is
+  // being loaded. But if an iframe is injected into the head later, it will
+  // stay there and not been displayed. To prevent it from being brought to the
+  // saved page and cause it being displayed, we should not include it.
+  if (isHTMLIFrameElement(element) &&
+      Traversal<HTMLHeadElement>::FirstAncestor(element)) {
+    return true;
+  }
+
   // Do not include the element that is marked with hidden attribute.
   if (element.FastHasAttribute(HTMLNames::hiddenAttr))
     return true;
