@@ -28,6 +28,8 @@ class FileType(object):
     BLINK_BUILD = 2
     OWNERS = 3
     DEPS = 4
+    MOJOM = 5
+    TYPEMAP = 6
 
     @staticmethod
     def detect(path):
@@ -36,6 +38,10 @@ class FileType(object):
             return FileType.DEPS
         if basename == 'OWNERS':
             return FileType.OWNERS
+        if basename.endswith('.mojom'):
+            return FileType.MOJOM
+        if basename.endswith('.typemap'):
+            return FileType.TYPEMAP
         if basename.endswith(('.gn', '.gni')):
             path = path.replace('\\', '/')
             if 'third_party/WebKit' in path or 'third_party/blink' in path:
@@ -77,7 +83,6 @@ class MoveBlinkSource(object):
 
         # TODO(tkent): Update basenames in generated files; *.tmpl,
         # bindings/scripts/*.py
-        # TODO(tkent): Rename and update *.typemap and *.mojom
 
         # Content update for individual files
         self._update_single_file_content('third_party/WebKit/Source/bindings/scripts/scripts.gni',
@@ -148,6 +153,16 @@ class MoveBlinkSource(object):
             return content
         return self._update_basename(content)
 
+    def _update_mojom(self, content):
+        content = content.replace('third_party/WebKit/public', 'third_party/blink/renderer/public')
+        return content
+
+    def _update_typemap(self, content):
+        content = content.replace('//third_party/WebKit/Source', '//third_party/blink/renderer')
+        content = content.replace('//third_party/WebKit/common', '//third_party/blink/common')
+        content = content.replace('//third_party/WebKit/public', '//third_party/blink/renderer/public')
+        return self._update_basename(content)
+
     def _update_basename(self, content):
         return self._basename_re.sub(lambda match: self._basename_map[match.group(1)], content)
 
@@ -162,7 +177,7 @@ class MoveBlinkSource(object):
         dirs.append(new_dir)
 
     def _update_file_content(self):
-        _log.info('Find *.gn, DEPS, and OWNERS ...')
+        _log.info('Find *.gn, *.mojom, *.typemap, DEPS, and OWNERS ...')
         files = self._fs.files_under(
             self._repo_root, dirs_to_skip=['.git', 'out'], file_filter=self._filter_file)
         _log.info('Scan contents of %d files ...', len(files))
@@ -179,6 +194,10 @@ class MoveBlinkSource(object):
                 content = self._update_owners(content)
             elif file_type == FileType.DEPS:
                 content = self._update_deps(content)
+            elif file_type == FileType.MOJOM:
+                content = self._update_mojom(content)
+            elif file_type == FileType.TYPEMAP:
+                content = self._update_typemap(content)
 
             if original_content == content:
                 continue

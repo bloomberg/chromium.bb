@@ -28,8 +28,7 @@ def relative_dest(fs, filename):
         dest = filename
     else:
         raise ValueError('|filename| must start with "common", "public", or "Source": %s' % filename)
-    if filename.endswith('.h') or filename.endswith('.cpp') or \
-       filename.endswith('.mm') or filename.endswith('.idl'):
+    if filename.endswith(('.h', '.cpp', '.mm', '.idl', '.typemap')):
         dirname, basename = fs.split(dest)
         basename, ext = fs.splitext(basename)
         if filename.endswith('.cpp'):
