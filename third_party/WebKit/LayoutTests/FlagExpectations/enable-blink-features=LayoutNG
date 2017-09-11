@@ -13288,7 +13288,6 @@ crbug.com/591099 http/tests/workers/worker-workerScriptNotThere.html [ Failure P
 crbug.com/591099 http/tests/xmlhttprequest/XMLHttpRequestException.html [ Failure Pass ]
 crbug.com/591099 http/tests/xmlhttprequest/abort-should-destroy-responseText.html [ Failure Pass ]
 crbug.com/591099 http/tests/xmlhttprequest/access-control-response-with-body-sync.html [ Failure Pass ]
-crbug.com/591099 http/tests/xmlhttprequest/access-control-response-with-expose-headers.html [ Failure Pass ]
 crbug.com/591099 http/tests/xmlhttprequest/access-control-sandboxed-iframe-allow-origin-null.html [ Failure Pass ]
 crbug.com/591099 http/tests/xmlhttprequest/access-control-sandboxed-iframe-allow.html [ Failure Pass ]
 crbug.com/591099 http/tests/xmlhttprequest/access-control-sandboxed-iframe-denied-without-wildcard.html [ Failure Pass Timeout ]
