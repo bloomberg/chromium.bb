@@ -19,6 +19,8 @@
 #include "chrome/browser/chromeos/lock_screen_apps/app_manager.h"
 #include "chrome/browser/chromeos/lock_screen_apps/focus_cycler_delegate.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_observer.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -378,7 +380,10 @@ class LockScreenAppStateNotSupportedTest : public testing::Test {
 class LockScreenAppStateTest : public BrowserWithTestWindowTest {
  public:
   LockScreenAppStateTest()
-      : profile_manager_(TestingBrowserProcess::GetGlobal()) {}
+      : fake_user_manager_(new chromeos::FakeChromeUserManager),
+        user_manager_enabler_(fake_user_manager_),
+        profile_manager_(TestingBrowserProcess::GetGlobal()) {}
+
   ~LockScreenAppStateTest() override = default;
 
   void SetUp() override {
@@ -452,6 +457,9 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
   }
 
   TestingProfile* CreateProfile() override {
+    const AccountId account_id(AccountId::FromUserEmail(kPrimaryProfileName));
+    AddTestUser(account_id);
+    fake_user_manager()->LoginUser(account_id);
     return profile_manager_.CreateTestingProfile(kPrimaryProfileName);
   }
 
@@ -465,6 +473,12 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
     } else {
       ADD_FAILURE() << "Request to destroy unknown profile.";
     }
+  }
+
+  // Adds test user for the primary profile - virtual so test fixture can
+  // override the test user type.
+  virtual void AddTestUser(const AccountId& account_id) {
+    fake_user_manager()->AddUser(account_id);
   }
 
   void InitExtensionSystem(Profile* profile) {
@@ -570,6 +584,10 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
            TrayActionState::kActive;
   }
 
+  chromeos::FakeChromeUserManager* fake_user_manager() {
+    return fake_user_manager_;
+  }
+
   TestingProfile* lock_screen_profile() { return lock_screen_profile_; }
 
   chromeos::FakePowerManagerClient* power_manager_client() {
@@ -599,6 +617,9 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
 
  private:
   std::unique_ptr<base::test::ScopedCommandLine> command_line_;
+
+  chromeos::FakeChromeUserManager* fake_user_manager_;
+  chromeos::ScopedUserManagerEnabler user_manager_enabler_;
   TestingProfileManager profile_manager_;
   TestingProfile* lock_screen_profile_ = nullptr;
 
@@ -636,7 +657,30 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
   DISALLOW_COPY_AND_ASSIGN(LockScreenAppStateTest);
 };
 
+class LockScreenAppStateKioskUserTest : public LockScreenAppStateTest {
+ public:
+  LockScreenAppStateKioskUserTest() {}
+  ~LockScreenAppStateKioskUserTest() override {}
+
+  void AddTestUser(const AccountId& account_id) override {
+    fake_user_manager()->AddKioskAppUser(account_id);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LockScreenAppStateKioskUserTest);
+};
+
 }  // namespace
+
+TEST_F(LockScreenAppStateKioskUserTest, SetPrimaryProfile) {
+  ASSERT_EQ(TestAppManager::State::kNotInitialized, app_manager()->state());
+  SetPrimaryProfileAndWaitUntilReady();
+
+  EXPECT_EQ(TestAppManager::State::kNotInitialized, app_manager()->state());
+  EXPECT_EQ(TrayActionState::kNotAvailable,
+            state_controller()->GetLockScreenNoteState());
+  EXPECT_EQ(0u, observer()->observed_states().size());
+}
 
 TEST_F(LockScreenAppStateNotSupportedTest, NoInstance) {
   EXPECT_FALSE(lock_screen_apps::StateController::IsEnabled());
