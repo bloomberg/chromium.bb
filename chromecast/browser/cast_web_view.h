@@ -47,7 +47,8 @@ class CastWebView : content::WebContentsObserver, content::WebContentsDelegate {
               CastWebContentsManager* web_contents_manager,
               content::BrowserContext* browser_context,
               scoped_refptr<content::SiteInstance> site_instance,
-              bool transparent);
+              bool transparent,
+              bool allow_media_access);
   ~CastWebView() override;
 
   shell::CastContentWindow* window() const { return window_.get(); }
@@ -114,6 +115,7 @@ class CastWebView : content::WebContentsObserver, content::WebContentsDelegate {
   std::unique_ptr<shell::CastContentWindow> window_;
   bool did_start_navigation_;
   base::TimeDelta shutdown_delay_;
+  bool allow_media_access_;
 
   base::WeakPtrFactory<CastWebView> weak_factory_;
 
