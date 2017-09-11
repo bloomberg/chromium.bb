@@ -304,6 +304,33 @@ static void stringOrDoubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
   impl->setStringOrDoubleAttribute(cppValue);
 }
 
+static void withExtendedAttributeStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  V8SetReturnValueInt(info, impl->withExtendedAttributeStringAttribute());
+}
+
+static void withExtendedAttributeStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "withExtendedAttributeStringAttribute");
+
+  // Prepare the value to be set.
+  int32_t cppValue = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8Value, exceptionState, kEnforceRange);
+  if (exceptionState.HadException())
+    return;
+
+  impl->setWithExtendedAttributeStringAttribute(cppValue);
+}
+
 static void uncapitalAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
@@ -2346,6 +2373,20 @@ void V8TestInterface::stringOrDoubleAttributeAttributeSetterCallback(const v8::F
   TestInterfaceImplementationV8Internal::stringOrDoubleAttributeAttributeSetter(v8Value, info);
 }
 
+void V8TestInterface::withExtendedAttributeStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_withExtendedAttributeStringAttribute_Getter");
+
+  TestInterfaceImplementationV8Internal::withExtendedAttributeStringAttributeAttributeGetter(info);
+}
+
+void V8TestInterface::withExtendedAttributeStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_withExtendedAttributeStringAttribute_Setter");
+
+  v8::Local<v8::Value> v8Value = info[0];
+
+  TestInterfaceImplementationV8Internal::withExtendedAttributeStringAttributeAttributeSetter(v8Value, info);
+}
+
 void V8TestInterface::uncapitalAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_uncapitalAttribute_Getter");
 
@@ -3357,6 +3398,8 @@ static const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceAccessors[
     { "testEnumAttribute", V8TestInterface::testEnumAttributeAttributeGetterCallback, V8TestInterface::testEnumAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
 
     { "stringOrDoubleAttribute", V8TestInterface::stringOrDoubleAttributeAttributeGetterCallback, V8TestInterface::stringOrDoubleAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
+
+    { "withExtendedAttributeStringAttribute", V8TestInterface::withExtendedAttributeStringAttributeAttributeGetterCallback, V8TestInterface::withExtendedAttributeStringAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
 
     { "uncapitalAttribute", V8TestInterface::uncapitalAttributeAttributeGetterCallback, V8TestInterface::uncapitalAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
 

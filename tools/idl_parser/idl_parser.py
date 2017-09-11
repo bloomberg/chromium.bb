@@ -613,7 +613,7 @@ class IDLParser(object):
       p[0] = p[1]
 
   def p_AttributeRest(self, p):
-    """AttributeRest : ATTRIBUTE Type AttributeName ';'"""
+    """AttributeRest : ATTRIBUTE TypeWithExtendedAttributes AttributeName ';'"""
     p[0] = self.BuildNamed('Attribute', p, 3, p[2])
 
   def p_AttributeName(self, p):
