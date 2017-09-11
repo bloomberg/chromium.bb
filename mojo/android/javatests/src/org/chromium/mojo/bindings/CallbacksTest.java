@@ -6,8 +6,11 @@ package org.chromium.mojo.bindings;
 
 import android.support.test.filters.SmallTest;
 
-import junit.framework.TestCase;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.mojo.bindings.Callbacks.Callback1;
 import org.chromium.mojo.bindings.Callbacks.Callback7;
 
@@ -18,11 +21,12 @@ import java.util.List;
 /**
  * Testing generated callbacks
  */
-public class CallbacksTest extends TestCase {
-
+@RunWith(BaseJUnit4ClassRunner.class)
+public class CallbacksTest {
     /**
      * Testing {@link Callback1}.
      */
+    @Test
     @SmallTest
     public void testCallback1() {
         final List<Integer> parameters = new ArrayList<Integer>();
@@ -32,12 +36,13 @@ public class CallbacksTest extends TestCase {
                 parameters.add(i1);
             }
         }.call(1);
-        assertEquals(Arrays.asList(1), parameters);
+        Assert.assertEquals(Arrays.asList(1), parameters);
     }
 
     /**
      * Testing {@link Callback7}.
      */
+    @Test
     @SmallTest
     public void testCallback7() {
         final List<Integer> parameters = new ArrayList<Integer>();
@@ -54,6 +59,6 @@ public class CallbacksTest extends TestCase {
                 parameters.add(i7);
             }
         }.call(1, 2, 3, 4, 5, 6, 7);
-        assertEquals(Arrays.asList(1, 2, 3, 4, 5, 6, 7), parameters);
+        Assert.assertEquals(Arrays.asList(1, 2, 3, 4, 5, 6, 7), parameters);
     }
 }

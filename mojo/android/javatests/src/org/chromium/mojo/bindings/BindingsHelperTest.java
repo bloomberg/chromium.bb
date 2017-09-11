@@ -6,18 +6,23 @@ package org.chromium.mojo.bindings;
 
 import android.support.test.filters.SmallTest;
 
-import junit.framework.TestCase;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 
 import java.nio.charset.Charset;
 
 /**
  * Testing {@link BindingsHelper}.
  */
-public class BindingsHelperTest extends TestCase {
-
+@RunWith(BaseJUnit4ClassRunner.class)
+public class BindingsHelperTest {
     /**
      * Testing {@link BindingsHelper#utf8StringSizeInBytes(String)}.
      */
+    @Test
     @SmallTest
     public void testUTF8StringLength() {
         String[] stringsToTest = {
@@ -30,26 +35,27 @@ public class BindingsHelperTest extends TestCase {
             "你午饭想吃什么\0éléphant",
         };
         for (String s : stringsToTest) {
-            assertEquals(s.getBytes(Charset.forName("utf8")).length,
+            Assert.assertEquals(s.getBytes(Charset.forName("utf8")).length,
                     BindingsHelper.utf8StringSizeInBytes(s));
         }
-        assertEquals(1, BindingsHelper.utf8StringSizeInBytes("\0"));
+        Assert.assertEquals(1, BindingsHelper.utf8StringSizeInBytes("\0"));
         String s = new StringBuilder().appendCodePoint(0x0).appendCodePoint(0x80)
                 .appendCodePoint(0x800).appendCodePoint(0x10000).toString();
-        assertEquals(10, BindingsHelper.utf8StringSizeInBytes(s));
-        assertEquals(10, s.getBytes(Charset.forName("utf8")).length);
+        Assert.assertEquals(10, BindingsHelper.utf8StringSizeInBytes(s));
+        Assert.assertEquals(10, s.getBytes(Charset.forName("utf8")).length);
     }
 
     /**
      * Testing {@link BindingsHelper#align(int)}.
      */
+    @Test
     @SmallTest
     public void testAlign() {
         for (int i = 0; i < 3 * BindingsHelper.ALIGNMENT; ++i) {
             int j = BindingsHelper.align(i);
-            assertTrue(j >= i);
-            assertTrue(j % BindingsHelper.ALIGNMENT == 0);
-            assertTrue(j - i < BindingsHelper.ALIGNMENT);
+            Assert.assertTrue(j >= i);
+            Assert.assertTrue(j % BindingsHelper.ALIGNMENT == 0);
+            Assert.assertTrue(j - i < BindingsHelper.ALIGNMENT);
         }
     }
 }
