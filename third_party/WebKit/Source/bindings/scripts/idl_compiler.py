@@ -53,8 +53,11 @@ def parse_options():
                       help='cache directory, defaults to output directory')
     parser.add_option('--generate-impl',
                       action="store_true", default=False)
-    parser.add_option('--read-idl-list-from-file',
+    # TODO(tkent): Remove the option after the great mv. crbug.com/760462
+    parser.add_option('--snake-case-generated-files',
                       action="store_true", default=False)
+    parser.add_option('--read-idl-list-from-file',
+                      action='store_true', default=False)
     parser.add_option('--output-directory')
     parser.add_option('--impl-output-directory')
     parser.add_option('--info-dir')
@@ -84,8 +87,8 @@ class IdlCompiler(object):
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, output_directory, cache_directory=None,
-                 code_generator_class=None, info_provider=None,
-                 target_component=None):
+                 code_generator_class=None, snake_case_generated_files=False,
+                 info_provider=None, target_component=None):
         """
         Args:
           output_directory: directory to put output files.
@@ -101,7 +104,8 @@ class IdlCompiler(object):
         self.reader = IdlReader(info_provider.interfaces_info, cache_directory)
         self.code_generator = code_generator_class(self.info_provider,
                                                    self.cache_directory,
-                                                   self.output_directory)
+                                                   self.output_directory,
+                                                   snake_case_generated_files)
 
     def compile_and_write(self, idl_filename):
         definitions = self.reader.read_idl_definitions(idl_filename)
@@ -127,6 +131,7 @@ def generate_bindings(code_generator_class, info_provider, options,
         output_directory=options.output_directory,
         cache_directory=options.cache_directory,
         code_generator_class=code_generator_class,
+        snake_case_generated_files=options.snake_case_generated_files,
         info_provider=info_provider,
         target_component=options.target_component)
 
@@ -140,6 +145,7 @@ def generate_dictionary_impl(code_generator_class, info_provider, options,
         output_directory=options.impl_output_directory,
         cache_directory=options.cache_directory,
         code_generator_class=code_generator_class,
+        snake_case_generated_files=options.snake_case_generated_files,
         info_provider=info_provider,
         target_component=options.target_component)
 

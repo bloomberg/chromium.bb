@@ -39,6 +39,9 @@ idl_compiler("generate_bindings_modules_v8_partial_interfaces") {
   sources = core_idl_with_modules_dependency_files
   output_dir = bindings_modules_v8_output_dir
   output_name_suffix = "Partial"
+  if (bindings_generate_snake_case_files) {
+    output_name_suffix = "_partial"
+  }
   target_component = "modules"
 }
 
@@ -46,6 +49,9 @@ idl_compiler("generate_bindings_modules_v8_partial_interfaces_for_testing") {
   sources = webcore_testing_idl_with_modules_dependency_files
   output_dir = bindings_modules_v8_output_dir
   output_name_suffix = "Partial"
+  if (bindings_generate_snake_case_files) {
+    output_name_suffix = "_partial"
+  }
   target_component = "modules"
 }
 
