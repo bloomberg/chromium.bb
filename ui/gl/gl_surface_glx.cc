@@ -394,20 +394,15 @@ bool GLSurfaceGLX::InitializeOneOff() {
   // http://crbug.com/245466
   setenv("force_s3tc_enable", "true", 1);
 
-  {
-    // As a hack to avoid sandbox threading violation on certain NVidia drivers,
-    // this block of code needs to be put before gfx::InitializeThreadedX11().
-    // See crbug.com/756885.
-    g_display = gfx::GetXDisplay();
-    if (!g_display) {
-      LOG(ERROR) << "XOpenDisplay failed.";
-      return false;
-    }
-    glXQueryExtensionsString(g_display, 0);
-  }
   // SGIVideoSyncProviderShim (if instantiated) will issue X commands on
   // it's own thread.
   gfx::InitializeThreadedX11();
+
+  g_display = gfx::GetXDisplay();
+  if (!g_display) {
+    LOG(ERROR) << "XOpenDisplay failed.";
+    return false;
+  }
 
   int major, minor;
   if (!glXQueryVersion(g_display, &major, &minor)) {
