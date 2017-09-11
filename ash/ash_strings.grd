@@ -628,9 +628,6 @@ This file contains the strings for ash.
       </message>
 
       <!-- Status tray screen share strings. -->
-      <message name="IDS_ASH_STATUS_TRAY_SCREEN_SHARE_TITLE" desc="The title for screen sharing notification">
-        You are sharing your screen
-      </message>
       <message name="IDS_ASH_STATUS_TRAY_SCREEN_SHARE_STOP" desc="label used for screen sharing stop button">
         Stop
       </message>
