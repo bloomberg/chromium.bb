@@ -60,6 +60,11 @@ Polymer({
     isCharging: {type: Boolean, value: false},
 
     /**
+     * True if the migration was skipped.
+     */
+    isSkipped: {type: Boolean, value: false},
+
+    /**
      * Formatted string of the current available space size.
      */
     availableSpaceInString: {type: String, value: ''},
@@ -134,6 +139,16 @@ Polymer({
   },
 
   /**
+   * Returns true if the 'Update' button should be disabled.
+   * @param {boolean} isEnoughBattery
+   * @param {boolean} isSkipped
+   * @private
+   */
+  isUpdateDisabled_: function(isEnoughBattery, isSkipped) {
+    return !isEnoughBattery || isSkipped;
+  },
+
+  /**
    * Computes the label shown under progress bar.
    * @param {number} progress
    * @return {string}
@@ -195,6 +210,7 @@ Polymer({
    * @private
    */
   onSkip_: function() {
+    this.isSkipped = true;
     this.fire('skip');
   },
 
