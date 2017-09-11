@@ -127,20 +127,21 @@ class PLATFORM_EXPORT GarbageCollectedMixin {
 //    GarbageCollectedMixinConstructorMarker's constructor takes care of
 //    this and the field is declared by way of USING_GARBAGE_COLLECTED_MIXIN().
 
-#define DEFINE_GARBAGE_COLLECTED_MIXIN_CONSTRUCTOR_MARKER(TYPE)          \
- public:                                                                 \
-  GC_PLUGIN_IGNORE("crbug.com/456823")                                   \
-  NO_SANITIZE_UNRELATED_CAST void* operator new(size_t size) {           \
-    void* object =                                                       \
-        TYPE::AllocateObject(size, IsEagerlyFinalizedType<TYPE>::value); \
-    ThreadState* state =                                                 \
-        ThreadStateFor<ThreadingTrait<TYPE>::kAffinity>::GetState();     \
-    state->EnterGCForbiddenScopeIfNeeded(                                \
-        &(reinterpret_cast<TYPE*>(object)->mixin_constructor_marker_));  \
-    return object;                                                       \
-  }                                                                      \
-  GarbageCollectedMixinConstructorMarker mixin_constructor_marker_;      \
-                                                                         \
+#define DEFINE_GARBAGE_COLLECTED_MIXIN_CONSTRUCTOR_MARKER(TYPE)           \
+ public:                                                                  \
+  GC_PLUGIN_IGNORE("crbug.com/456823")                                    \
+  NO_SANITIZE_UNRELATED_CAST void* operator new(size_t size) {            \
+    void* object =                                                        \
+        TYPE::AllocateObject(size, IsEagerlyFinalizedType<TYPE>::value);  \
+    ThreadState* state =                                                  \
+        ThreadStateFor<ThreadingTrait<TYPE>::kAffinity>::GetState();      \
+    state->EnterGCForbiddenScopeIfNeeded(                                 \
+        &(reinterpret_cast<TYPE*>(object)->mixin_constructor_marker_));   \
+    return object;                                                        \
+  }                                                                       \
+  GarbageCollectedMixinConstructorMarker<ThreadingTrait<TYPE>::kAffinity> \
+      mixin_constructor_marker_;                                          \
+                                                                          \
  private:
 
 // Mixins that wrap/nest others requires extra handling:
@@ -175,7 +176,10 @@ class PLATFORM_EXPORT GarbageCollectedMixin {
 // GarbageCollectedMixinConstructorMarker<> private field. By following Blink
 // convention of using the macro at the top of a class declaration, its
 // constructor will run first.
-class GarbageCollectedMixinConstructorMarker {
+class GarbageCollectedMixinConstructorMarkerBase {};
+template <ThreadAffinity affinity>
+class GarbageCollectedMixinConstructorMarker
+    : public GarbageCollectedMixinConstructorMarkerBase {
  public:
   GarbageCollectedMixinConstructorMarker() {
     // FIXME: if prompt conservative GCs are needed, forced GCs that
@@ -183,7 +187,7 @@ class GarbageCollectedMixinConstructorMarker {
     // For now, assume the next out-of-line allocation request will
     // happen soon enough and take care of it. Mixin objects aren't
     // overly common.
-    ThreadState* state = ThreadState::Current();
+    ThreadState* state = ThreadStateFor<affinity>::GetState();
     state->LeaveGCForbiddenScopeIfNeeded(this);
   }
 };
