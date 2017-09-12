@@ -72,11 +72,8 @@ NGFragmentBuilder& NGFragmentBuilder::AddChild(
     const NGLogicalOffset& child_offset) {
   switch (child->Type()) {
     case NGPhysicalBoxFragment::kFragmentBox:
-      // Update if we have fragmented in this flow.
-      if (child->BreakToken()) {
-        did_break_ |= !child->BreakToken()->IsFinished();
+      if (child->BreakToken())
         child_break_tokens_.push_back(child->BreakToken());
-      }
       break;
     case NGPhysicalBoxFragment::kFragmentLineBox:
       // NGInlineNode produces multiple line boxes in an anonymous box. Only
@@ -97,6 +94,22 @@ NGFragmentBuilder& NGFragmentBuilder::AddChild(
   children_.push_back(std::move(child));
   offsets_.push_back(child_offset);
 
+  return *this;
+}
+
+NGFragmentBuilder& NGFragmentBuilder::PropagateBreak(
+    RefPtr<NGLayoutResult> child_layout_result) {
+  if (!did_break_)
+    return PropagateBreak(child_layout_result->PhysicalFragment());
+  return *this;
+}
+
+NGFragmentBuilder& NGFragmentBuilder::PropagateBreak(
+    RefPtr<NGPhysicalFragment> child_fragment) {
+  if (!did_break_) {
+    const auto* token = child_fragment->BreakToken();
+    did_break_ = token && !token->IsFinished();
+  }
   return *this;
 }
 
