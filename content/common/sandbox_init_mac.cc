@@ -35,7 +35,7 @@ bool InitializeSandbox(int sandbox_type,
 // Fill in |sandbox_type| and |allowed_dir| based on the command line,  returns
 // false if the current process type doesn't need to be sandboxed or if the
 // sandbox was disabled from the command line.
-bool GetSandboxInfoFromCommandLine(int* sandbox_type,
+bool GetSandboxInfoFromCommandLine(SandboxType* sandbox_type,
                                    base::FilePath* allowed_dir) {
   DCHECK(sandbox_type);
   DCHECK(allowed_dir);
@@ -50,7 +50,7 @@ bool GetSandboxInfoFromCommandLine(int* sandbox_type,
   }
 
   *sandbox_type = SandboxTypeFromCommandLine(*command_line);
-  if (*sandbox_type == SANDBOX_TYPE_NO_SANDBOX)
+  if (IsUnsandboxedSandboxType(*sandbox_type))
     return false;
 
   if (command_line->HasSwitch(switches::kV2SandboxedEnabled)) {
@@ -69,7 +69,7 @@ bool InitializeSandbox(int sandbox_type, const base::FilePath& allowed_dir) {
 }
 
 bool InitializeSandboxWithPostWarmupHook(base::OnceClosure hook) {
-  int sandbox_type = 0;
+  SandboxType sandbox_type = SANDBOX_TYPE_INVALID;
   base::FilePath allowed_dir;
   return !GetSandboxInfoFromCommandLine(&sandbox_type, &allowed_dir) ||
          InitializeSandbox(sandbox_type, allowed_dir, std::move(hook));
