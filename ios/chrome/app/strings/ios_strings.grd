@@ -800,6 +800,9 @@ To adjust your search term, long press to select. To refine your search, slide t
       <message name="IDS_IOS_OPTIONS_ACCOUNTS_GOOGLE_TITLE" desc="Title of the Google Activity Controls button on the accounts settings screen [Length: 50em]">
         Google Activity Controls
       </message>
+      <message name="IDS_IOS_OPTIONS_ACCOUNTS_SYNC_ERROR" desc="Text informing the user that sync isn't working properly [iOS only] [60em]">
+        Sync isn't working. Tap to fix.
+      </message>
       <message name="IDS_IOS_OPTIONS_ACCOUNTS_SYNC_IS_OFF" desc="Text informing the user that sync is off [iOS only] [60em]">
         Off
       </message>

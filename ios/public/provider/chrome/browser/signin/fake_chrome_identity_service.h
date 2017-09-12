@@ -78,8 +78,14 @@ class FakeChromeIdentityService : public ChromeIdentityService {
   // is unknown.
   void RemoveIdentity(ChromeIdentity* identity);
 
+  // When set to true, call to GetAccessToken() fakes a MDM error.
+  void SetFakeMDMError(bool fakeMDMError);
+
  private:
   base::scoped_nsobject<NSMutableArray> identities_;
+
+  // If true, call to GetAccessToken() fakes a MDM error.
+  bool _fakeMDMError;
 };
 
 }  // namespace ios

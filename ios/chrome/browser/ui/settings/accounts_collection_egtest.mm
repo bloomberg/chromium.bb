@@ -8,7 +8,10 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/signin/authentication_service.h"
+#import "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
+#import "ios/chrome/browser/ui/authentication/account_control_item.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #include "ios/chrome/browser/ui/tools_menu/tools_menu_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -18,6 +21,7 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -276,6 +280,36 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
 
   [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
       performAction:grey_tap()];
+}
+
+- (void)testMDMError {
+  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
+  ios::FakeChromeIdentityService* fakeChromeIdentityService =
+      ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();
+  fakeChromeIdentityService->AddIdentity(identity);
+  fakeChromeIdentityService->SetFakeMDMError(true);
+
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI tapSettingsMenuButton:SecondarySignInButton()];
+  [[EarlGrey selectElementWithMatcher:ButtonWithIdentity(identity)]
+      performAction:grey_tap()];
+  AcceptAccountConsistencyPopup();
+  [SigninEarlGreyUtils assertSignedInWithIdentity:identity];
+  [ChromeEarlGreyUI tapSettingsMenuButton:SettingsAccountButton()];
+
+  // Check that account sync button display the sync error.
+  GREYPerformBlock block = ^(id element, NSError* __strong* errorOrNil) {
+    GREYAssertTrue([element isKindOfClass:[AccountControlCell class]],
+                   @"Should be AccountControlCell type");
+    AccountControlCell* cell = static_cast<AccountControlCell*>(element);
+    NSString* expectedString =
+        l10n_util::GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_SYNC_ERROR);
+    return [cell.detailTextLabel.text isEqualToString:expectedString];
+  };
+  [[EarlGrey selectElementWithMatcher:AccountsSyncButton()]
+      performAction:[GREYActionBlock
+                        actionWithName:@"Invoke clearStateForTest selector"
+                          performBlock:block]];
 }
 
 @end

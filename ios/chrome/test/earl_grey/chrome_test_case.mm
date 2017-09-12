@@ -179,6 +179,7 @@ const CFTimeInterval kDrainTimeout = 5;
   _tearDownHandler = nil;
 
   chrome_test_util::ResetSigninPromoPreferences();
+  chrome_test_util::ResetMockAuthentication();
   chrome_test_util::OpenNewTab();
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 }

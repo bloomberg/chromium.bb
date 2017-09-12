@@ -20,6 +20,7 @@
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -172,6 +173,11 @@ bool SignOutAndClearAccounts() {
         base::TimeDelta::FromSecondsD(0.01));
   }
   return !identity_service->HasIdentities();
+}
+
+void ResetMockAuthentication() {
+  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
+      ->SetFakeMDMError(false);
 }
 
 void ResetSigninPromoPreferences() {

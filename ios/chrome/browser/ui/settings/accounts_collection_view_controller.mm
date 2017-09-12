@@ -282,6 +282,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return item;
 }
 
+// Updates the sync item according to the sync status (in progress, sync error,
+// mdm error, sync disabled or sync enabled).
 - (void)updateSyncItem:(AccountControlItem*)syncItem {
   SyncSetupService* syncSetupService =
       SyncSetupServiceFactory::GetForBrowserState(_browserState);
@@ -294,22 +296,31 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 
   ChromeIdentity* identity = [self authService]->GetAuthenticatedIdentity();
-  bool hasSyncError =
-      !IsTransientSyncError(syncSetupService->GetSyncServiceState());
-  bool hasMDMError = [self authService]->HasCachedMDMErrorForIdentity(identity);
-  if (hasSyncError || hasMDMError) {
-    syncItem.image = [UIImage imageNamed:@"settings_error"];
-    syncItem.detailText = GetSyncErrorDescriptionForBrowserState(_browserState);
+  if (!IsTransientSyncError(syncSetupService->GetSyncServiceState())) {
+    // Sync error.
     syncItem.shouldDisplayError = YES;
-  } else {
+    NSString* errorMessage =
+        GetSyncErrorDescriptionForBrowserState(_browserState);
+    DCHECK(errorMessage);
+    syncItem.detailText = errorMessage;
+  } else if ([self authService]->HasCachedMDMErrorForIdentity(identity)) {
+    // MDM error.
+    syncItem.shouldDisplayError = YES;
+    syncItem.detailText =
+        l10n_util::GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_SYNC_ERROR);
+  } else if (!syncSetupService->IsSyncEnabled()) {
+    // Sync disabled.
+    syncItem.shouldDisplayError = NO;
     syncItem.image = [UIImage imageNamed:@"settings_sync"];
     syncItem.detailText =
-        syncSetupService->IsSyncEnabled()
-            ? l10n_util::GetNSStringF(
-                  IDS_IOS_SIGN_IN_TO_CHROME_SETTING_SYNCING,
-                  base::SysNSStringToUTF16([identity userEmail]))
-            : l10n_util::GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_SYNC_IS_OFF);
+        l10n_util::GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_SYNC_IS_OFF);
+  } else {
+    // Sync enabled.
     syncItem.shouldDisplayError = NO;
+    syncItem.image = [UIImage imageNamed:@"settings_sync"];
+    syncItem.detailText =
+        l10n_util::GetNSStringF(IDS_IOS_SIGN_IN_TO_CHROME_SETTING_SYNCING,
+                                base::SysNSStringToUTF16([identity userEmail]));
   }
 }
 

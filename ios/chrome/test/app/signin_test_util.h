@@ -25,6 +25,9 @@ void TearDownMockAccountReconcilor();
 // the accounts were correctly removed from the keychain.
 bool SignOutAndClearAccounts();
 
+// Resets mock authentication.
+void ResetMockAuthentication();
+
 // Resets Sign-in promo impression preferences for bookmarks and settings view,
 // and resets kIosBookmarkPromoAlreadySeen flag for bookmarks.
 void ResetSigninPromoPreferences();

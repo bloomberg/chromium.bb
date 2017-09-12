@@ -19,28 +19,6 @@ using ::testing::Invoke;
 
 namespace {
 
-void FakeGetAccessToken(ChromeIdentity*,
-                        const std::string&,
-                        const std::string&,
-                        const std::set<std::string>&,
-                        ios::AccessTokenCallback callback) {
-  base::mac::ScopedBlock<ios::AccessTokenCallback> safe_callback(
-      [callback copy]);
-
-  // |GetAccessToken| is normally an asynchronous operation (that requires some
-  // network calls), this is replicated here by dispatching it.
-  dispatch_async(dispatch_get_main_queue(), ^{
-    // Token and expiration date. It should be larger than typical test
-    // execution because tests usually setup mock to expect one token request
-    // and then rely on access token being served from cache.
-    NSTimeInterval expiration = 60.0;
-    NSDate* expiresDate = [NSDate dateWithTimeIntervalSinceNow:expiration];
-    NSString* token = [expiresDate description];
-
-    safe_callback.get()(token, expiresDate, nil);
-  });
-}
-
 UIImage* FakeGetCachedAvatarForIdentity(ChromeIdentity*) {
   ios::SigninResourcesProvider* provider =
       ios::GetChromeBrowserProvider()->GetSigninResourcesProvider();
@@ -131,7 +109,7 @@ NSString* const kIdentityEmailFormat = @"%@@foo.com";
 NSString* const kIdentityGaiaIDFormat = @"%@ID";
 
 FakeChromeIdentityService::FakeChromeIdentityService()
-    : identities_([[NSMutableArray alloc] init]) {}
+    : identities_([[NSMutableArray alloc] init]), _fakeMDMError(false) {}
 
 FakeChromeIdentityService::~FakeChromeIdentityService() {}
 
@@ -216,7 +194,33 @@ void FakeChromeIdentityService::GetAccessToken(
     const std::string& client_secret,
     const std::set<std::string>& scopes,
     ios::AccessTokenCallback callback) {
-  FakeGetAccessToken(identity, client_id, client_secret, scopes, callback);
+  base::mac::ScopedBlock<ios::AccessTokenCallback> safe_callback(
+      [callback copy]);
+  NSError* error = nil;
+  NSDictionary* user_info = nil;
+  if (_fakeMDMError) {
+    // |GetAccessToken| is normally an asynchronous operation (that requires
+    // some network calls), this is replicated here by dispatching it.
+    error =
+        [NSError errorWithDomain:@"com.google.HTTPStatus" code:-1 userInfo:nil];
+    user_info = @{};
+    EXPECT_CALL(*this, HandleMDMNotification(identity, user_info, _))
+        .WillRepeatedly(testing::Return(true));
+  }
+  // |GetAccessToken| is normally an asynchronous operation (that requires some
+  // network calls), this is replicated here by dispatching it.
+  dispatch_async(dispatch_get_main_queue(), ^{
+    if (user_info)
+      FireAccessTokenRefreshFailed(identity, user_info);
+    // Token and expiration date. It should be larger than typical test
+    // execution because tests usually setup mock to expect one token request
+    // and then rely on access token being served from cache.
+    NSTimeInterval expiration = 60.0;
+    NSDate* expiresDate = [NSDate dateWithTimeIntervalSinceNow:expiration];
+    NSString* token = [expiresDate description];
+
+    safe_callback.get()(token, expiresDate, error);
+  });
 }
 
 UIImage* FakeChromeIdentityService::GetCachedAvatarForIdentity(
@@ -258,6 +262,10 @@ void FakeChromeIdentityService::RemoveIdentity(ChromeIdentity* identity) {
     [identities_ removeObject:identity];
     FireIdentityListChanged();
   }
+}
+
+void FakeChromeIdentityService::SetFakeMDMError(bool fakeMDMError) {
+  _fakeMDMError = fakeMDMError;
 }
 
 }  // namespace ios
