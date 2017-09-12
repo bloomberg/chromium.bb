@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/surface_id.h"
-#include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
+#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 
 struct AwDrawGLInfo;
 
@@ -28,7 +28,7 @@ class ChildFrame;
 class RenderThreadManager;
 class SurfacesInstance;
 
-class HardwareRenderer : public viz::CompositorFrameSinkSupportClient {
+class HardwareRenderer : public viz::mojom::CompositorFrameSinkClient {
  public:
   // Two rules:
   // 1) Never wait on |new_frame| on the UI thread, or in kModeSync. Otherwise
@@ -49,14 +49,12 @@ class HardwareRenderer : public viz::CompositorFrameSinkSupportClient {
   void CommitFrame();
 
  private:
-  // viz::CompositorFrameSinkSupportClient implementation.
+  // viz::mojom::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
       const std::vector<viz::ReturnedResource>& resources) override;
   void OnBeginFrame(const viz::BeginFrameArgs& args) override;
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;
-  void WillDrawSurface(const viz::LocalSurfaceId& local_surface_id,
-                       const gfx::Rect& damage_rect) override;
   void OnBeginFramePausedChanged(bool paused) override;
 
   void ReturnChildFrame(std::unique_ptr<ChildFrame> child_frame);

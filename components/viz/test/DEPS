@@ -3,6 +3,7 @@ include_rules = [
   "+components/viz",
   "+mojo/public/cpp/bindings",
   "+services/viz/privileged/interfaces",
+  "+services/viz/public/interfaces",
 ]
 
 specific_include_rules = {

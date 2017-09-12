@@ -12,7 +12,7 @@
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/host/host_frame_sink_client.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
-#include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
+#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "ui/android/ui_android_export.h"
 
 namespace cc {
@@ -33,7 +33,7 @@ class ViewAndroid;
 class WindowAndroidCompositor;
 
 class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
-    : public viz::CompositorFrameSinkSupportClient,
+    : public viz::mojom::CompositorFrameSinkClient,
       public viz::ExternalBeginFrameSourceClient,
       public viz::HostFrameSinkClient {
  public:
@@ -83,14 +83,12 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   viz::SurfaceId SurfaceId() const;
 
  private:
-  // viz::CompositorFrameSinkSupportClient implementation.
+  // viz::mojom::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
       const std::vector<viz::ReturnedResource>& resources) override;
   void OnBeginFrame(const viz::BeginFrameArgs& args) override;
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;
-  void WillDrawSurface(const viz::LocalSurfaceId& local_surface_id,
-                       const gfx::Rect& damage_rect) override;
   void OnBeginFramePausedChanged(bool paused) override;
 
   // viz::ExternalBeginFrameSourceClient implementation.

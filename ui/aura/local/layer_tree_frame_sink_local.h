@@ -12,7 +12,7 @@
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/host/host_frame_sink_client.h"
-#include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
+#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "ui/aura/window_port.h"
 #include "ui/base/property_data.h"
 
@@ -28,7 +28,7 @@ namespace aura {
 // aura::Window, and then the sink can be used for submitting frames to the
 // aura::Window's ui::Layer.
 class LayerTreeFrameSinkLocal : public cc::LayerTreeFrameSink,
-                                public viz::CompositorFrameSinkSupportClient,
+                                public viz::mojom::CompositorFrameSinkClient,
                                 public viz::ExternalBeginFrameSourceClient,
                                 public viz::HostFrameSinkClient {
  public:
@@ -51,14 +51,12 @@ class LayerTreeFrameSinkLocal : public cc::LayerTreeFrameSink,
   void SubmitCompositorFrame(cc::CompositorFrame frame) override;
   void DidNotProduceFrame(const viz::BeginFrameAck& ack) override;
 
-  // viz::CompositorFrameSinkSupportClient:
+  // viz::mojom::CompositorFrameSinkClient:
   void DidReceiveCompositorFrameAck(
       const std::vector<viz::ReturnedResource>& resources) override;
   void OnBeginFrame(const viz::BeginFrameArgs& args) override;
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;
-  void WillDrawSurface(const viz::LocalSurfaceId& local_surface_id,
-                       const gfx::Rect& damage_rect) override {}
   void OnBeginFramePausedChanged(bool paused) override;
 
   // viz::ExternalBeginFrameSourceClient:

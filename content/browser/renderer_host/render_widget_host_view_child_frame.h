@@ -21,7 +21,6 @@
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/common/surfaces/surface_sequence.h"
 #include "components/viz/host/host_frame_sink_client.h"
-#include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -29,6 +28,7 @@
 #include "content/common/input/input_event_ack_state.h"
 #include "content/public/browser/readback_types.h"
 #include "content/public/browser/touch_selection_controller_client_manager.h"
+#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -55,7 +55,7 @@ class TouchSelectionControllerClientChildFrame;
 class CONTENT_EXPORT RenderWidgetHostViewChildFrame
     : public RenderWidgetHostViewBase,
       public TouchSelectionControllerClientManager::Observer,
-      public viz::CompositorFrameSinkSupportClient,
+      public viz::mojom::CompositorFrameSinkClient,
       public viz::HostFrameSinkClient {
  public:
   static RenderWidgetHostViewChildFrame* Create(RenderWidgetHost* widget);
@@ -174,14 +174,12 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
       BrowserAccessibilityDelegate* delegate,
       bool for_root_frame) override;
 
-  // viz::CompositorFrameSinkSupportClient implementation.
+  // viz::mojom::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
       const std::vector<viz::ReturnedResource>& resources) override;
   void OnBeginFrame(const viz::BeginFrameArgs& args) override;
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;
-  void WillDrawSurface(const viz::LocalSurfaceId& id,
-                       const gfx::Rect& damage_rect) override {}
   void OnBeginFramePausedChanged(bool paused) override;
 
   // viz::HostFrameSinkClient implementation.

@@ -10,11 +10,11 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/weak_ptr.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/quads/copy_output_result.h"
 #include "components/viz/host/host_frame_sink_client.h"
-#include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
 #include "components/viz/service/frame_sinks/frame_evictor.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/compositor/owned_mailbox.h"
@@ -23,6 +23,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/render_process_host.h"
+#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/compositor_vsync_manager.h"
@@ -81,7 +82,7 @@ class CONTENT_EXPORT DelegatedFrameHost
       public ui::CompositorVSyncManager::Observer,
       public ui::ContextFactoryObserver,
       public viz::FrameEvictorClient,
-      public viz::CompositorFrameSinkSupportClient,
+      public viz::mojom::CompositorFrameSinkClient,
       public viz::HostFrameSinkClient,
       public base::SupportsWeakPtr<DelegatedFrameHost> {
  public:
@@ -107,14 +108,12 @@ class CONTENT_EXPORT DelegatedFrameHost
   // FrameEvictorClient implementation.
   void EvictDelegatedFrame() override;
 
-  // viz::CompositorFrameSinkSupportClient implementation.
+  // viz::mojom::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
       const std::vector<viz::ReturnedResource>& resources) override;
   void OnBeginFrame(const viz::BeginFrameArgs& args) override;
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;
-  void WillDrawSurface(const viz::LocalSurfaceId& id,
-                       const gfx::Rect& damage_rect) override;
   void OnBeginFramePausedChanged(bool paused) override;
 
   // viz::HostFrameSinkClient implementation.
@@ -212,6 +211,11 @@ class CONTENT_EXPORT DelegatedFrameHost
   void RequestCopyOfOutput(std::unique_ptr<viz::CopyOutputRequest> request);
 
   bool ShouldSkipFrame(const gfx::Size& size_in_dip);
+
+  // Called when surface is being scheduled for a draw. This is provided as a
+  // callback to |support_|.
+  void WillDrawSurface(const viz::LocalSurfaceId& id,
+                       const gfx::Rect& damage_rect);
 
   // Lazily grab a resize lock if the aura window size doesn't match the current
   // frame size, to give time to the renderer.
@@ -323,6 +327,8 @@ class CONTENT_EXPORT DelegatedFrameHost
       nullptr;
 
   std::unique_ptr<viz::FrameEvictor> frame_evictor_;
+
+  base::WeakPtrFactory<DelegatedFrameHost> weak_ptr_factory_;
 };
 
 }  // namespace content

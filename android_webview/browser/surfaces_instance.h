@@ -13,7 +13,7 @@
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/display/display_client.h"
-#include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
+#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 
 namespace gfx {
 class Rect;
@@ -35,7 +35,7 @@ class ParentOutputSurface;
 
 class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
                          public viz::DisplayClient,
-                         public viz::CompositorFrameSinkSupportClient {
+                         public viz::mojom::CompositorFrameSinkClient {
  public:
   static scoped_refptr<SurfacesInstance> GetOrCreateInstance();
 
@@ -64,12 +64,10 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
       const cc::RenderPassList& render_passes) override {}
   void DisplayDidDrawAndSwap() override {}
 
-  // viz::CompositorFrameSinkSupportClient implementation.
+  // viz::mojom::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
       const std::vector<viz::ReturnedResource>& resources) override;
   void OnBeginFrame(const viz::BeginFrameArgs& args) override;
-  void WillDrawSurface(const viz::LocalSurfaceId& local_surface_id,
-                       const gfx::Rect& damage_rect) override;
   void OnBeginFramePausedChanged(bool paused) override;
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;

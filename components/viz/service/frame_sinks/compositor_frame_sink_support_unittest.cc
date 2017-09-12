@@ -12,14 +12,15 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
-#include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/compositor_frame_helpers.h"
+#include "components/viz/test/fake_compositor_frame_sink_client.h"
 #include "components/viz/test/fake_external_begin_frame_source.h"
 #include "components/viz/test/fake_surface_observer.h"
-#include "components/viz/test/mock_compositor_frame_sink_support_client.h"
+#include "components/viz/test/mock_compositor_frame_sink_client.h"
 #include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
+#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -94,45 +95,6 @@ class FakeFrameSinkManagerClient : public mojom::FrameSinkManagerClient {
   base::flat_map<SurfaceId, FrameSinkId> temporary_references_to_assign_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeFrameSinkManagerClient);
-};
-
-class FakeCompositorFrameSinkSupportClient
-    : public CompositorFrameSinkSupportClient {
- public:
-  FakeCompositorFrameSinkSupportClient() = default;
-  ~FakeCompositorFrameSinkSupportClient() override = default;
-
-  void DidReceiveCompositorFrameAck(
-      const std::vector<ReturnedResource>& resources) override {
-    InsertResources(resources);
-  }
-
-  void OnBeginFrame(const BeginFrameArgs& args) override {}
-
-  void ReclaimResources(
-      const std::vector<ReturnedResource>& resources) override {
-    InsertResources(resources);
-  }
-
-  void WillDrawSurface(const LocalSurfaceId& local_surface_id,
-                       const gfx::Rect& damage_rect) override {}
-
-  void OnBeginFramePausedChanged(bool paused) override {}
-
-  void clear_returned_resources() { returned_resources_.clear(); }
-  const std::vector<ReturnedResource>& returned_resources() {
-    return returned_resources_;
-  }
-
- private:
-  void InsertResources(const std::vector<ReturnedResource>& resources) {
-    returned_resources_.insert(returned_resources_.end(), resources.begin(),
-                               resources.end());
-  }
-
-  std::vector<ReturnedResource> returned_resources_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeCompositorFrameSinkSupportClient);
 };
 
 class CompositorFrameSinkSupportTest : public testing::Test {
@@ -217,7 +179,7 @@ class CompositorFrameSinkSupportTest : public testing::Test {
  protected:
   FrameSinkManagerImpl manager_;
   FakeFrameSinkManagerClient frame_sink_manager_client_;
-  FakeCompositorFrameSinkSupportClient fake_support_client_;
+  FakeCompositorFrameSinkClient fake_support_client_;
   std::unique_ptr<CompositorFrameSinkSupport> support_;
   FakeExternalBeginFrameSource begin_frame_source_;
   LocalSurfaceId local_surface_id_;
@@ -536,7 +498,7 @@ TEST_F(CompositorFrameSinkSupportTest, AddDuringEviction) {
   manager_.RegisterFrameSinkId(kAnotherArbitraryFrameSinkId);
   manager_.SetFrameSinkDebugLabel(kAnotherArbitraryFrameSinkId,
                                   "kAnotherArbitraryFrameSinkId");
-  test::MockCompositorFrameSinkSupportClient mock_client;
+  MockCompositorFrameSinkClient mock_client;
   auto support = CompositorFrameSinkSupport::Create(
       &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot,
       kNeedsSyncPoints);
@@ -558,7 +520,7 @@ TEST_F(CompositorFrameSinkSupportTest, EvictCurrentSurface) {
   manager_.RegisterFrameSinkId(kAnotherArbitraryFrameSinkId);
   manager_.SetFrameSinkDebugLabel(kAnotherArbitraryFrameSinkId,
                                   "kAnotherArbitraryFrameSinkId");
-  test::MockCompositorFrameSinkSupportClient mock_client;
+  MockCompositorFrameSinkClient mock_client;
   auto support = CompositorFrameSinkSupport::Create(
       &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot,
       kNeedsSyncPoints);

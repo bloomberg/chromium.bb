@@ -30,7 +30,6 @@ class SingleThreadTaskRunner;
 namespace viz {
 
 class CompositorFrameSinkSupport;
-class CompositorFrameSinkSupportClient;
 class FrameSinkManagerImpl;
 class SurfaceInfo;
 
@@ -119,7 +118,7 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
 
   // CompositorFrameSinkSupportManager:
   std::unique_ptr<CompositorFrameSinkSupport> CreateCompositorFrameSinkSupport(
-      CompositorFrameSinkSupportClient* client,
+      mojom::CompositorFrameSinkClient* client,
       const FrameSinkId& frame_sink_id,
       bool is_root,
       bool needs_sync_points) override;

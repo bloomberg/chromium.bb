@@ -203,10 +203,6 @@ void TestLayerTreeFrameSink::ReclaimResources(
   client_->ReclaimResources(resources);
 }
 
-void TestLayerTreeFrameSink::WillDrawSurface(
-    const LocalSurfaceId& local_surface_id,
-    const gfx::Rect& damage_rect) {}
-
 void TestLayerTreeFrameSink::OnBeginFramePausedChanged(bool paused) {}
 
 void TestLayerTreeFrameSink::DisplayOutputSurfaceLost() {

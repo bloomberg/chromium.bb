@@ -11,6 +11,7 @@ include_rules = [
   "+components/viz/service/frame_sinks",
   "+components/viz/service/surfaces",
   "+jni",
+  "+services/viz/public/interfaces",
   "+skia/ext",
   "+third_party/WebKit/public/platform/WebCursorInfo.h",
   "+third_party/skia",

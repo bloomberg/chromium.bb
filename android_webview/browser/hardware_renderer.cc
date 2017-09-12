@@ -195,10 +195,6 @@ void HardwareRenderer::ReclaimResources(
                               last_submitted_layer_tree_frame_sink_id_);
 }
 
-void HardwareRenderer::WillDrawSurface(
-    const viz::LocalSurfaceId& local_surface_id,
-    const gfx::Rect& damage_rect) {}
-
 void HardwareRenderer::OnBeginFramePausedChanged(bool paused) {}
 
 // static
