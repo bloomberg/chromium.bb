@@ -21,7 +21,6 @@ group("sandbox") {
     ]
   } else if (is_mac) {
     public_deps = [
-      "//sandbox/mac:sandbox",
       "//sandbox/mac:seatbelt",
     ]
   } else if (is_linux || is_android) {

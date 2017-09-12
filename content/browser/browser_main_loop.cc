@@ -152,7 +152,6 @@
 #if defined(OS_MACOSX)
 #include "base/allocator/allocator_interception_mac.h"
 #include "base/memory/memory_pressure_monitor_mac.h"
-#include "content/browser/bootstrap_sandbox_manager_mac.h"
 #include "content/browser/cocoa/system_hotkey_helper_mac.h"
 #include "content/browser/mach_broker_mac.h"
 #include "content/browser/renderer_host/browser_compositor_view_mac.h"
@@ -780,14 +779,6 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
                  "BrowserMainLoop::Subsystem:ScreenOrientationProvider");
     screen_orientation_delegate_.reset(
         new ScreenOrientationDelegateAndroid());
-  }
-#endif
-
-#if defined(OS_MACOSX)
-  if (BootstrapSandboxManager::ShouldEnable()) {
-    TRACE_EVENT0("startup",
-                 "BrowserMainLoop::Subsystem:BootstrapSandbox");
-    CHECK(BootstrapSandboxManager::GetInstance());
   }
 #endif
 
