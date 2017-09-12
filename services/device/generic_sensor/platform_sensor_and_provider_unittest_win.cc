@@ -625,9 +625,9 @@ TEST_F(PlatformSensorAndProviderTestWin, CheckGyroscopeReadingConversion) {
   base::RunLoop().RunUntilIdle();
   SensorReadingSharedBuffer* buffer =
       static_cast<SensorReadingSharedBuffer*>(mapping.get());
-  EXPECT_THAT(buffer->reading.gyro.x, -x_ang_accel * kRadiansInDegrees);
-  EXPECT_THAT(buffer->reading.gyro.y, -y_ang_accel * kRadiansInDegrees);
-  EXPECT_THAT(buffer->reading.gyro.z, -z_ang_accel * kRadiansInDegrees);
+  EXPECT_THAT(buffer->reading.gyro.x, -x_ang_accel * kDegreesToRadians);
+  EXPECT_THAT(buffer->reading.gyro.y, -y_ang_accel * kDegreesToRadians);
+  EXPECT_THAT(buffer->reading.gyro.z, -z_ang_accel * kDegreesToRadians);
   EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
 }
 

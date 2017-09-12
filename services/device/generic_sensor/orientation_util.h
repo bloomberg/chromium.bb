@@ -9,12 +9,6 @@
 
 namespace device {
 
-// Conversion ratio from radians to degrees.
-extern const double kRadToDeg;
-
-// Conversion ratio from degrees to radians.
-extern const double kDegToRad;
-
 void ComputeOrientationEulerAnglesFromRotationMatrix(
     const std::vector<double>& r,
     double* alpha_in_degrees,

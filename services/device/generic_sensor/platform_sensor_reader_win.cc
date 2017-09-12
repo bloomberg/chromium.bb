@@ -124,9 +124,9 @@ std::unique_ptr<ReaderInitParams> CreateGyroscopeReaderInitParams() {
         // Windows uses coordinate system where Z axis points down from device
         // screen, therefore, using right hand notation, we have to reverse
         // sign for each axis. Values are converted from deg to rad.
-        reading->gyro.x = -x * kRadiansInDegrees;
-        reading->gyro.y = -y * kRadiansInDegrees;
-        reading->gyro.z = -z * kRadiansInDegrees;
+        reading->gyro.x = -x * kDegreesToRadians;
+        reading->gyro.y = -y * kDegreesToRadians;
+        reading->gyro.z = -z * kDegreesToRadians;
         return S_OK;
       };
   return params;

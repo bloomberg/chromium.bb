@@ -7,7 +7,7 @@
 #include <cmath>
 
 #include "base/logging.h"
-#include "services/device/generic_sensor/orientation_util.h"
+#include "services/device/generic_sensor/generic_sensor_consts.h"
 #include "services/device/generic_sensor/platform_sensor_fusion.h"
 
 namespace device {
@@ -21,9 +21,9 @@ void ComputeQuaternionFromEulerAngles(double alpha_in_degrees,
                                       double* y,
                                       double* z,
                                       double* w) {
-  double alpha_in_radians = device::kDegToRad * alpha_in_degrees;
-  double beta_in_radians = device::kDegToRad * beta_in_degrees;
-  double gamma_in_radians = device::kDegToRad * gamma_in_degrees;
+  double alpha_in_radians = device::kDegreesToRadians * alpha_in_degrees;
+  double beta_in_radians = device::kDegreesToRadians * beta_in_degrees;
+  double gamma_in_radians = device::kDegreesToRadians * gamma_in_degrees;
 
   double cx = std::cos(beta_in_radians / 2);
   double cy = std::cos(gamma_in_radians / 2);
