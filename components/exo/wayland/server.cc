@@ -4098,12 +4098,9 @@ void gaming_input_get_gaming_seat(wl_client* client,
       wl_resource_create(client, &zcr_gaming_seat_v2_interface,
                          wl_resource_get_version(resource), id);
 
-  base::Thread* gaming_input_thread = GetUserDataAs<base::Thread>(resource);
-
   SetImplementation(gaming_seat_resource, &gaming_seat_implementation,
                     base::MakeUnique<GamingSeat>(
-                        new WaylandGamingSeatDelegate(gaming_seat_resource),
-                        gaming_input_thread->task_runner().get()));
+                        new WaylandGamingSeatDelegate(gaming_seat_resource)));
 }
 
 void gaming_input_destroy(wl_client* client, wl_resource* resource) {
@@ -4120,53 +4117,8 @@ void bind_gaming_input(wl_client* client,
   wl_resource* resource =
       wl_resource_create(client, &zcr_gaming_input_v2_interface, version, id);
 
-  std::unique_ptr<base::Thread> gaming_input_thread(
-      new base::Thread("Exo gaming input polling thread."));
-  gaming_input_thread->StartWithOptions(
-      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
-
-  SetImplementation(resource, &gaming_input_implementation,
-                    std::move(gaming_input_thread));
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// dummy interface for gaming_input_v1:
-/* Following is a dummy interface for gaming_input_v1.
- * It makes sure the "old" android with v1 interface won't break. However, "old"
- * android will not receive any gamepad input. This interface implementation
- * should be removed once android is updated.
- */
-// TODO(jkwang): Remove the following interface function once android updated.
-void gamepad_v1_destroy_DEPRECATED(wl_client* client, wl_resource* resource) {
-  wl_resource_destroy(resource);
-}
-
-const struct zcr_gamepad_v1_interface gamepad_v1_implementation = {
-    gamepad_v1_destroy_DEPRECATED};
-
-void gaming_input_v1_get_gamepad_DEPRECATED(wl_client* client,
-                                            wl_resource* resource,
-                                            uint32_t id,
-                                            wl_resource* seat) {
-  wl_resource* gamepad_resource = wl_resource_create(
-      client, &zcr_gamepad_v1_interface, wl_resource_get_version(resource), id);
-
-  wl_resource_set_implementation(gamepad_resource, &gamepad_v1_implementation,
-                                 NULL, NULL);
-}
-
-const struct zcr_gaming_input_v1_interface gaming_input_v1_implementation = {
-    gaming_input_v1_get_gamepad_DEPRECATED};
-
-void bind_gaming_input_v1_DEPRECATED(wl_client* client,
-                                     void* data,
-                                     uint32_t version,
-                                     uint32_t id) {
-  wl_resource* resource =
-      wl_resource_create(client, &zcr_gaming_input_v1_interface, version, id);
-
-  wl_resource_set_implementation(resource, &gaming_input_v1_implementation,
-                                 NULL, NULL);
+  wl_resource_set_implementation(resource, &gaming_input_implementation,
+                                 nullptr, nullptr);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -4598,8 +4550,6 @@ Server::Server(Display* display)
                    remote_shell_version, display_, bind_remote_shell);
   wl_global_create(wl_display_.get(), &zaura_shell_interface, 1, display_,
                    bind_aura_shell);
-  wl_global_create(wl_display_.get(), &zcr_gaming_input_v1_interface, 1,
-                   display_, bind_gaming_input_v1_DEPRECATED);
   wl_global_create(wl_display_.get(), &zcr_gaming_input_v2_interface, 1,
                    display_, bind_gaming_input);
   wl_global_create(wl_display_.get(), &zcr_stylus_v1_interface, 2, display_,
