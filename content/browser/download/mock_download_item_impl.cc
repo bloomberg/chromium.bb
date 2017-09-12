@@ -6,9 +6,7 @@
 
 namespace content {
 
-MockDownloadItemImpl::MockDownloadItemImpl(
-    DownloadItemImplDelegate* delegate,
-    const DownloadItem::ReceivedSlices& received_slices)
+MockDownloadItemImpl::MockDownloadItemImpl(DownloadItemImplDelegate* delegate)
     : DownloadItemImpl(delegate,
                        std::string("7d122682-55b5-4a47-a253-36cadc3e5bee"),
                        content::DownloadItem::kInvalidId,
@@ -34,11 +32,8 @@ MockDownloadItemImpl::MockDownloadItemImpl(
                        false,
                        base::Time(),
                        true,
-                       received_slices,
+                       DownloadItem::ReceivedSlices(),
                        net::NetLogWithSource()) {}
-
-MockDownloadItemImpl::MockDownloadItemImpl(DownloadItemImplDelegate* delegate)
-    : MockDownloadItemImpl(delegate, DownloadItem::ReceivedSlices()) {}
 
 MockDownloadItemImpl::~MockDownloadItemImpl() = default;
 

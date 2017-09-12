@@ -79,6 +79,11 @@ class CONTENT_EXPORT ParallelDownloadJob : public DownloadJobImpl,
   // Information about the initial request when download is started.
   int64_t initial_request_offset_;
 
+  // A snapshot of received slices when creating the parallel download job.
+  // Download item's received slices may be different from this snapshot when
+  // |BuildParallelRequests| is called.
+  DownloadItem::ReceivedSlices initial_received_slices_;
+
   // The length of the response body of the original request.
   // Used to estimate the remaining size of the content when the initial
   // request is half open, i.e, |initial_request_length_| is
