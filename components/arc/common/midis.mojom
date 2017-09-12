@@ -1,0 +1,28 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// This file defines the mojo interface between Android, Chrome and the
+// Chrome OS daemon for the MIDI implementation used in ARC.
+
+module arc.mojom;
+
+// This interface is needed to get the actual MidisManager interface handle.
+// Next Method ID: 1
+interface MidisHost {
+  // This is used by a client to register with midis and is used to connect
+  // the client handle with the server and vice-versa.
+  // Once implemented, this call will have two arguments:
+  //  - a pointer to server interface handle (used to call server functions).
+  //  - a handle to the client interface (used to call client routines on
+  //    device related events like (dis)connections).
+  // It is currently a stub.
+  Connect@0();
+};
+
+// MidisInstance is implemented in the ARC MIDI JNI code that
+// runs in Android and handles the Android side of the ArcBridge connection.
+// Next Method ID: 1
+interface MidisInstance {
+  Init@0(MidisHost host_ptr);
+};
