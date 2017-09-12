@@ -423,7 +423,7 @@ input {
     background-color: white;
     border: 2px inset;
     -webkit-rtl-ordering: logical;
-    cursor: auto;
+    cursor: text;
 }
 
 input[type="search" i] {
@@ -441,6 +441,7 @@ input::-webkit-textfield-decoration-container {
 input::-webkit-clear-button {
     -webkit-appearance: searchfield-cancel-button;
     display: inline-block;
+    cursor: default;
     flex: none;
     -webkit-user-modify: read-only !important;
     -webkit-margin-start: 2px;
@@ -456,6 +457,7 @@ input:enabled:read-write:-webkit-any(:focus,:hover)::-webkit-clear-button {
 input[type="search" i]::-webkit-search-cancel-button {
     -webkit-appearance: searchfield-cancel-button;
     display: block;
+    cursor: default;
     flex: none;
     -webkit-user-modify: read-only !important;
     -webkit-margin-start: 1px;
@@ -495,7 +497,7 @@ textarea {
     -webkit-rtl-ordering: logical;
     flex-direction: column;
     resize: auto;
-    cursor: auto;
+    cursor: text;
     padding: 2px;
     white-space: pre-wrap;
     word-wrap: break-word;
@@ -524,6 +526,7 @@ input[type="hidden" i], input[type="image" i], input[type="file" i] {
     padding: initial;
     background-color: initial;
     border: initial;
+    cursor: default;
 }
 
 input[type="file" i] {
@@ -543,6 +546,7 @@ input[type="radio" i], input[type="checkbox" i] {
     padding: initial;
     background-color: initial;
     border: initial;
+    cursor: default;
 }
 
 input[type="button" i], input[type="submit" i], input[type="reset" i] {
@@ -576,6 +580,7 @@ input[type="range" i] {
     border: initial;
     margin: 2px;
     color: #909090;
+    cursor: default;
 }
 
 input[type="range" i]::-webkit-slider-container, input[type="range" i]::-webkit-media-slider-container {
@@ -658,6 +663,7 @@ input[type="color" i] {
     /* Same as native_theme_base. */
     border: 1px #a9a9a9 solid;
     padding: 1px 2px;
+    cursor: default;
 }
 
 input[type="color" i]::-webkit-color-swatch-wrapper {
@@ -699,6 +705,7 @@ input::-webkit-calendar-picker-indicator {
     padding: 0.17em 0.34em;
     -webkit-user-modify: read-only !important;
     opacity: 0;
+    cursor: default;
     pointer-events: none;
 }
 
@@ -997,7 +1004,7 @@ input[type="file" i]:focus::-webkit-file-upload-button {
 a:-webkit-any-link {
     color: -webkit-link;
     text-decoration: underline;
-    cursor: auto;
+    cursor: pointer;
 }
 
 a:-webkit-any-link:active {
