@@ -84,7 +84,7 @@ class BasePinButton : public views::Button, public views::ButtonListener {
     SetPreferredSize(
         gfx::Size(LoginPinView::kButtonSizeDp, LoginPinView::kButtonSizeDp));
     SetFocusPainter(views::Painter::CreateSolidFocusPainter(
-        ash::kFocusBorderColor, ash::kFocusBorderThickness, gfx::InsetsF()));
+        kFocusBorderColor, kFocusBorderThickness, gfx::InsetsF()));
     auto* layout = new views::BoxLayout(views::BoxLayout::kVertical);
     layout->set_main_axis_alignment(
         views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);

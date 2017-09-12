@@ -51,9 +51,8 @@ void LoginTestBase::ShowWidgetWithContent(views::View* content) {
   // Set the widget to the lock screen container, since a test may change the
   // session state to locked, which will hide all widgets not associated with
   // the lock screen.
-  params.parent =
-      ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
-                               ash::kShellWindowId_LockScreenContainer);
+  params.parent = Shell::GetContainer(Shell::GetPrimaryRootWindow(),
+                                      kShellWindowId_LockScreenContainer);
 
   widget_ = new views::Widget();
   widget_->Init(params);

@@ -47,7 +47,7 @@ class MockLockScreenClient : public mojom::LockScreenClient {
  private:
   bool authenticate_user_callback_result_ = true;
 
-  mojo::Binding<ash::mojom::LockScreenClient> binding_;
+  mojo::Binding<mojom::LockScreenClient> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(MockLockScreenClient);
 };

@@ -22,14 +22,14 @@ LockWindow::LockWindow(Config config) {
   params.delegate = this;
   params.show_state = ui::SHOW_STATE_FULLSCREEN;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  const int kLockContainer = ash::kShellWindowId_LockScreenContainer;
+  const int kLockContainer = kShellWindowId_LockScreenContainer;
 
   if (config == Config::MASH) {
     params.mus_properties[ui::mojom::WindowManager::kContainerId_InitProperty] =
         mojo::ConvertTo<std::vector<uint8_t>>(kLockContainer);
   } else {
-    params.parent = ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
-                                             kLockContainer);
+    params.parent =
+        Shell::GetContainer(Shell::GetPrimaryRootWindow(), kLockContainer);
   }
   Init(params);
   SetVisibilityAnimationTransition(views::Widget::ANIMATE_NONE);
