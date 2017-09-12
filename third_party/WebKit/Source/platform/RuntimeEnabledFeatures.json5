@@ -206,10 +206,6 @@
       status: "experimental",
     },
     {
-      name: "CSS3TextDecorations",
-      status: "stable",
-    },
-    {
       name: "CSSAdditiveAnimations",
       depends_on: ["StackedCSSPropertyAnimations"],
       status: "experimental",

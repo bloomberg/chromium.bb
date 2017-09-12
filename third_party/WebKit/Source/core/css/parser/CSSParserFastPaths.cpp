@@ -681,7 +681,6 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
     case CSSPropertyTextCombineUpright:
       return value_id == CSSValueNone || value_id == CSSValueAll;
     case CSSPropertyTextDecorationStyle:
-      DCHECK(RuntimeEnabledFeatures::CSS3TextDecorationsEnabled());
       return value_id == CSSValueSolid || value_id == CSSValueDouble ||
              value_id == CSSValueDotted || value_id == CSSValueDashed ||
              value_id == CSSValueWavy;

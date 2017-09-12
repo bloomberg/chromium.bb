@@ -68,14 +68,6 @@ namespace blink {
 
 using namespace cssvalue;
 
-static const CSSPropertyID& TextDecorationPropertyForEditing() {
-  static const CSSPropertyID kProperty =
-      RuntimeEnabledFeatures::CSS3TextDecorationsEnabled()
-          ? CSSPropertyTextDecorationLine
-          : CSSPropertyTextDecoration;
-  return kProperty;
-}
-
 // Editing style properties must be preserved during editing operation.
 // e.g. when a user inserts a new paragraph, all properties listed here must be
 // copied to the new paragraph.
@@ -106,8 +98,7 @@ static const Vector<CSSPropertyID>& AllEditingProperties() {
     CSSProperty::FilterEnabledCSSPropertiesIntoVector(
         kStaticEditingProperties, WTF_ARRAY_LENGTH(kStaticEditingProperties),
         properties);
-    if (RuntimeEnabledFeatures::CSS3TextDecorationsEnabled())
-      properties.erase(properties.Find(CSSPropertyTextDecoration));
+    properties.erase(properties.Find(CSSPropertyTextDecoration));
   }
   return properties;
 }
@@ -257,7 +248,7 @@ class HTMLTextDecorationEquivalent final : public HTMLElementEquivalent {
 HTMLTextDecorationEquivalent::HTMLTextDecorationEquivalent(
     CSSValueID primitive_value,
     const HTMLQualifiedName& tag_name)
-    : HTMLElementEquivalent(TextDecorationPropertyForEditing(),
+    : HTMLElementEquivalent(CSSPropertyTextDecorationLine,
                             primitive_value,
                             tag_name)
 // m_propertyID is used in HTMLElementEquivalent::addToStyle
@@ -266,7 +257,7 @@ HTMLTextDecorationEquivalent::HTMLTextDecorationEquivalent(
 bool HTMLTextDecorationEquivalent::PropertyExistsInStyle(
     const StylePropertySet* style) const {
   return style->GetPropertyCSSValue(CSSPropertyWebkitTextDecorationsInEffect) ||
-         style->GetPropertyCSSValue(TextDecorationPropertyForEditing());
+         style->GetPropertyCSSValue(CSSPropertyTextDecorationLine);
 }
 
 bool HTMLTextDecorationEquivalent::ValueIsPresentInStyle(
@@ -275,8 +266,7 @@ bool HTMLTextDecorationEquivalent::ValueIsPresentInStyle(
   const CSSValue* style_value =
       style->GetPropertyCSSValue(CSSPropertyWebkitTextDecorationsInEffect);
   if (!style_value)
-    style_value =
-        style->GetPropertyCSSValue(TextDecorationPropertyForEditing());
+    style_value = style->GetPropertyCSSValue(CSSPropertyTextDecorationLine);
   return Matches(element) && style_value && style_value->IsValueList() &&
          ToCSSValueList(style_value)->HasValue(*identifier_value_);
 }
@@ -739,13 +729,13 @@ void EditingStyle::CollapseTextDecorationProperties() {
   if (!text_decorations_in_effect)
     return;
 
-  if (text_decorations_in_effect->IsValueList())
-    mutable_style_->SetProperty(TextDecorationPropertyForEditing(),
-                                text_decorations_in_effect->CssText(),
-                                mutable_style_->PropertyIsImportant(
-                                    TextDecorationPropertyForEditing()));
-  else
-    mutable_style_->RemoveProperty(TextDecorationPropertyForEditing());
+  if (text_decorations_in_effect->IsValueList()) {
+    mutable_style_->SetProperty(
+        CSSPropertyTextDecorationLine, text_decorations_in_effect->CssText(),
+        mutable_style_->PropertyIsImportant(CSSPropertyTextDecorationLine));
+  } else {
+    mutable_style_->RemoveProperty(CSSPropertyTextDecorationLine);
+  }
   mutable_style_->RemoveProperty(CSSPropertyWebkitTextDecorationsInEffect);
 }
 
@@ -860,20 +850,19 @@ bool EditingStyle::ConflictsWithInlineStyleOfElement(
       continue;
 
     if (property_id == CSSPropertyWebkitTextDecorationsInEffect &&
-        inline_style->GetPropertyCSSValue(TextDecorationPropertyForEditing())) {
+        inline_style->GetPropertyCSSValue(CSSPropertyTextDecorationLine)) {
       if (!conflicting_properties)
         return true;
       conflicting_properties->push_back(CSSPropertyTextDecoration);
-      // Because text-decoration expands to text-decoration-line when CSS3
-      // Text Decoration is enabled, we also state it as conflicting.
-      if (RuntimeEnabledFeatures::CSS3TextDecorationsEnabled())
-        conflicting_properties->push_back(CSSPropertyTextDecorationLine);
-      if (extracted_style)
+      // Because text-decoration expands to text-decoration-line,
+      // we also state it as conflicting.
+      conflicting_properties->push_back(CSSPropertyTextDecorationLine);
+      if (extracted_style) {
         extracted_style->SetProperty(
-            TextDecorationPropertyForEditing(),
-            inline_style->GetPropertyValue(TextDecorationPropertyForEditing()),
-            inline_style->PropertyIsImportant(
-                TextDecorationPropertyForEditing()));
+            CSSPropertyTextDecorationLine,
+            inline_style->GetPropertyValue(CSSPropertyTextDecorationLine),
+            inline_style->PropertyIsImportant(CSSPropertyTextDecorationLine));
+      }
       continue;
     }
 
@@ -1284,7 +1273,7 @@ void EditingStyle::MergeStyle(const StylePropertySet* style,
     const CSSValue* value = mutable_style_->GetPropertyCSSValue(property.Id());
 
     // text decorations never override values
-    if ((property.Id() == TextDecorationPropertyForEditing() ||
+    if ((property.Id() == CSSPropertyTextDecorationLine ||
          property.Id() == CSSPropertyWebkitTextDecorationsInEffect) &&
         property.Value().IsValueList() && value) {
       if (value->IsValueList()) {
@@ -1495,11 +1484,11 @@ static void ReconcileTextDecorationProperties(MutableStylePropertySet* style) {
   const CSSValue* text_decorations_in_effect =
       style->GetPropertyCSSValue(CSSPropertyWebkitTextDecorationsInEffect);
   const CSSValue* text_decoration =
-      style->GetPropertyCSSValue(TextDecorationPropertyForEditing());
+      style->GetPropertyCSSValue(CSSPropertyTextDecorationLine);
   // "LayoutTests/editing/execCommand/insert-list-and-strikethrough.html" makes
   // both |textDecorationsInEffect| and |textDecoration| non-null.
   if (text_decorations_in_effect) {
-    style->SetProperty(TextDecorationPropertyForEditing(),
+    style->SetProperty(CSSPropertyTextDecorationLine,
                        text_decorations_in_effect->CssText());
     style->RemoveProperty(CSSPropertyWebkitTextDecorationsInEffect);
     text_decoration = text_decorations_in_effect;
@@ -1508,7 +1497,7 @@ static void ReconcileTextDecorationProperties(MutableStylePropertySet* style) {
   // If text-decoration is set to "none", remove the property because we don't
   // want to add redundant "text-decoration: none".
   if (text_decoration && !text_decoration->IsValueList())
-    style->RemoveProperty(TextDecorationPropertyForEditing());
+    style->RemoveProperty(CSSPropertyTextDecorationLine);
 }
 
 StyleChange::StyleChange(EditingStyle* style, const Position& position)
@@ -1603,7 +1592,7 @@ void StyleChange::ExtractTextStyles(Document* document,
   // Furthermore, text-decoration: none has been trimmed so that text-decoration
   // property is always a CSSValueList.
   const CSSValue* text_decoration =
-      style->GetPropertyCSSValue(TextDecorationPropertyForEditing());
+      style->GetPropertyCSSValue(CSSPropertyTextDecorationLine);
   if (text_decoration && text_decoration->IsValueList()) {
     DEFINE_STATIC_LOCAL(CSSIdentifierValue, underline,
                         (CSSIdentifierValue::Create(CSSValueUnderline)));
@@ -1617,7 +1606,7 @@ void StyleChange::ExtractTextStyles(Document* document,
 
     // If trimTextDecorations, delete underline and line-through
     SetTextDecorationProperty(style, new_text_decoration,
-                              TextDecorationPropertyForEditing());
+                              CSSPropertyTextDecorationLine);
   }
 
   int vertical_align = GetIdentifierValue(style, CSSPropertyVerticalAlign);
@@ -1718,7 +1707,7 @@ MutableStylePropertySet* GetPropertiesNotIn(
   const CSSValue* base_text_decorations_in_effect =
       base_style->GetPropertyCSSValueInternal(
           CSSPropertyWebkitTextDecorationsInEffect);
-  DiffTextDecorations(result, TextDecorationPropertyForEditing(),
+  DiffTextDecorations(result, CSSPropertyTextDecorationLine,
                       base_text_decorations_in_effect);
   DiffTextDecorations(result, CSSPropertyWebkitTextDecorationsInEffect,
                       base_text_decorations_in_effect);

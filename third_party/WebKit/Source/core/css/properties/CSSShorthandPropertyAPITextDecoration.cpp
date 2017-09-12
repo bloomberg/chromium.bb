@@ -16,7 +16,6 @@ bool CSSShorthandPropertyAPITextDecoration::ParseShorthand(
     const CSSParserContext& context,
     const CSSParserLocalContext&,
     HeapVector<CSSProperty, 256>& properties) const {
-  DCHECK(RuntimeEnabledFeatures::CSS3TextDecorationsEnabled());
   return CSSPropertyParserHelpers::ConsumeShorthandGreedilyViaLonghandAPIs(
       textDecorationShorthand(), important, context, range, properties);
 }
