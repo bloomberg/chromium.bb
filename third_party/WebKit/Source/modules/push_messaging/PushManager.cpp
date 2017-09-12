@@ -4,6 +4,8 @@
 
 #include "modules/push_messaging/PushManager.h"
 
+#include <memory>
+
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
@@ -78,13 +80,13 @@ ScriptPromise PushManager::subscribe(ScriptState* script_state,
     PushController::ClientFrom(document->GetFrame())
         .Subscribe(registration_->WebRegistration(), web_options,
                    UserGestureIndicator::ProcessingUserGestureThreadSafe(),
-                   WTF::MakeUnique<PushSubscriptionCallbacks>(resolver,
-                                                              registration_));
+                   std::make_unique<PushSubscriptionCallbacks>(resolver,
+                                                               registration_));
   } else {
     PushProvider()->Subscribe(
         registration_->WebRegistration(), web_options,
         UserGestureIndicator::ProcessingUserGestureThreadSafe(),
-        WTF::MakeUnique<PushSubscriptionCallbacks>(resolver, registration_));
+        std::make_unique<PushSubscriptionCallbacks>(resolver, registration_));
   }
 
   return promise;
@@ -96,7 +98,7 @@ ScriptPromise PushManager::getSubscription(ScriptState* script_state) {
 
   PushProvider()->GetSubscription(
       registration_->WebRegistration(),
-      WTF::MakeUnique<PushSubscriptionCallbacks>(resolver, registration_));
+      std::make_unique<PushSubscriptionCallbacks>(resolver, registration_));
   return promise;
 }
 
@@ -119,7 +121,7 @@ ScriptPromise PushManager::permissionState(
   PushProvider()->GetPermissionStatus(
       registration_->WebRegistration(),
       PushSubscriptionOptions::ToWeb(options, exception_state),
-      WTF::MakeUnique<PushPermissionStatusCallbacks>(resolver));
+      std::make_unique<PushPermissionStatusCallbacks>(resolver));
   return promise;
 }
 

@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/push_messaging/push_provider.h"
@@ -143,7 +142,7 @@ void PushMessagingClient::DidSubscribe(
     DCHECK(p256dh);
     DCHECK(auth);
 
-    callbacks->OnSuccess(base::MakeUnique<blink::WebPushSubscription>(
+    callbacks->OnSuccess(std::make_unique<blink::WebPushSubscription>(
         endpoint.value(), options.value().user_visible_only,
         blink::WebString::FromLatin1(options.value().sender_info),
         p256dh.value(), auth.value()));

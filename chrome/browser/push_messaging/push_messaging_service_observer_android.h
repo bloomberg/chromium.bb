@@ -16,13 +16,12 @@
 class PushMessagingServiceObserverAndroid
     : public PushMessagingServiceObserver {
  public:
+  PushMessagingServiceObserverAndroid() = default;
+
   // PushMessagingServiceObserver implementation.
   void OnMessageHandled() override;
 
  private:
-  friend class PushMessagingServiceObserver;
-  PushMessagingServiceObserverAndroid() {}
-
   DISALLOW_COPY_AND_ASSIGN(PushMessagingServiceObserverAndroid);
 };
 

@@ -145,7 +145,7 @@ class MyTestURLRequestContext : public net::TestURLRequestContext {
     context_storage_.set_host_resolver(
         net::HostResolver::CreateDefaultResolver(NULL));
     context_storage_.set_transport_security_state(
-        base::MakeUnique<net::TransportSecurityState>());
+        std::make_unique<net::TransportSecurityState>());
     Init();
   }
 
@@ -318,26 +318,21 @@ void MCSProbe::Start() {
   file_thread_.Start();
   InitializeNetworkState();
   BuildNetworkSession();
-  std::vector<GURL> endpoints(1,
-                              GURL("https://" +
-                                   net::HostPortPair(server_host_,
-                                                     server_port_).ToString()));
-  connection_factory_.reset(
-      new ConnectionFactoryImpl(endpoints,
-                                kDefaultBackoffPolicy,
-                                network_session_.get(),
-                                NULL,
-                                &net_log_,
-                                &recorder_));
-  gcm_store_.reset(
-      new GCMStoreImpl(gcm_store_path_, file_thread_.task_runner(),
-                       base::WrapUnique<Encryptor>(new FakeEncryptor)));
-  mcs_client_.reset(new MCSClient("probe",
-                                  &clock_,
-                                  connection_factory_.get(),
-                                  gcm_store_.get(),
-                                  &recorder_));
-  run_loop_.reset(new base::RunLoop());
+  std::vector<GURL> endpoints(
+      1, GURL("https://" +
+              net::HostPortPair(server_host_, server_port_).ToString()));
+
+  connection_factory_ = std::make_unique<ConnectionFactoryImpl>(
+      endpoints, kDefaultBackoffPolicy, network_session_.get(), nullptr,
+      &net_log_, &recorder_);
+  gcm_store_ = std::make_unique<GCMStoreImpl>(
+      gcm_store_path_, file_thread_.task_runner(),
+      std::make_unique<FakeEncryptor>());
+
+  mcs_client_ =
+      std::make_unique<MCSClient>("probe", &clock_, connection_factory_.get(),
+                                  gcm_store_.get(), &recorder_);
+  run_loop_ = std::make_unique<base::RunLoop>();
   gcm_store_->Load(GCMStore::CREATE_IF_MISSING,
                    base::Bind(&MCSProbe::LoadCallback,
                               base::Unretained(this)));
@@ -388,19 +383,19 @@ void MCSProbe::InitializeNetworkState() {
   host_resolver_ = net::HostResolver::CreateDefaultResolver(&net_log_);
 
   if (command_line_.HasSwitch(kIgnoreCertSwitch)) {
-    cert_verifier_.reset(new MyTestCertVerifier());
+    cert_verifier_ = std::make_unique<MyTestCertVerifier>();
   } else {
     cert_verifier_ = net::CertVerifier::CreateDefault();
   }
-  system_channel_id_service_.reset(
-      new net::ChannelIDService(new net::DefaultChannelIDStore(NULL)));
+  system_channel_id_service_ = std::make_unique<net::ChannelIDService>(
+      new net::DefaultChannelIDStore(nullptr));
 
-  transport_security_state_.reset(new net::TransportSecurityState());
-  cert_transparency_verifier_.reset(new net::MultiLogCTVerifier());
-  ct_policy_enforcer_.reset(new net::CTPolicyEnforcer());
+  transport_security_state_ = std::make_unique<net::TransportSecurityState>();
+  cert_transparency_verifier_ = std::make_unique<net::MultiLogCTVerifier>();
+  ct_policy_enforcer_ = std::make_unique<net::CTPolicyEnforcer>();
   http_auth_handler_factory_ = net::HttpAuthHandlerRegistryFactory::Create(
       &http_auth_preferences_, host_resolver_.get());
-  http_server_properties_.reset(new net::HttpServerPropertiesImpl());
+  http_server_properties_ = std::make_unique<net::HttpServerPropertiesImpl>();
   proxy_service_ = net::ProxyService::CreateDirectWithNetLog(&net_log_);
 }
 
@@ -424,8 +419,8 @@ void MCSProbe::BuildNetworkSession() {
   session_context.net_log = &net_log_;
   session_context.proxy_service = proxy_service_.get();
 
-  network_session_.reset(
-      new net::HttpNetworkSession(session_params, session_context));
+  network_session_ = std::make_unique<net::HttpNetworkSession>(session_params,
+                                                               session_context);
 }
 
 void MCSProbe::ErrorCallback() {
@@ -441,19 +436,14 @@ void MCSProbe::CheckIn() {
       checkin_proto::ChromeBuildProto::CHANNEL_CANARY);
   chrome_build_proto.set_chrome_version(kChromeVersion);
 
-  CheckinRequest::RequestInfo request_info(0,
-                                           0,
+  CheckinRequest::RequestInfo request_info(0, 0,
                                            std::map<std::string, std::string>(),
-                                           std::string(),
-                                           chrome_build_proto);
+                                           std::string(), chrome_build_proto);
 
-  checkin_request_.reset(new CheckinRequest(
-      GServicesSettings().GetCheckinURL(),
-      request_info,
-      kDefaultBackoffPolicy,
+  checkin_request_ = std::make_unique<CheckinRequest>(
+      GServicesSettings().GetCheckinURL(), request_info, kDefaultBackoffPolicy,
       base::Bind(&MCSProbe::OnCheckInCompleted, base::Unretained(this)),
-      url_request_context_getter_.get(),
-      &recorder_));
+      url_request_context_getter_.get(), &recorder_);
   checkin_request_->Start();
 }
 

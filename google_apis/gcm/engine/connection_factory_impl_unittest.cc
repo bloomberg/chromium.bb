@@ -5,9 +5,9 @@
 #include "google_apis/gcm/engine/connection_factory_impl.h"
 
 #include <cmath>
+#include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -152,9 +152,9 @@ TestConnectionFactoryImpl::TestConnectionFactoryImpl(
       connections_fulfilled_(true),
       delay_login_(false),
       finished_callback_(finished_callback),
-      scoped_handler_(
-          new FakeConnectionHandler(base::Bind(&ReadContinuation),
-                                    base::Bind(&WriteContinuation))),
+      scoped_handler_(std::make_unique<FakeConnectionHandler>(
+          base::Bind(&ReadContinuation),
+          base::Bind(&WriteContinuation))),
       fake_handler_(scoped_handler_.get()) {
   // Set a non-null time.
   tick_clock_.Advance(base::TimeDelta::FromMilliseconds(1));
@@ -193,7 +193,7 @@ void TestConnectionFactoryImpl::InitHandler() {
 std::unique_ptr<net::BackoffEntry>
 TestConnectionFactoryImpl::CreateBackoffEntry(
     const net::BackoffEntry::Policy* const policy) {
-  return base::MakeUnique<net::BackoffEntry>(&kTestBackoffPolicy, &tick_clock_);
+  return std::make_unique<net::BackoffEntry>(&kTestBackoffPolicy, &tick_clock_);
 }
 
 std::unique_ptr<ConnectionHandler>

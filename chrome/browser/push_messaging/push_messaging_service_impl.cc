@@ -261,9 +261,9 @@ void PushMessagingServiceImpl::OnMessage(const std::string& app_id,
   }
 
   if (!in_flight_keep_alive_) {
-    in_flight_keep_alive_.reset(
-        new ScopedKeepAlive(KeepAliveOrigin::IN_FLIGHT_PUSH_MESSAGE,
-                            KeepAliveRestartOption::DISABLED));
+    in_flight_keep_alive_ = std::make_unique<ScopedKeepAlive>(
+        KeepAliveOrigin::IN_FLIGHT_PUSH_MESSAGE,
+        KeepAliveRestartOption::DISABLED);
   }
 #endif
 
