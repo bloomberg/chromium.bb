@@ -324,6 +324,8 @@ NavigationUIData* ResourceRequestInfoImpl::GetNavigationUIData() const {
 }
 
 void ResourceRequestInfoImpl::AssociateWithRequest(net::URLRequest* request) {
+  // Added for http://crbug.com/754704; remove when that bug is resolved.
+  CHECK(this);
   request->SetUserData(kResourceRequestInfoImplKey, base::WrapUnique(this));
   int render_process_id;
   int render_frame_id;
