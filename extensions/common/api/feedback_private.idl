@@ -112,8 +112,26 @@ namespace feedbackPrivate {
     // Logs from daemon for Atrus device.
     atrusLog,
 
-    // Network logs.
-    netLog
+    // Network log.
+    netLog,
+
+    // Log of system events.
+    eventLog,
+
+    // Update engine log.
+    updateEngineLog,
+
+    // Log of the current power manager session.
+    powerManagerLatest,
+
+    // Log of the previous power manager session.
+    powerManagerPrevious,
+
+    // Info about system PCI buses devices.
+    lspci,
+
+    // Info about system network interface.
+    ifconfig
   };
 
   // Input parameters for a readLogSource() call.

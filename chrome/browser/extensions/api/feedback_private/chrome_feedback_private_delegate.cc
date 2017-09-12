@@ -126,6 +126,18 @@ ChromeFeedbackPrivateDelegate::CreateSingleLogSource(
     case api::feedback_private::LOG_SOURCE_NETLOG:
       return base::MakeUnique<system_logs::SingleLogFileLogSource>(
           SupportedLogFileSource::kNetLog);
+    case api::feedback_private::LOG_SOURCE_EVENTLOG:
+      return base::MakeUnique<system_logs::SingleLogFileLogSource>(
+          SupportedLogFileSource::kEventLog);
+    case api::feedback_private::LOG_SOURCE_UPDATEENGINELOG:
+      return base::MakeUnique<system_logs::SingleLogFileLogSource>(
+          SupportedLogFileSource::kUpdateEngineLog);
+    case api::feedback_private::LOG_SOURCE_POWERMANAGERLATEST:
+      return base::MakeUnique<system_logs::SingleLogFileLogSource>(
+          SupportedLogFileSource::kPowerManagerLatest);
+    case api::feedback_private::LOG_SOURCE_POWERMANAGERPREVIOUS:
+      return base::MakeUnique<system_logs::SingleLogFileLogSource>(
+          SupportedLogFileSource::kPowerManagerPrevious);
 
     // These map to SupportedDebugDaemonSources.
     case api::feedback_private::LOG_SOURCE_DRMMODETEST:
@@ -134,6 +146,12 @@ ChromeFeedbackPrivateDelegate::CreateSingleLogSource(
     case api::feedback_private::LOG_SOURCE_LSUSB:
       return base::MakeUnique<system_logs::SingleDebugDaemonLogSource>(
           SupportedDebugDaemonSource::kLsusb);
+    case api::feedback_private::LOG_SOURCE_LSPCI:
+      return base::MakeUnique<system_logs::SingleDebugDaemonLogSource>(
+          SupportedDebugDaemonSource::kLspci);
+    case api::feedback_private::LOG_SOURCE_IFCONFIG:
+      return base::MakeUnique<system_logs::SingleDebugDaemonLogSource>(
+          SupportedDebugDaemonSource::kIfconfig);
 
     case api::feedback_private::LOG_SOURCE_NONE:
     default:
