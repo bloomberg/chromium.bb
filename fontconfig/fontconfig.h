@@ -99,6 +99,7 @@ typedef int		FcBool;
 #define FC_OUTLINE	    "outline"		/* Bool */
 #define FC_SCALABLE	    "scalable"		/* Bool */
 #define FC_COLOR	    "color"		/* Bool */
+#define FC_VARIABLE	    "variable"		/* Bool */
 #define FC_SCALE	    "scale"		/* double (deprecated) */
 #define FC_SYMBOL	    "symbol"		/* Bool */
 #define FC_DPI		    "dpi"		/* double */

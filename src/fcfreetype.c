@@ -1236,6 +1236,9 @@ FcFreeTypeQueryFace (const FT_Face  face,
 	    goto bail1;
     }
 
+    if (!FcPatternAddBool (pat, FC_VARIABLE, FcFalse))
+	goto bail1;
+
     if (id >> 16)
     {
       unsigned int instance_id = (id >> 16) - 1;

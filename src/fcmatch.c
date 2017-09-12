@@ -250,6 +250,7 @@ typedef enum _FcMatcherPriorityDummy {
 typedef enum _FcMatcherPriority {
     PRI1(FILE),
     PRI1(FONTFORMAT),
+    PRI1(VARIABLE),
     PRI1(SCALABLE),
     PRI1(COLOR),
     PRI1(FOUNDRY),

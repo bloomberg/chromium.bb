@@ -71,4 +71,5 @@ FC_OBJECT (POSTSCRIPT_NAME,	FcTypeString,	FcComparePostScript)
 FC_OBJECT (COLOR,		FcTypeBool,	FcCompareBool)
 FC_OBJECT (SYMBOL,		FcTypeBool,	FcCompareBool)
 FC_OBJECT (FONT_VARIATIONS,	FcTypeString,	NULL)
+FC_OBJECT (VARIABLE,		FcTypeBool,	FcCompareBool)
 /* ^-------------- Add new objects here. */
