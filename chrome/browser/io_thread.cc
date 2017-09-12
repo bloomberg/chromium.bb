@@ -66,7 +66,6 @@
 #include "content/public/common/user_agent.h"
 #include "extensions/features/features.h"
 #include "net/base/logging_network_change_observer.h"
-#include "net/base/sdch_manager.h"
 #include "net/cert/caching_cert_verifier.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_proc.h"
