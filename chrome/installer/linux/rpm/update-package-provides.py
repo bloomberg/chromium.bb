@@ -53,6 +53,7 @@ PACKAGE_FILTER = [
     "libpthread.so",
     "librt.so",
     "libsmime3.so",
+    "libstdc++.so",
     "libxcb.so",
 ]
 
