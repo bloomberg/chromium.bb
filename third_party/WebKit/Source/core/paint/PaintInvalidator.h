@@ -87,17 +87,19 @@ struct CORE_EXPORT PaintInvalidatorContext {
 
   // Store the old visual rect in the paint invalidation backing's coordinates.
   // It does *not* account for composited scrolling.
-  // See LayoutObject::adjustVisualRectForCompositedScrolling().
+  // See LayoutObject::AdjustVisualRectForCompositedScrolling().
   LayoutRect old_visual_rect;
-  // Use LayoutObject::visualRect() to get the new visual rect.
+  // Use LayoutObject::VisualRect() to get the new visual rect.
 
-  // Store the origin of the object's local coordinates in the paint
-  // invalidation backing's coordinates. They are used to detect layoutObject
-  // shifts that force a full invalidation and invalidation check in subtree.
+  // This field and LayoutObject::LocationInBacking() store the old and new
+  // origins of the object's local coordinates in the paint invalidation
+  // backing's coordinates. They are used to detect layoutObject shifts that
+  // force a full invalidation and invalidation check in subtree.
   // The points do *not* account for composited scrolling. See
   // LayoutObject::adjustVisualRectForCompositedScrolling().
+  // This field will be removed for SPv2.
   LayoutPoint old_location;
-  LayoutPoint new_location;
+  // Use LayoutObject::LocationInBacking() to get the new location.
 
  private:
   friend class PaintInvalidator;

@@ -1167,7 +1167,8 @@ LayoutRect LayoutObject::VisualRectIncludingCompositedScrolling(
 
 void LayoutObject::ClearPreviousVisualRects() {
   SetVisualRect(LayoutRect());
-  ObjectPaintInvalidator(*this).SetLocationInBacking(LayoutPoint());
+  if (rare_paint_data_)
+    rare_paint_data_->SetLocationInBacking(LayoutPoint());
   // Ensure check paint invalidation of subtree that would be triggered by
   // location change if we had valid previous location.
   SetMayNeedPaintInvalidationSubtree();
@@ -2549,8 +2550,6 @@ void LayoutObject::WillBeDestroyed() {
 
   SetAncestorLineBoxDirty(false);
 
-  ObjectPaintInvalidator::ObjectWillBeDestroyed(*this);
-
   ClearLayoutRootIfNeeded();
 
   if (style_) {
@@ -3419,7 +3418,7 @@ void LayoutObject::SetIsBackgroundAttachmentFixedObject(
 
 RarePaintData& LayoutObject::EnsureRarePaintData() {
   if (!rare_paint_data_)
-    rare_paint_data_ = WTF::MakeUnique<RarePaintData>();
+    rare_paint_data_ = WTF::MakeUnique<RarePaintData>(visual_rect_.Location());
   return *rare_paint_data_.get();
 }
 
