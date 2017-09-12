@@ -1,4 +1,4 @@
-layer at (0,0) size 800x600 scrollWidth 971
+layer at (0,0) size 800x600 scrollWidth 970
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600

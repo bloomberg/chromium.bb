@@ -480,10 +480,6 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   void RecalcSections() const;
 
   void UpdateCollapsedOuterBorders() const;
-  unsigned ComputeCollapsedOuterBorderBefore() const;
-  unsigned ComputeCollapsedOuterBorderAfter() const;
-  unsigned ComputeCollapsedOuterBorderStart() const;
-  unsigned ComputeCollapsedOuterBorderEnd() const;
 
   void LayoutCaption(LayoutTableCaption&, SubtreeLayoutScope&);
   void LayoutSection(LayoutTableSection&,
@@ -587,10 +583,13 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   short h_spacing_;
   short v_spacing_;
 
+  // See UpdateCollapsedOuterBorders().
   mutable unsigned collapsed_outer_border_start_;
   mutable unsigned collapsed_outer_border_end_;
   mutable unsigned collapsed_outer_border_before_;
   mutable unsigned collapsed_outer_border_after_;
+  mutable unsigned collapsed_outer_border_start_overflow_;
+  mutable unsigned collapsed_outer_border_end_overflow_;
 
   LayoutUnit block_offset_to_first_repeatable_header_;
   LayoutUnit row_offset_from_repeating_header_;
