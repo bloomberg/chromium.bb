@@ -26,7 +26,7 @@ source_set("events") {
     "//ui/events:dom_keycode_converter",
     "//ui/events/devices",
   ]
-  if (use_x11 || ozone_platform_x11) {
+  if (ozone_platform_x11) {
     deps += [
       "//ui/base/x",
       "//ui/events/keycodes:x11",

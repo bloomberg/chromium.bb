@@ -29,18 +29,6 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 
-#if defined(USE_X11)
-#include <X11/Xlib.h>
-#include <X11/extensions/XInput2.h>
-
-// Get rid of macros from Xlib.h that conflicts with other parts of the code.
-#undef RootWindow
-#undef Status
-
-#include "ui/base/x/x11_util.h"
-#include "ui/events/keycodes/keyboard_code_conversion_x.h"
-#endif
-
 namespace ui {
 
 namespace {
@@ -540,15 +528,6 @@ ui::EventRewriteStatus EventRewriterChromeOS::RewriteKeyEvent(
   }
   if ((key_event.flags() == state.flags) &&
       (key_event.key_code() == state.key_code) &&
-#if defined(USE_X11)
-      // TODO(kpschoedel): This test is present because several consumers of
-      // key events depend on having a native core X11 event, so we rewrite
-      // all XI2 key events (GenericEvent) into corresponding core X11 key
-      // events. Remove this when event consumers no longer care about
-      // native X11 event details (crbug.com/380349).
-      (!key_event.HasNativeEvent() ||
-       (key_event.native_event()->type != GenericEvent)) &&
-#endif
       (status == ui::EVENT_REWRITE_CONTINUE)) {
     return ui::EVENT_REWRITE_CONTINUE;
   }
@@ -591,15 +570,8 @@ ui::EventRewriteStatus EventRewriterChromeOS::RewriteMouseButtonEvent(
   ui::MouseEvent* rewritten_mouse_event = new ui::MouseEvent(mouse_event);
   rewritten_event->reset(rewritten_mouse_event);
   rewritten_mouse_event->set_flags(flags);
-#if defined(USE_X11)
-  ui::UpdateX11EventForFlags(rewritten_mouse_event);
-#endif
-  if (changed_button != ui::EF_NONE) {
+  if (changed_button != ui::EF_NONE)
     rewritten_mouse_event->set_changed_button_flags(changed_button);
-#if defined(USE_X11)
-    ui::UpdateX11EventForChangedButtonFlags(rewritten_mouse_event);
-#endif
-  }
   return status;
 }
 
@@ -619,18 +591,12 @@ ui::EventRewriteStatus EventRewriterChromeOS::RewriteMouseWheelEvent(
     case ui::EVENT_REWRITE_REWRITTEN:
     case ui::EVENT_REWRITE_DISPATCH_ANOTHER:
       // whell event has been rewritten and stored in |rewritten_event|.
-#if defined(USE_X11)
-      ui::UpdateX11EventForFlags(rewritten_event->get());
-#endif
       break;
     case ui::EVENT_REWRITE_CONTINUE:
       if (flags != wheel_event.flags()) {
         *rewritten_event = base::MakeUnique<ui::MouseWheelEvent>(wheel_event);
         (*rewritten_event)->set_flags(flags);
         status = ui::EVENT_REWRITE_REWRITTEN;
-#if defined(USE_X11)
-        ui::UpdateX11EventForFlags(rewritten_event->get());
-#endif
       }
       break;
     case ui::EVENT_REWRITE_DISCARD:
@@ -651,9 +617,6 @@ ui::EventRewriteStatus EventRewriterChromeOS::RewriteTouchEvent(
   ui::TouchEvent* rewritten_touch_event = new ui::TouchEvent(touch_event);
   rewritten_event->reset(rewritten_touch_event);
   rewritten_touch_event->set_flags(flags);
-#if defined(USE_X11)
-  ui::UpdateX11EventForFlags(rewritten_touch_event);
-#endif
   return ui::EVENT_REWRITE_REWRITTEN;
 }
 
@@ -666,10 +629,6 @@ ui::EventRewriteStatus EventRewriterChromeOS::RewriteScrollEvent(
       sticky_keys_controller_->RewriteEvent(scroll_event, rewritten_event);
   // Scroll event shouldn't be discarded.
   DCHECK_NE(status, ui::EVENT_REWRITE_DISCARD);
-#if defined(USE_X11)
-  if (status != ui::EVENT_REWRITE_CONTINUE)
-    ui::UpdateX11EventForFlags(rewritten_event->get());
-#endif
   return status;
 }
 
@@ -728,7 +687,6 @@ bool EventRewriterChromeOS::RewriteModifierKeys(const ui::KeyEvent& key_event,
       if (remapped_key && remapped_key->result.key_code == ui::VKEY_CAPITAL)
         remapped_key = kModifierRemappingNeoMod3;
       break;
-#if !defined(USE_X11)
     case ui::DomKey::ALT_GRAPH_LATCH:
       if (key_event.type() == ui::ET_KEY_PRESSED) {
         pressed_modifier_latches_ |= ui::EF_ALTGR_DOWN;
@@ -748,7 +706,6 @@ bool EventRewriterChromeOS::RewriteModifierKeys(const ui::KeyEvent& key_event,
       state->key_code = ui::VKEY_ALTGR;
       exact_event = true;
       break;
-#endif
     default:
       break;
   }
