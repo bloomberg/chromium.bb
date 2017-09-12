@@ -8,31 +8,6 @@ namespace media_perception = extensions::api::media_perception_private;
 
 namespace extensions {
 
-using CallbackStatus = MediaPerceptionAPIManager::CallbackStatus;
-
-namespace {
-
-const char kErrorStringStatusDbusError[] = "Service is unreachable.";
-const char kErrorStringStatusIdle[] = "Service is not running.";
-const char kErrorStringStatusLaunching[] = "Service busy launching.";
-
-std::string CallbackStatusToErrorMessage(const CallbackStatus& status) {
-  switch (status) {
-    case CallbackStatus::DBUS_ERROR:
-      return kErrorStringStatusDbusError;
-    case CallbackStatus::PROCESS_IDLE_ERROR:
-      return kErrorStringStatusIdle;
-    case CallbackStatus::PROCESS_LAUNCHING_ERROR:
-      return kErrorStringStatusLaunching;
-    case CallbackStatus::SUCCESS:
-      return "CallbackStatus success.";
-  }
-  NOTREACHED() << "Reached CallbackStatus not in switch.";
-  return "CallbackStatus string not found.";
-}
-
-}  // namespace
-
 MediaPerceptionPrivateGetStateFunction ::
     MediaPerceptionPrivateGetStateFunction() {}
 
@@ -49,12 +24,7 @@ MediaPerceptionPrivateGetStateFunction::Run() {
 }
 
 void MediaPerceptionPrivateGetStateFunction::GetStateCallback(
-    CallbackStatus status,
     media_perception::State state) {
-  if (status != CallbackStatus::SUCCESS) {
-    Respond(Error(CallbackStatusToErrorMessage(status)));
-    return;
-  }
   Respond(OneArgument(state.ToValue()));
 }
 
@@ -92,12 +62,7 @@ MediaPerceptionPrivateSetStateFunction::Run() {
 }
 
 void MediaPerceptionPrivateSetStateFunction::SetStateCallback(
-    CallbackStatus status,
     media_perception::State state) {
-  if (status != CallbackStatus::SUCCESS) {
-    Respond(Error(CallbackStatusToErrorMessage(status)));
-    return;
-  }
   Respond(OneArgument(state.ToValue()));
 }
 
@@ -118,12 +83,7 @@ MediaPerceptionPrivateGetDiagnosticsFunction::Run() {
 }
 
 void MediaPerceptionPrivateGetDiagnosticsFunction::GetDiagnosticsCallback(
-    CallbackStatus status,
     media_perception::Diagnostics diagnostics) {
-  if (status != CallbackStatus::SUCCESS) {
-    Respond(Error(CallbackStatusToErrorMessage(status)));
-    return;
-  }
   Respond(OneArgument(diagnostics.ToValue()));
 }
 

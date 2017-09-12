@@ -215,6 +215,7 @@ mri::State::Status StateStatusIdlToProto(const State& state) {
       return mri::State::SUSPENDED;
     case STATUS_RESTARTING:
       return mri::State::RESTARTING;
+    case STATUS_SERVICE_ERROR:
     case STATUS_NONE:
       return mri::State::STATUS_UNSPECIFIED;
   }
