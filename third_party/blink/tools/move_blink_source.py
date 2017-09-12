@@ -81,8 +81,8 @@ class MoveBlinkSource(object):
         self._append_unless_upper_dir_exists(dirs, self._fs.join(self._repo_root, 'third_party', 'WebKit', 'public'))
         self._update_cpp_includes_in_directories(dirs)
 
-        # TODO(tkent): Update basenames in generated files; *.tmpl,
-        # bindings/scripts/*.py
+        # TODO(tkent): Update basenames in generated files;
+        # bindings/scripts/*.py, build/scripts/*.py.
 
         # Content update for individual files
         self._update_single_file_content('third_party/WebKit/Source/config.gni',
@@ -100,6 +100,10 @@ class MoveBlinkSource(object):
             _, source_base = self._fs.split(source)
             _, dest_base = self._fs.split(dest)
             if source_base == dest_base:
+                continue
+            # ConditionalFeaturesForCore.* in bindings/tests/results/modules/
+            # confuses generated/checked-in detection in _replace_include_path().
+            if 'bindings/tests' in source.replace('\\', '/'):
                 continue
             basename_map[source_base] = dest_base
             pattern += re.escape(source_base) + '|'
@@ -214,7 +218,8 @@ class MoveBlinkSource(object):
         for dirname in dirs:
             _log.info('Processing #include in %s ...', self._shorten_path(dirname))
             files = self._fs.files_under(
-                dirname, file_filter=lambda fs, _, basename: basename.endswith(('.h', '.cc', '.cpp', '.mm')))
+                dirname, file_filter=lambda fs, _, basename: basename.endswith(
+                    ('.h', '.cc', '.cpp', '.mm', '.cpp.tmpl', '.h.tmpl')))
             for file_path in files:
                 original_content = self._fs.read_text_file(file_path)
 
