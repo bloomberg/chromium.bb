@@ -817,21 +817,6 @@ void ContentViewCore::DoubleTap(JNIEnv* env,
   SendGestureEvent(event);
 }
 
-void ContentViewCore::ResolveTapDisambiguation(JNIEnv* env,
-                                               const JavaParamRef<jobject>& obj,
-                                               jlong time_ms,
-                                               jfloat x,
-                                               jfloat y,
-                                               jboolean is_long_press) {
-  RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
-  if (!rwhv)
-    return;
-
-  rwhv->ResolveTapDisambiguation(time_ms / 1000.0,
-                                 gfx::Point(x / dpi_scale_, y / dpi_scale_),
-                                 is_long_press);
-}
-
 void ContentViewCore::PinchBegin(JNIEnv* env,
                                  const JavaParamRef<jobject>& obj,
                                  jlong time_ms,

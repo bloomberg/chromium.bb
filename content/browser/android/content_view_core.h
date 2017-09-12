@@ -132,13 +132,6 @@ class ContentViewCore : public WebContentsObserver {
                  jfloat x,
                  jfloat y);
 
-  void ResolveTapDisambiguation(JNIEnv* env,
-                                const base::android::JavaParamRef<jobject>& obj,
-                                jlong time_ms,
-                                jfloat x,
-                                jfloat y,
-                                jboolean is_long_press);
-
   void PinchBegin(JNIEnv* env,
                   const base::android::JavaParamRef<jobject>& obj,
                   jlong time_ms,
