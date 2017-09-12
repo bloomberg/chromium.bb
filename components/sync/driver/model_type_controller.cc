@@ -263,9 +263,8 @@ BridgeProvider ModelTypeController::GetBridgeProvider() {
   return base::Bind(&ReturnCapturedBridge, bridge);
 }
 
-void ModelTypeController::PostBridgeTask(
-    const tracked_objects::Location& location,
-    const BridgeTask& task) {
+void ModelTypeController::PostBridgeTask(const base::Location& location,
+                                         const BridgeTask& task) {
   model_thread_->PostTask(
       location, base::Bind(&RunBridgeTask, GetBridgeProvider(), task));
 }

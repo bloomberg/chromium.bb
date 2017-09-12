@@ -20,7 +20,7 @@ class TestUnrecoverableErrorHandler : public UnrecoverableErrorHandler {
   TestUnrecoverableErrorHandler();
   ~TestUnrecoverableErrorHandler() override;
 
-  void OnUnrecoverableError(const tracked_objects::Location& from_here,
+  void OnUnrecoverableError(const base::Location& from_here,
                             const std::string& message) override;
 
   base::WeakPtr<TestUnrecoverableErrorHandler> GetWeakPtr();

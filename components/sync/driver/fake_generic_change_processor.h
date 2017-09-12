@@ -28,7 +28,7 @@ class FakeGenericChangeProcessor : public GenericChangeProcessor {
   void set_sync_model_has_user_created_nodes_success(bool success);
 
   // GenericChangeProcessor implementations.
-  SyncError ProcessSyncChanges(const tracked_objects::Location& from_here,
+  SyncError ProcessSyncChanges(const base::Location& from_here,
                                const SyncChangeList& change_list) override;
   SyncError GetAllSyncDataReturnError(SyncDataList* data) const override;
   bool GetDataTypeContext(std::string* context) const override;

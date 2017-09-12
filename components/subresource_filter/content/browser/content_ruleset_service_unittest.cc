@@ -46,7 +46,7 @@ class TestContentBrowserClient : public ::content::ContentBrowserClient {
   TestContentBrowserClient() {}
 
   // ::content::ContentBrowserClient:
-  void PostAfterStartupTask(const tracked_objects::Location&,
+  void PostAfterStartupTask(const base::Location&,
                             const scoped_refptr<base::TaskRunner>& task_runner,
                             base::OnceClosure task) override {
     scoped_refptr<base::TaskRunner> ui_task_runner =

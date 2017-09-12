@@ -22,7 +22,7 @@ class DataTypeErrorHandlerMock : public DataTypeErrorHandler {
   ~DataTypeErrorHandlerMock() override;
 
   void OnUnrecoverableError(const SyncError& error) override;
-  SyncError CreateAndUploadError(const tracked_objects::Location& location,
+  SyncError CreateAndUploadError(const base::Location& location,
                                  const std::string& message,
                                  ModelType type) override;
   std::unique_ptr<DataTypeErrorHandler> Copy() const override;

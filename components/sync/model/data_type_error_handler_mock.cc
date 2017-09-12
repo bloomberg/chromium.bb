@@ -20,7 +20,7 @@ void DataTypeErrorHandlerMock::OnUnrecoverableError(const SyncError& error) {
 }
 
 SyncError DataTypeErrorHandlerMock::CreateAndUploadError(
-    const tracked_objects::Location& location,
+    const base::Location& location,
     const std::string& message,
     ModelType type) {
   return SyncError(location, SyncError::DATATYPE_ERROR, message, type);

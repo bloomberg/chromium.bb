@@ -17,7 +17,7 @@ class UnrecoverableErrorHandler {
   // syncer model are inconsistent, or similar.  The ProfileSyncService will
   // try to avoid doing any work to avoid crashing or corrupting things
   // further, and will report an error status if queried.
-  virtual void OnUnrecoverableError(const tracked_objects::Location& from_here,
+  virtual void OnUnrecoverableError(const base::Location& from_here,
                                     const std::string& message) = 0;
   virtual ~UnrecoverableErrorHandler() {}
 };

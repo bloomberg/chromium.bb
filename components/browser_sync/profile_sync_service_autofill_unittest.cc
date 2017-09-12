@@ -706,7 +706,7 @@ class AddAutofillHelper {
 // Overload write transaction to use custom NotifyTransactionComplete
 class WriteTransactionTest : public WriteTransaction {
  public:
-  WriteTransactionTest(const tracked_objects::Location& from_here,
+  WriteTransactionTest(const base::Location& from_here,
                        WriterTag writer,
                        syncer::syncable::Directory* directory,
                        WaitableEvent* wait_for_syncapi)

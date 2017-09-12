@@ -584,7 +584,7 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
                          service->HasUnrecoverableError());
 
   if (service->HasUnrecoverableError()) {
-    tracked_objects::Location loc(service->unrecoverable_error_location());
+    base::Location loc(service->unrecoverable_error_location());
     std::string location_str;
     loc.Write(true, true, &location_str);
     std::string unrecoverable_error_message =

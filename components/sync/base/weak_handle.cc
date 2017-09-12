@@ -22,9 +22,8 @@ bool WeakHandleCoreBase::IsOnOwnerThread() const {
 
 WeakHandleCoreBase::~WeakHandleCoreBase() {}
 
-void WeakHandleCoreBase::PostToOwnerThread(
-    const tracked_objects::Location& from_here,
-    const base::Closure& fn) const {
+void WeakHandleCoreBase::PostToOwnerThread(const base::Location& from_here,
+                                           const base::Closure& fn) const {
   if (!owner_loop_task_runner_->PostTask(from_here, fn)) {
     DVLOG(1) << "Could not post task from " << from_here.ToString();
   }

@@ -329,7 +329,7 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   virtual const GURL& sync_service_url() const = 0;
 
   virtual std::string unrecoverable_error_message() const = 0;
-  virtual tracked_objects::Location unrecoverable_error_location() const = 0;
+  virtual base::Location unrecoverable_error_location() const = 0;
 
   virtual void AddProtocolEventObserver(ProtocolEventObserver* observer) = 0;
   virtual void RemoveProtocolEventObserver(ProtocolEventObserver* observer) = 0;

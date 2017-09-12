@@ -55,9 +55,8 @@ void AddEntry(const ArticleEntry& e, EntryMap* map) {
 
 class FakeSyncErrorFactory : public syncer::SyncErrorFactory {
  public:
-  syncer::SyncError CreateAndUploadError(
-      const tracked_objects::Location& location,
-      const std::string& message) override {
+  syncer::SyncError CreateAndUploadError(const base::Location& location,
+                                         const std::string& message) override {
     return syncer::SyncError();
   }
 };
@@ -71,7 +70,7 @@ class FakeSyncChangeProcessor : public syncer::SyncChangeProcessor {
     return syncer::SyncDataList();
   }
 
-  SyncError ProcessSyncChanges(const tracked_objects::Location&,
+  SyncError ProcessSyncChanges(const base::Location&,
                                const syncer::SyncChangeList& changes) override {
     for (SyncChangeList::const_iterator it = changes.begin();
          it != changes.end(); ++it) {

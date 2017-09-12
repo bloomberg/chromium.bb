@@ -91,7 +91,7 @@ void TypedUrlDataTypeController::OnSavingBrowserHistoryDisabledChanged() {
 }
 
 bool TypedUrlDataTypeController::PostTaskOnModelThread(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const base::Closure& task) {
   DCHECK(CalledOnValidThread());
   history::HistoryService* history = sync_client_->GetHistoryService();

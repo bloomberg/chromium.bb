@@ -96,10 +96,9 @@ void JsMutationEventObserver::OnTransactionWrite(
   HandleJsEvent(FROM_HERE, "onTransactionWrite", JsEventDetails(&details));
 }
 
-void JsMutationEventObserver::HandleJsEvent(
-    const tracked_objects::Location& from_here,
-    const std::string& name,
-    const JsEventDetails& details) {
+void JsMutationEventObserver::HandleJsEvent(const base::Location& from_here,
+                                            const std::string& name,
+                                            const JsEventDetails& details) {
   if (!event_handler_.IsInitialized()) {
     NOTREACHED();
     return;

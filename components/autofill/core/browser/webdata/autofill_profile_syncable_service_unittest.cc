@@ -107,7 +107,7 @@ class MockSyncChangeProcessor : public syncer::SyncChangeProcessor {
   ~MockSyncChangeProcessor() override {}
 
   MOCK_METHOD2(ProcessSyncChanges,
-               syncer::SyncError(const tracked_objects::Location&,
+               syncer::SyncError(const base::Location&,
                                  const syncer::SyncChangeList&));
   syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override {
     return syncer::SyncDataList();
@@ -120,7 +120,7 @@ class TestSyncChangeProcessor : public syncer::SyncChangeProcessor {
   ~TestSyncChangeProcessor() override {}
 
   syncer::SyncError ProcessSyncChanges(
-      const tracked_objects::Location& location,
+      const base::Location& location,
       const syncer::SyncChangeList& changes) override {
     changes_ = changes;
     return syncer::SyncError();

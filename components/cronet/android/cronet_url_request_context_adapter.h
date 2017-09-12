@@ -68,7 +68,7 @@ class CronetURLRequestContextAdapter
 
   // Posts a task that might depend on the context being initialized
   // to the network thread.
-  void PostTaskToNetworkThread(const tracked_objects::Location& posted_from,
+  void PostTaskToNetworkThread(const base::Location& posted_from,
                                const base::Closure& callback);
 
   bool IsOnNetworkThread() const;

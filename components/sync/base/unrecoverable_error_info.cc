@@ -8,14 +8,13 @@ namespace syncer {
 
 UnrecoverableErrorInfo::UnrecoverableErrorInfo() : is_set_(false) {}
 
-UnrecoverableErrorInfo::UnrecoverableErrorInfo(
-    const tracked_objects::Location& location,
-    const std::string& message)
+UnrecoverableErrorInfo::UnrecoverableErrorInfo(const base::Location& location,
+                                               const std::string& message)
     : location_(location), message_(message), is_set_(true) {}
 
 UnrecoverableErrorInfo::~UnrecoverableErrorInfo() {}
 
-void UnrecoverableErrorInfo::Reset(const tracked_objects::Location& location,
+void UnrecoverableErrorInfo::Reset(const base::Location& location,
                                    const std::string& message) {
   location_ = location;
   message_ = message;
@@ -26,7 +25,7 @@ bool UnrecoverableErrorInfo::IsSet() const {
   return is_set_;
 }
 
-const tracked_objects::Location& UnrecoverableErrorInfo::location() const {
+const base::Location& UnrecoverableErrorInfo::location() const {
   return location_;
 }
 

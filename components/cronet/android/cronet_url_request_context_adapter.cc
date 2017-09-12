@@ -526,7 +526,7 @@ net::URLRequestContext* CronetURLRequestContextAdapter::GetURLRequestContext() {
 }
 
 void CronetURLRequestContextAdapter::PostTaskToNetworkThread(
-    const tracked_objects::Location& posted_from,
+    const base::Location& posted_from,
     const base::Closure& callback) {
   GetNetworkTaskRunner()->PostTask(
       posted_from, base::Bind(&CronetURLRequestContextAdapter::

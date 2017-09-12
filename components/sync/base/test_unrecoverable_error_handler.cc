@@ -14,7 +14,7 @@ TestUnrecoverableErrorHandler::TestUnrecoverableErrorHandler()
 TestUnrecoverableErrorHandler::~TestUnrecoverableErrorHandler() {}
 
 void TestUnrecoverableErrorHandler::OnUnrecoverableError(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const std::string& message) {
   ADD_FAILURE_AT(from_here.file_name(), from_here.line_number())
       << from_here.function_name() << ": " << message;

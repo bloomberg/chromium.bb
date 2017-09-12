@@ -150,7 +150,7 @@ class DomDistillerStore : public syncer::SyncableService,
   void StopSyncing(syncer::ModelType type) override;
   syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
   syncer::SyncError ProcessSyncChanges(
-      const tracked_objects::Location& from_here,
+      const base::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
 
  private:
@@ -185,7 +185,7 @@ class DomDistillerStore : public syncer::SyncableService,
                                 syncer::SyncChangeList* changes_to_apply,
                                 syncer::SyncChangeList* changes_missing);
 
-  bool ApplyChangesToSync(const tracked_objects::Location& from_here,
+  bool ApplyChangesToSync(const base::Location& from_here,
                           const syncer::SyncChangeList& change_list);
   bool ApplyChangesToDatabase(const syncer::SyncChangeList& change_list);
 

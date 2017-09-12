@@ -387,7 +387,7 @@ syncer::SyncDataList AutofillWalletMetadataSyncableService::GetAllSyncData(
 }
 
 syncer::SyncError AutofillWalletMetadataSyncableService::ProcessSyncChanges(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const syncer::SyncChangeList& changes_from_sync) {
   DCHECK(thread_checker_.CalledOnValidThread());
 

@@ -30,7 +30,7 @@ class ChangeProcessorMock : public ChangeProcessor {
   MOCK_METHOD0(StartImpl, void());
   MOCK_CONST_METHOD0(IsRunning, bool());
   MOCK_METHOD2(OnUnrecoverableError,
-               void(const tracked_objects::Location&, const std::string&));
+               void(const base::Location&, const std::string&));
 };
 
 }  // namespace syncer

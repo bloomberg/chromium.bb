@@ -102,7 +102,7 @@ class ProfileSyncComponentsFactoryImpl
                                syncer::ModelTypeSet enabled_types);
 
   void DisableBrokenType(syncer::ModelType type,
-                         const tracked_objects::Location& from_here,
+                         const base::Location& from_here,
                          const std::string& message);
 
   // Client/platform specific members.

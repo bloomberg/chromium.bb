@@ -65,9 +65,8 @@ void FakeModelTypeChangeProcessor::ReportError(const ModelError& error) {
   expect_error_ = false;
 }
 
-void FakeModelTypeChangeProcessor::ReportError(
-    const tracked_objects::Location& location,
-    const std::string& message) {
+void FakeModelTypeChangeProcessor::ReportError(const base::Location& location,
+                                               const std::string& message) {
   ReportError(ModelError(location, message));
 }
 

@@ -42,7 +42,7 @@ class DeviceInfoSyncService : public SyncableService, public DeviceInfoTracker {
       std::unique_ptr<SyncErrorFactory> error_handler) override;
   void StopSyncing(ModelType type) override;
   SyncDataList GetAllSyncData(ModelType type) const override;
-  SyncError ProcessSyncChanges(const tracked_objects::Location& from_here,
+  SyncError ProcessSyncChanges(const base::Location& from_here,
                                const SyncChangeList& change_list) override;
 
   // DeviceInfoTracker implementation.

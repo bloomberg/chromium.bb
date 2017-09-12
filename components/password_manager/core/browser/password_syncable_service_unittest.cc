@@ -167,8 +167,7 @@ class MockSyncChangeProcessor : public syncer::SyncChangeProcessor {
   MockSyncChangeProcessor() {}
 
   MOCK_METHOD2(ProcessSyncChanges,
-               SyncError(const tracked_objects::Location&,
-                         const SyncChangeList& list));
+               SyncError(const base::Location&, const SyncChangeList& list));
   SyncDataList GetAllSyncData(syncer::ModelType type) const override {
     NOTREACHED();
     return SyncDataList();

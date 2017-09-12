@@ -815,14 +815,13 @@ void ProfileSyncService::ClearStaleErrors() {
 void ProfileSyncService::ClearUnrecoverableError() {
   unrecoverable_error_reason_ = ERROR_REASON_UNSET;
   unrecoverable_error_message_.clear();
-  unrecoverable_error_location_ = tracked_objects::Location();
+  unrecoverable_error_location_ = base::Location();
 }
 
 // An invariant has been violated.  Transition to an error state where we try
 // to do as little work as possible, to avoid further corruption or crashes.
-void ProfileSyncService::OnUnrecoverableError(
-    const tracked_objects::Location& from_here,
-    const std::string& message) {
+void ProfileSyncService::OnUnrecoverableError(const base::Location& from_here,
+                                              const std::string& message) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Unrecoverable errors that arrive via the syncer::UnrecoverableErrorHandler
   // interface are assumed to originate within the syncer.
@@ -831,7 +830,7 @@ void ProfileSyncService::OnUnrecoverableError(
 }
 
 void ProfileSyncService::OnUnrecoverableErrorImpl(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const std::string& message,
     bool delete_sync_database) {
   DCHECK(HasUnrecoverableError());
@@ -2219,7 +2218,7 @@ const DataTypeStatusTable& ProfileSyncService::data_type_status_table() const {
 }
 
 void ProfileSyncService::OnInternalUnrecoverableError(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const std::string& message,
     bool delete_sync_database,
     UnrecoverableErrorReason reason) {
@@ -2382,8 +2381,7 @@ std::string ProfileSyncService::unrecoverable_error_message() const {
   return unrecoverable_error_message_;
 }
 
-tracked_objects::Location ProfileSyncService::unrecoverable_error_location()
-    const {
+base::Location ProfileSyncService::unrecoverable_error_location() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return unrecoverable_error_location_;
 }

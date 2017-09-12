@@ -107,9 +107,8 @@ base::SingleThreadTaskRunner* CronetEnvironment::GetNetworkThreadTaskRunner() {
   return ios_global_state::GetSharedNetworkIOThreadTaskRunner().get();
 }
 
-void CronetEnvironment::PostToNetworkThread(
-    const tracked_objects::Location& from_here,
-    const base::Closure& task) {
+void CronetEnvironment::PostToNetworkThread(const base::Location& from_here,
+                                            const base::Closure& task) {
   GetNetworkThreadTaskRunner()->PostTask(from_here, task);
 }
 

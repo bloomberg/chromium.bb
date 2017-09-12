@@ -30,7 +30,7 @@ void DataTypeErrorHandlerImpl::OnUnrecoverableError(const SyncError& error) {
 }
 
 SyncError DataTypeErrorHandlerImpl::CreateAndUploadError(
-    const tracked_objects::Location& location,
+    const base::Location& location,
     const std::string& message,
     ModelType type) {
   if (!dump_stack_.is_null())

@@ -347,7 +347,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // data. This may send notifications if local search engines are added,
   // updated or removed.
   syncer::SyncError ProcessSyncChanges(
-      const tracked_objects::Location& from_here,
+      const base::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
   // Merge initial search engine data from Sync and push any local changes up
   // to Sync. This may send notifications if local search engines are added,
@@ -364,7 +364,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // This may send a new SyncChange to the cloud. If our model has not yet been
   // associated with Sync, or if this is triggered by a Sync change, then this
   // does nothing.
-  void ProcessTemplateURLChange(const tracked_objects::Location& from_here,
+  void ProcessTemplateURLChange(const base::Location& from_here,
                                 const TemplateURL* turl,
                                 syncer::SyncChange::SyncChangeType type);
 

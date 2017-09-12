@@ -28,7 +28,7 @@ class MockTimer : public MockableTime::Timer {
   ~MockTimer() override {}
 
   // MockableTime::Timer implementation:
-  void Start(const tracked_objects::Location& posted_from,
+  void Start(const base::Location& posted_from,
              base::TimeDelta delay,
              const base::Closure& user_task) override {
     DCHECK(!user_task.is_null());

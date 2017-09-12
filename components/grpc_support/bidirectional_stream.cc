@@ -392,9 +392,8 @@ bool BidirectionalStream::IsOnNetworkThread() {
       ->BelongsToCurrentThread();
 }
 
-void BidirectionalStream::PostToNetworkThread(
-    const tracked_objects::Location& from_here,
-    const base::Closure& task) {
+void BidirectionalStream::PostToNetworkThread(const base::Location& from_here,
+                                              const base::Closure& task) {
   request_context_getter_->GetNetworkTaskRunner()->PostTask(from_here, task);
 }
 

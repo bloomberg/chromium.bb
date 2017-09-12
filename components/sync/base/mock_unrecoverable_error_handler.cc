@@ -12,7 +12,7 @@ MockUnrecoverableErrorHandler::MockUnrecoverableErrorHandler()
 MockUnrecoverableErrorHandler::~MockUnrecoverableErrorHandler() {}
 
 void MockUnrecoverableErrorHandler::OnUnrecoverableError(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const std::string& message) {
   ++invocation_count_;
 }

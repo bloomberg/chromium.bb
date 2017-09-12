@@ -16,20 +16,19 @@ namespace syncer {
 class UnrecoverableErrorInfo {
  public:
   UnrecoverableErrorInfo();
-  UnrecoverableErrorInfo(const tracked_objects::Location& location,
+  UnrecoverableErrorInfo(const base::Location& location,
                          const std::string& message);
   ~UnrecoverableErrorInfo();
 
-  void Reset(const tracked_objects::Location& location,
-             const std::string& message);
+  void Reset(const base::Location& location, const std::string& message);
 
   bool IsSet() const;
 
-  const tracked_objects::Location& location() const;
+  const base::Location& location() const;
   const std::string& message() const;
 
  private:
-  tracked_objects::Location location_;
+  base::Location location_;
   std::string message_;
   bool is_set_;
 };

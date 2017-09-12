@@ -146,7 +146,7 @@ SyncDataList DeviceInfoSyncService::GetAllSyncData(ModelType type) const {
 }
 
 SyncError DeviceInfoSyncService::ProcessSyncChanges(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const SyncChangeList& change_list) {
   SyncError error;
 
