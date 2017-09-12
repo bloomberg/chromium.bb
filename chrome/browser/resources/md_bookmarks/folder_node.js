@@ -102,9 +102,9 @@ Polymer({
    * @param {!Event} e
    */
   onKeydown_: function(e) {
-    var yDirection = 0;
-    var xDirection = 0;
-    var handled = true;
+    let yDirection = 0;
+    let xDirection = 0;
+    let handled = true;
     if (e.key == 'ArrowUp') {
       yDirection = -1;
     } else if (e.key == 'ArrowDown') {
@@ -142,8 +142,8 @@ Polymer({
    * @param {!HTMLElement} currentFocus
    */
   changeKeyboardSelection_: function(xDirection, yDirection, currentFocus) {
-    var newFocusFolderNode = null;
-    var isChildFolderNodeFocused =
+    let newFocusFolderNode = null;
+    const isChildFolderNodeFocused =
         currentFocus.tagName == 'BOOKMARKS-FOLDER-NODE';
 
     if (xDirection == 1) {
@@ -163,7 +163,7 @@ Polymer({
       if (this.hasChildFolder_ && this.isOpen) {
         this.dispatch(bookmarks.actions.changeFolderOpen(this.item_.id, false));
       } else {
-        var parentFolderNode = this.getParentFolderNode_();
+        const parentFolderNode = this.getParentFolderNode_();
         if (parentFolderNode.itemId != ROOT_NODE_ID) {
           parentFolderNode.selectFolder_();
           parentFolderNode.getFocusTarget().focus();
@@ -176,7 +176,7 @@ Polymer({
 
     // The current node's successor is its first child when open.
     if (!isChildFolderNodeFocused && yDirection == 1 && this.isOpen) {
-      var children = this.getChildFolderNodes_();
+      const children = this.getChildFolderNodes_();
       if (children.length)
         newFocusFolderNode = children[0];
     }
@@ -219,10 +219,10 @@ Polymer({
    *     before/after |child|.
    */
   getNextChild_: function(reverse, child) {
-    var newFocus = null;
-    var children = this.getChildFolderNodes_();
+    let newFocus = null;
+    const children = this.getChildFolderNodes_();
 
-    var index = children.indexOf(child);
+    const index = children.indexOf(child);
     assert(index != -1);
     if (reverse) {
       // A child node's predecessor is either the previous child's last visible
@@ -243,7 +243,7 @@ Polymer({
    * @return {BookmarksFolderNodeElement|null}
    */
   getParentFolderNode_: function() {
-    var parentFolderNode = this.parentNode;
+    let parentFolderNode = this.parentNode;
     while (parentFolderNode &&
            parentFolderNode.tagName != 'BOOKMARKS-FOLDER-NODE') {
       parentFolderNode = parentFolderNode.parentNode || parentFolderNode.host;
@@ -256,7 +256,7 @@ Polymer({
    * @return {BookmarksFolderNodeElement}
    */
   getLastVisibleDescendant_: function() {
-    var children = this.getChildFolderNodes_();
+    const children = this.getChildFolderNodes_();
     if (!this.isOpen || children.length == 0)
       return this;
 

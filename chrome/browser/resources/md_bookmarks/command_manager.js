@@ -8,7 +8,7 @@
  */
 cr.define('bookmarks', function() {
 
-  var CommandManager = Polymer({
+  const CommandManager = Polymer({
     is: 'bookmarks-command-manager',
 
     behaviors: [
@@ -124,7 +124,7 @@ cr.define('bookmarks', function() {
       this.menuSource_ = source;
       this.menuIds_ = items || this.getState().selection.items;
 
-      var dropdown =
+      const dropdown =
           /** @type {!CrActionMenuElement} */ (this.$.dropdown.get());
       // Ensure that the menu is fully rendered before trying to position it.
       Polymer.dom.flush();
@@ -144,7 +144,7 @@ cr.define('bookmarks', function() {
       this.menuSource_ = source;
       this.menuIds_ = this.getState().selection.items;
 
-      var dropdown =
+      const dropdown =
           /** @type {!CrActionMenuElement} */ (this.$.dropdown.get());
       // Ensure that the menu is fully rendered before trying to position it.
       Polymer.dom.flush();
@@ -172,7 +172,7 @@ cr.define('bookmarks', function() {
      * @return {boolean}
      */
     canExecute: function(command, itemIds) {
-      var state = this.getState();
+      const state = this.getState();
       switch (command) {
         case Command.OPEN:
           return itemIds.size > 0;
@@ -237,7 +237,7 @@ cr.define('bookmarks', function() {
       switch (command) {
         case Command.EDIT:
         case Command.DELETE:
-          var state = this.getState();
+          const state = this.getState();
           return !this.containsMatchingNode_(itemIds, function(node) {
             return !bookmarks.util.canEditNode(state, node.id);
           });
@@ -258,18 +258,19 @@ cr.define('bookmarks', function() {
      * @param {!Set<string>} itemIds
      */
     handle: function(command, itemIds) {
-      var state = this.getState();
+      const state = this.getState();
       switch (command) {
-        case Command.EDIT:
-          var id = Array.from(itemIds)[0];
+        case Command.EDIT: {
+          let id = Array.from(itemIds)[0];
           /** @type {!BookmarksEditDialogElement} */ (this.$.editDialog.get())
               .showEditDialog(state.nodes[id]);
           break;
+        }
         case Command.COPY_URL:
-        case Command.COPY:
-          var idList = Array.from(itemIds);
+        case Command.COPY: {
+          let idList = Array.from(itemIds);
           chrome.bookmarkManagerPrivate.copy(idList, () => {
-            var labelPromise;
+            let labelPromise;
             if (command == Command.COPY_URL) {
               labelPromise =
                   Promise.resolve(loadTimeData.getString('toastUrlCopied'));
@@ -285,17 +286,19 @@ cr.define('bookmarks', function() {
                 labelPromise, state.nodes[idList[0]].title, false);
           });
           break;
-        case Command.SHOW_IN_FOLDER:
-          var id = Array.from(itemIds)[0];
+        }
+        case Command.SHOW_IN_FOLDER: {
+          let id = Array.from(itemIds)[0];
           this.dispatch(bookmarks.actions.selectFolder(
               assert(state.nodes[id].parentId), state.nodes));
           bookmarks.DialogFocusManager.getInstance().clearFocus();
           this.fire('highlight-items', [id]);
           break;
-        case Command.DELETE:
-          var idList = Array.from(this.minimizeDeletionSet_(itemIds));
-          var title = state.nodes[idList[0]].title;
-          var labelPromise;
+        }
+        case Command.DELETE: {
+          let idList = Array.from(this.minimizeDeletionSet_(itemIds));
+          const title = state.nodes[idList[0]].title;
+          let labelPromise;
 
           if (idList.length == 1) {
             labelPromise =
@@ -309,6 +312,7 @@ cr.define('bookmarks', function() {
             this.showTitleToast_(labelPromise, title, true);
           });
           break;
+        }
         case Command.UNDO:
           chrome.bookmarkManagerPrivate.undo();
           bookmarks.ToastManager.getInstance().hide();
@@ -322,12 +326,12 @@ cr.define('bookmarks', function() {
           this.openUrls_(this.expandUrls_(itemIds), command);
           break;
         case Command.OPEN:
-          var isFolder = itemIds.size == 1 &&
+          const isFolder = itemIds.size == 1 &&
               this.containsMatchingNode_(itemIds, function(node) {
                 return !node.url;
               });
           if (isFolder) {
-            var folderId = Array.from(itemIds)[0];
+            const folderId = Array.from(itemIds)[0];
             this.dispatch(
                 bookmarks.actions.selectFolder(folderId, state.nodes));
           } else {
@@ -335,7 +339,7 @@ cr.define('bookmarks', function() {
           }
           break;
         case Command.SELECT_ALL:
-          var displayedIds = bookmarks.util.getDisplayedList(state);
+          const displayedIds = bookmarks.util.getDisplayedList(state);
           this.dispatch(bookmarks.actions.selectAll(displayedIds, state));
           break;
         case Command.DESELECT_ALL:
@@ -345,8 +349,8 @@ cr.define('bookmarks', function() {
           chrome.bookmarkManagerPrivate.cut(Array.from(itemIds));
           break;
         case Command.PASTE:
-          var selectedFolder = state.selectedFolder;
-          var selectedItems = state.selection.items;
+          const selectedFolder = state.selectedFolder;
+          const selectedItems = state.selection.items;
           bookmarks.ApiListener.trackUpdatedItems();
           chrome.bookmarkManagerPrivate.paste(
               selectedFolder, Array.from(selectedItems),
@@ -367,9 +371,9 @@ cr.define('bookmarks', function() {
      *     shortcut.
      */
     handleKeyEvent: function(e, itemIds) {
-      for (var commandTuple of this.shortcuts_) {
-        var command = /** @type {Command} */ (commandTuple[0]);
-        var shortcut =
+      for (const commandTuple of this.shortcuts_) {
+        const command = /** @type {Command} */ (commandTuple[0]);
+        const shortcut =
             /** @type {cr.ui.KeyboardShortcutList} */ (commandTuple[1]);
         if (shortcut.matchesEvent(e) && this.canExecute(command, itemIds)) {
           this.handle(command, itemIds);
@@ -398,7 +402,7 @@ cr.define('bookmarks', function() {
      *     Mac.
      */
     addShortcut_: function(command, shortcut, macShortcut) {
-      var shortcut = (cr.isMac && macShortcut) ? macShortcut : shortcut;
+      shortcut = (cr.isMac && macShortcut) ? macShortcut : shortcut;
       this.shortcuts_.set(command, new cr.ui.KeyboardShortcutList(shortcut));
     },
 
@@ -412,10 +416,10 @@ cr.define('bookmarks', function() {
      * @return {!Set<string>}
      */
     minimizeDeletionSet_: function(itemIds) {
-      var minimizedSet = new Set();
-      var nodes = this.getState().nodes;
+      const minimizedSet = new Set();
+      const nodes = this.getState().nodes;
       itemIds.forEach(function(itemId) {
-        var currentId = itemId;
+        let currentId = itemId;
         while (currentId != ROOT_NODE_ID) {
           currentId = assert(nodes[currentId].parentId);
           if (itemIds.has(currentId))
@@ -442,8 +446,8 @@ cr.define('bookmarks', function() {
       if (urls.length == 0)
         return;
 
-      var openUrlsCallback = function() {
-        var incognito = command == Command.OPEN_INCOGNITO;
+      const openUrlsCallback = function() {
+        const incognito = command == Command.OPEN_INCOGNITO;
         if (command == Command.OPEN_NEW_WINDOW || incognito) {
           chrome.windows.create({url: urls, incognito: incognito});
         } else {
@@ -461,7 +465,7 @@ cr.define('bookmarks', function() {
       }
 
       this.confirmOpenCallback_ = openUrlsCallback;
-      var dialog = this.$.openDialog.get();
+      const dialog = this.$.openDialog.get();
       dialog.querySelector('[slot=body]').textContent =
           loadTimeData.getStringF('openDialogBody', urls.length);
 
@@ -479,16 +483,16 @@ cr.define('bookmarks', function() {
      * @private
      */
     expandUrls_: function(itemIds) {
-      var urls = [];
-      var nodes = this.getState().nodes;
+      const urls = [];
+      const nodes = this.getState().nodes;
 
       itemIds.forEach(function(id) {
-        var node = nodes[id];
+        const node = nodes[id];
         if (node.url) {
           urls.push(node.url);
         } else {
           node.children.forEach(function(childId) {
-            var childNode = nodes[childId];
+            const childNode = nodes[childId];
             if (childNode.url)
               urls.push(childNode.url);
           });
@@ -505,7 +509,7 @@ cr.define('bookmarks', function() {
      *     |predicate|.
      */
     containsMatchingNode_: function(itemIds, predicate) {
-      var nodes = this.getState().nodes;
+      const nodes = this.getState().nodes;
 
       return Array.from(itemIds).some(function(id) {
         return predicate(nodes[id]);
@@ -530,18 +534,18 @@ cr.define('bookmarks', function() {
      * @private
      */
     getCommandLabel_: function(command) {
-      var multipleNodes = this.menuIds_.size > 1 ||
+      const multipleNodes = this.menuIds_.size > 1 ||
           this.containsMatchingNode_(this.menuIds_, function(node) {
             return !node.url;
           });
-      var label;
+      let label;
       switch (command) {
         case Command.EDIT:
           if (this.menuIds_.size != 1)
             return '';
 
-          var id = Array.from(this.menuIds_)[0];
-          var itemUrl = this.getState().nodes[id].url;
+          const id = Array.from(this.menuIds_)[0];
+          const itemUrl = this.getState().nodes[id].url;
           label = itemUrl ? 'menuEdit' : 'menuRename';
           break;
         case Command.COPY_URL:
@@ -573,13 +577,13 @@ cr.define('bookmarks', function() {
      * @private
      */
     getCommandSublabel_: function(command) {
-      var multipleNodes = this.menuIds_.size > 1 ||
+      const multipleNodes = this.menuIds_.size > 1 ||
           this.containsMatchingNode_(this.menuIds_, function(node) {
             return !node.url;
           });
       switch (command) {
         case Command.OPEN_NEW_TAB:
-          var urls = this.expandUrls_(this.menuIds_);
+          const urls = this.expandUrls_(this.menuIds_);
           return multipleNodes && urls.length > 0 ? String(urls.length) : '';
         default:
           return '';
@@ -616,12 +620,12 @@ cr.define('bookmarks', function() {
      */
     showTitleToast_: function(labelPromise, title, canUndo) {
       labelPromise.then(function(label) {
-        var pieces = loadTimeData.getSubstitutedStringPieces(label, title)
-                         .map(function(p) {
-                           // Make the bookmark name collapsible.
-                           p.collapsible = !!p.arg;
-                           return p;
-                         });
+        const pieces = loadTimeData.getSubstitutedStringPieces(label, title)
+                           .map(function(p) {
+                             // Make the bookmark name collapsible.
+                             p.collapsible = !!p.arg;
+                             return p;
+                           });
 
         bookmarks.ToastManager.getInstance().showForStringPieces(
             pieces, canUndo);
@@ -660,7 +664,7 @@ cr.define('bookmarks', function() {
      * @private
      */
     onKeydown_: function(e) {
-      var selection = this.getState().selection.items;
+      const selection = this.getState().selection.items;
       if (e.target == document.body &&
           !bookmarks.DialogFocusManager.getInstance().hasOpenDialog()) {
         this.handleKeyEvent(e, selection);

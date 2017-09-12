@@ -29,7 +29,7 @@ Polymer({
     if (this.showing_)
       return;
 
-    var isFolder = !dragItem.url;
+    const isFolder = !dragItem.url;
     this.isMultiItem_ = items.length > 1;
 
     this.$.icon.className = isFolder ? 'folder-icon' : 'website-icon';

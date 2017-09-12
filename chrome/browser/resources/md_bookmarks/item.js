@@ -138,7 +138,7 @@ Polymer({
     // Ignore double clicks so that Ctrl double-clicking an item won't deselect
     // the item before opening.
     if (e.detail != 2) {
-      var addKey = cr.isMac ? e.metaKey : e.ctrlKey;
+      const addKey = cr.isMac ? e.metaKey : e.ctrlKey;
       this.dispatch(bookmarks.actions.selectItem(this.itemId, this.getState(), {
         clear: !addKey,
         range: e.shiftKey,
@@ -168,8 +168,8 @@ Polymer({
     if (!this.isSelectedItem_)
       this.selectThisItem_();
 
-    var commandManager = bookmarks.CommandManager.getInstance();
-    var itemSet = this.getState().selection.items;
+    const commandManager = bookmarks.CommandManager.getInstance();
+    const itemSet = this.getState().selection.items;
     if (commandManager.canExecute(Command.OPEN, itemSet))
       commandManager.handle(Command.OPEN, itemSet);
   },
@@ -186,9 +186,9 @@ Polymer({
     if (this.isFolder_)
       return;
 
-    var commandManager = bookmarks.CommandManager.getInstance();
-    var itemSet = this.getState().selection.items;
-    var command = e.shiftKey ? Command.OPEN : Command.OPEN_NEW_TAB;
+    const commandManager = bookmarks.CommandManager.getInstance();
+    const itemSet = this.getState().selection.items;
+    const command = e.shiftKey ? Command.OPEN : Command.OPEN_NEW_TAB;
     if (commandManager.canExecute(command, itemSet))
       commandManager.handle(command, itemSet);
   },

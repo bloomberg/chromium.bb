@@ -44,11 +44,11 @@ Polymer({
     });
 
     chrome.bookmarks.getTree((results) => {
-      var nodeMap = bookmarks.util.normalizeNodes(results[0]);
-      var initialState = bookmarks.util.createEmptyState();
+      const nodeMap = bookmarks.util.normalizeNodes(results[0]);
+      const initialState = bookmarks.util.createEmptyState();
       initialState.nodes = nodeMap;
       initialState.selectedFolder = nodeMap[ROOT_NODE_ID].children[0];
-      var folderStateString =
+      const folderStateString =
           window.localStorage[LOCAL_STORAGE_FOLDER_STATE_KEY];
       initialState.folderOpenState = folderStateString ?
           new Map(
@@ -86,9 +86,9 @@ Polymer({
    * @private
    */
   initializeSplitter_: function() {
-    var splitter = this.$.splitter;
+    const splitter = this.$.splitter;
     cr.ui.Splitter.decorate(splitter);
-    var splitterTarget = this.$.sidebar;
+    const splitterTarget = this.$.sidebar;
 
     // The splitter persists the size of the left component in the local store.
     if (LOCAL_STORAGE_TREE_WIDTH_KEY in window.localStorage) {
@@ -120,7 +120,7 @@ Polymer({
       return;
 
     chrome.bookmarks.search(this.searchTerm_, (results) => {
-      var ids = results.map(function(node) {
+      const ids = results.map(function(node) {
         return node.id;
       });
       this.dispatch(bookmarks.actions.setSearchResults(ids));

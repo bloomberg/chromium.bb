@@ -49,8 +49,8 @@ Polymer({
 
   /** @private */
   onQueryParamsChanged_: function() {
-    var searchTerm = this.queryParams_.q || '';
-    var selectedId = this.queryParams_.id;
+    const searchTerm = this.queryParams_.q || '';
+    let selectedId = this.queryParams_.id;
     if (!selectedId && !searchTerm)
       selectedId = BOOKMARKS_BAR_ID;
 

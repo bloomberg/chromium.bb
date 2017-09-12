@@ -55,7 +55,7 @@ cr.define('bookmarks', function() {
 
     /** @param {!StoreObserver} observer */
     removeObserver: function(observer) {
-      var index = this.observers_.indexOf(observer);
+      const index = this.observers_.indexOf(observer);
       this.observers_.splice(index, 1);
     },
 

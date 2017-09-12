@@ -69,7 +69,7 @@ cr.define('bookmarks', function() {
      * @private
      */
     getFocusedElement_: function() {
-      var focus = document.activeElement;
+      let focus = document.activeElement;
       while (focus.root && focus.root.activeElement)
         focus = focus.root.activeElement;
 
@@ -82,7 +82,7 @@ cr.define('bookmarks', function() {
      * @private
      */
     getCloseListener_: function(dialog) {
-      var closeListener = (e) => {
+      const closeListener = (e) => {
         // If the dialog is open, then it got reshown immediately and we
         // shouldn't clear it until it is closed again.
         if (dialog.open)

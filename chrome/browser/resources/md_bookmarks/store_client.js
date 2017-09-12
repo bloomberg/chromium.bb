@@ -12,7 +12,7 @@ cr.define('bookmarks', function() {
    * @polymerBehavior
    * @implements {StoreObserver}
    */
-  var StoreClient = {
+  const StoreClient = {
     created: function() {
       /**
        * @type {!Array<{
@@ -80,8 +80,8 @@ cr.define('bookmarks', function() {
     /** @param {string} newState */
     onStateChanged: function(newState) {
       this.watches_.forEach((watch) => {
-        var oldValue = this[watch.localProperty];
-        var newValue = watch.valueGetter(newState);
+        const oldValue = this[watch.localProperty];
+        const newValue = watch.valueGetter(newState);
 
         // Avoid poking Polymer unless something has actually changed. Reducers
         // must return new objects rather than mutating existing objects, so

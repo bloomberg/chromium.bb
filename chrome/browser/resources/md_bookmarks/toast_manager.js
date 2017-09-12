@@ -7,7 +7,7 @@
  */
 cr.define('bookmarks', function() {
 
-  var ToastManager = Polymer({
+  const ToastManager = Polymer({
     is: 'bookmarks-toast-manager',
 
     properties: {
@@ -62,13 +62,13 @@ cr.define('bookmarks', function() {
      * @param {boolean} showUndo Whether the undo button should be shown.
      */
     showForStringPieces: function(pieces, showUndo) {
-      var content = this.$.content;
+      const content = this.$.content;
       content.textContent = '';
       pieces.forEach(function(p) {
         if (p.value.length == 0)
           return;
 
-        var span = document.createElement('span');
+        const span = document.createElement('span');
         span.textContent = p.value;
         if (p.collapsible)
           span.classList.add('collapsible');
