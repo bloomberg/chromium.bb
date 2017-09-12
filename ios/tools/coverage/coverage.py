@@ -17,7 +17,7 @@
     Generate code coverage report for |target| and restrict the results to
     |path1| and |path2|.
 
-  For more info, please refer to ios/tools/coverage/coverage.py -h
+  For more options, please refer to ios/tools/coverage/coverage.py -h
 
 """
 
@@ -26,7 +26,6 @@ import sys
 import argparse
 import collections
 import ConfigParser
-import json
 import os
 import subprocess
 
@@ -93,18 +92,16 @@ def _DisplayLineCoverageReport(target, profdata_path, filter_paths):
     profdata_path: A string representing the path to the profdata file.
     filter_paths: A list of directories used to restrict code coverage results.
   """
-  print 'Generating code coverge report'
-  coverage_json = _ExportCodeCoverageToJson(target, profdata_path)
-  raw_line_coverage_report = _GenerateLineCoverageReport(coverage_json)
+  print 'Generating line code coverge report'
+  raw_line_coverage_report = _GenerateLineCoverageReport(target, profdata_path)
   line_coverage_report = _FilterLineCoverageReport(raw_line_coverage_report,
                                                    filter_paths)
 
   coverage_by_filter = collections.defaultdict(
       lambda: collections.defaultdict(lambda: 0))
-  for coverage_file in line_coverage_report:
-    file_name = coverage_file['filename']
-    total_lines = coverage_file['summary']['count']
-    executed_lines = coverage_file['summary']['covered']
+  for file_name in line_coverage_report:
+    total_lines = line_coverage_report[file_name]['total_lines']
+    executed_lines = line_coverage_report[file_name]['executed_lines']
 
     matched_filter_paths = _MatchFilePathWithDirectories(file_name,
                                                          filter_paths)
@@ -128,8 +125,28 @@ def _DisplayLineCoverageReport(target, profdata_path, filter_paths):
                             coverage_by_filter['aggregate']['executed_lines'])
 
 
-def _ExportCodeCoverageToJson(target, profdata_path):
-  """Exports code coverage data.
+def _GenerateLineCoverageReport(target, profdata_path):
+  """Generate code coverage report using llvm-cov report.
+
+  The officially suggested command to export code coverage data is to use
+  "llvm-cov export", which returns comprehensive code coverage data in a json
+  object, however, due to the large size and complicated dependencies of
+  Chrome, "llvm-cov export" takes too long to run, and for example, it takes 5
+  minutes for ios_chrome_unittests. Therefore, this script gets code coverage
+  data by calling "llvm-cov report", which is significantly faster and provides
+  the same data.
+
+  The raw code coverage report returned from "llvm-cov report" has the following
+  format:
+  Filename\tRegions\tMissed Regions\tCover\tFunctions\tMissed Functions\t
+  Executed\tInstantiations\tMissed Insts.\tLines\tMissed Lines\tCover
+  ------------------------------------------------------------------------------
+  ------------------------------------------------------------------------------
+  base/at_exit.cc\t89\t85\t4.49%\t7\t6\t14.29%\t7\t6\t14.29%\t107\t99\t7.48%
+  url/pathurl.cc\t89\t85\t4.49%\t7\t6\t14.29%\t7\t6\t14.29%\t107\t99\t7.48%
+  ------------------------------------------------------------------------------
+  ------------------------------------------------------------------------------
+  In Total\t89\t85\t4.49%\t7\t6\t14.29%\t7\t6\t14.29%\t107\t99\t7.48%
 
   Args:
     target: A string representing the name of the target to be tested.
@@ -137,46 +154,44 @@ def _ExportCodeCoverageToJson(target, profdata_path):
 
   Returns:
     A json object whose format can be found at:
-    https://github.com/llvm-mirror/llvm/blob/master/tools/llvm-cov/CoverageExporterJson.cpp.
+
+    Root: dict => A dictionary of objects describing line covearge for files
+    -- file_name: dict => Line coverage summary.
+    ---- total_lines: int => Number of total lines.
+    ---- executed_lines: int => Number of executed lines.
   """
   application_path = _GetApplicationBundlePath(target)
   binary_path = os.path.join(application_path, target)
-  cmd = ['xcrun', 'llvm-cov', 'export', '-instr-profile', profdata_path,
+  cmd = ['xcrun', 'llvm-cov', 'report', '-instr-profile', profdata_path,
          '-arch=x86_64', binary_path]
   std_out = subprocess.check_output(cmd)
-  return json.loads(std_out)
+  std_out_by_lines = std_out.split('\n')
 
+  # Strip out the unrelated lines. The 1st line is the header and the 2nd line
+  # is a '-' separator line. The last line is an empty line break, the second
+  # to last line is the in total coverage and the third to last line is a '-'
+  # separator line.
+  coverage_content_by_files = std_out_by_lines[2: -3]
 
-def _GenerateLineCoverageReport(coverage_json):
-  """Generates a line coverage report out of exported coverage json data.
+  # The 3rd to last column contains the total number of lines.
+  total_lines_index = -3
 
-  Args:
-    coverage_json: A json object whose format can be found at:
-        https://github.com/llvm-mirror/llvm/blob/master/tools/llvm-cov/CoverageExporterJson.cpp.
+  # The 2nd to last column contains the missed number of lines.
+  missed_lines_index = -2
 
-  Returns:
-    A json object with the following format:
+  line_coverage_report = collections.defaultdict(
+      lambda: collections.defaultdict(lambda: 0))
+  for coverage_content in coverage_content_by_files:
+    coverage_data = coverage_content.split()
+    file_name = coverage_data[0]
+    total_lines = int(coverage_data[total_lines_index])
+    missed_lines = int(coverage_data[missed_lines_index])
+    executed_lines = total_lines - missed_lines
 
-    Root: array => List of objects describing line covearge summary for files
-    -- File: dict => Line coverage summary for a single file
-    ---- FileName: str => Name of tis file
-    ---- Summary: dict => Object summarizing the line coverage for this file
-  """
-  assert len(coverage_json['data']) == 1, ('There should be only one export '
-                                           'object for a single target.')
-  coverage_data = coverage_json['data'][0]
-  coverage_files = coverage_data['files']
+    line_coverage_report[file_name]['total_lines'] = total_lines
+    line_coverage_report[file_name]['executed_lines'] = executed_lines
 
-  coverage_lines_report = []
-  for coverage_file in coverage_files:
-    summary_lines = coverage_file['summary']['lines']
-    coverage_lines_file = {
-        'filename': coverage_file['filename'],
-        'summary': summary_lines
-    }
-    coverage_lines_report.append(coverage_lines_file)
-
-  return coverage_lines_report
+  return line_coverage_report
 
 
 def _FilterLineCoverageReport(raw_report, filter_paths):
@@ -184,25 +199,24 @@ def _FilterLineCoverageReport(raw_report, filter_paths):
 
   Args:
     raw_report: A json object with the following format:
-      Root: array => List of objects describing line covearge summary for files
-      -- File: dict => Line coverage summary for a single file
-      ---- FileName: str => Name of this file
-      ---- Summary: dict => Object summarizing the line coverage for this file
+      Root: dict => A dictionary of objects describing line covearge for files
+      -- file_name: dict => Line coverage summary.
+      ---- total_lines: int => Number of total lines.
+      ---- executed_lines: int => Number of executed lines.
     filter_paths: A list of directories used to restrict code coverage results.
 
   Returns:
     A json object with the following format:
 
-    Root: array => List of objects describing line covearge summary for files
-    -- File: dict => Line coverage summary for a single file
-    ---- FileName: str => Name of this file
-    ---- Summary: dict => Object summarizing the line coverage for this file
+    Root: dict => A dictionary of objects describing line covearge for files
+    -- file_name: dict => Line coverage summary.
+    ---- total_lines: int => Number of total lines.
+    ---- executed_lines: int => Number of executed lines.
   """
-  filtered_report = []
-  for coverage_lines_file in raw_report:
-    file_name = coverage_lines_file['filename']
+  filtered_report = {}
+  for file_name in raw_report:
     if _MatchFilePathWithDirectories(file_name, filter_paths):
-      filtered_report.append(coverage_lines_file)
+      filtered_report[file_name] = raw_report[file_name]
 
   return filtered_report
 
