@@ -22,6 +22,7 @@ source_set("exo") {
     "data_source_delegate.h",
     "display.cc",
     "display.h",
+    "gaming_seat.cc",
     "gaming_seat.h",
     "keyboard.cc",
     "keyboard.h",
@@ -75,23 +76,16 @@ source_set("exo") {
     "//ui/compositor",
     "//ui/display/manager",
     "//ui/events/devices:devices",
+    "//ui/events/ozone:events_ozone_evdev",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl",
+    "//ui/ozone",
     "//ui/views",
     "//ui/views/mus",
     "//ui/wm",
     "//ui/wm/public",
   ]
-
-  if (enable_exo_ozone_gamepad) {
-    defines = [ "USE_OZONE_GAMEPAD" ]
-    sources += [ "gaming_seat_ozone.cc" ]
-    deps += [ "//ui/ozone" ]
-    deps += [ "//ui/events/ozone:events_ozone_evdev" ]
-  } else {
-    sources += [ "gaming_seat.cc" ]
-  }
 
   if (is_chromeos) {
     deps += [ "//chromeos" ]
@@ -128,10 +122,12 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "../../ui/events/ozone/gamepad/gamepad_event.cc",
     "buffer_unittest.cc",
     "data_device_unittest.cc",
     "data_offer_unittest.cc",
     "display_unittest.cc",
+    "gaming_seat_unittest.cc",
     "keyboard_unittest.cc",
     "pointer_unittest.cc",
     "shared_memory_unittest.cc",
@@ -163,6 +159,7 @@ source_set("unit_tests") {
     "//ui/compositor:test_support",
     "//ui/events:dom_keycode_converter",
     "//ui/events:test_support",
+    "//ui/events/ozone:events_ozone_evdev",
     "//ui/gfx",
     "//ui/keyboard",
     "//ui/message_center",
@@ -172,14 +169,6 @@ source_set("unit_tests") {
 
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
-  }
-
-  if (enable_exo_ozone_gamepad) {
-    sources += [
-      "../../ui/events/ozone/gamepad/gamepad_event.cc",
-      "gaming_seat_unittest.cc",
-    ]
-    deps += [ "//ui/events/ozone:events_ozone_evdev" ]
   }
 }
 

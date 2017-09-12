@@ -46,7 +46,7 @@ class GamingSeatTest : public test::ExoTestBase {
  public:
   GamingSeatTest() {}
   void InitializeGamingSeat(MockGamingSeatDelegate* delegate) {
-    gaming_seat_.reset(new GamingSeat(delegate, nullptr));
+    gaming_seat_.reset(new GamingSeat(delegate));
   }
 
   void DestroyGamingSeat(MockGamingSeatDelegate* delegate) {
