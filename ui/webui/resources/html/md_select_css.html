@@ -56,37 +56,35 @@
       .md-select-underline {
         -webkit-margin-end: 0;
         -webkit-margin-start: var(--md-select-side-padding);
-        border-top: 1px solid var(--paper-grey-300);
+        border-bottom: 1px solid var(--paper-grey-300);
         display: block;
         margin-bottom: 0;
         margin-top: 0;
+        position: relative;
+        /* Make the focus line visible by 1px while the <select> is expanded. */
+        top: -2px;
       }
 
       /* Focus underline */
-      .md-select-underline::after {
+      .md-select-underline::before {
         border-top: 2px solid var(--google-blue-500);
         content: '';
         display: block;
+        position: relative;
+        /* Force the thicker "focus" underline to be properly overlapping with
+         * the "persistent" underline. */
+        top: 1px;
         transform: scale3d(0, 1, 1);
         transition: transform 200ms ease-in;
       }
 
-      /* Force the thicker "focus" underline to be properly overlapping with the
-       * "persistent" underline, and also make it visible by 1px while the
-       * <select> is expanded. */
-      .md-select-underline,
-      .md-select-underline::after {
-        position: relative;
-        top: -1px;
-      }
-
-      .md-select:focus + .md-select-underline::after {
+      .md-select:focus + .md-select-underline::before {
         transform: scale3d(1, 1, 1);
         transition: transform 200ms ease-out;
       }
 
       .md-select[disabled] + .md-select-underline {
-        border-top: 1px dashed var(--secondary-text-color);
+        border-bottom: 1px dashed var(--secondary-text-color);
       }
 
       .md-select-wrapper {
