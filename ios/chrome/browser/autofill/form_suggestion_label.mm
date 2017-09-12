@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/credit_card.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "ios/chrome/browser/autofill/form_suggestion_view_client.h"
@@ -53,18 +54,6 @@ struct IconImageMap {
   NSString* image_name;
 };
 
-const IconImageMap kCreditCardIconImageMap[] = {
-    {autofill::kAmericanExpressCard, @"autofill_card_american_express"},
-    {autofill::kDiscoverCard, @"autofill_card_discover"},
-    {autofill::kMasterCard, @"autofill_card_mastercard"},
-    {autofill::kMirCard, @"autofill_card_mir"},
-    {autofill::kVisaCard, @"autofill_card_visa"},
-    {autofill::kDinersCard, @"autofill_card_diners"},
-    {autofill::kGenericCard, @"autofill_card_generic"},
-    {autofill::kJCBCard, @"autofill_card_jcb"},
-    {autofill::kUnionPay, @"autofill_card_unionpay"},
-};
-
 // Creates a label with the given |text| and |alpha| suitable for use in a
 // suggestion button in the keyboard accessory view.
 UILabel* TextLabel(NSString* text, CGFloat alpha, BOOL bold) {
@@ -81,12 +70,6 @@ UILabel* TextLabel(NSString* text, CGFloat alpha, BOOL bold) {
 }
 
 }  // namespace
-
-@interface FormSuggestionLabel ()
-
-// Returns the name of the image for credit card icon.
-+ (NSString*)imageNameForCreditCardIcon:(NSString*)icon;
-@end
 
 @implementation FormSuggestionLabel {
   // Client of this view.
@@ -109,22 +92,17 @@ UILabel* TextLabel(NSString* text, CGFloat alpha, BOOL bold) {
     const CGFloat frameHeight = CGRectGetHeight(proposedFrame);
     CGFloat currentX = kBorderWidth;
 
-    // [UIImage imageNamed:] writes error message if nil is passed. Prevent
-    // console spam by checking the name first.
-    NSString* iconImageName =
-        [FormSuggestionLabel imageNameForCreditCardIcon:suggestion.icon];
-    UIImage* iconImage = nil;
-    if (iconImageName)
-      iconImage = [UIImage imageNamed:iconImageName];
-    if (iconImage) {
-      UIImageView* iconView = [[UIImageView alloc] initWithImage:iconImage];
-      const CGFloat iconY =
-          std::floor((frameHeight - iconImage.size.height) / 2.0f);
-      iconView.frame = CGRectMake(currentX, iconY, iconImage.size.width,
-                                  iconImage.size.height);
-      [self addSubview:iconView];
-      currentX += CGRectGetWidth(iconView.frame) + kSpacing;
-    }
+    const int iconImageID = autofill::data_util::GetPaymentRequestData(
+                                base::SysNSStringToUTF8(suggestion.icon))
+                                .icon_resource_id;
+    UIImage* iconImage = NativeImage(iconImageID);
+    UIImageView* iconView = [[UIImageView alloc] initWithImage:iconImage];
+    const CGFloat iconY =
+        std::floor((frameHeight - iconImage.size.height) / 2.0f);
+    iconView.frame = CGRectMake(currentX, iconY, iconImage.size.width,
+                                iconImage.size.height);
+    [self addSubview:iconView];
+    currentX += CGRectGetWidth(iconView.frame) + kSpacing;
 
     UILabel* label = TextLabel(suggestion.value, kMainLabelAlpha, YES);
     const CGFloat labelY =
@@ -188,22 +166,6 @@ UILabel* TextLabel(NSString* text, CGFloat alpha, BOOL bold) {
 - (void)touchesEnded:(NSSet*)touches withEvent:(UIEvent*)event {
   [self setBackgroundColor:UIColorFromRGB(kBackgroundNormalColor)];
   [client_ didSelectSuggestion:suggestion_];
-}
-
-#pragma mark -
-#pragma mark Private
-
-+ (NSString*)imageNameForCreditCardIcon:(NSString*)icon {
-  if (!icon || [icon length] == 0) {
-    return nil;
-  }
-  std::string iconName(base::SysNSStringToUTF8(icon));
-  for (size_t i = 0; i < arraysize(kCreditCardIconImageMap); ++i) {
-    if (iconName.compare(kCreditCardIconImageMap[i].icon_name) == 0) {
-      return kCreditCardIconImageMap[i].image_name;
-    }
-  }
-  return nil;
 }
 
 @end
