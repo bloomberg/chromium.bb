@@ -64,12 +64,9 @@ class CSSPropertyParser {
   bool ParseValueStart(CSSPropertyID unresolved_property, bool important);
   bool ConsumeCSSWideKeyword(CSSPropertyID unresolved_property, bool important);
 
-  bool InQuirksMode() const { return IsQuirksModeBehavior(context_->Mode()); }
-
   bool ParseViewportDescriptor(CSSPropertyID prop_id, bool important);
   bool ParseFontFaceDescriptor(CSSPropertyID);
 
-  bool ParseShorthand(CSSPropertyID, bool important);
  private:
   // Inputs:
   CSSParserTokenRange range_;
