@@ -1199,6 +1199,13 @@ void ResourceFetcher::ClearContext() {
   ClearPreloads(ResourceFetcher::kClearAllPreloads);
   context_ = Context().Detach();
 
+  // Make sure the only requests still going are keepalive requests.
+  // Callers of ClearContext() should be calling StopFetching() prior
+  // to this, but it's possible for additional requests to start during
+  // StopFetching() (e.g., fallback fonts that only trigger when the
+  // first choice font failed to load).
+  StopFetching();
+
   if (!loaders_.IsEmpty() || !non_blocking_loaders_.IsEmpty()) {
     // There are some keepalive requests.
     self_keep_alive_ = this;
