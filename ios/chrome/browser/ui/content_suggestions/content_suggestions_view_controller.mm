@@ -637,6 +637,8 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
       break;
   }
 
+  if (IsIPadIdiom())
+    [self.headerSynchronizer unfocusOmnibox];
 }
 
 // Checks if the |section| is empty and add an empty element if it is the case.
