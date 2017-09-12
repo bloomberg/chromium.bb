@@ -20,8 +20,6 @@ using password_manager::CredentialMediationRequirement;
 // make sure there are no payments dependencies.
 using payments::OriginSecurityChecker;
 
-namespace credential_manager {
-
 namespace {
 
 security_state::SecurityLevel GetSecurityLevelForWebState(
@@ -206,5 +204,3 @@ bool WebStateContentIsSecureHtml(const web::WebState* web_state) {
       GetSecurityLevelForWebState(web_state);
   return OriginSecurityChecker::IsSSLCertificateValid(security_level);
 }
-
-}  // namespace credential_manager

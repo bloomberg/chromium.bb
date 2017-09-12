@@ -263,7 +263,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
   std::unique_ptr<PasswordGenerationManager> passwordGenerationManager_;
   std::unique_ptr<PasswordManagerClient> passwordManagerClient_;
   std::unique_ptr<PasswordManagerDriver> passwordManagerDriver_;
-  std::unique_ptr<credential_manager::CredentialManager> credentialManager_;
+  std::unique_ptr<CredentialManager> credentialManager_;
   PasswordGenerationAgent* passwordGenerationAgent_;
 
   __weak JsPasswordManager* passwordJsManager_;
@@ -322,11 +322,9 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
         new web::WebStateObserverBridge(webState, self));
     sent_request_to_store_ = NO;
 
-    if (base::FeatureList::IsEnabled(
-            credential_manager::features::kCredentialManager)) {
-      credentialManager_ =
-          std::make_unique<credential_manager::CredentialManager>(
-              passwordManagerClient_.get(), webState_);
+    if (base::FeatureList::IsEnabled(features::kCredentialManager)) {
+      credentialManager_ = base::MakeUnique<CredentialManager>(
+          passwordManagerClient_.get(), webState_);
     }
   }
   return self;

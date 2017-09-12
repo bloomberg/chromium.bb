@@ -14,8 +14,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace credential_manager {
-
 namespace {
 
 // Takes CredentialInfo and returns string representing invocation of
@@ -59,7 +57,7 @@ void ResolveOrRejectPromise(web::WebState* web_state,
 
 }  // namespace
 
-void ResolvePromiseWithCredentialInfo(
+void ResolveCredentialPromiseWithCredentialInfo(
     web::WebState* web_state,
     int promise_id,
     const base::Optional<password_manager::CredentialInfo>& info) {
@@ -71,15 +69,16 @@ void ResolvePromiseWithCredentialInfo(
                          credential_str);
 }
 
-void ResolvePromiseWithUndefined(web::WebState* web_state, int promise_id) {
+void ResolveCredentialPromiseWithUndefined(web::WebState* web_state,
+                                           int promise_id) {
   DCHECK(web_state);
   ResolveOrRejectPromise(web_state, promise_id, /*resolve=*/true,
                          std::string());
 }
 
-void RejectPromiseWithTypeError(web::WebState* web_state,
-                                int promise_id,
-                                const base::StringPiece16& message) {
+void RejectCredentialPromiseWithTypeError(web::WebState* web_state,
+                                          int promise_id,
+                                          const base::StringPiece16& message) {
   DCHECK(web_state);
   std::string type_error_str = base::StringPrintf(
       "new TypeError(%s)", base::GetQuotedJSONString(message).c_str());
@@ -87,9 +86,10 @@ void RejectPromiseWithTypeError(web::WebState* web_state,
                          type_error_str);
 }
 
-void RejectPromiseWithInvalidStateError(web::WebState* web_state,
-                                        int promise_id,
-                                        const base::StringPiece16& message) {
+void RejectCredentialPromiseWithInvalidStateError(
+    web::WebState* web_state,
+    int promise_id,
+    const base::StringPiece16& message) {
   DCHECK(web_state);
   std::string invalid_state_err_str = base::StringPrintf(
       "Object.create(DOMException.prototype, "
@@ -99,9 +99,10 @@ void RejectPromiseWithInvalidStateError(web::WebState* web_state,
                          invalid_state_err_str);
 }
 
-void RejectPromiseWithNotSupportedError(web::WebState* web_state,
-                                        int promise_id,
-                                        const base::StringPiece16& message) {
+void RejectCredentialPromiseWithNotSupportedError(
+    web::WebState* web_state,
+    int promise_id,
+    const base::StringPiece16& message) {
   DCHECK(web_state);
   std::string not_supported_err_str = base::StringPrintf(
       "Object.create(DOMException.prototype, "
@@ -110,5 +111,3 @@ void RejectPromiseWithNotSupportedError(web::WebState* web_state,
   ResolveOrRejectPromise(web_state, promise_id, /*resolve=*/false,
                          not_supported_err_str);
 }
-
-}  // namespace credential_manager

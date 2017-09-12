@@ -167,8 +167,7 @@ NSString* ChromeWebClient::GetEarlyPageScript(
   NSMutableArray* scripts = [NSMutableArray array];
   [scripts addObject:GetPageScript(@"chrome_bundle")];
 
-  if (base::FeatureList::IsEnabled(
-          credential_manager::features::kCredentialManager)) {
+  if (base::FeatureList::IsEnabled(features::kCredentialManager)) {
     [scripts addObject:GetPageScript(@"credential_manager")];
   }
 
