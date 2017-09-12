@@ -150,16 +150,10 @@ template <typename T>
 struct RefPtrHash : PtrHash<T> {
   using PtrHash<T>::GetHash;
   static unsigned GetHash(const RefPtr<T>& key) { return GetHash(key.Get()); }
-  static unsigned GetHash(const PassRefPtr<T>& key) {
-    return GetHash(key.Get());
-  }
   using PtrHash<T>::Equal;
   static bool Equal(const RefPtr<T>& a, const RefPtr<T>& b) { return a == b; }
   static bool Equal(T* a, const RefPtr<T>& b) { return a == b; }
   static bool Equal(const RefPtr<T>& a, T* b) { return a == b; }
-  static bool Equal(const RefPtr<T>& a, const PassRefPtr<T>& b) {
-    return a == b;
-  }
 };
 
 template <typename T>
