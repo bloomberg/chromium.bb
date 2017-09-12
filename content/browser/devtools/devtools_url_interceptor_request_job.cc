@@ -790,6 +790,7 @@ DevToolsURLInterceptorRequestJob::SubRequest::SubRequest(
       resource_request_info->is_load_timing_enabled(),
       resource_request_info->is_upload_progress_enabled(),
       resource_request_info->do_not_prompt_for_login(),
+      resource_request_info->keepalive(),
       resource_request_info->GetReferrerPolicy(),
       resource_request_info->GetVisibilityState(),
       resource_request_info->GetContext(),

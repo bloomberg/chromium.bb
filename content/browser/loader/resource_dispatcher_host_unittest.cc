@@ -177,6 +177,7 @@ static ResourceRequest CreateResourceRequest(const char* method,
   request.parent_is_main_frame = false;
   request.transition_type = ui::PAGE_TRANSITION_LINK;
   request.allow_download = true;
+  request.keepalive = (type == RESOURCE_TYPE_PING);
   return request;
 }
 

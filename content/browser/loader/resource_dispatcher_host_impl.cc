@@ -197,17 +197,6 @@ const double kMaxRequestsPerProcessRatio = 0.45;
 // same resource (see bugs 46104 and 31014).
 const int kDefaultDetachableCancelDelayMs = 30000;
 
-bool IsDetachableResourceType(ResourceType type) {
-  switch (type) {
-    case RESOURCE_TYPE_PREFETCH:
-    case RESOURCE_TYPE_PING:
-    case RESOURCE_TYPE_CSP_REPORT:
-      return true;
-    default:
-      return false;
-  }
-}
-
 // Aborts a request before an URLRequest has actually been created.
 void AbortRequestBeforeItStarts(
     IPC::Sender* sender,
@@ -1364,10 +1353,10 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
       false,  // is stream
       allow_download, request_data.has_user_gesture,
       request_data.enable_load_timing, request_data.enable_upload_progress,
-      do_not_prompt_for_login, request_data.referrer_policy,
-      request_data.visibility_state, resource_context, report_raw_headers,
-      !is_sync_load, previews_state, request_data.request_body,
-      request_data.initiated_in_secure_context);
+      do_not_prompt_for_login, request_data.keepalive,
+      request_data.referrer_policy, request_data.visibility_state,
+      resource_context, report_raw_headers, !is_sync_load, previews_state,
+      request_data.request_body, request_data.initiated_in_secure_context);
   extra_info->SetBlobHandles(std::move(blob_handles));
 
   // Request takes ownership.
@@ -1470,8 +1459,8 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
 
   // Prefetches and <a ping> requests outlive their child process.
   if (!sync_result_handler &&
-      (start_detached ||
-       IsDetachableResourceType(request_data.resource_type))) {
+      (start_detached || request_data.resource_type == RESOURCE_TYPE_PREFETCH ||
+       request_data.keepalive)) {
     auto timeout =
         base::TimeDelta::FromMilliseconds(kDefaultDetachableCancelDelayMs);
     int timeout_set_by_finch_in_sec = base::GetFieldTrialParamByFeatureAsInt(
@@ -1713,6 +1702,7 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       false,     // enable_load_timing
       false,     // enable_upload_progress
       false,     // do_not_prompt_for_login
+      false,     // keepalive
       blink::kWebReferrerPolicyDefault, blink::kWebPageVisibilityStateVisible,
       context,
       false,           // report_raw_headers
@@ -1793,7 +1783,8 @@ void ResourceDispatcherHostImpl::CancelRequestsForRoute(
     if (cancel_all_routes || route_id == info->GetRenderFrameID()) {
       if (info->detachable_handler()) {
         if (base::FeatureList::IsEnabled(
-                features::kKeepAliveRendererForKeepaliveRequests)) {
+                features::kKeepAliveRendererForKeepaliveRequests) &&
+            info->keepalive()) {
           // If the feature is enabled, the renderer process's lifetime is
           // prolonged so there's no need to detach.
           if (cancel_all_routes) {
@@ -2132,6 +2123,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       true,   // enable_load_timing
       false,  // enable_upload_progress
       false,  // do_not_prompt_for_login
+      false,  // keepalive
       info.common_params.referrer.policy, info.page_visibility_state,
       resource_context, info.report_raw_headers,
       true,  // is_async
