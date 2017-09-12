@@ -18,6 +18,8 @@ $ for x in Linux_x64 Mac Win ; do \
         gs://chromium-browser-clang/$x/llvmobjdump-$rev.tgz ; \
     gsutil cp -n -a public-read gs://chromium-browser-clang-staging/$x/translation_unit-$rev.tgz \
         gs://chromium-browser-clang/$x/translation_unit-$rev.tgz ; \
+    gsutil cp -n -a public-read gs://chromium-browser-clang-staging/$x/llvm-code-coverage-$rev.tgz \
+        gs://chromium-browser-clang/$x/llvm-code-coverage-$rev.tgz ; \
     done
 ```
 
