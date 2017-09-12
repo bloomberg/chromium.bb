@@ -12,5 +12,7 @@ interface TestIntegerIndexed {
     [Custom] setter Node (DOMString name, Node value);
     [Custom] deleter boolean (DOMString name);
 
+    iterable <[Clamp] long, DOMString>;
+
     void voidMethodDocument(Document document);
 };

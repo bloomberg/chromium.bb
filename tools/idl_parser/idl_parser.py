@@ -722,7 +722,7 @@ class IDLParser(object):
       p[0].AddChildren(self.BuildTrue('ELLIPSIS'))
 
   def p_Iterable(self, p):
-    """Iterable : ITERABLE '<' Type OptionalType '>' ';'"""
+    """Iterable : ITERABLE '<' TypeWithExtendedAttributes OptionalType '>' ';'"""
     childlist = ListFromConcat(p[3], p[4])
     p[0] = self.BuildProduction('Iterable', p, 2, childlist)
 
