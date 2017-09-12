@@ -334,18 +334,6 @@ content::WebUIDataSource* CreatePrintPreviewUISource(Profile* profile) {
   source->AddLocalizedString("offlineForWeek",
                              IDS_PRINT_PREVIEW_OFFLINE_FOR_WEEK);
   source->AddLocalizedString("offline", IDS_PRINT_PREVIEW_OFFLINE);
-  source->AddLocalizedString("noDestsPromoTitle",
-                             IDS_PRINT_PREVIEW_NO_DESTS_PROMO_TITLE);
-  source->AddLocalizedString("noDestsPromoBody",
-                             IDS_PRINT_PREVIEW_NO_DESTS_PROMO_BODY);
-  source->AddLocalizedString("noDestsPromoGcpDesc",
-                             IDS_PRINT_PREVIEW_NO_DESTS_GCP_DESC);
-  source->AddLocalizedString("learnMore",
-                             IDS_LEARN_MORE);
-  source->AddLocalizedString(
-      "noDestsPromoAddPrinterButtonLabel",
-      IDS_PRINT_PREVIEW_NO_DESTS_PROMO_ADD_PRINTER_BUTTON_LABEL);
-  source->AddLocalizedString("noDestsPromoNotNowButtonLabel", IDS_NOT_NOW);
   source->AddLocalizedString("couldNotPrint",
                              IDS_PRINT_PREVIEW_COULD_NOT_PRINT);
   source->AddLocalizedString("registerPromoButtonText",

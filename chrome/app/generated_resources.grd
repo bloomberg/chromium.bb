@@ -6751,23 +6751,6 @@ I don't think this site should be blocked!
         <message name="IDS_PRINT_PREVIEW_OFFLINE" desc="Shown when printer is currently offline.">
           Currently offline
         </message>
-        <message name="IDS_PRINT_PREVIEW_NO_DESTS_PROMO_TITLE" desc="Title of promotion shown when user has no Google Cloud Print printers.">
-          Add Printers
-        </message>
-        <message name="IDS_PRINT_PREVIEW_NO_DESTS_PROMO_BODY" desc="Main body of promotion shown when user has no Google Cloud Print printers.">
-          You can add printers to your computer by clicking the "Add a printer"
-          button below. If you have no printers to add, you'll still be able to save
-          a PDF or save to Google Drive.
-        </message>
-        <message name="IDS_PRINT_PREVIEW_NO_DESTS_GCP_DESC" desc="A description of the Google Cloud Print service.">
-          Adding your printers to Google Cloud Print allows you to print from
-          anywhere, to anywhere. Share your printers with whoever you choose and
-          print to them from Chrome, your phone, tablet, PC, or any other
-          web-connected device.
-        </message>
-        <message name="IDS_PRINT_PREVIEW_NO_DESTS_PROMO_ADD_PRINTER_BUTTON_LABEL" desc="Label of button to setup Google Cloud Print printers.">
-          Add a printer
-        </message>
         <message name="IDS_PRINT_PREVIEW_EXTENSION_DESTINATION_ICON_TOOLTIP" desc="Tooltip for the icon shown in print destination list next to print destination provided by an extension.">
           Documents you send to print via <ph name="APP_NAME">$1<ex>A Chrome app</ex></ph> can be read by <ph name="APP_NAME">$1<ex>A Chrome app</ex></ph>.
         </message>

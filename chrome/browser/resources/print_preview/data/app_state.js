@@ -11,7 +11,6 @@ cr.exportPath('print_preview');
 print_preview.AppStateField = {
   VERSION: 'version',
   RECENT_DESTINATIONS: 'recentDestinations',
-  IS_GCP_PROMO_DISMISSED: 'isGcpPromoDismissed',
   DPI: 'dpi',
   MEDIA_SIZE: 'mediaSize',
   MARGINS_TYPE: 'marginsType',
@@ -90,7 +89,6 @@ cr.define('print_preview', function() {
      */
     this.state_ = {};
     this.state_[print_preview.AppStateField.VERSION] = AppState.VERSION_;
-    this.state_[print_preview.AppStateField.IS_GCP_PROMO_DISMISSED] = true;
     this.state_[print_preview.AppStateField.RECENT_DESTINATIONS] = [];
 
     /**
@@ -150,11 +148,6 @@ cr.define('print_preview', function() {
       return this.state_[print_preview.AppStateField.RECENT_DESTINATIONS];
     },
 
-    /** @return {boolean} Whether the GCP promotion has been dismissed. */
-    get isGcpPromoDismissed() {
-      return this.state_[print_preview.AppStateField.IS_GCP_PROMO_DISMISSED];
-    },
-
     /**
      * @param {!print_preview.AppStateField} field App state field to check if
      *     set.
@@ -196,7 +189,6 @@ cr.define('print_preview', function() {
         }
       } else {
         // Set some state defaults.
-        this.state_[print_preview.AppStateField.IS_GCP_PROMO_DISMISSED] = false;
         this.state_[print_preview.AppStateField.RECENT_DESTINATIONS] = [];
       }
       if (!this.state_[print_preview.AppStateField.RECENT_DESTINATIONS]) {
@@ -282,19 +274,6 @@ cr.define('print_preview', function() {
       this.state_[print_preview.AppStateField.RECENT_DESTINATIONS].splice(
           0, 0, newDestination);
 
-      this.persist_();
-    },
-
-    /**
-     * Persists whether the GCP promotion has been dismissed.
-     * @param {boolean} isGcpPromoDismissed Whether the GCP promotion has been
-     *     dismissed.
-     */
-    persistIsGcpPromoDismissed: function(isGcpPromoDismissed) {
-      if (!this.isInitialized_)
-        return;
-      this.state_[print_preview.AppStateField.IS_GCP_PROMO_DISMISSED] =
-          isGcpPromoDismissed;
       this.persist_();
     },
 
