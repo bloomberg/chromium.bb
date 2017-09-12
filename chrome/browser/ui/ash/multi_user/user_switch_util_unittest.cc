@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/system/screen_security/screen_tray_item.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "base/run_loop.h"
@@ -40,6 +41,13 @@ class TrySwitchingUserTest : public ash::AshTestBase {
     capture_item_ = system_tray->GetScreenCaptureItem();
     EXPECT_TRUE(share_item_);
     EXPECT_TRUE(capture_item_);
+    WebNotificationTray::DisableAnimationsForTest(true);
+  }
+
+  void TearDown() override {
+    RunAllPendingInMessageLoop();
+    WebNotificationTray::DisableAnimationsForTest(false);
+    AshTestBase::TearDown();
   }
 
   // Accessing the capture session functionality.
