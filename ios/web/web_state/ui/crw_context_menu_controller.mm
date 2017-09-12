@@ -204,7 +204,14 @@ void CancelTouches(UIGestureRecognizer* gesture_recognizer) {
 }
 
 - (void)longPressGestureRecognizerBegan {
-  [self cancelAllTouches];
+  if ([_DOMElementForLastTouch count]) {
+    // User long pressed on a link or an image. Cancelling all touches will
+    // intentionally suppress system context menu UI.
+    [self cancelAllTouches];
+  } else {
+    // There is no link or image under user's gesture. Do not cancel all touches
+    // to allow system text seletion UI.
+  }
 
   if ([_delegate respondsToSelector:@selector(webView:handleContextMenu:)]) {
     _locationForLastTouch = [_contextMenuRecognizer locationInView:_webView];
