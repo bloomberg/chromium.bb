@@ -1106,6 +1106,7 @@ class TaskOutputStdoutOption(optparse.Option):
         self,
         *args,
         choices=self.choices,
+        default=['console', 'json'],
         help=re.sub('\s\s*', ' ', self.__doc__),
         **kw)
 
@@ -1115,7 +1116,7 @@ class TaskOutputStdoutOption(optparse.Option):
           self.get_opt_string(), self.choices, value))
     stdout_to = []
     if value == 'all':
-      stdout_to = ['json', 'console']
+      stdout_to = ['console', 'json']
     elif value != 'none':
       stdout_to = [value]
     return stdout_to
@@ -1145,7 +1146,7 @@ def add_collect_options(parser):
            'directory contains per-shard directory with output files produced '
            'by shards: <task-output-dir>/<zero-based-shard-index>/.')
   parser.task_output_group.add_option(TaskOutputStdoutOption(
-      '--task-output-stdout', default='all'))
+      '--task-output-stdout'))
   parser.task_output_group.add_option(
       '--perf', action='store_true', default=False,
       help='Includes performance statistics')
