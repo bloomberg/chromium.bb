@@ -24,7 +24,6 @@ class ServiceProcessState;
 
 namespace base {
 class CommandLine;
-class SequencedWorkerPool;
 class WaitableEvent;
 }
 
@@ -122,7 +121,6 @@ class ServiceProcess : public ServiceIPCServer::Client,
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   std::unique_ptr<base::Thread> io_thread_;
   std::unique_ptr<base::Thread> file_thread_;
-  scoped_refptr<base::SequencedWorkerPool> blocking_pool_;
   std::unique_ptr<cloud_print::CloudPrintProxy> cloud_print_proxy_;
   std::unique_ptr<ServiceProcessPrefs> service_prefs_;
   std::unique_ptr<ServiceIPCServer> ipc_server_;
