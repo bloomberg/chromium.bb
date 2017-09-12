@@ -316,6 +316,14 @@ class UserSessionManager
   // the authentication profile.
   void CompleteProfileCreateAfterAuthTransfer(Profile* profile);
 
+  // Asynchronously prepares TPM devices and calls FinalizePrepareProfile on UI
+  // thread.
+  void PrepareTpmDeviceAndFinalizeProfile(Profile* profile);
+
+  // Called on UI thread once Cryptohome operation completes.
+  void OnCryptohomeOperationCompleted(Profile* profile,
+                                      DBusMethodCallStatus call_status);
+
   // Finalized profile preparation.
   void FinalizePrepareProfile(Profile* profile);
 
