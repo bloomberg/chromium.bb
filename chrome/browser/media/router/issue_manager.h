@@ -10,9 +10,12 @@
 #include <memory>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
+#include "base/cancelable_callback.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "base/sequence_checker.h"
+#include "base/single_thread_task_runner.h"
 #include "chrome/browser/media/router/issues_observer.h"
 #include "chrome/common/media_router/issue.h"
 
@@ -20,11 +23,15 @@ namespace media_router {
 
 // IssueManager keeps track of current issues related to casting
 // connectivity and quality. It lives on the UI thread.
-// TODO(apacible): Determine what other issues will be handled here.
 class IssueManager {
  public:
   IssueManager();
   ~IssueManager();
+
+  // Returns the amount of time before |issue_info| is dismissed after it is
+  // added to the IssueManager. Returns base::TimeDelta() if the given IssueInfo
+  // is not auto-dismissed.
+  static base::TimeDelta GetAutoDismissTimeout(const IssueInfo& issue_info);
 
   // Adds an issue. No-ops if the issue already exists.
   // |issue_info|: Info of issue to be added.
@@ -45,6 +52,11 @@ class IssueManager {
   // |observer|: IssuesObserver to be unregistered.
   void UnregisterObserver(IssuesObserver* observer);
 
+  void set_task_runner_for_test(
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
+    task_runner_ = task_runner;
+  }
+
  private:
   // Checks if the current top issue has changed. Updates |top_issue_|.
   // If |top_issue_| has changed, observers in |issues_observers_| will be
@@ -58,6 +70,21 @@ class IssueManager {
 
   // ID of the top Issue in |issues_|, or |nullptr| if there are no issues.
   const Issue* top_issue_;
+
+  // The SingleThreadTaskRunner that this IssueManager runs on, and is used
+  // for posting issue auto-dismissal tasks.
+  // When a non-blocking issues is added to the IssueManager, a delayed task
+  // will be added to remove the issue. This is done to automatically clean up
+  // issues that are no longer relevant.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  // Tracks auto-dimiss callbacks that are posted to |task_runner_|. If an
+  // Issue is cleared by the user before the auto-dimiss timeout, then the
+  // callback will be canceled.
+  std::map<Issue::Id, std::unique_ptr<base::CancelableClosure>>
+      auto_dismiss_issue_callbacks_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(IssueManager);
 };
