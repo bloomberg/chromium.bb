@@ -50,10 +50,28 @@ DEFAULT_VERSION = PACKAGE_STABLE
 DEFAULT_TARGET_VERSION_MAP = {
 }
 TARGET_VERSION_MAP = {
-    'host' : {
-        'gdb' : PACKAGE_NONE,
-    },
 }
+
+# The exact list of host toolchain packages we care about.  These are the
+# packages that bots/devs install only from binpkgs and rely on the SDK bot
+# (chromiumos-sdk) to validate+uprev.
+#
+# These also need to be manually kept in sync with update_chroot.
+#
+# We don't use crossdev to manage the host toolchain for us, especially since
+# we diverge significantly now (with llvm/clang/etc...), and we don't need or
+# want crossdev managing /etc/portage config files for the sdk
+HOST_PACKAGES = (
+    'dev-lang/go',
+    'sys-devel/binutils',
+    'sys-devel/clang',
+    'sys-devel/gcc',
+    'sys-devel/llvm',
+    'sys-kernel/linux-headers',
+    'sys-libs/glibc',
+    'sys-libs/libcxx',
+    'sys-libs/libcxxabi',
+)
 
 # Enable the Go compiler for these targets.
 TARGET_GO_ENABLED = (
@@ -169,29 +187,35 @@ class Crossdev(object):
 
     val = cls._CACHE.setdefault(CACHE_ATTR, {})
     if not target in val:
-      # Find out the crossdev tuple.
-      target_tuple = target
       if target == 'host':
-        target_tuple = toolchain.GetHostTuple()
-      # Build the crossdev command.
-      cmd = ['crossdev', '--show-target-cfg', '--ex-gdb']
-      if target in TARGET_COMPILER_RT_ENABLED:
-        cmd.extend(CROSSDEV_COMPILER_RT_ARGS)
-      if target in TARGET_GO_ENABLED:
-        cmd.extend(CROSSDEV_GO_ARGS)
-      if target in TARGET_LLVM_PKGS_ENABLED:
-        for pkg in LLVM_PKGS_TABLE:
-          cmd.extend(LLVM_PKGS_TABLE[pkg])
-      cmd.extend(['-t', target_tuple])
-      # Catch output of crossdev.
-      out = cros_build_lib.RunCommand(cmd, print_cmd=False,
-                                      redirect_stdout=True).output.splitlines()
-      # List of tuples split at the first '=', converted into dict.
-      conf = dict((k, cros_build_lib.ShellUnquote(v))
-                  for k, v in (x.split('=', 1) for x in out))
-      conf['crosspkgs'] = conf['crosspkgs'].split()
+        conf = {
+            'crosspkgs': [],
+            'target': toolchain.GetHostTuple(),
+        }
+        manual_pkgs = dict((pkg, cat) for cat, pkg in
+                           [x.split('/') for x in HOST_PACKAGES])
+      else:
+        # Build the crossdev command.
+        cmd = ['crossdev', '--show-target-cfg', '--ex-gdb']
+        if target in TARGET_COMPILER_RT_ENABLED:
+          cmd.extend(CROSSDEV_COMPILER_RT_ARGS)
+        if target in TARGET_GO_ENABLED:
+          cmd.extend(CROSSDEV_GO_ARGS)
+        if target in TARGET_LLVM_PKGS_ENABLED:
+          for pkg in LLVM_PKGS_TABLE:
+            cmd.extend(LLVM_PKGS_TABLE[pkg])
+        cmd.extend(['-t', target])
+        # Catch output of crossdev.
+        out = cros_build_lib.RunCommand(
+            cmd, print_cmd=False, redirect_stdout=True).output.splitlines()
+        # List of tuples split at the first '=', converted into dict.
+        conf = dict((k, cros_build_lib.ShellUnquote(v))
+                    for k, v in (x.split('=', 1) for x in out))
+        conf['crosspkgs'] = conf['crosspkgs'].split()
 
-      for pkg, cat in cls.MANUAL_PKGS.iteritems():
+        manual_pkgs = cls.MANUAL_PKGS
+
+      for pkg, cat in manual_pkgs.items():
         conf[pkg + '_pn'] = pkg
         conf[pkg + '_category'] = cat
         if pkg not in conf['crosspkgs']:
