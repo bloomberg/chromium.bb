@@ -24,7 +24,7 @@ class WrappedTaskRunner : public base::TaskRunner {
   explicit WrappedTaskRunner(scoped_refptr<TaskRunner> real_runner)
       : real_task_runner_(std::move(real_runner)) {}
 
-  bool PostDelayedTask(const tracked_objects::Location& from_here,
+  bool PostDelayedTask(const base::Location& from_here,
                        base::OnceClosure task,
                        base::TimeDelta delay) override {
     ++posted_task_count_;
@@ -91,7 +91,7 @@ class AfterStartupTaskTest : public testing::Test {
 
   // Hop to the background sequence and call PostAfterStartupTask.
   void PostAfterStartupTaskFromBackgroundSequence(
-      const tracked_objects::Location& from_here,
+      const base::Location& from_here,
       scoped_refptr<base::TaskRunner> task_runner,
       base::OnceClosure task) {
     base::RunLoop run_loop;

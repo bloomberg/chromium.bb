@@ -27,14 +27,14 @@ class SequencedTaskRunnerNoDelay : public base::SequencedTaskRunner {
   SequencedTaskRunnerNoDelay() {}
 
   // base::SequencedTaskRunner implementation:
-  bool PostDelayedTask(const tracked_objects::Location& from_here,
+  bool PostDelayedTask(const base::Location& from_here,
                        base::OnceClosure task,
                        base::TimeDelta delay) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(from_here, std::move(task));
     return true;
   }
 
-  bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
+  bool PostNonNestableDelayedTask(const base::Location& from_here,
                                   base::OnceClosure task,
                                   base::TimeDelta delay) override {
     return true;

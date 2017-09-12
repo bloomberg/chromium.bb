@@ -69,8 +69,7 @@ class MockResourcePrefetchPredictorTables
       scoped_refptr<base::SequencedTaskRunner> db_task_runner)
       : ResourcePrefetchPredictorTables(std::move(db_task_runner)) {}
 
-  void ScheduleDBTask(const tracked_objects::Location& from_here,
-                      DBTask task) override {
+  void ScheduleDBTask(const base::Location& from_here, DBTask task) override {
     ExecuteDBTaskOnDBSequence(std::move(task));
   }
 

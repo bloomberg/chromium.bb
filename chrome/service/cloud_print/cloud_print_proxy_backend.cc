@@ -95,7 +95,7 @@ class CloudPrintProxyBackend::Core
 
   CloudPrintProxyFrontend* frontend() { return backend_->frontend_; }
 
-  bool PostFrontendTask(const tracked_objects::Location& from_here,
+  bool PostFrontendTask(const base::Location& from_here,
                         const base::Closure& task);
 
   bool CurrentlyOnFrontendThread() const;
@@ -228,9 +228,8 @@ void CloudPrintProxyBackend::UnregisterPrinters() {
                           core_));
 }
 
-bool CloudPrintProxyBackend::PostCoreTask(
-    const tracked_objects::Location& from_here,
-    const base::Closure& task) {
+bool CloudPrintProxyBackend::PostCoreTask(const base::Location& from_here,
+                                          const base::Closure& task) {
   return core_thread_.task_runner()->PostTask(from_here, task);
 }
 
@@ -250,7 +249,7 @@ CloudPrintProxyBackend::Core::Core(
 }
 
 bool CloudPrintProxyBackend::Core::PostFrontendTask(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const base::Closure& task) {
   return backend_->frontend_task_runner_->PostTask(from_here, task);
 }

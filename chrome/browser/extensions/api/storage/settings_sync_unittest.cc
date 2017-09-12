@@ -107,7 +107,7 @@ class MockSyncChangeProcessor : public syncer::SyncChangeProcessor {
 
   // syncer::SyncChangeProcessor implementation.
   syncer::SyncError ProcessSyncChanges(
-      const tracked_objects::Location& from_here,
+      const base::Location& from_here,
       const syncer::SyncChangeList& change_list) override {
     if (fail_all_requests_) {
       return syncer::SyncError(
@@ -256,7 +256,7 @@ class ExtensionSettingsSyncTest : public testing::Test {
   }
 
   template <typename Func>
-  void PostOnBackendSequenceAndWait(const tracked_objects::Location& from_here,
+  void PostOnBackendSequenceAndWait(const base::Location& from_here,
                                     Func func) {
     GetBackendTaskRunner()->PostTask(
         from_here, base::Bind(&ExtensionSettingsSyncTest::RunFunc<Func>, func));

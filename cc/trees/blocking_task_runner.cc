@@ -33,7 +33,7 @@ bool BlockingTaskRunner::BelongsToCurrentThread() {
   return base::PlatformThread::CurrentId() == thread_id_;
 }
 
-bool BlockingTaskRunner::PostTask(const tracked_objects::Location& from_here,
+bool BlockingTaskRunner::PostTask(const base::Location& from_here,
                                   base::OnceClosure task) {
   base::AutoLock lock(lock_);
   DCHECK(task_runner_.get() || capture_);

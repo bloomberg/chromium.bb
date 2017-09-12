@@ -33,10 +33,9 @@ class MediaTaskRunnerWithNotification : public MediaTaskRunner {
       const base::Closure& shutdown_cb);
 
   // MediaTaskRunner implementation.
-  bool PostMediaTask(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task,
-      base::TimeDelta timestamp) override;
+  bool PostMediaTask(const base::Location& from_here,
+                     const base::Closure& task,
+                     base::TimeDelta timestamp) override;
 
  private:
   ~MediaTaskRunnerWithNotification() override;
@@ -63,7 +62,7 @@ MediaTaskRunnerWithNotification::~MediaTaskRunnerWithNotification() {
 }
 
 bool MediaTaskRunnerWithNotification::PostMediaTask(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const base::Closure& task,
     base::TimeDelta timestamp) {
   bool may_run_in_future =
@@ -94,10 +93,9 @@ class BalancedMediaTaskRunner
   base::TimeDelta GetMediaTimestamp() const;
 
   // MediaTaskRunner implementation.
-  bool PostMediaTask(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task,
-      base::TimeDelta timestamp) override;
+  bool PostMediaTask(const base::Location& from_here,
+                     const base::Closure& task,
+                     base::TimeDelta timestamp) override;
 
  private:
   ~BalancedMediaTaskRunner() override;
@@ -108,7 +106,7 @@ class BalancedMediaTaskRunner
   mutable base::Lock lock_;
 
   // Possible pending media task.
-  tracked_objects::Location from_here_;
+  base::Location from_here_;
   base::Closure pending_task_;
 
   // Timestamp of the last posted task.
@@ -147,10 +145,9 @@ base::TimeDelta BalancedMediaTaskRunner::GetMediaTimestamp() const {
   return last_timestamp_;
 }
 
-bool BalancedMediaTaskRunner::PostMediaTask(
-    const tracked_objects::Location& from_here,
-    const base::Closure& task,
-    base::TimeDelta timestamp) {
+bool BalancedMediaTaskRunner::PostMediaTask(const base::Location& from_here,
+                                            const base::Closure& task,
+                                            base::TimeDelta timestamp) {
   DCHECK(!task.is_null());
 
   // Pass through for a task with no timestamp.

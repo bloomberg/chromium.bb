@@ -314,7 +314,7 @@ syncer::SyncDataList SupervisedUserSharedSettingsService::GetAllSyncData(
 }
 
 syncer::SyncError SupervisedUserSharedSettingsService::ProcessSyncChanges(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const syncer::SyncChangeList& change_list) {
   for (const SyncChange& sync_change : change_list) {
     SyncData data = sync_change.sync_data();

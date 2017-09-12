@@ -148,7 +148,7 @@ class StatefulChangeProcessor : public syncer::FakeSyncChangeProcessor {
   // the FakeSyncChangeProcessor's SyncDataList as a map keyed by extension
   // id.
   syncer::SyncError ProcessSyncChanges(
-      const tracked_objects::Location& from_here,
+      const base::Location& from_here,
       const syncer::SyncChangeList& change_list) override {
     syncer::FakeSyncChangeProcessor::ProcessSyncChanges(from_here, change_list);
     for (const auto& change : change_list) {

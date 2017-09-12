@@ -233,7 +233,7 @@ syncer::SyncDataList SupervisedUserWhitelistService::GetAllSyncData(
 }
 
 syncer::SyncError SupervisedUserWhitelistService::ProcessSyncChanges(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const syncer::SyncChangeList& change_list) {
   bool whitelists_removed = false;
   syncer::SyncError error;

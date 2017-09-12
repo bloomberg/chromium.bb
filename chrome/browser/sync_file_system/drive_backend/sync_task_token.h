@@ -45,10 +45,10 @@ class SyncTaskToken {
       int64_t token_id,
       std::unique_ptr<TaskBlocker> task_blocker);
 
-  void UpdateTask(const tracked_objects::Location& location,
+  void UpdateTask(const base::Location& location,
                   const SyncStatusCallback& callback);
 
-  const tracked_objects::Location& location() const { return location_; }
+  const base::Location& location() const { return location_; }
   virtual ~SyncTaskToken();
 
   static SyncStatusCallback WrapToCallback(
@@ -82,7 +82,7 @@ class SyncTaskToken {
 
   base::WeakPtr<SyncTaskManager> manager_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  tracked_objects::Location location_;
+  base::Location location_;
   int64_t token_id_;
   SyncStatusCallback callback_;
 

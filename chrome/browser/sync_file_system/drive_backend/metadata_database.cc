@@ -1548,7 +1548,7 @@ void MetadataDatabase::RemoveUnneededTrackersForMissingFile(
 }
 
 void MetadataDatabase::UpdateByFileMetadata(
-    const tracked_objects::Location& from_where,
+    const base::Location& from_where,
     std::unique_ptr<FileMetadata> metadata,
     UpdateOption option) {
   DCHECK(metadata);

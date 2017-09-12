@@ -25,10 +25,9 @@ class MediaTaskRunner
   // detail of derived classes.
   // Returns true if the task may be run at some point in the future, and false
   // if the task definitely will not be run.
-  virtual bool PostMediaTask(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task,
-      base::TimeDelta timestamp) = 0;
+  virtual bool PostMediaTask(const base::Location& from_here,
+                             const base::Closure& task,
+                             base::TimeDelta timestamp) = 0;
 
  protected:
   virtual ~MediaTaskRunner();

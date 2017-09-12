@@ -125,9 +125,8 @@ class SyncErrorFactoryStub : public syncer::SyncErrorFactory {
   ~SyncErrorFactoryStub() override {}
 
   // Overridden from syncer::SyncErrorFactory:
-  syncer::SyncError CreateAndUploadError(
-      const tracked_objects::Location& location,
-      const std::string& message) override {
+  syncer::SyncError CreateAndUploadError(const base::Location& location,
+                                         const std::string& message) override {
     (*error_counter_)++;
     return syncer::SyncError(location,
                              syncer::SyncError::DATATYPE_ERROR,

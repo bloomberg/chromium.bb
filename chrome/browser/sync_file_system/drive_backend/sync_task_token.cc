@@ -51,7 +51,7 @@ std::unique_ptr<SyncTaskToken> SyncTaskToken::CreateForBackgroundTask(
                                             SyncStatusCallback()));
 }
 
-void SyncTaskToken::UpdateTask(const tracked_objects::Location& location,
+void SyncTaskToken::UpdateTask(const base::Location& location,
                                const SyncStatusCallback& callback) {
   DCHECK(callback_.is_null());
   location_ = location;

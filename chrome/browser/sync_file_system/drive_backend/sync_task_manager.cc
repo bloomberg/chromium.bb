@@ -84,11 +84,10 @@ void SyncTaskManager::Initialize(SyncStatusCode status) {
       status);
 }
 
-void SyncTaskManager::ScheduleTask(
-    const tracked_objects::Location& from_here,
-    const Task& task,
-    Priority priority,
-    const SyncStatusCallback& callback) {
+void SyncTaskManager::ScheduleTask(const base::Location& from_here,
+                                   const Task& task,
+                                   Priority priority,
+                                   const SyncStatusCallback& callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
   ScheduleSyncTask(from_here,
@@ -96,11 +95,10 @@ void SyncTaskManager::ScheduleTask(
                    priority, callback);
 }
 
-void SyncTaskManager::ScheduleSyncTask(
-    const tracked_objects::Location& from_here,
-    std::unique_ptr<SyncTask> task,
-    Priority priority,
-    const SyncStatusCallback& callback) {
+void SyncTaskManager::ScheduleSyncTask(const base::Location& from_here,
+                                       std::unique_ptr<SyncTask> task,
+                                       Priority priority,
+                                       const SyncStatusCallback& callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
   std::unique_ptr<SyncTaskToken> token(GetToken(from_here, callback));
@@ -115,10 +113,9 @@ void SyncTaskManager::ScheduleSyncTask(
   RunTask(std::move(token), std::move(task));
 }
 
-bool SyncTaskManager::ScheduleTaskIfIdle(
-        const tracked_objects::Location& from_here,
-        const Task& task,
-        const SyncStatusCallback& callback) {
+bool SyncTaskManager::ScheduleTaskIfIdle(const base::Location& from_here,
+                                         const Task& task,
+                                         const SyncStatusCallback& callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
   return ScheduleSyncTaskIfIdle(
@@ -127,7 +124,7 @@ bool SyncTaskManager::ScheduleTaskIfIdle(
 }
 
 bool SyncTaskManager::ScheduleSyncTaskIfIdle(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     std::unique_ptr<SyncTask> task,
     const SyncStatusCallback& callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
@@ -330,7 +327,7 @@ void SyncTaskManager::UpdateTaskBlockerBody(
   if (background_task_token) {
     background_task_token->set_task_blocker(std::move(task_blocker));
   } else {
-    tracked_objects::Location from_here = foreground_task_token->location();
+    base::Location from_here = foreground_task_token->location();
     SyncStatusCallback callback = foreground_task_token->callback();
     foreground_task_token->clear_callback();
 
@@ -349,7 +346,7 @@ void SyncTaskManager::UpdateTaskBlockerBody(
 }
 
 std::unique_ptr<SyncTaskToken> SyncTaskManager::GetToken(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const SyncStatusCallback& callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 

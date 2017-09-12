@@ -72,7 +72,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
   content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;
-  void PostAfterStartupTask(const tracked_objects::Location& from_here,
+  void PostAfterStartupTask(const base::Location& from_here,
                             const scoped_refptr<base::TaskRunner>& task_runner,
                             base::OnceClosure task) override;
   bool IsBrowserStartupComplete() override;

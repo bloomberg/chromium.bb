@@ -48,7 +48,7 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
   struct PendingTaskInfo {
     PendingTaskInfo(const base::FilePath& path,
                     content::BrowserThread::ID thread_id,
-                    const tracked_objects::Location& location,
+                    const base::Location& location,
                     const base::Closure& task);
     PendingTaskInfo(const PendingTaskInfo& other);
     ~PendingTaskInfo();
@@ -56,7 +56,7 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
     base::FilePath path;
     base::FilePath cached_path;
     const content::BrowserThread::ID thread_id;
-    const tracked_objects::Location location;
+    const base::Location location;
     const base::Closure task;
   };
 

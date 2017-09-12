@@ -25,7 +25,7 @@ class AfterStartupTaskUtils {
     explicit Runner(scoped_refptr<base::TaskRunner> destination_runner);
 
     // Overrides from base::TaskRunner:
-    bool PostDelayedTask(const tracked_objects::Location& from_here,
+    bool PostDelayedTask(const base::Location& from_here,
                          base::OnceClosure task,
                          base::TimeDelta delay) override;
     bool RunsTasksInCurrentSequence() const override;
@@ -45,7 +45,7 @@ class AfterStartupTaskUtils {
   // for chrome. Tasks are queued until startup is complete.
   // Note: see browser_thread.h
   static void PostTask(
-      const tracked_objects::Location& from_here,
+      const base::Location& from_here,
       const scoped_refptr<base::TaskRunner>& destination_runner,
       base::OnceClosure task);
 

@@ -34,13 +34,13 @@ using content::WebContentsObserver;
 namespace {
 
 struct AfterStartupTask {
-  AfterStartupTask(const tracked_objects::Location& from_here,
+  AfterStartupTask(const base::Location& from_here,
                    const scoped_refptr<base::TaskRunner>& task_runner,
                    base::OnceClosure task)
       : from_here(from_here), task_runner(task_runner), task(std::move(task)) {}
   ~AfterStartupTask() {}
 
-  const tracked_objects::Location from_here;
+  const base::Location from_here;
   const scoped_refptr<base::TaskRunner> task_runner;
   base::OnceClosure task;
 };
@@ -71,7 +71,7 @@ void ScheduleTask(std::unique_ptr<AfterStartupTask> queued_task) {
   const int kMinDelaySec = 0;
   const int kMaxDelaySec = 10;
   scoped_refptr<base::TaskRunner> target_runner = queued_task->task_runner;
-  tracked_objects::Location from_here = queued_task->from_here;
+  base::Location from_here = queued_task->from_here;
   target_runner->PostDelayedTask(
       from_here, base::BindOnce(&RunTask, base::Passed(std::move(queued_task))),
       base::TimeDelta::FromSeconds(base::RandInt(kMinDelaySec, kMaxDelaySec)));
@@ -215,7 +215,7 @@ AfterStartupTaskUtils::Runner::Runner(
 AfterStartupTaskUtils::Runner::~Runner() = default;
 
 bool AfterStartupTaskUtils::Runner::PostDelayedTask(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     base::OnceClosure task,
     base::TimeDelta delay) {
   DCHECK(delay.is_zero());
@@ -234,7 +234,7 @@ void AfterStartupTaskUtils::StartMonitoringStartup() {
 }
 
 void AfterStartupTaskUtils::PostTask(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const scoped_refptr<base::TaskRunner>& destination_runner,
     base::OnceClosure task) {
   if (IsBrowserStartupComplete()) {

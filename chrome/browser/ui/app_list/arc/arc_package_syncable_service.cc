@@ -198,7 +198,7 @@ syncer::SyncDataList ArcPackageSyncableService::GetAllSyncData(
 }
 
 syncer::SyncError ArcPackageSyncableService::ProcessSyncChanges(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const syncer::SyncChangeList& change_list) {
   if (!sync_processor_.get()) {
     return syncer::SyncError(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,

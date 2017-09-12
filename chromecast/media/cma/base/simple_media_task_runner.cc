@@ -17,10 +17,9 @@ SimpleMediaTaskRunner::SimpleMediaTaskRunner(
 SimpleMediaTaskRunner::~SimpleMediaTaskRunner() {
 }
 
-bool SimpleMediaTaskRunner::PostMediaTask(
-    const tracked_objects::Location& from_here,
-    const base::Closure& task,
-    base::TimeDelta timestamp) {
+bool SimpleMediaTaskRunner::PostMediaTask(const base::Location& from_here,
+                                          const base::Closure& task,
+                                          base::TimeDelta timestamp) {
   return task_runner_->PostTask(from_here, task);
 }
 

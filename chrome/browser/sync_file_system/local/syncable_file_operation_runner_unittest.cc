@@ -109,19 +109,19 @@ class SyncableFileOperationRunnerTest : public testing::Test {
     callback_count_ = 0;
   }
 
-  StatusCallback ExpectStatus(const tracked_objects::Location& location,
+  StatusCallback ExpectStatus(const base::Location& location,
                               File::Error expect) {
     return base::Bind(&SyncableFileOperationRunnerTest::DidFinish,
                       weak_factory_.GetWeakPtr(), location, expect);
   }
 
   FileSystemOperation::WriteCallback GetWriteCallback(
-      const tracked_objects::Location& location) {
+      const base::Location& location) {
     return base::Bind(&SyncableFileOperationRunnerTest::DidWrite,
                       weak_factory_.GetWeakPtr(), location);
   }
 
-  void DidWrite(const tracked_objects::Location& location,
+  void DidWrite(const base::Location& location,
                 File::Error status,
                 int64_t bytes,
                 bool complete) {
@@ -132,8 +132,9 @@ class SyncableFileOperationRunnerTest : public testing::Test {
     ++callback_count_;
   }
 
-  void DidFinish(const tracked_objects::Location& location,
-                 File::Error expect, File::Error status) {
+  void DidFinish(const base::Location& location,
+                 File::Error expect,
+                 File::Error status) {
     SCOPED_TRACE(testing::Message() << location.ToString());
     EXPECT_EQ(expect, status);
     ++callback_count_;

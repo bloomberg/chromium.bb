@@ -51,7 +51,7 @@ const int kRetryLimit = 100;
 void DBusBoolRedirectCallback(const base::Closure& on_true,
                               const base::Closure& on_false,
                               const base::Closure& on_failure,
-                              const tracked_objects::Location& from_here,
+                              const base::Location& from_here,
                               chromeos::DBusMethodCallStatus status,
                               bool value) {
   if (status != chromeos::DBUS_METHOD_CALL_SUCCESS) {
@@ -76,7 +76,7 @@ void DBusBoolRedirectCallback(const base::Closure& on_true,
 void DBusStringCallback(
     const base::Callback<void(const std::string&)> on_success,
     const base::Closure& on_failure,
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     chromeos::DBusMethodCallStatus status,
     bool result,
     const std::string& data) {

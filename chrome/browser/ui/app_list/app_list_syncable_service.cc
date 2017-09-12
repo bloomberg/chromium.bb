@@ -899,7 +899,7 @@ syncer::SyncDataList AppListSyncableService::GetAllSyncData(
 }
 
 syncer::SyncError AppListSyncableService::ProcessSyncChanges(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const syncer::SyncChangeList& change_list) {
   if (!sync_processor_.get()) {
     return syncer::SyncError(FROM_HERE,

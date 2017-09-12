@@ -43,9 +43,8 @@ class MockSyncErrorFactory : public syncer::SyncErrorFactory {
   ~MockSyncErrorFactory() override;
 
   // SyncErrorFactory implementation:
-  syncer::SyncError CreateAndUploadError(
-      const tracked_objects::Location& location,
-      const std::string& message) override;
+  syncer::SyncError CreateAndUploadError(const base::Location& location,
+                                         const std::string& message) override;
 
  private:
   syncer::ModelType type_;
@@ -59,7 +58,7 @@ MockSyncErrorFactory::MockSyncErrorFactory(syncer::ModelType type)
 MockSyncErrorFactory::~MockSyncErrorFactory() {}
 
 syncer::SyncError MockSyncErrorFactory::CreateAndUploadError(
-    const tracked_objects::Location& location,
+    const base::Location& location,
     const std::string& message) {
   return syncer::SyncError(location, SyncError::DATATYPE_ERROR, message, type_);
 }

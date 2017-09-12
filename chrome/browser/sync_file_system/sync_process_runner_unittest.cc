@@ -44,7 +44,7 @@ class FakeTimerHelper : public SyncProcessRunner::TimerHelper {
 
   bool IsRunning() override { return !timer_task_.is_null(); }
 
-  void Start(const tracked_objects::Location& from_here,
+  void Start(const base::Location& from_here,
              const base::TimeDelta& delay,
              const base::Closure& closure) override {
     scheduled_time_ = current_time_ + delay;

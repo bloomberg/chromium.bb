@@ -52,7 +52,7 @@ namespace {
 
 const char kOrigin[] = "http://example.com";
 
-void DidPrepareForProcessRemoteChange(const tracked_objects::Location& where,
+void DidPrepareForProcessRemoteChange(const base::Location& where,
                                       const base::Closure& oncompleted,
                                       SyncStatusCode expected_status,
                                       const SyncFileMetadata& expected_metadata,
@@ -67,7 +67,7 @@ void DidPrepareForProcessRemoteChange(const tracked_objects::Location& where,
   oncompleted.Run();
 }
 
-void OnSyncCompleted(const tracked_objects::Location& where,
+void OnSyncCompleted(const base::Location& where,
                      const base::Closure& oncompleted,
                      SyncStatusCode expected_status,
                      const FileSystemURL& expected_url,
@@ -79,7 +79,7 @@ void OnSyncCompleted(const tracked_objects::Location& where,
   oncompleted.Run();
 }
 
-void OnGetFileMetadata(const tracked_objects::Location& where,
+void OnGetFileMetadata(const base::Location& where,
                        const base::Closure& oncompleted,
                        SyncStatusCode* status_out,
                        SyncFileMetadata* metadata_out,
@@ -157,7 +157,7 @@ class LocalFileSyncServiceTest
 
   void PrepareForProcessRemoteChange(
       const FileSystemURL& url,
-      const tracked_objects::Location& where,
+      const base::Location& where,
       SyncStatusCode expected_status,
       const SyncFileMetadata& expected_metadata) {
     base::RunLoop run_loop;

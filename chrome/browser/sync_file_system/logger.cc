@@ -40,7 +40,7 @@ void ClearLog() {
 }
 
 void Log(logging::LogSeverity severity,
-         const tracked_objects::Location& location,
+         const base::Location& location,
          const char* format,
          ...) {
   std::string what;

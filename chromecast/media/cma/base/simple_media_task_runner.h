@@ -24,7 +24,7 @@ class SimpleMediaTaskRunner : public MediaTaskRunner {
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
   // MediaTaskRunner implementation.
-  bool PostMediaTask(const tracked_objects::Location& from_here,
+  bool PostMediaTask(const base::Location& from_here,
                      const base::Closure& task,
                      base::TimeDelta timestamp) override;
 

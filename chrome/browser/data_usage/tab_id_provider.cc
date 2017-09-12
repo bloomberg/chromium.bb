@@ -76,7 +76,7 @@ class TabIdProvider::CallbackRunner {
 };
 
 TabIdProvider::TabIdProvider(base::TaskRunner* task_runner,
-                             const tracked_objects::Location& from_here,
+                             const base::Location& from_here,
                              const TabIdGetter& tab_id_getter)
     : is_tab_info_ready_(false), tab_info_(-1), weak_ptr_factory_(this) {
   std::unique_ptr<CallbackRunner> callback_runner(new CallbackRunner());

@@ -84,7 +84,7 @@ class ProfileShortcutManagerTest : public testing::Test {
     return profile_path;
   }
 
-  void SetupDefaultProfileShortcut(const tracked_objects::Location& location) {
+  void SetupDefaultProfileShortcut(const base::Location& location) {
     ASSERT_EQ(0u, profile_attributes_storage_->GetNumberOfProfiles())
         << location.ToString();
     ASSERT_FALSE(ProfileShortcutExistsAtDefaultPath(profile_1_name_))
@@ -100,7 +100,7 @@ class ProfileShortcutManagerTest : public testing::Test {
     ValidateNonProfileShortcut(location);
   }
 
-  void SetupAndCreateTwoShortcuts(const tracked_objects::Location& location) {
+  void SetupAndCreateTwoShortcuts(const base::Location& location) {
     SetupDefaultProfileShortcut(location);
     CreateProfileWithShortcut(location, profile_2_name_, profile_2_path_);
     ValidateProfileShortcut(location, profile_1_name_, profile_1_path_);
@@ -122,7 +122,7 @@ class ProfileShortcutManagerTest : public testing::Test {
 
   // Posts a task to call base::win::ValidateShortcut on the COM thread.
   void PostValidateShortcut(
-      const tracked_objects::Location& location,
+      const base::Location& location,
       const base::FilePath& shortcut_path,
       const base::win::ShortcutProperties& expected_properties) {
     base::CreateCOMSTATaskRunnerWithTraits({})->PostTask(
@@ -133,7 +133,7 @@ class ProfileShortcutManagerTest : public testing::Test {
 
   // Calls base::win::ValidateShortcut() with expected properties for the
   // shortcut at |shortcut_path| for the profile at |profile_path|.
-  void ValidateProfileShortcutAtPath(const tracked_objects::Location& location,
+  void ValidateProfileShortcutAtPath(const base::Location& location,
                                      const base::FilePath& shortcut_path,
                                      const base::FilePath& profile_path) {
     EXPECT_TRUE(base::PathExists(shortcut_path)) << location.ToString();
@@ -157,16 +157,15 @@ class ProfileShortcutManagerTest : public testing::Test {
 
   // Calls base::win::ValidateShortcut() with expected properties for
   // |profile_name|'s shortcut.
-  void ValidateProfileShortcut(const tracked_objects::Location& location,
+  void ValidateProfileShortcut(const base::Location& location,
                                const base::string16& profile_name,
                                const base::FilePath& profile_path) {
     ValidateProfileShortcutAtPath(
         location, GetDefaultShortcutPathForProfile(profile_name), profile_path);
   }
 
-  void ValidateNonProfileShortcutAtPath(
-      const tracked_objects::Location& location,
-      const base::FilePath& shortcut_path) {
+  void ValidateNonProfileShortcutAtPath(const base::Location& location,
+                                        const base::FilePath& shortcut_path) {
     EXPECT_TRUE(base::PathExists(shortcut_path)) << location.ToString();
 
     base::win::ShortcutProperties expected_properties;
@@ -178,13 +177,13 @@ class ProfileShortcutManagerTest : public testing::Test {
     PostValidateShortcut(location, shortcut_path, expected_properties);
   }
 
-  void ValidateNonProfileShortcut(const tracked_objects::Location& location) {
+  void ValidateNonProfileShortcut(const base::Location& location) {
     const base::FilePath shortcut_path =
         GetDefaultShortcutPathForProfile(base::string16());
     ValidateNonProfileShortcutAtPath(location, shortcut_path);
   }
 
-  void CreateProfileWithShortcut(const tracked_objects::Location& location,
+  void CreateProfileWithShortcut(const base::Location& location,
                                  const base::string16& profile_name,
                                  const base::FilePath& profile_path) {
     ASSERT_FALSE(ProfileShortcutExistsAtDefaultPath(profile_name))
@@ -199,7 +198,7 @@ class ProfileShortcutManagerTest : public testing::Test {
 
   // Posts a task to call ShellUtil::CreateOrUpdateShortcut on the COM thread.
   void PostCreateOrUpdateShortcut(
-      const tracked_objects::Location& location,
+      const base::Location& location,
       const ShellUtil::ShortcutProperties& properties) {
     base::PostTaskAndReplyWithResult(
         base::CreateCOMSTATaskRunnerWithTraits({base::MayBlock()}).get(),
@@ -214,7 +213,7 @@ class ProfileShortcutManagerTest : public testing::Test {
   // Creates a regular (non-profile) desktop shortcut with the given name and
   // returns its path. Fails the test if an error occurs.
   base::FilePath CreateRegularShortcutWithName(
-      const tracked_objects::Location& location,
+      const base::Location& location,
       const base::string16& shortcut_name) {
     const base::FilePath shortcut_path =
         GetUserShortcutsDirectory().Append(shortcut_name + installer::kLnkExt);
@@ -231,7 +230,7 @@ class ProfileShortcutManagerTest : public testing::Test {
   }
 
   base::FilePath CreateRegularSystemLevelShortcut(
-      const tracked_objects::Location& location) {
+      const base::Location& location) {
     BrowserDistribution* distribution = GetDistribution();
     installer::Product product(distribution);
     ShellUtil::ShortcutProperties properties(ShellUtil::SYSTEM_LEVEL);
@@ -245,7 +244,7 @@ class ProfileShortcutManagerTest : public testing::Test {
     return system_level_shortcut_path;
   }
 
-  void RenameProfile(const tracked_objects::Location& location,
+  void RenameProfile(const base::Location& location,
                      const base::FilePath& profile_path,
                      const base::string16& new_profile_name) {
     ProfileAttributesEntry* entry;

@@ -252,7 +252,7 @@ syncer::SyncDataList ExtensionSyncService::GetAllSyncData(
 }
 
 syncer::SyncError ExtensionSyncService::ProcessSyncChanges(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const syncer::SyncChangeList& change_list) {
   for (const syncer::SyncChange& sync_change : change_list) {
     std::unique_ptr<ExtensionSyncData> extension_sync_data(
