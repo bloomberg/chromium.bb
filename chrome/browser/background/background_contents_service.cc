@@ -867,6 +867,6 @@ void BackgroundContentsService::AddWebContents(
       Profile::FromBrowserContext(new_contents->GetBrowserContext()));
   if (browser) {
     chrome::AddWebContents(browser, NULL, new_contents, disposition,
-                           initial_rect, user_gesture, was_blocked);
+                           initial_rect, user_gesture);
   }
 }

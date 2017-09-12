@@ -70,12 +70,8 @@ void CustomLauncherPageContents::AddNewContents(
     const gfx::Rect& initial_rect,
     bool user_gesture,
     bool* was_blocked) {
-  app_delegate_->AddNewContents(new_contents->GetBrowserContext(),
-                                new_contents,
-                                disposition,
-                                initial_rect,
-                                user_gesture,
-                                was_blocked);
+  app_delegate_->AddNewContents(new_contents->GetBrowserContext(), new_contents,
+                                disposition, initial_rect, user_gesture);
 }
 
 bool CustomLauncherPageContents::IsPopupOrPanel(

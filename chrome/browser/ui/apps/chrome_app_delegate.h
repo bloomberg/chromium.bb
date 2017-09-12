@@ -51,8 +51,7 @@ class ChromeAppDelegate : public extensions::AppDelegate,
                       content::WebContents* new_contents,
                       WindowOpenDisposition disposition,
                       const gfx::Rect& initial_rect,
-                      bool user_gesture,
-                      bool* was_blocked) override;
+                      bool user_gesture) override;
   content::ColorChooser* ShowColorChooser(content::WebContents* web_contents,
                                           SkColor initial_color) override;
   void RunFileChooser(content::RenderFrameHost* render_frame_host,

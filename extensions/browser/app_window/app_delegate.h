@@ -52,8 +52,7 @@ class AppDelegate {
                               content::WebContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_rect,
-                              bool user_gesture,
-                              bool* was_blocked) = 0;
+                              bool user_gesture) = 0;
 
   // Feature support.
   virtual content::ColorChooser* ShowColorChooser(

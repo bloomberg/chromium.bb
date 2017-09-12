@@ -372,12 +372,8 @@ void AppWindow::AddNewContents(WebContents* source,
                                bool user_gesture,
                                bool* was_blocked) {
   DCHECK(new_contents->GetBrowserContext() == browser_context_);
-  app_delegate_->AddNewContents(browser_context_,
-                                new_contents,
-                                disposition,
-                                initial_rect,
-                                user_gesture,
-                                was_blocked);
+  app_delegate_->AddNewContents(browser_context_, new_contents, disposition,
+                                initial_rect, user_gesture);
 }
 
 content::KeyboardEventProcessingResult AppWindow::PreHandleKeyboardEvent(

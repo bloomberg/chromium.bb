@@ -169,7 +169,7 @@ class StartPageService::StartPageWebContentsDelegate
                       ? disposition
                       : WindowOpenDisposition::NEW_FOREGROUND_TAB;
     chrome::AddWebContents(displayer.browser(), nullptr, new_contents,
-                           disposition, initial_pos, user_gesture, was_blocked);
+                           disposition, initial_pos, user_gesture);
   }
 
   content::WebContents* OpenURLFromTab(
