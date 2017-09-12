@@ -25,7 +25,7 @@ class FetchTestingPlatformSupport
   WebURLLoaderMockFactory* GetURLLoaderMockFactory() override;
   std::unique_ptr<WebURLLoader> CreateURLLoader(
       const blink::WebURLRequest&,
-      base::SingleThreadTaskRunner*) override;
+      SingleThreadTaskRunnerRefPtr) override;
 
  private:
   class FetchTestingWebURLLoaderMockFactory;

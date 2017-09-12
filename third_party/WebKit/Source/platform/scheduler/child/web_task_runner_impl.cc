@@ -48,7 +48,8 @@ base::TimeTicks WebTaskRunnerImpl::Now() const {
   return time_domain->Now();
 }
 
-base::SingleThreadTaskRunner* WebTaskRunnerImpl::ToSingleThreadTaskRunner() {
+scoped_refptr<base::SingleThreadTaskRunner>
+WebTaskRunnerImpl::ToSingleThreadTaskRunner() {
   return task_queue_.get();
 }
 

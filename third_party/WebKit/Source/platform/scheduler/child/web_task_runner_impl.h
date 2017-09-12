@@ -26,7 +26,8 @@ class PLATFORM_EXPORT WebTaskRunnerImpl : public WebTaskRunner {
   bool RunsTasksInCurrentSequence() override;
   double VirtualTimeSeconds() const override;
   double MonotonicallyIncreasingVirtualTimeSeconds() const override;
-  base::SingleThreadTaskRunner* ToSingleThreadTaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> ToSingleThreadTaskRunner()
+      override;
 
   TaskQueue* GetTaskQueue() const { return task_queue_.get(); }
 

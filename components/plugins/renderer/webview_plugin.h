@@ -178,7 +178,7 @@ class WebViewPlugin : public blink::WebPlugin,
     void ScheduleAnimation() override;
     std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
         const blink::WebURLRequest& request,
-        base::SingleThreadTaskRunner* task_runner) override;
+        scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
 
     // WebFrameClient methods:
     void DidClearWindowObject() override;

@@ -322,7 +322,7 @@ void RendererBlinkPlatformImpl::Shutdown() {
 
 std::unique_ptr<blink::WebURLLoader> RendererBlinkPlatformImpl::CreateURLLoader(
     const blink::WebURLRequest& request,
-    base::SingleThreadTaskRunner* task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   ChildThreadImpl* child_thread = ChildThreadImpl::current();
 
   if (!url_loader_factory_ && child_thread)
@@ -331,8 +331,8 @@ std::unique_ptr<blink::WebURLLoader> RendererBlinkPlatformImpl::CreateURLLoader(
   // There may be no child thread in RenderViewTests.  These tests can still use
   // data URLs to bypass the ResourceDispatcher.
   return base::MakeUnique<WebURLLoaderImpl>(
-      child_thread ? child_thread->resource_dispatcher() : nullptr, task_runner,
-      url_loader_factory_.get());
+      child_thread ? child_thread->resource_dispatcher() : nullptr,
+      std::move(task_runner), url_loader_factory_.get());
 }
 
 scoped_refptr<ChildURLLoaderFactoryGetter>

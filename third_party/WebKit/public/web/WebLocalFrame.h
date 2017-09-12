@@ -17,13 +17,10 @@
 #include "public/platform/WebSize.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLRequest.h"
+#include "public/platform/scheduler/single_thread_task_runner.h"
 #include "public/platform/site_engagement.mojom-shared.h"
 #include "public/web/WebSandboxFlags.h"
 #include "v8/include/v8.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}
 
 namespace blink {
 
@@ -705,9 +702,9 @@ class WebLocalFrame : public WebFrame {
 
   // Returns frame-specific task runner to run tasks of this type on.
   // They have the same lifetime as the frame.
-  virtual base::SingleThreadTaskRunner* TimerTaskRunner() = 0;
-  virtual base::SingleThreadTaskRunner* LoadingTaskRunner() = 0;
-  virtual base::SingleThreadTaskRunner* UnthrottledTaskRunner() = 0;
+  virtual SingleThreadTaskRunnerRefPtr TimerTaskRunner() = 0;
+  virtual SingleThreadTaskRunnerRefPtr LoadingTaskRunner() = 0;
+  virtual SingleThreadTaskRunnerRefPtr UnthrottledTaskRunner() = 0;
 
   // Returns the WebInputMethodController associated with this local frame.
   virtual WebInputMethodController* GetInputMethodController() = 0;
@@ -718,7 +715,7 @@ class WebLocalFrame : public WebFrame {
   // frame is attached to a document.
   virtual std::unique_ptr<WebURLLoader> CreateURLLoader(
       const WebURLRequest&,
-      base::SingleThreadTaskRunner*) = 0;
+      SingleThreadTaskRunnerRefPtr) = 0;
 
   // Returns an AssociatedURLLoader that is associated with this frame.  The
   // loader will, for example, be cancelled when WebFrame::stopLoading is

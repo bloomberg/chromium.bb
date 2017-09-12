@@ -244,7 +244,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
       const blink::WebURLRequest& request,
-      base::SingleThreadTaskRunner* task_runner) override;
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
 
   void RequestPurgeMemory() override;
 

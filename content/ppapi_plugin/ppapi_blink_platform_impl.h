@@ -44,7 +44,7 @@ class PpapiBlinkPlatformImpl : public BlinkPlatformImpl {
   blink::WebThemeEngine* ThemeEngine() override;
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
       const blink::WebURLRequest& request,
-      base::SingleThreadTaskRunner* task_runner) override;
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   void GetPluginList(bool refresh,
                      const blink::WebSecurityOrigin& mainFrameOrigin,
                      blink::WebPluginListBuilder*) override;

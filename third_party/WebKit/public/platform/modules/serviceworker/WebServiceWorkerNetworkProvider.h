@@ -34,6 +34,7 @@
 #include <memory>
 
 #include "public/platform/WebURLLoader.h"
+#include "public/platform/scheduler/single_thread_task_runner.h"
 
 namespace blink {
 
@@ -72,7 +73,7 @@ class WebServiceWorkerNetworkProvider {
   // and only if servicification is enabled.
   virtual std::unique_ptr<WebURLLoader> CreateURLLoader(
       const WebURLRequest& request,
-      base::SingleThreadTaskRunner* task_runner) {
+      SingleThreadTaskRunnerRefPtr task_runner) {
     return nullptr;
   }
 };

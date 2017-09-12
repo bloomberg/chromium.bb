@@ -382,7 +382,7 @@ class TestWebFrameClient : public WebFrameClient {
   }
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
       const blink::WebURLRequest& request,
-      SingleThreadTaskRunner* task_runner) override {
+      SingleThreadTaskRunnerRefPtr task_runner) override {
     // TODO(yhirano): Stop using Platform::CreateURLLoader() here.
     return Platform::Current()->CreateURLLoader(request, task_runner);
   }

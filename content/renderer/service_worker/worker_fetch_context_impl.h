@@ -43,10 +43,11 @@ class WorkerFetchContextImpl : public blink::WebWorkerFetchContext,
   ~WorkerFetchContextImpl() override;
 
   // blink::WebWorkerFetchContext implementation:
-  void InitializeOnWorkerThread(base::SingleThreadTaskRunner*) override;
+  void InitializeOnWorkerThread(
+      scoped_refptr<base::SingleThreadTaskRunner>) override;
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
       const blink::WebURLRequest& request,
-      base::SingleThreadTaskRunner* task_runner) override;
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   void WillSendRequest(blink::WebURLRequest&) override;
   bool IsControlledByServiceWorker() const override;
   void SetDataSaverEnabled(bool) override;

@@ -80,10 +80,6 @@ namespace service_manager {
 class InterfaceProvider;
 }
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
 namespace blink {
 namespace mojom {
 enum class WebFeature : int32_t;
@@ -832,7 +828,7 @@ class BLINK_EXPORT WebFrameClient {
 
   virtual std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
       const WebURLRequest&,
-      base::SingleThreadTaskRunner*) {
+      SingleThreadTaskRunnerRefPtr) {
     NOTREACHED();
     return nullptr;
   }

@@ -24,7 +24,7 @@ class PLATFORM_EXPORT WebThreadImplForUtilityThread
   PlatformThreadId ThreadId() const override;
 
   // WebThreadBase implementation.
-  base::SingleThreadTaskRunner* GetTaskRunner() const override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() const override;
   scheduler::SingleThreadIdleTaskRunner* GetIdleTaskRunner() const override;
   void Init() override;
 

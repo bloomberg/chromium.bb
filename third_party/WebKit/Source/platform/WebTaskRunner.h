@@ -14,14 +14,9 @@
 #include "platform/wtf/WeakPtr.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebTraceLocation.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}
+#include "public/platform/scheduler/single_thread_task_runner.h"
 
 namespace blink {
-
-using SingleThreadTaskRunner = base::SingleThreadTaskRunner;
 
 // TaskHandle is associated to a task posted by
 // WebTaskRunner::postCancellableTask or
@@ -84,7 +79,7 @@ class BLINK_PLATFORM_EXPORT WebTaskRunner
   virtual double MonotonicallyIncreasingVirtualTimeSeconds() const = 0;
 
   // Returns the underlying task runner object.
-  virtual SingleThreadTaskRunner* ToSingleThreadTaskRunner() = 0;
+  virtual SingleThreadTaskRunnerRefPtr ToSingleThreadTaskRunner() = 0;
 
   // Helpers for posting bound functions as tasks.
 

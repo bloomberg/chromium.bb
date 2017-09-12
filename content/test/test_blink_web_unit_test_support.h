@@ -43,7 +43,7 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
 
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
       const blink::WebURLRequest& request,
-      base::SingleThreadTaskRunner* task_runner) override;
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   blink::WebString UserAgent() override;
   blink::WebString QueryLocalizedString(
       blink::WebLocalizedString::Name name) override;

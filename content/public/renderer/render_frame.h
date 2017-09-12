@@ -263,9 +263,11 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
 
   // Renderer scheduler frame-specific task queues handles.
   // See third_party/WebKit/Source/platform/WebFrameScheduler.h for details.
-  virtual base::SingleThreadTaskRunner* GetTimerTaskRunner() = 0;
-  virtual base::SingleThreadTaskRunner* GetLoadingTaskRunner() = 0;
-  virtual base::SingleThreadTaskRunner* GetUnthrottledTaskRunner() = 0;
+  virtual scoped_refptr<base::SingleThreadTaskRunner> GetTimerTaskRunner() = 0;
+  virtual scoped_refptr<base::SingleThreadTaskRunner>
+  GetLoadingTaskRunner() = 0;
+  virtual scoped_refptr<base::SingleThreadTaskRunner>
+  GetUnthrottledTaskRunner() = 0;
 
   // Bitwise-ORed set of extra bindings that have been enabled.  See
   // BindingsPolicy for details.

@@ -97,7 +97,7 @@ class WebServiceWorkerNetworkProviderForFrame
 
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
       const blink::WebURLRequest& request,
-      base::SingleThreadTaskRunner* task_runner) override {
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override {
     // ChildThreadImpl is nullptr in some tests.
     if (!ChildThreadImpl::current())
       return nullptr;
@@ -125,7 +125,8 @@ class WebServiceWorkerNetworkProviderForFrame
     // Create our own SubresourceLoader to route the request
     // to the controller ServiceWorker.
     return base::MakeUnique<WebURLLoaderImpl>(
-        ChildThreadImpl::current()->resource_dispatcher(), task_runner,
+        ChildThreadImpl::current()->resource_dispatcher(),
+        std::move(task_runner),
         provider_->context()->subresource_loader_factory());
   }
 

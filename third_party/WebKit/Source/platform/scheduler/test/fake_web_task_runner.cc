@@ -94,8 +94,9 @@ double FakeWebTaskRunner::MonotonicallyIncreasingVirtualTimeSeconds() const {
   return data_->time_;
 }
 
-SingleThreadTaskRunner* FakeWebTaskRunner::ToSingleThreadTaskRunner() {
-  return base_task_runner_.get();
+scoped_refptr<base::SingleThreadTaskRunner>
+FakeWebTaskRunner::ToSingleThreadTaskRunner() {
+  return base_task_runner_;
 }
 
 void FakeWebTaskRunner::RunUntilIdle() {

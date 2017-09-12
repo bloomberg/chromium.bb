@@ -116,13 +116,13 @@ class WebServiceWorkerNetworkProviderImpl
 
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
       const blink::WebURLRequest& request,
-      base::SingleThreadTaskRunner* task_runner) override {
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override {
     RenderThreadImpl* child_thread = RenderThreadImpl::current();
     if (child_thread && provider_->script_loader_factory() &&
         ServiceWorkerUtils::IsServicificationEnabled() &&
         IsScriptRequest(request)) {
       return base::MakeUnique<WebURLLoaderImpl>(
-          child_thread->resource_dispatcher(), task_runner,
+          child_thread->resource_dispatcher(), std::move(task_runner),
           provider_->script_loader_factory());
     }
     return nullptr;

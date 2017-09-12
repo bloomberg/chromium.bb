@@ -63,10 +63,7 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}
+#include "public/platform/scheduler/single_thread_task_runner.h"
 
 namespace device {
 class Gamepads;
@@ -346,7 +343,7 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Returns a new WebURLLoader instance.
   virtual std::unique_ptr<WebURLLoader> CreateURLLoader(
       const WebURLRequest&,
-      base::SingleThreadTaskRunner*) {
+      SingleThreadTaskRunnerRefPtr) {
     return nullptr;
   }
 
@@ -466,7 +463,7 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Returns an interface to the file task runner.
   WebTaskRunner* FileTaskRunner() const;
-  base::TaskRunner* BaseFileTaskRunner() const;
+  SingleThreadTaskRunnerRefPtr BaseFileTaskRunner() const;
 
   // Testing -------------------------------------------------------------
 

@@ -68,7 +68,7 @@ class CORE_EXPORT WorkerShadowPage : public WebFrameClient {
   service_manager::InterfaceProvider* GetInterfaceProvider() override;
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
       const WebURLRequest&,
-      SingleThreadTaskRunner*) override;
+      SingleThreadTaskRunnerRefPtr) override;
 
   Document* GetDocument() { return main_frame_->GetFrame()->GetDocument(); }
   WebSettings* GetSettings() { return web_view_->GetSettings(); }
