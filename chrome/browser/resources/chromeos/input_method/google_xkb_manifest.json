@@ -25,7 +25,8 @@
   ],
   "background": {
     "page": "background.html",
-    "persistent": false
+    // TODO(yhanada): Change to false after fixing crbug.com/761714.
+    "persistent": true
   },
   "content_scripts": [
     {

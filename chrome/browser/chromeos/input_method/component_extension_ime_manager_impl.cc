@@ -97,10 +97,18 @@ void DoLoadExtension(Profile* profile,
       extensions::ExtensionSystem::Get(profile);
   ExtensionService* extension_service = extension_system->extension_service();
   DCHECK(extension_service);
-  if (extension_service->GetExtensionById(extension_id, false))
+  if (extension_service->GetExtensionById(extension_id, false)) {
+    VLOG(1) << "the IME extension(id=\"" << extension_id
+            << "\") is already enabled";
     return;
+  }
   const std::string loaded_extension_id =
       GetComponentLoader(profile)->Add(manifest, file_path);
+  if (loaded_extension_id.empty()) {
+    LOG(ERROR) << "Failed to add an IME extension(id=\"" << extension_id
+               << ", path=\"" << file_path << "\") to ComponentLoader";
+    return;
+  }
   // Register IME extension with ExtensionPrefValueMap.
   ExtensionPrefValueMapFactory::GetForBrowserContext(profile)
       ->RegisterExtension(extension_id,
@@ -108,6 +116,10 @@ void DoLoadExtension(Profile* profile,
                           true,          // is_enabled.
                           true);         // is_incognito_enabled.
   DCHECK_EQ(loaded_extension_id, extension_id);
+  if (!extension_service->IsExtensionEnabled(loaded_extension_id)) {
+    LOG(ERROR) << "An IME extension(id=\"" << loaded_extension_id
+               << "\") is not enabled after loading";
+  }
 }
 
 bool CheckFilePath(const base::FilePath* file_path) {
@@ -301,18 +313,29 @@ void ComponentExtensionIMEManagerImpl::ReadComponentExtensionsInfo(
         rb.GetRawDataResource(
                whitelisted_component_extension[i].manifest_resource_id)
             .as_string();
-    if (component_ime.manifest.empty())
+
+    if (component_ime.manifest.empty()) {
+      LOG(ERROR) << "Couldn't get manifest from resource_id("
+                 << whitelisted_component_extension[i].manifest_resource_id
+                 << ")";
       continue;
+    }
 
     std::unique_ptr<base::DictionaryValue> manifest =
         GetManifest(component_ime.manifest);
-    if (!manifest.get())
+    if (!manifest.get()) {
+      LOG(ERROR) << "Failed to load invalid manifest: "
+                 << component_ime.manifest;
       continue;
+    }
 
     if (!ReadExtensionInfo(*manifest.get(),
                            whitelisted_component_extension[i].id,
-                           &component_ime))
+                           &component_ime)) {
+      LOG(ERROR) << "manifest doesn't have needed information for IME.";
       continue;
+    }
+
     component_ime.id = whitelisted_component_extension[i].id;
 
     if (!component_ime.path.IsAbsolute()) {
@@ -324,8 +347,10 @@ void ComponentExtensionIMEManagerImpl::ReadComponentExtensionsInfo(
 
     const base::ListValue* component_list;
     if (!manifest->GetList(extensions::manifest_keys::kInputComponents,
-                           &component_list))
+                           &component_list)) {
+      LOG(ERROR) << "No input_components is found in manifest.";
       continue;
+    }
 
     for (size_t i = 0; i < component_list->GetSize(); ++i) {
       const base::DictionaryValue* dictionary;
