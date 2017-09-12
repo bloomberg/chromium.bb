@@ -969,10 +969,10 @@ int BrowserAccessibilityAndroid::GetMaxScrollY() const {
 }
 
 bool BrowserAccessibilityAndroid::Scroll(int direction) const {
-  int x = GetIntAttribute(ui::AX_ATTR_SCROLL_X);
+  int x_initial = GetIntAttribute(ui::AX_ATTR_SCROLL_X);
   int x_min = GetIntAttribute(ui::AX_ATTR_SCROLL_X_MIN);
   int x_max = GetIntAttribute(ui::AX_ATTR_SCROLL_X_MAX);
-  int y = GetIntAttribute(ui::AX_ATTR_SCROLL_Y);
+  int y_initial = GetIntAttribute(ui::AX_ATTR_SCROLL_Y);
   int y_min = GetIntAttribute(ui::AX_ATTR_SCROLL_Y_MIN);
   int y_max = GetIntAttribute(ui::AX_ATTR_SCROLL_Y_MAX);
 
@@ -1012,18 +1012,28 @@ bool BrowserAccessibilityAndroid::Scroll(int direction) const {
   if (direction == BACKWARD)
     direction = y_max > y_min ? UP : LEFT;
 
+  int x = x_initial;
+  int y = y_initial;
   switch (direction) {
     case UP:
-      y = std::min(std::max(y - page_y, y_min), y_max);
+      if (y_initial == y_min)
+        return false;
+      y = std::min(std::max(y_initial - page_y, y_min), y_max);
       break;
     case DOWN:
-      y = std::min(std::max(y + page_y, y_min), y_max);
+      if (y_initial == y_max)
+        return false;
+      y = std::min(std::max(y_initial + page_y, y_min), y_max);
       break;
     case LEFT:
-      x = std::min(std::max(x - page_x, x_min), x_max);
+      if (x_initial == x_min)
+        return false;
+      x = std::min(std::max(x_initial - page_x, x_min), x_max);
       break;
     case RIGHT:
-      x = std::min(std::max(x + page_x, x_min), x_max);
+      if (x_initial == x_max)
+        return false;
+      x = std::min(std::max(x_initial + page_x, x_min), x_max);
       break;
     default:
       NOTREACHED();
