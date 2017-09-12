@@ -81,6 +81,7 @@
 #include "extensions/renderer/process_info_native_handler.h"
 #include "extensions/renderer/render_frame_observer_natives.h"
 #include "extensions/renderer/renderer_extension_registry.h"
+#include "extensions/renderer/renderer_messaging_service.h"
 #include "extensions/renderer/request_sender.h"
 #include "extensions/renderer/runtime_custom_bindings.h"
 #include "extensions/renderer/safe_builtins.h"
@@ -196,7 +197,6 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
       content_watcher_(new ContentWatcher()),
       source_map_(&ResourceBundle::GetSharedInstance()),
       v8_schema_registry_(new V8SchemaRegistry),
-      messaging_service_(std::make_unique<JSRendererMessagingService>()),
       user_script_set_manager_observer_(this),
       activity_logging_enabled_(false) {
   const base::CommandLine& command_line =
@@ -215,6 +215,8 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
     bindings_system_ = std::make_unique<JsExtensionBindingsSystem>(
         &source_map_, std::move(ipc_message_sender));
   }
+  messaging_service_ =
+      std::make_unique<JSRendererMessagingService>(bindings_system_.get());
 
   set_idle_notifications_ =
       command_line.HasSwitch(switches::kExtensionProcess) ||
