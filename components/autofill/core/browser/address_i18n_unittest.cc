@@ -157,5 +157,15 @@ TEST(AddressI18nTest, CreateAddressDataFromAutofillProfile) {
   EXPECT_EQ(expected, *actual);
 }
 
+TEST(AddressI18nTest, IsFieldRequired) {
+  EXPECT_TRUE(IsFieldRequired(ADDRESS_HOME_LINE1, "CA"));
+
+  EXPECT_FALSE(IsFieldRequired(ADDRESS_HOME_SORTING_CODE, "CA"));
+  EXPECT_FALSE(IsFieldRequired(ADDRESS_HOME_SORTING_CODE, "FR"));
+
+  EXPECT_TRUE(IsFieldRequired(ADDRESS_HOME_STATE, "AE"));
+  EXPECT_FALSE(IsFieldRequired(ADDRESS_HOME_STATE, "BS"));
+}
+
 }  // namespace i18n
 }  // namespace autofill

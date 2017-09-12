@@ -12,6 +12,7 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_metadata.h"
 
 namespace autofill {
 namespace i18n {
@@ -144,6 +145,15 @@ bool FieldForType(ServerFieldType server_type, AddressField* field) {
     default:
       return false;
   }
+}
+
+bool IsFieldRequired(ServerFieldType server_type,
+                     const std::string& country_code) {
+  ::i18n::addressinput::AddressField field_enum;
+  if (FieldForType(server_type, &field_enum)) {
+    return ::i18n::addressinput::IsFieldRequired(field_enum, country_code);
+  }
+  return false;
 }
 
 }  // namespace i18n

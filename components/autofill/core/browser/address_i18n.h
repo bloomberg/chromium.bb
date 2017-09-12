@@ -45,6 +45,11 @@ ServerFieldType TypeForField(::i18n::addressinput::AddressField field,
 bool FieldForType(ServerFieldType server_type,
                   ::i18n::addressinput::AddressField* field);
 
+// Returns whether the field specified by |server_type| is required for this
+// |country_code|, according to the libaddressinput metadata.
+bool IsFieldRequired(ServerFieldType server_type,
+                     const std::string& country_code);
+
 }  // namespace i18n
 }  // namespace autofill
 

@@ -383,10 +383,11 @@ void ShippingAddressEditorViewController::UpdateEditorFields() {
            !failed_to_load_region_data_)) {
         control_type = EditorField::ControlType::COMBOBOX;
       }
-      editor_fields_.emplace_back(
-          server_field_type, base::UTF8ToUTF16(field_name), length_hint,
-          /*required=*/server_field_type != autofill::COMPANY_NAME,
-          control_type);
+      editor_fields_.emplace_back(server_field_type,
+                                  base::UTF8ToUTF16(field_name), length_hint,
+                                  autofill::i18n::IsFieldRequired(
+                                      server_field_type, chosen_country_code),
+                                  control_type);
       // Insert the Country combobox right after NAME_FULL.
       if (server_field_type == autofill::NAME_FULL) {
         editor_fields_.emplace_back(
