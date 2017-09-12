@@ -2387,6 +2387,25 @@ class PaintControllerUnderInvalidationTest
     }
     GetPaintController().CommitNewDisplayItems();
   }
+
+  void TestSubsequenceBecomesEmpty() {
+    FakeDisplayItemClient target("target");
+    GraphicsContext context(GetPaintController());
+
+    {
+      SubsequenceRecorder r(context, target);
+      DrawRect(context, target, kBackgroundDrawingType,
+               FloatRect(100, 100, 300, 300));
+    }
+    GetPaintController().CommitNewDisplayItems();
+
+    {
+      EXPECT_FALSE(
+          SubsequenceRecorder::UseCachedSubsequenceIfPossible(context, target));
+      SubsequenceRecorder r(context, target);
+    }
+    GetPaintController().CommitNewDisplayItems();
+  }
 };
 
 TEST_F(PaintControllerUnderInvalidationTest, ChangeDrawing) {
@@ -2434,6 +2453,10 @@ TEST_F(PaintControllerUnderInvalidationTest, InvalidationInSubsequence) {
   // same display items. The cases of changed display items are tested by other
   // test cases.
   TestInvalidationInSubsequence();
+}
+
+TEST_F(PaintControllerUnderInvalidationTest, SubsequenceBecomesEmpty) {
+  EXPECT_DEATH(TestSubsequenceBecomesEmpty(), "");
 }
 
 #endif  // defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)

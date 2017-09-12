@@ -272,6 +272,29 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange) {
 }
 
 TEST_P(PaintLayerPainterTest,
+       CachedSubsequenceOnInterestRectChangeUnderInvalidationChecking) {
+  ScopedPaintUnderInvalidationCheckingForTest under_invalidation_checking(true);
+
+  SetBodyInnerHTML(
+      "<style>p { width: 200px; height: 50px; background: green }</style>"
+      "<div id='target' style='position: relative; z-index: 1'>"
+      "  <p></p><p></p><p></p><p></p>"
+      "</div>");
+  RootPaintController().InvalidateAll();
+
+  // |target| will be fully painted.
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  IntRect interest_rect(0, 0, 400, 300);
+  Paint(&interest_rect);
+
+  // |target| will be partially painted. Should not trigger under-invalidation
+  // checking DCHECKs.
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  IntRect new_interest_rect(0, 100, 300, 1000);
+  Paint(&new_interest_rect);
+}
+
+TEST_P(PaintLayerPainterTest,
        CachedSubsequenceOnStyleChangeWithInterestRectClipping) {
   SetBodyInnerHTML(
       "<div id='container1' style='position: relative; z-index: 1;"
