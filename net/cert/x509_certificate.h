@@ -22,9 +22,6 @@
 
 #if BUILDFLAG(USE_BYTE_CERTS)
 #include "third_party/boringssl/src/include/openssl/base.h"
-#elif defined(OS_WIN)
-#include <windows.h>
-#include "crypto/wincrypt_shim.h"
 #elif defined(USE_NSS_CERTS)
 // Forward declaration; real one in <cert.h>
 struct CERTCertificateStr;
@@ -55,8 +52,6 @@ class NET_EXPORT X509Certificate
   // TODO(mattm): Remove OSCertHandle type and clean up the interfaces once all
   // platforms use the CRYPTO_BUFFER version.
   typedef CRYPTO_BUFFER* OSCertHandle;
-#elif defined(OS_WIN)
-  typedef PCCERT_CONTEXT OSCertHandle;
 #elif defined(USE_NSS_CERTS)
   typedef struct CERTCertificateStr* OSCertHandle;
 #else
