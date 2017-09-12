@@ -189,12 +189,12 @@ public class FirstRunTest extends SyncTestBase {
      * @return The Preferences activity if showSettings was YES; null otherwise.
      */
     private Preferences processFirstRun(String account, ShowSettings showSettings) {
-        FirstRunSignInProcessor.setFirstRunFlowSignInComplete(mContext, false);
+        FirstRunSignInProcessor.setFirstRunFlowSignInComplete(false);
         Bundle data = new Bundle();
         data.putString(FirstRunActivity.RESULT_SIGNIN_ACCOUNT_NAME, account);
         data.putBoolean(
                 FirstRunActivity.RESULT_SHOW_SIGNIN_SETTINGS, showSettings == ShowSettings.YES);
-        FirstRunSignInProcessor.finalizeFirstRunFlowState(mContext, data);
+        FirstRunSignInProcessor.finalizeFirstRunFlowState(data);
 
         Preferences prefActivity = null;
         if (showSettings == ShowSettings.YES) {
@@ -213,7 +213,7 @@ public class FirstRunTest extends SyncTestBase {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return FirstRunSignInProcessor.getFirstRunFlowSignInComplete(mContext);
+                return FirstRunSignInProcessor.getFirstRunFlowSignInComplete();
             }
         });
         return prefActivity;

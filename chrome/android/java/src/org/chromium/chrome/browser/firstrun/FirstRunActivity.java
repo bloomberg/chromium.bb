@@ -393,7 +393,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
 
         mFreProperties.putString(RESULT_SIGNIN_ACCOUNT_NAME, mResultSignInAccountName);
         mFreProperties.putBoolean(RESULT_SHOW_SIGNIN_SETTINGS, mResultShowSignInSettings);
-        FirstRunFlowSequencer.markFlowAsCompleted(this, mFreProperties);
+        FirstRunFlowSequencer.markFlowAsCompleted(mFreProperties);
 
         if (DataReductionPromoUtils.getDisplayedFreOrSecondRunPromo()) {
             if (DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()) {
@@ -446,7 +446,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
 
     @Override
     public boolean didAcceptTermsOfService() {
-        boolean result = FirstRunUtils.didAcceptTermsOfService(getApplicationContext());
+        boolean result = FirstRunUtils.didAcceptTermsOfService();
         if (sObserver != null) sObserver.onAcceptTermsOfService();
         return result;
     }

@@ -44,7 +44,7 @@ public class ToSAckedReceiverTest {
 
     @Test
     public void testNoToSAccounts() {
-        Assert.assertFalse(ToSAckedReceiver.checkAnyUserHasSeenToS(RuntimeEnvironment.application));
+        Assert.assertFalse(ToSAckedReceiver.checkAnyUserHasSeenToS());
     }
 
     @Test
@@ -53,7 +53,7 @@ public class ToSAckedReceiverTest {
         intent.putExtra(ToSAckedReceiver.EXTRA_ACCOUNT_NAME, GOOGLE_ACCOUNT);
 
         mReceiver.onReceive(RuntimeEnvironment.application, intent);
-        Assert.assertFalse(ToSAckedReceiver.checkAnyUserHasSeenToS(RuntimeEnvironment.application));
+        Assert.assertFalse(ToSAckedReceiver.checkAnyUserHasSeenToS());
         Set<String> toSAckedAccounts = ContextUtils.getAppSharedPreferences().getStringSet(
                 ToSAckedReceiver.TOS_ACKED_ACCOUNTS, new HashSet<>());
         Assert.assertThat(toSAckedAccounts, Matchers.contains(GOOGLE_ACCOUNT));
@@ -64,6 +64,6 @@ public class ToSAckedReceiverTest {
         Mockito.doReturn(accounts).when(accountManagerDelegate).getAccountsSync();
         AccountManagerFacade.overrideAccountManagerFacadeForTests(
                 RuntimeEnvironment.application, accountManagerDelegate);
-        Assert.assertTrue(ToSAckedReceiver.checkAnyUserHasSeenToS(RuntimeEnvironment.application));
+        Assert.assertTrue(ToSAckedReceiver.checkAnyUserHasSeenToS());
     }
 }
