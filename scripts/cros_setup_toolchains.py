@@ -6,7 +6,6 @@
 
 from __future__ import print_function
 
-import copy
 import errno
 import glob
 import hashlib
@@ -41,15 +40,6 @@ ECLASS_OVERLAY = '/usr/local/portage/eclass-overlay'
 STABLE_OVERLAY = '/usr/local/portage/stable'
 CROSSDEV_OVERLAY = '/usr/local/portage/crossdev'
 
-
-# TODO: The versions are stored here very much like in setup_board.
-# The goal for future is to differentiate these using a config file.
-# This is done essentially by messing with GetDesiredPackageVersions()
-DEFAULT_VERSION = PACKAGE_STABLE
-DEFAULT_TARGET_VERSION_MAP = {
-}
-TARGET_VERSION_MAP = {
-}
 
 # The exact list of host toolchain packages we care about.  These are the
 # packages that bots/devs install only from binpkgs and rely on the SDK bot
@@ -103,10 +93,6 @@ CONFIG_TARGET_SUFFIXES = {
         'i686-pc-linux-gnu' : '-gold',
         'x86_64-cros-linux-gnu' : '-gold',
     },
-}
-# Global per-run cache that will be filled ondemand in by GetPackageMap()
-# function as needed.
-target_version_map = {
 }
 
 
@@ -281,37 +267,6 @@ class Crossdev(object):
       configured_targets.append(target)
 
 
-def GetPackageMap(target):
-  """Compiles a package map for the given target from the constants.
-
-  Uses a cache in target_version_map, that is dynamically filled in as needed,
-  since here everything is static data and the structuring is for ease of
-  configurability only.
-
-  Args:
-    target: The target for which to return a version map
-
-  Returns:
-    A map between packages and desired versions in internal format
-    (using the PACKAGE_* constants)
-  """
-  if target in target_version_map:
-    return target_version_map[target]
-
-  # Start from copy of the global defaults.
-  result = copy.copy(DEFAULT_TARGET_VERSION_MAP)
-
-  for pkg in GetTargetPackages(target):
-  # prefer any specific overrides
-    if pkg in TARGET_VERSION_MAP.get(target, {}):
-      result[pkg] = TARGET_VERSION_MAP[target][pkg]
-    else:
-      # finally, if not already set, set a sane default
-      result.setdefault(pkg, DEFAULT_VERSION)
-  target_version_map[target] = result
-  return result
-
-
 def GetTargetPackages(target):
   """Returns a list of packages for a given target."""
   conf = Crossdev.GetConfig(target)
@@ -425,13 +380,10 @@ def GetDesiredPackageVersions(target, package):
   Returns:
     A list composed of either a version string, PACKAGE_STABLE
   """
-  packagemap = GetPackageMap(target)
-
-  versions = []
-  if package in packagemap:
-    versions.append(packagemap[package])
-
-  return versions
+  if package in GetTargetPackages(target):
+    return [PACKAGE_STABLE]
+  else:
+    return []
 
 
 def TargetIsInitialized(target):
