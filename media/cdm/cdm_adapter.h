@@ -140,7 +140,7 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
   void OnDeferredInitializationDone(cdm::StreamType stream_type,
                                     cdm::Status decoder_status) override;
   cdm::FileIO* CreateFileIO(cdm::FileIOClient* client) override;
-  void RequestStorageId() override;
+  void RequestStorageId(uint32_t version) override;
 
   // cdm::Host_8 specific implementation.
   void OnRejectPromise(uint32_t promise_id,
@@ -195,7 +195,8 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
                                const std::string& signed_data,
                                const std::string& signed_data_signature,
                                const std::string& platform_key_certificate);
-  void OnStorageIdObtained(const std::vector<uint8_t>& storage_id);
+  void OnStorageIdObtained(uint32_t version,
+                           const std::vector<uint8_t>& storage_id);
 
   // Callbacks for OutputProtection.
   void OnOutputProtectionRequestMade(bool success);

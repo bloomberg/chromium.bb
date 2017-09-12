@@ -822,7 +822,8 @@ void ClearKeyCdm::OnQueryOutputProtectionStatus(
   OnUnitTestComplete(true);
 };
 
-void ClearKeyCdm::OnStorageId(const uint8_t* storage_id,
+void ClearKeyCdm::OnStorageId(uint32_t version,
+                              const uint8_t* storage_id,
                               uint32_t storage_id_size) {
   if (!is_running_storage_id_test_) {
     NOTREACHED() << "OnStorageId() called unexpectedly.";
@@ -1006,7 +1007,9 @@ void ClearKeyCdm::VerifyCdmHostTest() {
 void ClearKeyCdm::StartStorageIdTest() {
   DVLOG(1) << __func__;
   is_running_storage_id_test_ = true;
-  host_->RequestStorageId();
+
+  // Request the latest available version.
+  host_->RequestStorageId(0);
 }
 
 }  // namespace media

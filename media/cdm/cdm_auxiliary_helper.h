@@ -52,7 +52,7 @@ class MEDIA_EXPORT CdmAuxiliaryHelper : public CdmAllocator,
   void ChallengePlatform(const std::string& service_id,
                          const std::string& challenge,
                          ChallengePlatformCB callback) override;
-  void GetStorageId(StorageIdCB callback) override;
+  void GetStorageId(uint32_t version, StorageIdCB callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CdmAuxiliaryHelper);
