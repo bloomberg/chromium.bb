@@ -830,7 +830,10 @@ BLACKLISTED_DEVICES = []
 
 # List of benchmarks that are to never be run with reference builds.
 BENCHMARK_REF_BUILD_BLACKLIST = [
-  'power.idle_platform',
+  'power.idle_platform',  # No browser used in benchmark.
+  'loading.desktop',  # Long running benchmark.
+  'loading.mobile',  # Long running benchmark.
+  'v8.runtime_stats.top_25',  # Long running benchmark.
 ]
 
 
