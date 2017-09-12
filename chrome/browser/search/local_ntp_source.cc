@@ -141,6 +141,8 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
     AddString(translated_strings.get(), "tryAgain",
               IDS_NEW_TAB_VOICE_TRY_AGAIN);
     AddString(translated_strings.get(), "waiting", IDS_NEW_TAB_VOICE_WAITING);
+    AddString(translated_strings.get(), "otherError",
+              IDS_NEW_TAB_VOICE_OTHER_ERROR);
   }
 
   return translated_strings;

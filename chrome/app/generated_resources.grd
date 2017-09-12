@@ -7971,6 +7971,10 @@ I don't think this site should be blocked!
         desc="Used to indicate that the speech recognition service didn't receive any voice input.">
         Please check your microphone and audio levels.
       </message>
+      <message name="IDS_NEW_TAB_VOICE_OTHER_ERROR"
+        desc="Used to indicate that the speech recognition service failed in an unknown way.">
+        Unknown error.
+      </message>
       <message name="IDS_NEW_TAB_VOICE_PERMISSION_ERROR"
         desc="Used to indicate that the speech recognition service did not get permission to use the microphone.">
         Voice search has been turned off.

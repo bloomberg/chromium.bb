@@ -86,6 +86,7 @@ let speech = {};
  *   networkError: string,
  *   noTranslation: string,
  *   noVoice: string,
+ *   otherError: string,
  *   permissionError: string,
  *   ready: string,
  *   tryAgain: string,
@@ -101,6 +102,7 @@ speech.messages = {
   networkError: '',
   noTranslation: '',
   noVoice: '',
+  otherError: '',
   permissionError: '',
   ready: '',
   tryAgain: '',
@@ -279,12 +281,12 @@ speech.init = function(
   fakeboxMicrophoneElem.onmouseup = function(event) {
     // If propagated, closes the overlay (click on the background).
     event.stopPropagation();
-    speech.toggleStartStop();
+    speech.start();
   };
   fakeboxMicrophoneElem.onkeydown = function(event) {
     if (!event.repeat &&
         (event.code == KEYCODE.ENTER || event.code == KEYCODE.NUMPAD_ENTER)) {
-      speech.toggleStartStop();
+      speech.start();
     }
   };
   window.addEventListener('keydown', speech.onKeyDown);
@@ -304,6 +306,7 @@ speech.init = function(
     networkError: translatedStrings.networkError,
     noTranslation: translatedStrings.noTranslation,
     noVoice: translatedStrings.noVoice,
+    otherError: translatedStrings.otherError,
     permissionError: translatedStrings.permissionError,
     ready: translatedStrings.ready,
     tryAgain: translatedStrings.tryAgain,
@@ -324,7 +327,6 @@ speech.initWebkitSpeech_ = function() {
   speech.recognition_.continuous = false;
   speech.recognition_.interimResults = true;
   speech.recognition_.lang = getChromeUILanguage();
-  speech.recognition_.maxAlternatives = 4;
   speech.recognition_.onaudiostart = speech.handleRecognitionAudioStart_;
   speech.recognition_.onend = speech.handleRecognitionEnd_;
   speech.recognition_.onerror = speech.handleRecognitionError_;
@@ -337,9 +339,8 @@ speech.initWebkitSpeech_ = function() {
 /**
  * Sets up the necessary states for voice search and then starts the
  * speech recognition interface.
- * @private
  */
-speech.start_ = function() {
+speech.start = function() {
   view.show();
 
   speech.resetIdleTimer_(speech.IDLE_TIMEOUT_MS_);
@@ -352,7 +353,7 @@ speech.start_ = function() {
     speech.initWebkitSpeech_();
   }
 
-  // If |speech.start_()| is called too soon after |speech.stop_()| then the
+  // If |speech.start()| is called too soon after |speech.stop()| then the
   // recognition interface hasn't yet reset and an error occurs. In this case
   // we need to hard-reset it and reissue the |recognition_.start()| command.
   try {
@@ -364,7 +365,7 @@ speech.start_ = function() {
       speech.recognition_.start();
       speech.currentState_ = speech.State_.STARTED;
     } catch (error2) {
-      speech.stop_();
+      speech.stop();
     }
   }
 };
@@ -372,9 +373,8 @@ speech.start_ = function() {
 
 /**
  * Hides the overlay and resets the speech state.
- * @private
  */
-speech.stop_ = function() {
+speech.stop = function() {
   speech.recognition_.abort();
   speech.currentState_ = speech.State_.STOPPED;
   view.hide();
@@ -586,13 +586,13 @@ speech.onKeyDown = function(event) {
         event.ctrlKey || (speech.isUserAgentMac_() && event.metaKey);
     if (speech.currentState_ == speech.State_.READY &&
         event.code == KEYCODE.PERIOD && event.shiftKey && ctrlKeyPressed) {
-      speech.toggleStartStop();
+      speech.start();
     }
   } else {
     // Ensures that keyboard events are not propagated during voice input.
     event.stopPropagation();
     if (event.code == KEYCODE.ESC) {
-      speech.stop_();
+      speech.stop();
     } else if (
         (event.code == KEYCODE.ENTER || event.code == KEYCODE.NUMPAD_ENTER) &&
         speech.finalResult_) {
@@ -621,7 +621,7 @@ speech.onIdleTimeout_ = function() {
     case speech.State_.SPEECH_RECEIVED:
     case speech.State_.RESULT_RECEIVED:
     case speech.State_.ERROR_RECEIVED:
-      speech.stop_();
+      speech.stop();
       break;
   }
 };
@@ -638,7 +638,7 @@ speech.onVisibilityChange_ = function() {
   }
 
   if (document.webkitHidden) {
-    speech.stop_();
+    speech.stop();
   }
 };
 
@@ -648,7 +648,7 @@ speech.onVisibilityChange_ = function() {
  */
 speech.onOmniboxFocused = function() {
   if (!speech.isUiDefinitelyHidden_()) {
-    speech.stop_();
+    speech.stop();
   }
 };
 
@@ -684,7 +684,7 @@ speech.submitFinalResult_ = function() {
   const queryUrl = new URL('/search', speech.googleBaseUrl_);
   queryUrl.search = searchParams;
 
-  speech.stop_();
+  speech.stop();
   speech.navigateToUrl_(queryUrl);
 };
 
@@ -761,7 +761,7 @@ speech.resetIdleTimer_ = function(duration) {
  */
 speech.resetErrorTimer_ = function(duration) {
   window.clearTimeout(speech.errorTimer_);
-  speech.errorTimer_ = window.setTimeout(speech.stop_, duration);
+  speech.errorTimer_ = window.setTimeout(speech.stop, duration);
 };
 
 
@@ -802,18 +802,6 @@ speech.isUiDefinitelyHidden_ = function() {
 
 
 /**
- * Toggles starting and stopping of speech recognition by the speech tool.
- */
-speech.toggleStartStop = function() {
-  if (speech.currentState_ == speech.State_.READY) {
-    speech.start_();
-  } else {
-    speech.stop_();
-  }
-};
-
-
-/**
  * Handles click events during speech recognition.
  * @param {boolean} shouldSubmit True if a query should be submitted.
  * @param {boolean} shouldRetry True if the interface should be restarted.
@@ -830,17 +818,16 @@ speech.onClick_ = function(shouldSubmit, shouldRetry, navigatingAway) {
     // If the user clicks on a "Learn more" or "Details" support page link
     // from an error message, do nothing, and let Chrome navigate to that page.
   } else {
-    speech.stop_();
+    speech.stop();
   }
 };
 
 /**
  * Restarts voice recognition. Used for the 'Try again' error link.
- * @private
  */
 speech.restart = function() {
   speech.reset_();
-  speech.toggleStartStop();
+  speech.start();
 };
 
 
@@ -929,6 +916,15 @@ text.LISTENING_TIMEOUT_MS_ = 2000;
 
 
 /**
+ * Base link target for help regarding voice search. To be appended
+ * with a locale string for proper target site localization.
+ * @const @private
+ */
+text.SUPPORT_LINK_BASE_ =
+    'https://support.google.com/chrome/?p=ui_voice_search&hl=';
+
+
+/**
  * The final / high confidence speech recognition result element.
  * @private {Element}
  */
@@ -954,15 +950,6 @@ text.initializingTimer_;
  * @private {number}
  */
 text.listeningTimer_;
-
-
-/**
- * Base link target for help regarding voice search. To be appended
- * with a locale string for proper target site localization.
- * @const @private
- */
-text.SUPPORT_LINK_BASE_ =
-    'https://support.google.com/chrome/?p=ui_voice_search&hl=';
 
 
 /**
@@ -1061,7 +1048,7 @@ text.getErrorMessage_ = function(error) {
     case RecognitionError.LANGUAGE_NOT_SUPPORTED:
       return speech.messages.languageError;
     default:
-      return '';
+      return speech.messages.otherError;
   }
 };
 

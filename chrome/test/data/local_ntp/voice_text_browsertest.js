@@ -48,6 +48,7 @@ test.text.setUp = function() {
     networkError: 'Network error',
     noTranslation: 'No translation',
     noVoice: 'No voice',
+    otherError: 'Unknown error',
     permissionError: 'Permission error',
     ready: 'Ready',
     tryAgain: 'Try again',

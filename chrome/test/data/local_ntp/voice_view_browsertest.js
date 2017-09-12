@@ -16,12 +16,13 @@ test.view = {};
 
 /**
  * The set of textual strings for different states.
- * @enum {string}
+ * @const
  */
-test.view.Text = {
-  WAITING: 'Waiting...',
+test.view.TEXT = {
+  BLANK: '',
+  ERROR: 'Error',
   SPEAK_NOW: 'Speak now',
-  BLANK: ''
+  WAITING: 'Waiting...'
 };
 
 
@@ -80,20 +81,24 @@ test.view.setUp = function() {
   // Mock text area manipulating functions.
   test.view.stubs.replace(text, 'showInitializingMessage', function() {
     // Ignore the short timeout before showing "Waiting...".
-    test.view.interimText = test.view.Text.WAITING;
-    test.view.finalText = test.view.Text.BLANK;
+    test.view.interimText = test.view.TEXT.WAITING;
+    test.view.finalText = test.view.TEXT.BLANK;
   });
   test.view.stubs.replace(text, 'showReadyMessage', function() {
-    test.view.interimText = test.view.Text.SPEAK_NOW;
-    test.view.finalText = test.view.Text.BLANK;
+    test.view.interimText = test.view.TEXT.SPEAK_NOW;
+    test.view.finalText = test.view.TEXT.BLANK;
+  });
+  test.view.stubs.replace(text, 'showErrorMessage', function() {
+    test.view.interimText = test.view.TEXT.ERROR;
+    test.view.finalText = test.view.TEXT.BLANK;
   });
   test.view.stubs.replace(text, 'updateTextArea', function(texti, textf = '') {
     test.view.interimText = texti;
     test.view.finalText = textf;
   });
   test.view.stubs.replace(text, 'clear', function() {
-    test.view.interimText = test.view.Text.BLANK;
-    test.view.finalText = test.view.Text.BLANK;
+    test.view.interimText = test.view.TEXT.BLANK;
+    test.view.finalText = test.view.TEXT.BLANK;
   });
 
   // Mock level animation state.
@@ -127,8 +132,8 @@ test.view.testShowWithReadyElements = function() {
   view.show();
 
   test.view.assertViewActive(
-      /*interim=*/test.view.Text.WAITING,
-      /*final=*/test.view.Text.BLANK,
+      /*interim=*/test.view.TEXT.WAITING,
+      /*final=*/test.view.TEXT.BLANK,
       /*containerClass=*/view.INACTIVE_CLASS_,
       /*levelAnimationActive=*/false);
 };
@@ -143,8 +148,8 @@ test.view.testShowCalledTwice = function() {
   view.show();
 
   test.view.assertViewActive(
-      /*interim=*/test.view.Text.WAITING,
-      /*final=*/test.view.Text.BLANK,
+      /*interim=*/test.view.TEXT.WAITING,
+      /*final=*/test.view.TEXT.BLANK,
       /*containerClass=*/view.INACTIVE_CLASS_,
       /*levelAnimationActive=*/false);
 };
@@ -173,8 +178,8 @@ test.view.testAudioDeviceReady = function() {
   view.setReadyForSpeech();
 
   test.view.assertViewActive(
-      /*interim=*/test.view.Text.SPEAK_NOW,
-      /*final=*/test.view.Text.BLANK,
+      /*interim=*/test.view.TEXT.SPEAK_NOW,
+      /*final=*/test.view.TEXT.BLANK,
       /*containerClass=*/view.MICROPHONE_LISTENING_CLASS_,
       /*levelAnimationActive=*/false);
 };
@@ -202,8 +207,8 @@ test.view.testSpeechStartWithWorkingViews = function() {
   view.setReceivingSpeech();
 
   test.view.assertViewActive(
-      /*interim=*/test.view.Text.SPEAK_NOW,
-      /*final=*/test.view.Text.BLANK,
+      /*interim=*/test.view.TEXT.SPEAK_NOW,
+      /*final=*/test.view.TEXT.BLANK,
       /*containerClass=*/view.RECEIVING_SPEECH_CLASS_,
       /*levelAnimationActive=*/true);
 };
@@ -458,8 +463,8 @@ test.view.testShowingUnknownErrorDoesNotProduceAnError = function() {
   view.showError(RecognitionError.OTHER);
 
   test.view.assertViewActive(
-      /*interim=*/test.view.Text.BLANK,
-      /*final=*/test.view.Text.BLANK,
+      /*interim=*/test.view.TEXT.ERROR,
+      /*final=*/test.view.TEXT.BLANK,
       /*containerClass=*/view.ERROR_RECEIVED_CLASS_,
       /*levelAnimationActive=*/false);
 };
@@ -477,8 +482,8 @@ test.view.assertViewInactive = function() {
   assertFalse(view.isNoMatchShown_);
   assertEquals(view.OVERLAY_HIDDEN_CLASS_, view.background_.className);
 
-  assertEquals(test.view.Text.BLANK, test.view.interimText);
-  assertEquals(test.view.Text.BLANK, test.view.finalText);
+  assertEquals(test.view.TEXT.BLANK, test.view.interimText);
+  assertEquals(test.view.TEXT.BLANK, test.view.finalText);
   assertEquals(view.INACTIVE_CLASS_, view.container_.className);
   assertFalse(test.view.levelAnimationActive);
 };
