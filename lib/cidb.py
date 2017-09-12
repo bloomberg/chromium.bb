@@ -647,7 +647,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       'id', 'build_config', 'start_time', 'finish_time', 'status', 'waterfall',
       'build_number', 'builder_name', 'platform_version', 'full_version',
       'milestone_version', 'important', 'buildbucket_id', 'summary',
-      'buildbot_generation')
+      'buildbot_generation', 'master_build_id', 'bot_hostname', 'deadline')
 
   def __init__(self, db_credentials_dir, for_service=False,
                query_retry_args=SqlConnectionRetryArgs(8, 4, 2)):
@@ -1351,7 +1351,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                       starting_build_number=None, ending_build_number=None,
                       milestone_version=None, platform_version=None,
                       starting_build_id=None, waterfall=None,
-                      buildbot_generation=None, final=False):
+                      buildbot_generation=None, final=False, reverse=False):
     """Returns basic information about most recent builds for build config.
 
     By default this function returns the most recent builds. Some arguments can
@@ -1383,13 +1383,13 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       buildbot_generation: (Optional) The buildbot_generation for which data
           should be retrieved.
       final: (Optional) If True, only retrieve final (ie finished) builds.
+      reverse: (Optional) If True, retrieve builds in reversed order (old ones
+          first).
 
     Returns:
       A sorted list of dicts containing up to |number| dictionaries for
-      build statuses in descending order. Valid keys in the dictionary are
-      [id, build_config, buildbot_generation, waterfall, build_number,
-      start_time, finish_time, platform_version, full_version, status,
-      important, buildbucket_id].
+      build statuses in descending order (if |reverse| is True, ascending
+      order). See BUILD_STATUS_KEYS for valid keys in the dictionary.
     """
     return self.GetBuildsHistory(
         [build_config], num_results,
@@ -1398,7 +1398,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
         ending_build_number=ending_build_number,
         milestone_version=milestone_version, platform_version=platform_version,
         starting_build_id=starting_build_id, waterfall=waterfall,
-        buildbot_generation=buildbot_generation, final=final)
+        buildbot_generation=buildbot_generation, final=final, reverse=reverse)
 
   @minimum_schema(47)
   def GetBuildsHistory(self, build_configs, num_results,
@@ -1406,14 +1406,15 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                        starting_build_number=None, ending_build_number=None,
                        milestone_version=None, platform_version=None,
                        starting_build_id=None, waterfall=None,
-                       buildbot_generation=None, final=False):
+                       buildbot_generation=None, final=False, reverse=False):
     """Returns basic information about most recent builds for build configs.
 
     By default this function returns the most recent builds. Some arguments can
     restrict the result to older builds.
 
     Args:
-      build_configs: config names of the builds to get history.
+      build_configs: config names of the builds to get history. If None is
+          given, all build configs are covered.
       num_results: Number of builds to search back. Set this to
           CIDBConnection.NUM_RESULTS_NO_LIMIT to request no limit on the number
           of results.
@@ -1438,16 +1439,18 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       buildbot_generation: (Optional) The buildbot_generation for which data
           should be retrieved.
       final: (Optional) If True, only retrieve final (ie finished) builds.
+      reverse: (Optional) If True, retrieve builds in reversed order (old ones
+          first).
 
     Returns:
       A sorted list of dicts containing up to |number| dictionaries for
-      build statuses in descending order. Valid keys in the dictionary are
-      [id, build_config, buildbot_generation, waterfall, build_number,
-      start_time, finish_time, platform_version, full_version, status,
-      important, buildbucket_id].
+      build statuses in descending order (if |reverse| is True, ascending
+      order). See BUILD_STATUS_KEYS for valid keys in the dictionary.
     """
-    where_clauses = ['build_config IN (%s)' %
-                     ','.join('"%s"' % b for b in build_configs)]
+    where_clauses = []
+    if build_configs:
+      where_clauses.append('build_config IN (%s)' %
+                           ','.join('"%s"' % b for b in build_configs))
     if start_date is not None:
       where_clauses.append('date(start_time) >= date("%s")' %
                            start_date.strftime(self._DATE_FORMAT))
@@ -1472,13 +1475,16 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       where_clauses.append('buildbot_generation = "%s"' % buildbot_generation)
     if final:
       where_clauses.append('final = 1')
+    if not where_clauses:
+      where_clauses.append('TRUE')
     query = (
         'SELECT %s'
         ' FROM buildTable'
         ' WHERE %s'
-        ' ORDER BY id DESC' %
+        ' ORDER BY id %s' %
         (', '.join(CIDBConnection.BUILD_STATUS_KEYS),
-         ' AND '.join(where_clauses)))
+         ' AND '.join(where_clauses),
+         'ASC' if reverse else 'DESC'))
     if num_results != self.NUM_RESULTS_NO_LIMIT:
       query += ' LIMIT %d' % num_results
 
