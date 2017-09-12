@@ -1007,8 +1007,12 @@ static void write_segment_id(aom_writer *w, const struct segmentation *seg,
 #if CONFIG_NEW_MULTISYMBOL
 #define WRITE_REF_BIT(bname, pname) \
   aom_write_symbol(w, bname, av1_get_pred_cdf_##pname(cm, xd), 2)
+#define WRITE_REF_BIT2(bname, pname) \
+  aom_write_symbol(w, bname, av1_get_pred_cdf_##pname(xd), 2)
 #else
 #define WRITE_REF_BIT(bname, pname) \
+  aom_write(w, bname, av1_get_pred_prob_##pname(cm, xd))
+#define WRITE_REF_BIT2(bname, pname) \
   aom_write(w, bname, av1_get_pred_prob_##pname(cm, xd))
 #endif
 
@@ -1049,7 +1053,12 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       if ((L_OR_L2(cm) || L3_OR_G(cm)) && BWD_OR_ALT(cm))
         if (L_AND_L2(cm) || L_AND_L3(cm) || L_AND_G(cm) || BWD_AND_ALT(cm))
 #endif  // CONFIG_VAR_REFS
-          aom_write(w, comp_ref_type, av1_get_comp_reference_type_prob(cm, xd));
+#if CONFIG_NEW_MULTISYMBOL
+          aom_write_symbol(w, comp_ref_type,
+                           av1_get_comp_reference_type_cdf(xd), 2);
+#else
+      aom_write(w, comp_ref_type, av1_get_comp_reference_type_prob(cm, xd));
+#endif
 #if CONFIG_VAR_REFS
         else
           assert(comp_ref_type == BIDIR_COMP_REFERENCE);
@@ -1066,7 +1075,7 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #if CONFIG_VAR_REFS
         if ((L_AND_L2(cm) || L_AND_L3(cm) || L_AND_G(cm)) && BWD_AND_ALT(cm))
 #endif  // CONFIG_VAR_REFS
-          aom_write(w, bit, av1_get_pred_prob_uni_comp_ref_p(cm, xd));
+          WRITE_REF_BIT2(bit, uni_comp_ref_p);
 
         if (!bit) {
           assert(mbmi->ref_frame[0] == LAST_FRAME);
@@ -1075,14 +1084,13 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #endif  // CONFIG_VAR_REFS
             const int bit1 = mbmi->ref_frame[1] == LAST3_FRAME ||
                              mbmi->ref_frame[1] == GOLDEN_FRAME;
-            aom_write(w, bit1, av1_get_pred_prob_uni_comp_ref_p1(cm, xd));
-
+            WRITE_REF_BIT2(bit1, uni_comp_ref_p1);
             if (bit1) {
 #if CONFIG_VAR_REFS
               if (L_AND_L3(cm) && L_AND_G(cm)) {
 #endif  // CONFIG_VAR_REFS
                 const int bit2 = mbmi->ref_frame[1] == GOLDEN_FRAME;
-                aom_write(w, bit2, av1_get_pred_prob_uni_comp_ref_p2(cm, xd));
+                WRITE_REF_BIT2(bit2, uni_comp_ref_p2);
 #if CONFIG_VAR_REFS
               }
 #endif  // CONFIG_VAR_REFS

@@ -1356,8 +1356,12 @@ static REFERENCE_MODE read_block_reference_mode(AV1_COMMON *cm,
 #if CONFIG_NEW_MULTISYMBOL
 #define READ_REF_BIT(pname) \
   aom_read_symbol(r, av1_get_pred_cdf_##pname(cm, xd), 2, ACCT_STR)
+#define READ_REF_BIT2(pname) \
+  aom_read_symbol(r, av1_get_pred_cdf_##pname(xd), 2, ACCT_STR)
 #else
 #define READ_REF_BIT(pname) \
+  aom_read(r, av1_get_pred_prob_##pname(cm, xd), ACCT_STR)
+#define READ_REF_BIT2(pname) \
   aom_read(r, av1_get_pred_prob_##pname(cm, xd), ACCT_STR)
 #endif
 
@@ -1369,16 +1373,24 @@ static COMP_REFERENCE_TYPE read_comp_reference_type(AV1_COMMON *cm,
 #if USE_UNI_COMP_REFS
   COMP_REFERENCE_TYPE comp_ref_type;
 #if CONFIG_VAR_REFS
-  if ((L_OR_L2(cm) || L3_OR_G(cm)) && BWD_OR_ALT(cm))
-    if (L_AND_L2(cm) || L_AND_L3(cm) || L_AND_G(cm) || BWD_AND_ALT(cm))
+  if ((L_OR_L2(cm) || L3_OR_G(cm)) && BWD_OR_ALT(cm)) {
+    if (L_AND_L2(cm) || L_AND_L3(cm) || L_AND_G(cm) || BWD_AND_ALT(cm)) {
 #endif  // CONFIG_VAR_REFS
-      comp_ref_type = (COMP_REFERENCE_TYPE)aom_read(
-          r, cm->fc->comp_ref_type_prob[ctx], ACCT_STR);
+#if CONFIG_NEW_MULTISYMBOL
+      (void)cm;
+      comp_ref_type = (COMP_REFERENCE_TYPE)aom_read_symbol(
+          r, xd->tile_ctx->comp_ref_type_cdf[ctx], 2, ACCT_STR);
+#else
+  comp_ref_type = (COMP_REFERENCE_TYPE)aom_read(
+      r, cm->fc->comp_ref_type_prob[ctx], ACCT_STR);
+#endif
 #if CONFIG_VAR_REFS
-    else
+    } else {
       comp_ref_type = BIDIR_COMP_REFERENCE;
-  else
+    }
+  } else {
     comp_ref_type = UNIDIR_COMP_REFERENCE;
+  }
 #endif  // CONFIG_VAR_REFS
 #else   // !USE_UNI_COMP_REFS
   // TODO(zoeliu): Temporarily turn off uni-directional comp refs
@@ -1394,9 +1406,6 @@ static COMP_REFERENCE_TYPE read_comp_reference_type(AV1_COMMON *cm,
 static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                             aom_reader *r, int segment_id,
                             MV_REFERENCE_FRAME ref_frame[2]) {
-#if CONFIG_EXT_COMP_REFS
-  FRAME_CONTEXT *const fc = cm->fc;
-#endif
   FRAME_COUNTS *counts = xd->counts;
 
   if (segfeature_active(&cm->seg, segment_id, SEG_LVL_REF_FRAME)) {
@@ -1422,7 +1431,7 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 #if CONFIG_VAR_REFS
         if ((L_AND_L2(cm) || L_AND_L3(cm) || L_AND_G(cm)) && BWD_AND_ALT(cm))
 #endif  // CONFIG_VAR_REFS
-          bit = aom_read(r, fc->uni_comp_ref_prob[ctx][0], ACCT_STR);
+          bit = READ_REF_BIT2(uni_comp_ref_p);
 #if CONFIG_VAR_REFS
         else
           bit = BWD_AND_ALT(cm);
@@ -1438,7 +1447,7 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 #if CONFIG_VAR_REFS
           if (L_AND_L2(cm) && (L_AND_L3(cm) || L_AND_G(cm)))
 #endif  // CONFIG_VAR_REFS
-            bit1 = aom_read(r, fc->uni_comp_ref_prob[ctx1][1], ACCT_STR);
+            bit1 = READ_REF_BIT2(uni_comp_ref_p1);
 #if CONFIG_VAR_REFS
           else
             bit1 = L_AND_L3(cm) || L_AND_G(cm);
@@ -1451,7 +1460,7 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 #if CONFIG_VAR_REFS
             if (L_AND_L3(cm) && L_AND_G(cm))
 #endif  // CONFIG_VAR_REFS
-              bit2 = aom_read(r, fc->uni_comp_ref_prob[ctx2][2], ACCT_STR);
+              bit2 = READ_REF_BIT2(uni_comp_ref_p2);
 #if CONFIG_VAR_REFS
             else
               bit2 = L_AND_G(cm);
