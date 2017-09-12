@@ -189,7 +189,8 @@ void GenericURLRequestJob::GetLoadTimingInfo(
 }
 
 uint64_t GenericURLRequestJob::GenericURLRequestJob::GetRequestId() const {
-  return request_->identifier();
+  return request_->identifier() +
+         (static_cast<uint64_t>(request_->url_chain().size()) << 32);
 }
 
 const net::URLRequest* GenericURLRequestJob::GetURLRequest() const {
