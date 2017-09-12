@@ -26,8 +26,6 @@ class MockDownloadItemImpl : public DownloadItemImpl {
  public:
   // Use history constructor for minimal base object.
   explicit MockDownloadItemImpl(DownloadItemImplDelegate* delegate);
-  MockDownloadItemImpl(DownloadItemImplDelegate* delegate,
-                       const DownloadItem::ReceivedSlices& received_slices);
   ~MockDownloadItemImpl() override;
 
   MOCK_METHOD5(OnDownloadTargetDetermined,
@@ -89,6 +87,7 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   MOCK_CONST_METHOD0(GetRemoteAddress, std::string());
   MOCK_CONST_METHOD0(GetTotalBytes, int64_t());
   MOCK_CONST_METHOD0(GetReceivedBytes, int64_t());
+  MOCK_CONST_METHOD0(GetReceivedSlices, const std::vector<ReceivedSlice>&());
   MOCK_CONST_METHOD0(GetHashState, const std::string&());
   MOCK_CONST_METHOD0(GetHash, const std::string&());
   MOCK_CONST_METHOD0(GetId, uint32_t());
