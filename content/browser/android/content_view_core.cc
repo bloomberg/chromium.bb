@@ -988,6 +988,12 @@ jint ContentViewCore::GetCurrentRenderProcessId(
       web_contents_->GetRenderViewHost());
 }
 
+jboolean ContentViewCore::UsingSynchronousCompositing(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  return content::GetContentClient()->UsingSynchronousCompositing();
+}
+
 void ContentViewCore::SetBackgroundOpaque(JNIEnv* env,
                                           const JavaParamRef<jobject>& jobj,
                                           jboolean opaque) {

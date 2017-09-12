@@ -487,7 +487,8 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         mWebContentsObserver = new ContentViewWebContentsObserver(this);
 
         mShouldRequestUnbufferedDispatch = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-                && ContentFeatureList.isEnabled(ContentFeatureList.REQUEST_UNBUFFERED_DISPATCH);
+                && ContentFeatureList.isEnabled(ContentFeatureList.REQUEST_UNBUFFERED_DISPATCH)
+                && !nativeUsingSynchronousCompositing(mNativeContentViewCore);
     }
 
     /**
@@ -2211,6 +2212,8 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
             long nativeContentViewCore, long nativeSelectPopupSourceFrame, int[] indices);
 
     private native int nativeGetCurrentRenderProcessId(long nativeContentViewCore);
+
+    private native boolean nativeUsingSynchronousCompositing(long nativeContentViewCore);
 
     private native void nativeSetAllowJavascriptInterfacesInspection(
             long nativeContentViewCore, boolean allow);
