@@ -35,7 +35,7 @@ std::unique_ptr<RemoteSuggestion> SnippetFromContentSuggestionJSON(
       *json_dict, kArticlesRemoteId, fetch_date);
 }
 
-TEST(RemoteSuggestionTest, FromChromeContentSuggestionsDictionary) {
+TEST(RemoteSuggestionTest, FromContentSuggestionsDictionary) {
   const std::string kJsonStr =
       "{"
       "  \"ids\" : [\"http://localhost/foobar\"],"
@@ -79,291 +79,6 @@ TEST(RemoteSuggestionTest, FromChromeContentSuggestionsDictionary) {
   EXPECT_EQ(fetch_date, snippet->fetch_date());
 }
 
-std::unique_ptr<RemoteSuggestion> SnippetFromChromeReaderDict(
-    std::unique_ptr<base::DictionaryValue> dict,
-    const base::Time& fetch_date) {
-  if (!dict) {
-    return nullptr;
-  }
-  return RemoteSuggestion::CreateFromChromeReaderDictionary(*dict, fetch_date);
-}
-
-const char kChromeReaderCreationTimestamp[] = "1234567890";
-const char kChromeReaderExpiryTimestamp[] = "2345678901";
-
-// Old form, from chromereader-pa.googleapis.com. Two sources.
-std::unique_ptr<base::DictionaryValue> ChromeReaderSnippetWithTwoSources() {
-  const std::string kJsonStr = base::StringPrintf(
-      "{\n"
-      "  \"contentInfo\": {\n"
-      "    \"url\":                   \"http://url.com\",\n"
-      "    \"title\":                 \"Source 1 Title\",\n"
-      "    \"snippet\":               \"Source 1 Snippet\",\n"
-      "    \"thumbnailUrl\":          \"http://url.com/thumbnail\",\n"
-      "    \"creationTimestampSec\":  \"%s\",\n"
-      "    \"expiryTimestampSec\":    \"%s\",\n"
-      "    \"sourceCorpusInfo\": [{\n"
-      "      \"corpusId\":            \"http://source1.com\",\n"
-      "      \"publisherData\": {\n"
-      "        \"sourceName\":        \"Source 1\"\n"
-      "      },\n"
-      "      \"ampUrl\": \"http://source1.amp.com\"\n"
-      "    }, {\n"
-      "      \"corpusId\":            \"http://source2.com\",\n"
-      "      \"publisherData\": {\n"
-      "        \"sourceName\":        \"Source 2\"\n"
-      "      },\n"
-      "      \"ampUrl\": \"http://source2.amp.com\"\n"
-      "    }]\n"
-      "  },\n"
-      "  \"score\": 5.0\n"
-      "}\n",
-      kChromeReaderCreationTimestamp, kChromeReaderExpiryTimestamp);
-
-  auto json_value = base::JSONReader::Read(kJsonStr);
-  base::DictionaryValue* json_dict;
-  if (!json_value->GetAsDictionary(&json_dict)) {
-    return nullptr;
-  }
-  return json_dict->CreateDeepCopy();
-}
-
-TEST(RemoteSuggestionTest, TestMultipleSources) {
-  auto snippet = SnippetFromChromeReaderDict(
-      ChromeReaderSnippetWithTwoSources(), base::Time());
-  ASSERT_THAT(snippet, NotNull());
-
-  // Expect the first source to be chosen.
-  EXPECT_EQ(snippet->id(), "http://url.com");
-  EXPECT_EQ(snippet->url(), GURL("http://source1.com"));
-  EXPECT_EQ(snippet->publisher_name(), std::string("Source 1"));
-  EXPECT_EQ(snippet->amp_url(), GURL("http://source1.amp.com"));
-}
-
-TEST(RemoteSuggestionTest, TestMultipleIncompleteSources1) {
-  // Set Source 2 to have no AMP url, and Source 1 to have no publisher name
-  // Source 2 should win since we favor publisher name over amp url
-  auto dict = ChromeReaderSnippetWithTwoSources();
-  base::ListValue* sources;
-  ASSERT_TRUE(dict->GetList("contentInfo.sourceCorpusInfo", &sources));
-  base::DictionaryValue* source;
-  ASSERT_TRUE(sources->GetDictionary(0, &source));
-  source->Remove("publisherData.sourceName", nullptr);
-  ASSERT_TRUE(sources->GetDictionary(1, &source));
-  source->Remove("ampUrl", nullptr);
-
-  auto snippet = SnippetFromChromeReaderDict(std::move(dict), base::Time());
-  ASSERT_THAT(snippet, NotNull());
-
-  EXPECT_EQ(snippet->id(), "http://url.com");
-  EXPECT_EQ(snippet->url(), GURL("http://source2.com"));
-  EXPECT_EQ(snippet->publisher_name(), std::string("Source 2"));
-  EXPECT_EQ(snippet->amp_url(), GURL());
-}
-
-TEST(RemoteSuggestionTest, TestMultipleIncompleteSources2) {
-  // Set Source 1 to have no AMP url, and Source 2 to have no publisher name
-  // Source 1 should win in this case since we prefer publisher name to AMP url
-  auto dict = ChromeReaderSnippetWithTwoSources();
-  base::ListValue* sources;
-  ASSERT_TRUE(dict->GetList("contentInfo.sourceCorpusInfo", &sources));
-  base::DictionaryValue* source;
-  ASSERT_TRUE(sources->GetDictionary(0, &source));
-  source->Remove("ampUrl", nullptr);
-  ASSERT_TRUE(sources->GetDictionary(1, &source));
-  source->Remove("publisherData.sourceName", nullptr);
-
-  auto snippet = SnippetFromChromeReaderDict(std::move(dict), base::Time());
-  ASSERT_THAT(snippet, NotNull());
-
-  EXPECT_EQ(snippet->id(), "http://url.com");
-  EXPECT_EQ(snippet->url(), GURL("http://source1.com"));
-  EXPECT_EQ(snippet->publisher_name(), std::string("Source 1"));
-  EXPECT_EQ(snippet->amp_url(), GURL());
-}
-
-TEST(RemoteSuggestionTest, TestMultipleIncompleteSources3) {
-  // Set source 1 to have no AMP url and no source, and source 2 to only have
-  // amp url. There should be no snippets since we only add sources we consider
-  // complete
-  auto dict = ChromeReaderSnippetWithTwoSources();
-  base::ListValue* sources;
-  ASSERT_TRUE(dict->GetList("contentInfo.sourceCorpusInfo", &sources));
-  base::DictionaryValue* source;
-  ASSERT_TRUE(sources->GetDictionary(0, &source));
-  source->Remove("publisherData.sourceName", nullptr);
-  source->Remove("ampUrl", nullptr);
-  ASSERT_TRUE(sources->GetDictionary(1, &source));
-  source->Remove("publisherData.sourceName", nullptr);
-
-  auto snippet = SnippetFromChromeReaderDict(std::move(dict), base::Time());
-  ASSERT_THAT(snippet, NotNull());
-  ASSERT_FALSE(snippet->is_complete());
-}
-
-TEST(RemoteSuggestionTest, ShouldFillInCreation) {
-  auto dict = ChromeReaderSnippetWithTwoSources();
-  ASSERT_TRUE(dict->Remove("contentInfo.creationTimestampSec", nullptr));
-  auto snippet = SnippetFromChromeReaderDict(std::move(dict), base::Time());
-  ASSERT_THAT(snippet, NotNull());
-
-  // Publish date should have been filled with "now" - just make sure it's not
-  // empty and not the test default value.
-  base::Time publish_date = snippet->publish_date();
-  EXPECT_FALSE(publish_date.is_null());
-  EXPECT_NE(publish_date, RemoteSuggestion::TimeFromJsonString(
-                              kChromeReaderCreationTimestamp));
-  // Expiry date should have kept the test default value.
-  base::Time expiry_date = snippet->expiry_date();
-  EXPECT_FALSE(expiry_date.is_null());
-  EXPECT_EQ(expiry_date,
-            RemoteSuggestion::TimeFromJsonString(kChromeReaderExpiryTimestamp));
-}
-
-TEST(RemoteSuggestionTest, ShouldFillInExpiry) {
-  auto dict = ChromeReaderSnippetWithTwoSources();
-  ASSERT_TRUE(dict->Remove("contentInfo.expiryTimestampSec", nullptr));
-  auto snippet = SnippetFromChromeReaderDict(std::move(dict), base::Time());
-  ASSERT_THAT(snippet, NotNull());
-
-  base::Time publish_date = snippet->publish_date();
-  ASSERT_FALSE(publish_date.is_null());
-  // Expiry date should have been filled with creation date + offset.
-  base::Time expiry_date = snippet->expiry_date();
-  EXPECT_FALSE(expiry_date.is_null());
-  EXPECT_EQ(publish_date + base::TimeDelta::FromMinutes(
-                               kChromeReaderDefaultExpiryTimeMins),
-            expiry_date);
-}
-
-TEST(RemoteSuggestionTest, ShouldFillInCreationAndExpiry) {
-  auto dict = ChromeReaderSnippetWithTwoSources();
-  ASSERT_TRUE(dict->Remove("contentInfo.creationTimestampSec", nullptr));
-  ASSERT_TRUE(dict->Remove("contentInfo.expiryTimestampSec", nullptr));
-  auto snippet = SnippetFromChromeReaderDict(std::move(dict), base::Time());
-  ASSERT_THAT(snippet, NotNull());
-
-  // Publish date should have been filled with "now" - just make sure it's not
-  // empty and not the test default value.
-  base::Time publish_date = snippet->publish_date();
-  EXPECT_FALSE(publish_date.is_null());
-  EXPECT_NE(publish_date, RemoteSuggestion::TimeFromJsonString(
-                              kChromeReaderCreationTimestamp));
-  // Expiry date should have been filled with creation date + offset.
-  base::Time expiry_date = snippet->expiry_date();
-  EXPECT_FALSE(expiry_date.is_null());
-  EXPECT_EQ(publish_date + base::TimeDelta::FromMinutes(
-                               kChromeReaderDefaultExpiryTimeMins),
-            expiry_date);
-}
-
-TEST(RemoteSuggestionTest, ShouldNotOverwriteExpiry) {
-  auto dict = ChromeReaderSnippetWithTwoSources();
-  ASSERT_TRUE(dict->Remove("contentInfo.creationTimestampSec", nullptr));
-  auto snippet = SnippetFromChromeReaderDict(std::move(dict), base::Time());
-  ASSERT_THAT(snippet, NotNull());
-
-  // Expiry date should have kept the test default value.
-  base::Time expiry_date = snippet->expiry_date();
-  EXPECT_FALSE(expiry_date.is_null());
-  EXPECT_EQ(expiry_date,
-            RemoteSuggestion::TimeFromJsonString(kChromeReaderExpiryTimestamp));
-}
-
-// Old form, from chromereader-pa.googleapis.com. Three sources.
-std::unique_ptr<base::DictionaryValue> ChromeReaderSnippetWithThreeSources() {
-  const std::string kJsonStr = base::StringPrintf(
-      "{\n"
-      "  \"contentInfo\": {\n"
-      "    \"url\":                   \"http://url.com\",\n"
-      "    \"title\":                 \"Source 1 Title\",\n"
-      "    \"snippet\":               \"Source 1 Snippet\",\n"
-      "    \"thumbnailUrl\":          \"http://url.com/thumbnail\",\n"
-      "    \"creationTimestampSec\":  \"%s\",\n"
-      "    \"expiryTimestampSec\":    \"%s\",\n"
-      "    \"sourceCorpusInfo\": [{\n"
-      "      \"corpusId\":            \"http://source1.com\",\n"
-      "      \"publisherData\": {\n"
-      "        \"sourceName\":        \"Source 1\"\n"
-      "      },\n"
-      "      \"ampUrl\": \"http://source1.amp.com\"\n"
-      "    }, {\n"
-      "      \"corpusId\":            \"http://source2.com\",\n"
-      "      \"publisherData\": {\n"
-      "        \"sourceName\":        \"Source 2\"\n"
-      "      },\n"
-      "      \"ampUrl\": \"http://source2.amp.com\"\n"
-      "    }, {\n"
-      "      \"corpusId\":            \"http://source3.com\",\n"
-      "      \"publisherData\": {\n"
-      "        \"sourceName\":        \"Source 3\"\n"
-      "      },\n"
-      "      \"ampUrl\": \"http://source3.amp.com\"\n"
-      "    }]\n"
-      "  },\n"
-      "  \"score\": 5.0\n"
-      "}\n",
-      kChromeReaderCreationTimestamp, kChromeReaderExpiryTimestamp);
-
-  auto json_value = base::JSONReader::Read(kJsonStr);
-  base::DictionaryValue* json_dict;
-  if (!json_value->GetAsDictionary(&json_dict)) {
-    return nullptr;
-  }
-  return json_dict->CreateDeepCopy();
-}
-
-TEST(RemoteSuggestionTest, TestMultipleCompleteSources1) {
-  // Test 2 complete sources, we should choose the first complete source
-  auto dict = ChromeReaderSnippetWithThreeSources();
-  base::ListValue* sources;
-  ASSERT_TRUE(dict->GetList("contentInfo.sourceCorpusInfo", &sources));
-  base::DictionaryValue* source;
-  ASSERT_TRUE(sources->GetDictionary(1, &source));
-  source->Remove("publisherData.sourceName", nullptr);
-
-  auto snippet = SnippetFromChromeReaderDict(std::move(dict), base::Time());
-  ASSERT_THAT(snippet, NotNull());
-
-  EXPECT_EQ(snippet->id(), "http://url.com");
-  EXPECT_THAT(snippet->GetAllIDs(),
-              ElementsAre("http://url.com", "http://source1.com",
-                          "http://source2.com", "http://source3.com"));
-  EXPECT_EQ(snippet->url(), GURL("http://source1.com"));
-  EXPECT_EQ(snippet->publisher_name(), std::string("Source 1"));
-  EXPECT_EQ(snippet->amp_url(), GURL("http://source1.amp.com"));
-}
-
-TEST(RemoteSuggestionTest, TestMultipleCompleteSources2) {
-  // Test 2 complete sources, we should choose the first complete source
-  auto dict = ChromeReaderSnippetWithThreeSources();
-  base::ListValue* sources;
-  ASSERT_TRUE(dict->GetList("contentInfo.sourceCorpusInfo", &sources));
-  base::DictionaryValue* source;
-  ASSERT_TRUE(sources->GetDictionary(0, &source));
-  source->Remove("publisherData.sourceName", nullptr);
-
-  auto snippet = SnippetFromChromeReaderDict(std::move(dict), base::Time());
-  ASSERT_THAT(snippet, NotNull());
-
-  EXPECT_EQ(snippet->id(), "http://url.com");
-  EXPECT_EQ(snippet->url(), GURL("http://source2.com"));
-  EXPECT_EQ(snippet->publisher_name(), std::string("Source 2"));
-  EXPECT_EQ(snippet->amp_url(), GURL("http://source2.amp.com"));
-}
-
-TEST(RemoteSuggestionTest, TestMultipleCompleteSources3) {
-  // Test 3 complete sources, we should choose the first complete source
-  auto dict = ChromeReaderSnippetWithThreeSources();
-  auto snippet = SnippetFromChromeReaderDict(std::move(dict), base::Time());
-  ASSERT_THAT(snippet, NotNull());
-
-  EXPECT_EQ(snippet->id(), "http://url.com");
-  EXPECT_EQ(snippet->url(), GURL("http://source1.com"));
-  EXPECT_EQ(snippet->publisher_name(), std::string("Source 1"));
-  EXPECT_EQ(snippet->amp_url(), GURL("http://source1.amp.com"));
-}
-
 TEST(RemoteSuggestionTest,
      ShouldSupportMultipleIdsFromContentSuggestionsServer) {
   const std::string kJsonStr =
@@ -401,7 +116,7 @@ TEST(RemoteSuggestionTest, CreateFromProtoToProtoRoundtrip) {
   proto.set_remote_category_id(1);
   proto.set_fetch_date(1476364691);
   proto.set_content_type(SnippetProto_ContentType_VIDEO);
-  auto* source = proto.add_sources();
+  auto* source = proto.mutable_source();
   source->set_url("http://cool-suggestions.com/");
   source->set_publisher_name("Great Suggestions Inc.");
   source->set_amp_url("http://cdn.ampproject.org/c/foo/");
@@ -435,7 +150,7 @@ TEST(RemoteSuggestionTest, CreateFromProtoIgnoreMissingFetchDate) {
   proto.set_score(0.1f);
   proto.set_dismissed(false);
   proto.set_remote_category_id(1);
-  auto* source = proto.add_sources();
+  auto* source = proto.mutable_source();
   source->set_url("http://cool-suggestions.com/");
   source->set_publisher_name("Great Suggestions Inc.");
   source->set_amp_url("http://cdn.ampproject.org/c/foo/");
@@ -449,7 +164,6 @@ TEST(RemoteSuggestionTest, CreateFromProtoIgnoreMissingFetchDate) {
   EXPECT_EQ(snippet->fetch_date(), base::Time());
 }
 
-// New form, from chromecontentsuggestions-pa.googleapis.com.
 std::unique_ptr<base::DictionaryValue> ContentSuggestionSnippet() {
   const std::string kJsonStr =
       "{"

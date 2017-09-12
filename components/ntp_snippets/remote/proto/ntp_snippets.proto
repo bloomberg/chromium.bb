@@ -22,7 +22,7 @@ message SnippetProto {
   optional int64 publish_date = 5;
   optional int64 expiry_date = 6;
   optional float score = 7;
-  repeated SnippetSourceProto sources = 8;
+  optional SnippetSourceProto source = 8;
   optional bool dismissed = 9;
   optional int32 remote_category_id = 10;
   // The time when the snippet was fetched from the server.
