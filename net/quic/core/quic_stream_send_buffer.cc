@@ -19,6 +19,10 @@ BufferedSlice::BufferedSlice(QuicMemSlice mem_slice, QuicStreamOffset offset)
       offset(offset),
       outstanding_data_length(slice.length()) {}
 
+BufferedSlice::BufferedSlice(BufferedSlice&& other) = default;
+
+BufferedSlice& BufferedSlice::operator=(BufferedSlice&& other) = default;
+
 BufferedSlice::~BufferedSlice() {}
 
 QuicStreamSendBuffer::QuicStreamSendBuffer(QuicBufferAllocator* allocator)
