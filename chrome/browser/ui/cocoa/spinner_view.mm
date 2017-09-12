@@ -6,8 +6,9 @@
 
 #import <QuartzCore/QuartzCore.h>
 
-#include "base/mac/sdk_forward_declarations.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/mac/sdk_forward_declarations.h"
+#import "chrome/browser/ui/cocoa/md_util.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/theme_provider.h"
 #include "ui/native_theme/native_theme.h"
@@ -182,7 +183,7 @@ NSString* const kRotationAnimationName = @"RotationAnimationName";
   // Create the first half of the arc animation, where it grows from a short
   // block to its full length.
   base::scoped_nsobject<CAMediaTimingFunction> timingFunction(
-      [[CAMediaTimingFunction alloc] initWithControlPoints:0.4 :0.0 :0.2 :1]);
+      [CAMediaTimingFunction.cr_materialEaseInOutTimingFunction retain]);
   base::scoped_nsobject<CAKeyframeAnimation> firstHalfAnimation(
       [[CAKeyframeAnimation alloc] init]);
   [firstHalfAnimation setTimingFunction:timingFunction];

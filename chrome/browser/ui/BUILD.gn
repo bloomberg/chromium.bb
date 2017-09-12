@@ -2426,6 +2426,8 @@ split_static_library("ui") {
       "cocoa/last_active_browser_cocoa.h",
       "cocoa/md_hover_button.h",
       "cocoa/md_hover_button.mm",
+      "cocoa/md_util.h",
+      "cocoa/md_util.mm",
       "cocoa/media_picker/desktop_media_picker_bridge.h",
       "cocoa/media_picker/desktop_media_picker_bridge.mm",
       "cocoa/media_picker/desktop_media_picker_cocoa.h",

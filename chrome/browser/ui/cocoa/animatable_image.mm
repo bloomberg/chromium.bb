@@ -18,6 +18,7 @@
 @synthesize startOpacity = startOpacity_;
 @synthesize endOpacity = endOpacity_;
 @synthesize duration = duration_;
+@synthesize timingFunction = timingFunction_;
 
 - (id)initWithImage:(NSImage*)image
      animationFrame:(NSRect)animationFrame {
@@ -28,6 +29,8 @@
     DCHECK(image);
     image_.reset([image retain]);
     duration_ = 1.0;
+    timingFunction_ =
+        [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
     startOpacity_ = 1.0;
     endOpacity_ = 1.0;
 
@@ -57,10 +60,6 @@
   [layer setNeedsDisplayOnBoundsChange:YES];
   [rootLayer addSublayer:layer];
 
-  // Common timing function for all animations.
-  CAMediaTimingFunction* mediaFunction =
-      [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
-
   // Animate the bounds only if the image is resized.
   CABasicAnimation* boundsAnimation = nil;
   if (CGRectGetWidth([self startFrame]) != CGRectGetWidth([self endFrame]) ||
@@ -76,7 +75,7 @@
     [boundsAnimation setToValue:[NSValue valueWithRect:endRect]];
     [boundsAnimation gtm_setDuration:[self duration]
                            eventMask:NSLeftMouseUpMask];
-    [boundsAnimation setTimingFunction:mediaFunction];
+    [boundsAnimation setTimingFunction:timingFunction_];
   }
 
   // Positional animation.
@@ -88,7 +87,7 @@
       [NSValue valueWithPoint:NSPointFromCGPoint([self endFrame].origin)]];
   [positionAnimation gtm_setDuration:[self duration]
                            eventMask:NSLeftMouseUpMask];
-  [positionAnimation setTimingFunction:mediaFunction];
+  [positionAnimation setTimingFunction:timingFunction_];
 
   // Opacity animation.
   CABasicAnimation* opacityAnimation =
@@ -98,7 +97,7 @@
   [opacityAnimation setToValue:[NSNumber numberWithFloat:[self endOpacity]]];
   [opacityAnimation gtm_setDuration:[self duration]
                           eventMask:NSLeftMouseUpMask];
-  [opacityAnimation setTimingFunction:mediaFunction];
+  [opacityAnimation setTimingFunction:timingFunction_];
   // Set the delegate just for one of the animations so that this window can
   // be closed upon completion.
   [opacityAnimation setDelegate:self];

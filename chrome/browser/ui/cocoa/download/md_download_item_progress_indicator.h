@@ -15,6 +15,9 @@
 // 0, shows an indeterminate progress bar.
 @property(nonatomic) CGFloat progress;
 
+// Is the download paused? If so, any indeterminate animation will freeze.
+@property(nonatomic) BOOL paused;
+
 // Sets progress to 0 with an animation representing cancelation.
 - (void)cancel;
 
