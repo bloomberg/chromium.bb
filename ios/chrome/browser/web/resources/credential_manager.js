@@ -10,10 +10,6 @@
  * the window.navigator.object.
  */
 
-// TODO(crbug.com/435046) This only contains method signatures.
-// Implement the JavaScript API and types according to the spec:
-// https://w3c.github.io/webappsec-credential-management
-
 // TODO(crbug.com/435046) After get, store, preventSilentAccess are
 // implemented app-side, make sure that all tests at
 // https://w3c-test.org/credential-management/idl.https.html
@@ -410,7 +406,10 @@ var FederatedCredentialRequestOptions;
  * The CredentialCreationOptions dictionary, for more information see
  * https://w3c.github.io/webappsec-credential-management/#credentialcreationoptions-dictionary
  * @dict
- * @typedef {Object}
+ * @typedef {{
+ *     password: ?PasswordCredentialInit,
+ *     federated: ?FederatedCredentialInit
+ * }}
  */
 var CredentialCreationOptions;
 
@@ -474,7 +473,30 @@ CredentialsContainer.prototype.preventSilentAccess = function() {
  *     of the request.
  */
 CredentialsContainer.prototype.create = function(options) {
-  // TODO(crbug.com/435046) Implement |create| as JS function
+  // According to
+  // https://w3c.github.io/webappsec-credential-management/#abstract-opdef-create-a-credential,
+  // we should also check for secure context. Instead it is done only in
+  // browser-side methods. Since public JS interface is exposed, user can create
+  // a Credential using a constructor anyway.
+  return new Promise(function(resolve, reject) {
+    try {
+      if (options && options.password && !options.federated) {
+        resolve(new PasswordCredential(options.password));
+        return;
+      }
+      if (options && options.federated && !options.password) {
+        resolve(new FederatedCredential(options.federated));
+        return;
+      }
+    } catch (err) {
+      reject(err);
+      return;
+    }
+    reject(Object.create(DOMException.prototype, {
+      name: {value: DOMException.NOT_SUPPORTED_ERR},
+      message: {value: 'Invalid CredentialRequestOptions'}
+    }));
+  });
 };
 
 /**
