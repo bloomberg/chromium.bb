@@ -21,10 +21,10 @@
   <div i18n-content="autoRefreshText"></div>
   <span i18n-values=".innerHTML:deviceLogLinkText"></span>
 
-  <h3 i18n-content="globalPolicyLabel"></h3>
+  <h2 i18n-content="globalPolicyLabel"></h2>
   <div id="global-policy"></div>
 
-  <h3>CrNetworkSelect</h3>
+  <h2>CrNetworkSelect</h2>
   <div id="select-div">
     <cr-network-select handle-network-item-selected>
     </cr-network-select>
@@ -35,7 +35,8 @@
     </paper-button>
   </div>
 
-  <h3 i18n-content="visibleNetworksLabel"></h3>
+  <h2 i18n-content="networkListsLabel"></h2>
+
   <div i18n-content="clickToExpandText"></div>
   <div>
     <span i18n-content="propertyFormatText"></span>
@@ -47,12 +48,22 @@
     </select>
   </div>
 
+  <h3 i18n-content="devicesLabel"></h3>
+  <table id="device-state-table" class="state-table">
+    <tr class="state-table-header">
+      <td></td>
+      <td></td>
+      <td>Type</td>
+      <td>State</td>
+    </tr>
+  </table>
+
+  <h3 i18n-content="visibleNetworksLabel"></h3>
   <table id="network-state-table" class="state-table">
     <tr class="state-table-header">
       <td></td>
       <td></td>
       <td>GUID</td>
-      <td>Path</td>
       <td>Name</td>
       <td>Type</td>
       <td>State</td>
@@ -73,7 +84,6 @@
       <td></td>
       <td></td>
       <td>GUID</td>
-      <td>Path</td>
       <td>Name</td>
       <td>Type</td>
       <td>Profile</td>
