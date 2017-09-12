@@ -29,16 +29,18 @@ if exit_code != 0:
   print 'stderr was ' + stderr
   sys.exit(1)
 
-requires = [] if stdout == '' else stdout.rstrip('\n').split('\n')
+requires = set([] if stdout == '' else stdout.rstrip('\n').split('\n'))
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 provides_file = open(os.path.join(script_dir, 'dist-package-provides.json'))
 distro_package_provides = json.load(provides_file)
 
+remove_requires = set()
 ret_code = 0
 for distro in distro_package_provides:
   for requirement in requires:
     if any([requirement.startswith(shlib) for shlib in bundled_shlibs]):
+      remove_requires.add(requirement)
       continue
     if requirement not in distro_package_provides[distro]:
       print >> sys.stderr, (
@@ -47,6 +49,8 @@ for distro in distro_package_provides:
       ret_code = 1
       continue
 if ret_code == 0:
+  requires = requires.difference(remove_requires)
   with open(dep_filename, 'w') as dep_file:
-    dep_file.write(stdout)
+    for requirement in sorted(list(requires)):
+      dep_file.write(requirement + '\n')
 sys.exit(ret_code)
