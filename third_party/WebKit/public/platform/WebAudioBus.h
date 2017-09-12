@@ -30,7 +30,7 @@
 #if INSIDE_BLINK
 namespace WTF {
 template <typename T>
-class RefPtr;
+class PassRefPtr;
 }
 #endif
 
@@ -68,7 +68,7 @@ class BLINK_PLATFORM_EXPORT WebAudioBus {
   float* ChannelData(unsigned channel_index);
 
 #if INSIDE_BLINK
-  WTF::RefPtr<AudioBus> Release();
+  WTF::PassRefPtr<AudioBus> Release();
 #endif
 
  private:

@@ -172,6 +172,11 @@ struct ParamStorageTraits {
 };
 
 template <typename T>
+struct ParamStorageTraits<PassRefPtr<T>> {
+  typedef RefPtr<T> StorageType;
+};
+
+template <typename T>
 struct ParamStorageTraits<RefPtr<T>> {
   typedef RefPtr<T> StorageType;
 };
