@@ -276,8 +276,8 @@ found in the LICENSE file.
       }
 
       function getPoseMatrix (out, pose, isGamepad) {
-        orientation = pose.orientation;
-        position = pose.position;
+        orientation = pose && pose.orientation;
+        position = pose && pose.position;
         if (!orientation) { orientation = [0, 0, 0, 1]; }
         if (!position) {
           // If this is a gamepad without a pose set it out in front of us so
@@ -336,19 +336,19 @@ found in the LICENSE file.
 
           // Draw X/Y/Z axes for un-rotated controller standing coordinate system.
           getPoseMatrix(controllerDebugMat, {
-            position: gamepad.pose.position,
+            position: gamepad.pose && gamepad.pose.position,
             orientation: [0, 0, 0, 1]},
             true);
           debugGeom.drawCoordinateAxes(controllerDebugMat);
 
           // Show angular velocity from gyro if available
-          if (gamepad.pose.angularVelocity) {
+          if (gamepad.pose && gamepad.pose.angularVelocity) {
             vec4.set(arrowColor, 0.7, 0.5, 0.3, 1);
             debugGeom.drawArrow(controllerDebugMat, gamepad.pose.angularVelocity, arrowColor);
           }
 
           // Show linear acceleration if available
-          if (gamepad.pose.linearAcceleration) {
+          if (gamepad.pose && gamepad.pose.linearAcceleration) {
             //console.log('accel', gamepad.pose.linearAcceleration);
             vec4.set(arrowColor, 0.3, 0.2, 0.7, 1);
             // Linear acceleration is large since it contains 9.81 m/s^2 gravity,
@@ -429,9 +429,10 @@ found in the LICENSE file.
           for (var i = 0; i < gamepads.length; ++i) {
             var gamepad = gamepads[i];
             // The array may contain undefined gamepads, so check for that as
-            // well as a non-null pose.
+            // well as a non-null pose. VR clicker devices such as the Carboard
+            // touch handler for Daydream have a displayId but no pose.
             if (gamepad) {
-              if (gamepad.pose)
+              if (gamepad.pose || gamepad.displayId)
                 vrGamepads.push(gamepad);
 
               if ("hapticActuators" in gamepad && gamepad.hapticActuators.length > 0) {
