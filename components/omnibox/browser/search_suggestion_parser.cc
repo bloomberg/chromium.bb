@@ -277,11 +277,19 @@ SearchSuggestionParser::NavigationResult::CalculateAndClassifyMatchContents(
       URLPrefix::BestURLPrefix(formatted_url_, input_text);
   size_t match_start = (prefix == NULL) ?
       formatted_url_.find(input_text) : prefix->prefix.length();
-  bool trim_http = !AutocompleteInput::HasHTTPScheme(input_text) &&
-                   (!prefix || (match_start != 0));
-  base::string16 match_contents = url_formatter::FormatUrl(
-      url_, AutocompleteMatch::GetFormatTypes(!trim_http, false, false),
-      net::UnescapeRule::SPACES, nullptr, nullptr, &match_start);
+
+  bool match_in_scheme = false;
+  bool match_in_subdomain = false;
+  bool match_after_host = false;
+  AutocompleteMatch::GetMatchComponents(
+      url_, {{match_start, match_start + input_text.length()}},
+      &match_in_scheme, &match_in_subdomain, &match_after_host);
+  auto format_types = AutocompleteMatch::GetFormatTypes(
+      match_in_scheme, match_in_subdomain, match_after_host);
+
+  base::string16 match_contents =
+      url_formatter::FormatUrl(url_, format_types, net::UnescapeRule::SPACES,
+                               nullptr, nullptr, &match_start);
   // If the first match in the untrimmed string was inside a scheme that we
   // trimmed, look for a subsequent match.
   if (match_start == base::string16::npos)

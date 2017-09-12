@@ -208,6 +208,87 @@ TEST(AutocompleteMatchTest, InlineTailPrefix) {
   }
 }
 
+TEST(AutocompleteMatchTest, GetMatchComponents) {
+  struct MatchComponentsTestData {
+    const std::string url;
+    std::vector<std::string> input_terms;
+    bool expected_match_in_scheme;
+    bool expected_match_in_subdomain;
+    bool expected_match_after_host;
+  };
+
+  MatchComponentsTestData test_cases[] = {
+      // Match in scheme.
+      {"http://www.google.com", {"ht"}, true, false, false},
+      // Match within the scheme, but not starting at the beginning, i.e. "ttp".
+      {"http://www.google.com", {"tp"}, false, false, false},
+      // Sanity check that HTTPS still works.
+      {"https://www.google.com", {"http"}, true, false, false},
+
+      // Match within the subdomain.
+      {"http://www.google.com", {"www"}, false, true, false},
+      // Don't consider matches on the '.' delimiter as a match_in_subdomain.
+      {"http://www.google.com", {"."}, false, false, false},
+      // Matches within the domain.
+      {"http://www.google.com", {"goo"}, false, false, false},
+      // Verify that in private registries, we detect matches in subdomains.
+      {"http://www.appspot.com", {"www"}, false, true, false},
+
+      // Matches spanning the scheme, subdomain, and domain.
+      {"http://www.google.com", {"http://www.goo"}, true, true, false},
+      {"http://www.google.com", {"ht", "www"}, true, true, false},
+      // But we should not flag match_in_subdomain if there is no subdomain.
+      {"http://google.com", {"http://goo"}, true, false, false},
+
+      // Matches in the path, query, and ref.
+      {"http://google.com/abc?def=ghi#jkl", {"abc"}, false, false, true},
+      {"http://google.com/abc?def=ghi#jkl", {"ghi"}, false, false, true},
+      {"http://google.com/abc?def=ghi#jkl", {"jkl"}, false, false, true},
+      // Match spanning an arbitrary portion of the URL after the host.
+      {"http://google.com/abc?def=ghi#jkl", {"bc?def=g"}, false, false, true},
+      // Don't consider the '/' delimiter as a match_in_path.
+      {"http://google.com/abc?def=ghi#jkl", {"com/"}, false, false, false},
+
+      // Matches spanning the subdomain and path.
+      {"http://www.google.com/abc", {"www.google.com/ab"}, false, true, true},
+      {"http://www.google.com/abc", {"www", "ab"}, false, true, true},
+
+      // Matches spanning the scheme, subdomain, and path.
+      {"http://www.google.com/abc",
+       {"http://www.google.com/ab"},
+       true,
+       true,
+       true},
+      {"http://www.google.com/abc", {"ht", "ww", "ab"}, true, true, true},
+  };
+  for (auto& test_case : test_cases) {
+    SCOPED_TRACE(testing::Message()
+                 << " url=" << test_case.url << " first input term="
+                 << test_case.input_terms[0] << " expected_match_in_scheme="
+                 << test_case.expected_match_in_scheme
+                 << " expected_match_in_subdomain="
+                 << test_case.expected_match_in_subdomain
+                 << " expected_match_after_host="
+                 << test_case.expected_match_after_host);
+    bool match_in_scheme = false;
+    bool match_in_subdomain = false;
+    bool match_after_host = false;
+    std::vector<AutocompleteMatch::MatchPosition> match_positions;
+    for (auto& term : test_case.input_terms) {
+      size_t start = test_case.url.find(term);
+      ASSERT_NE(std::string::npos, start);
+      size_t end = start + term.size();
+      match_positions.push_back(std::make_pair(start, end));
+    }
+    AutocompleteMatch::GetMatchComponents(GURL(test_case.url), match_positions,
+                                          &match_in_scheme, &match_in_subdomain,
+                                          &match_after_host);
+    EXPECT_EQ(test_case.expected_match_in_scheme, match_in_scheme);
+    EXPECT_EQ(test_case.expected_match_in_subdomain, match_in_subdomain);
+    EXPECT_EQ(test_case.expected_match_after_host, match_after_host);
+  }
+}
+
 TEST(AutocompleteMatchTest, FormatUrlForSuggestionDisplay) {
   // This test does not need to verify url_formatter's functionality in-depth,
   // since url_formatter has its own unit tests. This test is to validate that

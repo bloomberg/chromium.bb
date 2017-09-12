@@ -24,7 +24,9 @@
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/gfx/vector_icon_types.h"
+#include "url/third_party/mozilla/url_parse.h"
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 #include "components/omnibox/browser/vector_icons.h"  // nogncheck
@@ -485,6 +487,55 @@ GURL AutocompleteMatch::GURLToStrippedGURL(
     stripped_destination_url = stripped_destination_url.ReplaceComponents(
         replacements);
   return stripped_destination_url;
+}
+
+// static
+void AutocompleteMatch::GetMatchComponents(
+    const GURL& url,
+    const std::vector<MatchPosition>& match_positions,
+    bool* match_in_scheme,
+    bool* match_in_subdomain,
+    bool* match_after_host) {
+  DCHECK(match_in_scheme);
+  DCHECK(match_in_subdomain);
+  DCHECK(match_after_host);
+
+  size_t domain_length =
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          url.host_piece(),
+          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES)
+          .size();
+  const url::Parsed& parsed = url.parsed_for_possibly_invalid_spec();
+
+  size_t host_pos = parsed.CountCharactersBefore(url::Parsed::HOST, false);
+
+  // We must add an extra character to exclude the '/' delimiter that prefixes
+  // every path. We have to do this because the |include_delimiter| parameter
+  // passed to url::Parsed::CountCharactersBefore has no effect for the PATH.
+  size_t path_pos = parsed.CountCharactersBefore(url::Parsed::PATH, false) + 1;
+
+  bool has_subdomain = domain_length < url.host_piece().length();
+  // Subtract an extra character from the domain start to exclude the '.'
+  // delimiter between subdomain and domain.
+  size_t subdomain_end =
+      has_subdomain ? host_pos + url.host_piece().length() - domain_length - 1
+                    : std::string::npos;
+
+  for (auto& position : match_positions) {
+    // Only flag |match_in_scheme| if the match starts at the very beginning.
+    if (position.first == 0)
+      *match_in_scheme = true;
+
+    // Subdomain matches must begin before the domain, and end somewhere within
+    // the host or later.
+    if (has_subdomain && position.first < subdomain_end &&
+        position.second > host_pos) {
+      *match_in_subdomain = true;
+    }
+
+    if (position.second > path_pos)
+      *match_after_host = true;
+  }
 }
 
 // static
