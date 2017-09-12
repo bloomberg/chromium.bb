@@ -86,7 +86,29 @@ enum class LineBreakType {
   kKeepAll,
 };
 
+// Determines break opportunities around collapsible space characters (space,
+// newline, and tabulation characters.)
+enum class BreakSpaceType {
+  // Break before collapsible space characters.
+  // This is a specialized optimization for CSS, where leading/trailing spaces
+  // in each line are removed, and thus breaking before spaces can save
+  // computing hanging spaces.
+  kBefore,
+
+  // Break before space characters, but after newline and tabulation characters.
+  // This is for CSS line breaking as in |kBefore|, but when whitespace
+  // collapsing is already applied to the target string.
+  kBeforeSpace,
+
+  // Break after collapsible space characters.
+  // When 'white-space:pre-wrap', or when in editing, leaging/trailing spaces
+  // need to be preserved, and that the |kBefore| optimization cannot work.
+  // This mode is compatible with UAX#14/ICU. http://unicode.org/reports/tr14/
+  kAfter,
+};
+
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, LineBreakType);
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, BreakSpaceType);
 
 class PLATFORM_EXPORT LazyLineBreakIterator final {
   STACK_ALLOCATED();
@@ -210,18 +232,8 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
 
   LineBreakType BreakType() const { return break_type_; }
   void SetBreakType(LineBreakType break_type) { break_type_ = break_type; }
-
-  // By default, this class breaks before spaces. This is a specialized
-  // optimization for CSS, where leading/trailing spaces in each line are
-  // removed, and thus breaking before spaces can save computing hanging spaces.
-  //
-  // When 'white-space:pre-wrap', or when in editing, leaging/trailing spaces
-  // need to be preserved, and this optimization needs to be disabled. This mode
-  // is compatible with UAX#14/ICU. http://unicode.org/reports/tr14/
-  bool BreakAfterSpace() const { return break_after_space_; }
-  void SetBreakAfterSpace(bool break_after_space) {
-    break_after_space_ = break_after_space;
-  }
+  BreakSpaceType BreakSpace() const { return break_space_; }
+  void SetBreakSpace(BreakSpaceType break_space) { break_space_ = break_space; }
 
   inline bool IsBreakable(int pos,
                           int& next_breakable,
@@ -261,7 +273,7 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
     cached_prior_context_length_ = 0;
   }
 
-  template <typename CharacterType, LineBreakType, bool>
+  template <typename CharacterType, LineBreakType, BreakSpaceType>
   int NextBreakablePosition(int pos, const CharacterType* str) const;
   template <typename CharacterType, LineBreakType>
   int NextBreakablePosition(int pos, const CharacterType* str) const;
@@ -278,7 +290,7 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
   mutable const UChar* cached_prior_context_;
   mutable unsigned cached_prior_context_length_;
   LineBreakType break_type_;
-  bool break_after_space_ = false;
+  BreakSpaceType break_space_ = BreakSpaceType::kBefore;
 };
 
 // Iterates over "extended grapheme clusters", as defined in UAX #29.

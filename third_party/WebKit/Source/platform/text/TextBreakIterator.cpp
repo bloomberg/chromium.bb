@@ -255,7 +255,7 @@ inline bool NeedsLineBreakIterator(UChar ch) {
 
 template <typename CharacterType,
           LineBreakType lineBreakType,
-          bool break_after_space>
+          BreakSpaceType break_space>
 inline int LazyLineBreakIterator::NextBreakablePosition(
     int pos,
     const CharacterType* str) const {
@@ -276,14 +276,25 @@ inline int LazyLineBreakIterator::NextBreakablePosition(
     ch = str[i];
 
     is_space = IsBreakableSpace(ch);
-    if (!break_after_space) {
-      if (is_space)
-        return i;
-    } else {
-      if (is_space)
-        continue;
-      if (is_last_space)
-        return i;
+    switch (break_space) {
+      case BreakSpaceType::kBefore:
+        if (is_space)
+          return i;
+        break;
+      case BreakSpaceType::kBeforeSpace:
+        if (ch == kSpaceCharacter)
+          return i;
+        if (is_space)
+          continue;
+        if (is_last_space && last_ch != kSpaceCharacter)
+          return i;
+        break;
+      case BreakSpaceType::kAfter:
+        if (is_space)
+          continue;
+        if (is_last_space)
+          return i;
+        break;
     }
 
     if (ShouldBreakAfter(last_last_ch, last_ch, ch))
@@ -318,8 +329,20 @@ inline int LazyLineBreakIterator::NextBreakablePosition(
           }
         }
       }
-      if (i == next_break && (break_after_space || !is_last_space))
-        return i;
+      if (i == next_break) {
+        switch (break_space) {
+          case BreakSpaceType::kBefore:
+            if (!is_last_space)
+              return i;
+            break;
+          case BreakSpaceType::kBeforeSpace:
+            if (last_ch != kSpaceCharacter)
+              return i;
+            break;
+          case BreakSpaceType::kAfter:
+            return i;
+        }
+      }
     }
   }
 
@@ -330,9 +353,20 @@ template <typename CharacterType, LineBreakType lineBreakType>
 inline int LazyLineBreakIterator::NextBreakablePosition(
     int pos,
     const CharacterType* str) const {
-  if (!break_after_space_)
-    return NextBreakablePosition<CharacterType, lineBreakType, false>(pos, str);
-  return NextBreakablePosition<CharacterType, lineBreakType, true>(pos, str);
+  switch (break_space_) {
+    case BreakSpaceType::kBefore:
+      return NextBreakablePosition<CharacterType, lineBreakType,
+                                   BreakSpaceType::kBefore>(pos, str);
+    case BreakSpaceType::kBeforeSpace:
+      return NextBreakablePosition<CharacterType, lineBreakType,
+                                   BreakSpaceType::kBeforeSpace>(pos, str);
+    case BreakSpaceType::kAfter:
+      return NextBreakablePosition<CharacterType, lineBreakType,
+                                   BreakSpaceType::kAfter>(pos, str);
+  }
+  NOTREACHED();
+  return NextBreakablePosition<CharacterType, lineBreakType,
+                               BreakSpaceType::kBefore>(pos, str);
 }
 
 template <LineBreakType lineBreakType>
@@ -400,6 +434,19 @@ std::ostream& operator<<(std::ostream& ostream, LineBreakType line_break_type) {
   }
   NOTREACHED();
   return ostream << "LineBreakType::" << static_cast<int>(line_break_type);
+}
+
+std::ostream& operator<<(std::ostream& ostream, BreakSpaceType break_space) {
+  switch (break_space) {
+    case BreakSpaceType::kBefore:
+      return ostream << "Before";
+    case BreakSpaceType::kBeforeSpace:
+      return ostream << "BeforeSpace";
+    case BreakSpaceType::kAfter:
+      return ostream << "After";
+  }
+  NOTREACHED();
+  return ostream << "BreakSpaceType::" << static_cast<int>(break_space);
 }
 
 }  // namespace blink
