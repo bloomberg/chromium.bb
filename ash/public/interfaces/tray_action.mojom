@@ -9,7 +9,7 @@ enum TrayActionState {
   // The action cannot be handled - due to no client being set, the client not
   // supporting the action, user session not being locked etc.
   kNotAvailable,
-  
+
   // The client supports the action and is not currently handling the action.
   kAvailable,
 
@@ -48,4 +48,7 @@ interface TrayAction {
 interface TrayActionClient {
   // Requests a lock screen note action to be handled.
   RequestNewLockScreenNote();
+
+  // Closes lock screen note.
+  CloseLockScreenNote();
 };

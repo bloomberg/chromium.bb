@@ -80,6 +80,16 @@ void TrayAction::RequestNewLockScreenNote() {
   tray_action_client_->RequestNewLockScreenNote();
 }
 
+void TrayAction::CloseLockScreenNote() {
+  if (tray_action_client_)
+    tray_action_client_->CloseLockScreenNote();
+}
+
+void TrayAction::FlushMojoForTesting() {
+  if (tray_action_client_)
+    tray_action_client_.FlushForTesting();
+}
+
 void TrayAction::NotifyLockScreenNoteStateChanged() {
   for (auto& observer : observers_)
     observer.OnLockScreenNoteStateChanged(GetLockScreenNoteState());

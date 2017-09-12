@@ -15,6 +15,7 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/tray_action/test_tray_action_client.h"
 #include "ash/tray_action/tray_action.h"
 #include "ash/wm/window_state.h"
 #include "base/command_line.h"
@@ -60,27 +61,6 @@ class TestWindowDelegate : public views::WidgetDelegate {
   views::Widget* widget_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowDelegate);
-};
-
-class TestTrayActionClient : public mojom::TrayActionClient {
- public:
-  TestTrayActionClient() : binding_(this) {}
-
-  ~TestTrayActionClient() override = default;
-
-  mojom::TrayActionClientPtr CreateInterfacePtrAndBind() {
-    mojom::TrayActionClientPtr ptr;
-    binding_.Bind(mojo::MakeRequest(&ptr));
-    return ptr;
-  }
-
-  // mojom::TrayActionClient:
-  void RequestNewLockScreenNote() override {}
-
- private:
-  mojo::Binding<ash::mojom::TrayActionClient> binding_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestTrayActionClient);
 };
 
 }  // namespace

@@ -1288,6 +1288,8 @@ source_set("common_unittests") {
     "system/web_notification/web_notification_tray_unittest.cc",
     "test/ash_test_helper_unittest.cc",
     "tooltips/tooltip_controller_unittest.cc",
+    "tray_action/test_tray_action_client.cc",
+    "tray_action/test_tray_action_client.h",
     "tray_action/tray_action_unittest.cc",
     "wallpaper/wallpaper_controller_unittest.cc",
     "window_user_data_unittest.cc",
