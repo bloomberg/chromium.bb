@@ -114,10 +114,6 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   source->AddResourcePath("crisper.js", IDR_MD_DOWNLOADS_CRISPER_JS);
   source->SetDefaultResource(IDR_MD_DOWNLOADS_VULCANIZED_HTML);
 #else
-  source->AddResourcePath("action_service.html",
-                          IDR_MD_DOWNLOADS_ACTION_SERVICE_HTML);
-  source->AddResourcePath("action_service.js",
-                          IDR_MD_DOWNLOADS_ACTION_SERVICE_JS);
   source->AddResourcePath("browser_proxy.html",
                           IDR_MD_DOWNLOADS_BROWSER_PROXY_HTML);
   source->AddResourcePath("browser_proxy.js",
@@ -131,6 +127,10 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   source->AddResourcePath("item.js", IDR_MD_DOWNLOADS_ITEM_JS);
   source->AddResourcePath("manager.html", IDR_MD_DOWNLOADS_MANAGER_HTML);
   source->AddResourcePath("manager.js", IDR_MD_DOWNLOADS_MANAGER_JS);
+  source->AddResourcePath("search_service.html",
+                          IDR_MD_DOWNLOADS_SEARCH_SERVICE_HTML);
+  source->AddResourcePath("search_service.js",
+                          IDR_MD_DOWNLOADS_SEARCH_SERVICE_JS);
   source->AddResourcePath("toolbar.html", IDR_MD_DOWNLOADS_TOOLBAR_HTML);
   source->AddResourcePath("toolbar.js", IDR_MD_DOWNLOADS_TOOLBAR_JS);
   source->SetDefaultResource(IDR_MD_DOWNLOADS_DOWNLOADS_HTML);
