@@ -446,8 +446,6 @@ source_set("browser") {
     "bluetooth/frame_connected_bluetooth_devices.h",
     "bluetooth/web_bluetooth_service_impl.cc",
     "bluetooth/web_bluetooth_service_impl.h",
-    "bootstrap_sandbox_manager_mac.cc",
-    "bootstrap_sandbox_manager_mac.h",
     "broadcast_channel/broadcast_channel_provider.cc",
     "broadcast_channel/broadcast_channel_provider.h",
     "browser_child_process_host_impl.cc",
@@ -2091,7 +2089,6 @@ source_set("browser") {
   if (is_mac) {
     deps += [
       "//media",
-      "//sandbox/mac:sandbox",
       "//third_party/mozilla",
       "//ui/accelerated_widget_mac",
     ]
