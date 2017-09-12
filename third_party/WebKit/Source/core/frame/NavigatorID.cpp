@@ -55,7 +55,7 @@ String NavigatorID::appVersion() {
   return agent.Substring(agent.find('/') + 1);
 }
 
-String NavigatorID::platform() {
+String NavigatorID::platform() const {
 #if defined(OS_MACOSX)
   // Match Safari and Mozilla on Mac x86.
   return "MacIntel";

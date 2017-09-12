@@ -50,6 +50,7 @@ class CORE_EXPORT InspectorEmulationAgent final
   protocol::Response setVirtualTimePolicy(
       const String& policy,
       protocol::Maybe<int> virtual_time_budget_ms) override;
+  protocol::Response setNavigatorOverrides(const String& platform) override;
   protocol::Response setDefaultBackgroundColorOverride(
       protocol::Maybe<protocol::DOM::RGBA>) override;
 

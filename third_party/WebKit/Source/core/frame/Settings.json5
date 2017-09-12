@@ -971,5 +971,9 @@
       name: "forceDisplayList2dCanvasEnabled",
       initial: false,
     },
+    {
+      name: "navigatorPlatformOverride",
+      type: "String",
+    },
   ],
 }

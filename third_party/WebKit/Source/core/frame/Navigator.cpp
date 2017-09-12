@@ -59,6 +59,14 @@ String Navigator::vendorSub() const {
   return "";
 }
 
+String Navigator::platform() const {
+  if (GetFrame() &&
+      !GetFrame()->GetSettings()->GetNavigatorPlatformOverride().IsEmpty()) {
+    return GetFrame()->GetSettings()->GetNavigatorPlatformOverride();
+  }
+  return NavigatorID::platform();
+}
+
 String Navigator::userAgent() const {
   // If the frame is already detached it no longer has a meaningful useragent.
   if (!GetFrame() || !GetFrame()->GetPage())

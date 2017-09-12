@@ -41,7 +41,7 @@ class CORE_EXPORT NavigatorID {
   String appCodeName();
   String appName();
   String appVersion();
-  String platform();
+  virtual String platform() const;
   String product();
   virtual String userAgent() const = 0;
 };

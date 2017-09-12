@@ -57,6 +57,7 @@ class CORE_EXPORT Navigator final : public GarbageCollected<Navigator>,
   String vendor() const;
   String vendorSub() const;
 
+  String platform() const override;
   String userAgent() const override;
 
   // NavigatorLanguage
