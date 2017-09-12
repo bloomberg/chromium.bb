@@ -590,6 +590,35 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
              ntp_home::FakeOmniboxAccessibilityID();
 }
 
+#pragma mark - UIAccessibilityAction
+
+- (BOOL)accessibilityScroll:(UIAccessibilityScrollDirection)direction {
+  // The collection displays the fake omnibox on the top of the other elements.
+  // The default scrolling action scrolls for the full height of the collection,
+  // hiding elements behing the fake omnibox. This reduces the scrolling by the
+  // height of the fake omnibox.
+  if (direction == UIAccessibilityScrollDirectionDown) {
+    CGFloat newYOffset = self.collectionView.contentOffset.y +
+                         self.collectionView.bounds.size.height -
+                         ntp_header::kToolbarHeight;
+    newYOffset = MIN(self.collectionView.contentSize.height -
+                         self.collectionView.bounds.size.height,
+                     newYOffset);
+    self.collectionView.contentOffset =
+        CGPointMake(self.collectionView.contentOffset.x, newYOffset);
+  } else if (direction == UIAccessibilityScrollDirectionUp) {
+    CGFloat newYOffset = self.collectionView.contentOffset.y -
+                         self.collectionView.bounds.size.height +
+                         ntp_header::kToolbarHeight;
+    newYOffset = MAX(0, newYOffset);
+    self.collectionView.contentOffset =
+        CGPointMake(self.collectionView.contentOffset.x, newYOffset);
+  } else {
+    return NO;
+  }
+  return YES;
+}
+
 #pragma mark - Private
 
 - (void)handleLongPress:(UILongPressGestureRecognizer*)gestureRecognizer {
