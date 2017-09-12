@@ -74,7 +74,6 @@ enum IPCMessageStart {
   ChromeUtilityPrintingMsgStart,
   AecDumpMsgStart,
   OzoneGpuMsgStart,
-  ChromeUtilityExtensionsMsgStart,
   PlatformNotificationMsgStart,
   LayoutTestMsgStart,
   NetworkHintsMsgStart,
