@@ -7,12 +7,12 @@ suite('toolbar tests', function() {
   let toolbar;
 
   setup(function() {
-    class TestActionService extends downloads.ActionService {
+    class TestSearchService extends downloads.SearchService {
       loadMore() { /* Prevent chrome.send(). */ }
     }
 
     toolbar = document.createElement('downloads-toolbar');
-    downloads.ActionService.instance_ = new TestActionService;
+    downloads.SearchService.instance_ = new TestSearchService;
     document.body.appendChild(toolbar);
   });
 

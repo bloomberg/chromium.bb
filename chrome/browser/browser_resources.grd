@@ -149,8 +149,6 @@
           </then>
           <else>
             <include name="IDR_MD_DOWNLOADS_DOWNLOADS_HTML" file="resources\md_downloads\downloads.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-            <include name="IDR_MD_DOWNLOADS_ACTION_SERVICE_HTML" file="resources\md_downloads\action_service.html" type="BINDATA" />
-            <include name="IDR_MD_DOWNLOADS_ACTION_SERVICE_JS" file="resources\md_downloads\action_service.js" type="BINDATA" />
             <include name="IDR_MD_DOWNLOADS_BROWSER_PROXY_HTML" file="resources\md_downloads\browser_proxy.html" type="BINDATA" />
             <include name="IDR_MD_DOWNLOADS_BROWSER_PROXY_JS" file="resources\md_downloads\browser_proxy.js" type="BINDATA" />
             <include name="IDR_MD_DOWNLOADS_CONSTANTS_HTML" file="resources\md_downloads\constants.html" type="BINDATA" />
@@ -162,6 +160,8 @@
             <include name="IDR_MD_DOWNLOADS_ITEM_JS" file="resources\md_downloads\item.js" type="BINDATA" />
             <include name="IDR_MD_DOWNLOADS_MANAGER_HTML" file="resources\md_downloads\manager.html" type="BINDATA" />
             <include name="IDR_MD_DOWNLOADS_MANAGER_JS" file="resources\md_downloads\manager.js" type="BINDATA" />
+            <include name="IDR_MD_DOWNLOADS_SEARCH_SERVICE_HTML" file="resources\md_downloads\search_service.html" type="BINDATA" />
+            <include name="IDR_MD_DOWNLOADS_SEARCH_SERVICE_JS" file="resources\md_downloads\search_service.js" type="BINDATA" />
             <include name="IDR_MD_DOWNLOADS_TOOLBAR_HTML" file="resources\md_downloads\toolbar.html" type="BINDATA" />
             <include name="IDR_MD_DOWNLOADS_TOOLBAR_JS" file="resources\md_downloads\toolbar.js" type="BINDATA" />
           </else>

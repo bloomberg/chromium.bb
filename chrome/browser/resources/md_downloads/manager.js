@@ -58,8 +58,8 @@ cr.define('downloads', function() {
     /** @private {?downloads.BrowserProxy} */
     browserProxy_: null,
 
-    /** @private {?downloads.ActionService} */
-    actionService_: null,
+    /** @private {?downloads.SearchService} */
+    searchService_: null,
 
     /** @private {!PromiseResolver} */
     loaded_: new PromiseResolver,
@@ -67,7 +67,7 @@ cr.define('downloads', function() {
     /** @override */
     created: function() {
       this.browserProxy_ = downloads.BrowserProxy.getInstance();
-      this.actionService_ = downloads.ActionService.getInstance();
+      this.searchService_ = downloads.SearchService.getInstance();
     },
 
     /** @override */
@@ -167,7 +167,7 @@ cr.define('downloads', function() {
       const list = this.$['downloads-list'];
       if (list.scrollHeight - list.scrollTop - list.offsetHeight <= 100) {
         // Approaching the end of the scrollback. Attempt to load more items.
-        this.actionService_.loadMore();
+        this.searchService_.loadMore();
       }
       this.hasShadow_ = list.scrollTop > 0;
     },
@@ -181,13 +181,13 @@ cr.define('downloads', function() {
       document.addEventListener('canExecute', this.onCanExecute_.bind(this));
       document.addEventListener('command', this.onCommand_.bind(this));
 
-      this.actionService_.loadMore();
+      this.searchService_.loadMore();
       return this.loaded_.promise;
     },
 
     /** @private */
     onSearchChanged_: function() {
-      this.inSearchMode_ = this.actionService_.isSearching();
+      this.inSearchMode_ = this.searchService_.isSearching();
     },
 
     /**

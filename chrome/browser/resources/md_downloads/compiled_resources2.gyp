@@ -4,15 +4,6 @@
 {
   'targets': [
     {
-      'target_name': 'action_service',
-      'dependencies': [
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
-        'browser_proxy',
-      ],
-      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
-    },
-    {
       'target_name': 'browser_proxy',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
@@ -58,12 +49,21 @@
         '<(DEPTH)/ui/webui/resources/js/cr/compiled_resources2.gyp:ui',
         '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:command',
         '<(DEPTH)/third_party/polymer/v1_0/components-chromium/iron-list/compiled_resources2.gyp:iron-list-extracted',
-        'action_service',
         'browser_proxy',
         'item',
+        'search_service',
         'toolbar',
         '<(EXTERNS_GYP):chrome_send',
         'externs',
+      ],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'search_service',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
+        'browser_proxy',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -76,8 +76,8 @@
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_toolbar/compiled_resources2.gyp:cr_toolbar',
         '<(DEPTH)/third_party/polymer/v1_0/components-chromium/iron-a11y-announcer/compiled_resources2.gyp:iron-a11y-announcer-extracted',
         '<(DEPTH)/third_party/polymer/v1_0/components-chromium/paper-menu/compiled_resources2.gyp:paper-menu-extracted',
-        'action_service',
         'browser_proxy',
+        'search_service',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
