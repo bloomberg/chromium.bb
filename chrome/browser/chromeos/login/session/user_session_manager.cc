@@ -1196,33 +1196,49 @@ void UserSessionManager::UserProfileInitialized(Profile* profile,
     // Call FinalizePrepareProfile directly and skip RestoreAuthSessionImpl
     // because there is no need to merge session for Active Directory users.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&UserSessionManager::FinalizePrepareProfile,
-                                  AsWeakPtr(), profile));
+        FROM_HERE,
+        base::BindOnce(&UserSessionManager::PrepareTpmDeviceAndFinalizeProfile,
+                       AsWeakPtr(), profile));
     return;
   }
 
-  FinalizePrepareProfile(profile);
+  PrepareTpmDeviceAndFinalizeProfile(profile);
 }
 
 void UserSessionManager::CompleteProfileCreateAfterAuthTransfer(
     Profile* profile) {
   RestoreAuthSessionImpl(profile, has_auth_cookies_);
+  PrepareTpmDeviceAndFinalizeProfile(profile);
+}
+
+void UserSessionManager::PrepareTpmDeviceAndFinalizeProfile(Profile* profile) {
+  BootTimesRecorder::Get()->AddLoginTimeMarker("TPMOwn-Start", false);
+
+  // Own TPM device if, for any reason, it has not been done in EULA screen.
+  if (!cryptohome_util::TpmIsEnabled() || cryptohome_util::TpmIsBeingOwned()) {
+    FinalizePrepareProfile(profile);
+    return;
+  }
+
+  VoidDBusMethodCallback callback =
+      base::BindOnce(&UserSessionManager::OnCryptohomeOperationCompleted,
+                     AsWeakPtr(), profile);
+  CryptohomeClient* client = DBusThreadManager::Get()->GetCryptohomeClient();
+  if (cryptohome_util::TpmIsOwned())
+    client->TpmClearStoredPassword(std::move(callback));
+  else
+    client->TpmCanAttemptOwnership(std::move(callback));
+}
+
+void UserSessionManager::OnCryptohomeOperationCompleted(
+    Profile* profile,
+    DBusMethodCallStatus call_status) {
+  DCHECK_EQ(DBUS_METHOD_CALL_SUCCESS, call_status);
   FinalizePrepareProfile(profile);
 }
 
 void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
-  BootTimesRecorder* btl = BootTimesRecorder::Get();
-
-  // Own TPM device if, for any reason, it has not been done in EULA screen.
-  CryptohomeClient* client = DBusThreadManager::Get()->GetCryptohomeClient();
-  btl->AddLoginTimeMarker("TPMOwn-Start", false);
-  if (cryptohome_util::TpmIsEnabled() && !cryptohome_util::TpmIsBeingOwned()) {
-    if (cryptohome_util::TpmIsOwned())
-      client->CallTpmClearStoredPasswordAndBlock();
-    else
-      client->TpmCanAttemptOwnership(EmptyVoidDBusMethodCallback());
-  }
-  btl->AddLoginTimeMarker("TPMOwn-End", false);
+  BootTimesRecorder::Get()->AddLoginTimeMarker("TPMOwn-End", false);
 
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   if (user_manager->IsLoggedInAsUserWithGaiaAccount()) {
