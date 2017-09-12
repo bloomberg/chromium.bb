@@ -186,6 +186,8 @@ static void reflectStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
 
   TestInterfaceNode* impl = V8TestInterfaceNode::ToImpl(holder);
 
+  V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
+
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.Prepare())
@@ -210,6 +212,8 @@ static void reflectUrlStringAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
   ALLOW_UNUSED_LOCAL(holder);
 
   TestInterfaceNode* impl = V8TestInterfaceNode::ToImpl(holder);
+
+  V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
 
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
@@ -356,8 +360,6 @@ void V8TestInterfaceNode::reflectStringAttributeAttributeSetterCallback(const v8
 
   v8::Local<v8::Value> v8Value = info[0];
 
-  V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
-
   TestInterfaceNodeV8Internal::reflectStringAttributeAttributeSetter(v8Value, info);
 }
 
@@ -371,8 +373,6 @@ void V8TestInterfaceNode::reflectUrlStringAttributeAttributeSetterCallback(const
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceNode_reflectUrlStringAttribute_Setter");
 
   v8::Local<v8::Value> v8Value = info[0];
-
-  V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
 
   TestInterfaceNodeV8Internal::reflectUrlStringAttributeAttributeSetter(v8Value, info);
 }

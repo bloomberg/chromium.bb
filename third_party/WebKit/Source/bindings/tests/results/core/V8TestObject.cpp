@@ -3121,7 +3121,6 @@ static void reflectTestInterfaceAttributeAttributeSetter(v8::Local<v8::Value> v8
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  // Skip on compact node DOMString getters.
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "reflectTestInterfaceAttribute");
@@ -3155,7 +3154,6 @@ static void reflectReflectedNameAttributeTestAttributeAttributeSetter(v8::Local<
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  // Skip on compact node DOMString getters.
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "reflectReflectedNameAttributeTestAttribute");
@@ -3189,7 +3187,6 @@ static void reflectBooleanAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  // Skip on compact node DOMString getters.
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "reflectBooleanAttribute");
@@ -3219,7 +3216,6 @@ static void reflectLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  // Skip on compact node DOMString getters.
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "reflectLongAttribute");
@@ -3249,7 +3245,6 @@ static void reflectUnsignedShortAttributeAttributeSetter(v8::Local<v8::Value> v8
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  // Skip on compact node DOMString getters.
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "reflectUnsignedShortAttribute");
@@ -3279,7 +3274,6 @@ static void reflectUnsignedLongAttributeAttributeSetter(v8::Local<v8::Value> v8V
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  // Skip on compact node DOMString getters.
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
 
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestObject", "reflectUnsignedLongAttribute");
@@ -3309,7 +3303,6 @@ static void idAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCa
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  // Skip on compact node DOMString getters.
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
 
   // Prepare the value to be set.
@@ -3337,7 +3330,6 @@ static void nameAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Function
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  // Skip on compact node DOMString getters.
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
 
   // Prepare the value to be set.
@@ -3365,7 +3357,6 @@ static void classAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Functio
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  // Skip on compact node DOMString getters.
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
 
   // Prepare the value to be set.
@@ -3393,7 +3384,6 @@ static void reflectedIdAttributeSetter(v8::Local<v8::Value> v8Value, const v8::F
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  // Skip on compact node DOMString getters.
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
 
   // Prepare the value to be set.
@@ -3421,7 +3411,6 @@ static void reflectedNameAttributeSetter(v8::Local<v8::Value> v8Value, const v8:
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  // Skip on compact node DOMString getters.
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
 
   // Prepare the value to be set.
@@ -3449,7 +3438,6 @@ static void reflectedClassAttributeSetter(v8::Local<v8::Value> v8Value, const v8
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  // Skip on compact node DOMString getters.
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
 
   // Prepare the value to be set.
@@ -3487,7 +3475,6 @@ static void limitedToOnlyOneAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  // Skip on compact node DOMString getters.
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
 
   // Prepare the value to be set.
@@ -3529,7 +3516,6 @@ static void limitedToOnlyAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  // Skip on compact node DOMString getters.
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
 
   // Prepare the value to be set.
@@ -3569,7 +3555,6 @@ static void limitedToOnlyOtherAttributeAttributeSetter(v8::Local<v8::Value> v8Va
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  // Skip on compact node DOMString getters.
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
 
   // Prepare the value to be set.
@@ -3609,7 +3594,6 @@ static void limitedWithMissingDefaultAttributeAttributeSetter(v8::Local<v8::Valu
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  // Skip on compact node DOMString getters.
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
 
   // Prepare the value to be set.
@@ -3651,7 +3635,6 @@ static void limitedWithInvalidMissingDefaultAttributeAttributeSetter(v8::Local<v
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  // Skip on compact node DOMString getters.
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
 
   // Prepare the value to be set.
@@ -4016,7 +3999,6 @@ static void urlStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, cons
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  // Skip on compact node DOMString getters.
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
 
   // Prepare the value to be set.
@@ -4044,7 +4026,6 @@ static void urlStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, cons
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  // Skip on compact node DOMString getters.
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
 
   // Prepare the value to be set.
@@ -10990,8 +10971,6 @@ void V8TestObject::reflectTestInterfaceAttributeAttributeSetterCallback(const v8
 
   v8::Local<v8::Value> v8Value = info[0];
 
-  V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
-
   TestObjectV8Internal::reflectTestInterfaceAttributeAttributeSetter(v8Value, info);
 }
 
@@ -11005,8 +10984,6 @@ void V8TestObject::reflectReflectedNameAttributeTestAttributeAttributeSetterCall
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_reflectReflectedNameAttributeTestAttribute_Setter");
 
   v8::Local<v8::Value> v8Value = info[0];
-
-  V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
 
   TestObjectV8Internal::reflectReflectedNameAttributeTestAttributeAttributeSetter(v8Value, info);
 }
@@ -11022,8 +10999,6 @@ void V8TestObject::reflectBooleanAttributeAttributeSetterCallback(const v8::Func
 
   v8::Local<v8::Value> v8Value = info[0];
 
-  V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
-
   TestObjectV8Internal::reflectBooleanAttributeAttributeSetter(v8Value, info);
 }
 
@@ -11037,8 +11012,6 @@ void V8TestObject::reflectLongAttributeAttributeSetterCallback(const v8::Functio
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_reflectLongAttribute_Setter");
 
   v8::Local<v8::Value> v8Value = info[0];
-
-  V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
 
   TestObjectV8Internal::reflectLongAttributeAttributeSetter(v8Value, info);
 }
@@ -11054,8 +11027,6 @@ void V8TestObject::reflectUnsignedShortAttributeAttributeSetterCallback(const v8
 
   v8::Local<v8::Value> v8Value = info[0];
 
-  V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
-
   TestObjectV8Internal::reflectUnsignedShortAttributeAttributeSetter(v8Value, info);
 }
 
@@ -11069,8 +11040,6 @@ void V8TestObject::reflectUnsignedLongAttributeAttributeSetterCallback(const v8:
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_reflectUnsignedLongAttribute_Setter");
 
   v8::Local<v8::Value> v8Value = info[0];
-
-  V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
 
   TestObjectV8Internal::reflectUnsignedLongAttributeAttributeSetter(v8Value, info);
 }
@@ -11086,8 +11055,6 @@ void V8TestObject::idAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::
 
   v8::Local<v8::Value> v8Value = info[0];
 
-  V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
-
   TestObjectV8Internal::idAttributeSetter(v8Value, info);
 }
 
@@ -11101,8 +11068,6 @@ void V8TestObject::nameAttributeSetterCallback(const v8::FunctionCallbackInfo<v8
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_name_Setter");
 
   v8::Local<v8::Value> v8Value = info[0];
-
-  V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
 
   TestObjectV8Internal::nameAttributeSetter(v8Value, info);
 }
@@ -11118,8 +11083,6 @@ void V8TestObject::classAttributeSetterCallback(const v8::FunctionCallbackInfo<v
 
   v8::Local<v8::Value> v8Value = info[0];
 
-  V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
-
   TestObjectV8Internal::classAttributeSetter(v8Value, info);
 }
 
@@ -11133,8 +11096,6 @@ void V8TestObject::reflectedIdAttributeSetterCallback(const v8::FunctionCallback
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_reflectedId_Setter");
 
   v8::Local<v8::Value> v8Value = info[0];
-
-  V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
 
   TestObjectV8Internal::reflectedIdAttributeSetter(v8Value, info);
 }
@@ -11150,8 +11111,6 @@ void V8TestObject::reflectedNameAttributeSetterCallback(const v8::FunctionCallba
 
   v8::Local<v8::Value> v8Value = info[0];
 
-  V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
-
   TestObjectV8Internal::reflectedNameAttributeSetter(v8Value, info);
 }
 
@@ -11165,8 +11124,6 @@ void V8TestObject::reflectedClassAttributeSetterCallback(const v8::FunctionCallb
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_reflectedClass_Setter");
 
   v8::Local<v8::Value> v8Value = info[0];
-
-  V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
 
   TestObjectV8Internal::reflectedClassAttributeSetter(v8Value, info);
 }
@@ -11182,8 +11139,6 @@ void V8TestObject::limitedToOnlyOneAttributeAttributeSetterCallback(const v8::Fu
 
   v8::Local<v8::Value> v8Value = info[0];
 
-  V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
-
   TestObjectV8Internal::limitedToOnlyOneAttributeAttributeSetter(v8Value, info);
 }
 
@@ -11197,8 +11152,6 @@ void V8TestObject::limitedToOnlyAttributeAttributeSetterCallback(const v8::Funct
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_limitedToOnlyAttribute_Setter");
 
   v8::Local<v8::Value> v8Value = info[0];
-
-  V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
 
   TestObjectV8Internal::limitedToOnlyAttributeAttributeSetter(v8Value, info);
 }
@@ -11214,8 +11167,6 @@ void V8TestObject::limitedToOnlyOtherAttributeAttributeSetterCallback(const v8::
 
   v8::Local<v8::Value> v8Value = info[0];
 
-  V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
-
   TestObjectV8Internal::limitedToOnlyOtherAttributeAttributeSetter(v8Value, info);
 }
 
@@ -11230,8 +11181,6 @@ void V8TestObject::limitedWithMissingDefaultAttributeAttributeSetterCallback(con
 
   v8::Local<v8::Value> v8Value = info[0];
 
-  V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
-
   TestObjectV8Internal::limitedWithMissingDefaultAttributeAttributeSetter(v8Value, info);
 }
 
@@ -11245,8 +11194,6 @@ void V8TestObject::limitedWithInvalidMissingDefaultAttributeAttributeSetterCallb
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_limitedWithInvalidMissingDefaultAttribute_Setter");
 
   v8::Local<v8::Value> v8Value = info[0];
-
-  V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
 
   TestObjectV8Internal::limitedWithInvalidMissingDefaultAttributeAttributeSetter(v8Value, info);
 }
@@ -11434,8 +11381,6 @@ void V8TestObject::urlStringAttributeAttributeSetterCallback(const v8::FunctionC
 
   v8::Local<v8::Value> v8Value = info[0];
 
-  V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
-
   TestObjectV8Internal::urlStringAttributeAttributeSetter(v8Value, info);
 }
 
@@ -11449,8 +11394,6 @@ void V8TestObject::urlStringAttributeAttributeSetterCallback(const v8::FunctionC
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_urlStringAttribute_Setter");
 
   v8::Local<v8::Value> v8Value = info[0];
-
-  V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
 
   TestObjectV8Internal::urlStringAttributeAttributeSetter(v8Value, info);
 }

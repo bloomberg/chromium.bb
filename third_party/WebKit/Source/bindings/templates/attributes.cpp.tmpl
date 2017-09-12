@@ -377,9 +377,7 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
   if (!result)
     return;
   {% else %}{# attribute.is_put_forwards #}
-  {% if attribute.is_custom_element_callbacks or
-        (attribute.is_reflect and not (attribute.idl_type == 'DOMString' and is_node)) %}
-  // Skip on compact node DOMString getters.
+  {% if attribute.is_custom_element_callbacks or attribute.is_reflect %}
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
   {% endif %}
 
@@ -495,10 +493,6 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 
   {% if attribute.is_ce_reactions %}
   CEReactionsScope ceReactionsScope;
-  {% endif %}
-
-  {% if attribute.is_custom_element_callbacks or attribute.is_reflect %}
-  V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
   {% endif %}
 
   {% if attribute.has_custom_setter %}
