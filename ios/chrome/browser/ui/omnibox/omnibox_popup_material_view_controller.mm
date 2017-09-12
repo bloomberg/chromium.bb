@@ -7,17 +7,8 @@
 #include <memory>
 
 #include "base/ios/ios_util.h"
-#include "base/mac/scoped_cftyperef.h"
-#include "base/metrics/user_metrics.h"
-#include "base/metrics/user_metrics_action.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
-#import "components/image_fetcher/ios/ios_image_data_fetcher_wrapper.h"
-#include "components/omnibox/browser/autocomplete_input.h"
-#include "components/omnibox/browser/autocomplete_match.h"
-#include "components/omnibox/browser/autocomplete_result.h"
-#include "components/omnibox/browser/suggestion_answer.h"
 #include "ios/chrome/browser/ui/animation_util.h"
+#import "ios/chrome/browser/ui/omnibox/image_retriever.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_popup_material_row.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #import "ios/chrome/browser/ui/omnibox/truncating_attributed_label.h"
@@ -25,8 +16,6 @@
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
-#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
-#include "net/base/escape.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -37,28 +26,6 @@ const int kRowCount = 6;
 const CGFloat kRowHeight = 48.0;
 const CGFloat kAnswerRowHeight = 64.0;
 const CGFloat kTopAndBottomPadding = 8.0;
-// The color of the main text of a suggest cell.
-UIColor* SuggestionTextColor() {
-  return [UIColor colorWithWhite:(51 / 255.0) alpha:1.0];
-}
-// The color of the detail text of a suggest cell.
-UIColor* SuggestionDetailTextColor() {
-  return [UIColor colorWithRed:(85 / 255.0)
-                         green:(149 / 255.0)
-                          blue:(254 / 255.0)
-                         alpha:1.0];
-}
-// The color of the text in the portion of a search suggestion that matches the
-// omnibox input text.
-UIColor* DimColor() {
-  return [UIColor colorWithWhite:(161 / 255.0) alpha:1.0];
-}
-UIColor* SuggestionTextColorIncognito() {
-  return [UIColor whiteColor];
-}
-UIColor* DimColorIncognito() {
-  return [UIColor whiteColor];
-}
 UIColor* BackgroundColorTablet() {
   return [UIColor whiteColor];
 }
@@ -80,39 +47,28 @@ UIColor* BackgroundColorIncognito() {
   // Alignment of omnibox text. Popup text should match this alignment.
   NSTextAlignment _alignment;
 
-  OmniboxPopupMaterialViewControllerDelegate* _delegate;  // weak
-
-  // Fetcher for Answers in Suggest images.
-  std::unique_ptr<image_fetcher::IOSImageDataFetcherWrapper> imageFetcher_;
-
-  // The data source.
-  AutocompleteResult _currentResult;
+  NSArray<id<AutocompleteSuggestion>>* _currentResult;
 
   // Array containing the OmniboxPopupMaterialRow objects displayed in the view.
   NSArray* _rows;
 
   // The height of the keyboard. Used to determine the content inset for the
   // scroll view.
-  CGFloat keyboardHeight_;
+  CGFloat _keyboardHeight;
 }
 
 @end
 
 @implementation OmniboxPopupMaterialViewController
-
+@synthesize delegate = _delegate;
 @synthesize incognito = _incognito;
+@synthesize imageRetriever = _imageRetriever;
 
 #pragma mark -
 #pragma mark Initialization
 
-- (instancetype)
-initWithFetcher:
-    (std::unique_ptr<image_fetcher::IOSImageDataFetcherWrapper>)imageFetcher
-       delegate:(OmniboxPopupMaterialViewControllerDelegate*)delegate {
-  if ((self = [super init])) {
-    _delegate = delegate;
-    imageFetcher_ = std::move(imageFetcher);
-
+- (instancetype)init {
+  if ((self = [super initWithStyle:UITableViewStylePlain])) {
     if (IsIPadIdiom()) {
       // The iPad keyboard can cover some of the rows of the scroll view. The
       // scroll view's content inset may need to be updated when the keyboard is
@@ -192,11 +148,24 @@ initWithFetcher:
   [self layoutRows];
 }
 
+#pragma mark - AutocompleteResultConsumer
+
+- (void)updateMatches:(NSArray<id<AutocompleteSuggestion>>*)result
+        withAnimation:(BOOL)animation {
+  _currentResult = result;
+  [self layoutRows];
+
+  size_t size = _currentResult.count;
+  if (animation && size > 0) {
+    [self fadeInRows];
+  }
+}
+
 #pragma mark -
 #pragma mark Updating data and UI
 
 - (void)updateRow:(OmniboxPopupMaterialRow*)row
-        withMatch:(const AutocompleteMatch&)match {
+        withMatch:(id<AutocompleteSuggestion>)match {
   const CGFloat kTextCellLeadingPadding =
       IsIPadIdiom() ? (!IsCompactTablet() ? 192 : 100) : 16;
   const CGFloat kTextCellTopPadding = 6;
@@ -213,23 +182,15 @@ initWithFetcher:
 
   BOOL LTRTextInRTLLayout = _alignment == NSTextAlignmentLeft && UseRTLLayout();
 
-  row.rowHeight = [self hasAnswer:match] ? kAnswerRowHeight : kRowHeight;
+  row.rowHeight = match.hasAnswer ? kAnswerRowHeight : kRowHeight;
 
   // Fetch the answer image if specified.  Currently, no answer types specify an
   // image on the first line so for now we only look at the second line.
-  if ([self hasImage:match]) {
-    image_fetcher::IOSImageDataFetcherCallback callback =
-        ^(NSData* data, const image_fetcher::RequestMetadata& metadata) {
-          if (data) {
-            UIImage* image =
-                [UIImage imageWithData:data scale:[UIScreen mainScreen].scale];
-            if (image) {
-              row.answerImageView.image = image;
-            }
-          }
-        };
-    imageFetcher_->FetchImageDataWebpDecoded([self imageURL:match], callback);
-
+  if (match.hasImage) {
+    [self.imageRetriever fetchImage:match.imageURL
+                         completion:^(UIImage* image) {
+                           row.answerImageView.image = image;
+                         }];
     // Answers in suggest do not support RTL, left align only.
     CGFloat imageLeftPadding =
         kTextCellLeadingPadding + kAnswerImageLeftPadding;
@@ -252,26 +213,26 @@ initWithFetcher:
   // For the detail text label, we use either the regular detail label, which
   // truncates by fading, or the answer label, which uses UILabel's standard
   // truncation by ellipse for the multi-line text sometimes shown in answers.
-  row.detailTruncatingLabel.hidden = [self hasAnswer:match];
-  row.detailAnswerLabel.hidden = ![self hasAnswer:match];
+  row.detailTruncatingLabel.hidden = match.hasAnswer;
+  row.detailAnswerLabel.hidden = !match.hasAnswer;
   // URLs have have special layout requirements that need to be invoked here.
-  row.detailTruncatingLabel.displayAsURL = [self isURL:match];
+  row.detailTruncatingLabel.displayAsURL = match.isURL;
 
   // TODO(crbug.com/697647): The complexity of managing these two separate
   // labels could probably be encapusulated in the row class if we moved the
   // layout logic there.
-  UILabel* detailTextLabel = [self hasAnswer:match] ? row.detailAnswerLabel
-                                                    : row.detailTruncatingLabel;
+  UILabel* detailTextLabel =
+      match.hasAnswer ? row.detailAnswerLabel : row.detailTruncatingLabel;
   [detailTextLabel setTextAlignment:_alignment];
 
   // The width must be positive for CGContextRef to be valid.
   CGFloat labelWidth =
       MAX(40, floorf(row.frame.size.width) - kTextCellLeadingPadding);
   CGFloat labelHeight =
-      [self hasAnswer:match] ? kAnswerLabelHeight : kTextDetailLabelHeight;
+      match.hasAnswer ? kAnswerLabelHeight : kTextDetailLabelHeight;
   CGFloat answerImagePadding = kAnswerImageWidth + kAnswerImageRightPadding;
   CGFloat leadingPadding =
-      ([self hasImage:match] && !alignmentRight ? answerImagePadding : 0) +
+      (match.hasImage && !alignmentRight ? answerImagePadding : 0) +
       kTextCellLeadingPadding;
 
   LayoutRect detailTextLabelLayout =
@@ -279,11 +240,11 @@ initWithFetcher:
                      kDetailCellTopPadding, labelWidth, labelHeight);
   detailTextLabel.frame = LayoutRectGetRect(detailTextLabelLayout);
 
-  detailTextLabel.attributedText = [self detailText:match];
+  detailTextLabel.attributedText = match.detailText;
 
   // Set detail text label number of lines
-  if ([self hasAnswer:match]) {
-    detailTextLabel.numberOfLines = [self numberOfLines:match];
+  if (match.hasAnswer) {
+    detailTextLabel.numberOfLines = match.numberOfLines;
   }
 
   [detailTextLabel setNeedsDisplay];
@@ -296,10 +257,10 @@ initWithFetcher:
   textLabel.frame = LayoutRectGetRect(textLabelLayout);
 
   // Set the text.
-  textLabel.attributedText = [self text:match];
+  textLabel.attributedText = match.text;
 
   // Center the textLabel if detailLabel is empty.
-  if (![self hasAnswer:match] && [[self detailText:match] length] == 0) {
+  if (!match.hasAnswer && [match.detailText length] == 0) {
     textLabel.center = CGPointMake(textLabel.center.x, floor(kRowHeight / 2));
     textLabel.frame = AlignRectToPixel(textLabel.frame);
   } else {
@@ -313,17 +274,17 @@ initWithFetcher:
   // The leading image (e.g. magnifying glass, star, clock) is only shown on
   // iPad.
   if (IsIPadIdiom()) {
-    [row updateLeadingImage:[self imageId:match]];
+    [row updateLeadingImage:match.imageID];
   }
 
   // Show append button for search history/search suggestions/Physical Web as
   // the right control element (aka an accessory element of a table view cell).
-  row.appendButton.hidden = ![self isAppendable:match];
+  row.appendButton.hidden = !match.isAppendable;
   [row.appendButton cancelTrackingWithEvent:nil];
 
   // If a right accessory element is present or the text alignment is right
   // aligned, adjust the width to align with the accessory element.
-  if ([self isAppendable:match] || alignmentRight) {
+  if (match.isAppendable || alignmentRight) {
     LayoutRect layout =
         LayoutRectForRectInBoundingRect(textLabel.frame, self.view.frame);
     layout.size.width -= kAppendButtonWidth;
@@ -331,7 +292,7 @@ initWithFetcher:
     layout =
         LayoutRectForRectInBoundingRect(detailTextLabel.frame, self.view.frame);
     layout.size.width -=
-        kAppendButtonWidth + ([self hasImage:match] ? answerImagePadding : 0);
+        kAppendButtonWidth + (match.hasImage ? answerImagePadding : 0);
     detailTextLabel.frame = LayoutRectGetRect(layout);
   }
 
@@ -354,142 +315,8 @@ initWithFetcher:
   }
 }
 
-- (NSMutableAttributedString*)attributedStringWithAnswerLine:
-    (const SuggestionAnswer::ImageLine&)line {
-  NSMutableAttributedString* result =
-      [[NSMutableAttributedString alloc] initWithString:@""];
-
-  for (size_t i = 0; i < line.text_fields().size(); i++) {
-    const SuggestionAnswer::TextField& field = line.text_fields()[i];
-    [result
-        appendAttributedString:[self attributedStringWithString:field.text()
-                                                           type:field.type()]];
-  }
-
-  NSAttributedString* spacer =
-      [[NSAttributedString alloc] initWithString:@"  "];
-  if (line.additional_text() != nil) {
-    const SuggestionAnswer::TextField* field = line.additional_text();
-    [result appendAttributedString:spacer];
-    [result
-        appendAttributedString:[self attributedStringWithString:field->text()
-                                                           type:field->type()]];
-  }
-
-  if (line.status_text() != nil) {
-    const SuggestionAnswer::TextField* field = line.status_text();
-    [result appendAttributedString:spacer];
-    [result
-        appendAttributedString:[self attributedStringWithString:field->text()
-                                                           type:field->type()]];
-  }
-
-  return result;
-}
-
-- (NSAttributedString*)attributedStringWithString:(const base::string16&)string
-                                             type:(int)type {
-  NSDictionary* attributes = nil;
-
-  const id font = (id)NSFontAttributeName;
-  NSString* foregroundColor = (NSString*)NSForegroundColorAttributeName;
-  const id baselineOffset = (id)NSBaselineOffsetAttributeName;
-
-  // Answer types, sizes and colors specified at http://goto.google.com/ais_api.
-  switch (type) {
-    case SuggestionAnswer::TOP_ALIGNED:
-      attributes = @{
-        font : [[MDCTypography fontLoader] regularFontOfSize:12],
-        baselineOffset : @10.0f,
-        foregroundColor : [UIColor grayColor],
-      };
-      break;
-    case SuggestionAnswer::DESCRIPTION_POSITIVE:
-      attributes = @{
-        font : [[MDCTypography fontLoader] regularFontOfSize:16],
-        foregroundColor : [UIColor colorWithRed:11 / 255.0
-                                          green:128 / 255.0
-                                           blue:67 / 255.0
-                                          alpha:1.0],
-      };
-      break;
-    case SuggestionAnswer::DESCRIPTION_NEGATIVE:
-      attributes = @{
-        font : [[MDCTypography fontLoader] regularFontOfSize:16],
-        foregroundColor : [UIColor colorWithRed:197 / 255.0
-                                          green:57 / 255.0
-                                           blue:41 / 255.0
-                                          alpha:1.0],
-      };
-      break;
-    case SuggestionAnswer::PERSONALIZED_SUGGESTION:
-      attributes = @{
-        font : [[MDCTypography fontLoader] regularFontOfSize:16],
-      };
-      break;
-    case SuggestionAnswer::ANSWER_TEXT_MEDIUM:
-      attributes = @{
-        font : [[MDCTypography fontLoader] regularFontOfSize:20],
-        foregroundColor : [UIColor grayColor],
-      };
-      break;
-    case SuggestionAnswer::ANSWER_TEXT_LARGE:
-      attributes = @{
-        font : [[MDCTypography fontLoader] regularFontOfSize:24],
-        foregroundColor : [UIColor grayColor],
-      };
-      break;
-    case SuggestionAnswer::SUGGESTION_SECONDARY_TEXT_SMALL:
-      attributes = @{
-        font : [[MDCTypography fontLoader] regularFontOfSize:12],
-        foregroundColor : [UIColor grayColor],
-      };
-      break;
-    case SuggestionAnswer::SUGGESTION_SECONDARY_TEXT_MEDIUM:
-      attributes = @{
-        font : [[MDCTypography fontLoader] regularFontOfSize:14],
-        foregroundColor : [UIColor grayColor],
-      };
-      break;
-    case SuggestionAnswer::SUGGESTION:
-    // Fall through.
-    default:
-      attributes = @{
-        font : [[MDCTypography fontLoader] regularFontOfSize:16],
-      };
-  }
-
-  NSString* unescapedString =
-      base::SysUTF16ToNSString(net::UnescapeForHTML(string));
-  // TODO(jdonnelly): Remove this tag stripping once the JSON parsing class
-  // handles HTML tags.
-  unescapedString = [unescapedString stringByReplacingOccurrencesOfString:@"<b>"
-                                                               withString:@""];
-  unescapedString =
-      [unescapedString stringByReplacingOccurrencesOfString:@"</b>"
-                                                 withString:@""];
-
-  return [[NSAttributedString alloc] initWithString:unescapedString
-                                         attributes:attributes];
-}
-
-- (void)updateMatches:(const AutocompleteResult&)result
-        withAnimation:(BOOL)animation {
-  AutocompleteResult oldResults;
-  AutocompleteInput emptyInput;
-  oldResults.Swap(&_currentResult);
-  _currentResult.CopyOldMatches(emptyInput, result, nil);
-
-  [self layoutRows];
-
-  size_t size = _currentResult.size();
-  if (animation && size > 0) {
-    [self fadeInRows];
-  }
-}
-
 - (void)layoutRows {
-  size_t size = _currentResult.size();
+  size_t size = _currentResult.count;
 
   [self.tableView reloadData];
   [self.tableView beginUpdates];
@@ -497,9 +324,7 @@ initWithFetcher:
     OmniboxPopupMaterialRow* row = _rows[i];
 
     if (i < size) {
-      const AutocompleteMatch& match =
-          ((const AutocompleteResult&)_currentResult).match_at((NSUInteger)i);
-      [self updateRow:row withMatch:match];
+      [self updateRow:row withMatch:_currentResult[i]];
       row.hidden = NO;
     } else {
       row.hidden = YES;
@@ -515,7 +340,7 @@ initWithFetcher:
   NSDictionary* keyboardInfo = [notification userInfo];
   NSValue* keyboardFrameValue =
       [keyboardInfo valueForKey:UIKeyboardFrameEndUserInfoKey];
-  keyboardHeight_ = CurrentKeyboardHeight(keyboardFrameValue);
+  _keyboardHeight = CurrentKeyboardHeight(keyboardFrameValue);
   if (self.tableView.contentSize.height > 0)
     [self updateContentInsetForKeyboard];
 }
@@ -527,7 +352,7 @@ initWithFetcher:
       [self.tableView convertRect:self.tableView.bounds toView:toView];
   CGFloat screenHeight = CurrentScreenHeight();
   CGFloat bottomInset = screenHeight - self.tableView.contentSize.height -
-                        keyboardHeight_ - absoluteRect.origin.y -
+                        _keyboardHeight - absoluteRect.origin.y -
                         kTopAndBottomPadding * 2;
   bottomInset = MAX(kTopAndBottomPadding, -bottomInset);
   self.tableView.contentInset =
@@ -572,18 +397,7 @@ initWithFetcher:
 
 - (void)appendButtonTapped:(id)sender {
   NSUInteger row = [sender tag];
-  const AutocompleteMatch& match =
-      ((const AutocompleteResult&)_currentResult).match_at(row);
-
-  if (AutocompleteMatch::IsSearchType(match.type)) {
-    base::RecordAction(
-        base::UserMetricsAction("MobileOmniboxRefineSuggestion.Search"));
-  } else {
-    base::RecordAction(
-        base::UserMetricsAction("MobileOmniboxRefineSuggestion.Url"));
-  }
-
-  _delegate->OnMatchSelectedForAppending(match);
+  [self.delegate autocompleteResultConsumer:self didSelectRowForAppending:row];
 }
 
 #pragma mark -
@@ -603,7 +417,7 @@ initWithFetcher:
       return;
   }
 
-  _delegate->OnScroll();
+  [self.delegate autocompleteResultConsumerDidScroll:self];
   for (OmniboxPopupMaterialRow* row in _rows) {
     row.highlighted = NO;
   }
@@ -614,76 +428,21 @@ initWithFetcher:
   _alignment = alignment;
 }
 
-- (NSMutableAttributedString*)
-attributedStringWithString:(NSString*)text
-           classifications:(const ACMatchClassifications*)classifications
-                 smallFont:(BOOL)smallFont
-                     color:(UIColor*)defaultColor
-                  dimColor:(UIColor*)dimColor {
-  if (text == nil)
-    return nil;
-
-  UIFont* fontRef =
-      smallFont ? [MDCTypography body1Font] : [MDCTypography subheadFont];
-
-  NSMutableAttributedString* as =
-      [[NSMutableAttributedString alloc] initWithString:text];
-
-  // Set the base attributes to the default font and color.
-  NSDictionary* dict = @{
-    NSFontAttributeName : fontRef,
-    NSForegroundColorAttributeName : defaultColor,
-  };
-  [as addAttributes:dict range:NSMakeRange(0, [text length])];
-
-  if (classifications != NULL) {
-    UIFont* boldFontRef =
-        [[MDCTypography fontLoader] mediumFontOfSize:fontRef.pointSize];
-
-    for (ACMatchClassifications::const_iterator i = classifications->begin();
-         i != classifications->end(); ++i) {
-      const BOOL isLast = (i + 1) == classifications->end();
-      const size_t nextOffset = (isLast ? [text length] : (i + 1)->offset);
-      const NSInteger location = static_cast<NSInteger>(i->offset);
-      const NSInteger length = static_cast<NSInteger>(nextOffset - i->offset);
-      // Guard against bad, off-the-end classification ranges due to
-      // crbug.com/121703 and crbug.com/131370.
-      if (i->offset + length > [text length] || length <= 0)
-        break;
-      const NSRange range = NSMakeRange(location, length);
-      if (0 != (i->style & ACMatchClassification::MATCH)) {
-        [as addAttribute:NSFontAttributeName value:boldFontRef range:range];
-      }
-
-      if (0 != (i->style & ACMatchClassification::DIM)) {
-        [as addAttribute:NSForegroundColorAttributeName
-                   value:dimColor
-                   range:range];
-      }
-    }
-  }
-  return as;
-}
-
 #pragma mark -
 #pragma mark Table view delegate
 
 - (void)tableView:(UITableView*)tableView
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
   DCHECK_EQ(0U, (NSUInteger)indexPath.section);
-  DCHECK_LT((NSUInteger)indexPath.row, _currentResult.size());
+  DCHECK_LT((NSUInteger)indexPath.row, _currentResult.count);
   NSUInteger row = indexPath.row;
 
   // Crash reports tell us that |row| is sometimes indexed past the end of
   // the results array. In those cases, just ignore the request and return
   // early. See b/5813291.
-  if (row >= _currentResult.size())
+  if (row >= _currentResult.count)
     return;
-
-  const AutocompleteMatch& match =
-      ((const AutocompleteResult&)_currentResult).match_at(row);
-
-  _delegate->OnMatchSelected(match, row);
+  [self.delegate autocompleteResultConsumer:self didSelectRow:row];
 }
 
 #pragma mark -
@@ -692,7 +451,7 @@ attributedStringWithString:(NSString*)text
 - (CGFloat)tableView:(UITableView*)tableView
     heightForRowAtIndexPath:(NSIndexPath*)indexPath {
   DCHECK_EQ(0U, (NSUInteger)indexPath.section);
-  DCHECK_LT((NSUInteger)indexPath.row, _currentResult.size());
+  DCHECK_LT((NSUInteger)indexPath.row, _currentResult.count);
   return ((OmniboxPopupMaterialRow*)(_rows[indexPath.row])).rowHeight;
 }
 
@@ -703,14 +462,14 @@ attributedStringWithString:(NSString*)text
 - (NSInteger)tableView:(UITableView*)tableView
     numberOfRowsInSection:(NSInteger)section {
   DCHECK_EQ(0, section);
-  return _currentResult.size();
+  return _currentResult.count;
 }
 
 // Customize the appearance of table view cells.
 - (UITableViewCell*)tableView:(UITableView*)tableView
         cellForRowAtIndexPath:(NSIndexPath*)indexPath {
   DCHECK_EQ(0U, (NSUInteger)indexPath.section);
-  DCHECK_LT((NSUInteger)indexPath.row, _currentResult.size());
+  DCHECK_LT((NSUInteger)indexPath.row, _currentResult.count);
   return _rows[indexPath.row];
 }
 
@@ -720,139 +479,24 @@ attributedStringWithString:(NSString*)text
   // iOS doesn't check -numberOfRowsInSection before checking
   // -canEditRowAtIndexPath in a reload call. If |indexPath.row| is too large,
   // simple return |NO|.
-  if ((NSUInteger)indexPath.row >= _currentResult.size())
+  if ((NSUInteger)indexPath.row >= _currentResult.count)
     return NO;
 
-  const AutocompleteMatch& match =
-      ((const AutocompleteResult&)_currentResult).match_at(indexPath.row);
-  return match.SupportsDeletion();
+  return [_currentResult[indexPath.row] supportsDeletion];
 }
 
 - (void)tableView:(UITableView*)tableView
     commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
      forRowAtIndexPath:(NSIndexPath*)indexPath {
   DCHECK_EQ(0U, (NSUInteger)indexPath.section);
-  DCHECK_LT((NSUInteger)indexPath.row, _currentResult.size());
+  DCHECK_LT((NSUInteger)indexPath.row, _currentResult.count);
   if (editingStyle == UITableViewCellEditingStyleDelete) {
     // The delete button never disappears if you don't call this after a tap.
     // It doesn't seem to be required anywhere else.
     [_rows[indexPath.row] prepareForReuse];
-    const AutocompleteMatch& match =
-        ((const AutocompleteResult&)_currentResult).match_at(indexPath.row);
-    _delegate->OnMatchSelectedForDeletion(match);
+    [self.delegate autocompleteResultConsumer:self
+                      didSelectRowForDeletion:indexPath.row];
   }
-}
-
-- (BOOL)hasAnswer:(const AutocompleteMatch&)match {
-  return match.answer.get() != nil;
-}
-
-- (BOOL)hasImage:(const AutocompleteMatch&)match {
-  return [self hasAnswer:match] &&
-         match.answer->second_line().image_url().is_valid();
-}
-
-- (BOOL)isURL:(const AutocompleteMatch&)match {
-  return !AutocompleteMatch::IsSearchType(match.type);
-}
-
-- (NSAttributedString*)detailText:(const AutocompleteMatch&)match {
-  // The detail text should be the URL (|match.contents|) for non-search
-  // suggestions and the entity type (|match.description|) for search entity
-  // suggestions. For all other search suggestions, |match.description| is the
-  // name of the currently selected search engine, which for mobile we suppress.
-  NSString* detailText = nil;
-  if ([self isURL:match])
-    detailText = base::SysUTF16ToNSString(match.contents);
-  else if (match.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY)
-    detailText = base::SysUTF16ToNSString(match.description);
-
-  NSAttributedString* detailAttributedText = nil;
-  if ([self hasAnswer:match]) {
-    detailAttributedText =
-        [self attributedStringWithAnswerLine:match.answer->second_line()];
-  } else {
-    const ACMatchClassifications* classifications =
-        [self isURL:match] ? &match.contents_class : nil;
-    // The suggestion detail color should match the main text color for entity
-    // suggestions. For non-search suggestions (URLs), a highlight color is used
-    // instead.
-    UIColor* suggestionDetailTextColor = nil;
-    if (match.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY) {
-      suggestionDetailTextColor =
-          _incognito ? SuggestionTextColorIncognito() : SuggestionTextColor();
-    } else {
-      suggestionDetailTextColor = SuggestionDetailTextColor();
-    }
-    DCHECK(suggestionDetailTextColor);
-    detailAttributedText =
-        [self attributedStringWithString:detailText
-                         classifications:classifications
-                               smallFont:YES
-                                   color:suggestionDetailTextColor
-                                dimColor:DimColor()];
-  }
-  return detailAttributedText;
-}
-
-- (NSInteger)numberOfLines:(const AutocompleteMatch&)match {
-  // Answers specify their own limit on the number of lines to show but we
-  // additionally cap this at 3 to guard against unreasonable values.
-  const SuggestionAnswer::TextField& first_text_field =
-      match.answer->second_line().text_fields()[0];
-  if (first_text_field.has_num_lines() && first_text_field.num_lines() > 1)
-    return MIN(3, first_text_field.num_lines());
-  else
-    return 1;
-}
-
-- (NSAttributedString*)text:(const AutocompleteMatch&)match {
-  // The text should be search term (|match.contents|) for searches, otherwise
-  // page title (|match.description|).
-  base::string16 textString =
-      ![self isURL:match] ? match.contents : match.description;
-  NSString* text = base::SysUTF16ToNSString(textString);
-
-  // If for some reason the title is empty, copy the detailText.
-  if ([text length] == 0 && [[self detailText:match] length] != 0) {
-    text = [[self detailText:match] string];
-  }
-
-  NSAttributedString* attributedText = nil;
-
-  if ([self hasAnswer:match]) {
-    attributedText =
-        [self attributedStringWithAnswerLine:match.answer->first_line()];
-  } else {
-    const ACMatchClassifications* textClassifications =
-        ![self isURL:match] ? &match.contents_class : &match.description_class;
-    UIColor* suggestionTextColor =
-        _incognito ? SuggestionTextColorIncognito() : SuggestionTextColor();
-    UIColor* dimColor = _incognito ? DimColorIncognito() : DimColor();
-
-    attributedText = [self attributedStringWithString:text
-                                      classifications:textClassifications
-                                            smallFont:NO
-                                                color:suggestionTextColor
-                                             dimColor:dimColor];
-  }
-  return attributedText;
-}
-
-- (BOOL)isAppendable:(const AutocompleteMatch&)match {
-  return match.type == AutocompleteMatchType::SEARCH_HISTORY ||
-         match.type == AutocompleteMatchType::SEARCH_SUGGEST ||
-         match.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY ||
-         match.type == AutocompleteMatchType::PHYSICAL_WEB;
-}
-
-- (GURL)imageURL:(const AutocompleteMatch&)match {
-  return match.answer->second_line().image_url();
-}
-
-- (int)imageId:(const AutocompleteMatch&)match {
-  return GetIconForAutocompleteMatchType(
-      match.type, _delegate->IsStarredMatch(match), _incognito);
 }
 
 @end

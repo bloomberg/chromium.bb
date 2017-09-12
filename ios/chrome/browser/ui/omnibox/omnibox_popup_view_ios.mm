@@ -20,6 +20,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_popup_material_view_controller.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_popup_mediator.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_popup_presenter.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_popup_view_suggestions_delegate.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_util.h"
@@ -52,10 +53,17 @@ OmniboxPopupViewIOS::OmniboxPopupViewIOS(
       base::MakeUnique<image_fetcher::IOSImageDataFetcherWrapper>(
           browser_state->GetRequestContext());
 
-  popup_controller_.reset([[OmniboxPopupMaterialViewController alloc]
+  mediator_.reset([[OmniboxPopupMediator alloc]
       initWithFetcher:std::move(imageFetcher)
              delegate:this]);
+  popup_controller_.reset([[OmniboxPopupMaterialViewController alloc] init]);
   [popup_controller_ setIncognito:browser_state->IsOffTheRecord()];
+
+  [mediator_ setIncognito:browser_state->IsOffTheRecord()];
+  [mediator_ setConsumer:popup_controller_];
+  [popup_controller_ setImageRetriever:mediator_];
+  [popup_controller_ setDelegate:mediator_];
+
   presenter_.reset([[OmniboxPopupPresenter alloc]
       initWithPopupPositioner:positioner
           popupViewController:popup_controller_]);
@@ -79,14 +87,15 @@ void OmniboxPopupViewIOS::UpdateEditViewIcon() {
 void OmniboxPopupViewIOS::UpdatePopupAppearance() {
   const AutocompleteResult& result = model_->result();
 
+  // TODO(crbug.com/762597): this logic should move to PopupCoordinator.
   if (!is_open_ && !result.empty()) {
     // The popup is not currently open and there are results to display. Update
     // and animate the cells
-    [popup_controller_ updateMatches:result withAnimation:YES];
+    [mediator_ updateMatches:result withAnimation:YES];
   } else {
     // The popup is already displayed or there are no results to display. Update
     // the cells without animating.
-    [popup_controller_ updateMatches:result withAnimation:NO];
+    [mediator_ updateMatches:result withAnimation:NO];
   }
   is_open_ = !result.empty();
 

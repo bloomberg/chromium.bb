@@ -6,39 +6,25 @@
 #define IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_MATERIAL_VIEW_CONTROLLER_H_
 
 #import <UIKit/UIKit.h>
+#import "ios/chrome/browser/ui/omnibox/autocomplete_result_consumer.h"
+#import "ios/chrome/browser/ui/omnibox/image_retriever.h"
 
-#include "components/omnibox/browser/autocomplete_result.h"
-
-namespace image_fetcher {
-class IOSImageDataFetcherWrapper;
-}
-
-class OmniboxPopupMaterialViewControllerDelegate {
- public:
-  virtual bool IsStarredMatch(const AutocompleteMatch& match) const = 0;
-  virtual void OnMatchSelected(const AutocompleteMatch& match, size_t row) = 0;
-  virtual void OnMatchSelectedForAppending(const AutocompleteMatch& match) = 0;
-  virtual void OnMatchSelectedForDeletion(const AutocompleteMatch& match) = 0;
-  virtual void OnScroll() = 0;
-};
+@protocol ImageRetriever;
 
 // View controller used to display a list of omnibox autocomplete matches in the
 // omnibox popup.
-@interface OmniboxPopupMaterialViewController : UITableViewController
+@interface OmniboxPopupMaterialViewController
+    : UITableViewController<AutocompleteResultConsumer>
 
 @property(nonatomic, assign) BOOL incognito;
+@property(nonatomic, weak) id<AutocompleteResultConsumerDelegate> delegate;
+@property(nonatomic, weak) id<ImageRetriever> imageRetriever;
 
-// Designated initializer.  Creates a table view with UITableViewStylePlain.
-// Takes ownership of |imageFetcher|.
-- (instancetype)
-initWithFetcher:
-    (std::unique_ptr<image_fetcher::IOSImageDataFetcherWrapper>)imageFetcher
-       delegate:(OmniboxPopupMaterialViewControllerDelegate*)delegate;
-
-// Updates the current data and forces a redraw. If animation is YES, adds
-// CALayer animations to fade the OmniboxPopupMaterialRows in.
-- (void)updateMatches:(const AutocompleteResult&)result
-        withAnimation:(BOOL)animation;
+- (instancetype)init NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
+- (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
+- (instancetype)initWithNibName:(NSString*)nibNameOrNil
+                         bundle:(NSBundle*)nibBundleOrNil NS_UNAVAILABLE;
 
 // Set text alignment for popup cells.
 - (void)setTextAlignment:(NSTextAlignment)alignment;
