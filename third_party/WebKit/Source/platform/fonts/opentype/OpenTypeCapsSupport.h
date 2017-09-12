@@ -34,7 +34,6 @@ class PLATFORM_EXPORT OpenTypeCapsSupport {
 
   const HarfBuzzFace* harf_buzz_face_;
   FontDescription::FontVariantCaps requested_caps_;
-  SmallCapsIterator::SmallCapsBehavior run_case_;
 
   enum class FontSupport {
     kFull,
