@@ -657,7 +657,8 @@ static bool ShouldEmitExtraNewlineForNode(Node* node) {
     return true;
 
   if (node->HasTagName(h1Tag) || node->HasTagName(h2Tag) ||
-      node->HasTagName(h3Tag)) {
+      node->HasTagName(h3Tag) || node->HasTagName(h4Tag) ||
+      node->HasTagName(h5Tag) || node->HasTagName(h6Tag)) {
     const ComputedStyle* style = r->Style();
     if (style) {
       int bottom_margin = ToLayoutBox(r)->CollapsedMarginAfter().ToInt();
