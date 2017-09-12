@@ -32,6 +32,9 @@ use_openmax_dl_fft =
 
 use_webaudio_ffmpeg = !is_mac && !is_android
 
+# TODO(tkent): Remove this flag after the great mv. crbug.com/760462
+snake_case_source_files = false
+
 # feature_defines_list ---------------------------------------------------------
 
 feature_defines_list = []

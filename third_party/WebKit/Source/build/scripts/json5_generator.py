@@ -207,10 +207,16 @@ class Writer(object):
         self._input_files = copy.copy(json5_files)
         self._outputs = {}  # file_name -> generator
         self.gperf_path = None
+        self.snake_case_input_files = False
         if json5_files:
             self.json5_file = Json5File.load_from_files(json5_files,
                                                         self.default_metadata,
                                                         self.default_parameters)
+
+    # TODO(tkent): This is an ugly hack. Remove the function after the great mv.
+    # crbug.com/760462
+    def set_snake_case_input_files(self, flag):
+        self.snake_case_input_files = flag
 
     def _write_file_if_changed(self, output_dir, contents, file_name):
         path = os.path.join(output_dir, file_name)
@@ -249,11 +255,15 @@ class Maker(object):
         parser.add_argument("--gperf", default="gperf")
         parser.add_argument("--developer_dir", help="Path to Xcode.")
         parser.add_argument("--output_dir", default=os.getcwd())
+        # TODO(tkent): Remove the option after the great mv. crbug.com/760462
+        parser.add_argument("--snake-case-input-files",
+                            action="store_true", default=False)
         args = parser.parse_args()
 
         if args.developer_dir:
             os.environ["DEVELOPER_DIR"] = args.developer_dir
 
         writer = self._writer_class(args.files)
+        writer.set_snake_case_input_files(args.snake_case_input_files)
         writer.set_gperf_path(args.gperf)
         writer.write_files(args.output_dir)
