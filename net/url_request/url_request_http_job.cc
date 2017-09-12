@@ -270,6 +270,8 @@ URLRequestHttpJob::~URLRequestHttpJob() {
 
   // Make sure SdchSourceStream are told to emit histogram data while |this|
   // is still alive.
+  // TODO(xunjieli): This is probably not needed. Remove once crbug.com/762686
+  // is fixed.
   DestroySourceStream();
 
   DoneWithRequest(ABORTED);
@@ -1351,12 +1353,6 @@ void URLRequestHttpJob::UpdatePacketReadTimes() {
   final_packet_time_ = now;
 
   bytes_observed_in_packets_ = prefilter_bytes_read();
-}
-
-void URLRequestHttpJob::RecordPacketStats(
-    SdchPolicyDelegate::StatisticSelector statistic) const {
-  // TODO(xunjieli): Remove this when SdchPolicyDelegate is removed.
-  // crbug.com/762686.
 }
 
 void URLRequestHttpJob::SetRequestHeadersCallback(

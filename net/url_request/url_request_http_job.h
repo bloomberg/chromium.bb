@@ -20,7 +20,6 @@
 #include "net/base/net_error_details.h"
 #include "net/base/net_export.h"
 #include "net/cookies/cookie_store.h"
-#include "net/filter/sdch_policy_delegate.h"
 #include "net/http/http_request_info.h"
 #include "net/socket/connection_attempts.h"
 #include "net/url_request/url_request_job.h"
@@ -45,9 +44,6 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
                                 NetworkDelegate* network_delegate,
                                 const std::string& scheme);
 
-  // Record Sdch specific packet stats. Public so that SdchPolicyDelegate can
-  // access it.
-  void RecordPacketStats(SdchPolicyDelegate::StatisticSelector statistic) const;
   void SetRequestHeadersCallback(RequestHeadersCallback callback) override;
   void SetResponseHeadersCallback(ResponseHeadersCallback callback) override;
 
