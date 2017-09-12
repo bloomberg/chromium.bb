@@ -9,7 +9,7 @@ namespace features {
 // Enables VSync aligned input for GestureScroll/Pinch on compositor thread.
 // Tracking: https://crbug.com/625689
 const base::Feature kVsyncAlignedInputEvents{"VsyncAlignedInput",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSendMouseLeaveEvents{"SendMouseLeaveEvents",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
