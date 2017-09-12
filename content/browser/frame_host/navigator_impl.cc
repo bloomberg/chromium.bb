@@ -999,7 +999,7 @@ void NavigatorImpl::OnBeginNavigation(
     RenderFrameHost* current_frame_host =
         frame_tree_node->render_manager()->current_frame_host();
     current_frame_host->Send(
-        new FrameMsg_Stop(current_frame_host->GetRoutingID()));
+        new FrameMsg_DroppedNavigation(current_frame_host->GetRoutingID()));
     return;
   }
 

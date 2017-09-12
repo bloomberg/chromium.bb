@@ -456,9 +456,12 @@ void FrameLoader::DidFinishNavigation() {
   // We should have either finished the provisional or committed navigation if
   // this is called. Only delcare the whole frame finished if neither is in
   // progress.
-  DCHECK(document_loader_->SentDidFinishLoad() || !HasProvisionalNavigation());
-  if (!document_loader_->SentDidFinishLoad() || HasProvisionalNavigation())
+  DCHECK((document_loader_ && document_loader_->SentDidFinishLoad()) ||
+         !HasProvisionalNavigation());
+  if (!document_loader_ || !document_loader_->SentDidFinishLoad() ||
+      HasProvisionalNavigation()) {
     return;
+  }
 
   if (frame_->IsLoading()) {
     progress_tracker_->ProgressCompleted();
@@ -1388,6 +1391,13 @@ NavigationPolicy FrameLoader::ShouldContinueForRedirectNavigationPolicy(
       substitute_data, loader, should_check_main_world_content_security_policy,
       type, policy, frame_load_type, is_client_redirect,
       WebTriggeringEventInfo::kNotFromEvent, form);
+}
+
+void FrameLoader::ClientDroppedNavigation() {
+  if (!provisional_document_loader_ || provisional_document_loader_->DidStart())
+    return;
+
+  DetachProvisionalDocumentLoader(provisional_document_loader_);
 }
 
 NavigationPolicy FrameLoader::CheckLoadCanStart(

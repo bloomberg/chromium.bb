@@ -295,6 +295,11 @@ class WebLocalFrame : public WebFrame {
                                  bool had_redirect,
                                  const WebSourceLocation&) = 0;
 
+  // PlzNavigate
+  // Informs the frame that the navigation it asked the client to do was
+  // dropped.
+  virtual void ClientDroppedNavigation() = 0;
+
   // Orientation Changes ----------------------------------------------------
 
   // Notify the frame that the screen orientation has changed.

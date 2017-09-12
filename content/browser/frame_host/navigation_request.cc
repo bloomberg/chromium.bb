@@ -264,7 +264,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
                             blink::WebMixedContentContextType::kBlockable,
                             is_form_submission, initiator),
       request_params, browser_initiated,
-      true,  // may_transfer
+      false,  // from_begin_navigation
       &frame_entry, &entry));
   return navigation_request;
 }
@@ -311,7 +311,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
       frame_tree_node, common_params, begin_params, request_params,
       false,  // browser_initiated
-      false,  // may_transfer
+      true,   // from_begin_navigation
       nullptr, entry));
   return navigation_request;
 }
@@ -322,7 +322,7 @@ NavigationRequest::NavigationRequest(
     const BeginNavigationParams& begin_params,
     const RequestNavigationParams& request_params,
     bool browser_initiated,
-    bool may_transfer,
+    bool from_begin_navigation,
     const FrameNavigationEntry* frame_entry,
     const NavigationEntryImpl* entry)
     : frame_tree_node_(frame_tree_node),
@@ -336,7 +336,7 @@ NavigationRequest::NavigationRequest(
       bindings_(NavigationEntryImpl::kInvalidBindings),
       response_should_be_rendered_(true),
       associated_site_instance_type_(AssociatedSiteInstanceType::NONE),
-      may_transfer_(may_transfer),
+      from_begin_navigation_(from_begin_navigation),
       weak_factory_(this) {
   DCHECK(!browser_initiated || (entry != nullptr && frame_entry != nullptr));
   TRACE_EVENT_ASYNC_BEGIN2("navigation", "NavigationRequest", this,
@@ -348,21 +348,20 @@ NavigationRequest::NavigationRequest(
   common_params_.referrer =
       Referrer::SanitizeForRequest(common_params_.url, common_params_.referrer);
 
-  if (may_transfer) {
+  if (from_begin_navigation_) {
+    // This is needed to have data URLs commit in the same SiteInstance as the
+    // initiating renderer.
+    source_site_instance_ =
+        frame_tree_node->current_frame_host()->GetSiteInstance();
+  } else {
     FrameNavigationEntry* frame_entry = entry->GetFrameEntry(frame_tree_node);
     if (frame_entry) {
       source_site_instance_ = frame_entry->source_site_instance();
       dest_site_instance_ = frame_entry->site_instance();
     }
-
     restore_type_ = entry->restore_type();
     is_view_source_ = entry->IsViewSourceMode();
     bindings_ = entry->bindings();
-  } else {
-    // This is needed to have about:blank and data URLs commit in the same
-    // SiteInstance as the initiating renderer.
-    source_site_instance_ =
-        frame_tree_node->current_frame_host()->GetSiteInstance();
   }
 
   // Update the load flags with cache information.

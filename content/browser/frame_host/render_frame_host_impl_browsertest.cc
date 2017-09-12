@@ -636,4 +636,40 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
       blink::kBeforeUnloadHandler));
 }
 
+// Aborted renderer-initiated navigations that don't destroy the current
+// document (e.g. no error page is displayed) must not cancel pending
+// XMLHttpRequests.
+// See https://crbug.com/762945.
+IN_PROC_BROWSER_TEST_F(
+    RenderFrameHostImplBrowserTest,
+    AbortedRendererInitiatedNavigationDoNotCancelPendingXHR) {
+  GURL main_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  // 1) Send an XHR that is slow to complete.
+  const char* send_slow_XHR =
+      "var request = new XMLHttpRequest();"
+      "request.addEventListener('abort', () => document.title = 'XHR aborted');"
+      "request.addEventListener('load', () => document.title = 'XHR loaded');"
+      "request.open('GET', '%s');"
+      "request.send();";
+  const GURL slow_url = embedded_test_server()->GetURL("/slow?1");
+  EXPECT_TRUE(content::ExecuteScript(
+      shell(), base::StringPrintf(send_slow_XHR, slow_url.spec().c_str())));
+
+  // 2) In the meantime, create a renderer-initiated navigation. It will be
+  // aborted.
+  EXPECT_TRUE(content::ExecuteScript(
+      shell(), "window.location = 'customprotocol:aborted'"));
+
+  // 3) Wait for the XHR request to complete.
+  const base::string16 XHR_aborted = base::ASCIIToUTF16("XHR aborted");
+  const base::string16 XHR_loaded = base::ASCIIToUTF16("XHR loaded");
+  TitleWatcher watcher(shell()->web_contents(), XHR_loaded);
+  watcher.AlsoWaitForTitle(XHR_aborted);
+
+  EXPECT_EQ(XHR_loaded, watcher.WaitAndGetTitle());
+}
+
 }  // namespace content
