@@ -22,17 +22,23 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadSharedPreferenceHelper;
 import org.chromium.chrome.browser.download.DownloadUtils;
+import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.browser.download.ui.BackendProvider.DownloadDelegate;
 import org.chromium.chrome.browser.download.ui.BackendProvider.OfflinePageDelegate;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.DownloadItemWrapper;
+import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.OfflineItemWrapper;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.OfflinePageItemWrapper;
 import org.chromium.chrome.browser.download.ui.DownloadManagerUi.DownloadUiObserver;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadItem;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.widget.DateDividedAdapter;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.components.offline_items_collection.ContentId;
+import org.chromium.components.offline_items_collection.OfflineContentProvider;
+import org.chromium.components.offline_items_collection.OfflineItem;
+import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.content_public.browser.DownloadState;
 
 import java.util.ArrayList;
@@ -47,13 +53,16 @@ import java.util.Set;
 
 /** Bridges the user's download history and the UI used to display it. */
 public class DownloadHistoryAdapter extends DateDividedAdapter
-        implements DownloadUiObserver, DownloadSharedPreferenceHelper.Observer {
+        implements DownloadUiObserver, DownloadSharedPreferenceHelper.Observer,
+                   OfflineContentProvider.Observer {
     private static final String TAG = "DownloadAdapter";
 
     /** Alerted about changes to internal state. */
     static interface TestObserver {
         abstract void onDownloadItemCreated(DownloadItem item);
         abstract void onDownloadItemUpdated(DownloadItem item);
+        abstract void onOfflineItemCreated(OfflineItem item);
+        abstract void onOfflineItemUpdated(OfflineItem item);
     }
 
     private class BackendItemsImpl extends BackendItems {
@@ -150,6 +159,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
     private final BackendItems mRegularDownloadItems = new BackendItemsImpl();
     private final BackendItems mIncognitoDownloadItems = new BackendItemsImpl();
     private final BackendItems mOfflinePageItems = new BackendItemsImpl();
+    private final BackendItems mOfflineItems = new BackendItemsImpl();
 
     private final FilePathsToDownloadItemsMap mFilePathsToItemsMap =
             new FilePathsToDownloadItemsMap();
@@ -205,10 +215,17 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
 
         initializeOfflinePageBridge();
 
+        getOfflineContentProvider().addObserver(this);
+
         sDeletedFileTracker.incrementInstanceCount();
         mShouldShowStorageInfoHeader = ContextUtils.getAppSharedPreferences().getBoolean(
                 PREF_SHOW_STORAGE_INFO_HEADER,
                 ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_HOME_SHOW_STORAGE_INFO));
+    }
+
+    private OfflineContentProvider getOfflineContentProvider() {
+        return OfflineContentAggregatorFactory.forProfile(
+                Profile.getLastUsedProfile().getOriginalProfile());
     }
 
     /** Called when the user's regular or incognito download history has been loaded. */
@@ -303,6 +320,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
         totalSize += mRegularDownloadItems.getTotalBytes();
         totalSize += mIncognitoDownloadItems.getTotalBytes();
         totalSize += mOfflinePageItems.getTotalBytes();
+        totalSize += mOfflineItems.getTotalBytes();
         return totalSize;
     }
 
@@ -573,6 +591,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
         List<TimedItem> filteredTimedItems = new ArrayList<>();
         mRegularDownloadItems.filter(mFilter, mSearchQuery, filteredTimedItems);
         mIncognitoDownloadItems.filter(mFilter, mSearchQuery, filteredTimedItems);
+        mOfflineItems.filter(mFilter, mSearchQuery, filteredTimedItems);
 
         if (TextUtils.isEmpty(mSearchQuery)) {
             filterOfflinePageItems(filteredTimedItems);
@@ -777,5 +796,91 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
     /** Returns the {@link SpaceDisplay}. */
     public SpaceDisplay getSpaceDisplayForTests() {
         return mSpaceDisplay;
+    }
+
+    @Override
+    public void onItemsAvailable() {
+        List<OfflineItem> offlineItems = getOfflineContentProvider().getAllItems();
+        for (OfflineItem item : offlineItems) {
+            DownloadHistoryItemWrapper wrapper = createDownloadHistoryItemWrapper(item);
+            addDownloadHistoryItemWrapper(wrapper);
+        }
+    }
+
+    @Override
+    public void onItemsAdded(ArrayList<OfflineItem> items) {
+        boolean wasAdded = false;
+        boolean visible = false;
+        for (OfflineItem item : items) {
+            assert mOfflineItems.findItemIndex(item.id.id) == BackendItems.INVALID_INDEX;
+
+            DownloadHistoryItemWrapper wrapper = createDownloadHistoryItemWrapper(item);
+            wasAdded |= addDownloadHistoryItemWrapper(wrapper);
+            visible |= wrapper.isVisibleToUser(mFilter);
+            for (TestObserver observer : mObservers) observer.onOfflineItemCreated(item);
+        }
+
+        if (wasAdded && visible) filter(mFilter);
+    }
+
+    @Override
+    public void onItemRemoved(ContentId id) {
+        if (mOfflineItems.removeItem(id.id) != null) {
+            filter(mFilter);
+        }
+    }
+
+    @Override
+    public void onItemUpdated(OfflineItem item) {
+        DownloadHistoryItemWrapper newWrapper = createDownloadHistoryItemWrapper(item);
+        if (newWrapper.isOffTheRecord() && !mShowOffTheRecord) return;
+
+        // Check if the item has already been deleted.
+        if (updateDeletedFileMap(newWrapper)) return;
+
+        BackendItems list = mOfflineItems;
+        int index = list.findItemIndex(newWrapper.getId());
+        if (index == BackendItems.INVALID_INDEX) {
+            assert false : "Tried to update DownloadItem that didn't exist.";
+            return;
+        }
+
+        // Update the old one.
+        DownloadHistoryItemWrapper existingWrapper = list.get(index);
+        boolean isUpdated = existingWrapper.replaceItem(item);
+
+        // Re-add the file mapping once it finishes downloading. This accounts for the backend
+        // creating DownloadItems with a null file path, then updating it after the download starts.
+        // Doing it once after completion instead of at every update is a compromise that prevents
+        // us from rapidly and repeatedly updating the map with the same info.
+        if (item.state == OfflineItemState.COMPLETE) {
+            mFilePathsToItemsMap.addItem(existingWrapper);
+        }
+
+        if (item.state == OfflineItemState.CANCELLED) {
+            // The old one is being removed.
+            filter(mFilter);
+        } else if (existingWrapper.isVisibleToUser(mFilter)) {
+            if (existingWrapper.getPosition() == TimedItem.INVALID_POSITION) {
+                filter(mFilter);
+                for (TestObserver observer : mObservers) observer.onOfflineItemUpdated(item);
+            } else if (isUpdated) {
+                // Directly alert DownloadItemViews displaying information about the item that it
+                // has changed instead of notifying the RecyclerView that a particular item has
+                // changed.  This prevents the RecyclerView from detaching and immediately
+                // reattaching the same view, causing janky animations.
+                for (DownloadItemView view : mViews) {
+                    if (TextUtils.equals(item.id.id, view.getItem().getId())) {
+                        view.displayItem(mBackendProvider, existingWrapper);
+                    }
+                }
+
+                for (TestObserver observer : mObservers) observer.onOfflineItemUpdated(item);
+            }
+        }
+    }
+
+    private DownloadHistoryItemWrapper createDownloadHistoryItemWrapper(OfflineItem item) {
+        return new OfflineItemWrapper(item, mBackendProvider, mParentComponent);
     }
 }

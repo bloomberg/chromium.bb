@@ -16,10 +16,16 @@ import org.chromium.chrome.browser.download.DownloadInfo;
 import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadNotificationService;
 import org.chromium.chrome.browser.download.DownloadUtils;
+import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadItem;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.widget.DateDividedAdapter.TimedItem;
+import org.chromium.components.offline_items_collection.OfflineContentProvider;
+import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
+import org.chromium.components.offline_items_collection.OfflineItemFilter;
 import org.chromium.components.offline_items_collection.OfflineItemProgressUnit;
+import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.DownloadState;
 import org.chromium.ui.widget.Toast;
@@ -162,6 +168,12 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
 
     /** @return Whether this download is associated with the off the record profile. */
     abstract boolean isOffTheRecord();
+
+    /** @return Whether the item is an offline page. */
+    public abstract boolean isOfflinePage();
+
+    /** @return Whether this item is to be shown in the suggested reading section. */
+    abstract boolean isSuggested();
 
     /** @return Whether the item has been completely downloaded. */
     abstract boolean isComplete();
@@ -369,6 +381,16 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
         }
 
         @Override
+        public boolean isOfflinePage() {
+            return false;
+        }
+
+        @Override
+        public boolean isSuggested() {
+            return false;
+        }
+
+        @Override
         public boolean isComplete() {
             return mItem.getDownloadInfo().state() == DownloadState.COMPLETE;
         }
@@ -558,7 +580,12 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
             return false;
         }
 
-        /** @return Whether this page is to be shown in the suggested reading section. */
+        @Override
+        public boolean isOfflinePage() {
+            return true;
+        }
+
+        @Override
         public boolean isSuggested() {
             return mItem.isSuggested();
         }
@@ -573,6 +600,158 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
         public boolean isPaused() {
             return mItem.getDownloadState()
                     == org.chromium.components.offlinepages.downloads.DownloadState.PAUSED;
+        }
+    }
+
+    /** Wraps a {@link OfflineItem}. */
+    public static class OfflineItemWrapper extends DownloadHistoryItemWrapper {
+        private OfflineItem mItem;
+
+        OfflineItemWrapper(OfflineItem item, BackendProvider provider, ComponentName component) {
+            super(provider, component);
+            mItem = item;
+        }
+
+        @Override
+        public OfflineItem getItem() {
+            return mItem;
+        }
+
+        @Override
+        public boolean replaceItem(Object item) {
+            assert item instanceof OfflineItem;
+            OfflineItem newItem = (OfflineItem) item;
+            assert mItem.id.equals(newItem.id);
+
+            mItem = newItem;
+            mFile = null;
+            return true;
+        }
+
+        @Override
+        public String getId() {
+            return mItem.id.id;
+        }
+
+        @Override
+        public long getTimestamp() {
+            return mItem.creationTimeMs;
+        }
+
+        @Override
+        public String getFilePath() {
+            return mItem.filePath;
+        }
+
+        @Override
+        public String getDisplayFileName() {
+            String title = mItem.title;
+            if (TextUtils.isEmpty(title)) {
+                return getDisplayHostname();
+            } else {
+                return title;
+            }
+        }
+
+        @Override
+        public long getFileSize() {
+            return mItem.totalSizeBytes;
+        }
+
+        @Override
+        public String getUrl() {
+            return mItem.pageUrl;
+        }
+
+        @Override
+        public int getFilterType() {
+            // TODO(shaktisahu): Make DownloadFilter unnecessary.
+            return isOfflinePage() ? DownloadFilter.FILTER_PAGE
+                                   : DownloadFilter.fromMimeType(mItem.mimeType);
+        }
+
+        @Override
+        public String getMimeType() {
+            return mItem.mimeType;
+        }
+
+        @Override
+        public int getFileExtensionType() {
+            // TODO(shaktisahu): Fix this.
+            return FILE_EXTENSION_OTHER;
+        }
+
+        @Override
+        public Progress getDownloadProgress() {
+            return mItem.progress;
+        }
+
+        @Override
+        public String getStatusString() {
+            // TODO(shaktisahu): Extract the status string.
+            return "";
+        }
+
+        private OfflineContentProvider getOfflineContentProvider() {
+            return OfflineContentAggregatorFactory.forProfile(
+                    Profile.getLastUsedProfile().getOriginalProfile());
+        }
+
+        @Override
+        public void open() {
+            getOfflineContentProvider().openItem(mItem.id);
+            recordOpenSuccess();
+        }
+
+        @Override
+        public void cancel() {
+            getOfflineContentProvider().cancelDownload(mItem.id);
+        }
+
+        @Override
+        public void pause() {
+            getOfflineContentProvider().pauseDownload(mItem.id);
+        }
+
+        @Override
+        public void resume() {
+            getOfflineContentProvider().resumeDownload(mItem.id, true);
+        }
+
+        @Override
+        public boolean remove() {
+            getOfflineContentProvider().removeItem(mItem.id);
+            return true;
+        }
+
+        @Override
+        boolean hasBeenExternallyRemoved() {
+            return mItem.externallyRemoved;
+        }
+
+        @Override
+        boolean isOffTheRecord() {
+            return mItem.isOffTheRecord;
+        }
+
+        @Override
+        public boolean isOfflinePage() {
+            return mItem.filter == OfflineItemFilter.FILTER_PAGE;
+        }
+
+        @Override
+        public boolean isSuggested() {
+            return mItem.isSuggested;
+        }
+
+        @Override
+        public boolean isComplete() {
+            return mItem.state == OfflineItemState.COMPLETE;
+        }
+
+        @Override
+        public boolean isPaused() {
+            return mItem.state == OfflineItemState.PAUSED;
         }
     }
 }
