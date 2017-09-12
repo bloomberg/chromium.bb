@@ -528,11 +528,16 @@ def Main():
     jobs = DEFAULT_GOMA_JOBS
 
   _AssertCoverageBuildDirectoryExists()
+
   if args.filter:
     _AssertFilterPathsExist(args.filter)
 
   profdata_path = args.reuse_profdata
-  if not profdata_path:
+  if profdata_path:
+    assert os.path.exists(profdata_path), ('The provided profile data file: {} '
+                                           'doesn\'t exist.').format(
+                                               profdata_path)
+  else:
     profdata_path = _CreateCoverageProfileDataForTarget(target, jobs)
 
   _DisplayLineCoverageReport(target, profdata_path,
