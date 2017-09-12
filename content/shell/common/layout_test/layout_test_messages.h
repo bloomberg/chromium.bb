@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+#include "base/optional.h"
+#include "base/strings/string16.h"
 #include "content/public/common/common_param_traits_macros.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
@@ -26,8 +28,8 @@ IPC_MESSAGE_ROUTED1(LayoutTestHostMsg_SetDatabaseQuota,
                     int /* quota */)
 IPC_MESSAGE_ROUTED3(LayoutTestHostMsg_SimulateWebNotificationClick,
                     std::string /* title */,
-                    int /* action_index */,
-                    base::NullableString16 /* reply */)
+                    base::Optional<int> /* action_index */,
+                    base::Optional<base::string16> /* reply */)
 IPC_MESSAGE_ROUTED2(LayoutTestHostMsg_SimulateWebNotificationClose,
                     std::string /* title */,
                     bool /* by_user */)

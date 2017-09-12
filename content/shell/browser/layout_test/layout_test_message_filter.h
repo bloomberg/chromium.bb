@@ -10,6 +10,8 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/optional.h"
+#include "base/strings/string16.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 
@@ -17,7 +19,6 @@ class GURL;
 
 namespace base {
 class DictionaryValue;
-class NullableString16;
 }
 
 namespace net {
@@ -59,9 +60,10 @@ class LayoutTestMessageFilter : public BrowserMessageFilter {
   void OnGrantWebNotificationPermission(const GURL& origin,
                                         bool permission_granted);
   void OnClearWebNotificationPermissions();
-  void OnSimulateWebNotificationClick(const std::string& title,
-                                      int action_index,
-                                      const base::NullableString16& reply);
+  void OnSimulateWebNotificationClick(
+      const std::string& title,
+      const base::Optional<int>& action_index,
+      const base::Optional<base::string16>& reply);
   void OnSimulateWebNotificationClose(const std::string& title, bool by_user);
   void OnSetPushMessagingPermission(const GURL& origin, bool allowed);
   void OnClearPushMessagingPermissions();

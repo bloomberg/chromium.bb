@@ -11,6 +11,8 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
+#include "base/strings/string16.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -150,8 +152,8 @@ class WebTestDelegate {
   // Controls Web Notifications.
   virtual void SimulateWebNotificationClick(
       const std::string& title,
-      int action_index,
-      const base::NullableString16& reply) = 0;
+      const base::Optional<int>& action_index,
+      const base::Optional<base::string16>& reply) = 0;
   virtual void SimulateWebNotificationClose(const std::string& title,
                                             bool by_user) = 0;
 

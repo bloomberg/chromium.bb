@@ -462,8 +462,8 @@ void BlinkTestRunner::SetDatabaseQuota(int quota) {
 
 void BlinkTestRunner::SimulateWebNotificationClick(
     const std::string& title,
-    int action_index,
-    const base::NullableString16& reply) {
+    const base::Optional<int>& action_index,
+    const base::Optional<base::string16>& reply) {
   Send(new LayoutTestHostMsg_SimulateWebNotificationClick(routing_id(), title,
                                                           action_index, reply));
 }

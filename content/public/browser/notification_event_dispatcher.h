@@ -8,14 +8,12 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/optional.h"
+#include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "content/public/common/persistent_notification_status.h"
 
 class GURL;
-
-namespace base {
-class NullableString16;
-}
 
 namespace content {
 
@@ -42,8 +40,8 @@ class CONTENT_EXPORT NotificationEventDispatcher {
       BrowserContext* browser_context,
       const std::string& notification_id,
       const GURL& origin,
-      int action_index,
-      const base::NullableString16& reply,
+      const base::Optional<int>& action_index,
+      const base::Optional<base::string16>& reply,
       const NotificationDispatchCompleteCallback&
           dispatch_complete_callback) = 0;
 

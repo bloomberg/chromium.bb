@@ -13,13 +13,11 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
+#include "base/strings/string16.h"
 #include "content/public/browser/platform_notification_service.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 #include "url/gurl.h"
-
-namespace base {
-  class NullableString16;
-}
 
 namespace content {
 
@@ -34,12 +32,11 @@ class MockPlatformNotificationService : public PlatformNotificationService {
   ~MockPlatformNotificationService() override;
 
   // Simulates a click on the notification titled |title|. |action_index|
-  // indicates which action was clicked, or -1 if the main notification body was
-  // clicked. |reply| indicates the user reply, if any.
+  // indicates which action was clicked. |reply| indicates the user reply.
   // Must be called on the UI thread.
   void SimulateClick(const std::string& title,
-                     int action_index,
-                     const base::NullableString16& reply);
+                     const base::Optional<int>& action_index,
+                     const base::Optional<base::string16>& reply);
 
   // Simulates the closing a notification titled |title|. Must be called on
   // the UI thread.

@@ -47,7 +47,7 @@
               // (3) Simulate a click on each button and on the notification body.
               for (var i = 0; i < options.actions.length; ++i)
                   testRunner.simulateWebNotificationClick(scope, i);
-              testRunner.simulateWebNotificationClick(scope, -1 /* action_index */);
+              testRunner.simulateWebNotificationClick(scope);
 
               port.addEventListener('message', function(event) {
                   // (4) Listen for confirmation from the Service Worker that the

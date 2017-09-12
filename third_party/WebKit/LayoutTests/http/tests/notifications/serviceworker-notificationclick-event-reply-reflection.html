@@ -38,15 +38,15 @@
               var expectedReplies = [];
               // (3) Simulate some clicks on the notification, with and without replies.
               // (3.1) Simulate a reply to the notification text action.
-              testRunner.simulateWebNotificationClickWithReply(scope, 0 /* action_index */, 'My reply.');
+              testRunner.simulateWebNotificationClick(scope, 0 /* action_index */, 'My reply.');
               expectedReplies.push('My reply.');
 
               // (3.2) Simulate an empty reply to the notification text action.
-              testRunner.simulateWebNotificationClickWithReply(scope, 0 /* action_index */, '');
+              testRunner.simulateWebNotificationClick(scope, 0 /* action_index */, '');
               expectedReplies.push('');
 
               // (3.3) Simulate a click on the notification body (reply should be null).
-              testRunner.simulateWebNotificationClick(scope, -1 /* action_index */);
+              testRunner.simulateWebNotificationClick(scope);
               expectedReplies.push(null);
 
               port.addEventListener('message', function(event) {
