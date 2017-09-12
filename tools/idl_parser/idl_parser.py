@@ -695,19 +695,24 @@ class IDLParser(object):
     p[0] = self.BuildError(p, 'Arguments')
 
   def p_Argument(self, p):
-    """Argument : ExtendedAttributeList OptionalOrRequiredArgument"""
-    p[2].AddChildren(p[1])
-    p[0] = p[2]
-
-  def p_OptionalOrRequiredArgument(self, p):
-    """OptionalOrRequiredArgument : OPTIONAL Type ArgumentName Default
-                                  | Type Ellipsis ArgumentName"""
-    if len(p) > 4:
-      arg = self.BuildNamed('Argument', p, 3, ListFromConcat(p[2], p[4]))
-      arg.AddChildren(self.BuildTrue('OPTIONAL'))
+    """Argument : ExtendedAttributeList OPTIONAL TypeWithExtendedAttributes ArgumentName Default
+                | ExtendedAttributeList Type Ellipsis ArgumentName"""
+    if len(p) > 5:
+      p[0] = self.BuildNamed('Argument', p, 4, ListFromConcat(p[3], p[5]))
+      p[0].AddChildren(self.BuildTrue('OPTIONAL'))
+      p[0].AddChildren(p[1])
     else:
-      arg = self.BuildNamed('Argument', p, 3, ListFromConcat(p[1], p[2]))
-    p[0] = arg
+      applicable_to_types, non_applicable_to_types = \
+          DivideExtAttrsIntoApplicableAndNonApplicable(p[1])
+      if applicable_to_types:
+        attributes = self.BuildProduction('ExtAttributes', p, 1,
+            applicable_to_types)
+        p[2].AddChildren(attributes)
+      p[0] = self.BuildNamed('Argument', p, 4, ListFromConcat(p[2], p[3]))
+      if non_applicable_to_types:
+        attributes = self.BuildProduction('ExtAttributes', p, 1,
+            non_applicable_to_types)
+        p[0].AddChildren(attributes)
 
   def p_ArgumentName(self, p):
     """ArgumentName : ArgumentNameKeyword

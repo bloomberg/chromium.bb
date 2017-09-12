@@ -448,3 +448,47 @@ interface MyIfaceUnion {
 interface MyIfaceAttributeRestClamp {
   attribute [Clamp] long myLong;
 };
+
+/** TREE
+ *Interface(MyIFaceArgumentWithAnnotatedType1)
+ *  Operation(myFunction)
+ *    Arguments()
+ *      Argument(myLong)
+ *        Type()
+ *          PrimitiveType(long long)
+ *          ExtAttributes()
+ *            ExtAttribute(Clamp)
+ *    Type()
+ *      PrimitiveType(void)
+ */
+interface MyIFaceArgumentWithAnnotatedType1 {
+  void myFunction(optional [Clamp] long long myLong);
+};
+
+/** TREE
+ *Interface(MyIFaceArgumentWithAnnotatedType2)
+ *  Operation(voidMethodTestArgumentWithExtAttribute1)
+ *    Arguments()
+ *      Argument(myLong)
+ *        Type()
+ *          PrimitiveType(long long)
+ *          ExtAttributes()
+ *            ExtAttribute(Clamp)
+ *        ExtAttributes()
+ *          ExtAttribute(XAttr)
+ *    Type()
+ *      PrimitiveType(void)
+ *  Operation(voidMethodTestArgumentWithExtAttribute2)
+ *    Arguments()
+ *      Argument(longArg)
+ *        Type()
+ *          PrimitiveType(long)
+ *          ExtAttributes()
+ *            ExtAttribute(EnforceRange)
+ *    Type()
+ *      PrimitiveType(void)
+ */
+interface MyIFaceArgumentWithAnnotatedType2 {
+  void voidMethodTestArgumentWithExtAttribute1([Clamp, XAttr] long long myLong);
+  void voidMethodTestArgumentWithExtAttribute2([EnforceRange] long longArg);
+};
