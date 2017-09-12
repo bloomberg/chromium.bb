@@ -56,7 +56,7 @@ void CastBrowserTest::PostRunTestOnMainThread() {
 content::WebContents* CastBrowserTest::NavigateToURL(const GURL& url) {
   cast_web_view_ = web_contents_manager_->CreateWebView(
       this, nullptr /*site_instance*/, false /*transparent*/,
-      false /*allow_media_access*/);
+      false /*allow_media_access*/, false /*is_headless*/);
 
   content::WebContents* web_contents = cast_web_view_->web_contents();
   content::WaitForLoadStop(web_contents);
