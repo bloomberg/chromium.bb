@@ -5,7 +5,7 @@
 #ifndef CHROME_PROFILING_ALLOCATION_TRACKER_H_
 #define CHROME_PROFILING_ALLOCATION_TRACKER_H_
 
-#include <set>
+#include <map>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -20,6 +20,7 @@ namespace profiling {
 class AllocationTracker : public MemlogReceiver {
  public:
   using CompleteCallback = base::OnceClosure;
+  using ContextMap = std::map<std::string, int>;
 
   AllocationTracker(CompleteCallback complete_cb,
                     BacktraceStorage* backtrace_storage);
@@ -32,7 +33,8 @@ class AllocationTracker : public MemlogReceiver {
   void OnFree(const FreePacket& free_packet) override;
   void OnComplete() override;
 
-  const AllocationEventSet& live_allocs() { return live_allocs_; }
+  const AllocationEventSet& live_allocs() const { return live_allocs_; }
+  const ContextMap& context() const { return context_; }
 
  private:
   CompleteCallback complete_callback_;
@@ -40,6 +42,14 @@ class AllocationTracker : public MemlogReceiver {
   BacktraceStorage* backtrace_storage_;
 
   AllocationEventSet live_allocs_;
+
+  // The context strings are atoms. Since there are O(100's) of these, we do
+  // not bother to uniquify across all processes. This map contains the unique
+  // context strings for the current process, mapped to the unique ID for that
+  // context. This unique ID is stored in the allocation. This is optimized for
+  // insertion. When querying, a reverse index will need to be generated
+  ContextMap context_;
+  int next_context_id_ = 1;  // 0 means no context.
 
   DISALLOW_COPY_AND_ASSIGN(AllocationTracker);
 };

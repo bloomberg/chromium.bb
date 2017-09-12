@@ -124,9 +124,13 @@ bool MemlogConnectionManager::DumpProcess(
   Connection* connection = it->second.get();
 
   std::ostringstream oss;
-  ExportAllocationEventSetToJSON(pid, connection->tracker.live_allocs(), maps,
-                                 oss, std::move(metadata), kMinSizeThreshold,
-                                 kMinCountThreshold);
+  ExportParams params;
+  params.set = &connection->tracker.live_allocs();
+  params.context_map = &connection->tracker.context();
+  params.maps = &maps;
+  params.min_size_threshold = kMinSizeThreshold;
+  params.min_count_threshold = kMinCountThreshold;
+  ExportAllocationEventSetToJSON(pid, params, std::move(metadata), oss);
   std::string reply = oss.str();
 
   // Pass ownership of the underlying fd/HANDLE to zlib.
@@ -174,9 +178,13 @@ void MemlogConnectionManager::DumpProcessForTracing(
 
   Connection* connection = it->second.get();
   std::ostringstream oss;
-  ExportMemoryMapsAndV2StackTraceToJSON(connection->tracker.live_allocs(), maps,
-                                        oss, kMinSizeThreshold,
-                                        kMinCountThreshold);
+  ExportParams params;
+  params.set = &connection->tracker.live_allocs();
+  params.maps = &maps;
+  params.context_map = &connection->tracker.context();
+  params.min_size_threshold = kMinSizeThreshold;
+  params.min_count_threshold = kMinCountThreshold;
+  ExportMemoryMapsAndV2StackTraceToJSON(params, oss);
   std::string reply = oss.str();
 
   mojo::ScopedSharedBufferHandle buffer =

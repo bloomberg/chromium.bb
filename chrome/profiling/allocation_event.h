@@ -8,6 +8,7 @@
 #include <functional>
 #include <set>
 
+#include "chrome/common/profiling/memlog_stream.h"
 #include "chrome/profiling/address.h"
 #include "chrome/profiling/backtrace_storage.h"
 
@@ -18,11 +19,17 @@ class AllocationEvent {
  public:
   // There must be a reference to this kept in the BacktraceStorage object on
   // behalf of this class.
-  AllocationEvent(Address addr, size_t sz, const Backtrace* bt);
+  AllocationEvent(AllocatorType allocator,
+                  Address addr,
+                  size_t sz,
+                  const Backtrace* bt,
+                  int context_id);
 
   // This partial initializer creates an allocation of empty size for
   // searching purposes.
   explicit AllocationEvent(Address addr);
+
+  AllocatorType allocator() const { return allocator_; }
 
   Address address() const { return address_; }
   size_t size() const { return size_; }
@@ -30,6 +37,9 @@ class AllocationEvent {
   // The backtrace for this allocation. There must be a reference to this kept
   // in the BacktraceStorage object on behalf of this class.
   const Backtrace* backtrace() const { return backtrace_; }
+
+  // ID into context map, 0 means no context.
+  int context_id() const { return context_id_; }
 
   // Implements < for AllocationEvents using address only. This is not a raw
   // operator because it only implements a comparison on the one field.
@@ -50,9 +60,11 @@ class AllocationEvent {
   };
 
  private:
+  AllocatorType allocator_ = AllocatorType::kMalloc;
   Address address_;
-  size_t size_;
-  const Backtrace* backtrace_;
+  size_t size_ = 0;
+  const Backtrace* backtrace_ = nullptr;
+  int context_id_ = 0;
 };
 
 using AllocationEventSet =

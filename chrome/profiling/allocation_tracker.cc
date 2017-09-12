@@ -28,10 +28,20 @@ void AllocationTracker::OnHeader(const StreamHeader& header) {}
 void AllocationTracker::OnAlloc(const AllocPacket& alloc_packet,
                                 std::vector<Address>&& bt,
                                 std::string&& context) {
-  // TODO(http://crbug.com/763173): uniquify and save context string.
+  // Compute the context ID for this allocation, 0 means no context.
+  int context_id = 0;
+  if (!context.empty()) {
+    auto inserted_record = context_.emplace(
+        std::piecewise_construct, std::forward_as_tuple(std::move(context)),
+        std::forward_as_tuple(next_context_id_));
+    context_id = inserted_record.first->second;
+    if (inserted_record.second)
+      next_context_id_++;
+  }
+
   const Backtrace* backtrace = backtrace_storage_->Insert(std::move(bt));
-  live_allocs_.emplace(Address(alloc_packet.address), alloc_packet.size,
-                       backtrace);
+  live_allocs_.emplace(alloc_packet.allocator, Address(alloc_packet.address),
+                       alloc_packet.size, backtrace, context_id);
 }
 
 void AllocationTracker::OnFree(const FreePacket& free_packet) {
