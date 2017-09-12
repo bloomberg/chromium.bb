@@ -67,12 +67,12 @@ class PLATFORM_EXPORT TaskQueueManager
   // These tasks are de-duplicated in two buckets: main-thread and all other
   // threads.  This distinction is done to reduce the overehead from locks, we
   // assume the main-thread path will be hot.
-  void MaybeScheduleImmediateWork(const tracked_objects::Location& from_here);
+  void MaybeScheduleImmediateWork(const base::Location& from_here);
 
   // Requests that a delayed task to process work is posted on the main task
   // runner. These delayed tasks are de-duplicated. Must be called on the thread
   // this class was created on.
-  void MaybeScheduleDelayedWork(const tracked_objects::Location& from_here,
+  void MaybeScheduleDelayedWork(const base::Location& from_here,
                                 TimeDomain* requesting_time_domain,
                                 base::TimeTicks now,
                                 base::TimeTicks run_time);
@@ -272,7 +272,7 @@ class PLATFORM_EXPORT TaskQueueManager
                                              base::TimeTicks* time_after_task);
 
   bool RunsTasksInCurrentSequence() const;
-  bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
+  bool PostNonNestableDelayedTask(const base::Location& from_here,
                                   const base::Closure& task,
                                   base::TimeDelta delay);
 
@@ -287,9 +287,8 @@ class PLATFORM_EXPORT TaskQueueManager
   AsValueWithSelectorResult(bool should_run,
                             internal::WorkQueue* selected_work_queue) const;
 
-  void MaybeScheduleImmediateWorkLocked(
-      const tracked_objects::Location& from_here,
-      MoveableAutoLock lock);
+  void MaybeScheduleImmediateWorkLocked(const base::Location& from_here,
+                                        MoveableAutoLock lock);
 
   // Adds |queue| to |any_thread().has_incoming_immediate_work_| and if
   // |queue_is_blocked| is false it makes sure a DoWork is posted.

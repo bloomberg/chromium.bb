@@ -19,7 +19,7 @@ DeadlineTaskRunner::DeadlineTaskRunner(
 
 DeadlineTaskRunner::~DeadlineTaskRunner() {}
 
-void DeadlineTaskRunner::SetDeadline(const tracked_objects::Location& from_here,
+void DeadlineTaskRunner::SetDeadline(const base::Location& from_here,
                                      base::TimeDelta delay,
                                      base::TimeTicks now) {
   DCHECK(delay > base::TimeDelta());

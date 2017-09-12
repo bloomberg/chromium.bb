@@ -187,10 +187,9 @@ bool MessageLoopResource::IsCurrent() const {
          static_cast<const void*>(this);
 }
 
-void MessageLoopResource::PostClosure(
-    const tracked_objects::Location& from_here,
-    const base::Closure& closure,
-    int64_t delay_ms) {
+void MessageLoopResource::PostClosure(const base::Location& from_here,
+                                      const base::Closure& closure,
+                                      int64_t delay_ms) {
   if (task_runner_.get()) {
     task_runner_->PostDelayedTask(from_here, closure,
                                   base::TimeDelta::FromMilliseconds(delay_ms));

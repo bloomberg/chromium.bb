@@ -227,7 +227,7 @@ class FFmpegDemuxerTest : public testing::Test {
   // Verifies that |buffer| has a specific |size| and |timestamp|.
   // |location| simply indicates where the call to this function was made.
   // This makes it easier to track down where test failures occur.
-  void OnReadDone(const tracked_objects::Location& location,
+  void OnReadDone(const base::Location& location,
                   const ReadExpectation& read_expectation,
                   DemuxerStream::Status status,
                   const scoped_refptr<DecoderBuffer>& buffer) {
@@ -251,7 +251,7 @@ class FFmpegDemuxerTest : public testing::Test {
   }
 
   DemuxerStream::ReadCB NewReadCB(
-      const tracked_objects::Location& location,
+      const base::Location& location,
       int size,
       int64_t timestamp_us,
       bool is_key_frame,
@@ -261,7 +261,7 @@ class FFmpegDemuxerTest : public testing::Test {
   }
 
   DemuxerStream::ReadCB NewReadCBWithCheckedDiscard(
-      const tracked_objects::Location& location,
+      const base::Location& location,
       int size,
       int64_t timestamp_us,
       base::TimeDelta discard_front_padding,

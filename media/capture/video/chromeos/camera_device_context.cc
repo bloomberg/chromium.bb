@@ -26,9 +26,8 @@ CameraDeviceContext::State CameraDeviceContext::GetState() {
   return state_;
 }
 
-void CameraDeviceContext::SetErrorState(
-    const tracked_objects::Location& from_here,
-    const std::string& reason) {
+void CameraDeviceContext::SetErrorState(const base::Location& from_here,
+                                        const std::string& reason) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   state_ = State::kError;
   LOG(ERROR) << reason;

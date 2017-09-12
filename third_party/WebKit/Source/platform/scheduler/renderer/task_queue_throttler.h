@@ -166,10 +166,9 @@ class PLATFORM_EXPORT TaskQueueThrottler : public TaskQueue::Observer,
   // Note |unthrottled_runtime| might be in the past. When this happens we
   // compute the delay to the next runtime based on now rather than
   // unthrottled_runtime.
-  void MaybeSchedulePumpThrottledTasks(
-      const tracked_objects::Location& from_here,
-      base::TimeTicks now,
-      base::TimeTicks runtime);
+  void MaybeSchedulePumpThrottledTasks(const base::Location& from_here,
+                                       base::TimeTicks now,
+                                       base::TimeTicks runtime);
 
   // Return next possible time when queue is allowed to run in accordance
   // with throttling policy.

@@ -177,7 +177,7 @@ PairingRegistry::~PairingRegistry() {
 
 void PairingRegistry::PostTask(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const base::Closure& task) {
   task_runner->PostTask(from_here, task);
 }

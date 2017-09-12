@@ -1676,7 +1676,7 @@ void QuotaManager::DeleteOnCorrectThread() const {
 }
 
 void QuotaManager::PostTaskAndReplyWithResultForDBThread(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     base::Callback<bool(QuotaDatabase*)> task,
     base::Callback<void(bool)> reply) {
   // Deleting manager will post another task to DB sequence to delete

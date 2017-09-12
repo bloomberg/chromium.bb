@@ -92,7 +92,7 @@ SynchronousPairingRegistry::~SynchronousPairingRegistry() {}
 
 void SynchronousPairingRegistry::PostTask(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const base::Closure& task) {
   DCHECK(task_runner->BelongsToCurrentThread());
   task.Run();

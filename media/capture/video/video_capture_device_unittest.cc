@@ -97,8 +97,7 @@ ACTION_P(RunClosure, closure) {
   closure.Run();
 }
 
-void DumpError(const tracked_objects::Location& location,
-               const std::string& message) {
+void DumpError(const base::Location& location, const std::string& message) {
   DPLOG(ERROR) << location.ToString() << " " << message;
 }
 
@@ -122,7 +121,7 @@ class MockVideoCaptureClient : public VideoCaptureDevice::Client {
   MOCK_METHOD0(DoOnIncomingCapturedVideoFrame, void(void));
   MOCK_METHOD0(DoResurrectLastOutputBuffer, void(void));
   MOCK_METHOD2(OnError,
-               void(const tracked_objects::Location& from_here,
+               void(const base::Location& from_here,
                     const std::string& reason));
   MOCK_CONST_METHOD0(GetBufferPoolUtilization, double(void));
   MOCK_METHOD0(OnStarted, void(void));

@@ -252,8 +252,7 @@ void DaemonProcess::SetScreenResolution(int terminal_id,
   (*i)->SetScreenResolution(resolution);
 }
 
-void DaemonProcess::CrashNetworkProcess(
-    const tracked_objects::Location& location) {
+void DaemonProcess::CrashNetworkProcess(const base::Location& location) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
   DoCrashNetworkProcess(location);

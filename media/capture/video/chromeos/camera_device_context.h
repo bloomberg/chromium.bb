@@ -99,7 +99,7 @@ class CAPTURE_EXPORT CameraDeviceContext {
 
   // Sets state to kError and call |client_->OnError| to tear down the
   // VideoCaptureDevice.
-  void SetErrorState(const tracked_objects::Location& from_here,
+  void SetErrorState(const base::Location& from_here,
                      const std::string& reason);
 
   // Logs |message| to |client_|.

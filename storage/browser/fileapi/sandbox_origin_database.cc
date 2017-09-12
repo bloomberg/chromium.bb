@@ -189,9 +189,8 @@ bool SandboxOriginDatabase::RepairDatabase(const std::string& db_path) {
   return true;
 }
 
-void SandboxOriginDatabase::HandleError(
-    const tracked_objects::Location& from_here,
-    const leveldb::Status& status) {
+void SandboxOriginDatabase::HandleError(const base::Location& from_here,
+                                        const leveldb::Status& status) {
   db_.reset();
   LOG(ERROR) << "SandboxOriginDatabase failed at: "
              << from_here.ToString() << " with error: " << status.ToString();

@@ -85,7 +85,7 @@ class MOJO_CPP_SYSTEM_EXPORT SimpleWatcher {
     MANUAL,
   };
 
-  SimpleWatcher(const tracked_objects::Location& from_here,
+  SimpleWatcher(const base::Location& from_here,
                 ArmingPolicy arming_policy,
                 scoped_refptr<base::SequencedTaskRunner> runner =
                     base::SequencedTaskRunnerHandle::Get());

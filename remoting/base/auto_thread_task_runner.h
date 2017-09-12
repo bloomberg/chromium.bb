@@ -26,10 +26,10 @@ class AutoThreadTaskRunner : public base::SingleThreadTaskRunner {
                        base::OnceClosure stop_task);
 
   // SingleThreadTaskRunner implementation
-  bool PostDelayedTask(const tracked_objects::Location& from_here,
+  bool PostDelayedTask(const base::Location& from_here,
                        base::OnceClosure task,
                        base::TimeDelta delay) override;
-  bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
+  bool PostNonNestableDelayedTask(const base::Location& from_here,
                                   base::OnceClosure task,
                                   base::TimeDelta delay) override;
   bool RunsTasksInCurrentSequence() const override;

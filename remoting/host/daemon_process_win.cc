@@ -95,8 +95,7 @@ class DaemonProcessWin : public DaemonProcess {
       int terminal_id,
       const ScreenResolution& resolution,
       bool virtual_terminal) override;
-  void DoCrashNetworkProcess(
-      const tracked_objects::Location& location) override;
+  void DoCrashNetworkProcess(const base::Location& location) override;
   void LaunchNetworkProcess() override;
 
   // Changes the service start type to 'manual'.
@@ -201,8 +200,7 @@ std::unique_ptr<DesktopSession> DaemonProcessWin::DoCreateDesktopSession(
   }
 }
 
-void DaemonProcessWin::DoCrashNetworkProcess(
-    const tracked_objects::Location& location) {
+void DaemonProcessWin::DoCrashNetworkProcess(const base::Location& location) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
   network_launcher_->Crash(location);

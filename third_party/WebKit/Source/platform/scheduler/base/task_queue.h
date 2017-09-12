@@ -118,7 +118,7 @@ class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
   // Interface to pass per-task metadata to RendererScheduler.
   class PLATFORM_EXPORT Task : public base::PendingTask {
    public:
-    Task(const tracked_objects::Location& posted_from,
+    Task(const base::Location& posted_from,
          base::OnceClosure task,
          base::TimeTicks desired_run_time,
          bool nestable);
@@ -220,10 +220,10 @@ class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
 
   // base::SingleThreadTaskRunner implementation
   bool RunsTasksInCurrentSequence() const override;
-  bool PostDelayedTask(const tracked_objects::Location& from_here,
+  bool PostDelayedTask(const base::Location& from_here,
                        base::OnceClosure task,
                        base::TimeDelta delay) override;
-  bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
+  bool PostNonNestableDelayedTask(const base::Location& from_here,
                                   base::OnceClosure task,
                                   base::TimeDelta delay) override;
 

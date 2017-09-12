@@ -219,9 +219,8 @@ void ThreadSafeCaptureOracle::Stop() {
   client_.reset();
 }
 
-void ThreadSafeCaptureOracle::ReportError(
-    const tracked_objects::Location& from_here,
-    const std::string& reason) {
+void ThreadSafeCaptureOracle::ReportError(const base::Location& from_here,
+                                          const std::string& reason) {
   base::AutoLock guard(lock_);
   if (client_)
     client_->OnError(from_here, reason);

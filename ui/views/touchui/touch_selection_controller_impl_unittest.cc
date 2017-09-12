@@ -238,7 +238,7 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
   // handle 1's position is matched against the start of selection or the end.
   void VerifyHandlePositions(bool cursor_at_selection_handle_1,
                              bool check_direction,
-                             const tracked_objects::Location& from_here) {
+                             const base::Location& from_here) {
     gfx::SelectionBound anchor, focus;
     textfield_->GetSelectionEndPoints(&anchor, &focus);
     std::string from_str = from_here.ToString();

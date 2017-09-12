@@ -23,7 +23,7 @@ class DesktopViewportTest : public testing::Test {
   void TearDown() override;
 
  protected:
-  void AssertTransformationReceived(const tracked_objects::Location& from_here,
+  void AssertTransformationReceived(const base::Location& from_here,
                                     float scale,
                                     float offset_x,
                                     float offset_y);
@@ -50,7 +50,7 @@ void DesktopViewportTest::TearDown() {
 }
 
 void DesktopViewportTest::AssertTransformationReceived(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     float scale,
     float offset_x,
     float offset_y) {

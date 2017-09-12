@@ -486,9 +486,8 @@ void VideoCaptureDeviceMac::OnPhotoError() {
   photo_callback_.Reset();
 }
 
-void VideoCaptureDeviceMac::ReceiveError(
-    const tracked_objects::Location& from_here,
-    const std::string& reason) {
+void VideoCaptureDeviceMac::ReceiveError(const base::Location& from_here,
+                                         const std::string& reason) {
   task_runner_->PostTask(
       FROM_HERE, base::Bind(&VideoCaptureDeviceMac::SetErrorState,
                             weak_factory_.GetWeakPtr(), from_here, reason));
@@ -524,9 +523,8 @@ std::string VideoCaptureDeviceMac::GetDeviceModelId(
   return id_vendor + ":" + id_product;
 }
 
-void VideoCaptureDeviceMac::SetErrorState(
-    const tracked_objects::Location& from_here,
-    const std::string& reason) {
+void VideoCaptureDeviceMac::SetErrorState(const base::Location& from_here,
+                                          const std::string& reason) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   state_ = kError;
   client_->OnError(from_here, reason);

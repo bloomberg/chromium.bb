@@ -30,7 +30,7 @@ class STORAGE_EXPORT TimedTaskHelper {
   ~TimedTaskHelper();
 
   bool IsRunning() const;
-  void Start(const tracked_objects::Location& posted_from,
+  void Start(const base::Location& posted_from,
              base::TimeDelta delay,
              const base::Closure& user_task);
   void Reset();
@@ -43,7 +43,7 @@ class STORAGE_EXPORT TimedTaskHelper {
   void PostDelayedTask(std::unique_ptr<Tracker> tracker, base::TimeDelta delay);
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  tracked_objects::Location posted_from_;
+  base::Location posted_from_;
   base::TimeDelta delay_;
   base::Closure user_task_;
 

@@ -34,9 +34,8 @@ bool SingleThreadIdleTaskRunner::RunsTasksInCurrentSequence() const {
   return idle_priority_task_runner_->RunsTasksInCurrentSequence();
 }
 
-void SingleThreadIdleTaskRunner::PostIdleTask(
-    const tracked_objects::Location& from_here,
-    const IdleTask& idle_task) {
+void SingleThreadIdleTaskRunner::PostIdleTask(const base::Location& from_here,
+                                              const IdleTask& idle_task) {
   delegate_->OnIdleTaskPosted();
   idle_priority_task_runner_->PostTask(
       from_here, base::Bind(&SingleThreadIdleTaskRunner::RunTask,
@@ -44,7 +43,7 @@ void SingleThreadIdleTaskRunner::PostIdleTask(
 }
 
 void SingleThreadIdleTaskRunner::PostDelayedIdleTask(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const base::TimeDelta delay,
     const IdleTask& idle_task) {
   base::TimeTicks first_run_time = delegate_->NowTicks() + delay;
@@ -55,7 +54,7 @@ void SingleThreadIdleTaskRunner::PostDelayedIdleTask(
 }
 
 void SingleThreadIdleTaskRunner::PostNonNestableIdleTask(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const IdleTask& idle_task) {
   delegate_->OnIdleTaskPosted();
   idle_priority_task_runner_->PostNonNestableTask(

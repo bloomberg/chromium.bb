@@ -184,13 +184,13 @@ void TaskQueueManager::OnQueueHasIncomingImmediateWork(
 }
 
 void TaskQueueManager::MaybeScheduleImmediateWork(
-    const tracked_objects::Location& from_here) {
+    const base::Location& from_here) {
   MoveableAutoLock lock(any_thread_lock_);
   MaybeScheduleImmediateWorkLocked(from_here, std::move(lock));
 }
 
 void TaskQueueManager::MaybeScheduleImmediateWorkLocked(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     MoveableAutoLock lock) {
   {
     MoveableAutoLock auto_lock(std::move(lock));
@@ -210,7 +210,7 @@ void TaskQueueManager::MaybeScheduleImmediateWorkLocked(
 }
 
 void TaskQueueManager::MaybeScheduleDelayedWork(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     TimeDomain* requesting_time_domain,
     base::TimeTicks now,
     base::TimeTicks run_time) {

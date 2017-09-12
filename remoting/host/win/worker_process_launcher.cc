@@ -73,8 +73,7 @@ WorkerProcessLauncher::~WorkerProcessLauncher() {
   StopWorker();
 }
 
-void WorkerProcessLauncher::Crash(
-    const tracked_objects::Location& location) {
+void WorkerProcessLauncher::Crash(const base::Location& location) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Ask the worker process to crash voluntarily if it is still connected.

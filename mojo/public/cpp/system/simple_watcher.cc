@@ -122,7 +122,7 @@ class SimpleWatcher::Context : public base::RefCountedThreadSafe<Context> {
   DISALLOW_COPY_AND_ASSIGN(Context);
 };
 
-SimpleWatcher::SimpleWatcher(const tracked_objects::Location& from_here,
+SimpleWatcher::SimpleWatcher(const base::Location& from_here,
                              ArmingPolicy arming_policy,
                              scoped_refptr<base::SequencedTaskRunner> runner)
     : arming_policy_(arming_policy),

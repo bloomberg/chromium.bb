@@ -86,13 +86,13 @@ class PLATFORM_EXPORT TaskQueueImpl {
   class PLATFORM_EXPORT Task : public TaskQueue::Task {
    public:
     Task();
-    Task(const tracked_objects::Location& posted_from,
+    Task(const base::Location& posted_from,
          base::OnceClosure task,
          base::TimeTicks desired_run_time,
          EnqueueOrder sequence_number,
          bool nestable);
 
-    Task(const tracked_objects::Location& posted_from,
+    Task(const base::Location& posted_from,
          base::OnceClosure task,
          base::TimeTicks desired_run_time,
          EnqueueOrder sequence_number,
@@ -143,10 +143,10 @@ class PLATFORM_EXPORT TaskQueueImpl {
   // TaskQueue implementation.
   const char* GetName() const;
   bool RunsTasksInCurrentSequence() const;
-  bool PostDelayedTask(const tracked_objects::Location& from_here,
+  bool PostDelayedTask(const base::Location& from_here,
                        base::OnceClosure task,
                        base::TimeDelta delay);
-  bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
+  bool PostNonNestableDelayedTask(const base::Location& from_here,
                                   base::OnceClosure task,
                                   base::TimeDelta delay);
   // Require a reference to enclosing task queue for lifetime control.
@@ -329,10 +329,10 @@ class PLATFORM_EXPORT TaskQueueImpl {
     bool is_enabled_for_test;
   };
 
-  bool PostImmediateTaskImpl(const tracked_objects::Location& from_here,
+  bool PostImmediateTaskImpl(const base::Location& from_here,
                              base::OnceClosure task,
                              TaskType task_type);
-  bool PostDelayedTaskImpl(const tracked_objects::Location& from_here,
+  bool PostDelayedTaskImpl(const base::Location& from_here,
                            base::OnceClosure task,
                            base::TimeDelta delay,
                            TaskType task_type);
@@ -353,12 +353,11 @@ class PLATFORM_EXPORT TaskQueueImpl {
   // Push the task onto the |immediate_incoming_queue| and for auto pumped
   // queues it calls MaybePostDoWorkOnMainRunner if the Incoming queue was
   // empty.
-  void PushOntoImmediateIncomingQueueLocked(
-      const tracked_objects::Location& posted_from,
-      base::OnceClosure task,
-      base::TimeTicks desired_run_time,
-      EnqueueOrder sequence_number,
-      bool nestable);
+  void PushOntoImmediateIncomingQueueLocked(const base::Location& posted_from,
+                                            base::OnceClosure task,
+                                            base::TimeTicks desired_run_time,
+                                            EnqueueOrder sequence_number,
+                                            bool nestable);
 
   // We reserve an inline capacity of 8 tasks to try and reduce the load on
   // PartitionAlloc.

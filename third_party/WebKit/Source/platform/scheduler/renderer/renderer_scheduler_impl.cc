@@ -892,7 +892,7 @@ void RendererSchedulerImpl::MaybeUpdatePolicy() {
 }
 
 void RendererSchedulerImpl::EnsureUrgentPolicyUpdatePostedOnMainThread(
-    const tracked_objects::Location& from_here) {
+    const base::Location& from_here) {
   // TODO(scheduler-dev): Check that this method isn't called from the main
   // thread.
   any_thread_lock_.AssertAcquired();

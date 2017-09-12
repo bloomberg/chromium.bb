@@ -47,14 +47,14 @@ class FakeWebTaskRunner::BaseTaskRunner : public base::SingleThreadTaskRunner {
  public:
   explicit BaseTaskRunner(PassRefPtr<Data> data) : data_(std::move(data)) {}
 
-  bool PostDelayedTask(const tracked_objects::Location& from_here,
+  bool PostDelayedTask(const base::Location& from_here,
                        base::OnceClosure task,
                        base::TimeDelta delay) override {
     data_->PostTask(std::move(task), delay);
     return true;
   }
 
-  bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
+  bool PostNonNestableDelayedTask(const base::Location& from_here,
                                   base::OnceClosure task,
                                   base::TimeDelta delay) override {
     data_->PostTask(std::move(task), delay);

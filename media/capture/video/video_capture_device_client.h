@@ -76,7 +76,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceClient
                                    media::VideoPixelFormat format,
                                    media::VideoPixelStorage storage,
                                    int new_frame_feedback_id) override;
-  void OnError(const tracked_objects::Location& from_here,
+  void OnError(const base::Location& from_here,
                const std::string& reason) override;
   void OnLog(const std::string& message) override;
   void OnStarted() override;
