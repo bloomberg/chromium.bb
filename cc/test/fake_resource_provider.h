@@ -18,11 +18,13 @@ class FakeResourceProvider : public ResourceProvider {
  public:
   static std::unique_ptr<FakeResourceProvider> Create(
       viz::ContextProvider* context_provider,
-      viz::SharedBitmapManager* shared_bitmap_manager) {
+      viz::SharedBitmapManager* shared_bitmap_manager,
+      bool high_bit_for_testing = false) {
     viz::ResourceSettings resource_settings;
     resource_settings.texture_id_allocation_chunk_size = 1;
     resource_settings.buffer_to_texture_target_map =
         viz::DefaultBufferToTextureTargetMapForTesting();
+    resource_settings.high_bit_for_testing = high_bit_for_testing;
     return base::WrapUnique(new FakeResourceProvider(
         context_provider, shared_bitmap_manager, nullptr, nullptr, true, false,
         resource_settings));
@@ -44,11 +46,13 @@ class FakeResourceProvider : public ResourceProvider {
   static std::unique_ptr<FakeResourceProvider> Create(
       viz::ContextProvider* context_provider,
       viz::SharedBitmapManager* shared_bitmap_manager,
-      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      bool high_bit_for_testing = false) {
     viz::ResourceSettings resource_settings;
     resource_settings.texture_id_allocation_chunk_size = 1;
     resource_settings.buffer_to_texture_target_map =
         viz::DefaultBufferToTextureTargetMapForTesting();
+    resource_settings.high_bit_for_testing = high_bit_for_testing;
     return base::WrapUnique(new FakeResourceProvider(
         context_provider, shared_bitmap_manager, gpu_memory_buffer_manager,
         nullptr, true, false, resource_settings));

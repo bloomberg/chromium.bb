@@ -464,12 +464,29 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
   }
 
   std::unique_ptr<media::HalfFloatMaker> half_float_maker;
-  if (resource_provider_->YuvResourceFormat(bits_per_channel) ==
-      viz::LUMINANCE_F16) {
-    half_float_maker =
-        media::HalfFloatMaker::NewHalfFloatMaker(bits_per_channel);
-    external_resources.offset = half_float_maker->Offset();
-    external_resources.multiplier = half_float_maker->Multiplier();
+
+  switch (resource_provider_->YuvResourceFormat(bits_per_channel)) {
+    case viz::LUMINANCE_F16:
+      half_float_maker =
+          media::HalfFloatMaker::NewHalfFloatMaker(bits_per_channel);
+      external_resources.offset = half_float_maker->Offset();
+      external_resources.multiplier = half_float_maker->Multiplier();
+      break;
+    case viz::R16_EXT:
+      external_resources.multiplier = 65535.0f / ((1 << bits_per_channel) - 1);
+      external_resources.offset = 0;
+      break;
+    case viz::LUMINANCE_8:
+    case viz::RED_8:
+      break;
+    case viz::ALPHA_8:
+    case viz::RGBA_8888:
+    case viz::RGBA_4444:
+    case viz::BGRA_8888:
+    case viz::RGB_565:
+    case viz::ETC1:
+    case viz::RGBA_F16:
+      NOTREACHED();
   }
 
   for (size_t i = 0; i < plane_resources.size(); ++i) {
@@ -504,6 +521,9 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       // step.
       if (plane_resource.resource_format() == viz::LUMINANCE_F16) {
         needs_conversion = true;
+      } else if (plane_resource.resource_format() == viz::R16_EXT) {
+        // R16_EXT can represent 16-bit int, so we don't need a conversion step.
+        needs_conversion = false;
       } else if (bits_per_channel > 8) {
         // If bits_per_channel > 8 and we can't use viz::LUMINANCE_F16, we need
         // to shift the data down and create an 8-bit texture.

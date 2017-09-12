@@ -106,6 +106,7 @@ GLenum TextureToStorageFormat(viz::ResourceFormat format) {
     case viz::ETC1:
     case viz::RED_8:
     case viz::LUMINANCE_F16:
+    case viz::R16_EXT:
       NOTREACHED();
       break;
   }
@@ -127,6 +128,7 @@ bool IsFormatSupportedForStorage(viz::ResourceFormat format, bool use_bgra) {
     case viz::ETC1:
     case viz::RED_8:
     case viz::LUMINANCE_F16:
+    case viz::R16_EXT:
       return false;
   }
   return false;
@@ -325,6 +327,9 @@ ResourceProvider::Settings::Settings(
     : default_resource_type(resource_settings.use_gpu_memory_buffer_resources
                                 ? RESOURCE_TYPE_GPU_MEMORY_BUFFER
                                 : RESOURCE_TYPE_GL_TEXTURE),
+      yuv_highbit_resource_format(resource_settings.high_bit_for_testing
+                                      ? viz::R16_EXT
+                                      : viz::LUMINANCE_8),
       enable_color_correct_rasterization(enable_color_correct_rasterization),
       delegated_sync_points_required(delegated_sync_points_required) {
   if (!compositor_context_provider) {
@@ -347,9 +352,10 @@ ResourceProvider::Settings::Settings(
     yuv_resource_format = yuv_highbit_resource_format = viz::RGBA_8888;
   } else {
     yuv_resource_format = caps.texture_rg ? viz::RED_8 : viz::LUMINANCE_8;
-    yuv_highbit_resource_format = caps.texture_half_float_linear
-                                      ? viz::LUMINANCE_F16
-                                      : yuv_resource_format;
+    if (resource_settings.use_r16_texture && caps.texture_norm16)
+      yuv_highbit_resource_format = viz::R16_EXT;
+    else if (caps.texture_half_float_linear)
+      yuv_highbit_resource_format = viz::LUMINANCE_F16;
   }
 
   GLES2Interface* gl = compositor_context_provider->ContextGL();
@@ -449,6 +455,8 @@ bool ResourceProvider::IsTextureFormatSupported(
       return caps.texture_format_etc1;
     case viz::RED_8:
       return caps.texture_rg;
+    case viz::R16_EXT:
+      return caps.texture_norm16;
     case viz::LUMINANCE_F16:
     case viz::RGBA_F16:
       return caps.texture_half_float_linear;
@@ -482,6 +490,7 @@ bool ResourceProvider::IsRenderBufferFormatSupported(
     case viz::RED_8:
     case viz::ETC1:
     case viz::LUMINANCE_F16:
+    case viz::R16_EXT:
       // We don't currently render into these formats. If we need to render into
       // these eventually, we should expand this logic.
       return false;

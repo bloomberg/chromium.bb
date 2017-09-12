@@ -86,6 +86,10 @@ class CC_EXPORT VideoResourceUpdater {
   VideoFrameExternalResources CreateExternalResourcesFromVideoFrame(
       scoped_refptr<media::VideoFrame> video_frame);
 
+  void SetUseR16ForTesting(bool use_r16_for_testing) {
+    use_r16_for_testing_ = use_r16_for_testing;
+  }
+
  private:
   class PlaneResource {
    public:
@@ -184,6 +188,7 @@ class CC_EXPORT VideoResourceUpdater {
   const bool use_stream_video_draw_quad_;
   std::unique_ptr<media::SkCanvasVideoRenderer> video_renderer_;
   std::vector<uint8_t> upload_pixels_;
+  bool use_r16_for_testing_ = false;
 
   // Recycle resources so that we can reduce the number of allocations and
   // data transfers.
