@@ -10,6 +10,7 @@
   <template strip-whitespace="">
     <style include="cr-hidden-style cr-icons">
       :host {
+        align-self: stretch;
         background: none;
         border: none;
         color: inherit;
@@ -19,7 +20,6 @@
         outline: none;
         padding: 0;
         position: relative;
-        width: 100%;
         @apply(--cr-section);
       }
 
@@ -66,7 +66,9 @@
         <div id="label" class="label">[[label]]</div>
         <div id="subLabel" class="secondary label">[[subLabel]]</div>
       </div>
-      <button class$="[[iconClass]]" is="paper-icon-button-light"></button>
+      <button class$="[[iconClass]]" is="paper-icon-button-light"
+          aria-label$="[[label]]" aria-describedby="subLabel">
+      </button>
     </div>
   </template>
   <script src="cr_link_row.js"></script>
