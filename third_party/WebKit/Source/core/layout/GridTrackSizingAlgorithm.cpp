@@ -726,6 +726,7 @@ LayoutUnit GridTrackSizingAlgorithm::InitialGrowthLimit(
 void GridTrackSizingAlgorithm::InitializeTrackSizes() {
   DCHECK(content_sized_tracks_index_.IsEmpty());
   DCHECK(flexible_sized_tracks_index_.IsEmpty());
+  DCHECK(auto_sized_tracks_index_.IsEmpty());
   Vector<GridTrack>& track_list = Tracks(direction_);
   bool has_definite_free_space = !!AvailableSpace();
   size_t num_tracks = track_list.size();
@@ -748,6 +749,8 @@ void GridTrackSizingAlgorithm::InitializeTrackSizes() {
       content_sized_tracks_index_.push_back(i);
     if (track_size.MaxTrackBreadth().IsFlex())
       flexible_sized_tracks_index_.push_back(i);
+    if (track_size.HasAutoMaxTrackBreadth())
+      auto_sized_tracks_index_.push_back(i);
   }
 }
 
@@ -1300,6 +1303,9 @@ void GridTrackSizingAlgorithm::ComputeFlexSizedTracksGrowth(
 
 void GridTrackSizingAlgorithm::StretchFlexibleTracks(
     Optional<LayoutUnit> free_space) {
+  if (flexible_sized_tracks_index_.IsEmpty())
+    return;
+
   double flex_fraction = strategy_->FindUsedFlexFraction(
       flexible_sized_tracks_index_, direction_, free_space);
 
@@ -1327,6 +1333,34 @@ void GridTrackSizingAlgorithm::StretchFlexibleTracks(
                  this->FreeSpace(direction_).value() - total_growth);
   }
   max_content_size_ += total_growth;
+}
+
+void GridTrackSizingAlgorithm::StretchAutoTracks() {
+  if (auto_sized_tracks_index_.IsEmpty())
+    return;
+
+  Optional<LayoutUnit> free_space = FreeSpace(direction_);
+  if (!free_space || free_space.value() <= 0 ||
+      (direction_ == kForColumns &&
+       layout_grid_->StyleRef().ResolvedJustifyContentDistribution(
+           layout_grid_->ContentAlignmentNormalBehavior()) !=
+           kContentDistributionStretch) ||
+      (direction_ == kForRows &&
+       layout_grid_->StyleRef().ResolvedAlignContentDistribution(
+           layout_grid_->ContentAlignmentNormalBehavior()) !=
+           kContentDistributionStretch))
+    return;
+
+  unsigned number_of_auto_sized_tracks = auto_sized_tracks_index_.size();
+  LayoutUnit size_to_increase =
+      free_space.value() / number_of_auto_sized_tracks;
+  Vector<GridTrack>& all_tracks = Tracks(direction_);
+  for (const auto& track_index : auto_sized_tracks_index_) {
+    auto& track = all_tracks[track_index];
+    LayoutUnit base_size = track.BaseSize() + size_to_increase;
+    track.SetBaseSize(base_size);
+  }
+  SetFreeSpace(direction_, LayoutUnit());
 }
 
 void GridTrackSizingAlgorithm::AdvanceNextState() {
@@ -1379,6 +1413,7 @@ void GridTrackSizingAlgorithm::Setup(GridTrackSizingDirection direction,
 
   content_sized_tracks_index_.Shrink(0);
   flexible_sized_tracks_index_.Shrink(0);
+  auto_sized_tracks_index_.Shrink(0);
 
   SetFreeSpace(direction, free_space);
   Tracks(direction).resize(num_tracks);
@@ -1417,11 +1452,11 @@ void GridTrackSizingAlgorithm::Run() {
                                                     ? free_space_columns_
                                                     : free_space_rows_);
 
-  if (flexible_sized_tracks_index_.IsEmpty())
-    return;
-
   // Step 4.
   StretchFlexibleTracks(initial_free_space);
+
+  // Step 5.
+  StretchAutoTracks();
 }
 
 void GridTrackSizingAlgorithm::Reset() {
@@ -1430,6 +1465,7 @@ void GridTrackSizingAlgorithm::Reset() {
   rows_.Shrink(0);
   content_sized_tracks_index_.Shrink(0);
   flexible_sized_tracks_index_.Shrink(0);
+  auto_sized_tracks_index_.Shrink(0);
   SetAvailableSpace(kForRows, WTF::nullopt);
   SetAvailableSpace(kForColumns, WTF::nullopt);
 }
