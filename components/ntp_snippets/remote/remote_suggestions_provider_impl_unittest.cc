@@ -151,7 +151,7 @@ std::unique_ptr<RemoteSuggestion> CreateTestRemoteSuggestion(
   snippet_proto.set_publish_date(SerializeTime(GetDefaultCreationTime()));
   snippet_proto.set_expiry_date(SerializeTime(GetDefaultExpirationTime()));
   snippet_proto.set_remote_category_id(1);
-  auto* source = snippet_proto.add_sources();
+  auto* source = snippet_proto.mutable_source();
   source->set_url(url);
   source->set_publisher_name("Publisher");
   source->set_amp_url(url + "amp");

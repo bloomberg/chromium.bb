@@ -23,7 +23,6 @@ namespace ntp_snippets {
 
 // Exposed for tests.
 extern const int kArticlesRemoteId;
-extern const int kChromeReaderDefaultExpiryTimeMins;
 
 class SnippetProto;
 
@@ -35,17 +34,9 @@ class RemoteSuggestion {
 
   ~RemoteSuggestion();
 
-  // Creates a RemoteSuggestion from a dictionary, as returned by Chrome Reader.
-  // Returns a null pointer if the dictionary doesn't correspond to a valid
-  // suggestion. The keys in the dictionary are expected to be the same as the
-  // property name, with exceptions documented in the property comment.
-  static std::unique_ptr<RemoteSuggestion> CreateFromChromeReaderDictionary(
-      const base::DictionaryValue& dict,
-      const base::Time& fetch_date);
-
   // Creates a RemoteSuggestion from a dictionary, as returned by Chrome Content
   // Suggestions. Returns a null pointer if the dictionary doesn't correspond to
-  // a valid suggestion. Maps field names to Chrome Reader field names.
+  // a valid suggestion.
   static std::unique_ptr<RemoteSuggestion>
   CreateFromContentSuggestionsDictionary(const base::DictionaryValue& dict,
                                          int remote_category_id,
@@ -87,13 +78,10 @@ class RemoteSuggestion {
   const std::string& snippet() const { return snippet_; }
 
   // Link to an image representative of the content. Do not fetch this image
-  // directly. If initialized by CreateFromChromeReaderDictionary() the relevant
-  // key is 'thumbnailUrl'
+  // directly.
   const GURL& salient_image_url() const { return salient_image_url_; }
 
-  // When the page pointed by this suggestion was published.  If initialized by
-  // CreateFromChromeReaderDictionary() the relevant key is
-  // 'creationTimestampSec'
+  // When the page pointed by this suggestion was published.
   const base::Time& publish_date() const { return publish_date_; }
 
   // After this expiration date this suggestion should no longer be presented to
@@ -130,10 +118,6 @@ class RemoteSuggestion {
   void set_rank(int rank) { rank_ = rank; }
 
   base::Time fetch_date() const { return fetch_date_; }
-
-  // Public for testing.
-  static base::Time TimeFromJsonString(const std::string& timestamp_str);
-  static std::string TimeToJsonString(const base::Time& time);
 
  private:
   RemoteSuggestion(const std::vector<std::string>& ids, int remote_category_id);

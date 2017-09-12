@@ -44,7 +44,7 @@ std::unique_ptr<RemoteSuggestion> CreateTestSuggestion() {
   SnippetProto proto;
   proto.add_ids("http://localhost");
   proto.set_remote_category_id(1);  // Articles
-  auto* source = proto.add_sources();
+  auto* source = proto.mutable_source();
   source->set_url("http://localhost");
   source->set_publisher_name("Publisher");
   source->set_amp_url("http://amp");

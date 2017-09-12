@@ -148,7 +148,7 @@ std::unique_ptr<RemoteSuggestion> RemoteSuggestionBuilder::Build() const {
   proto.set_score(score_.value_or(1));
   proto.set_dismissed(is_dismissed_.value_or(false));
   proto.set_remote_category_id(remote_category_id_.value_or(1));
-  auto* source = proto.add_sources();
+  auto* source = proto.mutable_source();
   source->set_url(url_.value_or("http://url.com/"));
   source->set_publisher_name(publisher_name_.value_or("Publisher"));
   source->set_amp_url(amp_url_.value_or("http://amp_url.com/"));

@@ -64,22 +64,6 @@ class RemoteSuggestionsFetcherImpl : public RemoteSuggestionsFetcher {
   }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ChromeReaderSnippetsFetcherTest,
-                           BuildRequestAuthenticated);
-  FRIEND_TEST_ALL_PREFIXES(ChromeReaderSnippetsFetcherTest,
-                           BuildRequestUnauthenticated);
-  FRIEND_TEST_ALL_PREFIXES(ChromeReaderSnippetsFetcherTest,
-                           BuildRequestExcludedIds);
-  FRIEND_TEST_ALL_PREFIXES(ChromeReaderSnippetsFetcherTest,
-                           BuildRequestNoUserClass);
-  FRIEND_TEST_ALL_PREFIXES(ChromeReaderSnippetsFetcherTest,
-                           BuildRequestWithTwoLanguages);
-  FRIEND_TEST_ALL_PREFIXES(ChromeReaderSnippetsFetcherTest,
-                           BuildRequestWithUILanguageOnly);
-  FRIEND_TEST_ALL_PREFIXES(ChromeReaderSnippetsFetcherTest,
-                           BuildRequestWithOtherLanguageOnly);
-  friend class ChromeReaderSnippetsFetcherTest;
-
   void FetchSnippetsNonAuthenticated(internal::JsonRequest::Builder builder,
                                      SnippetsAvailableCallback callback);
   void FetchSnippetsAuthenticated(internal::JsonRequest::Builder builder,

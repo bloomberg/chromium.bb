@@ -828,8 +828,6 @@ void RemoteSuggestionsProviderImpl::OnFetchFinished(
     // from the server. crbug.com/653816
     bool response_includes_article_category = false;
     for (FetchedCategory& fetched_category : *fetched_categories) {
-      // TODO(tschumann): Remove this histogram once we only talk to the content
-      // suggestions cloud backend.
       if (fetched_category.category == articles_category_) {
         UMA_HISTOGRAM_SPARSE_SLOWLY(
             "NewTabPage.Snippets.NumArticlesFetched",
