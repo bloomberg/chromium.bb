@@ -295,8 +295,6 @@ external/wpt/assumptions [ WontFix ]
 external/wpt/gyroscope [ WontFix ]
 external/wpt/magnetometer [ WontFix ]
 external/wpt/upgrade-insecure-requests [ WontFix ]
-external/wpt/css/css-conditional-3 [ WontFix ]
-external/wpt/css/css-namespaces-3 [ WontFix ]
 
 # Temporary disabling of most encrypted-media WPT tests while enabling
 # https only. Once the switch is complete (and the WPT tests renamed so they
