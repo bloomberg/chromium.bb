@@ -1,0 +1,13 @@
+This is a testharness.js-based test.
+FAIL Magnetometer: Test that 'onreading' is called and sensor reading is valid assert_unreached: NotReadableError: Could not connect to a sensor Reached unreachable code
+FAIL Magnetometer: sensor reading is correct assert_unreached: NotReadableError: Could not connect to a sensor Reached unreachable code
+FAIL Magnetometer: sensor timestamp is updated when time passes assert_unreached: NotReadableError: Could not connect to a sensor Reached unreachable code
+FAIL Magnetometer: Test that sensor can be successfully created and its states are correct. assert_unreached: NotReadableError: Could not connect to a sensor Reached unreachable code
+PASS Magnetometer: sensor.start() returns undefined
+PASS Magnetometer: no exception is thrown when calling start() on already started sensor
+PASS Magnetometer: sensor.stop() returns undefined
+PASS Magnetometer: no exception is thrown when calling stop() on already stopped sensor
+PASS Magnetometer: throw a 'SecurityError' when constructing sensor object within iframe
+FAIL Magnetometer: sensor readings can not be fired on the background tab assert_unreached: NotReadableError: Could not connect to a sensor Reached unreachable code
+Harness: the test ran to completion.
+

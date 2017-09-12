@@ -288,13 +288,6 @@ crbug.com/763610 external/wpt/css/CSS2/cascade [ WontFix ]
 # The revert keyword is not yet supported.
 external/wpt/css/css-cascade-4/revert-val-001.html [ WontFix ]
 
-# WPT subdirectories without owners.
-external/wpt/accelerometer [ WontFix ]
-external/wpt/assumptions [ WontFix ]
-external/wpt/gyroscope [ WontFix ]
-external/wpt/magnetometer [ WontFix ]
-external/wpt/upgrade-insecure-requests [ WontFix ]
-
 # Temporary disabling of most encrypted-media WPT tests while enabling
 # https only. Once the switch is complete (and the WPT tests renamed so they
 # run using https), they can be re-enabled.
