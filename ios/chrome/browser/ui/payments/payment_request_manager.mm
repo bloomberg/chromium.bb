@@ -328,12 +328,8 @@ struct PendingPaymentResponse {
     return;
 
   _enabled = enabled;
-  if (!enabled) {
+  if (!enabled)
     [self cancelRequest];
-    [self disableActiveWebState];
-  } else if (!_activeWebStateEnabled) {
-    [self enableActiveWebState];
-  }
 }
 
 - (void)cancelRequest {
@@ -426,6 +422,10 @@ struct PendingPaymentResponse {
 }
 
 - (BOOL)handleScriptCommand:(const base::DictionaryValue&)JSONCommand {
+  // Early return if the Payment Request is not enabled.
+  if (!_enabled)
+    return NO;
+
   std::string command;
   if (!JSONCommand.GetString("command", &command)) {
     LOG(ERROR) << "Received bad JSON: No 'command' field";

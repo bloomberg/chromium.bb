@@ -101,6 +101,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/bookmarks/test",
+    "//components/payments/core",
     "//components/prefs:test_support",
     "//components/search_engines",
     "//components/sessions",
