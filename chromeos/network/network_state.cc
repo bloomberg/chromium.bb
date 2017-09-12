@@ -9,7 +9,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -25,8 +24,6 @@
 namespace {
 
 const char kErrorUnknown[] = "Unknown";
-
-const char kDefaultCellularNetworkPath[] = "/cellular";
 
 bool ConvertListValueToStringVector(const base::ListValue& string_list,
                                     std::vector<std::string>* result) {
@@ -246,10 +243,9 @@ void NetworkState::GetStateProperties(base::DictionaryValue* dictionary) const {
   dictionary->SetKey(shill::kProfileProperty, base::Value(profile_path()));
   dictionary->SetKey(shill::kPriorityProperty, base::Value(priority_));
 
-  if (visible())
+  if (visible()) {
     dictionary->SetKey(shill::kStateProperty, base::Value(connection_state()));
-  if (!device_path().empty())
-    dictionary->SetKey(shill::kDeviceProperty, base::Value(device_path()));
+  }
 
   // VPN properties.
   if (NetworkTypePattern::VPN().MatchesType(type())) {
@@ -408,11 +404,6 @@ bool NetworkState::IsPrivate() const {
          profile_path_ != NetworkProfileHandler::GetSharedProfilePath();
 }
 
-bool NetworkState::IsDefaultCellular() const {
-  return type() == shill::kTypeCellular &&
-         path() == kDefaultCellularNetworkPath;
-}
-
 std::string NetworkState::GetHexSsid() const {
   return base::HexEncode(raw_ssid().data(), raw_ssid().size());
 }
@@ -438,9 +429,9 @@ std::string NetworkState::GetSpecifier() const {
   }
   if (type() == shill::kTypeWifi)
     return name() + "_" + security_class_;
-  if (type() != shill::kTypeCellular && !name().empty())
+  if (!name().empty())
     return name();
-  return type();  // For unnamed networks, i.e. Ethernet and Cellular.
+  return type();  // For unnamed networks such as ethernet.
 }
 
 void NetworkState::SetGuid(const std::string& guid) {
@@ -487,17 +478,6 @@ bool NetworkState::NetworkStateIsCaptivePortal(
 bool NetworkState::ErrorIsValid(const std::string& error) {
   // Shill uses "Unknown" to indicate an unset or cleared error state.
   return !error.empty() && error != kErrorUnknown;
-}
-
-// static
-std::unique_ptr<NetworkState> NetworkState::CreateDefaultCellular(
-    const std::string& device_path) {
-  auto new_state = base::MakeUnique<NetworkState>(kDefaultCellularNetworkPath);
-  new_state->set_type(shill::kTypeCellular);
-  new_state->set_update_received();
-  new_state->set_visible(true);
-  new_state->device_path_ = device_path;
-  return new_state;
 }
 
 }  // namespace chromeos

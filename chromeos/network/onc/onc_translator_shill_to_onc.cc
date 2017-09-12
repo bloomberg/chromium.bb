@@ -779,8 +779,7 @@ void ShillToONCTranslator::TranslateWithTableAndSet(
     const std::string& onc_field_name) {
   std::string shill_value;
   if (!shill_dictionary_->GetStringWithoutPathExpansion(shill_property_name,
-                                                        &shill_value) ||
-      shill_value.empty()) {
+                                                        &shill_value)) {
     return;
   }
   std::string onc_value;
