@@ -47,7 +47,14 @@ public class DownloadForegroundService extends Service {
      * Stop the foreground service that is running.
      */
     public void stopDownloadForegroundService(boolean isCancelled) {
-        stopForeground(isCancelled /* kill notification if cancelled */);
+        // If it's not cancelled, just detach the notification from the service, if possible.
+        if (!isCancelled && Build.VERSION.SDK_INT >= 24) {
+            stopForeground(STOP_FOREGROUND_DETACH);
+            return;
+        }
+
+        // Otherwise, just stop the foreground and correct it elsewhere.
+        stopForeground(true);
     }
 
     @Override
