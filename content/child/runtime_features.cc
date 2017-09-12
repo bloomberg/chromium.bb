@@ -409,6 +409,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnableModuleScriptsDynamicImport(
       base::FeatureList::IsEnabled(features::kModuleScriptsDynamicImport));
 
+  WebRuntimeFeatures::EnableOverflowIconsForMediaControls(
+      base::FeatureList::IsEnabled(media::kOverflowIconsForMediaControls));
+
   // Enable explicitly enabled features, and then disable explicitly disabled
   // ones.
   for (const std::string& feature :

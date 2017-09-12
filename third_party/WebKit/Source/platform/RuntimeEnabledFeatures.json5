@@ -767,6 +767,9 @@
       name: "OutOfBlinkCORS",
     },
     {
+      name: "OverflowIconsForMediaControls",
+    },
+    {
       name: "OverlayScrollbars",
       settable_from_internals: true,
     },

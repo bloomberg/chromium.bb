@@ -116,6 +116,7 @@ MEDIA_EXPORT extern const base::Feature kMseBufferByPts;
 MEDIA_EXPORT extern const base::Feature kMseFlacInIsobmff;
 MEDIA_EXPORT extern const base::Feature kNewAudioRenderingMixingStrategy;
 MEDIA_EXPORT extern const base::Feature kNewRemotePlaybackPipeline;
+MEDIA_EXPORT extern const base::Feature kOverflowIconsForMediaControls;
 MEDIA_EXPORT extern const base::Feature kOverlayFullscreenVideo;
 MEDIA_EXPORT extern const base::Feature kPreloadDefaultIsMetadata;
 MEDIA_EXPORT extern const base::Feature kResumeBackgroundVideo;

@@ -538,10 +538,18 @@ video::-internal-media-controls-download-button, audio::-internal-media-controls
 }
 
 video::-internal-media-controls-overflow-menu-list-item, audio::-internal-media-controls-overflow-menu-list-item {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+
     color: #424242;
     line-height: 40px;
     padding-left: 28px;
+}
+
+label[pseudo="-internal-media-controls-overflow-menu-list-item"] input{
+    margin-left: -22px;
+    margin-right: 2px;
 }
 
 video::-webkit-media-text-track-container {

@@ -9,6 +9,7 @@
 #include "core/html/HTMLMediaElement.h"
 #include "modules/media_controls/MediaControlsImpl.h"
 #include "platform/Histogram.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/text/PlatformLocale.h"
 
 namespace blink {
@@ -120,7 +121,10 @@ void MediaControlInputElement::UpdateShownState() {
     else
       parent->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
 
-    return;
+    // Don't update the shown state of the element if we want to hide
+    // icons on the overflow menu.
+    if (!RuntimeEnabledFeatures::OverflowIconsForMediaControlsEnabled())
+      return;
   }
 
   MediaControlElementBase::UpdateShownState();

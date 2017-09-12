@@ -336,4 +336,9 @@ std::string GetEffectiveAutoplayPolicy(const base::CommandLine& command_line) {
 #endif
 }
 
+// Adds icons to the overflow menu on the native media controls.
+// For experiment: crbug.com/763301
+const base::Feature kOverflowIconsForMediaControls{
+    "OverflowIconsForMediaControls", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace media
