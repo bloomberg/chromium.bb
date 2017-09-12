@@ -12,11 +12,14 @@
 #include "components/exo/data_offer_observer.h"
 #include "components/exo/file_helper.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/dragdrop/file_info.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "url/gurl.h"
 
 namespace exo {
 namespace {
+
+constexpr char kUriListSeparator[] = "\r\n";
 
 class RefCountedString16 : public base::RefCountedMemory {
  public:
@@ -111,15 +114,19 @@ void DataOffer::SetDropData(FileHelper* file_helper,
     }
   }
   if (data.HasFile()) {
-    base::FilePath path;
-    if (data.GetFilename(&path)) {
-      GURL url;
-      if (file_helper->ConvertPathToUrl(path, &url)) {
-        base::string16 url_string = base::UTF8ToUTF16(url.spec());
-        drop_data_.emplace(
-            file_helper->GetMimeTypeForUriList(),
-            RefCountedString16::TakeString(std::move(url_string)));
+    std::vector<ui::FileInfo> files;
+    if (data.GetFilenames(&files)) {
+      base::string16 url_list;
+      for (const auto& info : files) {
+        GURL url;
+        if (file_helper->ConvertPathToUrl(info.path, &url)) {
+          if (!url_list.empty())
+            url_list += base::UTF8ToUTF16(kUriListSeparator);
+          url_list += base::UTF8ToUTF16(url.spec());
+        }
       }
+      drop_data_.emplace(file_helper->GetMimeTypeForUriList(),
+                         RefCountedString16::TakeString(std::move(url_list)));
     }
   }
   for (const auto& pair : drop_data_) {
