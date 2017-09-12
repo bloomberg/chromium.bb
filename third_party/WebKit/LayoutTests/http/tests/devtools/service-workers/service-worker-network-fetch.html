@@ -1,0 +1,36 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/service-workers/service-workers-test.js"></script>
+<script src="../../inspector/resources-test.js"></script>
+<script src="../../inspector/console-test.js"></script>
+<script src="../../inspector/network-test.js"></script>
+<script>
+
+function test() {
+  let scope = 'http://127.0.0.1:8000/devtools/service-workers/resources/network-fetch-worker-scope';
+
+  NetworkTestRunner.recordNetwork();
+
+  ApplicationTestRunner.makeFetchInServiceWorker(scope, '../../network/resources/resource.php', {}, fetchCallback);
+
+  function fetchCallback(result) {
+    TestRunner.addResult('Fetch in worker result: ' + result.value);
+
+    var requests = NetworkTestRunner.networkRequests();
+    requests.forEach((request) => {
+      TestRunner.addResult(request.url());
+      TestRunner.addResult('resource.type: ' + request.resourceType());
+      TestRunner.addResult('request.failed: ' + !!request.failed);
+    });
+
+    TestRunner.completeTest();
+  }
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests fetch in Service Workers.</p>
+</body>
+</html>

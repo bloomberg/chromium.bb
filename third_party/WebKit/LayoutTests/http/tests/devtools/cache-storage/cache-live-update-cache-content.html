@@ -1,0 +1,34 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/cache-storage/cache-storage-test.js"></script>
+<script>
+
+async function test() {
+  var cacheStorageModel = InspectorTest.mainTarget.model(SDK.ServiceWorkerCacheModel);
+  cacheStorageModel.enable();
+
+  await new Promise(resolve => InspectorTest.waitForCacheRefresh(resolve));
+  await InspectorTest.clearAllCaches();
+  await InspectorTest.dumpCacheTree();
+  await InspectorTest.createCache('testCache1');
+  await InspectorTest.dumpCacheTree();
+  var promise = InspectorTest.addSnifferPromise(Resources.ServiceWorkerCacheView.prototype, '_updatedForTest');
+  await InspectorTest.addCacheEntry('testCache1', 'http://fake.request.com/1', 'OK');
+  await promise;
+  InspectorTest.addResult('Added entry')
+  await InspectorTest.dumpCacheTreeNoRefresh();
+  promise = InspectorTest.addSnifferPromise(Resources.ServiceWorkerCacheView.prototype, '_updatedForTest');
+  await InspectorTest.deleteCacheEntry('testCache1', 'http://fake.request.com/1');
+  await promise;
+  InspectorTest.addResult('Deleted entry');
+  await InspectorTest.dumpCacheTreeNoRefresh();
+  await InspectorTest.clearAllCaches();
+  InspectorTest.completeTest();
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that cache view updates when the cache is changed.</p>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/console-test.js"></script>
+<script src="../../inspector/service-workers/service-workers-test.js"></script>
+<script>
+function test() {
+  var scriptURL = 'http://127.0.0.1:8000/devtools/service-workers/resources/service-worker-lazy-addeventlistener.js';
+  var scope = 'http://127.0.0.1:8000/devtools/service-workers/resources/lazy-scope';
+  ConsoleTestRunner.waitForConsoleMessages(1, () => {
+    ConsoleTestRunner.dumpConsoleMessages();
+    TestRunner.completeTest();
+  });
+  ApplicationTestRunner.registerServiceWorker(scriptURL, scope);
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that a warning is shown in the console if addEventListener is called after initial evaluation of the service worker script.</p>
+</body>
+</html>

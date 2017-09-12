@@ -1,0 +1,113 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/service-workers/service-workers-test.js"></script>
+<script>
+
+function initializeServiceWorker(script, scope) {
+  return navigator.serviceWorker.register(script, {scope: scope})
+    .then(reg => waitForActivated(reg.installing));
+}
+
+function waitForActivated(worker) {
+  if (worker.state === 'activated')
+    return Promise.resolve();
+  if (worker.state === 'redundant')
+    return Promise.reject(new Error('The worker is redundant'));
+  return new Promise(resolve => {
+      worker.addEventListener('statechange', _ => {
+          if (worker.state === 'activated')
+            resolve();
+        });
+    });
+}
+
+function loadIframe(url)
+{
+    var callback;
+    var promise = new Promise((fulfill) => callback = fulfill);
+    var frame = document.createElement('iframe');
+    frame.src = url;
+    frame.onload = callback;
+    document.body.appendChild(frame);
+    return promise;
+}
+
+function test() {
+  var scriptURL = 'http://127.0.0.1:8000/devtools/service-workers/resources/navigation-preload-worker.js';
+  var scope = 'http://127.0.0.1:8000/devtools/service-workers/resources/navigation-preload-scope.php';
+  var preloadRequestIDs = {};
+
+  function onRequestStarted(event) {
+    var request = event.data;
+    if (request.initiator().type != 'preload') {
+      return;
+    }
+    preloadRequestIDs[request.requestId()] = true;
+    TestRunner.addResult('onRequestStarted:');
+    TestRunner.addResult('  url: ' + request.url());
+  }
+
+  function onResponseReceived(event) {
+    var request = event.data;
+    if (!preloadRequestIDs[request.requestId()]) {
+      return;
+    }
+    TestRunner.addResult('onResponseReceived:');
+    TestRunner.addResult('  statusCode: ' + request.statusCode);
+    TestRunner.addResult('  timing available: ' + !!request.timing);
+    request.requestHeaders().map(header => {
+      if (header.name == 'Service-Worker-Navigation-Preload') {
+        TestRunner.addResult('  requestHeaders[\'Service-Worker-Navigation-Preload\']: ' + header.value);
+      }
+    });
+  }
+  function onRequestFinished(event) {
+    var request = event.data;
+    if (!preloadRequestIDs[request.requestId()]) {
+      return;
+    }
+    TestRunner.addResult('onRequestFinished:');
+    if (request.localizedFailDescription) {
+      TestRunner.addResult('  localizedFailDescription: ' + request.localizedFailDescription);
+    }
+  }
+
+  SDK.targetManager.addModelListener(SDK.NetworkManager, SDK.NetworkManager.Events.RequestStarted, onRequestStarted);
+  SDK.targetManager.addModelListener(
+      SDK.NetworkManager, SDK.NetworkManager.Events.ResponseReceived, onResponseReceived);
+  SDK.targetManager.addModelListener(SDK.NetworkManager, SDK.NetworkManager.Events.RequestFinished, onRequestFinished);
+
+
+  TestRunner.callFunctionInPageAsync('initializeServiceWorker', [scriptURL, scope])
+      .then(_ => {
+        TestRunner.addResult('-----------------');
+        TestRunner.addResult('Loading an iframe.');
+        return TestRunner.callFunctionInPageAsync('loadIframe', [scope]);
+      })
+      .then(_ => {
+        TestRunner.addResult('The iframe loaded.');
+        TestRunner.addResult('-----------------');
+        TestRunner.addResult('Loading another iframe.');
+        return TestRunner.callFunctionInPageAsync('loadIframe', [scope + '?BrokenChunked']);
+      })
+      .then(_ => {
+        TestRunner.addResult('The iframe loaded.');
+        TestRunner.addResult('-----------------');
+        TestRunner.addResult('Loading another iframe.');
+        return TestRunner.callFunctionInPageAsync('loadIframe', [scope + '?Redirect']);
+      })
+      .then(_ => {
+        TestRunner.addResult('The iframe loaded.');
+        TestRunner.addResult('-----------------');
+        TestRunner.addResult('Done');
+        TestRunner.completeTest();
+      });
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests the navigation request related events are available in the DevTools</p>
+</body>
+</html>

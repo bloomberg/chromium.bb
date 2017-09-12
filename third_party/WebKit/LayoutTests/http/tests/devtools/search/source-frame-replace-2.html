@@ -1,0 +1,28 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/debugger-test.js"></script>
+<script src="../../inspector/sources-test.js"></script>
+<script src="../../inspector/search/search-test.js"></script>
+<script src="resources/search.js"></script>
+<script>
+function test() {
+  UI.viewManager.showView('sources');
+  SourcesTestRunner.showScriptSource('search.js', didShowScriptSource);
+
+  function didShowScriptSource(sourceFrame) {
+    var searchConfig = new UI.SearchableView.SearchConfig('replaceMe1', false, false);
+    SourcesTestRunner.replaceAndDumpChange(sourceFrame, searchConfig, 'replaced', false);
+
+    var searchConfig = new UI.SearchableView.SearchConfig('replaceMe2', false, false);
+    SourcesTestRunner.replaceAndDumpChange(sourceFrame, searchConfig, 'replaced', true);
+
+    TestRunner.completeTest();
+  }
+};
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests different types of search-and-replace in SourceFrame</p>
+</body>
+</html>
