@@ -178,9 +178,7 @@ bool ServiceProcess::Initialize(base::MessageLoopForUI* message_loop,
   base::Thread::Options options;
   options.message_loop_type = base::MessageLoop::TYPE_IO;
   io_thread_.reset(new ServiceIOThread("ServiceProcess_IO"));
-  file_thread_.reset(new base::Thread("ServiceProcess_File"));
-  if (!io_thread_->StartWithOptions(options) ||
-      !file_thread_->StartWithOptions(options)) {
+  if (!io_thread_->StartWithOptions(options)) {
     NOTREACHED();
     Teardown();
     return false;
@@ -273,7 +271,6 @@ bool ServiceProcess::Teardown() {
   // background threads can cleanup.
   shutdown_event_.Signal();
   io_thread_.reset();
-  file_thread_.reset();
 
   if (base::TaskScheduler::GetInstance())
     base::TaskScheduler::GetInstance()->Shutdown();
