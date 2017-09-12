@@ -23,17 +23,18 @@ import org.chromium.ui.text.SpanApplier.SpanInfo;
 /**
 * Lightweight FirstRunActivity. It shows ToS dialog only.
 */
-public class LightweightFirstRunActivity extends FirstRunActivity {
+public class LightweightFirstRunActivity extends FirstRunActivityBase {
     private Button mOkButton;
     private boolean mNativeInitialized;
     private boolean mTriggerAcceptAfterNativeInit;
 
     @Override
     public void setContentView() {
-        super.setContentView();
         if (CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)) {
             completeFirstRunExperience();
         }
+
+        setFinishOnTouchOutside(true);
 
         setContentView(LayoutInflater.from(LightweightFirstRunActivity.this)
                                .inflate(R.layout.lightweight_fre_tos, null));
@@ -88,6 +89,15 @@ public class LightweightFirstRunActivity extends FirstRunActivity {
     }
 
     @Override
+    public void onBackPressed() {
+        abortFirstRunExperience();
+    }
+
+    public void abortFirstRunExperience() {
+        finish();
+        sendPendingIntentIfNecessary(false);
+    }
+
     public void completeFirstRunExperience() {
         FirstRunStatus.setLightweightFirstRunFlowComplete(true);
         finish();

@@ -6,31 +6,22 @@ package org.chromium.chrome.browser.firstrun;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.app.PendingIntent;
-import android.app.PendingIntent.CanceledException;
-import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
-import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
-import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
-import org.chromium.chrome.browser.document.ChromeLauncherActivity;
-import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoUtils;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionProxyUma;
-import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.searchwidget.SearchWidgetProvider;
-import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.ui.base.LocalizationUtils;
 
 import java.lang.reflect.Constructor;
@@ -48,7 +39,7 @@ import java.util.concurrent.Callable;
  *   [Sign-in page]
  * The activity might be run more than once, e.g. 1) for ToS and sign-in, and 2) for intro.
  */
-public class FirstRunActivity extends AsyncInitializationActivity implements FirstRunPageDelegate {
+public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPageDelegate {
     /** Alerted about various events when FirstRunActivity performs them. */
     public interface FirstRunActivityObserver {
         /** See {@link #onFlowIsKnown}. */
@@ -67,12 +58,9 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
         void onAbortFirstRunExperience();
     }
 
-    protected static final String TAG = "FirstRunActivity";
-
     // Incoming parameters:
     public static final String EXTRA_COMING_FROM_CHROME_ICON = "Extra.ComingFromChromeIcon";
     public static final String EXTRA_USE_FRE_FLOW_SEQUENCER = "Extra.UseFreFlowSequencer";
-    public static final String EXTRA_START_LIGHTWEIGHT_FRE = "Extra.StartLightweightFRE";
     public static final String EXTRA_CHROME_LAUNCH_INTENT = "Extra.FreChromeLaunchIntent";
 
     static final String SHOW_WELCOME_PAGE = "ShowWelcome";
@@ -196,12 +184,6 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
     }
 
     @Override
-    protected boolean requiresFirstRunToBeCompleted(Intent intent) {
-        // The user is already in First Run.
-        return false;
-    }
-
-    @Override
     protected Bundle transformSavedInstanceStateForOnCreate(Bundle savedInstanceState) {
         // We pass null to Activity.onCreate() so that it doesn't automatically restore
         // the FragmentManager state - as that may cause fragments to be loaded that have
@@ -223,11 +205,6 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
         }
 
         setFinishOnTouchOutside(true);
-
-        // Skip creating content view if it is to start a lightweight First Run Experience.
-        if (mFreProperties.getBoolean(FirstRunActivity.EXTRA_START_LIGHTWEIGHT_FRE)) {
-            return;
-        }
 
         mPager = new FirstRunViewPager(this);
         mPager.setId(R.id.fre_pager);
@@ -312,11 +289,6 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
         }
     }
 
-    @Override
-    public boolean shouldStartGpuProcess() {
-        return true;
-    }
-
     // Activity:
 
     @Override
@@ -353,20 +325,8 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
-        flushPersistentData();
-    }
-
-    @Override
     public void onStart() {
         super.onStart();
-        // Since the FRE may be shown before any tab is shown, mark that this is the point at
-        // which Chrome went to foreground. This is needed as otherwise an assert will be hit
-        // in UmaUtils.getForegroundStartTime() when recording the time taken to load the first
-        // page (which happens after native has been initialized possibly while FRE is still
-        // active).
-        UmaUtils.recordForegroundStartTime();
         stopProgressionIfNotAcceptedTermsOfService();
     }
 
@@ -500,51 +460,6 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
         flushPersistentData();
         stopProgressionIfNotAcceptedTermsOfService();
         jumpToPage(mPager.getCurrentItem() + 1);
-    }
-
-    protected void flushPersistentData() {
-        if (mNativeSideIsInitialized) {
-            ProfileManagerUtils.flushPersistentDataForAllProfiles();
-        }
-    }
-
-    /**
-     * Sends the PendingIntent included with the CHROME_LAUNCH_INTENT extra if it exists.
-     * @param complete Whether first run completed successfully.
-     * @return Whether a pending intent was sent.
-     */
-    protected final boolean sendPendingIntentIfNecessary(final boolean complete) {
-        PendingIntent pendingIntent = IntentUtils.safeGetParcelableExtra(getIntent(),
-                EXTRA_CHROME_LAUNCH_INTENT);
-        if (pendingIntent == null) return false;
-
-        Intent extraDataIntent = new Intent();
-        extraDataIntent.putExtra(FirstRunActivity.EXTRA_FIRST_RUN_ACTIVITY_RESULT, true);
-        extraDataIntent.putExtra(FirstRunActivity.EXTRA_FIRST_RUN_COMPLETE, complete);
-
-        try {
-            // After the PendingIntent has been sent, send a first run callback to custom tabs if
-            // necessary.
-            PendingIntent.OnFinished onFinished = new PendingIntent.OnFinished() {
-                @Override
-                public void onSendFinished(PendingIntent pendingIntent, Intent intent,
-                        int resultCode, String resultData, Bundle resultExtras) {
-                    if (ChromeLauncherActivity.isCustomTabIntent(intent)) {
-                        CustomTabsConnection.getInstance().sendFirstRunCallbackIfNecessary(
-                                intent, complete);
-                    }
-                }
-            };
-
-            // Use the PendingIntent to send the intent that originally launched Chrome. The intent
-            // will go back to the ChromeLauncherActivity, which will route it accordingly.
-            pendingIntent.send(this, complete ? Activity.RESULT_OK : Activity.RESULT_CANCELED,
-                    extraDataIntent, onFinished, null);
-            return true;
-        } catch (CanceledException e) {
-            Log.e(TAG, "Unable to send PendingIntent.", e);
-        }
-        return false;
     }
 
     /**
