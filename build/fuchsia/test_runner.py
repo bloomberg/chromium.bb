@@ -59,6 +59,7 @@ def WaitUntil(predicate, timeout_seconds=1):
     time.sleep(sleep_time_sec)
     sleep_time_sec = min(1, sleep_time_sec * 2)  # Don't wait more than 1 sec.
 
+
 # Implementation of chrome_test_server_spawner.PortForwarder that doesn't
 # forward ports. Instead the tests are expected to connect to the host IP
 # address inside the virtual network provided by qemu. qemu will forward
@@ -124,8 +125,9 @@ def main():
   parser.add_argument('--test-launcher-jobs',
                       type=int,
                       help='Sets the number of parallel test jobs.')
-  parser.add_argument('--test_launcher_summary_output',
-                      help='Currently ignored for 2-sided roll.')
+  parser.add_argument('--test-launcher-summary-output',
+                      '--test_launcher_summary_output',
+                      help='Where the test launcher will output its json.')
   parser.add_argument('child_args', nargs='*',
                       help='Arguments for the test process.')
   parser.add_argument('-d', '--device', action='store_true', default=False,
@@ -184,14 +186,17 @@ def main():
     runtime_deps.append(('test_filter_file', test_launcher_filter_file))
     child_args.append('--test-launcher-filter-file=/system/test_filter_file')
 
+  if args.test_launcher_summary_output:
+    child_args.append('--test-launcher-summary-output=/tmp/summary_output.json')
+
   try:
     bootfs = BuildBootfs(args.output_directory, runtime_deps, args.exe_name,
-                         child_args, args.dry_run, power_off=not args.device)
+                         child_args, args.dry_run)
     if not bootfs:
       return 2
 
-    return RunFuchsia(bootfs, args.device, args.dry_run)
-
+    return RunFuchsia(bootfs, args.device, args.dry_run,
+                      args.test_launcher_summary_output)
   finally:
     # Stop the spawner to make sure it doesn't leave testserver running, in
     # case some tests failed.
