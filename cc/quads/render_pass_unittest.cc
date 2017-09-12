@@ -30,6 +30,7 @@ struct RenderPassSize {
   FilterOperations background_filters;
   gfx::ColorSpace color_space;
   bool has_transparent_background;
+  bool generate_mipmap;
   std::vector<std::unique_ptr<viz::CopyOutputRequest>> copy_callbacks;
   QuadList quad_list;
   SharedQuadStateList shared_quad_state_list;
@@ -51,6 +52,7 @@ static void CompareRenderPassLists(const RenderPassList& expected_list,
     EXPECT_EQ(expected->background_filters, expected->background_filters);
     EXPECT_EQ(expected->has_transparent_background,
               actual->has_transparent_background);
+    EXPECT_EQ(expected->generate_mipmap, actual->generate_mipmap);
 
     EXPECT_EQ(expected->shared_quad_state_list.size(),
               actual->shared_quad_state_list.size());
@@ -81,12 +83,13 @@ TEST(RenderPassTest, CopyShouldBeIdenticalExceptIdAndQuads) {
   bool has_transparent_background = true;
   bool cache_render_pass = false;
   bool has_damage_from_contributing_content = false;
+  bool generate_mipmap = false;
 
   std::unique_ptr<RenderPass> pass = RenderPass::Create();
   pass->SetAll(render_pass_id, output_rect, damage_rect, transform_to_root,
                filters, background_filters, color_space,
                has_transparent_background, cache_render_pass,
-               has_damage_from_contributing_content);
+               has_damage_from_contributing_content, generate_mipmap);
   pass->copy_requests.push_back(viz::CopyOutputRequest::CreateStubForTesting());
 
   // Stick a quad in the pass, this should not get copied.
@@ -109,6 +112,7 @@ TEST(RenderPassTest, CopyShouldBeIdenticalExceptIdAndQuads) {
   EXPECT_EQ(pass->filters, copy->filters);
   EXPECT_EQ(pass->background_filters, copy->background_filters);
   EXPECT_EQ(pass->has_transparent_background, copy->has_transparent_background);
+  EXPECT_EQ(pass->generate_mipmap, copy->generate_mipmap);
   EXPECT_EQ(0u, copy->quad_list.size());
 
   // The copy request should not be copied/duplicated.
@@ -134,11 +138,13 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
   bool has_transparent_background = true;
   bool cache_render_pass = false;
   bool has_damage_from_contributing_content = false;
+  bool generate_mipmap = false;
 
   std::unique_ptr<RenderPass> pass = RenderPass::Create();
   pass->SetAll(id, output_rect, damage_rect, transform_to_root, filters,
                background_filters, color_space, has_transparent_background,
-               cache_render_pass, has_damage_from_contributing_content);
+               cache_render_pass, has_damage_from_contributing_content,
+               generate_mipmap);
 
   // Two quads using one shared state.
   viz::SharedQuadState* shared_state1 = pass->CreateAndAppendSharedQuadState();
@@ -188,13 +194,15 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
   bool contrib_has_transparent_background = true;
   bool contrib_cache_render_pass = false;
   bool contrib_has_damage_from_contributing_content = false;
+  bool contrib_generate_mipmap = false;
 
   std::unique_ptr<RenderPass> contrib = RenderPass::Create();
   contrib->SetAll(contrib_id, contrib_output_rect, contrib_damage_rect,
                   contrib_transform_to_root, contrib_filters,
                   contrib_background_filters, contrib_color_space,
                   contrib_has_transparent_background, contrib_cache_render_pass,
-                  contrib_has_damage_from_contributing_content);
+                  contrib_has_damage_from_contributing_content,
+                  contrib_generate_mipmap);
 
   viz::SharedQuadState* contrib_shared_state =
       contrib->CreateAndAppendSharedQuadState();
@@ -241,11 +249,13 @@ TEST(RenderPassTest, CopyAllWithCulledQuads) {
   bool has_transparent_background = true;
   bool cache_render_pass = false;
   bool has_damage_from_contributing_content = false;
+  bool generate_mipmap = false;
 
   std::unique_ptr<RenderPass> pass = RenderPass::Create();
   pass->SetAll(id, output_rect, damage_rect, transform_to_root, filters,
                background_filters, color_space, has_transparent_background,
-               cache_render_pass, has_damage_from_contributing_content);
+               cache_render_pass, has_damage_from_contributing_content,
+               generate_mipmap);
 
   // A shared state with a quad.
   viz::SharedQuadState* shared_state1 = pass->CreateAndAppendSharedQuadState();

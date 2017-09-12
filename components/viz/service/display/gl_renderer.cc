@@ -2580,6 +2580,11 @@ void GLRenderer::FinishDrawingQuadList() {
   FlushTextureQuadCache(SHARED_BINDING);
 }
 
+void GLRenderer::GenerateMipmap() {
+  DCHECK(current_framebuffer_lock_);
+  current_framebuffer_lock_->set_generate_mipmap();
+}
+
 void GLRenderer::SetEnableDCLayers(bool enable) {
   gl_->SetEnableDCLayersCHROMIUM(enable);
 }

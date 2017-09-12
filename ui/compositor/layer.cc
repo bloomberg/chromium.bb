@@ -685,6 +685,10 @@ void Layer::RemoveCacheRenderSurfaceRequest() {
     cc_layer_->SetCacheRenderSurface(false);
 }
 
+void Layer::SetTrilinearFiltering(bool trilinear_filtering) {
+  cc_layer_->SetTrilinearFiltering(trilinear_filtering);
+}
+
 void Layer::SetTextureMailbox(
     const viz::TextureMailbox& mailbox,
     std::unique_ptr<viz::SingleReleaseCallback> release_callback,

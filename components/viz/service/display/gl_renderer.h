@@ -107,6 +107,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public cc::DirectRenderer {
   void CopyDrawnRenderPass(std::unique_ptr<CopyOutputRequest> request) override;
   void SetEnableDCLayers(bool enable) override;
   void FinishDrawingQuadList() override;
+  void GenerateMipmap() override;
 
   // Returns true if quad requires antialiasing and false otherwise.
   static bool ShouldAntialiasQuad(const gfx::QuadF& device_layer_quad,

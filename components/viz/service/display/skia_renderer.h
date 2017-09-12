@@ -57,6 +57,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public cc::DirectRenderer {
   void SetEnableDCLayers(bool enable) override;
   void DidChangeVisibility() override;
   void FinishDrawingQuadList() override;
+  void GenerateMipmap() override;
 
  private:
   void ClearCanvas(SkColor color);

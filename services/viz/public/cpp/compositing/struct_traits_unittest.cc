@@ -746,11 +746,12 @@ TEST_F(StructTraitsTest, RenderPass) {
   const bool has_transparent_background = true;
   const bool cache_render_pass = false;
   const bool has_damage_from_contributing_content = false;
+  const bool generate_mipmap = false;
   std::unique_ptr<cc::RenderPass> input = cc::RenderPass::Create();
   input->SetAll(render_pass_id, output_rect, damage_rect, transform_to_root,
                 filters, background_filters, color_space,
                 has_transparent_background, cache_render_pass,
-                has_damage_from_contributing_content);
+                has_damage_from_contributing_content, generate_mipmap);
 
   SharedQuadState* shared_state_1 = input->CreateAndAppendSharedQuadState();
   shared_state_1->SetAll(
@@ -867,11 +868,12 @@ TEST_F(StructTraitsTest, RenderPassWithEmptySharedQuadStateList) {
   const bool has_transparent_background = true;
   const bool cache_render_pass = false;
   const bool has_damage_from_contributing_content = false;
+  const bool generate_mipmap = false;
   std::unique_ptr<cc::RenderPass> input = cc::RenderPass::Create();
   input->SetAll(render_pass_id, output_rect, damage_rect, transform_to_root,
                 cc::FilterOperations(), cc::FilterOperations(), color_space,
                 has_transparent_background, cache_render_pass,
-                has_damage_from_contributing_content);
+                has_damage_from_contributing_content, generate_mipmap);
 
   // Unlike the previous test, don't add any quads to the list; we need to
   // verify that the serialization code can deal with that.

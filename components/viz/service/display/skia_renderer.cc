@@ -643,6 +643,11 @@ void SkiaRenderer::FinishDrawingQuadList() {
   current_canvas_->flush();
 }
 
+void SkiaRenderer::GenerateMipmap() {
+  // TODO(reveman): Generates mipmaps for current canvas. (crbug.com/763664)
+  NOTIMPLEMENTED();
+}
+
 bool SkiaRenderer::ShouldApplyBackgroundFilters(
     const cc::RenderPassDrawQuad* quad,
     const cc::FilterOperations* background_filters) const {

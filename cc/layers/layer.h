@@ -425,6 +425,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return inputs_.has_will_change_transform_hint;
   }
 
+  void SetTrilinearFiltering(bool trilinear_filtering);
+  bool trilinear_filtering() const { return inputs_.trilinear_filtering; }
+
   MutatorHost* GetMutatorHost() const;
 
   ElementListType GetElementTypeForAnimation() const;
@@ -612,6 +615,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     Layer* clip_parent;
 
     bool has_will_change_transform_hint : 1;
+
+    bool trilinear_filtering : 1;
 
     bool hide_layer_and_subtree : 1;
 

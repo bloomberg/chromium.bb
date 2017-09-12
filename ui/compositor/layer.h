@@ -430,6 +430,9 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   void AddCacheRenderSurfaceRequest();
   void RemoveCacheRenderSurfaceRequest();
 
+  // Request trilinear filtering for layer.
+  void SetTrilinearFiltering(bool trilinear_filtering);
+
   // The back link from the mask layer to it's associated masked layer.
   // We keep this reference for the case that if the mask layer gets deleted
   // while attached to the main layer before the main layer is deleted.

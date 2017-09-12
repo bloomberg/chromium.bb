@@ -53,6 +53,7 @@ struct CC_EXPORT EffectNode {
   bool has_copy_request : 1;
   bool hidden_by_backface_visibility : 1;
   bool double_sided : 1;
+  bool trilinear_filtering : 1;
   bool is_drawn : 1;
   // TODO(jaydasika) : Delete this after implementation of
   // SetHideLayerAndSubtree is cleaned up. (crbug.com/595843)

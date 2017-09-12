@@ -34,8 +34,12 @@ class CC_EXPORT ScopedResource : public Resource {
                                    const gfx::ColorSpace& color_space);
   void Free();
 
+  ResourceProvider::TextureHint hint() const { return hint_; }
+
  private:
   ResourceProvider* resource_provider_;
+  ResourceProvider::TextureHint hint_ =
+      ResourceProvider::TextureHint::TEXTURE_HINT_DEFAULT;
 
 #if DCHECK_IS_ON()
   base::PlatformThreadId allocate_thread_id_;

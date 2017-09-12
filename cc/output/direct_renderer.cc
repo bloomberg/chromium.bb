@@ -180,7 +180,11 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
 
   auto& root_render_pass = render_passes_in_draw_order.back();
 
-  base::flat_map<RenderPassId, gfx::Size> render_passes_in_frame;
+  struct RenderPassRequirements {
+    gfx::Size size;
+    ResourceProvider::TextureHint hint;
+  };
+  base::flat_map<RenderPassId, RenderPassRequirements> render_passes_in_frame;
   for (const auto& pass : render_passes_in_draw_order) {
     if (pass != root_render_pass) {
       if (const TileDrawQuad* tile_quad = CanPassBeDrawnDirectly(pass.get())) {
@@ -190,7 +194,8 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
         continue;
       }
     }
-    render_passes_in_frame[pass->id] = RenderPassTextureSize(pass.get());
+    render_passes_in_frame[pass->id] = {RenderPassTextureSize(pass.get()),
+                                        RenderPassTextureHint(pass.get())};
   }
 
   std::vector<RenderPassId> passes_to_delete;
@@ -201,13 +206,15 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
       continue;
     }
 
-    gfx::Size required_size = it->second;
+    gfx::Size required_size = it->second.size;
+    ResourceProvider::TextureHint required_hint = it->second.hint;
     ScopedResource* texture = pair.second.get();
     DCHECK(texture);
 
     bool size_appropriate = texture->size().width() >= required_size.width() &&
                             texture->size().height() >= required_size.height();
-    if (texture->id() && !size_appropriate)
+    bool hint_appropriate = (texture->hint() & required_hint) == required_hint;
+    if (texture->id() && (!size_appropriate || !hint_appropriate))
       texture->Free();
   }
 
@@ -607,6 +614,9 @@ void DirectRenderer::DrawRenderPass(const RenderPass* render_pass) {
   FlushPolygons(&poly_list, render_pass_scissor_in_draw_space,
                 render_pass_requires_scissor);
   FinishDrawingQuadList();
+
+  if (render_pass->generate_mipmap)
+    GenerateMipmap();
 }
 
 bool DirectRenderer::UseRenderPass(const RenderPass* render_pass) {
@@ -632,9 +642,9 @@ bool DirectRenderer::UseRenderPass(const RenderPass* render_pass) {
   size.Enlarge(enlarge_pass_texture_amount_.width(),
                enlarge_pass_texture_amount_.height());
   if (!texture->id()) {
-    texture->Allocate(
-        size, ResourceProvider::TEXTURE_HINT_IMMUTABLE_FRAMEBUFFER,
-        BackbufferFormat(), current_frame()->current_render_pass->color_space);
+    texture->Allocate(size, RenderPassTextureHint(render_pass),
+                      BackbufferFormat(),
+                      current_frame()->current_render_pass->color_space);
   } else if (render_pass->cache_render_pass &&
              !render_pass->has_damage_from_contributing_content) {
     return false;
@@ -662,6 +672,14 @@ bool DirectRenderer::HasAllocatedResourcesForTesting(
 // static
 gfx::Size DirectRenderer::RenderPassTextureSize(const RenderPass* render_pass) {
   return render_pass->output_rect.size();
+}
+
+// static
+ResourceProvider::TextureHint DirectRenderer::RenderPassTextureHint(
+    const RenderPass* render_pass) {
+  return render_pass->generate_mipmap
+             ? ResourceProvider::TEXTURE_HINT_IMMUTABLE_MIPMAP_FRAMEBUFFER
+             : ResourceProvider::TEXTURE_HINT_IMMUTABLE_FRAMEBUFFER;
 }
 
 void DirectRenderer::SetCurrentFrameForTesting(const DrawingFrame& frame) {
