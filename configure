@@ -307,6 +307,7 @@ EXPERIMENT_LIST="
     adapt_scan
     filter_7bit
     parallel_deblocking
+    deblock_13tap
     loopfiltering_across_tiles
     tempmv_signaling
     rd_debug
