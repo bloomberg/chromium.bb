@@ -1483,8 +1483,10 @@ void RTCPeerConnection::DidAddRemoteStream(
     }
     RTCRtpReceiver* track_rtp_receiver =
         GetOrCreateRTCRtpReceiver(std::move(track_web_rtp_receiver));
-    ScheduleDispatchEvent(
-        new RTCTrackEvent(track_rtp_receiver, track, streams));
+    if (RuntimeEnabledFeatures::RTCRtpSenderEnabled()) {
+      ScheduleDispatchEvent(
+          new RTCTrackEvent(track_rtp_receiver, track, streams));
+    }
   }
 }
 
