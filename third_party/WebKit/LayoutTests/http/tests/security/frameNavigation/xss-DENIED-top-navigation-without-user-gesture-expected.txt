@@ -1,3 +1,4 @@
 CONSOLE WARNING: line 8: Frame with URL 'http://localhost:8000/security/frameNavigation/resources/iframe-that-performs-top-navigation-without-user-gesture.html' attempted to navigate its top-level window with URL 'http://127.0.0.1:8000/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html'. Navigating the top-level window from a cross-origin iframe will soon require that the iframe has received a user gesture. See https://www.chromestatus.com/features/5851021045661696.
 localhost
+
 PASSED: Navigation succeeded.
