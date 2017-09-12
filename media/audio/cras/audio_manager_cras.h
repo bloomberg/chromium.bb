@@ -83,6 +83,9 @@ class MEDIA_EXPORT AudioManagerCras : public AudioManagerBase {
   void GetAudioDevices(chromeos::AudioDeviceList* devices);
   void GetAudioDevicesOnMainThread(chromeos::AudioDeviceList* devices,
                                    base::WaitableEvent* event);
+  uint64_t GetPrimaryActiveInputNode();
+  void GetPrimaryActiveInputNodeOnMainThread(uint64_t* active_input_node_id,
+                                             base::WaitableEvent* event);
   void GetPrimaryActiveOutputNodeOnMainThread(uint64_t* active_output_node_id,
                                               base::WaitableEvent* event);
   void GetDefaultOutputBufferSizeOnMainThread(int32_t* buffer_size,

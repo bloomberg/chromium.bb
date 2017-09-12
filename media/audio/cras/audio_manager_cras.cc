@@ -202,11 +202,18 @@ std::string AudioManagerCras::GetAssociatedOutputDeviceID(
   chromeos::AudioDeviceList devices;
   GetAudioDevices(&devices);
 
-  // At this point, we know we have an ordinary input device, so we look up its
-  // device_name, which identifies which hardware device it belongs to.
   uint64_t device_id = 0;
-  if (!base::StringToUint64(input_device_id, &device_id))
-    return "";
+  if (input_device_id == AudioDeviceDescription::kDefaultDeviceId) {
+    device_id = GetPrimaryActiveInputNode();
+  } else {
+    // At this point, we know we have an ordinary input device id, so we parse
+    // the string for its device_id.
+    if (!base::StringToUint64(input_device_id, &device_id))
+      return "";
+  }
+
+  // Find the device in the device list to get the device name (identifying the
+  // hardware device).
   const chromeos::AudioDevice* input_device =
       GetDeviceFromId(devices, device_id);
   if (!input_device)
@@ -395,12 +402,41 @@ void AudioManagerCras::GetAudioDevicesOnMainThread(
   event->Signal();
 }
 
+uint64_t AudioManagerCras::GetPrimaryActiveInputNode() {
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  uint64_t device_id = 0;
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
+  if (main_task_runner_->BelongsToCurrentThread()) {
+    GetPrimaryActiveInputNodeOnMainThread(&device_id, &event);
+  } else {
+    main_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&AudioManagerCras::GetPrimaryActiveInputNodeOnMainThread,
+                       weak_this_, &device_id, &event));
+  }
+  WaitEventOrShutdown(&event);
+  return device_id;
+}
+
+void AudioManagerCras::GetPrimaryActiveInputNodeOnMainThread(
+    uint64_t* active_input_node_id,
+    base::WaitableEvent* event) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  if (chromeos::CrasAudioHandler::IsInitialized()) {
+    *active_input_node_id =
+        chromeos::CrasAudioHandler::Get()->GetPrimaryActiveInputNode();
+  }
+  event->Signal();
+}
+
 void AudioManagerCras::GetPrimaryActiveOutputNodeOnMainThread(
     uint64_t* active_output_node_id,
     base::WaitableEvent* event) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (chromeos::CrasAudioHandler::IsInitialized()) {
-    chromeos::CrasAudioHandler::Get()->GetPrimaryActiveOutputNode();
+    *active_output_node_id =
+        chromeos::CrasAudioHandler::Get()->GetPrimaryActiveOutputNode();
   }
   event->Signal();
 }
