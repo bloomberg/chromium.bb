@@ -69,6 +69,34 @@ struct PassthroughResources {
   std::unordered_map<GLuint, MappedBuffer> mapped_buffer_map;
 };
 
+class ScopedFramebufferBindingReset {
+ public:
+  ScopedFramebufferBindingReset();
+  ~ScopedFramebufferBindingReset();
+
+ private:
+  GLint draw_framebuffer_;
+  GLint read_framebuffer_;
+};
+
+class ScopedRenderbufferBindingReset {
+ public:
+  ScopedRenderbufferBindingReset();
+  ~ScopedRenderbufferBindingReset();
+
+ private:
+  GLint renderbuffer_;
+};
+
+class ScopedTexture2DBindingReset {
+ public:
+  ScopedTexture2DBindingReset();
+  ~ScopedTexture2DBindingReset();
+
+ private:
+  GLint texture_;
+};
+
 class GPU_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
  public:
   GLES2DecoderPassthroughImpl(GLES2DecoderClient* client,
@@ -323,6 +351,8 @@ class GPU_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
   void VerifyServiceTextureObjectsExist();
 
+  bool IsEmulatedFramebufferBound(GLenum target) const;
+
   GLES2DecoderClient* client_;
 
   int commands_to_process_;
@@ -436,6 +466,89 @@ class GPU_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
   std::unordered_map<GLenum, ActiveQuery> active_queries_;
 
   std::set<GLenum> errors_;
+
+  // Default framebuffer emulation
+  struct EmulatedDefaultFramebufferFormat {
+    GLenum color_renderbuffer_internal_format = GL_NONE;
+    GLenum color_texture_internal_format = GL_NONE;
+    GLenum color_texture_format = GL_NONE;
+    GLenum color_texture_type = GL_NONE;
+    GLenum depth_stencil_internal_format = GL_NONE;
+    GLenum depth_internal_format = GL_NONE;
+    GLenum stencil_internal_format = GL_NONE;
+    GLint samples = 0;
+  };
+
+  struct EmulatedColorBuffer {
+    explicit EmulatedColorBuffer(
+        const EmulatedDefaultFramebufferFormat& format_in);
+    ~EmulatedColorBuffer();
+
+    bool Resize(const gfx::Size& new_size);
+    void Destroy(bool have_context);
+
+    scoped_refptr<TexturePassthrough> texture;
+
+    gfx::Size size;
+    EmulatedDefaultFramebufferFormat format;
+
+    DISALLOW_COPY_AND_ASSIGN(EmulatedColorBuffer);
+  };
+
+  struct EmulatedDefaultFramebuffer {
+    EmulatedDefaultFramebuffer(
+        const EmulatedDefaultFramebufferFormat& format_in,
+        const FeatureInfo* feature_info);
+    ~EmulatedDefaultFramebuffer();
+
+    // Set a new color buffer, return the old one
+    std::unique_ptr<EmulatedColorBuffer> SetColorBuffer(
+        std::unique_ptr<EmulatedColorBuffer> new_color_buffer);
+
+    // Blit this framebuffer into another same-sized color buffer
+    void Blit(EmulatedColorBuffer* target);
+
+    bool Resize(const gfx::Size& new_size, const FeatureInfo* feature_info);
+    void Destroy(bool have_context);
+
+    // Service ID of the framebuffer
+    GLuint framebuffer_service_id = 0;
+
+    // Service ID of the color renderbuffer (if multisampled)
+    GLuint color_buffer_service_id = 0;
+
+    // Color buffer texture (if not multisampled)
+    std::unique_ptr<EmulatedColorBuffer> color_texture;
+
+    // Service ID of the depth stencil renderbuffer
+    GLuint depth_stencil_buffer_service_id = 0;
+
+    // Service ID of the depth renderbuffer
+    GLuint depth_buffer_service_id = 0;
+
+    // Service ID of the stencil renderbuffer (
+    GLuint stencil_buffer_service_id = 0;
+
+    gfx::Size size;
+    EmulatedDefaultFramebufferFormat format;
+
+    DISALLOW_COPY_AND_ASSIGN(EmulatedDefaultFramebuffer);
+  };
+  EmulatedDefaultFramebufferFormat emulated_default_framebuffer_format_;
+  std::unique_ptr<EmulatedDefaultFramebuffer> emulated_back_buffer_;
+  std::unique_ptr<EmulatedColorBuffer> emulated_front_buffer_;
+  bool offscreen_single_buffer_;
+  bool offscreen_target_buffer_preserved_;
+  std::vector<std::unique_ptr<EmulatedColorBuffer>> in_use_color_textures_;
+  std::vector<std::unique_ptr<EmulatedColorBuffer>> available_color_textures_;
+  size_t create_color_buffer_count_for_test_;
+
+  // Maximum 2D texture size for limiting offscreen framebuffer sizes
+  GLint max_2d_texture_size_;
+
+  // State tracking of currently bound draw and read framebuffers (client IDs)
+  GLuint bound_draw_framebuffer_;
+  GLuint bound_read_framebuffer_;
 
   // Tracing
   std::unique_ptr<GPUTracer> gpu_tracer_;

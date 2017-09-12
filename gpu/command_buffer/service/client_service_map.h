@@ -30,16 +30,15 @@ class ClientServiceMap {
   void Clear() { client_to_service_.clear(); }
 
   bool GetServiceID(ClientType client_id, ServiceType* service_id) const {
-    if (client_id == 0) {
-      if (service_id) {
-        *service_id = 0;
-      }
-      return true;
-    }
     auto iter = client_to_service_.find(client_id);
     if (iter != client_to_service_.end()) {
       if (service_id) {
         *service_id = iter->second;
+      }
+      return true;
+    } else if (client_id == 0) {
+      if (service_id) {
+        *service_id = 0;
       }
       return true;
     }
@@ -55,12 +54,6 @@ class ClientServiceMap {
   }
 
   bool GetClientID(ServiceType service_id, ClientType* client_id) const {
-    if (service_id == 0) {
-      if (client_id) {
-        *client_id = 0;
-      }
-      return true;
-    }
     for (auto mapping : client_to_service_) {
       if (mapping.second == service_id) {
         if (client_id) {
@@ -68,6 +61,12 @@ class ClientServiceMap {
         }
         return true;
       }
+    }
+    if (service_id == 0) {
+      if (client_id) {
+        *client_id = 0;
+      }
+      return true;
     }
     return false;
   }

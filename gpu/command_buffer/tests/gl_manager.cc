@@ -344,7 +344,7 @@ void GLManager::InitializeWithWorkaroundsImpl(
 
   command_buffer_->set_handler(decoder_.get());
 
-  surface_ = gl::init::CreateOffscreenGLSurface(options.size);
+  surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
   ASSERT_TRUE(surface_.get() != NULL) << "could not create offscreen surface";
 
   if (base_context_) {
