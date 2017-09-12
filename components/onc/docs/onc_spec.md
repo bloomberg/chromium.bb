@@ -362,6 +362,24 @@ static IP configuration (see **StaticIPConfig**).
       should not start with a dot. Example: `["corp.acme.org", "acme.org" ]`.
       If not specified, DHCP values will be used.
 
+* **IncludedRoutes**
+    * (optional) - **array of string**
+    * An array of strings, each of which is an IP block in CIDR notation,
+      whose traffic should be handled by the network. Example:
+      `["10.0.0.0/8", "192.168.5.0/24"]`. If **IncludedRoutes** or
+      **ExcludedRoutes** are not specified, this network
+      will be used to handle traffic for all IPs by default. Currently this
+      property only has an effect if the Network **Type** is *VPN* and the
+      VPN **Type** is *ARCVPN*.
+
+* **ExcludedRoutes**
+    * (optional) - **array of string**
+    * An array of strings, each of which is an IP block in CIDR notation,
+      whose traffic should **not** be handled by the network. Example:
+      `["10.0.0.0/8", "192.168.5.0/24"]`. Currently this
+      only has an effect if the Network **Type** is *VPN* and the VPN
+      **Type** is *ARCVPN*.
+
 * **WebProxyAutoDiscoveryUrl**
     * (optional if part of **IPConfigs**, read-only) - **string**
     * The Web Proxy Auto-Discovery URL for this network as reported over DHCP.

@@ -208,6 +208,8 @@ ONC_EXPORT extern const char kIPv6[];
 ONC_EXPORT extern const char kNameServers[];
 ONC_EXPORT extern const char kRoutingPrefix[];
 ONC_EXPORT extern const char kSearchDomains[];
+ONC_EXPORT extern const char kIncludedRoutes[];
+ONC_EXPORT extern const char kExcludedRoutes[];
 ONC_EXPORT extern const char kType[];
 ONC_EXPORT extern const char kWebProxyAutoDiscoveryUrl[];
 }  // namespace ipconfig
