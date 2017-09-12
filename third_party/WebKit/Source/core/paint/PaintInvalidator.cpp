@@ -365,7 +365,7 @@ void PaintInvalidator::UpdateVisualRectIfNeeded(
     const PaintPropertyTreeBuilderContext* tree_builder_context,
     PaintInvalidatorContext& context) {
   context.old_visual_rect = object.VisualRect();
-  context.old_location = ObjectPaintInvalidator(object).LocationInBacking();
+  context.old_location = object.LocationInBacking();
 
 #if DCHECK_IS_ON()
   FindObjectVisualRectNeedingUpdateScope finder(
@@ -376,10 +376,8 @@ void PaintInvalidator::UpdateVisualRectIfNeeded(
       tree_builder_context->is_actually_needed;
 #endif
 
-  if (!context.NeedsVisualRectUpdate(object)) {
-    context.new_location = context.old_location;
+  if (!context.NeedsVisualRectUpdate(object))
     return;
-  }
 
   DCHECK(tree_builder_context);
   for (auto& fragment : tree_builder_context->fragments) {
@@ -396,21 +394,22 @@ void PaintInvalidator::UpdateVisualRect(const LayoutObject& object,
   //        object.PaintOffset());
 
   LayoutRect new_visual_rect = ComputeVisualRectInBacking(object, context);
+  LayoutPoint new_location;
   if (object.IsBoxModelObject()) {
-    context.new_location = ComputeLocationInBacking(object, context);
+    new_location = ComputeLocationInBacking(object, context);
     // Location of empty visual rect doesn't affect paint invalidation. Set it
     // to newLocation to avoid saving the previous location separately in
     // ObjectPaintInvalidator.
     if (new_visual_rect.IsEmpty())
-      new_visual_rect.SetLocation(context.new_location);
+      new_visual_rect.SetLocation(new_location);
   } else {
     // Use visual rect location for non-LayoutBoxModelObject because it suffices
     // to check whether a visual rect changes for layout caused invalidation.
-    context.new_location = new_visual_rect.Location();
+    new_location = new_visual_rect.Location();
   }
 
   object.GetMutableForPainting().SetVisualRect(new_visual_rect);
-  ObjectPaintInvalidator(object).SetLocationInBacking(context.new_location);
+  object.GetMutableForPainting().SetLocationInBacking(new_location);
 }
 
 void PaintInvalidator::InvalidatePaint(
@@ -527,7 +526,7 @@ void PaintInvalidator::InvalidatePaint(
         PaintInvalidatorContext::kSubtreeInvalidationChecking;
   }
 
-  if (context.old_location != context.new_location &&
+  if (context.old_location != object.LocationInBacking() &&
       !context.painting_layer->SubtreeIsInvisible()) {
     context.subtree_flags |=
         PaintInvalidatorContext::kSubtreeInvalidationChecking;

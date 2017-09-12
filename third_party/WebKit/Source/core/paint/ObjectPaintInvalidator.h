@@ -15,7 +15,6 @@ namespace blink {
 class DisplayItemClient;
 class LayoutBoxModelObject;
 class LayoutObject;
-class LayoutPoint;
 class LayoutRect;
 struct PaintInvalidatorContext;
 
@@ -24,8 +23,6 @@ class CORE_EXPORT ObjectPaintInvalidator {
 
  public:
   ObjectPaintInvalidator(const LayoutObject& object) : object_(object) {}
-
-  static void ObjectWillBeDestroyed(const LayoutObject&);
 
   // This calls paintingLayer() which walks up the tree.
   // If possible, use the faster
@@ -73,9 +70,6 @@ class CORE_EXPORT ObjectPaintInvalidator {
   void InvalidatePaintIncludingNonCompositingDescendants();
   void InvalidatePaintIncludingNonSelfPaintingLayerDescendants(
       const LayoutBoxModelObject& paint_invalidation_container);
-
-  LayoutPoint LocationInBacking() const;
-  void SetLocationInBacking(const LayoutPoint&);
 
  private:
   void InvalidatePaintIncludingNonSelfPaintingLayerDescendantsInternal(

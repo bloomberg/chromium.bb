@@ -117,7 +117,7 @@ PaintInvalidationReason BoxPaintInvalidator::ComputePaintInvalidationReason() {
   if (context_.old_visual_rect !=
           LayoutRect(context_.old_location, old_border_box_size) ||
       box_.VisualRect() !=
-          LayoutRect(context_.new_location, new_border_box_size)) {
+          LayoutRect(box_.LocationInBacking(), new_border_box_size)) {
     return PaintInvalidationReason::kGeometry;
   }
 
@@ -283,7 +283,7 @@ PaintInvalidationReason BoxPaintInvalidator::InvalidatePaint() {
           !RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
         IncrementallyInvalidatePaint(
             reason, LayoutRect(context_.old_location, box_.PreviousSize()),
-            LayoutRect(context_.new_location, box_.Size()));
+            LayoutRect(box_.LocationInBacking(), box_.Size()));
       }
     }
     if (should_invalidate) {

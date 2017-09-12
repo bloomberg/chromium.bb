@@ -9,7 +9,9 @@
 
 namespace blink {
 
-RarePaintData::RarePaintData() : unique_id_(NewUniqueObjectId()) {}
+RarePaintData::RarePaintData(const LayoutPoint& location_in_backing)
+    : unique_id_(NewUniqueObjectId()),
+      location_in_backing_(location_in_backing) {}
 
 RarePaintData::~RarePaintData() {}
 

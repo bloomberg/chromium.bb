@@ -1750,12 +1750,15 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                 DocumentLifecycle::kInPrePaint);
       layout_object_.paint_offset_ = p;
     }
-    void SetHasPreviousLocationInBacking(bool b) {
-      layout_object_.bitfields_.SetHasPreviousLocationInBacking(b);
+    void SetLocationInBacking(const LayoutPoint& p) {
+      if (layout_object_.GetRarePaintData() ||
+          p != layout_object_.VisualRect().Location())
+        layout_object_.EnsureRarePaintData().SetLocationInBacking(p);
     }
-    void SetHasPreviousSelectionVisualRect(bool b) {
-      layout_object_.bitfields_.SetHasPreviousSelectionVisualRect(b);
+    void SetSelectionVisualRect(const LayoutRect& r) {
+      layout_object_.EnsureRarePaintData().SetSelectionVisualRect(r);
     }
+
     void SetPreviousBackgroundObscured(bool b) {
       layout_object_.SetPreviousBackgroundObscured(b);
     }
@@ -1866,15 +1869,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return bitfields_.IsBackgroundAttachmentFixedObject();
   }
 
-  // Paint invalidators will access the internal global map storing the data
-  // only when the flag is set, to avoid unnecessary map lookups.
-  bool HasLocationInBacking() const {
-    return bitfields_.HasPreviousLocationInBacking();
-  }
-  bool HasSelectionVisualRect() const {
-    return bitfields_.HasPreviousSelectionVisualRect();
-  }
-
   bool BackgroundChangedSinceLastPaintInvalidation() const {
     return bitfields_.BackgroundChangedSinceLastPaintInvalidation();
   }
@@ -1887,6 +1881,15 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
   bool PreviousOutlineMayBeAffectedByDescendants() const {
     return bitfields_.PreviousOutlineMayBeAffectedByDescendants();
+  }
+
+  LayoutPoint LocationInBacking() const {
+    return rare_paint_data_ ? rare_paint_data_->LocationInBacking()
+                            : VisualRect().Location();
+  }
+  LayoutRect SelectionVisualRect() const {
+    return rare_paint_data_ ? rare_paint_data_->SelectionVisualRect()
+                            : LayoutRect();
   }
 
  protected:
@@ -2228,8 +2231,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           is_scroll_anchor_object_(false),
           scroll_anchor_disabling_style_changed_(false),
           has_box_decoration_background_(false),
-          has_previous_location_in_backing_(false),
-          has_previous_selection_visual_rect_(false),
           needs_paint_property_update_(true),
           subtree_needs_paint_property_update_(true),
           descendant_needs_paint_property_update_(true),
@@ -2407,11 +2408,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     ADD_BOOLEAN_BITFIELD(has_box_decoration_background_,
                          HasBoxDecorationBackground);
 
-    ADD_BOOLEAN_BITFIELD(has_previous_location_in_backing_,
-                         HasPreviousLocationInBacking);
-    ADD_BOOLEAN_BITFIELD(has_previous_selection_visual_rect_,
-                         HasPreviousSelectionVisualRect);
-
     // Whether the paint properties need to be updated. For more details, see
     // LayoutObject::needsPaintPropertyUpdate().
     ADD_BOOLEAN_BITFIELD(needs_paint_property_update_,
@@ -2440,7 +2436,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
    protected:
     // Use protected to avoid warning about unused variable.
-    unsigned unused_bits_ : 3;
+    unsigned unused_bits_ : 5;
 
    private:
     // This is the cached 'position' value of this object

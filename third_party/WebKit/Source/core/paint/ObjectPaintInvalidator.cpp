@@ -19,45 +19,6 @@ namespace blink {
 
 static bool g_disable_paint_invalidation_state_asserts = false;
 
-typedef HashMap<const LayoutObject*, LayoutRect> SelectionVisualRectMap;
-static SelectionVisualRectMap& GetSelectionVisualRectMap() {
-  DEFINE_STATIC_LOCAL(SelectionVisualRectMap, map, ());
-  return map;
-}
-
-static void SetSelectionVisualRect(const LayoutObject& object,
-                                   const LayoutRect& rect) {
-  DCHECK(object.HasSelectionVisualRect() ==
-         GetSelectionVisualRectMap().Contains(&object));
-  if (rect.IsEmpty()) {
-    if (object.HasSelectionVisualRect()) {
-      GetSelectionVisualRectMap().erase(&object);
-      object.GetMutableForPainting().SetHasPreviousSelectionVisualRect(false);
-    }
-  } else {
-    GetSelectionVisualRectMap().Set(&object, rect);
-    object.GetMutableForPainting().SetHasPreviousSelectionVisualRect(true);
-  }
-}
-
-typedef HashMap<const LayoutObject*, LayoutPoint> LocationInBackingMap;
-static LocationInBackingMap& GetLocationInBackingMap() {
-  DEFINE_STATIC_LOCAL(LocationInBackingMap, map, ());
-  return map;
-}
-
-void ObjectPaintInvalidator::ObjectWillBeDestroyed(const LayoutObject& object) {
-  DCHECK(object.HasSelectionVisualRect() ==
-         GetSelectionVisualRectMap().Contains(&object));
-  if (object.HasSelectionVisualRect())
-    GetSelectionVisualRectMap().erase(&object);
-
-  DCHECK(object.HasLocationInBacking() ==
-         GetLocationInBackingMap().Contains(&object));
-  if (object.HasLocationInBacking())
-    GetLocationInBackingMap().erase(&object);
-}
-
 using LayoutObjectTraversalFunctor = std::function<void(const LayoutObject&)>;
 
 static void TraverseNonCompositingDescendantsInPaintOrder(
@@ -433,27 +394,6 @@ void ObjectPaintInvalidator::SlowSetPaintingLayerNeedsRepaint() {
     painting_layer->SetNeedsRepaint();
 }
 
-LayoutPoint ObjectPaintInvalidator::LocationInBacking() const {
-  DCHECK(object_.HasLocationInBacking() ==
-         GetLocationInBackingMap().Contains(&object_));
-  return object_.HasLocationInBacking() ? GetLocationInBackingMap().at(&object_)
-                                        : object_.VisualRect().Location();
-}
-
-void ObjectPaintInvalidator::SetLocationInBacking(const LayoutPoint& location) {
-  DCHECK(object_.HasLocationInBacking() ==
-         GetLocationInBackingMap().Contains(&object_));
-  if (location == object_.VisualRect().Location()) {
-    if (object_.HasLocationInBacking()) {
-      GetLocationInBackingMap().erase(&object_);
-      object_.GetMutableForPainting().SetHasPreviousLocationInBacking(false);
-    }
-  } else {
-    GetLocationInBackingMap().Set(&object_, location);
-    object_.GetMutableForPainting().SetHasPreviousLocationInBacking(true);
-  }
-}
-
 void ObjectPaintInvalidatorWithContext::FullyInvalidatePaint(
     PaintInvalidationReason reason,
     const LayoutRect& old_visual_rect,
@@ -576,7 +516,7 @@ ObjectPaintInvalidatorWithContext::ComputePaintInvalidationReason() {
   if (object_.VisualRect().Location() != context_.old_visual_rect.Location())
     return PaintInvalidationReason::kGeometry;
 
-  if (context_.new_location != context_.old_location)
+  if (object_.LocationInBacking() != context_.old_location)
     return PaintInvalidationReason::kGeometry;
 
   // Incremental invalidation is only applicable to LayoutBoxes. Return
@@ -604,12 +544,7 @@ void ObjectPaintInvalidatorWithContext::InvalidateSelectionIfNeeded(
   if (!full_invalidation && !object_.ShouldInvalidateSelection())
     return;
 
-  DCHECK(object_.HasSelectionVisualRect() ==
-         GetSelectionVisualRectMap().Contains(&object_));
-  LayoutRect old_selection_rect;
-  if (object_.HasSelectionVisualRect())
-    old_selection_rect = GetSelectionVisualRectMap().at(&object_);
-
+  LayoutRect old_selection_rect = object_.SelectionVisualRect();
   LayoutRect new_selection_rect;
 #if DCHECK_IS_ON()
   FindVisualRectNeedingUpdateScope finder(object_, context_, old_selection_rect,
@@ -622,7 +557,7 @@ void ObjectPaintInvalidatorWithContext::InvalidateSelectionIfNeeded(
     new_selection_rect = old_selection_rect;
   }
 
-  SetSelectionVisualRect(object_, new_selection_rect);
+  object_.GetMutableForPainting().SetSelectionVisualRect(new_selection_rect);
 
   if (!full_invalidation) {
     // TODO(crbug.com/732612): Implement partial raster invalidation for
