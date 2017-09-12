@@ -403,6 +403,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/firstrun/FirstRunChooserView.java",
   "java/src/org/chromium/chrome/browser/firstrun/LightweightFirstRunActivity.java",
   "java/src/org/chromium/chrome/browser/firstrun/FirstRunActivity.java",
+  "java/src/org/chromium/chrome/browser/firstrun/FirstRunActivityBase.java",
   "java/src/org/chromium/chrome/browser/firstrun/FirstRunFlowSequencer.java",
   "java/src/org/chromium/chrome/browser/firstrun/FirstRunPage.java",
   "java/src/org/chromium/chrome/browser/firstrun/FirstRunPageDelegate.java",

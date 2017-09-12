@@ -297,7 +297,6 @@ public abstract class FirstRunFlowSequencer  {
         Intent intent = new Intent();
         intent.setClassName(context, LightweightFirstRunActivity.class.getName());
         intent.putExtra(FirstRunActivity.EXTRA_COMING_FROM_CHROME_ICON, fromChromeIcon);
-        intent.putExtra(FirstRunActivity.EXTRA_START_LIGHTWEIGHT_FRE, true);
         return intent;
     }
 
@@ -369,8 +368,7 @@ public abstract class FirstRunFlowSequencer  {
             List<WeakReference<Activity>> activities = ApplicationStatus.getRunningActivities();
             for (WeakReference<Activity> weakActivity : activities) {
                 Activity activity = weakActivity.get();
-                if (activity instanceof FirstRunActivity
-                        && !(activity instanceof LightweightFirstRunActivity)) {
+                if (activity instanceof FirstRunActivity) {
                     isGenericFreActive = true;
                     break;
                 }
