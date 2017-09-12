@@ -122,9 +122,7 @@ TEST_F(SiteSettingsHelperTest, CheckExceptionOrder) {
                 CONTENT_SETTING_BLOCK);
   VerifySetting(exceptions, i++, star_google_com, star_google_com,
                 CONTENT_SETTING_ALLOW);
-  // The display name will always be percent-encoded.
-  VerifySetting(exceptions, i++, http_star, "http://%2A",
-                CONTENT_SETTING_BLOCK);
+  VerifySetting(exceptions, i++, http_star, "http://*", CONTENT_SETTING_BLOCK);
 }
 
 // Tests the following content setting sources: Chrome default, user-set global
