@@ -8,6 +8,7 @@
 import json
 import logging
 import math
+import requests
 import subprocess
 import time
 import websocket
@@ -44,7 +45,10 @@ class TracingBackend(object):
   def Connect(self):
     """Connect to cast_shell."""
     assert not self._socket
-    url = 'ws://%s:%i/devtools/browser' % (self._device_ip, self._devtools_port)
+    # Get the secure browser debugging target.
+    r = requests.get(
+        'http://%s:%i/json/version' % (self._device_ip, self._devtools_port))
+    url = r.json()['webSocketDebuggerUrl']
     print('Connect to %s ...' % url)
     self._socket = websocket.create_connection(url, timeout=self._timeout)
     self._next_request_id = 0

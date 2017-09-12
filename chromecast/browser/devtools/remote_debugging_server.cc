@@ -174,6 +174,10 @@ void RemoteDebuggingServer::DisableWebContentsForDebugging(
   dev_tools_delegate->DisableWebContentsForDebugging(web_contents);
 
   if (is_started_ && !dev_tools_delegate->HasEnabledWebContents()) {
+    // TODO(seantopping): The debugging server goes down temporarily when there
+    // are no active apps. This can sometimes break in-progress traces. Find a
+    // fix for this.
+    LOG(INFO) << "Stopping Devtools server.";
     content::DevToolsAgentHost::StopRemoteDebuggingServer();
     is_started_ = false;
   }
