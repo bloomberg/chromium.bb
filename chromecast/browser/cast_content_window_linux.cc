@@ -21,7 +21,7 @@ namespace shell {
 
 // static
 std::unique_ptr<CastContentWindow> CastContentWindow::Create(
-    CastContentWindow::Delegate* delegate) {
+    CastContentWindow::Delegate* delegate, bool is_headless) {
   DCHECK(delegate);
   return base::WrapUnique(new CastContentWindowLinux());
 }

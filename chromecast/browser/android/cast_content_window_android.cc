@@ -18,23 +18,25 @@ namespace chromecast {
 namespace shell {
 
 namespace {
-base::android::ScopedJavaLocalRef<jobject> CreateJavaWindow(
-    jlong nativeWindow) {
+base::android::ScopedJavaLocalRef<jobject> CreateJavaWindow(jlong nativeWindow,
+                                                            bool isHeadless) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_CastContentWindowAndroid_create(env, nativeWindow);
+  return Java_CastContentWindowAndroid_create(env, nativeWindow, isHeadless);
 }
 }  // namespace
 
 // static
 std::unique_ptr<CastContentWindow> CastContentWindow::Create(
-    CastContentWindow::Delegate* delegate) {
-  return base::WrapUnique(new CastContentWindowAndroid(delegate));
+    CastContentWindow::Delegate* delegate,
+    bool isHeadless) {
+  return base::WrapUnique(new CastContentWindowAndroid(delegate, isHeadless));
 }
 
 CastContentWindowAndroid::CastContentWindowAndroid(
-    CastContentWindow::Delegate* delegate)
+    CastContentWindow::Delegate* delegate,
+    bool isHeadless)
     : delegate_(delegate),
-      java_window_(CreateJavaWindow(reinterpret_cast<jlong>(this))) {
+      java_window_(CreateJavaWindow(reinterpret_cast<jlong>(this), isHeadless)) {
   DCHECK(delegate_);
 }
 

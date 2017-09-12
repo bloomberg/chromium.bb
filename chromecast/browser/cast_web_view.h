@@ -48,7 +48,8 @@ class CastWebView : content::WebContentsObserver, content::WebContentsDelegate {
               content::BrowserContext* browser_context,
               scoped_refptr<content::SiteInstance> site_instance,
               bool transparent,
-              bool allow_media_access);
+              bool allow_media_access,
+              bool is_headless);
   ~CastWebView() override;
 
   shell::CastContentWindow* window() const { return window_.get(); }

@@ -39,7 +39,8 @@ class CastWebContentsManager {
       CastWebView::Delegate* delegate,
       scoped_refptr<content::SiteInstance> site_instance,
       bool transparent,
-      bool allow_media_access);
+      bool allow_media_access,
+      bool is_headless);
 
   // Take ownership of |web_contents| and delete after |time_delta|, or sooner
   // if necessary.
