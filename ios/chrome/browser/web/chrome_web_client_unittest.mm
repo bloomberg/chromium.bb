@@ -116,8 +116,7 @@ TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScriptCredentialManager) {
                                 web_view, @"typeof navigator.credentials"));
 
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      credential_manager::features::kCredentialManager);
+  feature_list.InitAndEnableFeature(features::kCredentialManager);
   script = web_client.Get()->GetEarlyPageScript(browser_state());
   web::ExecuteJavaScript(web_view, script);
   EXPECT_NSEQ(@"object", web::ExecuteJavaScript(

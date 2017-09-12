@@ -16,8 +16,6 @@ using password_manager::CredentialInfo;
 using password_manager::CredentialMediationRequirement;
 using password_manager::CredentialType;
 
-namespace credential_manager {
-
 namespace {
 
 constexpr char kTestWebOrigin[] = "https://example.com/";
@@ -241,5 +239,3 @@ TEST(CredentialManagerUtilTest, ParseFederations) {
   json.SetString(kCredentialRequestProvidersKey, kTestWebOrigin);
   EXPECT_FALSE(ParseFederations(json, &federations));
 }
-
-}  // namespace credential_manager

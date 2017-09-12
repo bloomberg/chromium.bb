@@ -12,8 +12,6 @@ namespace web {
 class WebState;
 }
 
-namespace credential_manager {
-
 // Keys for obtaining common Credential's fields from DictionaryValue
 // representing the Credential. Keys below correspond to JavaScript
 // Credential object fields as follows:
@@ -89,7 +87,5 @@ bool ParseCredentialDictionary(const base::DictionaryValue& json,
 // Checks if |web_state|'s content is a secure HTML. This is done in order to
 // ignore API calls from insecure context.
 bool WebStateContentIsSecureHtml(const web::WebState* web_state);
-
-}  // namespace credential_manager
 
 #endif  // IOS_CHROME_BROWSER_PASSWORDS_CREDENTIAL_MANAGER_UTIL_H_

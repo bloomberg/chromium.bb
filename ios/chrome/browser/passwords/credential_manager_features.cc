@@ -4,13 +4,9 @@
 
 #include "ios/chrome/browser/passwords/credential_manager_features.h"
 
-namespace credential_manager {
-
 namespace features {
 
 const base::Feature kCredentialManager{"CredentialManager",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
-
-}  // namespace credential_manager

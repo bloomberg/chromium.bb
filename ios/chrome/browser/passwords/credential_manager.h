@@ -11,8 +11,6 @@ namespace web {
 class WebState;
 }
 
-namespace credential_manager {
-
 // Owned by PasswordController. It is responsible for registering and handling
 // callbacks for JS methods |navigator.credentials.*|.
 // TODO(crbug.com/435047): Implement JSCredentialManager responsible for
@@ -55,7 +53,5 @@ class CredentialManager {
 
   DISALLOW_COPY_AND_ASSIGN(CredentialManager);
 };
-
-}  // namespace credential_manager
 
 #endif  // IOS_CHROME_BROWSER_PASSWORDS_CREDENTIAL_MANAGER_H_

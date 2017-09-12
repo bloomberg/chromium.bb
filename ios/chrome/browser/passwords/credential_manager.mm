@@ -19,8 +19,6 @@ using password_manager::CredentialInfo;
 using password_manager::CredentialType;
 using password_manager::CredentialMediationRequirement;
 
-namespace credential_manager {
-
 namespace {
 
 // Script command prefix for CM API calls. Possible commands to be sent from
@@ -58,7 +56,7 @@ bool CredentialManager::HandleScriptCommand(const base::DictionaryValue& json,
   int promise_id = static_cast<int>(promise_id_double);
 
   if (!WebStateContentIsSecureHtml(web_state_)) {
-    RejectPromiseWithInvalidStateError(
+    RejectCredentialPromiseWithInvalidStateError(
         web_state_, promise_id,
         base::ASCIIToUTF16(
             "Credential Manager API called from insecure context"));
@@ -74,7 +72,7 @@ bool CredentialManager::HandleScriptCommand(const base::DictionaryValue& json,
   if (command == "credentials.get") {
     CredentialMediationRequirement mediation;
     if (!ParseMediationRequirement(json, &mediation)) {
-      RejectPromiseWithTypeError(
+      RejectCredentialPromiseWithTypeError(
           web_state_, promise_id,
           base::ASCIIToUTF16(
               "CredentialRequestOptions: Invalid 'mediation' value."));
@@ -82,7 +80,7 @@ bool CredentialManager::HandleScriptCommand(const base::DictionaryValue& json,
     }
     bool include_passwords;
     if (!ParseIncludePasswords(json, &include_passwords)) {
-      RejectPromiseWithTypeError(
+      RejectCredentialPromiseWithTypeError(
           web_state_, promise_id,
           base::ASCIIToUTF16(
               "CredentialRequestOptions: Invalid 'password' value."));
@@ -90,7 +88,7 @@ bool CredentialManager::HandleScriptCommand(const base::DictionaryValue& json,
     }
     std::vector<GURL> federations;
     if (!ParseFederations(json, &federations)) {
-      RejectPromiseWithTypeError(
+      RejectCredentialPromiseWithTypeError(
           web_state_, promise_id,
           base::ASCIIToUTF16(
               "CredentialRequestOptions: invalid 'providers' value."));
@@ -106,7 +104,7 @@ bool CredentialManager::HandleScriptCommand(const base::DictionaryValue& json,
     if (!ParseCredentialDictionary(json, &credential)) {
       // TODO(crbug.com/435047): Refactor ParseCredentialDictionary method to
       // provide more meaningful error message.
-      RejectPromiseWithTypeError(
+      RejectCredentialPromiseWithTypeError(
           web_state_, promise_id,
           base::ASCIIToUTF16("Invalid Credential object."));
       return false;
@@ -131,36 +129,34 @@ void CredentialManager::SendGetResponse(
     const base::Optional<CredentialInfo>& info) {
   switch (error) {
     case CredentialManagerError::SUCCESS:
-      ResolvePromiseWithCredentialInfo(web_state_, promise_id, info);
+      ResolveCredentialPromiseWithCredentialInfo(web_state_, promise_id, info);
       break;
     case CredentialManagerError::DISABLED:
-      RejectPromiseWithInvalidStateError(
+      RejectCredentialPromiseWithInvalidStateError(
           web_state_, promise_id,
           base::ASCIIToUTF16("Credential Manager is disabled."));
       break;
     case CredentialManagerError::PENDINGREQUEST:
-      RejectPromiseWithInvalidStateError(
+      RejectCredentialPromiseWithInvalidStateError(
           web_state_, promise_id,
           base::ASCIIToUTF16("Pending 'get()' request."));
       break;
     case CredentialManagerError::PASSWORDSTOREUNAVAILABLE:
-      RejectPromiseWithNotSupportedError(
+      RejectCredentialPromiseWithNotSupportedError(
           web_state_, promise_id,
           base::ASCIIToUTF16("Password store is unavailable."));
       break;
     case CredentialManagerError::UNKNOWN:
-      RejectPromiseWithNotSupportedError(
+      RejectCredentialPromiseWithNotSupportedError(
           web_state_, promise_id,
           base::ASCIIToUTF16("Unknown error has occurred."));
   }
 }
 
 void CredentialManager::SendPreventSilentAccessResponse(int promise_id) {
-  ResolvePromiseWithUndefined(web_state_, promise_id);
+  ResolveCredentialPromiseWithUndefined(web_state_, promise_id);
 }
 
 void CredentialManager::SendStoreResponse(int promise_id) {
-  ResolvePromiseWithUndefined(web_state_, promise_id);
+  ResolveCredentialPromiseWithUndefined(web_state_, promise_id);
 }
-
-}  // namespace credential_manager

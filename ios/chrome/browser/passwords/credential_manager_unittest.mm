@@ -37,8 +37,6 @@ using password_manager::TestPasswordStore;
 using testing::_;
 using url::Origin;
 
-namespace credential_manager {
-
 namespace {
 
 // Test hostname for cert verification.
@@ -798,5 +796,3 @@ TEST_F(WebStateContentIsSecureHtmlTest, ContentMustBeHtml) {
   // return false.
   EXPECT_FALSE(WebStateContentIsSecureHtml(web_state()));
 }
-
-}  // namespace credential_manager

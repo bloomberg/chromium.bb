@@ -12,12 +12,10 @@ namespace web {
 class WebState;
 }
 
-namespace credential_manager {
-
 // Resolves the Promise identified by |promise_id| with either Credential or
 // undefined. |promise_id| is unique number of a pending promise resolver stored
 // in |__gCrWeb.credentialManager|.
-void ResolvePromiseWithCredentialInfo(
+void ResolveCredentialPromiseWithCredentialInfo(
     web::WebState* web_state,
     int promise_id,
     const base::Optional<password_manager::CredentialInfo>& info);
@@ -25,32 +23,33 @@ void ResolvePromiseWithCredentialInfo(
 // Resolves the Promise identified by |promise_id| with undefined. |promise_id|
 // is unique number of a pending promise resolver stored in
 // |__gCrWeb.credentialManager|.
-void ResolvePromiseWithUndefined(web::WebState* web_state, int promise_id);
+void ResolveCredentialPromiseWithUndefined(web::WebState* web_state,
+                                           int promise_id);
 
 // Rejects the Promise identified by |promise_id| with TypeError. This may be a
 // result of failed parsing of arguments passed to exposed API method.
 // |promise_id| is unique number of a pending promise rejecter stored in
 // |__gCrWeb.credentialManager|.
-void RejectPromiseWithTypeError(web::WebState* web_state,
-                                int promise_id,
-                                const base::StringPiece16& message);
+void RejectCredentialPromiseWithTypeError(web::WebState* web_state,
+                                          int promise_id,
+                                          const base::StringPiece16& message);
 
 // Rejects the Promise identified by |promise_id| with InvalidStateError. This
 // should happen when credential manager is disabled or there is a pending 'get'
 // request. |promise_id| is unique number of a pending promise rejecter stored
 // in |__gCrWeb.credentialManager|.
-void RejectPromiseWithInvalidStateError(web::WebState* web_state,
-                                        int promise_id,
-                                        const base::StringPiece16& message);
+void RejectCredentialPromiseWithInvalidStateError(
+    web::WebState* web_state,
+    int promise_id,
+    const base::StringPiece16& message);
 
 // Rejects the Promise identified by |promise_id| with NotSupportedError. This
 // should happen when password store is unavailable or an unknown error occurs.
 // |promise_id| is unique number of a pending promise rejecter stored in
 // |__gCrWeb.credentialManager|.
-void RejectPromiseWithNotSupportedError(web::WebState* web_state,
-                                        int promise_id,
-                                        const base::StringPiece16& message);
-
-}  // namespace credential_manager
+void RejectCredentialPromiseWithNotSupportedError(
+    web::WebState* web_state,
+    int promise_id,
+    const base::StringPiece16& message);
 
 #endif  // IOS_CHROME_BROWSER_PASSWORDS_JS_CREDENTIAL_MANAGER_H_
