@@ -95,13 +95,9 @@ class BaseAudioContextTestPlatform : public TestingPlatformSupport {
 
 }  // anonymous namespace
 
-#if defined(OS_ANDROID)
-// Often times out on Android: https://crbug.com/752511.
+// Often times out on all platforms: https://crbug.com/763550.
 #define MAYBE_TEST_P(test_case_name, test_name) \
   TEST_P(test_case_name, DISABLED_##test_name)
-#else
-#define MAYBE_TEST_P TEST_P
-#endif
 
 class BaseAudioContextAutoplayTest
     : public ::testing::TestWithParam<AutoplayPolicy::Type> {
