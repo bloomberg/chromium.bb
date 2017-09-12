@@ -45,11 +45,16 @@ bool StructTraits<ui::mojom::ImeTextSpanDataView, ui::ImeTextSpan>::Read(
     ui::ImeTextSpan* out) {
   if (data.is_null())
     return false;
+  if (!data.ReadType(&out->type))
+    return false;
   out->start_offset = data.start_offset();
   out->end_offset = data.end_offset();
   out->underline_color = data.underline_color();
   out->thick = data.thick();
   out->background_color = data.background_color();
+  out->suggestion_highlight_color = data.suggestion_highlight_color();
+  if (!data.ReadSuggestions(&out->suggestions))
+    return false;
   return true;
 }
 
@@ -59,6 +64,38 @@ bool StructTraits<ui::mojom::CompositionTextDataView, ui::CompositionText>::
   return !data.is_null() && data.ReadText(&out->text) &&
          data.ReadImeTextSpans(&out->ime_text_spans) &&
          data.ReadSelection(&out->selection);
+}
+
+// static
+ui::mojom::ImeTextSpanType
+EnumTraits<ui::mojom::ImeTextSpanType, ui::ImeTextSpan::Type>::ToMojom(
+    ui::ImeTextSpan::Type ime_text_span_type) {
+  switch (ime_text_span_type) {
+    case ui::ImeTextSpan::Type::kComposition:
+      return ui::mojom::ImeTextSpanType::kComposition;
+    case ui::ImeTextSpan::Type::kSuggestion:
+      return ui::mojom::ImeTextSpanType::kSuggestion;
+  }
+
+  NOTREACHED();
+  return ui::mojom::ImeTextSpanType::kComposition;
+}
+
+// static
+bool EnumTraits<ui::mojom::ImeTextSpanType, ui::ImeTextSpan::Type>::FromMojom(
+    ui::mojom::ImeTextSpanType type,
+    ui::ImeTextSpan::Type* out) {
+  switch (type) {
+    case ui::mojom::ImeTextSpanType::kComposition:
+      *out = ui::ImeTextSpan::Type::kComposition;
+      return true;
+    case ui::mojom::ImeTextSpanType::kSuggestion:
+      *out = ui::ImeTextSpan::Type::kSuggestion;
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
 }
 
 // static

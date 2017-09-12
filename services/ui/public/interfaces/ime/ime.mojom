@@ -56,14 +56,23 @@ struct CandidateWindowEntry {
   string description_body;
 };
 
+// See comments for ui::ImeTextSpan::Type for more details.
+enum ImeTextSpanType {
+  kComposition,
+  kSuggestion,
+};
+
 // Represents an underlined segment of text currently composed by IME.
 // Corresponds to ui::ImeTextSpan.
 struct ImeTextSpan {
+  ImeTextSpanType type;
   uint32 start_offset;
   uint32 end_offset;
-  bool thick;
   uint32 underline_color;
+  bool thick;
   uint32 background_color;
+  uint32 suggestion_highlight_color;
+  array<string> suggestions;
 };
 
 // Represents a text currently being composed by IME. Corresponds to

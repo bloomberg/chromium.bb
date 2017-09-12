@@ -1490,7 +1490,7 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/infobar/PermissionUpdateInfobarTest.java",
   "javatests/src/org/chromium/chrome/browser/infobar/SearchGeolocationDisclosureInfoBarTest.java",
   "javatests/src/org/chromium/chrome/browser/input/SelectPopupOtherContentViewTest.java",
-  "javatests/src/org/chromium/chrome/browser/input/TextSuggestionMenuTest.java",
+  "javatests/src/org/chromium/chrome/browser/input/SpellCheckMenuTest.java",
   "javatests/src/org/chromium/chrome/browser/instantapps/InstantAppsHandlerTest.java",
   "javatests/src/org/chromium/chrome/browser/invalidation/ChromeBrowserSyncAdapterTest.java",
   "javatests/src/org/chromium/chrome/browser/invalidation/DelayedInvalidationsControllerTest.java",

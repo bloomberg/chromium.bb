@@ -975,7 +975,7 @@ bool RenderWidgetHostViewAndroid::OnTouchEvent(
   // Receiving any other touch event before the double-tap timeout expires
   // cancels opening the spellcheck menu.
   if (text_suggestion_host_)
-    text_suggestion_host_->StopSpellCheckMenuTimer();
+    text_suggestion_host_->StopSuggestionMenuTimer();
 
   // If a browser-based widget consumes the touch event, it's critical that
   // touch event interception be disabled. This avoids issues with

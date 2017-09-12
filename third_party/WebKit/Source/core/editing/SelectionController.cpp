@@ -400,7 +400,7 @@ bool SelectionController::HandleSingleClick(
   // makes the IsValidFor() check fail.
   if (has_editable_style && event.Event().FromTouch() &&
       position_to_use.IsValidFor(*frame_->GetDocument())) {
-    frame_->GetTextSuggestionController().HandlePotentialMisspelledWordTap(
+    frame_->GetTextSuggestionController().HandlePotentialSuggestionTap(
         position_to_use.GetPosition());
   }
 

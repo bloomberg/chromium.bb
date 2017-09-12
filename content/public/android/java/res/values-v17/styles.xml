@@ -16,6 +16,9 @@
     <style name="SelectActionMenuWebSearch">
         <item name="android:icon">@drawable/ic_search</item>
     </style>
+    <style name="SuggestionPrefixOrSuffix">
+      <item name="android:textColor">?android:attr/textColorSecondary</item>
+    </style>
     <style name="TextSuggestionButton" parent="RobotoMediumStyle">
         <item name="android:drawablePadding">8dp</item>
         <!-- v21 uses sans-serif-medium -->
