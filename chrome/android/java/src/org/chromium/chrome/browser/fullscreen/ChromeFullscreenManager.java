@@ -5,13 +5,12 @@
 package org.chromium.chrome.browser.fullscreen;
 
 import android.app.Activity;
-import android.content.res.Resources;
+import android.support.annotation.Nullable;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
-import android.view.Window;
 import android.widget.FrameLayout;
 
 import org.chromium.base.ActivityState;
@@ -47,7 +46,6 @@ public class ChromeFullscreenManager
     private static final long ACTIVITY_RETURN_SHOW_REQUEST_DELAY_MS = 100;
 
     private final Activity mActivity;
-    private final Window mWindow;
     private final BrowserStateBrowserControlsVisibilityDelegate mBrowserVisibilityDelegate;
     private final boolean mIsBottomControls;
     private final boolean mExitFullscreenOnStop;
@@ -55,7 +53,6 @@ public class ChromeFullscreenManager
     private ControlContainer mControlContainer;
     private int mTopControlContainerHeight;
     private int mBottomControlContainerHeight;
-    private TabModelSelector mTabModelSelector;
     private TabModelSelectorTabModelObserver mTabModelObserver;
 
     private float mRendererTopControlOffset = Float.NaN;
@@ -139,7 +136,6 @@ public class ChromeFullscreenManager
         super(activity.getWindow());
 
         mActivity = activity;
-        mWindow = activity.getWindow();
         mIsBottomControls = isBottomControls;
         mExitFullscreenOnStop = exitFullscreenOnStop;
         mBrowserVisibilityDelegate = new BrowserStateBrowserControlsVisibilityDelegate(
@@ -162,52 +158,47 @@ public class ChromeFullscreenManager
      * @param modelSelector The tab model selector that will be monitored for tab changes.
      * @param resControlContainerHeight The dimension resource ID for the control container height.
      */
-    public void initialize(ControlContainer controlContainer, TabModelSelector modelSelector,
+    public void initialize(ControlContainer controlContainer, final TabModelSelector modelSelector,
             int resControlContainerHeight) {
         ApplicationStatus.registerStateListenerForActivity(this, mActivity);
         ((BaseChromiumApplication) mActivity.getApplication())
                 .registerWindowFocusChangedListener(this);
 
-        mTabModelSelector = modelSelector;
-        mTabModelObserver = new TabModelSelectorTabModelObserver(mTabModelSelector) {
+        mTabModelObserver = new TabModelSelectorTabModelObserver(modelSelector) {
             @Override
             public void tabClosureCommitted(Tab tab) {
-                setTab(mTabModelSelector.getCurrentTab());
+                setTab(modelSelector.getCurrentTab());
             }
 
             @Override
             public void allTabsClosureCommitted() {
-                setTab(mTabModelSelector.getCurrentTab());
+                setTab(modelSelector.getCurrentTab());
             }
 
             @Override
             public void tabRemoved(Tab tab) {
-                setTab(mTabModelSelector.getCurrentTab());
+                setTab(modelSelector.getCurrentTab());
             }
 
             @Override
             public void didSelectTab(Tab tab, TabSelectionType type, int lastId) {
-                setTab(mTabModelSelector.getCurrentTab());
+                setTab(modelSelector.getCurrentTab());
             }
 
             @Override
             public void didCloseTab(int tabId, boolean incognito) {
-                setTab(mTabModelSelector.getCurrentTab());
+                setTab(modelSelector.getCurrentTab());
             }
         };
 
         assert controlContainer != null;
         mControlContainer = controlContainer;
-        Resources resources = mWindow.getContext().getResources();
 
-        int controlContainerHeight = resources.getDimensionPixelSize(resControlContainerHeight);
-        if (mIsBottomControls) {
-            mTopControlContainerHeight = 0;
-            mBottomControlContainerHeight = controlContainerHeight;
-        } else {
-            mTopControlContainerHeight = controlContainerHeight;
-            mBottomControlContainerHeight = 0;
-        }
+        int controlContainerHeight =
+                mActivity.getResources().getDimensionPixelSize(resControlContainerHeight);
+
+        mTopControlContainerHeight =    mIsBottomControls ? 0 : controlContainerHeight;
+        mBottomControlContainerHeight = mIsBottomControls ? controlContainerHeight : 0;
 
         mRendererTopContentOffset = mTopControlContainerHeight;
         updateControlOffset();
@@ -227,7 +218,7 @@ public class ChromeFullscreenManager
     }
 
     @Override
-    public void setTab(Tab tab) {
+    public void setTab(@Nullable Tab tab) {
         Tab previousTab = getTab();
         super.setTab(tab);
         if (tab != null && previousTab != getTab()) {
@@ -254,7 +245,7 @@ public class ChromeFullscreenManager
             }, ACTIVITY_RETURN_SHOW_REQUEST_DELAY_MS);
         } else if (newState == ActivityState.DESTROYED) {
             ApplicationStatus.unregisterActivityStateListener(this);
-            ((BaseChromiumApplication) mWindow.getContext().getApplicationContext())
+            ((BaseChromiumApplication) mActivity.getApplicationContext())
                     .unregisterWindowFocusChangedListener(this);
 
             mTabModelObserver.destroy();
