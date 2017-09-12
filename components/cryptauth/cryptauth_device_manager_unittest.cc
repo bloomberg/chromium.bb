@@ -53,7 +53,7 @@ const bool kStoredMobileHotspotSupported = true;
 
 // ExternalDeviceInfo fields for the synced unlock key.
 const char kPublicKey1[] = "GOOG";
-const char kDeviceName1[] = "Nexus 5";
+const char kDeviceName1[] = "Pixel XL";
 const char kBluetoothAddress1[] = "aa:bb:cc:ee:dd:ff";
 const bool kUnlockKey1 = true;
 const bool kUnlockable1 = false;
@@ -64,6 +64,8 @@ const int64_t kBeaconSeed1EndTime = 123457;
 const char kBeaconSeed2Data[] = "beaconSeed2Data";
 const int64_t kBeaconSeed2StartTime = 234567;
 const int64_t kBeaconSeed2EndTime = 234568;
+const bool kArcPlusPlus1 = true;
+const bool kPixelPhone1 = true;
 
 // ExternalDeviceInfo fields for a non-synced unlockable device.
 const char kPublicKey2[] = "MSFT";
@@ -77,6 +79,8 @@ const int64_t kBeaconSeed3EndTime = 123457;
 const char kBeaconSeed4Data[] = "beaconSeed4Data";
 const int64_t kBeaconSeed4StartTime = 234567;
 const int64_t kBeaconSeed4EndTime = 234568;
+const bool kArcPlusPlus2 = false;
+const bool kPixelPhone2 = false;
 
 // Validates that |devices| is equal to |expected_devices|.
 void ExpectSyncedDevicesAreEqual(
@@ -351,6 +355,8 @@ class CryptAuthDeviceManagerTest
     seed2->set_data(kBeaconSeed2Data);
     seed2->set_start_time_millis(kBeaconSeed2StartTime);
     seed2->set_end_time_millis(kBeaconSeed2EndTime);
+    unlock_key.set_arc_plus_plus(kArcPlusPlus1);
+    unlock_key.set_pixel_phone(kPixelPhone1);
     devices_in_response_.push_back(unlock_key);
 
     ExternalDeviceInfo unlockable_device;
@@ -367,6 +373,8 @@ class CryptAuthDeviceManagerTest
     seed4->set_data(kBeaconSeed4Data);
     seed4->set_start_time_millis(kBeaconSeed4StartTime);
     seed4->set_end_time_millis(kBeaconSeed4EndTime);
+    unlockable_device.set_arc_plus_plus(kArcPlusPlus2);
+    unlockable_device.set_pixel_phone(kPixelPhone2);
     devices_in_response_.push_back(unlockable_device);
   }
 

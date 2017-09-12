@@ -81,6 +81,12 @@ message ExternalDeviceInfo {
 
   // A list of seeds for EID BLE advertisements targeting this device.
   repeated BeaconSeed beacon_seeds = 9;
+
+  // Whether this device is an ARC++ device enrolled via gmscore.
+  optional bool arc_plus_plus = 10 [default = false];
+
+  // Whether this is a "Pixel Experience" phone.
+  optional bool pixel_phone = 11 [default = false];
 }
 
 // Determine if the calling device is allowed to promote the SmartLock

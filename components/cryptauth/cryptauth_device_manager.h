@@ -110,9 +110,13 @@ class CryptAuthDeviceManager : public SyncScheduler::Delegate,
 
   // Returns a list of remote devices that can unlock the user's other devices.
   virtual std::vector<ExternalDeviceInfo> GetUnlockKeys() const;
+  // Like GetUnlockKeys(), but only returns Pixel devices.
+  virtual std::vector<ExternalDeviceInfo> GetPixelUnlockKeys() const;
 
   // Returns a list of remote devices that can host tether hotspots.
   virtual std::vector<ExternalDeviceInfo> GetTetherHosts() const;
+  // Like GetTetherHosts(), but only returns Pixel devices.
+  virtual std::vector<ExternalDeviceInfo> GetPixelTetherHosts() const;
 
  protected:
   // Empty constructor, to be used by tests to mock the device manager. Do not
