@@ -25,6 +25,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/devtools_external_agent_proxy_delegate.h"
 
 namespace content {
 
@@ -279,6 +280,12 @@ void DevToolsAgentHostImpl::ForceDetachAllClients(bool replaced) {
     InnerDetachClient(client);
     client->AgentHostClosed(this, replaced);
   }
+}
+
+void DevToolsAgentHostImpl::ForceDetachSession(DevToolsSession* session) {
+  DevToolsAgentHostClient* client = session->client();
+  InnerDetachClient(client);
+  client->AgentHostClosed(this, false);
 }
 
 void DevToolsAgentHostImpl::InspectElement(

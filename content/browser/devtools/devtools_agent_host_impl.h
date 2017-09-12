@@ -61,6 +61,7 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
 
   void NotifyCreated();
   void ForceDetachAllClients(bool replaced);
+  void ForceDetachSession(DevToolsSession* session);
   DevToolsIOContext* GetIOContext() { return &io_context_; }
 
   base::flat_set<DevToolsSession*>& sessions() { return sessions_; }
