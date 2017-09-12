@@ -14,8 +14,8 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
-#include "base/task_runner_util.h"
-#include "base/threading/worker_pool.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
 #include "crypto/nss_crypto_module_delegate.h"
 #include "net/ssl/ssl_cert_request_info.h"
@@ -64,18 +64,13 @@ void ClientCertStoreChromeOS::GotAdditionalCerts(
   scoped_refptr<crypto::CryptoModuleBlockingPasswordDelegate> password_delegate;
   if (!password_delegate_factory_.is_null())
     password_delegate = password_delegate_factory_.Run(request->host_and_port);
-  if (base::PostTaskAndReplyWithResult(
-          base::WorkerPool::GetTaskRunner(true /* task_is_slow */).get(),
-          FROM_HERE,
-          base::Bind(&ClientCertStoreChromeOS::GetAndFilterCertsOnWorkerThread,
-                     base::Unretained(this), password_delegate,
-                     base::Unretained(request),
-                     base::Passed(&additional_certs)),
-          callback)) {
-    return;
-  }
-  // If the task could not be posted, behave as if there were no certificates.
-  callback.Run(net::ClientCertIdentityList());
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::Bind(&ClientCertStoreChromeOS::GetAndFilterCertsOnWorkerThread,
+                 base::Unretained(this), password_delegate,
+                 base::Unretained(request), base::Passed(&additional_certs)),
+      callback);
 }
 
 net::ClientCertIdentityList
@@ -84,6 +79,12 @@ ClientCertStoreChromeOS::GetAndFilterCertsOnWorkerThread(
         password_delegate,
     const net::SSLCertRequestInfo* request,
     net::ClientCertIdentityList additional_certs) {
+  // This method may acquire the NSS lock or reenter this code via extension
+  // hooks (such as smart card UI). To ensure threads are not starved or
+  // deadlocked, the base::ScopedBlockingCall below increments the thread pool
+  // capacity if this method takes too much time to run.
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+
   net::ClientCertIdentityList client_certs;
   net::ClientCertStoreNSS::GetPlatformCertsOnWorkerThread(
       std::move(password_delegate),
