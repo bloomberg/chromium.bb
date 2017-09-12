@@ -6,11 +6,11 @@
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_SYNTHETIC_GESTURE_CONTROLLER_H_
 
 #include <memory>
-#include <queue>
 #include <utility>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -105,7 +105,7 @@ class CONTENT_EXPORT SyntheticGestureController {
     SyntheticGesture::Result result_of_current_gesture_ =
         SyntheticGesture::GESTURE_RUNNING;
     std::vector<std::unique_ptr<SyntheticGesture>> gestures_;
-    std::queue<OnGestureCompleteCallback> callbacks_;
+    base::queue<OnGestureCompleteCallback> callbacks_;
 
     DISALLOW_COPY_AND_ASSIGN(GestureAndCallbackQueue);
   } pending_gesture_queue_;

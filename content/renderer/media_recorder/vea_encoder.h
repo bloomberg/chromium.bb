@@ -7,6 +7,7 @@
 
 #include <queue>
 
+#include "base/containers/queue.h"
 #include "content/renderer/media_recorder/video_track_recorder.h"
 #include "media/video/video_encode_accelerator.h"
 #include "ui/gfx/geometry/size.h"
@@ -73,7 +74,7 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
   std::vector<std::unique_ptr<base::SharedMemory>> output_buffers_;
 
   // Shared memory buffers for output with the VEA as FIFO.
-  std::queue<std::unique_ptr<base::SharedMemory>> input_buffers_;
+  base::queue<std::unique_ptr<base::SharedMemory>> input_buffers_;
 
   // Tracks error status.
   bool error_notified_;
@@ -88,7 +89,7 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
   gfx::Size vea_requested_input_coded_size_;
 
   // Frames and corresponding timestamps in encode as FIFO.
-  std::queue<VideoParamsAndTimestamp> frames_in_encode_;
+  base::queue<VideoParamsAndTimestamp> frames_in_encode_;
 
   // This callback can be exercised on any thread.
   const VideoTrackRecorder::OnErrorCB on_error_callback_;

@@ -8,11 +8,11 @@
 #include <stdint.h>
 
 #include <memory>
-#include <queue>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -104,7 +104,7 @@ class CONTENT_EXPORT PepperVpnProviderMessageFilter
   std::unique_ptr<ppapi::VpnProviderSharedBuffer> send_packet_buffer_;
   std::unique_ptr<ppapi::VpnProviderSharedBuffer> recv_packet_buffer_;
 
-  std::queue<std::vector<char>> received_packets_;
+  base::queue<std::vector<char>> received_packets_;
 
   base::WeakPtrFactory<PepperVpnProviderMessageFilter> weak_factory_;
 

@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/queue.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
@@ -232,7 +233,7 @@ class DelegatingURLLoaderClient final : public mojom::URLLoaderClient {
 
   base::Optional<std::pair<int, int>> worker_id_;
   std::string devtools_request_id_;
-  std::queue<base::Callback<void(const WorkerId&, const std::string&)>>
+  base::queue<base::Callback<void(const WorkerId&, const std::string&)>>
       devtools_callbacks;
   DISALLOW_COPY_AND_ASSIGN(DelegatingURLLoaderClient);
 };

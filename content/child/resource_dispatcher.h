@@ -9,11 +9,11 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <map>
 #include <memory>
 #include <string>
 
+#include "base/containers/circular_deque.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
@@ -170,7 +170,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   friend class URLResponseBodyConsumer;
   friend class ResourceDispatcherTest;
 
-  typedef std::deque<IPC::Message*> MessageQueue;
+  using MessageQueue = base::circular_deque<IPC::Message*>;
   struct PendingRequestInfo {
     PendingRequestInfo(std::unique_ptr<RequestPeer> peer,
                        ResourceType resource_type,

@@ -5,10 +5,10 @@
 #include "content/child/shared_memory_data_consumer_handle.h"
 
 #include <algorithm>
-#include <deque>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -244,7 +244,8 @@ class SharedMemoryDataConsumerHandle::Context final
   // |result_| stores the ultimate state of this handle if it has. Otherwise,
   // |Ok| is set.
   Result result_;
-  std::deque<std::unique_ptr<RequestPeer::ThreadSafeReceivedData>> queue_;
+  base::circular_deque<std::unique_ptr<RequestPeer::ThreadSafeReceivedData>>
+      queue_;
   size_t first_offset_;
   Client* client_;
   scoped_refptr<base::SingleThreadTaskRunner> notification_task_runner_;

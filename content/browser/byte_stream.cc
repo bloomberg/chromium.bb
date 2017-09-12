@@ -4,11 +4,11 @@
 
 #include "content/browser/byte_stream.h"
 
-#include <deque>
 #include <set>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/circular_deque.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -17,8 +17,8 @@
 namespace content {
 namespace {
 
-typedef std::deque<std::pair<scoped_refptr<net::IOBuffer>, size_t> >
-ContentVector;
+using ContentVector =
+    base::circular_deque<std::pair<scoped_refptr<net::IOBuffer>, size_t>>;
 
 class ByteStreamReaderImpl;
 

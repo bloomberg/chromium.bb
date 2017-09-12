@@ -8,10 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <deque>
 #include <list>
 #include <memory>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
@@ -195,7 +195,7 @@ class CONTENT_EXPORT LegacyTouchEventQueue : public TouchEventQueue {
   // uncancelable touchmoves which are still waiting for their acks back from
   // render. We do not put them back to the front the touch_event_queue any
   // more.
-  std::deque<uint32_t> ack_pending_async_touchmove_ids_;
+  base::circular_deque<uint32_t> ack_pending_async_touchmove_ids_;
 
   double last_sent_touch_timestamp_sec_;
 

@@ -5,10 +5,10 @@
 #include "content/browser/renderer_host/p2p/socket_host_udp.h"
 
 #include <stdint.h>
-#include <deque>
 #include <utility>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/sys_byteorder.h"
@@ -53,7 +53,7 @@ class FakeDatagramServerSocket : public net::DatagramServerSocket {
 
   // P2PSocketHostUdp destroys a socket on errors so sent packets
   // need to be stored outside of this object.
-  FakeDatagramServerSocket(std::deque<UDPPacket>* sent_packets,
+  FakeDatagramServerSocket(base::circular_deque<UDPPacket>* sent_packets,
                            std::vector<uint16_t>* used_ports)
       : sent_packets_(sent_packets),
         recv_address_(nullptr),
@@ -179,8 +179,8 @@ class FakeDatagramServerSocket : public net::DatagramServerSocket {
 
  private:
   net::IPEndPoint address_;
-  std::deque<UDPPacket>* sent_packets_;
-  std::deque<UDPPacket> incoming_packets_;
+  base::circular_deque<UDPPacket>* sent_packets_;
+  base::circular_deque<UDPPacket> incoming_packets_;
   net::NetLogWithSource net_log_;
 
   scoped_refptr<net::IOBuffer> recv_buffer_;
@@ -191,7 +191,7 @@ class FakeDatagramServerSocket : public net::DatagramServerSocket {
 };
 
 std::unique_ptr<net::DatagramServerSocket> CreateFakeDatagramServerSocket(
-    std::deque<FakeDatagramServerSocket::UDPPacket>* sent_packets,
+    base::circular_deque<FakeDatagramServerSocket::UDPPacket>* sent_packets,
     std::vector<uint16_t>* used_ports) {
   return base::MakeUnique<FakeDatagramServerSocket>(sent_packets, used_ports);
 }
@@ -227,7 +227,7 @@ class P2PSocketHostUdpTest : public testing::Test {
 
   P2PMessageThrottler throttler_;
   ScopedFakeClock fake_clock_;
-  std::deque<FakeDatagramServerSocket::UDPPacket> sent_packets_;
+  base::circular_deque<FakeDatagramServerSocket::UDPPacket> sent_packets_;
   FakeDatagramServerSocket* socket_;  // Owned by |socket_host_|.
   std::unique_ptr<P2PSocketHostUdp> socket_host_;
   MockIPCSender sender_;
@@ -494,7 +494,7 @@ TEST_F(P2PSocketHostUdpTest, MAYBE_ThrottlingStopsAtExpectedTimes) {
 TEST_F(P2PSocketHostUdpTest, PortRangeImplicitPort) {
   const uint16_t min_port = 10000;
   const uint16_t max_port = 10001;
-  std::deque<FakeDatagramServerSocket::UDPPacket> sent_packets;
+  base::circular_deque<FakeDatagramServerSocket::UDPPacket> sent_packets;
   std::vector<uint16_t> used_ports;
   P2PSocketHostUdp::DatagramServerSocketFactory fake_socket_factory =
       base::Bind(&CreateFakeDatagramServerSocket, &sent_packets, &used_ports);
@@ -537,7 +537,7 @@ TEST_F(P2PSocketHostUdpTest, PortRangeExplictValidPort) {
   const uint16_t min_port = 10000;
   const uint16_t max_port = 10001;
   const uint16_t valid_port = min_port;
-  std::deque<FakeDatagramServerSocket::UDPPacket> sent_packets;
+  base::circular_deque<FakeDatagramServerSocket::UDPPacket> sent_packets;
   std::vector<uint16_t> used_ports;
   P2PSocketHostUdp::DatagramServerSocketFactory fake_socket_factory =
       base::Bind(&CreateFakeDatagramServerSocket, &sent_packets, &used_ports);
@@ -567,7 +567,7 @@ TEST_F(P2PSocketHostUdpTest, PortRangeExplictInvalidPort) {
   const uint16_t min_port = 10000;
   const uint16_t max_port = 10001;
   const uint16_t invalid_port = max_port + 1;
-  std::deque<FakeDatagramServerSocket::UDPPacket> sent_packets;
+  base::circular_deque<FakeDatagramServerSocket::UDPPacket> sent_packets;
   std::vector<uint16_t> used_ports;
   P2PSocketHostUdp::DatagramServerSocketFactory fake_socket_factory =
       base::Bind(&CreateFakeDatagramServerSocket, &sent_packets, &used_ports);

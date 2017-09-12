@@ -7,8 +7,7 @@
 
 #include <stdint.h>
 
-#include <deque>
-
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -68,7 +67,7 @@ class CONTENT_EXPORT ResourceDispatchThrottler : public IPC::Sender {
   base::Timer flush_timer_;
   base::TimeTicks last_flush_time_;
   uint32_t sent_requests_since_last_flush_;
-  std::deque<IPC::Message*> throttled_messages_;
+  base::circular_deque<IPC::Message*> throttled_messages_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatchThrottler);
 };

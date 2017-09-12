@@ -237,10 +237,10 @@ void AudioTrackRecorder::AudioEncoder::EncodeAudio(
 
   if (!is_initialized() || paused_)
     return;
-  // TODO(mcasas): Consider using a std::deque<std::unique_ptr<AudioBus>>
-  // instead of
-  // an AudioFifo, to avoid copying data needlessly since we know the sizes of
-  // both input and output and they are multiples.
+  // TODO(mcasas): Consider using a
+  // base::circular_deque<std::unique_ptr<AudioBus>> instead of an AudioFifo,
+  // to avoid copying data needlessly since we know the sizes of both input and
+  // output and they are multiples.
   fifo_->Push(input_bus.get());
 
   // Wait to have enough |input_bus|s to guarantee a satisfactory conversion.

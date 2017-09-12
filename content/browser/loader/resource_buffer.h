@@ -5,8 +5,7 @@
 #ifndef CONTENT_BROWSER_LOADER_RESOURCE_BUFFER_H_
 #define CONTENT_BROWSER_LOADER_RESOURCE_BUFFER_H_
 
-#include <queue>
-
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
@@ -113,7 +112,7 @@ class CONTENT_EXPORT ResourceBuffer
   int alloc_start_;
   int alloc_end_;
 
-  std::queue<int> alloc_sizes_;
+  base::queue<int> alloc_sizes_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceBuffer);
 };

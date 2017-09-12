@@ -9,12 +9,12 @@
 
 #include <map>
 #include <memory>
-#include <queue>
 #include <set>
 #include <string>
 
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -238,10 +238,10 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   // These are the channel requests that we have already sent to
   // the GPU process, but haven't heard back about yet.
-  std::queue<EstablishChannelCallback> channel_requests_;
+  base::queue<EstablishChannelCallback> channel_requests_;
 
   // The pending create gpu memory buffer requests we need to reply to.
-  std::queue<CreateGpuMemoryBufferCallback> create_gpu_memory_buffer_requests_;
+  base::queue<CreateGpuMemoryBufferCallback> create_gpu_memory_buffer_requests_;
 
   // A callback to signal the completion of a SendDestroyingVideoSurface call.
   base::Closure send_destroying_video_surface_done_cb_;
@@ -249,7 +249,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   std::vector<RequestGPUInfoCallback> request_gpu_info_callbacks_;
 
   // Qeueud messages to send when the process launches.
-  std::queue<IPC::Message*> queued_messages_;
+  base::queue<IPC::Message*> queued_messages_;
 
   // Whether the GPU process is valid, set to false after Send() failed.
   bool valid_;

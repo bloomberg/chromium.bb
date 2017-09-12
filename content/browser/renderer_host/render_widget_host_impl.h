@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -1015,7 +1016,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // List of all swap messages that their corresponding frames have not arrived.
   // Sorted by frame token.
-  std::queue<std::pair<uint32_t, std::vector<IPC::Message>>> queued_messages_;
+  base::queue<std::pair<uint32_t, std::vector<IPC::Message>>> queued_messages_;
 
   // If a CompositorFrame is submitted that references SharedBitmaps that don't
   // exist yet, we keep it here until they are available.

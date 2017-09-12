@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/containers/queue.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -616,7 +617,7 @@ operator=(Parameters&& that) {
 TestDownloadRequestHandler::Parameters::~Parameters() {}
 
 void TestDownloadRequestHandler::Parameters::ClearInjectedErrors() {
-  std::queue<InjectedError> empty_error_list;
+  base::queue<InjectedError> empty_error_list;
   injected_errors.swap(empty_error_list);
 }
 

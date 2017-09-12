@@ -11,12 +11,12 @@
 #include <list>
 #include <map>
 #include <memory>
-#include <queue>
 #include <string>
 #include <tuple>
 #include <utility>
 #include <vector>
 
+#include "base/containers/queue.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -346,7 +346,7 @@ class CONTENT_EXPORT IndexedDBDatabase
   // This holds open or delete requests that are waiting for the active
   // request to be completed. The requests have not yet broadcast
   // OnVersionChange (if necessary).
-  std::queue<std::unique_ptr<ConnectionRequest>> pending_requests_;
+  base::queue<std::unique_ptr<ConnectionRequest>> pending_requests_;
 
   // The |processing_pending_requests_| flag is set while ProcessRequestQueue()
   // is executing. It prevents rentrant calls if the active request completes

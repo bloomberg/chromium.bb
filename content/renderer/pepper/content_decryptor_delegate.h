@@ -9,12 +9,12 @@
 #include <stdint.h>
 
 #include <map>
-#include <queue>
 #include <string>
 #include <vector>
 
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -237,7 +237,7 @@ class ContentDecryptorDelegate {
   scoped_refptr<PPB_Buffer_Impl> audio_input_resource_;
   scoped_refptr<PPB_Buffer_Impl> video_input_resource_;
 
-  std::queue<uint32_t> free_buffers_;
+  base::queue<uint32_t> free_buffers_;
 
   // Keep track of audio parameters.
   int audio_samples_per_second_;

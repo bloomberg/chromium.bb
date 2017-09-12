@@ -7,9 +7,9 @@
 #include <stddef.h>
 
 #include <list>
-#include <queue>
 #include <string>
 
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
@@ -89,7 +89,7 @@ class MockServiceWorkerResponseReader : public ServiceWorkerResponseReader {
     int result;
   };
 
-  std::queue<ExpectedRead> expected_reads_;
+  base::queue<ExpectedRead> expected_reads_;
   scoped_refptr<net::IOBuffer> pending_buffer_;
   size_t pending_buffer_len_;
   scoped_refptr<HttpResponseInfoIOBuffer> pending_info_;
@@ -238,7 +238,7 @@ class MockServiceWorkerResponseWriter : public ServiceWorkerResponseWriter {
     int result;
   };
 
-  std::queue<ExpectedWrite> expected_writes_;
+  base::queue<ExpectedWrite> expected_writes_;
 
   size_t info_written_;
   size_t data_written_;

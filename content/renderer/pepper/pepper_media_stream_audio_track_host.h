@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <memory>
 
 #include "base/compiler_specific.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
@@ -109,7 +109,7 @@ class PepperMediaStreamAudioTrackHost : public PepperMediaStreamTrackHostBase {
     base::Lock lock_;
 
     // A queue for free buffer indices.
-    std::deque<int32_t> buffers_;
+    base::circular_deque<int32_t> buffers_;
 
     // Generation of buffers. It is increased by every |InitBuffers()| call.
     int32_t buffers_generation_;

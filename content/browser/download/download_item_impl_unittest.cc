@@ -6,16 +6,16 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <iterator>
 #include <map>
 #include <memory>
-#include <queue>
 #include <utility>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/containers/circular_deque.h"
+#include "base/containers/queue.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
@@ -1974,14 +1974,14 @@ using CurriedObservation =
 
 // A list of observations that are to be made during some event in the
 // DownloadItemImpl control flow. Ordering of the observations is significant.
-using ObservationList = std::deque<CurriedObservation>;
+using ObservationList = base::circular_deque<CurriedObservation>;
 
 // An ordered list of events.
 //
 // An "event" in this context refers to some stage in the DownloadItemImpl's
 // workflow described as "A", "B", "C", or "D" above. An EventList is expected
 // to always contains kEventCount events.
-using EventList = std::deque<ObservationList>;
+using EventList = base::circular_deque<ObservationList>;
 
 // Number of events in an EventList. This is always 4 for now as described
 // above.
@@ -2139,8 +2139,8 @@ class DownloadItemDestinationUpdateRaceTest
   std::unique_ptr<MockDownloadFile> file_;
   std::unique_ptr<MockRequestHandle> request_handle_;
 
-  std::queue<base::Closure> successful_update_events_;
-  std::queue<base::Closure> failing_update_events_;
+  base::queue<base::Closure> successful_update_events_;
+  base::queue<base::Closure> failing_update_events_;
 };
 
 INSTANTIATE_TEST_CASE_P(Success,

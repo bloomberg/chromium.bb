@@ -10,10 +10,10 @@
 
 #include <map>
 #include <memory>
-#include <queue>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/containers/queue.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -435,7 +435,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // The most recent surface size that was pushed to the surface layer.
   gfx::Size current_surface_size_;
 
-  std::queue<base::Closure> ack_callbacks_;
+  base::queue<base::Closure> ack_callbacks_;
 
   // Used to control and render overscroll-related effects.
   std::unique_ptr<OverscrollControllerAndroid> overscroll_controller_;

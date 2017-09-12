@@ -8,11 +8,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <deque>
 #include <memory>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "build/build_config.h"
@@ -294,9 +294,10 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   // using CSS.
   bool CanBecomeVisible();
 
-  using FrameSwappedCallbackList = std::deque<std::unique_ptr<base::Closure>>;
-  // Since frame-drawn callbacks are "fire once", we use std::deque to make
-  // it convenient to swap() when processing the list.
+  using FrameSwappedCallbackList =
+      base::circular_deque<std::unique_ptr<base::Closure>>;
+  // Since frame-drawn callbacks are "fire once", we use base::circular_deque
+  // to make it convenient to swap() when processing the list.
   FrameSwappedCallbackList frame_swapped_callbacks_;
 
   // The surface client ID of the parent RenderWidgetHostView.  0 if none.

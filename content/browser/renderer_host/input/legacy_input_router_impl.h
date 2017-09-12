@@ -9,8 +9,8 @@
 
 #include <map>
 #include <memory>
-#include <queue>
 
+#include "base/containers/circular_deque.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/time/time.h"
@@ -214,7 +214,7 @@ class CONTENT_EXPORT LegacyInputRouterImpl
 
   // Queue of pending select messages to send after receiving the next select
   // message ack.
-  std::deque<std::unique_ptr<IPC::Message>> pending_select_messages_;
+  base::circular_deque<std::unique_ptr<IPC::Message>> pending_select_messages_;
 
   // True while waiting for MoveCaret_ACK.
   bool move_caret_pending_;
@@ -224,13 +224,13 @@ class CONTENT_EXPORT LegacyInputRouterImpl
 
   // A queue of the mouse move events sent to the renderer. Similar
   // to |key_queue_|.
-  typedef std::deque<MouseEventWithLatencyInfo> MouseEventQueue;
+  using MouseEventQueue = base::circular_deque<MouseEventWithLatencyInfo>;
   MouseEventQueue mouse_event_queue_;
 
   // A queue of keyboard events. We can't trust data from the renderer so we
   // stuff key events into a queue and pop them out on ACK, feeding our copy
   // back to whatever unhandled handler instead of the returned version.
-  typedef std::deque<NativeWebKeyboardEventWithLatencyInfo> KeyQueue;
+  using KeyQueue = base::circular_deque<NativeWebKeyboardEventWithLatencyInfo>;
   KeyQueue key_queue_;
 
   // The source of the ack within the scope of |ProcessInputEventAck()|.

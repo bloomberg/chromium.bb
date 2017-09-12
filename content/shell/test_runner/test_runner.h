@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/shell/test_runner/layout_test_runtime_flags.h"
@@ -210,7 +210,7 @@ class TestRunner : public WebTestRunner {
    private:
     void ProcessWork();
 
-    std::deque<WorkItem*> queue_;
+    base::circular_deque<WorkItem*> queue_;
     bool frozen_;
     TestRunner* controller_;
 

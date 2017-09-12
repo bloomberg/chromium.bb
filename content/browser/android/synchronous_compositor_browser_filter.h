@@ -5,10 +5,10 @@
 #ifndef CONTENT_BROWSER_ANDROID_SYNCHRONOUS_COMPOSITOR_BROWSER_FILTER_H_
 #define CONTENT_BROWSER_ANDROID_SYNCHRONOUS_COMPOSITOR_BROWSER_FILTER_H_
 
-#include <deque>
 #include <map>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "cc/output/compositor_frame_metadata.h"
@@ -70,7 +70,7 @@ class SynchronousCompositorBrowserFilter : public BrowserMessageFilter {
   base::Lock future_map_lock_;  // Protects fields below.
   bool filter_ready_ = false;
   using FrameFutureQueue =
-      std::deque<scoped_refptr<SynchronousCompositor::FrameFuture>>;
+      base::circular_deque<scoped_refptr<SynchronousCompositor::FrameFuture>>;
   // This object is per renderer process, so routing_id is unique.
   using FrameFutureMap = std::map<int, FrameFutureQueue>;
   FrameFutureMap future_map_;

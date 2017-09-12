@@ -5,9 +5,9 @@
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
 
 #include <algorithm>
-#include <queue>
 
 #include "base/command_line.h"
+#include "base/containers/queue.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/checked_math.h"
 #include "base/strings/string_number_conversions.h"
@@ -473,7 +473,7 @@ class BackgroundFetchDataManager::RegistrationData {
  private:
   BackgroundFetchOptions options_;
 
-  std::queue<scoped_refptr<BackgroundFetchRequestInfo>> pending_requests_;
+  base::queue<scoped_refptr<BackgroundFetchRequestInfo>> pending_requests_;
   std::vector<scoped_refptr<BackgroundFetchRequestInfo>> active_requests_;
 
   // TODO(peter): Right now it's safe for this to be a vector because we only

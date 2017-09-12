@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <map>
 #include <set>
 #include <string>
@@ -15,6 +14,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/circular_deque.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -569,7 +569,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
 
   std::unique_ptr<ServiceWorkerDiskCache> disk_cache_;
 
-  std::deque<int64_t> purgeable_resource_ids_;
+  base::circular_deque<int64_t> purgeable_resource_ids_;
   bool is_purge_pending_;
   bool has_checked_for_stale_resources_;
   std::set<int64_t> pending_deletions_;

@@ -8,11 +8,11 @@
 #include <stddef.h>
 
 #include <memory>
-#include <queue>
 #include <string>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
@@ -173,7 +173,7 @@ class CONTENT_EXPORT PepperUDPSocketMessageFilter
 
   scoped_refptr<net::IOBuffer> recvfrom_buffer_;
 
-  std::queue<PendingSend> pending_sends_;
+  base::queue<PendingSend> pending_sends_;
 
   net::IPEndPoint recvfrom_address_;
 

@@ -6,10 +6,9 @@
 
 #include <inttypes.h>
 
-#include <deque>
-
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/containers/circular_deque.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/sys_info.h"
@@ -143,8 +142,8 @@ class VideoEncoderShim::EncoderImpl {
 
   uint32_t framerate_;
 
-  std::deque<PendingEncode> frames_;
-  std::deque<BitstreamBuffer> buffers_;
+  base::circular_deque<PendingEncode> frames_;
+  base::circular_deque<BitstreamBuffer> buffers_;
 };
 
 VideoEncoderShim::EncoderImpl::EncoderImpl(

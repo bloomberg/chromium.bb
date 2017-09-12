@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <map>
 #include <memory>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -201,7 +201,7 @@ class MockAppCacheStorage : public AppCacheStorage {
   StoredEvictionTimesMap stored_eviction_times_;
   DoomedResponseIds doomed_response_ids_;
   std::unique_ptr<AppCacheDiskCache> disk_cache_;
-  std::deque<base::OnceClosure> pending_tasks_;
+  base::circular_deque<base::OnceClosure> pending_tasks_;
 
   bool simulate_make_group_obsolete_failure_;
   bool simulate_store_group_and_newest_cache_failure_;

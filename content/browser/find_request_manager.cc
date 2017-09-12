@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/containers/queue.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
@@ -261,7 +262,7 @@ void FindRequestManager::Find(int request_id,
 
   // If this is a new find session, clear any queued requests from last session.
   if (!options.find_next)
-    find_request_queue_ = std::queue<FindRequest>();
+    find_request_queue_ = base::queue<FindRequest>();
 
   find_request_queue_.emplace(request_id, search_text, options);
   if (find_request_queue_.size() == 1)

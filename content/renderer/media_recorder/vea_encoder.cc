@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/containers/queue.h"
 #include "content/renderer/media/gpu/gpu_video_accelerator_factories_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/bind_to_current_loop.h"
@@ -78,7 +79,7 @@ void VEAEncoder::RequireBitstreamBuffers(unsigned int /*input_count*/,
 
   vea_requested_input_coded_size_ = input_coded_size;
   output_buffers_.clear();
-  std::queue<std::unique_ptr<base::SharedMemory>>().swap(input_buffers_);
+  base::queue<std::unique_ptr<base::SharedMemory>>().swap(input_buffers_);
 
   for (int i = 0; i < kVEAEncoderOutputBufferCount; ++i) {
     std::unique_ptr<base::SharedMemory> shm =

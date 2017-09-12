@@ -6,9 +6,9 @@
 
 #include <stddef.h>
 
-#include <queue>
 #include <utility>
 
+#include "base/containers/queue.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -892,7 +892,7 @@ void NavigationEntryImpl::ClearStaleFrameEntriesForNewFrame(
   DCHECK(!frame_tree_node->IsMainFrame());
 
   NavigationEntryImpl::TreeNode* node = nullptr;
-  std::queue<NavigationEntryImpl::TreeNode*> work_queue;
+  base::queue<NavigationEntryImpl::TreeNode*> work_queue;
   int count = 0;
 
   work_queue.push(root_node());
@@ -941,7 +941,7 @@ GURL NavigationEntryImpl::GetHistoryURLForDataURL() const {
 NavigationEntryImpl::TreeNode* NavigationEntryImpl::FindFrameEntry(
     FrameTreeNode* frame_tree_node) const {
   NavigationEntryImpl::TreeNode* node = nullptr;
-  std::queue<NavigationEntryImpl::TreeNode*> work_queue;
+  base::queue<NavigationEntryImpl::TreeNode*> work_queue;
   work_queue.push(root_node());
   while (!work_queue.empty()) {
     node = work_queue.front();

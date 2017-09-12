@@ -8,9 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <deque>
 #include <string>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
@@ -72,7 +72,7 @@ class AudioBuffer {
   bool IsEmpty() const;
 
  private:
-  typedef std::deque<scoped_refptr<AudioChunk> > ChunksContainer;
+  using ChunksContainer = base::circular_deque<scoped_refptr<AudioChunk>>;
   ChunksContainer chunks_;
   const int bytes_per_sample_;
 

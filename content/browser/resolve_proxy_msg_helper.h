@@ -5,9 +5,9 @@
 #ifndef CONTENT_BROWSER_RESOLVE_PROXY_MSG_HELPER_H_
 #define CONTENT_BROWSER_RESOLVE_PROXY_MSG_HELPER_H_
 
-#include <deque>
 #include <string>
 
+#include "base/containers/circular_deque.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -74,7 +74,7 @@ class CONTENT_EXPORT ResolveProxyMsgHelper : public BrowserMessageFilter {
   net::ProxyInfo proxy_info_;
 
   // FIFO queue of pending requests. The first entry is always the current one.
-  typedef std::deque<PendingRequest> PendingRequestList;
+  using PendingRequestList = base::circular_deque<PendingRequest>;
   PendingRequestList pending_requests_;
 
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
