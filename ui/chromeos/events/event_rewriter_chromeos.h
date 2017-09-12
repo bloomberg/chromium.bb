@@ -223,8 +223,8 @@ class EventRewriterChromeOS : public ui::EventRewriter {
   // layout model requires this to be handled explicitly. See crbug.com/518237
   // Pragmatically this, like the Diamond key, is handled here in
   // EventRewriterChromeOS, but modifier state management is scattered between
-  // here, sticky keys, and the system layer (X11 or Ozone), and could
-  // do with refactoring.
+  // here, sticky keys, and the system layer (Ozone), and could do with
+  // refactoring.
   // - |pressed_modifier_latches_| records the latching keys currently pressed.
   //   It also records the active modifier flags for non-modifier keys that are
   //   remapped to modifiers, e.g. Diamond/F15.
