@@ -120,6 +120,15 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   };
   typedef std::map<content::MediaStreamType, MediaMenu> MediaMenuMap;
 
+  enum class ManageTextStyle {
+    // No Manage button or checkbox is displayed.
+    kNone,
+    // Manage text is displayed as a non-prominent button.
+    kButton,
+    // Manage text is used as a checkbox title.
+    kCheckbox,
+  };
+
   struct BubbleContent {
     BubbleContent();
     ~BubbleContent();
@@ -133,7 +142,7 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
     base::string16 custom_link;
     bool custom_link_enabled = false;
     base::string16 manage_text;
-    bool show_manage_text_as_checkbox = false;
+    ManageTextStyle manage_text_style = ManageTextStyle::kButton;
     MediaMenuMap media_menus;
     bool show_learn_more = false;
     base::string16 done_button_text;
@@ -236,8 +245,8 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   void set_manage_text(const base::string16& text) {
     bubble_content_.manage_text = text;
   }
-  void set_show_manage_text_as_checkbox(bool show_manage_text_as_checkbox) {
-    bubble_content_.show_manage_text_as_checkbox = show_manage_text_as_checkbox;
+  void set_manage_text_style(ManageTextStyle manage_text_style) {
+    bubble_content_.manage_text_style = manage_text_style;
   }
   void add_media_menu(content::MediaStreamType type, const MediaMenu& menu) {
     bubble_content_.media_menus[type] = menu;
@@ -254,9 +263,6 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   rappor::RapporServiceImpl* rappor_service() const { return rappor_service_; }
 
  private:
-  virtual void SetTitle() = 0;
-  virtual void SetManageText() = 0;
-
   content::WebContents* web_contents_;
   Profile* profile_;
   Owner* owner_;
@@ -285,8 +291,8 @@ class ContentSettingSimpleBubbleModel : public ContentSettingBubbleModel {
 
  private:
   // ContentSettingBubbleModel implementation.
-  void SetTitle() override;
-  void SetManageText() override;
+  void SetTitle();
+  void SetManageText();
   void OnManageButtonClicked() override;
   void SetCustomLink();
   void OnCustomLinkClicked() override;
@@ -337,10 +343,10 @@ class ContentSettingSubresourceFilterBubbleModel
 
  private:
   void SetMessage();
+  void SetTitle();
+  void SetManageText();
 
   // ContentSettingBubbleModel:
-  void SetTitle() override;
-  void SetManageText() override;
   void OnManageCheckboxChecked(bool is_checked) override;
   ContentSettingSubresourceFilterBubbleModel* AsSubresourceFilterBubbleModel()
       override;
@@ -371,9 +377,8 @@ class ContentSettingMediaStreamBubbleModel : public ContentSettingBubbleModel {
   bool MicrophoneAccessed() const;
   bool CameraAccessed() const;
 
-  // ContentSettingBubbleModel:
-  void SetTitle() override;
-  void SetManageText() override;
+  void SetTitle();
+  void SetManageText();
 
   // Sets the data for the radio buttons of the bubble.
   void SetRadioGroup();
@@ -421,11 +426,11 @@ class ContentSettingDownloadsBubbleModel : public ContentSettingBubbleModel {
 
  private:
   void SetRadioGroup();
+  void SetTitle();
+  void SetManageText();
 
   // ContentSettingBubbleModel overrides:
   void OnRadioClicked(int radio_index) override;
-  void SetTitle() override;
-  void SetManageText() override;
   void OnManageButtonClicked() override;
 
   int selected_item_ = 0;
