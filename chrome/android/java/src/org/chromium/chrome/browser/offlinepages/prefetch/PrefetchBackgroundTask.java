@@ -114,8 +114,7 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
         DeviceConditions deviceConditions = DeviceConditions.getCurrentConditions(context);
 
         if (!areBatteryConditionsMet(deviceConditions)
-                || !areNetworkConditionsMet(context, deviceConditions)
-                || deviceConditions.inPowerSaveMode()) {
+                || !areNetworkConditionsMet(context, deviceConditions)) {
             return NativeBackgroundTask.RESCHEDULE;
         }
 
