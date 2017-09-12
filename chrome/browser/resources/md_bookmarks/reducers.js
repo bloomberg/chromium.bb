@@ -10,7 +10,7 @@
  */
 
 cr.define('bookmarks', function() {
-  var SelectionState = {};
+  const SelectionState = {};
 
   /**
    * @param {SelectionState} selectionState
@@ -18,12 +18,12 @@ cr.define('bookmarks', function() {
    * @return {SelectionState}
    */
   SelectionState.selectItems = function(selectionState, action) {
-    var newItems = new Set();
+    let newItems = new Set();
     if (!action.clear)
       newItems = new Set(selectionState.items);
 
     action.items.forEach(function(id) {
-      var add = true;
+      let add = true;
       if (action.toggle)
         add = !newItems.has(id);
 
@@ -107,7 +107,7 @@ cr.define('bookmarks', function() {
     }
   };
 
-  var SearchState = {};
+  const SearchState = {};
 
   /**
    * @param {SearchState} search
@@ -152,7 +152,7 @@ cr.define('bookmarks', function() {
     if (!search.results)
       return search;
 
-    var newResults = [];
+    const newResults = [];
     search.results.forEach(function(id) {
       if (!deletedIds.has(id))
         newResults.push(id);
@@ -183,7 +183,7 @@ cr.define('bookmarks', function() {
     }
   };
 
-  var NodeState = {};
+  const NodeState = {};
 
   /**
    * @param {NodeMap} nodes
@@ -192,7 +192,7 @@ cr.define('bookmarks', function() {
    * @return {NodeMap}
    */
   NodeState.modifyNode_ = function(nodes, id, callback) {
-    var nodeModification = {};
+    const nodeModification = {};
     nodeModification[id] = callback(nodes[id]);
     return Object.assign({}, nodes, nodeModification);
   };
@@ -203,11 +203,11 @@ cr.define('bookmarks', function() {
    * @return {NodeMap}
    */
   NodeState.createBookmark = function(nodes, action) {
-    var nodeModifications = {};
+    const nodeModifications = {};
     nodeModifications[action.id] = action.node;
 
-    var parentNode = nodes[action.parentId];
-    var newChildren = parentNode.children.slice();
+    const parentNode = nodes[action.parentId];
+    const newChildren = parentNode.children.slice();
     newChildren.splice(action.parentIndex, 0, action.id);
     nodeModifications[action.parentId] = Object.assign({}, parentNode, {
       children: newChildren,
@@ -238,23 +238,23 @@ cr.define('bookmarks', function() {
    * @return {NodeMap}
    */
   NodeState.moveBookmark = function(nodes, action) {
-    var nodeModifications = {};
-    var id = action.id;
+    const nodeModifications = {};
+    const id = action.id;
 
     // Change node's parent.
     nodeModifications[id] =
         Object.assign({}, nodes[id], {parentId: action.parentId});
 
     // Remove from old parent.
-    var oldParentId = action.oldParentId;
-    var oldParentChildren = nodes[oldParentId].children.slice();
+    const oldParentId = action.oldParentId;
+    const oldParentChildren = nodes[oldParentId].children.slice();
     oldParentChildren.splice(action.oldIndex, 1);
     nodeModifications[oldParentId] =
         Object.assign({}, nodes[oldParentId], {children: oldParentChildren});
 
     // Add to new parent.
-    var parentId = action.parentId;
-    var parentChildren = oldParentId == parentId ?
+    const parentId = action.parentId;
+    const parentChildren = oldParentId == parentId ?
         oldParentChildren :
         nodes[parentId].children.slice();
     parentChildren.splice(action.index, 0, action.id);
@@ -270,9 +270,9 @@ cr.define('bookmarks', function() {
    * @return {NodeMap}
    */
   NodeState.removeBookmark = function(nodes, action) {
-    var newState =
+    const newState =
         NodeState.modifyNode_(nodes, action.parentId, function(node) {
-          var newChildren = node.children.slice();
+          const newChildren = node.children.slice();
           newChildren.splice(action.index, 1);
           return /** @type {BookmarkNode} */ (
               Object.assign({}, node, {children: newChildren}));
@@ -317,7 +317,7 @@ cr.define('bookmarks', function() {
     }
   };
 
-  var SelectedFolderState = {};
+  const SelectedFolderState = {};
 
   /**
    * @param {NodeMap} nodes
@@ -326,7 +326,7 @@ cr.define('bookmarks', function() {
    * @return {boolean}
    */
   SelectedFolderState.isAncestorOf = function(nodes, ancestorId, childId) {
-    var currentId = childId;
+    let currentId = childId;
     // Work upwards through the tree from child.
     while (currentId) {
       if (currentId == ancestorId)
@@ -368,7 +368,7 @@ cr.define('bookmarks', function() {
     }
   };
 
-  var FolderOpenState = {};
+  const FolderOpenState = {};
 
   /**
    * @param {FolderOpenState} folderOpenState
@@ -378,9 +378,9 @@ cr.define('bookmarks', function() {
    */
   FolderOpenState.openFolderAndAncestors = function(
       folderOpenState, id, nodes) {
-    var newFolderOpenState =
+    const newFolderOpenState =
         /** @type {FolderOpenState} */ (new Map(folderOpenState));
-    for (var currentId = id; currentId; currentId = nodes[currentId].parentId)
+    for (let currentId = id; currentId; currentId = nodes[currentId].parentId)
       newFolderOpenState.set(currentId, true);
 
     return newFolderOpenState;
@@ -392,7 +392,7 @@ cr.define('bookmarks', function() {
    * @return {FolderOpenState}
    */
   FolderOpenState.changeFolderOpen = function(folderOpenState, action) {
-    var newFolderOpenState =
+    const newFolderOpenState =
         /** @type {FolderOpenState} */ (new Map(folderOpenState));
     newFolderOpenState.set(action.id, action.open);
 
@@ -427,7 +427,7 @@ cr.define('bookmarks', function() {
     }
   };
 
-  var PreferencesState = {};
+  const PreferencesState = {};
 
   /**
    * @param {PreferencesState} prefs

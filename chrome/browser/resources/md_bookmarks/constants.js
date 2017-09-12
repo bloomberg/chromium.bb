@@ -8,7 +8,7 @@
  * @enum {number}
  * @const
  */
-var DropPosition = {
+const DropPosition = {
   NONE: 0,
   ABOVE: 1,
   ON: 2,
@@ -22,7 +22,7 @@ var DropPosition = {
  * @enum {number}
  * @const
  */
-var Command = {
+const Command = {
   EDIT: 0,
   COPY_URL: 1,
   SHOW_IN_FOLDER: 2,
@@ -47,7 +47,7 @@ var Command = {
  * @enum {number}
  * @const
  */
-var MenuSource = {
+const MenuSource = {
   NONE: 0,
   LIST: 1,
   TREE: 2,
@@ -58,30 +58,30 @@ var MenuSource = {
  * @enum {number}
  * @const
  */
-var IncognitoAvailability = {
+const IncognitoAvailability = {
   ENABLED: 0,
   DISABLED: 1,
   FORCED: 2,
 };
 
 /** @const */
-var LOCAL_STORAGE_FOLDER_STATE_KEY = 'folderOpenState';
+const LOCAL_STORAGE_FOLDER_STATE_KEY = 'folderOpenState';
 
 /** @const */
-var LOCAL_STORAGE_TREE_WIDTH_KEY = 'treeWidth';
+const LOCAL_STORAGE_TREE_WIDTH_KEY = 'treeWidth';
 
 /** @const */
-var ROOT_NODE_ID = '0';
+const ROOT_NODE_ID = '0';
 
 /** @const */
-var BOOKMARKS_BAR_ID = '1';
+const BOOKMARKS_BAR_ID = '1';
 
 /** @const {number} */
-var OPEN_CONFIRMATION_LIMIT = 15;
+const OPEN_CONFIRMATION_LIMIT = 15;
 
 /**
  * Folders that are beneath this depth will be closed by default in the folder
  * tree (where the Bookmarks Bar folder is at depth 0).
  * @const {number}
  */
-var FOLDER_OPEN_BY_DEFAULT_DEPTH = 1;
+const FOLDER_OPEN_BY_DEFAULT_DEPTH = 1;

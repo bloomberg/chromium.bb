@@ -74,7 +74,7 @@ cr.define('bookmarks.actions', function() {
    * @return {!Action}
    */
   function removeBookmark(id, parentId, index, nodes) {
-    var descendants = bookmarks.util.getDescendants(nodes, id);
+    const descendants = bookmarks.util.getDescendants(nodes, id);
     return {
       name: 'remove-bookmark',
       id: id,
@@ -156,15 +156,15 @@ cr.define('bookmarks.actions', function() {
     assert(!config.toggle || !config.range);
     assert(!config.toggle || !config.clear);
 
-    var anchor = state.selection.anchor;
-    var toSelect = [];
-    var newAnchor = id;
+    const anchor = state.selection.anchor;
+    const toSelect = [];
+    let newAnchor = id;
 
     if (config.range && anchor) {
-      var displayedList = bookmarks.util.getDisplayedList(state);
-      var selectedIndex = displayedList.indexOf(id);
+      const displayedList = bookmarks.util.getDisplayedList(state);
+      const selectedIndex = displayedList.indexOf(id);
       assert(selectedIndex != -1);
-      var anchorIndex = displayedList.indexOf(anchor);
+      let anchorIndex = displayedList.indexOf(anchor);
       if (anchorIndex == -1)
         anchorIndex = selectedIndex;
 
@@ -172,10 +172,10 @@ cr.define('bookmarks.actions', function() {
       // was used in this selection.
       newAnchor = displayedList[anchorIndex];
 
-      var startIndex = Math.min(anchorIndex, selectedIndex);
-      var endIndex = Math.max(anchorIndex, selectedIndex);
+      const startIndex = Math.min(anchorIndex, selectedIndex);
+      const endIndex = Math.max(anchorIndex, selectedIndex);
 
-      for (var i = startIndex; i <= endIndex; i++)
+      for (let i = startIndex; i <= endIndex; i++)
         toSelect.push(displayedList[i]);
     } else {
       toSelect.push(id);

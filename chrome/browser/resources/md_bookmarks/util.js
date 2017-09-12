@@ -25,7 +25,7 @@ cr.define('bookmarks.util', function() {
    * @return {!BookmarkNode}
    */
   function normalizeNode(treeNode) {
-    var node = Object.assign({}, treeNode);
+    const node = Object.assign({}, treeNode);
     // Node index is not necessary and not kept up-to-date. Remove it from the
     // data structure so we don't accidentally depend on the incorrect
     // information.
@@ -46,12 +46,12 @@ cr.define('bookmarks.util', function() {
    */
   function normalizeNodes(rootNode) {
     /** @type {NodeMap} */
-    var nodeMap = {};
-    var stack = [];
+    const nodeMap = {};
+    const stack = [];
     stack.push(rootNode);
 
     while (stack.length > 0) {
-      var node = stack.pop();
+      const node = stack.pop();
       nodeMap[node.id] = normalizeNode(node);
       if (!node.children)
         continue;
@@ -127,8 +127,8 @@ cr.define('bookmarks.util', function() {
    * @return {boolean}
    */
   function hasChildFolders(id, nodes) {
-    var children = nodes[id].children;
-    for (var i = 0; i < children.length; i++) {
+    const children = nodes[id].children;
+    for (let i = 0; i < children.length; i++) {
       if (nodes[children[i]].children)
         return true;
     }
@@ -142,13 +142,13 @@ cr.define('bookmarks.util', function() {
    * @return {!Set<string>}
    */
   function getDescendants(nodes, baseId) {
-    var descendants = new Set();
-    var stack = [];
+    const descendants = new Set();
+    const stack = [];
     stack.push(baseId);
 
     while (stack.length > 0) {
-      var id = stack.pop();
-      var node = nodes[id];
+      const id = stack.pop();
+      const node = nodes[id];
 
       if (!node)
         continue;
@@ -182,7 +182,7 @@ cr.define('bookmarks.util', function() {
    * @template T
    */
   function removeIdsFromObject(map, ids) {
-    var newObject = Object.assign({}, map);
+    const newObject = Object.assign({}, map);
     ids.forEach(function(id) {
       delete newObject[id];
     });
@@ -197,7 +197,7 @@ cr.define('bookmarks.util', function() {
    * @template T
    */
   function removeIdsFromMap(map, ids) {
-    var newMap = new Map(map);
+    const newMap = new Map(map);
     ids.forEach(function(id) {
       newMap.delete(id);
     });
@@ -210,7 +210,7 @@ cr.define('bookmarks.util', function() {
    * @return {!Set<string>}
    */
   function removeIdsFromSet(set, ids) {
-    var difference = new Set(set);
+    const difference = new Set(set);
     ids.forEach(function(id) {
       difference.delete(id);
     });

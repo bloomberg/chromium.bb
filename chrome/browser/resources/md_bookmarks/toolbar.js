@@ -94,7 +94,7 @@ Polymer({
    * @private
    */
   onMenuButtonOpenTap_: function(e) {
-    var menu = /** @type {!CrActionMenuElement} */ (this.$.dropdown.get());
+    const menu = /** @type {!CrActionMenuElement} */ (this.$.dropdown.get());
     menu.showAt(/** @type {!Element} */ (e.target));
   },
 
@@ -108,7 +108,7 @@ Polymer({
 
   /** @private */
   onAddBookmarkTap_: function() {
-    var dialog =
+    const dialog =
         /** @type {BookmarksEditDialogElement} */ (this.$.addDialog.get());
     dialog.showAddDialog(false, assert(this.selectedFolder_));
     this.closeDropdownMenu_();
@@ -116,7 +116,7 @@ Polymer({
 
   /** @private */
   onAddFolderTap_: function() {
-    var dialog =
+    const dialog =
         /** @type {BookmarksEditDialogElement} */ (this.$.addDialog.get());
     dialog.showAddDialog(true, assert(this.selectedFolder_));
     this.closeDropdownMenu_();
@@ -136,8 +136,8 @@ Polymer({
 
   /** @private */
   onDeleteSelectionTap_: function() {
-    var selection = this.selectedItems_;
-    var commandManager = bookmarks.CommandManager.getInstance();
+    const selection = this.selectedItems_;
+    const commandManager = bookmarks.CommandManager.getInstance();
     assert(commandManager.canExecute(Command.DELETE, selection));
     commandManager.handle(Command.DELETE, selection);
   },
@@ -149,7 +149,7 @@ Polymer({
 
   /** @private */
   closeDropdownMenu_: function() {
-    var menu = /** @type {!CrActionMenuElement} */ (this.$.dropdown.get());
+    const menu = /** @type {!CrActionMenuElement} */ (this.$.dropdown.get());
     menu.close();
   },
 
@@ -158,7 +158,7 @@ Polymer({
    * @private
    */
   onSearchChanged_: function(e) {
-    var searchTerm = /** @type {string} */ (e.detail);
+    const searchTerm = /** @type {string} */ (e.detail);
     if (searchTerm != this.searchTerm_)
       this.dispatch(bookmarks.actions.setSearchTerm(searchTerm));
   },

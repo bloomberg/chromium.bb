@@ -4,7 +4,7 @@
 
 cr.define('bookmarks', function() {
   /** @const */
-  var HIDE_FOCUS_RING_ATTRIBUTE = 'hide-focus-ring';
+  const HIDE_FOCUS_RING_ATTRIBUTE = 'hide-focus-ring';
 
   /**
    * Behavior which adds the 'hide-focus-ring' attribute to a target element
@@ -12,7 +12,7 @@ cr.define('bookmarks', function() {
    * to be hidden without affecting keyboard users.
    * @polymerBehavior
    */
-  var MouseFocusBehavior = {
+  const MouseFocusBehavior = {
     attached: function() {
       this.boundOnMousedown_ = this.onMousedown_.bind(this);
       this.boundOnKeydown = this.onKeydown_.bind(this);

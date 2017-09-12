@@ -82,7 +82,7 @@ Polymer({
    * @private
    */
   getDialogTitle_: function(isFolder, isEdit) {
-    var title;
+    let title;
     if (isEdit)
       title = isFolder ? 'renameFolderTitle' : 'editBookmarkTitle';
     else
@@ -98,8 +98,8 @@ Polymer({
    * @private
    */
   validateUrl_: function() {
-    var urlInput = /** @type {PaperInputElement} */ (this.$.url);
-    var originalValue = this.urlValue_;
+    const urlInput = /** @type {PaperInputElement} */ (this.$.url);
+    const originalValue = this.urlValue_;
 
     if (urlInput.validate())
       return true;
@@ -115,7 +115,7 @@ Polymer({
 
   /** @private */
   onSaveButtonTap_: function() {
-    var edit = {'title': this.titleValue_};
+    const edit = {'title': this.titleValue_};
     if (!this.isFolder_) {
       if (!this.validateUrl_())
         return;
