@@ -39,7 +39,7 @@ const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {
 
 // Alphabetical:
 const base::Feature kRequestUnbufferedDispatch{
-    "RequestUnbufferedDispatch", base::FEATURE_DISABLED_BY_DEFAULT};
+    "RequestUnbufferedDispatch", base::FEATURE_ENABLED_BY_DEFAULT};
 
 static jboolean IsEnabled(JNIEnv* env,
                           const JavaParamRef<jclass>& clazz,
