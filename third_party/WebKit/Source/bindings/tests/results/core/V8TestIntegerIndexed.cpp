@@ -14,11 +14,14 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/IDLTypes.h"
 #include "bindings/core/v8/NativeValueTraitsImpl.h"
+#include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8Document.h"
+#include "bindings/core/v8/V8Iterator.h"
 #include "bindings/core/v8/V8Node.h"
 #include "core/dom/ExecutionContext.h"
 #include "platform/bindings/RuntimeCallStats.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8ObjectConstructor.h"
 #include "platform/wtf/GetPtr.h"
 #include "platform/wtf/RefPtr.h"
@@ -114,6 +117,63 @@ static void voidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& 
   impl->voidMethodDocument(document);
 }
 
+static void keysMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestIntegerIndexed", "keys");
+
+  TestIntegerIndexed* impl = V8TestIntegerIndexed::ToImpl(info.Holder());
+
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
+
+  Iterator* result = impl->keysForBinding(scriptState, exceptionState);
+  if (exceptionState.HadException()) {
+    return;
+  }
+  V8SetReturnValue(info, result);
+}
+
+static void valuesMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestIntegerIndexed", "values");
+
+  TestIntegerIndexed* impl = V8TestIntegerIndexed::ToImpl(info.Holder());
+
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
+
+  Iterator* result = impl->valuesForBinding(scriptState, exceptionState);
+  if (exceptionState.HadException()) {
+    return;
+  }
+  V8SetReturnValue(info, result);
+}
+
+static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestIntegerIndexed", "forEach");
+
+  TestIntegerIndexed* impl = V8TestIntegerIndexed::ToImpl(info.Holder());
+
+  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
+
+  if (UNLIKELY(info.Length() < 1)) {
+    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
+    return;
+  }
+
+  ScriptValue callback;
+  ScriptValue thisArg;
+  if (!(info[0]->IsObject() && v8::Local<v8::Object>::Cast(info[0])->IsCallable())) {
+    exceptionState.ThrowTypeError("The callback provided as parameter 1 is not a function.");
+
+    return;
+  }
+  callback = ScriptValue(ScriptState::Current(info.GetIsolate()), info[0]);
+
+  thisArg = ScriptValue(ScriptState::Current(info.GetIsolate()), info[1]);
+
+  impl->forEachForBinding(scriptState, ScriptValue(scriptState, info.Holder()), callback, thisArg, exceptionState);
+  if (exceptionState.HadException()) {
+    return;
+  }
+}
+
 static void indexedPropertyDescriptor(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
   // https://heycam.github.io/webidl/#LegacyPlatformObjectGetOwnProperty
   // Steps 1.1 to 1.2.4 are covered here: we rely on indexedPropertyGetter() to
@@ -157,6 +217,24 @@ void V8TestIntegerIndexed::voidMethodDocumentMethodCallback(const v8::FunctionCa
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestIntegerIndexed_voidMethodDocument");
 
   TestIntegerIndexedV8Internal::voidMethodDocumentMethod(info);
+}
+
+void V8TestIntegerIndexed::keysMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestIntegerIndexed_keys");
+
+  TestIntegerIndexedV8Internal::keysMethod(info);
+}
+
+void V8TestIntegerIndexed::valuesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestIntegerIndexed_values");
+
+  TestIntegerIndexedV8Internal::valuesMethod(info);
+}
+
+void V8TestIntegerIndexed::forEachMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestIntegerIndexed_forEach");
+
+  TestIntegerIndexedV8Internal::forEachMethod(info);
 }
 
 void V8TestIntegerIndexed::namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
@@ -247,6 +325,9 @@ static const V8DOMConfiguration::AccessorConfiguration V8TestIntegerIndexedAcces
 
 static const V8DOMConfiguration::MethodConfiguration V8TestIntegerIndexedMethods[] = {
     {"voidMethodDocument", V8TestIntegerIndexed::voidMethodDocumentMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
+    {"keys", V8TestIntegerIndexed::keysMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
+    {"values", V8TestIntegerIndexed::valuesMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
+    {"forEach", V8TestIntegerIndexed::forEachMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
 };
 
 static void installV8TestIntegerIndexedTemplate(
@@ -288,6 +369,12 @@ static void installV8TestIntegerIndexedTemplate(
 
   // Array iterator (@@iterator)
   prototypeTemplate->SetIntrinsicDataProperty(v8::Symbol::GetIterator(isolate), v8::kArrayProto_values, v8::DontEnum);
+  // For value iterators, the properties below must originally be set to the corresponding ones in %ArrayPrototype%.
+  // See https://heycam.github.io/webidl/#es-iterators.
+  prototypeTemplate->SetIntrinsicDataProperty(V8AtomicString(isolate, "entries"), v8::kArrayProto_entries);
+  prototypeTemplate->SetIntrinsicDataProperty(V8AtomicString(isolate, "forEach"), v8::kArrayProto_forEach);
+  prototypeTemplate->SetIntrinsicDataProperty(V8AtomicString(isolate, "keys"), v8::kArrayProto_keys);
+  prototypeTemplate->SetIntrinsicDataProperty(V8AtomicString(isolate, "values"), v8::kArrayProto_values);
 
   // Custom signature
 
