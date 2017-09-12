@@ -4,10 +4,25 @@
 
 package org.chromium.net;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import static org.chromium.net.CronetTestRule.assertContains;
+import static org.chromium.net.CronetTestRule.getContext;
+
 import android.os.ConditionVariable;
 import android.os.ParcelFileDescriptor;
 import android.support.test.filters.SmallTest;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestRule.CronetTestFramework;
 
@@ -17,21 +32,22 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /** Test the default provided implementations of {@link UploadDataProvider} */
-public class UploadDataProvidersTest extends CronetTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class UploadDataProvidersTest {
     private static final String LOREM = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. "
             + "Proin elementum, libero laoreet fringilla faucibus, metus tortor vehicula ante, "
             + "lacinia lorem eros vel sapien.";
+    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
+    @Rule
+    public final CronetTestRule mTestRule = new CronetTestRule();
     private CronetTestFramework mTestFramework;
     private File mFile;
-    private MockUrlRequestJobFactory mMockUrlRequestJobFactory;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        mTestFramework = startCronetTestFramework();
+    @Before
+    public void setUp() throws Exception {
+        mTestFramework = mTestRule.startCronetTestFramework();
         assertTrue(NativeTestServer.startNativeTestServer(getContext()));
         // Add url interceptors after native application context is initialized.
-        mMockUrlRequestJobFactory = new MockUrlRequestJobFactory(mTestFramework.mCronetEngine);
         mFile = new File(getContext().getCacheDir().getPath() + "/tmpfile");
         FileOutputStream fileOutputStream = new FileOutputStream(mFile);
         try {
@@ -41,15 +57,14 @@ public class UploadDataProvidersTest extends CronetTestBase {
         }
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        mMockUrlRequestJobFactory.shutdown();
+    @After
+    public void tearDown() throws Exception {
         NativeTestServer.shutdownNativeTestServer();
         mTestFramework.mCronetEngine.shutdown();
         assertTrue(mFile.delete());
-        super.tearDown();
     }
 
+    @Test
     @SmallTest
     @Feature({"Cronet"})
     public void testFileProvider() throws Exception {
@@ -65,6 +80,7 @@ public class UploadDataProvidersTest extends CronetTestBase {
         assertEquals(LOREM, callback.mResponseAsString);
     }
 
+    @Test
     @SmallTest
     @Feature({"Cronet"})
     public void testFileDescriptorProvider() throws Exception {
@@ -83,6 +99,7 @@ public class UploadDataProvidersTest extends CronetTestBase {
         assertEquals(LOREM, callback.mResponseAsString);
     }
 
+    @Test
     @SmallTest
     @Feature({"Cronet"})
     public void testBadFileDescriptorProvider() throws Exception {
@@ -103,6 +120,7 @@ public class UploadDataProvidersTest extends CronetTestBase {
         }
     }
 
+    @Test
     @SmallTest
     @Feature({"Cronet"})
     public void testBufferProvider() throws Exception {
@@ -119,6 +137,7 @@ public class UploadDataProvidersTest extends CronetTestBase {
         assertEquals(LOREM, callback.mResponseAsString);
     }
 
+    @Test
     @SmallTest
     @Feature({"Cronet"})
     public void testNoErrorWhenCanceledDuringStart() throws Exception {
@@ -152,6 +171,7 @@ public class UploadDataProvidersTest extends CronetTestBase {
         assertTrue(callback.mOnCanceledCalled);
     }
 
+    @Test
     @SmallTest
     @Feature({"Cronet"})
     public void testNoErrorWhenExceptionDuringStart() throws Exception {
@@ -185,6 +205,7 @@ public class UploadDataProvidersTest extends CronetTestBase {
         assertContains(exceptionMessage, callback.mError.getCause().getMessage());
     }
 
+    @Test
     @SmallTest
     @Feature({"Cronet"})
     // Tests that creating a ByteBufferUploadProvider using a byte array with an
