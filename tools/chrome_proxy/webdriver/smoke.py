@@ -83,7 +83,7 @@ class Smoke(IntegrationTest):
       self.assertEqual(1, succeeded['count'])
 
   # Ensure pageload metric pingback with DataSaver has the variations header.
-  # Disabled on android because the net log is not copied yet. crbug.com/761507
+  @ChromeVersionEqualOrAfterM(62)
   def testPingbackHasVariations(self):
     with TestDriver() as t:
       t.AddChromeArg('--enable-spdy-proxy-auth')
