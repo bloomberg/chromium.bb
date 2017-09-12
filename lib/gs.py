@@ -976,16 +976,18 @@ class GSContext(object):
     Args:
       src_path: Fully qualified local path or full gs:// path of the src file.
       dest_path: Fully qualified local path or full gs:// path of the dest file.
+      kwargs: See options that DoCommand takes.
     """
     cmd = ['mv', '--', src_path, dest_path]
     return self.DoCommand(cmd, **kwargs)
 
-  def SetACL(self, upload_url, acl=None):
+  def SetACL(self, upload_url, acl=None, **kwargs):
     """Set access on a file already in google storage.
 
     Args:
       upload_url: gs:// url that will have acl applied to it.
       acl: An ACL permissions file or canned ACL.
+      kwargs: See options that DoCommand takes.
     """
     if acl is None:
       if not self.acl:
@@ -993,9 +995,9 @@ class GSContext(object):
             'SetAcl invoked w/out a specified acl, nor a default acl.')
       acl = self.acl
 
-    self.DoCommand(['acl', 'set', acl, upload_url])
+    self.DoCommand(['acl', 'set', acl, upload_url], **kwargs)
 
-  def ChangeACL(self, upload_url, acl_args_file=None, acl_args=None):
+  def ChangeACL(self, upload_url, acl_args_file=None, acl_args=None, **kwargs):
     """Change access on a file already in google storage with "acl ch".
 
     Args:
@@ -1007,6 +1009,7 @@ class GSContext(object):
                      set.
       acl_args: A list of arguments for the gsutil acl ch command. Exactly
                 one of this argument or acl_args must be set.
+      kwargs: See options that DoCommand takes.
     """
     if acl_args_file and acl_args:
       raise GSContextException(
@@ -1021,7 +1024,7 @@ class GSContext(object):
       lines = [x.split('#', 1)[0].strip() for x in lines]
       acl_args = ' '.join([x for x in lines if x]).split()
 
-    self.DoCommand(['acl', 'ch'] + acl_args + [upload_url])
+    self.DoCommand(['acl', 'ch'] + acl_args + [upload_url], **kwargs)
 
   def Exists(self, path, **kwargs):
     """Checks whether the given object exists.
