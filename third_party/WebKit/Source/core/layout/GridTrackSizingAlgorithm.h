@@ -166,6 +166,7 @@ class GridTrackSizingAlgorithm final {
   void InitializeTrackSizes();
   void ResolveIntrinsicTrackSizes();
   void StretchFlexibleTracks(Optional<LayoutUnit> free_space);
+  void StretchAutoTracks();
 
   // State machine.
   void AdvanceNextState();
@@ -185,6 +186,7 @@ class GridTrackSizingAlgorithm final {
   Vector<GridTrack> rows_;
   Vector<size_t> content_sized_tracks_index_;
   Vector<size_t> flexible_sized_tracks_index_;
+  Vector<size_t> auto_sized_tracks_index_;
 
   GridTrackSizingDirection direction_;
 
