@@ -311,11 +311,11 @@ BASE_EXPORT size_t GetSystemCommitCharge();
 // returned by GetPageSize().
 BASE_EXPORT size_t GetPageSize();
 
-#if defined(OS_POSIX)
 // Returns the maximum number of file descriptors that can be open by a process
 // at once. If the number is unavailable, a conservative best guess is returned.
 BASE_EXPORT size_t GetMaxFds();
 
+#if defined(OS_POSIX)
 // Sets the file descriptor soft limit to |max_descriptors| or the OS hard
 // limit, whichever is lower.
 BASE_EXPORT void SetFdLimit(unsigned int max_descriptors);
