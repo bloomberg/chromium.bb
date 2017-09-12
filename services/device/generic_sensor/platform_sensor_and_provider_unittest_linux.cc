@@ -638,7 +638,7 @@ TEST_F(PlatformSensorAndProviderLinuxTest, CheckGyroscopeReadingConversion) {
   SensorReadingSharedBuffer* buffer =
       static_cast<SensorReadingSharedBuffer*>(mapping.get());
 #if defined(OS_CHROMEOS)
-  double scaling = kMeanGravity * kRadiansInDegrees / kGyroscopeScalingValue;
+  double scaling = kMeanGravity * kDegreesToRadians / kGyroscopeScalingValue;
   EXPECT_THAT(buffer->reading.gyro.x, -scaling * sensor_values[0]);
   EXPECT_THAT(buffer->reading.gyro.y, -scaling * sensor_values[1]);
   EXPECT_THAT(buffer->reading.gyro.z, -scaling * sensor_values[2]);
