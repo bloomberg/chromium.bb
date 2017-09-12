@@ -5,8 +5,10 @@
 package org.chromium.device.sensors;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doAnswer;
@@ -245,8 +247,8 @@ public class PlatformSensorAndProviderTest {
         // 5Hz min delay
         PlatformSensor sensor = createPlatformSensor(200000, Sensor.TYPE_ACCELEROMETER,
                 SensorType.ACCELEROMETER, Sensor.REPORTING_MODE_CONTINUOUS);
-        assertEquals(true, sensor.checkSensorConfiguration(5));
-        assertEquals(false, sensor.checkSensorConfiguration(6));
+        assertTrue(sensor.checkSensorConfiguration(5));
+        assertFalse(sensor.checkSensorConfiguration(6));
     }
 
     /**
