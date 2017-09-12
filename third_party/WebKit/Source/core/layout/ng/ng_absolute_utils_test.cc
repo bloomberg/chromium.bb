@@ -158,7 +158,7 @@ TEST_F(NGAbsoluteUtilsTest, Horizontal) {
                                                 static_right_position,
                                                 estimated_inline, WTF::nullopt);
   EXPECT_EQ(minmax_60.min_size + border_padding, p.size.width);
-  EXPECT_EQ(LayoutUnit(0), p.inset.right);
+  EXPECT_EQ(container_size_.inline_size, p.inset.right);
 
   // All auto + RTL.
   p = ComputePartialAbsoluteWithChildInlineSize(
@@ -346,7 +346,7 @@ TEST_F(NGAbsoluteUtilsTest, Vertical) {
   ComputeFullAbsoluteWithChildBlockSize(*ltr_space_, *style_,
                                         static_position_bottom, auto_height,
                                         WTF::nullopt, &p);
-  EXPECT_EQ(LayoutUnit(0), p.inset.bottom);
+  EXPECT_EQ(container_size_.block_size, p.inset.bottom);
 
   // If top, bottom, and height are known, compute margins.
   SetVerticalStyle(top, NGAuto, height, NGAuto, bottom);

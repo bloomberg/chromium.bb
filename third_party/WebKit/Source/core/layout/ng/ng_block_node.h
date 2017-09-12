@@ -20,6 +20,7 @@ class NGPhysicalBoxFragment;
 class NGPhysicalFragment;
 struct MinMaxSize;
 struct NGBaselineRequest;
+struct NGBoxStrut;
 struct NGLogicalOffset;
 
 // Represents a node to be laid out.
@@ -39,6 +40,8 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   // available size for min content, and percentage resolution size zero for
   // both.
   MinMaxSize ComputeMinMaxSize();
+
+  NGBoxStrut GetScrollbarSizes() const;
 
   NGLayoutInputNode FirstChild();
 

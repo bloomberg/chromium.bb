@@ -32,4 +32,34 @@ NGStaticPosition NGStaticPosition::Create(NGWritingMode writing_mode,
   return position;
 }
 
+LayoutUnit NGStaticPosition::LeftInset(LayoutUnit container_size,
+                                       LayoutUnit width,
+                                       LayoutUnit margin_left,
+                                       LayoutUnit margin_right) const {
+  if (HasLeft())
+    return offset.left;
+  else
+    return offset.left - width - margin_left - margin_right;
+}
+
+LayoutUnit NGStaticPosition::RightInset(LayoutUnit container_size,
+                                        LayoutUnit width,
+                                        LayoutUnit margin_left,
+                                        LayoutUnit margin_right) const {
+  if (HasLeft())
+    return container_size - offset.left - width - margin_left - margin_right;
+  else
+    return container_size - offset.left;
+}
+
+LayoutUnit NGStaticPosition::TopInset(LayoutUnit container_size,
+                                      LayoutUnit height,
+                                      LayoutUnit margin_top,
+                                      LayoutUnit margin_bottom) const {
+  if (HasTop())
+    return offset.top;
+  else
+    return offset.top - height - margin_bottom - margin_top;
+}
+
 }  // namespace blink
