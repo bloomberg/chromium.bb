@@ -17,8 +17,10 @@ TEST(SandboxTypeTest, Empty) {
                                  "network");
   EXPECT_EQ(SANDBOX_TYPE_NO_SANDBOX, SandboxTypeFromCommandLine(command_line));
 
-  command_line.AppendSwitch(switches::kNoSandbox);
+  EXPECT_FALSE(command_line.HasSwitch(switches::kNoSandbox));
+  SetCommandLineFlagsForSandboxType(&command_line, SANDBOX_TYPE_NO_SANDBOX);
   EXPECT_EQ(SANDBOX_TYPE_NO_SANDBOX, SandboxTypeFromCommandLine(command_line));
+  EXPECT_TRUE(command_line.HasSwitch(switches::kNoSandbox));
 }
 
 TEST(SandboxTypeTest, Renderer) {
@@ -31,8 +33,10 @@ TEST(SandboxTypeTest, Renderer) {
                                  "network");
   EXPECT_EQ(SANDBOX_TYPE_RENDERER, SandboxTypeFromCommandLine(command_line));
 
-  command_line.AppendSwitch(switches::kNoSandbox);
+  EXPECT_FALSE(command_line.HasSwitch(switches::kNoSandbox));
+  SetCommandLineFlagsForSandboxType(&command_line, SANDBOX_TYPE_NO_SANDBOX);
   EXPECT_EQ(SANDBOX_TYPE_NO_SANDBOX, SandboxTypeFromCommandLine(command_line));
+  EXPECT_TRUE(command_line.HasSwitch(switches::kNoSandbox));
 }
 
 TEST(SandboxTypeTest, Utility) {
@@ -42,12 +46,11 @@ TEST(SandboxTypeTest, Utility) {
   EXPECT_EQ(SANDBOX_TYPE_UTILITY, SandboxTypeFromCommandLine(command_line));
 
   base::CommandLine command_line2(command_line);
-  command_line2.AppendSwitchASCII(switches::kUtilityProcessSandboxType,
-                                  "network");
+  SetCommandLineFlagsForSandboxType(&command_line2, SANDBOX_TYPE_NETWORK);
   EXPECT_EQ(SANDBOX_TYPE_NETWORK, SandboxTypeFromCommandLine(command_line2));
 
   base::CommandLine command_line3(command_line);
-  command_line3.AppendSwitchASCII(switches::kUtilityProcessSandboxType, "none");
+  SetCommandLineFlagsForSandboxType(&command_line3, SANDBOX_TYPE_NO_SANDBOX);
   EXPECT_EQ(SANDBOX_TYPE_NO_SANDBOX, SandboxTypeFromCommandLine(command_line3));
 
   base::CommandLine command_line4(command_line);
@@ -62,6 +65,7 @@ TEST(SandboxTypeTest, Utility) {
 TEST(SandboxTypeTest, GPU) {
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kProcessType, switches::kGpuProcess);
+  SetCommandLineFlagsForSandboxType(&command_line, SANDBOX_TYPE_GPU);
   EXPECT_EQ(SANDBOX_TYPE_GPU, SandboxTypeFromCommandLine(command_line));
 
   command_line.AppendSwitchASCII(switches::kUtilityProcessSandboxType,
@@ -90,6 +94,7 @@ TEST(SandboxTypeTest, PPAPIPlugin) {
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kProcessType,
                                  switches::kPpapiPluginProcess);
+  SetCommandLineFlagsForSandboxType(&command_line, SANDBOX_TYPE_PPAPI);
   EXPECT_EQ(SANDBOX_TYPE_PPAPI, SandboxTypeFromCommandLine(command_line));
 
   command_line.AppendSwitchASCII(switches::kUtilityProcessSandboxType,

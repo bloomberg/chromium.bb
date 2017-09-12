@@ -128,6 +128,7 @@ if (current_cpu == "x86") {
       "//content/app/sandbox_helper_win.cc",
       "//content/common/sandbox_init_win.cc",
       "//content/common/sandbox_win.cc",
+      "//content/public/common/sandbox_type.cc",
       "//content/public/common/sandboxed_process_launcher_delegate.cc",
     ]
 

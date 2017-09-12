@@ -10,6 +10,42 @@
 
 namespace content {
 
+void SetCommandLineFlagsForSandboxType(base::CommandLine* command_line,
+                                       SandboxType sandbox_type) {
+  switch (sandbox_type) {
+    case SANDBOX_TYPE_NO_SANDBOX:
+      command_line->AppendSwitch(switches::kNoSandbox);
+      break;
+    case SANDBOX_TYPE_RENDERER:
+      DCHECK(command_line->GetSwitchValueASCII(switches::kProcessType) ==
+             switches::kRendererProcess);
+      break;
+    case SANDBOX_TYPE_UTILITY:
+      DCHECK(command_line->GetSwitchValueASCII(switches::kProcessType) ==
+             switches::kUtilityProcess);
+      DCHECK(!command_line->HasSwitch(switches::kUtilityProcessSandboxType));
+      command_line->AppendSwitchASCII(switches::kUtilityProcessSandboxType,
+                                      "utility");
+      break;
+    case SANDBOX_TYPE_GPU:
+      DCHECK(command_line->GetSwitchValueASCII(switches::kProcessType) ==
+             switches::kGpuProcess);
+      break;
+    case SANDBOX_TYPE_PPAPI:
+      DCHECK(command_line->GetSwitchValueASCII(switches::kProcessType) ==
+             switches::kPpapiPluginProcess);
+      break;
+    case SANDBOX_TYPE_NETWORK:
+      DCHECK(command_line->GetSwitchValueASCII(switches::kProcessType) ==
+             switches::kUtilityProcess);
+      DCHECK(!command_line->HasSwitch(switches::kUtilityProcessSandboxType));
+      command_line->AppendSwitchASCII(switches::kUtilityProcessSandboxType,
+                                      "network");
+    default:
+      break;
+  }
+}
+
 SandboxType SandboxTypeFromCommandLine(const base::CommandLine& command_line) {
   if (command_line.HasSwitch(switches::kNoSandbox))
     return SANDBOX_TYPE_NO_SANDBOX;

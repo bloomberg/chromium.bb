@@ -263,8 +263,7 @@ bool UtilityProcessHostImpl::StartProcess() {
     cmd_line->AppendArg(switches::kPrefetchArgumentOther);
 #endif  // defined(OS_WIN)
 
-    if (IsUnsandboxedSandboxType(sandbox_type_))
-      cmd_line->AppendSwitch(switches::kNoSandbox);
+    SetCommandLineFlagsForSandboxType(cmd_line.get(), sandbox_type_);
 
     // Browser command-line switches to propagate to the utility process.
     static const char* const kSwitchNames[] = {

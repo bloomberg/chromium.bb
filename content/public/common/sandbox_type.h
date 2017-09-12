@@ -49,6 +49,10 @@ inline bool IsUnsandboxedSandboxType(SandboxType sandbox_type) {
          sandbox_type == SANDBOX_TYPE_NETWORK;
 }
 
+CONTENT_EXPORT void SetCommandLineFlagsForSandboxType(
+    base::CommandLine* command_line,
+    SandboxType sandbox_type);
+
 CONTENT_EXPORT SandboxType
 SandboxTypeFromCommandLine(const base::CommandLine& command_line);
 

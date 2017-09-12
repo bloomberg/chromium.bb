@@ -16,6 +16,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/sandbox_init.h"
+#include "content/public/common/sandbox_type.h"
 #include "content/utility/utility_thread_impl.h"
 
 #if defined(OS_LINUX)
@@ -67,8 +68,8 @@ int UtilityMain(const MainFunctionParams& parameters) {
   }
 
 #if defined(OS_WIN)
-  bool no_sandbox = parameters.command_line.HasSwitch(switches::kNoSandbox);
-  if (!no_sandbox) {
+  if (!IsUnsandboxedSandboxType(
+          SandboxTypeFromCommandLine(parameters.command_line))) {
     sandbox::TargetServices* target_services =
         parameters.sandbox_info->target_services;
     if (!target_services)
