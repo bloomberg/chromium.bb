@@ -17,7 +17,7 @@
 #include "extensions/renderer/console.h"
 #include "extensions/renderer/content_watcher.h"
 #include "extensions/renderer/dispatcher.h"
-#include "extensions/renderer/js_renderer_messaging_service.h"
+#include "extensions/renderer/renderer_messaging_service.h"
 #include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"

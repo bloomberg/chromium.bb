@@ -156,6 +156,8 @@ source_set("renderer") {
     "render_frame_observer_natives.h",
     "renderer_extension_registry.cc",
     "renderer_extension_registry.h",
+    "renderer_messaging_service.cc",
+    "renderer_messaging_service.h",
     "request_sender.cc",
     "request_sender.h",
     "resource_bundle_source_map.cc",
