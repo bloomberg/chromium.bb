@@ -83,10 +83,6 @@ static bool check_msgtable() {
   exemptions.push_back(OzoneGpuMsgStart);
 #endif  // !defined(USE_OZONE)
 
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
-  exemptions.push_back(ChromeUtilityExtensionsMsgStart);
-#endif
-
 #if !defined(OS_WIN)
   exemptions.push_back(DWriteFontProxyMsgStart);
 #endif
