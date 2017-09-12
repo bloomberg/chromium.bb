@@ -313,16 +313,14 @@ TEST_F(SiteSettingsHandlerTest, GetAndSetDefault) {
 }
 
 TEST_F(SiteSettingsHandlerTest, Origins) {
-  const std::string google_with_port("https://www.google.com:443");
-  // The display name won't show the port if it's default for that scheme.
-  const std::string google("https://www.google.com");
+  const std::string google("https://www.google.com:443");
   const std::string kUmaBase("WebsiteSettings.Menu.PermissionChanged");
   {
     // Test the JS -> C++ -> JS callback path for configuring origins, by
     // setting Google.com to blocked.
     base::ListValue set_args;
-    set_args.AppendString(google_with_port);  // Primary pattern.
-    set_args.AppendString(google_with_port);  // Secondary pattern.
+    set_args.AppendString(google);  // Primary pattern.
+    set_args.AppendString(google);  // Secondary pattern.
     set_args.AppendString(kNotifications);
     set_args.AppendString(
         content_settings::ContentSettingToString(CONTENT_SETTING_BLOCK));
@@ -340,15 +338,14 @@ TEST_F(SiteSettingsHandlerTest, Origins) {
   get_exception_list_args.AppendString(kCallbackId);
   get_exception_list_args.AppendString(kNotifications);
   handler()->HandleGetExceptionList(&get_exception_list_args);
-  ValidateOrigin(google_with_port, google_with_port, google,
-                 CONTENT_SETTING_BLOCK,
+  ValidateOrigin(google, google, google, CONTENT_SETTING_BLOCK,
                  site_settings::SiteSettingSource::kPreference, 2U);
 
   {
     // Reset things back to how they were.
     base::ListValue reset_args;
-    reset_args.AppendString(google_with_port);
-    reset_args.AppendString(google_with_port);
+    reset_args.AppendString(google);
+    reset_args.AppendString(google);
     reset_args.AppendString(kNotifications);
     reset_args.AppendBoolean(false);  // Incognito.
     base::HistogramTester histograms;
@@ -429,22 +426,25 @@ TEST_F(SiteSettingsHandlerTest, DefaultSettingSource) {
 }
 
 TEST_F(SiteSettingsHandlerTest, GetAndSetOriginPermissions) {
+  const std::string origin_with_port("https://www.example.com:443");
+  // The display name won't show the port if it's default for that scheme.
   const std::string origin("https://www.example.com");
   base::ListValue get_args;
   get_args.AppendString(kCallbackId);
-  get_args.AppendString(origin);
+  get_args.AppendString(origin_with_port);
   {
     auto category_list = base::MakeUnique<base::ListValue>();
     category_list->AppendString(kNotifications);
     get_args.Append(std::move(category_list));
   }
   handler()->HandleGetOriginPermissions(&get_args);
-  ValidateOrigin(origin, origin, origin, CONTENT_SETTING_ASK,
+  ValidateOrigin(origin_with_port, origin_with_port, origin,
+                 CONTENT_SETTING_ASK,
                  site_settings::SiteSettingSource::kDefault, 1U);
 
   // Block notifications.
   base::ListValue set_args;
-  set_args.AppendString(origin);
+  set_args.AppendString(origin_with_port);
   {
     auto category_list = base::MakeUnique<base::ListValue>();
     category_list->AppendString(kNotifications);
@@ -457,7 +457,7 @@ TEST_F(SiteSettingsHandlerTest, GetAndSetOriginPermissions) {
 
   // Reset things back to how they were.
   base::ListValue reset_args;
-  reset_args.AppendString(origin);
+  reset_args.AppendString(origin_with_port);
   auto category_list = base::MakeUnique<base::ListValue>();
   category_list->AppendString(kNotifications);
   reset_args.Append(std::move(category_list));
@@ -469,7 +469,8 @@ TEST_F(SiteSettingsHandlerTest, GetAndSetOriginPermissions) {
 
   // Verify the reset was successful.
   handler()->HandleGetOriginPermissions(&get_args);
-  ValidateOrigin(origin, origin, origin, CONTENT_SETTING_ASK,
+  ValidateOrigin(origin_with_port, origin_with_port, origin,
+                 CONTENT_SETTING_ASK,
                  site_settings::SiteSettingSource::kDefault, 4U);
 }
 
