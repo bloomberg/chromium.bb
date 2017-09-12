@@ -91,7 +91,7 @@ LoginPasswordView::LoginPasswordView(const OnPasswordSubmit& on_submit)
   // TODO: Change icon color when enabled/disabled.
   submit_icon->SetImage(
       gfx::CreateVectorIcon(kLockScreenArrowIcon, SK_ColorWHITE));
-  submit_button_ = new ash::tray::ButtonFromView(
+  submit_button_ = new tray::ButtonFromView(
       submit_icon, this, TrayPopupInkDropStyle::HOST_CENTERED);
   row->AddChildView(submit_button_);
 

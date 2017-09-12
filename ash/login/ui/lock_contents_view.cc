@@ -268,8 +268,6 @@ void LockContentsView::OnPinEnabledForUserChanged(const AccountId& user,
 }
 
 void LockContentsView::OnFocusOut(bool reverse) {
-  LOG(ERROR) << "!! LockContentsView::OnFocusOut reverse=" << reverse;
-
   // This function is called when the status area is losing focus. We want to
   // switch the focused widget to the next one in the cycle.
   FocusNextWidget(reverse);
@@ -454,7 +452,7 @@ void LockContentsView::OnAuthenticate(bool auth_success) {
   if (auth_success) {
     unlock_attempt_ = 0;
     error_bubble_->Close();
-    ash::LockScreen::Get()->Destroy();
+    LockScreen::Get()->Destroy();
   } else {
     ShowErrorMessage();
     ++unlock_attempt_;

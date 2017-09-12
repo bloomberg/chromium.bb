@@ -87,7 +87,7 @@ class LoginUserView::UserImage : public views::View {
     // TODO(jdufault): We need to render a black border. We will probably have
     // to add support directly to RoundedImageView, since the existing
     // views::Border renders based on bounds (ie, a rectangle).
-    image_ = new ash::tray::RoundedImageView(size_ / 2);
+    image_ = new tray::RoundedImageView(size_ / 2);
     AddChildView(image_);
   }
   ~UserImage() override = default;
@@ -100,7 +100,7 @@ class LoginUserView::UserImage : public views::View {
   const char* GetClassName() const override { return kLoginUserImageClassName; }
 
  private:
-  ash::tray::RoundedImageView* image_ = nullptr;
+  tray::RoundedImageView* image_ = nullptr;
   int size_;
 
   DISALLOW_COPY_AND_ASSIGN(UserImage);
@@ -238,7 +238,7 @@ LoginUserView::LoginUserView(LoginDisplayStyle style,
         gfx::CreateVectorIcon(kLockScreenDropdownIcon, SK_ColorWHITE));
     user_dropdown_->SetFocusBehavior(FocusBehavior::ALWAYS);
     user_dropdown_->SetFocusPainter(views::Painter::CreateSolidFocusPainter(
-        ash::kFocusBorderColor, ash::kFocusBorderThickness, gfx::InsetsF()));
+        kFocusBorderColor, kFocusBorderThickness, gfx::InsetsF()));
   }
 
   switch (style) {

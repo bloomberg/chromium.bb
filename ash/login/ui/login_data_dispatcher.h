@@ -35,8 +35,7 @@ class ASH_EXPORT LoginDataDispatcher {
     virtual ~Observer();
 
     // Called when the displayed set of users has changed.
-    virtual void OnUsersChanged(
-        const std::vector<ash::mojom::UserInfoPtr>& users);
+    virtual void OnUsersChanged(const std::vector<mojom::UserInfoPtr>& users);
 
     // Called when pin should be enabled or disabled for |user|. By default, pin
     // should be disabled.
@@ -50,7 +49,7 @@ class ASH_EXPORT LoginDataDispatcher {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  void NotifyUsers(const std::vector<ash::mojom::UserInfoPtr>& users);
+  void NotifyUsers(const std::vector<mojom::UserInfoPtr>& users);
 
   void SetPinEnabledForUser(const AccountId& user, bool enabled);
 

@@ -35,7 +35,7 @@ class LoginTestBase : public AshTestBase {
   // Changes the active number of users. Fires an event on |data_dispatcher()|.
   void SetUserCount(size_t count);
 
-  const std::vector<ash::mojom::UserInfoPtr>& users() const { return users_; }
+  const std::vector<mojom::UserInfoPtr>& users() const { return users_; }
 
   LoginDataDispatcher* data_dispatcher() { return &data_dispatcher_; }
 
@@ -48,7 +48,7 @@ class LoginTestBase : public AshTestBase {
   views::Widget* widget_ = nullptr;
   std::unique_ptr<WidgetDelegate> delegate_;
 
-  std::vector<ash::mojom::UserInfoPtr> users_;
+  std::vector<mojom::UserInfoPtr> users_;
 
   LoginDataDispatcher data_dispatcher_;
 

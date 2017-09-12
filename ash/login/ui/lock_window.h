@@ -24,7 +24,7 @@ enum class Config;
 class ASH_EXPORT LockWindow : public views::Widget,
                               public views::WidgetDelegate {
  public:
-  explicit LockWindow(ash::Config config);
+  explicit LockWindow(Config config);
   ~LockWindow() override;
 
   LoginDataDispatcher* data_dispatcher() const {

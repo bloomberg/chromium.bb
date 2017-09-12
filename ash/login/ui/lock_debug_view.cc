@@ -24,7 +24,7 @@ const char* kDebugUserNames[] = {
 
 // Additional state for a user that the debug UI needs to reference.
 struct UserMetadata {
-  explicit UserMetadata(const ash::mojom::UserInfoPtr& user_info)
+  explicit UserMetadata(const mojom::UserInfoPtr& user_info)
       : account_id(user_info->account_id) {}
 
   AccountId account_id;
@@ -77,10 +77,9 @@ class LockDebugView::DebugDataDispatcherTransformer
       debug_users_.erase(debug_users_.begin() + count, debug_users_.end());
 
     // Build |users|, add any new users to |debug_users|.
-    std::vector<ash::mojom::UserInfoPtr> users;
+    std::vector<mojom::UserInfoPtr> users;
     for (size_t i = 0; i < size_t{count}; ++i) {
-      const ash::mojom::UserInfoPtr& root_user =
-          root_users_[i % root_users_.size()];
+      const mojom::UserInfoPtr& root_user = root_users_[i % root_users_.size()];
       users.push_back(root_user->Clone());
       if (i >= root_users_.size()) {
         users[i]->account_id = AccountId::FromUserEmailGaiaId(
@@ -113,8 +112,7 @@ class LockDebugView::DebugDataDispatcherTransformer
   }
 
   // LoginDataDispatcher::Observer:
-  void OnUsersChanged(
-      const std::vector<ash::mojom::UserInfoPtr>& users) override {
+  void OnUsersChanged(const std::vector<mojom::UserInfoPtr>& users) override {
     // Update root_users_ to new source data.
     root_users_.clear();
     for (auto& user : users)
@@ -143,7 +141,7 @@ class LockDebugView::DebugDataDispatcherTransformer
   LoginDataDispatcher debug_dispatcher_;
 
   // Original set of users from |root_dispatcher_|.
-  std::vector<ash::mojom::UserInfoPtr> root_users_;
+  std::vector<mojom::UserInfoPtr> root_users_;
 
   // Metadata for users that the UI is displaying.
   std::vector<UserMetadata> debug_users_;

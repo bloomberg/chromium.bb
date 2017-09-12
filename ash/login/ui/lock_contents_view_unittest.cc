@@ -18,9 +18,9 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/widget/widget.h"
 
-using LockContentsViewUnitTest = ash::LoginTestBase;
-
 namespace ash {
+
+using LockContentsViewUnitTest = LoginTestBase;
 
 TEST_F(LockContentsViewUnitTest, DisplayMode) {
   // Build lock screen with 1 user.
