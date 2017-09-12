@@ -2,7 +2,7 @@ Tests ServiceWorkersView on resources panel.
 
 Select ServiceWorkers tree element.
 Register ServiceWorker for scope1
-http://127.0.0.1:8000/inspector/service-workers/resources/scope1/
+127.0.0.1/inspector/service-workers/resources/scope1
 Update
 Push
 Sync
@@ -19,7 +19,7 @@ Errors
 details
 clear
 Register ServiceWorker for scope2
-http://127.0.0.1:8000/inspector/service-workers/resources/scope1/
+127.0.0.1/inspector/service-workers/resources/scope1
 Update
 Push
 Sync
@@ -35,7 +35,7 @@ Errors
 0
 details
 clear
-http://127.0.0.1:8000/inspector/service-workers/resources/scope2/
+127.0.0.1/inspector/service-workers/resources/scope2
 Update
 Push
 Sync
@@ -52,7 +52,19 @@ Errors
 details
 clear
 Unegister ServiceWorker for scope1
-http://127.0.0.1:8000/inspector/service-workers/resources/scope2/
+127.0.0.1/inspector/service-workers/resources/scope1 - deleted
+Update
+Push
+Sync
+Unregister
+Source
+Status
+Clients
+Errors
+0
+details
+clear
+127.0.0.1/inspector/service-workers/resources/scope2
 Update
 Push
 Sync
@@ -63,18 +75,6 @@ Received
 Status
 #N activated and is running
 stop
-Clients
-Errors
-0
-details
-clear
-http://127.0.0.1:8000/inspector/service-workers/resources/scope1/ - deleted
-Update
-Push
-Sync
-Unregister
-Source
-Status
 Clients
 Errors
 0
