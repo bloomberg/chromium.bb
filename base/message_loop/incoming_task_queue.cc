@@ -56,6 +56,9 @@ IncomingTaskQueue::IncomingTaskQueue(MessageLoop* message_loop)
       message_loop_scheduled_(false),
       always_schedule_work_(AlwaysNotifyPump(message_loop_->type())),
       is_ready_for_scheduling_(false) {
+  // The constructing sequence is not necessarily the running sequence in the
+  // case of base::Thread.
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 bool IncomingTaskQueue::AddToIncomingQueue(
@@ -139,7 +142,7 @@ IncomingTaskQueue::~IncomingTaskQueue() {
 }
 
 void IncomingTaskQueue::RunTask(PendingTask* pending_task) {
-  SEQUENCE_CHECKER(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   task_annotator_.RunTask("MessageLoop::PostTask", pending_task);
 }
 
