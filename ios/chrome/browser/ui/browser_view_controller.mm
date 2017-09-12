@@ -171,8 +171,10 @@
 #import "ios/chrome/browser/web/blocked_popup_tab_helper.h"
 #import "ios/chrome/browser/web/error_page_content.h"
 #import "ios/chrome/browser/web/passkit_dialog_provider.h"
+#include "ios/chrome/browser/web/print_tab_helper.h"
 #import "ios/chrome/browser/web/repost_form_tab_helper.h"
 #import "ios/chrome/browser/web/sad_tab_tab_helper.h"
+#include "ios/chrome/browser/web/web_state_printer.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
@@ -375,7 +377,8 @@ bool IsURLAllowedInIncognito(const GURL& url) {
                                     UIGestureRecognizerDelegate,
                                     UpgradeCenterClientProtocol,
                                     VoiceSearchBarDelegate,
-                                    VoiceSearchBarOwner> {
+                                    VoiceSearchBarOwner,
+                                    WebStatePrinter> {
   // The dependency factory passed on initialization.  Used to vend objects used
   // by the BVC.
   BrowserViewControllerDependencyFactory* _dependencyFactory;
@@ -2367,6 +2370,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   // BrowserViewController owns the coordinator that displays the Sad Tab.
   if (!SadTabTabHelper::FromWebState(tab.webState))
     SadTabTabHelper::CreateForWebState(tab.webState, _sadTabCoordinator);
+  PrintTabHelper::CreateForWebState(tab.webState, self);
 }
 
 - (void)uninstallDelegatesForTab:(Tab*)tab {
@@ -5104,6 +5108,13 @@ bubblePresenterForFeature:(const base::Feature&)feature
 - (void)prepareForPageInfoPresentation {
   // Dismiss the omnibox (if open).
   [_toolbarController cancelOmniboxEdit];
+}
+
+#pragma mark - WebStatePrinter
+
+- (void)printWebState:(web::WebState*)webState {
+  if (webState == [_model currentTab].webState)
+    [self printTab];
 }
 
 @end
