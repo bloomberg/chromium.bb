@@ -206,7 +206,8 @@ class PortTest(unittest.TestCase):
         # primary_driver_flag() comes from rwt.flag or --additional-driver-flag
         # additional_driver_flags() excludes primary_driver_flag()
 
-        port_a = self.make_port()
+        port_a = self.make_port(options=optparse.Values(
+            {'additional_driver_flag': []}))
         port_b = self.make_port(options=optparse.Values(
             {'additional_driver_flag': ['--bb']}))
         port_c = self.make_port(options=optparse.Values(
