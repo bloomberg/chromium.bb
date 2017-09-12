@@ -272,16 +272,7 @@ TEST_F(UDPSocketTest, PartialRecv) {
                              &recv_from_address_, recv_callback.callback());
   rv = recv_callback.GetResult(rv);
 
-#if defined(OS_WIN)
-  // On Windows Recv() returns ERR_MSG_TOO_BIG.
-  // TODO(sergeyu): Consider making this behavior consistent on all platforms.
   EXPECT_EQ(rv, ERR_MSG_TOO_BIG);
-#else   // !OS_WIN
-  EXPECT_EQ(rv, kPartialReadSize);
-#endif  // !OS_WIN
-
-  EXPECT_EQ(test_packet.substr(0, kPartialReadSize),
-            std::string(buffer->data(), kPartialReadSize));
 
   // Send a different message again.
   std::string second_packet("Second packet");
