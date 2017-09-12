@@ -209,6 +209,17 @@ struct AutocompleteMatch {
                                  TemplateURLService* template_url_service,
                                  const base::string16& keyword);
 
+  // Sets the |match_in_scheme|, |match_in_subdomain|, and |match_after_host|
+  // flags based on the provided |url| and list of substring |match_positions|.
+  // |match_positions| is the [begin, end) positions of a match within a string.
+  using MatchPosition = std::pair<size_t, size_t>;
+  static void GetMatchComponents(
+      const GURL& url,
+      const std::vector<MatchPosition>& match_positions,
+      bool* match_in_scheme,
+      bool* match_in_subdomain,
+      bool* match_after_host);
+
   // Gets the formatting flags used for display of suggestions. This method
   // encapsulates the return of experimental flags too, so any URLs displayed
   // as an Omnibox suggestion should use this method.

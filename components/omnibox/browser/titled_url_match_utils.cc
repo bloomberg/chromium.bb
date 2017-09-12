@@ -69,18 +69,20 @@ AutocompleteMatch TitledUrlMatchToAutocompleteMatch(
   CorrectTitleAndMatchPositions(&title, &new_title_match_positions);
   const base::string16& url_utf16 = base::UTF8ToUTF16(url.spec());
   match.destination_url = url;
-  const size_t match_start =
-      titled_url_match.url_match_positions.empty()
-          ? base::string16::npos
-          : titled_url_match.url_match_positions[0].first;
-  const bool trim_http =
-      !AutocompleteInput::HasHTTPScheme(input.text()) &&
-      ((match_start == base::string16::npos) || (match_start != 0));
+
+  bool match_in_scheme = false;
+  bool match_in_subdomain = false;
+  bool match_after_host = false;
+  AutocompleteMatch::GetMatchComponents(
+      url, titled_url_match.url_match_positions, &match_in_scheme,
+      &match_in_subdomain, &match_after_host);
+  auto format_types = AutocompleteMatch::GetFormatTypes(
+      match_in_scheme, match_in_subdomain, match_after_host);
+
   std::vector<size_t> offsets = TitledUrlMatch::OffsetsFromMatchPositions(
       titled_url_match.url_match_positions);
   match.contents = url_formatter::FormatUrlWithOffsets(
-      url, AutocompleteMatch::GetFormatTypes(!trim_http, false, false),
-      net::UnescapeRule::SPACES, nullptr, nullptr, &offsets);
+      url, format_types, net::UnescapeRule::SPACES, nullptr, nullptr, &offsets);
   TitledUrlMatch::MatchPositions new_url_match_positions =
       TitledUrlMatch::ReplaceOffsetsInMatchPositions(
           titled_url_match.url_match_positions, offsets);
@@ -92,7 +94,7 @@ AutocompleteMatch TitledUrlMatchToAutocompleteMatch(
   size_t inline_autocomplete_offset = URLPrefix::GetInlineAutocompleteOffset(
       input.text(), fixed_up_input_text, false, url_utf16);
   auto fill_into_edit_format_types = url_formatter::kFormatUrlOmitDefaults;
-  if (!trim_http)
+  if (match_in_scheme)
     fill_into_edit_format_types &= ~url_formatter::kFormatUrlOmitHTTP;
   match.fill_into_edit =
       AutocompleteInput::FormattedStringWithEquivalentMeaning(
