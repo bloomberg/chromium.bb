@@ -112,8 +112,6 @@ int ADTSStreamParser::ParseFrameHeader(const uint8_t* data,
                           << 3;
     extra_data->push_back(esds >> 8);
     extra_data->push_back(esds & 0xFF);
-    if (media_log())
-      DCHECK(mp4::AAC().Parse(*extra_data, media_log()));
   }
 
   return bytes_read;
