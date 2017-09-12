@@ -522,6 +522,7 @@ post_process_cmdline() {
     soft_enable rect_intra_pred
     soft_enable convolve_round
     soft_enable aom_qm
+    soft_enable dist_8x8
 
     # Enable low-bitdepth pixel pipeline by default
     soft_enable lowbitdepth
