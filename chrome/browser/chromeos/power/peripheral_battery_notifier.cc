@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/system_notifier.h"
@@ -128,11 +129,13 @@ struct NotificationParams {
   int image_id;
   std::string notifier_name;
   GURL url;
+  const gfx::VectorIcon* icon;
 };
 
 NotificationParams GetNonStylusNotificationParams(const std::string& address,
                                                   const std::string& name,
-                                                  int battery_level) {
+                                                  int battery_level,
+                                                  bool is_bluetooth) {
   return NotificationParams{
       address,
       base::ASCIIToUTF16(name),
@@ -140,7 +143,9 @@ NotificationParams GetNonStylusNotificationParams(const std::string& address,
           IDS_ASH_LOW_PERIPHERAL_BATTERY_NOTIFICATION_TEXT, battery_level),
       IDR_NOTIFICATION_PERIPHERAL_BATTERY_LOW,
       kNotifierId,
-      GURL(kNotificationOriginUrl)};
+      GURL(kNotificationOriginUrl),
+      is_bluetooth ? &ash::kNotificationBluetoothBatteryWarningIcon
+                   : &ash::kNotificationBatteryCriticalIcon};
 }
 
 NotificationParams GetStylusNotificationParams() {
@@ -150,7 +155,8 @@ NotificationParams GetStylusNotificationParams() {
       l10n_util::GetStringUTF16(IDS_ASH_LOW_STYLUS_BATTERY_NOTIFICATION_BODY),
       IDR_NOTIFICATION_STYLUS_BATTERY_LOW,
       ash::system_notifier::kNotifierStylusBattery,
-      GURL()};
+      GURL(),
+      &ash::kNotificationBatteryCriticalIcon};
 }
 
 }  // namespace
@@ -274,16 +280,18 @@ bool PeripheralBatteryNotifier::PostNotification(const std::string& path,
   NotificationParams params =
       battery.is_stylus
           ? GetStylusNotificationParams()
-          : GetNonStylusNotificationParams(path, battery.name, battery.level);
+          : GetNonStylusNotificationParams(path, battery.name, battery.level,
+                                           !battery.bluetooth_address.empty());
 
-  auto notification = base::MakeUnique<message_center::Notification>(
+  auto notification = ash::system_notifier::CreateSystemNotification(
       message_center::NOTIFICATION_TYPE_SIMPLE, params.id, params.title,
       params.message,
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(params.image_id),
       base::string16(), params.url,
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  params.notifier_name),
-      message_center::RichNotificationData(), nullptr);
+      message_center::RichNotificationData(), nullptr, *params.icon,
+      message_center::SystemNotificationWarningLevel::CRITICAL_WARNING);
   notification->SetSystemPriority();
 
   message_center::MessageCenter::Get()->AddNotification(
