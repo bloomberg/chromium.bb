@@ -153,15 +153,16 @@ void HtmlVideoElementCapturerSource::sendNewFrame() {
 
   if (libyuv::ConvertToI420(
           static_cast<uint8*>(bitmap_.getPixels()), bitmap_.getSize(),
-          frame->data(media::VideoFrame::kYPlane),
+          frame->visible_data(media::VideoFrame::kYPlane),
           frame->stride(media::VideoFrame::kYPlane),
-          frame->data(media::VideoFrame::kUPlane),
+          frame->visible_data(media::VideoFrame::kUPlane),
           frame->stride(media::VideoFrame::kUPlane),
-          frame->data(media::VideoFrame::kVPlane),
+          frame->visible_data(media::VideoFrame::kVPlane),
           frame->stride(media::VideoFrame::kVPlane), 0 /* crop_x */,
-          0 /* crop_y */, bitmap_.info().width(), bitmap_.info().height(),
-          frame->coded_size().width(), frame->coded_size().height(),
-          libyuv::kRotate0, source_pixel_format) == 0) {
+          0 /* crop_y */, frame->visible_rect().size().width(),
+          frame->visible_rect().size().height(), bitmap_.info().width(),
+          bitmap_.info().height(), libyuv::kRotate0,
+          source_pixel_format) == 0) {
     // Success!
     io_task_runner_->PostTask(
         FROM_HERE, base::Bind(new_frame_callback_, frame, current_time));
