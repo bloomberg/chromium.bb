@@ -99,7 +99,6 @@ public class BottomToolbarPhone extends ToolbarPhone {
             if (isMovingDown && getLocationBar().isUrlBarFocused()) {
                 getLocationBar().setUrlBarFocus(false);
             }
-
             boolean buttonsClickable = heightFraction == 0.f;
             mToggleTabStackButton.setClickable(buttonsClickable);
             updateMenuButtonClickableState();
@@ -1023,7 +1022,8 @@ public class BottomToolbarPhone extends ToolbarPhone {
         if (isMovingUp && !mAnimatingToolbarButtonDisappearance
                 && mToolbarButtonVisibilityPercent != 0.f) {
             onToolbarButtonAnimationStart(false);
-        } else if (!mAnimatingToolbarButtonAppearance && mToolbarButtonVisibilityPercent != 1.f) {
+        } else if (!isMovingUp && !mAnimatingToolbarButtonAppearance
+                && mToolbarButtonVisibilityPercent != 1.f) {
             onToolbarButtonAnimationStart(true);
         }
 
@@ -1034,9 +1034,9 @@ public class BottomToolbarPhone extends ToolbarPhone {
         updateToolbarButtonVisibility();
 
         if ((mAnimatingToolbarButtonDisappearance
-                    && MathUtils.areFloatsEqual(mToolbarButtonVisibilityPercent, 0.f))
+                    && MathUtils.areFloatsEqual(mLastPeekToHalfHeightFraction, 1.f))
                 || (mAnimatingToolbarButtonAppearance
-                           && MathUtils.areFloatsEqual(mToolbarButtonVisibilityPercent, 1.f))) {
+                           && MathUtils.areFloatsEqual(mLastPeekToHalfHeightFraction, 0.f))) {
             onToolbarButtonAnimationEnd(mAnimatingToolbarButtonAppearance);
         }
     }
@@ -1083,7 +1083,7 @@ public class BottomToolbarPhone extends ToolbarPhone {
         if (!visible) {
             mShowMenuButtonWhenSheetOpen = mBottomSheet.isShowingNewTab();
             mHidingSomeToolbarButtons = true;
-            mLayoutLocationBarInFocusedMode = true;
+            mLayoutLocationBarInFocusedMode = !mShowMenuButtonWhenSheetOpen;
             requestLayout();
         } else {
             mDisableLocationBarRelayout = true;
@@ -1133,8 +1133,6 @@ public class BottomToolbarPhone extends ToolbarPhone {
      * translation X.
      */
     private void updateToolbarButtonVisibility() {
-        boolean isRtl = ApiCompatibilityUtils.isLayoutRtl(this);
-
         updateButtonsContainerVisibilityAndTranslation();
 
         float locationBarTranslationX;
@@ -1149,7 +1147,6 @@ public class BottomToolbarPhone extends ToolbarPhone {
             // background will change as the location bar background expands/contracts.
             locationBarTranslationX =
                     -currentWidth + getRightPositionOfLocationBarBackground(mVisualState);
-
             if (!mHasVisibleViewPriorToUrlBar) locationBarTranslationX -= mToolbarSidePadding;
         } else {
             // The location bar contents should be aligned with the left side of the location bar
@@ -1164,7 +1161,7 @@ public class BottomToolbarPhone extends ToolbarPhone {
 
         // Get the padding straight from the location bar instead of
         // |mLocationBarBackgroundPadding|, because it might be different in incognito mode.
-        if (isRtl) {
+        if (isLocationBarRtl) {
             locationBarTranslationX -= mLocationBar.getPaddingRight();
         } else {
             locationBarTranslationX += mLocationBar.getPaddingLeft();
