@@ -1039,8 +1039,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // to the given |compositing_layer| backing. In SPv1 mode, fragmentation
   // may not cross compositing boundaries, so this wil return false
   // if EnclosingPaginationLayer() is above |compositing_layer|.
+  // If |compositing_layer| is not provided, it will be computed if necessary.
   bool ShouldFragmentCompositedBounds(
-      const PaintLayer* compositing_layer) const;
+      const PaintLayer* compositing_layer = nullptr) const;
 
  private:
   void SetNeedsCompositingInputsUpdateInternal();

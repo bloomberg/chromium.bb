@@ -260,7 +260,7 @@ class PaintPropertyTreeBuilder {
       ObjectPaintProperties*,
       bool& force_subtree_update);
 
-  static void InitSingleFragmentFromParent(
+  ALWAYS_INLINE static void InitSingleFragmentFromParent(
       const LayoutObject&,
       PaintPropertyTreeBuilderContext& full_context,
       bool needs_paint_properties);
