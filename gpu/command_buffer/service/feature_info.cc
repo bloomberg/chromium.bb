@@ -1385,6 +1385,8 @@ void FeatureInfo::InitializeFeatures() {
       gl::HasExtension(extensions, "GL_CHROMIUM_texture_filtering_hint");
   feature_flags_.ext_pixel_buffer_object =
       gl::HasExtension(extensions, "GL_NV_pixel_buffer_object");
+  feature_flags_.oes_rgb8_rgba8 =
+      gl::HasExtension(extensions, "GL_OES_rgb8_rgba8");
 }
 
 void FeatureInfo::InitializeFloatAndHalfFloatFeatures(

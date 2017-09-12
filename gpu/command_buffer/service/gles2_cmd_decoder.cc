@@ -3399,7 +3399,7 @@ bool GLES2DecoderImpl::Initialize(
     offscreen_single_buffer_ = attrib_helper.single_buffer;
 
     if (gl_version_info().is_es) {
-      const bool rgb8_supported = context_->HasExtension("GL_OES_rgb8_rgba8");
+      const bool rgb8_supported = features().oes_rgb8_rgba8;
       // The only available default render buffer formats in GLES2 have very
       // little precision.  Don't enable multisampling unless 8-bit render
       // buffer formats are available--instead fall back to 8-bit textures.
