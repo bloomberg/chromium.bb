@@ -10,7 +10,7 @@
 #include "components/signin/core/browser/signin_metrics.h"
 #import "ios/chrome/browser/signin/constants.h"
 
-@protocol ApplicationSettingsCommands;
+@protocol ApplicationCommands;
 @class ChromeIdentity;
 @class ChromeSigninViewController;
 
@@ -67,7 +67,7 @@ class ChromeBrowserState;
 // It is valid to set this in the |willStartSignIn:| method of the delegate.
 @property(nonatomic, assign) ShouldClearData shouldClearData;
 
-@property(nonatomic, weak, readonly) id<ApplicationSettingsCommands> dispatcher;
+@property(nonatomic, weak, readonly) id<ApplicationCommands> dispatcher;
 
 // Designated initializer.
 // * |browserState| is the current browser state.
@@ -82,8 +82,7 @@ class ChromeBrowserState;
                          accessPoint:(signin_metrics::AccessPoint)accessPoint
                          promoAction:(signin_metrics::PromoAction)promoAction
                       signInIdentity:(ChromeIdentity*)identity
-                          dispatcher:
-                              (id<ApplicationSettingsCommands>)dispatcher;
+                          dispatcher:(id<ApplicationCommands>)dispatcher;
 
 // Cancels the on-going authentication operation (if any). |delegate| will be
 // called with |didFailSignIn|.

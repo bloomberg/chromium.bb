@@ -133,7 +133,7 @@ bool ShouldShowSyncSettings(SyncSetupService::SyncServiceState syncState) {
 
 bool DisplaySyncErrors(ios::ChromeBrowserState* browser_state,
                        Tab* tab,
-                       id<ApplicationSettingsCommands> dispatcher) {
+                       id<ApplicationCommands> dispatcher) {
   // Avoid displaying sync errors on incognito tabs.
   if (browser_state->IsOffTheRecord())
     return false;

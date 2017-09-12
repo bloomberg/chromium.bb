@@ -15,7 +15,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
-#import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/ui_util.h"
 
@@ -51,6 +51,9 @@ class SignInObserver;
   std::unique_ptr<SignInObserver> _signinObserver;
   bool _promoDisplayedRecorded;
 }
+
+// Dispatcher for sending commands.
+@property(nonatomic, readonly, weak) id<ApplicationCommands> dispatcher;
 
 // Records that the promo was displayed. Can be called several times per
 // instance but will effectively record the histogram only once per instance.
@@ -94,6 +97,7 @@ class SignInObserver : public SigninManagerBase::Observer {
 
 @synthesize delegate = _delegate;
 @synthesize promoState = _promoState;
+@synthesize dispatcher = _dispatcher;
 
 + (void)registerBrowserStatePrefs:(user_prefs::PrefRegistrySyncable*)registry {
   registry->RegisterBooleanPref(prefs::kIosBookmarkPromoAlreadySeen, false);
@@ -101,10 +105,12 @@ class SignInObserver : public SigninManagerBase::Observer {
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                             delegate:
-                                (id<BookmarkPromoControllerDelegate>)delegate {
+                                (id<BookmarkPromoControllerDelegate>)delegate
+                          dispatcher:(id<ApplicationCommands>)dispatcher {
   self = [super init];
   if (self) {
     _delegate = delegate;
+    _dispatcher = dispatcher;
     // Incognito browserState can go away before this class is released, this
     // code avoids keeping a pointer to it.
     _isIncognito = browserState->IsOffTheRecord();
@@ -139,7 +145,7 @@ class SignInObserver : public SigninManagerBase::Observer {
       initWithOperation:AUTHENTICATION_OPERATION_SIGNIN
             accessPoint:signin_metrics::AccessPoint::
                             ACCESS_POINT_BOOKMARK_MANAGER];
-  [self chromeExecuteCommand:command];
+  [self.dispatcher showSignin:command];
 }
 
 - (void)hidePromoCell {
@@ -178,12 +184,6 @@ class SignInObserver : public SigninManagerBase::Observer {
 }
 
 #pragma mark - Private
-
-- (void)chromeExecuteCommand:(id)sender {
-  id delegate = [[UIApplication sharedApplication] delegate];
-  if ([delegate respondsToSelector:@selector(chromeExecuteCommand:)])
-    [delegate chromeExecuteCommand:sender];
-}
 
 - (void)recordPromoDisplayed {
   if (_promoDisplayedRecorded)

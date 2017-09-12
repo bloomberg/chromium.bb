@@ -11,7 +11,7 @@
 #include "components/signin/core/browser/signin_metrics.h"
 #include "ios/chrome/browser/signin/constants.h"
 
-@protocol ApplicationSettingsCommands;
+@protocol ApplicationCommands;
 namespace ios {
 class ChromeBrowserState;
 }
@@ -33,8 +33,7 @@ class ChromeBrowserState;
                isPresentedOnSettings:(BOOL)isPresentedOnSettings
                          accessPoint:(signin_metrics::AccessPoint)accessPoint
                          promoAction:(signin_metrics::PromoAction)promoAction
-                          dispatcher:
-                              (id<ApplicationSettingsCommands>)dispatcher;
+                          dispatcher:(id<ApplicationCommands>)dispatcher;
 
 // Starts user sign-in.
 // * |viewController| is the current view controller.

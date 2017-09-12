@@ -34,7 +34,6 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
-#import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
@@ -594,11 +593,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
   SyncSetupService::SyncServiceState syncState =
       GetSyncStateForBrowserState(_browserState);
   if (ShouldShowSyncSignin(syncState)) {
-    [self chromeExecuteCommand:
-              [[ShowSigninCommand alloc]
-                  initWithOperation:AUTHENTICATION_OPERATION_REAUTHENTICATE
-                        accessPoint:signin_metrics::AccessPoint::
-                                        ACCESS_POINT_UNKNOWN]];
+    [self.dispatcher
+        showSignin:[[ShowSigninCommand alloc]
+                       initWithOperation:AUTHENTICATION_OPERATION_REAUTHENTICATE
+                             accessPoint:signin_metrics::AccessPoint::
+                                             ACCESS_POINT_UNKNOWN]];
   } else if (ShouldShowSyncSettings(syncState)) {
     [self.dispatcher showSyncSettings];
   } else if (ShouldShowSyncPassphraseSettings(syncState)) {

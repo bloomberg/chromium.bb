@@ -576,7 +576,8 @@ enum {
           [[BookmarkControllerFactory alloc] init];
       _bookmarkController =
           [factory bookmarkPanelControllerForBrowserState:_browserState
-                                                   loader:_loader];
+                                                   loader:_loader
+                                               dispatcher:self.dispatcher];
     }
     panelController = _bookmarkController;
     [_bookmarkController setDelegate:self];

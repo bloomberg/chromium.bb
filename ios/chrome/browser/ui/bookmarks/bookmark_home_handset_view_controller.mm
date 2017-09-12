@@ -82,8 +82,11 @@ using bookmarks::BookmarkNode;
 @synthesize cachedContentPosition = _cachedContentPosition;
 
 - (instancetype)initWithLoader:(id<UrlLoader>)loader
-                  browserState:(ios::ChromeBrowserState*)browserState {
-  self = [super initWithLoader:loader browserState:browserState];
+                  browserState:(ios::ChromeBrowserState*)browserState
+                    dispatcher:(id<ApplicationCommands>)dispatcher {
+  self = [super initWithLoader:loader
+                  browserState:browserState
+                    dispatcher:dispatcher];
   if (self) {
     self.sideSwipingPossible = YES;
   }

@@ -13,7 +13,6 @@
 // also need to be updated.
 
 // clang-format off
-#define IDC_SHOW_SIGNIN_IOS                            40905
 #define IDC_SHOW_ADD_ACCOUNT                           40910
 #define IDC_CLEAR_BROWSING_DATA_IOS                    40924
 #define IDC_SHOW_MAIL_COMPOSER                         40926

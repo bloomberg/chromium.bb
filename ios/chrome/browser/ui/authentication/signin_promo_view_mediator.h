@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_delegate.h"
 
+@protocol ApplicationCommands;
 @class ChromeIdentity;
 @class SigninPromoViewConfigurator;
 @protocol SigninPromoViewConsumer;
@@ -57,6 +58,7 @@ enum class SigninPromoViewState {
 // ACCESS_POINT_RECENT_TABS, ACCESS_POINT_TAB_SWITCHER are supported.
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                          accessPoint:(signin_metrics::AccessPoint)accessPoint
+                          dispatcher:(id<ApplicationCommands>)dispatcher
     NS_DESIGNATED_INITIALIZER;
 
 - (SigninPromoViewConfigurator*)createConfigurator;

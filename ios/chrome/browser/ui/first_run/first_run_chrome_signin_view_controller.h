@@ -10,7 +10,7 @@
 extern NSString* const kSignInButtonAccessibilityIdentifier;
 extern NSString* const kSignInSkipButtonAccessibilityIdentifier;
 
-@protocol ApplicationSettingsCommands;
+@protocol ApplicationCommands;
 @class FirstRunConfiguration;
 namespace ios {
 class ChromeBrowserState;
@@ -25,8 +25,7 @@ class ChromeBrowserState;
                             tabModel:(TabModel*)tabModel
                       firstRunConfig:(FirstRunConfiguration*)firstRunConfig
                       signInIdentity:(ChromeIdentity*)identity
-                          dispatcher:
-                              (id<ApplicationSettingsCommands>)dispatcher;
+                          dispatcher:(id<ApplicationCommands>)dispatcher;
 
 @end
 

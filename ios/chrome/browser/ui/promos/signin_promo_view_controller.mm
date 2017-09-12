@@ -63,8 +63,7 @@ enum PromoAction {
 }
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                          dispatcher:
-                              (id<ApplicationSettingsCommands>)dispatcher {
+                          dispatcher:(id<ApplicationCommands>)dispatcher {
   self = [super initWithBrowserState:browserState
                isPresentedOnSettings:NO
                          accessPoint:signin_metrics::AccessPoint::

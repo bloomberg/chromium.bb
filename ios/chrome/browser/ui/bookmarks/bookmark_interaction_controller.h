@@ -6,6 +6,7 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol ApplicationCommands;
 @class Tab;
 @protocol UrlLoader;
 
@@ -18,10 +19,10 @@ class ChromeBrowserState;
 // point is called when the user taps on the star icon.
 @interface BookmarkInteractionController : NSObject
 
-
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                               loader:(id<UrlLoader>)loader
                     parentController:(UIViewController*)parentController
+                          dispatcher:(id<ApplicationCommands>)dispatcher
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 

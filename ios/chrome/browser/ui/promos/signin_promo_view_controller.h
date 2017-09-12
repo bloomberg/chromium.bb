@@ -9,7 +9,7 @@
 
 #import "ios/chrome/browser/ui/authentication/chrome_signin_view_controller.h"
 
-@protocol ApplicationSettingsCommands;
+@protocol ApplicationCommands;
 namespace ios {
 class ChromeBrowserState;
 }
@@ -31,8 +31,7 @@ extern NSString* kDisplayedSSORecallForMajorVersionKey;
 
 // Designated initializer.  |browserState| must not be nil.
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                          dispatcher:
-                              (id<ApplicationSettingsCommands>)dispatcher;
+                          dispatcher:(id<ApplicationCommands>)dispatcher;
 
 // Records in user defaults that the promo has been shown along with the current
 // version number.

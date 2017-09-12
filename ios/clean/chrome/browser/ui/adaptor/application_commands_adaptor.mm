@@ -70,6 +70,10 @@
   [self showAlert:@"openURL"];
 }
 
+- (void)showSignin:(ShowSigninCommand*)command {
+  [self showAlert:@"showSignin"];
+}
+
 #pragma mark - ApplicationSettingsCommands
 
 - (void)showAccountsSettings {

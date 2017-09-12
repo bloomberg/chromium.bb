@@ -10,7 +10,7 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 
-@protocol ApplicationSettingsCommands;
+@protocol ApplicationCommands;
 @class GenericChromeCommand;
 @class Tab;
 
@@ -53,7 +53,7 @@ bool ShouldShowSyncSettings(SyncSetupService::SyncServiceState syncState);
 // Returns true if an infobar was brought up.
 bool DisplaySyncErrors(ios::ChromeBrowserState* browser_state,
                        Tab* tab,
-                       id<ApplicationSettingsCommands> dispatcher);
+                       id<ApplicationCommands> dispatcher);
 
 // Returns true if |errorState| corresponds to a transient sync error.
 bool IsTransientSyncError(SyncSetupService::SyncServiceState errorState);

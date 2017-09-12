@@ -9,7 +9,7 @@
 
 extern NSString* const kUMAMetricsButtonAccessibilityIdentifier;
 
-@protocol ApplicationSettingsCommands;
+@protocol ApplicationCommands;
 @class TabModel;
 
 namespace ios {
@@ -30,7 +30,7 @@ class ChromeBrowserState;
 // which can be nil.
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                             tabModel:(TabModel*)tabModel
-                          dispatcher:(id<ApplicationSettingsCommands>)dispatcher
+                          dispatcher:(id<ApplicationCommands>)dispatcher
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithNibName:(NSString*)nibNameOrNil

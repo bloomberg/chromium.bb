@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/ntp/recent_tabs/views/signed_in_sync_off_view.h"
 
 #include "base/logging.h"
-#import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/fancy_ui/primary_action_button.h"
@@ -30,7 +29,7 @@ const CGFloat kDesiredHeight = 180;
 
 @interface SignedInSyncOffView ()
 // Dispatcher for sending commands.
-@property(nonatomic, weak) id<ApplicationSettingsCommands> dispatcher;
+@property(nonatomic, readonly, weak) id<ApplicationCommands> dispatcher;
 @end
 
 @implementation SignedInSyncOffView {
@@ -40,7 +39,7 @@ const CGFloat kDesiredHeight = 180;
 
 - (instancetype)initWithFrame:(CGRect)aRect
                  browserState:(ios::ChromeBrowserState*)browserState
-                   dispatcher:(id<ApplicationSettingsCommands>)dispatcher {
+                   dispatcher:(id<ApplicationCommands>)dispatcher {
   self = [super initWithFrame:CGRectZero];
   if (self) {
     _browserState = browserState;
@@ -87,11 +86,11 @@ const CGFloat kDesiredHeight = 180;
   SyncSetupService::SyncServiceState syncState =
       GetSyncStateForBrowserState(_browserState);
   if (ShouldShowSyncSignin(syncState)) {
-    [self chromeExecuteCommand:
-              [[ShowSigninCommand alloc]
-                  initWithOperation:AUTHENTICATION_OPERATION_REAUTHENTICATE
-                        accessPoint:signin_metrics::AccessPoint::
-                                        ACCESS_POINT_UNKNOWN]];
+    [self.dispatcher
+        showSignin:[[ShowSigninCommand alloc]
+                       initWithOperation:AUTHENTICATION_OPERATION_REAUTHENTICATE
+                             accessPoint:signin_metrics::AccessPoint::
+                                             ACCESS_POINT_UNKNOWN]];
   } else if (ShouldShowSyncSettings(syncState)) {
     [self.dispatcher showSyncSettings];
   } else if (ShouldShowSyncPassphraseSettings(syncState)) {

@@ -1458,6 +1458,18 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   }
 }
 
+- (void)showSignin:(ShowSigninCommand*)command {
+  if (command.operation == AUTHENTICATION_OPERATION_DISMISS) {
+    [self dismissSigninInteractionController];
+  } else {
+    [self showSigninWithOperation:command.operation
+                         identity:command.identity
+                      accessPoint:command.accessPoint
+                      promoAction:command.promoAction
+                         callback:command.callback];
+  }
+}
+
 #pragma mark - ApplicationSettingsCommands
 
 - (void)showAccountsSettings {
@@ -1513,20 +1525,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   NSInteger command = [sender tag];
 
   switch (command) {
-    case IDC_SHOW_SIGNIN_IOS: {
-      ShowSigninCommand* command =
-          base::mac::ObjCCastStrict<ShowSigninCommand>(sender);
-      if (command.operation == AUTHENTICATION_OPERATION_DISMISS) {
-        [self dismissSigninInteractionController];
-      } else {
-        [self showSigninWithOperation:command.operation
-                             identity:command.identity
-                          accessPoint:command.accessPoint
-                          promoAction:command.promoAction
-                             callback:command.callback];
-      }
-      break;
-    }
     case IDC_SHOW_MAIL_COMPOSER:
       [self.currentBVC chromeExecuteCommand:sender];
       break;
