@@ -233,7 +233,9 @@ class TestExternalAgentDelegate: public DevToolsExternalAgentProxyDelegate {
     recordEvent("Attach");
   };
 
-  void Detach() override { recordEvent("Detach"); };
+  void Detach(DevToolsExternalAgentProxy* proxy) override {
+    recordEvent("Detach");
+  };
 
   std::string GetType() override { return std::string(); }
   std::string GetTitle() override { return std::string(); }
@@ -246,7 +248,8 @@ class TestExternalAgentDelegate: public DevToolsExternalAgentProxyDelegate {
   bool Close() override { return false; };
   base::TimeTicks GetLastActivityTime() override { return base::TimeTicks(); }
 
-  void SendMessageToBackend(const std::string& message) override {
+  void SendMessageToBackend(DevToolsExternalAgentProxy* proxy,
+                            const std::string& message) override {
     recordEvent(std::string("SendMessageToBackend.") + message);
   };
 

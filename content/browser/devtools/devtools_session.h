@@ -27,6 +27,7 @@ class DevToolsSession : public protocol::FrontendChannel {
   ~DevToolsSession() override;
 
   int session_id() const { return session_id_; }
+  DevToolsAgentHostClient* client() const { return client_; }
   void AddHandler(std::unique_ptr<protocol::DevToolsDomainHandler> handler);
   void SetRenderFrameHost(RenderFrameHostImpl* host);
   void SetFallThroughForNotFound(bool value);

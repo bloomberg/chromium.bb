@@ -18,11 +18,15 @@ class DevToolsExternalAgentProxyDelegate {
  public:
   virtual ~DevToolsExternalAgentProxyDelegate() {}
 
-  // Informs the agent that a client host has attached.
+  // Informs the agent that a client has attached.
   virtual void Attach(DevToolsExternalAgentProxy* proxy) = 0;
 
-  // Informs the agent that a client host has detached.
-  virtual void Detach() = 0;
+  // Informs the agent that a client has detached.
+  virtual void Detach(DevToolsExternalAgentProxy* proxy) = 0;
+
+  // Sends a message to the agent from a client.
+  virtual void SendMessageToBackend(DevToolsExternalAgentProxy* proxy,
+                                    const std::string& message) = 0;
 
   // Returns agent host type.
   virtual std::string GetType() = 0;
@@ -53,9 +57,6 @@ class DevToolsExternalAgentProxyDelegate {
 
   // Returns the time when the host was last active.
   virtual base::TimeTicks GetLastActivityTime() = 0;
-
-  // Sends a message to the agent.
-  virtual void SendMessageToBackend(const std::string& message) = 0;
 };
 
 }  // namespace content
