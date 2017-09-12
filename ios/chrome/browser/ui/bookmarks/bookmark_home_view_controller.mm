@@ -1145,9 +1145,10 @@ const CGFloat kSpacer = 50;
       break;
     case BookmarksContextBarMultipleURLSelection:
       // More clicked, show action sheet with context menu.
-      [self presentViewController:[self contextMenuForMultipleBookmarkURLs]
-                         animated:YES
-                       completion:nil];
+      [self
+          presentViewController:[self contextMenuForMultipleBookmarkURLs:nodes]
+                       animated:YES
+                     completion:nil];
       break;
     case BookmarksContextBarSingleFolderSelection:
       // Edit clicked, open the editor.
@@ -1259,7 +1260,9 @@ const CGFloat kSpacer = 50;
 
 #pragma mark - Context Menu
 
-- (UIAlertController*)contextMenuForMultipleBookmarkURLs {
+- (UIAlertController*)contextMenuForMultipleBookmarkURLs:
+    (const std::set<const bookmarks::BookmarkNode*>)nodes {
+  __weak BookmarkHomeViewController* weakSelf = self;
   UIAlertController* alert = [UIAlertController
       alertControllerWithTitle:nil
                        message:nil
@@ -1285,7 +1288,9 @@ const CGFloat kSpacer = 50;
   UIAlertAction* moveAction = [UIAlertAction
       actionWithTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)
                 style:UIAlertActionStyleDefault
-              handler:nil];
+              handler:^(UIAlertAction* _Nonnull action) {
+                [weakSelf moveNodes:nodes];
+              }];
   [alert addAction:openAllAction];
   [alert addAction:openInIncognitoAction];
   [alert addAction:moveAction];
@@ -1373,7 +1378,8 @@ const CGFloat kSpacer = 50;
 }
 
 - (UIAlertController*)contextMenuForMixedAndMultiFolderSelection:
-    (const std::set<const bookmarks::BookmarkNode*>&)nodes {
+    (const std::set<const bookmarks::BookmarkNode*>)nodes {
+  __weak BookmarkHomeViewController* weakSelf = self;
   UIAlertController* alert = [UIAlertController
       alertControllerWithTitle:nil
                        message:nil
@@ -1388,7 +1394,9 @@ const CGFloat kSpacer = 50;
   UIAlertAction* moveAction = [UIAlertAction
       actionWithTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)
                 style:UIAlertActionStyleDefault
-              handler:nil];
+              handler:^(UIAlertAction* _Nonnull action) {
+                [weakSelf moveNodes:nodes];
+              }];
   [alert addAction:moveAction];
   [alert addAction:cancelAction];
   return alert;

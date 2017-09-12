@@ -393,10 +393,7 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 
   // Cancel edit mode
-  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarCancelString])]
-      performAction:grey_tap()];
+  [BookmarksNewGenTestCase closeContextBarEditMode];
 
   [self verifyContextBarInDefaultState];
 }
@@ -842,12 +839,7 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Verify all folder flow UI is now closed.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder Creator")]
-      assertWithMatcher:grey_notVisible()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder Picker")]
-      assertWithMatcher:grey_notVisible()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder Editor")]
-      assertWithMatcher:grey_notVisible()];
+  [self verifyFolderFlowIsClosed];
 
   // Verify new folder "Title For New Folder" has been created under Folder 2.
   [BookmarksNewGenTestCase assertChildCount:2 ofFolderWithName:@"Folder 2"];
@@ -865,6 +857,225 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       selectElementWithMatcher:grey_accessibilityID(@"Title For New Folder")]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1.1")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Verify Move functionality on multiple folder selection.
+- (void)testMoveFunctionalityOnMultipleFolder {
+  if (IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
+  }
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
+
+  [BookmarksNewGenTestCase setupStandardBookmarks];
+  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksNewGenTestCase openMobileBookmarks];
+
+  // Change to edit mode, using context menu.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          @"context_bar_trailing_button")]
+      performAction:grey_tap()];
+
+  // Select multiple folders.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1.1")]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+      performAction:grey_tap()];
+
+  // Tap context menu.
+  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarMoreString])]
+      performAction:grey_tap()];
+
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
+      performAction:grey_tap()];
+
+  // Choose to move into a new folder.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(@"Create New Folder")]
+      performAction:grey_tap()];
+
+  // Enter custom new folder name.
+  [BookmarksNewGenTestCase
+      renameBookmarkFolderWithFolderTitle:@"Title For New Folder"];
+
+  // Verify current parent folder for "Title For New Folder" folder is "Mobile
+  // Bookmarks" folder.
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_accessibilityID(@"Change Folder"),
+                                   grey_accessibilityLabel(@"Mobile Bookmarks"),
+                                   nil)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Tap Done (accessibilityID is 'Save') to close bookmark move flow.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Save")]
+      performAction:grey_tap()];
+
+  // Verify all folder flow UI is now closed.
+  [self verifyFolderFlowIsClosed];
+
+  // Wait for Undo toast to go away from screen.
+  [BookmarksNewGenTestCase waitForUndoToastToGoAway];
+
+  // Close edit mode.
+  [BookmarksNewGenTestCase closeContextBarEditMode];
+
+  // Verify new folder "Title For New Folder" has two bookmark folder.
+  [BookmarksNewGenTestCase assertChildCount:2
+                           ofFolderWithName:@"Title For New Folder"];
+
+  // Drill down to where "Folder 1.1" and "Folder 1" have been moved and assert
+  // it's presence.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(@"Title For New Folder")]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1.1")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Verify Move functionality on mixed folder / url selection.
+- (void)testMoveFunctionalityOnMixedSelection {
+  if (IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
+  }
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
+
+  [BookmarksNewGenTestCase setupStandardBookmarks];
+  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksNewGenTestCase openMobileBookmarks];
+
+  // Change to edit mode, using context menu.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          @"context_bar_trailing_button")]
+      performAction:grey_tap()];
+
+  // Select URL and folder.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+      performAction:grey_tap()];
+
+  // Tap context menu.
+  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarMoreString])]
+      performAction:grey_tap()];
+
+  // Tap on move, from context menu.
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
+      performAction:grey_tap()];
+
+  // Choose to move into a new folder.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(@"Create New Folder")]
+      performAction:grey_tap()];
+
+  // Enter custom new folder name.
+  [BookmarksNewGenTestCase
+      renameBookmarkFolderWithFolderTitle:@"Title For New Folder"];
+
+  // Verify current parent folder for "Title For New Folder" folder is "Mobile
+  // Bookmarks" folder.
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_accessibilityID(@"Change Folder"),
+                                   grey_accessibilityLabel(@"Mobile Bookmarks"),
+                                   nil)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Tap Done (accessibilityID is 'Save') to close bookmark move flow.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Save")]
+      performAction:grey_tap()];
+
+  // Verify all folder flow UI is now closed.
+  [self verifyFolderFlowIsClosed];
+
+  // Wait for Undo toast to go away from screen.
+  [BookmarksNewGenTestCase waitForUndoToastToGoAway];
+
+  // Close edit mode.
+  [BookmarksNewGenTestCase closeContextBarEditMode];
+
+  // Verify new folder "Title For New Folder" has two bookmark nodes.
+  [BookmarksNewGenTestCase assertChildCount:2
+                           ofFolderWithName:@"Title For New Folder"];
+
+  // Drill down to where "Second URL" and "Folder 1" have been moved and assert
+  // it's presence.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(@"Title For New Folder")]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Verify Move functionality on multiple url selection.
+- (void)testMoveFunctionalityOnMultipleUrlSelection {
+  if (IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
+  }
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
+
+  [BookmarksNewGenTestCase setupStandardBookmarks];
+  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksNewGenTestCase openMobileBookmarks];
+
+  // Change to edit mode, using context menu.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          @"context_bar_trailing_button")]
+      performAction:grey_tap()];
+
+  // Select URL and folder.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL")]
+      performAction:grey_tap()];
+
+  // Tap context menu.
+  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarMoreString])]
+      performAction:grey_tap()];
+
+  // Tap on move, from context menu.
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
+      performAction:grey_tap()];
+
+  // Choose to move into Folder 1.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+      performAction:grey_tap()];
+
+  // Verify all folder flow UI is now closed.
+  [self verifyFolderFlowIsClosed];
+
+  // Wait for Undo toast to go away from screen.
+  [BookmarksNewGenTestCase waitForUndoToastToGoAway];
+
+  // Close edit mode.
+  [BookmarksNewGenTestCase closeContextBarEditMode];
+
+  // Verify Folder 1 has three bookmark nodes.
+  [BookmarksNewGenTestCase assertChildCount:3 ofFolderWithName:@"Folder 1"];
+
+  // Drill down to where "Second URL" and "First URL" have been moved and assert
+  // it's presence.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL")]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
@@ -976,10 +1187,7 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
                                    nil)];
 
   // Cancel edit mode.
-  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarCancelString])]
-      performAction:grey_tap()];
+  [BookmarksNewGenTestCase closeContextBarEditMode];
 }
 
 - (void)testDeleteSingleFolderNode {
@@ -1029,10 +1237,7 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
                                    nil)];
 
   // Cancel edit mode.
-  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarCancelString])]
-      performAction:grey_tap()];
+  [BookmarksNewGenTestCase closeContextBarEditMode];
 }
 
 - (void)testDeleteMultipleNodes {
@@ -1078,10 +1283,7 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       assertWithMatcher:grey_notNil()];
 
   // Cancel edit mode.
-  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarCancelString])]
-      performAction:grey_tap()];
+  [BookmarksNewGenTestCase closeContextBarEditMode];
 }
 
 // Tests that the promo view is only seen at root level and not in any of the
@@ -1468,6 +1670,20 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
              @"Waiting for bookmark to go away");
 }
 
+// Wait for Undo toast to go away.
++ (void)waitForUndoToastToGoAway {
+  // Wait until it's gone.
+  ConditionBlock condition = ^{
+    NSError* error = nil;
+    [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Undo")]
+        assertWithMatcher:grey_notVisible()
+                    error:&error];
+    return error == nil;
+  };
+  GREYAssert(testing::WaitUntilConditionOrTimeout(10, condition),
+             @"Waiting for undo toast to go away");
+}
+
 // Waits for the bookmark model to be loaded in memory.
 + (void)waitForBookmarkModelLoaded:(BOOL)loaded {
   bookmarks::BookmarkModel* bookmarkModel =
@@ -1502,6 +1718,14 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 // Dismisses the edit folder UI.
 + (void)closeEditBookmarkFolder {
   [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
+      performAction:grey_tap()];
+}
+
+// Close edit mode.
++ (void)closeContextBarEditMode {
+  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarCancelString])]
       performAction:grey_tap()];
 }
 
@@ -1581,6 +1805,15 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
                                           [BookmarksNewGenTestCase
                                               contextBarSelectString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
+}
+
+- (void)verifyFolderFlowIsClosed {
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder Creator")]
+      assertWithMatcher:grey_notVisible()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder Picker")]
+      assertWithMatcher:grey_notVisible()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder Editor")]
+      assertWithMatcher:grey_notVisible()];
 }
 
 // Context bar strings.
