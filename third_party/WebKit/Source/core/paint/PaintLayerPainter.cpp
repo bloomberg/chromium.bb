@@ -230,7 +230,12 @@ static bool ShouldRepaintSubsequence(
 
   // Repaint if previously the layer might be clipped by paintDirtyRect and
   // paintDirtyRect changes.
-  if (paint_layer.PreviousPaintResult() == kMayBeClippedByPaintDirtyRect &&
+  if ((paint_layer.PreviousPaintResult() == kMayBeClippedByPaintDirtyRect ||
+       // When PaintUnderInvalidationChecking is enabled, always repaint the
+       // subsequence when the paint rect changes because we will strictly match
+       // new and cached subsequences. Normally we can reuse the cached fully
+       // painted subsequence even if we would partially paint this time.
+       RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) &&
       paint_layer.PreviousPaintDirtyRect() != painting_info.paint_dirty_rect) {
     needs_repaint = true;
     should_clear_empty_paint_phase_flags = true;

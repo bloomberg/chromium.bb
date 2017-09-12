@@ -306,9 +306,8 @@ class PLATFORM_EXPORT PaintController {
 
   void CheckUnderInvalidation();
   bool IsCheckingUnderInvalidation() const {
-    return under_invalidation_checking_end_ -
-               under_invalidation_checking_begin_ >
-           0;
+    return under_invalidation_checking_end_ >
+           under_invalidation_checking_begin_;
   }
 
   struct SubsequenceMarkers {

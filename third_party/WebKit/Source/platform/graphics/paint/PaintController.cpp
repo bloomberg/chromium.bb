@@ -173,18 +173,9 @@ size_t PaintController::BeginSubsequence() {
 void PaintController::EndSubsequence(const DisplayItemClient& client,
                                      size_t start) {
   size_t end = new_display_item_list_.size();
-  if (start == end) {
-    // Omit the empty subsequence. The forcing-new-chunk flag set by
-    // BeginSubsequence() still applies, but this not a big deal because empty
-    // subsequences are not common. Also we should not clear the flag because
-    // there might be unhandled flag that was set before this empty subsequence.
-    return;
-  }
 
-  // Force new paint chunk which is required for subsequence caching.
-  new_paint_chunks_.ForceNewChunk();
-
-  if (IsCheckingUnderInvalidation()) {
+  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
+      IsCheckingUnderInvalidation()) {
     SubsequenceMarkers* markers = GetSubsequenceMarkers(client);
     if (!markers) {
       ShowSequenceUnderInvalidationError(
@@ -197,7 +188,19 @@ void PaintController::EndSubsequence(const DisplayItemClient& client,
           end);
       CHECK(false);
     }
+    under_invalidation_checking_end_ = 0;
   }
+
+  if (start == end) {
+    // Omit the empty subsequence. The forcing-new-chunk flag set by
+    // BeginSubsequence() still applies, but this not a big deal because empty
+    // subsequences are not common. Also we should not clear the flag because
+    // there might be unhandled flag that was set before this empty subsequence.
+    return;
+  }
+
+  // Force new paint chunk which is required for subsequence caching.
+  new_paint_chunks_.ForceNewChunk();
 
   DCHECK(new_cached_subsequences_.find(&client) ==
          new_cached_subsequences_.end());
