@@ -16,7 +16,9 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/local_discovery/service_discovery_client_impl.h"
+#include "components/net_log/chrome_net_log.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/dns/mdns_client.h"
 #include "net/socket/datagram_server_socket.h"
@@ -123,8 +125,9 @@ using MdnsInitCallback = base::Callback<void(bool)>;
 
 class SocketFactory : public net::MDnsSocketFactory {
  public:
-  explicit SocketFactory(const net::InterfaceIndexFamilyList& interfaces)
-      : interfaces_(interfaces) {}
+  SocketFactory(const net::InterfaceIndexFamilyList& interfaces,
+                net::NetLog* net_log)
+      : interfaces_(interfaces), net_log_(net_log) {}
 
   // net::MDnsSocketFactory implementation:
   void CreateSockets(std::vector<std::unique_ptr<net::DatagramServerSocket>>*
@@ -132,8 +135,8 @@ class SocketFactory : public net::MDnsSocketFactory {
     for (size_t i = 0; i < interfaces_.size(); ++i) {
       DCHECK(interfaces_[i].second == net::ADDRESS_FAMILY_IPV4 ||
              interfaces_[i].second == net::ADDRESS_FAMILY_IPV6);
-      std::unique_ptr<net::DatagramServerSocket> socket(
-          CreateAndBindMDnsSocket(interfaces_[i].second, interfaces_[i].first));
+      std::unique_ptr<net::DatagramServerSocket> socket(CreateAndBindMDnsSocket(
+          interfaces_[i].second, interfaces_[i].first, net_log_));
       if (socket)
         sockets->push_back(std::move(socket));
     }
@@ -141,12 +144,16 @@ class SocketFactory : public net::MDnsSocketFactory {
 
  private:
   net::InterfaceIndexFamilyList interfaces_;
+
+  // Owned by |g_browser_process|.
+  net::NetLog* const net_log_;
 };
 
 void InitMdns(const MdnsInitCallback& on_initialized,
               const net::InterfaceIndexFamilyList& interfaces,
-              net::MDnsClient* mdns) {
-  SocketFactory socket_factory(interfaces);
+              net::MDnsClient* mdns,
+              net::NetLog* net_log) {
+  SocketFactory socket_factory(interfaces, net_log);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(on_initialized, mdns->StartListening(&socket_factory)));
@@ -416,12 +423,14 @@ void ServiceDiscoveryClientMdns::StartNewClient() {
 
 void ServiceDiscoveryClientMdns::OnInterfaceListReady(
     const net::InterfaceIndexFamilyList& interfaces) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   mdns_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&InitMdns,
                      base::Bind(&ServiceDiscoveryClientMdns::OnMdnsInitialized,
                                 weak_ptr_factory_.GetWeakPtr()),
-                     interfaces, base::Unretained(mdns_.get())));
+                     interfaces, base::Unretained(mdns_.get()),
+                     g_browser_process->net_log()));
 }
 
 void ServiceDiscoveryClientMdns::OnMdnsInitialized(bool success) {
