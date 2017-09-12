@@ -60,7 +60,8 @@ class UrlBarTexture : public UiTexture {
 
   std::unique_ptr<gfx::RenderText> url_render_text_;
 
-  // Rendered state for test purposes.
+  // Rendered state for test purposes. The text rectangles represent regions
+  // available to text, not the smaller area of the actual rendered text.
   base::string16 rendered_url_text_;
   gfx::Rect rendered_url_text_rect_;
   base::string16 rendered_security_text_;
@@ -73,7 +74,7 @@ class UrlBarTexture : public UiTexture {
   bool HitsTransparentRegion(const gfx::PointF& meters, bool left) const;
   void RenderUrl(const gfx::Size& texture_size, const gfx::Rect& text_bounds);
   void OnSetMode() override;
-  SkColor GetLeftCornerColor() const;
+  SkColor BackButtonColor() const;
 
   gfx::SizeF size_;
   bool back_hovered_ = false;
@@ -86,7 +87,6 @@ class UrlBarTexture : public UiTexture {
 
   base::Callback<void(UiUnsupportedMode)> failure_callback_;
   gfx::RectF security_hit_region_ = gfx::RectF(0, 0, 0, 0);
-  gfx::RectF back_button_hit_region_ = gfx::RectF(0, 0, 0, 0);
 
   DISALLOW_COPY_AND_ASSIGN(UrlBarTexture);
 };
