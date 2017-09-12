@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "components/leveldb_proto/options.h"
+#include "third_party/leveldatabase/env_chromium.h"
 
 namespace base {
 class FilePath;
@@ -45,15 +45,14 @@ class ProtoDatabase {
   void Init(const char* client_name,
             const base::FilePath& database_dir,
             InitCallback callback) {
-    InitWithOptions(
-        client_name,
-        Options(database_dir, leveldb_env::SharedReadCache::Default),
-        std::move(callback));
+    InitWithOptions(client_name, database_dir, leveldb_env::Options(),
+                    std::move(callback));
   }
 
   // Similar to Init, but takes additional options.
   virtual void InitWithOptions(const char* client_name,
-                               const Options& options,
+                               const base::FilePath& database_dir,
+                               const leveldb_env::Options& options,
                                InitCallback callback) = 0;
 
   // Asynchronously saves |entries_to_save| and deletes entries from

@@ -6,7 +6,6 @@ static_library("leveldb_proto") {
   sources = [
     "leveldb_database.cc",
     "leveldb_database.h",
-    "options.h",
     "proto_database.h",
     "proto_database_impl.h",
   ]
