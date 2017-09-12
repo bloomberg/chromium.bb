@@ -13,7 +13,7 @@ namespace device {
 // static
 std::unique_ptr<U2fMessage> U2fMessage::Create(
     uint32_t channel_id,
-    Type type,
+    U2fCommandType type,
     const std::vector<uint8_t>& data) {
   if (data.size() > kMaxMessageSize)
     return nullptr;
@@ -44,7 +44,7 @@ U2fMessage::U2fMessage(std::unique_ptr<U2fInitPacket> init_packet,
 }
 
 U2fMessage::U2fMessage(uint32_t channel_id,
-                       Type type,
+                       U2fCommandType type,
                        const std::vector<uint8_t>& data)
     : packets_(), remaining_size_(), channel_id_(channel_id) {
   size_t remaining_bytes = data.size();

@@ -39,7 +39,7 @@ TEST_F(U2fMessageTest, TestPacketSize) {
 TEST_F(U2fMessageTest, TestPacketData) {
   uint32_t channel_id = 0xF5060708;
   std::vector<uint8_t> data{10, 11};
-  uint8_t cmd = static_cast<uint8_t>(U2fMessage::Type::CMD_WINK);
+  uint8_t cmd = static_cast<uint8_t>(U2fCommandType::CMD_WINK);
   auto init_packet =
       std::make_unique<U2fInitPacket>(channel_id, cmd, data, data.size());
   int index = 0;
@@ -70,7 +70,7 @@ TEST_F(U2fMessageTest, TestPacketData) {
 TEST_F(U2fMessageTest, TestPacketConstructors) {
   uint32_t channel_id = 0x05060708;
   std::vector<uint8_t> data{10, 11};
-  uint8_t cmd = static_cast<uint8_t>(U2fMessage::Type::CMD_WINK);
+  uint8_t cmd = static_cast<uint8_t>(U2fCommandType::CMD_WINK);
   auto orig_packet =
       std::make_unique<U2fInitPacket>(channel_id, cmd, data, data.size());
 
@@ -105,7 +105,7 @@ TEST_F(U2fMessageTest, TestMaxLengthPacketConstructors) {
   for (size_t i = 0; i < U2fMessage::kMaxMessageSize; ++i)
     data.push_back(static_cast<uint8_t>(i % 0xff));
 
-  U2fMessage::Type cmd = U2fMessage::Type::CMD_MSG;
+  U2fCommandType cmd = U2fCommandType::CMD_MSG;
   std::unique_ptr<U2fMessage> orig_msg =
       U2fMessage::Create(channel_id, cmd, data);
   auto it = orig_msg->begin();
@@ -147,18 +147,18 @@ TEST_F(U2fMessageTest, TestMessagePartitoning) {
   uint32_t channel_id = 0x01010203;
   std::vector<uint8_t> data(U2fMessage::kInitPacketDataSize + 1);
   std::unique_ptr<U2fMessage> two_packet_message =
-      U2fMessage::Create(channel_id, U2fMessage::Type::CMD_PING, data);
+      U2fMessage::Create(channel_id, U2fCommandType::CMD_PING, data);
   EXPECT_EQ(2U, two_packet_message->NumPackets());
 
   data.resize(U2fMessage::kInitPacketDataSize);
   std::unique_ptr<U2fMessage> one_packet_message =
-      U2fMessage::Create(channel_id, U2fMessage::Type::CMD_PING, data);
+      U2fMessage::Create(channel_id, U2fCommandType::CMD_PING, data);
   EXPECT_EQ(1U, one_packet_message->NumPackets());
 
   data.resize(U2fMessage::kInitPacketDataSize +
               U2fMessage::kContinuationPacketDataSize + 1);
   std::unique_ptr<U2fMessage> three_packet_message =
-      U2fMessage::Create(channel_id, U2fMessage::Type::CMD_PING, data);
+      U2fMessage::Create(channel_id, U2fCommandType::CMD_PING, data);
   EXPECT_EQ(3U, three_packet_message->NumPackets());
 }
 
@@ -166,7 +166,7 @@ TEST_F(U2fMessageTest, TestMaxSize) {
   uint32_t channel_id = 0x00010203;
   std::vector<uint8_t> data(U2fMessage::kMaxMessageSize + 1);
   std::unique_ptr<U2fMessage> oversize_message =
-      U2fMessage::Create(channel_id, U2fMessage::Type::CMD_PING, data);
+      U2fMessage::Create(channel_id, U2fCommandType::CMD_PING, data);
   EXPECT_EQ(nullptr, oversize_message);
 }
 
@@ -174,7 +174,7 @@ TEST_F(U2fMessageTest, TestDeconstruct) {
   uint32_t channel_id = 0x0A0B0C0D;
   std::vector<uint8_t> data(U2fMessage::kMaxMessageSize, 0x7F);
   std::unique_ptr<U2fMessage> filled_message =
-      U2fMessage::Create(channel_id, U2fMessage::Type::CMD_PING, data);
+      U2fMessage::Create(channel_id, U2fCommandType::CMD_PING, data);
 
   EXPECT_THAT(data, testing::ContainerEq(filled_message->GetMessagePayload()));
 }
@@ -184,7 +184,7 @@ TEST_F(U2fMessageTest, TestDeserialize) {
   std::vector<uint8_t> data(U2fMessage::kMaxMessageSize);
 
   std::unique_ptr<U2fMessage> orig_message =
-      U2fMessage::Create(channel_id, U2fMessage::Type::CMD_PING, data);
+      U2fMessage::Create(channel_id, U2fCommandType::CMD_PING, data);
   std::list<scoped_refptr<net::IOBufferWithSize>> orig_list;
   scoped_refptr<net::IOBufferWithSize> buf = orig_message->PopNextPacket();
   orig_list.push_back(buf);
