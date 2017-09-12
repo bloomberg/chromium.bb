@@ -19,7 +19,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/sequenced_task_runner.h"
+#include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "components/visitedlink/common/visitedlink_common.h"
 #include "mojo/public/cpp/system/buffer.h"
@@ -208,9 +209,6 @@ class VisitedLinkMaster : public VisitedLinkCommon {
   // we will write the whole table to disk at once instead of individual items.
   static const size_t kBigDeleteThreshold;
 
-  // Backend for the constructors initializing the members.
-  void InitMembers();
-
   // If a rebuild is in progress, we save the URL in the temporary list.
   // Otherwise, we add this to the table. Returns the index of the
   // inserted fingerprint or null_hash_ on failure.
@@ -397,7 +395,7 @@ class VisitedLinkMaster : public VisitedLinkCommon {
 
   // Reference to the browser context that this object belongs to
   // (it knows the path to where the data is stored)
-  content::BrowserContext* browser_context_;
+  content::BrowserContext* browser_context_ = nullptr;
 
   // Client owns the delegate and is responsible for it being valid through
   // the life time this VisitedLinkMaster.
@@ -406,8 +404,11 @@ class VisitedLinkMaster : public VisitedLinkCommon {
   // VisitedLinkEventListener to handle incoming events.
   std::unique_ptr<Listener> listener_;
 
-  // Lazily initialized sequence token for posting file tasks.
-  base::SequencedWorkerPool::SequenceToken sequence_token_;
+  // Task runner for posting file tasks.
+  scoped_refptr<base::SequencedTaskRunner> file_task_runner_ =
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
   // When non-NULL, indicates we are in database rebuild mode and points to
   // the class collecting fingerprint information from the history system.
@@ -433,7 +434,7 @@ class VisitedLinkMaster : public VisitedLinkCommon {
   // guaranteed to be executed after the opening.
   // The class owns both the |file_| pointer and the pointer pointed
   // by |*file_|.
-  FILE** file_;
+  FILE** file_ = nullptr;
 
   // If true, will try to persist the hash table to disk. Will rebuild from
   // VisitedLinkDelegate::RebuildTable if there are disk corruptions.
@@ -449,13 +450,13 @@ class VisitedLinkMaster : public VisitedLinkCommon {
 
   // When we generate new tables, we increment the serial number of the
   // shared memory object.
-  int32_t shared_memory_serial_;
+  int32_t shared_memory_serial_ = 0;
 
   // Number of non-empty items in the table, used to compute fullness.
-  int32_t used_items_;
+  int32_t used_items_ = 0;
 
   // We set this to true to avoid writing to the database file.
-  bool table_is_loading_from_file_;
+  bool table_is_loading_from_file_ = false;
 
   // Testing values -----------------------------------------------------------
   //
@@ -469,7 +470,7 @@ class VisitedLinkMaster : public VisitedLinkCommon {
   base::FilePath database_name_override_;
 
   // When nonzero, overrides the table size for new databases for testing
-  int32_t table_size_override_;
+  int32_t table_size_override_ = 0;
 
   // When set, indicates the task that should be run after the next rebuild from
   // history is complete.
@@ -478,7 +479,7 @@ class VisitedLinkMaster : public VisitedLinkCommon {
   // Set to prevent us from attempting to rebuild the database from global
   // history if we have an error opening the file. This is used for testing,
   // will be false in production.
-  bool suppress_rebuild_;
+  bool suppress_rebuild_ = false;
 
   base::WeakPtrFactory<VisitedLinkMaster> weak_ptr_factory_;
 
