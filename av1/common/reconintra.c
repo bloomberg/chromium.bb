@@ -3063,6 +3063,7 @@ void av1_predict_intra_block_facade(MACROBLOCKD *xd, int plane, int block_idx,
                           blk_row, plane);
 }
 
+#if INTRA_USES_EXT_TRANSFORMS
 // Copy the given row of dst into the equivalent row of ref, saving
 // the overwritten data to tmp. Returns zero if no copy happened (so
 // no restore is needed)
@@ -3165,6 +3166,7 @@ static void restore_ref_col(int buf_flags, int block_height,
   (void)buf_flags;
 #endif  // CONFIG_HIGHBITDEPTH
 }
+#endif  // #if INTRA_USES_EXT_TRANSFORMS
 
 void av1_predict_intra_block(const MACROBLOCKD *xd, int wpx, int hpx,
                              BLOCK_SIZE bsize, PREDICTION_MODE mode,
