@@ -15577,11 +15577,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Download.ContentImageType" enum="DownloadImageType">
-  <owner>asanka@chromium.org</owner>
-  <summary>Types of images that are downloaded.</summary>
-</histogram>
-
 <histogram name="Download.ContentLength.Parallelizable" units="KB">
   <owner>qinmin@chromium.org</owner>
   <summary>
@@ -15596,6 +15591,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </obsolete>
   <owner>asanka@chromium.org</owner>
   <summary>Content types that are downloaded.</summary>
+</histogram>
+
+<histogram name="Download.ContentType.Audio" enum="DownloadAudioType">
+  <owner>jming@chromium.org</owner>
+  <summary>Types of audio files that are downloaded.</summary>
+</histogram>
+
+<histogram name="Download.ContentType.Image" enum="DownloadImageType">
+  <owner>asanka@chromium.org</owner>
+  <summary>Types of images that are downloaded.</summary>
+</histogram>
+
+<histogram name="Download.ContentType.Text" enum="DownloadTextType">
+  <owner>jming@chromium.org</owner>
+  <summary>Types of text files that are downloaded.</summary>
+</histogram>
+
+<histogram name="Download.ContentType.Video" enum="DownloadVideoType">
+  <owner>jming@chromium.org</owner>
+  <summary>Types of video files that are downloaded.</summary>
 </histogram>
 
 <histogram name="Download.Counts" enum="DownloadCountType">

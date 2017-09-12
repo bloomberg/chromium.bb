@@ -559,6 +559,18 @@ void RecordAcceptsRanges(const std::string& accepts_ranges,
 
 namespace {
 
+int GetMimeTypeMatch(const std::string& mime_type_string,
+                     std::map<std::string, int> mime_type_map) {
+  for (const auto& entry : mime_type_map) {
+    if (entry.first == mime_type_string) {
+      return entry.second;
+    }
+  }
+  return 0;
+}
+
+// NOTE: Keep in sync with DownloadContentType in
+// tools/metrics/histograms/enums.xml.
 enum DownloadContent {
   DOWNLOAD_CONTENT_UNRECOGNIZED = 0,
   DOWNLOAD_CONTENT_TEXT = 1,
@@ -567,38 +579,73 @@ enum DownloadContent {
   DOWNLOAD_CONTENT_VIDEO = 4,
   DOWNLOAD_CONTENT_OCTET_STREAM = 5,
   DOWNLOAD_CONTENT_PDF = 6,
-  DOWNLOAD_CONTENT_DOC = 7,
-  DOWNLOAD_CONTENT_XLS = 8,
-  DOWNLOAD_CONTENT_PPT = 9,
+  DOWNLOAD_CONTENT_DOCUMENT = 7,
+  DOWNLOAD_CONTENT_SPREADSHEET = 8,
+  DOWNLOAD_CONTENT_PRESENTATION = 9,
   DOWNLOAD_CONTENT_ARCHIVE = 10,
-  DOWNLOAD_CONTENT_EXE = 11,
+  DOWNLOAD_CONTENT_EXECUTABLE = 11,
   DOWNLOAD_CONTENT_DMG = 12,
   DOWNLOAD_CONTENT_CRX = 13,
-  DOWNLOAD_CONTENT_MAX = 14,
+  DOWNLOAD_CONTENT_WEB = 14,
+  DOWNLOAD_CONTENT_EBOOK = 15,
+  DOWNLOAD_CONTENT_FONT = 16,
+  DOWNLOAD_CONTENT_APK = 17,
+  DOWNLOAD_CONTENT_MAX = 18,
 };
 
-struct MimeTypeToDownloadContent {
-  const char* mime_type;
-  DownloadContent download_content;
-};
+static std::map<std::string, int> getMimeTypeToDownloadContentMap() {
+  return {
+      {"application/octet-stream", DOWNLOAD_CONTENT_OCTET_STREAM},
+      {"binary/octet-stream", DOWNLOAD_CONTENT_OCTET_STREAM},
+      {"application/pdf", DOWNLOAD_CONTENT_PDF},
+      {"application/msword", DOWNLOAD_CONTENT_DOCUMENT},
+      {"application/"
+       "vnd.openxmlformats-officedocument.wordprocessingml.document",
+       DOWNLOAD_CONTENT_DOCUMENT},
+      {"application/rtf", DOWNLOAD_CONTENT_DOCUMENT},
+      {"application/vnd.oasis.opendocument.text", DOWNLOAD_CONTENT_DOCUMENT},
+      {"application/vnd.google-apps.document", DOWNLOAD_CONTENT_DOCUMENT},
+      {"application/vnd.ms-excel", DOWNLOAD_CONTENT_SPREADSHEET},
+      {"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+       DOWNLOAD_CONTENT_SPREADSHEET},
+      {"application/vnd.oasis.opendocument.spreadsheet",
+       DOWNLOAD_CONTENT_SPREADSHEET},
+      {"application/vnd.google-apps.spreadsheet", DOWNLOAD_CONTENT_SPREADSHEET},
+      {"application/vns.ms-powerpoint", DOWNLOAD_CONTENT_PRESENTATION},
+      {"application/"
+       "vnd.openxmlformats-officedocument.presentationml.presentation",
+       DOWNLOAD_CONTENT_PRESENTATION},
+      {"application/vnd.oasis.opendocument.presentation",
+       DOWNLOAD_CONTENT_PRESENTATION},
+      {"application/vnd.google-apps.presentation",
+       DOWNLOAD_CONTENT_PRESENTATION},
+      {"application/zip", DOWNLOAD_CONTENT_ARCHIVE},
+      {"application/x-gzip", DOWNLOAD_CONTENT_ARCHIVE},
+      {"application/x-rar-compressed", DOWNLOAD_CONTENT_ARCHIVE},
+      {"application/x-tar", DOWNLOAD_CONTENT_ARCHIVE},
+      {"application/x-bzip", DOWNLOAD_CONTENT_ARCHIVE},
+      {"application/x-bzip2", DOWNLOAD_CONTENT_ARCHIVE},
+      {"application/x-7z-compressed", DOWNLOAD_CONTENT_ARCHIVE},
+      {"application/x-exe", DOWNLOAD_CONTENT_EXECUTABLE},
+      {"application/java-archive", DOWNLOAD_CONTENT_EXECUTABLE},
+      {"application/vnd.apple.installer+xml", DOWNLOAD_CONTENT_EXECUTABLE},
+      {"application/x-csh", DOWNLOAD_CONTENT_EXECUTABLE},
+      {"application/x-sh", DOWNLOAD_CONTENT_EXECUTABLE},
+      {"application/x-apple-diskimage", DOWNLOAD_CONTENT_DMG},
+      {"application/x-chrome-extension", DOWNLOAD_CONTENT_CRX},
+      {"application/xhtml+xml", DOWNLOAD_CONTENT_WEB},
+      {"application/xml", DOWNLOAD_CONTENT_WEB},
+      {"application/javascript", DOWNLOAD_CONTENT_WEB},
+      {"application/json", DOWNLOAD_CONTENT_WEB},
+      {"application/typescript", DOWNLOAD_CONTENT_WEB},
+      {"application/vnd.mozilla.xul+xml", DOWNLOAD_CONTENT_WEB},
+      {"application/vnd.amazon.ebook", DOWNLOAD_CONTENT_EBOOK},
+      {"application/epub+zip", DOWNLOAD_CONTENT_EBOOK},
+      {"application/vnd.android.package-archive", DOWNLOAD_CONTENT_APK}};
+}
 
-static MimeTypeToDownloadContent kMapMimeTypeToDownloadContent[] = {
-  {"application/octet-stream", DOWNLOAD_CONTENT_OCTET_STREAM},
-  {"binary/octet-stream", DOWNLOAD_CONTENT_OCTET_STREAM},
-  {"application/pdf", DOWNLOAD_CONTENT_PDF},
-  {"application/msword", DOWNLOAD_CONTENT_DOC},
-  {"application/vnd.ms-excel", DOWNLOAD_CONTENT_XLS},
-  {"application/vns.ms-powerpoint", DOWNLOAD_CONTENT_PPT},
-  {"application/zip", DOWNLOAD_CONTENT_ARCHIVE},
-  {"application/x-gzip", DOWNLOAD_CONTENT_ARCHIVE},
-  {"application/x-rar-compressed", DOWNLOAD_CONTENT_ARCHIVE},
-  {"application/x-tar", DOWNLOAD_CONTENT_ARCHIVE},
-  {"application/x-bzip", DOWNLOAD_CONTENT_ARCHIVE},
-  {"application/x-exe", DOWNLOAD_CONTENT_EXE},
-  {"application/x-apple-diskimage", DOWNLOAD_CONTENT_DMG},
-  {"application/x-chrome-extension", DOWNLOAD_CONTENT_CRX},
-};
-
+// NOTE: Keep in sync with DownloadImageType in
+// tools/metrics/histograms/enums.xml.
 enum DownloadImage {
   DOWNLOAD_IMAGE_UNRECOGNIZED = 0,
   DOWNLOAD_IMAGE_GIF = 1,
@@ -607,68 +654,158 @@ enum DownloadImage {
   DOWNLOAD_IMAGE_TIFF = 4,
   DOWNLOAD_IMAGE_ICON = 5,
   DOWNLOAD_IMAGE_WEBP = 6,
-  DOWNLOAD_IMAGE_MAX = 7,
+  DOWNLOAD_IMAGE_PSD = 7,
+  DOWNLOAD_IMAGE_SVG = 8,
+  DOWNLOAD_IMAGE_MAX = 9,
 };
 
-struct MimeTypeToDownloadImage {
-  const char* mime_type;
-  DownloadImage download_image;
-};
-
-static MimeTypeToDownloadImage kMapMimeTypeToDownloadImage[] = {
-  {"image/gif", DOWNLOAD_IMAGE_GIF},
-  {"image/jpeg", DOWNLOAD_IMAGE_JPEG},
-  {"image/png", DOWNLOAD_IMAGE_PNG},
-  {"image/tiff", DOWNLOAD_IMAGE_TIFF},
-  {"image/vnd.microsoft.icon", DOWNLOAD_IMAGE_ICON},
-  {"image/webp", DOWNLOAD_IMAGE_WEBP},
-};
+static std::map<std::string, int> getMimeTypeToDownloadImageMap() {
+  return {{"image/gif", DOWNLOAD_IMAGE_GIF},
+          {"image/jpeg", DOWNLOAD_IMAGE_JPEG},
+          {"image/png", DOWNLOAD_IMAGE_PNG},
+          {"image/tiff", DOWNLOAD_IMAGE_TIFF},
+          {"image/vnd.microsoft.icon", DOWNLOAD_IMAGE_ICON},
+          {"image/x-icon", DOWNLOAD_IMAGE_ICON},
+          {"image/webp", DOWNLOAD_IMAGE_WEBP},
+          {"image/vnd.adobe.photoshop", DOWNLOAD_IMAGE_PSD},
+          {"image/svg+xml", DOWNLOAD_IMAGE_SVG}};
+}
 
 void RecordDownloadImageType(const std::string& mime_type_string) {
-  DownloadImage download_image = DOWNLOAD_IMAGE_UNRECOGNIZED;
-
-  // Look up exact matches.
-  for (size_t i = 0; i < arraysize(kMapMimeTypeToDownloadImage); ++i) {
-    const MimeTypeToDownloadImage& entry = kMapMimeTypeToDownloadImage[i];
-    if (mime_type_string == entry.mime_type) {
-      download_image = entry.download_image;
-      break;
-    }
-  }
-
-  UMA_HISTOGRAM_ENUMERATION("Download.ContentImageType", download_image,
+  DownloadImage download_image = DownloadImage(
+      GetMimeTypeMatch(mime_type_string, getMimeTypeToDownloadImageMap()));
+  UMA_HISTOGRAM_ENUMERATION("Download.ContentType.Image", download_image,
                             DOWNLOAD_IMAGE_MAX);
 }
 
-DownloadContent DownloadContentFromMimeType(const std::string& mime_type_string,
-                                            bool record_image_type) {
-  DownloadContent download_content = DOWNLOAD_CONTENT_UNRECOGNIZED;
+/** Text categories **/
 
-  // Look up exact matches.
-  for (size_t i = 0; i < arraysize(kMapMimeTypeToDownloadContent); ++i) {
-    const MimeTypeToDownloadContent& entry = kMapMimeTypeToDownloadContent[i];
-    if (mime_type_string == entry.mime_type) {
-      download_content = entry.download_content;
-      break;
-    }
-  }
+// NOTE: Keep in sync with DownloadTextType in
+// tools/metrics/histograms/enums.xml.
+enum DownloadText {
+  DOWNLOAD_TEXT_UNRECOGNIZED = 0,
+  DOWNLOAD_TEXT_PLAIN = 1,
+  DOWNLOAD_TEXT_CSS = 2,
+  DOWNLOAD_TEXT_CSV = 3,
+  DOWNLOAD_TEXT_HTML = 4,
+  DOWNLOAD_TEXT_CALENDAR = 5,
+  DOWNLOAD_TEXT_MAX = 6,
+};
+
+static std::map<std::string, int> getMimeTypeToDownloadTextMap() {
+  return {{"text/plain", DOWNLOAD_TEXT_PLAIN},
+          {"text/css", DOWNLOAD_TEXT_CSS},
+          {"text/csv", DOWNLOAD_TEXT_CSV},
+          {"text/html", DOWNLOAD_TEXT_HTML},
+          {"text/calendar", DOWNLOAD_TEXT_CALENDAR}};
+}
+
+void RecordDownloadTextType(const std::string& mime_type_string) {
+  DownloadText download_text = DownloadText(
+      GetMimeTypeMatch(mime_type_string, getMimeTypeToDownloadTextMap()));
+  UMA_HISTOGRAM_ENUMERATION("Download.ContentType.Text", download_text,
+                            DOWNLOAD_TEXT_MAX);
+}
+
+/* Audio categories */
+
+// NOTE: Keep in sync with DownloadAudioType in
+// tools/metrics/histograms/enums.xml.
+enum DownloadAudio {
+  DOWNLOAD_AUDIO_UNRECOGNIZED = 0,
+  DOWNLOAD_AUDIO_AAC = 1,
+  DOWNLOAD_AUDIO_MIDI = 2,
+  DOWNLOAD_AUDIO_OGA = 3,
+  DOWNLOAD_AUDIO_WAV = 4,
+  DOWNLOAD_AUDIO_WEBA = 5,
+  DOWNLOAD_AUDIO_3GP = 6,
+  DOWNLOAD_AUDIO_3G2 = 7,
+  DOWNLOAD_AUDIO_MP3 = 8,
+  DOWNLOAD_AUDIO_MAX = 9,
+};
+
+static std::map<std::string, int> getMimeTypeToDownloadAudioMap() {
+  return {
+      {"audio/aac", DOWNLOAD_AUDIO_AAC},   {"audio/midi", DOWNLOAD_AUDIO_MIDI},
+      {"audio/ogg", DOWNLOAD_AUDIO_OGA},   {"audio/x-wav", DOWNLOAD_AUDIO_WAV},
+      {"audio/webm", DOWNLOAD_AUDIO_WEBA}, {"audio/3gpp", DOWNLOAD_AUDIO_3GP},
+      {"audio/3gpp2", DOWNLOAD_AUDIO_3G2}, {"audio/mp3", DOWNLOAD_AUDIO_MP3}};
+}
+
+void RecordDownloadAudioType(const std::string& mime_type_string) {
+  DownloadAudio download_audio = DownloadAudio(
+      GetMimeTypeMatch(mime_type_string, getMimeTypeToDownloadAudioMap()));
+  UMA_HISTOGRAM_ENUMERATION("Download.ContentType.Audio", download_audio,
+                            DOWNLOAD_AUDIO_MAX);
+}
+
+/* Video categories */
+
+// NOTE: Keep in sync with DownloadVideoType in
+// tools/metrics/histograms/enums.xml.
+enum DownloadVideo {
+  DOWNLOAD_VIDEO_UNRECOGNIZED = 0,
+  DOWNLOAD_VIDEO_AVI = 1,
+  DOWNLOAD_VIDEO_MPEG = 2,
+  DOWNLOAD_VIDEO_OGV = 3,
+  DOWNLOAD_VIDEO_WEBM = 4,
+  DOWNLOAD_VIDEO_3GP = 5,
+  DOWNLOAD_VIDEO_3G2 = 6,
+  DOWNLOAD_VIDEO_MP4 = 7,
+  DOWNLOAD_VIDEO_MOV = 8,
+  DOWNLOAD_VIDEO_WMV = 9,
+  DOWNLOAD_VIDEO_MAX = 10,
+};
+
+static std::map<std::string, int> getMimeTypeToDownloadVideoMap() {
+  return {{"video/x-msvideo", DOWNLOAD_VIDEO_AVI},
+          {"video/mpeg", DOWNLOAD_VIDEO_MPEG},
+          {"video/ogg", DOWNLOAD_VIDEO_OGV},
+          {"video/webm", DOWNLOAD_VIDEO_WEBM},
+          {"video/3gpp", DOWNLOAD_VIDEO_3GP},
+          {"video/3ggp2", DOWNLOAD_VIDEO_3G2},
+          {"video/mp4", DOWNLOAD_VIDEO_MP4},
+          {"video/quicktime", DOWNLOAD_VIDEO_MOV},
+          {"video/x-ms-wmv", DOWNLOAD_VIDEO_WMV}};
+}
+
+void RecordDownloadVideoType(const std::string& mime_type_string) {
+  DownloadVideo download_video = DownloadVideo(
+      GetMimeTypeMatch(mime_type_string, getMimeTypeToDownloadVideoMap()));
+  UMA_HISTOGRAM_ENUMERATION("Download.ContentType.Video", download_video,
+                            DOWNLOAD_VIDEO_MAX);
+}
+
+DownloadContent DownloadContentFromMimeType(const std::string& mime_type_string,
+                                            bool record_content_subcategory) {
+  DownloadContent download_content = DownloadContent(
+      GetMimeTypeMatch(mime_type_string, getMimeTypeToDownloadContentMap()));
 
   // Do partial matches.
   if (download_content == DOWNLOAD_CONTENT_UNRECOGNIZED) {
     if (base::StartsWith(mime_type_string, "text/",
                          base::CompareCase::SENSITIVE)) {
       download_content = DOWNLOAD_CONTENT_TEXT;
+      if (record_content_subcategory)
+        RecordDownloadTextType(mime_type_string);
     } else if (base::StartsWith(mime_type_string, "image/",
                                 base::CompareCase::SENSITIVE)) {
       download_content = DOWNLOAD_CONTENT_IMAGE;
-      if (record_image_type)
+      if (record_content_subcategory)
         RecordDownloadImageType(mime_type_string);
     } else if (base::StartsWith(mime_type_string, "audio/",
                                 base::CompareCase::SENSITIVE)) {
       download_content = DOWNLOAD_CONTENT_AUDIO;
+      if (record_content_subcategory)
+        RecordDownloadAudioType(mime_type_string);
     } else if (base::StartsWith(mime_type_string, "video/",
                                 base::CompareCase::SENSITIVE)) {
       download_content = DOWNLOAD_CONTENT_VIDEO;
+      if (record_content_subcategory)
+        RecordDownloadVideoType(mime_type_string);
+    } else if (base::StartsWith(mime_type_string, "font/",
+                                base::CompareCase::SENSITIVE)) {
+      download_content = DOWNLOAD_CONTENT_FONT;
     }
   }
 

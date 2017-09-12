@@ -8689,6 +8689,18 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="4" label="FAILURE_REASON_FILE_MONITOR"/>
 </enum>
 
+<enum name="DownloadAudioType">
+  <int value="0" label="UNRECOGNIZED"/>
+  <int value="1" label="AAC"/>
+  <int value="2" label="MIDI"/>
+  <int value="3" label="OGA"/>
+  <int value="4" label="WAV"/>
+  <int value="5" label="WEBA"/>
+  <int value="6" label="3GP"/>
+  <int value="7" label="3G2"/>
+  <int value="8" label="MP3"/>
+</enum>
+
 <enum name="DownloadConnectionSecurity">
   <int value="0"
       label="Final download url and the redirects before it all use https"/>
@@ -8724,13 +8736,17 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="4" label="VIDEO"/>
   <int value="5" label="OCTET_STREAM"/>
   <int value="6" label="PDF"/>
-  <int value="7" label="DOC"/>
-  <int value="8" label="XLS"/>
-  <int value="9" label="PPT"/>
+  <int value="7" label="DOCUMENT"/>
+  <int value="8" label="SPREADSHEET"/>
+  <int value="9" label="PRESENTATION"/>
   <int value="10" label="ARCHIVE"/>
-  <int value="11" label="EXE"/>
+  <int value="11" label="EXECUTABLE"/>
   <int value="12" label="DMG"/>
   <int value="13" label="CRX"/>
+  <int value="14" label="WEB"/>
+  <int value="15" label="EBOOK"/>
+  <int value="16" label="FONT"/>
+  <int value="17" label="APK"/>
 </enum>
 
 <enum name="DownloadCountType">
@@ -8819,6 +8835,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="4" label="TIFF"/>
   <int value="5" label="ICON"/>
   <int value="6" label="WEBP"/>
+  <int value="7" label="PSD"/>
+  <int value="8" label="SVG"/>
 </enum>
 
 <enum name="DownloadInterruptedUnknownSizeType">
@@ -9148,9 +9166,31 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="6" label="Initiated by Automatic Resumption"/>
 </enum>
 
+<enum name="DownloadTextType">
+  <int value="0" label="UNRECOGNIZED"/>
+  <int value="1" label="PLAIN"/>
+  <int value="2" label="CSS"/>
+  <int value="3" label="CSV"/>
+  <int value="4" label="HTML"/>
+  <int value="5" label="CALENDAR"/>
+</enum>
+
 <enum name="DownloadUploadRequestedByServer">
   <int value="0" label="No Upload"/>
   <int value="1" label="Upload Requested"/>
+</enum>
+
+<enum name="DownloadVideoType">
+  <int value="0" label="UNRECOGNIZED"/>
+  <int value="1" label="AVI"/>
+  <int value="2" label="MPEG"/>
+  <int value="3" label="OGV"/>
+  <int value="4" label="WEBM"/>
+  <int value="5" label="3GP"/>
+  <int value="6" label="3G2"/>
+  <int value="7" label="MP4"/>
+  <int value="8" label="MOV"/>
+  <int value="9" label="WMV"/>
 </enum>
 
 <enum name="DragContent">
