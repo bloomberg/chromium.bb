@@ -37,7 +37,6 @@ bool IsSupportedPlaybackToMemoryFormat(viz::ResourceFormat format) {
     case viz::RED_8:
     case viz::LUMINANCE_F16:
     case viz::RGBA_F16:
-    case viz::R16_EXT:
       return false;
   }
   NOTREACHED();
@@ -131,7 +130,6 @@ void RasterBufferProvider::PlaybackToMemory(
     case viz::RGB_565:
     case viz::RED_8:
     case viz::LUMINANCE_F16:
-    case viz::R16_EXT:
       NOTREACHED();
       return;
   }
@@ -155,7 +153,6 @@ bool RasterBufferProvider::ResourceFormatRequiresSwizzle(
     case viz::RED_8:
     case viz::LUMINANCE_F16:
     case viz::RGBA_F16:
-    case viz::R16_EXT:
       return false;
   }
   NOTREACHED();
