@@ -279,8 +279,7 @@ LayoutBox* CollectInlinesInternal(
     if (node->IsText()) {
       LayoutText* layout_text = ToLayoutText(node);
       if (UNLIKELY(layout_text->IsWordBreak())) {
-        builder->Append(NGInlineItem::kControl, kZeroWidthSpaceCharacter,
-                        node->Style(), layout_text);
+        builder->AppendBreakOpportunity(node->Style(), layout_text);
       } else {
         builder->SetIsSVGText(node->IsSVGInlineText());
         const String& text =
