@@ -232,10 +232,8 @@ class SQLitePersistentCookieStore::Backend
   void DatabaseErrorCallback(int error, sql::Statement* stmt);
   void KillDatabase();
 
-  void PostBackgroundTask(const tracked_objects::Location& origin,
-                          base::OnceClosure task);
-  void PostClientTask(const tracked_objects::Location& origin,
-                      base::OnceClosure task);
+  void PostBackgroundTask(const base::Location& origin, base::OnceClosure task);
+  void PostClientTask(const base::Location& origin, base::OnceClosure task);
 
   // Shared code between the different load strategies to be used after all
   // cookies have been loaded.
@@ -1359,7 +1357,7 @@ void SQLitePersistentCookieStore::Backend::BackgroundDeleteAllInList(
 }
 
 void SQLitePersistentCookieStore::Backend::PostBackgroundTask(
-    const tracked_objects::Location& origin,
+    const base::Location& origin,
     base::OnceClosure task) {
   if (!background_task_runner_->PostTask(origin, std::move(task))) {
     LOG(WARNING) << "Failed to post task from " << origin.ToString()
@@ -1368,7 +1366,7 @@ void SQLitePersistentCookieStore::Backend::PostBackgroundTask(
 }
 
 void SQLitePersistentCookieStore::Backend::PostClientTask(
-    const tracked_objects::Location& origin,
+    const base::Location& origin,
     base::OnceClosure task) {
   if (!client_task_runner_->PostTask(origin, std::move(task))) {
     LOG(WARNING) << "Failed to post task from " << origin.ToString()

@@ -900,10 +900,9 @@ void VideoCaptureDeviceWin::SetAntiFlickerInCaptureFilter(
   }
 }
 
-void VideoCaptureDeviceWin::SetErrorState(
-    const tracked_objects::Location& from_here,
-    const std::string& reason,
-    HRESULT hr) {
+void VideoCaptureDeviceWin::SetErrorState(const base::Location& from_here,
+                                          const std::string& reason,
+                                          HRESULT hr) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DLOG_IF_FAILED_WITH_HRESULT(reason, hr);
   state_ = kError;

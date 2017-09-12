@@ -442,7 +442,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   // sets |policy_may_need_update_|. Note |any_thread_lock_| must be
   // locked.
   void EnsureUrgentPolicyUpdatePostedOnMainThread(
-      const tracked_objects::Location& from_here);
+      const base::Location& from_here);
 
   // Update the policy if a new signal has arrived. Must be called from the main
   // thread.

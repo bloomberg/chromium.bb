@@ -152,7 +152,7 @@ class AVDACodecAllocatorTest : public testing::Test {
   // don't have a specialization for void, and void won't work as written.  So,
   // be sure to return something.
   template <typename ReturnType>
-  ReturnType PostAndWait(const tracked_objects::Location& from_here,
+  ReturnType PostAndWait(const base::Location& from_here,
                          const base::Callback<ReturnType(void)>& cb) {
     base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
                               base::WaitableEvent::InitialState::NOT_SIGNALED);

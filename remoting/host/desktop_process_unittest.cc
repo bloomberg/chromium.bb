@@ -279,7 +279,7 @@ void DesktopProcessTest::RunDeathTest() {
 }
 
 void DesktopProcessTest::SendCrashRequest() {
-  tracked_objects::Location location = FROM_HERE;
+  base::Location location = FROM_HERE;
   daemon_channel_->Send(new ChromotingDaemonMsg_Crash(
       location.function_name(), location.file_name(), location.line_number()));
 }

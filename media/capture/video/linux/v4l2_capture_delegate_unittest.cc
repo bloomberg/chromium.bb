@@ -208,7 +208,7 @@ class MockVideoCaptureDeviceClient : public VideoCaptureDevice::Client {
       ResurrectLastOutputBuffer,
       Buffer(const gfx::Size&, VideoPixelFormat, VideoPixelStorage, int));
   MOCK_METHOD2(OnError,
-               void(const tracked_objects::Location& from_here,
+               void(const base::Location& from_here,
                     const std::string& reason));
   MOCK_CONST_METHOD0(GetBufferPoolUtilization, double(void));
   MOCK_METHOD0(OnStarted, void(void));

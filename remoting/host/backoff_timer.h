@@ -23,7 +23,7 @@ class BackoffTimer {
   // Invokes |user_task| at intervals specified by |delay|, and
   // increasing up to |max_delay|.  Always invokes |user_task| before
   // the first scheduled delay.
-  void Start(const tracked_objects::Location& posted_from,
+  void Start(const base::Location& posted_from,
              base::TimeDelta delay,
              base::TimeDelta max_delay,
              const base::Closure& user_task);
@@ -42,7 +42,7 @@ class BackoffTimer {
 
   std::unique_ptr<base::Timer> timer_;
   base::Closure user_task_;
-  tracked_objects::Location posted_from_;
+  base::Location posted_from_;
   net::BackoffEntry::Policy backoff_policy_ = {};
   std::unique_ptr<net::BackoffEntry> backoff_entry_;
 

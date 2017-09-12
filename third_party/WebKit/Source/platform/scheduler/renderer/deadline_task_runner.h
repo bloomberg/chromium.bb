@@ -31,7 +31,7 @@ class PLATFORM_EXPORT DeadlineTaskRunner {
   //              posted to run after |delay|.
   //
   // Once the deadline task has run, we reset.
-  void SetDeadline(const tracked_objects::Location& from_here,
+  void SetDeadline(const base::Location& from_here,
                    base::TimeDelta delay,
                    base::TimeTicks now);
 

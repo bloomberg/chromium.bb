@@ -73,7 +73,7 @@ class DeckLinkCaptureDelegate
   ULONG Release() override;
 
   // Forwarder to VideoCaptureDeviceDeckLinkMac::SendErrorString().
-  void SendErrorString(const tracked_objects::Location& from_here,
+  void SendErrorString(const base::Location& from_here,
                        const std::string& reason);
 
   // Forwarder to VideoCaptureDeviceDeckLinkMac::SendLogString().
@@ -311,9 +311,8 @@ ULONG DeckLinkCaptureDelegate::Release() {
   return ret_value;
 }
 
-void DeckLinkCaptureDelegate::SendErrorString(
-    const tracked_objects::Location& from_here,
-    const std::string& reason) {
+void DeckLinkCaptureDelegate::SendErrorString(const base::Location& from_here,
+                                              const std::string& reason) {
   base::AutoLock lock(lock_);
   if (frame_receiver_)
     frame_receiver_->SendErrorString(from_here, reason);
@@ -482,7 +481,7 @@ void VideoCaptureDeviceDeckLinkMac::OnIncomingCapturedData(
 }
 
 void VideoCaptureDeviceDeckLinkMac::SendErrorString(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const std::string& reason) {
   DCHECK(thread_checker_.CalledOnValidThread());
   base::AutoLock lock(lock_);

@@ -168,8 +168,7 @@ class TaskQueueManagerTest : public ::testing::Test {
     return manager_->GetNextSequenceNumber();
   }
 
-  void MaybeScheduleImmediateWorkLocked(
-      const tracked_objects::Location& from_here) {
+  void MaybeScheduleImmediateWorkLocked(const base::Location& from_here) {
     MoveableAutoLock lock(manager_->any_thread_lock_);
     manager_->MaybeScheduleImmediateWorkLocked(from_here, std::move(lock));
   }

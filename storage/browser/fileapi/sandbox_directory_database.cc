@@ -948,9 +948,8 @@ bool SandboxDirectoryDatabase::RemoveFileInfoHelper(
   return true;
 }
 
-void SandboxDirectoryDatabase::HandleError(
-    const tracked_objects::Location& from_here,
-    const leveldb::Status& status) {
+void SandboxDirectoryDatabase::HandleError(const base::Location& from_here,
+                                           const leveldb::Status& status) {
   LOG(ERROR) << "SandboxDirectoryDatabase failed at: "
              << from_here.ToString() << " with error: " << status.ToString();
   db_.reset();

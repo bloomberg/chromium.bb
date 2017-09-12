@@ -40,10 +40,9 @@ bool TimedTaskHelper::IsRunning() const {
   return tracker_ != NULL;
 }
 
-void TimedTaskHelper::Start(
-    const tracked_objects::Location& posted_from,
-    base::TimeDelta delay,
-    const base::Closure& user_task) {
+void TimedTaskHelper::Start(const base::Location& posted_from,
+                            base::TimeDelta delay,
+                            const base::Closure& user_task) {
   posted_from_ = posted_from;
   delay_ = delay;
   user_task_ = user_task;

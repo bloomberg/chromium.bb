@@ -80,7 +80,7 @@ class MockDaemonProcess : public DaemonProcess {
                bool(int, int, const IPC::ChannelHandle&));
 
   MOCK_METHOD1(DoCreateDesktopSessionPtr, DesktopSession*(int));
-  MOCK_METHOD1(DoCrashNetworkProcess, void(const tracked_objects::Location&));
+  MOCK_METHOD1(DoCrashNetworkProcess, void(const base::Location&));
   MOCK_METHOD0(LaunchNetworkProcess, void());
 
  private:
@@ -137,7 +137,7 @@ class DaemonProcessTest : public testing::Test {
 
   // DaemonProcess mocks
   DesktopSession* DoCreateDesktopSession(int terminal_id);
-  void DoCrashNetworkProcess(const tracked_objects::Location& location);
+  void DoCrashNetworkProcess(const base::Location& location);
   void LaunchNetworkProcess();
 
   // Deletes |daemon_process_|.
@@ -196,8 +196,7 @@ DesktopSession* DaemonProcessTest::DoCreateDesktopSession(int terminal_id) {
   return new FakeDesktopSession(daemon_process_.get(), terminal_id);
 }
 
-void DaemonProcessTest::DoCrashNetworkProcess(
-    const tracked_objects::Location& location) {
+void DaemonProcessTest::DoCrashNetworkProcess(const base::Location& location) {
   daemon_process_->SendToNetwork(
       new ChromotingDaemonMsg_Crash(location.function_name(),
                                     location.file_name(),

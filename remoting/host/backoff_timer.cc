@@ -12,7 +12,7 @@ BackoffTimer::BackoffTimer() : timer_(new base::Timer(false, false)) {}
 
 BackoffTimer::~BackoffTimer() {}
 
-void BackoffTimer::Start(const tracked_objects::Location& posted_from,
+void BackoffTimer::Start(const base::Location& posted_from,
                          base::TimeDelta delay,
                          base::TimeDelta max_delay,
                          const base::Closure& user_task) {

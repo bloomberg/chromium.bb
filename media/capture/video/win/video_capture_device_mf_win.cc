@@ -307,9 +307,8 @@ void VideoCaptureDeviceMFWin::OnIncomingCapturedData(
   }
 }
 
-void VideoCaptureDeviceMFWin::OnError(
-    const tracked_objects::Location& from_here,
-    HRESULT hr) {
+void VideoCaptureDeviceMFWin::OnError(const base::Location& from_here,
+                                      HRESULT hr) {
   if (client_.get()) {
     client_->OnError(
         from_here,

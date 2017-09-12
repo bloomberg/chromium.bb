@@ -14,7 +14,7 @@ TaskQueue::TaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl)
 
 TaskQueue::~TaskQueue() {}
 
-TaskQueue::Task::Task(const tracked_objects::Location& posted_from,
+TaskQueue::Task::Task(const base::Location& posted_from,
                       base::OnceClosure task,
                       base::TimeTicks desired_run_time,
                       bool nestable)
@@ -28,16 +28,15 @@ bool TaskQueue::RunsTasksInCurrentSequence() const {
   return impl_->RunsTasksInCurrentSequence();
 }
 
-bool TaskQueue::PostDelayedTask(const tracked_objects::Location& from_here,
+bool TaskQueue::PostDelayedTask(const base::Location& from_here,
                                 base::OnceClosure task,
                                 base::TimeDelta delay) {
   return impl_->PostDelayedTask(from_here, std::move(task), delay);
 }
 
-bool TaskQueue::PostNonNestableDelayedTask(
-    const tracked_objects::Location& from_here,
-    base::OnceClosure task,
-    base::TimeDelta delay) {
+bool TaskQueue::PostNonNestableDelayedTask(const base::Location& from_here,
+                                           base::OnceClosure task,
+                                           base::TimeDelta delay) {
   return impl_->PostNonNestableDelayedTask(from_here, std::move(task), delay);
 }
 

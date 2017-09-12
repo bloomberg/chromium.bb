@@ -58,7 +58,7 @@ class PPAPI_PROXY_EXPORT MessageLoopResource : public MessageLoopShared {
 
  private:
   struct TaskInfo {
-    tracked_objects::Location from_here;
+    base::Location from_here;
     base::Closure closure;
     int64_t delay_ms;
   };
@@ -73,7 +73,7 @@ class PPAPI_PROXY_EXPORT MessageLoopResource : public MessageLoopShared {
   // NOTE: The given closure will be run *WITHOUT* acquiring the Proxy lock.
   //       This only makes sense for user code and completely thread-safe
   //       proxy operations (e.g., MessageLoop::QuitClosure).
-  void PostClosure(const tracked_objects::Location& from_here,
+  void PostClosure(const base::Location& from_here,
                    const base::Closure& closure,
                    int64_t delay_ms) override;
   base::SingleThreadTaskRunner* GetTaskRunner() override;

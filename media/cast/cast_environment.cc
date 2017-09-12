@@ -29,16 +29,15 @@ CastEnvironment::CastEnvironment(
 CastEnvironment::~CastEnvironment() {}
 
 bool CastEnvironment::PostTask(ThreadId identifier,
-                               const tracked_objects::Location& from_here,
+                               const base::Location& from_here,
                                const base::Closure& task) {
   return GetTaskRunner(identifier)->PostTask(from_here, task);
 }
 
-bool CastEnvironment::PostDelayedTask(
-    ThreadId identifier,
-    const tracked_objects::Location& from_here,
-    const base::Closure& task,
-    base::TimeDelta delay) {
+bool CastEnvironment::PostDelayedTask(ThreadId identifier,
+                                      const base::Location& from_here,
+                                      const base::Closure& task,
+                                      base::TimeDelta delay) {
   return GetTaskRunner(identifier)->PostDelayedTask(from_here, task, delay);
 }
 

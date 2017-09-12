@@ -440,9 +440,8 @@ VideoPixelFormat VideoCaptureDeviceAndroid::GetColorspace() {
   }
 }
 
-void VideoCaptureDeviceAndroid::SetErrorState(
-    const tracked_objects::Location& from_here,
-    const std::string& reason) {
+void VideoCaptureDeviceAndroid::SetErrorState(const base::Location& from_here,
+                                              const std::string& reason) {
   {
     base::AutoLock lock(lock_);
     state_ = kError;

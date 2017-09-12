@@ -862,9 +862,8 @@ void V4L2CaptureDelegate::DoCapture() {
       FROM_HERE, base::Bind(&V4L2CaptureDelegate::DoCapture, GetWeakPtr()));
 }
 
-void V4L2CaptureDelegate::SetErrorState(
-    const tracked_objects::Location& from_here,
-    const std::string& reason) {
+void V4L2CaptureDelegate::SetErrorState(const base::Location& from_here,
+                                        const std::string& reason) {
   DCHECK(v4l2_task_runner_->BelongsToCurrentThread());
   is_capturing_ = false;
   client_->OnError(from_here, reason);

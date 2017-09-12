@@ -32,9 +32,8 @@ void MockVideoCaptureClient::SetQuitCb(base::OnceClosure quit_cb) {
   quit_cb_ = std::move(quit_cb);
 }
 
-void MockVideoCaptureClient::DumpError(
-    const tracked_objects::Location& location,
-    const std::string& message) {
+void MockVideoCaptureClient::DumpError(const base::Location& location,
+                                       const std::string& message) {
   DPLOG(ERROR) << location.ToString() << " " << message;
 }
 

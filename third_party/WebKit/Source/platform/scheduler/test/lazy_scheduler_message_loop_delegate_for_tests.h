@@ -36,10 +36,10 @@ class LazySchedulerMessageLoopDelegateForTests : public SchedulerTqmDelegate {
   void SetDefaultTaskRunner(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   void RestoreDefaultTaskRunner() override;
-  bool PostDelayedTask(const tracked_objects::Location& from_here,
+  bool PostDelayedTask(const base::Location& from_here,
                        base::OnceClosure task,
                        base::TimeDelta delay) override;
-  bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
+  bool PostNonNestableDelayedTask(const base::Location& from_here,
                                   base::OnceClosure task,
                                   base::TimeDelta delay) override;
   bool RunsTasksInCurrentSequence() const override;

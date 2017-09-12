@@ -245,7 +245,7 @@ base::TimeTicks TaskQueueThrottler::AlignedThrottledRunTime(
 }
 
 void TaskQueueThrottler::MaybeSchedulePumpThrottledTasks(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     base::TimeTicks now,
     base::TimeTicks unaligned_runtime) {
   if (!allow_throttling_)

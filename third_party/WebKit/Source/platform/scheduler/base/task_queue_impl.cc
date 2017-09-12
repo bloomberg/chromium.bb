@@ -68,7 +68,7 @@ TaskQueueImpl::~TaskQueueImpl() {
 }
 
 TaskQueueImpl::Task::Task()
-    : TaskQueue::Task(tracked_objects::Location(),
+    : TaskQueue::Task(base::Location(),
                       base::Closure(),
                       base::TimeTicks(),
                       true),
@@ -79,7 +79,7 @@ TaskQueueImpl::Task::Task()
   sequence_num = 0;
 }
 
-TaskQueueImpl::Task::Task(const tracked_objects::Location& posted_from,
+TaskQueueImpl::Task::Task(const base::Location& posted_from,
                           base::OnceClosure task,
                           base::TimeTicks desired_run_time,
                           EnqueueOrder sequence_number,
@@ -92,7 +92,7 @@ TaskQueueImpl::Task::Task(const tracked_objects::Location& posted_from,
   sequence_num = sequence_number;
 }
 
-TaskQueueImpl::Task::Task(const tracked_objects::Location& posted_from,
+TaskQueueImpl::Task::Task(const base::Location& posted_from,
                           base::OnceClosure task,
                           base::TimeTicks desired_run_time,
                           EnqueueOrder sequence_number,
@@ -164,7 +164,7 @@ bool TaskQueueImpl::RunsTasksInCurrentSequence() const {
   return base::PlatformThread::CurrentId() == thread_id_;
 }
 
-bool TaskQueueImpl::PostDelayedTask(const tracked_objects::Location& from_here,
+bool TaskQueueImpl::PostDelayedTask(const base::Location& from_here,
                                     base::OnceClosure task,
                                     base::TimeDelta delay) {
   if (delay.is_zero())
@@ -174,10 +174,9 @@ bool TaskQueueImpl::PostDelayedTask(const tracked_objects::Location& from_here,
                              TaskType::NORMAL);
 }
 
-bool TaskQueueImpl::PostNonNestableDelayedTask(
-    const tracked_objects::Location& from_here,
-    base::OnceClosure task,
-    base::TimeDelta delay) {
+bool TaskQueueImpl::PostNonNestableDelayedTask(const base::Location& from_here,
+                                               base::OnceClosure task,
+                                               base::TimeDelta delay) {
   if (delay.is_zero())
     return PostImmediateTaskImpl(from_here, std::move(task),
                                  TaskType::NON_NESTABLE);
@@ -186,10 +185,9 @@ bool TaskQueueImpl::PostNonNestableDelayedTask(
                              TaskType::NON_NESTABLE);
 }
 
-bool TaskQueueImpl::PostImmediateTaskImpl(
-    const tracked_objects::Location& from_here,
-    base::OnceClosure task,
-    TaskType task_type) {
+bool TaskQueueImpl::PostImmediateTaskImpl(const base::Location& from_here,
+                                          base::OnceClosure task,
+                                          TaskType task_type) {
   // Use CHECK instead of DCHECK to crash earlier. See http://crbug.com/711167
   // for details.
   CHECK(task);
@@ -206,11 +204,10 @@ bool TaskQueueImpl::PostImmediateTaskImpl(
   return true;
 }
 
-bool TaskQueueImpl::PostDelayedTaskImpl(
-    const tracked_objects::Location& from_here,
-    base::OnceClosure task,
-    base::TimeDelta delay,
-    TaskType task_type) {
+bool TaskQueueImpl::PostDelayedTaskImpl(const base::Location& from_here,
+                                        base::OnceClosure task,
+                                        base::TimeDelta delay,
+                                        TaskType task_type) {
   // Use CHECK instead of DCHECK to crash earlier. See http://crbug.com/711167
   // for details.
   CHECK(task);
@@ -304,7 +301,7 @@ void TaskQueueImpl::ScheduleDelayedWorkTask(Task pending_task) {
 }
 
 void TaskQueueImpl::PushOntoImmediateIncomingQueueLocked(
-    const tracked_objects::Location& posted_from,
+    const base::Location& posted_from,
     base::OnceClosure task,
     base::TimeTicks desired_run_time,
     EnqueueOrder sequence_number,

@@ -417,9 +417,8 @@ VideoCaptureDeviceClient::ResurrectLastOutputBuffer(
   return MakeBufferStruct(buffer_pool_, buffer_id, new_frame_feedback_id);
 }
 
-void VideoCaptureDeviceClient::OnError(
-    const tracked_objects::Location& from_here,
-    const std::string& reason) {
+void VideoCaptureDeviceClient::OnError(const base::Location& from_here,
+                                       const std::string& reason) {
   const std::string log_message = base::StringPrintf(
       "error@ %s, %s, OS message: %s", from_here.ToString().c_str(),
       reason.c_str(),

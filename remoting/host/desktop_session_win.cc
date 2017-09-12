@@ -679,8 +679,7 @@ void DesktopSessionWin::OnDesktopSessionAgentAttached(
   }
 }
 
-void DesktopSessionWin::CrashDesktopProcess(
-    const tracked_objects::Location& location) {
+void DesktopSessionWin::CrashDesktopProcess(const base::Location& location) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   launcher_->Crash(location);

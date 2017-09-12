@@ -11,7 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 
-using tracked_objects::Location;
+using base::Location;
 
 namespace media {
 

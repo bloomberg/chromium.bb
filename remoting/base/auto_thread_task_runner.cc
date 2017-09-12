@@ -17,16 +17,15 @@ AutoThreadTaskRunner::AutoThreadTaskRunner(
   DCHECK(!stop_task_.is_null());
 }
 
-bool AutoThreadTaskRunner::PostDelayedTask(
-    const tracked_objects::Location& from_here,
-    base::OnceClosure task,
-    base::TimeDelta delay) {
+bool AutoThreadTaskRunner::PostDelayedTask(const base::Location& from_here,
+                                           base::OnceClosure task,
+                                           base::TimeDelta delay) {
   CHECK(task_runner_->PostDelayedTask(from_here, std::move(task), delay));
   return true;
 }
 
 bool AutoThreadTaskRunner::PostNonNestableDelayedTask(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     base::OnceClosure task,
     base::TimeDelta delay) {
   CHECK(task_runner_->PostNonNestableDelayedTask(from_here, std::move(task),

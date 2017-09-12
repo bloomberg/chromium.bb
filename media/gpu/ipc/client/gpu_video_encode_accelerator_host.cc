@@ -219,7 +219,7 @@ void GpuVideoEncodeAcceleratorHost::EncodeSharedMemoryFrame(
 }
 
 void GpuVideoEncodeAcceleratorHost::PostNotifyError(
-    const tracked_objects::Location& location,
+    const base::Location& location,
     Error error,
     const std::string& message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
