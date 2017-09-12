@@ -23,6 +23,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -185,13 +186,6 @@ bool ServiceProcess::Initialize(base::MessageLoopForUI* message_loop,
     return false;
   }
 
-  // Since SequencedWorkerPool is redirected to TaskScheduler, the value of
-  // |kMaxBlockingPoolThreads| is ignored.
-  constexpr int kMaxBlockingPoolThreads = 3;
-  blocking_pool_ =
-      new base::SequencedWorkerPool(kMaxBlockingPoolThreads, "ServiceBlocking",
-                                    base::TaskPriority::USER_VISIBLE);
-
   // Initialize Mojo early so things can use it.
   mojo::edk::Init();
   mojo_ipc_support_.reset(new mojo::edk::ScopedIPCSupport(
@@ -204,10 +198,11 @@ bool ServiceProcess::Initialize(base::MessageLoopForUI* message_loop,
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   base::FilePath pref_path =
       user_data_dir.Append(chrome::kServiceStateFileName);
-  service_prefs_.reset(new ServiceProcessPrefs(
+  service_prefs_ = std::make_unique<ServiceProcessPrefs>(
       pref_path,
-      JsonPrefStore::GetTaskRunnerForFile(pref_path, blocking_pool_.get())
-          .get()));
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN})
+          .get());
   service_prefs_->ReadPrefs();
 
   // This switch it required to run connector with test gaia.
@@ -279,16 +274,6 @@ bool ServiceProcess::Teardown() {
   shutdown_event_.Signal();
   io_thread_.reset();
   file_thread_.reset();
-
-  if (blocking_pool_.get()) {
-    // The goal is to make it impossible for chrome to 'infinite loop' during
-    // shutdown, but to reasonably expect that all BLOCKING_SHUTDOWN tasks
-    // queued during shutdown get run. There's nothing particularly scientific
-    // about the number chosen.
-    const int kMaxNewShutdownBlockingTasks = 1000;
-    blocking_pool_->Shutdown(kMaxNewShutdownBlockingTasks);
-    blocking_pool_ = NULL;
-  }
 
   if (base::TaskScheduler::GetInstance())
     base::TaskScheduler::GetInstance()->Shutdown();
