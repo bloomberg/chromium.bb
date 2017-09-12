@@ -119,7 +119,8 @@ class VariableExpander:
         'NEXT_VERSION_MINI_INSTALLER': next_version_mini_installer_abspath,
         'NEXT_VERSION_MINI_INSTALLER_FILE_VERSION': _GetFileVersion(
             next_version_mini_installer_abspath),
-        'PROGRAM_FILES': shell.SHGetFolderPath(0, shellcon.CSIDL_PROGRAM_FILES,
+        'PROGRAM_FILES': shell.SHGetFolderPath(0,
+                                               shellcon.CSIDL_PROGRAM_FILESX86,
                                                None, 0),
         'USER_SPECIFIC_REGISTRY_SUFFIX': _GetUserSpecificRegistrySuffix(),
         'VERSION_SERVER_2003': '(5, 2)',
