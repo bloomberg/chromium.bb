@@ -17,6 +17,7 @@ from utilities import idl_filename_to_basename
 from utilities import read_idl_files_list_from_file
 from utilities import should_generate_impl_file_from_idl
 from utilities import write_file
+from v8_utilities import build_basename
 
 
 _COPYRIGHT = """// Copyright 2014 The Chromium Authors. All rights reserved.
@@ -46,6 +47,9 @@ def parse_options():
                       help='if specified, idl-files-list is newline separated. ' +
                       'When unspecified, it\'s formatted as a Posix command line.')
     parser.add_option('--output')
+    # TODO(tkent): Remove the option after the great mv. crbug.com/760462
+    parser.add_option('--snake-case-generated-files',
+                      action='store_true', default=False)
 
     options, args = parser.parse_args()
     if options.output is None:
@@ -92,7 +96,8 @@ def main():
                        for meta_data in meta_data_list]
     interface_names.sort()
 
-    includes = ['#include "bindings/modules/v8/%s.h"' % interface_name
+    includes = ['#include "bindings/modules/v8/%s"' %
+                build_basename(interface_name, options.snake_case_generated_files, ext='.h')
                 for interface_name in interface_names]
     initialize_calls = ['  %s::initialize();' % interface_name
                         for interface_name in interface_names]

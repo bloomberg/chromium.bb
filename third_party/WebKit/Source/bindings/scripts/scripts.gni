@@ -504,6 +504,9 @@ template("generate_conditional_features") {
       "--idl-files-list",
       rebase_path(idl_files_list, root_build_dir),
     ]
+    if (snake_case_source_files) {
+      args += [ "--snake-case-generated-files" ]
+    }
 
     outputs = [
       "${invoker.output_dir}/ConditionalFeaturesFor${invoker.component}.cpp",

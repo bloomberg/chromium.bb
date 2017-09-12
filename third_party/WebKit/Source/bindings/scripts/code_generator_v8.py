@@ -58,7 +58,7 @@ from v8_globals import includes
 import v8_interface
 import v8_types
 import v8_union
-from v8_utilities import cpp_name
+from v8_utilities import build_basename, cpp_name
 from utilities import idl_filename_to_component, is_testing_target, shorten_union_name, to_snake_case
 
 
@@ -154,15 +154,7 @@ class CodeGeneratorV8Base(CodeGeneratorBase):
         raise NotImplementedError()
 
     def get_output_basename(self, definition_name, ext, prefix=None):
-        if self.snake_case_generated_files:
-            if ext == 'cpp':
-                ext = 'cc'
-            if prefix:
-                return '%s_%s.%s' % (prefix.lower(), to_snake_case(definition_name), ext)
-            return '%s.%s' % (to_snake_case(definition_name), ext)
-        if prefix:
-            return '%s%s.%s' % (prefix, definition_name, ext)
-        return '%s.%s' % (definition_name, ext)
+        return build_basename(definition_name, self.snake_case_generated_files, prefix=prefix, ext=ext)
 
 
 class CodeGeneratorV8(CodeGeneratorV8Base):
@@ -171,9 +163,9 @@ class CodeGeneratorV8(CodeGeneratorV8Base):
 
     def output_paths(self, definition_name):
         header_path = posixpath.join(self.output_dir, self.get_output_basename(
-            definition_name, 'h', prefix='V8'))
+            definition_name, '.h', prefix='V8'))
         cpp_path = posixpath.join(self.output_dir, self.get_output_basename(
-            definition_name, 'cpp', prefix='V8'))
+            definition_name, '.cpp', prefix='V8'))
         return header_path, cpp_path
 
     def generate_code_internal(self, definitions, definition_name):
@@ -275,9 +267,9 @@ class CodeGeneratorDictionaryImpl(CodeGeneratorV8Base):
         output_dir = posixpath.join(self.output_dir,
                                     interface_info['relative_dir'])
         header_path = posixpath.join(output_dir,
-                                     self.get_output_basename(definition_name, 'h'))
+                                     self.get_output_basename(definition_name, '.h'))
         cpp_path = posixpath.join(output_dir,
-                                  self.get_output_basename(definition_name, 'cpp'))
+                                  self.get_output_basename(definition_name, '.cpp'))
         return header_path, cpp_path
 
     def generate_code_internal(self, definitions, definition_name):

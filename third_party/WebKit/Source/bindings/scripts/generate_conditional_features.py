@@ -19,7 +19,8 @@ from code_generator import (initialize_jinja_env, normalize_and_sort_includes,
 from idl_reader import IdlReader
 from utilities import (create_component_info_provider, write_file,
                        idl_filename_to_component)
-from v8_utilities import v8_class_name, v8_class_name_or_partial, uncapitalize
+from v8_utilities import (binding_header_basename, v8_class_name,
+                          v8_class_name_or_partial, uncapitalize)
 
 # Make sure extension is .py, not .pyc or .pyo, so doesn't depend on caching
 MODULE_PYNAME = os.path.splitext(os.path.basename(__file__))[0] + '.py'
@@ -78,7 +79,7 @@ def interface_is_global(interface):
             'PrimaryGlobal' in interface.extended_attributes)
 
 
-def conditional_features_info(info_provider, reader, idl_filenames, target_component):
+def conditional_features_info(info_provider, reader, idl_filenames, target_component, snake_case):
     """Read a set of IDL files and compile the mapping between interfaces and
     the conditional features defined on them.
 
@@ -119,13 +120,13 @@ def conditional_features_info(info_provider, reader, idl_filenames, target_compo
                 parent_component = idl_filename_to_component(
                     parent_interface_info.get('full_path'))
             if interface.is_partial and target_component != parent_component:
-                includes.add('bindings/%s/v8/V8%s.h' %
-                             (parent_component, interface.name))
-                includes.add('bindings/%s/v8/V8%sPartial.h' %
-                             (target_component, interface.name))
+                includes.add('bindings/%s/v8/%s' %
+                             (parent_component, binding_header_basename(interface.name, snake_case)))
+                includes.add('bindings/%s/v8/%s' %
+                             (target_component, binding_header_basename(interface.name + 'Partial', snake_case)))
             else:
-                includes.add('bindings/%s/v8/V8%s.h' %
-                             (target_component, interface.name))
+                includes.add('bindings/%s/v8/%s' %
+                             (target_component, binding_header_basename(interface.name, snake_case)))
                 # If this is a partial interface in the same component as
                 # its parent, then treat it as a non-partial interface.
                 interface.is_partial = False
@@ -194,6 +195,9 @@ def parse_options():
                       choices=['Core', 'Modules'],
                       help='target component to generate code')
     parser.add_option('--idl-files-list')
+    # TODO(tkent): Remove the option after the great mv. crbug.com/760462
+    parser.add_option('--snake-case-generated-files',
+                      action='store_true', default=False)
 
     options, _ = parser.parse_args()
     if options.output_directory is None:
@@ -209,7 +213,8 @@ def generate_conditional_features(info_provider, options, idl_filenames):
     # from the global info provider and the supplied list of IDL files.
     feature_info = conditional_features_info(info_provider,
                                              reader, idl_filenames,
-                                             options.target_component.lower())
+                                             options.target_component.lower(),
+                                             options.snake_case_generated_files)
 
     # Convert that mapping into the context required for the Jinja2 templates.
     template_context = conditional_features_context(
