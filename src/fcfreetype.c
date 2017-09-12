@@ -1980,7 +1980,8 @@ FcFreeTypeQuery(const FcChar8	*file,
     if (FT_New_Face (ftLibrary, (char *) file, id, &face))
 	goto bail;
 
-    *count = face->num_faces;
+    if (count)
+      *count = face->num_faces;
 
     pat = FcFreeTypeQueryFace (face, file, id, blanks);
 
@@ -1989,6 +1990,67 @@ bail:
     FT_Done_FreeType (ftLibrary);
     return pat;
 }
+
+unsigned int
+FcFreeTypeQueryAll(const FcChar8	*file,
+		   int			id,
+		   FcBlanks		*blanks,
+		   int			*count,
+		   FcFontSet            *set)
+{
+    FT_Face face;
+    FT_Library ftLibrary = NULL;
+    int index_set = id != -1;
+    int set_face_num = index_set ? id & 0xFFFF : 0;
+    int set_instance_num = index_set ? id >> 16 : 0;
+    int face_num = set_face_num;
+    int instance_num = set_instance_num;
+    int num_faces = 0;
+    int num_instances = 0;
+    unsigned int ret = 0;
+    int		err = 0;
+
+    if (FT_Init_FreeType (&ftLibrary))
+	return 0;
+
+    do {
+	FcPattern *pat;
+
+	id = ((instance_num << 16) + face_num);
+	if (FT_New_Face (ftLibrary, (const char *) file, id, &face))
+	  break;
+
+	num_faces = face->num_faces;
+	num_instances = face->style_flags >> 16;
+	pat = FcFreeTypeQueryFace (face, (const FcChar8 *) file, id, blanks);
+	FT_Done_Face (face);
+
+	if (pat)
+	{
+	    ret++;
+	    if (!set || ! FcFontSetAdd (set, pat))
+	      FcPatternDestroy (pat);
+	}
+	else
+	    err = 1;
+
+	if (instance_num < num_instances && !set_instance_num)
+	    instance_num++;
+	else
+	{
+	    face_num++;
+	    instance_num = 0;
+	}
+    } while (!err && (!index_set || face_num == set_face_num) && face_num < num_faces);
+
+    if (count)
+      *count = num_faces;
+
+    FT_Done_FreeType (ftLibrary);
+
+    return ret;
+}
+
 
 /*
  * For our purposes, this approximation is sufficient

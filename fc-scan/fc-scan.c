@@ -150,9 +150,7 @@ main (int argc, char **argv)
 
     for (i = 0; i < fs->nfont; i++)
     {
-	FcPattern *pat;
-
-	pat = fs->fonts[i];
+	FcPattern *pat = fs->fonts[i];
 
 	if (format)
 	{
