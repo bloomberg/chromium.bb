@@ -137,6 +137,9 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
 
   v8_breakpad_support::SetUp();
 #endif
+#if defined(OS_LINUX) && !defined(OS_ANDROID)
+  breakpad::SetFirstChanceExceptionHandler(v8::V8::TryHandleSignal);
+#endif
 #if defined(OS_MACOSX)
   // Needs to happen before InitializeResourceBundle() and before
   // BlinkTestPlatformInitialize() are called.
