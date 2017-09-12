@@ -175,16 +175,14 @@ TEST_F(NetworkIconTest,
   EXPECT_EQ(0, GetCellularUninitializedMsg());
 }
 
-TEST_F(NetworkIconTest,
-       GetCellularUninitializedMsg_CellularUninitialized_NoMobileNetworks) {
+TEST_F(NetworkIconTest, GetCellularUninitializedMsg_CellularUninitialized) {
   SetCellularUninitialized();
 
   EXPECT_EQ(IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR,
             GetCellularUninitializedMsg());
 }
 
-TEST_F(NetworkIconTest,
-       GetCellularUninitializedMsg_CellularScanning_NoMobileNetworks) {
+TEST_F(NetworkIconTest, GetCellularUninitializedMsg_CellularScanning) {
   SetCellularUninitialized();
 
   test_manager_client()->AddTechnology(shill::kTypeCellular, true);

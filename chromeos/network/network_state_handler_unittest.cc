@@ -1653,4 +1653,67 @@ TEST_F(NetworkStateHandlerTest, IPConfigChanged) {
       kShillManagerClientStubDefaultWifi));
 }
 
+TEST_F(NetworkStateHandlerTest, UpdateGuid) {
+  const NetworkState* wifi1 = network_state_handler_->GetNetworkState(
+      kShillManagerClientStubDefaultWifi);
+  ASSERT_TRUE(wifi1);
+  EXPECT_EQ("wifi1_guid", wifi1->guid());
+  // Remove the wifi service.
+  service_test_->RemoveService(kShillManagerClientStubDefaultWifi);
+  base::RunLoop().RunUntilIdle();
+  wifi1 = network_state_handler_->GetNetworkState(
+      kShillManagerClientStubDefaultWifi);
+  EXPECT_FALSE(wifi1);
+  // Add the wifi service but do not specify a guid; the same guid should be
+  // reused.
+  AddService(kShillManagerClientStubDefaultWifi, "", "wifi1", shill::kTypeWifi,
+             shill::kStateOnline);
+  base::RunLoop().RunUntilIdle();
+  wifi1 = network_state_handler_->GetNetworkState(
+      kShillManagerClientStubDefaultWifi);
+  ASSERT_TRUE(wifi1);
+  EXPECT_EQ("wifi1_guid", wifi1->guid());
+
+  const NetworkState* cellular =
+      network_state_handler_->GetNetworkState(kShillManagerClientStubCellular);
+  ASSERT_TRUE(cellular);
+  EXPECT_EQ("cellular1_guid", cellular->guid());
+  // Remove the cellular service. This should create a default network with the
+  // same GUID.
+  service_test_->RemoveService(kShillManagerClientStubCellular);
+  base::RunLoop().RunUntilIdle();
+  // No service matching kShillManagerClientStubCellular.
+  EXPECT_FALSE(
+      network_state_handler_->GetNetworkState(kShillManagerClientStubCellular));
+  // The default cellular network should have the same guid as before.
+  cellular = network_state_handler_->FirstNetworkByType(
+      NetworkTypePattern::Cellular());
+  ASSERT_TRUE(cellular);
+  EXPECT_EQ("cellular1_guid", cellular->guid());
+}
+
+TEST_F(NetworkStateHandlerTest, EnsureCellularNetwork) {
+  // ClearServices will trigger a kServiceCompleteListProperty property change
+  // which will create a default Cellular network.
+  service_test_->ClearServices();
+  base::RunLoop().RunUntilIdle();
+  NetworkStateHandler::NetworkStateList cellular_networks;
+  network_state_handler_->GetNetworkListByType(
+      NetworkTypePattern::Cellular(), false /* configured_only */,
+      false /* visible_only */, 0, &cellular_networks);
+  ASSERT_EQ(1u, cellular_networks.size());
+  EXPECT_TRUE(cellular_networks[0]->IsDefaultCellular());
+
+  // Add a Cellular service. This should replace the default cellular network.
+  AddService(kShillManagerClientStubCellular, "cellular1_guid", "cellular1",
+             shill::kTypeCellular, shill::kStateIdle);
+  base::RunLoop().RunUntilIdle();
+  network_state_handler_->GetNetworkListByType(
+      NetworkTypePattern::Cellular(), false /* configured_only */,
+      false /* visible_only */, 0, &cellular_networks);
+  ASSERT_EQ(1u, cellular_networks.size());
+  EXPECT_FALSE(cellular_networks[0]->IsDefaultCellular());
+  EXPECT_EQ("/service/cellular1", cellular_networks[0]->path());
+}
+
 }  // namespace chromeos

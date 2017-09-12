@@ -610,6 +610,40 @@ var availableTests = [
         }, result);
       }));
   },
+  function getPropertiesCellularDefault() {
+    chrome.networkingPrivate.getProperties(
+      kCellularGuid,
+      callbackPass(function(result) {
+        assertEq({
+          Cellular: {
+            AllowRoaming: false,
+            Carrier: 'Cellular1_Carrier',
+            ESN: "test_esn",
+            Family: 'GSM',
+            HomeProvider: {
+              Code: '000000',
+              Country: 'us',
+              Name: 'Cellular1_Provider'
+            },
+            ICCID: "test_iccid",
+            IMEI: "test_imei",
+            MDN: "test_mdn",
+            MEID: "test_meid",
+            MIN: "test_min",
+            ModelID:"test_model_id",
+            SIMLockStatus: {LockEnabled: true, LockType: '', RetriesLeft: 3},
+            SignalStrength: 0,
+          },
+          Connectable: false,
+          ConnectionState: ConnectionStateType.NOT_CONNECTED,
+          GUID: kCellularGuid,
+          Name: '',
+          Priority: 0,
+          Source: 'None',
+          Type: NetworkType.CELLULAR,
+        }, result);
+      }));
+  },
   function getManagedProperties() {
     chrome.networkingPrivate.getManagedProperties(
       'stub_wifi2',

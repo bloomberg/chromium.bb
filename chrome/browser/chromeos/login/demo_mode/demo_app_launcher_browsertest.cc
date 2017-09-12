@@ -54,7 +54,7 @@ bool VerifyDemoAppLaunch() {
 
 bool VerifyNetworksDisabled() {
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
-  return !handler->FirstNetworkByType(NetworkTypePattern::NonVirtual());
+  return !handler->DefaultNetwork();
 }
 
 }  // namespace

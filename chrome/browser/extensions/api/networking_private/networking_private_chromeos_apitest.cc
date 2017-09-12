@@ -31,7 +31,9 @@
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_certificate_handler.h"
 #include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/network_type_pattern.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "components/onc/onc_constants.h"
@@ -623,6 +625,27 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
                        GetCellularProperties) {
   SetupCellular();
   EXPECT_TRUE(RunNetworkingSubtest("getPropertiesCellular")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
+                       GetCellularPropertiesDefault) {
+  SetupCellular();
+  const chromeos::NetworkState* cellular =
+      chromeos::NetworkHandler::Get()
+          ->network_state_handler()
+          ->FirstNetworkByType(chromeos::NetworkTypePattern::Cellular());
+  ASSERT_TRUE(cellular);
+  std::string cellular_guid = std::string(kCellular1ServicePath) + "_guid";
+  EXPECT_EQ(cellular_guid, cellular->guid());
+  // Remove the Cellular service. This should create a default Cellular network.
+  service_test_->RemoveService(kCellular1ServicePath);
+  content::RunAllPendingInMessageLoop();
+  cellular = chromeos::NetworkHandler::Get()
+                 ->network_state_handler()
+                 ->FirstNetworkByType(chromeos::NetworkTypePattern::Cellular());
+  ASSERT_TRUE(cellular);
+  EXPECT_EQ(cellular_guid, cellular->guid());
+  EXPECT_TRUE(RunNetworkingSubtest("getPropertiesCellularDefault")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, GetState) {

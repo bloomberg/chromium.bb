@@ -158,7 +158,7 @@ std::string DeviceState::GetIpAddressByType(const std::string& type) const {
 }
 
 bool DeviceState::IsSimAbsent() const {
-  return technology_family_ == shill::kTechnologyFamilyGsm && !sim_present_;
+  return technology_family_ != shill::kTechnologyFamilyCdma && !sim_present_;
 }
 
 }  // namespace chromeos
