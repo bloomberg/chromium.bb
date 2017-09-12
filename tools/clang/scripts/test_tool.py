@@ -33,7 +33,7 @@ def _GenerateCompileCommands(files, include_paths):
   include_path_flags = ' '.join('-I %s' % include_path.replace('\\', '/')
                                 for include_path in include_paths)
   return json.dumps([{'directory': os.path.dirname(f),
-                      'command': 'clang++ -std=c++11 -fsyntax-only %s -c %s' % (
+                      'command': 'clang++ -std=c++14 -fsyntax-only %s -c %s' % (
                           include_path_flags, os.path.basename(f)),
                       'file': os.path.basename(f)} for f in files], indent=2)
 
@@ -186,9 +186,9 @@ def main(argv):
     print '[ RUN      ] %s' % os.path.relpath(actual)
     expected_output = actual_output = None
     with open(expected, 'r') as f:
-      expected_output = f.readlines()
+      expected_output = f.read().splitlines()
     with open(actual, 'r') as f:
-      actual_output = f.readlines()
+      actual_output =  f.read().splitlines()
     if actual_output != expected_output:
       failed += 1
       for line in difflib.unified_diff(expected_output, actual_output,
