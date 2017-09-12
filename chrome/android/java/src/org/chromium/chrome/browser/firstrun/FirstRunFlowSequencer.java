@@ -114,7 +114,7 @@ public abstract class FirstRunFlowSequencer  {
 
     @VisibleForTesting
     protected boolean hasAnyUserSeenToS() {
-        return ToSAckedReceiver.checkAnyUserHasSeenToS(mActivity);
+        return ToSAckedReceiver.checkAnyUserHasSeenToS();
     }
 
     @VisibleForTesting
@@ -147,8 +147,7 @@ public abstract class FirstRunFlowSequencer  {
 
     @VisibleForTesting
     protected void setFirstRunFlowSignInComplete() {
-        FirstRunSignInProcessor.setFirstRunFlowSignInComplete(
-                mActivity.getApplicationContext(), true);
+        FirstRunSignInProcessor.setFirstRunFlowSignInComplete(true);
     }
 
     void initializeSharedState(boolean isAndroidEduDevice, boolean hasChildAccount) {
@@ -238,10 +237,9 @@ public abstract class FirstRunFlowSequencer  {
 
     /**
      * Marks a given flow as completed.
-     * @param activity An activity.
      * @param data Resulting FRE properties bundle.
      */
-    public static void markFlowAsCompleted(Activity activity, Bundle data) {
+    public static void markFlowAsCompleted(Bundle data) {
         // When the user accepts ToS in the Setup Wizard (see ToSAckedReceiver), we do not
         // show the ToS page to the user because the user has already accepted one outside FRE.
         if (!PrefServiceBridge.getInstance().isFirstRunEulaAccepted()) {
@@ -249,7 +247,7 @@ public abstract class FirstRunFlowSequencer  {
         }
 
         // Mark the FRE flow as complete and set the sign-in flow preferences if necessary.
-        FirstRunSignInProcessor.finalizeFirstRunFlowState(activity, data);
+        FirstRunSignInProcessor.finalizeFirstRunFlowState(data);
     }
 
     /**
@@ -275,7 +273,7 @@ public abstract class FirstRunFlowSequencer  {
         // to the intent handling.
         final boolean fromChromeIcon =
                 fromIntent != null && TextUtils.equals(fromIntent.getAction(), Intent.ACTION_MAIN);
-        if (!fromChromeIcon && ToSAckedReceiver.checkAnyUserHasSeenToS(context)) return null;
+        if (!fromChromeIcon && ToSAckedReceiver.checkAnyUserHasSeenToS()) return null;
 
         final boolean baseFreComplete = FirstRunStatus.getFirstRunFlowComplete();
         if (!baseFreComplete) {

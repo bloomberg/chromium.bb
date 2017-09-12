@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.firstrun;
 
 import android.app.Fragment;
-import android.content.Context;
 import android.content.SharedPreferences;
 
 import org.chromium.base.ContextUtils;
@@ -32,7 +31,7 @@ public class FirstRunUtils {
         boolean javaPrefValue = javaPrefs.getBoolean(CACHED_TOS_ACCEPTED_PREF, false);
         boolean nativePrefValue = prefsBridge.isFirstRunEulaAccepted();
         boolean userHasSeenTos =
-                ToSAckedReceiver.checkAnyUserHasSeenToS(ContextUtils.getApplicationContext());
+                ToSAckedReceiver.checkAnyUserHasSeenToS();
         boolean isFirstRunComplete = FirstRunStatus.getFirstRunFlowComplete();
         if (javaPrefValue || nativePrefValue || userHasSeenTos || isFirstRunComplete) {
             if (!javaPrefValue) {
@@ -46,13 +45,12 @@ public class FirstRunUtils {
 
     /**
      * @return Whether the user has accepted Chrome Terms of Service.
-     * @param appContext An application context.
      */
-    public static boolean didAcceptTermsOfService(Context appContext) {
+    public static boolean didAcceptTermsOfService() {
         // Note: Does not check PrefServiceBridge.getInstance().isFirstRunEulaAccepted()
         // because this may be called before native is initialized.
         return ContextUtils.getAppSharedPreferences().getBoolean(CACHED_TOS_ACCEPTED_PREF, false)
-                || ToSAckedReceiver.checkAnyUserHasSeenToS(appContext);
+                || ToSAckedReceiver.checkAnyUserHasSeenToS();
     }
 
     /**
