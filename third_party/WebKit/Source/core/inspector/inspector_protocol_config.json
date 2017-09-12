@@ -90,7 +90,7 @@
             {
                 "domain": "Emulation",
                 "include": ["forceViewport", "resetViewport", "resetPageScaleFactor", "setPageScaleFactor", "setScriptExecutionDisabled", "setTouchEmulationEnabled",
-                            "setEmulatedMedia", "setCPUThrottlingRate", "setVirtualTimePolicy", "setDefaultBackgroundColorOverride"],
+                            "setEmulatedMedia", "setCPUThrottlingRate", "setVirtualTimePolicy", "setNavigatorOverrides", "setDefaultBackgroundColorOverride"],
                 "include_events": ["virtualTimeBudgetExpired", "virtualTimePaused"]
             },
             {
