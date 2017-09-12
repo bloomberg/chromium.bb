@@ -38,9 +38,9 @@ EphemeralRangeTemplate<Strategy>::EphemeralRangeTemplate(
     return;
   }
   DCHECK(end_position_.IsNotNull());
+  DCHECK(start_position_.IsValidFor(*start_position_.GetDocument()));
+  DCHECK(end_position_.IsValidFor(*end_position_.GetDocument()));
   DCHECK_EQ(start_position_.GetDocument(), end_position_.GetDocument());
-  DCHECK(start_position_.IsConnected());
-  DCHECK(end_position_.IsConnected());
   DCHECK_LE(start_position_, end_position_);
 }
 
