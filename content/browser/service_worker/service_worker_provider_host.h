@@ -30,6 +30,7 @@
 #include "content/public/common/resource_type.h"
 #include "content/public/common/service_worker_modes.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace storage {
 class BlobStorageContext;
@@ -387,7 +388,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   // Implements mojom::ServiceWorkerContainerHost.
   void Register(const GURL& script_url,
-                const ServiceWorkerRegistrationOptions& options,
+                blink::mojom::ServiceWorkerRegistrationOptionsPtr options,
                 RegisterCallback callback) override;
   void GetRegistration(const GURL& client_url,
                        GetRegistrationCallback callback) override;
@@ -415,9 +416,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       const std::vector<scoped_refptr<ServiceWorkerRegistration>>&
           registrations);
 
-  bool IsValidRegisterMessage(const GURL& script_url,
-                              const ServiceWorkerRegistrationOptions& options,
-                              std::string* out_error) const;
+  bool IsValidRegisterMessage(
+      const GURL& script_url,
+      const blink::mojom::ServiceWorkerRegistrationOptions& options,
+      std::string* out_error) const;
   bool IsValidGetRegistrationMessage(const GURL& client_url,
                                      std::string* out_error) const;
   bool IsValidGetRegistrationsMessage(std::string* out_error) const;

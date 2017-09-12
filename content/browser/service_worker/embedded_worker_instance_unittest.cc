@@ -30,6 +30,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace content {
 
@@ -64,7 +65,7 @@ class ProviderHostEndpoints : public mojom::ServiceWorkerContainerHost {
  private:
   // Implements mojom::ServiceWorkerContainerHost.
   void Register(const GURL& script_url,
-                const ServiceWorkerRegistrationOptions& options,
+                blink::mojom::ServiceWorkerRegistrationOptionsPtr options,
                 RegisterCallback callback) override {
     NOTIMPLEMENTED();
   }

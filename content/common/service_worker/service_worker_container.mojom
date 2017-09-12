@@ -6,6 +6,7 @@ module content.mojom;
 
 import "content/common/service_worker/service_worker_types.mojom";
 import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_error_type.mojom";
+import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom";
 import "url/mojo/url.mojom";
 
 // mojom::ServiceWorkerContainerHost is a browser-side interface. The renderer
@@ -16,7 +17,8 @@ interface ServiceWorkerContainerHost {
   // Registers a service worker from |script_url| with |options|.
   // On success, |error| is kNone with |registration| and |attributes| set.
   // Otherwise, |error| and |error_msg| describe the failure.
-  Register(url.mojom.Url script_url, ServiceWorkerRegistrationOptions options)
+  Register(url.mojom.Url script_url,
+           blink.mojom.ServiceWorkerRegistrationOptions options)
     => (blink.mojom.ServiceWorkerErrorType error,
         string? error_msg,
         ServiceWorkerRegistrationObjectInfo? registration,

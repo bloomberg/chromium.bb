@@ -28,6 +28,7 @@
 #include "net/base/net_errors.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/special_storage_policy.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 using std::swap;
 
@@ -1400,8 +1401,8 @@ ServiceWorkerStorage::GetOrCreateRegistration(
     return registration;
 
   registration = new ServiceWorkerRegistration(
-      ServiceWorkerRegistrationOptions(data.scope), data.registration_id,
-      context_);
+      blink::mojom::ServiceWorkerRegistrationOptions(data.scope),
+      data.registration_id, context_);
   registration->set_resources_total_size_bytes(data.resources_total_size_bytes);
   registration->set_last_update_check(data.last_update_check);
   if (pending_deletions_.find(data.registration_id) !=

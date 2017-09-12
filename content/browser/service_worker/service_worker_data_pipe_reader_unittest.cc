@@ -15,6 +15,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/io_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace content {
 
@@ -79,7 +80,8 @@ class ServiceWorkerDataPipeReaderTest
     helper_ = base::MakeUnique<EmbeddedWorkerTestHelper>(base::FilePath());
     mock_url_request_job_ =
         base::MakeUnique<MockServiceWorkerURLRequestJob>(this);
-    ServiceWorkerRegistrationOptions options(GURL("https://example.com/"));
+    blink::mojom::ServiceWorkerRegistrationOptions options(
+        GURL("https://example.com/"));
     registration_ = new ServiceWorkerRegistration(
         options, 1L, helper_->context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(

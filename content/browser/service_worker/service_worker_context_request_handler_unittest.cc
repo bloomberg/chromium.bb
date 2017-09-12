@@ -29,6 +29,7 @@
 #include "net/url_request/url_request_test_util.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace content {
 
@@ -67,7 +68,8 @@ class ServiceWorkerContextRequestHandlerTest : public testing::Test {
     script_url_ = GURL("https://host/script.js");
     import_script_url_ = GURL("https://host/import.js");
     registration_ = new ServiceWorkerRegistration(
-        ServiceWorkerRegistrationOptions(scope_), 1L, context()->AsWeakPtr());
+        blink::mojom::ServiceWorkerRegistrationOptions(scope_), 1L,
+        context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(registration_.get(), script_url_,
                                         context()->storage()->NewVersionId(),
                                         context()->AsWeakPtr());

@@ -25,6 +25,7 @@
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/service_worker_context.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 class GURL;
 
@@ -195,10 +196,11 @@ class CONTENT_EXPORT ServiceWorkerContextCore
       const std::string& client_uuid);
 
   // Non-null |provider_host| must be given if this is called from a document.
-  void RegisterServiceWorker(const GURL& script_url,
-                             const ServiceWorkerRegistrationOptions& options,
-                             ServiceWorkerProviderHost* provider_host,
-                             const RegistrationCallback& callback);
+  void RegisterServiceWorker(
+      const GURL& script_url,
+      const blink::mojom::ServiceWorkerRegistrationOptions& options,
+      ServiceWorkerProviderHost* provider_host,
+      const RegistrationCallback& callback);
   void UnregisterServiceWorker(const GURL& pattern,
                                const UnregistrationCallback& callback);
 

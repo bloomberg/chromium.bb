@@ -21,6 +21,7 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -109,8 +110,9 @@ TEST_F(ServiceWorkerRegistrationTest, SetAndUnsetVersions) {
   const GURL kScript("http://www.example.not/service_worker.js");
   int64_t kRegistrationId = 1L;
   scoped_refptr<ServiceWorkerRegistration> registration =
-      new ServiceWorkerRegistration(ServiceWorkerRegistrationOptions(kScope),
-                                    kRegistrationId, context()->AsWeakPtr());
+      new ServiceWorkerRegistration(
+          blink::mojom::ServiceWorkerRegistrationOptions(kScope),
+          kRegistrationId, context()->AsWeakPtr());
 
   const int64_t version_1_id = 1L;
   const int64_t version_2_id = 2L;
@@ -176,8 +178,9 @@ TEST_F(ServiceWorkerRegistrationTest, FailedRegistrationNoCrash) {
   const GURL kScope("http://www.example.not/");
   int64_t kRegistrationId = 1L;
   scoped_refptr<ServiceWorkerRegistration> registration =
-      new ServiceWorkerRegistration(ServiceWorkerRegistrationOptions(kScope),
-                                    kRegistrationId, context()->AsWeakPtr());
+      new ServiceWorkerRegistration(
+          blink::mojom::ServiceWorkerRegistrationOptions(kScope),
+          kRegistrationId, context()->AsWeakPtr());
   std::unique_ptr<ServiceWorkerRegistrationHandle> handle(
       new ServiceWorkerRegistrationHandle(
           context()->AsWeakPtr(), base::WeakPtr<ServiceWorkerProviderHost>(),
@@ -191,9 +194,9 @@ TEST_F(ServiceWorkerRegistrationTest, NavigationPreload) {
   const GURL kScript("https://www.example.not/service_worker.js");
   // Setup.
   scoped_refptr<ServiceWorkerRegistration> registration =
-      new ServiceWorkerRegistration(ServiceWorkerRegistrationOptions(kScope),
-                                    storage()->NewRegistrationId(),
-                                    context()->AsWeakPtr());
+      new ServiceWorkerRegistration(
+          blink::mojom::ServiceWorkerRegistrationOptions(kScope),
+          storage()->NewRegistrationId(), context()->AsWeakPtr());
   scoped_refptr<ServiceWorkerVersion> version_1 = new ServiceWorkerVersion(
       registration.get(), kScript, storage()->NewVersionId(),
       context()->AsWeakPtr());
@@ -236,7 +239,7 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest {
     const GURL kScript("https://www.example.not/service_worker.js");
 
     registration_ = new ServiceWorkerRegistration(
-        ServiceWorkerRegistrationOptions(kScope),
+        blink::mojom::ServiceWorkerRegistrationOptions(kScope),
         storage()->NewRegistrationId(), context()->AsWeakPtr());
 
     // Create an active version.

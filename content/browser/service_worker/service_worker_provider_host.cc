@@ -38,6 +38,7 @@
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "net/base/url_util.h"
 #include "storage/browser/blob/blob_storage_context.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace content {
 
@@ -897,7 +898,7 @@ void ServiceWorkerProviderHost::SendSetControllerServiceWorker(
 
 void ServiceWorkerProviderHost::Register(
     const GURL& script_url,
-    const ServiceWorkerRegistrationOptions& options,
+    blink::mojom::ServiceWorkerRegistrationOptionsPtr options,
     RegisterCallback callback) {
   if (!dispatcher_host_ || !IsContextAlive()) {
     std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kAbort,
@@ -916,7 +917,7 @@ void ServiceWorkerProviderHost::Register(
   }
 
   std::string error_message;
-  if (!IsValidRegisterMessage(script_url, options, &error_message)) {
+  if (!IsValidRegisterMessage(script_url, *options, &error_message)) {
     mojo::ReportBadMessage(error_message);
     // ReportBadMessage() will kill the renderer process, but Mojo complains if
     // the callback is not run. Just run it with nonsense arguments.
@@ -926,7 +927,7 @@ void ServiceWorkerProviderHost::Register(
   }
 
   if (!GetContentClient()->browser()->AllowServiceWorker(
-          options.scope, topmost_frame_url(),
+          options->scope, topmost_frame_url(),
           dispatcher_host_->resource_context(),
           base::Bind(&GetWebContents, render_process_id_, frame_id()))) {
     std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kDisabled,
@@ -939,9 +940,9 @@ void ServiceWorkerProviderHost::Register(
   int64_t trace_id = base::TimeTicks::Now().since_origin().InMicroseconds();
   TRACE_EVENT_ASYNC_BEGIN2(
       "ServiceWorker", "ServiceWorkerProviderHost::Register", trace_id, "Scope",
-      options.scope.spec(), "Script URL", script_url.spec());
+      options->scope.spec(), "Script URL", script_url.spec());
   context_->RegisterServiceWorker(
-      script_url, options, this,
+      script_url, *options, this,
       base::AdaptCallbackForRepeating(
           base::BindOnce(&ServiceWorkerProviderHost::RegistrationComplete,
                          AsWeakPtr(), std::move(callback), trace_id)));
@@ -1208,7 +1209,7 @@ void ServiceWorkerProviderHost::GetRegistrationForReady(
 
 bool ServiceWorkerProviderHost::IsValidRegisterMessage(
     const GURL& script_url,
-    const ServiceWorkerRegistrationOptions& options,
+    const blink::mojom::ServiceWorkerRegistrationOptions& options,
     std::string* out_error) const {
   if (client_type() != blink::kWebServiceWorkerClientTypeWindow) {
     *out_error = kBadMessageFromNonWindow;

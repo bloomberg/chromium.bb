@@ -24,6 +24,7 @@
 #include "net/url_request/url_request_test_util.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace content {
 
@@ -108,8 +109,9 @@ class LinkHeaderServiceWorkerTest : public ::testing::Test {
   void CreateServiceWorkerProviderHost() {
     scoped_refptr<ServiceWorkerRegistration> registration =
         new ServiceWorkerRegistration(
-            ServiceWorkerRegistrationOptions(GURL("https://host/scope")), 1L,
-            context()->AsWeakPtr());
+            blink::mojom::ServiceWorkerRegistrationOptions(
+                GURL("https://host/scope")),
+            1L, context()->AsWeakPtr());
     scoped_refptr<ServiceWorkerVersion> version = new ServiceWorkerVersion(
         registration.get(), GURL("https://host/script.js"), 1L,
         context()->AsWeakPtr());

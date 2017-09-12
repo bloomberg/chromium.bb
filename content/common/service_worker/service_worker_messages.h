@@ -111,7 +111,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerObjectInfo)
   IPC_STRUCT_TRAITS_MEMBER(version_id)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerRegistrationOptions)
+IPC_STRUCT_TRAITS_BEGIN(blink::mojom::ServiceWorkerRegistrationOptions)
   IPC_STRUCT_TRAITS_MEMBER(scope)
 IPC_STRUCT_TRAITS_END()
 

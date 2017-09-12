@@ -29,6 +29,7 @@
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_content_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace content {
 
@@ -74,14 +75,16 @@ class ServiceWorkerProviderHostTest : public testing::Test {
     context_ = helper_->context();
     script_url_ = GURL("https://www.example.com/service_worker.js");
     registration1_ = new ServiceWorkerRegistration(
-        ServiceWorkerRegistrationOptions(GURL("https://www.example.com/")), 1L,
-        context_->AsWeakPtr());
+        blink::mojom::ServiceWorkerRegistrationOptions(
+            GURL("https://www.example.com/")),
+        1L, context_->AsWeakPtr());
     registration2_ = new ServiceWorkerRegistration(
-        ServiceWorkerRegistrationOptions(
+        blink::mojom::ServiceWorkerRegistrationOptions(
             GURL("https://www.example.com/example")),
         2L, context_->AsWeakPtr());
     registration3_ = new ServiceWorkerRegistration(
-        ServiceWorkerRegistrationOptions(GURL("https://other.example.com/")),
+        blink::mojom::ServiceWorkerRegistrationOptions(
+            GURL("https://other.example.com/")),
         3L, context_->AsWeakPtr());
   }
 
@@ -268,9 +271,10 @@ TEST_F(ServiceWorkerProviderHostTest, ContextSecurity) {
 
 class MockServiceWorkerRegistration : public ServiceWorkerRegistration {
  public:
-  MockServiceWorkerRegistration(const ServiceWorkerRegistrationOptions& options,
-                                int64_t registration_id,
-                                base::WeakPtr<ServiceWorkerContextCore> context)
+  MockServiceWorkerRegistration(
+      const blink::mojom::ServiceWorkerRegistrationOptions& options,
+      int64_t registration_id,
+      base::WeakPtr<ServiceWorkerContextCore> context)
       : ServiceWorkerRegistration(options, registration_id, context) {}
 
   void AddListener(ServiceWorkerRegistration::Listener* listener) override {
@@ -298,7 +302,8 @@ TEST_F(ServiceWorkerProviderHostTest, CrossSiteTransfer) {
 
   // Create a mock registration before creating the provider host which is in
   // the scope.
-  ServiceWorkerRegistrationOptions options(GURL("https://cross.example.com/"));
+  blink::mojom::ServiceWorkerRegistrationOptions options(
+      GURL("https://cross.example.com/"));
   scoped_refptr<MockServiceWorkerRegistration> registration =
       new MockServiceWorkerRegistration(options, 4L,
                                         helper_->context()->AsWeakPtr());

@@ -29,6 +29,7 @@
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/test/fake_download_item.h"
 #include "content/public/test/mock_download_manager.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -245,7 +246,8 @@ bool BackgroundFetchTestBase::CreateRegistrationId(
   {
     base::RunLoop run_loop;
     embedded_worker_test_helper_.context()->RegisterServiceWorker(
-        script_url, ServiceWorkerRegistrationOptions(origin_.GetURL()),
+        script_url,
+        blink::mojom::ServiceWorkerRegistrationOptions(origin_.GetURL()),
         nullptr /* provider_host */,
         base::Bind(&DidRegisterServiceWorker, &service_worker_registration_id,
                    run_loop.QuitClosure()));
