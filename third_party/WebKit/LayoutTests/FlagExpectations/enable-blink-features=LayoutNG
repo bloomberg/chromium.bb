@@ -10764,7 +10764,6 @@ crbug.com/591099 fast/text/place-rtl-ellipsis-in-inline-blocks-align-right.html 
 crbug.com/591099 fast/text/place-rtl-ellipsis-in-inline-blocks.html [ Failure ]
 crbug.com/591099 fast/text/regional-indicator-symobls.html [ Failure Pass ]
 crbug.com/591099 fast/text/reset-drag-on-mouse-down.html [ Failure Pass ]
-crbug.com/591099 fast/text/reset-emptyRun.html [ Failure Pass ]
 crbug.com/591099 fast/text/selection-hard-linebreak.html [ Failure ]
 crbug.com/591099 fast/text/selection-rect-line-height-too-big.html [ Failure ]
 crbug.com/591099 fast/text/selection-rect-line-height-too-small.html [ Failure ]
