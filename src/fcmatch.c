@@ -160,42 +160,43 @@ FcCompareRange (FcValue *v1, FcValue *v2)
 {
     FcValue value1 = FcValueCanonicalize (v1);
     FcValue value2 = FcValueCanonicalize (v2);
-    FcRange *r1 = NULL, *r2 = NULL;
-    double ret = -1.0;
+    double b1, e1, b2, e2;
 
     switch ((int) value1.type) {
+    case FcTypeInteger:
+        b1 = e1 = value1.u.i;
+	break;
     case FcTypeDouble:
-	r1 = FcRangeCreateDouble (value1.u.d, value1.u.d);
+        b1 = e1 = value1.u.d;
 	break;
     case FcTypeRange:
-	r1 = FcRangeCopy (value1.u.r);
+	abort();
+	b1 = value1.u.r->begin;
+	e1 = value1.u.r->end;
 	break;
     default:
-	goto bail;
+	return -1;
     }
     switch ((int) value2.type) {
+    case FcTypeInteger:
+        b2 = e2 = value2.u.i;
+	break;
     case FcTypeDouble:
-	r2 = FcRangeCreateDouble (value2.u.d, value2.u.d);
+        b2 = e2 = value2.u.d;
 	break;
     case FcTypeRange:
-	r2 = FcRangeCopy (value2.u.r);
+	b2 = value2.u.r->begin;
+	e2 = value2.u.r->end;
 	break;
     default:
-	goto bail;
+	return -1;
     }
 
-    if (FcRangeIsInRange (r1, r2))
-	ret = 0.0;
+    /* If the ranges overlap, it's a match, otherwise return closest distance. */
+    if (e1 < b2 || e2 < b1)
+	return FC_MIN (fabs (b2 - e1), fabs (b1 - e2));
     else
-	ret = FC_MIN (fabs (r1->end - r2->begin), fabs (r1->begin - r2->end));
-
-bail:
-    if (r1)
-	FcRangeDestroy (r1);
-    if (r2)
-	FcRangeDestroy (r2);
-
-    return ret;
+	return 0.0;
 }
 
 static double
