@@ -58,6 +58,7 @@ class ServiceWorkerInstalledScriptsSender;
 class ServiceWorkerProviderHost;
 class ServiceWorkerRegistration;
 class ServiceWorkerURLRequestJob;
+class ServiceWorkerURLLoaderJob;
 struct ServiceWorkerClientInfo;
 struct ServiceWorkerVersionInfo;
 
@@ -309,12 +310,14 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   base::WeakPtr<ServiceWorkerContextCore> context() const { return context_; }
 
-  // Adds and removes |request_job| as a dependent job not to stop the
-  // ServiceWorker while |request_job| is reading the stream of the fetch event
-  // response from the ServiceWorker.
+  // Adds and removes |request_job| or |loader_job| as a dependent job not to
+  // stop the ServiceWorker while |request_job| or |loader_job|  is reading the
+  // stream of the fetch event response from the ServiceWorker.
   void AddStreamingURLRequestJob(const ServiceWorkerURLRequestJob* request_job);
   void RemoveStreamingURLRequestJob(
       const ServiceWorkerURLRequestJob* request_job);
+  void AddStreamingURLLoaderJob(const ServiceWorkerURLLoaderJob* loader_job);
+  void RemoveStreamingURLLoaderJob(const ServiceWorkerURLLoaderJob* loader_job);
 
   // Adds and removes Listeners.
   void AddListener(Listener* listener);
@@ -718,6 +721,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
       installed_scripts_sender_;
 
   std::set<const ServiceWorkerURLRequestJob*> streaming_url_request_jobs_;
+  std::set<const ServiceWorkerURLLoaderJob*> streaming_url_loader_jobs_;
 
   // Keeps track of the provider hosting this running service worker for this
   // version. |provider_host_| is always valid as long as this version is
