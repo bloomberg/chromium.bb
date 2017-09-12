@@ -1919,6 +1919,12 @@ void MailboxReleased(const gpu::SyncToken& sync_token,
                      bool lost_resource,
                      cc::BlockingTaskRunner* main_thread_task_runner) {}
 
+static void CollectResources(std::vector<ReturnedResource>* array,
+                             const std::vector<ReturnedResource>& returned,
+                             cc::BlockingTaskRunner* main_thread_task_runner) {
+  array->insert(array->end(), returned.begin(), returned.end());
+}
+
 TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   cc::FakeOutputSurfaceClient output_surface_client;
   std::unique_ptr<cc::FakeOutputSurface> output_surface(
@@ -1927,15 +1933,42 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
 
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
       new cc::TestSharedBitmapManager());
-  std::unique_ptr<cc::DisplayResourceProvider> resource_provider =
+  auto parent_resource_provider =
       cc::FakeResourceProvider::Create<cc::DisplayResourceProvider>(
           output_surface->context_provider(), shared_bitmap_manager.get());
   std::unique_ptr<cc::TextureMailboxDeleter> mailbox_deleter(
       new cc::TextureMailboxDeleter(base::ThreadTaskRunnerHandle::Get()));
 
+  auto child_context_provider = cc::TestContextProvider::Create();
+  ASSERT_TRUE(child_context_provider->BindToCurrentThread());
+  auto child_resource_provider =
+      cc::FakeResourceProvider::Create<cc::LayerTreeResourceProvider>(
+          child_context_provider.get(), shared_bitmap_manager.get());
+
+  TextureMailbox mailbox(gpu::Mailbox::Generate(), gpu::SyncToken(),
+                         GL_TEXTURE_2D, gfx::Size(256, 256), true, false);
+  auto release_callback =
+      cc::SingleReleaseCallbackImpl::Create(base::Bind(&MailboxReleased));
+  ResourceId resource_id =
+      child_resource_provider->CreateResourceFromTextureMailbox(
+          mailbox, std::move(release_callback));
+
+  std::vector<ReturnedResource> returned_to_child;
+  int child_id = parent_resource_provider->CreateChild(
+      base::Bind(&CollectResources, &returned_to_child));
+
+  // Transfer resource to the parent.
+  cc::ResourceProvider::ResourceIdArray resource_ids_to_transfer;
+  resource_ids_to_transfer.push_back(resource_id);
+  std::vector<TransferableResource> list;
+  child_resource_provider->PrepareSendToParent(resource_ids_to_transfer, &list);
+  parent_resource_provider->ReceiveFromChild(child_id, list);
+  ResourceId parent_resource_id = list[0].id;
+
   RendererSettings settings;
   FakeRendererGL renderer(&settings, output_surface.get(),
-                          resource_provider.get(), mailbox_deleter.get());
+                          parent_resource_provider.get(),
+                          mailbox_deleter.get());
   renderer.Initialize();
   renderer.SetVisible(true);
 
@@ -1954,13 +1987,6 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   root_pass->has_transparent_background = false;
   root_pass->copy_requests.push_back(CopyOutputRequest::CreateStubForTesting());
 
-  TextureMailbox mailbox =
-      TextureMailbox(gpu::Mailbox::Generate(), gpu::SyncToken(), GL_TEXTURE_2D,
-                     gfx::Size(256, 256), true, false);
-  std::unique_ptr<cc::SingleReleaseCallbackImpl> release_callback =
-      cc::SingleReleaseCallbackImpl::Create(base::Bind(&MailboxReleased));
-  ResourceId resource_id = resource_provider->CreateResourceFromTextureMailbox(
-      mailbox, std::move(release_callback));
   bool needs_blending = false;
   bool premultiplied_alpha = false;
   bool flipped = false;
@@ -1971,7 +1997,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
       root_pass->CreateAndAppendDrawQuad<cc::TextureDrawQuad>();
   overlay_quad->SetNew(
       root_pass->CreateAndAppendSharedQuadState(), gfx::Rect(viewport_size),
-      gfx::Rect(viewport_size), needs_blending, resource_id,
+      gfx::Rect(viewport_size), needs_blending, parent_resource_id,
       premultiplied_alpha, gfx::PointF(0, 0), gfx::PointF(1, 1),
       SK_ColorTRANSPARENT, vertex_opacity, flipped, nearest_neighbor, false);
 
@@ -1996,7 +2022,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   overlay_quad = root_pass->CreateAndAppendDrawQuad<cc::TextureDrawQuad>();
   overlay_quad->SetNew(
       root_pass->CreateAndAppendSharedQuadState(), gfx::Rect(viewport_size),
-      gfx::Rect(viewport_size), needs_blending, resource_id,
+      gfx::Rect(viewport_size), needs_blending, parent_resource_id,
       premultiplied_alpha, gfx::PointF(0, 0), gfx::PointF(1, 1),
       SK_ColorTRANSPARENT, vertex_opacity, flipped, nearest_neighbor, false);
   EXPECT_CALL(*validator, AllowCALayerOverlays())
@@ -2018,7 +2044,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   overlay_quad = root_pass->CreateAndAppendDrawQuad<cc::TextureDrawQuad>();
   overlay_quad->SetNew(
       root_pass->CreateAndAppendSharedQuadState(), gfx::Rect(viewport_size),
-      gfx::Rect(viewport_size), needs_blending, resource_id,
+      gfx::Rect(viewport_size), needs_blending, parent_resource_id,
       premultiplied_alpha, gfx::PointF(0, 0), gfx::PointF(1, 1),
       SK_ColorTRANSPARENT, vertex_opacity, flipped, nearest_neighbor, false);
   EXPECT_CALL(*validator, AllowCALayerOverlays())
@@ -2026,6 +2052,11 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
       .WillOnce(::testing::Return(true));
   EXPECT_CALL(*processor->strategy_, Attempt(_, _, _, _)).Times(0);
   DrawFrame(&renderer, viewport_size);
+
+  // Transfer resources back from the parent to the child. Set no resources as
+  // being in use.
+  parent_resource_provider->DeclareUsedResourcesFromChild(child_id,
+                                                          ResourceIdSet());
 }
 
 class SingleOverlayOnTopProcessor : public cc::OverlayProcessor {
@@ -2094,15 +2125,44 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
 
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
       new cc::TestSharedBitmapManager());
-  std::unique_ptr<cc::DisplayResourceProvider> resource_provider =
+  auto parent_resource_provider =
       cc::FakeResourceProvider::Create<cc::DisplayResourceProvider>(
           output_surface->context_provider(), shared_bitmap_manager.get());
   std::unique_ptr<cc::TextureMailboxDeleter> mailbox_deleter(
       new cc::TextureMailboxDeleter(base::ThreadTaskRunnerHandle::Get()));
 
+  auto child_context_provider = cc::TestContextProvider::Create();
+  ASSERT_TRUE(child_context_provider->BindToCurrentThread());
+  auto child_resource_provider =
+      cc::FakeResourceProvider::Create<cc::LayerTreeResourceProvider>(
+          child_context_provider.get(), shared_bitmap_manager.get());
+
+  gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO, 0,
+                            gpu::CommandBufferId::FromUnsafeValue(0x123), 29);
+  TextureMailbox mailbox(gpu::Mailbox::Generate(), sync_token, GL_TEXTURE_2D,
+                         gfx::Size(256, 256), true, false);
+  auto release_callback =
+      cc::SingleReleaseCallbackImpl::Create(base::Bind(&MailboxReleased));
+  ResourceId resource_id =
+      child_resource_provider->CreateResourceFromTextureMailbox(
+          mailbox, std::move(release_callback));
+
+  std::vector<ReturnedResource> returned_to_child;
+  int child_id = parent_resource_provider->CreateChild(
+      base::Bind(&CollectResources, &returned_to_child));
+
+  // Transfer resource to the parent.
+  cc::ResourceProvider::ResourceIdArray resource_ids_to_transfer;
+  resource_ids_to_transfer.push_back(resource_id);
+  std::vector<TransferableResource> list;
+  child_resource_provider->PrepareSendToParent(resource_ids_to_transfer, &list);
+  parent_resource_provider->ReceiveFromChild(child_id, list);
+  ResourceId parent_resource_id = list[0].id;
+
   RendererSettings settings;
   FakeRendererGL renderer(&settings, output_surface.get(),
-                          resource_provider.get(), mailbox_deleter.get());
+                          parent_resource_provider.get(),
+                          mailbox_deleter.get());
   renderer.Initialize();
   renderer.SetVisible(true);
 
@@ -2117,15 +2177,6 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
                     gfx::Transform(), cc::FilterOperations());
   root_pass->has_transparent_background = false;
 
-  gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO, 0,
-                            gpu::CommandBufferId::FromUnsafeValue(0x123), 29);
-  TextureMailbox mailbox =
-      TextureMailbox(gpu::Mailbox::Generate(), sync_token, GL_TEXTURE_2D,
-                     gfx::Size(256, 256), true, false);
-  std::unique_ptr<cc::SingleReleaseCallbackImpl> release_callback =
-      cc::SingleReleaseCallbackImpl::Create(base::Bind(&MailboxReleased));
-  ResourceId resource_id = resource_provider->CreateResourceFromTextureMailbox(
-      mailbox, std::move(release_callback));
   bool needs_blending = false;
   bool premultiplied_alpha = false;
   bool flipped = false;
@@ -2141,14 +2192,20 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
                        gfx::Rect(viewport_size), gfx::Rect(viewport_size),
                        false, false, 1, SkBlendMode::kSrcOver, 0);
   overlay_quad->SetNew(shared_state, gfx::Rect(viewport_size),
-                       gfx::Rect(viewport_size), needs_blending, resource_id,
-                       premultiplied_alpha, uv_top_left, uv_bottom_right,
-                       SK_ColorTRANSPARENT, vertex_opacity, flipped,
-                       nearest_neighbor, false);
+                       gfx::Rect(viewport_size), needs_blending,
+                       parent_resource_id, premultiplied_alpha, uv_top_left,
+                       uv_bottom_right, SK_ColorTRANSPARENT, vertex_opacity,
+                       flipped, nearest_neighbor, false);
+
+  // The verified flush flag will be set by
+  // cc::LayerTreeResourceProvider::PrepareSendToParent. Before checking if the
+  // gpu::SyncToken matches, set this flag first.
+  sync_token.SetVerifyFlush();
 
   // Verify that overlay_quad actually gets turned into an overlay, and even
   // though it's not drawn, that its sync point is waited on.
   EXPECT_CALL(*context, waitSyncToken(MatchesSyncToken(sync_token))).Times(1);
+
   EXPECT_CALL(
       overlay_scheduler,
       Schedule(1, gfx::OVERLAY_TRANSFORM_NONE, _, gfx::Rect(viewport_size),
@@ -2156,6 +2213,11 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
       .Times(1);
 
   DrawFrame(&renderer, viewport_size);
+
+  // Transfer resources back from the parent to the child. Set no resources as
+  // being in use.
+  parent_resource_provider->DeclareUsedResourcesFromChild(child_id,
+                                                          ResourceIdSet());
 }
 
 class PartialSwapMockGLES2Interface : public cc::TestGLES2Interface {
@@ -2302,14 +2364,40 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
       cc::FakeOutputSurface::Create3d(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<cc::DisplayResourceProvider> resource_provider =
+  auto parent_resource_provider =
       cc::FakeResourceProvider::Create<cc::DisplayResourceProvider>(
           output_surface->context_provider(), nullptr);
+
+  auto child_context_provider = cc::TestContextProvider::Create();
+  ASSERT_TRUE(child_context_provider->BindToCurrentThread());
+  auto child_resource_provider =
+      cc::FakeResourceProvider::Create<cc::LayerTreeResourceProvider>(
+          child_context_provider.get(), nullptr);
+
+  TextureMailbox mailbox(gpu::Mailbox::Generate(), gpu::SyncToken(),
+                         GL_TEXTURE_2D, gfx::Size(256, 256), true, false);
+  auto release_callback =
+      cc::SingleReleaseCallbackImpl::Create(base::Bind(&MailboxReleased));
+  ResourceId resource_id =
+      child_resource_provider->CreateResourceFromTextureMailbox(
+          mailbox, std::move(release_callback));
+
+  std::vector<ReturnedResource> returned_to_child;
+  int child_id = parent_resource_provider->CreateChild(
+      base::Bind(&CollectResources, &returned_to_child));
+
+  // Transfer resource to the parent.
+  cc::ResourceProvider::ResourceIdArray resource_ids_to_transfer;
+  resource_ids_to_transfer.push_back(resource_id);
+  std::vector<TransferableResource> list;
+  child_resource_provider->PrepareSendToParent(resource_ids_to_transfer, &list);
+  parent_resource_provider->ReceiveFromChild(child_id, list);
+  ResourceId parent_resource_id = list[0].id;
 
   RendererSettings settings;
   settings.partial_swap_enabled = true;
   FakeRendererGL renderer(&settings, output_surface.get(),
-                          resource_provider.get());
+                          parent_resource_provider.get());
   renderer.Initialize();
   renderer.SetVisible(true);
   TestOverlayProcessor* processor =
@@ -2320,14 +2408,6 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
   output_surface->SetOverlayCandidateValidator(validator.get());
 
   gfx::Size viewport_size(100, 100);
-
-  TextureMailbox mailbox =
-      TextureMailbox(gpu::Mailbox::Generate(), gpu::SyncToken(), GL_TEXTURE_2D,
-                     gfx::Size(256, 256), true, false);
-  std::unique_ptr<cc::SingleReleaseCallbackImpl> release_callback =
-      cc::SingleReleaseCallbackImpl::Create(base::Bind(&MailboxReleased));
-  ResourceId resource_id = resource_provider->CreateResourceFromTextureMailbox(
-      mailbox, std::move(release_callback));
 
   for (int i = 0; i < 65; i++) {
     int root_pass_id = 1;
@@ -2345,8 +2425,8 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
       cc::YUVVideoDrawQuad* quad =
           root_pass->CreateAndAppendDrawQuad<cc::YUVVideoDrawQuad>();
       quad->SetNew(shared_state, rect, rect, needs_blending, tex_coord_rect,
-                   tex_coord_rect, rect.size(), rect.size(), resource_id,
-                   resource_id, resource_id, resource_id,
+                   tex_coord_rect, rect.size(), rect.size(), parent_resource_id,
+                   parent_resource_id, parent_resource_id, parent_resource_id,
                    cc::YUVVideoDrawQuad::REC_601, gfx::ColorSpace(), 0, 1.0, 8);
     }
 
@@ -2377,6 +2457,11 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
     EXPECT_EQ(output_rectangle, output_surface->last_set_draw_rectangle());
     testing::Mock::VerifyAndClearExpectations(gl);
   }
+
+  // Transfer resources back from the parent to the child. Set no resources as
+  // being in use.
+  parent_resource_provider->DeclareUsedResourcesFromChild(child_id,
+                                                          ResourceIdSet());
 }
 
 class GLRendererWithMockContextTest : public ::testing::Test {
