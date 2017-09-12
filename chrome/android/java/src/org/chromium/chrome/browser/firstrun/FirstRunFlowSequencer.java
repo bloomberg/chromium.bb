@@ -280,7 +280,8 @@ public abstract class FirstRunFlowSequencer  {
             if (preferLightweightFre) {
                 if (!FirstRunStatus.shouldSkipWelcomePage()
                         && !FirstRunStatus.getLightweightFirstRunFlowComplete()) {
-                    return createLightweightFirstRunIntent(context, fromChromeIcon);
+                    return createFirstRunIntent(
+                            context, LightweightFirstRunActivity.class.getName(), fromChromeIcon);
                 }
             } else {
                 return createGenericFirstRunIntent(context, fromChromeIcon);
@@ -291,21 +292,25 @@ public abstract class FirstRunFlowSequencer  {
         return null;
     }
 
-    private static Intent createLightweightFirstRunIntent(Context context, boolean fromChromeIcon) {
-        Intent intent = new Intent();
-        intent.setClassName(context, LightweightFirstRunActivity.class.getName());
-        intent.putExtra(FirstRunActivity.EXTRA_COMING_FROM_CHROME_ICON, fromChromeIcon);
-        return intent;
-    }
-
     /**
      * @return A generic intent to show the First Run Activity.
      * @param context        The context.
      * @param fromChromeIcon Whether Chrome is opened via the Chrome icon.
-    */
+     */
     public static Intent createGenericFirstRunIntent(Context context, boolean fromChromeIcon) {
+        return createFirstRunIntent(context, FirstRunActivity.class.getName(), fromChromeIcon);
+    }
+
+    /**
+     * @return An intent to show the First Run Activity.
+     * @param context                   The context.
+     * @param firstRunActivityClassName The class name of the first run activity to start.
+     * @param fromChromeIcon            Whether Chrome is opened via the Chrome icon.
+     */
+    public static Intent createFirstRunIntent(
+            Context context, String firstRunActivityClassName, boolean fromChromeIcon) {
         Intent intent = new Intent();
-        intent.setClassName(context, FirstRunActivity.class.getName());
+        intent.setClassName(context, firstRunActivityClassName);
         intent.putExtra(FirstRunActivity.EXTRA_COMING_FROM_CHROME_ICON, fromChromeIcon);
         intent.putExtra(FirstRunActivity.EXTRA_USE_FRE_FLOW_SEQUENCER, true);
         return intent;
