@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include <memory>
-#include <queue>
 #include <vector>
 
 #include "base/location.h"

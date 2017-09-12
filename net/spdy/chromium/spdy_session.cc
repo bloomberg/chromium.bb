@@ -3189,7 +3189,7 @@ void SpdySession::ResumeSendStalledStreams() {
   // have to worry about streams being closed, as well as ourselves
   // being closed.
 
-  std::deque<SpdyStream*> streams_to_requeue;
+  base::circular_deque<SpdyStream*> streams_to_requeue;
 
   while (!IsSendStalled()) {
     size_t old_size = 0;
@@ -3222,7 +3222,7 @@ void SpdySession::ResumeSendStalledStreams() {
 
 SpdyStreamId SpdySession::PopStreamToPossiblyResume() {
   for (int i = MAXIMUM_PRIORITY; i >= MINIMUM_PRIORITY; --i) {
-    std::deque<SpdyStreamId>* queue = &stream_send_unstall_queue_[i];
+    base::circular_deque<SpdyStreamId>* queue = &stream_send_unstall_queue_[i];
     if (!queue->empty()) {
       SpdyStreamId stream_id = queue->front();
       queue->pop_front();

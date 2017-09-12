@@ -7,12 +7,12 @@
 #include <list>
 #include <map>
 #include <memory>
-#include <queue>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/queue.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -199,7 +199,7 @@ class MockMojoProxyResolver : public interfaces::ProxyResolver {
 
   std::string pac_script_data_;
 
-  std::queue<GetProxyForUrlAction> get_proxy_actions_;
+  base::queue<GetProxyForUrlAction> get_proxy_actions_;
 
   base::Closure quit_closure_;
 
@@ -355,7 +355,7 @@ class MockMojoProxyResolverFactory : public interfaces::ProxyResolverFactory {
   void WakeWaiter();
 
   MockMojoProxyResolver* resolver_;
-  std::queue<CreateProxyResolverAction> create_resolver_actions_;
+  base::queue<CreateProxyResolverAction> create_resolver_actions_;
 
   base::Closure quit_closure_;
 

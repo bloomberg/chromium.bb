@@ -9,7 +9,6 @@
 #include <stdint.h>
 
 #include <cstring>
-#include <deque>
 #include <memory>
 #include <string>
 #include <vector>

@@ -5,6 +5,7 @@
 #include "net/socket/udp_socket.h"
 
 #include "base/bind.h"
+#include "base/containers/circular_deque.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -362,7 +363,8 @@ static const int kBindRetries = 10;
 
 class TestPrng {
  public:
-  explicit TestPrng(const std::deque<int>& numbers) : numbers_(numbers) {}
+  explicit TestPrng(const base::circular_deque<int>& numbers)
+      : numbers_(numbers) {}
   int GetNext(int /* min */, int /* max */) {
     DCHECK(!numbers_.empty());
     int rv = numbers_.front();
@@ -370,7 +372,7 @@ class TestPrng {
     return rv;
   }
  private:
-  std::deque<int> numbers_;
+  base::circular_deque<int> numbers_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPrng);
 };
@@ -380,7 +382,7 @@ TEST_F(UDPSocketTest, ConnectRandomBind) {
   IPEndPoint peer_address(IPAddress::IPv4Localhost(), 53);
 
   // Create and connect sockets and save port numbers.
-  std::deque<int> used_ports;
+  base::circular_deque<int> used_ports;
   for (int i = 0; i < kBindRetries; ++i) {
     UDPClientSocket* socket = new UDPClientSocket(
         DatagramSocket::DEFAULT_BIND, RandIntCallback(), NULL, NetLogSource());

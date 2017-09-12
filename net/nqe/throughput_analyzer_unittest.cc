@@ -6,7 +6,6 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <map>
 #include <memory>
 #include <string>
@@ -15,6 +14,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/containers/circular_deque.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -109,7 +109,7 @@ TEST(ThroughputAnalyzerTest, MaximumRequests) {
     throughput_analyzer.AddIPAddressResolution(&context);
 
     ASSERT_FALSE(throughput_analyzer.disable_throughput_measurements());
-    std::deque<std::unique_ptr<URLRequest>> requests;
+    base::circular_deque<std::unique_ptr<URLRequest>> requests;
 
     // Start more requests than the maximum number of requests that can be held
     // in the memory.

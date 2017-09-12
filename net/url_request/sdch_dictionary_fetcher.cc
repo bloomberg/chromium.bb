@@ -5,12 +5,12 @@
 #include "net/url_request/sdch_dictionary_fetcher.h"
 
 #include <stdint.h>
-#include <queue>
 #include <set>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/io_buffer.h"
@@ -75,7 +75,7 @@ class SdchDictionaryFetcher::UniqueFetchQueue {
   void Clear();
 
  private:
-  std::queue<FetchInfo> queue_;
+  base::queue<FetchInfo> queue_;
   std::set<GURL> ever_network_queued_;
 
   DISALLOW_COPY_AND_ASSIGN(UniqueFetchQueue);

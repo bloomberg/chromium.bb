@@ -2001,14 +2001,15 @@ void CookieMonster::DoCookieCallbackForURL(base::OnceClosure callback,
     // Checks if the domain key has been loaded.
     std::string key(cookie_util::GetEffectiveDomain(url.scheme(), url.host()));
     if (keys_loaded_.find(key) == keys_loaded_.end()) {
-      std::map<std::string, std::deque<base::OnceClosure>>::iterator it =
-          tasks_pending_for_key_.find(key);
+      std::map<std::string, base::circular_deque<base::OnceClosure>>::iterator
+          it = tasks_pending_for_key_.find(key);
       if (it == tasks_pending_for_key_.end()) {
         store_->LoadCookiesForKey(
             key, base::Bind(&CookieMonster::OnKeyLoaded,
                             weak_ptr_factory_.GetWeakPtr(), key));
         it = tasks_pending_for_key_
-                 .insert(std::make_pair(key, std::deque<base::OnceClosure>()))
+                 .insert(std::make_pair(
+                     key, base::circular_deque<base::OnceClosure>()))
                  .first;
       }
       it->second.push_back(std::move(callback));

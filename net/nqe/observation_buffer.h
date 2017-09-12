@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <map>
 #include <memory>
 #include <set>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/optional.h"
 #include "base/time/tick_clock.h"
 #include "net/base/net_export.h"
@@ -115,7 +115,7 @@ class NET_EXPORT_PRIVATE ObservationBuffer {
 
   // Holds observations sorted by time, with the oldest observation at the
   // front of the queue.
-  std::deque<Observation> observations_;
+  base::circular_deque<Observation> observations_;
 
   // The factor by which the weight of an observation reduces every second.
   // For example, if an observation is 6 seconds old, its weight would be:

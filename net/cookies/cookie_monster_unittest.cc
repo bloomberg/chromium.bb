@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/queue.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -1015,7 +1016,7 @@ class DeferredCookieTaskTest : public CookieMonsterTest {
   CookieMonster::PersistentCookieStore::LoadedCallback loaded_callback_;
   // Stores the callback passed from the CookieMonster to the
   // PersistentCookieStore::LoadCookiesForKey
-  std::queue<CookieMonster::PersistentCookieStore::LoadedCallback>
+  base::queue<CookieMonster::PersistentCookieStore::LoadedCallback>
       loaded_for_key_callbacks_;
   // base::RunLoop used to wait for PersistentCookieStore::Load to be called.
   base::RunLoop load_run_loop_;

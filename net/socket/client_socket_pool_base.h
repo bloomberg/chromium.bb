@@ -26,7 +26,6 @@
 #include <stdint.h>
 
 #include <cstddef>
-#include <deque>
 #include <list>
 #include <map>
 #include <memory>
