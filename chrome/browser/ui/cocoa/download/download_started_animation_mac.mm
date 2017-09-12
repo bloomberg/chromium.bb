@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #import "chrome/browser/ui/cocoa/animatable_image.h"
+#import "chrome/browser/ui/cocoa/md_util.h"
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/theme_resources.h"
@@ -103,6 +104,11 @@ class DownloadAnimationWebObserver;
     [animation_ setStartOpacity:1.0];
     [animation_ setEndOpacity:0.4];
     [animation_ setDuration:0.6];
+    if (base::FeatureList::IsEnabled(
+            features::kMacMaterialDesignDownloadShelf)) {
+      [animation_ setTimingFunction:CAMediaTimingFunction
+                                        .cr_materialEaseInOutTimingFunction];
+    }
 
     // Set up to get notified about resize events on the parent window.
     NSNotificationCenter* center = [NSNotificationCenter defaultCenter];

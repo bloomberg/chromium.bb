@@ -21,25 +21,22 @@
  @private
   // The image to animate.
   base::scoped_nsobject<NSImage> image_;
-
-  // The frame of the image before and after the animation. This is in this
-  // window's coordinate system.
-  CGRect startFrame_;
-  CGRect endFrame_;
-
-  // Opacity values for the animation.
-  CGFloat startOpacity_;
-  CGFloat endOpacity_;
-
-  // The amount of time it takes to animate the image.
-  CGFloat duration_;
 }
 
+// The frame of the image before and after the animation. This is in this
+// window's coordinate system.
 @property(nonatomic) CGRect startFrame;
 @property(nonatomic) CGRect endFrame;
+
+// Opacity values for the animation.
 @property(nonatomic) CGFloat startOpacity;
 @property(nonatomic) CGFloat endOpacity;
+
+// The amount of time it takes to animate the image.
 @property(nonatomic) CGFloat duration;
+
+// The timing function to use for the animation.
+@property(nonatomic, assign) CAMediaTimingFunction* timingFunction;
 
 // Designated initializer. Do not use any other NSWindow initializers. Creates
 // but does not show the blank animation window of the given size. The

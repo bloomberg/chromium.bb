@@ -13,6 +13,7 @@
 #import "chrome/browser/ui/cocoa/download/md_download_item_progress_indicator.h"
 #import "chrome/browser/ui/cocoa/harmony_button.h"
 #import "chrome/browser/ui/cocoa/md_hover_button.h"
+#import "chrome/browser/ui/cocoa/md_util.h"
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "chrome/grit/generated_resources.h"
@@ -415,6 +416,7 @@ NSTextField* MakeLabel(
                                    download.GetFileNameToReportUser().value())];
 
   progressIndicator_.progress = downloadModel->PercentComplete() / 100.0;
+  progressIndicator_.paused = download.IsPaused();
 
   button_.enabled = ^{
     switch (download.GetState()) {
@@ -452,7 +454,9 @@ NSTextField* MakeLabel(
   BOOL hasStatus = statusString.length != 0;
   if (hasStatus == statusTextView_.hidden) {
     [NSAnimationContext runAnimationGroup:^(NSAnimationContext* context) {
-      context.duration = 0.3;
+      context.duration = 0.25;
+      context.timingFunction =
+          CAMediaTimingFunction.cr_materialEaseInOutTimingFunction;
       // Explicitly animate position.y so that x position isn't animated for
       // a new download (which would happen with view.animator).
       [filenameView_.layer

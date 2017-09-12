@@ -10,6 +10,7 @@
 #import "base/mac/scoped_nsobject.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
+#import "chrome/browser/ui/cocoa/md_util.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "ui/base/cocoa/quartzcore_additions.h"
 
@@ -17,8 +18,10 @@ namespace {
 
 // An indeterminate progress indicator is a moving 50° arc…
 constexpr CGFloat kIndeterminateArcSize = 50 / 360.0;
-// …which completes a rotation around the circle every 4.5 seconds.
+// …which completes a rotation around the circle every 4.5 seconds…
 constexpr CGFloat kIndeterminateAnimationDuration = 4.5;
+// …stored under this key.
+NSString* const kIndeterminateAnimationKey = @"indeterminate";
 
 }  // namespace
 
@@ -27,36 +30,40 @@ constexpr CGFloat kIndeterminateAnimationDuration = 4.5;
 }
 
 @synthesize progress = progress_;
+@synthesize paused = paused_;
 
 - (void)updateProgress {
-  if (progress_ < 0) {
-    progressShapeLayer_.strokeStart = 0;
-    progressShapeLayer_.strokeEnd = kIndeterminateArcSize;
+  BOOL isIndeterminate = progress_ < 0;
+  if (isIndeterminate &&
+      ![progressShapeLayer_ animationForKey:kIndeterminateAnimationKey]) {
     CABasicAnimation* anim =
         [CABasicAnimation animationWithKeyPath:@"transform.rotation.z"];
     anim.byValue = @(M_PI * -2);
     anim.duration = kIndeterminateAnimationDuration;
     anim.repeatCount = HUGE_VALF;
-    [progressShapeLayer_ addAnimation:anim forKey:@"indeterminate"];
-  } else {
-    [NSAnimationContext runAnimationGroup:^(NSAnimationContext* context) {
-      context.duration = 0.25;
-      // If the bar was in an indeterminate state, replace the continuous
-      // rotation animation with a one-shot animation that resets it.
-      if ([progressShapeLayer_ animationForKey:@"indeterminate"]) {
-        CABasicAnimation* anim =
-            [CABasicAnimation animationWithKeyPath:@"transform.rotation.z"];
-        NSNumber* from = [progressShapeLayer_.presentationLayer
-            valueForKeyPath:@"transform.rotation.z"];
-        anim.fromValue = from;
-        anim.byValue = @(-(from.doubleValue < 0 ? from.doubleValue
-                                                : -(M_PI + from.doubleValue)));
-        [progressShapeLayer_ addAnimation:anim forKey:@"indeterminate"];
-      }
-      progressShapeLayer_.strokeEnd = progress_;
-    }
-                        completionHandler:nil];
+    [progressShapeLayer_ addAnimation:anim forKey:kIndeterminateAnimationKey];
   }
+  [NSAnimationContext runAnimationGroup:^(NSAnimationContext* context) {
+    context.duration = 0.25;
+    context.timingFunction =
+        CAMediaTimingFunction.cr_materialEaseInOutTimingFunction;
+    // If the bar was in an indeterminate state, replace the continuous
+    // rotation animation with a one-shot animation that resets it.
+    CGFloat rotation =
+        static_cast<NSNumber*>([progressShapeLayer_.presentationLayer
+                                   valueForKeyPath:@"transform.rotation.z"])
+            .doubleValue;
+    if (!isIndeterminate && rotation) {
+      CABasicAnimation* anim =
+          [CABasicAnimation animationWithKeyPath:@"transform.rotation.z"];
+      anim.fromValue = @(rotation);
+      anim.byValue = @(-(rotation < 0 ? rotation : -(M_PI + rotation)));
+      [progressShapeLayer_ addAnimation:anim forKey:kIndeterminateAnimationKey];
+    }
+    progressShapeLayer_.strokeEnd =
+        isIndeterminate ? kIndeterminateArcSize : progress_;
+  }
+                      completionHandler:nil];
 }
 
 - (void)setProgress:(CGFloat)progress {
@@ -66,6 +73,24 @@ constexpr CGFloat kIndeterminateAnimationDuration = 4.5;
   [self updateProgress];
   NSAccessibilityPostNotification(self,
                                   NSAccessibilityValueChangedNotification);
+}
+
+- (void)setPaused:(BOOL)paused {
+  if (paused_ == paused)
+    return;
+  paused_ = paused;
+  if (paused_) {
+    if (CAAnimation* indeterminateAnimation =
+            [progressShapeLayer_ animationForKey:kIndeterminateAnimationKey]) {
+      [progressShapeLayer_ setValue:[progressShapeLayer_.presentationLayer
+                                        valueForKeyPath:@"transform.rotation.z"]
+                         forKeyPath:@"transform.rotation.z"];
+      [progressShapeLayer_ removeAnimationForKey:kIndeterminateAnimationKey];
+    }
+  } else {
+    [progressShapeLayer_ setValue:@0 forKey:@"transform.rotation.z"];
+    [self updateProgress];
+  }
 }
 
 - (void)hideAnimated:(void (^)(CAAnimation*))block {
@@ -80,6 +105,8 @@ constexpr CGFloat kIndeterminateAnimationDuration = 4.5;
                                     fromValue:@NO
                                       toValue:@NO],
   ];
+  animGroup.timingFunction =
+      CAMediaTimingFunction.cr_materialEaseInOutTimingFunction;
   block(animGroup);
   progressShapeLayer_.hidden = YES;
   [progressShapeLayer_ addAnimation:animGroup forKey:nil];

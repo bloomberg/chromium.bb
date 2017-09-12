@@ -22,6 +22,7 @@
 #import "chrome/browser/ui/cocoa/download/download_shelf_view_cocoa.h"
 #import "chrome/browser/ui/cocoa/harmony_button.h"
 #import "chrome/browser/ui/cocoa/md_hover_button.h"
+#import "chrome/browser/ui/cocoa/md_util.h"
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
@@ -457,6 +458,8 @@ const CGFloat kMDCloseButtonSize = 32;
   if (base::FeatureList::IsEnabled(features::kMacMaterialDesignDownloadShelf)) {
     [NSAnimationContext runAnimationGroup:^(NSAnimationContext* context) {
       context.duration = kDownloadItemOpenDuration;
+      context.timingFunction =
+          CAMediaTimingFunction.cr_materialEaseOutTimingFunction;
       [self layoutItems];
     }
                         completionHandler:nil];
