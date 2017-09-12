@@ -701,32 +701,14 @@ void ServiceWorkerVersion::RemoveControllee(
   }
 }
 
-void ServiceWorkerVersion::AddStreamingURLRequestJob(
-    const ServiceWorkerURLRequestJob* request_job) {
-  DCHECK(streaming_url_request_jobs_.find(request_job) ==
-         streaming_url_request_jobs_.end());
-  streaming_url_request_jobs_.insert(request_job);
+void ServiceWorkerVersion::OnStreamResponseStarted() {
+  CHECK_LT(pending_stream_response_count_, std::numeric_limits<int>::max());
+  pending_stream_response_count_++;
 }
 
-void ServiceWorkerVersion::AddStreamingURLLoaderJob(
-    const ServiceWorkerURLLoaderJob* loader_job) {
-  DCHECK(streaming_url_loader_jobs_.find(loader_job) ==
-         streaming_url_loader_jobs_.end());
-  streaming_url_loader_jobs_.insert(loader_job);
-}
-
-void ServiceWorkerVersion::RemoveStreamingURLRequestJob(
-    const ServiceWorkerURLRequestJob* request_job) {
-  streaming_url_request_jobs_.erase(request_job);
-  if (!HasWork()) {
-    for (auto& observer : listeners_)
-      observer.OnNoWork(this);
-  }
-}
-
-void ServiceWorkerVersion::RemoveStreamingURLLoaderJob(
-    const ServiceWorkerURLLoaderJob* loader_job) {
-  streaming_url_loader_jobs_.erase(loader_job);
+void ServiceWorkerVersion::OnStreamResponseFinished() {
+  DCHECK_GT(pending_stream_response_count_, 0);
+  pending_stream_response_count_--;
   if (!HasWork()) {
     for (auto& observer : listeners_)
       observer.OnNoWork(this);
@@ -1735,8 +1717,8 @@ void ServiceWorkerVersion::StopWorkerIfIdle() {
 }
 
 bool ServiceWorkerVersion::HasWork() const {
-  return !pending_requests_.IsEmpty() || !streaming_url_loader_jobs_.empty() ||
-         !streaming_url_request_jobs_.empty() || !start_callbacks_.empty();
+  return !pending_requests_.IsEmpty() || pending_stream_response_count_ > 0 ||
+         !start_callbacks_.empty();
 }
 
 void ServiceWorkerVersion::RecordStartWorkerResult(
@@ -1933,10 +1915,6 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
   external_request_uuid_to_request_id_.clear();
   event_dispatcher_.reset();
   installed_scripts_sender_.reset();
-
-  // TODO(falken): Call SWURLRequestJob::ClearStream here?
-  streaming_url_request_jobs_.clear();
-  streaming_url_loader_jobs_.clear();
 
   for (auto& observer : listeners_)
     observer.OnRunningStateChanged(this);
