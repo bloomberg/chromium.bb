@@ -10,11 +10,10 @@
 #include "components/viz/test/compositor_frame_helpers.h"
 #include "components/viz/test/fake_external_begin_frame_source.h"
 #include "components/viz/test/fake_surface_observer.h"
-#include "components/viz/test/mock_compositor_frame_sink_support_client.h"
+#include "components/viz/test/mock_compositor_frame_sink_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using viz::test::MockCompositorFrameSinkSupportClient;
 using viz::test::MakeCompositorFrame;
 using testing::_;
 using testing::Eq;
@@ -194,7 +193,7 @@ class SurfaceSynchronizationTest : public testing::Test {
   }
 
  protected:
-  testing::NiceMock<MockCompositorFrameSinkSupportClient> support_client_;
+  testing::NiceMock<MockCompositorFrameSinkClient> support_client_;
 
  private:
   FrameSinkManagerImpl frame_sink_manager_;

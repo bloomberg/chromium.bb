@@ -5,7 +5,6 @@
 #include <stddef.h>
 
 #include "cc/output/compositor_frame.h"
-#include "cc/test/fake_compositor_frame_sink_support_client.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
@@ -13,6 +12,7 @@
 #include "components/viz/service/surfaces/surface_hittest.h"
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "components/viz/test/compositor_frame_helpers.h"
+#include "components/viz/test/fake_compositor_frame_sink_client.h"
 #include "components/viz/test/surface_hittest_test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -83,10 +83,10 @@ class SurfaceHittestTest : public testing::Test {
     testing::Test::SetUp();
 
     supports_.push_back(CompositorFrameSinkSupport::Create(
-        &support_client_, &frame_sink_manager_, kRootFrameSink, kIsRoot,
+        &client_, &frame_sink_manager_, kRootFrameSink, kIsRoot,
         kNeedsSyncPoints));
     supports_.push_back(CompositorFrameSinkSupport::Create(
-        &support_client_, &frame_sink_manager_, kChildFrameSink, kIsChildRoot,
+        &client_, &frame_sink_manager_, kChildFrameSink, kIsChildRoot,
         kNeedsSyncPoints));
   }
 
@@ -95,7 +95,7 @@ class SurfaceHittestTest : public testing::Test {
  private:
   FrameSinkManagerImpl frame_sink_manager_;
   std::vector<std::unique_ptr<CompositorFrameSinkSupport>> supports_;
-  cc::FakeCompositorFrameSinkSupportClient support_client_;
+  FakeCompositorFrameSinkClient client_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceHittestTest);
 };

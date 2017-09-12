@@ -12,8 +12,8 @@
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
-#include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
 #include "components/viz/service/viz_service_export.h"
+#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 
 namespace cc {
 class LocalSurfaceIdAllocator;
@@ -28,7 +28,7 @@ class Display;
 // client's frame being the root surface of the Display.
 class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
     : public cc::LayerTreeFrameSink,
-      public CompositorFrameSinkSupportClient,
+      public mojom::CompositorFrameSinkClient,
       public ExternalBeginFrameSourceClient,
       public DisplayClient {
  public:
@@ -67,14 +67,12 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
   std::unique_ptr<CompositorFrameSinkSupport> support_;  // protected for test.
 
  private:
-  // CompositorFrameSinkSupportClient implementation:
+  // mojom::CompositorFrameSinkClient implementation:
   void DidReceiveCompositorFrameAck(
       const std::vector<ReturnedResource>& resources) override;
   void OnBeginFrame(const BeginFrameArgs& args) override;
   void ReclaimResources(
       const std::vector<ReturnedResource>& resources) override;
-  void WillDrawSurface(const LocalSurfaceId& local_surface_id,
-                       const gfx::Rect& damage_rect) override;
   void OnBeginFramePausedChanged(bool paused) override;
 
   // ExternalBeginFrameSourceClient implementation:

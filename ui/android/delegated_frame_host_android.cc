@@ -195,10 +195,6 @@ void DelegatedFrameHostAndroid::ReclaimResources(
   client_->ReclaimResources(resources);
 }
 
-void DelegatedFrameHostAndroid::WillDrawSurface(
-    const viz::LocalSurfaceId& local_surface_id,
-    const gfx::Rect& damage_rect) {}
-
 void DelegatedFrameHostAndroid::OnBeginFramePausedChanged(bool paused) {
   begin_frame_source_.OnSetBeginFrameSourcePaused(paused);
 }

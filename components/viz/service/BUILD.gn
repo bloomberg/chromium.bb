@@ -55,7 +55,6 @@ viz_component("service") {
     "frame_sinks/compositor_frame_sink_impl.h",
     "frame_sinks/compositor_frame_sink_support.cc",
     "frame_sinks/compositor_frame_sink_support.h",
-    "frame_sinks/compositor_frame_sink_support_client.h",
     "frame_sinks/compositor_frame_sink_support_manager.h",
     "frame_sinks/direct_layer_tree_frame_sink.cc",
     "frame_sinks/direct_layer_tree_frame_sink.h",

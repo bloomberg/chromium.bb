@@ -154,12 +154,6 @@ void DirectLayerTreeFrameSink::ReclaimResources(
   client_->ReclaimResources(resources);
 }
 
-void DirectLayerTreeFrameSink::WillDrawSurface(
-    const LocalSurfaceId& local_surface_id,
-    const gfx::Rect& damage_rect) {
-  // TODO(staraz): Implement this.
-}
-
 void DirectLayerTreeFrameSink::OnBeginFramePausedChanged(bool paused) {
   begin_frame_source_->OnSetBeginFrameSourcePaused(paused);
 }

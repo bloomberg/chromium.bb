@@ -24,6 +24,7 @@ include_rules = [
   # Only this one header in media which doesn't depend on anything else.
   "+media/media_features.h",
   "+net",
+  "+services/viz/public/interfaces",
   "+skia",
   "+third_party/skia/include",
   "+ui/android",

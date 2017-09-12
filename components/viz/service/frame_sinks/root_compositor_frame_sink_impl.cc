@@ -6,9 +6,8 @@
 
 #include <utility>
 
-#include "base/command_line.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/service/display/display.h"
-#include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 
 namespace viz {
@@ -21,19 +20,21 @@ RootCompositorFrameSinkImpl::RootCompositorFrameSinkImpl(
     mojom::CompositorFrameSinkAssociatedRequest request,
     mojom::CompositorFrameSinkClientPtr client,
     mojom::DisplayPrivateAssociatedRequest display_private_request)
-    : support_(
-          CompositorFrameSinkSupport::Create(this,
-                                             frame_sink_manager,
-                                             frame_sink_id,
-                                             true /* is_root */,
-                                             true /* needs_sync_points */)),
-      display_begin_frame_source_(std::move(begin_frame_source)),
-      display_(std::move(display)),
-      client_(std::move(client)),
+    : compositor_frame_sink_client_(std::move(client)),
       compositor_frame_sink_binding_(this, std::move(request)),
       display_private_binding_(this, std::move(display_private_request)),
+      support_(CompositorFrameSinkSupport::Create(
+          compositor_frame_sink_client_.get(),
+          frame_sink_manager,
+          frame_sink_id,
+          true /* is_root */,
+          true /* needs_sync_points */)),
+      display_begin_frame_source_(std::move(begin_frame_source)),
+      display_(std::move(display)),
       hit_test_aggregator_(this) {
   DCHECK(display_begin_frame_source_);
+  DCHECK(display_);
+
   compositor_frame_sink_binding_.set_connection_error_handler(
       base::Bind(&RootCompositorFrameSinkImpl::OnClientConnectionLost,
                  base::Unretained(this)));
@@ -48,23 +49,19 @@ RootCompositorFrameSinkImpl::~RootCompositorFrameSinkImpl() {
 }
 
 void RootCompositorFrameSinkImpl::SetDisplayVisible(bool visible) {
-  DCHECK(display_);
   display_->SetVisible(visible);
 }
 
 void RootCompositorFrameSinkImpl::ResizeDisplay(const gfx::Size& size) {
-  DCHECK(display_);
   display_->Resize(size);
 }
 
 void RootCompositorFrameSinkImpl::SetDisplayColorSpace(
     const gfx::ColorSpace& color_space) {
-  DCHECK(display_);
   display_->SetColorSpace(color_space, color_space);
 }
 
 void RootCompositorFrameSinkImpl::SetOutputIsSecure(bool secure) {
-  DCHECK(display_);
   display_->SetOutputIsSecure(secure);
 }
 
@@ -85,6 +82,7 @@ void RootCompositorFrameSinkImpl::SubmitCompositorFrame(
     uint64_t submit_time) {
   if (!support_->SubmitCompositorFrame(local_surface_id, std::move(frame),
                                        std::move(hit_test_region_list))) {
+    DLOG(ERROR) << "SubmitCompositorFrame failed for " << local_surface_id;
     compositor_frame_sink_binding_.Close();
     OnClientConnectionLost();
   }
@@ -123,33 +121,6 @@ void RootCompositorFrameSinkImpl::DisplayWillDrawAndSwap(
 }
 
 void RootCompositorFrameSinkImpl::DisplayDidDrawAndSwap() {}
-
-void RootCompositorFrameSinkImpl::DidReceiveCompositorFrameAck(
-    const std::vector<ReturnedResource>& resources) {
-  if (client_)
-    client_->DidReceiveCompositorFrameAck(resources);
-}
-
-void RootCompositorFrameSinkImpl::OnBeginFrame(const BeginFrameArgs& args) {
-  hit_test_aggregator_.Swap();
-  if (client_)
-    client_->OnBeginFrame(args);
-}
-
-void RootCompositorFrameSinkImpl::OnBeginFramePausedChanged(bool paused) {
-  if (client_)
-    client_->OnBeginFramePausedChanged(paused);
-}
-
-void RootCompositorFrameSinkImpl::ReclaimResources(
-    const std::vector<ReturnedResource>& resources) {
-  if (client_)
-    client_->ReclaimResources(resources);
-}
-
-void RootCompositorFrameSinkImpl::WillDrawSurface(
-    const LocalSurfaceId& local_surface_id,
-    const gfx::Rect& damage_rect) {}
 
 void RootCompositorFrameSinkImpl::OnClientConnectionLost() {
   support_->frame_sink_manager()->OnClientConnectionLost(

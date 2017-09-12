@@ -7,26 +7,25 @@
 
 #include <memory>
 
+#include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
-#include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/display/display_client.h"
-#include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
+#include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/hit_test/hit_test_aggregator.h"
 #include "components/viz/service/hit_test/hit_test_aggregator_delegate.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 
 namespace viz {
 
 class BeginFrameSource;
-class CompositorFrameSinkSupport;
 class Display;
 class FrameSinkManagerImpl;
 
-class RootCompositorFrameSinkImpl : public CompositorFrameSinkSupportClient,
-                                    public mojom::CompositorFrameSink,
+// The viz portion of a root CompositorFrameSink. Holds the Binding/InterfacePtr
+// for the mojom::CompositorFrameSink interface and owns the Display.
+class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
                                     public mojom::DisplayPrivate,
                                     public DisplayClient,
                                     public HitTestAggregatorDelegate {
@@ -74,29 +73,20 @@ class RootCompositorFrameSinkImpl : public CompositorFrameSinkSupportClient,
                               const cc::RenderPassList& render_passes) override;
   void DisplayDidDrawAndSwap() override;
 
-  // CompositorFrameSinkSupportClient:
-  void DidReceiveCompositorFrameAck(
-      const std::vector<ReturnedResource>& resources) override;
-  void OnBeginFrame(const BeginFrameArgs& args) override;
-  void OnBeginFramePausedChanged(bool paused) override;
-  void ReclaimResources(
-      const std::vector<ReturnedResource>& resources) override;
-  void WillDrawSurface(const LocalSurfaceId& local_surface_id,
-                       const gfx::Rect& damage_rect) override;
-
   void OnClientConnectionLost();
 
+  mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client_;
+  mojo::AssociatedBinding<mojom::CompositorFrameSink>
+      compositor_frame_sink_binding_;
+  mojo::AssociatedBinding<mojom::DisplayPrivate> display_private_binding_;
+
+  // Must be destroyed before |compositor_frame_sink_client_|.
   std::unique_ptr<CompositorFrameSinkSupport> support_;
 
   // RootCompositorFrameSinkImpl holds a Display and its BeginFrameSource if
   // it was created with a non-null gpu::SurfaceHandle.
   std::unique_ptr<BeginFrameSource> display_begin_frame_source_;
   std::unique_ptr<Display> display_;
-
-  mojom::CompositorFrameSinkClientPtr client_;
-  mojo::AssociatedBinding<mojom::CompositorFrameSink>
-      compositor_frame_sink_binding_;
-  mojo::AssociatedBinding<mojom::DisplayPrivate> display_private_binding_;
 
   HitTestAggregator hit_test_aggregator_;
 

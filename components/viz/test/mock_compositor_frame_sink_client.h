@@ -2,22 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIZ_TEST_MOCK_COMPOSITOR_FRAME_SINK_SUPPORT_CLIENT_H_
-#define COMPONENTS_VIZ_TEST_MOCK_COMPOSITOR_FRAME_SINK_SUPPORT_CLIENT_H_
+#ifndef COMPONENTS_VIZ_TEST_MOCK_COMPOSITOR_FRAME_SINK_CLIENT_H_
+#define COMPONENTS_VIZ_TEST_MOCK_COMPOSITOR_FRAME_SINK_CLIENT_H_
 
-#include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
+#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace viz {
-namespace test {
 
-class MockCompositorFrameSinkSupportClient
-    : public CompositorFrameSinkSupportClient {
+class MockCompositorFrameSinkClient : public mojom::CompositorFrameSinkClient {
  public:
-  MockCompositorFrameSinkSupportClient();
-  ~MockCompositorFrameSinkSupportClient() override;
+  MockCompositorFrameSinkClient();
+  ~MockCompositorFrameSinkClient() override;
 
-  // CompositorFrameSinkSupportClient implementation.
+  // mojom::CompositorFrameSinkClient implementation.
   MOCK_METHOD1(DidReceiveCompositorFrameAck,
                void(const std::vector<ReturnedResource>&));
   MOCK_METHOD1(OnBeginFrame, void(const BeginFrameArgs&));
@@ -26,7 +24,6 @@ class MockCompositorFrameSinkSupportClient
   MOCK_METHOD1(OnBeginFramePausedChanged, void(bool paused));
 };
 
-}  // namespace test
 }  // namespace viz
 
-#endif  // COMPONENTS_VIZ_TEST_MOCK_COMPOSITOR_FRAME_SINK_SUPPORT_CLIENT_H_
+#endif  // COMPONENTS_VIZ_TEST_MOCK_COMPOSITOR_FRAME_SINK_CLIENT_H_

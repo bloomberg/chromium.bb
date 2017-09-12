@@ -457,8 +457,6 @@ cc_static_library("test_support") {
     "test/animation_test_common.h",
     "test/animation_timelines_test_common.cc",
     "test/animation_timelines_test_common.h",
-    "test/fake_compositor_frame_sink_support_client.cc",
-    "test/fake_compositor_frame_sink_support_client.h",
     "test/fake_content_layer_client.cc",
     "test/fake_content_layer_client.h",
     "test/fake_impl_task_runner_provider.h",
