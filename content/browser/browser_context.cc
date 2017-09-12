@@ -118,14 +118,16 @@ StoragePartition* GetStoragePartitionFromConfig(
     BrowserContext* browser_context,
     const std::string& partition_domain,
     const std::string& partition_name,
-    bool in_memory) {
+    bool in_memory,
+    bool can_create) {
   StoragePartitionImplMap* partition_map =
       GetStoragePartitionMap(browser_context);
 
   if (browser_context->IsOffTheRecord())
     in_memory = true;
 
-  return partition_map->Get(partition_domain, partition_name, in_memory);
+  return partition_map->Get(partition_domain, partition_name, in_memory,
+                            can_create);
 }
 
 void SaveSessionStateOnIOThread(
@@ -257,7 +259,8 @@ content::BrowsingDataRemover* content::BrowserContext::GetBrowsingDataRemover(
 
 StoragePartition* BrowserContext::GetStoragePartition(
     BrowserContext* browser_context,
-    SiteInstance* site_instance) {
+    SiteInstance* site_instance,
+    bool can_create) {
   std::string partition_domain;
   std::string partition_name;
   bool in_memory = false;
@@ -268,13 +271,14 @@ StoragePartition* BrowserContext::GetStoragePartition(
         &partition_domain, &partition_name, &in_memory);
   }
 
-  return GetStoragePartitionFromConfig(
-      browser_context, partition_domain, partition_name, in_memory);
+  return GetStoragePartitionFromConfig(browser_context, partition_domain,
+                                       partition_name, in_memory, can_create);
 }
 
 StoragePartition* BrowserContext::GetStoragePartitionForSite(
     BrowserContext* browser_context,
-    const GURL& site) {
+    const GURL& site,
+    bool can_create) {
   std::string partition_domain;
   std::string partition_name;
   bool in_memory;
@@ -283,8 +287,8 @@ StoragePartition* BrowserContext::GetStoragePartitionForSite(
       browser_context, site, true, &partition_domain, &partition_name,
       &in_memory);
 
-  return GetStoragePartitionFromConfig(
-      browser_context, partition_domain, partition_name, in_memory);
+  return GetStoragePartitionFromConfig(browser_context, partition_domain,
+                                       partition_name, in_memory, can_create);
 }
 
 void BrowserContext::ForEachStoragePartition(
