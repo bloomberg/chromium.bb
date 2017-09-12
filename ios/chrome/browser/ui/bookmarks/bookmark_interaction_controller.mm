@@ -26,6 +26,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_mediator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_navigation_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #include "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/browser/ui/url_loader.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -67,6 +68,8 @@ using bookmarks::BookmarkNode;
 
 @property(nonatomic, strong) BookmarkMediator* mediator;
 
+@property(nonatomic, readonly, weak) id<ApplicationCommands> dispatcher;
+
 // Builds a controller and brings it on screen.
 - (void)presentBookmarkForTab:(Tab*)tab;
 
@@ -83,10 +86,12 @@ using bookmarks::BookmarkNode;
 @synthesize bookmarkEditor = _bookmarkEditor;
 @synthesize bookmarkModel = _bookmarkModel;
 @synthesize mediator = _mediator;
+@synthesize dispatcher = _dispatcher;
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                               loader:(id<UrlLoader>)loader
-                    parentController:(UIViewController*)parentController {
+                    parentController:(UIViewController*)parentController
+                          dispatcher:(id<ApplicationCommands>)dispatcher {
   self = [super init];
   if (self) {
     // Bookmarks are always opened with the main browser state, even in
@@ -95,6 +100,7 @@ using bookmarks::BookmarkNode;
     _browserState = browserState->GetOriginalChromeBrowserState();
     _loader = loader;
     _parentController = parentController;
+    _dispatcher = dispatcher;
     _bookmarkModel =
         ios::BookmarkModelFactory::GetForBrowserState(_browserState);
     _mediator = [[BookmarkMediator alloc] initWithBrowserState:_browserState];
@@ -166,7 +172,8 @@ using bookmarks::BookmarkNode;
       [[BookmarkControllerFactory alloc] init];
   self.bookmarkBrowser = [bookmarkControllerFactory
       bookmarkControllerWithBrowserState:_currentBrowserState
-                                  loader:_loader];
+                                  loader:_loader
+                              dispatcher:self.dispatcher];
   self.bookmarkBrowser.homeDelegate = self;
 
   if (base::FeatureList::IsEnabled(kBookmarkNewGeneration)) {

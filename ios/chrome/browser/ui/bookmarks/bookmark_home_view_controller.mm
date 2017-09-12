@@ -33,6 +33,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_promo_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_table_view.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -91,6 +92,7 @@ const CGFloat kSpacer = 50;
 @synthesize bookmarksTableView = _bookmarksTableView;
 @synthesize contextBar = _contextBar;
 @synthesize contextBarState = _contextBarState;
+@synthesize dispatcher = _dispatcher;
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -99,7 +101,8 @@ const CGFloat kSpacer = 50;
 #pragma mark - Initializer
 
 - (instancetype)initWithLoader:(id<UrlLoader>)loader
-                  browserState:(ios::ChromeBrowserState*)browserState {
+                  browserState:(ios::ChromeBrowserState*)browserState
+                    dispatcher:(id<ApplicationCommands>)dispatcher {
   DCHECK(browserState);
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
@@ -108,6 +111,7 @@ const CGFloat kSpacer = 50;
 
     _browserState = browserState->GetOriginalChromeBrowserState();
     _loader = loader;
+    _dispatcher = dispatcher;
 
     _bookmarks = ios::BookmarkModelFactory::GetForBrowserState(browserState);
 
@@ -117,7 +121,8 @@ const CGFloat kSpacer = 50;
     // passed in, as it could be incognito.
     _bookmarkPromoController =
         [[BookmarkPromoController alloc] initWithBrowserState:browserState
-                                                     delegate:self];
+                                                     delegate:self
+                                                   dispatcher:self.dispatcher];
   }
   return self;
 }
@@ -387,7 +392,8 @@ const CGFloat kSpacer = 50;
   BookmarkHomeViewController* controller =
       (BookmarkHomeViewController*)[bookmarkControllerFactory
           bookmarkControllerWithBrowserState:self.browserState
-                                      loader:_loader];
+                                      loader:_loader
+                                  dispatcher:self.dispatcher];
   [controller setRootNode:folder];
   controller.homeDelegate = self.homeDelegate;
   [self.navigationController pushViewController:controller animated:YES];
@@ -905,7 +911,8 @@ const CGFloat kSpacer = 50;
   // Create folder view.
   BookmarkCollectionView* view =
       [[BookmarkCollectionView alloc] initWithBrowserState:self.browserState
-                                                     frame:CGRectZero];
+                                                     frame:CGRectZero
+                                                dispatcher:self.dispatcher];
   self.folderView = view;
   [self.folderView setEditing:self.editing animated:NO];
   self.folderView.autoresizingMask =
@@ -921,7 +928,8 @@ const CGFloat kSpacer = 50;
       [[BookmarkTableView alloc] initWithBrowserState:self.browserState
                                              delegate:self
                                              rootNode:_rootNode
-                                                frame:self.view.bounds];
+                                                frame:self.view.bounds
+                                           dispatcher:self.dispatcher];
   [self.bookmarksTableView
       setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
                           UIViewAutoresizingFlexibleHeight];

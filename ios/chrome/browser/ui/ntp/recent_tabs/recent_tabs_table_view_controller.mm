@@ -816,7 +816,8 @@ enum CellType {
         _signinPromoViewMediator = [[SigninPromoViewMediator alloc]
             initWithBrowserState:_browserState
                      accessPoint:signin_metrics::AccessPoint::
-                                     ACCESS_POINT_RECENT_TABS];
+                                     ACCESS_POINT_RECENT_TABS
+                      dispatcher:self.dispatcher];
         _signinPromoViewMediator.consumer = self;
       }
       contentViewTopMargin = kSigninPromoViewTopMargin;

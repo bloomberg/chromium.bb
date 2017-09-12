@@ -50,7 +50,8 @@ TEST_F(BookmarkHomeHandsetViewControllerTest, DeleteNodesUpdatesEditNodes) {
     BookmarkHomeHandsetViewController* controller =
         [[BookmarkHomeHandsetViewController alloc]
             initWithLoader:nil
-              browserState:chrome_browser_state_.get()];
+              browserState:chrome_browser_state_.get()
+                dispatcher:nil];
 
     [controller resetEditNodes];
     [controller insertEditNode:f1 atIndexPath:nil];

@@ -160,7 +160,7 @@ void WriteFirstRunSentinelAndRecordMetrics(
 void FinishFirstRun(ios::ChromeBrowserState* browserState,
                     Tab* tab,
                     FirstRunConfiguration* config,
-                    id<ApplicationSettingsCommands> dispatcher) {
+                    id<ApplicationCommands> dispatcher) {
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kChromeFirstRunUIWillFinishNotification
                     object:nil];

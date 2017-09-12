@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_tablet_ntp_controller.h"
 #import "ios/chrome/browser/ui/browser_list/browser.h"
 #import "ios/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
+#import "ios/clean/chrome/browser/ui/adaptor/application_commands_adaptor.h"
 #import "ios/clean/chrome/browser/ui/adaptor/url_loader_adaptor.h"
 #include "ios/web/public/referrer.h"
 
@@ -30,6 +31,9 @@
 @property(nonatomic, strong) BookmarkHomeViewController* bookmarkBrowser;
 // Adaptor for old architecture URL loaders.
 @property(nonatomic, strong) URLLoaderAdaptor* loader;
+// Adaptor for old architecture application commands.
+@property(nonatomic, strong)
+    ApplicationCommandsAdaptor* applicationCommandAdaptor;
 @end
 
 @implementation BookmarksCoordinator
@@ -37,6 +41,7 @@
 @synthesize viewController = _viewController;
 @synthesize bookmarkBrowser = _bookmarkBrowser;
 @synthesize loader = _loader;
+@synthesize applicationCommandAdaptor = _applicationCommandAdaptor;
 
 - (void)start {
   if (self.started)
@@ -45,12 +50,14 @@
   DCHECK(self.mode != UNDEFINED);
 
   self.loader = [[URLLoaderAdaptor alloc] init];
+  self.applicationCommandAdaptor = [[ApplicationCommandsAdaptor alloc] init];
   if (self.mode == PRESENTED) {
     BookmarkControllerFactory* bookmarkControllerFactory =
         [[BookmarkControllerFactory alloc] init];
     self.bookmarkBrowser = [bookmarkControllerFactory
         bookmarkControllerWithBrowserState:self.browser->browser_state()
-                                    loader:self.loader];
+                                    loader:self.loader
+                                dispatcher:self.applicationCommandAdaptor];
     self.bookmarkBrowser.homeDelegate = self;
 
     if (base::FeatureList::IsEnabled(kBookmarkNewGeneration)) {
@@ -68,9 +75,11 @@
   } else {
     self.viewController = [[BookmarkHomeTabletNTPController alloc]
         initWithLoader:self.loader
-          browserState:self.browser->browser_state()];
+          browserState:self.browser->browser_state()
+            dispatcher:self.applicationCommandAdaptor];
   }
   self.loader.viewControllerForAlert = self.viewController;
+  self.applicationCommandAdaptor.viewControllerForAlert = self.viewController;
   [super start];
 }
 

@@ -18,7 +18,7 @@
 #include "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_consumer.h"
-#import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -239,6 +239,8 @@ const char* AlreadySeenSigninViewPreferenceKey(
 
 @interface SigninPromoViewMediator ()<ChromeIdentityServiceObserver,
                                       ChromeBrowserProviderObserver>
+// Dispatcher for sending commands.
+@property(nonatomic, readonly, weak) id<ApplicationCommands> dispatcher;
 @end
 
 @implementation SigninPromoViewMediator {
@@ -253,14 +255,17 @@ const char* AlreadySeenSigninViewPreferenceKey(
 @synthesize consumer = _consumer;
 @synthesize defaultIdentity = _defaultIdentity;
 @synthesize signinPromoViewState = _signinPromoViewState;
+@synthesize dispatcher = _dispatcher;
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                         accessPoint:(signin_metrics::AccessPoint)accessPoint {
+                         accessPoint:(signin_metrics::AccessPoint)accessPoint
+                          dispatcher:(id<ApplicationCommands>)dispatcher {
   self = [super init];
   if (self) {
     DCHECK(IsSupportedAccessPoint(accessPoint));
     _accessPoint = accessPoint;
     _browserState = browserState;
+    _dispatcher = dispatcher;
     NSArray* identities = ios::GetChromeBrowserProvider()
                               ->GetChromeIdentityService()
                               ->GetAllIdentitiesSortedForDisplay();
@@ -467,7 +472,7 @@ const char* AlreadySeenSigninViewPreferenceKey(
                callback:^(BOOL succeeded) {
                  [weakSelf signinCallback];
                }];
-  [signinPromoView chromeExecuteCommand:command];
+  [self.dispatcher showSignin:command];
 }
 
 - (void)signinPromoViewDidTapSigninWithDefaultAccount:
@@ -485,7 +490,7 @@ const char* AlreadySeenSigninViewPreferenceKey(
                callback:^(BOOL succeeded) {
                  [weakSelf signinCallback];
                }];
-  [signinPromoView chromeExecuteCommand:command];
+  [self.dispatcher showSignin:command];
 }
 
 - (void)signinPromoViewDidTapSigninWithOtherAccount:
@@ -503,7 +508,7 @@ const char* AlreadySeenSigninViewPreferenceKey(
                callback:^(BOOL succeeded) {
                  [weakSelf signinCallback];
                }];
-  [signinPromoView chromeExecuteCommand:command];
+  [self.dispatcher showSignin:command];
 }
 
 @end

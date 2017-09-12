@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 #include <set>
 
+@protocol ApplicationCommands;
 class GURL;
 
 namespace bookmarks {
@@ -71,7 +72,9 @@ class PrefRegistrySyncable;
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                             delegate:(id<BookmarkTableViewDelegate>)delegate
                             rootNode:(const bookmarks::BookmarkNode*)rootNode
-                               frame:(CGRect)frame NS_DESIGNATED_INITIALIZER;
+                               frame:(CGRect)frame
+                          dispatcher:(id<ApplicationCommands>)dispatcher
+    NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
 - (instancetype)initWithFrame:(CGRect)frame

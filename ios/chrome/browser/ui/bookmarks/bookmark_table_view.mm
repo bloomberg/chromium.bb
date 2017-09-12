@@ -27,6 +27,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_cell.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_signin_promo_cell.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/sync/synced_sessions_bridge.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "skia/ext/skia_utils_ios.h"
@@ -104,6 +105,9 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 // The loading spinner background which appears when syncing.
 @property(nonatomic, strong) BookmarkHomeWaitingView* spinnerView;
 
+// Dispatcher for sending commands.
+@property(nonatomic, readonly, weak) id<ApplicationCommands> dispatcher;
+
 // Section indices.
 @property(nonatomic, readonly, assign) NSInteger promoSection;
 @property(nonatomic, readonly, assign) NSInteger bookmarksSection;
@@ -120,6 +124,7 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 @synthesize emptyTableBackgroundView = _emptyTableBackgroundView;
 @synthesize spinnerView = _spinnerView;
 @synthesize editing = _editing;
+@synthesize dispatcher = _dispatcher;
 
 + (void)registerBrowserStatePrefs:(user_prefs::PrefRegistrySyncable*)registry {
   registry->RegisterIntegerPref(prefs::kIosBookmarkSigninPromoDisplayedCount,
@@ -129,13 +134,15 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                             delegate:(id<BookmarkTableViewDelegate>)delegate
                             rootNode:(const BookmarkNode*)rootNode
-                               frame:(CGRect)frame {
+                               frame:(CGRect)frame
+                          dispatcher:(id<ApplicationCommands>)dispatcher {
   self = [super initWithFrame:frame];
   if (self) {
     DCHECK(rootNode);
     _browserState = browserState;
     _delegate = delegate;
     _currentRootNode = rootNode;
+    _dispatcher = dispatcher;
 
     // Set up connection to the BookmarkModel.
     _bookmarkModel =
@@ -215,7 +222,8 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
     _signinPromoViewMediator = [[SigninPromoViewMediator alloc]
         initWithBrowserState:_browserState
                  accessPoint:signin_metrics::AccessPoint::
-                                 ACCESS_POINT_BOOKMARK_MANAGER];
+                                 ACCESS_POINT_BOOKMARK_MANAGER
+                  dispatcher:self.dispatcher];
     _signinPromoViewMediator.consumer = self;
     [_signinPromoViewMediator signinPromoViewVisible];
   }

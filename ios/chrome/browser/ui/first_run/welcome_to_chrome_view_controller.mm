@@ -55,7 +55,7 @@ const BOOL kDefaultStatsCheckboxValue = YES;
 // The animation which occurs at launch has run.
 @property(nonatomic, assign) BOOL ranLaunchAnimation;
 
-@property(nonatomic, readonly, weak) id<ApplicationSettingsCommands> dispatcher;
+@property(nonatomic, readonly, weak) id<ApplicationCommands> dispatcher;
 
 @end
 
@@ -78,8 +78,7 @@ const BOOL kDefaultStatsCheckboxValue = YES;
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                             tabModel:(TabModel*)tabModel
-                          dispatcher:
-                              (id<ApplicationSettingsCommands>)dispatcher {
+                          dispatcher:(id<ApplicationCommands>)dispatcher {
   DCHECK(browserState);
   DCHECK(tabModel);
   self = [super initWithNibName:nil bundle:nil];

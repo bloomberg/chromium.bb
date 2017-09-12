@@ -49,7 +49,7 @@ using signin_ui::CompletionCallback;
   BOOL identityAdded_;
 }
 
-@property(nonatomic, weak, readonly) id<ApplicationSettingsCommands> dispatcher;
+@property(nonatomic, weak, readonly) id<ApplicationCommands> dispatcher;
 
 @end
 
@@ -67,8 +67,7 @@ using signin_ui::CompletionCallback;
                isPresentedOnSettings:(BOOL)isPresentedOnSettings
                          accessPoint:(signin_metrics::AccessPoint)accessPoint
                          promoAction:(signin_metrics::PromoAction)promoAction
-                          dispatcher:
-                              (id<ApplicationSettingsCommands>)dispatcher {
+                          dispatcher:(id<ApplicationCommands>)dispatcher {
   self = [super init];
   if (self) {
     DCHECK(browserState);

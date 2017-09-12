@@ -13,7 +13,6 @@
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/clear_browsing_data_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
-#import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/material_components/app_bar_presenting.h"
@@ -464,11 +463,6 @@ initWithRootViewController:(UIViewController*)rootViewController
 
 - (void)chromeExecuteCommand:(id)sender {
   switch ([sender tag]) {
-    case IDC_SHOW_SIGNIN_IOS:
-      // Sign-in actions can only happen on the main browser state (not on
-      // incognito browser state), which is unique. The command can just be
-      // forwarded up the responder chain.
-      break;
     case IDC_CLEAR_BROWSING_DATA_IOS: {
       // Check that the data for the right browser state is being cleared before
       // forwarding it up the responder chain.

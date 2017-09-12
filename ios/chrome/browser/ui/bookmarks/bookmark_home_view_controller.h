@@ -10,6 +10,7 @@
 #include <set>
 #include <vector>
 
+@protocol ApplicationCommands;
 @protocol UrlLoader;
 class GURL;
 
@@ -57,6 +58,7 @@ class BookmarkNode;
 - (instancetype)init NS_UNAVAILABLE;
 - (instancetype)initWithLoader:(id<UrlLoader>)loader
                   browserState:(ios::ChromeBrowserState*)browserState
+                    dispatcher:(id<ApplicationCommands>)dispatcher
     NS_DESIGNATED_INITIALIZER;
 
 // Setter to set _rootNode value.
@@ -66,6 +68,9 @@ class BookmarkNode;
 // in case of handset, and not tablet. In the future it will be used by both
 // cases.
 @property(nonatomic, weak) id<BookmarkHomeViewControllerDelegate> homeDelegate;
+
+// Dispatcher for sending commands.
+@property(nonatomic, readonly, weak) id<ApplicationCommands> dispatcher;
 
 // Dismisses any modal interaction elements. Note that this
 // method is currently used in case of handset only. In the future it

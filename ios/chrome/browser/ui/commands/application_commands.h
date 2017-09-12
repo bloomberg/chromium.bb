@@ -9,6 +9,7 @@
 
 @class OpenNewTabCommand;
 @class OpenUrlCommand;
+@class ShowSigninCommand;
 @class StartVoiceSearchCommand;
 
 // This protocol groups commands that are part of ApplicationCommands, but
@@ -78,6 +79,9 @@
 
 // Opens the |command| URL.
 - (void)openURL:(OpenUrlCommand*)command;
+
+// Shows the signin UI.
+- (void)showSignin:(ShowSigninCommand*)command;
 
 @end
 

@@ -15,42 +15,18 @@
 #include "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/authentication_service_fake.h"
-#include "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #include "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+#include "third_party/ocmock/OCMock/OCMock.h"
+#include "third_party/ocmock/gtest_support.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-// View that intercepts and stores chrome commands sent up the responder chain.
-@interface CatchExecuteCommandView : UIView {
-}
-// Command sent up the responder chain and intercepted by this view.
-@property(nonatomic, strong) id command;
-@end
-
-@implementation CatchExecuteCommandView
-
-@synthesize command = _command;
-
-- (instancetype)initWithFrame:(CGRect)frame {
-  self = [super initWithFrame:frame];
-  if (self) {
-  }
-  return self;
-}
-
-- (void)chromeExecuteCommand:(id)command {
-  DCHECK(command);
-  DCHECK(!self.command);
-  self.command = command;
-}
-
-@end
 
 namespace {
 
@@ -104,7 +80,7 @@ TEST_F(ReSignInInfoBarDelegateTest, TestCreateWhenNotPrompting) {
   authService->SetPromptForSignIn(false);
   std::unique_ptr<ReSignInInfoBarDelegate> infobar_delegate =
       ReSignInInfoBarDelegate::CreateInfoBarDelegate(
-          chrome_browser_state_.get());
+          chrome_browser_state_.get(), nil);
   // Infobar delegate should not be created.
   EXPECT_FALSE(infobar_delegate.get());
   EXPECT_FALSE(authService->ShouldPromptForSignIn());
@@ -119,7 +95,7 @@ TEST_F(ReSignInInfoBarDelegateTest, TestCreateWhenNotSignedIn) {
   authService->SetPromptForSignIn(true);
   std::unique_ptr<ReSignInInfoBarDelegate> infobar_delegate =
       ReSignInInfoBarDelegate::CreateInfoBarDelegate(
-          chrome_browser_state_.get());
+          chrome_browser_state_.get(), nil);
   // Infobar delegate should be created.
   EXPECT_TRUE(infobar_delegate.get());
   EXPECT_TRUE(authService->ShouldPromptForSignIn());
@@ -134,7 +110,7 @@ TEST_F(ReSignInInfoBarDelegateTest, TestCreateWhenAlreadySignedIn) {
   authService->SetPromptForSignIn(true);
   std::unique_ptr<ReSignInInfoBarDelegate> infobar_delegate =
       ReSignInInfoBarDelegate::CreateInfoBarDelegate(
-          chrome_browser_state_.get());
+          chrome_browser_state_.get(), nil);
   // Infobar delegate should not be created.
   EXPECT_FALSE(infobar_delegate.get());
   EXPECT_FALSE(authService->ShouldPromptForSignIn());
@@ -149,7 +125,7 @@ TEST_F(ReSignInInfoBarDelegateTest, TestCreateWhenIncognito) {
   authService->SetPromptForSignIn(true);
   std::unique_ptr<ReSignInInfoBarDelegate> infobar_delegate =
       ReSignInInfoBarDelegate::CreateInfoBarDelegate(
-          chrome_browser_state_->GetOffTheRecordChromeBrowserState());
+          chrome_browser_state_->GetOffTheRecordChromeBrowserState(), nil);
   // Infobar delegate should not be created.
   EXPECT_FALSE(infobar_delegate.get());
   EXPECT_TRUE(authService->ShouldPromptForSignIn());
@@ -158,7 +134,7 @@ TEST_F(ReSignInInfoBarDelegateTest, TestCreateWhenIncognito) {
 TEST_F(ReSignInInfoBarDelegateTest, TestMessages) {
   SetUpMainChromeBrowserStateNotSignedIn();
   std::unique_ptr<ReSignInInfoBarDelegate> delegate(
-      new ReSignInInfoBarDelegate(chrome_browser_state_.get()));
+      new ReSignInInfoBarDelegate(chrome_browser_state_.get(), nil));
   EXPECT_EQ(ConfirmInfoBarDelegate::BUTTON_OK, delegate->GetButtons());
   base::string16 message_text = delegate->GetMessageText();
   EXPECT_GT(message_text.length(), 0U);
@@ -173,23 +149,26 @@ TEST_F(ReSignInInfoBarDelegateTest, TestAccept) {
       AuthenticationServiceFactory::GetForBrowserState(
           chrome_browser_state_.get());
   authService->SetPromptForSignIn(true);
+
+  id dispatcher = OCMProtocolMock(@protocol(ApplicationCommands));
+  [[dispatcher expect]
+      showSignin:[OCMArg checkWithBlock:^BOOL(id command) {
+        EXPECT_TRUE([command isKindOfClass:[ShowSigninCommand class]]);
+        EXPECT_EQ(AUTHENTICATION_OPERATION_REAUTHENTICATE,
+                  static_cast<ShowSigninCommand*>(command).operation);
+        return YES;
+      }]];
+
   std::unique_ptr<infobars::InfoBar> infobar(
       CreateConfirmInfoBar(ReSignInInfoBarDelegate::CreateInfoBarDelegate(
-          chrome_browser_state_.get())));
+          chrome_browser_state_.get(), dispatcher)));
   InfoBarIOS* infobarIOS = static_cast<InfoBarIOS*>(infobar.get());
   infobarIOS->Layout(CGRectZero);
-  CatchExecuteCommandView* view =
-      [[CatchExecuteCommandView alloc] initWithFrame:CGRectZero];
-  [view addSubview:infobarIOS->view()];
 
   ReSignInInfoBarDelegate* delegate =
       static_cast<ReSignInInfoBarDelegate*>(infobarIOS->delegate());
   EXPECT_TRUE(delegate->Accept());
   EXPECT_FALSE(authService->ShouldPromptForSignIn());
-  EXPECT_TRUE([view command]);
-  EXPECT_TRUE([[view command] isKindOfClass:[ShowSigninCommand class]]);
-  EXPECT_EQ(AUTHENTICATION_OPERATION_REAUTHENTICATE,
-            static_cast<ShowSigninCommand*>([view command]).operation);
 }
 
 TEST_F(ReSignInInfoBarDelegateTest, TestInfoBarDismissed) {
@@ -198,20 +177,20 @@ TEST_F(ReSignInInfoBarDelegateTest, TestInfoBarDismissed) {
       AuthenticationServiceFactory::GetForBrowserState(
           chrome_browser_state_.get());
   authService->SetPromptForSignIn(true);
+
+  id dispatcher = OCMProtocolMock(@protocol(ApplicationCommands));
+  [[dispatcher reject] showSignin:[OCMArg any]];
+
   std::unique_ptr<infobars::InfoBar> infobar(
       CreateConfirmInfoBar(ReSignInInfoBarDelegate::CreateInfoBarDelegate(
-          chrome_browser_state_.get())));
+          chrome_browser_state_.get(), dispatcher)));
   InfoBarIOS* infobarIOS = static_cast<InfoBarIOS*>(infobar.get());
   infobarIOS->Layout(CGRectZero);
-  CatchExecuteCommandView* view =
-      [[CatchExecuteCommandView alloc] initWithFrame:CGRectZero];
-  [view addSubview:infobarIOS->view()];
 
   ReSignInInfoBarDelegate* delegate =
       static_cast<ReSignInInfoBarDelegate*>(infobarIOS->delegate());
   delegate->InfoBarDismissed();
   EXPECT_FALSE(authService->ShouldPromptForSignIn());
-  EXPECT_FALSE([view command]);
 }
 
 }  // namespace

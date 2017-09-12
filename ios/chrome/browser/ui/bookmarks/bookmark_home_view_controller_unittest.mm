@@ -16,7 +16,8 @@ TEST_F(BookmarkHomeViewControllerTest, LoadBookmarks) {
   @autoreleasepool {
     BookmarkHomeViewController* controller = [[BookmarkHomeViewController alloc]
         initWithLoader:nil
-          browserState:chrome_browser_state_.get()];
+          browserState:chrome_browser_state_.get()
+            dispatcher:nil];
 
     EXPECT_EQ(nil, controller.menuView);
     EXPECT_EQ(nil, controller.panelView);
@@ -37,7 +38,8 @@ TEST_F(BookmarkHomeViewControllerTest, LoadWaitingView) {
   @autoreleasepool {
     BookmarkHomeViewController* controller = [[BookmarkHomeViewController alloc]
         initWithLoader:nil
-          browserState:chrome_browser_state_.get()];
+          browserState:chrome_browser_state_.get()
+            dispatcher:nil];
 
     EXPECT_TRUE(controller.waitForModelView == nil);
 

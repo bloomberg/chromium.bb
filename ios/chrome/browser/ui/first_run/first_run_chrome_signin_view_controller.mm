@@ -45,8 +45,7 @@ NSString* const kSignInSkipButtonAccessibilityIdentifier =
                             tabModel:(TabModel*)tabModel
                       firstRunConfig:(FirstRunConfiguration*)firstRunConfig
                       signInIdentity:(ChromeIdentity*)identity
-                          dispatcher:
-                              (id<ApplicationSettingsCommands>)dispatcher {
+                          dispatcher:(id<ApplicationCommands>)dispatcher {
   self = [super
        initWithBrowserState:browserState
       isPresentedOnSettings:NO
