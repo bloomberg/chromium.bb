@@ -56,6 +56,7 @@ namespace extensions {
 class ContentWatcher;
 class DispatcherDelegate;
 class ExtensionBindingsSystem;
+class JSRendererMessagingService;
 class ScriptContext;
 class ScriptInjectionManager;
 struct EventFilteringInfo;
@@ -146,6 +147,9 @@ class Dispatcher : public content::RenderThreadObserver,
                                      V8SchemaRegistry* v8_schema_registry);
 
   ExtensionBindingsSystem* bindings_system() { return bindings_system_.get(); }
+  JSRendererMessagingService* messaging_service() {
+    return messaging_service_.get();
+  }
 
  private:
   // The RendererPermissionsPolicyDelegateTest.CannotScriptWebstore test needs
@@ -281,6 +285,12 @@ class Dispatcher : public content::RenderThreadObserver,
 
   // The bindings system associated with the main thread.
   std::unique_ptr<ExtensionBindingsSystem> bindings_system_;
+
+  // The messaging system.
+  // TODO(devlin): Move this to BindingsSystem? This will only work on the main
+  // thread. But there's more that needs to be done to get messaging to work on
+  // worker threads.
+  std::unique_ptr<JSRendererMessagingService> messaging_service_;
 
   // The platforms system font family and size;
   std::string system_font_family_;

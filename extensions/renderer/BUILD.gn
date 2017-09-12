@@ -132,6 +132,8 @@ source_set("renderer") {
     "ipc_message_sender.h",
     "js_extension_bindings_system.cc",
     "js_extension_bindings_system.h",
+    "js_renderer_messaging_service.cc",
+    "js_renderer_messaging_service.h",
     "lazy_background_page_native_handler.cc",
     "lazy_background_page_native_handler.h",
     "logging_native_handler.cc",
