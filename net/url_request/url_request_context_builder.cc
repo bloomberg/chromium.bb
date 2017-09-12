@@ -19,7 +19,6 @@
 #include "net/base/cache_type.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate_impl.h"
-#include "net/base/sdch_manager.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_known_logs.h"
 #include "net/cert/ct_log_verifier.h"
@@ -202,7 +201,6 @@ URLRequestContextBuilder::URLRequestContextBuilder()
 #endif
       http_cache_enabled_(true),
       throttling_enabled_(false),
-      sdch_enabled_(false),
       cookie_store_set_by_client_(false),
       transport_security_persister_readonly_(false),
       net_log_(nullptr),
@@ -453,11 +451,6 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
     cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());
     storage->set_cookie_store(std::move(cookie_store));
     storage->set_channel_id_service(std::move(channel_id_service));
-  }
-
-  if (sdch_enabled_) {
-    storage->set_sdch_manager(
-        std::unique_ptr<net::SdchManager>(new SdchManager()));
   }
 
   storage->set_transport_security_state(
