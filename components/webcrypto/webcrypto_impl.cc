@@ -77,7 +77,7 @@ class CryptoThreadPool {
     worker_thread_.StartWithOptions(options);
   }
 
-  static bool PostTask(const tracked_objects::Location& from_here,
+  static bool PostTask(const base::Location& from_here,
                        const base::Closure& task);
 
  private:
@@ -94,7 +94,7 @@ class CryptoThreadPool {
 base::LazyInstance<CryptoThreadPool>::Leaky crypto_thread_pool =
     LAZY_INSTANCE_INITIALIZER;
 
-bool CryptoThreadPool::PostTask(const tracked_objects::Location& from_here,
+bool CryptoThreadPool::PostTask(const base::Location& from_here,
                                 const base::Closure& task) {
   return crypto_thread_pool.Get().worker_thread_.task_runner()->PostTask(
       from_here, task);

@@ -348,7 +348,7 @@ class Directory {
   // Called to set the unrecoverable error on the directory and to propagate
   // the error to upper layers.
   void OnUnrecoverableError(const BaseTransaction* trans,
-                            const tracked_objects::Location& location,
+                            const base::Location& location,
                             const std::string& message);
 
   DeleteJournal* delete_journal();

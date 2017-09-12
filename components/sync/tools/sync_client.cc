@@ -166,7 +166,7 @@ class LoggingUnrecoverableErrorHandler : public UnrecoverableErrorHandler {
  public:
   ~LoggingUnrecoverableErrorHandler() override {}
 
-  void OnUnrecoverableError(const tracked_objects::Location& from_here,
+  void OnUnrecoverableError(const base::Location& from_here,
                             const std::string& message) override {
     if (LOG_IS_ON(ERROR)) {
       logging::LogMessage(from_here.file_name(), from_here.line_number(),

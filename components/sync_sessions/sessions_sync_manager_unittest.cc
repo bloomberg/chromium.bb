@@ -424,7 +424,7 @@ class TestSyncedWindowDelegatesGetter : public SyncedWindowDelegatesGetter {
 class TestSyncChangeProcessor : public syncer::SyncChangeProcessor {
  public:
   explicit TestSyncChangeProcessor(SyncChangeList* output) : output_(output) {}
-  SyncError ProcessSyncChanges(const tracked_objects::Location& from_here,
+  SyncError ProcessSyncChanges(const base::Location& from_here,
                                const SyncChangeList& change_list) override {
     if (error_.IsSet()) {
       SyncError error = error_;

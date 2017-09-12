@@ -43,7 +43,7 @@ class WebThreadImpl : public WebThread, public base::Thread {
   void IOThreadRun(base::RunLoop* run_loop);
 
   static bool PostTaskHelper(WebThread::ID identifier,
-                             const tracked_objects::Location& from_here,
+                             const base::Location& from_here,
                              base::OnceClosure task,
                              base::TimeDelta delay,
                              bool nestable);

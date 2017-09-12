@@ -10,7 +10,7 @@ namespace syncer {
 namespace syncable {
 
 ModelNeutralWriteTransaction::ModelNeutralWriteTransaction(
-    const tracked_objects::Location& location,
+    const base::Location& location,
     WriterTag writer,
     Directory* directory)
     : BaseWriteTransaction(location,

@@ -43,7 +43,7 @@ class FakeSyncableService : public SyncableService {
       std::unique_ptr<SyncErrorFactory> sync_error_factory) override;
   void StopSyncing(ModelType type) override;
   SyncDataList GetAllSyncData(ModelType type) const override;
-  SyncError ProcessSyncChanges(const tracked_objects::Location& from_here,
+  SyncError ProcessSyncChanges(const base::Location& from_here,
                                const SyncChangeList& change_list) override;
   std::unique_ptr<AttachmentStoreForSync> GetAttachmentStoreForSync() override;
   void SetAttachmentService(

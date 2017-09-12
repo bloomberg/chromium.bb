@@ -80,7 +80,7 @@ void ChangeEntryIDAndUpdateChildren(BaseWriteTransaction* trans,
 // 1. Sets unrecoverable error on transaction.
 // 2. Returns false.
 bool SyncAssert(bool condition,
-                const tracked_objects::Location& location,
+                const base::Location& location,
                 const char* msg,
                 BaseTransaction* trans) {
   if (!condition) {

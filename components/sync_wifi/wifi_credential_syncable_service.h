@@ -50,7 +50,7 @@ class WifiCredentialSyncableService : public syncer::SyncableService,
   void StopSyncing(syncer::ModelType type) override;
   syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
   syncer::SyncError ProcessSyncChanges(
-      const tracked_objects::Location& caller_location,
+      const base::Location& caller_location,
       const syncer::SyncChangeList& change_list) override;
 
   // Adds a WiFiCredential to Chrome Sync. |item_id| is a persistent

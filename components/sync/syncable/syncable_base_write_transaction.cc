@@ -7,11 +7,10 @@
 namespace syncer {
 namespace syncable {
 
-BaseWriteTransaction::BaseWriteTransaction(
-    const tracked_objects::Location location,
-    const char* name,
-    WriterTag writer,
-    Directory* directory)
+BaseWriteTransaction::BaseWriteTransaction(const base::Location location,
+                                           const char* name,
+                                           WriterTag writer,
+                                           Directory* directory)
     : BaseTransaction(location, name, writer, directory) {}
 
 BaseWriteTransaction::~BaseWriteTransaction() {}

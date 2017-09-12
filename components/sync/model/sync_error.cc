@@ -15,7 +15,7 @@ SyncError::SyncError() {
   Clear();
 }
 
-SyncError::SyncError(const tracked_objects::Location& location,
+SyncError::SyncError(const base::Location& location,
                      ErrorType error_type,
                      const std::string& message,
                      ModelType model_type) {
@@ -54,18 +54,18 @@ void SyncError::Clear() {
   error_type_ = UNSET;
 }
 
-void SyncError::Reset(const tracked_objects::Location& location,
+void SyncError::Reset(const base::Location& location,
                       const std::string& message,
                       ModelType model_type) {
   Init(location, message, model_type, DATATYPE_ERROR);
   PrintLogError();
 }
 
-void SyncError::Init(const tracked_objects::Location& location,
+void SyncError::Init(const base::Location& location,
                      const std::string& message,
                      ModelType model_type,
                      ErrorType error_type) {
-  location_ = std::make_unique<tracked_objects::Location>(location);
+  location_ = std::make_unique<base::Location>(location);
   message_ = message;
   model_type_ = model_type;
   error_type_ = error_type;
@@ -75,7 +75,7 @@ bool SyncError::IsSet() const {
   return error_type_ != UNSET;
 }
 
-const tracked_objects::Location& SyncError::location() const {
+const base::Location& SyncError::location() const {
   CHECK(IsSet());
   return *location_;
 }

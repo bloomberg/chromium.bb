@@ -7,7 +7,7 @@
 namespace syncer {
 namespace syncable {
 
-ReadTransaction::ReadTransaction(const tracked_objects::Location& location,
+ReadTransaction::ReadTransaction(const base::Location& location,
                                  Directory* directory)
     : BaseTransaction(location, "ReadTransaction", INVALID, directory) {
   Lock();

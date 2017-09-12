@@ -18,7 +18,7 @@ class BaseWriteTransaction : public BaseTransaction {
   virtual void TrackChangesTo(const EntryKernel* entry) = 0;
 
  protected:
-  BaseWriteTransaction(const tracked_objects::Location location,
+  BaseWriteTransaction(const base::Location location,
                        const char* name,
                        WriterTag writer,
                        Directory* directory);

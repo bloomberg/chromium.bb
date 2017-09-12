@@ -173,9 +173,8 @@ void SharedModelTypeProcessor::ReportError(const ModelError& error) {
   }
 }
 
-void SharedModelTypeProcessor::ReportError(
-    const tracked_objects::Location& location,
-    const std::string& message) {
+void SharedModelTypeProcessor::ReportError(const base::Location& location,
+                                           const std::string& message) {
   ReportError(ModelError(location, message));
 }
 

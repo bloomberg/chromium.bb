@@ -83,12 +83,11 @@ class TextInputClientMacTest : public testing::Test {
 
   // Helper method to post a task on the testing thread's MessageLoop after
   // a short delay.
-  void PostTask(const tracked_objects::Location& from_here,
-                const base::Closure& task) {
+  void PostTask(const base::Location& from_here, const base::Closure& task) {
     PostTask(from_here, task, base::TimeDelta::FromMilliseconds(kTaskDelayMs));
   }
 
-  void PostTask(const tracked_objects::Location& from_here,
+  void PostTask(const base::Location& from_here,
                 const base::Closure& task,
                 const base::TimeDelta delay) {
     thread_.task_runner()->PostDelayedTask(from_here, task, delay);

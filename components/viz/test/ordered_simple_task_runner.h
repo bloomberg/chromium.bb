@@ -28,7 +28,7 @@ namespace cc {
 class TestOrderablePendingTask : public base::TestPendingTask {
  public:
   TestOrderablePendingTask();
-  TestOrderablePendingTask(const tracked_objects::Location& location,
+  TestOrderablePendingTask(const base::Location& location,
                            base::OnceClosure task,
                            base::TimeTicks post_time,
                            base::TimeDelta delay,
@@ -63,10 +63,10 @@ class OrderedSimpleTaskRunner : public base::SingleThreadTaskRunner {
   OrderedSimpleTaskRunner(base::SimpleTestTickClock* now_src, bool advance_now);
 
   // base::TestSimpleTaskRunner implementation:
-  bool PostDelayedTask(const tracked_objects::Location& from_here,
+  bool PostDelayedTask(const base::Location& from_here,
                        base::OnceClosure task,
                        base::TimeDelta delay) override;
-  bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
+  bool PostNonNestableDelayedTask(const base::Location& from_here,
                                   base::OnceClosure task,
                                   base::TimeDelta delay) override;
 

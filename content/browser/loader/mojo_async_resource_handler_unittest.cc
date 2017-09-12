@@ -263,7 +263,7 @@ class MojoAsyncResourceHandlerWithStubOperations
   }
 
   std::unique_ptr<UploadProgressTracker> CreateUploadProgressTracker(
-      const tracked_objects::Location& from_here,
+      const base::Location& from_here,
       UploadProgressTracker::UploadProgressReportCallback callback) override {
     DCHECK(!upload_progress_tracker_);
 

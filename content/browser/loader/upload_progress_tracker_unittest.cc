@@ -20,7 +20,7 @@ namespace {
 class TestingUploadProgressTracker : public UploadProgressTracker {
  public:
   TestingUploadProgressTracker(
-      const tracked_objects::Location& location,
+      const base::Location& location,
       UploadProgressReportCallback report_callback,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : UploadProgressTracker(location,

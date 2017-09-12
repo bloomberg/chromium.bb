@@ -18,9 +18,8 @@ class SyncErrorFactory {
   virtual ~SyncErrorFactory();
 
   // Creates a SyncError object and uploads this call stack to breakpad.
-  virtual SyncError CreateAndUploadError(
-      const tracked_objects::Location& location,
-      const std::string& message) = 0;
+  virtual SyncError CreateAndUploadError(const base::Location& location,
+                                         const std::string& message) = 0;
 };
 
 }  // namespace syncer

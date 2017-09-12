@@ -331,7 +331,7 @@ class StubClient : public media::VideoCaptureDevice::Client {
         buffer_pool_, buffer_id, frame_feedback_id);
   }
 
-  void OnError(const tracked_objects::Location& from_here,
+  void OnError(const base::Location& from_here,
                const std::string& reason) override {
     error_callback_.Run();
   }

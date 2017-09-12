@@ -114,7 +114,7 @@ TEST(BeginFrameArgsTest, Create) {
 
 #ifndef NDEBUG
 TEST(BeginFrameArgsTest, Location) {
-  tracked_objects::Location expected_location = BEGINFRAME_FROM_HERE;
+  base::Location expected_location = BEGINFRAME_FROM_HERE;
 
   BeginFrameArgs args = CreateBeginFrameArgsForTesting(expected_location, 0, 1);
   EXPECT_EQ(expected_location.ToString(), args.created_from.ToString());

@@ -21,7 +21,7 @@ TEST_F(SyncErrorTest, Unset) {
 }
 
 TEST_F(SyncErrorTest, Default) {
-  tracked_objects::Location location = FROM_HERE;
+  base::Location location = FROM_HERE;
   std::string msg = "test";
   ModelType type = PREFERENCES;
   SyncError error(location, SyncError::DATATYPE_ERROR, msg, type);
@@ -34,7 +34,7 @@ TEST_F(SyncErrorTest, Default) {
 }
 
 TEST_F(SyncErrorTest, LowSeverity) {
-  tracked_objects::Location location = FROM_HERE;
+  base::Location location = FROM_HERE;
   std::string msg = "test";
   ModelType type = PREFERENCES;
   SyncError error(location, SyncError::DATATYPE_POLICY_ERROR, msg, type);
@@ -48,7 +48,7 @@ TEST_F(SyncErrorTest, LowSeverity) {
 }
 
 TEST_F(SyncErrorTest, Reset) {
-  tracked_objects::Location location = FROM_HERE;
+  base::Location location = FROM_HERE;
   std::string msg = "test";
   ModelType type = PREFERENCES;
 
@@ -61,7 +61,7 @@ TEST_F(SyncErrorTest, Reset) {
   EXPECT_EQ(msg, error.message());
   EXPECT_EQ(type, error.model_type());
 
-  tracked_objects::Location location2 = FROM_HERE;
+  base::Location location2 = FROM_HERE;
   std::string msg2 = "test";
   ModelType type2 = PREFERENCES;
   error.Reset(location2, msg2, type2);
@@ -72,7 +72,7 @@ TEST_F(SyncErrorTest, Reset) {
 }
 
 TEST_F(SyncErrorTest, Copy) {
-  tracked_objects::Location location = FROM_HERE;
+  base::Location location = FROM_HERE;
   std::string msg = "test";
   ModelType type = PREFERENCES;
 
@@ -100,7 +100,7 @@ TEST_F(SyncErrorTest, Copy) {
 }
 
 TEST_F(SyncErrorTest, Assign) {
-  tracked_objects::Location location = FROM_HERE;
+  base::Location location = FROM_HERE;
   std::string msg = "test";
   ModelType type = PREFERENCES;
 
@@ -127,7 +127,7 @@ TEST_F(SyncErrorTest, Assign) {
 }
 
 TEST_F(SyncErrorTest, ToString) {
-  tracked_objects::Location location = FROM_HERE;
+  base::Location location = FROM_HERE;
   std::string msg = "test";
   ModelType type = PREFERENCES;
   std::string expected = std::string(ModelTypeToString(type)) +

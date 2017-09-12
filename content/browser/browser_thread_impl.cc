@@ -60,14 +60,14 @@ class BrowserThreadTaskRunner : public base::SingleThreadTaskRunner {
       : id_(identifier) {}
 
   // SingleThreadTaskRunner implementation.
-  bool PostDelayedTask(const tracked_objects::Location& from_here,
+  bool PostDelayedTask(const base::Location& from_here,
                        base::OnceClosure task,
                        base::TimeDelta delay) override {
     return BrowserThread::PostDelayedTask(id_, from_here, std::move(task),
                                           delay);
   }
 
-  bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
+  bool PostNonNestableDelayedTask(const base::Location& from_here,
                                   base::OnceClosure task,
                                   base::TimeDelta delay) override {
     return BrowserThread::PostNonNestableDelayedTask(id_, from_here,
@@ -486,12 +486,11 @@ void BrowserThreadImpl::StopRedirectionOfThreadID(
 }
 
 // static
-bool BrowserThreadImpl::PostTaskHelper(
-    BrowserThread::ID identifier,
-    const tracked_objects::Location& from_here,
-    base::OnceClosure task,
-    base::TimeDelta delay,
-    bool nestable) {
+bool BrowserThreadImpl::PostTaskHelper(BrowserThread::ID identifier,
+                                       const base::Location& from_here,
+                                       base::OnceClosure task,
+                                       base::TimeDelta delay,
+                                       bool nestable) {
   DCHECK_GE(identifier, 0);
   DCHECK_LT(identifier, ID_COUNT);
   // Optimization: to avoid unnecessary locks, we listed the ID enumeration in
@@ -533,7 +532,7 @@ bool BrowserThreadImpl::PostTaskHelper(
 // static
 bool BrowserThread::PostBlockingPoolSequencedTask(
     const std::string& sequence_token_name,
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     base::OnceClosure task) {
   return g_globals.Get().blocking_pool->PostNamedSequencedWorkerTask(
       sequence_token_name, from_here, std::move(task));
@@ -541,7 +540,7 @@ bool BrowserThread::PostBlockingPoolSequencedTask(
 
 // static
 void BrowserThread::PostAfterStartupTask(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const scoped_refptr<base::TaskRunner>& task_runner,
     base::OnceClosure task) {
   GetContentClient()->browser()->PostAfterStartupTask(from_here, task_runner,
@@ -604,7 +603,7 @@ bool BrowserThread::IsMessageLoopValid(ID identifier) {
 
 // static
 bool BrowserThread::PostTask(ID identifier,
-                             const tracked_objects::Location& from_here,
+                             const base::Location& from_here,
                              base::OnceClosure task) {
   return BrowserThreadImpl::PostTaskHelper(
       identifier, from_here, std::move(task), base::TimeDelta(), true);
@@ -612,7 +611,7 @@ bool BrowserThread::PostTask(ID identifier,
 
 // static
 bool BrowserThread::PostDelayedTask(ID identifier,
-                                    const tracked_objects::Location& from_here,
+                                    const base::Location& from_here,
                                     base::OnceClosure task,
                                     base::TimeDelta delay) {
   return BrowserThreadImpl::PostTaskHelper(identifier, from_here,
@@ -620,27 +619,25 @@ bool BrowserThread::PostDelayedTask(ID identifier,
 }
 
 // static
-bool BrowserThread::PostNonNestableTask(
-    ID identifier,
-    const tracked_objects::Location& from_here,
-    base::OnceClosure task) {
+bool BrowserThread::PostNonNestableTask(ID identifier,
+                                        const base::Location& from_here,
+                                        base::OnceClosure task) {
   return BrowserThreadImpl::PostTaskHelper(
       identifier, from_here, std::move(task), base::TimeDelta(), false);
 }
 
 // static
-bool BrowserThread::PostNonNestableDelayedTask(
-    ID identifier,
-    const tracked_objects::Location& from_here,
-    base::OnceClosure task,
-    base::TimeDelta delay) {
+bool BrowserThread::PostNonNestableDelayedTask(ID identifier,
+                                               const base::Location& from_here,
+                                               base::OnceClosure task,
+                                               base::TimeDelta delay) {
   return BrowserThreadImpl::PostTaskHelper(identifier, from_here,
                                            std::move(task), delay, false);
 }
 
 // static
 bool BrowserThread::PostTaskAndReply(ID identifier,
-                                     const tracked_objects::Location& from_here,
+                                     const base::Location& from_here,
                                      base::OnceClosure task,
                                      base::OnceClosure reply) {
   return GetTaskRunnerForThread(identifier)

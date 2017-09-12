@@ -23,7 +23,7 @@ class TracedValue;
 
 /**
  * In debug builds we trace the creation origin of BeginFrameArgs objects. We
- * reuse the tracked_objects::Location system to do that.
+ * reuse the base::Location system to do that.
  *
  * However, in release builds we don't want this as it doubles the size of the
  * BeginFrameArgs object. As well it adds a number of largish strings to the
@@ -65,8 +65,8 @@ struct VIZ_COMMON_EXPORT BeginFrameArgs {
 #ifdef NDEBUG
   typedef const void* CreationLocation;
 #else
-  typedef const tracked_objects::Location& CreationLocation;
-  tracked_objects::Location created_from;
+  typedef const base::Location& CreationLocation;
+  base::Location created_from;
 #endif
 
   // You should be able to find all instances where a BeginFrame has been

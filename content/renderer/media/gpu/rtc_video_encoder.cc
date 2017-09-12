@@ -181,7 +181,7 @@ class RTCVideoEncoder::Impl
   ~Impl() override;
 
   // Logs the |error| and |str| sent from |location| and NotifyError()s forward.
-  void LogAndNotifyError(const tracked_objects::Location& location,
+  void LogAndNotifyError(const base::Location& location,
                          const std::string& str,
                          media::VideoEncodeAccelerator::Error error);
 
@@ -586,7 +586,7 @@ void RTCVideoEncoder::Impl::NotifyError(
 RTCVideoEncoder::Impl::~Impl() { DCHECK(!video_encoder_); }
 
 void RTCVideoEncoder::Impl::LogAndNotifyError(
-    const tracked_objects::Location& location,
+    const base::Location& location,
     const std::string& str,
     media::VideoEncodeAccelerator::Error error) {
   static const char* const kErrorNames[] = {

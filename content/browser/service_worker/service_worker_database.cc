@@ -1845,9 +1845,8 @@ bool ServiceWorkerDatabase::IsOpen() {
   return db_ != NULL;
 }
 
-void ServiceWorkerDatabase::Disable(
-    const tracked_objects::Location& from_here,
-    Status status) {
+void ServiceWorkerDatabase::Disable(const base::Location& from_here,
+                                    Status status) {
   if (status != STATUS_OK) {
     DLOG(ERROR) << "Failed at: " << from_here.ToString()
                 << " with error: " << StatusToString(status);
@@ -1857,25 +1856,22 @@ void ServiceWorkerDatabase::Disable(
   db_.reset();
 }
 
-void ServiceWorkerDatabase::HandleOpenResult(
-    const tracked_objects::Location& from_here,
-    Status status) {
+void ServiceWorkerDatabase::HandleOpenResult(const base::Location& from_here,
+                                             Status status) {
   if (status != STATUS_OK)
     Disable(from_here, status);
   ServiceWorkerMetrics::CountOpenDatabaseResult(status);
 }
 
-void ServiceWorkerDatabase::HandleReadResult(
-    const tracked_objects::Location& from_here,
-    Status status) {
+void ServiceWorkerDatabase::HandleReadResult(const base::Location& from_here,
+                                             Status status) {
   if (status != STATUS_OK)
     Disable(from_here, status);
   ServiceWorkerMetrics::CountReadDatabaseResult(status);
 }
 
-void ServiceWorkerDatabase::HandleWriteResult(
-    const tracked_objects::Location& from_here,
-    Status status) {
+void ServiceWorkerDatabase::HandleWriteResult(const base::Location& from_here,
+                                              Status status) {
   if (status != STATUS_OK)
     Disable(from_here, status);
   ServiceWorkerMetrics::CountWriteDatabaseResult(status);

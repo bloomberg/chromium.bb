@@ -101,7 +101,7 @@ class ModelTypeChangeProcessor {
   virtual void ReportError(const ModelError& error) = 0;
 
   // A convenience form of the above.
-  virtual void ReportError(const tracked_objects::Location& location,
+  virtual void ReportError(const base::Location& location,
                            const std::string& message) = 0;
 };
 

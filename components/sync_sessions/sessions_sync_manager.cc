@@ -678,7 +678,7 @@ bool SessionsSyncManager::GetLocalSession(const SyncedSession** local_session) {
 }
 
 syncer::SyncError SessionsSyncManager::ProcessSyncChanges(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const syncer::SyncChangeList& change_list) {
   if (!sync_processor_.get()) {
     syncer::SyncError error(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,

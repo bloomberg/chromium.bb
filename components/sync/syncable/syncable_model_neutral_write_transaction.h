@@ -23,7 +23,7 @@ namespace syncable {
 // DirectoryChangeDelegate.
 class ModelNeutralWriteTransaction : public BaseWriteTransaction {
  public:
-  ModelNeutralWriteTransaction(const tracked_objects::Location& location,
+  ModelNeutralWriteTransaction(const base::Location& location,
                                WriterTag writer,
                                Directory* directory);
   ~ModelNeutralWriteTransaction() override;

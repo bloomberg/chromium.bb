@@ -145,7 +145,7 @@ a delay on a particular thread. A task is represented by the `base::Closure`
 typedef, which contains a `Run()` function, and is created by calling
 `base::Bind()`.  To process a task, the message loop eventually calls
 `base::Closure`'s `Run` function, and then drops the reference to the task
-object. Both `PostTask` and `PostDelayedTask` take a `tracked_objects::Location`
+object. Both `PostTask` and `PostDelayedTask` take a `base::Location`
 parameter, which is used for lightweight debugging purposes (counts and
 primitive profiling of pending and completed tasks can be monitored in a debug
 build via the url about:objects). Generally the macro value `FROM_HERE` is the

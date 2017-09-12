@@ -353,7 +353,7 @@ syncer::SyncDataList PrefModelAssociator::GetAllSyncData(
 }
 
 syncer::SyncError PrefModelAssociator::ProcessSyncChanges(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const syncer::SyncChangeList& change_list) {
   if (!models_associated_) {
     syncer::SyncError error(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,

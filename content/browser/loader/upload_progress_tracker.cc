@@ -16,7 +16,7 @@ constexpr base::TimeDelta kUploadProgressInterval =
 }  // namespace
 
 UploadProgressTracker::UploadProgressTracker(
-    const tracked_objects::Location& location,
+    const base::Location& location,
     UploadProgressReportCallback report_progress,
     net::URLRequest* request,
     scoped_refptr<base::SequencedTaskRunner> task_runner)

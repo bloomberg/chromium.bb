@@ -354,7 +354,7 @@ VisitedLinkMaster::Hash VisitedLinkMaster::TryToAddURL(const GURL& url) {
   return AddFingerprint(fingerprint, true);
 }
 
-void VisitedLinkMaster::PostIOTask(const tracked_objects::Location& from_here,
+void VisitedLinkMaster::PostIOTask(const base::Location& from_here,
                                    const base::Closure& task) {
   DCHECK(persist_to_disk_);
   BrowserThread::GetBlockingPool()->PostSequencedWorkerTask(sequence_token_,

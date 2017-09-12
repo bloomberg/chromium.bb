@@ -330,7 +330,7 @@ syncer::SyncDataList FaviconCache::GetAllSyncData(syncer::ModelType type)
 }
 
 syncer::SyncError FaviconCache::ProcessSyncChanges(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const syncer::SyncChangeList& change_list) {
   if (!favicon_images_sync_processor_.get() ||
       !favicon_tracking_sync_processor_.get()) {

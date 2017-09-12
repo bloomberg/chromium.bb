@@ -10,7 +10,7 @@ namespace syncer {
 
 SyncChange::SyncChange() : change_type_(ACTION_INVALID) {}
 
-SyncChange::SyncChange(const tracked_objects::Location& from_here,
+SyncChange::SyncChange(const base::Location& from_here,
                        SyncChangeType change_type,
                        const SyncData& sync_data)
     : location_(from_here), change_type_(change_type), sync_data_(sync_data) {
@@ -48,7 +48,7 @@ SyncData SyncChange::sync_data() const {
   return sync_data_;
 }
 
-tracked_objects::Location SyncChange::location() const {
+base::Location SyncChange::location() const {
   return location_;
 }
 

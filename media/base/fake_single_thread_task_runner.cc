@@ -19,7 +19,7 @@ FakeSingleThreadTaskRunner::FakeSingleThreadTaskRunner(
 FakeSingleThreadTaskRunner::~FakeSingleThreadTaskRunner() {}
 
 bool FakeSingleThreadTaskRunner::PostDelayedTask(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     base::OnceClosure task,
     base::TimeDelta delay) {
   if (fail_on_next_task_) {
@@ -105,7 +105,7 @@ void FakeSingleThreadTaskRunner::Sleep(base::TimeDelta t) {
 }
 
 bool FakeSingleThreadTaskRunner::PostNonNestableDelayedTask(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     base::OnceClosure task,
     base::TimeDelta delay) {
   NOTIMPLEMENTED();

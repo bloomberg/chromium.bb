@@ -20,14 +20,14 @@ namespace extensions {
 
 struct OneShotEvent::TaskInfo {
   TaskInfo() {}
-  TaskInfo(const tracked_objects::Location& from_here,
+  TaskInfo(const base::Location& from_here,
            const scoped_refptr<SingleThreadTaskRunner>& runner,
            const base::Closure& task,
            const base::TimeDelta& delay)
       : from_here(from_here), runner(runner), task(task), delay(delay) {
     CHECK(runner.get());  // Detect mistakes with a decent stack frame.
   }
-  tracked_objects::Location from_here;
+  base::Location from_here;
   scoped_refptr<SingleThreadTaskRunner> runner;
   base::Closure task;
   base::TimeDelta delay;
@@ -43,20 +43,20 @@ OneShotEvent::OneShotEvent(bool signaled) : signaled_(signaled) {
 }
 OneShotEvent::~OneShotEvent() {}
 
-void OneShotEvent::Post(const tracked_objects::Location& from_here,
+void OneShotEvent::Post(const base::Location& from_here,
                         const base::Closure& task) const {
   PostImpl(from_here, task, base::ThreadTaskRunnerHandle::Get(),
            base::TimeDelta());
 }
 
 void OneShotEvent::Post(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const base::Closure& task,
     const scoped_refptr<SingleThreadTaskRunner>& runner) const {
   PostImpl(from_here, task, runner, base::TimeDelta());
 }
 
-void OneShotEvent::PostDelayed(const tracked_objects::Location& from_here,
+void OneShotEvent::PostDelayed(const base::Location& from_here,
                                const base::Closure& task,
                                const base::TimeDelta& delay) const {
   PostImpl(from_here, task, base::ThreadTaskRunnerHandle::Get(), delay);
@@ -83,7 +83,7 @@ void OneShotEvent::Signal() {
   }
 }
 
-void OneShotEvent::PostImpl(const tracked_objects::Location& from_here,
+void OneShotEvent::PostImpl(const base::Location& from_here,
                             const base::Closure& task,
                             const scoped_refptr<SingleThreadTaskRunner>& runner,
                             const base::TimeDelta& delay) const {

@@ -85,7 +85,7 @@ class TestTaskCounter : public base::SingleThreadTaskRunner {
   TestTaskCounter() : count_(0) {}
 
   // SingleThreadTaskRunner implementation.
-  bool PostDelayedTask(const tracked_objects::Location&,
+  bool PostDelayedTask(const base::Location&,
                        base::OnceClosure,
                        base::TimeDelta) override {
     base::AutoLock auto_lock(lock_);
@@ -93,7 +93,7 @@ class TestTaskCounter : public base::SingleThreadTaskRunner {
     return true;
   }
 
-  bool PostNonNestableDelayedTask(const tracked_objects::Location&,
+  bool PostNonNestableDelayedTask(const base::Location&,
                                   base::OnceClosure,
                                   base::TimeDelta) override {
     base::AutoLock auto_lock(lock_);
