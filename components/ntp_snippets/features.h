@@ -46,10 +46,10 @@ extern const base::Feature kCategoryRanker;
 // Feature to allow the new Google favicon server for fetching publisher icons.
 extern const base::Feature kPublisherFaviconsFromNewServerFeature;
 
-// Feature for simple experimental comparision and validation of changes since
+// Feature for simple experimental comparison and validation of changes since
 // M58: enabling this brings back the M58 Stable fetching schedule (which is
 // suitable for Holdback groups).
-// TODO(jkrcal): Remove when the comparision is done (probably after M62).
+// TODO(jkrcal): Remove when the comparison is done (probably after M62).
 extern const base::Feature kRemoteSuggestionsEmulateM58FetchingSchedule;
 
 // Parameter and its values for the kCategoryRanker feature flag.
@@ -122,11 +122,6 @@ constexpr int kNotificationsIgnoredDefaultLimit = 3;
 // Whether to keep some prefetched content suggestions even when new suggestions
 // have been fetched.
 extern const base::Feature kKeepPrefetchedContentSuggestions;
-
-// Whether remote categories (except articles) which are not present in the last
-// fetch response should be deleted. This feature implicitly depends on
-// kArticleSuggestionsFeature.
-extern const base::Feature kDeleteRemoteCategoriesNotPresentInLastFetch;
 
 }  // namespace ntp_snippets
 

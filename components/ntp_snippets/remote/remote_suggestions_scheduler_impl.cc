@@ -70,7 +70,7 @@ const double kDefaultFetchingIntervalHoursActiveNtpUser[] = {96.0, 48.0, 24.0,
 const double kDefaultFetchingIntervalHoursActiveSuggestionsConsumer[] = {
     48.0, 24.0, 12.0, 12.0, 1.0, 1.0};
 
-// For a simple comparision: fetching intervals that emulate the state really
+// For a simple comparison: fetching intervals that emulate the state really
 // rolled out to 100% M58 Stable. Used for evaluation of later changes. DBL_MAX
 // values simulate this interval being disabled.
 // TODO(jkrcal): Remove when not needed any more, incl. the feature. Probably
@@ -139,11 +139,6 @@ const char* const kTriggerTypesParamName = "scheduler_trigger_types";
 const char* const kTriggerTypesParamValueForEmptyList = "-";
 
 const int kBlockBackgroundFetchesMinutesAfterClearingHistory = 30;
-
-const char kSnippetSoftFetchingIntervalOnUsageEventDeprecated[] =
-    "ntp_snippets.soft_fetching_interval_on_usage_event";
-const char kSnippetSoftFetchingIntervalOnNtpOpenedDeprecated[] =
-    "ntp_snippets.soft_fetching_interval_on_ntp_opened";
 
 // Returns the time interval to use for scheduling remote suggestion fetches for
 // the given interval and user_class.
@@ -461,10 +456,6 @@ RemoteSuggestionsSchedulerImpl::RemoteSuggestionsSchedulerImpl(
   DCHECK(user_classifier);
   DCHECK(profile_prefs);
 
-  // Cleanup procedure in M59. Remove for M62.
-  profile_prefs_->ClearPref(kSnippetSoftFetchingIntervalOnUsageEventDeprecated);
-  profile_prefs_->ClearPref(kSnippetSoftFetchingIntervalOnNtpOpenedDeprecated);
-
   LoadLastFetchingSchedule();
 }
 
@@ -482,12 +473,6 @@ void RemoteSuggestionsSchedulerImpl::RegisterProfilePrefs(
   registry->RegisterInt64Pref(prefs::kSnippetShownFetchingIntervalWifi, 0);
   registry->RegisterInt64Pref(prefs::kSnippetShownFetchingIntervalFallback, 0);
   registry->RegisterInt64Pref(prefs::kSnippetLastFetchAttempt, 0);
-
-  // Cleanup procedure in M59. Remove for M62.
-  registry->RegisterInt64Pref(
-      kSnippetSoftFetchingIntervalOnUsageEventDeprecated, 0);
-  registry->RegisterInt64Pref(kSnippetSoftFetchingIntervalOnNtpOpenedDeprecated,
-                              0);
 }
 
 void RemoteSuggestionsSchedulerImpl::SetProvider(
