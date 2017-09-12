@@ -222,7 +222,7 @@ TEST_F(KeyboardTest, OnKeyboardModifiers) {
 #else
 #define MAYBE_OnKeyboardTypeChanged OnKeyboardTypeChanged
 #endif
-TEST_F(KeyboardTest, OnKeyboardTypeChanged) {
+TEST_F(KeyboardTest, MAYBE_OnKeyboardTypeChanged) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
   gfx::Size buffer_size(10, 10);
