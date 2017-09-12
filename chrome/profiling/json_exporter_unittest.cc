@@ -147,9 +147,17 @@ bool IsBacktraceInList(const base::Value* backtraces, int id, int parent) {
 TEST(ProfilingJsonExporterTest, TraceHeader) {
   BacktraceStorage backtrace_storage;
   AllocationEventSet events;
+  MemoryMap memory_map;
+  std::map<std::string, int> context_map;
   std::ostringstream stream;
-  ExportAllocationEventSetToJSON(1234, events, MemoryMap(), stream, nullptr,
-                                 kNoSizeThreshold, kNoCountThreshold);
+
+  ExportParams params;
+  params.set = &events;
+  params.context_map = &context_map;
+  params.maps = &memory_map;
+  params.min_size_threshold = kNoSizeThreshold;
+  params.min_count_threshold = kNoCountThreshold;
+  ExportAllocationEventSetToJSON(1234, params, nullptr, stream);
   std::string json = stream.str();
 
   // JSON should parse.
@@ -202,9 +210,17 @@ TEST(ProfilingJsonExporterTest, TraceHeader) {
 TEST(ProfilingJsonExporterTest, DumpsHeader) {
   BacktraceStorage backtrace_storage;
   AllocationEventSet events;
+  std::map<std::string, int> context_map;
+  MemoryMap memory_map;
   std::ostringstream stream;
-  ExportAllocationEventSetToJSON(1234, events, MemoryMap(), stream, nullptr,
-                                 kNoSizeThreshold, kNoCountThreshold);
+
+  ExportParams params;
+  params.set = &events;
+  params.context_map = &context_map;
+  params.maps = &memory_map;
+  params.min_size_threshold = kNoSizeThreshold;
+  params.min_count_threshold = kNoCountThreshold;
+  ExportAllocationEventSetToJSON(1234, params, nullptr, stream);
   std::string json = stream.str();
 
   // JSON should parse.
@@ -255,13 +271,24 @@ TEST(ProfilingJsonExporterTest, Simple) {
   const Backtrace* bt2 = backtrace_storage.Insert(std::move(stack2));
 
   AllocationEventSet events;
-  events.insert(AllocationEvent(Address(0x1), 20, bt1));
-  events.insert(AllocationEvent(Address(0x2), 32, bt2));
-  events.insert(AllocationEvent(Address(0x3), 20, bt1));
+  events.insert(
+      AllocationEvent(AllocatorType::kMalloc, Address(0x1), 20, bt1, 0));
+  events.insert(
+      AllocationEvent(AllocatorType::kMalloc, Address(0x2), 32, bt2, 0));
+  events.insert(
+      AllocationEvent(AllocatorType::kMalloc, Address(0x3), 20, bt1, 0));
 
   std::ostringstream stream;
-  ExportAllocationEventSetToJSON(1234, events, MemoryMap(), stream, nullptr,
-                                 kNoSizeThreshold, kNoCountThreshold);
+  std::map<std::string, int> context_map;
+  MemoryMap memory_map;
+
+  ExportParams params;
+  params.set = &events;
+  params.context_map = &context_map;
+  params.maps = &memory_map;
+  params.min_size_threshold = kNoSizeThreshold;
+  params.min_count_threshold = kNoCountThreshold;
+  ExportAllocationEventSetToJSON(1234, params, nullptr, stream);
   std::string json = stream.str();
 
   // JSON should parse.
@@ -374,17 +401,30 @@ TEST(ProfilingJsonExporterTest, SimpleWithFilteredAllocations) {
   const Backtrace* bt3 = backtrace_storage.Insert(std::move(stack3));
 
   AllocationEventSet events;
-  events.insert(AllocationEvent(Address(0x1), 16, bt1));
-  events.insert(AllocationEvent(Address(0x2), 32, bt1));
-  events.insert(AllocationEvent(Address(0x3), 1000, bt2));
-  events.insert(AllocationEvent(Address(0x4), 1000, bt2));
+  events.insert(
+      AllocationEvent(AllocatorType::kMalloc, Address(0x1), 16, bt1, 0));
+  events.insert(
+      AllocationEvent(AllocatorType::kMalloc, Address(0x2), 32, bt1, 0));
+  events.insert(
+      AllocationEvent(AllocatorType::kMalloc, Address(0x3), 1000, bt2, 0));
+  events.insert(
+      AllocationEvent(AllocatorType::kMalloc, Address(0x4), 1000, bt2, 0));
   for (size_t i = 0; i < kCountThreshold + 1; ++i)
-    events.insert(AllocationEvent(Address(0x5 + i), 1, bt3));
+    events.insert(
+        AllocationEvent(AllocatorType::kMalloc, Address(0x5 + i), 1, bt3, 0));
 
   // Validate filtering by size and count.
   std::ostringstream stream;
-  ExportAllocationEventSetToJSON(1234, events, MemoryMap(), stream, nullptr,
-                                 kSizeThreshold, kCountThreshold);
+  std::map<std::string, int> context_map;
+  MemoryMap memory_map;
+
+  ExportParams params;
+  params.set = &events;
+  params.context_map = &context_map;
+  params.maps = &memory_map;
+  params.min_size_threshold = kSizeThreshold;
+  params.min_count_threshold = kCountThreshold;
+  ExportAllocationEventSetToJSON(1234, params, nullptr, stream);
   std::string json = stream.str();
 
   // JSON should parse.
@@ -452,8 +492,15 @@ TEST(ProfilingJsonExporterTest, MemoryMaps) {
   ASSERT_GT(memory_maps.size(), 2u);
 
   std::ostringstream stream;
-  ExportAllocationEventSetToJSON(1234, events, memory_maps, stream, nullptr,
-                                 kNoSizeThreshold, kNoCountThreshold);
+  std::map<std::string, int> context_map;
+
+  ExportParams params;
+  params.set = &events;
+  params.context_map = &context_map;
+  params.maps = &memory_maps;
+  params.min_size_threshold = kNoSizeThreshold;
+  params.min_count_threshold = kNoCountThreshold;
+  ExportAllocationEventSetToJSON(1234, params, nullptr, stream);
   std::string json = stream.str();
 
   // JSON should parse.
@@ -489,7 +536,8 @@ TEST(ProfilingJsonExporterTest, Metadata) {
   const Backtrace* bt1 = backtrace_storage.Insert(std::move(stack1));
 
   AllocationEventSet events;
-  events.insert(AllocationEvent(Address(0x1), 16, bt1));
+  events.insert(
+      AllocationEvent(AllocatorType::kMalloc, Address(0x1), 16, bt1, 0));
 
   // Generate metadata to pass in.
   std::unique_ptr<base::DictionaryValue> metadata_dict(
@@ -499,9 +547,17 @@ TEST(ProfilingJsonExporterTest, Metadata) {
   base::Value metadata_dict_copy = metadata_dict->Clone();
 
   std::ostringstream stream;
-  ExportAllocationEventSetToJSON(1234, events, MemoryMap(), stream,
-                                 std::move(metadata_dict), kNoSizeThreshold,
-                                 kNoCountThreshold);
+  std::map<std::string, int> context_map;
+  MemoryMap memory_map;
+
+  ExportParams params;
+  params.set = &events;
+  params.context_map = &context_map;
+  params.maps = &memory_map;
+  params.min_size_threshold = kNoSizeThreshold;
+  params.min_count_threshold = kNoCountThreshold;
+  ExportAllocationEventSetToJSON(1234, params, std::move(metadata_dict),
+                                 stream);
   std::string json = stream.str();
 
   // JSON should parse.
