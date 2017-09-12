@@ -353,11 +353,16 @@ void ManagePasswordsUIController::NeverSavePassword() {
   // The state stays the same.
 }
 
-void ManagePasswordsUIController::SavePassword(const base::string16& username) {
+void ManagePasswordsUIController::SavePassword(const base::string16& username,
+                                               const base::string16& password) {
   DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_STATE, GetState());
   if (passwords_data_.form_manager()->pending_credentials().username_value !=
       username) {
     passwords_data_.form_manager()->UpdateUsername(username);
+  }
+  if (passwords_data_.form_manager()->pending_credentials().password_value !=
+      password) {
+    passwords_data_.form_manager()->UpdatePasswordValue(password);
   }
   save_fallback_timer_.Stop();
   SavePasswordInternal();

@@ -2474,6 +2474,34 @@ TEST_F(PasswordFormManagerTest, TestUpdatePSLUsername) {
   EXPECT_EQ(ASCIIToUTF16("some_pass"), saved_result.password_value);
 }
 
+// Test that when user selects a password, the pending credentials is updated
+// accordingly.
+TEST_F(PasswordFormManagerTest, TestSelectPasswordMethod) {
+  fake_form_fetcher()->SetNonFederated(std::vector<const PasswordForm*>(), 0u);
+
+  // User enters credential in the form.
+  PasswordForm credential(*observed_form());
+  credential.username_value = ASCIIToUTF16("username");
+  credential.password_value = ASCIIToUTF16("password");
+  form_manager()->ProvisionallySave(
+      credential, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  // User selects another password in a prompt.
+  form_manager()->UpdatePasswordValue(ASCIIToUTF16("newpassword"));
+  EXPECT_EQ(form_manager()->pending_credentials().username_value,
+            ASCIIToUTF16("username"));
+  EXPECT_EQ(form_manager()->pending_credentials().password_value,
+            ASCIIToUTF16("newpassword"));
+  EXPECT_EQ(form_manager()->IsNewLogin(), true);
+
+  // User clicks save, selected password is saved.
+  PasswordForm saved_result;
+  EXPECT_CALL(MockFormSaver::Get(form_manager()), Save(_, IsEmpty(), nullptr))
+      .WillOnce(SaveArg<0>(&saved_result));
+  form_manager()->Save();
+  EXPECT_EQ(ASCIIToUTF16("username"), saved_result.username_value);
+  EXPECT_EQ(ASCIIToUTF16("newpassword"), saved_result.password_value);
+}
+
 // Test that if WipeStoreCopyIfOutdated is called before password store
 // callback, the UMA is signalled accordingly.
 TEST_F(PasswordFormManagerTest, WipeStoreCopyIfOutdated_BeforeStoreCallback) {
