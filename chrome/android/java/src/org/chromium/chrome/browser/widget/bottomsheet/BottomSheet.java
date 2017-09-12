@@ -1019,7 +1019,8 @@ public class BottomSheet
         // doesn't appear to show a hole in the toolbar.
         int colorId = content.isIncognitoThemedContent() ? R.color.incognito_primary_color
                                                          : R.color.modern_primary_color;
-        if (!mIsSheetOpen) {
+        if (!mIsSheetOpen || content.isIncognitoThemedContent()
+                || (mSheetContent != null && mSheetContent.isIncognitoThemedContent())) {
             // If the sheet is closed, the bottom sheet content container is invisible, so
             // background color is needed on the toolbar holder to prevent a blank rectangle from
             // appearing during the content transition.
