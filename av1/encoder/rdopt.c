@@ -3739,9 +3739,6 @@ static int64_t rd_pick_intra_sub_8x8_y_mode(const AV1_COMP *const cpi,
     uint8_t *src = p->src.buf;
     uint8_t *dst = pd->dst.buf;
 
-#if CONFIG_PVQ
-    use_activity_masking = mb->daala_enc.use_activity_masking;
-#endif  // CONFIG_PVQ
     // Daala-defined distortion computed for the block of 8x8 pixels
     total_distortion = av1_dist_8x8(cpi, mb, src, src_stride, dst, dst_stride,
                                     BLOCK_8X8, 8, 8, 8, 8, mb->qindex)
