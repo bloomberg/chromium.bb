@@ -236,6 +236,10 @@ bool WebRuntimeFeatures::IsOriginTrialsEnabled() {
   return RuntimeEnabledFeatures::OriginTrialsEnabled();
 }
 
+void WebRuntimeFeatures::EnableOverflowIconsForMediaControls(bool enable) {
+  RuntimeEnabledFeatures::SetOverflowIconsForMediaControlsEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnablePagePopup(bool enable) {
   RuntimeEnabledFeatures::SetPagePopupEnabled(enable);
 }
