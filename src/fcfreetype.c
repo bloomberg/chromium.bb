@@ -1219,14 +1219,11 @@ FcFreeTypeQueryFace (const FT_Face  face,
 	int has_outline = !!(face->face_flags & FT_FACE_FLAG_SCALABLE);
 	int has_color = 0;
 
-#ifdef FT_FACE_FLAG_COLOR
-	has_color = !!(face->face_flags & FT_FACE_FLAG_COLOR);
-#endif
-
 	if (!FcPatternAddBool (pat, FC_OUTLINE, has_outline))
 	    goto bail1;
 
 #ifdef FT_FACE_FLAG_COLOR
+	has_color = !!(face->face_flags & FT_FACE_FLAG_COLOR);
 	if (!FcPatternAddBool (pat, FC_COLOR, has_color))
 	    goto bail1;
 #endif
