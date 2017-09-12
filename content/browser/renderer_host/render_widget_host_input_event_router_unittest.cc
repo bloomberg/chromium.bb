@@ -33,12 +33,19 @@ class MockRenderWidgetHostView : public TestRenderWidgetHostView {
     last_gesture_seen_ = event.GetType();
   }
 
+  void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
+                              InputEventAckState ack_result) override {
+    unique_id_for_last_touch_ack_ = touch.event.unique_touch_event_id;
+  }
+
   blink::WebInputEvent::Type last_gesture_seen() { return last_gesture_seen_; }
+  uint32_t last_id_for_touch_ack() { return unique_id_for_last_touch_ack_; }
 
   void Reset() { last_gesture_seen_ = blink::WebInputEvent::kUndefined; }
 
  private:
   blink::WebInputEvent::Type last_gesture_seen_;
+  uint32_t unique_id_for_last_touch_ack_ = 0;
 };
 
 // The RenderWidgetHostInputEventRouter uses the root RWHV for hittesting, so
@@ -241,6 +248,35 @@ TEST_F(RenderWidgetHostInputEventRouterTest,
             view_other_->last_gesture_seen());
   EXPECT_NE(blink::WebInputEvent::kGestureScrollEnd,
             view_root_->last_gesture_seen());
+}
+
+// Ensure that when RenderWidgetHostInputEventRouter receives an unexpected
+// touch event, it calls the root view's method to Ack the event before
+// dropping it.
+TEST_F(RenderWidgetHostInputEventRouterTest, EnsureDroppedTouchEventsAreAcked) {
+  // Send a touch move without a touch start.
+  blink::WebTouchEvent touch_move_event(
+      blink::WebInputEvent::kTouchMove, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::kTimeStampForTesting);
+  touch_move_event.touches_length = 1;
+  touch_move_event.touches[0].state = blink::WebTouchPoint::kStatePressed;
+  touch_move_event.unique_touch_event_id = 1;
+
+  rwhier_.RouteTouchEvent(view_root_.get(), &touch_move_event,
+                          ui::LatencyInfo(ui::SourceEventType::TOUCH));
+  EXPECT_EQ(view_root_->last_id_for_touch_ack(), 1lu);
+
+  // Send a touch cancel without a touch start.
+  blink::WebTouchEvent touch_cancel_event(
+      blink::WebInputEvent::kTouchCancel, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::kTimeStampForTesting);
+  touch_cancel_event.touches_length = 1;
+  touch_cancel_event.touches[0].state = blink::WebTouchPoint::kStateCancelled;
+  touch_cancel_event.unique_touch_event_id = 2;
+
+  rwhier_.RouteTouchEvent(view_root_.get(), &touch_cancel_event,
+                          ui::LatencyInfo(ui::SourceEventType::TOUCH));
+  EXPECT_EQ(view_root_->last_id_for_touch_ack(), 2lu);
 }
 
 }  // namespace content
