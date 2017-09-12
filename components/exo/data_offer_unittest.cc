@@ -25,7 +25,7 @@ using DataOfferTest = test::ExoTestBase;
 
 class TestDataOfferDelegate : public DataOfferDelegate {
  public:
-  TestDataOfferDelegate() : dnd_action_(DndAction::kNone) {}
+  TestDataOfferDelegate() {}
 
   // Called at the top of the data device's destructor, to give observers a
   // chance to remove themselves.
@@ -54,7 +54,7 @@ class TestDataOfferDelegate : public DataOfferDelegate {
  private:
   std::vector<std::string> mime_types_;
   base::flat_set<DndAction> source_actions_;
-  DndAction dnd_action_;
+  DndAction dnd_action_ = DndAction::kNone;
 
   DISALLOW_COPY_AND_ASSIGN(TestDataOfferDelegate);
 };
