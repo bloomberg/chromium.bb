@@ -278,11 +278,13 @@ void InputHandlerProxy::HandleInputEventWithLatencyInfo(
         gesture_event.GetType() == blink::WebGestureEvent::kGestureScrollEnd;
     if (is_from_set_non_blocking_touch || is_scroll_end_from_wheel ||
         synchronous_input_handler_) {
-      // Gesture events was already delayed by blocking events in rAF aligned
+      // 1. Gesture events was already delayed by blocking events in rAF aligned
       // queue. We want to avoid additional one frame delay by flushing the
       // VSync queue immediately.
       // The first GSU latency was tracked by:
       // |smoothness.tough_scrolling_cases:first_gesture_scroll_update_latency|.
+      // 2. |synchronous_input_handler_| is WebView only. WebView has different
+      // mechanisms and we want to forward all events immediately.
       compositor_event_queue_->Queue(std::move(event_with_callback),
                                      tick_clock_->NowTicks());
       DispatchQueuedInputEvents();

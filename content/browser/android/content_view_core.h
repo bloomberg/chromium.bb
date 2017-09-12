@@ -214,6 +214,10 @@ class ContentViewCore : public WebContentsObserver {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
+  jboolean UsingSynchronousCompositing(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+
   // --------------------------------------------------------------------------
   // Public methods that call to Java via JNI
   // --------------------------------------------------------------------------
