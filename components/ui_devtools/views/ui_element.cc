@@ -56,9 +56,12 @@ void UIElement::RemoveChild(UIElement* child) {
 }
 
 void UIElement::ReorderChild(UIElement* child, int new_index) {
-  // Remove |child| out of vector |children_|.
   auto iter = std::find(children_.begin(), children_.end(), child);
   DCHECK(iter != children_.end());
+
+  // Don't re-order if the new position is the same as the old position.
+  if (std::distance(children_.begin(), iter) == new_index)
+    return;
   children_.erase(iter);
 
   // Move child to new position |new_index| in vector |children_|.

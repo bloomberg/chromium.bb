@@ -815,6 +815,13 @@ TEST_F(UIDevToolsTest, ViewRearranged) {
                          child_view_node_1->getNodeId());
   ExpectChildNodeInserted(parent_view_node->getNodeId(), 0);
 
+  // Reorder child_view_1 to the same index 0 shouldn't perform reroder work, so
+  // we still expect 1 remove and 1 insert protocol notification messages.
+  parent_view->ReorderChildView(child_view_1, 0);
+  ExpectChildNodeRemoved(parent_view_node->getNodeId(),
+                         child_view_node_1->getNodeId());
+  ExpectChildNodeInserted(parent_view_node->getNodeId(), 0);
+
   target_view->AddChildView(child_view);
   ExpectChildNodeRemoved(parent_view_node->getNodeId(),
                          child_view_node->getNodeId());
