@@ -45,7 +45,9 @@ import os
 import posixpath
 import sys
 
-from utilities import get_file_contents, read_file_to_list, write_file, get_interface_extended_attributes_from_idl
+from utilities import (get_file_contents, get_first_interface_name_from_idl,
+                       read_file_to_list, write_file,
+                       get_interface_extended_attributes_from_idl)
 
 EXPORTED_EXTENDED_ATTRIBUTES = (
     'ImplementedAs',
@@ -73,17 +75,19 @@ def parse_options():
 
 def write_event_interfaces_file(event_idl_files, destination_filename, suffix):
     def interface_line(full_path):
-        relative_path_local, _ = os.path.splitext(os.path.relpath(full_path, source_dir))
-        relative_path_posix = relative_path_local.replace(os.sep, posixpath.sep)
+        relative_dir_local = os.path.dirname(os.path.relpath(full_path, source_dir))
+        relative_dir_posix = relative_dir_local.replace(os.sep, posixpath.sep)
 
         idl_file_contents = get_file_contents(full_path)
+        interface_name = get_first_interface_name_from_idl(idl_file_contents)
         extended_attributes = get_interface_extended_attributes_from_idl(idl_file_contents)
         extended_attributes_list = [
             (name, extended_attributes[name])
             for name in EXPORTED_EXTENDED_ATTRIBUTES
             if name in extended_attributes]
 
-        return (relative_path_posix, extended_attributes_list)
+        return (posixpath.join(relative_dir_posix, interface_name),
+                extended_attributes_list)
 
     lines = [
         '{',

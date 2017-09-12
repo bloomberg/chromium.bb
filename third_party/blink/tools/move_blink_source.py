@@ -85,9 +85,9 @@ class MoveBlinkSource(object):
         # bindings/scripts/*.py
 
         # Content update for individual files
-        self._update_single_file_content('third_party/WebKit/Source/bindings/scripts/scripts.gni',
-                                         [('bindings_generate_snake_case_files = false',
-                                           'bindings_generate_snake_case_files = true')])
+        self._update_single_file_content('third_party/WebKit/Source/config.gni',
+                                         [('snake_case_source_files = false',
+                                           'snake_case_source_files = true')])
 
         self._move_files(file_pairs)
 
