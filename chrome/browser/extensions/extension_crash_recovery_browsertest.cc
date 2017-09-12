@@ -40,14 +40,6 @@ using content::WebContents;
 using extensions::Extension;
 using extensions::ExtensionRegistry;
 
-// Tests are timing out waiting for extension to crash.
-// http://crbug.com/174705
-#if defined(OS_MACOSX) || defined(USE_AURA) || defined(OS_LINUX)
-#define MAYBE_ExtensionCrashRecoveryTest DISABLED_ExtensionCrashRecoveryTest
-#else
-#define MAYBE_ExtensionCrashRecoveryTest ExtensionCrashRecoveryTest
-#endif  // defined(OS_MACOSX) || defined(USE_AURA) || defined(OS_LINUX)
-
 class ExtensionCrashRecoveryTestBase : public ExtensionBrowserTest {
  protected:
   virtual void AcceptNotification(size_t index) = 0;
@@ -134,7 +126,7 @@ class ExtensionCrashRecoveryTestBase : public ExtensionBrowserTest {
   std::string second_extension_id_;
 };
 
-class MAYBE_ExtensionCrashRecoveryTest : public ExtensionCrashRecoveryTestBase {
+class ExtensionCrashRecoveryTest : public ExtensionCrashRecoveryTestBase {
  protected:
   void AcceptNotification(size_t index) override {
     message_center::MessageCenter* message_center =
@@ -170,8 +162,7 @@ class MAYBE_ExtensionCrashRecoveryTest : public ExtensionCrashRecoveryTestBase {
   }
 };
 
-// Flaky: http://crbug.com/242167.
-IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest, DISABLED_Basic) {
+IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, Basic) {
   const size_t count_before = GetEnabledExtensionCount();
   const size_t crash_count_before = GetTerminatedExtensionCount();
   LoadTestExtension();
@@ -186,8 +177,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest, DISABLED_Basic) {
 }
 
 // Flaky, http://crbug.com/241191.
-IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
-                       DISABLED_CloseAndReload) {
+IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, DISABLED_CloseAndReload) {
   const size_t count_before = GetEnabledExtensionCount();
   const size_t crash_count_before = GetTerminatedExtensionCount();
   LoadTestExtension();
@@ -204,14 +194,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
   ASSERT_EQ(crash_count_before, GetTerminatedExtensionCount());
 }
 
-// Test is timing out on Windows http://crbug.com/174705.
-#if defined(OS_WIN)
-#define MAYBE_ReloadIndependently DISABLED_ReloadIndependently
-#else
-#define MAYBE_ReloadIndependently ReloadIndependently
-#endif  // defined(OS_WIN)
-IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
-                       MAYBE_ReloadIndependently) {
+IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, ReloadIndependently) {
   const size_t count_before = GetEnabledExtensionCount();
   LoadTestExtension();
   CrashExtension(first_extension_id_);
@@ -231,15 +214,8 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
   ASSERT_EQ(0U, CountBalloons());
 }
 
-// Test is timing out on Windows http://crbug.com/174705.
-#if defined(OS_WIN)
-#define MAYBE_ReloadIndependentlyChangeTabs DISABLED_ReloadIndependentlyChangeTabs
-#else
-#define MAYBE_ReloadIndependentlyChangeTabs ReloadIndependentlyChangeTabs
-#endif  // defined(OS_WIN)
-
-IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
-                       MAYBE_ReloadIndependentlyChangeTabs) {
+IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
+                       ReloadIndependentlyChangeTabs) {
   const size_t count_before = GetEnabledExtensionCount();
   LoadTestExtension();
   CrashExtension(first_extension_id_);
@@ -268,8 +244,8 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
   ASSERT_EQ(0U, CountBalloons());
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
-                       DISABLED_ReloadIndependentlyNavigatePage) {
+IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
+                       ReloadIndependentlyNavigatePage) {
   const size_t count_before = GetEnabledExtensionCount();
   LoadTestExtension();
   CrashExtension(first_extension_id_);
@@ -297,28 +273,14 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
   ASSERT_EQ(0U, CountBalloons());
 }
 
-// Make sure that when we don't do anything about the crashed extension
-// and close the browser, it doesn't crash. The browser is closed implicitly
-// at the end of each browser test.
-//
-// http://crbug.com/84719
-#if defined(OS_LINUX)
-#define MAYBE_ShutdownWhileCrashed DISABLED_ShutdownWhileCrashed
-#else
-#define MAYBE_ShutdownWhileCrashed ShutdownWhileCrashed
-#endif  // defined(OS_LINUX)
-
-IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
-                       MAYBE_ShutdownWhileCrashed) {
+IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, ShutdownWhileCrashed) {
   const size_t count_before = GetEnabledExtensionCount();
   LoadTestExtension();
   CrashExtension(first_extension_id_);
   ASSERT_EQ(count_before, GetEnabledExtensionCount());
 }
 
-// Flaky, http://crbug.com/241245.
-IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
-                       DISABLED_TwoExtensionsCrashFirst) {
+IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, TwoExtensionsCrashFirst) {
   const size_t count_before = GetEnabledExtensionCount();
   LoadTestExtension();
   LoadSecondExtension();
@@ -331,9 +293,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
   CheckExtensionConsistency(second_extension_id_);
 }
 
-// Flaky: http://crbug.com/242196
-IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
-                       DISABLED_TwoExtensionsCrashSecond) {
+IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, TwoExtensionsCrashSecond) {
   const size_t count_before = GetEnabledExtensionCount();
   LoadTestExtension();
   LoadSecondExtension();
@@ -346,7 +306,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
   CheckExtensionConsistency(second_extension_id_);
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
+IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
                        TwoExtensionsCrashBothAtOnce) {
   const size_t count_before = GetEnabledExtensionCount();
   const size_t crash_count_before = GetTerminatedExtensionCount();
@@ -373,8 +333,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
-                       TwoExtensionsOneByOne) {
+IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, TwoExtensionsOneByOne) {
   const size_t count_before = GetEnabledExtensionCount();
   LoadTestExtension();
   CrashExtension(first_extension_id_);
@@ -397,20 +356,11 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
   }
 }
 
-// http://crbug.com/84719
-#if defined(OS_LINUX)
-#define MAYBE_TwoExtensionsShutdownWhileCrashed \
-    DISABLED_TwoExtensionsShutdownWhileCrashed
-#else
-#define MAYBE_TwoExtensionsShutdownWhileCrashed \
-    TwoExtensionsShutdownWhileCrashed
-#endif  // defined(OS_LINUX)
-
 // Make sure that when we don't do anything about the crashed extensions
 // and close the browser, it doesn't crash. The browser is closed implicitly
 // at the end of each browser test.
-IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
-                       MAYBE_TwoExtensionsShutdownWhileCrashed) {
+IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
+                       TwoExtensionsShutdownWhileCrashed) {
   const size_t count_before = GetEnabledExtensionCount();
   LoadTestExtension();
   CrashExtension(first_extension_id_);
@@ -421,7 +371,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
 }
 
 // Flaky, http://crbug.com/241573.
-IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
+IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
                        DISABLED_TwoExtensionsIgnoreFirst) {
   const size_t count_before = GetEnabledExtensionCount();
   LoadTestExtension();
@@ -442,9 +392,8 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
   CheckExtensionConsistency(second_extension_id_);
 }
 
-// Flaky, http://crbug.com/241164.
-IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
-                       DISABLED_TwoExtensionsReloadIndependently) {
+IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
+                       TwoExtensionsReloadIndependently) {
   const size_t count_before = GetEnabledExtensionCount();
   LoadTestExtension();
   LoadSecondExtension();
@@ -474,14 +423,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
   }
 }
 
-// http://crbug.com/243648
-#if defined(OS_WIN)
-#define MAYBE_CrashAndUninstall DISABLED_CrashAndUninstall
-#else
-#define MAYBE_CrashAndUninstall CrashAndUninstall
-#endif
-IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
-                       MAYBE_CrashAndUninstall) {
+IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, CrashAndUninstall) {
   const size_t count_before = GetEnabledExtensionCount();
   const size_t crash_count_before = GetTerminatedExtensionCount();
   LoadTestExtension();
@@ -500,15 +442,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
   ASSERT_EQ(0U, CountBalloons());
 }
 
-// http://crbug.com/84719
-#if defined(OS_LINUX)
-#define MAYBE_CrashAndUnloadAll DISABLED_CrashAndUnloadAll
-#else
-#define MAYBE_CrashAndUnloadAll CrashAndUnloadAll
-#endif  // defined(OS_LINUX)
-
-IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
-                       MAYBE_CrashAndUnloadAll) {
+IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, CrashAndUnloadAll) {
   const size_t count_before = GetEnabledExtensionCount();
   const size_t crash_count_before = GetTerminatedExtensionCount();
   LoadTestExtension();
@@ -521,19 +455,11 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
   ASSERT_EQ(crash_count_before, GetTerminatedExtensionCount());
 }
 
-// Fails a DCHECK on Aura and Linux: http://crbug.com/169622
-// Failing on Windows: http://crbug.com/232340
-#if defined(USE_AURA)
-#define MAYBE_ReloadTabsWithBackgroundPage DISABLED_ReloadTabsWithBackgroundPage
-#else
-#define MAYBE_ReloadTabsWithBackgroundPage ReloadTabsWithBackgroundPage
-#endif
-
 // Test that when an extension with a background page that has a tab open
 // crashes, the tab stays open, and reloading it reloads the extension.
-// Regression test for issue 71629.
-IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
-                       MAYBE_ReloadTabsWithBackgroundPage) {
+// Regression test for issue 71629 and 763808.
+IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
+                       ReloadTabsWithBackgroundPage) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
   const size_t count_before = GetEnabledExtensionCount();
   const size_t crash_count_before = GetTerminatedExtensionCount();
