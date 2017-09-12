@@ -66,12 +66,12 @@ class ResourceFetcherImpl::ClientImpl : public mojom::URLLoaderClient {
   void Start(const ResourceRequest& request,
              mojom::URLLoaderFactory* url_loader_factory,
              const net::NetworkTrafficAnnotationTag& annotation_tag,
-             base::SingleThreadTaskRunner* task_runner) {
+             scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
     status_ = Status::kStarted;
     response_.SetURL(request.url);
 
     mojom::URLLoaderClientPtr client;
-    client_binding_.Bind(mojo::MakeRequest(&client), task_runner);
+    client_binding_.Bind(mojo::MakeRequest(&client), std::move(task_runner));
 
     url_loader_factory->CreateLoaderAndStart(
         mojo::MakeRequest(&loader_), kRoutingId,

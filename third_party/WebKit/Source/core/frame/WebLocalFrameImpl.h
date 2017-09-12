@@ -312,9 +312,9 @@ class CORE_EXPORT WebLocalFrameImpl final
   void ClearActiveFindMatch() override;
   void UsageCountChromeLoadTimes(const WebString& metric) override;
   WebFrameScheduler* Scheduler() const override;
-  SingleThreadTaskRunner* TimerTaskRunner() override;
-  SingleThreadTaskRunner* LoadingTaskRunner() override;
-  SingleThreadTaskRunner* UnthrottledTaskRunner() override;
+  SingleThreadTaskRunnerRefPtr TimerTaskRunner() override;
+  SingleThreadTaskRunnerRefPtr LoadingTaskRunner() override;
+  SingleThreadTaskRunnerRefPtr UnthrottledTaskRunner() override;
   WebInputMethodController* GetInputMethodController() override;
 
   void ExtractSmartClipData(WebRect rect_in_viewport,
@@ -430,7 +430,7 @@ class CORE_EXPORT WebLocalFrameImpl final
 
   std::unique_ptr<WebURLLoader> CreateURLLoader(
       const WebURLRequest&,
-      SingleThreadTaskRunner*) override;
+      SingleThreadTaskRunnerRefPtr) override;
 
   WebFrameWidgetBase* LocalRootFrameWidget();
 

@@ -208,7 +208,7 @@ blink::WebThemeEngine* PpapiBlinkPlatformImpl::ThemeEngine() {
 
 std::unique_ptr<blink::WebURLLoader> PpapiBlinkPlatformImpl::CreateURLLoader(
     const blink::WebURLRequest& request,
-    base::SingleThreadTaskRunner* task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   NOTREACHED();
   return NULL;
 }

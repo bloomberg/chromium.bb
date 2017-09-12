@@ -13,6 +13,7 @@
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
+#include "public/platform/scheduler/single_thread_task_runner.h"
 
 namespace blink {
 namespace scheduler {
@@ -47,7 +48,7 @@ class BLINK_PLATFORM_EXPORT WebThreadBase : public WebThread {
 
   // Returns the base::Bind-compatible task runner for posting tasks to this
   // thread. Can be called from any thread.
-  virtual base::SingleThreadTaskRunner* GetTaskRunner() const = 0;
+  virtual SingleThreadTaskRunnerRefPtr GetTaskRunner() const = 0;
 
   // Returns the base::Bind-compatible task runner for posting idle tasks to
   // this thread. Can be called from any thread.

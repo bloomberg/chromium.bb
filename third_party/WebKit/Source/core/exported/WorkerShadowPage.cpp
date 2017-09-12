@@ -88,7 +88,7 @@ service_manager::InterfaceProvider* WorkerShadowPage::GetInterfaceProvider() {
 
 std::unique_ptr<blink::WebURLLoader> WorkerShadowPage::CreateURLLoader(
     const WebURLRequest& request,
-    SingleThreadTaskRunner* task_runner) {
+    SingleThreadTaskRunnerRefPtr task_runner) {
   DCHECK(IsMainThread());
   // TODO(yhirano): Stop using Platform::CreateURLLoader() here.
   return Platform::Current()->CreateURLLoader(request, task_runner);

@@ -26,12 +26,9 @@
 #define WebThread_h
 
 #include "WebCommon.h"
+#include "public/platform/scheduler/single_thread_task_runner.h"
 
 #include <stdint.h>
-
-namespace base {
-class SingleThreadTaskRunner;
-}
 
 namespace blink {
 namespace scheduler {
@@ -72,7 +69,7 @@ class BLINK_PLATFORM_EXPORT WebThread {
   // manage task priorities and should not be used.
   // Use TaskRunnerHelper::Get instead (crbug.com/624696).
   virtual WebTaskRunner* GetWebTaskRunner() { return nullptr; }
-  base::SingleThreadTaskRunner* GetSingleThreadTaskRunner();
+  SingleThreadTaskRunnerRefPtr GetSingleThreadTaskRunner();
 
   virtual bool IsCurrentThread() const = 0;
   virtual PlatformThreadId ThreadId() const { return 0; }

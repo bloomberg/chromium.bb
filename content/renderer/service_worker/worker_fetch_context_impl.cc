@@ -28,12 +28,12 @@ WorkerFetchContextImpl::WorkerFetchContextImpl(
 WorkerFetchContextImpl::~WorkerFetchContextImpl() {}
 
 void WorkerFetchContextImpl::InitializeOnWorkerThread(
-    base::SingleThreadTaskRunner* loading_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner) {
   DCHECK(loading_task_runner->RunsTasksInCurrentSequence());
   DCHECK(!resource_dispatcher_);
   DCHECK(!binding_.is_bound());
-  resource_dispatcher_ =
-      base::MakeUnique<ResourceDispatcher>(nullptr, loading_task_runner);
+  resource_dispatcher_ = base::MakeUnique<ResourceDispatcher>(
+      nullptr, std::move(loading_task_runner));
 
   url_loader_factory_getter_ = url_loader_factory_getter_info_.Bind();
 
@@ -43,14 +43,14 @@ void WorkerFetchContextImpl::InitializeOnWorkerThread(
 
 std::unique_ptr<blink::WebURLLoader> WorkerFetchContextImpl::CreateURLLoader(
     const blink::WebURLRequest& request,
-    base::SingleThreadTaskRunner* task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   if (request.Url().ProtocolIs(url::kBlobScheme)) {
     return base::MakeUnique<content::WebURLLoaderImpl>(
-        resource_dispatcher_.get(), task_runner,
+        resource_dispatcher_.get(), std::move(task_runner),
         url_loader_factory_getter_->GetBlobLoaderFactory());
   }
   return base::MakeUnique<content::WebURLLoaderImpl>(
-      resource_dispatcher_.get(), task_runner,
+      resource_dispatcher_.get(), std::move(task_runner),
       url_loader_factory_getter_->GetNetworkLoaderFactory());
 }
 

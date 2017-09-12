@@ -104,9 +104,9 @@ blink::WebScheduler* WebThreadImplForWorkerScheduler::Scheduler() const {
   return web_scheduler_.get();
 }
 
-base::SingleThreadTaskRunner* WebThreadImplForWorkerScheduler::GetTaskRunner()
-    const {
-  return task_queue_.get();
+scoped_refptr<base::SingleThreadTaskRunner>
+WebThreadImplForWorkerScheduler::GetTaskRunner() const {
+  return task_queue_;
 }
 
 SingleThreadIdleTaskRunner* WebThreadImplForWorkerScheduler::GetIdleTaskRunner()

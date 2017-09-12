@@ -2339,8 +2339,8 @@ WebFrameWidgetBase* WebLocalFrameImpl::FrameWidget() const {
 
 std::unique_ptr<WebURLLoader> WebLocalFrameImpl::CreateURLLoader(
     const WebURLRequest& request,
-    SingleThreadTaskRunner* task_runner) {
-  return client_->CreateURLLoader(request, task_runner);
+    SingleThreadTaskRunnerRefPtr task_runner) {
+  return client_->CreateURLLoader(request, std::move(task_runner));
 }
 
 void WebLocalFrameImpl::CopyImageAt(const WebPoint& pos_in_viewport) {
@@ -2434,21 +2434,21 @@ WebFrameScheduler* WebLocalFrameImpl::Scheduler() const {
   return GetFrame()->FrameScheduler();
 }
 
-SingleThreadTaskRunner* WebLocalFrameImpl::TimerTaskRunner() {
+SingleThreadTaskRunnerRefPtr WebLocalFrameImpl::TimerTaskRunner() {
   return GetFrame()
       ->FrameScheduler()
       ->ThrottleableTaskRunner()
       ->ToSingleThreadTaskRunner();
 }
 
-SingleThreadTaskRunner* WebLocalFrameImpl::LoadingTaskRunner() {
+SingleThreadTaskRunnerRefPtr WebLocalFrameImpl::LoadingTaskRunner() {
   return GetFrame()
       ->FrameScheduler()
       ->LoadingTaskRunner()
       ->ToSingleThreadTaskRunner();
 }
 
-SingleThreadTaskRunner* WebLocalFrameImpl::UnthrottledTaskRunner() {
+SingleThreadTaskRunnerRefPtr WebLocalFrameImpl::UnthrottledTaskRunner() {
   return GetFrame()
       ->FrameScheduler()
       ->PausableTaskRunner()

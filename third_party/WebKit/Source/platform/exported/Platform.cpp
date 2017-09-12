@@ -180,7 +180,7 @@ WebTaskRunner* Platform::FileTaskRunner() const {
   return file_thread_ ? file_thread_->GetWebTaskRunner() : nullptr;
 }
 
-base::TaskRunner* Platform::BaseFileTaskRunner() const {
+SingleThreadTaskRunnerRefPtr Platform::BaseFileTaskRunner() const {
   return file_thread_ ? file_thread_->GetSingleThreadTaskRunner() : nullptr;
 }
 

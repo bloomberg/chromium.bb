@@ -473,9 +473,10 @@ class CONTENT_EXPORT RenderFrameImpl
   bool IsPasting() const override;
   blink::WebPageVisibilityState GetVisibilityState() const override;
   bool IsBrowserSideNavigationPending() override;
-  base::SingleThreadTaskRunner* GetTimerTaskRunner() override;
-  base::SingleThreadTaskRunner* GetLoadingTaskRunner() override;
-  base::SingleThreadTaskRunner* GetUnthrottledTaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetTimerTaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetLoadingTaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetUnthrottledTaskRunner()
+      override;
   int GetEnabledBindings() const override;
   // Returns non-null.
   // It is invalid to call this in an incomplete env where
@@ -692,7 +693,7 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::WebPageVisibilityState VisibilityState() const override;
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
       const blink::WebURLRequest& request,
-      base::SingleThreadTaskRunner* task_runner) override;
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   void DraggableRegionsChanged() override;
 
   // WebFrameSerializerClient implementation:

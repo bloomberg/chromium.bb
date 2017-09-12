@@ -127,7 +127,7 @@ blink::WebNavigationPolicy TestRenderFrame::DecidePolicyForNavigation(
 
 std::unique_ptr<blink::WebURLLoader> TestRenderFrame::CreateURLLoader(
     const blink::WebURLRequest& request,
-    base::SingleThreadTaskRunner* task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   return base::MakeUnique<WebURLLoaderImpl>(
       nullptr, base::ThreadTaskRunnerHandle::Get(), nullptr);
 }
