@@ -767,54 +767,53 @@ Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
       page->GetSettings().SetDefaultFixedFontSize(
           default_settings.GetDefaultFixedFontSize());
     }
-    }
+  }
 
-    LocalFrame* frame = nullptr;
-    {
-      TRACE_EVENT0("blink", "SVGImage::dataChanged::createFrame");
-      DCHECK(!frame_client_);
-      frame_client_ = new SVGImageLocalFrameClient(this);
-      frame = LocalFrame::Create(frame_client_, *page, 0);
-      frame->SetView(LocalFrameView::Create(*frame));
-      frame->Init();
-    }
+  LocalFrame* frame = nullptr;
+  {
+    TRACE_EVENT0("blink", "SVGImage::dataChanged::createFrame");
+    DCHECK(!frame_client_);
+    frame_client_ = new SVGImageLocalFrameClient(this);
+    frame = LocalFrame::Create(frame_client_, *page, 0);
+    frame->SetView(LocalFrameView::Create(*frame));
+    frame->Init();
+  }
 
-    FrameLoader& loader = frame->Loader();
-    loader.ForceSandboxFlags(kSandboxAll);
+  FrameLoader& loader = frame->Loader();
+  loader.ForceSandboxFlags(kSandboxAll);
 
-    frame->View()->SetScrollbarsSuppressed(true);
-    // SVG Images will always synthesize a viewBox, if it's not available, and
-    // thus never see scrollbars.
-    frame->View()->SetCanHaveScrollbars(false);
-    // SVG Images are transparent.
-    frame->View()->SetBaseBackgroundColor(Color::kTransparent);
+  frame->View()->SetScrollbarsSuppressed(true);
+  // SVG Images will always synthesize a viewBox, if it's not available, and
+  // thus never see scrollbars.
+  frame->View()->SetCanHaveScrollbars(false);
+  // SVG Images are transparent.
+  frame->View()->SetBaseBackgroundColor(Color::kTransparent);
 
-    page_ = page;
+  page_ = page;
 
-    TRACE_EVENT0("blink", "SVGImage::dataChanged::load");
-    loader.Load(
-        FrameLoadRequest(0, ResourceRequest(BlankURL()),
-                         SubstituteData(Data(), AtomicString("image/svg+xml"),
-                                        AtomicString("UTF-8"), NullURL(),
-                                        kForceSynchronousLoad)));
+  TRACE_EVENT0("blink", "SVGImage::dataChanged::load");
+  loader.Load(FrameLoadRequest(
+      0, ResourceRequest(BlankURL()),
+      SubstituteData(Data(), AtomicString("image/svg+xml"),
+                     AtomicString("UTF-8"), NullURL(), kForceSynchronousLoad)));
 
-    // Set the concrete object size before a container size is available.
-    intrinsic_size_ = RoundedIntSize(ConcreteObjectSize(FloatSize(
-        LayoutReplaced::kDefaultWidth, LayoutReplaced::kDefaultHeight)));
+  // Set the concrete object size before a container size is available.
+  intrinsic_size_ = RoundedIntSize(ConcreteObjectSize(FloatSize(
+      LayoutReplaced::kDefaultWidth, LayoutReplaced::kDefaultHeight)));
 
-    DCHECK(page_);
-    switch (load_state_) {
-      case kInDataChanged:
-        load_state_ = kWaitingForAsyncLoadCompletion;
-        return kSizeAvailableAndLoadingAsynchronously;
+  DCHECK(page_);
+  switch (load_state_) {
+    case kInDataChanged:
+      load_state_ = kWaitingForAsyncLoadCompletion;
+      return kSizeAvailableAndLoadingAsynchronously;
 
-      case kLoadCompleted:
-        return kSizeAvailable;
+    case kLoadCompleted:
+      return kSizeAvailable;
 
-      case kDataChangedNotStarted:
-      case kWaitingForAsyncLoadCompletion:
-        CHECK(false);
-        break;
+    case kDataChangedNotStarted:
+    case kWaitingForAsyncLoadCompletion:
+      CHECK(false);
+      break;
   }
 
   NOTREACHED();
