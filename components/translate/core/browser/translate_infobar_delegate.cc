@@ -47,7 +47,7 @@ const int kNeverTranslateMinCount = 3;
 }  // namespace
 
 const base::Feature kTranslateCompactUI{"TranslateCompactUI",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 const size_t TranslateInfoBarDelegate::kNoIndex = TranslateUIDelegate::kNoIndex;
 
