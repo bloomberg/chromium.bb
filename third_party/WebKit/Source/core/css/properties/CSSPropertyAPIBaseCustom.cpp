@@ -33,14 +33,7 @@ const CSSValue* CSSPropertyAPI::ParseSingleValue(
     const CSSParserLocalContext& local_context) const {
   // This is the legacy ParseSingleValue code.
   // TODO(bugsnash): Move all of this to individual CSSPropertyAPI subclasses.
-  switch (property) {
-    case CSSPropertyTextDecoration:
-      DCHECK(!RuntimeEnabledFeatures::CSS3TextDecorationsEnabled());
-      return CSSPropertyTextDecorationLineUtils::ConsumeTextDecorationLine(
-          range);
-    default:
-      return nullptr;
-  }
+  return nullptr;
 }
 
 bool CSSPropertyAPI::ParseShorthand(

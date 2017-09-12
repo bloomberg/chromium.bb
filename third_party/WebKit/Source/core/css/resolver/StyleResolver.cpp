@@ -1297,7 +1297,6 @@ static inline bool IsValidCueStyleProperty(CSSPropertyID id) {
     case CSSPropertyTextDecorationStyle:
     case CSSPropertyTextDecorationColor:
     case CSSPropertyTextDecorationSkip:
-      DCHECK(RuntimeEnabledFeatures::CSS3TextDecorationsEnabled());
       return true;
     case CSSPropertyFontVariationSettings:
       DCHECK(RuntimeEnabledFeatures::CSSVariableFontsEnabled());
@@ -1408,14 +1407,10 @@ static inline bool IsValidFirstLetterStyleProperty(CSSPropertyID id) {
     case CSSPropertyFontVariationSettings:
       DCHECK(RuntimeEnabledFeatures::CSSVariableFontsEnabled());
       return true;
-    case CSSPropertyTextDecoration:
-      DCHECK(!RuntimeEnabledFeatures::CSS3TextDecorationsEnabled());
-      return true;
     case CSSPropertyTextDecorationColor:
     case CSSPropertyTextDecorationLine:
     case CSSPropertyTextDecorationStyle:
     case CSSPropertyTextDecorationSkip:
-      DCHECK(RuntimeEnabledFeatures::CSS3TextDecorationsEnabled());
       return true;
 
     // text-shadow added in text decoration spec:

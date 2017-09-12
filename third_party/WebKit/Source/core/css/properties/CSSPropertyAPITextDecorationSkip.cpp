@@ -16,7 +16,6 @@ const CSSValue* CSSPropertyAPITextDecorationSkip::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  DCHECK(RuntimeEnabledFeatures::CSS3TextDecorationsEnabled());
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   while (true) {
     CSSIdentifierValue* ident =

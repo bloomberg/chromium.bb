@@ -59,9 +59,6 @@ const StylePropertyShorthand& shorthandForProperty(CSSPropertyID propertyID) {
   // FIXME: We shouldn't switch between shorthand/not shorthand based on a runtime flag
   static constexpr StylePropertyShorthand emptyShorthand;
 
-  if (propertyID == CSSPropertyTextDecoration &&
-      !RuntimeEnabledFeatures::CSS3TextDecorationsEnabled())
-    return emptyShorthand;
   if (propertyID == CSSPropertyOffset &&
       !RuntimeEnabledFeatures::CSSOffsetPositionAnchorEnabled())
     return offsetShorthandWithoutPositionAnchor();

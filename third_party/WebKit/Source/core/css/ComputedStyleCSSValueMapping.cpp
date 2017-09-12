@@ -2967,11 +2967,9 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
     case CSSPropertyTextAlignLast:
       return CSSIdentifierValue::Create(style.TextAlignLast());
     case CSSPropertyTextDecoration:
-      if (RuntimeEnabledFeatures::CSS3TextDecorationsEnabled())
-        return ValuesForShorthandProperty(textDecorationShorthand(), style,
-                                          layout_object, styled_node,
-                                          allow_visited_style);
-    // Fall through.
+      return ValuesForShorthandProperty(textDecorationShorthand(), style,
+                                        layout_object, styled_node,
+                                        allow_visited_style);
     case CSSPropertyTextDecorationLine:
       return RenderTextDecorationFlagsToCSSValue(style.GetTextDecoration());
     case CSSPropertyTextDecorationSkip:
