@@ -336,7 +336,7 @@ def secure_context(member, interface):
     """Returns C++ code that checks whether an interface/method/attribute/etc. is exposed
     to the current context."""
     if 'SecureContext' in member.extended_attributes or 'SecureContext' in interface.extended_attributes:
-        return "executionContext->IsSecureContext()"
+        return 'executionContext->IsSecureContext()'
     return None
 
 

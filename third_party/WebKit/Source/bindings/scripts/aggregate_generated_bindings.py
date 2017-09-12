@@ -91,7 +91,7 @@ def parse_options():
     parser.add_option('--component')
     # TODO(tkent): Remove the option after the great mv. crbug.com/760462
     parser.add_option('--snake-case-generated-files',
-                      action="store_true", default=False)
+                      action='store_true', default=False)
 
     options, args = parser.parse_args()
     if len(args) < 2:
