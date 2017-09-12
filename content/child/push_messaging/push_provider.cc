@@ -9,7 +9,6 @@
 
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_local.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/service_worker/web_service_worker_registration_impl.h"
@@ -218,7 +217,7 @@ void PushProvider::DidSubscribe(
     DCHECK(p256dh);
     DCHECK(auth);
 
-    callbacks->OnSuccess(base::MakeUnique<blink::WebPushSubscription>(
+    callbacks->OnSuccess(std::make_unique<blink::WebPushSubscription>(
         endpoint.value(), options.value().user_visible_only,
         blink::WebString::FromLatin1(options.value().sender_info),
         p256dh.value(), auth.value()));
@@ -292,7 +291,7 @@ void PushProvider::DidGetSubscription(
     DCHECK(p256dh);
     DCHECK(auth);
 
-    callbacks->OnSuccess(base::MakeUnique<blink::WebPushSubscription>(
+    callbacks->OnSuccess(std::make_unique<blink::WebPushSubscription>(
         endpoint.value(), options.value().user_visible_only,
         blink::WebString::FromLatin1(options.value().sender_info),
         p256dh.value(), auth.value()));

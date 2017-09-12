@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/barrier_closure.h"
@@ -153,7 +154,7 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
     gcm_driver_ = static_cast<instance_id::FakeGCMDriverForInstanceID*>(
         gcm_service_->driver());
 
-    notification_tester_ = base::MakeUnique<NotificationDisplayServiceTester>(
+    notification_tester_ = std::make_unique<NotificationDisplayServiceTester>(
         GetBrowser()->profile());
 
     push_service_ =

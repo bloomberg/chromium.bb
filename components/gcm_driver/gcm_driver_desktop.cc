@@ -12,7 +12,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
@@ -151,9 +150,9 @@ void GCMDriverDesktop::IOWorker::Initialize(
 
   gcm_client_ = gcm_client_factory->BuildInstance();
 
-  gcm_client_->Initialize(
-      chrome_build_info, store_path, blocking_task_runner, request_context,
-      base::WrapUnique<Encryptor>(new SystemEncryptor), this);
+  gcm_client_->Initialize(chrome_build_info, store_path, blocking_task_runner,
+                          request_context, std::make_unique<SystemEncryptor>(),
+                          this);
 }
 
 void GCMDriverDesktop::IOWorker::OnRegisterFinished(
@@ -328,7 +327,7 @@ void GCMDriverDesktop::IOWorker::Register(
     const std::vector<std::string>& sender_ids) {
   DCHECK(io_thread_->RunsTasksInCurrentSequence());
 
-  std::unique_ptr<GCMRegistrationInfo> gcm_info(new GCMRegistrationInfo);
+  auto gcm_info = std::make_unique<GCMRegistrationInfo>();
   gcm_info->app_id = app_id;
   gcm_info->sender_ids = sender_ids;
   gcm_client_->Register(make_linked_ptr<RegistrationInfo>(gcm_info.release()));
@@ -346,7 +345,7 @@ bool GCMDriverDesktop::IOWorker::ValidateRegistration(
 void GCMDriverDesktop::IOWorker::Unregister(const std::string& app_id) {
   DCHECK(io_thread_->RunsTasksInCurrentSequence());
 
-  std::unique_ptr<GCMRegistrationInfo> gcm_info(new GCMRegistrationInfo);
+  auto gcm_info = std::make_unique<GCMRegistrationInfo>();
   gcm_info->app_id = app_id;
   gcm_client_->Unregister(
       make_linked_ptr<RegistrationInfo>(gcm_info.release()));
@@ -462,8 +461,7 @@ void GCMDriverDesktop::IOWorker::GetToken(
     const std::map<std::string, std::string>& options) {
   DCHECK(io_thread_->RunsTasksInCurrentSequence());
 
-  std::unique_ptr<InstanceIDTokenInfo> instance_id_token_info(
-      new InstanceIDTokenInfo);
+  auto instance_id_token_info = std::make_unique<InstanceIDTokenInfo>();
   instance_id_token_info->app_id = app_id;
   instance_id_token_info->authorized_entity = authorized_entity;
   instance_id_token_info->scope = scope;
@@ -476,8 +474,7 @@ void GCMDriverDesktop::IOWorker::DeleteToken(
     const std::string& app_id,
     const std::string& authorized_entity,
     const std::string& scope) {
-  std::unique_ptr<InstanceIDTokenInfo> instance_id_token_info(
-      new InstanceIDTokenInfo);
+  auto instance_id_token_info = std::make_unique<InstanceIDTokenInfo>();
   instance_id_token_info->app_id = app_id;
   instance_id_token_info->authorized_entity = authorized_entity;
   instance_id_token_info->scope = scope;
@@ -491,9 +488,9 @@ void GCMDriverDesktop::IOWorker::WakeFromSuspendForHeartbeat(bool wake) {
 
   std::unique_ptr<base::Timer> timer;
   if (wake)
-    timer.reset(new timers::SimpleAlarmTimer());
+    timer = std::make_unique<timers::SimpleAlarmTimer>();
   else
-    timer.reset(new base::Timer(true, false));
+    timer = std::make_unique<base::Timer>(true, false);
 
   gcm_client_->UpdateHeartbeatTimer(std::move(timer));
 #endif
@@ -588,7 +585,7 @@ void GCMDriverDesktop::ValidateRegistration(
 
   // Only validating current state, so ignore pending register_callbacks_.
 
-  auto gcm_info = base::MakeUnique<GCMRegistrationInfo>();
+  auto gcm_info = std::make_unique<GCMRegistrationInfo>();
   gcm_info->app_id = app_id;
   gcm_info->sender_ids = sender_ids;
   // Normalize the sender IDs by making them sorted.
@@ -971,7 +968,7 @@ void GCMDriverDesktop::ValidateToken(const std::string& app_id,
 
   // Only validating current state, so ignore pending get_token_callbacks_.
 
-  auto instance_id_info = base::MakeUnique<InstanceIDTokenInfo>();
+  auto instance_id_info = std::make_unique<InstanceIDTokenInfo>();
   instance_id_info->app_id = app_id;
   instance_id_info->authorized_entity = authorized_entity;
   instance_id_info->scope = scope;

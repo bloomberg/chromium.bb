@@ -8,7 +8,6 @@
 
 #include "base/base64url.h"
 #include "base/big_endian.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "components/gcm_driver/crypto/message_payload_parser.h"
@@ -295,7 +294,7 @@ class GCMMessageCryptographerTest
   void SetUp() override {
     GCMMessageCryptographerTestBase::SetUp();
 
-    cryptographer_ = base::MakeUnique<GCMMessageCryptographer>(GetParam());
+    cryptographer_ = std::make_unique<GCMMessageCryptographer>(GetParam());
   }
 
  protected:

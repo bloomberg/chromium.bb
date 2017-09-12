@@ -12,7 +12,6 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
@@ -295,10 +294,10 @@ const size_t GCMMessageCryptographer::kSaltSize = 16;
 GCMMessageCryptographer::GCMMessageCryptographer(Version version) {
   switch (version) {
     case Version::DRAFT_03:
-      encryption_scheme_ = base::MakeUnique<WebPushEncryptionDraft03>();
+      encryption_scheme_ = std::make_unique<WebPushEncryptionDraft03>();
       return;
     case Version::DRAFT_08:
-      encryption_scheme_ = base::MakeUnique<WebPushEncryptionDraft08>();
+      encryption_scheme_ = std::make_unique<WebPushEncryptionDraft08>();
       return;
   }
 
