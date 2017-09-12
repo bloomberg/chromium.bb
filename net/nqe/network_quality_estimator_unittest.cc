@@ -195,6 +195,7 @@ TEST(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
   base::HistogramTester histogram_tester;
   // Enable requests to local host to be used for network quality estimation.
   std::map<std::string, std::string> variation_params;
+  variation_params["throughput_min_requests_in_flight"] = "1";
   TestNetworkQualityEstimator estimator(variation_params);
 
   estimator.SimulateNetworkChange(
@@ -347,6 +348,7 @@ TEST(NetworkQualityEstimatorTest, Caching) {
         NetworkChangeNotifier::ConnectionType::CONNECTION_ETHERNET}) {
     base::HistogramTester histogram_tester;
     std::map<std::string, std::string> variation_params;
+    variation_params["throughput_min_requests_in_flight"] = "1";
     TestNetworkQualityEstimator estimator(variation_params);
 
     const std::string connection_id =
@@ -465,6 +467,7 @@ TEST(NetworkQualityEstimatorTest, CachingDisabled) {
   std::map<std::string, std::string> variation_params;
   // Do not set |persistent_cache_reading_enabled| variation param.
   variation_params["persistent_cache_reading_enabled"] = "false";
+  variation_params["throughput_min_requests_in_flight"] = "1";
   TestNetworkQualityEstimator estimator(variation_params);
 
   estimator.SimulateNetworkChange(
@@ -545,7 +548,9 @@ TEST(NetworkQualityEstimatorTest, QuicObservations) {
 }
 
 TEST(NetworkQualityEstimatorTest, StoreObservations) {
-  TestNetworkQualityEstimator estimator;
+  std::map<std::string, std::string> variation_params;
+  variation_params["throughput_min_requests_in_flight"] = "1";
+  TestNetworkQualityEstimator estimator(variation_params);
 
   base::TimeDelta rtt;
   int32_t kbps;
@@ -582,7 +587,9 @@ TEST(NetworkQualityEstimatorTest, StoreObservations) {
 // throughput and RTT percentiles are checked for correctness by doing simple
 // verifications.
 TEST(NetworkQualityEstimatorTest, ComputedPercentiles) {
-  TestNetworkQualityEstimator estimator;
+  std::map<std::string, std::string> variation_params;
+  variation_params["throughput_min_requests_in_flight"] = "1";
+  TestNetworkQualityEstimator estimator(variation_params);
 
   std::vector<NetworkQualityObservationSource> disallowed_observation_sources;
   disallowed_observation_sources.push_back(
@@ -1508,6 +1515,7 @@ TEST(NetworkQualityEstimatorTest, TestExternalEstimateProviderMergeEstimates) {
       test_external_estimate_provider);
 
   std::map<std::string, std::string> variation_params;
+  variation_params["throughput_min_requests_in_flight"] = "1";
   TestNetworkQualityEstimator estimator(variation_params,
                                         std::move(external_estimate_provider));
   estimator.SimulateNetworkChange(net::NetworkChangeNotifier::CONNECTION_WIFI,
@@ -1553,6 +1561,7 @@ TEST(NetworkQualityEstimatorTest, TestExternalEstimateProviderMergeEstimates) {
 TEST(NetworkQualityEstimatorTest, TestThroughputNoRequestOverlap) {
   base::HistogramTester histogram_tester;
   std::map<std::string, std::string> variation_params;
+  variation_params["throughput_min_requests_in_flight"] = "1";
 
   static const struct {
     bool allow_small_localhost_requests;
@@ -2060,7 +2069,11 @@ TEST(NetworkQualityEstimatorTest,
 TEST(NetworkQualityEstimatorTest, TestRttThroughputObservers) {
   TestRTTObserver rtt_observer;
   TestThroughputObserver throughput_observer;
-  TestNetworkQualityEstimator estimator;
+
+  std::map<std::string, std::string> variation_params;
+  variation_params["throughput_min_requests_in_flight"] = "1";
+  TestNetworkQualityEstimator estimator(variation_params);
+
   estimator.AddRTTObserver(&rtt_observer);
   estimator.AddThroughputObserver(&throughput_observer);
 
@@ -2162,6 +2175,7 @@ TEST(NetworkQualityEstimatorTest, MAYBE_TestTCPSocketRTT) {
 
   std::map<std::string, std::string> variation_params;
   variation_params["persistent_cache_reading_enabled"] = "true";
+  variation_params["throughput_min_requests_in_flight"] = "1";
   TestNetworkQualityEstimator estimator(
       nullptr, variation_params, true, true,
       true /* add_default_platform_observations */,
