@@ -2781,6 +2781,9 @@ static void write_tokens_sb(AV1_COMP *cpi, const TileInfo *const tile,
                         subsize);
         break;
 #if CONFIG_EXT_PARTITION_TYPES
+#if CONFIG_EXT_PARTITION_TYPES_AB
+#error NC_MODE_INFO+MOTION_VAR not yet supported for new HORZ/VERT_AB partitions
+#endif
       case PARTITION_HORZ_A:
         write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
         write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col + hbs);
@@ -2902,7 +2905,10 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
 #if CONFIG_EXT_PARTITION_TYPES
   const int quarter_step = mi_size_wide[bsize] / 4;
   int i;
-#endif
+#if CONFIG_EXT_PARTITION_TYPES_AB
+  const int qbs = mi_size_wide[bsize] / 4;
+#endif  // CONFIG_EXT_PARTITION_TYPES_AB
+#endif  // CONFIG_EXT_PARTITION_TYPES
   const PARTITION_TYPE partition = get_partition(cm, mi_row, mi_col, bsize);
   const BLOCK_SIZE subsize = get_subsize(bsize, partition);
 #if CONFIG_CB4X4
@@ -2976,6 +2982,42 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
                                mi_row + hbs, mi_col + hbs, subsize);
         break;
 #if CONFIG_EXT_PARTITION_TYPES
+#if CONFIG_EXT_PARTITION_TYPES_AB
+      case PARTITION_HORZ_A:
+        write_modes_b_wrapper(cpi, tile, w, tok, tok_end, supertx_enabled,
+                              mi_row, mi_col);
+        write_modes_b_wrapper(cpi, tile, w, tok, tok_end, supertx_enabled,
+                              mi_row + qbs, mi_col);
+        write_modes_b_wrapper(cpi, tile, w, tok, tok_end, supertx_enabled,
+                              mi_row + hbs, mi_col);
+        break;
+      case PARTITION_HORZ_B:
+        write_modes_b_wrapper(cpi, tile, w, tok, tok_end, supertx_enabled,
+                              mi_row, mi_col);
+        write_modes_b_wrapper(cpi, tile, w, tok, tok_end, supertx_enabled,
+                              mi_row + hbs, mi_col);
+        if (mi_row + 3 * qbs < cm->mi_rows)
+          write_modes_b_wrapper(cpi, tile, w, tok, tok_end, supertx_enabled,
+                                mi_row + 3 * qbs, mi_col);
+        break;
+      case PARTITION_VERT_A:
+        write_modes_b_wrapper(cpi, tile, w, tok, tok_end, supertx_enabled,
+                              mi_row, mi_col);
+        write_modes_b_wrapper(cpi, tile, w, tok, tok_end, supertx_enabled,
+                              mi_row, mi_col + qbs);
+        write_modes_b_wrapper(cpi, tile, w, tok, tok_end, supertx_enabled,
+                              mi_row, mi_col + hbs);
+        break;
+      case PARTITION_VERT_B:
+        write_modes_b_wrapper(cpi, tile, w, tok, tok_end, supertx_enabled,
+                              mi_row, mi_col);
+        write_modes_b_wrapper(cpi, tile, w, tok, tok_end, supertx_enabled,
+                              mi_row, mi_col + hbs);
+        if (mi_col + 3 * qbs < cm->mi_cols)
+          write_modes_b_wrapper(cpi, tile, w, tok, tok_end, supertx_enabled,
+                                mi_row, mi_col + 3 * qbs);
+        break;
+#else
       case PARTITION_HORZ_A:
         write_modes_b_wrapper(cpi, tile, w, tok, tok_end, supertx_enabled,
                               mi_row, mi_col);
@@ -3008,6 +3050,7 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
         write_modes_b_wrapper(cpi, tile, w, tok, tok_end, supertx_enabled,
                               mi_row + hbs, mi_col + hbs);
         break;
+#endif
       case PARTITION_HORZ_4:
         for (i = 0; i < 4; ++i) {
           int this_mi_row = mi_row + i * quarter_step;
