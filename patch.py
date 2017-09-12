@@ -34,6 +34,7 @@ class FilePatchBase(object):
   def __init__(self, filename):
     assert self.__class__ is not FilePatchBase
     self.filename = self._process_filename(filename)
+    self.patchlevel = 0
     # Set when the file is copied or moved.
     self.source_filename = None
 
@@ -64,6 +65,25 @@ class FilePatchBase(object):
       raise UnsupportedPatchFormat(
           filename, 'Filename can\'t be \'%s\'.' % filename)
     return filename
+
+  def filename_after_patchlevel(self):
+    """Applies patchlevel to self.filename.
+
+    Applies patchlevel to self.filename so the resulting filename is the same as
+    the one git-apply would have used.
+    """
+    # We use self.patchlevel-1 since git-apply considers the "a/" in the diff
+    # as part of the file path.
+    return self._apply_patchlevel(self.filename, self.patchlevel-1)
+
+  def _apply_patchlevel(self, string, patchlevel=None):
+    """Apply patchlevel to a file path.
+
+    This function replaces backslashes with slashes and removes the first
+    patchlevel elements of string. patchlevel is self.patchlevel by default.
+    """
+    patchlevel = patchlevel or self.patchlevel
+    return '/'.join(string.replace('\\', '/').split('/')[patchlevel:])
 
   def set_relpath(self, relpath):
     if not relpath:
@@ -163,7 +183,6 @@ class FilePatchDiff(FilePatchBase):
     self.diff_header, self.diff_hunks = self._split_header(diff)
     self.svn_properties = svn_properties or []
     self.is_git_diff = self._is_git_diff_header(self.diff_header)
-    self.patchlevel = 0
     if self.is_git_diff:
       self._verify_git_header()
     else:
@@ -314,10 +333,6 @@ class FilePatchDiff(FilePatchBase):
       hunks[0].start_src -= 1
     return hunks
 
-  def mangle(self, string):
-    """Mangle a file path."""
-    return '/'.join(string.replace('\\', '/').split('/')[self.patchlevel:])
-
   def _verify_git_header(self):
     """Sanity checks the header.
 
@@ -346,8 +361,8 @@ class FilePatchDiff(FilePatchBase):
         continue
       if match.group(1).startswith('a/') and match.group(2).startswith('b/'):
         self.patchlevel = 1
-      old = self.mangle(match.group(1))
-      new = self.mangle(match.group(2))
+      old = self._apply_patchlevel(match.group(1))
+      new = self._apply_patchlevel(match.group(2))
 
       # The rename is about the new file so the old file can be anything.
       if new not in (self.filename_utf8, 'dev/null'):
@@ -430,7 +445,7 @@ class FilePatchDiff(FilePatchBase):
         self._fail('--- and +++ are reversed')
       if match.group(1) == '/dev/null':
         self.is_new = True
-      elif self.mangle(match.group(1)) != old:
+      elif self._apply_patchlevel(match.group(1)) != old:
         # git patches are always well formatted, do not allow random filenames.
         self._fail('Unexpected git diff: %s != %s.' % (old, match.group(1)))
       if not lines or not lines[0].startswith('+++'):
@@ -443,7 +458,7 @@ class FilePatchDiff(FilePatchBase):
         self._fail('Unexpected git diff: --- not following +++.')
       if '/dev/null' == match.group(1):
         self.is_delete = True
-      elif self.filename_utf8 != self.mangle(match.group(1)):
+      elif self.filename_utf8 != self._apply_patchlevel(match.group(1)):
         self._fail(
             'Unexpected git diff: %s != %s.' % (self.filename, match.group(1)))
       if lines:
@@ -482,7 +497,7 @@ class FilePatchDiff(FilePatchBase):
         self._fail('--- and +++ are reversed')
       if match.group(1) == '/dev/null':
         self.is_new = True
-      elif self.mangle(match.group(1)) != self.filename_utf8:
+      elif self._apply_patchlevel(match.group(1)) != self.filename_utf8:
         # guess the source filename.
         self.source_filename = match.group(1).decode('utf-8')
         self.is_new = True
@@ -496,7 +511,7 @@ class FilePatchDiff(FilePatchBase):
         self._fail('Unexpected diff: --- not following +++.')
       if match.group(1) == '/dev/null':
         self.is_delete = True
-      elif self.mangle(match.group(1)) != self.filename_utf8:
+      elif self._apply_patchlevel(match.group(1)) != self.filename_utf8:
         self._fail('Unexpected diff: %s.' % match.group(1))
       if lines:
         self._fail('Crap after +++')

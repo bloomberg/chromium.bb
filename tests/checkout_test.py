@@ -180,6 +180,23 @@ class BaseTest(fake_repos.FakeReposTestBase):
     #print fake_repos.read_tree(root)
     self.assertTree(tree, root)
 
+  def _check_delete_patchlevel(self, co):
+    """Makes sure file moves are handled correctly."""
+    co.prepare(None)
+    patchset = patch.PatchSet([
+        patch.FilePatchDelete(
+            'something/chromeos/views/DOMui_menu_widget.h', False),
+    ])
+    for p in patchset:
+      p.patchlevel = 2
+    co.apply_patch(patchset)
+    # Make sure chromeos/views/DOMui_menu_widget.h is deleted and
+    # chromeos/views/webui_menu_widget.h is correctly created.
+    root = os.path.join(self.root_dir, self.name)
+    tree = self.get_trunk(False)
+    del tree['chromeos/views/DOMui_menu_widget.h']
+    self.assertTree(tree, root)
+
 
 class GitBaseTest(BaseTest):
   def setUp(self):
@@ -317,6 +334,19 @@ class GitCheckout(GitBaseTest):
     expected = sorted(
       [
         'A\tchromeos/views/webui_menu_widget.h',
+        'D\tchromeos/views/DOMui_menu_widget.h',
+      ])
+    self.assertEquals(expected, out)
+
+  def testDeletePatchlevel(self):
+    co = self._get_co(None)
+    self._check_delete_patchlevel(co)
+    out = subprocess2.check_output(
+        ['git', 'diff', '--staged', '--name-status', '--no-renames'],
+        cwd=co.project_path)
+    out = sorted(out.splitlines())
+    expected = sorted(
+      [
         'D\tchromeos/views/DOMui_menu_widget.h',
       ])
     self.assertEquals(expected, out)
