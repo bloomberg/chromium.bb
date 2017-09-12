@@ -175,8 +175,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Checks if we have permission to access the microphone or camera. Note that
   // this does not query the user. |type| must be MEDIA_DEVICE_AUDIO_CAPTURE
   // or MEDIA_DEVICE_VIDEO_CAPTURE.
-  // TODO(guidou): use url::Origin for |security_origin|. See crbug.com/683115.
-  virtual bool CheckMediaAccessPermission(const GURL& security_origin,
+  virtual bool CheckMediaAccessPermission(const url::Origin& security_origin,
                                           MediaStreamType type);
 
   // Returns the ID of the default device for the given media device |type|.

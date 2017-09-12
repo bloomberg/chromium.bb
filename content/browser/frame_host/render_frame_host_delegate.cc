@@ -11,6 +11,7 @@
 #include "ipc/ipc_message.h"
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -50,7 +51,7 @@ void RenderFrameHostDelegate::RequestMediaAccessPermission(
 }
 
 bool RenderFrameHostDelegate::CheckMediaAccessPermission(
-    const GURL& security_origin,
+    const url::Origin& security_origin,
     MediaStreamType type) {
   LOG(ERROR) << "RenderFrameHostDelegate::CheckMediaAccessPermission: "
              << "Not supported.";

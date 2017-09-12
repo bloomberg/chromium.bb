@@ -33,8 +33,7 @@ class MockRenderFrameHostDelegate : public RenderFrameHostDelegate {
                void(const MediaStreamRequest& request,
                     const MediaResponseCallback& callback));
   MOCK_METHOD2(CheckMediaAccessPermission,
-               bool(const GURL& security_origin,
-                    MediaStreamType type));
+               bool(const url::Origin& security_origin, MediaStreamType type));
 };
 
 class MockResponseCallback {
