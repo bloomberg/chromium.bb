@@ -27,6 +27,7 @@
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "net/base/network_change_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace content {
 
@@ -163,7 +164,9 @@ class BackgroundSyncServiceImplTest : public testing::Test {
     bool called = false;
     embedded_worker_helper_->context()->RegisterServiceWorker(
         GURL(kServiceWorkerScript),
-        ServiceWorkerRegistrationOptions(GURL(kServiceWorkerPattern)), nullptr,
+        blink::mojom::ServiceWorkerRegistrationOptions(
+            GURL(kServiceWorkerPattern)),
+        nullptr,
         base::AdaptCallbackForRepeating(base::BindOnce(
             &RegisterServiceWorkerCallback, &called, &sw_registration_id_)));
     base::RunLoop().RunUntilIdle();

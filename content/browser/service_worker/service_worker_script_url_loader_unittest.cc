@@ -16,6 +16,7 @@
 #include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace content {
 
@@ -93,7 +94,7 @@ class ServiceWorkerScriptURLLoaderTest : public testing::Test {
     GURL scope("https://www.example.com/");
     GURL script_url("https://example.com/sw.js");
     registration_ = base::MakeRefCounted<ServiceWorkerRegistration>(
-        ServiceWorkerRegistrationOptions(scope), 1L,
+        blink::mojom::ServiceWorkerRegistrationOptions(scope), 1L,
         helper_->context()->AsWeakPtr());
     version_ = base::MakeRefCounted<ServiceWorkerVersion>(
         registration_.get(), script_url, 1L, helper_->context()->AsWeakPtr());

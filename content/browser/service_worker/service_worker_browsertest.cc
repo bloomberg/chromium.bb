@@ -83,6 +83,7 @@
 #include "storage/browser/blob/blob_data_snapshot.h"
 #include "storage/browser/blob/blob_reader.h"
 #include "storage/browser/blob/blob_storage_context.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace content {
 
@@ -642,7 +643,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     const GURL pattern = embedded_test_server()->GetURL("/service_worker/");
     registration_ = new ServiceWorkerRegistration(
-        ServiceWorkerRegistrationOptions(pattern),
+        blink::mojom::ServiceWorkerRegistrationOptions(pattern),
         wrapper()->context()->storage()->NewRegistrationId(),
         wrapper()->context()->AsWeakPtr());
     // Set the update check time to avoid triggering updates in the middle of

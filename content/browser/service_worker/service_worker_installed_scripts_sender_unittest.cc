@@ -16,6 +16,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace content {
 
@@ -237,7 +238,8 @@ class ServiceWorkerInstalledScriptsSenderTest : public testing::Test {
 
     pattern_ = GURL("http://www.example.com/test/");
     registration_ = base::MakeRefCounted<ServiceWorkerRegistration>(
-        ServiceWorkerRegistrationOptions(pattern_), 1L, context()->AsWeakPtr());
+        blink::mojom::ServiceWorkerRegistrationOptions(pattern_), 1L,
+        context()->AsWeakPtr());
     version_ = base::MakeRefCounted<ServiceWorkerVersion>(
         registration_.get(),
         GURL("http://www.example.com/test/service_worker.js"),

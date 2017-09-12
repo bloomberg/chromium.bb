@@ -62,6 +62,7 @@
 #include "storage/browser/blob/blob_url_request_job_factory.h"
 #include "storage/common/blob_storage/blob_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace content {
 
@@ -207,8 +208,9 @@ class ServiceWorkerURLRequestJobTest
 
     // Create a registration and service worker version.
     registration_ = new ServiceWorkerRegistration(
-        ServiceWorkerRegistrationOptions(GURL("https://example.com/")), 1L,
-        helper_->context()->AsWeakPtr());
+        blink::mojom::ServiceWorkerRegistrationOptions(
+            GURL("https://example.com/")),
+        1L, helper_->context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(
         registration_.get(), GURL("https://example.com/service_worker.js"), 1L,
         helper_->context()->AsWeakPtr());

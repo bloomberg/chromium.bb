@@ -16,6 +16,7 @@
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace content {
 
@@ -38,7 +39,7 @@ ServiceWorkerVersionInfo GetVersionInfo(ServiceWorkerVersion* version) {
 }  // namespace
 
 ServiceWorkerRegistration::ServiceWorkerRegistration(
-    const ServiceWorkerRegistrationOptions& options,
+    const blink::mojom::ServiceWorkerRegistrationOptions& options,
     int64_t registration_id,
     base::WeakPtr<ServiceWorkerContextCore> context)
     : pattern_(options.scope),

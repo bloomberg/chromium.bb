@@ -21,6 +21,7 @@
 #include "content/test/mock_platform_notification_service.h"
 #include "content/test/test_content_browser_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -328,7 +329,7 @@ TEST_F(PlatformNotificationContextTest, ServiceWorkerUnregistered) {
 
   // Register a Service Worker to get a valid registration id.
   embedded_worker_test_helper->context()->RegisterServiceWorker(
-      script_url, ServiceWorkerRegistrationOptions(origin),
+      script_url, blink::mojom::ServiceWorkerRegistrationOptions(origin),
       nullptr /* provider_host */,
       base::Bind(&PlatformNotificationContextTest::DidRegisterServiceWorker,
                  base::Unretained(this), &service_worker_registration_id));

@@ -11,6 +11,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "content/browser/service_worker/service_worker_register_job_base.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace content {
 
@@ -78,7 +79,7 @@ ServiceWorkerJobCoordinator::~ServiceWorkerJobCoordinator() {
 
 void ServiceWorkerJobCoordinator::Register(
     const GURL& script_url,
-    const ServiceWorkerRegistrationOptions& options,
+    const blink::mojom::ServiceWorkerRegistrationOptions& options,
     ServiceWorkerProviderHost* provider_host,
     const ServiceWorkerRegisterJob::RegistrationCallback& callback) {
   auto job =

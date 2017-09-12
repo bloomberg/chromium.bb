@@ -26,6 +26,7 @@
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace content {
 
@@ -91,7 +92,8 @@ class ServiceWorkerReadFromCacheJobTest : public testing::Test {
 
     // Populate a registration in the storage.
     registration_ = new ServiceWorkerRegistration(
-        ServiceWorkerRegistrationOptions(GURL("http://example.com/scope")),
+        blink::mojom::ServiceWorkerRegistrationOptions(
+            GURL("http://example.com/scope")),
         kRegistrationId, context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(registration_.get(), main_script_.url,
                                         kVersionId, context()->AsWeakPtr());

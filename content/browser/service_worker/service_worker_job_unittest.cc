@@ -38,6 +38,7 @@
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 using net::IOBuffer;
 using net::TestCompletionCallback;
@@ -234,8 +235,8 @@ scoped_refptr<ServiceWorkerRegistration> ServiceWorkerJobTest::RunRegisterJob(
   scoped_refptr<ServiceWorkerRegistration> registration;
   bool called;
   job_coordinator()->Register(
-      script_url, ServiceWorkerRegistrationOptions(pattern), nullptr,
-      SaveRegistration(expected_status, &called, &registration));
+      script_url, blink::mojom::ServiceWorkerRegistrationOptions(pattern),
+      nullptr, SaveRegistration(expected_status, &called, &registration));
   EXPECT_TRUE(is_job_timer_running());
   EXPECT_FALSE(called);
   base::RunLoop().RunUntilIdle();
@@ -339,7 +340,8 @@ TEST_F(ServiceWorkerJobTest, DifferentMatchDifferentRegistration) {
   scoped_refptr<ServiceWorkerRegistration> original_registration1;
   job_coordinator()->Register(
       GURL("http://www.example.com/service_worker.js"),
-      ServiceWorkerRegistrationOptions(GURL("http://www.example.com/one/")),
+      blink::mojom::ServiceWorkerRegistrationOptions(
+          GURL("http://www.example.com/one/")),
       nullptr,
       SaveRegistration(SERVICE_WORKER_OK, &called1, &original_registration1));
 
@@ -347,7 +349,8 @@ TEST_F(ServiceWorkerJobTest, DifferentMatchDifferentRegistration) {
   scoped_refptr<ServiceWorkerRegistration> original_registration2;
   job_coordinator()->Register(
       GURL("http://www.example.com/service_worker.js"),
-      ServiceWorkerRegistrationOptions(GURL("http://www.example.com/two/")),
+      blink::mojom::ServiceWorkerRegistrationOptions(
+          GURL("http://www.example.com/two/")),
       nullptr,
       SaveRegistration(SERVICE_WORKER_OK, &called2, &original_registration2));
 
@@ -420,7 +423,8 @@ TEST_F(ServiceWorkerJobTest, RegistrationTimeout) {
   scoped_refptr<ServiceWorkerRegistration> registration1;
   job_coordinator()->Register(
       GURL("http://www.example.com/service_worker.js"),
-      ServiceWorkerRegistrationOptions(GURL("http://www.example.com/one/")),
+      blink::mojom::ServiceWorkerRegistrationOptions(
+          GURL("http://www.example.com/one/")),
       nullptr,
       SaveRegistration(SERVICE_WORKER_ERROR_ABORT, &called1, &registration1));
 
@@ -428,7 +432,8 @@ TEST_F(ServiceWorkerJobTest, RegistrationTimeout) {
   scoped_refptr<ServiceWorkerRegistration> registration2;
   job_coordinator()->Register(
       GURL("http://www.example.com/service_worker.js"),
-      ServiceWorkerRegistrationOptions(GURL("http://www.example.com/two/")),
+      blink::mojom::ServiceWorkerRegistrationOptions(
+          GURL("http://www.example.com/two/")),
       nullptr,
       SaveRegistration(SERVICE_WORKER_ERROR_ABORT, &called2, &registration2));
 
@@ -602,7 +607,8 @@ TEST_F(ServiceWorkerJobTest, ParallelRegUnreg) {
   bool registration_called = false;
   scoped_refptr<ServiceWorkerRegistration> registration;
   job_coordinator()->Register(
-      script_url, ServiceWorkerRegistrationOptions(pattern), nullptr,
+      script_url, blink::mojom::ServiceWorkerRegistrationOptions(pattern),
+      nullptr,
       SaveRegistration(SERVICE_WORKER_OK, &registration_called, &registration));
 
   bool unregistration_called = false;
@@ -632,7 +638,8 @@ TEST_F(ServiceWorkerJobTest, ParallelRegNewScript) {
   bool registration1_called = false;
   scoped_refptr<ServiceWorkerRegistration> registration1;
   job_coordinator()->Register(
-      script_url1, ServiceWorkerRegistrationOptions(pattern), nullptr,
+      script_url1, blink::mojom::ServiceWorkerRegistrationOptions(pattern),
+      nullptr,
       SaveRegistration(SERVICE_WORKER_OK, &registration1_called,
                        &registration1));
 
@@ -640,7 +647,8 @@ TEST_F(ServiceWorkerJobTest, ParallelRegNewScript) {
   bool registration2_called = false;
   scoped_refptr<ServiceWorkerRegistration> registration2;
   job_coordinator()->Register(
-      script_url2, ServiceWorkerRegistrationOptions(pattern), nullptr,
+      script_url2, blink::mojom::ServiceWorkerRegistrationOptions(pattern),
+      nullptr,
       SaveRegistration(SERVICE_WORKER_OK, &registration2_called,
                        &registration2));
 
@@ -666,14 +674,16 @@ TEST_F(ServiceWorkerJobTest, ParallelRegSameScript) {
   bool registration1_called = false;
   scoped_refptr<ServiceWorkerRegistration> registration1;
   job_coordinator()->Register(
-      script_url, ServiceWorkerRegistrationOptions(pattern), nullptr,
+      script_url, blink::mojom::ServiceWorkerRegistrationOptions(pattern),
+      nullptr,
       SaveRegistration(SERVICE_WORKER_OK, &registration1_called,
                        &registration1));
 
   bool registration2_called = false;
   scoped_refptr<ServiceWorkerRegistration> registration2;
   job_coordinator()->Register(
-      script_url, ServiceWorkerRegistrationOptions(pattern), nullptr,
+      script_url, blink::mojom::ServiceWorkerRegistrationOptions(pattern),
+      nullptr,
       SaveRegistration(SERVICE_WORKER_OK, &registration2_called,
                        &registration2));
 
@@ -732,14 +742,16 @@ TEST_F(ServiceWorkerJobTest, AbortAll_Register) {
   bool registration_called1 = false;
   scoped_refptr<ServiceWorkerRegistration> registration1;
   job_coordinator()->Register(
-      script_url1, ServiceWorkerRegistrationOptions(pattern1), nullptr,
+      script_url1, blink::mojom::ServiceWorkerRegistrationOptions(pattern1),
+      nullptr,
       SaveRegistration(SERVICE_WORKER_ERROR_ABORT, &registration_called1,
                        &registration1));
 
   bool registration_called2 = false;
   scoped_refptr<ServiceWorkerRegistration> registration2;
   job_coordinator()->Register(
-      script_url2, ServiceWorkerRegistrationOptions(pattern2), nullptr,
+      script_url2, blink::mojom::ServiceWorkerRegistrationOptions(pattern2),
+      nullptr,
       SaveRegistration(SERVICE_WORKER_ERROR_ABORT, &registration_called2,
                        &registration2));
 
@@ -803,7 +815,8 @@ TEST_F(ServiceWorkerJobTest, AbortAll_RegUnreg) {
   bool registration_called = false;
   scoped_refptr<ServiceWorkerRegistration> registration;
   job_coordinator()->Register(
-      script_url, ServiceWorkerRegistrationOptions(pattern), nullptr,
+      script_url, blink::mojom::ServiceWorkerRegistrationOptions(pattern),
+      nullptr,
       SaveRegistration(SERVICE_WORKER_ERROR_ABORT, &registration_called,
                        &registration));
 
@@ -1003,8 +1016,9 @@ class UpdateJobTestHelper
     bool called = false;
     job_coordinator()->Register(
         test_origin.Resolve(kScript),
-        ServiceWorkerRegistrationOptions(test_origin.Resolve(kScope)), nullptr,
-        SaveRegistration(SERVICE_WORKER_OK, &called, &registration));
+        blink::mojom::ServiceWorkerRegistrationOptions(
+            test_origin.Resolve(kScope)),
+        nullptr, SaveRegistration(SERVICE_WORKER_OK, &called, &registration));
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(called);
     EXPECT_TRUE(registration.get());

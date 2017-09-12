@@ -33,6 +33,7 @@
 #include "net/base/url_util.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/special_storage_policy.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace content {
 
@@ -278,7 +279,8 @@ void ServiceWorkerContextWrapper::RegisterServiceWorker(
                             base::BindOnce(std::move(callback), false));
     return;
   }
-  ServiceWorkerRegistrationOptions options(net::SimplifyUrlForRequest(pattern));
+  blink::mojom::ServiceWorkerRegistrationOptions options(
+      net::SimplifyUrlForRequest(pattern));
   context()->RegisterServiceWorker(
       net::SimplifyUrlForRequest(script_url), options,
       nullptr /* provider_host */,

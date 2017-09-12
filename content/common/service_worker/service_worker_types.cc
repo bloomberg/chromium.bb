@@ -143,10 +143,6 @@ bool ServiceWorkerObjectInfo::IsValid() const {
          version_id != kInvalidServiceWorkerVersionId;
 }
 
-ServiceWorkerRegistrationOptions::ServiceWorkerRegistrationOptions(
-    const GURL& scope)
-    : scope(scope) {}
-
 ServiceWorkerRegistrationObjectInfo::ServiceWorkerRegistrationObjectInfo()
     : handle_id(kInvalidServiceWorkerRegistrationHandleId),
       registration_id(kInvalidServiceWorkerRegistrationId) {

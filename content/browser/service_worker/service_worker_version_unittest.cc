@@ -28,6 +28,7 @@
 #include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 // IPC messages for testing ---------------------------------------------------
 
@@ -171,7 +172,7 @@ class ServiceWorkerVersionTest : public testing::Test {
 
     pattern_ = GURL("http://www.example.com/test/");
     registration_ = new ServiceWorkerRegistration(
-        ServiceWorkerRegistrationOptions(pattern_), 1L,
+        blink::mojom::ServiceWorkerRegistrationOptions(pattern_), 1L,
         helper_->context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(
         registration_.get(),
