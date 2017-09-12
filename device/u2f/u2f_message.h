@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "device/u2f/u2f_command_type.h"
 #include "device/u2f/u2f_packet.h"
 
 namespace net {
@@ -23,20 +24,14 @@ namespace device {
 // about the message are available through class methods.
 class U2fMessage {
  public:
-  enum class Type : uint8_t {
-    CMD_PING = 0x81,
-    CMD_MSG = 0x83,
-    CMD_INIT = 0x86,
-    CMD_WINK = 0x88,
-    CMD_ERROR = 0xbf,
-  };
-
-  U2fMessage(uint32_t channel_id, Type type, const std::vector<uint8_t>& data);
+  U2fMessage(uint32_t channel_id,
+             U2fCommandType type,
+             const std::vector<uint8_t>& data);
   U2fMessage(std::unique_ptr<U2fInitPacket> init_packet, size_t remaining_size);
   ~U2fMessage();
 
   static std::unique_ptr<U2fMessage> Create(uint32_t channel_id,
-                                            Type type,
+                                            U2fCommandType type,
                                             const std::vector<uint8_t>& data);
   // Reconstruct a message from serialized message data
   static std::unique_ptr<U2fMessage> CreateFromSerializedData(
