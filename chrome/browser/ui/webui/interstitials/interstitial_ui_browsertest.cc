@@ -46,6 +46,14 @@ IN_PROC_BROWSER_TEST_F(InterstitialUITest, InvalidURLShouldOpenHomePage) {
       "Interstitials");
 }
 
+IN_PROC_BROWSER_TEST_F(InterstitialUITest,
+                       InvalidURLMatchingStartOfValidURLShouldBeInvalid) {
+  // Path that matches the first characters of another should be invalid
+  // (and therefore open the main page).
+  TestInterstitial(GURL("chrome://interstitials/ssl--invalid--"),
+                   "Interstitials");
+}
+
 IN_PROC_BROWSER_TEST_F(InterstitialUITest, SSLInterstitial) {
   TestInterstitial(
       GURL("chrome://interstitials/ssl"),
