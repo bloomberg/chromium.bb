@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.widget.bottomsheet;
 
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.SheetState;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 
 /**
  * An interface for notifications about the state of the bottom sheet.
@@ -15,7 +16,7 @@ public interface BottomSheetObserver {
      * A notification that the sheet has been opened, meaning the sheet is any height greater
      * than its peeking state.
      */
-    void onSheetOpened();
+    void onSheetOpened(@StateChangeReason int reason);
 
     /**
      * A notification that the sheet has closed, meaning the sheet has reached its peeking state.

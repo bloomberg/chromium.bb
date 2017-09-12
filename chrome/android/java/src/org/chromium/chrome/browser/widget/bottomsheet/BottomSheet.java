@@ -101,6 +101,14 @@ public class BottomSheet
     public static final int SHEET_STATE_FULL = 2;
     public static final int SHEET_STATE_SCROLLING = 3;
 
+    /** The different reasons that the sheet's state can change. */
+    @IntDef({StateChangeReason.NONE, StateChangeReason.OMNIBOX_FOCUS})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface StateChangeReason {
+        int NONE = 0;
+        int OMNIBOX_FOCUS = 1;
+    }
+
     /**
      * The base duration of the settling animation of the sheet. 218 ms is a spec for material
      * design (this is the minimum time a user is guaranteed to pay attention to something).
@@ -375,7 +383,7 @@ public class BottomSheet
             float newOffset = getSheetOffsetFromBottom() + distanceY;
             boolean wasOpenBeforeSwipe = mIsSheetOpen;
             setSheetOffsetFromBottom(MathUtils.clamp(newOffset, getMinOffset(), getMaxOffset()));
-            setInternalCurrentState(SHEET_STATE_SCROLLING);
+            setInternalCurrentState(SHEET_STATE_SCROLLING, StateChangeReason.NONE);
 
             if (!wasOpenBeforeSwipe && mIsSheetOpen) {
                 mMetrics.recordSheetOpenReason(BottomSheetMetrics.OPENED_BY_SWIPE);
@@ -1106,8 +1114,9 @@ public class BottomSheet
 
     /**
      * A notification that the sheet is exiting the peek state into one that shows content.
+     * @param reason The reason the sheet was opened, if any.
      */
-    private void onSheetOpened() {
+    private void onSheetOpened(@StateChangeReason int reason) {
         if (mIsSheetOpen) return;
 
         mIsSheetOpen = true;
@@ -1127,7 +1136,7 @@ public class BottomSheet
                 mFullscreenManager.getBrowserVisibilityDelegate().showControlsPersistent();
 
         dismissSelectedText();
-        for (BottomSheetObserver o : mObservers) o.onSheetOpened();
+        for (BottomSheetObserver o : mObservers) o.onSheetOpened(reason);
         announceForAccessibility(getResources().getString(R.string.bottom_sheet_opened));
         mActivity.addViewObscuringAllTabs(this);
 
@@ -1209,8 +1218,10 @@ public class BottomSheet
     /**
      * Creates the sheet's animation to a target state.
      * @param targetState The target state.
+     * @param reason The reason the sheet started animation.
      */
-    private void createSettleAnimation(@SheetState final int targetState) {
+    private void createSettleAnimation(
+            @SheetState final int targetState, @StateChangeReason final int reason) {
         mTargetState = targetState;
         mSettleAnimator = ValueAnimator.ofFloat(
                 getSheetOffsetFromBottom(), getSheetHeightForState(targetState));
@@ -1224,7 +1235,7 @@ public class BottomSheet
                 if (mIsDestroyed) return;
 
                 mSettleAnimator = null;
-                setInternalCurrentState(targetState);
+                setInternalCurrentState(targetState, reason);
                 mTargetState = SHEET_STATE_NONE;
             }
         });
@@ -1236,7 +1247,7 @@ public class BottomSheet
             }
         });
 
-        setInternalCurrentState(SHEET_STATE_SCROLLING);
+        setInternalCurrentState(SHEET_STATE_SCROLLING, reason);
         mSettleAnimator.start();
     }
 
@@ -1357,13 +1368,24 @@ public class BottomSheet
     }
 
     /**
+     * @see #setSheetState(int, boolean, int)
+     */
+    public void setSheetState(@SheetState int state, boolean animate) {
+        setSheetState(state, animate, StateChangeReason.NONE);
+    }
+
+    /**
      * Moves the sheet to the provided state.
      * @param state The state to move the panel to. This cannot be SHEET_STATE_SCROLLING or
      *              SHEET_STATE_NONE.
      * @param animate If true, the sheet will animate to the provided state, otherwise it will
      *                move there instantly.
+     * @param reason The reason the sheet state is changing. This can be specified to indicate to
+     *               observers that a more specific event has occured, otherwise
+     *               STATE_CHANGE_REASON_NONE can be used.
      */
-    public void setSheetState(@SheetState int state, boolean animate) {
+    public void setSheetState(
+            @SheetState int state, boolean animate, @StateChangeReason int reason) {
         assert state != SHEET_STATE_SCROLLING && state != SHEET_STATE_NONE;
 
         // Half state is not valid on small screens.
@@ -1374,10 +1396,10 @@ public class BottomSheet
         cancelAnimation();
 
         if (animate && state != mCurrentState) {
-            createSettleAnimation(state);
+            createSettleAnimation(state, reason);
         } else {
             setSheetOffsetFromBottom(getSheetHeightForState(state));
-            setInternalCurrentState(mTargetState);
+            setInternalCurrentState(mTargetState, reason);
             mTargetState = SHEET_STATE_NONE;
         }
     }
@@ -1411,8 +1433,9 @@ public class BottomSheet
      * Set the current state of the bottom sheet. This is for internal use to notify observers of
      * state change events.
      * @param state The current state of the sheet.
+     * @param reason The reason the state is changing if any.
      */
-    private void setInternalCurrentState(@SheetState int state) {
+    private void setInternalCurrentState(@SheetState int state, @StateChangeReason int reason) {
         if (state == mCurrentState) return;
 
         // TODO(mdjones): This shouldn't be able to happen, but does occasionally during layout.
@@ -1431,7 +1454,7 @@ public class BottomSheet
         if (state == SHEET_STATE_PEEK) {
             onSheetClosed();
         } else {
-            onSheetOpened();
+            onSheetOpened(reason);
         }
     }
 

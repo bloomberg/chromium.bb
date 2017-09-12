@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.ToolbarProgressBar;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetMetrics;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
@@ -57,7 +58,7 @@ public class BottomToolbarPhone extends ToolbarPhone {
      */
     private final BottomSheetObserver mBottomSheetObserver = new EmptyBottomSheetObserver() {
         @Override
-        public void onSheetOpened() {
+        public void onSheetOpened(@StateChangeReason int reason) {
             if (!mUseModernDesign) {
                 mToolbarShadowPermanentlyHidden = false;
             }
@@ -477,7 +478,8 @@ public class BottomToolbarPhone extends ToolbarPhone {
         if (mBottomSheet == null || !hasFocus) return;
 
         boolean wasSheetOpen = mBottomSheet.isSheetOpen();
-        mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_FULL, true);
+        mBottomSheet.setSheetState(
+                BottomSheet.SHEET_STATE_FULL, true, StateChangeReason.OMNIBOX_FOCUS);
 
         if (!wasSheetOpen) {
             mBottomSheet.getBottomSheetMetrics().recordSheetOpenReason(
