@@ -708,7 +708,7 @@ let Query = {
   updateFilters: function(traversal) {
     for (let el of Array.from(
           document.querySelectorAll("#filters > label"))) {
-      let count = traversal.resultCounts[el.id];
+      let count = traversal.resultCounts[el.id.replace("_", "+")];
       if (count > 0) {
         el.classList.remove("hidden");
         el.querySelector('input').checked = true;
@@ -730,7 +730,7 @@ let Query = {
     for (let el of Array.from(
           document.querySelectorAll("#filters > label"))) {
         if (el.querySelector('input').checked)
-          filterMap.set(el.id, true);
+          filterMap.set(el.id.replace("_", "+"), true);
     }
     return test => queryFilter(test) && filterMap.has(test.actualFinal);
   },
