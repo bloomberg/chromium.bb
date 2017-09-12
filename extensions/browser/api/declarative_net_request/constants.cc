@@ -33,14 +33,6 @@ const char kErrorPersisting[] = "*: Rules file could not be parsed.";
 const char kRulesNotParsedWarning[] =
     "Declarative Net Request: Not all rules were successfully parsed.";
 
-const char kIDKey[] = "id";
-const char kPriorityKey[] = "priority";
-const char kUrlFilterKey[] = "urlFilter";
-const char kIsUrlFilterCaseSensitiveKey[] = "isUrlFilterCaseSensitive";
-const char kDomainsKey[] = "domains";
-const char kResourceTypesKey[] = "resourceTypes";
-const char kRedirectUrlKey[] = "redirectUrl";
-
 const char kIndexAndPersistRulesTimeHistogram[] =
     "Extensions.DeclarativeNetRequest.IndexAndPersistRulesTime";
 const char kIndexRulesTimeHistogram[] =

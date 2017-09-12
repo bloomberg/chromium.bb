@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_CONSTANTS_H_
 #define EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_CONSTANTS_H_
 
+#include "extensions/common/api/declarative_net_request/constants.h"
+
 namespace extensions {
 namespace declarative_net_request {
 
@@ -41,25 +43,6 @@ extern const char kErrorPersisting[];
 
 // Rule parsing install warnings.
 extern const char kRulesNotParsedWarning[];
-
-// Minimum valid value of a declarative rule ID.
-constexpr int kMinValidID = 1;
-
-// Minimum valid value of a declarative rule priority.
-constexpr int kMinValidPriority = 1;
-
-// Default priority used for rules when the priority is not explicity provided
-// by an extension.
-constexpr int kDefaultPriority = 1;
-
-// Keys used in rules.
-extern const char kIDKey[];
-extern const char kPriorityKey[];
-extern const char kUrlFilterKey[];
-extern const char kIsUrlFilterCaseSensitiveKey[];
-extern const char kDomainsKey[];
-extern const char kResourceTypesKey[];
-extern const char kRedirectUrlKey[];
 
 // Histogram names.
 extern const char kIndexAndPersistRulesTimeHistogram[];
