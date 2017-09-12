@@ -24,14 +24,14 @@ ServiceWorkerDataPipeReader::ServiceWorkerDataPipeReader(
       producer_state_(State::kStreaming) {
   TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker", "ServiceWorkerDataPipeReader", this,
                            "Url", owner->request()->url().spec());
-  streaming_version_->AddStreamingURLRequestJob(owner_);
+  streaming_version_->OnStreamResponseStarted();
   binding_.set_connection_error_handler(base::BindOnce(
       &ServiceWorkerDataPipeReader::OnAborted, base::Unretained(this)));
 }
 
 ServiceWorkerDataPipeReader::~ServiceWorkerDataPipeReader() {
   DCHECK(streaming_version_);
-  streaming_version_->RemoveStreamingURLRequestJob(owner_);
+  streaming_version_->OnStreamResponseFinished();
   streaming_version_ = nullptr;
 
   TRACE_EVENT_ASYNC_END0("ServiceWorker", "ServiceWorkerDataPipeReader", this);

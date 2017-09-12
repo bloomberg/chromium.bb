@@ -31,13 +31,11 @@ class ServiceWorkerURLLoaderJob::StreamWaiter
       : owner_(owner),
         streaming_version_(streaming_version),
         binding_(this, std::move(callback_request)) {
-    streaming_version_->AddStreamingURLLoaderJob(owner_);
+    streaming_version_->OnStreamResponseStarted();
     binding_.set_connection_error_handler(
         base::BindOnce(&StreamWaiter::OnAborted, base::Unretained(this)));
   }
-  ~StreamWaiter() override {
-    streaming_version_->RemoveStreamingURLLoaderJob(owner_);
-  }
+  ~StreamWaiter() override { streaming_version_->OnStreamResponseFinished(); }
 
   // Implements mojom::ServiceWorkerStreamCallback.
   void OnCompleted() override {

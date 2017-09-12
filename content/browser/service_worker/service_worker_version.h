@@ -57,8 +57,6 @@ class ServiceWorkerContextCore;
 class ServiceWorkerInstalledScriptsSender;
 class ServiceWorkerProviderHost;
 class ServiceWorkerRegistration;
-class ServiceWorkerURLRequestJob;
-class ServiceWorkerURLLoaderJob;
 struct ServiceWorkerClientInfo;
 struct ServiceWorkerVersionInfo;
 
@@ -310,14 +308,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   base::WeakPtr<ServiceWorkerContextCore> context() const { return context_; }
 
-  // Adds and removes |request_job| or |loader_job| as a dependent job not to
-  // stop the ServiceWorker while |request_job| or |loader_job|  is reading the
-  // stream of the fetch event response from the ServiceWorker.
-  void AddStreamingURLRequestJob(const ServiceWorkerURLRequestJob* request_job);
-  void RemoveStreamingURLRequestJob(
-      const ServiceWorkerURLRequestJob* request_job);
-  void AddStreamingURLLoaderJob(const ServiceWorkerURLLoaderJob* loader_job);
-  void RemoveStreamingURLLoaderJob(const ServiceWorkerURLLoaderJob* loader_job);
+  // Called when the browser process starts/finishes reading a fetch event
+  // response via Mojo data pipe from the service worker. We try to not stop the
+  // service worker while there is an ongoing response.
+  void OnStreamResponseStarted();
+  void OnStreamResponseFinished();
 
   // Adds and removes Listeners.
   void AddListener(Listener* listener);
@@ -720,8 +715,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   std::unique_ptr<ServiceWorkerInstalledScriptsSender>
       installed_scripts_sender_;
 
-  std::set<const ServiceWorkerURLRequestJob*> streaming_url_request_jobs_;
-  std::set<const ServiceWorkerURLLoaderJob*> streaming_url_loader_jobs_;
+  // The number of fetch event responses that the service worker is streaming to
+  // the browser process. We try to not stop the service worker while there is
+  // an ongoing response.
+  int pending_stream_response_count_ = 0;
 
   // Keeps track of the provider hosting this running service worker for this
   // version. |provider_host_| is always valid as long as this version is
