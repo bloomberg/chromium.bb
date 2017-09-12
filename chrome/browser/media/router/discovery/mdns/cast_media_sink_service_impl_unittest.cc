@@ -6,8 +6,10 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/timer/mock_timer.h"
+#include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/test_helper.h"
 #include "components/cast_channel/cast_socket.h"
 #include "components/cast_channel/cast_socket_service.h"
@@ -241,8 +243,9 @@ TEST_F(CastMediaSinkServiceImplTest, TestOpenChannelRetryOnce) {
 
   media_sink_service_impl_.SetTaskRunnerForTest(mock_time_task_runner_);
   std::unique_ptr<net::BackoffEntry> backoff_entry(
-      new net::BackoffEntry(&CastMediaSinkServiceImpl::kBackoffPolicy));
+      new net::BackoffEntry(&CastMediaSinkServiceImpl::kDefaultBackoffPolicy));
   ExpectOpenSocketInternal(&socket);
+  media_sink_service_impl_.max_retry_attempts_ = 3;
   media_sink_service_impl_.OpenChannel(ip_endpoint, cast_sink,
                                        std::move(backoff_entry));
 
@@ -263,10 +266,12 @@ TEST_F(CastMediaSinkServiceImplTest, TestOpenChannelFails) {
   media_sink_service_impl_.SetTaskRunnerForTest(mock_time_task_runner_);
 
   ExpectOpenSocketInternal(&socket);
-  net::BackoffEntry::Policy policy = CastMediaSinkServiceImpl::kBackoffPolicy;
+  net::BackoffEntry::Policy policy =
+      CastMediaSinkServiceImpl::kDefaultBackoffPolicy;
   std::unique_ptr<net::BackoffEntry> backoff_entry(
       new net::BackoffEntry(&policy));
   auto* backoff_entry_ptr = backoff_entry.get();
+  media_sink_service_impl_.max_retry_attempts_ = 3;
   media_sink_service_impl_.OpenChannel(ip_endpoint, cast_sink,
                                        std::move(backoff_entry));
 
@@ -978,6 +983,53 @@ TEST_F(CastMediaSinkServiceImplTest, DualDiscoveryDoesntDuplicateCacheItems) {
   net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
       net::NetworkChangeNotifier::CONNECTION_ETHERNET);
   content::RunAllBlockingPoolTasksUntilIdle();
+}
+
+TEST_F(CastMediaSinkServiceImplTest,
+       TestInitRetryParametersWithFeatureDisabled) {
+  // Feature not enabled.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(kEnableCastChannelRetry);
+
+  net::BackoffEntry::Policy backoff_policy;
+  int max_retry_attempts;
+  CastMediaSinkServiceImpl::InitRetryParameters(&backoff_policy,
+                                                &max_retry_attempts);
+  EXPECT_EQ(0, max_retry_attempts);
+}
+
+TEST_F(CastMediaSinkServiceImplTest, TestInitRetryParameters) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  std::map<std::string, std::string> params;
+  params[CastMediaSinkServiceImpl::kParamNameMaxRetryAttempts] = "20";
+  params[CastMediaSinkServiceImpl::kParamNameInitialDelayMS] = "2000";
+  params[CastMediaSinkServiceImpl::kParamNameExponential] = "2.0";
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kEnableCastChannelRetry, params);
+
+  net::BackoffEntry::Policy backoff_policy;
+  int max_retry_attempts;
+  CastMediaSinkServiceImpl::InitRetryParameters(&backoff_policy,
+                                                &max_retry_attempts);
+  EXPECT_EQ(20, max_retry_attempts);
+  EXPECT_EQ(2000, backoff_policy.initial_delay_ms);
+  EXPECT_EQ(2.0, backoff_policy.multiply_factor);
+}
+
+TEST_F(CastMediaSinkServiceImplTest, TestInitRetryParametersWithDefaultValue) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kEnableCastChannelRetry);
+
+  net::BackoffEntry::Policy backoff_policy;
+  int max_retry_attempts;
+  CastMediaSinkServiceImpl::InitRetryParameters(&backoff_policy,
+                                                &max_retry_attempts);
+  EXPECT_EQ(CastMediaSinkServiceImpl::kDefaultMaxRetryAttempts,
+            max_retry_attempts);
+  EXPECT_EQ(CastMediaSinkServiceImpl::kDefaultBackoffPolicy.initial_delay_ms,
+            backoff_policy.initial_delay_ms);
+  EXPECT_EQ(CastMediaSinkServiceImpl::kDefaultBackoffPolicy.multiply_factor,
+            backoff_policy.multiply_factor);
 }
 
 }  // namespace media_router
