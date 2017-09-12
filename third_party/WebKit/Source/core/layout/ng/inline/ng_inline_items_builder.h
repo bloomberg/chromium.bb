@@ -66,6 +66,9 @@ class CORE_TEMPLATE_CLASS_EXPORT NGInlineItemsBuilderTemplate {
   // If a nullptr, it does not generate BidiRun. Bidi controls use this.
   void Append(const String&, const ComputedStyle*, LayoutObject* = nullptr);
 
+  // Append a break opportunity; e.g., <wbr> element.
+  void AppendBreakOpportunity(const ComputedStyle*, LayoutObject*);
+
   // Append a character.
   // Currently this function is for adding control characters such as
   // objectReplacementCharacter, and does not support all space collapsing logic
@@ -132,7 +135,7 @@ class CORE_TEMPLATE_CLASS_EXPORT NGInlineItemsBuilderTemplate {
   } OnExitNode;
   Vector<OnExitNode> exits_;
 
-  enum class CollapsibleSpace { kNone, kSpace, kNewline };
+  enum class CollapsibleSpace { kNone, kSpace, kNewline, kSpaceNoWrap };
 
   CollapsibleSpace last_collapsible_space_ = CollapsibleSpace::kSpace;
   bool is_svgtext_ = false;

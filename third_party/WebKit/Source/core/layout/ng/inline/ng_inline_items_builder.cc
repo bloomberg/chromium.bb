@@ -180,6 +180,20 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
                                    unsigned end,
                                    const ComputedStyle* style,
                                    LayoutObject* layout_object) {
+  DCHECK_GT(end, start);
+
+  // Collapsed spaces are "zero advance width, invisible, but retains its soft
+  // wrap opportunity". When the first collapsible space was in 'nowrap',
+  // following collapsed spaces should create a break opportunity.
+  // https://drafts.csswg.org/css-text-3/#collapse
+  if (last_collapsible_space_ == CollapsibleSpace::kSpaceNoWrap &&
+      IsCollapsibleSpace(string[start]) && style->AutoWrap()) {
+    AppendBreakOpportunity(style, layout_object);
+    mapping_builder_.AppendIdentityMapping(1);
+    start++;
+    last_collapsible_space_ = CollapsibleSpace::kSpace;
+  }
+
   unsigned start_offset = text_.length();
   for (unsigned i = start; i < end;) {
     UChar c = string[i];
@@ -231,6 +245,9 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
     AppendItem(items_, NGInlineItem::kText, start_offset, text_.length(), style,
                layout_object);
 
+    if (last_collapsible_space_ == CollapsibleSpace::kSpace &&
+        !style->AutoWrap())
+      last_collapsible_space_ = CollapsibleSpace::kSpaceNoWrap;
     is_empty_inline_ &= IsItemEmpty(NGInlineItem::kText, style);
   }
 }
@@ -297,6 +314,14 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendForcedBreak(
 
   // Remove collapsible spaces immediately after a preserved newline.
   last_collapsible_space_ = CollapsibleSpace::kSpace;
+}
+
+template <typename OffsetMappingBuilder>
+void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendBreakOpportunity(
+    const ComputedStyle* style,
+    LayoutObject* layout_object) {
+  Append(NGInlineItem::kControl, kZeroWidthSpaceCharacter, style,
+         layout_object);
 }
 
 template <typename OffsetMappingBuilder>
