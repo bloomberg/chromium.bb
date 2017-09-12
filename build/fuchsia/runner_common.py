@@ -342,6 +342,26 @@ def _SymbolizeBacktrace(backtrace, file_mapping):
   return map(lambda entry: symbolized[entry['frame_id']], backtrace)
 
 
+def _EnsureTunTap(dry_run):
+  """Make sure the tun/tap device is configured. This cannot be done
+  automatically because it requires sudo, unfortunately, so we just print out
+  instructions.
+  """
+  with open(os.devnull, 'w') as nul:
+    p = subprocess.Popen(
+        ['tunctl', '-b', '-u', os.environ.get('USER'), '-t', 'qemu'],
+        stdout=subprocess.PIPE, stderr=nul)
+    output = p.communicate()[0].strip()
+  if output != 'qemu':
+    print 'Configuration of tun/tap device required:'
+    if not os.path.isfile('/usr/sbin/tunctl'):
+      print 'sudo apt-get install uml-utilities'
+    print 'sudo tunctl -u $USER -t qemu'
+    print 'sudo ifconfig qemu up'
+    return False
+  return True
+
+
 def RunFuchsia(bootfs_data, use_device, dry_run, test_launcher_summary_output):
   kernel_path = os.path.join(SDK_ROOT, 'kernel', 'magenta.bin')
 
@@ -352,6 +372,9 @@ def RunFuchsia(bootfs_data, use_device, dry_run, test_launcher_summary_output):
     bootserver_command = [bootserver_path, '-1', kernel_path,
                           bootfs_data.bootfs]
     return _RunAndCheck(dry_run, bootserver_command)
+
+  if not _EnsureTunTap(dry_run):
+    return 1
 
   qemu_path = os.path.join(SDK_ROOT, 'qemu', 'bin', 'qemu-system-x86_64')
   qemu_command = [qemu_path,
