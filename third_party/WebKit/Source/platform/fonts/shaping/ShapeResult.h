@@ -47,7 +47,7 @@ namespace blink {
 
 class Font;
 template <typename TextContainerType>
-class ShapeResultSpacing;
+class PLATFORM_EXPORT ShapeResultSpacing;
 class SimpleFontData;
 class TextRun;
 
@@ -65,7 +65,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
       unsigned count);
   ~ShapeResult();
 
-  // Returns a mutalbe unique instance. If |this| has more than 1 ref count,
+  // Returns a mutable unique instance. If |this| has more than 1 ref count,
   // a clone is created.
   RefPtr<ShapeResult> MutableUnique() const;
 
