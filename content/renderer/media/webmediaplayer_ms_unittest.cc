@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include "base/containers/circular_deque.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -198,7 +199,7 @@ class MockMediaStreamVideoRenderer : public MediaStreamVideoRenderer {
   const base::Closure error_cb_;
   const MediaStreamVideoRenderer::RepaintCB repaint_cb_;
 
-  std::deque<TestFrame> frames_;
+  base::circular_deque<TestFrame> frames_;
   base::TimeDelta delay_till_next_generated_frame_;
 };
 

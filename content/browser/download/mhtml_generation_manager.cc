@@ -5,10 +5,10 @@
 #include "content/browser/download/mhtml_generation_manager.h"
 
 #include <map>
-#include <queue>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/queue.h"
 #include "base/files/file.h"
 #include "base/guid.h"
 #include "base/macros.h"
@@ -152,7 +152,7 @@ class MHTMLGenerationManager::Job : public RenderProcessHostObserver {
   MHTMLGenerationParams params_;
 
   // The IDs of frames that still need to be processed.
-  std::queue<int> pending_frame_tree_node_ids_;
+  base::queue<int> pending_frame_tree_node_ids_;
 
   // Identifies a frame to which we've sent FrameMsg_SerializeAsMHTML but for
   // which we didn't yet process FrameHostMsg_SerializeAsMHTMLResponse via

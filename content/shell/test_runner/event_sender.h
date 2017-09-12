@@ -8,11 +8,11 @@
 #include <stdint.h>
 
 #include <memory>
-#include <queue>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
@@ -305,7 +305,7 @@ class EventSender {
 
   bool replaying_saved_events_;
 
-  std::deque<SavedEvent> mouse_event_queue_;
+  base::circular_deque<SavedEvent> mouse_event_queue_;
 
   blink::WebDragOperationsMask current_drag_effects_allowed_;
 

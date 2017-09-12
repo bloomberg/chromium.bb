@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/atomicops.h"
+#include "base/containers/circular_deque.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
@@ -249,7 +249,7 @@ class CONTENT_EXPORT DOMStorageContextImpl
   const int session_id_offset_;
   base::subtle::Atomic32 session_id_sequence_;
   // For diagnoostic purposes.
-  std::deque<int64_t> recently_deleted_session_ids_;
+  base::circular_deque<int64_t> recently_deleted_session_ids_;
 
   bool is_shutdown_;
   bool force_keep_session_state_;

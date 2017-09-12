@@ -5,6 +5,7 @@
 #include "content/browser/devtools/devtools_io_context.h"
 
 #include "base/base64.h"
+#include "base/containers/queue.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
@@ -232,7 +233,7 @@ class BlobStream : public DevToolsIOContext::ROStream {
   OpenCallback open_callback_;
   scoped_refptr<storage::FileSystemContext> fs_context_;
   std::unique_ptr<BlobReader> blob_reader_;
-  std::queue<std::unique_ptr<ReadRequest>> pending_reads_;
+  base::queue<std::unique_ptr<ReadRequest>> pending_reads_;
   scoped_refptr<net::IOBufferWithSize> io_buf_;
   off_t last_read_pos_;
   bool failed_;
@@ -350,7 +351,7 @@ void BlobStream::CloseOnIO(bool invoke_pending_callbacks) {
     return;
   }
   failed_ = true;
-  pending_reads_ = std::queue<std::unique_ptr<ReadRequest>>();
+  pending_reads_ = base::queue<std::unique_ptr<ReadRequest>>();
   open_callback_ = OpenCallback();
 }
 

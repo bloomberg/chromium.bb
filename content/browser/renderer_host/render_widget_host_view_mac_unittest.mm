@@ -10,6 +10,7 @@
 #include <tuple>
 
 #include "base/command_line.h"
+#include "base/containers/queue.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/sdk_forward_declarations.h"
@@ -280,7 +281,7 @@ void GenerateCompositionRectArray(const gfx::Point& origin,
   DCHECK(output);
   output->clear();
 
-  std::queue<int> break_point_queue;
+  base::queue<int> break_point_queue;
   for (size_t i = 0; i < break_points.size(); ++i)
     break_point_queue.push(break_points[i]);
   break_point_queue.push(length);

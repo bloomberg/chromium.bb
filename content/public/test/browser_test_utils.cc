@@ -1643,7 +1643,7 @@ void DOMMessageQueue::RenderProcessGone(base::TerminationStatus status) {
 }
 
 void DOMMessageQueue::ClearQueue() {
-  message_queue_ = std::queue<std::string>();
+  message_queue_ = base::queue<std::string>();
 }
 
 bool DOMMessageQueue::WaitForMessage(std::string* message) {

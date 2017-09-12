@@ -6,12 +6,12 @@
 #define CONTENT_PUBLIC_TEST_BROWSER_TEST_UTILS_H_
 
 #include <memory>
-#include <queue>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/containers/queue.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -593,7 +593,7 @@ class DOMMessageQueue : public NotificationObserver,
 
  private:
   NotificationRegistrar registrar_;
-  std::queue<std::string> message_queue_;
+  base::queue<std::string> message_queue_;
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
   bool renderer_crashed_ = false;
 

@@ -5,9 +5,9 @@
 #ifndef CONTENT_RENDERER_INPUT_MAIN_THREAD_EVENT_QUEUE_TASK_LIST_H_
 #define CONTENT_RENDERER_INPUT_MAIN_THREAD_EVENT_QUEUE_TASK_LIST_H_
 
-#include <deque>
 #include <memory>
 
+#include "base/containers/circular_deque.h"
 #include "content/renderer/input/main_thread_event_queue_task.h"
 
 namespace content {
@@ -36,7 +36,8 @@ class MainThreadEventQueueTaskList {
   size_t size() const { return queue_.size(); }
 
  private:
-  typedef std::deque<std::unique_ptr<MainThreadEventQueueTask>> EventQueue;
+  using EventQueue =
+      base::circular_deque<std::unique_ptr<MainThreadEventQueueTask>>;
   EventQueue queue_;
 
   DISALLOW_COPY_AND_ASSIGN(MainThreadEventQueueTaskList);

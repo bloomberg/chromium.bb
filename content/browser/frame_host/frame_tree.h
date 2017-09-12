@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -64,7 +65,7 @@ class CONTENT_EXPORT FrameTree {
 
     FrameTreeNode* current_node_;
     FrameTreeNode* const root_of_subtree_to_skip_;
-    std::queue<FrameTreeNode*> queue_;
+    base::queue<FrameTreeNode*> queue_;
   };
 
   class CONTENT_EXPORT NodeRange {

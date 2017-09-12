@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/containers/circular_deque.h"
 #include "base/lazy_instance.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/compositor/image_transport_factory.h"
@@ -34,8 +35,9 @@ bool g_has_shut_down = false;
 uint32_t g_browser_compositor_count = 0;
 
 // A spare RecyclableCompositorMac kept around for recycling.
-base::LazyInstance<std::deque<std::unique_ptr<RecyclableCompositorMac>>>::
-    DestructorAtExit g_spare_recyclable_compositors;
+base::LazyInstance<base::circular_deque<
+    std::unique_ptr<RecyclableCompositorMac>>>::DestructorAtExit
+    g_spare_recyclable_compositors;
 
 void ReleaseSpareCompositors() {
   // Allow at most one spare recyclable compositor.

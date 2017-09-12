@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/containers/circular_deque.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -339,7 +340,7 @@ class LegacyTouchEventQueueTest : public testing::Test,
   std::unique_ptr<InputEventAckState> sync_ack_result_;
   double slop_length_dips_;
   gfx::PointF anchor_;
-  std::deque<int> sent_events_ids_;
+  base::circular_deque<int> sent_events_ids_;
 };
 
 // Tests that touch-events are queued properly.

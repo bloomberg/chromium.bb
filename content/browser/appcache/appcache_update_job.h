@@ -8,12 +8,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <deque>
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -252,7 +252,7 @@ class CONTENT_EXPORT AppCacheUpdateJob
   // Helper container to track which urls have not been fetched yet. URLs are
   // removed when the fetch is initiated. Flag indicates whether an attempt
   // to load the URL from storage has already been tried and failed.
-  std::deque<UrlToFetch> urls_to_fetch_;
+  base::circular_deque<UrlToFetch> urls_to_fetch_;
 
   // Helper container to track which urls are being loaded from response
   // storage.

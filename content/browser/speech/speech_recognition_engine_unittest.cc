@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include <memory>
-#include <queue>
 
 #include "base/big_endian.h"
+#include "base/containers/queue.h"
 #include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -103,7 +103,7 @@ class SpeechRecognitionEngineTest
   std::string response_buffer_;
   SpeechRecognitionErrorCode error_;
   int end_of_utterance_counter_;
-  std::queue<SpeechRecognitionResults> results_;
+  base::queue<SpeechRecognitionResults> results_;
 };
 
 TEST_F(SpeechRecognitionEngineTest, SingleDefinitiveResult) {

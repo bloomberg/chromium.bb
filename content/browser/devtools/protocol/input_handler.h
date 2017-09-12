@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_PROTOCOL_INPUT_HANDLER_H_
 #define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_INPUT_HANDLER_H_
 
+#include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -148,8 +149,9 @@ class InputHandler : public DevToolsDomainHandler,
   // Callbacks for calls to Input.dispatchKey/MouseEvent that have been sent to
   // the renderer, but that we haven't yet received an ack for.
   bool input_queued_;
-  std::deque<std::unique_ptr<DispatchKeyEventCallback>> pending_key_callbacks_;
-  std::deque<std::unique_ptr<DispatchMouseEventCallback>>
+  base::circular_deque<std::unique_ptr<DispatchKeyEventCallback>>
+      pending_key_callbacks_;
+  base::circular_deque<std::unique_ptr<DispatchMouseEventCallback>>
       pending_mouse_callbacks_;
   float page_scale_factor_;
   gfx::SizeF scrollable_viewport_size_;

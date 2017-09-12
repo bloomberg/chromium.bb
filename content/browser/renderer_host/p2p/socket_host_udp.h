@@ -8,13 +8,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <deque>
 #include <memory>
 #include <set>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
@@ -99,7 +99,7 @@ class CONTENT_EXPORT P2PSocketHostUdp : public P2PSocketHost {
   scoped_refptr<net::IOBuffer> recv_buffer_;
   net::IPEndPoint recv_address_;
 
-  std::deque<PendingPacket> send_queue_;
+  base::circular_deque<PendingPacket> send_queue_;
   bool send_pending_;
   net::DiffServCodePoint last_dscp_;
 

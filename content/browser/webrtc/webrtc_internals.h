@@ -6,10 +6,10 @@
 #define CONTENT_BROWSER_WEBRTC_WEBRTC_INTERNALS_H_
 
 #include <memory>
-#include <queue>
 #include <string>
 
 #include "base/containers/hash_tables.h"
+#include "base/containers/queue.h"
 #include "base/gtest_prod_util.h"
 #include "base/lazy_instance.h"
 #include "base/memory/weak_ptr.h"
@@ -251,7 +251,7 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
     DISALLOW_COPY_AND_ASSIGN(PendingUpdate);
   };
 
-  std::queue<PendingUpdate> pending_updates_;
+  base::queue<PendingUpdate> pending_updates_;
   const int aggregate_updates_ms_;
 
   // Weak factory for this object that we use for bulking up updates.

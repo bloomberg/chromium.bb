@@ -6,13 +6,13 @@
 
 #include <stddef.h>
 #include <memory>
-#include <queue>
 #include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/containers/queue.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/system_monitor/system_monitor.h"
@@ -218,7 +218,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
 
   mojo::BindingSet<mojom::MediaStreamDispatcher> bindings_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  std::queue<base::Closure> quit_closures_;
+  base::queue<base::Closure> quit_closures_;
 };
 
 class MockMediaStreamUIProxy : public FakeMediaStreamUIProxy {

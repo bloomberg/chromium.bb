@@ -572,6 +572,9 @@ BrowsingDataRemoverImpl::RemovalTask::RemovalTask(
       filter_builder(std::move(filter_builder)),
       observer(observer) {}
 
+BrowsingDataRemoverImpl::RemovalTask::RemovalTask(
+    RemovalTask&& other) noexcept = default;
+
 BrowsingDataRemoverImpl::RemovalTask::~RemovalTask() {}
 
 bool BrowsingDataRemoverImpl::AllDone() {

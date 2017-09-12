@@ -5,12 +5,12 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 
 #include <algorithm>
-#include <queue>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/hash_tables.h"
+#include "base/containers/queue.h"
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
@@ -4291,7 +4291,7 @@ void RenderFrameHostImpl::ForEachImmediateLocalRoot(
   if (!frame_tree_node_->child_count())
     return;
 
-  std::queue<FrameTreeNode*> queue;
+  base::queue<FrameTreeNode*> queue;
   for (size_t index = 0; index < frame_tree_node_->child_count(); ++index)
     queue.push(frame_tree_node_->child_at(index));
   while (queue.size()) {

@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
@@ -92,11 +93,11 @@ class CONTENT_EXPORT PepperNetworkProxyHost : public ppapi::host::ResourceHost {
     GURL url;
     ppapi::host::ReplyMessageContext reply_context;
   };
-  std::queue<UnsentRequest> unsent_requests_;
+  base::queue<UnsentRequest> unsent_requests_;
 
   // Requests awaiting a response from ProxyService. We need to store these so
   // that we can cancel them if we get destroyed.
-  std::queue<net::ProxyService::PacRequest*> pending_requests_;
+  base::queue<net::ProxyService::PacRequest*> pending_requests_;
 
   base::WeakPtrFactory<PepperNetworkProxyHost> weak_factory_;
 

@@ -5,12 +5,12 @@
 #ifndef CONTENT_BROWSER_FIND_REQUEST_MANAGER_H_
 #define CONTENT_BROWSER_FIND_REQUEST_MANAGER_H_
 
-#include <queue>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
 
+#include "base/containers/queue.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/stop_find_action.h"
@@ -299,7 +299,7 @@ class CONTENT_EXPORT FindRequestManager {
 
   // Find requests are queued here when previous requests need to be handled
   // before these ones can be properly routed.
-  std::queue<FindRequest> find_request_queue_;
+  base::queue<FindRequest> find_request_queue_;
 
   // Keeps track of the find request ID of the last find reply reported via
   // NotifyFindReply().

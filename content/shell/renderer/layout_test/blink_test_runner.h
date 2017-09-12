@@ -5,11 +5,11 @@
 #ifndef CONTENT_SHELL_RENDERER_LAYOUT_TEST_BLINK_TEST_RUNNER_H_
 #define CONTENT_SHELL_RENDERER_LAYOUT_TEST_BLINK_TEST_RUNNER_H_
 
-#include <deque>
 #include <memory>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "content/public/common/page_state.h"
@@ -222,7 +222,7 @@ class BlinkTestRunner : public RenderViewObserver,
   std::vector<std::vector<PageState> > session_histories_;
   std::vector<unsigned> current_entry_indexes_;
 
-  std::deque<base::Callback<void(const std::vector<std::string>&)>>
+  base::circular_deque<base::Callback<void(const std::vector<std::string>&)>>
       get_bluetooth_events_callbacks_;
 
   bool is_main_window_;

@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include <memory>
-#include <queue>
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/renderer_host/p2p/socket_host.h"
@@ -101,7 +101,7 @@ class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
 
   std::unique_ptr<net::StreamSocket> socket_;
   scoped_refptr<net::GrowableIOBuffer> read_buffer_;
-  std::queue<SendBuffer> write_queue_;
+  base::queue<SendBuffer> write_queue_;
   SendBuffer write_buffer_;
 
   bool write_pending_;

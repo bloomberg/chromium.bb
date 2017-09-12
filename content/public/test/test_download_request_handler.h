@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include <memory>
-#include <queue>
 
 #include "base/callback_forward.h"
+#include "base/containers/queue.h"
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -197,7 +197,7 @@ class TestDownloadRequestHandler {
     // * Distinctions about which read requests signal the error is often only
     //   important at the //net layer. From //content, it would appear that 100
     //   bytes were read and then request failed with ERR_CONNECTION_RESET.
-    std::queue<InjectedError> injected_errors;
+    base::queue<InjectedError> injected_errors;
   };
 
   // Details about completed requests returned by GetCompletedRequestInfo().

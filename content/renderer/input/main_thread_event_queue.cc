@@ -4,6 +4,7 @@
 
 #include "content/renderer/input/main_thread_event_queue.h"
 
+#include "base/containers/circular_deque.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -199,7 +200,7 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
   }
 
   // Contains the pending callbacks to be called.
-  std::deque<HandledEventCallback> blocking_coalesced_callbacks_;
+  base::circular_deque<HandledEventCallback> blocking_coalesced_callbacks_;
   // Contains the number of non-blocking events coalesced.
   size_t non_blocking_coalesced_count_;
   base::TimeTicks creation_timestamp_;

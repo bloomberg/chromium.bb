@@ -11,6 +11,7 @@
 #include "base/base64.h"
 #include "base/command_line.h"
 #include "base/containers/hash_tables.h"
+#include "base/containers/queue.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -357,7 +358,7 @@ std::vector<GURL> ComputeCookieURLs(RenderFrameHostImpl* frame_host,
     for (size_t i = 0; i < actual_urls->length(); i++)
       urls.push_back(GURL(actual_urls->get(i)));
   } else {
-    std::queue<FrameTreeNode*> queue;
+    base::queue<FrameTreeNode*> queue;
     queue.push(frame_host->frame_tree_node());
     while (!queue.empty()) {
       FrameTreeNode* node = queue.front();

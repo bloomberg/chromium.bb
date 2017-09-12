@@ -8,7 +8,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <deque>
 #include <map>
 #include <memory>
 #include <set>
@@ -16,6 +15,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/containers/id_map.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
@@ -1394,7 +1394,8 @@ class CONTENT_EXPORT RenderFrameImpl
   // callback, and the remaining elements are the other file chooser completion
   // still waiting to be run (in order).
   struct PendingFileChooser;
-  std::deque<std::unique_ptr<PendingFileChooser>> file_chooser_completions_;
+  base::circular_deque<std::unique_ptr<PendingFileChooser>>
+      file_chooser_completions_;
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
   // The external popup for the currently showing select popup.

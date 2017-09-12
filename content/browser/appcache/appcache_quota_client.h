@@ -5,11 +5,11 @@
 #ifndef CONTENT_BROWSER_APPCACHE_APPCACHE_QUOTA_CLIENT_H_
 #define CONTENT_BROWSER_APPCACHE_APPCACHE_QUOTA_CLIENT_H_
 
-#include <deque>
 #include <map>
 #include <memory>
 #include <string>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/appcache/appcache_storage.h"
@@ -31,7 +31,7 @@ class AppCacheStorageImpl;
 // been destroyed.
 class AppCacheQuotaClient : public storage::QuotaClient {
  public:
-  typedef std::deque<base::OnceClosure> RequestQueue;
+  using RequestQueue = base::circular_deque<base::OnceClosure>;
 
   ~AppCacheQuotaClient() override;
 

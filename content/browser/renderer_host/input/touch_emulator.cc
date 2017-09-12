@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/input/touch_emulator.h"
 
+#include "base/containers/queue.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/input/motion_event_web.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
@@ -117,7 +118,7 @@ void TouchEmulator::Disable() {
   mode_ = Mode::kEmulatingTouchFromMouse;
   CancelTouch();
   gesture_provider_.reset();
-  std::queue<base::OnceClosure> empty;
+  base::queue<base::OnceClosure> empty;
   injected_touch_completion_callbacks_.swap(empty);
   client_->SetCursor(pointer_cursor_);
   ResetState();

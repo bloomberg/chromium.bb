@@ -10,6 +10,7 @@
 #include <deque>
 #include <memory>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
@@ -183,9 +184,9 @@ class CONTENT_EXPORT GestureEventQueue {
 
   bool processing_acks_ = false;
 
-  typedef std::deque<GestureEventWithLatencyInfo> GestureQueue;
-  typedef std::deque<GestureEventWithLatencyInfoAndAckState>
-      GestureQueueWithAckState;
+  using GestureQueue = base::circular_deque<GestureEventWithLatencyInfo>;
+  using GestureQueueWithAckState =
+      base::circular_deque<GestureEventWithLatencyInfoAndAckState>;
 
   // If |allow_multiple_inflight_events_|, |coalesced_gesture_events_| stores
   // outstanding events that have been sent to the renderer but not yet been

@@ -7,9 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <queue>
-
 #include "base/bind.h"
+#include "base/containers/queue.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
@@ -334,7 +333,7 @@ void RenderAccessibilityImpl::OnPluginRootNodeUpdated() {
   if (!root.UpdateLayoutAndCheckValidity())
     return;
 
-  std::queue<WebAXObject> objs_to_explore;
+  base::queue<WebAXObject> objs_to_explore;
   objs_to_explore.push(root);
   while (objs_to_explore.size()) {
     WebAXObject obj = objs_to_explore.front();
@@ -464,7 +463,7 @@ void RenderAccessibilityImpl::SendLocationChanges() {
 
   // Do a breadth-first explore of the whole blink AX tree.
   base::hash_map<int, ui::AXRelativeBounds> new_locations;
-  std::queue<WebAXObject> objs_to_explore;
+  base::queue<WebAXObject> objs_to_explore;
   objs_to_explore.push(root);
   while (objs_to_explore.size()) {
     WebAXObject obj = objs_to_explore.front();

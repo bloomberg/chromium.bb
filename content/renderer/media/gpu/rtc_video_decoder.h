@@ -8,13 +8,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <deque>
 #include <list>
 #include <map>
 #include <memory>
 #include <set>
 #include <utility>
 
+#include "base/containers/circular_deque.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -274,11 +274,13 @@ class CONTENT_EXPORT RTCVideoDecoder
 
   // A queue storing WebRTC encoding images (and their metadata) that are
   // waiting for the shared memory. Guarded by |lock_|.
-  std::deque<std::pair<webrtc::EncodedImage, BufferData>> pending_buffers_;
+  base::circular_deque<std::pair<webrtc::EncodedImage, BufferData>>
+      pending_buffers_;
 
   // A queue storing buffers (and their metadata) that will be sent to VDA for
   // decode. Guarded by |lock_|.
-  std::deque<std::pair<std::unique_ptr<base::SharedMemory>, BufferData>>
+  base::circular_deque<
+      std::pair<std::unique_ptr<base::SharedMemory>, BufferData>>
       decode_buffers_;
 
   // The id that will be given to the next bitstream buffer. Guarded by |lock_|.

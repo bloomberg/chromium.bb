@@ -5,9 +5,9 @@
 #ifndef CONTENT_SHELL_TEST_RUNNER_MOCK_WEB_SPEECH_RECOGNIZER_H_
 #define CONTENT_SHELL_TEST_RUNNER_MOCK_WEB_SPEECH_RECOGNIZER_H_
 
-#include <deque>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "third_party/WebKit/public/web/WebSpeechRecognizer.h"
@@ -80,7 +80,7 @@ class MockWebSpeechRecognizer : public blink::WebSpeechRecognizer {
   bool was_aborted_;
 
   // Queue of tasks to be run.
-  std::deque<Task*> task_queue_;
+  base::circular_deque<Task*> task_queue_;
   bool task_queue_running_;
 
   WebTestDelegate* delegate_;

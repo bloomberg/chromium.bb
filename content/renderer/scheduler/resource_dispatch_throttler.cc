@@ -5,6 +5,7 @@
 #include "content/renderer/scheduler/resource_dispatch_throttler.h"
 
 #include "base/auto_reset.h"
+#include "base/containers/circular_deque.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/resource_messages.h"
 #include "ipc/ipc_message_macros.h"
@@ -130,7 +131,7 @@ void ResourceDispatchThrottler::FlushAll() {
 
   TRACE_EVENT1("loader", "ResourceDispatchThrottler::FlushAll",
                "total_throttled_messages", throttled_messages_.size());
-  std::deque<IPC::Message*> throttled_messages;
+  base::circular_deque<IPC::Message*> throttled_messages;
   throttled_messages.swap(throttled_messages_);
   for (auto* message : throttled_messages)
     ForwardMessage(message);

@@ -7,11 +7,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <deque>
 #include <memory>
 #include <utility>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -530,7 +530,7 @@ class ResourceLoaderTest : public testing::Test,
   // Allows controlling the return values of sequential calls to
   // HandleExternalProtocol. Values are removed by the measure they are used
   // but the last one which is used for all following calls.
-  std::deque<bool> handle_external_protocol_results_{false};
+  base::circular_deque<bool> handle_external_protocol_results_{false};
 
   net::URLRequestJobFactoryImpl job_factory_;
   net::TestNetworkQualityEstimator network_quality_estimator_;

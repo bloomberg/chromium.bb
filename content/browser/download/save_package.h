@@ -8,7 +8,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <deque>
 #include <map>
 #include <memory>
 #include <set>
@@ -16,6 +15,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -352,7 +352,7 @@ class CONTENT_EXPORT SavePackage
       const std::string& contents_mime_type);
 
   // A queue for items we are about to start saving.
-  std::deque<std::unique_ptr<SaveItem>> waiting_item_queue_;
+  base::circular_deque<std::unique_ptr<SaveItem>> waiting_item_queue_;
 
   // Map of all saving job in in-progress state.
   SaveItemIdMap in_progress_items_;

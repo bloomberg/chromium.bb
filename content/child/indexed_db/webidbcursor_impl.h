@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/containers/circular_deque.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
@@ -72,9 +72,9 @@ class CONTENT_EXPORT WebIDBCursorImpl : public blink::WebIDBCursor {
   scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
 
   // Prefetch cache.
-  std::deque<IndexedDBKey> prefetch_keys_;
-  std::deque<IndexedDBKey> prefetch_primary_keys_;
-  std::deque<blink::WebIDBValue> prefetch_values_;
+  base::circular_deque<IndexedDBKey> prefetch_keys_;
+  base::circular_deque<IndexedDBKey> prefetch_primary_keys_;
+  base::circular_deque<blink::WebIDBValue> prefetch_values_;
 
   // Number of continue calls that would qualify for a pre-fetch.
   int continue_count_;
