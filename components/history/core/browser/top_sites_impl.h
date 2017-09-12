@@ -57,6 +57,12 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
   // callable multiple time and during the whole lifetime of TopSitesImpl.
   using CanAddURLToHistoryFn = base::Callback<bool(const GURL&)>;
 
+  // How many non-forced top sites to store in the cache.
+  static constexpr size_t kNonForcedTopSitesNumber = 10;
+
+  // How many forced top sites to store in the cache.
+  static constexpr size_t kForcedTopSitesNumber = 10;
+
   TopSitesImpl(PrefService* pref_service,
                HistoryService* history_service,
                const PrepopulatedPageList& prepopulated_pages,
