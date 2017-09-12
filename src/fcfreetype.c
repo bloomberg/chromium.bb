@@ -2140,8 +2140,8 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks FC_UNUSED, int *spac
     FcCharSet	    *fcs;
     int		    o;
     FT_Int	    load_flags = FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH | FT_LOAD_NO_SCALE | FT_LOAD_NO_HINTING;
-    FT_Pos	    advances[3];
-    unsigned int    num_advances = 0;
+    FT_Pos	    advances[3] = {};
+    unsigned int    num_advances = spacing ? 0 : 3;
 
     fcs = FcCharSetCreate ();
     if (!fcs)
@@ -2265,14 +2265,19 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks FC_UNUSED, int *spac
 #endif
 	break;
     }
-    if (num_advances <= 1)
-	*spacing = FC_MONO;
-    else if (num_advances == 2 &&
-	     fc_approximately_equal (fc_min (advances[0], advances[1]) * 2,
-				     fc_max (advances[0], advances[1])))
-        *spacing = FC_DUAL;
-    else
-	*spacing = FC_PROPORTIONAL;
+
+    if (spacing)
+    {
+      if (num_advances <= 1)
+	  *spacing = FC_MONO;
+      else if (num_advances == 2 &&
+	       fc_approximately_equal (fc_min (advances[0], advances[1]) * 2,
+				       fc_max (advances[0], advances[1])))
+	  *spacing = FC_DUAL;
+      else
+	  *spacing = FC_PROPORTIONAL;
+    }
+
     return fcs;
 bail1:
     FcCharSetDestroy (fcs);
@@ -2283,9 +2288,7 @@ bail0:
 FcCharSet *
 FcFreeTypeCharSet (FT_Face face, FcBlanks *blanks FC_UNUSED)
 {
-    int spacing;
-
-    return FcFreeTypeCharSetAndSpacing (face, blanks, &spacing);
+    return FcFreeTypeCharSetAndSpacing (face, blanks, NULL);
 }
 
 
