@@ -17,6 +17,7 @@
 #include "cc/test/fake_raster_source.h"
 #include "cc/test/fake_recording_source.h"
 #include "cc/test/pixel_test.h"
+#include "cc/test/test_in_process_context_provider.h"
 #include "components/viz/service/display/gl_renderer.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "media/base/video_frame.h"
@@ -302,10 +303,20 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
     bits_per_channel = 10;
   }
 
+  viz::ResourceFormat yuv_highbit_resource_format =
+      resource_provider->YuvResourceFormat(bits_per_channel);
+
+  float multiplier = 1.0;
+
+  if (yuv_highbit_resource_format != viz::R16_EXT)
+    bits_per_channel = 8;
+  else
+    multiplier = 65535.0f / ((1 << bits_per_channel) - 1);
+
   yuv_quad->SetNew(shared_state, rect, visible_rect, needs_blending,
                    ya_tex_coord_rect, uv_tex_coord_rect, ya_tex_size,
                    uv_tex_size, y_resource, u_resource, v_resource, a_resource,
-                   color_space, video_color_space, 0.0f, 1.0f,
+                   color_space, video_color_space, 0.0f, multiplier,
                    bits_per_channel);
 }
 
@@ -1304,9 +1315,35 @@ class VideoGLRendererPixelTest : public GLRendererPixelTest {
   std::unique_ptr<VideoResourceUpdater> video_resource_updater_;
 };
 
+enum class HighbitTexture {
+  Y8,
+  R16_EXT,
+};
+
 class VideoGLRendererPixelHiLoTest
     : public VideoGLRendererPixelTest,
-      public ::testing::WithParamInterface<bool> {};
+      public ::testing::WithParamInterface<
+          ::testing::tuple<bool, HighbitTexture>> {
+ public:
+  void SetSupportHighbitTexture(HighbitTexture texture) {
+    TestInProcessContextProvider* context_provider =
+        GetTestInProcessContextProvider();
+    switch (texture) {
+      case HighbitTexture::Y8:
+        break;
+      case HighbitTexture::R16_EXT:
+        context_provider->SetSupportTextureNorm16(true);
+        video_resource_updater_->SetUseR16ForTesting(true);
+        break;
+    }
+  }
+
+ private:
+  TestInProcessContextProvider* GetTestInProcessContextProvider() {
+    return static_cast<TestInProcessContextProvider*>(
+        output_surface_->context_provider());
+  }
+};
 
 TEST_P(VideoGLRendererPixelHiLoTest, SimpleYUVRect) {
   gfx::Rect rect(this->device_viewport_size_);
@@ -1320,7 +1357,10 @@ TEST_P(VideoGLRendererPixelHiLoTest, SimpleYUVRect) {
   SharedQuadState* shared_state =
       CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
 
-  bool highbit = GetParam();
+  const bool highbit = testing::get<0>(GetParam());
+  const HighbitTexture format = testing::get<1>(GetParam());
+  SetSupportHighbitTexture(format);
+
   CreateTestYUVVideoDrawQuad_Striped(
       shared_state, media::PIXEL_FORMAT_YV12, media::COLOR_SPACE_SD_REC601,
       false, highbit, gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f), pass.get(),
@@ -1349,7 +1389,10 @@ TEST_P(VideoGLRendererPixelHiLoTest, ClippedYUVRect) {
   SharedQuadState* shared_state =
       CreateTestSharedQuadState(gfx::Transform(), viewport, pass.get());
 
-  bool highbit = GetParam();
+  const bool highbit = testing::get<0>(GetParam());
+  const HighbitTexture format = testing::get<1>(GetParam());
+  SetSupportHighbitTexture(format);
+
   CreateTestYUVVideoDrawQuad_Striped(
       shared_state, media::PIXEL_FORMAT_YV12, media::COLOR_SPACE_SD_REC601,
       false, highbit, gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f), pass.get(),
@@ -1418,7 +1461,12 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVRectBlack) {
 }
 
 // First argument (test case prefix) is intentionally left empty.
-INSTANTIATE_TEST_CASE_P(, VideoGLRendererPixelHiLoTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(
+    ,
+    VideoGLRendererPixelHiLoTest,
+    testing::Combine(testing::Bool(),
+                     testing::Values(HighbitTexture::Y8,
+                                     HighbitTexture::R16_EXT)));
 
 TEST_F(VideoGLRendererPixelTest, SimpleYUVJRect) {
   gfx::Rect rect(this->device_viewport_size_);

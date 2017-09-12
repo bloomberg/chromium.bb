@@ -110,6 +110,7 @@ gpu::Capabilities TestInProcessContextProvider::ContextCapabilities() {
   gpu::Capabilities capabilities;
   capabilities.texture_rectangle = true;
   capabilities.sync_query = true;
+  capabilities.texture_norm16 = true;
   switch (viz::PlatformColor::Format()) {
     case viz::PlatformColor::SOURCE_FORMAT_RGBA8:
       capabilities.texture_format_bgra8888 = false;
