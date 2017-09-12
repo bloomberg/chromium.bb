@@ -244,8 +244,12 @@ double NetworkInformation::GetRandomMultiplier() const {
   // cross-origin fingerprinting. The random number should also be a function
   // of randomized salt which is known only to the device. This prevents
   // origin from removing noise from the estimates.
-  unsigned hash = StringHash::GetHash(GetExecutionContext()->Url().Host()) +
-                  GetNetworkStateNotifier().RandomizationSalt();
+  const String host = GetExecutionContext()->Url().Host();
+  if (!host)
+    return 1.0;
+
+  unsigned hash =
+      StringHash::GetHash(host) + GetNetworkStateNotifier().RandomizationSalt();
   double random_multiplier = 0.9 + static_cast<double>((hash % 21)) * 0.01;
   DCHECK_LE(0.90, random_multiplier);
   DCHECK_GE(1.10, random_multiplier);
