@@ -142,6 +142,7 @@ class OutOfProcessInstance : public pp::Instance,
   void FormTextFieldFocusChange(bool in_focus) override;
   bool IsPrintPreview() override;
   uint32_t GetBackgroundColor() override;
+  void CancelBrowserDownload() override;
   void IsSelectingChanged(bool is_selecting) override;
   void SelectionChanged(const pp::Rect& left, const pp::Rect& right) override;
 
