@@ -62440,6 +62440,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PrintPreview.GcpPromo" enum="PrintPreviewGcpPromoBuckets">
+  <obsolete>
+    No longer used as of 09/2017.
+  </obsolete>
   <owner>vitalybuka@chromium.org</owner>
   <summary>
     Actions performed by the user when the Google Cloud Print add-printers

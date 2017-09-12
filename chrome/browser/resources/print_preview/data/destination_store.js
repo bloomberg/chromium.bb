@@ -907,18 +907,6 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * @return {boolean} Whether only default cloud destinations have been
-     *     loaded.
-     */
-    hasOnlyDefaultCloudDestinations: function() {
-      // TODO: Move the logic to print_preview.
-      return this.destinations_.every(function(dest) {
-        return dest.isLocal ||
-            dest.id == print_preview.Destination.GooglePromotedId.DOCS;
-      });
-    },
-
-    /**
      * @param {print_preview.Destination} destination Destination to select.
      */
     selectDestination: function(destination) {

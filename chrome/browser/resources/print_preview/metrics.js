@@ -54,25 +54,6 @@ cr.define('print_preview', function() {
   };
 
   /**
-   * Enumeration of buckets that a user can enter while using the Google Cloud
-   * Print promotion.
-   * @enum {number}
-   */
-  Metrics.GcpPromoBucket = {
-    // Used when the Google Cloud Print promotion (shown above the PDF preview
-    // plugin) is shown to the user.
-    PROMO_SHOWN: 0,
-    // Used when the user clicks the "Get started" link in the promotion shown
-    // in CLOUDPRINT_BIG_PROMO_SHOWN.
-    PROMO_CLICKED: 1,
-    // Used when the user dismisses the promotion shown in
-    // CLOUDPRINT_BIG_PROMO_SHOWN.
-    PROMO_CLOSED: 2,
-    // Max value.
-    GCP_PROMO_MAX_BUCKET: 3
-  };
-
-  /**
    * Print settings UI usage metrics buckets.
    * @enum {number}
    */
@@ -140,19 +121,6 @@ cr.define('print_preview', function() {
   };
 
   /**
-   * GCP promotion specific usage statistics context.
-   * @constructor
-   * @extends {print_preview.MetricsContext}
-   */
-  function GcpPromoMetricsContext() {
-    MetricsContext.call(
-        this, 'PrintPreview.GcpPromo',
-        Metrics.GcpPromoBucket.GCP_PROMO_MAX_BUCKET);
-  }
-
-  GcpPromoMetricsContext.prototype = {__proto__: MetricsContext.prototype};
-
-  /**
    * Print settings UI specific usage statistics context.
    * @constructor
    * @extends {print_preview.MetricsContext}
@@ -172,7 +140,6 @@ cr.define('print_preview', function() {
     Metrics: Metrics,
     MetricsContext: MetricsContext,
     DestinationSearchMetricsContext: DestinationSearchMetricsContext,
-    GcpPromoMetricsContext: GcpPromoMetricsContext,
     PrintSettingsUiMetricsContext: PrintSettingsUiMetricsContext
   };
 });
