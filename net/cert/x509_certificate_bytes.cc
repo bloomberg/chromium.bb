@@ -7,6 +7,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/pickle.h"
 #include "base/stl_util.h"
+#include "build/build_config.h"
 #include "crypto/openssl_util.h"
 #include "net/base/ip_address.h"
 #include "net/cert/asn1_util.h"
@@ -39,7 +40,31 @@ bool GeneralizedTimeToBaseTime(const der::GeneralizedTime& generalized,
   exploded.hour = generalized.hours;
   exploded.minute = generalized.minutes;
   exploded.second = generalized.seconds;
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+  if (base::Time::FromUTCExploded(exploded, result))
+    return true;
+
+  if (sizeof(time_t) == 4) {
+    // Fail on obviously bad dates before trying the 32-bit hacks.
+    if (!exploded.HasValidValues())
+      return false;
+
+    // Hack to handle dates that can't be converted on 32-bit systems.
+    // TODO(mattm): consider consolidating this with
+    // SaturatedTimeFromUTCExploded from cookie_util.cc
+    if (generalized.year >= 2038) {
+      *result = base::Time::Max();
+      return true;
+    }
+    if (generalized.year < 1970) {
+      *result = base::Time::Min();
+      return true;
+    }
+  }
+  return false;
+#else
   return base::Time::FromUTCExploded(exploded, result);
+#endif
 }
 
 // Sets |value| to the Value from a DER Sequence Tag-Length-Value and return
