@@ -40,20 +40,20 @@ security_state::SecurityLevel GetSecurityLevelForWebState(
 
 }  // namespace
 
-const char kCredentialIdKey[] = "id";
-const char kCredentialTypeKey[] = "type";
-const char kCredentialNameKey[] = "name";
-const char kCredentialIconKey[] = "iconURL";
-const char kPasswordCredentialPasswordKey[] = "password";
-const char kFederatedCredentialProviderKey[] = "provider";
+const char kCredentialIdKey[] = "_id";
+const char kCredentialTypeKey[] = "_type";
+const char kCredentialNameKey[] = "_name";
+const char kCredentialIconKey[] = "_iconURL";
+const char kPasswordCredentialPasswordKey[] = "_password";
+const char kFederatedCredentialProviderKey[] = "_provider";
 const char kCredentialRequestMediationKey[] = "mediation";
 const char kCredentialRequestPasswordKey[] = "password";
 const char kCredentialRequestProvidersKey[] = "providers";
 const char kMediationRequirementSilent[] = "silent";
 const char kMediationRequirementRequired[] = "required";
 const char kMediationRequirementOptional[] = "optional";
-const char kCredentialTypePassword[] = "PasswordCredential";
-const char kCredentialTypeFederated[] = "FederatedCredential";
+const char kCredentialTypePassword[] = "password";
+const char kCredentialTypeFederated[] = "federated";
 
 bool ParseMediationRequirement(const base::DictionaryValue& json,
                                CredentialMediationRequirement* mediation) {

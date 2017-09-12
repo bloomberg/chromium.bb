@@ -40,7 +40,7 @@ std::string CredentialInfoToJsCredential(
         base::GetQuotedJSONString(info.icon.spec()).c_str(),
         base::GetQuotedJSONString(info.password).c_str());
   }
-  NOTREACHED() << "Invalid CredentialType";
+  /* if (info.type == CREDENTIAL_TYPE_EMPTY) */
   return std::string();
 }
 
