@@ -34,6 +34,7 @@ class CastDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
   // content::DevToolsManagerDelegate implementation.
   content::DevToolsAgentHost::List RemoteDebuggingTargets() override;
   std::string GetDiscoveryPageHTML() override;
+  bool IsBrowserTargetDiscoverable() override;
 
  private:
   std::unordered_set<content::WebContents*> enabled_webcontents_;

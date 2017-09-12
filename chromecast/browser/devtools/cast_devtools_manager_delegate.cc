@@ -67,5 +67,9 @@ std::string CastDevToolsManagerDelegate::GetDiscoveryPageHTML() {
 #endif
 }
 
+bool CastDevToolsManagerDelegate::IsBrowserTargetDiscoverable() {
+  return true;
+}
+
 }  // namespace shell
 }  // namespace chromecast
