@@ -170,7 +170,6 @@ main (int argc, char **argv)
 	    FcPattern *pat;
 
 	    id = ((instance_num << 16) + face_num);
-	    printf("id %d\n", id);
 	    if (FT_New_Face (ftLibrary, argv[i], id, &face))
 	      break;
 	    num_faces = face->num_faces;
