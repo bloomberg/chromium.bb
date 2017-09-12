@@ -3192,6 +3192,78 @@ static INLINE int get_motion_inconsistency(MOTION_DIRECTION this_mv,
 #endif
 
 #if CONFIG_EXT_PARTITION_TYPES
+// Try searching for an encoding for the given subblock. Returns zero if the
+// rdcost is already too high (to tell the caller not to bother searching for
+// encodings of further subblocks)
+static int rd_try_subblock(const AV1_COMP *const cpi, ThreadData *td,
+                           TileDataEnc *tile_data, TOKENEXTRA **tp,
+                           int is_first, int is_last, int mi_row, int mi_col,
+                           BLOCK_SIZE subsize, RD_STATS *best_rdc,
+                           RD_STATS *sum_rdc, RD_STATS *this_rdc,
+#if CONFIG_SUPERTX
+                           int64_t best_rd, int *sum_rate_nocoef,
+                           int *this_rate_nocoef, int *abort_flag,
+#endif
+                           PARTITION_TYPE partition,
+                           PICK_MODE_CONTEXT *prev_ctx,
+                           PICK_MODE_CONTEXT *this_ctx) {
+#if CONFIG_SUPERTX
+#define RTS_X_RATE_NOCOEF_ARG ((is_first) ? sum_rate_nocoef : this_rate_nocoef),
+#define RTS_MAX_RDCOST INT64_MAX
+#else
+#define RTS_X_RATE_NOCOEF_ARG
+#define RTS_MAX_RDCOST best_rdc->rdcost
+#endif
+
+  MACROBLOCK *const x = &td->mb;
+
+  if (cpi->sf.adaptive_motion_search) load_pred_mv(x, prev_ctx);
+
+  // On the first time around, write the rd stats straight to sum_rdc. Also, we
+  // should treat sum_rdc as containing zeros (even if it doesn't) to avoid
+  // having to zero it at the start.
+  if (is_first) this_rdc = sum_rdc;
+  const int64_t spent_rdcost = is_first ? 0 : sum_rdc->rdcost;
+  const int64_t rdcost_remaining = best_rdc->rdcost - spent_rdcost;
+
+  rd_pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, this_rdc,
+                   RTS_X_RATE_NOCOEF_ARG partition, subsize, this_ctx,
+                   rdcost_remaining);
+
+#if CONFIG_SUPERTX
+  if (is_first) *abort_flag = sum_rdc->rdcost >= best_rd;
+#endif
+
+  if (!is_first) {
+    if (this_rdc->rate == INT_MAX) {
+      sum_rdc->rdcost = INT64_MAX;
+#if CONFIG_SUPERTX
+      *sum_rate_nocoef = INT_MAX;
+#endif
+    } else {
+      sum_rdc->rate += this_rdc->rate;
+      sum_rdc->dist += this_rdc->dist;
+      sum_rdc->rdcost += this_rdc->rdcost;
+#if CONFIG_SUPERTX
+      *sum_rate_nocoef += *this_rate_nocoef;
+#endif
+    }
+  }
+
+  if (sum_rdc->rdcost >= RTS_MAX_RDCOST) return 0;
+
+  if (!is_last) {
+    update_state(cpi, td, this_ctx, mi_row, mi_col, subsize, 1);
+    encode_superblock(cpi, td, tp, DRY_RUN_NORMAL, mi_row, mi_col, subsize,
+                      NULL);
+  }
+
+  return 1;
+
+#undef RTS_X_RATE_NOCOEF_ARG
+#undef RTS_MAX_RDCOST
+}
+
 static void rd_test_partition3(
     const AV1_COMP *const cpi, ThreadData *td, TileDataEnc *tile_data,
     TOKENEXTRA **tp, PC_TREE *pc_tree, RD_STATS *best_rdc,
@@ -3204,172 +3276,97 @@ static void rd_test_partition3(
     BLOCK_SIZE subsize1, int mi_row2, int mi_col2, BLOCK_SIZE subsize2) {
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
-  RD_STATS this_rdc, sum_rdc;
+  RD_STATS sum_rdc, this_rdc;
+
 #if CONFIG_SUPERTX
   const AV1_COMMON *const cm = &cpi->common;
   TileInfo *const tile_info = &tile_data->tile_info;
-  int this_rate_nocoef, sum_rate_nocoef;
+  int sum_rate_nocoef, this_rate_nocoef;
   int abort_flag;
   const int supertx_allowed = !frame_is_intra_only(cm) &&
                               bsize <= MAX_SUPERTX_BLOCK_SIZE &&
                               !xd->lossless[0];
-#endif
-  if (cpi->sf.adaptive_motion_search) load_pred_mv(x, ctx);
 
-  rd_pick_sb_modes(cpi, tile_data, x, mi_row0, mi_col0, &sum_rdc,
-#if CONFIG_SUPERTX
-                   &sum_rate_nocoef,
-#endif
-#if CONFIG_EXT_PARTITION_TYPES
-                   partition,
-#endif
-                   subsize0, &ctxs[0], best_rdc->rdcost);
-#if CONFIG_SUPERTX
-  abort_flag = sum_rdc.rdcost >= best_rd;
-#endif
-
-#if CONFIG_SUPERTX
-  if (sum_rdc.rdcost < INT64_MAX)
+#define RTP_STX_TRY_ARGS \
+  best_rd, &sum_rate_nocoef, &this_rate_nocoef, &abort_flag,
 #else
-  if (sum_rdc.rdcost < best_rdc->rdcost)
+#define RTP_STX_TRY_ARGS
 #endif
-  {
-    PICK_MODE_CONTEXT *ctx_0 = &ctxs[0];
-    update_state(cpi, td, ctx_0, mi_row0, mi_col0, subsize0, 1);
-    encode_superblock(cpi, td, tp, DRY_RUN_NORMAL, mi_row0, mi_col0, subsize0,
-                      NULL);
 
-    if (cpi->sf.adaptive_motion_search) load_pred_mv(x, ctx_0);
+  if (!rd_try_subblock(cpi, td, tile_data, tp, 1, 0, mi_row0, mi_col0, subsize0,
+                       best_rdc, &sum_rdc, &this_rdc,
+                       RTP_STX_TRY_ARGS partition, ctx, &ctxs[0]))
+    return;
+
+  if (!rd_try_subblock(cpi, td, tile_data, tp, 0, 0, mi_row1, mi_col1, subsize1,
+                       best_rdc, &sum_rdc, &this_rdc,
+                       RTP_STX_TRY_ARGS partition, &ctxs[0], &ctxs[1]))
+    return;
+
+  if (!rd_try_subblock(cpi, td, tile_data, tp, 0, 1, mi_row2, mi_col2, subsize2,
+                       best_rdc, &sum_rdc, &this_rdc,
+                       RTP_STX_TRY_ARGS partition, &ctxs[1], &ctxs[2]))
+    return;
 
 #if CONFIG_SUPERTX
-    rd_pick_sb_modes(cpi, tile_data, x, mi_row1, mi_col1, &this_rdc,
-                     &this_rate_nocoef,
-#if CONFIG_EXT_PARTITION_TYPES
-                     partition,
-#endif
-                     subsize1, &ctxs[1], INT64_MAX - sum_rdc.rdcost);
-#else
-    rd_pick_sb_modes(cpi, tile_data, x, mi_row1, mi_col1, &this_rdc,
-#if CONFIG_EXT_PARTITION_TYPES
-                     partition,
-#endif
-                     subsize1, &ctxs[1], best_rdc->rdcost - sum_rdc.rdcost);
-#endif  // CONFIG_SUPERTX
+  if (supertx_allowed && !abort_flag && sum_rdc.rdcost < INT64_MAX) {
+    TX_SIZE supertx_size = max_txsize_lookup[bsize];
+    const PARTITION_TYPE best_partition = pc_tree->partitioning;
+    pc_tree->partitioning = partition;
+    sum_rdc.rate += av1_cost_bit(
+        cm->fc->supertx_prob[partition_supertx_context_lookup[partition]]
+                            [supertx_size],
+        0);
+    sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
 
-    if (this_rdc.rate == INT_MAX) {
-      sum_rdc.rdcost = INT64_MAX;
-#if CONFIG_SUPERTX
-      sum_rate_nocoef = INT_MAX;
-#endif
-    } else {
-      sum_rdc.rate += this_rdc.rate;
-      sum_rdc.dist += this_rdc.dist;
-      sum_rdc.rdcost += this_rdc.rdcost;
-#if CONFIG_SUPERTX
-      sum_rate_nocoef += this_rate_nocoef;
-#endif
-    }
+    if (!check_intra_sb(cpi, tile_info, mi_row, mi_col, bsize, pc_tree)) {
+      TX_TYPE best_tx = DCT_DCT;
+      RD_STATS tmp_rdc = { sum_rate_nocoef, 0, 0 };
 
-#if CONFIG_SUPERTX
-    if (sum_rdc.rdcost < INT64_MAX)
-#else
-    if (sum_rdc.rdcost < best_rdc->rdcost)
-#endif
-    {
-      PICK_MODE_CONTEXT *ctx_1 = &ctxs[1];
-      update_state(cpi, td, ctx_1, mi_row1, mi_col1, subsize1, 1);
-      encode_superblock(cpi, td, tp, DRY_RUN_NORMAL, mi_row1, mi_col1, subsize1,
-                        NULL);
+      restore_context(x, x_ctx, mi_row, mi_col, bsize);
 
-      if (cpi->sf.adaptive_motion_search) load_pred_mv(x, ctx_1);
+      rd_supertx_sb(cpi, td, tile_info, mi_row, mi_col, bsize, &tmp_rdc.rate,
+                    &tmp_rdc.dist, &best_tx, pc_tree);
 
-#if CONFIG_SUPERTX
-      rd_pick_sb_modes(cpi, tile_data, x, mi_row2, mi_col2, &this_rdc,
-                       &this_rate_nocoef,
-#if CONFIG_EXT_PARTITION_TYPES
-                       partition,
-#endif
-                       subsize2, &ctxs[2], INT64_MAX - sum_rdc.rdcost);
-#else
-      rd_pick_sb_modes(cpi, tile_data, x, mi_row2, mi_col2, &this_rdc,
-#if CONFIG_EXT_PARTITION_TYPES
-                       partition,
-#endif
-                       subsize2, &ctxs[2], best_rdc->rdcost - sum_rdc.rdcost);
-#endif  // CONFIG_SUPERTX
-
-      if (this_rdc.rate == INT_MAX) {
-        sum_rdc.rdcost = INT64_MAX;
-#if CONFIG_SUPERTX
-        sum_rate_nocoef = INT_MAX;
-#endif
-      } else {
-        sum_rdc.rate += this_rdc.rate;
-        sum_rdc.dist += this_rdc.dist;
-        sum_rdc.rdcost += this_rdc.rdcost;
-#if CONFIG_SUPERTX
-        sum_rate_nocoef += this_rate_nocoef;
-#endif
-      }
-
-#if CONFIG_SUPERTX
-      if (supertx_allowed && !abort_flag && sum_rdc.rdcost < INT64_MAX) {
-        TX_SIZE supertx_size = max_txsize_lookup[bsize];
-        const PARTITION_TYPE best_partition = pc_tree->partitioning;
-        pc_tree->partitioning = partition;
-        sum_rdc.rate += av1_cost_bit(
-            cm->fc->supertx_prob[partition_supertx_context_lookup[partition]]
-                                [supertx_size],
-            0);
-        sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
-
-        if (!check_intra_sb(cpi, tile_info, mi_row, mi_col, bsize, pc_tree)) {
-          TX_TYPE best_tx = DCT_DCT;
-          RD_STATS tmp_rdc = { sum_rate_nocoef, 0, 0 };
-
-          restore_context(x, x_ctx, mi_row, mi_col, bsize);
-
-          rd_supertx_sb(cpi, td, tile_info, mi_row, mi_col, bsize,
-                        &tmp_rdc.rate, &tmp_rdc.dist, &best_tx, pc_tree);
-
-          tmp_rdc.rate += av1_cost_bit(
-              cm->fc->supertx_prob[partition_supertx_context_lookup[partition]]
-                                  [supertx_size],
-              1);
-          tmp_rdc.rdcost = RDCOST(x->rdmult, tmp_rdc.rate, tmp_rdc.dist);
-          if (tmp_rdc.rdcost < sum_rdc.rdcost) {
-            sum_rdc = tmp_rdc;
-            update_supertx_param_sb(cpi, td, mi_row, mi_col, bsize, best_tx,
-                                    supertx_size, pc_tree);
-          }
-        }
-
-        pc_tree->partitioning = best_partition;
-      }
-#endif  // CONFIG_SUPERTX
-
-      if (sum_rdc.rdcost < best_rdc->rdcost) {
-        int pl = partition_plane_context(xd, mi_row, mi_col,
-#if CONFIG_UNPOISON_PARTITION_CTX
-                                         has_rows, has_cols,
-#endif
-                                         bsize);
-        sum_rdc.rate += x->partition_cost[pl][partition];
-        sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
-#if CONFIG_SUPERTX
-        sum_rate_nocoef += x->partition_cost[pl][partition];
-#endif
-        if (sum_rdc.rdcost < best_rdc->rdcost) {
-#if CONFIG_SUPERTX
-          *best_rate_nocoef = sum_rate_nocoef;
-          assert(*best_rate_nocoef >= 0);
-#endif
-          *best_rdc = sum_rdc;
-          pc_tree->partitioning = partition;
-        }
+      tmp_rdc.rate += av1_cost_bit(
+          cm->fc->supertx_prob[partition_supertx_context_lookup[partition]]
+                              [supertx_size],
+          1);
+      tmp_rdc.rdcost = RDCOST(x->rdmult, tmp_rdc.rate, tmp_rdc.dist);
+      if (tmp_rdc.rdcost < sum_rdc.rdcost) {
+        sum_rdc = tmp_rdc;
+        update_supertx_param_sb(cpi, td, mi_row, mi_col, bsize, best_tx,
+                                supertx_size, pc_tree);
       }
     }
+
+    pc_tree->partitioning = best_partition;
   }
+#endif
+
+  if (sum_rdc.rdcost >= best_rdc->rdcost) return;
+
+  int pl = partition_plane_context(xd, mi_row, mi_col,
+#if CONFIG_UNPOISON_PARTITION_CTX
+                                   has_rows, has_cols,
+#endif
+                                   bsize);
+  sum_rdc.rate += x->partition_cost[pl][partition];
+  sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
+#if CONFIG_SUPERTX
+  sum_rate_nocoef += x->partition_cost[pl][partition];
+#endif
+
+  if (sum_rdc.rdcost >= best_rdc->rdcost) return;
+
+#if CONFIG_SUPERTX
+  *best_rate_nocoef = sum_rate_nocoef;
+  assert(*best_rate_nocoef >= 0);
+#endif
+  *best_rdc = sum_rdc;
+  pc_tree->partitioning = partition;
+
+#undef RTP_STX_TRY_ARGS
 }
 #endif  // CONFIG_EXT_PARTITION_TYPES
 
@@ -4374,42 +4371,24 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   if ((bsize == BLOCK_64X64 || bsize == BLOCK_32X32 || bsize == BLOCK_16X16) &&
       partition_horz_allowed && !force_horz_split &&
       (do_rectangular_split || av1_active_h_edge(cpi, mi_row, mi_step))) {
-    int i;
     const int quarter_step = mi_size_high[bsize] / 4;
     PICK_MODE_CONTEXT *ctx_prev = ctx_none;
 
     subsize = get_subsize(bsize, PARTITION_HORZ_4);
-    av1_zero(sum_rdc);
 
-    for (i = 0; i < 4; ++i) {
+    for (int i = 0; i < 4; ++i) {
       int this_mi_row = mi_row + i * quarter_step;
 
       if (i > 0 && this_mi_row >= cm->mi_rows) break;
 
-      if (cpi->sf.adaptive_motion_search) load_pred_mv(x, ctx_prev);
+      PICK_MODE_CONTEXT *ctx_this = &pc_tree->horizontal4[i];
 
-      ctx_prev = &pc_tree->horizontal4[i];
-
-      rd_pick_sb_modes(cpi, tile_data, x, this_mi_row, mi_col, &this_rdc,
-                       PARTITION_HORZ_4, subsize, ctx_prev,
-                       best_rdc.rdcost - sum_rdc.rdcost);
-
-      if (this_rdc.rate == INT_MAX) {
-        sum_rdc.rdcost = INT64_MAX;
+      if (!rd_try_subblock(cpi, td, tile_data, tp, (i == 0), (i == 3),
+                           this_mi_row, mi_col, subsize, &best_rdc, &sum_rdc,
+                           &this_rdc, PARTITION_HORZ_4, ctx_prev, ctx_this))
         break;
-      } else {
-        sum_rdc.rate += this_rdc.rate;
-        sum_rdc.dist += this_rdc.dist;
-        sum_rdc.rdcost += this_rdc.rdcost;
-      }
 
-      if (sum_rdc.rdcost >= best_rdc.rdcost) break;
-
-      if (i < 3) {
-        update_state(cpi, td, ctx_prev, this_mi_row, mi_col, subsize, 1);
-        encode_superblock(cpi, td, tp, DRY_RUN_NORMAL, this_mi_row, mi_col,
-                          subsize, NULL);
-      }
+      ctx_prev = ctx_this;
     }
 
     if (sum_rdc.rdcost < best_rdc.rdcost) {
@@ -4430,41 +4409,24 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   if ((bsize == BLOCK_64X64 || bsize == BLOCK_32X32 || bsize == BLOCK_16X16) &&
       partition_vert_allowed && !force_vert_split &&
       (do_rectangular_split || av1_active_v_edge(cpi, mi_row, mi_step))) {
-    int i;
     const int quarter_step = mi_size_wide[bsize] / 4;
     PICK_MODE_CONTEXT *ctx_prev = ctx_none;
 
     subsize = get_subsize(bsize, PARTITION_VERT_4);
-    av1_zero(sum_rdc);
 
-    for (i = 0; i < 4; ++i) {
+    for (int i = 0; i < 4; ++i) {
       int this_mi_col = mi_col + i * quarter_step;
 
       if (i > 0 && this_mi_col >= cm->mi_cols) break;
 
-      if (cpi->sf.adaptive_motion_search) load_pred_mv(x, ctx_prev);
+      PICK_MODE_CONTEXT *ctx_this = &pc_tree->vertical4[i];
 
-      ctx_prev = &pc_tree->vertical4[i];
+      if (!rd_try_subblock(cpi, td, tile_data, tp, (i == 0), (i == 3), mi_row,
+                           this_mi_col, subsize, &best_rdc, &sum_rdc, &this_rdc,
+                           PARTITION_VERT_4, ctx_prev, ctx_this))
+        break;
 
-      rd_pick_sb_modes(cpi, tile_data, x, mi_row, this_mi_col, &this_rdc,
-                       PARTITION_VERT_4, subsize, ctx_prev,
-                       best_rdc.rdcost - sum_rdc.rdcost);
-
-      if (this_rdc.rate == INT_MAX) {
-        sum_rdc.rdcost = INT64_MAX;
-      } else {
-        sum_rdc.rate += this_rdc.rate;
-        sum_rdc.dist += this_rdc.dist;
-        sum_rdc.rdcost += this_rdc.rdcost;
-      }
-
-      if (sum_rdc.rdcost >= best_rdc.rdcost) break;
-
-      if (i < 3) {
-        update_state(cpi, td, ctx_prev, mi_row, this_mi_col, subsize, 1);
-        encode_superblock(cpi, td, tp, DRY_RUN_NORMAL, mi_row, this_mi_col,
-                          subsize, NULL);
-      }
+      ctx_prev = ctx_this;
     }
 
     if (sum_rdc.rdcost < best_rdc.rdcost) {
