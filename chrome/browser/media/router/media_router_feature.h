@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_MEDIA_ROUTER_MEDIA_ROUTER_FEATURE_H_
 #define CHROME_BROWSER_MEDIA_ROUTER_MEDIA_ROUTER_FEATURE_H_
 
+#include "base/feature_list.h"
+
 namespace content {
 class BrowserContext;
 }
@@ -15,6 +17,9 @@ namespace media_router {
 bool MediaRouterEnabled(content::BrowserContext* context);
 
 #if !defined(OS_ANDROID)
+
+extern const base::Feature kEnableCastChannelRetry;
+
 // Returns true if browser side DIAL discovery is enabled.
 bool DialLocalDiscoveryEnabled();
 
@@ -23,6 +28,9 @@ bool CastDiscoveryEnabled();
 
 // Returns true if local media casting is enabled.
 bool CastLocalMediaEnabled();
+
+// Returns true if cast channel retry is enabled.
+bool CastChannelRetryEnabled();
 #endif
 
 }  // namespace media_router

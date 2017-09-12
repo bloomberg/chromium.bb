@@ -5,8 +5,11 @@
 #include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service_impl.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial_params.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/router/discovery/media_sink_service_base.h"
+#include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
 #include "chrome/common/media_router/discovery/media_sink_service.h"
 #include "chrome/common/media_router/media_sink.h"
@@ -48,38 +51,44 @@ bool IsNetworkIdUnknownOrDisconnected(const std::string& network_id) {
 }  // namespace
 
 // static
-const net::BackoffEntry::Policy CastMediaSinkServiceImpl::kBackoffPolicy = {
-    // Number of initial errors (in sequence) to ignore before going into
-    // exponential backoff.
-    0,
+const net::BackoffEntry::Policy
+    CastMediaSinkServiceImpl::kDefaultBackoffPolicy = {
+        // Number of initial errors (in sequence) to ignore before going into
+        // exponential backoff.
+        0,
 
-    // Initial delay (in ms) once backoff starts. It should be longer than
-    // Cast
-    // socket's liveness timeout |kConnectLivenessTimeoutSecs| (10 seconds).
-    kDelayInSeconds * 1000,  // 15 seconds
+        // Initial delay (in ms) once backoff starts. It should be longer than
+        // Cast
+        // socket's liveness timeout |kConnectLivenessTimeoutSecs| (10 seconds).
+        15 * 1000,  // 15 seconds
 
-    // Factor by which the delay will be multiplied on each subsequent
-    // failure.
-    1.0,
+        // Factor by which the delay will be multiplied on each subsequent
+        // failure.
+        1.0,
 
-    // Fuzzing percentage: 50% will spread delays randomly between 50%--100%
-    // of
-    // the nominal time.
-    0.5,  // 50%
+        // Fuzzing percentage: 50% will spread delays randomly between 50%--100%
+        // of
+        // the nominal time.
+        0.5,  // 50%
 
-    // Maximum delay (in ms) during exponential backoff.
-    30 * 1000,  // 30 seconds
+        // Maximum delay (in ms) during exponential backoff.
+        30 * 1000,  // 30 seconds
 
-    // Time to keep an entry from being discarded even when it has no
-    // significant state, -1 to never discard. (Not applicable.)
-    -1,
+        // Time to keep an entry from being discarded even when it has no
+        // significant state, -1 to never discard. (Not applicable.)
+        -1,
 
-    // False means that initial_delay_ms is the first delay once we start
-    // exponential backoff, i.e., there is no delay after subsequent
-    // successful
-    // requests.
-    false,
+        // False means that initial_delay_ms is the first delay once we start
+        // exponential backoff, i.e., there is no delay after subsequent
+        // successful
+        // requests.
+        false,
 };
+
+constexpr int CastMediaSinkServiceImpl::kDefaultMaxRetryAttempts;
+constexpr char const CastMediaSinkServiceImpl::kParamNameInitialDelayMS[];
+constexpr char const CastMediaSinkServiceImpl::kParamNameMaxRetryAttempts[];
+constexpr char const CastMediaSinkServiceImpl::kParamNameExponential[];
 
 CastMediaSinkServiceImpl::CastMediaSinkServiceImpl(
     const OnSinksDiscoveredCallback& callback,
@@ -89,13 +98,16 @@ CastMediaSinkServiceImpl::CastMediaSinkServiceImpl(
     : MediaSinkServiceBase(callback),
       cast_socket_service_(cast_socket_service),
       network_monitor_(network_monitor),
-      backoff_policy_(&kBackoffPolicy),
+      backoff_policy_(kDefaultBackoffPolicy),
       task_runner_(task_runner),
       net_log_(g_browser_process->net_log()) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(cast_socket_service_);
   DCHECK(network_monitor_);
   network_monitor_->AddObserver(this);
+
+  CastMediaSinkServiceImpl::InitRetryParameters(&backoff_policy_,
+                                                &max_retry_attempts_);
 }
 
 CastMediaSinkServiceImpl::~CastMediaSinkServiceImpl() {
@@ -153,7 +165,7 @@ void CastMediaSinkServiceImpl::OpenChannels(
     const net::IPEndPoint& ip_endpoint = cast_sink.cast_data().ip_endpoint;
     known_ip_endpoints_.insert(ip_endpoint);
     OpenChannel(ip_endpoint, cast_sink,
-                base::MakeUnique<net::BackoffEntry>(backoff_policy_));
+                base::MakeUnique<net::BackoffEntry>(&backoff_policy_));
   }
 
   MediaSinkServiceBase::RestartTimer();
@@ -184,7 +196,7 @@ void CastMediaSinkServiceImpl::OnError(const cast_channel::CastSocket& socket,
   }
 
   std::unique_ptr<net::BackoffEntry> backoff_entry(
-      new net::BackoffEntry(backoff_policy_));
+      new net::BackoffEntry(&backoff_policy_));
 
   DVLOG(2) << "OnError starts reopening cast channel: "
            << ip_endpoint.ToString();
@@ -280,7 +292,7 @@ void CastMediaSinkServiceImpl::OnChannelErrorMayRetry(
   const net::IPEndPoint& ip_endpoint = cast_sink.cast_data().ip_endpoint;
   OnChannelOpenFailed(ip_endpoint);
 
-  if (!backoff_entry || backoff_entry->failure_count() > kMaxAttempts) {
+  if (!backoff_entry || backoff_entry->failure_count() > max_retry_attempts_) {
     DVLOG(1) << "Fail to open channel after all retry attempts: "
              << ip_endpoint.ToString() << " [error_state]: "
              << cast_channel::ChannelErrorToString(error_state);
@@ -342,7 +354,38 @@ void CastMediaSinkServiceImpl::OnDialSinkAdded(const MediaSinkInternal& sink) {
   // TODO(crbug.com/753175): Dual discovery should not try to open cast channel
   // for non-Cast device.
   OpenChannel(ip_endpoint, CreateCastSinkFromDialSink(sink),
-              base::MakeUnique<net::BackoffEntry>(backoff_policy_));
+              base::MakeUnique<net::BackoffEntry>(&backoff_policy_));
+}
+
+// static
+void CastMediaSinkServiceImpl::InitRetryParameters(
+    net::BackoffEntry::Policy* backoff_policy,
+    int* max_retry_attempts) {
+  DCHECK(backoff_policy);
+  DCHECK(max_retry_attempts);
+
+  *backoff_policy = kDefaultBackoffPolicy;
+  if (!CastChannelRetryEnabled()) {
+    *max_retry_attempts = 0;
+    return;
+  }
+
+  *max_retry_attempts = base::GetFieldTrialParamByFeatureAsInt(
+      kEnableCastChannelRetry, kParamNameMaxRetryAttempts,
+      kDefaultMaxRetryAttempts);
+
+  backoff_policy->initial_delay_ms = base::GetFieldTrialParamByFeatureAsInt(
+      kEnableCastChannelRetry, kParamNameInitialDelayMS,
+      kDefaultBackoffPolicy.initial_delay_ms);
+
+  backoff_policy->multiply_factor = base::GetFieldTrialParamByFeatureAsDouble(
+      kEnableCastChannelRetry, kParamNameExponential,
+      kDefaultBackoffPolicy.multiply_factor);
+
+  DVLOG(2) << "Retry strategy parameters "
+           << " [initial_delay_ms]: " << backoff_policy->initial_delay_ms
+           << " [max_retry_attempts]: " << *max_retry_attempts
+           << " [exponential]: " << backoff_policy->multiply_factor;
 }
 
 void CastMediaSinkServiceImpl::AttemptConnection(
@@ -353,7 +396,7 @@ void CastMediaSinkServiceImpl::AttemptConnection(
     const net::IPEndPoint& ip_endpoint = cast_sink.cast_data().ip_endpoint;
     if (!base::ContainsKey(current_sinks_map_, ip_endpoint.address())) {
       OpenChannel(ip_endpoint, cast_sink,
-                  base::MakeUnique<net::BackoffEntry>(backoff_policy_));
+                  base::MakeUnique<net::BackoffEntry>(&backoff_policy_));
     }
   }
 }
