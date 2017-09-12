@@ -205,21 +205,6 @@ class MockBluetoothLowEnergyWeavePacketReceiver
   ReasonForClose reason_to_close_;
 };
 
-class TestTimerFactory final
-    : public BluetoothLowEnergyWeaveClientConnection::TimerFactory {
- public:
-  std::unique_ptr<base::Timer> CreateTimer() override {
-    last_created_timer_ = new base::MockTimer(false /* retains_user_task */,
-                                              false /* is_repeating */);
-    return base::WrapUnique(last_created_timer_);
-  }
-
-  base::MockTimer* last_created_timer() { return last_created_timer_; }
-
- private:
-  base::MockTimer* last_created_timer_;
-};
-
 class TestBluetoothLowEnergyWeaveClientConnection
     : public BluetoothLowEnergyWeaveClientConnection {
  public:
@@ -336,7 +321,7 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
   ~CryptAuthBluetoothLowEnergyWeaveClientConnectionTest() override {}
 
   void SetUp() override {
-    test_timer_factory_ = nullptr;
+    test_timer_ = nullptr;
     generator_ = nullptr;
     receiver_ = nullptr;
 
@@ -397,12 +382,13 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
         base::WrapUnique(new MockConnectionObserver(connection.get()));
     connection->AddObserver(connection_observer_.get());
 
-    test_timer_factory_ = new TestTimerFactory();
+    test_timer_ = new base::MockTimer(false /* retains_user_task */,
+                                      false /* is_repeating */);
     generator_ = new NiceMock<MockBluetoothLowEnergyWeavePacketGenerator>();
     receiver_ = new NiceMock<MockBluetoothLowEnergyWeavePacketReceiver>();
-    connection->SetupTestDoubles(
-        task_runner_, base::WrapUnique(test_timer_factory_),
-        base::WrapUnique(generator_), base::WrapUnique(receiver_));
+    connection->SetupTestDoubles(task_runner_, base::WrapUnique(test_timer_),
+                                 base::WrapUnique(generator_),
+                                 base::WrapUnique(receiver_));
 
     return connection;
   }
@@ -575,7 +561,7 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
   const proximity_auth::ScopedDisableLoggingForTesting disable_logging_;
 
   scoped_refptr<device::MockBluetoothAdapter> adapter_;
-  TestTimerFactory* test_timer_factory_;
+  base::MockTimer* test_timer_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
 
   std::unique_ptr<device::MockBluetoothDevice> mock_bluetooth_device_;
@@ -1168,14 +1154,106 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
 }
 
 TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
-       ConnectionResponseTimeout) {
+       Timeout_ConnectionLatency) {
+  std::unique_ptr<TestBluetoothLowEnergyWeaveClientConnection> connection(
+      CreateConnection());
+
+  EXPECT_CALL(*mock_bluetooth_device_,
+              SetConnectionLatency(
+                  device::BluetoothDevice::CONNECTION_LATENCY_LOW, _, _))
+      .WillOnce(DoAll(SaveArg<1>(&connection_latency_callback_),
+                      SaveArg<2>(&connection_latency_error_callback_)));
+
+  // Call Connect(), which should set the connection latency.
+  connection->Connect();
+  EXPECT_EQ(connection->sub_status(), SubStatus::WAITING_CONNECTION_LATENCY);
+  EXPECT_EQ(connection->status(), Connection::IN_PROGRESS);
+  ASSERT_FALSE(connection_latency_callback_.is_null());
+  ASSERT_FALSE(connection_latency_error_callback_.is_null());
+
+  // Simulate a timeout.
+  test_timer_->Fire();
+
+  EXPECT_EQ(connection->sub_status(), SubStatus::DISCONNECTED);
+  EXPECT_EQ(connection->status(), Connection::DISCONNECTED);
+}
+
+TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+       Timeout_GattConnection) {
+  std::unique_ptr<TestBluetoothLowEnergyWeaveClientConnection> connection(
+      CreateConnection());
+
+  EXPECT_CALL(*mock_bluetooth_device_,
+              SetConnectionLatency(
+                  device::BluetoothDevice::CONNECTION_LATENCY_LOW, _, _))
+      .WillOnce(DoAll(SaveArg<1>(&connection_latency_callback_),
+                      SaveArg<2>(&connection_latency_error_callback_)));
+
+  // Preparing |connection| for a CreateGattConnection call.
+  EXPECT_CALL(*mock_bluetooth_device_, CreateGattConnection(_, _))
+      .WillOnce(DoAll(SaveArg<0>(&create_gatt_connection_success_callback_),
+                      SaveArg<1>(&create_gatt_connection_error_callback_)));
+
+  connection->Connect();
+
+  // Handle setting the connection latency.
+  EXPECT_EQ(connection->sub_status(), SubStatus::WAITING_CONNECTION_LATENCY);
+  EXPECT_EQ(connection->status(), Connection::IN_PROGRESS);
+  ASSERT_FALSE(connection_latency_callback_.is_null());
+  ASSERT_FALSE(connection_latency_error_callback_.is_null());
+  connection_latency_callback_.Run();
+
+  EXPECT_EQ(connection->sub_status(), SubStatus::WAITING_GATT_CONNECTION);
+  EXPECT_EQ(connection->status(), Connection::IN_PROGRESS);
+
+  // Simulate a timeout.
+  test_timer_->Fire();
+
+  EXPECT_EQ(connection->sub_status(), SubStatus::DISCONNECTED);
+  EXPECT_EQ(connection->status(), Connection::DISCONNECTED);
+}
+
+TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+       Timeout_GattCharacteristics) {
+  std::unique_ptr<TestBluetoothLowEnergyWeaveClientConnection> connection(
+      CreateConnection());
+  ConnectGatt(connection.get());
+  EXPECT_EQ(connection->sub_status(), SubStatus::WAITING_CHARACTERISTICS);
+  EXPECT_EQ(connection->status(), Connection::IN_PROGRESS);
+
+  // Simulate a timeout.
+  test_timer_->Fire();
+
+  EXPECT_EQ(connection->sub_status(), SubStatus::DISCONNECTED);
+  EXPECT_EQ(connection->status(), Connection::DISCONNECTED);
+}
+
+TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+       Timeout_NotifySession) {
+  std::unique_ptr<TestBluetoothLowEnergyWeaveClientConnection> connection(
+      CreateConnection());
+  ConnectGatt(connection.get());
+  CharacteristicsFound(connection.get());
+  EXPECT_EQ(connection->sub_status(), SubStatus::WAITING_NOTIFY_SESSION);
+  EXPECT_EQ(connection->status(), Connection::IN_PROGRESS);
+
+  // Simulate a timeout.
+  test_timer_->Fire();
+
+  EXPECT_EQ(connection->sub_status(), SubStatus::DISCONNECTED);
+  EXPECT_EQ(connection->status(), Connection::DISCONNECTED);
+}
+
+TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+       Timeout_ConnectionResponse) {
   std::unique_ptr<TestBluetoothLowEnergyWeaveClientConnection> connection(
       CreateConnection());
   ConnectGatt(connection.get());
   CharacteristicsFound(connection.get());
   NotifySessionStarted(connection.get());
 
-  test_timer_factory_->last_created_timer()->Fire();
+  // Simulate a timeout.
+  test_timer_->Fire();
 
   EXPECT_EQ(connection->sub_status(), SubStatus::DISCONNECTED);
   EXPECT_EQ(connection->status(), Connection::DISCONNECTED);
