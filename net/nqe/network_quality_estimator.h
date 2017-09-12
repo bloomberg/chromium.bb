@@ -526,11 +526,6 @@ class NET_EXPORT NetworkQualityEstimator
   // network quality. Set to true only for tests.
   bool use_localhost_requests_;
 
-  // Determines if the responses smaller than |kMinTransferSizeInBytes|
-  // or shorter than |kMinTransferSizeInBytes| can be used in estimating the
-  // network quality. Set to true only for tests.
-  bool use_small_responses_;
-
   // When set to true, the device offline check is disabled when computing the
   // effective connection type or when writing the prefs. Set to true only for
   // testing.
