@@ -98,11 +98,10 @@ void TaskSchedulerImpl::Start(const TaskScheduler::InitParams& init_params) {
       service_thread_task_runner);
 }
 
-void TaskSchedulerImpl::PostDelayedTaskWithTraits(
-    const tracked_objects::Location& from_here,
-    const TaskTraits& traits,
-    OnceClosure task,
-    TimeDelta delay) {
+void TaskSchedulerImpl::PostDelayedTaskWithTraits(const Location& from_here,
+                                                  const TaskTraits& traits,
+                                                  OnceClosure task,
+                                                  TimeDelta delay) {
   // Post |task| as part of a one-off single-task Sequence.
   const TaskTraits new_traits = SetUserBlockingPriorityIfNeeded(traits);
   GetWorkerPoolForTraits(new_traits)

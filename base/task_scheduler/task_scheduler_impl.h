@@ -60,7 +60,7 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
 
   // TaskScheduler:
   void Start(const TaskScheduler::InitParams& init_params) override;
-  void PostDelayedTaskWithTraits(const tracked_objects::Location& from_here,
+  void PostDelayedTaskWithTraits(const Location& from_here,
                                  const TaskTraits& traits,
                                  OnceClosure task,
                                  TimeDelta delay) override;

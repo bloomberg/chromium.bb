@@ -41,8 +41,7 @@ class BASE_EXPORT MessagePumpFuchsia : public MessagePump {
   // Manages an active watch on an mx_handle_t.
   class MxHandleWatchController {
    public:
-    explicit MxHandleWatchController(
-        const tracked_objects::Location& from_here);
+    explicit MxHandleWatchController(const Location& from_here);
     // Deleting the Controller implicitly calls StopWatchingMxHandle.
     virtual ~MxHandleWatchController();
 
@@ -50,9 +49,7 @@ class BASE_EXPORT MessagePumpFuchsia : public MessagePump {
     // to do.
     bool StopWatchingMxHandle();
 
-    const tracked_objects::Location& created_from_location() {
-      return created_from_location_;
-    }
+    const Location& created_from_location() { return created_from_location_; }
 
    protected:
     // This bool is used by the pump when invoking the MxHandleWatcher callback,
@@ -79,7 +76,7 @@ class BASE_EXPORT MessagePumpFuchsia : public MessagePump {
       return static_cast<uint64_t>(reinterpret_cast<uintptr_t>(this));
     }
 
-    const tracked_objects::Location created_from_location_;
+    const Location created_from_location_;
 
     // Set directly from the inputs to WatchFileDescriptor.
     MxHandleWatcher* watcher_ = nullptr;
@@ -104,7 +101,7 @@ class BASE_EXPORT MessagePumpFuchsia : public MessagePump {
   class FdWatchController : public MxHandleWatchController,
                             public MxHandleWatcher {
    public:
-    explicit FdWatchController(const tracked_objects::Location& from_here);
+    explicit FdWatchController(const Location& from_here);
     ~FdWatchController() override;
 
     bool StopWatchingFileDescriptor();

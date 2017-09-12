@@ -11,7 +11,7 @@
 namespace base {
 namespace internal {
 
-Task::Task(const tracked_objects::Location& posted_from,
+Task::Task(const Location& posted_from,
            OnceClosure task,
            const TaskTraits& traits,
            TimeDelta delay)

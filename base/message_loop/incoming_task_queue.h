@@ -37,7 +37,7 @@ class BASE_EXPORT IncomingTaskQueue
   // Returns true if the task was successfully added to the queue, otherwise
   // returns false. In all cases, the ownership of |task| is transferred to the
   // called method.
-  bool AddToIncomingQueue(const tracked_objects::Location& from_here,
+  bool AddToIncomingQueue(const Location& from_here,
                           OnceClosure task,
                           TimeDelta delay,
                           bool nestable);

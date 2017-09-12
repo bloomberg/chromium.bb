@@ -92,12 +92,12 @@ class NonOwningProxyTaskRunner : public SingleThreadTaskRunner {
   bool RunsTasksInCurrentSequence() const override {
     return target_->RunsTasksInCurrentSequence();
   }
-  bool PostDelayedTask(const tracked_objects::Location& from_here,
+  bool PostDelayedTask(const Location& from_here,
                        OnceClosure task,
                        TimeDelta delay) override {
     return target_->PostDelayedTask(from_here, std::move(task), delay);
   }
-  bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
+  bool PostNonNestableDelayedTask(const Location& from_here,
                                   OnceClosure task,
                                   TimeDelta delay) override {
     return target_->PostNonNestableDelayedTask(from_here, std::move(task),
@@ -123,7 +123,7 @@ class NonOwningProxyTaskRunner : public SingleThreadTaskRunner {
 struct TestMockTimeTaskRunner::TestOrderedPendingTask
     : public base::TestPendingTask {
   TestOrderedPendingTask();
-  TestOrderedPendingTask(const tracked_objects::Location& location,
+  TestOrderedPendingTask(const Location& location,
                          OnceClosure task,
                          TimeTicks post_time,
                          TimeDelta delay,
@@ -148,7 +148,7 @@ TestMockTimeTaskRunner::TestOrderedPendingTask::TestOrderedPendingTask(
     TestOrderedPendingTask&&) = default;
 
 TestMockTimeTaskRunner::TestOrderedPendingTask::TestOrderedPendingTask(
-    const tracked_objects::Location& location,
+    const Location& location,
     OnceClosure task,
     TimeTicks post_time,
     TimeDelta delay,
@@ -287,10 +287,9 @@ bool TestMockTimeTaskRunner::RunsTasksInCurrentSequence() const {
   return thread_checker_.CalledOnValidThread();
 }
 
-bool TestMockTimeTaskRunner::PostDelayedTask(
-    const tracked_objects::Location& from_here,
-    OnceClosure task,
-    TimeDelta delay) {
+bool TestMockTimeTaskRunner::PostDelayedTask(const Location& from_here,
+                                             OnceClosure task,
+                                             TimeDelta delay) {
   AutoLock scoped_lock(tasks_lock_);
   tasks_.push(TestOrderedPendingTask(from_here, std::move(task), now_ticks_,
                                      delay, next_task_ordinal_++,
@@ -300,7 +299,7 @@ bool TestMockTimeTaskRunner::PostDelayedTask(
 }
 
 bool TestMockTimeTaskRunner::PostNonNestableDelayedTask(
-    const tracked_objects::Location& from_here,
+    const Location& from_here,
     OnceClosure task,
     TimeDelta delay) {
   return PostDelayedTask(from_here, std::move(task), delay);

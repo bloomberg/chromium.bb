@@ -62,7 +62,7 @@ bool PostTaskInternal(PendingTask* pending_task, bool task_is_slow) {
 }  // namespace
 
 // static
-bool WorkerPool::PostTask(const tracked_objects::Location& from_here,
+bool WorkerPool::PostTask(const Location& from_here,
                           base::OnceClosure task,
                           bool task_is_slow) {
   PendingTask* pending_task = new PendingTask(from_here, std::move(task));
