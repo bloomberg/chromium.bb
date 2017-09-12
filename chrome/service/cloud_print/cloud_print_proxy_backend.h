@@ -76,8 +76,7 @@ class CloudPrintProxyBackend {
   void UnregisterPrinters();
 
  private:
-  bool PostCoreTask(const tracked_objects::Location& from_here,
-                    const base::Closure& task);
+  bool PostCoreTask(const base::Location& from_here, const base::Closure& task);
 
   // The real guts of CloudPrintProxyBackend, to keep the public client API
   // clean.

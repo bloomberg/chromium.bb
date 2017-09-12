@@ -75,8 +75,7 @@ class CC_EXPORT BlockingTaskRunner {
   // is true. When |capture_| is true, tasks posted will be caught and stored
   // until the capturing stops. At that time the tasks will be run directly
   // instead of being posted to the SingleThreadTaskRunner.
-  bool PostTask(const tracked_objects::Location& from_here,
-                base::OnceClosure task);
+  bool PostTask(const base::Location& from_here, base::OnceClosure task);
 
  private:
   explicit BlockingTaskRunner(

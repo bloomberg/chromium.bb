@@ -350,13 +350,10 @@ MTPDeviceDelegateImplWin::StorageDeviceInfo::StorageDeviceInfo(
 }
 
 MTPDeviceDelegateImplWin::PendingTaskInfo::PendingTaskInfo(
-    const tracked_objects::Location& location,
+    const base::Location& location,
     const base::Callback<base::File::Error(void)>& task,
     const base::Callback<void(base::File::Error)>& reply)
-    : location(location),
-      task(task),
-      reply(reply) {
-}
+    : location(location), task(task), reply(reply) {}
 
 MTPDeviceDelegateImplWin::PendingTaskInfo::PendingTaskInfo(
     const PendingTaskInfo& other) = default;

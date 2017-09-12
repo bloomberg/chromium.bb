@@ -227,7 +227,7 @@ syncer::SyncMergeResult SyncStorageBackend::MergeDataAndStartSyncing(
 }
 
 syncer::SyncError SyncStorageBackend::ProcessSyncChanges(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const syncer::SyncChangeList& sync_changes) {
   DCHECK(IsOnBackendSequence());
   DCHECK(sync_processor_.get());

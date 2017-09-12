@@ -486,7 +486,7 @@ SyncDataList SupervisedUserSyncService::GetAllSyncData(
 }
 
 SyncError SupervisedUserSyncService::ProcessSyncChanges(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const SyncChangeList& change_list) {
   SyncError error;
   DictionaryPrefUpdate update(prefs_, prefs::kSupervisedUsers);

@@ -207,7 +207,7 @@ class VrShell : device::GvrGamepadDataProvider,
 
  private:
   ~VrShell() override;
-  void PostToGlThread(const tracked_objects::Location& from_here,
+  void PostToGlThread(const base::Location& from_here,
                       const base::Closure& task);
   void SetUiState();
 

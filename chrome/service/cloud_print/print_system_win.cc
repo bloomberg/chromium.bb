@@ -39,7 +39,7 @@ bool CurrentlyOnServiceIOThread() {
   return g_service_process->io_task_runner()->BelongsToCurrentThread();
 }
 
-bool PostIOThreadTask(const tracked_objects::Location& from_here,
+bool PostIOThreadTask(const base::Location& from_here,
                       const base::Closure& task) {
   return g_service_process->io_task_runner()->PostTask(from_here, task);
 }

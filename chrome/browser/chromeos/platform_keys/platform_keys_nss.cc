@@ -80,7 +80,7 @@ class NSSOperationState {
 
   // Called if an error occurred during the execution of the NSS operation
   // described by this object.
-  virtual void OnError(const tracked_objects::Location& from,
+  virtual void OnError(const base::Location& from,
                        const std::string& error_message) = 0;
 
   crypto::ScopedPK11Slot slot_;
@@ -163,12 +163,12 @@ class GenerateRSAKeyState : public NSSOperationState {
                       const subtle::GenerateKeyCallback& callback);
   ~GenerateRSAKeyState() override {}
 
-  void OnError(const tracked_objects::Location& from,
+  void OnError(const base::Location& from,
                const std::string& error_message) override {
     CallBack(from, std::string() /* no public key */, error_message);
   }
 
-  void CallBack(const tracked_objects::Location& from,
+  void CallBack(const base::Location& from,
                 const std::string& public_key_spki_der,
                 const std::string& error_message) {
     origin_task_runner_->PostTask(
@@ -191,12 +191,12 @@ class SignRSAState : public NSSOperationState {
                const subtle::SignCallback& callback);
   ~SignRSAState() override {}
 
-  void OnError(const tracked_objects::Location& from,
+  void OnError(const base::Location& from,
                const std::string& error_message) override {
     CallBack(from, std::string() /* no signature */, error_message);
   }
 
-  void CallBack(const tracked_objects::Location& from,
+  void CallBack(const base::Location& from,
                 const std::string& signature,
                 const std::string& error_message) {
     origin_task_runner_->PostTask(
@@ -232,13 +232,13 @@ class SelectCertificatesState : public NSSOperationState {
       const subtle::SelectCertificatesCallback& callback);
   ~SelectCertificatesState() override {}
 
-  void OnError(const tracked_objects::Location& from,
+  void OnError(const base::Location& from,
                const std::string& error_message) override {
     CallBack(from, std::unique_ptr<net::CertificateList>() /* no matches */,
              error_message);
   }
 
-  void CallBack(const tracked_objects::Location& from,
+  void CallBack(const base::Location& from,
                 std::unique_ptr<net::CertificateList> matches,
                 const std::string& error_message) {
     origin_task_runner_->PostTask(
@@ -260,14 +260,14 @@ class GetCertificatesState : public NSSOperationState {
   explicit GetCertificatesState(const GetCertificatesCallback& callback);
   ~GetCertificatesState() override {}
 
-  void OnError(const tracked_objects::Location& from,
+  void OnError(const base::Location& from,
                const std::string& error_message) override {
     CallBack(from,
              std::unique_ptr<net::CertificateList>() /* no certificates */,
              error_message);
   }
 
-  void CallBack(const tracked_objects::Location& from,
+  void CallBack(const base::Location& from,
                 std::unique_ptr<net::CertificateList> certs,
                 const std::string& error_message) {
     origin_task_runner_->PostTask(
@@ -287,13 +287,12 @@ class ImportCertificateState : public NSSOperationState {
                          const ImportCertificateCallback& callback);
   ~ImportCertificateState() override {}
 
-  void OnError(const tracked_objects::Location& from,
+  void OnError(const base::Location& from,
                const std::string& error_message) override {
     CallBack(from, error_message);
   }
 
-  void CallBack(const tracked_objects::Location& from,
-                const std::string& error_message) {
+  void CallBack(const base::Location& from, const std::string& error_message) {
     origin_task_runner_->PostTask(from, base::Bind(callback_, error_message));
   }
 
@@ -310,13 +309,12 @@ class RemoveCertificateState : public NSSOperationState {
                          const RemoveCertificateCallback& callback);
   ~RemoveCertificateState() override {}
 
-  void OnError(const tracked_objects::Location& from,
+  void OnError(const base::Location& from,
                const std::string& error_message) override {
     CallBack(from, error_message);
   }
 
-  void CallBack(const tracked_objects::Location& from,
-                const std::string& error_message) {
+  void CallBack(const base::Location& from, const std::string& error_message) {
     origin_task_runner_->PostTask(from, base::Bind(callback_, error_message));
   }
 
@@ -332,14 +330,14 @@ class GetTokensState : public NSSOperationState {
   explicit GetTokensState(const GetTokensCallback& callback);
   ~GetTokensState() override {}
 
-  void OnError(const tracked_objects::Location& from,
+  void OnError(const base::Location& from,
                const std::string& error_message) override {
     CallBack(from,
              std::unique_ptr<std::vector<std::string>>() /* no token ids */,
              error_message);
   }
 
-  void CallBack(const tracked_objects::Location& from,
+  void CallBack(const base::Location& from,
                 std::unique_ptr<std::vector<std::string>> token_ids,
                 const std::string& error_message) {
     origin_task_runner_->PostTask(

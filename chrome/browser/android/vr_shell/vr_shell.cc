@@ -260,7 +260,7 @@ VrShell::~VrShell() {
   g_instance = nullptr;
 }
 
-void VrShell::PostToGlThread(const tracked_objects::Location& from_here,
+void VrShell::PostToGlThread(const base::Location& from_here,
                              const base::Closure& task) {
   gl_thread_->message_loop()->task_runner()->PostTask(from_here, task);
 }

@@ -184,7 +184,7 @@ float ResourcePrefetchPredictorTables::ComputeOriginScore(
 }
 
 void ResourcePrefetchPredictorTables::ScheduleDBTask(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     DBTask task) {
   GetTaskRunner()->PostTask(
       from_here,

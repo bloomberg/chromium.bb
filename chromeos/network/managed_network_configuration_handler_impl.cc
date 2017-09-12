@@ -72,7 +72,7 @@ void InvokeErrorCallback(const std::string& service_path,
       error_callback, service_path, error_name, error_msg);
 }
 
-void LogErrorWithDict(const tracked_objects::Location& from_where,
+void LogErrorWithDict(const base::Location& from_where,
                       const std::string& error_name,
                       std::unique_ptr<base::DictionaryValue> error_data) {
   device_event_log::AddEntry(from_where.file_name(), from_where.line_number(),

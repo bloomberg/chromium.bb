@@ -129,7 +129,7 @@ syncer::SyncDataList ThemeSyncableService::GetAllSyncData(
 }
 
 syncer::SyncError ThemeSyncableService::ProcessSyncChanges(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const syncer::SyncChangeList& change_list) {
   DCHECK(thread_checker_.CalledOnValidThread());
 

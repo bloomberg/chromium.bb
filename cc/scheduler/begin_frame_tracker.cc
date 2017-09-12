@@ -6,7 +6,7 @@
 
 namespace cc {
 
-BeginFrameTracker::BeginFrameTracker(const tracked_objects::Location& location)
+BeginFrameTracker::BeginFrameTracker(const base::Location& location)
     : location_(location),
       location_string_(location.ToString()),
       current_finished_at_(base::TimeTicks() +

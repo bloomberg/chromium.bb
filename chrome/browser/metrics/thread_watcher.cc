@@ -744,23 +744,22 @@ bool WatchDogThread::CurrentlyOnWatchDogThread() {
 }
 
 // static
-bool WatchDogThread::PostTask(const tracked_objects::Location& from_here,
+bool WatchDogThread::PostTask(const base::Location& from_here,
                               const base::Closure& task) {
   return PostTaskHelper(from_here, task, base::TimeDelta());
 }
 
 // static
-bool WatchDogThread::PostDelayedTask(const tracked_objects::Location& from_here,
+bool WatchDogThread::PostDelayedTask(const base::Location& from_here,
                                      const base::Closure& task,
                                      base::TimeDelta delay) {
   return PostTaskHelper(from_here, task, delay);
 }
 
 // static
-bool WatchDogThread::PostTaskHelper(
-    const tracked_objects::Location& from_here,
-    const base::Closure& task,
-    base::TimeDelta delay) {
+bool WatchDogThread::PostTaskHelper(const base::Location& from_here,
+                                    const base::Closure& task,
+                                    base::TimeDelta delay) {
   {
     base::AutoLock lock(g_watchdog_lock.Get());
 

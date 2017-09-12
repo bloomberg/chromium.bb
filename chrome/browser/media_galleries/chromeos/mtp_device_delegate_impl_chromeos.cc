@@ -367,13 +367,9 @@ void FakeCopyFileProgressCallback(int64_t size) {}
 MTPDeviceDelegateImplLinux::PendingTaskInfo::PendingTaskInfo(
     const base::FilePath& path,
     content::BrowserThread::ID thread_id,
-    const tracked_objects::Location& location,
+    const base::Location& location,
     const base::Closure& task)
-    : path(path),
-      thread_id(thread_id),
-      location(location),
-      task(task) {
-}
+    : path(path), thread_id(thread_id), location(location), task(task) {}
 
 MTPDeviceDelegateImplLinux::PendingTaskInfo::PendingTaskInfo(
     const PendingTaskInfo& other) = default;

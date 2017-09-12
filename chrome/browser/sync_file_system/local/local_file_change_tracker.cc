@@ -62,7 +62,7 @@ class LocalFileChangeTracker::TrackerDB {
 
   SyncStatusCode Init(RecoveryOption recovery_option);
   SyncStatusCode Repair(const std::string& db_path);
-  void HandleError(const tracked_objects::Location& from_here,
+  void HandleError(const base::Location& from_here,
                    const leveldb::Status& status);
 
   const base::FilePath base_path_;
@@ -538,7 +538,7 @@ SyncStatusCode LocalFileChangeTracker::TrackerDB::Repair(
 
 // TODO(nhiroki): factor out the common methods into somewhere else.
 void LocalFileChangeTracker::TrackerDB::HandleError(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const leveldb::Status& status) {
   LOG(ERROR) << "LocalFileChangeTracker::TrackerDB failed at: "
              << from_here.ToString() << " with error: " << status.ToString();

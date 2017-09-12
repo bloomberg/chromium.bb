@@ -73,13 +73,13 @@ class MTPDeviceDelegateImplWin : public MTPDeviceAsyncDelegate {
 
   // Used to represent pending task details.
   struct PendingTaskInfo {
-    PendingTaskInfo(const tracked_objects::Location& location,
+    PendingTaskInfo(const base::Location& location,
                     const base::Callback<base::File::Error(void)>& task,
                     const base::Callback<void(base::File::Error)>& reply);
     PendingTaskInfo(const PendingTaskInfo& other);
     ~PendingTaskInfo();
 
-    const tracked_objects::Location location;
+    const base::Location location;
     const base::Callback<base::File::Error(void)> task;
     const base::Callback<void(base::File::Error)> reply;
   };

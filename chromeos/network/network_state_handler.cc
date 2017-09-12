@@ -129,9 +129,8 @@ std::unique_ptr<NetworkStateHandler> NetworkStateHandler::InitializeForTest() {
   return handler;
 }
 
-void NetworkStateHandler::AddObserver(
-    NetworkStateHandlerObserver* observer,
-    const tracked_objects::Location& from_here) {
+void NetworkStateHandler::AddObserver(NetworkStateHandlerObserver* observer,
+                                      const base::Location& from_here) {
   observers_.AddObserver(observer);
   device_event_log::AddEntry(
       from_here.file_name(), from_here.line_number(),
@@ -139,9 +138,8 @@ void NetworkStateHandler::AddObserver(
       base::StringPrintf("NetworkStateHandler::AddObserver: 0x%p", observer));
 }
 
-void NetworkStateHandler::RemoveObserver(
-    NetworkStateHandlerObserver* observer,
-    const tracked_objects::Location& from_here) {
+void NetworkStateHandler::RemoveObserver(NetworkStateHandlerObserver* observer,
+                                         const base::Location& from_here) {
   observers_.RemoveObserver(observer);
   device_event_log::AddEntry(
       from_here.file_name(), from_here.line_number(),

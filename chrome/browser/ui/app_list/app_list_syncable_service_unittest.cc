@@ -364,7 +364,7 @@ TEST_F(AppListSyncableServiceTest, InitialMergeAndUpdate) {
       CreateAppRemoteData(kItemId2, "item_name2x", GenerateId("parent_id2x"),
                           "ordinalx", "pinordinalx")));
 
-  app_list_syncable_service()->ProcessSyncChanges(tracked_objects::Location(),
+  app_list_syncable_service()->ProcessSyncChanges(base::Location(),
                                                   change_list);
   content::RunAllBlockingPoolTasksUntilIdle();
 
@@ -407,7 +407,7 @@ TEST_F(AppListSyncableServiceTest, InitialMergeAndUpdate_BadData) {
   }
 
   // Validate items with bad data are processed without crashing.
-  app_list_syncable_service()->ProcessSyncChanges(tracked_objects::Location(),
+  app_list_syncable_service()->ProcessSyncChanges(base::Location(),
                                                   change_list);
   content::RunAllBlockingPoolTasksUntilIdle();
 

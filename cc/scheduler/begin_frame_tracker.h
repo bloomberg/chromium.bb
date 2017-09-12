@@ -35,7 +35,7 @@ namespace cc {
 // TODO(mithro): Record stats about the viz::BeginFrameArgs
 class CC_EXPORT BeginFrameTracker {
  public:
-  explicit BeginFrameTracker(const tracked_objects::Location& location);
+  explicit BeginFrameTracker(const base::Location& location);
   ~BeginFrameTracker();
 
   // The Start and Finish methods manage the period that a BFA should be
@@ -85,7 +85,7 @@ class CC_EXPORT BeginFrameTracker {
   // the BFA object. Can be called at any time.
   bool HasFinished() const { return !current_finished_at_.is_null(); }
 
-  const tracked_objects::Location location_;
+  const base::Location location_;
   const std::string location_string_;
 
   base::TimeTicks current_updated_at_;

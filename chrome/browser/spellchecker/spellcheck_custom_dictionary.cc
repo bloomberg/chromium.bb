@@ -346,7 +346,7 @@ syncer::SyncDataList SpellcheckCustomDictionary::GetAllSyncData(
 }
 
 syncer::SyncError SpellcheckCustomDictionary::ProcessSyncChanges(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const syncer::SyncChangeList& change_list) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::unique_ptr<Change> dictionary_change(new Change);

@@ -117,7 +117,7 @@ SessionService* SessionServiceTestHelper::ReleaseService() {
 }
 
 void SessionServiceTestHelper::RunTaskOnBackendThread(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const base::Closure& task) {
   sessions::BaseSessionServiceTestHelper test_helper(
       service_->GetBaseSessionServiceForTest());

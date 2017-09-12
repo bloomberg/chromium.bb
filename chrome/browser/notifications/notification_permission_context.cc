@@ -36,7 +36,7 @@ class VisibilityTimerTabHelper
 
   // Runs |task| after the WebContents has been visible for a consecutive
   // duration of at least |visible_delay|.
-  void PostTaskAfterVisibleDelay(const tracked_objects::Location& from_here,
+  void PostTaskAfterVisibleDelay(const base::Location& from_here,
                                  const base::Closure& task,
                                  base::TimeDelta visible_delay,
                                  const PermissionRequestID& id);
@@ -98,7 +98,7 @@ VisibilityTimerTabHelper::VisibilityTimerTabHelper(
 }
 
 void VisibilityTimerTabHelper::PostTaskAfterVisibleDelay(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const base::Closure& task,
     base::TimeDelta visible_delay,
     const PermissionRequestID& id) {

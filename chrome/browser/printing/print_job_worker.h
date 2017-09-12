@@ -75,8 +75,7 @@ class PrintJobWorker {
   bool IsRunning() const;
 
   // Posts the given task to be run.
-  bool PostTask(const tracked_objects::Location& from_here,
-                const base::Closure& task);
+  bool PostTask(const base::Location& from_here, const base::Closure& task);
 
   // Signals the thread to exit in the near future.
   void StopSoon();
