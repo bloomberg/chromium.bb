@@ -15,7 +15,7 @@ import extract_histograms
 import merge_xml
 
 _SCRIPT_NAME = "generate_expired_histograms_array.py"
-_HASH_DATATYPE = "unit64_t"
+_HASH_DATATYPE = "uint64_t"
 _HEADER = """// Generated from {script_name}. Do not edit!
 
 #ifndef {include_guard}
@@ -85,7 +85,7 @@ def _GetHashToNameMap(histograms_names):
   return hash_to_name_map
 
 
-def _GenerateHeaderFileContent(header_filename, namespace, hash_datatype,
+def _GenerateHeaderFileContent(header_filename, namespace,
                                histograms_map):
   """Generates header file content.
 
@@ -99,6 +99,9 @@ def _GenerateHeaderFileContent(header_filename, namespace, hash_datatype,
     String with the generated content.
   """
   include_guard = re.sub("[^A-Z]", "_", header_filename.upper()) + "_"
+  if not histograms_map:
+    # Some platforms don't allow creating empty arrays.
+    histograms_map["0x0000000000000000"] = "Dummy.Histogram"
   hashes = "\n".join([
       "  {hash},  // {name}".format(hash=value, name=histograms_map[value])
       for value in sorted(histograms_map.keys())
@@ -107,7 +110,7 @@ def _GenerateHeaderFileContent(header_filename, namespace, hash_datatype,
       script_name=_SCRIPT_NAME,
       include_guard=include_guard,
       namespace=namespace,
-      hash_datatype=hash_datatype,
+      hash_datatype=_HASH_DATATYPE,
       hashes=hashes,
       hashes_size=len(histograms_map))
 
@@ -135,7 +138,7 @@ def _GenerateFile(arguments):
   expired_histograms_names = _GetExpiredHistograms(histograms, today)
   expired_histograms_map = _GetHashToNameMap(expired_histograms_names)
   header_file_content = _GenerateHeaderFileContent(
-      arguments.header_filename, arguments.namespace, _HASH_DATATYPE,
+      arguments.header_filename, arguments.namespace,
       expired_histograms_map)
   with open(os.path.join(arguments.output_dir, arguments.header_filename),
             "w") as generated_file:

@@ -15,20 +15,32 @@ _EXPECTED_HEADER_FILE_CONTENT = (
 
 #include <stdint.h>
 
-namespace some_namespace {
+namespace some_namespace {{
 
 // Contains hashes of expired histograms.
-const uint64_t kExpiredHistogramsHashes[] = {
+{array_definition}
+
+}}  // namespace some_namespace
+
+#endif  // TEST_TEST_H_
+""")
+
+_EXPECTED_NON_EMPTY_ARRAY_DEFINITION = (
+"""const uint64_t kExpiredHistogramsHashes[] = {
   0x965ce8e9e12a9c89,  // Test.FirstHistogram
   0xdb5b2f55ffd139e8,  // Test.SecondHistogram
 };
 
-const size_t kNumExpiredHistograms = 2;
+const size_t kNumExpiredHistograms = 2;"""
+)
 
-}  // namespace some_namespace
+_EXPECTED_EMPTY_ARRAY_DEFINITION = (
+"""const uint64_t kExpiredHistogramsHashes[] = {
+  0x0000000000000000,  // Dummy.Histogram
+};
 
-#endif  // TEST_TEST_H_
-""")
+const size_t kNumExpiredHistograms = 1;"""
+)
 
 class ExpiredHistogramsTest(unittest.TestCase):
 
@@ -81,7 +93,6 @@ class ExpiredHistogramsTest(unittest.TestCase):
   def testGenerateHeaderFileContent(self):
     header_filename = "test/test.h"
     namespace = "some_namespace"
-    hash_datatype = "uint64_t"
 
     histogram_map = generate_expired_histograms_array._GetHashToNameMap(
         ["Test.FirstHistogram", "Test.SecondHistogram"])
@@ -92,9 +103,19 @@ class ExpiredHistogramsTest(unittest.TestCase):
     self.assertEqual(expected_histogram_map, histogram_map)
 
     content = generate_expired_histograms_array._GenerateHeaderFileContent(
-        header_filename, namespace, hash_datatype, histogram_map)
+        header_filename, namespace, histogram_map)
 
-    self.assertEqual(_EXPECTED_HEADER_FILE_CONTENT, content)
+    self.assertEqual(_EXPECTED_HEADER_FILE_CONTENT.format(
+        array_definition=_EXPECTED_NON_EMPTY_ARRAY_DEFINITION), content)
+
+  def testGenerateHeaderFileContentEmptyArray(self):
+    header_filename = "test/test.h"
+    namespace = "some_namespace"
+    content = generate_expired_histograms_array._GenerateHeaderFileContent(
+        header_filename, namespace, dict())
+    self.assertEqual(_EXPECTED_HEADER_FILE_CONTENT.format(
+        array_definition=_EXPECTED_EMPTY_ARRAY_DEFINITION), content)
+
 
 if __name__ == "__main__":
   unittest.main()
