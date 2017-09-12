@@ -36,6 +36,8 @@ const char kUISlowAnimations[] = "ui-slow-animations";
 // to be done via corner points. See https://goo.gl/Dqig5s
 const char kEnablePixelCanvasRecording[] = "enable-pixel-canvas-recording";
 
+const char kDisableVsyncForTests[] = "disable-vsync-for-tests";
+
 }  // namespace switches
 
 namespace ui {
