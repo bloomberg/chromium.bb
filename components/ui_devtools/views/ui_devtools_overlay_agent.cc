@@ -5,6 +5,7 @@
 #include "components/ui_devtools/views/ui_devtools_overlay_agent.h"
 
 #include "ui/aura/env.h"
+#include "ui/events/event.h"
 
 namespace ui_devtools {
 
@@ -14,6 +15,12 @@ UIDevToolsOverlayAgent::UIDevToolsOverlayAgent(UIDevToolsDOMAgent* dom_agent)
 }
 
 UIDevToolsOverlayAgent::~UIDevToolsOverlayAgent() {}
+
+void UIDevToolsOverlayAgent::SetPinnedNodeId(int node_id) {
+  pinned_id_ = node_id;
+  frontend()->nodeHighlightRequested(pinned_id_);
+  dom_agent_->HighlightNode(pinned_id_, true /* show_size */);
+}
 
 ui_devtools::protocol::Response UIDevToolsOverlayAgent::setInspectMode(
     const String& in_mode,
@@ -43,6 +50,22 @@ void UIDevToolsOverlayAgent::OnMouseEvent(ui::MouseEvent* event) {
   if (!dom_agent_->window_element_root())
     return;
 
+  // Show parent of the pinned element with id |pinned_id_| when mouse scrolls
+  // up. If parent exists, hightlight and re-pin parent element.
+  if (event->type() == ui::ET_MOUSEWHEEL && pinned_id_) {
+    const ui::MouseWheelEvent* mouse_event =
+        static_cast<ui::MouseWheelEvent*>(event);
+    DCHECK(mouse_event);
+    if (mouse_event->y_offset() > 0) {
+      const int parent_node_id = dom_agent_->GetParentIdOfNodeId(pinned_id_);
+      if (parent_node_id)
+        SetPinnedNodeId(parent_node_id);
+    } else if (mouse_event->y_offset() < 0) {
+      // TODO(thanhph): discuss behaviours when mouse scrolls down.
+    }
+    return;
+  }
+
   // Find node id of element whose bounds contain the mouse pointer location.
   aura::Window* target = static_cast<aura::Window*>(event->target());
   int element_id = dom_agent_->FindElementIdTargetedByPoint(
@@ -53,14 +76,11 @@ void UIDevToolsOverlayAgent::OnMouseEvent(ui::MouseEvent* event) {
     return;
   }
 
-  // Pin the  hover element on click.
+  // Pin the hover element on click.
   if (event->type() == ui::ET_MOUSE_PRESSED) {
     event->SetHandled();
-    if (element_id) {
-      pinned_id_ = element_id;
-      frontend()->nodeHighlightRequested(element_id);
-      dom_agent_->HighlightNode(element_id, true /* show_size */);
-    }
+    if (element_id)
+      SetPinnedNodeId(element_id);
   } else if (element_id && !pinned_id_) {
     // Display only guidelines if hovering without a pinned element.
     frontend()->nodeHighlightRequested(element_id);
