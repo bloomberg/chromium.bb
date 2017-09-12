@@ -344,9 +344,6 @@ typedef struct RD_STATS {
   int64_t ref_rdcost;
   int zero_rate;
   uint8_t invalid_rate;
-#if CONFIG_DIST_8X8 && CONFIG_CB4X4
-  int64_t dist_y;
-#endif
 #if CONFIG_RD_DEBUG
   int txb_coeff_cost[MAX_MB_PLANE];
 #if CONFIG_VAR_TX

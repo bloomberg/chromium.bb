@@ -3370,6 +3370,54 @@ static void rd_test_partition3(
 }
 #endif  // CONFIG_EXT_PARTITION_TYPES
 
+#if CONFIG_DIST_8X8 && CONFIG_CB4X4
+static int64_t dist_8x8_yuv(const AV1_COMP *const cpi, MACROBLOCK *const x,
+                            uint8_t *y_src_8x8) {
+  MACROBLOCKD *const xd = &x->e_mbd;
+  int64_t dist_8x8, dist_8x8_uv, total_dist;
+  const int src_stride = x->plane[0].src.stride;
+  uint8_t *decoded_8x8;
+  int plane;
+
+#if CONFIG_HIGHBITDEPTH
+  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
+    decoded_8x8 = CONVERT_TO_BYTEPTR(x->decoded_8x8);
+  else
+#endif
+    decoded_8x8 = (uint8_t *)x->decoded_8x8;
+
+  dist_8x8 = av1_dist_8x8(cpi, x, y_src_8x8, src_stride, decoded_8x8, 8,
+                          BLOCK_8X8, 8, 8, 8, 8, x->qindex)
+             << 4;
+
+  // Compute chroma distortion for a luma 8x8 block
+  dist_8x8_uv = 0;
+
+  for (plane = 1; plane < MAX_MB_PLANE; ++plane) {
+    const int src_stride_uv = x->plane[plane].src.stride;
+    const int dst_stride_uv = xd->plane[plane].dst.stride;
+    // uv buff pointers now (i.e. the last sub8x8 block) is the same
+    // to those at the first sub8x8 block because
+    // uv buff pointer is set only once at first sub8x8 block in a 8x8.
+    uint8_t *src_uv = x->plane[plane].src.buf;
+    uint8_t *dst_uv = xd->plane[plane].dst.buf;
+    unsigned sse;
+#if CONFIG_CHROMA_SUB8X8
+    const BLOCK_SIZE plane_bsize =
+        AOMMAX(BLOCK_4X4, get_plane_block_size(BLOCK_8X8, &xd->plane[plane]));
+#else
+    const BLOCK_SIZE plane_bsize =
+        get_plane_block_size(BLOCK_8X8, &xd->plane[plane]);
+#endif
+    cpi->fn_ptr[plane_bsize].vf(src_uv, src_stride_uv, dst_uv, dst_stride_uv,
+                                &sse);
+    dist_8x8_uv += (int64_t)sse << 4;
+  }
+
+  return total_dist = dist_8x8 + dist_8x8_uv;
+}
+#endif  // CONFIG_DIST_8X8 && CONFIG_CB4X4
+
 // TODO(jingning,jimbankoski,rbultje): properly skip partition types that are
 // unlikely to be selected depending on previous rate-distortion optimization
 // results, for encoding speed-up.
@@ -3819,12 +3867,6 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
                           temp_best_rdcost - sum_rdc.rdcost,
                           pc_tree->split[idx]);
 
-#if CONFIG_DIST_8X8 && CONFIG_CB4X4
-        if (x->using_dist_8x8 && bsize == BLOCK_8X8 &&
-            this_rdc.rate != INT_MAX) {
-          assert(this_rdc.dist_y < INT64_MAX);
-        }
-#endif
         if (this_rdc.rate == INT_MAX) {
           sum_rdc.rdcost = INT64_MAX;
 #if CONFIG_SUPERTX
@@ -3838,12 +3880,6 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 #if CONFIG_SUPERTX
           sum_rate_nocoef += this_rate_nocoef;
 #endif  // CONFIG_SUPERTX
-#if CONFIG_DIST_8X8 && CONFIG_CB4X4
-          if (x->using_dist_8x8 && bsize == BLOCK_8X8) {
-            assert(this_rdc.dist_y < INT64_MAX);
-            sum_rdc.dist_y += this_rdc.dist_y;
-          }
-#endif
         }
       }
       reached_last_index = (idx == 4);
@@ -3851,24 +3887,11 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 #if CONFIG_DIST_8X8 && CONFIG_CB4X4
       if (x->using_dist_8x8 && reached_last_index &&
           sum_rdc.rdcost != INT64_MAX && bsize == BLOCK_8X8) {
-        int64_t dist_8x8;
         const int src_stride = x->plane[0].src.stride;
-        uint8_t *decoded_8x8;
-
-#if CONFIG_HIGHBITDEPTH
-        if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
-          decoded_8x8 = CONVERT_TO_BYTEPTR(x->decoded_8x8);
-        else
-#endif
-          decoded_8x8 = (uint8_t *)x->decoded_8x8;
-
+        int64_t dist_8x8;
         dist_8x8 =
-            av1_dist_8x8(cpi, x, x->plane[0].src.buf - 4 * src_stride - 4,
-                         src_stride, decoded_8x8, 8, BLOCK_8X8, 8, 8, 8, 8,
-                         x->qindex)
-            << 4;
-        assert(sum_rdc.dist_y < INT64_MAX);
-        sum_rdc.dist = sum_rdc.dist - sum_rdc.dist_y + dist_8x8;
+            dist_8x8_yuv(cpi, x, x->plane[0].src.buf - 4 * src_stride - 4);
+        sum_rdc.dist = dist_8x8;
         sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
       }
 #endif  // CONFIG_DIST_8X8 && CONFIG_CB4X4
@@ -4029,29 +4052,14 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 #if CONFIG_SUPERTX
         sum_rate_nocoef += this_rate_nocoef;
 #endif  // CONFIG_SUPERTX
-#if CONFIG_DIST_8X8 && CONFIG_CB4X4
-        if (x->using_dist_8x8) sum_rdc.dist_y += this_rdc.dist_y;
-#endif
       }
 #if CONFIG_DIST_8X8 && CONFIG_CB4X4
       if (x->using_dist_8x8 && sum_rdc.rdcost != INT64_MAX &&
           bsize == BLOCK_8X8) {
-        int64_t dist_8x8;
         const int src_stride = x->plane[0].src.stride;
-        uint8_t *decoded_8x8;
-
-#if CONFIG_HIGHBITDEPTH
-        if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
-          decoded_8x8 = CONVERT_TO_BYTEPTR(x->decoded_8x8);
-        else
-#endif
-          decoded_8x8 = (uint8_t *)x->decoded_8x8;
-
-        dist_8x8 = av1_dist_8x8(cpi, x, x->plane[0].src.buf - 4 * src_stride,
-                                src_stride, decoded_8x8, 8, BLOCK_8X8, 8, 8, 8,
-                                8, x->qindex)
-                   << 4;
-        sum_rdc.dist = sum_rdc.dist - sum_rdc.dist_y + dist_8x8;
+        int64_t dist_8x8;
+        dist_8x8 = dist_8x8_yuv(cpi, x, x->plane[0].src.buf - 4 * src_stride);
+        sum_rdc.dist = dist_8x8;
         sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
       }
 #endif  // CONFIG_DIST_8X8 && CONFIG_CB4X4
@@ -4209,29 +4217,13 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 #if CONFIG_SUPERTX
         sum_rate_nocoef += this_rate_nocoef;
 #endif  // CONFIG_SUPERTX
-#if CONFIG_DIST_8X8 && CONFIG_CB4X4
-        if (x->using_dist_8x8) sum_rdc.dist_y += this_rdc.dist_y;
-#endif
       }
 #if CONFIG_DIST_8X8 && CONFIG_CB4X4
       if (x->using_dist_8x8 && sum_rdc.rdcost != INT64_MAX &&
           bsize == BLOCK_8X8) {
         int64_t dist_8x8;
-        const int src_stride = x->plane[0].src.stride;
-        uint8_t *decoded_8x8;
-
-#if CONFIG_HIGHBITDEPTH
-        if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
-          decoded_8x8 = CONVERT_TO_BYTEPTR(x->decoded_8x8);
-        else
-#endif
-          decoded_8x8 = (uint8_t *)x->decoded_8x8;
-
-        dist_8x8 =
-            av1_dist_8x8(cpi, x, x->plane[0].src.buf - 4, src_stride,
-                         decoded_8x8, 8, BLOCK_8X8, 8, 8, 8, 8, x->qindex)
-            << 4;
-        sum_rdc.dist = sum_rdc.dist - sum_rdc.dist_y + dist_8x8;
+        dist_8x8 = dist_8x8_yuv(cpi, x, x->plane[0].src.buf - 4);
+        sum_rdc.dist = dist_8x8;
         sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
       }
 #endif  // CONFIG_DIST_8X8 && CONFIG_CB4X4
@@ -4457,11 +4449,6 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   (void)best_rd;
   *rd_cost = best_rdc;
 
-#if CONFIG_DIST_8X8 && CONFIG_CB4X4
-  if (x->using_dist_8x8 && bsize <= BLOCK_8X8 && rd_cost->rate != INT_MAX) {
-    assert(rd_cost->dist_y < INT64_MAX);
-  }
-#endif  // CONFIG_DIST_8X8 && CONFIG_CB4X4
 #if CONFIG_SUPERTX
   *rate_nocoef = best_rate_nocoef;
 #endif  // CONFIG_SUPERTX

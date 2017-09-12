@@ -521,9 +521,6 @@ static INLINE void av1_init_rd_stats(RD_STATS *rd_stats) {
   rd_stats->zero_rate = 0;
   rd_stats->invalid_rate = 0;
   rd_stats->ref_rdcost = INT64_MAX;
-#if CONFIG_DIST_8X8 && CONFIG_CB4X4
-  rd_stats->dist_y = 0;
-#endif
 #if CONFIG_RD_DEBUG
   for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
     rd_stats->txb_coeff_cost[plane] = 0;
@@ -551,9 +548,6 @@ static INLINE void av1_invalid_rd_stats(RD_STATS *rd_stats) {
   rd_stats->zero_rate = 0;
   rd_stats->invalid_rate = 1;
   rd_stats->ref_rdcost = INT64_MAX;
-#if CONFIG_DIST_8X8 && CONFIG_CB4X4
-  rd_stats->dist_y = INT64_MAX;
-#endif
 #if CONFIG_RD_DEBUG
   for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
     rd_stats->txb_coeff_cost[plane] = INT_MAX;
@@ -579,9 +573,6 @@ static INLINE void av1_merge_rd_stats(RD_STATS *rd_stats_dst,
   rd_stats_dst->sse += rd_stats_src->sse;
   rd_stats_dst->skip &= rd_stats_src->skip;
   rd_stats_dst->invalid_rate &= rd_stats_src->invalid_rate;
-#if CONFIG_DIST_8X8 && CONFIG_CB4X4
-  rd_stats_dst->dist_y += rd_stats_src->dist_y;
-#endif
 #if CONFIG_RD_DEBUG
   for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
     rd_stats_dst->txb_coeff_cost[plane] += rd_stats_src->txb_coeff_cost[plane];
