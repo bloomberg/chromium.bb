@@ -1425,16 +1425,20 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 }
 
 - (void)showReportAnIssue {
-  if (_settingsNavigationController)
-    return;
-  _settingsNavigationController =
-      [SettingsNavigationController newUserFeedbackController:_mainBrowserState
-                                                     delegate:self
-                                           feedbackDataSource:self];
-  [[self topPresentedViewController]
-      presentViewController:_settingsNavigationController
-                   animated:YES
-                 completion:nil];
+  // This dispatch is necessary to give enough time for the tools menu to
+  // disappear before taking a screenshot.
+  dispatch_async(dispatch_get_main_queue(), ^{
+    if (_settingsNavigationController)
+      return;
+    _settingsNavigationController = [SettingsNavigationController
+        newUserFeedbackController:_mainBrowserState
+                         delegate:self
+               feedbackDataSource:self];
+    [[self topPresentedViewController]
+        presentViewController:_settingsNavigationController
+                     animated:YES
+                   completion:nil];
+  });
 }
 
 - (void)openURL:(OpenUrlCommand*)command {
