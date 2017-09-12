@@ -145,7 +145,7 @@ unsigned ShapingLineBreaker::Hyphenate(unsigned offset,
   unsigned previous_break_opportunity =
       break_iterator_->PreviousBreakOpportunity(offset, start);
   unsigned word_start = previous_break_opportunity;
-  if (!break_iterator_->BreakAfterSpace()) {
+  if (break_iterator_->BreakSpace() != BreakSpaceType::kAfter) {
     while (word_start < text.length() &&
            LazyLineBreakIterator::IsBreakableSpace(text[word_start]))
       word_start++;
@@ -281,7 +281,7 @@ PassRefPtr<ShapeResult> ShapingLineBreaker::ShapeLine(
   candidate_break = std::max(candidate_break, start);
 
   unsigned break_opportunity;
-  if (break_iterator_->BreakAfterSpace() &&
+  if (break_iterator_->BreakSpace() == BreakSpaceType::kAfter &&
       IsHangableSpace(text[candidate_break])) {
     // If BreakAfterSpace, allow spaces to hang over the available space.
     result_out->has_hanging_spaces = true;
