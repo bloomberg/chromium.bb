@@ -380,15 +380,10 @@ base::DictionaryValue* ChromeDevToolsManagerDelegate::HandleCommand(
 
 std::string ChromeDevToolsManagerDelegate::GetTargetType(
     content::WebContents* web_contents) {
-  for (TabContentsIterator it; !it.done(); it.Next()) {
-    if (*it == web_contents)
-      return DevToolsAgentHost::kTypePage;
-  }
-
   std::string extension_name;
   std::string extension_type;
   if (!GetExtensionInfo(web_contents, &extension_name, &extension_type))
-    return DevToolsAgentHost::kTypeOther;
+    return DevToolsAgentHost::kTypePage;
   return extension_type;
 }
 
