@@ -171,11 +171,6 @@ set(AOM_AV1_COMMON_INTRIN_AVX2
     "${AOM_ROOT}/av1/common/x86/highbd_inv_txfm_avx2.c"
     "${AOM_ROOT}/av1/common/x86/hybrid_inv_txfm_avx2.c")
 
-set(AOM_AV1_COMMON_INTRIN_DSPR2
-    "${AOM_ROOT}/av1/common/mips/dspr2/av1_itrans16_dspr2.c"
-    "${AOM_ROOT}/av1/common/mips/dspr2/av1_itrans4_dspr2.c"
-    "${AOM_ROOT}/av1/common/mips/dspr2/av1_itrans8_dspr2.c")
-
 set(AOM_AV1_COMMON_INTRIN_MSA
     "${AOM_ROOT}/av1/common/mips/msa/av1_idct16x16_msa.c"
     "${AOM_ROOT}/av1/common/mips/msa/av1_idct4x4_msa.c"
@@ -224,6 +219,12 @@ if (CONFIG_HIGHBITDEPTH)
       ${AOM_AV1_COMMON_INTRIN_SSE4_1}
       "${AOM_ROOT}/av1/common/x86/av1_highbd_convolve_sse4.c")
 else ()
+  set(AOM_AV1_COMMON_INTRIN_DSPR2
+      ${AOM_AV1_COMMON_INTRIN_DSPR2}
+      "${AOM_ROOT}/av1/common/mips/dspr2/av1_itrans16_dspr2.c"
+      "${AOM_ROOT}/av1/common/mips/dspr2/av1_itrans4_dspr2.c"
+      "${AOM_ROOT}/av1/common/mips/dspr2/av1_itrans8_dspr2.c")
+
   set(AOM_AV1_COMMON_INTRIN_NEON
       ${AOM_AV1_COMMON_INTRIN_NEON}
       "${AOM_ROOT}/av1/encoder/arm/neon/dct_neon.c"

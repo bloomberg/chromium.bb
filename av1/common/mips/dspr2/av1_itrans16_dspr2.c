@@ -20,7 +20,7 @@
 #include "aom_dsp/txfm_common.h"
 #include "aom_ports/mem.h"
 
-#if HAVE_DSPR2
+#if HAVE_DSPR2 && CONFIG_HIGHBITDEPTH
 void av1_iht16x16_256_add_dspr2(const int16_t *input, uint8_t *dest, int pitch,
                                 TxfmParam *txfm_param) {
   int i, j;
@@ -94,4 +94,4 @@ void av1_iht16x16_256_add_dspr2(const int16_t *input, uint8_t *dest, int pitch,
     default: printf("av1_short_iht16x16_add_dspr2 : Invalid tx_type\n"); break;
   }
 }
-#endif  // #if HAVE_DSPR2
+#endif  // #if HAVE_DSPR2 && CONFIG_HIGHBITDEPTH
