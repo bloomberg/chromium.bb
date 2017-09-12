@@ -92,7 +92,7 @@ void RegisterDumpProviderWithSequencedTaskRunner(
 }
 
 // Posts |task| to |task_runner| and blocks until it is executed.
-void PostTaskAndWait(const tracked_objects::Location& from_here,
+void PostTaskAndWait(const Location& from_here,
                      SequencedTaskRunner* task_runner,
                      base::OnceClosure task) {
   base::WaitableEvent event(WaitableEvent::ResetPolicy::MANUAL,
@@ -144,14 +144,14 @@ class TestSequencedTaskRunner : public SequencedTaskRunner {
   void set_enabled(bool value) { enabled_ = value; }
   unsigned no_of_post_tasks() const { return num_of_post_tasks_; }
 
-  bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
+  bool PostNonNestableDelayedTask(const Location& from_here,
                                   OnceClosure task,
                                   TimeDelta delay) override {
     NOTREACHED();
     return false;
   }
 
-  bool PostDelayedTask(const tracked_objects::Location& from_here,
+  bool PostDelayedTask(const Location& from_here,
                        OnceClosure task,
                        TimeDelta delay) override {
     num_of_post_tasks_++;

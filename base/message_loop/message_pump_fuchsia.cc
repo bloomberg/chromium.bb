@@ -13,7 +13,7 @@
 namespace base {
 
 MessagePumpFuchsia::MxHandleWatchController::MxHandleWatchController(
-    const tracked_objects::Location& from_here)
+    const Location& from_here)
     : created_from_location_(from_here) {}
 
 MessagePumpFuchsia::MxHandleWatchController::~MxHandleWatchController() {
@@ -70,7 +70,7 @@ void MessagePumpFuchsia::FdWatchController::OnMxHandleSignalled(
 }
 
 MessagePumpFuchsia::FdWatchController::FdWatchController(
-    const tracked_objects::Location& from_here)
+    const Location& from_here)
     : MxHandleWatchController(from_here) {}
 
 MessagePumpFuchsia::FdWatchController::~FdWatchController() {

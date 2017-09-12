@@ -90,7 +90,7 @@ struct SequencedTask {
   int trace_id;
   int64_t sequence_task_number;
   SequencedWorkerPool::WorkerShutdown shutdown_behavior;
-  tracked_objects::Location posted_from;
+  Location posted_from;
   OnceClosure task;
 
   // Non-delayed tasks and delayed tasks are managed together by time-to-run
@@ -132,7 +132,7 @@ class SequencedWorkerPoolTaskRunner : public TaskRunner {
       SequencedWorkerPool::WorkerShutdown shutdown_behavior);
 
   // TaskRunner implementation
-  bool PostDelayedTask(const tracked_objects::Location& from_here,
+  bool PostDelayedTask(const Location& from_here,
                        OnceClosure task,
                        TimeDelta delay) override;
   bool RunsTasksInCurrentSequence() const override;
@@ -155,10 +155,9 @@ SequencedWorkerPoolTaskRunner::SequencedWorkerPoolTaskRunner(
 SequencedWorkerPoolTaskRunner::~SequencedWorkerPoolTaskRunner() {
 }
 
-bool SequencedWorkerPoolTaskRunner::PostDelayedTask(
-    const tracked_objects::Location& from_here,
-    OnceClosure task,
-    TimeDelta delay) {
+bool SequencedWorkerPoolTaskRunner::PostDelayedTask(const Location& from_here,
+                                                    OnceClosure task,
+                                                    TimeDelta delay) {
   if (delay.is_zero()) {
     return pool_->PostWorkerTaskWithShutdownBehavior(from_here, std::move(task),
                                                      shutdown_behavior_);
@@ -186,14 +185,14 @@ class SequencedWorkerPool::PoolSequencedTaskRunner
       SequencedWorkerPool::WorkerShutdown shutdown_behavior);
 
   // TaskRunner implementation
-  bool PostDelayedTask(const tracked_objects::Location& from_here,
+  bool PostDelayedTask(const Location& from_here,
                        OnceClosure task,
                        TimeDelta delay) override;
   bool RunsTasksInCurrentSequence() const override;
 
 
   // SequencedTaskRunner implementation
-  bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
+  bool PostNonNestableDelayedTask(const Location& from_here,
                                   OnceClosure task,
                                   TimeDelta delay) override;
 
@@ -222,7 +221,7 @@ SequencedWorkerPool::PoolSequencedTaskRunner::
     ~PoolSequencedTaskRunner() = default;
 
 bool SequencedWorkerPool::PoolSequencedTaskRunner::PostDelayedTask(
-    const tracked_objects::Location& from_here,
+    const Location& from_here,
     OnceClosure task,
     TimeDelta delay) {
   if (delay.is_zero()) {
@@ -239,7 +238,7 @@ bool SequencedWorkerPool::PoolSequencedTaskRunner::
 }
 
 bool SequencedWorkerPool::PoolSequencedTaskRunner::PostNonNestableDelayedTask(
-    const tracked_objects::Location& from_here,
+    const Location& from_here,
     OnceClosure task,
     TimeDelta delay) {
   // There's no way to run nested tasks, so simply forward to
@@ -342,7 +341,7 @@ class SequencedWorkerPool::Inner {
   bool PostTask(const std::string* optional_token_name,
                 SequenceToken sequence_token,
                 WorkerShutdown shutdown_behavior,
-                const tracked_objects::Location& from_here,
+                const Location& from_here,
                 OnceClosure task,
                 TimeDelta delay);
 
@@ -680,7 +679,7 @@ bool SequencedWorkerPool::Inner::PostTask(
     const std::string* optional_token_name,
     SequenceToken sequence_token,
     WorkerShutdown shutdown_behavior,
-    const tracked_objects::Location& from_here,
+    const Location& from_here,
     OnceClosure task,
     TimeDelta delay) {
   // Use CHECK instead of DCHECK to crash earlier. See http://crbug.com/711167
@@ -1519,32 +1518,30 @@ SequencedWorkerPool::GetTaskRunnerWithShutdownBehavior(
   return new SequencedWorkerPoolTaskRunner(this, shutdown_behavior);
 }
 
-bool SequencedWorkerPool::PostWorkerTask(
-    const tracked_objects::Location& from_here,
-    OnceClosure task) {
+bool SequencedWorkerPool::PostWorkerTask(const Location& from_here,
+                                         OnceClosure task) {
   return inner_->PostTask(NULL, SequenceToken(), BLOCK_SHUTDOWN, from_here,
                           std::move(task), TimeDelta());
 }
 
 bool SequencedWorkerPool::PostWorkerTaskWithShutdownBehavior(
-    const tracked_objects::Location& from_here,
+    const Location& from_here,
     OnceClosure task,
     WorkerShutdown shutdown_behavior) {
   return inner_->PostTask(NULL, SequenceToken(), shutdown_behavior, from_here,
                           std::move(task), TimeDelta());
 }
 
-bool SequencedWorkerPool::PostSequencedWorkerTask(
-    SequenceToken sequence_token,
-    const tracked_objects::Location& from_here,
-    OnceClosure task) {
+bool SequencedWorkerPool::PostSequencedWorkerTask(SequenceToken sequence_token,
+                                                  const Location& from_here,
+                                                  OnceClosure task) {
   return inner_->PostTask(NULL, sequence_token, BLOCK_SHUTDOWN, from_here,
                           std::move(task), TimeDelta());
 }
 
 bool SequencedWorkerPool::PostDelayedSequencedWorkerTask(
     SequenceToken sequence_token,
-    const tracked_objects::Location& from_here,
+    const Location& from_here,
     OnceClosure task,
     TimeDelta delay) {
   WorkerShutdown shutdown_behavior =
@@ -1555,7 +1552,7 @@ bool SequencedWorkerPool::PostDelayedSequencedWorkerTask(
 
 bool SequencedWorkerPool::PostNamedSequencedWorkerTask(
     const std::string& token_name,
-    const tracked_objects::Location& from_here,
+    const Location& from_here,
     OnceClosure task) {
   DCHECK(!token_name.empty());
   return inner_->PostTask(&token_name, SequenceToken(), BLOCK_SHUTDOWN,
@@ -1564,17 +1561,16 @@ bool SequencedWorkerPool::PostNamedSequencedWorkerTask(
 
 bool SequencedWorkerPool::PostSequencedWorkerTaskWithShutdownBehavior(
     SequenceToken sequence_token,
-    const tracked_objects::Location& from_here,
+    const Location& from_here,
     OnceClosure task,
     WorkerShutdown shutdown_behavior) {
   return inner_->PostTask(NULL, sequence_token, shutdown_behavior, from_here,
                           std::move(task), TimeDelta());
 }
 
-bool SequencedWorkerPool::PostDelayedTask(
-    const tracked_objects::Location& from_here,
-    OnceClosure task,
-    TimeDelta delay) {
+bool SequencedWorkerPool::PostDelayedTask(const Location& from_here,
+                                          OnceClosure task,
+                                          TimeDelta delay) {
   WorkerShutdown shutdown_behavior =
       delay.is_zero() ? BLOCK_SHUTDOWN : SKIP_ON_SHUTDOWN;
   return inner_->PostTask(nullptr, SequenceToken(), shutdown_behavior,
