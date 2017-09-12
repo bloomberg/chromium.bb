@@ -144,6 +144,8 @@ Status PrepareCommandLine(uint16_t port,
   }
   switches.SetFromSwitches(capabilities.switches);
 
+  if (capabilities.exclude_switches.count("user-data-dir") > 0)
+    LOG(WARNING) << "excluding user-data-dir switch is not supported";
   base::FilePath user_data_dir_path;
   if (switches.HasSwitch("user-data-dir")) {
     user_data_dir_path = base::FilePath(
