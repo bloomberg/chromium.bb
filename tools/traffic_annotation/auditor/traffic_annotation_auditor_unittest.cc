@@ -11,12 +11,9 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
-#include "build/build_config.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "tools/traffic_annotation/auditor/traffic_annotation_exporter.h"
 #include "tools/traffic_annotation/auditor/traffic_annotation_file_filter.h"
 
 namespace {
@@ -34,12 +31,7 @@ const char* kIrrelevantFiles[] = {
 const char* kRelevantFiles[] = {
     "tools/traffic_annotation/auditor/tests/relevant_file_name_and_content.cc",
     "tools/traffic_annotation/auditor/tests/relevant_file_name_and_content.mm"};
-
-const base::FilePath kDownstreamUnittests(
-    FILE_PATH_LITERAL("tools/traffic_annotation/scripts/"
-                      "annotations_xml_downstream_caller.py"));
-
-}  // namespace
+}
 
 using namespace testing;
 
@@ -826,28 +818,4 @@ TEST_F(TrafficAnnotationAuditorTest, CreateCompleteAnnotation) {
           NetworkTrafficAnnotation_TrafficSemantics_Destination_LOCAL);
   EXPECT_NE(instance.CreateCompleteAnnotation(other, &combination).type(),
             AuditorResult::Type::RESULT_OK);
-}
-
-// Tests if Annotations.xml has proper content.
-TEST_F(TrafficAnnotationAuditorTest, AnnotationsXML) {
-  TrafficAnnotationExporter exporter(source_path());
-
-  EXPECT_TRUE(exporter.LoadAnnotationsXML());
-  EXPECT_TRUE(exporter.CheckReportItems());
-}
-
-// Tests if downstream files depending on of Annotations.xml are updated.
-TEST_F(TrafficAnnotationAuditorTest, AnnotationsDownstreamUnittests) {
-  base::CommandLine cmdline(source_path().Append(kDownstreamUnittests));
-  cmdline.AppendSwitch("test");
-
-  int tests_result;
-#if defined(OS_WIN)
-  cmdline.PrependWrapper(L"python");
-  tests_result =
-      system(base::UTF16ToASCII(cmdline.GetCommandLineString()).c_str());
-#else
-  tests_result = system(cmdline.GetCommandLineString().c_str());
-#endif
-  EXPECT_EQ(0, tests_result);
 }

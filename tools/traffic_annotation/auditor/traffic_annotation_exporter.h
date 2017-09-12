@@ -6,54 +6,48 @@
 #define TOOLS_TRAFFIC_ANNOTATION_AUDITOR_TRAFFIC_ANNOTATION_EXPORTER_H_
 
 #include <map>
-#include <set>
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/strings/string_util.h"
 #include "tools/traffic_annotation/auditor/instance.h"
 
 class TrafficAnnotationExporter {
  public:
-  TrafficAnnotationExporter(const base::FilePath& source_path);
-  ~TrafficAnnotationExporter();
+  TrafficAnnotationExporter() = default;
+  ~TrafficAnnotationExporter() = default;
   TrafficAnnotationExporter(const TrafficAnnotationExporter&) = delete;
   TrafficAnnotationExporter(TrafficAnnotationExporter&&) = delete;
 
-  // Loads annotations from annotations.xml file into |report_items_|.
-  bool LoadAnnotationsXML();
-
-  // Updates |report_items_| with current set of extracted annotations and
-  // reserved ids. Sets the |modified_| flag if any item is updated.
-  bool UpdateAnnotations(const std::vector<AnnotationInstance>& annotations,
-                         const std::map<int, std::string>& reserved_ids);
-
-  // Saves |report_items_| into annotations.xml.
-  bool SaveAnnotationsXML();
-
-  // Produces the list of deprecated hash codes. Returns false if
-  // annotations.xml is not and cannot be loaded.
-  bool GetDeprecatedHashCodes(std::set<int>* hash_codes);
-
-  bool modified() { return modified_; }
-
-  // Runs tests on content of |report_items_|.
-  bool CheckReportItems();
+  // Updates the xml file including annotations unique id, hash code, content
+  // hash code, and a flag specifying that annotation is depricated.
+  bool UpdateAnnotationsXML(const base::FilePath& filepath,
+                            const std::vector<AnnotationInstance>& annotations,
+                            const std::map<int, std::string>& reserved_ids);
 
  private:
   struct ReportItem {
-    ReportItem();
-    ReportItem(const ReportItem& other);
-    ~ReportItem();
+    ReportItem(std::string id, int hash_code, int content_hash)
+        : unique_id(id),
+          unique_id_hash_code(hash_code),
+          deprecation_date(std::string()),
+          content_hash_code(content_hash) {}
+    ReportItem(std::string id, int hash_code) : ReportItem(id, hash_code, -1) {}
+    ReportItem() : ReportItem(std::string(), -1, -1) {}
 
+    static bool Compare(const ReportItem& a, const ReportItem& b) {
+      return base::CompareCaseInsensitiveASCII(a.unique_id, b.unique_id) < 0;
+    }
+
+    std::string unique_id;
     int unique_id_hash_code;
     std::string deprecation_date;
     int content_hash_code;
-    std::vector<std::string> os_list;
   };
 
-  std::map<std::string, ReportItem> report_items_;
-  const base::FilePath source_path_;
-  bool modified_;
+  // Loads annotations from the given XML file.
+  bool LoadAnnotationsFromXML(const base::FilePath& filepath,
+                              std::vector<ReportItem>* items);
 };
 
 #endif  // TOOLS_TRAFFIC_ANNOTATION_AUDITOR_TRAFFIC_ANNOTATION_EXPORTER_H_

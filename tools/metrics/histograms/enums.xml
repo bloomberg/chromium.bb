@@ -38748,7 +38748,6 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="8561691" label="safe_browsing_v4_get_hash"/>
   <int value="9459438" label="external_policy_fetcher"/>
   <int value="13211343" label="suggestions_image_manager"/>
-  <int value="13694792" label="desktop_ios_promotion"/>
   <int value="14257952" label="supervised_user_url_filter"/>
   <int value="15418154" label="ntp_snippets_fetch"/>
   <int value="16469669" label="background_fetch_context"/>
@@ -38812,7 +38811,6 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="56275203" label="save_file_manager"/>
   <int value="56351037" label="download_web_contents_frame"/>
   <int value="56434025" label="gcm_subscription"/>
-  <int value="56866367" label="pdf_plugin_placeholder"/>
   <int value="57144960" label="sync_http_bridge"/>
   <int value="57276415" label="chrome_expect_ct_reporter"/>
   <int value="58963098" label="resource_dispather_host"/>
@@ -38833,7 +38831,6 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="68561428" label="data_reduction_proxy_pingback"/>
   <int value="68745894" label="safe_browsing_get_full_hash"/>
   <int value="70126372" label="notification_image_reporter"/>
-  <int value="70796791" label="content_resource_fetcher"/>
   <int value="71251498" label="privet_http_impl"/>
   <int value="71578042" label="cloud_print_backend"/>
   <int value="72354423" label="invalidation_service"/>
@@ -38860,7 +38857,6 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="88863520" label="autofill_query"/>
   <int value="89771989" label="asset_links"/>
   <int value="91597383" label="gaia_auth_login"/>
-  <int value="93232258" label="mojo_context_state"/>
   <int value="95588446" label="payments_sync_cards"/>
   <int value="95682324" label="ranker_url_fetcher"/>
   <int value="95711309" label="ntp_contextual_suggestions_fetch"/>
@@ -38869,7 +38865,6 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="97199008" label="doodle_fetcher"/>
   <int value="97978464" label="gaia_auth_fetch_for_uber"/>
   <int value="98123737" label="devtools_interceptor"/>
-  <int value="99279418" label="rlz_ping"/>
   <int value="100545943" label="webui_content_scripts_download"/>
   <int value="101725581" label="cros_recovery_image_download"/>
   <int value="101845102" label="blink_resource_loader"/>
