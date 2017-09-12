@@ -23,8 +23,86 @@ import time
 
 CONCURRENT_TASKS=4
 
+def run_test(options, crash_dir, additional_arguments = []):
+  global failure
+  global breakpad_tools_dir
+
+  print "# Run content_shell and make it crash."
+  cmd = [options.binary,
+         '--run-layout-test',
+         'chrome://crash',
+         '--enable-crash-reporter',
+         '--crash-dumps-dir=%s' % crash_dir]
+  cmd += additional_arguments
+  if options.verbose:
+    print ' '.join(cmd)
+  failure = 'Failed to run content_shell.'
+  if options.verbose:
+    subprocess.check_call(cmd)
+  else:
+    with open(os.devnull, 'w') as devnull:
+      subprocess.check_call(cmd, stdout=devnull, stderr=devnull)
+
+  print "# Retrieve crash dump."
+  dmp_files = glob.glob(os.path.join(crash_dir, '*.dmp'))
+  failure = 'Expected 1 crash dump, found %d.' % len(dmp_files)
+  if len(dmp_files) != 1:
+    raise Exception(failure)
+  dmp_file = dmp_files[0]
+
+  if sys.platform != 'win32':
+    minidump = os.path.join(crash_dir, 'minidump')
+    dmp_to_minidump = os.path.join(breakpad_tools_dir, 'dmp2minidump.py')
+    cmd = [dmp_to_minidump, dmp_file, minidump]
+    if options.verbose:
+      print ' '.join(cmd)
+    failure = 'Failed to run dmp_to_minidump.'
+    subprocess.check_call(cmd)
+
+  print "# Symbolize crash dump."
+  if sys.platform == 'win32':
+    cdb_exe = os.path.join(options.build_dir, 'cdb', 'cdb.exe')
+    cmd = [cdb_exe, '-y', options.build_dir, '-c', '.lines;.excr;k30;q',
+           '-z', dmp_file]
+    if options.verbose:
+      print ' '.join(cmd)
+    failure = 'Failed to run cdb.exe.'
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+    stack = proc.communicate()[0]
+  else:
+    minidump_stackwalk = os.path.join(options.build_dir, 'minidump_stackwalk')
+    global symbols_dir
+    cmd = [minidump_stackwalk, minidump, symbols_dir]
+    if options.verbose:
+      print ' '.join(cmd)
+    failure = 'Failed to run minidump_stackwalk.'
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+    stack = proc.communicate()[0]
+
+  # Check whether the stack contains a CrashIntentionally symbol.
+  found_symbol = 'CrashIntentionally' in stack
+
+  os.remove(dmp_file)
+
+  if options.no_symbols:
+    if found_symbol:
+      if options.verbose:
+        print stack
+      failure = 'Found unexpected reference to CrashIntentionally in stack'
+      raise Exception(failure)
+  else:
+    if not found_symbol:
+      if options.verbose:
+        print stack
+      failure = 'Could not find reference to CrashIntentionally in stack.'
+      raise Exception(failure)
 
 def main():
+  global failure
+  global breakpad_tools_dir
+
   parser = optparse.OptionParser()
   parser.add_option('', '--build-dir', default='',
                     help='The build output directory.')
@@ -75,6 +153,7 @@ def main():
       time.sleep(1)
     else:
       print "# Generate symbols."
+      global symbols_dir
       breakpad_tools_dir = os.path.join(
           os.path.dirname(__file__), '..', '..', '..',
           'components', 'crash', 'content', 'tools')
@@ -92,73 +171,12 @@ def main():
       failure = 'Failed to run generate_breakpad_symbols.py.'
       subprocess.check_call(cmd)
 
-    print "# Run content_shell and make it crash."
-    cmd = [options.binary,
-           '--run-layout-test',
-           'chrome://crash',
-           '--enable-crash-reporter',
-           '--crash-dumps-dir=%s' % crash_dir]
-    if options.verbose:
-      print ' '.join(cmd)
-    failure = 'Failed to run content_shell.'
-    if options.verbose:
-      subprocess.check_call(cmd)
-    else:
-      with open(os.devnull, 'w') as devnull:
-        subprocess.check_call(cmd, stdout=devnull, stderr=devnull)
-
-    print "# Retrieve crash dump."
-    dmp_files = glob.glob(os.path.join(crash_dir, '*.dmp'))
-    failure = 'Expected 1 crash dump, found %d.' % len(dmp_files)
-    if len(dmp_files) != 1:
-      raise Exception(failure)
-    dmp_file = dmp_files[0]
-
-    if sys.platform != 'win32':
-      minidump = os.path.join(crash_dir, 'minidump')
-      dmp_to_minidump = os.path.join(breakpad_tools_dir, 'dmp2minidump.py')
-      cmd = [dmp_to_minidump, dmp_file, minidump]
-      if options.verbose:
-        print ' '.join(cmd)
-      failure = 'Failed to run dmp_to_minidump.'
-      subprocess.check_call(cmd)
-
-    print "# Symbolize crash dump."
-    if sys.platform == 'win32':
-      cdb_exe = os.path.join(options.build_dir, 'cdb', 'cdb.exe')
-      cmd = [cdb_exe, '-y', options.build_dir, '-c', '.lines;.excr;k30;q',
-             '-z', dmp_file]
-      if options.verbose:
-        print ' '.join(cmd)
-      failure = 'Failed to run cdb.exe.'
-      proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                              stderr=subprocess.PIPE)
-      stack = proc.communicate()[0]
-    else:
-      minidump_stackwalk = os.path.join(options.build_dir, 'minidump_stackwalk')
-      cmd = [minidump_stackwalk, minidump, symbols_dir]
-      if options.verbose:
-        print ' '.join(cmd)
-      failure = 'Failed to run minidump_stackwalk.'
-      proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                              stderr=subprocess.PIPE)
-      stack = proc.communicate()[0]
-
-    # Check whether the stack contains a CrashIntentionally symbol.
-    found_symbol = 'CrashIntentionally' in stack
-
-    if options.no_symbols:
-      if found_symbol:
-        if options.verbose:
-          print stack
-        failure = 'Found unexpected reference to CrashIntentionally in stack'
-        raise Exception(failure)
-    else:
-      if not found_symbol:
-        if options.verbose:
-          print stack
-        failure = 'Could not find reference to CrashIntentionally in stack.'
-        raise Exception(failure)
+    print "# Running test without trap handler."
+    run_test(options, crash_dir);
+    print "# Running test with trap handler."
+    run_test(options, crash_dir,
+             additional_arguments =
+               ['--enable-features=WebAssemblyTrapHandler']);
 
   except:
     print "FAIL: %s" % failure
