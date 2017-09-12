@@ -8,12 +8,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <deque>
 #include <map>
 #include <memory>
 #include <set>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -613,10 +613,10 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   FRIEND_TEST_ALL_PREFIXES(SpdyNetworkTransactionTest,
                            ServerPushValidCrossOriginWithOpenSession);
 
-  typedef std::deque<base::WeakPtr<SpdyStreamRequest>>
-      PendingStreamRequestQueue;
-  typedef std::map<SpdyStreamId, SpdyStream*> ActiveStreamMap;
-  typedef std::set<SpdyStream*> CreatedStreamSet;
+  using PendingStreamRequestQueue =
+      base::circular_deque<base::WeakPtr<SpdyStreamRequest>>;
+  using ActiveStreamMap = std::map<SpdyStreamId, SpdyStream*>;
+  using CreatedStreamSet = std::set<SpdyStream*>;
 
   enum AvailabilityState {
     // The session is available in its socket pool and can be used
@@ -1158,7 +1158,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   // A queue of stream IDs that have been send-stalled at some point
   // in the past.
-  std::deque<SpdyStreamId> stream_send_unstall_queue_[NUM_PRIORITIES];
+  base::circular_deque<SpdyStreamId> stream_send_unstall_queue_[NUM_PRIORITIES];
 
   NetLogWithSource net_log_;
 

@@ -10,16 +10,15 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <deque>
 #include <map>
 #include <memory>
-#include <queue>
 #include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/containers/circular_deque.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -685,11 +684,12 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // Map of domain keys to their associated task queues. These tasks are blocked
   // until all cookies for the associated domain key eTLD+1 are loaded from the
   // backend store.
-  std::map<std::string, std::deque<base::OnceClosure>> tasks_pending_for_key_;
+  std::map<std::string, base::circular_deque<base::OnceClosure>>
+      tasks_pending_for_key_;
 
   // Queues tasks that are blocked until all cookies are loaded from the backend
   // store.
-  std::deque<base::OnceClosure> tasks_pending_;
+  base::circular_deque<base::OnceClosure> tasks_pending_;
 
   // Once a global cookie task has been seen, all per-key tasks must be put in
   // |tasks_pending_| instead of |tasks_pending_for_key_| to ensure a reasonable

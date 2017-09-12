@@ -5,7 +5,6 @@
 #include "net/dns/mdns_client_impl.h"
 
 #include <algorithm>
-#include <queue>
 #include <utility>
 
 #include "base/bind.h"

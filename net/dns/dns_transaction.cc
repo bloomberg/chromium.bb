@@ -4,7 +4,6 @@
 
 #include "net/dns/dns_transaction.h"
 
-#include <deque>
 #include <memory>
 #include <string>
 #include <utility>
@@ -12,6 +11,7 @@
 
 #include "base/big_endian.h"
 #include "base/bind.h"
+#include "base/containers/circular_deque.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -950,7 +950,7 @@ class DnsTransactionImpl : public DnsTransaction,
   NetLogWithSource net_log_;
 
   // Search list of fully-qualified DNS names to query next (in DNS format).
-  std::deque<std::string> qnames_;
+  base::circular_deque<std::string> qnames_;
   size_t qnames_initial_size_;
 
   // List of attempts for the current name.

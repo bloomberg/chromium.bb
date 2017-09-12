@@ -30,6 +30,7 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/containers/circular_deque.h"
 #include "base/debug/debugger.h"
 #include "base/debug/stack_trace.h"
 #include "base/macros.h"
@@ -1885,7 +1886,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
   std::unique_ptr<DnsTask> dns_task_;
 
   // All Requests waiting for the result of this Job. Some can be canceled.
-  std::deque<RequestImpl*> requests_;
+  base::circular_deque<RequestImpl*> requests_;
 
   // A handle used in |HostResolverImpl::dispatcher_|.
   PrioritizedDispatcher::Handle handle_;

@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include <memory>
-#include <queue>
 #include <string>
 
+#include "base/containers/queue.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
@@ -389,7 +389,7 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   // would leak the SimpleSynchronousEntry.
   SimpleSynchronousEntry* synchronous_entry_;
 
-  std::queue<SimpleEntryOperation> pending_operations_;
+  base::queue<SimpleEntryOperation> pending_operations_;
 
   net::NetLogWithSource net_log_;
 
