@@ -71,6 +71,7 @@ modules_idl_files =
                     "compositorworker/AnimationWorkletGlobalScope.idl",
                     "compositorworker/CompositorWorker.idl",
                     "compositorworker/CompositorWorkerGlobalScope.idl",
+                    "compositorworker/WorkletAnimation.idl",
                     "credentialmanager/AuthenticatorAssertionResponse.idl",
                     "credentialmanager/AuthenticatorAttestationResponse.idl",
                     "credentialmanager/AuthenticatorResponse.idl",
