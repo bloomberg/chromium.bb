@@ -640,6 +640,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   resource_request->request_body =
       GetRequestBodyForWebURLRequest(request).get();
   resource_request->download_to_file = request.DownloadToFile();
+  resource_request->keepalive = request.GetKeepalive();
   resource_request->has_user_gesture = request.HasUserGesture();
   resource_request->enable_load_timing = true;
   resource_request->enable_upload_progress = request.ReportUploadProgress();

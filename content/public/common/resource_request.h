@@ -131,6 +131,10 @@ struct CONTENT_EXPORT ResourceRequest {
   // to that file will be provided in ResponseInfo::download_file_path.
   bool download_to_file = false;
 
+  // True if the request can work after the fetch group is terminated.
+  // https://fetch.spec.whatwg.org/#request-keepalive-flag
+  bool keepalive = false;
+
   // True if the request was user initiated.
   bool has_user_gesture = false;
 

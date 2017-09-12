@@ -186,6 +186,7 @@ class AsyncResourceHandlerTest : public ::testing::Test,
         false,                                  // enable load timing
         false,                                  // enable upload progress
         false,                                  // do_not_prompt_for_login
+        false,                                  // keep_alive
         blink::kWebReferrerPolicyDefault,       // referrer_policy
         blink::kWebPageVisibilityStateVisible,  // visibility_state
         resource_context_.get(),                // context

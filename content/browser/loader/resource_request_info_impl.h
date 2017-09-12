@@ -66,6 +66,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       bool enable_load_timing,
       bool enable_upload_progress,
       bool do_not_prompt_for_login,
+      bool keepalive,
       blink::WebReferrerPolicy referrer_policy,
       blink::WebPageVisibilityState visibility_state,
       ResourceContext* context,
@@ -143,6 +144,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   void set_detachable_handler(DetachableResourceHandler* h) {
     detachable_handler_ = h;
   }
+  bool keepalive() const { return keepalive_; }
 
   // Downloads are allowed only as a top level request.
   bool allow_download() const { return allow_download_; }
@@ -223,6 +225,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   bool enable_load_timing_;
   bool enable_upload_progress_;
   bool do_not_prompt_for_login_;
+  bool keepalive_;
   bool counted_as_in_flight_request_;
   ResourceType resource_type_;
   ui::PageTransition transition_type_;
