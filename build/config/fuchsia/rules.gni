@@ -49,7 +49,14 @@ template("generate_runner_script") {
     outputs = [
       generated_script,
     ]
-    data += [ generated_script ]
+    data += [
+      generated_script,
+      "//build/fuchsia/exe_runner.py",
+      "//build/fuchsia/test_runner.py",
+      "//build/fuchsia/runner_common.py",
+      "//build/util/lib/",
+      "//third_party/fuchsia-sdk/",
+    ]
 
     runner_args += [
       "--runner-script",
@@ -58,7 +65,10 @@ template("generate_runner_script") {
       rebase_path(root_build_dir, root_build_dir),
     ]
 
-    deps += [ ":$_runtime_deps_target" ]
+    deps += [
+      ":$_runtime_deps_target",
+      "//testing/buildbot/filters:fuchsia_filters",
+    ]
     data += [ _runtime_deps_file ]
     runner_args += [
       "--runtime-deps-path",
