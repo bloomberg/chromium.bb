@@ -774,8 +774,6 @@ split_static_library("browser") {
     "net/request_source_bandwidth_histograms.h",
     "net/safe_search_util.cc",
     "net/safe_search_util.h",
-    "net/sdch_owner_pref_storage.cc",
-    "net/sdch_owner_pref_storage.h",
     "net/service_providers_win.cc",
     "net/service_providers_win.h",
     "net/spdyproxy/data_reduction_proxy_chrome_io_data.cc",
