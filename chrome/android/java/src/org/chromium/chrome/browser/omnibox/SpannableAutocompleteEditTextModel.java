@@ -511,15 +511,15 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
                 // the restored diff at the beginning of next IME operation.
                 mDeletePostfixOnNextBeginImeCommand = diff.length();
             }
-            incrementBatchEditCount(); // avoids additional notifyAutocompleteTextStateChanged()
-            Editable editable = mDelegate.getEditableText();
-            editable.append(diff);
-            decrementBatchEditCount();
             if (mBatchEditNestCount == 0) { // only at the outermost batch edit
                 // crbug.com/758443: Japanese keyboard does not finish composition when we restore
                 // the deleted text.
                 super.finishComposingText();
             }
+            incrementBatchEditCount(); // avoids additional notifyAutocompleteTextStateChanged()
+            Editable editable = mDelegate.getEditableText();
+            editable.append(diff);
+            decrementBatchEditCount();
         }
 
         private boolean setAutocompleteSpan() {
