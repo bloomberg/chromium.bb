@@ -56,6 +56,19 @@ const size_t kMaxQueryCacheResultBytes =
 
 const char kRecordBytesLabel[] = "DiskCache.CacheStorage";
 
+// The range of the padding added to response sizes for opaque resources.
+// Increment padding version if changed.
+const uint64_t kPaddingRange = 14431 * 1024;
+
+// If the way that a cache's padding is calculated changes increment this
+// version.
+//
+// History:
+//
+//   1: Uniform random 400K.
+//   2: Uniform random 14,431K.
+const int32_t kCachePaddingAlgorithmVersion = 2;
+
 // This class ensures that the cache and the entry have a lifetime as long as
 // the blob that is created to contain them.
 class CacheStorageCacheDataHandle
@@ -291,20 +304,10 @@ bool ShouldPadResourceSize(const ServiceWorkerResponse* response) {
                                !response->url_list.empty());
 }
 
-// If the way that a cache's padding is calculated changes increment this
-// version.
-//
-// History:
-//
-//   1: Uniform random 400K.
-const int32_t kCachePaddingAlgorithmVersion = 1;
-
 int64_t CalculateResponsePaddingInternal(
     const std::string& response_url,
     const crypto::SymmetricKey* padding_key,
     int side_data_size) {
-  const uint64_t kPaddingRange = 400 * 1024;  // Increment version if changed.
-
   DCHECK(!response_url.empty());
 
   crypto::HMAC hmac(crypto::HMAC::SHA256);
