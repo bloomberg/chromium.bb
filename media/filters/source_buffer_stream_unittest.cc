@@ -33,10 +33,15 @@
 using ::testing::HasSubstr;
 using ::testing::InSequence;
 using ::testing::StrictMock;
+using ::testing::Values;
 
 namespace {
 
 enum class TimeGranularity { kMicrosecond, kMillisecond };
+
+// See https://crbug.com/718641 and kMseBufferByPts. This controls which kind of
+// buffering implementation is constructed and tested.
+enum class BufferingApi { kLegacyByDts, kNewByPts };
 
 }  // namespace
 
@@ -68,9 +73,20 @@ MATCHER_P(ContainsTrackBufferExhaustionSkipLog, skip_milliseconds, "") {
                              "appear temporarily frozen.");
 }
 
-class SourceBufferStreamTest : public testing::Test {
+// Test parameter determines if media::kMseBufferByPts feature should be forced
+// on or off for the test.
+class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
  protected:
   SourceBufferStreamTest() {
+    buffering_api_ = GetParam();
+    switch (buffering_api_) {
+      case BufferingApi::kLegacyByDts:
+        scoped_feature_list_.InitAndDisableFeature(media::kMseBufferByPts);
+        break;
+      case BufferingApi::kNewByPts:
+        scoped_feature_list_.InitAndEnableFeature(media::kMseBufferByPts);
+        break;
+    }
     video_config_ = TestVideoConfig::Normal();
     SetStreamInfo(kDefaultFramesPerSecond, kDefaultKeyframesPerSecond);
     stream_.reset(new SourceBufferStream(video_config_, &media_log_));
@@ -465,6 +481,8 @@ class SourceBufferStreamTest : public testing::Test {
   std::unique_ptr<SourceBufferStream> stream_;
   VideoDecoderConfig video_config_;
   AudioDecoderConfig audio_config_;
+  BufferingApi buffering_api_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
   base::TimeDelta ConvertToFrameDuration(int frames_per_second) {
@@ -723,7 +741,7 @@ class SourceBufferStreamTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(SourceBufferStreamTest);
 };
 
-TEST_F(SourceBufferStreamTest, Append_SingleRange) {
+TEST_P(SourceBufferStreamTest, Append_SingleRange) {
   // Append 15 buffers at positions 0 through 14.
   NewCodedFrameGroupAppend(0, 15);
 
@@ -734,7 +752,7 @@ TEST_F(SourceBufferStreamTest, Append_SingleRange) {
   CheckExpectedBuffers(0, 14);
 }
 
-TEST_F(SourceBufferStreamTest, Append_SingleRange_OneBufferAtATime) {
+TEST_P(SourceBufferStreamTest, Append_SingleRange_OneBufferAtATime) {
   // Append 15 buffers starting at position 0, one buffer at a time.
   NewCodedFrameGroupAppend(0, 1);
   for (int i = 1; i < 15; i++)
@@ -747,7 +765,7 @@ TEST_F(SourceBufferStreamTest, Append_SingleRange_OneBufferAtATime) {
   CheckExpectedBuffers(0, 14);
 }
 
-TEST_F(SourceBufferStreamTest, Append_DisjointRanges) {
+TEST_P(SourceBufferStreamTest, Append_DisjointRanges) {
   // Append 5 buffers at positions 0 through 4.
   NewCodedFrameGroupAppend(0, 5);
 
@@ -763,7 +781,7 @@ TEST_F(SourceBufferStreamTest, Append_DisjointRanges) {
   CheckExpectedBuffers(15, 24);
 }
 
-TEST_F(SourceBufferStreamTest, Append_AdjacentRanges) {
+TEST_P(SourceBufferStreamTest, Append_AdjacentRanges) {
   // Append 10 buffers at positions 0 through 9.
   NewCodedFrameGroupAppend(0, 10);
 
@@ -780,7 +798,7 @@ TEST_F(SourceBufferStreamTest, Append_AdjacentRanges) {
   CheckExpectedBuffers(0, 25);
 }
 
-TEST_F(SourceBufferStreamTest, Complete_Overlap) {
+TEST_P(SourceBufferStreamTest, Complete_Overlap) {
   // Append 5 buffers at positions 5 through 9.
   NewCodedFrameGroupAppend(5, 5);
 
@@ -794,7 +812,7 @@ TEST_F(SourceBufferStreamTest, Complete_Overlap) {
   CheckExpectedBuffers(0, 14);
 }
 
-TEST_F(SourceBufferStreamTest,
+TEST_P(SourceBufferStreamTest,
        Complete_Overlap_AfterGroupTimestampAndBeforeFirstBufferTimestamp) {
   // Append a coded frame group with a start timestamp of 0, but the first
   // buffer starts at 30ms. This can happen in muxed content where the
@@ -816,7 +834,7 @@ TEST_F(SourceBufferStreamTest,
   CheckExpectedBuffers("20K 50K 80K 110K 120K");
 }
 
-TEST_F(SourceBufferStreamTest, Complete_Overlap_EdgeCase) {
+TEST_P(SourceBufferStreamTest, Complete_Overlap_EdgeCase) {
   // Make each frame a keyframe so that it's okay to overlap frames at any point
   // (instead of needing to respect keyframe boundaries).
   SetStreamInfo(30, 30);
@@ -834,7 +852,7 @@ TEST_F(SourceBufferStreamTest, Complete_Overlap_EdgeCase) {
   CheckExpectedBuffers(5, 12);
 }
 
-TEST_F(SourceBufferStreamTest, Start_Overlap) {
+TEST_P(SourceBufferStreamTest, Start_Overlap) {
   // Append 10 buffers at positions 5 through 14.
   NewCodedFrameGroupAppend(5, 5);
 
@@ -848,7 +866,7 @@ TEST_F(SourceBufferStreamTest, Start_Overlap) {
   CheckExpectedBuffers(5, 15);
 }
 
-TEST_F(SourceBufferStreamTest, End_Overlap) {
+TEST_P(SourceBufferStreamTest, End_Overlap) {
   // Append 10 buffers at positions 10 through 19.
   NewCodedFrameGroupAppend(10, 10);
 
@@ -862,7 +880,7 @@ TEST_F(SourceBufferStreamTest, End_Overlap) {
   CheckExpectedBuffers(5, 19);
 }
 
-TEST_F(SourceBufferStreamTest, End_Overlap_Several) {
+TEST_P(SourceBufferStreamTest, End_Overlap_Several) {
   // Append 10 buffers at positions 10 through 19.
   NewCodedFrameGroupAppend(10, 10);
 
@@ -888,7 +906,7 @@ TEST_F(SourceBufferStreamTest, End_Overlap_Several) {
 // new  : *0K*
 // after: *0K*                 *120K* 150K
 // track:
-TEST_F(SourceBufferStreamTest, End_Overlap_SingleBuffer) {
+TEST_P(SourceBufferStreamTest, End_Overlap_SingleBuffer) {
   // Seek to start of stream.
   SeekToTimestampMs(0);
 
@@ -902,7 +920,7 @@ TEST_F(SourceBufferStreamTest, End_Overlap_SingleBuffer) {
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest, Complete_Overlap_Several) {
+TEST_P(SourceBufferStreamTest, Complete_Overlap_Several) {
   // Append 2 buffers at positions 5 through 6.
   NewCodedFrameGroupAppend(5, 2);
 
@@ -925,7 +943,7 @@ TEST_F(SourceBufferStreamTest, Complete_Overlap_Several) {
   CheckExpectedBuffers(0, 19);
 }
 
-TEST_F(SourceBufferStreamTest, Complete_Overlap_Several_Then_Merge) {
+TEST_P(SourceBufferStreamTest, Complete_Overlap_Several_Then_Merge) {
   // Append 2 buffers at positions 5 through 6.
   NewCodedFrameGroupAppend(5, 2);
 
@@ -948,7 +966,7 @@ TEST_F(SourceBufferStreamTest, Complete_Overlap_Several_Then_Merge) {
   CheckExpectedBuffers(0, 21);
 }
 
-TEST_F(SourceBufferStreamTest, Complete_Overlap_Selected) {
+TEST_P(SourceBufferStreamTest, Complete_Overlap_Selected) {
   // Append 10 buffers at positions 5 through 14.
   NewCodedFrameGroupAppend(5, 10, &kDataA);
 
@@ -969,7 +987,7 @@ TEST_F(SourceBufferStreamTest, Complete_Overlap_Selected) {
 // overlaps the range from which the client is currently grabbing buffers. We
 // would expect that the SourceBufferStream would return old data until it hits
 // the keyframe of the new data, after which it will return the new data.
-TEST_F(SourceBufferStreamTest, Complete_Overlap_Selected_TrackBuffer) {
+TEST_P(SourceBufferStreamTest, Complete_Overlap_Selected_TrackBuffer) {
   // Append 10 buffers at positions 5 through 14.
   NewCodedFrameGroupAppend(5, 10, &kDataA);
 
@@ -998,7 +1016,7 @@ TEST_F(SourceBufferStreamTest, Complete_Overlap_Selected_TrackBuffer) {
   CheckExpectedRanges("{ [0,19) }");
 }
 
-TEST_F(SourceBufferStreamTest, Complete_Overlap_Selected_EdgeCase) {
+TEST_P(SourceBufferStreamTest, Complete_Overlap_Selected_EdgeCase) {
   // Append 10 buffers at positions 5 through 14.
   NewCodedFrameGroupAppend(5, 10, &kDataA);
 
@@ -1027,7 +1045,7 @@ TEST_F(SourceBufferStreamTest, Complete_Overlap_Selected_EdgeCase) {
   CheckExpectedRanges("{ [5,14) }");
 }
 
-TEST_F(SourceBufferStreamTest, Complete_Overlap_Selected_Multiple) {
+TEST_P(SourceBufferStreamTest, Complete_Overlap_Selected_Multiple) {
   static const uint8_t kDataC = 0x55;
   static const uint8_t kDataD = 0x77;
 
@@ -1063,7 +1081,7 @@ TEST_F(SourceBufferStreamTest, Complete_Overlap_Selected_Multiple) {
   CheckExpectedBuffers(5, 14, &kDataD);
 }
 
-TEST_F(SourceBufferStreamTest, Start_Overlap_Selected) {
+TEST_P(SourceBufferStreamTest, Start_Overlap_Selected) {
   // Append 10 buffers at positions 0 through 9.
   NewCodedFrameGroupAppend(0, 10, &kDataA);
 
@@ -1083,7 +1101,7 @@ TEST_F(SourceBufferStreamTest, Start_Overlap_Selected) {
   CheckExpectedBuffers(5, 14, &kDataB);
 }
 
-TEST_F(SourceBufferStreamTest, Start_Overlap_Selected_TrackBuffer) {
+TEST_P(SourceBufferStreamTest, Start_Overlap_Selected_TrackBuffer) {
   // Append 15 buffers at positions 0 through 14.
   NewCodedFrameGroupAppend(0, 15, &kDataA);
 
@@ -1115,7 +1133,7 @@ TEST_F(SourceBufferStreamTest, Start_Overlap_Selected_TrackBuffer) {
   CheckExpectedRanges("{ [0,19) }");
 }
 
-TEST_F(SourceBufferStreamTest, Start_Overlap_Selected_EdgeCase) {
+TEST_P(SourceBufferStreamTest, Start_Overlap_Selected_EdgeCase) {
   // Append 10 buffers at positions 5 through 14.
   NewCodedFrameGroupAppend(5, 10, &kDataA);
 
@@ -1152,7 +1170,7 @@ TEST_F(SourceBufferStreamTest, Start_Overlap_Selected_EdgeCase) {
 // old  :           *A*a a a a A a a a a
 // new  :  B b b b b B b b b b
 // after:  B b b b b*B*b b b b A a a a a
-TEST_F(SourceBufferStreamTest, End_Overlap_Selected) {
+TEST_P(SourceBufferStreamTest, End_Overlap_Selected) {
   // Append 10 buffers at positions 5 through 14.
   NewCodedFrameGroupAppend(5, 10, &kDataA);
 
@@ -1182,7 +1200,7 @@ TEST_F(SourceBufferStreamTest, End_Overlap_Selected) {
 // old  :           |A a a a a A a a*a*a|
 // new  :  B b b b b B b b b b
 // after: |B b b b b B b b b b A a a*a*a|
-TEST_F(SourceBufferStreamTest, End_Overlap_Selected_AfterEndOfNew_1) {
+TEST_P(SourceBufferStreamTest, End_Overlap_Selected_AfterEndOfNew_1) {
   // Append 10 buffers at positions 5 through 14.
   NewCodedFrameGroupAppend(5, 10, &kDataA);
 
@@ -1214,7 +1232,7 @@ TEST_F(SourceBufferStreamTest, End_Overlap_Selected_AfterEndOfNew_1) {
 // old  :           |A a a a a A a a*a*a|
 // new  :  B b b b b B b b
 // after: |B b b b b B b b|   |A a a*a*a|
-TEST_F(SourceBufferStreamTest, End_Overlap_Selected_AfterEndOfNew_2) {
+TEST_P(SourceBufferStreamTest, End_Overlap_Selected_AfterEndOfNew_2) {
   // Append 10 buffers at positions 5 through 14.
   NewCodedFrameGroupAppend(5, 10, &kDataA);
 
@@ -1250,7 +1268,7 @@ TEST_F(SourceBufferStreamTest, End_Overlap_Selected_AfterEndOfNew_2) {
 // new  :  B b b b b B b b
 // after: |B b b b b B b b|   |A a a a a|
 // track:                 |a a|
-TEST_F(SourceBufferStreamTest, End_Overlap_Selected_AfterEndOfNew_3) {
+TEST_P(SourceBufferStreamTest, End_Overlap_Selected_AfterEndOfNew_3) {
   // Append 10 buffers at positions 5 through 14.
   NewCodedFrameGroupAppend(5, 10, &kDataA);
 
@@ -1285,7 +1303,7 @@ TEST_F(SourceBufferStreamTest, End_Overlap_Selected_AfterEndOfNew_3) {
 // new  :  B b b b b B b b b b
 // after: |B b b b b B b b b b A a a a a|
 // track:                 |a a|
-TEST_F(SourceBufferStreamTest, End_Overlap_Selected_OverlappedByNew_1) {
+TEST_P(SourceBufferStreamTest, End_Overlap_Selected_OverlappedByNew_1) {
   // Append 10 buffers at positions 5 through 14.
   NewCodedFrameGroupAppend(5, 10, &kDataA);
 
@@ -1320,7 +1338,7 @@ TEST_F(SourceBufferStreamTest, End_Overlap_Selected_OverlappedByNew_1) {
 // new  :  B b b b b B b
 // after: |B b b b b B b|     |A a a a a|
 // track:             |a a a a|
-TEST_F(SourceBufferStreamTest, End_Overlap_Selected_OverlappedByNew_2) {
+TEST_P(SourceBufferStreamTest, End_Overlap_Selected_OverlappedByNew_2) {
   // Append 10 buffers at positions 5 through 14.
   NewCodedFrameGroupAppend(5, 10, &kDataA);
 
@@ -1358,7 +1376,7 @@ TEST_F(SourceBufferStreamTest, End_Overlap_Selected_OverlappedByNew_2) {
 // new  :  B b b b b B b b b b B b b
 // after: |B b b b b B b b b b B b b|   |A a a a a|
 // track:             |a a a a|
-TEST_F(SourceBufferStreamTest, End_Overlap_Selected_OverlappedByNew_3) {
+TEST_P(SourceBufferStreamTest, End_Overlap_Selected_OverlappedByNew_3) {
   // Append 15 buffers at positions 5 through 19.
   NewCodedFrameGroupAppend(5, 15, &kDataA);
 
@@ -1394,7 +1412,7 @@ TEST_F(SourceBufferStreamTest, End_Overlap_Selected_OverlappedByNew_3) {
 // new  :  B b b b b B
 // after: |B b b b b B|
 // track:             |a a a a|
-TEST_F(SourceBufferStreamTest, End_Overlap_Selected_NoKeyframeAfterNew) {
+TEST_P(SourceBufferStreamTest, End_Overlap_Selected_NoKeyframeAfterNew) {
   // Append 5 buffers at positions 5 through 9.
   NewCodedFrameGroupAppend(5, 5, &kDataA);
 
@@ -1431,7 +1449,7 @@ TEST_F(SourceBufferStreamTest, End_Overlap_Selected_NoKeyframeAfterNew) {
 // new  :  A a a a a A
 // after: |A a a a a A|       |B b b b b B|
 // track:                                 |a|
-TEST_F(SourceBufferStreamTest, End_Overlap_Selected_NoKeyframeAfterNew2) {
+TEST_P(SourceBufferStreamTest, End_Overlap_Selected_NoKeyframeAfterNew2) {
   EXPECT_MEDIA_LOG(ContainsTrackBufferExhaustionSkipLog(133));
 
   // Append 7 buffers at positions 10 through 16.
@@ -1479,7 +1497,7 @@ TEST_F(SourceBufferStreamTest, End_Overlap_Selected_NoKeyframeAfterNew2) {
 // new  :  B b b b b B
 // after: |B b b b b B|                  |A a a a a|
 // track:             |a a a a|
-TEST_F(SourceBufferStreamTest, End_Overlap_Selected_NoKeyframeAfterNew3) {
+TEST_P(SourceBufferStreamTest, End_Overlap_Selected_NoKeyframeAfterNew3) {
   // Append 5 buffers at positions 5 through 9.
   NewCodedFrameGroupAppend(5, 5, &kDataA);
 
@@ -1525,7 +1543,7 @@ TEST_F(SourceBufferStreamTest, End_Overlap_Selected_NoKeyframeAfterNew3) {
 // old  :  A a a a a*A*a a a a A a a a a
 // new  :            B b b b b
 // after:  A a a a a*B*b b b b A a a a a
-TEST_F(SourceBufferStreamTest, Middle_Overlap_Selected_1) {
+TEST_P(SourceBufferStreamTest, Middle_Overlap_Selected_1) {
   // Append 15 buffers at positions 0 through 14.
   NewCodedFrameGroupAppend(0, 15, &kDataA);
 
@@ -1555,7 +1573,7 @@ TEST_F(SourceBufferStreamTest, Middle_Overlap_Selected_1) {
 // old  :  A a a a a A a a a a A*a*a a a
 // new  :            B b b b b
 // after:  A a a a a B b b b b A*a*a a a
-TEST_F(SourceBufferStreamTest, Middle_Overlap_Selected_2) {
+TEST_P(SourceBufferStreamTest, Middle_Overlap_Selected_2) {
   // Append 15 buffers at positions 0 through 14.
   NewCodedFrameGroupAppend(0, 15, &kDataA);
 
@@ -1584,7 +1602,7 @@ TEST_F(SourceBufferStreamTest, Middle_Overlap_Selected_2) {
 // old  :  A a*a*a a A a a a a A a a a a
 // new  :            B b b
 // after:  A a*a*a a B b b|   |A a a a a
-TEST_F(SourceBufferStreamTest, Middle_Overlap_Selected_3) {
+TEST_P(SourceBufferStreamTest, Middle_Overlap_Selected_3) {
   // Append 15 buffers at positions 0 through 14.
   NewCodedFrameGroupAppend(0, 15, &kDataA);
 
@@ -1613,7 +1631,7 @@ TEST_F(SourceBufferStreamTest, Middle_Overlap_Selected_3) {
 // new  :            B b b
 // after: |A a a a a B b b|   |A a a a a|
 // track:                 |a a|
-TEST_F(SourceBufferStreamTest, Middle_Overlap_Selected_4) {
+TEST_P(SourceBufferStreamTest, Middle_Overlap_Selected_4) {
   // Append 15 buffers at positions 0 through 14.
   NewCodedFrameGroupAppend(0, 15, &kDataA);
 
@@ -1640,7 +1658,7 @@ TEST_F(SourceBufferStreamTest, Middle_Overlap_Selected_4) {
   CheckExpectedBuffers(10, 14, &kDataA);
 }
 
-TEST_F(SourceBufferStreamTest, Overlap_OneByOne) {
+TEST_P(SourceBufferStreamTest, Overlap_OneByOne) {
   // Append 5 buffers starting at 10ms, 30ms apart.
   NewCodedFrameGroupAppendOneByOne("10K 40 70 100 130");
 
@@ -1659,7 +1677,7 @@ TEST_F(SourceBufferStreamTest, Overlap_OneByOne) {
   CheckExpectedBuffers(0, 9, &kDataB);
 }
 
-TEST_F(SourceBufferStreamTest, Overlap_OneByOne_DeleteGroup) {
+TEST_P(SourceBufferStreamTest, Overlap_OneByOne_DeleteGroup) {
   NewCodedFrameGroupAppendOneByOne("10K 40 70 100 130K");
   CheckExpectedRangesByTimestamp("{ [10,160) }");
 
@@ -1677,7 +1695,7 @@ TEST_F(SourceBufferStreamTest, Overlap_OneByOne_DeleteGroup) {
   CheckExpectedBuffers("0K 120 130K");
 }
 
-TEST_F(SourceBufferStreamTest, Overlap_OneByOne_BetweenCodedFrameGroups) {
+TEST_P(SourceBufferStreamTest, Overlap_OneByOne_BetweenCodedFrameGroups) {
   // Append 5 buffers starting at 110ms, 30ms apart.
   NewCodedFrameGroupAppendOneByOne("110K 140 170 200 230");
   CheckExpectedRangesByTimestamp("{ [110,260) }");
@@ -1698,7 +1716,7 @@ TEST_F(SourceBufferStreamTest, Overlap_OneByOne_BetweenCodedFrameGroups) {
 // old  :   10K  40  *70*  100K  125  130K
 // new  : 0K   30   60   90   120K
 // after: 0K   30   60   90  *120K*   130K
-TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer) {
+TEST_P(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer) {
   EXPECT_MEDIA_LOG(ContainsTrackBufferExhaustionSkipLog(50));
 
   NewCodedFrameGroupAppendOneByOne("10K 40 70 100K 125 130D30K");
@@ -1730,7 +1748,7 @@ TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer) {
 // track:             70
 // new  :                     110K    130
 // after: 0K   30   60   90  *110K*   130
-TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer2) {
+TEST_P(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer2) {
   EXPECT_MEDIA_LOG(ContainsTrackBufferExhaustionSkipLog(40));
 
   NewCodedFrameGroupAppendOneByOne("10K 40 70 100K 125 130D30K");
@@ -1763,7 +1781,7 @@ TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer2) {
 // new  :        50K   80   110          140
 // after: 0K   30   50K   80   110   140 * (waiting for keyframe)
 // track:             70
-TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer3) {
+TEST_P(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer3) {
   EXPECT_MEDIA_LOG(ContainsTrackBufferExhaustionSkipLog(80));
 
   NewCodedFrameGroupAppendOneByOne("10K 40 70 100K 125 130D30K");
@@ -1801,7 +1819,7 @@ TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer3) {
 // new  :              80K  110          140
 // after: 0K   30   60   *80K*  110   140
 // track:               70
-TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer4) {
+TEST_P(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer4) {
   NewCodedFrameGroupAppendOneByOne("10K 40 70 100K 125 130D30K");
   CheckExpectedRangesByTimestamp("{ [10,160) }");
 
@@ -1832,7 +1850,7 @@ TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer4) {
 // new  :              80K  110          140
 // after: 0K   30   60   *80K*  110   140
 // track:               70
-TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer5) {
+TEST_P(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer5) {
   NewCodedFrameGroupAppendOneByOne("10K 40 70 100K");
   CheckExpectedRangesByTimestamp("{ [10,130) }");
 
@@ -1862,7 +1880,7 @@ TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer5) {
 // new  :                                               260K 290
 // after: 0K   30   60   90  *120K*   130K ... 200K 230 260K 290
 // track:             70
-TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer6) {
+TEST_P(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer6) {
   EXPECT_MEDIA_LOG(ContainsTrackBufferExhaustionSkipLog(50));
 
   NewCodedFrameGroupAppendOneByOne("10K 40 70 100K 125 130D30K");
@@ -1893,7 +1911,7 @@ TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer6) {
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest, Seek_Keyframe) {
+TEST_P(SourceBufferStreamTest, Seek_Keyframe) {
   // Append 6 buffers at positions 0 through 5.
   NewCodedFrameGroupAppend(0, 6);
 
@@ -1902,7 +1920,7 @@ TEST_F(SourceBufferStreamTest, Seek_Keyframe) {
   CheckExpectedBuffers(0, 5, true);
 }
 
-TEST_F(SourceBufferStreamTest, Seek_NonKeyframe) {
+TEST_P(SourceBufferStreamTest, Seek_NonKeyframe) {
   // Append 15 buffers at positions 0 through 14.
   NewCodedFrameGroupAppend(0, 15);
 
@@ -1919,7 +1937,7 @@ TEST_F(SourceBufferStreamTest, Seek_NonKeyframe) {
   CheckExpectedBuffers(0, 3, true);
 }
 
-TEST_F(SourceBufferStreamTest, Seek_NotBuffered) {
+TEST_P(SourceBufferStreamTest, Seek_NotBuffered) {
   // Seek to beginning.
   Seek(0);
 
@@ -1936,7 +1954,7 @@ TEST_F(SourceBufferStreamTest, Seek_NotBuffered) {
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest, Seek_InBetweenTimestamps) {
+TEST_P(SourceBufferStreamTest, Seek_InBetweenTimestamps) {
   // Append 10 buffers at positions 0 through 9.
   NewCodedFrameGroupAppend(0, 10);
 
@@ -1956,7 +1974,7 @@ TEST_F(SourceBufferStreamTest, Seek_InBetweenTimestamps) {
 // buffers to the track buffers. Then the test does a seek to another part of
 // the stream. The SourceBufferStream should clear its internal track buffer in
 // response to the Seek().
-TEST_F(SourceBufferStreamTest, Seek_After_TrackBuffer_Filled) {
+TEST_P(SourceBufferStreamTest, Seek_After_TrackBuffer_Filled) {
   // Append 10 buffers at positions 5 through 14.
   NewCodedFrameGroupAppend(5, 10, &kDataA);
 
@@ -1978,7 +1996,7 @@ TEST_F(SourceBufferStreamTest, Seek_After_TrackBuffer_Filled) {
   CheckExpectedRanges("{ [0,19) }");
 }
 
-TEST_F(SourceBufferStreamTest, Seek_StartOfGroup) {
+TEST_P(SourceBufferStreamTest, Seek_StartOfGroup) {
   base::TimeDelta bump = frame_duration() / 4;
   CHECK(bump > base::TimeDelta());
 
@@ -2012,7 +2030,7 @@ TEST_F(SourceBufferStreamTest, Seek_StartOfGroup) {
   CheckExpectedBuffers(16, 19);
 }
 
-TEST_F(SourceBufferStreamTest, Seek_BeforeStartOfGroup) {
+TEST_P(SourceBufferStreamTest, Seek_BeforeStartOfGroup) {
   // Append 10 buffers at positions 5 through 14.
   NewCodedFrameGroupAppend(5, 10);
 
@@ -2023,7 +2041,7 @@ TEST_F(SourceBufferStreamTest, Seek_BeforeStartOfGroup) {
   CheckExpectedBuffers(5, 14);
 }
 
-TEST_F(SourceBufferStreamTest, OldSeekPoint_CompleteOverlap) {
+TEST_P(SourceBufferStreamTest, OldSeekPoint_CompleteOverlap) {
   // Append 5 buffers at positions 0 through 4.
   NewCodedFrameGroupAppend(0, 4);
 
@@ -2042,7 +2060,7 @@ TEST_F(SourceBufferStreamTest, OldSeekPoint_CompleteOverlap) {
   CheckExpectedBuffers(0, 0);
 }
 
-TEST_F(SourceBufferStreamTest, OldSeekPoint_CompleteOverlap_Pending) {
+TEST_P(SourceBufferStreamTest, OldSeekPoint_CompleteOverlap_Pending) {
   // Append 2 buffers at positions 0 through 1.
   NewCodedFrameGroupAppend(0, 2);
 
@@ -2061,7 +2079,7 @@ TEST_F(SourceBufferStreamTest, OldSeekPoint_CompleteOverlap_Pending) {
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest, OldSeekPoint_MiddleOverlap) {
+TEST_P(SourceBufferStreamTest, OldSeekPoint_MiddleOverlap) {
   // Append 2 buffers at positions 0 through 1.
   NewCodedFrameGroupAppend(0, 2);
 
@@ -2080,7 +2098,7 @@ TEST_F(SourceBufferStreamTest, OldSeekPoint_MiddleOverlap) {
   CheckExpectedBuffers(0, 0);
 }
 
-TEST_F(SourceBufferStreamTest, OldSeekPoint_MiddleOverlap_Pending) {
+TEST_P(SourceBufferStreamTest, OldSeekPoint_MiddleOverlap_Pending) {
   // Append 2 buffers at positions 0 through 1.
   NewCodedFrameGroupAppend(0, 2);
 
@@ -2099,7 +2117,7 @@ TEST_F(SourceBufferStreamTest, OldSeekPoint_MiddleOverlap_Pending) {
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest, OldSeekPoint_StartOverlap) {
+TEST_P(SourceBufferStreamTest, OldSeekPoint_StartOverlap) {
   // Append 2 buffers at positions 0 through 1.
   NewCodedFrameGroupAppend(0, 2);
 
@@ -2117,7 +2135,7 @@ TEST_F(SourceBufferStreamTest, OldSeekPoint_StartOverlap) {
   CheckExpectedBuffers(0, 0);
 }
 
-TEST_F(SourceBufferStreamTest, OldSeekPoint_StartOverlap_Pending) {
+TEST_P(SourceBufferStreamTest, OldSeekPoint_StartOverlap_Pending) {
   // Append 2 buffers at positions 0 through 1.
   NewCodedFrameGroupAppend(0, 2);
 
@@ -2135,7 +2153,7 @@ TEST_F(SourceBufferStreamTest, OldSeekPoint_StartOverlap_Pending) {
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest, OldSeekPoint_EndOverlap) {
+TEST_P(SourceBufferStreamTest, OldSeekPoint_EndOverlap) {
   // Append 5 buffers at positions 0 through 4.
   NewCodedFrameGroupAppend(0, 4);
 
@@ -2153,7 +2171,7 @@ TEST_F(SourceBufferStreamTest, OldSeekPoint_EndOverlap) {
   CheckExpectedBuffers(0, 0);
 }
 
-TEST_F(SourceBufferStreamTest, OldSeekPoint_EndOverlap_Pending) {
+TEST_P(SourceBufferStreamTest, OldSeekPoint_EndOverlap_Pending) {
   // Append 2 buffers at positions 0 through 1.
   NewCodedFrameGroupAppend(0, 2);
 
@@ -2171,7 +2189,7 @@ TEST_F(SourceBufferStreamTest, OldSeekPoint_EndOverlap_Pending) {
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest, GetNextBuffer_AfterMerges) {
+TEST_P(SourceBufferStreamTest, GetNextBuffer_AfterMerges) {
   // Append 5 buffers at positions 10 through 14.
   NewCodedFrameGroupAppend(10, 5);
 
@@ -2195,7 +2213,7 @@ TEST_F(SourceBufferStreamTest, GetNextBuffer_AfterMerges) {
   CheckExpectedBuffers(11, 14);
 }
 
-TEST_F(SourceBufferStreamTest, GetNextBuffer_ExhaustThenAppend) {
+TEST_P(SourceBufferStreamTest, GetNextBuffer_ExhaustThenAppend) {
   // Append 4 buffers at positions 0 through 3.
   NewCodedFrameGroupAppend(0, 4);
 
@@ -2213,7 +2231,7 @@ TEST_F(SourceBufferStreamTest, GetNextBuffer_ExhaustThenAppend) {
 
 // This test covers the case where new buffers start-overlap a range whose next
 // buffer is not buffered.
-TEST_F(SourceBufferStreamTest, GetNextBuffer_ExhaustThenStartOverlap) {
+TEST_P(SourceBufferStreamTest, GetNextBuffer_ExhaustThenStartOverlap) {
   // Append 10 buffers at positions 0 through 9 and exhaust the buffers.
   NewCodedFrameGroupAppend(0, 10, &kDataA);
   Seek(0);
@@ -2244,7 +2262,7 @@ TEST_F(SourceBufferStreamTest, GetNextBuffer_ExhaustThenStartOverlap) {
 // buffer that was returned by GetNextBuffer(). This test verifies that
 // GetNextBuffer() skips to second GOP in the newly appended data instead
 // of returning two buffers with the same timestamp.
-TEST_F(SourceBufferStreamTest, GetNextBuffer_ExhaustThenStartOverlap2) {
+TEST_P(SourceBufferStreamTest, GetNextBuffer_ExhaustThenStartOverlap2) {
   NewCodedFrameGroupAppend("0K 30 60 90 120");
 
   Seek(0);
@@ -2268,7 +2286,7 @@ TEST_F(SourceBufferStreamTest, GetNextBuffer_ExhaustThenStartOverlap2) {
 
 // This test covers the case where new buffers completely overlap a range
 // whose next buffer is not buffered.
-TEST_F(SourceBufferStreamTest, GetNextBuffer_ExhaustThenCompleteOverlap) {
+TEST_P(SourceBufferStreamTest, GetNextBuffer_ExhaustThenCompleteOverlap) {
   // Append 5 buffers at positions 10 through 14 and exhaust the buffers.
   NewCodedFrameGroupAppend(10, 5, &kDataA);
   Seek(10);
@@ -2296,7 +2314,7 @@ TEST_F(SourceBufferStreamTest, GetNextBuffer_ExhaustThenCompleteOverlap) {
 
 // This test covers the case where a range is stalled waiting for its next
 // buffer, then an end-overlap causes the end of the range to be deleted.
-TEST_F(SourceBufferStreamTest, GetNextBuffer_ExhaustThenEndOverlap) {
+TEST_P(SourceBufferStreamTest, GetNextBuffer_ExhaustThenEndOverlap) {
   // Append 5 buffers at positions 10 through 14 and exhaust the buffers.
   NewCodedFrameGroupAppend(10, 5, &kDataA);
   Seek(10);
@@ -2328,7 +2346,7 @@ TEST_F(SourceBufferStreamTest, GetNextBuffer_ExhaustThenEndOverlap) {
 // to fulfill the request. The SourceBufferStream should be able to fulfill the
 // request when the data is later appended, and should not lose track of the
 // "next buffer" position.
-TEST_F(SourceBufferStreamTest, GetNextBuffer_Overlap_Selected_Complete) {
+TEST_P(SourceBufferStreamTest, GetNextBuffer_Overlap_Selected_Complete) {
   // Append 5 buffers at positions 5 through 9.
   NewCodedFrameGroupAppend(5, 5, &kDataA);
 
@@ -2351,7 +2369,7 @@ TEST_F(SourceBufferStreamTest, GetNextBuffer_Overlap_Selected_Complete) {
   CheckExpectedBuffers(10, 14, &kDataB);
 }
 
-TEST_F(SourceBufferStreamTest, PresentationTimestampIndependence) {
+TEST_P(SourceBufferStreamTest, PresentationTimestampIndependence) {
   // Append 20 buffers at position 0.
   NewCodedFrameGroupAppend(0, 20);
   Seek(0);
@@ -2384,7 +2402,7 @@ TEST_F(SourceBufferStreamTest, PresentationTimestampIndependence) {
   }
 }
 
-TEST_F(SourceBufferStreamTest, GarbageCollection_DeleteFront) {
+TEST_P(SourceBufferStreamTest, GarbageCollection_DeleteFront) {
   // Set memory limit to 20 buffers.
   SetMemoryLimit(20);
 
@@ -2416,7 +2434,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_DeleteFront) {
   CheckExpectedBuffers(5, 9, &kDataA);
 }
 
-TEST_F(SourceBufferStreamTest,
+TEST_P(SourceBufferStreamTest,
        GarbageCollection_DeleteFront_PreserveSeekedGOP) {
   // Set memory limit to 15 buffers.
   SetMemoryLimit(15);
@@ -2442,7 +2460,7 @@ TEST_F(SourceBufferStreamTest,
   CheckExpectedRangesByTimestamp("{ [50,100) [1000,1050) }");
 }
 
-TEST_F(SourceBufferStreamTest, GarbageCollection_DeleteFrontGOPsAtATime) {
+TEST_P(SourceBufferStreamTest, GarbageCollection_DeleteFrontGOPsAtATime) {
   // Set memory limit to 20 buffers.
   SetMemoryLimit(20);
 
@@ -2465,7 +2483,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_DeleteFrontGOPsAtATime) {
   CheckExpectedBuffers(5, 9, &kDataA);
 }
 
-TEST_F(SourceBufferStreamTest, GarbageCollection_DeleteBack) {
+TEST_P(SourceBufferStreamTest, GarbageCollection_DeleteBack) {
   // Set memory limit to 5 buffers.
   SetMemoryLimit(5);
 
@@ -2485,7 +2503,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_DeleteBack) {
   CheckExpectedBuffers(0, 4, &kDataA);
 }
 
-TEST_F(SourceBufferStreamTest, GarbageCollection_DeleteFrontAndBack) {
+TEST_P(SourceBufferStreamTest, GarbageCollection_DeleteFrontAndBack) {
   // Set memory limit to 3 buffers.
   SetMemoryLimit(3);
 
@@ -2508,7 +2526,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_DeleteFrontAndBack) {
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest, GarbageCollection_DeleteSeveralRanges) {
+TEST_P(SourceBufferStreamTest, GarbageCollection_DeleteSeveralRanges) {
   // Append 5 buffers at positions 0 through 4.
   NewCodedFrameGroupAppend(0, 5);
 
@@ -2567,7 +2585,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_DeleteSeveralRanges) {
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest, GarbageCollection_DeleteAfterLastAppend) {
+TEST_P(SourceBufferStreamTest, GarbageCollection_DeleteAfterLastAppend) {
   // Set memory limit to 10 buffers.
   SetMemoryLimit(10);
 
@@ -2595,7 +2613,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_DeleteAfterLastAppend) {
   CheckExpectedRangesByTimestamp("{ [100,280) [580,670) }");
 }
 
-TEST_F(SourceBufferStreamTest, GarbageCollection_DeleteAfterLastAppendMerged) {
+TEST_P(SourceBufferStreamTest, GarbageCollection_DeleteAfterLastAppendMerged) {
   // Set memory limit to 10 buffers.
   SetMemoryLimit(10);
 
@@ -2616,7 +2634,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_DeleteAfterLastAppendMerged) {
   CheckExpectedRangesByTimestamp("{ [220,400) [580,670) }");
 }
 
-TEST_F(SourceBufferStreamTest, GarbageCollection_NoSeek) {
+TEST_P(SourceBufferStreamTest, GarbageCollection_NoSeek) {
   // Set memory limit to 20 buffers.
   SetMemoryLimit(20);
 
@@ -2636,7 +2654,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_NoSeek) {
   CheckExpectedBuffers(5, 24, &kDataA);
 }
 
-TEST_F(SourceBufferStreamTest, GarbageCollection_PendingSeek) {
+TEST_P(SourceBufferStreamTest, GarbageCollection_PendingSeek) {
   // Append 10 buffers at positions 0 through 9.
   NewCodedFrameGroupAppend(0, 10, &kDataA);
 
@@ -2674,7 +2692,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_PendingSeek) {
   CheckExpectedBuffers(30, 34, &kDataA);
 }
 
-TEST_F(SourceBufferStreamTest, GarbageCollection_NeedsMoreData) {
+TEST_P(SourceBufferStreamTest, GarbageCollection_NeedsMoreData) {
   // Set memory limit to 15 buffers.
   SetMemoryLimit(15);
 
@@ -2706,7 +2724,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_NeedsMoreData) {
   CheckExpectedBuffers(10, 24, &kDataA);
 }
 
-TEST_F(SourceBufferStreamTest, GarbageCollection_TrackBuffer) {
+TEST_P(SourceBufferStreamTest, GarbageCollection_TrackBuffer) {
   EXPECT_MEDIA_LOG(ContainsTrackBufferExhaustionSkipLog(99));
 
   // Set memory limit to 3 buffers.
@@ -2754,7 +2772,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_TrackBuffer) {
 }
 
 // Test GC preserves data starting at first GOP containing playback position.
-TEST_F(SourceBufferStreamTest, GarbageCollection_SaveDataAtPlaybackPosition) {
+TEST_P(SourceBufferStreamTest, GarbageCollection_SaveDataAtPlaybackPosition) {
   // Set memory limit to 30 buffers = 1 second of data.
   SetMemoryLimit(30);
   // And append 300 buffers = 10 seconds of data.
@@ -2812,7 +2830,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_SaveDataAtPlaybackPosition) {
 }
 
 // Test saving the last GOP appended when this GOP is the only GOP in its range.
-TEST_F(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP) {
+TEST_P(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP) {
   // Set memory limit to 3 and make sure the 4-byte GOP is not garbage
   // collected.
   SetMemoryLimit(3);
@@ -2852,7 +2870,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP) {
 
 // Test saving the last GOP appended when this GOP is in the middle of a
 // non-selected range.
-TEST_F(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP_Middle) {
+TEST_P(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP_Middle) {
   // Append 3 GOPs starting at 0ms, 30ms apart.
   NewCodedFrameGroupAppend("0K 30 60 90K 120 150 180K 210 240");
   CheckExpectedRangesByTimestamp("{ [0,270) }");
@@ -2899,7 +2917,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP_Middle) {
 
 // Test saving the last GOP appended when the GOP containing the next buffer is
 // adjacent to the last GOP appended.
-TEST_F(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP_Selected1) {
+TEST_P(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP_Selected1) {
   // Append 3 GOPs at 0ms, 90ms, and 180ms.
   NewCodedFrameGroupAppend("0K 30 60 90K 120 150 180K 210 240");
   CheckExpectedRangesByTimestamp("{ [0,270) }");
@@ -2937,7 +2955,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP_Selected1) {
 // Test saving the last GOP appended when it is at the beginning or end of the
 // selected range. This tests when the last GOP appended is before or after the
 // GOP containing the next buffer, but not directly adjacent to this GOP.
-TEST_F(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP_Selected2) {
+TEST_P(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP_Selected2) {
   // Append 4 GOPs starting at positions 0ms, 90ms, 180ms, 270ms.
   NewCodedFrameGroupAppend("0K 30 60 90K 120 150 180K 210 240 270K 300 330");
   CheckExpectedRangesByTimestamp("{ [0,360) }");
@@ -2971,7 +2989,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP_Selected2) {
 
 // Test saving the last GOP appended when it is the same as the GOP containing
 // the next buffer.
-TEST_F(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP_Selected3) {
+TEST_P(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP_Selected3) {
   // Seek to start of stream.
   SeekToTimestampMs(0);
 
@@ -3007,7 +3025,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP_Selected3) {
 }
 
 // Test the performance of garbage collection.
-TEST_F(SourceBufferStreamTest, GarbageCollection_Performance) {
+TEST_P(SourceBufferStreamTest, GarbageCollection_Performance) {
   // Force |keyframes_per_second_| to be equal to kDefaultFramesPerSecond.
   SetStreamInfo(kDefaultFramesPerSecond, kDefaultFramesPerSecond);
 
@@ -3027,7 +3045,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_Performance) {
   }
 }
 
-TEST_F(SourceBufferStreamTest, GarbageCollection_MediaTimeAfterLastAppendTime) {
+TEST_P(SourceBufferStreamTest, GarbageCollection_MediaTimeAfterLastAppendTime) {
   // Set memory limit to 10 buffers.
   SetMemoryLimit(10);
 
@@ -3047,7 +3065,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_MediaTimeAfterLastAppendTime) {
   CheckExpectedRangesByTimestamp("{ [120,360) }");
 }
 
-TEST_F(SourceBufferStreamTest,
+TEST_P(SourceBufferStreamTest,
        GarbageCollection_MediaTimeOutsideOfStreamBufferedRange) {
   // Set memory limit to 10 buffers.
   SetMemoryLimit(10);
@@ -3075,7 +3093,7 @@ TEST_F(SourceBufferStreamTest,
   CheckExpectedRangesByTimestamp("{ [120,360) }");
 }
 
-TEST_F(SourceBufferStreamTest, GetRemovalRange_BytesToFree) {
+TEST_P(SourceBufferStreamTest, GetRemovalRange_BytesToFree) {
   // Append 2 GOPs starting at 300ms, 30ms apart.
   NewCodedFrameGroupAppend("300K 330 360 390K 420 450");
 
@@ -3137,7 +3155,7 @@ TEST_F(SourceBufferStreamTest, GetRemovalRange_BytesToFree) {
   EXPECT_EQ(18, bytes_removed);
 }
 
-TEST_F(SourceBufferStreamTest, GetRemovalRange_Range) {
+TEST_P(SourceBufferStreamTest, GetRemovalRange_Range) {
   // Append 2 GOPs starting at 300ms, 30ms apart.
   NewCodedFrameGroupAppend("300K 330 360 390K 420 450");
 
@@ -3203,7 +3221,7 @@ TEST_F(SourceBufferStreamTest, GetRemovalRange_Range) {
   EXPECT_EQ(18, bytes_removed);
 }
 
-TEST_F(SourceBufferStreamTest, ConfigChange_Basic) {
+TEST_P(SourceBufferStreamTest, ConfigChange_Basic) {
   VideoDecoderConfig new_config = TestVideoConfig::Large();
   ASSERT_FALSE(new_config.Matches(video_config_));
 
@@ -3246,7 +3264,7 @@ TEST_F(SourceBufferStreamTest, ConfigChange_Basic) {
   }
 }
 
-TEST_F(SourceBufferStreamTest, ConfigChange_Seek) {
+TEST_P(SourceBufferStreamTest, ConfigChange_Seek) {
   scoped_refptr<StreamParserBuffer> buffer;
   VideoDecoderConfig new_config = TestVideoConfig::Large();
 
@@ -3283,7 +3301,7 @@ TEST_F(SourceBufferStreamTest, ConfigChange_Seek) {
   CheckExpectedBuffers(0, 4, &kDataA);
 }
 
-TEST_F(SourceBufferStreamTest, SetExplicitDuration) {
+TEST_P(SourceBufferStreamTest, SetExplicitDuration) {
   // Append 2 buffers at positions 5 through 6.
   NewCodedFrameGroupAppend(5, 2);
 
@@ -3307,7 +3325,7 @@ TEST_F(SourceBufferStreamTest, SetExplicitDuration) {
   CheckExpectedRanges("{ [0,19) }");
 }
 
-TEST_F(SourceBufferStreamTest, SetExplicitDuration_EdgeCase) {
+TEST_P(SourceBufferStreamTest, SetExplicitDuration_EdgeCase) {
   // Append 10 buffers at positions 10 through 19.
   NewCodedFrameGroupAppend(10, 10);
 
@@ -3324,7 +3342,7 @@ TEST_F(SourceBufferStreamTest, SetExplicitDuration_EdgeCase) {
   CheckExpectedRanges("{ [10,19) }");
 }
 
-TEST_F(SourceBufferStreamTest, SetExplicitDuration_EdgeCase2) {
+TEST_P(SourceBufferStreamTest, SetExplicitDuration_EdgeCase2) {
   // This test requires specific relative proportions for fudge room, append
   // size, and duration truncation amounts. See details at:
   // https://codereview.chromium.org/2385423002
@@ -3349,7 +3367,7 @@ TEST_F(SourceBufferStreamTest, SetExplicitDuration_EdgeCase2) {
   CheckExpectedRangesByTimestamp("{ [0,5) [11,19) }");
 }
 
-TEST_F(SourceBufferStreamTest, RemoveWithinFudgeRoom) {
+TEST_P(SourceBufferStreamTest, RemoveWithinFudgeRoom) {
   // This test requires specific relative proportions for fudge room, append
   // size, and removal amounts. See details at:
   // https://codereview.chromium.org/2385423002
@@ -3374,7 +3392,7 @@ TEST_F(SourceBufferStreamTest, RemoveWithinFudgeRoom) {
   CheckExpectedRangesByTimestamp("{ [0,5) [11,19) }");
 }
 
-TEST_F(SourceBufferStreamTest, SetExplicitDuration_DeletePartialRange) {
+TEST_P(SourceBufferStreamTest, SetExplicitDuration_DeletePartialRange) {
   // Append 5 buffers at positions 0 through 4.
   NewCodedFrameGroupAppend(0, 5);
 
@@ -3394,7 +3412,7 @@ TEST_F(SourceBufferStreamTest, SetExplicitDuration_DeletePartialRange) {
   CheckExpectedRanges("{ [0,4) [10,13) }");
 }
 
-TEST_F(SourceBufferStreamTest, SetExplicitDuration_DeleteSelectedRange) {
+TEST_P(SourceBufferStreamTest, SetExplicitDuration_DeleteSelectedRange) {
   // Append 2 buffers at positions 5 through 6.
   NewCodedFrameGroupAppend(5, 2);
 
@@ -3427,7 +3445,7 @@ TEST_F(SourceBufferStreamTest, SetExplicitDuration_DeleteSelectedRange) {
   CheckExpectedRanges("{ [0,14) }");
 }
 
-TEST_F(SourceBufferStreamTest, SetExplicitDuration_DeletePartialSelectedRange) {
+TEST_P(SourceBufferStreamTest, SetExplicitDuration_DeletePartialSelectedRange) {
   // Append 5 buffers at positions 0 through 4.
   NewCodedFrameGroupAppend(0, 5);
 
@@ -3461,7 +3479,7 @@ TEST_F(SourceBufferStreamTest, SetExplicitDuration_DeletePartialSelectedRange) {
 // already start passing the data to decoding pipeline. Selected range,
 // when invalidated by getting truncated, should be updated to NULL
 // accordingly so that successive append operations keep working.
-TEST_F(SourceBufferStreamTest, SetExplicitDuration_UpdateSelectedRange) {
+TEST_P(SourceBufferStreamTest, SetExplicitDuration_UpdateSelectedRange) {
   // Seek to start of stream.
   SeekToTimestampMs(0);
 
@@ -3482,7 +3500,7 @@ TEST_F(SourceBufferStreamTest, SetExplicitDuration_UpdateSelectedRange) {
   CheckExpectedRangesByTimestamp("{ [0,60) [120,180) }");
 }
 
-TEST_F(SourceBufferStreamTest,
+TEST_P(SourceBufferStreamTest,
        SetExplicitDuration_AfterGroupTimestampAndBeforeFirstBufferTimestamp) {
   NewCodedFrameGroupAppend("0K 30K 60K");
 
@@ -3502,7 +3520,7 @@ TEST_F(SourceBufferStreamTest,
   CheckExpectedRangesByTimestamp("{ [0,90) }");
 }
 
-TEST_F(SourceBufferStreamTest, SetExplicitDuration_MarkEOS) {
+TEST_P(SourceBufferStreamTest, SetExplicitDuration_MarkEOS) {
   // Append 1 buffer at positions 0 through 8.
   NewCodedFrameGroupAppend(0, 9);
 
@@ -3527,7 +3545,7 @@ TEST_F(SourceBufferStreamTest, SetExplicitDuration_MarkEOS) {
   CheckEOSReached();
 }
 
-TEST_F(SourceBufferStreamTest, SetExplicitDuration_MarkEOS_IsSeekPending) {
+TEST_P(SourceBufferStreamTest, SetExplicitDuration_MarkEOS_IsSeekPending) {
   // Append 1 buffer at positions 0 through 8.
   NewCodedFrameGroupAppend(0, 9);
 
@@ -3554,7 +3572,7 @@ TEST_F(SourceBufferStreamTest, SetExplicitDuration_MarkEOS_IsSeekPending) {
 // Test the case were the current playback position is at the end of the
 // buffered data and several overlaps occur that causes the selected
 // range to get split and then merged back into a single range.
-TEST_F(SourceBufferStreamTest, OverlapSplitAndMergeWhileWaitingForMoreData) {
+TEST_P(SourceBufferStreamTest, OverlapSplitAndMergeWhileWaitingForMoreData) {
   // Seek to start of stream.
   SeekToTimestampMs(0);
 
@@ -3591,7 +3609,7 @@ TEST_F(SourceBufferStreamTest, OverlapSplitAndMergeWhileWaitingForMoreData) {
 // Verify that a single coded frame at the current read position unblocks the
 // read even if the frame is buffered after the previously read position is
 // removed.
-TEST_F(SourceBufferStreamTest, AfterRemove_SingleFrameRange_Unblocks_Read) {
+TEST_P(SourceBufferStreamTest, AfterRemove_SingleFrameRange_Unblocks_Read) {
   Seek(0);
   NewCodedFrameGroupAppend("0K 30 60 90D30");
   CheckExpectedRangesByTimestamp("{ [0,120) }");
@@ -3609,7 +3627,7 @@ TEST_F(SourceBufferStreamTest, AfterRemove_SingleFrameRange_Unblocks_Read) {
 // Verify that multiple short (relative to max-inter-buffer-distance * 2) coded
 // frames at the current read position unblock the read even if the frames are
 // buffered after the previously read position is removed.
-TEST_F(SourceBufferStreamTest, AfterRemove_TinyFrames_Unblock_Read_1) {
+TEST_P(SourceBufferStreamTest, AfterRemove_TinyFrames_Unblock_Read_1) {
   Seek(0);
   NewCodedFrameGroupAppend("0K 30 60 90D30");
   CheckExpectedRangesByTimestamp("{ [0,120) }");
@@ -3627,7 +3645,7 @@ TEST_F(SourceBufferStreamTest, AfterRemove_TinyFrames_Unblock_Read_1) {
 // Verify that multiple short (relative to max-inter-buffer-distance * 2) coded
 // frames starting at the fudge room boundary unblock the read even if the
 // frames are buffered after the previously read position is removed.
-TEST_F(SourceBufferStreamTest, AfterRemove_TinyFrames_Unblock_Read_2) {
+TEST_P(SourceBufferStreamTest, AfterRemove_TinyFrames_Unblock_Read_2) {
   Seek(0);
   NewCodedFrameGroupAppend("0K 30 60 90D30");
   CheckExpectedRangesByTimestamp("{ [0,120) }");
@@ -3644,7 +3662,7 @@ TEST_F(SourceBufferStreamTest, AfterRemove_TinyFrames_Unblock_Read_2) {
 
 // Verify that coded frames starting after the fudge room boundary do not
 // unblock the read when buffered after the previously read position is removed.
-TEST_F(SourceBufferStreamTest, AfterRemove_BeyondFudge_Stalled) {
+TEST_P(SourceBufferStreamTest, AfterRemove_BeyondFudge_Stalled) {
   Seek(0);
   NewCodedFrameGroupAppend("0K 30 60 90D30");
   CheckExpectedRangesByTimestamp("{ [0,120) }");
@@ -3660,7 +3678,7 @@ TEST_F(SourceBufferStreamTest, AfterRemove_BeyondFudge_Stalled) {
 
 // Verify that non-keyframes with the same timestamp in the same
 // append are handled correctly.
-TEST_F(SourceBufferStreamTest, SameTimestamp_Video_SingleAppend) {
+TEST_P(SourceBufferStreamTest, SameTimestamp_Video_SingleAppend) {
   Seek(0);
   NewCodedFrameGroupAppend("0K 30 30 60 90 120K 150");
   CheckExpectedBuffers("0K 30 30 60 90 120K 150");
@@ -3668,7 +3686,7 @@ TEST_F(SourceBufferStreamTest, SameTimestamp_Video_SingleAppend) {
 
 // Verify that non-keyframes with the same timestamp can occur
 // in different appends.
-TEST_F(SourceBufferStreamTest, SameTimestamp_Video_TwoAppends) {
+TEST_P(SourceBufferStreamTest, SameTimestamp_Video_TwoAppends) {
   Seek(0);
   NewCodedFrameGroupAppend("0K 30D0");
   AppendBuffers("30 60 90 120K 150");
@@ -3677,7 +3695,7 @@ TEST_F(SourceBufferStreamTest, SameTimestamp_Video_TwoAppends) {
 
 // Verify that a non-keyframe followed by a keyframe with the same timestamp
 // is allowed, but also results in a MediaLog.
-TEST_F(SourceBufferStreamTest, SameTimestamp_Video_SingleAppend_Warning) {
+TEST_P(SourceBufferStreamTest, SameTimestamp_Video_SingleAppend_Warning) {
   EXPECT_MEDIA_LOG(ContainsSameTimestampAt30MillisecondsLog());
 
   Seek(0);
@@ -3685,7 +3703,7 @@ TEST_F(SourceBufferStreamTest, SameTimestamp_Video_SingleAppend_Warning) {
   CheckExpectedBuffers("0K 30 30K 60");
 }
 
-TEST_F(SourceBufferStreamTest, SameTimestamp_Video_TwoAppends_Warning) {
+TEST_P(SourceBufferStreamTest, SameTimestamp_Video_TwoAppends_Warning) {
   EXPECT_MEDIA_LOG(ContainsSameTimestampAt30MillisecondsLog());
 
   Seek(0);
@@ -3696,20 +3714,20 @@ TEST_F(SourceBufferStreamTest, SameTimestamp_Video_TwoAppends_Warning) {
 
 // Verify that a keyframe followed by a non-keyframe with the same timestamp
 // is allowed.
-TEST_F(SourceBufferStreamTest, SameTimestamp_VideoKeyFrame_TwoAppends) {
+TEST_P(SourceBufferStreamTest, SameTimestamp_VideoKeyFrame_TwoAppends) {
   Seek(0);
   NewCodedFrameGroupAppend("0K 30D0K");
   AppendBuffers("30 60");
   CheckExpectedBuffers("0K 30K 30 60");
 }
 
-TEST_F(SourceBufferStreamTest, SameTimestamp_VideoKeyFrame_SingleAppend) {
+TEST_P(SourceBufferStreamTest, SameTimestamp_VideoKeyFrame_SingleAppend) {
   Seek(0);
   NewCodedFrameGroupAppend("0K 30K 30 60");
   CheckExpectedBuffers("0K 30K 30 60");
 }
 
-TEST_F(SourceBufferStreamTest, SameTimestamp_Video_Overlap_1) {
+TEST_P(SourceBufferStreamTest, SameTimestamp_Video_Overlap_1) {
   Seek(0);
   NewCodedFrameGroupAppend("0K 30 60 60 90 120K 150");
 
@@ -3717,14 +3735,14 @@ TEST_F(SourceBufferStreamTest, SameTimestamp_Video_Overlap_1) {
   CheckExpectedBuffers("0K 30 60K 91 121K 151");
 }
 
-TEST_F(SourceBufferStreamTest, SameTimestamp_Video_Overlap_2) {
+TEST_P(SourceBufferStreamTest, SameTimestamp_Video_Overlap_2) {
   Seek(0);
   NewCodedFrameGroupAppend("0K 30 60 60 90 120K 150");
   NewCodedFrameGroupAppend("0K 30 61");
   CheckExpectedBuffers("0K 30 61 120K 150");
 }
 
-TEST_F(SourceBufferStreamTest, SameTimestamp_Video_Overlap_3) {
+TEST_P(SourceBufferStreamTest, SameTimestamp_Video_Overlap_3) {
   Seek(0);
   NewCodedFrameGroupAppend("0K 20 40 60 80 100K 101 102 103K");
   NewCodedFrameGroupAppend("0K 20 40 60 80 90D0");
@@ -3737,7 +3755,7 @@ TEST_F(SourceBufferStreamTest, SameTimestamp_Video_Overlap_3) {
 }
 
 // Test all the valid same timestamp cases for audio.
-TEST_F(SourceBufferStreamTest, SameTimestamp_Audio) {
+TEST_P(SourceBufferStreamTest, SameTimestamp_Audio) {
   AudioDecoderConfig config(kCodecMP3, kSampleFormatF32, CHANNEL_LAYOUT_STEREO,
                             44100, EmptyExtraData(), Unencrypted());
   stream_.reset(new SourceBufferStream(config, &media_log_));
@@ -3746,7 +3764,7 @@ TEST_F(SourceBufferStreamTest, SameTimestamp_Audio) {
   CheckExpectedBuffers("0K 0K 30K 30 60 60");
 }
 
-TEST_F(SourceBufferStreamTest, SameTimestamp_Audio_SingleAppend_Warning) {
+TEST_P(SourceBufferStreamTest, SameTimestamp_Audio_SingleAppend_Warning) {
   EXPECT_MEDIA_LOG(ContainsSameTimestampAt30MillisecondsLog());
 
   AudioDecoderConfig config(kCodecMP3, kSampleFormatF32, CHANNEL_LAYOUT_STEREO,
@@ -3763,7 +3781,7 @@ TEST_F(SourceBufferStreamTest, SameTimestamp_Audio_SingleAppend_Warning) {
 // If seeking past any existing range and the seek is pending
 // because no data has been provided for that position,
 // the stream position can be considered as the end of stream.
-TEST_F(SourceBufferStreamTest, EndSelected_During_PendingSeek) {
+TEST_P(SourceBufferStreamTest, EndSelected_During_PendingSeek) {
   // Append 15 buffers at positions 0 through 14.
   NewCodedFrameGroupAppend(0, 15);
 
@@ -3775,7 +3793,7 @@ TEST_F(SourceBufferStreamTest, EndSelected_During_PendingSeek) {
 
 // If there is a pending seek between 2 existing ranges,
 // the end of the stream has not been reached.
-TEST_F(SourceBufferStreamTest, EndNotSelected_During_PendingSeek) {
+TEST_P(SourceBufferStreamTest, EndNotSelected_During_PendingSeek) {
   // Append:
   // - 10 buffers at positions 0 through 9.
   // - 10 buffers at positions 30 through 39
@@ -3790,7 +3808,7 @@ TEST_F(SourceBufferStreamTest, EndNotSelected_During_PendingSeek) {
 
 
 // Removing exact start & end of a range.
-TEST_F(SourceBufferStreamTest, Remove_WholeRange1) {
+TEST_P(SourceBufferStreamTest, Remove_WholeRange1) {
   Seek(0);
   NewCodedFrameGroupAppend("10K 40 70K 100 130K");
   CheckExpectedRangesByTimestamp("{ [10,160) }");
@@ -3799,7 +3817,7 @@ TEST_F(SourceBufferStreamTest, Remove_WholeRange1) {
 }
 
 // Removal range starts before range and ends exactly at end.
-TEST_F(SourceBufferStreamTest, Remove_WholeRange2) {
+TEST_P(SourceBufferStreamTest, Remove_WholeRange2) {
   Seek(0);
   NewCodedFrameGroupAppend("10K 40 70K 100 130K");
   CheckExpectedRangesByTimestamp("{ [10,160) }");
@@ -3809,7 +3827,7 @@ TEST_F(SourceBufferStreamTest, Remove_WholeRange2) {
 
 // Removal range starts at the start of a range and ends beyond the
 // range end.
-TEST_F(SourceBufferStreamTest, Remove_WholeRange3) {
+TEST_P(SourceBufferStreamTest, Remove_WholeRange3) {
   Seek(0);
   NewCodedFrameGroupAppend("10K 40 70K 100 130K");
   CheckExpectedRangesByTimestamp("{ [10,160) }");
@@ -3818,7 +3836,7 @@ TEST_F(SourceBufferStreamTest, Remove_WholeRange3) {
 }
 
 // Removal range starts before range start and ends after the range end.
-TEST_F(SourceBufferStreamTest, Remove_WholeRange4) {
+TEST_P(SourceBufferStreamTest, Remove_WholeRange4) {
   Seek(0);
   NewCodedFrameGroupAppend("10K 40 70K 100 130K");
   CheckExpectedRangesByTimestamp("{ [10,160) }");
@@ -3827,7 +3845,7 @@ TEST_F(SourceBufferStreamTest, Remove_WholeRange4) {
 }
 
 // Removes multiple ranges.
-TEST_F(SourceBufferStreamTest, Remove_WholeRange5) {
+TEST_P(SourceBufferStreamTest, Remove_WholeRange5) {
   Seek(0);
   NewCodedFrameGroupAppend("10K 40 70K 100 130K");
   NewCodedFrameGroupAppend("1000K 1030 1060K 1090 1120K");
@@ -3838,7 +3856,7 @@ TEST_F(SourceBufferStreamTest, Remove_WholeRange5) {
 }
 
 // Verifies a [0-infinity) range removes everything.
-TEST_F(SourceBufferStreamTest, Remove_ZeroToInfinity) {
+TEST_P(SourceBufferStreamTest, Remove_ZeroToInfinity) {
   Seek(0);
   NewCodedFrameGroupAppend("10K 40 70K 100 130K");
   NewCodedFrameGroupAppend("1000K 1030 1060K 1090 1120K");
@@ -3850,7 +3868,7 @@ TEST_F(SourceBufferStreamTest, Remove_ZeroToInfinity) {
 
 // Removal range starts at the beginning of the range and ends in the
 // middle of the range. This test verifies that full GOPs are removed.
-TEST_F(SourceBufferStreamTest, Remove_Partial1) {
+TEST_P(SourceBufferStreamTest, Remove_Partial1) {
   Seek(0);
   NewCodedFrameGroupAppend("10K 40 70K 100 130K");
   NewCodedFrameGroupAppend("1000K 1030 1060K 1090 1120K");
@@ -3861,7 +3879,7 @@ TEST_F(SourceBufferStreamTest, Remove_Partial1) {
 
 // Removal range starts in the middle of a range and ends at the exact
 // end of the range.
-TEST_F(SourceBufferStreamTest, Remove_Partial2) {
+TEST_P(SourceBufferStreamTest, Remove_Partial2) {
   Seek(0);
   NewCodedFrameGroupAppend("10K 40 70K 100 130K");
   NewCodedFrameGroupAppend("1000K 1030 1060K 1090 1120K");
@@ -3871,7 +3889,7 @@ TEST_F(SourceBufferStreamTest, Remove_Partial2) {
 }
 
 // Removal range starts and ends within a range.
-TEST_F(SourceBufferStreamTest, Remove_Partial3) {
+TEST_P(SourceBufferStreamTest, Remove_Partial3) {
   Seek(0);
   NewCodedFrameGroupAppend("10K 40 70K 100 130K");
   NewCodedFrameGroupAppend("1000K 1030 1060K 1090 1120K");
@@ -3882,7 +3900,7 @@ TEST_F(SourceBufferStreamTest, Remove_Partial3) {
 
 // Removal range starts in the middle of one range and ends in the
 // middle of another range.
-TEST_F(SourceBufferStreamTest, Remove_Partial4) {
+TEST_P(SourceBufferStreamTest, Remove_Partial4) {
   Seek(0);
   NewCodedFrameGroupAppend("10K 40 70K 100 130K");
   NewCodedFrameGroupAppend("1000K 1030 1060K 1090 1120K");
@@ -3894,7 +3912,7 @@ TEST_F(SourceBufferStreamTest, Remove_Partial4) {
 
 // Test behavior when the current position is removed and new buffers
 // are appended over the removal range.
-TEST_F(SourceBufferStreamTest, Remove_CurrentPosition) {
+TEST_P(SourceBufferStreamTest, Remove_CurrentPosition) {
   Seek(0);
   NewCodedFrameGroupAppend("0K 30 60 90K 120 150 180K 210 240 270K 300 330");
   CheckExpectedRangesByTimestamp("{ [0,360) }");
@@ -3918,7 +3936,7 @@ TEST_F(SourceBufferStreamTest, Remove_CurrentPosition) {
 
 // Test behavior when buffers in the selected range before the current position
 // are removed.
-TEST_F(SourceBufferStreamTest, Remove_BeforeCurrentPosition) {
+TEST_P(SourceBufferStreamTest, Remove_BeforeCurrentPosition) {
   Seek(0);
   NewCodedFrameGroupAppend("0K 30 60 90K 120 150 180K 210 240 270K 300 330");
   CheckExpectedRangesByTimestamp("{ [0,360) }");
@@ -3933,7 +3951,7 @@ TEST_F(SourceBufferStreamTest, Remove_BeforeCurrentPosition) {
 
 // Test removing the entire range for the current coded frame group
 // being appended.
-TEST_F(SourceBufferStreamTest, Remove_MidGroup) {
+TEST_P(SourceBufferStreamTest, Remove_MidGroup) {
   Seek(0);
   NewCodedFrameGroupAppend("0K 30 60 90 120K 150 180 210");
   CheckExpectedRangesByTimestamp("{ [0,240) }");
@@ -3971,7 +3989,7 @@ TEST_F(SourceBufferStreamTest, Remove_MidGroup) {
 
 // Test removing the current GOP being appended, while not removing
 // the entire range the GOP belongs to.
-TEST_F(SourceBufferStreamTest, Remove_GOPBeingAppended) {
+TEST_P(SourceBufferStreamTest, Remove_GOPBeingAppended) {
   Seek(0);
   NewCodedFrameGroupAppend("0K 30 60 90 120K 150 180");
   CheckExpectedRangesByTimestamp("{ [0,210) }");
@@ -3995,7 +4013,7 @@ TEST_F(SourceBufferStreamTest, Remove_GOPBeingAppended) {
   CheckExpectedBuffers("240K 270 300");
 }
 
-TEST_F(SourceBufferStreamTest, Remove_WholeGOPBeingAppended) {
+TEST_P(SourceBufferStreamTest, Remove_WholeGOPBeingAppended) {
   SeekToTimestampMs(1000);
   NewCodedFrameGroupAppend("1000K 1030 1060 1090");
   CheckExpectedRangesByTimestamp("{ [1000,1120) }");
@@ -4022,7 +4040,7 @@ TEST_F(SourceBufferStreamTest, Remove_WholeGOPBeingAppended) {
   CheckExpectedBuffers("1270K 1300");
 }
 
-TEST_F(SourceBufferStreamTest,
+TEST_P(SourceBufferStreamTest,
        Remove_PreviousAppendDestroyedAndOverwriteExistingRange) {
   SeekToTimestampMs(90);
 
@@ -4046,7 +4064,7 @@ TEST_F(SourceBufferStreamTest,
   CheckExpectedBuffers("90K 121 151");
 }
 
-TEST_F(SourceBufferStreamTest, Remove_GapAtBeginningOfGroup) {
+TEST_P(SourceBufferStreamTest, Remove_GapAtBeginningOfGroup) {
   Seek(0);
 
   // Append a coded frame group that has a gap at the beginning of it.
@@ -4076,7 +4094,7 @@ TEST_F(SourceBufferStreamTest, Remove_GapAtBeginningOfGroup) {
   CheckExpectedRangesByTimestamp("{ [120,180) }");
 }
 
-TEST_F(SourceBufferStreamTest,
+TEST_P(SourceBufferStreamTest,
        OverlappingAppendRangeMembership_OneMicrosecond_Video) {
   NewCodedFrameGroupAppend("10D20K");
   CheckExpectedRangesByTimestamp("{ [10000,30000) }",
@@ -4098,7 +4116,7 @@ TEST_F(SourceBufferStreamTest,
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest,
+TEST_P(SourceBufferStreamTest,
        OverlappingAppendRangeMembership_TwoMicroseconds_Video) {
   NewCodedFrameGroupAppend("10D20K");
   CheckExpectedRangesByTimestamp("{ [10000,30000) }",
@@ -4120,7 +4138,7 @@ TEST_F(SourceBufferStreamTest,
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest, Text_Append_SingleRange) {
+TEST_P(SourceBufferStreamTest, Text_Append_SingleRange) {
   SetTextStream();
   NewCodedFrameGroupAppend("0K 500K 1000K");
   CheckExpectedRangesByTimestamp("{ [0,1500) }");
@@ -4129,7 +4147,7 @@ TEST_F(SourceBufferStreamTest, Text_Append_SingleRange) {
   CheckExpectedBuffers("0K 500K 1000K");
 }
 
-TEST_F(SourceBufferStreamTest, Text_Append_DisjointAfter) {
+TEST_P(SourceBufferStreamTest, Text_Append_DisjointAfter) {
   SetTextStream();
   NewCodedFrameGroupAppend("0K 500K 1000K");
   CheckExpectedRangesByTimestamp("{ [0,1500) }");
@@ -4140,7 +4158,7 @@ TEST_F(SourceBufferStreamTest, Text_Append_DisjointAfter) {
   CheckExpectedBuffers("0K 500K 1000K 3000K 3500K 4000K");
 }
 
-TEST_F(SourceBufferStreamTest, Text_Append_DisjointBefore) {
+TEST_P(SourceBufferStreamTest, Text_Append_DisjointBefore) {
   SetTextStream();
   NewCodedFrameGroupAppend("3000K 3500K 4000K");
   CheckExpectedRangesByTimestamp("{ [3000,4500) }");
@@ -4151,7 +4169,7 @@ TEST_F(SourceBufferStreamTest, Text_Append_DisjointBefore) {
   CheckExpectedBuffers("0K 500K 1000K 3000K 3500K 4000K");
 }
 
-TEST_F(SourceBufferStreamTest, Text_CompleteOverlap) {
+TEST_P(SourceBufferStreamTest, Text_CompleteOverlap) {
   SetTextStream();
   NewCodedFrameGroupAppend("3000K 3500K 4000K");
   CheckExpectedRangesByTimestamp("{ [3000,4500) }");
@@ -4165,7 +4183,7 @@ TEST_F(SourceBufferStreamTest, Text_CompleteOverlap) {
                        "3001K 3501K 4001K 4501K 5001K");
 }
 
-TEST_F(SourceBufferStreamTest, Text_OverlapAfter) {
+TEST_P(SourceBufferStreamTest, Text_OverlapAfter) {
   SetTextStream();
   NewCodedFrameGroupAppend("0K 500K 1000K 1500K 2000K");
   CheckExpectedRangesByTimestamp("{ [0,2500) }");
@@ -4176,7 +4194,7 @@ TEST_F(SourceBufferStreamTest, Text_OverlapAfter) {
   CheckExpectedBuffers("0K 500K 1000K 1499K 2001K 2501K 3001K");
 }
 
-TEST_F(SourceBufferStreamTest, Text_OverlapBefore) {
+TEST_P(SourceBufferStreamTest, Text_OverlapBefore) {
   SetTextStream();
   NewCodedFrameGroupAppend("1500K 2000K 2500K 3000K 3500K");
   CheckExpectedRangesByTimestamp("{ [1500,4000) }");
@@ -4187,7 +4205,7 @@ TEST_F(SourceBufferStreamTest, Text_OverlapBefore) {
   CheckExpectedBuffers("0K 501K 1001K 1501K 2001K 3000K 3500K");
 }
 
-TEST_F(SourceBufferStreamTest, Audio_SpliceTrimmingForOverlap) {
+TEST_P(SourceBufferStreamTest, Audio_SpliceTrimmingForOverlap) {
   SetAudioStream();
   Seek(0);
   NewCodedFrameGroupAppend("0K 2K 4K 6K 8K 10K 12K");
@@ -4213,7 +4231,7 @@ TEST_F(SourceBufferStreamTest, Audio_SpliceTrimmingForOverlap) {
 
 // Test that a splice is not created if an end timestamp and start timestamp
 // perfectly overlap.
-TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_NoSplice) {
+TEST_P(SourceBufferStreamTest, Audio_SpliceFrame_NoSplice) {
   SetAudioStream();
   Seek(0);
 
@@ -4237,7 +4255,7 @@ TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_NoSplice) {
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest, Audio_NoSpliceForBadOverlap) {
+TEST_P(SourceBufferStreamTest, Audio_NoSpliceForBadOverlap) {
   SetAudioStream();
   Seek(0);
 
@@ -4262,7 +4280,7 @@ TEST_F(SourceBufferStreamTest, Audio_NoSpliceForBadOverlap) {
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest, Audio_SpliceTrimming_ExistingTrimming) {
+TEST_P(SourceBufferStreamTest, Audio_SpliceTrimming_ExistingTrimming) {
   const base::TimeDelta kDuration = base::TimeDelta::FromMilliseconds(4);
   const base::TimeDelta kNoDiscard = base::TimeDelta();
   const bool is_keyframe = true;
@@ -4356,7 +4374,7 @@ TEST_F(SourceBufferStreamTest, Audio_SpliceTrimming_ExistingTrimming) {
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_NoMillisecondSplices) {
+TEST_P(SourceBufferStreamTest, Audio_SpliceFrame_NoMillisecondSplices) {
   EXPECT_MEDIA_LOG(
       HasSubstr("Skipping audio splice trimming at PTS=1250us. Found only 250us"
                 " of overlap, need at least 1000us."));
@@ -4387,14 +4405,14 @@ TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_NoMillisecondSplices) {
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest, Audio_PrerollFrame) {
+TEST_P(SourceBufferStreamTest, Audio_PrerollFrame) {
   Seek(0);
   NewCodedFrameGroupAppend("0K 3P 6K");
   CheckExpectedBuffers("0K 3P 6K");
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest, Audio_ConfigChangeWithPreroll) {
+TEST_P(SourceBufferStreamTest, Audio_ConfigChangeWithPreroll) {
   AudioDecoderConfig new_config(kCodecVorbis, kSampleFormatPlanarF32,
                                 CHANNEL_LAYOUT_MONO, 2000, EmptyExtraData(),
                                 Unencrypted());
@@ -4434,7 +4452,7 @@ TEST_F(SourceBufferStreamTest, Audio_ConfigChangeWithPreroll) {
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest, BFrames) {
+TEST_P(SourceBufferStreamTest, BFrames) {
   Seek(0);
   NewCodedFrameGroupAppend("0K 120|30 30|60 60|90 90|120");
   CheckExpectedRangesByTimestamp("{ [0,150) }");
@@ -4443,7 +4461,7 @@ TEST_F(SourceBufferStreamTest, BFrames) {
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest, RemoveShouldAlwaysExcludeEnd) {
+TEST_P(SourceBufferStreamTest, RemoveShouldAlwaysExcludeEnd) {
   NewCodedFrameGroupAppend("10D2K 12D2 14D2");
   CheckExpectedRangesByTimestamp("{ [10,16) }");
 
@@ -4469,7 +4487,7 @@ TEST_F(SourceBufferStreamTest, RemoveShouldAlwaysExcludeEnd) {
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest, RefinedDurationEstimates_BackOverlap) {
+TEST_P(SourceBufferStreamTest, RefinedDurationEstimates_BackOverlap) {
   // Append a few buffers, the last one having estimated duration.
   NewCodedFrameGroupAppend("0K 5 10 20D10E");
   CheckExpectedRangesByTimestamp("{ [0,30) }");
@@ -4495,7 +4513,7 @@ TEST_F(SourceBufferStreamTest, RefinedDurationEstimates_BackOverlap) {
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest, RefinedDurationEstimates_FrontOverlap) {
+TEST_P(SourceBufferStreamTest, RefinedDurationEstimates_FrontOverlap) {
   // Append a few buffers.
   NewCodedFrameGroupAppend("10K 15 20D5");
   CheckExpectedRangesByTimestamp("{ [10,25) }");
@@ -4521,7 +4539,7 @@ TEST_F(SourceBufferStreamTest, RefinedDurationEstimates_FrontOverlap) {
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest, SeekToStartSatisfiedUpToThreshold) {
+TEST_P(SourceBufferStreamTest, SeekToStartSatisfiedUpToThreshold) {
   NewCodedFrameGroupAppend("999K 1010 1020D10");
   CheckExpectedRangesByTimestamp("{ [999,1030) }");
 
@@ -4530,7 +4548,7 @@ TEST_F(SourceBufferStreamTest, SeekToStartSatisfiedUpToThreshold) {
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest, SeekToStartUnsatisfiedBeyondThreshold) {
+TEST_P(SourceBufferStreamTest, SeekToStartUnsatisfiedBeyondThreshold) {
   NewCodedFrameGroupAppend("1000K 1010 1020D10");
   CheckExpectedRangesByTimestamp("{ [1000,1030) }");
 
@@ -4538,7 +4556,7 @@ TEST_F(SourceBufferStreamTest, SeekToStartUnsatisfiedBeyondThreshold) {
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest,
+TEST_P(SourceBufferStreamTest,
        ReSeekToStartSatisfiedUpToThreshold_SameTimestamps) {
   // Append a few buffers.
   NewCodedFrameGroupAppend("999K 1010 1020D10");
@@ -4557,7 +4575,7 @@ TEST_F(SourceBufferStreamTest,
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest,
+TEST_P(SourceBufferStreamTest,
        ReSeekToStartSatisfiedUpToThreshold_EarlierTimestamps) {
   // Append a few buffers.
   NewCodedFrameGroupAppend("999K 1010 1020D10");
@@ -4577,7 +4595,7 @@ TEST_F(SourceBufferStreamTest,
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest,
+TEST_P(SourceBufferStreamTest,
        ReSeekToStartSatisfiedUpToThreshold_LaterTimestamps) {
   // Append a few buffers.
   NewCodedFrameGroupAppend("500K 510 520D10");
@@ -4598,7 +4616,7 @@ TEST_F(SourceBufferStreamTest,
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest, ReSeekBeyondStartThreshold_SameTimestamps) {
+TEST_P(SourceBufferStreamTest, ReSeekBeyondStartThreshold_SameTimestamps) {
   // Append a few buffers.
   NewCodedFrameGroupAppend("1000K 1010 1020D10");
   CheckExpectedRangesByTimestamp("{ [1000,1030) }");
@@ -4616,7 +4634,7 @@ TEST_F(SourceBufferStreamTest, ReSeekBeyondStartThreshold_SameTimestamps) {
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest, ReSeekBeyondThreshold_EarlierTimestamps) {
+TEST_P(SourceBufferStreamTest, ReSeekBeyondThreshold_EarlierTimestamps) {
   // Append a few buffers.
   NewCodedFrameGroupAppend("2000K 2010 2020D10");
   CheckExpectedRangesByTimestamp("{ [2000,2030) }");
@@ -4636,7 +4654,7 @@ TEST_F(SourceBufferStreamTest, ReSeekBeyondThreshold_EarlierTimestamps) {
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest, ConfigChange_ReSeek) {
+TEST_P(SourceBufferStreamTest, ConfigChange_ReSeek) {
   // Append a few buffers, with a config change in the middle.
   VideoDecoderConfig new_config = TestVideoConfig::Large();
   NewCodedFrameGroupAppend("2000K 2010 2020D10");
@@ -4682,7 +4700,7 @@ TEST_F(SourceBufferStreamTest, ConfigChange_ReSeek) {
   CheckVideoConfig(new_config);
 }
 
-TEST_F(SourceBufferStreamTest, TrackBuffer_ExhaustionWithSkipForward) {
+TEST_P(SourceBufferStreamTest, TrackBuffer_ExhaustionWithSkipForward) {
   NewCodedFrameGroupAppend("0K 10 20 30 40");
 
   // Read the first 4 buffers, so next buffer is at time 40.
@@ -4707,7 +4725,7 @@ TEST_F(SourceBufferStreamTest, TrackBuffer_ExhaustionWithSkipForward) {
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest,
+TEST_P(SourceBufferStreamTest,
        TrackBuffer_ExhaustionAndImmediateNewTrackBuffer) {
   NewCodedFrameGroupAppend("0K 10 20 30 40");
 
@@ -4741,7 +4759,7 @@ TEST_F(SourceBufferStreamTest,
   CheckNoNextBuffer();
 }
 
-TEST_F(
+TEST_P(
     SourceBufferStreamTest,
     AdjacentCodedFrameGroupContinuation_NoGapCreatedByTinyGapInGroupContinuation) {
   NewCodedFrameGroupAppend("0K 10 20K 30 40K 50D10");
@@ -4753,7 +4771,7 @@ TEST_F(
   CheckExpectedRangesByTimestamp("{ [0,81) }");
 }
 
-TEST_F(SourceBufferStreamTest,
+TEST_P(SourceBufferStreamTest,
        AdjacentCodedFrameGroupContinuation_NoGapCreatedPrefixRemoved) {
   NewCodedFrameGroupAppend("0K 10 20K 30 40K 50D10");
   CheckExpectedRangesByTimestamp("{ [0,60) }");
@@ -4767,7 +4785,7 @@ TEST_F(SourceBufferStreamTest,
   CheckExpectedRangesByTimestamp("{ [40,81) }");
 }
 
-TEST_F(SourceBufferStreamTest,
+TEST_P(SourceBufferStreamTest,
        AdjacentNewCodedFrameGroupContinuation_NoGapCreatedPrefixRemoved) {
   NewCodedFrameGroupAppend("0K 10 20K 30 40K 50D10");
   CheckExpectedRangesByTimestamp("{ [0,60) }");
@@ -4784,7 +4802,7 @@ TEST_F(SourceBufferStreamTest,
   CheckExpectedRangesByTimestamp("{ [40,81) }");
 }
 
-TEST_F(SourceBufferStreamTest,
+TEST_P(SourceBufferStreamTest,
        StartCodedFrameGroup_RemoveThenAppendMoreMuchLater) {
   NewCodedFrameGroupAppend("1000K 1010 1020 1030K 1040 1050 1060K 1070 1080");
   NewCodedFrameGroupAppend("0K 10 20");
@@ -4810,7 +4828,7 @@ TEST_F(SourceBufferStreamTest,
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest,
+TEST_P(SourceBufferStreamTest,
        StartCodedFrameGroup_InExisting_AppendMuchLater) {
   NewCodedFrameGroupAppend("0K 10 20 30K 40 50");
   SignalStartOfCodedFrameGroup(base::TimeDelta::FromMilliseconds(45));
@@ -4823,7 +4841,7 @@ TEST_F(SourceBufferStreamTest,
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest,
+TEST_P(SourceBufferStreamTest,
        StartCodedFrameGroup_InExisting_RemoveGOP_ThenAppend_1) {
   NewCodedFrameGroupAppend("0K 10 20 30K 40 50");
   SignalStartOfCodedFrameGroup(base::TimeDelta::FromMilliseconds(30));
@@ -4837,7 +4855,7 @@ TEST_F(SourceBufferStreamTest,
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest,
+TEST_P(SourceBufferStreamTest,
        StartCodedFrameGroup_InExisting_RemoveGOP_ThenAppend_2) {
   NewCodedFrameGroupAppend("0K 10 20 30K 40 50");
   SignalStartOfCodedFrameGroup(base::TimeDelta::FromMilliseconds(45));
@@ -4857,7 +4875,7 @@ TEST_F(SourceBufferStreamTest,
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest,
+TEST_P(SourceBufferStreamTest,
        StartCodedFrameGroup_InExisting_RemoveMostRecentAppend_ThenAppend_1) {
   NewCodedFrameGroupAppend("0K 10 20 30K 40 50");
   SignalStartOfCodedFrameGroup(base::TimeDelta::FromMilliseconds(45));
@@ -4871,7 +4889,7 @@ TEST_F(SourceBufferStreamTest,
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest,
+TEST_P(SourceBufferStreamTest,
        StartCodedFrameGroup_InExisting_RemoveMostRecentAppend_ThenAppend_2) {
   NewCodedFrameGroupAppend("0K 10 20 30K 40 50");
   SignalStartOfCodedFrameGroup(base::TimeDelta::FromMilliseconds(50));
@@ -4885,7 +4903,7 @@ TEST_F(SourceBufferStreamTest,
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest, GetHighestPresentationTimestamp) {
+TEST_P(SourceBufferStreamTest, GetHighestPresentationTimestamp) {
   // TODO(wolenetz): Add coverage for when DTS != PTS once
   // https://crbug.com/398130 is fixed.
 
@@ -4910,7 +4928,7 @@ TEST_F(SourceBufferStreamTest, GetHighestPresentationTimestamp) {
   EXPECT_EQ(base::TimeDelta(), stream_->GetHighestPresentationTimestamp());
 }
 
-TEST_F(SourceBufferStreamTest, GarbageCollectionUnderMemoryPressure) {
+TEST_P(SourceBufferStreamTest, GarbageCollectionUnderMemoryPressure) {
   SetMemoryLimit(16);
   NewCodedFrameGroupAppend("0K 1 2 3K 4 5 6K 7 8 9K 10 11 12K 13 14 15K");
   CheckExpectedRangesByTimestamp("{ [0,16) }");
@@ -4924,7 +4942,8 @@ TEST_F(SourceBufferStreamTest, GarbageCollectionUnderMemoryPressure) {
   EXPECT_TRUE(GarbageCollect(base::TimeDelta::FromMilliseconds(8), 0));
   CheckExpectedRangesByTimestamp("{ [0,16) }");
 
-  // Now enable the feature.
+  // Now enable the feature (on top of any overrides already in
+  // |scoped_feature_list_|.)
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kMemoryPressureBasedSourceBufferGC);
 
@@ -4961,7 +4980,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollectionUnderMemoryPressure) {
   CheckExpectedRangesByTimestamp("{ [12,28) }");
 }
 
-TEST_F(SourceBufferStreamTest, InstantGarbageCollectionUnderMemoryPressure) {
+TEST_P(SourceBufferStreamTest, InstantGarbageCollectionUnderMemoryPressure) {
   SetMemoryLimit(16);
   NewCodedFrameGroupAppend("0K 1 2 3K 4 5 6K 7 8 9K 10 11 12K 13 14 15K");
   CheckExpectedRangesByTimestamp("{ [0,16) }");
@@ -4969,6 +4988,8 @@ TEST_F(SourceBufferStreamTest, InstantGarbageCollectionUnderMemoryPressure) {
   // Verify that garbage collection happens immediately on critical memory
   // pressure notification, even without explicit GarbageCollect invocation,
   // when the immediate GC is allowed.
+  // First, enable the feature (on top of any overrides already in
+  // |scoped_feature_list_|.)
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kMemoryPressureBasedSourceBufferGC);
   stream_->OnMemoryPressure(
@@ -4989,7 +5010,7 @@ struct VideoEndTimeCase {
   int64_t expected_end_time;
 };
 
-TEST_F(SourceBufferStreamTest, VideoRangeEndTimeCases) {
+TEST_P(SourceBufferStreamTest, VideoRangeEndTimeCases) {
   // With a basic range containing just a single keyframe [10,20), verify
   // various keyframe overlap append cases' results on the range end time.
   const VideoEndTimeCase kCases[] = {
@@ -5034,7 +5055,7 @@ struct AudioEndTimeCase {
   bool expect_splice;
 };
 
-TEST_F(SourceBufferStreamTest, AudioRangeEndTimeCases) {
+TEST_P(SourceBufferStreamTest, AudioRangeEndTimeCases) {
   // With a basic range containing just a single keyframe [10,20), verify
   // various keyframe overlap append cases' results on the range end time.
   const AudioEndTimeCase kCases[] = {
@@ -5077,7 +5098,7 @@ TEST_F(SourceBufferStreamTest, AudioRangeEndTimeCases) {
   }
 }
 
-TEST_F(SourceBufferStreamTest, SameTimestampEstimatedDurations_Video) {
+TEST_P(SourceBufferStreamTest, SameTimestampEstimatedDurations_Video) {
   // Start a coded frame group with a frame having a non-estimated duration.
   NewCodedFrameGroupAppend("10D10K");
 
@@ -5101,7 +5122,7 @@ TEST_F(SourceBufferStreamTest, SameTimestampEstimatedDurations_Video) {
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest, RangeIsNextInPTS_Simple) {
+TEST_P(SourceBufferStreamTest, RangeIsNextInPTS_Simple) {
   // Append a simple GOP where DTS==PTS, perform basic PTS continuity checks.
   NewCodedFrameGroupAppend("10D10K");
   CheckIsNextInPTSSequenceWithFirstRange(9, false);
@@ -5111,7 +5132,7 @@ TEST_F(SourceBufferStreamTest, RangeIsNextInPTS_Simple) {
   CheckIsNextInPTSSequenceWithFirstRange(31, false);
 }
 
-TEST_F(SourceBufferStreamTest, RangeIsNextInPTS_OutOfOrder) {
+TEST_P(SourceBufferStreamTest, RangeIsNextInPTS_OutOfOrder) {
   // Append a GOP where DTS != PTS such that a timestamp used as DTS would not
   // be continuous, but used as PTS is, and verify PTS continuity.
   NewCodedFrameGroupAppend("1000|0K 1120|30 1030|60 1060|90 1090|120");
@@ -5132,10 +5153,12 @@ TEST_F(SourceBufferStreamTest, RangeIsNextInPTS_OutOfOrder) {
   CheckIsNextInPTSSequenceWithFirstRange(1181, false);
 }
 
-// TODO(vrk): Add unit tests where keyframes are unaligned between streams.
-// (crbug.com/133557)
+INSTANTIATE_TEST_CASE_P(LegacyByDts,
+                        SourceBufferStreamTest,
+                        Values(BufferingApi::kLegacyByDts));
 
-// TODO(vrk): Add unit tests with end of stream being called at interesting
-// times.
+// TODO(wolenetz): Update impl and tests to verify when kMseBufferByPts is
+// enabled. See https://crbug.com/718641. INSTANTIATE_TEST_CASE_P(NewByPts,
+// SourceBufferStreamTest, Values(BufferingApi::kNewByPts));
 
 }  // namespace media
