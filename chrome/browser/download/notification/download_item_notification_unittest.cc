@@ -125,20 +125,20 @@ class DownloadItemNotificationTest : public testing::Test {
 
   const Notification* notification() const {
     return ui_manager()->FindById(
-        download_item_notification_->watcher()->id(),
+        download_item_notification_->GetNotificationId(),
         NotificationUIManager::GetProfileID(profile_));
   }
 
   size_t NotificationCount() const {
     return ui_manager()
         ->GetAllIdsByProfileAndSourceOrigin(
-              NotificationUIManager::GetProfileID(profile_),
-              GURL(DownloadItemNotification::kDownloadNotificationOrigin))
+            NotificationUIManager::GetProfileID(profile_),
+            GURL("chrome://downloads"))
         .size();
   }
 
   void RemoveNotification() {
-    ui_manager()->CancelById(download_item_notification_->watcher()->id(),
+    ui_manager()->CancelById(download_item_notification_->GetNotificationId(),
                              NotificationUIManager::GetProfileID(profile_));
 
     // Waits, since removing a notification may cause an async job.

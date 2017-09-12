@@ -2324,8 +2324,6 @@ split_static_library("browser") {
     sources += [
       "download/notification/download_item_notification.cc",
       "download/notification/download_item_notification.h",
-      "download/notification/download_notification.cc",
-      "download/notification/download_notification.h",
       "download/notification/download_notification_manager.cc",
       "download/notification/download_notification_manager.h",
       "feedback/feedback_util_chromeos.cc",
