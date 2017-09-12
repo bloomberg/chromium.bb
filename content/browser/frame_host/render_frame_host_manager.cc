@@ -1944,7 +1944,7 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
                                               request.common_params().url);
 
     no_renderer_swap_allowed |=
-        !request.may_transfer() && !can_renderer_initiate_transfer;
+        request.from_begin_navigation() && !can_renderer_initiate_transfer;
   } else {
     // Subframe navigations will use the current renderer, unless specifically
     // allowed to swap processes.

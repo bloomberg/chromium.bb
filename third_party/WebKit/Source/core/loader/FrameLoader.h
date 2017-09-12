@@ -220,6 +220,8 @@ class CORE_EXPORT FrameLoader final {
 
   static void SetReferrerForFrameRequest(FrameLoadRequest&);
 
+  void ClientDroppedNavigation();
+
  private:
   bool PrepareRequestForThisFrame(FrameLoadRequest&);
   FrameLoadType DetermineFrameLoadType(const FrameLoadRequest&);

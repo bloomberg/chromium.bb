@@ -762,6 +762,11 @@ IPC_MESSAGE_ROUTED0(FrameMsg_SwapIn)
 // Instructs the frame to stop the load in progress, if any.
 IPC_MESSAGE_ROUTED0(FrameMsg_Stop)
 
+// PlzNavigate
+// Informs the renderer that the browser stopped processing a renderer-initiated
+// navigation. It does not stop ongoing loads in the current page.
+IPC_MESSAGE_ROUTED0(FrameMsg_DroppedNavigation)
+
 // A message sent to RenderFrameProxy to indicate that its corresponding
 // RenderFrame has started loading a document.
 IPC_MESSAGE_ROUTED0(FrameMsg_DidStartLoading)
