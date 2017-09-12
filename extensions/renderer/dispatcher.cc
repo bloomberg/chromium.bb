@@ -73,6 +73,7 @@
 #include "extensions/renderer/id_generator_custom_bindings.h"
 #include "extensions/renderer/ipc_message_sender.h"
 #include "extensions/renderer/js_extension_bindings_system.h"
+#include "extensions/renderer/js_renderer_messaging_service.h"
 #include "extensions/renderer/logging_native_handler.h"
 #include "extensions/renderer/messaging_bindings.h"
 #include "extensions/renderer/module_system.h"
@@ -195,6 +196,7 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
       content_watcher_(new ContentWatcher()),
       source_map_(&ResourceBundle::GetSharedInstance()),
       v8_schema_registry_(new V8SchemaRegistry),
+      messaging_service_(std::make_unique<JSRendererMessagingService>()),
       user_script_set_manager_observer_(this),
       activity_logging_enabled_(false) {
   const base::CommandLine& command_line =
@@ -964,9 +966,9 @@ void Dispatcher::OnCancelSuspend(const std::string& extension_id) {
 
 void Dispatcher::OnDeliverMessage(const PortId& target_port_id,
                                   const Message& message) {
-  MessagingBindings::DeliverMessage(*script_context_set_, target_port_id,
-                                    message,
-                                    NULL);  // All render frames.
+  messaging_service_->DeliverMessage(*script_context_set_, target_port_id,
+                                     message,
+                                     NULL);  // All render frames.
 }
 
 void Dispatcher::OnDispatchOnConnect(
@@ -977,17 +979,17 @@ void Dispatcher::OnDispatchOnConnect(
     const std::string& tls_channel_id) {
   DCHECK(!target_port_id.is_opener);
 
-  MessagingBindings::DispatchOnConnect(*script_context_set_, target_port_id,
-                                       channel_name, source, info,
-                                       tls_channel_id,
-                                       NULL);  // All render frames.
+  messaging_service_->DispatchOnConnect(*script_context_set_, target_port_id,
+                                        channel_name, source, info,
+                                        tls_channel_id,
+                                        NULL);  // All render frames.
 }
 
 void Dispatcher::OnDispatchOnDisconnect(const PortId& port_id,
                                         const std::string& error_message) {
-  MessagingBindings::DispatchOnDisconnect(*script_context_set_, port_id,
-                                          error_message,
-                                          NULL);  // All render frames.
+  messaging_service_->DispatchOnDisconnect(*script_context_set_, port_id,
+                                           error_message,
+                                           NULL);  // All render frames.
 }
 
 void Dispatcher::OnLoaded(
