@@ -476,8 +476,11 @@ void InputMethodManagerImpl::StateImpl::ChangeInputMethod(
   if (!descriptor) {
     descriptor = manager_->LookupInputMethod(
         manager_->util_.MigrateInputMethod(input_method_id), this);
-    if (!descriptor)
+    if (!descriptor) {
+      LOG(ERROR) << "Can't find InputMethodDescriptor for \"" << input_method_id
+                 << "\"";
       return;
+    }
   }
 
   // For 3rd party IME, when the user just logged in, SetEnabledExtensionImes
@@ -521,6 +524,7 @@ void InputMethodManagerImpl::StateImpl::AddInputMethodExtension(
   DCHECK(engine);
 
   manager_->engine_map_[profile][extension_id] = engine;
+  VLOG(1) << "Add an engine for \"" << extension_id << "\"";
 
   bool contain = false;
   for (size_t i = 0; i < descriptors.size(); i++) {
@@ -986,8 +990,10 @@ void InputMethodManagerImpl::ChangeInputMethodInternal(
     bool show_message,
     bool notify_menu) {
   // No need to switch input method when terminating.
-  if (ui_session_ == STATE_TERMINATING)
+  if (ui_session_ == STATE_TERMINATING) {
+    VLOG(1) << "No need to switch input method when terminating.";
     return;
+  }
 
   if (candidate_window_controller_.get())
     candidate_window_controller_->Hide();
@@ -1017,6 +1023,10 @@ void InputMethodManagerImpl::ChangeInputMethodInternal(
       extension_ime_util::GetExtensionIDFromInputMethodID(descriptor.id());
   const std::string& component_id =
       extension_ime_util::GetComponentIDByInputMethodID(descriptor.id());
+  if (engine_map_.find(profile) == engine_map_.end() ||
+      engine_map_[profile].find(extension_id) == engine_map_[profile].end()) {
+    LOG(ERROR) << "IMEEngine for \"" << extension_id << "\" is not registered";
+  }
   engine = engine_map_[profile][extension_id];
 
   ui::IMEBridge::Get()->SetCurrentEngineHandler(engine);
