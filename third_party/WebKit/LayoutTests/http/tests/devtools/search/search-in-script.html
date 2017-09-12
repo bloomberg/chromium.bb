@@ -1,0 +1,59 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/resources-test.js"></script>
+<script src="../../inspector/debugger-test.js"></script>
+<script src="../../inspector/search/search-test.js"></script>
+<script>
+function test() {
+  SourcesTestRunner.startDebuggerTest(step1);
+  var script;
+
+  function step1() {
+    ApplicationTestRunner.runAfterResourcesAreFinished(['search.js'], step2);
+  }
+
+  function step2() {
+    SourcesTestRunner.showScriptSource('search.js', step3);
+  }
+
+  async function step3() {
+    var url = 'http://127.0.0.1:8000/devtools/search/resources/search.js';
+    var scripts = SourcesTestRunner.queryScripts(function(s) {
+      return s.sourceURL === url;
+    });
+    script = scripts[0];
+    TestRunner.addResult(script.sourceURL);
+
+    // This file should not match search query.
+    var text = 'searchTest' +
+        'UniqueString';
+    var searchMatches = await script.searchInContent(text, false, false);
+    SourcesTestRunner.dumpSearchMatches(searchMatches);
+
+    // This file should not match search query.
+    var text = 'searchTest' +
+        'UniqueString';
+    searchMatches = await script.searchInContent(text, true, false);
+    SourcesTestRunner.dumpSearchMatches(searchMatches);
+
+    var text = '[a-z]earchTestUniqueString';
+    searchMatches = await script.searchInContent(text, false, true);
+    SourcesTestRunner.dumpSearchMatches(searchMatches);
+
+    var text = '[a-z]earchTestUniqueString';
+    searchMatches = await script.searchInContent(text, true, true);
+    SourcesTestRunner.dumpSearchMatches(searchMatches);
+
+    SourcesTestRunner.completeDebuggerTest();
+  }
+}
+</script>
+</head>
+<body>
+<p>Tests script search in inspector debugger agent.</p>
+<a href="https://bugs.webkit.org/show_bug.cgi?id=69015">Bug 69015</a>
+
+<iframe src="resources/search.html" onload="runTest()">
+</body>
+</html>

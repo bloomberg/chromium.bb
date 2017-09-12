@@ -133,10 +133,10 @@ crbug.com/623265 virtual/mojo-loading/http/tests/inspector/indexeddb/resources-p
 crbug.com/645641 external/wpt/html/syntax/parsing/html5lib_tests19.html [ Crash Failure ]
 
 # http/ flaky tests w/ --site-per-process
-crbug.com/678481 http/tests/inspector/appcache/appcache-iframe-manifests.html [ Timeout Pass ]
-crbug.com/678481 virtual/mojo-loading/http/tests/inspector/appcache/appcache-iframe-manifests.html [ Timeout Pass ]
-crbug.com/678482 http/tests/inspector/debugger/fetch-breakpoints.html [ Timeout Pass ]
-crbug.com/678482 virtual/mojo-loading/http/tests/inspector/debugger/fetch-breakpoints.html [ Timeout Pass ]
+crbug.com/678481 http/tests/devtools/appcache/appcache-iframe-manifests.html [ Timeout Pass ]
+crbug.com/678481 virtual/mojo-loading/http/tests/devtools/appcache/appcache-iframe-manifests.html [ Timeout Pass ]
+crbug.com/678482 http/tests/devtools/debugger/fetch-breakpoints.html [ Timeout Pass ]
+crbug.com/678482 virtual/mojo-loading/http/tests/devtools/debugger/fetch-breakpoints.html [ Timeout Pass ]
 crbug.com/678484 http/tests/inspector-enabled/reattach-after-editing-styles.html [ Timeout Pass ]
 crbug.com/678484 virtual/mojo-loading/http/tests/inspector-enabled/reattach-after-editing-styles.html [ Timeout Pass ]
 crbug.com/678485 http/tests/inspector-enabled/shadow-dom-rules-restart.html [ Timeout ]

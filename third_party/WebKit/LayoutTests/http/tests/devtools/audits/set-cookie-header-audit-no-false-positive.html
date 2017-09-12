@@ -1,0 +1,23 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/network-test.js"></script>
+<script>
+var test = function() {
+  TestRunner.reloadPage(step1);
+
+  function step1() {
+    var requests = NetworkTestRunner.networkRequests();
+    for (var i = 0; i < requests.length; ++i)
+      TestRunner.assertTrue(requests[i].responseHeaderValue('Set-Cookie') === undefined);
+    TestRunner.addResult('Success, no Set-Cookie headers found.');
+    TestRunner.completeTest();
+  }
+};
+</script>
+</head>
+<body onload="runTest()">
+Tests there is no false positive Set-Cookie audit error.
+<img src="resources/abe.png">
+</body>
+</html>

@@ -1,0 +1,41 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/cache-storage/cache-storage-test.js"></script>
+<script>
+function test() {
+  var cacheStorageModel = TestRunner.mainTarget.model(SDK.ServiceWorkerCacheModel);
+  cacheStorageModel.enable();
+
+  function errorAndExit(error) {
+    if (error)
+      TestRunner.addResult(error);
+    TestRunner.completeTest();
+  }
+
+  function main() {
+    ApplicationTestRunner.clearAllCaches()
+        .then(ApplicationTestRunner.dumpCacheTree)
+        .then(ApplicationTestRunner.createCache.bind(this, 'testCache1'))
+        .then(ApplicationTestRunner.createCache.bind(this, 'testCache2'))
+        .then(ApplicationTestRunner.addCacheEntry.bind(this, 'testCache1', 'http://fake.request.com/1', 'OK'))
+        .then(ApplicationTestRunner.addCacheEntry.bind(this, 'testCache1', 'http://fake.request.com/2', 'Not Found'))
+        .then(ApplicationTestRunner.addCacheEntry.bind(this, 'testCache2', 'http://fake.request2.com/1', 'OK'))
+        .then(ApplicationTestRunner.addCacheEntry.bind(this, 'testCache2', 'http://fake.request2.com/2', 'Not Found'))
+        .then(ApplicationTestRunner.dumpCacheTree)
+        .then(ApplicationTestRunner.deleteCacheEntry.bind(this, 'testCache1', 'http://fake.request.com/2'))
+        .then(ApplicationTestRunner.deleteCacheFromInspector.bind(this, 'testCache2', 'http://fake.request2.com/2'))
+        .then(ApplicationTestRunner.dumpCacheTree)
+        .then(ApplicationTestRunner.clearAllCaches)
+        .then(TestRunner.completeTest)
+        .catch(errorAndExit);
+  }
+
+  ApplicationTestRunner.waitForCacheRefresh(main);
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that cache entry data is correctly deleted by the inspector.</p>
+</body>
+</html>
