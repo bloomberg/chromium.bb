@@ -60,7 +60,6 @@ class PlatformColor {
       case RED_8:
       case LUMINANCE_F16:
       case RGBA_F16:
-      case R16_EXT:
         NOTREACHED();
         return false;
     }
