@@ -1735,14 +1735,14 @@ crbug.com/763718 virtual/mojo-loading/http/tests/inspector/bindings/livelocation
 # These need to be updated but appear not to be related to that change.
 crbug.com/626703 http/tests/inspector/indexeddb/database-refresh-view.html [ Pass Failure ]
 crbug.com/626703 virtual/mojo-loading/http/tests/inspector/indexeddb/database-refresh-view.html [ Pass Failure ]
-crbug.com/626703 http/tests/inspector/network/network-filters.html [ Pass Failure ]
-crbug.com/626703 virtual/mojo-loading/http/tests/inspector/network/network-filters.html [ Pass Failure ]
+crbug.com/626703 http/tests/devtools/network/network-filters.html [ Pass Failure ]
+crbug.com/626703 virtual/mojo-loading/http/tests/devtools/network/network-filters.html [ Pass Failure ]
 crbug.com/626703 http/tests/inspector/application-panel/resources-panel-selection-on-reload.html [ Pass Failure ]
 crbug.com/626703 virtual/mojo-loading/http/tests/inspector/application-panel/resources-panel-selection-on-reload.html [ Pass Failure ]
 crbug.com/626703 http/tests/inspector/extensions/extensions-sidebar.html [ Pass Failure ]
 crbug.com/626703 virtual/mojo-loading/http/tests/inspector/extensions/extensions-sidebar.html [ Pass Failure ]
-crbug.com/626703 http/tests/inspector/network/network-columns-visible.html [ Pass Failure ]
-crbug.com/626703 virtual/mojo-loading/http/tests/inspector/network/network-columns-visible.html [ Pass Failure ]
+crbug.com/626703 http/tests/devtools/network/network-columns-visible.html [ Pass Failure ]
+crbug.com/626703 virtual/mojo-loading/http/tests/devtools/network/network-columns-visible.html [ Pass Failure ]
 crbug.com/626703 http/tests/inspector/persistence/persistence-tabbed-editor-opens-filesystem-uisourcecode.html [ Pass Failure ]
 crbug.com/626703 virtual/mojo-loading/http/tests/inspector/persistence/persistence-tabbed-editor-opens-filesystem-uisourcecode.html [ Pass Failure ]
 crbug.com/626703 virtual/threaded/transitions/transition-end-event-multiple-03.html [ Pass Failure ]
@@ -2833,8 +2833,8 @@ crbug.com/722212 fast/events/pointerevents/mouse-pointer-event-properties.html [
 # Crashes on win
 crbug.com/722943 media/audio-repaint.html [ Skip ]
 
-crbug.com/714166 http/tests/inspector/network/waterfall-images.html [ Skip ]
-crbug.com/715405 virtual/mojo-loading/http/tests/inspector/network/waterfall-images.html [ Skip ]
+crbug.com/714166 http/tests/devtools/network/waterfall-images.html [ Skip ]
+crbug.com/715405 virtual/mojo-loading/http/tests/devtools/network/waterfall-images.html [ Skip ]
 crbug.com/708175 external/wpt/IndexedDB/interleaved-cursors.html [ Failure Pass ]
 
 crbug.com/715718 external/wpt/media-source/mediasource-activesourcebuffers.html [ Failure Pass ]
