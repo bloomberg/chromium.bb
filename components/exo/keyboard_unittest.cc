@@ -216,6 +216,12 @@ TEST_F(KeyboardTest, OnKeyboardModifiers) {
   keyboard.reset();
 }
 
+// Test fails consistently on CrOS: crbug.com/764338
+#if defined(OS_CHROMEOS)
+#define MAYBE_OnKeyboardTypeChanged DISABLED_OnKeyboardTypeChanged
+#else
+#define MAYBE_OnKeyboardTypeChanged OnKeyboardTypeChanged
+#endif
 TEST_F(KeyboardTest, OnKeyboardTypeChanged) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
