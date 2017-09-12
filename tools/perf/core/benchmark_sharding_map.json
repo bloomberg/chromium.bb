@@ -18,7 +18,8 @@
       "benchmarks": [
         "page_cycler_v2.intl_ja_zh",
         "v8.runtimestats.browsing_mobile_classic",
-        "blink_perf.owp_storage"
+        "blink_perf.owp_storage",
+        "blink_perf.image_decoder"
       ]
     },
     "build13-b1--device4": {
@@ -250,7 +251,8 @@
       "benchmarks": [
         "page_cycler_v2.intl_ja_zh",
         "v8.runtimestats.browsing_mobile_classic",
-        "blink_perf.owp_storage"
+        "blink_perf.owp_storage",
+        "blink_perf.image_decoder"
       ]
     },
     "build73-b1--device4": {
@@ -480,7 +482,8 @@
     "build164-b1--device3": {
       "benchmarks": [
         "system_health.common_desktop",
-        "blink_perf.owp_storage"
+        "blink_perf.owp_storage",
+        "blink_perf.image_decoder"
       ]
     },
     "build164-b1--device4": {
@@ -689,7 +692,8 @@
       "benchmarks": [
         "page_cycler_v2.intl_ja_zh",
         "v8.runtimestats.browsing_mobile_classic",
-        "blink_perf.owp_storage"
+        "blink_perf.owp_storage",
+        "blink_perf.image_decoder"
       ]
     },
     "build15-b1--device4": {
@@ -919,7 +923,8 @@
     "build112-b1--device3": {
       "benchmarks": [
         "system_health.common_desktop",
-        "blink_perf.owp_storage"
+        "blink_perf.owp_storage",
+        "blink_perf.image_decoder"
       ]
     },
     "build112-b1--device4": {
@@ -1302,7 +1307,8 @@
       "benchmarks": [
         "page_cycler_v2.intl_ja_zh",
         "v8.runtimestats.browsing_mobile_classic",
-        "blink_perf.owp_storage"
+        "blink_perf.owp_storage",
+        "blink_perf.image_decoder"
       ]
     },
     "build9-b1--device4": {
@@ -1360,7 +1366,8 @@
       "benchmarks": [
         "page_cycler_v2.intl_ja_zh",
         "v8.runtimestats.browsing_mobile_classic",
-        "blink_perf.owp_storage"
+        "blink_perf.owp_storage",
+        "blink_perf.image_decoder"
       ]
     },
     "build17-b1--device4": {
@@ -1834,6 +1841,7 @@
         "blink_perf.blink_gc",
         "blink_perf.canvas",
         "blink_perf.owp_storage",
+        "blink_perf.image_decoder",
         "dummy_benchmark.noisy_benchmark_1",
         "dummy_benchmark.histogram_benchmark_1",
         "loading.desktop",
@@ -2005,6 +2013,7 @@
         "blink_perf.blink_gc",
         "blink_perf.canvas",
         "blink_perf.owp_storage",
+        "blink_perf.image_decoder",
         "dummy_benchmark.noisy_benchmark_1",
         "dummy_benchmark.histogram_benchmark_1",
         "loading.desktop",
@@ -2173,6 +2182,7 @@
         "blink_perf.blink_gc",
         "blink_perf.canvas",
         "blink_perf.owp_storage",
+        "blink_perf.image_decoder",
         "dummy_benchmark.noisy_benchmark_1",
         "dummy_benchmark.histogram_benchmark_1",
         "loading.desktop",
@@ -2340,6 +2350,7 @@
         "blink_perf.blink_gc",
         "blink_perf.canvas",
         "blink_perf.owp_storage",
+        "blink_perf.image_decoder",
         "dummy_benchmark.noisy_benchmark_1",
         "dummy_benchmark.histogram_benchmark_1",
         "loading.desktop",
@@ -2509,6 +2520,7 @@
         "blink_perf.blink_gc",
         "blink_perf.canvas",
         "blink_perf.owp_storage",
+        "blink_perf.image_decoder",
         "dummy_benchmark.noisy_benchmark_1",
         "dummy_benchmark.histogram_benchmark_1",
         "loading.desktop",
@@ -2677,6 +2689,7 @@
         "blink_perf.blink_gc",
         "blink_perf.canvas",
         "blink_perf.owp_storage",
+        "blink_perf.image_decoder",
         "dummy_benchmark.noisy_benchmark_1",
         "dummy_benchmark.histogram_benchmark_1",
         "loading.desktop",
@@ -2881,6 +2894,7 @@
         "blink_perf.blink_gc",
         "blink_perf.canvas",
         "blink_perf.owp_storage",
+        "blink_perf.image_decoder",
         "dummy_benchmark.noisy_benchmark_1",
         "dummy_benchmark.histogram_benchmark_1",
         "loading.desktop",
@@ -3009,6 +3023,7 @@
     "build139-b1": {
       "benchmarks": [
         "blink_perf.owp_storage",
+        "blink_perf.image_decoder",
         "page_cycler_v2.typical_25",
         "speedometer-turbo",
         "system_health.common_mobile",
@@ -3249,6 +3264,7 @@
         "blink_perf.blink_gc",
         "blink_perf.canvas",
         "blink_perf.owp_storage",
+        "blink_perf.image_decoder",
         "dummy_benchmark.noisy_benchmark_1",
         "dummy_benchmark.histogram_benchmark_1",
         "loading.desktop",
@@ -3413,6 +3429,7 @@
     "build203-b4": {
       "benchmarks": [
         "blink_perf.owp_storage",
+        "blink_perf.image_decoder",
         "page_cycler_v2.typical_25",
         "speedometer-turbo",
         "system_health.common_mobile",
@@ -3653,6 +3670,7 @@
         "blink_perf.blink_gc",
         "blink_perf.canvas",
         "blink_perf.owp_storage",
+        "blink_perf.image_decoder",
         "dummy_benchmark.noisy_benchmark_1",
         "dummy_benchmark.histogram_benchmark_1",
         "loading.desktop",
@@ -3821,6 +3839,7 @@
         "blink_perf.blink_gc",
         "blink_perf.canvas",
         "blink_perf.owp_storage",
+        "blink_perf.image_decoder",
         "dummy_benchmark.noisy_benchmark_1",
         "dummy_benchmark.histogram_benchmark_1",
         "loading.desktop",
@@ -3989,6 +4008,7 @@
         "blink_perf.blink_gc",
         "blink_perf.canvas",
         "blink_perf.owp_storage",
+        "blink_perf.image_decoder",
         "dummy_benchmark.noisy_benchmark_1",
         "dummy_benchmark.histogram_benchmark_1",
         "loading.desktop",
@@ -4157,6 +4177,7 @@
         "blink_perf.blink_gc",
         "blink_perf.canvas",
         "blink_perf.owp_storage",
+        "blink_perf.image_decoder",
         "dummy_benchmark.noisy_benchmark_1",
         "dummy_benchmark.histogram_benchmark_1",
         "loading.desktop",
@@ -4325,6 +4346,7 @@
         "blink_perf.blink_gc",
         "blink_perf.canvas",
         "blink_perf.owp_storage",
+        "blink_perf.image_decoder",
         "dummy_benchmark.noisy_benchmark_1",
         "dummy_benchmark.histogram_benchmark_1",
         "loading.desktop",
@@ -4493,6 +4515,7 @@
         "blink_perf.blink_gc",
         "blink_perf.canvas",
         "blink_perf.owp_storage",
+        "blink_perf.image_decoder",
         "dummy_benchmark.noisy_benchmark_1",
         "dummy_benchmark.histogram_benchmark_1",
         "loading.desktop",
@@ -4661,6 +4684,7 @@
         "blink_perf.blink_gc",
         "blink_perf.canvas",
         "blink_perf.owp_storage",
+        "blink_perf.image_decoder",
         "dummy_benchmark.noisy_benchmark_1",
         "dummy_benchmark.histogram_benchmark_1",
         "loading.desktop",
@@ -4807,6 +4831,7 @@
     "blink_perf.events",
     "blink_perf.layout",
     "blink_perf.owp_storage",
+    "blink_perf.image_decoder",
     "blink_perf.paint",
     "blink_perf.parser",
     "blink_perf.shadow_dom",
