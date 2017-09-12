@@ -132,8 +132,8 @@ static EphemeralRangeInFlatTree CalcSelectionInFlatTree(
       const PositionInFlatTree& extent =
           ToPositionInFlatTree(selection_in_dom.Extent());
       if (base.IsNull() || extent.IsNull() || base == extent ||
-          !IsPositionValidFor(base, frame_selection.GetDocument()) ||
-          !IsPositionValidFor(extent, frame_selection.GetDocument()))
+          !base.IsValidFor(frame_selection.GetDocument()) ||
+          !extent.IsValidFor(frame_selection.GetDocument()))
         return {};
       return base <= extent ? EphemeralRangeInFlatTree(base, extent)
                             : EphemeralRangeInFlatTree(extent, base);

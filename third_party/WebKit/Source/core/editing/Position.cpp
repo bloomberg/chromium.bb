@@ -334,7 +334,8 @@ Node* PositionTemplate<Strategy>::CommonAncestorContainer(
                                   *other.ComputeContainerNode());
 }
 
-bool IsPositionValidFor(const Position& position, const Document& document) {
+static bool IsPositionValidFor(const Position& position,
+                               const Document& document) {
   if (position.IsNull())
     return true;
   if (position.GetDocument() != document)
@@ -342,8 +343,8 @@ bool IsPositionValidFor(const Position& position, const Document& document) {
   return position.AnchorNode()->isConnected();
 }
 
-bool IsPositionValidFor(const PositionInFlatTree& position,
-                        const Document& document) {
+static bool IsPositionValidFor(const PositionInFlatTree& position,
+                               const Document& document) {
   if (position.IsNull())
     return true;
   if (position.GetDocument() != document)
