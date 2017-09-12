@@ -158,9 +158,8 @@ class CHROME_DBUS_EXPORT MethodCall : public Message {
              const std::string& method_name);
 
   // Returns a newly created MethodCall from the given raw message of the
-  // type DBUS_MESSAGE_TYPE_METHOD_CALL. The caller must delete the
-  // returned object. Takes the ownership of |raw_message|.
-  static MethodCall* FromRawMessage(DBusMessage* raw_message);
+  // type DBUS_MESSAGE_TYPE_METHOD_CALL. Takes the ownership of |raw_message|.
+  static std::unique_ptr<MethodCall> FromRawMessage(DBusMessage* raw_message);
 
  private:
   // Creates a method call message. The internal raw message is NULL.
@@ -187,9 +186,8 @@ class CHROME_DBUS_EXPORT Signal : public Message {
          const std::string& method_name);
 
   // Returns a newly created SIGNAL from the given raw message of the type
-  // DBUS_MESSAGE_TYPE_SIGNAL. The caller must delete the returned
-  // object. Takes the ownership of |raw_message|.
-  static Signal* FromRawMessage(DBusMessage* raw_message);
+  // DBUS_MESSAGE_TYPE_SIGNAL. Takes the ownership of |raw_message|.
+  static std::unique_ptr<Signal> FromRawMessage(DBusMessage* raw_message);
 
  private:
   // Creates a signal message. The internal raw message is NULL.

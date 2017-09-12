@@ -47,9 +47,7 @@ bool IsDBusTypeUnixFdSupported() {
   return major >= 1 && minor >= 4;
 }
 
-Message::Message()
-    : raw_message_(NULL) {
-}
+Message::Message() : raw_message_(nullptr) {}
 
 Message::~Message() {
   if (raw_message_)
@@ -344,21 +342,20 @@ uint32_t Message::GetReplySerial() {
 //
 
 MethodCall::MethodCall(const std::string& interface_name,
-                       const std::string& method_name)
-    : Message() {
+                       const std::string& method_name) {
   Init(dbus_message_new(DBUS_MESSAGE_TYPE_METHOD_CALL));
 
   CHECK(SetInterface(interface_name));
   CHECK(SetMember(method_name));
 }
 
-MethodCall::MethodCall() : Message() {
-}
+MethodCall::MethodCall() = default;
 
-MethodCall* MethodCall::FromRawMessage(DBusMessage* raw_message) {
+std::unique_ptr<MethodCall> MethodCall::FromRawMessage(
+    DBusMessage* raw_message) {
   DCHECK_EQ(DBUS_MESSAGE_TYPE_METHOD_CALL, dbus_message_get_type(raw_message));
 
-  MethodCall* method_call = new MethodCall;
+  std::unique_ptr<MethodCall> method_call(new MethodCall());
   method_call->Init(raw_message);
   return method_call;
 }
@@ -367,21 +364,19 @@ MethodCall* MethodCall::FromRawMessage(DBusMessage* raw_message) {
 // Signal implementation.
 //
 Signal::Signal(const std::string& interface_name,
-               const std::string& method_name)
-    : Message() {
+               const std::string& method_name) {
   Init(dbus_message_new(DBUS_MESSAGE_TYPE_SIGNAL));
 
   CHECK(SetInterface(interface_name));
   CHECK(SetMember(method_name));
 }
 
-Signal::Signal() : Message() {
-}
+Signal::Signal() = default;
 
-Signal* Signal::FromRawMessage(DBusMessage* raw_message) {
+std::unique_ptr<Signal> Signal::FromRawMessage(DBusMessage* raw_message) {
   DCHECK_EQ(DBUS_MESSAGE_TYPE_SIGNAL, dbus_message_get_type(raw_message));
 
-  Signal* signal = new Signal;
+  std::unique_ptr<Signal> signal(new Signal());
   signal->Init(raw_message);
   return signal;
 }
@@ -390,26 +385,25 @@ Signal* Signal::FromRawMessage(DBusMessage* raw_message) {
 // Response implementation.
 //
 
-Response::Response() : Message() {
-}
+Response::Response() = default;
 
 std::unique_ptr<Response> Response::FromRawMessage(DBusMessage* raw_message) {
   DCHECK_EQ(DBUS_MESSAGE_TYPE_METHOD_RETURN,
             dbus_message_get_type(raw_message));
 
-  std::unique_ptr<Response> response(new Response);
+  std::unique_ptr<Response> response(new Response());
   response->Init(raw_message);
   return response;
 }
 
 std::unique_ptr<Response> Response::FromMethodCall(MethodCall* method_call) {
-  std::unique_ptr<Response> response(new Response);
+  std::unique_ptr<Response> response(new Response());
   response->Init(dbus_message_new_method_return(method_call->raw_message()));
   return response;
 }
 
 std::unique_ptr<Response> Response::CreateEmpty() {
-  std::unique_ptr<Response> response(new Response);
+  std::unique_ptr<Response> response(new Response());
   response->Init(dbus_message_new(DBUS_MESSAGE_TYPE_METHOD_RETURN));
   return response;
 }
@@ -418,14 +412,13 @@ std::unique_ptr<Response> Response::CreateEmpty() {
 // ErrorResponse implementation.
 //
 
-ErrorResponse::ErrorResponse() : Response() {
-}
+ErrorResponse::ErrorResponse() = default;
 
 std::unique_ptr<ErrorResponse> ErrorResponse::FromRawMessage(
     DBusMessage* raw_message) {
   DCHECK_EQ(DBUS_MESSAGE_TYPE_ERROR, dbus_message_get_type(raw_message));
 
-  std::unique_ptr<ErrorResponse> response(new ErrorResponse);
+  std::unique_ptr<ErrorResponse> response(new ErrorResponse());
   response->Init(raw_message);
   return response;
 }
@@ -434,7 +427,7 @@ std::unique_ptr<ErrorResponse> ErrorResponse::FromMethodCall(
     MethodCall* method_call,
     const std::string& error_name,
     const std::string& error_message) {
-  std::unique_ptr<ErrorResponse> response(new ErrorResponse);
+  std::unique_ptr<ErrorResponse> response(new ErrorResponse());
   response->Init(dbus_message_new_error(method_call->raw_message(),
                                         error_name.c_str(),
                                         error_message.c_str()));
@@ -551,11 +544,10 @@ void MessageWriter::OpenVariant(const std::string& signature,
 void MessageWriter::OpenStruct(MessageWriter* writer) {
   DCHECK(!container_is_open_);
 
-  const bool success = dbus_message_iter_open_container(
-      &raw_message_iter_,
-      DBUS_TYPE_STRUCT,
-      NULL,  // Signature should be NULL.
-      &writer->raw_message_iter_);
+  const bool success =
+      dbus_message_iter_open_container(&raw_message_iter_, DBUS_TYPE_STRUCT,
+                                       nullptr,  // Signature should be nullptr.
+                                       &writer->raw_message_iter_);
   CHECK(success) << "Unable to allocate memory";
   container_is_open_ = true;
 }
@@ -563,11 +555,10 @@ void MessageWriter::OpenStruct(MessageWriter* writer) {
 void MessageWriter::OpenDictEntry(MessageWriter* writer) {
   DCHECK(!container_is_open_);
 
-  const bool success = dbus_message_iter_open_container(
-      &raw_message_iter_,
-      DBUS_TYPE_DICT_ENTRY,
-      NULL,  // Signature should be NULL.
-      &writer->raw_message_iter_);
+  const bool success =
+      dbus_message_iter_open_container(&raw_message_iter_, DBUS_TYPE_DICT_ENTRY,
+                                       nullptr,  // Signature should be nullptr.
+                                       &writer->raw_message_iter_);
   CHECK(success) << "Unable to allocate memory";
   container_is_open_ = true;
 }
@@ -777,7 +768,7 @@ bool MessageReader::PopDouble(double* value) {
 }
 
 bool MessageReader::PopString(std::string* value) {
-  char* tmp_value = NULL;
+  char* tmp_value = nullptr;
   const bool success = PopBasic(DBUS_TYPE_STRING, &tmp_value);
   if (success)
     value->assign(tmp_value);
@@ -785,7 +776,7 @@ bool MessageReader::PopString(std::string* value) {
 }
 
 bool MessageReader::PopObjectPath(ObjectPath* value) {
-  char* tmp_value = NULL;
+  char* tmp_value = nullptr;
   const bool success = PopBasic(DBUS_TYPE_OBJECT_PATH, &tmp_value);
   if (success)
     *value = ObjectPath(tmp_value);
@@ -815,7 +806,7 @@ bool MessageReader::PopArrayOfBytes(const uint8_t** bytes, size_t* length) {
   // An empty array is allowed.
   if (!array_reader.HasMoreData()) {
     *length = 0;
-    *bytes = NULL;
+    *bytes = nullptr;
     return true;
   }
   if (!array_reader.CheckDataType(DBUS_TYPE_BYTE))
@@ -879,8 +870,8 @@ bool MessageReader::PopArrayOfObjectPaths(
 
 bool MessageReader::PopArrayOfBytesAsProto(
     google::protobuf::MessageLite* protobuf) {
-  DCHECK(protobuf != NULL);
-  const char* serialized_buf = NULL;
+  DCHECK(protobuf);
+  const char* serialized_buf = nullptr;
   size_t buf_size = 0;
   if (!PopArrayOfBytes(reinterpret_cast<const uint8_t**>(&serialized_buf),
                        &buf_size)) {
@@ -935,7 +926,7 @@ bool MessageReader::PopVariantOfDouble(double* value) {
 }
 
 bool MessageReader::PopVariantOfString(std::string* value) {
-  char* tmp_value = NULL;
+  char* tmp_value = nullptr;
   const bool success = PopVariantOfBasic(DBUS_TYPE_STRING, &tmp_value);
   if (success)
     value->assign(tmp_value);
@@ -943,7 +934,7 @@ bool MessageReader::PopVariantOfString(std::string* value) {
 }
 
 bool MessageReader::PopVariantOfObjectPath(ObjectPath* value) {
-  char* tmp_value = NULL;
+  char* tmp_value = nullptr;
   const bool success = PopVariantOfBasic(DBUS_TYPE_OBJECT_PATH, &tmp_value);
   if (success)
     *value = ObjectPath(tmp_value);

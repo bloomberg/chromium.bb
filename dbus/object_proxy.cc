@@ -27,23 +27,25 @@ namespace dbus {
 
 namespace {
 
-const char kErrorServiceUnknown[] = "org.freedesktop.DBus.Error.ServiceUnknown";
-const char kErrorObjectUnknown[] = "org.freedesktop.DBus.Error.UnknownObject";
+constexpr char kErrorServiceUnknown[] =
+    "org.freedesktop.DBus.Error.ServiceUnknown";
+constexpr char kErrorObjectUnknown[] =
+    "org.freedesktop.DBus.Error.UnknownObject";
 
 // Used for success ratio histograms. 1 for success, 0 for failure.
-const int kSuccessRatioHistogramMaxValue = 2;
+constexpr int kSuccessRatioHistogramMaxValue = 2;
 
 // The path of D-Bus Object sending NameOwnerChanged signal.
-const char kDBusSystemObjectPath[] = "/org/freedesktop/DBus";
+constexpr char kDBusSystemObjectPath[] = "/org/freedesktop/DBus";
 
 // The D-Bus Object interface.
-const char kDBusSystemObjectInterface[] = "org.freedesktop.DBus";
+constexpr char kDBusSystemObjectInterface[] = "org.freedesktop.DBus";
 
 // The D-Bus Object address.
-const char kDBusSystemObjectAddress[] = "org.freedesktop.DBus";
+constexpr char kDBusSystemObjectAddress[] = "org.freedesktop.DBus";
 
 // The NameOwnerChanged member in |kDBusSystemObjectInterface|.
-const char kNameOwnerChangedMember[] = "NameOwnerChanged";
+constexpr char kNameOwnerChangedMember[] = "NameOwnerChanged";
 
 // An empty function used for ObjectProxy::EmptyResponseCallback().
 void EmptyResponseCallbackBody(Response* /*response*/) {
