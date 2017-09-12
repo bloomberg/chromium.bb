@@ -2974,7 +2974,6 @@ split_static_library("browser") {
       "android/webapk/webapk_update_data_fetcher.cc",
       "android/webapk/webapk_update_data_fetcher.h",
       "android/webapk/webapk_update_manager.cc",
-      "android/webapk/webapk_update_manager.h",
       "android/webapk/webapk_web_manifest_checker.cc",
       "android/webapk/webapk_web_manifest_checker.h",
       "android/webapps/add_to_homescreen_data_fetcher.cc",
