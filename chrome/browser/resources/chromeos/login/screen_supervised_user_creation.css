@@ -366,7 +366,7 @@ input.supervised-user-creation-manager-password,
 #supervised-user-creation-image-grid {
   -webkit-user-drag: none;
   display: inline-block;
-  height: 264px;
+  height: 272px;
   margin: 0;
   outline: none;
   overflow: hidden;
@@ -428,7 +428,9 @@ html[dir=rtl] #supervised-user-creation-image-preview {
   background: white;
   border: solid 1px #cacaca;
   border-radius: 4px;
+  height: 220px;
   padding: 2px;
+  width: 220px;
 }
 
 .supervised-user-creation-image-stream-area {

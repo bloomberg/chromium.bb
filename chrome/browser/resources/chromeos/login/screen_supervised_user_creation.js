@@ -1428,8 +1428,11 @@ login.createScreen(
 
         setDefaultImages: function(info) {
           var imageGrid = this.getScreenElement('image-grid');
-          imageGrid.setDefaultImages(info.images);
-          this.imagesData_ = info.images;
+          // Limit default images to 23 first images of current set to avoid
+          // the need to handle overflow and the additional logic that is
+          // required to handle that correctly.
+          this.imagesData_ = info.images.slice(info.first, info.first + 23);
+          imageGrid.setDefaultImages(this.imagesData_);
         },
 
 
