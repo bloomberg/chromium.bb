@@ -4,16 +4,15 @@
 
 package org.chromium.android_webview;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Process;
 import android.provider.Settings;
+import android.support.annotation.IntDef;
 import android.util.Log;
 import android.webkit.WebSettings;
-import android.webkit.WebSettings.LayoutAlgorithm;
 import android.webkit.WebSettings.PluginState;
 
 import org.chromium.base.BuildInfo;
@@ -22,6 +21,9 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content_public.browser.WebContents;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * Stores Android WebView specific settings that does not need to be synced to WebKit.
@@ -36,6 +38,21 @@ public class AwSettings {
 
     private static final String TAG = "AwSettings";
 
+    /* See {@link android.webkit.WebSettings}. */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({LAYOUT_ALGORITHM_NORMAL,
+            /* See {@link android.webkit.WebSettings}. */
+            LAYOUT_ALGORITHM_SINGLE_COLUMN,
+            /* See {@link android.webkit.WebSettings}. */
+            LAYOUT_ALGORITHM_NARROW_COLUMNS, LAYOUT_ALGORITHM_TEXT_AUTOSIZING})
+    public @interface LayoutAlgorithm {}
+    public static final int LAYOUT_ALGORITHM_NORMAL = 0;
+    /* See {@link android.webkit.WebSettings}. */
+    public static final int LAYOUT_ALGORITHM_SINGLE_COLUMN = 1;
+    /* See {@link android.webkit.WebSettings}. */
+    public static final int LAYOUT_ALGORITHM_NARROW_COLUMNS = 2;
+    public static final int LAYOUT_ALGORITHM_TEXT_AUTOSIZING = 3;
+
     // This class must be created on the UI thread. Afterwards, it can be
     // used from any thread. Internally, the class uses a message queue
     // to call native code on the UI thread only.
@@ -49,7 +66,8 @@ public class AwSettings {
     // Lock to protect all settings.
     private final Object mAwSettingsLock = new Object();
 
-    private LayoutAlgorithm mLayoutAlgorithm = LayoutAlgorithm.NARROW_COLUMNS;
+    @LayoutAlgorithm
+    private int mLayoutAlgorithm = LAYOUT_ALGORITHM_NARROW_COLUMNS;
     private int mTextSizePercent = 100;
     private String mStandardFontFamily = "sans-serif";
     private String mFixedFontFamily = "monospace";
@@ -1181,7 +1199,7 @@ public class AwSettings {
     /**
      * See {@link android.webkit.WebSettings#setLayoutAlgorithm}.
      */
-    public void setLayoutAlgorithm(LayoutAlgorithm l) {
+    public void setLayoutAlgorithm(@LayoutAlgorithm int l) {
         if (TRACE) Log.d(LOGTAG, "setLayoutAlgorithm=" + l);
         synchronized (mAwSettingsLock) {
             if (mLayoutAlgorithm != l) {
@@ -1194,7 +1212,8 @@ public class AwSettings {
     /**
      * See {@link android.webkit.WebSettings#getLayoutAlgorithm}.
      */
-    public LayoutAlgorithm getLayoutAlgorithm() {
+    @LayoutAlgorithm
+    public int getLayoutAlgorithm() {
         synchronized (mAwSettingsLock) {
             return mLayoutAlgorithm;
         }
@@ -1205,11 +1224,10 @@ public class AwSettings {
      *
      * @return true if Text Auto-sizing layout algorithm is enabled
      */
-    @SuppressLint("NewApi")  // WebSettings.LayoutAlgorithm#TEXT_AUTOSIZING requires API level 19.
     @CalledByNative
     private boolean getTextAutosizingEnabledLocked() {
         assert Thread.holdsLock(mAwSettingsLock);
-        return mLayoutAlgorithm == LayoutAlgorithm.TEXT_AUTOSIZING;
+        return mLayoutAlgorithm == LAYOUT_ALGORITHM_TEXT_AUTOSIZING;
     }
 
     /**

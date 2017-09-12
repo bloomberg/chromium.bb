@@ -20,7 +20,6 @@ import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebSettings;
-import android.webkit.WebSettings.LayoutAlgorithm;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -30,6 +29,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
+import org.chromium.android_webview.AwSettings.LayoutAlgorithm;
 import org.chromium.android_webview.AwWebResourceResponse;
 import org.chromium.android_webview.test.AwTestBase.TestDependencyFactory;
 import org.chromium.android_webview.test.TestAwContentsClient.DoUpdateVisitedHistoryHelper;
@@ -994,9 +994,7 @@ public class AwSettingsTest {
         private float mOldFontSize;
     }
 
-    class AwSettingsLayoutAlgorithmTestHelper extends
-                                              AwSettingsTextAutosizingTestHelper<LayoutAlgorithm> {
-
+    class AwSettingsLayoutAlgorithmTestHelper extends AwSettingsTextAutosizingTestHelper<Integer> {
         AwSettingsLayoutAlgorithmTestHelper(
                 AwTestContainerView containerView,
                 TestAwContentsClient contentViewClient) throws Throwable {
@@ -1005,31 +1003,34 @@ public class AwSettingsTest {
             mAwSettings.setUseWideViewPort(true);
         }
 
+        @LayoutAlgorithm
         @Override
-        protected LayoutAlgorithm getAlteredValue() {
-            return LayoutAlgorithm.TEXT_AUTOSIZING;
+        protected Integer getAlteredValue() {
+            return AwSettings.LAYOUT_ALGORITHM_TEXT_AUTOSIZING;
         }
 
+        @LayoutAlgorithm
         @Override
-        protected LayoutAlgorithm getInitialValue() {
-            return LayoutAlgorithm.NARROW_COLUMNS;
+        protected Integer getInitialValue() {
+            return AwSettings.LAYOUT_ALGORITHM_NARROW_COLUMNS;
         }
 
+        @LayoutAlgorithm
         @Override
-        protected LayoutAlgorithm getCurrentValue() {
+        protected Integer getCurrentValue() {
             return mAwSettings.getLayoutAlgorithm();
         }
 
         @Override
-        protected void setCurrentValue(LayoutAlgorithm value) throws Throwable {
+        protected void setCurrentValue(@LayoutAlgorithm Integer value) throws Throwable {
             super.setCurrentValue(value);
             mAwSettings.setLayoutAlgorithm(value);
         }
 
         @Override
-        protected void doEnsureSettingHasValue(LayoutAlgorithm value) throws Throwable {
+        protected void doEnsureSettingHasValue(@LayoutAlgorithm Integer value) throws Throwable {
             final float actualFontSize = getActualFontSize();
-            if (value == LayoutAlgorithm.TEXT_AUTOSIZING) {
+            if (value == AwSettings.LAYOUT_ALGORITHM_TEXT_AUTOSIZING) {
                 Assert.assertFalse("Actual font size: " + actualFontSize,
                         actualFontSize == PARAGRAPH_FONT_SIZE);
             } else {
@@ -1094,7 +1095,7 @@ public class AwSettingsTest {
                 AwTestContainerView containerView,
                 TestAwContentsClient contentViewClient) throws Throwable {
             super(containerView, contentViewClient);
-            mAwSettings.setLayoutAlgorithm(LayoutAlgorithm.TEXT_AUTOSIZING);
+            mAwSettings.setLayoutAlgorithm(AwSettings.LAYOUT_ALGORITHM_TEXT_AUTOSIZING);
             // The initial font size can be adjusted by font autosizer depending on the page's
             // viewport width.
             mInitialActualFontSize = getActualFontSize();
