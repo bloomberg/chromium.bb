@@ -85,7 +85,6 @@ static void typeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Function
 
   SVGTestInterface* impl = V8SVGTestInterface::ToImpl(holder);
 
-  // Skip on compact node DOMString getters.
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
 
   // Prepare the value to be set.
@@ -108,8 +107,6 @@ void V8SVGTestInterface::typeAttributeSetterCallback(const v8::FunctionCallbackI
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_SVGTestInterface_type_Setter");
 
   v8::Local<v8::Value> v8Value = info[0];
-
-  V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
 
   SVGTestInterfaceV8Internal::typeAttributeSetter(v8Value, info);
 }
