@@ -37,7 +37,8 @@ SUPPORTED_ALGOS = {
 # Used for serialization.
 SUPPORTED_ALGOS_REVERSE = dict((v, k) for k, v in SUPPORTED_ALGOS.iteritems())
 
-SUPPORTED_FILE_TYPES = ['basic', 'ar', 'tar']
+
+SUPPORTED_FILE_TYPES = ['basic', 'tar']
 
 
 class IsolatedError(ValueError):

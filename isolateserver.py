@@ -1711,10 +1711,6 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks):
                     file_path.ensure_tree(os.path.dirname(fp))
                     putfile(ifd, fp, 0700, ti.size)
 
-              elif filetype == 'ar':
-                raise isolated_format.MappingError(
-                    'Ar files are no longer supported')
-
               else:
                 raise isolated_format.IsolatedError(
                       'Unknown file type %r', filetype)
