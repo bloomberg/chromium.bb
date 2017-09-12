@@ -64,6 +64,15 @@ class PresentationConnectionProxyTest : public ::testing::Test {
         controller_connection_proxy_->Bind());
   }
 
+  void ExpectBinaryMessageReceived(const std::vector<uint8_t>& expected_data) {
+    EXPECT_CALL(*receiver_connection_, DidReceiveBinaryMessage(_, _))
+        .WillOnce(::testing::Invoke(
+            [&expected_data](const uint8_t* data, size_t length) {
+              std::vector<uint8_t> message_data(data, data + length);
+              EXPECT_EQ(expected_data, message_data);
+            }));
+  }
+
   void TearDown() override {
     controller_connection_.reset();
     receiver_connection_.reset();
@@ -88,19 +97,31 @@ TEST_F(PresentationConnectionProxyTest, TestSendString) {
   run_loop.RunUntilIdle();
 }
 
+TEST_F(PresentationConnectionProxyTest, TestSendLongString) {
+  blink::WebString message =
+      blink::WebString::FromUTF8(std::string(65537u, 'w'));
+  base::RunLoop run_loop;
+  EXPECT_CALL(*receiver_connection_, DidReceiveTextMessage(message));
+  controller_connection_proxy_->SendTextMessage(message);
+  run_loop.RunUntilIdle();
+}
+
 TEST_F(PresentationConnectionProxyTest, TestSendArrayBuffer) {
   std::vector<uint8_t> expected_data;
   expected_data.push_back(42);
   expected_data.push_back(36);
 
   base::RunLoop run_loop;
-  EXPECT_CALL(*receiver_connection_, DidReceiveBinaryMessage(_, _))
-      .WillOnce(::testing::Invoke(
-          [&expected_data](const uint8_t* data, size_t length) {
-            std::vector<uint8_t> message_data(data, data + length);
-            EXPECT_EQ(expected_data, message_data);
-          }));
+  ExpectBinaryMessageReceived(expected_data);
+  controller_connection_proxy_->SendBinaryMessage(expected_data.data(),
+                                                  expected_data.size());
+  run_loop.RunUntilIdle();
+}
 
+TEST_F(PresentationConnectionProxyTest, TestSendLongArrayBuffer) {
+  std::vector<uint8_t> expected_data(65537u, 42);
+  base::RunLoop run_loop;
+  ExpectBinaryMessageReceived(expected_data);
   controller_connection_proxy_->SendBinaryMessage(expected_data.data(),
                                                   expected_data.size());
   run_loop.RunUntilIdle();
