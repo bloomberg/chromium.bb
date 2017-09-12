@@ -1739,6 +1739,8 @@ crbug.com/751952 virtual/mojo-loading/http/tests/inspector-unit/datagrid-editabl
 crbug.com/751952 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/budget-api-origin-trial-interfaces.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/payment-request/change-shipping-option-manual.https.html [ Skip ]
+crbug.com/626703 external/wpt/payment-request/shipping-address-changed-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/html/semantics/embedded-content/the-embed-element/embed-represent-nothing-02.html [ Failure ]
 crbug.com/626703 external/wpt/html/semantics/embedded-content/the-embed-element/embed-represent-nothing-04.html [ Failure ]
 crbug.com/626703 external/wpt/html/semantics/embedded-content/the-img-element/relevant-mutations.html [ Timeout ]
