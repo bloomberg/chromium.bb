@@ -13,7 +13,6 @@
 #include "base/pending_task.h"
 #include "base/sequence_checker.h"
 #include "base/synchronization/lock.h"
-#include "base/synchronization/read_write_lock.h"
 #include "base/time/time.h"
 
 namespace base {
@@ -70,6 +69,10 @@ class BASE_EXPORT IncomingTaskQueue
   // does not retain |pending_task->task| beyond this function call.
   bool PostPendingTask(PendingTask* pending_task);
 
+  // Does the real work of posting a pending task. Returns true if the caller
+  // should call ScheduleWork() on the message loop.
+  bool PostPendingTaskLockRequired(PendingTask* pending_task);
+
   // Wakes up the message loop and schedules work.
   void ScheduleWork();
 
@@ -83,9 +86,9 @@ class BASE_EXPORT IncomingTaskQueue
   // |message_loop_|.
   base::Lock incoming_queue_lock_;
 
-  // Lock that protects |message_loop_| to prevent it from being deleted while a
-  // task is being posted.
-  base::subtle::ReadWriteLock message_loop_lock_;
+  // Lock that protects |message_loop_| to prevent it from being deleted while
+  // a request is made to schedule work.
+  base::Lock message_loop_lock_;
 
   // An incoming queue of tasks that are acquired under a mutex for processing
   // on this instance's thread. These tasks have not yet been been pushed to
@@ -94,6 +97,9 @@ class BASE_EXPORT IncomingTaskQueue
 
   // Points to the message loop that owns |this|.
   MessageLoop* message_loop_;
+
+  // True if new tasks should be accepted.
+  bool accept_new_tasks_ = true;
 
   // The next sequence number to use for delayed tasks.
   int next_sequence_num_;
