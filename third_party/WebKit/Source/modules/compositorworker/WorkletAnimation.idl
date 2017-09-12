@@ -1,0 +1,19 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://wicg.github.io/animation-worklet/#worklet-animation-desc
+
+// TODO(smcgruer): Update constructor to match latest spec.
+[
+    Constructor(DOMString animatorName,
+                sequence<KeyframeEffectReadOnly> effects,
+                sequence<(DocumentTimeline or ScrollTimeline)> timelines,
+                SerializedScriptValue options),
+    RaisesException=Constructor,
+    RuntimeEnabled=CompositorWorker
+] interface WorkletAnimation {
+  readonly attribute AnimationPlayState playState;
+  void play();
+  void cancel();
+};

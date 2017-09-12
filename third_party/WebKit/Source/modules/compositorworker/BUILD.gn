@@ -34,5 +34,7 @@ blink_modules_sources("compositorworker") {
     "CompositorWorkerThread.h",
     "WindowAnimationWorklet.cpp",
     "WindowAnimationWorklet.h",
+    "WorkletAnimation.cpp",
+    "WorkletAnimation.h",
   ]
 }

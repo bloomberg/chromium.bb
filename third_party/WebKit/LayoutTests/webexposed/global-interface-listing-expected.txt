@@ -8718,6 +8718,12 @@ interface Worklet
     attribute @@toStringTag
     method addModule
     method constructor
+interface WorkletAnimation
+    attribute @@toStringTag
+    getter playState
+    method cancel
+    method constructor
+    method play
 interface WritableStream
     getter locked
     method abort

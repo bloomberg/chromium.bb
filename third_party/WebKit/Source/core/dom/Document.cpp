@@ -640,6 +640,7 @@ Document::Document(const DocumentInit& initializer,
           &Document::ElementDataCacheClearTimerFired),
       timeline_(DocumentTimeline::Create(this)),
       pending_animations_(new PendingAnimations(*this)),
+      worklet_animation_controller_(new WorkletAnimationController),
       template_document_host_(nullptr),
       did_associate_form_controls_timer_(
           TaskRunnerHelper::Get(TaskType::kUnspecedLoading, this),
@@ -7019,6 +7020,7 @@ DEFINE_TRACE(Document) {
   visitor->Trace(svg_extensions_);
   visitor->Trace(timeline_);
   visitor->Trace(pending_animations_);
+  visitor->Trace(worklet_animation_controller_);
   visitor->Trace(context_document_);
   visitor->Trace(canvas_font_cache_);
   visitor->Trace(intersection_observer_controller_);

@@ -37,6 +37,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/CoreExport.h"
+#include "core/animation/WorkletAnimationController.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/DocumentEncodingData.h"
 #include "core/dom/DocumentInit.h"
@@ -1222,6 +1223,9 @@ class CORE_EXPORT Document : public ContainerNode,
   AnimationClock& GetAnimationClock();
   DocumentTimeline& Timeline() const { return *timeline_; }
   PendingAnimations& GetPendingAnimations() { return *pending_animations_; }
+  WorkletAnimationController& GetWorkletAnimationController() {
+    return *worklet_animation_controller_;
+  }
 
   void AddToTopLayer(Element*, const Element* before = nullptr);
   void RemoveFromTopLayer(Element*);
@@ -1688,6 +1692,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   Member<DocumentTimeline> timeline_;
   Member<PendingAnimations> pending_animations_;
+  Member<WorkletAnimationController> worklet_animation_controller_;
 
   Member<Document> template_document_;
   Member<Document> template_document_host_;

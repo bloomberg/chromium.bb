@@ -33,6 +33,7 @@
 #include "core/animation/AnimationClock.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/animation/PendingAnimations.h"
+#include "core/animation/WorkletAnimationController.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
@@ -74,6 +75,8 @@ void DocumentAnimations::UpdateAnimations(
     DCHECK(document.View());
     document.View()->ScheduleAnimation();
   }
+
+  document.GetWorkletAnimationController().Update();
 
   document.Timeline().ScheduleNextService();
 }
