@@ -34,7 +34,6 @@
 #include "media/base/video_color_space.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/media_gpu_export.h"
-#include "media/video/h264_parser.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ui/gfx/color_space.h"
 
@@ -60,39 +59,17 @@ class EGLStreamCopyPictureBuffer;
 class EGLStreamPictureBuffer;
 class PbufferPictureBuffer;
 
-// Provides functionality to detect H.264 stream configuration changes.
-// TODO(ananta)
-// Move this to a common place so that all VDA's can use this.
-class H264ConfigChangeDetector {
+class ConfigChangeDetector {
  public:
-  H264ConfigChangeDetector();
-  ~H264ConfigChangeDetector();
-
-  // Detects stream configuration changes.
-  // Returns false on failure.
-  bool DetectConfig(const uint8_t* stream, unsigned int size);
+  virtual ~ConfigChangeDetector();
+  virtual bool DetectConfig(const uint8_t* stream, unsigned int size) = 0;
+  virtual VideoColorSpace current_color_space(
+      const VideoColorSpace& container_color_space) const = 0;
   bool config_changed() const { return config_changed_; }
 
-  VideoColorSpace current_color_space() const;
-
- private:
-  // These fields are used to track the SPS/PPS in the H.264 bitstream and
-  // are eventually compared against the SPS/PPS in the bitstream to detect
-  // a change.
-  int last_sps_id_;
-  std::vector<uint8_t> last_sps_;
-  int last_pps_id_;
-  std::vector<uint8_t> last_pps_;
+ protected:
   // Set to true if we detect a stream configuration change.
-  bool config_changed_;
-  // We want to indicate configuration changes only after we see IDR slices.
-  // This flag tracks that we potentially have a configuration change which
-  // we want to honor after we see an IDR slice.
-  bool pending_config_changed_;
-
-  std::unique_ptr<H264Parser> parser_;
-
-  DISALLOW_COPY_AND_ASSIGN(H264ConfigChangeDetector);
+  bool config_changed_ = false;
 };
 
 // Class to provide a DXVA 2.0 based accelerator using the Microsoft Media
@@ -584,7 +561,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   // when these changes occur then, the decoder works fine. The
   // H264ConfigChangeDetector class provides functionality to check if the
   // stream configuration changed.
-  std::unique_ptr<H264ConfigChangeDetector> config_change_detector_;
+  std::unique_ptr<ConfigChangeDetector> config_change_detector_;
 
   // Contains the initialization parameters for the video.
   Config config_;
