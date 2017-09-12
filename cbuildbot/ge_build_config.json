@@ -1442,157 +1442,66 @@
         {
           "board_name": "coral",
           "name": "astronaut",
-          "test_suites": [
-            "sanity",
-            "bvt-inline",
-            "bvt-arc",
-            "au",
-            "bvt-cq",
-            "bvt-perbuild"
-          ],
           "cq_test_enabled": false
         },
         {
           "board_name": "coral",
           "name": "blue",
-          "test_suites": [
-            "sanity",
-            "bvt-inline",
-            "bvt-arc",
-            "au",
-            "bvt-cq",
-            "bvt-perbuild"
-          ],
           "cq_test_enabled": false
         },
         {
           "board_name": "coral",
           "name": "bruce",
-          "test_suites": [
-            "sanity",
-            "bvt-inline",
-            "bvt-arc",
-            "au",
-            "bvt-cq",
-            "bvt-perbuild"
-          ],
           "cq_test_enabled": false
         },
         {
           "board_name": "coral",
           "name": "coral",
-          "test_suites": [
-            "sanity",
-            "bvt-inline",
-            "bvt-arc",
-            "au",
-            "bvt-cq",
-            "bvt-perbuild"
-          ],
           "cq_test_enabled": false
         },
         {
           "board_name": "coral",
           "name": "lava",
-          "test_suites": [
-            "sanity",
-            "bvt-inline",
-            "bvt-arc",
-            "au",
-            "bvt-cq",
-            "bvt-perbuild"
-          ],
           "cq_test_enabled": false
         },
         {
           "board_name": "coral",
           "name": "mako",
-          "test_suites": [
-            "sanity",
-            "bvt-inline",
-            "bvt-arc",
-            "au",
-            "bvt-cq",
-            "bvt-perbuild"
-          ],
+          "cq_test_enabled": false
+        },
+        {
+          "board_name": "coral",
+          "name": "nasher",
           "cq_test_enabled": false
         },
         {
           "board_name": "coral",
           "name": "nasher360",
-          "test_suites": [
-            "sanity",
-            "bvt-inline",
-            "bvt-arc",
-            "au",
-            "bvt-cq",
-            "bvt-perbuild"
-          ],
           "cq_test_enabled": false
         },
         {
           "board_name": "coral",
           "name": "porbeagle",
-          "test_suites": [
-            "sanity",
-            "bvt-inline",
-            "bvt-arc",
-            "au",
-            "bvt-cq",
-            "bvt-perbuild"
-          ],
           "cq_test_enabled": false
         },
         {
           "board_name": "coral",
           "name": "robo",
-          "test_suites": [
-            "sanity",
-            "bvt-inline",
-            "bvt-arc",
-            "au",
-            "bvt-cq",
-            "bvt-perbuild"
-          ],
           "cq_test_enabled": false
         },
         {
           "board_name": "coral",
           "name": "robo360",
-          "test_suites": [
-            "sanity",
-            "bvt-inline",
-            "bvt-arc",
-            "au",
-            "bvt-cq",
-            "bvt-perbuild"
-          ],
           "cq_test_enabled": false
         },
         {
           "board_name": "coral",
           "name": "santa",
-          "test_suites": [
-            "sanity",
-            "bvt-inline",
-            "bvt-arc",
-            "au",
-            "bvt-cq",
-            "bvt-perbuild"
-          ],
           "cq_test_enabled": false
         },
         {
           "board_name": "coral",
           "name": "thresher",
-          "test_suites": [
-            "sanity",
-            "bvt-inline",
-            "bvt-arc",
-            "au",
-            "bvt-cq",
-            "bvt-perbuild"
-          ],
           "cq_test_enabled": false
         }
       ]
@@ -1607,14 +1516,6 @@
         {
           "board_name": "kahlee",
           "name": "kahlee",
-          "test_suites": [
-            "sanity",
-            "bvt-inline",
-            "bvt-arc",
-            "au",
-            "bvt-cq",
-            "bvt-perbuild"
-          ],
           "cq_test_enabled": false
         }
       ]
