@@ -1,5 +1,9 @@
 include_rules = [
   "+ash/public/interfaces",
+  # Use //ui/wm/core/window_util.h when manipulating chrome browser windows.
+  # Consult mustash-team@ if you need to manipulate non-browser windows because
+  # those are owned by the ash process under mash. See //ash/README.md.
+  "-ash/wm/window_util.h",
   # TODO(ananta): Remove this when we move files which display UI in
   # chrome/browser/ui/ash to chrome/browser/ui/views/ash
   # crbug.com/728877
@@ -8,17 +12,5 @@ include_rules = [
   "+components/drive",
   "+components/session_manager/core",
   "+components/user_manager",
-  "+mash/shelf/public/interfaces",
   "+media",
 ]
-
-specific_include_rules = {
-  # Allow ash::SessionStateDelegate for SessionStateDelegateChromeOS.
-  # SessionStateDelegate is deprecated. Chrome code should not use it anymore.
-  # Instead, SessionManager/UserManager/SessionControllerClient should be used.
-  # This is temporary rule before SessionStateDelegate(ChromeOS) can be fully
-  # removed.
-  "session_state_delegate_chromeos\.(cc|h)": [
-    "+ash/session",
-  ]
-}

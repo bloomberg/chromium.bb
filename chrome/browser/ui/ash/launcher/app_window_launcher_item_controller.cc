@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <utility>
 
-#include "ash/wm/window_util.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
@@ -16,6 +16,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/base_window.h"
 #include "ui/wm/core/window_animations.h"
+#include "ui/wm/core/window_util.h"
 
 AppWindowLauncherItemController::AppWindowLauncherItemController(
     const ash::ShelfID& shelf_id)
@@ -137,7 +138,7 @@ void AppWindowLauncherItemController::OnWindowPropertyChanged(
     intptr_t old) {
   if (key == aura::client::kDrawAttentionKey) {
     ash::ShelfItemStatus status;
-    if (ash::wm::IsActiveWindow(window)) {
+    if (wm::IsActiveWindow(window)) {
       status = ash::STATUS_ACTIVE;
     } else if (window->GetProperty(aura::client::kDrawAttentionKey)) {
       status = ash::STATUS_ATTENTION;

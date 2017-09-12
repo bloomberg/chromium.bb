@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/ash/launcher/browser_status_monitor.h"
 
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/shell.h"
-#include "ash/wm/window_util.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/ash/ash_util.h"
