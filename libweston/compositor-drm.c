@@ -3806,21 +3806,24 @@ drm_get_backlight(struct drm_head *head)
 static void
 drm_set_backlight(struct weston_output *output_base, uint32_t value)
 {
-	struct drm_head *head = to_drm_head(weston_output_get_first_head(output_base));
+	struct drm_output *output = to_drm_output(output_base);
+	struct drm_head *head;
 	long max_brightness, new_brightness;
-
-	if (!head->backlight)
-		return;
 
 	if (value > 255)
 		return;
 
-	max_brightness = backlight_get_max_brightness(head->backlight);
+	wl_list_for_each(head, &output->base.head_list, base.output_link) {
+		if (!head->backlight)
+			return;
 
-	/* get denormalized value */
-	new_brightness = (value * max_brightness) / 255;
+		max_brightness = backlight_get_max_brightness(head->backlight);
 
-	backlight_set_brightness(head->backlight, new_brightness);
+		/* get denormalized value */
+		new_brightness = (value * max_brightness) / 255;
+
+		backlight_set_brightness(head->backlight, new_brightness);
+	}
 }
 
 /**
