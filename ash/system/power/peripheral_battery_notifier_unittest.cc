@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/power/peripheral_battery_notifier.h"
+#include "ash/system/power/peripheral_battery_notifier.h"
 
+#include "ash/public/cpp/config.h"
+#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -22,7 +24,7 @@ const char kTestDeviceName[] = "test device";
 
 }  // namespace
 
-namespace chromeos {
+namespace ash {
 
 class PeripheralBatteryNotifierTest : public ash::AshTestBase {
  public:
@@ -180,6 +182,11 @@ TEST_F(PeripheralBatteryNotifierTest, DeviceRemove) {
 }
 
 TEST_F(PeripheralBatteryNotifierTest, StylusNotification) {
+  // DeviceDataManager is nullptr when the config is not classic.
+  // TODO(sammiequon): Make this work for mash.
+  if (Shell::GetAshConfig() != Config::CLASSIC)
+    return;
+
   const std::string kTestStylusBatteryPath =
       "/sys/class/power_supply/hid-AAAA:BBBB:CCCC.DDDD-battery";
   const std::string kTestStylusName = "test_stylus";
@@ -222,4 +229,4 @@ TEST_F(PeripheralBatteryNotifierTest, StylusNotification) {
                   PeripheralBatteryNotifier::kStylusNotificationId) == nullptr);
 }
 
-}  // namespace chromeos
+}  // namespace ash

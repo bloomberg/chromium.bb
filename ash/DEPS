@@ -22,6 +22,7 @@ include_rules = [
   "+skia/ext",
   "+third_party/cros_system_api",
   "+third_party/icu",
+  "+third_party/re2",
   "+third_party/skia",
   "+net",
   "+ui",

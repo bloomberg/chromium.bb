@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_POWER_PERIPHERAL_BATTERY_NOTIFIER_H_
-#define CHROME_BROWSER_CHROMEOS_POWER_PERIPHERAL_BATTERY_NOTIFIER_H_
+#ifndef ASH_SYSTEM_POWER_PERIPHERAL_BATTERY_NOTIFIER_H_
+#define ASH_SYSTEM_POWER_PERIPHERAL_BATTERY_NOTIFIER_H_
 
 #include <map>
 
+#include "ash/ash_export.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -15,17 +16,16 @@
 #include "chromeos/dbus/power_manager_client.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
-namespace chromeos {
+namespace ash {
 
 class BluetoothDevice;
 class PeripheralBatteryNotifierTest;
 
 // This class listens for peripheral device battery status and shows
 // notifications for low battery conditions.
-// TODO(sammiequon): Investigate whether we can move this class to
-// //ash/system/power.
-class PeripheralBatteryNotifier : public PowerManagerClient::Observer,
-                                  public device::BluetoothAdapter::Observer {
+class ASH_EXPORT PeripheralBatteryNotifier
+    : public chromeos::PowerManagerClient::Observer,
+      public device::BluetoothAdapter::Observer {
  public:
   static const char kStylusNotificationId[];
 
@@ -35,7 +35,7 @@ class PeripheralBatteryNotifier : public PowerManagerClient::Observer,
 
   void set_testing_clock(base::TickClock* clock) { testing_clock_ = clock; }
 
-  // PowerManagerClient::Observer:
+  // chromeos::PowerManagerClient::Observer:
   void PeripheralBatteryStatusReceived(const std::string& path,
                                        const std::string& name,
                                        int level) override;
@@ -95,6 +95,6 @@ class PeripheralBatteryNotifier : public PowerManagerClient::Observer,
   DISALLOW_COPY_AND_ASSIGN(PeripheralBatteryNotifier);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
-#endif  // CHROME_BROWSER_CHROMEOS_POWER_PERIPHERAL_BATTERY_NOTIFIER_H_
+#endif  // ASH_SYSTEM_POWER_PERIPHERAL_BATTERY_NOTIFIER_H_

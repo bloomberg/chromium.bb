@@ -33,6 +33,8 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_BLUETOOTH" file="cros/notification/notification_bluetooth_icon.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_DISPLAY" file="cros/notification/display_notification_icon.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_LOW_POWER_CHARGER" file="cros/notification/notification_low_power_charger.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_PERIPHERAL_BATTERY_LOW" file="cros/notification/notification_peripheral_battery_low.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_STYLUS_BATTERY_LOW" file="cros/notification/notification_peripheral_battery_low.png" />
 
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_BOTTOM" file="common/window_header_shade_bottom_inactive.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_LEFT" file="common/window_header_shade_left_inactive.png" />

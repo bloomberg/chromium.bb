@@ -81,7 +81,6 @@
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/power/freezer_cgroup_process_manager.h"
 #include "chrome/browser/chromeos/power/idle_action_warning_observer.h"
-#include "chrome/browser/chromeos/power/peripheral_battery_notifier.h"
 #include "chrome/browser/chromeos/power/power_data_collector.h"
 #include "chrome/browser/chromeos/power/power_prefs.h"
 #include "chrome/browser/chromeos/power/renderer_freezer.h"
@@ -916,8 +915,6 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // This observer uses the intialized profile to dispatch extension events.
   extension_volume_observer_ = base::MakeUnique<ExtensionVolumeObserver>();
 
-  peripheral_battery_notifier_ = base::MakeUnique<PeripheralBatteryNotifier>();
-
   renderer_freezer_ = base::MakeUnique<RendererFreezer>(
       base::MakeUnique<FreezerCgroupProcessManager>());
 
@@ -1038,7 +1035,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // DBusThreadManager is shut down.
   network_pref_state_observer_.reset();
   extension_volume_observer_.reset();
-  peripheral_battery_notifier_.reset();
   power_prefs_.reset();
   renderer_freezer_.reset();
   wake_on_wifi_manager_.reset();
