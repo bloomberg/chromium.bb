@@ -420,7 +420,7 @@ const base::Feature kStaggeredBackgroundTabOpeningExperiment{
 // Enables or disables the creation of (legacy) supervised users. Does not
 // affect existing supervised users.
 const base::Feature kSupervisedUserCreation{"SupervisedUserCreation",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if defined(OS_CHROMEOS)
 // Enables or disables chrome://sys-internals.
