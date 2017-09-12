@@ -128,13 +128,7 @@ ui::ModalType BookmarkAppConfirmationView::GetModalType() const {
 }
 
 base::string16 BookmarkAppConfirmationView::GetWindowTitle() const {
-#if defined(USE_ASH)
-  int ids = IDS_ADD_TO_SHELF_BUBBLE_TITLE;
-#else
-  int ids = IDS_ADD_TO_DESKTOP_BUBBLE_TITLE;
-#endif
-
-  return l10n_util::GetStringUTF16(ids);
+  return l10n_util::GetStringUTF16(IDS_ADD_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE);
 }
 
 bool BookmarkAppConfirmationView::ShouldShowCloseButton() const {

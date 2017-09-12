@@ -1900,23 +1900,18 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
 
       <!-- Bookmark app bubble -->
       <if expr="use_ash">
-        <message name="IDS_ADD_TO_SHELF_BUBBLE_TITLE" desc="Title of the bubble for adding a bookmark app to the shelf.">
+        <message name="IDS_ADD_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE" desc="Title of the bubble for adding a bookmark app to the shelf.">
           Add to shelf
         </message>
       </if>
-      <if expr="not use_titlecase">
-        <message name="IDS_ADD_TO_DESKTOP_BUBBLE_TITLE" desc="Title of the bubble for adding a bookmark app to the desktop.">
-          Add to desktop
-        </message>
-      </if>
-      <if expr="use_titlecase and not is_macosx">
-        <message name="IDS_ADD_TO_DESKTOP_BUBBLE_TITLE" desc="Title of the bubble for adding a bookmark app to the desktop.">
-          Add to Desktop
-        </message>
-      </if>
       <if expr="is_macosx">
-        <message name="IDS_ADD_TO_DESKTOP_BUBBLE_TITLE" desc="Title of the bubble adding a bookmark app to the Applications Folder on Mac.">
+        <message name="IDS_ADD_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE" desc="In Title Case: Title of the bubble adding a bookmark app to the Applications Folder on Mac. Note `Applications` should match the name that appears under Favourites in Finder on macOS.">
           Add to Applications
+        </message>
+      </if>
+      <if expr="not use_ash and not is_macosx">
+        <message name="IDS_ADD_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE" desc="Title of the bubble for adding a bookmark app to the desktop.">
+          Add to desktop
         </message>
       </if>
 
@@ -1944,24 +1939,19 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
       </if>
 
       <!-- "Create application shortcuts" menu item -->
-      <if expr="is_macosx">
-        <message name="IDS_ADD_TO_APPLICATIONS" desc="Button text for adding a bookmark app to the Applications Folder.">
-          Add to Applications...
-        </message>
-      </if>
       <if expr="use_ash">
-        <message name="IDS_ADD_TO_SHELF" desc="Button text for adding a bookmark app to the shelf.">
+        <message name="IDS_ADD_TO_OS_LAUNCH_SURFACE" desc="Button text for adding a bookmark app to the shelf.">
           Add to shelf...
         </message>
       </if>
-      <if expr="not use_titlecase">
-        <message name="IDS_ADD_TO_DESKTOP" desc="Button text for adding a bookmark app to the desktop.">
-          Add to desktop...
+      <if expr="is_macosx">
+        <message name="IDS_ADD_TO_OS_LAUNCH_SURFACE" desc="In Title Case: Button text for adding a bookmark app to the Applications Folder. Note `Applications` should match the name that appears under Favourites in Finder on macOS">
+          Add to Applications...
         </message>
       </if>
-      <if expr="use_titlecase">
-        <message name="IDS_ADD_TO_DESKTOP" desc="Button text for adding a bookmark app to the desktop.">
-          Add to Desktop...
+      <if expr="not use_ash and not is_macosx">
+        <message name="IDS_ADD_TO_OS_LAUNCH_SURFACE" desc="Button text for adding a bookmark app to the desktop.">
+          Add to desktop...
         </message>
       </if>
 
