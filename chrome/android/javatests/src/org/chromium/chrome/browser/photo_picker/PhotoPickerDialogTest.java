@@ -6,13 +6,13 @@ package org.chromium.chrome.browser.photo_picker;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
+import android.support.test.filters.LargeTest;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Button;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
@@ -194,14 +194,7 @@ public class PhotoPickerDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         });
     }
 
-    /**
-     * Continues to be flaky on bots which doesn't reproduce on local devices,
-     * continuing to investigate offline.
-     *
-     * https://crbug.com/761060
-     * @LargeTest
-     */
-    @DisabledTest
+    @LargeTest
     public void testNoSelection() throws Throwable {
         createDialog(false, Arrays.asList("image/*")); // Multi-select = false.
         assertTrue(mDialog.isShowing());
@@ -217,14 +210,7 @@ public class PhotoPickerDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         dismissDialog();
     }
 
-    /**
-     * Continues to be flaky on bots which doesn't reproduce on local devices,
-     * continuing to investigate offline.
-     *
-     * https://crbug.com/761060
-     * @LargeTest
-     */
-    @DisabledTest
+    @LargeTest
     public void testSingleSelectionPhoto() throws Throwable {
         createDialog(false, Arrays.asList("image/*")); // Multi-select = false.
         assertTrue(mDialog.isShowing());
@@ -243,14 +229,7 @@ public class PhotoPickerDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         dismissDialog();
     }
 
-    /**
-     * Continues to be flaky on bots which doesn't reproduce on local devices,
-     * continuing to investigate offline.
-     *
-     * https://crbug.com/761060
-     * @LargeTest
-     */
-    @DisabledTest
+    @LargeTest
     public void testMultiSelectionPhoto() throws Throwable {
         createDialog(true, Arrays.asList("image/*")); // Multi-select = true.
         assertTrue(mDialog.isShowing());
