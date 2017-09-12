@@ -109,11 +109,12 @@ LayoutObject* FirstLetterPseudoElement::FirstLetterTextLayoutObject(
 
   // If we are looking at a first letter element then we need to find the
   // first letter text layoutObject from the parent node, and not ourselves.
-  if (element.IsFirstLetterPseudoElement())
+  if (element.IsFirstLetterPseudoElement()) {
     parent_layout_object =
         element.ParentOrShadowHostElement()->GetLayoutObject();
-  else
+  } else {
     parent_layout_object = element.GetLayoutObject();
+  }
 
   if (!parent_layout_object ||
       !parent_layout_object->Style()->HasPseudoStyle(kPseudoIdFirstLetter) ||
@@ -240,10 +241,11 @@ void FirstLetterPseudoElement::SetRemainingTextLayoutObject(
   // The text fragment we get our content from is being destroyed. We need
   // to tell our parent element to recalcStyle so we can get cleaned up
   // as well.
-  if (!fragment)
+  if (!fragment) {
     SetNeedsStyleRecalc(
         kLocalStyleChange,
         StyleChangeReasonForTracing::Create(StyleChangeReason::kPseudoClass));
+  }
 
   remaining_text_layout_object_ = fragment;
 }

@@ -100,9 +100,10 @@ TreeScopeStyleSheetCollection& StyleEngine::EnsureStyleSheetCollectionFor(
 
   StyleSheetCollectionMap::AddResult result =
       style_sheet_collection_map_.insert(&tree_scope, nullptr);
-  if (result.is_new_entry)
+  if (result.is_new_entry) {
     result.stored_value->value =
         new ShadowTreeStyleSheetCollection(ToShadowRoot(tree_scope));
+  }
   return *result.stored_value->value.Get();
 }
 
@@ -607,13 +608,15 @@ CSSStyleSheet* StyleEngine::ParseSheet(Element& element,
 void StyleEngine::CollectScopedStyleFeaturesTo(RuleFeatureSet& features) const {
   HeapHashSet<Member<const StyleSheetContents>>
       visited_shared_style_sheet_contents;
-  if (GetDocument().GetScopedStyleResolver())
+  if (GetDocument().GetScopedStyleResolver()) {
     GetDocument().GetScopedStyleResolver()->CollectFeaturesTo(
         features, visited_shared_style_sheet_contents);
+  }
   for (TreeScope* tree_scope : active_tree_scopes_) {
-    if (ScopedStyleResolver* resolver = tree_scope->GetScopedStyleResolver())
+    if (ScopedStyleResolver* resolver = tree_scope->GetScopedStyleResolver()) {
       resolver->CollectFeaturesTo(features,
                                   visited_shared_style_sheet_contents);
+    }
   }
 }
 
@@ -780,14 +783,16 @@ void StyleEngine::ScheduleSiblingInvalidationsForElement(
 
   if (element.HasClass()) {
     const SpaceSplitString& class_names = element.ClassNames();
-    for (size_t i = 0; i < class_names.size(); i++)
+    for (size_t i = 0; i < class_names.size(); i++) {
       features.CollectSiblingInvalidationSetForClass(
           invalidation_lists, element, class_names[i], min_direct_adjacent);
+    }
   }
 
-  for (const Attribute& attribute : element.Attributes())
+  for (const Attribute& attribute : element.Attributes()) {
     features.CollectSiblingInvalidationSetForAttribute(
         invalidation_lists, element, attribute.GetName(), min_direct_adjacent);
+  }
 
   features.CollectUniversalSiblingInvalidationSet(invalidation_lists,
                                                   min_direct_adjacent);
@@ -813,9 +818,11 @@ void StyleEngine::ScheduleInvalidationsForInsertedSibling(
                                          1);
 
   for (unsigned i = 1; before_element && i <= affected_siblings;
-       i++, before_element = ElementTraversal::PreviousSibling(*before_element))
+       i++, before_element =
+                ElementTraversal::PreviousSibling(*before_element)) {
     ScheduleSiblingInvalidationsForElement(*before_element, *scheduling_parent,
                                            i);
+  }
 }
 
 void StyleEngine::ScheduleInvalidationsForRemovedSibling(
@@ -835,9 +842,11 @@ void StyleEngine::ScheduleInvalidationsForRemovedSibling(
                                          1);
 
   for (unsigned i = 1; before_element && i <= affected_siblings;
-       i++, before_element = ElementTraversal::PreviousSibling(*before_element))
+       i++, before_element =
+                ElementTraversal::PreviousSibling(*before_element)) {
     ScheduleSiblingInvalidationsForElement(*before_element, *scheduling_parent,
                                            i);
+  }
 }
 
 void StyleEngine::ScheduleNthPseudoInvalidations(ContainerNode& nth_parent) {
@@ -860,18 +869,21 @@ void StyleEngine::ScheduleRuleSetInvalidationsForElement(
 
   InvalidationLists invalidation_lists;
   for (const auto& rule_set : rule_sets) {
-    if (!id.IsNull())
+    if (!id.IsNull()) {
       rule_set->Features().CollectInvalidationSetsForId(invalidation_lists,
                                                         element, id);
+    }
     if (class_names) {
       unsigned class_name_count = class_names->size();
-      for (size_t i = 0; i < class_name_count; i++)
+      for (size_t i = 0; i < class_name_count; i++) {
         rule_set->Features().CollectInvalidationSetsForClass(
             invalidation_lists, element, (*class_names)[i]);
+      }
     }
-    for (const Attribute& attribute : element.Attributes())
+    for (const Attribute& attribute : element.Attributes()) {
       rule_set->Features().CollectInvalidationSetsForAttribute(
           invalidation_lists, element, attribute.GetName());
+    }
   }
   style_invalidator_.ScheduleInvalidationSetsForNode(invalidation_lists,
                                                      element);
@@ -881,9 +893,10 @@ void StyleEngine::ScheduleTypeRuleSetInvalidations(
     ContainerNode& node,
     const HeapHashSet<Member<RuleSet>>& rule_sets) {
   InvalidationLists invalidation_lists;
-  for (const auto& rule_set : rule_sets)
+  for (const auto& rule_set : rule_sets) {
     rule_set->Features().CollectTypeRuleInvalidationSet(invalidation_lists,
                                                         node);
+  }
   DCHECK(invalidation_lists.siblings.IsEmpty());
   style_invalidator_.ScheduleInvalidationSetsForNode(invalidation_lists, node);
 
@@ -906,10 +919,11 @@ void StyleEngine::ScheduleTypeRuleSetInvalidations(
 
 void StyleEngine::InvalidateSlottedElements(HTMLSlotElement& slot) {
   for (auto& node : slot.GetDistributedNodes()) {
-    if (node->IsElementNode())
+    if (node->IsElementNode()) {
       node->SetNeedsStyleRecalc(kLocalStyleChange,
                                 StyleChangeReasonForTracing::Create(
                                     StyleChangeReason::kStyleSheetChange));
+    }
   }
 }
 
@@ -1163,11 +1177,12 @@ void StyleEngine::ApplyRuleSetChanges(
 
 const MediaQueryEvaluator& StyleEngine::EnsureMediaQueryEvaluator() {
   if (!media_query_evaluator_) {
-    if (GetDocument().GetFrame())
+    if (GetDocument().GetFrame()) {
       media_query_evaluator_ =
           new MediaQueryEvaluator(GetDocument().GetFrame());
-    else
+    } else {
       media_query_evaluator_ = new MediaQueryEvaluator("all");
+    }
   }
   return *media_query_evaluator_;
 }
