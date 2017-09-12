@@ -66,9 +66,6 @@ enum class PasswordInfoBarType { SAVE, UPDATE };
 // This is set to YES as soon as the associated WebState is destroyed.
 @property(readonly) BOOL isWebStateDestroyed;
 
-// Accessor for property inside block.
-@property(readonly) PasswordManager* passwordManager;
-
 @end
 
 @interface PasswordController ()<FormSuggestionProvider, PasswordFormFiller>
