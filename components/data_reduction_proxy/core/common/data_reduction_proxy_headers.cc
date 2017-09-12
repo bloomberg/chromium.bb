@@ -445,10 +445,7 @@ DataReductionProxyBypassType GetDataReductionProxyBypassType(
       return BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_4XX;
     }
 
-    // Missing the via header should not trigger bypass if the client is
-    // included in the tamper detection experiment.
-    if (!params::IsIncludedInTamperDetectionExperiment())
-      return BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER;
+    return BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER;
   }
   // There is no bypass event.
   return BYPASS_EVENT_TYPE_MAX;
