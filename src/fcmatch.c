@@ -156,7 +156,7 @@ FcCompareCharSet (FcValue *v1, FcValue *v2)
 }
 
 static double
-FcCompareSizeRange (FcValue *v1, FcValue *v2)
+FcCompareRange (FcValue *v1, FcValue *v2)
 {
     FcValue value1 = FcValueCanonicalize (v1);
     FcValue value2 = FcValueCanonicalize (v2);
@@ -227,7 +227,7 @@ FcCompareFilename (FcValue *v1, FcValue *v2)
 #define PRI_FcCompareCharSet(n)		PRI1(n)
 #define PRI_FcCompareLang(n)		PRI1(n)
 #define PRI_FcComparePostScript(n)	PRI1(n)
-#define PRI_FcCompareSizeRange(n)	PRI1(n)
+#define PRI_FcCompareRange(n)		PRI1(n)
 
 #define FC_OBJECT(NAME, Type, Cmp)	PRI_##Cmp(NAME)
 
