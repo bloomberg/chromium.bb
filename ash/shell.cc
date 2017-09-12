@@ -582,8 +582,8 @@ void Shell::NotifyVoiceInteractionContextEnabled(bool enabled) {
     observer.OnVoiceInteractionContextEnabled(enabled);
 }
 
-void Shell::NotifyVoiceInteractionSetupCompleted() {
-  voice_interaction_setup_completed_ = true;
+void Shell::NotifyVoiceInteractionSetupCompleted(bool completed) {
+  voice_interaction_setup_completed_ = completed;
   for (auto& observer : shell_observers_)
     observer.OnVoiceInteractionSetupCompleted();
 }

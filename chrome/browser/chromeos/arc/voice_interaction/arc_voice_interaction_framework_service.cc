@@ -183,16 +183,6 @@ class ArcVoiceInteractionFrameworkServiceFactory
   }
 };
 
-void SetVoiceInteractionPrefs(content::BrowserContext* context,
-                              mojom::VoiceInteractionStatusPtr status) {
-  PrefService* prefs = Profile::FromBrowserContext(context)->GetPrefs();
-  prefs->SetBoolean(prefs::kVoiceInteractionPrefSynced, status->configured);
-  prefs->SetBoolean(prefs::kVoiceInteractionEnabled,
-                    status->configured && status->voice_interaction_enabled);
-  prefs->SetBoolean(prefs::kVoiceInteractionContextEnabled,
-                    status->configured && status->context_enabled);
-}
-
 }  // namespace
 
 // static
@@ -356,14 +346,13 @@ void ArcVoiceInteractionFrameworkService::OnArcPlayStoreEnabledChanged(
     bool enabled) {
   if (enabled)
     return;
+
   PrefService* prefs = Profile::FromBrowserContext(context_)->GetPrefs();
-  prefs->SetBoolean(prefs::kArcVoiceInteractionValuePropAccepted, false);
-  mojom::VoiceInteractionStatusPtr status =
-      mojom::VoiceInteractionStatus::New();
-  status->configured = false;
-  status->voice_interaction_enabled = false;
-  status->context_enabled = false;
-  SetVoiceInteractionPrefs(context_, std::move(status));
+  // TODO(xiaohuic): remove deprecated prefs::kVoiceInteractionPrefSynced.
+  prefs->SetBoolean(prefs::kVoiceInteractionPrefSynced, false);
+  SetVoiceInteractionSetupCompletedInternal(false);
+  SetVoiceInteractionEnabled(false);
+  SetVoiceInteractionContextEnabled(false);
 }
 
 void ArcVoiceInteractionFrameworkService::OnSessionStateChanged() {
@@ -376,17 +365,16 @@ void ArcVoiceInteractionFrameworkService::OnSessionStateChanged() {
 
   // TODO(crbug.com/757012): Avoid using ash::Shell here so that it can work in
   // mash.
-  bool enabled = Profile::FromBrowserContext(context_)->GetPrefs()->GetBoolean(
-      prefs::kVoiceInteractionEnabled);
+  PrefService* prefs = Profile::FromBrowserContext(context_)->GetPrefs();
+  bool enabled = prefs->GetBoolean(prefs::kVoiceInteractionEnabled);
   ash::Shell::Get()->NotifyVoiceInteractionEnabled(enabled);
 
-  bool context = ProfileManager::GetActiveUserProfile()->GetPrefs()->GetBoolean(
-      prefs::kVoiceInteractionContextEnabled);
+  bool context = prefs->GetBoolean(prefs::kVoiceInteractionContextEnabled);
   ash::Shell::Get()->NotifyVoiceInteractionContextEnabled(context);
 
-  if (Profile::FromBrowserContext(context_)->GetPrefs()->GetBoolean(
-          prefs::kArcVoiceInteractionValuePropAccepted))
-    ash::Shell::Get()->NotifyVoiceInteractionSetupCompleted();
+  bool setup_completed =
+      prefs->GetBoolean(prefs::kArcVoiceInteractionValuePropAccepted);
+  ash::Shell::Get()->NotifyVoiceInteractionSetupCompleted(setup_completed);
 
   // We only want notify the status change on first user signed in.
   session_manager::SessionManager::Get()->RemoveObserver(this);
@@ -469,30 +457,12 @@ void ArcVoiceInteractionFrameworkService::SetVoiceInteractionContextEnabled(
   framework_instance->SetVoiceInteractionContextEnabled(enable);
 }
 
-void ArcVoiceInteractionFrameworkService::UpdateVoiceInteractionPrefs() {
-  if (Profile::FromBrowserContext(context_)->GetPrefs()->GetBoolean(
-          prefs::kVoiceInteractionPrefSynced)) {
-    return;
-  }
-  mojom::VoiceInteractionFrameworkInstance* framework_instance =
-      ARC_GET_INSTANCE_FOR_METHOD(
-          arc_bridge_service_->voice_interaction_framework(),
-          GetVoiceInteractionSettings);
-  if (!framework_instance)
-    return;
-  framework_instance->GetVoiceInteractionSettings(
-      base::Bind(&SetVoiceInteractionPrefs, context_));
-}
-
 void ArcVoiceInteractionFrameworkService::SetVoiceInteractionSetupCompleted() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  PrefService* prefs = Profile::FromBrowserContext(context_)->GetPrefs();
-  prefs->SetBoolean(prefs::kArcVoiceInteractionValuePropAccepted, true);
+  SetVoiceInteractionSetupCompletedInternal(true);
   SetVoiceInteractionEnabled(true);
-  prefs->SetBoolean(prefs::kVoiceInteractionContextEnabled, true);
-
-  ash::Shell::Get()->NotifyVoiceInteractionSetupCompleted();
+  SetVoiceInteractionContextEnabled(true);
 }
 
 void ArcVoiceInteractionFrameworkService::StartSessionFromUserInteraction(
@@ -606,6 +576,14 @@ bool ArcVoiceInteractionFrameworkService::InitiateUserInteraction() {
   user_interaction_start_time_ = base::TimeTicks::Now();
   context_request_remaining_count_ = kContextRequestMaxRemainingCount;
   return true;
+}
+
+void ArcVoiceInteractionFrameworkService::
+    SetVoiceInteractionSetupCompletedInternal(bool completed) {
+  PrefService* prefs = Profile::FromBrowserContext(context_)->GetPrefs();
+  prefs->SetBoolean(prefs::kArcVoiceInteractionValuePropAccepted, completed);
+
+  ash::Shell::Get()->NotifyVoiceInteractionSetupCompleted(completed);
 }
 
 }  // namespace arc

@@ -166,7 +166,7 @@ TEST_F(VoiceInteractionAppListButtonTest,
   // Simulate a user who has already completed setup flow, but disabled voice
   // interaction in settings.
   Shell::Get()->NotifyVoiceInteractionEnabled(false);
-  Shell::Get()->NotifyVoiceInteractionSetupCompleted();
+  Shell::Get()->NotifyVoiceInteractionSetupCompleted(true);
 
   ui::GestureEvent long_press =
       CreateGestureEvent(ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
