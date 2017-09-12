@@ -70,7 +70,7 @@ public class BottomSheetMetrics extends EmptyBottomSheetObserver {
     }
 
     @Override
-    public void onSheetOpened() {
+    public void onSheetOpened(int reason) {
         mIsSheetOpen = true;
 
         boolean isFirstOpen = mLastOpenTime == 0;

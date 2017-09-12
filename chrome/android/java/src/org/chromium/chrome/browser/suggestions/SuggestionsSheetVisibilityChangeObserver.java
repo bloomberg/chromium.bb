@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 
 /**
@@ -50,7 +51,7 @@ public abstract class SuggestionsSheetVisibilityChangeObserver
 
         // This event is swallowed when the observer is registered after the sheet is opened.
         // (e.g. Chrome starts on the NTP). This allows taking it into account.
-        if (mBottomSheet.isSheetOpen()) onSheetOpened();
+        if (mBottomSheet.isSheetOpen()) onSheetOpened(StateChangeReason.NONE);
     }
 
     public void onDestroy() {
@@ -77,7 +78,7 @@ public abstract class SuggestionsSheetVisibilityChangeObserver
 
     @Override
     @CallSuper
-    public void onSheetOpened() {
+    public void onSheetOpened(@StateChangeReason int reason) {
         mWasShownSinceLastOpen = false;
         onStateChange();
     }

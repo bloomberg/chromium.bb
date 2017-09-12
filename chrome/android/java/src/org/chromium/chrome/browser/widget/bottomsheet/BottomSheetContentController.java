@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.ViewHighlighter;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 import org.chromium.chrome.browser.widget.bottomsheet.base.BottomNavigationItemView;
 import org.chromium.chrome.browser.widget.bottomsheet.base.BottomNavigationMenuView;
 import org.chromium.chrome.browser.widget.bottomsheet.base.BottomNavigationView;
@@ -98,8 +99,18 @@ public class BottomSheetContentController extends BottomNavigationView
         }
 
         @Override
-        public void onSheetOpened() {
-            if (!mDefaultContentInitialized) initializeDefaultContent();
+        public void onSheetOpened(@StateChangeReason int reason) {
+            initializeDefaultContent();
+
+            if (reason == StateChangeReason.OMNIBOX_FOCUS) {
+                // If the omnibox is being focused, show the placeholder.
+                mBottomSheet.showContent(mPlaceholderContent);
+                mBottomSheet.endTransitionAnimations();
+                if (mSelectedItemId > 0) getMenu().findItem(mSelectedItemId).setChecked(false);
+                mSelectedItemId = PLACEHOLDER_ID;
+                return;
+            }
+
             if (mHighlightItemId != null) {
                 mHighlightedView = mActivity.findViewById(mHighlightItemId);
                 ViewHighlighter.turnOnHighlight(mHighlightedView, false);
@@ -258,7 +269,8 @@ public class BottomSheetContentController extends BottomNavigationView
      */
     public void initializeDefaultContent() {
         if (mDefaultContentInitialized) return;
-        showBottomSheetContent(R.id.action_home);
+        createAndCacheContentForId(R.id.action_home);
+        if (!mOmniboxHasFocus) showBottomSheetContent(R.id.action_home);
         mDefaultContentInitialized = true;
     }
 
@@ -296,15 +308,6 @@ public class BottomSheetContentController extends BottomNavigationView
      */
     public void onOmniboxFocusChange(boolean hasFocus) {
         mOmniboxHasFocus = hasFocus;
-
-        // If the omnibox is being focused, show the placeholder.
-        if (hasFocus && mBottomSheet.getSheetState() != BottomSheet.SHEET_STATE_HALF
-                && mBottomSheet.getSheetState() != BottomSheet.SHEET_STATE_FULL) {
-            mBottomSheet.showContent(mPlaceholderContent);
-            mBottomSheet.endTransitionAnimations();
-            if (mSelectedItemId > 0) getMenu().findItem(mSelectedItemId).setChecked(false);
-            mSelectedItemId = PLACEHOLDER_ID;
-        }
     }
 
     @Override
@@ -343,6 +346,16 @@ public class BottomSheetContentController extends BottomNavigationView
         BottomSheetContent content = mBottomSheetContents.get(navItemId);
         if (content != null) return content;
 
+        return createAndCacheContentForId(navItemId);
+    }
+
+    /**
+     * Create and return the content for the provided nav button id.
+     * @param navItemId The id to create and get the content for.
+     * @return The created content.
+     */
+    private BottomSheetContent createAndCacheContentForId(int navItemId) {
+        BottomSheetContent content = null;
         if (navItemId == R.id.action_home) {
             content = new SuggestionsBottomSheetContent(
                     mActivity, mBottomSheet, mTabModelSelector, mSnackbarManager);

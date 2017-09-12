@@ -5,13 +5,14 @@
 package org.chromium.chrome.browser.widget.bottomsheet;
 
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 
 /**
  * An empty base implementation of the {@link BottomSheetObserver} interface.
  */
 public class EmptyBottomSheetObserver implements BottomSheetObserver {
     @Override
-    public void onSheetOpened() {}
+    public void onSheetOpened(@StateChangeReason int reason) {}
 
     @Override
     public void onSheetClosed() {}
