@@ -75,14 +75,9 @@ class PermissionRequestManager
   // at which time the caller is free to delete the request.
   void CancelRequest(PermissionRequest* request);
 
-  // Temporarily hides the bubble, and destroys the prompt UI surface. Any
-  // existing requests will be reshown when DisplayPendingRequests is called
-  // (e.g. when switching tabs away and back to a page with a prompt).
-  // TODO(timloh): Rename this to something more fitting (e.g. TabSwitchedAway).
-  void HideBubble();
-
   // Will show a permission bubble if there is a pending permission request on
   // the web contents that the PermissionRequestManager belongs to.
+  // TODO(timloh): Remove this from the public API.
   void DisplayPendingRequests();
 
   // Will reposition the bubble (may change parent if necessary).
@@ -131,6 +126,8 @@ class PermissionRequestManager
   void DocumentLoadedInFrame(
       content::RenderFrameHost* render_frame_host) override;
   void WebContentsDestroyed() override;
+  void WasShown() override;
+  void WasHidden() override;
 
   // PermissionPrompt::Delegate:
   const std::vector<PermissionRequest*>& Requests() override;
@@ -184,10 +181,11 @@ class PermissionRequestManager
   PermissionPrompt::Factory view_factory_;
 
   // The UI surface for an active permission prompt if we're displaying one.
+  // On Desktop, we destroy this upon tab switching, while on Android we keep
+  // the object alive. The infobar system hides the actual infobar UI and modals
+  // prevent tab switching.
   std::unique_ptr<PermissionPrompt> view_;
-  // We only show prompts when both of these are true. On Desktop, we hide any
-  // active prompt on tab switching, while on Android we let the infobar system
-  // handle it.
+  // We only show new prompts when both of these are true.
   bool main_frame_has_fully_loaded_;
   bool tab_can_show_prompts_;
 

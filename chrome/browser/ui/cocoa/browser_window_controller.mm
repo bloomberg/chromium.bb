@@ -1076,20 +1076,6 @@ bool IsTabDetachingInFullscreenEnabled() {
 
 - (void)onActiveTabChanged:(content::WebContents*)oldContents
                         to:(content::WebContents*)newContents {
-  // No need to remove previous bubble. It will close itself.
-  PermissionRequestManager* manager(nullptr);
-  if (oldContents) {
-    manager = PermissionRequestManager::FromWebContents(oldContents);
-    if (manager)
-      manager->HideBubble();
-  }
-
-  if (newContents) {
-    manager = PermissionRequestManager::FromWebContents(newContents);
-    if (manager)
-      manager->DisplayPendingRequests();
-  }
-
   if ([self isInAnyFullscreenMode]) {
     [[self fullscreenToolbarController] revealToolbarForWebContents:newContents
                                                        inForeground:YES];
@@ -1529,14 +1515,6 @@ bool IsTabDetachingInFullscreenEnabled() {
 
 - (void)onTabDetachedWithContents:(WebContents*)contents {
   [infoBarContainerController_ tabDetachedWithContents:contents];
-
-  // If there are permission requests, hide them. This may be checked again in
-  // -onActiveTabChanged:, but not if this was the last tab in the window, in
-  // which case there is nothing to change to.
-  if (PermissionRequestManager* manager =
-          PermissionRequestManager::FromWebContents(contents)) {
-    manager->HideBubble();
-  }
 }
 
 - (void)onTabInsertedWithContents:(content::WebContents*)contents

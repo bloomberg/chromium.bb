@@ -95,9 +95,9 @@ class PermissionRequestManagerTest : public ChromeRenderViewHostTestHarness {
     base::RunLoop().RunUntilIdle();
   }
 
-  void MockTabSwitchAway() { manager_->HideBubble(); }
+  void MockTabSwitchAway() { manager_->WasHidden(); }
 
-  void MockTabSwitchBack() { manager_->DisplayPendingRequests(); }
+  void MockTabSwitchBack() { manager_->WasShown(); }
 
   virtual void NavigationEntryCommitted(
       const content::LoadCommittedDetails& details) {
@@ -193,7 +193,11 @@ TEST_F(PermissionRequestManagerTest, TwoRequestsTabSwitch) {
   ASSERT_EQ(prompt_factory_->request_count(), 2);
 
   MockTabSwitchAway();
+#if defined(OS_ANDROID)
+  EXPECT_TRUE(prompt_factory_->is_visible());
+#else
   EXPECT_FALSE(prompt_factory_->is_visible());
+#endif
 
   MockTabSwitchBack();
   WaitForBubbleToBeShown();
@@ -211,7 +215,11 @@ TEST_F(PermissionRequestManagerTest, CancelAfterTabSwitch) {
   WaitForBubbleToBeShown();
   EXPECT_TRUE(prompt_factory_->is_visible());
   MockTabSwitchAway();
+#if defined(OS_ANDROID)
+  EXPECT_TRUE(prompt_factory_->is_visible());
+#else
   EXPECT_FALSE(prompt_factory_->is_visible());
+#endif
   manager_->CancelRequest(&request1_);
   EXPECT_TRUE(request1_.finished());
 }
@@ -222,14 +230,16 @@ TEST_F(PermissionRequestManagerTest, NoRequests) {
   EXPECT_FALSE(prompt_factory_->is_visible());
 }
 
-#if !defined(OS_ANDROID)
 TEST_F(PermissionRequestManagerTest, PermissionRequestWhileTabSwitchedAway) {
+  MockTabSwitchAway();
   manager_->AddRequest(&request1_);
-  // Don't mark the tab as active.
   WaitForBubbleToBeShown();
   EXPECT_FALSE(prompt_factory_->is_visible());
+
+  MockTabSwitchBack();
+  WaitForBubbleToBeShown();
+  EXPECT_TRUE(prompt_factory_->is_visible());
 }
-#endif
 
 TEST_F(PermissionRequestManagerTest, TwoRequestsDoNotCoalesce) {
   manager_->DisplayPendingRequests();
