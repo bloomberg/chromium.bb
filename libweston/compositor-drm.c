@@ -1797,17 +1797,23 @@ static int
 drm_output_apply_state_legacy(struct drm_output_state *state)
 {
 	struct drm_output *output = state->output;
-	struct drm_head *head = to_drm_head(weston_output_get_first_head(&output->base));
 	struct drm_backend *backend = to_drm_backend(output->base.compositor);
 	struct drm_plane *scanout_plane = output->scanout_plane;
-	struct drm_property_info *dpms_prop =
-		&head->props_conn[WDRM_CONNECTOR_DPMS];
+	struct drm_property_info *dpms_prop;
 	struct drm_plane_state *scanout_state;
 	struct drm_plane_state *ps;
 	struct drm_plane *p;
 	struct drm_mode *mode;
+	struct drm_head *head;
+	uint32_t connectors[MAX_CLONED_CONNECTORS];
+	int n_conn = 0;
 	struct timespec now;
 	int ret = 0;
+
+	wl_list_for_each(head, &output->base.head_list, base.output_link) {
+		assert(n_conn < MAX_CLONED_CONNECTORS);
+		connectors[n_conn++] = head->connector_id;
+	}
 
 	/* If disable_planes is set then assign_planes() wasn't
 	 * called for this render, so we could still have a stale
@@ -1844,7 +1850,7 @@ drm_output_apply_state_legacy(struct drm_output_state *state)
 		}
 
 		ret = drmModeSetCrtc(backend->drm.fd, output->crtc_id, 0, 0, 0,
-				     &head->connector_id, 0, NULL);
+				     NULL, 0, NULL);
 		if (ret)
 			weston_log("drmModeSetCrtc failed disabling: %m\n");
 
@@ -1879,7 +1885,7 @@ drm_output_apply_state_legacy(struct drm_output_state *state)
 		ret = drmModeSetCrtc(backend->drm.fd, output->crtc_id,
 				     scanout_state->fb->fb_id,
 				     0, 0,
-				     &head->connector_id, 1,
+				     connectors, n_conn,
 				     &mode->mode_info);
 		if (ret) {
 			weston_log("set mode failed: %m\n");
@@ -1950,14 +1956,20 @@ drm_output_apply_state_legacy(struct drm_output_state *state)
 		}
 	}
 
-	if (dpms_prop->prop_id && state->dpms != output->state_cur->dpms) {
-		ret = drmModeConnectorSetProperty(backend->drm.fd,
-						  head->connector_id,
-						  dpms_prop->prop_id,
-						  state->dpms);
-		if (ret) {
-			weston_log("DRM: DPMS: failed property set for %s\n",
-				   output->base.name);
+	if (state->dpms != output->state_cur->dpms) {
+		wl_list_for_each(head, &output->base.head_list, base.output_link) {
+			dpms_prop = &head->props_conn[WDRM_CONNECTOR_DPMS];
+			if (dpms_prop->prop_id == 0)
+				continue;
+
+			ret = drmModeConnectorSetProperty(backend->drm.fd,
+							  head->connector_id,
+							  dpms_prop->prop_id,
+							  state->dpms);
+			if (ret) {
+				weston_log("DRM: DPMS: failed property set for %s\n",
+					   head->base.name);
+			}
 		}
 	}
 
