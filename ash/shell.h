@@ -593,7 +593,7 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   void NotifyVoiceInteractionContextEnabled(bool enabled);
 
-  void NotifyVoiceInteractionSetupCompleted();
+  void NotifyVoiceInteractionSetupCompleted(bool completed);
 
   VoiceInteractionState voice_interaction_state() const {
     return voice_interaction_state_;
