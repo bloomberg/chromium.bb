@@ -484,7 +484,6 @@ function setUpHealthThermometerAndHeartRateDevices() {
 // 'characteristic_user_description' descriptor.
 // The device has been connected to and its attributes are ready to be
 // discovered.
-// TODO(crbug.com/719816): Add descriptors.
 function getHealthThermometerDevice(options) {
   let result;
   return getConnectedHealthThermometerDevice(options)
@@ -570,7 +569,7 @@ function getUserDescriptionDescriptor() {
 // including the |fake_peripheral|.
 function populateHealthThermometerFakes(fake_peripheral) {
   let fake_generic_access, fake_health_thermometer, fake_measurement_interval,
-      fake_user_description, fake_temperature_measurement,
+      fake_user_description, fake_cccd, fake_temperature_measurement,
       fake_temperature_type;
   return fake_peripheral.addFakeService({uuid: 'generic_access'})
     .then(_ => fake_generic_access = _)
@@ -587,6 +586,10 @@ function populateHealthThermometerFakes(fake_peripheral) {
       uuid: 'gatt.characteristic_user_description',
     }))
     .then(_ => fake_user_description = _)
+    .then(() => fake_measurement_interval.addFakeDescriptor({
+      uuid: 'gatt.client_characteristic_configuration',
+    }))
+    .then(_ => fake_cccd = _)
     .then(() => fake_health_thermometer.addFakeCharacteristic({
       uuid: 'temperature_measurement',
       properties: ['indicate'],
@@ -602,6 +605,7 @@ function populateHealthThermometerFakes(fake_peripheral) {
       fake_generic_access,
       fake_health_thermometer,
       fake_measurement_interval,
+      fake_cccd,
       fake_user_description,
       fake_temperature_measurement,
       fake_temperature_type,
