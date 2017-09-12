@@ -74,7 +74,9 @@ LayoutTable::LayoutTable(Element* element)
       collapsed_outer_border_start_(0),
       collapsed_outer_border_end_(0),
       collapsed_outer_border_before_(0),
-      collapsed_outer_border_after_(0) {
+      collapsed_outer_border_after_(0),
+      collapsed_outer_border_start_overflow_(0),
+      collapsed_outer_border_end_overflow_(0) {
   DCHECK(!ChildrenInline());
   effective_column_positions_.Fill(0, 1);
 }
@@ -884,6 +886,27 @@ void LayoutTable::InvalidateCollapsedBordersForAllCellsIfNeeded() {
 }
 
 void LayoutTable::AddOverflowFromChildren() {
+  // Add overflow from borders.
+  // Technically it's odd that we are incorporating the borders into layout
+  // overflow, which is only supposed to be about overflow from our
+  // descendant objects, but since tables don't support overflow:auto, this
+  // works out fine.
+  UpdateCollapsedOuterBorders();
+  if (ShouldCollapseBorders() && (collapsed_outer_border_start_overflow_ ||
+                                  collapsed_outer_border_end_overflow_)) {
+    LogicalToPhysical<LayoutUnit> physical_border_overflow(
+        StyleRef().GetWritingMode(), StyleRef().Direction(),
+        LayoutUnit(collapsed_outer_border_start_overflow_),
+        LayoutUnit(collapsed_outer_border_end_overflow_), LayoutUnit(),
+        LayoutUnit());
+    LayoutRect border_overflow(PixelSnappedBorderBoxRect());
+    border_overflow.Expand(LayoutRectOutsets(
+        physical_border_overflow.Top(), physical_border_overflow.Right(),
+        physical_border_overflow.Bottom(), physical_border_overflow.Left()));
+    AddLayoutOverflow(border_overflow);
+    AddSelfVisualOverflow(border_overflow);
+  }
+
   // Add overflow from our caption.
   for (unsigned i = 0; i < captions_.size(); i++)
     AddOverflowFromChild(*captions_[i]);
@@ -892,12 +915,6 @@ void LayoutTable::AddOverflowFromChildren() {
   for (LayoutTableSection* section = TopSection(); section;
        section = SectionBelow(section))
     AddOverflowFromChild(*section);
-
-  // Technically it's odd that we are incorporating the borders into layout
-  // overflow, which is only supposed to be about overflow from our
-  // descendant objects, but since tables don't support overflow:auto, this
-  // works out fine.
-  AddLayoutOverflow(VisualOverflowRect());
 }
 
 void LayoutTable::PaintObject(const PaintInfo& paint_info,
@@ -1618,84 +1635,79 @@ LayoutUnit LayoutTable::PaddingRight() const {
   return LayoutUnit(LayoutBlock::PaddingRight().ToInt());
 }
 
-unsigned LayoutTable::ComputeCollapsedOuterBorderBefore() const {
-  DCHECK(ShouldCollapseBorders());
-
-  // The table's before outer border width is the maximum before outer border
-  // widths of all cells in the first row. See the CSS 2.1 spec, section 17.6.2.
-  const auto* section = TopNonEmptySection();
-  if (!section)
-    return 0;
-
-  unsigned n_cols = section->NumCols(0);
-  unsigned result = 0;
-  for (unsigned col = 0; col < n_cols; ++col) {
-    if (const auto* cell = section->PrimaryCellAt(0, col))
-      result = std::max(result, cell->CollapsedOuterBorderBefore());
-  }
-  return result;
-}
-
-unsigned LayoutTable::ComputeCollapsedOuterBorderAfter() const {
-  DCHECK(ShouldCollapseBorders());
-
-  const auto* section = BottomNonEmptySection();
-  if (!section)
-    return 0;
-
-  // The table's after outer border width is the maximum after outer border
-  // widths of all cells in the last row. See the CSS 2.1 spec, section 17.6.2.
-  unsigned row = section->NumRows() - 1;
-  unsigned n_cols = section->NumCols(row);
-  unsigned result = 0;
-  for (unsigned col = 0; col < n_cols; ++col) {
-    if (const auto* cell = section->PrimaryCellAt(row, col))
-      result = std::max(result, cell->CollapsedOuterBorderAfter());
-  }
-  return result;
-}
-
-unsigned LayoutTable::ComputeCollapsedOuterBorderStart() const {
-  DCHECK(ShouldCollapseBorders());
-
-  // The table's start and end outer border widths are the border outer widths
-  // of the first and last cells in the first row. See the CSS 2.1 spec,
-  // section 17.6.2.
-  if (const auto* section = TopNonEmptySection()) {
-    if (const auto* row = section->FirstRow()) {
-      if (const auto* cell = row->FirstCell())
-        return cell->CollapsedOuterBorderStart();
-    }
-  }
-  return 0;
-}
-
-unsigned LayoutTable::ComputeCollapsedOuterBorderEnd() const {
-  DCHECK(ShouldCollapseBorders());
-
-  // The table's start and end outer border widths are the border outer widths
-  // of the first and last cells in the first row. See the CSS 2.1 spec,
-  // section 17.6.2.
-  if (const auto* section = TopNonEmptySection()) {
-    if (const auto* row = section->FirstRow()) {
-      if (const auto* cell = row->LastCell())
-        return cell->CollapsedOuterBorderEnd();
-    }
-  }
-  return 0;
-}
-
 void LayoutTable::UpdateCollapsedOuterBorders() const {
   if (collapsed_outer_borders_valid_)
     return;
 
   collapsed_outer_borders_valid_ = true;
-  if (ShouldCollapseBorders()) {
-    collapsed_outer_border_before_ = ComputeCollapsedOuterBorderBefore();
-    collapsed_outer_border_after_ = ComputeCollapsedOuterBorderAfter();
-    collapsed_outer_border_start_ = ComputeCollapsedOuterBorderStart();
-    collapsed_outer_border_end_ = ComputeCollapsedOuterBorderEnd();
+  if (!ShouldCollapseBorders())
+    return;
+
+  collapsed_outer_border_start_ = 0;
+  collapsed_outer_border_end_ = 0;
+  collapsed_outer_border_before_ = 0;
+  collapsed_outer_border_after_ = 0;
+  collapsed_outer_border_start_overflow_ = 0;
+  collapsed_outer_border_end_overflow_ = 0;
+
+  const auto* top_section = TopNonEmptySection();
+  if (!top_section)
+    return;
+
+  // The table's before outer border width is the maximum before outer border
+  // widths of all cells in the first row. See the CSS 2.1 spec, section 17.6.2.
+  unsigned top_cols = top_section->NumCols(0);
+  for (unsigned col = 0; col < top_cols; ++col) {
+    if (const auto* cell = top_section->PrimaryCellAt(0, col)) {
+      collapsed_outer_border_before_ = std::max(
+          collapsed_outer_border_before_, cell->CollapsedOuterBorderBefore());
+    }
   }
+
+  const auto* bottom_section = BottomNonEmptySection();
+  DCHECK(bottom_section);
+  // The table's after outer border width is the maximum after outer border
+  // widths of all cells in the last row. See the CSS 2.1 spec, section 17.6.2.
+  unsigned row = bottom_section->NumRows() - 1;
+  unsigned bottom_cols = bottom_section->NumCols(row);
+  for (unsigned col = 0; col < bottom_cols; ++col) {
+    if (const auto* cell = bottom_section->PrimaryCellAt(row, col)) {
+      collapsed_outer_border_after_ = std::max(
+          collapsed_outer_border_after_, cell->CollapsedOuterBorderAfter());
+    }
+  }
+
+  // The table's start and end outer border widths are the border outer widths
+  // of the first and last cells in the first row. See the CSS 2.1 spec,
+  // section 17.6.2.
+  bool first_row = true;
+  unsigned max_border_start = 0;
+  unsigned max_border_end = 0;
+  for (const auto* section = top_section; section;
+       section = SectionBelow(section, kSkipEmptySections)) {
+    for (const auto* row = section->FirstRow(); row; row = row->NextRow()) {
+      if (const auto* cell = row->FirstCell()) {
+        auto border_start = cell->CollapsedOuterBorderStart();
+        if (first_row)
+          collapsed_outer_border_start_ = border_start;
+        max_border_start = std::max(max_border_start, border_start);
+      }
+      if (const auto* cell = row->LastCell()) {
+        auto border_end = cell->CollapsedOuterBorderEnd();
+        if (first_row)
+          collapsed_outer_border_end_ = border_end;
+        max_border_end = std::max(max_border_end, border_end);
+      }
+      first_row = false;
+    }
+  }
+
+  // Record the overflows caused by wider collapsed borders of the first/last
+  // cell in rows other than the first.
+  collapsed_outer_border_start_overflow_ =
+      max_border_start - collapsed_outer_border_start_;
+  collapsed_outer_border_end_overflow_ =
+      max_border_end - collapsed_outer_border_end_;
 }
 
 bool LayoutTable::PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
