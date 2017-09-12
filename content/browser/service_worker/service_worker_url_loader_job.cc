@@ -18,6 +18,45 @@
 
 namespace content {
 
+// This class waits for completion of a stream response from the service worker.
+// It calls ServiceWorkerURLLoader::CommitComplete() upon completion of the
+// response.
+class ServiceWorkerURLLoaderJob::StreamWaiter
+    : public blink::mojom::ServiceWorkerStreamCallback {
+ public:
+  StreamWaiter(
+      ServiceWorkerURLLoaderJob* owner,
+      scoped_refptr<ServiceWorkerVersion> streaming_version,
+      blink::mojom::ServiceWorkerStreamCallbackRequest callback_request)
+      : owner_(owner),
+        streaming_version_(streaming_version),
+        binding_(this, std::move(callback_request)) {
+    streaming_version_->AddStreamingURLLoaderJob(owner_);
+    binding_.set_connection_error_handler(
+        base::BindOnce(&StreamWaiter::OnAborted, base::Unretained(this)));
+  }
+  ~StreamWaiter() override {
+    streaming_version_->RemoveStreamingURLLoaderJob(owner_);
+  }
+
+  // Implements mojom::ServiceWorkerStreamCallback.
+  void OnCompleted() override {
+    // Destroys |this|.
+    owner_->CommitCompleted(net::OK);
+  }
+  void OnAborted() override {
+    // Destroys |this|.
+    owner_->CommitCompleted(net::ERR_ABORTED);
+  }
+
+ private:
+  ServiceWorkerURLLoaderJob* owner_;
+  scoped_refptr<ServiceWorkerVersion> streaming_version_;
+  mojo::Binding<blink::mojom::ServiceWorkerStreamCallback> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(StreamWaiter);
+};
+
 ServiceWorkerURLLoaderJob::ServiceWorkerURLLoaderJob(
     LoaderCallback callback,
     Delegate* delegate,
@@ -74,11 +113,15 @@ void ServiceWorkerURLLoaderJob::FailDueToLostController() {
 }
 
 void ServiceWorkerURLLoaderJob::Cancel() {
-  url_loader_client_.reset();
   status_ = Status::kCancelled;
   weak_factory_.InvalidateWeakPtrs();
   blob_storage_context_.reset();
   fetch_dispatcher_.reset();
+  stream_waiter_.reset();
+
+  url_loader_client_->OnComplete(
+      ResourceRequestCompletionStatus(net::ERR_ABORTED));
+  url_loader_client_.reset();
 }
 
 bool ServiceWorkerURLLoaderJob::WasCanceled() const {
@@ -125,10 +168,11 @@ void ServiceWorkerURLLoaderJob::CommitResponseHeaders() {
 void ServiceWorkerURLLoaderJob::CommitCompleted(int error_code) {
   DCHECK_LT(status_, Status::kCompleted);
   status_ = Status::kCompleted;
-  ResourceRequestCompletionStatus completion_status;
-  completion_status.error_code = error_code;
-  completion_status.completion_time = base::TimeTicks::Now();
-  url_loader_client_->OnComplete(completion_status);
+
+  // |stream_waiter_| calls this when done.
+  stream_waiter_.reset();
+
+  url_loader_client_->OnComplete(ResourceRequestCompletionStatus(error_code));
 }
 
 void ServiceWorkerURLLoaderJob::DeliverErrorResponse() {
@@ -196,12 +240,13 @@ void ServiceWorkerURLLoaderJob::DidDispatchFetchEvent(
 
   std::move(loader_callback_)
       .Run(base::BindOnce(&ServiceWorkerURLLoaderJob::StartResponse,
-                          weak_factory_.GetWeakPtr(), response,
+                          weak_factory_.GetWeakPtr(), response, version,
                           std::move(body_as_stream), std::move(body_as_blob)));
 }
 
 void ServiceWorkerURLLoaderJob::StartResponse(
     const ServiceWorkerResponse& response,
+    scoped_refptr<ServiceWorkerVersion> version,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
     storage::mojom::BlobPtr body_as_blob,
     mojom::URLLoaderRequest request,
@@ -222,12 +267,12 @@ void ServiceWorkerURLLoaderJob::StartResponse(
 
   // Handle a stream response body.
   if (!body_as_stream.is_null() && body_as_stream->stream.is_valid()) {
+    stream_waiter_ = std::make_unique<StreamWaiter>(
+        this, std::move(version), std::move(body_as_stream->callback_request));
     CommitResponseHeaders();
     url_loader_client_->OnStartLoadingResponseBody(
         std::move(body_as_stream->stream));
-    // TODO(falken): Call CommitCompleted() when stream finished.
-    // See https://crbug.com/758455
-    CommitCompleted(net::OK);
+    // StreamWaiter will call CommitCompleted() when done.
     return;
   }
 
