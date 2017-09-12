@@ -37,6 +37,11 @@ typedef NTSTATUS(WINAPI* NTQUERYSYSTEMINFORMATION)(
 
 ProcessMetrics::~ProcessMetrics() { }
 
+size_t GetMaxFds() {
+  // Windows is only limited by the amount of physical memory.
+  return std::numeric_limits<size_t>::max();
+}
+
 // static
 std::unique_ptr<ProcessMetrics> ProcessMetrics::CreateProcessMetrics(
     ProcessHandle process) {
