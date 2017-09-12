@@ -184,9 +184,6 @@ CompositingLayerAssigner::GetReasonsPreventingSquashing(
   if (layer->TransformAncestor() != squashing_layer.TransformAncestor())
     return kSquashingDisallowedReasonTransformAncestorMismatch;
 
-  if (layer->Transform() && !layer->Transform()->IsIdentityOrTranslation())
-    return kSquashingDisallowedReasonNonTranslationTransform;
-
   if (layer->RenderingContextRoot() != squashing_layer.RenderingContextRoot())
     return kSquashingDisallowedReasonRenderingContextMismatch;
 

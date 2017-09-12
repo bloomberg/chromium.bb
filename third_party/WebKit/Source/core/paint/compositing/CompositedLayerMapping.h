@@ -278,7 +278,7 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
 
   LayoutSize ContentOffsetInCompositingLayer() const;
 
-  LayoutPoint SquashingOffsetFromTransformedAncestor() {
+  LayoutPoint SquashingOffsetFromTransformedAncestor() const {
     return squashing_layer_offset_from_transformed_ancestor_;
   }
 

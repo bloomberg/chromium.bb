@@ -106,6 +106,11 @@ After:
       "backgroundColor": "#FFFFFF"
     },
     {
+      "name": "Squashing Containment Layer",
+      "position": [58, 230],
+      "drawsContent": false
+    },
+    {
       "name": "LayoutBlockFlow (relative positioned) DIV class='box gray force-layer'",
       "bounds": [100, 100],
       "contentsOpaque": true,
@@ -113,26 +118,9 @@ After:
       "transform": 4
     },
     {
-      "name": "LayoutBlockFlow (relative positioned) DIV id='first-green-box' class='box green rotate-45deg'",
-      "bounds": [102, 102],
-      "backgroundColor": "#008000",
-      "transform": 6
-    },
-    {
-      "name": "Squashing Containment Layer",
-      "position": [58, 230],
-      "drawsContent": false
-    },
-    {
-      "name": "LayoutBlockFlow (relative positioned) DIV class='box green rotate-45deg'",
-      "bounds": [102, 102],
-      "backgroundColor": "#008000",
-      "transform": 8
-    },
-    {
-      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='box green')",
-      "position": [18, 570],
-      "bounds": [152, 222]
+      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV id='first-green-box' class='box green rotate-45deg')",
+      "position": [18, 328],
+      "bounds": [174, 464]
     }
   ],
   "transforms": [
@@ -162,7 +150,8 @@ After:
         [...],
         [...],
         [...]
-      ]
+      ],
+      "flattenInheritedTransform": false
     },
     {
       "id": 4,
@@ -172,48 +161,7 @@ After:
         [...],
         [...],
         [...]
-      ]
-    },
-    {
-      "id": 5,
-      "transform": [
-        [...],
-        [...],
-        [...],
-        [...]
-      ]
-    },
-    {
-      "id": 6,
-      "parent": 5,
-      "transform": [
-        [...],
-        [...],
-        [...],
-        [...]
       ],
-      "origin": [51, 51]
-    },
-    {
-      "id": 7,
-      "transform": [
-        [...],
-        [...],
-        [...],
-        [...]
-      ],
-      "flattenInheritedTransform": false
-    },
-    {
-      "id": 8,
-      "parent": 7,
-      "transform": [
-        [...],
-        [...],
-        [...],
-        [...]
-      ],
-      "origin": [51, 51],
       "flattenInheritedTransform": false
     }
   ]

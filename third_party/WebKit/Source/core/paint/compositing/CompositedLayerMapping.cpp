@@ -3182,28 +3182,24 @@ IntRect CompositedLayerMapping::RecomputeInterestRect(
     const GraphicsLayer* graphics_layer) const {
   FloatRect graphics_layer_bounds(FloatPoint(), graphics_layer->Size());
 
-  IntSize offset_from_anchor_layout_object;
+  FloatSize offset_from_anchor_layout_object;
   const LayoutBoxModelObject* anchor_layout_object;
   if (graphics_layer == squashing_layer_.get()) {
-    // TODO(chrishtr): this is a speculative fix for crbug.com/561306. However,
-    // it should never be the case that m_squashingLayer exists,
-    // yet m_squashedLayers.size() == 0. There must be a bug elsewhere.
-    if (squashed_layers_.size() == 0)
-      return IntRect();
     // All squashed layers have the same clip and transform space, so we can use
     // the first squashed layer's layoutObject to map the squashing layer's
     // bounds into viewport space, with offsetFromAnchorLayoutObject to
     // translate squashing layer's bounds into the first squashed layer's space.
-    anchor_layout_object = &squashed_layers_[0].paint_layer->GetLayoutObject();
+    anchor_layout_object =
+        &owning_layer_.EnclosingTransformedAncestor()->GetLayoutObject();
     offset_from_anchor_layout_object =
-        squashed_layers_[0].offset_from_layout_object;
+        ToFloatSize(FloatPoint(SquashingOffsetFromTransformedAncestor()));
   } else {
     DCHECK(graphics_layer == graphics_layer_.get() ||
            graphics_layer == scrolling_contents_layer_.get());
     anchor_layout_object = &owning_layer_.GetLayoutObject();
-    offset_from_anchor_layout_object = graphics_layer->OffsetFromLayoutObject();
-    AdjustForCompositedScrolling(graphics_layer,
-                                 offset_from_anchor_layout_object);
+    IntSize offset = graphics_layer->OffsetFromLayoutObject();
+    AdjustForCompositedScrolling(graphics_layer, offset);
+    offset_from_anchor_layout_object = FloatSize(offset);
   }
 
   // Start with the bounds of the graphics layer in the space of the anchor
@@ -3226,12 +3222,12 @@ IntRect CompositedLayerMapping::RecomputeInterestRect(
   FloatRect visible_content_rect(graphics_layer_bounds_in_root_view_space);
   root_view->GetFrameView()->ClipPaintRect(&visible_content_rect);
 
-  IntRect enclosing_graphics_layer_bounds(
+  FloatRect enclosing_graphics_layer_bounds(
       EnclosingIntRect(graphics_layer_bounds));
 
   // Map the visible content rect from root view space to local graphics layer
   // space.
-  IntRect local_interest_rect;
+  FloatRect local_interest_rect;
   // If the visible content rect is empty, then it makes no sense to map it back
   // since there is nothing to map.
   if (!visible_content_rect.IsEmpty()) {
@@ -3257,7 +3253,7 @@ IntRect CompositedLayerMapping::RecomputeInterestRect(
     local_interest_rect.Inflate(kPixelDistanceToRecord);
     local_interest_rect.Intersect(enclosing_graphics_layer_bounds);
   }
-  return local_interest_rect;
+  return EnclosingIntRect(local_interest_rect);
 }
 
 static const int kMinimumDistanceBeforeRepaint = 512;
