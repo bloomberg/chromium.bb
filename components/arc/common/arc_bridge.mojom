@@ -20,6 +20,7 @@ import "intent_helper.mojom";
 import "kiosk.mojom";
 import "lock_screen.mojom";
 import "metrics.mojom";
+import "midis.mojom";
 import "net.mojom";
 import "notifications.mojom";
 import "obb_mounter.mojom";
@@ -37,9 +38,9 @@ import "voice_interaction_framework.mojom";
 import "volume_mounter.mojom";
 import "wallpaper.mojom";
 
-// Next MinVersion: 30
+// Next MinVersion: 31
 // Deprecated method IDs: 101, 105
-// Next method ID: 135
+// Next method ID: 136
 interface ArcBridgeHost {
   // Keep the entries alphabetical. In order to do so without breaking
   // compatibility with the ARC instance, explicitly assign each interface a
@@ -99,6 +100,9 @@ interface ArcBridgeHost {
 
   // Notifies Chrome that the MetricsInstance interface is ready.
   [MinVersion=10] OnMetricsInstanceReady@116(MetricsInstance instance_ptr);
+
+  // Notifies Chrome that the MidisInstance interface is ready.
+  [MinVersion=30] OnMidisInstanceReady@135(MidisInstance instance_ptr);
 
   // Notifies Chrome that the NetInstance interface is ready.
   [MinVersion=5] OnNetInstanceReady@108(NetInstance instance_ptr);

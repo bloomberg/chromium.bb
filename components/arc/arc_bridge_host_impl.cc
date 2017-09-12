@@ -170,6 +170,11 @@ void ArcBridgeHostImpl::OnMetricsInstanceReady(
   OnInstanceReady(arc_bridge_service_->metrics(), std::move(metrics_ptr));
 }
 
+void ArcBridgeHostImpl::OnMidisInstanceReady(
+    mojom::MidisInstancePtr midis_ptr) {
+  OnInstanceReady(arc_bridge_service_->midis(), std::move(midis_ptr));
+}
+
 void ArcBridgeHostImpl::OnNetInstanceReady(mojom::NetInstancePtr net_ptr) {
   OnInstanceReady(arc_bridge_service_->net(), std::move(net_ptr));
 }
