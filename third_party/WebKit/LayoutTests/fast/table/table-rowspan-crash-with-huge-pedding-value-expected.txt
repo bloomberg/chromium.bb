@@ -4,5 +4,4 @@ For this test to PASS, it should not crash.
 
 r0c0	
 r0c1
-
 rowspan=2
