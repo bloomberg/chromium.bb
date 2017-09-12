@@ -18,14 +18,21 @@ source_set("omnibox") {
 source_set("omnibox_internal") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "autocomplete_match_formatter.h",
+    "autocomplete_match_formatter.mm",
+    "autocomplete_result_consumer.h",
+    "autocomplete_suggestion.h",
     "chrome_omnibox_client_ios.h",
     "chrome_omnibox_client_ios.mm",
+    "image_retriever.h",
     "location_bar_controller_impl.h",
     "location_bar_controller_impl.mm",
     "omnibox_popup_material_row.h",
     "omnibox_popup_material_row.mm",
     "omnibox_popup_material_view_controller.h",
     "omnibox_popup_material_view_controller.mm",
+    "omnibox_popup_mediator.h",
+    "omnibox_popup_mediator.mm",
     "omnibox_popup_positioner.h",
     "omnibox_popup_presenter.h",
     "omnibox_popup_presenter.mm",
