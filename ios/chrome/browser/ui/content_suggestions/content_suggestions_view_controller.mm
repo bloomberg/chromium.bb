@@ -435,18 +435,13 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
 
 #pragma mark - MDCCollectionViewStylingDelegate
 
-// TODO(crbug.com/724493): Use collectionView:hidesInkViewAtIndexPath: when it
-// is fixed. For now hidding the ink prevent cell interaction.
-- (UIColor*)collectionView:(UICollectionView*)collectionView
-       inkColorAtIndexPath:(NSIndexPath*)indexPath {
+- (BOOL)collectionView:(UICollectionView*)collectionView
+    hidesInkViewAtIndexPath:(NSIndexPath*)indexPath {
   ContentSuggestionType itemType = [self.collectionUpdater
       contentSuggestionTypeForItem:[self.collectionViewModel
                                        itemAtIndexPath:indexPath]];
-  if ([self.collectionUpdater isMostVisitedSection:indexPath.section] ||
-      itemType == ContentSuggestionTypeEmpty) {
-    return [UIColor clearColor];
-  }
-  return nil;
+  return [self.collectionUpdater isMostVisitedSection:indexPath.section] ||
+         itemType == ContentSuggestionTypeEmpty;
 }
 
 - (UIColor*)collectionView:(nonnull UICollectionView*)collectionView
