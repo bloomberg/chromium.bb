@@ -13,7 +13,7 @@ cr.define('options', function() {
    * Dimensions for camera capture.
    * @const
    */
-  var CAPTURE_SIZE = {height: 480, width: 480};
+  var CAPTURE_SIZE = {height: 576, width: 576};
 
   /**
    * Path for internal URLs.
@@ -47,7 +47,7 @@ cr.define('options', function() {
       // than actual images so there is no need in full scale on HDPI.
       var url = this.dataItem.url;
       if (url.slice(0, CHROME_THEME_PATH.length) == CHROME_THEME_PATH)
-        imageEl.src = this.dataItem.url + '@1x';
+        imageEl.src = this.dataItem.url + '[0]@1x';
       else
         imageEl.src = this.dataItem.url;
       imageEl.title = this.dataItem.title || '';
@@ -180,7 +180,7 @@ cr.define('options', function() {
       var url = this.selectedItemUrl;
       if (url && this.previewImage_) {
         if (url.slice(0, CHROME_THEME_PATH.length) == CHROME_THEME_PATH)
-          this.previewImage_.src = url + '@' + window.devicePixelRatio + 'x';
+          this.previewImage_.src = url + '@2x';
         else
           this.previewImage_.src = url;
       }
