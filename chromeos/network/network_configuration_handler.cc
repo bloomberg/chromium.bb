@@ -232,16 +232,15 @@ void NetworkConfigurationHandler::GetShillProperties(
   const NetworkState* network_state =
       network_state_handler_->GetNetworkState(service_path);
   if (network_state &&
-      NetworkTypePattern::Tether().MatchesType(network_state->type())) {
-    // If this is a Tether network, use the properties present in the
-    // NetworkState object provided by NetworkStateHandler. Tether networks are
-    // not present in Shill, so the Shill call below will not work.
+      (NetworkTypePattern::Tether().MatchesType(network_state->type()) ||
+       network_state->IsDefaultCellular())) {
+    // This is a Tether network or a Cellular network with no Service.
+    // Provide properties from NetworkState.
     base::DictionaryValue dictionary;
     network_state->GetStateProperties(&dictionary);
     callback.Run(service_path, dictionary);
     return;
   }
-
   DBusThreadManager::Get()->GetShillServiceClient()->GetProperties(
       dbus::ObjectPath(service_path),
       base::Bind(&NetworkConfigurationHandler::GetPropertiesCallback,

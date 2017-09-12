@@ -789,16 +789,15 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
       state = shill::kStateOnline;
     }
     AddTechnology(shill::kTypeCellular, enabled);
-    devices->AddDevice(
-        "/device/cellular1", shill::kTypeCellular, "stub_cellular_device1");
+    devices->AddDevice("/device/cellular1", shill::kTypeCellular,
+                       "stub_cellular_device1");
     devices->SetDeviceProperty("/device/cellular1", shill::kCarrierProperty,
                                base::Value(shill::kCarrierSprint));
     base::ListValue carrier_list;
     carrier_list.AppendString(shill::kCarrierSprint);
     carrier_list.AppendString(shill::kCarrierGenericUMTS);
     devices->SetDeviceProperty("/device/cellular1",
-                               shill::kSupportedCarriersProperty,
-                               carrier_list);
+                               shill::kSupportedCarriersProperty, carrier_list);
     if (roaming_state_ == kRoamingRequired) {
       devices->SetDeviceProperty("/device/cellular1",
                                  shill::kProviderRequiresRoamingProperty,
@@ -813,66 +812,66 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
       devices->SetSimLocked("/device/cellular1", false);
     }
 
-    services->AddService(kCellularServicePath,
-                         "cellular1_guid",
-                         "cellular1" /* name */,
-                         shill::kTypeCellular,
-                         state,
-                         add_to_visible);
-    base::Value technology_value(cellular_technology_);
-    devices->SetDeviceProperty("/device/cellular1",
-                               shill::kTechnologyFamilyProperty,
-                               technology_value);
-    services->SetServiceProperty(kCellularServicePath,
-                                 shill::kNetworkTechnologyProperty,
+    if (state != shill::kStateIdle) {
+      services->AddService(kCellularServicePath, "cellular1_guid",
+                           "cellular1" /* name */, shill::kTypeCellular, state,
+                           add_to_visible);
+      base::Value technology_value(cellular_technology_);
+      devices->SetDeviceProperty("/device/cellular1",
+                                 shill::kTechnologyFamilyProperty,
                                  technology_value);
-    base::Value strength_value(50);
-    services->SetServiceProperty(
-        kCellularServicePath, shill::kSignalStrengthProperty, strength_value);
+      services->SetServiceProperty(kCellularServicePath,
+                                   shill::kNetworkTechnologyProperty,
+                                   technology_value);
+      base::Value strength_value(50);
+      services->SetServiceProperty(
+          kCellularServicePath, shill::kSignalStrengthProperty, strength_value);
 
-    if (activated) {
-      services->SetServiceProperty(
-          kCellularServicePath, shill::kActivationStateProperty,
-          base::Value(shill::kActivationStateActivated));
-      services->SetServiceProperty(
-          kCellularServicePath, shill::kConnectableProperty, base::Value(true));
-    } else {
-      services->SetServiceProperty(
-          kCellularServicePath, shill::kActivationStateProperty,
-          base::Value(shill::kActivationStateNotActivated));
+      if (activated) {
+        services->SetServiceProperty(
+            kCellularServicePath, shill::kActivationStateProperty,
+            base::Value(shill::kActivationStateActivated));
+        services->SetServiceProperty(kCellularServicePath,
+                                     shill::kConnectableProperty,
+                                     base::Value(true));
+      } else {
+        services->SetServiceProperty(
+            kCellularServicePath, shill::kActivationStateProperty,
+            base::Value(shill::kActivationStateNotActivated));
+      }
+
+      std::string shill_roaming_state;
+      if (roaming_state_ == kRoamingRequired)
+        shill_roaming_state = shill::kRoamingStateRoaming;
+      else if (roaming_state_.empty())
+        shill_roaming_state = shill::kRoamingStateHome;
+      else  // |roaming_state_| is expected to be a valid Shill state.
+        shill_roaming_state = roaming_state_;
+      services->SetServiceProperty(kCellularServicePath,
+                                   shill::kRoamingStateProperty,
+                                   base::Value(shill_roaming_state));
+
+      base::DictionaryValue apn;
+      apn.SetKey(shill::kApnProperty, base::Value("testapn"));
+      apn.SetKey(shill::kApnNameProperty, base::Value("Test APN"));
+      apn.SetKey(shill::kApnLocalizedNameProperty,
+                 base::Value("Localized Test APN"));
+      apn.SetKey(shill::kApnUsernameProperty, base::Value("User1"));
+      apn.SetKey(shill::kApnPasswordProperty, base::Value("password"));
+      base::DictionaryValue apn2;
+      apn2.SetKey(shill::kApnProperty, base::Value("testapn2"));
+      services->SetServiceProperty(kCellularServicePath,
+                                   shill::kCellularApnProperty, apn);
+      services->SetServiceProperty(kCellularServicePath,
+                                   shill::kCellularLastGoodApnProperty, apn);
+      base::ListValue apn_list;
+      apn_list.Append(apn.CreateDeepCopy());
+      apn_list.Append(apn2.CreateDeepCopy());
+      devices->SetDeviceProperty("/device/cellular1",
+                                 shill::kCellularApnListProperty, apn_list);
+
+      profiles->AddService(shared_profile, kCellularServicePath);
     }
-
-    std::string shill_roaming_state;
-    if (roaming_state_ == kRoamingRequired)
-      shill_roaming_state = shill::kRoamingStateRoaming;
-    else if (roaming_state_.empty())
-      shill_roaming_state = shill::kRoamingStateHome;
-    else  // |roaming_state_| is expected to be a valid Shill state.
-      shill_roaming_state = roaming_state_;
-    services->SetServiceProperty(kCellularServicePath,
-                                 shill::kRoamingStateProperty,
-                                 base::Value(shill_roaming_state));
-
-    base::DictionaryValue apn;
-    apn.SetKey(shill::kApnProperty, base::Value("testapn"));
-    apn.SetKey(shill::kApnNameProperty, base::Value("Test APN"));
-    apn.SetKey(shill::kApnLocalizedNameProperty,
-               base::Value("Localized Test APN"));
-    apn.SetKey(shill::kApnUsernameProperty, base::Value("User1"));
-    apn.SetKey(shill::kApnPasswordProperty, base::Value("password"));
-    base::DictionaryValue apn2;
-    apn2.SetKey(shill::kApnProperty, base::Value("testapn2"));
-    services->SetServiceProperty(kCellularServicePath,
-                                 shill::kCellularApnProperty, apn);
-    services->SetServiceProperty(kCellularServicePath,
-                                 shill::kCellularLastGoodApnProperty, apn);
-    base::ListValue apn_list;
-    apn_list.Append(apn.CreateDeepCopy());
-    apn_list.Append(apn2.CreateDeepCopy());
-    devices->SetDeviceProperty("/device/cellular1",
-                               shill::kCellularApnListProperty, apn_list);
-
-    profiles->AddService(shared_profile, kCellularServicePath);
   }
 
   // VPN
