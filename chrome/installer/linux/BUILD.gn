@@ -66,6 +66,11 @@ action_foreach("calculate_deb_dependencies") {
   ]
   script = "debian/calculate_package_deps.py"
   sources = packaging_files_binaries
+  inputs = [
+    "debian/deb_version.py",
+    "debian/dist-package-versions.json",
+    "debian/package_version_interval.py",
+  ]
   outputs = [
     "$root_out_dir/deb_{{source_name_part}}.deps",
   ]
@@ -85,6 +90,8 @@ action("merge_deb_dependencies") {
   additional_deps = "debian/additional_deps"
   inputs = [
     additional_deps,
+    "debian/deb_version.py",
+    "debian/package_version_interval.py",
   ]
   outputs = [
     "$root_out_dir/deb_common.deps",
@@ -103,6 +110,9 @@ action_foreach("calculate_rpm_dependencies") {
   ]
   script = "rpm/calculate_package_deps.py"
   sources = packaging_files_binaries
+  inputs = [
+    "rpm/dist-package-provides.json",
+  ]
   outputs = [
     "$root_out_dir/rpm_{{source_name_part}}.deps",
   ]
@@ -118,10 +128,17 @@ action("merge_rpm_dependencies") {
     ":calculate_rpm_dependencies",
   ]
   script = "rpm/merge_package_deps.py"
+  additional_deps = "rpm/additional_deps"
+  inputs = [
+    additional_deps,
+  ]
   outputs = [
     "$root_out_dir/rpm_common.deps",
   ]
-  args = [ "rpm_common.deps" ]
+  args = [
+    "rpm_common.deps",
+    rebase_path(additional_deps, root_build_dir),
+  ]
   args += rebase_path(get_target_outputs(":calculate_rpm_dependencies"),
                       root_build_dir)
 }
@@ -264,7 +281,6 @@ if (!is_chromeos) {
     sources = [
       "rpm/build.sh",
       "rpm/chrome.spec.template",
-      "rpm/expected_deps_x86_64",
     ]
     outputs = [
       "$root_out_dir/installer/rpm/{{source_file_part}}",
@@ -425,6 +441,7 @@ template("linux_package") {
       }
       deps = [
         ":installer_deps",
+        ":merge_rpm_dependencies",
       ]
     }
   }
