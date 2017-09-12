@@ -1432,8 +1432,12 @@ registerLoadRequestForURL:(const GURL&)requestURL
   _lastRegisteredRequestURL = requestURL;
 
   if (!redirect) {
-    // Record state of outgoing page.
-    [self recordStateInHistory];
+    if (!self.nativeController) {
+      // Record the state of outgoing web view. Do nothing if native controller
+      // exists, because in that case recordStateInHistory will record the state
+      // of incoming page as native controller is already inserted.
+      [self recordStateInHistory];
+    }
   }
 
   [_delegate webWillAddPendingURL:requestURL transition:transition];
