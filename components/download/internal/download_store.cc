@@ -42,8 +42,7 @@ bool DownloadStore::IsInitialized() {
 void DownloadStore::Initialize(InitCallback callback) {
   DCHECK(!IsInitialized());
   db_->InitWithOptions(
-      kDatabaseClientName,
-      leveldb_proto::Options(database_dir_, SharedReadCache::Default),
+      kDatabaseClientName, database_dir_, leveldb_env::Options(),
       base::BindOnce(&DownloadStore::OnDatabaseInited,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -85,8 +84,7 @@ void DownloadStore::OnDatabaseDestroyed(StoreCallback callback, bool success) {
   }
 
   db_->InitWithOptions(
-      kDatabaseClientName,
-      leveldb_proto::Options(database_dir_, SharedReadCache::Default),
+      kDatabaseClientName, database_dir_, leveldb_env::Options(),
       base::BindOnce(&DownloadStore::OnDatabaseInitedAfterDestroy,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }

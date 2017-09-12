@@ -45,7 +45,8 @@ class ProtoDatabaseImpl : public ProtoDatabase<T> {
   //     part of the constructor
   void InitWithOptions(
       const char* client_name,
-      const Options& options,
+      const base::FilePath& database_dir,
+      const leveldb_env::Options& options,
       typename ProtoDatabase<T>::InitCallback callback) override;
   void UpdateEntries(
       std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector>
@@ -60,7 +61,8 @@ class ProtoDatabaseImpl : public ProtoDatabase<T> {
 
   // Allow callers to provide their own Database implementation.
   void InitWithDatabase(std::unique_ptr<LevelDB> database,
-                        const Options& options,
+                        const base::FilePath& database_dir,
+                        const leveldb_env::Options& options,
                         typename ProtoDatabase<T>::InitCallback callback);
 
  private:
@@ -118,12 +120,13 @@ void RunDestroyCallback(typename ProtoDatabase<T>::DestroyCallback callback,
 }
 
 inline void InitFromTaskRunner(LevelDB* database,
-                               const Options& options,
+                               const base::FilePath& database_dir,
+                               const leveldb_env::Options& options,
                                bool* success) {
   DCHECK(success);
 
   // TODO(cjhopman): Histogram for database size.
-  *success = database->Init(options);
+  *success = database->Init(database_dir, options);
 }
 
 inline void DestroyFromTaskRunner(const base::FilePath& database_dir,
@@ -220,12 +223,13 @@ ProtoDatabaseImpl<T>::~ProtoDatabaseImpl() {
 template <typename T>
 void ProtoDatabaseImpl<T>::InitWithOptions(
     const char* client_name,
-    const Options& options,
+    const base::FilePath& database_dir,
+    const leveldb_env::Options& options,
     typename ProtoDatabase<T>::InitCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  database_dir_ = options.database_dir;
-  InitWithDatabase(base::WrapUnique(new LevelDB(client_name)), options,
-                   std::move(callback));
+  database_dir_ = database_dir;
+  InitWithDatabase(base::WrapUnique(new LevelDB(client_name)), database_dir,
+                   options, std::move(callback));
 }
 
 template <typename T>
@@ -253,7 +257,8 @@ void ProtoDatabaseImpl<T>::Destroy(
 template <typename T>
 void ProtoDatabaseImpl<T>::InitWithDatabase(
     std::unique_ptr<LevelDB> database,
-    const Options& options,
+    const base::FilePath& database_dir,
+    const leveldb_env::Options& options,
     typename ProtoDatabase<T>::InitCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!db_);
@@ -262,8 +267,8 @@ void ProtoDatabaseImpl<T>::InitWithDatabase(
   bool* success = new bool(false);
   task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(InitFromTaskRunner, base::Unretained(db_.get()), options,
-                 success),
+      base::Bind(InitFromTaskRunner, base::Unretained(db_.get()), database_dir,
+                 options, success),
       base::BindOnce(RunInitCallback<T>, std::move(callback),
                      base::Owned(success)));
 }
