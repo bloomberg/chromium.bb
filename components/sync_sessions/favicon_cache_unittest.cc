@@ -42,7 +42,7 @@ class TestChangeProcessor : public syncer::SyncChangeProcessor {
 
   // Store a copy of all the changes passed in so we can examine them later.
   syncer::SyncError ProcessSyncChanges(
-      const tracked_objects::Location& from_here,
+      const base::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
 
   syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override {
@@ -83,7 +83,7 @@ TestChangeProcessor::~TestChangeProcessor() {
 }
 
 syncer::SyncError TestChangeProcessor::ProcessSyncChanges(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const syncer::SyncChangeList& change_list) {
   if (erroneous_) {
     return syncer::SyncError(

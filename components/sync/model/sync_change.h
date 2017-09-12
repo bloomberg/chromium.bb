@@ -31,7 +31,7 @@ class SyncChange {
   // Default constructor creates an invalid change.
   SyncChange();
   // Create a new change with the specified sync data.
-  SyncChange(const tracked_objects::Location& from_here,
+  SyncChange(const base::Location& from_here,
              SyncChangeType change_type,
              const SyncData& sync_data);
   ~SyncChange();
@@ -49,7 +49,7 @@ class SyncChange {
   // Getters.
   SyncChangeType change_type() const;
   SyncData sync_data() const;
-  tracked_objects::Location location() const;
+  base::Location location() const;
 
   // Returns a string representation of |change_type|.
   static std::string ChangeTypeToString(SyncChangeType change_type);
@@ -59,7 +59,7 @@ class SyncChange {
   std::string ToString() const;
 
  private:
-  tracked_objects::Location location_;
+  base::Location location_;
 
   SyncChangeType change_type_;
 

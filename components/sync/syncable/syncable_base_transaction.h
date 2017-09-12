@@ -46,13 +46,13 @@ class BaseTransaction {
   // called we set a bool in the transaction. The caller has to unwind the
   // stack. When the destructor for the transaction is called it acts upon the
   // bool and calls the Directory to handle the unrecoverable error.
-  void OnUnrecoverableError(const tracked_objects::Location& location,
+  void OnUnrecoverableError(const base::Location& location,
                             const std::string& message);
 
   bool unrecoverable_error_set() const;
 
  protected:
-  BaseTransaction(const tracked_objects::Location& from_here,
+  BaseTransaction(const base::Location& from_here,
                   const char* name,
                   WriterTag writer,
                   Directory* directory);
@@ -66,14 +66,14 @@ class BaseTransaction {
   // thread could call the method at a time.
   void HandleUnrecoverableErrorIfSet();
 
-  const tracked_objects::Location from_here_;
+  const base::Location from_here_;
   const char* const name_;
   WriterTag writer_;
   Directory* const directory_;
 
   // Error information.
   bool unrecoverable_error_set_;
-  tracked_objects::Location unrecoverable_error_location_;
+  base::Location unrecoverable_error_location_;
   std::string unrecoverable_error_msg_;
 
  private:

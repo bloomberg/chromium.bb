@@ -19,8 +19,7 @@ namespace syncable {
 // Locks db in constructor, unlocks in destructor.
 class ReadTransaction : public BaseTransaction {
  public:
-  ReadTransaction(const tracked_objects::Location& from_here,
-                  Directory* directory);
+  ReadTransaction(const base::Location& from_here, Directory* directory);
 
   ~ReadTransaction() override;
 

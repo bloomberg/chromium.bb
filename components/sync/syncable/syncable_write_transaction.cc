@@ -17,7 +17,7 @@ namespace syncable {
 
 const int64_t kInvalidTransactionVersion = -1;
 
-WriteTransaction::WriteTransaction(const tracked_objects::Location& location,
+WriteTransaction::WriteTransaction(const base::Location& location,
                                    WriterTag writer,
                                    Directory* directory)
     : BaseWriteTransaction(location, "WriteTransaction", writer, directory),
@@ -25,7 +25,7 @@ WriteTransaction::WriteTransaction(const tracked_objects::Location& location,
   Lock();
 }
 
-WriteTransaction::WriteTransaction(const tracked_objects::Location& location,
+WriteTransaction::WriteTransaction(const base::Location& location,
                                    Directory* directory,
                                    int64_t* transaction_version)
     : BaseWriteTransaction(location, "WriteTransaction", SYNCAPI, directory),

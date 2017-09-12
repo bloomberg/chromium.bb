@@ -172,7 +172,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // called on any thread.
   // Note: see related BrowserThread::PostAfterStartupTask.
   virtual void PostAfterStartupTask(
-      const tracked_objects::Location& from_here,
+      const base::Location& from_here,
       const scoped_refptr<base::TaskRunner>& task_runner,
       base::OnceClosure task);
 

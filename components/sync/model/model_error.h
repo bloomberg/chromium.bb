@@ -16,21 +16,20 @@ namespace syncer {
 class ModelError {
  public:
   // Creates a set error object with the given location and message.
-  ModelError(const tracked_objects::Location& location,
-             const std::string& message);
+  ModelError(const base::Location& location, const std::string& message);
 
   ~ModelError();
 
   // The location of the error this object represents. Can only be called if the
   // error is set.
-  const tracked_objects::Location& location() const;
+  const base::Location& location() const;
 
   // The message explaining the error this object represents. Can only be called
   // if the error is set.
   const std::string& message() const;
 
  private:
-  tracked_objects::Location location_;
+  base::Location location_;
   std::string message_;
 };
 

@@ -66,7 +66,7 @@ SyncDataList FakeSyncableService::GetAllSyncData(ModelType type) const {
 }
 
 SyncError FakeSyncableService::ProcessSyncChanges(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const SyncChangeList& change_list) {
   return process_sync_changes_error_;
 }

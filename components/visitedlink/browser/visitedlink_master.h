@@ -221,8 +221,7 @@ class VisitedLinkMaster : public VisitedLinkCommon {
   // These functions are only called if |persist_to_disk_| is true.
 
   // Posts the given task to the blocking worker pool with our options.
-  void PostIOTask(const tracked_objects::Location& from_here,
-                  const base::Closure& task);
+  void PostIOTask(const base::Location& from_here, const base::Closure& task);
 
   // Writes the entire table to disk. It will leave the table file open and
   // the handle to it will be stored in file_.

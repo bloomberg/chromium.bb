@@ -227,7 +227,7 @@ void Directory::Close() {
 }
 
 void Directory::OnUnrecoverableError(const BaseTransaction* trans,
-                                     const tracked_objects::Location& location,
+                                     const base::Location& location,
                                      const std::string& message) {
   DCHECK(trans != nullptr);
   unrecoverable_error_set_ = true;

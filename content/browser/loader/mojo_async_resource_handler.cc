@@ -569,7 +569,7 @@ void MojoAsyncResourceHandler::ReportBadMessage(const std::string& error) {
 
 std::unique_ptr<UploadProgressTracker>
 MojoAsyncResourceHandler::CreateUploadProgressTracker(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     UploadProgressTracker::UploadProgressReportCallback callback) {
   return base::MakeUnique<UploadProgressTracker>(from_here, std::move(callback),
                                                  request());

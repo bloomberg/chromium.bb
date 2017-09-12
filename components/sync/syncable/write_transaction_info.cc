@@ -14,7 +14,7 @@ namespace syncable {
 
 WriteTransactionInfo::WriteTransactionInfo(
     int64_t id,
-    tracked_objects::Location location,
+    base::Location location,
     WriterTag writer,
     ImmutableEntryKernelMutationMap mutations)
     : id(id),

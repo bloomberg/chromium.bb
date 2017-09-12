@@ -35,7 +35,7 @@ class CONTENT_EXPORT CategorizedWorkerPool : public base::TaskRunner,
   CategorizedWorkerPool();
 
   // Overridden from base::TaskRunner:
-  bool PostDelayedTask(const tracked_objects::Location& from_here,
+  bool PostDelayedTask(const base::Location& from_here,
                        base::OnceClosure task,
                        base::TimeDelta delay) override;
   bool RunsTasksInCurrentSequence() const override;

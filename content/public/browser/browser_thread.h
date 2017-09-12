@@ -117,30 +117,29 @@ class CONTENT_EXPORT BrowserThread {
   // even if the task is posted, there's no guarantee that it will run, since
   // the target thread may already have a Quit message in its queue.
   static bool PostTask(ID identifier,
-                       const tracked_objects::Location& from_here,
+                       const base::Location& from_here,
                        base::OnceClosure task);
   static bool PostDelayedTask(ID identifier,
-                              const tracked_objects::Location& from_here,
+                              const base::Location& from_here,
                               base::OnceClosure task,
                               base::TimeDelta delay);
   static bool PostNonNestableTask(ID identifier,
-                                  const tracked_objects::Location& from_here,
+                                  const base::Location& from_here,
                                   base::OnceClosure task);
-  static bool PostNonNestableDelayedTask(
-      ID identifier,
-      const tracked_objects::Location& from_here,
-      base::OnceClosure task,
-      base::TimeDelta delay);
+  static bool PostNonNestableDelayedTask(ID identifier,
+                                         const base::Location& from_here,
+                                         base::OnceClosure task,
+                                         base::TimeDelta delay);
 
   static bool PostTaskAndReply(ID identifier,
-                               const tracked_objects::Location& from_here,
+                               const base::Location& from_here,
                                base::OnceClosure task,
                                base::OnceClosure reply);
 
   template <typename ReturnType, typename ReplyArgType>
   static bool PostTaskAndReplyWithResult(
       ID identifier,
-      const tracked_objects::Location& from_here,
+      const base::Location& from_here,
       base::OnceCallback<ReturnType()> task,
       base::OnceCallback<void(ReplyArgType)> reply) {
     scoped_refptr<base::SingleThreadTaskRunner> task_runner =
@@ -158,7 +157,7 @@ class CONTENT_EXPORT BrowserThread {
   template <typename ReturnType, typename ReplyArgType>
   static bool PostTaskAndReplyWithResult(
       ID identifier,
-      const tracked_objects::Location& from_here,
+      const base::Location& from_here,
       base::Callback<ReturnType()> task,
       base::Callback<void(ReplyArgType)> reply) {
     return PostTaskAndReplyWithResult(
@@ -169,21 +168,21 @@ class CONTENT_EXPORT BrowserThread {
 
   template <class T>
   static bool DeleteSoon(ID identifier,
-                         const tracked_objects::Location& from_here,
+                         const base::Location& from_here,
                          const T* object) {
     return GetTaskRunnerForThread(identifier)->DeleteSoon(from_here, object);
   }
 
   template <class T>
   static bool DeleteSoon(ID identifier,
-                         const tracked_objects::Location& from_here,
+                         const base::Location& from_here,
                          std::unique_ptr<T> object) {
     return DeleteSoon(identifier, from_here, object.release());
   }
 
   template <class T>
   static bool ReleaseSoon(ID identifier,
-                          const tracked_objects::Location& from_here,
+                          const base::Location& from_here,
                           const T* object) {
     return GetTaskRunnerForThread(identifier)->ReleaseSoon(from_here, object);
   }
@@ -206,7 +205,7 @@ class CONTENT_EXPORT BrowserThread {
   // GetBlockingPool().
   static bool PostBlockingPoolSequencedTask(
       const std::string& sequence_token_name,
-      const tracked_objects::Location& from_here,
+      const base::Location& from_here,
       base::OnceClosure task);
 
   // For use with scheduling non-critical tasks for execution after startup.
@@ -217,7 +216,7 @@ class CONTENT_EXPORT BrowserThread {
   // to |task_runner| immediately.
   // Note: see related ContentBrowserClient::PostAfterStartupTask.
   static void PostAfterStartupTask(
-      const tracked_objects::Location& from_here,
+      const base::Location& from_here,
       const scoped_refptr<base::TaskRunner>& task_runner,
       base::OnceClosure task);
 

@@ -36,13 +36,11 @@ namespace content {
 
 namespace {
 
-void RunSoon(const tracked_objects::Location& from_here,
-             const base::Closure& closure) {
+void RunSoon(const base::Location& from_here, const base::Closure& closure) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(from_here, closure);
 }
 
-void RunSoon(const tracked_objects::Location& from_here,
-             base::OnceClosure closure) {
+void RunSoon(const base::Location& from_here, base::OnceClosure closure) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(from_here, std::move(closure));
 }
 
@@ -59,7 +57,7 @@ void CompleteFindNow(
 }
 
 void CompleteFindSoon(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     scoped_refptr<ServiceWorkerRegistration> registration,
     ServiceWorkerStatusCode status,
     const ServiceWorkerStorage::FindRegistrationCallback& callback) {

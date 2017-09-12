@@ -18,7 +18,7 @@ class SyncErrorFactoryMock : public SyncErrorFactory {
   virtual ~SyncErrorFactoryMock();
 
   MOCK_METHOD2(CreateAndUploadError,
-               SyncError(const tracked_objects::Location& location,
+               SyncError(const base::Location& location,
                          const std::string& message));
 };
 

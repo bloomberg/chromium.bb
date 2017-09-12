@@ -15,7 +15,7 @@ SyncChangeProcessorWrapperForTest::SyncChangeProcessorWrapperForTest(
 SyncChangeProcessorWrapperForTest::~SyncChangeProcessorWrapperForTest() {}
 
 SyncError SyncChangeProcessorWrapperForTest::ProcessSyncChanges(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const SyncChangeList& change_list) {
   return wrapped_->ProcessSyncChanges(from_here, change_list);
 }

@@ -30,9 +30,8 @@ void BaseTransaction::Unlock() {
   directory_->kernel()->transaction_mutex.Release();
 }
 
-void BaseTransaction::OnUnrecoverableError(
-    const tracked_objects::Location& location,
-    const std::string& message) {
+void BaseTransaction::OnUnrecoverableError(const base::Location& location,
+                                           const std::string& message) {
   unrecoverable_error_set_ = true;
   unrecoverable_error_location_ = location;
   unrecoverable_error_msg_ = message;
@@ -55,7 +54,7 @@ void BaseTransaction::HandleUnrecoverableErrorIfSet() {
   }
 }
 
-BaseTransaction::BaseTransaction(const tracked_objects::Location& from_here,
+BaseTransaction::BaseTransaction(const base::Location& from_here,
                                  const char* name,
                                  WriterTag writer,
                                  Directory* directory)

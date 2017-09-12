@@ -146,7 +146,7 @@ syncer::SyncDataList WifiCredentialSyncableService::GetAllSyncData(
 }
 
 syncer::SyncError WifiCredentialSyncableService::ProcessSyncChanges(
-    const tracked_objects::Location& /* caller_location */,
+    const base::Location& /* caller_location */,
     const syncer::SyncChangeList& change_list) {
   if (!sync_processor_.get()) {
     return syncer::SyncError(

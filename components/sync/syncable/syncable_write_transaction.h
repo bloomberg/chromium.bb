@@ -21,7 +21,7 @@ extern const int64_t kInvalidTransactionVersion;
 // Locks db in constructor, unlocks in destructor.
 class WriteTransaction : public BaseWriteTransaction {
  public:
-  WriteTransaction(const tracked_objects::Location& from_here,
+  WriteTransaction(const base::Location& from_here,
                    WriterTag writer,
                    Directory* directory);
 
@@ -30,7 +30,7 @@ class WriteTransaction : public BaseWriteTransaction {
   // the new transaction version of the model and modified nodes will be saved
   // in |transaction_version| upon destruction of the transaction. If model is
   // not changed,  |transaction_version| will be kInvalidTransactionVersion.
-  WriteTransaction(const tracked_objects::Location& from_here,
+  WriteTransaction(const base::Location& from_here,
                    Directory* directory,
                    int64_t* transaction_version);
 

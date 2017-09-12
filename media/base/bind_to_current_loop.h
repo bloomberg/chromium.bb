@@ -45,7 +45,7 @@ base::OnceClosure MakeClosure(base::OnceCallback<Signature>* callback,
 template <typename CallbackType>
 class TrampolineHelper {
  public:
-  TrampolineHelper(const tracked_objects::Location& posted_from,
+  TrampolineHelper(const base::Location& posted_from,
                    scoped_refptr<base::SequencedTaskRunner> task_runner,
                    CallbackType callback)
       : posted_from_(posted_from),
@@ -74,7 +74,7 @@ class TrampolineHelper {
  private:
   static void ClearCallbackOnTargetTaskRunner(CallbackType) {}
 
-  tracked_objects::Location posted_from_;
+  base::Location posted_from_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   CallbackType callback_;
 };

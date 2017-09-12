@@ -34,7 +34,7 @@ TestOrderablePendingTask::TestOrderablePendingTask()
       task_id_(TestOrderablePendingTask::task_id_counter++) {}
 
 TestOrderablePendingTask::TestOrderablePendingTask(
-    const tracked_objects::Location& location,
+    const base::Location& location,
     base::OnceClosure task,
     base::TimeTicks post_time,
     base::TimeDelta delay,
@@ -98,10 +98,9 @@ OrderedSimpleTaskRunner::OrderedSimpleTaskRunner(
 OrderedSimpleTaskRunner::~OrderedSimpleTaskRunner() {}
 
 // base::TestSimpleTaskRunner implementation
-bool OrderedSimpleTaskRunner::PostDelayedTask(
-    const tracked_objects::Location& from_here,
-    base::OnceClosure task,
-    base::TimeDelta delay) {
+bool OrderedSimpleTaskRunner::PostDelayedTask(const base::Location& from_here,
+                                              base::OnceClosure task,
+                                              base::TimeDelta delay) {
   DCHECK(thread_checker_.CalledOnValidThread());
   TestOrderablePendingTask pt(from_here, std::move(task), now_src_->NowTicks(),
                               delay, base::TestPendingTask::NESTABLE);
@@ -112,7 +111,7 @@ bool OrderedSimpleTaskRunner::PostDelayedTask(
 }
 
 bool OrderedSimpleTaskRunner::PostNonNestableDelayedTask(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     base::OnceClosure task,
     base::TimeDelta delay) {
   DCHECK(thread_checker_.CalledOnValidThread());

@@ -11,7 +11,7 @@ namespace syncer {
 
 //////////////////////////////////////////////////////////////////////////
 // ReadTransaction member definitions
-ReadTransaction::ReadTransaction(const tracked_objects::Location& from_here,
+ReadTransaction::ReadTransaction(const base::Location& from_here,
                                  UserShare* share)
     : BaseTransaction(share), transaction_(nullptr), close_transaction_(true) {
   transaction_ =
