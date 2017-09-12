@@ -2053,10 +2053,10 @@ drm_output_apply_state_atomic(struct drm_output_state *state,
 			      uint32_t *flags)
 {
 	struct drm_output *output = state->output;
-	struct drm_head *head = to_drm_head(weston_output_get_first_head(&output->base));
 	struct drm_backend *backend = to_drm_backend(output->base.compositor);
 	struct drm_plane_state *plane_state;
 	struct drm_mode *current_mode = to_drm_mode(output->base.current_mode);
+	struct drm_head *head;
 	int ret = 0;
 
 	if (state->dpms != output->state_cur->dpms)
@@ -2070,12 +2070,17 @@ drm_output_apply_state_atomic(struct drm_output_state *state,
 		ret |= crtc_add_prop(req, output, WDRM_CRTC_MODE_ID,
 				     current_mode->blob_id);
 		ret |= crtc_add_prop(req, output, WDRM_CRTC_ACTIVE, 1);
-		ret |= connector_add_prop(req, head, WDRM_CONNECTOR_CRTC_ID,
-					  output->crtc_id);
+
+		wl_list_for_each(head, &output->base.head_list, base.output_link) {
+			ret |= connector_add_prop(req, head, WDRM_CONNECTOR_CRTC_ID,
+						  output->crtc_id);
+		}
 	} else {
 		ret |= crtc_add_prop(req, output, WDRM_CRTC_MODE_ID, 0);
 		ret |= crtc_add_prop(req, output, WDRM_CRTC_ACTIVE, 0);
-		ret |= connector_add_prop(req, head, WDRM_CONNECTOR_CRTC_ID, 0);
+
+		wl_list_for_each(head, &output->base.head_list, base.output_link)
+			ret |= connector_add_prop(req, head, WDRM_CONNECTOR_CRTC_ID, 0);
 	}
 
 	if (ret != 0) {
