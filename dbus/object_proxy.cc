@@ -188,16 +188,17 @@ void ObjectProxy::ConnectToSignal(const std::string& interface_name,
   if (bus_->HasDBusThread()) {
     base::PostTaskAndReplyWithResult(
         bus_->GetDBusTaskRunner(), FROM_HERE,
-        base::Bind(&ObjectProxy::ConnectToSignalInternal, this, interface_name,
-                   signal_name, signal_callback),
-        base::Bind(on_connected_callback, interface_name, signal_name));
+        base::BindOnce(&ObjectProxy::ConnectToSignalInternal, this,
+                       interface_name, signal_name, signal_callback),
+        base::BindOnce(std::move(on_connected_callback), interface_name,
+                       signal_name));
   } else {
     // If the bus doesn't have a dedicated dbus thread we need to call
     // ConnectToSignalInternal directly otherwise we might miss a signal
     // that is currently queued if we do a PostTask.
     const bool success =
         ConnectToSignalInternal(interface_name, signal_name, signal_callback);
-    on_connected_callback.Run(interface_name, signal_name, success);
+    std::move(on_connected_callback).Run(interface_name, signal_name, success);
   }
 }
 
@@ -212,10 +213,10 @@ void ObjectProxy::WaitForServiceToBeAvailable(
     WaitForServiceToBeAvailableCallback callback) {
   bus_->AssertOnOriginThread();
 
-  wait_for_service_to_be_available_callbacks_.push_back(callback);
+  wait_for_service_to_be_available_callbacks_.push_back(std::move(callback));
   bus_->GetDBusTaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&ObjectProxy::WaitForServiceToBeAvailableInternal, this));
+      base::BindOnce(&ObjectProxy::WaitForServiceToBeAvailableInternal, this));
 }
 
 void ObjectProxy::Detach() {
@@ -438,8 +439,8 @@ void ObjectProxy::WaitForServiceToBeAvailableInternal() {
     const bool service_is_ready = false;
     bus_->GetOriginTaskRunner()->PostTask(
         FROM_HERE,
-        base::Bind(&ObjectProxy::RunWaitForServiceToBeAvailableCallbacks,
-                   this, service_is_ready));
+        base::BindOnce(&ObjectProxy::RunWaitForServiceToBeAvailableCallbacks,
+                       this, service_is_ready));
     return;
   }
 
@@ -447,8 +448,8 @@ void ObjectProxy::WaitForServiceToBeAvailableInternal() {
   if (service_is_available) {  // Service is already available.
     bus_->GetOriginTaskRunner()->PostTask(
         FROM_HERE,
-        base::Bind(&ObjectProxy::RunWaitForServiceToBeAvailableCallbacks,
-                   this, service_is_available));
+        base::BindOnce(&ObjectProxy::RunWaitForServiceToBeAvailableCallbacks,
+                       this, service_is_available));
     return;
   }
 }
@@ -713,7 +714,7 @@ void ObjectProxy::RunWaitForServiceToBeAvailableCallbacks(
   std::vector<WaitForServiceToBeAvailableCallback> callbacks;
   callbacks.swap(wait_for_service_to_be_available_callbacks_);
   for (size_t i = 0; i < callbacks.size(); ++i)
-    callbacks[i].Run(service_is_available);
+    std::move(callbacks[i]).Run(service_is_available);
 }
 
 }  // namespace dbus

@@ -119,19 +119,19 @@ void ShillClientUnittestBase::SetUp() {
   // OnConnectToPropertyChanged() to run the callback.
   EXPECT_CALL(
       *mock_proxy_.get(),
-      ConnectToSignal(interface_name_, shill::kMonitorPropertyChanged, _, _))
+      DoConnectToSignal(interface_name_, shill::kMonitorPropertyChanged, _, _))
       .WillRepeatedly(
-           Invoke(this, &ShillClientUnittestBase::OnConnectToPropertyChanged));
+          Invoke(this, &ShillClientUnittestBase::OnConnectToPropertyChanged));
 
-  EXPECT_CALL(
-      *mock_proxy_.get(),
-      ConnectToSignal(interface_name_, shill::kOnPlatformMessageFunction, _, _))
+  EXPECT_CALL(*mock_proxy_.get(),
+              DoConnectToSignal(interface_name_,
+                                shill::kOnPlatformMessageFunction, _, _))
       .WillRepeatedly(
           Invoke(this, &ShillClientUnittestBase::OnConnectToPlatformMessage));
 
-  EXPECT_CALL(
-      *mock_proxy_.get(),
-      ConnectToSignal(interface_name_, shill::kOnPacketReceivedFunction, _, _))
+  EXPECT_CALL(*mock_proxy_.get(),
+              DoConnectToSignal(interface_name_,
+                                shill::kOnPacketReceivedFunction, _, _))
       .WillRepeatedly(
           Invoke(this, &ShillClientUnittestBase::OnConnectToPacketReceived));
 
@@ -385,36 +385,36 @@ void ShillClientUnittestBase::OnConnectToPlatformMessage(
     const std::string& interface_name,
     const std::string& signal_name,
     const dbus::ObjectProxy::SignalCallback& signal_callback,
-    const dbus::ObjectProxy::OnConnectedCallback& on_connected_callback) {
+    dbus::ObjectProxy::OnConnectedCallback* on_connected_callback) {
   platform_message_handler_ = signal_callback;
   const bool success = true;
   message_loop_.task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(on_connected_callback, interface_name, signal_name, success));
+      FROM_HERE, base::BindOnce(std::move(*on_connected_callback),
+                                interface_name, signal_name, success));
 }
 
 void ShillClientUnittestBase::OnConnectToPacketReceived(
     const std::string& interface_name,
     const std::string& signal_name,
     const dbus::ObjectProxy::SignalCallback& signal_callback,
-    const dbus::ObjectProxy::OnConnectedCallback& on_connected_callback) {
+    dbus::ObjectProxy::OnConnectedCallback* on_connected_callback) {
   packet_receieved__handler_ = signal_callback;
   const bool success = true;
   message_loop_.task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(on_connected_callback, interface_name, signal_name, success));
+      FROM_HERE, base::BindOnce(std::move(*on_connected_callback),
+                                interface_name, signal_name, success));
 }
 
 void ShillClientUnittestBase::OnConnectToPropertyChanged(
     const std::string& interface_name,
     const std::string& signal_name,
     const dbus::ObjectProxy::SignalCallback& signal_callback,
-    const dbus::ObjectProxy::OnConnectedCallback& on_connected_callback) {
+    dbus::ObjectProxy::OnConnectedCallback* on_connected_callback) {
   property_changed_handler_ = signal_callback;
   const bool success = true;
   message_loop_.task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(on_connected_callback, interface_name, signal_name, success));
+      FROM_HERE, base::BindOnce(std::move(*on_connected_callback),
+                                interface_name, signal_name, success));
 }
 
 void ShillClientUnittestBase::OnCallMethod(

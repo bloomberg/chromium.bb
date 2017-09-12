@@ -187,7 +187,7 @@ class ShillClientUnittestBase : public testing::Test {
       const std::string& interface_name,
       const std::string& signal_name,
       const dbus::ObjectProxy::SignalCallback& signal_callback,
-      const dbus::ObjectProxy::OnConnectedCallback& on_connected_callback);
+      dbus::ObjectProxy::OnConnectedCallback* on_connected_callback);
 
   // Checks the requested interface name and signal name.
   // Used to implement the mock proxy.
@@ -195,7 +195,7 @@ class ShillClientUnittestBase : public testing::Test {
       const std::string& interface_name,
       const std::string& signal_name,
       const dbus::ObjectProxy::SignalCallback& signal_callback,
-      const dbus::ObjectProxy::OnConnectedCallback& on_connected_callback);
+      dbus::ObjectProxy::OnConnectedCallback* on_connected_callback);
 
   // Checks the requested interface name and signal name.
   // Used to implement the mock proxy.
@@ -203,7 +203,7 @@ class ShillClientUnittestBase : public testing::Test {
       const std::string& interface_name,
       const std::string& signal_name,
       const dbus::ObjectProxy::SignalCallback& signal_callback,
-      const dbus::ObjectProxy::OnConnectedCallback& on_connected_callback);
+      dbus::ObjectProxy::OnConnectedCallback* on_connected_callback);
 
   // Checks the content of the method call and returns the response.
   // Used to implement the mock proxy.

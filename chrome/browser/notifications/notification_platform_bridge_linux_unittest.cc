@@ -165,7 +165,8 @@ std::unique_ptr<dbus::Response> GetIdResponse(uint32_t id) {
 
 ACTION_P(RegisterSignalCallback, callback_addr) {
   *callback_addr = arg2;
-  arg3.Run("" /* interface_name */, "" /* signal_name */, true /* success */);
+  std::move(*arg3).Run("" /* interface_name */, "" /* signal_name */,
+                       true /* success */);
 }
 
 ACTION_P2(OnNotify, verifier, id) {
@@ -242,14 +243,14 @@ class NotificationPlatformBridgeLinuxTest : public testing::Test {
         .WillOnce(Return(ByMove(std::move(response))));
 
     if (connect_signals) {
-      EXPECT_CALL(
-          *mock_notification_proxy_.get(),
-          ConnectToSignal(kFreedesktopNotificationsName, "ActionInvoked", _, _))
+      EXPECT_CALL(*mock_notification_proxy_.get(),
+                  DoConnectToSignal(kFreedesktopNotificationsName,
+                                    "ActionInvoked", _, _))
           .WillOnce(RegisterSignalCallback(&action_invoked_callback_));
 
       EXPECT_CALL(*mock_notification_proxy_.get(),
-                  ConnectToSignal(kFreedesktopNotificationsName,
-                                  "NotificationClosed", _, _))
+                  DoConnectToSignal(kFreedesktopNotificationsName,
+                                    "NotificationClosed", _, _))
           .WillOnce(RegisterSignalCallback(&notification_closed_callback_));
     }
 
