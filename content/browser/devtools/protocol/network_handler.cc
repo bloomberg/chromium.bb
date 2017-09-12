@@ -566,9 +566,9 @@ class NetworkNavigationThrottle : public content::NavigationThrottle {
   NavigationThrottle::ThrottleCheckResult WillProcessResponse() override {
     if (network_handler_ && network_handler_->ShouldCancelNavigation(
                                 navigation_handle()->GetGlobalRequestID())) {
-      return ThrottleCheckResult::CANCEL_AND_IGNORE;
+      return CANCEL_AND_IGNORE;
     }
-    return ThrottleCheckResult::PROCEED;
+    return PROCEED;
   }
 
   const char* GetNameForLogging() override {

@@ -825,31 +825,32 @@ void NavigationRequest::OnRequestStarted(base::TimeTicks timestamp) {
 
 void NavigationRequest::OnStartChecksComplete(
     NavigationThrottle::ThrottleCheckResult result) {
-  DCHECK(result != NavigationThrottle::DEFER);
-  DCHECK(result != NavigationThrottle::BLOCK_RESPONSE);
+  DCHECK(result.action() != NavigationThrottle::DEFER);
+  DCHECK(result.action() != NavigationThrottle::BLOCK_RESPONSE);
 
   if (on_start_checks_complete_closure_)
     on_start_checks_complete_closure_.Run();
   // Abort the request if needed. This will destroy the NavigationRequest.
-  if (result == NavigationThrottle::CANCEL_AND_IGNORE ||
-      result == NavigationThrottle::CANCEL ||
-      result == NavigationThrottle::BLOCK_REQUEST ||
-      result == NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE) {
+  if (result.action() == NavigationThrottle::CANCEL_AND_IGNORE ||
+      result.action() == NavigationThrottle::CANCEL ||
+      result.action() == NavigationThrottle::BLOCK_REQUEST ||
+      result.action() == NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE) {
     // TODO(clamy): distinguish between CANCEL and CANCEL_AND_IGNORE.
-    int error_code = net::ERR_ABORTED;
-    if (result == NavigationThrottle::BLOCK_REQUEST ||
-        result == NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE) {
-      error_code = net::ERR_BLOCKED_BY_CLIENT;
-    }
+    DCHECK_EQ((result.action() == NavigationThrottle::CANCEL ||
+               result.action() == NavigationThrottle::CANCEL_AND_IGNORE)
+                  ? net::ERR_ABORTED
+                  : net::ERR_BLOCKED_BY_CLIENT,
+              result.net_error_code());
 
     // If the start checks completed synchronously, which could happen if there
     // is no onbeforeunload handler or if a NavigationThrottle cancelled it,
     // then this could cause reentrancy into NavigationController. So use a
     // PostTask to avoid that.
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(&NavigationRequest::OnRequestFailed,
-                                           weak_factory_.GetWeakPtr(), false,
-                                           error_code, base::nullopt, false));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&NavigationRequest::OnRequestFailed,
+                       weak_factory_.GetWeakPtr(), false,
+                       result.net_error_code(), base::nullopt, false));
 
     // DO NOT ADD CODE after this. The previous call to OnRequestFailed has
     // destroyed the NavigationRequest.
@@ -937,23 +938,25 @@ void NavigationRequest::OnStartChecksComplete(
 
 void NavigationRequest::OnRedirectChecksComplete(
     NavigationThrottle::ThrottleCheckResult result) {
-  DCHECK(result != NavigationThrottle::DEFER);
-  DCHECK(result != NavigationThrottle::BLOCK_RESPONSE);
+  DCHECK(result.action() != NavigationThrottle::DEFER);
+  DCHECK(result.action() != NavigationThrottle::BLOCK_RESPONSE);
 
   // Abort the request if needed. This will destroy the NavigationRequest.
-  if (result == NavigationThrottle::CANCEL_AND_IGNORE ||
-      result == NavigationThrottle::CANCEL) {
+  if (result.action() == NavigationThrottle::CANCEL_AND_IGNORE ||
+      result.action() == NavigationThrottle::CANCEL) {
     // TODO(clamy): distinguish between CANCEL and CANCEL_AND_IGNORE if needed.
-    OnRequestFailed(false, net::ERR_ABORTED, base::nullopt, false);
+    DCHECK_EQ(net::ERR_ABORTED, result.net_error_code());
+    OnRequestFailed(false, result.net_error_code(), base::nullopt, false);
 
     // DO NOT ADD CODE after this. The previous call to OnRequestFailed has
     // destroyed the NavigationRequest.
     return;
   }
 
-  if (result == NavigationThrottle::BLOCK_REQUEST ||
-      result == NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE) {
-    OnRequestFailed(false, net::ERR_BLOCKED_BY_CLIENT, base::nullopt, false);
+  if (result.action() == NavigationThrottle::BLOCK_REQUEST ||
+      result.action() == NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE) {
+    DCHECK_EQ(net::ERR_BLOCKED_BY_CLIENT, result.net_error_code());
+    OnRequestFailed(false, result.net_error_code(), base::nullopt, false);
     // DO NOT ADD CODE after this. The previous call to OnRequestFailed has
     // destroyed the NavigationRequest.
     return;
@@ -964,28 +967,34 @@ void NavigationRequest::OnRedirectChecksComplete(
 
 void NavigationRequest::OnWillProcessResponseChecksComplete(
     NavigationThrottle::ThrottleCheckResult result) {
-  DCHECK(result != NavigationThrottle::DEFER);
+  DCHECK(result.action() != NavigationThrottle::DEFER);
 
   // If the NavigationThrottles allowed the navigation to continue, have the
   // processing of the response resume in the network stack.
-  if (result == NavigationThrottle::PROCEED)
+  if (result.action() == NavigationThrottle::PROCEED)
     loader_->ProceedWithResponse();
 
   // Abort the request if needed. This includes requests that were blocked by
   // NavigationThrottles and requests that should not commit (e.g. downloads,
   // 204/205s). This will destroy the NavigationRequest.
-  if (result == NavigationThrottle::CANCEL_AND_IGNORE ||
-      result == NavigationThrottle::CANCEL || !response_should_be_rendered_) {
+  if (result.action() == NavigationThrottle::CANCEL_AND_IGNORE ||
+      result.action() == NavigationThrottle::CANCEL ||
+      !response_should_be_rendered_) {
+    int net_error = result.net_error_code();
+    if (!response_should_be_rendered_)
+      net_error = net::ERR_ABORTED;
     // TODO(clamy): distinguish between CANCEL and CANCEL_AND_IGNORE.
-    OnRequestFailed(false, net::ERR_ABORTED, base::nullopt, false);
+    DCHECK_EQ(net::ERR_ABORTED, net_error);
+    OnRequestFailed(false, net_error, base::nullopt, false);
 
     // DO NOT ADD CODE after this. The previous call to OnRequestFailed has
     // destroyed the NavigationRequest.
     return;
   }
 
-  if (result == NavigationThrottle::BLOCK_RESPONSE) {
-    OnRequestFailed(false, net::ERR_BLOCKED_BY_RESPONSE, base::nullopt, false);
+  if (result.action() == NavigationThrottle::BLOCK_RESPONSE) {
+    DCHECK_EQ(net::ERR_BLOCKED_BY_RESPONSE, result.net_error_code());
+    OnRequestFailed(false, result.net_error_code(), base::nullopt, false);
     // DO NOT ADD CODE after this. The previous call to OnRequestFailed has
     // destroyed the NavigationRequest.
     return;

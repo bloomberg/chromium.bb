@@ -20,8 +20,6 @@ namespace content {
 class FrameTreeNode;
 struct WebPreferences;
 
-using ThrottleCheckResult = NavigationThrottle::ThrottleCheckResult;
-
 // Responsible for browser-process-side mixed content security checks. It is
 // only enabled if PlzNavigate is and checks only for frame-level resource loads
 // (aka navigation loads). Sub-resources fetches are checked in the renderer

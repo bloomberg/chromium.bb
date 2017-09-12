@@ -39,9 +39,9 @@ class TestNavigationThrottle : public NavigationThrottle {
  public:
   TestNavigationThrottle(
       NavigationHandle* handle,
-      NavigationThrottle::ThrottleCheckResult will_start_result,
-      NavigationThrottle::ThrottleCheckResult will_redirect_result,
-      NavigationThrottle::ThrottleCheckResult will_process_result,
+      NavigationThrottle::ThrottleAction will_start_result,
+      NavigationThrottle::ThrottleAction will_redirect_result,
+      NavigationThrottle::ThrottleAction will_process_result,
       base::Closure did_call_will_start,
       base::Closure did_call_will_redirect,
       base::Closure did_call_will_process)
@@ -100,9 +100,9 @@ class TestNavigationThrottle : public NavigationThrottle {
     return will_process_result_;
   }
 
-  NavigationThrottle::ThrottleCheckResult will_start_result_;
-  NavigationThrottle::ThrottleCheckResult will_redirect_result_;
-  NavigationThrottle::ThrottleCheckResult will_process_result_;
+  NavigationThrottle::ThrottleAction will_start_result_;
+  NavigationThrottle::ThrottleAction will_redirect_result_;
+  NavigationThrottle::ThrottleAction will_process_result_;
   base::Closure did_call_will_start_;
   base::Closure did_call_will_redirect_;
   base::Closure did_call_will_process_;
@@ -117,9 +117,9 @@ class TestNavigationThrottleInstaller : public WebContentsObserver {
  public:
   TestNavigationThrottleInstaller(
       WebContents* web_contents,
-      NavigationThrottle::ThrottleCheckResult will_start_result,
-      NavigationThrottle::ThrottleCheckResult will_redirect_result,
-      NavigationThrottle::ThrottleCheckResult will_process_result,
+      NavigationThrottle::ThrottleAction will_start_result,
+      NavigationThrottle::ThrottleAction will_redirect_result,
+      NavigationThrottle::ThrottleAction will_process_result,
       const GURL& expected_start_url = GURL())
       : WebContentsObserver(web_contents),
         will_start_result_(will_start_result),
@@ -156,8 +156,8 @@ class TestNavigationThrottleInstaller : public WebContentsObserver {
   }
 
   void Continue(NavigationThrottle::ThrottleCheckResult result) {
-    ASSERT_NE(NavigationThrottle::DEFER, result);
-    if (result == NavigationThrottle::PROCEED)
+    ASSERT_NE(NavigationThrottle::DEFER, result.action());
+    if (result.action() == NavigationThrottle::PROCEED)
       navigation_throttle()->ResumeNavigation();
     else
       navigation_throttle()->CancelNavigation(result);
@@ -215,9 +215,9 @@ class TestNavigationThrottleInstaller : public WebContentsObserver {
       navigation_throttle_ = nullptr;
   }
 
-  NavigationThrottle::ThrottleCheckResult will_start_result_;
-  NavigationThrottle::ThrottleCheckResult will_redirect_result_;
-  NavigationThrottle::ThrottleCheckResult will_process_result_;
+  NavigationThrottle::ThrottleAction will_start_result_;
+  NavigationThrottle::ThrottleAction will_redirect_result_;
+  NavigationThrottle::ThrottleAction will_process_result_;
   int will_start_called_ = 0;
   int will_redirect_called_ = 0;
   int will_process_called_ = 0;
@@ -241,9 +241,9 @@ class TestDeferringNavigationThrottleInstaller
  public:
   TestDeferringNavigationThrottleInstaller(
       WebContents* web_contents,
-      NavigationThrottle::ThrottleCheckResult will_start_result,
-      NavigationThrottle::ThrottleCheckResult will_redirect_result,
-      NavigationThrottle::ThrottleCheckResult will_process_result,
+      NavigationThrottle::ThrottleAction will_start_result,
+      NavigationThrottle::ThrottleAction will_redirect_result,
+      NavigationThrottle::ThrottleAction will_process_result,
       GURL expected_start_url = GURL())
       : TestNavigationThrottleInstaller(web_contents,
                                         NavigationThrottle::DEFER,
@@ -271,9 +271,9 @@ class TestDeferringNavigationThrottleInstaller
   }
 
  private:
-  NavigationThrottle::ThrottleCheckResult will_start_deferred_result_;
-  NavigationThrottle::ThrottleCheckResult will_redirect_deferred_result_;
-  NavigationThrottle::ThrottleCheckResult will_process_deferred_result_;
+  NavigationThrottle::ThrottleAction will_start_deferred_result_;
+  NavigationThrottle::ThrottleAction will_redirect_deferred_result_;
+  NavigationThrottle::ThrottleAction will_process_deferred_result_;
 };
 
 // Records all navigation start URLs from the WebContents.
@@ -749,8 +749,8 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
   // Exercise both synchronous and deferred throttle check results, and both on
   // WillStartRequest and on WillRedirectRequest.
   const struct {
-    NavigationThrottle::ThrottleCheckResult will_start_result;
-    NavigationThrottle::ThrottleCheckResult will_redirect_result;
+    NavigationThrottle::ThrottleAction will_start_result;
+    NavigationThrottle::ThrottleAction will_redirect_result;
     bool deferred_block;
   } kTestCases[] = {
       {NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE,

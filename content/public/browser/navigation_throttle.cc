@@ -8,6 +8,55 @@
 
 namespace content {
 
+namespace {
+
+net::Error DefaultNetErrorCode(NavigationThrottle::ThrottleAction action) {
+  switch (action) {
+    case NavigationThrottle::PROCEED:
+    case NavigationThrottle::DEFER:
+      return net::OK;
+    case NavigationThrottle::CANCEL:
+    case NavigationThrottle::CANCEL_AND_IGNORE:
+      return net::ERR_ABORTED;
+    case NavigationThrottle::BLOCK_REQUEST:
+    case NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE:
+      return net::ERR_BLOCKED_BY_CLIENT;
+    case NavigationThrottle::BLOCK_RESPONSE:
+      return net::ERR_BLOCKED_BY_RESPONSE;
+    default:
+      NOTREACHED();
+      return net::ERR_UNEXPECTED;
+  }
+}
+
+}  // namespace
+
+NavigationThrottle::ThrottleCheckResult::ThrottleCheckResult(
+    NavigationThrottle::ThrottleAction action)
+    : NavigationThrottle::ThrottleCheckResult(action,
+                                              DefaultNetErrorCode(action),
+                                              base::nullopt) {}
+
+NavigationThrottle::ThrottleCheckResult::ThrottleCheckResult(
+    NavigationThrottle::ThrottleAction action,
+    net::Error net_error_code)
+    : NavigationThrottle::ThrottleCheckResult(action,
+                                              net_error_code,
+                                              base::nullopt) {}
+
+NavigationThrottle::ThrottleCheckResult::ThrottleCheckResult(
+    NavigationThrottle::ThrottleAction action,
+    net::Error net_error_code,
+    base::Optional<std::string> error_page_content)
+    : action_(action),
+      net_error_code_(net_error_code),
+      error_page_content_(error_page_content) {}
+
+NavigationThrottle::ThrottleCheckResult::ThrottleCheckResult(
+    const ThrottleCheckResult& other) = default;
+
+NavigationThrottle::ThrottleCheckResult::~ThrottleCheckResult() {}
+
 NavigationThrottle::NavigationThrottle(NavigationHandle* navigation_handle)
     : navigation_handle_(navigation_handle) {}
 

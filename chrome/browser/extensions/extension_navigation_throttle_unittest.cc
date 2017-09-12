@@ -70,7 +70,7 @@ class ExtensionNavigationThrottleUnitTest
   void CheckTestCase(
       content::RenderFrameHost* host,
       const GURL& extension_url,
-      NavigationThrottle::ThrottleCheckResult expected_will_start_result) {
+      NavigationThrottle::ThrottleAction expected_will_start_result) {
     // First subtest: direct navigation to |extension_url|.
     std::unique_ptr<content::NavigationHandle> handle =
         content::NavigationHandle::CreateNavigationHandleForTesting(
@@ -91,7 +91,7 @@ class ExtensionNavigationThrottleUnitTest
     // TODO(nick): https://crbug.com/695421 Once PlzNavigate is enabled 100%, it
     // should be possible to support return values other than PROCEED and CANCEL
     // from ExtensionNavigationThrottle::WillRedirectRequest.
-    NavigationThrottle::ThrottleCheckResult expected_will_redirect_result =
+    NavigationThrottle::ThrottleAction expected_will_redirect_result =
         (expected_will_start_result == NavigationThrottle::PROCEED)
             ? NavigationThrottle::PROCEED
             : NavigationThrottle::CANCEL;

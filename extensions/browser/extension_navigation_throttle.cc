@@ -191,7 +191,7 @@ ExtensionNavigationThrottle::WillStartRequest() {
 content::NavigationThrottle::ThrottleCheckResult
 ExtensionNavigationThrottle::WillRedirectRequest() {
   ThrottleCheckResult result = WillStartOrRedirectRequest();
-  if (result == BLOCK_REQUEST) {
+  if (result.action() == BLOCK_REQUEST) {
     // TODO(nick): https://crbug.com/695421 means that BLOCK_REQUEST does not
     // work here. Once PlzNavigate is enabled 100%, just return |result|.
     return CANCEL;

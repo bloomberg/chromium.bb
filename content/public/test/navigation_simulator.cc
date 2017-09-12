@@ -203,7 +203,7 @@ void NavigationSimulator::Start() {
   WaitForThrottleChecksComplete();
 
   CHECK_EQ(1, num_did_start_navigation_called_);
-  if (GetLastThrottleCheckResult() == NavigationThrottle::PROCEED) {
+  if (GetLastThrottleCheckResult().action() == NavigationThrottle::PROCEED) {
     CHECK_EQ(1, num_will_start_request_called_);
   } else {
     FailFromThrottleCheck(GetLastThrottleCheckResult());
@@ -259,7 +259,7 @@ void NavigationSimulator::Redirect(const GURL& new_url) {
 
   WaitForThrottleChecksComplete();
 
-  if (GetLastThrottleCheckResult() == NavigationThrottle::PROCEED) {
+  if (GetLastThrottleCheckResult().action() == NavigationThrottle::PROCEED) {
     CHECK_EQ(previous_num_will_redirect_request_called + 1,
              num_will_redirect_request_called_);
     CHECK_EQ(previous_did_redirect_navigation_called + 1,
@@ -330,7 +330,7 @@ void NavigationSimulator::ReadyToCommit() {
        IsURLHandledByNetworkStack(navigation_url_))) {
     WaitForThrottleChecksComplete();
 
-    if (GetLastThrottleCheckResult() != NavigationThrottle::PROCEED) {
+    if (GetLastThrottleCheckResult().action() != NavigationThrottle::PROCEED) {
       FailFromThrottleCheck(GetLastThrottleCheckResult());
       return;
     }
@@ -849,38 +849,24 @@ RenderFrameHost* NavigationSimulator::GetFinalRenderFrameHost() {
 
 void NavigationSimulator::FailFromThrottleCheck(
     NavigationThrottle::ThrottleCheckResult result) {
-  DCHECK_NE(result, NavigationThrottle::PROCEED);
+  DCHECK_NE(NavigationThrottle::PROCEED, result.action());
   state_ = FAILED;
 
   // Special failure logic only needed for non-PlzNavigate case.
   if (IsBrowserSideNavigationEnabled())
     return;
-  int error_code = net::OK;
-  switch (result) {
-    case NavigationThrottle::PROCEED:
-    case NavigationThrottle::DEFER:
-      NOTREACHED();
-      break;
-    case NavigationThrottle::CANCEL:
-    case NavigationThrottle::CANCEL_AND_IGNORE:
-      error_code = net::ERR_ABORTED;
-      break;
-    case NavigationThrottle::BLOCK_REQUEST:
-    case NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE:
-      error_code = net::ERR_BLOCKED_BY_CLIENT;
-      break;
-    case NavigationThrottle::BLOCK_RESPONSE:
-      error_code = net::ERR_BLOCKED_BY_RESPONSE;
-      break;
-  };
+  DCHECK_NE(NavigationThrottle::DEFER, result.action());
+  DCHECK_NE(NavigationThrottle::PROCEED, result.action());
+  DCHECK_NE(net::OK, result.net_error_code());
 
   FrameHostMsg_DidFailProvisionalLoadWithError_Params error_params;
-  error_params.error_code = error_code;
+  error_params.error_code = result.net_error_code();
   error_params.url = navigation_url_;
   render_frame_host_->OnMessageReceived(
       FrameHostMsg_DidFailProvisionalLoadWithError(
           render_frame_host_->GetRoutingID(), error_params));
-  bool should_result_in_error_page = error_code != net::ERR_ABORTED;
+  bool should_result_in_error_page =
+      result.net_error_code() != net::ERR_ABORTED;
   if (!should_result_in_error_page) {
     render_frame_host_->OnMessageReceived(
         FrameHostMsg_DidStopLoading(render_frame_host_->GetRoutingID()));

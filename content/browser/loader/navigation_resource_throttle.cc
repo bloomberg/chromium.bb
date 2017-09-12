@@ -48,7 +48,7 @@ typedef base::Callback<void(NavigationThrottle::ThrottleCheckResult)>
 void SendCheckResultToIOThread(UIChecksPerformedCallback callback,
                                NavigationThrottle::ThrottleCheckResult result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK_NE(result, NavigationThrottle::DEFER);
+  DCHECK_NE(result.action(), NavigationThrottle::DEFER);
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::BindOnce(callback, result));
 }
@@ -344,19 +344,20 @@ void NavigationResourceThrottle::set_force_transfer_for_testing(
 void NavigationResourceThrottle::OnUIChecksPerformed(
     NavigationThrottle::ThrottleCheckResult result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK_NE(NavigationThrottle::DEFER, result);
+  DCHECK_NE(NavigationThrottle::DEFER, result.action());
   if (in_cross_site_transition_) {
     on_transfer_done_result_ = result;
     return;
   }
 
-  if (result == NavigationThrottle::CANCEL_AND_IGNORE ||
-      result == NavigationThrottle::CANCEL) {
+  if (result.action() == NavigationThrottle::CANCEL_AND_IGNORE ||
+      result.action() == NavigationThrottle::CANCEL) {
     Cancel();
-  } else if (result == NavigationThrottle::BLOCK_REQUEST ||
-             result == NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE) {
+  } else if (result.action() == NavigationThrottle::BLOCK_REQUEST ||
+             result.action() ==
+                 NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE) {
     CancelWithError(net::ERR_BLOCKED_BY_CLIENT);
-  } else if (result == NavigationThrottle::BLOCK_RESPONSE) {
+  } else if (result.action() == NavigationThrottle::BLOCK_RESPONSE) {
     // TODO(mkwst): If we cancel the main frame request with anything other than
     // 'net::ERR_ABORTED', we'll trigger some special behavior that might not be
     // desirable here (non-POSTs will reload the page, while POST has some logic
@@ -389,7 +390,7 @@ void NavigationResourceThrottle::OnTransferComplete() {
 
   // If the results of the checks on the UI thread are known, unblock the
   // navigation. Otherwise, wait until the callback has executed.
-  if (on_transfer_done_result_ != NavigationThrottle::DEFER) {
+  if (on_transfer_done_result_.action() != NavigationThrottle::DEFER) {
     OnUIChecksPerformed(on_transfer_done_result_);
     on_transfer_done_result_ = NavigationThrottle::DEFER;
   }
