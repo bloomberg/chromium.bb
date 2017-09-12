@@ -24,8 +24,7 @@ class MediaPerceptionPrivateGetStateFunction
   // ExtensionFunction:
   ResponseAction Run() override;
 
-  void GetStateCallback(MediaPerceptionAPIManager::CallbackStatus status,
-                        extensions::api::media_perception_private::State state);
+  void GetStateCallback(extensions::api::media_perception_private::State state);
 
   DISALLOW_COPY_AND_ASSIGN(MediaPerceptionPrivateGetStateFunction);
 };
@@ -43,8 +42,7 @@ class MediaPerceptionPrivateSetStateFunction
   // ExtensionFunction:
   ResponseAction Run() override;
 
-  void SetStateCallback(MediaPerceptionAPIManager::CallbackStatus status,
-                        extensions::api::media_perception_private::State state);
+  void SetStateCallback(extensions::api::media_perception_private::State state);
 
   DISALLOW_COPY_AND_ASSIGN(MediaPerceptionPrivateSetStateFunction);
 };
@@ -63,7 +61,6 @@ class MediaPerceptionPrivateGetDiagnosticsFunction
   ResponseAction Run() override;
 
   void GetDiagnosticsCallback(
-      MediaPerceptionAPIManager::CallbackStatus status,
       extensions::api::media_perception_private::Diagnostics diagnostics);
 
   DISALLOW_COPY_AND_ASSIGN(MediaPerceptionPrivateGetDiagnosticsFunction);
