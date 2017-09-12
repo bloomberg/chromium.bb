@@ -268,10 +268,11 @@ def ConfigureGlobalEnvironment():
   os.environ['LANG'] = 'en_US.UTF-8'
 
   # TODO(dgarrett): Super ugly, super temporary hack to fix release builds.
-  logging.warn('FORCING LOCAL INSTALL OF CRCMOD.')
+  logging.warn('FORCING CRCMOD INSTALL to workaround crbug.com/763438.')
   cmd = ['pip', 'install', '--ignore-installed', 'crcmod']
-  result = cros_build_lib.SudoRunCommand(cmd, error_code_ok=True)
-  logging.warn('FORCED LOCAL INSTALL OF CRCMOD RETURNED: %d', result.returncode)
+  result = cros_build_lib.SudoRunCommand(
+      cmd, error_code_ok=True, mute_output=True)
+  logging.warn('CRCMOD INSTALL RETURNED: %d', result.returncode)
 
 
 def _main(argv):
