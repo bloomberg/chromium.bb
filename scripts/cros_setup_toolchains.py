@@ -35,7 +35,6 @@ if cros_build_lib.IsInsideChroot():
 
 EMERGE_CMD = os.path.join(constants.CHROMITE_BIN_DIR, 'parallel_emerge')
 PACKAGE_STABLE = '[stable]'
-PACKAGE_NONE = '[none]'
 
 CHROMIUMOS_OVERLAY = '/usr/local/portage/chromiumos'
 ECLASS_OVERLAY = '/usr/local/portage/eclass-overlay'
@@ -339,11 +338,6 @@ def GetPortagePackage(target, package):
   return '%s/%s' % (category, pn)
 
 
-def IsPackageDisabled(target, package):
-  """Returns if the given package is not used for the target."""
-  return GetDesiredPackageVersions(target, package) == [PACKAGE_NONE]
-
-
 def PortageTrees(root):
   """Return the portage trees for a given root."""
   if root == '/':
@@ -410,7 +404,7 @@ def VersionListToNumeric(target, package, versions, installed, root='/'):
   for version in versions:
     if version == PACKAGE_STABLE:
       resolved.append(GetStablePackageVersion(atom, installed, root=root))
-    elif version != PACKAGE_NONE:
+    else:
       resolved.append(version)
   return resolved
 
@@ -460,9 +454,8 @@ def TargetIsInitialized(target):
     for package in GetTargetPackages(target):
       atom = GetPortagePackage(target, package)
       # Do we even want this package && is it initialized?
-      if not IsPackageDisabled(target, package) and not (
-          GetStablePackageVersion(atom, True) and
-          GetStablePackageVersion(atom, False)):
+      if not (GetStablePackageVersion(atom, True) and
+              GetStablePackageVersion(atom, False)):
         return False
     return True
   except cros_build_lib.RunCommandError:
@@ -543,22 +536,15 @@ def UpdateTargets(targets, usepkg, root='/'):
     RemovePackageMask(target)
     for package in GetTargetPackages(target):
       # Portage name for the package
-      if IsPackageDisabled(target, package):
-        logging.debug('   Skipping disabled package %s', package)
-        continue
-      logging.debug('   Updating package %s', package)
+      logging.debug('   Checking package %s', package)
       pkg = GetPortagePackage(target, package)
       current = GetInstalledPackageVersions(pkg, root=root)
       desired = GetDesiredPackageVersions(target, package)
       desired_num = VersionListToNumeric(target, package, desired, False)
       mergemap[pkg] = set(desired_num).difference(current)
+      logging.debug('      %s -> %s', current, desired_num)
 
-  packages = []
-  for pkg in mergemap:
-    for ver in mergemap[pkg]:
-      if ver != PACKAGE_NONE:
-        packages.append(pkg)
-
+  packages = [pkg for pkg, vers in mergemap.items() if vers]
   if not packages:
     logging.info('Nothing to update!')
     return False
@@ -588,9 +574,6 @@ def CleanTargets(targets, root='/'):
   for target in targets:
     logging.debug('Cleaning target %s', target)
     for package in GetTargetPackages(target):
-      if IsPackageDisabled(target, package):
-        logging.debug('   Skipping disabled package %s', package)
-        continue
       logging.debug('   Cleaning package %s', package)
       pkg = GetPortagePackage(target, package)
       current = GetInstalledPackageVersions(pkg, root=root)
