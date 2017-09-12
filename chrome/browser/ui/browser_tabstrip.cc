@@ -51,8 +51,7 @@ void AddWebContents(Browser* browser,
                     content::WebContents* new_contents,
                     WindowOpenDisposition disposition,
                     const gfx::Rect& initial_rect,
-                    bool user_gesture,
-                    bool* was_blocked) {
+                    bool user_gesture) {
   // No code for this yet.
   DCHECK(disposition != WindowOpenDisposition::SAVE_TO_DISK);
   // Can't create a new contents for the current tab - invalid case.
