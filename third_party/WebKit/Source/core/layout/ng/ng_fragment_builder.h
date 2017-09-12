@@ -52,6 +52,10 @@ class CORE_EXPORT NGFragmentBuilder final : public NGBaseFragmentBuilder {
   NGFragmentBuilder& AddChild(RefPtr<NGPhysicalFragment>,
                               const NGLogicalOffset&);
 
+  // Update if we have fragmented in this flow.
+  NGFragmentBuilder& PropagateBreak(RefPtr<NGLayoutResult>);
+  NGFragmentBuilder& PropagateBreak(RefPtr<NGPhysicalFragment>);
+
   NGFragmentBuilder& SetBfcOffset(const NGBfcOffset& offset);
 
   // Builder has non-trivial out-of-flow descendant methods.

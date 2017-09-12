@@ -118,9 +118,11 @@ void PositionPendingFloats(
 
   // TODO(ikilpatrick): Add DCHECK that any positioned floats are children.
 
-  for (const auto& positioned_float : positioned_floats)
+  for (const auto& positioned_float : positioned_floats) {
     container_builder->AddChild(positioned_float.layout_result,
                                 positioned_float.logical_offset);
+    container_builder->PropagateBreak(positioned_float.layout_result);
+  }
 
   unpositioned_floats->clear();
 }
@@ -693,6 +695,7 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
                             border_scrollbar_padding_.InlineSum());
 
   container_builder_.AddChild(layout_result, logical_offset);
+  container_builder_.PropagateBreak(layout_result);
 
   *previous_inflow_position =
       ComputeInflowPosition(*previous_inflow_position, child, child_data,
