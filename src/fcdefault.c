@@ -255,7 +255,14 @@ FcDefaultSubstitute (FcPattern *pattern)
 	    FcPatternObjectAddBool (pattern, FcBoolDefaults[i].field, FcBoolDefaults[i].value);
 
     if (FcPatternObjectGetDouble (pattern, FC_SIZE_OBJECT, 0, &size) != FcResultMatch)
-	size = 12.0L;
+    {
+	FcRange *r;
+	double b, e;
+	if (FcPatternObjectGetRange (pattern, FC_SIZE_OBJECT, 0, &r) == FcResultMatch && FcRangeGetDouble (r, &b, &e))
+	    size = (b + e) * .5;
+	else
+	    size = 12.0L;
+    }
     if (FcPatternObjectGetDouble (pattern, FC_SCALE_OBJECT, 0, &scale) != FcResultMatch)
 	scale = 1.0;
     if (FcPatternObjectGetDouble (pattern, FC_DPI_OBJECT, 0, &dpi) != FcResultMatch)
