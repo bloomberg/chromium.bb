@@ -130,7 +130,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
   const uint8_t *band_translate = get_band_translate(tx_size);
   int dq_shift;
   int v, token;
-  int16_t dqv = dq[0];
+  int32_t dqv = dq[0];
 #if CONFIG_NEW_QUANT
   const tran_low_t *dqv_val = &dq_val[0][0];
 #endif  // CONFIG_NEW_QUANT
