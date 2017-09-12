@@ -70,6 +70,8 @@ aggregate_vector_icons("ash_vector_icons") {
     "notification_battery_critical.icon",
     "notification_battery_fluctuating.icon",
     "notification_battery_low.icon",
+    "notification_bluetooth_battery_warning.1x.icon",
+    "notification_bluetooth_battery_warning.icon",
     "notification_bluetooth.icon",
     "notification_capslock.1x.icon",
     "notification_capslock.icon",
