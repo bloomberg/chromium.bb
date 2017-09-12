@@ -4,6 +4,7 @@
 
 #include "chrome/test/base/tracing.h"
 
+#include "base/allocator/features.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/run_loop.h"
@@ -12,6 +13,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_config_memory_test_util.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -67,7 +69,8 @@ class MemoryTracingBrowserTest : public InProcessBrowserTest {
 
   void PerformDumpMemoryTestActions(
       const base::trace_event::TraceConfig& trace_config,
-      base::trace_event::MemoryDumpLevelOfDetail explicit_dump_type) {
+      base::trace_event::MemoryDumpLevelOfDetail explicit_dump_type,
+      std::string* json_events) {
     GURL url1("about:blank");
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), url1, WindowOpenDisposition::NEW_FOREGROUND_TAB,
@@ -98,14 +101,13 @@ class MemoryTracingBrowserTest : public InProcessBrowserTest {
     ASSERT_NO_FATAL_FAILURE(ExecuteJavascriptOnCurrentTab());
 
     run_loop.Run();
-    std::string json_events;
-    ASSERT_TRUE(EndTracing(&json_events));
+    ASSERT_TRUE(EndTracing(json_events));
 
     if (should_test_memory_dump_success_) {
       // Expect the basic memory dumps to be present in the trace.
-      EXPECT_NE(std::string::npos, json_events.find("process_totals"));
-      EXPECT_NE(std::string::npos, json_events.find("v8"));
-      EXPECT_NE(std::string::npos, json_events.find("blink_gc"));
+      EXPECT_NE(std::string::npos, json_events->find("process_totals"));
+      EXPECT_NE(std::string::npos, json_events->find("v8"));
+      EXPECT_NE(std::string::npos, json_events->find("blink_gc"));
     }
   }
 
@@ -117,11 +119,12 @@ IN_PROC_BROWSER_TEST_F(MemoryTracingBrowserTest, TestMemoryInfra) {
   // is fixed to be called after enable tracing is acked by all processes,
   // crbug.com/709524. The test still tests if dumping does not crash.
   should_test_memory_dump_success_ = false;
+  std::string json_events;
   PerformDumpMemoryTestActions(
       base::trace_event::TraceConfig(
           base::trace_event::TraceConfigMemoryTestUtil::
               GetTraceConfig_EmptyTriggers()),
-      base::trace_event::MemoryDumpLevelOfDetail::DETAILED);
+      base::trace_event::MemoryDumpLevelOfDetail::DETAILED, &json_events);
 }
 
 IN_PROC_BROWSER_TEST_F(MemoryTracingBrowserTest, TestBackgroundMemoryInfra) {
@@ -129,11 +132,57 @@ IN_PROC_BROWSER_TEST_F(MemoryTracingBrowserTest, TestBackgroundMemoryInfra) {
   // is fixed to be called after enable tracing is acked by all processes,
   // crbug.com/709524. The test still tests if dumping does not crash.
   should_test_memory_dump_success_ = false;
+  std::string json_events;
   PerformDumpMemoryTestActions(
       base::trace_event::TraceConfig(
           base::trace_event::TraceConfigMemoryTestUtil::
               GetTraceConfig_BackgroundTrigger(200)),
-      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND);
+      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND, &json_events);
 }
+
+#if BUILDFLAG(USE_ALLOCATOR_SHIM) && !defined(OS_NACL)
+IN_PROC_BROWSER_TEST_F(MemoryTracingBrowserTest, TestHeapProfilingPseudo) {
+  should_test_memory_dump_success_ = true;
+  // TODO(ssid): Enable heap profiling on all processes once the
+  // memory_instrumentation api is available, crbug.com/757747.
+  base::trace_event::MemoryDumpManager::GetInstance()->EnableHeapProfiling(
+      base::trace_event::kHeapProfilingModePseudo);
+  std::string json_events;
+  PerformDumpMemoryTestActions(
+      base::trace_event::TraceConfig(
+          base::trace_event::TraceConfigMemoryTestUtil::
+              GetTraceConfig_PeriodicTriggers(100, 500)),
+      base::trace_event::MemoryDumpLevelOfDetail::DETAILED, &json_events);
+  EXPECT_NE(std::string::npos, json_events.find("stackFrames"));
+  // TODO(ssid): Fix mac and win to get thread names in the allocation context,
+  // crbug.com/764454.
+  EXPECT_NE(std::string::npos, json_events.find("[Thread:"));
+  EXPECT_NE(std::string::npos, json_events.find("MessageLoop::RunTask"));
+  EXPECT_NE(std::string::npos, json_events.find("typeNames"));
+  EXPECT_NE(std::string::npos, json_events.find("content/browser"));
+  EXPECT_NE(std::string::npos, json_events.find("\"malloc\":{\"entries\""));
+}
+
+IN_PROC_BROWSER_TEST_F(MemoryTracingBrowserTest, TestHeapProfilingNoStack) {
+  should_test_memory_dump_success_ = true;
+  // TODO(ssid): Enable heap profiling on all processes once the
+  // memory_instrumentation api is available, crbug.com/757747.
+  base::trace_event::MemoryDumpManager::GetInstance()->EnableHeapProfiling(
+      base::trace_event::kHeapProfilingModeNoStack);
+  std::string json_events;
+  PerformDumpMemoryTestActions(
+      base::trace_event::TraceConfig(
+          base::trace_event::TraceConfigMemoryTestUtil::
+              GetTraceConfig_BackgroundTrigger(200)),
+      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND, &json_events);
+  // LOG(ERROR) << "ssid \n" << json_events;
+  EXPECT_NE(std::string::npos, json_events.find("stackFrames"));
+  EXPECT_NE(std::string::npos, json_events.find("[Thread:"));
+  EXPECT_EQ(std::string::npos, json_events.find("MessageLoop::RunTask"));
+  EXPECT_NE(std::string::npos, json_events.find("typeNames"));
+  EXPECT_NE(std::string::npos, json_events.find("content/browser"));
+  EXPECT_NE(std::string::npos, json_events.find("\"malloc\":{\"entries\""));
+}
+#endif  // BUILDFLAG(USE_ALLOCATOR_SHIM) && !defined(OS_NACL)
 
 }  // namespace

@@ -573,17 +573,10 @@ void TraceLog::SetEnabled(const TraceConfig& trace_config,
       }
     }
 
-    // Update event filters.
-    if (modes_to_enable & FILTERING_MODE) {
-      DCHECK(!trace_config.event_filters().empty())
-          << "Attempting to enable filtering without any filters";
-      DCHECK(enabled_event_filters_.empty()) << "Attempting to re-enable "
-                                                "filtering when filters are "
-                                                "already enabled.";
-
-      // Use the given event filters only if filtering was not enabled.
-      if (enabled_event_filters_.empty())
-        enabled_event_filters_ = trace_config.event_filters();
+    // Update event filters only if filtering was not enabled.
+    if (modes_to_enable & FILTERING_MODE && enabled_event_filters_.empty()) {
+      DCHECK(!trace_config.event_filters().empty());
+      enabled_event_filters_ = trace_config.event_filters();
     }
     // Keep the |trace_config_| updated with only enabled filters in case anyone
     // tries to read it using |GetCurrentTraceConfig| (even if filters are
