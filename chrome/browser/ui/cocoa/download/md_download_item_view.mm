@@ -51,6 +51,7 @@ constexpr CGFloat kDangerViewYInset = 10;
 
 constexpr CGFloat kTextX = 45;
 constexpr CGFloat kFilenameY = 16;
+constexpr CGFloat kFilenameWithStatusY = 23;
 constexpr CGFloat kStatusTextY = 9;
 constexpr CGFloat kMenuButtonSpacing = 8;
 
@@ -450,9 +451,10 @@ NSTextField* MakeLabel(
 
   NSString* statusString =
       base::SysUTF16ToNSString(downloadModel->GetStatusText());
+  const BOOL hadStatusBefore = statusTextView_.stringValue.length > 0;
+  const BOOL hasStatus = statusString.length > 0;
   statusTextView_.stringValue = statusString;
-  BOOL hasStatus = statusString.length != 0;
-  if (hasStatus == statusTextView_.hidden) {
+  if (hasStatus != hadStatusBefore) {
     [NSAnimationContext runAnimationGroup:^(NSAnimationContext* context) {
       context.duration = 0.25;
       context.timingFunction =
@@ -463,7 +465,8 @@ NSTextField* MakeLabel(
           addAnimation:[CABasicAnimation animationWithKeyPath:@"position.y"]
                 forKey:nil];
       [filenameView_ setFrameOrigin:NSMakePoint(NSMinX(filenameView_.frame),
-                                                hasStatus ? 23 : 16)];
+                                                hasStatus ? kFilenameWithStatusY
+                                                          : kFilenameY)];
       statusTextView_.animator.hidden = !hasStatus;
     }
                         completionHandler:nil];
