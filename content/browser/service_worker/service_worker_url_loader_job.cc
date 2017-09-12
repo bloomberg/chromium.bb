@@ -111,6 +111,7 @@ void ServiceWorkerURLLoaderJob::StartRequest() {
       fetch_dispatcher_->MaybeStartNavigationPreloadWithURLLoader(
           resource_request_, url_loader_factory_getter_.get(),
           base::BindOnce(&base::DoNothing /* TODO(crbug/762357): metrics? */));
+  response_head_.service_worker_start_time = base::TimeTicks::Now();
   fetch_dispatcher_->Run();
 }
 
@@ -143,7 +144,9 @@ void ServiceWorkerURLLoaderJob::DeliverErrorResponse() {
 }
 
 void ServiceWorkerURLLoaderJob::DidPrepareFetchEvent(
-    scoped_refptr<ServiceWorkerVersion> version) {}
+    scoped_refptr<ServiceWorkerVersion> version) {
+  response_head_.service_worker_ready_time = base::TimeTicks::Now();
+}
 
 void ServiceWorkerURLLoaderJob::DidDispatchFetchEvent(
     ServiceWorkerStatusCode status,

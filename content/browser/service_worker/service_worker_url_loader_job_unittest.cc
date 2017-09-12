@@ -484,10 +484,9 @@ class ServiceWorkerURLLoaderJobTest
               info.url_list_via_service_worker);
     EXPECT_EQ(expected_info.response_type_via_service_worker,
               info.response_type_via_service_worker);
-    EXPECT_EQ(expected_info.service_worker_start_time,
-              info.service_worker_start_time);
-    EXPECT_EQ(expected_info.service_worker_ready_time,
-              info.service_worker_ready_time);
+    EXPECT_FALSE(info.service_worker_start_time.is_null());
+    EXPECT_FALSE(info.service_worker_ready_time.is_null());
+    EXPECT_LT(info.service_worker_start_time, info.service_worker_ready_time);
     EXPECT_EQ(expected_info.is_in_cache_storage, info.is_in_cache_storage);
     EXPECT_EQ(expected_info.cache_storage_cache_name,
               info.cache_storage_cache_name);
