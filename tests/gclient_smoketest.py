@@ -10,6 +10,7 @@ Shell out 'gclient' and run basic conformance tests.
 This test assumes GClientSmokeBase.URL_BASE is valid.
 """
 
+import json
 import logging
 import os
 import re
@@ -915,9 +916,14 @@ class GClientSmokeGIT(GClientSmokeBase):
     output_deps = os.path.join(self.root_dir, 'DEPS.flattened')
     self.assertFalse(os.path.exists(output_deps))
 
+    output_deps_files = os.path.join(self.root_dir, 'DEPS.files')
+    self.assertFalse(os.path.exists(output_deps_files))
+
     self.gclient(['config', self.git_base + 'repo_10', '--name', 'src'])
     self.gclient(['sync', '--process-all-deps'])
-    self.gclient(['flatten', '-v', '-v', '-v', '--output-deps', output_deps])
+    self.gclient(['flatten', '-v', '-v', '-v',
+                  '--output-deps', output_deps,
+                  '--output-deps-files', output_deps_files])
 
     with open(output_deps) as f:
       deps_contents = f.read()
@@ -1005,6 +1011,15 @@ class GClientSmokeGIT(GClientSmokeBase):
         '# git://127.0.0.1:20000/git/repo_8, DEPS',
         '# git://127.0.0.1:20000/git/repo_9, DEPS',
     ], deps_contents.splitlines())
+
+    with open(output_deps_files) as f:
+      deps_files_contents = json.load(f)
+
+    self.assertEqual([
+      {'url': 'git://127.0.0.1:20000/git/repo_11', 'deps_file': 'DEPS'},
+      {'url': 'git://127.0.0.1:20000/git/repo_8', 'deps_file': 'DEPS'},
+      {'url': 'git://127.0.0.1:20000/git/repo_9', 'deps_file': 'DEPS'},
+    ], deps_files_contents)
 
 
 class GClientSmokeGITMutates(GClientSmokeBase):

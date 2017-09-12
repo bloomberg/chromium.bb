@@ -1725,6 +1725,7 @@ class Flattener(object):
     self._client = client
 
     self._deps_string = None
+    self._deps_files = set()
 
     self._allowed_hosts = set()
     self._deps = {}
@@ -1740,6 +1741,10 @@ class Flattener(object):
   def deps_string(self):
     assert self._deps_string is not None
     return self._deps_string
+
+  @property
+  def deps_files(self):
+    return self._deps_files
 
   def _pin_dep(self, dep):
     """Pins a dependency to specific full revision sha.
@@ -1785,17 +1790,22 @@ class Flattener(object):
         for dep in os_deps.itervalues():
           self._pin_dep(dep)
 
-    deps_files = set()
     def add_deps_file(dep):
       # Only include DEPS files referenced by recursedeps.
       if not (dep.parent is None or
               (dep.name in (dep.parent.recursedeps or {}))):
         return
-      deps_path = os.path.join(self._client.root_dir, dep.name, dep.deps_file)
+      deps_file = dep.deps_file
+      deps_path = os.path.join(self._client.root_dir, dep.name, deps_file)
       if not os.path.exists(deps_path):
-        return
+        # gclient has a fallback that if deps_file doesn't exist, it'll try
+        # DEPS. Do the same here.
+        deps_file = 'DEPS'
+        deps_path = os.path.join(self._client.root_dir, dep.name, deps_file)
+        if not os.path.exists(deps_path):
+          return
       assert dep.parsed_url
-      deps_files.add((dep.parsed_url, dep.deps_file))
+      self._deps_files.add((dep.parsed_url, deps_file))
     for dep in self._deps.itervalues():
       add_deps_file(dep)
     for os_deps in self._deps_os.itervalues():
@@ -1814,7 +1824,7 @@ class Flattener(object):
         _HooksOsToLines(self._hooks_os) +
         _VarsToLines(self._vars) +
         ['# %s, %s' % (url, deps_file)
-         for url, deps_file in sorted(deps_files)] +
+         for url, deps_file in sorted(self._deps_files)] +
         [''])  # Ensure newline at end of file.
 
   def _add_dep(self, dep):
@@ -1909,6 +1919,10 @@ def CMDflatten(parser, args):
   """Flattens the solutions into a single DEPS file."""
   parser.add_option('--output-deps', help='Path to the output DEPS file')
   parser.add_option(
+      '--output-deps-files',
+      help=('Path to the output metadata about DEPS files referenced by '
+            'recursedeps.'))
+  parser.add_option(
       '--pin-all-deps', action='store_true',
       help=('Pin all deps, even if not pinned in DEPS. CAVEAT: only does so '
             'for checked out deps, NOT deps_os.'))
@@ -1932,6 +1946,12 @@ def CMDflatten(parser, args):
       f.write(flattener.deps_string)
   else:
     print(flattener.deps_string)
+
+  deps_files = [{'url': d[0], 'deps_file': d[1]}
+                for d in sorted(flattener.deps_files)]
+  if options.output_deps_files:
+    with open(options.output_deps_files, 'w') as f:
+      json.dump(deps_files, f)
 
   return 0
 
