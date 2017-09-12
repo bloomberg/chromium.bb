@@ -316,13 +316,6 @@ class CONTENT_EXPORT BrowserMainLoop {
   // On Android, the PROCESS_LAUNCHER thread is handled by Java,
   // |process_launcher_thread_| is merely a proxy to the real message loop.
   std::unique_ptr<BrowserProcessSubThread> process_launcher_thread_;
-#elif defined(OS_WIN)
-  // TaskScheduler doesn't support async I/O on Windows as CACHE thread is
-  // the only user and this use case is going away in
-  // https://codereview.chromium.org/2216583003/.
-  // TODO(gavinp): Remove this (and thus enable redirection of the CACHE thread
-  // on Windows) once that CL lands.
-  std::unique_ptr<BrowserProcessSubThread> cache_thread_;
 #endif
 
   // Members initialized in |BrowserThreadsStarted()| --------------------------
