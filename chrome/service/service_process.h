@@ -64,14 +64,6 @@ class ServiceProcess : public ServiceIPCServer::Client,
     return io_thread_ ? io_thread_->task_runner() : nullptr;
   }
 
-  // Returns the SingleThreadTaskRunner for the service process file thread.
-  // Used to do I/O operations (not network requests or even file: URL requests)
-  // to avoid blocking the main thread. Returns null before Initialize is
-  // called and after Teardown is called.
-  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner() {
-    return file_thread_ ? file_thread_->task_runner() : nullptr;
-  }
-
   // A global event object that is signalled when the main thread's message
   // loop exits. This gives background threads a way to observe the main
   // thread shutting down.
@@ -120,7 +112,6 @@ class ServiceProcess : public ServiceIPCServer::Client,
 
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   std::unique_ptr<base::Thread> io_thread_;
-  std::unique_ptr<base::Thread> file_thread_;
   std::unique_ptr<cloud_print::CloudPrintProxy> cloud_print_proxy_;
   std::unique_ptr<ServiceProcessPrefs> service_prefs_;
   std::unique_ptr<ServiceIPCServer> ipc_server_;
