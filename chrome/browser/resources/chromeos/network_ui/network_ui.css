@@ -26,6 +26,10 @@ paper-button[raised].colored {
   border-collapse: collapse;
 }
 
+.state-table tr {
+  min-width: 800px;
+}
+
 .state-table tr td {
   border: 1px solid rgb(220, 220, 220);
   font-size: 13px;
@@ -50,6 +54,7 @@ paper-button[raised].colored {
 }
 
 .state-table-expanded-cell {
+  min-width: 400px;
   white-space: pre-wrap;
 }
 

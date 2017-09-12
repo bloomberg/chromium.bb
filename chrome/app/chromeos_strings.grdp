@@ -4863,11 +4863,17 @@ All users must sign out to continue.
   <message name="IDS_NETWORK_UI_GLOBAL_POLICY" desc="Label for global policy properties">
     Global Policy:
   </message>
+  <message name="IDS_NETWORK_UI_NETWORK_LISTS" desc="Label for network lists section">
+    Network (Service) and Device properties
+  </message>
   <message name="IDS_NETWORK_UI_VISIBLE_NETWORKS" desc="Label for list of visible networks">
     Visible Networks:
   </message>
   <message name="IDS_NETWORK_UI_FAVORITE_NETWORKS" desc="Label for list of favorite networks">
     Favorite Networks:
+  </message>
+  <message name="IDS_NETWORK_UI_DEVICES" desc="Label for list of network devices, e.g. wifi or cellular">
+    Devices:
   </message>
 
   <message name="IDS_DEVICE_LOG_LINK_TEXT" desc="Message preceeding link to chrome://device-log">
