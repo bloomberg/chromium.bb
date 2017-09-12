@@ -28,25 +28,36 @@ void TextSuggestionBackendImpl::ApplySpellCheckSuggestion(
     frame_->GetTextSuggestionController().ApplySpellCheckSuggestion(suggestion);
 }
 
+void TextSuggestionBackendImpl::ApplyTextSuggestion(int32_t marker_tag,
+                                                    int32_t suggestion_index) {
+  if (frame_) {
+    frame_->GetTextSuggestionController().ApplyTextSuggestion(marker_tag,
+                                                              suggestion_index);
+  }
+}
+
 void TextSuggestionBackendImpl::DeleteActiveSuggestionRange() {
   if (frame_)
     frame_->GetTextSuggestionController().DeleteActiveSuggestionRange();
 }
 
-void TextSuggestionBackendImpl::NewWordAddedToDictionary(
+void TextSuggestionBackendImpl::OnNewWordAddedToDictionary(
     const WTF::String& word) {
   if (frame_)
-    frame_->GetTextSuggestionController().NewWordAddedToDictionary(word);
+    frame_->GetTextSuggestionController().OnNewWordAddedToDictionary(word);
 }
 
-void TextSuggestionBackendImpl::SpellCheckMenuTimeoutCallback() {
+void TextSuggestionBackendImpl::OnSuggestionMenuClosed() {
   if (frame_)
-    frame_->GetTextSuggestionController().SpellCheckMenuTimeoutCallback();
+    frame_->GetTextSuggestionController().OnSuggestionMenuClosed();
 }
 
-void TextSuggestionBackendImpl::SuggestionMenuClosed() {
-  if (frame_)
-    frame_->GetTextSuggestionController().SuggestionMenuClosed();
+void TextSuggestionBackendImpl::SuggestionMenuTimeoutCallback(
+    int32_t max_number_of_suggestions) {
+  if (frame_) {
+    frame_->GetTextSuggestionController().SuggestionMenuTimeoutCallback(
+        max_number_of_suggestions);
+  }
 }
 
 }  // namespace blink

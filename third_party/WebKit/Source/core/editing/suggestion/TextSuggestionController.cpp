@@ -11,7 +11,10 @@
 #include "core/editing/Position.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/editing/markers/SpellCheckMarker.h"
+#include "core/editing/markers/SuggestionMarker.h"
+#include "core/editing/markers/SuggestionMarkerReplacementScope.h"
 #include "core/editing/spellcheck/SpellChecker.h"
+#include "core/editing/suggestion/TextSuggestionInfo.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/layout/LayoutTheme.h"
@@ -92,6 +95,99 @@ EphemeralRangeInFlatTree ComputeRangeSurroundingCaret(
       next_position.IsNull() ? caret_position : next_position);
 }
 
+struct SuggestionInfosWithNodeAndHighlightColor {
+  STACK_ALLOCATED();
+
+  Persistent<Node> text_node;
+  Color highlight_color;
+  Vector<TextSuggestionInfo> suggestion_infos;
+};
+
+SuggestionInfosWithNodeAndHighlightColor ComputeSuggestionInfos(
+    const HeapVector<std::pair<Member<Node>, Member<DocumentMarker>>>&
+        node_suggestion_marker_pairs,
+    size_t max_number_of_suggestions) {
+  // We look at all suggestion markers touching or overlapping the touched
+  // location to pull suggestions from. We preferentially draw suggestions from
+  // shorter markers first (since we assume they're more specific to the tapped
+  // location) until we hit our limit.
+  HeapVector<std::pair<Member<Node>, Member<DocumentMarker>>>
+      node_suggestion_marker_pairs_sorted_by_length =
+          node_suggestion_marker_pairs;
+  std::sort(node_suggestion_marker_pairs_sorted_by_length.begin(),
+            node_suggestion_marker_pairs_sorted_by_length.end(),
+            [](const std::pair<Node*, DocumentMarker*>& pair1,
+               const std::pair<Node*, DocumentMarker*>& pair2) {
+              const int length1 =
+                  pair1.second->EndOffset() - pair1.second->StartOffset();
+              const int length2 =
+                  pair2.second->EndOffset() - pair2.second->StartOffset();
+              return length1 < length2;
+            });
+
+  SuggestionInfosWithNodeAndHighlightColor
+      suggestion_infos_with_node_and_highlight_color;
+  // In theory, a user could tap right before/after the start of a node and we'd
+  // want to pull in suggestions from either side of the tap. However, this is
+  // an edge case that's unlikely to matter in practice (the user will most
+  // likely just tap in the node where they want to apply the suggestions) and
+  // it complicates implementation, so we require that all suggestions come
+  // from the same text node.
+  suggestion_infos_with_node_and_highlight_color.text_node =
+      node_suggestion_marker_pairs_sorted_by_length.front().first;
+
+  // The highlight color comes from the shortest suggestion marker touching or
+  // intersecting the tapped location. If there's no color set, we use the
+  // default text selection color.
+  const SuggestionMarker& first_suggestion_marker = *ToSuggestionMarker(
+      node_suggestion_marker_pairs_sorted_by_length.front().second);
+
+  suggestion_infos_with_node_and_highlight_color.highlight_color =
+      (first_suggestion_marker.SuggestionHighlightColor() == 0)
+          ? LayoutTheme::TapHighlightColor()
+          : first_suggestion_marker.SuggestionHighlightColor();
+
+  Vector<TextSuggestionInfo>& suggestion_infos =
+      suggestion_infos_with_node_and_highlight_color.suggestion_infos;
+  for (const std::pair<Node*, DocumentMarker*>& node_marker_pair :
+       node_suggestion_marker_pairs_sorted_by_length) {
+    if (node_marker_pair.first !=
+        suggestion_infos_with_node_and_highlight_color.text_node)
+      continue;
+
+    if (suggestion_infos.size() == max_number_of_suggestions)
+      break;
+
+    const SuggestionMarker* marker =
+        ToSuggestionMarker(node_marker_pair.second);
+    const Vector<String>& marker_suggestions = marker->Suggestions();
+    for (size_t suggestion_index = 0;
+         suggestion_index < marker_suggestions.size(); ++suggestion_index) {
+      const String& suggestion = marker_suggestions[suggestion_index];
+      if (suggestion_infos.size() == max_number_of_suggestions)
+        break;
+      if (std::find_if(suggestion_infos.begin(), suggestion_infos.end(),
+                       [marker, &suggestion](const TextSuggestionInfo& info) {
+                         return info.span_start ==
+                                    (int32_t)marker->StartOffset() &&
+                                info.span_end == (int32_t)marker->EndOffset() &&
+                                info.suggestion == suggestion;
+                       }) != suggestion_infos.end())
+        continue;
+
+      TextSuggestionInfo suggestion_info;
+      suggestion_info.marker_tag = marker->Tag();
+      suggestion_info.suggestion_index = suggestion_index;
+      suggestion_info.span_start = marker->StartOffset();
+      suggestion_info.span_end = marker->EndOffset();
+      suggestion_info.suggestion = suggestion;
+      suggestion_infos.push_back(suggestion_info);
+    }
+  }
+
+  return suggestion_infos_with_node_and_highlight_color;
+}
+
 }  // namespace
 
 TextSuggestionController::TextSuggestionController(LocalFrame& frame)
@@ -106,14 +202,15 @@ bool TextSuggestionController::IsMenuOpen() const {
   return is_suggestion_menu_open_;
 }
 
-void TextSuggestionController::HandlePotentialMisspelledWordTap(
+void TextSuggestionController::HandlePotentialSuggestionTap(
     const PositionInFlatTree& caret_position) {
   const EphemeralRangeInFlatTree& range_to_check =
       ComputeRangeSurroundingCaret(caret_position);
 
   const std::pair<const Node*, const DocumentMarker*>& node_and_marker =
-      FirstMarkerIntersectingRange(range_to_check,
-                                   DocumentMarker::MisspellingMarkers());
+      FirstMarkerIntersectingRange(
+          range_to_check, DocumentMarker::kSpelling | DocumentMarker::kGrammar |
+                              DocumentMarker::kSuggestion);
   if (!node_and_marker.first)
     return;
 
@@ -122,7 +219,7 @@ void TextSuggestionController::HandlePotentialMisspelledWordTap(
         mojo::MakeRequest(&text_suggestion_host_));
   }
 
-  text_suggestion_host_->StartSpellCheckMenuTimer();
+  text_suggestion_host_->StartSuggestionMenuTimer();
 }
 
 DEFINE_TRACE(TextSuggestionController) {
@@ -130,18 +227,97 @@ DEFINE_TRACE(TextSuggestionController) {
   DocumentShutdownObserver::Trace(visitor);
 }
 
+void TextSuggestionController::ReplaceActiveSuggestionRange(
+    const String& suggestion) {
+  const VisibleSelectionInFlatTree& selection =
+      GetFrame().Selection().ComputeVisibleSelectionInFlatTree();
+  if (selection.IsNone())
+    return;
+
+  const EphemeralRangeInFlatTree& range_to_check =
+      selection.IsRange() ? selection.ToNormalizedEphemeralRange()
+                          : ComputeRangeSurroundingCaret(selection.Start());
+  const HeapVector<std::pair<Member<Node>, Member<DocumentMarker>>>&
+      node_marker_pairs =
+          GetFrame().GetDocument()->Markers().MarkersIntersectingRange(
+              range_to_check, DocumentMarker::kActiveSuggestion);
+
+  if (node_marker_pairs.IsEmpty())
+    return;
+
+  Node* const marker_text_node = node_marker_pairs.front().first;
+  const DocumentMarker* const marker = node_marker_pairs.front().second;
+
+  const EphemeralRange& range_to_replace =
+      EphemeralRange(Position(marker_text_node, marker->StartOffset()),
+                     Position(marker_text_node, marker->EndOffset()));
+  ReplaceRangeWithText(range_to_replace, suggestion);
+}
+
 void TextSuggestionController::ApplySpellCheckSuggestion(
     const String& suggestion) {
-  ReplaceSpellingMarkerTouchingSelectionWithText(suggestion);
-  SuggestionMenuClosed();
+  ReplaceActiveSuggestionRange(suggestion);
+  OnSuggestionMenuClosed();
+}
+
+void TextSuggestionController::ApplyTextSuggestion(int32_t marker_tag,
+                                                   uint32_t suggestion_index) {
+  const VisibleSelectionInFlatTree& selection =
+      GetFrame().Selection().ComputeVisibleSelectionInFlatTree();
+  if (selection.IsNone()) {
+    OnSuggestionMenuClosed();
+    return;
+  }
+
+  const EphemeralRangeInFlatTree& range_to_check =
+      selection.IsRange() ? selection.ToNormalizedEphemeralRange()
+                          : ComputeRangeSurroundingCaret(selection.Start());
+
+  const HeapVector<std::pair<Member<Node>, Member<DocumentMarker>>>&
+      node_marker_pairs =
+          GetFrame().GetDocument()->Markers().MarkersIntersectingRange(
+              range_to_check, DocumentMarker::kSuggestion);
+
+  const Node* marker_text_node = nullptr;
+  SuggestionMarker* marker = nullptr;
+  for (const std::pair<Member<Node>, Member<DocumentMarker>>& node_marker_pair :
+       node_marker_pairs) {
+    SuggestionMarker* suggestion_marker =
+        ToSuggestionMarker(node_marker_pair.second);
+    if (suggestion_marker->Tag() == marker_tag) {
+      marker_text_node = node_marker_pair.first;
+      marker = suggestion_marker;
+      break;
+    }
+  }
+
+  if (!marker) {
+    OnSuggestionMenuClosed();
+    return;
+  }
+
+  const EphemeralRange& range_to_replace =
+      EphemeralRange(Position(marker_text_node, marker->StartOffset()),
+                     Position(marker_text_node, marker->EndOffset()));
+
+  const String& replacement = marker->Suggestions()[suggestion_index];
+  const String& new_suggestion = PlainText(range_to_replace);
+
+  {
+    SuggestionMarkerReplacementScope scope;
+    ReplaceRangeWithText(range_to_replace, replacement);
+  }
+  marker->SetSuggestion(suggestion_index, new_suggestion);
+
+  OnSuggestionMenuClosed();
 }
 
 void TextSuggestionController::DeleteActiveSuggestionRange() {
   AttemptToDeleteActiveSuggestionRange();
-  SuggestionMenuClosed();
+  OnSuggestionMenuClosed();
 }
 
-void TextSuggestionController::NewWordAddedToDictionary(const String& word) {
+void TextSuggestionController::OnNewWordAddedToDictionary(const String& word) {
   // Android pops up a dialog to let the user confirm they actually want to add
   // the word to the dictionary; this method gets called as soon as the dialog
   // is shown. So the word isn't actually in the dictionary here, even if the
@@ -151,29 +327,72 @@ void TextSuggestionController::NewWordAddedToDictionary(const String& word) {
   // Note: this actually matches the behavior in native Android text boxes
   GetDocument().Markers().RemoveSpellingMarkersUnderWords(
       Vector<String>({word}));
-  SuggestionMenuClosed();
+  OnSuggestionMenuClosed();
 }
 
-void TextSuggestionController::SpellCheckMenuTimeoutCallback() {
-  const std::pair<const Node*, const DocumentMarker*>& node_and_marker =
-      FirstMarkerTouchingSelection(DocumentMarker::MisspellingMarkers());
-  if (!node_and_marker.first)
+void TextSuggestionController::OnSuggestionMenuClosed() {
+  if (!IsAvailable())
     return;
 
-  const Node* const marker_text_node = node_and_marker.first;
-  const SpellCheckMarker* const marker =
-      ToSpellCheckMarker(node_and_marker.second);
+  GetDocument().Markers().RemoveMarkersOfTypes(
+      DocumentMarker::kActiveSuggestion);
+  GetFrame().Selection().SetCaretVisible(true);
+  is_suggestion_menu_open_ = false;
+}
 
-  const EphemeralRange marker_range =
+void TextSuggestionController::SuggestionMenuTimeoutCallback(
+    size_t max_number_of_suggestions) {
+  const VisibleSelectionInFlatTree& selection =
+      GetFrame().Selection().ComputeVisibleSelectionInFlatTree();
+  if (selection.IsNone())
+    return;
+
+  const EphemeralRangeInFlatTree& range_to_check =
+      selection.IsRange() ? selection.ToNormalizedEphemeralRange()
+                          : ComputeRangeSurroundingCaret(selection.Start());
+
+  // We can show a menu if the user tapped on either a spellcheck marker or a
+  // suggestion marker. Suggestion markers take precedence (we don't even try
+  // to draw both underlines, suggestion wins).
+  const HeapVector<std::pair<Member<Node>, Member<DocumentMarker>>>&
+      node_suggestion_marker_pairs =
+          GetFrame().GetDocument()->Markers().MarkersIntersectingRange(
+              range_to_check, DocumentMarker::kSuggestion);
+  if (!node_suggestion_marker_pairs.IsEmpty()) {
+    ShowSuggestionMenu(node_suggestion_marker_pairs, max_number_of_suggestions);
+    return;
+  }
+
+  // If we didn't find any suggestion markers, look for spell check markers.
+  const HeapVector<std::pair<Member<Node>, Member<DocumentMarker>>>
+      node_spelling_marker_pairs =
+          GetFrame().GetDocument()->Markers().MarkersIntersectingRange(
+              range_to_check, DocumentMarker::MisspellingMarkers());
+  if (!node_spelling_marker_pairs.IsEmpty())
+    ShowSpellCheckMenu(node_spelling_marker_pairs.front());
+
+  // If we get here, that means the user tapped on a spellcheck or suggestion
+  // marker a few hundred milliseconds ago (to start the double-click timer)
+  // but it's gone now. Oh well...
+}
+
+void TextSuggestionController::ShowSpellCheckMenu(
+    const std::pair<Node*, DocumentMarker*>& node_spelling_marker_pair) {
+  Node* const marker_text_node = node_spelling_marker_pair.first;
+  SpellCheckMarker* const marker =
+      ToSpellCheckMarker(node_spelling_marker_pair.second);
+
+  const EphemeralRange active_suggestion_range =
       EphemeralRange(Position(marker_text_node, marker->StartOffset()),
                      Position(marker_text_node, marker->EndOffset()));
-  const String& misspelled_word = PlainText(marker_range);
+  const String& misspelled_word = PlainText(active_suggestion_range);
   const String& description = marker->Description();
 
   is_suggestion_menu_open_ = true;
   GetFrame().Selection().SetCaretVisible(false);
   GetDocument().Markers().AddActiveSuggestionMarker(
-      marker_range, SK_ColorTRANSPARENT, StyleableMarker::Thickness::kThin,
+      active_suggestion_range, SK_ColorTRANSPARENT,
+      StyleableMarker::Thickness::kThin,
       LayoutTheme::GetTheme().PlatformActiveSpellingMarkerHighlightColor());
 
   Vector<String> suggestions;
@@ -196,14 +415,80 @@ void TextSuggestionController::SpellCheckMenuTimeoutCallback() {
       std::move(suggestion_ptrs));
 }
 
-void TextSuggestionController::SuggestionMenuClosed() {
-  if (!IsAvailable())
-    return;
+void TextSuggestionController::ShowSuggestionMenu(
+    const HeapVector<std::pair<Member<Node>, Member<DocumentMarker>>>&
+        node_suggestion_marker_pairs,
+    size_t max_number_of_suggestions) {
+  DCHECK(!node_suggestion_marker_pairs.IsEmpty());
 
-  GetDocument().Markers().RemoveMarkersOfTypes(
-      DocumentMarker::kActiveSuggestion);
-  GetFrame().Selection().SetCaretVisible(true);
-  is_suggestion_menu_open_ = false;
+  SuggestionInfosWithNodeAndHighlightColor
+      suggestion_infos_with_node_and_highlight_color = ComputeSuggestionInfos(
+          node_suggestion_marker_pairs, max_number_of_suggestions);
+
+  Vector<TextSuggestionInfo>& suggestion_infos =
+      suggestion_infos_with_node_and_highlight_color.suggestion_infos;
+  int span_union_start = suggestion_infos[0].span_start;
+  int span_union_end = suggestion_infos[0].span_end;
+  for (size_t i = 1; i < suggestion_infos.size(); ++i) {
+    span_union_start =
+        std::min(span_union_start, suggestion_infos[i].span_start);
+    span_union_end = std::max(span_union_end, suggestion_infos[i].span_end);
+  }
+
+  const Node* text_node =
+      suggestion_infos_with_node_and_highlight_color.text_node;
+  for (TextSuggestionInfo& info : suggestion_infos) {
+    const EphemeralRange prefix_range(Position(text_node, span_union_start),
+                                      Position(text_node, info.span_start));
+    const String& prefix = PlainText(prefix_range);
+
+    const EphemeralRange suffix_range(Position(text_node, info.span_end),
+                                      Position(text_node, span_union_end));
+    const String& suffix = PlainText(suffix_range);
+
+    info.prefix = prefix;
+    info.suffix = suffix;
+  }
+
+  const EphemeralRange marker_range(Position(text_node, span_union_start),
+                                    Position(text_node, span_union_end));
+
+  GetDocument().Markers().AddActiveSuggestionMarker(
+      marker_range, SK_ColorTRANSPARENT, StyleableMarker::Thickness::kThin,
+      suggestion_infos_with_node_and_highlight_color.highlight_color);
+
+  is_suggestion_menu_open_ = true;
+  GetFrame().Selection().SetCaretVisible(false);
+
+  const String& misspelled_word = PlainText(marker_range);
+  CallMojoShowTextSuggestionMenu(
+      suggestion_infos_with_node_and_highlight_color.suggestion_infos,
+      misspelled_word);
+}
+
+void TextSuggestionController::CallMojoShowTextSuggestionMenu(
+    const Vector<TextSuggestionInfo>& text_suggestion_infos,
+    const String& misspelled_word) {
+  Vector<mojom::blink::TextSuggestionPtr> suggestion_info_ptrs;
+  for (const blink::TextSuggestionInfo& info : text_suggestion_infos) {
+    mojom::blink::TextSuggestionPtr info_ptr(
+        mojom::blink::TextSuggestion::New());
+    info_ptr->marker_tag = info.marker_tag;
+    info_ptr->suggestion_index = info.suggestion_index;
+    info_ptr->prefix = info.prefix;
+    info_ptr->suggestion = info.suggestion;
+    info_ptr->suffix = info.suffix;
+
+    suggestion_info_ptrs.push_back(std::move(info_ptr));
+  }
+
+  const IntRect& absolute_bounds = GetFrame().Selection().AbsoluteCaretBounds();
+  const IntRect& viewport_bounds =
+      GetFrame().View()->ContentsToViewport(absolute_bounds);
+
+  text_suggestion_host_->ShowTextSuggestionMenu(
+      viewport_bounds.X(), viewport_bounds.MaxY(), misspelled_word,
+      std::move(suggestion_info_ptrs));
 }
 
 Document& TextSuggestionController::GetDocument() const {
@@ -285,22 +570,6 @@ void TextSuggestionController::AttemptToDeleteActiveSuggestionRange() {
       Position(marker_text_node, marker->StartOffset()),
       Position(marker_text_node, marker->EndOffset() + delete_next_char));
   ReplaceRangeWithText(range_to_delete, "");
-}
-
-void TextSuggestionController::ReplaceSpellingMarkerTouchingSelectionWithText(
-    const String& suggestion) {
-  const std::pair<const Node*, const DocumentMarker*>& node_and_marker =
-      FirstMarkerTouchingSelection(DocumentMarker::MisspellingMarkers());
-  if (!node_and_marker.first)
-    return;
-
-  const Node* const marker_text_node = node_and_marker.first;
-  const DocumentMarker* const marker = node_and_marker.second;
-
-  const EphemeralRange range_to_replace(
-      Position(marker_text_node, marker->StartOffset()),
-      Position(marker_text_node, marker->EndOffset()));
-  ReplaceRangeWithText(range_to_replace, suggestion);
 }
 
 void TextSuggestionController::ReplaceRangeWithText(const EphemeralRange& range,

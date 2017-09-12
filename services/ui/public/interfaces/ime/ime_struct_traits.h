@@ -90,6 +90,7 @@ struct StructTraits<ui::mojom::CompositionTextDataView, ui::CompositionText> {
 
 template <>
 struct StructTraits<ui::mojom::ImeTextSpanDataView, ui::ImeTextSpan> {
+  static ui::ImeTextSpan::Type type(const ui::ImeTextSpan& c) { return c.type; }
   static uint32_t start_offset(const ui::ImeTextSpan& c) {
     return c.start_offset;
   }
@@ -101,7 +102,21 @@ struct StructTraits<ui::mojom::ImeTextSpanDataView, ui::ImeTextSpan> {
   static uint32_t background_color(const ui::ImeTextSpan& c) {
     return c.background_color;
   }
+  static uint32_t suggestion_highlight_color(const ui::ImeTextSpan& c) {
+    return c.suggestion_highlight_color;
+  }
+  static std::vector<std::string> suggestions(const ui::ImeTextSpan& c) {
+    return c.suggestions;
+  }
   static bool Read(ui::mojom::ImeTextSpanDataView data, ui::ImeTextSpan* out);
+};
+
+template <>
+struct EnumTraits<ui::mojom::ImeTextSpanType, ui::ImeTextSpan::Type> {
+  static ui::mojom::ImeTextSpanType ToMojom(
+      ui::ImeTextSpan::Type ime_text_span_type);
+  static bool FromMojom(ui::mojom::ImeTextSpanType input,
+                        ui::ImeTextSpan::Type* out);
 };
 
 template <>
