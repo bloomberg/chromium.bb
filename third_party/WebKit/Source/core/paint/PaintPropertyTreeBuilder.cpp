@@ -1319,10 +1319,7 @@ void PaintPropertyTreeBuilder::UpdateForObjectLocationAndSize(
       // frame rect, so force a property update if it changes. TODO(pdr): We
       // only need to update properties if there are relative lengths.
       box.StyleRef().HasTransform() || box.StyleRef().HasPerspective() ||
-      box_generates_property_nodes_for_mask_and_clip_path
-      // Fragmentation sizes, positions and counts depend on the size of a
-      // fragmented box.
-      || (box.Layer() && box.Layer()->EnclosingPaginationLayer()))
+      box_generates_property_nodes_for_mask_and_clip_path)
     box.GetMutableForPainting().SetNeedsPaintPropertyUpdate();
 }
 
@@ -1415,6 +1412,12 @@ void PaintPropertyTreeBuilder::UpdateFragments(
     } else {
       PaintLayer* enclosing_pagination_layer =
           paint_layer->EnclosingPaginationLayer();
+
+      // Always force-update properties for fragmented content.
+      // TODO(chrishtr): find ways to optimize this in the future.
+      // It may suffice to compare previous and current visual overflow,
+      // but we do not currenly cache that on the LayoutObject or PaintLayer.
+      object.GetMutableForPainting().SetNeedsPaintPropertyUpdate();
 
       LayoutPoint offset_within_paginated_layer;
       paint_layer->ConvertToLayerCoords(enclosing_pagination_layer,
