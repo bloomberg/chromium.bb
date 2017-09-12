@@ -52,10 +52,10 @@ def parse_options():
     parser.add_option('--cache-directory',
                       help='cache directory, defaults to output directory')
     parser.add_option('--generate-impl',
-                      action="store_true", default=False)
+                      action='store_true', default=False)
     # TODO(tkent): Remove the option after the great mv. crbug.com/760462
     parser.add_option('--snake-case-generated-files',
-                      action="store_true", default=False)
+                      action='store_true', default=False)
     parser.add_option('--read-idl-list-from-file',
                       action='store_true', default=False)
     parser.add_option('--output-directory')

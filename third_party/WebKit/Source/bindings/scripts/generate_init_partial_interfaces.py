@@ -40,8 +40,11 @@ void InitPartialInterfacesInModules() {
 def parse_options():
     usage = 'Usage: %prog [options]'
     parser = OptionParser(usage=usage)
-    parser.add_option('--idl-files-list', help="a text file containing the IDL file paths, so the command line doesn't exceed OS length limits.")
-    parser.add_option('--gyp-format-list', default=False, action='store_true', help="if specified, idl-files-list is newline separated. When unspecified, it's formatted as a Posix command line.")
+    parser.add_option('--idl-files-list',
+                      help='a text file containing the IDL file paths, so the command line doesn\'t exceed OS length limits.')
+    parser.add_option('--gyp-format-list', default=False, action='store_true',
+                      help='if specified, idl-files-list is newline separated. ' +
+                      'When unspecified, it\'s formatted as a Posix command line.')
     parser.add_option('--output')
 
     options, args = parser.parse_args()

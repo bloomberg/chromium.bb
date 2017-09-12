@@ -108,8 +108,8 @@ def normalize_and_sort_includes(include_paths):
 
 def render_template(template, context):
     filename = str(template.filename)
-    filename = filename[filename.rfind("third_party"):]
-    context["jinja_template_filename"] = filename
+    filename = filename[filename.rfind('third_party'):]
+    context['jinja_template_filename'] = filename
     return template.render(context)
 
 

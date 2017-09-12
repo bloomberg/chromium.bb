@@ -38,12 +38,12 @@ def get_install_functions(interfaces, feature_names):
         be installed on those interfaces.
     """
     return [
-        {"condition": 'OriginTrials::%sEnabled' % uncapitalize(feature_name),
-         "name": feature_name,
-         "install_method": "install%s" % feature_name,
-         "interface_is_global": interface_info.is_global,
-         "v8_class": interface_info.v8_class,
-         "v8_class_or_partial": interface_info.v8_class_or_partial}
+        {'condition': 'OriginTrials::%sEnabled' % uncapitalize(feature_name),
+         'name': feature_name,
+         'install_method': 'install%s' % feature_name,
+         'interface_is_global': interface_info.is_global,
+         'v8_class': interface_info.v8_class,
+         'v8_class_or_partial': interface_info.v8_class_or_partial}
         for feature_name in feature_names
         for interface_info in interfaces]
 
@@ -149,34 +149,34 @@ def conditional_features_context(generator_name, feature_info):
 
     # Add includes needed for cpp code and normalize.
     includes.update([
-        "core/context_features/ContextFeatureSettings.h",
-        "core/dom/ExecutionContext.h",
-        "core/frame/Frame.h",
-        "core/origin_trials/OriginTrials.h",
-        "platform/bindings/ConditionalFeatures.h",
-        "platform/bindings/ScriptState.h",
+        'core/context_features/ContextFeatureSettings.h',
+        'core/dom/ExecutionContext.h',
+        'core/frame/Frame.h',
+        'core/origin_trials/OriginTrials.h',
+        'platform/bindings/ConditionalFeatures.h',
+        'platform/bindings/ScriptState.h',
         # TODO(iclelland): Remove the need to explicitly include this; it is
         # here because the ContextFeatureSettings code needs it.
-        "bindings/core/v8/V8Window.h",
+        'bindings/core/v8/V8Window.h',
     ])
     context['includes'] = normalize_and_sort_includes(includes)
 
     # For each interface, collect a list of bindings installation functions to
     # call, organized by conditional feature.
     context['installers_by_interface'] = [
-        {"name": interface_info.name,
-         "is_global": interface_info.is_global,
-         "v8_class": interface_info.v8_class,
-         "installers": get_install_functions([interface_info], feature_names)}
+        {'name': interface_info.name,
+         'is_global': interface_info.is_global,
+         'v8_class': interface_info.v8_class,
+         'installers': get_install_functions([interface_info], feature_names)}
         for interface_info, feature_names in features_for_type.items()]
     context['installers_by_interface'].sort(key=lambda x: x['name'])
 
     # For each conditional feature, collect a list of bindings installation
     # functions to call, organized by interface.
     context['installers_by_feature'] = [
-        {"name": feature_name,
-         "name_constant": "OriginTrials::k%sTrialName" % feature_name,
-         "installers": get_install_functions(interfaces, [feature_name])}
+        {'name': feature_name,
+         'name_constant': 'OriginTrials::k%sTrialName' % feature_name,
+         'installers': get_install_functions(interfaces, [feature_name])}
         for feature_name, interfaces in types_for_feature.items()]
     context['installers_by_feature'].sort(key=lambda x: x['name'])
 
@@ -217,16 +217,16 @@ def generate_conditional_features(info_provider, options, idl_filenames):
 
     # Generate and write out the header file
     header_text = render_template(jinja_env.get_template(
-        "ConditionalFeaturesFor%s.h.tmpl" % options.target_component.title()), template_context)
+        'ConditionalFeaturesFor%s.h.tmpl' % options.target_component.title()), template_context)
     header_path = posixpath.join(options.output_directory,
-                                 "ConditionalFeaturesFor%s.h" % options.target_component.title())
+                                 'ConditionalFeaturesFor%s.h' % options.target_component.title())
     write_file(header_text, header_path)
 
     # Generate and write out the implementation file
     cpp_text = render_template(jinja_env.get_template(
-        "ConditionalFeaturesFor%s.cpp.tmpl" % options.target_component.title()), template_context)
+        'ConditionalFeaturesFor%s.cpp.tmpl' % options.target_component.title()), template_context)
     cpp_path = posixpath.join(options.output_directory,
-                              "ConditionalFeaturesFor%s.cpp" % options.target_component.title())
+                              'ConditionalFeaturesFor%s.cpp' % options.target_component.title())
     write_file(cpp_text, cpp_path)
 
 

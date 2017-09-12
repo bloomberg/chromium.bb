@@ -55,7 +55,7 @@ def parse_args():
                         help='cache directory')
     parser.add_argument('--target-component', type=str, required=True,
                         help='target component')
-    parser.add_argument('--snake-case-generated-files', action="store_true",
+    parser.add_argument('--snake-case-generated-files', action='store_true',
                         default=False)
     return parser.parse_known_args()
 

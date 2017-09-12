@@ -243,7 +243,7 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_
             if idl_type.is_nullable:
                 return idl_type.inner_type.name
             return idl_type.name
-        idl_type_name = "Or".join(member_cpp_name(member)
+        idl_type_name = 'Or'.join(member_cpp_name(member)
                                   for member in idl_type.member_types)
         return 'const %s&' % idl_type_name if used_as_rvalue_type else idl_type_name
     if idl_type.is_callback_function:
@@ -608,11 +608,11 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
 
     if 'FlexibleArrayBufferView' in extended_attributes:
         if base_idl_type not in ARRAY_BUFFER_VIEW_AND_TYPED_ARRAY_TYPES:
-            raise ValueError("Unrecognized base type for extended attribute 'FlexibleArrayBufferView': %s" % (idl_type.base_type))
+            raise ValueError('Unrecognized base type for extended attribute "FlexibleArrayBufferView": %s' % (idl_type.base_type))
         base_idl_type = 'FlexibleArrayBufferView'
 
     if 'AllowShared' in extended_attributes and not idl_type.is_array_buffer_view_or_typed_array:
-        raise ValueError("Unrecognized base type for extended attribute 'AllowShared': %s" % (idl_type.base_type))
+        raise ValueError('Unrecognized base type for extended attribute "AllowShared": %s' % (idl_type.base_type))
 
     if idl_type.is_integer_type:
         configuration = 'kNormalConversion'
@@ -696,7 +696,7 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
 
     if 'FlexibleArrayBufferView' in extended_attributes:
         if idl_type.base_type not in ARRAY_BUFFER_VIEW_AND_TYPED_ARRAY_TYPES:
-            raise ValueError("Unrecognized base type for extended attribute 'FlexibleArrayBufferView': %s" % (idl_type.base_type))
+            raise ValueError('Unrecognized base type for extended attribute "FlexibleArrayBufferView": %s' % (idl_type.base_type))
         set_expression = cpp_value
     elif idl_type.is_string_type or idl_type.v8_conversion_needs_exception_state:
         # Types for which conversion can fail and that need error handling.
