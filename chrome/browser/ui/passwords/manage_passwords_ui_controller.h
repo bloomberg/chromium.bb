@@ -116,7 +116,8 @@ class ManagePasswordsUIController
   void OnNoInteraction() override;
   void OnNopeUpdateClicked() override;
   void NeverSavePassword() override;
-  void SavePassword(const base::string16& username) override;
+  void SavePassword(const base::string16& username,
+                    const base::string16& password) override;
   void UpdatePassword(const autofill::PasswordForm& password_form) override;
   void ChooseCredential(
       const autofill::PasswordForm& form,

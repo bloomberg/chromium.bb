@@ -406,7 +406,8 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSaved) {
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
   controller()->OnPasswordSubmitted(std::move(test_form_manager));
 
-  controller()->SavePassword(test_local_form().username_value);
+  controller()->SavePassword(test_local_form().username_value,
+                             test_local_form().password_value);
   ExpectIconStateIs(password_manager::ui::MANAGE_STATE);
 }
 
@@ -447,7 +448,8 @@ TEST_F(ManagePasswordsUIControllerTest, NormalNavigationsClosedBubble) {
       CreateFormManager());
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
   controller()->OnPasswordSubmitted(std::move(test_form_manager));
-  controller()->SavePassword(test_local_form().username_value);
+  controller()->SavePassword(test_local_form().username_value,
+                             test_local_form().password_value);
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
   controller()->OnBubbleHidden();
   ExpectIconStateIs(password_manager::ui::MANAGE_STATE);
@@ -828,7 +830,8 @@ TEST_F(ManagePasswordsUIControllerTest, ManualFallbackForSaving_UseFallback) {
       EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
       controller()->UpdatePassword(autofill::PasswordForm());
     } else {
-      controller()->SavePassword(test_local_form().username_value);
+      controller()->SavePassword(test_local_form().username_value,
+                                 test_local_form().password_value);
     }
     ExpectIconAndControllerStateIs(password_manager::ui::MANAGE_STATE);
     testing::Mock::VerifyAndClearExpectations(controller());
@@ -970,7 +973,8 @@ TEST_F(ManagePasswordsUIControllerTest,
         password_manager::ui::PENDING_PASSWORD_STATE);
 
     if (user_saved_password) {
-      controller()->SavePassword(test_local_form().username_value);
+      controller()->SavePassword(test_local_form().username_value,
+                                 test_local_form().password_value);
       ExpectIconAndControllerStateIs(password_manager::ui::MANAGE_STATE);
     } else {
       // A user closed the bubble. The fallback should be hidden after

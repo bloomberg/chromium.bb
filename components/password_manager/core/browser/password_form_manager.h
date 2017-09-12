@@ -160,6 +160,12 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // accordingly. This function should be called after ProvisionallySave().
   void UpdateUsername(const base::string16& new_username);
 
+  // Updates the password value. Called when user selects a password from the
+  // password selection dropdown and clicks the save button. Updates the
+  // password and modifies internal state accordingly. This function should be
+  // called after ProvisionallySave().
+  void UpdatePasswordValue(const base::string16& new_password);
+
   // Call these if/when we know the form submission worked or failed.
   // These routines are used to update internal statistics ("ActionsTaken").
   void LogSubmitPassed();

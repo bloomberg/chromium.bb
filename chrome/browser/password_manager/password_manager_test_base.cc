@@ -341,7 +341,8 @@ void BubbleObserver::Dismiss() const  {
 void BubbleObserver::AcceptSavePrompt() const {
   ASSERT_TRUE(IsSavePromptAvailable());
   passwords_ui_controller_->SavePassword(
-      passwords_ui_controller_->GetPendingPassword().username_value);
+      passwords_ui_controller_->GetPendingPassword().username_value,
+      passwords_ui_controller_->GetPendingPassword().password_value);
   EXPECT_FALSE(IsSavePromptAvailable());
 }
 

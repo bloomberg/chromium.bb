@@ -487,6 +487,11 @@ void PasswordFormManager::UpdateUsername(const base::string16& new_username) {
   }
 }
 
+void PasswordFormManager::UpdatePasswordValue(
+    const base::string16& new_password) {
+  pending_credentials_.password_value = new_password;
+}
+
 void PasswordFormManager::PresaveGeneratedPassword(
     const autofill::PasswordForm& form) {
   form_saver()->PresaveGeneratedPassword(form);
