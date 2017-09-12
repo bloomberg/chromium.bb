@@ -200,17 +200,21 @@ class PasswordStoreConsumerVerifier
   std::vector<std::unique_ptr<autofill::PasswordForm>> password_entries_;
 };
 
-static base::FilePath GetFirstNonSigninProfile(
+static base::FilePath GetFirstNonSigninNonLockScreenAppProfile(
     ProfileAttributesStorage& storage) {
   std::vector<ProfileAttributesEntry*> entries =
       storage.GetAllProfilesAttributesSortedByName();
 #if defined(OS_CHROMEOS)
   const base::FilePath signin_path =
       chromeos::ProfileHelper::GetSigninProfileDir();
+  const base::FilePath lock_screen_apps_path =
+      chromeos::ProfileHelper::GetLockScreenAppProfilePath();
+
   for (ProfileAttributesEntry* entry : entries) {
     base::FilePath profile_path = entry->GetPath();
-    if (profile_path != signin_path)
+    if (profile_path != signin_path && profile_path != lock_screen_apps_path) {
       return profile_path;
+    }
   }
   return base::FilePath();
 #else
@@ -446,8 +450,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,
   }
 }
 
-// Flakes on ChromiumOS: http://crbug.com/758930
-IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DISABLED_SwitchToProfile) {
+IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, SwitchToProfile) {
   // If multiprofile mode is not enabled, you can't switch between profiles.
   if (!profiles::IsMultipleProfilesEnabled())
     return;
@@ -456,7 +459,8 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DISABLED_SwitchToProfile) {
   ProfileAttributesStorage& storage =
       profile_manager->GetProfileAttributesStorage();
   size_t initial_profile_count = profile_manager->GetNumberOfProfiles();
-  base::FilePath path_profile1 = GetFirstNonSigninProfile(storage);
+  base::FilePath path_profile1 =
+      GetFirstNonSigninNonLockScreenAppProfile(storage);
 
   ASSERT_NE(0U, initial_profile_count);
   EXPECT_EQ(1U, chrome::GetTotalBrowserCount());
@@ -502,8 +506,12 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DISABLED_SwitchToProfile) {
 }
 
 // Flakes on Windows: http://crbug.com/314905
-// Flakes on ChromiumOS: http://crbug.com/758930
-IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DISABLED_EphemeralProfile) {
+#if defined(OS_WIN)
+#define MAYBE_EphemeralProfile DISABLED_EphemeralProfile
+#else
+#define MAYBE_EphemeralProfile EphemeralProfile
+#endif
+IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_EphemeralProfile) {
   // If multiprofile mode is not enabled, you can't switch between profiles.
   if (!profiles::IsMultipleProfilesEnabled())
     return;
@@ -512,7 +520,8 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DISABLED_EphemeralProfile) {
   ProfileAttributesStorage& storage =
       profile_manager->GetProfileAttributesStorage();
   size_t initial_profile_count = profile_manager->GetNumberOfProfiles();
-  base::FilePath path_profile1 = GetFirstNonSigninProfile(storage);
+  base::FilePath path_profile1 =
+      GetFirstNonSigninNonLockScreenAppProfile(storage);
 
   ASSERT_NE(0U, initial_profile_count);
   EXPECT_EQ(1U, chrome::GetTotalBrowserCount());
