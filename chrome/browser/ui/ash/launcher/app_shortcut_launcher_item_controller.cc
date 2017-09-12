@@ -8,7 +8,6 @@
 
 #include <utility>
 
-#include "ash/wm/window_util.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
@@ -327,9 +326,10 @@ ash::ShelfAction AppShortcutLauncherItemController::ActivateContent(
 bool AppShortcutLauncherItemController::AdvanceToNextApp() {
   std::vector<content::WebContents*> items = GetRunningApplications();
   if (items.size() >= 1) {
-    Browser* browser = chrome::FindBrowserWithWindow(
-        ash::wm::GetActiveWindow());
-    if (browser) {
+    Browser* browser = chrome::FindLastActive();
+    // The last active browser is not necessarily the active window. The window
+    // could be a v2 app or ARC app.
+    if (browser && browser->window()->IsActive()) {
       TabStripModel* tab_strip = browser->tab_strip_model();
       content::WebContents* active = tab_strip->GetWebContentsAt(
           tab_strip->active_index());

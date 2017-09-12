@@ -21,7 +21,6 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -703,9 +702,6 @@ TEST_F(MultiUserWindowManagerChromeOSTest, ActiveWindowTests) {
   const AccountId account_id_B(AccountId::FromUserEmail("B"));
   const AccountId account_id_C(AccountId::FromUserEmail("C"));
 
-  ::wm::ActivationClient* activation_client =
-      ::wm::GetActivationClient(window(0)->GetRootWindow());
-
   // Set some windows to the active owner.
   multi_user_window_manager()->SetWindowOwner(window(0), account_id_A);
   multi_user_window_manager()->SetWindowOwner(window(1), account_id_A);
@@ -714,23 +710,25 @@ TEST_F(MultiUserWindowManagerChromeOSTest, ActiveWindowTests) {
   EXPECT_EQ("S[A], S[A], H[B], H[B]", GetStatus());
 
   // Set the active window for user A to be #1
-  activation_client->ActivateWindow(window(1));
+  ::wm::ActivateWindow(window(1));
 
   // Change to user B and make sure that one of its windows is active.
   StartUserTransitionAnimation(account_id_B);
   EXPECT_EQ("H[A], H[A], S[B], S[B]", GetStatus());
-  EXPECT_TRUE(window(3) == activation_client->GetActiveWindow() ||
-              window(2) == activation_client->GetActiveWindow());
+  EXPECT_TRUE(::wm::IsActiveWindow(window(3)) ||
+              ::wm::IsActiveWindow(window(2)));
   // Set the active window for user B now to be #2
-  activation_client->ActivateWindow(window(2));
+  ::wm::ActivateWindow(window(2));
 
   StartUserTransitionAnimation(account_id_A);
-  EXPECT_EQ(window(1), activation_client->GetActiveWindow());
+  EXPECT_TRUE(::wm::IsActiveWindow(window(1)));
 
   StartUserTransitionAnimation(account_id_B);
-  EXPECT_EQ(window(2), activation_client->GetActiveWindow());
+  EXPECT_TRUE(::wm::IsActiveWindow(window(2)));
 
   StartUserTransitionAnimation(account_id_C);
+  ::wm::ActivationClient* activation_client =
+      ::wm::GetActivationClient(window(0)->GetRootWindow());
   EXPECT_EQ(NULL, activation_client->GetActiveWindow());
 
   // Now test that a minimized window stays minimized upon switch and back.
@@ -740,7 +738,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, ActiveWindowTests) {
   StartUserTransitionAnimation(account_id_B);
   StartUserTransitionAnimation(account_id_A);
   EXPECT_TRUE(wm::GetWindowState(window(0))->IsMinimized());
-  EXPECT_EQ(window(1), activation_client->GetActiveWindow());
+  EXPECT_TRUE(::wm::IsActiveWindow(window(1)));
 }
 
 // Test that Transient windows are handled properly.
@@ -1576,7 +1574,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, WindowsOrderPreservedTests) {
   activation_client->ActivateWindow(window(2));
   activation_client->ActivateWindow(window(1));
   activation_client->ActivateWindow(window(0));
-  EXPECT_EQ(wm::GetActiveWindow(), window(0));
+  EXPECT_EQ(activation_client->GetActiveWindow(), window(0));
 
   aura::Window::Windows mru_list =
       Shell::Get()->mru_window_tracker()->BuildMruWindowList();
@@ -1588,13 +1586,13 @@ TEST_F(MultiUserWindowManagerChromeOSTest, WindowsOrderPreservedTests) {
   multi_user_window_manager()->ActiveUserChanged(
       user_manager()->FindUser(account_id_B));
   EXPECT_EQ("H[A], H[A], H[A]", GetStatus());
-  EXPECT_EQ(wm::GetActiveWindow(), nullptr);
+  EXPECT_EQ(activation_client->GetActiveWindow(), nullptr);
 
   user_manager()->SwitchActiveUser(account_id_A);
   multi_user_window_manager()->ActiveUserChanged(
       user_manager()->FindUser(account_id_A));
   EXPECT_EQ("S[A], S[A], S[A]", GetStatus());
-  EXPECT_EQ(wm::GetActiveWindow(), window(0));
+  EXPECT_EQ(activation_client->GetActiveWindow(), window(0));
 
   mru_list = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
   EXPECT_EQ(mru_list[0], window(0));
@@ -1628,7 +1626,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, GetActiveBrowserTest) {
   // Manually set last active browser in BrowserList for testing.
   BrowserList::GetInstance()->SetLastActive(browser.get());
   EXPECT_EQ(browser.get(), BrowserList::GetInstance()->GetLastActive());
-  EXPECT_EQ(browser_native_window, wm::GetActiveWindow());
+  EXPECT_EQ(browser_native_window, activation_client->GetActiveWindow());
   EXPECT_EQ(browser.get(), ChromeNewWindowClient::GetActiveBrowser());
 
   // Switch to another user's desktop with no active window.
@@ -1636,7 +1634,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, GetActiveBrowserTest) {
   multi_user_window_manager()->ActiveUserChanged(
       user_manager()->FindUser(account_id_B));
   EXPECT_EQ(browser.get(), BrowserList::GetInstance()->GetLastActive());
-  EXPECT_EQ(nullptr, wm::GetActiveWindow());
+  EXPECT_EQ(nullptr, activation_client->GetActiveWindow());
   EXPECT_EQ(nullptr, ChromeNewWindowClient::GetActiveBrowser());
 }
 

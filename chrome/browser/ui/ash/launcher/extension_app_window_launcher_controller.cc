@@ -7,7 +7,6 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/wm/window_util.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/ash_config.h"
@@ -20,6 +19,7 @@
 #include "extensions/common/extension.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/wm/core/window_util.h"
 
 using extensions::AppWindow;
 using extensions::AppWindowRegistry;
@@ -122,9 +122,8 @@ void ExtensionAppWindowLauncherController::RegisterApp(AppWindow* app_window) {
   window->AddObserver(this);
 
   // Find or create an item controller and launcher item.
-  ash::ShelfItemStatus status = ash::wm::IsActiveWindow(window)
-                                    ? ash::STATUS_ACTIVE
-                                    : ash::STATUS_RUNNING;
+  ash::ShelfItemStatus status =
+      wm::IsActiveWindow(window) ? ash::STATUS_ACTIVE : ash::STATUS_RUNNING;
   AppControllerMap::iterator app_controller_iter =
       app_controller_map_.find(shelf_id);
 

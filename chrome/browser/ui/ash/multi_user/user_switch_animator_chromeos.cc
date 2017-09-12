@@ -13,7 +13,6 @@
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm/window_util.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -89,15 +88,14 @@ class MaximizedWindowAnimationWatcher : public ui::LayerAnimationObserver {
 // any, and if it exists in |window_list|) will be the last window in the list.
 void PutMruWindowLast(std::vector<aura::Window*>* window_list) {
   DCHECK(window_list);
-  auto* active_window = ash::wm::GetActiveWindow();
-  if (!active_window)
+  auto it = std::find_if(
+      window_list->begin(), window_list->end(),
+      [](aura::Window* window) { return wm::IsActiveWindow(window); });
+  if (it == window_list->end())
     return;
-
-  auto itr = std::find(window_list->begin(), window_list->end(), active_window);
-  if (itr != window_list->end()) {
-    window_list->erase(itr);
-    window_list->push_back(active_window);
-  }
+  // Move the active window to the end of the list.
+  window_list->erase(it);
+  window_list->push_back(*it);
 }
 
 }  // namespace

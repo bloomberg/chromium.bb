@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "apps/test/app_window_waiter.h"
-#include "ash/wm/window_util.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
@@ -17,6 +16,7 @@
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "ui/aura/client/focus_client.h"
+#include "ui/wm/core/window_util.h"
 
 namespace chromeos {
 
@@ -44,7 +44,7 @@ IN_PROC_BROWSER_TEST_F(LoginFeedbackTest, Basic) {
   ASSERT_NE(nullptr, feedback_window);
   EXPECT_FALSE(feedback_window->is_hidden());
 
-  EXPECT_EQ(feedback_window->GetNativeWindow(), ash::wm::GetActiveWindow());
+  EXPECT_TRUE(wm::IsActiveWindow(feedback_window->GetNativeWindow()));
 
   feedback_window->GetBaseWindow()->Close();
   run_loop.Run();

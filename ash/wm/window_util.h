@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "ash/ash_export.h"
-#include "base/compiler_specific.h"
 #include "ui/base/ui_base_types.h"
 
 namespace aura {
@@ -31,6 +30,7 @@ class ImmersiveFullscreenController;
 namespace wm {
 
 // Utility functions for window activation.
+// DEPRECATED: Prefer the functions in ui/wm/core/window_util.h.
 ASH_EXPORT void ActivateWindow(aura::Window* window);
 ASH_EXPORT void DeactivateWindow(aura::Window* window);
 ASH_EXPORT bool IsActiveWindow(aura::Window* window);

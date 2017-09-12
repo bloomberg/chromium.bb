@@ -9,7 +9,6 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/wm/window_util.h"
 #include "base/run_loop.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "ui/app_list/presenter/app_list.h"
@@ -19,12 +18,15 @@
 using AppListTest = InProcessBrowserTest;
 
 // An integration test to toggle the app list by pressing the shelf button.
+// TODO(jamescook|newcomer): Replace this with a unit test in //ash/app_list
+// after app list ownership moves out of the browser process into ash.
+// http://crbug.com/733662
 IN_PROC_BROWSER_TEST_F(AppListTest, PressAppListButtonToShowAndDismiss) {
-  ash::Shelf* shelf = ash::Shelf::ForWindow(ash::wm::GetActiveWindow());
+  aura::Window* root_window = ash::Shell::GetPrimaryRootWindow();
+  ash::Shelf* shelf = ash::Shelf::ForWindow(root_window);
   ash::ShelfWidget* shelf_widget = shelf->shelf_widget();
   ash::AppListButton* app_list_button = shelf_widget->GetAppListButton();
 
-  aura::Window* root_window = ash::wm::GetActiveWindow()->GetRootWindow();
   aura::Window* app_list_container =
       root_window->GetChildById(ash::kShellWindowId_AppListContainer);
   ui::test::EventGenerator generator(shelf_widget->GetNativeWindow());
