@@ -318,7 +318,7 @@ void ChromeAutocompleteProviderClient::StartServiceWorker(
     return;
 
   context->StartServiceWorkerForNavigationHint(destination_url,
-                                               base::Bind(&NoopCallback));
+                                               base::BindOnce(&NoopCallback));
 }
 
 void ChromeAutocompleteProviderClient::OnAutocompleteControllerResultReady(

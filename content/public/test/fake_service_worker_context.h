@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_TEST_MOCK_SERVICE_WORKER_CONTEXT_H_
-#define CONTENT_PUBLIC_TEST_MOCK_SERVICE_WORKER_CONTEXT_H_
+#ifndef CONTENT_PUBLIC_TEST_FAKE_SERVICE_WORKER_CONTEXT_H_
+#define CONTENT_PUBLIC_TEST_FAKE_SERVICE_WORKER_CONTEXT_H_
 
 #include <string>
 
 #include "base/callback_forward.h"
 #include "content/public/browser/service_worker_context.h"
-#include "testing/gmock/include/gmock/gmock.h"
 
 class GURL;
 
@@ -17,23 +16,26 @@ namespace content {
 
 class ServiceWorkerContextObserver;
 
-// Mock implementation of ServiceWorkerContext.
-class MockServiceWorkerContext : public ServiceWorkerContext {
+// Fake implementation of ServiceWorkerContext.
+//
+// Currently it only implements StartServiceWorkerForNavigationHint. Add
+// what you need.
+class FakeServiceWorkerContext : public ServiceWorkerContext {
  public:
-  MockServiceWorkerContext();
-  virtual ~MockServiceWorkerContext();
+  FakeServiceWorkerContext();
+  ~FakeServiceWorkerContext() override;
 
-  // Some functions cannot be mocked because they use OnceCallback which is not
-  // copyable.
-  MOCK_METHOD1(AddObserver, void(ServiceWorkerContextObserver*));
-  MOCK_METHOD1(RemoveObserver, void(ServiceWorkerContextObserver*));
+  void AddObserver(ServiceWorkerContextObserver* observer) override;
+  void RemoveObserver(ServiceWorkerContextObserver* observer) override;
   void RegisterServiceWorker(const GURL& pattern,
                              const GURL& script_url,
                              ResultCallback callback) override;
   void UnregisterServiceWorker(const GURL& pattern,
                                ResultCallback callback) override;
-  MOCK_METHOD2(StartingExternalRequest, bool(int64_t, const std::string&));
-  MOCK_METHOD2(FinishedExternalRequest, bool(int64_t, const std::string&));
+  bool StartingExternalRequest(int64_t service_worker_version_id,
+                               const std::string& request_uuid) override;
+  bool FinishedExternalRequest(int64_t service_worker_version_id,
+                               const std::string& request_uuid) override;
   void CountExternalRequestsForTest(
       const GURL& url,
       CountExternalRequestsCallback callback) override;
@@ -47,15 +49,21 @@ class MockServiceWorkerContext : public ServiceWorkerContext {
       const GURL& pattern,
       ServiceWorkerContext::StartActiveWorkerCallback info_callback,
       base::OnceClosure failure_callback) override;
-  MOCK_METHOD2(StartServiceWorkerForNavigationHint,
-               void(const GURL&,
-                    const StartServiceWorkerForNavigationHintCallback&));
-  MOCK_METHOD1(StopAllServiceWorkersForOrigin, void(const GURL&));
+  void StartServiceWorkerForNavigationHint(
+      const GURL& document_url,
+      StartServiceWorkerForNavigationHintCallback callback) override;
+  void StopAllServiceWorkersForOrigin(const GURL& origin) override;
+
+  bool start_service_worker_for_navigation_hint_called() {
+    return start_service_worker_for_navigation_hint_called_;
+  }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockServiceWorkerContext);
+  bool start_service_worker_for_navigation_hint_called_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeServiceWorkerContext);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_TEST_MOCK_SERVICE_WORKER_CONTEXT_H_
+#endif  // CONTENT_PUBLIC_TEST_FAKE_SERVICE_WORKER_CONTEXT_H_

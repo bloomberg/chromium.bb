@@ -59,8 +59,8 @@ class ServiceWorkerContext {
   using CountExternalRequestsCallback =
       base::OnceCallback<void(size_t external_request_count)>;
 
-  using StartServiceWorkerForNavigationHintCallback =
-      base::Callback<void(StartServiceWorkerForNavigationHintResult result)>;
+  using StartServiceWorkerForNavigationHintCallback = base::OnceCallback<void(
+      StartServiceWorkerForNavigationHintResult result)>;
 
   using StartActiveWorkerCallback =
       base::OnceCallback<void(int process_id, int thread_id)>;
@@ -176,7 +176,7 @@ class ServiceWorkerContext {
   // |callback| will always be called on the UI thread.
   virtual void StartServiceWorkerForNavigationHint(
       const GURL& document_url,
-      const StartServiceWorkerForNavigationHintCallback& callback) = 0;
+      StartServiceWorkerForNavigationHintCallback callback) = 0;
 
   // Stops all running workers on the given |origin|.
   //

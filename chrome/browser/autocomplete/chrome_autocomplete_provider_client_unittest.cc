@@ -4,18 +4,17 @@
 
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 
+#include <memory>
+
 #include "base/memory/ptr_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/test/mock_service_worker_context.h"
+#include "content/public/test/fake_service_worker_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_storage_partition.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-
-using ::testing::_;
 
 class ChromeAutocompleteProviderClientTest : public testing::Test {
  public:
@@ -40,7 +39,7 @@ class ChromeAutocompleteProviderClientTest : public testing::Test {
 
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<ChromeAutocompleteProviderClient> client_;
-  content::MockServiceWorkerContext service_worker_context_;
+  content::FakeServiceWorkerContext service_worker_context_;
 
  private:
   content::TestStoragePartition storage_partition_;
@@ -49,10 +48,9 @@ class ChromeAutocompleteProviderClientTest : public testing::Test {
 TEST_F(ChromeAutocompleteProviderClientTest, StartServiceWorker) {
   GURL destination_url("https://google.com/search?q=puppies");
 
-  EXPECT_CALL(service_worker_context_,
-              StartServiceWorkerForNavigationHint(destination_url, _))
-      .Times(1);
   client_->StartServiceWorker(destination_url);
+  EXPECT_TRUE(service_worker_context_
+                  .start_service_worker_for_navigation_hint_called());
 }
 
 TEST_F(ChromeAutocompleteProviderClientTest,
@@ -60,10 +58,9 @@ TEST_F(ChromeAutocompleteProviderClientTest,
   GURL destination_url("https://google.com/search?q=puppies");
 
   GoOffTheRecord();
-  EXPECT_CALL(service_worker_context_,
-              StartServiceWorkerForNavigationHint(destination_url, _))
-      .Times(0);
   client_->StartServiceWorker(destination_url);
+  EXPECT_FALSE(service_worker_context_
+                   .start_service_worker_for_navigation_hint_called());
 }
 
 TEST_F(ChromeAutocompleteProviderClientTest,
@@ -71,8 +68,7 @@ TEST_F(ChromeAutocompleteProviderClientTest,
   GURL destination_url("https://google.com/search?q=puppies");
 
   profile_->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, false);
-  EXPECT_CALL(service_worker_context_,
-              StartServiceWorkerForNavigationHint(destination_url, _))
-      .Times(0);
   client_->StartServiceWorker(destination_url);
+  EXPECT_FALSE(service_worker_context_
+                   .start_service_worker_for_navigation_hint_called());
 }

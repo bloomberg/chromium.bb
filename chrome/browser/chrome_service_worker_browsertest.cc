@@ -615,9 +615,9 @@ class ChromeServiceWorkerNavigationHintTest : public ChromeServiceWorkerTest {
     base::RunLoop run_loop;
     GetServiceWorkerContext()->StartServiceWorkerForNavigationHint(
         embedded_test_server()->GetURL(scope),
-        base::Bind(&ExpectResultAndRun<
-                       content::StartServiceWorkerForNavigationHintResult>,
-                   expected_result, run_loop.QuitClosure()));
+        base::BindOnce(&ExpectResultAndRun<
+                           content::StartServiceWorkerForNavigationHintResult>,
+                       expected_result, run_loop.QuitClosure()));
     run_loop.Run();
     if (expected_started) {
       histogram_tester_.ExpectBucketCount(
