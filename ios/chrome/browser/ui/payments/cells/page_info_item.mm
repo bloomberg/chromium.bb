@@ -37,6 +37,9 @@ const CGFloat kFaviconAndLabelsHorizontalSpacing = 12;
 // Dimension for lock indicator in points.
 const CGFloat kLockIndicatorDimension = 16;
 
+// Dimension for the favicon in points.
+const CGFloat kFaviconDimension = 16;
+
 // There is some empty space between the left and right edges of the lock
 // indicator image contents and the square box it is contained within.
 // This padding represents that difference. This is useful when it comes
@@ -153,10 +156,6 @@ const CGFloat kLockIndicatorVerticalPadding = 4;
         setTintColor:[[MDCPalette cr_greenPalette] tint700]];
     [self.contentView addSubview:_pageLockIndicatorView];
 
-    CGFloat faviconHeight = _pageTitleLabel.font.pointSize +
-                            _pageHostLabel.font.pointSize +
-                            kLabelsVerticalSpacing;
-
     // Layout
     [NSLayoutConstraint activateConstraints:@[
       [_pageFaviconView.leadingAnchor
@@ -164,7 +163,8 @@ const CGFloat kLockIndicatorVerticalPadding = 4;
                          constant:kHorizontalPadding],
       [_pageFaviconView.centerYAnchor
           constraintEqualToAnchor:self.contentView.centerYAnchor],
-      [_pageFaviconView.heightAnchor constraintEqualToConstant:faviconHeight],
+      [_pageFaviconView.heightAnchor
+          constraintEqualToConstant:kFaviconDimension],
       [_pageFaviconView.widthAnchor
           constraintEqualToAnchor:_pageFaviconView.heightAnchor],
 
