@@ -14,6 +14,7 @@
 #include "net/quic/core/quic_connection.h"
 #include "net/quic/core/quic_crypto_server_stream.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_containers.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_socket_address.h"
 #include "net/quic/platform/api/quic_string_piece.h"
@@ -65,7 +66,7 @@ class QuicSimpleServerSessionPeer {
     return s->CreateOutgoingDynamicStream(priority);
   }
 
-  static std::deque<PromisedStreamInfo>* promised_streams(
+  static QuicDeque<PromisedStreamInfo>* promised_streams(
       QuicSimpleServerSession* s) {
     return &(s->promised_streams_);
   }

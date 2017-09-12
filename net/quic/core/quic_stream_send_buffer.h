@@ -5,10 +5,9 @@
 #ifndef NET_QUIC_CORE_QUIC_STREAM_SEND_BUFFER_H_
 #define NET_QUIC_CORE_QUIC_STREAM_SEND_BUFFER_H_
 
-#include <deque>
-
 #include "net/quic/core/frames/quic_stream_frame.h"
 #include "net/quic/core/quic_iovector.h"
+#include "net/quic/platform/api/quic_containers.h"
 #include "net/quic/platform/api/quic_mem_slice.h"
 
 namespace net {
@@ -22,14 +21,14 @@ class QuicDataWriter;
 // BufferedSlice comprises information of a piece of stream data stored in
 // contiguous memory space. Please note, BufferedSlice is constructed when
 // stream data is saved in send buffer and is removed when stream data is fully
-// acked. There is no usage cases that BufferedSlice needs to be either copied
-// or moved.
+// acked. It is move-only.
 struct BufferedSlice {
   BufferedSlice(QuicMemSlice mem_slice, QuicStreamOffset offset);
+  BufferedSlice(BufferedSlice&& other);
+  BufferedSlice& operator=(BufferedSlice&& other);
+
   BufferedSlice(const BufferedSlice& other) = delete;
   BufferedSlice& operator=(const BufferedSlice& other) = delete;
-  BufferedSlice(BufferedSlice&& other) = delete;
-  BufferedSlice& operator=(BufferedSlice&& other) = delete;
   ~BufferedSlice();
 
   // Stream data of this data slice.
@@ -75,7 +74,8 @@ class QUIC_EXPORT_PRIVATE QuicStreamSendBuffer {
 
  private:
   friend class test::QuicStreamSendBufferPeer;
-  std::deque<BufferedSlice> buffered_slices_;
+
+  QuicDeque<BufferedSlice> buffered_slices_;
 
   // Offset of next inserted byte.
   QuicStreamOffset stream_offset_;
