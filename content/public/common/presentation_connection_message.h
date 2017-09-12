@@ -16,9 +16,6 @@
 
 namespace content {
 
-// The maximum number of bytes allowed in a presentation connection message.
-CONTENT_EXPORT extern const size_t kMaxPresentationConnectionMessageSize;
-
 // Represents a presentation connection message.  If this is a text message,
 // |data| is null; otherwise, |message| is null.  Empty messages are allowed.
 struct CONTENT_EXPORT PresentationConnectionMessage {

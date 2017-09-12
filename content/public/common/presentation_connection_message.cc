@@ -8,10 +8,6 @@
 
 namespace content {
 
-// TODO(crbug.com/524128): This restriction comes from Cast.  Raise this limit
-// for non-Cast presentations.
-const size_t kMaxPresentationConnectionMessageSize = 64 * 1024;  // 64 KB.
-
 PresentationConnectionMessage::PresentationConnectionMessage() = default;
 
 PresentationConnectionMessage::PresentationConnectionMessage(

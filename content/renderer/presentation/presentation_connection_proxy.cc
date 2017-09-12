@@ -92,24 +92,11 @@ void PresentationConnectionProxy::NotifyTargetConnection(
 
 void PresentationConnectionProxy::SendTextMessage(
     const blink::WebString& message) {
-  auto utf8_string = message.Utf8();
-  if (utf8_string.size() > kMaxPresentationConnectionMessageSize) {
-    // TODO(crbug.com/459008): Limit the size of individual messages to 64k
-    // for now. Consider throwing DOMException or splitting bigger messages
-    // into smaller chunks later.
-    LOG(WARNING) << "message size exceeded limit!";
-    return;
-  }
-  SendConnectionMessage(PresentationConnectionMessage(utf8_string));
+  SendConnectionMessage(PresentationConnectionMessage(message.Utf8()));
 }
 
 void PresentationConnectionProxy::SendBinaryMessage(const uint8_t* data,
                                                     size_t length) {
-  if (length > kMaxPresentationConnectionMessageSize) {
-    // TODO(crbug.com/459008): Same as in SendTextMessage().
-    LOG(WARNING) << "data size exceeded limit!";
-    return;
-  }
   SendConnectionMessage(
       PresentationConnectionMessage(std::vector<uint8_t>(data, data + length)));
 }
