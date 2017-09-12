@@ -119,6 +119,7 @@ typedef int		FcBool;
 #define FC_DECORATIVE	    "decorative"	/* Bool - true if style is a decorative variant */
 #define FC_LCD_FILTER	    "lcdfilter"		/* Int */
 #define FC_FONT_FEATURES    "fontfeatures"	/* String */
+#define FC_FONT_VARIATIONS  "fontvariations"	/* String */
 #define FC_NAMELANG	    "namelang"		/* String RFC 3866 langs */
 #define FC_PRGNAME	    "prgname"		/* String */
 #define FC_HASH		    "hash"		/* String (deprecated) */

@@ -70,4 +70,5 @@ FC_OBJECT (HASH,		FcTypeString,	NULL)	/* deprecated */
 FC_OBJECT (POSTSCRIPT_NAME,	FcTypeString,	FcComparePostScript)
 FC_OBJECT (COLOR,		FcTypeBool,	FcCompareBool)
 FC_OBJECT (SYMBOL,		FcTypeBool,	FcCompareBool)
+FC_OBJECT (FONT_VARIATIONS,	FcTypeString,	NULL)
 /* ^-------------- Add new objects here. */
