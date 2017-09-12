@@ -1936,12 +1936,12 @@ int HttpCache::Transaction::DoFinishHeaders(int result) {
 
   TransitionToState(STATE_FINISH_HEADERS_COMPLETE);
 
-  // If it was an auth failure or 416, this transaction should continue to be
+  // If it was an auth failure, this transaction should continue to be
   // headers_transaction till consumer takes an action, so no need to do
   // anything now.
-  if (auth_response_.headers.get() ||
-      (new_response_ && new_response_->headers &&
-       new_response_->headers->response_code() == 416))
+  // TODO(crbug.com/740947). See the issue for a suggestion for cleaning the
+  // state machine to be able to remove this condition.
+  if (auth_response_.headers.get())
     return OK;
 
   // If the transaction needs to wait because another transaction is still
