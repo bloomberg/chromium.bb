@@ -1,10 +1,8 @@
 # TODO(fuchsia): Fix these tests and remove the filter. https://crbug.com/731302 .
--CertVerifyProcInternalTest.*
 -CloseOnConnectHttpServerTest.ServerImmediatelyClosesConnection
 -NetworkInterfacesTest.GetNetworkList
 -ProxyScriptFetcherImplTest.Priority
 -PythonUtils*
--SQLite*
 -UDPSocketTest.PartialRecv
 -UnixDomain*Socket*
 -URLRequest*FTP*
