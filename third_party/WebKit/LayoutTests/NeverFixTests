@@ -285,9 +285,8 @@ webaudio/codec-tests/aac [ WontFix ]
 
 # WPT for CSS cascade
 crbug.com/763610 external/wpt/css/CSS2/cascade [ WontFix ]
-crbug.com/763610 external/wpt/css/CSS2/cascade-import [ WontFix ]
-crbug.com/763610 external/wpt/css/css-cascade-3 [ WontFix ]
-crbug.com/763610 external/wpt/css/css-cascade-4 [ WontFix ]
+# The revert keyword is not yet supported.
+external/wpt/css/css-cascade-4/revert-val-001.html [ WontFix ]
 
 # WPT subdirectories without owners.
 external/wpt/accelerometer [ WontFix ]
