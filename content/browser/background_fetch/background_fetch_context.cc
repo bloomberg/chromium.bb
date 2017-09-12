@@ -61,20 +61,6 @@ BackgroundFetchContext::BackgroundFetchContext(
 
 BackgroundFetchContext::~BackgroundFetchContext() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  // TODO(crbug.com/762960): Keep a reference to the request_context_ on the UI
-  // thread so it can be deref'd and destroyed there until the referenced bug is
-  // fixed.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::BindOnce(
-          [](scoped_refptr<net::URLRequestContextGetter> request_context) {},
-          std::move(request_context_getter_)));
-}
-
-void BackgroundFetchContext::InitializeOnIOThread(
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter) {
-  request_context_getter_ = request_context_getter;
 }
 
 void BackgroundFetchContext::StartFetch(

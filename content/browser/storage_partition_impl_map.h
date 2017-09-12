@@ -37,7 +37,8 @@ class CONTENT_EXPORT StoragePartitionImplMap
   // This map retains ownership of the returned StoragePartition objects.
   StoragePartitionImpl* Get(const std::string& partition_domain,
                             const std::string& partition_name,
-                            bool in_memory);
+                            bool in_memory,
+                            bool can_create);
 
   // Starts an asynchronous best-effort attempt to delete all on-disk storage
   // related to |site|, avoiding any directories that are known to be in use.

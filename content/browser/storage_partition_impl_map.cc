@@ -380,7 +380,8 @@ StoragePartitionImplMap::~StoragePartitionImplMap() {
 StoragePartitionImpl* StoragePartitionImplMap::Get(
     const std::string& partition_domain,
     const std::string& partition_name,
-    bool in_memory) {
+    bool in_memory,
+    bool can_create) {
   // Find the previously created partition if it's available.
   StoragePartitionConfig partition_config(
       partition_domain, partition_name, in_memory);
@@ -388,6 +389,9 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
   PartitionMap::const_iterator it = partitions_.find(partition_config);
   if (it != partitions_.end())
     return it->second.get();
+
+  if (!can_create)
+    return nullptr;
 
   base::FilePath relative_partition_path =
       GetStoragePartitionPath(partition_domain, partition_name);
@@ -579,12 +583,6 @@ void StoragePartitionImplMap::PostCreateInitialization(
         base::BindOnce(&ServiceWorkerContextWrapper::InitializeResourceContext,
                        partition->GetServiceWorkerContext(),
                        browser_context_->GetResourceContext()));
-
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&BackgroundFetchContext::InitializeOnIOThread,
-                       partition->GetBackgroundFetchContext(),
-                       base::RetainedRef(partition->GetURLRequestContext())));
 
     // We do not call InitializeURLRequestContext() for media contexts because,
     // other than the HTTP cache, the media contexts share the same backing
