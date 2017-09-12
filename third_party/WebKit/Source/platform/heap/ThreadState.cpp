@@ -318,10 +318,8 @@ size_t ThreadState::TotalMemorySize() {
 
 size_t ThreadState::EstimatedLiveSize(size_t estimation_base_size,
                                       size_t size_at_last_gc) {
-  if (heap_->HeapStats().WrapperCountAtLastGC() == 0) {
-    // We'll reach here only before hitting the first GC.
-    return 0;
-  }
+  if (heap_->HeapStats().WrapperCountAtLastGC() == 0)
+    return estimation_base_size;
 
   // (estimated size) = (estimation base size) - (heap size at the last GC) /
   //   (# of persistent handles at the last GC) *
