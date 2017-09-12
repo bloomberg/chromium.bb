@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/foreign_fetch_request_handler.h"
 
+#include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_clock.h"
@@ -55,8 +56,6 @@ const char* kValidUrl = "https://valid.example.com/foo/bar";
 // tokens in this test, but before the expiry timestamp of the valid ones.
 double kNowTimestamp = 1500000000;
 
-void EmptyCallback() {}
-
 }  // namespace
 
 class ForeignFetchRequestHandlerTest : public testing::Test {
@@ -90,7 +89,8 @@ class ForeignFetchRequestHandlerTest : public testing::Test {
     clock->SetNow(base::Time::FromDoubleT(kNowTimestamp));
     version_->SetClockForTesting(std::move(clock));
 
-    context()->storage()->LazyInitialize(base::Bind(&EmptyCallback));
+    context()->storage()->LazyInitializeForTest(
+        base::BindOnce(&base::DoNothing));
     base::RunLoop().RunUntilIdle();
 
     // Persist the registration data.

@@ -86,7 +86,7 @@ class ServiceWorkerReadFromCacheJobTest : public testing::Test {
 
   void InitializeStorage() {
     base::RunLoop run_loop;
-    context()->storage()->LazyInitialize(run_loop.QuitClosure());
+    context()->storage()->LazyInitializeForTest(run_loop.QuitClosure());
     run_loop.Run();
 
     // Populate a registration in the storage.

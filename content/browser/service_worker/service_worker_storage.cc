@@ -40,6 +40,11 @@ void RunSoon(const tracked_objects::Location& from_here,
   base::ThreadTaskRunnerHandle::Get()->PostTask(from_here, closure);
 }
 
+void RunSoon(const tracked_objects::Location& from_here,
+             base::OnceClosure closure) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(from_here, std::move(closure));
+}
+
 void CompleteFindNow(
     scoped_refptr<ServiceWorkerRegistration> registration,
     ServiceWorkerStatusCode status,
@@ -942,6 +947,10 @@ void ServiceWorkerStorage::PurgeResources(const ResourceList& resources) {
   StartPurgingResources(resources);
 }
 
+bool ServiceWorkerStorage::LazyInitializeForTest(base::OnceClosure callback) {
+  return LazyInitialize(std::move(callback));
+}
+
 ServiceWorkerStorage::ServiceWorkerStorage(
     const base::FilePath& path,
     base::WeakPtr<ServiceWorkerContextCore> context,
@@ -979,17 +988,17 @@ base::FilePath ServiceWorkerStorage::GetDiskCachePath() {
       .Append(kDiskCacheName);
 }
 
-bool ServiceWorkerStorage::LazyInitialize(const base::Closure& callback) {
+bool ServiceWorkerStorage::LazyInitialize(base::OnceClosure callback) {
   switch (state_) {
     case INITIALIZED:
       return true;
     case DISABLED:
       return false;
     case INITIALIZING:
-      pending_tasks_.push_back(callback);
+      pending_tasks_.push_back(std::move(callback));
       return false;
     case UNINITIALIZED:
-      pending_tasks_.push_back(callback);
+      pending_tasks_.push_back(std::move(callback));
       // Fall-through.
   }
 
@@ -1022,8 +1031,8 @@ void ServiceWorkerStorage::DidReadInitialData(
     ScheduleDeleteAndStartOver();
   }
 
-  for (const auto& task : pending_tasks_)
-    RunSoon(FROM_HERE, task);
+  for (base::OnceClosure& task : pending_tasks_)
+    RunSoon(FROM_HERE, std::move(task));
   pending_tasks_.clear();
 }
 

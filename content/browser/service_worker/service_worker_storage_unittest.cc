@@ -330,7 +330,8 @@ class ServiceWorkerStorageTest : public testing::Test {
   }
 
   ServiceWorkerContextCore* context() { return helper_->context(); }
-  ServiceWorkerStorage* storage() { return helper_->context()->storage(); }
+  ServiceWorkerStorage* storage() { return context()->storage(); }
+  ServiceWorkerDatabase* database() { return storage()->database_.get(); }
 
   // A static class method for friendliness.
   static void VerifyPurgeableListStatusCallback(
@@ -347,7 +348,7 @@ class ServiceWorkerStorageTest : public testing::Test {
 
  protected:
   void LazyInitialize() {
-    storage()->LazyInitialize(base::Bind(&base::DoNothing));
+    storage()->LazyInitialize(base::BindOnce(&base::DoNothing));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -564,10 +565,10 @@ class ServiceWorkerStorageTest : public testing::Test {
     ServiceWorkerDatabase::RegistrationData deleted_version;
     std::vector<int64_t> newly_purgeable_resources;
 
-    ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
-              storage()->database_->WriteRegistration(
-                  registration, resources, &deleted_version,
-                  &newly_purgeable_resources));
+    ASSERT_EQ(
+        ServiceWorkerDatabase::STATUS_OK,
+        database()->WriteRegistration(registration, resources, &deleted_version,
+                                      &newly_purgeable_resources));
   }
 
   // user_data_directory_ must be declared first to preserve destructor order.
@@ -1238,7 +1239,7 @@ class ServiceWorkerResourceStorageTest : public ServiceWorkerStorageTest {
     base::RunLoop().RunUntilIdle();
     std::set<int64_t> verify_ids;
     EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-              storage()->database_->GetUncommittedResourceIds(&verify_ids));
+              database()->GetUncommittedResourceIds(&verify_ids));
     EXPECT_EQ(2u, verify_ids.size());
 
     // And dump something in the disk cache for them.
@@ -1254,7 +1255,7 @@ class ServiceWorkerResourceStorageTest : public ServiceWorkerStorageTest {
         StoreRegistration(registration_, registration_->waiting_version()));
     verify_ids.clear();
     EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-              storage()->database_->GetUncommittedResourceIds(&verify_ids));
+              database()->GetUncommittedResourceIds(&verify_ids));
     EXPECT_TRUE(verify_ids.empty());
   }
 
@@ -1352,21 +1353,17 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_NoLiveVersion) {
   // Deleting the registration should result in the resources being added to the
   // purgeable list and then doomed in the disk cache and removed from that
   // list.
-  storage()->DeleteRegistration(
-      registration_id_,
-      scope_.GetOrigin(),
-      base::Bind(&VerifyPurgeableListStatusCallback,
-                 base::Unretained(storage()->database_.get()),
-                 &verify_ids,
-                 &was_called,
-                 &result));
+  storage()->DeleteRegistration(registration_id_, scope_.GetOrigin(),
+                                base::Bind(&VerifyPurgeableListStatusCallback,
+                                           base::Unretained(database()),
+                                           &verify_ids, &was_called, &result));
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(was_called);
   EXPECT_EQ(SERVICE_WORKER_OK, result);
   EXPECT_EQ(2u, verify_ids.size());
   verify_ids.clear();
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            storage()->database_->GetPurgeableResourceIds(&verify_ids));
+            database()->GetPurgeableResourceIds(&verify_ids));
   EXPECT_TRUE(verify_ids.empty());
 
   EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id1_, false));
@@ -1381,21 +1378,17 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_WaitingVersion) {
   // Deleting the registration should result in the resources being added to the
   // purgeable list and then doomed in the disk cache and removed from that
   // list.
-  storage()->DeleteRegistration(
-      registration_->id(),
-      scope_.GetOrigin(),
-      base::Bind(&VerifyPurgeableListStatusCallback,
-                 base::Unretained(storage()->database_.get()),
-                 &verify_ids,
-                 &was_called,
-                 &result));
+  storage()->DeleteRegistration(registration_->id(), scope_.GetOrigin(),
+                                base::Bind(&VerifyPurgeableListStatusCallback,
+                                           base::Unretained(database()),
+                                           &verify_ids, &was_called, &result));
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(was_called);
   EXPECT_EQ(SERVICE_WORKER_OK, result);
   EXPECT_EQ(2u, verify_ids.size());
   verify_ids.clear();
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            storage()->database_->GetPurgeableResourceIds(&verify_ids));
+            database()->GetPurgeableResourceIds(&verify_ids));
   EXPECT_EQ(2u, verify_ids.size());
 
   EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, false));
@@ -1408,7 +1401,7 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_WaitingVersion) {
   EXPECT_EQ(2u, verify_ids.size());
   verify_ids.clear();
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            storage()->database_->GetPurgeableResourceIds(&verify_ids));
+            database()->GetPurgeableResourceIds(&verify_ids));
   EXPECT_TRUE(verify_ids.empty());
 
   EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id1_, false));
@@ -1433,21 +1426,17 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
 
   // Deleting the registration should move the resources to the purgeable list
   // but keep them available.
-  storage()->DeleteRegistration(
-      registration_->id(),
-      scope_.GetOrigin(),
-      base::Bind(&VerifyPurgeableListStatusCallback,
-                 base::Unretained(storage()->database_.get()),
-                 &verify_ids,
-                 &was_called,
-                 &result));
+  storage()->DeleteRegistration(registration_->id(), scope_.GetOrigin(),
+                                base::Bind(&VerifyPurgeableListStatusCallback,
+                                           base::Unretained(database()),
+                                           &verify_ids, &was_called, &result));
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(was_called);
   EXPECT_EQ(SERVICE_WORKER_OK, result);
   EXPECT_EQ(2u, verify_ids.size());
   verify_ids.clear();
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            storage()->database_->GetPurgeableResourceIds(&verify_ids));
+            database()->GetPurgeableResourceIds(&verify_ids));
   EXPECT_EQ(2u, verify_ids.size());
 
   EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, true));
@@ -1459,7 +1448,7 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
   base::RunLoop().RunUntilIdle();
   verify_ids.clear();
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            storage()->database_->GetPurgeableResourceIds(&verify_ids));
+            database()->GetPurgeableResourceIds(&verify_ids));
   EXPECT_TRUE(verify_ids.empty());
 
   EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id1_, false));
@@ -1485,21 +1474,17 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
 
   // Deleting the registration should move the resources to the purgeable list
   // but keep them available.
-  storage()->DeleteRegistration(
-      registration_->id(),
-      scope_.GetOrigin(),
-      base::Bind(&VerifyPurgeableListStatusCallback,
-                 base::Unretained(storage()->database_.get()),
-                 &verify_ids,
-                 &was_called,
-                 &result));
+  storage()->DeleteRegistration(registration_->id(), scope_.GetOrigin(),
+                                base::Bind(&VerifyPurgeableListStatusCallback,
+                                           base::Unretained(database()),
+                                           &verify_ids, &was_called, &result));
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(was_called);
   EXPECT_EQ(SERVICE_WORKER_OK, result);
   EXPECT_EQ(2u, verify_ids.size());
   verify_ids.clear();
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            storage()->database_->GetPurgeableResourceIds(&verify_ids));
+            database()->GetPurgeableResourceIds(&verify_ids));
   EXPECT_EQ(2u, verify_ids.size());
 
   EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, true));
@@ -1511,7 +1496,7 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
   base::RunLoop().RunUntilIdle();
   verify_ids.clear();
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            storage()->database_->GetUncommittedResourceIds(&verify_ids));
+            database()->GetUncommittedResourceIds(&verify_ids));
   EXPECT_EQ(1u, verify_ids.size());
   WriteBasicResponse(storage(), kStaleUncommittedResourceId);
   EXPECT_TRUE(
@@ -1531,7 +1516,7 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
   // The stale resources should be purged, but the new resource should persist.
   verify_ids.clear();
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            storage()->database_->GetUncommittedResourceIds(&verify_ids));
+            database()->GetUncommittedResourceIds(&verify_ids));
   ASSERT_EQ(1u, verify_ids.size());
   EXPECT_EQ(kNewResourceId, *verify_ids.begin());
 
@@ -1542,7 +1527,7 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
 
   verify_ids.clear();
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            storage()->database_->GetPurgeableResourceIds(&verify_ids));
+            database()->GetPurgeableResourceIds(&verify_ids));
   EXPECT_TRUE(verify_ids.empty());
   EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id1_, false));
   EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id2_, false));
@@ -1658,21 +1643,18 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
 
   // Writing the registration should move the old version's resources to the
   // purgeable list but keep them available.
-  storage()->StoreRegistration(
-      registration_.get(),
-      registration_->waiting_version(),
-      base::Bind(&VerifyPurgeableListStatusCallback,
-                 base::Unretained(storage()->database_.get()),
-                 &verify_ids,
-                 &was_called,
-                 &result));
+  storage()->StoreRegistration(registration_.get(),
+                               registration_->waiting_version(),
+                               base::Bind(&VerifyPurgeableListStatusCallback,
+                                          base::Unretained(database()),
+                                          &verify_ids, &was_called, &result));
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(was_called);
   EXPECT_EQ(SERVICE_WORKER_OK, result);
   EXPECT_EQ(2u, verify_ids.size());
   verify_ids.clear();
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            storage()->database_->GetPurgeableResourceIds(&verify_ids));
+            database()->GetPurgeableResourceIds(&verify_ids));
   EXPECT_EQ(2u, verify_ids.size());
 
   EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, false));
@@ -1685,7 +1667,7 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
   base::RunLoop().RunUntilIdle();
   verify_ids.clear();
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            storage()->database_->GetPurgeableResourceIds(&verify_ids));
+            database()->GetPurgeableResourceIds(&verify_ids));
   EXPECT_TRUE(verify_ids.empty());
 
   EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id1_, false));

@@ -406,7 +406,7 @@ class ServiceWorkerURLLoaderJobTest
 
   void SetUp() override {
     // Create an active service worker.
-    storage()->LazyInitialize(base::Bind(&base::DoNothing));
+    storage()->LazyInitializeForTest(base::BindOnce(&base::DoNothing));
     base::RunLoop().RunUntilIdle();
     registration_ = new ServiceWorkerRegistration(
         ServiceWorkerRegistrationOptions(GURL("https://example.com/")),
