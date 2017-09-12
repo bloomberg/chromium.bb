@@ -102,6 +102,7 @@ class WebVrLatencyTest(object):
     self._test_urls = args.urls or DEFAULT_URLS
     assert (self._num_samples > 0),'Number of samples must be greater than 0'
     self._test_results = {}
+    self._test_name = 'vr_perf.motopho_latency'
 
     # Connect to the Arduino that drives the servos.
     devices = GetTtyDevices(r'ttyACM\d+', [0x2a03, 0x2341])
@@ -144,6 +145,7 @@ class WebVrLatencyTest(object):
       if motopho_thread.failed_iteration:
         num_retries += 1
         if num_retries > MOTOPHO_THREAD_RETRIES:
+          self._ReportSummaryResult(False, url)
           raise RuntimeError(
               'Motopho thread failed more than %d times, aborting' % (
                   MOTOPHO_THREAD_RETRIES))
@@ -151,6 +153,7 @@ class WebVrLatencyTest(object):
       else:
         samples_obtained += 1
       time.sleep(1)
+    self._ReportSummaryResult(True, url)
     self._StoreResults(motopho_thread.latencies, motopho_thread.correlations,
                        url)
     # Leaving old threads around shouldn't cause issues, but clean up just in
@@ -159,6 +162,19 @@ class WebVrLatencyTest(object):
     motopho_thread.join(MOTOPHO_THREAD_TERMINATION_TIMEOUT)
     if motopho_thread.isAlive():
       logging.warning('Motopho thread failed to terminate.')
+
+  def _ReportSummaryResult(self, passed, url):
+    """Stores pass/fail results for the summary output JSON file.
+
+    Args:
+      passed: Boolean, whether the test passed or not
+      url: The URL that was being tested
+    """
+    self._results_summary[url] = {
+        'actual': 'PASS' if passed else 'FAIL',
+        'expected': 'PASS',
+        'is_unexpected': not passed,
+    }
 
   def _StoreResults(self, latencies, correlations, url):
     """Temporarily stores the results of a test.
@@ -246,7 +262,7 @@ class WebVrLatencyTest(object):
 
     results = {
       'format_version': '1.0',
-      'benchmark_name': 'vr_perf.motopho_latency',
+      'benchmark_name': self._test_name,
       'benchmark_description': 'Measures the motion-to-photon latency of WebVR',
       'charts': charts,
     }
