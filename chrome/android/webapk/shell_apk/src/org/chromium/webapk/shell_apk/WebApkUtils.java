@@ -306,8 +306,9 @@ public class WebApkUtils {
         titleView.setTextSize(
                 TypedValue.COMPLEX_UNIT_PX, res.getDimension(R.dimen.headline_size_medium));
         int dialogContentPadding = res.getDimensionPixelSize(R.dimen.dialog_content_padding);
-        setPaddingInPixel(
-                titleView, dialogContentPadding, dialogContentPadding, dialogContentPadding, 0);
+        int titleBottomPadding = res.getDimensionPixelSize(R.dimen.title_bottom_padding);
+        setPaddingInPixel(titleView, dialogContentPadding, dialogContentPadding,
+                dialogContentPadding, titleBottomPadding);
 
         int dialogContentTopPadding = res.getDimensionPixelSize(R.dimen.dialog_content_top_padding);
         setPaddingInPixel(contentView, dialogContentPadding, dialogContentTopPadding,

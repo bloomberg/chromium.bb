@@ -11,6 +11,7 @@
 
     <!-- Refers to https://material.googleplex.com/components/dialogs.html#dialogs-specs. -->
     <dimen name="dialog_content_padding">24dp</dimen>
-    <dimen name="dialog_content_top_padding">12dp</dimen>
+    <dimen name="dialog_content_top_padding">6dp</dimen>
+    <dimen name="title_bottom_padding">6dp</dimen>
     <dimen name="list_column_padding">16dp</dimen>
 </resources>
