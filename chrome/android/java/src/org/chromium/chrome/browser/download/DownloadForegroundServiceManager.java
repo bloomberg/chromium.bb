@@ -197,15 +197,19 @@ public class DownloadForegroundServiceManager {
             // This does not happen for API >= 24.
             if (mPinnedNotificationId != INVALID_NOTIFICATION_ID
                     && mPinnedNotificationId != notificationId && Build.VERSION.SDK_INT < 24) {
-                NotificationManager notificationManager =
-                        (NotificationManager) ContextUtils.getApplicationContext().getSystemService(
-                                Context.NOTIFICATION_SERVICE);
-                notificationManager.notify(mPinnedNotificationId,
-                        mDownloadUpdateQueue.get(mPinnedNotificationId).mNotification);
+                relaunchPinnedNotification();
             }
 
             mPinnedNotificationId = notificationId;
         }
+    }
+
+    private void relaunchPinnedNotification() {
+        NotificationManager notificationManager =
+                (NotificationManager) ContextUtils.getApplicationContext().getSystemService(
+                        Context.NOTIFICATION_SERVICE);
+        notificationManager.notify(mPinnedNotificationId,
+                mDownloadUpdateQueue.get(mPinnedNotificationId).mNotification);
     }
 
     /** Helper code to stop and unbind service. */
@@ -213,12 +217,18 @@ public class DownloadForegroundServiceManager {
     @VisibleForTesting
     void stopAndUnbindService(boolean isCancelled) {
         mIsServiceBound = false;
-        mPinnedNotificationId = INVALID_NOTIFICATION_ID;
 
         if (mBoundService != null) {
             stopAndUnbindServiceInternal(isCancelled);
             mBoundService = null;
         }
+
+        // If the download isn't cancelled,  need to relaunch the notification so it is no longer
+        // pinned to the foreground service.
+        if (!isCancelled && Build.VERSION.SDK_INT < 24) {
+            relaunchPinnedNotification();
+        }
+        mPinnedNotificationId = INVALID_NOTIFICATION_ID;
     }
 
     @VisibleForTesting

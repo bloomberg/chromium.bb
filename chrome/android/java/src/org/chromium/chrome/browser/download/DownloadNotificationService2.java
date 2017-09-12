@@ -320,15 +320,15 @@ public class DownloadNotificationService2 {
         Notification notification = DownloadNotificationFactory.buildNotification(
                 context, DownloadNotificationFactory.DownloadStatus.PAUSED, downloadUpdate);
 
-        updateNotification(notificationId, notification, id,
-                new DownloadSharedPreferenceEntry(id, notificationId, isOffTheRecord,
-                        canDownloadWhileMetered, fileName, isAutoResumable, isTransient));
-
         // If called from DownloadBroadcastManager, only update notification, not tracking.
         if (hasUserGesture) {
             updateNotification(notificationId, notification);
             return;
         }
+
+        updateNotification(notificationId, notification, id,
+                new DownloadSharedPreferenceEntry(id, notificationId, isOffTheRecord,
+                        canDownloadWhileMetered, fileName, isAutoResumable, isTransient));
 
         mDownloadForegroundServiceManager.updateDownloadStatus(context,
                 DownloadForegroundServiceManager.DownloadStatus.PAUSE, notificationId,
