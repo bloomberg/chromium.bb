@@ -33,6 +33,7 @@ class BaseSafeBrowsingErrorUI {
                           bool is_scout_reporting_enabled,
                           bool is_proceed_anyway_disabled,
                           bool should_open_links_in_new_tab,
+                          bool always_show_back_to_safety,
                           const std::string& help_center_article_link);
 
     SBErrorDisplayOptions(const SBErrorDisplayOptions& other);
@@ -63,6 +64,12 @@ class BaseSafeBrowsingErrorUI {
 
     // Indicates if links should use a new foreground tab or the current tab.
     bool should_open_links_in_new_tab;
+
+    // Indicates if the 'Back to safety' primary action button should always be
+    // shown. If the option is false, this button is shown only when there is
+    // a proper page to navigate back to. Chrome and Chromium builds should
+    // always set this option to true,
+    bool always_show_back_to_safety;
 
     // The p= query parameter used when visiting the Help Center. If this is
     // nullptr, then a default value will be used for the SafeBrowsing article.
@@ -107,6 +114,10 @@ class BaseSafeBrowsingErrorUI {
 
   bool should_open_links_in_new_tab() const {
     return display_options_.should_open_links_in_new_tab;
+  }
+
+  bool always_show_back_to_safety() const {
+    return display_options_.always_show_back_to_safety;
   }
 
   const std::string& get_help_center_article_link() const {

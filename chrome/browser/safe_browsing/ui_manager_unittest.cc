@@ -437,6 +437,7 @@ class TestSafeBrowsingBlockingPage : public SafeBrowsingBlockingPage {
                 false,                   // is_scout_reporting_enabled
                 false,                   // is_proceed_anyway_disabled
                 true,                    // should_open_links_in_new_tab
+                true,                    // always_show_back_to_safety
                 "cpn_safe_browsing")) {  // help_center_article_link
     // Don't delay details at all for the unittest.
     SetThreatDetailsProceedDelayForTesting(0);

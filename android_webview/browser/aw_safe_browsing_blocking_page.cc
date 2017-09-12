@@ -98,6 +98,7 @@ void AwSafeBrowsingBlockingPage::ShowBlockingPage(
             pref_service->GetBoolean(
                 ::prefs::kSafeBrowsingProceedAnywayDisabled),
             false,                    // should_open_links_in_new_tab
+            false,                    // always_show_back_to_safety
             "cpn_safe_browsing_wv");  // help_center_article_link
 
     ErrorUiType errorType =
