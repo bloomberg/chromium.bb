@@ -3885,10 +3885,14 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
     case CSSPropertyScrollSnapMarginInlineEnd:
       return ZoomAdjustedPixelValueForLength(style.ScrollSnapMarginInlineEnd(),
                                              style);
-    case CSSPropertyScrollBoundaryBehavior:
-      if (style.ScrollBoundaryBehaviorX() == style.ScrollBoundaryBehaviorY())
-        return CSSIdentifierValue::Create(style.ScrollBoundaryBehaviorX());
-      return nullptr;
+    case CSSPropertyScrollBoundaryBehavior: {
+      CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+      list->Append(
+          *CSSIdentifierValue::Create(style.ScrollBoundaryBehaviorX()));
+      list->Append(
+          *CSSIdentifierValue::Create(style.ScrollBoundaryBehaviorY()));
+      return list;
+    }
     case CSSPropertyScrollBoundaryBehaviorX:
       return CSSIdentifierValue::Create(style.ScrollBoundaryBehaviorX());
     case CSSPropertyScrollBoundaryBehaviorY:
