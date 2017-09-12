@@ -31,6 +31,8 @@ class PasswordFormManager;
 
 @property(readonly, nonatomic) ios::ChromeBrowserState* browserState;
 
+@property(readonly) password_manager::PasswordManager* passwordManager;
+
 @property(readonly, nonatomic) const GURL& lastCommittedURL;
 
 @end
@@ -62,6 +64,7 @@ class IOSChromePasswordManagerClient
       std::unique_ptr<password_manager::PasswordFormManager> saved_form_manager)
       override;
   bool IsIncognito() const override;
+  const password_manager::PasswordManager* GetPasswordManager() const override;
   PrefService* GetPrefs() override;
   password_manager::PasswordStore* GetPasswordStore() const override;
   void NotifyUserAutoSignin(

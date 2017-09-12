@@ -111,6 +111,11 @@ bool IOSChromePasswordManagerClient::IsIncognito() const {
   return (delegate_.browserState)->IsOffTheRecord();
 }
 
+const password_manager::PasswordManager*
+IOSChromePasswordManagerClient::GetPasswordManager() const {
+  return delegate_.passwordManager;
+}
+
 PrefService* IOSChromePasswordManagerClient::GetPrefs() {
   return (delegate_.browserState)->GetPrefs();
 }
