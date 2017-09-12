@@ -194,36 +194,36 @@ class ContentSubresourceFilterThrottleManagerTest
   }
 
   void SimulateStartAndExpectResult(
-      content::NavigationThrottle::ThrottleCheckResult expect_result) {
+      content::NavigationThrottle::ThrottleAction expect_result) {
     navigation_simulator_->Start();
     content::NavigationThrottle::ThrottleCheckResult result =
         navigation_simulator_->GetLastThrottleCheckResult();
     EXPECT_EQ(expect_result, result);
-    if (result != content::NavigationThrottle::PROCEED)
+    if (result.action() != content::NavigationThrottle::PROCEED)
       navigation_simulator_.reset();
   }
 
   void SimulateRedirectAndExpectResult(
       const GURL& new_url,
-      content::NavigationThrottle::ThrottleCheckResult expect_result) {
+      content::NavigationThrottle::ThrottleAction expect_result) {
     navigation_simulator_->Redirect(new_url);
     content::NavigationThrottle::ThrottleCheckResult result =
         navigation_simulator_->GetLastThrottleCheckResult();
     EXPECT_EQ(expect_result, result);
-    if (result != content::NavigationThrottle::PROCEED)
+    if (result.action() != content::NavigationThrottle::PROCEED)
       navigation_simulator_.reset();
   }
 
   // Returns the RenderFrameHost that the navigation commit in.
   content::RenderFrameHost* SimulateCommitAndExpectResult(
-      content::NavigationThrottle::ThrottleCheckResult expect_result) {
+      content::NavigationThrottle::ThrottleAction expect_result) {
     navigation_simulator_->Commit();
     content::NavigationThrottle::ThrottleCheckResult result =
         navigation_simulator_->GetLastThrottleCheckResult();
     EXPECT_EQ(expect_result, result);
 
     auto scoped_simulator = std::move(navigation_simulator_);
-    if (result == content::NavigationThrottle::PROCEED)
+    if (result.action() == content::NavigationThrottle::PROCEED)
       return scoped_simulator->GetFinalRenderFrameHost();
     return nullptr;
   }
@@ -370,12 +370,12 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   CreateSubframeWithTestNavigation(
       GURL("https://www.example.com/before-redirect.html"), main_rfh());
   SimulateStartAndExpectResult(content::NavigationThrottle::PROCEED);
-  content::NavigationThrottle::ThrottleCheckResult expected_result =
+  content::NavigationThrottle::ThrottleAction expected_action =
       content::IsBrowserSideNavigationEnabled()
           ? content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE
           : content::NavigationThrottle::CANCEL;
   SimulateRedirectAndExpectResult(
-      GURL("https://www.example.com/disallowed.html"), expected_result);
+      GURL("https://www.example.com/disallowed.html"), expected_action);
 
   EXPECT_EQ(1, disallowed_notification_count());
 }

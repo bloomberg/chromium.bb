@@ -33,8 +33,8 @@ IN_PROC_BROWSER_TEST_F(FormSubmissionBrowserTest,
   const struct {
     GURL main_page_url;
     GURL form_page_url;
-    NavigationThrottle::ThrottleCheckResult start_expectation;
-    NavigationThrottle::ThrottleCheckResult redirect_expectation;
+    NavigationThrottle::ThrottleAction start_expectation;
+    NavigationThrottle::ThrottleAction redirect_expectation;
   } kTestCases[] = {
       // Form submissions is allowed by default when there is no CSP.
       {

@@ -104,7 +104,7 @@ class SubframeNavigationFilteringThrottleTest
   }
 
   void SimulateStartAndExpectResult(
-      content::NavigationThrottle::ThrottleCheckResult expect_result) {
+      content::NavigationThrottle::ThrottleAction expect_result) {
     navigation_simulator_->Start();
     EXPECT_EQ(expect_result,
               navigation_simulator_->GetLastThrottleCheckResult());
@@ -112,14 +112,14 @@ class SubframeNavigationFilteringThrottleTest
 
   void SimulateRedirectAndExpectResult(
       const GURL& new_url,
-      content::NavigationThrottle::ThrottleCheckResult expect_result) {
+      content::NavigationThrottle::ThrottleAction expect_result) {
     navigation_simulator_->Redirect(new_url);
     EXPECT_EQ(expect_result,
               navigation_simulator_->GetLastThrottleCheckResult());
   }
 
   void SimulateCommitAndExpectResult(
-      content::NavigationThrottle::ThrottleCheckResult expect_result) {
+      content::NavigationThrottle::ThrottleAction expect_result) {
     navigation_simulator_->Commit();
     EXPECT_EQ(expect_result,
               navigation_simulator_->GetLastThrottleCheckResult());
@@ -158,7 +158,7 @@ TEST_F(SubframeNavigationFilteringThrottleTest, FilterOnRedirect) {
                                       main_rfh());
 
   SimulateStartAndExpectResult(content::NavigationThrottle::PROCEED);
-  content::NavigationThrottle::ThrottleCheckResult expected_result =
+  content::NavigationThrottle::ThrottleAction expected_result =
       content::IsBrowserSideNavigationEnabled()
           ? content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE
           : content::NavigationThrottle::CANCEL;
@@ -174,7 +174,7 @@ TEST_F(SubframeNavigationFilteringThrottleTest, FilterOnSecondRedirect) {
   SimulateStartAndExpectResult(content::NavigationThrottle::PROCEED);
   SimulateRedirectAndExpectResult(GURL("https://example.test/allowed2.html"),
                                   content::NavigationThrottle::PROCEED);
-  content::NavigationThrottle::ThrottleCheckResult expected_result =
+  content::NavigationThrottle::ThrottleAction expected_result =
       content::IsBrowserSideNavigationEnabled()
           ? content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE
           : content::NavigationThrottle::CANCEL;
@@ -219,7 +219,7 @@ TEST_F(SubframeNavigationFilteringThrottleTest, DelayMetrics) {
   if (content::IsBrowserSideNavigationEnabled())
     navigation_simulator()->SetTransition(ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
   SimulateStartAndExpectResult(content::NavigationThrottle::PROCEED);
-  content::NavigationThrottle::ThrottleCheckResult expected_result =
+  content::NavigationThrottle::ThrottleAction expected_result =
       content::IsBrowserSideNavigationEnabled()
           ? content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE
           : content::NavigationThrottle::CANCEL;

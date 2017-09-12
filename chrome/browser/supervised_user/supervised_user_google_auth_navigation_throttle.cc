@@ -74,7 +74,7 @@ SupervisedUserGoogleAuthNavigationThrottle::WillStartOrRedirectRequest() {
   content::NavigationThrottle::ThrottleCheckResult result =
       ShouldProceed(child_account_service_->IsGoogleAuthenticated());
 
-  if (result == content::NavigationThrottle::DEFER) {
+  if (result.action() == content::NavigationThrottle::DEFER) {
     google_auth_state_subscription_ =
         child_account_service_->ObserveGoogleAuthState(
             base::Bind(&SupervisedUserGoogleAuthNavigationThrottle::
@@ -90,7 +90,7 @@ void SupervisedUserGoogleAuthNavigationThrottle::OnGoogleAuthStateChanged(
   content::NavigationThrottle::ThrottleCheckResult result =
       ShouldProceed(authenticated);
 
-  switch (result) {
+  switch (result.action()) {
     case content::NavigationThrottle::PROCEED: {
       google_auth_state_subscription_.reset();
       Resume();

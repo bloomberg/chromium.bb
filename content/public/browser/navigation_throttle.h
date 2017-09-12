@@ -5,7 +5,9 @@
 #ifndef CONTENT_PUBLIC_BROWSER_NAVIGATION_THROTTLE_H_
 #define CONTENT_PUBLIC_BROWSER_NAVIGATION_THROTTLE_H_
 
+#include "base/optional.h"
 #include "content/common/content_export.h"
+#include "net/base/net_errors.h"
 
 namespace content {
 class NavigationHandle;
@@ -14,30 +16,30 @@ class NavigationHandle;
 // UI thread.
 class CONTENT_EXPORT NavigationThrottle {
  public:
-  // This is returned to the NavigationHandle to allow the navigation to
-  // proceed, or to cancel it.
-  enum ThrottleCheckResult {
+  // Represents what a NavigationThrottle can decide to do to a navigation. Note
+  // that this enum is implicitly convertable to ThrottleCheckResult.
+  enum ThrottleAction {
     // The navigation proceeds uninterrupted.
     PROCEED,
 
     // Defers the navigation until the NavigationThrottle calls
-    // NavigationHandle::Resume or NavigationHandle::CancelDeferredRequest.
-    // If the NavigationHandle is destroyed while the navigation is deferred,
-    // the navigation will be canceled in the network stack.
+    // NavigationHandle::Resume or NavigationHandle::CancelDeferredRequest. If
+    // the NavigationHandle is destroyed while the navigation is deferred, the
+    // navigation will be canceled in the network stack.
     DEFER,
 
     // Cancels the navigation.
     CANCEL,
 
-    // Cancels the navigation and makes the requester of the navigation acts
+    // Cancels the navigation and makes the requester of the navigation act
     // like the request was never made.
     CANCEL_AND_IGNORE,
 
     // Blocks a navigation due to rules asserted before the request is made.
     // This can only be returned from WillStartRequest and also from
     // WillRedirectRequest when PlzNavigate is enabled. This will result in an
-    // error page for net::ERR_BLOCKED_BY_CLIENT being loaded in the frame that
-    // is navigated.
+    // default net_error code of net::ERR_BLOCKED_BY_CLIENT being loaded in
+    // the frame that is navigated.
     BLOCK_REQUEST,
 
     // Blocks a navigation taking place in a subframe, and collapses the frame
@@ -50,6 +52,70 @@ class CONTENT_EXPORT NavigationThrottle {
     // embedding restrictions like 'X-Frame-Options'). This result will only
     // be returned from WillProcessResponse.
     BLOCK_RESPONSE,
+  };
+
+  // ThrottleCheckResult, the return value for NavigationThrottle decision
+  // methods, is a ThrottleAction value with an attached net::Error and an
+  // optional attached error page HTML string.
+  //
+  // ThrottleCheckResult is implicitly convertible from ThrottleAction, allowing
+  // the following examples to work:
+  //
+  //   ThrottleCheckResult WillStartRequest() override {
+  //      // Uses default error for PROCEED (net::OK).
+  //      return PROCEED;
+  //   }
+  //
+  //   ThrottleCheckResult WillStartRequest() override {
+  //      // Uses default error for BLOCK_REQUEST (net::ERR_BLOCKED_BY_CLIENT).
+  //      return BLOCK_REQUEST;
+  //   }
+  //
+  //   ThrottleCheckResult WillStartRequest() override {
+  //      // Identical to previous example (net::ERR_BLOCKED_BY_CLIENT)
+  //      return {BLOCK_REQUEST};
+  //   }
+  //
+  //   ThrottleCheckResult WillStartRequest() override {
+  //      // Uses a custom error code of ERR_FILE_NOT_FOUND.
+  //      return {BLOCK_REQUEST, net::ERR_FILE_NOT_FOUND};
+  //   }
+  //
+  //   ThrottleCheckResult WillStartRequest() override {
+  //      // Uses a custom error code of ERR_FILE_NOT_FOUND and an error page
+  //      string.
+  //      return {BLOCK_REQUEST,
+  //              net::ERR_FILE_NOT_FOUND,
+  //              std::string("<html><body>Could not find.</body></html>")};
+  //   }
+  class CONTENT_EXPORT ThrottleCheckResult {
+   public:
+    // Construct with just a ThrottleAction, using the default net::Error for
+    // that action.
+    ThrottleCheckResult(ThrottleAction action);
+
+    // Construct with an action and error.
+    ThrottleCheckResult(ThrottleAction action, net::Error net_error_code);
+
+    // Construct with an action, error, and error page HTML.
+    ThrottleCheckResult(ThrottleAction action,
+                        net::Error net_error_code,
+                        base::Optional<std::string> error_page_content);
+
+    ThrottleCheckResult(const ThrottleCheckResult& other);
+
+    ~ThrottleCheckResult();
+
+    ThrottleAction action() const { return action_; }
+    net::Error net_error_code() const { return net_error_code_; }
+    base::Optional<std::string> error_page_content() {
+      return error_page_content_;
+    }
+
+   private:
+    ThrottleAction action_;
+    net::Error net_error_code_;
+    base::Optional<std::string> error_page_content_;
   };
 
   NavigationThrottle(NavigationHandle* navigation_handle);
@@ -110,6 +176,21 @@ class CONTENT_EXPORT NavigationThrottle {
  private:
   NavigationHandle* navigation_handle_;
 };
+
+#if defined(UNIT_TEST)
+// Test-only operator== to enable assertions like:
+//   EXPECT_EQ(NavigationThrottle::PROCEED, throttle->WillProcessResponse())
+inline bool operator==(NavigationThrottle::ThrottleAction lhs,
+                       const NavigationThrottle::ThrottleCheckResult& rhs) {
+  return lhs == rhs.action();
+}
+// Test-only operator!= to enable assertions like:
+//   EXPECT_NE(NavigationThrottle::PROCEED, throttle->WillProcessResponse())
+inline bool operator!=(NavigationThrottle::ThrottleAction lhs,
+                       const NavigationThrottle::ThrottleCheckResult& rhs) {
+  return lhs != rhs.action();
+}
+#endif
 
 }  // namespace content
 

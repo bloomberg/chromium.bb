@@ -123,7 +123,7 @@ SubresourceFilterTestHarness::SimulateNavigateAndCommit(
   auto simulator =
       content::NavigationSimulator::CreateRendererInitiated(url, rfh);
   simulator->Commit();
-  return simulator->GetLastThrottleCheckResult() ==
+  return simulator->GetLastThrottleCheckResult().action() ==
                  content::NavigationThrottle::PROCEED
              ? simulator->GetFinalRenderFrameHost()
              : nullptr;

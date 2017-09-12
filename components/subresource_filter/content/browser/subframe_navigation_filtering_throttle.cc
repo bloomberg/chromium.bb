@@ -63,7 +63,7 @@ content::NavigationThrottle::ThrottleCheckResult
 SubframeNavigationFilteringThrottle::WillProcessResponse() {
   DCHECK_NE(load_policy_, LoadPolicy::DISALLOW);
   NotifyLoadPolicy();
-  return content::NavigationThrottle::ThrottleCheckResult::PROCEED;
+  return PROCEED;
 }
 
 const char* SubframeNavigationFilteringThrottle::GetNameForLogging() {
@@ -75,13 +75,13 @@ SubframeNavigationFilteringThrottle::DeferToCalculateLoadPolicy(
     ThrottlingStage stage) {
   DCHECK_NE(load_policy_, LoadPolicy::DISALLOW);
   if (load_policy_ == LoadPolicy::WOULD_DISALLOW)
-    return content::NavigationThrottle::ThrottleCheckResult::PROCEED;
+    return PROCEED;
   parent_frame_filter_->GetLoadPolicyForSubdocument(
       navigation_handle()->GetURL(),
       base::Bind(&SubframeNavigationFilteringThrottle::OnCalculatedLoadPolicy,
                  weak_ptr_factory_.GetWeakPtr(), stage));
   last_defer_timestamp_ = base::TimeTicks::Now();
-  return content::NavigationThrottle::ThrottleCheckResult::DEFER;
+  return DEFER;
 }
 
 void SubframeNavigationFilteringThrottle::OnCalculatedLoadPolicy(
@@ -111,9 +111,7 @@ void SubframeNavigationFilteringThrottle::OnCalculatedLoadPolicy(
         content::IsBrowserSideNavigationEnabled() ||
         stage == ThrottlingStage::WillStartRequest;
     CancelDeferredNavigation(
-        block_and_collapse_is_supported
-            ? content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE
-            : content::NavigationThrottle::CANCEL);
+        block_and_collapse_is_supported ? BLOCK_REQUEST_AND_COLLAPSE : CANCEL);
   } else {
     Resume();
   }

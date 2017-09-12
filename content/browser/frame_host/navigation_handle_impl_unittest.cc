@@ -9,6 +9,7 @@
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/browser_side_navigation_test_utils.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_web_contents.h"
@@ -304,7 +305,7 @@ class NavigationHandleImplThrottleInsertionTest
   std::vector<std::unique_ptr<NavigationThrottle>> GetThrottles(
       NavigationHandle* handle) {
     auto throttle = base::MakeUnique<TestNavigationThrottle>(
-        handle, NavigationThrottle::ThrottleCheckResult::PROCEED);
+        handle, NavigationThrottle::PROCEED);
     std::vector<std::unique_ptr<NavigationThrottle>> vec;
     throttles_inserted_++;
     vec.push_back(std::move(throttle));
@@ -862,6 +863,172 @@ TEST_F(NavigationHandleImplTest, BlockResponseThenProceedWillProcessResponse) {
   EXPECT_EQ(0, proceed_throttle->will_start_calls());
   EXPECT_EQ(0, proceed_throttle->will_redirect_calls());
   EXPECT_EQ(0, proceed_throttle->will_process_response_calls());
+}
+
+TEST_F(NavigationHandleImplTest, BlockRequestCustomNetError) {
+  TestNavigationThrottle* blocked_throttle = CreateTestNavigationThrottle(
+      {NavigationThrottle::BLOCK_REQUEST, net::ERR_BLOCKED_BY_ADMINISTRATOR});
+  EXPECT_EQ(0, blocked_throttle->will_start_calls());
+  EXPECT_EQ(0, blocked_throttle->will_redirect_calls());
+  EXPECT_EQ(0, blocked_throttle->will_process_response_calls());
+
+  // Simulate WillRedirectRequest. The request should not be deferred. The
+  // callback should have been called. The second throttle should not have
+  // been notified.
+  SimulateWillStartRequest();
+  EXPECT_FALSE(IsDeferringStart());
+  EXPECT_FALSE(IsDeferringRedirect());
+  EXPECT_FALSE(IsDeferringResponse());
+  EXPECT_TRUE(was_callback_called());
+  EXPECT_TRUE(IsCanceling());
+  EXPECT_EQ(NavigationThrottle::BLOCK_REQUEST, callback_result());
+  EXPECT_EQ(NavigationThrottle::BLOCK_REQUEST, callback_result().action());
+  EXPECT_EQ(net::ERR_BLOCKED_BY_ADMINISTRATOR,
+            callback_result().net_error_code());
+  EXPECT_FALSE(callback_result().error_page_content().has_value());
+  EXPECT_EQ(1, blocked_throttle->will_start_calls());
+  EXPECT_EQ(0, blocked_throttle->will_redirect_calls());
+  EXPECT_EQ(0, blocked_throttle->will_process_response_calls());
+}
+
+TEST_F(NavigationHandleImplTest, BlockRequestCustomNetErrorAndErrorHTML) {
+  std::string expected_error_page_content("<html><body>test</body></html>");
+  TestNavigationThrottle* blocked_throttle = CreateTestNavigationThrottle(
+      {NavigationThrottle::BLOCK_REQUEST, net::ERR_BLOCKED_BY_ADMINISTRATOR,
+       expected_error_page_content});
+  EXPECT_EQ(0, blocked_throttle->will_start_calls());
+  EXPECT_EQ(0, blocked_throttle->will_redirect_calls());
+  EXPECT_EQ(0, blocked_throttle->will_process_response_calls());
+
+  // Simulate WillRedirectRequest. The request should not be deferred. The
+  // callback should have been called. The second throttle should not have
+  // been notified.
+  SimulateWillStartRequest();
+  EXPECT_FALSE(IsDeferringStart());
+  EXPECT_FALSE(IsDeferringRedirect());
+  EXPECT_FALSE(IsDeferringResponse());
+  EXPECT_TRUE(was_callback_called());
+  EXPECT_TRUE(IsCanceling());
+  EXPECT_EQ(NavigationThrottle::BLOCK_REQUEST, callback_result());
+  EXPECT_EQ(net::ERR_BLOCKED_BY_ADMINISTRATOR,
+            callback_result().net_error_code());
+  EXPECT_TRUE(callback_result().error_page_content().has_value());
+  EXPECT_EQ(expected_error_page_content,
+            callback_result().error_page_content().value());
+  EXPECT_EQ(1, blocked_throttle->will_start_calls());
+  EXPECT_EQ(0, blocked_throttle->will_redirect_calls());
+  EXPECT_EQ(0, blocked_throttle->will_process_response_calls());
+}
+
+TEST_F(NavigationHandleImplTest, BlockRequestCustomNetErrorInRedirect) {
+  // BLOCK_REQUEST on redirect requires PlzNavigate.
+  EnableBrowserSideNavigation();
+  TestNavigationThrottle* blocked_throttle = CreateTestNavigationThrottle(
+      {NavigationThrottle::BLOCK_REQUEST, net::ERR_FILE_NOT_FOUND});
+  EXPECT_EQ(0, blocked_throttle->will_start_calls());
+  EXPECT_EQ(0, blocked_throttle->will_redirect_calls());
+  EXPECT_EQ(0, blocked_throttle->will_process_response_calls());
+
+  // Simulate WillRedirectRequest. The request should not be deferred. The
+  // callback should have been called. The second throttle should not have
+  // been notified.
+  SimulateWillRedirectRequest();
+  EXPECT_FALSE(IsDeferringStart());
+  EXPECT_FALSE(IsDeferringRedirect());
+  EXPECT_FALSE(IsDeferringResponse());
+  EXPECT_TRUE(was_callback_called());
+  EXPECT_TRUE(IsCanceling());
+  EXPECT_EQ(NavigationThrottle::BLOCK_REQUEST, callback_result());
+  EXPECT_EQ(NavigationThrottle::BLOCK_REQUEST, callback_result().action());
+  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, callback_result().net_error_code());
+  EXPECT_FALSE(callback_result().error_page_content().has_value());
+  EXPECT_EQ(0, blocked_throttle->will_start_calls());
+  EXPECT_EQ(1, blocked_throttle->will_redirect_calls());
+  EXPECT_EQ(0, blocked_throttle->will_process_response_calls());
+}
+
+TEST_F(NavigationHandleImplTest,
+       BlockRequestCustomNetErrorAndErrorHTMLInRedirect) {
+  // BLOCK_REQUEST on redirect requires PlzNavigate.
+  EnableBrowserSideNavigation();
+  std::string expected_error_page_content("<html><body>test</body></html>");
+  TestNavigationThrottle* blocked_throttle = CreateTestNavigationThrottle(
+      {NavigationThrottle::BLOCK_REQUEST, net::ERR_FILE_NOT_FOUND,
+       expected_error_page_content});
+  EXPECT_EQ(0, blocked_throttle->will_start_calls());
+  EXPECT_EQ(0, blocked_throttle->will_redirect_calls());
+  EXPECT_EQ(0, blocked_throttle->will_process_response_calls());
+
+  // Simulate WillRedirectRequest. The request should not be deferred. The
+  // callback should have been called. The second throttle should not have
+  // been notified.
+  SimulateWillRedirectRequest();
+  EXPECT_FALSE(IsDeferringStart());
+  EXPECT_FALSE(IsDeferringRedirect());
+  EXPECT_FALSE(IsDeferringResponse());
+  EXPECT_TRUE(was_callback_called());
+  EXPECT_TRUE(IsCanceling());
+  EXPECT_EQ(NavigationThrottle::BLOCK_REQUEST, callback_result());
+  EXPECT_EQ(NavigationThrottle::BLOCK_REQUEST, callback_result().action());
+  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, callback_result().net_error_code());
+  EXPECT_TRUE(callback_result().error_page_content().has_value());
+  EXPECT_EQ(expected_error_page_content,
+            callback_result().error_page_content().value());
+  EXPECT_EQ(0, blocked_throttle->will_start_calls());
+  EXPECT_EQ(1, blocked_throttle->will_redirect_calls());
+  EXPECT_EQ(0, blocked_throttle->will_process_response_calls());
+}
+
+TEST_F(NavigationHandleImplTest, BlockResponseCustomNetError) {
+  TestNavigationThrottle* block_throttle = CreateTestNavigationThrottle(
+      {NavigationThrottle::BLOCK_RESPONSE, net::ERR_FILE_VIRUS_INFECTED});
+  EXPECT_EQ(0, block_throttle->will_start_calls());
+  EXPECT_EQ(0, block_throttle->will_redirect_calls());
+  EXPECT_EQ(0, block_throttle->will_process_response_calls());
+  // Simulate WillRedirectRequest. The request should not be deferred. The
+  // callback should have been called. The second throttle should not have
+  // been notified.
+  SimulateWillProcessResponse();
+  EXPECT_FALSE(IsDeferringStart());
+  EXPECT_FALSE(IsDeferringRedirect());
+  EXPECT_FALSE(IsDeferringResponse());
+  EXPECT_TRUE(was_callback_called());
+  EXPECT_TRUE(IsCanceling());
+  EXPECT_EQ(NavigationThrottle::BLOCK_RESPONSE, callback_result());
+  EXPECT_EQ(NavigationThrottle::BLOCK_RESPONSE, callback_result().action());
+  EXPECT_EQ(net::ERR_FILE_VIRUS_INFECTED, callback_result().net_error_code());
+  EXPECT_FALSE(callback_result().error_page_content().has_value());
+  EXPECT_EQ(0, block_throttle->will_start_calls());
+  EXPECT_EQ(0, block_throttle->will_redirect_calls());
+  EXPECT_EQ(1, block_throttle->will_process_response_calls());
+}
+
+TEST_F(NavigationHandleImplTest, BlockResponseCustomNetErrorAndErrorHTML) {
+  std::string expected_error_page_content("<html><body>test</body></html>");
+  TestNavigationThrottle* block_throttle = CreateTestNavigationThrottle(
+      {NavigationThrottle::BLOCK_RESPONSE, net::ERR_FILE_VIRUS_INFECTED,
+       expected_error_page_content});
+  EXPECT_EQ(0, block_throttle->will_start_calls());
+  EXPECT_EQ(0, block_throttle->will_redirect_calls());
+  EXPECT_EQ(0, block_throttle->will_process_response_calls());
+  // Simulate WillRedirectRequest. The request should not be deferred. The
+  // callback should have been called. The second throttle should not have
+  // been notified.
+  SimulateWillProcessResponse();
+  EXPECT_FALSE(IsDeferringStart());
+  EXPECT_FALSE(IsDeferringRedirect());
+  EXPECT_FALSE(IsDeferringResponse());
+  EXPECT_TRUE(was_callback_called());
+  EXPECT_TRUE(IsCanceling());
+  EXPECT_EQ(NavigationThrottle::BLOCK_RESPONSE, callback_result());
+  EXPECT_EQ(NavigationThrottle::BLOCK_RESPONSE, callback_result().action());
+  EXPECT_EQ(net::ERR_FILE_VIRUS_INFECTED, callback_result().net_error_code());
+  EXPECT_TRUE(callback_result().error_page_content().has_value());
+  EXPECT_EQ(expected_error_page_content,
+            callback_result().error_page_content().value());
+  EXPECT_EQ(0, block_throttle->will_start_calls());
+  EXPECT_EQ(0, block_throttle->will_redirect_calls());
+  EXPECT_EQ(1, block_throttle->will_process_response_calls());
 }
 
 // Checks that a NavigationHandle can be safely deleted by teh execution of one

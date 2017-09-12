@@ -79,7 +79,7 @@ ActivationStateComputingNavigationThrottle::WillProcessResponse() {
       parent_activation_state_->activation_level == ActivationLevel::DISABLED) {
     DCHECK(navigation_handle()->IsInMainFrame());
     DCHECK(!ruleset_handle_);
-    return content::NavigationThrottle::ThrottleCheckResult::PROCEED;
+    return content::NavigationThrottle::PROCEED;
   }
 
   DCHECK(ruleset_handle_);
@@ -99,7 +99,7 @@ ActivationStateComputingNavigationThrottle::WillProcessResponse() {
                  weak_ptr_factory_.GetWeakPtr()));
 
   defer_timestamp_ = base::TimeTicks::Now();
-  return content::NavigationThrottle::ThrottleCheckResult::DEFER;
+  return content::NavigationThrottle::DEFER;
 }
 
 const char* ActivationStateComputingNavigationThrottle::GetNameForLogging() {

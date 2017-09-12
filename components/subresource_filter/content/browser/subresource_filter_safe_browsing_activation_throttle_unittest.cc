@@ -255,7 +255,7 @@ class SubresourceFilterSafeBrowsingActivationThrottleTest
     auto simulator = content::NavigationSimulator::CreateRendererInitiated(
         GURL("https://example.test/disallowed.html"), subframe);
     simulator->Commit();
-    return simulator->GetLastThrottleCheckResult() ==
+    return simulator->GetLastThrottleCheckResult().action() ==
                    content::NavigationThrottle::PROCEED
                ? simulator->GetFinalRenderFrameHost()
                : nullptr;
@@ -280,7 +280,7 @@ class SubresourceFilterSafeBrowsingActivationThrottleTest
         content::NavigationSimulator::CreateRendererInitiated(first_url, rfh);
     navigation_simulator_->Start();
     auto result = navigation_simulator_->GetLastThrottleCheckResult();
-    if (result == content::NavigationThrottle::CANCEL)
+    if (result.action() == content::NavigationThrottle::CANCEL)
       navigation_simulator_.reset();
     return result;
   }
@@ -289,7 +289,7 @@ class SubresourceFilterSafeBrowsingActivationThrottleTest
       const GURL& new_url) {
     navigation_simulator_->Redirect(new_url);
     auto result = navigation_simulator_->GetLastThrottleCheckResult();
-    if (result == content::NavigationThrottle::CANCEL)
+    if (result.action() == content::NavigationThrottle::CANCEL)
       navigation_simulator_.reset();
     return result;
   }

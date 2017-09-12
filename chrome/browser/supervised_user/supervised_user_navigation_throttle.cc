@@ -159,8 +159,8 @@ SupervisedUserNavigationThrottle::CheckURL() {
   if (got_result)
     behavior_ = SupervisedUserURLFilter::INVALID;
   if (deferred_)
-    return ThrottleCheckResult::DEFER;
-  return ThrottleCheckResult::PROCEED;
+    return NavigationThrottle::DEFER;
+  return NavigationThrottle::PROCEED;
 }
 
 void SupervisedUserNavigationThrottle::ShowInterstitial(
