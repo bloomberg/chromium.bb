@@ -1213,7 +1213,8 @@ def CreatePackages(targets_wanted, output_dir, root='/'):
         queue.put([tar_file, os.path.join(tempdir, target)])
 
 
-def main(argv):
+def GetParser():
+  """Return a command line parser."""
   parser = commandline.ArgumentParser(description=__doc__)
   parser.add_argument('-u', '--nousepkg',
                       action='store_false', dest='usepkg', default=True,
@@ -1245,7 +1246,11 @@ def main(argv):
                       help='Reload crossdev config and reselect toolchains')
   parser.add_argument('--sysroot', type='path',
                       help='The sysroot in which to install the toolchains')
+  return parser
 
+
+def main(argv):
+  parser = GetParser()
   options = parser.parse_args(argv)
   options.Freeze()
 
