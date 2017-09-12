@@ -328,7 +328,8 @@ class TestSafeBrowsingBlockingPageFactory
         web_contents->GetBrowserContext()->IsOffTheRecord(),
         IsExtendedReportingEnabled(*prefs), IsScout(*prefs),
         is_proceed_anyway_disabled,
-        true,  // should_open_links_in_new_tab
+        true,   // should_open_links_in_new_tab
+        false,  // check_can_go_back_to_safety
         "cpn_safe_browsing" /* help_center_article_link */);
     return new TestSafeBrowsingBlockingPage(delegate, web_contents,
                                             main_frame_url, unsafe_resources,
