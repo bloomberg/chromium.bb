@@ -85,7 +85,8 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   void OnQueryOutputProtectionStatus(cdm::QueryResult result,
                                      uint32_t link_mask,
                                      uint32_t output_protection_mask) override;
-  void OnStorageId(const uint8_t* storage_id,
+  void OnStorageId(uint32_t version,
+                   const uint8_t* storage_id,
                    uint32_t storage_id_size) override;
 
  private:

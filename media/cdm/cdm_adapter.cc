@@ -1014,13 +1014,14 @@ cdm::FileIO* CdmAdapter::CreateFileIO(cdm::FileIOClient* client) {
   return file_io.release();
 }
 
-void CdmAdapter::RequestStorageId() {
-  helper_->GetStorageId(
-      base::Bind(&CdmAdapter::OnStorageIdObtained, weak_factory_.GetWeakPtr()));
+void CdmAdapter::RequestStorageId(uint32_t version) {
+  helper_->GetStorageId(version, base::Bind(&CdmAdapter::OnStorageIdObtained,
+                                            weak_factory_.GetWeakPtr()));
 }
 
-void CdmAdapter::OnStorageIdObtained(const std::vector<uint8_t>& storage_id) {
-  cdm_->OnStorageId(storage_id.data(), storage_id.size());
+void CdmAdapter::OnStorageIdObtained(uint32_t version,
+                                     const std::vector<uint8_t>& storage_id) {
+  cdm_->OnStorageId(version, storage_id.data(), storage_id.size());
 }
 
 bool CdmAdapter::AudioFramesDataToAudioFrames(

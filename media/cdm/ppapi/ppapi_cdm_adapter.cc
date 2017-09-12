@@ -28,6 +28,11 @@ const uint32_t kSizeKBMin = 1;
 const uint32_t kSizeKBMax = 512 * 1024;  // 512MB
 const uint32_t kSizeKBBuckets = 100;
 
+// Only support version 1 of Storage Id. However, the "latest" version can also
+// be requested.
+const uint32_t kRequestLatestStorageIdVersion = 0;
+const uint32_t kCurrentStorageIdVersion = 1;
+
 #if !defined(NDEBUG)
 #define DLOG_TO_CONSOLE(message) LogToConsole(message);
 #else
@@ -1203,9 +1208,12 @@ void PpapiCdmAdapter::OnDeferredInitializationDone(cdm::StreamType stream_type,
   }
 }
 
-void PpapiCdmAdapter::RequestStorageId() {
+void PpapiCdmAdapter::RequestStorageId(uint32_t version) {
   // If persistent storage is not allowed, no need to get the Storage ID.
-  if (allow_persistent_state_) {
+  // As well, only allow the request if the current version (or "latest")
+  // is requested.
+  if (allow_persistent_state_ && (version == kCurrentStorageIdVersion ||
+                                  version == kRequestLatestStorageIdVersion)) {
     linked_ptr<pp::Var> response(new pp::Var());
     int32_t result = platform_verification_.GetStorageId(
         response.get(), callback_factory_.NewCallback(
@@ -1217,7 +1225,7 @@ void PpapiCdmAdapter::RequestStorageId() {
     PP_DCHECK(result != PP_OK);
   }
 
-  cdm_->OnStorageId(nullptr, 0);
+  cdm_->OnStorageId(version, nullptr, 0);
 }
 
 // The CDM owns the returned object and must call FileIO::Close() to release it.
@@ -1350,7 +1358,8 @@ void PpapiCdmAdapter::RequestStorageIdDone(
     storage_id_size = 0;
   }
 
-  cdm_->OnStorageId(storage_id_ptr, storage_id_size);
+  // Pepper only supports a single version of Storage ID.
+  cdm_->OnStorageId(kCurrentStorageIdVersion, storage_id_ptr, storage_id_size);
 }
 
 PpapiCdmAdapter::SessionError::SessionError(

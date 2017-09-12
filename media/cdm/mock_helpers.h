@@ -46,8 +46,8 @@ class MockCdmAuxiliaryHelper : public CdmAuxiliaryHelper {
                          const std::string& challenge,
                          ChallengePlatformCB callback) override;
 
-  MOCK_METHOD0(GetStorageIdCalled, std::vector<uint8_t>());
-  void GetStorageId(StorageIdCB callback) override;
+  MOCK_METHOD1(GetStorageIdCalled, std::vector<uint8_t>(uint32_t version));
+  void GetStorageId(uint32_t version, StorageIdCB callback) override;
 
  private:
   std::unique_ptr<CdmAllocator> allocator_;

@@ -112,9 +112,9 @@ class MojoCdmHelper : public media::CdmAuxiliaryHelper {
                                               std::move(scoped_callback));
   }
 
-  void GetStorageId(StorageIdCB callback) override {
+  void GetStorageId(uint32_t version, StorageIdCB callback) override {
     StorageIdCB scoped_callback = media::ScopedCallbackRunner(
-        std::move(callback), std::vector<uint8_t>());
+        std::move(callback), version, std::vector<uint8_t>());
     // TODO(jrummell): Hook up GetStorageId() once added to the mojo interface.
     // http://crbug.com/478960.
   }

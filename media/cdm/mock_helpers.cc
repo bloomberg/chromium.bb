@@ -36,8 +36,9 @@ void MockCdmAuxiliaryHelper::ChallengePlatform(const std::string& service_id,
                           "", "");
 }
 
-void MockCdmAuxiliaryHelper::GetStorageId(StorageIdCB callback) {
-  std::move(callback).Run(GetStorageIdCalled());
+void MockCdmAuxiliaryHelper::GetStorageId(uint32_t version,
+                                          StorageIdCB callback) {
+  std::move(callback).Run(version, GetStorageIdCalled(version));
 }
 
 }  // namespace media

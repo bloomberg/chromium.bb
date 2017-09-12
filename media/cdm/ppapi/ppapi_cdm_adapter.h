@@ -123,7 +123,7 @@ class PpapiCdmAdapter : public pp::Instance,
   void QueryOutputProtectionStatus() override;
   void OnDeferredInitializationDone(cdm::StreamType stream_type,
                                     cdm::Status decoder_status) override;
-  void RequestStorageId() override;
+  void RequestStorageId(uint32_t version) override;
   cdm::FileIO* CreateFileIO(cdm::FileIOClient* client) override;
 
   // cdm::Host_8 implementation (differences from Host_9).

@@ -136,7 +136,8 @@ class CdmWrapper {
       cdm::QueryResult result,
       uint32_t link_mask,
       uint32_t output_protection_mask) = 0;
-  virtual void OnStorageId(const uint8_t* storage_id,
+  virtual void OnStorageId(uint32_t version,
+                           const uint8_t* storage_id,
                            uint32_t storage_id_size) = 0;
 
  protected:
@@ -275,8 +276,10 @@ class CdmWrapperImpl : public CdmWrapper {
                                         output_protection_mask);
   }
 
-  void OnStorageId(const uint8_t* storage_id, uint32_t storage_id_size) {
-    cdm_->OnStorageId(storage_id, storage_id_size);
+  void OnStorageId(uint32_t version,
+                   const uint8_t* storage_id,
+                   uint32_t storage_id_size) {
+    cdm_->OnStorageId(version, storage_id, storage_id_size);
   }
 
  private:
@@ -300,6 +303,7 @@ bool CdmWrapperImpl<cdm::ContentDecryptionModule_8>::GetStatusForPolicy(
 
 template <>
 void CdmWrapperImpl<cdm::ContentDecryptionModule_8>::OnStorageId(
+    uint32_t version,
     const uint8_t* storage_id,
     uint32_t storage_id_size) {}
 
