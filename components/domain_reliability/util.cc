@@ -213,7 +213,7 @@ class ActualTimer : public MockableTime::Timer {
   ~ActualTimer() override {}
 
   // MockableTime::Timer implementation:
-  void Start(const tracked_objects::Location& posted_from,
+  void Start(const base::Location& posted_from,
              base::TimeDelta delay,
              const base::Closure& user_task) override {
     base_timer_.Start(posted_from, delay, user_task);

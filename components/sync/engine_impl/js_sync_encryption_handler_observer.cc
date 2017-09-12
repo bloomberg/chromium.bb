@@ -108,7 +108,7 @@ void JsSyncEncryptionHandlerObserver::OnLocalSetPassphraseEncryption(
     const SyncEncryptionHandler::NigoriState& nigori_state) {}
 
 void JsSyncEncryptionHandlerObserver::HandleJsEvent(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const std::string& name,
     const JsEventDetails& details) {
   if (!event_handler_.IsInitialized()) {

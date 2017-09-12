@@ -438,7 +438,7 @@ syncer::SyncDataList PasswordSyncableService::GetAllSyncData(
 }
 
 syncer::SyncError PasswordSyncableService::ProcessSyncChanges(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const syncer::SyncChangeList& change_list) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::AutoReset<bool> processing_changes(&is_processing_sync_changes_, true);

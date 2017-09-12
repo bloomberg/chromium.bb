@@ -60,7 +60,7 @@ class FakeTaskRunner : public base::TaskRunner {
   explicit FakeTaskRunner(std::vector<int64_t>* delays) : delays_(delays) {}
 
   // base::TaskRunner overrides:
-  bool PostDelayedTask(const tracked_objects::Location& from_here,
+  bool PostDelayedTask(const base::Location& from_here,
                        base::OnceClosure task,
                        base::TimeDelta delay) override {
     delays_->push_back(delay.InMilliseconds());

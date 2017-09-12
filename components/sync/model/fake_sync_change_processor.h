@@ -21,7 +21,7 @@ class FakeSyncChangeProcessor : public SyncChangeProcessor {
   //
   // ProcessSyncChanges will accumulate changes in changes() until they are
   // cleared.
-  SyncError ProcessSyncChanges(const tracked_objects::Location& from_here,
+  SyncError ProcessSyncChanges(const base::Location& from_here,
                                const SyncChangeList& change_list) override;
 
   // SyncChangeProcessor implementation.

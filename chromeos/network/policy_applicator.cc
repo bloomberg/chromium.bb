@@ -27,7 +27,7 @@ namespace chromeos {
 
 namespace {
 
-void LogErrorMessage(const tracked_objects::Location& from_where,
+void LogErrorMessage(const base::Location& from_where,
                      const std::string& error_name,
                      const std::string& error_message) {
   LOG(ERROR) << from_where.ToString() << ": " << error_message;

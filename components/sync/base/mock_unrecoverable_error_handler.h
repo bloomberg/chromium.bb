@@ -19,7 +19,7 @@ class MockUnrecoverableErrorHandler : public UnrecoverableErrorHandler {
  public:
   MockUnrecoverableErrorHandler();
   ~MockUnrecoverableErrorHandler() override;
-  void OnUnrecoverableError(const tracked_objects::Location& from_here,
+  void OnUnrecoverableError(const base::Location& from_here,
                             const std::string& message) override;
 
   // Returns the number of times this handler has been invoked.

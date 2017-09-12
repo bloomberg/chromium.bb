@@ -89,7 +89,7 @@ void AsyncDirectoryTypeController::StopModels() {
 }
 
 bool AsyncDirectoryTypeController::PostTaskOnModelThread(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const base::Closure& task) {
   DCHECK(CalledOnValidThread());
   return model_thread_->PostTask(from_here, task);

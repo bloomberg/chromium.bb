@@ -29,7 +29,7 @@ PasswordDataTypeController::PasswordDataTypeController(
 PasswordDataTypeController::~PasswordDataTypeController() {}
 
 bool PasswordDataTypeController::PostTaskOnModelThread(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const base::Closure& task) {
   DCHECK(CalledOnValidThread());
   if (!password_store_.get())

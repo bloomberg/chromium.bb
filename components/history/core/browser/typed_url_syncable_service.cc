@@ -233,7 +233,7 @@ syncer::SyncDataList TypedUrlSyncableService::GetAllSyncData(
 }
 
 syncer::SyncError TypedUrlSyncableService::ProcessSyncChanges(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const syncer::SyncChangeList& change_list) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 

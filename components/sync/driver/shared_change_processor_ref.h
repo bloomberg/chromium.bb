@@ -25,7 +25,7 @@ class SharedChangeProcessorRef : public SyncChangeProcessor,
   ~SharedChangeProcessorRef() override;
 
   // SyncChangeProcessor implementation.
-  SyncError ProcessSyncChanges(const tracked_objects::Location& from_here,
+  SyncError ProcessSyncChanges(const base::Location& from_here,
                                const SyncChangeList& change_list) override;
   SyncDataList GetAllSyncData(ModelType type) const override;
   SyncError UpdateDataTypeContext(
@@ -36,7 +36,7 @@ class SharedChangeProcessorRef : public SyncChangeProcessor,
   void RemoveLocalChangeObserver(LocalChangeObserver* observer) override;
 
   // SyncErrorFactory implementation.
-  SyncError CreateAndUploadError(const tracked_objects::Location& from_here,
+  SyncError CreateAndUploadError(const base::Location& from_here,
                                  const std::string& message) override;
 
   // Default copy and assign welcome (and safe due to refcounted-ness).

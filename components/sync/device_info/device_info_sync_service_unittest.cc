@@ -30,7 +30,7 @@ class TestChangeProcessor : public SyncChangeProcessor {
 
   // SyncChangeProcessor implementation.
   // Store a copy of all the changes passed in so we can examine them later.
-  SyncError ProcessSyncChanges(const tracked_objects::Location& from_here,
+  SyncError ProcessSyncChanges(const base::Location& from_here,
                                const SyncChangeList& change_list) override {
     change_list_ = change_list;
     return SyncError();

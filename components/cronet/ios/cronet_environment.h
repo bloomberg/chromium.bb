@@ -146,7 +146,7 @@ class CronetEnvironment {
   base::SingleThreadTaskRunner* GetNetworkThreadTaskRunner();
 
   // Runs a closure on the network thread.
-  void PostToNetworkThread(const tracked_objects::Location& from_here,
+  void PostToNetworkThread(const base::Location& from_here,
                            const base::Closure& task);
 
   // Helper methods that start/stop net logging on the network thread.

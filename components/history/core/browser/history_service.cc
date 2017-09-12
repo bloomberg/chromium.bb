@@ -981,7 +981,7 @@ syncer::SyncDataList HistoryService::GetAllSyncData(
 }
 
 syncer::SyncError HistoryService::ProcessSyncChanges(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const syncer::SyncChangeList& change_list) {
   delete_directive_handler_.ProcessSyncChanges(this, change_list);
   return syncer::SyncError();

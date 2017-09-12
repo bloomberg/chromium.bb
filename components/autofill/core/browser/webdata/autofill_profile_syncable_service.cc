@@ -227,7 +227,7 @@ syncer::SyncDataList AutofillProfileSyncableService::GetAllSyncData(
 }
 
 syncer::SyncError AutofillProfileSyncableService::ProcessSyncChanges(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const syncer::SyncChangeList& change_list) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!sync_processor_.get()) {

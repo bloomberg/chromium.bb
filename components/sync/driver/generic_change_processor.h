@@ -73,7 +73,7 @@ class GenericChangeProcessor : public ChangeProcessor,
   void CommitChangesFromSyncModel() override;
 
   // SyncChangeProcessor implementation.
-  SyncError ProcessSyncChanges(const tracked_objects::Location& from_here,
+  SyncError ProcessSyncChanges(const base::Location& from_here,
                                const SyncChangeList& change_list) override;
   SyncDataList GetAllSyncData(ModelType type) const override;
   SyncError UpdateDataTypeContext(

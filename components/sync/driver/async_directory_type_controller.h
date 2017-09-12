@@ -68,7 +68,7 @@ class AsyncDirectoryTypeController : public DirectoryDataTypeController {
   // lives on. Return value: True if task posted successfully, false otherwise.
   // Default implementation posts task to model_thread_. Types that don't use
   // TaskRunner need to override this method.
-  virtual bool PostTaskOnModelThread(const tracked_objects::Location& from_here,
+  virtual bool PostTaskOnModelThread(const base::Location& from_here,
                                      const base::Closure& task);
 
   // Start up complete, update the state and invoke the callback.

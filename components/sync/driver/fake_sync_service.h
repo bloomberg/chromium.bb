@@ -75,7 +75,7 @@ class FakeSyncService : public SyncService {
   std::unique_ptr<base::Value> GetTypeStatusMap() override;
   const GURL& sync_service_url() const override;
   std::string unrecoverable_error_message() const override;
-  tracked_objects::Location unrecoverable_error_location() const override;
+  base::Location unrecoverable_error_location() const override;
   void AddProtocolEventObserver(ProtocolEventObserver* observer) override;
   void RemoveProtocolEventObserver(ProtocolEventObserver* observer) override;
   void AddTypeDebugInfoObserver(TypeDebugInfoObserver* observer) override;

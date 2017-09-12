@@ -92,9 +92,8 @@ class SharedChangeProcessor
   // GenericChangeProcessor stubs (with disconnect support).
   // Should only be called on the same sequence the datatype resides.
   virtual int GetSyncCount();
-  virtual SyncError ProcessSyncChanges(
-      const tracked_objects::Location& from_here,
-      const SyncChangeList& change_list);
+  virtual SyncError ProcessSyncChanges(const base::Location& from_here,
+                                       const SyncChangeList& change_list);
   virtual SyncDataList GetAllSyncData(ModelType type) const;
   virtual SyncError GetAllSyncDataReturnError(ModelType type,
                                               SyncDataList* data) const;
@@ -112,9 +111,8 @@ class SharedChangeProcessor
   // set, returns false.
   virtual bool GetDataTypeContext(std::string* context) const;
 
-  virtual SyncError CreateAndUploadError(
-      const tracked_objects::Location& location,
-      const std::string& message);
+  virtual SyncError CreateAndUploadError(const base::Location& location,
+                                         const std::string& message);
 
   // Calls local_service_->StopSyncing() and releases our reference to it.
   void StopLocalService();

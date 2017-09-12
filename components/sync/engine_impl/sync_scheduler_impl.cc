@@ -330,7 +330,7 @@ bool SyncSchedulerImpl::CanRunNudgeJobNow(JobPriority priority) {
 
 void SyncSchedulerImpl::ScheduleLocalNudge(
     ModelTypeSet types,
-    const tracked_objects::Location& nudge_location) {
+    const base::Location& nudge_location) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!types.Empty());
 
@@ -343,7 +343,7 @@ void SyncSchedulerImpl::ScheduleLocalNudge(
 
 void SyncSchedulerImpl::ScheduleLocalRefreshRequest(
     ModelTypeSet types,
-    const tracked_objects::Location& nudge_location) {
+    const base::Location& nudge_location) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!types.Empty());
 
@@ -357,7 +357,7 @@ void SyncSchedulerImpl::ScheduleLocalRefreshRequest(
 void SyncSchedulerImpl::ScheduleInvalidationNudge(
     ModelType model_type,
     std::unique_ptr<InvalidationInterface> invalidation,
-    const tracked_objects::Location& nudge_location) {
+    const base::Location& nudge_location) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   SDVLOG_LOC(nudge_location, 2)
@@ -381,7 +381,7 @@ void SyncSchedulerImpl::ScheduleInitialSyncNudge(ModelType model_type) {
 // refresh requests.
 void SyncSchedulerImpl::ScheduleNudgeImpl(
     const TimeDelta& delay,
-    const tracked_objects::Location& nudge_location) {
+    const base::Location& nudge_location) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(!syncer_->IsSyncing());
 

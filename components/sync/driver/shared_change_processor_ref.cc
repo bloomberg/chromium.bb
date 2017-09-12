@@ -15,7 +15,7 @@ SharedChangeProcessorRef::SharedChangeProcessorRef(
 SharedChangeProcessorRef::~SharedChangeProcessorRef() {}
 
 SyncError SharedChangeProcessorRef::ProcessSyncChanges(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const SyncChangeList& change_list) {
   return change_processor_->ProcessSyncChanges(from_here, change_list);
 }
@@ -43,7 +43,7 @@ void SharedChangeProcessorRef::RemoveLocalChangeObserver(
 }
 
 SyncError SharedChangeProcessorRef::CreateAndUploadError(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const std::string& message) {
   return change_processor_->CreateAndUploadError(from_here, message);
 }

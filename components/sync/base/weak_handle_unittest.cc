@@ -49,7 +49,7 @@ class WeakHandleTest : public ::testing::Test {
 
   void PumpLoop() { base::RunLoop().RunUntilIdle(); }
 
-  static void CallTestFromOtherThread(tracked_objects::Location from_here,
+  static void CallTestFromOtherThread(base::Location from_here,
                                       const WeakHandle<Base>& h) {
     base::Thread t("Test thread");
     ASSERT_TRUE(t.Start());
@@ -58,8 +58,7 @@ class WeakHandleTest : public ::testing::Test {
   }
 
  private:
-  static void CallTest(tracked_objects::Location from_here,
-                       const WeakHandle<Base>& h) {
+  static void CallTest(base::Location from_here, const WeakHandle<Base>& h) {
     h.Call(from_here, &Base::Test);
   }
 

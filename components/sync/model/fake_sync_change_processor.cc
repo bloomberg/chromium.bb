@@ -14,7 +14,7 @@ FakeSyncChangeProcessor::FakeSyncChangeProcessor() {}
 FakeSyncChangeProcessor::~FakeSyncChangeProcessor() {}
 
 SyncError FakeSyncChangeProcessor::ProcessSyncChanges(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const SyncChangeList& change_list) {
   changes_.insert(changes_.end(), change_list.begin(), change_list.end());
   return SyncError();

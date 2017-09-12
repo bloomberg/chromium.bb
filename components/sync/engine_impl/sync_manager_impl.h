@@ -220,7 +220,7 @@ class SyncManagerImpl
   // Open the directory named with |username|.
   bool OpenDirectory(const std::string& username);
 
-  void RequestNudgeForDataTypes(const tracked_objects::Location& nudge_location,
+  void RequestNudgeForDataTypes(const base::Location& nudge_location,
                                 ModelTypeSet type);
 
   // If this is a deletion for a password, sets the legacy

@@ -784,7 +784,7 @@ void SyncManagerImpl::HandleCalculateChangesChangeEventFromSyncer(
 }
 
 void SyncManagerImpl::RequestNudgeForDataTypes(
-    const tracked_objects::Location& nudge_location,
+    const base::Location& nudge_location,
     ModelTypeSet types) {
   debug_info_event_listener_.OnNudgeFromDatatype(types.First().Get());
 

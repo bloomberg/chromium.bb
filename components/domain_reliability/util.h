@@ -66,7 +66,7 @@ class DOMAIN_RELIABILITY_EXPORT MockableTime : public base::Clock,
    public:
     virtual ~Timer();
 
-    virtual void Start(const tracked_objects::Location& posted_from,
+    virtual void Start(const base::Location& posted_from,
                        base::TimeDelta delay,
                        const base::Closure& user_task) = 0;
     virtual void Stop() = 0;

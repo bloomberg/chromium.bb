@@ -30,7 +30,7 @@ class TypedUrlDataTypeController : public syncer::AsyncDirectoryTypeController {
 
  protected:
   // AsyncDirectoryTypeController implementation.
-  bool PostTaskOnModelThread(const tracked_objects::Location& from_here,
+  bool PostTaskOnModelThread(const base::Location& from_here,
                              const base::Closure& task) override;
 
  private:

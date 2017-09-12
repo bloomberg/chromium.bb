@@ -30,7 +30,7 @@ class AsyncDirectoryTypeControllerMock : public AsyncDirectoryTypeController {
   MOCK_METHOD0(StartModels, bool());
   MOCK_METHOD0(StopModels, void());
   MOCK_METHOD2(PostTaskOnModelThread,
-               bool(const tracked_objects::Location&, const base::Closure&));
+               bool(const base::Location&, const base::Closure&));
   MOCK_METHOD3(StartDone,
                void(DataTypeController::ConfigureResult result,
                     const SyncMergeResult& local_merge_result,

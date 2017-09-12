@@ -199,7 +199,7 @@ int SharedChangeProcessor::GetSyncCount() {
 }
 
 SyncError SharedChangeProcessor::ProcessSyncChanges(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const SyncChangeList& list_of_changes) {
   DCHECK(backend_task_runner_.get());
   DCHECK(backend_task_runner_->RunsTasksInCurrentSequence());
@@ -301,7 +301,7 @@ bool SharedChangeProcessor::GetDataTypeContext(std::string* context) const {
 }
 
 SyncError SharedChangeProcessor::CreateAndUploadError(
-    const tracked_objects::Location& location,
+    const base::Location& location,
     const std::string& message) {
   AutoLock lock(monitor_lock_);
   if (!disconnected_) {

@@ -171,9 +171,8 @@ BaseSessionService::ScheduleGetLastSessionCommands(
   return id;
 }
 
-void BaseSessionService::RunTaskOnBackendThread(
-    const tracked_objects::Location& from_here,
-    base::OnceClosure task) {
+void BaseSessionService::RunTaskOnBackendThread(const base::Location& from_here,
+                                                base::OnceClosure task) {
   backend_task_runner_->PostNonNestableTask(from_here, std::move(task));
 }
 

@@ -321,7 +321,7 @@ namespace {
 // attempts to merge it with other calls, losing useful information in
 // breakpad uploads.
 SyncError LogLookupFailure(BaseNode::InitByLookupResult lookup_result,
-                           const tracked_objects::Location& from_here,
+                           const base::Location& from_here,
                            const std::string& error_prefix,
                            ModelType type,
                            DataTypeErrorHandler* error_handler) {
@@ -421,7 +421,7 @@ SyncError GenericChangeProcessor::AttemptDelete(
 }
 
 SyncError GenericChangeProcessor::ProcessSyncChanges(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const SyncChangeList& list_of_changes) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 

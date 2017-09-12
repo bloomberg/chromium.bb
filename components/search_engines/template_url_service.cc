@@ -855,7 +855,7 @@ syncer::SyncDataList TemplateURLService::GetAllSyncData(
 }
 
 syncer::SyncError TemplateURLService::ProcessSyncChanges(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const syncer::SyncChangeList& change_list) {
   if (!models_associated_) {
     syncer::SyncError error(FROM_HERE,
@@ -1131,7 +1131,7 @@ void TemplateURLService::StopSyncing(syncer::ModelType type) {
 }
 
 void TemplateURLService::ProcessTemplateURLChange(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const TemplateURL* turl,
     syncer::SyncChange::SyncChangeType type) {
   DCHECK_NE(type, syncer::SyncChange::ACTION_INVALID);

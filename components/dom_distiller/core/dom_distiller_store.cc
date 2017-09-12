@@ -310,7 +310,7 @@ SyncDataList DomDistillerStore::GetAllSyncData(ModelType type) const {
 }
 
 SyncError DomDistillerStore::ProcessSyncChanges(
-    const tracked_objects::Location& from_here,
+    const base::Location& from_here,
     const SyncChangeList& change_list) {
   DCHECK(database_loaded_);
   SyncChangeList database_changes;
@@ -400,9 +400,8 @@ void DomDistillerStore::OnDatabaseSave(bool success) {
   }
 }
 
-bool DomDistillerStore::ApplyChangesToSync(
-    const tracked_objects::Location& from_here,
-    const SyncChangeList& change_list) {
+bool DomDistillerStore::ApplyChangesToSync(const base::Location& from_here,
+                                           const SyncChangeList& change_list) {
   if (!sync_processor_) {
     return false;
   }
