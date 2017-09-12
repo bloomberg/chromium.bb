@@ -3,10 +3,30 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Tool to move Blink source from third_party/WebKit to third_party/blink.
+
+How to use:
+1. third_party/blink/tools/move_blink_source.py update --run
+ (It would take a few minutes to complete this command.)
+2. git cl format
+3. git commit -a
+4. Land the commit
+
+5. third_party/blink/tools/move_blink_source.py move --git
+ (It would take an hour to complete this command.)
+6. third_party/WebKit/Tools/Scripts/run-bindings-test --reset-results
+7. git commit -a
+8. Land the commit
+9. Pray for successful build!
+
+TODO(tkent): More automation.
+"""
+
 import argparse
 import logging
 import os
 import re
+import subprocess
 import sys
 from functools import partial
 
@@ -16,6 +36,7 @@ sys.path.append(os.path.abspath(
                  'third_party', 'WebKit', 'Tools', 'Scripts')))
 from blinkpy.common.name_style_converter import NameStyleConverter
 from plan_blink_move import plan_blink_move
+from webkitpy.common.checkout.git import Git
 from webkitpy.common.path_finder import get_chromium_src_dir
 from webkitpy.common.system.filesystem import FileSystem
 
@@ -66,7 +87,7 @@ class MoveBlinkSource(object):
         self._idl_generated_impl_headers = None
         self._checked_in_header_re = None
 
-    def main(self):
+    def update(self):
         _log.info('Planning renaming ...')
         file_pairs = plan_blink_move(self._fs, [])
         _log.info('Will move %d files', len(file_pairs))
@@ -89,7 +110,26 @@ class MoveBlinkSource(object):
                                          [('snake_case_source_files = false',
                                            'snake_case_source_files = true')])
 
-        self._move_files(file_pairs)
+    def move(self):
+        _log.info('Planning renaming ...')
+        file_pairs = plan_blink_move(self._fs, [])
+        _log.info('Will move %d files', len(file_pairs))
+
+        git = Git(cwd=self._repo_root)
+        for i, (src, dest) in enumerate(file_pairs):
+            src_from_repo = self._fs.join('third_party', 'WebKit', src)
+            dest_from_repo = self._fs.join('third_party', 'blink', dest)
+            self._fs.maybe_make_directory(self._repo_root, 'third_party', 'blink', self._fs.dirname(dest))
+            if self._options.run_git:
+                if git.exists(src_from_repo):
+                    git.move(src_from_repo, dest_from_repo)
+                    _log.info('[%d/%d] Git moved %s', i + 1, len(file_pairs), src)
+                else:
+                    _log.info('%s is not in the repository', src)
+            else:
+                self._fs.move(self._fs.join(self._repo_root, src_from_repo),
+                              self._fs.join(self._repo_root, dest_from_repo))
+                _log.info('[%d/%d] Moved %s', i + 1, len(file_pairs), src)
 
     def _create_basename_maps(self, file_pairs):
         basename_map = {}
@@ -300,19 +340,30 @@ class MoveBlinkSource(object):
         else:
             _log.warning('%s does not contain specified source strings.', file_path)
 
-    def _move_files(self, file_pairs):
-        # TODO(tkent): Implement.
-        return file_pairs
-
 
 def main():
     logging.basicConfig(level=logging.DEBUG,
                         format='[%(asctime)s %(levelname)s %(name)s] %(message)s',
                         datefmt='%H:%M:%S')
     parser = argparse.ArgumentParser(description='Blink source mover')
-    parser.add_argument('--run', dest='run', action='store_true')
+    sub_parsers = parser.add_subparsers()
+
+    update_parser = sub_parsers.add_parser('update')
+    update_parser.set_defaults(command='update')
+    update_parser.add_argument('--run', dest='run', action='store_true',
+                               help='Update file contents')
+
+    move_parser = sub_parsers.add_parser('move')
+    move_parser.set_defaults(command='move')
+    move_parser.add_argument('--git', dest='run_git', action='store_true',
+                             help='Run |git mv| command instead of |mv|.')
+
     options = parser.parse_args()
-    MoveBlinkSource(FileSystem(), options, get_chromium_src_dir()).main()
+    mover = MoveBlinkSource(FileSystem(), options, get_chromium_src_dir())
+    if options.command == 'update':
+        mover.update()
+    elif options.command == 'move':
+        mover.move()
 
 
 if __name__ == '__main__':
