@@ -12,6 +12,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include <xf86drm.h>
 
 #include "drv_priv.h"
@@ -353,9 +355,16 @@ struct bo *drv_bo_import(struct driver *drv, struct drv_import_fd_data *data)
 	for (plane = 0; plane < bo->num_planes; plane++) {
 		bo->strides[plane] = data->strides[plane];
 		bo->offsets[plane] = data->offsets[plane];
-		bo->sizes[plane] = data->sizes[plane];
 		bo->format_modifiers[plane] = data->format_modifiers[plane];
-		bo->total_size += data->sizes[plane];
+		if (plane == bo->num_planes - 1 || data->offsets[plane + 1] == 0) {
+			bo->sizes[plane] =
+			    lseek(data->fds[plane], 0, SEEK_END) - data->offsets[plane];
+			lseek(data->fds[plane], 0, SEEK_SET);
+		} else {
+			bo->sizes[plane] = data->offsets[plane + 1] - data->offsets[plane];
+		}
+
+		bo->total_size += bo->sizes[plane];
 	}
 
 	return bo;
