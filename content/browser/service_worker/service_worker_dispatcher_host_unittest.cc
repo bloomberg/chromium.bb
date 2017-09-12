@@ -176,11 +176,10 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
   }
 
   void SetUpRegistration(const GURL& scope, const GURL& script_url) {
-    registration_ =
-        new ServiceWorkerRegistration(ServiceWorkerRegistrationOptions(scope),
-                                      1L, helper_->context()->AsWeakPtr());
+    registration_ = new ServiceWorkerRegistration(
+        ServiceWorkerRegistrationOptions(scope), 1L, context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(registration_.get(), script_url, 1L,
-                                        helper_->context()->AsWeakPtr());
+                                        context()->AsWeakPtr());
     std::vector<ServiceWorkerDatabase::ResourceRecord> records;
     records.push_back(
         ServiceWorkerDatabase::ResourceRecord(10, version_->script_url(), 100));
@@ -192,11 +191,12 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
     version_->SetStatus(ServiceWorkerVersion::INSTALLING);
 
     // Make the registration findable via storage functions.
-    helper_->context()->storage()->LazyInitialize(base::Bind(&base::DoNothing));
+    context()->storage()->LazyInitializeForTest(
+        base::BindOnce(&base::DoNothing));
     base::RunLoop().RunUntilIdle();
     bool called = false;
     ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
-    helper_->context()->storage()->StoreRegistration(
+    context()->storage()->StoreRegistration(
         registration_.get(), version_.get(),
         base::Bind(&SaveStatusCallback, &called, &status));
     base::RunLoop().RunUntilIdle();
@@ -223,8 +223,8 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
     std::unique_ptr<ServiceWorkerProviderHost> host =
         CreateProviderHostForServiceWorkerContext(
             helper_->mock_render_process_id(),
-            true /* is_parent_frame_secure */, version,
-            helper_->context()->AsWeakPtr(), &remote_endpoint_);
+            true /* is_parent_frame_secure */, version, context()->AsWeakPtr(),
+            &remote_endpoint_);
     provider_host_ = host.get();
     helper_->SimulateAddProcessToPattern(pattern,
                                          helper_->mock_render_process_id());
@@ -666,7 +666,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, ProviderCreatedAndDestroyed) {
     // ProviderHost should be created before OnProviderCreated.
     navigation_handle_core->DidPreCreateProviderHost(
         ServiceWorkerProviderHost::PreCreateNavigationHost(
-            helper_->context()->AsWeakPtr(), true /* are_ancestors_secure */,
+            context()->AsWeakPtr(), true /* are_ancestors_secure */,
             base::Callback<WebContents*(void)>()));
   }
 
@@ -691,7 +691,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, ProviderCreatedAndDestroyed) {
     // ProviderHost should be created before OnProviderCreated.
     navigation_handle_core->DidPreCreateProviderHost(
         ServiceWorkerProviderHost::PreCreateNavigationHost(
-            helper_->context()->AsWeakPtr(), true /* are_ancestors_secure */,
+            context()->AsWeakPtr(), true /* are_ancestors_secure */,
             base::Callback<WebContents*(void)>()));
   }
 

@@ -7,6 +7,7 @@
 
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -47,9 +48,6 @@ const char kHeaders[] =
     "Expires: Thu, 1 Jan 2100 20:00:00 GMT\n"
     "\n";
 const char kScriptCode[] = "// no script code\n";
-
-void EmptyCallback() {
-}
 
 // The blocksize that ServiceWorkerWriteToCacheJob reads/writes at a time.
 const int kBlockSize = 16 * 1024;
@@ -341,7 +339,8 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
     ASSERT_TRUE(host);
     SetUpScriptRequest(helper_->mock_render_process_id(), host->provider_id());
 
-    context()->storage()->LazyInitialize(base::Bind(&EmptyCallback));
+    context()->storage()->LazyInitializeForTest(
+        base::BindOnce(&base::DoNothing));
     base::RunLoop().RunUntilIdle();
   }
 
