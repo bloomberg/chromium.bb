@@ -80,15 +80,15 @@ bool AuraWindowCaptureMachine::InternalStart(
   // Update capture size.
   UpdateCaptureSize();
 
-  // Start observing for GL context losses.
-  ImageTransportFactory::GetInstance()->GetContextFactory()->AddObserver(this);
-
   // Start observing compositor updates.
   aura::WindowTreeHost* const host = desktop_window_->GetHost();
   ui::Compositor* const compositor = host ? host->compositor() : nullptr;
   if (!compositor)
     return false;
   compositor->AddAnimationObserver(this);
+
+  // Start observing for GL context losses.
+  compositor->context_factory()->AddObserver(this);
 
   DCHECK(!wake_lock_);
   // Request Wake Lock. In some testing contexts, the service manager
@@ -159,17 +159,16 @@ void AuraWindowCaptureMachine::InternalStop(const base::Closure& callback) {
   // Stop observing compositor and window events.
   if (desktop_window_) {
     if (aura::WindowTreeHost* host = desktop_window_->GetHost()) {
-      if (ui::Compositor* compositor = host->compositor())
+      if (ui::Compositor* compositor = host->compositor()) {
         compositor->RemoveAnimationObserver(this);
+        compositor->context_factory()->RemoveObserver(this);
+      }
     }
     desktop_window_->RemoveObserver(this);
     desktop_window_ = NULL;
     cursor_renderer_.reset();
   }
 
-  // Stop observing for GL context losses.
-  ImageTransportFactory::GetInstance()->GetContextFactory()->RemoveObserver(
-      this);
   OnLostResources();
 
   callback.Run();
@@ -436,8 +435,10 @@ void AuraWindowCaptureMachine::OnWindowRemovingFromRootWindow(
   DCHECK(window == desktop_window_);
 
   if (aura::WindowTreeHost* host = window->GetHost()) {
-    if (ui::Compositor* compositor = host->compositor())
+    if (ui::Compositor* compositor = host->compositor()) {
       compositor->RemoveAnimationObserver(this);
+      compositor->context_factory()->RemoveObserver(this);
+    }
   }
 }
 
@@ -466,6 +467,7 @@ void AuraWindowCaptureMachine::OnCompositingShuttingDown(
     ui::Compositor* compositor) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   compositor->RemoveAnimationObserver(this);
+  compositor->context_factory()->RemoveObserver(this);
 }
 
 void AuraWindowCaptureMachine::OnLostResources() {
