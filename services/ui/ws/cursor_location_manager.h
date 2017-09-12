@@ -15,6 +15,9 @@ class Point;
 
 namespace ui {
 namespace ws {
+namespace test {
+class CursorLocationManagerTestApi;
+}
 
 // Manages a shared memory buffer that stores the cursor location.
 class CursorLocationManager {
@@ -31,6 +34,8 @@ class CursorLocationManager {
   mojo::ScopedSharedBufferHandle GetCursorLocationMemory();
 
  private:
+  friend test::CursorLocationManagerTestApi;
+
   base::subtle::Atomic32* cursor_location_memory() {
     return reinterpret_cast<base::subtle::Atomic32*>(
         cursor_location_mapping_.get());
