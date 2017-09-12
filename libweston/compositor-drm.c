@@ -252,8 +252,7 @@ struct drm_backend {
 
 	bool state_invalid;
 
-	/* Connector and CRTC IDs not used by any enabled output. */
-	struct wl_array unused_connectors;
+	/* CRTC IDs not used by any enabled output. */
 	struct wl_array unused_crtcs;
 
 	int cursors_are_broken;
@@ -2124,47 +2123,36 @@ drm_pending_state_apply_atomic(struct drm_pending_state *pending_state,
 		return -1;
 
 	if (b->state_invalid) {
+		struct weston_head *head_base;
+		struct drm_head *head;
 		uint32_t *unused;
 		int err;
 
 		/* If we need to reset all our state (e.g. because we've
 		 * just started, or just been VT-switched in), explicitly
 		 * disable all the CRTCs and connectors we aren't using. */
-		wl_array_for_each(unused, &b->unused_connectors) {
-			struct drm_property_info infos[WDRM_CONNECTOR__COUNT];
+		wl_list_for_each(head_base,
+				 &b->compositor->head_list, compositor_link) {
 			struct drm_property_info *info;
-			drmModeObjectProperties *props;
 
-			memset(infos, 0, sizeof(infos));
-
-			props = drmModeObjectGetProperties(b->drm.fd,
-							   *unused,
-							   DRM_MODE_OBJECT_CONNECTOR);
-			if (!props) {
-				ret = -1;
+			if (weston_head_is_enabled(head_base))
 				continue;
-			}
 
-			drm_property_info_populate(b, connector_props, infos,
-						   WDRM_CONNECTOR__COUNT,
-						   props);
-			drmModeFreeObjectProperties(props);
+			head = to_drm_head(head_base);
 
-			info = &infos[WDRM_CONNECTOR_CRTC_ID];
-			err = drmModeAtomicAddProperty(req, *unused,
+			info = &head->props_conn[WDRM_CONNECTOR_CRTC_ID];
+			err = drmModeAtomicAddProperty(req, head->connector_id,
 						       info->prop_id, 0);
 			if (err <= 0)
 				ret = -1;
 
-			info = &infos[WDRM_CONNECTOR_DPMS];
+			info = &head->props_conn[WDRM_CONNECTOR_DPMS];
 			if (info->prop_id > 0)
-				err = drmModeAtomicAddProperty(req, *unused,
+				err = drmModeAtomicAddProperty(req, head->connector_id,
 							       info->prop_id,
 							       DRM_MODE_DPMS_OFF);
 			if (err <= 0)
 				ret = -1;
-
-			drm_property_info_free(infos, WDRM_CONNECTOR__COUNT);
 		}
 
 		wl_array_for_each(unused, &b->unused_crtcs) {
@@ -4828,8 +4816,6 @@ drm_output_enable(struct weston_output *base)
 				      &output->scanout_plane->base,
 				      &b->compositor->primary_plane);
 
-	wl_array_remove_uint32(&b->unused_connectors, head->connector_id);
-
 	weston_log("Output %s, (connector %d, crtc %d)\n",
 		   output->base.name, head->connector_id, output->crtc_id);
 	wl_list_for_each(m, &output->base.mode_list, link)
@@ -4854,9 +4840,7 @@ static void
 drm_output_deinit(struct weston_output *base)
 {
 	struct drm_output *output = to_drm_output(base);
-	struct drm_head *head = to_drm_head(weston_output_get_first_head(base));
 	struct drm_backend *b = to_drm_backend(base->compositor);
-	uint32_t *unused;
 
 	if (b->use_pixman)
 		drm_output_fini_pixman(output);
@@ -4878,9 +4862,6 @@ drm_output_deinit(struct weston_output *base)
 			drmModeSetCursor(b->drm.fd, output->crtc_id, 0, 0, 0);
 		}
 	}
-
-	unused = wl_array_add(&b->unused_connectors, sizeof(*unused));
-	*unused = head->connector_id;
 
 	drm_output_fini_crtc(output);
 }
@@ -4941,7 +4922,7 @@ drm_output_disable(struct weston_output *base)
 /**
  * Update the list of unused connectors and CRTCs
  *
- * This keeps the unused_connectors and unused_crtcs arrays up to date.
+ * This keeps the unused_crtc arrays up to date.
  *
  * @param b Weston backend structure
  * @param resources DRM resources for this device
@@ -4950,22 +4931,6 @@ static void
 drm_backend_update_unused_outputs(struct drm_backend *b, drmModeRes *resources)
 {
 	int i;
-
-	wl_array_release(&b->unused_connectors);
-	wl_array_init(&b->unused_connectors);
-
-	for (i = 0; i < resources->count_connectors; i++) {
-		struct drm_head *head;
-		uint32_t *connector_id;
-
-		head = drm_head_find_by_connector(b, resources->connectors[i]);
-		if (head && weston_head_is_enabled(&head->base))
-			continue;
-
-		connector_id = wl_array_add(&b->unused_connectors,
-					    sizeof(*connector_id));
-		*connector_id = resources->connectors[i];
-	}
 
 	wl_array_release(&b->unused_crtcs);
 	wl_array_init(&b->unused_crtcs);
@@ -5344,7 +5309,6 @@ drm_destroy(struct weston_compositor *ec)
 	weston_launcher_destroy(ec->launcher);
 
 	wl_array_release(&b->unused_crtcs);
-	wl_array_release(&b->unused_connectors);
 
 	close(b->drm.fd);
 	free(b->drm.filename);
@@ -5778,7 +5742,6 @@ drm_backend_create(struct weston_compositor *compositor,
 	b->state_invalid = true;
 	b->drm.fd = -1;
 	wl_array_init(&b->unused_crtcs);
-	wl_array_init(&b->unused_connectors);
 
 	/*
 	 * KMS support for hardware planes cannot properly synchronize
