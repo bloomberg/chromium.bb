@@ -153,7 +153,7 @@ void RenderWidgetHostViewChildFrame::SetFrameConnectorDelegate(
     RenderWidgetHostViewBase* parent_view =
         frame_connector_->GetParentRenderWidgetHostView();
     if (parent_view) {
-      DCHECK(parent_view->GetFrameSinkId().is_valid());
+      DCHECK(parent_view->GetFrameSinkId().is_valid() || IsUsingMus());
       SetParentFrameSinkId(parent_view->GetFrameSinkId());
     }
 
