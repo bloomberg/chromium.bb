@@ -81,8 +81,8 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
     const CSSParserContext* context) {
   DCHECK(context);
   CSSPropertyParser parser(range, context, nullptr);
-  const CSSValue* value = CSSPropertyParserHelpers::ParseLonghandViaAPI(
-      property, CSSPropertyInvalid, *parser.context_, parser.range_);
+  const CSSValue* value = ParseLonghandViaAPI(property, CSSPropertyInvalid,
+                                              *parser.context_, parser.range_);
   if (!value || !parser.range_.AtEnd())
     return nullptr;
   return value;
@@ -97,16 +97,20 @@ bool CSSPropertyParser::ParseValueStart(CSSPropertyID unresolved_property,
   CSSPropertyID property_id = resolveCSSPropertyID(unresolved_property);
   bool is_shorthand = isShorthandProperty(property_id);
 
+  DCHECK(context_);
   if (is_shorthand) {
     // Variable references will fail to parse here and will fall out to the
     // variable ref parser below.
-    if (ParseShorthand(unresolved_property, important))
+    if (CSSPropertyAPI::Get(property_id)
+            .ParseShorthand(
+                property_id, important, range_, *context_,
+                CSSParserLocalContext(isPropertyAlias(unresolved_property),
+                                      property_id),
+                *parsed_properties_))
       return true;
   } else {
-    DCHECK(context_);
-    if (const CSSValue* parsed_value =
-            CSSPropertyParserHelpers::ParseLonghandViaAPI(
-                unresolved_property, CSSPropertyInvalid, *context_, range_)) {
+    if (const CSSValue* parsed_value = ParseLonghandViaAPI(
+            unresolved_property, CSSPropertyInvalid, *context_, range_)) {
       if (range_.AtEnd()) {
         AddProperty(property_id, CSSPropertyInvalid, *parsed_value, important,
                     IsImplicitProperty::kNotImplicit, *parsed_properties_);
@@ -502,16 +506,6 @@ bool CSSPropertyParser::ParseViewportDescriptor(CSSPropertyID prop_id,
     default:
       return false;
   }
-}
-
-bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
-                                       bool important) {
-  DCHECK(context_);
-  CSSPropertyID property = resolveCSSPropertyID(unresolved_property);
-  return CSSPropertyAPI::Get(property).ParseShorthand(
-      property, important, range_, *context_,
-      CSSParserLocalContext(isPropertyAlias(unresolved_property), property),
-      *parsed_properties_);
 }
 
 }  // namespace blink
