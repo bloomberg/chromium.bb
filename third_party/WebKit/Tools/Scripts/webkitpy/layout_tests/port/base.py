@@ -186,7 +186,8 @@ class Port(object):
             return flags[0]
 
     def additional_driver_flags(self):
-        flags = self.get_option('additional_driver_flag', [])
+        # Clone list to avoid mutating option state.
+        flags = list(self.get_option('additional_driver_flag', []))
         if flags and flags[0] == self.primary_driver_flag():
             flags = flags[1:]
         if self.driver_name() == self.CONTENT_SHELL_NAME:
