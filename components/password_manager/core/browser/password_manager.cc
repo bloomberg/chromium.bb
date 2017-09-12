@@ -210,6 +210,9 @@ void PasswordManager::RegisterProfilePrefs(
   registry->RegisterStringPref(prefs::kSyncPasswordLengthAndHashSalt,
                                std::string(),
                                PrefRegistry::NO_REGISTRATION_FLAGS);
+  registry->RegisterBooleanPref(
+      prefs::kWasAutoSignInFirstRunExperienceShown, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
 #if defined(OS_MACOSX)
   registry->RegisterIntegerPref(
       prefs::kKeychainMigrationStatus,

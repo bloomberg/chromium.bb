@@ -23,10 +23,6 @@ const char kSmartBubbleThresholdParam[] = "dismissal_count";
 
 void RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(
-      password_manager::prefs::kWasAutoSignInFirstRunExperienceShown, false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
-
-  registry->RegisterBooleanPref(
       password_manager::prefs::kWasSignInPasswordPromoClicked, false);
 
   registry->RegisterIntegerPref(
