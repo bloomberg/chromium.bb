@@ -449,6 +449,14 @@ void UIDevToolsDOMAgent::ShowDistancesInHighlightOverlay(int pinned_id,
   }
 }
 
+int UIDevToolsDOMAgent::GetParentIdOfNodeId(int node_id) const {
+  DCHECK(node_id_to_ui_element_.count(node_id));
+  const UIElement* element = node_id_to_ui_element_.at(node_id);
+  if (element->parent() && element->parent() != window_element_root_.get())
+    return element->parent()->node_id();
+  return 0;
+}
+
 void UIDevToolsDOMAgent::OnPaintLayer(const ui::PaintContext& context) {
   const gfx::Rect& screen_bounds(layer_for_highlighting_->bounds());
   ui::PaintRecorder recorder(context, screen_bounds.size());

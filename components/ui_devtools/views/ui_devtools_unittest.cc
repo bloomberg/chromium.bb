@@ -504,6 +504,15 @@ TEST_F(UIDevToolsTest, MouseEventsGenerateFEEventsInInspectMode) {
   // Clicking on the widget should pin that element.
   generator.PressLeftButton();
 
+  // Pin parent node after mouse wheel moves up.
+  int parent_id = dom_agent()->GetParentIdOfNodeId(node_id);
+  EXPECT_NE(parent_id, overlay_agent()->pinned_id());
+  generator.MoveMouseWheel(0, 1);
+  EXPECT_EQ(parent_id, overlay_agent()->pinned_id());
+
+  // Re-assign pin node.
+  node_id = parent_id;
+
   int inspect_node_notification_count =
       GetOverlayInspectNodeRequestedCount(node_id);
 
