@@ -127,8 +127,8 @@ void PlatformNotificationServiceImpl::OnPersistentNotificationClick(
     BrowserContext* browser_context,
     const std::string& notification_id,
     const GURL& origin,
-    int action_index,
-    const base::NullableString16& reply) {
+    const base::Optional<int>& action_index,
+    const base::Optional<base::string16>& reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   blink::mojom::PermissionStatus permission_status =
       CheckPermissionOnUIThread(browser_context, origin,
@@ -142,12 +142,12 @@ void PlatformNotificationServiceImpl::OnPersistentNotificationClick(
     return;
   }
 
-  if (action_index == -1) {
-    base::RecordAction(
-        base::UserMetricsAction("Notifications.Persistent.Clicked"));
-  } else {
+  if (action_index.has_value()) {
     base::RecordAction(base::UserMetricsAction(
         "Notifications.Persistent.ClickedActionButton"));
+  } else {
+    base::RecordAction(
+        base::UserMetricsAction("Notifications.Persistent.Clicked"));
   }
 
 #if BUILDFLAG(ENABLE_BACKGROUND)

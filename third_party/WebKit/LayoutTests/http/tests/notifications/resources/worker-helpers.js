@@ -16,6 +16,6 @@ var testRunner = {
     simulateWebNotificationClick: function(title, action_index)
     {
         if (_port)
-            _port.postMessage({ type: 'simulateWebNotificationClick', title: title, action_index: action_index });
+            _port.postMessage({ type: 'simulateWebNotificationClick', title, action_index });
     }
 };

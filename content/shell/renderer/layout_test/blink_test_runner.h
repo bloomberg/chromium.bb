@@ -12,6 +12,8 @@
 #include "base/containers/circular_deque.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/optional.h"
+#include "base/strings/string16.h"
 #include "content/public/common/page_state.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_observer_tracker.h"
@@ -98,8 +100,8 @@ class BlinkTestRunner : public RenderViewObserver,
   void SetDatabaseQuota(int quota) override;
   void SimulateWebNotificationClick(
       const std::string& title,
-      int action_index,
-      const base::NullableString16& reply) override;
+      const base::Optional<int>& action_index,
+      const base::Optional<base::string16>& reply) override;
   void SimulateWebNotificationClose(const std::string& title,
                                     bool by_user) override;
   void SetDeviceScaleFactor(float factor) override;

@@ -253,10 +253,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetWindowIsKey(bool value);
   void SetXSSAuditorEnabled(bool enabled);
   void ShowWebInspector(gin::Arguments* args);
-  void SimulateWebNotificationClick(const std::string& title, int action_index);
-  void SimulateWebNotificationClickWithReply(const std::string& title,
-                                             int action_index,
-                                             const std::string& reply);
+  void SimulateWebNotificationClick(gin::Arguments* args);
   void SimulateWebNotificationClose(const std::string& title, bool by_user);
   void UseUnfortunateSynchronousResizeMode();
   void WaitForPolicyDelegate();
@@ -609,8 +606,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("showWebInspector", &TestRunnerBindings::ShowWebInspector)
       .SetMethod("simulateWebNotificationClick",
                  &TestRunnerBindings::SimulateWebNotificationClick)
-      .SetMethod("simulateWebNotificationClickWithReply",
-                 &TestRunnerBindings::SimulateWebNotificationClickWithReply)
       .SetMethod("simulateWebNotificationClose",
                  &TestRunnerBindings::SimulateWebNotificationClose)
       .SetProperty("tooltipText", &TestRunnerBindings::TooltipText)
@@ -1377,23 +1372,34 @@ void TestRunnerBindings::SetMIDIAccessorResult(bool result) {
   }
 }
 
-void TestRunnerBindings::SimulateWebNotificationClick(const std::string& title,
-                                                      int action_index) {
+void TestRunnerBindings::SimulateWebNotificationClick(gin::Arguments* args) {
+  DCHECK_GE(args->Length(), 1);
   if (!runner_)
     return;
-  runner_->SimulateWebNotificationClick(title, action_index,
-                                        base::NullableString16());
-}
 
-void TestRunnerBindings::SimulateWebNotificationClickWithReply(
-    const std::string& title,
-    int action_index,
-    const std::string& reply) {
-  if (!runner_)
-    return;
-  runner_->SimulateWebNotificationClick(
-      title, action_index,
-      base::NullableString16(base::UTF8ToUTF16(reply), false /* is_null */));
+  std::string title;
+  base::Optional<int> action_index;
+  base::Optional<base::string16> reply;
+
+  args->GetNext(&title);
+
+  // Optional |action_index| argument.
+  if (args->Length() >= 2) {
+    int action_index_int;
+    args->GetNext(&action_index_int);
+
+    action_index = action_index_int;
+  }
+
+  // Optional |reply| argument.
+  if (args->Length() >= 3) {
+    std::string reply_string;
+    args->GetNext(&reply_string);
+
+    reply = base::UTF8ToUTF16(reply_string);
+  }
+
+  runner_->SimulateWebNotificationClick(title, action_index, reply);
 }
 
 void TestRunnerBindings::SimulateWebNotificationClose(const std::string& title,
@@ -2761,8 +2767,8 @@ void TestRunner::SetMIDIAccessorResult(midi::mojom::Result result) {
 
 void TestRunner::SimulateWebNotificationClick(
     const std::string& title,
-    int action_index,
-    const base::NullableString16& reply) {
+    const base::Optional<int>& action_index,
+    const base::Optional<base::string16>& reply) {
   delegate_->SimulateWebNotificationClick(title, action_index, reply);
 }
 

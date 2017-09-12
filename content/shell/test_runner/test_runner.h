@@ -15,6 +15,8 @@
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
+#include "base/strings/string16.h"
 #include "content/shell/test_runner/layout_test_runtime_flags.h"
 #include "content/shell/test_runner/test_runner_export.h"
 #include "content/shell/test_runner/web_test_runner.h"
@@ -25,10 +27,6 @@
 
 class GURL;
 class SkBitmap;
-
-namespace base {
-class NullableString16;
-}
 
 namespace blink {
 class WebContentSettingsClient;
@@ -532,9 +530,10 @@ class TestRunner : public WebTestRunner {
   void SetMIDIAccessorResult(midi::mojom::Result result);
 
   // Simulates a click on a Web Notification.
-  void SimulateWebNotificationClick(const std::string& title,
-                                    int action_index,
-                                    const base::NullableString16& reply);
+  void SimulateWebNotificationClick(
+      const std::string& title,
+      const base::Optional<int>& action_index,
+      const base::Optional<base::string16>& reply);
 
   // Simulates closing a Web Notification.
   void SimulateWebNotificationClose(const std::string& title, bool by_user);

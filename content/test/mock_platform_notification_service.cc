@@ -95,8 +95,8 @@ void MockPlatformNotificationService::GetDisplayedNotifications(
 
 void MockPlatformNotificationService::SimulateClick(
     const std::string& title,
-    int action_index,
-    const base::NullableString16& reply) {
+    const base::Optional<int>& action_index,
+    const base::Optional<base::string16>& reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const auto notification_id_iter = notification_id_map_.find(title);
   if (notification_id_iter == notification_id_map_.end())
@@ -116,8 +116,9 @@ void MockPlatformNotificationService::SimulateClick(
         notification.browser_context, notification_id, notification.origin,
         action_index, reply, base::Bind(&OnEventDispatchComplete));
   } else if (non_persistent_iter != non_persistent_notifications_.end()) {
-    DCHECK_EQ(action_index, -1) << "Action buttons are only supported for "
-                                   "persistent notifications";
+    DCHECK(!action_index.has_value())
+        << "Action buttons are only supported for "
+           "persistent notifications";
     NotificationEventDispatcher::GetInstance()->DispatchNonPersistentClickEvent(
         notification_id);
   }

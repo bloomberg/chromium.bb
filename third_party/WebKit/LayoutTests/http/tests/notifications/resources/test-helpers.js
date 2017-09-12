@@ -7,7 +7,7 @@ function supportTestRunnerMessagesOnPort(messagePort)
 
     messagePort.addEventListener('message', function(message) {
         if (message.data.type == 'simulateWebNotificationClick')
-            testRunner.simulateWebNotificationClick(message.data.title, -1 /* action_index */);
+            testRunner.simulateWebNotificationClick(message.data.title);
     });
 }
 
@@ -85,8 +85,7 @@ function sendCommand(port, data)
 }
 
 // Simulates a click on the notification whose title equals |title|. The |actionIndex| specifies
-// which action button to activate, where -1 means the notification itself is clicked, not an action
-// button.
+// which action button to activate, if any.
 function simulateNotificationClick(title, actionIndex, port)
 {
     return new Promise((resolve, reject) => {

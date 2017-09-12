@@ -16,6 +16,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_common.h"
@@ -27,10 +28,6 @@
 
 class NotificationDelegate;
 class ScopedKeepAlive;
-
-namespace base {
-class NullableString16;
-}
 
 namespace content {
 class BrowserContext;
@@ -53,11 +50,12 @@ class PlatformNotificationServiceImpl
   // To be called when a persistent notification has been clicked on. The
   // Service Worker associated with the registration will be started if
   // needed, on which the event will be fired. Must be called on the UI thread.
-  void OnPersistentNotificationClick(content::BrowserContext* browser_context,
-                                     const std::string& notification_id,
-                                     const GURL& origin,
-                                     int action_index,
-                                     const base::NullableString16& reply);
+  void OnPersistentNotificationClick(
+      content::BrowserContext* browser_context,
+      const std::string& notification_id,
+      const GURL& origin,
+      const base::Optional<int>& action_index,
+      const base::Optional<base::string16>& reply);
 
   // To be called when a persistent notification has been closed. The data
   // associated with the notification has to be pruned from the database in this

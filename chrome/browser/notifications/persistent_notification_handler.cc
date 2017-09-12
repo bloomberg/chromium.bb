@@ -38,20 +38,8 @@ void PersistentNotificationHandler::OnClick(
   const GURL notification_origin(origin);
   DCHECK(notification_origin.is_valid());
 
-  // TODO(peter): Convert the notification stack from this point onward to use
-  // base::Optional<> as well.
-
-  int action_index_int = -1 /* no_action */;
-  if (action_index.has_value())
-    action_index_int = action_index.value();
-
-  base::NullableString16 nullable_reply;
-  if (reply.has_value())
-    nullable_reply = base::NullableString16(reply.value(), false /* is_null */);
-
   PlatformNotificationServiceImpl::GetInstance()->OnPersistentNotificationClick(
-      profile, notification_id, notification_origin, action_index_int,
-      nullable_reply);
+      profile, notification_id, notification_origin, action_index, reply);
 }
 
 void PersistentNotificationHandler::OpenSettings(Profile* profile) {

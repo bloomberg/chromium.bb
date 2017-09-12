@@ -133,8 +133,8 @@ void LayoutTestMessageFilter::OnSetDatabaseQuota(int quota) {
 
 void LayoutTestMessageFilter::OnSimulateWebNotificationClick(
     const std::string& title,
-    int action_index,
-    const base::NullableString16& reply) {
+    const base::Optional<int>& action_index,
+    const base::Optional<base::string16>& reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   LayoutTestNotificationManager* manager =
       LayoutTestContentBrowserClient::Get()->GetLayoutTestNotificationManager();

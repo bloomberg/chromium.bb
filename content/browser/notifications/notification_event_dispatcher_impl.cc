@@ -206,27 +206,27 @@ void ReadNotificationDatabaseData(
 void DispatchNotificationClickEventOnWorker(
     const scoped_refptr<ServiceWorkerVersion>& service_worker,
     const NotificationDatabaseData& notification_database_data,
-    int action_index,
-    const base::NullableString16& reply,
+    const base::Optional<int>& action_index,
+    const base::Optional<base::string16>& reply,
     const ServiceWorkerVersion::StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   int request_id = service_worker->StartRequest(
       ServiceWorkerMetrics::EventType::NOTIFICATION_CLICK, callback);
 
-  base::Optional<base::string16> optional_reply;
-  if (!reply.is_null())
-    optional_reply = reply.string();
+  int action_index_int = -1 /* no value */;
+  if (action_index.has_value())
+    action_index_int = action_index.value();
 
   service_worker->event_dispatcher()->DispatchNotificationClickEvent(
       notification_database_data.notification_id,
-      notification_database_data.notification_data, action_index,
-      optional_reply, service_worker->CreateSimpleEventCallback(request_id));
+      notification_database_data.notification_data, action_index_int, reply,
+      service_worker->CreateSimpleEventCallback(request_id));
 }
 
 // Dispatches the notification click event on the |service_worker_registration|.
 void DoDispatchNotificationClickEvent(
-    int action_index,
-    const base::NullableString16& reply,
+    const base::Optional<int>& action_index,
+    const base::Optional<base::string16>& reply,
     const NotificationDispatchCompleteCallback& dispatch_complete_callback,
     const scoped_refptr<PlatformNotificationContext>& notification_context,
     const ServiceWorkerRegistration* service_worker_registration,
@@ -368,8 +368,8 @@ void NotificationEventDispatcherImpl::DispatchNotificationClickEvent(
     BrowserContext* browser_context,
     const std::string& notification_id,
     const GURL& origin,
-    int action_index,
-    const base::NullableString16& reply,
+    const base::Optional<int>& action_index,
+    const base::Optional<base::string16>& reply,
     const NotificationDispatchCompleteCallback& dispatch_complete_callback) {
   DispatchNotificationEvent(
       browser_context, notification_id, origin,
