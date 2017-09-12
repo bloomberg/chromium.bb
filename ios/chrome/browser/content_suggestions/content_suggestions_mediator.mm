@@ -255,6 +255,9 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
     return;
   }
 
+  self.contentService->user_classifier()->OnEvent(
+      ntp_snippets::UserClassifier::Metric::SUGGESTIONS_USED);
+
   ContentSuggestionsCategoryWrapper* wrapper =
       [self categoryWrapperForSectionInfo:sectionInfo];
 
