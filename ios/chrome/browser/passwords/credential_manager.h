@@ -7,6 +7,10 @@
 
 #include "components/password_manager/core/browser/credential_manager_impl.h"
 
+namespace web {
+class WebState;
+}
+
 namespace credential_manager {
 
 // Owned by PasswordController. It is responsible for registering and handling
@@ -25,7 +29,8 @@ namespace credential_manager {
 //     website.
 class CredentialManager {
  public:
-  explicit CredentialManager(password_manager::PasswordManagerClient* client);
+  CredentialManager(password_manager::PasswordManagerClient* client,
+                    web::WebState* web_state);
   ~CredentialManager();
 
  private:
@@ -46,6 +51,7 @@ class CredentialManager {
   void SendStoreResponse(int promise_id);
 
   password_manager::CredentialManagerImpl impl_;
+  web::WebState* web_state_;
 
   DISALLOW_COPY_AND_ASSIGN(CredentialManager);
 };
