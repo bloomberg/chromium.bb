@@ -481,7 +481,7 @@ String StylePropertySerializer::GetPropertyValue(
     case CSSPropertyOverflow:
       return GetCommonValue(overflowShorthand());
     case CSSPropertyScrollBoundaryBehavior:
-      return GetCommonValue(scrollBoundaryBehaviorShorthand());
+      return GetShorthandValue(scrollBoundaryBehaviorShorthand());
     case CSSPropertyPadding:
       return Get4Values(paddingShorthand());
     case CSSPropertyTextDecoration:
