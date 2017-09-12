@@ -88,13 +88,6 @@ content::WebContents* ExtensionWebContentsObserver::GetAssociatedWebContents()
 
 void ExtensionWebContentsObserver::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
-  InitializeRenderFrame(render_frame_host);
-
-  // Optimization: Look up the extension API frame ID to force the mapping to be
-  // cached. This minimizes the number of IO->UI->IO thread hops when the ID is
-  // looked up again on the IO thread for the webRequest API.
-  ExtensionApiFrameIdMap::Get()->CacheFrameData(render_frame_host);
-
   const Extension* extension = GetExtensionFromFrame(render_frame_host, false);
   if (!extension)
     return;
@@ -133,6 +126,13 @@ void ExtensionWebContentsObserver::RenderFrameCreated(
         ->ActivateExtensionInProcess(*extension,
                                      render_frame_host->GetProcess());
   }
+
+  InitializeRenderFrame(render_frame_host);
+
+  // Optimization: Look up the extension API frame ID to force the mapping to be
+  // cached. This minimizes the number of IO->UI->IO thread hops when the ID is
+  // looked up again on the IO thread for the webRequest API.
+  ExtensionApiFrameIdMap::Get()->CacheFrameData(render_frame_host);
 }
 
 void ExtensionWebContentsObserver::RenderFrameDeleted(
@@ -205,22 +205,20 @@ void ExtensionWebContentsObserver::PepperInstanceDeleted() {
 
 std::string ExtensionWebContentsObserver::GetExtensionIdFromFrame(
     content::RenderFrameHost* render_frame_host) const {
-  // The second argument is false because |render_frame_host| need not be an
-  // active RenderFrameHost (crbug.com/567277).
-  // TODO(robwu): If there is a method to check whether |render_frame_host| is
-  // an active host, use it.
-  const Extension* extension = GetExtensionFromFrame(render_frame_host, false);
-  return extension ? extension->id() : std::string();
+  const GURL& site = render_frame_host->GetSiteInstance()->GetSiteURL();
+  if (!site.SchemeIs(kExtensionScheme))
+    return std::string();
+
+  return site.host();
 }
 
 const Extension* ExtensionWebContentsObserver::GetExtensionFromFrame(
     content::RenderFrameHost* render_frame_host,
     bool verify_url) const {
-  const GURL site_url(render_frame_host->GetSiteInstance()->GetSiteURL());
-  if (!site_url.SchemeIs(kExtensionScheme))
+  std::string extension_id = GetExtensionIdFromFrame(render_frame_host);
+  if (extension_id.empty())
     return nullptr;
 
-  const std::string& extension_id = site_url.host();
   content::BrowserContext* browser_context =
       render_frame_host->GetProcess()->GetBrowserContext();
   const Extension* extension = ExtensionRegistry::Get(browser_context)
@@ -234,6 +232,7 @@ const Extension* ExtensionWebContentsObserver::GetExtensionFromFrame(
     // Without site isolation, this check is needed to eliminate non-extension
     // schemes. With site isolation, this is still needed to exclude sandboxed
     // extension frames with a unique origin.
+    const GURL site_url(render_frame_host->GetSiteInstance()->GetSiteURL());
     if (origin.unique() ||
         site_url != content::SiteInstance::GetSiteForURL(browser_context,
                                                          origin.GetURL()))
