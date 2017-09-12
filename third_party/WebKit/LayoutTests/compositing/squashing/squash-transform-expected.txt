@@ -7,6 +7,10 @@
       "backgroundColor": "#FFFFFF"
     },
     {
+      "name": "Squashing Containment Layer",
+      "drawsContent": false
+    },
+    {
       "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
       "bounds": [100, 100],
       "contentsOpaque": true,
@@ -14,20 +18,9 @@
       "transform": 1
     },
     {
-      "name": "Squashing Containment Layer",
-      "drawsContent": false
-    },
-    {
-      "name": "LayoutBlockFlow (positioned) DIV class='box middle'",
-      "bounds": [100, 100],
-      "contentsOpaque": true,
-      "backgroundColor": "#00FF00",
-      "transform": 3
-    },
-    {
-      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box top')",
-      "position": [180, 180],
-      "bounds": [100, 100]
+      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box middle')",
+      "position": [-1, -1],
+      "bounds": [281, 281]
     }
   ],
   "transforms": [
@@ -38,28 +31,7 @@
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [100, 100, 0, 1]
-      ]
-    },
-    {
-      "id": 2,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [20, 20, 0, 1]
       ],
-      "flattenInheritedTransform": false
-    },
-    {
-      "id": 3,
-      "parent": 2,
-      "transform": [
-        [0.707106781186548, 0.707106781186548, 0, 0],
-        [-0.707106781186548, 0.707106781186548, 0, 0],
-        [0, 0, 1, 0],
-        [0, 0, 0, 1]
-      ],
-      "origin": [50, 50],
       "flattenInheritedTransform": false
     }
   ]
