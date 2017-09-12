@@ -235,6 +235,9 @@ const char* const kAllocatorDumpNameWhitelist[] = {
     "tab_restore/service_helper_0x?/entries",
     "tab_restore/service_helper_0x?/entries/tab_0x?",
     "tab_restore/service_helper_0x?/entries/window_0x?",
+    "tracing/heap_profiler_blink_gc/AllocationRegister",
+    "tracing/heap_profiler_malloc/AllocationRegister",
+    "tracing/heap_profiler_partition_alloc/AllocationRegister",
     nullptr  // End of list marker.
 };
 
