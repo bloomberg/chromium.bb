@@ -183,6 +183,8 @@ const OncFieldSignature ipconfig_fields[] = {
     {::onc::ipconfig::kNameServers, &kStringListSignature},
     {::onc::ipconfig::kRoutingPrefix, &kIntegerSignature},
     {::onc::ipconfig::kSearchDomains, &kStringListSignature},
+    {::onc::ipconfig::kIncludedRoutes, &kStringListSignature},
+    {::onc::ipconfig::kExcludedRoutes, &kStringListSignature},
     {::onc::ipconfig::kType, &kStringSignature},
     {::onc::ipconfig::kWebProxyAutoDiscoveryUrl, &kStringSignature},
     {NULL}};

@@ -209,6 +209,8 @@ const char kIPv6[] = "IPv6";
 const char kNameServers[] = "NameServers";
 const char kRoutingPrefix[] = "RoutingPrefix";
 const char kSearchDomains[] = "SearchDomains";
+const char kIncludedRoutes[] = "IncludedRoutes";
+const char kExcludedRoutes[] = "ExcludedRoutes";
 const char kType[] = "Type";
 const char kWebProxyAutoDiscoveryUrl[] = "WebProxyAutoDiscoveryUrl";
 }  // namespace ipconfig

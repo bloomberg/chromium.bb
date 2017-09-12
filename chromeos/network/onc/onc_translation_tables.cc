@@ -235,6 +235,9 @@ const FieldTranslationEntry static_or_saved_ipconfig_fields[] = {
     {::onc::ipconfig::kGateway, shill::kGatewayProperty},
     {::onc::ipconfig::kRoutingPrefix, shill::kPrefixlenProperty},
     {::onc::ipconfig::kNameServers, shill::kNameServersProperty},
+    {::onc::ipconfig::kSearchDomains, shill::kSearchDomainsProperty},
+    {::onc::ipconfig::kIncludedRoutes, shill::kIncludedRoutesProperty},
+    {::onc::ipconfig::kExcludedRoutes, shill::kExcludedRoutesProperty},
     {NULL}};
 
 struct OncValueTranslationEntry {
