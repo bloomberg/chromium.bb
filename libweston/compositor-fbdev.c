@@ -260,8 +260,7 @@ calculate_refresh_rate(struct fb_var_screeninfo *vinfo)
 }
 
 static int
-fbdev_query_screen_info(struct fbdev_output *output, int fd,
-                        struct fbdev_screeninfo *info)
+fbdev_query_screen_info(int fd, struct fbdev_screeninfo *info)
 {
 	struct fb_var_screeninfo varinfo;
 	struct fb_fix_screeninfo fixinfo;
@@ -296,8 +295,7 @@ fbdev_query_screen_info(struct fbdev_output *output, int fd,
 }
 
 static int
-fbdev_set_screen_info(struct fbdev_output *output, int fd,
-                      struct fbdev_screeninfo *info)
+fbdev_set_screen_info(int fd, struct fbdev_screeninfo *info)
 {
 	struct fb_var_screeninfo varinfo;
 
@@ -340,8 +338,8 @@ static void fbdev_frame_buffer_destroy(struct fbdev_output *output);
 
 /* Returns an FD for the frame buffer device. */
 static int
-fbdev_frame_buffer_open(struct fbdev_output *output, const char *fb_dev,
-                        struct fbdev_screeninfo *screen_info)
+fbdev_frame_buffer_open(const char *fb_dev,
+			struct fbdev_screeninfo *screen_info)
 {
 	int fd = -1;
 
@@ -356,7 +354,7 @@ fbdev_frame_buffer_open(struct fbdev_output *output, const char *fb_dev,
 	}
 
 	/* Grab the screen info. */
-	if (fbdev_query_screen_info(output, fd, screen_info) < 0) {
+	if (fbdev_query_screen_info(fd, screen_info) < 0) {
 		weston_log("Failed to get frame buffer info: %s\n",
 		           strerror(errno));
 
@@ -436,7 +434,7 @@ fbdev_output_enable(struct weston_output *base)
 	struct wl_event_loop *loop;
 
 	/* Create the frame buffer. */
-	fb_fd = fbdev_frame_buffer_open(output, output->device, &output->fb_info);
+	fb_fd = fbdev_frame_buffer_open(output->device, &output->fb_info);
 	if (fb_fd < 0) {
 		weston_log("Creating frame buffer failed.\n");
 		return -1;
@@ -504,7 +502,7 @@ fbdev_output_create(struct fbdev_backend *backend,
 	output->device = strdup(device);
 
 	/* Create the frame buffer. */
-	fb_fd = fbdev_frame_buffer_open(output, device, &output->fb_info);
+	fb_fd = fbdev_frame_buffer_open(device, &output->fb_info);
 	if (fb_fd < 0) {
 		weston_log("Creating frame buffer failed.\n");
 		goto out_free;
@@ -590,8 +588,7 @@ fbdev_output_reenable(struct fbdev_backend *backend,
 	weston_log("Re-enabling fbdev output.\n");
 
 	/* Create the frame buffer. */
-	fb_fd = fbdev_frame_buffer_open(output, output->device,
-	                                &new_screen_info);
+	fb_fd = fbdev_frame_buffer_open(output->device, &new_screen_info);
 	if (fb_fd < 0) {
 		weston_log("Creating frame buffer failed.\n");
 		goto err;
@@ -601,8 +598,7 @@ fbdev_output_reenable(struct fbdev_backend *backend,
 	 * disabled. */
 	if (compare_screen_info (&output->fb_info, &new_screen_info) != 0) {
 		/* Perform a mode-set to restore the old mode. */
-		if (fbdev_set_screen_info(output, fb_fd,
-		                          &output->fb_info) < 0) {
+		if (fbdev_set_screen_info(fb_fd, &output->fb_info) < 0) {
 			weston_log("Failed to restore mode settings. "
 			           "Attempting to re-open output anyway.\n");
 		}
