@@ -44,8 +44,9 @@ class VM(object):
 
     self.qemu_path = qemu_path
     self.enable_kvm = enable_kvm
-    # Software emulation doesn't need sudo access.
-    self.use_sudo = enable_kvm
+    # We don't need sudo access for software emulation or if /dev/kvm is
+    # writeable.
+    self.use_sudo = enable_kvm and not os.access('/dev/kvm', os.W_OK)
     self.display = display
     self.image_path = image_path
     self.ssh_port = ssh_port
