@@ -195,6 +195,11 @@ class FetchManager::Loader final
       reader_ = handle_->ObtainReader(this);
     }
 
+    void Cancel() {
+      reader_ = nullptr;
+      handle_ = nullptr;
+    }
+
     void DidGetReadable() override {
       DCHECK(reader_);
       DCHECK(loader_);
@@ -648,6 +653,8 @@ void FetchManager::Loader::Dispose() {
     loader_->Cancel();
     loader_ = nullptr;
   }
+  if (integrity_verifier_)
+    integrity_verifier_->Cancel();
   execution_context_ = nullptr;
 }
 
