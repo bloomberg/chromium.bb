@@ -79,6 +79,7 @@
 #include "ash/system/network/vpn_list.h"
 #include "ash/system/night_light/night_light_controller.h"
 #include "ash/system/palette/palette_tray.h"
+#include "ash/system/power/peripheral_battery_notifier.h"
 #include "ash/system/power/power_event_observer.h"
 #include "ash/system/power/power_status.h"
 #include "ash/system/power/video_activity_notifier.h"
@@ -1120,6 +1121,7 @@ void Shell::Init(const ShellInitParams& init_params) {
     cursor_manager_->SetCursor(ui::CursorType::kPointer);
   }
 
+  peripheral_battery_notifier_ = base::MakeUnique<PeripheralBatteryNotifier>();
   power_event_observer_.reset(new PowerEventObserver());
   user_activity_notifier_.reset(
       new ui::UserActivityPowerManagerNotifier(user_activity_detector_.get()));

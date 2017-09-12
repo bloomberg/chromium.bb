@@ -128,6 +128,7 @@ class NightLightController;
 class OverlayEventFilter;
 class PaletteDelegate;
 class PartialMagnificationController;
+class PeripheralBatteryNotifier;
 class PowerButtonController;
 class PowerEventObserver;
 class ProjectingObserver;
@@ -759,6 +760,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   // |user_activity_detector_|. Only initialized for mash.
   std::unique_ptr<aura::UserActivityForwarder> user_activity_forwarder_;
 
+  std::unique_ptr<PeripheralBatteryNotifier> peripheral_battery_notifier_;
   std::unique_ptr<PowerEventObserver> power_event_observer_;
   std::unique_ptr<ui::UserActivityPowerManagerNotifier> user_activity_notifier_;
   std::unique_ptr<VideoActivityNotifier> video_activity_notifier_;
