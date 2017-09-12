@@ -141,7 +141,7 @@ mr.mirror.CaptureParameters = class {
         this.mirrorSettings.shouldCaptureAudio) {
       constraints['audio'] = {
         'mandatory': {
-          'chromeMediaSource': 'desktop',
+          'chromeMediaSource': 'system',
           'chromeMediaSourceId': sourceId,
         }
       };
