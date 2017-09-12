@@ -58,6 +58,7 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
     @Nullable
     private final SuggestionsCarousel mSuggestionsCarousel;
     private final SuggestionsSheetVisibilityChangeObserver mBottomSheetObserver;
+    private final ChromeActivity mActivity;
     private final BottomSheet mSheet;
     private final LogoView mLogoView;
     private final LogoDelegateImpl mLogoDelegate;
@@ -79,6 +80,7 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
         Profile profile = Profile.getLastUsedProfile();
         SuggestionsNavigationDelegate navigationDelegate =
                 new SuggestionsNavigationDelegateImpl(activity, profile, sheet, tabModelSelector);
+        mActivity = activity;
         mSheet = sheet;
         mTileGroupDelegate =
                 new TileGroupDelegateImpl(activity, profile, navigationDelegate, snackbarManager);
@@ -162,6 +164,8 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
                     SuggestionsMetrics.recordSurfaceFullyVisible();
                     mRecyclerView.setScrollEnabled(true);
                 }
+
+                updateLogoTransition();
             }
 
             @Override
@@ -322,6 +326,7 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
 
     private void updateLogoTransition() {
         boolean showLogo = mSearchProviderHasLogo && mNewTabShown && mSheet.isSheetOpen()
+                && !mActivity.getTabModelSelector().isIncognitoSelected()
                 && FeatureUtilities.isChromeHomeDoodleEnabled();
 
         if (!showLogo) {
