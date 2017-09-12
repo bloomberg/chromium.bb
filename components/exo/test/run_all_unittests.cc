@@ -17,7 +17,7 @@ int main(int argc, char** argv) {
   mojo::edk::Init();
 #endif
 
-  return base::LaunchUnitTestsSerially(
+  return base::LaunchUnitTests(
       argc, argv,
       base::Bind(&ash::AshTestSuite::Run, base::Unretained(&test_suite)));
 }
