@@ -142,6 +142,10 @@ const char kRateThisAppCommand[] = "ratethisapp";
           self.browserState);
   contentSuggestionsService->remote_suggestions_scheduler()
       ->OnSuggestionsSurfaceOpened();
+  contentSuggestionsService->user_classifier()->OnEvent(
+      ntp_snippets::UserClassifier::Metric::NTP_OPENED);
+  contentSuggestionsService->user_classifier()->OnEvent(
+      ntp_snippets::UserClassifier::Metric::SUGGESTIONS_SHOWN);
   PrefService* prefs =
       ios::ChromeBrowserState::FromBrowserState(self.browserState)->GetPrefs();
   bool contentSuggestionsEnabled =
@@ -257,6 +261,10 @@ const char kRateThisAppCommand[] = "ratethisapp";
       suggestionsShownAbove:[self.suggestionsViewController
                                 numberOfSuggestionsAbove:indexPath.section]
                  withAction:WindowOpenDisposition::CURRENT_TAB];
+  IOSChromeContentSuggestionsServiceFactory::GetForBrowserState(
+      self.browserState)
+      ->user_classifier()
+      ->OnEvent(ntp_snippets::UserClassifier::Metric::SUGGESTIONS_USED);
 
   // Use a referrer with a specific URL to mark this entry as coming from
   // ContentSuggestions.
@@ -370,6 +378,10 @@ const char kRateThisAppCommand[] = "ratethisapp";
                             incognito:(BOOL)incognito {
   new_tab_page_uma::RecordAction(self.browserState,
                                  new_tab_page_uma::ACTION_OPENED_SUGGESTION);
+  IOSChromeContentSuggestionsServiceFactory::GetForBrowserState(
+      self.browserState)
+      ->user_classifier()
+      ->OnEvent(ntp_snippets::UserClassifier::Metric::SUGGESTIONS_USED);
 
   NSIndexPath* indexPath = [self.suggestionsViewController.collectionViewModel
       indexPathForItem:item];
