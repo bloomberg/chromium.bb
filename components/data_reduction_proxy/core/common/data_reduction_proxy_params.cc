@@ -148,12 +148,6 @@ bool IsIncludedInServerExperimentsFieldTrial() {
          base::FieldTrialList::FindFullName(kServerExperimentsFieldTrial)
                  .find(kDisabled) != 0;
 }
-bool IsIncludedInTamperDetectionExperiment() {
-  return IsIncludedInServerExperimentsFieldTrial() &&
-         base::StartsWith(
-             base::FieldTrialList::FindFullName(kServerExperimentsFieldTrial),
-             "TamperDetection_Enabled", base::CompareCase::SENSITIVE);
-}
 
 bool FetchWarmupURLEnabled() {
   // Fetching of the warmup URL can be enabled only for Enabled* and Control*
