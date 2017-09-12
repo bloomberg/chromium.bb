@@ -147,8 +147,9 @@ source_set("web_internal") {
     "external_app_launcher.h",
     "external_app_launcher.mm",
     "passkit_dialog_provider.h",
-    "print_observer.h",
-    "print_observer.mm",
+    "print_tab_helper.h",
+    "print_tab_helper.mm",
+    "web_state_printer.h",
   ]
   deps = [
     ":chrome_bundle",
@@ -187,7 +188,10 @@ source_set("web_internal") {
     "//ui/gfx",
     "//url",
   ]
-  libs = [ "UIKit.framework" ]
+  libs = [
+    "UIKit.framework",
+    "Foundation.framework",
+  ]
 }
 
 source_set("test_support") {
