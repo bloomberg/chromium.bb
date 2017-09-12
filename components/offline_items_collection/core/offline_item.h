@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/files/file_path.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "components/offline_items_collection/core/offline_item_filter.h"
@@ -104,6 +105,9 @@ struct OfflineItem {
   // persistent UI spaces and will only show up as notifications.
   bool is_transient;
 
+  // Whether this item should show up as a suggested item for the user.
+  bool is_suggested;
+
   // TODO(dtrainor): Build out custom per-item icon support.
 
   // Content Metadata.
@@ -122,6 +126,12 @@ struct OfflineItem {
 
   // Whether or not this item can be opened after it is done being downloaded.
   bool is_openable;
+
+  // The target file path for this offline item.
+  base::FilePath file_path;
+
+  // The mime type for this offline item.
+  std::string mime_type;
 
   // Request Metadata.
   // ---------------------------------------------------------------------------

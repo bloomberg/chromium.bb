@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.download.ui.StubbedProvider.StubbedDownloadDe
 import org.chromium.chrome.browser.download.ui.StubbedProvider.StubbedOfflinePageDelegate;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadItem;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
+import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.content_public.browser.DownloadState;
 
 import java.util.Set;
@@ -65,6 +66,12 @@ public class DownloadHistoryAdapterTest {
             updatedItem = item;
             onDownloadItemUpdatedCallback.notifyCalled();
         }
+
+        @Override
+        public void onOfflineItemCreated(OfflineItem item) {}
+
+        @Override
+        public void onOfflineItemUpdated(OfflineItem item) {}
 
         @Override
         public void onSpaceDisplayUpdated(SpaceDisplay spaceDisplay) {
