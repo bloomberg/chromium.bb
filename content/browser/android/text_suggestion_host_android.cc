@@ -12,26 +12,17 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/SuggestionInfo_jni.h"
 #include "jni/TextSuggestionHost_jni.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "ui/gfx/android/view_configuration.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
-using base::android::GetClass;
 using base::android::JavaParamRef;
-using base::android::MethodID;
 using base::android::ScopedJavaLocalRef;
 using base::android::ToJavaArrayOfStrings;
 
 namespace content {
-
-namespace {
-
-const size_t kMaxNumberOfSuggestions = 5;
-
-}  // namespace
 
 jlong Init(JNIEnv* env,
            const JavaParamRef<jobject>& obj,
@@ -52,8 +43,8 @@ TextSuggestionHostAndroid::TextSuggestionHostAndroid(
       WebContentsObserver(web_contents),
       rwhva_(nullptr),
       java_text_suggestion_host_(JavaObjectWeakGlobalRef(env, obj)),
-      suggestion_menu_timeout_(
-          base::Bind(&TextSuggestionHostAndroid::OnSuggestionMenuTimeout,
+      spellcheck_menu_timeout_(
+          base::Bind(&TextSuggestionHostAndroid::OnSpellCheckMenuTimeout,
                      base::Unretained(this))) {
   registry_.AddInterface(base::Bind(&TextSuggestionHostMojoImplAndroid::Create,
                                     base::Unretained(this)));
@@ -89,18 +80,6 @@ void TextSuggestionHostAndroid::ApplySpellCheckSuggestion(
       ConvertJavaStringToUTF8(env, replacement));
 }
 
-void TextSuggestionHostAndroid::ApplyTextSuggestion(
-    JNIEnv*,
-    const JavaParamRef<jobject>&,
-    int marker_tag,
-    int suggestion_index) {
-  const blink::mojom::TextSuggestionBackendPtr& text_suggestion_backend =
-      GetTextSuggestionBackend();
-  if (!text_suggestion_backend)
-    return;
-  text_suggestion_backend->ApplyTextSuggestion(marker_tag, suggestion_index);
-}
-
 void TextSuggestionHostAndroid::DeleteActiveSuggestionRange(
     JNIEnv*,
     const JavaParamRef<jobject>&) {
@@ -111,7 +90,7 @@ void TextSuggestionHostAndroid::DeleteActiveSuggestionRange(
   text_suggestion_backend->DeleteActiveSuggestionRange();
 }
 
-void TextSuggestionHostAndroid::OnNewWordAddedToDictionary(
+void TextSuggestionHostAndroid::NewWordAddedToDictionary(
     JNIEnv* env,
     const JavaParamRef<jobject>&,
     const base::android::JavaParamRef<jstring>& word) {
@@ -119,18 +98,18 @@ void TextSuggestionHostAndroid::OnNewWordAddedToDictionary(
       GetTextSuggestionBackend();
   if (!text_suggestion_backend)
     return;
-  text_suggestion_backend->OnNewWordAddedToDictionary(
+  text_suggestion_backend->NewWordAddedToDictionary(
       ConvertJavaStringToUTF8(env, word));
 }
 
-void TextSuggestionHostAndroid::OnSuggestionMenuClosed(
+void TextSuggestionHostAndroid::SuggestionMenuClosed(
     JNIEnv*,
     const JavaParamRef<jobject>&) {
   const blink::mojom::TextSuggestionBackendPtr& text_suggestion_backend =
       GetTextSuggestionBackend();
   if (!text_suggestion_backend)
     return;
-  text_suggestion_backend->OnSuggestionMenuClosed();
+  text_suggestion_backend->SuggestionMenuClosed();
 }
 
 void TextSuggestionHostAndroid::ShowSpellCheckSuggestionMenu(
@@ -139,10 +118,8 @@ void TextSuggestionHostAndroid::ShowSpellCheckSuggestionMenu(
     const std::string& marked_text,
     const std::vector<blink::mojom::SpellCheckSuggestionPtr>& suggestions) {
   std::vector<std::string> suggestion_strings;
-  // Enforce kMaxNumberOfSuggestions here in case the renderer is hijacked and
-  // tries to send bad input.
-  for (size_t i = 0; i < suggestions.size() && i < kMaxNumberOfSuggestions; ++i)
-    suggestion_strings.push_back(suggestions[i]->suggestion);
+  for (const auto& suggestion_ptr : suggestions)
+    suggestion_strings.push_back(suggestion_ptr->suggestion);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_text_suggestion_host_.get(env);
   if (obj.is_null())
@@ -153,44 +130,14 @@ void TextSuggestionHostAndroid::ShowSpellCheckSuggestionMenu(
       ToJavaArrayOfStrings(env, suggestion_strings));
 }
 
-void TextSuggestionHostAndroid::ShowTextSuggestionMenu(
-    double caret_x,
-    double caret_y,
-    const std::string& marked_text,
-    const std::vector<blink::mojom::TextSuggestionPtr>& suggestions) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_text_suggestion_host_.get(env);
-
-  // Enforce kMaxNumberOfSuggestions here in case the renderer is hijacked and
-  // tries to send bad input.
-  size_t suggestion_count =
-      std::min(suggestions.size(), kMaxNumberOfSuggestions);
-  ScopedJavaLocalRef<jobjectArray> jsuggestion_infos =
-      Java_SuggestionInfo_createArray(env, suggestion_count);
-
-  for (size_t i = 0; i < suggestion_count; ++i) {
-    const blink::mojom::TextSuggestionPtr& suggestion_ptr = suggestions[i];
-    Java_SuggestionInfo_createSuggestionInfoAndPutInArray(
-        env, jsuggestion_infos, i, suggestion_ptr->marker_tag,
-        suggestion_ptr->suggestion_index,
-        ConvertUTF8ToJavaString(env, suggestion_ptr->prefix),
-        ConvertUTF8ToJavaString(env, suggestion_ptr->suggestion),
-        ConvertUTF8ToJavaString(env, suggestion_ptr->suffix));
-  }
-
-  Java_TextSuggestionHost_showTextSuggestionMenu(
-      env, obj, caret_x, caret_y, ConvertUTF8ToJavaString(env, marked_text),
-      jsuggestion_infos);
-}
-
-void TextSuggestionHostAndroid::StartSuggestionMenuTimer() {
-  suggestion_menu_timeout_.Stop();
-  suggestion_menu_timeout_.Start(base::TimeDelta::FromMilliseconds(
+void TextSuggestionHostAndroid::StartSpellCheckMenuTimer() {
+  spellcheck_menu_timeout_.Stop();
+  spellcheck_menu_timeout_.Start(base::TimeDelta::FromMilliseconds(
       gfx::ViewConfiguration::GetDoubleTapTimeoutInMs()));
 }
 
 void TextSuggestionHostAndroid::OnKeyEvent() {
-  suggestion_menu_timeout_.Stop();
+  spellcheck_menu_timeout_.Stop();
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_text_suggestion_host_.get(env);
@@ -200,8 +147,8 @@ void TextSuggestionHostAndroid::OnKeyEvent() {
   Java_TextSuggestionHost_hidePopups(env, obj);
 }
 
-void TextSuggestionHostAndroid::StopSuggestionMenuTimer() {
-  suggestion_menu_timeout_.Stop();
+void TextSuggestionHostAndroid::StopSpellCheckMenuTimer() {
+  spellcheck_menu_timeout_.Stop();
 }
 
 void TextSuggestionHostAndroid::OnInterfaceRequestFromFrame(
@@ -240,13 +187,12 @@ TextSuggestionHostAndroid::GetTextSuggestionBackend() {
   return text_suggestion_backend_;
 }
 
-void TextSuggestionHostAndroid::OnSuggestionMenuTimeout() {
+void TextSuggestionHostAndroid::OnSpellCheckMenuTimeout() {
   const blink::mojom::TextSuggestionBackendPtr& text_suggestion_backend =
       GetTextSuggestionBackend();
   if (!text_suggestion_backend)
     return;
-  text_suggestion_backend->SuggestionMenuTimeoutCallback(
-      kMaxNumberOfSuggestions);
+  text_suggestion_backend->SpellCheckMenuTimeoutCallback();
 }
 
 }  // namespace content

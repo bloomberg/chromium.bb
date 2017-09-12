@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.input;
 import android.support.test.filters.LargeTest;
 import android.view.View;
 
+import org.junit.Assert;
+
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
@@ -20,17 +22,16 @@ import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.WebContents;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 
 /**
  * Integration tests for the text suggestion menu.
  */
-public class SpellCheckMenuTest extends ChromeActivityTestCaseBase<ChromeActivity> {
+public class TextSuggestionMenuTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String URL =
             "data:text/html, <div contenteditable id=\"div\">iuvwneaoanls</div>";
 
-    public SpellCheckMenuTest() {
+    public TextSuggestionMenuTest() {
         super(ChromeActivity.class);
     }
 
@@ -60,7 +61,7 @@ public class SpellCheckMenuTest extends ChromeActivityTestCaseBase<ChromeActivit
             @Override
             public boolean isSatisfied() {
                 SuggestionsPopupWindow suggestionsPopupWindow =
-                        cvc.getTextSuggestionHostForTesting().getSpellCheckPopupWindowForTesting();
+                        cvc.getTextSuggestionHostForTesting().getSuggestionsPopupWindowForTesting();
                 if (suggestionsPopupWindow == null) {
                     return false;
                 }
@@ -75,22 +76,12 @@ public class SpellCheckMenuTest extends ChromeActivityTestCaseBase<ChromeActivit
         });
 
         TouchCommon.singleClickView(getDeleteButton(cvc));
-
-        CriteriaHelper.pollInstrumentationThread(Criteria.equals("", new Callable<String>() {
-            @Override
-            public String call() {
-                try {
-                    return DOMUtils.getNodeContents(cvc.getWebContents(), "div");
-                } catch (InterruptedException | TimeoutException e) {
-                    return null;
-                }
-            }
-        }));
+        Assert.assertEquals("", DOMUtils.getNodeContents(cvc.getWebContents(), "div"));
     }
 
     private View getDeleteButton(ContentViewCore cvc) {
         View contentView = cvc.getTextSuggestionHostForTesting()
-                                   .getSpellCheckPopupWindowForTesting()
+                                   .getSuggestionsPopupWindowForTesting()
                                    .getContentViewForTesting();
         return contentView.findViewById(R.id.deleteButton);
     }
