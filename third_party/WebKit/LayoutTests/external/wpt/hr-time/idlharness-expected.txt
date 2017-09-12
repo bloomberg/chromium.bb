@@ -8,10 +8,10 @@ PASS Performance interface: existence and properties of interface prototype obje
 PASS Performance interface: existence and properties of interface prototype object's "constructor" property
 PASS Performance interface: operation now()
 PASS Performance interface: operation toJSON()
-FAIL Test default toJSON operation of Performance Illegal invocation
 PASS Performance must be primary interface of window.performance
 PASS Stringification of window.performance
 PASS Performance interface: window.performance must inherit property "now()" with the proper type
 PASS Performance interface: window.performance must inherit property "toJSON()" with the proper type
+FAIL Test default toJSON operation of Performance assert_unreached: property "timing" should not be present in the output of Performance.prototype.toJSON() Reached unreachable code
 Harness: the test ran to completion.
 
