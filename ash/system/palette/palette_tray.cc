@@ -400,6 +400,8 @@ void PaletteTray::Initialize() {
   if (!delegate)
     return;
 
+  TrayBackgroundView::Initialize();
+
   // OnPaletteEnabledPrefChanged will get called with the initial pref value,
   // which will take care of showing the palette.
   palette_enabled_subscription_ = delegate->AddPaletteEnableListener(base::Bind(
