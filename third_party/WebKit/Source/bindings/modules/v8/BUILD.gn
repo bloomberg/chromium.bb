@@ -87,6 +87,9 @@ action("bindings_modules_v8_generated_init_partial") {
     rebase_path(bindings_modules_generated_init_partial_interfaces_file,
                 root_build_dir),
   ]
+  if (snake_case_source_files) {
+    args += [ "--snake-case-generated-files" ]
+  }
 
   deps = [
     "//third_party/WebKit/Source/bindings/modules:interfaces_info",

@@ -38,6 +38,7 @@ import sys
 from idl_types import IdlTypeBase
 import idl_types
 from idl_definitions import Exposure, IdlInterface, IdlAttribute
+from utilities import to_snake_case
 from v8_globals import includes
 
 ACRONYMS = [
@@ -145,6 +146,26 @@ def v8_class_name_or_partial(interface):
     if interface.is_partial:
         return ''.join([class_name, 'Partial'])
     return class_name
+
+
+def build_basename(name, snake_case, prefix=None, ext=None):
+    basename = name
+    if prefix:
+        basename = prefix + name
+    if snake_case:
+        basename = to_snake_case(basename)
+        if not ext:
+            return basename
+        if ext == '.cpp':
+            return basename + '.cc'
+        return basename + ext
+    if ext:
+        return basename + ext
+    return basename
+
+
+def binding_header_basename(name, snake_case):
+    return build_basename(name, snake_case, prefix='V8', ext='.h')
 
 
 ################################################################################
