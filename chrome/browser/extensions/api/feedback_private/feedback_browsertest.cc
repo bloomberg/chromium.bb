@@ -85,7 +85,14 @@ class FeedbackTest : public ExtensionBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(FeedbackTest, ShowFeedback) {
+// Disabled for ASan due to flakiness on Mac ASan 64 Tests (1).
+// See crbug.com/757243.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_ShowFeedback DISABLED_ShowFeedback
+#else
+#define MAYBE_ShowFeedback ShowFeedback
+#endif
+IN_PROC_BROWSER_TEST_F(FeedbackTest, MAYBE_ShowFeedback) {
   WaitForExtensionViewsToLoad();
 
   ASSERT_TRUE(IsFeedbackAppAvailable());
