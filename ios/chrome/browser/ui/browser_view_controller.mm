@@ -2472,6 +2472,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
     _voiceSearchController->SetDelegate(nil);
   [_rateThisAppDialog setDelegate:nil];
   [_model closeAllTabs];
+  [_paymentRequestManager setActiveWebState:nullptr];
 }
 
 #pragma mark - SnapshotOverlayProvider methods
@@ -4712,6 +4713,9 @@ bubblePresenterForFeature:(const base::Feature&)feature
   // Add |newTab|'s view to the hierarchy if it's the current Tab.
   if (self.active && model.currentTab == newTab)
     [self displayTab:newTab isNewSelection:NO];
+
+  if (newTab)
+    [_paymentRequestManager setActiveWebState:newTab.webState];
 }
 
 // A tab has been removed, remove its views from display if necessary.
