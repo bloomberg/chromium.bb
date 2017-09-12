@@ -5,20 +5,13 @@
 #include "services/ui/ws/cursor_location_manager.h"
 
 #include "base/atomicops.h"
+#include "services/ui/ws/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace ui {
 namespace ws {
 namespace test {
-namespace {
-
-gfx::Point Atomic32ToPoint(base::subtle::Atomic32 atomic) {
-  return gfx::Point(static_cast<int16_t>(atomic >> 16),
-                    static_cast<int16_t>(atomic & 0xFFFF));
-}
-
-}  // namespace
 
 TEST(CursorLocationManagerTest, PositiveCoordinates) {
   const gfx::Point point(100, 150);

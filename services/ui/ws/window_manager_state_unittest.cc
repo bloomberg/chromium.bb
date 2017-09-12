@@ -16,6 +16,7 @@
 #include "services/ui/common/accelerator_util.h"
 #include "services/ui/common/switches.h"
 #include "services/ui/ws/accelerator.h"
+#include "services/ui/ws/cursor_location_manager.h"
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_manager.h"
 #include "services/ui/ws/platform_display.h"
@@ -731,6 +732,33 @@ TEST_F(WindowManagerStateTest, CursorResetOverNoTarget) {
   // The event isn't over a valid target, which should trigger resetting the
   // cursor to POINTER.
   EXPECT_EQ(ui::CursorType::kPointer, cursor_type());
+}
+
+TEST_F(WindowManagerStateTest, CursorLocationManagerUpdatedOnMouseMove) {
+  WindowManagerStateTestApi test_api(window_manager_state());
+  ASSERT_EQ(1u, test_api.window_manager_display_roots().size());
+  WindowManagerDisplayRoot* window_manager_display_root =
+      test_api.window_manager_display_roots().begin()->get();
+  ASSERT_TRUE(window_manager_display_root->GetClientVisibleRoot());
+  // Install a transform on the root, which impacts the location reported to
+  // clients.
+  gfx::Transform transform;
+  transform.Translate(6, 7);
+  window_manager_display_root->GetClientVisibleRoot()->SetTransform(transform);
+  ui::PointerEvent move(
+      ui::ET_POINTER_MOVED, gfx::Point(25, 25), gfx::Point(25, 25), 0, 0,
+      ui::PointerDetails(EventPointerType::POINTER_TYPE_MOUSE, 0),
+      base::TimeTicks());
+  // Tests add display with kInvalidDisplayId.
+  window_manager_state()->ProcessEvent(move, display::kInvalidDisplayId);
+  CursorLocationManager* cursor_location_manager =
+      window_server()->display_manager()->GetCursorLocationManager(
+          window_manager_state()->user_id());
+  // The location reported to clients is offset by the root transform.
+  EXPECT_EQ(
+      gfx::Point(19, 18),
+      Atomic32ToPoint(CursorLocationManagerTestApi(cursor_location_manager)
+                          .current_cursor_location()));
 }
 
 TEST_F(WindowManagerStateTestAsync, CursorResetOverNoTargetAsync) {

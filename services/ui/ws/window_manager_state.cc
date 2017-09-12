@@ -27,6 +27,7 @@
 #include "services/ui/ws/window_tree.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/dip_util.h"
+#include "ui/gfx/geometry/point3_f.h"
 
 namespace ui {
 namespace ws {
@@ -574,17 +575,29 @@ void WindowManagerState::ScheduleInputEventTimeout(WindowTree* tree,
 bool WindowManagerState::ConvertPointToScreen(int64_t display_id,
                                               gfx::Point* point) {
   Display* display = display_manager()->GetDisplayById(display_id);
-  if (display) {
-    const display::Display& originated_display = display->GetDisplay();
-    const display::ViewportMetrics metrics =
-        display->platform_display()->GetViewportMetrics();
-    *point = gfx::ConvertPointToDIP(
-        originated_display.device_scale_factor() / metrics.ui_scale_factor,
-        *point);
-    *point += originated_display.bounds().origin().OffsetFromOrigin();
-    return true;
-  }
-  return false;
+  if (!display)
+    return false;
+
+  WindowManagerDisplayRoot* root =
+      display->GetWindowManagerDisplayRootForUser(user_id());
+  if (!root)
+    return false;
+
+  const display::Display& originated_display = display->GetDisplay();
+  gfx::Transform transform;
+  transform.Scale(originated_display.device_scale_factor(),
+                  originated_display.device_scale_factor());
+  transform *= display->GetWindowManagerDisplayRootForUser(user_id())
+                   ->GetClientVisibleRoot()
+                   ->transform();
+  gfx::Transform invert;
+  if (!transform.GetInverse(&invert))
+    invert = transform;
+  auto point_3f = gfx::Point3F(gfx::PointF(*point));
+  invert.TransformPoint(&point_3f);
+  *point = gfx::ToFlooredPoint(point_3f.AsPointF()) +
+           originated_display.bounds().origin().OffsetFromOrigin();
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

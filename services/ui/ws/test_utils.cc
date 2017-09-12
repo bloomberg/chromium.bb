@@ -13,6 +13,7 @@
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "services/ui/common/image_cursors_set.h"
 #include "services/ui/public/interfaces/cursor/cursor.mojom.h"
+#include "services/ui/ws/cursor_location_manager.h"
 #include "services/ui/ws/display_binding.h"
 #include "services/ui/ws/display_creation_config.h"
 #include "services/ui/ws/display_manager.h"
@@ -725,6 +726,18 @@ void TestPlatformDisplay::SetCursorConfig(display::Display::Rotation rotation,
 
 // -----------------------------------------------------------------------------
 
+CursorLocationManagerTestApi::CursorLocationManagerTestApi(
+    CursorLocationManager* cursor_location_manager)
+    : cursor_location_manager_(cursor_location_manager) {}
+
+CursorLocationManagerTestApi::~CursorLocationManagerTestApi() = default;
+
+base::subtle::Atomic32 CursorLocationManagerTestApi::current_cursor_location() {
+  return cursor_location_manager_->current_cursor_location_;
+}
+
+// -----------------------------------------------------------------------------
+
 void AddWindowManager(WindowServer* window_server,
                       const UserId& user_id,
                       bool automatically_create_display_roots) {
@@ -791,6 +804,11 @@ ServerWindow* NewWindowInTreeWithParent(WindowTree* tree,
   if (client_id)
     *client_id = client_window_id;
   return tree->GetWindowByClientId(client_window_id);
+}
+
+gfx::Point Atomic32ToPoint(base::subtle::Atomic32 atomic) {
+  return gfx::Point(static_cast<int16_t>(atomic >> 16),
+                    static_cast<int16_t>(atomic & 0xFFFF));
 }
 
 }  // namespace test
