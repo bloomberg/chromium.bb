@@ -206,8 +206,8 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   if (NeedMinMaxSize(ConstraintSpace(), Style()))
     min_max_size = ComputeMinMaxSize();
 
-  border_scrollbar_padding_ = CalculateBorderScrollbarPadding(
-      ConstraintSpace(), Style(), Node().GetLayoutObject());
+  border_scrollbar_padding_ =
+      CalculateBorderScrollbarPadding(ConstraintSpace(), Style(), Node());
 
   // TODO(layout-ng): For quirks mode, should we pass blockSize instead of
   // NGSizeIndefinite?
@@ -407,7 +407,8 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   // Only layout absolute and fixed children if we aren't going to revisit this
   // layout.
   if (unpositioned_floats_.IsEmpty()) {
-    NGOutOfFlowLayoutPart(ConstraintSpace(), Style(), &container_builder_)
+    NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), Style(),
+                          &container_builder_)
         .Run();
   }
 

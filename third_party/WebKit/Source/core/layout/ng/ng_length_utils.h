@@ -15,9 +15,9 @@
 
 namespace blink {
 class ComputedStyle;
-class LayoutObject;
 class Length;
 class NGConstraintSpace;
+class NGBlockNode;
 class NGLayoutInputNode;
 
 enum class LengthResolveType {
@@ -128,17 +128,10 @@ CORE_EXPORT LayoutUnit ConstrainByMinMax(LayoutUnit length,
                                          Optional<LayoutUnit> min,
                                          Optional<LayoutUnit> max);
 
-// Returns scrollbar sizes or this layout object.
-NGBoxStrut GetScrollbarSizes(const LayoutObject*);
-
-inline NGBoxStrut CalculateBorderScrollbarPadding(
+NGBoxStrut CalculateBorderScrollbarPadding(
     const NGConstraintSpace& constraint_space,
     const ComputedStyle& style,
-    const LayoutObject* layout_object) {
-  return ComputeBorders(constraint_space, style) +
-         ComputePadding(constraint_space, style) +
-         GetScrollbarSizes(layout_object);
-}
+    const NGBlockNode node);
 
 inline NGLogicalSize CalculateBorderBoxSize(
     const NGConstraintSpace& constraint_space,

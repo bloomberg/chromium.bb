@@ -198,6 +198,23 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize() {
   return sizes;
 }
 
+NGBoxStrut NGBlockNode::GetScrollbarSizes() const {
+  NGPhysicalBoxStrut sizes;
+  const ComputedStyle* style = GetLayoutObject()->Style();
+  if (!style->IsOverflowVisible()) {
+    const LayoutBox* box = ToLayoutBox(GetLayoutObject());
+    LayoutUnit vertical = LayoutUnit(box->VerticalScrollbarWidth());
+    LayoutUnit horizontal = LayoutUnit(box->HorizontalScrollbarHeight());
+    sizes.bottom = horizontal;
+    if (style->ShouldPlaceBlockDirectionScrollbarOnLogicalLeft())
+      sizes.left = vertical;
+    else
+      sizes.right = vertical;
+  }
+  return sizes.ConvertToLogical(
+      FromPlatformWritingMode(style->GetWritingMode()), style->Direction());
+}
+
 NGLayoutInputNode NGBlockNode::NextSibling() const {
   LayoutObject* next_sibling = box_->NextSibling();
   if (next_sibling) {
@@ -261,7 +278,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   intrinsic_content_logical_height += fragment.OverflowSize().block_size;
   NGBoxStrut border_scrollbar_padding =
       ComputeBorders(constraint_space, Style()) +
-      ComputePadding(constraint_space, Style()) + GetScrollbarSizes(box_);
+      ComputePadding(constraint_space, Style()) + GetScrollbarSizes();
   if (IsLastFragment(physical_fragment))
     intrinsic_content_logical_height -= border_scrollbar_padding.BlockSum();
   box_->SetLogicalHeight(logical_height);

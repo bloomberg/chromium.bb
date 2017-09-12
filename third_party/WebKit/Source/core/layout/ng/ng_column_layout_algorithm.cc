@@ -23,8 +23,8 @@ RefPtr<NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
   Optional<MinMaxSize> min_max_size;
   if (NeedMinMaxSize(ConstraintSpace(), Style()))
     min_max_size = ComputeMinMaxSize();
-  NGBoxStrut border_scrollbar_padding = CalculateBorderScrollbarPadding(
-      ConstraintSpace(), Style(), Node().GetLayoutObject());
+  NGBoxStrut border_scrollbar_padding =
+      CalculateBorderScrollbarPadding(ConstraintSpace(), Style(), Node());
   NGLogicalSize border_box_size =
       CalculateBorderBoxSize(ConstraintSpace(), Style(), min_max_size);
   content_box_size_ =
@@ -71,7 +71,8 @@ RefPtr<NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
 
   container_builder_.SetOverflowSize(overflow);
 
-  NGOutOfFlowLayoutPart(ConstraintSpace(), Style(), &container_builder_).Run();
+  NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), Style(), &container_builder_)
+      .Run();
 
   // TODO(mstensho): Propagate baselines.
 

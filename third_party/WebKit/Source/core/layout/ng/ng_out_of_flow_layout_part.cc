@@ -34,6 +34,7 @@ bool IsContainingBlockForAbsoluteDescendant(
 }  // namespace
 
 NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
+    const NGBlockNode container,
     const NGConstraintSpace& container_space,
     const ComputedStyle& container_style,
     NGFragmentBuilder* container_builder)
@@ -42,17 +43,19 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
       FromPlatformWritingMode(container_style_.GetWritingMode()));
 
   NGBoxStrut borders = ComputeBorders(container_space, container_style_);
-  container_border_offset_ =
-      NGLogicalOffset{borders.inline_start, borders.block_start};
-  container_border_physical_offset_ =
-      container_border_offset_.ConvertToPhysical(
-          writing_mode, container_style_.Direction(),
-          container_builder_->Size().ConvertToPhysical(writing_mode),
-          NGPhysicalSize());
+  NGBoxStrut scrollers = container.GetScrollbarSizes();
+  NGBoxStrut borders_and_scrollers = borders + scrollers;
+  content_offset_ = NGLogicalOffset{borders_and_scrollers.inline_start,
+                                    borders_and_scrollers.block_start};
+
+  NGPhysicalBoxStrut physical_borders = borders_and_scrollers.ConvertToPhysical(
+      writing_mode, container_style_.Direction());
+  content_physical_offset_ =
+      NGPhysicalOffset(physical_borders.left, physical_borders.top);
 
   container_size_ = container_builder_->Size();
-  container_size_.inline_size -= borders.InlineSum();
-  container_size_.block_size -= borders.BlockSum();
+  container_size_.inline_size -= borders_and_scrollers.InlineSum();
+  container_size_.block_size -= borders_and_scrollers.BlockSum();
 
   icb_size_ = container_space.InitialContainingBlockSize();
 }
@@ -97,7 +100,7 @@ RefPtr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
   // Adjust the static_position origin. The static_position coordinate origin is
   // relative to the container's border box, ng_absolute_utils expects it to be
   // relative to the container's padding box.
-  static_position.offset -= container_border_physical_offset_;
+  static_position.offset -= content_physical_offset_;
 
   // The block estimate is in the descendant's writing mode.
   RefPtr<NGConstraintSpace> descendant_constraint_space =
@@ -151,10 +154,8 @@ RefPtr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
   // to the padding box so add back the container's borders.
   NGBoxStrut inset = node_position.inset.ConvertToLogical(
       container_writing_mode, container_style_.Direction());
-  offset->inline_offset =
-      inset.inline_start + container_border_offset_.inline_offset;
-  offset->block_offset =
-      inset.block_start + container_border_offset_.block_offset;
+  offset->inline_offset = inset.inline_start + content_offset_.inline_offset;
+  offset->block_offset = inset.block_start + content_offset_.block_offset;
 
   return layout_result;
 }
