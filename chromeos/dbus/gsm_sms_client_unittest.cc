@@ -75,10 +75,8 @@ class GsmSMSClientTest : public testing::Test {
     // Set an expectation so mock_proxy's ConnectToSignal() will use
     // OnConnectToSignal() to run the callback.
     EXPECT_CALL(*mock_proxy_.get(),
-                ConnectToSignal(modemmanager::kModemManagerSMSInterface,
-                                modemmanager::kSMSReceivedSignal,
-                                _,
-                                _))
+                DoConnectToSignal(modemmanager::kModemManagerSMSInterface,
+                                  modemmanager::kSMSReceivedSignal, _, _))
         .WillRepeatedly(Invoke(this, &GsmSMSClientTest::OnConnectToSignal));
 
     // Set an expectation so mock_bus's GetObjectProxy() for the given
@@ -174,12 +172,12 @@ class GsmSMSClientTest : public testing::Test {
       const std::string& interface_name,
       const std::string& signal_name,
       const dbus::ObjectProxy::SignalCallback& signal_callback,
-      const dbus::ObjectProxy::OnConnectedCallback& on_connected_callback) {
+      dbus::ObjectProxy::OnConnectedCallback* on_connected_callback) {
     sms_received_callback_ = signal_callback;
     const bool success = true;
     message_loop_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(on_connected_callback, interface_name,
-                              signal_name, success));
+        FROM_HERE, base::BindOnce(std::move(*on_connected_callback),
+                                  interface_name, signal_name, success));
   }
 };
 

@@ -53,15 +53,21 @@ class MockObjectProxy : public ObjectProxy {
                     int timeout_ms,
                     ResponseCallback* callback,
                     ErrorCallback* error_callback));
-  MOCK_METHOD4(ConnectToSignal,
+
+  // This method is not mockable because it takes a move-only argument. To work
+  // around this, ConnectToSignal() implementation here calls
+  // DoConnectToSignal() which is mockable.
+  void ConnectToSignal(const std::string& interface_name,
+                       const std::string& signal_name,
+                       SignalCallback signal_callback,
+                       OnConnectedCallback on_connected_callback) override;
+  MOCK_METHOD4(DoConnectToSignal,
                void(const std::string& interface_name,
                     const std::string& signal_name,
                     SignalCallback signal_callback,
-                    OnConnectedCallback on_connected_callback));
+                    OnConnectedCallback* on_connected_callback));
   MOCK_METHOD1(SetNameOwnerChangedCallback,
                void(NameOwnerChangedCallback callback));
-  MOCK_METHOD1(WaitForServiceToBeAvailable,
-               void(WaitForServiceToBeAvailableCallback callback));
   MOCK_METHOD0(Detach, void());
 
  protected:

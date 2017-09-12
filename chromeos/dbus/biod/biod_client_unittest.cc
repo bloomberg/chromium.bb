@@ -77,7 +77,7 @@ class BiodClientTest : public testing::Test {
         .WillRepeatedly(Return(proxy_.get()));
 
     // Save |client_|'s signal callback.
-    EXPECT_CALL(*proxy_.get(), ConnectToSignal(kInterface, _, _, _))
+    EXPECT_CALL(*proxy_.get(), DoConnectToSignal(kInterface, _, _, _))
         .WillRepeatedly(Invoke(this, &BiodClientTest::ConnectToSignal));
 
     client_.reset(BiodClient::Create(REAL_DBUS_CLIENT_IMPLEMENTATION));
@@ -176,12 +176,13 @@ class BiodClientTest : public testing::Test {
       const std::string& interface_name,
       const std::string& signal_name,
       dbus::ObjectProxy::SignalCallback signal_callback,
-      dbus::ObjectProxy::OnConnectedCallback on_connected_callback) {
+      dbus::ObjectProxy::OnConnectedCallback* on_connected_callback) {
     EXPECT_EQ(interface_name, kInterface);
     signal_callbacks_[signal_name] = signal_callback;
     message_loop_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(on_connected_callback, interface_name,
-                              signal_name, true /* success */));
+        FROM_HERE,
+        base::BindOnce(std::move(*on_connected_callback), interface_name,
+                       signal_name, true /* success */));
   }
 
   // Handles calls to |proxy_|'s CallMethod().

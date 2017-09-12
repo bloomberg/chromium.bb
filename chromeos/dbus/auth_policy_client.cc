@@ -147,7 +147,7 @@ class AuthPolicyClientImpl : public AuthPolicyClient {
       dbus::ObjectProxy::OnConnectedCallback on_connected_callback) override {
     proxy_->ConnectToSignal(authpolicy::kAuthPolicyInterface,
                             std::move(signal_name), std::move(signal_callback),
-                            on_connected_callback);
+                            std::move(on_connected_callback));
   }
 
  protected:

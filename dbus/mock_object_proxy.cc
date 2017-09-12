@@ -30,4 +30,13 @@ void MockObjectProxy::CallMethodWithErrorCallback(
                                 &error_callback);
 }
 
+void MockObjectProxy::ConnectToSignal(
+    const std::string& interface_name,
+    const std::string& signal_name,
+    SignalCallback signal_callback,
+    OnConnectedCallback on_connected_callback) {
+  DoConnectToSignal(interface_name, signal_name, signal_callback,
+                    &on_connected_callback);
+}
+
 }  // namespace dbus

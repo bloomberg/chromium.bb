@@ -83,7 +83,7 @@ class CHROME_DBUS_EXPORT ObjectProxy
 
   // Called when the service becomes available.
   using WaitForServiceToBeAvailableCallback =
-      base::Callback<void(bool service_is_available)>;
+      base::OnceCallback<void(bool service_is_available)>;
 
   // Called when the object proxy is connected to the signal.
   // Parameters:
@@ -91,7 +91,7 @@ class CHROME_DBUS_EXPORT ObjectProxy
   // - the signal name.
   // - whether it was successful or not.
   using OnConnectedCallback =
-      base::Callback<void(const std::string&, const std::string&, bool)>;
+      base::OnceCallback<void(const std::string&, const std::string&, bool)>;
 
   // Calls the method of the remote object and blocks until the response
   // is returned. Returns NULL on error with the error details specified

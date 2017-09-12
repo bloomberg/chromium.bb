@@ -45,7 +45,7 @@ class MockUPowerObject {
       const std::string& interface_name,
       const std::string& signal_name,
       dbus::ObjectProxy::SignalCallback signal_callback,
-      dbus::ObjectProxy::OnConnectedCallback on_connected_callback);
+      dbus::ObjectProxy::OnConnectedCallback* on_connected_callback);
   std::unique_ptr<dbus::Response> CreateCallMethodResponse(
       dbus::MethodCall* method_call,
       Unused);
@@ -68,7 +68,7 @@ void MockUPowerObject::ConnectToSignal(
     const std::string& interface_name,
     const std::string& signal_name,
     dbus::ObjectProxy::SignalCallback signal_callback,
-    dbus::ObjectProxy::OnConnectedCallback on_connected_callback) {
+    dbus::ObjectProxy::OnConnectedCallback* on_connected_callback) {
   bool on_connected_success = true;
   if (interface_name == kUPowerInterfaceName) {
     if (signal_name == kUPowerSignalDeviceAdded)
@@ -86,7 +86,8 @@ void MockUPowerObject::ConnectToSignal(
                  << " Unexpected interface=" << interface_name
                  << ", signal=" << signal_name;
   }
-  on_connected_callback.Run(interface_name, signal_name, on_connected_success);
+  std::move(*on_connected_callback)
+      .Run(interface_name, signal_name, on_connected_success);
 }
 
 std::unique_ptr<dbus::Response> MockUPowerObject::CreateCallMethodResponse(
@@ -175,7 +176,7 @@ class MockBatteryObject {
       const std::string& interface_name,
       const std::string& signal_name,
       dbus::ObjectProxy::SignalCallback signal_callback,
-      dbus::ObjectProxy::OnConnectedCallback on_connected_callback);
+      dbus::ObjectProxy::OnConnectedCallback* on_connected_callback);
   std::unique_ptr<dbus::Response> CreateCallMethodResponse(
       dbus::MethodCall* method_call,
       Unused);
@@ -209,7 +210,7 @@ void MockBatteryObject::ConnectToSignal(
     const std::string& interface_name,
     const std::string& signal_name,
     dbus::ObjectProxy::SignalCallback signal_callback,
-    dbus::ObjectProxy::OnConnectedCallback on_connected_callback) {
+    dbus::ObjectProxy::OnConnectedCallback* on_connected_callback) {
   bool on_connected_success = true;
   if (interface_name == kUPowerDeviceInterfaceName &&
       signal_name == kUPowerDeviceSignalChanged)
@@ -225,7 +226,8 @@ void MockBatteryObject::ConnectToSignal(
                  << " Unexpected interface=" << interface_name
                  << ", signal=" << signal_name;
   }
-  on_connected_callback.Run(interface_name, signal_name, on_connected_success);
+  std::move(*on_connected_callback)
+      .Run(interface_name, signal_name, on_connected_success);
 }
 
 std::unique_ptr<dbus::Response> MockBatteryObject::CreateCallMethodResponse(
@@ -262,15 +264,15 @@ std::unique_ptr<dbus::Response> MockBatteryObject::CreateCallMethodResponse(
 }
 
 MockBatteryObject& MockBatteryObject::ExpectConnectToSignalChanged() {
-  EXPECT_CALL(*proxy.get(), ConnectToSignal(kUPowerDeviceInterfaceName,
-                                            kUPowerDeviceSignalChanged, _, _))
+  EXPECT_CALL(*proxy.get(), DoConnectToSignal(kUPowerDeviceInterfaceName,
+                                              kUPowerDeviceSignalChanged, _, _))
       .WillOnce(Invoke(this, &MockBatteryObject::ConnectToSignal));
   return *this;
 }
 
 MockBatteryObject& MockBatteryObject::ExpectConnectToSignalPropertyChanged() {
-  EXPECT_CALL(*proxy.get(), ConnectToSignal(dbus::kPropertiesInterface,
-                                            dbus::kPropertiesChanged, _, _))
+  EXPECT_CALL(*proxy.get(), DoConnectToSignal(dbus::kPropertiesInterface,
+                                              dbus::kPropertiesChanged, _, _))
       .WillOnce(Invoke(this, &MockBatteryObject::ConnectToSignal));
   return *this;
 }
@@ -407,11 +409,11 @@ void BatteryStatusManagerLinuxTest::SetUp() {
           Invoke(&mock_upower_, &MockUPowerObject::CreateCallMethodResponse));
   EXPECT_CALL(
       *mock_upower_.proxy.get(),
-      ConnectToSignal(kUPowerInterfaceName, kUPowerSignalDeviceAdded, _, _))
+      DoConnectToSignal(kUPowerInterfaceName, kUPowerSignalDeviceAdded, _, _))
       .WillOnce(Invoke(&mock_upower_, &MockUPowerObject::ConnectToSignal));
   EXPECT_CALL(
       *mock_upower_.proxy.get(),
-      ConnectToSignal(kUPowerInterfaceName, kUPowerSignalDeviceRemoved, _, _))
+      DoConnectToSignal(kUPowerInterfaceName, kUPowerSignalDeviceRemoved, _, _))
       .WillOnce(Invoke(&mock_upower_, &MockUPowerObject::ConnectToSignal));
 }
 
