@@ -92,8 +92,7 @@ DWORD RestrictedToken::GetRestrictedToken(
 
     for (unsigned int i = 0; i < sids_for_deny_only_.size() ; ++i) {
       deny_only_array[i].Attributes = SE_GROUP_USE_FOR_DENY_ONLY;
-      deny_only_array[i].Sid =
-          const_cast<SID*>(sids_for_deny_only_[i].GetPSID());
+      deny_only_array[i].Sid = sids_for_deny_only_[i].GetPSID();
     }
   }
 
@@ -103,8 +102,7 @@ DWORD RestrictedToken::GetRestrictedToken(
 
     for (unsigned int i = 0; i < restrict_size; ++i) {
       sids_to_restrict_array[i].Attributes = 0;
-      sids_to_restrict_array[i].Sid =
-          const_cast<SID*>(sids_to_restrict_[i].GetPSID());
+      sids_to_restrict_array[i].Sid = sids_to_restrict_[i].GetPSID();
     }
   }
 
@@ -242,8 +240,8 @@ DWORD RestrictedToken::AddAllSidsForDenyOnly(std::vector<Sid> *exceptions) {
       bool should_ignore = false;
       if (exceptions) {
         for (unsigned int j = 0; j < exceptions->size(); ++j) {
-          if (::EqualSid(const_cast<SID*>((*exceptions)[j].GetPSID()),
-                          token_groups->Groups[i].Sid)) {
+          if (::EqualSid((*exceptions)[j].GetPSID(),
+                         token_groups->Groups[i].Sid)) {
             should_ignore = true;
             break;
           }
