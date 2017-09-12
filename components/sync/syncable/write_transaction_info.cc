@@ -17,10 +17,7 @@ WriteTransactionInfo::WriteTransactionInfo(
     base::Location location,
     WriterTag writer,
     ImmutableEntryKernelMutationMap mutations)
-    : id(id),
-      location_string(location.ToString()),
-      writer(writer),
-      mutations(mutations) {}
+    : id(id), location_(location), writer(writer), mutations(mutations) {}
 
 WriteTransactionInfo::WriteTransactionInfo() : id(-1), writer(INVALID) {}
 
@@ -33,7 +30,7 @@ std::unique_ptr<base::DictionaryValue> WriteTransactionInfo::ToValue(
     size_t max_mutations_size) const {
   auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetString("id", base::Int64ToString(id));
-  dict->SetString("location", location_string);
+  dict->SetString("location", location_.ToString());
   dict->SetString("writer", WriterTagToString(writer));
   std::unique_ptr<base::Value> mutations_value;
   const size_t mutations_size = mutations.Get().size();

@@ -32,9 +32,7 @@ struct WriteTransactionInfo {
       size_t max_mutations_size) const;
 
   int64_t id;
-  // If base::Location becomes assignable, we can use that
-  // instead.
-  std::string location_string;
+  base::Location location_;
   WriterTag writer;
   ImmutableEntryKernelMutationMap mutations;
 };
