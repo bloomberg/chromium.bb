@@ -297,7 +297,6 @@ blink_core_sources("editing") {
     "suggestion/TextSuggestionBackendImpl.h",
     "suggestion/TextSuggestionController.cpp",
     "suggestion/TextSuggestionController.h",
-    "suggestion/TextSuggestionInfo.h",
   ]
 
   if (is_mac) {
