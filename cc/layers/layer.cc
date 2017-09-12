@@ -65,6 +65,7 @@ Layer::Inputs::Inputs(int layer_id)
       scroll_parent(nullptr),
       clip_parent(nullptr),
       has_will_change_transform_hint(false),
+      trilinear_filtering(false),
       hide_layer_and_subtree(false),
       client(nullptr),
       scroll_boundary_behavior(
@@ -1213,6 +1214,8 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetHasWillChangeTransformHint(has_will_change_transform_hint());
   layer->SetNeedsPushProperties();
 
+  layer->SetTrilinearFiltering(trilinear_filtering());
+
   // Reset any state that should be cleared for the next update.
   needs_show_scrollbars_ = false;
   subtree_property_changed_ = false;
@@ -1354,6 +1357,13 @@ void Layer::SetHasWillChangeTransformHint(bool has_will_change) {
   if (inputs_.has_will_change_transform_hint == has_will_change)
     return;
   inputs_.has_will_change_transform_hint = has_will_change;
+  SetNeedsCommit();
+}
+
+void Layer::SetTrilinearFiltering(bool trilinear_filtering) {
+  if (inputs_.trilinear_filtering == trilinear_filtering)
+    return;
+  inputs_.trilinear_filtering = trilinear_filtering;
   SetNeedsCommit();
 }
 

@@ -2086,7 +2086,6 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad) {
       gfx::Vector2dF(),                          // filters scale
       gfx::PointF(),                             // filter origin
       gfx::RectF(sub_rect));                     // tex_coord_rect
-
   // White background behind the masked render pass.
   SolidColorDrawQuad* white =
       root_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
@@ -2179,7 +2178,6 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad2) {
       gfx::Vector2dF(),                          // filters scale
       gfx::PointF(),                             // filter origin
       gfx::RectF(sub_rect));                     // tex_coord_rect
-
   // White background behind the masked render pass.
   SolidColorDrawQuad* white =
       root_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
@@ -2609,6 +2607,66 @@ TEST_F(GLRendererPixelTest, AntiAliasingPerspective) {
       &pass_list,
       base::FilePath(FILE_PATH_LITERAL("anti_aliasing_perspective.png")),
       FuzzyPixelOffByOneComparator(true)));
+}
+
+// Trilinear filtering is only supported in the gl renderer.
+// TODO(reveman): Enable test after updating osmesa to a version where
+// GL_LINEAR_MIPMAP_LINEAR works correctly. --use-gpu-in-tests can be
+// used to verify that trilinear filtering works until then.
+TEST_F(GLRendererPixelTest, DISABLED_TrilinearFiltering) {
+  gfx::Rect viewport_rect(this->device_viewport_size_);
+
+  int root_pass_id = 1;
+  std::unique_ptr<RenderPass> root_pass =
+      CreateTestRootRenderPass(root_pass_id, viewport_rect);
+  root_pass->has_transparent_background = false;
+
+  int child_pass_id = 2;
+  gfx::Transform transform_to_root;
+  gfx::Rect child_pass_rect(
+      ScaleToCeiledSize(this->device_viewport_size_, 4.0f));
+  bool generate_mipmap = true;
+  std::unique_ptr<RenderPass> child_pass = RenderPass::Create();
+  child_pass->SetAll(child_pass_id, child_pass_rect, child_pass_rect,
+                     transform_to_root, FilterOperations(), FilterOperations(),
+                     gfx::ColorSpace(), false, false, false, generate_mipmap);
+
+  gfx::Rect red_rect(child_pass_rect);
+  // Small enough red rect that linear filtering will miss it but large enough
+  // that it makes a meaningful contribution when using trilinear filtering.
+  red_rect.ClampToCenteredSize(gfx::Size(2, child_pass_rect.height()));
+  SharedQuadState* red_shared_state =
+      CreateTestSharedQuadState(gfx::Transform(), red_rect, child_pass.get());
+  SolidColorDrawQuad* red =
+      child_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+  red->SetNew(red_shared_state, red_rect, red_rect, SK_ColorRED, false);
+
+  SharedQuadState* blue_shared_state = CreateTestSharedQuadState(
+      gfx::Transform(), child_pass_rect, child_pass.get());
+  SolidColorDrawQuad* blue =
+      child_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+  blue->SetNew(blue_shared_state, child_pass_rect, child_pass_rect,
+               SK_ColorBLUE, false);
+
+  gfx::Transform child_to_root_transform(SkMatrix::MakeRectToRect(
+      RectToSkRect(child_pass_rect), RectToSkRect(viewport_rect),
+      SkMatrix::kFill_ScaleToFit));
+  SharedQuadState* child_pass_shared_state = CreateTestSharedQuadState(
+      child_to_root_transform, child_pass_rect, root_pass.get());
+  RenderPassDrawQuad* child_pass_quad =
+      root_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
+  child_pass_quad->SetNew(child_pass_shared_state, child_pass_rect,
+                          child_pass_rect, child_pass_id, 0, gfx::RectF(),
+                          gfx::Size(), gfx::Vector2dF(), gfx::PointF(),
+                          gfx::RectF(child_pass_rect));
+
+  RenderPassList pass_list;
+  pass_list.push_back(std::move(child_pass));
+  pass_list.push_back(std::move(root_pass));
+
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list, base::FilePath(FILE_PATH_LITERAL("trilinear_filtering.png")),
+      ExactPixelComparator(true)));
 }
 
 TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadIdentityScale) {

@@ -182,6 +182,8 @@ struct GPU_EXPORT Capabilities {
   bool disable_2d_canvas_copy_on_write = false;
   bool disable_overlay_ca_layers = false;
 
+  bool texture_npot = false;
+
   int major_version = 2;
   int minor_version = 0;
 };

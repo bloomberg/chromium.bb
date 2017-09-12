@@ -74,9 +74,12 @@ class CC_EXPORT ResourceProvider
   enum TextureHint {
     TEXTURE_HINT_DEFAULT = 0x0,
     TEXTURE_HINT_IMMUTABLE = 0x1,
-    TEXTURE_HINT_FRAMEBUFFER = 0x2,
+    TEXTURE_HINT_MIPMAP = 0x2,
+    TEXTURE_HINT_FRAMEBUFFER = 0x4,
     TEXTURE_HINT_IMMUTABLE_FRAMEBUFFER =
-        TEXTURE_HINT_IMMUTABLE | TEXTURE_HINT_FRAMEBUFFER
+        TEXTURE_HINT_IMMUTABLE | TEXTURE_HINT_FRAMEBUFFER,
+    TEXTURE_HINT_IMMUTABLE_MIPMAP_FRAMEBUFFER =
+        TEXTURE_HINT_IMMUTABLE | TEXTURE_HINT_MIPMAP | TEXTURE_HINT_FRAMEBUFFER
   };
   enum ResourceType {
     RESOURCE_TYPE_GPU_MEMORY_BUFFER,
@@ -212,6 +215,8 @@ class CC_EXPORT ResourceProvider
 
     void set_synchronized() { synchronized_ = true; }
 
+    void set_generate_mipmap() { generate_mipmap_ = true; }
+
     // Returns texture id on compositor context, allocating if necessary.
     GLuint GetTexture();
 
@@ -251,6 +256,7 @@ class CC_EXPORT ResourceProvider
     gpu::SyncToken sync_token_;
     bool has_sync_token_ = false;
     bool synchronized_ = false;
+    bool generate_mipmap_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockGL);
   };
@@ -415,6 +421,7 @@ class CC_EXPORT ResourceProvider
       // external resource for others to wait on.
       SYNCHRONIZED,
     };
+    enum MipmapState { INVALID, GENERATE, VALID };
 
     Resource(GLuint texture_id,
              const gfx::Size& size,
@@ -453,6 +460,7 @@ class CC_EXPORT ResourceProvider
     void UpdateSyncToken(const gpu::SyncToken& sync_token);
     int8_t* GetSyncTokenData();
     void WaitSyncToken(gpu::gles2::GLES2Interface* sync_token);
+    void SetGenerateMipmap();
 
     int child_id;
     viz::ResourceId id_in_child;
@@ -490,6 +498,7 @@ class CC_EXPORT ResourceProvider
     // TODO(skyostil): Use a separate sampler object for filter state.
     GLenum original_filter;
     GLenum filter;
+    GLenum min_filter;
     GLuint image_id;
     TextureHint hint;
     ResourceType type;
@@ -508,6 +517,7 @@ class CC_EXPORT ResourceProvider
     viz::SharedBitmap* shared_bitmap;
     std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer;
     gfx::ColorSpace color_space;
+    MipmapState mipmap_state = INVALID;
 
    private:
     SynchronizationState synchronization_state_ = SYNCHRONIZED;
@@ -566,6 +576,7 @@ class CC_EXPORT ResourceProvider
     bool use_texture_storage_ext = false;
     bool use_texture_format_bgra = false;
     bool use_texture_usage_hint = false;
+    bool use_texture_npot = false;
     bool use_sync_query = false;
     ResourceType default_resource_type = RESOURCE_TYPE_GL_TEXTURE;
     viz::ResourceFormat yuv_resource_format = viz::LUMINANCE_8;

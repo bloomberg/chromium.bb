@@ -96,7 +96,8 @@ class CC_EXPORT RenderPass {
               const gfx::ColorSpace& color_space,
               bool has_transparent_background,
               bool cache_render_pass,
-              bool has_damage_from_contributing_content);
+              bool has_damage_from_contributing_content,
+              bool generate_mipmap);
 
   void AsValueInto(base::trace_event::TracedValue* dict) const;
 
@@ -141,6 +142,9 @@ class CC_EXPORT RenderPass {
   // Indicates whether there is accumulated damage from contributing render
   // surface or layer or surface quad. Not including property changes on itself.
   bool has_damage_from_contributing_content = false;
+
+  // Generate mipmap for trilinear filtering, applied to render pass' texture.
+  bool generate_mipmap = false;
 
   // If non-empty, the renderer should produce a copy of the render pass'
   // contents as a bitmap, and give a copy of the bitmap to each callback in

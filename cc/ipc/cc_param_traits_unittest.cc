@@ -301,21 +301,22 @@ TEST_F(CCParamTraitsTest, AllQuads) {
       FilterOperation::CreateBrightnessFilter(arbitrary_float2));
 
   std::unique_ptr<RenderPass> child_pass_in = RenderPass::Create();
-  child_pass_in->SetAll(child_id, arbitrary_rect2, arbitrary_rect3,
-                        arbitrary_matrix2, arbitrary_filters1,
-                        arbitrary_filters2, arbitrary_color_space,
-                        arbitrary_bool2, arbitrary_bool3, arbitrary_bool4);
+  child_pass_in->SetAll(
+      child_id, arbitrary_rect2, arbitrary_rect3, arbitrary_matrix2,
+      arbitrary_filters1, arbitrary_filters2, arbitrary_color_space,
+      arbitrary_bool2, arbitrary_bool3, arbitrary_bool4, arbitrary_bool5);
 
   std::unique_ptr<RenderPass> child_pass_cmp = RenderPass::Create();
-  child_pass_cmp->SetAll(child_id, arbitrary_rect2, arbitrary_rect3,
-                         arbitrary_matrix2, arbitrary_filters1,
-                         arbitrary_filters2, arbitrary_color_space,
-                         arbitrary_bool2, arbitrary_bool3, arbitrary_bool4);
+  child_pass_cmp->SetAll(
+      child_id, arbitrary_rect2, arbitrary_rect3, arbitrary_matrix2,
+      arbitrary_filters1, arbitrary_filters2, arbitrary_color_space,
+      arbitrary_bool2, arbitrary_bool3, arbitrary_bool4, arbitrary_bool5);
 
   std::unique_ptr<RenderPass> pass_in = RenderPass::Create();
   pass_in->SetAll(root_id, arbitrary_rect1, arbitrary_rect2, arbitrary_matrix1,
                   arbitrary_filters2, arbitrary_filters1, arbitrary_color_space,
-                  arbitrary_bool1, arbitrary_bool2, arbitrary_bool3);
+                  arbitrary_bool1, arbitrary_bool2, arbitrary_bool3,
+                  arbitrary_bool4);
 
   SharedQuadState* shared_state1_in = pass_in->CreateAndAppendSharedQuadState();
   shared_state1_in->SetAll(arbitrary_matrix1, arbitrary_rect1, arbitrary_rect1,
@@ -327,7 +328,7 @@ TEST_F(CCParamTraitsTest, AllQuads) {
   pass_cmp->SetAll(root_id, arbitrary_rect1, arbitrary_rect2, arbitrary_matrix1,
                    arbitrary_filters2, arbitrary_filters1,
                    arbitrary_color_space, arbitrary_bool1, arbitrary_bool2,
-                   arbitrary_bool3);
+                   arbitrary_bool3, arbitrary_bool4);
 
   SharedQuadState* shared_state1_cmp =
       pass_cmp->CreateAndAppendSharedQuadState();
@@ -500,7 +501,7 @@ TEST_F(CCParamTraitsTest, UnusedSharedQuadStates) {
   std::unique_ptr<RenderPass> pass_in = RenderPass::Create();
   pass_in->SetAll(1, gfx::Rect(100, 100), gfx::Rect(), gfx::Transform(),
                   FilterOperations(), FilterOperations(),
-                  gfx::ColorSpace::CreateSRGB(), false, false, false);
+                  gfx::ColorSpace::CreateSRGB(), false, false, false, false);
 
   // The first SharedQuadState is used.
   SharedQuadState* shared_state1_in = pass_in->CreateAndAppendSharedQuadState();

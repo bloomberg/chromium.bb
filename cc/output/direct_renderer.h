@@ -131,6 +131,8 @@ class CC_EXPORT DirectRenderer {
   void SetScissorTestRectInDrawSpace(const gfx::Rect& draw_space_rect);
 
   static gfx::Size RenderPassTextureSize(const RenderPass* render_pass);
+  static ResourceProvider::TextureHint RenderPassTextureHint(
+      const RenderPass* render_pass);
 
   void FlushPolygons(std::deque<std::unique_ptr<DrawPolygon>>* poly_list,
                      const gfx::Rect& render_pass_scissor,
@@ -175,6 +177,7 @@ class CC_EXPORT DirectRenderer {
   virtual void CopyDrawnRenderPass(
       std::unique_ptr<viz::CopyOutputRequest> request) = 0;
   virtual void SetEnableDCLayers(bool enable) = 0;
+  virtual void GenerateMipmap() = 0;
 
   gfx::Size surface_size_for_swap_buffers() const {
     return reshape_surface_size_;

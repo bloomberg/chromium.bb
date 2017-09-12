@@ -12,6 +12,7 @@
 #include <unordered_map>
 
 #include "base/atomic_sequence_num.h"
+#include "base/bits.h"
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_math.h"
@@ -189,6 +190,7 @@ ResourceProvider::Resource::Resource(GLuint texture_id,
       target(target),
       original_filter(filter),
       filter(filter),
+      min_filter(filter),
       image_id(0),
       hint(hint),
       type(type),
@@ -225,6 +227,7 @@ ResourceProvider::Resource::Resource(uint8_t* pixels,
       target(0),
       original_filter(filter),
       filter(filter),
+      min_filter(filter),
       image_id(0),
       hint(TEXTURE_HINT_IMMUTABLE),
       type(RESOURCE_TYPE_BITMAP),
@@ -262,6 +265,7 @@ ResourceProvider::Resource::Resource(const viz::SharedBitmapId& bitmap_id,
       target(0),
       original_filter(filter),
       filter(filter),
+      min_filter(filter),
       image_id(0),
       hint(TEXTURE_HINT_IMMUTABLE),
       type(RESOURCE_TYPE_BITMAP),
@@ -317,6 +321,14 @@ void ResourceProvider::Resource::WaitSyncToken(gpu::gles2::GLES2Interface* gl) {
   SetSynchronized();
 }
 
+void ResourceProvider::Resource::SetGenerateMipmap() {
+  DCHECK(IsGpuResourceType(type));
+  DCHECK_EQ(target, static_cast<GLenum>(GL_TEXTURE_2D));
+  DCHECK(hint & TEXTURE_HINT_MIPMAP);
+  DCHECK(!gpu_memory_buffer);
+  mipmap_state = GENERATE;
+}
+
 ResourceProvider::Settings::Settings(
     viz::ContextProvider* compositor_context_provider,
     bool delegated_sync_points_required,
@@ -341,6 +353,7 @@ ResourceProvider::Settings::Settings(
   use_texture_storage_ext = caps.texture_storage;
   use_texture_format_bgra = caps.texture_format_bgra8888;
   use_texture_usage_hint = caps.texture_usage;
+  use_texture_npot = caps.texture_npot;
   use_sync_query = caps.sync_query;
 
   if (caps.disable_one_component_textures) {
@@ -888,6 +901,7 @@ ResourceProvider::Resource* ResourceProvider::LockForWrite(viz::ResourceId id) {
   resource->WaitSyncToken(ContextGL());
   resource->SetLocallyUsed();
   resource->locked_for_write = true;
+  resource->mipmap_state = Resource::INVALID;
   return resource;
 }
 
@@ -981,6 +995,8 @@ ResourceProvider::ScopedWriteLockGL::~ScopedWriteLockGL() {
     resource->UpdateSyncToken(sync_token_);
   if (synchronized_)
     resource->SetSynchronized();
+  if (generate_mipmap_)
+    resource->SetGenerateMipmap();
   resource_provider_->UnlockForWrite(resource);
 }
 
@@ -1068,7 +1084,12 @@ void ResourceProvider::ScopedWriteLockGL::AllocateTexture(
       IsFormatSupportedForStorage(format_, settings.use_texture_format_bgra) &&
       (hint_ & ResourceProvider::TEXTURE_HINT_IMMUTABLE)) {
     GLenum storage_format = TextureToStorageFormat(format_);
-    gl->TexStorage2DEXT(target_, 1, storage_format, size_.width(),
+    GLint levels = 1;
+    if (settings.use_texture_npot &&
+        (hint_ & ResourceProvider::TEXTURE_HINT_MIPMAP)) {
+      levels += base::bits::Log2Floor(std::max(size_.width(), size_.height()));
+    }
+    gl->TexStorage2DEXT(target_, levels, storage_format, size_.width(),
                         size_.height());
   } else {
     gl->TexImage2D(target_, 0, GLInternalFormat(format_), size_.width(),
@@ -1174,8 +1195,26 @@ GLenum ResourceProvider::BindForSampling(viz::ResourceId resource_id,
   ScopedSetActiveTexture scoped_active_tex(gl, unit);
   GLenum target = resource->target;
   gl->BindTexture(target, resource->gl_id);
+  GLenum min_filter = filter;
+  if (filter == GL_LINEAR) {
+    switch (resource->mipmap_state) {
+      case Resource::INVALID:
+        break;
+      case Resource::GENERATE:
+        DCHECK(settings_.use_texture_npot);
+        gl->GenerateMipmap(target);
+        resource->mipmap_state = Resource::VALID;
+      // fall-through
+      case Resource::VALID:
+        min_filter = GL_LINEAR_MIPMAP_LINEAR;
+        break;
+    }
+  }
+  if (min_filter != resource->min_filter) {
+    gl->TexParameteri(target, GL_TEXTURE_MIN_FILTER, min_filter);
+    resource->min_filter = min_filter;
+  }
   if (filter != resource->filter) {
-    gl->TexParameteri(target, GL_TEXTURE_MIN_FILTER, filter);
     gl->TexParameteri(target, GL_TEXTURE_MAG_FILTER, filter);
     resource->filter = filter;
   }

@@ -152,6 +152,8 @@ class CC_EXPORT RenderSurfaceImpl {
   gfx::PointF FiltersOrigin() const;
   gfx::Transform SurfaceScale() const;
 
+  bool TrilinearFiltering() const;
+
   bool HasCopyRequest() const;
 
   bool ShouldCacheRenderSurface() const;

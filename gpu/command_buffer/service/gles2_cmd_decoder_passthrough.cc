@@ -573,6 +573,7 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
   caps.multisample_compatibility =
       feature_info_->feature_flags().ext_multisample_compatibility;
   caps.dc_layers = !offscreen_ && surface_->SupportsDCLayers();
+  caps.texture_npot = feature_info_->feature_flags().npot_ok;
 
   // TODO:
   // caps.commit_overlay_planes

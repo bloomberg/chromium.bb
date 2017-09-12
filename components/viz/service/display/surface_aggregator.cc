@@ -264,12 +264,12 @@ void SurfaceAggregator::HandleSurfaceQuad(
 
     cc::RenderPassId remapped_pass_id = RemapPassId(source.id, surface_id);
 
-    copy_pass->SetAll(remapped_pass_id, source.output_rect, source.output_rect,
-                      source.transform_to_root_target, source.filters,
-                      source.background_filters, blending_color_space_,
-                      source.has_transparent_background,
-                      source.cache_render_pass,
-                      source.has_damage_from_contributing_content);
+    copy_pass->SetAll(
+        remapped_pass_id, source.output_rect, source.output_rect,
+        source.transform_to_root_target, source.filters,
+        source.background_filters, blending_color_space_,
+        source.has_transparent_background, source.cache_render_pass,
+        source.has_damage_from_contributing_content, source.generate_mipmap);
 
     MoveMatchingRequests(source.id, &copy_requests, &copy_pass->copy_requests);
 
@@ -571,12 +571,12 @@ void SurfaceAggregator::CopyPasses(const cc::CompositorFrame& frame,
     cc::RenderPassId remapped_pass_id =
         RemapPassId(source.id, surface->surface_id());
 
-    copy_pass->SetAll(remapped_pass_id, source.output_rect, source.output_rect,
-                      source.transform_to_root_target, source.filters,
-                      source.background_filters, blending_color_space_,
-                      source.has_transparent_background,
-                      source.cache_render_pass,
-                      source.has_damage_from_contributing_content);
+    copy_pass->SetAll(
+        remapped_pass_id, source.output_rect, source.output_rect,
+        source.transform_to_root_target, source.filters,
+        source.background_filters, blending_color_space_,
+        source.has_transparent_background, source.cache_render_pass,
+        source.has_damage_from_contributing_content, source.generate_mipmap);
 
     CopyQuadsToPass(source.quad_list, source.shared_quad_state_list,
                     child_to_parent_map, gfx::Transform(), ClipData(),

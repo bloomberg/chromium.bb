@@ -10428,5 +10428,41 @@ TEST_F(LayerTreeHostCommonTest, BuildPropertyNodesForScrollChildrenInOrder) {
   }
 }
 
+TEST_F(LayerTreeHostCommonTest, RenderSurfaceListForTrilinearFiltering) {
+  LayerImpl* root = root_layer_for_testing();
+  LayerImpl* parent = AddChild<LayerImpl>(root);
+  LayerImpl* child1 = AddChild<LayerImpl>(parent);
+  LayerImpl* child2 = AddChild<LayerImpl>(parent);
+
+  gfx::Transform scale_matrix;
+  scale_matrix.Scale(.25f, .25f);
+
+  root->SetBounds(gfx::Size(200, 200));
+  parent->test_properties()->transform = scale_matrix;
+  parent->test_properties()->trilinear_filtering = true;
+  child1->SetBounds(gfx::Size(50, 50));
+  child1->SetDrawsContent(true);
+  child1->test_properties()->force_render_surface = true;
+  child2->SetPosition(gfx::PointF(50, 50));
+  child2->SetBounds(gfx::Size(50, 50));
+  child2->SetDrawsContent(true);
+  child2->test_properties()->force_render_surface = true;
+
+  RenderSurfaceList render_surface_list;
+  LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+      root, root->bounds(), &render_surface_list);
+  inputs.can_adjust_raster_scales = true;
+  LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
+
+  ASSERT_TRUE(GetRenderSurface(parent));
+  EXPECT_EQ(2, GetRenderSurface(parent)->num_contributors());
+  EXPECT_EQ(4U, render_surface_list.size());
+
+  // The rectangle enclosing child1 and child2 (0,0 100x100), scaled by the
+  // scale matrix to (0,0 25x25).
+  EXPECT_EQ(gfx::RectF(0, 0, 25, 25),
+            GetRenderSurface(parent)->DrawableContentRect());
+}
+
 }  // namespace
 }  // namespace cc

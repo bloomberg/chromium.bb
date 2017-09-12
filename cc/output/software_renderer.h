@@ -54,6 +54,7 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
       std::unique_ptr<viz::CopyOutputRequest> request) override;
   void SetEnableDCLayers(bool enable) override;
   void DidChangeVisibility() override;
+  void GenerateMipmap() override;
 
  private:
   void ClearCanvas(SkColor color);

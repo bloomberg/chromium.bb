@@ -611,6 +611,10 @@ void SoftwareRenderer::DidChangeVisibility() {
     output_surface_->DiscardBackbuffer();
 }
 
+void SoftwareRenderer::GenerateMipmap() {
+  NOTIMPLEMENTED();
+}
+
 bool SoftwareRenderer::ShouldApplyBackgroundFilters(
     const RenderPassDrawQuad* quad,
     const FilterOperations* background_filters) const {

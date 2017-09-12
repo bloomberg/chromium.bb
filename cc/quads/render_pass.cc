@@ -114,7 +114,7 @@ std::unique_ptr<RenderPass> RenderPass::Copy(int new_id) const {
   copy_pass->SetAll(new_id, output_rect, damage_rect, transform_to_root_target,
                     filters, background_filters, color_space,
                     has_transparent_background, cache_render_pass,
-                    has_damage_from_contributing_content);
+                    has_damage_from_contributing_content, generate_mipmap);
   return copy_pass;
 }
 
@@ -128,7 +128,7 @@ std::unique_ptr<RenderPass> RenderPass::DeepCopy() const {
   copy_pass->SetAll(id, output_rect, damage_rect, transform_to_root_target,
                     filters, background_filters, color_space,
                     has_transparent_background, cache_render_pass,
-                    has_damage_from_contributing_content);
+                    has_damage_from_contributing_content, generate_mipmap);
 
   if (shared_quad_state_list.empty()) {
     DCHECK(quad_list.empty());
@@ -194,7 +194,8 @@ void RenderPass::SetAll(uint64_t id,
                         const gfx::ColorSpace& color_space,
                         bool has_transparent_background,
                         bool cache_render_pass,
-                        bool has_damage_from_contributing_content) {
+                        bool has_damage_from_contributing_content,
+                        bool generate_mipmap) {
   DCHECK(id);
 
   this->id = id;
@@ -208,6 +209,7 @@ void RenderPass::SetAll(uint64_t id,
   this->cache_render_pass = cache_render_pass;
   this->has_damage_from_contributing_content =
       has_damage_from_contributing_content;
+  this->generate_mipmap = generate_mipmap;
 
   DCHECK(quad_list.empty());
   DCHECK(shared_quad_state_list.empty());
@@ -222,6 +224,7 @@ void RenderPass::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetBoolean("cache_render_pass", cache_render_pass);
   value->SetBoolean("has_damage_from_contributing_content",
                     has_damage_from_contributing_content);
+  value->SetBoolean("generate_mipmap", generate_mipmap);
   value->SetInteger("copy_requests",
                     base::saturated_cast<int>(copy_requests.size()));
 
