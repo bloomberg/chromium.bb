@@ -52,8 +52,8 @@ class InProcessContextFactory : public ContextFactory,
   // using the SharedMainThreadContextProvider.
   void SendOnLostResources();
 
-  // Set refresh rate to 200 to spend less time waiting for BeginFrame when
-  // used for tests.
+  // Set refresh rate will be set to 200 to spend less time waiting for
+  // BeginFrame when used for tests.
   void SetUseFastRefreshRateForTests();
 
   // ContextFactory implementation.
@@ -104,6 +104,7 @@ class InProcessContextFactory : public ContextFactory,
   cc::TestTaskGraphRunner task_graph_runner_;
   viz::FrameSinkIdAllocator frame_sink_id_allocator_;
   bool use_test_surface_;
+  bool disable_vsync_ = false;
   double refresh_rate_ = 60.0;
   viz::HostFrameSinkManager* const host_frame_sink_manager_;
   viz::FrameSinkManagerImpl* const frame_sink_manager_;

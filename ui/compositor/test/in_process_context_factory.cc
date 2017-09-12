@@ -145,6 +145,8 @@ InProcessContextFactory::InProcessContextFactory(
     viz::FrameSinkManagerImpl* frame_sink_manager)
     : frame_sink_id_allocator_(kDefaultClientId),
       use_test_surface_(true),
+      disable_vsync_(base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableVsyncForTests)),
       host_frame_sink_manager_(host_frame_sink_manager),
       frame_sink_manager_(frame_sink_manager) {
   DCHECK(host_frame_sink_manager);
@@ -236,10 +238,21 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
         base::MakeUnique<DirectOutputSurface>(context_provider);
   }
 
-  std::unique_ptr<viz::DelayBasedBeginFrameSource> begin_frame_source(
-      new viz::DelayBasedBeginFrameSource(
-          base::MakeUnique<viz::DelayBasedTimeSource>(
-              compositor->task_runner().get())));
+  std::unique_ptr<viz::BeginFrameSource> begin_frame_source;
+  if (disable_vsync_) {
+    begin_frame_source = base::MakeUnique<viz::BackToBackBeginFrameSource>(
+        base::MakeUnique<viz::DelayBasedTimeSource>(
+            compositor->task_runner().get()));
+  } else {
+    auto time_source = base::MakeUnique<viz::DelayBasedTimeSource>(
+        compositor->task_runner().get());
+    time_source->SetTimebaseAndInterval(
+        base::TimeTicks(),
+        base::TimeDelta::FromMicroseconds(base::Time::kMicrosecondsPerSecond /
+                                          refresh_rate_));
+    begin_frame_source = base::MakeUnique<viz::DelayBasedBeginFrameSource>(
+        std::move(time_source));
+  }
   auto scheduler = base::MakeUnique<viz::DisplayScheduler>(
       begin_frame_source.get(), compositor->task_runner().get(),
       display_output_surface->capabilities().max_frames_pending);
