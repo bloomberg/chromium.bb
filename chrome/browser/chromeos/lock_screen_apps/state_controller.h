@@ -164,6 +164,7 @@ class StateController : public ash::mojom::TrayActionClient,
 
   // ash::mojom::TrayActionClient:
   void RequestNewLockScreenNote() override;
+  void CloseLockScreenNote() override;
 
   // session_manager::SessionManagerObserver:
   void OnSessionStateChanged() override;

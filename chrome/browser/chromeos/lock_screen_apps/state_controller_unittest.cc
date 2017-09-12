@@ -1404,3 +1404,38 @@ TEST_F(LockScreenAppStateTest,
   EXPECT_EQ(TrayActionState::kActive,
             state_controller()->GetLockScreenNoteState());
 }
+
+TEST_F(LockScreenAppStateTest, CloseNoteInActiveState) {
+  ASSERT_TRUE(InitializeNoteTakingApp(TrayActionState::kActive,
+                                      true /* enable_app_launch */));
+
+  state_controller()->CloseLockScreenNote();
+  state_controller()->FlushTrayActionForTesting();
+
+  EXPECT_EQ(TrayActionState::kAvailable,
+            state_controller()->GetLockScreenNoteState());
+
+  ExpectObservedStatesMatch({TrayActionState::kAvailable},
+                            "Close lock screen note.");
+  ClearObservedStates();
+
+  EXPECT_TRUE(app_window()->closed());
+}
+
+TEST_F(LockScreenAppStateTest, CloseNoteWhileLaunching) {
+  ASSERT_TRUE(InitializeNoteTakingApp(TrayActionState::kLaunching,
+                                      true /* enable_app_launch */));
+
+  state_controller()->CloseLockScreenNote();
+  state_controller()->FlushTrayActionForTesting();
+
+  EXPECT_EQ(TrayActionState::kAvailable,
+            state_controller()->GetLockScreenNoteState());
+
+  EXPECT_FALSE(state_controller()->CreateAppWindowForLockScreenAction(
+      profile(), app(), extensions::api::app_runtime::ACTION_TYPE_NEW_NOTE,
+      base::MakeUnique<ChromeAppDelegate>(true)));
+
+  ExpectObservedStatesMatch({TrayActionState::kAvailable},
+                            "Close lock screen note.");
+}
