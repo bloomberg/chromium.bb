@@ -47,7 +47,9 @@
 #include "media/base/media_switches.h"
 #include "media/base/win/mf_helpers.h"
 #include "media/base/win/mf_initializer.h"
+#include "media/filters/vp9_parser.h"
 #include "media/gpu/dxva_picture_buffer_win.h"
+#include "media/video/h264_parser.h"
 #include "media/video/video_decode_accelerator.h"
 #include "third_party/angle/include/EGL/egl.h"
 #include "third_party/angle/include/EGL/eglext.h"
@@ -302,10 +304,43 @@ HRESULT CreateCOMObjectFromDll(HMODULE dll,
   return hr;
 }
 
+ConfigChangeDetector::~ConfigChangeDetector() {}
+
+// Provides functionality to detect H.264 stream configuration changes.
+// TODO(ananta)
+// Move this to a common place so that all VDA's can use this.
+class H264ConfigChangeDetector : public ConfigChangeDetector {
+ public:
+  H264ConfigChangeDetector();
+  ~H264ConfigChangeDetector() override;
+
+  // Detects stream configuration changes.
+  // Returns false on failure.
+  bool DetectConfig(const uint8_t* stream, unsigned int size) override;
+  VideoColorSpace current_color_space(
+      const VideoColorSpace& container_color_space) const override;
+
+ private:
+  // These fields are used to track the SPS/PPS in the H.264 bitstream and
+  // are eventually compared against the SPS/PPS in the bitstream to detect
+  // a change.
+  int last_sps_id_;
+  std::vector<uint8_t> last_sps_;
+  int last_pps_id_;
+  std::vector<uint8_t> last_pps_;
+  // We want to indicate configuration changes only after we see IDR slices.
+  // This flag tracks that we potentially have a configuration change which
+  // we want to honor after we see an IDR slice.
+  bool pending_config_changed_;
+
+  std::unique_ptr<H264Parser> parser_;
+
+  DISALLOW_COPY_AND_ASSIGN(H264ConfigChangeDetector);
+};
+
 H264ConfigChangeDetector::H264ConfigChangeDetector()
     : last_sps_id_(0),
       last_pps_id_(0),
-      config_changed_(false),
       pending_config_changed_(false) {}
 
 H264ConfigChangeDetector::~H264ConfigChangeDetector() {}
@@ -409,15 +444,84 @@ bool H264ConfigChangeDetector::DetectConfig(const uint8_t* stream,
   return true;
 }
 
-VideoColorSpace H264ConfigChangeDetector::current_color_space() const {
+VideoColorSpace H264ConfigChangeDetector::current_color_space(
+    const VideoColorSpace& container_color_space) const {
   if (!parser_)
-    return VideoColorSpace();
+    return container_color_space;
   // TODO(hubbe): Is using last_sps_id_ correct here?
   const H264SPS* sps = parser_->GetSPS(last_sps_id_);
-  if (sps)
+  if (sps && sps->GetColorSpace().IsSpecified()) {
     return sps->GetColorSpace();
-  return VideoColorSpace();
+  }
+  return container_color_space;
 }
+
+// Doesn't actually detect config changes, only color spaces.
+class VP9ConfigChangeDetector : public ConfigChangeDetector {
+ public:
+  VP9ConfigChangeDetector() : ConfigChangeDetector(), parser_(false) {}
+  ~VP9ConfigChangeDetector() override {}
+
+  // Detects stream configuration changes.
+  // Returns false on failure.
+  bool DetectConfig(const uint8_t* stream, unsigned int size) override {
+    parser_.SetStream(stream, size);
+    Vp9FrameHeader fhdr;
+    while (parser_.ParseNextFrame(&fhdr) == Vp9Parser::kOk) {
+      // TODO(hubbe): move the conversion from Vp9FrameHeader to VideoColorSpace
+      // into a common, reusable location.
+      color_space_.range = fhdr.color_range ? gfx::ColorSpace::RangeID::FULL
+                                            : gfx::ColorSpace::RangeID::INVALID;
+      color_space_.primaries = VideoColorSpace::PrimaryID::INVALID;
+      color_space_.transfer = VideoColorSpace::TransferID::INVALID;
+      color_space_.matrix = VideoColorSpace::MatrixID::INVALID;
+      switch (fhdr.color_space) {
+        case Vp9ColorSpace::RESERVED:
+        case Vp9ColorSpace::UNKNOWN:
+          break;
+        case Vp9ColorSpace::BT_601:
+        case Vp9ColorSpace::SMPTE_170:
+          color_space_.primaries = VideoColorSpace::PrimaryID::SMPTE170M;
+          color_space_.transfer = VideoColorSpace::TransferID::SMPTE170M;
+          color_space_.matrix = VideoColorSpace::MatrixID::SMPTE170M;
+          break;
+        case Vp9ColorSpace::BT_709:
+          color_space_.primaries = VideoColorSpace::PrimaryID::BT709;
+          color_space_.transfer = VideoColorSpace::TransferID::BT709;
+          color_space_.matrix = VideoColorSpace::MatrixID::BT709;
+          break;
+        case Vp9ColorSpace::SMPTE_240:
+          color_space_.primaries = VideoColorSpace::PrimaryID::SMPTE240M;
+          color_space_.transfer = VideoColorSpace::TransferID::SMPTE240M;
+          color_space_.matrix = VideoColorSpace::MatrixID::SMPTE240M;
+          break;
+        case Vp9ColorSpace::BT_2020:
+          color_space_.primaries = VideoColorSpace::PrimaryID::BT2020;
+          color_space_.transfer = VideoColorSpace::TransferID::BT2020_10;
+          color_space_.matrix = VideoColorSpace::MatrixID::BT2020_NCL;
+          break;
+        case Vp9ColorSpace::SRGB:
+          color_space_.primaries = VideoColorSpace::PrimaryID::BT709;
+          color_space_.transfer = VideoColorSpace::TransferID::IEC61966_2_1;
+          color_space_.matrix = VideoColorSpace::MatrixID::BT709;
+          break;
+      }
+    }
+    return true;
+  }
+  VideoColorSpace current_color_space(
+      const VideoColorSpace& container_color_space) const override {
+    // For VP9, container color spaces override video stream color spaces.
+    if (container_color_space.IsSpecified()) {
+      return container_color_space;
+    }
+    return color_space_;
+  }
+
+ private:
+  VideoColorSpace color_space_;
+  Vp9Parser parser_;
+};
 
 DXVAVideoDecodeAccelerator::PendingSampleInfo::PendingSampleInfo(
     int32_t buffer_id,
@@ -603,7 +707,10 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
       "Send MFT_MESSAGE_NOTIFY_START_OF_STREAM notification failed",
       PLATFORM_FAILURE, false);
 
-  config_change_detector_.reset(new H264ConfigChangeDetector);
+  if (codec_ == kCodecH264)
+    config_change_detector_.reset(new H264ConfigChangeDetector);
+  if (codec_ == kCodecVP9)
+    config_change_detector_.reset(new VP9ConfigChangeDetector);
 
   SetState(kNormal);
 
@@ -2179,9 +2286,9 @@ void DXVAVideoDecodeAccelerator::FlushInternal() {
   // Attempt to retrieve an output frame from the decoder. If we have one,
   // return and proceed when the output frame is processed. If we don't have a
   // frame then we are done.
-  VideoColorSpace color_space = config_change_detector_->current_color_space();
-  if (color_space == VideoColorSpace())
-    color_space = config_.container_color_space;
+  VideoColorSpace color_space = config_.container_color_space;
+  if (config_change_detector_)
+    color_space = config_change_detector_->current_color_space(color_space);
   DoDecode(color_space.ToGfxColorSpace());
   if (OutputSamplesPresent())
     return;
@@ -2231,9 +2338,9 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
     return;
   }
 
-  VideoColorSpace color_space = config_change_detector_->current_color_space();
-  if (color_space == VideoColorSpace())
-    color_space = config_.container_color_space;
+  VideoColorSpace color_space = config_.container_color_space;
+  if (config_change_detector_)
+    color_space = config_change_detector_->current_color_space(color_space);
 
   if (!inputs_before_decode_) {
     TRACE_EVENT_ASYNC_BEGIN0("gpu", "DXVAVideoDecodeAccelerator.Decoding",
@@ -2960,8 +3067,10 @@ bool DXVAVideoDecodeAccelerator::SetTransformOutputType(IMFTransform* transform,
 
 HRESULT DXVAVideoDecodeAccelerator::CheckConfigChanged(IMFSample* sample,
                                                        bool* config_changed) {
-  if (codec_ != kCodecH264)
-    return S_FALSE;
+  if (!config_change_detector_) {
+    *config_changed = false;
+    return S_OK;
+  }
 
   base::win::ScopedComPtr<IMFMediaBuffer> buffer;
   HRESULT hr = sample->GetBufferByIndex(0, buffer.GetAddressOf());

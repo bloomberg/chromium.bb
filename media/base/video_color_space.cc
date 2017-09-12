@@ -53,6 +53,19 @@ bool VideoColorSpace::operator!=(const VideoColorSpace& other) const {
          matrix != other.matrix || range != other.range;
 }
 
+bool VideoColorSpace::IsSpecified() const {
+  if (primaries != PrimaryID::INVALID && primaries != PrimaryID::UNSPECIFIED)
+    return true;
+  if (transfer != TransferID::INVALID && transfer != TransferID::UNSPECIFIED)
+    return true;
+  if (matrix != MatrixID::INVALID && matrix != MatrixID::UNSPECIFIED)
+    return true;
+  // Note that it's not enough to have a range for a video color space to
+  // be considered valid, because often the range is just specified with
+  // a bool, so there is no way to know if it was set specifically or not.
+  return false;
+}
+
 gfx::ColorSpace VideoColorSpace::ToGfxColorSpace() const {
   gfx::ColorSpace::PrimaryID primary_id = gfx::ColorSpace::PrimaryID::INVALID;
   gfx::ColorSpace::TransferID transfer_id =
