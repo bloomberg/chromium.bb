@@ -61,6 +61,7 @@
 #include "ppapi/features/features.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -457,7 +458,7 @@ ContentSettingPluginBubbleModel::ContentSettingPluginBubbleModel(
 
   // If the setting is not managed by the user, hide the "Manage" button.
   if (info.source != SETTING_SOURCE_USER)
-    set_manage_text(base::string16());
+    set_manage_text_style(ContentSettingBubbleModel::ManageTextStyle::kNone);
 
   // The user cannot manually run Flash on the BLOCK setting when either holds:
   //  - The setting is from Policy. User cannot override admin intent.
@@ -609,8 +610,17 @@ ContentSettingPopupBubbleModel::CreateListItem(int32_t id, const GURL& url) {
   else
     title = base::UTF8ToUTF16(url.spec());
 
-  return ListItem(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-                      IDR_DEFAULT_FAVICON),
+  const bool use_md = ui::MaterialDesignController::IsSecondaryUiMaterial();
+  if (use_md) {
+    // Format the title to inlude the unicode single dot bullet code-point
+    // \u2022 and two spaces.
+    title = l10n_util::GetStringFUTF16(IDS_LIST_BULLET, title);
+  }
+
+  return ListItem(use_md
+                      ? gfx::Image()
+                      : ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+                            IDR_DEFAULT_FAVICON),
                   title, true, id);
 }
 
@@ -1050,6 +1060,10 @@ class ContentSettingMixedScriptBubbleModel
   ~ContentSettingMixedScriptBubbleModel() override {}
 
  private:
+  void SetManageText();
+
+  // ContentSettingBubbleModel:
+  void OnLearnMoreClicked() override;
   void OnCustomLinkClicked() override;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingMixedScriptBubbleModel);
@@ -1067,6 +1081,16 @@ ContentSettingMixedScriptBubbleModel::ContentSettingMixedScriptBubbleModel(
   content_settings::RecordMixedScriptAction(
       content_settings::MIXED_SCRIPT_ACTION_DISPLAYED_BUBBLE);
   set_custom_link_enabled(true);
+  set_show_learn_more(true);
+  SetManageText();
+}
+
+void ContentSettingMixedScriptBubbleModel::OnLearnMoreClicked() {
+  if (delegate())
+    delegate()->ShowLearnMorePage(content_type());
+
+  content_settings::RecordMixedScriptAction(
+      content_settings::MIXED_SCRIPT_ACTION_CLICKED_LEARN_MORE);
 }
 
 void ContentSettingMixedScriptBubbleModel::OnCustomLinkClicked() {
@@ -1090,6 +1114,11 @@ void ContentSettingMixedScriptBubbleModel::OnCustomLinkClicked() {
   rappor::SampleDomainAndRegistryFromGURL(
       rappor_service(), "ContentSettings.MixedScript.UserClickedAllow",
       web_contents()->GetLastCommittedURL());
+}
+
+// Don't set any manage text since none is displayed.
+void ContentSettingMixedScriptBubbleModel::SetManageText() {
+  set_manage_text_style(ContentSettingBubbleModel::ManageTextStyle::kNone);
 }
 
 // ContentSettingRPHBubbleModel ------------------------------------------------
@@ -1275,7 +1304,7 @@ void ContentSettingSubresourceFilterBubbleModel::SetManageText() {
           subresource_filter::kSafeBrowsingSubresourceFilterExperimentalUI)
           ? IDS_ALWAYS_ALLOW_ADS
           : IDS_ALLOW_ADS));
-  set_show_manage_text_as_checkbox(true);
+  set_manage_text_style(ContentSettingBubbleModel::ManageTextStyle::kCheckbox);
 }
 
 void ContentSettingSubresourceFilterBubbleModel::SetMessage() {

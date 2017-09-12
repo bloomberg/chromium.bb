@@ -40,19 +40,10 @@ void BrowserContentSettingBubbleModelDelegate::ShowMediaSettingsPage() {
 
 void BrowserContentSettingBubbleModelDelegate::ShowContentSettingsPage(
     ContentSettingsType type) {
-  if (type == CONTENT_SETTINGS_TYPE_MIXEDSCRIPT) {
-    // We don't (yet?) implement user-settable exceptions for mixed script
-    // blocking, so bounce to an explanatory page for now.
-    content_settings::RecordMixedScriptAction(
-        content_settings::MIXED_SCRIPT_ACTION_CLICKED_LEARN_MORE);
-    chrome::AddSelectedTabWithURL(browser_,
-                                  GURL(kInsecureScriptHelpUrl),
-                                  ui::PAGE_TRANSITION_LINK);
-  } else if (type == CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS) {
+  if (type == CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS)
     chrome::ShowSettingsSubPage(browser_, chrome::kHandlerSettingsSubPage);
-  } else {
+  else
     chrome::ShowContentSettingsExceptions(browser_, type);
-  }
 }
 
 void BrowserContentSettingBubbleModelDelegate::ShowLearnMorePage(
@@ -64,6 +55,9 @@ void BrowserContentSettingBubbleModelDelegate::ShowLearnMorePage(
       break;
     case CONTENT_SETTINGS_TYPE_ADS:
       learn_more_url = GURL(subresource_filter::kLearnMoreLink);
+      break;
+    case CONTENT_SETTINGS_TYPE_MIXEDSCRIPT:
+      learn_more_url = GURL(kInsecureScriptHelpUrl);
       break;
     default:
       return;
