@@ -89,7 +89,7 @@ bool ConsumeSyntaxIdent(const String& input, size_t& offset, String& ident) {
   return !CSSPropertyParserHelpers::IsCSSWideKeyword(ident);
 }
 
-CSSSyntaxDescriptor::CSSSyntaxDescriptor(String input) {
+CSSSyntaxDescriptor::CSSSyntaxDescriptor(const String& input) {
   size_t offset = 0;
   ConsumeWhitespace(input, offset);
 

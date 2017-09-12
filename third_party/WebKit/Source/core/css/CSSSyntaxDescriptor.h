@@ -46,7 +46,7 @@ struct CSSSyntaxComponent {
 
 class CORE_EXPORT CSSSyntaxDescriptor {
  public:
-  CSSSyntaxDescriptor(String syntax);
+  explicit CSSSyntaxDescriptor(const String& syntax);
 
   const CSSValue* Parse(CSSParserTokenRange,
                         const CSSParserContext*,
