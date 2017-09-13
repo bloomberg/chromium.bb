@@ -3,17 +3,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import optimize_webui
 import os
 import shutil
 import tempfile
 import unittest
-import vulcanize_gn
 
 
 _HERE_DIR = os.path.dirname(__file__)
 
 
-class VulcanizeGnTest(unittest.TestCase):
+class OptimizeWebUiTest(unittest.TestCase):
   def setUp(self):
     self._out_folder = None
     self._tmp_dirs = []
@@ -39,11 +39,11 @@ class VulcanizeGnTest(unittest.TestCase):
     assert self._out_folder
     return open(os.path.join(self._out_folder, file_name), 'r').read()
 
-  def _run_vulcanize(self, depfile, html_in_file, html_out_file, js_out_file):
-    # TODO(dbeam): make it possible to _run_vulcanize twice? Is that useful?
+  def _run_optimize(self, depfile, html_in_file, html_out_file, js_out_file):
+    # TODO(dbeam): make it possible to _run_optimize twice? Is that useful?
     assert not self._out_folder
     self._out_folder = self._create_tmp_dir()
-    vulcanize_gn.main([
+    optimize_webui.main([
       '--depfile', os.path.join(self._out_folder,'depfile.d'),
       '--html_in_file', html_in_file,
       '--html_out_file', html_out_file,
@@ -54,7 +54,7 @@ class VulcanizeGnTest(unittest.TestCase):
     ])
 
 
-  def testSimpleVulcanize(self):
+  def testSimpleOptimize(self):
     self._write_file_to_src_dir('element.html', '<div>got here!</div>')
     self._write_file_to_src_dir('element.js', "alert('yay');")
     self._write_file_to_src_dir('ui.html', '''
@@ -62,10 +62,10 @@ class VulcanizeGnTest(unittest.TestCase):
 <script src="element.js"></script>
 ''')
 
-    self._run_vulcanize(depfile='depfile.d',
-                        html_in_file='ui.html',
-                        html_out_file='fast.html',
-                        js_out_file='fast.js')
+    self._run_optimize(depfile='depfile.d',
+                       html_in_file='ui.html',
+                       html_out_file='fast.html',
+                       js_out_file='fast.js')
 
     fast_html = self._read_out_file('fast.html')
     self.assertFalse('element.html' in fast_html)

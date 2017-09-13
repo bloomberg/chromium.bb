@@ -127,7 +127,7 @@ def _update_dep_file(in_folder, args, manifest):
     f.write(deps_file_header + ': ' + ' '.join(deps))
 
 
-def _vulcanize(in_folder, args):
+def _optimize(in_folder, args):
   in_path = os.path.normpath(os.path.join(_CWD, in_folder))
   out_path = os.path.join(_CWD, args.out_folder)
   manifest_out_path = _request_list_path(out_path, args.host)
@@ -232,9 +232,9 @@ def main(argv):
   args.input = os.path.normpath(args.input)
   args.out_folder = os.path.normpath(args.out_folder)
 
-  manifest_out_path = _vulcanize(args.input, args)
+  manifest_out_path = _optimize(args.input, args)
 
-  # Prior call to _vulcanize() generated an output manifest file, containing
+  # Prior call to _optimize() generated an output manifest file, containing
   # information about all files that were bundled. Grab it from there.
   manifest = json.loads(open(manifest_out_path, 'r').read())
 

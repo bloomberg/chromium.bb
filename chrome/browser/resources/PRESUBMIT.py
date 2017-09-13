@@ -96,9 +96,9 @@ def CheckHtml(input_api, output_api):
       input_api, output_api, 80, lambda x: x.LocalPath().endswith('.html'))
 
 
-def RunVulcanizeTests(input_api, output_api):
+def RunOptimizeWebUiTests(input_api, output_api):
   presubmit_path = input_api.PresubmitLocalPath()
-  tests = [input_api.os_path.join(presubmit_path, 'vulcanize_gn_test.py')]
+  tests = [input_api.os_path.join(presubmit_path, 'optimize_webui_test.py')]
   return input_api.canned_checks.RunUnitTests(input_api, output_api, tests)
 
 
@@ -123,8 +123,8 @@ def _CheckChangeOnUploadOrCommit(input_api, output_api):
   affected = input_api.AffectedFiles()
   if any(f for f in affected if f.LocalPath().endswith('.html')):
     results += CheckHtml(input_api, output_api)
-  if any(f for f in affected if f.LocalPath().endswith('vulcanize_gn.py')):
-    results += RunVulcanizeTests(input_api, output_api)
+  if any(f for f in affected if f.LocalPath().endswith('optimize_webui.py')):
+    results += RunOptimizeWebUiTests(input_api, output_api)
   results += _CheckWebDevStyle(input_api, output_api)
   results += input_api.canned_checks.CheckPatchFormatted(input_api, output_api,
                                                          check_js=True)
