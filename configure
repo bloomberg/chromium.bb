@@ -292,6 +292,7 @@ EXPERIMENT_LIST="
     cfl
     xiphrc
     dct_only
+    daala_tx
     daala_dct4
     daala_dct8
     daala_dct16
@@ -567,6 +568,13 @@ post_process_cmdline() {
     if enabled rawbits && enabled ans; then
       log_echo "rawbits requires not ans, so disabling rawbits"
       disable_feature rawbits
+    fi
+    if enabled daala_tx; then
+      enable_feature daala_dct4
+      enable_feature daala_dct8
+      enable_feature daala_dct16
+      enable_feature daala_dct32
+      enable_feature daala_dct64
     fi
     if enabled daala_dct64 && ! enabled tx64x64; then
       log_echo "daala_dct64 requires tx64x64, so disabling daala_dct64"
