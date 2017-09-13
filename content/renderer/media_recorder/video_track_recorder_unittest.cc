@@ -338,12 +338,19 @@ TEST_F(VideoTrackRecorderTest, ReleasesFrame) {
       VideoFrame::CreateBlackFrame(frame_size);
 
   base::RunLoop run_loop;
-  video_frame->AddDestructionObserver(run_loop.QuitClosure());
-  EXPECT_CALL(*this, DoOnEncodedVideo(_, _, _, _, true)).Times(1);
+  base::Closure quit_closure = run_loop.QuitWhenIdleClosure();
+  bool frame_is_destroyed = false;
+  auto set_to_true = [](bool* b) { *b = true; };
+  video_frame->AddDestructionObserver(
+      base::BindOnce(set_to_true, &frame_is_destroyed));
+  EXPECT_CALL(*this, DoOnEncodedVideo(_, _, _, _, true))
+      .Times(1)
+      .WillOnce(RunClosure(quit_closure));
   Encode(video_frame, base::TimeTicks::Now());
   video_frame = nullptr;
   run_loop.Run();
   EXPECT_EQ(0u, NumFramesInEncode());
+  EXPECT_TRUE(frame_is_destroyed);
 
   Mock::VerifyAndClearExpectations(this);
 }
