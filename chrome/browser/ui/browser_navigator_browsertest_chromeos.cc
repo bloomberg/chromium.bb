@@ -99,10 +99,8 @@ IN_PROC_BROWSER_TEST_F(BrowserGuestSessionNavigatorTest,
 
 // Test that in multi user environments a newly created browser gets created
 // on the same desktop as the browser is shown on.
-//
-// Flakily hits assert: http://crbug.com/469717
 IN_PROC_BROWSER_TEST_F(BrowserGuestSessionNavigatorTest,
-                       DISABLED_Browser_Gets_Created_On_Visiting_Desktop) {
+                       Browser_Gets_Created_On_Visiting_Desktop) {
   // Test 1: Test that a browser created from a visiting browser will be on the
   // same visiting desktop.
   {
