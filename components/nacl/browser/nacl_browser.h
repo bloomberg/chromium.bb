@@ -14,6 +14,7 @@
 #include "base/containers/mru_cache.h"
 #include "base/files/file.h"
 #include "base/macros.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/nacl/browser/nacl_browser_delegate.h"
@@ -203,6 +204,10 @@ class NaClBrowser {
   std::vector<base::Closure> waiting_;
 
   base::circular_deque<base::Time> crash_times_;
+
+  scoped_refptr<base::SequencedTaskRunner> file_task_runner_ =
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
 
   DISALLOW_COPY_AND_ASSIGN(NaClBrowser);
 };
