@@ -24,6 +24,7 @@ class Layer;
 
 namespace gfx {
 class Point;
+class Size;
 }
 
 namespace ui {
@@ -83,33 +84,14 @@ class UI_ANDROID_EXPORT ViewAndroid {
     // Default copy/assign disabled by move constructor.
   };
 
-  // Layout parameters used to set the view's position and size.
-  // Position is in parent's coordinate space, and all the values
-  // are in CSS pixel.
-  struct LayoutParams {
-    static LayoutParams MatchParent() { return {true, 0, 0, 0, 0}; }
-    static LayoutParams Normal(int x, int y, int width, int height) {
-      return {false, x, y, width, height};
-    };
-
-    bool match_parent;  // Bounds matches that of the parent if true.
-    int x;
-    int y;
-    int width;
-    int height;
-
-    LayoutParams(const LayoutParams& p) = default;
-
-   private:
-    LayoutParams(bool match_parent, int x, int y, int width, int height)
-        : match_parent(match_parent),
-          x(x),
-          y(y),
-          width(width),
-          height(height) {}
+  enum class LayoutType {
+    // Can have its own size given by |OnSizeChanged| events.
+    NORMAL,
+    // Always follows its parent's size.
+    MATCH_PARENT
   };
 
-  explicit ViewAndroid(ViewClient* view_client);
+  ViewAndroid(ViewClient* view_client, LayoutType layout_type);
 
   ViewAndroid();
   virtual ~ViewAndroid();
@@ -205,6 +187,8 @@ class UI_ANDROID_EXPORT ViewAndroid {
   void OnAttachedToWindow();
   void OnDetachedFromWindow();
 
+  void SetLayoutForTesting(int x, int y, int width, int height);
+
   template <typename E>
   using ViewClientCallback =
       const base::Callback<bool(ViewClient*, const E&, const gfx::PointF&)>;
@@ -229,6 +213,8 @@ class UI_ANDROID_EXPORT ViewAndroid {
 
   bool has_event_forwarder() const { return !!event_forwarder_; }
 
+  bool match_parent() const { return layout_type_ == LayoutType::MATCH_PARENT; }
+
   // Checks if there is any event forwarder in any node up to root.
   static bool RootPathHasEventForwarder(ViewAndroid* view);
 
@@ -236,7 +222,7 @@ class UI_ANDROID_EXPORT ViewAndroid {
   // each leaf of subtree.
   static bool SubtreeHasEventForwarder(ViewAndroid* view);
 
-  void OnSizeChangedInternal(int width, int height);
+  void OnSizeChangedInternal(const gfx::Size& size);
   void DispatchOnSizeChanged();
 
   // Returns the Java delegate for this view. This is used to delegate work
@@ -253,8 +239,9 @@ class UI_ANDROID_EXPORT ViewAndroid {
   ViewClient* const client_;
 
   // Basic view layout information. Used to do hit testing deciding whether
-  // the passed events should be processed by the view.
-  LayoutParams layout_params_;
+  // the passed events should be processed by the view. Unit in DIP.
+  gfx::Rect view_rect_;
+  const LayoutType layout_type_;
 
   // In physical pixel.
   gfx::Size physical_size_;
