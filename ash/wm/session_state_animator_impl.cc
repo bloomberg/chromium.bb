@@ -44,8 +44,8 @@ gfx::Transform GetSlowCloseTransform() {
   gfx::Size root_size = Shell::GetPrimaryRootWindow()->bounds().size();
   gfx::Transform transform;
   transform.Translate(
-      floor(0.5 * (1.0 - kSlowCloseSizeRatio) * root_size.width() + 0.5),
-      floor(0.5 * (1.0 - kSlowCloseSizeRatio) * root_size.height() + 0.5));
+      std::round(0.5 * (1.0 - kSlowCloseSizeRatio) * root_size.width()),
+      std::round(0.5 * (1.0 - kSlowCloseSizeRatio) * root_size.height()));
   transform.Scale(kSlowCloseSizeRatio, kSlowCloseSizeRatio);
   return transform;
 }
@@ -56,8 +56,8 @@ gfx::Transform GetFastCloseTransform() {
   gfx::Size root_size = Shell::GetPrimaryRootWindow()->bounds().size();
   gfx::Transform transform;
 
-  transform.Translate(floor(0.5 * root_size.width() + 0.5),
-                      floor(0.5 * root_size.height() + 0.5));
+  transform.Translate(std::round(0.5 * root_size.width()),
+                      std::round(0.5 * root_size.height()));
   transform.Scale(kMinimumScale, kMinimumScale);
   return transform;
 }

@@ -1638,7 +1638,7 @@ bool RenderTextHarfBuzz::ShapeRunWithFont(const base::string16& text,
                       : HarfBuzzUnitsToFloat(hb_positions[i].x_advance);
     // Round run widths if subpixel positioning is off to match native behavior.
     if (!run->render_params.subpixel_positioning)
-      run->width = std::floor(run->width + 0.5f);
+      run->width = std::round(run->width);
   }
 
   hb_buffer_destroy(buffer);

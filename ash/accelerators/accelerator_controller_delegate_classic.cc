@@ -52,7 +52,7 @@ void HandleMagnifyScreen(int delta_index) {
     float scale = Shell::Get()->magnification_controller()->GetScale();
     // Calculate rounded logarithm (base kMagnificationScaleFactor) of scale.
     int scale_index =
-        std::floor(std::log(scale) / std::log(kMagnificationScaleFactor) + 0.5);
+        std::round(std::log(scale) / std::log(kMagnificationScaleFactor));
 
     int new_scale_index = std::max(0, std::min(8, scale_index + delta_index));
 

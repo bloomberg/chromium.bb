@@ -4,11 +4,11 @@
 
 #include "cc/animation/timing_function.h"
 
+#include <cmath>
 #include <memory>
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "cc/base/math_util.h"
 
 namespace cc {
 

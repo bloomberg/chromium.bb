@@ -2,14 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// MSVC++ requires this to be set before any other includes to get M_PI.
-#define _USE_MATH_DEFINES
-
 #include "media/base/audio_converter.h"
 
 #include <stddef.h>
 
-#include <cmath>
 #include <memory>
 
 #include "base/macros.h"

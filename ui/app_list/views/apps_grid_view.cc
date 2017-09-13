@@ -2532,23 +2532,20 @@ AppsGridView::Index AppsGridView::GetNearestTileIndexForPoint(
   int col = ClampToRange((point.x() - bounds.x()) / total_tile_size.width(), 0,
                          cols_ - 1);
   int row = rows_per_page_;
-  if (is_fullscreen_app_list_enabled_ && current_page == 0) {
-    row = ClampToRange((point.y() - bounds.y()) / total_tile_size.height(), 0,
-                       rows_per_page_ - 2);
-  } else {
-    row = ClampToRange((point.y() - bounds.y()) / total_tile_size.height(), 0,
-                       rows_per_page_ - 1);
-  }
+  bool show_suggested_apps =
+      is_fullscreen_app_list_enabled_ && current_page == 0;
+  row = ClampToRange((point.y() - bounds.y()) / total_tile_size.height(), 0,
+                     rows_per_page_ - (show_suggested_apps ? 2 : 1));
   return Index(current_page, row * cols_ + col);
 }
 
 gfx::Size AppsGridView::GetTileGridSize() const {
   gfx::Rect bounds = GetExpectedTileBounds(0, 0);
   const int current_page = pagination_model_.selected_page();
-  if (is_fullscreen_app_list_enabled_ && current_page == 0)
-    bounds.Union(GetExpectedTileBounds(rows_per_page_ - 2, cols_ - 1));
-  else
-    bounds.Union(GetExpectedTileBounds(rows_per_page_ - 1, cols_ - 1));
+  bool show_suggested_apps =
+      is_fullscreen_app_list_enabled_ && current_page == 0;
+  bounds.Union(GetExpectedTileBounds(
+      rows_per_page_ - (show_suggested_apps ? 2 : 1), cols_ - 1));
   bounds.Inset(0, -GetHeightOnTopOfAllAppsTiles(current_page), 0, 0);
   bounds.Inset(GetTilePadding());
   return bounds.size();
