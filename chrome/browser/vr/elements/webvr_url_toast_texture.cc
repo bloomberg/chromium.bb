@@ -6,10 +6,10 @@
 
 #include "cc/paint/skia_paint_canvas.h"
 #include "chrome/browser/vr/color_scheme.h"
+#include "chrome/browser/vr/elements/vector_icon.h"
 #include "components/url_formatter/url_formatter.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect_f.h"
-#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/gfx/text_elider.h"
@@ -73,16 +73,11 @@ void WebVrUrlToastTexture::Draw(SkCanvas* canvas,
   // Site security state icon.
   if ((state_.security_level != security_state::NONE || state_.offline_page) &&
       state_.vector_icon != nullptr && state_.should_display_url) {
-    canvas->save();
-    canvas->scale(size_.width() / kWidth, size_.width() / kWidth);
-    canvas->translate(kSecurityIconOffsetLeft,
-                      kHeight / 2 - kSecurityIconSize / 2);
-    const gfx::VectorIcon& icon = *state_.vector_icon;
-    float icon_scale = kSecurityIconSize / GetDefaultSizeOfVectorIcon(icon);
-    canvas->scale(icon_scale, icon_scale);
-    PaintVectorIcon(&gfx_canvas, icon,
-                    color_scheme().transient_warning_foreground);
-    canvas->restore();
+    DrawVectorIcon(&gfx_canvas, *state_.vector_icon,
+                   ToPixels(kSecurityIconSize),
+                   {ToPixels(kSecurityIconOffsetLeft),
+                    ToPixels((kHeight - kSecurityIconSize) / 2)},
+                   color_scheme().transient_warning_foreground);
   }
 
   if (state_.should_display_url) {

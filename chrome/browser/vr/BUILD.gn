@@ -82,6 +82,8 @@ static_library("vr_common") {
     "elements/url_bar.h",
     "elements/url_bar_texture.cc",
     "elements/url_bar_texture.h",
+    "elements/vector_icon.cc",
+    "elements/vector_icon.h",
     "elements/viewport_aware_root.cc",
     "elements/viewport_aware_root.h",
     "elements/webvr_url_toast.cc",

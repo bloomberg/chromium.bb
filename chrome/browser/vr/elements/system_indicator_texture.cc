@@ -6,14 +6,12 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "cc/paint/skia_paint_canvas.h"
+#include "chrome/browser/vr/elements/vector_icon.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/vector2d.h"
-#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/render_text.h"
-#include "ui/gfx/vector_icon_types.h"
 
 namespace vr {
 
@@ -23,9 +21,6 @@ constexpr int kHeightWidthRatio = 8.0;
 constexpr float kBorderFactor = 0.1;
 constexpr float kIconSizeFactor = 0.7;
 constexpr float kFontSizeFactor = 0.40;
-constexpr float kTextHeightFactor = 1.0 - 2 * kBorderFactor;
-constexpr float kTextWidthFactor =
-    kHeightWidthRatio - 3 * kBorderFactor - kIconSizeFactor;
 
 }  // namespace
 
@@ -46,55 +41,48 @@ void SystemIndicatorTexture::Draw(SkCanvas* sk_canvas,
 
   size_.set_height(texture_size.height());
 
+  float border_pixels = size_.height() * kBorderFactor;
+  float icon_pixels = size_.height() * kIconSizeFactor;
+  size_.set_width(icon_pixels + 2 * border_pixels);
+
   SkPaint paint;
   paint.setColor(color_scheme().system_indicator_background);
 
-  gfx::Rect text_size(0, 0);
-  std::vector<std::unique_ptr<gfx::RenderText>> lines;
+  std::unique_ptr<gfx::RenderText> rendered_text;
 
   if (has_text_) {
     base::string16 text = l10n_util::GetStringUTF16(message_id_);
 
     gfx::FontList fonts;
     GetFontList(size_.height() * kFontSizeFactor, text, &fonts);
-    text_size.set_height(kTextHeightFactor * size_.height());
-
+    gfx::Rect text_size(0, size_.height());
+    std::vector<std::unique_ptr<gfx::RenderText>> lines;
     lines = PrepareDrawStringRect(
         text, fonts, color_scheme().system_indicator_foreground, &text_size,
         kTextAlignmentNone, kWrappingBehaviorNoWrap);
+    DCHECK_EQ(lines.size(), 1u);
+    rendered_text = std::move(lines.front());
 
-    DCHECK_LE(text_size.width(), kTextWidthFactor * size_.height());
-
-    // Setting background size giving some extra lateral padding to the text.
-    size_.set_width((kHeightWidthRatio * kBorderFactor + kIconSizeFactor) *
-                        size_.height() +
-                    text_size.width());
-  } else {
-    size_.set_width((2 * kBorderFactor + kIconSizeFactor) * size_.height() +
-                    text_size.width());
+    // Adust texture width according to text size.
+    size_.set_width(size_.width() + text_size.width() + 2 * border_pixels);
   }
 
-  float radius = size_.height() * kBorderFactor;
   sk_canvas->drawRoundRect(SkRect::MakeWH(size_.width(), size_.height()),
-                           radius, radius, paint);
+                           border_pixels, border_pixels, paint);
 
-  canvas->Save();
-  canvas->Translate(gfx::Vector2d(
-      IsRTL() ? 4 * kBorderFactor * size_.height() + text_size.width()
-              : size_.height() * kBorderFactor,
-      size_.height() * (1.0 - kIconSizeFactor) / 2.0));
-  PaintVectorIcon(canvas, icon_, size_.height() * kIconSizeFactor,
-                  color_scheme().system_indicator_foreground);
-  canvas->Restore();
+  gfx::PointF icon_location(
+      (IsRTL() ? size_.width() - border_pixels - icon_pixels : border_pixels),
+      (size_.height() - icon_pixels) / 2.0);
+  DrawVectorIcon(canvas, icon_, size_.height() * kIconSizeFactor, icon_location,
+                 color_scheme().system_indicator_foreground);
 
-  canvas->Save();
-  canvas->Translate(gfx::Vector2d(
-      size_.height() *
-          (IsRTL() ? 2 * kBorderFactor : 3 * kBorderFactor + kIconSizeFactor),
-      size_.height() * kBorderFactor));
-  for (auto& render_text : lines)
-    render_text->Draw(canvas);
-  canvas->Restore();
+  if (rendered_text) {
+    canvas->Save();
+    canvas->Translate(gfx::Vector2d(
+        (IsRTL() ? border_pixels : 3 * border_pixels + icon_pixels), 0));
+    rendered_text->Draw(canvas);
+    canvas->Restore();
+  }
 }
 
 gfx::Size SystemIndicatorTexture::GetPreferredTextureSize(
