@@ -772,7 +772,7 @@ TEST_F(WindowManagerTest, UpdateCursorVisibility) {
   EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
 }
 
-// Cursor is hidden on keypress.
+// Tests cursor visibility on key pressed event.
 TEST_F(WindowManagerTest, UpdateCursorVisibilityOnKeyEvent) {
   // TODO: mash doesn't support CursorManager. http://crbug.com/631103.
   if (Shell::GetAshConfig() == Config::MASH)
@@ -792,6 +792,14 @@ TEST_F(WindowManagerTest, UpdateCursorVisibilityOnKeyEvent) {
   // Releasing a key does does not hide the cursor and does not disable mouse
   // events.
   generator.ReleaseKey(ui::VKEY_A, ui::EF_NONE);
+  EXPECT_TRUE(cursor_manager->IsCursorVisible());
+  EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
+  // Pressing a key with mouse button pressed does not hide the cursor and does
+  // not disable mouse events.
+  generator.PressLeftButton();
+  generator.PressKey(ui::VKEY_A, ui::EF_NONE);
+  generator.ReleaseKey(ui::VKEY_A, ui::EF_NONE);
+  generator.ReleaseLeftButton();
   EXPECT_TRUE(cursor_manager->IsCursorVisible());
   EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
 }

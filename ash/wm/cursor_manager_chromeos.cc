@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "ui/aura/env.h"
 #include "ui/events/event.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/wm/core/cursor_manager.h"
@@ -23,6 +24,10 @@ CursorManager::~CursorManager() {}
 bool CursorManager::ShouldHideCursorOnKeyEvent(
     const ui::KeyEvent& event) const {
   if (event.type() != ui::ET_KEY_PRESSED)
+    return false;
+
+  // Do not hide cursor when clicking the key with mouse button pressed.
+  if (aura::Env::GetInstance()->IsMouseButtonDown())
     return false;
 
   // Clicking on a key when the accessibility virtual keyboard is enabled should
