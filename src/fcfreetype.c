@@ -1238,8 +1238,9 @@ FcFreeTypeQueryFace (const FT_Face  face,
 
     if (id >> 16)
     {
-      if (!FT_Get_MM_Var (face, &master))
-	instance = &master->namedstyle[(id >> 16) - 1];
+      unsigned int instance_id = (id >> 16) - 1;
+      if (!FT_Get_MM_Var (face, &master) && instance_id < master->num_namedstyles)
+	instance = &master->namedstyle[instance_id];
 
       if (instance)
       {
@@ -1266,6 +1267,8 @@ FcFreeTypeQueryFace (const FT_Face  face,
 	    }
 	  }
 	}
+        else
+	    goto bail1;
     }
 
     /*
