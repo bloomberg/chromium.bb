@@ -9,10 +9,25 @@
 #include "core/dom/Text.h"
 #include "core/editing/testing/SelectionSample.h"
 #include "core/frame/LocalFrameView.h"
+#include "core/html/HTMLCollection.h"
 #include "core/html/HTMLElement.h"
 #include "core/testing/DummyPageHolder.h"
 
 namespace blink {
+
+namespace {
+
+Element* GetOrCreateElement(ContainerNode* parent,
+                            const HTMLQualifiedName& tag_name) {
+  HTMLCollection* elements = parent->getElementsByTagNameNS(
+      tag_name.NamespaceURI(), tag_name.LocalName());
+  if (!elements->IsEmpty())
+    return elements->item(0);
+  return parent->ownerDocument()->createElement(tag_name,
+                                                kCreatedByCreateElement);
+}
+
+}  // namespace
 
 EditingTestBase::EditingTestBase() {}
 
@@ -28,6 +43,15 @@ LocalFrame& EditingTestBase::GetFrame() const {
 
 FrameSelection& EditingTestBase::Selection() const {
   return GetFrame().Selection();
+}
+
+void EditingTestBase::InsertStyleElement(const std::string& style_rules) {
+  Element* const head = GetOrCreateElement(&GetDocument(), HTMLNames::headTag);
+  DCHECK_EQ(head, GetOrCreateElement(&GetDocument(), HTMLNames::headTag));
+  Element* const style =
+      GetDocument().createElement(HTMLNames::styleTag, kCreatedByCreateElement);
+  style->setTextContent(String(style_rules.data(), style_rules.size()));
+  head->appendChild(style);
 }
 
 Position EditingTestBase::SetCaretTextToBody(
