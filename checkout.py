@@ -252,8 +252,7 @@ class GitCheckout(CheckoutBase):
     for index, p in enumerate(patches):
       stdout = []
       try:
-        filepath = os.path.join(self.project_path,
-                                p.filename_after_patchlevel())
+        filepath = os.path.join(self.project_path, p.filename)
         if p.is_delete:
           if (not os.path.exists(filepath) and
               any(p1.source_filename == p.filename for p1 in patches[0:index])):
@@ -261,12 +260,11 @@ class GitCheckout(CheckoutBase):
             # was already processed because 'git apply' did it for us.
             pass
           else:
-            stdout.append(self._check_output_git(
-                ['rm', p.filename_after_patchlevel()]))
+            stdout.append(self._check_output_git(['rm', p.filename]))
             assert(not os.path.exists(filepath))
             stdout.append('Deleted.')
         else:
-          dirname = os.path.dirname(p.filename_after_patchlevel())
+          dirname = os.path.dirname(p.filename)
           full_dir = os.path.join(self.project_path, dirname)
           if dirname and not os.path.isdir(full_dir):
             os.makedirs(full_dir)
@@ -276,7 +274,7 @@ class GitCheckout(CheckoutBase):
             with open(filepath, 'wb') as f:
               f.write(content)
             stdout.append('Added binary file %d bytes' % len(content))
-            cmd = ['add', p.filename_after_patchlevel()]
+            cmd = ['add', p.filename]
             if verbose:
               cmd.append('--verbose')
             stdout.append(self._check_output_git(cmd))
