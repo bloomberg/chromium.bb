@@ -130,6 +130,7 @@ class CORE_EXPORT NGLineBreaker {
   void SkipCollapsibleWhitespaces();
 
   bool IsFirstFormattedLine() const;
+  void ComputeBaseDirection();
 
   LineData line_;
   NGInlineNode node_;
@@ -146,6 +147,11 @@ class CORE_EXPORT NGLineBreaker {
 
   // Keep track of handled float items. See HandleFloat().
   unsigned handled_floats_end_item_index_ = 0;
+
+  // The current base direction for the bidi algorithm.
+  // This is copied from NGInlineNode, then updated after each forced line break
+  // if 'unicode-bidi: plaintext'.
+  TextDirection base_direction_;
 
   // True when current box allows line wrapping.
   bool auto_wrap_ = false;
