@@ -190,8 +190,7 @@ class UI_ANDROID_EXPORT ViewAndroid {
   void SetLayoutForTesting(int x, int y, int width, int height);
 
   template <typename E>
-  using ViewClientCallback =
-      const base::Callback<bool(ViewClient*, const E&, const gfx::PointF&)>;
+  using ViewClientCallback = const base::Callback<bool(ViewClient*, const E&)>;
 
   template <typename E>
   bool HitTest(ViewClientCallback<E> send_to_client,
@@ -199,17 +198,13 @@ class UI_ANDROID_EXPORT ViewAndroid {
                const gfx::PointF& point);
 
   static bool SendDragEventToClient(ViewClient* client,
-                                    const DragEventAndroid& event,
-                                    const gfx::PointF& point);
+                                    const DragEventAndroid& event);
   static bool SendTouchEventToClient(ViewClient* client,
-                                     const MotionEventAndroid& event,
-                                     const gfx::PointF& point);
+                                     const MotionEventAndroid& event);
   static bool SendMouseEventToClient(ViewClient* client,
-                                     const MotionEventAndroid& event,
-                                     const gfx::PointF& point);
+                                     const MotionEventAndroid& event);
   static bool SendMouseWheelEventToClient(ViewClient* client,
-                                          const MotionEventAndroid& event,
-                                          const gfx::PointF& point);
+                                          const MotionEventAndroid& event);
 
   bool has_event_forwarder() const { return !!event_forwarder_; }
 

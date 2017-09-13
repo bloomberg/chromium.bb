@@ -431,10 +431,8 @@ bool ViewAndroid::OnDragEvent(const DragEventAndroid& event) {
 
 // static
 bool ViewAndroid::SendDragEventToClient(ViewClient* client,
-                                        const DragEventAndroid& event,
-                                        const gfx::PointF& point) {
-  std::unique_ptr<DragEventAndroid> e = event.CreateFor(point);
-  return client->OnDragEvent(*e);
+                                        const DragEventAndroid& event) {
+  return client->OnDragEvent(event);
 }
 
 bool ViewAndroid::OnTouchEvent(const MotionEventAndroid& event) {
@@ -444,10 +442,8 @@ bool ViewAndroid::OnTouchEvent(const MotionEventAndroid& event) {
 
 // static
 bool ViewAndroid::SendTouchEventToClient(ViewClient* client,
-                                         const MotionEventAndroid& event,
-                                         const gfx::PointF& point) {
-  std::unique_ptr<MotionEventAndroid> e(event.CreateFor(point));
-  return client->OnTouchEvent(*e);
+                                         const MotionEventAndroid& event) {
+  return client->OnTouchEvent(event);
 }
 
 bool ViewAndroid::OnMouseEvent(const MotionEventAndroid& event) {
@@ -457,10 +453,8 @@ bool ViewAndroid::OnMouseEvent(const MotionEventAndroid& event) {
 
 // static
 bool ViewAndroid::SendMouseEventToClient(ViewClient* client,
-                                         const MotionEventAndroid& event,
-                                         const gfx::PointF& point) {
-  std::unique_ptr<MotionEventAndroid> e(event.CreateFor(point));
-  return client->OnMouseEvent(*e);
+                                         const MotionEventAndroid& event) {
+  return client->OnMouseEvent(event);
 }
 
 bool ViewAndroid::OnMouseWheelEvent(const MotionEventAndroid& event) {
@@ -470,18 +464,24 @@ bool ViewAndroid::OnMouseWheelEvent(const MotionEventAndroid& event) {
 
 // static
 bool ViewAndroid::SendMouseWheelEventToClient(ViewClient* client,
-                                              const MotionEventAndroid& event,
-                                              const gfx::PointF& point) {
-  std::unique_ptr<MotionEventAndroid> e(event.CreateFor(point));
-  return client->OnMouseWheelEvent(*e);
+                                              const MotionEventAndroid& event) {
+  return client->OnMouseWheelEvent(event);
 }
 
 template <typename E>
 bool ViewAndroid::HitTest(ViewClientCallback<E> send_to_client,
                           const E& event,
                           const gfx::PointF& point) {
-  if (client_ && send_to_client.Run(client_, event, point))
-    return true;
+  if (client_) {
+    if (view_rect_.origin().IsOrigin()) {  // (x, y) == (0, 0)
+      if (send_to_client.Run(client_, event))
+        return true;
+    } else {
+      std::unique_ptr<E> e(event.CreateFor(point));
+      if (send_to_client.Run(client_, *e))
+        return true;
+    }
+  }
 
   if (!children_.empty()) {
     gfx::PointF offset_point(point);
