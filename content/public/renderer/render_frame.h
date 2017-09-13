@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/callback_forward.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "content/public/common/console_message_level.h"
@@ -18,13 +19,10 @@
 #include "ipc/ipc_sender.h"
 #include "ppapi/features/features.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "third_party/WebKit/public/platform/TaskType.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
 #include "third_party/WebKit/public/web/WebTriggeringEventInfo.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}
 
 namespace blink {
 class WebFrame;
@@ -263,11 +261,8 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
 
   // Renderer scheduler frame-specific task queues handles.
   // See third_party/WebKit/Source/platform/WebFrameScheduler.h for details.
-  virtual scoped_refptr<base::SingleThreadTaskRunner> GetTimerTaskRunner() = 0;
-  virtual scoped_refptr<base::SingleThreadTaskRunner>
-  GetLoadingTaskRunner() = 0;
-  virtual scoped_refptr<base::SingleThreadTaskRunner>
-  GetUnthrottledTaskRunner() = 0;
+  virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
+      blink::TaskType task_type) = 0;
 
   // Bitwise-ORed set of extra bindings that have been enabled.  See
   // BindingsPolicy for details.
