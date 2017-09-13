@@ -60,18 +60,6 @@ class OmniboxPopupContentsView::AutocompletePopupWidget
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxPopupContentsView, public:
 
-OmniboxPopupView* OmniboxPopupContentsView::Create(
-    const gfx::FontList& font_list,
-    OmniboxView* omnibox_view,
-    OmniboxEditModel* edit_model,
-    LocationBarView* location_bar_view) {
-  OmniboxPopupContentsView* view = nullptr;
-  view = new OmniboxPopupContentsView(
-      font_list, omnibox_view, edit_model, location_bar_view);
-  view->Init();
-  return view;
-}
-
 OmniboxPopupContentsView::OmniboxPopupContentsView(
     const gfx::FontList& font_list,
     OmniboxView* omnibox_view,
@@ -114,14 +102,9 @@ OmniboxPopupContentsView::OmniboxPopupContentsView(
     g_bottom_shadow.Get() =
         gfx::ImageSkiaOperations::CreateHorizontalShadow(shadows, true);
   }
-}
 
-void OmniboxPopupContentsView::Init() {
-  // This can't be done in the constructor as at that point we aren't
-  // necessarily our final class yet, and we may have subclasses
-  // overriding CreateResultView.
   for (size_t i = 0; i < AutocompleteResult::GetMaxMatches(); ++i) {
-    OmniboxResultView* result_view = CreateResultView(i, font_list_);
+    OmniboxResultView* result_view = new OmniboxResultView(this, i, font_list_);
     result_view->SetVisible(false);
     AddChildViewAt(result_view, static_cast<int>(i));
   }
@@ -149,21 +132,18 @@ gfx::Rect OmniboxPopupContentsView::GetPopupBounds() const {
   return current_frame_bounds;
 }
 
-void OmniboxPopupContentsView::LayoutChildren() {
-  gfx::Rect contents_rect = GetContentsBounds();
-  contents_rect.Inset(gfx::Insets(kPopupVerticalPadding, 0));
-  contents_rect.Inset(start_margin_, g_top_shadow.Get().height(), end_margin_,
-                      0);
+void OmniboxPopupContentsView::OpenMatch(size_t index,
+                                         WindowOpenDisposition disposition) {
+  DCHECK(HasMatchAt(index));
 
-  int top = contents_rect.y();
-  for (size_t i = 0; i < AutocompleteResult::GetMaxMatches(); ++i) {
-    View* v = child_at(i);
-    if (v->visible()) {
-      v->SetBounds(contents_rect.x(), top, contents_rect.width(),
-                   v->GetPreferredSize().height());
-      top = v->bounds().bottom();
-    }
-  }
+  omnibox_view_->OpenMatch(model_->result().match_at(index), disposition,
+                           GURL(), base::string16(), index);
+}
+
+gfx::Image OmniboxPopupContentsView::GetMatchIcon(
+    const AutocompleteMatch& match,
+    SkColor vector_icon_color) const {
+  return model_->GetMatchIcon(match, vector_icon_color);
 }
 
 void OmniboxPopupContentsView::SetSelectedLine(size_t index) {
@@ -172,12 +152,8 @@ void OmniboxPopupContentsView::SetSelectedLine(size_t index) {
   model_->SetSelectedLine(index, false, false);
 }
 
-void OmniboxPopupContentsView::OpenMatch(size_t index,
-                                         WindowOpenDisposition disposition) {
-  DCHECK(HasMatchAt(index));
-
-  omnibox_view_->OpenMatch(model_->result().match_at(index), disposition,
-                           GURL(), base::string16(), index);
+bool OmniboxPopupContentsView::IsSelectedIndex(size_t index) const {
+  return index == model_->selected_line();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -349,19 +325,6 @@ void OmniboxPopupContentsView::OnDragCanceled() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// OmniboxPopupContentsView, OmniboxResultViewModel implementation:
-
-bool OmniboxPopupContentsView::IsSelectedIndex(size_t index) const {
-  return index == model_->selected_line();
-}
-
-gfx::Image OmniboxPopupContentsView::GetMatchIcon(
-    const AutocompleteMatch& match,
-    SkColor vector_icon_color) const {
-  return model_->GetMatchIcon(match, vector_icon_color);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // OmniboxPopupContentsView, AnimationDelegate implementation:
 
 void OmniboxPopupContentsView::AnimationProgressed(
@@ -427,7 +390,7 @@ void OmniboxPopupContentsView::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// OmniboxPopupContentsView, protected:
+// OmniboxPopupContentsView, private:
 
 int OmniboxPopupContentsView::CalculatePopupHeight() {
   DCHECK_GE(static_cast<size_t>(child_count()), model_->result().size());
@@ -442,10 +405,50 @@ int OmniboxPopupContentsView::CalculatePopupHeight() {
          g_top_shadow.Get().height() + g_bottom_shadow.Get().height();
 }
 
-OmniboxResultView* OmniboxPopupContentsView::CreateResultView(
-    int model_index,
-    const gfx::FontList& font_list) {
-  return new OmniboxResultView(this, model_index, font_list);
+void OmniboxPopupContentsView::LayoutChildren() {
+  gfx::Rect contents_rect = GetContentsBounds();
+  contents_rect.Inset(gfx::Insets(kPopupVerticalPadding, 0));
+  contents_rect.Inset(start_margin_, g_top_shadow.Get().height(), end_margin_,
+                      0);
+
+  int top = contents_rect.y();
+  for (size_t i = 0; i < AutocompleteResult::GetMaxMatches(); ++i) {
+    View* v = child_at(i);
+    if (v->visible()) {
+      v->SetBounds(contents_rect.x(), top, contents_rect.width(),
+                   v->GetPreferredSize().height());
+      top = v->bounds().bottom();
+    }
+  }
+}
+
+bool OmniboxPopupContentsView::HasMatchAt(size_t index) const {
+  return index < model_->result().size();
+}
+
+const AutocompleteMatch& OmniboxPopupContentsView::GetMatchAtIndex(
+    size_t index) const {
+  return model_->result().match_at(index);
+}
+
+size_t OmniboxPopupContentsView::GetIndexForPoint(const gfx::Point& point) {
+  if (!HitTestPoint(point))
+    return OmniboxPopupModel::kNoMatch;
+
+  int nb_match = model_->result().size();
+  DCHECK(nb_match <= child_count());
+  for (int i = 0; i < nb_match; ++i) {
+    views::View* child = child_at(i);
+    gfx::Point point_in_child_coords(point);
+    View::ConvertPointToTarget(this, child, &point_in_child_coords);
+    if (child->visible() && child->HitTestPoint(point_in_child_coords))
+      return i;
+  }
+  return OmniboxPopupModel::kNoMatch;
+}
+
+OmniboxResultView* OmniboxPopupContentsView::result_view_at(size_t i) {
+  return static_cast<OmniboxResultView*>(child_at(static_cast<int>(i)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -490,37 +493,4 @@ void OmniboxPopupContentsView::PaintChildren(
     recorder.canvas()->DrawColor(background_color);
   }
   View::PaintChildren(paint_info);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// OmniboxPopupContentsView, private:
-
-bool OmniboxPopupContentsView::HasMatchAt(size_t index) const {
-  return index < model_->result().size();
-}
-
-const AutocompleteMatch& OmniboxPopupContentsView::GetMatchAtIndex(
-    size_t index) const {
-  return model_->result().match_at(index);
-}
-
-size_t OmniboxPopupContentsView::GetIndexForPoint(
-    const gfx::Point& point) {
-  if (!HitTestPoint(point))
-    return OmniboxPopupModel::kNoMatch;
-
-  int nb_match = model_->result().size();
-  DCHECK(nb_match <= child_count());
-  for (int i = 0; i < nb_match; ++i) {
-    views::View* child = child_at(i);
-    gfx::Point point_in_child_coords(point);
-    View::ConvertPointToTarget(this, child, &point_in_child_coords);
-    if (child->visible() && child->HitTestPoint(point_in_child_coords))
-      return i;
-  }
-  return OmniboxPopupModel::kNoMatch;
-}
-
-OmniboxResultView* OmniboxPopupContentsView::result_view_at(size_t i) {
-  return static_cast<OmniboxResultView*>(child_at(static_cast<int>(i)));
 }
