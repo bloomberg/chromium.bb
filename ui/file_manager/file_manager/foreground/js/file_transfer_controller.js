@@ -919,8 +919,8 @@ FileTransferController.prototype.renderThumbnail_ = function() {
     return container;
   }
 
-  // Option 2. Thumbnail image available, then render it without
-  // a label.
+  // Option 2. Thumbnail image available from preloadedThumbnailImagePromise_,
+  // then render it without a label.
   if (this.preloadedThumbnailImagePromise_ &&
       this.preloadedThumbnailImagePromise_.value) {
     var thumbnailImage = this.preloadedThumbnailImagePromise_.value;
@@ -951,7 +951,24 @@ FileTransferController.prototype.renderThumbnail_ = function() {
     return container;
   }
 
-  // Option 3. Thumbnail not available. Render an icon and a label.
+  // Option 3. Thumbnail image available from file grid / list, render it
+  // without a label.
+  // Because of Option 1, there is only exactly one item selected.
+  var index = this.selectionHandler_.selection.indexes[0];
+  // We only need one of the thumbnails.
+  var thumbnail = this.listContainer_.currentView.getThumbnail(index);
+  if (thumbnail) {
+    var canvas = document.createElement('canvas');
+    canvas.width = FileTransferController.DRAG_THUMBNAIL_SIZE_;
+    canvas.height = FileTransferController.DRAG_THUMBNAIL_SIZE_;
+    canvas.style.backgroundImage = thumbnail.style.backgroundImage;
+    canvas.style.backgroundSize = 'cover';
+    canvas.classList.add('for-image');
+    contents.appendChild(canvas);
+    return container;
+  }
+
+  // Option 4. Thumbnail not available. Render an icon and a label.
   var entry = this.selectionHandler_.selection.entries[0];
   var icon = this.document_.createElement('div');
   icon.className = 'detail-icon';
