@@ -15,6 +15,9 @@
     "use_goma=true",
     "use_xcode_clang=true"
   ],
+   "env": {
+    "IOS_TOOLCHAIN_REVISION": "9M214v-1"
+  },
   "additional_compile_targets": [
     "all"
   ],
