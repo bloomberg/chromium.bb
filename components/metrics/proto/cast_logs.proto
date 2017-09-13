@@ -15,7 +15,7 @@ package metrics;
 // Next tag: 7
 message CastLogsProto {
   // Cast specific device information.
-  // Next tag: 6
+  // Next tag: 7
   message CastDeviceInfo {
     // The product type of Cast device sent from Cast-enabled devices.
     // Next tag: 8
@@ -43,6 +43,15 @@ message CastLogsProto {
 
     // The serial number.
     optional string serial_number = 5;
+
+    // Hardware information of the device.
+    message HardwareInfo {
+      optional string color = 1;
+      optional string mic = 2;
+      optional string memory = 3;
+      optional string nand = 4;
+    }
+    optional HardwareInfo hardware_info = 6;
   }
   // The device sends this information at least once per day.
   optional CastDeviceInfo cast_device_info = 1;
