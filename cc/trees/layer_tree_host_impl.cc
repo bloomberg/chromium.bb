@@ -2016,9 +2016,7 @@ void LayerTreeHostImpl::UpdateViewportContainerSizes() {
   // Adjust the viewport layers by shrinking/expanding the container to account
   // for changes in the size (e.g. browser controls) since the last resize from
   // Blink.
-  gfx::Vector2dF amount_to_expand(
-      0.f,
-      delta_from_top_controls * active_tree_->painted_device_scale_factor());
+  gfx::Vector2dF amount_to_expand(0.f, delta_from_top_controls);
   inner_container->SetViewportBoundsDelta(amount_to_expand);
 
   if (outer_container && !outer_container->BoundsForScrolling().IsEmpty()) {
