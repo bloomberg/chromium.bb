@@ -4,7 +4,10 @@
 
 #include "components/offline_pages/core/model/offline_store_utils.h"
 
+#include <limits>
+
 #include "base/files/file_path.h"
+#include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 
@@ -33,6 +36,11 @@ AddPageResult OfflineStoreUtils::ItemActionStatusToAddPageResult(
     default:
       return AddPageResult::STORE_FAILURE;
   }
+}
+
+// static
+int64_t OfflineStoreUtils::GenerateOfflineId() {
+  return base::RandGenerator(std::numeric_limits<int64_t>::max()) + 1;
 }
 
 }  // namespace offline_pages

@@ -36,7 +36,7 @@ namespace offline_pages {
 // does not happen.
 //
 // If the page is not completely loaded, it is up to the implementation of the
-// archiver whether to respond with ERROR_CONTENT_UNAVAILBLE, wait longer to
+// archiver whether to respond with ERROR_CONTENT_UNAVAILABLE, wait longer to
 // actually snapshot a complete page, or snapshot whatever is available at that
 // point in time (what the user sees).
 class OfflinePageArchiver {
@@ -52,6 +52,8 @@ class OfflinePageArchiver {
                                     // there was a security error.
     ERROR_ERROR_PAGE,               // We detected an error page.
     ERROR_INTERSTITIAL_PAGE,        // We detected an interstitial page.
+    ERROR_SKIPPED,                  // Page shouldn't be archived like NTP or
+                                    // file urls.
   };
 
   // Describes the parameters to control how to create an archive.

@@ -7,7 +7,8 @@
 namespace offline_pages {
 
 OfflinePageItem::OfflinePageItem()
-    : file_size(0),
+    : offline_id(0),
+      file_size(0),
       access_count(0),
       flags(NO_FLAG),
       system_download_id(0),

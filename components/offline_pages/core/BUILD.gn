@@ -18,6 +18,8 @@ static_library("core") {
     "client_policy_controller.h",
     "model/add_page_task.cc",
     "model/add_page_task.h",
+    "model/create_archive_task.cc",
+    "model/create_archive_task.h",
     "model/offline_store_utils.cc",
     "model/offline_store_utils.h",
     "offline_event_logger.cc",
@@ -107,6 +109,7 @@ source_set("unit_tests") {
   sources = [
     "archive_manager_unittest.cc",
     "client_policy_controller_unittest.cc",
+    "model/create_archive_task_unittest.cc",
     "offline_event_logger_unittest.cc",
     "offline_page_metadata_store_unittest.cc",
     "offline_page_model_event_logger_unittest.cc",

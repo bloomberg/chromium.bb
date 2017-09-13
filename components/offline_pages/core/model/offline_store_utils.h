@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_CORE_MODEL_OFFLINE_STORE_UTILS_H_
 #define COMPONENTS_OFFLINE_PAGES_CORE_MODEL_OFFLINE_STORE_UTILS_H_
 
+#include <stdint.h>
 #include <string>
 
 #include "components/offline_pages/core/offline_page_types.h"
@@ -23,6 +24,9 @@ class OfflineStoreUtils {
 
   // Converts an ItemActionStatus to AddPageResult.
   static AddPageResult ItemActionStatusToAddPageResult(ItemActionStatus status);
+
+  // Generates a random offline id;
+  static int64_t GenerateOfflineId();
 };
 
 }  // namespace offline_pages
