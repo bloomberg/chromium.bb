@@ -1570,6 +1570,9 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_CHOOSE_DEFAULT_EMAIL_CLIENT_APP" desc="Title for action sheet to select an email client app when user taps on an URL that has a mailto: URL scheme. [Length: 50em]">
         Choose Default Email App
       </message>
+      <message name="IDS_IOS_CHOOSE_EMAIL_APP" desc="Title for bottom sheet to choose an email client app when user taps on an URL that has a mailto: URL scheme. [Length 40em]">
+        Choose Email App
+      </message>
       <message name="IDS_IOS_CHOOSE_EMAIL_APP_HOW_TO_CHANGE" desc="Subtitle for action sheet to choose mailto:// handler with instructions on how to change the preference in the future. [Length: 80]">
         You can change this preference any time in Chrome settings
       </message>
