@@ -319,10 +319,10 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
         container_builder_.SwapUnpositionedFloats(&unpositioned_floats_);
         return container_builder_.Abort(NGLayoutResult::kBfcOffsetResolved);
       }
+      if (container_builder_.DidBreak() &&
+          IsOutOfSpace(ConstraintSpace(), content_size_))
+        break;
     }
-
-    if (IsOutOfSpace(ConstraintSpace(), content_size_))
-      break;
   }
 
   NGMarginStrut end_margin_strut = previous_inflow_position.margin_strut;
