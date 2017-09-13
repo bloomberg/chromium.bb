@@ -6466,7 +6466,9 @@
             "{\n    \"name\": \"robo\",\n    \"test_suites\": []\n}",
             "{\n    \"name\": \"robo360\",\n    \"test_suites\": []\n}",
             "{\n    \"name\": \"santa\",\n    \"test_suites\": []\n}",
-            "{\n    \"name\": \"thresher\",\n    \"test_suites\": []\n}"
+            "{\n    \"name\": \"thresher\",\n    \"test_suites\": []\n}",
+            "{\n    \"name\": \"whitetip1\",\n    \"test_suites\": [\n        \"sanity\",\n        \"bvt-inline\",\n        \"bvt-arc\",\n        \"au\",\n        \"bvt-cq\",\n        \"bvt-perbuild\"\n    ]\n}",
+            "{\n    \"name\": \"whitetip2\",\n    \"test_suites\": [\n        \"sanity\",\n        \"bvt-inline\",\n        \"bvt-arc\",\n        \"au\",\n        \"bvt-cq\",\n        \"bvt-perbuild\"\n    ]\n}"
         ],
         "vm_tests": [],
         "vm_tests_override": null

@@ -1503,6 +1503,32 @@
           "board_name": "coral",
           "name": "thresher",
           "cq_test_enabled": false
+        },
+        {
+          "board_name": "coral",
+          "name": "whitetip1",
+          "test_suites": [
+            "sanity",
+            "bvt-inline",
+            "bvt-arc",
+            "au",
+            "bvt-cq",
+            "bvt-perbuild"
+          ],
+          "cq_test_enabled": false
+        },
+        {
+          "board_name": "coral",
+          "name": "whitetip2",
+          "test_suites": [
+            "sanity",
+            "bvt-inline",
+            "bvt-arc",
+            "au",
+            "bvt-cq",
+            "bvt-perbuild"
+          ],
+          "cq_test_enabled": false
         }
       ]
     },
