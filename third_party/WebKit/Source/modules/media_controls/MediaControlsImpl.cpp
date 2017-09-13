@@ -602,8 +602,7 @@ void MediaControlsImpl::MakeTransparent() {
 bool MediaControlsImpl::ShouldHideMediaControls(unsigned behavior_flags) const {
   // Never hide for a media element without visual representation.
   if (!MediaElement().IsHTMLVideoElement() || !MediaElement().HasVideo() ||
-      toHTMLVideoElement(MediaElement()).GetMediaRemotingStatus() ==
-          HTMLVideoElement::MediaRemotingStatus::kStarted) {
+      toHTMLVideoElement(MediaElement()).IsRemotingInterstitialVisible()) {
     return false;
   }
 

@@ -40,6 +40,9 @@ class MediaRemotingInterstitial final : public HTMLDivElement {
 
   void OnPosterImageChanged();
 
+  // Query for whether the remoting interstitial is visible.
+  bool IsVisible() const { return should_be_visible_; }
+
   HTMLVideoElement& GetVideoElement() const { return *video_element_; }
 
   DECLARE_VIRTUAL_TRACE();
@@ -52,7 +55,7 @@ class MediaRemotingInterstitial final : public HTMLDivElement {
   void ToggleInterstitialTimerFired(TimerBase*);
 
   // Indicates whether the interstitial should be visible. It is set/changed
-  // when SHow()/Hide() is called.
+  // when Show()/Hide() is called.
   bool should_be_visible_ = false;
 
   TaskRunnerTimer<MediaRemotingInterstitial> toggle_insterstitial_timer_;
