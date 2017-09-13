@@ -80,6 +80,11 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineObserver {
           bool needs_sync_tokens);
   ~Surface();
 
+  // Clears the |seen_first_frame_activation_| bit causing a
+  // FirstSurfaceActivation to be triggered on the next CompositorFrame
+  // activation.
+  void ResetSeenFirstFrameActivation();
+
   const SurfaceId& surface_id() const { return surface_info_.id(); }
   const SurfaceId& previous_frame_surface_id() const {
     return previous_frame_surface_id_;

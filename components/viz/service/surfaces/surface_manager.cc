@@ -119,8 +119,10 @@ Surface* SurfaceManager::CreateSurface(
   // SurfaceId. Remove the surface out of the garbage collector's queue and
   // reuse it.
   Surface* surface = it->second.get();
+
   DCHECK(IsMarkedForDestruction(surface_info.id()));
   surfaces_to_destroy_.erase(surface_info.id());
+  surface->ResetSeenFirstFrameActivation();
   return surface;
 }
 

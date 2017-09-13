@@ -44,6 +44,10 @@ Surface::~Surface() {
   deadline_.RemoveObserver(this);
 }
 
+void Surface::ResetSeenFirstFrameActivation() {
+  seen_first_frame_activation_ = false;
+}
+
 void Surface::SetPreviousFrameSurface(Surface* surface) {
   DCHECK(surface && (HasActiveFrame() || HasPendingFrame()));
   previous_frame_surface_id_ = surface->surface_id();

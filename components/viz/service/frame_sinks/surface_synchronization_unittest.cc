@@ -993,6 +993,7 @@ TEST_F(SurfaceSynchronizationTest, SurfaceResurrection) {
 
   // Child submits another frame to the same local surface id that is marked
   // destroyed.
+  surface_observer().Reset();
   child_support1().SubmitCompositorFrame(child_id.local_surface_id(),
                                          MakeCompositorFrame());
 
@@ -1001,6 +1002,7 @@ TEST_F(SurfaceSynchronizationTest, SurfaceResurrection) {
   Surface* surface2 = GetSurfaceForId(child_id);
   EXPECT_EQ(surface, surface2);
   EXPECT_FALSE(IsMarkedForDestruction(child_id));
+  EXPECT_EQ(child_id, surface_observer().last_created_surface_id());
 }
 
 // Verifies that if a LocalSurfaceId belonged to a surface that doesn't
