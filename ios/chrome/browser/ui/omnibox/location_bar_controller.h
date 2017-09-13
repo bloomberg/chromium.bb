@@ -5,7 +5,7 @@
 #ifndef IOS_SHARED_CHROME_BROWSER_UI_OMNIBOX_LOCATION_BAR_CONTROLLER_H_
 #define IOS_SHARED_CHROME_BROWSER_UI_OMNIBOX_LOCATION_BAR_CONTROLLER_H_
 
-#include "ios/shared/chrome/browser/ui/omnibox/web_omnibox_edit_controller.h"
+#include "ios/chrome/browser/ui/omnibox/web_omnibox_edit_controller.h"
 
 class OmniboxView;
 
