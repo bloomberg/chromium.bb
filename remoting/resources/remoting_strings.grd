@@ -1101,7 +1101,7 @@ Securely access your computer from your iOS device. It's fast, simple and free.
       </message>
       <message desc="Error message indicating that the host is offline because the session script keeps dying."
                name="IDS_OFFLINE_REASON_SESSION_RETRIES_EXCEEDED" formatter_data="android_java">
-        Session crashed or failed to start. If ~/.chrome-remote-desktop-session exists on the remote computer, make sure it runs a long-running process such as a desktop environment or window manager.
+        Session crashed or failed to start. If ~/.chrome-remote-desktop-session exists on the remote computer, make sure it starts a long-running foreground process such as a desktop environment or window manager.
       </message>
       <message desc="Error message indicating that the host is offline because the host keeps dying."
                name="IDS_OFFLINE_REASON_HOST_RETRIES_EXCEEDED" formatter_data="android_java">
