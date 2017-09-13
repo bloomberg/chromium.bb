@@ -1,11 +1,11 @@
-import("../vulcanize.gni")
+import("../optimize_webui.gni")
 import("//tools/grit/grit_rule.gni")
 import("//chrome/common/features.gni")
 
 settings_pak_file = "settings_resources.pak"
 unpak_folder = "settings_resources.unpak"
 
-vulcanize("build") {
+optimize_webui("build") {
   host = "settings"
   html_in_files = [
     "settings.html",

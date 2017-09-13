@@ -1,6 +1,6 @@
-import("../vulcanize.gni")
+import("../optimize_webui.gni")
 
-vulcanize("build") {
+optimize_webui("build") {
   host = "bookmarks"
   html_in_files = [ "bookmarks.html" ]
   html_out_files = [ "vulcanized.html" ]

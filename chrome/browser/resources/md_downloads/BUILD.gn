@@ -1,6 +1,6 @@
-import("../vulcanize.gni")
+import("../optimize_webui.gni")
 
-vulcanize("build") {
+optimize_webui("build") {
   deps = []
   host = "downloads"
   html_in_files = [ "downloads.html" ]
