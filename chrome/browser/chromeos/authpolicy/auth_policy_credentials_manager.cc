@@ -52,27 +52,23 @@ constexpr char kKrb5ConfEnvName[] = "KRB5_CONFIG";
 constexpr char kKrb5ConfFile[] = "krb5.conf";
 
 // A notification delegate for the sign-out button.
-class SigninNotificationDelegate : public NotificationDelegate {
+// TODO(estade): Can this be a HandleNotificationButtonClickDelegate?
+class SigninNotificationDelegate : public message_center::NotificationDelegate {
  public:
-  explicit SigninNotificationDelegate(const std::string& id);
+  SigninNotificationDelegate();
 
   // NotificationDelegate:
   void Click() override;
   void ButtonClick(int button_index) override;
-  std::string id() const override;
 
  protected:
   ~SigninNotificationDelegate() override = default;
 
  private:
-  // Unique id of the notification.
-  const std::string id_;
-
   DISALLOW_COPY_AND_ASSIGN(SigninNotificationDelegate);
 };
 
-SigninNotificationDelegate::SigninNotificationDelegate(const std::string& id)
-    : id_(id) {}
+SigninNotificationDelegate::SigninNotificationDelegate() {}
 
 void SigninNotificationDelegate::Click() {
   chrome::AttemptUserExit();
@@ -80,10 +76,6 @@ void SigninNotificationDelegate::Click() {
 
 void SigninNotificationDelegate::ButtonClick(int button_index) {
   chrome::AttemptUserExit();
-}
-
-std::string SigninNotificationDelegate::id() const {
-  return id_;
 }
 
 // Writes |blob| into file <UserPath>/kerberos/|file_name|. First writes into
@@ -314,10 +306,6 @@ void AuthPolicyCredentialsManager::ShowNotification(int message_id) {
   const std::string notification_id = kProfileSigninNotificationId +
                                       profile_->GetProfileUserName() +
                                       std::to_string(message_id);
-  // Set the delegate for the notification's sign-out button.
-  SigninNotificationDelegate* delegate =
-      new SigninNotificationDelegate(notification_id);
-
   message_center::NotifierId notifier_id(
       message_center::NotifierId::SYSTEM_COMPONENT,
       kProfileSigninNotificationId);
@@ -326,13 +314,14 @@ void AuthPolicyCredentialsManager::ShowNotification(int message_id) {
   notifier_id.profile_id = profile_->GetProfileUserName();
 
   Notification notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
+      message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
       l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_BUBBLE_VIEW_TITLE),
       l10n_util::GetStringUTF16(message_id),
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           IDR_NOTIFICATION_ALERT),
       notifier_id, l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_DISPLAY_SOURCE),
-      GURL(notification_id), notification_id, data, delegate);
+      GURL(notification_id), notification_id, data,
+      new SigninNotificationDelegate());
   notification.set_accent_color(
       message_center::kSystemNotificationColorCriticalWarning);
   notification.SetSystemPriority();

@@ -187,7 +187,7 @@ MessageCenterNotificationManager::GetAllIdsByProfileAndSourceOrigin(
     const Notification& notification = pair.second->notification();
     if (pair.second->profile_id() == profile_id &&
         notification.origin_url() == source) {
-      delegate_ids.insert(notification.delegate_id());
+      delegate_ids.insert(notification.id());
     }
   }
 
@@ -199,7 +199,7 @@ std::set<std::string> MessageCenterNotificationManager::GetAllIdsByProfile(
   std::set<std::string> delegate_ids;
   for (const auto& pair : profile_notifications_) {
     if (pair.second->profile_id() == profile_id)
-      delegate_ids.insert(pair.second->notification().delegate_id());
+      delegate_ids.insert(pair.second->notification().id());
   }
 
   return delegate_ids;

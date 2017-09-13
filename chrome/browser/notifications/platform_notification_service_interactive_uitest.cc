@@ -672,8 +672,8 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
       base::StartsWith(notification.id(), "p:", base::CompareCase::SENSITIVE));
 
   display_service_tester_->RemoveNotification(
-      NotificationCommon::PERSISTENT, notification.delegate_id(),
-      false /* by_user */, true /* silent */);
+      NotificationCommon::PERSISTENT, notification.id(), false /* by_user */,
+      true /* silent */);
 
   ASSERT_TRUE(RunScript("GetDisplayedNotifications()", &script_result));
   EXPECT_EQ("ok", script_result);
