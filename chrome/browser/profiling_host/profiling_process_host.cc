@@ -202,7 +202,7 @@ bool ProfilingProcessHost::OnMemoryDump(
   // Attempt to dump all processes. Some of these processes will not be profiled
   // [e.g. utility processes, including the profiling process]. The profiling
   // process will gracefully handle these failures.
-  DCHECK_EQ(GetCurrentMode(), Mode::kAll);
+  DCHECK_NE(GetCurrentMode(), Mode::kNone);
   base::ProcessIterator process_iter(NULL);
   while (const base::ProcessEntry* process_entry =
              process_iter.NextProcessEntry()) {
