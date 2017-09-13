@@ -12,14 +12,14 @@ namespace blink {
 
 RuntimeEnabledFeatures::Backup::Backup()
   : {% for feature in standard_features -%}
-    {{feature.first_lowered_name}}_(RuntimeEnabledFeatures::{{feature.name}}Enabled())
+    {{feature.class_member_name}}(RuntimeEnabledFeatures::{{feature.name}}Enabled())
     {%- if not loop.last %},
     {%+ endif -%}
     {% endfor %} {}
 
 void RuntimeEnabledFeatures::Backup::Restore() {
   {% for feature in standard_features %}
-  RuntimeEnabledFeatures::Set{{feature.name}}Enabled({{feature.first_lowered_name}}_);
+  RuntimeEnabledFeatures::Set{{feature.name}}Enabled({{feature.class_member_name}});
   {% endfor %}
 }
 
@@ -45,7 +45,7 @@ void RuntimeEnabledFeatures::SetFeatureEnabledFromString(
     bool* setting;
   } kFeatures[] = {
   {% for feature in standard_features %}
-    {"{{feature.name}}", &is{{feature.name}}Enabled},
+    {"{{feature.name}}", &is_{{feature.class_member_name}}enabled_},
   {% endfor %}
   };
   for (const auto& feature : kFeatures) {
@@ -58,7 +58,7 @@ void RuntimeEnabledFeatures::SetFeatureEnabledFromString(
 }
 
 {% for feature in standard_features %}
-bool RuntimeEnabledFeatures::is{{feature.name}}Enabled = {{'true' if feature.status == 'stable' else 'false'}};
+bool RuntimeEnabledFeatures::is_{{feature.class_member_name}}enabled_ = {{'true' if feature.status == 'stable' else 'false'}};
 {% endfor %}
 
 } // namespace blink

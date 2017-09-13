@@ -26,7 +26,7 @@ class PLATFORM_EXPORT RuntimeEnabledFeatures {
 
    private:
     {% for feature in standard_features %}
-    bool {{feature.first_lowered_name}}_;
+    bool {{feature.class_member_name}};
     {% endfor %}
   };
 
@@ -35,13 +35,13 @@ class PLATFORM_EXPORT RuntimeEnabledFeatures {
   {% endfor %}
   static void SetOriginTrialControlledFeaturesEnabled(bool);
 
-  static void SetFeatureEnabledFromString(const std::string& name, bool isEnabled);
+  static void SetFeatureEnabledFromString(const std::string& name, bool enabled);
 
   {% for feature in features %}
   {% if feature.custom %}
   static bool {{feature.name}}Enabled();
   {% else %}
-  static void Set{{feature.name}}Enabled(bool isEnabled) { is{{feature.name}}Enabled = isEnabled; }
+  static void Set{{feature.name}}Enabled(bool enabled) { is_{{feature.class_member_name}}enabled_ = enabled; }
   static bool {{feature.name}}Enabled() { return {{feature.enabled_condition}}; }
 
   {% endif %}
@@ -49,7 +49,7 @@ class PLATFORM_EXPORT RuntimeEnabledFeatures {
 
  private:
   {% for feature in standard_features %}
-  static bool is{{feature.name}}Enabled;
+  static bool is_{{feature.class_member_name}}enabled_;
   {% endfor %}
 };
 
