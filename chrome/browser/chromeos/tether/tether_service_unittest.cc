@@ -28,6 +28,7 @@
 #include "chromeos/dbus/fake_shill_manager_client.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
@@ -42,6 +43,7 @@
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 #include "ui/message_center/message_center.h"
 
 using testing::Invoke;
@@ -297,6 +299,14 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
 
   bool IsBluetoothPresent() { return is_adapter_present_; }
   bool IsBluetoothPowered() { return is_adapter_powered_; }
+
+  void RemoveWifiFromSystem() {
+    chromeos::DBusThreadManager::Get()
+        ->GetShillManagerClient()
+        ->GetTestInterface()
+        ->RemoveTechnology(shill::kTypeWifi);
+    base::RunLoop().RunUntilIdle();
+  }
 
   void DisconnectDefaultShillNetworks() {
     const chromeos::NetworkState* default_state;
@@ -601,6 +611,20 @@ TEST_F(TetherServiceTest, TestBluetoothNotPresent) {
 
   ShutdownAndVerifyFinalTetherFeatureState(
       TetherService::TetherFeatureState::BLE_NOT_PRESENT);
+}
+
+TEST_F(TetherServiceTest, TestWifiNotPresent) {
+  RemoveWifiFromSystem();
+
+  CreateTetherService();
+
+  EXPECT_EQ(
+      chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_UNAVAILABLE,
+      network_state_handler()->GetTechnologyState(
+          chromeos::NetworkTypePattern::Tether()));
+
+  ShutdownAndVerifyFinalTetherFeatureState(
+      TetherService::TetherFeatureState::WIFI_NOT_PRESENT);
 }
 
 TEST_F(TetherServiceTest, TestIsBluetoothPowered) {
