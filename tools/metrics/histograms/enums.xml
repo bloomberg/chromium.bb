@@ -24677,7 +24677,9 @@ from previous Chrome versions.
   <int value="1007" label="CBErrorPeripheralDisconnected"/>
   <int value="1008" label="CBErrorUUIDNotAllowed"/>
   <int value="1009" label="CBErrorAlreadyAdvertising"/>
-  <int value="1010" label="CBErrorMaxConnection"/>
+  <int value="1010" label="CBErrorConnectionFailed"/>
+  <int value="1011" label="CBErrorConnectionLimitReached"/>
+  <int value="1012" label="CBErrorUnknownDevice"/>
   <int value="1999" label="Unknown CBError code"/>
 </enum>
 
