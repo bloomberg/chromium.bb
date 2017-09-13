@@ -5,8 +5,7 @@
 #ifndef MOJO_EDK_SYSTEM_WATCHER_SET_H_
 #define MOJO_EDK_SYSTEM_WATCHER_SET_H_
 
-#include <map>
-
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
@@ -59,7 +58,7 @@ class WatcherSet {
   };
 
   Dispatcher* const owner_;
-  std::map<WatcherDispatcher*, Entry> watchers_;
+  base::flat_map<WatcherDispatcher*, Entry> watchers_;
   base::Optional<HandleSignalsState> last_known_state_;
 
   DISALLOW_COPY_AND_ASSIGN(WatcherSet);
