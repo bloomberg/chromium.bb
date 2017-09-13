@@ -96,15 +96,9 @@ test.text.testShowErrorMessageWithLink = function() {
 
 
 /**
- * Test updating the text with an error message containing a callback.
+ * Test updating the text with an error message containing a "Try Again" link.
  */
-test.text.testShowErrorMessageWithCallback = function() {
-  // Mock the restart callback.
-  let restartCalled = false;
-  test.text.stubs.replace(speech, 'restart', function() {
-    restartCalled = true;
-  });
-
+test.text.testShowErrorMessageWithTryAgainLink = function() {
   // Display the try again error.
   const tryAgainError = RecognitionError.NO_MATCH;
   text.showErrorMessage(tryAgainError);
@@ -113,12 +107,6 @@ test.text.testShowErrorMessageWithCallback = function() {
           'Try again</a>',
       text.interim_.innerHTML);
   assertEquals('', text.final_.innerHTML);
-
-  // Assert the callback is called when the link element is clicked.
-  assertFalse(restartCalled);
-  assertEquals(1, text.interim_.children.length);
-  text.interim_.children[0].click();
-  assertTrue(restartCalled);
 };
 
 
