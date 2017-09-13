@@ -5,6 +5,7 @@
 #include "components/leveldb/leveldb_struct_traits.h"
 
 #include "third_party/leveldatabase/env_chromium.h"
+#include "third_party/leveldatabase/leveldb_chrome.h"
 
 namespace mojo {
 
@@ -46,7 +47,7 @@ StructTraits<leveldb::mojom::OpenOptionsDataView, leveldb_env::Options>::
     NOTREACHED();
     return leveldb::mojom::SharedReadCache::Default;
   }
-  if (options.block_cache == leveldb_env::SharedWebBlockCache())
+  if (options.block_cache == leveldb_chrome::GetSharedWebBlockCache())
     return leveldb::mojom::SharedReadCache::Web;
 
   leveldb_env::Options default_options;
@@ -69,7 +70,7 @@ bool StructTraits<leveldb::mojom::OpenOptionsDataView, leveldb_env::Options>::
       out->block_cache = options.block_cache;
     } break;
     case leveldb::mojom::SharedReadCache::Web:
-      out->block_cache = leveldb_env::SharedWebBlockCache();
+      out->block_cache = leveldb_chrome::GetSharedWebBlockCache();
       break;
   }
 

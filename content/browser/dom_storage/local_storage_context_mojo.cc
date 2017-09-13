@@ -28,6 +28,7 @@
 #include "sql/connection.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "third_party/leveldatabase/env_chromium.h"
+#include "third_party/leveldatabase/leveldb_chrome.h"
 
 namespace content {
 
@@ -611,7 +612,7 @@ void LocalStorageContextMojo::OnDirectoryOpened(
   // Default write_buffer_size is 4 MB but that might leave a 3.999
   // memory allocation in RAM from a log file recovery.
   options.write_buffer_size = 64 * 1024;
-  options.block_cache = leveldb_env::SharedWebBlockCache();
+  options.block_cache = leveldb_chrome::GetSharedWebBlockCache();
   leveldb_service_->OpenWithOptions(
       std::move(options), std::move(directory_clone), "leveldb",
       memory_dump_id_, MakeRequest(&database_),

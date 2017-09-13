@@ -32,7 +32,7 @@
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "content/browser/indexed_db/leveldb/leveldb_iterator_impl.h"
 #include "content/browser/indexed_db/leveldb/leveldb_write_batch.h"
-#include "third_party/leveldatabase/env_chromium.h"
+#include "third_party/leveldatabase/leveldb_chrome.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/env.h"
@@ -123,7 +123,7 @@ leveldb::Status OpenDB(
   // https://code.google.com/p/chromium/issues/detail?id=227313#c11
   options.max_open_files = 80;
   options.env = env;
-  options.block_cache = leveldb_env::SharedWebBlockCache();
+  options.block_cache = leveldb_chrome::GetSharedWebBlockCache();
 
   // ChromiumEnv assumes UTF8, converts back to FilePath before using.
   return leveldb_env::OpenDB(options, path.AsUTF8Unsafe(), db);
