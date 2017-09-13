@@ -4,42 +4,58 @@
 
 package org.chromium.net.smoke;
 
+import static org.chromium.net.smoke.CronetSmokeTestRule.assertJavaEngine;
+import static org.chromium.net.smoke.CronetSmokeTestRule.assertSuccessfulNonEmptyResponse;
+
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.net.UrlRequest;
 
 /**
  * Tests scenario when an app doesn't contain the native Cronet implementation.
  */
-public class PlatformOnlyEngineTest extends CronetSmokeTestCase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class PlatformOnlyEngineTest {
     private String mURL;
     private TestSupport.TestServer mServer;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Rule
+    public CronetSmokeTestRule mRule = new CronetSmokeTestRule();
+
+    @Before
+    public void setUp() throws Exception {
         // Java-only implementation of the Cronet engine only supports Http/1 protocol.
-        mServer = mTestSupport.createTestServer(getContext(), TestSupport.Protocol.HTTP1);
-        assertTrue(mServer.start());
+        mServer = mRule.getTestSupport().createTestServer(
+                InstrumentationRegistry.getTargetContext(), TestSupport.Protocol.HTTP1);
+        Assert.assertTrue(mServer.start());
         mURL = mServer.getSuccessURL();
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         mServer.shutdown();
-        super.tearDown();
     }
 
     /**
      * Test a successful response when a request is sent by the Java Cronet Engine.
      */
+    @Test
     @SmallTest
     public void testSuccessfulResponse() {
-        initCronetEngine();
-        assertJavaEngine(mCronetEngine);
+        mRule.initCronetEngine();
+        assertJavaEngine(mRule.getCronetEngine());
         SmokeTestRequestCallback callback = new SmokeTestRequestCallback();
-        UrlRequest.Builder requestBuilder =
-                mCronetEngine.newUrlRequestBuilder(mURL, callback, callback.getExecutor());
+        UrlRequest.Builder requestBuilder = mRule.getCronetEngine().newUrlRequestBuilder(
+                mURL, callback, callback.getExecutor());
         requestBuilder.build().start();
         callback.blockForDone();
         assertSuccessfulNonEmptyResponse(callback, mURL);

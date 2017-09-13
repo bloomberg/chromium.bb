@@ -8,10 +8,17 @@ import android.support.test.filters.LargeTest;
 import android.view.View;
 
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content.R;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.input.SuggestionsPopupWindow;
@@ -27,24 +34,31 @@ import java.util.concurrent.TimeoutException;
 /**
  * Integration tests for the text suggestion menu.
  */
-public class TextSuggestionMenuTest extends ChromeActivityTestCaseBase<ChromeActivity> {
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
+public class TextSuggestionMenuTest {
+    @Rule
+    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
+            new ChromeActivityTestRule<>(ChromeActivity.class);
+
     private static final String URL =
             "data:text/html, <div contenteditable id=\"div\">iuvwneaoanls</div>";
 
-    public TextSuggestionMenuTest() {
-        super(ChromeActivity.class);
+    @Before
+    public void setUp() throws InterruptedException {
+        mActivityTestRule.startMainActivityOnBlankPage();
     }
 
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
-    }
-
+    @Test
     @LargeTest
     @RetryOnFailure
     public void testDeleteMisspelledWord() throws InterruptedException, TimeoutException {
-        loadUrl(URL);
-        final ContentViewCore cvc = getActivity().getActivityTab().getContentViewCore();
+        mActivityTestRule.loadUrl(URL);
+        final ContentViewCore cvc =
+                mActivityTestRule.getActivity().getActivityTab().getContentViewCore();
         WebContents webContents = cvc.getWebContents();
 
         // The spell checker is called asynchronously, in an idle-time callback. By waiting for an

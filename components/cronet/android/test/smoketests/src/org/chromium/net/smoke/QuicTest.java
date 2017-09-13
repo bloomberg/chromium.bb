@@ -4,12 +4,20 @@
 
 package org.chromium.net.smoke;
 
+import static org.chromium.net.smoke.TestSupport.Protocol.QUIC;
+
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
 import org.json.JSONObject;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
-import static org.chromium.net.smoke.TestSupport.Protocol.QUIC;
-
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.net.UrlRequest;
 
 import java.net.URL;
@@ -17,37 +25,41 @@ import java.net.URL;
 /**
  * QUIC Tests.
  */
-public class QuicTest extends NativeCronetTestCase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class QuicTest {
     private TestSupport.TestServer mServer;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        mServer = mTestSupport.createTestServer(getContext(), QUIC);
+    @Rule
+    public NativeCronetTestRule mRule = new NativeCronetTestRule();
+
+    @Before
+    public void setUp() throws Exception {
+        mServer = mRule.getTestSupport().createTestServer(
+                InstrumentationRegistry.getTargetContext(), QUIC);
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         mServer.shutdown();
-        super.tearDown();
     }
 
+    @Test
     @SmallTest
     public void testQuic() throws Exception {
-        assertTrue(mServer.start());
+        Assert.assertTrue(mServer.start());
         final String urlString = mServer.getSuccessURL();
         final URL url = new URL(urlString);
 
-        mCronetEngineBuilder.enableQuic(true);
-        mCronetEngineBuilder.addQuicHint(url.getHost(), url.getPort(), url.getPort());
-        mTestSupport.installMockCertVerifierForTesting(mCronetEngineBuilder);
+        mRule.getCronetEngineBuilder().enableQuic(true);
+        mRule.getCronetEngineBuilder().addQuicHint(url.getHost(), url.getPort(), url.getPort());
+        mRule.getTestSupport().installMockCertVerifierForTesting(mRule.getCronetEngineBuilder());
 
         JSONObject quicParams = new JSONObject();
         JSONObject experimentalOptions = new JSONObject().put("QUIC", quicParams);
-        mTestSupport.addHostResolverRules(experimentalOptions);
-        mCronetEngineBuilder.setExperimentalOptions(experimentalOptions.toString());
+        mRule.getTestSupport().addHostResolverRules(experimentalOptions);
+        mRule.getCronetEngineBuilder().setExperimentalOptions(experimentalOptions.toString());
 
-        initCronetEngine();
+        mRule.initCronetEngine();
 
         // QUIC is not guaranteed to win the race, so try multiple times.
         boolean quicNegotiated = false;
@@ -55,15 +67,16 @@ public class QuicTest extends NativeCronetTestCase {
         for (int i = 0; i < 5; i++) {
             SmokeTestRequestCallback callback = new SmokeTestRequestCallback();
             UrlRequest.Builder requestBuilder =
-                    mCronetEngine.newUrlRequestBuilder(urlString, callback, callback.getExecutor());
+                    mRule.getCronetEngine().newUrlRequestBuilder(
+                            urlString, callback, callback.getExecutor());
             requestBuilder.build().start();
             callback.blockForDone();
-            assertSuccessfulNonEmptyResponse(callback, urlString);
+            NativeCronetTestRule.assertSuccessfulNonEmptyResponse(callback, urlString);
             if (callback.getResponseInfo().getNegotiatedProtocol().startsWith("http/2+quic/")) {
                 quicNegotiated = true;
                 break;
             }
         }
-        assertTrue(quicNegotiated);
+        Assert.assertTrue(quicNegotiated);
     }
 }

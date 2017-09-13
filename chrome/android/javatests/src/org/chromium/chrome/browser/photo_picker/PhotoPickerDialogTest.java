@@ -6,18 +6,28 @@ package org.chromium.chrome.browser.photo_picker;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
+import android.support.test.filters.LargeTest;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Button;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
-import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.ui.PhotoPickerListener;
@@ -31,11 +41,19 @@ import java.util.concurrent.TimeUnit;
 /**
  * Tests for the PhotoPickerDialog class.
  */
-public class PhotoPickerDialogTest extends ChromeActivityTestCaseBase<ChromeActivity>
-        implements PhotoPickerListener, DecoderServiceHost.ServiceReadyCallback,
-                   SelectionObserver<PickerBitmap> {
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
+public class PhotoPickerDialogTest implements PhotoPickerListener,
+        SelectionObserver<PickerBitmap>, DecoderServiceHost.ServiceReadyCallback {
     // The timeout (in seconds) to wait for the decoder service to be ready.
     private static final long WAIT_TIMEOUT_SECONDS = scaleTimeout(30);
+
+    @Rule
+    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
+            new ChromeActivityTestRule<>(ChromeActivity.class);
 
     // The dialog we are testing.
     private PhotoPickerDialog mDialog;
@@ -66,16 +84,9 @@ public class PhotoPickerDialogTest extends ChromeActivityTestCaseBase<ChromeActi
     // A callback that fires when the decoder is ready.
     public final CallbackHelper onDecoderReadyCallback = new CallbackHelper();
 
-    public PhotoPickerDialogTest() {
-        super(ChromeActivity.class);
-    }
-
-    // ChromeActivityTestCaseBase:
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
+    @Before
+    public void setUp() throws Exception {
+        mActivityTestRule.startMainActivityOnBlankPage();
         mTestFiles = new ArrayList<>();
         mTestFiles.add(new PickerBitmap("a", 5L, PickerBitmap.PICTURE));
         mTestFiles.add(new PickerBitmap("b", 4L, PickerBitmap.PICTURE));
@@ -86,11 +97,6 @@ public class PhotoPickerDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         PickerCategoryView.setTestFiles(mTestFiles);
 
         DecoderServiceHost.setReadyCallback(this);
-    }
-
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
     }
 
     // PhotoPickerDialog.PhotoPickerListener:
@@ -128,8 +134,9 @@ public class PhotoPickerDialogTest extends ChromeActivityTestCaseBase<ChromeActi
                 ThreadUtils.runOnUiThreadBlocking(new Callable<PhotoPickerDialog>() {
                     @Override
                     public PhotoPickerDialog call() {
-                        final PhotoPickerDialog dialog = new PhotoPickerDialog(
-                                getActivity(), PhotoPickerDialogTest.this, multiselect, mimeTypes);
+                        final PhotoPickerDialog dialog =
+                                new PhotoPickerDialog(mActivityTestRule.getActivity(),
+                                        PhotoPickerDialogTest.this, multiselect, mimeTypes);
                         dialog.show();
                         return dialog;
                     }
@@ -159,8 +166,8 @@ public class PhotoPickerDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         onSelectionCallback.waitForCallback(callCount, 1);
 
         // Validate the correct selection took place.
-        assertEquals(expectedSelectionCount, mCurrentPhotoSelection.size());
-        assertTrue(mSelectionDelegate.isItemSelected(mTestFiles.get(position)));
+        Assert.assertEquals(expectedSelectionCount, mCurrentPhotoSelection.size());
+        Assert.assertTrue(mSelectionDelegate.isItemSelected(mTestFiles.get(position)));
     }
 
     private void clickDone() throws Exception {
@@ -171,18 +178,18 @@ public class PhotoPickerDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         int callCount = onActionCallback.getCallCount();
         TouchCommon.singleClickView(done);
         onActionCallback.waitForCallback(callCount, 1);
-        assertEquals(PhotoPickerListener.Action.PHOTOS_SELECTED, mLastActionRecorded);
+        Assert.assertEquals(PhotoPickerListener.Action.PHOTOS_SELECTED, mLastActionRecorded);
     }
 
     public void clickCancel() throws Exception {
         mLastActionRecorded = null;
 
         PickerCategoryView categoryView = mDialog.getCategoryViewForTesting();
-        View cancel = new View(getActivity());
+        View cancel = new View(mActivityTestRule.getActivity());
         int callCount = onActionCallback.getCallCount();
         categoryView.onClick(cancel);
         onActionCallback.waitForCallback(callCount, 1);
-        assertEquals(PhotoPickerListener.Action.CANCEL, mLastActionRecorded);
+        Assert.assertEquals(PhotoPickerListener.Action.CANCEL, mLastActionRecorded);
     }
 
     private void dismissDialog() {
@@ -197,22 +204,21 @@ public class PhotoPickerDialogTest extends ChromeActivityTestCaseBase<ChromeActi
     /**
      * Continues to be flaky on bots which doesn't reproduce on local devices,
      * continuing to investigate offline.
-     *
-     * https://crbug.com/761060
-     * @LargeTest
      */
-    @DisabledTest
+    @Test
+    @DisabledTest(message = "crbug.com/761060")
+    @LargeTest
     public void testNoSelection() throws Throwable {
         createDialog(false, Arrays.asList("image/*")); // Multi-select = false.
-        assertTrue(mDialog.isShowing());
+        Assert.assertTrue(mDialog.isShowing());
         waitForDecoder();
 
         int expectedSelectionCount = 1;
         clickView(0, expectedSelectionCount);
         clickCancel();
 
-        assertEquals(null, mLastSelectedPhotos);
-        assertEquals(PhotoPickerListener.Action.CANCEL, mLastActionRecorded);
+        Assert.assertNull(mLastSelectedPhotos);
+        Assert.assertEquals(PhotoPickerListener.Action.CANCEL, mLastActionRecorded);
 
         dismissDialog();
     }
@@ -220,14 +226,13 @@ public class PhotoPickerDialogTest extends ChromeActivityTestCaseBase<ChromeActi
     /**
      * Continues to be flaky on bots which doesn't reproduce on local devices,
      * continuing to investigate offline.
-     *
-     * https://crbug.com/761060
-     * @LargeTest
      */
-    @DisabledTest
+    @Test
+    @DisabledTest(message = "crbug.com/761060")
+    @LargeTest
     public void testSingleSelectionPhoto() throws Throwable {
         createDialog(false, Arrays.asList("image/*")); // Multi-select = false.
-        assertTrue(mDialog.isShowing());
+        Assert.assertTrue(mDialog.isShowing());
         waitForDecoder();
 
         // Expected selection count is 1 because clicking on a new view unselects other.
@@ -236,9 +241,9 @@ public class PhotoPickerDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         clickView(1, expectedSelectionCount);
         clickDone();
 
-        assertEquals(1, mLastSelectedPhotos.length);
-        assertEquals(PhotoPickerListener.Action.PHOTOS_SELECTED, mLastActionRecorded);
-        assertEquals(mTestFiles.get(1).getFilePath(), mLastSelectedPhotos[0]);
+        Assert.assertEquals(1, mLastSelectedPhotos.length);
+        Assert.assertEquals(PhotoPickerListener.Action.PHOTOS_SELECTED, mLastActionRecorded);
+        Assert.assertEquals(mTestFiles.get(1).getFilePath(), mLastSelectedPhotos[0]);
 
         dismissDialog();
     }
@@ -246,14 +251,13 @@ public class PhotoPickerDialogTest extends ChromeActivityTestCaseBase<ChromeActi
     /**
      * Continues to be flaky on bots which doesn't reproduce on local devices,
      * continuing to investigate offline.
-     *
-     * https://crbug.com/761060
-     * @LargeTest
      */
-    @DisabledTest
+    @Test
+    @DisabledTest(message = "crbug.com/761060")
+    @LargeTest
     public void testMultiSelectionPhoto() throws Throwable {
         createDialog(true, Arrays.asList("image/*")); // Multi-select = true.
-        assertTrue(mDialog.isShowing());
+        Assert.assertTrue(mDialog.isShowing());
         waitForDecoder();
 
         // Multi-selection is enabled, so each click is counted.
@@ -263,11 +267,11 @@ public class PhotoPickerDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         clickView(4, expectedSelectionCount++);
         clickDone();
 
-        assertEquals(3, mLastSelectedPhotos.length);
-        assertEquals(PhotoPickerListener.Action.PHOTOS_SELECTED, mLastActionRecorded);
-        assertEquals(mTestFiles.get(0).getFilePath(), mLastSelectedPhotos[0]);
-        assertEquals(mTestFiles.get(2).getFilePath(), mLastSelectedPhotos[1]);
-        assertEquals(mTestFiles.get(4).getFilePath(), mLastSelectedPhotos[2]);
+        Assert.assertEquals(3, mLastSelectedPhotos.length);
+        Assert.assertEquals(PhotoPickerListener.Action.PHOTOS_SELECTED, mLastActionRecorded);
+        Assert.assertEquals(mTestFiles.get(0).getFilePath(), mLastSelectedPhotos[0]);
+        Assert.assertEquals(mTestFiles.get(2).getFilePath(), mLastSelectedPhotos[1]);
+        Assert.assertEquals(mTestFiles.get(4).getFilePath(), mLastSelectedPhotos[2]);
 
         dismissDialog();
     }

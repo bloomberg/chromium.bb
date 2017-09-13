@@ -278,7 +278,7 @@ public class ChromeTabUtils {
         }
 
         try {
-            createdCallback.waitForCallback(0);
+            createdCallback.waitForCallback(null, 0, 1, 10, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
             Assert.fail("Never received tab creation event");
         }
