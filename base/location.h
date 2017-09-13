@@ -77,6 +77,11 @@ class BASE_EXPORT Location {
   void Write(bool display_filename, bool display_function_name,
              std::string* output) const;
 
+  static Location CreateFromHere(const char* file_name);
+  static Location CreateFromHere(const char* function_name,
+                                 const char* file_name,
+                                 int line_number);
+
  private:
   const char* function_name_ = nullptr;
   const char* file_name_ = nullptr;
@@ -105,15 +110,14 @@ BASE_EXPORT const void* GetProgramCounter();
 // Full source information should be included.
 #define FROM_HERE FROM_HERE_WITH_EXPLICIT_FUNCTION(__func__)
 #define FROM_HERE_WITH_EXPLICIT_FUNCTION(function_name) \
-  ::base::Location(function_name, __FILE__, __LINE__,   \
-                   ::base::GetProgramCounter())
+  ::base::Location::CreateFromHere(function_name, __FILE__, __LINE__)
 
 #else
 
 // TODO(http://crbug.com/760702) remove the __FILE__ argument from these calls.
-#define FROM_HERE ::base::Location(__FILE__, ::base::GetProgramCounter())
+#define FROM_HERE ::base::Location::CreateFromHere(__FILE__)
 #define FROM_HERE_WITH_EXPLICIT_FUNCTION(function_name) \
-  ::base::Location(function_name, __FILE__, -1, ::base::GetProgramCounter())
+  ::base::Location::CreateFromHere(function_name, __FILE__, -1)
 
 #endif
 
