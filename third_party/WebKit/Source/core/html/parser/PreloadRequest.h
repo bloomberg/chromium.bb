@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "core/CoreExport.h"
+#include "core/dom/Script.h"
 #include "platform/CrossOriginAttributeValue.h"
 #include "platform/loader/fetch/ClientHintsPreferences.h"
 #include "platform/loader/fetch/FetchParameters.h"
@@ -95,6 +96,8 @@ class CORE_EXPORT PreloadRequest {
   }
   ReferrerPolicy GetReferrerPolicy() const { return referrer_policy_; }
 
+  void SetScriptType(ScriptType script_type) { script_type_ = script_type; }
+
   // Only scripts and css stylesheets need to have integrity set on preloads.
   // This is because neither resource keeps raw data around to redo an
   // integrity check. A resource in memory cache needs integrity
@@ -127,6 +130,7 @@ class CORE_EXPORT PreloadRequest {
         resource_url_(resource_url.IsolatedCopy()),
         base_url_(base_url.Copy()),
         resource_type_(resource_type),
+        script_type_(ScriptType::kClassic),
         cross_origin_(kCrossOriginAttributeNotSet),
         discovery_time_(MonotonicallyIncreasingTime()),
         defer_(FetchParameters::kNoDefer),
@@ -146,6 +150,7 @@ class CORE_EXPORT PreloadRequest {
   KURL base_url_;
   String charset_;
   Resource::Type resource_type_;
+  ScriptType script_type_;
   CrossOriginAttributeValue cross_origin_;
   String nonce_;
   double discovery_time_;
