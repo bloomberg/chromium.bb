@@ -64,6 +64,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
+#include "content/common/content_switches_internal.h"
 #include "content/common/gpu_stream_constants.h"
 #include "content/common/input_messages.h"
 #include "content/common/site_isolation_policy.h"
@@ -1488,7 +1489,7 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
   bool is_mobile_optimized = IsMobileOptimizedFrame(frame_metadata);
   gesture_provider_.SetDoubleTapSupportForPageEnabled(!is_mobile_optimized);
 
-  float dip_scale = view_.GetDipScale();
+  float dip_scale = IsUseZoomForDSFEnabled() ? 1.f : view_.GetDipScale();
   float top_controls_pix = frame_metadata.top_controls_height * dip_scale;
   float top_content_offset = frame_metadata.top_controls_height *
                              frame_metadata.top_controls_shown_ratio;
