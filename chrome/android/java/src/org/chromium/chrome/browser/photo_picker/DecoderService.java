@@ -14,9 +14,12 @@ import android.os.RemoteException;
 import android.os.SystemClock;
 
 import org.chromium.base.Log;
+import org.chromium.base.PathUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 
 import java.io.FileDescriptor;
 import java.io.IOException;
@@ -42,6 +45,12 @@ public class DecoderService extends Service {
     @Override
     public void onCreate() {
         try {
+            // The decoder service relies on PathUtils.
+            ThreadUtils.runOnUiThreadBlocking(() -> {
+                PathUtils.setPrivateDataDirectorySuffix(
+                        ChromeBrowserInitializer.PRIVATE_DATA_DIRECTORY_SUFFIX);
+            });
+
             LibraryLoader.get(LibraryProcessType.PROCESS_CHILD).ensureInitialized();
             nativeInitializePhotoPickerSandbox();
 
