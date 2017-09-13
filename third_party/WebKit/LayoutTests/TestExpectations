@@ -2411,11 +2411,6 @@ crbug.com/508728 external/wpt/workers/Worker_cross_origin_security_err.htm [ Tim
 # This test needs to be updated: fails because it expects showModalDialog and some other APIs.
 crbug.com/508728 external/wpt/html/browsers/the-window-object/security-window/window-security.html [ Failure ]
 
-crbug.com/602693 external/wpt/service-workers/service-worker/fetch-frame-resource.https.html [ Timeout ]
-crbug.com/602693 virtual/service-worker-script-streaming/external/wpt/service-workers/service-worker/fetch-frame-resource.https.html [ Timeout ]
-crbug.com/602693 virtual/mojo-blobs/external/wpt/service-workers/service-worker/fetch-frame-resource.https.html [ Timeout ]
-crbug.com/602693 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-frame-resource.https.html [ Timeout ]
-
 # This test requires a special browser flag and seems not suitable for a wpt test, see bug.
 crbug.com/691944 external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
 crbug.com/691944 virtual/service-worker-script-streaming/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
