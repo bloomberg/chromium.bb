@@ -96,6 +96,9 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   // |split_view_overview_overlays_|'s widget, if necessary.
   void SetSplitViewOverviewOverlayVisible(bool visible,
                                           const gfx::Point& event_location);
+  // Retrieves the window grid whose root window matches |root_window|. Returns
+  // nullptr if the window grid is not found.
+  WindowGrid* GetGridWithRootWindow(aura::Window* root_window);
 
   // Removes the window selector item from the overview window grid.
   void RemoveWindowSelectorItem(WindowSelectorItem* item);

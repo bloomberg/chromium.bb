@@ -11,6 +11,7 @@
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
+#include "ui/events/event_constants.h"
 
 namespace views {
 class ImageView;
@@ -34,6 +35,9 @@ class ASH_EXPORT OverviewButtonTray : public TrayBackgroundView,
   // Updates the tray's visibility based on the LoginStatus and the current
   // state of TabletMode
   virtual void UpdateAfterLoginStatusChange(LoginStatus status);
+
+  // views::Button:
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // ActionableView:
   bool PerformAction(const ui::Event& event) override;

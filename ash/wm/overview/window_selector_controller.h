@@ -49,6 +49,11 @@ class ASH_EXPORT WindowSelectorController : public WindowSelectorDelegate {
   // are visible during overview mode.
   bool IsRestoringMinimizedWindows() const;
 
+  // Called when the overview button tray has been long pressed. Enters
+  // splitview mode if the active window is snappable. Also enters overview mode
+  // if device is not currently in overview mode.
+  void OnOverviewButtonTrayLongPressed(const gfx::Point& event_location);
+
   // Gets the windows list that are shown in the overview windows grids if the
   // overview mode is active for testing.
   std::vector<aura::Window*> GetWindowsListInOverviewGridsForTesting();

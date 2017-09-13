@@ -56,6 +56,14 @@ void OverviewButtonTray::UpdateAfterLoginStatusChange(LoginStatus status) {
   UpdateIconVisibility();
 }
 
+void OverviewButtonTray::OnGestureEvent(ui::GestureEvent* event) {
+  Button::OnGestureEvent(event);
+  if (event->type() == ui::ET_GESTURE_LONG_PRESS) {
+    Shell::Get()->window_selector_controller()->OnOverviewButtonTrayLongPressed(
+        event->location());
+  }
+}
+
 bool OverviewButtonTray::PerformAction(const ui::Event& event) {
   if (event.type() == ui::ET_GESTURE_TAP) {
     if (event.AsGestureEvent()->details().tap_count() == 2) {
