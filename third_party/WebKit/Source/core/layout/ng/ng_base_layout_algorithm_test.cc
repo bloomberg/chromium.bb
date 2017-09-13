@@ -75,7 +75,7 @@ RefPtr<NGConstraintSpace> ConstructBlockLayoutTestConstraintSpace(
       .SetTextDirection(direction)
       .SetIsShrinkToFit(shrink_to_fit)
       .SetIsNewFormattingContext(is_new_formatting_context)
-      .SetFragmentainerSpaceAvailable(fragmentainer_space_available)
+      .SetFragmentainerSpaceAtBfcStart(fragmentainer_space_available)
       .SetFragmentationType(block_fragmentation)
       .ToConstraintSpace(writing_mode);
 }

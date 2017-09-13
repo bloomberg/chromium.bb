@@ -108,7 +108,7 @@ WTF::Optional<LayoutUnit> CalculateFragmentationOffset(
          parent_space.WritingMode());
 
   if (parent_space.HasBlockFragmentation()) {
-    return parent_space.FragmentainerSpaceAvailable() - origin_block_offset;
+    return parent_space.FragmentainerSpaceAtBfcStart() - origin_block_offset;
   }
 
   return WTF::nullopt;
@@ -124,7 +124,7 @@ RefPtr<NGConstraintSpace> CreateConstraintSpaceForFloat(
   NGConstraintSpaceBuilder builder(parent_space);
 
   if (fragmentation_offset) {
-    builder.SetFragmentainerSpaceAvailable(fragmentation_offset.value())
+    builder.SetFragmentainerSpaceAtBfcStart(fragmentation_offset.value())
         .SetFragmentationType(parent_space.BlockFragmentationType());
   } else {
     builder.SetFragmentationType(NGFragmentationType::kFragmentNone);
