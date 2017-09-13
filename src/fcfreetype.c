@@ -1318,7 +1318,10 @@ FcFreeTypeQueryFace (const FT_Face  face,
 		  width_mult = mult;
 		  break;
 
-		/* TODO optical size! */
+		case FT_MAKE_TAG ('o','p','s','z'):
+		  if (!FcPatternAddDouble (pat, FC_SIZE, value))
+		      goto bail1;
+		  break;
 	    }
 	  }
 	}
