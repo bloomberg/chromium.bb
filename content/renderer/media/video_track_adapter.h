@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "content/common/content_export.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "media/base/video_frame.h"
 #include "ui/gfx/geometry/size.h"
@@ -85,12 +86,14 @@ class VideoTrackAdapter
 
   void SetSourceFrameSize(const gfx::Size& source_frame_size);
 
-  static void CalculateTargetSize(bool is_rotated,
-                                  const gfx::Size& input_size,
-                                  const gfx::Size& max_frame_size,
-                                  double min_aspect_ratio,
-                                  double max_aspect_ratio,
-                                  gfx::Size* desired_size);
+  // Exported for testing.
+  CONTENT_EXPORT static void CalculateTargetSize(
+      bool is_rotated,
+      const gfx::Size& input_size,
+      const gfx::Size& max_frame_size,
+      double min_aspect_ratio,
+      double max_aspect_ratio,
+      gfx::Size* desired_size);
 
  private:
   virtual ~VideoTrackAdapter();
