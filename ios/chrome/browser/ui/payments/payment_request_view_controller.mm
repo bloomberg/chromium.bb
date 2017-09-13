@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/payments/cells/page_info_item.h"
+#import "ios/chrome/browser/ui/payments/cells/payments_text_item.h"
 #import "ios/chrome/browser/ui/payments/cells/price_item.h"
 #import "ios/chrome/browser/ui/payments/payment_request_view_controller_actions.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
@@ -50,7 +51,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeSummaryPageInfo = kItemTypeEnumZero,
   ItemTypeSpinner,
   ItemTypeSummaryTotal,
-  ItemTypeShippingTitle,
+  ItemTypeShippingHeader,
   ItemTypeShippingAddress,
   ItemTypeShippingOption,
   ItemTypePaymentHeader,
@@ -193,9 +194,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
   if ([_dataSource requestShipping]) {
     [model addSectionWithIdentifier:SectionIdentifierShipping];
 
-    CollectionViewItem* shippingSectionHeaderItem =
+    PaymentsTextItem* shippingSectionHeaderItem =
         [_dataSource shippingSectionHeaderItem];
-    [shippingSectionHeaderItem setType:ItemTypeShippingTitle];
+    [shippingSectionHeaderItem setTextColor:[[MDCPalette greyPalette] tint500]];
+    [shippingSectionHeaderItem setType:ItemTypeShippingHeader];
     [model setHeader:shippingSectionHeaderItem
         forSectionWithIdentifier:SectionIdentifierShipping];
 
@@ -459,10 +461,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)populatePaymentMethodSection {
   CollectionViewModel* model = self.collectionViewModel;
 
-  CollectionViewItem* paymentMethodSectionHeaderItem =
+  PaymentsTextItem* paymentMethodSectionHeaderItem =
       [_dataSource paymentMethodSectionHeaderItem];
   if (paymentMethodSectionHeaderItem) {
     [paymentMethodSectionHeaderItem setType:ItemTypePaymentHeader];
+    [paymentMethodSectionHeaderItem
+        setTextColor:[[MDCPalette greyPalette] tint500]];
     [model setHeader:paymentMethodSectionHeaderItem
         forSectionWithIdentifier:SectionIdentifierPayment];
   }
@@ -477,10 +481,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)populateContactInfoSection {
   CollectionViewModel* model = self.collectionViewModel;
 
-  CollectionViewItem* contactInfoSectionHeaderItem =
+  PaymentsTextItem* contactInfoSectionHeaderItem =
       [_dataSource contactInfoSectionHeaderItem];
   if (contactInfoSectionHeaderItem) {
     [contactInfoSectionHeaderItem setType:ItemTypeContactInfoHeader];
+    [contactInfoSectionHeaderItem
+        setTextColor:[[MDCPalette greyPalette] tint500]];
     [model setHeader:contactInfoSectionHeaderItem
         forSectionWithIdentifier:SectionIdentifierContactInfo];
   }

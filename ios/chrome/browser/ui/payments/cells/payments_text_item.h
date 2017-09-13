@@ -15,13 +15,21 @@
 @interface PaymentsTextItem : CollectionViewItem<PaymentsIsSelectable>
 
 // The main text to display.
-@property(nonatomic, copy) NSString* text;
+@property(nonatomic, nullable, copy) NSString* text;
 
 // The secondary text to display.
-@property(nonatomic, copy) NSString* detailText;
+@property(nonatomic, nullable, copy) NSString* detailText;
+
+// The color of the main text. Default is the 900 tint color of the grey
+// palette.
+@property(nonatomic, null_resettable, copy) UIColor* textColor;
+
+// The color of the secondary text. Default is the 900 tint color of the grey
+// palette.
+@property(nonatomic, null_resettable, copy) UIColor* detailTextColor;
 
 // The image to display.
-@property(nonatomic, strong) UIImage* image;
+@property(nonatomic, nullable, strong) UIImage* image;
 
 // The accessory type for the represented cell.
 @property(nonatomic) MDCCollectionViewCellAccessoryType accessoryType;
@@ -38,13 +46,13 @@
 @interface PaymentsTextCell : MDCCollectionViewCell
 
 // UILabel corresponding to |text| from the item.
-@property(nonatomic, readonly, strong) UILabel* textLabel;
+@property(nonatomic, readonly, nullable, strong) UILabel* textLabel;
 
 // UILabel corresponding to |detailText| from the item.
-@property(nonatomic, readonly, strong) UILabel* detailTextLabel;
+@property(nonatomic, readonly, nullable, strong) UILabel* detailTextLabel;
 
 // UIImageView corresponding to |image| from the item.
-@property(nonatomic, readonly, strong) UIImageView* imageView;
+@property(nonatomic, readonly, nullable, strong) UIImageView* imageView;
 
 @end
 

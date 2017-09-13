@@ -30,6 +30,8 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
 
 @synthesize text = _text;
 @synthesize detailText = _detailText;
+@synthesize textColor = _textColor;
+@synthesize detailTextColor = _detailTextColor;
 @synthesize image = _image;
 @synthesize accessoryType = _accessoryType;
 @synthesize complete = _complete;
@@ -44,11 +46,27 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
   return self;
 }
 
+- (UIColor*)textColor {
+  if (!_textColor) {
+    _textColor = [[MDCPalette greyPalette] tint900];
+  }
+  return _textColor;
+}
+
+- (UIColor*)detailTextColor {
+  if (!_detailTextColor) {
+    _detailTextColor = [[MDCPalette greyPalette] tint900];
+  }
+  return _detailTextColor;
+}
+
 - (void)configureCell:(PaymentsTextCell*)cell {
   [super configureCell:cell];
   cell.accessoryType = self.accessoryType;
   cell.textLabel.text = self.text;
+  cell.textLabel.textColor = self.textColor;
   cell.detailTextLabel.text = self.detailText;
+  cell.detailTextLabel.textColor = self.detailTextColor;
   cell.imageView.image = self.image;
 }
 
@@ -107,12 +125,10 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
 // Set default font and text colors for labels.
 - (void)setDefaultViewStyling {
   _textLabel.font = [MDCTypography body2Font];
-  _textLabel.textColor = [[MDCPalette greyPalette] tint900];
   _textLabel.numberOfLines = 0;
   _textLabel.lineBreakMode = NSLineBreakByWordWrapping;
 
   _detailTextLabel.font = [MDCTypography body1Font];
-  _detailTextLabel.textColor = [[MDCPalette greyPalette] tint900];
   _detailTextLabel.numberOfLines = 0;
   _detailTextLabel.lineBreakMode = NSLineBreakByWordWrapping;
 }

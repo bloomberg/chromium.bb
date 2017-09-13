@@ -126,7 +126,7 @@ using ::payment_request_util::GetShippingSectionTitle;
   return item;
 }
 
-- (CollectionViewItem*)shippingSectionHeaderItem {
+- (PaymentsTextItem*)shippingSectionHeaderItem {
   PaymentsTextItem* item = [[PaymentsTextItem alloc] init];
   item.text = GetShippingSectionTitle(self.paymentRequest->shipping_type());
   return item;
@@ -177,7 +177,7 @@ using ::payment_request_util::GetShippingSectionTitle;
   return item;
 }
 
-- (CollectionViewItem*)paymentMethodSectionHeaderItem {
+- (PaymentsTextItem*)paymentMethodSectionHeaderItem {
   if (!self.paymentRequest->selected_payment_method())
     return nil;
   PaymentsTextItem* item = [[PaymentsTextItem alloc] init];
@@ -221,7 +221,7 @@ using ::payment_request_util::GetShippingSectionTitle;
   return item;
 }
 
-- (CollectionViewItem*)contactInfoSectionHeaderItem {
+- (PaymentsTextItem*)contactInfoSectionHeaderItem {
   if (!self.paymentRequest->selected_contact_profile())
     return nil;
   PaymentsTextItem* item = [[PaymentsTextItem alloc] init];
