@@ -47,8 +47,12 @@ namespace {
 // Indicates whether |network| belongs to this VPN provider.
 bool VpnProviderMatchesNetwork(const VPNProvider& provider,
                                const chromeos::NetworkState& network) {
+  // Never display non-VPN networks or ARC VPNs.
   if (network.type() != shill::kTypeVPN)
     return false;
+  if (network.vpn_provider_type() == shill::kProviderArcVpn)
+    return false;
+
   const bool network_uses_third_party_provider =
       network.vpn_provider_type() == shill::kProviderThirdPartyVpn;
   if (!provider.third_party)
@@ -337,6 +341,19 @@ void VPNListView::AddProvidersAndNetworks(
   // Get the list of VPN providers enabled in the primary user's profile.
   std::vector<VPNProvider> providers =
       Shell::Get()->vpn_list()->vpn_providers();
+
+  // Add connected ARCVPN networks. These are not normally displayed in
+  // the menu because the OS connects and disconnects them in response
+  // to events from ARC. They will never be matched in
+  // VpnProviderMatchesNetwork(), and they will not be "nested" under a
+  // provider view.
+  for (const chromeos::NetworkState* const& network : networks) {
+    if (network->vpn_provider_type() == shill::kProviderArcVpn &&
+        (network->IsConnectedState() || network->IsConnectedState())) {
+      AddNetwork(network);
+      list_empty_ = false;
+    }
+  }
 
   // Add providers with at least one configured network along with their
   // networks. Providers are added in the order of their highest priority
