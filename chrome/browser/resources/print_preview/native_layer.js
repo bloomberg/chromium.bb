@@ -85,6 +85,7 @@ print_preview.ProvisionalDestinationInfo;
 print_preview.PrinterType = {
   PRIVET_PRINTER: 0,
   EXTENSION_PRINTER: 1,
+  PDF_PRINTER: 2,
 };
 
 cr.define('print_preview', function() {

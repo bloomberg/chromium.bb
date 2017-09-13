@@ -20,11 +20,19 @@ class RefCountedBytes;
 class Value;
 }
 
-class Profile;
+namespace content {
+class WebContents;
+}
 
 namespace gfx {
 class Size;
 }
+
+namespace printing {
+class StickySettings;
+}
+
+class Profile;
 
 // Wrapper around PrinterProviderAPI to be used by print preview.
 // It makes request lifetime management easier, and hides details of more
@@ -44,6 +52,12 @@ class PrinterHandler {
   // Creates an instance of a PrinterHandler for extension printers.
   static std::unique_ptr<PrinterHandler> CreateForExtensionPrinters(
       Profile* profile);
+
+  // Creates an instance of a PrinterHandler for PDF printer.
+  static std::unique_ptr<PrinterHandler> CreateForPdfPrinter(
+      Profile* profile,
+      content::WebContents* preview_web_contents,
+      printing::StickySettings* sticky_settings);
 
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
   // Creates an instance of a PrinterHandler for privet printers.
