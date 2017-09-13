@@ -801,78 +801,64 @@ static double od_compute_dist_common(int activity_masking, uint16_t *x,
 
 static double od_compute_dist(uint16_t *x, uint16_t *y, int bsize_w,
                               int bsize_h, int qindex) {
-  int i;
-  double sum = 0;
-
   assert(bsize_w >= 8 && bsize_h >= 8);
-
 #if CONFIG_PVQ
   int activity_masking = 1;
 #else
   int activity_masking = 0;
 #endif
-  {
-    int j;
-    DECLARE_ALIGNED(16, od_coeff, e[MAX_TX_SQUARE]);
-    DECLARE_ALIGNED(16, od_coeff, tmp[MAX_TX_SQUARE]);
-    DECLARE_ALIGNED(16, od_coeff, e_lp[MAX_TX_SQUARE]);
-    int mid = OD_DIST_LP_MID;
-    for (i = 0; i < bsize_h; i++) {
-      for (j = 0; j < bsize_w; j++) {
-        e[i * bsize_w + j] = x[i * bsize_w + j] - y[i * bsize_w + j];
-      }
+  int i, j;
+  DECLARE_ALIGNED(16, od_coeff, e[MAX_TX_SQUARE]);
+  DECLARE_ALIGNED(16, od_coeff, tmp[MAX_TX_SQUARE]);
+  DECLARE_ALIGNED(16, od_coeff, e_lp[MAX_TX_SQUARE]);
+  for (i = 0; i < bsize_h; i++) {
+    for (j = 0; j < bsize_w; j++) {
+      e[i * bsize_w + j] = x[i * bsize_w + j] - y[i * bsize_w + j];
     }
-    for (i = 0; i < bsize_h; i++) {
-      tmp[i * bsize_w] = mid * e[i * bsize_w] + 2 * e[i * bsize_w + 1];
-      tmp[i * bsize_w + bsize_w - 1] =
-          mid * e[i * bsize_w + bsize_w - 1] + 2 * e[i * bsize_w + bsize_w - 2];
-      for (j = 1; j < bsize_w - 1; j++) {
-        tmp[i * bsize_w + j] = mid * e[i * bsize_w + j] +
-                               e[i * bsize_w + j - 1] + e[i * bsize_w + j + 1];
-      }
-    }
-    sum = od_compute_dist_common(activity_masking, x, y, bsize_w, bsize_h,
-                                 qindex, tmp, e_lp);
   }
-  return sum;
+  int mid = OD_DIST_LP_MID;
+  for (i = 0; i < bsize_h; i++) {
+    tmp[i * bsize_w] = mid * e[i * bsize_w] + 2 * e[i * bsize_w + 1];
+    tmp[i * bsize_w + bsize_w - 1] =
+        mid * e[i * bsize_w + bsize_w - 1] + 2 * e[i * bsize_w + bsize_w - 2];
+    for (j = 1; j < bsize_w - 1; j++) {
+      tmp[i * bsize_w + j] = mid * e[i * bsize_w + j] + e[i * bsize_w + j - 1] +
+                             e[i * bsize_w + j + 1];
+    }
+  }
+  return od_compute_dist_common(activity_masking, x, y, bsize_w, bsize_h,
+                                qindex, tmp, e_lp);
 }
 
 static double od_compute_dist_diff(uint16_t *x, int16_t *e, int bsize_w,
                                    int bsize_h, int qindex) {
-  int i;
-  double sum = 0;
-
   assert(bsize_w >= 8 && bsize_h >= 8);
-
 #if CONFIG_PVQ
   int activity_masking = 1;
 #else
   int activity_masking = 0;
 #endif
-  {
-    int j;
-    DECLARE_ALIGNED(16, uint16_t, y[MAX_TX_SQUARE]);
-    DECLARE_ALIGNED(16, od_coeff, tmp[MAX_TX_SQUARE]);
-    DECLARE_ALIGNED(16, od_coeff, e_lp[MAX_TX_SQUARE]);
-    int mid = OD_DIST_LP_MID;
-    for (i = 0; i < bsize_h; i++) {
-      for (j = 0; j < bsize_w; j++) {
-        y[i * bsize_w + j] = x[i * bsize_w + j] - e[i * bsize_w + j];
-      }
+  DECLARE_ALIGNED(16, uint16_t, y[MAX_TX_SQUARE]);
+  DECLARE_ALIGNED(16, od_coeff, tmp[MAX_TX_SQUARE]);
+  DECLARE_ALIGNED(16, od_coeff, e_lp[MAX_TX_SQUARE]);
+  int i, j;
+  for (i = 0; i < bsize_h; i++) {
+    for (j = 0; j < bsize_w; j++) {
+      y[i * bsize_w + j] = x[i * bsize_w + j] - e[i * bsize_w + j];
     }
-    for (i = 0; i < bsize_h; i++) {
-      tmp[i * bsize_w] = mid * e[i * bsize_w] + 2 * e[i * bsize_w + 1];
-      tmp[i * bsize_w + bsize_w - 1] =
-          mid * e[i * bsize_w + bsize_w - 1] + 2 * e[i * bsize_w + bsize_w - 2];
-      for (j = 1; j < bsize_w - 1; j++) {
-        tmp[i * bsize_w + j] = mid * e[i * bsize_w + j] +
-                               e[i * bsize_w + j - 1] + e[i * bsize_w + j + 1];
-      }
-    }
-    sum = od_compute_dist_common(activity_masking, x, y, bsize_w, bsize_h,
-                                 qindex, tmp, e_lp);
   }
-  return sum;
+  int mid = OD_DIST_LP_MID;
+  for (i = 0; i < bsize_h; i++) {
+    tmp[i * bsize_w] = mid * e[i * bsize_w] + 2 * e[i * bsize_w + 1];
+    tmp[i * bsize_w + bsize_w - 1] =
+        mid * e[i * bsize_w + bsize_w - 1] + 2 * e[i * bsize_w + bsize_w - 2];
+    for (j = 1; j < bsize_w - 1; j++) {
+      tmp[i * bsize_w + j] = mid * e[i * bsize_w + j] + e[i * bsize_w + j - 1] +
+                             e[i * bsize_w + j + 1];
+    }
+  }
+  return od_compute_dist_common(activity_masking, x, y, bsize_w, bsize_h,
+                                qindex, tmp, e_lp);
 }
 
 int64_t av1_dist_8x8(const AV1_COMP *const cpi, const MACROBLOCK *x,
