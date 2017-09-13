@@ -169,9 +169,15 @@ TEST_F(TranslateRankerImplTest, GetVersion) {
 
 TEST_F(TranslateRankerImplTest, ModelLoaderQueryNotEnabled) {
   // If Query is not enabled, the ranker should not try to load the model.
-  InitFeatures({}, {kTranslateRankerQuery});
+  InitFeatures({}, {kTranslateRankerQuery, kTranslateRankerEnforcement});
   auto ranker = GetRankerForTest(0.01f);
   EXPECT_FALSE(ranker->CheckModelLoaderForTesting());
+}
+
+TEST_F(TranslateRankerImplTest, ModelLoaderQueryEnabledByDefault) {
+  InitFeatures({}, {kTranslateRankerEnforcement});
+  auto ranker = GetRankerForTest(0.01f);
+  EXPECT_TRUE(ranker->CheckModelLoaderForTesting());
 }
 
 TEST_F(TranslateRankerImplTest, GetModelDecision) {
