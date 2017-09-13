@@ -87,10 +87,6 @@ enum class SharedReadCache {
   Web,
 };
 
-// Return the shared leveldb block cache for web APIs. The caller *does not*
-// own the returned instance.
-extern leveldb::Cache* SharedWebBlockCache();
-
 const char* MethodIDToString(MethodID method);
 
 leveldb::Status MakeIOError(leveldb::Slice filename,

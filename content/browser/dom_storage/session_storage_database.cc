@@ -18,6 +18,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "third_party/leveldatabase/env_chromium.h"
+#include "third_party/leveldatabase/leveldb_chrome.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/iterator.h"
 #include "third_party/leveldatabase/src/include/leveldb/options.h"
@@ -142,7 +143,7 @@ void SessionStorageDatabase::ReadAreaValues(
   // If the area does not exist, |namespace_id| might refer to a clone that
   // is not yet created. Reading from the original database is expected to be
   // consistent because tasks posted on commit sequence after clone did not
-  // before capturing the snapshot.
+  // run before capturing the snapshot.
   for (const auto& original_db_id : original_permanent_namespace_ids) {
     map_id.clear();
     if (GetMapForArea(original_db_id, origin.spec(), options, &exists,
@@ -466,7 +467,7 @@ leveldb::Status SessionStorageDatabase::TryToOpen(
   // Default write_buffer_size is 4 MB but that might leave a 3.999
   // memory allocation in RAM from a log file recovery.
   options.write_buffer_size = 64 * 1024;
-  options.block_cache = leveldb_env::SharedWebBlockCache();
+  options.block_cache = leveldb_chrome::GetSharedWebBlockCache();
   return leveldb_env::OpenDB(options, file_path_.AsUTF8Unsafe(), db);
 }
 

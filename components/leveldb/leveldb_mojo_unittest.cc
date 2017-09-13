@@ -5,6 +5,7 @@
 #include "components/leveldb/leveldb_struct_traits.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/leveldatabase/leveldb_chrome.h"
 
 namespace {
 
@@ -20,7 +21,7 @@ TEST(LevelDBServiceMojoTest, TestSerialization) {
   input.paranoid_checks = !input.paranoid_checks;
   input.write_buffer_size += 1;
   input.max_open_files += 1;
-  input.block_cache = leveldb_env::SharedWebBlockCache();
+  input.block_cache = leveldb_chrome::GetSharedWebBlockCache();
 
   leveldb_env::Options output;
   ASSERT_TRUE(leveldb::mojom::OpenOptions::Deserialize(
@@ -31,5 +32,5 @@ TEST(LevelDBServiceMojoTest, TestSerialization) {
   EXPECT_EQ(output.paranoid_checks, output.paranoid_checks);
   EXPECT_EQ(output.write_buffer_size, output.write_buffer_size);
   EXPECT_EQ(output.max_open_files, output.max_open_files);
-  EXPECT_EQ(leveldb_env::SharedWebBlockCache(), output.block_cache);
+  EXPECT_EQ(leveldb_chrome::GetSharedWebBlockCache(), output.block_cache);
 }
