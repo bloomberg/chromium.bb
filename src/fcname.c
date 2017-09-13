@@ -318,7 +318,7 @@ FcNameConvert (FcType type, FcChar8 *string)
 	    v.type = FcTypeVoid;
 	break;
     case FcTypeRange:
-	if (sscanf ((char *) string, "[%lg %lg)", &b, &e) != 2)
+	if (sscanf ((char *) string, "[%lg %lg]", &b, &e) != 2)
 	{
 	    v.u.d = strtod ((char *) string, &p);
 	    if (p != NULL && p[0] != 0)
@@ -526,7 +526,7 @@ FcNameUnparseValue (FcStrBuf	*buf,
     case FcTypeFTFace:
 	return FcTrue;
     case FcTypeRange:
-	sprintf ((char *) temp, "[%g %g)", v.u.r->begin, v.u.r->end);
+	sprintf ((char *) temp, "[%g %g]", v.u.r->begin, v.u.r->end);
 	return FcNameUnparseString (buf, temp, 0);
     }
     return FcFalse;

@@ -62,7 +62,7 @@ _FcValuePrintFile (FILE *f, const FcValue v)
 	fprintf (f, "face");
 	break;
     case FcTypeRange:
-	fprintf (f, "[%g %g)", v.u.r->begin, v.u.r->end);
+	fprintf (f, "[%g %g]", v.u.r->begin, v.u.r->end);
 	break;
     }
 }
