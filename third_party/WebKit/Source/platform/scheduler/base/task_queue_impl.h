@@ -143,12 +143,7 @@ class PLATFORM_EXPORT TaskQueueImpl {
   // TaskQueue implementation.
   const char* GetName() const;
   bool RunsTasksInCurrentSequence() const;
-  bool PostDelayedTask(const base::Location& from_here,
-                       base::OnceClosure task,
-                       base::TimeDelta delay);
-  bool PostNonNestableDelayedTask(const base::Location& from_here,
-                                  base::OnceClosure task,
-                                  base::TimeDelta delay);
+  bool PostDelayedTask(TaskQueue::PostedTask task);
   // Require a reference to enclosing task queue for lifetime control.
   std::unique_ptr<TaskQueue::QueueEnabledVoter> CreateQueueEnabledVoter(
       scoped_refptr<TaskQueue> owning_task_queue);
@@ -280,11 +275,6 @@ class PLATFORM_EXPORT TaskQueueImpl {
   friend class WorkQueue;
   friend class WorkQueueTest;
 
-  enum class TaskType {
-    NORMAL,
-    NON_NESTABLE,
-  };
-
   struct AnyThread {
     AnyThread(TaskQueueManager* task_queue_manager, TimeDomain* time_domain);
     ~AnyThread();
@@ -329,13 +319,8 @@ class PLATFORM_EXPORT TaskQueueImpl {
     bool is_enabled_for_test;
   };
 
-  bool PostImmediateTaskImpl(const base::Location& from_here,
-                             base::OnceClosure task,
-                             TaskType task_type);
-  bool PostDelayedTaskImpl(const base::Location& from_here,
-                           base::OnceClosure task,
-                           base::TimeDelta delay,
-                           TaskType task_type);
+  bool PostImmediateTaskImpl(TaskQueue::PostedTask task);
+  bool PostDelayedTaskImpl(TaskQueue::PostedTask task);
 
   // Push the task onto the |delayed_incoming_queue|. Lock-free main thread
   // only fast path.
@@ -353,11 +338,7 @@ class PLATFORM_EXPORT TaskQueueImpl {
   // Push the task onto the |immediate_incoming_queue| and for auto pumped
   // queues it calls MaybePostDoWorkOnMainRunner if the Incoming queue was
   // empty.
-  void PushOntoImmediateIncomingQueueLocked(const base::Location& posted_from,
-                                            base::OnceClosure task,
-                                            base::TimeTicks desired_run_time,
-                                            EnqueueOrder sequence_number,
-                                            bool nestable);
+  void PushOntoImmediateIncomingQueueLocked(Task task);
 
   // We reserve an inline capacity of 8 tasks to try and reduce the load on
   // PartitionAlloc.

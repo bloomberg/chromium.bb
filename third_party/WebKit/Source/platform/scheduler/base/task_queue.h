@@ -48,6 +48,20 @@ class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
                                           base::TimeTicks next_wake_up) = 0;
   };
 
+  // A wrapper around base::OnceClosure with additional metadata to be passed
+  // to PostTask and plumbed until PendingTask is created.
+  struct PostedTask {
+    PostedTask(base::OnceClosure callback,
+               base::Location posted_from,
+               base::TimeDelta delay,
+               bool nestable);
+
+    base::OnceClosure callback;
+    base::Location posted_from;
+    base::TimeDelta delay;
+    bool nestable;
+  };
+
   // Unregisters the task queue after which no tasks posted to it will run and
   // the TaskQueueManager's reference to it will be released soon.
   virtual void UnregisterTaskQueue();

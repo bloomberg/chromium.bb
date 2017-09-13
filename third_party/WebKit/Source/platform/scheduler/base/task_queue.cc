@@ -20,6 +20,15 @@ TaskQueue::Task::Task(const base::Location& posted_from,
                       bool nestable)
     : PendingTask(posted_from, std::move(task), desired_run_time, nestable) {}
 
+TaskQueue::PostedTask::PostedTask(base::OnceClosure callback,
+                                  base::Location posted_from,
+                                  base::TimeDelta delay,
+                                  bool nestable)
+    : callback(std::move(callback)),
+      posted_from(posted_from),
+      delay(delay),
+      nestable(nestable) {}
+
 void TaskQueue::UnregisterTaskQueue() {
   impl_->UnregisterTaskQueue(this);
 }
@@ -31,13 +40,15 @@ bool TaskQueue::RunsTasksInCurrentSequence() const {
 bool TaskQueue::PostDelayedTask(const base::Location& from_here,
                                 base::OnceClosure task,
                                 base::TimeDelta delay) {
-  return impl_->PostDelayedTask(from_here, std::move(task), delay);
+  return impl_->PostDelayedTask(
+      PostedTask(std::move(task), from_here, delay, /* nestable */ true));
 }
 
 bool TaskQueue::PostNonNestableDelayedTask(const base::Location& from_here,
                                            base::OnceClosure task,
                                            base::TimeDelta delay) {
-  return impl_->PostNonNestableDelayedTask(from_here, std::move(task), delay);
+  return impl_->PostDelayedTask(
+      PostedTask(std::move(task), from_here, delay, /* nestable */ false));
 }
 
 std::unique_ptr<TaskQueue::QueueEnabledVoter>
