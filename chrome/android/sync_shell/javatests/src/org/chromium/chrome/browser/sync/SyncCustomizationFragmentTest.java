@@ -11,16 +11,25 @@ import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.SwitchPreference;
 import android.preference.TwoStatePreference;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.support.v7.app.AlertDialog;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.CardType;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
@@ -29,6 +38,8 @@ import org.chromium.chrome.browser.sync.ui.PassphraseCreationDialogFragment;
 import org.chromium.chrome.browser.sync.ui.PassphraseDialogFragment;
 import org.chromium.chrome.browser.sync.ui.PassphraseTypeDialogFragment;
 import org.chromium.chrome.browser.sync.ui.SyncCustomizationFragment;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.sync.AndroidSyncSettings;
@@ -47,9 +58,17 @@ import java.util.concurrent.Callable;
 /**
  * Tests for SyncCustomizationFragment.
  */
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
 @SuppressLint("UseSparseArrays")
-@RetryOnFailure  // crbug.com/637448
-public class SyncCustomizationFragmentTest extends SyncTestBase {
+@RetryOnFailure // crbug.com/637448
+public class SyncCustomizationFragmentTest {
+    @Rule
+    public SyncTestRule mSyncTestRule = new SyncTestRule();
+
     private static final String TAG = "SyncCustomizationFragmentTest";
 
     /**
@@ -64,7 +83,8 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
             setMasterSyncEnabledProvider(new MasterSyncEnabledProvider() {
                 @Override
                 public boolean isMasterSyncEnabled() {
-                    return AndroidSyncSettings.isMasterSyncEnabled(mContext);
+                    return AndroidSyncSettings.isMasterSyncEnabled(
+                            mSyncTestRule.getTargetContext());
                 }
             });
         }
@@ -98,66 +118,73 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
 
     private Preferences mPreferences;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         mPreferences = null;
     }
 
+    @Test
     @SmallTest
     @Feature({"Sync"})
     public void testSyncSwitch() throws Exception {
-        setUpTestAccountAndSignIn();
+        mSyncTestRule.setUpTestAccountAndSignIn();
         SyncTestUtil.waitForSyncActive();
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         final SwitchPreference syncSwitch = getSyncSwitch(fragment);
 
-        assertTrue(syncSwitch.isChecked());
-        assertTrue(AndroidSyncSettings.isChromeSyncEnabled(mContext));
+        Assert.assertTrue(syncSwitch.isChecked());
+        Assert.assertTrue(
+                AndroidSyncSettings.isChromeSyncEnabled(mSyncTestRule.getTargetContext()));
         togglePreference(syncSwitch);
-        assertFalse(syncSwitch.isChecked());
-        assertFalse(AndroidSyncSettings.isChromeSyncEnabled(mContext));
+        Assert.assertFalse(syncSwitch.isChecked());
+        Assert.assertFalse(
+                AndroidSyncSettings.isChromeSyncEnabled(mSyncTestRule.getTargetContext()));
         togglePreference(syncSwitch);
-        assertTrue(syncSwitch.isChecked());
-        assertTrue(AndroidSyncSettings.isChromeSyncEnabled(mContext));
+        Assert.assertTrue(syncSwitch.isChecked());
+        Assert.assertTrue(
+                AndroidSyncSettings.isChromeSyncEnabled(mSyncTestRule.getTargetContext()));
     }
 
     /**
      * This is a regression test for http://crbug.com/454939.
      */
+    @Test
     @SmallTest
     @Feature({"Sync"})
     public void testOpeningSettingsDoesntEnableSync() throws Exception {
-        setUpTestAccountAndSignIn();
-        stopSync();
+        mSyncTestRule.setUpTestAccountAndSignIn();
+        mSyncTestRule.stopSync();
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         closeFragment(fragment);
-        assertFalse(AndroidSyncSettings.isChromeSyncEnabled(mContext));
+        Assert.assertFalse(
+                AndroidSyncSettings.isChromeSyncEnabled(mSyncTestRule.getTargetContext()));
     }
 
     /**
      * This is a regression test for http://crbug.com/467600.
      */
+    @Test
     @SmallTest
     @Feature({"Sync"})
     public void testOpeningSettingsDoesntStartEngine() throws Exception {
-        setUpTestAccountAndSignIn();
-        stopSync();
+        mSyncTestRule.setUpTestAccountAndSignIn();
+        mSyncTestRule.stopSync();
         startSyncCustomizationFragment();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                assertFalse(mProfileSyncService.isSyncRequested());
-                assertFalse(mProfileSyncService.isEngineInitialized());
+                Assert.assertFalse(mSyncTestRule.getProfileSyncService().isSyncRequested());
+                Assert.assertFalse(mSyncTestRule.getProfileSyncService().isEngineInitialized());
             }
         });
     }
 
+    @Test
     @SmallTest
     @Feature({"Sync"})
     public void testDefaultControlStatesWithSyncOffThenOn() throws Exception {
-        setUpTestAccountAndSignIn();
-        stopSync();
+        mSyncTestRule.setUpTestAccountAndSignIn();
+        mSyncTestRule.stopSync();
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         assertDefaultSyncOffState(fragment);
         togglePreference(getSyncSwitch(fragment));
@@ -165,10 +192,11 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         assertDefaultSyncOnState(fragment);
     }
 
+    @Test
     @SmallTest
     @Feature({"Sync"})
     public void testDefaultControlStatesWithSyncOnThenOff() throws Exception {
-        setUpTestAccountAndSignIn();
+        mSyncTestRule.setUpTestAccountAndSignIn();
         SyncTestUtil.waitForSyncActive();
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         assertDefaultSyncOnState(fragment);
@@ -176,10 +204,11 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         assertDefaultSyncOffState(fragment);
     }
 
+    @Test
     @SmallTest
     @Feature({"Sync"})
     public void testSyncEverythingAndDataTypes() throws Exception {
-        setUpTestAccountAndSignIn();
+        mSyncTestRule.setUpTestAccountAndSignIn();
         SyncTestUtil.waitForSyncActive();
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         SwitchPreference syncEverything = getSyncEverything(fragment);
@@ -188,23 +217,25 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         assertDefaultSyncOnState(fragment);
         togglePreference(syncEverything);
         for (CheckBoxPreference dataType : dataTypes) {
-            assertTrue(dataType.isChecked());
-            assertTrue(dataType.isEnabled());
+            Assert.assertTrue(dataType.isChecked());
+            Assert.assertTrue(dataType.isEnabled());
         }
 
         // If all data types are unchecked, sync should turn off.
         for (CheckBoxPreference dataType : dataTypes) {
             togglePreference(dataType);
         }
-        getInstrumentation().waitForIdleSync();
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         assertDefaultSyncOffState(fragment);
-        assertFalse(AndroidSyncSettings.isChromeSyncEnabled(mContext));
+        Assert.assertFalse(
+                AndroidSyncSettings.isChromeSyncEnabled(mSyncTestRule.getTargetContext()));
     }
 
+    @Test
     @SmallTest
     @Feature({"Sync"})
     public void testSettingDataTypes() throws Exception {
-        setUpTestAccountAndSignIn();
+        mSyncTestRule.setUpTestAccountAndSignIn();
         SyncTestUtil.waitForSyncActive();
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         SwitchPreference syncEverything = getSyncEverything(fragment);
@@ -213,8 +244,8 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         assertDefaultSyncOnState(fragment);
         togglePreference(syncEverything);
         for (CheckBoxPreference dataType : dataTypes.values()) {
-            assertTrue(dataType.isChecked());
-            assertTrue(dataType.isEnabled());
+            Assert.assertTrue(dataType.isChecked());
+            Assert.assertTrue(dataType.isEnabled());
         }
 
         Set<Integer> expectedTypes = new HashSet<Integer>(dataTypes.keySet());
@@ -232,10 +263,11 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         assertDataTypesAre(expectedTypes);
     }
 
+    @Test
     @SmallTest
     @Feature({"Sync"})
     public void testPaymentsIntegrationChecked() throws Exception {
-        setUpTestAccountAndSignIn();
+        mSyncTestRule.setUpTestAccountAndSignIn();
 
         setPaymentsIntegrationEnabled(true);
 
@@ -245,14 +277,15 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         CheckBoxPreference paymentsIntegration = (CheckBoxPreference) fragment.findPreference(
                 SyncCustomizationFragment.PREFERENCE_PAYMENTS_INTEGRATION);
 
-        assertFalse(paymentsIntegration.isEnabled());
-        assertTrue(paymentsIntegration.isChecked());
+        Assert.assertFalse(paymentsIntegration.isEnabled());
+        Assert.assertTrue(paymentsIntegration.isChecked());
     }
 
+    @Test
     @SmallTest
     @Feature({"Sync"})
     public void testPaymentsIntegrationUnchecked() throws Exception {
-        setUpTestAccountAndSignIn();
+        mSyncTestRule.setUpTestAccountAndSignIn();
 
         setPaymentsIntegrationEnabled(false);
 
@@ -264,14 +297,15 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         CheckBoxPreference paymentsIntegration = (CheckBoxPreference) fragment.findPreference(
                 SyncCustomizationFragment.PREFERENCE_PAYMENTS_INTEGRATION);
 
-        assertTrue(paymentsIntegration.isEnabled());
-        assertFalse(paymentsIntegration.isChecked());
+        Assert.assertTrue(paymentsIntegration.isEnabled());
+        Assert.assertFalse(paymentsIntegration.isChecked());
     }
 
+    @Test
     @SmallTest
     @Feature({"Sync"})
     public void testPaymentsIntegrationCheckboxDisablesPaymentsIntegration() throws Exception {
-        setUpTestAccountAndSignIn();
+        mSyncTestRule.setUpTestAccountAndSignIn();
 
         setPaymentsIntegrationEnabled(true);
 
@@ -288,10 +322,11 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         assertPaymentsIntegrationEnabled(false);
     }
 
+    @Test
     @SmallTest
     @Feature({"Sync"})
     public void testPaymentsIntegrationCheckboxEnablesPaymentsIntegration() throws Exception {
-        setUpTestAccountAndSignIn();
+        mSyncTestRule.setUpTestAccountAndSignIn();
 
         setPaymentsIntegrationEnabled(false);
 
@@ -308,16 +343,17 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         assertPaymentsIntegrationEnabled(true);
     }
 
+    @Test
     @SmallTest
     @Feature({"Sync"})
     public void testPaymentsIntegrationCheckboxClearsServerAutofillCreditCards() throws Exception {
-        setUpTestAccountAndSignIn();
+        mSyncTestRule.setUpTestAccountAndSignIn();
 
         setPaymentsIntegrationEnabled(true);
 
-        assertFalse("There should be no server cards", hasServerAutofillCreditCards());
+        Assert.assertFalse("There should be no server cards", hasServerAutofillCreditCards());
         addServerAutofillCreditCard();
-        assertTrue("There should be server cards", hasServerAutofillCreditCards());
+        Assert.assertTrue("There should be server cards", hasServerAutofillCreditCards());
 
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         assertDefaultSyncOnState(fragment);
@@ -331,39 +367,46 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         closeFragment(fragment);
         assertPaymentsIntegrationEnabled(false);
 
-        assertFalse("There should be no server cards remaining", hasServerAutofillCreditCards());
+        Assert.assertFalse(
+                "There should be no server cards remaining", hasServerAutofillCreditCards());
     }
 
+    @Test
     @SmallTest
     @Feature({"Sync"})
     public void testSyncSwitchClearsServerAutofillCreditCards() throws Exception {
-        setUpTestAccountAndSignIn();
+        mSyncTestRule.setUpTestAccountAndSignIn();
 
         setPaymentsIntegrationEnabled(true);
 
-        assertFalse("There should be no server cards", hasServerAutofillCreditCards());
+        Assert.assertFalse("There should be no server cards", hasServerAutofillCreditCards());
         addServerAutofillCreditCard();
-        assertTrue("There should be server cards", hasServerAutofillCreditCards());
+        Assert.assertTrue("There should be server cards", hasServerAutofillCreditCards());
 
-        assertTrue(AndroidSyncSettings.isChromeSyncEnabled(mContext));
+        Assert.assertTrue(
+                AndroidSyncSettings.isChromeSyncEnabled(mSyncTestRule.getTargetContext()));
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         assertDefaultSyncOnState(fragment);
         SwitchPreference syncSwitch = getSyncSwitch(fragment);
-        assertTrue(syncSwitch.isChecked());
-        assertTrue(AndroidSyncSettings.isChromeSyncEnabled(mContext));
+        Assert.assertTrue(syncSwitch.isChecked());
+        Assert.assertTrue(
+                AndroidSyncSettings.isChromeSyncEnabled(mSyncTestRule.getTargetContext()));
         togglePreference(syncSwitch);
-        assertFalse(syncSwitch.isChecked());
-        assertFalse(AndroidSyncSettings.isChromeSyncEnabled(mContext));
+        Assert.assertFalse(syncSwitch.isChecked());
+        Assert.assertFalse(
+                AndroidSyncSettings.isChromeSyncEnabled(mSyncTestRule.getTargetContext()));
 
         closeFragment(fragment);
 
-        assertFalse("There should be no server cards remaining", hasServerAutofillCreditCards());
+        Assert.assertFalse(
+                "There should be no server cards remaining", hasServerAutofillCreditCards());
     }
 
+    @Test
     @SmallTest
     @Feature({"Sync"})
     public void testPaymentsIntegrationDisabledByAutofillSyncCheckbox() throws Exception {
-        setUpTestAccountAndSignIn();
+        mSyncTestRule.setUpTestAccountAndSignIn();
 
         setPaymentsIntegrationEnabled(true);
 
@@ -378,17 +421,18 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
 
         CheckBoxPreference paymentsIntegration = (CheckBoxPreference) fragment.findPreference(
                 SyncCustomizationFragment.PREFERENCE_PAYMENTS_INTEGRATION);
-        assertFalse(paymentsIntegration.isEnabled());
-        assertFalse(paymentsIntegration.isChecked());
+        Assert.assertFalse(paymentsIntegration.isEnabled());
+        Assert.assertFalse(paymentsIntegration.isChecked());
 
         closeFragment(fragment);
         assertPaymentsIntegrationEnabled(false);
     }
 
+    @Test
     @SmallTest
     @Feature({"Sync"})
     public void testPaymentsIntegrationEnabledByAutofillSyncCheckbox() throws Exception {
-        setUpTestAccountAndSignIn();
+        mSyncTestRule.setUpTestAccountAndSignIn();
 
         setPaymentsIntegrationEnabled(false);
 
@@ -404,19 +448,20 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
 
         CheckBoxPreference paymentsIntegration = (CheckBoxPreference) fragment.findPreference(
                 SyncCustomizationFragment.PREFERENCE_PAYMENTS_INTEGRATION);
-        assertTrue(paymentsIntegration.isEnabled());
-        assertTrue(paymentsIntegration.isChecked());
+        Assert.assertTrue(paymentsIntegration.isEnabled());
+        Assert.assertTrue(paymentsIntegration.isChecked());
 
         closeFragment(fragment);
         assertPaymentsIntegrationEnabled(true);
     }
 
+    @Test
     @SmallTest
     @Feature({"Sync"})
     public void testPaymentsIntegrationEnabledBySyncEverything() throws Exception {
-        setUpTestAccountAndSignIn();
+        mSyncTestRule.setUpTestAccountAndSignIn();
         setPaymentsIntegrationEnabled(false);
-        disableDataType(ModelType.AUTOFILL);
+        mSyncTestRule.disableDataType(ModelType.AUTOFILL);
 
         // Get the UI elements.
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
@@ -427,19 +472,19 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
                 SyncCustomizationFragment.PREFERENCE_PAYMENTS_INTEGRATION);
 
         // All three are unchecked and payments is disabled.
-        assertFalse(syncEverything.isChecked());
-        assertFalse(syncAutofill.isChecked());
-        assertTrue(syncAutofill.isEnabled());
-        assertFalse(paymentsIntegration.isChecked());
-        assertFalse(paymentsIntegration.isEnabled());
+        Assert.assertFalse(syncEverything.isChecked());
+        Assert.assertFalse(syncAutofill.isChecked());
+        Assert.assertTrue(syncAutofill.isEnabled());
+        Assert.assertFalse(paymentsIntegration.isChecked());
+        Assert.assertFalse(paymentsIntegration.isEnabled());
 
         // All three are checked after toggling sync everything.
         togglePreference(syncEverything);
-        assertTrue(syncEverything.isChecked());
-        assertTrue(syncAutofill.isChecked());
-        assertFalse(syncAutofill.isEnabled());
-        assertTrue(paymentsIntegration.isChecked());
-        assertFalse(paymentsIntegration.isEnabled());
+        Assert.assertTrue(syncEverything.isChecked());
+        Assert.assertTrue(syncAutofill.isChecked());
+        Assert.assertFalse(syncAutofill.isEnabled());
+        Assert.assertTrue(paymentsIntegration.isChecked());
+        Assert.assertFalse(paymentsIntegration.isEnabled());
 
         // Closing the fragment enabled payments integration.
         closeFragment(fragment);
@@ -451,17 +496,18 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
      *
      * This is a regression test for http://crbug.com/507557.
      */
+    @Test
     @SmallTest
     @Feature({"Sync"})
     public void testChoosePassphraseTypeWhenSyncIsOff() throws Exception {
-        setUpTestAccountAndSignIn();
+        mSyncTestRule.setUpTestAccountAndSignIn();
         SyncTestUtil.waitForSyncActive();
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         Preference encryption = getEncryption(fragment);
         clickPreference(encryption);
 
         final PassphraseTypeDialogFragment typeFragment = getPassphraseTypeDialogFragment();
-        stopSync();
+        mSyncTestRule.stopSync();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -475,13 +521,14 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     /**
      * Test that entering a passphrase while sync is off doesn't crash.
      */
+    @Test
     @SmallTest
     @Feature({"Sync"})
     public void testEnterPassphraseWhenSyncIsOff() throws Exception {
-        setUpTestAccountAndSignIn();
+        mSyncTestRule.setUpTestAccountAndSignIn();
         SyncTestUtil.waitForSyncActive();
         final SyncCustomizationFragment fragment = startSyncCustomizationFragment();
-        stopSync();
+        mSyncTestRule.stopSync();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -494,12 +541,13 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     /**
      * Test that triggering OnPassphraseAccepted dismisses PassphraseDialogFragment.
      */
+    @Test
     @SmallTest
     @Feature({"Sync"})
     public void testPassphraseDialogDismissed() throws Exception {
         final FakeProfileSyncService pss = overrideProfileSyncService();
 
-        setUpTestAccountAndSignIn();
+        mSyncTestRule.setUpTestAccountAndSignIn();
         SyncTestUtil.waitForSyncActive();
         // Trigger PassphraseDialogFragment to be shown when taping on Encryption.
         pss.setPassphraseRequiredForDecryption(true);
@@ -509,7 +557,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         clickPreference(encryption);
 
         final PassphraseDialogFragment passphraseFragment = getPassphraseDialogFragment();
-        assertTrue(passphraseFragment.isAdded());
+        Assert.assertTrue(passphraseFragment.isAdded());
 
         // Simulate OnPassphraseAccepted from external event by setting PassphraseRequired to false
         // and triggering syncStateChanged().
@@ -520,17 +568,18 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
             public void run() {
                 pss.syncStateChanged();
                 fragment.getFragmentManager().executePendingTransactions();
-                assertNull("PassphraseDialogFragment should be dismissed.",
+                Assert.assertNull("PassphraseDialogFragment should be dismissed.",
                         mPreferences.getFragmentManager().findFragmentByTag(
                                 SyncCustomizationFragment.FRAGMENT_ENTER_PASSPHRASE));
             }
         });
     }
 
+    @Test
     @SmallTest
     @Feature({"Sync"})
     public void testPassphraseCreation() throws Exception {
-        setUpTestAccountAndSignIn();
+        mSyncTestRule.setUpTestAccountAndSignIn();
         SyncTestUtil.waitForSyncActive();
         final SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -539,7 +588,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
                 fragment.onPassphraseTypeSelected(PassphraseType.CUSTOM_PASSPHRASE);
             }
         });
-        getInstrumentation().waitForIdleSync();
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         PassphraseCreationDialogFragment pcdf = getPassphraseCreationDialogFragment();
         AlertDialog dialog = (AlertDialog) pcdf.getDialog();
         Button okButton = dialog.getButton(Dialog.BUTTON_POSITIVE);
@@ -547,52 +596,52 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         EditText confirmPassphrase = (EditText) dialog.findViewById(R.id.confirm_passphrase);
 
         // Error if you try to submit empty passphrase.
-        assertNull(confirmPassphrase.getError());
+        Assert.assertNull(confirmPassphrase.getError());
         clickButton(okButton);
-        assertTrue(pcdf.isResumed());
-        assertNotNull(enterPassphrase.getError());
-        assertNull(confirmPassphrase.getError());
+        Assert.assertTrue(pcdf.isResumed());
+        Assert.assertNotNull(enterPassphrase.getError());
+        Assert.assertNull(confirmPassphrase.getError());
 
         // Error if you try to submit with only the first box filled.
         clearError(confirmPassphrase);
         setText(enterPassphrase, "foo");
         clickButton(okButton);
-        assertTrue(pcdf.isResumed());
-        assertNull(enterPassphrase.getError());
-        assertNotNull(confirmPassphrase.getError());
+        Assert.assertTrue(pcdf.isResumed());
+        Assert.assertNull(enterPassphrase.getError());
+        Assert.assertNotNull(confirmPassphrase.getError());
 
         // Remove first box should only show empty error message
         setText(enterPassphrase, "");
         clickButton(okButton);
-        assertNotNull(enterPassphrase.getError());
-        assertNull(confirmPassphrase.getError());
+        Assert.assertNotNull(enterPassphrase.getError());
+        Assert.assertNull(confirmPassphrase.getError());
 
         // Error if you try to submit with only the second box filled.
         clearError(confirmPassphrase);
         setText(confirmPassphrase, "foo");
         clickButton(okButton);
-        assertTrue(pcdf.isResumed());
-        assertNull(enterPassphrase.getError());
-        assertNotNull(confirmPassphrase.getError());
+        Assert.assertTrue(pcdf.isResumed());
+        Assert.assertNull(enterPassphrase.getError());
+        Assert.assertNotNull(confirmPassphrase.getError());
 
         // No error if text doesn't match without button press.
         setText(enterPassphrase, "foo");
         clearError(confirmPassphrase);
         setText(confirmPassphrase, "bar");
-        assertNull(enterPassphrase.getError());
-        assertNull(confirmPassphrase.getError());
+        Assert.assertNull(enterPassphrase.getError());
+        Assert.assertNull(confirmPassphrase.getError());
 
         // Error if you try to submit unmatching text.
         clearError(confirmPassphrase);
         clickButton(okButton);
-        assertTrue(pcdf.isResumed());
-        assertNull(enterPassphrase.getError());
-        assertNotNull(confirmPassphrase.getError());
+        Assert.assertTrue(pcdf.isResumed());
+        Assert.assertNull(enterPassphrase.getError());
+        Assert.assertNotNull(confirmPassphrase.getError());
 
         // Success if text matches.
         setText(confirmPassphrase, "foo");
         clickButton(okButton);
-        assertFalse(pcdf.isResumed());
+        Assert.assertFalse(pcdf.isResumed());
     }
 
     private FakeProfileSyncService overrideProfileSyncService() {
@@ -608,8 +657,8 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     }
 
     private SyncCustomizationFragment startSyncCustomizationFragment() {
-        mPreferences = startPreferences(SyncCustomizationFragment.class.getName());
-        getInstrumentation().waitForIdleSync();
+        mPreferences = mSyncTestRule.startPreferences(SyncCustomizationFragment.class.getName());
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         return (SyncCustomizationFragment) mPreferences.getFragmentForTest();
     }
 
@@ -617,7 +666,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         FragmentTransaction transaction = mPreferences.getFragmentManager().beginTransaction();
         transaction.remove(fragment);
         transaction.commit();
-        getInstrumentation().waitForIdleSync();
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 
     private SwitchPreference getSyncSwitch(SyncCustomizationFragment fragment) {
@@ -670,36 +719,40 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     }
 
     private void assertDefaultSyncOnState(SyncCustomizationFragment fragment) {
-        assertTrue("The sync switch should be on.", getSyncSwitch(fragment).isChecked());
-        assertTrue("The sync switch should be enabled.", getSyncSwitch(fragment).isEnabled());
+        Assert.assertTrue("The sync switch should be on.", getSyncSwitch(fragment).isChecked());
+        Assert.assertTrue(
+                "The sync switch should be enabled.", getSyncSwitch(fragment).isEnabled());
         SwitchPreference syncEverything = getSyncEverything(fragment);
-        assertTrue("The sync everything switch should be on.", syncEverything.isChecked());
-        assertTrue("The sync everything switch should be enabled.", syncEverything.isEnabled());
+        Assert.assertTrue("The sync everything switch should be on.", syncEverything.isChecked());
+        Assert.assertTrue(
+                "The sync everything switch should be enabled.", syncEverything.isEnabled());
         for (CheckBoxPreference dataType : getDataTypes(fragment).values()) {
             String key = dataType.getKey();
-            assertTrue("Data type " + key + " should be checked.", dataType.isChecked());
-            assertFalse("Data type " + key + " should be disabled.", dataType.isEnabled());
+            Assert.assertTrue("Data type " + key + " should be checked.", dataType.isChecked());
+            Assert.assertFalse("Data type " + key + " should be disabled.", dataType.isEnabled());
         }
-        assertTrue("The encryption button should be enabled.",
-                getEncryption(fragment).isEnabled());
-        assertTrue("The manage sync data button should be always enabled.",
+        Assert.assertTrue(
+                "The encryption button should be enabled.", getEncryption(fragment).isEnabled());
+        Assert.assertTrue("The manage sync data button should be always enabled.",
                 getManageData(fragment).isEnabled());
     }
 
     private void assertDefaultSyncOffState(SyncCustomizationFragment fragment) {
-        assertFalse("The sync switch should be off.", getSyncSwitch(fragment).isChecked());
-        assertTrue("The sync switch should be enabled.", getSyncSwitch(fragment).isEnabled());
+        Assert.assertFalse("The sync switch should be off.", getSyncSwitch(fragment).isChecked());
+        Assert.assertTrue(
+                "The sync switch should be enabled.", getSyncSwitch(fragment).isEnabled());
         SwitchPreference syncEverything = getSyncEverything(fragment);
-        assertTrue("The sync everything switch should be on.", syncEverything.isChecked());
-        assertFalse("The sync everything switch should be disabled.", syncEverything.isEnabled());
+        Assert.assertTrue("The sync everything switch should be on.", syncEverything.isChecked());
+        Assert.assertFalse(
+                "The sync everything switch should be disabled.", syncEverything.isEnabled());
         for (CheckBoxPreference dataType : getDataTypes(fragment).values()) {
             String key = dataType.getKey();
-            assertTrue("Data type " + key + " should be checked.", dataType.isChecked());
-            assertFalse("Data type " + key + " should be disabled.", dataType.isEnabled());
+            Assert.assertTrue("Data type " + key + " should be checked.", dataType.isChecked());
+            Assert.assertFalse("Data type " + key + " should be disabled.", dataType.isEnabled());
         }
-        assertFalse("The encryption button should be disabled.",
-                getEncryption(fragment).isEnabled());
-        assertTrue("The manage sync data button should be always enabled.",
+        Assert.assertFalse(
+                "The encryption button should be disabled.", getEncryption(fragment).isEnabled());
+        Assert.assertTrue("The manage sync data button should be always enabled.",
                 getManageData(fragment).isEnabled());
     }
 
@@ -709,9 +762,10 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                Set<Integer> actualDataTypes = mProfileSyncService.getPreferredDataTypes();
-                assertTrue(actualDataTypes.containsAll(enabledDataTypes));
-                assertTrue(Collections.disjoint(disabledDataTypes, actualDataTypes));
+                Set<Integer> actualDataTypes =
+                        mSyncTestRule.getProfileSyncService().getPreferredDataTypes();
+                Assert.assertTrue(actualDataTypes.containsAll(enabledDataTypes));
+                Assert.assertTrue(Collections.disjoint(disabledDataTypes, actualDataTypes));
             }
         });
     }
@@ -729,7 +783,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                assertEquals(enabled, PersonalDataManager.isPaymentsIntegrationEnabled());
+                Assert.assertEquals(enabled, PersonalDataManager.isPaymentsIntegrationEnabled());
             }
         });
     }
@@ -773,7 +827,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
                 pref.setChecked(newValue);
             }
         });
-        getInstrumentation().waitForIdleSync();
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 
     private void clickPreference(final Preference pref) {
@@ -783,7 +837,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
                 pref.getOnPreferenceClickListener().onPreferenceClick(pref);
             }
         });
-        getInstrumentation().waitForIdleSync();
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 
     private void clickButton(final Button button) {
@@ -793,7 +847,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
                 button.performClick();
             }
         });
-        getInstrumentation().waitForIdleSync();
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 
     private void setText(final TextView textView, final String text) {
@@ -803,7 +857,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
                 textView.setText(text);
             }
         });
-        getInstrumentation().waitForIdleSync();
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 
     private void clearError(final TextView textView) {
@@ -813,6 +867,6 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
                 textView.setError(null);
             }
         });
-        getInstrumentation().waitForIdleSync();
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 }

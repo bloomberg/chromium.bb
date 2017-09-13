@@ -6,20 +6,30 @@ package org.chromium.chrome.browser.sync;
 
 import android.accounts.Account;
 import android.app.Activity;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
+
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.signin.AccountIdProvider;
 import org.chromium.chrome.browser.signin.AccountTrackerService;
 import org.chromium.chrome.browser.signin.SigninHelper;
 import org.chromium.chrome.browser.signin.SigninManager;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.signin.MockChangeEventChecker;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
@@ -31,17 +41,26 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 /**
  * Test suite for Sync.
  */
-@RetryOnFailure  // crbug.com/637448
-public class SyncTest extends SyncTestBase {
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
+@RetryOnFailure // crbug.com/637448
+public class SyncTest {
+    @Rule
+    public SyncTestRule mSyncTestRule = new SyncTestRule();
+
     private static final String TAG = "SyncTest";
 
+    @Test
     @LargeTest
     @Feature({"Sync"})
     public void testFlushDirectoryDoesntBreakSync() throws Throwable {
-        setUpTestAccountAndSignIn();
-        final Activity activity = getActivity();
+        mSyncTestRule.setUpTestAccountAndSignIn();
+        final Activity activity = mSyncTestRule.getActivity();
 
-        runTestOnUiThread(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 ApplicationStatus.onStateChangeForTesting(activity, ActivityState.PAUSED);
@@ -51,43 +70,47 @@ public class SyncTest extends SyncTestBase {
         // TODO(pvalenzuela): When available, check that sync is still functional.
     }
 
+    @Test
     @LargeTest
     @Feature({"Sync"})
     public void testSignInAndOut() throws InterruptedException {
-        Account account = setUpTestAccountAndSignIn();
+        Account account = mSyncTestRule.setUpTestAccountAndSignIn();
 
         // Signing out should disable sync.
-        signOut();
-        assertFalse(SyncTestUtil.isSyncRequested());
+        mSyncTestRule.signOut();
+        Assert.assertFalse(SyncTestUtil.isSyncRequested());
 
         // Signing back in should re-enable sync.
-        signIn(account);
+        mSyncTestRule.signIn(account);
         SyncTestUtil.waitForSyncActive();
     }
 
+    @Test
     @LargeTest
     @Feature({"Sync"})
     public void testStopAndClear() {
-        setUpTestAccountAndSignIn();
+        mSyncTestRule.setUpTestAccountAndSignIn();
         CriteriaHelper.pollUiThread(
                 new Criteria("Timed out checking that isSignedInOnNative() == true") {
                     @Override
                     public boolean isSatisfied() {
-                        return SigninManager.get(mContext).isSignedInOnNative();
+                        return SigninManager.get(mSyncTestRule.getTargetContext())
+                                .isSignedInOnNative();
                     }
                 },
                 SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
 
-        clearServerData();
+        mSyncTestRule.clearServerData();
 
         // Clearing server data should turn off sync and sign out of chrome.
-        assertNull(SigninTestUtil.getCurrentAccount());
-        assertFalse(SyncTestUtil.isSyncRequested());
+        Assert.assertNull(SigninTestUtil.getCurrentAccount());
+        Assert.assertFalse(SyncTestUtil.isSyncRequested());
         CriteriaHelper.pollUiThread(
                 new Criteria("Timed out checking that isSignedInOnNative() == false") {
                     @Override
                     public boolean isSatisfied() {
-                        return !SigninManager.get(mContext).isSignedInOnNative();
+                        return !SigninManager.get(mSyncTestRule.getTargetContext())
+                                        .isSignedInOnNative();
                     }
                 },
                 SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
@@ -98,10 +121,11 @@ public class SyncTest extends SyncTestBase {
      * @LargeTest
      * @Feature({"Sync"})
      */
+    @Test
     @DisabledTest(message = "crbug.com/588050,crbug.com/595893")
     public void testRename() {
         // The two accounts object that would represent the account rename.
-        final Account oldAccount = setUpTestAccountAndSignIn();
+        final Account oldAccount = mSyncTestRule.setUpTestAccountAndSignIn();
         final Account newAccount = SigninTestUtil.addTestAccount("test2@gmail.com");
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -112,13 +136,15 @@ public class SyncTest extends SyncTestBase {
                 // real account rename events instead of the mocks.
                 MockChangeEventChecker eventChecker = new MockChangeEventChecker();
                 eventChecker.insertRenameEvent(oldAccount.name, newAccount.name);
-                SigninHelper.resetAccountRenameEventIndex(mContext);
-                SigninHelper.updateAccountRenameData(mContext, eventChecker);
+                SigninHelper.resetAccountRenameEventIndex(mSyncTestRule.getTargetContext());
+                SigninHelper.updateAccountRenameData(
+                        mSyncTestRule.getTargetContext(), eventChecker);
 
                 // Tell the fake content resolver that a rename had happen and copy over the sync
-                // settings. This would normally be done by the SystemSyncContentResolver.
-                mSyncContentResolver.renameAccounts(
-                        oldAccount, newAccount, AndroidSyncSettings.getContractAuthority(mContext));
+                // settings. This would normally be done by the
+                // SystemSyncTestRule.getSyncContentResolver().
+                mSyncTestRule.getSyncContentResolver().renameAccounts(oldAccount, newAccount,
+                        AndroidSyncSettings.getContractAuthority(mSyncTestRule.getTargetContext()));
 
                 // Inform the AccountTracker, these would normally be done by account validation
                 // or signin. We will only be calling the testing versions of it.
@@ -130,7 +156,7 @@ public class SyncTest extends SyncTestBase {
 
                 // Starts the rename process. Normally, this is triggered by the broadcast
                 // listener as well.
-                SigninHelper.get(mContext).validateAccountSettings(true);
+                SigninHelper.get(mSyncTestRule.getTargetContext()).validateAccountSettings(true);
             }
         });
 
@@ -143,68 +169,72 @@ public class SyncTest extends SyncTestBase {
         SyncTestUtil.waitForSyncActive();
     }
 
+    @Test
     @LargeTest
     @Feature({"Sync"})
     public void testStopAndStartSync() {
-        Account account = setUpTestAccountAndSignIn();
+        Account account = mSyncTestRule.setUpTestAccountAndSignIn();
 
-        stopSync();
-        assertEquals(account, SigninTestUtil.getCurrentAccount());
-        assertFalse(SyncTestUtil.isSyncRequested());
+        mSyncTestRule.stopSync();
+        Assert.assertEquals(account, SigninTestUtil.getCurrentAccount());
+        Assert.assertFalse(SyncTestUtil.isSyncRequested());
 
-        startSyncAndWait();
+        mSyncTestRule.startSyncAndWait();
     }
 
     /*
      * @LargeTest
      * @Feature({"Sync"})
      */
+    @Test
     @FlakyTest(message = "crbug.com/594558")
     public void testStopAndStartSyncThroughAndroid() {
-        Account account = setUpTestAccountAndSignIn();
+        Account account = mSyncTestRule.setUpTestAccountAndSignIn();
 
-        String authority = AndroidSyncSettings.getContractAuthority(mContext);
+        String authority =
+                AndroidSyncSettings.getContractAuthority(mSyncTestRule.getTargetContext());
 
         // Disabling Android sync should turn Chrome sync engine off.
-        mSyncContentResolver.setSyncAutomatically(account, authority, false);
-        assertFalse(SyncTestUtil.isSyncRequested());
+        mSyncTestRule.getSyncContentResolver().setSyncAutomatically(account, authority, false);
+        Assert.assertFalse(SyncTestUtil.isSyncRequested());
 
         // Enabling Android sync should turn Chrome sync engine on.
-        mSyncContentResolver.setSyncAutomatically(account, authority, true);
+        mSyncTestRule.getSyncContentResolver().setSyncAutomatically(account, authority, true);
         SyncTestUtil.waitForSyncActive();
 
         // Disabling Android's master sync should turn Chrome sync engine off.
-        mSyncContentResolver.setMasterSyncAutomatically(false);
-        assertFalse(SyncTestUtil.isSyncRequested());
+        mSyncTestRule.getSyncContentResolver().setMasterSyncAutomatically(false);
+        Assert.assertFalse(SyncTestUtil.isSyncRequested());
 
         // Enabling Android's master sync should turn Chrome sync engine on.
-        mSyncContentResolver.setMasterSyncAutomatically(true);
+        mSyncTestRule.getSyncContentResolver().setMasterSyncAutomatically(true);
         SyncTestUtil.waitForSyncActive();
 
         // Disabling both should definitely turn sync off.
-        mSyncContentResolver.setSyncAutomatically(account, authority, false);
-        mSyncContentResolver.setMasterSyncAutomatically(false);
-        assertFalse(SyncTestUtil.isSyncRequested());
+        mSyncTestRule.getSyncContentResolver().setSyncAutomatically(account, authority, false);
+        mSyncTestRule.getSyncContentResolver().setMasterSyncAutomatically(false);
+        Assert.assertFalse(SyncTestUtil.isSyncRequested());
 
         // Re-enabling master sync should not turn sync back on.
-        mSyncContentResolver.setMasterSyncAutomatically(true);
-        assertFalse(SyncTestUtil.isSyncRequested());
+        mSyncTestRule.getSyncContentResolver().setMasterSyncAutomatically(true);
+        Assert.assertFalse(SyncTestUtil.isSyncRequested());
 
         // But then re-enabling Chrome sync should.
-        mSyncContentResolver.setSyncAutomatically(account, authority, true);
+        mSyncTestRule.getSyncContentResolver().setSyncAutomatically(account, authority, true);
         SyncTestUtil.waitForSyncActive();
     }
 
+    @Test
     @LargeTest
     @Feature({"Sync"})
     public void testMasterSyncBlocksSyncStart() {
-        setUpTestAccountAndSignIn();
-        stopSync();
-        assertFalse(SyncTestUtil.isSyncRequested());
+        mSyncTestRule.setUpTestAccountAndSignIn();
+        mSyncTestRule.stopSync();
+        Assert.assertFalse(SyncTestUtil.isSyncRequested());
 
-        mSyncContentResolver.setMasterSyncAutomatically(false);
-        startSync();
-        assertFalse(SyncTestUtil.isSyncRequested());
+        mSyncTestRule.getSyncContentResolver().setMasterSyncAutomatically(false);
+        mSyncTestRule.startSync();
+        Assert.assertFalse(SyncTestUtil.isSyncRequested());
     }
 
     private static ContentViewCore getContentViewCore(ChromeActivity activity) {

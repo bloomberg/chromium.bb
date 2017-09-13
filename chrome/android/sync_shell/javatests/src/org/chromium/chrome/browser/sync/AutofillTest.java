@@ -9,9 +9,19 @@ import android.util.Pair;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.sync.SyncTestRule.DataCriteria;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.protocol.AutofillProfileSpecifics;
@@ -26,8 +36,16 @@ import java.util.concurrent.Callable;
 /**
  * Test suite for the autofill profile sync data type.
  */
-@RetryOnFailure  // crbug.com/637448
-public class AutofillTest extends SyncTestBase {
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
+@RetryOnFailure // crbug.com/637448
+public class AutofillTest {
+    @Rule
+    public SyncTestRule mSyncTestRule = new SyncTestRule();
+
     private static final String TAG = "AutofillTest";
 
     private static final String AUTOFILL_TYPE = "Autofill Profiles";
@@ -65,16 +83,16 @@ public class AutofillTest extends SyncTestBase {
         }
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        setUpTestAccountAndSignIn();
+    @Before
+    public void setUp() throws Exception {
+        mSyncTestRule.setUpTestAccountAndSignIn();
         // Make sure the initial state is clean.
         assertClientAutofillProfileCount(0);
         assertServerAutofillProfileCountWithName(0, STREET);
     }
 
     // Test syncing an autofill profile from server to client.
+    @Test
     @LargeTest
     @Feature({"Sync"})
     public void testDownloadAutofill() throws Exception {
@@ -84,16 +102,17 @@ public class AutofillTest extends SyncTestBase {
 
         // Verify data synced to client.
         List<Autofill> autofills = getClientAutofillProfiles();
-        assertEquals("Only the injected autofill should exist on the client.",
-                1, autofills.size());
+        Assert.assertEquals(
+                "Only the injected autofill should exist on the client.", 1, autofills.size());
         Autofill autofill = autofills.get(0);
-        assertEquals("The wrong street was found for the address.", STREET, autofill.street);
-        assertEquals("The wrong city was found for the autofill.", CITY, autofill.city);
-        assertEquals("The wrong state was found for the autofill.", STATE, autofill.state);
-        assertEquals("The wrong zip was found for the autofill.", ZIP, autofill.zip);
+        Assert.assertEquals("The wrong street was found for the address.", STREET, autofill.street);
+        Assert.assertEquals("The wrong city was found for the autofill.", CITY, autofill.city);
+        Assert.assertEquals("The wrong state was found for the autofill.", STATE, autofill.state);
+        Assert.assertEquals("The wrong zip was found for the autofill.", ZIP, autofill.zip);
     }
 
     // Test syncing an autofill profile modification from server to client.
+    @Test
     @LargeTest
     @Feature({"Sync"})
     public void testDownloadAutofillModification() throws Exception {
@@ -105,9 +124,9 @@ public class AutofillTest extends SyncTestBase {
         // Modify on server, sync, and verify modification locally.
         Autofill autofill = getClientAutofillProfiles().get(0);
         specifics.autofillProfile.addressHomeCity = MODIFIED_CITY;
-        mFakeServerHelper.modifyEntitySpecifics(autofill.id, specifics);
+        mSyncTestRule.getFakeServerHelper().modifyEntitySpecifics(autofill.id, specifics);
         SyncTestUtil.triggerSync();
-        pollInstrumentationThread(new ClientAutofillCriteria() {
+        mSyncTestRule.pollInstrumentationThread(new ClientAutofillCriteria() {
             @Override
             public boolean isSatisfied(List<Autofill> autofills) {
                 Autofill modifiedAutofill = autofills.get(0);
@@ -117,6 +136,7 @@ public class AutofillTest extends SyncTestBase {
     }
 
     // Test syncing an autofill profile deletion from server to client.
+    @Test
     @LargeTest
     @Feature({"Sync"})
     public void testDownloadDeletedAutofill() throws Exception {
@@ -127,17 +147,18 @@ public class AutofillTest extends SyncTestBase {
 
         // Delete on server, sync, and verify deleted locally.
         Autofill autofill = getClientAutofillProfiles().get(0);
-        mFakeServerHelper.deleteEntity(autofill.id);
+        mSyncTestRule.getFakeServerHelper().deleteEntity(autofill.id);
         SyncTestUtil.triggerSync();
         waitForClientAutofillProfileCount(0);
     }
 
     // Test that autofill profiles don't get synced if the data type is disabled.
+    @Test
     @LargeTest
     @Feature({"Sync"})
     public void testDisabledNoDownloadAutofill() throws Exception {
         // The AUTOFILL type here controls both AUTOFILL and AUTOFILL_PROFILE.
-        disableDataType(ModelType.AUTOFILL);
+        mSyncTestRule.disableDataType(ModelType.AUTOFILL);
         addServerAutofillProfile(STREET, CITY, STATE, ZIP);
         SyncTestUtil.triggerSyncAndWaitForCompletion();
         assertClientAutofillProfileCount(0);
@@ -154,13 +175,13 @@ public class AutofillTest extends SyncTestBase {
         profile.addressHomeState = state;
         profile.addressHomeZip = zip;
         specifics.autofillProfile = profile;
-        mFakeServerHelper.injectUniqueClientEntity(street /* name */, specifics);
+        mSyncTestRule.getFakeServerHelper().injectUniqueClientEntity(street /* name */, specifics);
         return specifics;
     }
 
     private List<Autofill> getClientAutofillProfiles() throws JSONException {
-        List<Pair<String, JSONObject>> entities = SyncTestUtil.getLocalData(
-                mContext, AUTOFILL_TYPE);
+        List<Pair<String, JSONObject>> entities =
+                SyncTestUtil.getLocalData(mSyncTestRule.getTargetContext(), AUTOFILL_TYPE);
         List<Autofill> autofills = new ArrayList<Autofill>(entities.size());
         for (Pair<String, JSONObject> entity : entities) {
             String id = entity.first;
@@ -175,13 +196,13 @@ public class AutofillTest extends SyncTestBase {
     }
 
     private void assertClientAutofillProfileCount(int count) throws JSONException {
-        assertEquals("There should be " + count + " local autofill profiles.",
-                count, SyncTestUtil.getLocalData(mContext, AUTOFILL_TYPE).size());
+        Assert.assertEquals("There should be " + count + " local autofill profiles.", count,
+                SyncTestUtil.getLocalData(mSyncTestRule.getTargetContext(), AUTOFILL_TYPE).size());
     }
 
     private void assertServerAutofillProfileCountWithName(int count, String name) {
-        assertTrue("Expected " + count + " server autofill profiles with name " + name + ".",
-                mFakeServerHelper.verifyEntityCountByTypeAndName(
+        Assert.assertTrue("Expected " + count + " server autofill profiles with name " + name + ".",
+                mSyncTestRule.getFakeServerHelper().verifyEntityCountByTypeAndName(
                         count, ModelType.AUTOFILL_PROFILE, name));
     }
 
@@ -189,7 +210,8 @@ public class AutofillTest extends SyncTestBase {
         CriteriaHelper.pollInstrumentationThread(Criteria.equals(count, new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
-                return SyncTestUtil.getLocalData(mContext, AUTOFILL_TYPE).size();
+                return SyncTestUtil.getLocalData(mSyncTestRule.getTargetContext(), AUTOFILL_TYPE)
+                        .size();
             }
         }), SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
     }

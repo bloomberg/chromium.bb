@@ -11,9 +11,17 @@ import android.app.Instrumentation.ActivityMonitor;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
@@ -26,6 +34,8 @@ import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.signin.AccountManagementFragment;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
@@ -37,9 +47,61 @@ import java.util.concurrent.TimeoutException;
 /**
  * Tests for the first run experience.
  */
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add(ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG)
 @CommandLineFlags.Remove(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
-@RetryOnFailure  // crbug.com/637448
-public class FirstRunTest extends SyncTestBase {
+@RetryOnFailure // crbug.com/637448
+public class FirstRunTest {
+    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
+    @Rule
+    public SyncTestRule mSyncTestRule = new SyncTestRule() {
+        @Override
+        public void startMainActivityForSyncTest() throws Exception {
+            FirstRunActivity.setObserverForTest(mTestObserver);
+
+            // Starts up and waits for the FirstRunActivity to be ready.
+            // This isn't exactly what startMainActivity is supposed to be doing, but short of a
+            // refactoring of SyncTestBase to use something other than ChromeTabbedActivity,
+            // it's the only way to reuse the rest of the setup and initialization code inside of
+            // it.
+            final Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
+            final Context context = instrumentation.getTargetContext();
+
+            // Create an Intent that causes Chrome to run.
+            final Intent intent = new Intent(TEST_ACTION);
+            intent.setPackage(context.getPackageName());
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+            // Start the FRE.
+            final ActivityMonitor freMonitor =
+                    new ActivityMonitor(FirstRunActivity.class.getName(), null, false);
+            instrumentation.addMonitor(freMonitor);
+            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+                @Override
+                public void run() {
+                    FirstRunFlowSequencer.launch(context, intent, false /* requiresBroadcast */,
+                            false /* preferLightweightFre */);
+                }
+            });
+
+            // Wait for the FRE to be ready to use.
+            Activity activity =
+                    freMonitor.waitForActivityWithTimeout(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
+            instrumentation.removeMonitor(freMonitor);
+
+            Assert.assertTrue(activity instanceof FirstRunActivity);
+            mActivity = (FirstRunActivity) activity;
+
+            try {
+                mTestObserver.flowIsKnownCallback.waitForCallback(0);
+            } catch (TimeoutException e) {
+                Assert.fail();
+            }
+
+            InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        }
+    };
+
     private static final String TEST_ACTION = "com.artificial.package.TEST_ACTION";
 
     private static enum ShowSettings {
@@ -71,60 +133,10 @@ public class FirstRunTest extends SyncTestBase {
     private final TestObserver mTestObserver = new TestObserver();
     private FirstRunActivity mActivity;
 
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        FirstRunActivity.setObserverForTest(mTestObserver);
 
-        // Starts up and waits for the FirstRunActivity to be ready.
-        // This isn't exactly what startMainActivity is supposed to be doing, but short of a
-        // refactoring of SyncTestBase to use something other than ChromeTabbedActivity, it's the
-        // only way to reuse the rest of the setup and initialization code inside of it.
-        final Instrumentation instrumentation = getInstrumentation();
-        final Context context = instrumentation.getTargetContext();
-
-        // Create an Intent that causes Chrome to run.
-        final Intent intent = new Intent(TEST_ACTION);
-        intent.setPackage(context.getPackageName());
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-        // Start the FRE.
-        final ActivityMonitor freMonitor =
-                new ActivityMonitor(FirstRunActivity.class.getName(), null, false);
-        instrumentation.addMonitor(freMonitor);
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                FirstRunFlowSequencer.launch(context, intent, false /* requiresBroadcast */,
-                        false /* preferLightweightFre */);
-            }
-        });
-
-        // Wait for the FRE to be ready to use.
-        Activity activity =
-                freMonitor.waitForActivityWithTimeout(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
-        instrumentation.removeMonitor(freMonitor);
-
-        assertTrue(activity instanceof FirstRunActivity);
-        mActivity = (FirstRunActivity) activity;
-
-        try {
-            mTestObserver.flowIsKnownCallback.waitForCallback(0);
-        } catch (TimeoutException e) {
-            fail();
-        }
-
-        getInstrumentation().waitForIdleSync();
-    }
-
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-    }
-
-    @Override
+    @After
     public void tearDown() throws Exception {
         if (mActivity != null) mActivity.finish();
-        super.tearDown();
     }
 
     // Test that signing in through FirstRun signs in and starts sync.
@@ -132,14 +144,15 @@ public class FirstRunTest extends SyncTestBase {
      * @SmallTest
      * @Feature({"Sync"})
      */
+    @Test
     @FlakyTest(message = "https://crbug.com/616456")
     public void testSignIn() throws Exception {
         Account testAccount = SigninTestUtil.addTestAccount();
-        assertNull(SigninTestUtil.getCurrentAccount());
-        assertFalse(SyncTestUtil.isSyncRequested());
+        Assert.assertNull(SigninTestUtil.getCurrentAccount());
+        Assert.assertFalse(SyncTestUtil.isSyncRequested());
 
         processFirstRun(testAccount.name, ShowSettings.NO);
-        assertEquals(testAccount, SigninTestUtil.getCurrentAccount());
+        Assert.assertEquals(testAccount, SigninTestUtil.getCurrentAccount());
         SyncTestUtil.waitForSyncActive();
     }
 
@@ -149,6 +162,7 @@ public class FirstRunTest extends SyncTestBase {
      * @SmallTest
      * @Feature({"Sync"})
      */
+    @Test
     @FlakyTest(message = "https://crbug.com/616456")
     public void testSignInWithOpenSettings() throws Exception {
         final Account testAccount = SigninTestUtil.addTestAccount();
@@ -156,29 +170,30 @@ public class FirstRunTest extends SyncTestBase {
 
         // User should be signed in and the sync backend should initialize, but sync should not
         // become fully active until the settings page is closed.
-        assertEquals(testAccount, SigninTestUtil.getCurrentAccount());
+        Assert.assertEquals(testAccount, SigninTestUtil.getCurrentAccount());
         SyncTestUtil.waitForEngineInitialized();
-        assertFalse(SyncTestUtil.isSyncActive());
+        Assert.assertFalse(SyncTestUtil.isSyncActive());
 
         // Close the settings fragment.
         AccountManagementFragment fragment =
                 (AccountManagementFragment) prefActivity.getFragmentForTest();
-        assertNotNull(fragment);
+        Assert.assertNotNull(fragment);
         prefActivity.getFragmentManager().beginTransaction().remove(fragment).commit();
 
         // Sync should immediately become active.
-        assertTrue(SyncTestUtil.isSyncActive());
+        Assert.assertTrue(SyncTestUtil.isSyncActive());
     }
 
     // Test that not signing in through FirstRun does not sign in sync.
+    @Test
     @SmallTest
     @Feature({"Sync"})
     public void testNoSignIn() throws Exception {
         SigninTestUtil.addTestAccount();
-        assertFalse(SyncTestUtil.isSyncRequested());
+        Assert.assertFalse(SyncTestUtil.isSyncRequested());
         processFirstRun(null, ShowSettings.NO);
-        assertNull(SigninTestUtil.getCurrentAccount());
-        assertFalse(SyncTestUtil.isSyncRequested());
+        Assert.assertNull(SigninTestUtil.getCurrentAccount());
+        Assert.assertFalse(SyncTestUtil.isSyncRequested());
     }
 
     /**
@@ -199,13 +214,14 @@ public class FirstRunTest extends SyncTestBase {
         Preferences prefActivity = null;
         if (showSettings == ShowSettings.YES) {
             prefActivity = ActivityUtils.waitForActivity(
-                    getInstrumentation(), Preferences.class, new Runnable() {
+                    InstrumentationRegistry.getInstrumentation(), Preferences.class,
+                    new Runnable() {
                         @Override
                         public void run() {
                             processFirstRunOnUiThread();
                         }
                     });
-            assertNotNull("Could not find the preferences activity", prefActivity);
+            Assert.assertNotNull("Could not find the preferences activity", prefActivity);
         } else {
             processFirstRunOnUiThread();
         }
