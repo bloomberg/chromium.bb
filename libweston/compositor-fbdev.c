@@ -485,10 +485,8 @@ fbdev_output_disable_handler(struct weston_output *base)
 	if (!base->enabled)
 		return 0;
 
+	pixman_renderer_output_destroy(&output->base);
 	fbdev_frame_buffer_unmap(output);
-
-	if (base->renderer_state != NULL)
-		pixman_renderer_output_destroy(base);
 
 	return 0;
 }
