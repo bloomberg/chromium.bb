@@ -8,11 +8,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import org.chromium.base.test.util.Feature;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+
+import org.chromium.base.test.util.Feature;
+import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**
  * Robolectric tests for {@link MediaSource} class.
@@ -99,6 +100,13 @@ public class MediaSourceTest {
 
     @Test
     @Feature({"MediaRouter"})
+    public void testInvalidAutoJoinPolicy() {
+        assertNull(MediaSource.from("https://example.com/path?query#__castAppId__=A"
+                + "/__castAutoJoinPolicy__=invalidPolicy"));
+    }
+
+    @Test
+    @Feature({"MediaRouter"})
     public void testOptionalParameters() {
         MediaSource source = MediaSource.from("https://example.com/path?query#__castAppId__=A");
         assertNotNull(source);
@@ -107,5 +115,46 @@ public class MediaSourceTest {
         assertNull(source.getCapabilities());
         assertNull(source.getClientId());
         assertEquals("tab_and_origin_scoped", source.getAutoJoinPolicy());
+    }
+
+    @Test
+    @Feature({"MediaRouter"})
+    public void testBasicCastPresentationUrl() {
+        MediaSource source = MediaSource.from("cast:ABCD1234");
+        assertNotNull(source);
+        assertEquals("ABCD1234", source.getApplicationId());
+        assertNull(source.getCapabilities());
+        assertNull(source.getClientId());
+        assertEquals("tab_and_origin_scoped", source.getAutoJoinPolicy());
+    }
+
+    @Test
+    @Feature({"MediaRouter"})
+    public void testCastPresentationUrlWithParameters() {
+        MediaSource source = MediaSource.from("cast:ABCD1234?clientId=1234"
+                + "&capabilities=video_out,audio_out"
+                + "&autoJoinPolicy=tab_and_origin_scoped");
+        assertNotNull(source);
+        assertEquals("ABCD1234", source.getApplicationId());
+        assertNotNull(source.getCapabilities());
+        assertEquals(2, source.getCapabilities().length);
+        assertEquals("video_out", source.getCapabilities()[0]);
+        assertEquals("audio_out", source.getCapabilities()[1]);
+        assertEquals("1234", source.getClientId());
+        assertEquals("tab_and_origin_scoped", source.getAutoJoinPolicy());
+    }
+
+    @Test
+    @Feature({"MediaRouter"})
+    public void testCastPresentationUrlInvalidCapability() {
+        assertNull(MediaSource.from("cast:ABCD1234?clientId=1234"
+                + "&capabilities=invalidCapability"));
+    }
+
+    @Test
+    @Feature({"MediaRouter"})
+    public void testCastPresentationUrlInvalidAutoJoinPolicy() {
+        assertNull(MediaSource.from("cast:ABCD1234?clientId=1234"
+                + "&autoJoinPolicy=invalidPolicy"));
     }
 }
