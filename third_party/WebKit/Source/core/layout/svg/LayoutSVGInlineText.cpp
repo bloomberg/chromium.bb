@@ -56,7 +56,7 @@ LayoutSVGInlineText::LayoutSVGInlineText(Node* n, RefPtr<StringImpl> string)
       scaling_factor_(1) {}
 
 void LayoutSVGInlineText::SetTextInternal(RefPtr<StringImpl> text) {
-  LayoutText::SetTextInternal(std::move(text));
+  LayoutText::SetTextInternal(NormalizeWhitespace(std::move(text)));
   if (LayoutSVGText* text_layout_object =
           LayoutSVGText::LocateLayoutSVGTextAncestor(this))
     text_layout_object->SubtreeTextDidChange();
@@ -419,13 +419,6 @@ LayoutRect LayoutSVGInlineText::AbsoluteVisualRect() const {
 
 FloatRect LayoutSVGInlineText::VisualRectInLocalSVGCoordinates() const {
   return Parent()->VisualRectInLocalSVGCoordinates();
-}
-
-RefPtr<StringImpl> LayoutSVGInlineText::OriginalText() const {
-  RefPtr<StringImpl> result = LayoutText::OriginalText();
-  if (!result)
-    return nullptr;
-  return NormalizeWhitespace(std::move(result));
 }
 
 }  // namespace blink
