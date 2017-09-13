@@ -11,6 +11,7 @@
 #include "base/guid.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/ranges.h"
 #include "build/build_config.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
@@ -247,10 +248,6 @@ bool IsOEMFolderItem(AppListItem* item) {
   return IsFolderItem(item) &&
          (static_cast<AppListFolderItem*>(item))->folder_type() ==
              AppListFolderItem::FOLDER_TYPE_OEM;
-}
-
-int ClampToRange(int value, int min, int max) {
-  return std::min(std::max(value, min), max);
 }
 
 }  // namespace
@@ -1719,7 +1716,7 @@ void AppsGridView::CalculateReorderDropTarget(const gfx::Point& point,
   int x_offset = x_offset_direction *
                  (total_tile_size.width() - kFolderDroppingCircleRadius) / 2;
   int col = (point.x() - bounds.x() + x_offset) / total_tile_size.width();
-  col = ClampToRange(col, 0, cols_ - 1);
+  col = base::ClampToRange(col, 0, cols_ - 1);
   *drop_target =
       std::min(Index(pagination_model_.selected_page(), row * cols_ + col),
                GetLastViewIndex());
@@ -2529,13 +2526,13 @@ AppsGridView::Index AppsGridView::GetNearestTileIndexForPoint(
   const int current_page = pagination_model_.selected_page();
   bounds.Inset(0, GetHeightOnTopOfAllAppsTiles(current_page), 0, 0);
   const gfx::Size total_tile_size = GetTotalTileSize();
-  int col = ClampToRange((point.x() - bounds.x()) / total_tile_size.width(), 0,
-                         cols_ - 1);
+  int col = base::ClampToRange(
+      (point.x() - bounds.x()) / total_tile_size.width(), 0, cols_ - 1);
   int row = rows_per_page_;
   bool show_suggested_apps =
       is_fullscreen_app_list_enabled_ && current_page == 0;
-  row = ClampToRange((point.y() - bounds.y()) / total_tile_size.height(), 0,
-                     rows_per_page_ - (show_suggested_apps ? 2 : 1));
+  row = base::ClampToRange((point.y() - bounds.y()) / total_tile_size.height(),
+                           0, rows_per_page_ - (show_suggested_apps ? 2 : 1));
   return Index(current_page, row * cols_ + col);
 }
 

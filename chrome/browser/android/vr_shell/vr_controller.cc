@@ -10,7 +10,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "cc/base/math_util.h"
+#include "base/numerics/ranges.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
@@ -51,8 +51,8 @@ constexpr float kFadeDistanceFromFace = 0.34f;
 constexpr float kDeltaAlpha = 3.0f;
 
 void ClampTouchpadPosition(gfx::Vector2dF* position) {
-  position->set_x(cc::MathUtil::ClampToRange(position->x(), 0.0f, 1.0f));
-  position->set_y(cc::MathUtil::ClampToRange(position->y(), 0.0f, 1.0f));
+  position->set_x(base::ClampToRange(position->x(), 0.0f, 1.0f));
+  position->set_y(base::ClampToRange(position->y(), 0.0f, 1.0f));
 }
 
 float DeltaTimeSeconds(int64_t last_timestamp_nanos) {
@@ -473,10 +473,10 @@ void VrController::UpdateOverallVelocity() {
 void VrController::UpdateAlpha() {
   float distance_to_face = (Position() - gfx::Point3F()).Length();
   float alpha_change = kDeltaAlpha * DeltaTimeSeconds(last_timestamp_nanos_);
-  alpha_value_ = cc::MathUtil::ClampToRange(
-      distance_to_face < kFadeDistanceFromFace ? alpha_value_ - alpha_change
-                                               : alpha_value_ + alpha_change,
-      0.0f, 1.0f);
+  alpha_value_ = base::ClampToRange(distance_to_face < kFadeDistanceFromFace
+                                        ? alpha_value_ - alpha_change
+                                        : alpha_value_ + alpha_change,
+                                    0.0f, 1.0f);
 }
 
 }  // namespace vr_shell

@@ -14,10 +14,10 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
+#include "base/numerics/ranges.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "build/build_config.h"
-#include "cc/base/math_util.h"
 #include "cc/base/switches.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/public/browser/gpu_utils.h"
@@ -187,8 +187,8 @@ int NumberOfRendererRasterThreads() {
     }
   }
 
-  return cc::MathUtil::ClampToRange(num_raster_threads, kMinRasterThreads,
-                                    kMaxRasterThreads);
+  return base::ClampToRange(num_raster_threads, kMinRasterThreads,
+                            kMaxRasterThreads);
 }
 
 bool IsZeroCopyUploadEnabled() {

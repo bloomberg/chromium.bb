@@ -5,8 +5,7 @@
 #ifndef CC_BASE_MATH_UTIL_H_
 #define CC_BASE_MATH_UTIL_H_
 
-#include <algorithm>
-#include <cmath>
+#include <limits>
 #include <memory>
 #include <vector>
 
@@ -145,10 +144,6 @@ class CC_BASE_EXPORT MathUtil {
                   "T must be an integer type");
     CHECK(VerifyRoundDown(n, mul));
     return RoundDownInternal(n, mul);
-  }
-
-  template <typename T> static T ClampToRange(T value, T min, T max) {
-    return std::min(std::max(value, min), max);
   }
 
   template <typename T>
