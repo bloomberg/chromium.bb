@@ -54,6 +54,13 @@
 # http://crbug.com/721398
 -ClearSiteDataThrottleBrowserTest.*
 
+# Plugin throttle is not implemented. http://crbug.com/764474
+-DataUrlNavigationBrowserTest.PDF_BrowserInitiatedNavigation_Allow
+-DataUrlNavigationBrowserTest.PDF_FormPost_Block
+-DataUrlNavigationBrowserTest.PDF_Navigation_Block
+-DataUrlNavigationBrowserTest.PDF_NavigationFromFrame_Block
+-DataUrlNavigationBrowserTest.PDF_NavigationFromFrame_TopFrameIsDataURL_Block
+
 -AsyncResourceHandlerBrowserTest/AsyncResourceHandlerBrowserTest.UploadProgress*
 -BrowserSideNavigationBrowserTest.FailedNavigation
 -CrossSiteResourceHandlerTest.NoDeliveryToDetachedFrame

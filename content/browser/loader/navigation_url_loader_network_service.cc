@@ -39,9 +39,11 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "net/base/load_flags.h"
+#include "net/http/http_content_disposition.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "third_party/WebKit/common/mime_util/mime_util.h"
 
 namespace content {
 
@@ -481,7 +483,9 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
     ServiceWorkerNavigationHandle* service_worker_navigation_handle,
     AppCacheNavigationHandle* appcache_handle,
     NavigationURLLoaderDelegate* delegate)
-    : delegate_(delegate), weak_factory_(this) {
+    : delegate_(delegate),
+      allow_download_(request_info->common_params.allow_download),
+      weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(
@@ -519,6 +523,7 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
 
   new_request->request_body = request_info->common_params.post_data.get();
   new_request->report_raw_headers = request_info->report_raw_headers;
+  new_request->allow_download = allow_download_;
 
   int frame_tree_node_id = request_info->frame_tree_node_id;
 
@@ -605,7 +610,7 @@ void NavigationURLLoaderNetworkService::OnStartLoadingResponseBody(
   delegate_->OnResponseStarted(
       response_, nullptr, std::move(body), ssl_status_,
       std::unique_ptr<NavigationData>(), GlobalRequestID(-1, g_next_request_id),
-      false /* is_download? */, false /* is_stream */,
+      IsDownload(), false /* is_stream */,
       request_controller_->GetSubresourceURLLoaderFactory());
 }
 
@@ -625,6 +630,34 @@ void NavigationURLLoaderNetworkService::OnComplete(
   delegate_->OnRequestFailed(completion_status.exists_in_cache,
                              completion_status.error_code, ssl_info_,
                              should_ssl_errors_be_fatal);
+}
+
+bool NavigationURLLoaderNetworkService::IsDownload() const {
+  DCHECK(response_);
+
+  if (!allow_download_)
+    return false;
+
+  if (response_->head.headers) {
+    std::string disposition;
+    if (response_->head.headers->GetNormalizedHeader("content-disposition",
+                                                     &disposition) &&
+        !disposition.empty() &&
+        net::HttpContentDisposition(disposition, std::string())
+            .is_attachment()) {
+      return true;
+    }
+    // TODO(qinmin): Check whether this is special-case user script that needs
+    // to be downloaded.
+  }
+
+  if (blink::IsSupportedMimeType(response_->head.mime_type))
+    return false;
+
+  // TODO(qinmin): Check whether there is a plugin handler.
+
+  return (!response_->head.headers ||
+          response_->head.headers->response_code() / 100 == 2);
 }
 
 }  // namespace content

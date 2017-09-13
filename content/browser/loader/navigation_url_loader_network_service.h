@@ -50,6 +50,8 @@ class NavigationURLLoaderNetworkService : public NavigationURLLoader {
  private:
   class URLLoaderRequestController;
 
+  bool IsDownload() const;
+
   NavigationURLLoaderDelegate* delegate_;
 
   scoped_refptr<ResourceResponse> response_;
@@ -58,6 +60,8 @@ class NavigationURLLoaderNetworkService : public NavigationURLLoader {
 
   // Lives on the IO thread.
   std::unique_ptr<URLLoaderRequestController> request_controller_;
+
+  bool allow_download_;
 
   base::WeakPtrFactory<NavigationURLLoaderNetworkService> weak_factory_;
 
