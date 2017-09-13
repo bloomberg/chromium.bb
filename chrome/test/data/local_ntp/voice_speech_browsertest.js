@@ -222,7 +222,7 @@ test.speech.testFakeboxClickStartsSpeechWithWorkingView = function() {
   assertEquals(speech.State_.STARTED, speech.currentState_);
   assertEquals(1, test.speech.recognitionActiveCount);
   assertEquals(1, test.speech.viewActiveCount);
-  assertTrue(speech.isRecognizing_());
+  assertTrue(speech.isRecognizing());
   assertTrue(test.speech.clock.isTimeoutSet(speech.idleTimer_));
   assertFalse(test.speech.clock.isTimeoutSet(speech.errorTimer_));
 };
@@ -238,7 +238,7 @@ test.speech.testOmniboxFocusWithWorkingView = function() {
   assertEquals(speech.State_.STARTED, speech.currentState_);
   assertEquals(1, test.speech.recognitionActiveCount);
   assertEquals(1, test.speech.viewActiveCount);
-  assertTrue(speech.isRecognizing_());
+  assertTrue(speech.isRecognizing());
   assertTrue(test.speech.clock.isTimeoutSet(speech.idleTimer_));
   assertFalse(test.speech.clock.isTimeoutSet(speech.errorTimer_));
 
@@ -275,7 +275,7 @@ test.speech.testHandleAudioStart = function() {
   speech.recognition_.onaudiostart(null);
 
   assertTrue('ready' in test.speech.viewState);
-  assertTrue(speech.isRecognizing_());
+  assertTrue(speech.isRecognizing());
   assertEquals(1, test.speech.recognitionActiveCount);
   assertFalse(elementIsVisible($(test.speech.FAKEBOX_MICROPHONE_ID)));
 };
@@ -292,7 +292,7 @@ test.speech.testHandleSpeechStart = function() {
   speech.recognition_.onspeechstart(null);
 
   assertTrue('receiving' in test.speech.viewState);
-  assertTrue(speech.isRecognizing_());
+  assertTrue(speech.isRecognizing());
   assertEquals(1, test.speech.recognitionActiveCount);
   assertFalse(elementIsVisible($(test.speech.FAKEBOX_MICROPHONE_ID)));
 };
@@ -315,7 +315,7 @@ test.speech.testHandleInterimSpeechResponse = function() {
   speech.recognition_.onspeechstart(null);
   speech.recognition_.onresult(responseEvent);
 
-  assertTrue(speech.isRecognizing_());
+  assertTrue(speech.isRecognizing());
   assertEquals(highConfidenceText, test.speech.viewState.final);
   assertEquals(viewText, test.speech.viewState.interim);
   assertEquals(highConfidenceText, speech.finalResult_);
@@ -374,7 +374,7 @@ test.speech.testInterruptSpeechInputAfterInterimResult = function() {
   // The user interrupts speech.
   speech.stop();
 
-  assertFalse(speech.isRecognizing_());
+  assertFalse(speech.isRecognizing());
   assertEquals('', speech.interimResult_);
   assertEquals('', speech.finalResult_);
   assertEquals(0, test.speech.recognitionActiveCount);
@@ -383,7 +383,7 @@ test.speech.testInterruptSpeechInputAfterInterimResult = function() {
   test.speech.createInterimResponse('result should', 'be ignored');
   speech.recognition_.onresult(responseEvent);
 
-  assertFalse(speech.isRecognizing_());
+  assertFalse(speech.isRecognizing());
   assertEquals('', speech.interimResult_);
   assertEquals('', speech.finalResult_);
   assertEquals(0, test.speech.recognitionActiveCount);
@@ -414,7 +414,7 @@ test.speech.testSpeechRecognitionErrorTimeout = function() {
   speech.start();
   speech.recognition_.onerror({error: 'some-error'});
 
-  assertFalse(speech.isRecognizing_());
+  assertFalse(speech.isRecognizing());
   assertEquals(1, test.speech.recognitionActiveCount);
   assertEquals(1, test.speech.viewActiveCount);
   assertEquals(RecognitionError.OTHER, test.speech.viewState.error);
@@ -438,7 +438,7 @@ test.speech.testNoSpeechInput = function() {
   speech.recognition_.onaudiostart(null);
   speech.recognition_.onend(null);
 
-  assertFalse(speech.isRecognizing_());
+  assertFalse(speech.isRecognizing());
   assertEquals(RecognitionError.NO_SPEECH, test.speech.viewState.error);
 
   test.speech.clock.advanceTime(7999);
@@ -490,7 +490,7 @@ test.speech.testRecognitionHandlersStayInitialized = function() {
   // Stop.
   speech.recognition_.onend(null);
   assertRecognitionHandlers(true);
-  assertFalse(speech.isRecognizing_());
+  assertFalse(speech.isRecognizing());
   assertEquals(RecognitionError.NO_SPEECH, test.speech.viewState.error);
 
   test.speech.clock.advanceTime(7999);
@@ -519,11 +519,11 @@ test.speech.testStopStartErrorHandling = function() {
   test.speech.initSpeech();
   speech.start();
   assertEquals(speech.State_.STARTED, speech.currentState_);
-  assertTrue(speech.isRecognizing_());
+  assertTrue(speech.isRecognizing());
 
   speech.recognition_.onaudiostart(null);
   assertEquals(speech.State_.AUDIO_RECEIVED, speech.currentState_);
-  assertTrue(speech.isRecognizing_());
+  assertTrue(speech.isRecognizing());
 
   speech.stop();
   assertEquals(speech.State_.READY, speech.currentState_);
@@ -531,7 +531,7 @@ test.speech.testStopStartErrorHandling = function() {
 
   speech.start();
   assertEquals(speech.State_.STARTED, speech.currentState_);
-  assertTrue(speech.isRecognizing_());
+  assertTrue(speech.isRecognizing());
 
   speech.stop();
   assertEquals(speech.State_.READY, speech.currentState_);
@@ -554,14 +554,14 @@ test.speech.testStopStartKeyboardShortcutErrorHandling = function() {
   assertEquals(speech.State_.STARTED, speech.currentState_);
 
   speech.recognition_.onaudiostart(null);
-  assertTrue(speech.isRecognizing_());
+  assertTrue(speech.isRecognizing());
 
   speech.onKeyDown(stopShortcut);
   assertEquals(speech.State_.READY, speech.currentState_);
   test.speech.validateInactive();
 
   speech.onKeyDown(startShortcut);
-  assertTrue(speech.isRecognizing_());
+  assertTrue(speech.isRecognizing());
   assertEquals(speech.State_.STARTED, speech.currentState_);
 
   speech.onKeyDown(stopShortcut);
@@ -635,10 +635,10 @@ test.speech.testKeyboardStartWithCtrl = function() {
   const ctrlShiftPeriod = new KeyboardEvent(
       'test', {ctrlKey: true, code: 'Period', shiftKey: true});
   speech.onKeyDown(ctrlShiftPeriod);
-  assertTrue(speech.isRecognizing_());
+  assertTrue(speech.isRecognizing());
 
   speech.onKeyDown(ctrlShiftPeriod);
-  assertTrue(speech.isRecognizing_());
+  assertTrue(speech.isRecognizing());
 };
 
 
@@ -671,10 +671,10 @@ test.speech.testKeyboardStartWithCmd = function() {
   // Set a Mac user agent.
   isUserAgentMac = true;
   speech.onKeyDown(cmdShiftPeriod);
-  assertTrue(speech.isRecognizing_());
+  assertTrue(speech.isRecognizing());
 
   speech.onKeyDown(cmdShiftPeriod);
-  assertTrue(speech.isRecognizing_());
+  assertTrue(speech.isRecognizing());
 };
 
 
@@ -707,7 +707,7 @@ test.speech.testClickToRetryWhenStopped = function() {
 
   speech.onClick_(
       /*submitQuery=*/false, /*shouldRetry=*/true, /*navigatingAway=*/false);
-  assertTrue(speech.isRecognizing_());
+  assertTrue(speech.isRecognizing());
   assertEquals(speech.State_.STARTED, speech.currentState_);
 };
 
@@ -739,7 +739,7 @@ test.speech.testNoSpeechInputMatched = function() {
   speech.recognition_.onspeechstart(null);
   speech.recognition_.onnomatch(null);
 
-  assertFalse(speech.isRecognizing_());
+  assertFalse(speech.isRecognizing());
   assertEquals(1, test.speech.recognitionActiveCount);
   assertEquals(1, test.speech.viewActiveCount);
   assertEquals(RecognitionError.NO_MATCH, test.speech.viewState.error);
@@ -880,7 +880,7 @@ test.speech.unInitSpeech = function(fakeboxMicrophoneElem, searchboxApiHandle) {
  * Validates that speech is currently inactive and ready to start recognition.
  */
 test.speech.validateInactive = function() {
-  assertFalse(speech.isRecognizing_());
+  assertFalse(speech.isRecognizing());
   assertEquals(0, test.speech.recognitionActiveCount);
   assertEquals(0, test.speech.viewActiveCount);
   assertEquals('', speech.interimResult_);
