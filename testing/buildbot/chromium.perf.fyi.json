@@ -9,6 +9,7 @@
           "-v",
           "--upload-results",
           "--output-format=histograms",
+          "--output-format=json-test-results",
           "--browser=release"
         ],
         "isolate_name": "telemetry_perf_tests",
