@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "tools/traffic_annotation/auditor/traffic_annotation_exporter.h"
 #include "tools/traffic_annotation/auditor/traffic_annotation_file_filter.h"
 
 namespace {
@@ -135,10 +136,8 @@ bool TrafficAnnotationAuditor::RunClangTool(
   }
   base::CloseFile(options_file);
 
-  base::CommandLine cmdline(source_path_.Append(FILE_PATH_LITERAL("tools"))
-                                .Append(FILE_PATH_LITERAL("clang"))
-                                .Append(FILE_PATH_LITERAL("scripts"))
-                                .Append(FILE_PATH_LITERAL("run_tool.py")));
+  base::CommandLine cmdline(source_path_.Append(
+      FILE_PATH_LITERAL("tools/clang/scripts/run_tool.py")));
 
 #if defined(OS_WIN)
   cmdline.PrependWrapper(L"python");
@@ -325,11 +324,18 @@ void TrafficAnnotationAuditor::PurgeAnnotations(
       extracted_annotations_.end());
 }
 
-void TrafficAnnotationAuditor::CheckDuplicateHashes() {
+bool TrafficAnnotationAuditor::CheckDuplicateHashes() {
   const std::map<int, std::string> reserved_ids = GetReservedUniqueIDs();
 
   std::map<int, std::vector<AnnotationID>> collisions;
   std::set<int> to_be_purged;
+  std::set<int> deprecated_ids;
+
+  // Load deprecated Hashcodes.
+  if (!TrafficAnnotationExporter(source_path_)
+           .GetDeprecatedHashCodes(&deprecated_ids)) {
+    return false;
+  }
 
   for (AnnotationInstance& instance : extracted_annotations_) {
     // Check if partial and branched completing annotation have an extra id
@@ -382,6 +388,16 @@ void TrafficAnnotationAuditor::CheckDuplicateHashes() {
         continue;
       }
 
+      // If the id's hash code was formerly used by a deprecated annotation,
+      // add an error.
+      if (base::ContainsKey(deprecated_ids, current.hash)) {
+        errors_.push_back(AuditorResult(
+            AuditorResult::Type::ERROR_DEPRECATED_UNIQUE_ID_HASH_CODE,
+            current.text, instance.proto.source().file(),
+            instance.proto.source().line()));
+        continue;
+      }
+
       // Check for collisions.
       if (!base::ContainsKey(collisions, current.hash)) {
         collisions[current.hash] = std::vector<AnnotationID>();
@@ -425,6 +441,7 @@ void TrafficAnnotationAuditor::CheckDuplicateHashes() {
   }
 
   PurgeAnnotations(to_be_purged);
+  return true;
 }
 
 void TrafficAnnotationAuditor::CheckUniqueIDsFormat() {
@@ -608,10 +625,12 @@ void TrafficAnnotationAuditor::CheckAnnotationsContents() {
                                   new_annotations.end());
 }
 
-void TrafficAnnotationAuditor::RunAllChecks() {
-  CheckDuplicateHashes();
+bool TrafficAnnotationAuditor::RunAllChecks() {
+  if (!CheckDuplicateHashes())
+    return false;
   CheckUniqueIDsFormat();
   CheckAnnotationsContents();
 
   CheckAllRequiredFunctionsAreAnnotated();
+  return true;
 }
