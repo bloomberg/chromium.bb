@@ -61,10 +61,16 @@ display::Display CastScreen::GetDisplayNearestWindow(
 
 CastScreen::CastScreen() {
   // Device scale factor computed relative to 720p display
-  display::Display display(kDisplayId);
   const gfx::Size size = GetScreenResolution();
   const float device_scale_factor = size.height() / 720.0f;
-  display.SetScaleAndBounds(device_scale_factor, gfx::Rect(size));
+  OnDisplayChanged(device_scale_factor, gfx::Rect(size));
+}
+
+void CastScreen::OnDisplayChanged(float device_scale_factor, gfx::Rect bounds) {
+  VLOG(1) << __func__ << " device_scale_factor=" << device_scale_factor
+          << " bounds=" << bounds.ToString();
+  display::Display display(kDisplayId);
+  display.SetScaleAndBounds(device_scale_factor, bounds);
   ProcessDisplayChanged(display, true /* is_primary */);
 }
 

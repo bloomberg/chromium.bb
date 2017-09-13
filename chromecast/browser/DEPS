@@ -33,7 +33,7 @@ include_rules = [
   "+ui/gfx",
   "+ui/gl",
   "+ui/display",
-  "+ui/ozone/platform/cast/overlay_manager_cast.h",
+  "+ui/ozone",
 
   # TODO(sanfin): Remove this by fixing the crash handler on android.
   "!chromecast/app",
