@@ -183,8 +183,7 @@ WebrtcDummyVideoEncoderFactory::~WebrtcDummyVideoEncoderFactory() {
 
 webrtc::VideoEncoder* WebrtcDummyVideoEncoderFactory::CreateVideoEncoder(
     const cricket::VideoCodec& codec) {
-  webrtc::VideoCodecType type = webrtc::PayloadNameToCodecType(codec.name)
-                                    .value_or(webrtc::kVideoCodecUnknown);
+  webrtc::VideoCodecType type = webrtc::PayloadStringToCodecType(codec.name);
   WebrtcDummyVideoEncoder* encoder = new WebrtcDummyVideoEncoder(
       main_task_runner_, video_channel_state_observer_, type);
   base::AutoLock lock(lock_);
