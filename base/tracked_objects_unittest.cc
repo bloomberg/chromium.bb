@@ -60,7 +60,8 @@ class TrackedObjectsTest : public testing::Test {
 
   // Simulate a birth on the thread named |thread_name|, at the given
   // |location|.
-  void TallyABirth(const Location& location, const std::string& thread_name) {
+  void TallyABirth(const base::Location& location,
+                   const std::string& thread_name) {
     // If the |thread_name| is empty, we don't initialize system with a thread
     // name, so we're viewed as a worker thread.
     if (!thread_name.empty())
@@ -476,7 +477,7 @@ TEST_F(TrackedObjectsTest, DeactivatedBirthOnlyToSnapshotWorkerThread) {
   ThreadData::InitializeAndSetTrackingStatus(ThreadData::DEACTIVATED);
 
   const char kFunction[] = "DeactivatedBirthOnlyToSnapshotWorkerThread";
-  Location location(kFunction, kFile, kLineNumber, &kLineNumber);
+  base::Location location(kFunction, kFile, kLineNumber, &kLineNumber);
   TallyABirth(location, std::string());
 
   ProcessDataSnapshot process_data;
@@ -498,7 +499,7 @@ TEST_F(TrackedObjectsTest, DeactivatedBirthOnlyToSnapshotMainThread) {
   ThreadData::InitializeAndSetTrackingStatus(ThreadData::DEACTIVATED);
 
   const char kFunction[] = "DeactivatedBirthOnlyToSnapshotMainThread";
-  Location location(kFunction, kFile, kLineNumber, &kLineNumber);
+  base::Location location(kFunction, kFile, kLineNumber, &kLineNumber);
   TallyABirth(location, kMainThreadName);
 
   ProcessDataSnapshot process_data;
@@ -519,7 +520,7 @@ TEST_F(TrackedObjectsTest, BirthOnlyToSnapshotWorkerThread) {
   ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE);
 
   const char kFunction[] = "BirthOnlyToSnapshotWorkerThread";
-  Location location(kFunction, kFile, kLineNumber, &kLineNumber);
+  base::Location location(kFunction, kFile, kLineNumber, &kLineNumber);
   TallyABirth(location, std::string());
 
   ProcessDataSnapshot process_data;
@@ -532,7 +533,7 @@ TEST_F(TrackedObjectsTest, BirthOnlyToSnapshotMainThread) {
   ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE);
 
   const char kFunction[] = "BirthOnlyToSnapshotMainThread";
-  Location location(kFunction, kFile, kLineNumber, &kLineNumber);
+  base::Location location(kFunction, kFile, kLineNumber, &kLineNumber);
   TallyABirth(location, kMainThreadName);
 
   ProcessDataSnapshot process_data;

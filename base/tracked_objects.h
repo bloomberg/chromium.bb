@@ -203,16 +203,16 @@ namespace tracked_objects {
 class ThreadData;
 class BASE_EXPORT BirthOnThread {
  public:
-  BirthOnThread(const Location& location, const ThreadData& current);
+  BirthOnThread(const base::Location& location, const ThreadData& current);
 
-  const Location& location() const { return location_; }
+  const base::Location& location() const { return location_; }
   const ThreadData* birth_thread() const { return birth_thread_; }
 
  private:
   // File/lineno of birth.  This defines the essence of the task, as the context
   // of the birth (construction) often tell what the item is for.  This field
   // is const, and hence safe to access from any thread.
-  const Location location_;
+  const base::Location location_;
 
   // The thread that records births into this object.  Only this thread is
   // allowed to update birth_count_ (which changes over time).
@@ -238,7 +238,7 @@ struct BASE_EXPORT BirthOnThreadSnapshot {
 
 class BASE_EXPORT Births: public BirthOnThread {
  public:
-  Births(const Location& location, const ThreadData& current);
+  Births(const base::Location& location, const ThreadData& current);
 
   int birth_count() const;
 
@@ -549,7 +549,7 @@ class BASE_EXPORT ThreadData {
     STATUS_LAST = PROFILING_ACTIVE
   };
 
-  typedef std::unordered_map<Location, Births*> BirthMap;
+  typedef std::unordered_map<base::Location, Births*> BirthMap;
   typedef std::map<const Births*, DeathData> DeathMap;
 
   // Initialize the current thread context with a new instance of ThreadData.
@@ -583,7 +583,7 @@ class BASE_EXPORT ThreadData {
   // Finds (or creates) a place to count births from the given location in this
   // thread, and increment that tally.
   // TallyABirthIfActive will returns NULL if the birth cannot be tallied.
-  static Births* TallyABirthIfActive(const Location& location);
+  static Births* TallyABirthIfActive(const base::Location& location);
 
   // Record the end of a timed run of an object.  The |birth| is the record for
   // the instance, the |time_posted| records that instant, which is presumed to
@@ -669,7 +669,7 @@ class BASE_EXPORT ThreadData {
 
 
   // In this thread's data, record a new birth.
-  Births* TallyABirth(const Location& location);
+  Births* TallyABirth(const base::Location& location);
 
   // Find a place to record a death on this thread.
   void TallyADeath(const Births& births,

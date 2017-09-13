@@ -123,15 +123,6 @@ BASE_EXPORT const void* GetProgramCounter();
 
 }  // namespace base
 
-namespace tracked_objects {
-
-// TODO(http://crbug.com/763556): Convert all uses of Location and
-// GetProgramCounter to use the base namespace and remove these lines.
-using ::base::Location;
-using ::base::GetProgramCounter;
-
-}  // namespace tracked_objects
-
 namespace std {
 
 // Specialization for using Location in hash tables.
