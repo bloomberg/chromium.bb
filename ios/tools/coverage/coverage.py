@@ -10,12 +10,13 @@
         such as ios_chrome_unittests. To simply play with this tool, you are
         suggested to start with 'url_unittests'.
 
-  ios/tools/coverage/coverage.py target
-    Generate code coverage report for |target| and restrict the results to ios/.
+  ios/tools/coverage/coverage.py -p path1 -p path2 target
+    Generate code coverage report for |target| for |path1| and |path2|.
 
-  ios/tools/coverage/coverage.py -f path1 -f path2 target
-    Generate code coverage report for |target| and restrict the results to
-    |path1| and |path2|.
+  ios/tools/coverage/coverage.py target -p path --reuse-profdata
+  out/Coverage-iphonesimulator/coverage.profdata
+    Skip running tests and reuse the specified profile data file to generate
+    code coverage report.
 
   For more options, please refer to ios/tools/coverage/coverage.py -h
 
@@ -41,13 +42,6 @@ PROFDATA_FILE_NAME = 'coverage.profdata'
 # coverage configuration, and the path to the file is part of the log that can
 # be identified with the following identifier.
 PROFRAW_LOG_IDENTIFIER = 'Coverage data at '
-
-# By default, code coverage results are restricted to 'ios/' directory.
-# If the filter arguments are defined, they will override the default values.
-# Having default values are important because otherwise the code coverage data
-# returned by "llvm-cove" will include completely unrelated directories such as
-# 'base/' and 'url/'.
-DEFAULT_FILTER_PATHS = ['ios/']
 
 # Only test targets with the following postfixes are considered to be valid.
 VALID_TEST_TARGET_POSTFIXES = ['unittests', 'inttests', 'egtests']
@@ -75,7 +69,7 @@ def _CreateCoverageProfileDataForTarget(target, jobs_count=None):
   return profdata_path
 
 
-def _DisplayLineCoverageReport(target, profdata_path, filter_paths):
+def _DisplayLineCoverageReport(target, profdata_path, paths):
   """Generates and displays line coverage report.
 
   The output has the following format:
@@ -90,39 +84,38 @@ def _DisplayLineCoverageReport(target, profdata_path, filter_paths):
   Args:
     target: A string representing the name of the target to be tested.
     profdata_path: A string representing the path to the profdata file.
-    filter_paths: A list of directories used to restrict code coverage results.
+    paths: A list of directories to generate code coverage for.
   """
   print 'Generating line code coverge report'
   raw_line_coverage_report = _GenerateLineCoverageReport(target, profdata_path)
   line_coverage_report = _FilterLineCoverageReport(raw_line_coverage_report,
-                                                   filter_paths)
+                                                   paths)
 
-  coverage_by_filter = collections.defaultdict(
+  coverage_by_path = collections.defaultdict(
       lambda: collections.defaultdict(lambda: 0))
   for file_name in line_coverage_report:
     total_lines = line_coverage_report[file_name]['total_lines']
     executed_lines = line_coverage_report[file_name]['executed_lines']
 
-    matched_filter_paths = _MatchFilePathWithDirectories(file_name,
-                                                         filter_paths)
-    for matched_filter in matched_filter_paths:
-      coverage_by_filter[matched_filter]['total_lines'] += total_lines
-      coverage_by_filter[matched_filter]['executed_lines'] += executed_lines
+    matched_paths = _MatchFilePathWithDirectories(file_name, paths)
+    for matched_path in matched_paths:
+      coverage_by_path[matched_path]['total_lines'] += total_lines
+      coverage_by_path[matched_path]['executed_lines'] += executed_lines
 
-    if matched_filter_paths:
-      coverage_by_filter['aggregate']['total_lines'] += total_lines
-      coverage_by_filter['aggregate']['executed_lines'] += executed_lines
+    if matched_paths:
+      coverage_by_path['aggregate']['total_lines'] += total_lines
+      coverage_by_path['aggregate']['executed_lines'] += executed_lines
 
-  print '\nLine Coverage Report for Following Directories: ' + str(filter_paths)
-  for filter_path in filter_paths:
-    print filter_path + ':'
-    _PrintLineCoverageStats(coverage_by_filter[filter_path]['total_lines'],
-                            coverage_by_filter[filter_path]['executed_lines'])
+  print '\nLine Coverage Report for Following Directories: ' + str(paths)
+  for path in paths:
+    print path + ':'
+    _PrintLineCoverageStats(coverage_by_path[path]['total_lines'],
+                            coverage_by_path[path]['executed_lines'])
 
-  if len(filter_paths) > 1:
+  if len(paths) > 1:
     print 'In Aggregate:'
-    _PrintLineCoverageStats(coverage_by_filter['aggregate']['total_lines'],
-                            coverage_by_filter['aggregate']['executed_lines'])
+    _PrintLineCoverageStats(coverage_by_path['aggregate']['total_lines'],
+                            coverage_by_path['aggregate']['executed_lines'])
 
 
 def _GenerateLineCoverageReport(target, profdata_path):
@@ -194,8 +187,8 @@ def _GenerateLineCoverageReport(target, profdata_path):
   return line_coverage_report
 
 
-def _FilterLineCoverageReport(raw_report, filter_paths):
-  """Filter line coverage report to only include directories in |filter_paths|.
+def _FilterLineCoverageReport(raw_report, paths):
+  """Filter line coverage report to only include directories in |paths|.
 
   Args:
     raw_report: A json object with the following format:
@@ -203,7 +196,7 @@ def _FilterLineCoverageReport(raw_report, filter_paths):
       -- file_name: dict => Line coverage summary.
       ---- total_lines: int => Number of total lines.
       ---- executed_lines: int => Number of executed lines.
-    filter_paths: A list of directories used to restrict code coverage results.
+    paths: A list of directories to generate code coverage for.
 
   Returns:
     A json object with the following format:
@@ -215,7 +208,7 @@ def _FilterLineCoverageReport(raw_report, filter_paths):
   """
   filtered_report = {}
   for file_name in raw_report:
-    if _MatchFilePathWithDirectories(file_name, filter_paths):
+    if _MatchFilePathWithDirectories(file_name, paths):
       filtered_report[file_name] = raw_report[file_name]
 
   return filtered_report
@@ -459,12 +452,8 @@ def _ParseCommandArguments():
   arg_parser = argparse.ArgumentParser()
   arg_parser.usage = __doc__
 
-  arg_parser.add_argument('-f', '--filter', type=str, action='append',
-                          help='Paths used to restrict code coverage results '
-                               'to specific directories, and the default value '
-                               'is \'ios/\'. \n'
-                               'NOTE: if this value is defined, it will '
-                               'override instead of appeding to the defaults.')
+  arg_parser.add_argument('-p', '--path', action='append', required=True,
+                          help='Directories to get code coverage for.')
 
   arg_parser.add_argument('-j', '--jobs', type=int, default=None,
                           help='Run N jobs to build in parallel. If not '
@@ -472,7 +461,7 @@ def _ParseCommandArguments():
                                'based on CPUs availability. Please refer to '
                                '\'ninja -h\' for more details.')
 
-  arg_parser.add_argument('-r', '--reuse-profdata', type=str,
+  arg_parser.add_argument('-r', '--reuse-profdata',
                           help='Skip building test target and running tests '
                                'and re-use the specified profile data file.')
 
@@ -492,22 +481,20 @@ def _AssertCoverageBuildDirectoryExists():
                                           'ios/build/tools/setup-gn.py.')
 
 
-def _AssertFilterPathsExist(filter_paths):
-  """Asserts that paths specified in |filter_paths| exist.
+def _AssertPathsExist(paths):
+  """Asserts that paths specified in |paths| exist.
 
   Args:
-    filter_paths: A list of directories.
+    paths: A list of directories.
   """
   src_root = _GetSrcRootPath()
-  for filter_path in filter_paths:
-    filter_abspath = os.path.join(src_root, filter_path)
-    assert os.path.exists(filter_abspath), ('Filter path: {} doesn\'t exist.\n '
-                                            'A valid filter path must exist '
-                                            'and be relative to the root of '
-                                            'source, which is {} \nFor '
-                                            'example, \'ios/\' is a valid '
-                                            'filter.').format(filter_abspath,
-                                                              src_root)
+  for path in paths:
+    abspath = os.path.join(src_root, path)
+    assert os.path.exists(abspath), (('Path: {} doesn\'t exist.\n A valid '
+                                      'path must exist and be relative to the '
+                                      'root of source, which is {} \nFor '
+                                      'example, \'ios/\' is a valid path.').
+                                     format(abspath, src_root))
 
 
 def Main():
@@ -528,9 +515,7 @@ def Main():
     jobs = DEFAULT_GOMA_JOBS
 
   _AssertCoverageBuildDirectoryExists()
-
-  if args.filter:
-    _AssertFilterPathsExist(args.filter)
+  _AssertPathsExist(args.path)
 
   profdata_path = args.reuse_profdata
   if profdata_path:
@@ -540,8 +525,7 @@ def Main():
   else:
     profdata_path = _CreateCoverageProfileDataForTarget(target, jobs)
 
-  _DisplayLineCoverageReport(target, profdata_path,
-                             args.filter or DEFAULT_FILTER_PATHS)
+  _DisplayLineCoverageReport(target, profdata_path, args.path)
 
 if __name__ == '__main__':
   sys.exit(Main())
