@@ -408,6 +408,9 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
                      'GetExperimentalBuilders',
                      side_effect=experimental_builders)
 
+    self.PatchObject(build_status.SlaveStatus,
+                     '_GetUncompletedExperimentalBuildbucketIDs')
+
     final_status_dict = status_runs[-1]
     message_mock = mock.Mock()
     message_mock.BuildFailureMessageToStr.return_value = 'failure_message_str'
@@ -534,6 +537,8 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(buildbucket_lib,
                      'GetBuildInfoDict',
                      return_value=buildbucket_info_dict)
+    self.PatchObject(build_status.SlaveStatus,
+                     '_GetUncompletedExperimentalBuildbucketIDs')
     self.PatchObject(builder_status_lib.SlaveBuilderStatus,
                      'GetAllSlaveBuildbucketInfo',
                      side_effect=buildbucket_info_dicts)

@@ -37,7 +37,7 @@ def CancelBuilds(buildbucket_ids, buildbucket_client,
   """Cancel Buildbucket builds in a set.
 
   Args:
-    buildbucket_ids: A list of build_ids.
+    buildbucket_ids: A list of build_ids (strings).
     buildbucket_client: Instance of buildbucket_lib.buildbucket_client.
     debug: Boolean indicating whether it's a dry run. Default to True.
     config: Instance of config_lib.BuildConfig. Config dict for the master

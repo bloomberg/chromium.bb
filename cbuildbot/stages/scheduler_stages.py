@@ -110,7 +110,8 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
     buildset_tag = 'cbuildbot/%s/%s/%s' % (
         self._run.manifest_branch, self._run.config.name, build_id)
 
-    scheduled_slave_builds = []
+    scheduled_important_slave_builds = []
+    scheduled_experimental_slave_builds = []
     unscheduled_slave_builds = []
 
     # Get all active slave build configs.
@@ -121,8 +122,12 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
             slave_name, slave_config, build_id, buildset_tag, dryrun)
 
         if slave_config.important:
-          scheduled_slave_builds.append(
+          scheduled_important_slave_builds.append(
               (slave_name, buildbucket_id, created_ts))
+        else:
+          scheduled_experimental_slave_builds.append(
+              (slave_name, buildbucket_id, created_ts))
+
       except buildbucket_lib.BuildbucketResponseException as e:
         # Use 16-digit ts to be consistent with the created_ts from Buildbucket
         current_ts = int(round(time.time() * 1000000))
@@ -134,7 +139,11 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
                           % (slave_name, current_ts, e))
 
     self._run.attrs.metadata.ExtendKeyListWithList(
-        constants.METADATA_SCHEDULED_SLAVES, scheduled_slave_builds)
+        constants.METADATA_SCHEDULED_IMPORTANT_SLAVES,
+        scheduled_important_slave_builds)
+    self._run.attrs.metadata.ExtendKeyListWithList(
+        constants.METADATA_SCHEDULED_EXPERIMENTAL_SLAVES,
+        scheduled_experimental_slave_builds)
     self._run.attrs.metadata.ExtendKeyListWithList(
         constants.METADATA_UNSCHEDULED_SLAVES, unscheduled_slave_builds)
 

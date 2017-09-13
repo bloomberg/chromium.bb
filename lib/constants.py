@@ -1132,7 +1132,8 @@ BUILDBUCKET_BUILD_RETRY_LIMIT = 2
 # add a unit test to avoid duplicated keys in run_metadata
 
 # Builder_run metadata keys
-METADATA_SCHEDULED_SLAVES = 'scheduled_slaves'
+METADATA_SCHEDULED_IMPORTANT_SLAVES = 'scheduled_important_slaves'
+METADATA_SCHEDULED_EXPERIMENTAL_SLAVES = 'scheduled_experimental_slaves'
 METADATA_UNSCHEDULED_SLAVES = 'unscheduled_slaves'
 # List of builders marked as experimental through the tree status, not all the
 # experimental builders for a run.

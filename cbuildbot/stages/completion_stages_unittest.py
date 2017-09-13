@@ -299,7 +299,7 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
         ('build_2', 'buildbucket_id_2', 2)
     }
     self._run.attrs.metadata.ExtendKeyListWithList(
-        constants.METADATA_SCHEDULED_SLAVES, scheduled_slaves_list)
+        constants.METADATA_SCHEDULED_IMPORTANT_SLAVES, scheduled_slaves_list)
     return completion_stages.MasterSlaveSyncCompletionStage(
         self._run, sync_stage, success=True)
 

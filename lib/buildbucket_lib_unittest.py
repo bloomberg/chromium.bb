@@ -422,7 +422,7 @@ class BuildbucketLibTest(cros_test_lib.MockTestCase):
               ('config_1', 'bb_id_2', 1),
               ('config_2', 'bb_id_3', 2)]
     metadata.ExtendKeyListWithList(
-        constants.METADATA_SCHEDULED_SLAVES, slaves)
+        constants.METADATA_SCHEDULED_IMPORTANT_SLAVES, slaves)
 
     buildbucket_info_dict = buildbucket_lib.GetBuildInfoDict(metadata)
     self.assertEqual(buildbucket_info_dict['config_1'].retry, 1)
@@ -443,7 +443,7 @@ class BuildbucketLibTest(cros_test_lib.MockTestCase):
               ('config_1', 'bb_id_2', 1),
               ('config_2', 'bb_id_3', 2)]
     metadata.ExtendKeyListWithList(
-        constants.METADATA_SCHEDULED_SLAVES, slaves)
+        constants.METADATA_SCHEDULED_IMPORTANT_SLAVES, slaves)
 
     buildbucket_ids = buildbucket_lib.GetBuildbucketIds(metadata)
     self.assertTrue('bb_id_2' in buildbucket_ids)

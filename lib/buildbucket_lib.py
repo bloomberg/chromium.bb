@@ -88,6 +88,8 @@ def GetServiceAccount(service_account=None):
 def GetScheduledBuildDict(scheduled_slave_list):
   """Parse the build information from the scheduled_slave_list metadata.
 
+  Treats all listed builds as newly-scheduled.
+
   Args:
     scheduled_slave_list: A list of scheduled builds recorded in the
                           master metadata. In the format of
@@ -135,7 +137,7 @@ def GetBuildInfoDict(metadata):
   assert metadata is not None
 
   scheduled_slaves_list = metadata.GetValueWithDefault(
-      constants.METADATA_SCHEDULED_SLAVES, [])
+      constants.METADATA_SCHEDULED_IMPORTANT_SLAVES, [])
   experimental_builders = metadata.GetValueWithDefault(
       constants.METADATA_EXPERIMENTAL_BUILDERS, [])
   scheduled_slaves_list = [
@@ -413,7 +415,7 @@ def GetNestedAttr(content, nested_attr, default=None):
     default: Default value to return if the attribute doesn't exist.
 
   Returns:
-    The corresponding value if the attribute exits; else, default.
+    The corresponding value if the attribute exists; else, default.
   """
   assert isinstance(nested_attr, list), 'nested_attr must be a list.'
 
