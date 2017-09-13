@@ -282,7 +282,7 @@ SearchSuggestionParser::NavigationResult::CalculateAndClassifyMatchContents(
   bool match_in_subdomain = false;
   bool match_after_host = false;
   AutocompleteMatch::GetMatchComponents(
-      url_, {{match_start, match_start + input_text.length()}},
+      GURL(formatted_url_), {{match_start, match_start + input_text.length()}},
       &match_in_scheme, &match_in_subdomain, &match_after_host);
   auto format_types = AutocompleteMatch::GetFormatTypes(
       match_in_scheme, match_in_subdomain, match_after_host);

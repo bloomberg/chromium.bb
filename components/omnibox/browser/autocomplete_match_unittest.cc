@@ -227,8 +227,10 @@ TEST(AutocompleteMatchTest, GetMatchComponents) {
 
       // Match within the subdomain.
       {"http://www.google.com", {"www"}, false, true, false},
+      {"http://www.google.com", {"www."}, false, true, false},
       // Don't consider matches on the '.' delimiter as a match_in_subdomain.
       {"http://www.google.com", {"."}, false, false, false},
+      {"http://www.google.com", {".goo"}, false, false, false},
       // Matches within the domain.
       {"http://www.google.com", {"goo"}, false, false, false},
       // Verify that in private registries, we detect matches in subdomains.
@@ -248,6 +250,9 @@ TEST(AutocompleteMatchTest, GetMatchComponents) {
       {"http://google.com/abc?def=ghi#jkl", {"bc?def=g"}, false, false, true},
       // Don't consider the '/' delimiter as a match_in_path.
       {"http://google.com/abc?def=ghi#jkl", {"com/"}, false, false, false},
+      // Match on the query and ref only
+      {"http://google.com?def", {"def"}, false, false, true},
+      {"http://google.com#jkl", {"jkl"}, false, false, true},
 
       // Matches spanning the subdomain and path.
       {"http://www.google.com/abc", {"www.google.com/ab"}, false, true, true},
@@ -260,6 +265,14 @@ TEST(AutocompleteMatchTest, GetMatchComponents) {
        true,
        true},
       {"http://www.google.com/abc", {"ht", "ww", "ab"}, true, true, true},
+
+      // Intranet sites.
+      {"http://foobar/biz", {"foobar"}, false, false, false},
+      {"http://foobar/biz", {"biz"}, false, false, true},
+
+      // Ensure something sane happens when the URL input is invalid.
+      {"", {""}, false, false, false},
+      {"foobar", {"bar"}, false, false, false},
   };
   for (auto& test_case : test_cases) {
     SCOPED_TRACE(testing::Message()

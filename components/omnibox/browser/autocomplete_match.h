@@ -211,7 +211,8 @@ struct AutocompleteMatch {
 
   // Sets the |match_in_scheme|, |match_in_subdomain|, and |match_after_host|
   // flags based on the provided |url| and list of substring |match_positions|.
-  // |match_positions| is the [begin, end) positions of a match within a string.
+  // |match_positions| is the [begin, end) positions of a match within the
+  // unstripped URL spec.
   using MatchPosition = std::pair<size_t, size_t>;
   static void GetMatchComponents(
       const GURL& url,
