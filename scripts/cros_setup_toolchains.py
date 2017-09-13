@@ -61,6 +61,21 @@ HOST_PACKAGES = (
     'sys-libs/libcxxabi',
 )
 
+# These packages are also installed into the host SDK.  However, they require
+# the cross-compilers to be installed first (because they need them to actually
+# build), so we have to delay their installation.
+HOST_POST_CROSS_PACKAGES = (
+    'dev-lang/rust',
+)
+
+# New packages that we're in the process of adding to the SDK.  Since the SDK
+# bot hasn't had a chance to run yet, there are no binary packages available,
+# so we have to list them here and wait.  Once it completes, entries here can
+# be removed so they'll end up on bots & dev's systems.
+NEW_PACKAGES = (
+    'dev-lang/rust',
+)
+
 # Enable the Go compiler for these targets.
 TARGET_GO_ENABLED = (
     'x86_64-cros-linux-gnu',
@@ -175,13 +190,17 @@ class Crossdev(object):
 
     val = cls._CACHE.setdefault(CACHE_ATTR, {})
     if not target in val:
-      if target == 'host':
+      if target.startswith('host'):
         conf = {
             'crosspkgs': [],
             'target': toolchain.GetHostTuple(),
         }
+        if target == 'host':
+          packages_list = HOST_PACKAGES
+        else:
+          packages_list = HOST_POST_CROSS_PACKAGES
         manual_pkgs = dict((pkg, cat) for cat, pkg in
-                           [x.split('/') for x in HOST_PACKAGES])
+                           [x.split('/') for x in packages_list])
       else:
         # Build the crossdev command.
         cmd = ['crossdev', '--show-target-cfg', '--ex-gdb']
@@ -284,7 +303,7 @@ def GetPortagePackage(target, package):
   """Returns a package name for the given target."""
   conf = Crossdev.GetConfig(target)
   # Portage category:
-  if target == 'host' or package in Crossdev.MANUAL_PKGS:
+  if target.startswith('host') or package in Crossdev.MANUAL_PKGS:
     category = conf[package + '_category']
   else:
     category = conf['category']
@@ -496,6 +515,9 @@ def UpdateTargets(targets, usepkg, root='/'):
       current = GetInstalledPackageVersions(pkg, root=root)
       desired = GetDesiredPackageVersions(target, package)
       desired_num = VersionListToNumeric(target, package, desired, False)
+      if pkg in NEW_PACKAGES and usepkg:
+        # Skip this binary package (for now).
+        continue
       mergemap[pkg] = set(desired_num).difference(current)
       logging.debug('      %s -> %s', current, desired_num)
 
@@ -574,6 +596,11 @@ def SelectActiveToolchains(targets, suffixes, root='/'):
   """
   for package in ['gcc', 'binutils']:
     for target in targets:
+      # See if this package is part of this target.
+      if package not in GetTargetPackages(target):
+        logging.debug('%s: %s is not used', target, package)
+        continue
+
       # Pick the first version in the numbered list as the selected one.
       desired = GetDesiredPackageVersions(target, package)
       desired_num = VersionListToNumeric(target, package, desired, True,
@@ -582,7 +609,7 @@ def SelectActiveToolchains(targets, suffixes, root='/'):
       # *-config does not play revisions, strip them, keep just PV.
       desired = portage.versions.pkgsplit('%s-%s' % (package, desired))[1]
 
-      if target == 'host':
+      if target.startswith('host'):
         # *-config is the only tool treating host identically (by tuple).
         target = toolchain.GetHostTuple()
 
@@ -676,6 +703,9 @@ def UpdateToolchains(usepkg, deleteold, hostonly, reconfig,
       Crossdev.UpdateTargets(crossdev_targets, usepkg)
     # Those that were not initialized may need a config update.
     Crossdev.UpdateTargets(reconfig_targets, usepkg, config_only=True)
+
+    # Since we have cross-compilers now, we can update these packages.
+    targets['host-post-cross'] = {}
 
   # We want host updated.
   targets['host'] = {}
