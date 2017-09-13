@@ -1,6 +1,6 @@
 function dumpUserAgent()
 {
-    fetch('http://127.0.0.1:8000/inspector/resources/echo-headers.php')
+    fetch('http://127.0.0.1:8000/devtools/resources/echo-headers.php')
         .then(function(response) {
             return response.text();
         }).then(function(body) {

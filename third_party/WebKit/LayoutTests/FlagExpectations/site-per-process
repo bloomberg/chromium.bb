@@ -5,7 +5,7 @@
 # (apparently https://crbug.com/599670 doesn't affect the Site Isolation bot,
 # so there is no need to carry-over the [ Failure ] expectation from baseline
 # expectations in LayoutTests/TestExpectations).
-crbug.com/758075 http/tests/inspector/resource-parameters-ipv6.html [ Timeout ]
+crbug.com/758075 http/tests/devtools/resource-parameters-ipv6.html [ Timeout ]
 
 # https://crbug.com/393285: Text-autosizing doesn't support OOPIFs.
 # https://crbug.com/667551: Pixel dumps don't support OOPIFs.
@@ -42,10 +42,10 @@ crbug.com/582245 http/tests/security/xssAuditor/full-block-script-tag-cross-doma
 crbug.com/582245 virtual/mojo-loading/http/tests/security/xssAuditor/full-block-script-tag-cross-domain.html [ Failure ]
 
 # https://crbug.com/582176 - InspectorTest.changeExecutionContext doesn't like OOPIFs.
-crbug.com/582176 http/tests/inspector/console-cd-completions.html [ Failure ]
-crbug.com/582176 http/tests/inspector/console-cd.html [ Failure ]
-crbug.com/582176 virtual/mojo-loading/http/tests/inspector/console-cd-completions.html [ Failure ]
-crbug.com/582176 virtual/mojo-loading/http/tests/inspector/console-cd.html [ Failure ]
+crbug.com/582176 http/tests/devtools/console-cd-completions.html [ Failure ]
+crbug.com/582176 http/tests/devtools/console-cd.html [ Failure ]
+crbug.com/582176 virtual/mojo-loading/http/tests/devtools/console-cd-completions.html [ Failure ]
+crbug.com/582176 virtual/mojo-loading/http/tests/devtools/console-cd.html [ Failure ]
 
 # https://crbug.com/608015 - node.contentDocument is undefined.
 crbug.com/608015 http/tests/inspector-protocol/access-inspected-object.js [ Failure Timeout ]
@@ -121,12 +121,12 @@ crbug.com/623268 virtual/mojo-loading/http/tests/inspector-protocol/request-mixe
 crbug.com/623268 virtual/mojo-loading/http/tests/inspector-protocol/request-mixed-content-status-none.js [ Timeout ]
 crbug.com/623268 virtual/mojo-loading/http/tests/inspector-protocol/request-mixed-content-status-optionally-blockable.js [ Timeout ]
 crbug.com/623268 virtual/mojo-loading/http/tests/inspector-protocol/request-referrer-policy.js [ Timeout ]
-crbug.com/623268 http/tests/inspector/console-cross-origin-iframe-logging.html [ Failure ]
-crbug.com/623268 virtual/mojo-loading/http/tests/inspector/console-cross-origin-iframe-logging.html [ Failure ]
+crbug.com/623268 http/tests/devtools/console-cross-origin-iframe-logging.html [ Failure ]
+crbug.com/623268 virtual/mojo-loading/http/tests/devtools/console-cross-origin-iframe-logging.html [ Failure ]
 
 # https://crbug.com/623265 - cross-site navigation in main page breaks test.
-crbug.com/623265 http/tests/inspector/indexeddb/resources-panel.html [ Timeout ]
-crbug.com/623265 virtual/mojo-loading/http/tests/inspector/indexeddb/resources-panel.html [ Timeout ]
+crbug.com/623265 http/tests/devtools/indexeddb/resources-panel.html [ Timeout ]
+crbug.com/623265 virtual/mojo-loading/http/tests/devtools/indexeddb/resources-panel.html [ Timeout ]
 
 # https://crbug.com/645641 - test_runner.cc(1863) Check failed:
 # layout_test_runtime_flags_.have_top_loading_frame()

@@ -1,0 +1,40 @@
+Verify that navigator is rendered properly when frame with dynamic script and style is added and removed.
+
+
+Running: dumpInitialNavigator
+top
+  127.0.0.1:8000
+    devtools/bindings
+      dynamic-navigator-frame-attach-detach.html
+    inspector
+      bindings
+        bindings-test.js
+      inspector-test.js
+
+Running: attachFrame
+top
+  127.0.0.1:8000
+    devtools/bindings
+      dynamic-navigator-frame-attach-detach.html
+    inspector
+      bindings
+        bindings-test.js
+      inspector-test.js
+  frame (dynamic-frame.html)
+    127.0.0.1:8000
+      devtools/bindings/resources
+        dynamic-frame.html
+    (no domain)
+      dynamic-script.js
+      dynamic-style.css
+
+Running: detachFrame
+top
+  127.0.0.1:8000
+    devtools/bindings
+      dynamic-navigator-frame-attach-detach.html
+    inspector
+      bindings
+        bindings-test.js
+      inspector-test.js
+

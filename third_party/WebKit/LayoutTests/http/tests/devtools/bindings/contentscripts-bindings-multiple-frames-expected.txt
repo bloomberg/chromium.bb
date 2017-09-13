@@ -1,0 +1,100 @@
+Verify that SourceMap bindings are generating UISourceCodes properly.
+
+
+Running: initialWorkspace
+Removed: 0 uiSourceCodes
+Workspace: 7 uiSourceCodes.
+    debugger:///VM[XXX] bindings-test.js
+    debugger:///VM[XXX] contentscripts-bindings-multiple-frames.html
+    debugger:///VM[XXX] contentscripts-bindings-multiple-frames.html
+    debugger:///VM[XXX] inspector-test.js
+    http://127.0.0.1:8000/devtools/bindings/contentscripts-bindings-multiple-frames.html
+    http://127.0.0.1:8000/inspector/bindings/bindings-test.js
+    http://127.0.0.1:8000/inspector/inspector-test.js
+
+Running: attachFrame1
+Removed: 0 uiSourceCodes
+Workspace: 13 uiSourceCodes.
+[+] content-script-42.js
+    debugger:///VM[XXX] bindings-test.js
+[+] debugger:///VM[XXX] content-script-42.js
+[+] debugger:///VM[XXX] contentscript-frame.html
+    debugger:///VM[XXX] contentscripts-bindings-multiple-frames.html
+    debugger:///VM[XXX] contentscripts-bindings-multiple-frames.html
+    debugger:///VM[XXX] inspector-test.js
+[+] debugger:///VM[XXX] _test_attachFrame1.js
+    http://127.0.0.1:8000/devtools/bindings/contentscripts-bindings-multiple-frames.html
+[+] http://127.0.0.1:8000/devtools/bindings/resources/contentscript-frame.html
+    http://127.0.0.1:8000/inspector/bindings/bindings-test.js
+    http://127.0.0.1:8000/inspector/inspector-test.js
+[+] _test_attachFrame1.js
+
+Running: attachFrame2
+Removed: 0 uiSourceCodes
+Workspace: 17 uiSourceCodes.
+    content-script-42.js
+    debugger:///VM[XXX] bindings-test.js
+    debugger:///VM[XXX] content-script-42.js
+[+] debugger:///VM[XXX] content-script-42.js
+[+] debugger:///VM[XXX] contentscript-frame.html
+    debugger:///VM[XXX] contentscript-frame.html
+    debugger:///VM[XXX] contentscripts-bindings-multiple-frames.html
+    debugger:///VM[XXX] contentscripts-bindings-multiple-frames.html
+    debugger:///VM[XXX] inspector-test.js
+    debugger:///VM[XXX] _test_attachFrame1.js
+[+] debugger:///VM[XXX] _test_attachFrame2.js
+    http://127.0.0.1:8000/devtools/bindings/contentscripts-bindings-multiple-frames.html
+    http://127.0.0.1:8000/devtools/bindings/resources/contentscript-frame.html
+    http://127.0.0.1:8000/inspector/bindings/bindings-test.js
+    http://127.0.0.1:8000/inspector/inspector-test.js
+    _test_attachFrame1.js
+[+] _test_attachFrame2.js
+
+Running: detachFrame1
+Removed: 0 uiSourceCodes
+Workspace: 19 uiSourceCodes.
+    content-script-42.js
+    debugger:///VM[XXX] bindings-test.js
+    debugger:///VM[XXX] content-script-42.js
+    debugger:///VM[XXX] content-script-42.js
+    debugger:///VM[XXX] contentscript-frame.html
+    debugger:///VM[XXX] contentscript-frame.html
+    debugger:///VM[XXX] contentscripts-bindings-multiple-frames.html
+    debugger:///VM[XXX] contentscripts-bindings-multiple-frames.html
+    debugger:///VM[XXX] inspector-test.js
+    debugger:///VM[XXX] _test_attachFrame1.js
+    debugger:///VM[XXX] _test_attachFrame2.js
+[+] debugger:///VM[XXX] _test_detachFrame1.js
+    http://127.0.0.1:8000/devtools/bindings/contentscripts-bindings-multiple-frames.html
+    http://127.0.0.1:8000/devtools/bindings/resources/contentscript-frame.html
+    http://127.0.0.1:8000/inspector/bindings/bindings-test.js
+    http://127.0.0.1:8000/inspector/inspector-test.js
+    _test_attachFrame1.js
+    _test_attachFrame2.js
+[+] _test_detachFrame1.js
+
+Running: detachFrame2
+Removed: 1 uiSourceCodes
+[-] http://127.0.0.1:8000/devtools/bindings/resources/contentscript-frame.html
+Workspace: 20 uiSourceCodes.
+    content-script-42.js
+    debugger:///VM[XXX] bindings-test.js
+    debugger:///VM[XXX] content-script-42.js
+    debugger:///VM[XXX] content-script-42.js
+    debugger:///VM[XXX] contentscript-frame.html
+    debugger:///VM[XXX] contentscript-frame.html
+    debugger:///VM[XXX] contentscripts-bindings-multiple-frames.html
+    debugger:///VM[XXX] contentscripts-bindings-multiple-frames.html
+    debugger:///VM[XXX] inspector-test.js
+    debugger:///VM[XXX] _test_attachFrame1.js
+    debugger:///VM[XXX] _test_attachFrame2.js
+    debugger:///VM[XXX] _test_detachFrame1.js
+[+] debugger:///VM[XXX] _test_detachFrame2.js
+    http://127.0.0.1:8000/devtools/bindings/contentscripts-bindings-multiple-frames.html
+    http://127.0.0.1:8000/inspector/bindings/bindings-test.js
+    http://127.0.0.1:8000/inspector/inspector-test.js
+    _test_attachFrame1.js
+    _test_attachFrame2.js
+    _test_detachFrame1.js
+[+] _test_detachFrame2.js
+

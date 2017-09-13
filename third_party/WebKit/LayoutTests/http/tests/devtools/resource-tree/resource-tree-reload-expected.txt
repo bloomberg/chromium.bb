@@ -10,7 +10,7 @@ document http://127.0.0.1:8000/inspector/resource-tree/resources/resource-tree-r
 script http://127.0.0.1:8000/inspector/resource-tree/resources/script-initial.js
 stylesheet http://127.0.0.1:8000/inspector/resource-tree/resources/styles-initial-2.css
 stylesheet http://127.0.0.1:8000/inspector/resource-tree/resources/styles-initial.css
-script http://127.0.0.1:8000/inspector/resources-test.js
+script http://127.0.0.1:8000/devtools/resources-test.js
 
 Resources URL Map:
 http://127.0.0.1:8000/inspector/inspector-test.js == http://127.0.0.1:8000/inspector/inspector-test.js
@@ -20,7 +20,7 @@ http://127.0.0.1:8000/inspector/resource-tree/resources/resource-tree-reload-ifr
 http://127.0.0.1:8000/inspector/resource-tree/resources/script-initial.js == http://127.0.0.1:8000/inspector/resource-tree/resources/script-initial.js
 http://127.0.0.1:8000/inspector/resource-tree/resources/styles-initial-2.css == http://127.0.0.1:8000/inspector/resource-tree/resources/styles-initial-2.css
 http://127.0.0.1:8000/inspector/resource-tree/resources/styles-initial.css == http://127.0.0.1:8000/inspector/resource-tree/resources/styles-initial.css
-http://127.0.0.1:8000/inspector/resources-test.js == http://127.0.0.1:8000/inspector/resources-test.js
+http://127.0.0.1:8000/devtools/resources-test.js == http://127.0.0.1:8000/devtools/resources-test.js
 
 Resources Tree:
 Frames

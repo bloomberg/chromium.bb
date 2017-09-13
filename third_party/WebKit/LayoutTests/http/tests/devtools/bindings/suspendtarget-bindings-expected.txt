@@ -1,0 +1,84 @@
+Verify that bindings handle target suspension as expected.
+
+
+
+Running: initialWorkspace
+Removed: 0 uiSourceCodes
+Workspace: 7 uiSourceCodes.
+    debugger:///VM[XXX] bindings-test.js
+    debugger:///VM[XXX] inspector-test.js
+    debugger:///VM[XXX] suspendtarget-bindings.html
+    debugger:///VM[XXX] suspendtarget-bindings.html
+    http://127.0.0.1:8000/devtools/bindings/suspendtarget-bindings.html
+    http://127.0.0.1:8000/inspector/bindings/bindings-test.js
+    http://127.0.0.1:8000/inspector/inspector-test.js
+
+Running: createIframesAndWaitForSourceMaps
+Removed: 0 uiSourceCodes
+Workspace: 19 uiSourceCodes.
+    debugger:///VM[XXX] bindings-test.js
+    debugger:///VM[XXX] inspector-test.js
+[+] debugger:///VM[XXX] sourcemap-script.js
+[+] debugger:///VM[XXX] sourcemap-script.js
+    debugger:///VM[XXX] suspendtarget-bindings.html
+    debugger:///VM[XXX] suspendtarget-bindings.html
+[+] debugger:///VM[XXX] _test_create-iframe1.js
+[+] debugger:///VM[XXX] _test_create-iframe2.js
+[+] http://127.0.0.1:8000/devtools/bindings/resources/sourcemap-frame.html
+[+] http://127.0.0.1:8000/devtools/bindings/resources/sourcemap-sass.scss
+[+] http://127.0.0.1:8000/devtools/bindings/resources/sourcemap-script.js
+[+] http://127.0.0.1:8000/devtools/bindings/resources/sourcemap-script.js
+[+] http://127.0.0.1:8000/devtools/bindings/resources/sourcemap-style.css
+[+] http://127.0.0.1:8000/devtools/bindings/resources/sourcemap-typescript.ts
+    http://127.0.0.1:8000/devtools/bindings/suspendtarget-bindings.html
+    http://127.0.0.1:8000/inspector/bindings/bindings-test.js
+    http://127.0.0.1:8000/inspector/inspector-test.js
+[+] _test_create-iframe1.js
+[+] _test_create-iframe2.js
+
+Running: Suspending targets.
+Removed: 17 uiSourceCodes
+[-] debugger:///VM[XXX] bindings-test.js
+[-] debugger:///VM[XXX] inspector-test.js
+[-] debugger:///VM[XXX] sourcemap-script.js
+[-] debugger:///VM[XXX] sourcemap-script.js
+[-] debugger:///VM[XXX] suspendtarget-bindings.html
+[-] debugger:///VM[XXX] suspendtarget-bindings.html
+[-] debugger:///VM[XXX] _test_create-iframe1.js
+[-] debugger:///VM[XXX] _test_create-iframe2.js
+[-] http://127.0.0.1:8000/devtools/bindings/resources/sourcemap-sass.scss
+[-] http://127.0.0.1:8000/devtools/bindings/resources/sourcemap-script.js
+[-] http://127.0.0.1:8000/devtools/bindings/resources/sourcemap-script.js
+[-] http://127.0.0.1:8000/devtools/bindings/resources/sourcemap-style.css
+[-] http://127.0.0.1:8000/devtools/bindings/resources/sourcemap-typescript.ts
+[-] http://127.0.0.1:8000/inspector/bindings/bindings-test.js
+[-] http://127.0.0.1:8000/inspector/inspector-test.js
+[-] _test_create-iframe1.js
+[-] _test_create-iframe2.js
+Workspace: 2 uiSourceCodes.
+    http://127.0.0.1:8000/devtools/bindings/resources/sourcemap-frame.html
+    http://127.0.0.1:8000/devtools/bindings/suspendtarget-bindings.html
+
+Running: detachFrame
+Removed: 0 uiSourceCodes
+Workspace: 2 uiSourceCodes.
+    http://127.0.0.1:8000/devtools/bindings/resources/sourcemap-frame.html
+    http://127.0.0.1:8000/devtools/bindings/suspendtarget-bindings.html
+
+Running: Resuming targets.
+Removed: 0 uiSourceCodes
+Workspace: 13 uiSourceCodes.
+[+] debugger:///VM[XXX] bindings-test.js
+[+] debugger:///VM[XXX] inspector-test.js
+[+] debugger:///VM[XXX] sourcemap-script.js
+[+] debugger:///VM[XXX] suspendtarget-bindings.html
+[+] debugger:///VM[XXX] suspendtarget-bindings.html
+    http://127.0.0.1:8000/devtools/bindings/resources/sourcemap-frame.html
+[+] http://127.0.0.1:8000/devtools/bindings/resources/sourcemap-sass.scss
+[+] http://127.0.0.1:8000/devtools/bindings/resources/sourcemap-script.js
+[+] http://127.0.0.1:8000/devtools/bindings/resources/sourcemap-style.css
+[+] http://127.0.0.1:8000/devtools/bindings/resources/sourcemap-typescript.ts
+    http://127.0.0.1:8000/devtools/bindings/suspendtarget-bindings.html
+[+] http://127.0.0.1:8000/inspector/bindings/bindings-test.js
+[+] http://127.0.0.1:8000/inspector/inspector-test.js
+
