@@ -24,6 +24,10 @@ class AudioParameters;
 // input channels as defined in the matrix.
 class MEDIA_EXPORT ChannelMixer {
  public:
+  // To mix two channels into one and preserve loudness, we must apply
+  // (1 / sqrt(2)) gain to each.
+  static constexpr float kHalfPower = 0.707106781186547524401f;
+
   ChannelMixer(ChannelLayout input_layout, ChannelLayout output_layout);
   ChannelMixer(const AudioParameters& input, const AudioParameters& output);
   ~ChannelMixer();

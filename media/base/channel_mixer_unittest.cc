@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// MSVC++ requires this to be set before any other includes to get M_SQRT1_2.
-#define _USE_MATH_DEFINES
-
-#include <cmath>
 #include <memory>
 
 #include "base/macros.h"
@@ -158,7 +154,7 @@ TEST_P(ChannelMixerTest, Mixing) {
 
 static float kStereoToMonoValues[] = { 0.5f, 0.75f };
 static float kMonoToStereoValues[] = { 0.5f };
-// Zero the center channel since it will be mixed at scale 1 vs M_SQRT1_2.
+// Zero the center channel since it will be mixed at scale 1 vs 1/sqrt(2).
 static float kFiveOneToMonoValues[] = { 0.1f, 0.2f, 0.0f, 0.4f, 0.5f, 0.6f };
 static float kFiveDiscreteValues[] = { 0.1f, 0.2f, 0.3f, 0.4f, 0.5f };
 
@@ -180,7 +176,7 @@ INSTANTIATE_TEST_CASE_P(
                                          CHANNEL_LAYOUT_MONO,
                                          kFiveOneToMonoValues,
                                          arraysize(kFiveOneToMonoValues),
-                                         static_cast<float>(M_SQRT1_2)),
+                                         ChannelMixer::kHalfPower),
                     ChannelMixerTestData(CHANNEL_LAYOUT_DISCRETE,
                                          2,
                                          CHANNEL_LAYOUT_DISCRETE,
