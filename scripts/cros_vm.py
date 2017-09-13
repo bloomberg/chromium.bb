@@ -88,10 +88,9 @@ class VM(object):
     Args:
       recreate: recreate vm_dir.
     """
-    self._RunCommand(['rm', '-rf', self.vm_dir])
+    osutils.RmDir(self.vm_dir, ignore_missing=True, sudo=self.use_sudo)
     if recreate:
-      self._RunCommand(['mkdir', self.vm_dir])
-      self._RunCommand(['chmod', '777', self.vm_dir])
+      osutils.SafeMakedirs(self.vm_dir)
 
   def PerformAction(self, start=False, stop=False, cmd=None):
     """Performs an action, one of start, stop, or run a command in the VM.
@@ -133,9 +132,11 @@ class VM(object):
       raise VMError('VM image path %s does not exist.' % self.image_path)
 
     self._CleanupFiles(recreate=True)
-    open(self.kvm_serial, 'w')
+    # Make sure we can read these files later on by creating them as ourselves.
+    osutils.Touch(self.kvm_serial)
     for pipe in [self.kvm_pipe_in, self.kvm_pipe_out]:
       os.mkfifo(pipe, 0600)
+    osutils.Touch(self.pidfile)
 
     args = [self.qemu_path, '-m', '2G', '-smp', '4', '-vga', 'cirrus',
             '-daemonize',
@@ -151,7 +152,7 @@ class VM(object):
       args.append('-enable-kvm')
     if not self.display:
       args.extend(['-display', 'none'])
-    logging.info(' '.join(args))
+    logging.info(cros_build_lib.CmdToStr(args))
     logging.info('Pid file: %s', self.pidfile)
     if not self.dry_run:
       self._RunCommand(args)
@@ -170,10 +171,11 @@ class VM(object):
       logging.info('%s does not exist.', self.pidfile)
       return 0
 
-    pid = self._RunCommand(['cat', self.pidfile],
-                           redirect_stdout=True).output.rstrip()
+    pid = osutils.ReadFile(self.pidfile).rstrip()
     if not pid.isdigit():
-      logging.error('%s in %s is not a pid.', pid, self.pidfile)
+      # Ignore blank/empty files.
+      if pid:
+        logging.error('%s in %s is not a pid.', pid, self.pidfile)
       return 0
 
     return int(pid)
@@ -189,8 +191,7 @@ class VM(object):
       return False
 
     # Make sure the process actually exists.
-    res = self._RunCommand(['kill', '-0', str(pid)], error_code_ok=True)
-    return res.returncode == 0
+    return os.path.isdir('/proc/%i' % pid)
 
   def Stop(self):
     """Stop the VM."""
