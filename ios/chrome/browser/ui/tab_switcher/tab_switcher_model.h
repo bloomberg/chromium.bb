@@ -5,14 +5,14 @@
 #ifndef IOS_CHROME_BROWSER_UI_TAB_SWITCHER_TAB_SWITCHER_MODEL_H_
 #define IOS_CHROME_BROWSER_UI_TAB_SWITCHER_TAB_SWITCHER_MODEL_H_
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 #include <string>
 #include "base/ios/block_types.h"
 #include "base/mac/scoped_nsobject.h"
+#import "ios/chrome/browser/sync/synced_sessions_bridge.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/synced_sessions.h"
-#import "ios/chrome/browser/ui/sync/synced_sessions_bridge.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_model_snapshot.h"
 
 class ChromeBrowserState;
