@@ -157,7 +157,6 @@ class TestInitializerFactory final
       cryptauth::CryptAuthService* cryptauth_service,
       chromeos::tether::NotificationPresenter* notification_presenter,
       PrefService* pref_service,
-      ProfileOAuth2TokenService* token_service,
       chromeos::NetworkStateHandler* network_state_handler,
       chromeos::ManagedNetworkConfigurationHandler*
           managed_network_configuration_handler,

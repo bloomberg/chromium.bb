@@ -15,7 +15,6 @@
 #include "chromeos/components/tether/disconnect_tethering_request_sender.h"
 #include "chromeos/components/tether/initializer.h"
 #include "components/prefs/pref_registry_simple.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
 
@@ -64,7 +63,6 @@ class WifiHotspotDisconnector;
 
 // Initializes the Tether Chrome OS component.
 class InitializerImpl : public Initializer,
-                        public OAuth2TokenService::Observer,
                         public DisconnectTetheringRequestSender::Observer {
  public:
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
@@ -75,7 +73,6 @@ class InitializerImpl : public Initializer,
         cryptauth::CryptAuthService* cryptauth_service,
         NotificationPresenter* notification_presenter,
         PrefService* pref_service,
-        ProfileOAuth2TokenService* token_service,
         NetworkStateHandler* network_state_handler,
         ManagedNetworkConfigurationHandler*
             managed_network_configuration_handler,
@@ -90,7 +87,6 @@ class InitializerImpl : public Initializer,
         cryptauth::CryptAuthService* cryptauth_service,
         NotificationPresenter* notification_presenter,
         PrefService* pref_service,
-        ProfileOAuth2TokenService* token_service,
         NetworkStateHandler* network_state_handler,
         ManagedNetworkConfigurationHandler*
             managed_network_configuration_handler,
@@ -106,7 +102,6 @@ class InitializerImpl : public Initializer,
       cryptauth::CryptAuthService* cryptauth_service,
       NotificationPresenter* notification_presenter,
       PrefService* pref_service,
-      ProfileOAuth2TokenService* token_service,
       NetworkStateHandler* network_state_handler,
       ManagedNetworkConfigurationHandler* managed_network_configuration_handler,
       NetworkConnect* network_connect,
@@ -117,9 +112,6 @@ class InitializerImpl : public Initializer,
  protected:
   // Initializer:
   void RequestShutdown() override;
-
-  // OAuth2TokenService::Observer:
-  void OnRefreshTokensLoaded() override;
 
   // DisconnectTetheringRequestSender::Observer:
   void OnPendingDisconnectRequestsComplete() override;
@@ -134,7 +126,6 @@ class InitializerImpl : public Initializer,
   cryptauth::CryptAuthService* cryptauth_service_;
   NotificationPresenter* notification_presenter_;
   PrefService* pref_service_;
-  ProfileOAuth2TokenService* token_service_;
   NetworkStateHandler* network_state_handler_;
   ManagedNetworkConfigurationHandler* managed_network_configuration_handler_;
   NetworkConnect* network_connect_;
