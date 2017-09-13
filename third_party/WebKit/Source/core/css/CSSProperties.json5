@@ -3793,7 +3793,6 @@
       api_class: true,
       is_descriptor: true,
       is_property: false,
-      runtime_flag: "CSSFontDisplay",
     },
     {
       name: "max-zoom",

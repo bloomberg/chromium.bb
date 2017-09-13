@@ -53,7 +53,7 @@ enum FontFaceLoadStatus {
     [RaisesException=Setter, SetterCallWith=ExecutionContext] attribute DOMString unicodeRange;
     [RaisesException=Setter, SetterCallWith=ExecutionContext] attribute DOMString variant;
     [RaisesException=Setter, SetterCallWith=ExecutionContext] attribute DOMString featureSettings;
-    [RaisesException=Setter, SetterCallWith=ExecutionContext, RuntimeEnabled=CSSFontDisplay] attribute DOMString display;
+    [RaisesException=Setter, SetterCallWith=ExecutionContext] attribute DOMString display;
 
     readonly attribute FontFaceLoadStatus status;
 

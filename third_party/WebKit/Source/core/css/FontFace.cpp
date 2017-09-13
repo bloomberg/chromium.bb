@@ -179,10 +179,8 @@ FontFace::FontFace(ExecutionContext* context,
                         CSSPropertyFontVariant);
   SetPropertyFromString(document, descriptors.featureSettings(),
                         CSSPropertyFontFeatureSettings);
-  if (RuntimeEnabledFeatures::CSSFontDisplayEnabled()) {
-    SetPropertyFromString(document, descriptors.display(),
-                          CSSPropertyFontDisplay);
-  }
+  SetPropertyFromString(document, descriptors.display(),
+                        CSSPropertyFontDisplay);
 }
 
 FontFace::~FontFace() {}
