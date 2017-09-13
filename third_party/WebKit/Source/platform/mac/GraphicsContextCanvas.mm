@@ -7,7 +7,7 @@
 #import <AppKit/AppKit.h>
 #import <CoreGraphics/CoreGraphics.h>
 
-#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/RetainPtr.h"
 #include "skia/ext/skia_utils_mac.h"
 

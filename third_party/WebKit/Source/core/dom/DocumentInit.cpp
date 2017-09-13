@@ -35,7 +35,6 @@
 #include "core/html/custom/V0CustomElementRegistrationContext.h"
 #include "core/html/imports/HTMLImportsController.h"
 #include "core/loader/DocumentLoader.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/network/NetworkUtils.h"
 
 namespace blink {

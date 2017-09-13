@@ -28,7 +28,7 @@
 #include "core/InputTypeNames.h"
 #include "core/html/forms/DateTimeChooserClient.h"
 #include "core/page/ChromeClient.h"
-#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "public/web/WebDateTimeChooserCompletion.h"
 #include "public/web/WebDateTimeChooserParams.h"

@@ -5,7 +5,7 @@
 #ifndef RuntimeEnabledFeaturesTestHelpers_h
 #define RuntimeEnabledFeaturesTestHelpers_h
 
-#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/Assertions.h"
 
 namespace blink {

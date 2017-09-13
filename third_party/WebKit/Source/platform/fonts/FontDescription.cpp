@@ -30,7 +30,6 @@
 #include "platform/fonts/FontDescription.h"
 
 #include "platform/Language.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/HashFunctions.h"
 #include "platform/wtf/StringHasher.h"

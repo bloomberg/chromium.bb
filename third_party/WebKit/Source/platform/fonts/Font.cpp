@@ -26,7 +26,6 @@
 
 #include "platform/LayoutTestSupport.h"
 #include "platform/LayoutUnit.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/CharacterRange.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontFallbackIterator.h"

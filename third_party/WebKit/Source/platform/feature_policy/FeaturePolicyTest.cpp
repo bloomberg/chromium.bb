@@ -4,7 +4,6 @@
 
 #include "platform/feature_policy/FeaturePolicy.h"
 
-#include "platform/RuntimeEnabledFeatures.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Origin strings used for tests

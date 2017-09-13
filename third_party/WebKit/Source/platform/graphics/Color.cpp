@@ -27,7 +27,7 @@
 
 #include "build/build_config.h"
 #include "platform/Decimal.h"
-#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/HexNumber.h"
 #include "platform/wtf/MathExtras.h"

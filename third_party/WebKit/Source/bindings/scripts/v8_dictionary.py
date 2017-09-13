@@ -71,7 +71,7 @@ def dictionary_context(dictionary, interfaces_info):
 
     for member in members:
         if member['runtime_enabled_feature_name']:
-            includes.add('platform/RuntimeEnabledFeatures.h')
+            includes.add('platform/runtime_enabled_features.h')
             break
 
     cpp_class = v8_utilities.cpp_name(dictionary)

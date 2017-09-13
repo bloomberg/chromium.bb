@@ -6,7 +6,7 @@
 
 #include "core/css/CSSTimingFunctionValue.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/runtime_enabled_features.h"
 
 namespace blink {
 

@@ -44,7 +44,7 @@
 #include "core/origin_trials/OriginTrials.h"
 #include "core/timing/PerformanceTiming.h"
 #include "platform/loader/fetch/ResourceTimingInfo.h"
-#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/runtime_enabled_features.h"
 
 static const double kLongTaskObserverThreshold = 0.05;
 

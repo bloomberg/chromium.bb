@@ -7,10 +7,10 @@
 
 #include "base/compiler_specific.h"
 #include "platform/PlatformExport.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/graphics/paint/PaintRecord.h"
+#include "platform/runtime_enabled_features.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace blink {

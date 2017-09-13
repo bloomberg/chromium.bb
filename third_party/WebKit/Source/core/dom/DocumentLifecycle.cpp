@@ -30,7 +30,7 @@
 
 #include "core/dom/DocumentLifecycle.h"
 
-#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/Assertions.h"
 
 #if DCHECK_IS_ON()

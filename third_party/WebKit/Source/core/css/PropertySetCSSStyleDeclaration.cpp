@@ -37,7 +37,6 @@
 #include "core/html/custom/CustomElement.h"
 #include "core/html/custom/CustomElementDefinition.h"
 #include "core/probe/CoreProbes.h"
-#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 

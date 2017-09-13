@@ -16,7 +16,7 @@ RUNTIMEENABLED_NAME = re.compile(r'\s*name\s*:\s*"([^"]*)"')
 
 
 def RuntimeEnabledFeatureNames(filename):
-    """Reads the 'name' of each feature in RuntimeEnabledFeatures.json5."""
+    """Reads the 'name' of each feature in runtime_enabled_features.json5."""
     # Note: We don't have a JSON5 parser available, so just use a regex.
     with open(filename) as f:
         for line in f:
@@ -26,11 +26,11 @@ def RuntimeEnabledFeatureNames(filename):
 
 
 def _CheckRuntimeEnabledFeaturesSorted(input_api, output_api):
-    """Check: RuntimeEnabledFeatures.json5 feature list sorted alphabetically.
+    """Check: runtime_enabled_features.json5 feature list sorted alphabetically.
     """
-    # Read RuntimeEnabledFeatures.json5 using the JSON5 parser.
+    # Read runtime_enabled_features.json5 using the JSON5 parser.
     filename = os.path.join(input_api.PresubmitLocalPath(),
-                            'RuntimeEnabledFeatures.json5')
+                            'runtime_enabled_features.json5')
     features = list(RuntimeEnabledFeatureNames(filename))
 
     # Sort the 'data' section by name.
@@ -43,7 +43,7 @@ def _CheckRuntimeEnabledFeaturesSorted(input_api, output_api):
     differ = difflib.Differ()
     diff = differ.compare(features, features_sorted)
     return [output_api.PresubmitError(
-        'RuntimeEnabledFeatures.json5 features must be sorted alphabetically. '
+        'runtime_enabled_features.json5 features must be sorted alphabetically. '
         'Diff of feature order follows:', long_text='\n'.join(diff))]
 
 

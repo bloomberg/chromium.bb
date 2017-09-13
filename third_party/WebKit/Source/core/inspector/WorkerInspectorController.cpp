@@ -43,8 +43,8 @@
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/LayoutTestSupport.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/WebThreadSupportingGC.h"
+#include "platform/runtime_enabled_features.h"
 
 namespace blink {
 

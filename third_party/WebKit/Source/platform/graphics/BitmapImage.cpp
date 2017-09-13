@@ -26,7 +26,6 @@
 
 #include "platform/graphics/BitmapImage.h"
 
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/Timer.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/BitmapImageMetrics.h"
@@ -39,6 +38,7 @@
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/instrumentation/PlatformInstrumentation.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/PassRefPtr.h"
