@@ -4,19 +4,35 @@
 
 package org.chromium.chrome.browser.permissions;
 
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.permissions.PermissionTestRule.DialogShownCriteria;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
 /**
  * Test suite for interaction between permissions requests and navigation.
  */
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
 @RetryOnFailure
-public class PermissionNavigationTest extends PermissionTestCaseBase {
+public class PermissionNavigationTest {
+    @Rule
+    public PermissionTestRule mPermissionRule = new PermissionTestRule();
+
     private static final String TEST_FILE = "/content/test/data/android/permission_navigation.html";
 
     public PermissionNavigationTest() {}
@@ -29,18 +45,19 @@ public class PermissionNavigationTest extends PermissionTestCaseBase {
      */
     // @MediumTest
     // @Feature({"Permissions"})
-    @CommandLineFlags.Add("enable-features=" + MODAL_FLAG)
+    @Test
+    @CommandLineFlags.Add("enable-features=" + PermissionTestRule.MODAL_FLAG)
     // Flaky on official bots, https://crbug.com/699851#c8
     @DisabledTest
     public void testNavigationDismissesModalPermissionPrompt() throws Exception {
-        setUpUrl(TEST_FILE);
-        runJavaScriptCodeInCurrentTab("requestGeolocationPermission()");
+        mPermissionRule.setUpUrl(TEST_FILE);
+        mPermissionRule.runJavaScriptCodeInCurrentTab("requestGeolocationPermission()");
         DialogShownCriteria criteriaShown = new DialogShownCriteria("Dialog not shown", true);
         CriteriaHelper.pollUiThread(criteriaShown);
 
-        runJavaScriptCodeInCurrentTab("navigate()");
+        mPermissionRule.runJavaScriptCodeInCurrentTab("navigate()");
 
-        Tab tab = getActivity().getActivityTab();
+        Tab tab = mPermissionRule.getActivity().getActivityTab();
         final CallbackHelper callbackHelper = new CallbackHelper();
         EmptyTabObserver navigationWaiter = new EmptyTabObserver() {
             @Override

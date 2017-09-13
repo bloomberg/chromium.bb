@@ -8,13 +8,22 @@ import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
 
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.permissions.PermissionTestRule.PermissionUpdateWaiter;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
+import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.device.geolocation.LocationProviderFactory;
 import org.chromium.device.geolocation.MockLocationProvider;
 
@@ -25,32 +34,36 @@ import org.chromium.device.geolocation.MockLocationProvider;
  * - Global location is enabled.
  * - Google location is enabled.
  */
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
 @RetryOnFailure
-public class GeolocationTest extends PermissionTestCaseBase {
-    private static final String LOCATION_PROVIDER_MOCK = "locationProviderMock";
-    private static final double LATITUDE = 51.01;
-    private static final double LONGITUDE = 0.23;
-    private static final float ACCURACY = 10;
+public class GeolocationTest {
+    @Rule
+    public PermissionTestRule mPermissionRule = new PermissionTestRule();
+
     private static final String TEST_FILE = "/content/test/data/android/geolocation.html";
     private static final String PERSIST_ACCEPT_HISTOGRAM =
             "Permissions.Prompt.Accepted.Persisted.Geolocation";
 
     public GeolocationTest() {}
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
         LocationProviderFactory.setLocationProviderImpl(new MockLocationProvider());
     }
 
     private void runTest(String javascript, int nUpdates, boolean withGesture, boolean isDialog,
             boolean hasSwitch, boolean toggleSwitch) throws Exception {
-        Tab tab = getActivity().getActivityTab();
-        PermissionUpdateWaiter updateWaiter = new PermissionUpdateWaiter("Count:");
+        Tab tab = mPermissionRule.getActivity().getActivityTab();
+        PermissionUpdateWaiter updateWaiter =
+                new PermissionUpdateWaiter("Count:", mPermissionRule.getActivity());
         tab.addObserver(updateWaiter);
-        runAllowTest(updateWaiter, TEST_FILE, javascript, nUpdates, withGesture, isDialog,
-                hasSwitch, toggleSwitch);
+        mPermissionRule.runAllowTest(updateWaiter, TEST_FILE, javascript, nUpdates, withGesture,
+                isDialog, hasSwitch, toggleSwitch);
         tab.removeObserver(updateWaiter);
         if (hasSwitch) {
             int bucket = toggleSwitch ? 0 : 1;
@@ -64,8 +77,9 @@ public class GeolocationTest extends PermissionTestCaseBase {
      * Verify Geolocation creates an InfoBar and receives a mock location.
      * @throws Exception
      */
+    @Test
     @MediumTest
-    @CommandLineFlags.Add("disable-features=" + MODAL_FLAG)
+    @CommandLineFlags.Add("disable-features=" + PermissionTestRule.MODAL_FLAG)
     @Feature({"Location", "Main"})
     public void testGeolocationPlumbingAllowedInfoBar() throws Exception {
         runTest("initiate_getCurrentPosition()", 1, false, false, false, false);
@@ -75,8 +89,9 @@ public class GeolocationTest extends PermissionTestCaseBase {
      * Verify Geolocation creates a dialog and receives a mock location.
      * @throws Exception
      */
+    @Test
     @MediumTest
-    @CommandLineFlags.Add("enable-features=" + MODAL_FLAG)
+    @CommandLineFlags.Add("enable-features=" + PermissionTestRule.MODAL_FLAG)
     @Feature({"Location", "Main"})
     public void testGeolocationPlumbingAllowedDialog() throws Exception {
         runTest("initiate_getCurrentPosition()", 1, true, true, false, false);
@@ -87,8 +102,9 @@ public class GeolocationTest extends PermissionTestCaseBase {
      * enabled and there is no user gesture.
      * @throws Exception
      */
+    @Test
     @MediumTest
-    @CommandLineFlags.Add("enable-features=" + MODAL_FLAG)
+    @CommandLineFlags.Add("enable-features=" + PermissionTestRule.MODAL_FLAG)
     @Feature({"Location", "Main"})
     public void testGeolocationPlumbingAllowedDialogNoGesture() throws Exception {
         runTest("initiate_getCurrentPosition()", 1, false, true, false, false);
@@ -98,8 +114,9 @@ public class GeolocationTest extends PermissionTestCaseBase {
      * Verify Geolocation creates an InfoBar and receives multiple locations.
      * @throws Exception
      */
+    @Test
     @MediumTest
-    @CommandLineFlags.Add("disable-features=" + MODAL_FLAG)
+    @CommandLineFlags.Add("disable-features=" + PermissionTestRule.MODAL_FLAG)
     @Feature({"Location"})
     public void testGeolocationWatchInfoBar() throws Exception {
         runTest("initiate_watchPosition()", 2, false, false, false, false);
@@ -109,8 +126,9 @@ public class GeolocationTest extends PermissionTestCaseBase {
      * Verify Geolocation creates a dialog and receives multiple locations.
      * @throws Exception
      */
+    @Test
     @MediumTest
-    @CommandLineFlags.Add("enable-features=" + MODAL_FLAG)
+    @CommandLineFlags.Add("enable-features=" + PermissionTestRule.MODAL_FLAG)
     @Feature({"Location"})
     public void testGeolocationWatchDialog() throws Exception {
         runTest("initiate_watchPosition()", 2, true, true, false, false);
@@ -121,8 +139,10 @@ public class GeolocationTest extends PermissionTestCaseBase {
      * Check the switch appears and that permission is granted with it toggled on.
      * @throws Exception
      */
+    @Test
     @MediumTest
-    @CommandLineFlags.Add({"enable-features=" + TOGGLE_FLAG, "disable-features=" + MODAL_FLAG})
+    @CommandLineFlags.Add({"enable-features=" + PermissionTestRule.TOGGLE_FLAG,
+            "disable-features=" + PermissionTestRule.MODAL_FLAG})
     @Feature({"Location"})
     public void testGeolocationPersistenceAllowedInfoBar() throws Exception {
         runTest("initiate_getCurrentPosition()", 1, false, false, true, false);
@@ -133,8 +153,9 @@ public class GeolocationTest extends PermissionTestCaseBase {
      * Check the switch appears and that permission is granted with it toggled on.
      * @throws Exception
      */
+    @Test
     @MediumTest
-    @CommandLineFlags.Add("enable-features=" + MODAL_TOGGLE_FLAG)
+    @CommandLineFlags.Add("enable-features=" + PermissionTestRule.MODAL_TOGGLE_FLAG)
     @Feature({"Location"})
     public void testGeolocationPersistenceAllowedDialog() throws Exception {
         runTest("initiate_getCurrentPosition()", 1, true, true, true, false);
@@ -145,23 +166,26 @@ public class GeolocationTest extends PermissionTestCaseBase {
      * Check the switch toggled off.
      * @throws Exception
      */
+    @Test
     @MediumTest
-    @CommandLineFlags.Add({"enable-features=" + TOGGLE_FLAG, "disable-features=" + MODAL_FLAG})
+    @CommandLineFlags.Add({"enable-features=" + PermissionTestRule.TOGGLE_FLAG,
+            "disable-features=" + PermissionTestRule.MODAL_FLAG})
     @Feature({"Location"})
     public void testGeolocationPersistenceOffAllowedInfoBar() throws Exception {
-        Tab tab = getActivity().getActivityTab();
-        PermissionUpdateWaiter updateWaiter = new PermissionUpdateWaiter("Count:");
+        Tab tab = mPermissionRule.getActivity().getActivityTab();
+        PermissionUpdateWaiter updateWaiter =
+                new PermissionUpdateWaiter("Count:", mPermissionRule.getActivity());
         tab.addObserver(updateWaiter);
-        runAllowTest(updateWaiter, TEST_FILE, "initiate_getCurrentPosition()", 1, false, false,
-                true, true);
+        mPermissionRule.runAllowTest(updateWaiter, TEST_FILE, "initiate_getCurrentPosition()", 1,
+                false, false, true, true);
 
         // Ask for permission again and make sure it doesn't prompt again (grant is cached in the
         // Blink layer).
-        runJavaScriptCodeInCurrentTab("initiate_getCurrentPosition()");
+        mPermissionRule.runJavaScriptCodeInCurrentTab("initiate_getCurrentPosition()");
         updateWaiter.waitForNumUpdates(2);
 
         // Ask for permission a third time and make sure it doesn't prompt again.
-        runJavaScriptCodeInCurrentTab("initiate_getCurrentPosition()");
+        mPermissionRule.runJavaScriptCodeInCurrentTab("initiate_getCurrentPosition()");
         updateWaiter.waitForNumUpdates(3);
 
         tab.removeObserver(updateWaiter);
@@ -172,23 +196,25 @@ public class GeolocationTest extends PermissionTestCaseBase {
      * Check the switch toggled off.
      * @throws Exception
      */
+    @Test
     @MediumTest
-    @CommandLineFlags.Add("enable-features=" + MODAL_TOGGLE_FLAG)
+    @CommandLineFlags.Add("enable-features=" + PermissionTestRule.MODAL_TOGGLE_FLAG)
     @Feature({"Location"})
     public void testGeolocationPersistenceOffAllowedDialog() throws Exception {
-        Tab tab = getActivity().getActivityTab();
-        PermissionUpdateWaiter updateWaiter = new PermissionUpdateWaiter("Count:");
+        Tab tab = mPermissionRule.getActivity().getActivityTab();
+        PermissionUpdateWaiter updateWaiter =
+                new PermissionUpdateWaiter("Count:", mPermissionRule.getActivity());
         tab.addObserver(updateWaiter);
-        runAllowTest(updateWaiter, TEST_FILE, "initiate_getCurrentPosition()", 1, true, true, true,
-                true);
+        mPermissionRule.runAllowTest(updateWaiter, TEST_FILE, "initiate_getCurrentPosition()", 1,
+                true, true, true, true);
 
         // Ask for permission again and make sure it doesn't prompt again (grant is cached in the
         // Blink layer).
-        singleClickView(getActivity().getActivityTab().getView());
+        TouchCommon.singleClickView(mPermissionRule.getActivity().getActivityTab().getView());
         updateWaiter.waitForNumUpdates(2);
 
         // Ask for permission a third time and make sure it doesn't prompt again.
-        singleClickView(getActivity().getActivityTab().getView());
+        TouchCommon.singleClickView(mPermissionRule.getActivity().getActivityTab().getView());
         updateWaiter.waitForNumUpdates(3);
 
         tab.removeObserver(updateWaiter);
@@ -199,8 +225,10 @@ public class GeolocationTest extends PermissionTestCaseBase {
      * that feature is enabled. Use an infobar.
      * @throws Exception
      */
+    @Test
     @LargeTest
-    @CommandLineFlags.Add({"enable-features=" + TOGGLE_FLAG, "disable-features=" + MODAL_FLAG})
+    @CommandLineFlags.Add({"enable-features=" + PermissionTestRule.TOGGLE_FLAG,
+            "disable-features=" + PermissionTestRule.MODAL_FLAG})
     @Feature({"Location"})
     public void testGeolocationWatchPersistenceOffAllowedInfoBar() throws Exception {
         runTest("initiate_watchPosition()", 2, false, false, true, true);
@@ -211,8 +239,9 @@ public class GeolocationTest extends PermissionTestCaseBase {
      * that feature is enabled. Use a dialog.
      * @throws Exception
      */
+    @Test
     @LargeTest
-    @CommandLineFlags.Add("enable-features=" + MODAL_TOGGLE_FLAG)
+    @CommandLineFlags.Add("enable-features=" + PermissionTestRule.MODAL_TOGGLE_FLAG)
     @Feature({"Location"})
     public void testGeolocationWatchPersistenceOffAllowedDialog() throws Exception {
         runTest("initiate_watchPosition()", 2, true, true, true, true);
