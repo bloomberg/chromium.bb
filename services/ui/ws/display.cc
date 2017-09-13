@@ -93,6 +93,10 @@ const display::Display& Display::GetDisplay() {
   return display_;
 }
 
+const display::ViewportMetrics& Display::GetViewportMetrics() const {
+  return platform_display_->GetViewportMetrics();
+}
+
 DisplayManager* Display::display_manager() {
   return window_server_->display_manager();
 }
@@ -413,7 +417,7 @@ EventDispatchDetails Display::OnEventFromSource(Event* event) {
   WindowManagerDisplayRoot* display_root = GetActiveWindowManagerDisplayRoot();
   if (display_root) {
     WindowManagerState* wm_state = display_root->window_manager_state();
-    wm_state->ProcessEvent(*event, GetId());
+    wm_state->ProcessEvent(event, GetId());
   }
 
   UserActivityMonitor* activity_monitor =

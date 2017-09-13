@@ -48,6 +48,7 @@ display::ViewportMetrics MakeViewportMetrics(const display::Display& display) {
   display::ViewportMetrics metrics;
   metrics.bounds_in_pixels.set_size(pixel_size);
   metrics.device_scale_factor = display.device_scale_factor();
+  metrics.ui_scale_factor = 1;
   return metrics;
 }
 
@@ -110,10 +111,15 @@ int64_t TestScreenManager::AddDisplay(const display::Display& input_display) {
   return display_id;
 }
 
-void TestScreenManager::ModifyDisplay(const display::Display& display) {
+void TestScreenManager::ModifyDisplay(
+    const display::Display& display,
+    const base::Optional<display::ViewportMetrics>& metrics) {
   DCHECK(display_ids_.count(display.id()) == 1);
   screen_->display_list().UpdateDisplay(display);
-  delegate_->OnDisplayModified(display, MakeViewportMetrics(display));
+  if (metrics)
+    delegate_->OnDisplayModified(display, *metrics);
+  else
+    delegate_->OnDisplayModified(display, MakeViewportMetrics(display));
 }
 
 void TestScreenManager::RemoveDisplay(int64_t display_id) {
@@ -400,12 +406,16 @@ void TestWindowTreeClient::OnWindowSharedPropertyChanged(
   tracker_.OnWindowSharedPropertyChanged(window, name, new_data);
 }
 
-void TestWindowTreeClient::OnWindowInputEvent(uint32_t event_id,
-                                              uint32_t window,
-                                              int64_t display_id,
-                                              std::unique_ptr<ui::Event> event,
-                                              bool matches_pointer_watcher) {
-  tracker_.OnWindowInputEvent(window, *event.get(), matches_pointer_watcher);
+void TestWindowTreeClient::OnWindowInputEvent(
+    uint32_t event_id,
+    uint32_t window,
+    int64_t display_id,
+    const gfx::PointF& event_location_in_screen_pixel_layout,
+    std::unique_ptr<ui::Event> event,
+    bool matches_pointer_watcher) {
+  tracker_.OnWindowInputEvent(window, *event.get(), display_id,
+                              event_location_in_screen_pixel_layout,
+                              matches_pointer_watcher);
 }
 
 void TestWindowTreeClient::OnPointerEventObserved(

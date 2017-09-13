@@ -11,6 +11,7 @@
 #include "mojo/public/cpp/bindings/map.h"
 #include "services/ui/common/util.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/gfx/geometry/point_conversions.h"
 
 namespace ui {
 
@@ -30,6 +31,8 @@ std::string DirectionToString(mojom::OrderDirection direction) {
 enum class ChangeDescriptionType {
   ONE,
   TWO,
+  // Includes display id and location of events.
+  THREE,
 };
 
 std::string ChangeToDescription(const Change& change,
@@ -232,7 +235,8 @@ Change::Change()
       bool_value(false),
       float_value(0.f),
       cursor_type(ui::CursorType::kNull),
-      change_id(0u) {}
+      change_id(0u),
+      display_id(0) {}
 
 Change::Change(const Change& other) = default;
 
@@ -379,14 +383,21 @@ void TestChangeTracker::OnWindowParentDrawnStateChanged(Id window_id,
   AddChange(change);
 }
 
-void TestChangeTracker::OnWindowInputEvent(Id window_id,
-                                           const ui::Event& event,
-                                           bool matches_pointer_watcher) {
+void TestChangeTracker::OnWindowInputEvent(
+    Id window_id,
+    const ui::Event& event,
+    int64_t display_id,
+    const gfx::PointF& event_location_in_screen_pixel_layout,
+    bool matches_pointer_watcher) {
   Change change;
   change.type = CHANGE_TYPE_INPUT_EVENT;
   change.window_id = window_id;
   change.event_action = static_cast<int32_t>(event.type());
   change.matches_pointer_watcher = matches_pointer_watcher;
+  change.display_id = display_id;
+  if (event.IsLocatedEvent())
+    change.location1 = event.AsLocatedEvent()->root_location();
+  change.location2 = event_location_in_screen_pixel_layout;
   if (event.IsKeyEvent() && event.AsKeyEvent()->properties())
     change.key_event_properties = *event.AsKeyEvent()->properties();
   AddChange(change);

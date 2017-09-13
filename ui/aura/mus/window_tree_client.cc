@@ -1391,11 +1391,13 @@ void WindowTreeClient::OnWindowSharedPropertyChanged(
       name, transport_data.has_value() ? &transport_data.value() : nullptr);
 }
 
-void WindowTreeClient::OnWindowInputEvent(uint32_t event_id,
-                                          Id window_id,
-                                          int64_t display_id,
-                                          std::unique_ptr<ui::Event> event,
-                                          bool matches_pointer_watcher) {
+void WindowTreeClient::OnWindowInputEvent(
+    uint32_t event_id,
+    Id window_id,
+    int64_t display_id,
+    const gfx::PointF& event_location_in_screen_pixel_layout,
+    std::unique_ptr<ui::Event> event,
+    bool matches_pointer_watcher) {
   DCHECK(event);
 
   WindowMus* window = GetWindowByServerId(window_id);  // May be null.
@@ -1453,11 +1455,11 @@ void WindowTreeClient::OnWindowInputEvent(uint32_t event_id,
         static_cast<const base::NativeEvent&>(mapped_event.get()));
     // MouseEvent(NativeEvent) sets the root_location to location.
     mapped_event_with_native->set_root_location_f(
-        mapped_event->AsMouseEvent()->root_location_f());
+        event_location_in_screen_pixel_layout);
     // |mapped_event| is now the NativeEvent. It's expected the location of the
     // NativeEvent is the same as root_location.
     mapped_event->AsMouseEvent()->set_location_f(
-        mapped_event->AsMouseEvent()->root_location_f());
+        event_location_in_screen_pixel_layout);
     event_to_dispatch = mapped_event_with_native.get();
   }
 #endif

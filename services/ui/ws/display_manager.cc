@@ -29,6 +29,7 @@
 #include "ui/display/screen_base.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/events/event_rewriter.h"
+#include "ui/gfx/geometry/point_conversions.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/chromeos/events/event_rewriter_chromeos.h"
@@ -335,8 +336,8 @@ void DisplayManager::OnActiveUserIdChanged(const UserId& previously_active_id,
   int64_t mouse_display_id = 0;
   if (previous_window_manager_state) {
     mouse_location_on_display =
-        previous_window_manager_state->event_dispatcher()
-            ->mouse_pointer_last_location();
+        gfx::ToFlooredPoint(previous_window_manager_state->event_dispatcher()
+                                ->mouse_pointer_last_location());
     mouse_display_id = previous_window_manager_state->event_dispatcher()
                            ->mouse_pointer_display_id();
     previous_window_manager_state->Deactivate();

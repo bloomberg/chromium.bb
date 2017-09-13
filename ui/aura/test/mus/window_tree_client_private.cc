@@ -58,9 +58,13 @@ void WindowTreeClientPrivate::CallOnWindowInputEvent(
   const uint32_t event_id = 0u;
   const uint32_t observer_id = 0u;
   const int64_t display_id = 0;
+  gfx::PointF event_location_in_screen_pixel_layout;
+  if (event->IsLocatedEvent())
+    event_location_in_screen_pixel_layout =
+        event->AsLocatedEvent()->root_location_f();
   tree_client_impl_->OnWindowInputEvent(
       event_id, WindowPortMus::Get(window)->server_id(), display_id,
-      std::move(event), observer_id);
+      event_location_in_screen_pixel_layout, std::move(event), observer_id);
 }
 
 void WindowTreeClientPrivate::CallOnPointerEventObserved(

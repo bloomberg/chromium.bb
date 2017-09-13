@@ -47,6 +47,7 @@ static_library("lib") {
     "event_dispatcher.cc",
     "event_dispatcher.h",
     "event_dispatcher_delegate.h",
+    "event_location.h",
     "event_matcher.cc",
     "event_matcher.h",
     "event_targeter.cc",
