@@ -3475,6 +3475,13 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,  // TODO(peria): Add Android support.
      FEATURE_VALUE_TYPE(features::kV8ContextSnapshot)},
 
+#if defined(OS_CHROMEOS)
+    {"enable-pixel-canvas-recording",
+     flag_descriptions::kEnablePixelCanvasRecordingName,
+     flag_descriptions::kEnablePixelCanvasRecordingDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kEnablePixelCanvasRecording)},
+#endif
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms/enums.xml. See note in
     // enums.xml and don't forget to run AboutFlagsHistogramTest unit test.

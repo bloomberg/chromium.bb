@@ -18,6 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "cc/paint/display_item_list.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -3774,6 +3775,7 @@ class ViewLayerTest : public ViewsTestBase {
   }
 
   void SetUp() override {
+    SetUpPixelCanvas();
     ViewTest::SetUp();
     widget_ = new Widget;
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
@@ -3790,12 +3792,18 @@ class ViewLayerTest : public ViewsTestBase {
 
   Widget* widget() { return widget_; }
 
+  virtual void SetUpPixelCanvas() {
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kEnablePixelCanvasRecording);
+  }
+
  protected:
   // Accessors to View internals.
   void SchedulePaintOnParent(View* view) { view->SchedulePaintOnParent(); }
 
  private:
   Widget* widget_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 
@@ -4484,13 +4492,15 @@ class ViewLayerPixelCanvasTest : public ViewLayerTest {
 
   ~ViewLayerPixelCanvasTest() override {}
 
-  void SetUp() override {
-    // Enable pixel canvas
-    base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-    cmd_line->AppendSwitch(switches::kEnablePixelCanvasRecording);
-
-    ViewLayerTest::SetUp();
+  void SetUpPixelCanvas() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kEnablePixelCanvasRecording);
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(ViewLayerPixelCanvasTest);
 };
 
 TEST_F(ViewLayerPixelCanvasTest, SnapLayerToPixel) {

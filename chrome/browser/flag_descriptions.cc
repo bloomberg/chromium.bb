@@ -436,6 +436,12 @@ const char kEnablePictureInPictureName[] = "Enable picture in picture.";
 const char kEnablePictureInPictureDescription[] =
     "Enable the picture in picture feature for videos.";
 
+const char kEnablePixelCanvasRecordingName[] = "Enable pixel canvas recording";
+const char kEnablePixelCanvasRecordingDescription[] =
+    "Pixel canvas recording allows the compositor to raster contents aligned "
+    "with the pixel and improves text rendering. This should be enabled when a "
+    "device is using fractional scale factor.";
+
 const char kEnableTokenBindingName[] = "Token Binding.";
 const char kEnableTokenBindingDescription[] = "Enable Token Binding support.";
 
