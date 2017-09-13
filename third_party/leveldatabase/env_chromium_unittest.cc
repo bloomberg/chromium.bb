@@ -33,6 +33,8 @@ using leveldb_env::DBTracker;
 using leveldb_env::MethodID;
 using leveldb_env::Options;
 
+static const int kReadOnlyFileLimit = 4;
+
 TEST(ErrorEncoding, OnlyAMethod) {
   const MethodID in_method = leveldb_env::kSequentialFileRead;
   const Status s = MakeIOError("Somefile.txt", "message", in_method);
@@ -213,6 +215,40 @@ TEST(ChromiumEnv, LockFile) {
   EXPECT_TRUE(env->UnlockFile(lock).ok());
   EXPECT_TRUE(env->LockFile(tmp_file_path.MaybeAsASCII(), &lock).ok());
   EXPECT_TRUE(env->UnlockFile(lock).ok());
+}
+
+TEST(ChromiumEnvTest, TestOpenOnRead) {
+  // Write some test data to a single file that will be opened |n| times.
+  base::FilePath tmp_file_path;
+  ASSERT_TRUE(base::CreateTemporaryFile(&tmp_file_path));
+
+  FILE* f = fopen(tmp_file_path.AsUTF8Unsafe().c_str(), "w");
+  ASSERT_TRUE(f != NULL);
+  const char kFileData[] = "abcdefghijklmnopqrstuvwxyz";
+  fputs(kFileData, f);
+  fclose(f);
+
+  std::unique_ptr<ChromiumEnv> env(new ChromiumEnv());
+  env->SetReadOnlyFileLimitForTesting(kReadOnlyFileLimit);
+
+  // Open test file some number greater than kReadOnlyFileLimit to force the
+  // open-on-read behavior of POSIX Env leveldb::RandomAccessFile.
+  const int kNumFiles = kReadOnlyFileLimit + 5;
+  leveldb::RandomAccessFile* files[kNumFiles] = {0};
+  for (int i = 0; i < kNumFiles; i++) {
+    ASSERT_TRUE(
+        env->NewRandomAccessFile(tmp_file_path.AsUTF8Unsafe(), &files[i]).ok());
+  }
+  char scratch;
+  Slice read_result;
+  for (int i = 0; i < kNumFiles; i++) {
+    ASSERT_TRUE(files[i]->Read(i, 1, &read_result, &scratch).ok());
+    ASSERT_EQ(kFileData[i], read_result[0]);
+  }
+  for (int i = 0; i < kNumFiles; i++) {
+    delete files[i];
+  }
+  ASSERT_TRUE(env->DeleteFile(tmp_file_path.AsUTF8Unsafe()).ok());
 }
 
 class ChromiumEnvDBTrackerTest : public ::testing::Test {
