@@ -46,8 +46,6 @@ oortonline,ulan@chromium.org,
 oortonline_tbmv2,ulan@chromium.org,
 performance_browser_tests,miu@chromium.org,
 power.idle_platform,,
-power.steady_state,,
-power.trivial_pages,erikchen@chromium.org,
 power.typical_10_mobile,perezju@chromium.org,
 rasterize_and_record_micro.partial_invalidation,"vmpstr@chromium.org, wkorman@chromium.org",Internals>Compositing>Rasterization
 rasterize_and_record_micro.top_25,"vmpstr@chromium.org, wkorman@chromium.org",Internals>Compositing>Rasterization

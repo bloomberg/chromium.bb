@@ -1,6 +1,5 @@
 load_library_perf_tests
 power.idle_platform
-power.steady_state
 smoothness.tough_image_decode_cases
 thread_times.key_hit_test_cases
 thread_times.key_noop_cases

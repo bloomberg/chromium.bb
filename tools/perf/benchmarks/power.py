@@ -43,43 +43,6 @@ class PowerTypical10Mobile(perf_benchmark.PerfBenchmark):
     return StoryExpectations()
 
 
-@benchmark.Owner(emails=['erikchen@chromium.org'])
-class PowerScrollingTrivialPage(perf_benchmark.PerfBenchmark):
-  """Measure power consumption for some very simple pages."""
-  test = power.QuiescentPower
-  page_set = page_sets.TrivialSitesStorySet
-  SUPPORTED_PLATFORMS = [story.expectations.ALL_MAC]
-
-  @classmethod
-  def Name(cls):
-    return 'power.trivial_pages'
-
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        pass
-    return StoryExpectations()
-
-
-class PowerSteadyStatePages(perf_benchmark.PerfBenchmark):
-  """Measure power consumption for real web sites in steady state (no user
-  interactions)."""
-  test = power.QuiescentPower
-  page_set = page_sets.IdleAfterLoadingStories
-  SUPPORTED_PLATFORMS = [story.expectations.ALL_MAC]
-
-  @classmethod
-  def Name(cls):
-    return 'power.steady_state'
-
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        self.DisableStory('http://abcnews.go.com/', [story.expectations.ALL],
-                          'crbug.com/505990')
-    return StoryExpectations()
-
-
 class IdlePlatformBenchmark(perf_benchmark.PerfBenchmark):
   """Idle platform benchmark.
 
@@ -118,4 +81,3 @@ class IdlePlatformBenchmark(perf_benchmark.PerfBenchmark):
       def SetExpectations(self):
         pass # Nothing disabled.
     return StoryExpectations()
-
