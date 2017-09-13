@@ -38,6 +38,9 @@ class RenderWidgetHostConnector {
 
   RenderWidgetHostViewAndroid* GetRWHVAForTesting() const;
 
+ protected:
+  WebContents* web_contents() const;
+
  private:
   class Observer;
   std::unique_ptr<Observer> render_widget_observer_;

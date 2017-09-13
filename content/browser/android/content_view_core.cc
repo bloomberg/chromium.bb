@@ -534,16 +534,6 @@ void ContentViewCore::DidStopFlinging() {
     Java_ContentViewCore_onNativeFlingStopped(env, obj);
 }
 
-ScopedJavaLocalRef<jobject> ContentViewCore::GetContext() const {
-  JNIEnv* env = AttachCurrentThread();
-
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return ScopedJavaLocalRef<jobject>();
-
-  return Java_ContentViewCore_getContext(env, obj);
-}
-
 gfx::Size ContentViewCore::GetViewSize() const {
   gfx::Size size = GetViewportSizeDip();
   if (DoBrowserControlsShrinkBlinkSize())
@@ -603,26 +593,6 @@ void ContentViewCore::SendScreenRectsAndResizeWidget() {
     web_contents_->SendScreenRects();
     view->WasResized();
   }
-}
-
-void ContentViewCore::MoveRangeSelectionExtent(const gfx::PointF& extent) {
-  if (!web_contents_)
-    return;
-
-  web_contents_->MoveRangeSelectionExtent(gfx::ToRoundedPoint(extent));
-}
-
-void ContentViewCore::SelectBetweenCoordinates(const gfx::PointF& base,
-                                               const gfx::PointF& extent) {
-  if (!web_contents_)
-    return;
-
-  gfx::Point base_point = gfx::ToRoundedPoint(base);
-  gfx::Point extent_point = gfx::ToRoundedPoint(extent);
-  if (base_point == extent_point)
-    return;
-
-  web_contents_->SelectRange(base_point, extent_point);
 }
 
 ui::WindowAndroid* ContentViewCore::GetWindowAndroid() const {

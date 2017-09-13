@@ -263,11 +263,6 @@ class ContentViewCore : public WebContentsObserver {
   float GetTopControlsHeightDip() const;
   float GetBottomControlsHeightDip() const;
 
-  void MoveRangeSelectionExtent(const gfx::PointF& extent);
-
-  void SelectBetweenCoordinates(const gfx::PointF& base,
-                                const gfx::PointF& extent);
-
   void UpdateCursor(const content::CursorInfo& info);
   void OnTouchDown(const base::android::ScopedJavaLocalRef<jobject>& event);
 
