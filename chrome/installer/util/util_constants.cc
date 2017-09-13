@@ -152,19 +152,6 @@ const char kVerboseLogging[] = "verbose-logging";
 // Show the embedded EULA dialog.
 const char kShowEula[] = "show-eula";
 
-// Perform the inactive user toast experiment.
-const char kInactiveUserToast[] = "inactive-user-toast";
-
-// User toast experiment switch from system context to user context.
-const char kSystemLevelToast[] = "system-level-toast";
-
-// The group this experiment belongs to.
-const char kExperimentGroup[] = "experiment-group";
-
-// A handle value of the key to write the results of the toast experiment
-// to. See DuplicateGoogleUpdateSystemClientKey for details.
-const char kToastResultsKey[] = "toast-results-key";
-
 // Applies a binary patch to a file. The input, patch, and the output file are
 // specified as command line arguments following the --patch switch.
 // Ex: --patch=courgette --input_file='input' --patch_file='patch'

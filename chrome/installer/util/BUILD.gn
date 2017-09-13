@@ -92,8 +92,6 @@ static_library("with_no_strings") {
       "shell_util.h",
       "uninstall_metrics.cc",
       "uninstall_metrics.h",
-      "user_experiment.cc",
-      "user_experiment.h",
     ]
 
     deps += [

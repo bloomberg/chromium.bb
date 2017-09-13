@@ -4,13 +4,11 @@
 
 #include "chrome/installer/util/chrome_browser_operations.h"
 
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
-#include "chrome/installer/util/user_experiment.h"
 #include "chrome/installer/util/util_constants.h"
 
 namespace installer {
@@ -48,15 +46,6 @@ void ChromeBrowserOperations::AddDefaultShortcutProperties(
 
   if (!properties->has_description())
     properties->set_description(dist->GetAppDescription());
-}
-
-void ChromeBrowserOperations::LaunchUserExperiment(
-    const base::FilePath& setup_path,
-    InstallStatus status,
-    bool system_level) const {
-  base::CommandLine base_command(setup_path);
-  InstallUtil::AppendModeSwitch(&base_command);
-  LaunchBrowserUserExperiment(base_command, status, system_level);
 }
 
 }  // namespace installer
