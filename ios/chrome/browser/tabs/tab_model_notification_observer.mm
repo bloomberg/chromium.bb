@@ -12,18 +12,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-
-// Sets |web_state| web usage enabled property and starts loading the content
-// if necessary.
-void SetWebUsageEnabled(web::WebState* web_state, bool web_usage_enabled) {
-  web_state->SetWebUsageEnabled(web_usage_enabled);
-  if (web_usage_enabled)
-    web_state->GetNavigationManager()->LoadIfNecessary();
-}
-
-}  // namespace
-
 TabModelNotificationObserver::TabModelNotificationObserver(TabModel* tab_model)
     : tab_model_(tab_model) {}
 
@@ -34,7 +22,8 @@ void TabModelNotificationObserver::WebStateInsertedAt(
     web::WebState* web_state,
     int index,
     bool activating) {
-  SetWebUsageEnabled(web_state, tab_model_.webUsageEnabled);
+  if (!enabled_)
+    return;
 
   Tab* tab = LegacyTabHelper::GetTabForWebState(web_state);
   [[NSNotificationCenter defaultCenter]
@@ -46,10 +35,3 @@ void TabModelNotificationObserver::WebStateInsertedAt(
                   }];
 }
 
-void TabModelNotificationObserver::WebStateReplacedAt(
-    WebStateList* web_state_list,
-    web::WebState* old_web_state,
-    web::WebState* new_web_state,
-    int index) {
-  SetWebUsageEnabled(new_web_state, tab_model_.webUsageEnabled);
-}
