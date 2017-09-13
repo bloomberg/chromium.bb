@@ -390,6 +390,7 @@ function (setup_aom_test_targets)
   add_executable(test_libaom ${AOM_UNIT_TEST_WRAPPER_SOURCES}
                  $<TARGET_OBJECTS:aom_common_app_util>
                  $<TARGET_OBJECTS:test_aom_common>)
+  set(AOM_APP_TARGETS ${AOM_APP_TARGETS} test_libaom)
 
   if (CONFIG_AV1_DECODER)
     target_sources(test_libaom PRIVATE
@@ -416,6 +417,7 @@ function (setup_aom_test_targets)
                      $<TARGET_OBJECTS:aom_common_app_util>)
       target_link_libraries(test_intra_pred_speed ${AOM_LIB_LINK_TYPE}
                             aom gtest)
+      set(AOM_APP_TARGETS ${AOM_APP_TARGETS} test_intra_pred_speed)
     endif ()
   endif ()
 
@@ -509,6 +511,8 @@ function (setup_aom_test_targets)
   endforeach ()
   add_custom_target(runtests)
   add_dependencies(runtests ${test_targets})
+
+  set(AOM_APP_TARGETS ${AOM_APP_TARGETS} PARENT_SCOPE)
 endfunction ()
 
 endif ()  # AOM_TEST_TEST_CMAKE_
