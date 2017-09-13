@@ -732,7 +732,7 @@ class IDLParser(object):
     p[0] = self.BuildProduction('Iterable', p, 2, childlist)
 
   def p_OptionalType(self, p):
-    """OptionalType : ',' Type
+    """OptionalType : ',' TypeWithExtendedAttributes
                     |"""
     if len(p) > 1:
       p[0] = p[2]
