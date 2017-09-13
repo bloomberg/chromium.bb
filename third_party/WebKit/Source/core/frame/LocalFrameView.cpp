@@ -209,7 +209,6 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
           DocumentLifecycle::kUninitialized),
       past_layout_lifecycle_update_(false),
       scroll_anchor_(this),
-      in_perform_scroll_anchoring_adjustments_(false),
       scrollbar_manager_(*this),
       needs_scrollbars_update_(false),
       suppress_adjust_view_size_(false),
@@ -3276,20 +3275,18 @@ void LocalFrameView::EnqueueScrollAnchoringAdjustment(
 }
 
 void LocalFrameView::PerformScrollAnchoringAdjustments() {
-  // TODO(bokan): Temporary to get more information about crash in
-  // crbug.com/745686.
-  CHECK(!in_perform_scroll_anchoring_adjustments_);
-  in_perform_scroll_anchoring_adjustments_ = true;
+  // Adjust() will cause a scroll which could end up causing a layout and
+  // reentering this method. Copy and clear the queue so we don't modify it
+  // during iteration.
+  AnchoringAdjustmentQueue queue_copy = anchoring_adjustment_queue_;
+  anchoring_adjustment_queue_.clear();
 
-  for (WeakMember<ScrollableArea>& scroller : anchoring_adjustment_queue_) {
+  for (WeakMember<ScrollableArea>& scroller : queue_copy) {
     if (scroller) {
       DCHECK(scroller->GetScrollAnchor());
       scroller->GetScrollAnchor()->Adjust();
     }
   }
-  anchoring_adjustment_queue_.clear();
-
-  in_perform_scroll_anchoring_adjustments_ = false;
 }
 
 void LocalFrameView::PrePaint() {
