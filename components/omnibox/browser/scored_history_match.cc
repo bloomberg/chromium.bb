@@ -17,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/history_url_provider.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/url_prefix.h"
@@ -102,17 +103,6 @@ void InitDaysAgoToRecencyScoreArray() {
   }
 }
 
-size_t GetAdjustedOffsetForComponent(
-    const GURL& url,
-    const base::OffsetAdjuster::Adjustments& adjustments,
-    const url::Parsed::ComponentType& component) {
-  const url::Parsed& parsed = url.parsed_for_possibly_invalid_spec();
-
-  size_t result = parsed.CountCharactersBefore(component, true);
-  base::OffsetAdjuster::AdjustOffset(adjustments, &result);
-  return result;
-}
-
 }  // namespace
 
 // static
@@ -154,6 +144,9 @@ ScoredHistoryMatch::ScoredHistoryMatch(
   // Initialize HistoryMatch fields. TODO(tommycli): Merge these two classes.
   url_info = row;
   input_location = 0;
+  match_in_scheme = false;
+  match_in_subdomain = false;
+  match_after_host = false;
   innermost_match = false;
 
   // NOTE: Call Init() before doing any validity checking to ensure that the
@@ -166,12 +159,13 @@ ScoredHistoryMatch::ScoredHistoryMatch(
   // so that we can score as well as provide autocomplete highlighting.
   base::OffsetAdjuster::Adjustments adjustments;
   GURL gurl = row.url();
-  base::string16 url =
+  base::string16 cleaned_up_url_for_matching =
       bookmarks::CleanUpUrlForMatching(gurl, &adjustments);
   base::string16 title = bookmarks::CleanUpTitleForMatching(row.title());
   int term_num = 0;
   for (const auto& term : terms_vector) {
-    TermMatches url_term_matches = MatchTermInString(term, url, term_num);
+    TermMatches url_term_matches =
+        MatchTermInString(term, cleaned_up_url_for_matching, term_num);
     TermMatches title_term_matches = MatchTermInString(term, title, term_num);
     if (url_term_matches.empty() && title_term_matches.empty()) {
       // A term was not found in either URL or title - reject.
@@ -331,6 +325,16 @@ ScoredHistoryMatch::ScoredHistoryMatch(
   std::vector<size_t> offsets = OffsetsFromTermMatches(url_matches);
   base::OffsetAdjuster::UnadjustOffsets(adjustments, &offsets);
   url_matches = ReplaceOffsetsInTermMatches(url_matches, offsets);
+
+  // Now that url_matches contains the unadjusted offsets referring to the
+  // original URL, we can calculate which components the matches are for.
+  std::vector<AutocompleteMatch::MatchPosition> match_positions;
+  for (auto& url_match : url_matches) {
+    match_positions.push_back(
+        std::make_pair(url_match.offset, url_match.offset + url_match.length));
+  }
+  AutocompleteMatch::GetMatchComponents(gurl, match_positions, &match_in_scheme,
+                                        &match_in_subdomain, &match_after_host);
 }
 
 ScoredHistoryMatch::ScoredHistoryMatch(const ScoredHistoryMatch& other) =
@@ -454,27 +458,19 @@ float ScoredHistoryMatch::GetTopicalityScore(
   WordStarts::const_iterator end_word_starts =
       word_starts.url_word_starts_.end();
 
-  const size_t query_pos =
-      GetAdjustedOffsetForComponent(url, adjustments, url::Parsed::QUERY);
-  const size_t host_pos =
-      GetAdjustedOffsetForComponent(url, adjustments, url::Parsed::HOST);
-  const size_t path_pos =
-      GetAdjustedOffsetForComponent(url, adjustments, url::Parsed::PATH);
-
-  // Get the position of the last period in the hostname.
   const url::Parsed& parsed = url.parsed_for_possibly_invalid_spec();
-  size_t last_part_of_host_pos = url.possibly_invalid_spec().rfind(
-      '.', parsed.CountCharactersBefore(url::Parsed::PATH, true));
-  base::OffsetAdjuster::AdjustOffset(adjustments, &last_part_of_host_pos);
+  size_t host_pos = parsed.CountCharactersBefore(url::Parsed::HOST, true);
+  size_t path_pos = parsed.CountCharactersBefore(url::Parsed::PATH, true);
+  size_t query_pos = parsed.CountCharactersBefore(url::Parsed::QUERY, true);
+  size_t last_part_of_host_pos =
+      url.possibly_invalid_spec().rfind('.', path_pos);
 
-  // Get the position of the domain and registry portion of the hostname.
-  size_t domain_and_registry_pos =
-      parsed.CountCharactersBefore(url::Parsed::PATH, true) -
-      net::registry_controlled_domains::GetDomainAndRegistry(
-          url.host_piece(),
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)
-          .size();
-  base::OffsetAdjuster::AdjustOffset(adjustments, &domain_and_registry_pos);
+  // |word_starts| and |url_matches| both contain offsets for the cleaned up
+  // URL used for matching, so we have to follow those adjustments.
+  base::OffsetAdjuster::AdjustOffset(adjustments, &host_pos);
+  base::OffsetAdjuster::AdjustOffset(adjustments, &path_pos);
+  base::OffsetAdjuster::AdjustOffset(adjustments, &query_pos);
+  base::OffsetAdjuster::AdjustOffset(adjustments, &last_part_of_host_pos);
 
   // Loop through all URL matches and score them appropriately.
   // First, filter all matches not at a word boundary and in the path (or
@@ -506,18 +502,11 @@ float ScoredHistoryMatch::GetTopicalityScore(
       // The match is in the query or ref component.
       DCHECK(at_word_boundary);
       term_scores[url_match.term_num] += 5;
-      match_after_host = true;
     } else if (term_word_offset >= path_pos) {
       // The match is in the path component.
       DCHECK(at_word_boundary);
       term_scores[url_match.term_num] += 8;
-      match_after_host = true;
     } else if (term_word_offset >= host_pos) {
-      if (term_word_offset < domain_and_registry_pos)
-        match_in_subdomain = true;
-      if (url_match.offset + url_match.length > path_pos)
-        match_after_host = true;
-
       if (term_word_offset < last_part_of_host_pos) {
         // Either there are no dots in the hostname or this match isn't
         // the last dotted component.
@@ -532,12 +521,6 @@ float ScoredHistoryMatch::GetTopicalityScore(
       // The match is in the protocol (a.k.a. scheme).
       // Matches not at a word boundary should have been filtered already.
       DCHECK(at_word_boundary);
-      match_in_scheme = true;
-      if (url_match.offset + url_match.length > host_pos)
-        match_in_subdomain = true;
-      if (url_match.offset + url_match.length > path_pos)
-        match_after_host = true;
-
       if (allow_scheme_matches_)
         term_scores[url_match.term_num] += 10;
     }
