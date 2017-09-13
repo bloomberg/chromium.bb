@@ -1372,6 +1372,9 @@ void InputHandlerProxyTest::GestureFlingAnimatesTouchpad() {
     EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
     EXPECT_CALL(mock_input_handler_, ScrollingShouldSwitchtoMainThread())
         .WillOnce(testing::Return(true));
+    // A GSB is sent to the main thread before transfering the fling.
+    EXPECT_CALL(mock_client_, DispatchNonBlockingEventToMainThread_(testing::_))
+        .Times(1);
   }
   // Expected wheel fling animation parameters:
   // *) fling_delta and fling_point should match the original GestureFlingStart
@@ -1609,6 +1612,9 @@ void InputHandlerProxyTest::GestureFlingTransferResetsTouchpad() {
         .WillOnce(testing::Return(scroll_result_did_not_scroll_));
     EXPECT_CALL(mock_input_handler_, ScrollingShouldSwitchtoMainThread())
         .WillOnce(testing::Return(true));
+    // A GSB is sent to the main thread before transfering the fling.
+    EXPECT_CALL(mock_client_, DispatchNonBlockingEventToMainThread_(testing::_))
+        .Times(1);
   }
 
   // Expected wheel fling animation parameters:
@@ -1735,6 +1741,9 @@ void InputHandlerProxyTest::GestureFlingTransferResetsTouchpad() {
         .WillOnce(testing::Return(scroll_result_did_not_scroll_));
     EXPECT_CALL(mock_input_handler_, ScrollingShouldSwitchtoMainThread())
         .WillOnce(testing::Return(true));
+    // A GSB is sent to the main thread before transfering the fling.
+    EXPECT_CALL(mock_client_, DispatchNonBlockingEventToMainThread_(testing::_))
+        .Times(1);
   }
 
   // We should get parameters from the second fling, nothing from the first
