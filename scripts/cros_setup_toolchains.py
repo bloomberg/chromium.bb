@@ -55,8 +55,6 @@ TARGET_VERSION_MAP = {
 # packages that bots/devs install only from binpkgs and rely on the SDK bot
 # (chromiumos-sdk) to validate+uprev.
 #
-# These also need to be manually kept in sync with update_chroot.
-#
 # We don't use crossdev to manage the host toolchain for us, especially since
 # we diverge significantly now (with llvm/clang/etc...), and we don't need or
 # want crossdev managing /etc/portage config files for the sdk
@@ -1240,6 +1238,8 @@ def GetParser():
   parser.add_argument('--show-board-cfg', '--show-cfg',
                       dest='cfg_name', default=None,
                       help='Board  to list toolchains tuples for')
+  parser.add_argument('--show-packages', default=None,
+                      help='List all packages the specified target uses')
   parser.add_argument('--create-packages',
                       action='store_true', default=False,
                       help='Build redistributable packages')
@@ -1258,8 +1258,14 @@ def main(argv):
   options.Freeze()
 
   # Figure out what we're supposed to do and reject conflicting options.
-  if options.cfg_name and options.create_packages:
-    parser.error('conflicting options: create-packages & show-board-cfg')
+  conflicting_options = (
+      options.cfg_name,
+      options.show_packages,
+      options.create_packages,
+  )
+  if sum(bool(x) for x in conflicting_options) > 1:
+    parser.error('conflicting options: create-packages & show-packages & '
+                 'show-board-cfg')
 
   targets_wanted = set(options.targets.split(','))
   boards_wanted = (set(options.include_boards.split(','))
@@ -1267,6 +1273,12 @@ def main(argv):
 
   if options.cfg_name:
     ShowConfig(options.cfg_name)
+  elif options.show_packages is not None:
+    cros_build_lib.AssertInsideChroot()
+    target = options.show_packages
+    Crossdev.Load(False)
+    for package in GetTargetPackages(target):
+      print(GetPortagePackage(target, package))
   elif options.create_packages:
     cros_build_lib.AssertInsideChroot()
     Crossdev.Load(False)
