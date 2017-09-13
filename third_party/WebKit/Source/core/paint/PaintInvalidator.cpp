@@ -153,6 +153,7 @@ LayoutRect PaintInvalidator::MapLocalRectToVisualRectInBacking(
 void PaintInvalidatorContext::MapLocalRectToVisualRectInBacking(
     const LayoutObject& object,
     LayoutRect& rect) const {
+  DCHECK(NeedsVisualRectUpdate(object));
   rect = PaintInvalidator::MapLocalRectToVisualRectInBacking<LayoutRect,
                                                              LayoutPoint>(
       object, rect, *this);
@@ -161,7 +162,6 @@ void PaintInvalidatorContext::MapLocalRectToVisualRectInBacking(
 LayoutRect PaintInvalidator::ComputeVisualRectInBacking(
     const LayoutObject& object,
     const PaintInvalidatorContext& context) {
-  DCHECK(context.NeedsVisualRectUpdate(object));
   if (object.IsSVGChild()) {
     FloatRect local_rect = SVGLayoutSupport::LocalVisualRect(object);
     return MapLocalRectToVisualRectInBacking<FloatRect, FloatPoint>(

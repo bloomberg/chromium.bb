@@ -1128,15 +1128,11 @@ IntSize LayoutObject::ScrollAdjustmentForPaintInvalidation(
   return IntSize();
 }
 
-void LayoutObject::InvalidatePaintRectangle(const LayoutRect& dirty_rect) {
-  if (dirty_rect.IsEmpty())
-    return;
-
-  auto& rare_paint_data = EnsureRarePaintData();
-  rare_paint_data.SetPartialInvalidationRect(
-      UnionRect(dirty_rect, rare_paint_data.PartialInvalidationRect()));
-
-  SetMayNeedPaintInvalidationWithoutGeometryChange();
+LayoutRect LayoutObject::InvalidatePaintRectangle(
+    const LayoutRect& dirty_rect,
+    DisplayItemClient* display_item_client) const {
+  return ObjectPaintInvalidator(*this).InvalidatePaintRectangle(
+      dirty_rect, display_item_client);
 }
 
 LayoutRect LayoutObject::SelectionRectInViewCoordinates() const {
@@ -3374,8 +3370,6 @@ void LayoutObject::ClearPaintInvalidationFlags() {
 #if DCHECK_IS_ON()
   DCHECK(!ShouldCheckForPaintInvalidation() || PaintInvalidationStateIsDirty());
 #endif
-  if (rare_paint_data_)
-    rare_paint_data_->SetPartialInvalidationRect(LayoutRect());
   ClearShouldDoFullPaintInvalidation();
   bitfields_.SetMayNeedPaintInvalidation(false);
   bitfields_.SetMayNeedPaintInvalidationSubtree(false);

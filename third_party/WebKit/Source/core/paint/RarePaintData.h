@@ -47,13 +47,6 @@ class CORE_EXPORT RarePaintData {
     selection_visual_rect_ = r;
   }
 
-  LayoutRect PartialInvalidationRect() const {
-    return partial_invalidation_rect_;
-  }
-  void SetPartialInvalidationRect(const LayoutRect& r) {
-    partial_invalidation_rect_ = r;
-  }
-
  private:
   // The PaintLayer associated with this LayoutBoxModelObject. This can be null
   // depending on the return value of LayoutBoxModelObject::layerTypeRequired().
@@ -65,7 +58,6 @@ class CORE_EXPORT RarePaintData {
 
   LayoutPoint location_in_backing_;
   LayoutRect selection_visual_rect_;
-  LayoutRect partial_invalidation_rect_;
 };
 
 }  // namespace blink
