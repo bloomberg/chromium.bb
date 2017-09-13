@@ -206,10 +206,15 @@ struct etna_bo *etna_bo_from_dmabuf(struct etna_device *dev, int fd)
 	int ret, size;
 	uint32_t handle;
 
+	/* take the lock before calling drmPrimeFDToHandle to avoid
+	 * racing against etna_bo_del, which might invalidate the
+	 * returned handle.
+	 */
 	pthread_mutex_lock(&table_lock);
 
 	ret = drmPrimeFDToHandle(dev->fd, fd, &handle);
 	if (ret) {
+		pthread_mutex_unlock(&table_lock);
 		return NULL;
 	}
 
