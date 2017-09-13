@@ -86,15 +86,15 @@ base::TimeDelta BluetoothLowEnergyWeaveClientConnection::GetTimeoutForSubStatus(
     SubStatus sub_status) {
   switch (sub_status) {
     case SubStatus::WAITING_CONNECTION_RESPONSE:
-      return base::TimeDelta::FromSeconds(kConnectionLatencyTimeoutSeconds);
-    case SubStatus::WAITING_CONNECTION_LATENCY:
-      return base::TimeDelta::FromSeconds(kGattConnectionTimeoutSeconds);
-    case SubStatus::WAITING_GATT_CONNECTION:
-      return base::TimeDelta::FromSeconds(kGattCharacteristicsTimeoutSeconds);
-    case SubStatus::WAITING_CHARACTERISTICS:
-      return base::TimeDelta::FromSeconds(kNotifySessionTimeoutSeconds);
-    case SubStatus::WAITING_NOTIFY_SESSION:
       return base::TimeDelta::FromSeconds(kConnectionResponseTimeoutSeconds);
+    case SubStatus::WAITING_CONNECTION_LATENCY:
+      return base::TimeDelta::FromSeconds(kConnectionLatencyTimeoutSeconds);
+    case SubStatus::WAITING_GATT_CONNECTION:
+      return base::TimeDelta::FromSeconds(kGattConnectionTimeoutSeconds);
+    case SubStatus::WAITING_CHARACTERISTICS:
+      return base::TimeDelta::FromSeconds(kGattCharacteristicsTimeoutSeconds);
+    case SubStatus::WAITING_NOTIFY_SESSION:
+      return base::TimeDelta::FromSeconds(kNotifySessionTimeoutSeconds);
     default:
       // Max signifies that there should be no timeout.
       return base::TimeDelta::Max();
