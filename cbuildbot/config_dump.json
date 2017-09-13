@@ -5001,7 +5001,8 @@
         "boards": [
             "caroline-bertha"
         ],
-        "buildslave_type": "baremetal"
+        "chrome_sdk_build_chrome": false,
+        "vm_tests": []
     },
     "caroline-bertha-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
@@ -16179,6 +16180,7 @@
         "boards": [
             "nefario"
         ],
+        "important": true,
         "vm_tests": [],
         "vm_tests_override": null
     },
