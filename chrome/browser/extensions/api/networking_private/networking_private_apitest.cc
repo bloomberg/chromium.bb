@@ -165,6 +165,14 @@ class TestNetworkingPrivateDelegate : public NetworkingPrivateDelegate {
     VoidResult(success_callback, failure_callback);
   }
 
+  void SelectCellularMobileNetwork(
+      const std::string& guid,
+      const std::string& nework_id,
+      const VoidCallback& success_callback,
+      const FailureCallback& failure_callback) override {
+    VoidResult(success_callback, failure_callback);
+  }
+
   // Synchronous methods
   std::unique_ptr<base::ListValue> GetEnabledNetworkTypes() override {
     std::unique_ptr<base::ListValue> result;
@@ -538,6 +546,10 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTest, SetCellularSimState) {
   EXPECT_TRUE(RunNetworkingSubtest("setCellularSimState")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTest, SelectCellularMobileNetwork) {
+  EXPECT_TRUE(RunNetworkingSubtest("selectCellularMobileNetwork")) << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTest, GetGlobalPolicy) {
   EXPECT_TRUE(RunNetworkingSubtest("getGlobalPolicy")) << message_;
 }
@@ -643,6 +655,11 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTestFail, UnlockCellularSim) {
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTestFail, SetCellularSimState) {
   EXPECT_FALSE(RunNetworkingSubtest("setCellularSimState")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTestFail,
+                       SelectCellularMobileNetwork) {
+  EXPECT_FALSE(RunNetworkingSubtest("selectCellularMobileNetwork")) << message_;
 }
 
 #endif // defined(OS_WIN)

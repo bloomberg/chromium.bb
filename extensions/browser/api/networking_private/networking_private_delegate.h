@@ -126,6 +126,11 @@ class NetworkingPrivateDelegate : public KeyedService {
                                    const std::string& new_pin,
                                    const VoidCallback& success_callback,
                                    const FailureCallback& failure_callback) = 0;
+  virtual void SelectCellularMobileNetwork(
+      const std::string& guid,
+      const std::string& network_id,
+      const VoidCallback& success_callback,
+      const FailureCallback& failure_callback) = 0;
 
   // Synchronous methods
 

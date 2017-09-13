@@ -337,6 +337,14 @@ void NetworkingPrivateServiceClient::SetCellularSimState(
   failure_callback.Run(networking_private::kErrorNotSupported);
 }
 
+void NetworkingPrivateServiceClient::SelectCellularMobileNetwork(
+    const std::string& guid,
+    const std::string& network_id,
+    const VoidCallback& success_callback,
+    const FailureCallback& failure_callback) {
+  failure_callback.Run(networking_private::kErrorNotSupported);
+}
+
 std::unique_ptr<base::ListValue>
 NetworkingPrivateServiceClient::GetEnabledNetworkTypes() {
   std::unique_ptr<base::ListValue> network_list;

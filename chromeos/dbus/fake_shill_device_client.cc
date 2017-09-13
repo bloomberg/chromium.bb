@@ -246,9 +246,21 @@ void FakeShillDeviceClient::Register(const dbus::ObjectPath& device_path,
                                      const std::string& network_id,
                                      const base::Closure& callback,
                                      const ErrorCallback& error_callback) {
-  if (!stub_devices_.HasKey(device_path.value())) {
+  base::Value* device_properties = stub_devices_.FindKey(device_path.value());
+  if (!device_properties || !device_properties->is_dict()) {
     PostNotFoundError(error_callback);
     return;
+  }
+  base::Value* scan_results =
+      device_properties->FindKey(shill::kFoundNetworksProperty);
+  if (!scan_results) {
+    PostError("No Cellular scan results", error_callback);
+    return;
+  }
+  for (auto& network : scan_results->GetList()) {
+    std::string id = network.FindKey(shill::kNetworkIdProperty)->GetString();
+    std::string status = id == network_id ? "current" : "available";
+    network.SetKey(shill::kStatusProperty, base::Value(status));
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
 }
@@ -390,10 +402,6 @@ void FakeShillDeviceClient::AddDevice(const std::string& device_path,
                      base::Value(modemmanager::kModemManager1ServiceName));
   if (type == shill::kTypeCellular) {
     properties->SetKey(shill::kCellularAllowRoamingProperty,
-                       base::Value(false));
-  }
-  if (type == shill::kTypeWifi) {
-    properties->SetKey(shill::kMACAddressRandomizationSupportedProperty,
                        base::Value(false));
   }
 }
