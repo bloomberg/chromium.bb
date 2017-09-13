@@ -54,6 +54,7 @@
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/Position.h"
+#include "core/editing/VisibleSelection.h"
 #include "core/editing/commands/ApplyStyleCommand.h"
 #include "core/editing/serializers/HTMLInterchange.h"
 #include "core/frame/LocalFrame.h"

@@ -30,6 +30,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/PseudoElement.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/VisibleSelection.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"

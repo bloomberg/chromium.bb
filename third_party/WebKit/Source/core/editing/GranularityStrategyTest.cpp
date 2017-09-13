@@ -8,6 +8,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/Text.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/VisibleSelection.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLBodyElement.h"

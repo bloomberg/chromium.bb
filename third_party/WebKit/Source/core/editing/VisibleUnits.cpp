@@ -40,6 +40,7 @@
 #include "core/editing/RenderedPosition.h"
 #include "core/editing/TextAffinity.h"
 #include "core/editing/VisiblePosition.h"
+#include "core/editing/VisibleSelection.h"
 #include "core/editing/iterators/BackwardsCharacterIterator.h"
 #include "core/editing/iterators/BackwardsTextBuffer.h"
 #include "core/editing/iterators/CharacterIterator.h"

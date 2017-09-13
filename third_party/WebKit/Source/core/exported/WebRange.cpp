@@ -34,6 +34,7 @@
 #include "core/dom/Range.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/PlainTextRange.h"
+#include "core/editing/VisibleSelection.h"
 #include "core/frame/LocalFrame.h"
 
 namespace blink {

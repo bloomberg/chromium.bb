@@ -6,6 +6,8 @@
 
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/VisibleSelection.h"
+#include "core/editing/VisibleUnits.h"
 
 namespace blink {
 

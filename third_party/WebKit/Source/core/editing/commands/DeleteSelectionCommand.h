@@ -26,6 +26,7 @@
 #ifndef DeleteSelectionCommand_h
 #define DeleteSelectionCommand_h
 
+#include "core/editing/VisibleSelection.h"
 #include "core/editing/commands/CompositeEditCommand.h"
 
 namespace blink {

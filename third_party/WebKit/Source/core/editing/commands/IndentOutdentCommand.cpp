@@ -29,6 +29,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/editing/EditingUtilities.h"
+#include "core/editing/VisibleSelection.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/commands/InsertListCommand.h"
 #include "core/html/HTMLBRElement.h"

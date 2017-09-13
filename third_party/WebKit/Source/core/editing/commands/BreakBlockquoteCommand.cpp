@@ -30,6 +30,8 @@
 #include "core/dom/Text.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/VisiblePosition.h"
+#include "core/editing/VisibleSelection.h"
+#include "core/editing/VisibleUnits.h"
 #include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLQuoteElement.h"

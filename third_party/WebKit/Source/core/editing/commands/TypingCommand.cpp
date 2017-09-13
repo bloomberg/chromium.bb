@@ -35,6 +35,7 @@
 #include "core/editing/PlainTextRange.h"
 #include "core/editing/SelectionModifier.h"
 #include "core/editing/VisiblePosition.h"
+#include "core/editing/VisibleSelection.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/commands/BreakBlockquoteCommand.h"
 #include "core/editing/commands/DeleteSelectionCommand.h"

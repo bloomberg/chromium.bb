@@ -31,6 +31,7 @@
 #include "core/dom/events/EventDispatchResult.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/SelectionTemplate.h"
+#include "core/editing/VisibleSelection.h"
 
 namespace blink {
 
