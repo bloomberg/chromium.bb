@@ -210,7 +210,7 @@ void PaintController::EndSubsequence(const DisplayItemClient& client,
 }
 
 bool PaintController::LastDisplayItemIsNoopBegin() const {
-  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
 
   if (new_display_item_list_.IsEmpty())
     return false;
@@ -225,7 +225,7 @@ bool PaintController::LastDisplayItemIsSubsequenceEnd() const {
 }
 
 void PaintController::RemoveLastDisplayItem() {
-  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
 
   if (new_display_item_list_.IsEmpty())
     return;
@@ -271,19 +271,22 @@ void PaintController::ProcessNewItem(DisplayItem& display_item) {
         &display_item.Client(), display_item.Client().DebugName());
   }
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     size_t last_chunk_index = new_paint_chunks_.LastChunkIndex();
-    if (new_paint_chunks_.IncrementDisplayItemIndex(display_item)) {
-      DCHECK(last_chunk_index != new_paint_chunks_.LastChunkIndex());
-      if (last_chunk_index != kNotFound) {
+    bool chunk_added =
+        new_paint_chunks_.IncrementDisplayItemIndex(display_item);
+
+    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+      if (chunk_added && last_chunk_index != kNotFound) {
+        DCHECK(last_chunk_index != new_paint_chunks_.LastChunkIndex());
         GenerateRasterInvalidations(
             new_paint_chunks_.PaintChunkAt(last_chunk_index));
       }
-    }
 
-    new_paint_chunks_.LastChunk().outset_for_raster_effects =
-        std::max(new_paint_chunks_.LastChunk().outset_for_raster_effects,
-                 display_item.OutsetForRasterEffects().ToFloat());
+      new_paint_chunks_.LastChunk().outset_for_raster_effects =
+          std::max(new_paint_chunks_.LastChunk().outset_for_raster_effects,
+                   display_item.OutsetForRasterEffects().ToFloat());
+    }
   }
 
 #if DCHECK_IS_ON()
@@ -496,7 +499,7 @@ void PaintController::CopyCachedSubsequence(size_t begin_index,
 
   Vector<PaintChunk>::const_iterator cached_chunk;
   PaintChunkProperties properties_before_subsequence;
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     cached_chunk =
         current_paint_artifact_.FindChunkByDisplayItemIndex(begin_index);
     DCHECK(cached_chunk != current_paint_artifact_.PaintChunks().end());
@@ -523,7 +526,7 @@ void PaintController::CopyCachedSubsequence(size_t begin_index,
     DCHECK(cached_item->Client().IsAlive());
 #endif
 
-    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
         current_index == cached_chunk->end_index) {
       ++cached_chunk;
       DCHECK(cached_chunk != current_paint_artifact_.PaintChunks().end());
@@ -546,7 +549,7 @@ void PaintController::CopyCachedSubsequence(size_t begin_index,
 #endif
 
     ProcessNewItem(MoveItemFromCurrentListToNewList(current_index));
-    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
       DCHECK((!new_paint_chunks_.LastChunk().is_cacheable &&
               !cached_chunk->is_cacheable) ||
              new_paint_chunks_.LastChunk().Matches(*cached_chunk));
@@ -556,7 +559,7 @@ void PaintController::CopyCachedSubsequence(size_t begin_index,
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {
     under_invalidation_checking_end_ = end_index;
     DCHECK(IsCheckingUnderInvalidation());
-  } else if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  } else if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     // Restore properties and force new chunk for any trailing display items
     // after the cached subsequence without new properties.
     new_paint_chunks_.ForceNewChunk();
@@ -628,7 +631,7 @@ void PaintController::CommitNewDisplayItems() {
   out_of_order_chunk_indices_.clear();
   items_moved_into_new_list_.clear();
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     for (const auto& chunk : current_paint_artifact_.PaintChunks()) {
       if (chunk.id.client.IsJustCreated())
         chunk.id.client.ClearIsJustCreated();

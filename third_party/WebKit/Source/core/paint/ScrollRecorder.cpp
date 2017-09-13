@@ -15,7 +15,7 @@ ScrollRecorder::ScrollRecorder(GraphicsContext& context,
                                DisplayItem::Type type,
                                const IntSize& current_offset)
     : client_(client), begin_item_type_(type), context_(context) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
     return;
   context_.GetPaintController().CreateAndAppend<BeginScrollDisplayItem>(
       client_, begin_item_type_, current_offset);
@@ -31,7 +31,7 @@ ScrollRecorder::ScrollRecorder(GraphicsContext& context,
                      current_offset) {}
 
 ScrollRecorder::~ScrollRecorder() {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
     return;
   context_.GetPaintController().EndItem<EndScrollDisplayItem>(
       client_, DisplayItem::ScrollTypeToEndScrollType(begin_item_type_));

@@ -65,6 +65,7 @@ class CC_BLINK_EXPORT WebDisplayItemListImpl
   void AppendScrollItem(const blink::WebSize& scrollOffset,
                         ScrollContainerId) override;
   void AppendEndScrollItem() override;
+  cc::DisplayItemList* GetCcDisplayItemList() override;
 
  private:
   void AppendRestore();

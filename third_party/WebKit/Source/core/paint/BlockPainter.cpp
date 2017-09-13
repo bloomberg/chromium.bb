@@ -284,7 +284,7 @@ void BlockPainter::PaintObject(const PaintInfo& paint_info,
     Optional<ScopedPaintChunkProperties> scoped_scroll_property;
     Optional<ScrollRecorder> scroll_recorder;
     Optional<PaintInfo> scrolled_paint_info;
-    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
       const auto* object_properties =
           layout_block_.FirstFragment()
               ? layout_block_.FirstFragment()->PaintProperties()

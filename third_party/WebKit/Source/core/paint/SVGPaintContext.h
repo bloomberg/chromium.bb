@@ -54,7 +54,7 @@ class SVGTransformContext : public TransformRecorder {
                       const LayoutObject& object,
                       const AffineTransform& transform)
       : TransformRecorder(context, object, transform) {
-    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
       const auto* fragment_data = object.FirstFragment();
       if (!fragment_data)
         return;

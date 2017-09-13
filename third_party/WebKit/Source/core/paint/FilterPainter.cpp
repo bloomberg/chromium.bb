@@ -20,7 +20,7 @@
 namespace blink {
 
 sk_sp<SkImageFilter> FilterPainter::GetImageFilter(PaintLayer& layer) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
     return nullptr;
 
   if (!layer.PaintsWithFilters())

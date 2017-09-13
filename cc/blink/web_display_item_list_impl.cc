@@ -202,4 +202,8 @@ void WebDisplayItemListImpl::AppendRestore() {
   display_item_list_->EndPaintOfPairedEnd();
 }
 
+cc::DisplayItemList* WebDisplayItemListImpl::GetCcDisplayItemList() {
+  return display_item_list_.get();
+}
+
 }  // namespace cc_blink

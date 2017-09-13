@@ -356,6 +356,26 @@ void ConversionContext::Convert(const Vector<const PaintChunk*>& paint_chunks,
 
 }  // unnamed namespace
 
+void PaintChunksToCcLayer::ConvertInto(
+    const Vector<const PaintChunk*>& paint_chunks,
+    const PropertyTreeState& layer_state,
+    const gfx::Vector2dF& layer_offset,
+    const DisplayItemList& display_items,
+    cc::DisplayItemList& cc_list) {
+  bool need_translate = !layer_offset.IsZero();
+  if (need_translate) {
+    cc_list.StartPaint();
+    cc_list.push<cc::SaveOp>();
+    cc_list.push<cc::TranslateOp>(-layer_offset.x(), -layer_offset.y());
+    cc_list.EndPaintOfPairedBegin();
+  }
+
+  ConversionContext(layer_state, cc_list).Convert(paint_chunks, display_items);
+
+  if (need_translate)
+    AppendRestore(cc_list, 1);
+}
+
 scoped_refptr<cc::DisplayItemList> PaintChunksToCcLayer::Convert(
     const Vector<const PaintChunk*>& paint_chunks,
     const PropertyTreeState& layer_state,
@@ -364,18 +384,7 @@ scoped_refptr<cc::DisplayItemList> PaintChunksToCcLayer::Convert(
     cc::DisplayItemList::UsageHint hint,
     RasterUnderInvalidationCheckingParams* under_invalidation_checking_params) {
   auto cc_list = base::MakeRefCounted<cc::DisplayItemList>(hint);
-  bool need_translate = !layer_offset.IsZero();
-  if (need_translate) {
-    cc_list->StartPaint();
-    cc_list->push<cc::SaveOp>();
-    cc_list->push<cc::TranslateOp>(-layer_offset.x(), -layer_offset.y());
-    cc_list->EndPaintOfPairedBegin();
-  }
-
-  ConversionContext(layer_state, *cc_list).Convert(paint_chunks, display_items);
-
-  if (need_translate)
-    AppendRestore(*cc_list, 1);
+  ConvertInto(paint_chunks, layer_state, layer_offset, display_items, *cc_list);
 
   if (under_invalidation_checking_params) {
     auto& params = *under_invalidation_checking_params;
@@ -383,9 +392,10 @@ scoped_refptr<cc::DisplayItemList> PaintChunksToCcLayer::Convert(
     recorder.beginRecording(params.interest_rect);
     // Create a complete cloned list for under-invalidation checking. We can't
     // use cc_list because it is not finalized yet.
-    auto list_clone =
-        Convert(paint_chunks, layer_state, layer_offset, display_items,
-                cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer);
+    auto list_clone = base::MakeRefCounted<cc::DisplayItemList>(
+        cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer);
+    ConvertInto(paint_chunks, layer_state, layer_offset, display_items,
+                *list_clone);
     recorder.getRecordingCanvas()->drawPicture(list_clone->ReleaseAsRecord());
     params.tracking.CheckUnderInvalidations(params.debug_name,
                                             recorder.finishRecordingAsPicture(),
