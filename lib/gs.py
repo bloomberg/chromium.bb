@@ -769,6 +769,16 @@ class GSContext(object):
     if self.boto_file and os.path.isfile(self.boto_file):
       extra_env.setdefault('BOTO_CONFIG', self.boto_file)
 
+    # Workaround system crcmod w/out compiled module being found before our
+    # local copy.  https://crbug.com/763438
+    # If we update to a newer gsutil that fixes the bug, we can drop this:
+    # https://github.com/GoogleCloudPlatform/gsutil/issues/462
+    crcmod_path = os.path.join(os.path.dirname(os.path.abspath(
+        self.gsutil_bin)), 'third_party', 'crcmod', 'python2')
+    if os.path.exists(crcmod_path):
+      pythonpath = extra_env.get('PYTHONPATH', os.environ.get('PYTHONPATH', ''))
+      extra_env['PYTHONPATH'] = '%s:%s' % (crcmod_path, pythonpath)
+
     if self.dry_run:
       logging.debug("%s: would've run: %s", self.__class__.__name__,
                     cros_build_lib.CmdToStr(cmd))
