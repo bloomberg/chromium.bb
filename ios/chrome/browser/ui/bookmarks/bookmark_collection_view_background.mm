@@ -37,6 +37,7 @@ const CGFloat kImageViewOffsetFromText = 5.0;
     _emptyBookmarksImageView = [self newBookmarkImageView];
     [self addSubview:_emptyBookmarksImageView];
     _emptyBookmarksLabel = [self newEmptyBookmarkLabel];
+    _emptyBookmarksLabel.accessibilityIdentifier = @"empty_background_label";
     [self addSubview:_emptyBookmarksLabel];
   }
   return self;

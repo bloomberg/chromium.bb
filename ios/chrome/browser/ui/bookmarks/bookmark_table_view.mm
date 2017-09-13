@@ -267,6 +267,16 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   return nodes;
 }
 
+- (BOOL)hasBookmarksOrFolders {
+  return _currentRootNode && !_currentRootNode->empty();
+}
+
+- (BOOL)allowsNewFolder {
+  // When the current root node has been removed remotely (becomes NULL),
+  // creating new folder is forbidden.
+  return _currentRootNode != NULL;
+}
+
 #pragma mark - UITableViewDataSource
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView*)tableView {
@@ -592,6 +602,7 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   [self showEmptyOrLoadingSpinnerBackgroundIfNeeded];
   [self cancelAllFaviconLoads];
   [self resetEditNodes];
+  [self.delegate bookmarkTableViewRefreshContextBar:self];
   [self.tableView reloadData];
 }
 
@@ -664,7 +675,7 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
     return;
   }
 
-  if (!_currentRootNode || _currentRootNode->empty()) {
+  if (![self hasBookmarksOrFolders]) {
     [self showEmptyBackground];
   } else {
     // Hides the empty bookmarks background if it is showing.
