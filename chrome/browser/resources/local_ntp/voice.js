@@ -581,7 +581,7 @@ speech.isUserAgentMac_ = function() {
  * @param {KeyboardEvent} event The keydown event.
  */
 speech.onKeyDown = function(event) {
-  if (!speech.isRecognizing_()) {
+  if (!speech.isRecognizing()) {
     const ctrlKeyPressed =
         event.ctrlKey || (speech.isUserAgentMac_() && event.metaKey);
     if (speech.currentState_ == speech.State_.READY &&
@@ -766,11 +766,21 @@ speech.resetErrorTimer_ = function(duration) {
 
 
 /**
+ * Check to see if the speech recognition interface is running, and has
+ * received any results.
+ * @return {boolean} True, if the speech recognition interface is running,
+ *     and has received any results.
+ */
+speech.hasReceivedResults = function() {
+  return speech.currentState_ == speech.State_.RESULT_RECEIVED;
+};
+
+
+/**
  * Check to see if the speech recognition interface is running.
  * @return {boolean} True, if the speech recognition interface is running.
- * @private
  */
-speech.isRecognizing_ = function() {
+speech.isRecognizing = function() {
   switch (speech.currentState_) {
     case speech.State_.STARTED:
     case speech.State_.AUDIO_RECEIVED:
@@ -785,7 +795,7 @@ speech.isRecognizing_ = function() {
 /**
  * Check if the controller is in a state where the UI is definitely hidden.
  * Since we show the UI for a few seconds after we receive an error from the
- * API, we need a separate definition to |speech.isRecognizing_()| to indicate
+ * API, we need a separate definition to |speech.isRecognizing()| to indicate
  * when the UI is hidden. <strong>Note:</strong> that if this function
  * returns false, it might not necessarily mean that the UI is visible.
  * @return {boolean} True if the UI is hidden.
@@ -1140,9 +1150,8 @@ text.getTextClassName_ = function() {
  */
 text.startListeningMessageAnimation_ = function() {
   const animateListeningText = function() {
-    // TODO(oskopek): Substitute the fragile string comparison with a correct
-    // state condition.
-    if (text.interim_.textContent == speech.messages.ready) {
+    // If speech is active with no results yet, show the message and animation.
+    if (speech.isRecognizing() && !speech.hasReceivedResults()) {
       text.updateTextArea(speech.messages.listening);
       text.interim_.classList.add(text.LISTENING_ANIMATION_CLASS_);
     }
