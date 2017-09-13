@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.firstrun;
 import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
+import android.support.annotation.StringRes;
 import android.text.TextUtils;
 
 import org.chromium.base.ActivityState;
@@ -523,7 +524,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
     }
 
     @Override
-    public void showInfoPage(int url) {
+    public void showInfoPage(@StringRes int url) {
         CustomTabActivity.showInfoPage(
                 this, LocalizationUtils.substituteLocalePlaceholder(getString(url)));
     }
