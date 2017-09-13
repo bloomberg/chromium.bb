@@ -10,6 +10,7 @@
 #include "cc/paint/skia_paint_canvas.h"
 #include "chrome/browser/vr/color_scheme.h"
 #include "chrome/browser/vr/elements/render_text_wrapper.h"
+#include "chrome/browser/vr/elements/vector_icon.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/gfx/canvas.h"
@@ -193,15 +194,12 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
   canvas->drawRRect(round_rect, paint);
 
   // Back button icon.
-  canvas->save();
-  canvas->translate(
-      ToPixels((kBackButtonWidth - kBackIconSize) / 2 + kBackIconOffset),
-      ToPixels((kHeight - kBackIconSize) / 2));
-  PaintVectorIcon(&gfx_canvas, vector_icons::kBackArrowIcon,
-                  ToPixels(kBackIconSize),
-                  can_go_back_ ? color_scheme().element_foreground
-                               : color_scheme().disabled);
-  canvas->restore();
+  DrawVectorIcon(
+      &gfx_canvas, vector_icons::kBackArrowIcon, ToPixels(kBackIconSize),
+      {ToPixels(kBackButtonWidth / 2 + kBackIconOffset - kBackIconSize / 2),
+       ToPixels(kHeight - kBackIconSize) / 2},
+      can_go_back_ ? color_scheme().element_foreground
+                   : color_scheme().disabled);
 
   // Security indicator and URL area.
   paint.setColor(color_scheme().element_background);
@@ -223,13 +221,11 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
       state_.vector_icon != nullptr && state_.should_display_url) {
     gfx::RectF icon_region(left_edge, kHeight / 2 - kSecurityIconSize / 2,
                            kSecurityIconSize, kSecurityIconSize);
-    canvas->save();
-    canvas->translate(ToPixels(icon_region.x()), ToPixels(icon_region.y()));
-    PaintVectorIcon(&gfx_canvas, *state_.vector_icon,
-                    ToPixels(kSecurityIconSize),
-                    GetSecurityChipColor(state_.security_level,
-                                         state_.offline_page, color_scheme()));
-    canvas->restore();
+    DrawVectorIcon(&gfx_canvas, *state_.vector_icon,
+                   ToPixels(kSecurityIconSize),
+                   {ToPixels(icon_region.x()), ToPixels(icon_region.y())},
+                   GetSecurityChipColor(state_.security_level,
+                                        state_.offline_page, color_scheme()));
     security_hit_region_ = icon_region;
     left_edge += kSecurityIconSize + kFieldSpacing;
   }

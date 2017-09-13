@@ -7,13 +7,11 @@
 #include "cc/paint/skia_paint_canvas.h"
 #include "chrome/browser/vr/color_scheme.h"
 #include "chrome/browser/vr/elements/button.h"
+#include "chrome/browser/vr/elements/vector_icon.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/vector2d.h"
-#include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icon_types.h"
 
 namespace vr {
 
@@ -45,13 +43,11 @@ void CloseButtonTexture::Draw(SkCanvas* sk_canvas,
   canvas->DrawCircle(gfx::PointF(size_.width() / 2, size_.height() / 2),
                      size_.width() / 2, flags);
 
-  canvas->Save();
-  canvas->Translate(gfx::Vector2d(size_.height() * (1 - kIconScaleFactor) / 2,
-                                  size_.height() * (1 - kIconScaleFactor) / 2));
-  PaintVectorIcon(canvas, vector_icons::kCloseIcon,
-                  size_.height() * kIconScaleFactor,
-                  color_scheme().close_button_foreground);
-  canvas->Restore();
+  float icon_size = size_.height() * kIconScaleFactor;
+  float icon_corner_offset = (size_.height() - icon_size) / 2;
+  DrawVectorIcon(canvas, vector_icons::kCloseIcon, icon_size,
+                 gfx::PointF(icon_corner_offset, icon_corner_offset),
+                 color_scheme().close_button_foreground);
 }
 
 gfx::Size CloseButtonTexture::GetPreferredTextureSize(int maximum_width) const {
