@@ -6902,19 +6902,9 @@ bool RenderFrameImpl::IsBrowserSideNavigationPending() {
   return browser_side_navigation_pending_;
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-RenderFrameImpl::GetTimerTaskRunner() {
-  return GetWebFrame()->TimerTaskRunner();
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
-RenderFrameImpl::GetLoadingTaskRunner() {
-  return GetWebFrame()->LoadingTaskRunner();
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
-RenderFrameImpl::GetUnthrottledTaskRunner() {
-  return GetWebFrame()->UnthrottledTaskRunner();
+scoped_refptr<base::SingleThreadTaskRunner> RenderFrameImpl::GetTaskRunner(
+    blink::TaskType task_type) {
+  return GetWebFrame()->GetTaskRunner(task_type);
 }
 
 int RenderFrameImpl::GetEnabledBindings() const {

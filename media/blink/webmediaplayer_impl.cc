@@ -188,7 +188,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
                    ? MultibufferDataSource::METADATA
                    : MultibufferDataSource::AUTO),
       has_poster_(false),
-      main_task_runner_(frame->LoadingTaskRunner()),
+      main_task_runner_(
+          frame->GetTaskRunner(blink::TaskType::kMediaElementEvent)),
       media_task_runner_(params->media_task_runner()),
       worker_task_runner_(params->worker_task_runner()),
       media_log_(params->take_media_log()),

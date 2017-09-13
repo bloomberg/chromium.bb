@@ -314,8 +314,10 @@ void ResourceFetcherImpl::Start(
 
   client_ = base::MakeUnique<ClientImpl>(this, std::move(callback),
                                          maximum_download_size);
+  // TODO(kinuko, toyoshim): This task runner should be given by the consumer
+  // of this class.
   client_->Start(request_, url_loader_factory, annotation_tag,
-                 frame->LoadingTaskRunner());
+                 frame->GetTaskRunner(blink::TaskType::kNetworking));
 
   // No need to hold on to the request; reset it now.
   request_ = ResourceRequest();
