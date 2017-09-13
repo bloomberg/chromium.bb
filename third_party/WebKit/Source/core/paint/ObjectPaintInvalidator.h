@@ -60,13 +60,6 @@ class CORE_EXPORT ObjectPaintInvalidator {
       const LayoutRect&,
       PaintInvalidationReason);
 
-  // Invalidate the paint of a specific subrectangle within a given object. The
-  // rect is in the object's coordinate space.  If a DisplayItemClient is
-  // specified, that client is invalidated rather than |m_object|.
-  // Returns the visual rect that was invalidated (i.e, invalidation in the
-  // space of the GraphicsLayer backing this LayoutObject).
-  LayoutRect InvalidatePaintRectangle(const LayoutRect&, DisplayItemClient*);
-
   void InvalidatePaintIncludingNonCompositingDescendants();
   void InvalidatePaintIncludingNonSelfPaintingLayerDescendants(
       const LayoutBoxModelObject& paint_invalidation_container);
@@ -109,7 +102,8 @@ class ObjectPaintInvalidatorWithContext : public ObjectPaintInvalidator {
                                            PaintInvalidationReason);
 
  private:
-  void InvalidateSelectionIfNeeded(PaintInvalidationReason);
+  void InvalidateSelection(PaintInvalidationReason);
+  void InvalidatePartialRect(PaintInvalidationReason);
   bool ParentFullyInvalidatedOnSameBacking();
 
   const PaintInvalidatorContext& context_;
