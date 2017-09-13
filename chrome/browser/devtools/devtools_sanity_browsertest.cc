@@ -2020,7 +2020,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsPixelOutputTests,
   DispatchInPageAndWait("waitForEvent", "click");
 
   SimulateMouseWheelEvent(web_contents, gfx::Point(300, 100),
-                          gfx::Vector2d(0, 120));
+                          gfx::Vector2d(0, 120),
+                          blink::WebMouseWheelEvent::kPhaseBegan);
   DispatchInPageAndWait("waitForEvent", "wheel");
 
   SimulateTapAt(web_contents, gfx::Point(30, 60));

@@ -3747,7 +3747,8 @@ IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTest,
                                 embedder_scroll_location);
     content::SimulateMouseWheelEvent(embedder_contents,
                                      embedder_scroll_location,
-                                     gfx::Vector2d(0, -scroll_magnitude));
+                                     gfx::Vector2d(0, -scroll_magnitude),
+                                     blink::WebMouseWheelEvent::kPhaseBegan);
     waiter.WaitForScrollChange(expected_offset);
   }
 
@@ -3771,7 +3772,8 @@ IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTest,
                                 blink::WebInputEvent::kMouseMove,
                                 guest_scroll_location);
     content::SimulateMouseWheelEvent(embedder_contents, guest_scroll_location,
-                                     gfx::Vector2d(0, scroll_magnitude));
+                                     gfx::Vector2d(0, scroll_magnitude),
+                                     blink::WebMouseWheelEvent::kPhaseChanged);
 
     waiter.WaitForScrollChange(gfx::Vector2dF());
   }
