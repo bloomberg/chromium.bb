@@ -449,10 +449,6 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
   bool has_arguments = token.GetType() == kFunctionToken;
   selector->UpdatePseudoType(value, *context_, has_arguments, context_->Mode());
 
-  if (!RuntimeEnabledFeatures::CSSSelectorsFocusWithinEnabled() &&
-      selector->GetPseudoType() == CSSSelector::kPseudoFocusWithin)
-    return nullptr;
-
   if (selector->Match() == CSSSelector::kPseudoElement &&
       disallow_pseudo_elements_)
     return nullptr;
