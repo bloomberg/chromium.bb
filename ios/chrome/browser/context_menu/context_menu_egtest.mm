@@ -6,6 +6,7 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
+#include "base/ios/ios_util.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -161,6 +162,13 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 
 // Tests "Open in New Tab" on context menu.
 - (void)testContextMenuOpenInNewTab {
+  // TODO(crbug.com/764691): This test is flaky on iOS 11.  The bots retry
+  // failures, so this test sometimes appears green because it passes on the
+  // retry.
+  if (base::ios::IsRunningOnIOS11OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 11.");
+  }
+
   // Set up test simple http server.
   std::map<GURL, std::string> responses;
   GURL initialURL = web::test::HttpServer::MakeUrl(kUrlInitialPage);
