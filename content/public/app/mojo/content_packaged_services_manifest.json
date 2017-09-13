@@ -16,6 +16,7 @@
         ]
       },
       "requires": {
+        "*": [ "app" ],
         "content_browser": [],
         "service_manager": [
           "service_manager:all_users",

@@ -14,6 +14,7 @@
 #include "services/resource_coordinator/public/interfaces/coordination_unit_provider.mojom.h"
 
 namespace service_manager {
+struct BindSourceInfo;
 class ServiceContextRefFactory;
 class ServiceContextRef;
 }  // service_manager
@@ -28,7 +29,8 @@ class CoordinationUnitProviderImpl : public mojom::CoordinationUnitProvider {
   ~CoordinationUnitProviderImpl() override;
 
   void Bind(
-      resource_coordinator::mojom::CoordinationUnitProviderRequest request);
+      resource_coordinator::mojom::CoordinationUnitProviderRequest request,
+      const service_manager::BindSourceInfo& source_info);
 
   void OnConnectionError(CoordinationUnitImpl* coordination_unit);
 

@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/resource_coordinator/resource_coordinator_service.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
 namespace resource_coordinator {
@@ -27,7 +28,8 @@ ServiceCallbacksImpl::~ServiceCallbacksImpl() = default;
 void ServiceCallbacksImpl::Create(
     service_manager::ServiceContextRefFactory* service_ref_factory,
     ResourceCoordinatorService* resource_coordinator_service,
-    resource_coordinator::mojom::ServiceCallbacksRequest request) {
+    resource_coordinator::mojom::ServiceCallbacksRequest request,
+    const service_manager::BindSourceInfo& source_info) {
   mojo::MakeStrongBinding(
       base::MakeUnique<ServiceCallbacksImpl>(service_ref_factory,
                                              resource_coordinator_service),

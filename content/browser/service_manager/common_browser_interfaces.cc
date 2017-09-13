@@ -17,27 +17,17 @@
 #include "content/public/common/service_manager_connection.h"
 #include "device/geolocation/geolocation_config.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/resource_coordinator/memory_instrumentation/coordinator_impl.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace content {
 
 namespace {
 
-void BindMemoryCoordinatorRequest(
-    memory_instrumentation::mojom::CoordinatorRequest request,
-    const service_manager::BindSourceInfo& source_info) {
-  auto* coordinator = memory_instrumentation::CoordinatorImpl::GetInstance();
-  if (coordinator)
-    coordinator->BindCoordinatorRequest(std::move(request), source_info);
-}
-
 class ConnectionFilterImpl : public ConnectionFilter {
  public:
   ConnectionFilterImpl()
       : main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
     RegisterMainThreadInterface(base::Bind(&device::GeolocationConfig::Create));
-    RegisterMainThreadInterface(base::Bind(&BindMemoryCoordinatorRequest));
 
     auto* browser_main_loop = BrowserMainLoop::GetInstance();
     if (browser_main_loop) {

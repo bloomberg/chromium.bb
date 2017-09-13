@@ -103,12 +103,7 @@ CoordinatorImpl::~CoordinatorImpl() {
 
 base::ProcessId CoordinatorImpl::GetProcessIdForClientIdentity(
     service_manager::Identity identity) const {
-  // TODO(primiano): the browser process registers bypassing mojo and ends up
-  // with an invalid identity. Fix that (crbug.com/733165) and remove the
-  // special case in the else branch below.
-  if (!identity.IsValid()) {
-    return base::GetCurrentProcId();
-  }
+  DCHECK(identity.IsValid());
   return process_map_->GetProcessId(identity);
 }
 

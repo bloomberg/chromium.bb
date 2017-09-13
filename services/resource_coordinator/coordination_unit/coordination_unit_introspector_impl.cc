@@ -9,6 +9,7 @@
 #include "base/process/process_handle.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace resource_coordinator {
 
@@ -48,7 +49,8 @@ void CoordinationUnitIntrospectorImpl::GetProcessToURLMap(
 }
 
 void CoordinationUnitIntrospectorImpl::BindToInterface(
-    resource_coordinator::mojom::CoordinationUnitIntrospectorRequest request) {
+    resource_coordinator::mojom::CoordinationUnitIntrospectorRequest request,
+    const service_manager::BindSourceInfo& source_info) {
   bindings_.AddBinding(this, std::move(request));
 }
 
