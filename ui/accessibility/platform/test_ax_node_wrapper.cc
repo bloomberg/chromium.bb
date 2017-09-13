@@ -175,12 +175,49 @@ TestAXNodeWrapper::GetTargetForNativeAccessibilityEvent() {
   return gfx::kNullAcceleratedWidget;
 }
 
+void TestAXNodeWrapper::ReplaceIntAttribute(int32_t node_id,
+                                            AXIntAttribute attribute,
+                                            int32_t value) {
+  if (!tree_)
+    return;
+
+  AXNode* node = tree_->GetFromId(node_id);
+  if (!node)
+    return;
+
+  AXNodeData new_data = node->data();
+  std::vector<std::pair<AXIntAttribute, int32_t>>& attributes =
+      new_data.int_attributes;
+
+  auto deleted = std::remove_if(
+      attributes.begin(), attributes.end(),
+      [attribute](auto& pair) { return pair.first == attribute; });
+  attributes.erase(deleted, attributes.end());
+
+  new_data.AddIntAttribute(attribute, value);
+  node->SetData(new_data);
+}
+
 bool TestAXNodeWrapper::AccessibilityPerformAction(
     const ui::AXActionData& data) {
-  if (data.action == ui::AX_ACTION_SCROLL_TO_POINT)
+  if (data.action == ui::AX_ACTION_SCROLL_TO_POINT) {
     g_offset = gfx::Vector2d(data.target_point.x(), data.target_point.x());
-  else if (data.action == ui::AX_ACTION_SCROLL_TO_MAKE_VISIBLE)
+    return true;
+  }
+
+  if (data.action == ui::AX_ACTION_SCROLL_TO_MAKE_VISIBLE) {
     g_offset = gfx::Vector2d(data.target_rect.x(), data.target_rect.x());
+    return true;
+  }
+
+  if (data.action == ui::AX_ACTION_SET_SELECTION) {
+    ReplaceIntAttribute(data.anchor_node_id, AX_ATTR_TEXT_SEL_START,
+                        data.anchor_offset);
+    ReplaceIntAttribute(data.anchor_node_id, AX_ATTR_TEXT_SEL_END,
+                        data.focus_offset);
+    return true;
+  }
+
   return true;
 }
 

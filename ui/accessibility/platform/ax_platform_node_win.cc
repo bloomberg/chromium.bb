@@ -2448,6 +2448,10 @@ STDMETHODIMP AXPlatformNodeWin::addSelection(LONG start_offset,
 }
 
 STDMETHODIMP AXPlatformNodeWin::removeSelection(LONG selection_index) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_REMOVE_SELECTION);
+  COM_OBJECT_VALIDATE();
+  AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
+
   if (selection_index != 0)
     return E_INVALIDARG;
   // Simply collapse the selection to the position of the caret if a caret is

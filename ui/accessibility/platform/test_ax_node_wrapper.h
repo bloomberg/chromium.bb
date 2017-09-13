@@ -48,6 +48,9 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegate {
 
  private:
   TestAXNodeWrapper(AXTree* tree, AXNode* node);
+  void ReplaceIntAttribute(int32_t node_id,
+                           AXIntAttribute attribute,
+                           int32_t value);
 
   TestAXNodeWrapper* HitTestSyncInternal(int x, int y);
 
