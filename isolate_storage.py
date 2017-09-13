@@ -118,11 +118,12 @@ class StorageApi(object):
     """
     return False
 
-  def fetch(self, digest, offset=0):
+  def fetch(self, digest, size, offset):
     """Fetches an object and yields its content.
 
     Arguments:
       digest: hash digest of item to download.
+      size: size of the item to download if known, or None otherwise.
       offset: offset (in bytes) from the start of the file to resume fetch from.
 
     Yields:
@@ -252,10 +253,11 @@ class IsolateServer(StorageApi):
     assert file_path.is_url(base_url), base_url
     self._base_url = base_url.rstrip('/')
     self._namespace = namespace
+    algo = isolated_format.get_hash_algo(namespace)
     self._namespace_dict = {
         'compression': 'flate' if namespace.endswith(
             ('-gzip', '-flate')) else '',
-        'digest_hash': 'sha-1',
+        'digest_hash': isolated_format.SUPPORTED_ALGOS_REVERSE[algo],
         'namespace': namespace,
     }
     self._lock = threading.Lock()
@@ -290,7 +292,7 @@ class IsolateServer(StorageApi):
   def namespace(self):
     return self._namespace
 
-  def fetch(self, digest, offset=0):
+  def fetch(self, digest, _size, offset):
     assert offset >= 0
     source_url = '%s/api/isolateservice/v1/retrieve' % (
         self._base_url)
@@ -509,16 +511,15 @@ class _IsolateServerGrpcPushState(object):
 class IsolateServerGrpc(StorageApi):
   """StorageApi implementation that downloads and uploads to a gRPC service.
 
-  Limitations: only works for the default-gzip namespace, and with zero offsets
-  while fetching.
+  Limitations: does not pass on namespace to the server (uses it only for hash
+  algo and compression), and only allows zero offsets while fetching.
   """
 
   def __init__(self, server, namespace, proxy):
     super(IsolateServerGrpc, self).__init__()
-    logging.info('Using gRPC for Isolate')
-    # Proxies only support the default-gzip namespace for now.
-    # TODO(aludwin): support other namespaces if necessary
-    assert namespace == 'default-gzip'
+    logging.info('Using gRPC for Isolate with server %s, '
+                 'namespace %s, proxy %s',
+                 server, namespace, proxy)
     self._server = server
     self._lock = threading.Lock()
     self._memory_use = 0
@@ -541,13 +542,14 @@ class IsolateServerGrpc(StorageApi):
     # gRPC natively compresses all messages before transmission.
     return True
 
-  def fetch(self, digest, offset=0):
+  def fetch(self, digest, size, offset):
     # The gRPC APIs only work with an offset of 0
     assert offset == 0
     request = bytestream_pb2.ReadRequest()
-    #TODO(aludwin): send the expected size of the item
-    request.resource_name = '%s/blobs/%s/0' % (
-        self._proxy.prefix, digest)
+    if not size:
+      size = -1
+    request.resource_name = '%s/blobs/%s/%d' % (
+        self._proxy.prefix, digest, size)
     try:
       for response in self._proxy.get_stream('Read', request):
         yield response.data

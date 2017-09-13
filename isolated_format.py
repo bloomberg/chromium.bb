@@ -25,11 +25,11 @@ ISOLATED_FILE_VERSION = '1.6'
 DISK_FILE_CHUNK = 1024 * 1024
 
 
-# Sadly, hashlib uses 'sha1' instead of the standard 'sha-1' so explicitly
+# Sadly, hashlib uses 'shaX' instead of the standard 'sha-X' so explicitly
 # specify the names here.
 SUPPORTED_ALGOS = {
-  'md5': hashlib.md5,
   'sha-1': hashlib.sha1,
+  'sha-256': hashlib.sha256,
   'sha-512': hashlib.sha512,
 }
 
@@ -57,10 +57,29 @@ def is_valid_hash(value, algo):
   return bool(re.match(r'^[a-fA-F0-9]{%d}$' % size, value))
 
 
-def get_hash_algo(_namespace):
+get_hash_algo_has_logged = False
+
+
+def get_hash_algo(namespace):
   """Return hash algorithm class to use when uploading to given |namespace|."""
-  # TODO(vadimsh): Implement this at some point.
-  return hashlib.sha1
+  global get_hash_algo_has_logged
+  chosen = None
+  for name, algo in SUPPORTED_ALGOS.iteritems():
+    if namespace.startswith(name + '-'):
+      chosen = algo
+      break
+
+  if not get_hash_algo_has_logged:
+    get_hash_algo_has_logged = True
+    if chosen:
+      logging.info('Using hash algo %s for namespace %s', chosen, namespace)
+    else:
+      logging.warn('No hash algo found in \'%s\', assuming sha-1', namespace)
+
+  if not chosen:
+    return hashlib.sha1
+
+  return chosen
 
 
 def is_namespace_with_compression(namespace):
@@ -87,7 +106,7 @@ class IsolatedFile(object):
   """Represents a single parsed .isolated file."""
 
   def __init__(self, obj_hash, algo):
-    """|obj_hash| is really the sha-1 of the file."""
+    """|obj_hash| is really the hash of the file."""
     self.obj_hash = obj_hash
     self.algo = algo
 
@@ -320,7 +339,7 @@ def file_to_metadata(filepath, prevdict, read_only, algo, collapse_symlinks):
 
   Arguments:
     filepath: File to act on.
-    prevdict: the previous dictionary. It is used to retrieve the cached sha-1
+    prevdict: the previous dictionary. It is used to retrieve the cached hash
               to skip recalculating the hash. Optional.
     read_only: If 1 or 2, the file mode is manipulated. In practice, only save
                one of 4 modes: 0755 (rwx), 0644 (rw), 0555 (rx), 0444 (r). On
@@ -376,7 +395,7 @@ def file_to_metadata(filepath, prevdict, read_only, algo, collapse_symlinks):
   if not is_link:
     out['s'] = filestats.st_size
     # If the timestamp wasn't updated and the file size is still the same, carry
-    # on the sha-1.
+    # on the hash.
     if (prevdict.get('t') == out['t'] and
         prevdict.get('s') == out['s']):
       # Reuse the previous hash if available.
@@ -466,6 +485,8 @@ def load_isolated(content, algo):
     # 'sha-1' if unspecified.
     algo = SUPPORTED_ALGOS_REVERSE[data.get('algo', 'sha-1')]
 
+  algo_name = SUPPORTED_ALGOS_REVERSE[algo]
+
   for key, value in data.iteritems():
     if key == 'algo':
       if not isinstance(value, basestring):
@@ -513,7 +534,8 @@ def load_isolated(content, algo):
               raise IsolatedError('Expected int, got %r' % subsubvalue)
           elif subsubkey == 'h':
             if not is_valid_hash(subsubvalue, algo):
-              raise IsolatedError('Expected sha-1, got %r' % subsubvalue)
+              raise IsolatedError('Expected %s, got %r' %
+                                  (algo_name, subsubvalue))
           elif subsubkey == 's':
             if not isinstance(subsubvalue, (int, long)):
               raise IsolatedError('Expected int or long, got %r' % subsubvalue)
@@ -525,12 +547,12 @@ def load_isolated(content, algo):
             raise IsolatedError('Unknown subsubkey %s' % subsubkey)
         if bool('h' in subvalue) == bool('l' in subvalue):
           raise IsolatedError(
-              'Need only one of \'h\' (sha-1) or \'l\' (link), got: %r' %
-              subvalue)
+              'Need only one of \'h\' (%s) or \'l\' (link), got: %r' %
+              (algo_name, subvalue))
         if bool('h' in subvalue) != bool('s' in subvalue):
           raise IsolatedError(
-              'Both \'h\' (sha-1) and \'s\' (size) should be set, got: %r' %
-              subvalue)
+              'Both \'h\' (%s) and \'s\' (size) should be set, got: %r' %
+              (algo_name, subvalue))
         if bool('s' in subvalue) == bool('l' in subvalue):
           raise IsolatedError(
               'Need only one of \'s\' (size) or \'l\' (link), got: %r' %
@@ -547,7 +569,7 @@ def load_isolated(content, algo):
         raise IsolatedError('Expected non-empty includes list')
       for subvalue in value:
         if not is_valid_hash(subvalue, algo):
-          raise IsolatedError('Expected sha-1, got %r' % subvalue)
+          raise IsolatedError('Expected %s, got %r' % (algo_name, subvalue))
 
     elif key == 'os':
       if version >= (1, 4):

@@ -653,7 +653,7 @@ class Storage(object):
     def fetch():
       try:
         # Prepare reading pipeline.
-        stream = self._storage_api.fetch(digest)
+        stream = self._storage_api.fetch(digest, size, 0)
         if self._use_zip:
           stream = zip_decompress(stream, isolated_format.DISK_FILE_CHUNK)
         # Run |stream| through verifier that will assert its size.
@@ -1637,14 +1637,16 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks):
     with tools.Profiler('GetIsolateds'):
       # Optionally support local files by manually adding them to cache.
       if not isolated_format.is_valid_hash(isolated_hash, algo):
-        logging.debug('%s is not a valid hash, assuming a file', isolated_hash)
+        logging.debug('%s is not a valid hash, assuming a file '
+                      '(algo was %s, hash size was %d)',
+                      isolated_hash, algo(), algo().digest_size)
         path = unicode(os.path.abspath(isolated_hash))
         try:
           isolated_hash = fetch_queue.inject_local_file(path, algo)
-        except IOError:
+        except IOError as e:
           raise isolated_format.MappingError(
               '%s doesn\'t seem to be a valid file. Did you intent to pass a '
-              'valid hash?' % isolated_hash)
+              'valid hash (error: %s)?' % (isolated_hash, e))
 
       # Load all *.isolated and start loading rest of the files.
       bundle.fetch(fetch_queue, isolated_hash, algo)

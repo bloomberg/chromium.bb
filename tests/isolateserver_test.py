@@ -589,7 +589,7 @@ class IsolateServerStorageApiTest(TestCase):
     self.expected_requests(
         [self.mock_fetch_request(server, namespace, item, data)])
     storage = isolate_storage.IsolateServer(server, namespace)
-    fetched = ''.join(storage.fetch(item))
+    fetched = ''.join(storage.fetch(item, 0, 0))
     self.assertEqual(data, fetched)
 
   def test_fetch_failure(self):
@@ -600,7 +600,7 @@ class IsolateServerStorageApiTest(TestCase):
         [self.mock_fetch_request(server, namespace, item)[:-1] + (None,)])
     storage = isolate_storage.IsolateServer(server, namespace)
     with self.assertRaises(IOError):
-      _ = ''.join(storage.fetch(item))
+      _ = ''.join(storage.fetch(item, 0, 0))
 
   def test_fetch_offset_success(self):
     server = 'http://example.com'
@@ -619,7 +619,7 @@ class IsolateServerStorageApiTest(TestCase):
       self.expected_requests([self.mock_fetch_request(
           server, namespace, item, data, offset=offset)])
       storage = isolate_storage.IsolateServer(server, namespace)
-      fetched = ''.join(storage.fetch(item, offset))
+      fetched = ''.join(storage.fetch(item, 0, offset))
       self.assertEqual(data[offset:], fetched)
 
   def test_fetch_offset_bad_header(self):
@@ -654,7 +654,7 @@ class IsolateServerStorageApiTest(TestCase):
       ])
       storage = isolate_storage.IsolateServer(server, namespace)
       with self.assertRaises(IOError):
-        _ = ''.join(storage.fetch(item, offset))
+        _ = ''.join(storage.fetch(item, 0, offset))
 
   def test_push_success(self):
     server = 'http://example.com'

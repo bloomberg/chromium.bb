@@ -75,7 +75,7 @@ class IsolateStorageTest(auto_stub.TestCase):
     self.mock(ByteStreamStubMock, 'Read', Read)
 
     s = self.get_server()
-    replies = s.fetch('abc123')
+    replies = s.fetch('abc123', 1, 0)
     response = replies.next()
     self.assertEqual('0', response)
     response = replies.next()
@@ -94,7 +94,7 @@ class IsolateStorageTest(auto_stub.TestCase):
     self.mock(ByteStreamStubMock, 'Read', Read)
 
     s = self.get_server()
-    replies = s.fetch('abc123')
+    replies = s.fetch('abc123', 1, 0)
     reply = replies.next()
     self.assertEqual(0, len(reply))
 
@@ -107,7 +107,7 @@ class IsolateStorageTest(auto_stub.TestCase):
     self.mock(ByteStreamStubMock, 'Read', Read)
 
     s = self.get_server()
-    replies = s.fetch('abc123')
+    replies = s.fetch('abc123', 1, 0)
     with self.assertRaises(IOError):
       _response = replies.next()
 
@@ -119,7 +119,7 @@ class IsolateStorageTest(auto_stub.TestCase):
     self.mock(ByteStreamStubMock, 'Read', Read)
 
     s = self.get_server()
-    replies = s.fetch('abc123')
+    replies = s.fetch('abc123', 1, 0)
     with self.assertRaises(IOError):
       _response = replies.next()
 
@@ -139,7 +139,7 @@ class IsolateStorageTest(auto_stub.TestCase):
 
     s = self.get_server()
     with self.assertRaises(IOError):
-      for _response in s.fetch('abc123'):
+      for _response in s.fetch('abc123', 1, 0):
         pass
 
   def testPushHappySingleSmall(self):
@@ -147,7 +147,7 @@ class IsolateStorageTest(auto_stub.TestCase):
     s = self.get_server()
     i = isolate_storage.Item(digest='abc123', size=4)
     s.push(i, isolate_storage._IsolateServerGrpcPushState(), '1234')
-    requests = s._stub.popPushRequests()
+    requests = s._proxy._stub.popPushRequests()
     self.assertEqual(1, len(requests))
     m = re.search('client/bob/uploads/.*/blobs/abc123/4',
                   requests[0].resource_name)
@@ -162,7 +162,7 @@ class IsolateStorageTest(auto_stub.TestCase):
     s = self.get_server()
     i = isolate_storage.Item(digest='abc123', size=4)
     s.push(i, isolate_storage._IsolateServerGrpcPushState(), '1234')
-    requests = s._stub.popPushRequests()
+    requests = s._proxy._stub.popPushRequests()
     self.assertEqual(2, len(requests))
     m = re.search('client/bob/uploads/.*/blobs/abc123/4',
                   requests[0].resource_name)
@@ -179,7 +179,7 @@ class IsolateStorageTest(auto_stub.TestCase):
     s = self.get_server()
     i = isolate_storage.Item(digest='abc123', size=4)
     s.push(i, isolate_storage._IsolateServerGrpcPushState(), ['12', '34'])
-    requests = s._stub.popPushRequests()
+    requests = s._proxy._stub.popPushRequests()
     self.assertEqual(2, len(requests))
     m = re.search('client/bob/uploads/.*/blobs/abc123/4',
                   requests[0].resource_name)
@@ -197,7 +197,7 @@ class IsolateStorageTest(auto_stub.TestCase):
     s = self.get_server()
     i = isolate_storage.Item(digest='abc123', size=6)
     s.push(i, isolate_storage._IsolateServerGrpcPushState(), ['123', '456'])
-    requests = s._stub.popPushRequests()
+    requests = s._proxy._stub.popPushRequests()
     self.assertEqual(4, len(requests))
     m = re.search('client/bob/uploads/.*/blobs/abc123/6',
                   requests[0].resource_name)
@@ -220,7 +220,7 @@ class IsolateStorageTest(auto_stub.TestCase):
     s = self.get_server()
     i = isolate_storage.Item(digest='abc123', size=0)
     s.push(i, isolate_storage._IsolateServerGrpcPushState(), '')
-    requests = s._stub.popPushRequests()
+    requests = s._proxy._stub.popPushRequests()
     self.assertEqual(1, len(requests))
     m = re.search('client/bob/uploads/.*/blobs/abc123/0',
                   requests[0].resource_name)
@@ -245,7 +245,7 @@ class IsolateStorageTest(auto_stub.TestCase):
     """Push: if something goes wrong in Isolate, we throw an exception"""
     def Write(_self, _request, timeout=None):
       del timeout
-      raise isolate_storage.grpc.RpcError('proxy died during push :(')
+      raiseError(isolate_storage.grpc.StatusCode.INTERNAL_ERROR)
     self.mock(ByteStreamStubMock, 'Write', Write)
 
     s = self.get_server()

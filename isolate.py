@@ -261,7 +261,7 @@ class SavedState(Flattenable):
     # "creative".
     'OS',
     # Algorithm used to generate the hash. The only supported value is at the
-    # time of writting 'sha-1'.
+    # time of writing 'sha-1'.
     'algo',
     # List of included .isolated files. Used to support/remember 'slave'
     # .isolated files. Relative path to isolated_basedir.

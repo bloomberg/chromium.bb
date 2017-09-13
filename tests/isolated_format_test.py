@@ -28,10 +28,22 @@ ALGO = hashlib.sha1
 
 class TestCase(net_utils.TestCase):
   def test_get_hash_algo(self):
-    # Tests here assume ALGO is used for default namespaces, check this
-    # assumption.
-    self.assertIs(isolated_format.get_hash_algo('default'), ALGO)
-    self.assertIs(isolated_format.get_hash_algo('default-gzip'), ALGO)
+    self.assertIs(isolated_format.get_hash_algo('default'),
+                  hashlib.sha1)
+    self.assertIs(isolated_format.get_hash_algo('default-gzip'),
+                  hashlib.sha1)
+    self.assertIs(isolated_format.get_hash_algo('sha-1-flat'),
+                  hashlib.sha1)
+    self.assertIs(isolated_format.get_hash_algo('sha-1-deflate'),
+                  hashlib.sha1)
+    self.assertIs(isolated_format.get_hash_algo('sha-256-flat'),
+                  hashlib.sha256)
+    self.assertIs(isolated_format.get_hash_algo('sha-256-deflate'),
+                  hashlib.sha256)
+    self.assertIs(isolated_format.get_hash_algo('sha-512-flat'),
+                  hashlib.sha512)
+    self.assertIs(isolated_format.get_hash_algo('sha-512-deflate'),
+                  hashlib.sha512)
 
 
 class SymlinkTest(unittest.TestCase):
