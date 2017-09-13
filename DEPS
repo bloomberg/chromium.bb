@@ -33,6 +33,7 @@ vars = {
   'pdfium_git': 'https://pdfium.googlesource.com',
   'boringssl_git': 'https://boringssl.googlesource.com',
   'skia_git': 'https://skia.googlesource.com',
+  'webrtc_git': 'https://webrtc.googlesource.com',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling sfntly
   # and whatever else without interference from each other.
@@ -120,6 +121,7 @@ allowed_hosts = [
   'pdfium.googlesource.com',
   'skia.googlesource.com',
   'swiftshader.googlesource.com',
+  'webrtc.googlesource.com',
 ]
 
 deps = {
@@ -241,10 +243,10 @@ deps = {
     Var('chromium_git') + '/native_client/src/third_party/scons-2.0.1.git' + '@' + '1c1550e17fc26355d08627fbdec13d8291227067',
 
   'src/third_party/webrtc':
-    Var('chromium_git') + '/external/webrtc/trunk/webrtc.git' + '@' + '29826f277a161347a2b9e3bc1d2ee6a66cae0c2e', # commit position 19767
+    Var('webrtc_git') + '/src/webrtc.git' + '@' + '29826f277a161347a2b9e3bc1d2ee6a66cae0c2e', # commit position 19767
 
   'src/third_party/openmax_dl':
-    Var('chromium_git') + '/external/webrtc/deps/third_party/openmax.git' + '@' +  Var('openmax_dl_revision'),
+    Var('webrtc_git') + '/deps/third_party/openmax.git' + '@' +  Var('openmax_dl_revision'),
 
   'src/third_party/jsoncpp/source':
     Var('chromium_git') + '/external/github.com/open-source-parsers/jsoncpp.git' + '@' + 'f572e8e42e22cfcf5ab0aea26574f408943edfa4', # from svn 248
