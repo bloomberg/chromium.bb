@@ -3043,7 +3043,6 @@ crbug.com/708994 http/tests/security/cross-frame-mouse-source-capabilities.html 
 crbug.com/708994 virtual/mojo-loading/http/tests/security/cross-frame-mouse-source-capabilities.html [ Timeout Pass ]
 
 crbug.com/745887 [ Mac Win ] fast/frames/sandboxed-iframe-plugins.html [ Failure Pass ]
-crbug.com/745899 [ Linux ] vr/getFrameData_samewithinframe.html [ Failure Pass ]
 
 crbug.com/626703 [ Win7 ] external/wpt/domxpath/xml_xpath_runner.html [ Timeout Pass ]
 
