@@ -6,9 +6,35 @@ module blink.mojom;
 
 import "url/mojo/url.mojom";
 
+const int32 kInvalidServiceWorkerRegistrationHandleId = -1;
+const int64 kInvalidServiceWorkerRegistrationId = -1;
+
 // Represents options for register():
 // https://w3c.github.io/ServiceWorker/#dictdef-registrationoptions
 struct ServiceWorkerRegistrationOptions {
   url.mojom.Url scope;
   // TODO(yuryu): Other values will be added as they are supported later.
+};
+
+// Describes a ServiceWorkerRegistration:
+// https://w3c.github.io/ServiceWorker/#serviceworkerregistration-interface
+//
+// This struct is mostly internal metadata about the ServiceWorkerRegistration.
+struct ServiceWorkerRegistrationObjectInfo {
+  // The globally unique identifier of a service worker registration entity.
+  int64 registration_id = kInvalidServiceWorkerRegistrationId;
+
+  // The id to differentiate a service worker registration entity against
+  // multiple JavaScript execution contexts for service worker clients or
+  // service worker itself, it is also unique globally.
+  // Blink either mints a new ServiceWorkerRegistration object or reuses an
+  // existing one based on |handle_id|. This allows ServiceWorkerRegistration
+  // objects in different execution contexts to be different, even if they
+  // represent the same registration entity (registration_id is equal). They
+  // must be different since they should have different prototypes.
+  int32 handle_id = kInvalidServiceWorkerRegistrationHandleId;
+
+  // The registration options attached with this registration object, including
+  // some information such as scope of this registration.
+  ServiceWorkerRegistrationOptions options;
 };

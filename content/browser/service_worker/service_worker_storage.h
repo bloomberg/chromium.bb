@@ -221,8 +221,8 @@ class CONTENT_EXPORT ServiceWorkerStorage
   void DeleteAndStartOver(const StatusCallback& callback);
 
   // Returns a new registration id which is guaranteed to be unique in the
-  // storage. Returns kInvalidServiceWorkerRegistrationId if the storage is
-  // disabled.
+  // storage. Returns blink::mojom::kInvalidServiceWorkerRegistrationId if the
+  // storage is disabled.
   int64_t NewRegistrationId();
 
   // Returns a new version id which is guaranteed to be unique in the storage.

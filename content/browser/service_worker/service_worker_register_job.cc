@@ -312,7 +312,7 @@ void ServiceWorkerRegisterJob::RegisterAndContinue() {
   SetPhase(REGISTER);
 
   int64_t registration_id = context_->storage()->NewRegistrationId();
-  if (registration_id == kInvalidServiceWorkerRegistrationId) {
+  if (registration_id == blink::mojom::kInvalidServiceWorkerRegistrationId) {
     Complete(SERVICE_WORKER_ERROR_ABORT);
     return;
   }

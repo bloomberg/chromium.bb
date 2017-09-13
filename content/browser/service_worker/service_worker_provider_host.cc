@@ -683,7 +683,7 @@ ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
   ServiceWorkerRegistration* registration = context_->GetLiveRegistration(
       running_hosted_version()->registration_id());
   DCHECK(registration);
-  ServiceWorkerRegistrationObjectInfo info;
+  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info;
   ServiceWorkerVersionAttributes attrs;
   dispatcher_host->GetRegistrationObjectInfoAndVersionAttributes(
       AsWeakPtr(), registration, &info, &attrs);
@@ -846,11 +846,11 @@ void ServiceWorkerProviderHost::ReturnRegistrationForReadyIfNeeded() {
     return;
   }
 
-  ServiceWorkerRegistrationObjectInfo info;
+  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info;
   ServiceWorkerVersionAttributes attrs;
   dispatcher_host_->GetRegistrationObjectInfoAndVersionAttributes(
       AsWeakPtr(), registration, &info, &attrs);
-  std::move(*get_ready_callback_).Run(info, attrs);
+  std::move(*get_ready_callback_).Run(std::move(info), attrs);
 }
 
 bool ServiceWorkerProviderHost::IsReadyToSendMessages() const {
@@ -904,7 +904,7 @@ void ServiceWorkerProviderHost::Register(
     std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kAbort,
                             std::string(kServiceWorkerRegisterErrorPrefix) +
                                 std::string(kShutdownErrorMessage),
-                            base::nullopt, base::nullopt);
+                            nullptr, base::nullopt);
     return;
   }
   // TODO(falken): This check can be removed once crbug.com/439697 is fixed.
@@ -912,7 +912,7 @@ void ServiceWorkerProviderHost::Register(
     std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kSecurity,
                             std::string(kServiceWorkerRegisterErrorPrefix) +
                                 std::string(kNoDocumentURLErrorMessage),
-                            base::nullopt, base::nullopt);
+                            nullptr, base::nullopt);
     return;
   }
 
@@ -922,7 +922,7 @@ void ServiceWorkerProviderHost::Register(
     // ReportBadMessage() will kill the renderer process, but Mojo complains if
     // the callback is not run. Just run it with nonsense arguments.
     std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kUnknown,
-                            std::string(), base::nullopt, base::nullopt);
+                            std::string(), nullptr, base::nullopt);
     return;
   }
 
@@ -933,7 +933,7 @@ void ServiceWorkerProviderHost::Register(
     std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kDisabled,
                             std::string(kServiceWorkerRegisterErrorPrefix) +
                                 std::string(kUserDeniedPermissionMessage),
-                            base::nullopt, base::nullopt);
+                            nullptr, base::nullopt);
     return;
   }
 
@@ -961,7 +961,7 @@ void ServiceWorkerProviderHost::RegistrationComplete(
     std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kAbort,
                             std::string(kServiceWorkerRegisterErrorPrefix) +
                                 std::string(kShutdownErrorMessage),
-                            base::nullopt, base::nullopt);
+                            nullptr, base::nullopt);
     return;
   }
 
@@ -972,7 +972,7 @@ void ServiceWorkerProviderHost::RegistrationComplete(
                                              &error_type, &error_message);
     std::move(callback).Run(error_type,
                             kServiceWorkerRegisterErrorPrefix + error_message,
-                            base::nullopt, base::nullopt);
+                            nullptr, base::nullopt);
     return;
   }
 
@@ -982,13 +982,13 @@ void ServiceWorkerProviderHost::RegistrationComplete(
   // this function being called, while the registration is live.
   DCHECK(registration);
 
-  ServiceWorkerRegistrationObjectInfo info;
+  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info;
   ServiceWorkerVersionAttributes attrs;
   dispatcher_host_->GetRegistrationObjectInfoAndVersionAttributes(
       AsWeakPtr(), registration, &info, &attrs);
 
   std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kNone,
-                          base::nullopt, info, attrs);
+                          base::nullopt, std::move(info), attrs);
 }
 
 void ServiceWorkerProviderHost::GetRegistration(
@@ -999,7 +999,7 @@ void ServiceWorkerProviderHost::GetRegistration(
         blink::mojom::ServiceWorkerErrorType::kAbort,
         std::string(kServiceWorkerGetRegistrationErrorPrefix) +
             std::string(kShutdownErrorMessage),
-        base::nullopt, base::nullopt);
+        nullptr, base::nullopt);
     return;
   }
   // TODO(falken): This check can be removed once crbug.com/439697 is fixed.
@@ -1008,7 +1008,7 @@ void ServiceWorkerProviderHost::GetRegistration(
         blink::mojom::ServiceWorkerErrorType::kSecurity,
         std::string(kServiceWorkerGetRegistrationErrorPrefix) +
             std::string(kNoDocumentURLErrorMessage),
-        base::nullopt, base::nullopt);
+        nullptr, base::nullopt);
     return;
   }
 
@@ -1018,7 +1018,7 @@ void ServiceWorkerProviderHost::GetRegistration(
     // ReportBadMessage() will kill the renderer process, but Mojo complains if
     // the callback is not run. Just run it with nonsense arguments.
     std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kUnknown,
-                            std::string(), base::nullopt, base::nullopt);
+                            std::string(), nullptr, base::nullopt);
     return;
   }
 
@@ -1030,7 +1030,7 @@ void ServiceWorkerProviderHost::GetRegistration(
         blink::mojom::ServiceWorkerErrorType::kDisabled,
         std::string(kServiceWorkerGetRegistrationErrorPrefix) +
             std::string(kUserDeniedPermissionMessage),
-        base::nullopt, base::nullopt);
+        nullptr, base::nullopt);
     return;
   }
 
@@ -1104,13 +1104,14 @@ void ServiceWorkerProviderHost::GetRegistrationComplete(
   TRACE_EVENT_ASYNC_END2(
       "ServiceWorker", "ServiceWorkerProviderHost::GetRegistration", trace_id,
       "Status", status, "Registration ID",
-      registration ? registration->id() : kInvalidServiceWorkerRegistrationId);
+      registration ? registration->id()
+                   : blink::mojom::kInvalidServiceWorkerRegistrationId);
   if (!dispatcher_host_ || !IsContextAlive()) {
     std::move(callback).Run(
         blink::mojom::ServiceWorkerErrorType::kAbort,
         std::string(kServiceWorkerGetRegistrationErrorPrefix) +
             std::string(kShutdownErrorMessage),
-        base::nullopt, base::nullopt);
+        nullptr, base::nullopt);
     return;
   }
 
@@ -1121,11 +1122,12 @@ void ServiceWorkerProviderHost::GetRegistrationComplete(
                                              &error_message);
     std::move(callback).Run(
         error_type, kServiceWorkerGetRegistrationErrorPrefix + error_message,
-        base::nullopt, base::nullopt);
+        nullptr, base::nullopt);
     return;
   }
 
-  ServiceWorkerRegistrationObjectInfo info;
+  auto info = blink::mojom::ServiceWorkerRegistrationObjectInfo::New();
+  info->options = blink::mojom::ServiceWorkerRegistrationOptions::New();
   ServiceWorkerVersionAttributes attrs;
   if (status == SERVICE_WORKER_OK) {
     DCHECK(registration.get());
@@ -1136,7 +1138,7 @@ void ServiceWorkerProviderHost::GetRegistrationComplete(
   }
 
   std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kNone,
-                          base::nullopt, info, attrs);
+                          base::nullopt, std::move(info), attrs);
 }
 
 void ServiceWorkerProviderHost::GetRegistrationsComplete(
@@ -1168,23 +1170,25 @@ void ServiceWorkerProviderHost::GetRegistrationsComplete(
     return;
   }
 
-  std::vector<ServiceWorkerRegistrationObjectInfo> object_infos;
+  std::vector<blink::mojom::ServiceWorkerRegistrationObjectInfoPtr>
+      object_infos;
   std::vector<ServiceWorkerVersionAttributes> version_attrs;
 
   for (const auto& registration : registrations) {
     DCHECK(registration.get());
     if (!registration->is_uninstalling()) {
-      ServiceWorkerRegistrationObjectInfo object_info;
+      blink::mojom::ServiceWorkerRegistrationObjectInfoPtr object_info;
       ServiceWorkerVersionAttributes version_attr;
       dispatcher_host_->GetRegistrationObjectInfoAndVersionAttributes(
           AsWeakPtr(), registration.get(), &object_info, &version_attr);
-      object_infos.push_back(object_info);
+      object_infos.push_back(std::move(object_info));
       version_attrs.push_back(version_attr);
     }
   }
 
   std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kNone,
-                          base::nullopt, object_infos, version_attrs);
+                          base::nullopt, std::move(object_infos),
+                          version_attrs);
 }
 
 void ServiceWorkerProviderHost::GetRegistrationForReady(
@@ -1194,7 +1198,7 @@ void ServiceWorkerProviderHost::GetRegistrationForReady(
     mojo::ReportBadMessage(error_message);
     // ReportBadMessage() will kill the renderer process, but Mojo complains if
     // the callback is not run. Just run it with nonsense arguments.
-    std::move(callback).Run(base::nullopt, base::nullopt);
+    std::move(callback).Run(nullptr, base::nullopt);
     return;
   }
 

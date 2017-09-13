@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -27,29 +28,31 @@ class CONTENT_EXPORT ServiceWorkerRegistrationHandleReference {
   // Creates a new ServiceWorkerRegistrationHandleReference and increments
   // ref-count.
   static std::unique_ptr<ServiceWorkerRegistrationHandleReference> Create(
-      const ServiceWorkerRegistrationObjectInfo& info,
+      blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info,
       ThreadSafeSender* sender);
 
   // Creates a new ServiceWorkerRegistrationHandleReference by adopting a
   // ref-count.
   static std::unique_ptr<ServiceWorkerRegistrationHandleReference> Adopt(
-      const ServiceWorkerRegistrationObjectInfo& info,
+      blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info,
       ThreadSafeSender* sender);
 
   ~ServiceWorkerRegistrationHandleReference();
 
-  const ServiceWorkerRegistrationObjectInfo& info() const { return info_; }
-  int handle_id() const { return info_.handle_id; }
-  GURL scope() const { return info_.options.scope; }
-  int64_t registration_id() const { return info_.registration_id; }
+  const blink::mojom::ServiceWorkerRegistrationObjectInfo& info() const {
+    return *info_;
+  }
+  int handle_id() const { return info_->handle_id; }
+  GURL scope() const { return info_->options->scope; }
+  int64_t registration_id() const { return info_->registration_id; }
 
  private:
   ServiceWorkerRegistrationHandleReference(
-      const ServiceWorkerRegistrationObjectInfo& info,
+      blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info,
       ThreadSafeSender* sender,
       bool increment_ref_in_ctor);
 
-  ServiceWorkerRegistrationObjectInfo info_;
+  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info_;
   scoped_refptr<ThreadSafeSender> sender_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRegistrationHandleReference);

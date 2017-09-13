@@ -111,16 +111,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerObjectInfo)
   IPC_STRUCT_TRAITS_MEMBER(version_id)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(blink::mojom::ServiceWorkerRegistrationOptions)
-  IPC_STRUCT_TRAITS_MEMBER(scope)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerRegistrationObjectInfo)
-  IPC_STRUCT_TRAITS_MEMBER(handle_id)
-  IPC_STRUCT_TRAITS_MEMBER(options)
-  IPC_STRUCT_TRAITS_MEMBER(registration_id)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerVersionAttributes)
   IPC_STRUCT_TRAITS_MEMBER(installing)
   IPC_STRUCT_TRAITS_MEMBER(waiting)

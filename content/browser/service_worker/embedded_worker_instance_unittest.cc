@@ -57,6 +57,10 @@ class ProviderHostEndpoints : public mojom::ServiceWorkerContainerHost {
     // Just keep the endpoints.
     mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info =
         mojom::ServiceWorkerProviderInfoForStartWorker::New();
+    provider_info->registration =
+        blink::mojom::ServiceWorkerRegistrationObjectInfo::New();
+    provider_info->registration->options =
+        blink::mojom::ServiceWorkerRegistrationOptions::New();
     binding_.Bind(mojo::MakeRequest(&provider_info->host_ptr_info));
     provider_info->client_request = mojo::MakeRequest(&client_);
     return provider_info;

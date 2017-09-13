@@ -55,7 +55,8 @@ class PaymentAppContentUnitTestBase::PaymentAppForWorkerTestHelper
  public:
   PaymentAppForWorkerTestHelper()
       : EmbeddedWorkerTestHelper(base::FilePath()),
-        last_sw_registration_id_(kInvalidServiceWorkerRegistrationId) {}
+        last_sw_registration_id_(
+            blink::mojom::kInvalidServiceWorkerRegistrationId) {}
   ~PaymentAppForWorkerTestHelper() override {}
 
   void OnStartWorker(

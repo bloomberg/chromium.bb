@@ -14,6 +14,7 @@
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace content {
 
@@ -40,7 +41,7 @@ class CONTENT_EXPORT ServiceWorkerRegistrationHandle
       ServiceWorkerRegistration* registration);
   virtual ~ServiceWorkerRegistrationHandle();
 
-  ServiceWorkerRegistrationObjectInfo GetObjectInfo();
+  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr GetObjectInfo();
 
   bool HasNoRefCount() const { return ref_count_ <= 0; }
   void IncrementRefCount();

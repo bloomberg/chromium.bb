@@ -325,7 +325,8 @@ TEST_F(PlatformNotificationContextTest, ServiceWorkerUnregistered) {
   GURL origin("https://example.com");
   GURL script_url("https://example.com/worker.js");
 
-  int64_t service_worker_registration_id = kInvalidServiceWorkerRegistrationId;
+  int64_t service_worker_registration_id =
+      blink::mojom::kInvalidServiceWorkerRegistrationId;
 
   // Register a Service Worker to get a valid registration id.
   embedded_worker_test_helper->context()->RegisterServiceWorker(
@@ -336,7 +337,7 @@ TEST_F(PlatformNotificationContextTest, ServiceWorkerUnregistered) {
 
   base::RunLoop().RunUntilIdle();
   ASSERT_NE(service_worker_registration_id,
-            kInvalidServiceWorkerRegistrationId);
+            blink::mojom::kInvalidServiceWorkerRegistrationId);
 
   NotificationDatabaseData notification_database_data;
 

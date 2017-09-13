@@ -16,6 +16,7 @@
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebNavigationPreloadState.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerRegistrationProxy.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace content {
 
@@ -54,7 +55,7 @@ WebServiceWorkerRegistrationImpl::WebServiceWorkerRegistrationImpl(
     std::unique_ptr<ServiceWorkerRegistrationHandleReference> handle_ref)
     : handle_ref_(std::move(handle_ref)), proxy_(nullptr) {
   DCHECK(handle_ref_);
-  DCHECK_NE(kInvalidServiceWorkerRegistrationHandleId,
+  DCHECK_NE(blink::mojom::kInvalidServiceWorkerRegistrationHandleId,
             handle_ref_->handle_id());
   ServiceWorkerDispatcher* dispatcher =
       ServiceWorkerDispatcher::GetThreadSpecificInstance();

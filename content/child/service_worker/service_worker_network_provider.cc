@@ -312,8 +312,8 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
       std::move(info->client_request), std::move(info->host_ptr_info),
       dispatcher, nullptr /* loader_factory_getter */);
   std::unique_ptr<ServiceWorkerRegistrationHandleReference> registration =
-      ServiceWorkerRegistrationHandleReference::Adopt(info->registration,
-                                                      sender);
+      ServiceWorkerRegistrationHandleReference::Adopt(
+          std::move(info->registration), sender);
   std::unique_ptr<ServiceWorkerHandleReference> installing =
       ServiceWorkerHandleReference::Adopt(info->attributes.installing, sender);
   std::unique_ptr<ServiceWorkerHandleReference> waiting =

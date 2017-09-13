@@ -656,7 +656,7 @@ TEST_F(ServiceWorkerStorageTest, DisabledStorage) {
       storage()->OriginHasForeignFetchRegistrations(kScope.GetOrigin()));
 
   // Next available ids should be invalid.
-  EXPECT_EQ(kInvalidServiceWorkerRegistrationId,
+  EXPECT_EQ(blink::mojom::kInvalidServiceWorkerRegistrationId,
             storage()->NewRegistrationId());
   EXPECT_EQ(kInvalidServiceWorkerVersionId, storage()->NewVersionId());
   EXPECT_EQ(kInvalidServiceWorkerResourceId, storage()->NewRegistrationId());
@@ -1125,19 +1125,21 @@ TEST_F(ServiceWorkerStorageTest, StoreUserData) {
 
   // Data access with an invalid registration id should be failed.
   EXPECT_EQ(SERVICE_WORKER_ERROR_FAILED,
-            StoreUserData(kInvalidServiceWorkerRegistrationId,
+            StoreUserData(blink::mojom::kInvalidServiceWorkerRegistrationId,
                           kScope.GetOrigin(), {{"key", "data"}}));
+  EXPECT_EQ(SERVICE_WORKER_ERROR_FAILED,
+            GetUserData(blink::mojom::kInvalidServiceWorkerRegistrationId,
+                        {"key"}, &data_out));
   EXPECT_EQ(
       SERVICE_WORKER_ERROR_FAILED,
-      GetUserData(kInvalidServiceWorkerRegistrationId, {"key"}, &data_out));
+      GetUserDataByKeyPrefix(blink::mojom::kInvalidServiceWorkerRegistrationId,
+                             "prefix", &data_out));
   EXPECT_EQ(SERVICE_WORKER_ERROR_FAILED,
-            GetUserDataByKeyPrefix(kInvalidServiceWorkerRegistrationId,
-                                   "prefix", &data_out));
+            ClearUserData(blink::mojom::kInvalidServiceWorkerRegistrationId,
+                          {"key"}));
   EXPECT_EQ(SERVICE_WORKER_ERROR_FAILED,
-            ClearUserData(kInvalidServiceWorkerRegistrationId, {"key"}));
-  EXPECT_EQ(SERVICE_WORKER_ERROR_FAILED,
-            ClearUserDataByKeyPrefixes(kInvalidServiceWorkerRegistrationId,
-                                       {"prefix"}));
+            ClearUserDataByKeyPrefixes(
+                blink::mojom::kInvalidServiceWorkerRegistrationId, {"prefix"}));
 
   // Data access with an empty key should be failed.
   EXPECT_EQ(SERVICE_WORKER_ERROR_FAILED,

@@ -519,7 +519,8 @@ void ServiceWorkerContextCore::RegistrationComplete(
     ServiceWorkerRegistration* registration) {
   if (status != SERVICE_WORKER_OK) {
     DCHECK(!registration);
-    callback.Run(status, status_message, kInvalidServiceWorkerRegistrationId);
+    callback.Run(status, status_message,
+                 blink::mojom::kInvalidServiceWorkerRegistrationId);
     return;
   }
 
@@ -542,7 +543,8 @@ void ServiceWorkerContextCore::UpdateComplete(
     ServiceWorkerRegistration* registration) {
   if (status != SERVICE_WORKER_OK) {
     DCHECK(!registration);
-    callback.Run(status, status_message, kInvalidServiceWorkerRegistrationId);
+    callback.Run(status, status_message,
+                 blink::mojom::kInvalidServiceWorkerRegistrationId);
     return;
   }
 

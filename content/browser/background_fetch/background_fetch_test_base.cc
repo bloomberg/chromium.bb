@@ -241,7 +241,8 @@ bool BackgroundFetchTestBase::CreateRegistrationId(
 
   GURL script_url(kTestScriptUrl);
 
-  int64_t service_worker_registration_id = kInvalidServiceWorkerRegistrationId;
+  int64_t service_worker_registration_id =
+      blink::mojom::kInvalidServiceWorkerRegistrationId;
 
   {
     base::RunLoop run_loop;
@@ -255,7 +256,8 @@ bool BackgroundFetchTestBase::CreateRegistrationId(
     run_loop.Run();
   }
 
-  if (service_worker_registration_id == kInvalidServiceWorkerRegistrationId) {
+  if (service_worker_registration_id ==
+      blink::mojom::kInvalidServiceWorkerRegistrationId) {
     ADD_FAILURE() << "Could not obtain a valid Service Worker registration";
     return false;
   }

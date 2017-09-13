@@ -18,6 +18,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/modules/payments/payment_app.mojom.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace content {
 namespace {
@@ -240,7 +241,8 @@ IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest,
   std::vector<int64_t> registrationIds = GetAllPaymentAppRegistrationIDs();
   ASSERT_EQ(1U, registrationIds.size());
 
-  bool payment_aborted = AbortPayment(kInvalidServiceWorkerRegistrationId);
+  bool payment_aborted =
+      AbortPayment(blink::mojom::kInvalidServiceWorkerRegistrationId);
   ASSERT_FALSE(payment_aborted);
 
   ClearStoragePartitionData();

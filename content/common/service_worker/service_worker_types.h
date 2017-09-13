@@ -50,8 +50,6 @@ extern const char kFetchScriptError[];
 
 // Constants for invalid identifiers.
 static const int kInvalidServiceWorkerHandleId = -1;
-static const int kInvalidServiceWorkerRegistrationHandleId = -1;
-static const int64_t kInvalidServiceWorkerRegistrationId = -1;
 static const int64_t kInvalidServiceWorkerVersionId = -1;
 static const int64_t kInvalidServiceWorkerResourceId = -1;
 static const int kInvalidEmbeddedWorkerThreadId = -1;
@@ -184,13 +182,6 @@ struct CONTENT_EXPORT ServiceWorkerObjectInfo {
   GURL url;
   blink::WebServiceWorkerState state;
   int64_t version_id;
-};
-
-struct CONTENT_EXPORT ServiceWorkerRegistrationObjectInfo {
-  ServiceWorkerRegistrationObjectInfo();
-  int handle_id;
-  blink::mojom::ServiceWorkerRegistrationOptions options;
-  int64_t registration_id;
 };
 
 struct CONTENT_EXPORT ServiceWorkerVersionAttributes {

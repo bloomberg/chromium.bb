@@ -17,6 +17,7 @@
 #include "content/browser/service_worker/service_worker_database.pb.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 #include "url/origin.h"
 
@@ -943,7 +944,8 @@ TEST(ServiceWorkerDatabaseTest, Registration_UninitializedDatabase) {
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
             database->ReadRegistration(
                 100, origin, &data_out, &resources_out));
-  EXPECT_EQ(kInvalidServiceWorkerRegistrationId, data_out.registration_id);
+  EXPECT_EQ(blink::mojom::kInvalidServiceWorkerRegistrationId,
+            data_out.registration_id);
   EXPECT_TRUE(resources_out.empty());
   GURL origin_out;
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
@@ -966,7 +968,8 @@ TEST(ServiceWorkerDatabaseTest, Registration_UninitializedDatabase) {
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
             database->ReadRegistration(
                 100, origin, &data_out, &resources_out));
-  EXPECT_EQ(kInvalidServiceWorkerRegistrationId, data_out.registration_id);
+  EXPECT_EQ(blink::mojom::kInvalidServiceWorkerRegistrationId,
+            data_out.registration_id);
   EXPECT_TRUE(resources_out.empty());
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
             database->ReadRegistrationOrigin(100, &origin_out));

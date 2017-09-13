@@ -29,6 +29,7 @@
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebNavigationPreloadState.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerProviderClient.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_error_type.mojom.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 #include "url/url_constants.h"
 
 using blink::WebServiceWorkerError;
@@ -240,9 +241,9 @@ ServiceWorkerDispatcher::GetOrCreateServiceWorker(
 
 scoped_refptr<WebServiceWorkerRegistrationImpl>
 ServiceWorkerDispatcher::GetOrCreateRegistration(
-    const ServiceWorkerRegistrationObjectInfo& info,
+    blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info,
     const ServiceWorkerVersionAttributes& attrs) {
-  RegistrationObjectMap::iterator found = registrations_.find(info.handle_id);
+  RegistrationObjectMap::iterator found = registrations_.find(info->handle_id);
   if (found != registrations_.end())
     return found->second;
 
@@ -251,7 +252,7 @@ ServiceWorkerDispatcher::GetOrCreateRegistration(
   scoped_refptr<WebServiceWorkerRegistrationImpl> registration(
       new WebServiceWorkerRegistrationImpl(
           ServiceWorkerRegistrationHandleReference::Create(
-              info, thread_safe_sender_.get())));
+              std::move(info), thread_safe_sender_.get())));
 
   registration->SetInstalling(
       GetOrCreateServiceWorker(ServiceWorkerHandleReference::Create(
@@ -267,10 +268,12 @@ ServiceWorkerDispatcher::GetOrCreateRegistration(
 
 scoped_refptr<WebServiceWorkerRegistrationImpl>
 ServiceWorkerDispatcher::GetOrAdoptRegistration(
-    const ServiceWorkerRegistrationObjectInfo& info,
+    blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info,
     const ServiceWorkerVersionAttributes& attrs) {
+  int32_t registration_handle_id = info->handle_id;
+
   std::unique_ptr<ServiceWorkerRegistrationHandleReference> registration_ref =
-      Adopt(info);
+      Adopt(std::move(info));
   std::unique_ptr<ServiceWorkerHandleReference> installing_ref =
       Adopt(attrs.installing);
   std::unique_ptr<ServiceWorkerHandleReference> waiting_ref =
@@ -278,7 +281,8 @@ ServiceWorkerDispatcher::GetOrAdoptRegistration(
   std::unique_ptr<ServiceWorkerHandleReference> active_ref =
       Adopt(attrs.active);
 
-  RegistrationObjectMap::iterator found = registrations_.find(info.handle_id);
+  RegistrationObjectMap::iterator found =
+      registrations_.find(registration_handle_id);
   if (found != registrations_.end())
     return found->second;
 
@@ -625,9 +629,9 @@ void ServiceWorkerDispatcher::RemoveServiceWorkerRegistration(
 
 std::unique_ptr<ServiceWorkerRegistrationHandleReference>
 ServiceWorkerDispatcher::Adopt(
-    const ServiceWorkerRegistrationObjectInfo& info) {
+    blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info) {
   return ServiceWorkerRegistrationHandleReference::Adopt(
-      info, thread_safe_sender_.get());
+      std::move(info), thread_safe_sender_.get());
 }
 
 std::unique_ptr<ServiceWorkerHandleReference> ServiceWorkerDispatcher::Adopt(
