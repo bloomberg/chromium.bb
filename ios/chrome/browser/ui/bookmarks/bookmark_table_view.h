@@ -95,6 +95,9 @@ class PrefRegistrySyncable;
 // Returns the currently selected edit nodes.
 - (const std::set<const bookmarks::BookmarkNode*>&)editNodes;
 
+// Returns a vector of edit nodes.
+- (std::vector<const bookmarks::BookmarkNode*>)getEditNodesInVector;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_TABLE_VIEW_H_

@@ -53,7 +53,18 @@ const CGFloat kMenuWidth = 264;
 
 // The spacer between title and done button on the navigation bar.
 const CGFloat kSpacer = 50;
+
+// Returns a vector of all URLs in |nodes|.
+std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
+  std::vector<GURL> urls;
+  for (const BookmarkNode* node : nodes) {
+    if (node->is_url()) {
+      urls.push_back(node->url());
+    }
+  }
+  return urls;
 }
+}  // namespace
 
 @interface BookmarkHomeViewController ()<
     BookmarkCollectionViewDelegate,
@@ -339,6 +350,12 @@ const CGFloat kSpacer = 50;
   [self presentViewController:navController animated:YES completion:NULL];
 }
 
+- (void)openAllNodes:(const std::vector<const bookmarks::BookmarkNode*>&)nodes {
+  std::vector<GURL> urls = GetUrlsToOpen(nodes);
+  [self.homeDelegate bookmarkHomeViewControllerWantsDismissal:self
+                                             navigationToUrls:urls];
+}
+
 #pragma mark - Navigation Bar Callbacks
 
 - (void)navigationBarCancel:(id)sender {
@@ -437,9 +454,7 @@ const CGFloat kSpacer = 50;
 
   BOOL foundURL = NO;
   BOOL foundFolder = NO;
-  for (std::set<const bookmarks::BookmarkNode*>::iterator i = nodes.begin();
-       i != nodes.end(); ++i) {
-    const bookmarks::BookmarkNode* node = *i;
+  for (const BookmarkNode* node : nodes) {
     if (!foundURL && node->is_url()) {
       foundURL = YES;
     } else if (!foundFolder && node->is_folder()) {
@@ -1024,8 +1039,11 @@ const CGFloat kSpacer = 50;
 - (void)dismissWithURL:(const GURL&)url {
   [self cachePosition];
   if (self.homeDelegate) {
+    std::vector<GURL> urls;
+    if (url.is_valid())
+      urls.push_back(url);
     [self.homeDelegate bookmarkHomeViewControllerWantsDismissal:self
-                                                navigationToUrl:url];
+                                               navigationToUrls:urls];
   } else {
     // Before passing the URL to the block, make sure the block has a copy of
     // the URL and not just a reference.
@@ -1285,7 +1303,11 @@ const CGFloat kSpacer = 50;
   UIAlertAction* openAllAction = [UIAlertAction
       actionWithTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN)
                 style:UIAlertActionStyleDefault
-              handler:nil];
+              handler:^(UIAlertAction* _Nonnull action) {
+                std::vector<const BookmarkNode*> nodes =
+                    [weakSelf.bookmarksTableView getEditNodesInVector];
+                [weakSelf openAllNodes:nodes];
+              }];
 
   UIAlertAction* openInIncognitoAction = [UIAlertAction
       actionWithTitle:l10n_util::GetNSString(

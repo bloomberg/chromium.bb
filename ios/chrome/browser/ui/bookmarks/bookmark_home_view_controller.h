@@ -26,11 +26,12 @@ class BookmarkNode;
 @class BookmarkHomeViewController;
 
 @protocol BookmarkHomeViewControllerDelegate
-// The view controller wants to be dismissed.
-// If |url| != GURL(), then the user has selected |url| for navigation.
+// The view controller wants to be dismissed. If |urls| is not empty, then
+// the user has selected to navigate to those URLs.
 - (void)bookmarkHomeViewControllerWantsDismissal:
             (BookmarkHomeViewController*)controller
-                                 navigationToUrl:(const GURL&)url;
+                                navigationToUrls:(const std::vector<GURL>&)urls;
+
 @end
 
 // Class to navigate the bookmark hierarchy, needs subclassing for tablet /
