@@ -571,6 +571,14 @@ void NetworkingPrivateLinux::SetCellularSimState(
   ReportNotSupported("SetCellularSimState", failure_callback);
 }
 
+void NetworkingPrivateLinux::SelectCellularMobileNetwork(
+    const std::string& guid,
+    const std::string& network_id,
+    const VoidCallback& success_callback,
+    const FailureCallback& failure_callback) {
+  ReportNotSupported("SelectCellularMobileNetwork", failure_callback);
+}
+
 std::unique_ptr<base::ListValue>
 NetworkingPrivateLinux::GetEnabledNetworkTypes() {
   std::unique_ptr<base::ListValue> network_list(new base::ListValue);

@@ -128,6 +128,10 @@ var availableTests = [
     chrome.networkingPrivate.setCellularSimState(
         kGuid, simState, callbackPass(callbackResult));
   },
+  function selectCellularMobileNetwork() {
+    chrome.networkingPrivate.selectCellularMobileNetwork(
+        kGuid, 'fakeId', callbackPass(callbackResult));
+  },
   function getGlobalPolicy() {
     chrome.networkingPrivate.getGlobalPolicy(callbackPass(callbackResult));
   }

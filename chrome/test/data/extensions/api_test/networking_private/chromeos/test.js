@@ -945,6 +945,31 @@ var availableTests = [
               }));
         }));
   },
+  function selectCellularMobileNetwork() {
+    chrome.networkingPrivate.getProperties(
+        kCellularGuid, callbackPass(function(result) {
+          // Ensure that there are two found networks and the first is selected.
+          assertTrue(!!result.Cellular.FoundNetworks);
+          assertTrue(result.Cellular.FoundNetworks.length >= 2);
+          assertTrue(result.Cellular.FoundNetworks[0].Status == 'current');
+          assertTrue(result.Cellular.FoundNetworks[1].Status == 'available');
+          // Select the second network
+          var secondNetworkId = result.Cellular.FoundNetworks[1].NetworkId;
+          chrome.networkingPrivate.selectCellularMobileNetwork(
+              kCellularGuid, secondNetworkId, callbackPass(function() {
+                chrome.networkingPrivate.getProperties(
+                    kCellularGuid, callbackPass(function(result) {
+                      // Ensure that the second network is selected.
+                      assertTrue(!!result.Cellular.FoundNetworks);
+                      assertTrue(result.Cellular.FoundNetworks.length >= 2);
+                      assertEq(
+                          'available', result.Cellular.FoundNetworks[0].Status);
+                      assertEq(
+                          'current', result.Cellular.FoundNetworks[1].Status);
+                    }));
+              }));
+        }));
+  },
   function cellularSimPuk() {
     var newPin = '6666';
     var incorrectPin = '2222';

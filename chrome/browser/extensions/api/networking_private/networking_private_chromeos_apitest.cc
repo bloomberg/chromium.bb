@@ -53,6 +53,7 @@
 #include "extensions/browser/api/networking_private/networking_private_delegate_factory.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/switches.h"
+#include "extensions/common/value_builder.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -872,6 +873,28 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, UnlockCellularSim) {
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, SetCellularSimState) {
   SetupCellular();
   EXPECT_TRUE(RunNetworkingSubtest("setCellularSimState")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
+                       SelectCellularMobileNetwork) {
+  SetupCellular();
+  // Create fake list of found networks.
+  std::unique_ptr<base::ListValue> found_networks =
+      extensions::ListBuilder()
+          .Append(extensions::DictionaryBuilder()
+                      .Set(shill::kNetworkIdProperty, "network1")
+                      .Set(shill::kTechnologyProperty, "GSM")
+                      .Set(shill::kStatusProperty, "current")
+                      .Build())
+          .Append(extensions::DictionaryBuilder()
+                      .Set(shill::kNetworkIdProperty, "network2")
+                      .Set(shill::kTechnologyProperty, "GSM")
+                      .Set(shill::kStatusProperty, "available")
+                      .Build())
+          .Build();
+  device_test_->SetDeviceProperty(
+      kCellularDevicePath, shill::kFoundNetworksProperty, *found_networks);
+  EXPECT_TRUE(RunNetworkingSubtest("selectCellularMobileNetwork")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, CellularSimPuk) {

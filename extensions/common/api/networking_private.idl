@@ -1102,6 +1102,17 @@ namespace networkingPrivate {
                                     CellularSimState simState,
                                     optional VoidCallback callback);
 
+    // Selects which Cellular Mobile Network to use. |networkId| must be the
+    // NetworkId property of a member of Cellular.FoundNetworks from the
+    // network properties for the specified Cellular network.
+    // |networkGuid|: The GUID of the cellular network to select the network
+    //     for. If empty, the default cellular device will be used.
+    // |networkId|: The networkId to select.
+    // |callback|: Called when the operation has completed.
+    static void selectCellularMobileNetwork(DOMString networkGuid,
+                                            DOMString networkId,
+                                            optional VoidCallback callback);
+
     // Gets the global policy properties. These properties are not expected to
     // change during a session.
     static void getGlobalPolicy(GetGlobalPolicyCallback callback);

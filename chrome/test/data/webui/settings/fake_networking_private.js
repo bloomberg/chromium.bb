@@ -149,6 +149,9 @@ cr.define('settings', function() {
     setCellularSimState: assertNotReached,
 
     /** @override */
+    selectCellularMobileNetwork: assertNotReached,
+
+    /** @override */
     getGlobalPolicy: function(callback) {
       callback(this.globalPolicy_);
     },
