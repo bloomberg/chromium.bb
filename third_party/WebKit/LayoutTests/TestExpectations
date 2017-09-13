@@ -3648,5 +3648,11 @@ crbug.com/763810 [ Win7 Debug ] virtual/threaded/transitions/transition-end-even
 crbug.com/763975 [ Linux Debug ] webaudio/internals/cycle-connection-gc.html [ Pass Failure ]
 
 # Sheriff failures 2017-09-12
-crbug.com/764179 [ Mac10.11 ] virtual/gpu-rasterization/images/color-profile-background-image-space.html [ Pass Failure ]
+# Temporarily disabling this for JPEG change. Restore after fixes for 763605 are rebaselined.
+# crbug.com/764179 [ Mac10.11 ] virtual/gpu-rasterization/images/color-profile-background-image-space.html [ Pass Failure ]
 crbug.com/764180 [ Android ] virtual/display_list_2d_canvas/fast/canvas/script-inside-canvas-fallback.html [ Pass Crash ]
+
+# JPEG decoding change in Skia
+crbug.com/763605 virtual/gpu-rasterization/images/color-profile-background-image-space.html [ NeedsManualRebaseline ]
+crbug.com/763605 virtual/gpu-rasterization/images/color-profile-svg-fill-text.html [ NeedsManualRebaseline ]
+crbug.com/763605 virtual/gpu-rasterization/images/color-profile-svg.html [ NeedsManualRebaseline ]
