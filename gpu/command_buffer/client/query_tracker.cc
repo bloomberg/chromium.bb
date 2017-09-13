@@ -112,7 +112,6 @@ void QuerySyncManager::Free(const QuerySyncManager::QueryInfo& info) {
 
 void QuerySyncManager::Shrink(CommandBufferHelper* helper) {
   std::deque<std::unique_ptr<Bucket>> new_buckets;
-  bool has_token = false;
   uint32_t token = 0;
   while (!buckets_.empty()) {
     std::unique_ptr<Bucket>& bucket = buckets_.front();
@@ -124,7 +123,6 @@ void QuerySyncManager::Shrink(CommandBufferHelper* helper) {
         // access the shared memory after current commands, so we can
         // free-pending-token.
         token = helper->InsertToken();
-        has_token = true;
         mapped_memory_->FreePendingToken(bucket->syncs, token);
       } else {
         new_buckets.push_back(std::move(bucket));
