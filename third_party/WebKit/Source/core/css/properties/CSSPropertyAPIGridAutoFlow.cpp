@@ -16,7 +16,6 @@ const CSSValue* CSSPropertyAPIGridAutoFlow::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  DCHECK(RuntimeEnabledFeatures::CSSGridLayoutEnabled());
   CSSIdentifierValue* row_or_column_value =
       CSSPropertyParserHelpers::ConsumeIdent<CSSValueRow, CSSValueColumn>(
           range);

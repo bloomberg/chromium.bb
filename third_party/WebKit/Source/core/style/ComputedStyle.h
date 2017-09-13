@@ -293,9 +293,7 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   static StyleSelfAlignmentData InitialDefaultAlignment() {
-    return StyleSelfAlignmentData(RuntimeEnabledFeatures::CSSGridLayoutEnabled()
-                                      ? kItemPositionNormal
-                                      : kItemPositionStretch,
+    return StyleSelfAlignmentData(kItemPositionNormal,
                                   kOverflowAlignmentDefault);
   }
 

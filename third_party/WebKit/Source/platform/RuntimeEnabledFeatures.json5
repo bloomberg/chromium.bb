@@ -231,10 +231,6 @@
       status: "experimental",
     },
     {
-      name: "CSSGridLayout",
-      status: "stable",
-    },
-    {
       name: "CSSHexAlphaColor",
       status: "stable",
     },
