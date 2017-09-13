@@ -74,8 +74,8 @@ PaintController::DisplayItemListAsJSON::SubsequenceAsJSONObjectRecursive() {
 
   json_object->SetString("subsequence", ClientName(*subsequence.client));
   json_object->SetArray(
-      RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ? "chunks"
-                                                       : "displayItems",
+      RuntimeEnabledFeatures::SlimmingPaintV175Enabled() ? "chunks"
+                                                         : "displayItems",
       SubsequenceAsJSONArrayRecursive(subsequence.start, subsequence.end));
 
   return json_object;
@@ -112,7 +112,7 @@ void PaintController::DisplayItemListAsJSON::AppendSubsequenceAsJSON(
     JSONArray& json_array) {
   DCHECK(end_item > start_item);
 
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     list_.AppendSubsequenceAsJSON(start_item, end_item, flags_, json_array);
     return;
   }

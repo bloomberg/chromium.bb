@@ -17,14 +17,14 @@ FloatClipRecorder::FloatClipRecorder(GraphicsContext& context,
     : context_(context),
       client_(client),
       clip_type_(DisplayItem::PaintPhaseToFloatClipType(paint_phase)) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
     return;
   context_.GetPaintController().CreateAndAppend<FloatClipDisplayItem>(
       client_, clip_type_, clip_rect);
 }
 
 FloatClipRecorder::~FloatClipRecorder() {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
     return;
   DisplayItem::Type end_type =
       DisplayItem::FloatClipTypeToEndFloatClipType(clip_type_);

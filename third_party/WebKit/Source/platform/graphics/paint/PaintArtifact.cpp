@@ -52,7 +52,8 @@ PaintArtifact::PaintArtifact(DisplayItemList display_items,
                              Vector<PaintChunk> paint_chunks)
     : display_item_list_(std::move(display_items)),
       paint_chunks_(std::move(paint_chunks)) {
-  ComputeChunkBoundsAndOpaqueness(display_item_list_, paint_chunks_);
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    ComputeChunkBoundsAndOpaqueness(display_item_list_, paint_chunks_);
 }
 
 PaintArtifact::PaintArtifact(PaintArtifact&& source)
@@ -80,7 +81,7 @@ size_t PaintArtifact::ApproximateUnsharedMemoryUsage() const {
 void PaintArtifact::Replay(const FloatRect& bounds,
                            GraphicsContext& graphics_context) const {
   TRACE_EVENT0("blink,benchmark", "PaintArtifact::replay");
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     for (const DisplayItem& display_item : display_item_list_)
       display_item.Replay(graphics_context);
   } else {
@@ -92,7 +93,7 @@ void PaintArtifact::Replay(const FloatRect& bounds,
                            PaintCanvas& canvas,
                            const PropertyTreeState& replay_state) const {
   TRACE_EVENT0("blink,benchmark", "PaintArtifact::replay");
-  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
   Vector<const PaintChunk*> pointer_paint_chunks;
   pointer_paint_chunks.ReserveInitialCapacity(PaintChunks().size());
 

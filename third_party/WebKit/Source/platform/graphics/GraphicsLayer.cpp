@@ -45,8 +45,10 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/LinkHighlight.h"
+#include "platform/graphics/compositing/PaintChunksToCcLayer.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/PaintController.h"
+#include "platform/graphics/paint/PropertyTreeState.h"
 #include "platform/graphics/paint/RasterInvalidationTracking.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/json/JSONValues.h"
@@ -61,6 +63,7 @@
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
+#include "public/platform/WebDisplayItemList.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebFloatRect.h"
 #include "public/platform/WebLayer.h"
@@ -1249,6 +1252,17 @@ sk_sp<PaintRecord> GraphicsLayer::CaptureRecord() {
   return graphics_context.EndRecording();
 }
 
+void GraphicsLayer::SetLayerState(PropertyTreeState&& layer_state,
+                                  const IntPoint& layer_offset) {
+  if (!layer_state_) {
+    layer_state_ = base::MakeUnique<LayerState>(
+        LayerState{std::move(layer_state), layer_offset});
+    return;
+  }
+  layer_state_->state = std::move(layer_state);
+  layer_state_->offset = layer_offset;
+}
+
 void GraphicsLayer::PaintContents(WebDisplayItemList* web_display_item_list,
                                   PaintingControlSetting painting_control) {
   TRACE_EVENT0("blink,benchmark", "GraphicsLayer::PaintContents");
@@ -1283,8 +1297,25 @@ void GraphicsLayer::PaintContents(WebDisplayItemList* web_display_item_list,
   if (painting_control != kPaintDefaultBehavior)
     Paint(nullptr, disabled_mode);
 
-  paint_controller.GetPaintArtifact().AppendToWebDisplayItemList(
-      OffsetFromLayoutObjectWithSubpixelAccumulation(), web_display_item_list);
+  if (layer_state_) {
+    DCHECK(RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
+
+    Vector<const PaintChunk*> all_chunks;
+    all_chunks.ReserveInitialCapacity(
+        paint_controller.GetPaintArtifact().PaintChunks().size());
+    for (const auto& chunk : paint_controller.GetPaintArtifact().PaintChunks())
+      all_chunks.push_back(&chunk);
+
+    PaintChunksToCcLayer::ConvertInto(
+        all_chunks, layer_state_->state,
+        gfx::Vector2dF(layer_state_->offset.X(), layer_state_->offset.Y()),
+        paint_controller.GetPaintArtifact().GetDisplayItemList(),
+        *web_display_item_list->GetCcDisplayItemList());
+  } else {
+    paint_controller.GetPaintArtifact().AppendToWebDisplayItemList(
+        OffsetFromLayoutObjectWithSubpixelAccumulation(),
+        web_display_item_list);
+  }
 
   paint_controller.SetDisplayItemConstructionIsDisabled(false);
   paint_controller.SetSubsequenceCachingIsDisabled(false);

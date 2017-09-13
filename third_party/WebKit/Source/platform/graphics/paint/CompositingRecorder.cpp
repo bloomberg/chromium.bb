@@ -19,7 +19,7 @@ CompositingRecorder::CompositingRecorder(GraphicsContext& graphics_context,
                                          const FloatRect* bounds,
                                          ColorFilter color_filter)
     : client_(client), graphics_context_(graphics_context) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
     return;
   graphics_context.GetPaintController()
       .CreateAndAppend<BeginCompositingDisplayItem>(client_, xfer_mode, opacity,
@@ -27,7 +27,7 @@ CompositingRecorder::CompositingRecorder(GraphicsContext& graphics_context,
 }
 
 CompositingRecorder::~CompositingRecorder() {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
     return;
   graphics_context_.GetPaintController().EndItem<EndCompositingDisplayItem>(
       client_);

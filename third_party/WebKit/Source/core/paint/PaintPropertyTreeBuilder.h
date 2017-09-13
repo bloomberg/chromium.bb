@@ -228,6 +228,10 @@ class PaintPropertyTreeBuilder {
       PaintPropertyTreeBuilderFragmentContext&,
       FragmentData*,
       bool& force_subtree_update);
+  ALWAYS_INLINE static void UpdateCompositedLayerStates(
+      const LayoutObject&,
+      PaintPropertyTreeBuilderFragmentContext&,
+      bool& force_subtree_update);
   ALWAYS_INLINE static void UpdateScrollbarPaintOffset(
       const LayoutObject&,
       ObjectPaintProperties&,

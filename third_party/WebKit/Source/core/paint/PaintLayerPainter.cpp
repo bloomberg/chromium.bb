@@ -265,7 +265,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     return result;
 
   Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
       RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
       paint_layer_.GetLayoutObject().IsLayoutView()) {
     const auto* local_border_box_properties = paint_layer_.GetLayoutObject()
@@ -524,7 +524,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
   }
 
   Optional<ScopedPaintChunkProperties> content_scoped_paint_chunk_properties;
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
       !scoped_paint_chunk_properties.has_value()) {
     // If layoutObject() is a LayoutView and root layer scrolling is enabled,
     // the LayoutView's paint properties will already have been applied at
@@ -642,7 +642,7 @@ bool PaintLayerPainter::NeedsToClip(
     const ClipRect& clip_rect,
     const PaintLayerFlags& paint_flags) {
   // Clipping will be applied by property nodes directly for SPv2.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
     return false;
   return clip_rect.Rect() != local_painting_info.paint_dirty_rect ||
          (paint_flags & kPaintLayerPaintingAncestorClippingMaskPhase) ||
@@ -780,7 +780,7 @@ PaintResult PaintLayerPainter::PaintLayerWithTransform(
 
   for (const auto& fragment : layer_fragments) {
     Optional<LayerClipRecorder> clip_recorder;
-    if (parent_layer && !RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    if (parent_layer && !RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
       if (NeedsToClip(painting_info, fragment.background_rect, paint_flags)) {
         clip_recorder.emplace(
             context, *parent_layer, DisplayItem::kClipLayerParent,
@@ -935,7 +935,7 @@ void PaintLayerPainter::PaintOverflowControlsForFragments(
     }
 
     Optional<ScrollRecorder> scroll_recorder;
-    if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+    if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
         !local_painting_info.scroll_offset_accumulation.IsZero()) {
       cull_rect.Move(local_painting_info.scroll_offset_accumulation);
       scroll_recorder.emplace(context, paint_layer_.GetLayoutObject(),
@@ -1010,7 +1010,7 @@ void PaintLayerPainter::PaintFragmentWithPhase(
   LayoutRect new_cull_rect(clip_rect.Rect());
   Optional<ScrollRecorder> scroll_recorder;
   LayoutPoint paint_offset = -paint_layer_.LayoutBoxLocation();
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     paint_offset += paint_layer_.GetLayoutObject().PaintOffset();
     new_cull_rect.Move(painting_info.scroll_offset_accumulation);
   } else {
@@ -1182,7 +1182,7 @@ void PaintLayerPainter::PaintMaskForFragments(
     cache_skipper.emplace(context);
 
   Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     const auto* object_paint_properties =
         paint_layer_.GetLayoutObject().FirstFragment()->PaintProperties();
     DCHECK(object_paint_properties && object_paint_properties->Mask());

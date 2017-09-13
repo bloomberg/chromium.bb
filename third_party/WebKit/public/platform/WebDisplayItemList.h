@@ -23,6 +23,7 @@ struct SkRect;
 class SkRRect;
 
 namespace cc {
+class DisplayItemList;
 class FilterOperations;
 }
 
@@ -68,6 +69,8 @@ class WebDisplayItemList {
   virtual void AppendScrollItem(const WebSize& scroll_offset,
                                 ScrollContainerId) {}
   virtual void AppendEndScrollItem() {}
+
+  virtual cc::DisplayItemList* GetCcDisplayItemList() { return nullptr; }
 };
 
 }  // namespace blink

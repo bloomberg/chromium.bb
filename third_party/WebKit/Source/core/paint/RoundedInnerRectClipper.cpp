@@ -23,7 +23,8 @@ RoundedInnerRectClipper::RoundedInnerRectClipper(
       clip_type_(use_paint_controller_
                      ? paint_info_.DisplayItemTypeForClipping()
                      : DisplayItem::kClipBoxPaintPhaseFirst) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() && use_paint_controller_)
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
+      use_paint_controller_)
     return;
 
   Vector<FloatRoundedRect> rounded_rect_clips;
@@ -83,7 +84,8 @@ RoundedInnerRectClipper::RoundedInnerRectClipper(
 }
 
 RoundedInnerRectClipper::~RoundedInnerRectClipper() {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() && use_paint_controller_)
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
+      use_paint_controller_)
     return;
 
   DisplayItem::Type end_type = DisplayItem::ClipTypeToEndClipType(clip_type_);

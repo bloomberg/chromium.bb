@@ -102,7 +102,7 @@ class PLATFORM_EXPORT PaintController {
   // item construction is disabled, no list mutations will be performed.
   template <typename DisplayItemClass, typename... Args>
   void EndItem(Args&&... args) {
-    DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+    DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
 
     if (DisplayItemConstructionIsDisabled())
       return;

@@ -15,7 +15,7 @@ PaintChunker::~PaintChunker() {}
 void PaintChunker::UpdateCurrentPaintChunkProperties(
     const PaintChunk::Id* chunk_id,
     const PaintChunkProperties& properties) {
-  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
 
   current_chunk_id_ = WTF::nullopt;
   if (chunk_id)
@@ -24,16 +24,20 @@ void PaintChunker::UpdateCurrentPaintChunkProperties(
 }
 
 bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
-  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
 
 #if DCHECK_IS_ON()
   // Property nodes should never be null because they should either be set to
   // properties created by a LayoutObject/FrameView, or be set to a non-null
   // root node. If these DCHECKs are hit we are missing a call to update the
   // properties. See: ScopedPaintChunkProperties.
-  DCHECK(current_properties_.property_tree_state.Transform());
-  DCHECK(current_properties_.property_tree_state.Clip());
-  DCHECK(current_properties_.property_tree_state.Effect());
+  // TODO(trchen): Enable this check for SPv175 too. Some drawable layers
+  // don't paint with property tree yet, e.g. scrollbar layers.
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    DCHECK(current_properties_.property_tree_state.Transform());
+    DCHECK(current_properties_.property_tree_state.Clip());
+    DCHECK(current_properties_.property_tree_state.Effect());
+  }
 #endif
 
   bool item_forces_new_chunk = item.IsForeignLayer() || item.IsScrollHitTest();

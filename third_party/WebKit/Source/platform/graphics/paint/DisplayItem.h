@@ -389,7 +389,7 @@ class PLATFORM_EXPORT PairedBeginDisplayItem : public DisplayItem {
                          Type type,
                          size_t derived_size)
       : DisplayItem(client, type, derived_size) {
-    DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+    DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
   }
 
  private:
@@ -402,7 +402,7 @@ class PLATFORM_EXPORT PairedEndDisplayItem : public DisplayItem {
                        Type type,
                        size_t derived_size)
       : DisplayItem(client, type, derived_size) {
-    DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+    DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
   }
 
 #if DCHECK_IS_ON()

@@ -27,7 +27,7 @@ LayerClipRecorder::LayerClipRecorder(GraphicsContext& graphics_context,
     : graphics_context_(graphics_context),
       client_(client),
       clip_type_(clip_type) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
     return;
   IntRect snapped_clip_rect = PixelSnappedIntRect(clip_rect.Rect());
   bool painting_masks =
@@ -107,7 +107,7 @@ void LayerClipRecorder::CollectRoundedRectClips(
 }
 
 LayerClipRecorder::~LayerClipRecorder() {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
     return;
   graphics_context_.GetPaintController().EndItem<EndClipDisplayItem>(
       client_, DisplayItem::ClipTypeToEndClipType(clip_type_));

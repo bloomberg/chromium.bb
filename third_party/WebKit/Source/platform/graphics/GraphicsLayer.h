@@ -283,6 +283,8 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   void SetScrollBoundaryBehavior(const WebScrollBoundaryBehavior&);
   void SetIsResizedByBrowserControls(bool);
 
+  void SetLayerState(PropertyTreeState&&, const IntPoint& layer_offset);
+
  protected:
   String DebugName(cc::Layer*) const;
   bool ShouldFlattenTransform() const { return should_flatten_transform_; }
@@ -403,6 +405,12 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   mutable std::unique_ptr<PaintController> paint_controller_;
 
   IntRect previous_interest_rect_;
+
+  struct LayerState {
+    PropertyTreeState state;
+    IntPoint offset;
+  };
+  std::unique_ptr<LayerState> layer_state_;
 };
 
 // ObjectPaintInvalidatorWithContext::InvalidatePaintRectangleWithContext uses
