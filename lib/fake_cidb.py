@@ -58,16 +58,19 @@ class FakeCIDBConnection(object):
                   build_config, bot_hostname, master_build_id=None,
                   timeout_seconds=None, status=constants.BUILDER_STATUS_PASSED,
                   important=None, buildbucket_id=None, milestone_version=None,
-                  platform_version=None):
+                  platform_version=None, start_time=None):
     """Insert a build row.
 
     Note this API slightly differs from cidb as we pass status to avoid having
     to have a later FinishBuild call in testing.
     """
+    if start_time is None:
+      start_time = datetime.datetime.now()
+
     deadline = None
     if timeout_seconds is not None:
       timediff = datetime.timedelta(seconds=timeout_seconds)
-      deadline = datetime.datetime.now() + timediff
+      deadline = start_time + timediff
 
     build_id = len(self.buildTable)
     row = {'id': build_id,
@@ -77,11 +80,11 @@ class FakeCIDBConnection(object):
            'build_number': build_number,
            'build_config' : build_config,
            'bot_hostname': bot_hostname,
-           'start_time': datetime.datetime.now(),
+           'start_time': start_time,
            'master_build_id' : master_build_id,
            'deadline': deadline,
            'status': status,
-           'finish_time': datetime.datetime.now(),
+           'finish_time': start_time,
            'important': important,
            'buildbucket_id': buildbucket_id,
            'final': False,
@@ -451,26 +454,27 @@ class FakeCIDBConnection(object):
   def GetBuildHistory(self, build_config, num_results,
                       ignore_build_id=None, start_date=None, end_date=None,
                       starting_build_number=None, milestone_version=None,
-                      platform_version=None, final=False):
+                      platform_version=None, starting_build_id=None,
+                      final=False, reverse=False):
     """Returns the build history for the given |build_config|."""
     return self.GetBuildsHistory(
-        build_config, num_results, ignore_build_id=ignore_build_id,
-        start_date=start_date, end_date=end_date,
-        starting_build_number=starting_build_number,
+        build_configs=[build_config], num_results=num_results,
+        ignore_build_id=ignore_build_id, start_date=start_date,
+        end_date=end_date, starting_build_number=starting_build_number,
         milestone_version=milestone_version, platform_version=platform_version,
-        final=final)
+        starting_build_id=starting_build_id, final=final, reverse=reverse)
 
   def GetBuildsHistory(self, build_configs, num_results,
                        ignore_build_id=None, start_date=None, end_date=None,
                        starting_build_number=None, milestone_version=None,
-                       platform_version=None, final=False):
+                       platform_version=None, starting_build_id=None,
+                       final=False, reverse=False):
     """Returns the build history for the given |build_configs|."""
-    builds = [b for b in self.buildTable
-              if b['build_config'] in build_configs]
-    # Reverse sort as that's what's expected.
-    builds = sorted(builds, reverse=True)
+    builds = sorted(self.buildTable, reverse=(not reverse))
 
     # Filter results.
+    if build_configs:
+      builds = [b for b in builds if b['build_config'] in build_configs]
     if ignore_build_id is not None:
       builds = [b for b in builds if b['id'] != ignore_build_id]
     if start_date is not None:
@@ -490,6 +494,8 @@ class FakeCIDBConnection(object):
     if platform_version is not None:
       builds = [b for b in builds
                 if b.get('platform_version') == platform_version]
+    if starting_build_id is not None:
+      builds = [b for b in builds if b['id'] >= starting_build_id]
     if final:
       builds = [b for b in builds
                 if b.get('final') is True]
