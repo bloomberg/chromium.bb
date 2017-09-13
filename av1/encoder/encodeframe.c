@@ -5224,6 +5224,8 @@ static void encode_frame_internal(AV1_COMP *cpi) {
       ref_buf[frame] = get_ref_frame_buffer(cpi, frame);
       int pframe;
       set_default_warp_params(&cm->global_motion[frame]);
+      if (cm->error_resilient_mode)
+        set_default_warp_params(&cm->prev_frame->global_motion[frame]);
       // check for duplicate buffer
       for (pframe = LAST_FRAME; pframe < frame; ++pframe) {
         if (ref_buf[frame] == ref_buf[pframe]) break;
@@ -5326,8 +5328,9 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     }
     cpi->global_motion_search_done = 1;
   }
-  memcpy(cm->cur_frame->global_motion, cm->global_motion,
-         TOTAL_REFS_PER_FRAME * sizeof(WarpedMotionParams));
+  if (!cm->error_resilient_mode)
+    memcpy(cm->cur_frame->global_motion, cm->global_motion,
+           TOTAL_REFS_PER_FRAME * sizeof(WarpedMotionParams));
 #endif  // CONFIG_GLOBAL_MOTION
 
   for (i = 0; i < MAX_SEGMENTS; ++i) {

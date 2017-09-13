@@ -4306,6 +4306,8 @@ static void write_global_motion(AV1_COMP *cpi,
   AV1_COMMON *const cm = &cpi->common;
   int frame;
   for (frame = LAST_FRAME; frame <= ALTREF_FRAME; ++frame) {
+    if (cm->error_resilient_mode)
+      set_default_warp_params(&cm->prev_frame->global_motion[frame]);
     write_global_motion_params(&cm->global_motion[frame],
                                &cm->prev_frame->global_motion[frame], wb,
                                cm->allow_high_precision_mv);
@@ -4614,8 +4616,7 @@ static void write_uncompressed_header(AV1_COMP *cpi,
 #endif  // CONFIG_EXT_TX
 
 #if CONFIG_GLOBAL_MOTION
-  if (!(frame_is_intra_only(cm) || cm->error_resilient_mode))
-    write_global_motion(cpi, wb);
+  if (!frame_is_intra_only(cm)) write_global_motion(cpi, wb);
 #endif  // CONFIG_GLOBAL_MOTION
 
   write_tile_info(cm, wb);

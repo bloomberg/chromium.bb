@@ -4368,6 +4368,8 @@ static int read_global_motion_params(WarpedMotionParams *params,
 static void read_global_motion(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   int frame;
   for (frame = LAST_FRAME; frame <= ALTREF_FRAME; ++frame) {
+    if (cm->error_resilient_mode)
+      set_default_warp_params(&cm->prev_frame->global_motion[frame]);
     int good_params = read_global_motion_params(
         &cm->global_motion[frame], &cm->prev_frame->global_motion[frame], rb,
         cm->allow_high_precision_mv);
@@ -4398,8 +4400,9 @@ static void read_global_motion(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
            cm->global_motion[frame].wmmat[3]);
            */
   }
-  memcpy(cm->cur_frame->global_motion, cm->global_motion,
-         TOTAL_REFS_PER_FRAME * sizeof(WarpedMotionParams));
+  if (!cm->error_resilient_mode)
+    memcpy(cm->cur_frame->global_motion, cm->global_motion,
+           TOTAL_REFS_PER_FRAME * sizeof(WarpedMotionParams));
 }
 #endif  // CONFIG_GLOBAL_MOTION
 
@@ -4859,8 +4862,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 #endif  // CONFIG_EXT_TX
 
 #if CONFIG_GLOBAL_MOTION
-  if (!(frame_is_intra_only(cm) || cm->error_resilient_mode))
-    read_global_motion(cm, rb);
+  if (!frame_is_intra_only(cm)) read_global_motion(cm, rb);
 #endif
 
   read_tile_info(pbi, rb);
