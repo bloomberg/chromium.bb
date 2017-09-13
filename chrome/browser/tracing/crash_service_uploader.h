@@ -49,13 +49,12 @@ class TraceCrashServiceUploader : public content::TraceUploader,
                 const UploadDoneCallback& done_callback) override;
 
  private:
-  void DoUploadOnFileThread(
+  void DoCompressOnBackgroundThread(
       const std::string& file_contents,
       UploadMode upload_mode,
       const std::string& upload_url,
-      std::unique_ptr<const base::DictionaryValue> metadata,
-      const UploadProgressCallback& progress_callback,
-      const UploadDoneCallback& done_callback);
+      std::unique_ptr<const base::DictionaryValue> metadata);
+
   // Sets up a multipart body to be uploaded. The body is produced according
   // to RFC 2046.
   void SetupMultipart(const std::string& product,

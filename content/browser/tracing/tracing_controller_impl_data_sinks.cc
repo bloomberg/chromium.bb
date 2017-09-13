@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/pattern.h"
+#include "base/task_scheduler/post_task.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/zlib/zlib.h"
@@ -65,29 +66,30 @@ class FileTraceDataEndpoint : public TraceDataEndpoint {
         file_(NULL) {}
 
   void ReceiveTraceChunk(std::unique_ptr<std::string> chunk) override {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::BindOnce(&FileTraceDataEndpoint::ReceiveTraceChunkOnFileThread,
-                       this, base::Passed(std::move(chunk))));
+    background_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&FileTraceDataEndpoint::ReceiveTraceChunkOnBlockingThread,
+                   this, base::Passed(std::move(chunk))));
   }
 
   void ReceiveTraceFinalContents(
       std::unique_ptr<const base::DictionaryValue>) override {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::BindOnce(&FileTraceDataEndpoint::CloseOnFileThread, this));
+    background_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&FileTraceDataEndpoint::CloseOnBlockingThread, this));
   }
 
  private:
   ~FileTraceDataEndpoint() override { DCHECK(file_ == NULL); }
 
-  void ReceiveTraceChunkOnFileThread(std::unique_ptr<std::string> chunk) {
-    if (!OpenFileIfNeededOnFileThread())
+  void ReceiveTraceChunkOnBlockingThread(std::unique_ptr<std::string> chunk) {
+    if (!OpenFileIfNeededOnBlockingThread())
       return;
     ignore_result(fwrite(chunk->c_str(), chunk->size(), 1, file_));
   }
 
-  bool OpenFileIfNeededOnFileThread() {
+  bool OpenFileIfNeededOnBlockingThread() {
+    base::ThreadRestrictions::AssertIOAllowed();
     if (file_ != NULL)
       return true;
     file_ = base::OpenFile(file_path_, "w");
@@ -98,11 +100,12 @@ class FileTraceDataEndpoint : public TraceDataEndpoint {
     return true;
   }
 
-  void CloseOnFileThread() {
-    if (OpenFileIfNeededOnFileThread()) {
+  void CloseOnBlockingThread() {
+    if (OpenFileIfNeededOnBlockingThread()) {
       base::CloseFile(file_);
       file_ = NULL;
     }
+
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(&FileTraceDataEndpoint::FinalizeOnUIThread, this));
@@ -113,6 +116,9 @@ class FileTraceDataEndpoint : public TraceDataEndpoint {
   base::FilePath file_path_;
   base::Closure completion_callback_;
   FILE* file_;
+  const scoped_refptr<base::SequencedTaskRunner> background_task_runner_ =
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND});
 
   DISALLOW_COPY_AND_ASSIGN(FileTraceDataEndpoint);
 };

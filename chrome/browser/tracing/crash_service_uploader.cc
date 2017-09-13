@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
@@ -104,6 +105,7 @@ void TraceCrashServiceUploader::OnURLFetchUploadProgress(
     int64_t current,
     int64_t total) {
   DCHECK(url_fetcher_.get());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   LOG(WARNING) << "Upload progress: " << current << " of " << total;
 
@@ -121,26 +123,23 @@ void TraceCrashServiceUploader::DoUpload(
     const UploadProgressCallback& progress_callback,
     const UploadDoneCallback& done_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&TraceCrashServiceUploader::DoUploadOnFileThread,
-                 base::Unretained(this), file_contents, upload_mode,
-                 upload_url_, base::Passed(std::move(metadata)),
-                 progress_callback, done_callback));
-}
-
-void TraceCrashServiceUploader::DoUploadOnFileThread(
-    const std::string& file_contents,
-    UploadMode upload_mode,
-    const std::string& upload_url,
-    std::unique_ptr<const base::DictionaryValue> metadata,
-    const UploadProgressCallback& progress_callback,
-    const UploadDoneCallback& done_callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
-  DCHECK(!url_fetcher_.get());
 
   progress_callback_ = progress_callback;
   done_callback_ = done_callback;
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {base::TaskPriority::BACKGROUND},
+      base::Bind(&TraceCrashServiceUploader::DoCompressOnBackgroundThread,
+                 base::Unretained(this), file_contents, upload_mode,
+                 upload_url_, base::Passed(std::move(metadata))));
+}
+
+void TraceCrashServiceUploader::DoCompressOnBackgroundThread(
+    const std::string& file_contents,
+    UploadMode upload_mode,
+    const std::string& upload_url,
+    std::unique_ptr<const base::DictionaryValue> metadata) {
+  DCHECK(!url_fetcher_.get());
 
   if (upload_url.empty()) {
     OnUploadError("Upload URL empty or invalid");
