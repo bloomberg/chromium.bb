@@ -64,7 +64,6 @@ std::unique_ptr<Initializer> InitializerImpl::Factory::NewInstance(
     cryptauth::CryptAuthService* cryptauth_service,
     NotificationPresenter* notification_presenter,
     PrefService* pref_service,
-    ProfileOAuth2TokenService* token_service,
     NetworkStateHandler* network_state_handler,
     ManagedNetworkConfigurationHandler* managed_network_configuration_handler,
     NetworkConnect* network_connect,
@@ -74,7 +73,7 @@ std::unique_ptr<Initializer> InitializerImpl::Factory::NewInstance(
     factory_instance_ = new Factory();
   }
   return factory_instance_->BuildInstance(
-      cryptauth_service, notification_presenter, pref_service, token_service,
+      cryptauth_service, notification_presenter, pref_service,
       network_state_handler, managed_network_configuration_handler,
       network_connect, network_connection_handler, adapter);
 }
@@ -96,14 +95,13 @@ std::unique_ptr<Initializer> InitializerImpl::Factory::BuildInstance(
     cryptauth::CryptAuthService* cryptauth_service,
     NotificationPresenter* notification_presenter,
     PrefService* pref_service,
-    ProfileOAuth2TokenService* token_service,
     NetworkStateHandler* network_state_handler,
     ManagedNetworkConfigurationHandler* managed_network_configuration_handler,
     NetworkConnect* network_connect,
     NetworkConnectionHandler* network_connection_handler,
     scoped_refptr<device::BluetoothAdapter> adapter) {
   return base::WrapUnique(new InitializerImpl(
-      cryptauth_service, notification_presenter, pref_service, token_service,
+      cryptauth_service, notification_presenter, pref_service,
       network_state_handler, managed_network_configuration_handler,
       network_connect, network_connection_handler, adapter));
 }
@@ -112,7 +110,6 @@ InitializerImpl::InitializerImpl(
     cryptauth::CryptAuthService* cryptauth_service,
     NotificationPresenter* notification_presenter,
     PrefService* pref_service,
-    ProfileOAuth2TokenService* token_service,
     NetworkStateHandler* network_state_handler,
     ManagedNetworkConfigurationHandler* managed_network_configuration_handler,
     NetworkConnect* network_connect,
@@ -121,7 +118,6 @@ InitializerImpl::InitializerImpl(
     : cryptauth_service_(cryptauth_service),
       notification_presenter_(notification_presenter),
       pref_service_(pref_service),
-      token_service_(token_service),
       network_state_handler_(network_state_handler),
       managed_network_configuration_handler_(
           managed_network_configuration_handler),
@@ -129,20 +125,10 @@ InitializerImpl::InitializerImpl(
       network_connection_handler_(network_connection_handler),
       adapter_(adapter),
       weak_ptr_factory_(this) {
-  if (!token_service_->RefreshTokenIsAvailable(
-          cryptauth_service_->GetAccountId())) {
-    PA_LOG(INFO) << "Refresh token not yet available; "
-                 << "waiting for valid token to initializing tether feature.";
-    token_service_->AddObserver(this);
-    return;
-  }
-
-  PA_LOG(INFO) << "Refresh token is available; initializing tether feature.";
   CreateComponent();
 }
 
 InitializerImpl::~InitializerImpl() {
-  token_service_->RemoveObserver(this);
   network_state_handler_->set_tether_sort_delegate(nullptr);
 
   if (disconnect_tethering_request_sender_)
@@ -187,20 +173,6 @@ void InitializerImpl::RequestShutdown() {
   StartAsynchronousShutdown();
 }
 
-void InitializerImpl::OnRefreshTokensLoaded() {
-  if (!token_service_->RefreshTokenIsAvailable(
-          cryptauth_service_->GetAccountId())) {
-    // If a token for the active account is still not available, continue
-    // waiting for a new token.
-    return;
-  }
-
-  PA_LOG(INFO) << "Refresh token has loaded; initializing tether feature.";
-
-  token_service_->RemoveObserver(this);
-  CreateComponent();
-}
-
 void InitializerImpl::OnPendingDisconnectRequestsComplete() {
   DCHECK(status() == Initializer::Status::SHUTTING_DOWN);
   disconnect_tethering_request_sender_->RemoveObserver(this);
@@ -217,9 +189,6 @@ void InitializerImpl::OnPendingDisconnectRequestsComplete() {
 }
 
 void InitializerImpl::CreateComponent() {
-  PA_LOG(INFO) << "Successfully set Bluetooth advertisement interval. "
-               << "Initializing tether feature.";
-
   network_list_sorter_ = base::MakeUnique<NetworkListSorter>();
   network_state_handler_->set_tether_sort_delegate(network_list_sorter_.get());
   tether_host_fetcher_ =

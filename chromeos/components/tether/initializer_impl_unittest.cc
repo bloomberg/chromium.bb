@@ -27,7 +27,6 @@
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/secure_message_delegate.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -142,14 +141,13 @@ class InitializerTest : public NetworkStateTest {
       cryptauth::CryptAuthService* cryptauth_service,
       NotificationPresenter* notification_presenter,
       PrefService* pref_service,
-      ProfileOAuth2TokenService* token_service,
       NetworkStateHandler* network_state_handler,
       ManagedNetworkConfigurationHandler* managed_network_configuration_handler,
       NetworkConnect* network_connect,
       NetworkConnectionHandler* network_connection_handler,
       scoped_refptr<device::BluetoothAdapter> adapter) {
     Initializer* initializer = new InitializerImpl(
-        cryptauth_service, notification_presenter, pref_service, token_service,
+        cryptauth_service, notification_presenter, pref_service,
         network_state_handler, managed_network_configuration_handler,
         network_connect, network_connection_handler, adapter);
     delete initializer;
@@ -193,9 +191,6 @@ TEST_F(InitializerTest, TestCreateAndDestroy) {
   std::unique_ptr<TestingPrefServiceSimple> test_pref_service =
       base::MakeUnique<TestingPrefServiceSimple>();
 
-  std::unique_ptr<FakeProfileOAuth2TokenService> fake_token_service =
-      base::MakeUnique<FakeProfileOAuth2TokenService>();
-
   std::unique_ptr<ManagedNetworkConfigurationHandler>
       managed_network_configuration_handler = base::WrapUnique(
           new NiceMock<MockManagedNetworkConfigurationHandler>);
@@ -214,10 +209,9 @@ TEST_F(InitializerTest, TestCreateAndDestroy) {
   // InitializerTest only applies to the class itself, not these test functions.
   InitializeAndDestroy(
       fake_cryptauth_service.get(), fake_notification_presenter.get(),
-      test_pref_service_.get(), fake_token_service.get(),
-      network_state_handler(), managed_network_configuration_handler.get(),
-      mock_network_connect.get(), network_connection_handler_.get(),
-      mock_adapter);
+      test_pref_service_.get(), network_state_handler(),
+      managed_network_configuration_handler.get(), mock_network_connect.get(),
+      network_connection_handler_.get(), mock_adapter);
 }
 
 }  // namespace tether

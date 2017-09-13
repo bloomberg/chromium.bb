@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/tether/tether_service_factory.h"
 #include "chrome/browser/cryptauth/chrome_cryptauth_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
@@ -159,7 +158,6 @@ void TetherService::StartTetherIfPossible() {
   PA_LOG(INFO) << "Starting up Tether component.";
   initializer_ = chromeos::tether::InitializerImpl::Factory::NewInstance(
       cryptauth_service_, notification_presenter_.get(), profile_->GetPrefs(),
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_),
       network_state_handler_,
       chromeos::NetworkHandler::Get()->managed_network_configuration_handler(),
       chromeos::NetworkConnect::Get(),
