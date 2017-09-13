@@ -16,12 +16,10 @@
 #import "ios/chrome/browser/content_suggestions/content_suggestions_alert_factory.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_mediator.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_metrics_recorder.h"
-#import "ios/chrome/browser/content_suggestions/ntp_home_metrics.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_cache_factory.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
 #include "ios/chrome/browser/ntp_tiles/ios_most_visited_sites_factory.h"
-#include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/browser_list/browser.h"
@@ -100,16 +98,6 @@
           self.browser->browser_state());
   contentSuggestionsService->remote_suggestions_scheduler()
       ->OnSuggestionsSurfaceOpened();
-  PrefService* prefs =
-      ios::ChromeBrowserState::FromBrowserState(self.browser->browser_state())
-          ->GetPrefs();
-  bool contentSuggestionsEnabled =
-      prefs->GetBoolean(prefs::kSearchSuggestEnabled);
-  if (contentSuggestionsEnabled) {
-    ntp_home::RecordNTPImpression(ntp_home::REMOTE_SUGGESTIONS);
-  } else {
-    ntp_home::RecordNTPImpression(ntp_home::LOCAL_SUGGESTIONS);
-  }
 
   self.viewController = [[ContentSuggestionsViewController alloc]
       initWithStyle:CollectionViewControllerStyleDefault];
