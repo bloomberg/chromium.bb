@@ -87,12 +87,14 @@ stage_install_debian() {
 
 verify_package() {
   local DEPENDS="$1"
-  echo ${DEPENDS} | sed 's/, /\n/g' | LANG=C sort > expected_deb_depends
+  local EXPECTED_DEPENDS="${TMPFILEDIR}/expected_deb_depends"
+  local ACTUAL_DEPENDS="${TMPFILEDIR}/actual_deb_depends"
+  echo ${DEPENDS} | sed 's/, /\n/g' | LANG=C sort > "${EXPECTED_DEPENDS}"
   dpkg -I "${PACKAGE}-${CHANNEL}_${VERSIONFULL}_${ARCHITECTURE}.deb" | \
       grep '^ Depends: ' | sed 's/^ Depends: //' | sed 's/, /\n/g' | \
-      LANG=C sort > actual_deb_depends
+      LANG=C sort > "${ACTUAL_DEPENDS}"
   BAD_DIFF=0
-  diff -u expected_deb_depends actual_deb_depends || BAD_DIFF=1
+  diff -u "${EXPECTED_DEPENDS}" "${ACTUAL_DEPENDS}" || BAD_DIFF=1
   if [ $BAD_DIFF -ne 0 ]; then
     echo
     echo "ERROR: bad dpkg dependencies!"
