@@ -12,6 +12,13 @@ Polymer({
   behaviors: [SettingsBooleanControlBehavior],
 
   properties: {
+    ariaLabel: {
+      type: String,
+      reflectToAttribute: false,  // Handled by #control.
+      observer: 'onAriaLabelSet_',
+      value: '',
+    },
+
     elideLabel: {
       type: Boolean,
       reflectToAttribute: true,
@@ -29,6 +36,26 @@ Polymer({
   /** @override */
   focus: function() {
     this.$.control.focus();
+  },
+
+  /**
+   * Removes the aria-label attribute if it's added by $i18n{...}.
+   * @private
+   */
+  onAriaLabelSet_: function() {
+    if (this.hasAttribute('aria-label')) {
+      let ariaLabel = this.ariaLabel;
+      this.removeAttribute('aria-label');
+      this.ariaLabel = ariaLabel;
+    }
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getAriaLabel_: function() {
+    return this.label || this.ariaLabel;
   },
 
   /**
