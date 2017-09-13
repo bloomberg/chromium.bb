@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_MATERIAL_VIEW_CONTROLLER_H_
-#define IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_MATERIAL_VIEW_CONTROLLER_H_
+#ifndef IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_VIEW_CONTROLLER_H_
+#define IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_VIEW_CONTROLLER_H_
 
 #import <UIKit/UIKit.h>
 #import "ios/chrome/browser/ui/omnibox/autocomplete_result_consumer.h"
@@ -13,7 +13,7 @@
 
 // View controller used to display a list of omnibox autocomplete matches in the
 // omnibox popup.
-@interface OmniboxPopupMaterialViewController
+@interface OmniboxPopupViewController
     : UITableViewController<AutocompleteResultConsumer>
 
 @property(nonatomic, assign) BOOL incognito;
@@ -31,4 +31,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_MATERIAL_VIEW_CONTROLLER_H_
+#endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_VIEW_CONTROLLER_H_

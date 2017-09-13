@@ -19,9 +19,9 @@
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/experimental_flags.h"
-#import "ios/chrome/browser/ui/omnibox/omnibox_popup_material_view_controller.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_popup_mediator.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_popup_presenter.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_popup_view_controller.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_popup_view_suggestions_delegate.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -56,7 +56,7 @@ OmniboxPopupViewIOS::OmniboxPopupViewIOS(
   mediator_.reset([[OmniboxPopupMediator alloc]
       initWithFetcher:std::move(imageFetcher)
              delegate:this]);
-  popup_controller_.reset([[OmniboxPopupMaterialViewController alloc] init]);
+  popup_controller_.reset([[OmniboxPopupViewController alloc] init]);
   [popup_controller_ setIncognito:browser_state->IsOffTheRecord()];
 
   [mediator_ setIncognito:browser_state->IsOffTheRecord()];
@@ -121,7 +121,7 @@ bool OmniboxPopupViewIOS::IsOpen() const {
   return is_open_;
 }
 
-#pragma mark - OmniboxPopupMaterialViewControllerDelegate
+#pragma mark - OmniboxPopupViewControllerDelegate
 
 bool OmniboxPopupViewIOS::IsStarredMatch(const AutocompleteMatch& match) const {
   return model_->IsStarredMatch(match);
