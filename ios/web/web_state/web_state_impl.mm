@@ -657,10 +657,10 @@ const GURL& WebStateImpl::GetLastCommittedURL() const {
 
 GURL WebStateImpl::GetCurrentURL(URLVerificationTrustLevel* trust_level) const {
   GURL URL = [web_controller_ currentURLWithTrustLevel:trust_level];
-  bool equalURLs = web::GURLByRemovingRefFromGURL(URL) ==
-                   web::GURLByRemovingRefFromGURL(GetLastCommittedURL());
-  DCHECK(equalURLs);
-  UMA_HISTOGRAM_BOOLEAN("Web.CurrentURLEqualsLastCommittedURL", equalURLs);
+  bool equalOrigins = URL.GetOrigin() == GetLastCommittedURL().GetOrigin();
+  DCHECK(equalOrigins);
+  UMA_HISTOGRAM_BOOLEAN("Web.CurrentOriginEqualsLastCommittedOrigin",
+                        equalOrigins);
   return URL;
 }
 
