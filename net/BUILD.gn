@@ -38,6 +38,9 @@ use_v8_in_net = !is_ios && !is_proto_quic
 enable_built_in_dns = !is_ios && !is_proto_quic
 enable_net_mojo = !is_ios && !is_proto_quic
 
+# Unix sockets are not supported on iOS, Fuchsia or NaCl.
+enable_unix_sockets = is_posix && !is_ios && !is_fuchsia && !is_nacl
+
 # True if certificates are represented with DER byte buffers. This can be true
 # in addition to use_nss_certs, in that case byte certs are used internally but
 # NSS is used for certificate verification.
@@ -1520,10 +1523,6 @@ component("net") {
       "socket/udp_socket_posix.h",
       "socket/udp_socket_win.cc",
       "socket/udp_socket_win.h",
-      "socket/unix_domain_client_socket_posix.cc",
-      "socket/unix_domain_client_socket_posix.h",
-      "socket/unix_domain_server_socket_posix.cc",
-      "socket/unix_domain_server_socket_posix.h",
       "socket/websocket_endpoint_lock_manager.cc",
       "socket/websocket_endpoint_lock_manager.h",
       "socket/websocket_transport_client_socket_pool.cc",
@@ -1983,6 +1982,15 @@ component("net") {
     }
   } else {
     public_deps += [ "//native_client_sdk/src/libraries/nacl_io" ]
+  }
+
+  if (enable_unix_sockets) {
+    sources += [
+      "socket/unix_domain_client_socket_posix.cc",
+      "socket/unix_domain_client_socket_posix.h",
+      "socket/unix_domain_server_socket_posix.cc",
+      "socket/unix_domain_server_socket_posix.h",
+    ]
   }
 
   # Add back some sources that were otherwise filtered out.
@@ -5084,8 +5092,6 @@ test("net_unittests") {
     "socket/transport_client_socket_pool_unittest.cc",
     "socket/transport_client_socket_unittest.cc",
     "socket/udp_socket_unittest.cc",
-    "socket/unix_domain_client_socket_posix_unittest.cc",
-    "socket/unix_domain_server_socket_posix_unittest.cc",
     "socket/websocket_endpoint_lock_manager_unittest.cc",
     "socket/websocket_transport_client_socket_pool_unittest.cc",
     "spdy/chromium/bidirectional_stream_spdy_impl_unittest.cc",
@@ -5506,16 +5512,17 @@ test("net_unittests") {
 
       # Needs GetAppOutput().
       "test/python_utils_unittest.cc",
-
-      # The following tests are disabled because they don't apply to
-      # iOS.
-      # OS is not "linux" or "freebsd" or "openbsd".
-      "socket/unix_domain_client_socket_posix_unittest.cc",
-      "socket/unix_domain_server_socket_posix_unittest.cc",
     ]
     net_unfiltered_sources += [ "cert/x509_util_ios_and_mac_unittest.cc" ]
 
     bundle_deps = [ ":net_unittests_bundle_data" ]
+  }
+
+  if (enable_unix_sockets) {
+    sources += [
+      "socket/unix_domain_client_socket_posix_unittest.cc",
+      "socket/unix_domain_server_socket_posix_unittest.cc",
+    ]
   }
 
   # Use getifaddrs() on POSIX platforms, except Linux and Android.
