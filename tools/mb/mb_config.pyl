@@ -169,6 +169,8 @@
       'ClangToTWin64': 'clang_tot_official_minimal_symbols_static_release',
       'ClangToTWin64(dbg)': 'clang_tot_shared_debug',
       'ClangToTWin64(dll)': 'clang_tot_shared_release_dcheck',
+      'ClangToTWinCFI': 'clang_tot_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on_x86',
+      'ClangToTWinCFI64': 'clang_tot_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on',
       'ClangToTiOS': 'ios',
       'Closure Compilation Linux': 'closure_compilation',
       'CrWinAsan': 'asan_clang_fuzzer_static_v8_heap_x86_full_symbols_release',
@@ -1118,6 +1120,10 @@
 
     'clang_tot_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on': [
       'clang_tot', 'cfi_full', 'cfi_diag', 'thin_lto', 'release', 'static', 'dcheck_always_on',
+    ],
+
+    'clang_tot_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on_x86': [
+      'clang_tot', 'cfi_full', 'cfi_diag', 'thin_lto', 'release', 'static', 'dcheck_always_on', 'x86',
     ],
 
     'clang_tot_edge_ubsan_no_recover_hack_static_release': [
