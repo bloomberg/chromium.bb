@@ -753,21 +753,10 @@ void MidiManagerWin::DispatchSendMidiData(MidiManagerClient* client,
                                           uint32_t port_index,
                                           const std::vector<uint8_t>& data,
                                           double timestamp) {
-  if (timestamp != 0.0) {
-    base::TimeTicks time =
-        base::TimeTicks() + base::TimeDelta::FromMicroseconds(
-                                timestamp * base::Time::kMicrosecondsPerSecond);
-    base::TimeTicks now = base::TimeTicks::Now();
-    if (now < time) {
-      PostDelayedTask(
-          base::BindOnce(&MidiManagerWin::SendOnTaskRunner,
-                         base::Unretained(this), client, port_index, data),
-          time - now);
-      return;
-    }
-  }
-  PostTask(base::BindOnce(&MidiManagerWin::SendOnTaskRunner,
-                          base::Unretained(this), client, port_index, data));
+  PostDelayedTask(
+      base::BindOnce(&MidiManagerWin::SendOnTaskRunner, base::Unretained(this),
+                     client, port_index, data),
+      MidiService::TimestampToTimeDeltaDelay(timestamp));
 }
 
 void MidiManagerWin::OnDevicesChanged(

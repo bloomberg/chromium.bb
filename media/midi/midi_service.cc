@@ -31,6 +31,18 @@ std::unique_ptr<MidiManager> MidiService::ManagerFactory::Create(
   return std::unique_ptr<MidiManager>(MidiManager::Create(service));
 }
 
+// static
+base::TimeDelta MidiService::TimestampToTimeDeltaDelay(double timestamp) {
+  base::TimeDelta delay;
+  if (timestamp != 0.0) {
+    base::TimeTicks time_to_send =
+        base::TimeTicks() + base::TimeDelta::FromMicroseconds(
+                                timestamp * base::Time::kMicrosecondsPerSecond);
+    delay = std::max(time_to_send - base::TimeTicks::Now(), base::TimeDelta());
+  }
+  return delay;
+}
+
 MidiService::MidiService(void)
     : MidiService(std::make_unique<ManagerFactory>(),
                   IsDynamicInstantiationEnabled()) {}

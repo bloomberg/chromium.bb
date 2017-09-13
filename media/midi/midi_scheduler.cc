@@ -11,6 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "media/midi/midi_manager.h"
+#include "media/midi/midi_service.h"
 
 namespace midi {
 
@@ -36,14 +37,9 @@ void MidiScheduler::PostSendDataTask(MidiManagerClient* client,
       base::BindOnce(&MidiScheduler::InvokeClosure, weak_factory_.GetWeakPtr(),
                      client, length, std::move(closure));
 
-  base::TimeDelta delay;
-  if (timestamp != 0.0) {
-    base::TimeTicks time_to_send =
-        base::TimeTicks() + base::TimeDelta::FromMicroseconds(
-                                timestamp * base::Time::kMicrosecondsPerSecond);
-    delay = std::max(time_to_send - base::TimeTicks::Now(), base::TimeDelta());
-  }
-  task_runner_->PostDelayedTask(FROM_HERE, std::move(weak_closure), delay);
+  task_runner_->PostDelayedTask(
+      FROM_HERE, std::move(weak_closure),
+      MidiService::TimestampToTimeDeltaDelay(timestamp));
 }
 
 void MidiScheduler::InvokeClosure(MidiManagerClient* client,
