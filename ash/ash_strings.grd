@@ -963,29 +963,11 @@ This file contains the strings for ash.
       <message name="IDS_ASH_LOW_PERIPHERAL_BATTERY_NOTIFICATION_TEXT" desc="The text of the notification when a peripheral device is in low battery condition.">
         Battery low (<ph name="percentage">$1<ex>56</ex></ph>%)
       </message>
-     <message name="IDS_ASH_LOW_STYLUS_BATTERY_NOTIFICATION_TITLE" desc="The title of the notification which notifies user of the battery level of a stylus.">
-       Stylus battery is low
-     </message>
-     <message name="IDS_ASH_LOW_STYLUS_BATTERY_NOTIFICATION_BODY" desc="The message of the notification which notifies user of the battery level of a stylus.">
-       Please replace the battery
-     </message>
-      <message name="IDS_ASH_SCREENSHOT_NOTIFICATION_TITLE_SUCCESS" desc="The title of the notification when a screenshot was taken.">
-        Screenshot taken
+      <message name="IDS_ASH_LOW_STYLUS_BATTERY_NOTIFICATION_TITLE" desc="The title of the notification which notifies user of the battery level of a stylus.">
+        Stylus battery is low
       </message>
-      <message name="IDS_ASH_SCREENSHOT_NOTIFICATION_TITLE_DISABLED" desc="The title of the notification when taking a screenshot failed because screenshots are disabled.">
-        Screenshots disabled
-      </message>
-      <message name="IDS_ASH_SCREENSHOT_NOTIFICATION_TITLE_FAIL" desc="The title of the notification when taking a screenshot failed.">
-        An error occurred
-      </message>
-      <message name="IDS_ASH_SCREENSHOT_NOTIFICATION_TEXT_SUCCESS" desc="The text of the notification when a screenshot was taken. If clicked, the screenshot file is displayed in the Files app.">
-        Show in folder
-      </message>
-      <message name="IDS_ASH_SCREENSHOT_NOTIFICATION_TEXT_DISABLED" desc="The text of the notification when taking a screenshot failed because screenshots are disabled by administrator policy.">
-        The ability to take screenshots has been disabled by your administrator.
-      </message>
-      <message name="IDS_ASH_SCREENSHOT_NOTIFICATION_TEXT_FAIL" desc="The text of the notification when taking a screenshot failed.">
-        Failed to save screenshot
+      <message name="IDS_ASH_LOW_STYLUS_BATTERY_NOTIFICATION_BODY" desc="The message of the notification which notifies user of the battery level of a stylus.">
+        Please replace the battery
       </message>
       <message name="IDS_ASH_SIGN_OUT_WARNING_POPUP_TEXT" desc="The text of the popup when the user preses the exit shortcut in chrome-os.">
         Press Ctrl+Shift+Q twice to sign out.

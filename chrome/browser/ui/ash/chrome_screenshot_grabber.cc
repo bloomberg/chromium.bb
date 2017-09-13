@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "ash/shell.h"
-#include "ash/strings/grit/ash_strings.h"
 #include "ash/system/system_notifier.h"
 #include "base/base64.h"
 #include "base/bind.h"
@@ -37,6 +36,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "chromeos/login/login_state.h"
 #include "components/drive/chromeos/file_system_interface.h"
@@ -52,7 +52,6 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/public/cpp/message_center_switches.h"
-#include "ui/strings/grit/ui_strings.h"
 
 namespace {
 
@@ -186,11 +185,11 @@ int GetScreenshotNotificationTitle(
     ui::ScreenshotGrabberObserver::Result screenshot_result) {
   switch (screenshot_result) {
     case ui::ScreenshotGrabberObserver::SCREENSHOTS_DISABLED:
-      return IDS_ASH_SCREENSHOT_NOTIFICATION_TITLE_DISABLED;
+      return IDS_SCREENSHOT_NOTIFICATION_TITLE_DISABLED;
     case ui::ScreenshotGrabberObserver::SCREENSHOT_SUCCESS:
-      return IDS_ASH_SCREENSHOT_NOTIFICATION_TITLE_SUCCESS;
+      return IDS_SCREENSHOT_NOTIFICATION_TITLE_SUCCESS;
     default:
-      return IDS_ASH_SCREENSHOT_NOTIFICATION_TITLE_FAIL;
+      return IDS_SCREENSHOT_NOTIFICATION_TITLE_FAIL;
   }
 }
 
@@ -198,11 +197,11 @@ int GetScreenshotNotificationText(
     ui::ScreenshotGrabberObserver::Result screenshot_result) {
   switch (screenshot_result) {
     case ui::ScreenshotGrabberObserver::SCREENSHOTS_DISABLED:
-      return IDS_ASH_SCREENSHOT_NOTIFICATION_TEXT_DISABLED;
+      return IDS_SCREENSHOT_NOTIFICATION_TEXT_DISABLED;
     case ui::ScreenshotGrabberObserver::SCREENSHOT_SUCCESS:
-      return IDS_ASH_SCREENSHOT_NOTIFICATION_TEXT_SUCCESS;
+      return IDS_SCREENSHOT_NOTIFICATION_TEXT_SUCCESS;
     default:
-      return IDS_ASH_SCREENSHOT_NOTIFICATION_TEXT_FAIL;
+      return IDS_SCREENSHOT_NOTIFICATION_TEXT_FAIL;
   }
 }
 
@@ -575,14 +574,14 @@ Notification* ChromeScreenshotGrabber::CreateNotification(
     // The order in which these buttons are added must be reflected by
     // ScreenshotGrabberNotificationDelegate::ButtonIndex.
     message_center::ButtonInfo copy_button(l10n_util::GetStringUTF16(
-        IDS_MESSAGE_CENTER_NOTIFICATION_BUTTON_COPY_SCREENSHOT_TO_CLIPBOARD));
+        IDS_SCREENSHOT_NOTIFICATION_BUTTON_COPY_TO_CLIPBOARD));
     copy_button.icon = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
         IDR_NOTIFICATION_SCREENSHOT_COPY_TO_CLIPBOARD);
     optional_field.buttons.push_back(copy_button);
 
     if (chromeos::NoteTakingHelper::Get()->IsAppAvailable(GetProfile())) {
       message_center::ButtonInfo annotate_button(l10n_util::GetStringUTF16(
-          IDS_MESSAGE_CENTER_NOTIFICATION_BUTTON_ANNOTATE_SCREENSHOT));
+          IDS_SCREENSHOT_NOTIFICATION_BUTTON_ANNOTATE));
       annotate_button.icon =
           ui::ResourceBundle::GetSharedInstance().GetImageNamed(
               IDR_NOTIFICATION_SCREENSHOT_ANNOTATE);
@@ -608,7 +607,7 @@ Notification* ChromeScreenshotGrabber::CreateNotification(
           IDR_SCREENSHOT_NOTIFICATION_ICON),
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  ash::system_notifier::kNotifierScreenshot),
-      l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_NOTIFIER_SCREENSHOT_NAME),
+      l10n_util::GetStringUTF16(IDS_SCREENSHOT_NOTIFICATION_NOTIFIER_NAME),
       GURL(kNotificationOriginUrl), notification_id, optional_field,
       new ScreenshotGrabberNotificationDelegate(success, GetProfile(),
                                                 screenshot_path));
