@@ -67,6 +67,8 @@ const char kChromeUIIdentityInternalsURL[] = "chrome://identity-internals/";
 const char kChromeUIInspectURL[] = "chrome://inspect/";
 const char kChromeUIInstantURL[] = "chrome://instant/";
 const char kChromeUIInterstitialURL[] = "chrome://interstitials/";
+const char kChromeUIInterventionsInternalsURL[] =
+    "chrome://interventions-internals/";
 const char kChromeUIInvalidationsURL[] = "chrome://invalidations/";
 const char kChromeUIMemoryInternalsURL[] = "chrome://memory-internals/";
 const char kChromeUINaClURL[] = "chrome://nacl/";
@@ -213,6 +215,7 @@ const char kChromeUIIdentityInternalsHost[] = "identity-internals";
 const char kChromeUIInspectHost[] = "inspect";
 const char kChromeUIInstantHost[] = "instant";
 const char kChromeUIInterstitialHost[] = "interstitials";
+const char kChromeUIInterventionsInternalsHost[] = "interventions-internals";
 const char kChromeUIInvalidationsHost[] = "invalidations";
 const char kChromeUIKillHost[] = "kill";
 const char kChromeUILargeIconHost[] = "large-icon";
@@ -654,6 +657,7 @@ const char* const kChromeHostURLs[] = {
     kChromeUIFlagsHost,
     kChromeUIGCMInternalsHost,
     kChromeUIHistoryHost,
+    kChromeUIInterventionsInternalsHost,
     kChromeUIInvalidationsHost,
     kChromeUILocalStateHost,
     kChromeUIMediaEngagementHost,
