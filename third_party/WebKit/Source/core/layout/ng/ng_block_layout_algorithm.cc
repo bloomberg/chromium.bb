@@ -53,13 +53,6 @@ bool ClearanceMayAffectLayout(
   return false;
 }
 
-// Whether we've run out of space in this flow. If so, there will be no work
-// left to do for this block in this fragmentainer.
-bool IsOutOfSpace(const NGConstraintSpace& space, LayoutUnit content_size) {
-  return space.HasBlockFragmentation() &&
-         content_size >= space.FragmentainerSpaceAvailable();
-}
-
 // Returns if the resulting fragment should be considered an "empty block".
 // There is special casing for fragments like this, e.g. margins "collapse
 // through", etc.
@@ -319,8 +312,7 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
         container_builder_.SwapUnpositionedFloats(&unpositioned_floats_);
         return container_builder_.Abort(NGLayoutResult::kBfcOffsetResolved);
       }
-      if (container_builder_.DidBreak() &&
-          IsOutOfSpace(ConstraintSpace(), content_size_))
+      if (container_builder_.DidBreak() && IsFragmentainerOutOfSpace())
         break;
     }
   }
@@ -921,6 +913,20 @@ NGBfcOffset NGBlockLayoutAlgorithm::PositionWithParentBfc(
   return child_bfc_offset;
 }
 
+LayoutUnit NGBlockLayoutAlgorithm::FragmentainerSpaceAvailable() const {
+  DCHECK(container_builder_.BfcOffset().has_value());
+  return ConstraintSpace().FragmentainerSpaceAtBfcStart() -
+         container_builder_.BfcOffset()->block_offset;
+}
+
+bool NGBlockLayoutAlgorithm::IsFragmentainerOutOfSpace() const {
+  if (!ConstraintSpace().HasBlockFragmentation())
+    return false;
+  if (!container_builder_.BfcOffset().has_value())
+    return false;
+  return content_size_ >= FragmentainerSpaceAvailable();
+}
+
 void NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
   LayoutUnit used_block_size =
       BreakToken() ? BreakToken()->UsedBlockSize() : LayoutUnit();
@@ -932,8 +938,7 @@ void NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
       << "Adding and subtracting the used_block_size shouldn't leave the "
          "block_size for this fragment smaller than zero.";
 
-  LayoutUnit space_left = ConstraintSpace().FragmentainerSpaceAvailable() -
-                          ContainerBfcOffset().block_offset;
+  LayoutUnit space_left = FragmentainerSpaceAvailable();
   DCHECK_GE(space_left, LayoutUnit());
 
   if (container_builder_.DidBreak()) {
@@ -1057,7 +1062,7 @@ RefPtr<NGConstraintSpace> NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
 
   LayoutUnit space_available;
   if (ConstraintSpace().HasBlockFragmentation()) {
-    space_available = ConstraintSpace().FragmentainerSpaceAvailable();
+    space_available = ConstraintSpace().FragmentainerSpaceAtBfcStart();
     // If a block establishes a new formatting context we must know our
     // position in the formatting context, and are able to adjust the
     // fragmentation line.
@@ -1065,7 +1070,7 @@ RefPtr<NGConstraintSpace> NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
       space_available -= child_data.bfc_offset_estimate.block_offset;
     }
   }
-  space_builder.SetFragmentainerSpaceAvailable(space_available)
+  space_builder.SetFragmentainerSpaceAtBfcStart(space_available)
       .SetFragmentationType(ConstraintSpace().BlockFragmentationType());
 
   return space_builder.ToConstraintSpace(

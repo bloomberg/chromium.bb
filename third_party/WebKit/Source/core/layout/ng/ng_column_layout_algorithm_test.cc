@@ -511,5 +511,43 @@ TEST_F(NGColumnLayoutAlgorithmTest, BlockStartAtColumnBoundary) {
   EXPECT_EQ(expectation, dump);
 }
 
+TEST_F(NGColumnLayoutAlgorithmTest, NestedBlockAfterBlock) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-fill: auto;
+        column-gap: 10px;
+        width: 320px;
+        height: 100px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div style="height:10px;"></div>
+        <div>
+          <div style="width:60px; height:120px;"></div>
+          <div style="width:50px; height:20px;"></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x100
+        offset:0,0 size:100x10
+        offset:0,10 size:100x90
+          offset:0,0 size:60x90
+      offset:110,0 size:100x50
+        offset:0,0 size:100x50
+          offset:0,0 size:60x30
+          offset:0,30 size:50x20
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
 }  // anonymous namespace
 }  // namespace blink

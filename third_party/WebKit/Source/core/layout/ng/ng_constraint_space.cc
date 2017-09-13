@@ -17,7 +17,7 @@ NGConstraintSpace::NGConstraintSpace(
     NGLogicalSize percentage_resolution_size,
     Optional<LayoutUnit> parent_percentage_resolution_inline_size,
     NGPhysicalSize initial_containing_block_size,
-    LayoutUnit fragmentainer_space_available,
+    LayoutUnit fragmentainer_space_at_bfc_start,
     bool is_fixed_size_inline,
     bool is_fixed_size_block,
     bool is_shrink_to_fit,
@@ -38,7 +38,7 @@ NGConstraintSpace::NGConstraintSpace(
       parent_percentage_resolution_inline_size_(
           parent_percentage_resolution_inline_size),
       initial_containing_block_size_(initial_containing_block_size),
-      fragmentainer_space_available_(fragmentainer_space_available),
+      fragmentainer_space_at_bfc_start_(fragmentainer_space_at_bfc_start),
       is_fixed_size_inline_(is_fixed_size_inline),
       is_fixed_size_block_(is_fixed_size_block),
       is_shrink_to_fit_(is_shrink_to_fit),
@@ -180,8 +180,8 @@ bool NGConstraintSpace::operator==(const NGConstraintSpace& other) const {
              other.parent_percentage_resolution_inline_size_ &&
          initial_containing_block_size_ ==
              other.initial_containing_block_size_ &&
-         fragmentainer_space_available_ ==
-             other.fragmentainer_space_available_ &&
+         fragmentainer_space_at_bfc_start_ ==
+             other.fragmentainer_space_at_bfc_start_ &&
          is_fixed_size_inline_ == other.is_fixed_size_inline_ &&
          is_fixed_size_block_ == other.is_fixed_size_block_ &&
          is_shrink_to_fit_ == other.is_shrink_to_fit_ &&

@@ -148,6 +148,14 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
                     NGBreakToken* child_break_token,
                     NGPreviousInflowPosition*);
 
+  // Return the amount of block space available in the current fragmentainer
+  // for the node being laid out by this algorithm.
+  LayoutUnit FragmentainerSpaceAvailable() const;
+
+  // Return true if the node being laid out by this fragmentainer has used all
+  // the available space in the current fragmentainer.
+  bool IsFragmentainerOutOfSpace() const;
+
   // Final adjustments before fragment creation. We need to prevent the
   // fragment from crossing fragmentainer boundaries, and rather create a break
   // token if we're out of space.
