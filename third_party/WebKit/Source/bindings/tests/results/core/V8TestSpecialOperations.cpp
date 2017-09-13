@@ -113,7 +113,8 @@ static void namedPropertySetter(const AtomicString& name, v8::Local<v8::Value> v
   V8SetReturnValue(info, v8Value);
 }
 
-static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
+template <typename T>
+static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallbackInfo<T>& info) {
   const CString& nameInUtf8 = name.Utf8();
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kGetterContext, "TestSpecialOperations", nameInUtf8.data());
 
@@ -129,6 +130,35 @@ static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallb
   //      [LegacyUnenumerableNamedProperties] extended attribute, then set
   //      desc.[[Enumerable]] to false, otherwise set it to true.
   V8SetReturnValueInt(info, v8::None);
+}
+
+static void namedPropertyDescriptor(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  // This function is called when an IDL interface supports named properties
+  // but not indexed properties. When a numeric property is queried, V8 calls
+  // indexedPropertyDescriptorCallback(), which calls this function.
+
+  // Since we initialize our indexed and named property handlers differently
+  // (the former use descriptors and definers, the latter uses a query
+  // callback), we need to inefficiently call the query callback and convert
+  // the v8::PropertyAttribute integer it returns into a v8::PropertyDescriptor
+  // expected by a descriptor callback.
+  // TODO(rakuco): remove this hack once we switch named property handlers to
+  // using descriptor and definer callbacks (bug 764633).
+  const AtomicString& indexAsName = AtomicString::Number(index);
+  TestSpecialOperationsV8Internal::namedPropertyQuery(indexAsName, info);
+  v8::Local<v8::Value> getterValue = info.GetReturnValue().Get();
+  if (!getterValue->IsUndefined()) {
+    DCHECK(getterValue->IsInt32());
+    const int32_t props =
+        getterValue->ToInt32(info.GetIsolate()->GetCurrentContext())
+            .ToLocalChecked()
+            ->Value();
+    v8::PropertyDescriptor desc(V8String(info.GetIsolate(), indexAsName),
+                                !(props & v8::ReadOnly));
+    desc.set_enumerable(!(props & v8::DontEnum));
+    desc.set_configurable(!(props & v8::DontDelete));
+    V8SetReturnValue(info, desc);
+  }
 }
 
 static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info) {
@@ -193,6 +223,10 @@ void V8TestSpecialOperations::indexedPropertyGetterCallback(uint32_t index, cons
   TestSpecialOperationsV8Internal::namedPropertyGetter(propertyName, info);
 }
 
+void V8TestSpecialOperations::indexedPropertyDescriptorCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  TestSpecialOperationsV8Internal::namedPropertyDescriptor(index, info);
+}
+
 void V8TestSpecialOperations::indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
   const AtomicString& propertyName = AtomicString::Number(index);
 
@@ -226,7 +260,7 @@ static void installV8TestSpecialOperationsTemplate(
   v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(
       V8TestSpecialOperations::indexedPropertyGetterCallback,
       V8TestSpecialOperations::indexedPropertySetterCallback,
-      nullptr,
+      V8TestSpecialOperations::indexedPropertyDescriptorCallback,
       nullptr,
       nullptr,
       nullptr,
