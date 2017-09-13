@@ -426,7 +426,8 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Ubuntu"
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
             }
           ]
         },
@@ -820,7 +821,8 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Ubuntu"
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
             }
           ]
         },
