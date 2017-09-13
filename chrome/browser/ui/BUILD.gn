@@ -2175,6 +2175,8 @@ split_static_library("ui") {
     sources += [
       "webui/print_preview/extension_printer_handler.cc",
       "webui/print_preview/extension_printer_handler.h",
+      "webui/print_preview/pdf_printer_handler.cc",
+      "webui/print_preview/pdf_printer_handler.h",
       "webui/print_preview/print_preview_handler.cc",
       "webui/print_preview/print_preview_handler.h",
       "webui/print_preview/print_preview_ui.cc",
