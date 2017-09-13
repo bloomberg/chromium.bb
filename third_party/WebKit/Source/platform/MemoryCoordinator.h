@@ -40,18 +40,6 @@ class PLATFORM_EXPORT MemoryCoordinator final
   // Can be overridden in layout tests via internals.
   static bool IsLowEndDevice();
 
-  // Returns the amount of physical memory in megabytes on the device.
-  static int64_t GetPhysicalMemoryMB();
-
-  // Returns an approximation of the physical memory rounded to to the most
-  // significant 2-bits. This information is provided to web-developers to allow
-  // them to customize the experience of their page to the possible available
-  // device memory.
-  static float GetApproximatedDeviceMemory();
-
-  // Override the value of the physical memory for testing.
-  static void SetPhysicalMemoryMBForTesting(int64_t);
-
   // Returns true when available memory is low.
   // This is not cheap and should not be called repeatedly.
   // TODO(keishi): Remove when MemoryState is ready.
@@ -89,11 +77,7 @@ class PLATFORM_EXPORT MemoryCoordinator final
   void ClearMemory();
   static void ClearThreadSpecificMemory();
 
-  static void CalculateAndSetApproximatedDeviceMemory();
-
-  static float approximated_device_memory_gb_;
   static bool is_low_end_device_;
-  static int64_t physical_memory_mb_;
 
   HeapHashSet<WeakMember<MemoryCoordinatorClient>> clients_;
   HashSet<WebThread*> web_threads_;

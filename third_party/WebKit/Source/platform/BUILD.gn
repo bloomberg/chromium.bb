@@ -1738,7 +1738,6 @@ test("blink_platform_unittests") {
     "LayoutUnitTest.cpp",
     "LifecycleContextTest.cpp",
     "LongTaskDetectorTest.cpp",
-    "MemoryCoordinatorTest.cpp",
     "PODArenaTest.cpp",
     "PODFreeListArenaTest.cpp",
     "PODIntervalTreeTest.cpp",

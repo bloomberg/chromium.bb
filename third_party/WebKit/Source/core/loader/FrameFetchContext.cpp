@@ -87,6 +87,7 @@
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
+#include "third_party/WebKit/common/device_memory/approximated_device_memory.h"
 
 namespace blink {
 
@@ -783,8 +784,8 @@ void FrameFetchContext::AddClientHintsIfNecessary(
                            hints_preferences, enabled_hints)) {
     request.AddHTTPHeaderField(
         "Device-Memory",
-        AtomicString(
-            String::Number(MemoryCoordinator::GetApproximatedDeviceMemory())));
+        AtomicString(String::Number(
+            ApproximatedDeviceMemory::GetApproximatedDeviceMemory())));
   }
 
   float dpr = GetDevicePixelRatio();
