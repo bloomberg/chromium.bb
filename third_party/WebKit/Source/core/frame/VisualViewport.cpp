@@ -447,9 +447,15 @@ void VisualViewport::SetupScrollbar(WebScrollbar::Orientation orientation) {
                     : web_overlay_scrollbar_vertical_;
 
   ScrollbarThemeOverlay& theme = ScrollbarThemeOverlay::MobileTheme();
-  int thumb_thickness = theme.ThumbThickness();
-  int scrollbar_thickness = theme.ScrollbarThickness(kRegularScrollbar);
-  int scrollbar_margin = theme.ScrollbarMargin();
+  int thumb_thickness = clampTo<int>(
+      std::floor(GetPage().GetChromeClient().WindowToViewportScalar(
+          theme.ThumbThickness())));
+  int scrollbar_thickness = clampTo<int>(
+      std::floor(GetPage().GetChromeClient().WindowToViewportScalar(
+          theme.ScrollbarThickness(kRegularScrollbar))));
+  int scrollbar_margin = clampTo<int>(
+      std::floor(GetPage().GetChromeClient().WindowToViewportScalar(
+          theme.ScrollbarMargin())));
 
   if (!web_scrollbar_layer) {
     ScrollingCoordinator* coordinator = GetPage().GetScrollingCoordinator();
