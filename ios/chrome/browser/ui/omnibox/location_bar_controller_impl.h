@@ -11,7 +11,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "components/omnibox/browser/omnibox_view.h"
-#include "ios/shared/chrome/browser/ui/omnibox/location_bar_controller.h"
+#include "ios/chrome/browser/ui/omnibox/location_bar_controller.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
