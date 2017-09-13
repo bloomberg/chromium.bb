@@ -60,6 +60,12 @@ class RasterizeAndRecordMicroTop25(_RasterizeAndRecordMicro):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
+        # Should a story need to be disabled, note that story names
+        # for the static top 25 page set used by this benchmark are of
+        # the format "file://static_top_25/page.html" where
+        # "page.html" is substituted with the actual story's static
+        # html filename as found under
+        # tools/perf/page_sets/static_top_25.
         self.DisableStory(
             'file://static_top_25/wikipedia.html', [story.expectations.ALL],
             'crbug.com/764543')
