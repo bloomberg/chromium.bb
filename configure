@@ -580,11 +580,8 @@ post_process_cmdline() {
       log_echo "daala_dct64 requires tx64x64, so disabling daala_dct64"
       disable_feature daala_dct64
     fi
-    if enabled daala_dct4 ||
-	    enabled daala_dct8 ||
-	    enabled daala_dct16 ||
-	    enabled daala_dct32 ||
-	    enabled daala_dct64; then
+    if enabled daala_dct4 || enabled daala_dct8 || enabled daala_dct16 ||
+        enabled daala_dct32 || enabled daala_dct64; then
       disable_feature rect_tx
       disable_feature var_tx
       disable_feature lgt
