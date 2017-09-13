@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 import org.chromium.chrome.browser.ntp.cards.NodeVisitor;
 import org.chromium.chrome.browser.ntp.cards.OptionalLeaf;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.ui.widget.Toast;
 
@@ -51,8 +52,9 @@ public class SuggestionsCarousel extends OptionalLeaf implements ImpressionTrack
     private boolean mWasScrolledSinceShown;
 
     public SuggestionsCarousel(UiConfig uiConfig, SuggestionsUiDelegate uiDelegate,
-            ContextMenuManager contextMenuManager) {
-        mAdapter = new SuggestionsCarouselAdapter(uiConfig, uiDelegate, contextMenuManager);
+            ContextMenuManager contextMenuManager, OfflinePageBridge offlinePageBridge) {
+        mAdapter = new SuggestionsCarouselAdapter(
+                uiConfig, uiDelegate, contextMenuManager, offlinePageBridge);
         mUiDelegate = uiDelegate;
 
         // The impression tracker will record metrics only once per bottom sheet opened.

@@ -116,14 +116,17 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
         UiConfig uiConfig = new UiConfig(mRecyclerView);
         mRecyclerView.init(uiConfig, mContextMenuManager);
 
+        OfflinePageBridge offlinePageBridge = OfflinePageBridge.getForProfile(profile);
+
         mSuggestionsCarousel =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_CAROUSEL)
-                ? new SuggestionsCarousel(uiConfig, mSuggestionsUiDelegate, mContextMenuManager)
+                ? new SuggestionsCarousel(
+                          uiConfig, mSuggestionsUiDelegate, mContextMenuManager, offlinePageBridge)
                 : null;
 
         final NewTabPageAdapter adapter = new NewTabPageAdapter(mSuggestionsUiDelegate,
-                /* aboveTheFoldView = */ null, uiConfig, OfflinePageBridge.getForProfile(profile),
-                mContextMenuManager, mTileGroupDelegate, mSuggestionsCarousel);
+                /* aboveTheFoldView = */ null, uiConfig, offlinePageBridge, mContextMenuManager,
+                mTileGroupDelegate, mSuggestionsCarousel);
 
         mBottomSheetObserver = new SuggestionsSheetVisibilityChangeObserver(this, activity) {
             @Override
