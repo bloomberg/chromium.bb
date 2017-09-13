@@ -9,12 +9,10 @@
 
 #include "base/files/file_path.h"
 #include "chrome/installer/util/shell_util.h"
-#include "chrome/installer/util/util_constants.h"
 
 class BrowserDistribution;
 
 namespace installer {
-
 
 // An interface to product-specific operations that depend on product
 // configuration. Implementations are expected to be stateless.
@@ -39,12 +37,6 @@ class ProductOperations {
       const base::FilePath& target_exe,
       ShellUtil::ShortcutProperties* properties) const = 0;
 
-  // After an install or upgrade the user might qualify to participate in an
-  // experiment. This function determines if the user qualifies and if so it
-  // sets the wheels in motion or in simple cases does the experiment itself.
-  virtual void LaunchUserExperiment(const base::FilePath& setup_path,
-                                    InstallStatus status,
-                                    bool system_level) const = 0;
 };
 
 }  // namespace installer

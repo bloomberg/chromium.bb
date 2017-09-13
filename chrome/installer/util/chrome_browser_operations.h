@@ -22,10 +22,6 @@ class ChromeBrowserOperations : public ProductOperations {
       const base::FilePath& target_exe,
       ShellUtil::ShortcutProperties* properties) const override;
 
-  void LaunchUserExperiment(const base::FilePath& setup_path,
-                            InstallStatus status,
-                            bool system_level) const override;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserOperations);
 };

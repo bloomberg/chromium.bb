@@ -77,7 +77,6 @@
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/self_cleaning_temp_dir.h"
 #include "chrome/installer/util/shell_util.h"
-#include "chrome/installer/util/user_experiment.h"
 #include "chrome/installer/util/util_constants.h"
 #include "components/crash/content/app/crash_switches.h"
 #include "components/crash/content/app/run_as_crashpad_handler_win.h"
@@ -983,37 +982,6 @@ bool HandleNonInstallCmdLineOptions(const base::FilePath& setup_exe,
                                  MasterPreferences::ForCurrentProcess(),
                                  original_state, installer_state);
     exit_code = 0;
-  } else if (cmd_line.HasSwitch(installer::switches::kInactiveUserToast)) {
-    // Launch the inactive user toast experiment.
-    int flavor = -1;
-    base::StringToInt(cmd_line.GetSwitchValueNative(
-        installer::switches::kInactiveUserToast), &flavor);
-    std::string experiment_group =
-        cmd_line.GetSwitchValueASCII(installer::switches::kExperimentGroup);
-    DCHECK_NE(-1, flavor);
-    if (flavor == -1) {
-      *exit_code = installer::UNKNOWN_STATUS;
-    } else {
-      // This code is called (via setup.exe relaunch) only if a product is known
-      // to run user experiments, so no check is required.
-      installer::InactiveUserToastExperiment(
-          flavor, base::ASCIIToUTF16(experiment_group),
-          installer_state->product(), installer_state->target_path());
-    }
-  } else if (cmd_line.HasSwitch(installer::switches::kSystemLevelToast)) {
-    const Product& product = installer_state->product();
-    BrowserDistribution* browser_dist = product.distribution();
-    // We started as system-level and have been re-launched as user level
-    // to continue with the toast experiment.
-    base::Version installed_version;
-    InstallUtil::GetChromeVersion(browser_dist, true, &installed_version);
-    if (!installed_version.IsValid()) {
-      LOG(ERROR) << "No installation of " << browser_dist->GetDisplayName()
-                 << " found for system-level toast.";
-    } else {
-      product.LaunchUserExperiment(setup_exe, installer::REENTRY_SYS_UPDATE,
-                                   true);
-    }
   } else if (cmd_line.HasSwitch(installer::switches::kPatch)) {
     const std::string patch_type_str(
         cmd_line.GetSwitchValueASCII(installer::switches::kPatch));
@@ -1249,25 +1217,6 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
     }
   }
 
-  // There might be an experiment (for upgrade usually) that needs to happen.
-  // An experiment's outcome can include chrome's uninstallation. If that is
-  // the case we would not do that directly at this point but in another
-  // instance of setup.exe
-  //
-  // There is another way to reach this same function if this is a system
-  // level install. See HandleNonInstallCmdLineOptions().
-  {
-    // If installation failed, use the path to the currently running setup.
-    // If installation succeeded, use the path to setup in the installer dir.
-    base::FilePath setup_path(setup_exe);
-    if (InstallUtil::GetInstallReturnCode(install_status) == 0) {
-      setup_path = installer_state.GetInstallerDirectory(*installer_version)
-          .Append(setup_path.BaseName());
-    }
-    installer_state.product().LaunchUserExperiment(setup_path, install_status,
-                                                   system_install);
-  }
-
   // If the installation completed successfully...
   if (InstallUtil::GetInstallReturnCode(install_status) == 0) {
     // Update the DisplayVersion created by an MSI-based install.
@@ -1416,8 +1365,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   }
   // Some switches only apply for modes that support retention experiments.
   if (!install_static::SupportsRetentionExperiments() &&
-      (cmd_line.HasSwitch(installer::switches::kInactiveUserToast) ||
-       cmd_line.HasSwitch(installer::switches::kSystemLevelToast))) {
+      cmd_line.HasSwitch(installer::switches::kUserExperiment)) {
     return installer::SXS_OPTION_NOT_SUPPORTED;
   }
 
