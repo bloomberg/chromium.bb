@@ -599,6 +599,7 @@ void AutofillAgent::OnSameDocumentNavigationCompleted() {
 
   last_interacted_form_.Reset();
   formless_elements_user_edited_.clear();
+  submitted_forms_.clear();
 }
 
 bool AutofillAgent::CollectFormlessElements(FormData* output) {
