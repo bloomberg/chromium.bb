@@ -66,9 +66,10 @@ class TrafficAnnotationAuditor {
                     AuditorException::ExceptionType exception_type);
 
   // Checks to see if any unique id or extra id or their hash code are
-  // duplicated. Adds errors to |errors_| and purges annotations with duplicate
-  // ids.
-  void CheckDuplicateHashes();
+  // duplicated, either in currently existing annotations, or in deprecated
+  // ones. Adds errors to |errors_| and purges annotations with duplicate ids.
+  // Returns false if any errors happen while checking.
+  bool CheckDuplicateHashes();
 
   // Checks to see if unique ids only include alphanumeric characters and
   // underline. Adds errors to |errors_| and purges annotations with
@@ -89,7 +90,7 @@ class TrafficAnnotationAuditor {
   bool CheckIfCallCanBeUnannotated(const CallInstance& call);
 
   // Performs all checks on extracted annotations and calls.
-  void RunAllChecks();
+  bool RunAllChecks();
 
   // Returns a mapping of reserved unique ids' hash codes to the unique ids'
   // texts. This list includes all unique ids that are defined in

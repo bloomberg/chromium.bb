@@ -18,13 +18,15 @@ class AuditorResult {
                              // MISSING_TRAFFIC_ANNOTATION tag.
     ERROR_NO_ANNOTATION,     // A function is called with NO_ANNOTATION tag.
     ERROR_SYNTAX,            // Annotation syntax is not right.
-    ERROR_RESERVED_UNIQUE_ID_HASH_CODE,   // A unique id has a hash code similar
-                                          // to a reserved word.
-    ERROR_DUPLICATE_UNIQUE_ID_HASH_CODE,  // Two unique ids have similar hash
-                                          // codes.
-    ERROR_UNIQUE_ID_INVALID_CHARACTER,    // A unique id contanins a characer
-                                          // which is not alphanumeric or
-                                          // underline.
+    ERROR_RESERVED_UNIQUE_ID_HASH_CODE,  // A unique id has a hash code similar
+                                         // to a reserved word.
+    ERROR_DEPRECATED_UNIQUE_ID_HASH_CODE,  // A unique id has a hash code
+                                           // equal to a deprecated one.
+    ERROR_DUPLICATE_UNIQUE_ID_HASH_CODE,   // Two unique ids have equal hash
+                                           // codes.
+    ERROR_UNIQUE_ID_INVALID_CHARACTER,     // A unique id contanins a characer
+                                           // which is not alphanumeric or
+                                           // underline.
     ERROR_MISSING_ANNOTATION,     // A function that requires annotation is not
                                   // annotated.
     ERROR_MISSING_EXTRA_ID,       // Annotation does not have a valid extra id.

@@ -86,6 +86,13 @@ std::string AuditorResult::ToText() const {
           "word and should be changed.",
           details_[0].c_str(), file_path_.c_str(), line_);
 
+    case AuditorResult::Type::ERROR_DEPRECATED_UNIQUE_ID_HASH_CODE:
+      DCHECK(details_.size());
+      return base::StringPrintf(
+          "Unique id '%s' in '%s:%i' has a hash code similar to a deprecated "
+          "unique id and should be changed.",
+          details_[0].c_str(), file_path_.c_str(), line_);
+
     case AuditorResult::Type::ERROR_DUPLICATE_UNIQUE_ID_HASH_CODE:
       DCHECK_EQ(details_.size(), 2u);
       return base::StringPrintf(
