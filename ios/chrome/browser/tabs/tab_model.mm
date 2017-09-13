@@ -42,7 +42,6 @@
 #import "ios/chrome/browser/tabs/tab_model_selected_tab_observer.h"
 #import "ios/chrome/browser/tabs/tab_model_synced_window_delegate.h"
 #import "ios/chrome/browser/tabs/tab_model_web_state_list_delegate.h"
-#import "ios/chrome/browser/tabs/tab_model_web_usage_enabled_observer.h"
 #import "ios/chrome/browser/tabs/tab_parenting_observer.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -156,9 +155,6 @@ void CleanCertificatePolicyCache(
 
   // The delegate for sync.
   std::unique_ptr<TabModelSyncedWindowDelegate> _syncedWindowDelegate;
-
-  // The observer that sends kTabModelNewTabWillOpenNotification notifications.
-  TabModelNotificationObserver* _tabModelNotificationObserver;
 
   // Counters for metrics.
   WebStateListMetricsObserver* _webStateListMetricsObserver;
@@ -317,12 +313,7 @@ void CleanCertificatePolicyCache(
     _webStateListObservers.push_back(std::move(webStateListMetricsObserver));
 
     _webStateListObservers.push_back(
-        base::MakeUnique<TabModelWebUsageEnabledObserver>(self));
-
-    auto tabModelNotificationObserver =
-        base::MakeUnique<TabModelNotificationObserver>(self);
-    _tabModelNotificationObserver = tabModelNotificationObserver.get();
-    _webStateListObservers.push_back(std::move(tabModelNotificationObserver));
+        base::MakeUnique<TabModelNotificationObserver>(self));
 
     for (const auto& webStateListObserver : _webStateListObservers)
       _webStateList->AddObserver(webStateListObserver.get());
@@ -578,8 +569,7 @@ void CleanCertificatePolicyCache(
   UnregisterTabModelFromChromeBrowserState(_browserState, self);
   _browserState = nullptr;
 
-  // Clear weak pointer to observers before destroying them.
-  _tabModelNotificationObserver = nullptr;
+  // Clear weak pointer to WebStateListMetricsObserver before destroying it.
   _webStateListMetricsObserver = nullptr;
 
   // Close all tabs. Do this in an @autoreleasepool as WebStateList observers
@@ -656,11 +646,6 @@ void CleanCertificatePolicyCache(
   if (!window.sessions.count)
     return NO;
 
-  // Disable sending the kTabModelNewTabWillOpenNotification notification
-  // while restoring a session as it breaks the BVC (see crbug.com/763964).
-  if (_tabModelNotificationObserver)
-    _tabModelNotificationObserver->set_enabled(false);
-
   int oldCount = _webStateList->count();
   DCHECK_GE(oldCount, 0);
 
@@ -710,10 +695,6 @@ void CleanCertificatePolicyCache(
     _tabUsageRecorder->InitialRestoredTabs(self.currentTab.webState,
                                            restoredWebStates);
   }
-
-  if (_tabModelNotificationObserver)
-    _tabModelNotificationObserver->set_enabled(true);
-
   return closedNTPTab;
 }
 
