@@ -10,7 +10,6 @@
 import("//build/config/c++/c++.gni")
 import("//build/config/chromecast_build.gni")
 import("//build/config/compiler/compiler.gni")
-import("//build/config/v8_target_cpu.gni")
 import("//v8/snapshot_toolchain.gni")
 
 if (is_android) {
@@ -18,9 +17,7 @@ if (is_android) {
 }
 
 declare_args() {
-  # TODO(crbug.com/764576): Enable the feature on more environments.
-  use_v8_context_snapshot = !is_chromeos && !is_android && !is_chromecast &&
-                            v8_target_cpu == target_cpu
+  use_v8_context_snapshot = !is_chromeos && !is_android && !is_chromecast
 }
 
 if (is_android) {
