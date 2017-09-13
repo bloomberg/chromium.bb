@@ -54,8 +54,16 @@ class MakeInternalSettingsWriter(json5_generator.Writer):
         }
         self._template_context = {
             'input_files': self._input_files,
+            'primary_header_name': 'InternalSettingsGenerated.h',
             'settings': self.json5_file.name_dictionaries,
         }
+        if json5_generator.Writer.snake_case_source_files:
+            self._outputs = {
+                'internal_settings_generated.h': self.generate_header,
+                'internal_settings_generated.cc': self.generate_implementation,
+                'internal_settings_generated.idl': self.generate_idl,
+            }
+            self._template_context['primary_header_name'] = 'internal_settings_generated.h'
 
     @template_expander.use_jinja('templates/InternalSettingsGenerated.h.tmpl', filters=filters)
     def generate_header(self):

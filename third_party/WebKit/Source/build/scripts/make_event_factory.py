@@ -132,7 +132,7 @@ class EventFactoryWriter(json5_generator.Writer):
         exit(1)
 
     def _get_basename(self, name, prefix=None):
-        if self.snake_case_input_files:
+        if json5_generator.Writer.snake_case_source_files:
             if prefix:
                 return '%s_%s' % (prefix.lower(), name_utilities.snake_case(name))
             return name_utilities.snake_case(name)
