@@ -292,11 +292,6 @@ void CronetPrefsManager::PrepareForShutdown() {
   http_server_properties_manager_->ShutdownOnPrefSequence();
   if (network_qualities_prefs_manager_)
     network_qualities_prefs_manager_->ShutdownOnPrefSequence();
-
-  // TODO(crbug.com/758711): revisit to see whether the logic can be simplified
-  // after SDCH is removed. Destroy |host_cache_persistence_manager_| before the
-  // caller destroys UrlRequestContext.
-  host_cache_persistence_manager_.reset(nullptr);
 }
 
 }  // namespace cronet
