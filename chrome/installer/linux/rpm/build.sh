@@ -53,6 +53,8 @@ stage_install_rpm() {
 
 verify_package() {
   local DEPENDS="$1"
+  local EXPECTED_DEPENDS="${TMPFILEDIR}/expected_rpm_depends"
+  local ACTUAL_DEPENDS="${TMPFILEDIR}/actual_rpm_depends"
   local ADDITIONAL_RPM_DEPENDS="/bin/sh, \
   rpmlib(CompressedFileNames) <= 3.0.4-1, \
   rpmlib(PayloadFilesHavePrefix) <= 4.0-1, \
@@ -62,11 +64,11 @@ verify_package() {
       rpmlib(PayloadIsXz) <= 5.2-1"
   fi
   echo "${DEPENDS}" "${ADDITIONAL_RPM_DEPENDS}" | sed 's/,/\n/g' | \
-      sed 's/^ *//' | LANG=C sort > expected_rpm_depends
+      sed 's/^ *//' | LANG=C sort > "${EXPECTED_DEPENDS}"
   rpm -qpR "${OUTPUTDIR}/${PKGNAME}.${ARCHITECTURE}.rpm" | LANG=C sort | uniq \
-      > actual_rpm_depends
+      > "${ACTUAL_DEPENDS}"
   BAD_DIFF=0
-  diff -u expected_rpm_depends actual_rpm_depends || BAD_DIFF=1
+  diff -u "${EXPECTED_DEPENDS}" "${ACTUAL_DEPENDS}" || BAD_DIFF=1
   if [ $BAD_DIFF -ne 0 ] && [ -z "${IGNORE_DEPS_CHANGES:-}" ]; then
     echo
     echo "ERROR: bad rpm dependencies!"
