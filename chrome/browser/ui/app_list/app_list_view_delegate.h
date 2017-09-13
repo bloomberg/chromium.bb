@@ -17,7 +17,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/search/hotword_client.h"
 #include "chrome/browser/ui/app_list/start_page_observer.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"
@@ -48,7 +47,6 @@ class Profile;
 class AppListViewDelegate : public app_list::AppListViewDelegate,
                             public app_list::StartPageObserver,
                             public ash::mojom::WallpaperObserver,
-                            public HotwordClient,
                             public content::NotificationObserver,
                             public TemplateURLServiceObserver {
  public:
@@ -114,12 +112,6 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   // Overridden from ash::mojom::WallpaperObserver:
   void OnWallpaperColorsChanged(
       const std::vector<SkColor>& prominent_colors) override;
-
-  // Overridden from HotwordClient:
-  void OnHotwordStateChanged(bool started) override;
-  void OnHotwordRecognized(
-      const scoped_refptr<content::SpeechRecognitionSessionPreamble>& preamble)
-      override;
 
   // Overridden from content::NotificationObserver:
   void Observe(int type,

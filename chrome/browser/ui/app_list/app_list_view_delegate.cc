@@ -15,8 +15,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/hotword_service.h"
-#include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
@@ -287,25 +285,6 @@ void AppListViewDelegate::OnWallpaperColorsChanged(
     observer.OnWallpaperColorsChanged();
 }
 
-void AppListViewDelegate::OnHotwordStateChanged(bool started) {
-  if (started) {
-    if (speech_ui_->state() == app_list::SPEECH_RECOGNITION_READY) {
-      OnSpeechRecognitionStateChanged(
-          app_list::SPEECH_RECOGNITION_HOTWORD_LISTENING);
-    }
-  } else {
-    if (speech_ui_->state() == app_list::SPEECH_RECOGNITION_HOTWORD_LISTENING)
-      OnSpeechRecognitionStateChanged(app_list::SPEECH_RECOGNITION_READY);
-  }
-}
-
-void AppListViewDelegate::OnHotwordRecognized(
-    const scoped_refptr<content::SpeechRecognitionSessionPreamble>& preamble) {
-  DCHECK_EQ(app_list::SPEECH_RECOGNITION_HOTWORD_LISTENING,
-            speech_ui_->state());
-  StartSpeechRecognitionForHotword(preamble);
-}
-
 app_list::AppListModel* AppListViewDelegate::GetModel() {
   return model_;
 }
@@ -355,13 +334,6 @@ void AppListViewDelegate::ViewInitialized() {
       app_list::StartPageService::Get(profile_);
   if (service) {
     service->AppListShown();
-    if (service->HotwordEnabled()) {
-      HotwordService* hotword_service =
-          HotwordServiceFactory::GetForProfile(profile_);
-      if (hotword_service)
-        hotword_service->RequestHotwordSession(this);
-    }
-    OnHotwordStateChanged(service->HotwordEnabled());
   }
 }
 
@@ -377,29 +349,8 @@ void AppListViewDelegate::ViewClosing() {
 
   app_list::StartPageService* service =
       app_list::StartPageService::Get(profile_);
-  if (service) {
+  if (service)
     service->AppListHidden();
-    if (service->HotwordEnabled()) {
-      HotwordService* hotword_service =
-          HotwordServiceFactory::GetForProfile(profile_);
-      if (hotword_service) {
-        hotword_service->StopHotwordSession(this);
-
-        // If we're in always-on mode, we always want to restart hotwording
-        // after closing the launcher window. So, in always-on mode, hotwording
-        // is stopped, and then started again right away. Note that hotwording
-        // may already be stopped. The call to StopHotwordSession() above both
-        // explicitly stops hotwording, if it's running, and clears the
-        // association between the hotword service and |this|.  When starting up
-        // hotwording, pass nullptr as the client so that hotword triggers cause
-        // the launcher to open.
-        // TODO(amistry): This only works on ChromeOS since Chrome hides the
-        // launcher instead of destroying it. Make this work on Chrome.
-        if (hotword_service->IsAlwaysOnEnabled())
-          hotword_service->RequestHotwordSession(nullptr);
-      }
-    }
-  }
 }
 
 void AppListViewDelegate::StartSpeechRecognition() {
@@ -428,22 +379,6 @@ void AppListViewDelegate::StartSpeechRecognitionForHotword(
     }
     service->StartSpeechRecognition(preamble);
   }
-
-  // With the new hotword extension, stop the hotword session. With the launcher
-  // and NTP, this is unnecessary since the hotwording is implicitly stopped.
-  // However, for always on, hotword triggering launches the launcher which
-  // starts a session and hence starts the hotword detector. This results in the
-  // hotword detector and the speech-to-text engine running in parallel, which
-  // will conflict with each other (i.e. saying 'Ok Google' twice in a row
-  // should cause a search to happen for 'Ok Google', not two hotword triggers).
-  // To get around this, always stop the session when switching to speech
-  // recognition.
-  if (service && service->HotwordEnabled()) {
-    HotwordService* hotword_service =
-        HotwordServiceFactory::GetForProfile(profile_);
-    if (hotword_service)
-      hotword_service->StopHotwordSession(this);
-  }
 }
 
 void AppListViewDelegate::OnSpeechResult(const base::string16& result,
@@ -463,20 +398,6 @@ void AppListViewDelegate::OnSpeechSoundLevelChanged(int16_t level) {
 void AppListViewDelegate::OnSpeechRecognitionStateChanged(
     app_list::SpeechRecognitionState new_state) {
   speech_ui_->SetSpeechRecognitionState(new_state, false);
-
-  app_list::StartPageService* service =
-      app_list::StartPageService::Get(profile_);
-  // With the new hotword extension, we need to re-request hotwording after
-  // speech recognition has stopped. Do not request hotwording after the app
-  // list has already closed.
-  if (new_state == app_list::SPEECH_RECOGNITION_READY && service &&
-      service->HotwordEnabled() && controller_->GetAppListWindow()) {
-    HotwordService* hotword_service =
-        HotwordServiceFactory::GetForProfile(profile_);
-    if (hotword_service) {
-      hotword_service->RequestHotwordSession(this);
-    }
-  }
 }
 
 views::View* AppListViewDelegate::CreateStartPageWebView(
