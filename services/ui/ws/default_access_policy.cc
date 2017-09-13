@@ -240,9 +240,9 @@ bool DefaultAccessPolicy::WasCreatedByThisClient(
 bool DefaultAccessPolicy::IsValidIdForNewWindow(
     const ClientWindowId& id) const {
   // Clients using DefaultAccessPolicy only see windows they have created (for
-  // the embed point they choose the id), so it's ok for clients to use whatever
-  // id they want.
-  return true;
+  // the embed point they choose the id), which should have the same client_id
+  // as the client_id_ since we should have already filled in the real one.
+  return base::checked_cast<ClientSpecificId>(id.client_id()) == client_id_;
 }
 
 }  // namespace ws

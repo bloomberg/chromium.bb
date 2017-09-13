@@ -22,14 +22,15 @@ namespace ui {
 namespace ws {
 
 ServerWindow::ServerWindow(ServerWindowDelegate* delegate, const WindowId& id)
-    : ServerWindow(delegate, id, Properties()) {}
+    : ServerWindow(delegate, id, id.ToClientWindowId(), Properties()) {}
 
 ServerWindow::ServerWindow(ServerWindowDelegate* delegate,
                            const WindowId& id,
+                           const viz::FrameSinkId& frame_sink_id,
                            const Properties& properties)
     : delegate_(delegate),
       id_(id),
-      frame_sink_id_((id_.client_id << 16) | id_.window_id, 0),
+      frame_sink_id_(frame_sink_id),
       parent_(nullptr),
       stacking_target_(nullptr),
       transient_parent_(nullptr),
@@ -50,6 +51,7 @@ ServerWindow::ServerWindow(ServerWindowDelegate* delegate,
   DCHECK(delegate);  // Must provide a delegate.
   // TODO(kylechar): Add method to reregister |frame_sink_id_| when viz service
   // has crashed.
+  DCHECK(frame_sink_id_.is_valid());
   auto* host_frame_sink_manager = delegate_->GetHostFrameSinkManager();
   if (host_frame_sink_manager) {
     host_frame_sink_manager->RegisterFrameSinkId(frame_sink_id_, this);

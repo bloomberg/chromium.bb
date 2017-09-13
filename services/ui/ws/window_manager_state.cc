@@ -872,11 +872,8 @@ viz::HitTestQuery* WindowManagerState::GetHitTestQueryForDisplay(
 
 ServerWindow* WindowManagerState::GetWindowFromFrameSinkId(
     const viz::FrameSinkId& frame_sink_id) {
-  // TODO(riajiang): Use the correct id to look up window once FrameSinkId
-  // refactoring is done.
   DCHECK(frame_sink_id.is_valid());
-  return window_tree()->GetWindow(
-      WindowIdFromTransportId(frame_sink_id.client_id()));
+  return window_tree()->GetWindowByClientId(frame_sink_id);
 }
 
 void WindowManagerState::OnWindowEmbeddedAppDisconnected(ServerWindow* window) {

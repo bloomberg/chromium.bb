@@ -113,8 +113,9 @@ ThreadedImageCursorsFactory* WindowServer::GetThreadedImageCursorsFactory() {
 
 ServerWindow* WindowServer::CreateServerWindow(
     const WindowId& id,
+    const viz::FrameSinkId& frame_sink_id,
     const std::map<std::string, std::vector<uint8_t>>& properties) {
-  ServerWindow* window = new ServerWindow(this, id, properties);
+  ServerWindow* window = new ServerWindow(this, id, frame_sink_id, properties);
   window->AddObserver(this);
   return window;
 }
