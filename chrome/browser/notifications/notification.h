@@ -23,6 +23,7 @@ class Image;
 // Representation of a notification to be shown to the user.
 class Notification : public message_center::Notification {
  public:
+  // TODO(estade): remove this constructor and NotificationDelegate.
   Notification(
       message_center::NotificationType type,
       const base::string16& title,
@@ -34,6 +35,19 @@ class Notification : public message_center::Notification {
       const std::string& tag,
       const message_center::RichNotificationData& rich_notification_data,
       scoped_refptr<NotificationDelegate> delegate);
+
+  Notification(
+      message_center::NotificationType type,
+      const std::string& id,
+      const base::string16& title,
+      const base::string16& body,
+      const gfx::Image& icon,
+      const message_center::NotifierId& notifier_id,
+      const base::string16& display_source,
+      const GURL& origin_url,
+      const std::string& tag,
+      const message_center::RichNotificationData& rich_notification_data,
+      scoped_refptr<message_center::NotificationDelegate> delegate);
 
   Notification(const std::string& id, const Notification& notification);
 
@@ -49,11 +63,6 @@ class Notification : public message_center::Notification {
     service_worker_scope_ = service_worker_scope;
   }
 
-  // Id of the delegate embedded inside this instance.
-  std::string delegate_id() const { return delegate()->id(); }
-
-  NotificationDelegate* delegate() const { return delegate_.get(); }
-
  private:
   // The user-supplied tag for the notification.
   std::string tag_;
@@ -64,7 +73,7 @@ class Notification : public message_center::Notification {
 
   // A proxy object that allows access back to the JavaScript object that
   // represents the notification, for firing events.
-  scoped_refptr<NotificationDelegate> delegate_;
+  scoped_refptr<message_center::NotificationDelegate> delegate_;
 };
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_H_

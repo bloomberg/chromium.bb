@@ -29,7 +29,7 @@ ProfileNotification::ProfileNotification(Profile* profile,
           // Uses Notification's copy constructor to assign the message center
           // id, which should be unique for every profile + Notification pair.
           GetProfileNotificationId(
-              notification.delegate_id(),
+              notification.id(),
               NotificationUIManager::GetProfileID(profile)),
           notification),
       keep_alive_(new ScopedKeepAlive(KeepAliveOrigin::NOTIFICATION,

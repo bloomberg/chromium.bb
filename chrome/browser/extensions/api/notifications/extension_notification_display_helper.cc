@@ -25,18 +25,18 @@ void ExtensionNotificationDisplayHelper::Display(
     const Notification& notification) {
   // Remove the previous version of this notification if the |notification| is
   // updating another notification.
-  EraseDataForNotificationId(notification.delegate_id());
+  EraseDataForNotificationId(notification.id());
 
   notifications_.push_back(base::MakeUnique<Notification>(notification));
 
-  GetDisplayService()->Display(NotificationCommon::EXTENSION,
-                               notification.delegate_id(), notification);
+  GetDisplayService()->Display(NotificationCommon::EXTENSION, notification.id(),
+                               notification);
 }
 
 Notification* ExtensionNotificationDisplayHelper::GetByNotificationId(
     const std::string& notification_id) {
   for (const auto& notification : notifications_) {
-    if (notification->delegate_id() == notification_id)
+    if (notification->id() == notification_id)
       return notification.get();
   }
 
@@ -49,7 +49,7 @@ ExtensionNotificationDisplayHelper::GetNotificationIdsForExtension(
   std::set<std::string> notification_ids;
   for (const auto& notification : notifications_) {
     if (notification->origin_url() == extension_origin)
-      notification_ids.insert(notification->delegate_id());
+      notification_ids.insert(notification->id());
   }
 
   return notification_ids;
@@ -60,7 +60,7 @@ bool ExtensionNotificationDisplayHelper::EraseDataForNotificationId(
   auto iter = std::find_if(
       notifications_.begin(), notifications_.end(),
       [notification_id](const std::unique_ptr<Notification>& notification) {
-        return notification->delegate_id() == notification_id;
+        return notification->id() == notification_id;
       });
 
   if (iter == notifications_.end())

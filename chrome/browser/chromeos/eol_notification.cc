@@ -30,11 +30,10 @@ namespace chromeos {
 namespace {
 
 const char kEolNotificationId[] = "eol";
-const char kDelegateId[] = "eol_delegate";
 const SkColor kButtonIconColor = SkColorSetRGB(150, 150, 152);
 const SkColor kNotificationIconColor = SkColorSetRGB(219, 68, 55);
 
-class EolNotificationDelegate : public NotificationDelegate {
+class EolNotificationDelegate : public message_center::NotificationDelegate {
  public:
   explicit EolNotificationDelegate(Profile* profile);
 
@@ -46,7 +45,6 @@ class EolNotificationDelegate : public NotificationDelegate {
 
   // NotificationDelegate overrides:
   void ButtonClick(int button_index) override;
-  std::string id() const override;
 
   Profile* const profile_;
 
@@ -77,10 +75,6 @@ void EolNotificationDelegate::ButtonClick(int button_index) {
   CancelNotification();
 }
 
-std::string EolNotificationDelegate::id() const {
-  return kDelegateId;
-}
-
 void EolNotificationDelegate::OpenMoreInfoPage() {
   chrome::NavigateParams params(profile_, GURL(chrome::kEolNotificationURL),
                                 ui::PAGE_TRANSITION_LINK);
@@ -92,7 +86,7 @@ void EolNotificationDelegate::OpenMoreInfoPage() {
 void EolNotificationDelegate::CancelNotification() {
   // Clean up the notification
   g_browser_process->notification_ui_manager()->CancelById(
-      id(), NotificationUIManager::GetProfileID(profile_));
+      kEolNotificationId, NotificationUIManager::GetProfileID(profile_));
 }
 
 }  // namespace
@@ -154,7 +148,7 @@ void EolNotification::Update() {
   data.buttons.push_back(dismiss);
 
   Notification notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
+      message_center::NOTIFICATION_TYPE_SIMPLE, kEolNotificationId,
       GetStringUTF16(IDS_EOL_NOTIFICATION_TITLE),
       GetStringUTF16(IDS_EOL_NOTIFICATION_EOL),
       message_center::IsNewStyleNotificationEnabled()

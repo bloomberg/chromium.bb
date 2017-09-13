@@ -83,9 +83,6 @@ bool IsTestingEnabled() {
 namespace chromeos {
 
 // static
-const char HatsNotificationController::kDelegateId[] = "hats_delegate";
-
-// static
 const char HatsNotificationController::kNotificationId[] = "hats_notification";
 
 HatsNotificationController::HatsNotificationController(Profile* profile)
@@ -159,11 +156,6 @@ bool HatsNotificationController::ShouldShowSurveyToProfile(Profile* profile) {
   return true;
 }
 
-// NotificationDelegate override:
-std::string HatsNotificationController::id() const {
-  return kDelegateId;
-}
-
 // message_center::NotificationDelegate override:
 void HatsNotificationController::Click() {
   ButtonClick(0 /* unused */);
@@ -178,7 +170,7 @@ void HatsNotificationController::ButtonClick(int /* button_index */) {
 
   // Remove the notification.
   g_browser_process->notification_ui_manager()->CancelById(
-      id(), NotificationUIManager::GetProfileID(profile_));
+      kNotificationId, NotificationUIManager::GetProfileID(profile_));
 }
 
 // message_center::NotificationDelegate override:
@@ -212,7 +204,7 @@ Notification* HatsNotificationController::CreateNotification() {
       l10n_util::GetStringUTF16(IDS_ASH_HATS_NOTIFICATION_TAKE_SURVEY_BUTTON)));
 
   Notification* notification = new Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
+      message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
       l10n_util::GetStringUTF16(IDS_ASH_HATS_NOTIFICATION_TITLE),
       l10n_util::GetStringUTF16(IDS_ASH_HATS_NOTIFICATION_BODY),
       gfx::Image(

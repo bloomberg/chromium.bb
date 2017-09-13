@@ -94,6 +94,6 @@ void DesktopNotificationBalloon::DisplayBalloon(
 
   g_browser_process->notification_ui_manager()->Add(notification, profile);
 
-  notification_id_ = notification.delegate_id();
+  notification_id_ = notification.id();
   profile_ = profile;
 }

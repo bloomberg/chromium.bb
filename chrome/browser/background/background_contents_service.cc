@@ -102,7 +102,7 @@ void ScheduleCloseBalloon(const std::string& extension_id, Profile* profile) {
 
 // Delegate for the app/extension crash notification balloon. Restarts the
 // app/extension when the balloon is clicked.
-class CrashNotificationDelegate : public NotificationDelegate {
+class CrashNotificationDelegate : public message_center::NotificationDelegate {
  public:
   CrashNotificationDelegate(Profile* profile,
                             const Extension* extension)
@@ -145,10 +145,6 @@ class CrashNotificationDelegate : public NotificationDelegate {
 
   bool HasClickedListener() override { return true; }
 
-  std::string id() const override {
-    return kNotificationPrefix + extension_id_;
-  }
-
  private:
   ~CrashNotificationDelegate() override {}
 
@@ -160,12 +156,12 @@ class CrashNotificationDelegate : public NotificationDelegate {
   DISALLOW_COPY_AND_ASSIGN(CrashNotificationDelegate);
 };
 
-void NotificationImageReady(
-    const std::string extension_name,
-    const base::string16 message,
-    scoped_refptr<CrashNotificationDelegate> delegate,
-    Profile* profile,
-    const gfx::Image& icon) {
+void NotificationImageReady(const std::string extension_name,
+                            const std::string extension_id,
+                            const base::string16 message,
+                            scoped_refptr<CrashNotificationDelegate> delegate,
+                            Profile* profile,
+                            const gfx::Image& icon) {
   if (g_browser_process->IsShuttingDown())
     return;
 
@@ -178,18 +174,14 @@ void NotificationImageReady(
   // Origin URL must be different from the crashed extension to avoid the
   // conflict. NotificationSystemObserver will cancel all notifications from
   // the same origin when OnExtensionUnloaded() is called.
-  Notification notification(message_center::NOTIFICATION_TYPE_SIMPLE,
-                            base::string16(),
-                            message,
-                            notification_icon,
-                            message_center::NotifierId(
-                                message_center::NotifierId::SYSTEM_COMPONENT,
-                                kNotifierId),
-                            base::string16(),
-                            GURL("chrome://extension-crash"),
-                            delegate->id(),
-                            message_center::RichNotificationData(),
-                            delegate.get());
+  std::string id = kNotificationPrefix + extension_id;
+  Notification notification(
+      message_center::NOTIFICATION_TYPE_SIMPLE, id, base::string16(), message,
+      notification_icon,
+      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
+                                 kNotifierId),
+      base::string16(), GURL("chrome://extension-crash"), id,
+      message_center::RichNotificationData(), delegate.get());
 
   g_browser_process->notification_ui_manager()->Add(notification, profile);
 }
@@ -210,13 +202,9 @@ void ShowBalloon(const Extension* extension, Profile* profile) {
   // However, it's possible that the extension went away during the interim,
   // so we'll bind all the pertinent data here.
   extensions::ImageLoader::Get(profile)->LoadImageAsync(
-      extension,
-      resource,
-      gfx::Size(size, size),
+      extension, resource, gfx::Size(size, size),
       base::Bind(
-          &NotificationImageReady,
-          extension->name(),
-          message,
+          &NotificationImageReady, extension->name(), extension->id(), message,
           make_scoped_refptr(new CrashNotificationDelegate(profile, extension)),
           profile));
 }
