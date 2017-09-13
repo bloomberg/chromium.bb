@@ -6,6 +6,7 @@
 #define TraceWrapperMember_h
 
 #include "platform/bindings/ScriptWrappableVisitor.h"
+#include "platform/bindings/TraceWrapperBase.h"
 #include "platform/heap/HeapAllocator.h"
 
 namespace blink {
@@ -20,6 +21,9 @@ class Member;
 template <class T>
 class TraceWrapperMember : public Member<T> {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  // TODO(mlippautz): Enable the following check.
+  // static_assert(std::is_base_of<TraceWrapperBase, T>::value,
+  //               "T must inherit from TraceWrapperBase");
 
  public:
   TraceWrapperMember() : Member<T>(nullptr) {}
