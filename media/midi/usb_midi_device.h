@@ -50,7 +50,7 @@ class USB_MIDI_EXPORT UsbMidiDevice {
   // in platform-dependent way.
   class Factory {
    public:
-    typedef base::Callback<void(bool result, Devices* devices)> Callback;
+    typedef base::OnceCallback<void(bool result, Devices* devices)> Callback;
     virtual ~Factory() {}
 
     // Enumerates devices.

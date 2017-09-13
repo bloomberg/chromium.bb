@@ -194,7 +194,7 @@ TEST_F(MidiTaskServiceTest, RunStaticTask) {
   ResetEvent();
 
   EXPECT_TRUE(client->Bind());
-  task_service()->PostStaticTask(kFirstRunner, base::Bind(&SignalEvent));
+  task_service()->PostStaticTask(kFirstRunner, base::BindOnce(&SignalEvent));
   // Should be able to unbind the instance to process a static task.
   EXPECT_TRUE(client->Unbind());
   WaitEvent();

@@ -97,7 +97,7 @@ class MIDI_EXPORT TaskService final {
   base::Lock lock_;
 
   // Verifies all UnbindInstance() calls occur on the same sequence as
-  // BindSequence().
+  // BindInstance().
   SEQUENCE_CHECKER(instance_binding_sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(TaskService);

@@ -41,7 +41,7 @@ void UsbMidiDeviceFactoryAndroid::EnumerateDevices(
   raw_factory_.Reset(Java_UsbMidiDeviceFactoryAndroid_create(env, pointer));
 
   delegate_ = delegate;
-  callback_ = callback;
+  callback_ = std::move(callback);
 
   if (Java_UsbMidiDeviceFactoryAndroid_enumerateDevices(env, raw_factory_)) {
     // Asynchronous operation.
@@ -49,7 +49,7 @@ void UsbMidiDeviceFactoryAndroid::EnumerateDevices(
   }
   // No devices are found.
   UsbMidiDevice::Devices devices;
-  callback.Run(true, &devices);
+  std::move(callback_).Run(true, &devices);
 }
 
 // Called from the Java world.
@@ -66,7 +66,7 @@ void UsbMidiDeviceFactoryAndroid::OnUsbMidiDeviceRequestDone(
         base::MakeUnique<UsbMidiDeviceAndroid>(raw_device, delegate_));
   }
 
-  callback_.Run(true, &devices_to_pass);
+  std::move(callback_).Run(true, &devices_to_pass);
 }
 
 // Called from the Java world.

@@ -132,7 +132,7 @@ base::Lock* GetTaskLock() {
 }
 
 // Helper function to run a posted task on TaskRunner safely.
-void RunTask(int instance_id, const base::Closure& task) {
+void RunTask(int instance_id, base::OnceClosure task) {
   // Obtains task lock to ensure that the instance should not complete
   // Finalize() while running the |task|.
   base::AutoLock task_lock(*GetTaskLock());
@@ -142,7 +142,7 @@ void RunTask(int instance_id, const base::Closure& task) {
     if (instance_id != g_active_instance_id)
       return;
   }
-  task.Run();
+  std::move(task).Run();
 }
 
 // TODO(toyoshim): Factor out TaskRunner related functionaliries above, and
@@ -373,8 +373,8 @@ class MidiManagerWin::InPort final : public Port {
 
   void Finalize(scoped_refptr<base::SingleThreadTaskRunner> runner) {
     if (in_handle_ != kInvalidInHandle) {
-      runner->PostTask(FROM_HERE, base::Bind(&FinalizeInPort, in_handle_,
-                                             base::Passed(&hdr_)));
+      runner->PostTask(FROM_HERE, base::BindOnce(&FinalizeInPort, in_handle_,
+                                                 base::Passed(&hdr_)));
       manager_->port_manager()->UnregisterInHandle(in_handle_);
       in_handle_ = kInvalidInHandle;
     }
@@ -391,14 +391,14 @@ class MidiManagerWin::InPort final : public Port {
   }
 
   void NotifyPortStateSet(MidiManagerWin* manager) {
-    manager->PostReplyTask(base::Bind(
+    manager->PostReplyTask(base::BindOnce(
         &MidiManagerWin::SetInputPortState, base::Unretained(manager),
         static_cast<uint32_t>(index_), info_.state));
   }
 
   void NotifyPortAdded(MidiManagerWin* manager) {
-    manager->PostReplyTask(base::Bind(&MidiManagerWin::AddInputPort,
-                                      base::Unretained(manager), info_));
+    manager->PostReplyTask(base::BindOnce(&MidiManagerWin::AddInputPort,
+                                          base::Unretained(manager), info_));
   }
 
   // Port overrides:
@@ -483,20 +483,21 @@ class MidiManagerWin::OutPort final : public Port {
 
   void Finalize(scoped_refptr<base::SingleThreadTaskRunner> runner) {
     if (out_handle_ != kInvalidOutHandle) {
-      runner->PostTask(FROM_HERE, base::Bind(&FinalizeOutPort, out_handle_));
+      runner->PostTask(FROM_HERE,
+                       base::BindOnce(&FinalizeOutPort, out_handle_));
       out_handle_ = kInvalidOutHandle;
     }
   }
 
   void NotifyPortStateSet(MidiManagerWin* manager) {
-    manager->PostReplyTask(base::Bind(
+    manager->PostReplyTask(base::BindOnce(
         &MidiManagerWin::SetOutputPortState, base::Unretained(manager),
         static_cast<uint32_t>(index_), info_.state));
   }
 
   void NotifyPortAdded(MidiManagerWin* manager) {
-    manager->PostReplyTask(base::Bind(&MidiManagerWin::AddOutputPort,
-                                      base::Unretained(manager), info_));
+    manager->PostReplyTask(base::BindOnce(&MidiManagerWin::AddOutputPort,
+                                          base::Unretained(manager), info_));
   }
 
   void Send(const std::vector<uint8_t>& data) {
@@ -646,7 +647,7 @@ MidiManagerWin::PortManager::HandleMidiInCallback(HMIDIIN hmi,
     DCHECK_LE(len, arraysize(kData));
     std::vector<uint8_t> data;
     data.assign(kData, kData + len);
-    manager->PostReplyTask(base::Bind(
+    manager->PostReplyTask(base::BindOnce(
         &MidiManagerWin::ReceiveMidiData, base::Unretained(manager),
         static_cast<uint32_t>(index), data,
         manager->port_manager()->CalculateInEventTime(index, param2)));
@@ -657,7 +658,7 @@ MidiManagerWin::PortManager::HandleMidiInCallback(HMIDIIN hmi,
       const uint8_t* src = reinterpret_cast<const uint8_t*>(hdr->lpData);
       std::vector<uint8_t> data;
       data.assign(src, src + hdr->dwBytesRecorded);
-      manager->PostReplyTask(base::Bind(
+      manager->PostReplyTask(base::BindOnce(
           &MidiManagerWin::ReceiveMidiData, base::Unretained(manager),
           static_cast<uint32_t>(index), data,
           manager->port_manager()->CalculateInEventTime(index, param2)));
@@ -715,8 +716,8 @@ void MidiManagerWin::StartInitialization() {
   base::SystemMonitor::Get()->AddDevicesChangedObserver(this);
 
   // Starts asynchronous initialization on TaskRunner.
-  PostTask(base::Bind(&MidiManagerWin::InitializeOnTaskRunner,
-                      base::Unretained(this)));
+  PostTask(base::BindOnce(&MidiManagerWin::InitializeOnTaskRunner,
+                          base::Unretained(this)));
 }
 
 void MidiManagerWin::Finalize() {
@@ -759,14 +760,14 @@ void MidiManagerWin::DispatchSendMidiData(MidiManagerClient* client,
     base::TimeTicks now = base::TimeTicks::Now();
     if (now < time) {
       PostDelayedTask(
-          base::Bind(&MidiManagerWin::SendOnTaskRunner, base::Unretained(this),
-                     client, port_index, data),
+          base::BindOnce(&MidiManagerWin::SendOnTaskRunner,
+                         base::Unretained(this), client, port_index, data),
           time - now);
       return;
     }
   }
-  PostTask(base::Bind(&MidiManagerWin::SendOnTaskRunner, base::Unretained(this),
-                      client, port_index, data));
+  PostTask(base::BindOnce(&MidiManagerWin::SendOnTaskRunner,
+                          base::Unretained(this), client, port_index, data));
 }
 
 void MidiManagerWin::OnDevicesChanged(
@@ -780,8 +781,8 @@ void MidiManagerWin::OnDevicesChanged(
       // Add case of other unrelated device types here.
       return;
     case base::SystemMonitor::DEVTYPE_UNKNOWN: {
-      PostTask(base::Bind(&MidiManagerWin::UpdateDeviceListOnTaskRunner,
-                          base::Unretained(this)));
+      PostTask(base::BindOnce(&MidiManagerWin::UpdateDeviceListOnTaskRunner,
+                              base::Unretained(this)));
       break;
     }
   }
@@ -793,28 +794,31 @@ void MidiManagerWin::ReceiveMidiData(uint32_t index,
   MidiManager::ReceiveMidiData(index, data.data(), data.size(), time);
 }
 
-void MidiManagerWin::PostTask(const base::Closure& task) {
+void MidiManagerWin::PostTask(base::OnceClosure task) {
   service()
       ->GetTaskRunner(kTaskRunner)
-      ->PostTask(FROM_HERE, base::Bind(&RunTask, instance_id_, task));
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(&RunTask, instance_id_, std::move(task)));
 }
 
-void MidiManagerWin::PostDelayedTask(const base::Closure& task,
+void MidiManagerWin::PostDelayedTask(base::OnceClosure task,
                                      base::TimeDelta delay) {
   service()
       ->GetTaskRunner(kTaskRunner)
-      ->PostDelayedTask(FROM_HERE, base::Bind(&RunTask, instance_id_, task),
+      ->PostDelayedTask(FROM_HERE,
+                        base::BindOnce(&RunTask, instance_id_, std::move(task)),
                         delay);
 }
 
-void MidiManagerWin::PostReplyTask(const base::Closure& task) {
-  thread_runner_->PostTask(FROM_HERE, base::Bind(&RunTask, instance_id_, task));
+void MidiManagerWin::PostReplyTask(base::OnceClosure task) {
+  thread_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&RunTask, instance_id_, std::move(task)));
 }
 
 void MidiManagerWin::InitializeOnTaskRunner() {
   UpdateDeviceListOnTaskRunner();
-  PostReplyTask(base::Bind(&MidiManagerWin::CompleteInitialization,
-                           base::Unretained(this), mojom::Result::OK));
+  PostReplyTask(base::BindOnce(&MidiManagerWin::CompleteInitialization,
+                               base::Unretained(this), mojom::Result::OK));
 }
 
 void MidiManagerWin::UpdateDeviceListOnTaskRunner() {
@@ -872,8 +876,8 @@ void MidiManagerWin::SendOnTaskRunner(MidiManagerClient* client,
   CHECK_GT(port_manager_->outputs()->size(), port_index);
   (*port_manager_->outputs())[port_index]->Send(data);
   // |client| will be checked inside MidiManager::AccumulateMidiBytesSent.
-  PostReplyTask(base::Bind(&MidiManagerWin::AccumulateMidiBytesSent,
-                           base::Unretained(this), client, data.size()));
+  PostReplyTask(base::BindOnce(&MidiManagerWin::AccumulateMidiBytesSent,
+                               base::Unretained(this), client, data.size()));
 }
 
 MidiManager* MidiManager::Create(MidiService* service) {

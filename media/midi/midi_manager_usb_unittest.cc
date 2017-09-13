@@ -158,7 +158,7 @@ class TestUsbMidiDeviceFactory : public UsbMidiDevice::Factory {
   ~TestUsbMidiDeviceFactory() override {}
   void EnumerateDevices(UsbMidiDeviceDelegate* device,
                         Callback callback) override {
-    callback_ = callback;
+    callback_ = std::move(callback);
   }
 
   Callback callback_;

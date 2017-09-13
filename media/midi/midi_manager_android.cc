@@ -117,8 +117,8 @@ void MidiManagerAndroid::DispatchSendMidiData(MidiManagerClient* client,
   // the scheduler.
   scheduler_->PostSendDataTask(
       client, data.size(), timestamp,
-      base::Bind(&MidiOutputPortAndroid::Send,
-                 base::Unretained(all_output_ports_[port_index]), data));
+      base::BindOnce(&MidiOutputPortAndroid::Send,
+                     base::Unretained(all_output_ports_[port_index]), data));
 }
 
 void MidiManagerAndroid::OnReceivedData(MidiInputPortAndroid* port,
