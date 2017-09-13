@@ -41,6 +41,10 @@ struct CORE_EXPORT NGStaticPosition {
                       LayoutUnit height,
                       LayoutUnit margin_top,
                       LayoutUnit margin_bottom) const;
+  LayoutUnit BottomInset(LayoutUnit container_size,
+                         LayoutUnit height,
+                         LayoutUnit margin_top,
+                         LayoutUnit margin_bottom) const;
 
  private:
   bool HasTop() const { return type == kTopLeft || type == kTopRight; }
