@@ -112,7 +112,7 @@ GLenum Sampler::SetParameterf(
     case GL_TEXTURE_WRAP_T:
     case GL_TEXTURE_COMPARE_FUNC:
     case GL_TEXTURE_COMPARE_MODE: {
-      GLint iparam = static_cast<GLint>(param);
+      GLint iparam = static_cast<GLint>(std::round(param));
       return SetParameteri(feature_info, pname, iparam);
     }
     case GL_TEXTURE_MIN_LOD:
