@@ -34,6 +34,8 @@ class TranslateEventProto;
 
 namespace translate {
 
+extern const char kDefaultTranslateRankerModelURL[];
+
 // Features used to enable ranker query, enforcement and logging. Note that
 // enabling enforcement implies (forces) enabling queries.
 extern const base::Feature kTranslateRankerQuery;

@@ -17,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "components/machine_intelligence/proto/ranker_model.pb.h"
 #include "components/machine_intelligence/proto/translate_ranker_model.pb.h"
 #include "components/machine_intelligence/ranker_model.h"
@@ -73,11 +74,19 @@ RankerModelStatus ValidateModel(const RankerModel& model) {
 
 }  // namespace
 
+const char kDefaultTranslateRankerModelURL[] =
+    "https://www.gstatic.com/chrome/intelligence/assist/ranker/models/"
+    "translate/2017/03/translate_ranker_model_20170329.pb.bin";
 const base::Feature kTranslateRankerQuery{"TranslateRankerQuery",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
+#if defined(OS_ANDROID)
 const base::Feature kTranslateRankerEnforcement{
     "TranslateRankerEnforcement", base::FEATURE_DISABLED_BY_DEFAULT};
+#else
+const base::Feature kTranslateRankerEnforcement{
+    "TranslateRankerEnforcement", base::FEATURE_ENABLED_BY_DEFAULT};
+#endif
 
 const base::Feature kTranslateRankerDecisionOverride{
     "TranslateRankerDecisionOverride", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -167,6 +176,10 @@ base::FilePath TranslateRankerImpl::GetModelPath(
 
 // static
 GURL TranslateRankerImpl::GetModelURL() {
+  if (!base::FeatureList::IsEnabled(kTranslateRankerQuery) &&
+      !base::FeatureList::IsEnabled(kTranslateRankerEnforcement)) {
+    return GURL();
+  }
   // Allow override of the ranker model URL from the command line.
   std::string raw_url;
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -178,6 +191,9 @@ GURL TranslateRankerImpl::GetModelURL() {
     raw_url = variations::GetVariationParamValueByFeature(
         kTranslateRankerQuery, switches::kTranslateRankerModelURL);
   }
+  // If the ranker URL is still not defined, use the default.
+  if (raw_url.empty())
+    raw_url = kDefaultTranslateRankerModelURL;
 
   DVLOG(3) << switches::kTranslateRankerModelURL << " = " << raw_url;
 
