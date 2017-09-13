@@ -278,13 +278,15 @@ List Examples:
         description='Which patches should be included with the tryjob?')
     what_group.add_argument(
         '-g', '--gerrit-patches', action='split_extend', default=[],
-        # metavar='Id1 *int_Id2...IdN',
+        metavar='Id1 *int_Id2...IdN',
         help='Space-separated list of short-form Gerrit '
              "Change-Id's or change numbers to patch. "
              "Please prepend '*' to internal Change-Id's")
+    # We have to format metavar poorly to workaround an argparse bug.
+    # https://bugs.python.org/issue11874
     what_group.add_argument(
         '-p', '--local-patches', action='split_extend', default=[],
-        # metavar="'<project1>[:<branch1>]...<projectN>[:<branchN>]'",
+        metavar="'<project1>[:<branch1>] ... <projectN>[:<branchN>] '",
         help='Space-separated list of project branches with '
              'patches to apply.  Projects are specified by name. '
              'If no branch is specified the current branch of the '
