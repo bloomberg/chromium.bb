@@ -650,11 +650,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('WebglExtension_WEBGL_compressed_texture_atc',
         ['android', ('nvidia', 'NVIDIA Tegra')])
 
-    # Pixel C
-    self.Fail('conformance/glsl/bugs/constant-precision-qualifier.html',
-        ['android', 'android-chromium',
-         ('nvidia', 'NVIDIA Tegra')], bug=624621)
-
     # Nexus 9 and Shield TV (NVIDIA GPUs currently on the waterfall)
     self.Fail('conformance/ogles/GL/array/array_001_to_006.html',
               ['android', 'nvidia'], bug=740769)
