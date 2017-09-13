@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/macros.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_checker.h"
 #include "components/nacl/browser/nacl_file_host.h"
 #include "components/nacl/common/pnacl_types.h"
@@ -176,6 +177,10 @@ class PnaclHost {
   void OnEntriesDoomed(const base::Closure& callback, int net_error);
 
   void DeInitIfSafe();
+
+  scoped_refptr<base::SequencedTaskRunner> file_task_runner_ =
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
 
   // Operations which are pending with the cache backend, which we should
   // wait for before destroying it (see comment on DeInitIfSafe).

@@ -31,7 +31,6 @@ namespace {
 
 // An arbitrary delay to coalesce multiple writes to the cache.
 const int kValidationCacheCoalescingTimeMS = 6000;
-const char kValidationCacheSequenceName[] = "NaClValidationCache";
 const base::FilePath::CharType kValidationCacheFileName[] =
     FILE_PATH_LITERAL("nacl_validation_cache.bin");
 
@@ -537,8 +536,7 @@ void NaClBrowser::ClearValidationCache(const base::Closure& callback) {
     // the user interface for cache clearing is likely waiting for the callback.
     // In addition, we need to make sure the cache is actually cleared before
     // invoking the callback to meet the implicit guarantees of the UI.
-    content::BrowserThread::PostBlockingPoolSequencedTask(
-        kValidationCacheSequenceName,
+    file_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(RemoveCache, validation_cache_file_path_, callback));
   }
@@ -582,11 +580,9 @@ void NaClBrowser::PersistValidationCache() {
     // not allowed on the IO thread (which is the thread this method runs on)
     // because it can degrade the responsiveness of the browser.
     // The task is sequenced so that multiple writes happen in order.
-    content::BrowserThread::PostBlockingPoolSequencedTask(
-        kValidationCacheSequenceName,
-        FROM_HERE,
-        base::Bind(WriteCache, validation_cache_file_path_,
-                   base::Owned(pickle)));
+    file_task_runner_->PostTask(
+        FROM_HERE, base::Bind(WriteCache, validation_cache_file_path_,
+                              base::Owned(pickle)));
   }
   validation_cache_is_modified_ = false;
 }
