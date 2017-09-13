@@ -114,6 +114,8 @@ EnumTraits<gpu::mojom::VideoCodecProfile, gpu::VideoCodecProfile>::ToMojom(
       return gpu::mojom::VideoCodecProfile::DOLBYVISION_PROFILE5;
     case gpu::VideoCodecProfile::DOLBYVISION_PROFILE7:
       return gpu::mojom::VideoCodecProfile::DOLBYVISION_PROFILE7;
+    case gpu::VideoCodecProfile::THEORAPROFILE_ANY:
+      return gpu::mojom::VideoCodecProfile::THEORAPROFILE_ANY;
   }
   NOTREACHED() << "Invalid VideoCodecProfile:" << video_codec_profile;
   return gpu::mojom::VideoCodecProfile::VIDEO_CODEC_PROFILE_UNKNOWN;
@@ -195,6 +197,9 @@ bool EnumTraits<gpu::mojom::VideoCodecProfile, gpu::VideoCodecProfile>::
       return true;
     case gpu::mojom::VideoCodecProfile::DOLBYVISION_PROFILE7:
       *out = gpu::VideoCodecProfile::DOLBYVISION_PROFILE7;
+      return true;
+    case gpu::mojom::VideoCodecProfile::THEORAPROFILE_ANY:
+      *out = gpu::VideoCodecProfile::THEORAPROFILE_ANY;
       return true;
   }
   NOTREACHED() << "Invalid VideoCodecProfile: " << input;

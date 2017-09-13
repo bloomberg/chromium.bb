@@ -276,6 +276,7 @@ base::Optional<VideoCodecProfile> ToMediaVideoCodecProfile(
     CASE_RETURN_OTHER(DOLBYVISION_PROFILE4);
     CASE_RETURN_OTHER(DOLBYVISION_PROFILE5);
     CASE_RETURN_OTHER(DOLBYVISION_PROFILE7);
+    CASE_RETURN_OTHER(THEORAPROFILE_ANY);
   }
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }
@@ -309,6 +310,7 @@ ToProtoVideoDecoderConfigProfile(VideoCodecProfile value) {
     CASE_RETURN_OTHER(DOLBYVISION_PROFILE4);
     CASE_RETURN_OTHER(DOLBYVISION_PROFILE5);
     CASE_RETURN_OTHER(DOLBYVISION_PROFILE7);
+    CASE_RETURN_OTHER(THEORAPROFILE_ANY);
   }
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }
