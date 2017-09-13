@@ -13,7 +13,6 @@ import android.provider.Settings;
 import android.support.annotation.IntDef;
 import android.util.Log;
 import android.webkit.WebSettings;
-import android.webkit.WebSettings.PluginState;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ThreadUtils;
@@ -53,6 +52,14 @@ public class AwSettings {
     public static final int LAYOUT_ALGORITHM_NARROW_COLUMNS = 2;
     public static final int LAYOUT_ALGORITHM_TEXT_AUTOSIZING = 3;
 
+    /* See {@link android.webkit.WebSettings}. */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({PLUGIN_STATE_ON, PLUGIN_STATE_ON_DEMAND, PLUGIN_STATE_OFF})
+    public @interface PluginState {}
+    public static final int PLUGIN_STATE_ON = 0;
+    public static final int PLUGIN_STATE_ON_DEMAND = 1;
+    public static final int PLUGIN_STATE_OFF = 2;
+
     // This class must be created on the UI thread. Afterwards, it can be
     // used from any thread. Internally, the class uses a message queue
     // to call native code on the UI thread only.
@@ -88,7 +95,7 @@ public class AwSettings {
     private boolean mAllowFileAccessFromFileURLs;
     private boolean mJavaScriptCanOpenWindowsAutomatically;
     private boolean mSupportMultipleWindows;
-    private PluginState mPluginState = PluginState.OFF;
+    private @PluginState int mPluginState = PLUGIN_STATE_OFF;
     private boolean mAppCacheEnabled;
     private boolean mDomStorageEnabled;
     private boolean mDatabaseEnabled;
@@ -1123,13 +1130,13 @@ public class AwSettings {
      */
     public void setPluginsEnabled(boolean flag) {
         if (TRACE) Log.d(LOGTAG, "setPluginsEnabled=" + flag);
-        setPluginState(flag ? PluginState.ON : PluginState.OFF);
+        setPluginState(flag ? PLUGIN_STATE_ON : PLUGIN_STATE_OFF);
     }
 
     /**
      * See {@link android.webkit.WebSettings#setPluginState}.
      */
-    public void setPluginState(PluginState state) {
+    public void setPluginState(@PluginState int state) {
         if (TRACE) Log.d(LOGTAG, "setPluginState=" + state);
         synchronized (mAwSettingsLock) {
             if (mPluginState != state) {
@@ -1144,7 +1151,7 @@ public class AwSettings {
      */
     public boolean getPluginsEnabled() {
         synchronized (mAwSettingsLock) {
-            return mPluginState == PluginState.ON;
+            return mPluginState == PLUGIN_STATE_ON;
         }
     }
 
@@ -1155,13 +1162,14 @@ public class AwSettings {
     @CalledByNative
     private boolean getPluginsDisabledLocked() {
         assert Thread.holdsLock(mAwSettingsLock);
-        return mPluginState == PluginState.OFF;
+        return mPluginState == PLUGIN_STATE_OFF;
     }
 
     /**
      * See {@link android.webkit.WebSettings#getPluginState}.
      */
-    public PluginState getPluginState() {
+    @PluginState
+    public int getPluginState() {
         synchronized (mAwSettingsLock) {
             return mPluginState;
         }
