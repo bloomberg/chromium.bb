@@ -18,6 +18,10 @@ void EnableStartupTracingIfNeeded(bool can_access_file_system) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
+  // Ensure TraceLog is initialized first.
+  // https://crbug.com/764357
+  base::trace_event::TraceLog::GetInstance();
+
   // Enables heap profiling if "--enable-heap-profiling" flag is passed.
   base::trace_event::MemoryDumpManager::GetInstance()
       ->EnableHeapProfilingIfNeeded();
