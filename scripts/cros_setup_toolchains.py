@@ -508,9 +508,6 @@ def UpdateTargets(targets, usepkg, root='/'):
     usepkg: Copies the commandline option
     root: The install root in which we want packages updated.
   """
-  # Remove keyword files created by old versions of cros_setup_toolchains.
-  osutils.SafeUnlink('/etc/portage/package.keywords/cross-host')
-
   # For each target, we do two things. Figure out the list of updates,
   # and figure out the appropriate keywords/masks. Crossdev will initialize
   # these, but they need to be regenerated on every update.
