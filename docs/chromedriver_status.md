@@ -1,9 +1,9 @@
 # WebDriver Status
 
-Below is a list of all WebDriver commands and their current support in Chromedriver based on what is in the [WebDriver Specification](https://w3c.github.io/webdriver/webdriver-spec.html).
+Below is a list of all WebDriver commands and their current support in ChromeDriver based on what is in the [WebDriver Specification](https://w3c.github.io/webdriver/webdriver-spec.html).
 
 Notes:
- - Currently discussing missing some beginning error checks on almost all commands which are not counted in completion currently [1989](https://bugs.chromium.org/p/chromedriver/issues/detail?id=1989)
+ - Currently discussing missing some beginning error checks on almost all commands which are not counted in completion currently. This is tracked in bug [1989](https://bugs.chromium.org/p/chromedriver/issues/detail?id=1989)
 
 
 | Method | URL | Command | Status | Bug
