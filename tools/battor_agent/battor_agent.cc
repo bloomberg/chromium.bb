@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "tools/battor_agent/battor_connection_impl.h"
 #include "tools/battor_agent/battor_sample_converter.h"
 
@@ -127,17 +127,17 @@ BattOrAgent::BattOrAgent(
       last_action_(Action::INVALID),
       command_(Command::INVALID),
       num_command_attempts_(0) {
-  // We don't care what thread the constructor is called on - we only care that
-  // all of the other method invocations happen on the same thread.
-  thread_checker_.DetachFromThread();
+  // We don't care what sequence the constructor is called on - we only care
+  // that all of the other method invocations happen on the same sequence.
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 BattOrAgent::~BattOrAgent() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void BattOrAgent::StartTracing() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // When tracing is restarted, all previous clock sync markers are invalid.
   clock_sync_markers_.clear();
@@ -148,14 +148,14 @@ void BattOrAgent::StartTracing() {
 }
 
 void BattOrAgent::StopTracing() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   command_ = Command::STOP_TRACING;
   PerformAction(Action::REQUEST_CONNECTION);
 }
 
 void BattOrAgent::RecordClockSyncMarker(const std::string& marker) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   command_ = Command::RECORD_CLOCK_SYNC_MARKER;
   pending_clock_sync_marker_ = marker;
@@ -163,14 +163,14 @@ void BattOrAgent::RecordClockSyncMarker(const std::string& marker) {
 }
 
 void BattOrAgent::GetFirmwareGitHash() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   command_ = Command::GET_FIRMWARE_GIT_HASH;
   PerformAction(Action::REQUEST_CONNECTION);
 }
 
 void BattOrAgent::BeginConnect() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   connection_->Open();
 }
@@ -201,7 +201,7 @@ void BattOrAgent::OnConnectionOpened(bool success) {
 }
 
 void BattOrAgent::OnBytesSent(bool success) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!success) {
     CompleteCommand(BATTOR_ERROR_SEND_ERROR);
@@ -394,7 +394,7 @@ void BattOrAgent::OnMessageRead(bool success,
 }
 
 void BattOrAgent::PerformAction(Action action) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   last_action_ = action;
 
@@ -484,7 +484,7 @@ void BattOrAgent::PerformAction(Action action) {
 }
 
 void BattOrAgent::PerformDelayedAction(Action action, base::TimeDelta delay) {
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::Bind(&BattOrAgent::PerformAction, AsWeakPtr(), action),
       delay);
 }
@@ -510,7 +510,7 @@ void BattOrAgent::OnActionTimeout() {
 void BattOrAgent::SendControlMessage(BattOrControlMessageType type,
                                      uint16_t param1,
                                      uint16_t param2) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   SetActionTimeout(kBattOrControlMessageTimeoutSeconds);
 
@@ -544,7 +544,7 @@ void BattOrAgent::RetryCommand() {
       NOTREACHED();
   }
 
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, next_command,
       base::TimeDelta::FromSeconds(kCommandRetryDelaySeconds));
 }
@@ -552,26 +552,26 @@ void BattOrAgent::RetryCommand() {
 void BattOrAgent::CompleteCommand(BattOrError error) {
   switch (command_) {
     case Command::START_TRACING:
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(&Listener::OnStartTracingComplete,
                                 base::Unretained(listener_), error));
       break;
     case Command::STOP_TRACING:
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::Bind(&Listener::OnStopTracingComplete,
                      base::Unretained(listener_), SamplesToResults(), error));
       break;
     case Command::RECORD_CLOCK_SYNC_MARKER:
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(&Listener::OnRecordClockSyncMarkerComplete,
                                 base::Unretained(listener_), error));
       break;
     case Command::GET_FIRMWARE_GIT_HASH:
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&Listener::OnGetFirmwareGitHashComplete,
-                                base::Unretained(listener_),
-                                firmware_git_hash_, error));
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::Bind(&Listener::OnGetFirmwareGitHashComplete,
+                     base::Unretained(listener_), firmware_git_hash_, error));
       break;
     case Command::INVALID:
       NOTREACHED();
@@ -637,7 +637,7 @@ BattOrResults BattOrAgent::SamplesToResults() {
 void BattOrAgent::SetActionTimeout(uint16_t timeout_seconds) {
   timeout_callback_.Reset(
       base::Bind(&BattOrAgent::OnActionTimeout, AsWeakPtr()));
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, timeout_callback_.callback(),
       base::TimeDelta::FromSeconds(timeout_seconds));
 }
