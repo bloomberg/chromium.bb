@@ -514,7 +514,8 @@ void AutocompleteMatch::GetMatchComponents(
   // passed to url::Parsed::CountCharactersBefore has no effect for the PATH.
   size_t path_pos = parsed.CountCharactersBefore(url::Parsed::PATH, false) + 1;
 
-  bool has_subdomain = domain_length < url.host_piece().length();
+  bool has_subdomain =
+      domain_length > 0 && domain_length < url.host_piece().length();
   // Subtract an extra character from the domain start to exclude the '.'
   // delimiter between subdomain and domain.
   size_t subdomain_end =
@@ -523,18 +524,21 @@ void AutocompleteMatch::GetMatchComponents(
 
   for (auto& position : match_positions) {
     // Only flag |match_in_scheme| if the match starts at the very beginning.
-    if (position.first == 0)
+    if (position.first == 0 && parsed.scheme.is_nonempty())
       *match_in_scheme = true;
 
     // Subdomain matches must begin before the domain, and end somewhere within
     // the host or later.
     if (has_subdomain && position.first < subdomain_end &&
-        position.second > host_pos) {
+        position.second > host_pos && parsed.host.is_nonempty()) {
       *match_in_subdomain = true;
     }
 
-    if (position.second > path_pos)
+    if (position.second > path_pos &&
+        (parsed.path.is_nonempty() || parsed.query.is_nonempty() ||
+         parsed.ref.is_nonempty())) {
       *match_after_host = true;
+    }
   }
 }
 
