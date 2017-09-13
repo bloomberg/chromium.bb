@@ -74,11 +74,9 @@ void ReloadWithoutPreviews(previews::PreviewsType previews_type,
     case previews::PreviewsType::LITE_PAGE:
     case previews::PreviewsType::OFFLINE:
     case previews::PreviewsType::AMP_REDIRECTION:
-      // Prevent LoFi and lite page modes from showing after reload.
-      // TODO(ryansturm): rename DISABLE_LOFI_MODE to DISABLE_PREVIEWS.
-      // crbug.com/707272
+      // Prevent previews and lite page modes from showing after reload.
       web_contents->GetController().Reload(
-          content::ReloadType::DISABLE_LOFI_MODE, true);
+          content::ReloadType::DISABLE_PREVIEWS, true);
       break;
     case previews::PreviewsType::LOFI:
       web_contents->ReloadLoFiImages();
