@@ -1165,6 +1165,10 @@ FcFreeTypeQueryFace (const FT_Face  face,
     int		    weight = -1;
     int		    width = -1;
     FcBool	    decorative = FcFalse;
+    FcBool	    variable = FcFalse;
+    FcBool	    variable_weight = FcFalse;
+    FcBool	    variable_width = FcFalse;
+    FcBool	    variable_size = FcFalse;
     FcCharSet	    *cs;
     FcLangSet	    *ls;
 #if 0
@@ -1206,8 +1210,6 @@ FcFreeTypeQueryFace (const FT_Face  face,
     char	    psname[256];
     const char	    *tmp;
 
-    FcRange	    *r = NULL;
-
     FcBool	    symbol = FcFalse;
 
     FcInitDebug (); /* We might be called with no initizalization whatsoever. */
@@ -1236,19 +1238,69 @@ FcFreeTypeQueryFace (const FT_Face  face,
 	    goto bail1;
     }
 
-    if (!FcPatternAddBool (pat, FC_VARIABLE, FcFalse))
-	goto bail1;
-
     if (id >> 16)
     {
-      unsigned int instance_id = (id >> 16) - 1;
-      if (!FT_Get_MM_Var (face, &master) && instance_id < master->num_namedstyles)
-	instance = &master->namedstyle[instance_id];
+      if (FT_Get_MM_Var (face, &master))
+	  goto bail1;
 
-      if (instance)
+      if (id >> 16 == 0x8000)
+      {
+	  /* Query variable font itself. */
+	  unsigned int i;
+
+	  for (i = 0; i < master->num_axis; i++)
+	  {
+	      double min_value = master->axis[i].minimum / (double) (1 << 16);
+	      double def_value = master->axis[i].def / (double) (1 << 16);
+	      double max_value = master->axis[i].maximum / (double) (1 << 16);
+	      const char *elt = NULL;
+
+	      if (min_value > def_value || def_value > max_value || min_value == max_value)
+		  continue;
+
+	      switch (master->axis[i].tag)
+	      {
+		case FT_MAKE_TAG ('w','g','h','t'):
+		  elt = FC_WEIGHT;
+		  variable = variable_weight = FcTrue;
+		  weight = 0; /* To stop looking for weight. */
+		  break;
+
+		case FT_MAKE_TAG ('w','d','t','h'):
+		  elt = FC_WIDTH;
+		  variable = variable_width = FcTrue;
+		  width = 0; /* To stop looking for width. */
+		  break;
+
+		case FT_MAKE_TAG ('o','p','s','z'):
+		  elt = FC_SIZE;
+		  variable = variable_size = FcTrue;
+		  break;
+	      }
+
+	      if (elt)
+	      {
+		  FcRange *r = FcRangeCreateDouble (min_value, max_value);
+		  if (!FcPatternAddRange (pat, elt, r))
+		  {
+		      FcRangeDestroy (r);
+		      goto bail1;
+		  }
+		  FcRangeDestroy (r);
+	      }
+	  }
+
+	  if (!variable)
+	      goto bail1;
+
+	  id &= 0xFFFF;
+      }
+      else if ((id >> 16) - 1 < master->num_namedstyles)
       {
 	  /* Pull out weight and width from named-instance. */
 	  unsigned int i;
+
+	  instance = &master->namedstyle[(id >> 16) - 1];
 
 	  for (i = 0; i < master->num_axis; i++)
 	  {
@@ -1273,6 +1325,8 @@ FcFreeTypeQueryFace (const FT_Face  face,
         else
 	    goto bail1;
     }
+    if (!FcPatternAddBool (pat, FC_VARIABLE, variable))
+	goto bail1;
 
     /*
      * Get the OS/2 table
@@ -1685,9 +1739,10 @@ FcFreeTypeQueryFace (const FT_Face  face,
     }
 
 #if defined (HAVE_TT_OS2_USUPPEROPTICALPOINTSIZE) && defined (HAVE_TT_OS2_USLOWEROPTICALPOINTSIZE)
-    if (os2 && os2->version >= 0x0005 && os2->version != 0xffff)
+    if (!variable_size && os2 && os2->version >= 0x0005 && os2->version != 0xffff)
     {
 	double lower_size, upper_size;
+	FcRange *r;
 
 	/* usLowerPointSize and usUpperPointSize is actually twips */
 	lower_size = os2->usLowerOpticalPointSize / 20.0L;
@@ -1841,10 +1896,10 @@ FcFreeTypeQueryFace (const FT_Face  face,
     if (!FcPatternAddInteger (pat, FC_SLANT, slant))
 	goto bail1;
 
-    if (!FcPatternAddInteger (pat, FC_WEIGHT, weight))
+    if (!variable_weight && !FcPatternAddInteger (pat, FC_WEIGHT, weight))
 	goto bail1;
 
-    if (!FcPatternAddInteger (pat, FC_WIDTH, width))
+    if (!variable_width && !FcPatternAddInteger (pat, FC_WIDTH, width))
 	goto bail1;
 
     if (!FcPatternAddString (pat, FC_FOUNDRY, foundry))
@@ -1983,7 +2038,7 @@ FcFreeTypeQuery(const FcChar8	*file,
     if (FT_Init_FreeType (&ftLibrary))
 	return NULL;
 
-    if (FT_New_Face (ftLibrary, (char *) file, id, &face))
+    if (FT_New_Face (ftLibrary, (char *) file, id & 0x7FFFFFFFF, &face))
 	goto bail;
 
     if (count)
@@ -2023,7 +2078,7 @@ FcFreeTypeQueryAll(const FcChar8	*file,
 	FcPattern *pat;
 
 	id = ((instance_num << 16) + face_num);
-	if (FT_New_Face (ftLibrary, (const char *) file, id, &face))
+	if (FT_New_Face (ftLibrary, (const char *) file, id & 0x7FFFFFFF, &face))
 	  break;
 
 	num_faces = face->num_faces;
