@@ -383,6 +383,7 @@ fbdev_frame_buffer_map(struct fbdev_output *output, int fd)
 	if (output->fb == MAP_FAILED) {
 		weston_log("Failed to mmap frame buffer: %s\n",
 		           strerror(errno));
+		output->fb = NULL;
 		goto out_close;
 	}
 
