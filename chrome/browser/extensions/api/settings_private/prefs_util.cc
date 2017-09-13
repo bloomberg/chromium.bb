@@ -206,21 +206,33 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   // Clear browsing data settings.
   (*s_whitelist)[browsing_data::prefs::kDeleteBrowsingHistory] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[browsing_data::prefs::kDeleteBrowsingHistoryBasic] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[browsing_data::prefs::kDeleteDownloadHistory] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[browsing_data::prefs::kDeleteCache] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[browsing_data::prefs::kDeleteCacheBasic] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[browsing_data::prefs::kDeleteCookies] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[browsing_data::prefs::kDeleteCookiesBasic] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[browsing_data::prefs::kDeletePasswords] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[browsing_data::prefs::kDeleteFormData] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[browsing_data::prefs::kDeleteSiteSettings] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[browsing_data::prefs::kDeleteHostedAppsData] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[browsing_data::prefs::kDeleteMediaLicenses] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[browsing_data::prefs::kDeleteTimePeriod] =
+      settings_private::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)[browsing_data::prefs::kDeleteTimePeriodBasic] =
+      settings_private::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)[browsing_data::prefs::kLastClearBrowsingDataTab] =
       settings_private::PrefType::PREF_TYPE_NUMBER;
 
 #if defined(OS_CHROMEOS)

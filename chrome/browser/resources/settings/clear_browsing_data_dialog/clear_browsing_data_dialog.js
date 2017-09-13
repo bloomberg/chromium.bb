@@ -99,7 +99,8 @@ Polymer({
   /** @override */
   ready: function() {
     this.$.clearFrom.menuOptions = this.clearFromOptions_;
-    this.addWebUIListener('update-footer', this.updateFooter_.bind(this));
+    this.addWebUIListener(
+        'update-sync-state', this.updateSyncState_.bind(this));
     this.addWebUIListener(
         'update-counter-text', this.updateCounterText_.bind(this));
   },
@@ -122,12 +123,13 @@ Polymer({
   /**
    * Updates the footer to show only those sentences that are relevant to this
    * user.
+   * @param {boolean} signedIn Whether the user is signed in.
    * @param {boolean} syncing Whether the user is syncing data.
    * @param {boolean} otherFormsOfBrowsingHistory Whether the user has other
    *     forms of browsing history in their account.
    * @private
    */
-  updateFooter_: function(syncing, otherFormsOfBrowsingHistory) {
+  updateSyncState_: function(signedIn, syncing, otherFormsOfBrowsingHistory) {
     this.$.googleFooter.hidden = !otherFormsOfBrowsingHistory;
     this.$.syncedDataSentence.hidden = !syncing;
     this.$.clearBrowsingDataDialog.classList.add('fully-rendered');

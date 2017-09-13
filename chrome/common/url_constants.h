@@ -444,6 +444,9 @@ extern const char kKillReasonURL[];
 // "Learn more" URL for the Privacy section under Options.
 extern const char kPrivacyLearnMoreURL[];
 
+// "myactivity.google.com" URL for the history checkbox in ClearBrowsingData.
+extern const char kMyActivityUrl[];
+
 // "Learn more" URL for the "Do not track" setting in the privacy section.
 extern const char kDoNotTrackLearnMoreURL[];
 

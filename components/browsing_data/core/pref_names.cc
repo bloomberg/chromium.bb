@@ -83,10 +83,7 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterInt64Pref(prefs::kLastClearBrowsingDataTime, 0);
 #endif  // !defined(OS_IOS)
 
-#if defined(OS_ANDROID)
   registry->RegisterIntegerPref(kLastClearBrowsingDataTab, 0);
-#endif
-
   registry->RegisterBooleanPref(
       kPreferencesMigratedToBasic, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);

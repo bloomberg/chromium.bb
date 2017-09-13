@@ -417,14 +417,20 @@ void AddChangePasswordStrings(content::WebUIDataSource* html_source) {
 void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"clearFollowingItemsFrom", IDS_SETTINGS_CLEAR_FOLLOWING_ITEMS_FROM},
+      {"clearTimeRange", IDS_SETTINGS_CLEAR_PERIOD_TITLE},
       {"clearBrowsingHistory", IDS_SETTINGS_CLEAR_BROWSING_HISTORY},
+      {"clearBrowsingHistorySummary",
+       IDS_SETTINGS_CLEAR_BROWSING_HISTORY_SUMMARY},
       {"clearDownloadHistory", IDS_SETTINGS_CLEAR_DOWNLOAD_HISTORY},
       {"clearCache", IDS_SETTINGS_CLEAR_CACHE},
       {"clearCookies", IDS_SETTINGS_CLEAR_COOKIES},
+      {"clearCookiesSummary",
+       IDS_SETTINGS_CLEAR_COOKIES_AND_SITE_DATA_SUMMARY_BASIC},
       {"clearCookiesCounter", IDS_DEL_COOKIES_COUNTER},
       {"clearCookiesFlash", IDS_SETTINGS_CLEAR_COOKIES_FLASH},
       {"clearPasswords", IDS_SETTINGS_CLEAR_PASSWORDS},
       {"clearFormData", IDS_SETTINGS_CLEAR_FORM_DATA},
+      {"clearSiteSettings", IDS_SETTINGS_CLEAR_SITE_SETTINGS},
       {"clearHostedAppData", IDS_SETTINGS_CLEAR_HOSTED_APP_DATA},
       {"clearMediaLicenses", IDS_SETTINGS_CLEAR_MEDIA_LICENSES},
       {"clearDataHour", IDS_SETTINGS_CLEAR_DATA_HOUR},
@@ -432,6 +438,11 @@ void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source) {
       {"clearDataWeek", IDS_SETTINGS_CLEAR_DATA_WEEK},
       {"clearData4Weeks", IDS_SETTINGS_CLEAR_DATA_4WEEKS},
       {"clearDataEverything", IDS_SETTINGS_CLEAR_DATA_EVERYTHING},
+      {"clearPeriodHour", IDS_SETTINGS_CLEAR_PERIOD_HOUR},
+      {"clearPeriod24Hours", IDS_SETTINGS_CLEAR_PERIOD_24_HOURS},
+      {"clearPeriod7Days", IDS_SETTINGS_CLEAR_PERIOD_7_DAYS},
+      {"clearPeriod4Weeks", IDS_SETTINGS_CLEAR_PERIOD_FOUR_WEEKS},
+      {"clearPeriodEverything", IDS_SETTINGS_CLEAR_PERIOD_EVERYTHING},
       {"warnAboutNonClearedData", IDS_SETTINGS_CLEAR_DATA_SOME_STUFF_REMAINS},
       {"clearsSyncedData", IDS_SETTINGS_CLEAR_DATA_CLEARS_SYNCED_DATA},
       {"clearBrowsingDataLearnMoreUrl", IDS_SETTINGS_CLEAR_DATA_LEARN_MORE_URL},
@@ -446,6 +457,15 @@ void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source) {
       {"notificationWarning", IDS_SETTINGS_NOTIFICATION_WARNING},
   };
 
+  html_source->AddString(
+      "clearBrowsingHistorySummarySignedIn",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_CLEAR_BROWSING_HISTORY_SUMMARY_SIGNED_IN,
+          base::ASCIIToUTF16(chrome::kMyActivityUrl)));
+  html_source->AddString("clearBrowsingHistorySummarySynced",
+                         l10n_util::GetStringFUTF16(
+                             IDS_SETTINGS_CLEAR_BROWSING_HISTORY_SUMMARY_SYNCED,
+                             base::ASCIIToUTF16(chrome::kMyActivityUrl)));
   html_source->AddString(
       "otherFormsOfBrowsingHistory",
       l10n_util::GetStringFUTF16(

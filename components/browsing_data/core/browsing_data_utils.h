@@ -23,9 +23,9 @@ enum class BrowsingDataType {
   COOKIES,
   PASSWORDS,
   FORM_DATA,
+  SITE_SETTINGS,
   // Only for Android:
   BOOKMARKS,
-  SITE_SETTINGS,
   // Only for Desktop:
   DOWNLOADS,
   MEDIA_LICENSES,

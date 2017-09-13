@@ -21,6 +21,7 @@
 #include "chrome/browser/engagement/important_sites_usage_counter.h"
 #include "chrome/browser/engagement/important_sites_util.h"
 #include "chrome/browser/history/web_history_service_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
@@ -28,6 +29,7 @@
 #include "components/browsing_data/core/history_notice_utils.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_ui.h"
@@ -42,13 +44,23 @@ const int kMaxTimesHistoryNoticeShown = 1;
 
 // TODO(msramek): Get the list of deletion preferences from the JS side.
 const char* kCounterPrefs[] = {
-  browsing_data::prefs::kDeleteBrowsingHistory,
-  browsing_data::prefs::kDeleteCache,
-  browsing_data::prefs::kDeleteDownloadHistory,
-  browsing_data::prefs::kDeleteFormData,
-  browsing_data::prefs::kDeleteHostedAppsData,
-  browsing_data::prefs::kDeleteMediaLicenses,
-  browsing_data::prefs::kDeletePasswords,
+    browsing_data::prefs::kDeleteBrowsingHistory,
+    browsing_data::prefs::kDeleteCache,
+    browsing_data::prefs::kDeleteDownloadHistory,
+    browsing_data::prefs::kDeleteFormData,
+    browsing_data::prefs::kDeleteHostedAppsData,
+    browsing_data::prefs::kDeleteMediaLicenses,
+    browsing_data::prefs::kDeletePasswords,
+};
+
+// Additional counters for the tabbed ui.
+const char* kCounterPrefsBasic[] = {
+    browsing_data::prefs::kDeleteCacheBasic,
+};
+
+const char* kCounterPrefsAdvanced[] = {
+    browsing_data::prefs::kDeleteCookies,
+    browsing_data::prefs::kDeleteSiteSettings,
 };
 
 const char kRegisterableDomainField[] = "registerableDomain";
@@ -70,7 +82,11 @@ ClearBrowsingDataHandler::ClearBrowsingDataHandler(content::WebUI* webui)
       sync_service_observer_(this),
       show_history_footer_(false),
       show_history_deletion_dialog_(false),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  if (base::FeatureList::IsEnabled(features::kTabsInCbd)) {
+    browsing_data::MigratePreferencesToBasic(profile_->GetPrefs());
+  }
+}
 
 ClearBrowsingDataHandler::~ClearBrowsingDataHandler() {
 }
@@ -98,8 +114,20 @@ void ClearBrowsingDataHandler::OnJavascriptAllowed() {
 
   DCHECK(counters_.empty());
   for (const std::string& pref : kCounterPrefs) {
-    AddCounter(
-        BrowsingDataCounterFactory::GetForProfileAndPref(profile_, pref));
+    AddCounter(BrowsingDataCounterFactory::GetForProfileAndPref(profile_, pref),
+               browsing_data::ClearBrowsingDataTab::ADVANCED);
+  }
+  if (base::FeatureList::IsEnabled(features::kTabsInCbd)) {
+    for (const std::string& pref : kCounterPrefsBasic) {
+      AddCounter(
+          BrowsingDataCounterFactory::GetForProfileAndPref(profile_, pref),
+          browsing_data::ClearBrowsingDataTab::BASIC);
+    }
+    for (const std::string& pref : kCounterPrefsAdvanced) {
+      AddCounter(
+          BrowsingDataCounterFactory::GetForProfileAndPref(profile_, pref),
+          browsing_data::ClearBrowsingDataTab::ADVANCED);
+    }
   }
 }
 
@@ -127,7 +155,7 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
   std::vector<BrowsingDataType> data_type_vector;
   const base::ListValue* data_type_list = nullptr;
   CHECK(args->GetList(1, &data_type_list));
-  for (const auto& type : *data_type_list) {
+  for (const base::Value& type : *data_type_list) {
     std::string pref_name;
     CHECK(type.GetAsString(&pref_name));
     BrowsingDataType data_type =
@@ -157,6 +185,10 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
       case BrowsingDataType::FORM_DATA:
         remove_mask |= ChromeBrowsingDataRemoverDelegate::DATA_TYPE_FORM_DATA;
         break;
+      case BrowsingDataType::SITE_SETTINGS:
+        remove_mask |=
+            ChromeBrowsingDataRemoverDelegate::DATA_TYPE_CONTENT_SETTINGS;
+        break;
       case BrowsingDataType::MEDIA_LICENSES:
         remove_mask |= content::BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES;
         break;
@@ -165,7 +197,6 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
         origin_mask |= content::BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB;
         break;
       case BrowsingDataType::BOOKMARKS:
-      case BrowsingDataType::SITE_SETTINGS:
         // Only implemented on Android.
         NOTREACHED();
       case BrowsingDataType::NUM_TYPES:
@@ -378,9 +409,16 @@ void ClearBrowsingDataHandler::OnStateChanged(syncer::SyncService* sync) {
 }
 
 void ClearBrowsingDataHandler::UpdateSyncState() {
+  auto* signin_manager = SigninManagerFactory::GetForProfile(profile_);
+  // TODO(dullweber): Remove "show_history_footer" attribute when the new UI
+  // is launched as it doesn't have this footer anymore. Instead the
+  // myactivity.google.com link is shown when a user is signed in or syncing.
   CallJavascriptFunction(
-      "cr.webUIListenerCallback", base::Value("update-footer"),
-      base::Value(sync_service_ && sync_service_->IsSyncActive()),
+      "cr.webUIListenerCallback", base::Value("update-sync-state"),
+      base::Value(signin_manager && signin_manager->IsAuthenticated()),
+      base::Value(sync_service_ && sync_service_->IsSyncActive() &&
+                  sync_service_->GetActiveDataTypes().Has(
+                      syncer::HISTORY_DELETE_DIRECTIVES)),
       base::Value(show_history_footer_));
 }
 
@@ -422,9 +460,10 @@ void ClearBrowsingDataHandler::UpdateHistoryDeletionDialog(bool show) {
 }
 
 void ClearBrowsingDataHandler::AddCounter(
-    std::unique_ptr<browsing_data::BrowsingDataCounter> counter) {
-  counter->Init(profile_->GetPrefs(),
-                browsing_data::ClearBrowsingDataTab::ADVANCED,
+    std::unique_ptr<browsing_data::BrowsingDataCounter> counter,
+    browsing_data::ClearBrowsingDataTab tab) {
+  DCHECK(counter);
+  counter->Init(profile_->GetPrefs(), tab,
                 base::Bind(&ClearBrowsingDataHandler::UpdateCounterText,
                            base::Unretained(this)));
   counters_.push_back(std::move(counter));
