@@ -92,9 +92,11 @@ void CameraDeviceDelegate::StopAndDeAllocate(
   // CameraDeviceContext::State::kStopping.
   DCHECK_NE(device_context_->GetState(), CameraDeviceContext::State::kStopping);
 
-  if (device_context_->GetState() == CameraDeviceContext::State::kStopped) {
+  if (device_context_->GetState() == CameraDeviceContext::State::kStopped ||
+      !stream_buffer_manager_) {
     // In case of Mojo connection error the device may be stopped before
-    // StopAndDeAllocate is called.
+    // StopAndDeAllocate is called; in case of device open failure, the state
+    // is set to kError and |stream_buffer_manager_| is uninitialized.
     std::move(device_close_callback).Run();
     return;
   }
@@ -151,7 +153,9 @@ void CameraDeviceDelegate::OnMojoConnectionError() {
     OnClosed(0);
   } else {
     // The Mojo channel terminated unexpectedly.
-    stream_buffer_manager_->StopCapture();
+    if (stream_buffer_manager_) {
+      stream_buffer_manager_->StopCapture();
+    }
     device_context_->SetState(CameraDeviceContext::State::kStopped);
     device_context_->SetErrorState(FROM_HERE, "Mojo connection error");
     ResetMojoInterface();
@@ -214,6 +218,11 @@ void CameraDeviceDelegate::OnOpenedDevice(int32_t result) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
 
   if (device_context_->GetState() != CameraDeviceContext::State::kStarting) {
+    if (device_context_->GetState() == CameraDeviceContext::State::kError) {
+      // In case of camera open failed, the HAL can terminate the Mojo channel
+      // before we do and set the state to kError in OnMojoConnectionError.
+      return;
+    }
     DCHECK_EQ(device_context_->GetState(),
               CameraDeviceContext::State::kStopping);
     OnClosed(0);

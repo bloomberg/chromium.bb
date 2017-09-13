@@ -29,6 +29,7 @@ using testing::_;
 using testing::A;
 using testing::AtLeast;
 using testing::Invoke;
+using testing::InvokeWithoutArgs;
 
 namespace media {
 
@@ -517,6 +518,58 @@ TEST_F(CameraDeviceDelegateTest, StopAfterStreamConfigured) {
   SetUpExpectationForClose();
 
   WaitForDeviceToClose();
+
+  ResetDevice();
+}
+
+// Test that the camera device delegate handles camera device open failures
+// correctly.
+TEST_F(CameraDeviceDelegateTest, FailToOpenDevice) {
+  AllocateDeviceWithDescriptor(kDefaultDescriptor);
+
+  VideoCaptureParams params;
+  params.requested_format = kDefaultCaptureFormat;
+
+  auto* mock_client =
+      reinterpret_cast<unittest_internal::MockVideoCaptureClient*>(
+          mock_client_.get());
+
+  auto stop_on_error = [&]() {
+    device_delegate_thread_.task_runner()->PostTask(
+        FROM_HERE, base::Bind(&CameraDeviceDelegate::StopAndDeAllocate,
+                              camera_device_delegate_->GetWeakPtr(),
+                              BindToCurrentLoop(base::Bind(
+                                  &CameraDeviceDelegateTest::QuitRunLoop,
+                                  base::Unretained(this)))));
+  };
+  EXPECT_CALL(*mock_client, OnError(_, _))
+      .Times(AtLeast(1))
+      .WillOnce(InvokeWithoutArgs(stop_on_error));
+
+  EXPECT_CALL(mock_camera_module_, DoGetCameraInfo(0, _))
+      .Times(1)
+      .WillOnce(Invoke(this, &CameraDeviceDelegateTest::GetFakeCameraInfo));
+
+  auto open_device_with_error_cb =
+      [](int32_t camera_id,
+         arc::mojom::Camera3DeviceOpsRequest& device_ops_request,
+         base::OnceCallback<void(int32_t)>& callback) {
+        std::move(callback).Run(-ENODEV);
+        device_ops_request.ResetWithReason(-ENODEV,
+                                           "Failed to open camera device");
+      };
+  EXPECT_CALL(mock_camera_module_, DoOpenDevice(0, _, _))
+      .Times(1)
+      .WillOnce(Invoke(open_device_with_error_cb));
+
+  device_delegate_thread_.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&CameraDeviceDelegate::AllocateAndStart,
+                            camera_device_delegate_->GetWeakPtr(), params,
+                            base::Passed(&mock_client_)));
+
+  // Wait unitl |camera_device_delegate_->StopAndDeAllocate| calls the
+  // QuitRunLoop callback.
+  DoLoop();
 
   ResetDevice();
 }
