@@ -86,7 +86,7 @@ SiteEngagementUI::SiteEngagementUI(content::WebUI* web_ui)
       IDR_SITE_ENGAGEMENT_MOJO_JS);
   source->AddResourcePath("url/mojo/url.mojom.js", IDR_URL_MOJO_JS);
   source->SetDefaultResource(IDR_SITE_ENGAGEMENT_HTML);
-  source->UseGzip(std::unordered_set<std::string>());
+  source->UseGzip();
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source.release());
 }
 

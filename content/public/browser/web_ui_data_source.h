@@ -9,7 +9,7 @@
 
 #include <memory>
 #include <string>
-#include <unordered_set>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/strings/string16.h"
@@ -109,8 +109,7 @@ class WebUIDataSource {
 
   // Tells the loading code that resources are gzipped on disk. |excluded_paths|
   // are uncompressed paths, and therefore should not be decompressed.
-  virtual void UseGzip(const std::unordered_set<std::string>& excluded_paths)
-      = 0;
+  virtual void UseGzip(const std::vector<std::string>& excluded_paths = {}) = 0;
 };
 
 }  // namespace content

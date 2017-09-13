@@ -22,7 +22,7 @@ WebUIDataSource* CreateWebRTCInternalsHTMLSource() {
   source->SetJsonPath("strings.js");
   source->AddResourcePath("webrtc_internals.js", IDR_WEBRTC_INTERNALS_JS);
   source->SetDefaultResource(IDR_WEBRTC_INTERNALS_HTML);
-  source->UseGzip(std::unordered_set<std::string>());
+  source->UseGzip();
   return source;
 }
 

@@ -39,7 +39,7 @@ content::WebUIDataSource* CreatePasswordManagerInternalsHTMLSource() {
       IDR_PASSWORD_MANAGER_INTERNALS_PASSWORD_MANAGER_INTERNALS_CSS);
   source->SetDefaultResource(
       IDR_PASSWORD_MANAGER_INTERNALS_PASSWORD_MANAGER_INTERNALS_HTML);
-  source->UseGzip(std::unordered_set<std::string>());
+  source->UseGzip();
   return source;
 }
 

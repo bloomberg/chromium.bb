@@ -115,7 +115,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui),
       WebContentsObserver(web_ui->GetWebContents()) {
 #if BUILDFLAG(USE_VULCANIZE)
-  std::unordered_set<std::string> exclude_from_gzip;
+  std::vector<std::string> exclude_from_gzip;
 #endif
 
   Profile* profile = Profile::FromWebUI(web_ui);
@@ -208,7 +208,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
     html_source->AddResourcePath("partner-logo.svg",
                                  IDR_CHROME_CLEANUP_PARTNER);
 #if BUILDFLAG(USE_VULCANIZE)
-    exclude_from_gzip.insert("partner-logo.svg");
+    exclude_from_gzip.push_back("partner-logo.svg");
 #endif
 #endif  // defined(GOOGLE_CHROME_BUILD)
   }

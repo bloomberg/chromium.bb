@@ -20,7 +20,7 @@ content::WebUIDataSource* CreatePredictorsUIHTMLSource() {
       content::WebUIDataSource::Create(chrome::kChromeUIPredictorsHost);
   source->AddResourcePath("predictors.js", IDR_PREDICTORS_JS);
   source->SetDefaultResource(IDR_PREDICTORS_HTML);
-  source->UseGzip(std::unordered_set<std::string>());
+  source->UseGzip();
   return source;
 }
 

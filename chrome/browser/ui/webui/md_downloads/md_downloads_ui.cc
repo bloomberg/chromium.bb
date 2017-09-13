@@ -104,12 +104,8 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
                           IDR_MD_DOWNLOADS_2X_NO_DOWNLOADS_PNG);
 
 #if BUILDFLAG(USE_VULCANIZE)
-  std::unordered_set<std::string> exclude_from_gzip;
-  exclude_from_gzip.insert("1x/incognito_marker.png");
-  exclude_from_gzip.insert("2x/incognito_marker.png");
-  exclude_from_gzip.insert("1x/no_downloads.png");
-  exclude_from_gzip.insert("2x/no_downloads.png");
-  source->UseGzip(exclude_from_gzip);
+  source->UseGzip({"1x/incognito_marker.png", "1x/no_downloads.png",
+                   "2x/incognito_marker.png", "2x/no_downloads.png"});
 
   source->AddResourcePath("crisper.js", IDR_MD_DOWNLOADS_CRISPER_JS);
   source->SetDefaultResource(IDR_MD_DOWNLOADS_VULCANIZED_HTML);

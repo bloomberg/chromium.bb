@@ -62,7 +62,7 @@ BluetoothInternalsUI::BluetoothInternalsUI(content::WebUI* web_ui)
   html_source->AddResourcePath("device/bluetooth/public/interfaces/uuid.mojom",
                                IDR_BLUETOOTH_UUID_MOJO_JS);
   html_source->SetDefaultResource(IDR_BLUETOOTH_INTERNALS_HTML);
-  html_source->UseGzip(std::unordered_set<std::string>());
+  html_source->UseGzip();
 
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, html_source);

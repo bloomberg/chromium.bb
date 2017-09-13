@@ -210,7 +210,7 @@ void WebUIDataSourceImpl::DisableDenyXFrameOptions() {
 }
 
 void WebUIDataSourceImpl::UseGzip(
-    const std::unordered_set<std::string>& excluded_paths) {
+    const std::vector<std::string>& excluded_paths) {
   use_gzip_ = true;
   for (const auto& path : excluded_paths)
     excluded_paths_.insert(path);
