@@ -1653,7 +1653,7 @@ const CSSValue* ParseLonghandViaAPI(CSSPropertyID unresolved_property,
 
   const CSSPropertyAPI& api = CSSPropertyAPI::Get(property);
   const CSSValue* result = api.ParseSingleValue(
-      property, range, context,
+      range, context,
       CSSParserLocalContext(isPropertyAlias(unresolved_property),
                             current_shorthand));
   return result;

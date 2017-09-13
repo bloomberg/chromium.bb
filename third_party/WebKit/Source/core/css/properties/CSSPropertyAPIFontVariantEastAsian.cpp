@@ -10,7 +10,6 @@
 namespace blink {
 
 const CSSValue* CSSPropertyAPIFontVariantEastAsian::ParseSingleValue(
-    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {

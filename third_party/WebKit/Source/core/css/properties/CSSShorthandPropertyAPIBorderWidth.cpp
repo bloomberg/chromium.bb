@@ -10,7 +10,6 @@
 namespace blink {
 
 bool CSSShorthandPropertyAPIBorderWidth::ParseShorthand(
-    CSSPropertyID,
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,

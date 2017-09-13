@@ -42,7 +42,6 @@ CSSFontVariationValue* ConsumeFontVariationTag(CSSParserTokenRange& range) {
 }  // namespace
 
 const CSSValue* CSSPropertyAPIFontVariationSettings::ParseSingleValue(
-    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {

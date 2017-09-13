@@ -68,7 +68,6 @@ CSSValue* ConsumeBackgroundComponent(CSSPropertyID resolved_property,
 //   (ii). we split parsing logic of background and -webkit-mask into
 //   different APIs.
 bool CSSShorthandPropertyAPIBackground::ParseShorthand(
-    CSSPropertyID,
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,

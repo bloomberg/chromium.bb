@@ -10,7 +10,6 @@
 namespace blink {
 
 bool CSSShorthandPropertyAPIPageBreakBefore::ParseShorthand(
-    CSSPropertyID,
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext&,

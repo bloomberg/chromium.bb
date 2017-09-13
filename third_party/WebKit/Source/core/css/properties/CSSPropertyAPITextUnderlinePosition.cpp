@@ -10,7 +10,6 @@
 namespace blink {
 
 const CSSValue* CSSPropertyAPITextUnderlinePosition::ParseSingleValue(
-    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {

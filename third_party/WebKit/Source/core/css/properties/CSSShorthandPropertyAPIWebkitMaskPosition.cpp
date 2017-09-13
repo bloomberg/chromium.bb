@@ -11,7 +11,6 @@
 namespace blink {
 
 bool CSSShorthandPropertyAPIWebkitMaskPosition::ParseShorthand(
-    CSSPropertyID,
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,

@@ -9,7 +9,6 @@
 namespace blink {
 
 bool CSSShorthandPropertyAPIWebkitTextEmphasis::ParseShorthand(
-    CSSPropertyID,
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,

@@ -95,7 +95,7 @@ bool CSSPropertyParser::ParseValueStart(CSSPropertyID unresolved_property,
     // variable ref parser below.
     if (CSSPropertyAPI::Get(property_id)
             .ParseShorthand(
-                property_id, important, range_, *context_,
+                important, range_, *context_,
                 CSSParserLocalContext(isPropertyAlias(unresolved_property),
                                       property_id),
                 *parsed_properties_))

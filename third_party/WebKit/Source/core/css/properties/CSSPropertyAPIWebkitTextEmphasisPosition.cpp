@@ -14,7 +14,6 @@ namespace blink {
 // [ over | under ] && [ right | left ]?
 // If [ right | left ] is omitted, it defaults to right.
 const CSSValue* CSSPropertyAPIWebkitTextEmphasisPosition::ParseSingleValue(
-    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
