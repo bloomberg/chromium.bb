@@ -60,7 +60,9 @@ class RasterizeAndRecordMicroTop25(_RasterizeAndRecordMicro):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        pass # Nothing disabled.
+        self.DisableStory(
+            'file://static_top_25/wikipedia.html', [story.expectations.ALL],
+            'crbug.com/764543')
     return StoryExpectations()
 
 
