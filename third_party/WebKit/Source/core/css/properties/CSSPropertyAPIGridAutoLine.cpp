@@ -16,7 +16,6 @@ const CSSValue* CSSPropertyAPIGridAutoLine::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  DCHECK(RuntimeEnabledFeatures::CSSGridLayoutEnabled());
   return CSSPropertyGridUtils::ConsumeGridTrackList(
       range, context.Mode(), CSSPropertyGridUtils::kGridAuto);
 }

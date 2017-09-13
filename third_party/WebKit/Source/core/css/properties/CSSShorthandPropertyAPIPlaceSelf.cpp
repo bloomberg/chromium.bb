@@ -19,7 +19,6 @@ bool CSSShorthandPropertyAPIPlaceSelf::ParseShorthand(
     const CSSParserContext&,
     const CSSParserLocalContext&,
     HeapVector<CSSProperty, 256>& properties) const {
-  DCHECK(RuntimeEnabledFeatures::CSSGridLayoutEnabled());
   DCHECK_EQ(shorthandForProperty(CSSPropertyPlaceSelf).length(), 2u);
 
   CSSValue* align_self_value = nullptr;

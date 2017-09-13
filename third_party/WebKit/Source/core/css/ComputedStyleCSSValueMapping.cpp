@@ -661,8 +661,7 @@ static CSSValueList* ValuesForBackgroundShorthand(
 
 static CSSValueList*
 ValueForContentPositionAndDistributionWithOverflowAlignment(
-    const StyleContentAlignmentData& data,
-    CSSValueID normal_behavior_value_id) {
+    const StyleContentAlignmentData& data) {
   CSSValueList* result = CSSValueList::CreateSpaceSeparated();
   // Handle content-distribution values
   if (data.Distribution() != kContentDistributionDefault)
@@ -673,10 +672,7 @@ ValueForContentPositionAndDistributionWithOverflowAlignment(
     case kContentPositionNormal:
       // Handle 'normal' value, not valid as content-distribution fallback.
       if (data.Distribution() == kContentDistributionDefault) {
-        result->Append(*CSSIdentifierValue::Create(
-            RuntimeEnabledFeatures::CSSGridLayoutEnabled()
-                ? CSSValueNormal
-                : normal_behavior_value_id));
+        result->Append(*CSSIdentifierValue::Create(CSSValueNormal));
       }
       break;
     case kContentPositionLastBaseline:
@@ -2553,7 +2549,7 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
     }
     case CSSPropertyAlignContent:
       return ValueForContentPositionAndDistributionWithOverflowAlignment(
-          style.AlignContent(), CSSValueStretch);
+          style.AlignContent());
     case CSSPropertyAlignItems:
       return ValueForItemPositionWithOverflowAlignment(style.AlignItems());
     case CSSPropertyAlignSelf:
@@ -2579,7 +2575,7 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       return CSSIdentifierValue::Create(style.FlexWrap());
     case CSSPropertyJustifyContent:
       return ValueForContentPositionAndDistributionWithOverflowAlignment(
-          style.JustifyContent(), CSSValueFlexStart);
+          style.JustifyContent());
     case CSSPropertyOrder:
       return CSSPrimitiveValue::Create(style.Order(),
                                        CSSPrimitiveValue::UnitType::kNumber);

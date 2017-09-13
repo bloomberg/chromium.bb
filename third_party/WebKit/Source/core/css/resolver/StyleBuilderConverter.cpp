@@ -720,26 +720,6 @@ StyleContentAlignmentData StyleBuilderConverter::ConvertContentAlignmentData(
     const CSSValue& value) {
   StyleContentAlignmentData alignment_data =
       ComputedStyle::InitialContentAlignment();
-  if (!RuntimeEnabledFeatures::CSSGridLayoutEnabled()) {
-    const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);
-    switch (identifier_value.GetValueID()) {
-      case CSSValueStretch:
-      case CSSValueSpaceBetween:
-      case CSSValueSpaceAround:
-        alignment_data.SetDistribution(
-            identifier_value.ConvertTo<ContentDistributionType>());
-        break;
-      case CSSValueFlexStart:
-      case CSSValueFlexEnd:
-      case CSSValueCenter:
-        alignment_data.SetPosition(
-            identifier_value.ConvertTo<ContentPosition>());
-        break;
-      default:
-        NOTREACHED();
-    }
-    return alignment_data;
-  }
   const CSSContentDistributionValue& content_value =
       ToCSSContentDistributionValue(value);
   if (content_value.Distribution()->GetValueID() != CSSValueInvalid)

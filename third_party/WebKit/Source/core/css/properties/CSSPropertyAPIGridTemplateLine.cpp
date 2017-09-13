@@ -15,7 +15,6 @@ const CSSValue* CSSPropertyAPIGridTemplateLine::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  DCHECK(RuntimeEnabledFeatures::CSSGridLayoutEnabled());
   return CSSPropertyGridUtils::ConsumeGridTemplatesRowsOrColumns(
       range, context.Mode());
 }

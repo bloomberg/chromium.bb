@@ -574,8 +574,7 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
       return (value_id >= CSSValueInline && value_id <= CSSValueInlineFlex) ||
              value_id == CSSValueWebkitFlex ||
              value_id == CSSValueWebkitInlineFlex || value_id == CSSValueNone ||
-             (RuntimeEnabledFeatures::CSSGridLayoutEnabled() &&
-              (value_id == CSSValueGrid || value_id == CSSValueInlineGrid)) ||
+             value_id == CSSValueGrid || value_id == CSSValueInlineGrid ||
              (RuntimeEnabledFeatures::CSSDisplayContentsEnabled() &&
               value_id == CSSValueContents);
     case CSSPropertyDominantBaseline:
@@ -975,11 +974,6 @@ bool CSSParserFastPaths::IsKeywordPropertyID(CSSPropertyID property_id) {
     case CSSPropertyWritingMode:
     case CSSPropertyScrollSnapStop:
       return true;
-    case CSSPropertyJustifyContent:
-    case CSSPropertyAlignContent:
-    case CSSPropertyAlignItems:
-    case CSSPropertyAlignSelf:
-      return !RuntimeEnabledFeatures::CSSGridLayoutEnabled();
     default:
       return false;
   }

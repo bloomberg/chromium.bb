@@ -19,7 +19,6 @@ bool CSSShorthandPropertyAPIPlaceItems::ParseShorthand(
     const CSSParserContext&,
     const CSSParserLocalContext&,
     HeapVector<CSSProperty, 256>& properties) const {
-  DCHECK(RuntimeEnabledFeatures::CSSGridLayoutEnabled());
   DCHECK_EQ(shorthandForProperty(CSSPropertyPlaceItems).length(), 2u);
 
   // align-items property does not allow the 'auto' value.

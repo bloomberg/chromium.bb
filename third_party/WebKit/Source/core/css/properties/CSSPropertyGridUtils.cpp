@@ -504,7 +504,6 @@ bool CSSPropertyGridUtils::ConsumeGridItemPositionShorthand(
   // Input should be nullptrs.
   DCHECK(!start_value);
   DCHECK(!end_value);
-  DCHECK(RuntimeEnabledFeatures::CSSGridLayoutEnabled());
 
   start_value = ConsumeGridLine(range);
   if (!start_value)
@@ -534,7 +533,6 @@ bool CSSPropertyGridUtils::ConsumeGridTemplateShorthand(
   DCHECK(!template_columns);
   DCHECK(!template_areas);
 
-  DCHECK(RuntimeEnabledFeatures::CSSGridLayoutEnabled());
   DCHECK_EQ(gridTemplateShorthand().length(), 3u);
 
   CSSParserTokenRange range_copy = range;
