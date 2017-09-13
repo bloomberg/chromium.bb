@@ -89,7 +89,7 @@ bool MediaPipelineBackendAlsa::SetPlaybackRate(float rate) {
 
 int64_t MediaPipelineBackendAlsa::GetCurrentPts() {
   if (audio_decoder_)
-    return audio_decoder_->current_pts();
+    return audio_decoder_->GetCurrentPts();
   return std::numeric_limits<int64_t>::min();
 }
 

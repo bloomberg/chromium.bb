@@ -110,6 +110,7 @@ class MediaPipelineImpl {
 
   // The media time is retrieved at regular intervals.
   bool pending_time_update_task_;
+  base::TimeDelta start_media_time_;
   base::TimeDelta last_media_time_;
 
   // Used to make the statistics update period a multiplier of the time update

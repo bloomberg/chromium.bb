@@ -46,7 +46,7 @@ class AudioDecoderAlsa : public MediaPipelineBackend::AudioDecoder,
   bool Resume();
   bool SetPlaybackRate(float rate);
 
-  int64_t current_pts() const { return current_pts_; }
+  int64_t GetCurrentPts() const;
 
   // MediaPipelineBackend::AudioDecoder implementation:
   void SetDelegate(
@@ -104,7 +104,11 @@ class AudioDecoderAlsa : public MediaPipelineBackend::AudioDecoder,
   std::deque<RateShifterInfo> rate_shifter_info_;
   std::unique_ptr<::media::AudioBus> rate_shifter_output_;
 
-  int64_t current_pts_;
+  int64_t first_push_pts_;
+  int64_t last_push_pts_;
+  int64_t last_push_timestamp_;
+  int64_t last_push_pts_length_;
+  int64_t paused_pts_;
 
   std::unique_ptr<StreamMixerAlsaInput> mixer_input_;
   RenderingDelay last_mixer_delay_;
