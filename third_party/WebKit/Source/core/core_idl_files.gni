@@ -641,13 +641,23 @@ webcore_testing_idl_with_modules_dependency_files =
 webcore_testing_dependency_idl_files =
     get_path_info([ "testing/OriginTrialsTestPartial.idl" ], "abspath")
 
-generated_webcore_testing_idl_files =
-    get_path_info(
-        [
-          "$blink_core_output_dir/testing/InternalRuntimeFlags.idl",
-          "$blink_core_output_dir/testing/InternalSettingsGenerated.idl",
-        ],
-        "abspath")
+if (snake_case_source_files) {
+  generated_webcore_testing_idl_files =
+      get_path_info(
+          [
+            "$blink_core_output_dir/testing/internal_runtime_flags.idl",
+            "$blink_core_output_dir/testing/internal_settings_generated.idl",
+          ],
+          "abspath")
+} else {
+  generated_webcore_testing_idl_files =
+      get_path_info(
+          [
+            "$blink_core_output_dir/testing/InternalRuntimeFlags.idl",
+            "$blink_core_output_dir/testing/InternalSettingsGenerated.idl",
+          ],
+          "abspath")
+}
 
 core_definition_idl_files = core_dictionary_idl_files + core_idl_files +
                             core_idl_with_modules_dependency_files
