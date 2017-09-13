@@ -1305,6 +1305,8 @@ const char kTLS13VariantRecordTypeExperiment[] =
     "Enabled (Record Type Experiment)";
 const char kTLS13VariantNoSessionIDExperiment[] =
     "Enabled (No Session ID Experiment)";
+const char kTLS13VariantExperiment2[] = "Enabled (Experiment 2)";
+const char kTLS13VariantExperiment3[] = "Enabled (Experiment 3)";
 
 const char kTopDocumentIsolationName[] = "Top document isolation";
 const char kTopDocumentIsolationDescription[] =

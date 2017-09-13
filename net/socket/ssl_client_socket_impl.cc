@@ -901,6 +901,12 @@ int SSLClientSocketImpl::Init() {
     case kTLS13VariantNoSessionIDExperiment:
       SSL_set_tls13_variant(ssl_.get(), tls13_no_session_id_experiment);
       break;
+    case kTLS13VariantExperiment2:
+      SSL_set_tls13_variant(ssl_.get(), tls13_experiment2);
+      break;
+    case kTLS13VariantExperiment3:
+      SSL_set_tls13_variant(ssl_.get(), tls13_experiment3);
+      break;
   }
 
   // OpenSSL defaults some options to on, others to off. To avoid ambiguity,
