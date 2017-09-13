@@ -733,15 +733,6 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   return true;
 }
 
-bool AXLayoutObject::IsFocusableByDefault(Element* elem) const {
-  // These are the only naturally focusable elements that are focusable without
-  // contenteditable or tabindex.
-  DCHECK(elem);
-  return elem->IsFormControlElement() || elem->HasTagName(aTag) ||
-         elem->HasTagName(audioTag) || elem->HasTagName(iframeTag) ||
-         elem->HasTagName(summaryTag) || elem->HasTagName(videoTag);
-}
-
 bool AXLayoutObject::HasAriaCellRole(Element* elem) const {
   DCHECK(elem);
   const AtomicString& aria_role_str = elem->FastGetAttribute(roleAttr);
@@ -792,7 +783,7 @@ bool AXLayoutObject::CanIgnoreSpaceNextTo(LayoutObject* layout,
   Node* node = layout->GetNode();
   if (node && node->IsElementNode()) {
     Element* elem = ToElement(node);
-    if (IsFocusableByDefault(elem) || HasAriaCellRole(elem))
+    if (HasAriaCellRole(elem))
       return true;
   }
 

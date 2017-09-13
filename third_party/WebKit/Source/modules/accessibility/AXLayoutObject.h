@@ -213,7 +213,6 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
 
   bool CanIgnoreTextAsEmpty() const;
   bool CanIgnoreSpaceNextTo(LayoutObject*, bool is_after) const;
-  bool IsFocusableByDefault(Element*) const;
   bool HasAriaCellRole(Element*) const;
 };
 
