@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/omnibox/browser/autocomplete_match.h"
@@ -20,6 +21,7 @@
 
 class Profile;
 class ShortcutsBackend;
+class TemplateURLService;
 
 namespace net {
 class URLFetcher;
@@ -28,7 +30,7 @@ class URLFetcher;
 // Monitors omnibox navigations in order to trigger behaviors that depend on
 // successful navigations.
 //
-// Currently two such behaviors exist:
+// Currently three such behaviors exist:
 // (1) For single-word queries where we can't tell if the entry was a search or
 //     an intranet hostname, the omnibox opens as a search by default, but this
 //     class attempts to open as a URL via an HTTP HEAD request.  If successful,
@@ -36,6 +38,8 @@ class URLFetcher;
 //     AlternateNavInfoBarDelegate.
 // (2) Omnibox navigations that complete successfully are added to the
 //     Shortcuts backend.
+// (3) Omnibox searches that result in a 404 for an auto-generated custom
+//     search engine cause the custom search engine to be deleted.
 //
 // Please see the class comment on the base class for important information
 // about the memory management of this object.
@@ -63,7 +67,16 @@ class ChromeOmniboxNavigationObserver : public OmniboxNavigationObserver,
   // must be handled separately.
   void OnSuccessfulNavigation();
 
+  // Called when a navigation that yields a 404 ("Not Found") occurs.  If this
+  // navigation was an omnibox search that invoked an auto-generated custom
+  // search engine, delete the engine.  This will prevent the user from using
+  // the broken engine again.
+  void On404();
+
  private:
+  FRIEND_TEST_ALL_PREFIXES(ChromeOmniboxNavigationObserverTest,
+                           DeleteBrokenCustomSearchEngines);
+
   enum FetchState {
     FETCH_NOT_COMPLETE,
     FETCH_SUCCEEDED,
@@ -95,6 +108,7 @@ class ChromeOmniboxNavigationObserver : public OmniboxNavigationObserver,
   const base::string16 text_;
   const AutocompleteMatch match_;
   const AutocompleteMatch alternate_nav_match_;
+  TemplateURLService* template_url_service_;
   scoped_refptr<ShortcutsBackend> shortcuts_backend_;  // NULL in incognito.
   std::unique_ptr<net::URLFetcher> fetcher_;
   LoadState load_state_;

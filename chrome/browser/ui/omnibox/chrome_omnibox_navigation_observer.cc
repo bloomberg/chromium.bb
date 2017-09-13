@@ -7,8 +7,11 @@
 #include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/intranet_redirect_detector.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/omnibox/alternate_nav_infobar_delegate.h"
 #include "components/omnibox/browser/shortcuts_backend.h"
+#include "components/search_engines/template_url.h"
+#include "components/search_engines/template_url_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
@@ -61,6 +64,7 @@ ChromeOmniboxNavigationObserver::ChromeOmniboxNavigationObserver(
     : text_(text),
       match_(match),
       alternate_nav_match_(alternate_nav_match),
+      template_url_service_(TemplateURLServiceFactory::GetForProfile(profile)),
       shortcuts_backend_(ShortcutsBackendFactory::GetForProfile(profile)),
       load_state_(LOAD_NOT_SEEN),
       fetch_state_(FETCH_NOT_COMPLETE) {
@@ -112,6 +116,23 @@ ChromeOmniboxNavigationObserver::~ChromeOmniboxNavigationObserver() {}
 void ChromeOmniboxNavigationObserver::OnSuccessfulNavigation() {
   if (shortcuts_backend_.get())
     shortcuts_backend_->AddOrUpdateShortcut(text_, match_);
+}
+
+void ChromeOmniboxNavigationObserver::On404() {
+  TemplateURL* template_url = match_.GetTemplateURL(
+      template_url_service_, false /* allow_fallback_to_destination_host */);
+  // If the omnibox navigation was to a URL (and hence did not involve a
+  // TemplateURL / search at all) or the invoked search engine has been deleted
+  // or otherwise modified, doing nothing is the right thing.
+  if (template_url == nullptr)
+    return;
+  // If there's any hint that we should keep this search engine around, don't
+  // mess with it.
+  if (template_url_service_->ShowInDefaultList(template_url) ||
+      !template_url->safe_for_autoreplace())
+    return;
+  // This custom search engine is safe to delete.
+  template_url_service_->Remove(template_url);
 }
 
 bool ChromeOmniboxNavigationObserver::HasSeenPendingLoad() const {
@@ -185,6 +206,8 @@ void ChromeOmniboxNavigationObserver::NavigationEntryCommitted(
       IsValidNavigation(match_.destination_url,
                         load_details.entry->GetVirtualURL()))
     OnSuccessfulNavigation();
+  if (load_details.http_status_code == 404)
+    On404();
   if (!fetcher_ || (fetch_state_ != FETCH_NOT_COMPLETE))
     OnAllLoadingFinished();  // deletes |this|!
 }
