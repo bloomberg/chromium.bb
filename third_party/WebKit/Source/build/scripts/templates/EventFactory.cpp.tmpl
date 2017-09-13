@@ -4,18 +4,18 @@
 {{source_files_for_generated_file(template_file, input_files)}}
 
 {% if suffix == 'Modules' %}
-#include "modules/{{namespace}}{{suffix}}Factory.h"
+#include "modules/EventModulesFactory.h"
 {% else %}
-#include "core/events/{{namespace}}Factory.h"
+#include "core/events/EventFactory.h"
 {% endif %}
 
-#include "{{namespace}}{{suffix}}Headers.h"
+#include "Event{{suffix}}Headers.h"
 #include "core/frame/Deprecation.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 
-{{namespace}}* {{namespace}}{{suffix}}Factory::Create(ExecutionContext* executionContext, const String& type) {
+Event* Event{{suffix}}Factory::Create(ExecutionContext* executionContext, const String& type) {
   {% for event in events if event|script_name|create_event_whitelist or event|script_name|create_event_measure_whitelist %}
   {% if event|script_name|create_event_whitelist or event|script_name|create_event_measure_whitelist %}
   if (DeprecatedEqualIgnoringCase(type, "{{event|script_name}}"){% if event.RuntimeEnabled %} && RuntimeEnabledFeatures::{{event.RuntimeEnabled}}(){% endif %}) {
