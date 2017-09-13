@@ -151,9 +151,9 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   // Only used when invalidState() returns InvalidStateOther.
   String AriaInvalidValue() const final;
   String ValueDescription() const override;
-  float ValueForRange() const override;
-  float MaxValueForRange() const override;
-  float MinValueForRange() const override;
+  bool ValueForRange(float* out_value) const override;
+  bool MaxValueForRange(float* out_value) const override;
+  bool MinValueForRange(float* out_value) const override;
   String StringValue() const override;
 
   // ARIA attributes.

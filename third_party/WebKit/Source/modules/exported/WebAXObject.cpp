@@ -965,25 +965,25 @@ WebString WebAXObject::ValueDescription() const {
   return private_->ValueDescription();
 }
 
-float WebAXObject::ValueForRange() const {
+bool WebAXObject::ValueForRange(float* out_value) const {
   if (IsDetached())
-    return 0.0;
+    return false;
 
-  return private_->ValueForRange();
+  return private_->ValueForRange(out_value);
 }
 
-float WebAXObject::MaxValueForRange() const {
+bool WebAXObject::MaxValueForRange(float* out_value) const {
   if (IsDetached())
-    return 0.0;
+    return false;
 
-  return private_->MaxValueForRange();
+  return private_->MaxValueForRange(out_value);
 }
 
-float WebAXObject::MinValueForRange() const {
+bool WebAXObject::MinValueForRange(float* out_value) const {
   if (IsDetached())
-    return 0.0;
+    return false;
 
-  return private_->MinValueForRange();
+  return private_->MinValueForRange(out_value);
 }
 
 WebNode WebAXObject::GetNode() const {
