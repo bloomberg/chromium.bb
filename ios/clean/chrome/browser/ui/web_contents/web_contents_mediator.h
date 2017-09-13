@@ -7,6 +7,9 @@
 
 #import <Foundation/Foundation.h>
 
+#import "ios/chrome/browser/web/sad_tab_tab_helper_delegate.h"
+
+@protocol ApplicationCommands;
 namespace web {
 class WebState;
 }
@@ -14,7 +17,7 @@ class WebState;
 
 // A mediator object that provides the relevant properties of a web state
 // to a consumer.
-@interface WebContentsMediator : NSObject
+@interface WebContentsMediator : NSObject<SadTabTabHelperDelegate>
 
 // Updates to this webState are mediated to the consumer. This can change
 // during the lifetime of this object and may be nil.
@@ -23,6 +26,9 @@ class WebState;
 // The consumer for this object. This can change during the lifetime of this
 // object and may be nil.
 @property(nonatomic, weak) id<WebContentsConsumer> consumer;
+
+// The dispatcher for this mediator.
+@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
 
 @end
 

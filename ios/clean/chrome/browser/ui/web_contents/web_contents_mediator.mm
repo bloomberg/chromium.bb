@@ -7,8 +7,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/scoped_observer.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/ui/sad_tab/sad_tab_view.h"
 #import "ios/clean/chrome/browser/ui/web_contents/web_contents_consumer.h"
 #import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/web_state/ui/crw_generic_content_view.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -20,6 +22,7 @@
 @implementation WebContentsMediator
 @synthesize webState = _webState;
 @synthesize consumer = _consumer;
+@synthesize dispatcher = _dispatcher;
 
 #pragma mark - Properties
 
@@ -58,6 +61,20 @@
     params.transition_type = ui::PAGE_TRANSITION_TYPED;
     webState->GetNavigationManager()->LoadURLWithParams(params);
   }
+}
+
+#pragma mark - SadTabTabHelperDelegate
+
+- (void)presentSadTabForRepeatedFailure:(BOOL)repeatedFailure {
+  // Create a SadTabView so |webstate| presents it.
+  SadTabView* sadTabview = [[SadTabView alloc]
+           initWithMode:repeatedFailure ? SadTabViewMode::FEEDBACK
+                                        : SadTabViewMode::RELOAD
+      navigationManager:self.webState->GetNavigationManager()];
+  sadTabview.dispatcher = self.dispatcher;
+  CRWContentView* contentView =
+      [[CRWGenericContentView alloc] initWithView:sadTabview];
+  self.webState->ShowTransientContentView(contentView);
 }
 
 @end
