@@ -247,7 +247,7 @@ TEST_F(WindowManagerStateTest, PostTargetAccelerator) {
 // is done.
 TEST_F(WindowManagerStateTest, PreTargetConsumed) {
   // Set up two trees with focus on a child in the second.
-  const ClientWindowId child_window_id(11);
+  const ClientWindowId child_window_id(window_tree()->id(), 11);
   window_tree()->NewWindow(child_window_id, ServerWindow::Properties());
   ServerWindow* child_window =
       window_tree()->GetWindowByClientId(child_window_id);
@@ -303,7 +303,7 @@ TEST_F(WindowManagerStateTest, PreTargetConsumed) {
 
 TEST_F(WindowManagerStateTest, AckWithProperties) {
   // Set up two trees with focus on a child in the second.
-  const ClientWindowId child_window_id(11);
+  const ClientWindowId child_window_id(window_tree()->id(), 11);
   window_tree()->NewWindow(child_window_id, ServerWindow::Properties());
   ServerWindow* child_window =
       window_tree()->GetWindowByClientId(child_window_id);
@@ -559,10 +559,8 @@ TEST_F(WindowManagerStateTest, InterceptingEmbedderReceivesEvents) {
   embedder_tree->NewWindow(embed_window_id, ServerWindow::Properties());
   ServerWindow* embedder_window =
       embedder_tree->GetWindowByClientId(embed_window_id);
-  WindowId embedder_root_id = embedder_root->id();
-  ASSERT_TRUE(embedder_tree->AddWindow(
-      ClientWindowId(embedder_root_id.client_id, embedder_root_id.window_id),
-      embed_window_id));
+  ASSERT_TRUE(embedder_tree->AddWindow(embedder_root->id().ToClientWindowId(),
+                                       embed_window_id));
 
   TestWindowTreeClient* embedder_client = wm_client();
 
@@ -619,9 +617,8 @@ TEST_F(WindowManagerStateTest, InterceptingEmbedderReceivesEvents) {
     // Embed another tree in the embedded tree.
     const ClientWindowId nested_embed_window_id(embed_tree->id(), 23);
     embed_tree->NewWindow(nested_embed_window_id, ServerWindow::Properties());
-    WindowId embed_root_window_id = (*embed_tree->roots().begin())->id();
-    const ClientWindowId embed_root_id(embed_root_window_id.client_id,
-                                       embed_root_window_id.window_id);
+    const ClientWindowId embed_root_id =
+        (*embed_tree->roots().begin())->id().ToClientWindowId();
     ASSERT_TRUE(embed_tree->AddWindow(embed_root_id, nested_embed_window_id));
 
     WindowTree* nested_embed_tree = nullptr;
@@ -713,7 +710,7 @@ TEST(WindowManagerStateShutdownTest, DestroyTreeBeforeDisplay) {
 
 TEST_F(WindowManagerStateTest, CursorResetOverNoTarget) {
   ASSERT_EQ(1u, window_server()->display_manager()->displays().size());
-  const ClientWindowId child_window_id(11);
+  const ClientWindowId child_window_id(window_tree()->id(), 11);
   window_tree()->NewWindow(child_window_id, ServerWindow::Properties());
   ServerWindow* child_window =
       window_tree()->GetWindowByClientId(child_window_id);
@@ -763,7 +760,7 @@ TEST_F(WindowManagerStateTest, CursorLocationManagerUpdatedOnMouseMove) {
 
 TEST_F(WindowManagerStateTestAsync, CursorResetOverNoTargetAsync) {
   ASSERT_EQ(1u, window_server()->display_manager()->displays().size());
-  const ClientWindowId child_window_id(11);
+  const ClientWindowId child_window_id(window_tree()->id(), 11);
   window_tree()->NewWindow(child_window_id, ServerWindow::Properties());
   ServerWindow* child_window =
       window_tree()->GetWindowByClientId(child_window_id);

@@ -2294,8 +2294,11 @@ TEST_F(WindowTreeClientTest, SurfaceIdPropagation) {
   // Make sure the parent connection gets the surface ID.
   wt_client1()->WaitForChangeCount(1);
   // Verify that the submitted frame is for |window_2_101|.
-  EXPECT_EQ(window_1_100_in_ws2,
-            changes1()->back().surface_id.frame_sink_id().client_id());
+  viz::FrameSinkId frame_sink_id =
+      changes1()->back().surface_id.frame_sink_id();
+  // FrameSinkId is based on window's ClientWindowId.
+  EXPECT_NE(0u, frame_sink_id.client_id());
+  EXPECT_EQ(LoWord(window_1_100), frame_sink_id.sink_id());
   changes1()->clear();
 
   // The first window created in the second client gets a server id of
@@ -2331,8 +2334,11 @@ TEST_F(WindowTreeClientTest, SurfaceIdPropagation) {
   // Make sure the parent connection gets the surface ID.
   wt_client2()->WaitForChangeCount(1);
   // Verify that the submitted frame is for |window_2_101|.
-  EXPECT_EQ(window_2_101_in_ws2,
-            changes2()->back().surface_id.frame_sink_id().client_id());
+  viz::FrameSinkId frame_sink_id2 =
+      changes2()->back().surface_id.frame_sink_id();
+  // FrameSinkId is based on window's ClientWindowId.
+  EXPECT_NE(0u, frame_sink_id2.client_id());
+  EXPECT_EQ(LoWord(window_2_101), frame_sink_id2.sink_id());
 }
 
 // Verifies when an unknown window with a known child is added to a hierarchy

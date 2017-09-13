@@ -14,6 +14,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/window_manager_window_tree_factory.mojom.h"
@@ -82,6 +83,7 @@ class WindowServer : public ServerWindowDelegate,
   // must be destroyed before WindowServer.
   ServerWindow* CreateServerWindow(
       const WindowId& id,
+      const viz::FrameSinkId& frame_sink_id,
       const std::map<std::string, std::vector<uint8_t>>& properties);
 
   // Returns the id for the next WindowTree.

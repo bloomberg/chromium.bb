@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/host/host_frame_sink_client.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
@@ -51,8 +52,11 @@ class ServerWindow : public viz::HostFrameSinkClient {
   using Windows = std::vector<ServerWindow*>;
 
   ServerWindow(ServerWindowDelegate* delegate, const WindowId& id);
+  // |frame_sink_id| needs to be an input here as we are creating frame_sink_id_
+  // based on the ClientWindowId clients provided.
   ServerWindow(ServerWindowDelegate* delegate,
                const WindowId& id,
+               const viz::FrameSinkId& frame_sink_id,
                const Properties& properties);
   ~ServerWindow() override;
 
