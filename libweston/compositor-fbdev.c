@@ -478,7 +478,7 @@ out_hw_surface:
 }
 
 static int
-fbdev_output_disable_handler(struct weston_output *base)
+fbdev_output_disable(struct weston_output *base)
 {
 	struct fbdev_output *output = to_fbdev_output(base);
 
@@ -517,7 +517,7 @@ fbdev_output_create(struct fbdev_backend *backend,
 	weston_output_init(&output->base, backend->compositor, "fbdev");
 
 	output->base.destroy = fbdev_output_destroy;
-	output->base.disable = fbdev_output_disable_handler;
+	output->base.disable = fbdev_output_disable;
 	output->base.enable = fbdev_output_enable;
 
 	/* only one static mode in list */
@@ -556,7 +556,7 @@ fbdev_output_destroy(struct weston_output *base)
 
 	weston_log("Destroying fbdev output.\n");
 
-	fbdev_output_disable_handler(base);
+	fbdev_output_disable(base);
 
 	/* Remove the output. */
 	weston_output_release(&output->base);
