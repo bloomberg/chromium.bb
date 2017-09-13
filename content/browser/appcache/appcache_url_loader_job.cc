@@ -135,10 +135,6 @@ void AppCacheURLLoaderJob::DeliverErrorResponse() {
                                                   start_time_tick_);
 }
 
-const GURL& AppCacheURLLoaderJob::GetURL() const {
-  return request_.url;
-}
-
 AppCacheURLLoaderJob* AppCacheURLLoaderJob::AsURLLoaderJob() {
   return this;
 }

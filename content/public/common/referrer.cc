@@ -132,4 +132,34 @@ net::URLRequest::ReferrerPolicy Referrer::ReferrerPolicyForUrlRequest(
   return net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
 }
 
+// static
+blink::WebReferrerPolicy Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
+    net::URLRequest::ReferrerPolicy net_policy) {
+  switch (net_policy) {
+    case net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE:
+      return blink::kWebReferrerPolicyNoReferrerWhenDowngrade;
+    case net::URLRequest::
+        REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN:
+      return blink::
+          kWebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin;
+    case net::URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN:
+      return blink::kWebReferrerPolicyOriginWhenCrossOrigin;
+    case net::URLRequest::NEVER_CLEAR_REFERRER:
+      return blink::kWebReferrerPolicyAlways;
+    case net::URLRequest::ORIGIN:
+      return blink::kWebReferrerPolicyOrigin;
+    case net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_CROSS_ORIGIN:
+      return blink::kWebReferrerPolicySameOrigin;
+    case net::URLRequest::ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE:
+      return blink::kWebReferrerPolicyStrictOrigin;
+    case net::URLRequest::NO_REFERRER:
+      return blink::kWebReferrerPolicyNever;
+    case net::URLRequest::MAX_REFERRER_POLICY:
+      NOTREACHED();
+      return blink::kWebReferrerPolicyDefault;
+  }
+  NOTREACHED();
+  return blink::kWebReferrerPolicyDefault;
+}
+
 }  // namespace content

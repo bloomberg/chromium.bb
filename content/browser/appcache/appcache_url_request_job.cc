@@ -87,10 +87,6 @@ void AppCacheURLRequestJob::DeliverErrorResponse() {
   MaybeBeginDelivery();
 }
 
-const GURL& AppCacheURLRequestJob::GetURL() const {
-  return request()->url();
-}
-
 net::URLRequestJob* AppCacheURLRequestJob::AsURLRequestJob() {
   return this;
 }

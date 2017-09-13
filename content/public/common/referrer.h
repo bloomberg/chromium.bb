@@ -32,6 +32,9 @@ struct CONTENT_EXPORT Referrer {
 
   static net::URLRequest::ReferrerPolicy ReferrerPolicyForUrlRequest(
       const Referrer& referrer);
+
+  static blink::WebReferrerPolicy NetReferrerPolicyToBlinkReferrerPolicy(
+      net::URLRequest::ReferrerPolicy net_policy);
 };
 
 }  // namespace content

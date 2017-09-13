@@ -51,6 +51,9 @@ namespace {
 // as ResourceDispatcherHostImpl.
 int g_next_request_id = -2;
 
+// Max number of http redirects to follow.  Same number as the net library.
+const int kMaxRedirects = 20;
+
 WebContents* GetWebContentsFromFrameTreeNodeID(int frame_tree_node_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   FrameTreeNode* frame_tree_node =
@@ -106,6 +109,7 @@ const net::NetworkTrafficAnnotationTag kTrafficAnnotation =
 // of URLLoaderRequestHandler's and successively calls MaybeCreateLoader
 // on each until the request is successfully handled. The same sequence
 // may be performed multiple times when redirects happen.
+// TODO(michaeln): Expose this class and add unittests.
 class NavigationURLLoaderNetworkService::URLLoaderRequestController
     : public mojom::URLLoaderClient {
  public:
@@ -187,7 +191,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     Restart();
   }
 
-  // This could be called multiple times.
+  // This could be called multiple times to follow a chain of redirects.
   void Restart() {
     handler_index_ = 0;
     received_response_ = false;
@@ -196,6 +200,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
 
   void MaybeStartLoader(StartLoaderCallback start_loader_callback) {
     if (start_loader_callback) {
+      default_loader_used_ = false;
       url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
           std::move(start_loader_callback),
           GetContentClient()->browser()->CreateURLLoaderThrottles(
@@ -221,6 +226,12 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       return;
     }
 
+    if (url_loader_) {
+      DCHECK(!redirect_info_.new_url.is_empty());
+      url_loader_->FollowRedirect();
+      return;
+    }
+
     mojom::URLLoaderFactory* factory = nullptr;
     DCHECK_EQ(handlers_.size(), handler_index_);
     if (resource_request_->url.SchemeIs(url::kBlobScheme)) {
@@ -241,10 +252,76 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
   void FollowRedirect() {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(url_loader_);
-
     DCHECK(!response_url_loader_);
+    DCHECK(!redirect_info_.new_url.is_empty());
 
-    url_loader_->FollowRedirect();
+    // Update resource_request_ and call Restart to give our handlers_ a chance
+    // at handling the new location. If no handler wants to take over, we'll
+    // use the existing url_loader to follow the redirect, see MaybeStartLoader.
+    // TODO(michaeln): This is still WIP and is based on URLRequest::Redirect,
+    // there likely remains more to be done.
+    // a. For subframe navigations, the Origin header may need to be modified
+    //    differently?
+    // b. How should redirect_info_.referred_token_binding_host be handled?
+    // c. Maybe refactor for code reuse.
+
+    if (redirect_info_.new_method != resource_request_->method) {
+      resource_request_->method = redirect_info_.new_method;
+
+      // TODO(davidben): This logic still needs to be replicated at the
+      // consumers.
+      if (resource_request_->method == "POST") {
+        // If being switched from POST, must remove Origin header.
+        // TODO(jww): This is Origin header removal is probably layering
+        // violation and should be refactored into //content.
+        // See https://crbug.com/471397.
+        // See also: https://crbug.com/760487
+        resource_request_->headers.RemoveHeader(
+            net::HttpRequestHeaders::kOrigin);
+      }
+      // The inclusion of a multipart Content-Type header can cause problems
+      // with some servers:
+      // http://code.google.com/p/chromium/issues/detail?id=843
+      resource_request_->headers.RemoveHeader(
+          net::HttpRequestHeaders::kContentLength);
+      resource_request_->headers.RemoveHeader(
+          net::HttpRequestHeaders::kContentType);
+
+      // The request body is no longer applicable.
+      resource_request_->request_body = nullptr;
+      blob_handles_.clear();
+    }
+
+    // Cross-origin redirects should not result in an Origin header value that
+    // is equal to the original request's Origin header. This is necessary to
+    // a reflection of POST requests to bypass CSRF protections. If the header
+    // was prevent not set to "null", a POST request from origin A to a
+    // malicious origin M could be redirected by M back to A.
+    //
+    // This behavior is specified in step 10 of the HTTP-redirect fetch
+    // algorithm[1] (which supercedes the behavior outlined in RFC 6454[2].
+    //
+    // [1]: https://fetch.spec.whatwg.org/#http-redirect-fetch
+    // [2]: https://tools.ietf.org/html/rfc6454#section-7
+    //
+    // TODO(jww): This is a layering violation and should be refactored
+    // somewhere up into //net's embedder. https://crbug.com/471397
+    if (!url::Origin(redirect_info_.new_url)
+             .IsSameOriginWith(url::Origin(resource_request_->url)) &&
+        resource_request_->headers.HasHeader(
+            net::HttpRequestHeaders::kOrigin)) {
+      resource_request_->headers.SetHeader(net::HttpRequestHeaders::kOrigin,
+                                           url::Origin().Serialize());
+    }
+
+    resource_request_->url = redirect_info_.new_url;
+    resource_request_->site_for_cookies = redirect_info_.new_site_for_cookies;
+    resource_request_->referrer = GURL(redirect_info_.new_referrer);
+    resource_request_->referrer_policy =
+        Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
+            redirect_info_.new_referrer_policy);
+
+    Restart();
   }
 
   // Ownership of the URLLoaderFactoryPtrInfo instance is transferred to the
@@ -283,6 +360,15 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
 
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          const ResourceResponseHead& head) override {
+    if (--redirect_limit_ == 0) {
+      OnComplete(ResourceRequestCompletionStatus(net::ERR_TOO_MANY_REDIRECTS));
+      return;
+    }
+
+    // Store the redirect_info for later use in FollowRedirect where we give
+    // our handlers_ a chance to intercept the request for the new location.
+    redirect_info_ = redirect_info;
+
     scoped_refptr<ResourceResponse> response(new ResourceResponse());
     response->head = head;
 
@@ -299,13 +385,10 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
   }
 
   void OnDataDownloaded(int64_t data_length, int64_t encoded_length) override {}
-
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         OnUploadProgressCallback callback) override {}
-
   void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override {}
-
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override {}
 
   void OnStartLoadingResponseBody(
@@ -333,50 +416,35 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
   }
 
   // Returns true if a handler wants to handle the response, i.e. return a
-  // different response. For e.g. AppCache may have fallback content to be
-  // returned for a TLD.
+  // different response. For e.g. AppCache may have fallback content.
   bool MaybeCreateLoaderForResponse(const ResourceResponseHead& response) {
     if (!default_loader_used_)
       return false;
 
-    // URLLoaderClient request pointer for response loaders, i.e loaders created
-    // for handing responses received from the network URLLoader.
-    mojom::URLLoaderClientRequest response_client_request;
-
-    for (size_t index = 0; index < handlers_.size(); ++index) {
-      if (handlers_[index]->MaybeCreateLoaderForResponse(
-              response, &response_url_loader_, &response_client_request)) {
-        OnResponseHandlerFound(std::move(response_client_request));
+    for (auto& handler : handlers_) {
+      mojom::URLLoaderClientRequest response_client_request;
+      if (handler->MaybeCreateLoaderForResponse(response, &response_url_loader_,
+                                                &response_client_request)) {
+        response_loader_binding_.Bind(std::move(response_client_request));
+        default_loader_used_ = false;
+        url_loader_.reset();
         return true;
       }
     }
     return false;
   }
 
-  // Called if we find a handler who delivers different content for the URL.
-  void OnResponseHandlerFound(
-      mojom::URLLoaderClientRequest response_client_request) {
-    response_loader_binding_.Bind(std::move(response_client_request));
-    // We reset this flag as we expect a new response from the handler.
-    default_loader_used_ = false;
-    // Disconnect from the network loader to stop receiving further data
-    // or notifications for the URL.
-    url_loader_->DisconnectClient();
-  }
-
   std::vector<std::unique_ptr<URLLoaderRequestHandler>> handlers_;
   size_t handler_index_ = 0;
 
   std::unique_ptr<ResourceRequest> resource_request_;
+  net::RedirectInfo redirect_info_;
+  int redirect_limit_ = kMaxRedirects;
   ResourceContext* resource_context_;
   base::Callback<WebContents*()> web_contents_getter_;
-
   scoped_refptr<URLLoaderFactoryGetter> default_url_loader_factory_getter_;
-
   mojom::URLLoaderFactoryPtr webui_factory_ptr_;
-
   std::unique_ptr<ThrottlingURLLoader> url_loader_;
-
   BlobHandles blob_handles_;
 
   // Currently used by the AppCache loader to pass its factory to the
@@ -520,8 +588,6 @@ void NavigationURLLoaderNetworkService::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
     scoped_refptr<ResourceResponse> response) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // TODO(kinuko): Perform the necessary check and call
-  // URLLoaderRequestController::Restart with the new URL??
   delegate_->OnRequestRedirected(redirect_info, std::move(response));
 }
 

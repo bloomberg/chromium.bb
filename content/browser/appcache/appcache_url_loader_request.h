@@ -23,25 +23,21 @@ class CONTENT_EXPORT AppCacheURLLoaderRequest : public AppCacheRequest {
   ~AppCacheURLLoaderRequest() override;
 
   // AppCacheRequest overrides.
-  // TODO(ananta)
-  // Add support to the GetURL() call to return the updated URL while following
-  // a chain of redirects.
   const GURL& GetURL() const override;
   const std::string& GetMethod() const override;
   const GURL& GetSiteForCookies() const override;
   const GURL GetReferrer() const override;
-  // TODO(ananta)
-  // ResourceRequest only identifies the request unlike URLRequest which
-  // contains response information as well. We need the following methods to
-  // work for AppCache. Look into this.
+
   bool IsSuccess() const override;
   bool IsCancelled() const override;
   bool IsError() const override;
   int GetResponseCode() const override;
   std::string GetResponseHeaderByName(const std::string& name) const override;
+
   ResourceRequest* GetResourceRequest() override;
   AppCacheURLLoaderRequest* AsURLLoaderRequest() override;
 
+  void set_request(const ResourceRequest& request) { request_ = request; }
   void set_response(const ResourceResponseHead& response) {
     response_ = response;
   }

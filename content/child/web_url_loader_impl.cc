@@ -39,6 +39,7 @@
 #include "content/public/child/request_peer.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/referrer.h"
 #include "content/public/common/resource_request.h"
 #include "content/public/common/resource_request_body.h"
 #include "content/public/common/service_worker_modes.h"
@@ -185,35 +186,6 @@ net::RequestPriority ConvertWebKitPriorityToNetPriority(
       NOTREACHED();
       return net::LOW;
   }
-}
-
-blink::WebReferrerPolicy NetReferrerPolicyToBlinkReferrerPolicy(
-    net::URLRequest::ReferrerPolicy net_policy) {
-  switch (net_policy) {
-    case net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE:
-      return blink::kWebReferrerPolicyNoReferrerWhenDowngrade;
-    case net::URLRequest::
-        REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN:
-      return blink::
-          kWebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin;
-    case net::URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN:
-      return blink::kWebReferrerPolicyOriginWhenCrossOrigin;
-    case net::URLRequest::NEVER_CLEAR_REFERRER:
-      return blink::kWebReferrerPolicyAlways;
-    case net::URLRequest::ORIGIN:
-      return blink::kWebReferrerPolicyOrigin;
-    case net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_CROSS_ORIGIN:
-      return blink::kWebReferrerPolicySameOrigin;
-    case net::URLRequest::ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE:
-      return blink::kWebReferrerPolicyStrictOrigin;
-    case net::URLRequest::NO_REFERRER:
-      return blink::kWebReferrerPolicyNever;
-    case net::URLRequest::MAX_REFERRER_POLICY:
-      NOTREACHED();
-      return blink::kWebReferrerPolicyDefault;
-  }
-  NOTREACHED();
-  return blink::kWebReferrerPolicyDefault;
 }
 
 // Extracts info from a data scheme URL |url| into |info| and |data|. Returns
@@ -724,7 +696,8 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
   return client_->WillFollowRedirect(
       url_, redirect_info.new_site_for_cookies,
       WebString::FromUTF8(redirect_info.new_referrer),
-      NetReferrerPolicyToBlinkReferrerPolicy(redirect_info.new_referrer_policy),
+      Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
+          redirect_info.new_referrer_policy),
       WebString::FromUTF8(redirect_info.new_method), response,
       report_raw_headers_);
 }
