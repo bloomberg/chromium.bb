@@ -69,7 +69,8 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
         base::MakeUnique<media::TestAudioThread>(true)));
     audio_manager_->SetInputStreamParameters(
         media::AudioParameters::UnavailableDeviceParams());
-    audio_system_ = media::AudioSystemImpl::Create(audio_manager_.get());
+    audio_system_ =
+        std::make_unique<media::AudioSystemImpl>(audio_manager_.get());
     recognizer_ = new SpeechRecognizerImpl(
         this, audio_system_.get(), audio_manager_.get(), kTestingSessionId,
         false, false, sr_engine);

@@ -93,24 +93,25 @@ class MediaDevicesDispatcherHostTest : public testing::TestWithParam<GURL> {
         base::StringPrintf("video-input-default-id=%s, "
                            "audio-input-default-id=%s",
                            kDefaultVideoDeviceID, kDefaultAudioDeviceID));
-    audio_manager_.reset(new media::MockAudioManager(
-        base::MakeUnique<media::TestAudioThread>()));
-    audio_system_ = media::AudioSystemImpl::Create(audio_manager_.get());
+    audio_manager_ = std::make_unique<media::MockAudioManager>(
+        std::make_unique<media::TestAudioThread>());
+    audio_system_ =
+        std::make_unique<media::AudioSystemImpl>(audio_manager_.get());
 
     auto video_capture_device_factory =
-        base::MakeUnique<media::FakeVideoCaptureDeviceFactory>();
+        std::make_unique<media::FakeVideoCaptureDeviceFactory>();
     video_capture_device_factory_ = video_capture_device_factory.get();
-    auto video_capture_system = base::MakeUnique<media::VideoCaptureSystemImpl>(
+    auto video_capture_system = std::make_unique<media::VideoCaptureSystemImpl>(
         std::move(video_capture_device_factory));
     auto video_capture_provider =
-        base::MakeUnique<InProcessVideoCaptureProvider>(
+        std::make_unique<InProcessVideoCaptureProvider>(
             std::move(video_capture_system),
             base::ThreadTaskRunnerHandle::Get(), kIgnoreLogMessageCB);
 
-    media_stream_manager_ = base::MakeUnique<MediaStreamManager>(
+    media_stream_manager_ = std::make_unique<MediaStreamManager>(
         audio_system_.get(), audio_manager_->GetTaskRunner(),
         std::move(video_capture_provider));
-    host_ = base::MakeUnique<MediaDevicesDispatcherHost>(
+    host_ = std::make_unique<MediaDevicesDispatcherHost>(
         kProcessId, kRenderId, browser_context_.GetMediaDeviceIDSalt(),
         media_stream_manager_.get());
     host_->SetSecurityOriginForTesting(origin_);
@@ -314,7 +315,7 @@ class MediaDevicesDispatcherHostTest : public testing::TestWithParam<GURL> {
 
   void SubscribeAndWaitForResult(bool has_permission) {
     host_->SetPermissionChecker(
-        base::MakeUnique<MediaDevicesPermissionChecker>(has_permission));
+        std::make_unique<MediaDevicesPermissionChecker>(has_permission));
     uint32_t subscription_id = 0u;
     for (size_t i = 0; i < NUM_MEDIA_DEVICE_TYPES; ++i) {
       MediaDeviceType type = static_cast<MediaDeviceType>(i);

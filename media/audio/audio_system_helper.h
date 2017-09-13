@@ -8,10 +8,6 @@
 #include "media/audio/audio_system.h"
 #include "media/base/media_export.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
 namespace media {
 class AudioManager;
 
@@ -46,8 +42,6 @@ class MEDIA_EXPORT AudioSystemHelper {
   void GetInputDeviceInfo(
       const std::string& input_device_id,
       AudioSystem::OnInputDeviceInfoCallback on_input_device_info_cb);
-
-  base::SingleThreadTaskRunner* GetTaskRunner();
 
  private:
   base::Optional<AudioParameters> ComputeInputParameters(

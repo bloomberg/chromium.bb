@@ -12,6 +12,10 @@
 #include "base/memory/weak_ptr.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h"
 
+namespace media {
+class AudioSystem;
+}
+
 namespace extensions {
 
 class ChromeVirtualKeyboardDelegate : public VirtualKeyboardDelegate {
@@ -41,6 +45,7 @@ class ChromeVirtualKeyboardDelegate : public VirtualKeyboardDelegate {
   void OnHasInputDevices(OnKeyboardSettingsCallback on_settings_callback,
                          bool has_input_devices);
 
+  std::unique_ptr<media::AudioSystem> audio_system_;
   base::WeakPtr<ChromeVirtualKeyboardDelegate> weak_this_;
   base::WeakPtrFactory<ChromeVirtualKeyboardDelegate> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(ChromeVirtualKeyboardDelegate);

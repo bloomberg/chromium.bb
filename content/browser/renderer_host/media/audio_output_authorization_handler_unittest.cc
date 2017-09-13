@@ -99,10 +99,11 @@ class AudioOutputAuthorizationHandlerTest : public RenderViewHostTestHarness {
     // Starts thread bundle:
     RenderViewHostTestHarness::SetUp();
 
-    audio_manager_ = base::MakeUnique<media::FakeAudioManager>(
-        base::MakeUnique<media::AudioThreadImpl>(), &log_factory_);
-    audio_system_ = media::AudioSystemImpl::Create(audio_manager_.get());
-    media_stream_manager_ = base::MakeUnique<MediaStreamManager>(
+    audio_manager_ = std::make_unique<media::FakeAudioManager>(
+        std::make_unique<media::AudioThreadImpl>(), &log_factory_);
+    audio_system_ =
+        std::make_unique<media::AudioSystemImpl>(audio_manager_.get());
+    media_stream_manager_ = std::make_unique<MediaStreamManager>(
         audio_system_.get(), audio_manager_->GetTaskRunner());
 
     // Make sure everything is done initializing:
@@ -193,7 +194,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest, AuthorizeDefaultDevice_Ok) {
                             std::string()))
       .Times(1);
   std::unique_ptr<AudioOutputAuthorizationHandler> handler =
-      base::MakeUnique<AudioOutputAuthorizationHandler>(
+      std::make_unique<AudioOutputAuthorizationHandler>(
           GetAudioSystem(), GetMediaStreamManager(), process()->GetID(), kSalt);
 
   BrowserThread::PostTask(
@@ -215,7 +216,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
                             std::string()))
       .Times(1);
   std::unique_ptr<AudioOutputAuthorizationHandler> handler =
-      base::MakeUnique<AudioOutputAuthorizationHandler>(
+      std::make_unique<AudioOutputAuthorizationHandler>(
           GetAudioSystem(), GetMediaStreamManager(), process()->GetID(), kSalt);
 
   BrowserThread::PostTask(
@@ -238,7 +239,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
 
   MockAuthorizationCallback listener;
   std::unique_ptr<AudioOutputAuthorizationHandler> handler =
-      base::MakeUnique<AudioOutputAuthorizationHandler>(
+      std::make_unique<AudioOutputAuthorizationHandler>(
           GetAudioSystem(), GetMediaStreamManager(), process()->GetID(), kSalt);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -270,7 +271,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
       kSalt, SecurityOrigin(), raw_nondefault_id);
   MockAuthorizationCallback listener;
   std::unique_ptr<AudioOutputAuthorizationHandler> handler =
-      base::MakeUnique<AudioOutputAuthorizationHandler>(
+      std::make_unique<AudioOutputAuthorizationHandler>(
           GetAudioSystem(), GetMediaStreamManager(), process()->GetID(), kSalt);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -297,7 +298,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
 TEST_F(AudioOutputAuthorizationHandlerTest, AuthorizeInvalidDeviceId_NotFound) {
   MockAuthorizationCallback listener;
   std::unique_ptr<AudioOutputAuthorizationHandler> handler =
-      base::MakeUnique<AudioOutputAuthorizationHandler>(
+      std::make_unique<AudioOutputAuthorizationHandler>(
           GetAudioSystem(), GetMediaStreamManager(), process()->GetID(), kSalt);
 
   EXPECT_CALL(listener, Run(media::OUTPUT_DEVICE_STATUS_ERROR_NOT_FOUND, _,
@@ -331,7 +332,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
       kSalt, origin, raw_nondefault_id);
   MockAuthorizationCallback listener;
   std::unique_ptr<AudioOutputAuthorizationHandler> handler =
-      base::MakeUnique<AudioOutputAuthorizationHandler>(
+      std::make_unique<AudioOutputAuthorizationHandler>(
           GetAudioSystem(), GetMediaStreamManager(), process()->GetID(), kSalt);
   NavigateAndCommit(url);
 
@@ -356,7 +357,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
        AuthorizeWithSessionIdWithoutDevice_GivesDefault) {
   MockAuthorizationCallback listener;
   std::unique_ptr<AudioOutputAuthorizationHandler> handler =
-      base::MakeUnique<AudioOutputAuthorizationHandler>(
+      std::make_unique<AudioOutputAuthorizationHandler>(
           GetAudioSystem(), GetMediaStreamManager(), process()->GetID(), kSalt);
 
   EXPECT_CALL(listener, Run(media::OUTPUT_DEVICE_STATUS_OK, _, kDefaultDeviceId,

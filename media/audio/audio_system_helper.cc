@@ -41,33 +41,33 @@ AudioSystemHelper::~AudioSystemHelper() {}
 void AudioSystemHelper::GetInputStreamParameters(
     const std::string& device_id,
     AudioSystem::OnAudioParamsCallback on_params_cb) {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
   std::move(on_params_cb).Run(ComputeInputParameters(device_id));
 }
 
 void AudioSystemHelper::GetOutputStreamParameters(
     const std::string& device_id,
     AudioSystem::OnAudioParamsCallback on_params_cb) {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
   std::move(on_params_cb).Run(ComputeOutputParameters(device_id));
 }
 
 void AudioSystemHelper::HasInputDevices(
     AudioSystem::OnBoolCallback on_has_devices_cb) {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
   std::move(on_has_devices_cb).Run(audio_manager_->HasAudioInputDevices());
 }
 
 void AudioSystemHelper::HasOutputDevices(
     AudioSystem::OnBoolCallback on_has_devices_cb) {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
   std::move(on_has_devices_cb).Run(audio_manager_->HasAudioOutputDevices());
 }
 
 void AudioSystemHelper::GetDeviceDescriptions(
     bool for_input,
     AudioSystem::OnDeviceDescriptionsCallback on_descriptions_cb) {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
   AudioDeviceDescriptions descriptions;
   if (for_input)
     audio_manager_->GetAudioInputDeviceDescriptions(&descriptions);
@@ -79,7 +79,7 @@ void AudioSystemHelper::GetDeviceDescriptions(
 void AudioSystemHelper::GetAssociatedOutputDeviceID(
     const std::string& input_device_id,
     AudioSystem::OnDeviceIdCallback on_device_id_cb) {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
   std::move(on_device_id_cb)
       .Run(audio_manager_->GetAssociatedOutputDeviceID(input_device_id));
 }
@@ -87,7 +87,7 @@ void AudioSystemHelper::GetAssociatedOutputDeviceID(
 void AudioSystemHelper::GetInputDeviceInfo(
     const std::string& input_device_id,
     AudioSystem::OnInputDeviceInfoCallback on_input_device_info_cb) {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
   const std::string associated_output_device_id =
       audio_manager_->GetAssociatedOutputDeviceID(input_device_id);
 
@@ -99,13 +99,9 @@ void AudioSystemHelper::GetInputDeviceInfo(
            associated_output_device_id);
 }
 
-base::SingleThreadTaskRunner* AudioSystemHelper::GetTaskRunner() {
-  return audio_manager_->GetTaskRunner();
-}
-
 base::Optional<AudioParameters> AudioSystemHelper::ComputeInputParameters(
     const std::string& device_id) {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
 
   // TODO(olka): remove this when AudioManager::GetInputStreamParameters()
   // returns invalid parameters if the device is not found.
@@ -127,7 +123,7 @@ base::Optional<AudioParameters> AudioSystemHelper::ComputeInputParameters(
 
 base::Optional<AudioParameters> AudioSystemHelper::ComputeOutputParameters(
     const std::string& device_id) {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
 
   // TODO(olka): remove this when
   // AudioManager::Get[Default]OutputStreamParameters() returns invalid

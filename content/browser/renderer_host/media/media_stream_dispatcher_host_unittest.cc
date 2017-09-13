@@ -238,21 +238,22 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   MediaStreamDispatcherHostTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
         origin_(GURL("https://test.com")) {
-    audio_manager_.reset(new media::MockAudioManager(
-        base::MakeUnique<media::TestAudioThread>()));
-    audio_system_ = media::AudioSystemImpl::Create(audio_manager_.get());
+    audio_manager_ = std::make_unique<media::MockAudioManager>(
+        std::make_unique<media::TestAudioThread>());
+    audio_system_ =
+        std::make_unique<media::AudioSystemImpl>(audio_manager_.get());
     // Make sure we use fake devices to avoid long delays.
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseFakeDeviceForMediaStream);
     auto mock_video_capture_provider =
-        base::MakeUnique<MockVideoCaptureProvider>();
+        std::make_unique<MockVideoCaptureProvider>();
     mock_video_capture_provider_ = mock_video_capture_provider.get();
     // Create our own MediaStreamManager.
-    media_stream_manager_ = base::MakeUnique<MediaStreamManager>(
+    media_stream_manager_ = std::make_unique<MediaStreamManager>(
         audio_system_.get(), audio_manager_->GetTaskRunner(),
         std::move(mock_video_capture_provider));
 
-    host_ = base::MakeUnique<MockMediaStreamDispatcherHost>(
+    host_ = std::make_unique<MockMediaStreamDispatcherHost>(
         browser_context_.GetMediaDeviceIDSalt(),
         base::ThreadTaskRunnerHandle::Get(), media_stream_manager_.get());
     mojom::MediaStreamDispatcherPtr dispatcher =
@@ -791,7 +792,7 @@ TEST_F(MediaStreamDispatcherHostTest, CloseFromUI) {
   StreamControls controls(false, true);
 
   base::Closure close_callback;
-  auto stream_ui = base::MakeUnique<MockMediaStreamUIProxy>();
+  auto stream_ui = std::make_unique<MockMediaStreamUIProxy>();
   EXPECT_CALL(*stream_ui, MockOnStarted(_))
       .WillOnce(SaveArg<0>(&close_callback));
   media_stream_manager_->UseFakeUIForTests(std::move(stream_ui));

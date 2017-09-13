@@ -102,7 +102,7 @@
 #include "device/gamepad/gamepad_service.h"
 #include "gpu/vulkan/features.h"
 #include "media/audio/audio_manager.h"
-#include "media/audio/audio_system_impl.h"
+#include "media/audio/audio_system.h"
 #include "media/audio/audio_thread_impl.h"
 #include "media/base/media.h"
 #include "media/base/user_input_monitor.h"
@@ -1841,8 +1841,7 @@ void BrowserMainLoop::CreateAudioManager() {
         MediaInternals::GetInstance());
   }
   CHECK(audio_manager_);
-
-  audio_system_ = media::AudioSystemImpl::Create(audio_manager_.get());
+  audio_system_ = media::AudioSystem::CreateInstance();
   CHECK(audio_system_);
 }
 

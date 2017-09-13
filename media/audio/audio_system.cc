@@ -4,35 +4,18 @@
 
 #include "media/audio/audio_system.h"
 
-namespace media {
+#include "base/memory/ptr_util.h"
+#include "media/audio/audio_manager.h"
+#include "media/audio/audio_system_impl.h"
 
-static AudioSystem* g_last_created = nullptr;
+namespace media {
 
 AudioSystem::~AudioSystem() {}
 
-AudioSystem* AudioSystem::Get() {
-  return g_last_created;
-}
-
-void AudioSystem::SetInstance(AudioSystem* audio_system) {
-  DCHECK(audio_system);
-  if (g_last_created && audio_system) {
-    // We create multiple instances of AudioSystem only when testing.
-    // We should not encounter this case in production.
-    LOG(WARNING) << "Multiple instances of AudioSystem detected";
-  }
-  g_last_created = audio_system;
-}
-
-void AudioSystem::ClearInstance(const AudioSystem* audio_system) {
-  DCHECK(audio_system);
-  if (g_last_created != audio_system) {
-    // We create multiple instances of AudioSystem only when testing.
-    // We should not encounter this case in production.
-    LOG(WARNING) << "Multiple instances of AudioSystem detected";
-  } else {
-    g_last_created = nullptr;
-  }
+// static
+std::unique_ptr<AudioSystem> AudioSystem::CreateInstance() {
+  DCHECK(AudioManager::Get()) << "AudioManager instance is not created";
+  return std::make_unique<AudioSystemImpl>(AudioManager::Get());
 }
 
 }  // namespace media
