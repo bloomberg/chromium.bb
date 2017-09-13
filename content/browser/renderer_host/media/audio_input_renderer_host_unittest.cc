@@ -263,10 +263,11 @@ class AudioInputRendererHostTest : public testing::Test {
     flags->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
     flags->AppendSwitch(switches::kUseFakeUIForMediaStream);
 
-    audio_manager_.reset(new media::FakeAudioManager(
-        base::MakeUnique<media::TestAudioThread>(), &log_factory_));
-    audio_system_ = media::AudioSystemImpl::Create(audio_manager_.get());
-    media_stream_manager_ = base::MakeUnique<MediaStreamManager>(
+    audio_manager_ = std::make_unique<media::FakeAudioManager>(
+        std::make_unique<media::TestAudioThread>(), &log_factory_);
+    audio_system_ =
+        std::make_unique<media::AudioSystemImpl>(audio_manager_.get());
+    media_stream_manager_ = std::make_unique<MediaStreamManager>(
         audio_system_.get(), audio_manager_->GetTaskRunner());
     airh_ = new AudioInputRendererHostWithInterception(
         kRenderProcessId, kRendererPid, media::AudioManager::Get(),

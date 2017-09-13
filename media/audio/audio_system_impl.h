@@ -5,6 +5,7 @@
 #ifndef MEDIA_AUDIO_AUDIO_SYSTEM_IMPL_H_
 #define MEDIA_AUDIO_AUDIO_SYSTEM_IMPL_H_
 
+#include "base/threading/thread_checker.h"
 #include "media/audio/audio_system.h"
 #include "media/audio/audio_system_helper.h"
 
@@ -13,9 +14,7 @@ class AudioManager;
 
 class MEDIA_EXPORT AudioSystemImpl : public AudioSystem {
  public:
-  static std::unique_ptr<AudioSystem> Create(AudioManager* audio_manager);
-
-  ~AudioSystemImpl() override;
+  explicit AudioSystemImpl(AudioManager* audio_manager);
 
   // AudioSystem implementation.
   void GetInputStreamParameters(const std::string& device_id,
@@ -40,15 +39,14 @@ class MEDIA_EXPORT AudioSystemImpl : public AudioSystem {
       OnInputDeviceInfoCallback on_input_device_info_cb) override;
 
  private:
-  AudioSystemImpl(AudioManager* audio_manager);
-
   // No-op if called on helper_.GetTaskRunner() thread, otherwise binds
   // |callback| to the current loop.
   template <typename... Args>
   base::OnceCallback<void(Args...)> MaybeBindToCurrentLoop(
       base::OnceCallback<void(Args...)> callback);
 
-  AudioSystemHelper helper_;
+  THREAD_CHECKER(thread_checker_);
+  AudioManager* const audio_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioSystemImpl);
 };

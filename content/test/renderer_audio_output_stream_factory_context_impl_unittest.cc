@@ -58,7 +58,7 @@ const char kSalt[] = "salt";
 
 std::unique_ptr<media::AudioOutputStream::AudioSourceCallback>
 GetTestAudioSource() {
-  return base::MakeUnique<media::SineWaveAudioSource>(kChannels, kWaveFrequency,
+  return std::make_unique<media::SineWaveAudioSource>(kChannels, kWaveFrequency,
                                                       kSampleFrequency);
 }
 
@@ -222,11 +222,12 @@ class RendererAudioOutputStreamFactoryIntegrationTest : public Test {
       : media_stream_manager_(),
         thread_bundle_(TestBrowserThreadBundle::Options::REAL_IO_THREAD),
         log_factory_(),
-        audio_manager_(
-            new MockAudioManager(base::MakeUnique<media::AudioThreadImpl>(),
-                                 &log_factory_)),
-        audio_system_(media::AudioSystemImpl::Create(audio_manager_.get())) {
-    media_stream_manager_ = base::MakeUnique<MediaStreamManager>(
+        audio_manager_(std::make_unique<MockAudioManager>(
+            std::make_unique<media::AudioThreadImpl>(),
+            &log_factory_)),
+        audio_system_(
+            std::make_unique<media::AudioSystemImpl>(audio_manager_.get())) {
+    media_stream_manager_ = std::make_unique<MediaStreamManager>(
         audio_system_.get(), audio_manager_->GetTaskRunner());
   }
 
@@ -290,7 +291,7 @@ TEST_F(RendererAudioOutputStreamFactoryIntegrationTest, StreamIntegrationTest) {
   SyncWith(renderer_ipc_task_runner);
 
   auto renderer_side_ipc =
-      base::MakeUnique<MojoAudioOutputIPC>(base::BindRepeating(
+      std::make_unique<MojoAudioOutputIPC>(base::BindRepeating(
           [](mojom::RendererAudioOutputStreamFactory* factory_ptr) {
             return factory_ptr;
           },

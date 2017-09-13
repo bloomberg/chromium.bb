@@ -70,8 +70,7 @@ class AudioSystemImplTest : public testing::TestWithParam<bool> {
         base::Bind(get_device_descriptions,
                    base::Unretained(&output_device_descriptions_)));
 
-    audio_system_ = AudioSystemImpl::Create(audio_manager_.get());
-    EXPECT_EQ(AudioSystem::Get(), audio_system_.get());
+    audio_system_ = std::make_unique<AudioSystemImpl>(audio_manager_.get());
   }
 
   ~AudioSystemImplTest() override { audio_manager_->Shutdown(); }

@@ -67,7 +67,7 @@ const char kMockSalt[] = "";
 class MockAudioManager : public AudioManagerPlatform {
  public:
   MockAudioManager()
-      : AudioManagerPlatform(base::MakeUnique<media::TestAudioThread>(),
+      : AudioManagerPlatform(std::make_unique<media::TestAudioThread>(),
                              &fake_audio_log_factory_),
         num_output_devices_(2),
         num_input_devices_(2) {}
@@ -135,9 +135,10 @@ class MediaStreamManagerTest : public ::testing::Test {
  public:
   MediaStreamManagerTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
-    audio_manager_.reset(new MockAudioManager());
-    audio_system_ = media::AudioSystemImpl::Create(audio_manager_.get());
-    media_stream_manager_ = base::MakeUnique<MediaStreamManager>(
+    audio_manager_ = std::make_unique<MockAudioManager>();
+    audio_system_ =
+        std::make_unique<media::AudioSystemImpl>(audio_manager_.get());
+    media_stream_manager_ = std::make_unique<MediaStreamManager>(
         audio_system_.get(), audio_manager_->GetTaskRunner());
     base::RunLoop().RunUntilIdle();
   }

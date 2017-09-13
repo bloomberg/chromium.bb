@@ -129,6 +129,13 @@ std::string WebrtcAudioPrivateFunction::device_id_salt() const {
   return device_id_salt_;
 }
 
+media::AudioSystem* WebrtcAudioPrivateFunction::GetAudioSystem() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!audio_system_)
+    audio_system_ = media::AudioSystem::CreateInstance();
+  return audio_system_.get();
+}
+
 // TODO(hlundin): Stolen from WebrtcLoggingPrivateFunction.
 // Consolidate and improve. http://crbug.com/710371
 content::RenderProcessHost*
@@ -180,7 +187,7 @@ bool WebrtcAudioPrivateGetSinksFunction::RunAsync() {
 void WebrtcAudioPrivateGetSinksFunction::
     GetOutputDeviceDescriptionsOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  media::AudioSystem::Get()->GetDeviceDescriptions(
+  GetAudioSystem()->GetDeviceDescriptions(
       false, base::BindOnce(&WebrtcAudioPrivateGetSinksFunction::
                                 ReceiveOutputDeviceDescriptionsOnIOThread,
                             this));
@@ -235,7 +242,7 @@ bool WebrtcAudioPrivateGetAssociatedSinkFunction::RunAsync() {
 void WebrtcAudioPrivateGetAssociatedSinkFunction::
     GetInputDeviceDescriptionsOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  media::AudioSystem::Get()->GetDeviceDescriptions(
+  GetAudioSystem()->GetDeviceDescriptions(
       true, base::BindOnce(&WebrtcAudioPrivateGetAssociatedSinkFunction::
                                ReceiveInputDeviceDescriptionsOnIOThread,
                            this));
@@ -264,7 +271,7 @@ void WebrtcAudioPrivateGetAssociatedSinkFunction::
     CalculateHMACOnIOThread(std::string());
     return;
   }
-  media::AudioSystem::Get()->GetAssociatedOutputDeviceID(
+  GetAudioSystem()->GetAssociatedOutputDeviceID(
       raw_source_id,
       base::BindOnce(
           &WebrtcAudioPrivateGetAssociatedSinkFunction::CalculateHMACOnIOThread,

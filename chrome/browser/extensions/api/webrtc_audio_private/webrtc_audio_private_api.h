@@ -19,6 +19,10 @@
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "media/audio/audio_device_description.h"
 
+namespace media {
+class AudioSystem;
+}
+
 namespace extensions {
 
 // Listens for device changes and forwards as an extension event.
@@ -66,6 +70,8 @@ class WebrtcAudioPrivateFunction : public ChromeAsyncExtensionFunction {
   // |InitDeviceIDSalt()|.
   std::string device_id_salt() const;
 
+  media::AudioSystem* GetAudioSystem();
+
   // Returns the RenderProcessHost associated with the given |request|
   // authorized by the |security_origin|. Returns null if unauthorized or
   // the RPH does not exist.
@@ -75,6 +81,7 @@ class WebrtcAudioPrivateFunction : public ChromeAsyncExtensionFunction {
 
  private:
   std::string device_id_salt_;
+  std::unique_ptr<media::AudioSystem> audio_system_;
 
   DISALLOW_COPY_AND_ASSIGN(WebrtcAudioPrivateFunction);
 };

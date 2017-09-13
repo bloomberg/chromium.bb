@@ -62,7 +62,9 @@ namespace {
 void GetAudioDeviceDescriptions(bool for_input,
                                 AudioDeviceDescriptions* device_descriptions) {
   base::RunLoop run_loop;
-  media::AudioSystem::Get()->GetDeviceDescriptions(
+  std::unique_ptr<media::AudioSystem> audio_system =
+      media::AudioSystem::CreateInstance();
+  audio_system->GetDeviceDescriptions(
       for_input,
       base::BindOnce(
           [](base::Closure finished_callback, AudioDeviceDescriptions* result,

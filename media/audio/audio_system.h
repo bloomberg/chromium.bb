@@ -18,8 +18,9 @@ namespace media {
 // Provides asynchronous interface to access audio device information
 class MEDIA_EXPORT AudioSystem {
  public:
-  // Replies are asynchronously sent from audio system thread to the thread the
-  // call is issued on. Attention! Audio system thread may outlive the client
+  // Replies are sent asynchronously to the thread the calls are issued on.
+  // Instance is bound to the thread it's called on the first time.
+  // Attention! Audio system thread may outlive the client
   // objects; bind callbacks with care.
 
   // Non-empty optional AudioParameters are guaranteed to be valid.
@@ -40,7 +41,8 @@ class MEDIA_EXPORT AudioSystem {
       base::OnceCallback<void(AudioDeviceDescriptions)>;
   using OnDeviceIdCallback = base::OnceCallback<void(const std::string&)>;
 
-  static AudioSystem* Get();
+  // The global AudioManager instance must be created prior to that.
+  static std::unique_ptr<AudioSystem> CreateInstance();
 
   virtual ~AudioSystem();
 
@@ -72,15 +74,8 @@ class MEDIA_EXPORT AudioSystem {
   virtual void GetInputDeviceInfo(
       const std::string& input_device_id,
       OnInputDeviceInfoCallback on_input_device_info_cb) = 0;
-
- protected:
-  // Sets the global AudioSystem pointer to the specified non-null value.
-  static void SetInstance(AudioSystem* audio_system);
-
-  // Sets the global AudioSystem pointer to null if it equals the specified one.
-  static void ClearInstance(const AudioSystem* audio_system);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_AUDIO_AUDIO_SYSTEM_H_
+#endif  // MEDIA_AUDIO_AUDIO_SYSTEM_H_s

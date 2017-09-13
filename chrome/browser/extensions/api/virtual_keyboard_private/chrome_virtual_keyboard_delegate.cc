@@ -70,7 +70,9 @@ ChromeVirtualKeyboardDelegate::~ChromeVirtualKeyboardDelegate() {}
 void ChromeVirtualKeyboardDelegate::GetKeyboardConfig(
     OnKeyboardSettingsCallback on_settings_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  media::AudioSystem::Get()->HasInputDevices(
+  if (!audio_system_)
+    audio_system_ = media::AudioSystem::CreateInstance();
+  audio_system_->HasInputDevices(
       base::BindOnce(&ChromeVirtualKeyboardDelegate::OnHasInputDevices,
                      weak_this_, std::move(on_settings_callback)));
 }
