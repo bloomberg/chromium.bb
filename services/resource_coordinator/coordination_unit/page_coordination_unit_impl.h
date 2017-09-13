@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_WEB_CONTENTS_COORDINATION_UNIT_IMPL_H_
-#define SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_WEB_CONTENTS_COORDINATION_UNIT_IMPL_H_
+#ifndef SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_PAGE_COORDINATION_UNIT_IMPL_H_
+#define SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_PAGE_COORDINATION_UNIT_IMPL_H_
 
 #include <set>
 
@@ -12,12 +12,12 @@
 
 namespace resource_coordinator {
 
-class WebContentsCoordinationUnitImpl : public CoordinationUnitImpl {
+class PageCoordinationUnitImpl : public CoordinationUnitImpl {
  public:
-  WebContentsCoordinationUnitImpl(
+  PageCoordinationUnitImpl(
       const CoordinationUnitID& id,
       std::unique_ptr<service_manager::ServiceContextRef> service_ref);
-  ~WebContentsCoordinationUnitImpl() override;
+  ~PageCoordinationUnitImpl() override;
 
   // CoordinationUnitImpl implementation.
   std::set<CoordinationUnitImpl*> GetAssociatedCoordinationUnitsOfType(
@@ -36,12 +36,12 @@ class WebContentsCoordinationUnitImpl : public CoordinationUnitImpl {
   // Returns true for a valid value. Returns false otherwise.
   bool CalculateExpectedTaskQueueingDuration(int64_t* output);
 
-  // Returns the main frame CU or nullptr if this tab has no main frame.
+  // Returns the main frame CU or nullptr if this page has no main frame.
   CoordinationUnitImpl* GetMainFrameCoordinationUnit();
 
-  DISALLOW_COPY_AND_ASSIGN(WebContentsCoordinationUnitImpl);
+  DISALLOW_COPY_AND_ASSIGN(PageCoordinationUnitImpl);
 };
 
 }  // namespace resource_coordinator
 
-#endif  // SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_WEB_CONTENTS_COORDINATION_UNIT_IMPL_H_
+#endif  // SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_PAGE_COORDINATION_UNIT_IMPL_H_

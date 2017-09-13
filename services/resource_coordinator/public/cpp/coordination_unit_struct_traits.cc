@@ -12,18 +12,16 @@ EnumTraits<resource_coordinator::mojom::CoordinationUnitType,
            resource_coordinator::CoordinationUnitType>::
     ToMojom(resource_coordinator::CoordinationUnitType type) {
   switch (type) {
-    case resource_coordinator::CoordinationUnitType::kWebContents:
-      return resource_coordinator::mojom::CoordinationUnitType::kWebContents;
+    case resource_coordinator::CoordinationUnitType::kPage:
+      return resource_coordinator::mojom::CoordinationUnitType::kPage;
     case resource_coordinator::CoordinationUnitType::kFrame:
       return resource_coordinator::mojom::CoordinationUnitType::kFrame;
-    case resource_coordinator::CoordinationUnitType::kNavigation:
-      return resource_coordinator::mojom::CoordinationUnitType::kNavigation;
     case resource_coordinator::CoordinationUnitType::kProcess:
       return resource_coordinator::mojom::CoordinationUnitType::kProcess;
     default:
       NOTREACHED() << "Invalid type: " << static_cast<uint8_t>(type);
       // This should not be reached. Just return a random value.
-      return resource_coordinator::mojom::CoordinationUnitType::kWebContents;
+      return resource_coordinator::mojom::CoordinationUnitType::kPage;
   }
 }
 
@@ -33,14 +31,11 @@ bool EnumTraits<resource_coordinator::mojom::CoordinationUnitType,
     FromMojom(resource_coordinator::mojom::CoordinationUnitType input,
               resource_coordinator::CoordinationUnitType* out) {
   switch (input) {
-    case resource_coordinator::mojom::CoordinationUnitType::kWebContents:
-      *out = resource_coordinator::CoordinationUnitType::kWebContents;
+    case resource_coordinator::mojom::CoordinationUnitType::kPage:
+      *out = resource_coordinator::CoordinationUnitType::kPage;
       break;
     case resource_coordinator::mojom::CoordinationUnitType::kFrame:
       *out = resource_coordinator::CoordinationUnitType::kFrame;
-      break;
-    case resource_coordinator::mojom::CoordinationUnitType::kNavigation:
-      *out = resource_coordinator::CoordinationUnitType::kNavigation;
       break;
     case resource_coordinator::mojom::CoordinationUnitType::kProcess:
       *out = resource_coordinator::CoordinationUnitType::kProcess;

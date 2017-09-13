@@ -36,13 +36,13 @@ ResourceCoordinatorWebContentsObserver::ResourceCoordinatorWebContentsObserver(
   service_manager::Connector* connector =
       content::ServiceManagerConnection::GetForProcess()->GetConnector();
 
-  tab_resource_coordinator_ =
+  page_resource_coordinator_ =
       base::MakeUnique<resource_coordinator::ResourceCoordinatorInterface>(
-          connector, resource_coordinator::CoordinationUnitType::kWebContents);
+          connector, resource_coordinator::CoordinationUnitType::kPage);
 
   // Make sure to set the visibility property when we create
-  // |tab_resource_coordinator_|.
-  tab_resource_coordinator_->SetProperty(
+  // |page_resource_coordinator_|.
+  page_resource_coordinator_->SetProperty(
       resource_coordinator::mojom::PropertyType::kVisible,
       web_contents->IsVisible());
 
@@ -59,7 +59,7 @@ ResourceCoordinatorWebContentsObserver::ResourceCoordinatorWebContentsObserver(
     // Gets CoordinationUnitID for this WebContents and adds it to
     // GRCTabSignalObserver.
     grc_tab_signal_observer->AssociateCoordinationUnitIDWithWebContents(
-        tab_resource_coordinator_->id(), web_contents);
+        page_resource_coordinator_->id(), web_contents);
   }
 #endif
 }
@@ -114,12 +114,12 @@ bool ResourceCoordinatorWebContentsObserver::IsEnabled() {
 }
 
 void ResourceCoordinatorWebContentsObserver::WasShown() {
-  tab_resource_coordinator_->SetProperty(
+  page_resource_coordinator_->SetProperty(
       resource_coordinator::mojom::PropertyType::kVisible, true);
 }
 
 void ResourceCoordinatorWebContentsObserver::WasHidden() {
-  tab_resource_coordinator_->SetProperty(
+  page_resource_coordinator_->SetProperty(
       resource_coordinator::mojom::PropertyType::kVisible, false);
 }
 
@@ -130,7 +130,7 @@ void ResourceCoordinatorWebContentsObserver::WebContentsDestroyed() {
     // Gets CoordinationUnitID for this WebContents and removes it from
     // GRCTabSignalObserver.
     grc_tab_signal_observer->RemoveCoordinationUnitID(
-        tab_resource_coordinator_->id());
+        page_resource_coordinator_->id());
   }
 #endif
 }
@@ -145,7 +145,7 @@ void ResourceCoordinatorWebContentsObserver::DidFinishNavigation(
   if (navigation_handle->IsInMainFrame()) {
     UpdateUkmRecorder(navigation_handle->GetNavigationId());
     ResetFlag();
-    tab_resource_coordinator_->SendEvent(
+    page_resource_coordinator_->SendEvent(
         resource_coordinator::mojom::Event::kNavigationCommitted);
   }
 
@@ -154,7 +154,7 @@ void ResourceCoordinatorWebContentsObserver::DidFinishNavigation(
 
   auto* frame_resource_coordinator =
       render_frame_host->GetFrameResourceCoordinator();
-  tab_resource_coordinator_->AddChild(*frame_resource_coordinator);
+  page_resource_coordinator_->AddChild(*frame_resource_coordinator);
 
   auto* process_resource_coordinator =
       render_frame_host->GetProcess()->GetProcessResourceCoordinator();
@@ -168,7 +168,7 @@ void ResourceCoordinatorWebContentsObserver::TitleWasSet(
     first_time_title_set_ = true;
     return;
   }
-  tab_resource_coordinator_->SendEvent(
+  page_resource_coordinator_->SendEvent(
       resource_coordinator::mojom::Event::kTitleUpdated);
 }
 
@@ -178,7 +178,7 @@ void ResourceCoordinatorWebContentsObserver::DidUpdateFaviconURL(
     first_time_favicon_set_ = true;
     return;
   }
-  tab_resource_coordinator_->SendEvent(
+  page_resource_coordinator_->SendEvent(
       resource_coordinator::mojom::Event::kFaviconUpdated);
 }
 
@@ -190,7 +190,7 @@ void ResourceCoordinatorWebContentsObserver::UpdateUkmRecorder(
 
   ukm_source_id_ =
       ukm::ConvertToSourceId(navigation_id, ukm::SourceIdType::NAVIGATION_ID);
-  tab_resource_coordinator_->SetProperty(
+  page_resource_coordinator_->SetProperty(
       resource_coordinator::mojom::PropertyType::kUKMSourceId, ukm_source_id_);
 }
 

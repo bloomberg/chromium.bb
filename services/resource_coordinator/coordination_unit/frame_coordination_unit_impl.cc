@@ -4,7 +4,7 @@
 
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
 
-#include "services/resource_coordinator/coordination_unit/web_contents_coordination_unit_impl.h"
+#include "services/resource_coordinator/coordination_unit/page_coordination_unit_impl.h"
 #include "services/resource_coordinator/observers/coordination_unit_graph_observer.h"
 
 namespace resource_coordinator {
@@ -21,8 +21,8 @@ FrameCoordinationUnitImpl::GetAssociatedCoordinationUnitsOfType(
     CoordinationUnitType type) const {
   switch (type) {
     case CoordinationUnitType::kProcess:
-    case CoordinationUnitType::kWebContents:
-      // Processes and WebContents are only associated with a frame if
+    case CoordinationUnitType::kPage:
+      // Processes and Page are only associated with a frame if
       // they are a direct parents of the frame.
       return GetParentCoordinationUnitsOfType(type);
     case CoordinationUnitType::kFrame: {
@@ -60,12 +60,12 @@ FrameCoordinationUnitImpl::GetAssociatedCoordinationUnitsOfType(
   }
 }
 
-WebContentsCoordinationUnitImpl*
-FrameCoordinationUnitImpl::GetWebContentsCoordinationUnit() const {
+PageCoordinationUnitImpl* FrameCoordinationUnitImpl::GetPageCoordinationUnit()
+    const {
   for (auto* parent : parents_) {
-    if (parent->id().type != CoordinationUnitType::kWebContents)
+    if (parent->id().type != CoordinationUnitType::kPage)
       continue;
-    return CoordinationUnitImpl::ToWebContentsCoordinationUnit(parent);
+    return CoordinationUnitImpl::ToPageCoordinationUnit(parent);
   }
   return nullptr;
 }

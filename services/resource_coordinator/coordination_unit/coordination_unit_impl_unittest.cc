@@ -27,20 +27,15 @@ using CoordinationUnitImplDeathTest = CoordinationUnitImplTest;
 }  // namespace
 
 TEST_F(CoordinationUnitImplTest, AddChildBasic) {
-  CoordinationUnitID tab_cu_id(CoordinationUnitType::kFrame, std::string());
-  CoordinationUnitID frame1_cu_id(CoordinationUnitType::kFrame, std::string());
-  CoordinationUnitID frame2_cu_id(CoordinationUnitType::kFrame, std::string());
-  CoordinationUnitID frame3_cu_id(CoordinationUnitType::kFrame, std::string());
+  auto page_cu = CreateCoordinationUnit(CoordinationUnitType::kPage);
+  auto frame1_cu = CreateCoordinationUnit(CoordinationUnitType::kFrame);
+  auto frame2_cu = CreateCoordinationUnit(CoordinationUnitType::kFrame);
+  auto frame3_cu = CreateCoordinationUnit(CoordinationUnitType::kFrame);
 
-  auto tab_cu = CreateCoordinationUnit(tab_cu_id);
-  auto frame1_cu = CreateCoordinationUnit(frame1_cu_id);
-  auto frame2_cu = CreateCoordinationUnit(frame2_cu_id);
-  auto frame3_cu = CreateCoordinationUnit(frame3_cu_id);
-
-  tab_cu->AddChild(frame1_cu->id());
-  tab_cu->AddChild(frame2_cu->id());
-  tab_cu->AddChild(frame3_cu->id());
-  EXPECT_EQ(3u, tab_cu->children().size());
+  page_cu->AddChild(frame1_cu->id());
+  page_cu->AddChild(frame2_cu->id());
+  page_cu->AddChild(frame3_cu->id());
+  EXPECT_EQ(3u, page_cu->children().size());
 }
 
 #if (!defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)) && GTEST_HAS_DEATH_TEST
@@ -114,8 +109,7 @@ TEST_F(CoordinationUnitImplTest, RemoveChild) {
 }
 
 TEST_F(CoordinationUnitImplTest, GetSetProperty) {
-  auto coordination_unit =
-      CreateCoordinationUnit(CoordinationUnitType::kWebContents);
+  auto coordination_unit = CreateCoordinationUnit(CoordinationUnitType::kPage);
 
   // An empty value should be returned if property is not found
   int64_t test_value;
@@ -131,102 +125,102 @@ TEST_F(CoordinationUnitImplTest, GetSetProperty) {
 }
 
 TEST_F(CoordinationUnitImplTest,
-       GetAssociatedCoordinationUnitsForSingleTabInSingleProcess) {
-  MockSingleTabInSingleProcessCoordinationUnitGraph cu_graph;
+       GetAssociatedCoordinationUnitsForSinglePageInSingleProcess) {
+  MockSinglePageInSingleProcessCoordinationUnitGraph cu_graph;
 
-  auto tabs_associated_with_process =
+  auto pages_associated_with_process =
       cu_graph.process->GetAssociatedCoordinationUnitsOfType(
-          CoordinationUnitType::kWebContents);
-  EXPECT_EQ(1u, tabs_associated_with_process.size());
-  EXPECT_EQ(1u, tabs_associated_with_process.count(cu_graph.tab.get()));
+          CoordinationUnitType::kPage);
+  EXPECT_EQ(1u, pages_associated_with_process.size());
+  EXPECT_EQ(1u, pages_associated_with_process.count(cu_graph.page.get()));
 
-  auto processes_associated_with_tab =
-      cu_graph.tab->GetAssociatedCoordinationUnitsOfType(
+  auto processes_associated_with_page =
+      cu_graph.page->GetAssociatedCoordinationUnitsOfType(
           CoordinationUnitType::kProcess);
-  EXPECT_EQ(1u, processes_associated_with_tab.size());
-  EXPECT_EQ(1u, processes_associated_with_tab.count(cu_graph.process.get()));
+  EXPECT_EQ(1u, processes_associated_with_page.size());
+  EXPECT_EQ(1u, processes_associated_with_page.count(cu_graph.process.get()));
 }
 
 TEST_F(CoordinationUnitImplTest,
-       GetAssociatedCoordinationUnitsForMultipleTabsInSingleProcess) {
-  MockMultipleTabsInSingleProcessCoordinationUnitGraph cu_graph;
+       GetAssociatedCoordinationUnitsForMultiplePagesInSingleProcess) {
+  MockMultiplePagesInSingleProcessCoordinationUnitGraph cu_graph;
 
-  auto tabs_associated_with_process =
+  auto pages_associated_with_process =
       cu_graph.process->GetAssociatedCoordinationUnitsOfType(
-          CoordinationUnitType::kWebContents);
-  EXPECT_EQ(2u, tabs_associated_with_process.size());
-  EXPECT_EQ(1u, tabs_associated_with_process.count(cu_graph.tab.get()));
-  EXPECT_EQ(1u, tabs_associated_with_process.count(cu_graph.other_tab.get()));
+          CoordinationUnitType::kPage);
+  EXPECT_EQ(2u, pages_associated_with_process.size());
+  EXPECT_EQ(1u, pages_associated_with_process.count(cu_graph.page.get()));
+  EXPECT_EQ(1u, pages_associated_with_process.count(cu_graph.other_page.get()));
 
-  auto processes_associated_with_tab =
-      cu_graph.tab->GetAssociatedCoordinationUnitsOfType(
+  auto processes_associated_with_page =
+      cu_graph.page->GetAssociatedCoordinationUnitsOfType(
           CoordinationUnitType::kProcess);
-  EXPECT_EQ(1u, processes_associated_with_tab.size());
-  EXPECT_EQ(1u, processes_associated_with_tab.count(cu_graph.process.get()));
+  EXPECT_EQ(1u, processes_associated_with_page.size());
+  EXPECT_EQ(1u, processes_associated_with_page.count(cu_graph.process.get()));
 
-  auto processes_associated_with_other_tab =
-      cu_graph.other_tab->GetAssociatedCoordinationUnitsOfType(
+  auto processes_associated_with_other_page =
+      cu_graph.other_page->GetAssociatedCoordinationUnitsOfType(
           CoordinationUnitType::kProcess);
-  EXPECT_EQ(1u, processes_associated_with_other_tab.size());
-  EXPECT_EQ(1u, processes_associated_with_tab.count(cu_graph.process.get()));
+  EXPECT_EQ(1u, processes_associated_with_other_page.size());
+  EXPECT_EQ(1u, processes_associated_with_page.count(cu_graph.process.get()));
 }
 
 TEST_F(CoordinationUnitImplTest,
-       GetAssociatedCoordinationUnitsForSingleTabWithMultipleProcesses) {
-  MockSingleTabWithMultipleProcessesCoordinationUnitGraph cu_graph;
+       GetAssociatedCoordinationUnitsForSinglePageWithMultipleProcesses) {
+  MockSinglePageWithMultipleProcessesCoordinationUnitGraph cu_graph;
 
-  auto tabs_associated_with_process =
+  auto pages_associated_with_process =
       cu_graph.process->GetAssociatedCoordinationUnitsOfType(
-          CoordinationUnitType::kWebContents);
-  EXPECT_EQ(1u, tabs_associated_with_process.size());
-  EXPECT_EQ(1u, tabs_associated_with_process.count(cu_graph.tab.get()));
+          CoordinationUnitType::kPage);
+  EXPECT_EQ(1u, pages_associated_with_process.size());
+  EXPECT_EQ(1u, pages_associated_with_process.count(cu_graph.page.get()));
 
-  auto tabs_associated_with_other_process =
+  auto pages_associated_with_other_process =
       cu_graph.other_process->GetAssociatedCoordinationUnitsOfType(
-          CoordinationUnitType::kWebContents);
-  EXPECT_EQ(1u, tabs_associated_with_other_process.size());
-  EXPECT_EQ(1u, tabs_associated_with_other_process.count(cu_graph.tab.get()));
+          CoordinationUnitType::kPage);
+  EXPECT_EQ(1u, pages_associated_with_other_process.size());
+  EXPECT_EQ(1u, pages_associated_with_other_process.count(cu_graph.page.get()));
 
-  auto processes_associated_with_tab =
-      cu_graph.tab->GetAssociatedCoordinationUnitsOfType(
+  auto processes_associated_with_page =
+      cu_graph.page->GetAssociatedCoordinationUnitsOfType(
           CoordinationUnitType::kProcess);
-  EXPECT_EQ(2u, processes_associated_with_tab.size());
-  EXPECT_EQ(1u, processes_associated_with_tab.count(cu_graph.process.get()));
+  EXPECT_EQ(2u, processes_associated_with_page.size());
+  EXPECT_EQ(1u, processes_associated_with_page.count(cu_graph.process.get()));
   EXPECT_EQ(1u,
-            processes_associated_with_tab.count(cu_graph.other_process.get()));
+            processes_associated_with_page.count(cu_graph.other_process.get()));
 }
 
 TEST_F(CoordinationUnitImplTest,
-       GetAssociatedCoordinationUnitsForMultipleTabsWithMultipleProcesses) {
-  MockMultipleTabsWithMultipleProcessesCoordinationUnitGraph cu_graph;
+       GetAssociatedCoordinationUnitsForMultiplePagesWithMultipleProcesses) {
+  MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph cu_graph;
 
-  auto tabs_associated_with_process =
+  auto pages_associated_with_process =
       cu_graph.process->GetAssociatedCoordinationUnitsOfType(
-          CoordinationUnitType::kWebContents);
-  EXPECT_EQ(2u, tabs_associated_with_process.size());
-  EXPECT_EQ(1u, tabs_associated_with_process.count(cu_graph.tab.get()));
-  EXPECT_EQ(1u, tabs_associated_with_process.count(cu_graph.other_tab.get()));
+          CoordinationUnitType::kPage);
+  EXPECT_EQ(2u, pages_associated_with_process.size());
+  EXPECT_EQ(1u, pages_associated_with_process.count(cu_graph.page.get()));
+  EXPECT_EQ(1u, pages_associated_with_process.count(cu_graph.other_page.get()));
 
-  auto tabs_associated_with_other_process =
+  auto pages_associated_with_other_process =
       cu_graph.other_process->GetAssociatedCoordinationUnitsOfType(
-          CoordinationUnitType::kWebContents);
-  EXPECT_EQ(1u, tabs_associated_with_other_process.size());
-  EXPECT_EQ(1u,
-            tabs_associated_with_other_process.count(cu_graph.other_tab.get()));
+          CoordinationUnitType::kPage);
+  EXPECT_EQ(1u, pages_associated_with_other_process.size());
+  EXPECT_EQ(
+      1u, pages_associated_with_other_process.count(cu_graph.other_page.get()));
 
-  auto processes_associated_with_tab =
-      cu_graph.tab->GetAssociatedCoordinationUnitsOfType(
+  auto processes_associated_with_page =
+      cu_graph.page->GetAssociatedCoordinationUnitsOfType(
           CoordinationUnitType::kProcess);
-  EXPECT_EQ(1u, processes_associated_with_tab.size());
-  EXPECT_EQ(1u, processes_associated_with_tab.count(cu_graph.process.get()));
+  EXPECT_EQ(1u, processes_associated_with_page.size());
+  EXPECT_EQ(1u, processes_associated_with_page.count(cu_graph.process.get()));
 
-  auto processes_associated_with_other_tab =
-      cu_graph.other_tab->GetAssociatedCoordinationUnitsOfType(
+  auto processes_associated_with_other_page =
+      cu_graph.other_page->GetAssociatedCoordinationUnitsOfType(
           CoordinationUnitType::kProcess);
-  EXPECT_EQ(2u, processes_associated_with_other_tab.size());
+  EXPECT_EQ(2u, processes_associated_with_other_page.size());
   EXPECT_EQ(1u,
-            processes_associated_with_other_tab.count(cu_graph.process.get()));
-  EXPECT_EQ(1u, processes_associated_with_other_tab.count(
+            processes_associated_with_other_page.count(cu_graph.process.get()));
+  EXPECT_EQ(1u, processes_associated_with_other_page.count(
                     cu_graph.other_process.get()));
 }
 

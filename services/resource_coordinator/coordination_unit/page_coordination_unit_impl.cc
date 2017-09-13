@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/resource_coordinator/coordination_unit/web_contents_coordination_unit_impl.h"
+#include "services/resource_coordinator/coordination_unit/page_coordination_unit_impl.h"
 
 #include "base/logging.h"
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
@@ -10,23 +10,23 @@
 
 namespace resource_coordinator {
 
-WebContentsCoordinationUnitImpl::WebContentsCoordinationUnitImpl(
+PageCoordinationUnitImpl::PageCoordinationUnitImpl(
     const CoordinationUnitID& id,
     std::unique_ptr<service_manager::ServiceContextRef> service_ref)
     : CoordinationUnitImpl(id, std::move(service_ref)) {}
 
-WebContentsCoordinationUnitImpl::~WebContentsCoordinationUnitImpl() = default;
+PageCoordinationUnitImpl::~PageCoordinationUnitImpl() = default;
 
 std::set<CoordinationUnitImpl*>
-WebContentsCoordinationUnitImpl::GetAssociatedCoordinationUnitsOfType(
+PageCoordinationUnitImpl::GetAssociatedCoordinationUnitsOfType(
     CoordinationUnitType type) const {
   switch (type) {
     case CoordinationUnitType::kProcess: {
       std::set<CoordinationUnitImpl*> process_coordination_units;
 
       // There is currently not a direct relationship between processes and
-      // tabs. However, frames are children of both processes and frames, so we
-      // find all of the processes that are reachable from the tabs's child
+      // pages. However, frames are children of both processes and frames, so we
+      // find all of the processes that are reachable from the pages's child
       // frames.
       for (auto* frame_coordination_unit :
            GetChildCoordinationUnitsOfType(CoordinationUnitType::kFrame)) {
@@ -46,7 +46,7 @@ WebContentsCoordinationUnitImpl::GetAssociatedCoordinationUnitsOfType(
   }
 }
 
-void WebContentsCoordinationUnitImpl::RecalculateProperty(
+void PageCoordinationUnitImpl::RecalculateProperty(
     const mojom::PropertyType property_type) {
   switch (property_type) {
     case mojom::PropertyType::kCPUUsage: {
@@ -65,49 +65,48 @@ void WebContentsCoordinationUnitImpl::RecalculateProperty(
   }
 }
 
-bool WebContentsCoordinationUnitImpl::IsVisible() const {
+bool PageCoordinationUnitImpl::IsVisible() const {
   int64_t is_visible;
   bool has_property = GetProperty(mojom::PropertyType::kVisible, &is_visible);
   DCHECK(has_property && (is_visible == 0 || is_visible == 1));
   return is_visible;
 }
 
-void WebContentsCoordinationUnitImpl::OnEventReceived(
-    const mojom::Event event) {
+void PageCoordinationUnitImpl::OnEventReceived(const mojom::Event event) {
   for (auto& observer : observers())
-    observer.OnWebContentsEventReceived(this, event);
+    observer.OnPageEventReceived(this, event);
 }
 
-void WebContentsCoordinationUnitImpl::OnPropertyChanged(
+void PageCoordinationUnitImpl::OnPropertyChanged(
     const mojom::PropertyType property_type,
     int64_t value) {
   for (auto& observer : observers()) {
-    observer.OnWebContentsPropertyChanged(this, property_type, value);
+    observer.OnPagePropertyChanged(this, property_type, value);
   }
 }
 
-double WebContentsCoordinationUnitImpl::CalculateCPUUsage() {
+double PageCoordinationUnitImpl::CalculateCPUUsage() {
   double cpu_usage = 0.0;
 
   for (auto* process_coordination_unit :
        GetAssociatedCoordinationUnitsOfType(CoordinationUnitType::kProcess)) {
-    size_t tabs_in_process = process_coordination_unit
-                                 ->GetAssociatedCoordinationUnitsOfType(
-                                     CoordinationUnitType::kWebContents)
-                                 .size();
-    DCHECK_LE(1u, tabs_in_process);
+    size_t pages_in_process =
+        process_coordination_unit
+            ->GetAssociatedCoordinationUnitsOfType(CoordinationUnitType::kPage)
+            .size();
+    DCHECK_LE(1u, pages_in_process);
 
     int64_t process_cpu_usage;
     if (process_coordination_unit->GetProperty(mojom::PropertyType::kCPUUsage,
                                                &process_cpu_usage)) {
-      cpu_usage += (double)process_cpu_usage / tabs_in_process;
+      cpu_usage += (double)process_cpu_usage / pages_in_process;
     }
   }
 
   return cpu_usage;
 }
 
-bool WebContentsCoordinationUnitImpl::CalculateExpectedTaskQueueingDuration(
+bool PageCoordinationUnitImpl::CalculateExpectedTaskQueueingDuration(
     int64_t* output) {
   // Calculate the EQT for the process of the main frame only because
   // the smoothness of the main frame may affect the users the most.
@@ -130,8 +129,7 @@ bool WebContentsCoordinationUnitImpl::CalculateExpectedTaskQueueingDuration(
       ->GetProperty(mojom::PropertyType::kExpectedTaskQueueingDuration, output);
 }
 
-CoordinationUnitImpl*
-WebContentsCoordinationUnitImpl::GetMainFrameCoordinationUnit() {
+CoordinationUnitImpl* PageCoordinationUnitImpl::GetMainFrameCoordinationUnit() {
   for (auto* cu :
        GetAssociatedCoordinationUnitsOfType(CoordinationUnitType::kFrame)) {
     if (ToFrameCoordinationUnit(cu)->IsMainFrame())

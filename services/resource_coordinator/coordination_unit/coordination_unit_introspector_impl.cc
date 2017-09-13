@@ -32,12 +32,12 @@ void CoordinationUnitIntrospectorImpl::GetProcessToURLMap(
     process_info->pid = pid;
     DCHECK_NE(base::kNullProcessId, process_info->pid);
 
-    std::set<CoordinationUnitImpl*> web_contents_cus =
+    std::set<CoordinationUnitImpl*> page_cus =
         process_cu->GetAssociatedCoordinationUnitsOfType(
-            CoordinationUnitType::kWebContents);
-    for (CoordinationUnitImpl* web_contents_cu : web_contents_cus) {
+            CoordinationUnitType::kPage);
+    for (CoordinationUnitImpl* page_cu : page_cus) {
       int64_t ukm_source_id;
-      if (web_contents_cu->GetProperty(
+      if (page_cu->GetProperty(
               resource_coordinator::mojom::PropertyType::kUKMSourceId,
               &ukm_source_id)) {
         process_info->ukm_source_ids.push_back(ukm_source_id);

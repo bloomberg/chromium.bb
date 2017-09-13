@@ -17,7 +17,7 @@ namespace resource_coordinator {
 
 class CoordinationUnitImpl;
 class FrameCoordinationUnitImpl;
-class WebContentsCoordinationUnitImpl;
+class PageCoordinationUnitImpl;
 
 extern const char kTabFromBackgroundedToFirstAlertFiredUMA[];
 extern const char kTabFromBackgroundedToFirstAudioStartsUMA[];
@@ -44,15 +44,13 @@ class MetricsCollector : public CoordinationUnitGraphObserver {
   void OnFramePropertyChanged(const FrameCoordinationUnitImpl* frame_cu,
                               const mojom::PropertyType property_type,
                               int64_t value) override;
-  void OnWebContentsPropertyChanged(
-      const WebContentsCoordinationUnitImpl* web_contents_cu,
-      const mojom::PropertyType property_type,
-      int64_t value) override;
+  void OnPagePropertyChanged(const PageCoordinationUnitImpl* page_cu,
+                             const mojom::PropertyType property_type,
+                             int64_t value) override;
   void OnFrameEventReceived(const FrameCoordinationUnitImpl* frame_cu,
                             const mojom::Event event) override;
-  void OnWebContentsEventReceived(
-      const WebContentsCoordinationUnitImpl* web_contents_cu,
-      const mojom::Event event) override;
+  void OnPageEventReceived(const PageCoordinationUnitImpl* page_cu,
+                           const mojom::Event event) override;
 
  private:
   friend class MetricsCollectorTest;
@@ -94,7 +92,7 @@ class MetricsCollector : public CoordinationUnitGraphObserver {
     base::TimeTicks last_audible_time;
   };
 
-  struct WebContentsData {
+  struct PageData {
     base::TimeTicks last_invisible_time;
     base::TimeTicks navigation_finished_time;
   };
@@ -106,15 +104,13 @@ class MetricsCollector : public CoordinationUnitGraphObserver {
     ukm::SourceId ukm_source_id = -1;
   };
 
-  bool ShouldReportMetrics(
-      const WebContentsCoordinationUnitImpl* web_contents_cu);
-  bool IsCollectingCPUUsageForUkm(const CoordinationUnitID& web_contents_cu_id);
-  void RecordCPUUsageForUkm(const CoordinationUnitID& web_contents_cu_id,
+  bool ShouldReportMetrics(const PageCoordinationUnitImpl* page_cu);
+  bool IsCollectingCPUUsageForUkm(const CoordinationUnitID& page_cu_id);
+  void RecordCPUUsageForUkm(const CoordinationUnitID& page_cu_id,
                             double cpu_usage,
                             size_t num_coresident_tabs);
-  void UpdateUkmSourceIdForWebContents(
-      const CoordinationUnitID& web_contents_cu_id,
-      ukm::SourceId ukm_source_id);
+  void UpdateUkmSourceIdForPage(const CoordinationUnitID& page_cu_id,
+                                ukm::SourceId ukm_source_id);
   void UpdateWithFieldTrialParams();
   void ResetMetricsReportRecord(CoordinationUnitID cu_id);
 
@@ -123,7 +119,7 @@ class MetricsCollector : public CoordinationUnitGraphObserver {
   base::DefaultTickClock default_tick_clock_;
   base::TickClock* const clock_;
   std::map<CoordinationUnitID, FrameData> frame_data_map_;
-  std::map<CoordinationUnitID, WebContentsData> web_contents_data_map_;
+  std::map<CoordinationUnitID, PageData> page_data_map_;
   // The metrics_report_record_map_ is used to record whether a metric was
   // already reported to avoid reporting multiple metrics.
   std::map<CoordinationUnitID, MetricsReportRecord> metrics_report_record_map_;
