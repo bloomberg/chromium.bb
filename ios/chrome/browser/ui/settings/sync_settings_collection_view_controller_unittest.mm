@@ -24,7 +24,7 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/text_and_error_item.h"
-#import "ios/chrome/browser/ui/sync/sync_util.h"
+#import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #import "testing/gtest_mac.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/ui/sync/sync_error_infobar_delegate.h"
+#include "ios/chrome/browser/ui/settings/sync_utils/sync_error_infobar_delegate.h"
 
 #import <UIKit/UIKit.h>
 
@@ -22,8 +22,7 @@
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
-#import "ios/chrome/browser/ui/sync/sync_util.h"
-#include "ui/base/l10n/l10n_util.h"
+#import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

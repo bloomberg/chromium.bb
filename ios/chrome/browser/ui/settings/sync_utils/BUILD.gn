@@ -4,15 +4,13 @@
 
 import("//ios/public/provider/chrome/browser/build_config.gni")
 
-source_set("sync") {
+source_set("sync_utils") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "sync_error_infobar_delegate.h",
     "sync_error_infobar_delegate.mm",
     "sync_util.h",
     "sync_util.mm",
-    "synced_sessions_bridge.h",
-    "synced_sessions_bridge.mm",
   ]
   deps = [
     "//base",

@@ -19,6 +19,8 @@ source_set("sync") {
     "sync_setup_service.h",
     "sync_setup_service_factory.cc",
     "sync_setup_service_factory.h",
+    "synced_sessions_bridge.h",
+    "synced_sessions_bridge.mm",
   ]
   deps = [
     "//base",

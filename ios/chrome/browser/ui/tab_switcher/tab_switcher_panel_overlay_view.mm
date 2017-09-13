@@ -19,7 +19,7 @@
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/material_components/activity_indicator.h"
-#import "ios/chrome/browser/ui/sync/sync_util.h"
+#import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_model.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"

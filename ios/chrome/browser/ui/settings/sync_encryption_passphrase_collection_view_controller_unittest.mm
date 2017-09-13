@@ -23,7 +23,7 @@
 #import "ios/chrome/browser/ui/settings/cells/byo_textfield_item.h"
 #import "ios/chrome/browser/ui/settings/cells/card_multiline_item.h"
 #import "ios/chrome/browser/ui/settings/passphrase_collection_view_controller_test.h"
-#import "ios/chrome/browser/ui/sync/sync_util.h"
+#import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #include "ui/base/l10n/l10n_util.h"

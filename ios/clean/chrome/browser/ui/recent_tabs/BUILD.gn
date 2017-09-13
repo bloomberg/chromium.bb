@@ -20,7 +20,6 @@ source_set("recent_tabs") {
     "//ios/chrome/browser/ui/browser_list",
     "//ios/chrome/browser/ui/coordinators",
     "//ios/chrome/browser/ui/ntp/recent_tabs",
-    "//ios/chrome/browser/ui/sync",
     "//ios/clean/chrome/browser/ui",
     "//ios/clean/chrome/browser/ui/adaptor",
     "//ios/clean/chrome/browser/ui/commands",
