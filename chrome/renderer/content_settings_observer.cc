@@ -7,6 +7,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/common/client_hints.mojom.h"
+#include "chrome/common/client_hints/client_hints.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/ssl_insecure_content.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -493,44 +494,8 @@ void ContentSettingsObserver::GetAllowedClientHintsFromSource(
   if (!content_setting_rules_)
     return;
 
-  if (!content::IsOriginSecure(url))
-    return;
-
-  const GURL origin = GURL(url).GetOrigin();
-
-  for (const auto& rule : content_setting_rules_->client_hints_rules) {
-    // Look for an exact match since persisted client hints are disabled by
-    // default, and enabled only on per-host basis.
-    if (rule.primary_pattern == ContentSettingsPattern::Wildcard() ||
-        !rule.primary_pattern.Matches(origin)) {
-      continue;
-    }
-
-    // Found an exact match.
-    DCHECK(ContentSettingsPattern::Wildcard() == rule.secondary_pattern);
-    DCHECK(rule.setting_value->is_dict());
-    const base::Value* expiration_time =
-        rule.setting_value->FindPath({"expiration_time"});
-    DCHECK(expiration_time->is_double());
-
-    if (base::Time::Now().ToDoubleT() > expiration_time->GetDouble()) {
-      // The client hint is expired.
-      return;
-    }
-
-    const base::Value* list_value =
-        rule.setting_value->FindPath({"client_hints"});
-    DCHECK(list_value->is_list());
-    const base::Value::ListStorage& client_hints_list = list_value->GetList();
-    for (const auto& client_hint : client_hints_list) {
-      DCHECK(client_hint.is_int());
-      client_hints->SetIsEnabled(
-          static_cast<blink::mojom::WebClientHintsType>(client_hint.GetInt()),
-          true);
-    }
-    // Match found for |url| and client hints have been set.
-    return;
-  }
+  client_hints::GetAllowedClientHintsFromSource(
+      url, content_setting_rules_->client_hints_rules, client_hints);
 }
 
 void ContentSettingsObserver::DidNotAllowPlugins() {
