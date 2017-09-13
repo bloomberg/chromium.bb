@@ -34,6 +34,7 @@ bool StructTraits<viz::mojom::RenderPassDataView,
   (*out)->cache_render_pass = data.cache_render_pass();
   (*out)->has_damage_from_contributing_content =
       data.has_damage_from_contributing_content();
+  (*out)->generate_mipmap = data.generate_mipmap();
 
   mojo::ArrayDataView<viz::mojom::DrawQuadDataView> quads;
   data.GetQuadListDataView(&quads);
