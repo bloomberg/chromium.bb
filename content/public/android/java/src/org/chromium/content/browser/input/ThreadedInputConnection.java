@@ -326,12 +326,16 @@ class ThreadedInputConnection extends BaseInputConnection implements ChromiumBas
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
             public void run() {
-                cancelCombiningAccentOnUiThread();
-                mImeAdapter.sendCompositionToNative(text, newCursorPosition, true, 0);
+                commitTextOnUiThread(text, newCursorPosition);
             }
         });
         notifyUserAction();
         return true;
+    }
+
+    private void commitTextOnUiThread(final CharSequence text, final int newCursorPosition) {
+        cancelCombiningAccentOnUiThread();
+        mImeAdapter.sendCompositionToNative(text, newCursorPosition, true, 0);
     }
 
     /**
@@ -496,7 +500,7 @@ class ThreadedInputConnection extends BaseInputConnection implements ChromiumBas
                 StringBuilder builder = new StringBuilder();
                 builder.appendCodePoint(combined);
                 String text = builder.toString();
-                mImeAdapter.sendCompositionToNative(text, 1, text.length() > 0, 0);
+                commitTextOnUiThread(text, 1);
                 return true;
             }
             // Noncombinable character; commit the accent character and fall through to sending

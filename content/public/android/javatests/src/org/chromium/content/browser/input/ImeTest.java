@@ -1104,43 +1104,50 @@ public class ImeTest {
         Assert.assertEquals("hô", mRule.getTextBeforeCursor(9, 0));
         mRule.waitAndVerifyUpdateSelection(2, 2, 2, -1, -1);
 
+        // o again. Should not have accent mark this time.
+        mRule.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_O));
+        Assert.assertEquals("hôo", mRule.getTextBeforeCursor(9, 0));
+        mRule.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_O));
+        Assert.assertEquals("hôo", mRule.getTextBeforeCursor(9, 0));
+        mRule.waitAndVerifyUpdateSelection(3, 3, 3, -1, -1);
+
         // ALT-i
         mRule.dispatchKeyEvent(new KeyEvent(
                 0, 0, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
         mRule.dispatchKeyEvent(new KeyEvent(
                 0, 0, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
-        Assert.assertEquals("hôˆ", mRule.getTextBeforeCursor(9, 0));
-        mRule.waitAndVerifyUpdateSelection(3, 3, 3, 2, 3);
+        Assert.assertEquals("hôoˆ", mRule.getTextBeforeCursor(9, 0));
+        mRule.waitAndVerifyUpdateSelection(4, 4, 4, 3, 4);
 
         // ALT-i again should have no effect
         mRule.dispatchKeyEvent(new KeyEvent(
                 0, 0, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
         mRule.dispatchKeyEvent(new KeyEvent(
                 0, 0, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
-        Assert.assertEquals("hôˆ", mRule.getTextBeforeCursor(9, 0));
+        Assert.assertEquals("hôoˆ", mRule.getTextBeforeCursor(9, 0));
 
         // b (cannot be accented, should just appear after)
         mRule.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_B));
-        Assert.assertEquals("hôˆb", mRule.getTextBeforeCursor(9, 0));
+        Assert.assertEquals("hôoˆb", mRule.getTextBeforeCursor(9, 0));
         mRule.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_B));
-        Assert.assertEquals("hôˆb", mRule.getTextBeforeCursor(9, 0));
-        int index = 4;
-        mRule.waitAndVerifyUpdateSelection(index++, 4, 4, -1, -1);
+        Assert.assertEquals("hôoˆb", mRule.getTextBeforeCursor(9, 0));
+        int index = 5;
+        mRule.waitAndVerifyUpdateSelection(index++, 5, 5, -1, -1);
 
         // ALT-i
         mRule.dispatchKeyEvent(new KeyEvent(
                 0, 0, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
         mRule.dispatchKeyEvent(new KeyEvent(
                 0, 0, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
-        Assert.assertEquals("hôˆbˆ", mRule.getTextBeforeCursor(9, 0));
-        mRule.waitAndVerifyUpdateSelection(index++, 5, 5, 4, 5);
+        Assert.assertEquals("hôoˆbˆ", mRule.getTextBeforeCursor(9, 0));
+        mRule.waitAndVerifyUpdateSelection(index++, 6, 6, 5, 6);
 
         // Backspace
         mRule.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
-        Assert.assertEquals("hôˆb", mRule.getTextBeforeCursor(9, 0));
+        Assert.assertEquals("hôoˆb", mRule.getTextBeforeCursor(9, 0));
         mRule.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL));
-        Assert.assertEquals("hôˆb", mRule.getTextBeforeCursor(9, 0));
-        mRule.waitAndVerifyUpdateSelection(index++, 4, 4, -1, -1);
+        Assert.assertEquals("hôoˆb", mRule.getTextBeforeCursor(9, 0));
+        mRule.waitAndVerifyUpdateSelection(index++, 5, 5, -1, -1);
     }
 
     @Test
