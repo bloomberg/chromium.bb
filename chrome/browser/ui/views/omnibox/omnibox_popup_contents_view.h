@@ -29,24 +29,30 @@ class OmniboxPopupContentsView : public views::View,
                                  public OmniboxPopupView,
                                  public gfx::AnimationDelegate {
  public:
-  // Factory method for creating the AutocompletePopupView.
-  static OmniboxPopupView* Create(const gfx::FontList& font_list,
-                                  OmniboxView* omnibox_view,
-                                  OmniboxEditModel* edit_model,
-                                  LocationBarView* location_bar_view);
+  OmniboxPopupContentsView(const gfx::FontList& font_list,
+                           OmniboxView* omnibox_view,
+                           OmniboxEditModel* edit_model,
+                           LocationBarView* location_bar_view);
+  ~OmniboxPopupContentsView() override;
 
   // Returns the bounds the popup should be shown at. This is the display bounds
   // and includes offsets for the dropshadow which this view's border renders.
   gfx::Rect GetPopupBounds() const;
 
-  virtual void LayoutChildren();
+  // Opens a match from the list specified by |index| with the type of tab or
+  // window specified by |disposition|.
+  void OpenMatch(size_t index, WindowOpenDisposition disposition);
+
+  // Returns the icon that should be displayed next to |match|. If the icon is
+  // available as a vector icon, it will be |vector_icon_color|.
+  gfx::Image GetMatchIcon(const AutocompleteMatch& match,
+                          SkColor vector_icon_color) const;
 
   // Sets the line specified by |index| as selected.
   virtual void SetSelectedLine(size_t index);
 
-  // Opens a match from the list specified by |index| with the type of tab or
-  // window specified by |disposition|.
-  void OpenMatch(size_t index, WindowOpenDisposition disposition);
+  // Returns true if the line specified by |index| is selected.
+  virtual bool IsSelectedIndex(size_t index) const;
 
   // OmniboxPopupView:
   bool IsOpen() const override;
@@ -67,34 +73,14 @@ class OmniboxPopupContentsView : public views::View,
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
-  virtual bool IsSelectedIndex(size_t index) const;
-  gfx::Image GetMatchIcon(const AutocompleteMatch& match,
-                          SkColor vector_icon_color) const;
-
- protected:
-  OmniboxPopupContentsView(const gfx::FontList& font_list,
-                           OmniboxView* omnibox_view,
-                           OmniboxEditModel* edit_model,
-                           LocationBarView* location_bar_view);
-  ~OmniboxPopupContentsView() override;
-
-  LocationBarView* location_bar_view() { return location_bar_view_; }
-
-  // Calculates the height needed to show all the results in the model.
-  virtual int CalculatePopupHeight();
-  virtual OmniboxResultView* CreateResultView(int model_index,
-                                              const gfx::FontList& font_list);
-
  private:
   class AutocompletePopupWidget;
 
-  // views::View:
-  const char* GetClassName() const override;
-  void OnPaint(gfx::Canvas* canvas) override;
-  void PaintChildren(const views::PaintInfo& paint_info) override;
+  // Calculates the height needed to show all the results in the model.
+  int CalculatePopupHeight();
 
-  // Call immediately after construction.
-  void Init();
+  // Size our children to the available content area.
+  void LayoutChildren();
 
   // Returns true if the model has a match at the specified index.
   bool HasMatchAt(size_t index) const;
@@ -108,6 +94,13 @@ class OmniboxPopupContentsView : public views::View,
   size_t GetIndexForPoint(const gfx::Point& point);
 
   OmniboxResultView* result_view_at(size_t i);
+
+  LocationBarView* location_bar_view() { return location_bar_view_; }
+
+  // views::View:
+  const char* GetClassName() const override;
+  void OnPaint(gfx::Canvas* canvas) override;
+  void PaintChildren(const views::PaintInfo& paint_info) override;
 
   std::unique_ptr<OmniboxPopupModel> model_;
 

@@ -153,8 +153,8 @@ void OmniboxViewViews::Init() {
 
   if (location_bar_view_) {
     // Initialize the popup view using the same font.
-    popup_view_.reset(OmniboxPopupContentsView::Create(
-        GetFontList(), this, model(), location_bar_view_));
+    popup_view_.reset(new OmniboxPopupContentsView(GetFontList(), this, model(),
+                                                   location_bar_view_));
   }
 
   // Override the default FocusableBorder from Textfield, since the
