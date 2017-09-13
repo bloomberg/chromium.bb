@@ -28,12 +28,6 @@ namespace {
 // Five fixed position ratios of the divider.
 constexpr float kFixedPositionRatios[] = {0.0f, 0.33f, 0.5f, 0.67f, 1.0f};
 
-// Returns true if |window| can be activated and snapped.
-bool CanSnap(aura::Window* window) {
-  return wm::CanActivateWindow(window) ? wm::GetWindowState(window)->CanSnap()
-                                       : false;
-}
-
 float FindClosestFixedPositionRatio(
     int x_position,
     const gfx::Rect& work_area_bounds_in_screen) {
@@ -71,6 +65,12 @@ bool SplitViewController::ShouldAllowSplitView() {
     return false;
   }
   return true;
+}
+
+// static
+bool SplitViewController::CanSnap(aura::Window* window) {
+  return wm::CanActivateWindow(window) ? wm::GetWindowState(window)->CanSnap()
+                                       : false;
 }
 
 bool SplitViewController::IsSplitViewModeActive() const {
@@ -282,6 +282,30 @@ void SplitViewController::EndResize(const gfx::Point& location_in_screen) {
   }
 }
 
+void SplitViewController::EndSplitView() {
+  if (!IsSplitViewModeActive())
+    return;
+
+  // Remove observers when the split view mode ends.
+  Shell::Get()->RemoveShellObserver(this);
+  Shell::Get()->activation_client()->RemoveObserver(this);
+
+  StopObserving(left_window_);
+  StopObserving(right_window_);
+  left_window_ = nullptr;
+  right_window_ = nullptr;
+  split_view_divider_.reset();
+  black_scrim_layer_.reset();
+  default_snap_position_ = NONE;
+  divider_position_ = -1;
+
+  State previous_state = state_;
+  state_ = NO_SNAP;
+  NotifySplitViewStateChanged(previous_state, state_);
+
+  Shell::Get()->NotifySplitViewModeEnded();
+}
+
 void SplitViewController::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
@@ -380,30 +404,6 @@ void SplitViewController::OnOverviewModeEnded() {
       }
     }
   }
-}
-
-void SplitViewController::EndSplitView() {
-  if (!IsSplitViewModeActive())
-    return;
-
-  // Remove observers when the split view mode ends.
-  Shell::Get()->RemoveShellObserver(this);
-  Shell::Get()->activation_client()->RemoveObserver(this);
-
-  StopObserving(left_window_);
-  StopObserving(right_window_);
-  left_window_ = nullptr;
-  right_window_ = nullptr;
-  split_view_divider_.reset();
-  black_scrim_layer_.reset();
-  default_snap_position_ = NONE;
-  divider_position_ = -1;
-
-  State previous_state = state_;
-  state_ = NO_SNAP;
-  NotifySplitViewStateChanged(previous_state, state_);
-
-  Shell::Get()->NotifySplitViewModeEnded();
 }
 
 void SplitViewController::StartObserving(aura::Window* window) {

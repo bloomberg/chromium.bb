@@ -50,6 +50,9 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // mode is only supported in tablet mode (tablet mode).
   static bool ShouldAllowSplitView();
 
+  // Returns true if |window| can be activated and snapped.
+  static bool CanSnap(aura::Window* window);
+
   // Returns true if split view mode is active.
   bool IsSplitViewModeActive() const;
 
@@ -78,6 +81,9 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   void StartResize(const gfx::Point& location_in_screen);
   void Resize(const gfx::Point& location_in_screen);
   void EndResize(const gfx::Point& location_in_screen);
+
+  // Ends the split view mode.
+  void EndSplitView();
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -108,9 +114,6 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
  private:
   friend class SplitViewControllerTest;
   friend class WindowSelectorTest;
-
-  // Ends the split view mode.
-  void EndSplitView();
 
   // Starts/Stops observing |window|.
   void StartObserving(aura::Window* window);
