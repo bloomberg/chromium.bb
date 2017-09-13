@@ -363,6 +363,8 @@ split_static_library("ui") {
     "webui/instant_ui.h",
     "webui/interstitials/interstitial_ui.cc",
     "webui/interstitials/interstitial_ui.h",
+    "webui/interventions_internals/interventions_internals_ui.cc",
+    "webui/interventions_internals/interventions_internals_ui.h",
     "webui/invalidations_message_handler.cc",
     "webui/invalidations_message_handler.h",
     "webui/invalidations_ui.cc",
