@@ -274,6 +274,25 @@
             ]
         }
     ],
+    "AutofillUpstreamRequestCvcIfMissing": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledWithGoogleBranding",
+                    "enable_features": [
+                        "AutofillUpstreamRequestCvcIfMissing",
+                        "AutofillUpstreamShowGoogleLogo",
+                        "AutofillUpstreamShowNewUi"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutomaticTabDiscarding": [
         {
             "platforms": [
