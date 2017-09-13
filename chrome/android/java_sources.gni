@@ -1635,7 +1635,7 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/permissions/GeolocationTest.java",
   "javatests/src/org/chromium/chrome/browser/permissions/MediaTest.java",
   "javatests/src/org/chromium/chrome/browser/permissions/PermissionNavigationTest.java",
-  "javatests/src/org/chromium/chrome/browser/permissions/PermissionTestCaseBase.java",
+  "javatests/src/org/chromium/chrome/browser/permissions/PermissionTestRule.java",
   "javatests/src/org/chromium/chrome/browser/permissions/QuotaTest.java",
   "javatests/src/org/chromium/chrome/browser/preferences/NotificationsPreferencesTest.java",
   "javatests/src/org/chromium/chrome/browser/preferences/PasswordViewingTypeTest.java",

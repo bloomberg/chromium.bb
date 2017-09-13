@@ -12,8 +12,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.PowerManager;
 
-import junit.framework.Assert;
-import junit.framework.AssertionFailedError;
+import org.junit.Assert;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationState;
@@ -65,7 +64,7 @@ public class ApplicationTestUtils {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             try {
                 finishAllChromeTasks(context);
-            } catch (AssertionFailedError exception) {
+            } catch (AssertionError exception) {
             }
         }
     }

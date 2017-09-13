@@ -1,12 +1,17 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 package org.chromium.chrome.browser.permissions;
 
 import android.content.DialogInterface;
+import android.support.test.InstrumentationRegistry;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.SwitchCompat;
+
+import org.junit.Assert;
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
@@ -17,18 +22,19 @@ import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.chrome.test.util.InfoBarUtil;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
 /**
- * Test case base for permissions UI testing on Android.
+ * TestRule for permissions UI testing on Android.
  *
  * This class allows for easy testing of permissions infobar and dialog prompts. Writing a test
  * simply requires a HTML file containing JavaScript methods which trigger a permission prompt. The
@@ -44,11 +50,11 @@ import java.util.concurrent.ExecutionException;
  * a persistence toggle is expected, whether it should be explicitly toggled, whether to trigger the
  * JS call with a gesture, and whether an infobar or a dialog is expected.
  */
-public class PermissionTestCaseBase extends ChromeActivityTestCaseBase<ChromeActivity> {
-    protected static final String MODAL_FLAG = ChromeFeatureList.MODAL_PERMISSION_PROMPTS;
-    protected static final String TOGGLE_FLAG = "DisplayPersistenceToggleInPermissionPrompts";
-    protected static final String MODAL_TOGGLE_FLAG = MODAL_FLAG + "," + TOGGLE_FLAG;
-    protected static final String PERMISSION_REQUEST_MANAGER_FLAG = "UseGroupedPermissionInfobars";
+public class PermissionTestRule extends ChromeActivityTestRule<ChromeActivity> {
+    public static final String MODAL_FLAG = ChromeFeatureList.MODAL_PERMISSION_PROMPTS;
+    public static final String TOGGLE_FLAG = "DisplayPersistenceToggleInPermissionPrompts";
+    public static final String MODAL_TOGGLE_FLAG = MODAL_FLAG + "," + TOGGLE_FLAG;
+    public static final String PERMISSION_REQUEST_MANAGER_FLAG = "UseGroupedPermissionInfobars";
 
     private InfoBarTestAnimationListener mListener;
     private EmbeddedTestServer mTestServer;
@@ -57,20 +63,22 @@ public class PermissionTestCaseBase extends ChromeActivityTestCaseBase<ChromeAct
      * Waits till a JavaScript callback which updates the page title is called the specified number
      * of times. The page title is expected to be of the form <prefix>: <count>.
      */
-    protected class PermissionUpdateWaiter extends EmptyTabObserver {
+    protected static class PermissionUpdateWaiter extends EmptyTabObserver {
         private CallbackHelper mCallbackHelper;
         private String mPrefix;
         private int mExpectedCount;
+        private final ChromeActivity mActivity;
 
-        public PermissionUpdateWaiter(String prefix) {
+        public PermissionUpdateWaiter(String prefix, ChromeActivity activity) {
             mCallbackHelper = new CallbackHelper();
             mPrefix = prefix;
+            mActivity = activity;
         }
 
         @Override
         public void onTitleUpdated(Tab tab) {
             String expectedTitle = mPrefix + mExpectedCount;
-            if (getActivity().getActivityTab().getTitle().equals(expectedTitle)) {
+            if (mActivity.getActivityTab().getTitle().equals(expectedTitle)) {
                 mCallbackHelper.notifyCalled();
             }
         }
@@ -79,6 +87,18 @@ public class PermissionTestCaseBase extends ChromeActivityTestCaseBase<ChromeAct
             mExpectedCount = numUpdates;
             mCallbackHelper.waitForCallback(0);
         }
+    }
+
+    @Override
+    public Statement apply(final Statement base, Description desc) {
+        return super.apply(new Statement() {
+            @Override
+            public void evaluate() throws Throwable {
+                ruleSetUp();
+                base.evaluate();
+                ruleTearDown();
+            }
+        }, desc);
     }
 
     /**
@@ -114,24 +134,23 @@ public class PermissionTestCaseBase extends ChromeActivityTestCaseBase<ChromeAct
         }
     }
 
-    public PermissionTestCaseBase() {
+    public PermissionTestRule() {
         super(ChromeActivity.class);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    private void ruleSetUp() throws Throwable {
+        startMainActivityOnBlankPage();
         InfoBarContainer container =
                 getActivity().getTabModelSelector().getCurrentTab().getInfoBarContainer();
         mListener = new InfoBarTestAnimationListener();
         container.addAnimationListener(mListener);
-        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
+        // TODO(yolandyan): refactor to use EmbeddedTestServerRule
+        mTestServer = EmbeddedTestServer.createAndStartServer(
+                InstrumentationRegistry.getInstrumentation().getContext());
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    private void ruleTearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
-        super.tearDown();
     }
 
     protected void setUpUrl(final String url) throws InterruptedException {
@@ -164,14 +183,14 @@ public class PermissionTestCaseBase extends ChromeActivityTestCaseBase<ChromeAct
      * @param toggleSwitch  True if we should toggle the switch off, false otherwise.
      * @throws Exception
      */
-    protected void runAllowTest(PermissionUpdateWaiter updateWaiter, final String url,
+    public void runAllowTest(PermissionUpdateWaiter updateWaiter, final String url,
             String javascript, int nUpdates, boolean withGesture, boolean isDialog,
             boolean hasSwitch, boolean toggleSwitch) throws Exception {
         setUpUrl(url);
 
         if (withGesture) {
             runJavaScriptCodeInCurrentTab("functionToRun = '" + javascript + "'");
-            singleClickView(getActivity().getActivityTab().getView());
+            TouchCommon.singleClickView(getActivity().getActivityTab().getView());
         } else {
             runJavaScriptCodeInCurrentTab(javascript);
         }
@@ -195,7 +214,7 @@ public class PermissionTestCaseBase extends ChromeActivityTestCaseBase<ChromeAct
             boolean allow, boolean hasSwitch, boolean toggleSwitch) throws Exception {
         mListener.addInfoBarAnimationFinished("InfoBar not added.");
         InfoBar infobar = getInfoBars().get(0);
-        assertNotNull(infobar);
+        Assert.assertNotNull(infobar);
 
         if (hasSwitch) {
             SwitchCompat persistSwitch = (SwitchCompat) infobar.getView().findViewById(
@@ -204,9 +223,10 @@ public class PermissionTestCaseBase extends ChromeActivityTestCaseBase<ChromeAct
         }
 
         if (allow) {
-            assertTrue("Allow button wasn't found", InfoBarUtil.clickPrimaryButton(infobar));
+            Assert.assertTrue("Allow button wasn't found", InfoBarUtil.clickPrimaryButton(infobar));
         } else {
-            assertTrue("Block button wasn't found", InfoBarUtil.clickSecondaryButton(infobar));
+            Assert.assertTrue(
+                    "Block button wasn't found", InfoBarUtil.clickSecondaryButton(infobar));
         }
         updateWaiter.waitForNumUpdates(nUpdates);
     }
@@ -234,8 +254,8 @@ public class PermissionTestCaseBase extends ChromeActivityTestCaseBase<ChromeAct
     }
 
     private void checkAndToggleSwitch(final SwitchCompat persistSwitch, boolean toggleSwitch) {
-        assertNotNull(persistSwitch);
-        assertTrue(persistSwitch.isChecked());
+        Assert.assertNotNull(persistSwitch);
+        Assert.assertTrue(persistSwitch.isChecked());
         if (toggleSwitch) {
             ThreadUtils.runOnUiThreadBlocking(new Runnable() {
                 @Override
@@ -244,10 +264,5 @@ public class PermissionTestCaseBase extends ChromeActivityTestCaseBase<ChromeAct
                 }
             });
         }
-    }
-
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
     }
 }
