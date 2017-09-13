@@ -58,4 +58,8 @@ void AllocationTracker::OnComplete() {
                                                 std::move(complete_callback_));
 }
 
+AllocationCountMap AllocationTracker::GetCounts() const {
+  return AllocationEventSetToCountMap(live_allocs_);
+}
+
 }  // namespace profiling

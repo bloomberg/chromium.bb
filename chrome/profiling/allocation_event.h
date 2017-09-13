@@ -6,6 +6,7 @@
 #define CHROME_PROFILING_ALLOCATION_EVENT_H_
 
 #include <functional>
+#include <map>
 #include <set>
 
 #include "chrome/common/profiling/memlog_stream.h"
@@ -50,12 +51,38 @@ class AllocationEvent {
     }
   };
 
+  // Implements < for AllocationEvent using everything but the address.
+  struct MetadataPartialLess {
+    bool operator()(const AllocationEvent& lhs,
+                    const AllocationEvent& rhs) const {
+      // Note that we're using pointer compiarisons on the backtrace objects
+      // since they're atoms and the actual ordering is not important.
+      return std::tie(lhs.size_, lhs.backtrace_, lhs.context_id_,
+                      lhs.allocator_) < std::tie(rhs.size_, rhs.backtrace_,
+                                                 rhs.context_id_,
+                                                 rhs.allocator_);
+    }
+  };
+
   // Implements == for AllocationEvents using address only. This is not a raw
   // operator because it only implements a comparison on the one field.
   struct AddressPartialEqual {
     bool operator()(const AllocationEvent& lhs,
                     const AllocationEvent& rhs) const {
       return lhs.address() == rhs.address();
+    }
+  };
+
+  // Implements < for AllocationEvent using everything but the address.
+  struct MetadataPartialEqual {
+    bool operator()(const AllocationEvent& lhs,
+                    const AllocationEvent& rhs) const {
+      // Note that we're using pointer compiarisons on the backtrace objects
+      // since they're atoms.
+      return std::tie(lhs.size_, lhs.backtrace_, lhs.context_id_,
+                      lhs.allocator_) == std::tie(rhs.size_, rhs.backtrace_,
+                                                  rhs.context_id_,
+                                                  rhs.allocator_);
     }
   };
 
@@ -67,8 +94,19 @@ class AllocationEvent {
   int context_id_ = 0;
 };
 
+// Unique set based on addresses of allocations.
 using AllocationEventSet =
     std::set<AllocationEvent, AllocationEvent::AddressPartialLess>;
+
+// Maps allocation metadata to allocation counts of that type. In this case,
+// the address of the AllocationEvent is unused.
+using AllocationCountMap =
+    std::map<AllocationEvent, int, AllocationEvent::MetadataPartialLess>;
+
+// Aggregates the allocation events to a count map. The address of the
+// allocation event in the returned map will be the address of the first item
+// in the set with that metadata.
+AllocationCountMap AllocationEventSetToCountMap(const AllocationEventSet& set);
 
 }  // namespace profiling
 
