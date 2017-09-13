@@ -146,10 +146,12 @@ test("cast_base_unittests") {
     "process_utils_unittest.cc",
     "serializers_unittest.cc",
     "system_time_change_notifier_unittest.cc",
+    "thread_health_checker_unittest.cc",
   ]
 
   deps = [
     ":test_support",
+    ":thread_health_checker",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//testing/gmock",
@@ -209,6 +211,17 @@ source_set("cast_sys_info_shlib") {
       "//chromecast/public",
     ]
   }
+}
+
+source_set("thread_health_checker") {
+  sources = [
+    "thread_health_checker.cc",
+    "thread_health_checker.h",
+  ]
+  deps = [
+    ":base",
+    "//base",
+  ]
 }
 
 process_version("cast_version") {
