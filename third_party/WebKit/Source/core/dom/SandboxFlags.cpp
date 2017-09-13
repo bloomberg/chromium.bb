@@ -28,7 +28,7 @@
 
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "public/web/WebSandboxFlags.h"

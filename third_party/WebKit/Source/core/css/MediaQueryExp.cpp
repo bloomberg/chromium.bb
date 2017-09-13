@@ -32,7 +32,7 @@
 #include "core/css/parser/CSSParserToken.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "platform/Decimal.h"
-#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/text/StringBuffer.h"
 #include "platform/wtf/text/StringBuilder.h"
 

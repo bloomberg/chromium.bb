@@ -32,7 +32,6 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/HttpEquiv.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/wtf/text/StringToNumber.h"
 
 namespace blink {

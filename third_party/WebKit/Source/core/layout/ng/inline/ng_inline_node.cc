@@ -32,9 +32,9 @@
 #include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
 #include "core/style/ComputedStyle.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/shaping/HarfBuzzShaper.h"
 #include "platform/fonts/shaping/ShapeResultSpacing.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/text/CharacterNames.h"
 
 namespace blink {

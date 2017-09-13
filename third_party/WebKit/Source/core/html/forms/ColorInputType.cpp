@@ -47,7 +47,6 @@
 #include "core/html/forms/ColorChooser.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/page/ChromeClient.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/Color.h"
 #include "platform/wtf/text/WTFString.h"
 

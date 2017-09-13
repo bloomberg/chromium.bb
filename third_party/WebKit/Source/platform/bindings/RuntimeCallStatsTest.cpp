@@ -4,7 +4,7 @@
 
 #include "platform/bindings/RuntimeCallStats.h"
 
-#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/CurrentTime.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

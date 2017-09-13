@@ -29,7 +29,6 @@
 #include <memory>
 #include "core/dom/Document.h"
 #include "core/page/Page.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StdLibExtras.h"
 

@@ -27,7 +27,6 @@
 #include "core/page/Page.h"
 #include "modules/plugins/DOMMimeTypeArray.h"
 #include "modules/plugins/NavigatorPlugins.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/plugins/PluginData.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/debug/Alias.h"

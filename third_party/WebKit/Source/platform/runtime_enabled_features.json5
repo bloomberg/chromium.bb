@@ -1,7 +1,7 @@
 {
   // http://dev.chromium.org/blink/runtime-enabled-features
   //
-  // This list is used to generate RuntimeEnabledFeatures.h/cpp which contains
+  // This list is used to generate runtime_enabled_features.h/cc which contains
   // a class that stores static enablers for all experimental features.
 
   parameters: {

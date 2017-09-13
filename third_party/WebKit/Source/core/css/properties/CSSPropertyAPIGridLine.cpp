@@ -5,7 +5,6 @@
 #include "core/css/properties/CSSPropertyAPIGridLine.h"
 
 #include "core/css/properties/CSSPropertyGridUtils.h"
-#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 

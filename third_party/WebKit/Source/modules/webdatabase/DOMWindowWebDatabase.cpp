@@ -32,7 +32,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseManager.h"
-#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
 namespace blink {

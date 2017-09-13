@@ -31,7 +31,6 @@
 #include "public/platform/WebURLRequest.h"
 
 #include <memory>
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"

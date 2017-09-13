@@ -47,7 +47,6 @@
 #include "core/page/Page.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/DateComponents.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/text/DateTimeFormat.h"
 #include "platform/text/PlatformLocale.h"
 #include "platform/wtf/DateMath.h"

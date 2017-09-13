@@ -44,10 +44,10 @@
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutVideo.h"
 #include "platform/Histogram.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/gpu/Extensions3DUtil.h"
+#include "platform/runtime_enabled_features.h"
 #include "public/platform/WebCanvas.h"
 
 namespace blink {

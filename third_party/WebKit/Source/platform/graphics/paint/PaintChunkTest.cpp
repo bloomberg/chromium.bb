@@ -4,7 +4,6 @@
 
 #include "platform/graphics/paint/PaintChunk.h"
 
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/testing/FakeDisplayItemClient.h"
 #include "platform/wtf/Optional.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -33,7 +33,6 @@
 #include <memory>
 #include "platform/FontFamilyNames.h"
 #include "platform/LayoutTestSupport.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontFaceCreationParams.h"

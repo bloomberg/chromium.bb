@@ -25,9 +25,9 @@
 
 #include "platform/scroll/ScrollbarThemeMock.h"
 
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/scroll/Scrollbar.h"
 
 namespace blink {
