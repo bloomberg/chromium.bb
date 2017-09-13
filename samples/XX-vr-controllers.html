@@ -261,6 +261,7 @@ found in the LICENSE file.
             Math.random() * 0.5,
             Math.random() * 0.5, 1.0);
       }
+      VRSamplesUtil.addVRClickListener(onClick);
       webglCanvas.addEventListener("click", onClick, false);
 
       function getStandingViewMatrix (out, view) {

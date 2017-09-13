@@ -326,7 +326,12 @@ found in the LICENSE file.
           document.exitPointerLock();
         }
       }
-      
+
+      // This utility function monitors clicks from gamepads that are associated
+      // with a VRDisplay and fires the callback, providing "click" support for
+      // browsers that don't fire mouse click events on interaction.
+      VRSamplesUtil.addVRClickListener(onClick);
+
       webglCanvas.addEventListener("click", onClick, false);
       window.addEventListener('vrdisplaypointerrestricted', onDisplayPointerRestricted);
       window.addEventListener('vrdisplaypointerunrestricted', onDisplayPointerUnrestricted);
