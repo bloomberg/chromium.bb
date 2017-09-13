@@ -185,8 +185,10 @@ void HookPartitionFree(void* address) {
 }  // namespace
 
 void InitAllocatorShim(MemlogSenderPipe* sender_pipe) {
-  g_send_buffers = new SendBuffer[kNumSendBuffers];
+  // Must be done before hooking any functions that make stack traces.
+  base::debug::EnableInProcessStackDumping();
 
+  g_send_buffers = new SendBuffer[kNumSendBuffers];
   g_sender_pipe = sender_pipe;
 
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
