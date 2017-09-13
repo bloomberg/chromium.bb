@@ -1,23 +1,26 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="../prefs/prefs.html">
+<link rel="import" href="../controls/settings_toggle_button.html">
 <link rel="import" href="../settings_shared_css.html">
 
 <dom-module id="settings-multidevice-page">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared">
+      settings-toggle-button {
+        -webkit-padding-end: 0;
+        flex: 1;
+      }
+    </style>
     <div class="settings-box two-line">
       <div class="icon-container">
         <iron-icon icon="cr:sms-connect"></iron-icon>
       </div>
-      <div id="smsConnectToggleLabel" class="middle">
-        $i18n{smsConnect}
-        <div class="secondary">$i18n{smsConnectSummary}</div>
-      </div>
-      <paper-toggle-button checked="{{smsConnectToggleState_}}"
-          aria-labelledby="smsConnectToggleLabel">
-      </paper-toggle-button>
+      <settings-toggle-button
+          pref="{{prefs.multidevice.sms_connect_enabled}}"
+          label="$i18n{smsConnect}"
+          sub-label="$i18n{smsConnectSummary}">
+      </settings-toggle-button>
     </div>
   </template>
   <script src="multidevice_page.js"></script>

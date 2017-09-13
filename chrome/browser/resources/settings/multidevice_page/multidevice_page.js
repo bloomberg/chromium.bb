@@ -16,22 +16,5 @@ Polymer({
       type: Object,
       notify: true,
     },
-
-    /**
-     * Reflects the current state of the toggle buttons (in this page and the
-     * subpage). This will be set when the user changes the toggle.
-     * @private
-     */
-    smsConnectToggleState_: {
-      type: Boolean,
-      observer: 'smsConnectToggleStateChanged_',
-    },
-  },
-
-  /** @private */
-  smsConnectToggleStateChanged_: function() {
-    // TODO(orenb): Switch from paper-toggle-button to settings-toggle-button,
-    // which will manage the underlying pref state, once the new pref has been
-    // implemented. Propagate here the pref value to the SMS connect component.
   },
 });
