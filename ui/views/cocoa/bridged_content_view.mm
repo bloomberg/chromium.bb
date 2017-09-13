@@ -779,6 +779,12 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   return client ? client->DragUpdate(sender) : ui::DragDropTypes::DRAG_NONE;
 }
 
+- (void)draggingExited:(id<NSDraggingInfo>)sender {
+  views::DragDropClientMac* client = [self dragDropClient];
+  if (client)
+    client->DragExit();
+}
+
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)sender {
   views::DragDropClientMac* client = [self dragDropClient];
   return client && client->Drop(sender) != NSDragOperationNone;
