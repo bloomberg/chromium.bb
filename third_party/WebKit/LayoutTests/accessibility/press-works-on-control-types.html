@@ -28,10 +28,12 @@
     function handlePress(e) {
        eventSrcElement = e.srcElement;
 
-       // First press was on the group element. That is not a control type and it should
-       // have caused the container to be the target element instead of the group element.
+       // First press was on the group element. Even though that isn't a control
+       // type, that was the element pressed, and the page should be given an
+       // accurate target. The press will eventually bubble up to any ancestor
+       // listeners.
        if (pressCount == 0)
-          shouldBeTrue("eventSrcElement == document.getElementById('container')");
+          shouldBeTrue("eventSrcElement == document.getElementById('group')");
        else if (pressCount == 1)
           shouldBeTrue("eventSrcElement == document.getElementById('button')");
        else if (pressCount == 2)
