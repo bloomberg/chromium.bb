@@ -29,6 +29,10 @@ class WindowDelegate;
 class WindowManagerDelegate;
 class WindowTreeClientDelegate;
 
+namespace client {
+class FocusClient;
+}
+
 namespace test {
 
 enum class BackendType { CLASSIC, MUS };
@@ -85,6 +89,7 @@ class AuraTestBase : public testing::Test,
   WindowTreeHost* host() { return helper_->host(); }
   ui::EventSink* event_sink() { return helper_->event_sink(); }
   TestScreen* test_screen() { return helper_->test_screen(); }
+  client::FocusClient* focus_client() { return helper_->focus_client(); }
 
   TestWindowTree* window_tree() { return helper_->window_tree(); }
   WindowTreeClient* window_tree_client_impl() {

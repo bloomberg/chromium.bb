@@ -100,6 +100,26 @@ std::vector<uint8_t> ConvertToPropertyTransportValue(int64_t value) {
   return mojo::ConvertTo<std::vector<uint8_t>>(value);
 }
 
+WindowTreeHostMusInitParams CreateWindowTreeHostMusInitParams(
+    WindowTreeClient* window_tree_client,
+    const gfx::Rect& bounds,
+    int64_t display_id) {
+  std::unique_ptr<DisplayInitParams> display_params =
+      base::MakeUnique<DisplayInitParams>();
+  display_params->display = base::MakeUnique<display::Display>(display_id);
+  display_params->display->set_bounds(bounds);
+  display_params->viewport_metrics.bounds_in_pixels = bounds;
+  display_params->viewport_metrics.device_scale_factor = 1.0f;
+  display_params->viewport_metrics.ui_scale_factor = 1.0f;
+  WindowTreeHostMusInitParams init_params =
+      WindowTreeClientPrivate(window_tree_client)
+          .CallCreateInitParamsForNewDisplay();
+  init_params.use_classic_ime = true;
+  init_params.display_id = display_params->display->id();
+  init_params.display_init_params = std::move(display_params);
+  return init_params;
+}
+
 }  // namespace
 
 using WindowTreeClientWmTest = test::AuraMusWmTestBase;
@@ -2362,6 +2382,44 @@ TEST_F(WindowTreeClientWmTest, ManuallyCreateDisplay) {
   window_tree_host.InitHost();
   EXPECT_EQ(bounds, window_tree_host.GetBoundsInPixels());
   EXPECT_EQ(gfx::Rect(bounds.size()), window_tree_host.window()->bounds());
+}
+
+TEST_F(WindowTreeClientWmTest, FocusInDifferentDisplayThanEvent) {
+  constexpr int64_t kDisplayId1 = 201;
+  WindowTreeHostMusInitParams init_params1 = CreateWindowTreeHostMusInitParams(
+      window_tree_client_impl(), gfx::Rect(1, 2, 101, 102), kDisplayId1);
+  WindowTreeHostMus window_tree_host1(std::move(init_params1));
+  window_tree_host1.InitHost();
+  window_tree_host1.Show();
+  client::SetFocusClient(window_tree_host1.window(), focus_client());
+
+  constexpr int64_t kDisplayId2 = 202;
+  WindowTreeHostMusInitParams init_params2 = CreateWindowTreeHostMusInitParams(
+      window_tree_client_impl(), gfx::Rect(501, 2, 101, 102), kDisplayId2);
+  WindowTreeHostMus window_tree_host2(std::move(init_params2));
+  window_tree_host2.InitHost();
+  window_tree_host2.Show();
+  client::SetFocusClient(window_tree_host2.window(), focus_client());
+
+  aura::Window child1(nullptr);
+  child1.Init(ui::LAYER_NOT_DRAWN);
+  child1.Show();
+  window_tree_host1.window()->AddChild(&child1);
+  child1.Focus();
+
+  aura::Window child2(nullptr);
+  child2.Init(ui::LAYER_NOT_DRAWN);
+  child2.Show();
+  child2.SetEventTargeter(base::MakeUnique<WindowTargeter>());
+  window_tree_host2.window()->AddChild(&child2);
+
+  EXPECT_TRUE(child1.HasFocus());
+
+  std::unique_ptr<ui::KeyEvent> key_event = base::MakeUnique<ui::KeyEvent>(
+      ui::ET_KEY_PRESSED, ui::VKEY_ESCAPE, ui::EF_NONE);
+  window_tree_client()->OnWindowInputEvent(1, server_id(&child2), kDisplayId2,
+                                           gfx::PointF(), std::move(key_event),
+                                           false);
 }
 
 TEST_F(WindowTreeClientWmTestHighDPI, BoundsChangeWhenAdded) {
