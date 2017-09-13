@@ -119,6 +119,7 @@ import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.chrome.browser.widget.ViewHighlighter;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetMetrics;
 import org.chromium.chrome.browser.widget.emptybackground.EmptyBackgroundViewWrapper;
 import org.chromium.chrome.browser.widget.textbubble.ViewAnchoredTextBubble;
@@ -875,7 +876,7 @@ public class ChromeTabbedActivity
                     // Since reusing/creating a new NTP when using Chrome Home brings up the bottom
                     // sheet, we need to record it in our metrics.
                     bottomSheet.getBottomSheetMetrics().recordSheetOpenReason(
-                            BottomSheetMetrics.OPENED_BY_STARTUP);
+                            StateChangeReason.STARTUP);
                     return true;
                 }
                 return false;
@@ -920,9 +921,8 @@ public class ChromeTabbedActivity
     private boolean maybeSetBottomSheetStateToHalfOnStartup(BottomSheet bottomSheet) {
         if (getTimeSinceLastBackgroundedMs()
                 >= TIME_SINCE_BACKGROUNDED_TO_SHOW_BOTTOM_SHEET_HALF_MS) {
-            bottomSheet.getBottomSheetMetrics().recordSheetOpenReason(
-                    BottomSheetMetrics.OPENED_BY_STARTUP);
-            bottomSheet.setSheetState(BottomSheet.SHEET_STATE_HALF, true);
+            bottomSheet.setSheetState(
+                    BottomSheet.SHEET_STATE_HALF, true, StateChangeReason.STARTUP);
             return true;
         }
         return false;

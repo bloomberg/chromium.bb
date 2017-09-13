@@ -9,6 +9,7 @@ import android.support.annotation.IntDef;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -25,12 +26,12 @@ public class BottomSheetMetrics extends EmptyBottomSheetObserver {
     @IntDef({OPENED_BY_SWIPE, OPENED_BY_OMNIBOX_FOCUS, OPENED_BY_NEW_TAB_CREATION,
             OPENED_BY_EXPAND_BUTTON, OPENED_BY_STARTUP})
     @Retention(RetentionPolicy.SOURCE)
-    public @interface SheetOpenReason {}
-    public static final int OPENED_BY_SWIPE = 0;
-    public static final int OPENED_BY_OMNIBOX_FOCUS = 1;
-    public static final int OPENED_BY_NEW_TAB_CREATION = 2;
-    public static final int OPENED_BY_EXPAND_BUTTON = 3;
-    public static final int OPENED_BY_STARTUP = 4;
+    private @interface SheetOpenReason {}
+    private static final int OPENED_BY_SWIPE = 0;
+    private static final int OPENED_BY_OMNIBOX_FOCUS = 1;
+    private static final int OPENED_BY_NEW_TAB_CREATION = 2;
+    private static final int OPENED_BY_EXPAND_BUTTON = 3;
+    private static final int OPENED_BY_STARTUP = 4;
     private static final int OPENED_BY_BOUNDARY = 5;
 
     /** The different ways that the bottom sheet can be closed. */
@@ -84,6 +85,8 @@ public class BottomSheetMetrics extends EmptyBottomSheetObserver {
                     "Android.ChromeHome.TimeBetweenCloseAndNextOpen",
                     mLastOpenTime - mLastCloseTime, TimeUnit.MILLISECONDS);
         }
+
+        recordSheetOpenReason(reason);
     }
 
     @Override
@@ -145,37 +148,48 @@ public class BottomSheetMetrics extends EmptyBottomSheetObserver {
 
     /**
      * Records the reason the sheet was opened.
-     * @param reason The {@link SheetOpenReason} that caused the bottom sheet to open.
+     * @param reason The {@link StateChangeReason} that caused the bottom sheet to open.
      */
-    public void recordSheetOpenReason(@SheetOpenReason int reason) {
+    public void recordSheetOpenReason(@StateChangeReason int reason) {
+        @SheetOpenReason
+        int metricsReason = OPENED_BY_SWIPE;
         switch (reason) {
-            case OPENED_BY_SWIPE:
+            case StateChangeReason.SWIPE:
+                metricsReason = OPENED_BY_SWIPE;
                 RecordUserAction.record("Android.ChromeHome.OpenedBySwipe");
                 break;
-            case OPENED_BY_OMNIBOX_FOCUS:
+            case StateChangeReason.OMNIBOX_FOCUS:
+                metricsReason = OPENED_BY_OMNIBOX_FOCUS;
                 RecordUserAction.record("Android.ChromeHome.OpenedByOmnibox");
                 break;
-            case OPENED_BY_NEW_TAB_CREATION:
+            case StateChangeReason.NEW_TAB:
+                metricsReason = OPENED_BY_NEW_TAB_CREATION;
                 RecordUserAction.record("Android.ChromeHome.OpenedByNTP");
                 break;
-            case OPENED_BY_EXPAND_BUTTON:
+            case StateChangeReason.EXPAND_BUTTON:
+                metricsReason = OPENED_BY_EXPAND_BUTTON;
                 RecordUserAction.record("Android.ChromeHome.OpenedByExpandButton");
                 break;
-            case OPENED_BY_STARTUP:
+            case StateChangeReason.STARTUP:
+                metricsReason = OPENED_BY_STARTUP;
                 RecordUserAction.record("Android.ChromeHome.OpenedByStartup");
+                break;
+            case StateChangeReason.NONE:
+                // Intentionally empty.
                 break;
             default:
                 assert false;
         }
+
         RecordHistogram.recordEnumeratedHistogram(
-                "Android.ChromeHome.OpenReason", reason, OPENED_BY_BOUNDARY);
+                "Android.ChromeHome.OpenReason", metricsReason, OPENED_BY_BOUNDARY);
     }
 
     /**
      * Records the reason the sheet was closed.
      * @param reason The {@link SheetCloseReason} that cause the bottom sheet to close.
      */
-    public void recordSheetCloseReason(@SheetCloseReason int reason) {
+    private void recordSheetCloseReason(@SheetCloseReason int reason) {
         switch (reason) {
             case CLOSED_BY_SWIPE:
                 RecordUserAction.record("Android.ChromeHome.ClosedBySwipe");
