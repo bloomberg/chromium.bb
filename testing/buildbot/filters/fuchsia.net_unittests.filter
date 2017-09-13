@@ -12,10 +12,6 @@
 -DiskCacheBackendTest.SimpleCacheDeleteQuickly
 -URLRequestTestHTTP.GetTest_ManyCookies
 
-# https://crbug.com/755552
--HttpCache.RangeGET_ParallelValidationDifferentRanges
--HttpCache.RangeGET_ParallelValidationOverlappingRanges
-
 # base::MakeFileUnreadable() doesn't work. https://crbug.com/759853
 -HttpNetworkTransactionTest.UploadUnreadableFile
 -SpdyNetworkTransactionTest.UnreadableFilePost
