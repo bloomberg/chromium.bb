@@ -102,6 +102,7 @@
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_presentation.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_snackbar.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
+#import "ios/chrome/browser/ui/alert_coordinator/repost_form_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/re_signin_infobar_delegate.h"
 #import "ios/chrome/browser/ui/background_generator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_interaction_controller.h"
@@ -173,6 +174,7 @@
 #import "ios/chrome/browser/web/passkit_dialog_provider.h"
 #include "ios/chrome/browser/web/print_tab_helper.h"
 #import "ios/chrome/browser/web/repost_form_tab_helper.h"
+#import "ios/chrome/browser/web/repost_form_tab_helper_delegate.h"
 #import "ios/chrome/browser/web/sad_tab_tab_helper.h"
 #include "ios/chrome/browser/web/web_state_printer.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -366,6 +368,7 @@ bool IsURLAllowedInIncognito(const GURL& url) {
                                     PassKitDialogProvider,
                                     PreloadControllerDelegate,
                                     QRScannerPresenting,
+                                    RepostFormTabHelperDelegate,
                                     SKStoreProductViewControllerDelegate,
                                     SnapshotOverlayProvider,
                                     StoreKitLauncher,
@@ -541,6 +544,9 @@ bool IsURLAllowedInIncognito(const GURL& url) {
 
   // Coordinator for Page Info UI.
   PageInfoLegacyCoordinator* _pageInfoCoordinator;
+
+  // Coordinator for displaying Repost Form dialog.
+  RepostFormCoordinator* _repostFormCoordinator;
 }
 
 // The browser's side swipe controller.  Lazily instantiated on the first call.
@@ -2369,6 +2375,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   if (!SadTabTabHelper::FromWebState(tab.webState))
     SadTabTabHelper::CreateForWebState(tab.webState, _sadTabCoordinator);
   PrintTabHelper::CreateForWebState(tab.webState, self);
+  RepostFormTabHelper::CreateForWebState(tab.webState, self);
 }
 
 - (void)uninstallDelegatesForTab:(Tab*)tab {
@@ -5097,6 +5104,24 @@ bubblePresenterForFeature:(const base::Feature&)feature
 - (void)printWebState:(web::WebState*)webState {
   if (webState == [_model currentTab].webState)
     [self printTab];
+}
+
+#pragma mark - RepostFormTabHelperDelegate
+
+- (void)repostFormTabHelper:(RepostFormTabHelper*)helper
+    presentRepostFromDialogAtPoint:(CGPoint)location
+                 completionHandler:(void (^)(BOOL))completion {
+  _repostFormCoordinator = [[RepostFormCoordinator alloc]
+      initWithBaseViewController:self
+                  dialogLocation:location
+                        webState:helper->web_state()
+               completionHandler:completion];
+  [_repostFormCoordinator start];
+}
+
+- (void)repostFormTabHelperDismissRepostFormDialog:
+    (RepostFormTabHelper*)helper {
+  _repostFormCoordinator = nil;
 }
 
 @end

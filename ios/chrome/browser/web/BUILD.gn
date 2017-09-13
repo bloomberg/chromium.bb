@@ -44,7 +44,6 @@ source_set("web") {
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser",
     "//ios/chrome/browser/ui",
-    "//ios/chrome/browser/ui/alert_coordinator:alert_coordinator",
     "//ios/chrome/browser/ui/commands:commands",
     "//ios/chrome/browser/ui/util:util",
     "//ios/web",
@@ -67,6 +66,7 @@ source_set("tab_helper_delegates") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "page_placeholder_tab_helper_delegate.h",
+    "repost_form_tab_helper_delegate.h",
     "sad_tab_tab_helper_delegate.h",
   ]
 }
@@ -94,9 +94,7 @@ source_set("unit_tests") {
     ":web",
     "//base:base",
     "//base/test:test_support",
-    "//components/strings:components_strings_grit",
     "//ios/chrome/browser/browser_state:test_support",
-    "//ios/chrome/browser/ui:ui",
     "//ios/chrome/test:test_support",
     "//ios/web:web",
     "//ios/web/public/test",
