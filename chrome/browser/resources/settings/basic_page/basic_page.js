@@ -99,6 +99,10 @@ Polymer({
     currentRoute_: Object,
   },
 
+  hostAttributes: {
+    role: 'main',
+  },
+
   listeners: {
     'subpage-expand': 'onSubpageExpanded_',
   },

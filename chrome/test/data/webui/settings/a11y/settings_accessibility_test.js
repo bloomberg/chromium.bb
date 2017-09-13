@@ -25,8 +25,6 @@ function SettingsAccessibilityTest() {}
 // Default accessibility audit options. Specify in test definition to use.
 SettingsAccessibilityTest.axeOptions = {
   'rules': {
-    // TODO(hcarmona): enable 'region' after addressing violation.
-    'region': {enabled: false},
     // Disable 'skip-link' check since there are few tab stops before the main
     // content.
     'skip-link': {enabled: false},
