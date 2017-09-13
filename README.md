@@ -109,6 +109,20 @@ In addition to the above it's important to note that the toolchain files
 suffixed with gcc behave differently than the others. These toolchain files
 attempt to obey the $CROSS environment variable.
 
+### Sanitizers
+
+Sanitizer integration is built-in to the CMake build system. To enable a
+sanitizer, add `-DSANITIZE=<type>` to the CMake command line. For example, to
+enable address sanitizer:
+
+~~~
+    $ cmake path/to/aom -DSANITIZE=address
+    $ make
+~~~
+
+Sanitizers available vary by platform, target, and compiler. Consult your
+compiler documentation to determine which, if any, are available.
+
 ### Microsoft Visual Studio builds
 
 Building the AV1 codec library in Microsoft Visual Studio is supported. The
