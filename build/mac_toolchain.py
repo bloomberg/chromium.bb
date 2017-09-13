@@ -11,6 +11,9 @@ date:
   * Accepts the license.
     * If xcode-select and xcodebuild are not passwordless in sudoers, requires
       user interaction.
+
+The toolchain version can be overridden by setting IOS_TOOLCHAIN_REVISION or
+MAC_TOOLCHAIN_REVISION with the full revision, e.g. 9A235-1.
 """
 
 from distutils.version import LooseVersion
@@ -34,7 +37,7 @@ MAC_TOOLCHAIN_VERSION = '%s-%s' % (MAC_TOOLCHAIN_VERSION,
 # 16 is the major version number for macOS 10.12.
 MAC_MINIMUM_OS_VERSION = 16
 
-IOS_TOOLCHAIN_VERSION = '9M214v'
+IOS_TOOLCHAIN_VERSION = '9A235'
 IOS_TOOLCHAIN_SUB_REVISION = 1
 IOS_TOOLCHAIN_VERSION = '%s-%s' % (IOS_TOOLCHAIN_VERSION,
                                    IOS_TOOLCHAIN_SUB_REVISION)
@@ -211,13 +214,10 @@ def RequestGsAuthentication():
   sys.exit(1)
 
 
-def DownloadHermeticBuild(target_os, default_version, toolchain_filename):
+def DownloadHermeticBuild(target_os, toolchain_version, toolchain_filename):
   if not _UseHermeticToolchain(target_os):
     print 'Using local toolchain for %s.' % target_os
     return 0
-
-  toolchain_version = os.environ.get('MAC_TOOLCHAIN_REVISION',
-                                      default_version)
 
   if ReadStampFile(target_os) == toolchain_version:
     print 'Toolchain (%s) is already up to date.' % toolchain_version
@@ -261,14 +261,16 @@ def main():
       continue
 
     if target_os == 'ios':
-      default_version = IOS_TOOLCHAIN_VERSION
+      toolchain_version = os.environ.get('IOS_TOOLCHAIN_REVISION',
+                                          IOS_TOOLCHAIN_VERSION)
       toolchain_filename = 'ios-toolchain-%s.tgz'
     else:
-      default_version = MAC_TOOLCHAIN_VERSION
+      toolchain_version = os.environ.get('MAC_TOOLCHAIN_REVISION',
+                                          MAC_TOOLCHAIN_VERSION)
       toolchain_filename = 'toolchain-%s.tgz'
 
     return_value = DownloadHermeticBuild(
-        target_os, default_version, toolchain_filename)
+        target_os, toolchain_version, toolchain_filename)
     if return_value:
       return return_value
 
