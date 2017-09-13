@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/extensions/api/storage/policy_value_store.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
@@ -27,6 +26,7 @@
 #include "components/policy/core/common/schema_registry.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/storage/backend_task_runner.h"
+#include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -54,9 +54,6 @@ class ExtensionRegistry;
 namespace storage = api::storage;
 
 namespace {
-
-const char kLoadSchemasBackgroundTaskTokenName[] =
-    "load_managed_storage_schemas_token";
 
 // Only extension settings are stored in the managed namespace - not apps.
 const ValueStoreFactory::ModelType kManagedModelType =
@@ -95,7 +92,7 @@ class ManagedValueStoreCache::ExtensionTracker
 
   // Loads the schemas of the |extensions| and passes a ComponentMap to
   // Register().
-  static void LoadSchemasOnBlockingPool(
+  static void LoadSchemasOnFileTaskRunner(
       std::unique_ptr<ExtensionSet> extensions,
       base::WeakPtr<ExtensionTracker> self);
   void Register(const policy::ComponentMap* components);
@@ -175,10 +172,9 @@ void ManagedValueStoreCache::ExtensionTracker::LoadSchemas(
       added->Remove(to_remove);
   }
 
-  // Load the schema files in a background thread.
-  BrowserThread::PostBlockingPoolSequencedTask(
-      kLoadSchemasBackgroundTaskTokenName, FROM_HERE,
-      base::BindOnce(&ExtensionTracker::LoadSchemasOnBlockingPool,
+  GetExtensionFileTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ExtensionTracker::LoadSchemasOnFileTaskRunner,
                      base::Passed(&added), weak_factory_.GetWeakPtr()));
 }
 
@@ -188,7 +184,7 @@ bool ManagedValueStoreCache::ExtensionTracker::UsesManagedStorage(
 }
 
 // static
-void ManagedValueStoreCache::ExtensionTracker::LoadSchemasOnBlockingPool(
+void ManagedValueStoreCache::ExtensionTracker::LoadSchemasOnFileTaskRunner(
     std::unique_ptr<ExtensionSet> extensions,
     base::WeakPtr<ExtensionTracker> self) {
   base::ThreadRestrictions::AssertIOAllowed();
