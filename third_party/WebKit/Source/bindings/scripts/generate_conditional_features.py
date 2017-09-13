@@ -142,7 +142,7 @@ def conditional_features_info(info_provider, reader, idl_filenames, target_compo
     return features_for_type, types_for_feature, includes
 
 
-def conditional_features_context(generator_name, feature_info):
+def conditional_features_context(generator_name, feature_info, snake_case):
     context = {'code_generator': generator_name}
 
     # Unpack the feature info tuple.
@@ -160,7 +160,7 @@ def conditional_features_context(generator_name, feature_info):
         # here because the ContextFeatureSettings code needs it.
         'bindings/core/v8/V8Window.h',
     ])
-    context['includes'] = normalize_and_sort_includes(includes)
+    context['includes'] = normalize_and_sort_includes(includes, snake_case)
 
     # For each interface, collect a list of bindings installation functions to
     # call, organized by conditional feature.
@@ -218,7 +218,7 @@ def generate_conditional_features(info_provider, options, idl_filenames):
 
     # Convert that mapping into the context required for the Jinja2 templates.
     template_context = conditional_features_context(
-        MODULE_PYNAME, feature_info)
+        MODULE_PYNAME, feature_info, options.snake_case_generated_files)
 
     # Generate and write out the header file
     header_text = render_template(jinja_env.get_template(

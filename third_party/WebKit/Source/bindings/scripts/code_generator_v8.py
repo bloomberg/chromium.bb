@@ -135,9 +135,8 @@ class CodeGeneratorV8Base(CodeGeneratorBase):
     """Base class for v8 bindings generator and IDL dictionary impl generator"""
 
     def __init__(self, info_provider, cache_dir, output_dir, snake_case):
-        CodeGeneratorBase.__init__(self, MODULE_PYNAME, info_provider, cache_dir, output_dir)
+        CodeGeneratorBase.__init__(self, MODULE_PYNAME, info_provider, cache_dir, output_dir, snake_case)
         self.typedef_resolver = TypedefResolver(info_provider)
-        self.snake_case_generated_files = snake_case
 
     def generate_code(self, definitions, definition_name):
         """Returns .h/.cpp code as ((path, content)...)."""
@@ -305,8 +304,8 @@ class CodeGeneratorUnionType(CodeGeneratorBase):
     CodeGeneratorDictionaryImpl. It assumes that all union types are already
     collected. It doesn't process idl files directly.
     """
-    def __init__(self, info_provider, cache_dir, output_dir, target_component):
-        CodeGeneratorBase.__init__(self, MODULE_PYNAME, info_provider, cache_dir, output_dir)
+    def __init__(self, info_provider, cache_dir, output_dir, snake_case, target_component):
+        CodeGeneratorBase.__init__(self, MODULE_PYNAME, info_provider, cache_dir, output_dir, snake_case)
         self.target_component = target_component
         # The code below duplicates parts of TypedefResolver. We do not use it
         # directly because IdlUnionType is not a type defined in
@@ -325,7 +324,7 @@ class CodeGeneratorUnionType(CodeGeneratorBase):
         template_context['header_includes'].append(
             self.info_provider.include_path_for_export)
         template_context['header_includes'] = normalize_and_sort_includes(
-            template_context['header_includes'])
+            template_context['header_includes'], self.snake_case_generated_files)
         template_context['code_generator'] = self.generator_name
         template_context['exported'] = self.info_provider.specifier_for_export
         snake_base_name = to_snake_case(shorten_union_name(union_type))
@@ -367,8 +366,8 @@ class CodeGeneratorUnionType(CodeGeneratorBase):
 
 
 class CodeGeneratorCallbackFunction(CodeGeneratorBase):
-    def __init__(self, info_provider, cache_dir, output_dir, target_component):
-        CodeGeneratorBase.__init__(self, MODULE_PYNAME, info_provider, cache_dir, output_dir)
+    def __init__(self, info_provider, cache_dir, output_dir, snake_case, target_component):
+        CodeGeneratorBase.__init__(self, MODULE_PYNAME, info_provider, cache_dir, output_dir, snake_case)
         self.target_component = target_component
         self.typedef_resolver = TypedefResolver(info_provider)
 
@@ -383,7 +382,7 @@ class CodeGeneratorCallbackFunction(CodeGeneratorBase):
             template_context['header_includes'].append(
                 self.info_provider.include_path_for_export)
         template_context['header_includes'] = normalize_and_sort_includes(
-            template_context['header_includes'])
+            template_context['header_includes'], self.snake_case_generated_files)
         template_context['code_generator'] = MODULE_PYNAME
         header_text = render_template(header_template, template_context)
         cpp_text = render_template(cpp_template, template_context)

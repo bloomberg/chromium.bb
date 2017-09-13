@@ -239,9 +239,9 @@ class InterfaceContextBuilder(object):
 
 
 class CodeGeneratorWebAgentAPI(CodeGeneratorBase):
-    def __init__(self, info_provider, cache_dir, output_dir, _):
+    def __init__(self, info_provider, cache_dir, output_dir, snake_case):
         CodeGeneratorBase.__init__(self, MODULE_PYNAME, info_provider,
-                                   cache_dir, output_dir)
+                                   cache_dir, output_dir, snake_case)
         self.type_resolver = TypeResolver(info_provider.interfaces_info)
         self.typedef_resolver = TypedefResolver(info_provider)
 
