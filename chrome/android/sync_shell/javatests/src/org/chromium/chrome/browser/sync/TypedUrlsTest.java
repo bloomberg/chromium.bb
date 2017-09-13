@@ -9,11 +9,20 @@ import android.util.Pair;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.protocol.EntitySpecifics;
@@ -31,8 +40,16 @@ import java.util.concurrent.Callable;
 /**
  * Test suite for the typed URLs sync data type.
  */
-@RetryOnFailure  // crbug.com/637448
-public class TypedUrlsTest extends SyncTestBase {
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
+@RetryOnFailure // crbug.com/637448
+public class TypedUrlsTest {
+    @Rule
+    public SyncTestRule mSyncTestRule = new SyncTestRule();
+
     private static final String TAG = "TypedUrlsTest";
 
     private static final String TYPED_URLS_TYPE = "Typed URLs";
@@ -53,10 +70,9 @@ public class TypedUrlsTest extends SyncTestBase {
         }
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        setUpTestAccountAndSignIn();
+    @Before
+    public void setUp() throws Exception {
+        mSyncTestRule.setUpTestAccountAndSignIn();
         // Make sure the initial state is clean.
         assertClientTypedUrlCount(0);
         assertServerTypedUrlCountWithName(0, URL);
@@ -67,6 +83,7 @@ public class TypedUrlsTest extends SyncTestBase {
     @LargeTest
     @Feature({"Sync"})
     */
+    @Test
     @FlakyTest(message = "https://crbug.com/592437")
     public void testUploadTypedUrl() {
         loadUrlByTyping(URL);
@@ -75,6 +92,7 @@ public class TypedUrlsTest extends SyncTestBase {
     }
 
     // Test syncing a typed URL from server to client.
+    @Test
     @LargeTest
     @Feature({"Sync"})
     public void testDownloadTypedUrl() throws Exception {
@@ -84,13 +102,14 @@ public class TypedUrlsTest extends SyncTestBase {
 
         // Verify data synced to client.
         List<TypedUrl> typedUrls = getClientTypedUrls();
-        assertEquals("Only the injected typed URL should exist on the client.",
-                1, typedUrls.size());
+        Assert.assertEquals(
+                "Only the injected typed URL should exist on the client.", 1, typedUrls.size());
         TypedUrl typedUrl = typedUrls.get(0);
-        assertEquals("The wrong URL was found for the typed URL.", URL, typedUrl.url);
+        Assert.assertEquals("The wrong URL was found for the typed URL.", URL, typedUrl.url);
     }
 
     // Test syncing a typed URL deletion from server to client.
+    @Test
     @LargeTest
     @Feature({"Sync"})
     public void testDownloadDeletedTypedUrl() throws Exception {
@@ -101,7 +120,7 @@ public class TypedUrlsTest extends SyncTestBase {
 
         // Delete on server, sync, and verify deleted locally.
         TypedUrl typedUrl = getClientTypedUrls().get(0);
-        mFakeServerHelper.deleteEntity(typedUrl.id);
+        mSyncTestRule.getFakeServerHelper().deleteEntity(typedUrl.id);
         SyncTestUtil.triggerSync();
         waitForClientTypedUrlCount(0);
     }
@@ -111,7 +130,7 @@ public class TypedUrlsTest extends SyncTestBase {
             @Override
             public void run() {
                 LoadUrlParams params = new LoadUrlParams(url, PageTransition.TYPED);
-                getActivity().getActivityTab().loadUrl(params);
+                mSyncTestRule.getActivity().getActivityTab().loadUrl(params);
             }
         });
     }
@@ -123,12 +142,12 @@ public class TypedUrlsTest extends SyncTestBase {
         specifics.typedUrl.title = url;
         specifics.typedUrl.visits = new long[]{1L};
         specifics.typedUrl.visitTransitions = new int[]{SyncEnums.TYPED};
-        mFakeServerHelper.injectUniqueClientEntity(url /* name */, specifics);
+        mSyncTestRule.getFakeServerHelper().injectUniqueClientEntity(url /* name */, specifics);
     }
 
     private List<TypedUrl> getClientTypedUrls() throws JSONException {
-        List<Pair<String, JSONObject>> rawTypedUrls = SyncTestUtil.getLocalData(
-                mContext, TYPED_URLS_TYPE);
+        List<Pair<String, JSONObject>> rawTypedUrls =
+                SyncTestUtil.getLocalData(mSyncTestRule.getTargetContext(), TYPED_URLS_TYPE);
         List<TypedUrl> typedUrls = new ArrayList<TypedUrl>(rawTypedUrls.size());
         for (Pair<String, JSONObject> rawTypedUrl : rawTypedUrls) {
             String id =  rawTypedUrl.first;
@@ -138,13 +157,14 @@ public class TypedUrlsTest extends SyncTestBase {
     }
 
     private void assertClientTypedUrlCount(int count) throws JSONException {
-        assertEquals("There should be " + count + " local typed URL entities.",
-                count, SyncTestUtil.getLocalData(mContext, TYPED_URLS_TYPE).size());
+        Assert.assertEquals("There should be " + count + " local typed URL entities.", count,
+                SyncTestUtil.getLocalData(mSyncTestRule.getTargetContext(), TYPED_URLS_TYPE)
+                        .size());
     }
 
     private void assertServerTypedUrlCountWithName(int count, String name) {
-        assertTrue("Expected " + count + " server typed URLs with name " + name + ".",
-                mFakeServerHelper.verifyEntityCountByTypeAndName(
+        Assert.assertTrue("Expected " + count + " server typed URLs with name " + name + ".",
+                mSyncTestRule.getFakeServerHelper().verifyEntityCountByTypeAndName(
                         count, ModelType.TYPED_URLS, name));
     }
 
@@ -152,7 +172,8 @@ public class TypedUrlsTest extends SyncTestBase {
         CriteriaHelper.pollInstrumentationThread(Criteria.equals(count, new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
-                return SyncTestUtil.getLocalData(mContext, TYPED_URLS_TYPE).size();
+                return SyncTestUtil.getLocalData(mSyncTestRule.getTargetContext(), TYPED_URLS_TYPE)
+                        .size();
             }
         }), SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
     }
@@ -163,7 +184,7 @@ public class TypedUrlsTest extends SyncTestBase {
             @Override
             public boolean isSatisfied() {
                 try {
-                    return mFakeServerHelper.verifyEntityCountByTypeAndName(
+                    return mSyncTestRule.getFakeServerHelper().verifyEntityCountByTypeAndName(
                             count, ModelType.TYPED_URLS, name);
                 } catch (Exception e) {
                     throw new RuntimeException(e);

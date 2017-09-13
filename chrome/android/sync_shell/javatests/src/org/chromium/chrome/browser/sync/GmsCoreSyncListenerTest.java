@@ -7,9 +7,20 @@ package org.chromium.chrome.browser.sync;
 import android.accounts.Account;
 import android.support.test.filters.MediumTest;
 
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -19,8 +30,16 @@ import java.util.concurrent.Callable;
 /**
  * Test suite for the GmsCoreSyncListener.
  */
-@RetryOnFailure  // crbug.com/637448
-public class GmsCoreSyncListenerTest extends SyncTestBase {
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
+@RetryOnFailure // crbug.com/637448
+public class GmsCoreSyncListenerTest {
+    @Rule
+    public SyncTestRule mSyncTestRule = new SyncTestRule();
+
     private static final String PASSPHRASE = "passphrase";
 
     static class CountingGmsCoreSyncListener extends GmsCoreSyncListener {
@@ -38,9 +57,8 @@ public class GmsCoreSyncListenerTest extends SyncTestBase {
 
     private CountingGmsCoreSyncListener mListener;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         mListener = new CountingGmsCoreSyncListener();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -50,40 +68,41 @@ public class GmsCoreSyncListenerTest extends SyncTestBase {
         });
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 ProfileSyncService.get().removeSyncStateChangedListener(mListener);
             }
         });
-        super.tearDown();
     }
 
+    @Test
     @MediumTest
     @Feature({"Sync"})
     public void testGetsKey() throws Throwable {
-        Account account = setUpTestAccountAndSignIn();
-        assertEquals(0, mListener.callCount());
+        Account account = mSyncTestRule.setUpTestAccountAndSignIn();
+        Assert.assertEquals(0, mListener.callCount());
         encryptWithPassphrase(PASSPHRASE);
         waitForCallCount(1);
-        signOut();
-        signIn(account);
-        assertEquals(1, mListener.callCount());
+        mSyncTestRule.signOut();
+        mSyncTestRule.signIn(account);
+        Assert.assertEquals(1, mListener.callCount());
         decryptWithPassphrase(PASSPHRASE);
         waitForCallCount(2);
     }
 
+    @Test
     @MediumTest
     @Feature({"Sync"})
     public void testClearData() throws Throwable {
-        Account account = setUpTestAccountAndSignIn();
-        assertEquals(0, mListener.callCount());
+        Account account = mSyncTestRule.setUpTestAccountAndSignIn();
+        Assert.assertEquals(0, mListener.callCount());
         encryptWithPassphrase(PASSPHRASE);
         waitForCallCount(1);
-        clearServerData();
-        signIn(account);
+        mSyncTestRule.clearServerData();
+        mSyncTestRule.signIn(account);
         encryptWithPassphrase(PASSPHRASE);
         waitForCallCount(2);
     }
