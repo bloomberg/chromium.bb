@@ -17,6 +17,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -354,6 +355,64 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationOOPIFBrowserTest, ScreenOrientation) {
         &orientation_type));
     EXPECT_EQ(types[i], orientation_type);
   }
+}
+
+// Regression test for triggering a screen orientation change for a pending
+// main frame RenderFrameHost.  See https://crbug.com/764202.  In the bug, this
+// was triggered via the DevTools audit panel and
+// ViewMsg_EnableDeviceEmulation, which calls RenderWidget::Resize on the
+// renderer side.  The test fakes this by directly sending the resize message
+// to the widget.
+IN_PROC_BROWSER_TEST_F(ScreenOrientationOOPIFBrowserTest,
+                       ScreenOrientationInPendingMainFrame) {
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+#if USE_AURA || defined(OS_ANDROID)
+  WaitForResizeComplete(shell()->web_contents());
+#endif  // USE_AURA || defined(OS_ANDROID)
+
+  // Set up a fake Resize message with a screen orientation change.
+  RenderWidgetHost* main_frame_rwh =
+      web_contents()->GetMainFrame()->GetRenderWidgetHost();
+  ScreenInfo screen_info;
+  main_frame_rwh->GetScreenInfo(&screen_info);
+  int expected_angle = (screen_info.orientation_angle + 90) % 360;
+  screen_info.orientation_angle = expected_angle;
+
+  ResizeParams params;
+  params.screen_info = screen_info;
+  params.new_size = gfx::Size(300, 300);
+  params.physical_backing_size = gfx::Size(300, 300);
+  params.top_controls_height = 0.f;
+  params.browser_controls_shrink_blink_size = false;
+  params.is_fullscreen_granted = false;
+
+  // Start a cross-site navigation, but don't commit yet.
+  GURL second_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  TestNavigationManager delayer(shell()->web_contents(), second_url);
+  shell()->LoadURL(second_url);
+  EXPECT_TRUE(delayer.WaitForRequestStart());
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  RenderFrameHostImpl* pending_rfh =
+      IsBrowserSideNavigationEnabled()
+          ? root->render_manager()->speculative_frame_host()
+          : root->render_manager()->pending_frame_host();
+
+  // Send the orientation change to the pending RFH's widget.
+  pending_rfh->GetRenderWidgetHost()->Send(new ViewMsg_Resize(
+      pending_rfh->GetRenderWidgetHost()->GetRoutingID(), params));
+
+  // Let the navigation finish and make sure it succeeded.
+  delayer.WaitForNavigationFinished();
+  EXPECT_EQ(second_url, web_contents()->GetMainFrame()->GetLastCommittedURL());
+
+  int orientation_angle;
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      root->current_frame_host(),
+      "window.domAutomationController.send(screen.orientation.angle)",
+      &orientation_angle));
+  EXPECT_EQ(expected_angle, orientation_angle);
 }
 
 #ifdef OS_ANDROID

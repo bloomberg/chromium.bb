@@ -2010,7 +2010,14 @@ void RenderWidget::OnOrientationChange() {
   WebWidget* web_widget = GetWebWidget();
   if (web_widget && web_widget->IsWebFrameWidget()) {
     WebFrameWidget* web_frame_widget = static_cast<WebFrameWidget*>(web_widget);
-    web_frame_widget->LocalRoot()->SendOrientationChangeEvent();
+    // LocalRoot() might return null for provisional main frames. In this case,
+    // the frame hasn't committed a navigation and is not swapped into the tree
+    // yet, so it doesn't make sense to send orientation change events to it.
+    //
+    // TODO(https://crbug.com/578349): This check should be cleaned up
+    // once provisional frames are gone.
+    if (web_frame_widget->LocalRoot())
+      web_frame_widget->LocalRoot()->SendOrientationChangeEvent();
   }
 }
 
