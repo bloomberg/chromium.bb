@@ -312,7 +312,7 @@ class InterfaceTest(cros_test_lib.MockTestCase, cros_test_lib.LoggingTestCase):
   def testBuildBotWithGoodChromeRootOption(self):
     """chrome_root can be set without chrome_rev."""
     args = [
-        '--local',
+        '--buildbot',
         '--buildroot=/tmp',
         '--chrome_root=.',
         self._GENERIC_PREFLIGHT,
@@ -324,7 +324,7 @@ class InterfaceTest(cros_test_lib.MockTestCase, cros_test_lib.LoggingTestCase):
   def testBuildBotWithGoodChromeRevAndRootOption(self):
     """chrome_rev can get reset around chrome_root."""
     args = [
-        '--local',
+        '--buildbot',
         '--buildroot=/tmp',
         '--chrome_rev=%s' % constants.CHROME_REV_LATEST,
         '--chrome_rev=%s' % constants.CHROME_REV_STICKY,

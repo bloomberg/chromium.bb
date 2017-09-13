@@ -281,9 +281,9 @@ def _CreateParser():
       'Deprecated Options')
 
   parser.add_option('--local', action='store_true', default=False,
-                    help='Deprecated. See cros trybot.')
+                    help='Deprecated. See cros tryjob.')
   parser.add_option('--remote', action='store_true', default=False,
-                    help='Deprecated. See cros trybot.')
+                    help='Deprecated. See cros tryjob.')
 
   #
   # Patch selection options.
@@ -584,6 +584,9 @@ def _FinishParsing(options):
       options.parsed_args, lambda x: x.opt_inst.pass_through)
   options.pass_through_args.extend(accepted)
 
+  if options.local or options.remote:
+    cros_build_lib.Die('Deprecated usage. Please use cros tryjob instead.')
+
   if not options.buildroot:
     cros_build_lib.Die('A buildroot is required to build.')
 
@@ -834,9 +837,6 @@ def main(argv):
 
   if options.config_repo:
     cros_build_lib.Die('Deprecated usage. Ping crbug.com/735696 you need it.')
-
-  if options.local or options.remote:
-    cros_build_lib.Die('Deprecated usage. Please use cros tryjob instead.')
 
   # Fetch our site_config now, because we need it to do anything else.
   site_config = config_lib.GetConfig()
