@@ -15,10 +15,6 @@
 #include "extensions/common/constants.h"
 #include "printing/features/features.h"
 
-#if BUILDFLAG(ENABLE_APP_LIST) && defined(OS_CHROMEOS)
-#include "chrome/browser/ui/app_list/google_now_extension.h"
-#endif
-
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/input_method/component_extension_ime_manager_impl.h"
 #include "components/chrome_apps/grit/chrome_apps_resources.h"
@@ -48,14 +44,6 @@ bool IsComponentExtensionWhitelisted(const std::string& extension_id) {
     if (extension_id == kAllowed[i])
       return true;
   }
-
-#if BUILDFLAG(ENABLE_APP_LIST) && defined(OS_CHROMEOS)
-  std::string google_now_extension_id;
-  if (GetGoogleNowExtensionId(&google_now_extension_id) &&
-      google_now_extension_id == extension_id) {
-    return true;
-  }
-#endif
 
 #if defined(OS_CHROMEOS)
   if (chromeos::ComponentExtensionIMEManagerImpl::IsIMEExtensionID(
