@@ -1594,7 +1594,8 @@ class TestGitCl(TestCase):
          'remote: Processing changes: new: 1, done\n'
          'remote:\n'
          'remote: New Changes:\n'
-         'remote:   https://chromium-review.googlesource.com/123456 XXX.\n'
+         'remote:   https://chromium-review.googlesource.com/#/c/foo/+/123456 '
+             'XXX\n'
          'remote:\n'
          'To https://chromium.googlesource.com/yyy/zzz\n'
          ' * [new branch]      hhhh -> refs/for/refs/heads/master\n')),

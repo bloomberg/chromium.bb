@@ -3087,7 +3087,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
                    change_desc)
 
     if options.squash:
-      regex = re.compile(r'remote:\s+https?://[\w\-\.\/]*/(\d+)\s.*')
+      regex = re.compile(r'remote:\s+https?://[\w\-\.\+\/#]*/(\d+)\s.*')
       change_numbers = [m.group(1)
                         for m in map(regex.match, push_stdout.splitlines())
                         if m]
