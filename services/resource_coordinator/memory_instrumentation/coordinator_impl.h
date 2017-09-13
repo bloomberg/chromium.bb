@@ -20,8 +20,10 @@
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/coordinator.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/tracing_observer.h"
 #include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
+#include "services/service_manager/public/cpp/identity.h"
 
 namespace service_manager {
+struct BindSourceInfo;
 class Connector;
 }
 

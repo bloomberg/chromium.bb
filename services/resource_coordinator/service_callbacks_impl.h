@@ -13,6 +13,7 @@
 #include "services/resource_coordinator/public/interfaces/service_callbacks.mojom.h"
 
 namespace service_manager {
+struct BindSourceInfo;
 class ServiceContextRefFactory;
 class ServiceContextRef;
 }  // namespace service_manager
@@ -31,7 +32,8 @@ class ServiceCallbacksImpl : public mojom::ServiceCallbacks {
   static void Create(
       service_manager::ServiceContextRefFactory* service_ref_factory,
       ResourceCoordinatorService* resource_coordinator_service,
-      resource_coordinator::mojom::ServiceCallbacksRequest request);
+      resource_coordinator::mojom::ServiceCallbacksRequest request,
+      const service_manager::BindSourceInfo& source_info);
 
   void IsUkmRecorderInterfaceInitialized(
       const IsUkmRecorderInterfaceInitializedCallback& callback) override;

@@ -13,9 +13,11 @@
 #include "base/macros.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace service_manager {
+template <typename... BinderArgs>
+class BinderRegistryWithArgs;
+struct BindSourceInfo;
 class ServiceContextRefFactory;
 }  // service_manager
 
@@ -39,7 +41,8 @@ class CoordinationUnitManager {
   }
   ukm::MojoUkmRecorder* ukm_recorder() const { return ukm_recorder_; }
 
-  void OnStart(service_manager::BinderRegistry* registry,
+  void OnStart(service_manager::BinderRegistryWithArgs<
+                   const service_manager::BindSourceInfo&>* registry,
                service_manager::ServiceContextRefFactory* service_ref_factory);
   void RegisterObserver(
       std::unique_ptr<CoordinationUnitGraphObserver> observer);

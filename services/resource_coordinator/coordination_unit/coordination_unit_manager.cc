@@ -13,6 +13,7 @@
 #include "services/resource_coordinator/coordination_unit/coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_provider_impl.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace ukm {
@@ -33,7 +34,8 @@ CoordinationUnitManager::~CoordinationUnitManager() {
 }
 
 void CoordinationUnitManager::OnStart(
-    service_manager::BinderRegistry* registry,
+    service_manager::BinderRegistryWithArgs<
+        const service_manager::BindSourceInfo&>* registry,
     service_manager::ServiceContextRefFactory* service_ref_factory) {
   provider_ =
       base::MakeUnique<CoordinationUnitProviderImpl>(service_ref_factory, this);

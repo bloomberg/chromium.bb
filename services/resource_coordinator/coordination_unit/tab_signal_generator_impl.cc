@@ -10,6 +10,7 @@
 #include "services/resource_coordinator/coordination_unit/coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/web_contents_coordination_unit_impl.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace resource_coordinator {
 
@@ -63,7 +64,8 @@ void TabSignalGeneratorImpl::OnWebContentsPropertyChanged(
 }
 
 void TabSignalGeneratorImpl::BindToInterface(
-    resource_coordinator::mojom::TabSignalGeneratorRequest request) {
+    resource_coordinator::mojom::TabSignalGeneratorRequest request,
+    const service_manager::BindSourceInfo& source_info) {
   bindings_.AddBinding(this, std::move(request));
 }
 

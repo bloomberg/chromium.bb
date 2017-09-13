@@ -9,6 +9,10 @@
 #include "services/resource_coordinator/public/interfaces/coordination_unit_introspector.mojom.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 
+namespace service_manager {
+struct BindSourceInfo;
+}  // namespace service_manager
+
 namespace resource_coordinator {
 
 class CoordinationUnitIntrospectorImpl
@@ -18,7 +22,8 @@ class CoordinationUnitIntrospectorImpl
   ~CoordinationUnitIntrospectorImpl() override;
 
   void BindToInterface(
-      resource_coordinator::mojom::CoordinationUnitIntrospectorRequest request);
+      resource_coordinator::mojom::CoordinationUnitIntrospectorRequest request,
+      const service_manager::BindSourceInfo& source_info);
 
   // Overridden from mojom::CoordinationUnitIntrospector:
   void GetProcessToURLMap(const GetProcessToURLMapCallback& callback) override;

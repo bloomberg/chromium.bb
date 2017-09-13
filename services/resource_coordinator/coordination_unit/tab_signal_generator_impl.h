@@ -11,6 +11,10 @@
 #include "services/resource_coordinator/coordination_unit/coordination_unit_graph_observer.h"
 #include "services/resource_coordinator/public/interfaces/tab_signal.mojom.h"
 
+namespace service_manager {
+struct BindSourceInfo;
+}  // namespace service_manager
+
 namespace resource_coordinator {
 
 class CoordinationUnitImpl;
@@ -41,7 +45,8 @@ class TabSignalGeneratorImpl : public CoordinationUnitGraphObserver,
       int64_t value) override;
 
   void BindToInterface(
-      resource_coordinator::mojom::TabSignalGeneratorRequest request);
+      resource_coordinator::mojom::TabSignalGeneratorRequest request,
+      const service_manager::BindSourceInfo& source_info);
 
  private:
   mojo::BindingSet<mojom::TabSignalGenerator> bindings_;

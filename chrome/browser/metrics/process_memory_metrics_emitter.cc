@@ -142,7 +142,7 @@ void ProcessMemoryMetricsEmitter::FetchAndEmitProcessMemoryMetrics() {
 
   service_manager::Connector* connector =
       content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(content::mojom::kBrowserServiceName,
+  connector->BindInterface(resource_coordinator::mojom::kServiceName,
                            mojo::MakeRequest(&coordinator_));
 
   // The callback keeps this object alive until the callback is invoked..
