@@ -11,9 +11,8 @@ import "mojo/common/values.mojom";
 // coordination_unit.mojom, and have mappings between the two defined in
 // coordination_unit_struct_traits.h/.cc (see comment in coordination_unit_id.h).
 enum CoordinationUnitType {
-  kWebContents,
   kFrame,
-  kNavigation,
+  kPage,
   kProcess,
 };
 

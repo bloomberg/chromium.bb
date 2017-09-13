@@ -13,9 +13,8 @@ namespace resource_coordinator {
 // coordination_unit_struct_traits.h/.cc
 enum class CoordinationUnitType : uint8_t {
   kInvalidType,
-  kWebContents,
   kFrame,
-  kNavigation,
+  kPage,
   kProcess,
 };
 

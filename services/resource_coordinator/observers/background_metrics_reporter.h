@@ -10,7 +10,7 @@
 #include "base/time/time.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 
-// Tabs can be kept in the background for a long time, metrics show 75th
+// Pages can be kept in the background for a long time, metrics show 75th
 // percentile of time spent in background is 2.5 hours, and the 95th is 24 hour.
 // In order to guide the selection of an appropriate observation window we are
 // proposing using a CUSTOM_TIMES histogram from 1s to 48h, with 100 buckets.

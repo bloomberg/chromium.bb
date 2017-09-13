@@ -16,10 +16,9 @@ namespace resource_coordinator {
 class MockTabSignalGeneratorImpl : public TabSignalGeneratorImpl {
  public:
   // Overridden from TabSignalGeneratorImpl.
-  void OnWebContentsPropertyChanged(
-      const WebContentsCoordinationUnitImpl* coordination_unit,
-      const mojom::PropertyType property_type,
-      int64_t value) override {
+  void OnPagePropertyChanged(const PageCoordinationUnitImpl* coordination_unit,
+                             const mojom::PropertyType property_type,
+                             int64_t value) override {
     if (property_type == mojom::PropertyType::kExpectedTaskQueueingDuration)
       ++eqt_change_count_;
   }
@@ -42,8 +41,8 @@ class TabSignalGeneratorImplTest : public CoordinationUnitImplTestBase {
 
 TEST_F(TabSignalGeneratorImplTest,
        CalculateTabEQTForSingleTabWithMultipleProcesses) {
-  MockSingleTabWithMultipleProcessesCoordinationUnitGraph cu_graph;
-  cu_graph.tab->AddObserver(tab_signal_generator());
+  MockSinglePageWithMultipleProcessesCoordinationUnitGraph cu_graph;
+  cu_graph.page->AddObserver(tab_signal_generator());
 
   cu_graph.process->SetProperty(
       mojom::PropertyType::kExpectedTaskQueueingDuration, 1);
@@ -51,10 +50,10 @@ TEST_F(TabSignalGeneratorImplTest,
       mojom::PropertyType::kExpectedTaskQueueingDuration, 10);
 
   // The |other_process| is not for the main frame so its EQT values does not
-  // propagate to the tab.
+  // propagate to the page.
   EXPECT_EQ(1u, tab_signal_generator()->eqt_change_count());
   int64_t eqt;
-  ASSERT_TRUE(cu_graph.tab->GetProperty(
+  ASSERT_TRUE(cu_graph.page->GetProperty(
       mojom::PropertyType::kExpectedTaskQueueingDuration, &eqt));
   EXPECT_EQ(1, eqt);
 }

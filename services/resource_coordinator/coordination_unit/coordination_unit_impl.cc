@@ -9,8 +9,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
+#include "services/resource_coordinator/coordination_unit/page_coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/process_coordination_unit_impl.h"
-#include "services/resource_coordinator/coordination_unit/web_contents_coordination_unit_impl.h"
 #include "services/resource_coordinator/observers/coordination_unit_graph_observer.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
 
@@ -36,19 +36,17 @@ const FrameCoordinationUnitImpl* CoordinationUnitImpl::ToFrameCoordinationUnit(
 }
 
 // static
-WebContentsCoordinationUnitImpl*
-CoordinationUnitImpl::ToWebContentsCoordinationUnit(
+PageCoordinationUnitImpl* CoordinationUnitImpl::ToPageCoordinationUnit(
     CoordinationUnitImpl* coordination_unit) {
-  DCHECK(coordination_unit->id().type == CoordinationUnitType::kWebContents);
-  return static_cast<WebContentsCoordinationUnitImpl*>(coordination_unit);
+  DCHECK(coordination_unit->id().type == CoordinationUnitType::kPage);
+  return static_cast<PageCoordinationUnitImpl*>(coordination_unit);
 }
 
 // static
-const WebContentsCoordinationUnitImpl*
-CoordinationUnitImpl::ToWebContentsCoordinationUnit(
+const PageCoordinationUnitImpl* CoordinationUnitImpl::ToPageCoordinationUnit(
     const CoordinationUnitImpl* cu) {
-  DCHECK(cu->id().type == CoordinationUnitType::kWebContents);
-  return static_cast<const WebContentsCoordinationUnitImpl*>(cu);
+  DCHECK(cu->id().type == CoordinationUnitType::kPage);
+  return static_cast<const PageCoordinationUnitImpl*>(cu);
 }
 
 // static
@@ -84,8 +82,8 @@ CoordinationUnitImpl* CoordinationUnitImpl::CreateCoordinationUnit(
       new_cu = base::MakeUnique<ProcessCoordinationUnitImpl>(
           id, std::move(service_ref));
       break;
-    case CoordinationUnitType::kWebContents:
-      new_cu = base::MakeUnique<WebContentsCoordinationUnitImpl>(
+    case CoordinationUnitType::kPage:
+      new_cu = base::MakeUnique<PageCoordinationUnitImpl>(
           id, std::move(service_ref));
       break;
     default:

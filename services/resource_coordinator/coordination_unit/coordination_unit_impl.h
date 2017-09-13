@@ -24,7 +24,7 @@ namespace resource_coordinator {
 
 class CoordinationUnitGraphObserver;
 class FrameCoordinationUnitImpl;
-class WebContentsCoordinationUnitImpl;
+class PageCoordinationUnitImpl;
 
 class CoordinationUnitImpl : public mojom::CoordinationUnit {
  public:
@@ -36,9 +36,9 @@ class CoordinationUnitImpl : public mojom::CoordinationUnit {
 
   static const FrameCoordinationUnitImpl* ToFrameCoordinationUnit(
       const CoordinationUnitImpl* coordination_unit);
-  static WebContentsCoordinationUnitImpl* ToWebContentsCoordinationUnit(
+  static PageCoordinationUnitImpl* ToPageCoordinationUnit(
       CoordinationUnitImpl* coordination_unit);
-  static const WebContentsCoordinationUnitImpl* ToWebContentsCoordinationUnit(
+  static const PageCoordinationUnitImpl* ToPageCoordinationUnit(
       const CoordinationUnitImpl* coordination_unit);
 
   static std::vector<CoordinationUnitImpl*> GetCoordinationUnitsOfType(

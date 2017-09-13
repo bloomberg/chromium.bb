@@ -9,7 +9,7 @@
 #include "base/values.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
-#include "services/resource_coordinator/coordination_unit/web_contents_coordination_unit_impl.h"
+#include "services/resource_coordinator/coordination_unit/page_coordination_unit_impl.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace resource_coordinator {
@@ -30,7 +30,7 @@ void TabSignalGeneratorImpl::AddObserver(mojom::TabSignalObserverPtr observer) {
 bool TabSignalGeneratorImpl::ShouldObserve(
     const CoordinationUnitImpl* coordination_unit) {
   auto coordination_unit_type = coordination_unit->id().type;
-  return coordination_unit_type == CoordinationUnitType::kWebContents ||
+  return coordination_unit_type == CoordinationUnitType::kPage ||
          coordination_unit_type == CoordinationUnitType::kFrame;
 }
 
@@ -44,7 +44,7 @@ void TabSignalGeneratorImpl::OnFramePropertyChanged(
       return;
     // TODO(lpy) Combine CPU usage or long task idleness signal.
     for (auto* parent : frame_cu->parents()) {
-      if (parent->id().type != CoordinationUnitType::kWebContents)
+      if (parent->id().type != CoordinationUnitType::kPage)
         continue;
       DISPATCH_TAB_SIGNAL(observers_, OnEventReceived, parent,
                           mojom::TabEvent::kDoneLoading);
@@ -53,13 +53,13 @@ void TabSignalGeneratorImpl::OnFramePropertyChanged(
   }
 }
 
-void TabSignalGeneratorImpl::OnWebContentsPropertyChanged(
-    const WebContentsCoordinationUnitImpl* web_contents_cu,
+void TabSignalGeneratorImpl::OnPagePropertyChanged(
+    const PageCoordinationUnitImpl* page_cu,
     const mojom::PropertyType property_type,
     int64_t value) {
   if (property_type == mojom::PropertyType::kExpectedTaskQueueingDuration) {
-    DISPATCH_TAB_SIGNAL(observers_, OnPropertyChanged, web_contents_cu,
-                        property_type, value);
+    DISPATCH_TAB_SIGNAL(observers_, OnPropertyChanged, page_cu, property_type,
+                        value);
   }
 }
 

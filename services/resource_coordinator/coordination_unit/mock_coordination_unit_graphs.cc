@@ -26,51 +26,51 @@ TestCoordinationUnitWrapper CreateCoordinationUnit(CoordinationUnitType type) {
 
 }  // namespace
 
-MockSingleTabInSingleProcessCoordinationUnitGraph::
-    MockSingleTabInSingleProcessCoordinationUnitGraph()
+MockSinglePageInSingleProcessCoordinationUnitGraph::
+    MockSinglePageInSingleProcessCoordinationUnitGraph()
     : frame(CreateCoordinationUnit(CoordinationUnitType::kFrame)),
       process(CreateCoordinationUnit(CoordinationUnitType::kProcess)),
-      tab(CreateCoordinationUnit(CoordinationUnitType::kWebContents)) {
-  tab->AddChild(frame->id());
+      page(CreateCoordinationUnit(CoordinationUnitType::kPage)) {
+  page->AddChild(frame->id());
   process->AddChild(frame->id());
 }
 
-MockSingleTabInSingleProcessCoordinationUnitGraph::
-    ~MockSingleTabInSingleProcessCoordinationUnitGraph() = default;
+MockSinglePageInSingleProcessCoordinationUnitGraph::
+    ~MockSinglePageInSingleProcessCoordinationUnitGraph() = default;
 
-MockMultipleTabsInSingleProcessCoordinationUnitGraph::
-    MockMultipleTabsInSingleProcessCoordinationUnitGraph()
+MockMultiplePagesInSingleProcessCoordinationUnitGraph::
+    MockMultiplePagesInSingleProcessCoordinationUnitGraph()
     : other_frame(CreateCoordinationUnit(CoordinationUnitType::kFrame)),
-      other_tab(CreateCoordinationUnit(CoordinationUnitType::kWebContents)) {
-  other_tab->AddChild(other_frame->id());
+      other_page(CreateCoordinationUnit(CoordinationUnitType::kPage)) {
+  other_page->AddChild(other_frame->id());
   process->AddChild(other_frame->id());
 }
 
-MockMultipleTabsInSingleProcessCoordinationUnitGraph::
-    ~MockMultipleTabsInSingleProcessCoordinationUnitGraph() = default;
+MockMultiplePagesInSingleProcessCoordinationUnitGraph::
+    ~MockMultiplePagesInSingleProcessCoordinationUnitGraph() = default;
 
-MockSingleTabWithMultipleProcessesCoordinationUnitGraph::
-    MockSingleTabWithMultipleProcessesCoordinationUnitGraph()
+MockSinglePageWithMultipleProcessesCoordinationUnitGraph::
+    MockSinglePageWithMultipleProcessesCoordinationUnitGraph()
     : child_frame(CreateCoordinationUnit(CoordinationUnitType::kFrame)),
       other_process(CreateCoordinationUnit(CoordinationUnitType::kProcess)) {
   frame->AddChild(child_frame->id());
-  tab->AddChild(child_frame->id());
+  page->AddChild(child_frame->id());
   other_process->AddChild(child_frame->id());
 }
 
-MockSingleTabWithMultipleProcessesCoordinationUnitGraph::
-    ~MockSingleTabWithMultipleProcessesCoordinationUnitGraph() = default;
+MockSinglePageWithMultipleProcessesCoordinationUnitGraph::
+    ~MockSinglePageWithMultipleProcessesCoordinationUnitGraph() = default;
 
-MockMultipleTabsWithMultipleProcessesCoordinationUnitGraph::
-    MockMultipleTabsWithMultipleProcessesCoordinationUnitGraph()
+MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph::
+    MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph()
     : child_frame(CreateCoordinationUnit(CoordinationUnitType::kFrame)),
       other_process(CreateCoordinationUnit(CoordinationUnitType::kProcess)) {
   other_frame->AddChild(child_frame->id());
-  other_tab->AddChild(child_frame->id());
+  other_page->AddChild(child_frame->id());
   other_process->AddChild(child_frame->id());
 }
 
-MockMultipleTabsWithMultipleProcessesCoordinationUnitGraph::
-    ~MockMultipleTabsWithMultipleProcessesCoordinationUnitGraph() = default;
+MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph::
+    ~MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph() = default;
 
 }  // namespace resource_coordinator

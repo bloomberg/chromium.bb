@@ -8,7 +8,7 @@
 #include "services/resource_coordinator/coordination_unit/coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_manager.h"
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
-#include "services/resource_coordinator/coordination_unit/web_contents_coordination_unit_impl.h"
+#include "services/resource_coordinator/coordination_unit/page_coordination_unit_impl.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 
@@ -16,7 +16,7 @@ namespace resource_coordinator {
 
 const size_t kDefaultMaxCPUUsageMeasurements = 30u;
 
-// Audio is considered to have started playing if the tab has never
+// Audio is considered to have started playing if the page has never
 // previously played audio, or has been silent for at least one minute.
 const base::TimeDelta kMaxAudioSlientTimeout = base::TimeDelta::FromMinutes(1);
 // Delay the metrics report from GRC to UMA/UKM for 5 minutes from when the main
@@ -37,16 +37,16 @@ const char kTabFromBackgroundedToFirstNonPersistentNotificationCreatedUMA[] =
     "FromBackgroundedToFirstNonPersistentNotificationCreated";
 
 // Gets the number of tabs that are co-resident in all of the render processes
-// associated with a |CoordinationUnitType::kWebContents| coordination unit.
+// associated with a |CoordinationUnitType::kPage| coordination unit.
 size_t GetNumCoresidentTabs(const CoordinationUnitImpl* coordination_unit) {
-  DCHECK_EQ(CoordinationUnitType::kWebContents, coordination_unit->id().type);
+  DCHECK_EQ(CoordinationUnitType::kPage, coordination_unit->id().type);
   std::set<CoordinationUnitImpl*> coresident_tabs;
   for (auto* process_coordination_unit :
        coordination_unit->GetAssociatedCoordinationUnitsOfType(
            CoordinationUnitType::kProcess)) {
     for (auto* tab_coordination_unit :
          process_coordination_unit->GetAssociatedCoordinationUnitsOfType(
-             CoordinationUnitType::kWebContents)) {
+             CoordinationUnitType::kPage)) {
       coresident_tabs.insert(tab_coordination_unit);
     }
   }
@@ -65,12 +65,12 @@ MetricsCollector::~MetricsCollector() = default;
 bool MetricsCollector::ShouldObserve(
     const CoordinationUnitImpl* coordination_unit) {
   return coordination_unit->id().type == CoordinationUnitType::kFrame ||
-         coordination_unit->id().type == CoordinationUnitType::kWebContents;
+         coordination_unit->id().type == CoordinationUnitType::kPage;
 }
 
 void MetricsCollector::OnCoordinationUnitCreated(
     const CoordinationUnitImpl* coordination_unit) {
-  if (coordination_unit->id().type == CoordinationUnitType::kWebContents) {
+  if (coordination_unit->id().type == CoordinationUnitType::kPage) {
     metrics_report_record_map_.emplace(coordination_unit->id(),
                                        MetricsReportRecord());
   }
@@ -80,9 +80,8 @@ void MetricsCollector::OnBeforeCoordinationUnitDestroyed(
     const CoordinationUnitImpl* coordination_unit) {
   if (coordination_unit->id().type == CoordinationUnitType::kFrame) {
     frame_data_map_.erase(coordination_unit->id());
-  } else if (coordination_unit->id().type ==
-             CoordinationUnitType::kWebContents) {
-    web_contents_data_map_.erase(coordination_unit->id());
+  } else if (coordination_unit->id().type == CoordinationUnitType::kPage) {
+    page_data_map_.erase(coordination_unit->id());
     metrics_report_record_map_.erase(coordination_unit->id());
     ukm_cpu_usage_collection_state_map_.erase(coordination_unit->id());
   }
@@ -99,21 +98,18 @@ void MetricsCollector::OnFramePropertyChanged(
       frame_data.last_audible_time = clock_->NowTicks();
       return;
     }
-    auto* web_contents_cu = frame_cu->GetWebContentsCoordinationUnit();
+    auto* page_cu = frame_cu->GetPageCoordinationUnit();
     // Only record metrics while it is backgrounded.
-    if (!web_contents_cu || web_contents_cu->IsVisible() ||
-        !ShouldReportMetrics(web_contents_cu)) {
+    if (!page_cu || page_cu->IsVisible() || !ShouldReportMetrics(page_cu)) {
       return;
     }
-    // Audio is considered to have started playing if the tab has never
+    // Audio is considered to have started playing if the page has never
     // previously played audio, or has been silent for at least one minute.
     auto now = clock_->NowTicks();
     if (frame_data.last_audible_time + kMaxAudioSlientTimeout < now) {
       MetricsReportRecord& record =
-          metrics_report_record_map_.find(web_contents_cu->id())->second;
-      auto duration =
-          now -
-          web_contents_data_map_[web_contents_cu->id()].last_invisible_time;
+          metrics_report_record_map_.find(page_cu->id())->second;
+      auto duration = now - page_data_map_[page_cu->id()].last_invisible_time;
       record.first_audible.OnSignalReceived(
           frame_cu->IsMainFrame(), duration,
           coordination_unit_manager().ukm_recorder());
@@ -121,31 +117,29 @@ void MetricsCollector::OnFramePropertyChanged(
   }
 }
 
-void MetricsCollector::OnWebContentsPropertyChanged(
-    const WebContentsCoordinationUnitImpl* web_contents_cu,
+void MetricsCollector::OnPagePropertyChanged(
+    const PageCoordinationUnitImpl* page_cu,
     const mojom::PropertyType property_type,
     int64_t value) {
-  const auto web_contents_cu_id = web_contents_cu->id();
+  const auto page_cu_id = page_cu->id();
   if (property_type == mojom::PropertyType::kVisible) {
     if (value) {
-      // The web contents becomes visible again, clear all record in order to
-      // report metrics when web contents becomes invisible next time.
-      ResetMetricsReportRecord(web_contents_cu_id);
+      // The page becomes visible again, clear all record in order to
+      // report metrics when page becomes invisible next time.
+      ResetMetricsReportRecord(page_cu_id);
       return;
     }
-    web_contents_data_map_[web_contents_cu_id].last_invisible_time =
-        clock_->NowTicks();
+    page_data_map_[page_cu_id].last_invisible_time = clock_->NowTicks();
   } else if (property_type == mojom::PropertyType::kCPUUsage) {
-    if (IsCollectingCPUUsageForUkm(web_contents_cu_id)) {
-      RecordCPUUsageForUkm(web_contents_cu_id,
-                           static_cast<double>(value) / 1000,
-                           GetNumCoresidentTabs(web_contents_cu));
+    if (IsCollectingCPUUsageForUkm(page_cu_id)) {
+      RecordCPUUsageForUkm(page_cu_id, static_cast<double>(value) / 1000,
+                           GetNumCoresidentTabs(page_cu));
     }
   } else if (property_type == mojom::PropertyType::kUKMSourceId) {
     ukm::SourceId ukm_source_id = value;
-    UpdateUkmSourceIdForWebContents(web_contents_cu_id, ukm_source_id);
+    UpdateUkmSourceIdForPage(page_cu_id, ukm_source_id);
     MetricsReportRecord& record =
-        metrics_report_record_map_.find(web_contents_cu_id)->second;
+        metrics_report_record_map_.find(page_cu_id)->second;
     record.UpdateUKMSourceID(ukm_source_id);
   }
 }
@@ -154,91 +148,84 @@ void MetricsCollector::OnFrameEventReceived(
     const FrameCoordinationUnitImpl* frame_cu,
     const mojom::Event event) {
   if (event == mojom::Event::kAlertFired) {
-    auto* web_contents_cu = frame_cu->GetWebContentsCoordinationUnit();
+    auto* page_cu = frame_cu->GetPageCoordinationUnit();
     // Only record metrics while it is backgrounded.
-    if (!web_contents_cu || web_contents_cu->IsVisible() ||
-        !ShouldReportMetrics(web_contents_cu)) {
+    if (!page_cu || page_cu->IsVisible() || !ShouldReportMetrics(page_cu)) {
       return;
     }
     auto duration =
-        clock_->NowTicks() -
-        web_contents_data_map_[web_contents_cu->id()].last_invisible_time;
+        clock_->NowTicks() - page_data_map_[page_cu->id()].last_invisible_time;
     MetricsReportRecord& record =
-        metrics_report_record_map_.find(web_contents_cu->id())->second;
+        metrics_report_record_map_.find(page_cu->id())->second;
     record.first_alert_fired.OnSignalReceived(
         frame_cu->IsMainFrame(), duration,
         coordination_unit_manager().ukm_recorder());
   } else if (event == mojom::Event::kNonPersistentNotificationCreated) {
-    auto* web_contents_cu = frame_cu->GetWebContentsCoordinationUnit();
+    auto* page_cu = frame_cu->GetPageCoordinationUnit();
     // Only record metrics while it is backgrounded.
-    if (!web_contents_cu || web_contents_cu->IsVisible() ||
-        !ShouldReportMetrics(web_contents_cu)) {
+    if (!page_cu || page_cu->IsVisible() || !ShouldReportMetrics(page_cu)) {
       return;
     }
     auto duration =
-        clock_->NowTicks() -
-        web_contents_data_map_[web_contents_cu->id()].last_invisible_time;
+        clock_->NowTicks() - page_data_map_[page_cu->id()].last_invisible_time;
     MetricsReportRecord& record =
-        metrics_report_record_map_.find(web_contents_cu->id())->second;
+        metrics_report_record_map_.find(page_cu->id())->second;
     record.first_non_persistent_notification_created.OnSignalReceived(
         frame_cu->IsMainFrame(), duration,
         coordination_unit_manager().ukm_recorder());
   }
 }
 
-void MetricsCollector::OnWebContentsEventReceived(
-    const WebContentsCoordinationUnitImpl* web_contents_cu,
+void MetricsCollector::OnPageEventReceived(
+    const PageCoordinationUnitImpl* page_cu,
     const mojom::Event event) {
   if (event == mojom::Event::kTitleUpdated) {
     // Only record metrics while it is backgrounded.
-    if (web_contents_cu->IsVisible() || !ShouldReportMetrics(web_contents_cu))
+    if (page_cu->IsVisible() || !ShouldReportMetrics(page_cu))
       return;
     auto duration =
-        clock_->NowTicks() -
-        web_contents_data_map_[web_contents_cu->id()].last_invisible_time;
+        clock_->NowTicks() - page_data_map_[page_cu->id()].last_invisible_time;
     MetricsReportRecord& record =
-        metrics_report_record_map_.find(web_contents_cu->id())->second;
+        metrics_report_record_map_.find(page_cu->id())->second;
     record.first_title_updated.OnSignalReceived(
         true, duration, coordination_unit_manager().ukm_recorder());
   } else if (event == mojom::Event::kFaviconUpdated) {
     // Only record metrics while it is backgrounded.
-    if (web_contents_cu->IsVisible() || !ShouldReportMetrics(web_contents_cu))
+    if (page_cu->IsVisible() || !ShouldReportMetrics(page_cu))
       return;
     auto duration =
-        clock_->NowTicks() -
-        web_contents_data_map_[web_contents_cu->id()].last_invisible_time;
+        clock_->NowTicks() - page_data_map_[page_cu->id()].last_invisible_time;
     MetricsReportRecord& record =
-        metrics_report_record_map_.find(web_contents_cu->id())->second;
+        metrics_report_record_map_.find(page_cu->id())->second;
     record.first_favicon_updated.OnSignalReceived(
         true, duration, coordination_unit_manager().ukm_recorder());
   } else if (event == mojom::Event::kNavigationCommitted) {
-    web_contents_data_map_[web_contents_cu->id()].navigation_finished_time =
-        clock_->NowTicks();
+    page_data_map_[page_cu->id()].navigation_finished_time = clock_->NowTicks();
   }
 }
 
 bool MetricsCollector::ShouldReportMetrics(
-    const WebContentsCoordinationUnitImpl* web_contents_cu) {
-  return clock_->NowTicks() - web_contents_data_map_[web_contents_cu->id()]
-                                  .navigation_finished_time >
+    const PageCoordinationUnitImpl* page_cu) {
+  return clock_->NowTicks() -
+             page_data_map_[page_cu->id()].navigation_finished_time >
          kMetricsReportDelayTimeout;
 }
 
 bool MetricsCollector::IsCollectingCPUUsageForUkm(
-    const CoordinationUnitID& web_contents_cu_id) {
+    const CoordinationUnitID& page_cu_id) {
   UkmCPUUsageCollectionState& state =
-      ukm_cpu_usage_collection_state_map_[web_contents_cu_id];
+      ukm_cpu_usage_collection_state_map_[page_cu_id];
 
   return state.ukm_source_id > -1 &&
          state.num_cpu_usage_measurements < max_ukm_cpu_usage_measurements_;
 }
 
 void MetricsCollector::RecordCPUUsageForUkm(
-    const CoordinationUnitID& web_contents_cu_id,
+    const CoordinationUnitID& page_cu_id,
     double cpu_usage,
     size_t num_coresident_tabs) {
   UkmCPUUsageCollectionState& state =
-      ukm_cpu_usage_collection_state_map_[web_contents_cu_id];
+      ukm_cpu_usage_collection_state_map_[page_cu_id];
 
   ukm::builders::CPUUsageMeasurement(state.ukm_source_id)
       .SetTick(state.num_cpu_usage_measurements++)
@@ -247,11 +234,11 @@ void MetricsCollector::RecordCPUUsageForUkm(
       .Record(coordination_unit_manager().ukm_recorder());
 }
 
-void MetricsCollector::UpdateUkmSourceIdForWebContents(
-    const CoordinationUnitID& web_contents_cu_id,
+void MetricsCollector::UpdateUkmSourceIdForPage(
+    const CoordinationUnitID& page_cu_id,
     ukm::SourceId ukm_source_id) {
   UkmCPUUsageCollectionState& state =
-      ukm_cpu_usage_collection_state_map_[web_contents_cu_id];
+      ukm_cpu_usage_collection_state_map_[page_cu_id];
 
   state.ukm_source_id = ukm_source_id;
   // Updating the |ukm_source_id| restarts CPU usage collection.
