@@ -1,0 +1,38 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/debugger-test.js"></script>
+<script src="../../inspector/isolated-filesystem-test.js"></script>
+<script src="../../inspector/persistence/automapping-test.js"></script>
+<script>
+
+async function test() {
+  var foo_js = {content: 'console.log(\'foo.js!\');', time: null};
+
+  var fs = new BindingsTestRunner.TestFileSystem('file:///var/www');
+  BindingsTestRunner.addFiles(fs, {
+    'scripts/foo.js': foo_js,
+  });
+  await new Promise(fulfill => fs.reportCreated(fulfill));
+  TestRunner.markStep('Open foo.js editor');
+  var fileUISourceCode = await TestRunner.waitForUISourceCode('foo.js', Workspace.projectTypes.FileSystem);
+  await dumpEditorMimeType();
+
+  TestRunner.markStep('Rename foo.js => foo.css');
+  await fileUISourceCode.rename('foo.css');
+  await dumpEditorMimeType();
+
+  TestRunner.completeTest();
+
+  async function dumpEditorMimeType() {
+    var sourceFrame = await SourcesTestRunner.showUISourceCodePromise(fileUISourceCode);
+    var textEditor = sourceFrame.textEditor;
+    TestRunner.addResult('Text editor mimeType: ' + textEditor.mimeType());
+  }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Verify that text editor's mimeType gets changed as UISourceCode gets renamed.</p>
+</body>
+</html>

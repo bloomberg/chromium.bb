@@ -633,7 +633,7 @@ crbug.com/520188 [ Win ] virtual/mojo-loading/http/tests/local/fileapi/file-last
 crbug.com/520611 [ Debug ] fast/filesystem/workers/file-writer-events-shared-worker.html [ Failure Pass ]
 crbug.com/520194 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-overridesexpires.html [ Failure Pass ]
 
-crbug.com/749251 [ Mac ] http/tests/inspector/application-panel/resources-panel-websql.html [ Failure Pass ]
+crbug.com/749251 [ Mac ] http/tests/devtools/application-panel/resources-panel-websql.html [ Failure Pass ]
 
 crbug.com/761798 [ Mac ] inspector-protocol/emulation/device-emulation-desktop.js [ Failure ]
 
@@ -722,14 +722,14 @@ crbug.com/543110 [ Mac ] fast/text/international/text-shaping-arabic.html [ Fail
 
 crbug.com/731731 inspector-protocol/layers/paint-profiler-load-empty.js [ Failure Pass ]
 
-crbug.com/734744 http/tests/inspector/indexeddb/resources-panel.html [ Pass Failure Timeout ]
-crbug.com/734744 virtual/mojo-loading/http/tests/inspector/indexeddb/resources-panel.html [ Pass Failure Timeout ]
+crbug.com/734744 http/tests/devtools/indexeddb/resources-panel.html [ Pass Failure Timeout ]
+crbug.com/734744 virtual/mojo-loading/http/tests/devtools/indexeddb/resources-panel.html [ Pass Failure Timeout ]
 
-crbug.com/734793 http/tests/inspector/indexeddb/database-names.html [ Pass Failure Timeout ]
-crbug.com/734793 virtual/mojo-loading/http/tests/inspector/indexeddb/database-names.html [ Pass Failure Timeout ]
+crbug.com/734793 http/tests/devtools/indexeddb/database-names.html [ Pass Failure Timeout ]
+crbug.com/734793 virtual/mojo-loading/http/tests/devtools/indexeddb/database-names.html [ Pass Failure Timeout ]
 
-crbug.com/735259 http/tests/inspector/indexeddb/upgrade-events.html [ Pass Failure ]
-crbug.com/735259 virtual/mojo-loading/http/tests/inspector/indexeddb/upgrade-events.html [ Pass Failure ]
+crbug.com/735259 http/tests/devtools/indexeddb/upgrade-events.html [ Pass Failure ]
+crbug.com/735259 virtual/mojo-loading/http/tests/devtools/indexeddb/upgrade-events.html [ Pass Failure ]
 
 # Will be re-enabled and rebaselined once we remove the '--enable-file-cookies' flag.
 crbug.com/470482 fast/cookies/local-file-can-set-cookies.html [ Skip ]
@@ -780,8 +780,8 @@ crbug.com/552494 scrollbars/overflow-scrollbar-combinations.html [ Pass Failure 
 crbug.com/552494 virtual/prefer_compositing_to_lcd_text/scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]
 crbug.com/552494 virtual/rootlayerscrolls/scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]
 
-crbug.com/659456 http/tests/inspector/persistence/automapping-sourcemap.html [ Pass Failure ]
-crbug.com/659456 virtual/mojo-loading/http/tests/inspector/persistence/automapping-sourcemap.html [ Pass Failure ]
+crbug.com/659456 http/tests/devtools/persistence/automapping-sourcemap.html [ Pass Failure ]
+crbug.com/659456 virtual/mojo-loading/http/tests/devtools/persistence/automapping-sourcemap.html [ Pass Failure ]
 
 crbug.com/652964 [ Linux Win ] fast/text/hyphens/hyphen-min-preferred-width-mock.html [ Skip ]
 crbug.com/652964 [ Linux Win ] fast/text/hyphens/hyphens-align.html [ Skip ]
@@ -1180,8 +1180,8 @@ crbug.com/665577 [ Linux Win ] virtual/threaded/fast/scroll-behavior/smooth-scro
 crbug.com/665577 [ Linux Win ] virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll-interrupted.html [ Pass Failure ]
 crbug.com/665577 [ Linux Win ] virtual/threaded/fast/scroll-behavior/smooth-scroll/track-scroll.html [ Pass Failure ]
 
-crbug.com/599670 [ Win Linux ] http/tests/inspector/resource-parameters-ipv6.html [ Failure Pass ]
-crbug.com/599670 [ Win Linux ] virtual/mojo-loading/http/tests/inspector/resource-parameters-ipv6.html [ Failure Pass ]
+crbug.com/599670 [ Win Linux ] http/tests/devtools/resource-parameters-ipv6.html [ Failure Pass ]
+crbug.com/599670 [ Win Linux ] virtual/mojo-loading/http/tests/devtools/resource-parameters-ipv6.html [ Failure Pass ]
 crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html [ Failure ]
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-lr.html [ Failure ]
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-rl.html [ Failure ]
@@ -1487,8 +1487,8 @@ crbug.com/543369 [ Win Mac Linux ] fast/forms/select-popup/popup-menu-appearance
 
 crbug.com/546215 [ Android ] fast/inline-block/overflow-clip.html [ Failure ]
 
-crbug.com/548765 http/tests/inspector/console-fetch-logging.html [ Failure Pass ]
-crbug.com/548765 virtual/mojo-loading/http/tests/inspector/console-fetch-logging.html [ Failure Pass ]
+crbug.com/548765 http/tests/devtools/console-fetch-logging.html [ Failure Pass ]
+crbug.com/548765 virtual/mojo-loading/http/tests/devtools/console-fetch-logging.html [ Failure Pass ]
 
 crbug.com/564109 [ Win ] external/wpt/css-fonts/font-display/font-display.html [ Failure Pass Timeout ]
 crbug.com/564109 [ Win ]  http/tests/webfont/font-display-intervention.html [ Pass Failure Timeout ]
@@ -1706,23 +1706,23 @@ crbug.com/724251 virtual/threaded/animations/svg-attribute-interpolation/svg-sta
 
 # These tests have machine-dependent names in the output (e.g. ... debugger:///VM37 ...)
 # # which makes them have different results on different machines.
-crbug.com/763718 http/tests/inspector/bindings/livelocation-main-frame-navigated.html [ Pass Failure ]
-crbug.com/763718 virtual/mojo-loading/http/tests/inspector/bindings/livelocation-main-frame-navigated.html [ Pass Failure ]
+crbug.com/763718 http/tests/devtools/bindings/livelocation-main-frame-navigated.html [ Pass Failure ]
+crbug.com/763718 virtual/mojo-loading/http/tests/devtools/bindings/livelocation-main-frame-navigated.html [ Pass Failure ]
 
 # Untriaged failures after https://crrev.com/c/543695/.
 # These need to be updated but appear not to be related to that change.
-crbug.com/626703 http/tests/inspector/indexeddb/database-refresh-view.html [ Pass Failure ]
-crbug.com/626703 virtual/mojo-loading/http/tests/inspector/indexeddb/database-refresh-view.html [ Pass Failure ]
+crbug.com/626703 http/tests/devtools/indexeddb/database-refresh-view.html [ Pass Failure ]
+crbug.com/626703 virtual/mojo-loading/http/tests/devtools/indexeddb/database-refresh-view.html [ Pass Failure ]
 crbug.com/626703 http/tests/devtools/network/network-filters.html [ Pass Failure ]
 crbug.com/626703 virtual/mojo-loading/http/tests/devtools/network/network-filters.html [ Pass Failure ]
-crbug.com/626703 http/tests/inspector/application-panel/resources-panel-selection-on-reload.html [ Pass Failure ]
-crbug.com/626703 virtual/mojo-loading/http/tests/inspector/application-panel/resources-panel-selection-on-reload.html [ Pass Failure ]
-crbug.com/626703 http/tests/inspector/extensions/extensions-sidebar.html [ Pass Failure ]
-crbug.com/626703 virtual/mojo-loading/http/tests/inspector/extensions/extensions-sidebar.html [ Pass Failure ]
+crbug.com/626703 http/tests/devtools/application-panel/resources-panel-selection-on-reload.html [ Pass Failure ]
+crbug.com/626703 virtual/mojo-loading/http/tests/devtools/application-panel/resources-panel-selection-on-reload.html [ Pass Failure ]
+crbug.com/626703 http/tests/devtools/extensions/extensions-sidebar.html [ Pass Failure ]
+crbug.com/626703 virtual/mojo-loading/http/tests/devtools/extensions/extensions-sidebar.html [ Pass Failure ]
 crbug.com/626703 http/tests/devtools/network/network-columns-visible.html [ Pass Failure ]
 crbug.com/626703 virtual/mojo-loading/http/tests/devtools/network/network-columns-visible.html [ Pass Failure ]
-crbug.com/626703 http/tests/inspector/persistence/persistence-tabbed-editor-opens-filesystem-uisourcecode.html [ Pass Failure ]
-crbug.com/626703 virtual/mojo-loading/http/tests/inspector/persistence/persistence-tabbed-editor-opens-filesystem-uisourcecode.html [ Pass Failure ]
+crbug.com/626703 http/tests/devtools/persistence/persistence-tabbed-editor-opens-filesystem-uisourcecode.html [ Pass Failure ]
+crbug.com/626703 virtual/mojo-loading/http/tests/devtools/persistence/persistence-tabbed-editor-opens-filesystem-uisourcecode.html [ Pass Failure ]
 crbug.com/626703 virtual/threaded/transitions/transition-end-event-multiple-03.html [ Pass Failure ]
 crbug.com/751952 external/wpt/editing/run/forwarddelete.html [ Failure Pass Timeout ]
 crbug.com/751952 fast/text/international/complex-text-rectangle.html [ Timeout Pass ]
@@ -2334,8 +2334,8 @@ crbug.com/664873 virtual/mojo-loading/http/tests/xmlhttprequest/small-chunks-res
 
 crbug.com/660295 http/tests/devtools/elements/elements-panel-restore-selection-when-node-comes-later.html [ Pass Failure ]
 crbug.com/667560 virtual/mojo-loading/http/tests/devtools/elements/elements-panel-restore-selection-when-node-comes-later.html [ Pass Failure ]
-crbug.com/735245 http/tests/inspector/application-panel/storage-view-reports-quota.html [ Pass Timeout Failure ]
-crbug.com/735245 virtual/mojo-loading/http/tests/inspector/application-panel/storage-view-reports-quota.html [ Pass Timeout Failure ]
+crbug.com/735245 http/tests/devtools/application-panel/storage-view-reports-quota.html [ Pass Timeout Failure ]
+crbug.com/735245 virtual/mojo-loading/http/tests/devtools/application-panel/storage-view-reports-quota.html [ Pass Timeout Failure ]
 
 # [css-grid]
 crbug.com/659610 fast/css-grid-layout/grid-baseline.html [ Failure ]
@@ -2383,8 +2383,8 @@ crbug.com/657646 [ Win ] fast/text/font-stretch-variant.html [ Failure Pass ]
 crbug.com/657646 [ Win ] fast/text/drawBidiText.html [ Failure Pass ]
 crbug.com/657646 [ Win ] fast/text/font-features/caps-native-synthesis.html [ Failure Pass ]
 
-crbug.com/664450 http/tests/inspector/console/console-on-animation-worklet.html [ Skip ]
-crbug.com/664450 virtual/mojo-loading/http/tests/inspector/console/console-on-animation-worklet.html [ Skip ]
+crbug.com/664450 http/tests/devtools/console/console-on-animation-worklet.html [ Skip ]
+crbug.com/664450 virtual/mojo-loading/http/tests/devtools/console/console-on-animation-worklet.html [ Skip ]
 
 # Fail when run with --enable-wptserve due to data: URLs treated as cross-origin: (crbug.com/508730)
 crbug.com/508730 external/wpt/dom/nodes/Document-contentType/contentType/contenttype_datauri_02.html [ Failure ]
@@ -2719,8 +2719,8 @@ crbug.com/678499 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/
 crbug.com/680050 http/tests/devtools/sources/debugger-ui/watch-expressions-panel-switch.html [ Pass Timeout ]
 crbug.com/667560 virtual/mojo-loading/http/tests/devtools/sources/debugger-ui/watch-expressions-panel-switch.html [ Pass Timeout ]
 
-crbug.com/747751 http/tests/inspector/application-panel/resources-panel-resource-preview.html [ Failure Pass ]
-crbug.com/747751 virtual/mojo-loading/http/tests/inspector/application-panel/resources-panel-resource-preview.html [ Failure Pass ]
+crbug.com/747751 http/tests/devtools/application-panel/resources-panel-resource-preview.html [ Failure Pass ]
+crbug.com/747751 virtual/mojo-loading/http/tests/devtools/application-panel/resources-panel-resource-preview.html [ Failure Pass ]
 
 crbug.com/689781 external/wpt/media-source/mediasource-duration.html [ Failure Pass ]
 
@@ -2784,8 +2784,8 @@ crbug.com/698520 external/wpt/preload/fetch-destination.https.html [ Failure Pas
 
 # Sheriff failures 2017-03-10
 crbug.com/741210 [ Mac ] inspector-protocol/emulation/device-emulation-restore.js [ Failure ]
-crbug.com/700374 [ Win ] virtual/mojo-loading/http/tests/inspector/workers-on-navigation.html [ Failure Pass ]
-crbug.com/700374 [ Win ] http/tests/inspector/workers-on-navigation.html [ Failure Pass ]
+crbug.com/700374 [ Win ] virtual/mojo-loading/http/tests/devtools/workers-on-navigation.html [ Failure Pass ]
+crbug.com/700374 [ Win ] http/tests/devtools/workers-on-navigation.html [ Failure Pass ]
 
 # Sheriff failures 2017-03-21
 crbug.com/703518 http/tests/devtools/tracing/worker-js-frames.html [ Failure Pass ]
@@ -2893,8 +2893,8 @@ crbug.com/732103 [ Mac ] virtual/mojo-loading/http/tests/shapedetection/shapedet
 # Sheriff failures 2017-06-14
 crbug.com/733357 [ Win Mac ] http/tests/devtools/elements/styles-4/styles-history.html [ Failure Pass ]
 crbug.com/667560 [ Win Mac ] virtual/mojo-loading/http/tests/devtools/elements/styles-4/styles-history.html [ Failure Pass ]
-crbug.com/733448 http/tests/inspector/extensions/extensions-network.html [ Failure Pass ]
-crbug.com/733448 virtual/mojo-loading/http/tests/inspector/extensions/extensions-network.html [ Failure Pass ]
+crbug.com/733448 http/tests/devtools/extensions/extensions-network.html [ Failure Pass ]
+crbug.com/733448 virtual/mojo-loading/http/tests/devtools/extensions/extensions-network.html [ Failure Pass ]
 
 # Sheriff failures 2017-06-23
 crbug.com/736548 [ Mac ] css2.1/t040304-c64-uri-00-a-g.html [ Failure Pass ]
@@ -3067,8 +3067,8 @@ crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/sources/debugger-paus
 crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/sources/debugger-ui/function-generator-details.html [ NeedsManualRebaseline ]
 crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/sources/debugger-ui/watch-expressions-preserve-expansion.html [ NeedsManualRebaseline ]
 crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/sources/debugger/properties-special.html [ NeedsManualRebaseline ]
-crbug.com/v8/4958 virtual/mojo-loading/http/tests/inspector/persistence/automapping-sourcemap-nameclash.html [ NeedsManualRebaseline ]
-crbug.com/v8/4958 http/tests/inspector/persistence/automapping-sourcemap-nameclash.html [ NeedsManualRebaseline ]
+crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/persistence/automapping-sourcemap-nameclash.html [ NeedsManualRebaseline ]
+crbug.com/v8/4958 http/tests/devtools/persistence/automapping-sourcemap-nameclash.html [ NeedsManualRebaseline ]
 crbug.com/v8/4958 inspector-protocol/debugger/domdebugger-getEventListeners.js [ NeedsManualRebaseline ]
 crbug.com/v8/4958 http/tests/devtools/console/console-eval-scoped.js [ NeedsManualRebaseline ]
 crbug.com/v8/4958 http/tests/devtools/console/console-functions.html [ NeedsManualRebaseline ]
@@ -3502,7 +3502,7 @@ crbug.com/757165 [ Win ] fast/spatial-navigation/snav-zero-margin-content.html [
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-z-index.html [ Pass Failure Timeout Crash ]
 crbug.com/757165 [ Win ] http/tests/devtools/console/console-filter-test.js [ Skip ]
 crbug.com/757165 [ Win ] http/tests/devtools/console/console-links-in-errors-with-trace.js [ Skip ]
-crbug.com/757165 [ Win ] http/tests/inspector/extensions/extensions-panel.html [ Skip ]
+crbug.com/757165 [ Win ] http/tests/devtools/extensions/extensions-panel.html [ Skip ]
 crbug.com/757165 [ Win ] http/tests/devtools/sources/ui-source-code-metadata.html [ Skip ]
 crbug.com/757165 [ Win ] http/tests/misc/client-hints-accept-meta-preloader.html [ Skip ]
 crbug.com/757165 [ Win ] inspector-protocol/debugger/debugger-evaluate-in-worker-while-pause-in-page.js [ Skip ]
@@ -3513,7 +3513,7 @@ crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-filter-modified-save-res
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-filter-modified.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/mojo-loading/http/tests/devtools/console/console-filter-test.js [ Skip ]
 crbug.com/757165 [ Win ] virtual/mojo-loading/http/tests/devtools/console/console-links-in-errors-with-trace.js [ Skip ]
-crbug.com/757165 [ Win ] virtual/mojo-loading/http/tests/inspector/extensions/extensions-panel.html [ Skip ]
+crbug.com/757165 [ Win ] virtual/mojo-loading/http/tests/devtools/extensions/extensions-panel.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/threaded/animations/svg/animated-filter-svg-element.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/wheelscrolllatching/fast/compositor-wheel-scroll-latching/touchpad-scroll-impl-to-main.html [ Skip ]
 crbug.com/626703 [ Win Debug ] external/wpt/encoding/legacy-mb-korean/euc-kr/euckr-encode-href-errors-han.html [ Skip ]

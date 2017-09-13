@@ -1,0 +1,12 @@
+Verify that dirty uiSourceCodes are not bound.
+
+
+Running: waitForUISourceCodes
+
+Running: addFileSystemMapping
+Failed to create binding: {
+       network: http://127.0.0.1:8000/devtools/persistence/resources/foo.js
+    fileSystem: file:///var/www/devtools/persistence/resources/foo.js
+    exactMatch: false
+}
+

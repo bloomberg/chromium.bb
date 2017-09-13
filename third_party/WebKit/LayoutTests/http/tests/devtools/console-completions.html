@@ -1,0 +1,55 @@
+<html>
+<head>
+<script src="../inspector/console-test.js"></script>
+<script src="../inspector/inspector-test.js"></script>
+<script>
+
+function A() {
+    this.instanceMember = 1;
+    this.member1 = 1;
+}
+
+A.prototype.aMember = 1;
+A.prototype.shadowedMember = 0;
+A.prototype.__proto__ = null;
+
+function B() {
+    A.call(this);
+}
+
+B.prototype.bMember = 1;
+B.prototype.ePriorityMember = 2;
+B.prototype.shadowedMember = 1;
+B.prototype.__proto__ = A.prototype;
+
+function C() {
+    B.call(this);
+}
+
+C.prototype.cMember = 1;
+C.prototype.EPriorityMember = 2;
+C.prototype.shadowedMember = 2;
+C.prototype.__proto__ = B.prototype;
+
+var objectC = new C();
+
+function test() {
+  ObjectUI.JavaScriptAutocomplete.completionsForExpression('objectC.', 'e').then(checkCompletions.bind(this));
+  function checkCompletions(completions) {
+    TestRunner.addResult('Completions:');
+    for (var completion of completions)
+      TestRunner.addObject(completion);
+    TestRunner.completeTest();
+  }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests completions prototype chain.
+</p>
+
+</body>
+</html>

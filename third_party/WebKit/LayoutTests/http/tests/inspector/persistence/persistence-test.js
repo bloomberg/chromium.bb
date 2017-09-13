@@ -33,7 +33,7 @@ InspectorTest.waitForBinding = function(fileName)
 
 InspectorTest.addFooJSFile = function(fs)
 {
-    return fs.root.mkdir("inspector").mkdir("persistence").mkdir("resources").addFile("foo.js", "\n\nwindow.foo = ()=>'foo';");
+    return fs.root.mkdir("devtools").mkdir("persistence").mkdir("resources").addFile("foo.js", "\n\nwindow.foo = ()=>'foo';");
 }
 
 InspectorTest.forceUseDefaultMapping = function() {

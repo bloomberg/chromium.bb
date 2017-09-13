@@ -1,0 +1,34 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/bindings/bindings-test.js"></script>
+
+<script>
+
+async function test() {
+  var sourcesNavigator = new Sources.SourcesNavigatorView();
+  sourcesNavigator.show(UI.inspectorView.element);
+
+  TestRunner.markStep('dumpInitialNavigator');
+  SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
+
+  TestRunner.markStep('attachFrame');
+  await BindingsTestRunner.attachFrame('frame', './resources/magic-frame.html');
+  SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
+
+  TestRunner.markStep('navigateFrame');
+  await BindingsTestRunner.navigateFrame('frame', './resource/empty-frame.html');
+  SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
+
+  TestRunner.completeTest();
+}
+
+</script>
+
+</head>
+<body onload="runTest()">
+<p>
+Verify that navigator is updated as frame gets navigated.
+</p>
+</body>
+</html>

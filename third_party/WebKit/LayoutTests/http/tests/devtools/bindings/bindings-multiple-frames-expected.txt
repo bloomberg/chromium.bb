@@ -1,0 +1,82 @@
+Verify that UISourceCodes are removed as iframes are getting detached.
+
+
+Running: initialWorkspace
+Removed: 0 uiSourceCodes
+Workspace: 7 uiSourceCodes.
+    debugger:///VM[XXX] bindings-multiple-frames.html
+    debugger:///VM[XXX] bindings-multiple-frames.html
+    debugger:///VM[XXX] bindings-test.js
+    debugger:///VM[XXX] inspector-test.js
+    http://127.0.0.1:8000/devtools/bindings/bindings-multiple-frames.html
+    http://127.0.0.1:8000/inspector/bindings/bindings-test.js
+    http://127.0.0.1:8000/inspector/inspector-test.js
+
+Running: createIframes
+Removed: 0 uiSourceCodes
+Workspace: 17 uiSourceCodes.
+    debugger:///VM[XXX] bindings-multiple-frames.html
+    debugger:///VM[XXX] bindings-multiple-frames.html
+    debugger:///VM[XXX] bindings-test.js
+    debugger:///VM[XXX] inspector-test.js
+[+] debugger:///VM[XXX] magic-script.js
+[+] debugger:///VM[XXX] magic-script.js
+[+] debugger:///VM[XXX] _test_create-iframe1.js
+[+] debugger:///VM[XXX] _test_create-iframe2.js
+    http://127.0.0.1:8000/devtools/bindings/bindings-multiple-frames.html
+[+] http://127.0.0.1:8000/devtools/bindings/resources/magic-frame.html
+[+] http://127.0.0.1:8000/devtools/bindings/resources/magic-script.js
+[+] http://127.0.0.1:8000/devtools/bindings/resources/magic-script.js
+[+] http://127.0.0.1:8000/devtools/bindings/resources/magic-style.css
+    http://127.0.0.1:8000/inspector/bindings/bindings-test.js
+    http://127.0.0.1:8000/inspector/inspector-test.js
+[+] _test_create-iframe1.js
+[+] _test_create-iframe2.js
+
+Running: detachFrame1
+Removed: 1 uiSourceCodes
+[-] http://127.0.0.1:8000/devtools/bindings/resources/magic-script.js
+Workspace: 18 uiSourceCodes.
+    debugger:///VM[XXX] bindings-multiple-frames.html
+    debugger:///VM[XXX] bindings-multiple-frames.html
+    debugger:///VM[XXX] bindings-test.js
+    debugger:///VM[XXX] inspector-test.js
+    debugger:///VM[XXX] magic-script.js
+    debugger:///VM[XXX] magic-script.js
+    debugger:///VM[XXX] _test_create-iframe1.js
+    debugger:///VM[XXX] _test_create-iframe2.js
+[+] debugger:///VM[XXX] _test_detachFrame1.js
+    http://127.0.0.1:8000/devtools/bindings/bindings-multiple-frames.html
+    http://127.0.0.1:8000/devtools/bindings/resources/magic-frame.html
+    http://127.0.0.1:8000/devtools/bindings/resources/magic-script.js
+    http://127.0.0.1:8000/devtools/bindings/resources/magic-style.css
+    http://127.0.0.1:8000/inspector/bindings/bindings-test.js
+    http://127.0.0.1:8000/inspector/inspector-test.js
+    _test_create-iframe1.js
+    _test_create-iframe2.js
+[+] _test_detachFrame1.js
+
+Running: detachFrame2
+Removed: 3 uiSourceCodes
+[-] http://127.0.0.1:8000/devtools/bindings/resources/magic-frame.html
+[-] http://127.0.0.1:8000/devtools/bindings/resources/magic-script.js
+[-] http://127.0.0.1:8000/devtools/bindings/resources/magic-style.css
+Workspace: 17 uiSourceCodes.
+    debugger:///VM[XXX] bindings-multiple-frames.html
+    debugger:///VM[XXX] bindings-multiple-frames.html
+    debugger:///VM[XXX] bindings-test.js
+    debugger:///VM[XXX] inspector-test.js
+    debugger:///VM[XXX] magic-script.js
+    debugger:///VM[XXX] magic-script.js
+    debugger:///VM[XXX] _test_create-iframe1.js
+    debugger:///VM[XXX] _test_create-iframe2.js
+    debugger:///VM[XXX] _test_detachFrame1.js
+[+] debugger:///VM[XXX] _test_detachFrame2.js
+    http://127.0.0.1:8000/devtools/bindings/bindings-multiple-frames.html
+    http://127.0.0.1:8000/inspector/bindings/bindings-test.js
+    http://127.0.0.1:8000/inspector/inspector-test.js
+    _test_create-iframe1.js
+    _test_create-iframe2.js
+    _test_detachFrame1.js
+[+] _test_detachFrame2.js
+

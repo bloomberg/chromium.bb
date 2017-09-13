@@ -1,6 +1,6 @@
 Tests to ensure column names are matching data.
 
-name: empty.html?xhr/inspector/network/resources
+name: empty.html?xhr/devtools/network/resources
 method: GET
 status: 200OK
 protocol: http/1.1

@@ -61,8 +61,8 @@ InspectorTest.runExtensionTests = async function()
     var pageURL = result.value;
     var extensionURL = (/^https?:/.test(pageURL) ?
         pageURL.replace(/^(https?:\/\/[^/]*\/).*$/,"$1") :
-        pageURL.replace(/\/inspector\/extensions\/[^/]*$/, "/http/tests")) +
-        "inspector/resources/extension-main.html";
+        pageURL.replace(/\/devtools\/extensions\/[^/]*$/, "/http/tests")) +
+        "devtools/resources/extension-main.html";
     extensionURL = extensionURL.replace("127.0.0.1", extensionsHost);
     InspectorFrontendAPI.addExtensions([{ startPage: extensionURL, name: "test extension", exposeWebInspectorNamespace: true }]);
     Extensions.extensionServer.initializeExtensions();

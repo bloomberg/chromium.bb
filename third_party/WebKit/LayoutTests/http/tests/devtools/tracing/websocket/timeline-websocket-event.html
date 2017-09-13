@@ -1,0 +1,37 @@
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/timeline-test.js"></script>
+<script>
+
+function performActions()
+{
+    var ws = new WebSocket("ws://127.0.0.1:8880/simple");
+    return new Promise((fulfill) => ws.onclose = fulfill);
+}
+
+function test() {
+  PerformanceTestRunner.invokeAsyncWithTimeline('performActions', finish);
+
+  function finish() {
+    PerformanceTestRunner.printTimelineRecordsWithDetails('WebSocketCreate');
+    PerformanceTestRunner.printTimelineRecordsWithDetails('WebSocketSendHandshakeRequest');
+    PerformanceTestRunner.printTimelineRecordsWithDetails('WebSocketReceiveHandshakeResponse');
+    PerformanceTestRunner.printTimelineRecordsWithDetails('WebSocketDestroy');
+    TestRunner.completeTest();
+  }
+}
+
+if (!window.testRunner)
+    setTimeout(performActions, 2000);
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests the Timeline events for WebSocket
+</p>
+
+</body>
+</html>

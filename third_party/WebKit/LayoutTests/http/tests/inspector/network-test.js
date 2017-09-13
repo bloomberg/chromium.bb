@@ -55,7 +55,7 @@ function makeFetch(url, requestInitializer)
 function makeFetchInWorker(url, requestInitializer)
 {
     return new Promise((resolve) => {
-      var worker = new Worker('/inspector/network/resources/fetch-worker.js');
+      var worker = new Worker('/devtools/network/resources/fetch-worker.js');
       worker.onmessage = (event) => {
         resolve(event.data);
       };

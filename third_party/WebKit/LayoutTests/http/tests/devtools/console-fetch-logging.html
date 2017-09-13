@@ -1,0 +1,82 @@
+<html>
+<head>
+<script src="../inspector/inspector-test.js"></script>
+<script src="../inspector/console-test.js"></script>
+<script src="../inspector/network-test.js"></script>
+<script>
+function requestHelper(method, url, callback)
+{
+    console.log("sending a " + method + " request to " + url);
+    // Delay invoking callback to let didFinishLoading() a chance to fire and log
+    // console message.
+    function delayCallback()
+    {
+        setTimeout(callback, 0);
+    }
+    makeFetch(url, {method: method}).then(delayCallback);
+}
+
+function makeRequests()
+{
+    var callback;
+    var promise = new Promise((fulfill) => callback = fulfill);
+    step1();
+    return promise;
+
+    function step1()
+    {
+        // Page that exists.
+        requestHelper("GET", "resources/xhr-exists.html", step2);
+    }
+
+    function step2()
+    {
+        // Page that doesn't exist.
+        requestHelper("GET", "resources/xhr-does-not-exist.html", step3);
+    }
+
+    function step3()
+    {
+        // POST to a page.
+        requestHelper("POST", "resources/post-target.cgi", step4);
+    }
+
+    function step4()
+    {
+        // (Failed) cross-origin request
+        requestHelper("GET", "http://localhost:8000/devtools/resources/xhr-exists.html", callback);
+    }
+}
+
+function test() {
+  step1();
+
+  function step1() {
+    Common.settingForTest('monitoringXHREnabled').set(true);
+    TestRunner.callFunctionInPageAsync('makeRequests').then(step2);
+  }
+
+  function step2() {
+    Common.settingForTest('monitoringXHREnabled').set(false);
+    TestRunner.callFunctionInPageAsync('makeRequests').then(step3);
+  }
+
+  function step3() {
+    function finish() {
+      ConsoleTestRunner.dumpConsoleMessages();
+      TestRunner.completeTest();
+    }
+    TestRunner.deprecatedRunAfterPendingDispatches(finish);
+  }
+}
+//# sourceURL=console-fetch-logging.html
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that fetch logging works when XMLHttpRequest Logging is Enabled and doesn't show logs when it is Disabled.
+</p>
+
+</body>
+</html>
