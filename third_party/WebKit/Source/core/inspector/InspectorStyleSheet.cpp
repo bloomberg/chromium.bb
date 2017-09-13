@@ -53,6 +53,7 @@
 #include "core/inspector/InspectorNetworkAgent.h"
 #include "core/inspector/InspectorResourceContainer.h"
 #include "core/svg/SVGStyleElement.h"
+#include "platform/wtf/Allocator.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "platform/wtf/text/TextPosition.h"
@@ -145,8 +146,9 @@ void GetClassNamesFromRule(CSSStyleRule* rule, HashSet<String>& unique_names) {
   }
 }
 
-class StyleSheetHandler final : public GarbageCollected<StyleSheetHandler>,
-                                public CSSParserObserver {
+class StyleSheetHandler final : public CSSParserObserver {
+  STACK_ALLOCATED();
+
  public:
   StyleSheetHandler(const String& parsed_text,
                     Document* document,
@@ -154,8 +156,6 @@ class StyleSheetHandler final : public GarbageCollected<StyleSheetHandler>,
       : parsed_text_(parsed_text), document_(document), result_(result) {
     DCHECK(result_);
   }
-
-  DECLARE_TRACE();
 
  private:
   void StartRuleHeader(StyleRule::RuleType, unsigned) override;
@@ -333,13 +333,6 @@ void StyleSheetHandler::ObserveComment(unsigned start_offset,
   current_rule_data_stack_.back()->property_data.push_back(
       CSSPropertySourceData(property_data.name, property_data.value, false,
                             true, true, SourceRange(start_offset, end_offset)));
-}
-
-DEFINE_TRACE(StyleSheetHandler) {
-  visitor->Trace(document_);
-  visitor->Trace(result_);
-  visitor->Trace(current_rule_data_stack_);
-  visitor->Trace(current_rule_data_);
 }
 
 bool VerifyRuleText(Document* document, const String& rule_text) {
