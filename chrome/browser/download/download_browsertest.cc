@@ -103,6 +103,7 @@
 #include "content/public/common/quarantine.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
+#include "content/public/test/test_download_request_handler.h"
 #include "content/public/test/test_file_error_injector.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
@@ -3109,45 +3110,37 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_PauseResumeCancel) {
 #define MAYBE_DownloadTest_PercentComplete DownloadTest_PercentComplete
 #endif
 IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadTest_PercentComplete) {
-  // Write a huge file.
-  base::FilePath file_path(
-      GetDownloadDirectory(browser()).AppendASCII("source").AppendASCII(
-          "DownloadTest_BigZip.zip"));
-  int64_t size = 1 << 25;
+  // Write a huge file. Make sure the test harness can supply "Content-Length"
+  // header to indicate the file size, or the download will not have valid
+  // percentage progression.
+  GURL url = GURL("http://example.com/large_file");
+  content::TestDownloadRequestHandler request_handler(url);
+  content::TestDownloadRequestHandler::Parameters parameters;
+  parameters.size = 1024 * 1024 * 32; /* 32MB file. */
+  request_handler.StartServing(parameters);
+
+  // Ensure that we have enough disk space to download the large file.
   {
     base::ThreadRestrictions::ScopedAllowIO allow_io;
-    ASSERT_TRUE(CreateDirectory(file_path.DirName()));
-    base::File file(file_path,
-                    base::File::FLAG_CREATE | base::File::FLAG_WRITE);
-    ASSERT_TRUE(file.IsValid());
-    EXPECT_EQ(1, file.Write(size, "a", 1));
-    file.Close();
-
-#if defined(OS_POSIX)
-    // Make it readable by chronos on chromeos
-    base::SetPosixFilePermissions(file_path, 0755);
-#endif
-
-    // Ensure that we have enough disk space.
     int64_t free_space =
         base::SysInfo::AmountOfFreeDiskSpace(GetDownloadDirectory(browser()));
-    ASSERT_LE(size, free_space)
+    ASSERT_LE(parameters.size, free_space)
         << "Not enough disk space to download. Got " << free_space;
   }
-  GURL file_url(net::FilePathToFileURL(file_path));
+
   std::unique_ptr<content::DownloadTestObserver> progress_waiter(
       CreateInProgressWaiter(browser(), 1));
 
   // Start downloading a file, wait for it to be created.
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), file_url, WindowOpenDisposition::CURRENT_TAB,
+      browser(), url, WindowOpenDisposition::CURRENT_TAB,
       ui_test_utils::BROWSER_TEST_NONE);
   progress_waiter->WaitForFinished();
   EXPECT_EQ(1u, progress_waiter->NumDownloadsSeenInState(
       DownloadItem::IN_PROGRESS));
   std::vector<DownloadItem*> download_items;
   GetDownloads(browser(), &download_items);
-  ASSERT_EQ(1UL, download_items.size());
+  ASSERT_EQ(1u, download_items.size());
 
   // Wait for the download to complete, checking along the way that the
   // PercentComplete() never regresses.
@@ -3157,13 +3150,11 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadTest_PercentComplete) {
   ASSERT_EQ(100, download_items[0]->PercentComplete());
 
   // Check that the file downloaded correctly.
+  ASSERT_EQ(parameters.size, download_items[0]->GetReceivedBytes());
+  ASSERT_EQ(parameters.size, download_items[0]->GetTotalBytes());
+
+  // Delete the file.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
-  ASSERT_TRUE(base::PathExists(download_items[0]->GetTargetFilePath()));
-  int64_t downloaded_size = 0;
-  ASSERT_TRUE(base::GetFileSize(
-      download_items[0]->GetTargetFilePath(), &downloaded_size));
-  ASSERT_EQ(size + 1, downloaded_size);
-  ASSERT_TRUE(base::DieFileDie(file_path, false));
   ASSERT_TRUE(base::DieFileDie(download_items[0]->GetTargetFilePath(), false));
 }
 

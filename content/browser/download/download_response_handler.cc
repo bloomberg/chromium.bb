@@ -7,6 +7,7 @@
 #include "content/browser/download/download_stats.h"
 #include "content/browser/download/download_utils.h"
 #include "content/public/browser/download_url_parameters.h"
+#include "net/http/http_status_code.h"
 #include "net/log/net_log_with_source.h"
 
 namespace content {
@@ -66,16 +67,19 @@ void DownloadResponseHandler::OnReceiveResponse(
     const ResourceResponseHead& head,
     const base::Optional<net::SSLInfo>& ssl_info,
     mojom::DownloadedTempFilePtr downloaded_file) {
-  if (head.headers)
-    RecordDownloadHttpResponseCode(head.headers->response_code());
-
   create_info_ = CreateDownloadCreateInfo(head);
 
   if (ssl_info)
     cert_status_ = ssl_info->cert_status;
 
-  if (head.headers)
+  // TODO(xingliu): Do not use http cache.
+  // Sets page transition type correctly and call
+  // |RecordDownloadSourcePageTransitionType| here.
+  if (head.headers) {
     has_strong_validators_ = head.headers->HasStrongValidators();
+    RecordDownloadHttpResponseCode(head.headers->response_code());
+    RecordDownloadContentDisposition(create_info_->content_disposition);
+  }
 
   if (create_info_->result != DOWNLOAD_INTERRUPT_REASON_NONE)
     OnResponseStarted(mojom::DownloadStreamHandlePtr());
@@ -106,10 +110,8 @@ DownloadResponseHandler::CreateDownloadCreateInfo(
   create_info->response_headers = head.headers;
   create_info->offset = create_info->save_info->offset;
   create_info->mime_type = head.mime_type;
-  if (head.headers &&
-      !head.headers->GetMimeType(&create_info->original_mime_type)) {
-    create_info->original_mime_type.clear();
-  }
+
+  HandleResponseHeaders(head.headers.get(), create_info.get());
   return create_info;
 }
 

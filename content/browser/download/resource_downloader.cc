@@ -88,6 +88,8 @@ void ResourceDownloader::Start(std::unique_ptr<ResourceRequest> request) {
       mojom::kURLLoadOptionSendSSLInfo | mojom::kURLLoadOptionSniffMimeType,
       *(request.get()), &response_handler_,
       download_url_parameters_->GetNetworkTrafficAnnotation());
+  url_loader_->SetPriority(net::RequestPriority::IDLE,
+                           0 /* intra_priority_value */);
 }
 
 void ResourceDownloader::OnResponseStarted(

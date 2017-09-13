@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/process/process_handle.h"
 #include "base/strings/stringprintf.h"
+#include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_interrupt_reasons_impl.h"
 #include "content/browser/download/download_stats.h"
 #include "content/public/browser/browser_thread.h"
@@ -370,6 +371,47 @@ DownloadInterruptReason HandleSuccessfulServerResponse(
     return DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
 
   return DOWNLOAD_INTERRUPT_REASON_NONE;
+}
+
+void HandleResponseHeaders(const net::HttpResponseHeaders* headers,
+                           DownloadCreateInfo* create_info) {
+  if (!headers)
+    return;
+
+  // Parse the "Content-Length" header. Adjust to 0 if no valid content_length
+  // presents.
+  int64_t content_length = headers->GetContentLength();
+  create_info->total_bytes = (content_length == -1) ? 0 : content_length;
+
+  if (headers->HasStrongValidators()) {
+    // If we don't have strong validators as per RFC 7232 section 2, then
+    // we neither store nor use them for range requests.
+    if (!headers->EnumerateHeader(nullptr, "Last-Modified",
+                                  &create_info->last_modified))
+      create_info->last_modified.clear();
+    if (!headers->EnumerateHeader(nullptr, "ETag", &create_info->etag))
+      create_info->etag.clear();
+  }
+
+  // Grab the first content-disposition header.  There may be more than one,
+  // though as of this writing, the network stack ensures if there are, they
+  // are all duplicates.
+  headers->EnumerateHeader(nullptr, "Content-Disposition",
+                           &create_info->content_disposition);
+
+  // Parse the original mime type from the header, notice that actual mime type
+  // might be different due to mime type sniffing.
+  if (!headers->GetMimeType(&create_info->original_mime_type))
+    create_info->original_mime_type.clear();
+
+  // Content-Range is validated in HandleSuccessfulServerResponse.
+  // In RFC 7233, a single part 206 partial response must generate
+  // Content-Range. Accept-Range may be sent in 200 response to indicate the
+  // server can handle range request, but optional in 206 response.
+  create_info->accept_range =
+      headers->HasHeaderValue("Accept-Ranges", "bytes") ||
+      (headers->HasHeader("Content-Range") &&
+       headers->response_code() == net::HTTP_PARTIAL_CONTENT);
 }
 
 }  // namespace content
