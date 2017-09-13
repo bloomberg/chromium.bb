@@ -43,6 +43,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ExecutionContext.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/wtf/Allocator.h"
 

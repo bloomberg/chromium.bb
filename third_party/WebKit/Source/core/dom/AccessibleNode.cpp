@@ -9,7 +9,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/QualifiedName.h"
 #include "core/frame/Settings.h"
-#include "platform/runtime_enabled_features.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 

@@ -424,13 +424,13 @@ action("generated_testing_idls_internal_runtime_flags") {
 
   inputs = scripts_for_json5_files + [
              "../build/scripts/make_internal_runtime_flags.py",
-             "../platform/runtime_enabled_features.json5",
+             "../platform/RuntimeEnabledFeatures.json5",
              "../build/scripts/templates/InternalRuntimeFlags.h.tmpl",
              "../build/scripts/templates/InternalRuntimeFlags.idl.tmpl",
            ]
 
   args = [
-    rebase_path("../platform/runtime_enabled_features.json5", root_build_dir),
+    rebase_path("../platform/RuntimeEnabledFeatures.json5", root_build_dir),
     "--output_dir",
     "$rel_blink_core_gen_dir/testing",
   ]
@@ -1131,7 +1131,7 @@ action("make_core_generated_origin_trials") {
 
   inputs = scripts_for_json5_files + [
              "../build/scripts/make_origin_trials.py",
-             "../platform/runtime_enabled_features.json5",
+             "../platform/RuntimeEnabledFeatures.json5",
              "../build/scripts/templates/OriginTrials.cpp.tmpl",
              "../build/scripts/templates/OriginTrials.h.tmpl",
            ]
@@ -1141,7 +1141,7 @@ action("make_core_generated_origin_trials") {
   ]
 
   args = [
-    rebase_path("../platform/runtime_enabled_features.json5", root_build_dir),
+    rebase_path("../platform/RuntimeEnabledFeatures.json5", root_build_dir),
     "--output_dir",
     "$rel_blink_core_gen_dir/origin_trials",
   ]

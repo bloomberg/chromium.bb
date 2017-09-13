@@ -9,6 +9,7 @@
 #include "core/paint/BoxPainter.h"
 #include "core/style/BorderEdge.h"
 #include "core/style/ComputedStyle.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 
 namespace blink {

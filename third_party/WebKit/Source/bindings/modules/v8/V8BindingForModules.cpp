@@ -48,6 +48,7 @@
 #include "modules/indexeddb/IDBKeyRange.h"
 #include "modules/indexeddb/IDBTracing.h"
 #include "modules/indexeddb/IDBValue.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
 #include "platform/wtf/MathExtras.h"
 #include "platform/wtf/Vector.h"

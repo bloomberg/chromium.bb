@@ -24,7 +24,7 @@
 #define XSLImportRule_h
 
 #include "core/xml/XSLStyleSheet.h"
-#include "platform/runtime_enabled_features.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 

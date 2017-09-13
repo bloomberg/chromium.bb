@@ -50,6 +50,7 @@
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/AutoReset.h"
 #include "public/platform/WebMenuSourceType.h"

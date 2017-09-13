@@ -29,6 +29,7 @@
 
 #include "base/time/time.h"
 #include "platform/Histogram.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
@@ -45,7 +46,6 @@
 #include "platform/network/NetworkInstrumentation.h"
 #include "platform/network/NetworkUtils.h"
 #include "platform/probe/PlatformProbes.h"
-#include "platform/runtime_enabled_features.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/weborigin/KnownPorts.h"
 #include "platform/weborigin/SecurityOrigin.h"

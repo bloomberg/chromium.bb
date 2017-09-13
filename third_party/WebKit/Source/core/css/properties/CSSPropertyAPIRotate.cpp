@@ -7,7 +7,7 @@
 #include "core/CSSValueKeywords.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "platform/runtime_enabled_features.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 

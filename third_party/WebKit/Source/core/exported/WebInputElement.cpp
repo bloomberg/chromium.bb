@@ -39,6 +39,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/TextControlInnerElements.h"
 #include "core/html/shadow/ShadowElementNames.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/wtf/RefPtr.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebElementCollection.h"
