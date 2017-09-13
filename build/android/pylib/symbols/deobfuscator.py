@@ -21,13 +21,15 @@ class Deobfuscator(object):
     script_path = os.path.join(
         constants.GetOutDirectory(), 'bin', 'java_deobfuscate')
     cmd = [script_path, mapping_path]
+    # Allow only one thread to call TransformLines() at a time.
+    self._lock = threading.Lock()
+    self._closed_called = False
+    # Assign to None so that attribute exists if Popen() throws.
+    self._proc = None
     # Start process eagerly to hide start-up latency.
     self._proc = subprocess.Popen(
         cmd, bufsize=1, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
         close_fds=True)
-    # Allow only one thread to call TransformLines() at a time.
-    self._lock = threading.Lock()
-    self._closed_called = False
 
   def IsClosed(self):
     return self._closed_called or self._proc.returncode is not None
@@ -113,7 +115,8 @@ class Deobfuscator(object):
       self._proc.wait()
 
   def __del__(self):
-    if not self._closed_called:
+    # self._proc is None when Popen() fails.
+    if not self._closed_called and self._proc:
       logging.error('Forgot to Close() deobfuscator')
 
 

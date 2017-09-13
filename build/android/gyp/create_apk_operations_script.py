@@ -26,11 +26,13 @@ def main():
   import apk_operations
   output_dir = resolve(${OUTPUT_DIR})
   try:
-    apk_operations.Run(output_dir,
-                       resolve(${APK_PATH}),
-                       resolve(${INC_JSON_PATH}),
-                       ${FLAGS_FILE},
-                       target_cpu=${TARGET_CPU})
+    apk_operations.Run(
+        output_dir,
+        resolve(${APK_PATH}),
+        resolve(${INC_JSON_PATH}),
+        ${FLAGS_FILE},
+        ${TARGET_CPU},
+        resolve(${MAPPING_PATH}))
   except TypeError:
     rel_output_dir = os.path.relpath(output_dir)
     rel_script_path = os.path.relpath(sys.argv[0], output_dir)
@@ -52,6 +54,7 @@ def main(args):
   parser.add_argument('--incremental-install-json-path')
   parser.add_argument('--command-line-flags-file')
   parser.add_argument('--target-cpu')
+  parser.add_argument('--proguard-mapping-path')
   args = parser.parse_args(args)
 
   def relativize(path):
@@ -68,6 +71,7 @@ def main(args):
         'OUTPUT_DIR': repr(relativize('.')),
         'APK_PATH': repr(relativize(args.apk_path)),
         'INC_JSON_PATH': repr(relativize(args.incremental_install_json_path)),
+        'MAPPING_PATH': repr(relativize(args.proguard_mapping_path)),
         'FLAGS_FILE': repr(args.command_line_flags_file),
         'TARGET_CPU': repr(args.target_cpu),
     }

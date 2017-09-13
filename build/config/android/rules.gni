@@ -2492,6 +2492,12 @@ if (enable_java_templates) {
         outputs = [
           _generated_script,
         ]
+        if (_proguard_enabled) {
+          # Required by logcat command.
+          data_deps = [
+            "//build/android/stacktrace:java_deobfuscate",
+          ]
+        }
         args = [
           "--script-output-path",
           rebase_path(_generated_script, root_build_dir),
@@ -2509,6 +2515,12 @@ if (enable_java_templates) {
           args += [
             "--incremental-install-json-path",
             rebase_path(_incremental_install_json_path, root_build_dir),
+          ]
+        }
+        if (_proguard_enabled) {
+          args += [
+            "--proguard-mapping-path",
+            rebase_path("$_final_apk_path.mapping", root_build_dir),
           ]
         }
       }
@@ -2686,7 +2698,6 @@ if (enable_java_templates) {
           proguard_configs = []
         }
         proguard_configs += [ "//testing/android/proguard_for_test.flags" ]
-        data_deps += [ "//build/android/stacktrace:java_deobfuscate" ]
         if (defined(final_apk_path)) {
           _final_apk_path = final_apk_path
         } else {
@@ -2828,11 +2839,11 @@ if (enable_java_templates) {
       }
       shared_libraries = [ invoker.shared_library ]
       deps += [
+        ":${target_name}__runtime_deps",
+        ":${target_name}__secondary_abi_runtime_deps",
         "//base:base_java",
         "//testing/android/appurify_support:appurify_support_java",
         "//testing/android/reporter:reporter_java",
-        ":${target_name}__runtime_deps",
-        ":${target_name}__secondary_abi_runtime_deps",
       ]
       data_deps += [
         "//build/android/pylib/device/commands",
