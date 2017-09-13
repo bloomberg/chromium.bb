@@ -15,6 +15,7 @@
 
 namespace content {
 
+class ServiceWorkerVersion;
 class URLLoaderFactoryGetter;
 
 // S13nServiceWorker:
@@ -60,6 +61,10 @@ class CONTENT_EXPORT ServiceWorkerScriptURLLoader
   void OnComplete(const ResourceRequestCompletionStatus& status) override;
 
  private:
+  // This is RESOURCE_TYPE_SERVICE_WORKER for the main script or
+  // RESOURCE_TYPE_SCRIPT for an imported script.
+  const ResourceType resource_type_;
+
   mojom::URLLoaderPtr network_loader_;
   mojo::Binding<mojom::URLLoaderClient> network_client_binding_;
   mojom::URLLoaderClientPtr forwarding_client_;

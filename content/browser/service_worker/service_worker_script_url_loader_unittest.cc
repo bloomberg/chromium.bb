@@ -110,6 +110,7 @@ class ServiceWorkerScriptURLLoaderTest : public testing::Test {
     ResourceRequest request;
     request.url = version_->script_url();
     request.method = "GET";
+    request.resource_type = RESOURCE_TYPE_SERVICE_WORKER;
 
     DCHECK(!loader_);
     loader_ = base::MakeUnique<ServiceWorkerScriptURLLoader>(
