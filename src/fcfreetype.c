@@ -2100,7 +2100,7 @@ FcFreeTypeQueryAll(const FcChar8	*file,
 	else
 	{
 	    face_num++;
-	    instance_num = 0;
+	    instance_num = set_instance_num;
 	}
     } while (!err && (!index_set || face_num == set_face_num) && face_num < num_faces);
 
