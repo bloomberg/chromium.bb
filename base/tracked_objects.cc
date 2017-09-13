@@ -455,11 +455,9 @@ DeathDataSnapshot DeathDataSnapshot::Delta(
 }
 
 //------------------------------------------------------------------------------
-BirthOnThread::BirthOnThread(const Location& location,
+BirthOnThread::BirthOnThread(const base::Location& location,
                              const ThreadData& current)
-    : location_(location),
-      birth_thread_(&current) {
-}
+    : location_(location), birth_thread_(&current) {}
 
 //------------------------------------------------------------------------------
 BirthOnThreadSnapshot::BirthOnThreadSnapshot() {
@@ -473,9 +471,8 @@ BirthOnThreadSnapshot::~BirthOnThreadSnapshot() {
 }
 
 //------------------------------------------------------------------------------
-Births::Births(const Location& location, const ThreadData& current)
-    : BirthOnThread(location, current),
-      birth_count_(1) { }
+Births::Births(const base::Location& location, const ThreadData& current)
+    : BirthOnThread(location, current), birth_count_(1) {}
 
 int Births::birth_count() const { return birth_count_; }
 
@@ -665,7 +662,7 @@ void ThreadData::OnProfilingPhaseCompleted(int profiling_phase) {
   }
 }
 
-Births* ThreadData::TallyABirth(const Location& location) {
+Births* ThreadData::TallyABirth(const base::Location& location) {
   BirthMap::iterator it = birth_map_.find(location);
   Births* child;
   if (it != birth_map_.end()) {
@@ -721,7 +718,7 @@ void ThreadData::TallyADeath(const Births& births,
 }
 
 // static
-Births* ThreadData::TallyABirthIfActive(const Location& location) {
+Births* ThreadData::TallyABirthIfActive(const base::Location& location) {
   if (!TrackingStatus())
     return NULL;
   ThreadData* current_thread_data = Get();
