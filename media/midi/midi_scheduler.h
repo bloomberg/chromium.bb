@@ -19,6 +19,7 @@ namespace midi {
 class MidiManager;
 class MidiManagerClient;
 
+// DEPRECATED: Use TaskService for new code.
 // TODO(crbug.com/467442): Make tasks cancelable per client.
 class MIDI_EXPORT MidiScheduler final {
  public:
