@@ -433,6 +433,9 @@ void AudioInputController::DoClose() {
       }
     }
 
+    if (user_input_monitor_)
+      user_input_monitor_->DisableKeyPressMonitoring();
+
     audio_callback_.reset();
   } else {
     log_string =
@@ -445,9 +448,6 @@ void AudioInputController::DoClose() {
   stream_ = nullptr;
 
   sync_writer_->Close();
-
-  if (user_input_monitor_)
-    user_input_monitor_->DisableKeyPressMonitoring();
 
 #if defined(AUDIO_POWER_MONITORING)
   // Send UMA stats if enabled.
