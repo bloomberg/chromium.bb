@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/resource_coordinator/coordination_unit/coordination_unit_graph_observer.h"
-
-#include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
+#include "services/resource_coordinator/observers/coordination_unit_graph_observer.h"
 
 namespace resource_coordinator {
 

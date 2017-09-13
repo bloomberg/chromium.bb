@@ -5,8 +5,8 @@
 #include "services/resource_coordinator/coordination_unit/web_contents_coordination_unit_impl.h"
 
 #include "base/logging.h"
-#include "services/resource_coordinator/coordination_unit/coordination_unit_graph_observer.h"
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
+#include "services/resource_coordinator/observers/coordination_unit_graph_observer.h"
 
 namespace resource_coordinator {
 

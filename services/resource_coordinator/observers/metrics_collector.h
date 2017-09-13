@@ -10,8 +10,8 @@
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
-#include "services/resource_coordinator/coordination_unit/background_metrics_reporter.h"
-#include "services/resource_coordinator/coordination_unit/coordination_unit_graph_observer.h"
+#include "services/resource_coordinator/observers/background_metrics_reporter.h"
+#include "services/resource_coordinator/observers/coordination_unit_graph_observer.h"
 
 namespace resource_coordinator {
 

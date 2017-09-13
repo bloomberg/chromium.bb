@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
-#include "services/resource_coordinator/coordination_unit/coordination_unit_graph_observer.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_impl_unittest_util.h"
 #include "services/resource_coordinator/coordination_unit/mock_coordination_unit_graphs.h"

@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
-#include "services/resource_coordinator/coordination_unit/coordination_unit_graph_observer.h"
+#include "services/resource_coordinator/observers/coordination_unit_graph_observer.h"
 #include "services/resource_coordinator/public/interfaces/tab_signal.mojom.h"
 
 namespace service_manager {
