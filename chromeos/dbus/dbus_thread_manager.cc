@@ -239,6 +239,12 @@ UpstartClient* DBusThreadManager::GetUpstartClient() {
   return clients_browser_ ? clients_browser_->upstart_client_.get() : nullptr;
 }
 
+VirtualFileProviderClient* DBusThreadManager::GetVirtualFileProviderClient() {
+  return clients_browser_
+             ? clients_browser_->virtual_file_provider_client_.get()
+             : nullptr;
+}
+
 void DBusThreadManager::InitializeClients() {
   // Some clients call DBusThreadManager::Get() during initialization.
   DCHECK(g_dbus_thread_manager);
