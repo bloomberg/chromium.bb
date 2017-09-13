@@ -7,37 +7,42 @@ package org.chromium.content.browser.androidoverlay;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
+import org.chromium.content.browser.androidoverlay.DialogOverlayImplTestRule.Client;
 
 /**
  * Tests for DialogOverlayImpl.
- * TODO(liberato): Convert to junit4.
  */
-public class DialogOverlayImplTest extends DialogOverlayImplTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class DialogOverlayImplTest {
     private static final String BLANK_URL = "about://blank";
 
-    @Override
-    protected String getInitialUrl() {
-        return BLANK_URL;
-    }
+    @Rule
+    public DialogOverlayImplTestRule mActivityTestRule =
+            new DialogOverlayImplTestRule(BLANK_URL);
 
+    @Test
     @SmallTest
     @Feature({"AndroidOverlay"})
     public void testCreateDestroyOverlay() {
-        Assert.assertFalse(getClient().hasReceivedOverlayModeChange());
-        Assert.assertFalse(getClient().isUsingOverlayMode());
+        Assert.assertFalse(mActivityTestRule.getClient().hasReceivedOverlayModeChange());
+        Assert.assertFalse(mActivityTestRule.getClient().isUsingOverlayMode());
 
-        final DialogOverlayImpl overlay = createOverlay(0, 0, 10, 10);
+        final DialogOverlayImpl overlay = mActivityTestRule.createOverlay(0, 0, 10, 10);
 
         // We should get a new overlay with a valid surface key.
-        Client.Event event = getClient().nextEvent();
+        Client.Event event = mActivityTestRule.getClient().nextEvent();
         Assert.assertEquals(Client.SURFACE_READY, event.which);
         Assert.assertTrue(event.surfaceKey > 0);
 
-        Assert.assertTrue(getClient().hasReceivedOverlayModeChange());
-        Assert.assertTrue(getClient().isUsingOverlayMode());
+        Assert.assertTrue(mActivityTestRule.getClient().hasReceivedOverlayModeChange());
+        Assert.assertTrue(mActivityTestRule.getClient().isUsingOverlayMode());
 
         // Close the overlay, and make sure that the provider is notified.
         // Note that we should not get a 'destroyed' message when we close it.
@@ -47,67 +52,71 @@ public class DialogOverlayImplTest extends DialogOverlayImplTestBase {
                 overlay.close();
             }
         });
-        Assert.assertEquals(Client.RELEASED, getClient().nextEvent().which);
-        Assert.assertFalse(getClient().isUsingOverlayMode());
+        Assert.assertEquals(Client.RELEASED, mActivityTestRule.getClient().nextEvent().which);
+        Assert.assertFalse(mActivityTestRule.getClient().isUsingOverlayMode());
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidOverlay"})
     public void testCreateOverlayFailsIfUnknownRoutingToken() {
         // Try to create an overlay with a bad routing token.
-        mRoutingToken.high++;
-        DialogOverlayImpl overlay = createOverlay(0, 0, 10, 10);
+        mActivityTestRule.incrementUnguessableTokenHigh();
+        DialogOverlayImpl overlay = mActivityTestRule.createOverlay(0, 0, 10, 10);
         Assert.assertNotNull(overlay);
 
         // We should be notified that the overlay is destroyed.
-        Client.Event event = getClient().nextEvent();
+        Client.Event event = mActivityTestRule.getClient().nextEvent();
         Assert.assertEquals(Client.DESTROYED, event.which);
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidOverlay"})
     public void testCreateOverlayFailsIfWebContentsHidden() {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                getWebContents().onHide();
+                mActivityTestRule.getWebContents().onHide();
             }
         });
 
-        DialogOverlayImpl overlay = createOverlay(0, 0, 10, 10);
+        DialogOverlayImpl overlay = mActivityTestRule.createOverlay(0, 0, 10, 10);
         Assert.assertNotNull(overlay);
 
         // We should be notified that the overlay is destroyed.
-        Client.Event event = getClient().nextEvent();
+        Client.Event event = mActivityTestRule.getClient().nextEvent();
         Assert.assertEquals(Client.DESTROYED, event.which);
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidOverlay"})
     public void testHiddingWebContentsDestroysOverlay() {
-        DialogOverlayImpl overlay = createOverlay(0, 0, 10, 10);
+        DialogOverlayImpl overlay = mActivityTestRule.createOverlay(0, 0, 10, 10);
         Assert.assertNotNull(overlay);
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                getWebContents().onHide();
+                mActivityTestRule.getWebContents().onHide();
             }
         });
 
         // We should be notified that the overlay is destroyed.
-        Client.Event event = getClient().nextEvent();
+        Client.Event event = mActivityTestRule.getClient().nextEvent();
         Assert.assertEquals(Client.DESTROYED, event.which);
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidOverlay"})
     public void testScheduleLayoutDoesntCrash() {
         // Make sure that we don't get any messages due to scheduleLayout, and we don't crash.
-        final DialogOverlayImpl overlay = createOverlay(0, 0, 10, 10);
+        final DialogOverlayImpl overlay = mActivityTestRule.createOverlay(0, 0, 10, 10);
 
         // Wait for the surface.
-        Assert.assertEquals(Client.SURFACE_READY, getClient().nextEvent().which);
+        Assert.assertEquals(Client.SURFACE_READY, mActivityTestRule.getClient().nextEvent().which);
         final org.chromium.gfx.mojom.Rect rect = new org.chromium.gfx.mojom.Rect();
         rect.x = 100;
         rect.y = 200;
@@ -121,29 +130,31 @@ public class DialogOverlayImplTest extends DialogOverlayImplTestBase {
         });
 
         // No additional messages should have arrived.
-        Assert.assertTrue(getClient().isEmpty());
+        Assert.assertTrue(mActivityTestRule.getClient().isEmpty());
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidOverlay"})
     public void testCreateSecureSurface() {
         // Test that creating a secure overlay creates an overlay.  We can't really tell if it's
         // secure or not, until we can do a screen shot test.
-        mSecure = true;
-        final DialogOverlayImpl overlay = createOverlay(0, 0, 10, 10);
+        mActivityTestRule.setSecure(true);
+        final DialogOverlayImpl overlay = mActivityTestRule.createOverlay(0, 0, 10, 10);
         Assert.assertNotNull(overlay);
 
         // We should get a new overlay with a valid surface key.
-        Client.Event event = getClient().nextEvent();
+        Client.Event event = mActivityTestRule.getClient().nextEvent();
         Assert.assertEquals(Client.SURFACE_READY, event.which);
         Assert.assertTrue(event.surfaceKey > 0);
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidOverlay"})
     public void testCloseOnlyClosesOnce() {
         // Test that trying to close an overlay more than once doesn't actually do anything.
-        final DialogOverlayImpl overlay = createOverlay(0, 0, 10, 10);
+        final DialogOverlayImpl overlay = mActivityTestRule.createOverlay(0, 0, 10, 10);
         // The first should generate RELEASED
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -151,15 +162,15 @@ public class DialogOverlayImplTest extends DialogOverlayImplTestBase {
                 overlay.close();
             }
         });
-        Assert.assertEquals(Client.RELEASED, getClient().nextEvent().which);
+        Assert.assertEquals(Client.RELEASED, mActivityTestRule.getClient().nextEvent().which);
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 overlay.close();
-                getClient().injectMarkerEvent();
+                mActivityTestRule.getClient().injectMarkerEvent();
             }
         });
-        Assert.assertEquals(Client.TEST_MARKER, getClient().nextEvent().which);
+        Assert.assertEquals(Client.TEST_MARKER, mActivityTestRule.getClient().nextEvent().which);
     }
 }

@@ -8,11 +8,13 @@ import android.os.Handler;
 import android.os.HandlerThread;
 
 import org.junit.Assert;
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.content.browser.framehost.RenderFrameHostImpl;
-import org.chromium.content_shell_apk.ContentShellTestBase;
+import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 import org.chromium.media.mojom.AndroidOverlayClient;
 import org.chromium.media.mojom.AndroidOverlayConfig;
 import org.chromium.mojo.common.mojom.UnguessableToken;
@@ -23,9 +25,9 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Base class for tests for DialogOverlayImpl.
+ * TestRule for tests for DialogOverlayImpl.
  */
-public abstract class DialogOverlayImplTestBase extends ContentShellTestBase {
+public class DialogOverlayImplTestRule extends ContentShellActivityTestRule {
     // overlay-ui thread.
     private HandlerThread mOverlayUiThread;
     private Handler mOverlayUiHandler;
@@ -35,10 +37,12 @@ public abstract class DialogOverlayImplTestBase extends ContentShellTestBase {
 
     // The routing token that we'll use to create overlays.  This may be modified by the tests prior
     // to calling createOverlay().
-    protected UnguessableToken mRoutingToken;
+    private UnguessableToken mRoutingToken;
 
     // True if we should create a secure overlay.
-    protected boolean mSecure;
+    private boolean mSecure;
+
+    private String mInitialUrl;
 
     /**
      * AndroidOverlay client that supports waiting operations for callbacks.  One may call
@@ -152,57 +156,75 @@ public abstract class DialogOverlayImplTestBase extends ContentShellTestBase {
     private Client mClient = new Client();
 
     // Return the URL to start with.
-    protected abstract String getInitialUrl();
+    public DialogOverlayImplTestRule(String url) {
+        mInitialUrl = url;
+    }
 
-    protected Client getClient() {
+    public String getInitialUrl() {
+        return mInitialUrl;
+    }
+
+    public Client getClient() {
         return mClient;
     }
 
+    public void setSecure(boolean secure) {
+        mSecure = secure;
+    }
+
+    public void incrementUnguessableTokenHigh() {
+        mRoutingToken.high++;
+    }
+
+
     @Override
-    public void setUp() throws Exception {
-        super.setUp();
+    public Statement apply(final Statement base, Description desc) {
+        return super.apply(new Statement() {
+            @Override
+            public void evaluate() throws Throwable {
+                launchContentShellWithUrl(getInitialUrl());
+                waitForActiveShellToBeDoneLoading(); // Do we need this?
 
-        launchContentShellWithUrl(getInitialUrl());
-        waitForActiveShellToBeDoneLoading(); // Do we need this?
+                // Fetch the routing token.
+                mRoutingToken = ThreadUtils.runOnUiThreadBlockingNoException(
+                        new Callable<UnguessableToken>() {
+                            @Override
+                            public UnguessableToken call() {
+                                RenderFrameHostImpl host =
+                                        (RenderFrameHostImpl) getWebContents().getMainFrame();
+                                org.chromium.base.UnguessableToken routingToken =
+                                        host.getAndroidOverlayRoutingToken();
+                                UnguessableToken mojoToken = new UnguessableToken();
+                                mojoToken.high = routingToken.getHighForSerialization();
+                                mojoToken.low = routingToken.getLowForSerialization();
+                                return mojoToken;
+                            }
+                        });
 
-        // Fetch the routing token.
-        mRoutingToken =
-                ThreadUtils.runOnUiThreadBlockingNoException(new Callable<UnguessableToken>() {
+                // Set up the overlay UI thread
+                mOverlayUiThread = new HandlerThread("TestOverlayUI");
+                mOverlayUiThread.start();
+                mOverlayUiHandler = new Handler(mOverlayUiThread.getLooper());
+
+                // Just delegate to |mClient| when an overlay is released.
+                mReleasedRunnable = new Runnable() {
                     @Override
-                    public UnguessableToken call() {
-                        RenderFrameHostImpl host =
-                                (RenderFrameHostImpl) getWebContents().getMainFrame();
-                        org.chromium.base.UnguessableToken routingToken =
-                                host.getAndroidOverlayRoutingToken();
-                        UnguessableToken mojoToken = new UnguessableToken();
-                        mojoToken.high = routingToken.getHighForSerialization();
-                        mojoToken.low = routingToken.getLowForSerialization();
-                        return mojoToken;
+                    public void run() {
+                        mClient.notifyReleased();
                     }
-                });
+                };
 
-        // Set up the overlay UI thread
-        mOverlayUiThread = new HandlerThread("TestOverlayUI");
-        mOverlayUiThread.start();
-        mOverlayUiHandler = new Handler(mOverlayUiThread.getLooper());
+                Callback<Boolean> overlayModeChanged = new Callback<Boolean>() {
+                    @Override
+                    public void onResult(Boolean useOverlayMode) {
+                        mClient.onOverlayModeChanged(useOverlayMode);
+                    }
+                };
 
-        // Just delegate to |mClient| when an overlay is released.
-        mReleasedRunnable = new Runnable() {
-            @Override
-            public void run() {
-                mClient.notifyReleased();
+                getActivityForTestCommon().getActiveShell().setOverayModeChangedCallbackForTesting(
+                        overlayModeChanged);
             }
-        };
-
-        Callback<Boolean> overlayModeChanged = new Callback<Boolean>() {
-            @Override
-            public void onResult(Boolean useOverlayMode) {
-                mClient.onOverlayModeChanged(useOverlayMode);
-            }
-        };
-
-        getActivityForTestCommon().getActiveShell().setOverayModeChangedCallbackForTesting(
-                overlayModeChanged);
+        }, desc);
     }
 
     // Create an overlay with the given parameters and return it.

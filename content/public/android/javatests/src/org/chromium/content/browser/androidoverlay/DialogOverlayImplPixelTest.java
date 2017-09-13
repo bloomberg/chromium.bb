@@ -10,27 +10,39 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Build;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.view.Surface;
 
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content.browser.androidoverlay.DialogOverlayImplTestRule.Client;
 
 import java.util.concurrent.Callable;
 
 /**
  * Pixel tests for DialogOverlayImpl.  These use UiAutomation, so they only run in JB or above.
- * TODO(liberato): Convert to junit4.
  */
+@RunWith(BaseJUnit4ClassRunner.class)
 @MinAndroidSdkLevel(Build.VERSION_CODES.JELLY_BEAN_MR2)
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-public class DialogOverlayImplPixelTest extends DialogOverlayImplTestBase {
+public class DialogOverlayImplPixelTest {
     // Color that we'll fill the overlay with.
+
+    @Rule
+    public DialogOverlayImplTestRule mActivityTestRule =
+            new DialogOverlayImplTestRule(TEST_PAGE_DATA_URL);
+
     private static final int OVERLAY_FILL_COLOR = Color.BLUE;
 
     // CSS coordinates of a div that we'll try to cover with an overlay.
@@ -85,20 +97,14 @@ public class DialogOverlayImplPixelTest extends DialogOverlayImplTestBase {
     // Screenshot of the test page, before we do anything.
     Bitmap mInitialScreenshot;
 
-    @Override
-    protected String getInitialUrl() {
-        return TEST_PAGE_DATA_URL;
-    }
-
-    @Override
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
         takeScreenshotOfBackground();
     }
 
     // Take a screenshot via UiAutomation, which captures all overlays.
     Bitmap takeScreenshot() {
-        return getInstrumentation().getUiAutomation().takeScreenshot();
+        return InstrumentationRegistry.getInstrumentation().getUiAutomation().takeScreenshot();
     }
 
     // Fill |surface| with OVERLAY_FILL_COLOR and return a screenshot.  Note that we have no idea
@@ -113,7 +119,7 @@ public class DialogOverlayImplPixelTest extends DialogOverlayImplTestBase {
     }
 
     int convertCSSToScreenPixels(int css) {
-        ContentViewCore cvc = getContentViewCore();
+        ContentViewCore cvc = mActivityTestRule.getContentViewCore();
         return (int) (css * cvc.getPageScaleFactor() * cvc.getDeviceScaleFactor());
     }
 
@@ -221,7 +227,7 @@ public class DialogOverlayImplPixelTest extends DialogOverlayImplTestBase {
     // Wait for |overlay| to become ready, get its surface, and return it.
     Surface waitForSurface(DialogOverlayImpl overlay) throws Exception {
         Assert.assertNotNull(overlay);
-        final Client.Event event = getClient().nextEvent();
+        final Client.Event event = mActivityTestRule.getClient().nextEvent();
         Assert.assertTrue(event.surfaceKey > 0);
         return ThreadUtils.runOnUiThreadBlocking(new Callable<Surface>() {
             @Override
@@ -231,22 +237,24 @@ public class DialogOverlayImplPixelTest extends DialogOverlayImplTestBase {
         });
     }
 
+    @Test
     @MediumTest
     @Feature({"AndroidOverlay"})
     public void testInitialPosition() throws Exception {
         // Test that the initial position supplied for the overlay covers the <div> we created.
         final DialogOverlayImpl overlay =
-                createOverlay(mDivXPx, mDivYPx, mDivWidthPx, mDivHeightPx);
+                mActivityTestRule.createOverlay(mDivXPx, mDivYPx, mDivWidthPx, mDivHeightPx);
         Surface surface = waitForSurface(overlay);
 
         assertDivIsExactlyCovered(surface);
     }
 
+    @Test
     @MediumTest
     @Feature({"AndroidOverlay"})
     public void testScheduleLayout() throws Exception {
         // Test that scheduleLayout() moves the overlay to cover the <div>.
-        final DialogOverlayImpl overlay = createOverlay(0, 0, 10, 10);
+        final DialogOverlayImpl overlay = mActivityTestRule.createOverlay(0, 0, 10, 10);
         Surface surface = waitForSurface(overlay);
 
         final org.chromium.gfx.mojom.Rect rect = new org.chromium.gfx.mojom.Rect();
