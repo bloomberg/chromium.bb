@@ -33,11 +33,6 @@
 # 'gclient runhooks' rather than 'gclient sync'.
 
 deps = {
-  # Logging code.
-  "src/src/third_party/glog":
-    "https://github.com/google/glog.git" +
-      "@v0.3.4",
-
   # Testing libraries and utilities.
   "src/src/testing":
     "https://github.com/google/googletest.git" +
