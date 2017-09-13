@@ -6,6 +6,7 @@
 
 #include <memory>
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/public/common/resource_response.h"
 
@@ -20,9 +21,14 @@ ServiceWorkerScriptURLLoader::ServiceWorkerScriptURLLoader(
     scoped_refptr<ServiceWorkerVersion> version,
     scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
-    : network_client_binding_(this),
+    : resource_type_(resource_request.resource_type),
+      network_client_binding_(this),
       forwarding_client_(std::move(client)),
       version_(version) {
+  DCHECK_EQ(ServiceWorkerVersion::NEW, version->status());
+  DCHECK(resource_type_ == RESOURCE_TYPE_SERVICE_WORKER ||
+         resource_type_ == RESOURCE_TYPE_SCRIPT);
+
   mojom::URLLoaderClientPtr network_client;
   network_client_binding_.Bind(mojo::MakeRequest(&network_client));
   loader_factory_getter->GetNetworkFactory()->get()->CreateLoaderAndStart(
@@ -63,7 +69,8 @@ void ServiceWorkerScriptURLLoader::OnReceiveResponse(
   response_info.connection_info = response_head.connection_info;
   response_info.socket_address = response_head.socket_address;
 
-  version_->SetMainScriptHttpResponseInfo(response_info);
+  if (resource_type_ == RESOURCE_TYPE_SERVICE_WORKER)
+    version_->SetMainScriptHttpResponseInfo(response_info);
 
   forwarding_client_->OnReceiveResponse(response_head, ssl_info,
                                         std::move(downloaded_file));
