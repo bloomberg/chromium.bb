@@ -746,7 +746,7 @@ class IDLParser(object):
     p[0] = p[1]
 
   def p_MaplikeRest(self, p):
-    """MaplikeRest : MAPLIKE '<' Type ',' Type '>' ';'"""
+    """MaplikeRest : MAPLIKE '<' TypeWithExtendedAttributes ',' TypeWithExtendedAttributes '>' ';'"""
     childlist = ListFromConcat(p[3], p[5])
     p[0] = self.BuildProduction('Maplike', p, 2, childlist)
 

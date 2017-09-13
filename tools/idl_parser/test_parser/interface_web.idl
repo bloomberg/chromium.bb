@@ -355,10 +355,20 @@ interface MyIfaceIterable {
  *      PrimitiveType(double)
  *    Type()
  *      PrimitiveType(boolean)
+ *  Maplike()
+ *    Type()
+ *      PrimitiveType(long)
+ *      ExtAttributes()
+ *        ExtAttribute(Clamp)
+ *    Type()
+ *      StringType(DOMString)
+ *      ExtAttributes()
+ *        ExtAttribute(XAttr)
  */
 interface MyIfaceMaplike {
   readonly maplike<long, DOMString>;
   maplike<double, boolean>;
+  maplike<[Clamp] long, [XAttr] DOMString>;
 };
 
 /** TREE

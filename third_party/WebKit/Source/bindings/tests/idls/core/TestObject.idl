@@ -548,6 +548,6 @@ interface TestObject {
     attribute TestInterfaceGarbageCollected testInterfaceGarbageCollectedAttribute; // [GarbageCollected]
     attribute TestInterfaceGarbageCollected? testInterfaceGarbageCollectedOrNullAttribute; // [GarbageCollected]
 
-    maplike<long, DOMStringOrDouble>;
+    maplike<[EnforceRange] long, DOMStringOrDouble>;
     [RuntimeEnabled=FeatureName, CallWith=ScriptState, RaisesException, ImplementedAs=myMaplikeClear] boolean clear();
 };
