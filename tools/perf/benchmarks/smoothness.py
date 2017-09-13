@@ -442,9 +442,6 @@ class SmoothnessToughPinchZoomCases(_Smoothness):
         self.DisableStory('LinkedIn',
                           [story_module.expectations.ALL_ANDROID],
                           'crbug.com/631015')
-        self.DisableStory('Wikipedia (1 tab)',
-                          [story_module.expectations.ALL_ANDROID],
-                          'crbug.com/631015')
         self.DisableStory('Twitter',
                           [story_module.expectations.ALL_ANDROID],
                           'crbug.com/631015')
@@ -539,9 +536,6 @@ class SmoothnessGpuRasterizationToughPinchZoomCases(_Smoothness):
         self.DisableStory('Facebook', [story_module.expectations.ALL_ANDROID],
                           'crbug.com/610021')
         self.DisableStory('LinkedIn', [story_module.expectations.ALL_ANDROID],
-                          'crbug.com/610021')
-        self.DisableStory('Wikipedia (1 tab)',
-                          [story_module.expectations.ALL_ANDROID],
                           'crbug.com/610021')
         self.DisableStory('Twitter', [story_module.expectations.ALL_ANDROID],
                           'crbug.com/610021')
