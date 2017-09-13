@@ -33,9 +33,14 @@ and select:
 - Visual C++, which will select three sub-categories including MFC
 - Universal Windows Apps Development Tools > Tools (1.4.1) and Windows 10 SDK
 
-You can also install Visual Studio 2017 Update 3 or later - set
-GYP_MSVS_VERSION=2017 to tell the Chrome build system to use this toolchain.
-This generally works but is not yet officially supported.
+You can also install Visual Studio 2017 Update 3 or later. You must install the
+VC++ toolchain and MFC. This can be done from the command line like this:
+```shell
+vs_professional.exe --add Microsoft.VisualStudio.Workload.NativeDesktop
+    --add Microsoft.VisualStudio.Component.VC.ATLMFC --includeRecommended
+```
+You must also set GYP_MSVS_VERSION=2017 to tell the Chrome build system to use
+this toolchain. This generally works but is not yet officially supported.
 
 You must have the Windows 10 SDK installed, version 10.0.14393 or
 10.0.15063. The 10.0.15063 SDK initially had errors but the 10.0.15063.468
@@ -48,7 +53,8 @@ some tests use it for symbolizing crash dumps.
 If the Windows 10 SDK was installed via the Visual Studio installer, the Debugging
 Tools can be installed by going to: Control Panel → Programs →
 Programs and Features → Select the "Windows Software Development Kit" →
-Change → Change → Check "Debugging Tools For Windows" → Change.
+Change → Change → Check "Debugging Tools For Windows" → Change. Or, you can
+download the standalone installer and use it to install the Debugging Tools.
 
 ## Install `depot_tools`
 
