@@ -238,12 +238,20 @@ public class PermissionDialogController implements AndroidPermissionRequester.Re
 
         String messageText = delegate.getMessageText();
         String linkText = delegate.getLinkText();
-        if (!TextUtils.isEmpty(messageText)) fullString.append(messageText);
+        assert !TextUtils.isEmpty(messageText);
+        // TODO(timloh): Currently the strings are shared with infobars, so we for now manually
+        // remove the full stop (this code catches most but not all languages). Update the strings
+        // after removing the infobar path.
+        if (TextUtils.isEmpty(linkText)
+                && (messageText.endsWith(".") || messageText.endsWith("。"))) {
+            messageText = messageText.substring(0, messageText.length() - 1);
+        }
 
-        // If the linkText exists, then wrap it in a clickable span and concatenate it with the main
-        // dialog message.
+        fullString.append(messageText);
         if (!TextUtils.isEmpty(linkText)) {
-            if (fullString.length() > 0) fullString.append(" ");
+            // If the linkText exists, then wrap it in a clickable span and concatenate it with the
+            // main dialog message.
+            fullString.append(" ");
             int spanStart = fullString.length();
 
             fullString.append(linkText);
