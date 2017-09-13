@@ -457,6 +457,8 @@ instrumentation_test_apk("cronet_sample_test_apk") {
     "//base:base_java_test_support",
     "//net/android:net_java_test_support",
     "//third_party/android_support_test_runner:runner_java",
+    "//third_party/android_support_test_runner:rules_java",
+    "//third_party/junit",
   ]
   additional_apks = [ "//net/android:net_test_support_apk" ]
 
@@ -560,7 +562,7 @@ android_library("cronet_test_apk_java") {
 
 cronet_smoketests_platform_only_common_srcs = [
   "test/smoketests/src/org/chromium/net/smoke/ChromiumPlatformOnlyTestSupport.java",
-  "test/smoketests/src/org/chromium/net/smoke/CronetSmokeTestCase.java",
+  "test/smoketests/src/org/chromium/net/smoke/CronetSmokeTestRule.java",
   "test/smoketests/src/org/chromium/net/smoke/HttpTestServer.java",
   "test/smoketests/src/org/chromium/net/smoke/SmokeTestRequestCallback.java",
   "test/smoketests/src/org/chromium/net/smoke/TestSupport.java",
@@ -568,7 +570,7 @@ cronet_smoketests_platform_only_common_srcs = [
 
 cronet_smoketests_native_common_srcs = cronet_smoketests_platform_only_common_srcs + [
                                          "test/smoketests/src/org/chromium/net/smoke/ChromiumNativeTestSupport.java",
-                                         "test/smoketests/src/org/chromium/net/smoke/NativeCronetTestCase.java",
+                                         "test/smoketests/src/org/chromium/net/smoke/NativeCronetTestRule.java",
                                        ]
 
 android_library("cronet_smoketests_native_java") {
@@ -582,6 +584,8 @@ android_library("cronet_smoketests_native_java") {
     ":cronet_api_java",
     ":cronet_test_apk_java",
     "//base:base_java",
+    "//base:base_java_test_support",
+    "//third_party/junit",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/netty4:netty_all_java",
   ]
@@ -748,6 +752,8 @@ android_library("cronet_smoketests_platform_only_java") {
   java_files = [ "test/smoketests/src/org/chromium/net/smoke/PlatformOnlyEngineTest.java" ] + cronet_smoketests_platform_only_common_srcs
   deps = [
     ":cronet_api_java",
+    "//base:base_java_test_support",
+    "//third_party/junit",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/netty4:netty_all_java",
   ]
@@ -798,6 +804,8 @@ android_library("cronet_smoketests_missing_native_library_java") {
     ":cronet_api_java",
     ":cronet_test_apk_java",
     "//base:base_java",
+    "//base:base_java_test_support",
+    "//third_party/junit",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/netty4:netty_all_java",
   ]

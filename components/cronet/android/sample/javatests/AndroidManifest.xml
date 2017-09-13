@@ -16,6 +16,10 @@
     <application>
         <uses-library android:name="android.test.runner" />
     </application>
+    <instrumentation android:name="android.support.test.runner.AndroidJUnitRunner"
+        android:targetPackage="org.chromium.cronet_sample_apk"
+        android:label="Tests for org.chromium.cronet_sample_apk"
+        chromium-junit4="true"/>
     <instrumentation android:name="android.test.InstrumentationTestRunner"
         android:targetPackage="org.chromium.cronet_sample_apk"
         android:label="Tests for org.chromium.cronet_sample_apk"/>

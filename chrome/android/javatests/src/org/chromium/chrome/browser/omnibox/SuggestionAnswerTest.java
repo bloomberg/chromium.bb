@@ -6,32 +6,41 @@ package org.chromium.chrome.browser.omnibox;
 
 import android.support.test.filters.SmallTest;
 
-import junit.framework.TestCase;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
-public class SuggestionAnswerTest extends TestCase {
+import org.chromium.base.test.BaseJUnit4ClassRunner;
+
+@RunWith(BaseJUnit4ClassRunner.class)
+public class SuggestionAnswerTest {
+    @Test
     @SmallTest
     public void testMalformedJsonReturnsNull() {
         String json = "} malformed json {";
         SuggestionAnswer answer = SuggestionAnswer.parseAnswerContents(json);
-        assertNull(answer);
+        Assert.assertNull(answer);
     }
 
+    @Test
     @SmallTest
     public void testEmpyJsonReturnsNull() {
         String json = "";
         SuggestionAnswer answer = SuggestionAnswer.parseAnswerContents(json);
-        assertNull(answer);
+        Assert.assertNull(answer);
     }
 
+    @Test
     @SmallTest
     public void testOneLineReturnsNull() {
         String json = "{ 'l': ["
                 + "  { 'il': { 't': [{ 't': 'text', 'tt': 8 }] } }, "
                 + "] }";
         SuggestionAnswer answer = SuggestionAnswer.parseAnswerContents(json);
-        assertNull(answer);
+        Assert.assertNull(answer);
     }
 
+    @Test
     @SmallTest
     public void testTwoLinesDoesntReturnNull() {
         String json = "{ 'l': ["
@@ -39,9 +48,10 @@ public class SuggestionAnswerTest extends TestCase {
                 + "  { 'il': { 't': [{ 't': 'other text', 'tt': 5 }] } }"
                 + "] }";
         SuggestionAnswer answer = SuggestionAnswer.parseAnswerContents(json);
-        assertNotNull(answer);
+        Assert.assertNotNull(answer);
     }
 
+    @Test
     @SmallTest
     public void testThreeLinesReturnsNull() {
         String json = "{ 'l': ["
@@ -50,9 +60,10 @@ public class SuggestionAnswerTest extends TestCase {
                 + "  { 'il': { 't': [{ 't': 'yet more text', 'tt': 13 }] } }"
                 + "] }";
         SuggestionAnswer answer = SuggestionAnswer.parseAnswerContents(json);
-        assertNull(answer);
+        Assert.assertNull(answer);
     }
 
+    @Test
     @SmallTest
     public void testFiveLinesReturnsNull() {
         String json = "{ 'l': ["
@@ -63,9 +74,10 @@ public class SuggestionAnswerTest extends TestCase {
                 + "  { 'il': { 't': [{ 't': 'line 5', 'tt': 5 }] } }"
                 + "] }";
         SuggestionAnswer answer = SuggestionAnswer.parseAnswerContents(json);
-        assertNull(answer);
+        Assert.assertNull(answer);
     }
 
+    @Test
     @SmallTest
     public void testPropertyPresence() {
         String json = "{ 'l': ["
@@ -78,18 +90,19 @@ public class SuggestionAnswerTest extends TestCase {
         SuggestionAnswer answer = SuggestionAnswer.parseAnswerContents(json);
 
         SuggestionAnswer.ImageLine firstLine = answer.getFirstLine();
-        assertEquals(2, firstLine.getTextFields().size());
-        assertFalse(firstLine.hasAdditionalText());
-        assertFalse(firstLine.hasStatusText());
-        assertTrue(firstLine.hasImage());
+        Assert.assertEquals(2, firstLine.getTextFields().size());
+        Assert.assertFalse(firstLine.hasAdditionalText());
+        Assert.assertFalse(firstLine.hasStatusText());
+        Assert.assertTrue(firstLine.hasImage());
 
         SuggestionAnswer.ImageLine secondLine = answer.getSecondLine();
-        assertEquals(1, secondLine.getTextFields().size());
-        assertTrue(secondLine.hasAdditionalText());
-        assertTrue(secondLine.hasStatusText());
-        assertFalse(secondLine.hasImage());
+        Assert.assertEquals(1, secondLine.getTextFields().size());
+        Assert.assertTrue(secondLine.hasAdditionalText());
+        Assert.assertTrue(secondLine.hasStatusText());
+        Assert.assertFalse(secondLine.hasImage());
     }
 
+    @Test
     @SmallTest
     public void testContents() {
         String json = "{ 'l': ["
@@ -102,18 +115,18 @@ public class SuggestionAnswerTest extends TestCase {
         SuggestionAnswer answer = SuggestionAnswer.parseAnswerContents(json);
 
         SuggestionAnswer.ImageLine firstLine = answer.getFirstLine();
-        assertEquals("text", firstLine.getTextFields().get(0).getText());
-        assertEquals(8, firstLine.getTextFields().get(0).getType());
-        assertEquals("moar", firstLine.getTextFields().get(1).getText());
-        assertEquals(0, firstLine.getTextFields().get(1).getType());
-        assertEquals("hi there", firstLine.getAdditionalText().getText());
-        assertEquals(7, firstLine.getAdditionalText().getType());
+        Assert.assertEquals("text", firstLine.getTextFields().get(0).getText());
+        Assert.assertEquals(8, firstLine.getTextFields().get(0).getType());
+        Assert.assertEquals("moar", firstLine.getTextFields().get(1).getText());
+        Assert.assertEquals(0, firstLine.getTextFields().get(1).getType());
+        Assert.assertEquals("hi there", firstLine.getAdditionalText().getText());
+        Assert.assertEquals(7, firstLine.getAdditionalText().getType());
 
         SuggestionAnswer.ImageLine secondLine = answer.getSecondLine();
-        assertEquals("ftw", secondLine.getTextFields().get(0).getText());
-        assertEquals(6006, secondLine.getTextFields().get(0).getType());
-        assertEquals("shop S-Mart", secondLine.getStatusText().getText());
-        assertEquals(666, secondLine.getStatusText().getType());
-        assertEquals("Npb24gZnJvbSBvdGhlciBhbmltYWxzLCB3aGlj", secondLine.getImage());
+        Assert.assertEquals("ftw", secondLine.getTextFields().get(0).getText());
+        Assert.assertEquals(6006, secondLine.getTextFields().get(0).getType());
+        Assert.assertEquals("shop S-Mart", secondLine.getStatusText().getText());
+        Assert.assertEquals(666, secondLine.getStatusText().getType());
+        Assert.assertEquals("Npb24gZnJvbSBvdGhlciBhbmltYWxzLCB3aGlj", secondLine.getImage());
     }
 }

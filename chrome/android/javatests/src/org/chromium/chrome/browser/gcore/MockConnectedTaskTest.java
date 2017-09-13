@@ -6,22 +6,27 @@ package org.chromium.chrome.browser.gcore;
 
 import android.support.test.filters.SmallTest;
 
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.test.gcore.MockChromeGoogleApiClient;
 
 /** Tests for {@link ConnectedTask} */
-public class MockConnectedTaskTest extends TestCase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class MockConnectedTaskTest {
     private MockChromeGoogleApiClient mClient;
     private MockConnectedTask<MockChromeGoogleApiClient> mTask;
 
-    @Override
-    protected void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         mClient = new MockChromeGoogleApiClient();
         mTask = new MockConnectedTask<>(mClient);
     }
 
+    @Test
     @SmallTest
     @Feature({"GCore"})
     public void testConnectionSuccess() {
@@ -38,6 +43,7 @@ public class MockConnectedTaskTest extends TestCase {
         mClient.assertNoOtherMethodsCalled();
     }
 
+    @Test
     @SmallTest
     @Feature({"GCore"})
     public void testConnectionFailureWithGooglePlayServicesAvailable() {
@@ -54,6 +60,7 @@ public class MockConnectedTaskTest extends TestCase {
         mClient.assertNoOtherMethodsCalled();
     }
 
+    @Test
     @SmallTest
     @Feature({"GCore"})
     public void testConnectionFailureWithGooglePlayServicesUnavailable() {
@@ -70,6 +77,7 @@ public class MockConnectedTaskTest extends TestCase {
         mClient.assertNoOtherMethodsCalled();
     }
 
+    @Test
     @SmallTest
     @Feature({"GCore"})
     public void testRetryLimit() {

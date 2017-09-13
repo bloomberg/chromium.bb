@@ -6,10 +6,17 @@ package org.chromium.chrome.browser.suggestions;
 
 import android.support.test.filters.SmallTest;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
@@ -18,43 +25,53 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
 
 /**
  * Misc. Content Suggestions instrumentation tests.
  */
-public class ContentSuggestionsTest extends ChromeActivityTestCaseBase<ChromeActivity> {
-    public ContentSuggestionsTest() {
-        super(ChromeActivity.class);
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
+public class ContentSuggestionsTest {
+    @Rule
+    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
+            new ChromeActivityTestRule<>(ChromeActivity.class);
+
+    @Before
+    public void setUp() throws InterruptedException {
+        mActivityTestRule.startMainActivityOnBlankPage();
     }
 
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
-    }
-
+    @Test
     @SmallTest
     @Feature("Suggestions")
     @CommandLineFlags.Add("enable-features=ContentSuggestionsSettings")
     public void testRemoteSuggestionsEnabled() throws InterruptedException {
         NewTabPage ntp = loadNTPWithSearchSuggestState(true);
         SuggestionsUiDelegate uiDelegate = ntp.getManagerForTesting();
-        assertTrue(isCategoryEnabled(uiDelegate.getSuggestionsSource(), KnownCategories.ARTICLES));
+        Assert.assertTrue(
+                isCategoryEnabled(uiDelegate.getSuggestionsSource(), KnownCategories.ARTICLES));
     }
 
+    @Test
     @SmallTest
     @Feature("Suggestions")
     @CommandLineFlags.Add("enable-features=ContentSuggestionsSettings")
     public void testRemoteSuggestionsDisabled() throws InterruptedException {
         NewTabPage ntp = loadNTPWithSearchSuggestState(false);
         SuggestionsUiDelegate uiDelegate = ntp.getManagerForTesting();
-        assertFalse(isCategoryEnabled(uiDelegate.getSuggestionsSource(), KnownCategories.ARTICLES));
+        Assert.assertFalse(
+                isCategoryEnabled(uiDelegate.getSuggestionsSource(), KnownCategories.ARTICLES));
     }
 
     private NewTabPage loadNTPWithSearchSuggestState(final boolean enabled)
             throws InterruptedException {
-        Tab tab = getActivity().getActivityTab();
+        Tab tab = mActivityTestRule.getActivity().getActivityTab();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -62,10 +79,10 @@ public class ContentSuggestionsTest extends ChromeActivityTestCaseBase<ChromeAct
             }
         });
 
-        loadUrl(UrlConstants.NTP_URL);
+        mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
         NewTabPageTestUtils.waitForNtpLoaded(tab);
 
-        assertTrue(tab.getNativePage() instanceof NewTabPage);
+        Assert.assertTrue(tab.getNativePage() instanceof NewTabPage);
         return (NewTabPage) tab.getNativePage();
     }
 

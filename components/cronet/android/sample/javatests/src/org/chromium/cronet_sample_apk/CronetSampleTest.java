@@ -8,47 +8,56 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.ConditionVariable;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
-import android.test.ActivityInstrumentationTestCase2;
+import android.support.test.rule.ActivityTestRule;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.widget.TextView;
 
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.test.EmbeddedTestServer;
 
 /**
  * Base test class for all CronetSample based tests.
  */
-public class CronetSampleTest extends
-        ActivityInstrumentationTestCase2<CronetSampleActivity> {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class CronetSampleTest {
     private EmbeddedTestServer mTestServer;
     private String mUrl;
 
-    public CronetSampleTest() {
-        super(CronetSampleActivity.class);
-    }
+    @Rule
+    public ActivityTestRule<CronetSampleActivity> mActivityTestRule =
+            new ActivityTestRule<>(CronetSampleActivity.class, false, false);
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
+    @Before
+    public void setUp() throws Exception {
+        mTestServer = EmbeddedTestServer.createAndStartServer(
+                InstrumentationRegistry.getInstrumentation().getContext());
         mUrl = mTestServer.getURL("/echo?status=200");
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
-        super.tearDown();
     }
 
+    @Test
     @SmallTest
     @Feature({"Cronet"})
     public void testLoadUrl() throws Exception {
         CronetSampleActivity activity = launchCronetSampleWithUrl(mUrl);
 
         // Make sure the activity was created as expected.
-        assertNotNull(activity);
+        Assert.assertNotNull(activity);
 
         // Verify successful fetch.
         final TextView textView = (TextView) activity.findViewById(R.id.resultView);
@@ -81,10 +90,9 @@ public class CronetSampleTest extends
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.setData(Uri.parse(url));
-        intent.setComponent(new ComponentName(
-                getInstrumentation().getTargetContext(),
-                CronetSampleActivity.class));
-        setActivityIntent(intent);
-        return getActivity();
+        intent.setComponent(
+                new ComponentName(InstrumentationRegistry.getInstrumentation().getTargetContext(),
+                        CronetSampleActivity.class));
+        return mActivityTestRule.launchActivity(intent);
     }
 }

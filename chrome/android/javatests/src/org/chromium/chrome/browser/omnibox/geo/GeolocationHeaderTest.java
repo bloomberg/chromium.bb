@@ -13,28 +13,44 @@ import android.util.Base64;
 
 import com.google.protobuf.nano.MessageNano;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.GeolocationInfo;
 import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 import java.util.Locale;
 
 /**
  * Tests for GeolocationHeader and GeolocationTracker.
  */
-public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActivity> {
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
+public class GeolocationHeaderTest {
+
+    @Rule
+    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
+            new ChromeActivityTestRule<>(ChromeActivity.class);
+
     private static final String SEARCH_URL_1 = "https://www.google.com/search?q=potatoes";
     private static final String SEARCH_URL_2 = "https://www.google.co.jp/webhp?#q=dinosaurs";
     private static final String DISABLE_FEATURES = "disable-features=";
     private static final String ENABLE_FEATURES = "enable-features=";
-    private static final String FEATURE_SEPARATOR = ",";
     private static final String XGEO_VISIBLE_NETWORKS_FEATURE = "XGEOVisibleNetworks";
     private static final String GOOGLE_BASE_URL_SWITCH = "google-base-url=https://www.google.com";
     private static final double LOCATION_LAT = 20.3;
@@ -43,15 +59,17 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
     private static final boolean ENCODING_PROTO = true;
     private static final boolean ENCODING_ASCII = false;
 
-    public GeolocationHeaderTest() {
-        super(ChromeActivity.class);
+    @Before
+    public void setUp() throws InterruptedException {
+        mActivityTestRule.startMainActivityOnBlankPage();
     }
 
+    @Test
     @SmallTest
     @Feature({"Location"})
     @CommandLineFlags
             .Add({GOOGLE_BASE_URL_SWITCH, DISABLE_FEATURES + XGEO_VISIBLE_NETWORKS_FEATURE})
-    public void testConsistentHeader() throws ProcessInitException {
+    public void testConsistentHeader() {
         long now = setMockLocationNow();
 
         // X-Geo should be sent for Google search results page URLs.
@@ -74,11 +92,12 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
         assertNullHeader("http://www.google.com/webhp?#q=dinosaurs", false);
     }
 
+    @Test
     @SmallTest
     @Feature({"Location"})
     @CommandLineFlags
             .Add({GOOGLE_BASE_URL_SWITCH, DISABLE_FEATURES + XGEO_VISIBLE_NETWORKS_FEATURE})
-    public void testPermissionAndSetting() throws ProcessInitException {
+    public void testPermissionAndSetting() {
         long now = setMockLocationNow();
 
         // X-Geo shouldn't be sent when location is disallowed for the origin, or when the DSE
@@ -89,30 +108,33 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
         checkHeaderWithPermissionAndSetting(ContentSetting.BLOCK, false, now, true);
     }
 
+    @Test
     @SmallTest
     @Feature({"Location"})
     @CommandLineFlags.Add({DISABLE_FEATURES + XGEO_VISIBLE_NETWORKS_FEATURE})
-    public void testAsciiEncoding() throws ProcessInitException {
+    public void testAsciiEncoding() {
         long now = setMockLocationNow();
 
         // X-Geo should be sent for Google search results page URLs using ascii encoding.
         assertNonNullHeader(SEARCH_URL_1, false, now, ENCODING_ASCII);
     }
 
+    @Test
     @SmallTest
     @Feature({"Location"})
     @CommandLineFlags.Add({ENABLE_FEATURES + XGEO_VISIBLE_NETWORKS_FEATURE})
-    public void testProtoEncoding() throws ProcessInitException {
+    public void testProtoEncoding() {
         long now = setMockLocationNow();
 
         // X-Geo should be sent for Google search results page URLs using proto encoding.
         assertNonNullHeader(SEARCH_URL_1, false, now, ENCODING_PROTO);
     }
 
+    @Test
     @SmallTest
     @Feature({"Location"})
     @CommandLineFlags.Add({DISABLE_FEATURES + XGEO_VISIBLE_NETWORKS_FEATURE})
-    public void testGpsFallbackNotEnabled() throws ProcessInitException {
+    public void testGpsFallbackNotEnabled() {
         // Only GPS location, should not be sent when flag is off.
         long now = System.currentTimeMillis();
         Location gpsLocation = generateMockLocation(LocationManager.GPS_PROVIDER, now);
@@ -121,10 +143,11 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
         assertNullHeader(SEARCH_URL_1, false);
     }
 
+    @Test
     @SmallTest
     @Feature({"Location"})
     @CommandLineFlags.Add({ENABLE_FEATURES + XGEO_VISIBLE_NETWORKS_FEATURE})
-    public void testGpsFallbackEnabled() throws ProcessInitException {
+    public void testGpsFallbackEnabled() {
         // Only GPS location, should be sent when flag is on.
         long now = System.currentTimeMillis();
         Location gpsLocation = generateMockLocation(LocationManager.GPS_PROVIDER, now);
@@ -133,10 +156,11 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
         assertNonNullHeader(SEARCH_URL_1, false, now, ENCODING_PROTO);
     }
 
+    @Test
     @SmallTest
     @Feature({"Location"})
     @CommandLineFlags.Add({ENABLE_FEATURES + XGEO_VISIBLE_NETWORKS_FEATURE})
-    public void testGpsFallbackYounger() throws ProcessInitException {
+    public void testGpsFallbackYounger() {
         long now = System.currentTimeMillis();
         // GPS location is younger.
         Location gpsLocation = generateMockLocation(LocationManager.GPS_PROVIDER, now + 100);
@@ -148,10 +172,11 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
         assertNonNullHeader(SEARCH_URL_1, false, now + 100, ENCODING_PROTO);
     }
 
+    @Test
     @SmallTest
     @Feature({"Location"})
     @CommandLineFlags.Add({ENABLE_FEATURES + XGEO_VISIBLE_NETWORKS_FEATURE})
-    public void testGpsFallbackOlder() throws ProcessInitException {
+    public void testGpsFallbackOlder() {
         long now = System.currentTimeMillis();
         // GPS location is older.
         Location gpsLocation = generateMockLocation(LocationManager.GPS_PROVIDER, now - 100);
@@ -173,7 +198,7 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
                 infoHttps.setContentSetting(httpsPermission);
                 String header = GeolocationHeader.getGeoHeader(
                         "https://www.google.de/search?q=kartoffelsalat",
-                        getActivity().getActivityTab());
+                        mActivityTestRule.getActivity().getActivityTab());
                 assertHeaderState(header, locationTime, shouldBeNull);
             }
         });
@@ -189,7 +214,7 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
                 infoHttps.setContentSetting(httpsPermission);
                 WebsitePreferenceBridge.setDSEGeolocationSetting(settingValue);
                 String header = GeolocationHeader.getGeoHeader(
-                        SEARCH_URL_1, getActivity().getActivityTab());
+                        SEARCH_URL_1, mActivityTestRule.getActivity().getActivityTab());
                 assertHeaderState(header, locationTime, shouldBeNull);
             }
         });
@@ -201,7 +226,7 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
             public void run() {
                 setMockLocation(locationTime);
                 String header = GeolocationHeader.getGeoHeader(SEARCH_URL_1,
-                        getActivity().getActivityTab());
+                        mActivityTestRule.getActivity().getActivityTab());
                 assertHeaderState(header, locationTime, shouldBeNull);
             }
         });
@@ -209,7 +234,7 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
 
     private void assertHeaderState(String header, long locationTime, boolean shouldBeNull) {
         if (shouldBeNull) {
-            assertNull(header);
+            Assert.assertNull(header);
         } else {
             assertHeaderEquals(locationTime, ENCODING_ASCII, header);
         }
@@ -241,22 +266,22 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
 
     private void assertNullHeader(final String url, final boolean isIncognito) {
         try {
-            final Tab tab = loadUrlInNewTab("about:blank", isIncognito);
+            final Tab tab = mActivityTestRule.loadUrlInNewTab("about:blank", isIncognito);
             ThreadUtils.runOnUiThreadBlocking(new Runnable() {
                 @Override
                 public void run() {
-                    assertNull(GeolocationHeader.getGeoHeader(url, tab));
+                    Assert.assertNull(GeolocationHeader.getGeoHeader(url, tab));
                 }
             });
         } catch (InterruptedException e) {
-            fail(e.getMessage());
+            Assert.fail(e.getMessage());
         }
     }
 
     private void assertNonNullHeader(final String url, final boolean isIncognito,
             final long locationTime, final boolean encodingType) {
         try {
-            final Tab tab = loadUrlInNewTab("about:blank", isIncognito);
+            final Tab tab = mActivityTestRule.loadUrlInNewTab("about:blank", isIncognito);
             ThreadUtils.runOnUiThreadBlocking(new Runnable() {
                 @Override
                 public void run() {
@@ -265,7 +290,7 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
                 }
             });
         } catch (InterruptedException e) {
-            fail(e.getMessage());
+            Assert.fail(e.getMessage());
         }
     }
 
@@ -299,7 +324,7 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
                     MessageNano.toByteArray(locationDescriptor), Base64.NO_WRAP | Base64.URL_SAFE);
             expectedHeader = "X-Geo: w " + locationProto;
         } else {
-            assertEquals(ENCODING_ASCII, encodingType);
+            Assert.assertEquals(ENCODING_ASCII, encodingType);
             String locationAscii = String.format(Locale.US,
                     "role:1 producer:12 timestamp:%d latlng{latitude_e7:%d longitude_e7:%d} "
                             + "radius:%d",
@@ -307,11 +332,6 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
             expectedHeader = "X-Geo: a "
                     + new String(Base64.encode(locationAscii.getBytes(), Base64.NO_WRAP));
         }
-        assertEquals(expectedHeader, header);
-    }
-
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
+        Assert.assertEquals(expectedHeader, header);
     }
 }

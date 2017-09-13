@@ -7,41 +7,57 @@ package org.chromium.chrome.browser.metrics;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.ui.base.PageTransition;
 
 /**
  * Tests for UKM monitoring of incognito activity.
  */
-@CommandLineFlags.Add({"force-enable-metrics-reporting"})
-public class UkmIncognitoTest extends ChromeTabbedActivityTestBase {
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+        "force-enable-metrics-reporting"})
+public class UkmIncognitoTest {
+    @Rule
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+
     private static final String DEBUG_PAGE = "chrome://ukm";
 
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
+    @Before
+    public void setUp() throws InterruptedException {
+        mActivityTestRule.startMainActivityOnBlankPage();
     }
 
     public String getUkmState(Tab normalTab) throws Exception {
-        loadUrlInTab(DEBUG_PAGE, PageTransition.TYPED | PageTransition.FROM_ADDRESS_BAR, normalTab);
+        mActivityTestRule.loadUrlInTab(
+                DEBUG_PAGE, PageTransition.TYPED | PageTransition.FROM_ADDRESS_BAR, normalTab);
         return JavaScriptUtils.executeJavaScriptAndWaitForResult(
                 normalTab.getContentViewCore().getWebContents(),
                 "document.getElementById('state').textContent");
     }
 
+    @Test
     @SmallTest
     @RetryOnFailure
     public void testUkmIncognito() throws Exception {
-        Tab normalTab = getActivity().getActivityTab();
+        Tab normalTab = mActivityTestRule.getActivity().getActivityTab();
 
         Assert.assertEquals("UKM State:", "\"True\"", getUkmState(normalTab));
 
-        newIncognitoTabFromMenu();
+        mActivityTestRule.newIncognitoTabFromMenu();
 
         Assert.assertEquals("UKM State:", "\"False\"", getUkmState(normalTab));
     }

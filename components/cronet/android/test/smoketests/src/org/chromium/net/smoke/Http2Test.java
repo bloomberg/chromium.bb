@@ -4,41 +4,54 @@
 
 package org.chromium.net.smoke;
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.net.UrlRequest;
 
 /**
  * HTTP2 Tests.
  */
-public class Http2Test extends NativeCronetTestCase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class Http2Test {
     private TestSupport.TestServer mServer;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        mServer = mTestSupport.createTestServer(getContext(), TestSupport.Protocol.HTTP2);
+    @Rule
+    public NativeCronetTestRule mRule = new NativeCronetTestRule();
+
+    @Before
+    public void setUp() throws Exception {
+        mServer = mRule.getTestSupport().createTestServer(
+                InstrumentationRegistry.getTargetContext(), TestSupport.Protocol.HTTP2);
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         mServer.shutdown();
-        super.tearDown();
     }
 
     // Test that HTTP/2 is enabled by default but QUIC is not.
+    @Test
     @SmallTest
     public void testHttp2() throws Exception {
-        mTestSupport.installMockCertVerifierForTesting(mCronetEngineBuilder);
-        initCronetEngine();
-        assertTrue(mServer.start());
+        mRule.getTestSupport().installMockCertVerifierForTesting(mRule.getCronetEngineBuilder());
+        mRule.initCronetEngine();
+        Assert.assertTrue(mServer.start());
         SmokeTestRequestCallback callback = new SmokeTestRequestCallback();
-        UrlRequest.Builder requestBuilder = mCronetEngine.newUrlRequestBuilder(
+        UrlRequest.Builder requestBuilder = mRule.getCronetEngine().newUrlRequestBuilder(
                 mServer.getSuccessURL(), callback, callback.getExecutor());
         requestBuilder.build().start();
         callback.blockForDone();
 
-        assertSuccessfulNonEmptyResponse(callback, mServer.getSuccessURL());
-        assertEquals("h2", callback.getResponseInfo().getNegotiatedProtocol());
+        CronetSmokeTestRule.assertSuccessfulNonEmptyResponse(callback, mServer.getSuccessURL());
+        Assert.assertEquals("h2", callback.getResponseInfo().getNegotiatedProtocol());
     }
 }

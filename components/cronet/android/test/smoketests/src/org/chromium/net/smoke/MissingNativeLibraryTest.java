@@ -4,8 +4,17 @@
 
 package org.chromium.net.smoke;
 
+import static org.chromium.net.smoke.CronetSmokeTestRule.assertJavaEngine;
+
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.net.CronetEngine;
 import org.chromium.net.CronetProvider;
 import org.chromium.net.ExperimentalCronetEngine;
@@ -16,23 +25,28 @@ import java.util.List;
  *  Tests scenarios when the native shared library file is missing in the APK or was built for a
  *  wrong architecture.
  */
-public class MissingNativeLibraryTest extends CronetSmokeTestCase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class MissingNativeLibraryTest {
+    @Rule
+    public CronetSmokeTestRule mRule = new CronetSmokeTestRule();
+
     /**
      * If the ".so" file is missing, instantiating the Cronet engine should throw an exception.
      */
+    @Test
     @SmallTest
     public void testExceptionWhenSoFileIsAbsent() throws Exception {
         ExperimentalCronetEngine.Builder builder =
-                new ExperimentalCronetEngine.Builder(getContext());
+                new ExperimentalCronetEngine.Builder(InstrumentationRegistry.getTargetContext());
         try {
             builder.build();
-            fail("Expected exception since the shared library '.so' file is absent");
+            Assert.fail("Expected exception since the shared library '.so' file is absent");
         } catch (Throwable t) {
             // Find the root cause.
             while (t.getCause() != null) {
                 t = t.getCause();
             }
-            assertEquals(UnsatisfiedLinkError.class, t.getClass());
+            Assert.assertEquals(UnsatisfiedLinkError.class, t.getClass());
         }
     }
 
@@ -40,13 +54,15 @@ public class MissingNativeLibraryTest extends CronetSmokeTestCase {
      * Tests the embedder ability to select Java (platform) based implementation when
      * the native library is missing or doesn't load for some reason,
      */
+    @Test
     @SmallTest
     public void testForceChoiceOfJavaEngine() throws Exception {
-        List<CronetProvider> availableProviders = CronetProvider.getAllProviders(getContext());
+        List<CronetProvider> availableProviders =
+                CronetProvider.getAllProviders(InstrumentationRegistry.getTargetContext());
         boolean foundNativeProvider = false;
         CronetProvider platformProvider = null;
         for (CronetProvider provider : availableProviders) {
-            assertTrue(provider.isEnabled());
+            Assert.assertTrue(provider.isEnabled());
             if (provider.getName().equals(CronetProvider.PROVIDER_NAME_APP_PACKAGED)) {
                 foundNativeProvider = true;
             } else if (provider.getName().equals(CronetProvider.PROVIDER_NAME_FALLBACK)) {
@@ -54,18 +70,18 @@ public class MissingNativeLibraryTest extends CronetSmokeTestCase {
             }
         }
 
-        assertTrue("Unable to find the native cronet provider", foundNativeProvider);
-        assertNotNull("Unable to find the platform cronet provider", platformProvider);
+        Assert.assertTrue("Unable to find the native cronet provider", foundNativeProvider);
+        Assert.assertNotNull("Unable to find the platform cronet provider", platformProvider);
 
         CronetEngine.Builder builder = platformProvider.createBuilder();
         CronetEngine engine = builder.build();
         assertJavaEngine(engine);
 
-        assertTrue("It should be always possible to cast the created builder to"
+        Assert.assertTrue("It should be always possible to cast the created builder to"
                         + " ExperimentalCronetEngine.Builder",
                 builder instanceof ExperimentalCronetEngine.Builder);
 
-        assertTrue("It should be always possible to cast the created engine to"
+        Assert.assertTrue("It should be always possible to cast the created engine to"
                         + " ExperimentalCronetEngine.Builder",
                 engine instanceof ExperimentalCronetEngine);
     }
