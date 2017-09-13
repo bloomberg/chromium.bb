@@ -159,6 +159,7 @@ def generate_union_type_containers(code_generator_class, info_provider,
         info_provider,
         options.cache_directory,
         options.output_directory,
+        options.snake_case_generated_files,
         options.target_component)
     output_code_list = generator.generate_code()
     for output_path, output_code in output_code_list:
@@ -171,6 +172,7 @@ def generate_callback_function_impl(code_generator_class, info_provider,
         info_provider,
         options.cache_directory,
         options.output_directory,
+        options.snake_case_generated_files,
         options.target_component)
     output_code_list = generator.generate_code()
     for output_path, output_code in output_code_list:

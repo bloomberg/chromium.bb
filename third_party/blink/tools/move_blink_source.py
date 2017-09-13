@@ -51,6 +51,7 @@ class FileType(object):
     DEPS = 4
     MOJOM = 5
     TYPEMAP = 6
+    BLINK_BUILD_PY = 7
 
     @staticmethod
     def detect(path):
@@ -63,6 +64,8 @@ class FileType(object):
             return FileType.MOJOM
         if basename.endswith('.typemap'):
             return FileType.TYPEMAP
+        if basename.endswith('.py') and 'third_party/WebKit/Source/build' in path.replace('\\', '/'):
+            return FileType.BLINK_BUILD_PY
         if basename.endswith(('.gn', '.gni')):
             path = path.replace('\\', '/')
             if 'third_party/WebKit' in path or 'third_party/blink' in path:
@@ -101,9 +104,6 @@ class MoveBlinkSource(object):
         self._append_unless_upper_dir_exists(dirs, self._fs.join(self._repo_root, 'third_party', 'WebKit', 'common'))
         self._append_unless_upper_dir_exists(dirs, self._fs.join(self._repo_root, 'third_party', 'WebKit', 'public'))
         self._update_cpp_includes_in_directories(dirs)
-
-        # TODO(tkent): Update basenames in generated files;
-        # bindings/scripts/*.py, build/scripts/*.py.
 
         # Content update for individual files
         self._update_single_file_content('third_party/WebKit/Source/config.gni',
@@ -207,6 +207,12 @@ class MoveBlinkSource(object):
         content = content.replace('//third_party/WebKit/public', '//third_party/blink/renderer/public')
         return self._update_basename(content)
 
+    def _update_blink_build_py(self, content):
+        # We don't prepend 'third_party/blink/renderer/' to matched basenames
+        # because it won't affect build and manual update after the great mv is
+        # enough.
+        return self._update_basename(content)
+
     def _update_basename(self, content):
         return self._basename_re.sub(lambda match: self._basename_map[match.group(1)], content)
 
@@ -221,7 +227,7 @@ class MoveBlinkSource(object):
         dirs.append(new_dir)
 
     def _update_file_content(self):
-        _log.info('Find *.gn, *.mojom, *.typemap, DEPS, and OWNERS ...')
+        _log.info('Find *.gn, *.mojom, *.py, *.typemap, DEPS, and OWNERS ...')
         files = self._fs.files_under(
             self._repo_root, dirs_to_skip=['.git', 'out'], file_filter=self._filter_file)
         _log.info('Scan contents of %d files ...', len(files))
@@ -242,6 +248,8 @@ class MoveBlinkSource(object):
                 content = self._update_mojom(content)
             elif file_type == FileType.TYPEMAP:
                 content = self._update_typemap(content)
+            elif file_type == FileType.BLINK_BUILD_PY:
+                content = self._update_blink_build_py(content)
 
             if original_content == content:
                 continue
