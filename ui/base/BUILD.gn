@@ -341,10 +341,6 @@ component("base") {
       "clipboard/scoped_clipboard_writer.h",
       "cursor/cursor_util.cc",
       "cursor/cursor_util.h",
-      "cursor/cursors_aura.cc",
-      "cursor/cursors_aura.h",
-      "cursor/image_cursors.cc",
-      "cursor/image_cursors.h",
       "default_theme_provider.cc",
       "default_theme_provider.h",
       "dragdrop/cocoa_dnd_util.h",
@@ -551,11 +547,6 @@ component("base") {
   if (is_mac) {
     deps += [ "//third_party/mozilla" ]
 
-    sources -= [
-      "cursor/image_cursors.cc",
-      "cursor/image_cursors.h",
-    ]
-
     libs += [
       "Accelerate.framework",
       "AppKit.framework",
@@ -567,11 +558,6 @@ component("base") {
     ]
   }
 
-  if (use_aura) {
-    if (is_android) {
-      sources += [ "cursor/cursor_loader_android.cc" ]
-    }
-  }
   if (use_ozone) {
     sources += [
       "cursor/cursor_loader_ozone.cc",
@@ -609,30 +595,29 @@ component("base") {
 
   if (is_android) {
     deps += [ ":ui_base_jni_headers" ]
-
     libs += [ "jnigraphics" ]
+
+    if (use_aura) {
+      sources += [ "cursor/cursor_loader_android.cc" ]
+    } else {
+      sources -= [
+        "cursor/cursor_android.cc",
+        "default_theme_provider.cc",
+        "idle/idle.cc",
+        "idle/idle.h",
+        "idle/idle_android.cc",
+        "l10n/l10n_font_util.cc",
+        "models/button_menu_item_model.cc",
+        "models/dialog_model.cc",
+        "theme_provider.cc",
+        "touch/touch_editing_controller.cc",
+        "ui_base_types.cc",
+      ]
+    }
   }
 
-  if (is_android && !use_aura) {
-    sources -= [
-      "cursor/cursor_android.cc",
-      "cursor/image_cursors.cc",
-      "cursor/image_cursors.h",
-      "default_theme_provider.cc",
-      "idle/idle.cc",
-      "idle/idle.h",
-      "idle/idle_android.cc",
-      "l10n/l10n_font_util.cc",
-      "models/button_menu_item_model.cc",
-      "models/dialog_model.cc",
-      "theme_provider.cc",
-      "touch/touch_editing_controller.cc",
-      "ui_base_types.cc",
-    ]
-  }
-
-  # Aura clipboard.
   if (use_aura) {
+    # Aura clipboard.
     if (use_x11 && is_desktop_linux) {
       sources += [
         "clipboard/clipboard_aurax11.cc",
@@ -645,6 +630,14 @@ component("base") {
         "clipboard/clipboard_aura.h",
       ]
     }
+
+    # Cursor
+    sources += [
+      "cursor/cursors_aura.cc",
+      "cursor/cursors_aura.h",
+      "cursor/image_cursors.cc",
+      "cursor/image_cursors.h",
+    ]
   }
 
   if (is_android || is_ios) {
