@@ -496,9 +496,6 @@ bool IsURLAllowedInIncognito(const GURL& url) {
   // The image fetcher used to save images and perform image-based searches.
   std::unique_ptr<image_fetcher::IOSImageDataFetcherWrapper> _imageFetcher;
 
-  // Card side swipe view.
-  CardSideSwipeView* _sideSwipeView;
-
   // Dominant color cache. Key: (NSString*)url, val: (UIColor*)dominantColor.
   NSMutableDictionary* _dominantColorCache;
 
