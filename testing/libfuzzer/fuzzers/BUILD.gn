@@ -7,6 +7,7 @@
 import("//build/config/features.gni")
 import("//media/media_options.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
+import("//third_party/protobuf/proto_library.gni")
 
 # root BUILD depends on this target. Needed for package discovery
 group("fuzzers") {
@@ -136,6 +137,25 @@ fuzzer_test("url_parse_fuzzer") {
     "//url:url",
   ]
   dict = "dicts/generated/url_parse_fuzzer.dict"
+}
+
+fuzzer_test("url_parse_proto_fuzzer") {
+  sources = [
+    "url_parse_proto_fuzzer.cc",
+  ]
+  deps = [
+    ":url_proto",
+    "//base",
+    "//base:i18n",
+    "//third_party/libprotobuf-mutator",
+    "//url:url",
+  ]
+}
+
+proto_library("url_proto") {
+  sources = [
+    "url.proto",
+  ]
 }
 
 fuzzer_test("usrsctp_fuzzer") {
