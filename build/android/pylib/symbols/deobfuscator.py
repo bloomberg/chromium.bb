@@ -118,6 +118,9 @@ class Deobfuscator(object):
 
 
 class DeobfuscatorPool(object):
+  # As of Sep 2017, each instance requires about 500MB of RAM, as measured by:
+  # /usr/bin/time -v out/Release/bin/java_deobfuscate \
+  #     out/Release/apks/ChromePublic.apk.mapping
   def __init__(self, mapping_path, pool_size=4):
     self._mapping_path = mapping_path
     self._pool = [Deobfuscator(mapping_path) for _ in xrange(pool_size)]
