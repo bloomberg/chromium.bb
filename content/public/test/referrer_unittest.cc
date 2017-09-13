@@ -23,4 +23,24 @@ TEST_F(ReferrerSanitizerTest, SanitizesPolicyForNonEmptyReferrers) {
       Referrer(GURL("http://b"), static_cast<blink::WebReferrerPolicy>(200)))));
 }
 
+TEST(ReferrerTest, BlinkNetRoundTripConversion) {
+  const net::URLRequest::ReferrerPolicy policies[] = {
+      net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+      net::URLRequest::REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN,
+      net::URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN,
+      net::URLRequest::NEVER_CLEAR_REFERRER,
+      net::URLRequest::ORIGIN,
+      net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_CROSS_ORIGIN,
+      net::URLRequest::ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+      net::URLRequest::NO_REFERRER,
+  };
+
+  for (auto policy : policies) {
+    EXPECT_EQ(
+        Referrer::ReferrerPolicyForUrlRequest(Referrer(
+            GURL(), Referrer::NetReferrerPolicyToBlinkReferrerPolicy(policy))),
+        policy);
+  }
+}
+
 }  // namespace content

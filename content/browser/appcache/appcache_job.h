@@ -111,9 +111,6 @@ class CONTENT_EXPORT AppCacheJob : public base::SupportsWeakPtr<AppCacheJob> {
   // Returns a weak pointer reference to the job.
   virtual base::WeakPtr<AppCacheJob> GetWeakPtr();
 
-  // Returns the URL of the job.
-  virtual const GURL& GetURL() const = 0;
-
   // Returns the underlying URLRequestJob if any. This only applies to
   // AppCaches loaded via the URLLoader mechanism.
   virtual net::URLRequestJob* AsURLRequestJob();

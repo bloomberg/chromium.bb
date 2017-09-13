@@ -73,7 +73,6 @@ class CONTENT_EXPORT AppCacheURLLoaderJob : public AppCacheJob,
                                 bool is_fallback) override;
   void DeliverNetworkResponse() override;
   void DeliverErrorResponse() override;
-  const GURL& GetURL() const override;
   AppCacheURLLoaderJob* AsURLLoaderJob() override;
 
   // mojom::URLLoader implementation:

@@ -48,7 +48,6 @@ class CONTENT_EXPORT AppCacheURLRequestJob : public net::URLRequestJob,
                                 bool is_fallback) override;
   void DeliverNetworkResponse() override;
   void DeliverErrorResponse() override;
-  const GURL& GetURL() const override;
   net::URLRequestJob* AsURLRequestJob() override;
 
   // Accessors for the info about the appcached response, if any,
