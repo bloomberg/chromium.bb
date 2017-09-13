@@ -4,6 +4,7 @@
 
 #include "core/layout/ng/inline/ng_line_breaker.h"
 
+#include "core/layout/ng/inline/ng_bidi_paragraph.h"
 #include "core/layout/ng/inline/ng_inline_break_token.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
 #include "core/layout/ng/ng_box_fragment.h"
@@ -30,7 +31,8 @@ NGLineBreaker::NGLineBreaker(
       unpositioned_floats_(unpositioned_floats),
       break_iterator_(node.Text()),
       shaper_(node.Text().Characters16(), node.Text().length()),
-      spacing_(node.Text()) {
+      spacing_(node.Text()),
+      base_direction_(node_.BaseDirection()) {
   if (break_token) {
     item_index_ = break_token->ItemIndex();
     offset_ = break_token->TextOffset();
@@ -56,6 +58,22 @@ bool NGLineBreaker::IsFirstFormattedLine() const {
   return true;
 }
 
+// Compute the base direction for bidi algorithm for this line.
+void NGLineBreaker::ComputeBaseDirection() {
+  // If 'unicode-bidi' is not 'plaintext', use the base direction of the block.
+  if (!line_.is_after_forced_break ||
+      node_.Style().GetUnicodeBidi() != UnicodeBidi::kPlaintext)
+    return;
+  // If 'unicode-bidi: plaintext', compute the base direction for each paragraph
+  // (separated by forced break.)
+  const String& text = node_.Text();
+  if (text.Is8Bit())
+    return;
+  size_t end_offset = text.find(kNewlineCharacter, offset_);
+  base_direction_ = NGBidiParagraph::BaseDirectionForString(node_.Text(
+      offset_, end_offset == kNotFound ? text.length() : end_offset));
+}
+
 // Initialize internal states for the next line.
 void NGLineBreaker::PrepareNextLine(const NGExclusionSpace& exclusion_space,
                                     NGLineInfo* line_info) {
@@ -65,6 +83,9 @@ void NGLineBreaker::PrepareNextLine(const NGExclusionSpace& exclusion_space,
   line_info->SetLineStyle(node_, constraint_space_, IsFirstFormattedLine(),
                           line_.is_after_forced_break);
   SetCurrentStyle(line_info->LineStyle());
+  ComputeBaseDirection();
+  line_info->SetBaseDirection(base_direction_);
+
   line_.is_after_forced_break = false;
   line_.should_create_line_box = false;
 
@@ -239,7 +260,7 @@ void NGLineBreaker::ComputeLineLocation(NGLineInfo* line_info) const {
   if (LayoutUnit text_indent = line_info->TextIndent()) {
     // Move the line box by indent. Negative indents are ink overflow, let the
     // line box overflow from the container box.
-    if (IsLtr(node_.BaseDirection()))
+    if (IsLtr(line_info->BaseDirection()))
       line_left += text_indent;
     available_width -= text_indent;
   }

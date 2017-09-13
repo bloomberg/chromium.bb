@@ -265,8 +265,8 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
   // indivisual items do not change their relative position to the line box.
   LayoutUnit inline_size = position;
   if (text_align != ETextAlign::kJustify) {
-    ApplyTextAlign(text_align, &line_offset.inline_offset, inline_size,
-                   line_info->AvailableWidth());
+    ApplyTextAlign(*line_info, text_align, &line_offset.inline_offset,
+                   inline_size);
   }
 
   line_box.SetInlineSize(inline_size);
@@ -348,7 +348,7 @@ bool NGInlineLayoutAlgorithm::ApplyJustify(NGLineInfo* line_info) {
 
   // Compute the spacing to justify.
   ShapeResultSpacing<String> spacing(line_text);
-  spacing.SetExpansion(expansion, Node().BaseDirection(),
+  spacing.SetExpansion(expansion, line_info->BaseDirection(),
                        line_info->LineStyle().GetTextJustify());
   if (!spacing.HasExpansion())
     return false;  // no expansion opportunities exist.
@@ -379,13 +379,12 @@ bool NGInlineLayoutAlgorithm::ApplyJustify(NGLineInfo* line_info) {
   return true;
 }
 
-void NGInlineLayoutAlgorithm::ApplyTextAlign(ETextAlign text_align,
+void NGInlineLayoutAlgorithm::ApplyTextAlign(const NGLineInfo& line_info,
+                                             ETextAlign text_align,
                                              LayoutUnit* line_left,
-                                             LayoutUnit inline_size,
-                                             LayoutUnit available_width) {
-  bool is_base_ltr = IsLtr(Node().BaseDirection());
-  // TODO(kojii): Investigate handling trailing spaces for 'white-space:
-  // pre|pre-wrap'. Refer to LayoutBlockFlow::UpdateLogicalWidthForAlignment().
+                                             LayoutUnit inline_size) {
+  bool is_base_ltr = IsLtr(line_info.BaseDirection());
+  LayoutUnit available_width = line_info.AvailableWidth();
   while (true) {
     switch (text_align) {
       case ETextAlign::kLeft:

@@ -139,6 +139,12 @@ class CORE_EXPORT NGLineInfo {
   void SetStartOffset(unsigned offset) { start_offset_ = offset; }
   void SetEndOffset(unsigned offset) { end_offset_ = offset; }
 
+  // The base direction of this line for the bidi algorithm.
+  TextDirection BaseDirection() const { return base_direction_; }
+  void SetBaseDirection(TextDirection direction) {
+    base_direction_ = direction;
+  }
+
  private:
   const ComputedStyle* line_style_ = nullptr;
   NGInlineItemResults results_;
@@ -149,6 +155,8 @@ class CORE_EXPORT NGLineInfo {
 
   unsigned start_offset_;
   unsigned end_offset_;
+
+  TextDirection base_direction_ = TextDirection::kLtr;
 
   bool use_first_line_style_ = false;
   bool is_last_line_ = false;

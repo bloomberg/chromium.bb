@@ -44,6 +44,15 @@ bool NGBidiParagraph::SetParagraph(const String& text,
   return true;
 }
 
+TextDirection NGBidiParagraph::BaseDirectionForString(const StringView& text) {
+  DCHECK(!text.Is8Bit());
+  if (text.Is8Bit())
+    return TextDirection::kLtr;
+  UBiDiDirection direction =
+      ubidi_getBaseDirection(text.Characters16(), text.length());
+  return direction == UBIDI_RTL ? TextDirection::kRtl : TextDirection::kLtr;
+}
+
 unsigned NGBidiParagraph::GetLogicalRun(unsigned start,
                                         UBiDiLevel* level) const {
   int32_t end;
