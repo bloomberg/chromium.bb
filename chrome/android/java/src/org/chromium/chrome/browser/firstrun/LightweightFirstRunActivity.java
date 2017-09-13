@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.firstrun;
 
 import android.os.Bundle;
+import android.support.annotation.StringRes;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -164,7 +165,7 @@ public class LightweightFirstRunActivity extends FirstRunActivityBase {
      * Show an informational web page. The page doesn't show navigation control.
      * @param url Resource id for the URL of the web page.
      */
-    public void showInfoPage(int url) {
+    public void showInfoPage(@StringRes int url) {
         CustomTabActivity.showInfoPage(
                 this, LocalizationUtils.substituteLocalePlaceholder(getString(url)));
     }
