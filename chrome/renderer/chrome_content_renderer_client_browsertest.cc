@@ -132,42 +132,18 @@ struct FlashEmbedsTestData {
 };
 
 const FlashEmbedsTestData kFlashEmbedsTestData[] = {
-  {
-    "Valid URL, no parameters",
-    "www.youtube.com",
-    "/v/deadbeef",
-    "application/x-shockwave-flash",
-    "/embed/deadbeef"
-  },
-  {
-    "Valid URL, no parameters, subdomain",
-    "www.foo.youtube.com",
-    "/v/deadbeef",
-    "application/x-shockwave-flash",
-    "/embed/deadbeef"
-  },
-  {
-    "Valid URL, many parameters",
-    "www.youtube.com",
-    "/v/deadbeef?start=4&fs=1",
-    "application/x-shockwave-flash",
-    "/embed/deadbeef?start=4&fs=1"
-  },
-  {
-    "Invalid parameter construct, many parameters",
-    "www.youtube.com",
-    "/v/deadbeef&bar=4&foo=6",
-    "application/x-shockwave-flash",
-    "/embed/deadbeef?bar=4&foo=6"
-  },
-  {
-    "Valid URL, enablejsapi=1",
-    "www.youtube.com",
-    "/v/deadbeef?enablejsapi=1",
-    "",
-    "/v/deadbeef?enablejsapi=1"
-  }
-};
+    {"Valid URL, no parameters", "www.youtube.com", "/v/deadbeef",
+     "application/x-shockwave-flash", "/embed/deadbeef"},
+    {"Valid URL, no parameters, subdomain", "www.foo.youtube.com",
+     "/v/deadbeef", "application/x-shockwave-flash", "/embed/deadbeef"},
+    {"Valid URL, many parameters", "www.youtube.com",
+     "/v/deadbeef?start=4&fs=1", "application/x-shockwave-flash",
+     "/embed/deadbeef?start=4&fs=1"},
+    {"Invalid parameter construct, many parameters", "www.youtube.com",
+     "/v/deadbeef&bar=4&foo=6", "application/x-shockwave-flash",
+     "/embed/deadbeef?bar=4&foo=6"},
+    {"Valid URL, enablejsapi=1", "www.youtube.com", "/v/deadbeef?enablejsapi=1",
+     "application/x-shockwave-flash", "/embed/deadbeef?enablejsapi=1"}};
 
 }  // namespace
 

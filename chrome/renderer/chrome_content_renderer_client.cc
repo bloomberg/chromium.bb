@@ -1638,19 +1638,12 @@ GURL ChromeContentRendererClient::OverrideFlashEmbedWithHTML(const GURL& url) {
   }
 
   GURL corrected_url = GURL(url_str);
-  // Unless we're on an Android device, we don't modify any URLs that contain
-  // the enablejsapi=1 parameter since the page may be interacting with the
-  // YouTube Flash player in Javascript and we don't want to break working
-  // content. If we're on an Android device and the URL contains the
-  // enablejsapi=1 parameter, we do override the URL.
-  if (corrected_url.query().find("enablejsapi=1") != std::string::npos) {
-#if defined(OS_ANDROID)
+  // Chrome used to only rewrite embeds with enablejsapi=1 on mobile for
+  // backward compatibility but with Flash embeds deprecated by YouTube, they
+  // are rewritten on all platforms. However, a different result is used in
+  // order to keep track of how popular they are.
+  if (corrected_url.query().find("enablejsapi=1") != std::string::npos)
     result = internal::SUCCESS_ENABLEJSAPI;
-#else
-    RecordYouTubeRewriteUMA(internal::FAILURE_ENABLEJSAPI);
-    return GURL();
-#endif
-  }
 
   // Change the path to use the YouTube HTML5 API
   std::string path = corrected_url.path();

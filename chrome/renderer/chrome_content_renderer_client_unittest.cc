@@ -418,8 +418,7 @@ TEST_F(ChromeContentRendererClientTest,
           [data_reduction_proxy::chrome_proxy_content_transform_header()]);
 }
 
-// These are tests that are common for both Android and desktop browsers.
-TEST_F(ChromeContentRendererClientTest, RewriteEmbedCommon) {
+TEST_F(ChromeContentRendererClientTest, RewriteEmbed) {
   struct TestData {
     std::string original;
     std::string expected;
@@ -498,21 +497,6 @@ TEST_F(ChromeContentRendererClientTest, RewriteEmbedCommon) {
       // youtube-nocookie.com, https
       {"https://www.youtube-nocookie.com/v/123/",
        "https://www.youtube-nocookie.com/embed/123/"},
-  };
-
-  ChromeContentRendererClient client;
-
-  for (const auto& data : test_data)
-    EXPECT_EQ(GURL(data.expected),
-              client.OverrideFlashEmbedWithHTML(GURL(data.original)));
-}
-
-#if defined(OS_ANDROID)
-TEST_F(ChromeContentRendererClientTest, RewriteEmbedAndroid) {
-  struct TestData {
-    std::string original;
-    std::string expected;
-  } test_data[] = {
       // URL isn't using Flash, has JS API enabled
       {"http://www.youtube.com/embed/deadbeef?enablejsapi=1", ""},
       // URL is using Flash, has JS API enabled
@@ -532,38 +516,11 @@ TEST_F(ChromeContentRendererClientTest, RewriteEmbedAndroid) {
 
   ChromeContentRendererClient client;
 
-  for (const auto& data : test_data) {
+  for (const auto& data : test_data)
     EXPECT_EQ(GURL(data.expected),
               client.OverrideFlashEmbedWithHTML(GURL(data.original)));
-  }
 }
-#else
-TEST_F(ChromeContentRendererClientTest, RewriteEmbedDesktop) {
-  struct TestData {
-    std::string original;
-    std::string expected;
-  } test_data[] = {
-      // URL isn't using Flash, has JS API enabled
-      {"http://www.youtube.com/embed/deadbeef?enablejsapi=1", ""},
-      // URL is using Flash, has JS API enabled
-      {"http://www.youtube.com/v/deadbeef?enablejsapi=1", ""},
-      // youtube-nocookie.com, has JS API enabled
-      {"http://www.youtube-nocookie.com/v/123?enablejsapi=1", ""},
-      // URL is using Flash, has JS API enabled, invalid parameter construct
-      {"http://www.youtube.com/v/deadbeef&enablejsapi=1", ""},
-      // URL is using Flash, has JS API enabled, invalid parameter construct,
-      // has multiple parameters
-      {"http://www.youtube.com/v/deadbeef&start=4&enablejsapi=1", ""},
-  };
 
-  ChromeContentRendererClient client;
-
-  for (const auto& data : test_data) {
-    EXPECT_EQ(GURL(data.expected),
-              client.OverrideFlashEmbedWithHTML(GURL(data.original)));
-  }
-}
-#endif
 class ChromeContentRendererClientMetricsTest : public testing::Test {
  public:
   ChromeContentRendererClientMetricsTest() = default;
@@ -680,9 +637,7 @@ TEST_F(ChromeContentRendererClientMetricsTest, RewriteEmbedSuccessRewrite) {
   EXPECT_EQ(total_count, samples->TotalCount());
 }
 
-#if defined(OS_ANDROID)
-TEST_F(ChromeContentRendererClientMetricsTest,
-       RewriteEmbedFailureJSAPIAndroid) {
+TEST_F(ChromeContentRendererClientMetricsTest, RewriteEmbedJSAPI) {
   ChromeContentRendererClient client;
 
   std::unique_ptr<base::HistogramSamples> samples = GetHistogramSamples();
@@ -709,30 +664,3 @@ TEST_F(ChromeContentRendererClientMetricsTest,
   }
 }
 
-#else
-TEST_F(ChromeContentRendererClientMetricsTest,
-       RewriteEmbedFailureJSAPIDesktop) {
-  ChromeContentRendererClient client;
-
-  std::unique_ptr<base::HistogramSamples> samples = GetHistogramSamples();
-  auto total_count = 0;
-  EXPECT_EQ(total_count, samples->TotalCount());
-
-  const std::string test_data[] = {
-      // Valid parameter construct, one parameter
-      "http://www.youtube.com/v/deadbeef?enablejsapi=1",
-      // Invalid parameter construct, one parameter
-      "http://www.youtube.com/v/deadbeef&enablejsapi=1",
-      // Invalid parameter construct, has multiple parameters
-      "http://www.youtube.com/v/deadbeef&start=4&enablejsapi=1?foo=2"};
-
-  for (const auto& data : test_data) {
-    ++total_count;
-    GURL gurl = GURL(data);
-    OverrideFlashEmbed(gurl);
-    samples = GetHistogramSamples();
-    EXPECT_EQ(total_count, samples->GetCount(internal::FAILURE_ENABLEJSAPI));
-    EXPECT_EQ(total_count, samples->TotalCount());
-  }
-}
-#endif
