@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/trace_event/process_memory_dump.h"
+#include "build/build_config.h"
 #include "sql/connection.h"
 #include "sql/connection_memory_dump_provider.h"
 #include "sql/correct_sql_test_base.h"
@@ -837,8 +838,8 @@ TEST_F(SQLConnectionTest, RazeAndCloseDiagnostics) {
   // Close normally to reset the poisoned flag.
   db().Close();
 
-  // DEATH tests not supported on Android or iOS.
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  // DEATH tests not supported on Android, iOS, or Fuchsia.
+#if !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_FUCHSIA)
   // Once the real Close() has been called, various calls enforce API
   // usage by becoming fatal in debug mode.  Since DEATH tests are
   // expensive, just test one of them.
@@ -919,8 +920,8 @@ TEST_F(SQLConnectionTest, Delete) {
 }
 
 // This test manually sets on disk permissions; this doesn't apply to the mojo
-// fork.
-#if defined(OS_POSIX) && !defined(MOJO_APPTEST_IMPL)
+// fork or Fuchsia.
+#if defined(OS_POSIX) && !defined(MOJO_APPTEST_IMPL) && !defined(OS_FUCHSIA)
 // Test that set_restrict_to_user() trims database permissions so that
 // only the owner (and root) can read.
 TEST_F(SQLConnectionTest, UserPermission) {
@@ -984,7 +985,8 @@ TEST_F(SQLConnectionTest, UserPermission) {
   EXPECT_TRUE(base::GetPosixFilePermissions(journal, &mode));
   ASSERT_EQ((mode & base::FILE_PERMISSION_USER_MASK), mode);
 }
-#endif  // defined(OS_POSIX)
+#endif  // defined(OS_POSIX) && !defined(MOJO_APPTEST_IMPL) &&
+        // !defined(OS_FUCHSIA)
 
 // Test that errors start happening once Poison() is called.
 TEST_F(SQLConnectionTest, Poison) {
@@ -1657,8 +1659,8 @@ TEST_F(SQLConnectionTest, GetAppropriateMmapSizeAltStatus) {
 // statements which fail to compile with SQLITE_ERROR call DLOG(FATAL).  This
 // case cannot be suppressed with an error callback.
 TEST_F(SQLConnectionTest, CompileError) {
-  // DEATH tests not supported on Android or iOS.
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  // DEATH tests not supported on Android, iOS, or Fuchsia.
+#if !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_FUCHSIA)
   if (DLOG_IS_ON(FATAL)) {
     db().set_error_callback(base::Bind(&IgnoreErrorCallback));
     ASSERT_DEATH({
