@@ -32,7 +32,7 @@ class ASH_EXPORT SplitViewOverviewOverlay {
   bool visible() const;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(SplitViewWindowSelectorTest,
+  FRIEND_TEST_ALL_PREFIXES(WindowSelectorTest,
                            SplitViewOverviewOverlayWidgetReparenting);
   class SplitViewOverviewOverlayView;
 
