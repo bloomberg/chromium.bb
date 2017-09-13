@@ -206,8 +206,6 @@ source_set("common") {
     "layer_tree_settings_factory.h",
     "loader_util.cc",
     "loader_util.h",
-    "mac/app_nap_activity.h",
-    "mac/app_nap_activity.mm",
     "mac/attributed_string_coder.h",
     "mac/attributed_string_coder.mm",
     "mac/font_descriptor.h",
