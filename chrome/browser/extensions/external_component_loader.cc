@@ -24,10 +24,6 @@
 #include "chromeos/chromeos_switches.h"
 #endif
 
-#if BUILDFLAG(ENABLE_APP_LIST) && defined(OS_CHROMEOS)
-#include "chrome/browser/ui/app_list/google_now_extension.h"
-#endif
-
 namespace extensions {
 
 ExternalComponentLoader::ExternalComponentLoader(Profile* profile)
@@ -60,12 +56,6 @@ void ExternalComponentLoader::StartLoading() {
     AddExternalExtension(extension_misc::kMediaRouterStableExtensionId,
                          prefs.get());
   }
-
-#if BUILDFLAG(ENABLE_APP_LIST) && defined(OS_CHROMEOS)
-  std::string google_now_extension_id;
-  if (GetGoogleNowExtensionId(&google_now_extension_id))
-    AddExternalExtension(google_now_extension_id, prefs.get());
-#endif
 
   LoadFinished(std::move(prefs));
 }
