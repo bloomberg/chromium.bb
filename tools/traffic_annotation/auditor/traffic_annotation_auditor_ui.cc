@@ -32,6 +32,9 @@ Options:
   --source-path       Optional path to the src directory. If not provided and
                       build-path is available, assumed to be 'build-path/../..',
                       otherwise current directory.
+  --tool-path         Optional path to traffic_annotation_extractor clang tool.
+                      If not specified, it's assumed to be in the same path as
+                      auditor's executable.
   --extractor-output  Optional path to the temporary file that extracted
                       annotations will be stored into.
   --extracted-input   Optional path to the file that temporary extracted
@@ -284,6 +287,7 @@ int main(int argc, char* argv[]) {
 
   base::FilePath build_path = command_line.GetSwitchValuePath("build-path");
   base::FilePath source_path = command_line.GetSwitchValuePath("source-path");
+  base::FilePath tool_path = command_line.GetSwitchValuePath("tool-path");
   base::FilePath extractor_output =
       command_line.GetSwitchValuePath("extractor-output");
   base::FilePath extractor_input =
@@ -302,6 +306,11 @@ int main(int argc, char* argv[]) {
   path_filters = command_line.GetArgs();
 #endif
 
+  // If tool path is not specified, assume it is in the same path as this
+  // executable.
+  if (tool_path.empty())
+    tool_path = command_line.GetProgram().DirName();
+
   // If source path is not provided, guess it using build path or current
   // directory.
   if (source_path.empty()) {
@@ -312,7 +321,7 @@ int main(int argc, char* argv[]) {
                         .Append(base::FilePath::kParentDirectory);
   }
 
-  TrafficAnnotationAuditor auditor(source_path, build_path);
+  TrafficAnnotationAuditor auditor(source_path, build_path, tool_path);
 
   // Extract annotations.
   if (extractor_input.empty()) {
@@ -324,8 +333,10 @@ int main(int argc, char* argv[]) {
              "extracted annotations already exist.\n";
       return 1;
     }
-    if (!auditor.RunClangTool(path_filters, full_run))
+    if (!auditor.RunClangTool(path_filters, full_run)) {
+      LOG(ERROR) << "Failed to run clang tool.";
       return 1;
+    }
 
     // Write extractor output if requested.
     if (!extractor_output.empty()) {

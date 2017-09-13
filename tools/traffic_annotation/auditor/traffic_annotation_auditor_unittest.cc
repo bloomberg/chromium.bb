@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "tools/traffic_annotation/auditor/traffic_annotation_auditor.h"
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
@@ -35,6 +36,12 @@ const char* kRelevantFiles[] = {
     "tools/traffic_annotation/auditor/tests/relevant_file_name_and_content.cc",
     "tools/traffic_annotation/auditor/tests/relevant_file_name_and_content.mm"};
 
+const base::FilePath kTestsFolder(
+    FILE_PATH_LITERAL("tools/traffic_annotation/auditor/tests"));
+
+const base::FilePath kClangToolPath(
+    FILE_PATH_LITERAL("tools/traffic_annotation/bin"));
+
 const base::FilePath kDownstreamUnittests(
     FILE_PATH_LITERAL("tools/traffic_annotation/scripts/"
                       "annotations_xml_downstream_caller.py"));
@@ -51,16 +58,29 @@ class TrafficAnnotationAuditorTest : public ::testing::Test {
       return;
     }
 
-    tests_folder_ = source_path_.Append(FILE_PATH_LITERAL("tools"))
-                        .Append(FILE_PATH_LITERAL("traffic_annotation"))
-                        .Append(FILE_PATH_LITERAL("auditor"))
-                        .Append(FILE_PATH_LITERAL("tests"));
-    auditor_ =
-        base::MakeUnique<TrafficAnnotationAuditor>(source_path(), build_path());
+    tests_folder_ = source_path_.Append(kTestsFolder);
+
+#if defined(OS_WIN)
+    base::FilePath platform_name(FILE_PATH_LITERAL("win32"));
+#elif defined(OS_LINUX)
+    base::FilePath platform_name(FILE_PATH_LITERAL("linux64"));
+#elif defined(OS_MACOSX)
+    base::FilePath platform_name(FILE_PATH_LITERAL("mac"));
+#else
+    NOTREACHED() << "Unexpected platform.";
+#endif
+
+    base::FilePath clang_tool_path =
+        source_path_.Append(kClangToolPath).Append(platform_name);
+
+    // As build path is not available and not used in tests, the default (empty)
+    // build path is passed to auditor.
+    auditor_ = std::make_unique<TrafficAnnotationAuditor>(
+        source_path_, source_path_.Append(FILE_PATH_LITERAL("out/Default")),
+        clang_tool_path);
   }
 
   const base::FilePath source_path() const { return source_path_; }
-  const base::FilePath build_path() const { return build_path_; }
   const base::FilePath tests_folder() const { return tests_folder_; };
   TrafficAnnotationAuditor& auditor() { return *auditor_; }
 
@@ -82,9 +102,6 @@ class TrafficAnnotationAuditorTest : public ::testing::Test {
 
  private:
   base::FilePath source_path_;
-  base::FilePath build_path_;  // Currently stays empty. Will be set if access
-                               // to a compiled build directory would be
-                               // granted.
   base::FilePath tests_folder_;
   std::unique_ptr<TrafficAnnotationAuditor> auditor_;
 };
@@ -850,4 +867,10 @@ TEST_F(TrafficAnnotationAuditorTest, AnnotationsDownstreamUnittests) {
   tests_result = system(cmdline.GetCommandLineString().c_str());
 #endif
   EXPECT_EQ(0, tests_result);
+}
+
+// Tests if AnnotationInstance::GetClangLibraryPath finds a path.
+TEST_F(TrafficAnnotationAuditorTest, GetClangLibraryPath) {
+  base::FilePath clang_library = auditor().GetClangLibraryPath();
+  EXPECT_FALSE(clang_library.empty());
 }
