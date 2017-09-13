@@ -1545,21 +1545,29 @@ void WebContentsImpl::WasHidden() {
 }
 
 #if defined(OS_ANDROID)
-void WebContentsImpl::SetImportance(ChildProcessImportance importance) {
-  // Not calling GetRenderWidgetHostView since importance should be set on both
-  // the interstitial and underlying page.
+std::set<RenderWidgetHostImpl*> WebContentsImpl::GetAllRenderWidgetHosts() {
   std::set<RenderWidgetHostImpl*> set;
   if (ShowingInterstitialPage()) {
-    set.insert(
+    auto* host =
         static_cast<RenderFrameHostImpl*>(interstitial_page_->GetMainFrame())
-            ->GetRenderWidgetHost());
-  }
-  for (RenderFrameHost* rfh : GetAllFrames())
-    set.insert(static_cast<RenderFrameHostImpl*>(rfh)->GetRenderWidgetHost());
-  for (RenderWidgetHostImpl* host : set) {
+            ->GetRenderWidgetHost();
     DCHECK(host);
-    host->SetImportance(importance);
+    set.insert(host);
   }
+  for (RenderFrameHost* rfh : GetAllFrames()) {
+    auto* host = static_cast<RenderFrameHostImpl*>(rfh)->GetRenderWidgetHost();
+    DCHECK(host);
+    set.insert(host);
+  }
+  return set;
+}
+
+void WebContentsImpl::SetImportance(ChildProcessImportance importance) {
+  // Importance should be set on interstitial page as well, which is included
+  // the set returned by |GetAllRenderWidgetHosts()|.
+  for (auto* host : GetAllRenderWidgetHosts())
+    host->SetImportance(importance);
+
   // TODO(boliu): If this is ever used on platforms other than Android, make
   // sure to also update inner WebContents.
 }

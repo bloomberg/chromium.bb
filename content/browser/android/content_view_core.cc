@@ -208,19 +208,11 @@ ContentViewCore::ContentViewCore(
   InitWebContents();
 }
 
-void ContentViewCore::AddObserver(ContentViewCoreObserver* observer) {
-  observer_list_.AddObserver(observer);
-}
-
-void ContentViewCore::RemoveObserver(ContentViewCoreObserver* observer) {
-  observer_list_.RemoveObserver(observer);
-}
-
 ContentViewCore::~ContentViewCore() {
-  for (auto& observer : observer_list_)
-    observer.OnContentViewCoreDestroyed();
-  observer_list_.Clear();
-
+  for (auto* host : web_contents_->GetAllRenderWidgetHosts()) {
+    static_cast<RenderWidgetHostViewAndroid*>(host->GetView())
+        ->OnContentViewCoreDestroyed();
+  }
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   java_ref_.reset();

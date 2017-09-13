@@ -504,8 +504,6 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
 }
 
 RenderWidgetHostViewAndroid::~RenderWidgetHostViewAndroid() {
-  if (content_view_core_)
-    content_view_core_->RemoveObserver(this);
   SetContentViewCore(NULL);
   DCHECK(!ime_adapter_android_);
   DCHECK(ack_callbacks_.empty());
@@ -2104,13 +2102,11 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
     if (content_view_core_ || is_size_initialized)
       resize = true;
     if (content_view_core_) {
-      content_view_core_->RemoveObserver(this);
       view_.RemoveObserver(this);
       view_.RemoveFromParent();
       view_.GetLayer()->RemoveFromParent();
     }
     if (content_view_core) {
-      content_view_core->AddObserver(this);
       view_.AddObserver(this);
       ui::ViewAndroid* parent_view = content_view_core->GetViewAndroid();
       parent_view->AddChild(&view_);
