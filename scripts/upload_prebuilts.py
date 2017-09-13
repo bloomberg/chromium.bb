@@ -39,7 +39,6 @@ from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import portage_util
-from chromite.lib import retry_util
 from chromite.lib import toolchain
 
 # How many times to retry uploads.
@@ -216,12 +215,7 @@ def _GsUpload(gs_context, acl, local_file, remote_file):
       # Apply the passed in ACL xml file to the uploaded object.
       gs_context.SetACL(remote_file, acl=acl)
     else:
-      # Some versions of gsutil bubble up precondition failures even when we
-      # didn't request it due to how ACL changes happen internally to gsutil.
-      # https://crbug.com/763450
-      retry_util.RetryException(
-          gs.GSContextPreconditionFailed, 3, gs_context.ChangeACL,
-          remote_file, acl_args_file=acl)
+      gs_context.ChangeACL(remote_file, acl_args_file=acl)
 
 
 def RemoteUpload(gs_context, acl, files, pool=10):

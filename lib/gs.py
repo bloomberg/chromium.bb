@@ -1122,7 +1122,14 @@ class GSContext(object):
       lines = [x.split('#', 1)[0].strip() for x in lines]
       acl_args = ' '.join([x for x in lines if x]).split()
 
-    self.DoCommand(['acl', 'ch'] + acl_args + [upload_url], **kwargs)
+    # Some versions of gsutil bubble up precondition failures even when we
+    # didn't request it due to how ACL changes happen internally to gsutil.
+    # https://crbug.com/763450
+    # We keep the retry limit a bit low because DoCommand already has its
+    # own level of retries.
+    retry_util.RetryException(
+        GSContextPreconditionFailed, 3, self.DoCommand,
+        ['acl', 'ch'] + acl_args + [upload_url], **kwargs)
 
   def Exists(self, path, **kwargs):
     """Checks whether the given object exists.
