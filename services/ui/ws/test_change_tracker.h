@@ -15,6 +15,8 @@
 #include "services/ui/common/types.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "ui/gfx/geometry/mojo/geometry.mojom.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_f.h"
 
 namespace ui {
 
@@ -97,6 +99,9 @@ struct Change {
   gfx::Transform transform;
   // Set in OnWindowInputEvent() if the event is a KeyEvent.
   std::unordered_map<std::string, std::vector<uint8_t>> key_event_properties;
+  int64_t display_id;
+  gfx::Point location1;
+  gfx::PointF location2;
 };
 
 // Converts Changes to string descriptions.
@@ -168,9 +173,12 @@ class TestChangeTracker {
   void OnWindowVisibilityChanged(Id window_id, bool visible);
   void OnWindowOpacityChanged(Id window_id, float opacity);
   void OnWindowParentDrawnStateChanged(Id window_id, bool drawn);
-  void OnWindowInputEvent(Id window_id,
-                          const ui::Event& event,
-                          bool matches_pointer_watcher);
+  void OnWindowInputEvent(
+      Id window_id,
+      const ui::Event& event,
+      int64_t display_id,
+      const gfx::PointF& event_location_in_screen_pixel_layout,
+      bool matches_pointer_watcher);
   void OnPointerEventObserved(const ui::Event& event,
                               uint32_t window_id);
   void OnWindowSharedPropertyChanged(

@@ -360,11 +360,13 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   void OnWindowParentDrawnStateChanged(uint32_t window, bool drawn) override {
     tracker()->OnWindowParentDrawnStateChanged(window, drawn);
   }
-  void OnWindowInputEvent(uint32_t event_id,
-                          Id window_id,
-                          int64_t display_id,
-                          std::unique_ptr<ui::Event> event,
-                          bool matches_pointer_watcher) override {
+  void OnWindowInputEvent(
+      uint32_t event_id,
+      Id window_id,
+      int64_t display_id,
+      const gfx::PointF& event_location_in_screen_pixel_layout,
+      std::unique_ptr<ui::Event> event,
+      bool matches_pointer_watcher) override {
     // Ack input events to clear the state on the server. These can be received
     // during test startup. X11Window::DispatchEvent sends a synthetic move
     // event to notify of entry.

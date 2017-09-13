@@ -16,6 +16,7 @@
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_creation_config.h"
 #include "services/ui/ws/display_manager.h"
+#include "services/ui/ws/event_location.h"
 #include "services/ui/ws/event_targeter.h"
 #include "services/ui/ws/platform_display.h"
 #include "services/ui/ws/server_window.h"
@@ -28,6 +29,7 @@
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/point3_f.h"
+#include "ui/gfx/geometry/point_conversions.h"
 
 namespace ui {
 namespace ws {
@@ -45,7 +47,7 @@ base::TimeDelta GetDefaultAckTimerDelay() {
 #endif
 }
 
-bool EventsCanBeCoalesced(const ui::Event& one, const ui::Event& two) {
+bool CanEventsBeCoalesced(const ui::Event& one, const ui::Event& two) {
   if (one.type() != two.type() || one.flags() != two.flags())
     return false;
 
@@ -74,6 +76,24 @@ const ServerWindow* GetEmbedRoot(const ServerWindow* window) {
   while (embed_root && embed_root->id().client_id == window->id().client_id)
     embed_root = embed_root->parent();
   return embed_root;
+}
+
+const gfx::Rect& GetDisplayBoundsInPixels(Display* display) {
+  return display->GetViewportMetrics().bounds_in_pixels;
+}
+
+gfx::Point PixelsToDips(Display* display, const gfx::Point& location) {
+  return gfx::ConvertPointToDIP(
+      display->GetDisplay().device_scale_factor() /
+          display->GetViewportMetrics().ui_scale_factor,
+      location);
+}
+
+gfx::Point DipsToPixels(Display* display, const gfx::Point& location) {
+  return gfx::ConvertPointToPixel(
+      display->GetDisplay().device_scale_factor() /
+          display->GetViewportMetrics().ui_scale_factor,
+      location);
 }
 
 }  // namespace
@@ -134,8 +154,14 @@ bool WindowManagerState::DebugAccelerator::Matches(
          !event.is_char();
 }
 
-WindowManagerState::QueuedEvent::QueuedEvent() {}
-WindowManagerState::QueuedEvent::~QueuedEvent() {}
+struct WindowManagerState::QueuedEvent {
+  QueuedEvent() = default;
+  ~QueuedEvent() = default;
+
+  std::unique_ptr<Event> event;
+  std::unique_ptr<ProcessedEventTarget> processed_target;
+  EventLocation event_location;
+};
 
 WindowManagerState::WindowManagerState(WindowTree* window_tree)
     : window_tree_(window_tree),
@@ -311,13 +337,12 @@ void WindowManagerState::Activate(const gfx::Point& mouse_location_on_display,
 
   // Fake a mouse event to update cursor and ensure mouse location in client
   // is up to date.
-  const PointerEvent move_event(
-      ET_POINTER_MOVED, mouse_location_on_display, mouse_location_on_display,
-      EF_NONE, EF_NONE,
-      PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
-                     MouseEvent::kMousePointerId),
-      base::TimeTicks::Now());
-  ProcessEvent(move_event, display_id);
+  PointerEvent move_event(ET_POINTER_MOVED, mouse_location_on_display,
+                          mouse_location_on_display, EF_NONE, EF_NONE,
+                          PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
+                                         MouseEvent::kMousePointerId),
+                          base::TimeTicks::Now());
+  ProcessEvent(&move_event, display_id);
 }
 
 void WindowManagerState::Deactivate() {
@@ -329,24 +354,30 @@ void WindowManagerState::Deactivate() {
   event_queue.swap(event_queue_);
 }
 
-void WindowManagerState::ProcessEvent(const ui::Event& event,
-                                      int64_t display_id) {
+void WindowManagerState::ProcessEvent(ui::Event* event, int64_t display_id) {
+  EventLocation event_location(display_id);
+  if (event->IsLocatedEvent()) {
+    event_location.raw_location = event->AsLocatedEvent()->location_f();
+    AdjustEventLocation(display_id, event->AsLocatedEvent());
+    event_location.location = event->AsLocatedEvent()->root_location_f();
+  }
+
   // If this is still waiting for an ack from a previously sent event, then
   // queue up the event to be dispatched once the ack is received.
   if (event_dispatcher_.IsProcessingEvent() ||
       in_flight_event_dispatch_details_) {
     if (!event_queue_.empty() && !event_queue_.back()->processed_target &&
-        EventsCanBeCoalesced(*event_queue_.back()->event, event)) {
+        CanEventsBeCoalesced(*event_queue_.back()->event, *event)) {
       event_queue_.back()->event = CoalesceEvents(
-          std::move(event_queue_.back()->event), ui::Event::Clone(event));
-      event_queue_.back()->display_id = display_id;
+          std::move(event_queue_.back()->event), ui::Event::Clone(*event));
+      event_queue_.back()->event_location = event_location;
       return;
     }
-    QueueEvent(event, nullptr, display_id);
+    QueueEvent(*event, nullptr, event_location);
     return;
   }
 
-  ProcessEventImpl(event, display_id);
+  ProcessEventImpl(*event, event_location);
 }
 
 void WindowManagerState::OnAcceleratorAck(
@@ -364,7 +395,7 @@ void WindowManagerState::OnAcceleratorAck(
     if (!properties.empty())
       details->event->AsKeyEvent()->SetProperties(properties);
     event_dispatcher_.ProcessEvent(
-        *details->event, details->display_id,
+        *details->event, EventLocation(details->display_id),
         EventDispatcher::AcceleratorMatchPhase::POST_ONLY);
   } else {
     // We're not going to process the event any further, notify event observers.
@@ -458,23 +489,23 @@ void WindowManagerState::OnEventAckTimeout(ClientSpecificId client_id) {
 }
 
 void WindowManagerState::ProcessEventImpl(const ui::Event& event,
-                                          int64_t display_id) {
+                                          const EventLocation& event_location) {
   DCHECK(!in_flight_event_dispatch_details_ &&
          !event_dispatcher_.IsProcessingEvent());
   // Debug accelerators are always checked and don't interfere with processing.
-  ProcessDebugAccelerator(event, display_id);
-  event_dispatcher_.ProcessEvent(event, display_id,
+  ProcessDebugAccelerator(event, event_location.display_id);
+  event_dispatcher_.ProcessEvent(event, event_location,
                                  EventDispatcher::AcceleratorMatchPhase::ANY);
 }
 
 void WindowManagerState::QueueEvent(
     const ui::Event& event,
     std::unique_ptr<ProcessedEventTarget> processed_event_target,
-    int64_t display_id) {
+    const EventLocation& event_location) {
   std::unique_ptr<QueuedEvent> queued_event(new QueuedEvent);
   queued_event->event = ui::Event::Clone(event);
   queued_event->processed_target = std::move(processed_event_target);
-  queued_event->display_id = display_id;
+  queued_event->event_location = event_location;
   event_queue_.push(std::move(queued_event));
 }
 
@@ -483,7 +514,7 @@ void WindowManagerState::QueueEvent(
 void WindowManagerState::DispatchInputEventToWindowImpl(
     ServerWindow* target,
     ClientSpecificId client_id,
-    int64_t display_id,
+    const EventLocation& event_location,
     const ui::Event& event,
     base::WeakPtr<Accelerator> accelerator) {
   DCHECK(!in_flight_event_dispatch_details_);
@@ -498,16 +529,16 @@ void WindowManagerState::DispatchInputEventToWindowImpl(
 
   WindowTree* tree = window_server()->GetTreeWithId(client_id);
   DCHECK(tree);
-  ScheduleInputEventTimeout(tree, target, display_id, event,
+  ScheduleInputEventTimeout(tree, target, event_location.display_id, event,
                             EventDispatchPhase::TARGET);
   in_flight_event_dispatch_details_->post_target_accelerator = accelerator;
 
   // Ignore |tree| because it will receive the event via normal dispatch.
   window_server()->SendToPointerWatchers(event, user_id(), target, tree,
-                                         display_id);
+                                         event_location.display_id);
 
   tree->DispatchInputEvent(
-      target, event, display_id,
+      target, event, event_location,
       base::BindOnce(
           &WindowManagerState::OnEventAck,
           in_flight_event_dispatch_details_->weak_factory.GetWeakPtr(), tree));
@@ -600,6 +631,62 @@ bool WindowManagerState::ConvertPointToScreen(int64_t display_id,
   return true;
 }
 
+Display* WindowManagerState::FindDisplayContainingPixelLocation(
+    const gfx::Point& screen_pixels) {
+  for (auto& display_root_ptr : window_manager_display_roots_) {
+    if (GetDisplayBoundsInPixels(display_root_ptr->display())
+            .Contains(screen_pixels)) {
+      return display_root_ptr->display();
+    }
+  }
+  return nullptr;
+}
+
+void WindowManagerState::AdjustEventLocation(int64_t display_id,
+                                             LocatedEvent* event) {
+  if (window_manager_display_roots_.empty())
+    return;
+
+  Display* display = display_manager()->GetDisplayById(display_id);
+  if (!display)
+    return;
+
+  const gfx::Rect& display_bounds_in_pixels = GetDisplayBoundsInPixels(display);
+  // Typical case is the display contains the location.
+  if (gfx::Rect(display_bounds_in_pixels.size()).Contains(event->location())) {
+    return;
+  }
+
+  // The location is outside the bounds of the specified display. This generally
+  // happens when there is a grab and the mouse is moved to another display.
+  // When this happens the location of the event is in terms of the pixel
+  // display layout. Find the display using the pixel display layout.
+  const gfx::Point screen_pixels =
+      event->location() + display_bounds_in_pixels.origin().OffsetFromOrigin();
+  Display* containing_display =
+      FindDisplayContainingPixelLocation(screen_pixels);
+  if (!containing_display) {
+    DVLOG(1) << "Invalid event location " << event->location().ToString()
+             << " / display id " << display_id;
+    return;
+  }
+
+  // Adjust the location of the event to be in terms of the DIP display layout
+  // (but in pixels). See EventLocation for details on this.
+  const gfx::Point location_in_containing_display =
+      screen_pixels -
+      GetDisplayBoundsInPixels(containing_display).origin().OffsetFromOrigin();
+  const gfx::Point screen_dip_location =
+      containing_display->GetDisplay().bounds().origin() +
+      PixelsToDips(containing_display, location_in_containing_display)
+          .OffsetFromOrigin();
+  const gfx::Point pixel_relative_location = DipsToPixels(
+      display, screen_dip_location -
+                   display->GetDisplay().bounds().origin().OffsetFromOrigin());
+  event->set_location(pixel_relative_location);
+  event->set_root_location(pixel_relative_location);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // EventDispatcherDelegate:
 
@@ -674,9 +761,9 @@ void WindowManagerState::OnCaptureChanged(ServerWindow* new_capture,
 }
 
 void WindowManagerState::OnMouseCursorLocationChanged(
-    const gfx::Point& point_in_display,
+    const gfx::PointF& point_in_display,
     int64_t display_id) {
-  gfx::Point point_in_screen(point_in_display);
+  gfx::Point point_in_screen = gfx::ToFlooredPoint(point_in_display);
   if (ConvertPointToScreen(display_id, &point_in_screen)) {
     window_server()
         ->display_manager()
@@ -705,25 +792,26 @@ void WindowManagerState::OnEventChangesCursorTouchVisibility(
   cursor_state_.SetCursorTouchVisible(visible);
 }
 
-void WindowManagerState::DispatchInputEventToWindow(ServerWindow* target,
-                                                    ClientSpecificId client_id,
-                                                    int64_t display_id,
-                                                    const ui::Event& event,
-                                                    Accelerator* accelerator) {
+void WindowManagerState::DispatchInputEventToWindow(
+    ServerWindow* target,
+    ClientSpecificId client_id,
+    const EventLocation& event_location,
+    const ui::Event& event,
+    Accelerator* accelerator) {
   DCHECK(IsActive());
   // TODO(sky): this needs to see if another wms has capture and if so forward
   // to it.
   if (in_flight_event_dispatch_details_) {
     std::unique_ptr<ProcessedEventTarget> processed_event_target(
         new ProcessedEventTarget(target, client_id, accelerator));
-    QueueEvent(event, std::move(processed_event_target), display_id);
+    QueueEvent(event, std::move(processed_event_target), event_location);
     return;
   }
 
   base::WeakPtr<Accelerator> weak_accelerator;
   if (accelerator)
     weak_accelerator = accelerator->GetWeakPtr();
-  DispatchInputEventToWindowImpl(target, client_id, display_id, event,
+  DispatchInputEventToWindowImpl(target, client_id, event_location, event,
                                  weak_accelerator);
 }
 
@@ -741,14 +829,15 @@ void WindowManagerState::ProcessNextAvailableEvent() {
     std::unique_ptr<QueuedEvent> queued_event = std::move(event_queue_.front());
     event_queue_.pop();
     if (!queued_event->processed_target) {
-      ProcessEventImpl(*queued_event->event, queued_event->display_id);
+      ProcessEventImpl(*queued_event->event, queued_event->event_location);
       return;
     }
     if (queued_event->processed_target->IsValid()) {
       DispatchInputEventToWindowImpl(
           queued_event->processed_target->window(),
-          queued_event->processed_target->client_id(), queued_event->display_id,
-          *queued_event->event, queued_event->processed_target->accelerator());
+          queued_event->processed_target->client_id(),
+          queued_event->event_location, *queued_event->event,
+          queued_event->processed_target->accelerator());
       return;
     }
   }
@@ -782,46 +871,13 @@ ClientSpecificId WindowManagerState::GetEventTargetClientId(
   return tree->id();
 }
 
-ServerWindow* WindowManagerState::GetRootWindowContaining(
-    gfx::Point* location_in_display,
-    int64_t* display_id) {
-  if (window_manager_display_roots_.empty())
+ServerWindow* WindowManagerState::GetRootWindowForDisplay(int64_t display_id) {
+  Display* display = display_manager()->GetDisplayById(display_id);
+  if (!display)
     return nullptr;
 
-  gfx::Point location_in_screen(*location_in_display);
-  if (!ConvertPointToScreen(*display_id, &location_in_screen))
-    return nullptr;
-
-  WindowManagerDisplayRoot* target_display_root = nullptr;
-  for (auto& display_root_ptr : window_manager_display_roots_) {
-    if (display_root_ptr->display()->GetDisplay().bounds().Contains(
-            location_in_screen)) {
-      target_display_root = display_root_ptr.get();
-      break;
-    }
-  }
-
-  // TODO(kylechar): Better handle locations outside the window. Overlapping X11
-  // windows, dragging and touch sensors need to be handled properly.
-  if (!target_display_root) {
-    DVLOG(1) << "Invalid event location " << location_in_display->ToString()
-             << " / display id " << *display_id;
-    target_display_root = window_manager_display_roots_.begin()->get();
-  }
-
-  // Update |location_in_display| and |display_id| if the target display is
-  // different from the originated display, e.g. drag-and-drop.
-  if (*display_id != target_display_root->display()->GetId()) {
-    gfx::Point origin =
-        target_display_root->display()->GetDisplay().bounds().origin();
-    *location_in_display = location_in_screen - origin.OffsetFromOrigin();
-    *location_in_display = gfx::ConvertPointToPixel(
-        target_display_root->display()->GetDisplay().device_scale_factor(),
-        *location_in_display);
-    *display_id = target_display_root->display()->GetId();
-  }
-
-  return target_display_root->GetClientVisibleRoot();
+  return display->GetWindowManagerDisplayRootForUser(user_id())
+      ->GetClientVisibleRoot();
 }
 
 ServerWindow* WindowManagerState::GetRootWindowForEventDispatch(

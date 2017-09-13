@@ -455,9 +455,12 @@ interface WindowTreeClient {
   // specified by StartPointerWatcher(). The client will not receive farther
   // events until the event is ack'ed, regardless of the value of
   // |matches_pointer_watcher|.
+  // TODO(sky): remove |event_location_in_screen_pixel_layout| temporary until
+  // http://crbug.com/747465 is fixed.
   OnWindowInputEvent(uint32 event_id,
                      uint32 window,
                      int64 display_id,
+                     gfx.mojom.PointF event_location_in_screen_pixel_layout,
                      ui.mojom.Event event,
                      bool matches_pointer_watcher);
 

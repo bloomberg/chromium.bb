@@ -84,7 +84,7 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   virtual gfx::Transform GetInverseRootTransform() const;
 
   // These functions are used in event translation for translating the local
-  // coordinates of LocatedEvents. Default implementation calls to non-event
+  // coordinates of LocatedEvents. Default implementation calls to non-local
   // ones (e.g. GetRootTransform()).
   virtual gfx::Transform GetRootTransformForLocalEventCoordinates() const;
   virtual gfx::Transform GetInverseRootTransformForLocalEventCoordinates()

@@ -11,7 +11,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/host/hit_test/hit_test_query.h"
 #include "services/ui/common/switches.h"
+#include "services/ui/ws/event_location.h"
 #include "services/ui/ws/event_targeter_delegate.h"
+#include "ui/gfx/geometry/point_conversions.h"
 
 namespace ui {
 namespace ws {
@@ -22,10 +24,9 @@ EventTargeter::EventTargeter(EventTargeterDelegate* event_targeter_delegate)
 
 EventTargeter::~EventTargeter() {}
 
-void EventTargeter::FindTargetForLocation(
-    EventSource event_source,
-    const DisplayLocation& display_location,
-    HitTestCallback callback) {
+void EventTargeter::FindTargetForLocation(EventSource event_source,
+                                          const EventLocation& event_location,
+                                          HitTestCallback callback) {
   // TODO(riajiang): After the async ask-client part is implemented, the async
   // part should be moved to after sync viz-hit-test call.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -33,34 +34,32 @@ void EventTargeter::FindTargetForLocation(
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&EventTargeter::FindTargetForLocationNow,
                                   weak_ptr_factory_.GetWeakPtr(), event_source,
-                                  display_location, base::Passed(&callback)));
+                                  event_location, base::Passed(&callback)));
   } else {
-    FindTargetForLocationNow(event_source, display_location,
-                             std::move(callback));
+    FindTargetForLocationNow(event_source, event_location, std::move(callback));
   }
 }
 
 void EventTargeter::FindTargetForLocationNow(
     EventSource event_source,
-    const DisplayLocation& display_location,
+    const EventLocation& event_location,
     HitTestCallback callback) {
-  DisplayLocation updated_display_location = display_location;
-  ServerWindow* root = event_targeter_delegate_->GetRootWindowContaining(
-      &updated_display_location.location, &updated_display_location.display_id);
+  ServerWindow* root = event_targeter_delegate_->GetRootWindowForDisplay(
+      event_location.display_id);
   DeepestWindow deepest_window;
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseVizHitTest)) {
     if (root) {
       deepest_window = ui::ws::FindDeepestVisibleWindowForLocation(
-          root, event_source, updated_display_location.location);
+          root, event_source, gfx::ToFlooredPoint(event_location.raw_location));
     }
   } else {
     viz::HitTestQuery* hit_test_query =
         event_targeter_delegate_->GetHitTestQueryForDisplay(
-            updated_display_location.display_id);
+            event_location.display_id);
     if (hit_test_query) {
       viz::Target target = hit_test_query->FindTargetForLocation(
-          event_source, updated_display_location.location);
+          event_source, gfx::ToFlooredPoint(event_location.raw_location));
       if (target.frame_sink_id.is_valid()) {
         ServerWindow* target_window =
             event_targeter_delegate_->GetWindowFromFrameSinkId(
@@ -76,7 +75,7 @@ void EventTargeter::FindTargetForLocationNow(
       }
     }
   }
-  std::move(callback).Run(updated_display_location, deepest_window);
+  std::move(callback).Run(event_location, deepest_window);
 }
 
 }  // namespace ws

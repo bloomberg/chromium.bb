@@ -113,8 +113,9 @@ class WindowManagerState : public EventDispatcherDelegate,
                 int64_t display_id);
   void Deactivate();
 
-  // Processes an event from PlatformDisplay.
-  void ProcessEvent(const Event& event, int64_t display_id);
+  // Processes an event from PlatformDisplay. This doesn't take ownership of
+  // |event|, but it may modify it.
+  void ProcessEvent(ui::Event* event, int64_t display_id);
 
  private:
   class ProcessedEventTarget;
@@ -157,14 +158,7 @@ class WindowManagerState : public EventDispatcherDelegate,
   //   |processed_target| are valid.
   // The second case happens if EventDispatcher generates more than one event
   // at a time.
-  struct QueuedEvent {
-    QueuedEvent();
-    ~QueuedEvent();
-
-    std::unique_ptr<Event> event;
-    std::unique_ptr<ProcessedEventTarget> processed_target;
-    int64_t display_id;
-  };
+  struct QueuedEvent;
 
   // Tracks state associated with an event being dispatched to a client.
   struct InFlightEventDispatchDetails {
@@ -220,17 +214,18 @@ class WindowManagerState : public EventDispatcherDelegate,
 
   // Implemenation of processing an event with a match phase of all. This
   // handles debug accelerators and forwards to EventDispatcher.
-  void ProcessEventImpl(const Event& event, int64_t display_id);
+  void ProcessEventImpl(const Event& event,
+                        const EventLocation& event_location);
 
   // Schedules an event to be processed later.
   void QueueEvent(const Event& event,
                   std::unique_ptr<ProcessedEventTarget> processed_event_target,
-                  int64_t display_id);
+                  const EventLocation& event_location);
 
   // Dispatches the event to the appropriate client and starts the ack timer.
   void DispatchInputEventToWindowImpl(ServerWindow* target,
                                       ClientSpecificId client_id,
-                                      int64_t display_id,
+                                      const EventLocation& event_location,
                                       const Event& event,
                                       base::WeakPtr<Accelerator> accelerator);
 
@@ -257,6 +252,10 @@ class WindowManagerState : public EventDispatcherDelegate,
   // false otherwise.
   bool ConvertPointToScreen(int64_t display_id, gfx::Point* point);
 
+  Display* FindDisplayContainingPixelLocation(const gfx::Point& screen_pixels);
+
+  void AdjustEventLocation(int64_t display_id, LocatedEvent* event);
+
   // EventDispatcherDelegate:
   void OnAccelerator(uint32_t accelerator_id,
                      int64_t display_id,
@@ -269,7 +268,7 @@ class WindowManagerState : public EventDispatcherDelegate,
   void UpdateNativeCursorFromDispatcher() override;
   void OnCaptureChanged(ServerWindow* new_capture,
                         ServerWindow* old_capture) override;
-  void OnMouseCursorLocationChanged(const gfx::Point& point,
+  void OnMouseCursorLocationChanged(const gfx::PointF& point,
                                     int64_t display_id) override;
   void OnEventChangesCursorVisibility(const ui::Event& event,
                                       bool visible) override;
@@ -277,7 +276,7 @@ class WindowManagerState : public EventDispatcherDelegate,
                                            bool visible) override;
   void DispatchInputEventToWindow(ServerWindow* target,
                                   ClientSpecificId client_id,
-                                  int64_t display_id,
+                                  const EventLocation& event_location,
                                   const Event& event,
                                   Accelerator* accelerator) override;
   // Processes the next valid event in |event_queue_|. If the event has already
@@ -286,8 +285,7 @@ class WindowManagerState : public EventDispatcherDelegate,
   void ProcessNextAvailableEvent() override;
   ClientSpecificId GetEventTargetClientId(const ServerWindow* window,
                                           bool in_nonclient_area) override;
-  ServerWindow* GetRootWindowContaining(gfx::Point* location_in_display,
-                                        int64_t* display_id) override;
+  ServerWindow* GetRootWindowForDisplay(int64_t display_id) override;
   ServerWindow* GetRootWindowForEventDispatch(ServerWindow* window) override;
   void OnEventTargetNotFound(const Event& event, int64_t display_id) override;
   ServerWindow* GetFallbackTargetForEventBlockedByModal(

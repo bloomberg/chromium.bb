@@ -17,19 +17,14 @@ namespace ui {
 namespace ws {
 
 class EventTargeterDelegate;
+struct EventLocation;
 
 namespace test {
 class EventTargeterTestApi;
 }
 
-// Contains a location relative to a particular display.
-struct DisplayLocation {
-  gfx::Point location;
-  int64_t display_id;
-};
-
 using HitTestCallback =
-    base::OnceCallback<void(const DisplayLocation&, const DeepestWindow&)>;
+    base::OnceCallback<void(const EventLocation&, const DeepestWindow&)>;
 
 // Finds the target window for a location.
 class EventTargeter {
@@ -40,14 +35,14 @@ class EventTargeter {
   // Calls WindowFinder to find the target for |display_location|. |callback| is
   // called with the found target.
   void FindTargetForLocation(EventSource event_source,
-                             const DisplayLocation& display_location,
+                             const EventLocation& event_location,
                              HitTestCallback callback);
 
  private:
   friend class test::EventTargeterTestApi;
 
   void FindTargetForLocationNow(EventSource event_source,
-                                const DisplayLocation& display_location,
+                                const EventLocation& display_location,
                                 HitTestCallback callback);
 
   EventTargeterDelegate* event_targeter_delegate_;
