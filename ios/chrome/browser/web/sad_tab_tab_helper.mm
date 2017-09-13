@@ -68,6 +68,10 @@ void SadTabTabHelper::CreateForWebState(web::WebState* web_state,
   }
 }
 
+void SadTabTabHelper::SetDelegate(id<SadTabTabHelperDelegate> delegate) {
+  delegate_ = delegate;
+}
+
 void SadTabTabHelper::WasShown() {
   is_visible_ = true;
 

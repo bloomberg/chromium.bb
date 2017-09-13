@@ -30,6 +30,9 @@ class SadTabTabHelper : public web::WebStateUserData<SadTabTabHelper>,
                                 double repeat_failure_interval,
                                 id<SadTabTabHelperDelegate> delegate);
 
+  // Sets the SadTabHelper delegate.
+  void SetDelegate(id<SadTabTabHelperDelegate> delegate);
+
   ~SadTabTabHelper() override;
 
  private:
