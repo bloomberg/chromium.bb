@@ -85,8 +85,6 @@ class SystemHealthMobileCommonExpectations(expectations.StoryExpectations):
                       'Webview does not have tabs')
     self.DisableStory('browse:shopping:avito',
                       [expectations.ANDROID_NEXUS6], 'crbug.com/736497')
-    self.DisableStory('browse:social:pinterest_infinite_scroll',
-                      [expectations.ANDROID_WEBVIEW], 'crbug.com/728528')
 
 
 class SystemHealthMobileMemoryExpectations(expectations.StoryExpectations):
@@ -115,8 +113,6 @@ class SystemHealthMobileMemoryExpectations(expectations.StoryExpectations):
     self.DisableStory('long_running:tools:gmail-background',
                       [expectations.ANDROID_WEBVIEW],
                       'Webview does not have tabs')
-    self.DisableStory('browse:social:pinterest_infinite_scroll',
-                      [expectations.ANDROID_WEBVIEW], 'crbug.com/728528')
 
 
 # Should only include browse:*:* stories.
@@ -154,8 +150,6 @@ class V8BrowsingMobileExpecations(expectations.StoryExpectations):
     self.DisableStory('browse:chrome:newtab',
                       [expectations.ANDROID_WEBVIEW],
                       'Webview does not have NTP')
-    self.DisableStory('browse:social:pinterest_infinite_scroll',
-                      [expectations.ANDROID_WEBVIEW], 'crbug.com/728528')
 
 
 class SystemHealthWebviewStartupExpectations(expectations.StoryExpectations):
