@@ -744,9 +744,9 @@ TEST_F(StructTraitsTest, RenderPass) {
   background_filters.Append(cc::FilterOperation::CreateSaturateFilter(2.f));
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateXYZD50();
   const bool has_transparent_background = true;
-  const bool cache_render_pass = false;
-  const bool has_damage_from_contributing_content = false;
-  const bool generate_mipmap = false;
+  const bool cache_render_pass = true;
+  const bool has_damage_from_contributing_content = true;
+  const bool generate_mipmap = true;
   std::unique_ptr<cc::RenderPass> input = cc::RenderPass::Create();
   input->SetAll(render_pass_id, output_rect, damage_rect, transform_to_root,
                 filters, background_filters, color_space,
@@ -806,6 +806,10 @@ TEST_F(StructTraitsTest, RenderPass) {
   EXPECT_EQ(has_transparent_background, output->has_transparent_background);
   EXPECT_EQ(filters, output->filters);
   EXPECT_EQ(background_filters, output->background_filters);
+  EXPECT_EQ(cache_render_pass, output->cache_render_pass);
+  EXPECT_EQ(has_damage_from_contributing_content,
+            output->has_damage_from_contributing_content);
+  EXPECT_EQ(generate_mipmap, output->generate_mipmap);
 
   SharedQuadState* out_sqs1 = output->shared_quad_state_list.ElementAt(0);
   EXPECT_EQ(shared_state_1->quad_to_target_transform,

@@ -68,6 +68,10 @@ struct StructTraits<viz::mojom::RenderPassDataView,
     return input->has_damage_from_contributing_content;
   }
 
+  static bool generate_mipmap(const std::unique_ptr<cc::RenderPass>& input) {
+    return input->generate_mipmap;
+  }
+
   static const cc::QuadList& quad_list(
       const std::unique_ptr<cc::RenderPass>& input) {
     return input->quad_list;
