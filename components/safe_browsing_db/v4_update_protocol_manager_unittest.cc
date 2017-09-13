@@ -5,6 +5,7 @@
 #include "components/safe_browsing_db/v4_update_protocol_manager.h"
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/base64.h"
@@ -113,7 +114,7 @@ class V4UpdateProtocolManagerTest : public PlatformTest {
   }
 
   std::string GetExpectedV4UpdateResponse(
-      std::vector<ListUpdateResponse>& expected_lurs) const {
+      const std::vector<ListUpdateResponse>& expected_lurs) const {
     FetchThreatListUpdatesResponse response;
 
     for (const auto& expected_lur : expected_lurs) {
@@ -351,6 +352,10 @@ TEST_F(V4UpdateProtocolManagerTest, TestGetUpdatesHasTimeout) {
   DCHECK(!fetcher);
   // Now wait for the next request to be scheduled.
   runner->RunPendingTasks();
+
+  // Should have recorded one error, but back off multiplier is unchanged.
+  EXPECT_EQ(1ul, pm->update_error_count_);
+  EXPECT_EQ(1ul, pm->update_back_off_mult_);
 
   // There should be another fetcher now.
   fetcher = factory.GetFetcherByID(1);

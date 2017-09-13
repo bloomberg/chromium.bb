@@ -364,7 +364,7 @@ void V4UpdateProtocolManager::IssueUpdateRequest() {
 void V4UpdateProtocolManager::HandleTimeout() {
   UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.V4Update.TimedOut", true);
   request_.reset();
-  ScheduleNextUpdateWithBackoff(false);
+  ScheduleNextUpdateWithBackoff(true);
 }
 
 // net::URLFetcherDelegate implementation ----------------------------------
