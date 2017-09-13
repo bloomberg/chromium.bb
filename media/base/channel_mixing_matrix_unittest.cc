@@ -2,17 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// MSVC++ requires this to be set before any other includes to get M_SQRT1_2.
-#define _USE_MATH_DEFINES
-
 #include "media/base/channel_mixing_matrix.h"
 
 #include <stddef.h>
 
-#include <cmath>
-
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
+#include "media/base/channel_mixer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -116,13 +112,13 @@ TEST(ChannelMixingMatrixTest, FiveOneToMono) {
   EXPECT_FALSE(remapping);
   EXPECT_EQ(1u, matrix.size());
   EXPECT_EQ(6u, matrix[0].size());
-  EXPECT_FLOAT_EQ(static_cast<float>(M_SQRT1_2), matrix[0][0]);
-  EXPECT_FLOAT_EQ(static_cast<float>(M_SQRT1_2), matrix[0][1]);
+  EXPECT_FLOAT_EQ(ChannelMixer::kHalfPower, matrix[0][0]);
+  EXPECT_FLOAT_EQ(ChannelMixer::kHalfPower, matrix[0][1]);
   // The center channel will be mixed at scale 1.
   EXPECT_EQ(1.0f, matrix[0][2]);
-  EXPECT_FLOAT_EQ(static_cast<float>(M_SQRT1_2), matrix[0][3]);
-  EXPECT_FLOAT_EQ(static_cast<float>(M_SQRT1_2), matrix[0][4]);
-  EXPECT_FLOAT_EQ(static_cast<float>(M_SQRT1_2), matrix[0][5]);
+  EXPECT_FLOAT_EQ(ChannelMixer::kHalfPower, matrix[0][3]);
+  EXPECT_FLOAT_EQ(ChannelMixer::kHalfPower, matrix[0][4]);
+  EXPECT_FLOAT_EQ(ChannelMixer::kHalfPower, matrix[0][5]);
 }
 
 TEST(ChannelMixingMatrixTest, DiscreteToDiscrete) {

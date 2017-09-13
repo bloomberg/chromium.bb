@@ -2,23 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// MSVC++ requires this to be set before any other includes to get M_SQRT1_2.
-#define _USE_MATH_DEFINES
-
 #include "media/base/channel_mixing_matrix.h"
 
 #include <stddef.h>
 
 #include <algorithm>
-#include <cmath>
 
 #include "base/logging.h"
+#include "media/base/channel_mixer.h"
 
 namespace media {
-
-// Default scale factor for mixing two channels together.  We use a different
-// value for stereo -> mono and mono -> stereo mixes.
-static const float kEqualPowerScale = static_cast<float>(M_SQRT1_2);
 
 static void ValidateLayout(ChannelLayout layout) {
   CHECK_NE(layout, CHANNEL_LAYOUT_NONE);
@@ -136,8 +129,9 @@ bool ChannelMixingMatrix::CreateTransformationMatrix(
     // stereo mixes.  Scaling by 1 / sqrt(2) here will likely lead to clipping
     // so we use 1 / 2 instead.
     float scale =
-        (output_layout_ == CHANNEL_LAYOUT_MONO && input_channels_ == 2) ?
-        0.5 : kEqualPowerScale;
+        (output_layout_ == CHANNEL_LAYOUT_MONO && input_channels_ == 2)
+            ? 0.5
+            : ChannelMixer::kHalfPower;
     Mix(LEFT, CENTER, scale);
     Mix(RIGHT, CENTER, scale);
   }
@@ -146,7 +140,7 @@ bool ChannelMixingMatrix::CreateTransformationMatrix(
   if (IsUnaccounted(CENTER)) {
     // When up mixing from mono, just do a copy to front LR.
     float scale =
-        (input_layout_ == CHANNEL_LAYOUT_MONO) ? 1 : kEqualPowerScale;
+        (input_layout_ == CHANNEL_LAYOUT_MONO) ? 1 : ChannelMixer::kHalfPower;
     MixWithoutAccounting(CENTER, LEFT, scale);
     Mix(CENTER, RIGHT, scale);
   }
@@ -156,21 +150,21 @@ bool ChannelMixingMatrix::CreateTransformationMatrix(
     if (HasOutputChannel(SIDE_LEFT)) {
       // If the input has side LR, mix back LR into side LR, but instead if the
       // input doesn't have side LR (but output does) copy back LR to side LR.
-      float scale = HasInputChannel(SIDE_LEFT) ? kEqualPowerScale : 1;
+      float scale = HasInputChannel(SIDE_LEFT) ? ChannelMixer::kHalfPower : 1;
       Mix(BACK_LEFT, SIDE_LEFT, scale);
       Mix(BACK_RIGHT, SIDE_RIGHT, scale);
     } else if (HasOutputChannel(BACK_CENTER)) {
       // Mix back LR into back center.
-      Mix(BACK_LEFT, BACK_CENTER, kEqualPowerScale);
-      Mix(BACK_RIGHT, BACK_CENTER, kEqualPowerScale);
+      Mix(BACK_LEFT, BACK_CENTER, ChannelMixer::kHalfPower);
+      Mix(BACK_RIGHT, BACK_CENTER, ChannelMixer::kHalfPower);
     } else if (output_layout_ > CHANNEL_LAYOUT_MONO) {
       // Mix back LR into front LR.
-      Mix(BACK_LEFT, LEFT, kEqualPowerScale);
-      Mix(BACK_RIGHT, RIGHT, kEqualPowerScale);
+      Mix(BACK_LEFT, LEFT, ChannelMixer::kHalfPower);
+      Mix(BACK_RIGHT, RIGHT, ChannelMixer::kHalfPower);
     } else {
       // Mix back LR into front center.
-      Mix(BACK_LEFT, CENTER, kEqualPowerScale);
-      Mix(BACK_RIGHT, CENTER, kEqualPowerScale);
+      Mix(BACK_LEFT, CENTER, ChannelMixer::kHalfPower);
+      Mix(BACK_RIGHT, CENTER, ChannelMixer::kHalfPower);
     }
   }
 
@@ -179,21 +173,21 @@ bool ChannelMixingMatrix::CreateTransformationMatrix(
     if (HasOutputChannel(BACK_LEFT)) {
       // If the input has back LR, mix side LR into back LR, but instead if the
       // input doesn't have back LR (but output does) copy side LR to back LR.
-      float scale = HasInputChannel(BACK_LEFT) ? kEqualPowerScale : 1;
+      float scale = HasInputChannel(BACK_LEFT) ? ChannelMixer::kHalfPower : 1;
       Mix(SIDE_LEFT, BACK_LEFT, scale);
       Mix(SIDE_RIGHT, BACK_RIGHT, scale);
     } else if (HasOutputChannel(BACK_CENTER)) {
       // Mix side LR into back center.
-      Mix(SIDE_LEFT, BACK_CENTER, kEqualPowerScale);
-      Mix(SIDE_RIGHT, BACK_CENTER, kEqualPowerScale);
+      Mix(SIDE_LEFT, BACK_CENTER, ChannelMixer::kHalfPower);
+      Mix(SIDE_RIGHT, BACK_CENTER, ChannelMixer::kHalfPower);
     } else if (output_layout_ > CHANNEL_LAYOUT_MONO) {
       // Mix side LR into front LR.
-      Mix(SIDE_LEFT, LEFT, kEqualPowerScale);
-      Mix(SIDE_RIGHT, RIGHT, kEqualPowerScale);
+      Mix(SIDE_LEFT, LEFT, ChannelMixer::kHalfPower);
+      Mix(SIDE_RIGHT, RIGHT, ChannelMixer::kHalfPower);
     } else {
       // Mix side LR into front center.
-      Mix(SIDE_LEFT, CENTER, kEqualPowerScale);
-      Mix(SIDE_RIGHT, CENTER, kEqualPowerScale);
+      Mix(SIDE_LEFT, CENTER, ChannelMixer::kHalfPower);
+      Mix(SIDE_RIGHT, CENTER, ChannelMixer::kHalfPower);
     }
   }
 
@@ -201,21 +195,21 @@ bool ChannelMixingMatrix::CreateTransformationMatrix(
   if (IsUnaccounted(BACK_CENTER)) {
     if (HasOutputChannel(BACK_LEFT)) {
       // Mix back center into back LR.
-      MixWithoutAccounting(BACK_CENTER, BACK_LEFT, kEqualPowerScale);
-      Mix(BACK_CENTER, BACK_RIGHT, kEqualPowerScale);
+      MixWithoutAccounting(BACK_CENTER, BACK_LEFT, ChannelMixer::kHalfPower);
+      Mix(BACK_CENTER, BACK_RIGHT, ChannelMixer::kHalfPower);
     } else if (HasOutputChannel(SIDE_LEFT)) {
       // Mix back center into side LR.
-      MixWithoutAccounting(BACK_CENTER, SIDE_LEFT, kEqualPowerScale);
-      Mix(BACK_CENTER, SIDE_RIGHT, kEqualPowerScale);
+      MixWithoutAccounting(BACK_CENTER, SIDE_LEFT, ChannelMixer::kHalfPower);
+      Mix(BACK_CENTER, SIDE_RIGHT, ChannelMixer::kHalfPower);
     } else if (output_layout_ > CHANNEL_LAYOUT_MONO) {
       // Mix back center into front LR.
       // TODO(dalecurtis): Not sure about these values?
-      MixWithoutAccounting(BACK_CENTER, LEFT, kEqualPowerScale);
-      Mix(BACK_CENTER, RIGHT, kEqualPowerScale);
+      MixWithoutAccounting(BACK_CENTER, LEFT, ChannelMixer::kHalfPower);
+      Mix(BACK_CENTER, RIGHT, ChannelMixer::kHalfPower);
     } else {
       // Mix back center into front center.
       // TODO(dalecurtis): Not sure about these values?
-      Mix(BACK_CENTER, CENTER, kEqualPowerScale);
+      Mix(BACK_CENTER, CENTER, ChannelMixer::kHalfPower);
     }
   }
 
@@ -223,12 +217,12 @@ bool ChannelMixingMatrix::CreateTransformationMatrix(
   if (IsUnaccounted(LEFT_OF_CENTER)) {
     if (HasOutputChannel(LEFT)) {
       // Mix LR of center into front LR.
-      Mix(LEFT_OF_CENTER, LEFT, kEqualPowerScale);
-      Mix(RIGHT_OF_CENTER, RIGHT, kEqualPowerScale);
+      Mix(LEFT_OF_CENTER, LEFT, ChannelMixer::kHalfPower);
+      Mix(RIGHT_OF_CENTER, RIGHT, ChannelMixer::kHalfPower);
     } else {
       // Mix LR of center into front center.
-      Mix(LEFT_OF_CENTER, CENTER, kEqualPowerScale);
-      Mix(RIGHT_OF_CENTER, CENTER, kEqualPowerScale);
+      Mix(LEFT_OF_CENTER, CENTER, ChannelMixer::kHalfPower);
+      Mix(RIGHT_OF_CENTER, CENTER, ChannelMixer::kHalfPower);
     }
   }
 
@@ -236,11 +230,11 @@ bool ChannelMixingMatrix::CreateTransformationMatrix(
   if (IsUnaccounted(LFE)) {
     if (!HasOutputChannel(CENTER)) {
       // Mix LFE into front LR.
-      MixWithoutAccounting(LFE, LEFT, kEqualPowerScale);
-      Mix(LFE, RIGHT, kEqualPowerScale);
+      MixWithoutAccounting(LFE, LEFT, ChannelMixer::kHalfPower);
+      Mix(LFE, RIGHT, ChannelMixer::kHalfPower);
     } else {
       // Mix LFE into front center.
-      Mix(LFE, CENTER, kEqualPowerScale);
+      Mix(LFE, CENTER, ChannelMixer::kHalfPower);
     }
   }
 
