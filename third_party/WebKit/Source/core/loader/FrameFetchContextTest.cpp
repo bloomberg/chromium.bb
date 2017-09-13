@@ -60,6 +60,7 @@
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/common/device_memory/approximated_device_memory.h"
 
 namespace blink {
 
@@ -521,13 +522,13 @@ TEST_F(FrameFetchContextHintsTest, MonitorDeviceMemoryHints) {
   ClientHintsPreferences preferences;
   preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kDeviceMemory);
   document->GetClientHintsPreferences().UpdateFrom(preferences);
-  MemoryCoordinator::SetPhysicalMemoryMBForTesting(4096);
+  ApproximatedDeviceMemory::SetPhysicalMemoryMBForTesting(4096);
   ExpectHeader("http://www.example.com/1.gif", "Device-Memory", true, "4");
-  MemoryCoordinator::SetPhysicalMemoryMBForTesting(2048);
+  ApproximatedDeviceMemory::SetPhysicalMemoryMBForTesting(2048);
   ExpectHeader("http://www.example.com/1.gif", "Device-Memory", true, "2");
-  MemoryCoordinator::SetPhysicalMemoryMBForTesting(64385);
+  ApproximatedDeviceMemory::SetPhysicalMemoryMBForTesting(64385);
   ExpectHeader("http://www.example.com/1.gif", "Device-Memory", true, "64");
-  MemoryCoordinator::SetPhysicalMemoryMBForTesting(768);
+  ApproximatedDeviceMemory::SetPhysicalMemoryMBForTesting(768);
   ExpectHeader("http://www.example.com/1.gif", "Device-Memory", true, "0.75");
   ExpectHeader("http://www.example.com/1.gif", "DPR", false, "");
   ExpectHeader("http://www.example.com/1.gif", "Width", false, "");
@@ -588,7 +589,7 @@ TEST_F(FrameFetchContextHintsTest, MonitorAllHints) {
       mojom::WebClientHintsType::kResourceWidth);
   preferences.SetShouldSendForTesting(
       mojom::WebClientHintsType::kViewportWidth);
-  MemoryCoordinator::SetPhysicalMemoryMBForTesting(4096);
+  ApproximatedDeviceMemory::SetPhysicalMemoryMBForTesting(4096);
   document->GetClientHintsPreferences().UpdateFrom(preferences);
   ExpectHeader("http://www.example.com/1.gif", "Device-Memory", true, "4");
   ExpectHeader("http://www.example.com/1.gif", "DPR", true, "1");
