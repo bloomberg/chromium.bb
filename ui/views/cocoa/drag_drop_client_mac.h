@@ -59,6 +59,9 @@ class VIEWS_EXPORT DragDropClientMac {
   // Called when the drag and drop session has ended.
   void EndDrag();
 
+  // Called when mouse leaves the drop area.
+  void DragExit();
+
   DropHelper* drop_helper() { return &drop_helper_; }
 
  private:
@@ -81,6 +84,9 @@ class VIEWS_EXPORT DragDropClientMac {
 
   // The closure for the drag and drop's run loop.
   base::Closure quit_closure_;
+
+  // Whether |this| is the source of current dragging session.
+  bool is_drag_source_;
 
   DISALLOW_COPY_AND_ASSIGN(DragDropClientMac);
 };
