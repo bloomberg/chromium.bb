@@ -195,7 +195,8 @@ EXTRA_PROGRAMS = $(am__EXEEXT_1)
 @DISABLE_PROCESSOR_FALSE@	src/processor/synth_minidump_unittest
 
 @LINUX_HOST_TRUE@am__append_16 = \
-@LINUX_HOST_TRUE@	src/client/linux/linux_client_unittest
+@LINUX_HOST_TRUE@	src/client/linux/linux_client_unittest \
+@LINUX_HOST_TRUE@	src/common/linux/google_crashdump_uploader_test
 
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@am__append_17 = \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dumper_unittest \
@@ -225,6 +226,7 @@ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_append_compile_flags.m4 \
 	$(top_srcdir)/m4/ax_append_flag.m4 \
 	$(top_srcdir)/m4/ax_check_compile_flag.m4 \
+	$(top_srcdir)/m4/ax_check_define.m4 \
 	$(top_srcdir)/m4/ax_cxx_compile_stdcxx.m4 \
 	$(top_srcdir)/m4/ax_pthread.m4 \
 	$(top_srcdir)/m4/ax_require_defined.m4 \
@@ -584,7 +586,8 @@ src_third_party_libdisasm_libdisasm_a_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_mips64_unittest$(EXEEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86_unittest$(EXEEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/synth_minidump_unittest$(EXEEXT)
-@LINUX_HOST_TRUE@am__EXEEXT_6 = src/client/linux/linux_client_unittest$(EXEEXT)
+@LINUX_HOST_TRUE@am__EXEEXT_6 = src/client/linux/linux_client_unittest$(EXEEXT) \
+@LINUX_HOST_TRUE@	src/common/linux/google_crashdump_uploader_test$(EXEEXT)
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@am__EXEEXT_7 = src/common/dumper_unittest$(EXEEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/md2core/minidump_2_core_unittest$(EXEEXT)
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@@X86_HOST_TRUE@am__EXEEXT_8 = src/common/mac/macho_reader_unittest$(EXEEXT)
@@ -774,6 +777,18 @@ src_common_dumper_unittest_OBJECTS =  \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	$(am__DEPENDENCIES_1) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	$(am__DEPENDENCIES_1) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	$(am__DEPENDENCIES_1)
+am__src_common_linux_google_crashdump_uploader_test_SOURCES_DIST =  \
+	src/common/linux/google_crashdump_uploader.cc \
+	src/common/linux/google_crashdump_uploader_test.cc \
+	src/common/linux/libcurl_wrapper.cc
+@LINUX_HOST_TRUE@am_src_common_linux_google_crashdump_uploader_test_OBJECTS = src/common/linux/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader.$(OBJEXT) \
+@LINUX_HOST_TRUE@	src/common/linux/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader_test.$(OBJEXT) \
+@LINUX_HOST_TRUE@	src/common/linux/src_common_linux_google_crashdump_uploader_test-libcurl_wrapper.$(OBJEXT)
+src_common_linux_google_crashdump_uploader_test_OBJECTS =  \
+	$(am_src_common_linux_google_crashdump_uploader_test_OBJECTS)
+@LINUX_HOST_TRUE@src_common_linux_google_crashdump_uploader_test_DEPENDENCIES =  \
+@LINUX_HOST_TRUE@	$(am__DEPENDENCIES_2) $(am__DEPENDENCIES_1) \
+@LINUX_HOST_TRUE@	$(am__DEPENDENCIES_1)
 am__src_common_mac_macho_reader_unittest_SOURCES_DIST =  \
 	src/common/dwarf_cfi_to_module.cc \
 	src/common/dwarf_cu_to_module.cc \
@@ -1552,6 +1567,7 @@ SOURCES = $(src_client_linux_libbreakpad_client_a_SOURCES) \
 	$(src_client_linux_linux_client_unittest_shlib_SOURCES) \
 	$(src_client_linux_linux_dumper_unittest_helper_SOURCES) \
 	$(src_common_dumper_unittest_SOURCES) \
+	$(src_common_linux_google_crashdump_uploader_test_SOURCES) \
 	$(src_common_mac_macho_reader_unittest_SOURCES) \
 	$(src_common_test_assembler_unittest_SOURCES) \
 	$(src_processor_address_map_unittest_SOURCES) \
@@ -1602,6 +1618,7 @@ DIST_SOURCES =  \
 	$(am__src_client_linux_linux_client_unittest_shlib_SOURCES_DIST) \
 	$(am__src_client_linux_linux_dumper_unittest_helper_SOURCES_DIST) \
 	$(am__src_common_dumper_unittest_SOURCES_DIST) \
+	$(am__src_common_linux_google_crashdump_uploader_test_SOURCES_DIST) \
 	$(am__src_common_mac_macho_reader_unittest_SOURCES_DIST) \
 	$(am__src_common_test_assembler_unittest_SOURCES_DIST) \
 	$(am__src_processor_address_map_unittest_SOURCES_DIST) \
@@ -2002,6 +2019,7 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
+runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -2545,6 +2563,19 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@src_common_mac_macho_reader_unittest_LDADD = \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	$(TEST_LIBS) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
+
+@LINUX_HOST_TRUE@src_common_linux_google_crashdump_uploader_test_SOURCES = \
+@LINUX_HOST_TRUE@	src/common/linux/google_crashdump_uploader.cc \
+@LINUX_HOST_TRUE@	src/common/linux/google_crashdump_uploader_test.cc \
+@LINUX_HOST_TRUE@	src/common/linux/libcurl_wrapper.cc
+
+@LINUX_HOST_TRUE@src_common_linux_google_crashdump_uploader_test_CPPFLAGS = \
+@LINUX_HOST_TRUE@	$(AM_CPPFLAGS) $(TEST_CFLAGS)
+
+@LINUX_HOST_TRUE@src_common_linux_google_crashdump_uploader_test_LDADD = \
+@LINUX_HOST_TRUE@	$(TEST_LIBS) \
+@LINUX_HOST_TRUE@	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS) \
+@LINUX_HOST_TRUE@	-ldl
 
 @LINUX_HOST_TRUE@src_tools_linux_md2core_minidump_2_core_unittest_SOURCES = \
 @LINUX_HOST_TRUE@	src/tools/linux/md2core/minidump_memory_range_unittest.cc
@@ -4095,6 +4126,19 @@ src/common/tests/src_common_dumper_unittest-file_utils.$(OBJEXT):  \
 src/common/dumper_unittest$(EXEEXT): $(src_common_dumper_unittest_OBJECTS) $(src_common_dumper_unittest_DEPENDENCIES) $(EXTRA_src_common_dumper_unittest_DEPENDENCIES) src/common/$(am__dirstamp)
 	@rm -f src/common/dumper_unittest$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(src_common_dumper_unittest_OBJECTS) $(src_common_dumper_unittest_LDADD) $(LIBS)
+src/common/linux/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader.$(OBJEXT):  \
+	src/common/linux/$(am__dirstamp) \
+	src/common/linux/$(DEPDIR)/$(am__dirstamp)
+src/common/linux/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader_test.$(OBJEXT):  \
+	src/common/linux/$(am__dirstamp) \
+	src/common/linux/$(DEPDIR)/$(am__dirstamp)
+src/common/linux/src_common_linux_google_crashdump_uploader_test-libcurl_wrapper.$(OBJEXT):  \
+	src/common/linux/$(am__dirstamp) \
+	src/common/linux/$(DEPDIR)/$(am__dirstamp)
+
+src/common/linux/google_crashdump_uploader_test$(EXEEXT): $(src_common_linux_google_crashdump_uploader_test_OBJECTS) $(src_common_linux_google_crashdump_uploader_test_DEPENDENCIES) $(EXTRA_src_common_linux_google_crashdump_uploader_test_DEPENDENCIES) src/common/linux/$(am__dirstamp)
+	@rm -f src/common/linux/google_crashdump_uploader_test$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(src_common_linux_google_crashdump_uploader_test_OBJECTS) $(src_common_linux_google_crashdump_uploader_test_LDADD) $(LIBS)
 src/common/src_common_mac_macho_reader_unittest-dwarf_cfi_to_module.$(OBJEXT):  \
 	src/common/$(am__dirstamp) \
 	src/common/$(DEPDIR)/$(am__dirstamp)
@@ -4801,6 +4845,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/src_common_dumper_unittest-safe_readlink_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/src_common_dumper_unittest-synth_elf.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/src_common_dumper_unittest-synth_elf_unittest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader_test.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/src_common_linux_google_crashdump_uploader_test-libcurl_wrapper.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-crc32.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dump_symbols.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-elf_symbols_to_module.Po@am__quote@
@@ -6047,6 +6094,48 @@ src/common/tests/src_common_dumper_unittest-file_utils.obj: src/common/tests/fil
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/tests/file_utils.cc' object='src/common/tests/src_common_dumper_unittest-file_utils.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_dumper_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/common/tests/src_common_dumper_unittest-file_utils.obj `if test -f 'src/common/tests/file_utils.cc'; then $(CYGPATH_W) 'src/common/tests/file_utils.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/tests/file_utils.cc'; fi`
+
+src/common/linux/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader.o: src/common/linux/google_crashdump_uploader.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_linux_google_crashdump_uploader_test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/common/linux/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader.o -MD -MP -MF src/common/linux/$(DEPDIR)/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader.Tpo -c -o src/common/linux/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader.o `test -f 'src/common/linux/google_crashdump_uploader.cc' || echo '$(srcdir)/'`src/common/linux/google_crashdump_uploader.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/linux/$(DEPDIR)/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader.Tpo src/common/linux/$(DEPDIR)/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/linux/google_crashdump_uploader.cc' object='src/common/linux/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_linux_google_crashdump_uploader_test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/common/linux/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader.o `test -f 'src/common/linux/google_crashdump_uploader.cc' || echo '$(srcdir)/'`src/common/linux/google_crashdump_uploader.cc
+
+src/common/linux/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader.obj: src/common/linux/google_crashdump_uploader.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_linux_google_crashdump_uploader_test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/common/linux/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader.obj -MD -MP -MF src/common/linux/$(DEPDIR)/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader.Tpo -c -o src/common/linux/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader.obj `if test -f 'src/common/linux/google_crashdump_uploader.cc'; then $(CYGPATH_W) 'src/common/linux/google_crashdump_uploader.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/linux/google_crashdump_uploader.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/linux/$(DEPDIR)/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader.Tpo src/common/linux/$(DEPDIR)/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/linux/google_crashdump_uploader.cc' object='src/common/linux/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_linux_google_crashdump_uploader_test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/common/linux/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader.obj `if test -f 'src/common/linux/google_crashdump_uploader.cc'; then $(CYGPATH_W) 'src/common/linux/google_crashdump_uploader.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/linux/google_crashdump_uploader.cc'; fi`
+
+src/common/linux/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader_test.o: src/common/linux/google_crashdump_uploader_test.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_linux_google_crashdump_uploader_test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/common/linux/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader_test.o -MD -MP -MF src/common/linux/$(DEPDIR)/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader_test.Tpo -c -o src/common/linux/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader_test.o `test -f 'src/common/linux/google_crashdump_uploader_test.cc' || echo '$(srcdir)/'`src/common/linux/google_crashdump_uploader_test.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/linux/$(DEPDIR)/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader_test.Tpo src/common/linux/$(DEPDIR)/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader_test.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/linux/google_crashdump_uploader_test.cc' object='src/common/linux/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader_test.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_linux_google_crashdump_uploader_test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/common/linux/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader_test.o `test -f 'src/common/linux/google_crashdump_uploader_test.cc' || echo '$(srcdir)/'`src/common/linux/google_crashdump_uploader_test.cc
+
+src/common/linux/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader_test.obj: src/common/linux/google_crashdump_uploader_test.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_linux_google_crashdump_uploader_test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/common/linux/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader_test.obj -MD -MP -MF src/common/linux/$(DEPDIR)/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader_test.Tpo -c -o src/common/linux/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader_test.obj `if test -f 'src/common/linux/google_crashdump_uploader_test.cc'; then $(CYGPATH_W) 'src/common/linux/google_crashdump_uploader_test.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/linux/google_crashdump_uploader_test.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/linux/$(DEPDIR)/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader_test.Tpo src/common/linux/$(DEPDIR)/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader_test.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/linux/google_crashdump_uploader_test.cc' object='src/common/linux/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader_test.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_linux_google_crashdump_uploader_test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/common/linux/src_common_linux_google_crashdump_uploader_test-google_crashdump_uploader_test.obj `if test -f 'src/common/linux/google_crashdump_uploader_test.cc'; then $(CYGPATH_W) 'src/common/linux/google_crashdump_uploader_test.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/linux/google_crashdump_uploader_test.cc'; fi`
+
+src/common/linux/src_common_linux_google_crashdump_uploader_test-libcurl_wrapper.o: src/common/linux/libcurl_wrapper.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_linux_google_crashdump_uploader_test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/common/linux/src_common_linux_google_crashdump_uploader_test-libcurl_wrapper.o -MD -MP -MF src/common/linux/$(DEPDIR)/src_common_linux_google_crashdump_uploader_test-libcurl_wrapper.Tpo -c -o src/common/linux/src_common_linux_google_crashdump_uploader_test-libcurl_wrapper.o `test -f 'src/common/linux/libcurl_wrapper.cc' || echo '$(srcdir)/'`src/common/linux/libcurl_wrapper.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/linux/$(DEPDIR)/src_common_linux_google_crashdump_uploader_test-libcurl_wrapper.Tpo src/common/linux/$(DEPDIR)/src_common_linux_google_crashdump_uploader_test-libcurl_wrapper.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/linux/libcurl_wrapper.cc' object='src/common/linux/src_common_linux_google_crashdump_uploader_test-libcurl_wrapper.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_linux_google_crashdump_uploader_test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/common/linux/src_common_linux_google_crashdump_uploader_test-libcurl_wrapper.o `test -f 'src/common/linux/libcurl_wrapper.cc' || echo '$(srcdir)/'`src/common/linux/libcurl_wrapper.cc
+
+src/common/linux/src_common_linux_google_crashdump_uploader_test-libcurl_wrapper.obj: src/common/linux/libcurl_wrapper.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_linux_google_crashdump_uploader_test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/common/linux/src_common_linux_google_crashdump_uploader_test-libcurl_wrapper.obj -MD -MP -MF src/common/linux/$(DEPDIR)/src_common_linux_google_crashdump_uploader_test-libcurl_wrapper.Tpo -c -o src/common/linux/src_common_linux_google_crashdump_uploader_test-libcurl_wrapper.obj `if test -f 'src/common/linux/libcurl_wrapper.cc'; then $(CYGPATH_W) 'src/common/linux/libcurl_wrapper.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/linux/libcurl_wrapper.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/linux/$(DEPDIR)/src_common_linux_google_crashdump_uploader_test-libcurl_wrapper.Tpo src/common/linux/$(DEPDIR)/src_common_linux_google_crashdump_uploader_test-libcurl_wrapper.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/linux/libcurl_wrapper.cc' object='src/common/linux/src_common_linux_google_crashdump_uploader_test-libcurl_wrapper.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_linux_google_crashdump_uploader_test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/common/linux/src_common_linux_google_crashdump_uploader_test-libcurl_wrapper.obj `if test -f 'src/common/linux/libcurl_wrapper.cc'; then $(CYGPATH_W) 'src/common/linux/libcurl_wrapper.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/linux/libcurl_wrapper.cc'; fi`
 
 src/common/src_common_mac_macho_reader_unittest-dwarf_cfi_to_module.o: src/common/dwarf_cfi_to_module.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_mac_macho_reader_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_common_mac_macho_reader_unittest-dwarf_cfi_to_module.o -MD -MP -MF src/common/$(DEPDIR)/src_common_mac_macho_reader_unittest-dwarf_cfi_to_module.Tpo -c -o src/common/src_common_mac_macho_reader_unittest-dwarf_cfi_to_module.o `test -f 'src/common/dwarf_cfi_to_module.cc' || echo '$(srcdir)/'`src/common/dwarf_cfi_to_module.cc
@@ -8085,6 +8174,13 @@ src/processor/synth_minidump_unittest.log: src/processor/synth_minidump_unittest
 src/client/linux/linux_client_unittest.log: src/client/linux/linux_client_unittest$(EXEEXT)
 	@p='src/client/linux/linux_client_unittest$(EXEEXT)'; \
 	b='src/client/linux/linux_client_unittest'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+src/common/linux/google_crashdump_uploader_test.log: src/common/linux/google_crashdump_uploader_test$(EXEEXT)
+	@p='src/common/linux/google_crashdump_uploader_test$(EXEEXT)'; \
+	b='src/common/linux/google_crashdump_uploader_test'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
