@@ -233,6 +233,18 @@ TEST_F(LayoutTableTest, PaddingWithCollapsedBorder) {
   EXPECT_EQ(0, table->PaddingUnder());
 }
 
+TEST_F(LayoutTableTest, OutOfOrderHeadAndBody) {
+  // This should not crash.
+  SetBodyInnerHTML(
+      "<table style='border-collapse: collapse'>"
+      "  <tbody><tr><td>Body</td></tr></tbody>"
+      "  <thead></thead>"
+      "<table>");
+  // TODO(crbug.com/764525): Add tests for TopSection(), BottomSection(),
+  // TopNonEmptySection(), BottomNonEmptySection(), SectionAbove(),
+  // SectionBelow() for similar cases.
+}
+
 }  // anonymous namespace
 
 }  // namespace blink
