@@ -3132,6 +3132,12 @@
             ],
             "experiments": [
                 {
+                    "name": "Experiment2",
+                    "params": {
+                        "variant": "experiment2"
+                    }
+                },
+                {
                     "name": "Experiment",
                     "params": {
                         "variant": "experiment"
@@ -3153,6 +3159,12 @@
                     "name": "RecordTypeExperiment",
                     "params": {
                         "variant": "record-type"
+                    }
+                },
+                {
+                    "name": "Experiment3",
+                    "params": {
+                        "variant": "experiment3"
                     }
                 }
             ]

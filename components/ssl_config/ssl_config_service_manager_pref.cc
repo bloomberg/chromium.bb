@@ -227,6 +227,20 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
     local_state->SetDefaultPrefValue(
         ssl_config::prefs::kSSLVersionMax,
         new base::Value(switches::kSSLVersionTLSv13));
+  } else if (tls13_variant == "experiment2") {
+    local_state->SetDefaultPrefValue(
+        ssl_config::prefs::kTLS13Variant,
+        new base::Value(switches::kTLS13VariantExperiment2));
+    local_state->SetDefaultPrefValue(
+        ssl_config::prefs::kSSLVersionMax,
+        new base::Value(switches::kSSLVersionTLSv13));
+  } else if (tls13_variant == "experiment3") {
+    local_state->SetDefaultPrefValue(
+        ssl_config::prefs::kTLS13Variant,
+        new base::Value(switches::kTLS13VariantExperiment3));
+    local_state->SetDefaultPrefValue(
+        ssl_config::prefs::kSSLVersionMax,
+        new base::Value(switches::kSSLVersionTLSv13));
   }
 
   PrefChangeRegistrar::NamedChangeCallback local_state_callback =
@@ -343,6 +357,10 @@ void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
   } else if (tls13_variant_str ==
              switches::kTLS13VariantNoSessionIDExperiment) {
     config->tls13_variant = net::kTLS13VariantNoSessionIDExperiment;
+  } else if (tls13_variant_str == switches::kTLS13VariantExperiment2) {
+    config->tls13_variant = net::kTLS13VariantExperiment2;
+  } else if (tls13_variant_str == switches::kTLS13VariantExperiment3) {
+    config->tls13_variant = net::kTLS13VariantExperiment3;
   }
 
   config->disabled_cipher_suites = disabled_cipher_suites_;
