@@ -263,7 +263,6 @@ void CoordinatorImpl::PerformNextQueuedGlobalMemoryDump() {
     service_manager::Identity client_identity = kv.second->identity;
     const base::ProcessId pid = GetProcessIdForClientIdentity(client_identity);
     if (pid == base::kNullProcessId) {
-      // TODO(hjd): Change to NOTREACHED when crbug.com/739710 is fixed.
       VLOG(1) << "Couldn't find a PID for client \"" << client_identity.name()
               << "." << client_identity.instance() << "\"";
       continue;
@@ -306,7 +305,6 @@ void CoordinatorImpl::PerformNextQueuedGlobalMemoryDump() {
     service_manager::Identity client_identity = kv.second->identity;
     const base::ProcessId pid = GetProcessIdForClientIdentity(client_identity);
     if (pid == base::kNullProcessId) {
-      // TODO(hjd): Change to NOTREACHED when crbug.com/739710 is fixed.
       VLOG(1) << "Couldn't find a PID for client \"" << client_identity.name()
               << "." << client_identity.instance() << "\"";
       continue;
