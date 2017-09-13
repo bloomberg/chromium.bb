@@ -22,7 +22,7 @@ Event listeners of window
   columnNumber:54
   handler.type:function
   handler.className:Function
-  handler.description:function (){ consol.log(42) }
+  handler.description:function(){ consol.log(42) }
 
   type:scroll
   useCapture:false
@@ -30,7 +30,7 @@ Event listeners of window
   columnNumber:54
   handler.type:function
   handler.className:Function
-  handler.description:function (){ consol.log(42) }
+  handler.description:function(){ consol.log(42) }
 
 
 Event listeners of div#listeners1

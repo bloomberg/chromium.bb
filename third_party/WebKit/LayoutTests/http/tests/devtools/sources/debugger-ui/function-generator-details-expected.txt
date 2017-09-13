@@ -48,7 +48,7 @@ script is valid: yes
 Running: testIterObjGenerator
 iterObjGenerator: type = object, subtype = generator
 [[GeneratorStatus]] = suspended
-[[GeneratorFunction]] = function* ()
+[[GeneratorFunction]] = function*()
     {
         yield 11;
         yield 12;
@@ -63,7 +63,7 @@ script is valid: yes
 Running: testAnonymousGenIter
 anonymousGenIter: type = object, subtype = generator
 [[GeneratorStatus]] = suspended
-[[GeneratorFunction]] = function* () {
+[[GeneratorFunction]] = function*() {
     yield 21;
     yield 22;
     yield 23;

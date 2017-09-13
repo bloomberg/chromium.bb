@@ -14,7 +14,7 @@ Inspect Me
     useCapture: true
     passive: false
     once: false
-    handler: function () { console.log("click - document - handleEvent"); }
+    handler: function() { console.log("click - document - handleEvent"); }
 == Raw
 [expanded] documentRemoveevent-listener-sidebar.html:25
     useCapture: true
@@ -26,19 +26,19 @@ Inspect Me
     useCapture: true
     passive: false
     once: false
-    handler: function (event) { console.log("click - document - capturing"); }
+    handler: function(event) { console.log("click - document - capturing"); }
 == Raw
 [expanded] button#nodeRemoveevent-listener-sidebar.html:17
     useCapture: false
     passive: false
     once: false
-    handler: function (event) { console.log("click - button - bubbling (registered after attribute)"); }
+    handler: function(event) { console.log("click - button - bubbling (registered after attribute)"); }
 == Raw
 [expanded] button#nodeRemoveevent-listener-sidebar.html:16
     useCapture: false
     passive: false
     once: false
-    handler: function (event) { console.log("click - button - attribute"); }
+    handler: function(event) { console.log("click - button - attribute"); }
 == Raw
 [expanded] button#nodeRemoveevent-listener-sidebar.html:12
     useCapture: false
@@ -50,7 +50,7 @@ Inspect Me
     useCapture: true
     passive: false
     once: false
-    handler: function (event) { console.log("click - button - capturing"); }
+    handler: function(event) { console.log("click - button - capturing"); }
 
 ======== custom event ========
 == Raw

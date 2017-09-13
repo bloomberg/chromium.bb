@@ -263,7 +263,7 @@ Map(6) {" from str " => " to str ", undefined => undefined, null => null, 42 => 
 console-format-es6.js:15 genFunction {[[GeneratorStatus]]: "suspended"}
     __proto__: Generator
     [[GeneratorStatus]]: "suspended"
-    [[GeneratorFunction]]: ƒ* ()
+    [[GeneratorFunction]]: ƒ *()
     [[GeneratorReceiver]]: Window
     [[GeneratorLocation]]: console-format-es6.js:59
     [[Scopes]]: Scopes[2]
@@ -275,7 +275,7 @@ globals[13]
 genFunction {[[GeneratorStatus]]: "suspended"}
     __proto__: Generator
     [[GeneratorStatus]]: "suspended"
-    [[GeneratorFunction]]: ƒ* ()
+    [[GeneratorFunction]]: ƒ *()
     [[GeneratorReceiver]]: Window
     [[GeneratorLocation]]: console-format-es6.js:59
     [[Scopes]]: Scopes[2]
