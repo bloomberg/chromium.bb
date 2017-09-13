@@ -7,10 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <algorithm>       // for min/max()
-#define _USE_MATH_DEFINES  // for M_PI
-#include <math.h>
-#include <cmath>  // for log() and pow()
+#include <algorithm>  // for min/max()
+#include <cmath>      // for log() and pow()
 #include <list>
 
 #include "base/logging.h"

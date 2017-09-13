@@ -8,12 +8,9 @@
 
 #include "base/memory/ptr_util.h"
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
 #include "base/logging.h"
 #include "ui/gfx/animation/tween.h"
+#include "ui/gfx/geometry/safe_integer_conversions.h"
 
 namespace {
 
@@ -38,9 +35,7 @@ bool MassageRotationIfMultipleOfNinetyDegrees(gfx::Transform* rotation,
   SkMatrix44& m = transform.matrix();
   float degrees_by_ninety = degrees / 90.0f;
 
-  int n = static_cast<int>(degrees_by_ninety > 0
-      ? floor(degrees_by_ninety + 0.5f)
-      : ceil(degrees_by_ninety - 0.5f));
+  int n = gfx::ToRoundedInt(degrees_by_ninety);
 
   n %= 4;
   if (n < 0)

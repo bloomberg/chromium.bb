@@ -58,16 +58,15 @@ bool GetReadingValueForProperty(REFPROPERTYKEY key,
 std::unique_ptr<ReaderInitParams> CreateAmbientLightReaderInitParams() {
   auto params = base::MakeUnique<ReaderInitParams>();
   params->sensor_type_id = SENSOR_TYPE_AMBIENT_LIGHT;
-  params->reader_func =
-      [](ISensorDataReport* report, SensorReading* reading) {
-        double lux = 0.0;
-        if (!GetReadingValueForProperty(SENSOR_DATA_TYPE_LIGHT_LEVEL_LUX,
-                                        report, &lux)) {
-          return E_FAIL;
-        }
-        reading->als.value = lux;
-        return S_OK;
-      };
+  params->reader_func = [](ISensorDataReport* report, SensorReading* reading) {
+    double lux = 0.0;
+    if (!GetReadingValueForProperty(SENSOR_DATA_TYPE_LIGHT_LEVEL_LUX, report,
+                                    &lux)) {
+      return E_FAIL;
+    }
+    reading->als.value = lux;
+    return S_OK;
+  };
   return params;
 }
 
@@ -75,28 +74,27 @@ std::unique_ptr<ReaderInitParams> CreateAmbientLightReaderInitParams() {
 std::unique_ptr<ReaderInitParams> CreateAccelerometerReaderInitParams() {
   auto params = base::MakeUnique<ReaderInitParams>();
   params->sensor_type_id = SENSOR_TYPE_ACCELEROMETER_3D;
-  params->reader_func =
-      [](ISensorDataReport* report, SensorReading* reading) {
-        double x = 0.0;
-        double y = 0.0;
-        double z = 0.0;
-        if (!GetReadingValueForProperty(SENSOR_DATA_TYPE_ACCELERATION_X_G,
-                                        report, &x) ||
-            !GetReadingValueForProperty(SENSOR_DATA_TYPE_ACCELERATION_Y_G,
-                                        report, &y) ||
-            !GetReadingValueForProperty(SENSOR_DATA_TYPE_ACCELERATION_Z_G,
-                                        report, &z)) {
-          return E_FAIL;
-        }
+  params->reader_func = [](ISensorDataReport* report, SensorReading* reading) {
+    double x = 0.0;
+    double y = 0.0;
+    double z = 0.0;
+    if (!GetReadingValueForProperty(SENSOR_DATA_TYPE_ACCELERATION_X_G, report,
+                                    &x) ||
+        !GetReadingValueForProperty(SENSOR_DATA_TYPE_ACCELERATION_Y_G, report,
+                                    &y) ||
+        !GetReadingValueForProperty(SENSOR_DATA_TYPE_ACCELERATION_Z_G, report,
+                                    &z)) {
+      return E_FAIL;
+    }
 
-        // Windows uses coordinate system where Z axis points down from device
-        // screen, therefore, using right hand notation, we have to reverse
-        // sign for each axis. Values are converted from G/s^2 to m/s^2.
-        reading->accel.x = -x * kMeanGravity;
-        reading->accel.y = -y * kMeanGravity;
-        reading->accel.z = -z * kMeanGravity;
-        return S_OK;
-      };
+    // Windows uses coordinate system where Z axis points down from device
+    // screen, therefore, using right hand notation, we have to reverse
+    // sign for each axis. Values are converted from G/s^2 to m/s^2.
+    reading->accel.x = -x * kMeanGravity;
+    reading->accel.y = -y * kMeanGravity;
+    reading->accel.z = -z * kMeanGravity;
+    return S_OK;
+  };
   return params;
 }
 
@@ -104,31 +102,30 @@ std::unique_ptr<ReaderInitParams> CreateAccelerometerReaderInitParams() {
 std::unique_ptr<ReaderInitParams> CreateGyroscopeReaderInitParams() {
   auto params = base::MakeUnique<ReaderInitParams>();
   params->sensor_type_id = SENSOR_TYPE_GYROMETER_3D;
-  params->reader_func =
-      [](ISensorDataReport* report, SensorReading* reading) {
-        double x = 0.0;
-        double y = 0.0;
-        double z = 0.0;
-        if (!GetReadingValueForProperty(
-                SENSOR_DATA_TYPE_ANGULAR_VELOCITY_X_DEGREES_PER_SECOND, report,
-                &x) ||
-            !GetReadingValueForProperty(
-                SENSOR_DATA_TYPE_ANGULAR_VELOCITY_Y_DEGREES_PER_SECOND, report,
-                &y) ||
-            !GetReadingValueForProperty(
-                SENSOR_DATA_TYPE_ANGULAR_VELOCITY_Z_DEGREES_PER_SECOND, report,
-                &z)) {
-          return E_FAIL;
-        }
+  params->reader_func = [](ISensorDataReport* report, SensorReading* reading) {
+    double x = 0.0;
+    double y = 0.0;
+    double z = 0.0;
+    if (!GetReadingValueForProperty(
+            SENSOR_DATA_TYPE_ANGULAR_VELOCITY_X_DEGREES_PER_SECOND, report,
+            &x) ||
+        !GetReadingValueForProperty(
+            SENSOR_DATA_TYPE_ANGULAR_VELOCITY_Y_DEGREES_PER_SECOND, report,
+            &y) ||
+        !GetReadingValueForProperty(
+            SENSOR_DATA_TYPE_ANGULAR_VELOCITY_Z_DEGREES_PER_SECOND, report,
+            &z)) {
+      return E_FAIL;
+    }
 
-        // Windows uses coordinate system where Z axis points down from device
-        // screen, therefore, using right hand notation, we have to reverse
-        // sign for each axis. Values are converted from deg to rad.
-        reading->gyro.x = -x * kDegreesToRadians;
-        reading->gyro.y = -y * kDegreesToRadians;
-        reading->gyro.z = -z * kDegreesToRadians;
-        return S_OK;
-      };
+    // Windows uses coordinate system where Z axis points down from device
+    // screen, therefore, using right hand notation, we have to reverse
+    // sign for each axis. Values are converted from deg to rad.
+    reading->gyro.x = -x * kDegreesToRadians;
+    reading->gyro.y = -y * kDegreesToRadians;
+    reading->gyro.z = -z * kDegreesToRadians;
+    return S_OK;
+  };
   return params;
 }
 
@@ -136,32 +133,31 @@ std::unique_ptr<ReaderInitParams> CreateGyroscopeReaderInitParams() {
 std::unique_ptr<ReaderInitParams> CreateMagnetometerReaderInitParams() {
   auto params = base::MakeUnique<ReaderInitParams>();
   params->sensor_type_id = SENSOR_TYPE_COMPASS_3D;
-  params->reader_func =
-      [](ISensorDataReport* report, SensorReading* reading) {
-        double x = 0.0;
-        double y = 0.0;
-        double z = 0.0;
-        if (!GetReadingValueForProperty(
-                SENSOR_DATA_TYPE_MAGNETIC_FIELD_STRENGTH_X_MILLIGAUSS, report,
-                &x) ||
-            !GetReadingValueForProperty(
-                SENSOR_DATA_TYPE_MAGNETIC_FIELD_STRENGTH_Y_MILLIGAUSS, report,
-                &y) ||
-            !GetReadingValueForProperty(
-                SENSOR_DATA_TYPE_MAGNETIC_FIELD_STRENGTH_Z_MILLIGAUSS, report,
-                &z)) {
-          return E_FAIL;
-        }
+  params->reader_func = [](ISensorDataReport* report, SensorReading* reading) {
+    double x = 0.0;
+    double y = 0.0;
+    double z = 0.0;
+    if (!GetReadingValueForProperty(
+            SENSOR_DATA_TYPE_MAGNETIC_FIELD_STRENGTH_X_MILLIGAUSS, report,
+            &x) ||
+        !GetReadingValueForProperty(
+            SENSOR_DATA_TYPE_MAGNETIC_FIELD_STRENGTH_Y_MILLIGAUSS, report,
+            &y) ||
+        !GetReadingValueForProperty(
+            SENSOR_DATA_TYPE_MAGNETIC_FIELD_STRENGTH_Z_MILLIGAUSS, report,
+            &z)) {
+      return E_FAIL;
+    }
 
-        // Windows uses coordinate system where Z axis points down from device
-        // screen, therefore, using right hand notation, we have to reverse
-        // sign for each axis. Values are converted from Milligaus to
-        // Microtesla.
-        reading->magn.x = -x * kMicroteslaInMilligauss;
-        reading->magn.y = -y * kMicroteslaInMilligauss;
-        reading->magn.z = -z * kMicroteslaInMilligauss;
-        return S_OK;
-      };
+    // Windows uses coordinate system where Z axis points down from device
+    // screen, therefore, using right hand notation, we have to reverse
+    // sign for each axis. Values are converted from Milligaus to
+    // Microtesla.
+    reading->magn.x = -x * kMicroteslaInMilligauss;
+    reading->magn.y = -y * kMicroteslaInMilligauss;
+    reading->magn.z = -z * kMicroteslaInMilligauss;
+    return S_OK;
+  };
   return params;
 }
 
@@ -170,25 +166,24 @@ std::unique_ptr<ReaderInitParams>
 CreateAbsoluteOrientationEulerAnglesReaderInitParams() {
   auto params = base::MakeUnique<ReaderInitParams>();
   params->sensor_type_id = SENSOR_TYPE_INCLINOMETER_3D;
-  params->reader_func =
-      [](ISensorDataReport* report, SensorReading* reading) {
-        double x = 0.0;
-        double y = 0.0;
-        double z = 0.0;
-        if (!GetReadingValueForProperty(SENSOR_DATA_TYPE_TILT_X_DEGREES, report,
-                                        &x) ||
-            !GetReadingValueForProperty(SENSOR_DATA_TYPE_TILT_Y_DEGREES, report,
-                                        &y) ||
-            !GetReadingValueForProperty(SENSOR_DATA_TYPE_TILT_Z_DEGREES, report,
-                                        &z)) {
-          return E_FAIL;
-        }
+  params->reader_func = [](ISensorDataReport* report, SensorReading* reading) {
+    double x = 0.0;
+    double y = 0.0;
+    double z = 0.0;
+    if (!GetReadingValueForProperty(SENSOR_DATA_TYPE_TILT_X_DEGREES, report,
+                                    &x) ||
+        !GetReadingValueForProperty(SENSOR_DATA_TYPE_TILT_Y_DEGREES, report,
+                                    &y) ||
+        !GetReadingValueForProperty(SENSOR_DATA_TYPE_TILT_Z_DEGREES, report,
+                                    &z)) {
+      return E_FAIL;
+    }
 
-        reading->orientation_euler.x = x;
-        reading->orientation_euler.y = y;
-        reading->orientation_euler.z = z;
-        return S_OK;
-      };
+    reading->orientation_euler.x = x;
+    reading->orientation_euler.y = y;
+    reading->orientation_euler.z = z;
+    return S_OK;
+  };
   return params;
 }
 
@@ -197,27 +192,26 @@ std::unique_ptr<ReaderInitParams>
 CreateAbsoluteOrientationQuaternionReaderInitParams() {
   auto params = base::MakeUnique<ReaderInitParams>();
   params->sensor_type_id = SENSOR_TYPE_AGGREGATED_DEVICE_ORIENTATION;
-  params->reader_func =
-      [](ISensorDataReport* report, SensorReading* reading) {
-        base::win::ScopedPropVariant quat_variant;
-        HRESULT hr = report->GetSensorValue(SENSOR_DATA_TYPE_QUATERNION,
-                                            quat_variant.Receive());
-        if (FAILED(hr) || quat_variant.get().vt != (VT_VECTOR | VT_UI1) ||
-            quat_variant.get().caub.cElems < 16) {
-          return E_FAIL;
-        }
+  params->reader_func = [](ISensorDataReport* report, SensorReading* reading) {
+    base::win::ScopedPropVariant quat_variant;
+    HRESULT hr = report->GetSensorValue(SENSOR_DATA_TYPE_QUATERNION,
+                                        quat_variant.Receive());
+    if (FAILED(hr) || quat_variant.get().vt != (VT_VECTOR | VT_UI1) ||
+        quat_variant.get().caub.cElems < 16) {
+      return E_FAIL;
+    }
 
-        float* quat = reinterpret_cast<float*>(quat_variant.get().caub.pElems);
+    float* quat = reinterpret_cast<float*>(quat_variant.get().caub.pElems);
 
-        // Windows uses coordinate system where Z axis points down from device
-        // screen, therefore, using right hand notation, we have to reverse
-        // sign for each quaternion component.
-        reading->orientation_quat.x = -quat[0];  // x*sin(Theta/2)
-        reading->orientation_quat.y = -quat[1];  // y*sin(Theta/2)
-        reading->orientation_quat.z = -quat[2];  // z*sin(Theta/2)
-        reading->orientation_quat.w = quat[3];   // cos(Theta/2)
-        return S_OK;
-      };
+    // Windows uses coordinate system where Z axis points down from device
+    // screen, therefore, using right hand notation, we have to reverse
+    // sign for each quaternion component.
+    reading->orientation_quat.x = -quat[0];  // x*sin(Theta/2)
+    reading->orientation_quat.y = -quat[1];  // y*sin(Theta/2)
+    reading->orientation_quat.z = -quat[2];  // z*sin(Theta/2)
+    reading->orientation_quat.w = quat[3];   // cos(Theta/2)
+    return S_OK;
+  };
   return params;
 }
 

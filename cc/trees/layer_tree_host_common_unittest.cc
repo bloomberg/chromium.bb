@@ -548,10 +548,9 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
                                  nullptr, nullptr);
   gfx::Transform expected_transform;
   gfx::PointF sub_layer_screen_position = kScrollLayerPosition - kScrollDelta;
-  expected_transform.Translate(MathUtil::Round(sub_layer_screen_position.x() *
-                                               page_scale * kDeviceScale),
-                               MathUtil::Round(sub_layer_screen_position.y() *
-                                               page_scale * kDeviceScale));
+  expected_transform.Translate(
+      std::round(sub_layer_screen_position.x() * page_scale * kDeviceScale),
+      std::round(sub_layer_screen_position.y() * page_scale * kDeviceScale));
   expected_transform.Scale(page_scale * kDeviceScale,
                            page_scale * kDeviceScale);
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_transform,
@@ -570,12 +569,10 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
                                  nullptr, nullptr);
   expected_transform.MakeIdentity();
   expected_transform.Translate(
-      MathUtil::Round(kTranslateX * page_scale * kDeviceScale +
-                      sub_layer_screen_position.x() * page_scale *
-                          kDeviceScale),
-      MathUtil::Round(kTranslateY * page_scale * kDeviceScale +
-                      sub_layer_screen_position.y() * page_scale *
-                          kDeviceScale));
+      std::round(kTranslateX * page_scale * kDeviceScale +
+                 sub_layer_screen_position.x() * page_scale * kDeviceScale),
+      std::round(kTranslateY * page_scale * kDeviceScale +
+                 sub_layer_screen_position.y() * page_scale * kDeviceScale));
   expected_transform.Scale(page_scale * kDeviceScale,
                            page_scale * kDeviceScale);
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_transform,
@@ -595,12 +592,10 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
 
   expected_transform.MakeIdentity();
   expected_transform.Translate(
-      MathUtil::Round(kTranslateX * page_scale * kDeviceScale +
-                      sub_layer_screen_position.x() * page_scale *
-                          kDeviceScale),
-      MathUtil::Round(kTranslateY * page_scale * kDeviceScale +
-                      sub_layer_screen_position.y() * page_scale *
-                          kDeviceScale));
+      std::round(kTranslateX * page_scale * kDeviceScale +
+                 sub_layer_screen_position.x() * page_scale * kDeviceScale),
+      std::round(kTranslateY * page_scale * kDeviceScale +
+                 sub_layer_screen_position.y() * page_scale * kDeviceScale));
   expected_transform.Scale(page_scale * kDeviceScale,
                            page_scale * kDeviceScale);
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_transform,
