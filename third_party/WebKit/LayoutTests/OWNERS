@@ -2,3 +2,5 @@
 
 per-file ImageFirstTests=set noparent
 per-file ImageFirstTests=file://third_party/WebKit/Source/core/layout/OWNERS
+per-file SmokeTests=set noparent
+per-file SmokeTests=file://third_party/WebKit/Tools/OWNERS
