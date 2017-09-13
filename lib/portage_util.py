@@ -927,6 +927,9 @@ class EBuild(object):
   def _ShouldRevEBuild(self, commit_ids, srcdirs, subdirs_to_rev):
     """Determine whether we should attempt to rev |ebuild|.
 
+    If CROS_WORKON_SUBDIRS_TO_REV is not defined for |ebuild|, and
+    subdirs_to_rev is empty, this function trivially returns True.
+
     Args:
       commit_ids: Commit ID of the tip of tree for the source dir.
       srcdirs: Source direutory where the git repo is located.
@@ -944,7 +947,7 @@ class EBuild(object):
       return True
     if len(srcdirs) != 1:
       return True
-    if len(subdirs_to_rev) == 0:
+    if not subdirs_to_rev and not self.cros_workon_vars.rev_subdirs:
       return True
 
     current_commit_hash = commit_ids[0]
@@ -952,6 +955,7 @@ class EBuild(object):
     srcdir = srcdirs[0]
     logrange = '%s..%s' % (stable_commit_hash, current_commit_hash)
     git_args = ['log', '--oneline', logrange, '--']
+    git_args.extend(self.cros_workon_vars.rev_subdirs)
     git_args.extend(subdirs_to_rev)
 
     try:
