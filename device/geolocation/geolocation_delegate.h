@@ -25,6 +25,7 @@ class DEVICE_GEOLOCATION_EXPORT GeolocationDelegate {
   virtual bool UseNetworkLocationProviders();
 
   // Creates a new AccessTokenStore for geolocation. May return nullptr.
+  // Won't be called unless UseNetworkLocationProviders() is true.
   virtual scoped_refptr<AccessTokenStore> CreateAccessTokenStore();
 
   // Allows an embedder to return its own LocationProvider implementation.
