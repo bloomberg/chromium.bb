@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/numerics/ranges.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
 #include "cc/base/filter_operation.h"
@@ -197,7 +198,7 @@ static float ClampAmountForFilterType(float amount,
     case FilterOperation::INVERT:
     case FilterOperation::OPACITY:
     case FilterOperation::ALPHA_THRESHOLD:
-      return MathUtil::ClampToRange(amount, 0.f, 1.f);
+      return base::ClampToRange(amount, 0.f, 1.f);
     case FilterOperation::SATURATE:
     case FilterOperation::BRIGHTNESS:
     case FilterOperation::CONTRAST:

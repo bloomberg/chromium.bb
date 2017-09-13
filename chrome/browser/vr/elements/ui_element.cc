@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "base/logging.h"
+#include "base/numerics/ranges.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "cc/base/math_util.h"
@@ -229,7 +230,7 @@ bool UiElement::GetRayDistance(const gfx::Point3F& ray_origin,
 void UiElement::NotifyClientFloatAnimated(float opacity,
                                           int target_property_id,
                                           cc::Animation* animation) {
-  opacity_ = cc::MathUtil::ClampToRange(opacity, 0.0f, 1.0f);
+  opacity_ = base::ClampToRange(opacity, 0.0f, 1.0f);
 }
 
 void UiElement::NotifyClientTransformOperationsAnimated(
