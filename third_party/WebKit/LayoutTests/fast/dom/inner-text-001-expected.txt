@@ -15,9 +15,7 @@ Check collapsed margins
 
 Collapsed margins are supposed to result in an extra line break.
 First header
-
 Second header
-
 First list element
 Second list element
 This line contains  an image.
@@ -40,9 +38,7 @@ Check collapsed margins
 
 Collapsed margins are supposed to result in an extra line break.
 First header
-
 Second header
-
 First list element
 Second list element
 This line contains  an image.
