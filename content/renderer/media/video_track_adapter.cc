@@ -5,6 +5,7 @@
 #include "content/renderer/media/video_track_adapter.h"
 
 #include <algorithm>
+#include <cmath>
 #include <limits>
 #include <memory>
 #include <string>
@@ -21,6 +22,7 @@
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/limits.h"
 #include "media/base/video_util.h"
 
 namespace content {
@@ -49,6 +51,11 @@ void ReleaseOriginalFrame(const scoped_refptr<media::VideoFrame>& frame) {
 void ResetCallbackOnMainRenderThread(
     std::unique_ptr<VideoCaptureDeliverFrameCB> callback) {
   // |callback| will be deleted when this exits.
+}
+
+int ClampToValidDimension(int dimension) {
+  return std::min(static_cast<int>(media::limits::kMaxDimension),
+                  std::max(0, dimension));
 }
 
 }  // anonymous namespace
@@ -444,46 +451,49 @@ void VideoTrackAdapter::CalculateTargetSize(
     double min_aspect_ratio,
     double max_aspect_ratio,
     gfx::Size* desired_size) {
-  const gfx::Size& input_size =
-      is_rotated
-          ? gfx::Size(original_input_size.height(), original_input_size.width())
-          : original_input_size;
+  DCHECK(!std::isnan(min_aspect_ratio));
+  DCHECK(!std::isnan(max_aspect_ratio));
 
-  // If |frame| has larger width or height than requested, or the aspect ratio
-  // does not match the requested, we want to create a wrapped version of this
-  // frame with a size that fulfills the constraints.
-  const double input_ratio =
-      static_cast<double>(input_size.width()) / input_size.height();
+  // Perform all the cropping computations as if the device was never rotated.
+  int width =
+      is_rotated ? original_input_size.height() : original_input_size.width();
+  int height =
+      is_rotated ? original_input_size.width() : original_input_size.height();
 
-  if (input_size.width() > max_frame_size.width() ||
-      input_size.height() > max_frame_size.height() ||
-      input_ratio > max_aspect_ratio || input_ratio < min_aspect_ratio) {
-    int desired_width = std::min(max_frame_size.width(), input_size.width());
-    int desired_height = std::min(max_frame_size.height(), input_size.height());
+  // Adjust the size of the frame to the maximum allowed size.
+  width = ClampToValidDimension(std::min(width, max_frame_size.width()));
+  height = ClampToValidDimension(std::min(height, max_frame_size.height()));
 
-    const double resulting_ratio =
-        static_cast<double>(desired_width) / desired_height;
-    // Make sure |min_aspect_ratio| < |requested_ratio| < |max_aspect_ratio|.
-    const double requested_ratio =
-        std::max(std::min(resulting_ratio, max_aspect_ratio), min_aspect_ratio);
+  // If the area of the frame is zero, ignore aspect-ratio correction.
+  if (width * height > 0) {
+    double ratio = static_cast<double>(width) / height;
+    DCHECK(std::isfinite(ratio));
+    if (ratio > max_aspect_ratio || ratio < min_aspect_ratio) {
+      // Make sure |min_aspect_ratio| <= |desired_ratio| <= |max_aspect_ratio|.
+      double desired_ratio =
+          std::max(std::min(ratio, max_aspect_ratio), min_aspect_ratio);
+      DCHECK(std::isfinite(desired_ratio));
+      DCHECK_NE(desired_ratio, 0.0);
 
-    if (resulting_ratio < requested_ratio) {
-      desired_height = static_cast<int>((desired_height * resulting_ratio) /
-                                        requested_ratio);
-      // Make sure we scale to an even height to avoid rounding errors
-      desired_height = (desired_height + 1) & ~1;
-    } else if (resulting_ratio > requested_ratio) {
-      desired_width =
-          static_cast<int>((desired_width * requested_ratio) / resulting_ratio);
-      // Make sure we scale to an even width to avoid rounding errors.
-      desired_width = (desired_width + 1) & ~1;
+      if (ratio < desired_ratio) {
+        double desired_height_fp = (height * ratio) / desired_ratio;
+        DCHECK(std::isfinite(desired_height_fp));
+        height = static_cast<int>(desired_height_fp);
+        // Make sure we scale to an even height to avoid rounding errors
+        height = (height + 1) & ~1;
+      } else if (ratio > desired_ratio) {
+        double desired_width_fp = (width * desired_ratio) / ratio;
+        DCHECK(std::isfinite(desired_width_fp));
+        width = static_cast<int>(desired_width_fp);
+        // Make sure we scale to an even width to avoid rounding errors.
+        width = (width + 1) & ~1;
+      }
     }
-
-    *desired_size = is_rotated ? gfx::Size(desired_height, desired_width)
-                               : gfx::Size(desired_width, desired_height);
-  } else {
-    *desired_size = original_input_size;
   }
+
+  // Output back taking device rotation into account.
+  *desired_size =
+      is_rotated ? gfx::Size(height, width) : gfx::Size(width, height);
 }
 
 void VideoTrackAdapter::StartFrameMonitoringOnIO(
