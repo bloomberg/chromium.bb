@@ -9,6 +9,9 @@
 /*.py  recipes
 /*.sh  recipes
 
+# vpython specs
+/gsutil.vpython recipes
+
 # Extensionless tools we want and support scripts.
 /apply_issue                  recipes
 /clang*                       recipes
