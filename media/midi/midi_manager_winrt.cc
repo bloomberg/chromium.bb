@@ -420,8 +420,8 @@ class MidiManagerWinrt::MidiPortManager {
                           dev_name = GetNameString(info);
 
               task_runner->PostTask(
-                  FROM_HERE, base::Bind(&MidiPortManager::OnAdded, weak_ptr,
-                                        dev_id, dev_name));
+                  FROM_HERE, base::BindOnce(&MidiPortManager::OnAdded, weak_ptr,
+                                            dev_id, dev_name));
 
               return S_OK;
             })
@@ -438,8 +438,8 @@ class MidiManagerWinrt::MidiPortManager {
                                     IInspectable* insp) {
               task_runner->PostTask(
                   FROM_HERE,
-                  base::Bind(&MidiPortManager::OnEnumerationCompleted,
-                             weak_ptr));
+                  base::BindOnce(&MidiPortManager::OnEnumerationCompleted,
+                                 weak_ptr));
 
               return S_OK;
             })
@@ -463,9 +463,9 @@ class MidiManagerWinrt::MidiPortManager {
 
               std::string dev_id = GetIdString(update);
 
-              task_runner->PostTask(
-                  FROM_HERE,
-                  base::Bind(&MidiPortManager::OnRemoved, weak_ptr, dev_id));
+              task_runner->PostTask(FROM_HERE,
+                                    base::BindOnce(&MidiPortManager::OnRemoved,
+                                                   weak_ptr, dev_id));
 
               return S_OK;
             })
@@ -615,8 +615,9 @@ class MidiManagerWinrt::MidiPortManager {
               // outside.
               task_runner->PostTask(
                   FROM_HERE,
-                  base::Bind(&MidiPortManager::OnCompletedGetPortFromIdAsync,
-                             weak_ptr, async_op));
+                  base::BindOnce(
+                      &MidiPortManager::OnCompletedGetPortFromIdAsync, weak_ptr,
+                      async_op));
 
               return S_OK;
             })
@@ -824,8 +825,9 @@ class MidiManagerWinrt::MidiInPortManager final
                                         p_buffer_data + data_length);
 
               task_runner->PostTask(
-                  FROM_HERE, base::Bind(&MidiInPortManager::OnMessageReceived,
-                                        weak_ptr, dev_id, data, now));
+                  FROM_HERE,
+                  base::BindOnce(&MidiInPortManager::OnMessageReceived,
+                                 weak_ptr, dev_id, data, now));
 
               return S_OK;
             })
@@ -926,14 +928,14 @@ void MidiManagerWinrt::StartInitialization() {
   com_thread_.Start();
 
   com_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&MidiManagerWinrt::InitializeOnComThread,
-                            base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&MidiManagerWinrt::InitializeOnComThread,
+                                base::Unretained(this)));
 }
 
 void MidiManagerWinrt::Finalize() {
   com_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&MidiManagerWinrt::FinalizeOnComThread,
-                            base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&MidiManagerWinrt::FinalizeOnComThread,
+                                base::Unretained(this)));
 
   // Blocks until FinalizeOnComThread() returns. Delayed MIDI send data tasks
   // will be ignored.
@@ -948,8 +950,8 @@ void MidiManagerWinrt::DispatchSendMidiData(MidiManagerClient* client,
 
   scheduler_->PostSendDataTask(
       client, data.size(), timestamp,
-      base::Bind(&MidiManagerWinrt::SendOnComThread, base::Unretained(this),
-                 port_index, data));
+      base::BindOnce(&MidiManagerWinrt::SendOnComThread, base::Unretained(this),
+                     port_index, data));
 }
 
 void MidiManagerWinrt::InitializeOnComThread() {

@@ -36,12 +36,12 @@ class MIDI_EXPORT MidiScheduler final {
   void PostSendDataTask(MidiManagerClient* client,
                         size_t length,
                         double timestamp,
-                        const base::Closure& closure);
+                        base::OnceClosure closure);
 
  private:
   void InvokeClosure(MidiManagerClient* client,
                      size_t length,
-                     const base::Closure& closure);
+                     base::OnceClosure closure);
 
   // MidiManager should own the MidiScheduler and be alive longer.
   MidiManager* manager_;

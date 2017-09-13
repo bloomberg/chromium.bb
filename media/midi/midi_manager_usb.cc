@@ -28,8 +28,8 @@ MidiManagerUsb::~MidiManagerUsb() {
 }
 
 void MidiManagerUsb::StartInitialization() {
-  Initialize(
-      base::Bind(&MidiManager::CompleteInitialization, base::Unretained(this)));
+  Initialize(base::BindOnce(&MidiManager::CompleteInitialization,
+                            base::Unretained(this)));
 }
 
 void MidiManagerUsb::Finalize() {
@@ -38,8 +38,9 @@ void MidiManagerUsb::Finalize() {
   scheduler_.reset();
 }
 
-void MidiManagerUsb::Initialize(base::Callback<void(Result result)> callback) {
-  initialize_callback_ = callback;
+void MidiManagerUsb::Initialize(
+    base::OnceCallback<void(Result result)> callback) {
+  initialize_callback_ = std::move(callback);
 
   {
     base::AutoLock auto_lock(scheduler_lock_);
@@ -48,9 +49,8 @@ void MidiManagerUsb::Initialize(base::Callback<void(Result result)> callback) {
 
   // This is safe because EnumerateDevices cancels the operation on destruction.
   device_factory_->EnumerateDevices(
-      this,
-      base::Bind(&MidiManagerUsb::OnEnumerateDevicesDone,
-                 base::Unretained(this)));
+      this, base::BindOnce(&MidiManagerUsb::OnEnumerateDevicesDone,
+                           base::Unretained(this)));
 }
 
 void MidiManagerUsb::DispatchSendMidiData(MidiManagerClient* client,
@@ -67,8 +67,9 @@ void MidiManagerUsb::DispatchSendMidiData(MidiManagerClient* client,
   // the scheduler.
   scheduler_->PostSendDataTask(
       client, data.size(), timestamp,
-      base::Bind(&UsbMidiOutputStream::Send,
-                 base::Unretained(output_streams_[port_index].get()), data));
+      base::BindOnce(&UsbMidiOutputStream::Send,
+                     base::Unretained(output_streams_[port_index].get()),
+                     data));
 }
 
 void MidiManagerUsb::ReceiveUsbMidiData(UsbMidiDevice* device,
@@ -120,18 +121,18 @@ void MidiManagerUsb::OnReceivedData(size_t jack_index,
 void MidiManagerUsb::OnEnumerateDevicesDone(bool result,
                                             UsbMidiDevice::Devices* devices) {
   if (!result) {
-    initialize_callback_.Run(Result::INITIALIZATION_ERROR);
+    std::move(initialize_callback_).Run(Result::INITIALIZATION_ERROR);
     return;
   }
   input_stream_.reset(new UsbMidiInputStream(this));
   devices->swap(devices_);
   for (size_t i = 0; i < devices_.size(); ++i) {
     if (!AddPorts(devices_[i].get(), static_cast<int>(i))) {
-      initialize_callback_.Run(Result::INITIALIZATION_ERROR);
+      std::move(initialize_callback_).Run(Result::INITIALIZATION_ERROR);
       return;
     }
   }
-  initialize_callback_.Run(Result::OK);
+  std::move(initialize_callback_).Run(Result::OK);
 }
 
 bool MidiManagerUsb::AddPorts(UsbMidiDevice* device, int device_id) {
