@@ -4,6 +4,10 @@
 
 #include "chromeos/dbus/fake_image_loader_client.h"
 
+#include <utility>
+
+#include "base/optional.h"
+
 namespace chromeos {
 
 // ImageLoaderClient override:
@@ -14,14 +18,15 @@ void FakeImageLoaderClient::RegisterComponent(
     const BoolDBusMethodCallback& callback) {
   callback.Run(DBUS_METHOD_CALL_FAILURE, false);
 }
-void FakeImageLoaderClient::LoadComponent(const std::string& name,
-                                          StringDBusMethodCallback callback) {
-  std::move(callback).Run(DBUS_METHOD_CALL_FAILURE, "");
+void FakeImageLoaderClient::LoadComponent(
+    const std::string& name,
+    DBusMethodCallback<std::string> callback) {
+  std::move(callback).Run(base::nullopt);
 }
 void FakeImageLoaderClient::RequestComponentVersion(
     const std::string& name,
-    StringDBusMethodCallback callback) {
-  std::move(callback).Run(DBUS_METHOD_CALL_FAILURE, "");
+    DBusMethodCallback<std::string> callback) {
+  std::move(callback).Run(base::nullopt);
 }
 
 }  // namespace chromeos

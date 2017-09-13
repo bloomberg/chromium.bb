@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/optional.h"
 #include "chromeos/chromeos_export.h"
 
 namespace dbus {
@@ -24,6 +25,12 @@ enum DBusMethodCallStatus {
   DBUS_METHOD_CALL_SUCCESS,
 };
 
+// Callback to handle response of methods with result.
+// In case of error, nullopt should be passed.
+template <typename ResultType>
+using DBusMethodCallback =
+    base::OnceCallback<void(base::Optional<ResultType> result)>;
+
 // A callback to handle responses of methods without results.
 using VoidDBusMethodCallback =
     base::OnceCallback<void(DBusMethodCallStatus call_status)>;
@@ -33,11 +40,6 @@ using VoidDBusMethodCallback =
 // A callback to handle responses of methods returning a bool value.
 typedef base::Callback<void(DBusMethodCallStatus call_status,
                             bool result)> BoolDBusMethodCallback;
-
-// A callback to handle responses of methods returning a string value.
-using StringDBusMethodCallback =
-    base::OnceCallback<void(DBusMethodCallStatus call_status,
-                            const std::string& result)>;
 
 // A callback to handle responses of methods returning a boolean value.
 typedef base::Callback<void(

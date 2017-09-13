@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/optional.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -66,12 +67,11 @@ std::string GetVersion(VersionFormat format) {
 
 void GetTpmVersion(StringCallback callback) {
   chromeos::DBusThreadManager::Get()->GetCryptohomeClient()->TpmGetVersion(
-      base::Bind([](StringCallback callback,
-                    chromeos::DBusMethodCallStatus call_status,
-                    const std::string& tpm_version) {
-        callback.Run(tpm_version);
-      },
-      callback));
+      base::BindOnce(
+          [](StringCallback callback, base::Optional<std::string> version) {
+            callback.Run(version.value_or(std::string()));
+          },
+          callback));
 }
 
 std::string GetARCVersion() {

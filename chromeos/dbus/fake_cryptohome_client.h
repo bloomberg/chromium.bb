@@ -53,7 +53,7 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
                            const ProtobufMethodCallback& callback) override;
   void GetSystemSalt(const GetSystemSaltCallback& callback) override;
   void GetSanitizedUsername(const cryptohome::Identification& cryptohome_id,
-                            StringDBusMethodCallback callback) override;
+                            DBusMethodCallback<std::string> callback) override;
   std::string BlockingGetSanitizedUsername(
       const cryptohome::Identification& cryptohome_id) override;
   void AsyncMount(const cryptohome::Identification& cryptohome_id,
@@ -71,7 +71,7 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   void TpmIsReady(const BoolDBusMethodCallback& callback) override;
   void TpmIsEnabled(const BoolDBusMethodCallback& callback) override;
   bool CallTpmIsEnabledAndBlock(bool* enabled) override;
-  void TpmGetPassword(StringDBusMethodCallback callback) override;
+  void TpmGetPassword(DBusMethodCallback<std::string> callback) override;
   void TpmIsOwned(const BoolDBusMethodCallback& callback) override;
   bool CallTpmIsOwnedAndBlock(bool* owned) override;
   void TpmIsBeingOwned(const BoolDBusMethodCallback& callback) override;
@@ -169,7 +169,7 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
       const cryptohome::Identification& cryptohome_id,
       const std::string& key_prefix,
       const BoolDBusMethodCallback& callback) override;
-  void TpmGetVersion(StringDBusMethodCallback callback) override;
+  void TpmGetVersion(DBusMethodCallback<std::string> callback) override;
   void GetKeyDataEx(const cryptohome::Identification& cryptohome_id,
                     const cryptohome::AuthorizationRequest& auth,
                     const cryptohome::GetKeyDataRequest& request,

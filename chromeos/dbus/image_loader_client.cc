@@ -4,8 +4,11 @@
 
 #include "chromeos/dbus/image_loader_client.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -38,7 +41,7 @@ class ImageLoaderClientImpl : public ImageLoaderClient {
   }
 
   void LoadComponent(const std::string& name,
-                     StringDBusMethodCallback callback) override {
+                     DBusMethodCallback<std::string> callback) override {
     dbus::MethodCall method_call(imageloader::kImageLoaderServiceInterface,
                                  imageloader::kLoadComponent);
     dbus::MessageWriter writer(&method_call);
@@ -48,8 +51,9 @@ class ImageLoaderClientImpl : public ImageLoaderClient {
                                       std::move(callback)));
   }
 
-  void RequestComponentVersion(const std::string& name,
-                               StringDBusMethodCallback callback) override {
+  void RequestComponentVersion(
+      const std::string& name,
+      DBusMethodCallback<std::string> callback) override {
     dbus::MethodCall method_call(imageloader::kImageLoaderServiceInterface,
                                  imageloader::kGetComponentVersion);
     dbus::MessageWriter writer(&method_call);
@@ -84,20 +88,20 @@ class ImageLoaderClientImpl : public ImageLoaderClient {
     callback.Run(DBUS_METHOD_CALL_SUCCESS, result);
   }
 
-  static void OnStringMethod(StringDBusMethodCallback callback,
+  static void OnStringMethod(DBusMethodCallback<std::string> callback,
                              dbus::Response* response) {
     if (!response) {
-      std::move(callback).Run(DBUS_METHOD_CALL_FAILURE, std::string());
+      std::move(callback).Run(base::nullopt);
       return;
     }
     dbus::MessageReader reader(response);
     std::string result;
     if (!reader.PopString(&result)) {
-      std::move(callback).Run(DBUS_METHOD_CALL_FAILURE, std::string());
+      std::move(callback).Run(base::nullopt);
       LOG(ERROR) << "Invalid response: " << response->ToString();
       return;
     }
-    std::move(callback).Run(DBUS_METHOD_CALL_SUCCESS, result);
+    std::move(callback).Run(std::move(result));
   }
 
   dbus::ObjectProxy* proxy_ = nullptr;

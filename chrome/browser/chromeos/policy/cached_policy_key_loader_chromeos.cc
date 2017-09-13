@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
@@ -85,8 +87,8 @@ void CachedPolicyKeyLoaderChromeOS::EnsurePolicyKeyLoaded(
   // |cached_policy_key_path_|.
   cryptohome_client_->GetSanitizedUsername(
       cryptohome::Identification(account_id_),
-      base::Bind(&CachedPolicyKeyLoaderChromeOS::OnGetSanitizedUsername,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&CachedPolicyKeyLoaderChromeOS::OnGetSanitizedUsername,
+                     weak_factory_.GetWeakPtr()));
 }
 
 bool CachedPolicyKeyLoaderChromeOS::LoadPolicyKeyImmediately() {
@@ -124,8 +126,8 @@ void CachedPolicyKeyLoaderChromeOS::ReloadPolicyKey(
     // |cached_policy_key_path_|.
     cryptohome_client_->GetSanitizedUsername(
         cryptohome::Identification(account_id_),
-        base::Bind(&CachedPolicyKeyLoaderChromeOS::OnGetSanitizedUsername,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&CachedPolicyKeyLoaderChromeOS::OnGetSanitizedUsername,
+                       weak_factory_.GetWeakPtr()));
   } else {
     TriggerLoadPolicyKey();
   }
@@ -185,12 +187,10 @@ void CachedPolicyKeyLoaderChromeOS::OnPolicyKeyLoaded(const std::string& key) {
 }
 
 void CachedPolicyKeyLoaderChromeOS::OnGetSanitizedUsername(
-    chromeos::DBusMethodCallStatus call_status,
-    const std::string& sanitized_username) {
+    base::Optional<std::string> sanitized_username) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (call_status != chromeos::DBUS_METHOD_CALL_SUCCESS ||
-      sanitized_username.empty()) {
+  if (!sanitized_username || sanitized_username->empty()) {
     SampleValidationFailure(ValidationFailure::DBUS);
 
     // Don't bother trying to load a key if we don't know where it is - just
@@ -202,7 +202,7 @@ void CachedPolicyKeyLoaderChromeOS::OnGetSanitizedUsername(
   }
 
   cached_policy_key_path_ = user_policy_key_dir_.Append(
-      base::StringPrintf(kPolicyKeyFile, sanitized_username.c_str()));
+      base::StringPrintf(kPolicyKeyFile, sanitized_username->c_str()));
   TriggerLoadPolicyKey();
 }
 

@@ -7,10 +7,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -145,16 +148,14 @@ void FakeCryptohomeClient::GetSystemSalt(
 
 void FakeCryptohomeClient::GetSanitizedUsername(
     const cryptohome::Identification& cryptohome_id,
-    StringDBusMethodCallback callback) {
+    DBusMethodCallback<std::string> callback) {
   // Even for stub implementation we have to return different values so that
   // multi-profiles would work.
-  auto task =
-      service_is_available_
-          ? base::BindOnce(std::move(callback), DBUS_METHOD_CALL_SUCCESS,
-                           GetStubSanitizedUsername(cryptohome_id))
-          : base::BindOnce(std::move(callback), DBUS_METHOD_CALL_FAILURE,
-                           std::string());
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(task));
+  auto id = service_is_available_
+                ? base::make_optional(GetStubSanitizedUsername(cryptohome_id))
+                : base::nullopt;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), id));
 }
 
 std::string FakeCryptohomeClient::BlockingGetSanitizedUsername(
@@ -208,11 +209,12 @@ bool FakeCryptohomeClient::CallTpmIsEnabledAndBlock(bool* enabled) {
   return true;
 }
 
-void FakeCryptohomeClient::TpmGetPassword(StringDBusMethodCallback callback) {
-  const char kStubTpmPassword[] = "Stub-TPM-password";
+void FakeCryptohomeClient::TpmGetPassword(
+    DBusMethodCallback<std::string> callback) {
+  constexpr char kStubTpmPassword[] = "Stub-TPM-password";
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), DBUS_METHOD_CALL_SUCCESS,
-                                std::string(kStubTpmPassword)));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), std::string(kStubTpmPassword)));
 }
 
 void FakeCryptohomeClient::TpmIsOwned(
@@ -570,10 +572,10 @@ void FakeCryptohomeClient::TpmAttestationDeleteKeys(
       FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
 }
 
-void FakeCryptohomeClient::TpmGetVersion(StringDBusMethodCallback callback) {
+void FakeCryptohomeClient::TpmGetVersion(
+    DBusMethodCallback<std::string> callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), DBUS_METHOD_CALL_SUCCESS,
-                                std::string()));
+      FROM_HERE, base::BindOnce(std::move(callback), std::string()));
 }
 
 void FakeCryptohomeClient::GetKeyDataEx(
