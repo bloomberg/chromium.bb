@@ -61,6 +61,7 @@ static_library("arc") {
 
   public_deps = [
     ":arc_base",
+    ":prefs",
   ]
 
   deps = [
@@ -90,6 +91,20 @@ static_library("arc") {
     "//ui/events:dom_keycode_converter",
     "//ui/keyboard:keyboard",
     "//url:url",
+  ]
+}
+
+static_library("prefs") {
+  sources = [
+    "arc_export.h",
+    "arc_prefs.cc",
+    "arc_prefs.h",
+  ]
+
+  defines = [ "ARC_IMPLEMENTATION" ]
+
+  deps = [
+    "//components/pref_registry",
   ]
 }
 

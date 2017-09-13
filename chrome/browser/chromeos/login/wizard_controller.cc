@@ -93,6 +93,7 @@
 #include "chromeos/settings/timezone_settings.h"
 #include "chromeos/timezone/timezone_provider.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_prefs.h"
 #include "components/crash/content/app/breakpad_linux.h"
 #include "components/pairing/bluetooth_controller_pairing_controller.h"
 #include "components/pairing/bluetooth_host_pairing_controller.h"
@@ -1596,8 +1597,8 @@ bool WizardController::ShouldShowArcTerms() const {
     VLOG(1) << "Skip ARC Terms of Service screen because ARC is not allowed.";
     return false;
   }
-  if (profile->GetPrefs()->IsManagedPreference(prefs::kArcEnabled) &&
-      !profile->GetPrefs()->GetBoolean(prefs::kArcEnabled)) {
+  if (profile->GetPrefs()->IsManagedPreference(arc::prefs::kArcEnabled) &&
+      !profile->GetPrefs()->GetBoolean(arc::prefs::kArcEnabled)) {
     VLOG(1) << "Skip ARC Terms of Service screen because ARC is disabled.";
     return false;
   }

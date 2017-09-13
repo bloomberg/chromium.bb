@@ -28,6 +28,7 @@
 #include "chromeos/settings/timezone_settings.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "components/arc/arc_prefs.h"
 #include "components/arc/intent_helper/font_size_util.h"
 #include "components/onc/onc_pref_names.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -256,13 +257,13 @@ void ArcSettingsServiceImpl::OnPrefChanged(const std::string& pref_name) const {
   } else if (pref_name == prefs::kArcLocationServiceEnabled) {
     if (ShouldSyncLocationServiceEnabled())
       SyncLocationServiceEnabled();
-  } else if (pref_name == prefs::kUse24HourClock) {
+  } else if (pref_name == ::prefs::kUse24HourClock) {
     SyncUse24HourClock();
-  } else if (pref_name == prefs::kResolveTimezoneByGeolocation) {
+  } else if (pref_name == ::prefs::kResolveTimezoneByGeolocation) {
     SyncTimeZoneByGeolocation();
-  } else if (pref_name == prefs::kWebKitDefaultFixedFontSize ||
-             pref_name == prefs::kWebKitDefaultFontSize ||
-             pref_name == prefs::kWebKitMinimumFontSize) {
+  } else if (pref_name == ::prefs::kWebKitDefaultFixedFontSize ||
+             pref_name == ::prefs::kWebKitDefaultFontSize ||
+             pref_name == ::prefs::kWebKitMinimumFontSize) {
     SyncFontSize();
   } else if (pref_name == proxy_config::prefs::kProxy) {
     SyncProxySettings();
@@ -304,11 +305,11 @@ void ArcSettingsServiceImpl::StartObservingSettingsChanges() {
   AddPrefToObserve(ash::prefs::kAccessibilityVirtualKeyboardEnabled);
   AddPrefToObserve(prefs::kArcBackupRestoreEnabled);
   AddPrefToObserve(prefs::kArcLocationServiceEnabled);
-  AddPrefToObserve(prefs::kResolveTimezoneByGeolocation);
-  AddPrefToObserve(prefs::kUse24HourClock);
-  AddPrefToObserve(prefs::kWebKitDefaultFixedFontSize);
-  AddPrefToObserve(prefs::kWebKitDefaultFontSize);
-  AddPrefToObserve(prefs::kWebKitMinimumFontSize);
+  AddPrefToObserve(::prefs::kResolveTimezoneByGeolocation);
+  AddPrefToObserve(::prefs::kUse24HourClock);
+  AddPrefToObserve(::prefs::kWebKitDefaultFixedFontSize);
+  AddPrefToObserve(::prefs::kWebKitDefaultFontSize);
+  AddPrefToObserve(::prefs::kWebKitMinimumFontSize);
   AddPrefToObserve(proxy_config::prefs::kProxy);
   AddPrefToObserve(onc::prefs::kDeviceOpenNetworkConfiguration);
   AddPrefToObserve(onc::prefs::kOpenNetworkConfiguration);
@@ -412,9 +413,9 @@ void ArcSettingsServiceImpl::SyncFocusHighlightEnabled() const {
 }
 
 void ArcSettingsServiceImpl::SyncFontSize() const {
-  int default_size = GetIntegerPref(prefs::kWebKitDefaultFontSize);
-  int default_fixed_size = GetIntegerPref(prefs::kWebKitDefaultFixedFontSize);
-  int minimum_size = GetIntegerPref(prefs::kWebKitMinimumFontSize);
+  int default_size = GetIntegerPref(::prefs::kWebKitDefaultFontSize);
+  int default_fixed_size = GetIntegerPref(::prefs::kWebKitDefaultFixedFontSize);
+  int minimum_size = GetIntegerPref(::prefs::kWebKitMinimumFontSize);
 
   double android_scale = ConvertFontSizeChromeToAndroid(
       default_size, default_fixed_size, minimum_size);
@@ -427,7 +428,7 @@ void ArcSettingsServiceImpl::SyncFontSize() const {
 
 void ArcSettingsServiceImpl::SyncLocale() const {
   const PrefService::Preference* pref =
-      registrar_.prefs()->FindPreference(prefs::kApplicationLocale);
+      registrar_.prefs()->FindPreference(::prefs::kApplicationLocale);
   DCHECK(pref);
   std::string locale;
   bool value_exists = pref->GetValue()->GetAsString(&locale);
@@ -533,8 +534,8 @@ void ArcSettingsServiceImpl::SyncTimeZone() const {
 }
 
 void ArcSettingsServiceImpl::SyncTimeZoneByGeolocation() const {
-  const PrefService::Preference* pref =
-      registrar_.prefs()->FindPreference(prefs::kResolveTimezoneByGeolocation);
+  const PrefService::Preference* pref = registrar_.prefs()->FindPreference(
+      ::prefs::kResolveTimezoneByGeolocation);
   DCHECK(pref);
   bool setTimeZoneByGeolocation = false;
   bool value_exists = pref->GetValue()->GetAsBoolean(&setTimeZoneByGeolocation);
@@ -547,7 +548,7 @@ void ArcSettingsServiceImpl::SyncTimeZoneByGeolocation() const {
 
 void ArcSettingsServiceImpl::SyncUse24HourClock() const {
   const PrefService::Preference* pref =
-      registrar_.prefs()->FindPreference(prefs::kUse24HourClock);
+      registrar_.prefs()->FindPreference(::prefs::kUse24HourClock);
   DCHECK(pref);
   bool use24HourClock = false;
   bool value_exists = pref->GetValue()->GetAsBoolean(&use24HourClock);

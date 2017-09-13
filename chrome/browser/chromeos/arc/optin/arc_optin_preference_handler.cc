@@ -9,7 +9,7 @@
 #include "chrome/browser/chromeos/arc/optin/arc_optin_preference_handler_observer.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
-#include "chrome/common/pref_names.h"
+#include "components/arc/arc_prefs.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_service.h"
 

@@ -5,7 +5,7 @@
 #include "chrome/browser/policy/default_geolocation_policy_handler.h"
 
 #include "base/values.h"
-#include "chrome/common/pref_names.h"
+#include "components/arc/arc_prefs.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_constants.h"
@@ -25,7 +25,7 @@ void DefaultGeolocationPolicyHandler::ApplyPolicySettings(
   if (value && EnsureInRange(value, &value_in_range, nullptr)
       && value_in_range == CONTENT_SETTING_BLOCK) {
     // CONTENT_SETTING_BLOCK = BlockGeolocation
-    prefs->SetBoolean(prefs::kArcLocationServiceEnabled, false);
+    prefs->SetBoolean(arc::prefs::kArcLocationServiceEnabled, false);
   }
 }
 

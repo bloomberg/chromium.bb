@@ -8,7 +8,7 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
-#include "chrome/common/pref_names.h"
+#include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/base/sync_prefs.h"
@@ -28,7 +28,7 @@ ArcPackageSyncDataTypeController::ArcPackageSyncDataTypeController(
       profile_(profile) {
   pref_registrar_.Init(profile_->GetPrefs());
   pref_registrar_.Add(
-      prefs::kArcEnabled,
+      arc::prefs::kArcEnabled,
       base::Bind(&ArcPackageSyncDataTypeController::OnArcEnabledPrefChanged,
                  base::Unretained(this)));
 }
