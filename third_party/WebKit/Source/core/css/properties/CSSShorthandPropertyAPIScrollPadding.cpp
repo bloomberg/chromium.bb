@@ -10,7 +10,6 @@
 namespace blink {
 
 bool CSSShorthandPropertyAPIScrollPadding::ParseShorthand(
-    CSSPropertyID,
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,

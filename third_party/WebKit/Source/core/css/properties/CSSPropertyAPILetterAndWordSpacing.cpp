@@ -10,7 +10,6 @@
 namespace blink {
 
 const CSSValue* CSSPropertyAPILetterAndWordSpacing::ParseSingleValue(
-    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {

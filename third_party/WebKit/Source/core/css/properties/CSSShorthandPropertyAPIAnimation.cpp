@@ -58,7 +58,6 @@ CSSValue* ConsumeAnimationValue(CSSPropertyID property,
 }  // namespace
 
 bool CSSShorthandPropertyAPIAnimation::ParseShorthand(
-    CSSPropertyID,
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,

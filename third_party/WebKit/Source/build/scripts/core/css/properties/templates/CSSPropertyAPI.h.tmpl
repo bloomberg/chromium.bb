@@ -30,9 +30,7 @@ class CSSPropertyAPI {
 
   // Parses and consumes a longhand property value from the token range.
   // Returns nullptr if the input is invalid.
-  // TODO(bugsnash): remove CSSPropertyID arg from this and ParseShorthand
-  virtual const CSSValue* ParseSingleValue(CSSPropertyID,
-                                           CSSParserTokenRange&,
+  virtual const CSSValue* ParseSingleValue(CSSParserTokenRange&,
                                            const CSSParserContext&,
                                            const CSSParserLocalContext&) const {
     return nullptr;
@@ -40,8 +38,7 @@ class CSSPropertyAPI {
   // Parses and consumes entire shorthand value from the token range and adds
   // all constituent parsed longhand properties to the 'properties' set.
   // Returns false if the input is invalid.
-  virtual bool ParseShorthand(CSSPropertyID,
-                              bool important,
+  virtual bool ParseShorthand(bool important,
                               CSSParserTokenRange&,
                               const CSSParserContext&,
                               const CSSParserLocalContext&,

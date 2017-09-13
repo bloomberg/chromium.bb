@@ -12,7 +12,6 @@
 namespace blink {
 
 bool CSSShorthandPropertyAPIOverflow::ParseShorthand(
-    CSSPropertyID,
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,

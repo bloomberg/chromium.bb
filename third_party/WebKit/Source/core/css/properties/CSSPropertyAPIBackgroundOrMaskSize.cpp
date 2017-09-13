@@ -12,7 +12,6 @@
 namespace blink {
 
 const CSSValue* CSSPropertyAPIBackgroundOrMaskSize::ParseSingleValue(
-    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext& local_context) const {

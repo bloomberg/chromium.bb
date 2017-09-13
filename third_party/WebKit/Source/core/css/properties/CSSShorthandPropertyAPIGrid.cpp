@@ -39,7 +39,6 @@ CSSValueList* ConsumeImplicitAutoFlow(CSSParserTokenRange& range,
 }  // namespace
 
 bool CSSShorthandPropertyAPIGrid::ParseShorthand(
-    CSSPropertyID,
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,

@@ -12,7 +12,6 @@
 namespace blink {
 
 bool CSSShorthandPropertyAPIGridArea::ParseShorthand(
-    CSSPropertyID,
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext&,

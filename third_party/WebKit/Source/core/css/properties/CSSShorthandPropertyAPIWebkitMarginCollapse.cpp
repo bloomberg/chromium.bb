@@ -12,7 +12,6 @@
 namespace blink {
 
 bool CSSShorthandPropertyAPIWebkitMarginCollapse::ParseShorthand(
-    CSSPropertyID,
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,

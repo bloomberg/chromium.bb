@@ -11,7 +11,6 @@ namespace blink {
 class CSSParserLocalContext;
 
 const CSSValue* CSSPropertyAPIFillOrStrokeOpacity::ParseSingleValue(
-    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {

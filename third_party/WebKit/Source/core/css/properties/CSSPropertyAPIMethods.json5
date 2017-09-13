@@ -22,12 +22,12 @@
     {
       name: "ParseSingleValue",
       return_type: "const CSSValue*",
-      parameters: "(CSSPropertyID, CSSParserTokenRange&, const CSSParserContext&, const CSSParserLocalContext&)",
+      parameters: "(CSSParserTokenRange&, const CSSParserContext&, const CSSParserLocalContext&)",
     },
     {
       name: "ParseShorthand",
       return_type: "bool",
-      parameters: "(CSSPropertyID, bool, CSSParserTokenRange&, const CSSParserContext&, const CSSParserLocalContext&, HeapVector<CSSProperty, 256>&)",
+      parameters: "(bool, CSSParserTokenRange&, const CSSParserContext&, const CSSParserLocalContext&, HeapVector<CSSProperty, 256>&)",
     },
   ]
 }

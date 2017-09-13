@@ -9,7 +9,6 @@
 namespace blink {
 
 const CSSValue* CSSPropertyAPITextDecorationLine::ParseSingleValue(
-    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
