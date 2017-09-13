@@ -165,7 +165,6 @@ class CONTENT_EXPORT PaymentAppDatabase {
       const std::string& instrument_key,
       payments::mojom::PaymentInstrumentPtr instrument,
       WritePaymentInstrumentCallback callback,
-      std::unique_ptr<PaymentInstrumentIconFetcher> fetcher,
       const std::string& icon);
 
   // ClearPaymentInstruments callbacks
