@@ -2092,11 +2092,13 @@ FcFreeTypeQueryAll(const FcChar8	*file,
 	    if (!set || ! FcFontSetAdd (set, pat))
 	      FcPatternDestroy (pat);
 	}
-	else
+	else if (instance_num != 0x8000)
 	    err = 1;
 
-	if (instance_num < num_instances && !set_instance_num)
+	if (!set_instance_num && instance_num < num_instances)
 	    instance_num++;
+	else if (!set_instance_num && instance_num == num_instances)
+	    instance_num = 0x8000; /* variable font */
 	else
 	{
 	    face_num++;
