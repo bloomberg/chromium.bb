@@ -64,6 +64,14 @@ BackgroundTest.prototype = {
     <p>end<span>of test</span></p>
   */},
 
+  buttonDoc: function() {/*!
+    <p>start</p>
+    <button>hello button one</button>
+    cats
+    <button>hello button two</button>
+    <p>end</p>
+  */},
+
   formsDoc: function() {/*!
     <select id="fruitSelect">
       <option>apple</option>
@@ -188,6 +196,10 @@ TEST_F('BackgroundTest', 'CaretNavigation', function() {
         .expectSpeech('alpha', 'Link');
     mockFeedback.call(doCmd('nextWord'))
         .expectSpeech('beta', 'Link');
+    mockFeedback.call(doCmd('previousWord'))
+        .expectSpeech('alpha', 'Link');
+    mockFeedback.call(doCmd('nextWord'))
+        .expectSpeech('beta', 'Link');
     mockFeedback.call(doCmd('nextWord'))
         .expectSpeech('charlie', 'Heading 1');
     mockFeedback.call(doCmd('nextLine'))
@@ -214,6 +226,29 @@ TEST_F('BackgroundTest', 'CaretNavigation', function() {
         .expectSpeech('t');
     mockFeedback.call(doCmd('nextWord'))
         .expectSpeech('echo', 'Link');
+    mockFeedback.replay();
+  });
+});
+
+/** Tests that individual buttons are stops for move-by-word functionality. */
+TEST_F('BackgroundTest', 'CaretNavigationTreatsButtonAsWord', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(this.buttonDoc, function() {
+    mockFeedback.expectSpeech('start');
+    mockFeedback.call(doCmd('nextWord'))
+        .expectSpeech('hello button one', 'Button');
+    mockFeedback.call(doCmd('nextWord'))
+        .expectSpeech('cats');
+    mockFeedback.call(doCmd('nextWord'))
+        .expectSpeech('hello button two', 'Button');
+    mockFeedback.call(doCmd('nextWord'))
+        .expectSpeech('end');
+    mockFeedback.call(doCmd('previousWord'))
+        .expectSpeech('hello button two', 'Button');
+    mockFeedback.call(doCmd('previousWord'))
+        .expectSpeech('cats');
+    mockFeedback.call(doCmd('previousWord'))
+        .expectSpeech('hello button one', 'Button');
     mockFeedback.replay();
   });
 });

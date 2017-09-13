@@ -2,9 +2,13 @@ rootWebArea
 ++link name='Section one'
 ++++staticText name='Section one'
 ++++++inlineTextBox name='Section one'
+++staticText name=' '
+++++inlineTextBox name=' '
 ++link name='Section two'
 ++++staticText name='Section two'
 ++++++inlineTextBox name='Section two'
+++staticText name=' '
+++++inlineTextBox name=' '
 ++link name='Section three' ariaCurrentState=location
 ++++staticText name='Section three'
 ++++++inlineTextBox name='Section three'
