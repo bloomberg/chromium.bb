@@ -1429,8 +1429,13 @@ void PrintPreviewHandler::OnDirectoryCreated(const base::FilePath& path) {
   file_type_info.extensions.resize(1);
   file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("pdf"));
   file_type_info.include_all_files = true;
+  // Print Preview requires native paths to write PDF files.
+  // Note that Chrome OS save-as dialog has Google Drive as a saving location
+  // even when a client requires native paths. In this case, Chrome OS save-as
+  // dialog returns native paths to write files and uploads the saved files to
+  // Google Drive later.
   file_type_info.allowed_paths =
-      ui::SelectFileDialog::FileTypeInfo::NATIVE_OR_DRIVE_PATH;
+      ui::SelectFileDialog::FileTypeInfo::NATIVE_PATH;
 
   select_file_dialog_ =
       ui::SelectFileDialog::Create(this, nullptr /*policy already checked*/);
