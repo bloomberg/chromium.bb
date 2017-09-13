@@ -594,15 +594,15 @@ fbdev_output_reenable(struct fbdev_backend *backend,
 	struct fbdev_output *output = to_fbdev_output(base);
 	struct fbdev_screeninfo new_screen_info;
 	int fb_fd;
-	char *device;
 
 	weston_log("Re-enabling fbdev output.\n");
+	assert(output->base.enabled);
 
 	/* Create the frame buffer. */
 	fb_fd = fbdev_frame_buffer_open(output->device, &new_screen_info);
 	if (fb_fd < 0) {
 		weston_log("Creating frame buffer failed.\n");
-		goto err;
+		return -1;
 	}
 
 	/* Check whether the frame buffer details have changed since we were
@@ -616,27 +616,20 @@ fbdev_output_reenable(struct fbdev_backend *backend,
 
 		close(fb_fd);
 
-		/* Remove and re-add the output so that resources depending on
+		/* Disable and enable the output so that resources depending on
 		 * the frame buffer X/Y resolution (such as the shadow buffer)
 		 * are re-initialised. */
-		device = strdup(output->device);
-		fbdev_output_destroy(&output->base);
-		fbdev_output_create(backend, device);
-		free(device);
-
-		return 0;
+		fbdev_output_disable(&output->base);
+		return fbdev_output_enable(&output->base);
 	}
 
 	/* Map the device if it has the same details as before. */
 	if (fbdev_frame_buffer_map(output, fb_fd) < 0) {
 		weston_log("Mapping frame buffer failed.\n");
-		goto err;
+		return -1;
 	}
 
 	return 0;
-
-err:
-	return -1;
 }
 
 static void
