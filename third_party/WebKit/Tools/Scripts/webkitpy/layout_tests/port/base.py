@@ -921,6 +921,17 @@ class Port(object):
         """
         return self.skipped_due_to_smoke_tests(test) or self.skipped_in_never_fix_tests(test)
 
+    @memoized
+    def _tests_from_file(self, filename):
+        tests = set()
+        file_contents = self._filesystem.read_text_file(filename)
+        for line in file_contents.splitlines():
+            line = line.strip()
+            if line.startswith('#') or not line:
+                continue
+            tests.add(line)
+        return tests
+
     def skipped_due_to_smoke_tests(self, test):
         """Checks if the test is skipped based on the set of Smoke tests.
 
@@ -930,8 +941,10 @@ class Port(object):
         if not self.default_smoke_test_only():
             return False
         smoke_test_filename = self.path_to_smoke_tests_file()
-        return (self._filesystem.exists(smoke_test_filename) and
-                test not in self._filesystem.read_text_file(smoke_test_filename))
+        if not self._filesystem.exists(smoke_test_filename):
+            return False
+        smoke_tests = self._tests_from_file(smoke_test_filename)
+        return test not in smoke_tests
 
     def path_to_smoke_tests_file(self):
         return self._filesystem.join(self.layout_tests_dir(), 'SmokeTests')
@@ -960,16 +973,6 @@ class Port(object):
     def path_to_never_fix_tests_file(self):
         return self._filesystem.join(self.layout_tests_dir(), 'NeverFixTests')
 
-    def _tests_from_skipped_file_contents(self, skipped_file_contents):
-        tests_to_skip = []
-        for line in skipped_file_contents.split('\n'):
-            line = line.strip()
-            line = line.rstrip('/')  # Best to normalize directory names to not include the trailing slash.
-            if line.startswith('#') or not len(line):
-                continue
-            tests_to_skip.append(line)
-        return tests_to_skip
-
     def _expectations_from_skipped_files(self, skipped_file_paths):
         # TODO(qyearsley): Remove this if there are no more "Skipped" files.
         tests_to_skip = []
@@ -979,13 +982,15 @@ class Port(object):
                 _log.debug('Skipped does not exist: %s', filename)
                 continue
             _log.debug('Using Skipped file: %s', filename)
-            skipped_file_contents = self._filesystem.read_text_file(filename)
-            tests_to_skip.extend(self._tests_from_skipped_file_contents(skipped_file_contents))
+            tests_to_skip.extend(self._tests_from_file(filename))
         return tests_to_skip
 
     @memoized
     def skipped_perf_tests(self):
-        return self._expectations_from_skipped_files([self._perf_tests_dir()])
+        tests = self._expectations_from_skipped_files([self._perf_tests_dir()])
+        # Best to normalize directory names to not include the trailing slash.
+        # TODO(qyearsley): Explain why removing trailing slashes is needed here.
+        return sorted(test.rstrip('/') for test in tests)
 
     def skips_perf_test(self, test_name):
         for test_or_category in self.skipped_perf_tests():
