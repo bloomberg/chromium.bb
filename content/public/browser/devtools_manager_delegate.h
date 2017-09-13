@@ -59,8 +59,13 @@ class CONTENT_EXPORT DevToolsManagerDelegate {
   // Returns frontend resource data by |path|.
   virtual std::string GetFrontendResource(const std::string& path);
 
-  // Returns true for browsers running in the controlled environment that allow
-  // remote debugging.
+  // Makes browser target easily discoverable for remote debugging.
+  // This should only return true when remote debugging endpoint is not
+  // accessible by the web (for example in Chrome for Android where it is
+  // exposed via UNIX named socket) or when content/ embedder is built for
+  // running in the controlled environment (for example a special build for
+  // the Lab testing). If you want to return true here, please get security
+  // clearance from the devtools owners.
   virtual bool IsBrowserTargetDiscoverable();
 
   virtual ~DevToolsManagerDelegate();
