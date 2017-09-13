@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.BottomToolbarPhone;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -157,9 +158,7 @@ public class BottomSheetNewTabController extends EmptyBottomSheetObserver {
                 ? BottomSheet.SHEET_STATE_FULL
                 : BottomSheet.SHEET_STATE_HALF;
         if (mBottomSheet.getSheetState() != sheetState) {
-            mBottomSheet.setSheetState(sheetState, true);
-            mBottomSheet.getBottomSheetMetrics().recordSheetOpenReason(
-                    BottomSheetMetrics.OPENED_BY_NEW_TAB_CREATION);
+            mBottomSheet.setSheetState(sheetState, true, StateChangeReason.NEW_TAB);
         }
 
         for (Observer observer : mObservers) observer.onNewTabShown();
