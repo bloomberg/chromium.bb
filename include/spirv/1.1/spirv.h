@@ -658,6 +658,7 @@ typedef enum SpvCapability_ {
     SpvCapabilityAtomicStorageOps = 4445,
     SpvCapabilitySampleMaskPostDepthCoverage = 4447,
     SpvCapabilityImageGatherBiasLodAMD = 5009,
+    SpvCapabilityFragmentMaskAMD = 5010,
     SpvCapabilityStencilExportEXT = 5013,
     SpvCapabilityImageReadWriteLodAMD = 5015,
     SpvCapabilitySampleMaskOverrideCoverageNV = 5249,
@@ -989,6 +990,8 @@ typedef enum SpvOp_ {
     SpvOpGroupFMaxNonUniformAMD = 5005,
     SpvOpGroupUMaxNonUniformAMD = 5006,
     SpvOpGroupSMaxNonUniformAMD = 5007,
+    SpvOpFragmentMaskFetchAMD = 5011,
+    SpvOpFragmentFetchAMD = 5012,
     SpvOpMax = 0x7fffffff,
 } SpvOp;
 

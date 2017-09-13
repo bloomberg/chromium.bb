@@ -616,6 +616,7 @@ spv = {
         AtomicStorageOps = 4445,
         SampleMaskPostDepthCoverage = 4447,
         ImageGatherBiasLodAMD = 5009,
+        FragmentMaskAMD = 5010,
         StencilExportEXT = 5013,
         ImageReadWriteLodAMD = 5015,
         SampleMaskOverrideCoverageNV = 5249,
@@ -946,6 +947,8 @@ spv = {
         OpGroupFMaxNonUniformAMD = 5005,
         OpGroupUMaxNonUniformAMD = 5006,
         OpGroupSMaxNonUniformAMD = 5007,
+        OpFragmentMaskFetchAMD = 5011,
+        OpFragmentFetchAMD = 5012,
     },
 
 }

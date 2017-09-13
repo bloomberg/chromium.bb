@@ -3176,7 +3176,7 @@
         { "kind" : "IdResultType" },
         { "kind" : "IdResult" },
         { "kind" : "IdRef", "name" : "'Image'" },
-        { "kind" : "IdRef", "name" : "'Coordinate'" },
+        { "kind" : "IdRef", "name" : "'Coordinate'" }
       ],
       "capabilities" : [ "FragmentMaskAMD" ]
     },
@@ -3188,7 +3188,7 @@
         { "kind" : "IdResult" },
         { "kind" : "IdRef", "name" : "'Image'" },
         { "kind" : "IdRef", "name" : "'Coordinate'" },
-        { "kind" : "IdRef", "name" : "'Fragment Index'" },
+        { "kind" : "IdRef", "name" : "'Fragment Index'" }
       ],
       "capabilities" : [ "FragmentMaskAMD" ]
     }
@@ -3822,7 +3822,8 @@
           "extensions" : [
             "SPV_KHR_storage_buffer_storage_class",
             "SPV_KHR_variable_pointers"
-          ]
+          ],
+          "capabilities" : [ "Shader" ]
         }
       ]
     },
