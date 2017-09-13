@@ -1269,27 +1269,20 @@ static INLINE void build_inter_predictors(
   const int ss_x = pd->subsampling_x;
   const int ss_y = pd->subsampling_y;
   int sub8x8_inter = bsize < BLOCK_8X8 && (ss_x || ss_y);
+#if CONFIG_MOTION_VAR
+  sub8x8_inter = sub8x8_inter && !build_for_obmc;
+#endif  // CONFIG_MOTION_VAR
   const int row_start = (block_size_high[bsize] == 4) && ss_y ? -1 : 0;
   const int col_start = (block_size_wide[bsize] == 4) && ss_x ? -1 : 0;
 
-#if CONFIG_MOTION_VAR
-  if (!build_for_obmc && sub8x8_inter)
-#else
-  if (sub8x8_inter)
-#endif  // CONFIG_MOTION_VAR
-  {
+  if (sub8x8_inter) {
     for (int row = row_start; row <= 0 && sub8x8_inter; ++row)
       for (int col = col_start; col <= 0; ++col)
         if (!is_inter_block(&xd->mi[row * xd->mi_stride + col]->mbmi))
           sub8x8_inter = 0;
   }
 
-#if CONFIG_MOTION_VAR
-  if (!build_for_obmc && sub8x8_inter)
-#else
-  if (sub8x8_inter)
-#endif  // CONFIG_MOTION_VAR
-  {
+  if (sub8x8_inter) {
     // block size
     const int b4_w = block_size_wide[bsize] >> ss_x;
     const int b4_h = block_size_high[bsize] >> ss_y;
