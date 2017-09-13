@@ -375,7 +375,7 @@ TEST(ProfilingJsonExporterTest, Simple) {
   // Validate node allocated with |stack1|.
   EXPECT_EQ(2, counts->GetList()[node1].GetInt());
   EXPECT_EQ(0, types->GetList()[node1].GetInt());
-  EXPECT_EQ(20, sizes->GetList()[node1].GetInt());
+  EXPECT_EQ(40, sizes->GetList()[node1].GetInt());
   EXPECT_EQ(id1, backtraces->GetList()[node1].GetInt());
 
   // Validate node allocated with |stack2|.

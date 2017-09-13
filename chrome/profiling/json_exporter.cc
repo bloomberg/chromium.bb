@@ -276,7 +276,8 @@ void WriteSizes(const UniqueAllocCount& alloc_counts, std::ostream& out) {
       out << ",\n";
     else
       first_time = false;
-    out << cur.first.size;
+    // Output the total size, which is size * count.
+    out << cur.first.size * cur.second;
   }
   out << "]";
 }
