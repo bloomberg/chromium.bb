@@ -11,13 +11,16 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "media/base/media_log.h"
+#include "media/base/media_switches.h"
 #include "media/base/media_util.h"
 #include "media/base/mock_filters.h"
 #include "media/base/mock_media_log.h"
@@ -30,6 +33,26 @@
 using ::testing::InSequence;
 using ::testing::StrictMock;
 using ::testing::Values;
+
+namespace {
+
+enum class BufferingApi { kLegacyByDts, kNewByPts };
+
+struct FrameProcessorTestParams {
+ public:
+  FrameProcessorTestParams(const bool use_sequence_mode,
+                           const BufferingApi buffering_api)
+      : use_sequence_mode(use_sequence_mode), buffering_api(buffering_api) {}
+
+  // Test will use 'sequence' append mode if true, or 'segments' if false.
+  const bool use_sequence_mode;
+
+  // Determines if media::kMseBufferByPts feature should be forced on or off for
+  // the test.
+  const BufferingApi buffering_api;
+};
+
+}  // namespace
 
 namespace media {
 
@@ -58,20 +81,32 @@ class FrameProcessorTestCallbackHelper {
   DISALLOW_COPY_AND_ASSIGN(FrameProcessorTestCallbackHelper);
 };
 
-// Test parameter determines indicates if the TEST_P instance is targeted for
-// sequence mode (if true), or segments mode (if false).
-class FrameProcessorTest : public testing::TestWithParam<bool> {
+class FrameProcessorTest
+    : public ::testing::TestWithParam<FrameProcessorTestParams> {
  protected:
   FrameProcessorTest()
-      : frame_processor_(new FrameProcessor(
-            base::Bind(
-                &FrameProcessorTestCallbackHelper::OnPossibleDurationIncrease,
-                base::Unretained(&callbacks_)),
-            &media_log_)),
-        append_window_end_(kInfiniteDuration),
+      : append_window_end_(kInfiniteDuration),
         frame_duration_(base::TimeDelta::FromMilliseconds(10)),
         audio_id_(1),
         video_id_(2) {
+    const FrameProcessorTestParams& params = GetParam();
+    use_sequence_mode_ = params.use_sequence_mode;
+    buffering_api_ = params.buffering_api;
+
+    switch (buffering_api_) {
+      case BufferingApi::kLegacyByDts:
+        scoped_feature_list_.InitAndDisableFeature(media::kMseBufferByPts);
+        break;
+      case BufferingApi::kNewByPts:
+        scoped_feature_list_.InitAndEnableFeature(media::kMseBufferByPts);
+        break;
+    }
+
+    frame_processor_ = base::MakeUnique<FrameProcessor>(
+        base::Bind(
+            &FrameProcessorTestCallbackHelper::OnPossibleDurationIncrease,
+            base::Unretained(&callbacks_)),
+        &media_log_);
     frame_processor_->SetParseWarningCallback(
         base::Bind(&FrameProcessorTestCallbackHelper::OnParseWarning,
                    base::Unretained(&callbacks_)));
@@ -272,6 +307,10 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
   StrictMock<MockMediaLog> media_log_;
   StrictMock<FrameProcessorTestCallbackHelper> callbacks_;
 
+  bool use_sequence_mode_;
+  BufferingApi buffering_api_;
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   std::unique_ptr<FrameProcessor> frame_processor_;
   base::TimeDelta append_window_start_;
   base::TimeDelta append_window_end_;
@@ -334,7 +373,7 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
   DISALLOW_COPY_AND_ASSIGN(FrameProcessorTest);
 };
 
-TEST_F(FrameProcessorTest, WrongTypeInAppendedBuffer) {
+TEST_P(FrameProcessorTest, WrongTypeInAppendedBuffer) {
   AddTestTracks(HAS_AUDIO);
   EXPECT_FALSE(in_coded_frame_group());
 
@@ -352,7 +391,7 @@ TEST_F(FrameProcessorTest, WrongTypeInAppendedBuffer) {
   CheckReadStalls(audio_.get());
 }
 
-TEST_F(FrameProcessorTest, NonMonotonicallyIncreasingTimestampInOneCall) {
+TEST_P(FrameProcessorTest, NonMonotonicallyIncreasingTimestampInOneCall) {
   AddTestTracks(HAS_AUDIO);
 
   StreamParser::BufferQueueMap buffer_queue_map;
@@ -373,7 +412,7 @@ TEST_P(FrameProcessorTest, AudioOnly_SingleFrame) {
   // Tests A: P(A) -> (a)
   InSequence s;
   AddTestTracks(HAS_AUDIO);
-  if (GetParam())
+  if (use_sequence_mode_)
     frame_processor_->SetSequenceMode(true);
 
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_));
@@ -388,7 +427,7 @@ TEST_P(FrameProcessorTest, VideoOnly_SingleFrame) {
   // Tests V: P(V) -> (v)
   InSequence s;
   AddTestTracks(HAS_VIDEO);
-  if (GetParam())
+  if (use_sequence_mode_)
     frame_processor_->SetSequenceMode(true);
 
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_));
@@ -403,7 +442,7 @@ TEST_P(FrameProcessorTest, AudioOnly_TwoFrames) {
   // Tests A: P(A0, A10) -> (a0, a10)
   InSequence s;
   AddTestTracks(HAS_AUDIO);
-  if (GetParam())
+  if (use_sequence_mode_)
     frame_processor_->SetSequenceMode(true);
 
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_ * 2));
@@ -418,7 +457,7 @@ TEST_P(FrameProcessorTest, AudioOnly_SetOffsetThenSingleFrame) {
   // Tests A: STSO(50)+P(A0) -> TSO==50,(a0@50)
   InSequence s;
   AddTestTracks(HAS_AUDIO);
-  if (GetParam())
+  if (use_sequence_mode_)
     frame_processor_->SetSequenceMode(true);
 
   const base::TimeDelta fifty_ms = base::TimeDelta::FromMilliseconds(50);
@@ -440,15 +479,14 @@ TEST_P(FrameProcessorTest, AudioOnly_SetOffsetThenFrameTimestampBelowOffset) {
   //   if segments mode: TSO==50,(a20@70)
   InSequence s;
   AddTestTracks(HAS_AUDIO);
-  bool using_sequence_mode = GetParam();
-  if (using_sequence_mode)
+  if (use_sequence_mode_)
     frame_processor_->SetSequenceMode(true);
 
   const base::TimeDelta fifty_ms = base::TimeDelta::FromMilliseconds(50);
   const base::TimeDelta twenty_ms = base::TimeDelta::FromMilliseconds(20);
   SetTimestampOffset(fifty_ms);
 
-  if (using_sequence_mode) {
+  if (use_sequence_mode_) {
     EXPECT_CALL(callbacks_, PossibleDurationIncrease(
         fifty_ms + frame_duration_));
   } else {
@@ -461,7 +499,7 @@ TEST_P(FrameProcessorTest, AudioOnly_SetOffsetThenFrameTimestampBelowOffset) {
 
   // We do not stall on reading without seeking to 50ms / 70ms due to
   // SourceBufferStream::kSeekToStartFudgeRoom().
-  if (using_sequence_mode) {
+  if (use_sequence_mode_) {
     EXPECT_EQ(fifty_ms - twenty_ms, timestamp_offset_);
     CheckExpectedRangesByTimestamp(audio_.get(), "{ [50,60) }");
     CheckReadsThenReadStalls(audio_.get(), "50:20");
@@ -476,7 +514,7 @@ TEST_P(FrameProcessorTest, AudioOnly_SequentialProcessFrames) {
   // Tests A: P(A0,A10)+P(A20,A30) -> (a0,a10,a20,a30)
   InSequence s;
   AddTestTracks(HAS_AUDIO);
-  if (GetParam())
+  if (use_sequence_mode_)
     frame_processor_->SetSequenceMode(true);
 
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_ * 2));
@@ -501,8 +539,7 @@ TEST_P(FrameProcessorTest, AudioOnly_NonSequentialProcessFrames) {
   //   if segments mode: TSO==0,(a0,a10,a20,a30)
   InSequence s;
   AddTestTracks(HAS_AUDIO);
-  bool using_sequence_mode = GetParam();
-  if (using_sequence_mode) {
+  if (use_sequence_mode_) {
     frame_processor_->SetSequenceMode(true);
     EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_ * 2));
   } else {
@@ -512,7 +549,7 @@ TEST_P(FrameProcessorTest, AudioOnly_NonSequentialProcessFrames) {
   ProcessFrames("20K 30K", "");
   EXPECT_TRUE(in_coded_frame_group());
 
-  if (using_sequence_mode) {
+  if (use_sequence_mode_) {
     CheckExpectedRangesByTimestamp(audio_.get(), "{ [0,20) }");
     EXPECT_EQ(frame_duration_ * -2, timestamp_offset_);
     EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_ * 4));
@@ -525,7 +562,7 @@ TEST_P(FrameProcessorTest, AudioOnly_NonSequentialProcessFrames) {
   ProcessFrames("0K 10K", "");
   EXPECT_TRUE(in_coded_frame_group());
 
-  if (using_sequence_mode) {
+  if (use_sequence_mode_) {
     CheckExpectedRangesByTimestamp(audio_.get(), "{ [0,40) }");
     EXPECT_EQ(frame_duration_ * 2, timestamp_offset_);
     CheckReadsThenReadStalls(audio_.get(), "0:20 10:30 20:0 30:10");
@@ -544,7 +581,7 @@ TEST_P(FrameProcessorTest, AudioVideo_SequentialProcessFrames) {
   //   (a0,a10,a20,a30,a40);(v0,v10,v20,v30)
   InSequence s;
   AddTestTracks(HAS_AUDIO | HAS_VIDEO);
-  if (GetParam()) {
+  if (use_sequence_mode_) {
     frame_processor_->SetSequenceMode(true);
     EXPECT_CALL(callbacks_,
                 OnParseWarning(SourceBufferParseWarning::kMuxedSequenceMode));
@@ -577,8 +614,7 @@ TEST_P(FrameProcessorTest, AudioVideo_Discontinuity) {
   // MergeBufferQueues() behavior.
   InSequence s;
   AddTestTracks(HAS_AUDIO | HAS_VIDEO);
-  bool using_sequence_mode = GetParam();
-  if (using_sequence_mode) {
+  if (use_sequence_mode_) {
     frame_processor_->SetSequenceMode(true);
     EXPECT_CALL(callbacks_,
                 OnParseWarning(SourceBufferParseWarning::kMuxedSequenceMode));
@@ -591,7 +627,7 @@ TEST_P(FrameProcessorTest, AudioVideo_Discontinuity) {
   ProcessFrames("0K 10K 30K 40K 50K", "0K 10 40 50K");
   EXPECT_TRUE(in_coded_frame_group());
 
-  if (using_sequence_mode) {
+  if (use_sequence_mode_) {
     EXPECT_EQ(frame_duration_, timestamp_offset_);
     CheckExpectedRangesByTimestamp(audio_.get(), "{ [0,70) }");
     CheckExpectedRangesByTimestamp(video_.get(), "{ [0,70) }");
@@ -616,9 +652,8 @@ TEST_P(FrameProcessorTest, AudioVideo_Discontinuity_TimestampOffset) {
   // to handle overlap-appends, too.
   InSequence s;
   AddTestTracks(HAS_AUDIO | HAS_VIDEO);
-  bool using_sequence_mode = GetParam();
-  frame_processor_->SetSequenceMode(using_sequence_mode);
-  if (using_sequence_mode) {
+  frame_processor_->SetSequenceMode(use_sequence_mode_);
+  if (use_sequence_mode_) {
     EXPECT_CALL(callbacks_,
                 OnParseWarning(SourceBufferParseWarning::kMuxedSequenceMode));
     EXPECT_MEDIA_LOG(MuxedSequenceModeWarning());
@@ -642,7 +677,7 @@ TEST_P(FrameProcessorTest, AudioVideo_Discontinuity_TimestampOffset) {
   ProcessFrames("0K 10K 20K", "10K 20K 30K");
   EXPECT_EQ(frame_duration_ * 20, timestamp_offset_);
   EXPECT_TRUE(in_coded_frame_group());
-  if (using_sequence_mode) {
+  if (use_sequence_mode_) {
     CheckExpectedRangesByTimestamp(audio_.get(), "{ [100,230) }");
     CheckExpectedRangesByTimestamp(video_.get(), "{ [100,240) }");
   } else {
@@ -663,7 +698,7 @@ TEST_P(FrameProcessorTest, AudioVideo_Discontinuity_TimestampOffset) {
   // The new audio range is not within SourceBufferStream's coalescing threshold
   // relative to the next range, but the new video range is within the
   // threshold.
-  if (using_sequence_mode) {
+  if (use_sequence_mode_) {
     // TODO(wolenetz/chcunningham): The large explicit-timestampOffset-induced
     // jump forward (from timestamp 130 to 200) while in a sequence mode coded
     // frame group makes our adjacency threshold in SourceBuffer, based on
@@ -697,7 +732,7 @@ TEST_P(FrameProcessorTest, AudioVideo_Discontinuity_TimestampOffset) {
   // our initial seek to start.
   SeekStream(audio_.get(), fifty_five_ms);
   SeekStream(video_.get(), fifty_five_ms);
-  if (using_sequence_mode) {
+  if (use_sequence_mode_) {
     CheckReadsThenReadStalls(
         audio_.get(),
         "55:0 65:10 75:20 100:0 110:10 120:20 200:0 210:10 220:20");
@@ -730,11 +765,10 @@ TEST_P(FrameProcessorTest, AudioVideo_OutOfSequence_After_Discontinuity) {
   // these append sequences can occur.
   InSequence s;
   AddTestTracks(HAS_AUDIO | HAS_VIDEO);
-  bool using_sequence_mode = GetParam();
-  frame_processor_->SetSequenceMode(using_sequence_mode);
+  frame_processor_->SetSequenceMode(use_sequence_mode_);
 
   // Begin with a simple set of appends for all tracks.
-  if (using_sequence_mode) {
+  if (use_sequence_mode_) {
     // Allow room in the timeline for the last audio append (50K, below) in this
     // test to remain within default append window [0, +Infinity]. Moving the
     // sequence mode appends to begin at time 100ms, the same time as the first
@@ -754,7 +788,7 @@ TEST_P(FrameProcessorTest, AudioVideo_OutOfSequence_After_Discontinuity) {
   CheckExpectedRangesByTimestamp(video_.get(), "{ [100,140) }");
 
   // Trigger (normal) discontinuity with one track (video).
-  if (using_sequence_mode)
+  if (use_sequence_mode_)
     EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_ * 15));
   else
     EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_ * 17));
@@ -762,7 +796,7 @@ TEST_P(FrameProcessorTest, AudioVideo_OutOfSequence_After_Discontinuity) {
   ProcessFrames("", "160K");
   EXPECT_TRUE(in_coded_frame_group());
 
-  if (using_sequence_mode) {
+  if (use_sequence_mode_) {
     // The new video buffer is relocated into [140,150).
     EXPECT_EQ(frame_duration_ * -2, timestamp_offset_);
     CheckExpectedRangesByTimestamp(audio_.get(), "{ [100,130) }");
@@ -778,7 +812,7 @@ TEST_P(FrameProcessorTest, AudioVideo_OutOfSequence_After_Discontinuity) {
   // just appended. Append with a timestamp such that segments mode demonstrates
   // we don't retroactively extend the new video buffer appended above's range
   // start back to this audio start time.
-  if (using_sequence_mode)
+  if (use_sequence_mode_)
     EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_ * 15));
   else
     EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_ * 17));
@@ -789,7 +823,7 @@ TEST_P(FrameProcessorTest, AudioVideo_OutOfSequence_After_Discontinuity) {
   // Because this is the first audio buffer appended following the discontinuity
   // detected while appending the video frame, above, a new coded frame group
   // for video is not triggered.
-  if (using_sequence_mode) {
+  if (use_sequence_mode_) {
     // The new audio buffer is relocated into [30,40). Note the muxed 'sequence'
     // mode append mode results in a buffered range gap in this case.
     EXPECT_EQ(frame_duration_ * -2, timestamp_offset_);
@@ -803,7 +837,7 @@ TEST_P(FrameProcessorTest, AudioVideo_OutOfSequence_After_Discontinuity) {
 
   // Finally, append a non-keyframe to the first track (video), to continue the
   // GOP that started the normal discontinuity on the previous video append.
-  if (using_sequence_mode)
+  if (use_sequence_mode_)
     EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_ * 16));
   else
     EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_ * 18));
@@ -815,7 +849,7 @@ TEST_P(FrameProcessorTest, AudioVideo_OutOfSequence_After_Discontinuity) {
   // earlier than what already satisfied our initial seek to start. We satisfy
   // the seek with the first buffer in [0,1000).
   SeekStream(audio_.get(), base::TimeDelta());
-  if (using_sequence_mode) {
+  if (use_sequence_mode_) {
     // The new video buffer is relocated into [150,160).
     EXPECT_EQ(frame_duration_ * -2, timestamp_offset_);
     CheckExpectedRangesByTimestamp(audio_.get(), "{ [30,40) [100,130) }");
@@ -843,7 +877,7 @@ TEST_P(FrameProcessorTest,
        AppendWindowFilterOfNegativeBufferTimestampsWithPrerollDiscard) {
   InSequence s;
   AddTestTracks(HAS_AUDIO);
-  if (GetParam())
+  if (use_sequence_mode_)
     frame_processor_->SetSequenceMode(true);
 
   SetTimestampOffset(frame_duration_ * -2);
@@ -858,7 +892,7 @@ TEST_P(FrameProcessorTest,
 TEST_P(FrameProcessorTest, AppendWindowFilterWithInexactPreroll) {
   InSequence s;
   AddTestTracks(HAS_AUDIO);
-  if (GetParam())
+  if (use_sequence_mode_)
     frame_processor_->SetSequenceMode(true);
   SetTimestampOffset(-frame_duration_);
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_ * 2));
@@ -870,7 +904,7 @@ TEST_P(FrameProcessorTest, AppendWindowFilterWithInexactPreroll) {
 TEST_P(FrameProcessorTest, AppendWindowFilterWithInexactPreroll_2) {
   InSequence s;
   AddTestTracks(HAS_AUDIO);
-  if (GetParam())
+  if (use_sequence_mode_)
     frame_processor_->SetSequenceMode(true);
   SetTimestampOffset(-frame_duration_);
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_ * 2));
@@ -882,8 +916,7 @@ TEST_P(FrameProcessorTest, AppendWindowFilterWithInexactPreroll_2) {
 TEST_P(FrameProcessorTest, AllowNegativeFramePTSAndDTSBeforeOffsetAdjustment) {
   InSequence s;
   AddTestTracks(HAS_AUDIO);
-  bool using_sequence_mode = GetParam();
-  if (using_sequence_mode) {
+  if (use_sequence_mode_) {
     frame_processor_->SetSequenceMode(true);
     EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_ * 3));
   } else {
@@ -893,7 +926,7 @@ TEST_P(FrameProcessorTest, AllowNegativeFramePTSAndDTSBeforeOffsetAdjustment) {
 
   ProcessFrames("-5K 5K 15K", "");
 
-  if (using_sequence_mode) {
+  if (use_sequence_mode_) {
     EXPECT_EQ(frame_duration_ / 2, timestamp_offset_);
     CheckExpectedRangesByTimestamp(audio_.get(), "{ [0,30) }");
     CheckReadsThenReadStalls(audio_.get(), "0:-5 10:5 20:15");
@@ -909,7 +942,7 @@ TEST_P(FrameProcessorTest, PartialAppendWindowFilterNoDiscontinuity) {
   // trimmed frame.
   InSequence s;
   AddTestTracks(HAS_AUDIO);
-  if (GetParam())
+  if (use_sequence_mode_)
     frame_processor_->SetSequenceMode(true);
   EXPECT_CALL(callbacks_,
               PossibleDurationIncrease(base::TimeDelta::FromMilliseconds(29)));
@@ -928,10 +961,9 @@ TEST_P(FrameProcessorTest,
   // frame that originally had DTS > PTS.
   InSequence s;
   AddTestTracks(HAS_AUDIO);
-  bool using_sequence_mode = GetParam();
 
   EXPECT_MEDIA_LOG(ParsedDTSGreaterThanPTS()).Times(2);
-  if (using_sequence_mode) {
+  if (use_sequence_mode_) {
     frame_processor_->SetSequenceMode(true);
     EXPECT_CALL(callbacks_, PossibleDurationIncrease(
                                 base::TimeDelta::FromMilliseconds(20)));
@@ -942,7 +974,7 @@ TEST_P(FrameProcessorTest,
 
   ProcessFrames("-7|10K 3|20K", "");
 
-  if (using_sequence_mode) {
+  if (use_sequence_mode_) {
     EXPECT_EQ(base::TimeDelta::FromMilliseconds(7), timestamp_offset_);
 
     // TODO(wolenetz): Adjust the following expectation to use PTS instead of
@@ -966,11 +998,10 @@ TEST_P(FrameProcessorTest, PartialAppendWindowFilterNoNewMediaSegment) {
   // partial front trim, to prevent incorrect introduction of a discontinuity
   // and potentially a non-keyframe video frame to be processed next after the
   // discontinuity.
-  bool using_sequence_mode = GetParam();
   InSequence s;
   AddTestTracks(HAS_AUDIO | HAS_VIDEO);
-  frame_processor_->SetSequenceMode(using_sequence_mode);
-  if (using_sequence_mode) {
+  frame_processor_->SetSequenceMode(use_sequence_mode_);
+  if (use_sequence_mode_) {
     EXPECT_CALL(callbacks_,
                 OnParseWarning(SourceBufferParseWarning::kMuxedSequenceMode));
     EXPECT_MEDIA_LOG(MuxedSequenceModeWarning());
@@ -990,7 +1021,12 @@ TEST_P(FrameProcessorTest, PartialAppendWindowFilterNoNewMediaSegment) {
   CheckReadsThenReadStalls(video_.get(), "0 10");
 }
 
-TEST_F(FrameProcessorTest, AudioOnly_SequenceModeContinuityAcrossReset) {
+TEST_P(FrameProcessorTest, AudioOnly_SequenceModeContinuityAcrossReset) {
+  if (!use_sequence_mode_) {
+    DVLOG(1) << "Skipping segments mode variant; inapplicable to this case.";
+    return;
+  }
+
   InSequence s;
   AddTestTracks(HAS_AUDIO);
   frame_processor_->SetSequenceMode(true);
@@ -1009,8 +1045,7 @@ TEST_F(FrameProcessorTest, AudioOnly_SequenceModeContinuityAcrossReset) {
 TEST_P(FrameProcessorTest, PartialAppendWindowZeroDurationPreroll) {
   InSequence s;
   AddTestTracks(HAS_AUDIO);
-  bool is_sequence_mode = GetParam();
-  frame_processor_->SetSequenceMode(is_sequence_mode);
+  frame_processor_->SetSequenceMode(use_sequence_mode_);
 
   append_window_start_ = base::TimeDelta::FromMilliseconds(5);
 
@@ -1032,7 +1067,7 @@ TEST_P(FrameProcessorTest, PartialAppendWindowZeroDurationPreroll) {
 
   // Append a frame with 10ms duration, with 9ms falling after the window start.
   base::TimeDelta expected_duration =
-      base::TimeDelta::FromMilliseconds(is_sequence_mode ? 10 : 14);
+      base::TimeDelta::FromMilliseconds(use_sequence_mode_ ? 10 : 14);
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(expected_duration));
   frame_duration_ = base::TimeDelta::FromMilliseconds(10);
   ProcessFrames("4K", "");
@@ -1040,7 +1075,7 @@ TEST_P(FrameProcessorTest, PartialAppendWindowZeroDurationPreroll) {
 
   // Verify range updated to reflect last append was processed and trimmed, and
   // also that zero duration buffer was saved and attached as preroll.
-  if (is_sequence_mode) {
+  if (use_sequence_mode_) {
     // For sequence mode, append window trimming is applied after the append
     // is adjusted for timestampOffset. Basically, everything gets rebased to 0
     // and trimming then removes 5 seconds from the front.
@@ -1060,12 +1095,11 @@ TEST_P(FrameProcessorTest, PartialAppendWindowZeroDurationPreroll) {
 
 TEST_P(FrameProcessorTest,
        OOOKeyframePrecededByDependantNonKeyframeShouldWarn) {
-  bool is_sequence_mode = GetParam();
   InSequence s;
   AddTestTracks(HAS_VIDEO);
-  frame_processor_->SetSequenceMode(is_sequence_mode);
+  frame_processor_->SetSequenceMode(use_sequence_mode_);
 
-  if (is_sequence_mode) {
+  if (use_sequence_mode_) {
     // Allow room in the timeline for the last video append (40|70, below) in
     // this test to remain within default append window [0, +Infinity]. Moving
     // the sequence mode appends to begin at time 50ms, the same time as the
@@ -1107,16 +1141,15 @@ TEST_P(FrameProcessorTest, AudioNonKeyframeChangedToKeyframe) {
   // to a keyframe, so no longer depends on the original preceding keyframe).
   // The sequence mode test version uses SetTimestampOffset to make it behave
   // like segments mode to simplify the tests.
-  bool is_sequence_mode = GetParam();
   InSequence s;
   AddTestTracks(HAS_AUDIO);
-  frame_processor_->SetSequenceMode(is_sequence_mode);
+  frame_processor_->SetSequenceMode(use_sequence_mode_);
 
   EXPECT_MEDIA_LOG(AudioNonKeyframe(10000, 10000));
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_ * 3));
   ProcessFrames("0K 10 20K", "");
 
-  if (is_sequence_mode)
+  if (use_sequence_mode_)
     SetTimestampOffset(base::TimeDelta());
 
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_));
@@ -1127,7 +1160,21 @@ TEST_P(FrameProcessorTest, AudioNonKeyframeChangedToKeyframe) {
   CheckReadsThenReadStalls(audio_.get(), "0 10 20");
 }
 
-INSTANTIATE_TEST_CASE_P(SequenceMode, FrameProcessorTest, Values(true));
-INSTANTIATE_TEST_CASE_P(SegmentsMode, FrameProcessorTest, Values(false));
+INSTANTIATE_TEST_CASE_P(
+    SequenceModeLegacyByDts,
+    FrameProcessorTest,
+    Values(FrameProcessorTestParams(true, BufferingApi::kLegacyByDts)));
+INSTANTIATE_TEST_CASE_P(
+    SegmentsModeLegacyByDts,
+    FrameProcessorTest,
+    Values(FrameProcessorTestParams(false, BufferingApi::kLegacyByDts)));
+INSTANTIATE_TEST_CASE_P(
+    SequenceModeNewByPts,
+    FrameProcessorTest,
+    Values(FrameProcessorTestParams(true, BufferingApi::kNewByPts)));
+INSTANTIATE_TEST_CASE_P(
+    SegmentsModeNewByPts,
+    FrameProcessorTest,
+    Values(FrameProcessorTestParams(false, BufferingApi::kNewByPts)));
 
 }  // namespace media
