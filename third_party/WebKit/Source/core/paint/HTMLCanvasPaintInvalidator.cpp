@@ -12,17 +12,11 @@
 namespace blink {
 
 PaintInvalidationReason HTMLCanvasPaintInvalidator::InvalidatePaint() {
-  PaintInvalidationReason reason =
-      BoxPaintInvalidator(html_canvas_, context_).InvalidatePaint();
-
-  HTMLCanvasElement* element = toHTMLCanvasElement(html_canvas_.GetNode());
-  if (element->IsDirty()) {
+  auto* element = toHTMLCanvasElement(html_canvas_.GetNode());
+  if (element->IsDirty())
     element->DoDeferredPaintInvalidation();
-    if (reason < PaintInvalidationReason::kRectangle)
-      reason = PaintInvalidationReason::kRectangle;
-  }
 
-  return reason;
+  return BoxPaintInvalidator(html_canvas_, context_).InvalidatePaint();
 }
 
 }  // namespace blink

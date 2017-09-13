@@ -60,13 +60,6 @@ class CORE_EXPORT ObjectPaintInvalidator {
       const LayoutRect&,
       PaintInvalidationReason);
 
-  // Invalidate the paint of a specific subrectangle within a given object. The
-  // rect is in the object's coordinate space.  If a DisplayItemClient is
-  // specified, that client is invalidated rather than |m_object|.
-  // Returns the visual rect that was invalidated (i.e, invalidation in the
-  // space of the GraphicsLayer backing this LayoutObject).
-  LayoutRect InvalidatePaintRectangle(const LayoutRect&, DisplayItemClient*);
-
   void InvalidatePaintIncludingNonCompositingDescendants();
   void InvalidatePaintIncludingNonSelfPaintingLayerDescendants(
       const LayoutBoxModelObject& paint_invalidation_container);
@@ -109,14 +102,16 @@ class ObjectPaintInvalidatorWithContext : public ObjectPaintInvalidator {
                                            PaintInvalidationReason);
 
  private:
-  void InvalidateSelectionIfNeeded(PaintInvalidationReason);
+  void InvalidateSelection(PaintInvalidationReason);
+  void InvalidatePartialRect(PaintInvalidationReason);
   bool ParentFullyInvalidatedOnSameBacking();
 
   const PaintInvalidatorContext& context_;
 };
 
-// TODO(crbug.com/457415): We should not allow paint invalidation out of paint
-// invalidation state.
+// Use this for cases that compositing will change and we have to do immediate
+// paint invalidation. TODO(wangxianzhu): Remove this for SPv2 and SPv175 which
+// will always invalidate raster after paint.
 class DisablePaintInvalidationStateAsserts {
   STACK_ALLOCATED();
   WTF_MAKE_NONCOPYABLE(DisablePaintInvalidationStateAsserts);

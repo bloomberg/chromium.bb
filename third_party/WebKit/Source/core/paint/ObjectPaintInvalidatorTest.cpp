@@ -7,6 +7,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/paint/PaintLayer.h"
+#include "platform/graphics/GraphicsLayer.h"
 #include "platform/json/JSONValues.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -258,6 +259,49 @@ TEST_F(ObjectPaintInvalidatorTest, TraverseStackedFloatUnderCompositedInline) {
   EXPECT_EQ("LayoutText #text", s);
   JSONObject::Cast(invalidations->at(2))->Get("object")->AsString(&s);
   EXPECT_EQ(target->DebugName(), s);
+}
+
+TEST_F(ObjectPaintInvalidatorTest, InvalidatePaintRectangle) {
+  EnableCompositing();
+  SetBodyInnerHTML(
+      "<div id='target' style='width: 200px; height: 200px; background: blue'>"
+      "</div>");
+
+  GetDocument().View()->SetTracksPaintInvalidations(true);
+
+  auto* target = GetLayoutObjectByElementId("target");
+  target->InvalidatePaintRectangle(LayoutRect(10, 10, 50, 50));
+  EXPECT_EQ(LayoutRect(10, 10, 50, 50), target->PartialInvalidationRect());
+  target->InvalidatePaintRectangle(LayoutRect(30, 30, 60, 60));
+  EXPECT_EQ(LayoutRect(10, 10, 80, 80), target->PartialInvalidationRect());
+  EXPECT_TRUE(target->MayNeedPaintInvalidation());
+
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_EQ(LayoutRect(), target->PartialInvalidationRect());
+
+  auto object_invalidations =
+      GetDocument().View()->TrackedObjectPaintInvalidationsAsJSON();
+  ASSERT_EQ(1u, object_invalidations->size());
+  String s;
+  const auto* entry = JSONObject::Cast(object_invalidations->at(0));
+  entry->Get("reason")->AsString(&s);
+  EXPECT_EQ(String(PaintInvalidationReasonToString(
+                PaintInvalidationReason::kRectangle)),
+            s);
+  entry->Get("object")->AsString(&s);
+  EXPECT_EQ(target->DebugName(), s);
+
+  const auto& raster_invalidations = GetLayoutView()
+                                         .Layer()
+                                         ->GraphicsLayerBacking()
+                                         ->GetRasterInvalidationTracking()
+                                         ->invalidations;
+  ASSERT_EQ(1u, raster_invalidations.size());
+  EXPECT_EQ(IntRect(18, 18, 80, 80), raster_invalidations[0].rect);
+  EXPECT_EQ(PaintInvalidationReason::kRectangle,
+            raster_invalidations[0].reason);
+
+  GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 
 }  // namespace blink

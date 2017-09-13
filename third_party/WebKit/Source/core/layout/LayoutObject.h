@@ -1364,12 +1364,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   // Invalidate the paint of a specific subrectangle within a given object. The
   // rect is in the object's coordinate space.
-  // If a DisplayItemClient is specified, that client is invalidated rather than
-  // |this|.
-  // Returns the visual rect that was invalidated (i.e, invalidation in the
-  // space of the GraphicsLayer backing this LayoutObject).
-  LayoutRect InvalidatePaintRectangle(const LayoutRect&,
-                                      DisplayItemClient* = nullptr) const;
+  void InvalidatePaintRectangle(const LayoutRect&);
 
   void SetShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
 
@@ -1889,6 +1884,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
   LayoutRect SelectionVisualRect() const {
     return rare_paint_data_ ? rare_paint_data_->SelectionVisualRect()
+                            : LayoutRect();
+  }
+  LayoutRect PartialInvalidationRect() const {
+    return rare_paint_data_ ? rare_paint_data_->PartialInvalidationRect()
                             : LayoutRect();
   }
 

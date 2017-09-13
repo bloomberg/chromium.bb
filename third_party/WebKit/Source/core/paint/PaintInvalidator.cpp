@@ -54,6 +54,8 @@ LayoutRect PaintInvalidator::MapLocalRectToVisualRectInBacking(
     const LayoutObject& object,
     const Rect& local_rect,
     const PaintInvalidatorContext& context) {
+  DCHECK(context.NeedsVisualRectUpdate(object));
+
   if (local_rect.IsEmpty())
     return LayoutRect();
 
@@ -153,7 +155,6 @@ LayoutRect PaintInvalidator::MapLocalRectToVisualRectInBacking(
 void PaintInvalidatorContext::MapLocalRectToVisualRectInBacking(
     const LayoutObject& object,
     LayoutRect& rect) const {
-  DCHECK(NeedsVisualRectUpdate(object));
   rect = PaintInvalidator::MapLocalRectToVisualRectInBacking<LayoutRect,
                                                              LayoutPoint>(
       object, rect, *this);
