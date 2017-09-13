@@ -45,11 +45,11 @@ Polymer({
       readOnly: true,
       type: Array,
       value: [
-        {value: 0, name: loadTimeData.getString('clearDataHour')},
-        {value: 1, name: loadTimeData.getString('clearDataDay')},
-        {value: 2, name: loadTimeData.getString('clearDataWeek')},
-        {value: 3, name: loadTimeData.getString('clearData4Weeks')},
-        {value: 4, name: loadTimeData.getString('clearDataEverything')},
+        {value: 0, name: loadTimeData.getString('clearPeriodHour')},
+        {value: 1, name: loadTimeData.getString('clearPeriod24Hours')},
+        {value: 2, name: loadTimeData.getString('clearPeriod7Days')},
+        {value: 3, name: loadTimeData.getString('clearPeriod4Weeks')},
+        {value: 4, name: loadTimeData.getString('clearPeriodEverything')},
       ],
     },
 
@@ -73,6 +73,18 @@ Polymer({
       value: false,
     },
 
+    /** @private */
+    isSignedIn_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @private */
+    isSyncingHistory_: {
+      type: Boolean,
+      value: false,
+    },
+
     /** @private {!Array<ImportantSite>} */
     importantSites_: {
       type: Array,
@@ -90,7 +102,16 @@ Polymer({
     },
 
     /** @private */
-    showImportantSitesDialog_: {type: Boolean, value: false},
+    showImportantSitesDialog_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @private */
+    showImportantSitesCacheSubtitle_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   /** @private {settings.ClearBrowsingDataBrowserProxy} */
@@ -98,8 +119,8 @@ Polymer({
 
   /** @override */
   ready: function() {
-    this.$.clearFrom.menuOptions = this.clearFromOptions_;
-    this.addWebUIListener('update-footer', this.updateFooter_.bind(this));
+    this.addWebUIListener(
+        'update-sync-state', this.updateSyncState_.bind(this));
     this.addWebUIListener(
         'update-counter-text', this.updateCounterText_.bind(this));
   },
@@ -120,17 +141,30 @@ Polymer({
   },
 
   /**
-   * Updates the footer to show only those sentences that are relevant to this
-   * user.
-   * @param {boolean} syncing Whether the user is syncing data.
+   * Updates the history description to show the relevant information
+   * depending on sync and signin state.
+   *
+   * @param {boolean} signedIn Whether the user is signed in.
+   * @param {boolean} syncing Whether the user is syncing history.
    * @param {boolean} otherFormsOfBrowsingHistory Whether the user has other
    *     forms of browsing history in their account.
    * @private
    */
-  updateFooter_: function(syncing, otherFormsOfBrowsingHistory) {
-    this.$.googleFooter.hidden = !otherFormsOfBrowsingHistory;
-    this.$.syncedDataSentence.hidden = !syncing;
+  updateSyncState_: function(signedIn, syncing, otherFormsOfBrowsingHistory) {
+    this.isSignedIn_ = signedIn;
+    this.isSyncingHistory_ = syncing;
     this.$.clearBrowsingDataDialog.classList.add('fully-rendered');
+  },
+
+  browsingCheckboxLabel_: function(
+      isSignedIn, isSyncingHistory, historySummary, historySummarySigned,
+      historySummarySynced) {
+    if (isSyncingHistory) {
+      return historySummarySynced;
+    } else if (isSignedIn) {
+      return historySummarySigned;
+    }
+    return historySummary;
   },
 
   /**
@@ -154,8 +188,10 @@ Polymer({
   shouldShowImportantSites_: function() {
     if (!this.importantSitesFlagEnabled_)
       return false;
-    if (!this.$.cookiesCheckbox.checked)
+    var tab = this.$.tabs.selectedItem;
+    if (!tab.querySelector('.cookies-checkbox').checked) {
       return false;
+    }
 
     var haveImportantSites = this.importantSites_.length > 0;
     chrome.send(
@@ -170,7 +206,10 @@ Polymer({
    */
   onClearBrowsingDataTap_: function() {
     if (this.shouldShowImportantSites_()) {
+      var tab = this.$.tabs.selectedItem;
       this.showImportantSitesDialog_ = true;
+      this.showImportantSitesCacheSubtitle_ =
+          tab.querySelector('.cache-checkbox').checked;
       this.$.clearBrowsingDataDialog.close();
       // Show important sites dialog after dom-if is applied.
       this.async(function() {
@@ -198,15 +237,16 @@ Polymer({
    */
   clearBrowsingData_: function() {
     this.clearingInProgress_ = true;
+    var tab = this.$.tabs.selectedItem;
 
-    var checkboxes = this.root.querySelectorAll('.browsing-data-checkbox');
+    checkboxes = tab.querySelectorAll('settings-checkbox');
     var dataTypes = [];
     checkboxes.forEach((checkbox) => {
       if (checkbox.checked)
         dataTypes.push(checkbox.pref.key);
     });
 
-    var timePeriod = this.$.clearFrom.pref.value;
+    var timePeriod = tab.querySelector('.time-range-select').pref.value;
 
     this.browserProxy_
         .clearBrowsingData(dataTypes, timePeriod, this.importantSites_)

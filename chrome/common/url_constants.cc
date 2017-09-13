@@ -528,6 +528,8 @@ const char kPrivacyLearnMoreURL[] =
     "https://support.google.com/chrome/?p=settings_privacy";
 #endif
 
+extern const char kMyActivityUrl[] = "https://myactivity.google.com";
+
 const char kDoNotTrackLearnMoreURL[] =
 #if defined(OS_CHROMEOS)
     "https://support.google.com/chromebook/?p=settings_do_not_track";

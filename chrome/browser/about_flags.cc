@@ -2676,11 +2676,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"important-sites-in-cbd", flag_descriptions::kImportantSitesInCbdName,
      flag_descriptions::kImportantSitesInCbdDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kImportantSitesInCbd)},
-#if defined(OS_ANDROID)
     {"tabs-in-cbd", flag_descriptions::kTabsInCbdName,
-     flag_descriptions::kTabsInCbdDescription, kOsAndroid,
+     flag_descriptions::kTabsInCbdDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kTabsInCbd)},
-#endif  // OS_ANDROID
     {"passive-listener-default",
      flag_descriptions::kPassiveEventListenerDefaultName,
      flag_descriptions::kPassiveEventListenerDefaultDescription, kOsAll,

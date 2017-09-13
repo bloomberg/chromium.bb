@@ -87,7 +87,8 @@ class ClearBrowsingDataHandler : public SettingsPageUIHandler,
   void UpdateHistoryDeletionDialog(bool show);
 
   // Adds a browsing data |counter|.
-  void AddCounter(std::unique_ptr<browsing_data::BrowsingDataCounter> counter);
+  void AddCounter(std::unique_ptr<browsing_data::BrowsingDataCounter> counter,
+                  browsing_data::ClearBrowsingDataTab tab);
 
   // Updates a counter text according to the |result|.
   void UpdateCounterText(
