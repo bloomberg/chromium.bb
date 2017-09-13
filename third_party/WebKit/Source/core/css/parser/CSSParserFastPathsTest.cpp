@@ -24,7 +24,8 @@ TEST(CSSParserFastPathsTest, ParseKeyword) {
                                               kHTMLStandardMode);
   ASSERT_EQ(nullptr, value);
 }
-TEST(CSSParserFastPathsTest, ParseInitialAndInheritKeyword) {
+
+TEST(CSSParserFastPathsTest, ParseCSSWideKeywords) {
   CSSValue* value = CSSParserFastPaths::MaybeParseValue(
       CSSPropertyMarginTop, "inherit", kHTMLStandardMode);
   ASSERT_NE(nullptr, value);
@@ -41,6 +42,14 @@ TEST(CSSParserFastPathsTest, ParseInitialAndInheritKeyword) {
                                               kHTMLStandardMode);
   ASSERT_NE(nullptr, value);
   EXPECT_TRUE(value->IsInitialValue());
+  value = CSSParserFastPaths::MaybeParseValue(CSSPropertyMarginTop, "unset",
+                                              kHTMLStandardMode);
+  ASSERT_NE(nullptr, value);
+  EXPECT_TRUE(value->IsUnsetValue());
+  value = CSSParserFastPaths::MaybeParseValue(CSSPropertyMarginLeft, "unsEt",
+                                              kHTMLStandardMode);
+  ASSERT_NE(nullptr, value);
+  EXPECT_TRUE(value->IsUnsetValue());
   // Fast path doesn't handle short hands.
   value = CSSParserFastPaths::MaybeParseValue(CSSPropertyMargin, "initial",
                                               kHTMLStandardMode);
