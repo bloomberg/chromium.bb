@@ -42,6 +42,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/arc/arc_prefs.h"
 #include "ui/chromeos/events/pref_names.h"
 #endif
 
@@ -278,13 +279,13 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
 
   // Android Apps.
-  (*s_whitelist)[::prefs::kArcEnabled] =
+  (*s_whitelist)[arc::prefs::kArcEnabled] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
 
   // Google Assistant.
-  (*s_whitelist)[::prefs::kVoiceInteractionEnabled] =
+  (*s_whitelist)[arc::prefs::kVoiceInteractionEnabled] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kVoiceInteractionContextEnabled] =
+  (*s_whitelist)[arc::prefs::kVoiceInteractionContextEnabled] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
 
   // Misc.

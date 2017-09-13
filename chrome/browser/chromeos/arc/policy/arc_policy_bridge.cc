@@ -24,10 +24,10 @@
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/pref_names.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "components/arc/arc_prefs.h"
 #include "components/onc/onc_constants.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
@@ -338,12 +338,6 @@ ArcPolicyBridge::ArcPolicyBridge(content::BrowserContext* context,
 ArcPolicyBridge::~ArcPolicyBridge() {
   VLOG(2) << "ArcPolicyBridge::~ArcPolicyBridge";
   arc_bridge_service_->policy()->RemoveObserver(this);
-}
-
-// static
-void ArcPolicyBridge::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kArcPolicyComplianceReported, false);
 }
 
 void ArcPolicyBridge::OverrideIsManagedForTesting(bool is_managed) {

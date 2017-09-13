@@ -10,7 +10,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
-#include "chrome/common/pref_names.h"
+#include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/base/layout.h"
@@ -157,7 +157,7 @@ ArcKioskAppService::ArcKioskAppService(Profile* profile) : profile_(profile) {
   pref_change_registrar_->Init(profile_->GetPrefs());
   // Kiosk app can be started only when policy compliance is reported.
   pref_change_registrar_->Add(
-      prefs::kArcPolicyComplianceReported,
+      arc::prefs::kArcPolicyComplianceReported,
       base::Bind(&ArcKioskAppService::PreconditionsChanged,
                  base::Unretained(this)));
   notification_blocker_.reset(new ArcKioskNotificationBlocker());
@@ -194,13 +194,14 @@ void ArcKioskAppService::PreconditionsChanged() {
           << (maintenance_session_running_ ? "running" : "not running");
   VLOG(2) << "Policy compliance is "
           << (profile_->GetPrefs()->GetBoolean(
-                  prefs::kArcPolicyComplianceReported)
+                  arc::prefs::kArcPolicyComplianceReported)
                   ? "reported"
                   : "not yet reported");
   VLOG(2) << "Kiosk app with id: " << app_id_ << " is "
           << (app_launcher_ ? "already launched" : "not yet launched");
   if (app_info_ && app_info_->ready && !maintenance_session_running_ &&
-      profile_->GetPrefs()->GetBoolean(prefs::kArcPolicyComplianceReported)) {
+      profile_->GetPrefs()->GetBoolean(
+          arc::prefs::kArcPolicyComplianceReported)) {
     if (!app_launcher_) {
       VLOG(2) << "Starting kiosk app";
       app_launcher_ = base::MakeUnique<ArcKioskAppLauncher>(

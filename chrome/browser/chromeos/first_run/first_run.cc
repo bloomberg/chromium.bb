@@ -25,6 +25,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -135,7 +136,7 @@ class DialogLauncher : public content::NotificationObserver {
     // shown after the voice interaction OOBE flow.
     if (account_supported && arc::IsArcPlayStoreEnabledForProfile(profile_) &&
         !profile_->GetPrefs()->GetBoolean(
-            prefs::kArcVoiceInteractionValuePropAccepted)) {
+            arc::prefs::kArcVoiceInteractionValuePropAccepted)) {
       auto* service =
           arc::ArcVoiceInteractionFrameworkService::GetForBrowserContext(
               profile_);

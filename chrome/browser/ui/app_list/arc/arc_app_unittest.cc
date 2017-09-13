@@ -41,9 +41,9 @@
 #include "chrome/browser/ui/app_list/arc/arc_pai_starter.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/test/fake_app_instance.h"
@@ -596,7 +596,8 @@ class ArcDefaulAppForManagedUserTest : public ArcPlayStoreAppTest {
         policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile());
     connector->OverrideIsManagedForTesting(true);
     profile()->GetTestingPrefService()->SetManagedPref(
-        prefs::kArcEnabled, base::MakeUnique<base::Value>(IsEnabledByPolicy()));
+        arc::prefs::kArcEnabled,
+        base::MakeUnique<base::Value>(IsEnabledByPolicy()));
 
     ArcPlayStoreAppTest::OnBeforeArcTestSetup();
   }

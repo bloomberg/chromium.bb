@@ -239,6 +239,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/proxy/proxy_config_handler.h"
 #include "chromeos/timezone/timezone_resolver.h"
+#include "components/arc/arc_prefs.h"
 #include "components/invalidation/impl/invalidator_storage.h"
 #include "components/onc/onc_pref_names.h"
 #include "components/quirks/quirks_manager.h"
@@ -594,8 +595,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #endif
 
 #if defined(OS_CHROMEOS)
-  arc::ArcSessionManager::RegisterProfilePrefs(registry);
-  arc::ArcPolicyBridge::RegisterProfilePrefs(registry);
+  arc::prefs::RegisterProfilePrefs(registry);
   chromeos::first_run::RegisterProfilePrefs(registry);
   chromeos::file_system_provider::RegisterProfilePrefs(registry);
   chromeos::KeyPermissions::RegisterProfilePrefs(registry);

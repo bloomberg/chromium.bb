@@ -35,14 +35,13 @@
 #include "chrome/browser/ui/app_list/arc/arc_pai_starter.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "components/arc/arc_prefs.h"
 #include "components/arc/arc_session_runner.h"
 #include "components/arc/arc_util.h"
-#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -159,35 +158,6 @@ ArcSessionManager::~ArcSessionManager() {
 ArcSessionManager* ArcSessionManager::Get() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return g_arc_session_manager;
-}
-
-// static
-void ArcSessionManager::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-  // TODO(dspaid): Implement a mechanism to allow this to sync on first boot
-  // only.
-  registry->RegisterBooleanPref(prefs::kArcDataRemoveRequested, false);
-  registry->RegisterBooleanPref(prefs::kArcEnabled, false);
-  registry->RegisterBooleanPref(prefs::kArcSignedIn, false);
-  registry->RegisterBooleanPref(prefs::kArcPaiStarted, false);
-  registry->RegisterBooleanPref(prefs::kArcTermsAccepted, false);
-  registry->RegisterBooleanPref(prefs::kArcVoiceInteractionValuePropAccepted,
-                                false);
-  registry->RegisterBooleanPref(prefs::kVoiceInteractionEnabled, false);
-  registry->RegisterBooleanPref(prefs::kVoiceInteractionContextEnabled, false);
-  registry->RegisterBooleanPref(prefs::kVoiceInteractionPrefSynced, false);
-  // Note that ArcBackupRestoreEnabled and ArcLocationServiceEnabled prefs have
-  // to be off by default, until an explicit gesture from the user to enable
-  // them is received. This is crucial in the cases when these prefs transition
-  // from a previous managed state to the unmanaged.
-  registry->RegisterBooleanPref(prefs::kArcBackupRestoreEnabled, false);
-  registry->RegisterBooleanPref(prefs::kArcLocationServiceEnabled, false);
-  // This is used to delete the Play user ID if ARC is disabled for an
-  // Active Directory managed device.
-  registry->RegisterStringPref(prefs::kArcActiveDirectoryPlayUserId,
-                               std::string());
-  // This is used to decide whether migration from ecryptfs to ext4 is allowed.
-  registry->RegisterIntegerPref(prefs::kEcryptfsMigrationStrategy, 0);
 }
 
 // static

@@ -37,11 +37,11 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
+#include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_session_runner.h"
 #include "components/arc/arc_util.h"
@@ -619,7 +619,7 @@ class ArcSessionManagerPolicyTest
         return base::Value(false);
       case 2:
         return base::Value(true);
-    };
+    }
     NOTREACHED();
     return base::Value();
   }
@@ -632,7 +632,7 @@ class ArcSessionManagerPolicyTest
         return base::Value(false);
       case 2:
         return base::Value(true);
-    };
+    }
     NOTREACHED();
     return base::Value();
   }

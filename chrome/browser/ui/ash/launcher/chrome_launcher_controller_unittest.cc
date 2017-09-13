@@ -82,6 +82,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/common/app.mojom.h"
 #include "components/arc/test/fake_app_instance.h"
@@ -3705,7 +3706,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcManaged) {
   // ARC is managed and enabled, Play Store pin should be available.
   // Note: NEGOTIATING_TERMS_OF_SERVICE here means that opt-in flow starts.
   profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kArcEnabled, base::MakeUnique<base::Value>(true));
+      arc::prefs::kArcEnabled, base::MakeUnique<base::Value>(true));
   base::RunLoop().RunUntilIdle();
   ValidateArcState(true, true,
                    arc::ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE,
@@ -3713,13 +3714,14 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcManaged) {
 
   // ARC is managed and disabled, Play Store pin should not be available.
   profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kArcEnabled, base::MakeUnique<base::Value>(false));
+      arc::prefs::kArcEnabled, base::MakeUnique<base::Value>(false));
   base::RunLoop().RunUntilIdle();
   ValidateArcState(false, true, arc::ArcSessionManager::State::STOPPED,
                    "AppList, Chrome");
 
   // ARC is not managed and disabled, Play Store pin should be available.
-  profile()->GetTestingPrefService()->RemoveManagedPref(prefs::kArcEnabled);
+  profile()->GetTestingPrefService()->RemoveManagedPref(
+      arc::prefs::kArcEnabled);
   base::RunLoop().RunUntilIdle();
   ValidateArcState(false, false, arc::ArcSessionManager::State::STOPPED,
                    "AppList, Chrome, Play Store");

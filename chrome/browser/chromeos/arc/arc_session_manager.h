@@ -21,10 +21,6 @@
 class ArcAppLauncher;
 class Profile;
 
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
-
 namespace arc {
 
 class ArcAndroidManagementChecker;
@@ -143,9 +139,6 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
 
   // Returns true if OOBE flow is active currently.
   static bool IsOobeOptInActive();
-
-  // It is called from chrome/browser/prefs/browser_prefs.cc.
-  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   static void DisableUIForTesting();
   static void EnableCheckAndroidManagementForTesting();

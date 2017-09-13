@@ -58,6 +58,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/arc/arc_prefs.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/strings/grit/components_strings.h"
@@ -1167,7 +1168,7 @@ void ChromeLauncherController::AttachProfile(Profile* profile_to_attach) {
   // race condition when OnAppUninstalledPrepared for ARC apps is called after
   // UpdateAppLaunchersFromPref.
   pref_change_registrar_.Add(
-      prefs::kArcEnabled,
+      arc::prefs::kArcEnabled,
       base::Bind(&ChromeLauncherController::ScheduleUpdateAppLaunchersFromPref,
                  base::Unretained(this)));
   pref_change_registrar_.Add(

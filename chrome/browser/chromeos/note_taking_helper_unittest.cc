@@ -31,6 +31,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/common/intent_helper.mojom.h"
@@ -202,7 +203,7 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest,
     ASSERT_FALSE(initialized_);
     initialized_ = true;
 
-    profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled,
+    profile()->GetPrefs()->SetBoolean(arc::prefs::kArcEnabled,
                                       flags & ENABLE_PLAY_STORE);
     arc_test_.SetUp(profile());
     arc::ArcServiceManager::Get()
@@ -221,7 +222,7 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest,
     }
 
     // TODO(derat): Sigh, something in ArcAppTest appears to be re-enabling ARC.
-    profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled,
+    profile()->GetPrefs()->SetBoolean(arc::prefs::kArcEnabled,
                                       flags & ENABLE_PLAY_STORE);
     NoteTakingHelper::Initialize();
     NoteTakingHelper::Get()->SetProfileWithEnabledLockScreenApps(profile());
@@ -839,7 +840,7 @@ TEST_P(NoteTakingHelperTest, PlayStoreInitiallyDisabled) {
     return;
   // When Play Store is enabled, the helper's members should be updated
   // accordingly.
-  profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
+  profile()->GetPrefs()->SetBoolean(arc::prefs::kArcEnabled, true);
   EXPECT_TRUE(helper()->play_store_enabled());
   EXPECT_FALSE(helper()->android_apps_received());
 
@@ -866,7 +867,7 @@ TEST_P(NoteTakingHelperTest, AddProfileWithPlayStoreEnabled) {
   const char kSecondProfileName[] = "second-profile";
   auto prefs = base::MakeUnique<sync_preferences::TestingPrefServiceSyncable>();
   chrome::RegisterUserProfilePrefs(prefs->registry());
-  prefs->SetBoolean(prefs::kArcEnabled, true);
+  prefs->SetBoolean(arc::prefs::kArcEnabled, true);
   profile_manager_->CreateTestingProfile(
       kSecondProfileName, std::move(prefs), base::ASCIIToUTF16("Second User"),
       1 /* avatar_id */, std::string() /* supervised_user_id */,
@@ -934,7 +935,7 @@ TEST_P(NoteTakingHelperTest, ListAndroidApps) {
   if (arc::ShouldArcAlwaysStart())
     return;
   // Disable Play Store and check that the apps are no longer returned.
-  profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, false);
+  profile()->GetPrefs()->SetBoolean(arc::prefs::kArcEnabled, false);
   EXPECT_FALSE(helper()->play_store_enabled());
   EXPECT_FALSE(helper()->android_apps_received());
   EXPECT_FALSE(helper()->IsAppAvailable(profile()));
@@ -1064,9 +1065,9 @@ TEST_P(NoteTakingHelperTest, NotifyObserverAboutAndroidApps) {
 
   // Disabling and enabling Play Store should also notify the observer (and
   // enabling should request apps again).
-  profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, false);
+  profile()->GetPrefs()->SetBoolean(arc::prefs::kArcEnabled, false);
   EXPECT_EQ(2, observer.num_updates());
-  profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
+  profile()->GetPrefs()->SetBoolean(arc::prefs::kArcEnabled, true);
   EXPECT_EQ(3, observer.num_updates());
   // Run ARC data removing operation.
   base::RunLoop().RunUntilIdle();

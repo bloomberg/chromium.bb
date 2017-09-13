@@ -16,7 +16,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
-#include "components/pref_registry/pref_registry_syncable.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
@@ -56,8 +55,6 @@ class ArcPolicyBridge : public KeyedService,
                   ArcBridgeService* bridge_service,
                   policy::PolicyService* policy_service);
   ~ArcPolicyBridge() override;
-
-  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   void OverrideIsManagedForTesting(bool is_managed);
 

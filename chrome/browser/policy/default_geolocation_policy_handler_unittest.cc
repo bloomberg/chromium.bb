@@ -6,7 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
-#include "chrome/common/pref_names.h"
+#include "components/arc/arc_prefs.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/policy/core/browser/configuration_policy_pref_store.h"
 #include "components/policy/core/browser/configuration_policy_pref_store_test.h"
@@ -28,40 +28,44 @@ class DefaultGeolocationPolicyHandlerTest
 TEST_F(DefaultGeolocationPolicyHandlerTest, AllowGeolocation) {
   // DefaultGeolocationSetting of CONTENT_SETTING_ALLOW (AllowGeolocation)
   // should not translate to the ArcLocationServiceEnabled preference.
-  EXPECT_FALSE(store_->GetValue(prefs::kArcLocationServiceEnabled, nullptr));
+  EXPECT_FALSE(
+      store_->GetValue(arc::prefs::kArcLocationServiceEnabled, nullptr));
   PolicyMap policy;
   policy.Set(key::kDefaultGeolocationSetting, POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
              base::WrapUnique(new base::Value(CONTENT_SETTING_ALLOW)), nullptr);
   UpdateProviderPolicy(policy);
-  EXPECT_FALSE(store_->GetValue(prefs::kArcLocationServiceEnabled, nullptr));
+  EXPECT_FALSE(
+      store_->GetValue(arc::prefs::kArcLocationServiceEnabled, nullptr));
 }
 
 TEST_F(DefaultGeolocationPolicyHandlerTest, BlockGeolocation) {
   // DefaultGeolocationSetting of CONTENT_SETTING_BLOCK (BlockGeolocation)
   // should set the ArcLocationServiceEnabled preference to false.
-  EXPECT_FALSE(store_->GetValue(prefs::kArcLocationServiceEnabled, nullptr));
+  EXPECT_FALSE(
+      store_->GetValue(arc::prefs::kArcLocationServiceEnabled, nullptr));
   PolicyMap policy;
   policy.Set(key::kDefaultGeolocationSetting, POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
              base::WrapUnique(new base::Value(CONTENT_SETTING_BLOCK)), nullptr);
   UpdateProviderPolicy(policy);
   const base::Value* value = nullptr;
-  EXPECT_TRUE(store_->GetValue(prefs::kArcLocationServiceEnabled, &value));
+  EXPECT_TRUE(store_->GetValue(arc::prefs::kArcLocationServiceEnabled, &value));
   EXPECT_TRUE(base::Value(false).Equals(value));
 }
 
 TEST_F(DefaultGeolocationPolicyHandlerTest, AskGeolocation) {
   // DefaultGeolocationSetting of CONTENT_SETTING_ASK (AskGeolocation) should
   // not translate to the ArcLocationServiceEnabled preference.
-  EXPECT_FALSE(store_->GetValue(prefs::kArcLocationServiceEnabled, nullptr));
+  EXPECT_FALSE(
+      store_->GetValue(arc::prefs::kArcLocationServiceEnabled, nullptr));
   PolicyMap policy;
   policy.Set(key::kDefaultGeolocationSetting, POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
              base::WrapUnique(new base::Value(CONTENT_SETTING_ASK)), nullptr);
   UpdateProviderPolicy(policy);
-  EXPECT_FALSE(store_->GetValue(prefs::kArcLocationServiceEnabled, nullptr));
+  EXPECT_FALSE(
+      store_->GetValue(arc::prefs::kArcLocationServiceEnabled, nullptr));
 }
 
 }  // namespace policy
-

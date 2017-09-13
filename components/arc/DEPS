@@ -5,6 +5,7 @@ include_rules = [
   "+chromeos/dbus",
   "+components/exo",
   "+components/keyed_service",
+  "+components/pref_registry",
   "+components/prefs",
   "+components/session_manager/core",
   "+components/signin/core/account_id",

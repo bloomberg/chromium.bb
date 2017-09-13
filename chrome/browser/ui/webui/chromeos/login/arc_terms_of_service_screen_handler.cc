@@ -11,12 +11,12 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "components/arc/arc_prefs.h"
 #include "components/login/localized_values_builder.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
@@ -204,7 +204,7 @@ void ArcTermsOfServiceScreenHandler::DoShow() {
   // ARC is enabled (prefs::kArcEnabled = true) on showing Terms of Service. If
   // user accepts ToS then prefs::kArcEnabled is left activated. If user skips
   // ToS then prefs::kArcEnabled is automatically reset in ArcSessionManager.
-  profile->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
+  profile->GetPrefs()->SetBoolean(arc::prefs::kArcEnabled, true);
 
   action_taken_ = false;
 
@@ -216,7 +216,6 @@ void ArcTermsOfServiceScreenHandler::DoShow() {
   pref_handler_.reset(new arc::ArcOptInPreferenceHandler(
       this, profile->GetPrefs()));
   pref_handler_->Start();
-
 }
 
 bool ArcTermsOfServiceScreenHandler::NeedDispatchEventOnAction() {

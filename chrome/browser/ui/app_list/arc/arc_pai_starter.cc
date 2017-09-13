@@ -8,7 +8,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
-#include "chrome/common/pref_names.h"
+#include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "ui/events/event_constants.h"
 
