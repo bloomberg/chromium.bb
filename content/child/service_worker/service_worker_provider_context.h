@@ -18,6 +18,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/child/child_url_loader_factory_getter.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -94,8 +95,9 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
 
   // For service worker execution contexts. Used for initializing
   // ServiceWorkerGlobalScope#registration. Called on the worker thread.
-  void GetRegistration(ServiceWorkerRegistrationObjectInfo* info,
-                       ServiceWorkerVersionAttributes* attrs);
+  void GetRegistration(
+      blink::mojom::ServiceWorkerRegistrationObjectInfoPtr* info,
+      ServiceWorkerVersionAttributes* attrs);
 
   // For service worker clients. The controller for
   // ServiceWorkerContainer#controller.

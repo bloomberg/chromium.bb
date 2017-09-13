@@ -239,13 +239,12 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
     auto options = blink::mojom::ServiceWorkerRegistrationOptions::New(pattern);
     container_host->Register(
         worker_url, std::move(options),
-        base::BindOnce(
-            [](blink::mojom::ServiceWorkerErrorType error,
-               const base::Optional<std::string>& error_msg,
-               const base::Optional<ServiceWorkerRegistrationObjectInfo>&
-                   registration,
-               const base::Optional<ServiceWorkerVersionAttributes>&
-                   attributes) {}));
+        base::BindOnce([](blink::mojom::ServiceWorkerErrorType error,
+                          const base::Optional<std::string>& error_msg,
+                          blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
+                              registration,
+                          const base::Optional<ServiceWorkerVersionAttributes>&
+                              attributes) {}));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -257,15 +256,14 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
     auto options = blink::mojom::ServiceWorkerRegistrationOptions::New(pattern);
     container_host->Register(
         worker_url, std::move(options),
-        base::BindOnce(
-            [](blink::mojom::ServiceWorkerErrorType* out_error,
-               blink::mojom::ServiceWorkerErrorType error,
-               const base::Optional<std::string>& error_msg,
-               const base::Optional<ServiceWorkerRegistrationObjectInfo>&
-                   registration,
-               const base::Optional<ServiceWorkerVersionAttributes>&
-                   attributes) { *out_error = error; },
-            &error));
+        base::BindOnce([](blink::mojom::ServiceWorkerErrorType* out_error,
+                          blink::mojom::ServiceWorkerErrorType error,
+                          const base::Optional<std::string>& error_msg,
+                          blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
+                              registration,
+                          const base::Optional<ServiceWorkerVersionAttributes>&
+                              attributes) { *out_error = error; },
+                       &error));
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(expected, error);
   }
@@ -290,13 +288,12 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
                            GURL document_url) {
     container_host->GetRegistration(
         document_url,
-        base::BindOnce(
-            [](blink::mojom::ServiceWorkerErrorType error,
-               const base::Optional<std::string>& error_msg,
-               const base::Optional<ServiceWorkerRegistrationObjectInfo>&
-                   registration,
-               const base::Optional<ServiceWorkerVersionAttributes>&
-                   attributes) {}));
+        base::BindOnce([](blink::mojom::ServiceWorkerErrorType error,
+                          const base::Optional<std::string>& error_msg,
+                          blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
+                              registration,
+                          const base::Optional<ServiceWorkerVersionAttributes>&
+                              attributes) {}));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -306,15 +303,14 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
     blink::mojom::ServiceWorkerErrorType error;
     container_host->GetRegistration(
         document_url,
-        base::BindOnce(
-            [](blink::mojom::ServiceWorkerErrorType* out_error,
-               blink::mojom::ServiceWorkerErrorType error,
-               const base::Optional<std::string>& error_msg,
-               const base::Optional<ServiceWorkerRegistrationObjectInfo>&
-                   registration,
-               const base::Optional<ServiceWorkerVersionAttributes>&
-                   attributes) { *out_error = error; },
-            &error));
+        base::BindOnce([](blink::mojom::ServiceWorkerErrorType* out_error,
+                          blink::mojom::ServiceWorkerErrorType error,
+                          const base::Optional<std::string>& error_msg,
+                          blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
+                              registration,
+                          const base::Optional<ServiceWorkerVersionAttributes>&
+                              attributes) { *out_error = error; },
+                       &error));
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(expected, error);
   }
@@ -323,8 +319,8 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
     container_host->GetRegistrations(base::BindOnce(
         [](blink::mojom::ServiceWorkerErrorType error,
            const base::Optional<std::string>& error_msg,
-           const base::Optional<
-               std::vector<ServiceWorkerRegistrationObjectInfo>>& infos,
+           base::Optional<std::vector<
+               blink::mojom::ServiceWorkerRegistrationObjectInfoPtr>> infos,
            const base::Optional<std::vector<ServiceWorkerVersionAttributes>>&
                attrs) {}));
     base::RunLoop().RunUntilIdle();
@@ -337,8 +333,8 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
         [](blink::mojom::ServiceWorkerErrorType* out_error,
            blink::mojom::ServiceWorkerErrorType error,
            const base::Optional<std::string>& error_msg,
-           const base::Optional<
-               std::vector<ServiceWorkerRegistrationObjectInfo>>& infos,
+           base::Optional<std::vector<
+               blink::mojom::ServiceWorkerRegistrationObjectInfoPtr>> infos,
            const base::Optional<std::vector<ServiceWorkerVersionAttributes>>&
                attrs) { *out_error = error; },
         &error));

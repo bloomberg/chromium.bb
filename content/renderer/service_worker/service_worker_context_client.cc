@@ -81,6 +81,7 @@
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_error_type.mojom.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 #include "third_party/WebKit/public/web/modules/serviceworker/WebServiceWorkerContextClient.h"
 #include "third_party/WebKit/public/web/modules/serviceworker/WebServiceWorkerContextProxy.h"
 
@@ -771,18 +772,19 @@ void ServiceWorkerContextClient::WorkerContextStarted(
   // willDestroyWorkerContext.
   context_.reset(new WorkerContextData(this));
 
-  ServiceWorkerRegistrationObjectInfo registration_info;
+  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info;
   ServiceWorkerVersionAttributes version_attrs;
   provider_context_->GetRegistration(&registration_info, &version_attrs);
-  DCHECK_NE(registration_info.registration_id,
-            kInvalidServiceWorkerRegistrationId);
+  DCHECK_NE(registration_info->registration_id,
+            blink::mojom::kInvalidServiceWorkerRegistrationId);
 
   DCHECK(pending_dispatcher_request_.is_pending());
   DCHECK(!context_->event_dispatcher_binding.is_bound());
   context_->event_dispatcher_binding.Bind(
       std::move(pending_dispatcher_request_));
 
-  SetRegistrationInServiceWorkerGlobalScope(registration_info, version_attrs);
+  SetRegistrationInServiceWorkerGlobalScope(std::move(registration_info),
+                                            version_attrs);
 
   (*instance_host_)->OnThreadStarted(WorkerThread::GetCurrentId());
 
@@ -1394,7 +1396,7 @@ void ServiceWorkerContextClient::SendWorkerStarted() {
 }
 
 void ServiceWorkerContextClient::SetRegistrationInServiceWorkerGlobalScope(
-    const ServiceWorkerRegistrationObjectInfo& info,
+    blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info,
     const ServiceWorkerVersionAttributes& attrs) {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
   ServiceWorkerDispatcher* dispatcher =
@@ -1404,7 +1406,7 @@ void ServiceWorkerContextClient::SetRegistrationInServiceWorkerGlobalScope(
   // Register a registration and its version attributes with the dispatcher
   // living on the worker thread.
   scoped_refptr<WebServiceWorkerRegistrationImpl> registration(
-      dispatcher->GetOrCreateRegistration(info, attrs));
+      dispatcher->GetOrCreateRegistration(std::move(info), attrs));
 
   proxy_->SetRegistration(
       WebServiceWorkerRegistrationImpl::CreateHandle(registration));

@@ -876,7 +876,7 @@ ServiceWorkerDispatcherHost::FindRegistrationHandle(int provider_id,
 void ServiceWorkerDispatcherHost::GetRegistrationObjectInfoAndVersionAttributes(
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
     ServiceWorkerRegistration* registration,
-    ServiceWorkerRegistrationObjectInfo* out_info,
+    blink::mojom::ServiceWorkerRegistrationObjectInfoPtr* out_info,
     ServiceWorkerVersionAttributes* out_attrs) {
   ServiceWorkerRegistrationHandle* handle =
       GetOrCreateRegistrationHandle(provider_host, registration);

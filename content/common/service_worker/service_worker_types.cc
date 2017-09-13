@@ -143,11 +143,6 @@ bool ServiceWorkerObjectInfo::IsValid() const {
          version_id != kInvalidServiceWorkerVersionId;
 }
 
-ServiceWorkerRegistrationObjectInfo::ServiceWorkerRegistrationObjectInfo()
-    : handle_id(kInvalidServiceWorkerRegistrationHandleId),
-      registration_id(kInvalidServiceWorkerRegistrationId) {
-}
-
 ServiceWorkerClientQueryOptions::ServiceWorkerClientQueryOptions()
     : client_type(blink::kWebServiceWorkerClientTypeWindow),
       include_uncontrolled(false) {}

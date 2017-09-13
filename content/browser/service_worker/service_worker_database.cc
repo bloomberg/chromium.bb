@@ -19,6 +19,7 @@
 #include "content/browser/service_worker/service_worker_database.pb.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -275,12 +276,11 @@ const char* ServiceWorkerDatabase::StatusToString(
 }
 
 ServiceWorkerDatabase::RegistrationData::RegistrationData()
-    : registration_id(kInvalidServiceWorkerRegistrationId),
+    : registration_id(blink::mojom::kInvalidServiceWorkerRegistrationId),
       version_id(kInvalidServiceWorkerVersionId),
       is_active(false),
       has_fetch_handler(false),
-      resources_total_size_bytes(0) {
-}
+      resources_total_size_bytes(0) {}
 
 ServiceWorkerDatabase::RegistrationData::RegistrationData(
     const RegistrationData& other) = default;
@@ -854,7 +854,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadUserData(
     const std::vector<std::string>& user_data_names,
     std::vector<std::string>* user_data_values) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  DCHECK_NE(kInvalidServiceWorkerRegistrationId, registration_id);
+  DCHECK_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, registration_id);
   DCHECK(!user_data_names.empty());
   DCHECK(user_data_values);
 
@@ -885,7 +885,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadUserDataByKeyPrefix(
     const std::string& user_data_name_prefix,
     std::vector<std::string>* user_data_values) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  DCHECK_NE(kInvalidServiceWorkerRegistrationId, registration_id);
+  DCHECK_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, registration_id);
   DCHECK(user_data_values);
 
   Status status = LazyOpen(false);
@@ -930,7 +930,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteUserData(
     const GURL& origin,
     const std::vector<std::pair<std::string, std::string>>& name_value_pairs) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  DCHECK_NE(kInvalidServiceWorkerRegistrationId, registration_id);
+  DCHECK_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, registration_id);
   DCHECK(!name_value_pairs.empty());
 
   Status status = LazyOpen(false);
@@ -958,7 +958,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteUserData(
     int64_t registration_id,
     const std::vector<std::string>& user_data_names) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  DCHECK_NE(kInvalidServiceWorkerRegistrationId, registration_id);
+  DCHECK_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, registration_id);
   DCHECK(!user_data_names.empty());
 
   Status status = LazyOpen(false);
@@ -982,7 +982,7 @@ ServiceWorkerDatabase::DeleteUserDataByKeyPrefixes(
     const std::vector<std::string>& user_data_name_prefixes) {
   // Example |user_data_name_prefixes| is {"abc", "xyz"}.
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  DCHECK_NE(kInvalidServiceWorkerRegistrationId, registration_id);
+  DCHECK_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, registration_id);
 
   Status status = LazyOpen(false);
   if (IsNewOrNonexistentDatabase(status))

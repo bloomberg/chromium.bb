@@ -18,6 +18,7 @@
 #include "ipc/ipc_test_sink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerProviderClient.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace content {
 
@@ -53,10 +54,11 @@ class ServiceWorkerDispatcherTest : public testing::Test {
   }
 
   void CreateObjectInfoAndVersionAttributes(
-      ServiceWorkerRegistrationObjectInfo* info,
+      blink::mojom::ServiceWorkerRegistrationObjectInfoPtr* info,
       ServiceWorkerVersionAttributes* attrs) {
-    info->handle_id = 10;
-    info->registration_id = 20;
+    *info = blink::mojom::ServiceWorkerRegistrationObjectInfo::New();
+    (*info)->handle_id = 10;
+    (*info)->registration_id = 20;
 
     attrs->active.handle_id = 100;
     attrs->active.version_id = 200;
@@ -163,7 +165,7 @@ TEST_F(ServiceWorkerDispatcherTest, OnSetControllerServiceWorker) {
 
   // Assume that these objects are passed from the browser process and own
   // references to browser-side registration/worker representations.
-  ServiceWorkerRegistrationObjectInfo info;
+  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info;
   ServiceWorkerVersionAttributes attrs;
   CreateObjectInfoAndVersionAttributes(&info, &attrs);
 
@@ -252,7 +254,7 @@ TEST_F(ServiceWorkerDispatcherTest, OnSetControllerServiceWorker_Null) {
   const int kProviderId = 10;
   bool should_notify_controllerchange = true;
 
-  ServiceWorkerRegistrationObjectInfo info;
+  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info;
   ServiceWorkerVersionAttributes attrs;
   CreateObjectInfoAndVersionAttributes(&info, &attrs);
 
@@ -278,7 +280,7 @@ TEST_F(ServiceWorkerDispatcherTest, OnPostMessage) {
 
   // Assume that these objects are passed from the browser process and own
   // references to browser-side registration/worker representations.
-  ServiceWorkerRegistrationObjectInfo info;
+  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info;
   ServiceWorkerVersionAttributes attrs;
   CreateObjectInfoAndVersionAttributes(&info, &attrs);
 
@@ -310,7 +312,7 @@ TEST_F(ServiceWorkerDispatcherTest, OnPostMessage) {
 }
 
 TEST_F(ServiceWorkerDispatcherTest, GetServiceWorker) {
-  ServiceWorkerRegistrationObjectInfo info;
+  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info;
   ServiceWorkerVersionAttributes attrs;
   CreateObjectInfoAndVersionAttributes(&info, &attrs);
 
@@ -338,17 +340,17 @@ TEST_F(ServiceWorkerDispatcherTest, GetServiceWorker) {
 }
 
 TEST_F(ServiceWorkerDispatcherTest, GetOrCreateRegistration) {
-  ServiceWorkerRegistrationObjectInfo info;
+  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info;
   ServiceWorkerVersionAttributes attrs;
   CreateObjectInfoAndVersionAttributes(&info, &attrs);
 
   // Should return a registration object newly created with incrementing
   // the refcounts.
   scoped_refptr<WebServiceWorkerRegistrationImpl> registration1(
-      dispatcher()->GetOrCreateRegistration(info, attrs));
+      dispatcher()->GetOrCreateRegistration(info.Clone(), attrs));
   EXPECT_TRUE(registration1);
-  EXPECT_TRUE(ContainsRegistration(info.handle_id));
-  EXPECT_EQ(info.registration_id, registration1->RegistrationId());
+  EXPECT_TRUE(ContainsRegistration(info->handle_id));
+  EXPECT_EQ(info->registration_id, registration1->RegistrationId());
   ASSERT_EQ(4UL, ipc_sink()->message_count());
   EXPECT_EQ(ServiceWorkerHostMsg_IncrementRegistrationRefCount::ID,
             ipc_sink()->GetMessageAt(0)->type());
@@ -364,7 +366,7 @@ TEST_F(ServiceWorkerDispatcherTest, GetOrCreateRegistration) {
   // Should return the same registration object without incrementing the
   // refcounts.
   scoped_refptr<WebServiceWorkerRegistrationImpl> registration2(
-      dispatcher()->GetOrCreateRegistration(info, attrs));
+      dispatcher()->GetOrCreateRegistration(std::move(info), attrs));
   EXPECT_TRUE(registration2);
   EXPECT_EQ(registration1, registration2);
   EXPECT_EQ(0UL, ipc_sink()->message_count());
@@ -386,17 +388,17 @@ TEST_F(ServiceWorkerDispatcherTest, GetOrCreateRegistration) {
 }
 
 TEST_F(ServiceWorkerDispatcherTest, GetOrAdoptRegistration) {
-  ServiceWorkerRegistrationObjectInfo info;
+  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info;
   ServiceWorkerVersionAttributes attrs;
   CreateObjectInfoAndVersionAttributes(&info, &attrs);
 
   // Should return a registration object newly created with adopting the
   // refcounts.
   scoped_refptr<WebServiceWorkerRegistrationImpl> registration1(
-      dispatcher()->GetOrAdoptRegistration(info, attrs));
+      dispatcher()->GetOrAdoptRegistration(info.Clone(), attrs));
   EXPECT_TRUE(registration1);
-  EXPECT_TRUE(ContainsRegistration(info.handle_id));
-  EXPECT_EQ(info.registration_id, registration1->RegistrationId());
+  EXPECT_TRUE(ContainsRegistration(info->handle_id));
+  EXPECT_EQ(info->registration_id, registration1->RegistrationId());
   EXPECT_EQ(0UL, ipc_sink()->message_count());
 
   ipc_sink()->ClearMessages();
@@ -404,7 +406,7 @@ TEST_F(ServiceWorkerDispatcherTest, GetOrAdoptRegistration) {
   // Should return the same registration object without incrementing the
   // refcounts.
   scoped_refptr<WebServiceWorkerRegistrationImpl> registration2(
-      dispatcher()->GetOrAdoptRegistration(info, attrs));
+      dispatcher()->GetOrAdoptRegistration(std::move(info), attrs));
   EXPECT_TRUE(registration2);
   EXPECT_EQ(registration1, registration2);
   ASSERT_EQ(4UL, ipc_sink()->message_count());

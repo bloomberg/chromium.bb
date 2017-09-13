@@ -52,7 +52,7 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(
       context_(context),
       task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK_NE(kInvalidServiceWorkerRegistrationId, registration_id);
+  DCHECK_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, registration_id);
   DCHECK(context_);
   context_->AddLiveRegistration(this);
 }

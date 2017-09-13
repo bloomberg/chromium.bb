@@ -7,6 +7,7 @@ module content.mojom;
 import "content/common/service_worker/service_worker_container.mojom";
 import "content/common/service_worker/service_worker_types.mojom";
 import "content/public/common/url_loader_factory.mojom";
+import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom";
 
 // Sent from the browser process to the renderer. Contains parameters for the
 // constructor of ServiceWorkerNetworkProvider used for starting a service
@@ -15,7 +16,7 @@ struct ServiceWorkerProviderInfoForStartWorker {
   int32 provider_id;
   // |registration| and |attributes| are information about the service worker's
   // registration used to populate ServiceWorkerGlobalScope#registration.
-  ServiceWorkerRegistrationObjectInfo registration;
+  blink.mojom.ServiceWorkerRegistrationObjectInfo registration;
   ServiceWorkerVersionAttributes attributes;
 
   associated ServiceWorkerContainerHost host_ptr_info;

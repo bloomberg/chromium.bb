@@ -19,11 +19,6 @@ enum ServiceWorkerProviderType {
       SERVICE_WORKER_PROVIDER_FOR_CONTROLLER
 };
 
-// Struct for delivering the information about the ServiceWorkerRegistration.
-// Defined in service_worker_types.h.
-[Native]
-struct ServiceWorkerRegistrationObjectInfo;
-
 // Struct for delivering the information about the installing, waiting and
 // active ServiceWorkers.
 // Defined in service_worker_types.h.

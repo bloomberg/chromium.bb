@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_error_type.mojom.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace blink {
 class WebURL;
@@ -25,7 +26,6 @@ class ServiceWorkerDispatcher;
 class ServiceWorkerProviderContext;
 class ThreadSafeSender;
 
-struct ServiceWorkerRegistrationObjectInfo;
 struct ServiceWorkerVersionAttributes;
 
 // This class corresponds to one ServiceWorkerContainer interface in
@@ -65,28 +65,29 @@ class WebServiceWorkerProviderImpl : public blink::WebServiceWorkerProvider {
       std::unique_ptr<WebServiceWorkerRegistrationCallbacks> callbacks,
       blink::mojom::ServiceWorkerErrorType error,
       const base::Optional<std::string>& error_msg,
-      const base::Optional<ServiceWorkerRegistrationObjectInfo>& registration,
+      blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration,
       const base::Optional<ServiceWorkerVersionAttributes>& attributes);
 
   void OnDidGetRegistration(
       std::unique_ptr<WebServiceWorkerGetRegistrationCallbacks> callbacks,
       blink::mojom::ServiceWorkerErrorType error,
       const base::Optional<std::string>& error_msg,
-      const base::Optional<ServiceWorkerRegistrationObjectInfo>& registration,
+      blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration,
       const base::Optional<ServiceWorkerVersionAttributes>& attributes);
 
   void OnDidGetRegistrations(
       std::unique_ptr<WebServiceWorkerGetRegistrationsCallbacks> callbacks,
       blink::mojom::ServiceWorkerErrorType error,
       const base::Optional<std::string>& error_msg,
-      const base::Optional<std::vector<ServiceWorkerRegistrationObjectInfo>>&
+      base::Optional<
+          std::vector<blink::mojom::ServiceWorkerRegistrationObjectInfoPtr>>
           infos,
       const base::Optional<std::vector<ServiceWorkerVersionAttributes>>& attrs);
 
   void OnDidGetRegistrationForReady(
       std::unique_ptr<WebServiceWorkerGetRegistrationForReadyCallbacks>
           callbacks,
-      const base::Optional<ServiceWorkerRegistrationObjectInfo>& registration,
+      blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration,
       const base::Optional<ServiceWorkerVersionAttributes>& attributes);
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
