@@ -51,31 +51,41 @@ bool AXProgressIndicator::ComputeAccessibilityIsIgnored(
   return AccessibilityIsIgnoredByDefault(ignored_reasons);
 }
 
-float AXProgressIndicator::ValueForRange() const {
+bool AXProgressIndicator::ValueForRange(float* out_value) const {
   float value_now;
-  if (HasAOMPropertyOrARIAAttribute(AOMFloatProperty::kValueNow, value_now))
-    return value_now;
+  if (HasAOMPropertyOrARIAAttribute(AOMFloatProperty::kValueNow, value_now)) {
+    *out_value = value_now;
+    return true;
+  }
 
-  if (GetProgressElement()->position() >= 0)
-    return clampTo<float>(GetProgressElement()->value());
-  // Indeterminate progress bar should return 0.
-  return 0.0f;
+  if (GetProgressElement()->position() >= 0) {
+    *out_value = clampTo<float>(GetProgressElement()->value());
+    return true;
+  }
+  // Indeterminate progress bar has no value.
+  return false;
 }
 
-float AXProgressIndicator::MaxValueForRange() const {
+bool AXProgressIndicator::MaxValueForRange(float* out_value) const {
   float value_max;
-  if (HasAOMPropertyOrARIAAttribute(AOMFloatProperty::kValueMax, value_max))
-    return value_max;
+  if (HasAOMPropertyOrARIAAttribute(AOMFloatProperty::kValueMax, value_max)) {
+    *out_value = value_max;
+    return true;
+  }
 
-  return clampTo<float>(GetProgressElement()->max());
+  *out_value = clampTo<float>(GetProgressElement()->max());
+  return true;
 }
 
-float AXProgressIndicator::MinValueForRange() const {
+bool AXProgressIndicator::MinValueForRange(float* out_value) const {
   float value_min;
-  if (HasAOMPropertyOrARIAAttribute(AOMFloatProperty::kValueMin, value_min))
-    return value_min;
+  if (HasAOMPropertyOrARIAAttribute(AOMFloatProperty::kValueMin, value_min)) {
+    *out_value = value_min;
+    return true;
+  }
 
-  return 0.0f;
+  *out_value = 0.0f;
+  return true;
 }
 
 HTMLProgressElement* AXProgressIndicator::GetProgressElement() const {

@@ -227,12 +227,18 @@ void FillWidgetProperties(AXObject& ax_object,
   }
 
   if (ax_object.IsRange()) {
-    properties.addItem(
-        CreateProperty(AXWidgetAttributesEnum::Valuemin,
-                       CreateValue(ax_object.MinValueForRange())));
-    properties.addItem(
-        CreateProperty(AXWidgetAttributesEnum::Valuemax,
-                       CreateValue(ax_object.MaxValueForRange())));
+    float min_value;
+    if (ax_object.MinValueForRange(&min_value)) {
+      properties.addItem(CreateProperty(AXWidgetAttributesEnum::Valuemin,
+                                        CreateValue(min_value)));
+    }
+
+    float max_value;
+    if (ax_object.MaxValueForRange(&max_value)) {
+      properties.addItem(CreateProperty(AXWidgetAttributesEnum::Valuemax,
+                                        CreateValue(max_value)));
+    }
+
     properties.addItem(
         CreateProperty(AXWidgetAttributesEnum::Valuetext,
                        CreateValue(ax_object.ValueDescription())));
@@ -646,7 +652,9 @@ void InspectorAccessibilityAgent::FillCoreProperties(
   }
   // Value.
   if (ax_object.SupportsRangeValue()) {
-    node_object.setValue(CreateValue(ax_object.ValueForRange()));
+    float value;
+    if (ax_object.ValueForRange(&value))
+      node_object.setValue(CreateValue(value));
   } else {
     String string_value = ax_object.StringValue();
     if (!string_value.IsEmpty())

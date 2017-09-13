@@ -626,9 +626,9 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // Only used when invalidState() returns InvalidStateOther.
   virtual String AriaInvalidValue() const { return String(); }
   virtual String ValueDescription() const { return String(); }
-  virtual float ValueForRange() const { return 0.0f; }
-  virtual float MaxValueForRange() const { return 0.0f; }
-  virtual float MinValueForRange() const { return 0.0f; }
+  virtual bool ValueForRange(float* out_value) const { return 0.0f; }
+  virtual bool MaxValueForRange(float* out_value) const { return 0.0f; }
+  virtual bool MinValueForRange(float* out_value) const { return false; }
   virtual String StringValue() const { return String(); }
   virtual AXRestriction Restriction() const { return kNone; }
 
