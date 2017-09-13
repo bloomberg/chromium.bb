@@ -11,7 +11,6 @@
 #include "content/browser/browsing_data/conditional_cache_deletion_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
-#include "net/base/sdch_manager.h"
 #include "net/disk_cache/blockfile/backend_impl.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/disk_cache/memory/mem_backend_impl.h"
@@ -128,15 +127,6 @@ void StoragePartitionHttpCacheDataRemover::DoClearCache(int rv) {
         http_cache->GetSession()
             ->quic_stream_factory()
             ->ClearCachedStatesInCryptoConfig(url_predicate_);
-
-        // Clear SDCH dictionary state.
-        net::SdchManager* sdch_manager =
-            getter->GetURLRequestContext()->sdch_manager();
-        // The test is probably overkill, since chrome should always have an
-        // SdchManager.  But in general the URLRequestContext  is *not*
-        // guaranteed to have an SdchManager, so checking is wise.
-        if (sdch_manager)
-          sdch_manager->ClearData();
 
         rv = http_cache->GetBackend(
             &cache_,
