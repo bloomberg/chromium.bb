@@ -421,7 +421,6 @@ blink_core_sources("css") {
     "properties/CSSPropertyAPIBackgroundColor.cpp",
     "properties/CSSPropertyAPIBackgroundOrMaskImage.cpp",
     "properties/CSSPropertyAPIBackgroundOrMaskSize.cpp",
-    "properties/CSSPropertyAPIBaseCustom.cpp",
     "properties/CSSPropertyAPIBaselineShift.cpp",
     "properties/CSSPropertyAPIBorderColor.cpp",
     "properties/CSSPropertyAPIBorderImageOutset.cpp",
