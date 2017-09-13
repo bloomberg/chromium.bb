@@ -116,6 +116,8 @@ std::unique_ptr<base::DictionaryValue> Validator::MapObject(
       valid = ValidateOpenVPN(repaired.get());
     } else if (&signature == &kThirdPartyVPNSignature) {
       valid = ValidateThirdPartyVPN(repaired.get());
+    } else if (&signature == &kARCVPNSignature) {
+      valid = ValidateARCVPN(repaired.get());
     } else if (&signature == &kVerifyX509Signature) {
       valid = ValidateVerifyX509(repaired.get());
     } else if (&signature == &kCertificatePatternSignature) {
@@ -696,8 +698,8 @@ bool Validator::ValidateWiFi(base::DictionaryValue* result) {
 bool Validator::ValidateVPN(base::DictionaryValue* result) {
   using namespace ::onc::vpn;
 
-  const char* const kValidTypes[] = {
-      kIPsec, kTypeL2TP_IPsec, kOpenVPN, kThirdPartyVpn};
+  const char* const kValidTypes[] = {kIPsec, kTypeL2TP_IPsec, kOpenVPN,
+                                     kThirdPartyVpn, kArcVpn};
   const std::vector<const char*> valid_types(toVector(kValidTypes));
   if (FieldExistsAndHasNoValidValue(*result, ::onc::vpn::kType, valid_types))
     return false;
@@ -714,6 +716,8 @@ bool Validator::ValidateVPN(base::DictionaryValue* result) {
         RequireField(*result, kIPsec) && RequireField(*result, kL2TP);
   } else if (type == kThirdPartyVpn) {
     all_required_exist &= RequireField(*result, kThirdPartyVpn);
+  } else if (type == kArcVpn) {
+    all_required_exist &= RequireField(*result, kArcVpn);
   }
 
   return !error_on_missing_field_ || all_required_exist;
@@ -821,6 +825,13 @@ bool Validator::ValidateOpenVPN(base::DictionaryValue* result) {
 bool Validator::ValidateThirdPartyVPN(base::DictionaryValue* result) {
   const bool all_required_exist =
       RequireField(*result, ::onc::third_party_vpn::kExtensionID);
+
+  return !error_on_missing_field_ || all_required_exist;
+}
+
+bool Validator::ValidateARCVPN(base::DictionaryValue* result) {
+  const bool all_required_exist =
+      RequireField(*result, ::onc::arc_vpn::kTunnelChrome);
 
   return !error_on_missing_field_ || all_required_exist;
 }

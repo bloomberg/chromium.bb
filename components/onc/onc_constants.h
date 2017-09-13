@@ -340,6 +340,7 @@ ONC_EXPORT extern const char kOpenVPN[];
 ONC_EXPORT extern const char kPassword[];
 ONC_EXPORT extern const char kSaveCredentials[];
 ONC_EXPORT extern const char kThirdPartyVpn[];
+ONC_EXPORT extern const char kArcVpn[];
 ONC_EXPORT extern const char kTypeL2TP_IPsec[];
 ONC_EXPORT extern const char kType[];
 ONC_EXPORT extern const char kUsername[];
@@ -415,6 +416,10 @@ namespace third_party_vpn {
 ONC_EXPORT extern const char kExtensionID[];
 ONC_EXPORT extern const char kProviderName[];
 }  // third_party_vpn
+
+namespace arc_vpn {
+ONC_EXPORT extern const char kTunnelChrome[];
+}  // namespace arc_vpn
 
 namespace verify_x509 {
 ONC_EXPORT extern const char kName[];

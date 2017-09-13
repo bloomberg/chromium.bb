@@ -322,6 +322,7 @@ void ShillToONCTranslator::TranslateVPN() {
 
   bool save_credentials;
   if (onc_provider_type != ::onc::vpn::kThirdPartyVpn &&
+      onc_provider_type != ::onc::vpn::kArcVpn &&
       shill_dictionary_->GetBooleanWithoutPathExpansion(
           shill::kSaveCredentialsProperty, &save_credentials)) {
     SetNestedOncValue(provider_type_dictionary, ::onc::vpn::kSaveCredentials,
