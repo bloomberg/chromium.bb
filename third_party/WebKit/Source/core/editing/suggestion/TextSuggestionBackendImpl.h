@@ -20,10 +20,11 @@ class CORE_EXPORT TextSuggestionBackendImpl final
   static void Create(LocalFrame*, mojom::blink::TextSuggestionBackendRequest);
 
   void ApplySpellCheckSuggestion(const String& suggestion) final;
+  void ApplyTextSuggestion(int32_t marker_tag, int32_t suggestion_index) final;
   void DeleteActiveSuggestionRange() final;
-  void NewWordAddedToDictionary(const String& word) final;
-  void SpellCheckMenuTimeoutCallback() final;
-  void SuggestionMenuClosed() final;
+  void OnNewWordAddedToDictionary(const String& word) final;
+  void OnSuggestionMenuClosed() final;
+  void SuggestionMenuTimeoutCallback(int32_t max_number_of_suggestions) final;
 
  private:
   explicit TextSuggestionBackendImpl(LocalFrame&);

@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.input;
 import android.support.test.filters.LargeTest;
 import android.view.View;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,17 +28,18 @@ import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.WebContents;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Integration tests for the text suggestion menu.
+ * Integration tests for the spell check menu.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({
         ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
 })
-public class TextSuggestionMenuTest {
+public class SpellCheckMenuTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
@@ -75,7 +75,7 @@ public class TextSuggestionMenuTest {
             @Override
             public boolean isSatisfied() {
                 SuggestionsPopupWindow suggestionsPopupWindow =
-                        cvc.getTextSuggestionHostForTesting().getSuggestionsPopupWindowForTesting();
+                        cvc.getTextSuggestionHostForTesting().getSpellCheckPopupWindowForTesting();
                 if (suggestionsPopupWindow == null) {
                     return false;
                 }
@@ -90,12 +90,22 @@ public class TextSuggestionMenuTest {
         });
 
         TouchCommon.singleClickView(getDeleteButton(cvc));
-        Assert.assertEquals("", DOMUtils.getNodeContents(cvc.getWebContents(), "div"));
+
+        CriteriaHelper.pollInstrumentationThread(Criteria.equals("", new Callable<String>() {
+            @Override
+            public String call() {
+                try {
+                    return DOMUtils.getNodeContents(cvc.getWebContents(), "div");
+                } catch (InterruptedException | TimeoutException e) {
+                    return null;
+                }
+            }
+        }));
     }
 
     private View getDeleteButton(ContentViewCore cvc) {
         View contentView = cvc.getTextSuggestionHostForTesting()
-                                   .getSuggestionsPopupWindowForTesting()
+                                   .getSpellCheckPopupWindowForTesting()
                                    .getContentViewForTesting();
         return contentView.findViewById(R.id.deleteButton);
     }

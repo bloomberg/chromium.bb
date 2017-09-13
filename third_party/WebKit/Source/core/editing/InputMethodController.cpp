@@ -496,11 +496,21 @@ void InputMethodController::AddImeTextSpans(
     if (ephemeral_line_range.IsNull())
       continue;
 
-    GetDocument().Markers().AddCompositionMarker(
-        ephemeral_line_range, ime_text_span.UnderlineColor(),
-        ime_text_span.Thick() ? StyleableMarker::Thickness::kThick
-                              : StyleableMarker::Thickness::kThin,
-        ime_text_span.BackgroundColor());
+    if (ime_text_span.GetType() == ImeTextSpan::Type::kComposition) {
+      GetDocument().Markers().AddCompositionMarker(
+          ephemeral_line_range, ime_text_span.UnderlineColor(),
+          ime_text_span.Thick() ? StyleableMarker::Thickness::kThick
+                                : StyleableMarker::Thickness::kThin,
+          ime_text_span.BackgroundColor());
+    } else if (ime_text_span.GetType() == ImeTextSpan::Type::kSuggestion) {
+      GetDocument().Markers().AddSuggestionMarker(
+          ephemeral_line_range, ime_text_span.Suggestions(),
+          ime_text_span.SuggestionHighlightColor(),
+          ime_text_span.UnderlineColor(),
+          ime_text_span.Thick() ? StyleableMarker::Thickness::kThick
+                                : StyleableMarker::Thickness::kThin,
+          ime_text_span.BackgroundColor());
+    }
   }
 }
 
