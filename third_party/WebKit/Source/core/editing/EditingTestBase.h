@@ -31,6 +31,10 @@ class EditingTestBase : public ::testing::Test {
   EditingTestBase();
   ~EditingTestBase() override;
 
+  // Insert STYLE element with |style_rules|, no need to have "<style>", into
+  // HEAD.
+  void InsertStyleElement(const std::string& style_rules);
+
   // Returns |Position| for specified |caret_text|, which is HTML markup with
   // caret marker "|".
   Position SetCaretTextToBody(const std::string& caret_text);

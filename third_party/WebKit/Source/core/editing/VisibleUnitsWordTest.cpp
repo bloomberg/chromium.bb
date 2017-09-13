@@ -18,13 +18,6 @@ class VisibleUnitsWordTest : public EditingTestBase {
                 StartOfWord(CreateVisiblePosition(position)).DeepEquivalent())
             .Build());
   }
-
-  void InsertStyleElement(const std::string& style_rules) {
-    Element* const style = GetDocument().createElement("style");
-    style->setTextContent(String(style_rules.data(), style_rules.size()));
-    GetDocument().body()->parentNode()->InsertBefore(style,
-                                                     GetDocument().body());
-  }
 };
 
 TEST_F(VisibleUnitsWordTest, StartOfWordBasic) {
