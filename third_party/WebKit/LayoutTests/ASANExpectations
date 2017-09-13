@@ -72,5 +72,3 @@ crbug.com/667560 [ Linux ] virtual/mojo-loading/http/tests/devtools/sources/debu
 # Intentionally failed allocations, via partitionAllocGenericFlags()
 crbug.com/577889 [ Linux ] fast/js/typed-array-allocation-failure.html [ Crash ]
 
-crbug.com/717019 [ Linux ] virtual/gpu/fast/canvas/canvas-clip-rule.html [ Crash ]
-crbug.com/717019 [ Linux ] virtual/gpu/fast/canvas/canvas-path-context-clip.html [ Crash ]
