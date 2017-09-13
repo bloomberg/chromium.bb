@@ -267,6 +267,10 @@ class SmoothnessKeySilkCases(_Smoothness):
                           [story_module.expectations.ALL], 'crbug.com/338838')
         self.DisableStory('inbox_app.html?slide_drawer',
                           [story_module.expectations.ALL], 'crbug.com/446332')
+        self.DisableStory('inbox_app.html?swipe_to_dismiss',
+                          [story_module.expectations.ALL], 'crbug.com/764825')
+        self.DisableStory('masonry.html',
+                          [story_module.expectations.ALL], 'crbug.com/764825')
     return StoryExpectations()
 
 
