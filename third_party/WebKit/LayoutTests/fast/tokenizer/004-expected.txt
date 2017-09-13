@@ -1,5 +1,4 @@
 Variations on type attribute of script tag
-
 These scripts should execute
 no type attribute executed
 empty string executed
@@ -91,7 +90,6 @@ disabled_javascript
 xxxjavascriptxxx
 bogus
 Variations on language attribute of script tag
-
 These scripts should execute
 no language attribute executed
 empty string executed
@@ -154,7 +152,6 @@ disabled_javascript
 xxxjavascriptxxx
 bogus
 Variations on combined type and language attributes of script tag
-
 These scripts should execute
 empty string type, "javascript" language executed
 empty string language, "text/javascript" type executed
