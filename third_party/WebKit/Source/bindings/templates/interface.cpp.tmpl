@@ -189,10 +189,70 @@ static void indexedPropertyDescriptor(uint32_t index, const v8::PropertyCallback
 
 
 {##############################################################################}
+{% block named_property_descriptor %}
+{% if not indexed_property_getter and named_property_getter %}
+static void namedPropertyDescriptor(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  // This function is called when an IDL interface supports named properties
+  // but not indexed properties. When a numeric property is queried, V8 calls
+  // indexedPropertyDescriptorCallback(), which calls this function.
+
+  {% if named_property_getter.is_enumerable %}
+  // Since we initialize our indexed and named property handlers differently
+  // (the former use descriptors and definers, the latter uses a query
+  // callback), we need to inefficiently call the query callback and convert
+  // the v8::PropertyAttribute integer it returns into a v8::PropertyDescriptor
+  // expected by a descriptor callback.
+  // TODO(rakuco): remove this hack once we switch named property handlers to
+  // using descriptor and definer callbacks (bug 764633).
+  const AtomicString& indexAsName = AtomicString::Number(index);
+  {% if named_property_getter.is_custom_property_query %}
+  {{v8_class}}::namedPropertyQueryCustom(indexAsName, info);
+  {% else %}
+  {{cpp_class}}V8Internal::namedPropertyQuery(indexAsName, info);
+  {% endif %}
+  v8::Local<v8::Value> getterValue = info.GetReturnValue().Get();
+  if (!getterValue->IsUndefined()) {
+    DCHECK(getterValue->IsInt32());
+    const int32_t props =
+        getterValue->ToInt32(info.GetIsolate()->GetCurrentContext())
+            .ToLocalChecked()
+            ->Value();
+    v8::PropertyDescriptor desc(V8String(info.GetIsolate(), indexAsName),
+                                !(props & v8::ReadOnly));
+    desc.set_enumerable(!(props & v8::DontEnum));
+    desc.set_configurable(!(props & v8::DontDelete));
+    V8SetReturnValue(info, desc);
+  }
+  {% else %}{# TODO(rakuco): drop this once we remove [NotEnumerable] getters #}
+  // This IDL interface defines a [NotEnumerable] getter. We need to do
+  // something similar to indexedPropertyDescriptor(): call
+  // indexedPropertyGetterCallback, let it end up calling the named property
+  // getter and, if all goes well, we create a v8::PropertyDescriptor with the
+  // right values.
+  {{v8_class_or_partial}}::indexedPropertyGetterCallback(index, info);
+  v8::Local<v8::Value> getterValue = info.GetReturnValue().Get();
+  if (!getterValue->IsUndefined()) {
+    v8::PropertyDescriptor desc(getterValue, {% if named_property_setter %}true{% else %}false{% endif %});
+    desc.set_enumerable(false);
+    desc.set_configurable(true);
+    V8SetReturnValue(info, desc);
+  }
+  {% endif %}
+}
+
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
 {% block indexed_property_descriptor_callback %}
-{% if indexed_property_getter %}
+{% if indexed_property_getter or named_property_getter %}
 void {{v8_class_or_partial}}::indexedPropertyDescriptorCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  {% if indexed_property_getter %}
   {{cpp_class}}V8Internal::indexedPropertyDescriptor(index, info);
+  {% else %}{# The interface only supports named properties. #}
+  {{cpp_class}}V8Internal::namedPropertyDescriptor(index, info);
+  {% endif %}{# indexed_property_getter #}
 }
 
 {% endif %}
@@ -504,7 +564,18 @@ void {{v8_class_or_partial}}::namedPropertyDeleterCallback(v8::Local<v8::Name> n
 {% set getter = named_property_getter %}
 {# If there is an enumerator, there MUST be a query method to properly
    communicate property attributes. #}
+{% if indexed_property_getter %}
 static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
+{% else %}
+{# If we do not have an indexed property getter, this function is called #}
+{# from namedPropertyDescriptor(), whose v8::PropertyCallbackInfo has a #}
+{# v8::Value instead of a v8::Integer. We use this template trick to make #}
+{# the compiler accept the call. #}
+{# TODO(rakuco): remove this hack once we switch named property handlers to #}
+{# using descriptor and definer callbacks (bug 764633). #}
+template <typename T>
+static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallbackInfo<T>& info) {
+{% endif %}
   const CString& nameInUtf8 = name.Utf8();
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kGetterContext, "{{interface_name}}", nameInUtf8.data());
   {% if getter.is_call_with_script_state %}
@@ -831,7 +902,7 @@ for (const auto& attributeConfig : {{method.name}}OriginSafeAttributeConfigurati
        if indexed_property_getter or named_property_setter else 'nullptr' %}
 {% set indexed_property_descriptor_callback =
        '%s::indexedPropertyDescriptorCallback' % v8_class_or_partial
-       if indexed_property_getter else 'nullptr' %}
+       if indexed_property_getter or named_property_getter else 'nullptr' %}
 {% set indexed_property_deleter_callback =
        '%s::indexedPropertyDeleterCallback' % v8_class_or_partial
        if indexed_property_deleter or named_property_deleter else 'nullptr' %}
