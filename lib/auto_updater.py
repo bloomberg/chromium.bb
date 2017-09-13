@@ -933,7 +933,7 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
   REMOTE_LAB_MACHINE_FILE_PATH = '/mnt/stateful_partition/.labmachine'
   KERNEL_A = {'name': 'KERN-A', 'kernel': 2, 'root': 3}
   KERNEL_B = {'name': 'KERN-B', 'kernel': 4, 'root': 5}
-  KERNEL_UPDATE_TIMEOUT = 120
+  KERNEL_UPDATE_TIMEOUT = 180
   # Related to crbug.com/276094: Restore to 5 mins once the 'host did not
   # return from reboot' bug is solved.
   REBOOT_TIMEOUT = 480
