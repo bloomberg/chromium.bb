@@ -23,6 +23,7 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/bookmarks_test_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -46,6 +47,24 @@ using chrome_test_util::PrimarySignInButton;
 using chrome_test_util::SecondarySignInButton;
 
 namespace {
+
+// GURL for the testing bookmark "First URL".
+const GURL getFirstURL() {
+  return web::test::HttpServer::MakeUrl(
+      "http://ios/testing/data/http_server_files/pony.html");
+}
+
+// GURL for the testing bookmark "Second URL".
+const GURL getSecondURL() {
+  return web::test::HttpServer::MakeUrl(
+      "http://ios/testing/data/http_server_files/destination.html");
+}
+
+// GURL for the testing bookmark "French URL".
+const GURL getFrenchURL() {
+  return web::test::HttpServer::MakeUrl("http://www.a.fr/");
+}
+
 // Matcher for the Delete button on the bookmarks UI.
 id<GREYMatcher> BookmarksDeleteSwipeButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_BOOKMARK_ACTION_DELETE);
@@ -580,6 +599,66 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
                                           IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
       assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+- (void)testContextMenuForMultipleURLOpenAll {
+  if (IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
+  }
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
+
+  [BookmarksNewGenTestCase setupStandardBookmarks];
+  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksNewGenTestCase openMobileBookmarks];
+
+  // Change to edit mode
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          @"context_bar_trailing_button")]
+      performAction:grey_tap()];
+
+  // Select URLs.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL")]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"French URL")]
+      performAction:grey_tap()];
+
+  // Tap context menu.
+  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarMoreString])]
+      performAction:grey_tap()];
+
+  // Tap on Open All.
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN)]
+      performAction:grey_tap()];
+
+  // Verify there are 3 tabs.
+  [ChromeEarlGrey waitForMainTabCount:3];
+  [ChromeEarlGrey waitForIncognitoTabCount:0];
+
+  // The following verifies the selected bookmarks are open in the same order as
+  // in folder.
+
+  // Verify "French URL" appears in the omnibox.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
+                                          getFrenchURL().GetContent())]
+      assertWithMatcher:grey_notNil()];
+
+  // Switch to the 2nd Tab and verify "Second URL" appears.
+  chrome_test_util::SelectTabAtIndexInCurrentMode(1);
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
+                                          getSecondURL().GetContent())]
+      assertWithMatcher:grey_notNil()];
+
+  // Switch to the 3rd Tab and verify "First URL" appears.
+  chrome_test_util::SelectTabAtIndexInCurrentMode(2);
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
+                                          getFirstURL().GetContent())]
+      assertWithMatcher:grey_notNil()];
 }
 
 - (void)testContextBarForSingleFolderSelection {
@@ -1590,22 +1669,17 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       ios::BookmarkModelFactory::GetForBrowserState(
           chrome_test_util::GetOriginalBrowserState());
 
-  const GURL firstURL = web::test::HttpServer::MakeUrl(
-      "http://ios/testing/data/http_server_files/pony.html");
   NSString* firstTitle = @"First URL";
   bookmark_model->AddURL(bookmark_model->mobile_node(), 0,
-                         base::SysNSStringToUTF16(firstTitle), firstURL);
+                         base::SysNSStringToUTF16(firstTitle), getFirstURL());
 
-  const GURL secondURL = web::test::HttpServer::MakeUrl(
-      "http://ios/testing/data/http_server_files/destination.html");
   NSString* secondTitle = @"Second URL";
   bookmark_model->AddURL(bookmark_model->mobile_node(), 0,
-                         base::SysNSStringToUTF16(secondTitle), secondURL);
+                         base::SysNSStringToUTF16(secondTitle), getSecondURL());
 
-  const GURL frenchURL = web::test::HttpServer::MakeUrl("http://www.a.fr/");
   NSString* frenchTitle = @"French URL";
   bookmark_model->AddURL(bookmark_model->mobile_node(), 0,
-                         base::SysNSStringToUTF16(frenchTitle), frenchURL);
+                         base::SysNSStringToUTF16(frenchTitle), getFrenchURL());
 
   NSString* folderTitle = @"Folder 1";
   const bookmarks::BookmarkNode* folder1 = bookmark_model->AddFolder(
