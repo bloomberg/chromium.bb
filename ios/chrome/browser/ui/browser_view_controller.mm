@@ -2419,32 +2419,12 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
 #pragma mark - External files
 
-- (NSSet*)referencedExternalFiles {
-  NSSet* filesReferencedByTabs = [_model currentlyReferencedExternalFiles];
-
-  // TODO(noyau): this is incorrect, the caller should know that the model is
-  // not loaded yet.
-  if (!_bookmarkModel || !_bookmarkModel->loaded())
-    return filesReferencedByTabs;
-
-  std::vector<bookmarks::BookmarkModel::URLAndTitle> bookmarks;
-  _bookmarkModel->GetBookmarks(&bookmarks);
-  NSMutableSet* bookmarkedFiles = [NSMutableSet set];
-  for (const auto& bookmark : bookmarks) {
-    GURL bookmarkUrl = bookmark.url;
-    if (UrlIsExternalFileReference(bookmarkUrl)) {
-      [bookmarkedFiles
-          addObject:base::SysUTF8ToNSString(bookmarkUrl.ExtractFileName())];
-    }
-  }
-  return [filesReferencedByTabs setByAddingObjectsFromSet:bookmarkedFiles];
-}
-
 - (void)removeExternalFilesImmediately:(BOOL)immediately
                      completionHandler:(ProceduralBlock)completionHandler {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   DCHECK(!_isOffTheRecord);
-  _externalFileRemover.reset(new ExternalFileRemover(self));
+  _externalFileRemover =
+      std::make_unique<ExternalFileRemover>(self.browserState);
   // Delay the cleanup of the unreferenced files received from other apps
   // to not impact startup performance.
   int delay = immediately ? 0 : kExternalFilesCleanupDelaySeconds;

@@ -142,10 +142,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 // Dismisses all presented views then calls |completion|.
 - (void)clearPresentedStateWithCompletion:(ProceduralBlock)completion;
 
-// Returns a set with the names of the files received from other applications
-// that are bookmarked or referenced by an open or recently closed tab.
-- (NSSet*)referencedExternalFiles;
-
 // Removes files received from other applications. If |immediately| is YES,
 // initiates the removal of files immediately. |completionHandler| is called
 // when files have been removed.
