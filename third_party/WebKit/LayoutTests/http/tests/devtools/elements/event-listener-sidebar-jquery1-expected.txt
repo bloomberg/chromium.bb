@@ -8,25 +8,25 @@ Inspect Me
     useCapture: true
     passive: false
     once: false
-    handler: function (){ console.log("second jquery"); }
+    handler: function(){ console.log("second jquery"); }
 == FrameworkUser
 [expanded] button#nodeRemoveevent-listener-sidebar-jquery1.html:10
     useCapture: true
     passive: false
     once: false
-    handler: function (){ console.log("first jquery"); }
+    handler: function(){ console.log("first jquery"); }
 == Raw
 [expanded] button#nodeRemoveevent-listener-sidebar-jquery1.html:12
     useCapture: false
     passive: false
     once: false
-    handler: function () { console.log("addEventListener"); }
+    handler: function() { console.log("addEventListener"); }
 == Framework
 [expanded] button#nodeRemovejquery-1.11.3.min.js:4
     useCapture: false
     passive: false
     once: false
-    handler: function (a){return typeof m===K||a&&m.event.triggered===a.type?void 0:m.event.dispatch.apply(k.elem,arguments)}
+    handler: function(a){return typeof m===K||a&&m.event.triggered===a.type?void 0:m.event.dispatch.apply(k.elem,arguments)}
 
 ======== load ========
 == Raw

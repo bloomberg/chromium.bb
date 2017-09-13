@@ -4,20 +4,20 @@ CONSOLE MESSAGE: line 24: async function asyncSimple() {}
 CONSOLE MESSAGE: line 25: async function asyncSimple() {}
 CONSOLE MESSAGE: line 24: function* genSimple() {}
 CONSOLE MESSAGE: line 25: function* genSimple() {}
-CONSOLE MESSAGE: line 24: function (){}
-CONSOLE MESSAGE: line 25: function (){}
-CONSOLE MESSAGE: line 24: function (x, y){}
-CONSOLE MESSAGE: line 25: function (x, y){}
+CONSOLE MESSAGE: line 24: function(){}
+CONSOLE MESSAGE: line 25: function(){}
+CONSOLE MESSAGE: line 24: function(x, y){}
+CONSOLE MESSAGE: line 25: function(x, y){}
 CONSOLE MESSAGE: line 24: function namedArgs(x) {}
 CONSOLE MESSAGE: line 25: function namedArgs(x) {}
 CONSOLE MESSAGE: line 24: function namedArgs2(x, y) {}
 CONSOLE MESSAGE: line 25: function namedArgs2(x, y) {}
 CONSOLE MESSAGE: line 24: function ({}) {}
 CONSOLE MESSAGE: line 25: function ({}) {}
-CONSOLE MESSAGE: line 24: function* whitespace(  x  )    {   }
-CONSOLE MESSAGE: line 25: function* whitespace(  x  )    {   }
-CONSOLE MESSAGE: line 24: async function whitespace2(  x  ,  y  ,  z  )    {   }
-CONSOLE MESSAGE: line 25: async function whitespace2(  x  ,  y  ,  z  )    {   }
+CONSOLE MESSAGE: line 24: function   *    whitespace   (  x  )    {   }
+CONSOLE MESSAGE: line 25: function   *    whitespace   (  x  )    {   }
+CONSOLE MESSAGE: line 24: async    function    whitespace2   (  x  ,  y  ,  z  )    {   }
+CONSOLE MESSAGE: line 25: async    function    whitespace2   (  x  ,  y  ,  z  )    {   }
 CONSOLE MESSAGE: line 28: [object Object]
 CONSOLE MESSAGE: line 29: [object Object]
 Tests that console logging different types of functions correctly.
@@ -102,8 +102,8 @@ console-functions.html:25 ƒ anonymous({})
     __proto__: ƒ ()
     [[FunctionLocation]]: console-functions.html:17
     [[Scopes]]: Scopes[1]
-console-functions.html:24 ƒ* whitespace(  x  )    {   }
-console-functions.html:25 ƒ* whitespace(  x  )
+console-functions.html:24 ƒ *    whitespace   (  x  )    {   }
+console-functions.html:25 ƒ *    whitespace(  x  )
     arguments: (...)
     caller: (...)
     length: 1
@@ -113,7 +113,7 @@ console-functions.html:25 ƒ* whitespace(  x  )
     [[FunctionLocation]]: console-functions.html:18
     [[IsGenerator]]: true
     [[Scopes]]: Scopes[1]
-console-functions.html:24 async ƒ whitespace2(  x  ,  y  ,  z  )    {   }
+console-functions.html:24 async ƒ whitespace2   (  x  ,  y  ,  z  )    {   }
 console-functions.html:25 async ƒ whitespace2(  x  ,  y  ,  z  )
     arguments: (...)
     caller: (...)
@@ -131,7 +131,7 @@ console-functions.html:28 Object
     func5: ƒ namedArgs(x)
     func6: ƒ namedArgs2(x, y)
     func7: ƒ ({})
-    func8: ƒ* whitespace(  x  )
+    func8: ƒ *    whitespace(  x  )
     func9: async ƒ whitespace2(  x  ,  y  ,  z  )
     __proto__: Object
 console-functions.html:29 Object
@@ -143,7 +143,7 @@ console-functions.html:29 Object
     func5: ƒ namedArgs(x)
     func6: ƒ namedArgs2(x, y)
     func7: ƒ ({})
-    func8: ƒ* whitespace(  x  )
+    func8: ƒ *    whitespace(  x  )
     func9: async ƒ whitespace2(  x  ,  y  ,  z  )
     __proto__: Object
 
