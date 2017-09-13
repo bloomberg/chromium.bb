@@ -9,6 +9,7 @@
 
 @class CollectionViewFooterItem;
 @class CollectionViewItem;
+@class PaymentsTextItem;
 
 // Data source protocol for PaymentRequestViewController.
 @protocol PaymentRequestViewControllerDataSource
@@ -36,7 +37,7 @@
 - (CollectionViewItem*)paymentSummaryItem;
 
 // Returns the header item for the Shipping section.
-- (CollectionViewItem*)shippingSectionHeaderItem;
+- (PaymentsTextItem*)shippingSectionHeaderItem;
 
 // Returns the Shipping Address item displayed in the Shipping section.
 - (CollectionViewItem*)shippingAddressItem;
@@ -45,13 +46,13 @@
 - (CollectionViewItem*)shippingOptionItem;
 
 // Returns the header item for the Payment Method section.
-- (CollectionViewItem*)paymentMethodSectionHeaderItem;
+- (PaymentsTextItem*)paymentMethodSectionHeaderItem;
 
 // Returns the item displayed in the Payment Method section.
 - (CollectionViewItem*)paymentMethodItem;
 
 // Returns the header item for the Contact Info section.
-- (CollectionViewItem*)contactInfoSectionHeaderItem;
+- (PaymentsTextItem*)contactInfoSectionHeaderItem;
 
 // Returns the item displayed in the Contact Info section.
 - (CollectionViewItem*)contactInfoItem;
