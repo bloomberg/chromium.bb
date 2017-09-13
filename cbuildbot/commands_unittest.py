@@ -1081,25 +1081,6 @@ class BuildTarballTests(cros_build_lib_unittest.RunCommandTempDirTestCase):
                      constants.AUTOTEST_BUILD_PATH, '..'))
     self._tarball_dir = self.tempdir
 
-  def testBuildAUTestTarball(self):
-    """Tests that our call to generate an au test tarball is correct."""
-    archive_url = 'gs://mytest/path/version'
-    with mock.patch.object(commands, 'BuildTarball') as m:
-      tarball_path = commands.BuildAUTestTarball(
-          self._buildroot, self._board, self._tarball_dir, 'R26-3928.0.0',
-          archive_url)
-      m.assert_called_once_with(self._buildroot, ['autotest/au_control_files'],
-                                os.path.join(self._tarball_dir,
-                                             'au_control.tar.bz2'),
-                                cwd=self._tarball_dir)
-
-      self.assertEquals(os.path.join(self._tarball_dir, 'au_control.tar.bz2'),
-                        tarball_path)
-
-    # Full release test with partial args defined.
-    self.assertCommandContains(['site_utils/autoupdate/full_release_test.py',
-                                '--archive_url', archive_url, '3928.0.0',
-                                self._board])
 
   def testBuildFullAutotestTarball(self):
     """Tests that our call to generate the full autotest tarball is correct."""

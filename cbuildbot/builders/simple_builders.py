@@ -143,8 +143,6 @@ class SimpleBuilder(generic_builders.Builder):
       stage_class = None
       if suite_config.async:
         stage_class = test_stages.ASyncHWTestStage
-      elif suite_config.suite == constants.HWTEST_AU_SUITE:
-        stage_class = test_stages.AUTestStage
       else:
         stage_class = test_stages.HWTestStage
 
