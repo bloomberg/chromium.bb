@@ -9141,7 +9141,7 @@ static void hasMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   }
 
   int32_t key;
-  key = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), info[0], exceptionState, kNormalConversion);
+  key = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), info[0], exceptionState, kEnforceRange);
   if (exceptionState.HadException())
     return;
 
@@ -9165,7 +9165,7 @@ static void getMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   }
 
   int32_t key;
-  key = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), info[0], exceptionState, kNormalConversion);
+  key = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), info[0], exceptionState, kEnforceRange);
   if (exceptionState.HadException())
     return;
 
@@ -9189,7 +9189,7 @@ static void deleteMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   }
 
   int32_t key;
-  key = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), info[0], exceptionState, kNormalConversion);
+  key = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), info[0], exceptionState, kEnforceRange);
   if (exceptionState.HadException())
     return;
 
@@ -9214,7 +9214,7 @@ static void setMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   int32_t key;
   StringOrDouble value;
-  key = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), info[0], exceptionState, kNormalConversion);
+  key = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), info[0], exceptionState, kEnforceRange);
   if (exceptionState.HadException())
     return;
 
