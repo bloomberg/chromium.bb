@@ -12,7 +12,6 @@ import posixpath
 import random
 import re
 import shlex
-import subprocess
 import sys
 
 import devil_chromium
@@ -32,6 +31,7 @@ with devil_env.SysPath(os.path.join(os.path.dirname(__file__), '..', '..',
 
 from incremental_install import installer
 from pylib import constants
+from pylib.symbols import deobfuscator
 
 
 def _Colorize(color, text):
@@ -354,7 +354,15 @@ def _RunDiskUsage(devices, package_name, verbose):
     print 'Total: %skb (%.1fmb)' % (total, total / 1024.0)
 
 
-def _RunLogcat(device, package_name, verbose):
+def _RunLogcat(device, package_name, verbose, mapping_path):
+  if mapping_path:
+    try:
+      deobfuscate = deobfuscator.Deobfuscator(mapping_path)
+    except OSError:
+      sys.stderr.write('Error executing "bin/java_deobfuscate". '
+                       'Did you forget to build it?\n')
+      sys.exit(1)
+
   def get_my_pids():
     my_pids = []
     for pids in device.GetPids(package_name).values():
@@ -363,46 +371,52 @@ def _RunLogcat(device, package_name, verbose):
 
   def process_line(line, fast=False):
     if verbose:
-      if not fast:
-        sys.stdout.write(line)
+      if fast:
+        return
     else:
-      if line.startswith('------'):
+      if not line or line.startswith('------'):
         return
       tokens = line.split(None, 4)
       pid = int(tokens[2])
       priority = tokens[4]
       if pid in my_pids or (not fast and priority == 'F'):
-        sys.stdout.write(line)
+        pass  # write
       elif pid in not_my_pids:
         return
       elif fast:
         # Skip checking whether our package spawned new processes.
         not_my_pids.add(pid)
+        return
       else:
         # Check and add the pid if it is a new one from our package.
         my_pids.update(get_my_pids())
-        if pid in my_pids:
-          sys.stdout.write(line)
-        else:
+        if pid not in my_pids:
           not_my_pids.add(pid)
+          return
+    if mapping_path:
+      line = '\n'.join(deobfuscate.TransformLines([line.rstrip()])) + '\n'
+    sys.stdout.write(line)
 
-  adb_path = adb_wrapper.AdbWrapper.GetAdbPath()
-  cmd = [adb_path, '-s', device.serial, 'logcat', '-v', 'threadtime']
-  process = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=1)
-  my_pids = set(get_my_pids())
-  not_my_pids = set()
-
-  nonce = 'apk_wrappers.py nonce={}'.format(random.random())
-  device.RunShellCommand(['log', nonce])
-  fast = True
   try:
-    while True:
-      line = process.stdout.readline()
-      process_line(line, fast)
+    my_pids = set(get_my_pids())
+    not_my_pids = set()
+
+    nonce = 'apk_wrappers.py nonce={}'.format(random.random())
+    device.RunShellCommand(['log', nonce])
+    fast = True
+    for line in device.adb.Logcat(logcat_format='threadtime'):
+      try:
+        process_line(line, fast)
+      except:
+        sys.stderr.write('Failed to process line: ' + line)
+        raise
       if fast and nonce in line:
         fast = False
   except KeyboardInterrupt:
-    process.terminate()
+    pass  # Don't show stack trace upon Ctrl-C
+  finally:
+    if mapping_path:
+      deobfuscate.Close()
 
 
 def _RunPs(devices, package_name):
@@ -788,8 +802,20 @@ class _LogcatCommand(_Command):
   calls_exec = True
 
   def Run(self):
+    mapping = self.args.proguard_mapping_path
+    if self.args.no_deobfuscate:
+      mapping = None
     _RunLogcat(self.devices[0], self.args.package_name,
-               bool(self.args.verbose_count))
+               bool(self.args.verbose_count), mapping)
+
+  def _RegisterExtraArgs(self, group):
+    if self._from_wrapper_script:
+      group.add_argument('--no-deobfuscate', action='store_true',
+          help='Disables ProGuard deobfuscation of logcat.')
+    else:
+      group.set_defaults(no_deobfuscate=False)
+      group.add_argument('--proguard-mapping-path',
+          help='Path to ProGuard map (enables deobfuscation)')
 
 
 class _PsCommand(_Command):
@@ -913,7 +939,7 @@ def _RunInternal(parser, output_directory=None):
 # TODO(agrieve): Remove =None from target_cpu on or after October 2017.
 #     It exists only so that stale wrapper scripts continue to work.
 def Run(output_directory, apk_path, incremental_json, command_line_flags_file,
-        target_cpu=None):
+        target_cpu, proguard_mapping_path):
   """Entry point for generated wrapper scripts."""
   constants.SetOutputDirectory(output_directory)
   devil_chromium.Initialize(output_directory=output_directory)
@@ -923,7 +949,8 @@ def Run(output_directory, apk_path, incremental_json, command_line_flags_file,
       command_line_flags_file=command_line_flags_file,
       target_cpu=target_cpu,
       apk_path=exists_or_none(apk_path),
-      incremental_json=exists_or_none(incremental_json))
+      incremental_json=exists_or_none(incremental_json),
+      proguard_mapping_path=proguard_mapping_path)
   _RunInternal(parser, output_directory=output_directory)
 
 
@@ -933,4 +960,4 @@ def main():
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  main()
