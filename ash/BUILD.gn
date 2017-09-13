@@ -1160,21 +1160,40 @@ test("ash_content_unittests") {
   ]
 }
 
-# This target includes the tests that are run by both ash and mash. Eventually
-# the majority of tests in |ash_unittests| should move here.
-source_set("common_unittests") {
-  testonly = true
+test("ash_unittests") {
   sources = [
     "accelerators/accelerator_commands_unittest.cc",
     "accelerators/accelerator_controller_unittest.cc",
     "accelerators/accelerator_filter_unittest.cc",
     "accelerators/accelerator_table_unittest.cc",
+    "accelerators/magnifier_key_scroller_unittest.cc",
     "accelerators/spoken_feedback_toggler_unittest.cc",
     "accessibility/accessibility_controller_unittest.cc",
+    "app_list/app_list_presenter_delegate_unittest.cc",
     "ash_touch_exploration_manager_chromeos_unittest.cc",
     "autoclick/autoclick_unittest.cc",
+    "dip_unittest.cc",
+    "display/cursor_window_controller_unittest.cc",
+    "display/display_color_manager_chromeos_unittest.cc",
     "display/display_configuration_controller_unittest.cc",
+    "display/display_error_observer_chromeos_unittest.cc",
+    "display/display_manager_unittest.cc",
+    "display/display_util_unittest.cc",
+    "display/extended_mouse_warp_controller_unittest.cc",
+    "display/mirror_window_controller_unittest.cc",
+    "display/mouse_cursor_event_filter_unittest.cc",
+    "display/projecting_observer_chromeos_unittest.cc",
+    "display/resolution_notification_controller_unittest.cc",
+    "display/root_window_transformers_unittest.cc",
+    "display/screen_ash_unittest.cc",
+    "display/screen_position_controller_unittest.cc",
+    "display/touch_calibrator_controller_unittest.cc",
+    "display/unified_mouse_warp_controller_unittest.cc",
+    "display/window_tree_host_manager_unittest.cc",
+    "drag_drop/drag_drop_controller_unittest.cc",
+    "drag_drop/drag_drop_tracker_unittest.cc",
     "drag_drop/drag_image_view_unittest.cc",
+    "extended_desktop_unittest.cc",
     "fast_ink/fast_ink_points_unittest.cc",
     "first_run/first_run_helper_unittest.cc",
     "focus_cycler_unittest.cc",
@@ -1201,6 +1220,8 @@ source_set("common_unittests") {
     "login/ui/login_test_utils.cc",
     "login/ui/login_test_utils.h",
     "login/ui/login_user_view_unittest.cc",
+    "magnifier/magnification_controller_unittest.cc",
+    "magnifier/partial_magnification_controller_unittest.cc",
     "metrics/desktop_task_switch_metric_recorder_unittest.cc",
     "metrics/pointer_metrics_recorder_unittest.cc",
     "metrics/task_switch_metrics_recorder_unittest.cc",
@@ -1208,6 +1229,7 @@ source_set("common_unittests") {
     "metrics/user_metrics_recorder_unittest.cc",
     "mus/window_manager_common_unittests.cc",
     "mus_property_mirror_ash_unittest.cc",
+    "pointer_watcher_adapter_classic_unittest.cc",
     "root_window_controller_unittest.cc",
     "rotator/screen_rotation_animation_unittest.cc",
     "rotator/screen_rotation_animator_unittest.cc",
@@ -1263,6 +1285,8 @@ source_set("common_unittests") {
     "system/power/tablet_power_button_controller_unittest.cc",
     "system/power/tray_power_unittest.cc",
     "system/power/video_activity_notifier_unittest.cc",
+    "system/rotation/tray_rotation_lock_unittest.cc",
+    "system/screen_layout_observer_unittest.cc",
     "system/screen_security/screen_tray_item_unittest.cc",
     "system/session/logout_button_tray_unittest.cc",
     "system/session/logout_confirmation_controller_unittest.cc",
@@ -1287,30 +1311,43 @@ source_set("common_unittests") {
     "system/web_notification/login_state_notification_blocker_unittest.cc",
     "system/web_notification/web_notification_tray_unittest.cc",
     "test/ash_test_helper_unittest.cc",
+    "test/ash_unittests.cc",
     "tooltips/tooltip_controller_unittest.cc",
+    "touch/touch_observer_hud_unittest.cc",
     "tray_action/test_tray_action_client.cc",
     "tray_action/test_tray_action_client.h",
     "tray_action/tray_action_unittest.cc",
+    "utility/screenshot_controller_unittest.cc",
+    "virtual_keyboard_controller_unittest.cc",
     "wallpaper/wallpaper_controller_unittest.cc",
     "window_user_data_unittest.cc",
+    "wm/always_on_top_controller_unittest.cc",
     "wm/ash_focus_rules_unittest.cc",
     "wm/container_finder_unittest.cc",
+    "wm/drag_window_resizer_unittest.cc",
+    "wm/gestures/overview_gesture_handler_unittest.cc",
     "wm/immersive_fullscreen_controller_unittest.cc",
+    "wm/lock_action_handler_layout_manager_unittest.cc",
+    "wm/lock_layout_manager_unittest.cc",
     "wm/lock_state_controller_unittest.cc",
     "wm/mru_window_tracker_unittest.cc",
+    "wm/native_cursor_manager_ash_unittest.cc",
     "wm/overlay_event_filter_unittest.cc",
     "wm/overview/cleanup_animation_observer_unittest.cc",
     "wm/overview/window_selector_unittest.cc",
     "wm/panels/panel_layout_manager_unittest.cc",
     "wm/panels/panel_window_resizer_unittest.cc",
+    "wm/resize_shadow_and_cursor_unittest.cc",
     "wm/root_window_layout_manager_unittest.cc",
     "wm/screen_dimmer_unittest.cc",
     "wm/screen_pinning_controller_unittest.cc",
     "wm/session_state_animator_impl_unittest.cc",
     "wm/splitview/split_view_controller_unittest.cc",
     "wm/stacking_controller_unittest.cc",
+    "wm/system_gesture_event_filter_unittest.cc",
     "wm/system_modal_container_layout_manager_unittest.cc",
     "wm/tablet_mode/accelerometer_test_data_literals.cc",
+    "wm/tablet_mode/tablet_mode_controller_unittest.cc",
     "wm/tablet_mode/tablet_mode_window_manager_unittest.cc",
     "wm/tablet_mode/touchpad_and_keyboard_disabler_unittest.cc",
     "wm/toplevel_window_event_handler_unittest.cc",
@@ -1323,156 +1360,12 @@ source_set("common_unittests") {
     "wm/window_state_unittest.cc",
     "wm/window_util_unittest.cc",
     "wm/workspace/magnetism_matcher_unittest.cc",
+    "wm/workspace/multi_window_resize_controller_unittest.cc",
     "wm/workspace/workspace_event_handler_unittest.cc",
+    "wm/workspace/workspace_layout_manager_keyboard_unittest.cc",
     "wm/workspace/workspace_layout_manager_unittest.cc",
     "wm/workspace/workspace_window_resizer_unittest.cc",
     "wm/workspace_controller_unittest.cc",
-  ]
-  deps = [
-    ":test_support_without_content",
-    "//ash",
-    "//ash/mus:lib",
-    "//ash/public/cpp:ash_public_cpp",
-    "//ash/public/cpp:unit_tests",
-    "//ash/resources/vector_icons",
-    "//base",
-    "//base/test:test_support",
-    "//chromeos",
-    "//chromeos:power_manager_proto",
-    "//chromeos:test_support",
-    "//chromeos:test_support_without_gmock",
-    "//components/prefs:test_support",
-    "//components/session_manager/core",
-    "//components/user_manager:test_support",
-    "//device/bluetooth",
-    "//services/ui/public/interfaces",
-    "//testing/gmock",
-    "//ui/accessibility",
-    "//ui/app_list/presenter",
-    "//ui/app_list/presenter:test_support",
-    "//ui/aura",
-    "//ui/aura:test_support",
-    "//ui/base",
-    "//ui/base:test_support",
-    "//ui/chromeos/events",
-    "//ui/compositor:test_support",
-    "//ui/display",
-    "//ui/events:test_support",
-    "//ui/gfx:test_support",
-    "//ui/keyboard",
-    "//ui/keyboard:test_support",
-    "//ui/message_center",
-    "//ui/message_center:test_support",
-    "//ui/message_center/public/cpp",
-    "//ui/views",
-    "//ui/views:test_support",
-    "//ui/wm",
-    "//ui/wm:test_support",
-    "//ui/wm/public",
-  ]
-  public_deps = [
-    ":test_support_without_content",
-  ]
-}
-
-test("ash_unittests") {
-  sources = [
-    # TODO: move to common_unittests. Fails because of http://crbug.com/557401.
-    "accelerators/magnifier_key_scroller_unittest.cc",
-
-    # Specific to classic-ash.
-    "app_list/app_list_presenter_delegate_unittest.cc",
-    "pointer_watcher_adapter_classic_unittest.cc",
-
-    # TODO: decide if this needs to be ported. http://crbug.com/695566.
-    "dip_unittest.cc",
-
-    # TODO: tests in display generally use display_manger(), which doesn't
-    # exist in mash. Decide which of these tests need to be ported to mash.
-    # http://crbug.com/695569
-    "display/cursor_window_controller_unittest.cc",
-    "display/display_color_manager_chromeos_unittest.cc",
-    "display/display_error_observer_chromeos_unittest.cc",
-    "display/display_manager_unittest.cc",
-    "display/display_util_unittest.cc",
-    "display/extended_mouse_warp_controller_unittest.cc",
-    "display/mirror_window_controller_unittest.cc",
-    "display/mouse_cursor_event_filter_unittest.cc",
-    "display/projecting_observer_chromeos_unittest.cc",
-    "display/resolution_notification_controller_unittest.cc",
-    "display/root_window_transformers_unittest.cc",
-    "display/screen_ash_unittest.cc",
-    "display/screen_position_controller_unittest.cc",
-    "display/touch_calibrator_controller_unittest.cc",
-    "display/unified_mouse_warp_controller_unittest.cc",
-    "display/window_tree_host_manager_unittest.cc",
-
-    # These exercise classic-ash specific functionality.
-    "drag_drop/drag_drop_controller_unittest.cc",
-    "drag_drop/drag_drop_tracker_unittest.cc",
-
-    # TODO: port to mash. http://crbug.com/695570.
-    "extended_desktop_unittest.cc",
-
-    # TODO: magnifier not supported in mash. http://crbug.com/647438.
-    "magnifier/magnification_controller_unittest.cc",
-    "magnifier/partial_magnification_controller_unittest.cc",
-
-    # TODO: investigate failure in mash, http://crbug.com/695887.
-    "system/rotation/tray_rotation_lock_unittest.cc",
-
-    # TODO: fails as ScreenLayoutObserver is not installed in mash,
-    # http://crbug.com/696752.
-    "system/screen_layout_observer_unittest.cc",
-    "test/ash_unittests.cc",
-
-    # TODO(riajiang): port to work with mash. http://crbug.com/698032.
-    "touch/touch_observer_hud_unittest.cc",
-
-    # TODO(moshayedi): port to work with mash. http://crbug.com/698033.
-    "utility/screenshot_controller_unittest.cc",
-
-    # TODO: keyboard is not enabled in mash. http://crbug.com/648733.
-    "virtual_keyboard_controller_unittest.cc",
-
-    # TODO: keyboard is not enabled in mash. http://crbug.com/648733.
-    "wm/always_on_top_controller_unittest.cc",
-
-    # TODO: mash doesn't support CursorManager. http://crbug.com/631103.
-    "wm/native_cursor_manager_ash_unittest.cc",
-
-    # TODO: mash doesn't support DragWindowResizer. http://crbug.com/633782.
-    "wm/drag_window_resizer_unittest.cc",
-
-    # TODO: mash doesn't support OverviewGestureHandler.
-    # http://crbug.com/634994.
-    "wm/gestures/overview_gesture_handler_unittest.cc",
-
-    # TODO: fails because keyboard is not enabled in mash.
-    # http://crbug.com/648733.
-    "wm/lock_action_handler_layout_manager_unittest.cc",
-
-    # TODO: fails because keyboard is not enabled in mash.
-    # http://crbug.com/648733.
-    "wm/lock_layout_manager_unittest.cc",
-
-    # TODO: investigate failures in mash. http://crbug.com/698092.
-    "wm/tablet_mode/tablet_mode_controller_unittest.cc",
-
-    # TODO: mash doesn't support CursorManager. http://crbug.com/631103.
-    "wm/resize_shadow_and_cursor_unittest.cc",
-
-    # TODO: mash doesn't support SetFirstDisplayAsInternalDisplay(), which all
-    # the tests in this file use. http://crbug.com/698091.
-    "wm/system_gesture_event_filter_unittest.cc",
-
-    # TODO: MultiWindowResizeControllerTests fail in mash.
-    # http://crbug.com/699172.
-    "wm/workspace/multi_window_resize_controller_unittest.cc",
-
-    # TODO: fails because the virtual keyboard is not enabled in mash.
-    # http://crbug.com/648733.
-    "wm/workspace/workspace_layout_manager_keyboard_unittest.cc",
   ]
   configs += [
     "//build/config:precompiled_headers",
@@ -1481,10 +1374,11 @@ test("ash_unittests") {
 
   deps = [
     ":ash",
-    ":common_unittests",
     ":test_support_without_content",
     "//ash/autoclick/common:autoclick",
+    "//ash/mus:lib",
     "//ash/public/cpp:ash_public_cpp",
+    "//ash/public/cpp:unit_tests",
     "//ash/resources",
     "//ash/resources/vector_icons",
     "//ash/strings",
@@ -1492,10 +1386,15 @@ test("ash_unittests") {
     "//base",
     "//base/test:test_support",
     "//chromeos",
+    "//chromeos:power_manager_proto",
+    "//chromeos:test_support",
     "//chromeos:test_support_without_gmock",
+    "//components/prefs:test_support",
     "//components/quirks",
+    "//components/session_manager/core",
     "//components/signin/core/account_id",
     "//components/user_manager",
+    "//components/user_manager:test_support",
     "//device/bluetooth",
     "//mojo/edk/system",
     "//net:net",
@@ -1514,6 +1413,7 @@ test("ash_unittests") {
     "//ui/base:test_support",
     "//ui/base/ime",
     "//ui/chromeos",
+    "//ui/chromeos/events",
     "//ui/compositor",
     "//ui/compositor:test_support",
     "//ui/display",
@@ -1524,17 +1424,20 @@ test("ash_unittests") {
     "//ui/events:test_support",
     "//ui/events/devices",
     "//ui/gfx",
+    "//ui/gfx:test_support",
     "//ui/gfx/geometry",
     "//ui/gl:test_support",
     "//ui/keyboard",
     "//ui/keyboard:test_support",
     "//ui/message_center",
+    "//ui/message_center:test_support",
     "//ui/message_center/public/cpp",
     "//ui/resources",
     "//ui/strings",
     "//ui/views",
     "//ui/views:test_support",
     "//ui/wm",
+    "//ui/wm:test_support",
     "//ui/wm/public",
     "//url",
   ]
