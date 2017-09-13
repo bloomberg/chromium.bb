@@ -629,23 +629,7 @@ STDMETHODIMP BrowserAccessibilityComWin::addSelection(LONG start_offset,
 }
 
 STDMETHODIMP BrowserAccessibilityComWin::removeSelection(LONG selection_index) {
-  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_REMOVE_SELECTION);
-  AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!owner())
-    return E_FAIL;
-
-  if (selection_index != 0)
-    return E_INVALIDARG;
-
-  // Simply collapse the selection to the position of the caret if a caret is
-  // visible, otherwise set the selection to 0.
-  LONG caret_offset = 0;
-  int selection_start, selection_end;
-  GetSelectionOffsets(&selection_start, &selection_end);
-  if (owner()->HasCaret() && selection_end >= 0)
-    caret_offset = selection_end;
-  SetIA2HypertextSelection(caret_offset, caret_offset);
-  return S_OK;
+  return AXPlatformNodeWin::removeSelection(selection_index);
 }
 
 STDMETHODIMP BrowserAccessibilityComWin::setCaretOffset(LONG offset) {
