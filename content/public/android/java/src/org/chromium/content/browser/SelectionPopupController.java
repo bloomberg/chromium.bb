@@ -1057,6 +1057,14 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         mClassificationResult = null;
     }
 
+    /**
+     * @return The context used for SelectionPopupController.
+     */
+    @CalledByNative
+    private Context getContext() {
+        return mContext;
+    }
+
     @CalledByNative
     private void onSelectionChanged(String text) {
         mLastSelectedText = text;

@@ -138,4 +138,8 @@ RenderWidgetHostViewAndroid* RenderWidgetHostConnector::GetRWHVAForTesting()
   return render_widget_observer_->active_rwhva();
 }
 
+WebContents* RenderWidgetHostConnector::web_contents() const {
+  return render_widget_observer_->web_contents();
+}
+
 }  // namespace content

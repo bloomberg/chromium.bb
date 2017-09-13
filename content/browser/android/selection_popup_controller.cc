@@ -7,11 +7,13 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "content/browser/android/composited_touch_handle_drawable.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
-#include "content/public/browser/web_contents.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/common/context_menu_params.h"
 #include "jni/SelectionPopupController_jni.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
+#include "ui/gfx/geometry/point_conversions.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF16ToJavaString;
@@ -38,6 +40,51 @@ SelectionPopupController::SelectionPopupController(
     WebContents* web_contents)
     : RenderWidgetHostConnector(web_contents) {
   java_obj_ = JavaObjectWeakGlobalRef(env, obj);
+}
+
+ScopedJavaLocalRef<jobject> SelectionPopupController::GetContext() const {
+  JNIEnv* env = AttachCurrentThread();
+
+  ScopedJavaLocalRef<jobject> obj = java_obj_.get(env);
+  if (obj.is_null())
+    return nullptr;
+
+  return Java_SelectionPopupController_getContext(env, obj);
+}
+
+std::unique_ptr<ui::TouchHandleDrawable>
+SelectionPopupController::CreateTouchHandleDrawable() {
+  ScopedJavaLocalRef<jobject> activityContext = GetContext();
+  // If activityContext is null then Application context is used instead on
+  // the java side in CompositedTouchHandleDrawable.
+  auto* view = web_contents()->GetNativeView();
+  return std::unique_ptr<ui::TouchHandleDrawable>(
+      new CompositedTouchHandleDrawable(view->GetLayer(), view->GetDipScale(),
+                                        activityContext));
+}
+
+void SelectionPopupController::MoveRangeSelectionExtent(
+    const gfx::PointF& extent) {
+  auto* web_contents_impl = static_cast<WebContentsImpl*>(web_contents());
+  if (!web_contents_impl)
+    return;
+
+  web_contents_impl->MoveRangeSelectionExtent(gfx::ToRoundedPoint(extent));
+}
+
+void SelectionPopupController::SelectBetweenCoordinates(
+    const gfx::PointF& base,
+    const gfx::PointF& extent) {
+  auto* web_contents_impl = static_cast<WebContentsImpl*>(web_contents());
+  if (!web_contents_impl)
+    return;
+
+  gfx::Point base_point = gfx::ToRoundedPoint(base);
+  gfx::Point extent_point = gfx::ToRoundedPoint(extent);
+  if (base_point == extent_point)
+    return;
+
+  web_contents_impl->SelectRange(base_point, extent_point);
 }
 
 void SelectionPopupController::UpdateRenderProcessConnection(

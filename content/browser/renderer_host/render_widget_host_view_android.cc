@@ -37,7 +37,6 @@
 #include "components/viz/service/surfaces/surface_hittest.h"
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/browser/accessibility/web_contents_accessibility_android.h"
-#include "content/browser/android/composited_touch_handle_drawable.h"
 #include "content/browser/android/content_view_core.h"
 #include "content/browser/android/ime_adapter_android.h"
 #include "content/browser/android/overscroll_controller_android.h"
@@ -1380,15 +1379,15 @@ void RenderWidgetHostViewAndroid::MoveCaret(const gfx::PointF& position) {
 
 void RenderWidgetHostViewAndroid::MoveRangeSelectionExtent(
     const gfx::PointF& extent) {
-  DCHECK(content_view_core_);
-  content_view_core_->MoveRangeSelectionExtent(extent);
+  DCHECK(selection_popup_controller_);
+  selection_popup_controller_->MoveRangeSelectionExtent(extent);
 }
 
 void RenderWidgetHostViewAndroid::SelectBetweenCoordinates(
     const gfx::PointF& base,
     const gfx::PointF& extent) {
-  DCHECK(content_view_core_);
-  content_view_core_->SelectBetweenCoordinates(base, extent);
+  DCHECK(selection_popup_controller_);
+  selection_popup_controller_->SelectBetweenCoordinates(base, extent);
 }
 
 void RenderWidgetHostViewAndroid::OnSelectionEvent(
@@ -1421,21 +1420,14 @@ void RenderWidgetHostViewAndroid::SetSelectionControllerClientForTesting(
 
 std::unique_ptr<ui::TouchHandleDrawable>
 RenderWidgetHostViewAndroid::CreateDrawable() {
-  DCHECK(content_view_core_);
   if (!using_browser_compositor_) {
     if (!sync_compositor_)
       return nullptr;
     return std::unique_ptr<ui::TouchHandleDrawable>(
         sync_compositor_->client()->CreateDrawable());
   }
-  base::android::ScopedJavaLocalRef<jobject> activityContext =
-      content_view_core_->GetContext();
-  // If activityContext is null then Application context is used instead on
-  // the java side in CompositedTouchHandleDrawable.
-  return std::unique_ptr<ui::TouchHandleDrawable>(
-      new CompositedTouchHandleDrawable(
-          content_view_core_->GetViewAndroid()->GetLayer(), view_.GetDipScale(),
-          activityContext));
+  DCHECK(selection_popup_controller_);
+  return selection_popup_controller_->CreateTouchHandleDrawable();
 }
 
 void RenderWidgetHostViewAndroid::SynchronousCopyContents(
