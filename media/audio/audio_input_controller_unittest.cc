@@ -15,6 +15,7 @@
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_thread_impl.h"
 #include "media/audio/fake_audio_input_stream.h"
+#include "media/base/user_input_monitor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -86,6 +87,16 @@ class MockSyncWriter : public AudioInputController::SyncWriter {
   MOCK_METHOD0(Close, void());
 };
 
+class MockUserInputMonitor : public UserInputMonitor {
+ public:
+  MockUserInputMonitor() {}
+
+  size_t GetKeyPressCount() const { return 0; }
+
+  MOCK_METHOD0(StartKeyboardMonitoring, void());
+  MOCK_METHOD0(StopKeyboardMonitoring, void());
+};
+
 // Test fixture.
 class AudioInputControllerTest : public testing::Test {
  public:
@@ -95,7 +106,10 @@ class AudioInputControllerTest : public testing::Test {
     audio_manager_ =
         AudioManager::CreateForTesting(base::MakeUnique<AudioThreadImpl>());
   }
-  ~AudioInputControllerTest() override { audio_manager_->Shutdown(); }
+  ~AudioInputControllerTest() override {
+    audio_manager_->Shutdown();
+    base::RunLoop().RunUntilIdle();
+  }
 
   scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner() const {
     return audio_manager_->GetTaskRunner();
@@ -114,6 +128,7 @@ class AudioInputControllerTest : public testing::Test {
 
  protected:
   base::MessageLoop message_loop_;
+  MockUserInputMonitor user_input_monitor_;
   std::unique_ptr<AudioManager> audio_manager_;
   WaitableEvent suspend_event_;
 
@@ -134,8 +149,8 @@ TEST_F(AudioInputControllerTest, CreateAndClose) {
 
   SuspendAudioThread();
   controller = AudioInputController::Create(
-      audio_manager_.get(), &event_handler, &sync_writer, nullptr, params,
-      AudioDeviceDescription::kDefaultDeviceId, false);
+      audio_manager_.get(), &event_handler, &sync_writer, &user_input_monitor_,
+      params, AudioDeviceDescription::kDefaultDeviceId, false);
   ASSERT_TRUE(controller.get());
   EXPECT_CALL(event_handler, OnCreated(controller.get(), _)).Times(Exactly(1));
   EXPECT_CALL(event_handler, OnLog(controller.get(), _)).Times(Exactly(3));
@@ -163,20 +178,23 @@ TEST_F(AudioInputControllerTest, RecordAndClose) {
 
   EXPECT_CALL(event_handler, OnLog(_, _)).Times(AnyNumber());
   EXPECT_CALL(sync_writer, Close()).Times(Exactly(1));
+  EXPECT_CALL(user_input_monitor_, StartKeyboardMonitoring()).Times(Exactly(1));
 
   AudioParameters params(AudioParameters::AUDIO_FAKE, kChannelLayout,
                          kSampleRate, kBitsPerSample, kSamplesPerPacket);
 
   // Creating the AudioInputController should render an OnCreated() call.
   scoped_refptr<AudioInputController> controller = AudioInputController::Create(
-      audio_manager_.get(), &event_handler, &sync_writer, nullptr, params,
-      AudioDeviceDescription::kDefaultDeviceId, false);
+      audio_manager_.get(), &event_handler, &sync_writer, &user_input_monitor_,
+      params, AudioDeviceDescription::kDefaultDeviceId, false);
   ASSERT_TRUE(controller.get());
 
   controller->Record();
 
   // Record and wait until ten Write() callbacks are received.
   base::RunLoop().Run();
+
+  EXPECT_CALL(user_input_monitor_, StopKeyboardMonitoring()).Times(Exactly(1));
   CloseAudioController(controller.get());
 }
 
@@ -195,8 +213,8 @@ TEST_F(AudioInputControllerTest, SamplesPerPacketTooLarge) {
                          kBitsPerSample,
                          kSamplesPerPacket * 1000);
   scoped_refptr<AudioInputController> controller = AudioInputController::Create(
-      audio_manager_.get(), &event_handler, &sync_writer, nullptr, params,
-      AudioDeviceDescription::kDefaultDeviceId, false);
+      audio_manager_.get(), &event_handler, &sync_writer, &user_input_monitor_,
+      params, AudioDeviceDescription::kDefaultDeviceId, false);
   ASSERT_FALSE(controller.get());
 }
 
@@ -217,8 +235,8 @@ TEST_F(AudioInputControllerTest, CloseTwice) {
                          kBitsPerSample,
                          kSamplesPerPacket);
   scoped_refptr<AudioInputController> controller = AudioInputController::Create(
-      audio_manager_.get(), &event_handler, &sync_writer, nullptr, params,
-      AudioDeviceDescription::kDefaultDeviceId, false);
+      audio_manager_.get(), &event_handler, &sync_writer, &user_input_monitor_,
+      params, AudioDeviceDescription::kDefaultDeviceId, false);
   ASSERT_TRUE(controller.get());
 
   controller->Record();
@@ -264,8 +282,8 @@ TEST_F(AudioInputControllerTest, TestOnmutedCallbackInitiallyUnmuted) {
 
   FakeAudioInputStream::SetGlobalMutedState(false);
   controller = AudioInputController::Create(
-      audio_manager_.get(), &event_handler, &sync_writer, nullptr, params,
-      AudioDeviceDescription::kDefaultDeviceId, false);
+      audio_manager_.get(), &event_handler, &sync_writer, &user_input_monitor_,
+      params, AudioDeviceDescription::kDefaultDeviceId, false);
   ASSERT_TRUE(controller.get());
   RunLoopWithTimeout(&setup_run_loop, timeout);
 
@@ -299,8 +317,8 @@ TEST_F(AudioInputControllerTest, TestOnmutedCallbackInitiallyMuted) {
 
   FakeAudioInputStream::SetGlobalMutedState(true);
   controller = AudioInputController::Create(
-      audio_manager_.get(), &event_handler, &sync_writer, nullptr, params,
-      AudioDeviceDescription::kDefaultDeviceId, false);
+      audio_manager_.get(), &event_handler, &sync_writer, &user_input_monitor_,
+      params, AudioDeviceDescription::kDefaultDeviceId, false);
   ASSERT_TRUE(controller.get());
   RunLoopWithTimeout(&setup_run_loop, timeout);
 
