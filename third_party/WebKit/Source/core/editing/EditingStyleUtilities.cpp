@@ -34,6 +34,7 @@
 #include "core/css/parser/CSSParser.h"
 #include "core/editing/EditingStyle.h"
 #include "core/editing/EditingUtilities.h"
+#include "core/editing/VisibleSelection.h"
 
 namespace blink {
 

@@ -34,6 +34,7 @@
 #include "core/clipboard/DataTransferItemList.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/VisibleSelection.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/fileapi/FileList.h"
 #include "core/frame/LocalFrame.h"

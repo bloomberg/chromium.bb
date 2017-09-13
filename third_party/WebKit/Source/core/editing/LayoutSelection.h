@@ -22,8 +22,8 @@
 #ifndef LayoutSelection_h
 #define LayoutSelection_h
 
+#include "core/editing/Forward.h"
 #include "core/editing/Position.h"
-#include "core/editing/VisibleSelection.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

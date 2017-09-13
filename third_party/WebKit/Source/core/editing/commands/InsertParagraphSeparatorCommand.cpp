@@ -31,6 +31,7 @@
 #include "core/dom/Text.h"
 #include "core/editing/EditingStyle.h"
 #include "core/editing/EditingUtilities.h"
+#include "core/editing/VisibleSelection.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/commands/InsertLineBreakCommand.h"
 #include "core/html/HTMLBRElement.h"

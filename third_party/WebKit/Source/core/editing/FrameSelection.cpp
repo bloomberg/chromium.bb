@@ -49,6 +49,7 @@
 #include "core/editing/SelectionEditor.h"
 #include "core/editing/SelectionModifier.h"
 #include "core/editing/TextAffinity.h"
+#include "core/editing/VisibleSelection.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/commands/TypingCommand.h"
 #include "core/editing/iterators/TextIterator.h"

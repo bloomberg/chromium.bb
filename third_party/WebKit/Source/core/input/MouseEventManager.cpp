@@ -13,6 +13,7 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/SelectionController.h"
+#include "core/editing/VisibleSelection.h"
 #include "core/events/DragEvent.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/LocalFrame.h"

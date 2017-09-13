@@ -39,6 +39,7 @@
 #include "core/editing/Editor.h"
 #include "core/editing/PlainTextRange.h"
 #include "core/editing/RelocatablePosition.h"
+#include "core/editing/VisibleSelection.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/commands/AppendNodeCommand.h"
 #include "core/editing/commands/ApplyStyleCommand.h"

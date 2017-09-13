@@ -40,6 +40,7 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/SelectionModifier.h"
 #include "core/editing/SetSelectionOptions.h"
+#include "core/editing/VisibleSelection.h"
 #include "core/editing/iterators/TextIterator.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/LocalFrame.h"

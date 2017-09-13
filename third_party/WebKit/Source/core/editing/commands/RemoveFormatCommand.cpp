@@ -33,6 +33,7 @@
 #include "core/dom/Element.h"
 #include "core/editing/EditingStyle.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/VisibleSelection.h"
 #include "core/editing/commands/ApplyStyleCommand.h"
 #include "core/frame/LocalFrame.h"
 

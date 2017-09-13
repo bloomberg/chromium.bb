@@ -26,6 +26,7 @@
 #ifndef TypingCommand_h
 #define TypingCommand_h
 
+#include "core/editing/TextGranularity.h"
 #include "core/editing/commands/CompositeEditCommand.h"
 
 namespace blink {
