@@ -21,8 +21,8 @@ enum class ReloadType {
   // is used for cases where the user wants to refresh a page using a different
   // user agent after following a redirect.
   ORIGINAL_REQUEST_URL,
-  // Reloads the current entry with Lo-Fi mode disabled.
-  DISABLE_LOFI_MODE
+  // Reloads the current entry with previews disabled.
+  DISABLE_PREVIEWS
 };
 
 }  // namespace content

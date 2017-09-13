@@ -74,8 +74,7 @@ class ResourceDispatcherHostBrowserTest : public ContentBrowserTest,
       got_downloads_ = !!manager->InProgressCount();
   }
 
-  void CheckTitleTest(const GURL& url,
-                      const std::string& expected_title) {
+  void CheckTitleTest(const GURL& url, const std::string& expected_title) {
     base::string16 expected_title16(ASCIIToUTF16(expected_title));
     TitleWatcher title_watcher(shell()->web_contents(), expected_title16);
     NavigateToURL(shell(), url);
@@ -97,8 +96,8 @@ class ResourceDispatcherHostBrowserTest : public ContentBrowserTest,
   }
 
   std::string GetCookies(const GURL& url) {
-    return content::GetCookies(
-        shell()->web_contents()->GetBrowserContext(), url);
+    return content::GetCookies(shell()->web_contents()->GetBrowserContext(),
+                               url);
   }
 
   bool got_downloads() const { return got_downloads_; }
@@ -116,7 +115,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest, DynamicTitle1) {
   base::string16 title;
   ASSERT_TRUE(GetPopupTitle(url, &title));
   EXPECT_TRUE(base::StartsWith(title, ASCIIToUTF16("My Popup Title"),
-              base::CompareCase::SENSITIVE))
+                               base::CompareCase::SENSITIVE))
       << "Actual title: " << title;
 }
 
@@ -164,7 +163,8 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
                        SniffNoContentTypeNoData) {
   // Make sure no downloads start.
   BrowserContext::GetDownloadManager(
-      shell()->web_contents()->GetBrowserContext())->AddObserver(this);
+      shell()->web_contents()->GetBrowserContext())
+      ->AddObserver(this);
   CheckTitleTest(
       net::URLRequestMockHTTPJob::GetMockUrl("content-sniffer-test3.html"),
       "Content Sniffer Test 3");
@@ -189,8 +189,8 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 // Test for bug #1091358.
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest, SyncXMLHttpRequest) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  NavigateToURL(
-      shell(), embedded_test_server()->GetURL("/sync_xmlhttprequest.html"));
+  NavigateToURL(shell(),
+                embedded_test_server()->GetURL("/sync_xmlhttprequest.html"));
 
   // Let's check the XMLHttpRequest ran successfully.
   bool success = false;
@@ -204,9 +204,8 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest, SyncXMLHttpRequest) {
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
                        SyncXMLHttpRequest_Disallowed) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  NavigateToURL(
-      shell(),
-      embedded_test_server()->GetURL("/sync_xmlhttprequest_disallowed.html"));
+  NavigateToURL(shell(), embedded_test_server()->GetURL(
+                             "/sync_xmlhttprequest_disallowed.html"));
 
   // Let's check the XMLHttpRequest ran successfully.
   bool success = false;
@@ -229,7 +228,8 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
                        MAYBE_SyncXMLHttpRequest_DuringUnload) {
   ASSERT_TRUE(embedded_test_server()->Start());
   BrowserContext::GetDownloadManager(
-      shell()->web_contents()->GetBrowserContext())->AddObserver(this);
+      shell()->web_contents()->GetBrowserContext())
+      ->AddObserver(this);
 
   CheckTitleTest(
       embedded_test_server()->GetURL("/sync_xmlhttprequest_during_unload.html"),
@@ -237,8 +237,8 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 
   // Navigate to a new page, to dispatch unload event and trigger xhr.
   // (the bug would make this step hang the renderer).
-  CheckTitleTest(
-      embedded_test_server()->GetURL("/title2.html"), "Title Of Awesomeness");
+  CheckTitleTest(embedded_test_server()->GetURL("/title2.html"),
+                 "Title Of Awesomeness");
 
   ASSERT_FALSE(got_downloads());
 }
@@ -428,8 +428,8 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
   // TODO(creis): If this causes crashes or hangs, it might be for the same
   // reason as ErrorPageTest::DNSError.  See bug 1199491 and
   // http://crbug.com/22877.
-  GURL failed_url = net::URLRequestFailedJob::GetMockHttpUrl(
-      net::ERR_NAME_NOT_RESOLVED);
+  GURL failed_url =
+      net::URLRequestFailedJob::GetMockHttpUrl(net::ERR_NAME_NOT_RESOLVED);
   NavigateToURL(shell(), failed_url);
 
   EXPECT_NE(ASCIIToUTF16("set cookie on unload"),
@@ -453,8 +453,8 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
   bool success;
   GURL test_url(embedded_test_server()->GetURL("/title2.html"));
   std::string redirect_script = "window.location='" +
-      test_url.possibly_invalid_spec() + "';" +
-      "window.domAutomationController.send(true);";
+                                test_url.possibly_invalid_spec() + "';" +
+                                "window.domAutomationController.send(true);";
   EXPECT_TRUE(ExecuteScriptAndExtractBool(shell(), redirect_script, &success));
   EXPECT_EQ(expected_title16, title_watcher.WaitAndGetTitle());
 }
@@ -470,8 +470,8 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
   // TODO(creis): If this causes crashes or hangs, it might be for the same
   // reason as ErrorPageTest::DNSError.  See bug 1199491 and
   // http://crbug.com/22877.
-  GURL failed_url = net::URLRequestFailedJob::GetMockHttpUrl(
-      net::ERR_NAME_NOT_RESOLVED);
+  GURL failed_url =
+      net::URLRequestFailedJob::GetMockHttpUrl(net::ERR_NAME_NOT_RESOLVED);
 
   NavigateToURL(shell(), failed_url);
   EXPECT_NE(ASCIIToUTF16("Title Of Awesomeness"),
@@ -584,12 +584,9 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
   ResourceDispatcherHost::Get()->SetDelegate(&delegate);
 
   NavigateToURLBlockUntilNavigationsComplete(
-      shell(),
-      embedded_test_server()->GetURL("/client_redirect.html"),
-      2);
+      shell(), embedded_test_server()->GetURL("/client_redirect.html"), 2);
 
-  EXPECT_TRUE(
-      delegate.page_transition() & ui::PAGE_TRANSITION_CLIENT_REDIRECT);
+  EXPECT_TRUE(delegate.page_transition() & ui::PAGE_TRANSITION_CLIENT_REDIRECT);
 }
 
 namespace {
@@ -622,8 +619,8 @@ class PreviewsStateResourceDispatcherHostDelegate
       std::vector<std::unique_ptr<ResourceThrottle>>* throttles) override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
-    if (request->url() != main_frame_url_ && request->url() != subresource_url_
-        && request->url() != iframe_url_)
+    if (request->url() != main_frame_url_ &&
+        request->url() != subresource_url_ && request->url() != iframe_url_)
       return;
     if (request->url() == main_frame_url_) {
       EXPECT_FALSE(main_frame_url_seen_);
@@ -720,8 +717,7 @@ class PreviewsStateResourceDispatcherHostBrowserTest
                        base::Unretained(delegate_.get()), previews_state));
   }
 
-  void CheckResourcesRequested(
-      bool should_get_previews_state_called) {
+  void CheckResourcesRequested(bool should_get_previews_state_called) {
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
         base::BindOnce(&PreviewsStateResourceDispatcherHostDelegate::
@@ -801,7 +797,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsStateResourceDispatcherHostBrowserTest,
   // Reload with Lo-Fi disabled.
   Reset(PREVIEWS_NO_TRANSFORM);
   TestNavigationObserver tab_observer(shell()->web_contents(), 1);
-  shell()->web_contents()->GetController().Reload(ReloadType::DISABLE_LOFI_MODE,
+  shell()->web_contents()->GetController().Reload(ReloadType::DISABLE_PREVIEWS,
                                                   true);
   tab_observer.Wait();
   CheckResourcesRequested(false);
