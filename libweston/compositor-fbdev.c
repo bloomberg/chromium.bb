@@ -665,6 +665,8 @@ fbdev_backend_destroy(struct weston_compositor *base)
 	/* Chain up. */
 	weston_launcher_destroy(base->launcher);
 
+	udev_unref(backend->udev);
+
 	free(backend);
 }
 
