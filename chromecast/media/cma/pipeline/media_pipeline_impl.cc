@@ -22,6 +22,7 @@
 #include "chromecast/media/cma/base/coded_frame_provider.h"
 #include "chromecast/media/cma/pipeline/audio_decoder_software_wrapper.h"
 #include "chromecast/media/cma/pipeline/audio_pipeline_impl.h"
+#include "chromecast/media/cma/pipeline/cma_pipeline_features.h"
 #include "chromecast/media/cma/pipeline/video_pipeline_impl.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "media/base/timestamp_constants.h"
@@ -228,7 +229,8 @@ void MediaPipelineImpl::StartPlayingFrom(base::TimeDelta time) {
       "Cast.Platform.Playing");
 
   // Enable time updates.
-  last_media_time_ = time;
+  start_media_time_ = time;
+  last_media_time_ = ::media::kNoTimestamp;
   statistics_rolling_counter_ = 0;
   if (!pending_time_update_task_) {
     pending_time_update_task_ = true;
@@ -320,7 +322,13 @@ void MediaPipelineImpl::SetVolume(float volume) {
 
 base::TimeDelta MediaPipelineImpl::GetMediaTime() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return last_media_time_;
+#if BUILDFLAG(CMA_USE_ACCURATE_MEDIA_TIME)
+  base::TimeDelta time = base::TimeDelta::FromMicroseconds(
+      media_pipeline_backend_->GetCurrentPts());
+#else
+  base::TimeDelta time = last_media_time_;
+#endif
+  return (time == ::media::kNoTimestamp ? start_media_time_ : time);
 }
 
 bool MediaPipelineImpl::HasAudio() const {

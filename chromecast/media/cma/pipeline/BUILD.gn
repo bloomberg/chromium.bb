@@ -2,6 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
+import("//build/config/chromecast_build.gni")
+
+declare_args() {
+  # Set true to use accurate but more expensive method for GetMediaTime().
+  cma_use_accurate_media_time = is_cast_audio_only
+}
+
 source_set("pipeline") {
   sources = [
     "audio_decoder_software_wrapper.cc",
@@ -31,6 +39,7 @@ source_set("pipeline") {
   ]
 
   deps = [
+    ":cma_pipeline_features",
     "//base",
     "//chromecast/base/metrics:metrics",
     "//chromecast/media/base",
@@ -43,4 +52,10 @@ source_set("pipeline") {
     "//media",
     "//third_party/boringssl",
   ]
+}
+
+buildflag_header("cma_pipeline_features") {
+  header = "cma_pipeline_features.h"
+
+  flags = [ "CMA_USE_ACCURATE_MEDIA_TIME=$cma_use_accurate_media_time" ]
 }

@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
 #include "chromecast/base/task_runner_impl.h"
+#include "chromecast/media/cma/backend/alsa/alsa_features.h"
 #include "chromecast/media/cma/backend/alsa/media_pipeline_backend_alsa.h"
 #include "chromecast/media/cma/base/decoder_buffer_adapter.h"
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
@@ -49,9 +50,20 @@ const double kPlaybackRateEpsilon = 0.001;
 const CastAudioDecoder::OutputFormat kDecoderSampleFormat =
     CastAudioDecoder::kOutputPlanarFloat;
 
+const int64_t kMicrosecondsPerSecond = 1000 * 1000;
 const int64_t kInvalidTimestamp = std::numeric_limits<int64_t>::min();
 
 const int64_t kNoPendingOutput = -1;
+
+int64_t MonotonicClockNow() {
+  timespec now = {0, 0};
+#if BUILDFLAG(ALSA_MONOTONIC_RAW_TSTAMPS)
+  clock_gettime(CLOCK_MONOTONIC_RAW, &now);
+#else
+  clock_gettime(CLOCK_MONOTONIC, &now);
+#endif
+  return static_cast<int64_t>(now.tv_sec) * 1000000 + now.tv_nsec / 1000;
+}
 
 }  // namespace
 
@@ -68,7 +80,11 @@ AudioDecoderAlsa::AudioDecoderAlsa(MediaPipelineBackendAlsa* backend)
       mixer_error_(false),
       rate_shifter_output_(
           ::media::AudioBus::Create(kNumChannels, kDefaultFramesPerBuffer)),
-      current_pts_(kInvalidTimestamp),
+      first_push_pts_(kInvalidTimestamp),
+      last_push_pts_(kInvalidTimestamp),
+      last_push_timestamp_(kInvalidTimestamp),
+      last_push_pts_length_(0),
+      paused_pts_(kInvalidTimestamp),
       pending_output_frames_(kNoPendingOutput),
       volume_multiplier_(1.0f),
       pool_(new ::media::AudioBufferMemoryPool()),
@@ -97,7 +113,11 @@ void AudioDecoderAlsa::Initialize() {
   pending_buffer_complete_ = false;
   got_eos_ = false;
   pushed_eos_ = false;
-  current_pts_ = kInvalidTimestamp;
+  first_push_pts_ = kInvalidTimestamp;
+  last_push_pts_ = kInvalidTimestamp;
+  last_push_timestamp_ = kInvalidTimestamp;
+  last_push_pts_length_ = 0;
+  paused_pts_ = kInvalidTimestamp;
   pending_output_frames_ = kNoPendingOutput;
 
   last_mixer_delay_.timestamp_microseconds = kInvalidTimestamp;
@@ -106,7 +126,6 @@ void AudioDecoderAlsa::Initialize() {
 
 bool AudioDecoderAlsa::Start(int64_t start_pts) {
   TRACE_FUNCTION_ENTRY0();
-  current_pts_ = start_pts;
   DCHECK(IsValidConfig(config_));
   mixer_input_.reset(new StreamMixerAlsaInput(
       this, config_.samples_per_second, config_.playout_channel,
@@ -137,12 +156,14 @@ bool AudioDecoderAlsa::Pause() {
   TRACE_FUNCTION_ENTRY0();
   DCHECK(mixer_input_);
   mixer_input_->SetPaused(true);
+  paused_pts_ = GetCurrentPts();
   return true;
 }
 
 bool AudioDecoderAlsa::Resume() {
   TRACE_FUNCTION_ENTRY0();
   DCHECK(mixer_input_);
+  paused_pts_ = kInvalidTimestamp;
   mixer_input_->SetPaused(false);
   return true;
 }
@@ -170,6 +191,22 @@ bool AudioDecoderAlsa::SetPlaybackRate(float rate) {
   return true;
 }
 
+int64_t AudioDecoderAlsa::GetCurrentPts() const {
+  if (paused_pts_ != kInvalidTimestamp)
+    return paused_pts_;
+  if (last_push_pts_ == kInvalidTimestamp)
+    return kInvalidTimestamp;
+
+  DCHECK(!rate_shifter_info_.empty());
+  int64_t now = MonotonicClockNow();
+  int64_t estimate =
+      last_push_pts_ +
+      std::min(static_cast<int64_t>((now - last_push_timestamp_) *
+                                    rate_shifter_info_.front().rate),
+               last_push_pts_length_);
+  return (estimate < first_push_pts_ ? kInvalidTimestamp : estimate);
+}
+
 AudioDecoderAlsa::BufferStatus AudioDecoderAlsa::PushBuffer(
     CastDecoderBuffer* buffer) {
   TRACE_FUNCTION_ENTRY0();
@@ -182,9 +219,6 @@ AudioDecoderAlsa::BufferStatus AudioDecoderAlsa::PushBuffer(
   uint64_t input_bytes = buffer->end_of_stream() ? 0 : buffer->data_size();
   scoped_refptr<DecoderBufferBase> buffer_base(
       static_cast<DecoderBufferBase*>(buffer));
-  if (!buffer->end_of_stream()) {
-    current_pts_ = buffer->timestamp();
-  }
 
   // If the buffer is already decoded, do not attempt to decode. Call
   // OnBufferDecoded asynchronously on the main thread.
@@ -358,6 +392,23 @@ void AudioDecoderAlsa::OnBufferDecoded(
     got_eos_ = true;
   } else {
     int input_frames = decoded->data_size() / (kNumChannels * sizeof(float));
+
+    last_push_pts_ = decoded->timestamp();
+    last_push_pts_length_ =
+        input_frames * kMicrosecondsPerSecond / config_.samples_per_second;
+    if (last_push_pts_ != kInvalidTimestamp) {
+      if (first_push_pts_ == kInvalidTimestamp) {
+        first_push_pts_ = last_push_pts_;
+      }
+
+      RenderingDelay delay = GetRenderingDelay();
+      if (delay.timestamp_microseconds == kInvalidTimestamp) {
+        last_push_pts_ = kInvalidTimestamp;
+      } else {
+        last_push_timestamp_ =
+            delay.timestamp_microseconds + delay.delay_microseconds;
+      }
+    }
 
     DCHECK(!rate_shifter_info_.empty());
     RateShifterInfo* rate_info = &rate_shifter_info_.front();
