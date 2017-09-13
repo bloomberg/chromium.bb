@@ -492,10 +492,6 @@ bool LayerImpl::has_copy_requests_in_target_subtree() {
   return GetEffectTree().Node(effect_tree_index())->subtree_has_copy_request;
 }
 
-gfx::ScrollOffset LayerImpl::ScrollOffsetForAnimation() const {
-  return CurrentScrollOffset();
-}
-
 bool LayerImpl::IsActive() const {
   return layer_tree_impl_->IsActiveTree();
 }

@@ -754,6 +754,8 @@ class LayerTreeHostAnimationTestScrollOffsetChangesArePropagated
         break;
       }
       default:
+        EXPECT_GE(scroll_layer_->scroll_offset().x(), 10);
+        EXPECT_GE(scroll_layer_->scroll_offset().y(), 20);
         if (scroll_layer_->scroll_offset().x() > 10 &&
             scroll_layer_->scroll_offset().y() > 20)
           EndTest();

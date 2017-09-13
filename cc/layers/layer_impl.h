@@ -84,7 +84,6 @@ class CC_EXPORT LayerImpl {
   int id() const { return layer_id_; }
 
   // Interactions with attached animations.
-  gfx::ScrollOffset ScrollOffsetForAnimation() const;
   bool IsActive() const;
 
   void SetHasTransformNode(bool val) { has_transform_node_ = val; }

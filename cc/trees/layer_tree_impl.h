@@ -167,6 +167,7 @@ class CC_EXPORT LayerTreeImpl {
     // DCHECK(lifecycle().AllowsPropertyTreeAccess());
     return &property_trees_;
   }
+  const PropertyTrees* property_trees() const { return &property_trees_; }
 
   void PushPropertyTreesTo(LayerTreeImpl* tree_impl);
   void PushPropertiesTo(LayerTreeImpl* tree_impl);
