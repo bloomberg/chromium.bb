@@ -12,6 +12,7 @@
 #include "core/css/CSSInheritedValue.h"
 #include "core/css/CSSInitialValue.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSUnsetValue.h"
 #include "core/css/StyleColor.h"
 #include "core/css/parser/CSSParserIdioms.h"
 #include "core/css/parser/CSSPropertyParser.h"
@@ -985,12 +986,13 @@ static CSSValue* ParseKeywordValue(CSSPropertyID property_id,
   DCHECK(!string.IsEmpty());
 
   if (!CSSParserFastPaths::IsKeywordPropertyID(property_id)) {
-    // All properties accept the values of "initial" and "inherit".
+    // All properties accept the values of "initial," "inherit" and "unset".
     if (!EqualIgnoringASCIICase(string, "initial") &&
-        !EqualIgnoringASCIICase(string, "inherit"))
+        !EqualIgnoringASCIICase(string, "inherit") &&
+        !EqualIgnoringASCIICase(string, "unset"))
       return nullptr;
 
-    // Parse initial/inherit shorthands using the CSSPropertyParser.
+    // Parse initial/inherit/unset shorthands using the CSSPropertyParser.
     if (shorthandForProperty(property_id).length())
       return nullptr;
 
@@ -1008,6 +1010,8 @@ static CSSValue* ParseKeywordValue(CSSPropertyID property_id,
     return CSSInheritedValue::Create();
   if (value_id == CSSValueInitial)
     return CSSInitialValue::Create();
+  if (value_id == CSSValueUnset)
+    return CSSUnsetValue::Create();
   if (CSSParserFastPaths::IsValidKeywordPropertyAndValue(property_id, value_id,
                                                          parser_mode))
     return CSSIdentifierValue::Create(value_id);
