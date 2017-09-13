@@ -19,7 +19,7 @@
 #include "extensions/common/extension.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/wm/core/window_util.h"
+#include "ui/base/base_window.h"
 
 using extensions::AppWindow;
 using extensions::AppWindowRegistry;
@@ -122,8 +122,9 @@ void ExtensionAppWindowLauncherController::RegisterApp(AppWindow* app_window) {
   window->AddObserver(this);
 
   // Find or create an item controller and launcher item.
-  ash::ShelfItemStatus status =
-      wm::IsActiveWindow(window) ? ash::STATUS_ACTIVE : ash::STATUS_RUNNING;
+  ash::ShelfItemStatus status = app_window->GetBaseWindow()->IsActive()
+                                    ? ash::STATUS_ACTIVE
+                                    : ash::STATUS_RUNNING;
   AppControllerMap::iterator app_controller_iter =
       app_controller_map_.find(shelf_id);
 

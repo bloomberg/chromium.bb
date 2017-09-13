@@ -8,7 +8,6 @@
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/sticky_keys/sticky_keys_overlay.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/window_state.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -37,6 +36,7 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/test/events_test_utils.h"
 #include "ui/events/test/test_event_processor.h"
+#include "ui/wm/core/window_util.h"
 
 namespace {
 
@@ -2086,8 +2086,7 @@ class EventRewriterAshTest : public ash::AshTestBase {
 
 TEST_F(EventRewriterAshTest, TopRowKeysAreFunctionKeys) {
   std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(1));
-  ash::wm::WindowState* window_state = ash::wm::GetWindowState(window.get());
-  window_state->Activate();
+  wm::ActivateWindow(window.get());
   std::vector<std::unique_ptr<ui::Event>> events;
 
   // Create a simulated keypress of F1 targetted at the window.

@@ -16,7 +16,7 @@
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "ui/aura/client/focus_client.h"
-#include "ui/wm/core/window_util.h"
+#include "ui/base/base_window.h"
 
 namespace chromeos {
 
@@ -44,7 +44,7 @@ IN_PROC_BROWSER_TEST_F(LoginFeedbackTest, Basic) {
   ASSERT_NE(nullptr, feedback_window);
   EXPECT_FALSE(feedback_window->is_hidden());
 
-  EXPECT_TRUE(wm::IsActiveWindow(feedback_window->GetNativeWindow()));
+  EXPECT_TRUE(feedback_window->GetBaseWindow()->IsActive());
 
   feedback_window->GetBaseWindow()->Close();
   run_loop.Run();
