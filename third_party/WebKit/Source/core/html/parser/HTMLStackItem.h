@@ -31,6 +31,7 @@
 #include "core/SVGNames.h"
 #include "core/dom/Element.h"
 #include "core/html/parser/AtomicHTMLToken.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/wtf/text/AtomicString.h"
 
 namespace blink {

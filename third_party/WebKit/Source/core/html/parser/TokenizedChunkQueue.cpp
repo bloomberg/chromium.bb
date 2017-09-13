@@ -4,6 +4,7 @@
 
 #include "core/html/parser/TokenizedChunkQueue.h"
 
+#include "platform/RuntimeEnabledFeatures.h"
 #include <algorithm>
 #include <memory>
 

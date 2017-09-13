@@ -21,6 +21,7 @@
 #include "platform/image-decoders/ImageDecoder.h"
 
 #include <memory>
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/BitmapImageMetrics.h"
 #include "platform/image-decoders/FastSharedBufferReader.h"
 #include "platform/image-decoders/bmp/BMPImageDecoder.h"

@@ -4,7 +4,7 @@
 
 #include "platform/graphics/CanvasColorParams.h"
 
-#include "platform/runtime_enabled_features.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "ui/gfx/color_space.h"
 
 namespace blink {

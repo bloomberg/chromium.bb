@@ -27,6 +27,7 @@
 #include "platform/graphics/Image.h"
 
 #include "platform/Length.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRect.h"

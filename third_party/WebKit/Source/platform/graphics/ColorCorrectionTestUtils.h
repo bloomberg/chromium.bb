@@ -5,7 +5,7 @@
 #ifndef ColorCorrectionTestUtils_h
 #define ColorCorrectionTestUtils_h
 
-#include "platform/runtime_enabled_features.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 

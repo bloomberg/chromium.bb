@@ -5,7 +5,7 @@
 #include "core/css/properties/CSSPropertyAPIFontSizeAdjust.h"
 
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "platform/runtime_enabled_features.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 
