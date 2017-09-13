@@ -480,7 +480,7 @@ class SmoothnessDesktopToughPinchZoomCases(_Smoothness):
   cases. Uses lower zoom levels customized for desktop limits.
   """
   page_set = page_sets.DesktopToughPinchZoomCasesPageSet
-  SUPPORTED_PLATFORMS = [story_module.expectations.ALL_DESKTOP]
+  SUPPORTED_PLATFORMS = [story_module.expectations.ALL_MAC]
 
   @classmethod
   def Name(cls):
@@ -489,7 +489,7 @@ class SmoothnessDesktopToughPinchZoomCases(_Smoothness):
   def GetExpectations(self):
     class StoryExpectations(story_module.expectations.StoryExpectations):
       def SetExpectations(self):
-        pass
+        pass  # Nothing disabled.
     return StoryExpectations()
 
 
