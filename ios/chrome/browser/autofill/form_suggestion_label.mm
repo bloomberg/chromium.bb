@@ -92,17 +92,19 @@ UILabel* TextLabel(NSString* text, CGFloat alpha, BOOL bold) {
     const CGFloat frameHeight = CGRectGetHeight(proposedFrame);
     CGFloat currentX = kBorderWidth;
 
-    const int iconImageID = autofill::data_util::GetPaymentRequestData(
-                                base::SysNSStringToUTF8(suggestion.icon))
-                                .icon_resource_id;
-    UIImage* iconImage = NativeImage(iconImageID);
-    UIImageView* iconView = [[UIImageView alloc] initWithImage:iconImage];
-    const CGFloat iconY =
-        std::floor((frameHeight - iconImage.size.height) / 2.0f);
-    iconView.frame = CGRectMake(currentX, iconY, iconImage.size.width,
-                                iconImage.size.height);
-    [self addSubview:iconView];
-    currentX += CGRectGetWidth(iconView.frame) + kSpacing;
+    if (suggestion.icon.length > 0) {
+      const int iconImageID = autofill::data_util::GetPaymentRequestData(
+                                  base::SysNSStringToUTF8(suggestion.icon))
+                                  .icon_resource_id;
+      UIImage* iconImage = NativeImage(iconImageID);
+      UIImageView* iconView = [[UIImageView alloc] initWithImage:iconImage];
+      const CGFloat iconY =
+          std::floor((frameHeight - iconImage.size.height) / 2.0f);
+      iconView.frame = CGRectMake(currentX, iconY, iconImage.size.width,
+                                  iconImage.size.height);
+      [self addSubview:iconView];
+      currentX += CGRectGetWidth(iconView.frame) + kSpacing;
+    }
 
     UILabel* label = TextLabel(suggestion.value, kMainLabelAlpha, YES);
     const CGFloat labelY =
