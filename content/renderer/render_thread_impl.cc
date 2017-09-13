@@ -195,8 +195,6 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
-#include "base/process/process.h"
-#include "content/common/mac/app_nap_activity.h"
 #include "content/renderer/theme_helper_mac.h"
 #include "content/renderer/webscrollbarbehavior_impl_mac.h"
 #endif
@@ -809,12 +807,6 @@ void RenderThreadImpl::Init(
       !command_line.HasSwitch(switches::kDisablePartialRaster);
   is_gpu_memory_buffer_compositor_resources_enabled_ = command_line.HasSwitch(
       switches::kEnableGpuMemoryBufferCompositorResources);
-
-#if defined(OS_MACOSX)
-  if (base::Process::IsAppNapEnabled()) {
-    AppNapActivity::InitializeAppNapSupport();
-  }
-#endif
 
 // On macOS this value is adjusted in `UpdateScrollbarTheme()`,
 // but the system default is true.
