@@ -11,10 +11,16 @@
 
 namespace {
 
-#if !defined(MAC_OS_X_VERSION_10_11) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_11
-const NSInteger CBErrorMaxConnection = 10;
-#endif  // MAC_OS_X_VERSION_10_11
+#if !defined(MAC_OS_X_VERSION_10_13) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_13
+
+const NSInteger CBErrorConnectionFailed = 10;
+const NSInteger CBErrorConnectionLimitReached = 11;
+
+// Match the SDK, which now has a typo. https://openradar.appspot.com/34413811
+const NSInteger CBErrorUnkownDevice = 12;
+
+#endif  // MAC_OS_X_VERSION_10_13
 
 MacOSBluetoothOperationsResult GetMacOSOperationResultFromNSError(
     NSError* error) {
@@ -23,8 +29,7 @@ MacOSBluetoothOperationsResult GetMacOSOperationResultFromNSError(
   NSString* error_domain = [error domain];
   NSInteger error_code = [error code];
   if ([error_domain isEqualToString:CBErrorDomain]) {
-    CBError cb_error_code = static_cast<CBError>(error_code);
-    switch (cb_error_code) {
+    switch (error_code) {
       case CBErrorUnknown:
         return MacOSBluetoothOperationsResult::CBERROR_UNKNOWN;
       case CBErrorInvalidParameters:
@@ -45,11 +50,13 @@ MacOSBluetoothOperationsResult GetMacOSOperationResultFromNSError(
         return MacOSBluetoothOperationsResult::CBERROR_UUID_NOT_ALLOWED;
       case CBErrorAlreadyAdvertising:
         return MacOSBluetoothOperationsResult::CBERROR_ALREADY_ADVERTISING;
+      case CBErrorConnectionFailed:
+        return MacOSBluetoothOperationsResult::CBERROR_CONNECTION_FAILED;
+      case CBErrorConnectionLimitReached:
+        return MacOSBluetoothOperationsResult::CBERROR_CONNECTION_LIMIT_REACHED;
+      case CBErrorUnkownDevice:
+        return MacOSBluetoothOperationsResult::CBERROR_UNKNOWN_DEVICE;
       default:
-        if (@available(macOS 10.11, *)) {
-          if (CBErrorMaxConnection == cb_error_code)
-            return MacOSBluetoothOperationsResult::CBERROR_MAX_CONNECTION;
-        }
         NOTREACHED();
     }
     return MacOSBluetoothOperationsResult::CBATT_ERROR_UNKNOWN_ERROR_CODE;
