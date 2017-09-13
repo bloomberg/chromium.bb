@@ -204,6 +204,13 @@ bool TextSuggestionController::IsMenuOpen() const {
 
 void TextSuggestionController::HandlePotentialSuggestionTap(
     const PositionInFlatTree& caret_position) {
+  // It's theoretically possible, but extremely unlikely, that the user has
+  // managed to tap on some text after TextSuggestionController has told the
+  // browser to open the text suggestions menu, but before the browser has
+  // actually done so. In this case, we should just ignore the tap.
+  if (is_suggestion_menu_open_)
+    return;
+
   const EphemeralRangeInFlatTree& range_to_check =
       ComputeRangeSurroundingCaret(caret_position);
 
