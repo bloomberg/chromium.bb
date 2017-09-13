@@ -523,6 +523,7 @@ component("platform") {
     "bindings/StringResource.cpp",
     "bindings/StringResource.h",
     "bindings/ToV8.h",
+    "bindings/TraceWrapperBase.h",
     "bindings/TraceWrapperMember.h",
     "bindings/TraceWrapperV8Reference.h",
     "bindings/V0CustomElementBinding.cpp",
