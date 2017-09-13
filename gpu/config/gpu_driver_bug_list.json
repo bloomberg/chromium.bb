@@ -1,6 +1,6 @@
 {
   "name": "gpu driver bug list",
-  "version": "10.28",
+  "version": "10.29",
   "entries": [
     {
       "id": 1,
@@ -2609,7 +2609,7 @@
     },
     {
       "id": 240,
-      "cr_bugs": [750306],
+      "cr_bugs": [750306, 764526],
       "description": "glGetQueryObject(GL_QUERY_RESULT_AVAILABLE) blocks unexpectedly on Adreno",
       "os": {
         "type": "android",
@@ -2618,7 +2618,7 @@
           "value": "9.0"
         }
       },
-      "gl_renderer": "Adreno \\(TM\\) 530",
+      "gl_renderer": "Adreno \\(TM\\) 5[34]0",
       "disabled_extensions": [
         "GL_EXT_disjoint_timer_query",
         "GL_EXT_disjoint_timer_query_webgl2"
