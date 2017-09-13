@@ -1,7 +1,6 @@
 Test innerText
 
 Check lists, tables, styled text, and images.
-
 Block flow elements get line breaks before and after. Table cells are tab separated.
 Item 1
 Item 2
@@ -12,7 +11,6 @@ Right here is an inline block.
 And an  inline	table	with	one	row  is here, too. 
 And an  inline	table	with	rows  not far behind.
 Check collapsed margins
-
 Collapsed margins are supposed to result in an extra line break.
 First header
 Second header
@@ -24,7 +22,6 @@ The innerText of the above:
 Test innerText
 
 Check lists, tables, styled text, and images.
-
 Block flow elements get line breaks before and after. Table cells are tab separated.
 Item 1
 Item 2
@@ -35,7 +32,6 @@ Right here is an inline block.
 And an  inline	table	with	one	row  is here, too. 
 And an  inline	table	with	rows  not far behind.
 Check collapsed margins
-
 Collapsed margins are supposed to result in an extra line break.
 First header
 Second header

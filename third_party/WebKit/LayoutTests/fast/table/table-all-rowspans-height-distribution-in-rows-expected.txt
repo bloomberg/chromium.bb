@@ -1,5 +1,4 @@
 Test for chromium bug : 252120. Content of the row spanning cell is flowing out of the cell boundries.
-
 Row spanning cell height is not set as per its content height or given height to this cells.
 Test 1 - One row spanning cell present under the boundries of other row spanning cell and inner row spanning cell have lots of content.
 row0 col0 rowspan=6 height=400px	row0 col1

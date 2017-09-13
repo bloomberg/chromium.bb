@@ -1,5 +1,4 @@
 HTMLTableElement's insertRow() method
-
 The first three test whether HTMLTableElement's insertRow() method can add an implicit tbody into a table without one, to hold the inserted row.
 The first tests an empty table
 

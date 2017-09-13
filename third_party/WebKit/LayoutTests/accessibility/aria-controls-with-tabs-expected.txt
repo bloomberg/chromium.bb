@@ -1,9 +1,7 @@
 Crust
 Veges
 Test
-
 Select Crust
-
 Select Crust
 
 This tests that the aria tab item becomes selected if either aria-selected is used, or if aria-controls points to an item that contains KB focus.
