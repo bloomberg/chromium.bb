@@ -6,7 +6,6 @@
 
 #include <algorithm>
 #include <string>
-#include <unordered_set>
 #include <utility>
 
 #include "base/strings/string16.h"
@@ -123,10 +122,7 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
 #if BUILDFLAG(USE_VULCANIZE)
   source->AddResourcePath("crisper.js", IDR_MD_BOOKMARKS_CRISPER_JS);
   source->SetDefaultResource(IDR_MD_BOOKMARKS_VULCANIZED_HTML);
-  std::unordered_set<std::string> exclusions;
-  exclusions.insert("images/folder_open.svg");
-  exclusions.insert("images/folder.svg");
-  source->UseGzip(exclusions);
+  source->UseGzip({"images/folder_open.svg", "images/folder.svg"});
 #else
   source->AddResourcePath("actions.html", IDR_MD_BOOKMARKS_ACTIONS_HTML);
   source->AddResourcePath("actions.js", IDR_MD_BOOKMARKS_ACTIONS_JS);

@@ -20,7 +20,7 @@ content::WebUIDataSource* CreateInvalidationsHTMLSource() {
       content::WebUIDataSource::Create(chrome::kChromeUIInvalidationsHost);
   source->AddResourcePath("about_invalidations.js", IDR_ABOUT_INVALIDATIONS_JS);
   source->SetDefaultResource(IDR_ABOUT_INVALIDATIONS_HTML);
-  source->UseGzip(std::unordered_set<std::string>());
+  source->UseGzip();
   return source;
 }
 

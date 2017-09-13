@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/webui/sandbox_internals_ui.h"
 
 #include <string>
-#include <unordered_set>
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/render_messages.h"
@@ -54,7 +53,7 @@ content::WebUIDataSource* CreateDataSource() {
       content::WebUIDataSource::Create(chrome::kChromeUISandboxHost);
   source->SetDefaultResource(IDR_SANDBOX_INTERNALS_HTML);
   source->AddResourcePath("sandbox_internals.js", IDR_SANDBOX_INTERNALS_JS);
-  source->UseGzip(std::unordered_set<std::string>());
+  source->UseGzip();
 
 #if defined(OS_LINUX)
   SetSandboxStatusData(source);

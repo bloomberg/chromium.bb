@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/webui/domain_reliability_internals_ui.h"
 
 #include <string>
-#include <unordered_set>
 
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -28,7 +27,7 @@ DomainReliabilityInternalsUI::DomainReliabilityInternalsUI(
   html_source->AddResourcePath("domain_reliability_internals.js",
       IDR_DOMAIN_RELIABILITY_INTERNALS_JS);
   html_source->SetDefaultResource(IDR_DOMAIN_RELIABILITY_INTERNALS_HTML);
-  html_source->UseGzip(std::unordered_set<std::string>());
+  html_source->UseGzip();
 
   web_ui->RegisterMessageCallback("updateData",
       base::Bind(&DomainReliabilityInternalsUI::UpdateData,

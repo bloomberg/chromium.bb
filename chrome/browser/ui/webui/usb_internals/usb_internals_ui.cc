@@ -23,7 +23,7 @@ UsbInternalsUI::UsbInternalsUI(content::WebUI* web_ui)
   source->AddResourcePath("url/mojo/origin.mojom.js", IDR_ORIGIN_MOJO_JS);
   source->AddResourcePath("url/mojo/url.mojom.js", IDR_URL_MOJO_JS);
   source->SetDefaultResource(IDR_USB_INTERNALS_HTML);
-  source->UseGzip(std::unordered_set<std::string>());
+  source->UseGzip();
 
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 }

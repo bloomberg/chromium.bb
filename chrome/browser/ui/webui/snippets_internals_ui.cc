@@ -36,7 +36,7 @@ content::WebUIDataSource* CreateSnippetsInternalsHTMLSource() {
   source->AddResourcePath("snippets_internals.js", IDR_SNIPPETS_INTERNALS_JS);
   source->AddResourcePath("snippets_internals.css", IDR_SNIPPETS_INTERNALS_CSS);
   source->SetDefaultResource(IDR_SNIPPETS_INTERNALS_HTML);
-  source->UseGzip(std::unordered_set<std::string>());
+  source->UseGzip();
   return source;
 }
 

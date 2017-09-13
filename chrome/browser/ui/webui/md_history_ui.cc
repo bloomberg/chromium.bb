@@ -167,11 +167,10 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile,
 #endif
   };
 
-  std::unordered_set<std::string> exclude_from_gzip;
-  for (size_t i = 0; i < arraysize(uncompressed_resources); ++i) {
-    const UncompressedResource& resource = uncompressed_resources[i];
+  std::vector<std::string> exclude_from_gzip;
+  for (const auto& resource : uncompressed_resources) {
     source->AddResourcePath(resource.path, resource.idr);
-    exclude_from_gzip.insert(resource.path);
+    exclude_from_gzip.push_back(resource.path);
   }
   source->UseGzip(exclude_from_gzip);
 

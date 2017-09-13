@@ -204,9 +204,7 @@ AccessibilityUI::AccessibilityUI(WebUI* web_ui) : WebUIController(web_ui) {
       base::Bind(&HandleRequestCallback,
                  web_ui->GetWebContents()->GetBrowserContext()));
 
-  std::unordered_set<std::string> exclude_from_gzip;
-  exclude_from_gzip.insert(kDataFile);
-  html_source->UseGzip(exclude_from_gzip);
+  html_source->UseGzip({kDataFile});
 
   BrowserContext* browser_context =
       web_ui->GetWebContents()->GetBrowserContext();
