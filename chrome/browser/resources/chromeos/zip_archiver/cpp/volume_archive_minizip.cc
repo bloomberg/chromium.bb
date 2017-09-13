@@ -14,6 +14,23 @@
 #include "base/time/time.h"
 #include "ppapi/cpp/logging.h"
 
+namespace {
+
+base::Time::Exploded ExplodeDosdate(uint32_t dos_timedate) {
+  base::Time::Exploded exploded_time = {};
+  exploded_time.year = 1980 + ((dos_timedate >> 25) & 0x7f);
+  exploded_time.month = (dos_timedate >> 21) & 0x0f;
+  exploded_time.day_of_month = (dos_timedate >> 16) & 0x1f;
+  exploded_time.hour = (dos_timedate >> 11) & 0x1f;
+  exploded_time.minute = (dos_timedate >> 5) & 0x3f;
+  exploded_time.second = (dos_timedate & 0x1f) << 1;
+  exploded_time.millisecond = 0;
+
+  return exploded_time;
+}
+
+};  // namespace
+
 namespace volume_archive_functions {
 void* CustomArchiveOpen(void* archive,
                         const char* /* filename */,
@@ -263,21 +280,11 @@ VolumeArchive::Result VolumeArchiveMinizip::GetCurrentFileInfo(
 
   // Construct the last modified time. The timezone info is not present in
   // zip files. By default, the time is set as local time in zip format.
-  base::Time::Exploded exploded_time = {};  // Zero-clear.
-  // exploded_time.year = raw_file_info.tmu_date.tm_year;
-  // The month in zip file is 0-based, whereas ours is 1-based.
-  // TODO(yawano): fix this.
-  // exploded_time.month = raw_file_info.tmu_date.tm_mon + 1;
-  // exploded_time.day_of_month = raw_file_info.tmu_date.tm_mday;
-  // exploded_time.hour = raw_file_info.tmu_date.tm_hour;
-  // exploded_time.minute = raw_file_info.tmu_date.tm_min;
-  // exploded_time.second = raw_file_info.tmu_date.tm_sec;
-  // exploded_time.millisecond = 0;
-
   base::Time local_time;
   // If the modification time is not available, we set the value to the current
   // local time.
-  if (!base::Time::FromLocalExploded(exploded_time, &local_time))
+  if (!base::Time::FromLocalExploded(ExplodeDosdate(raw_file_info.dos_date),
+                                     &local_time))
     local_time = base::Time::UnixEpoch();
   *modification_time = local_time.ToTimeT();
 

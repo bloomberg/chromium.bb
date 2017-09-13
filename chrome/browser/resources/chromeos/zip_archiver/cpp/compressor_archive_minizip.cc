@@ -10,6 +10,19 @@
 #include "base/time/time.h"
 #include "ppapi/cpp/logging.h"
 
+namespace {
+
+uint32_t UnixToDosdate(const int64_t datetime) {
+  tm tm_datetime;
+  localtime_r(&datetime, &tm_datetime);
+
+  return (tm_datetime.tm_year - 80) << 25 | (tm_datetime.tm_mon + 1) << 21 |
+         tm_datetime.tm_mday << 16 | tm_datetime.tm_hour << 11 |
+         tm_datetime.tm_min << 5 | (tm_datetime.tm_sec >> 1);
+}
+
+};  // namespace
+
 namespace compressor_archive_functions {
 
 // Called when minizip tries to open a zip archive file. We do nothing here
@@ -149,17 +162,7 @@ bool CompressorArchiveMinizip::AddToArchive(const std::string& filename,
   // Fill zipfileMetadata with modification_time.
   zip_fileinfo zipfileMetadata;
   // modification_time is millisecond-based, while FromTimeT takes seconds.
-  base::Time tm = base::Time::FromTimeT((int64_t)modification_time / 1000);
-  base::Time::Exploded exploded_time = {};
-  tm.LocalExplode(&exploded_time);
-  // TODO(yawano): fix this.
-  // zipfileMetadata.tmz_date.tm_sec = exploded_time.second;
-  // zipfileMetadata.tmz_date.tm_min = exploded_time.minute;
-  // zipfileMetadata.tmz_date.tm_hour = exploded_time.hour;
-  // zipfileMetadata.tmz_date.tm_year = exploded_time.year;
-  // zipfileMetadata.tmz_date.tm_mday = exploded_time.day_of_month;
-  // Convert from 1-based to 0-based.
-  // zipfileMetadata.tmz_date.tm_mon = exploded_time.month - 1;
+  zipfileMetadata.dos_date = UnixToDosdate((int64_t)modification_time / 1000);
 
   // Section 4.4.4 http://www.pkware.com/documents/casestudies/APPNOTE.TXT
   // Setting the Language encoding flag so the file is told to be in utf-8.
