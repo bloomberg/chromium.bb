@@ -331,7 +331,10 @@ void MemoryDumpManager::Initialize(
 
 // Enable the core dump providers.
 #if defined(MALLOC_MEMORY_TRACING_SUPPORTED)
-  RegisterDumpProvider(MallocDumpProvider::GetInstance(), "Malloc", nullptr);
+  base::trace_event::MemoryDumpProvider::Options options;
+  options.supports_heap_profiling = true;
+  RegisterDumpProvider(MallocDumpProvider::GetInstance(), "Malloc", nullptr,
+                       options);
 #endif
 
 #if defined(OS_ANDROID)
@@ -849,13 +852,8 @@ void MemoryDumpManager::NotifyHeapProfilingEnabledLocked(
     scoped_refptr<MemoryDumpProviderInfo> mdpinfo,
     bool enabled) {
   lock_.AssertAcquired();
-
-  // If we do not have ability to request global dumps, then a dump cannot be in
-  // progress. So, the notification can be sent on any thread. This is done not
-  // to create thread early during startup since sandbox initialization that
-  // happens later requires no thread to be created.
-  if (!can_request_global_dumps())
-    return mdpinfo->dump_provider->OnHeapProfilingEnabled(enabled);
+  if (!mdpinfo->options.supports_heap_profiling)
+    return;
 
   const auto& task_runner = mdpinfo->task_runner
                                 ? mdpinfo->task_runner
