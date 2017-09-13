@@ -8,6 +8,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
@@ -213,15 +214,13 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
                                  const DataCallback& callback) override {
     DBusThreadManager::Get()->GetCryptohomeClient()->GetSanitizedUsername(
         cryptohome_id,
-        base::Bind(&AsyncMethodCallerImpl::GetSanitizedUsernameCallback,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
+        base::BindOnce(&AsyncMethodCallerImpl::GetSanitizedUsernameCallback,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
-  virtual void GetSanitizedUsernameCallback(
-      const DataCallback& callback,
-      const chromeos::DBusMethodCallStatus call_status,
-      const std::string& result) {
-    callback.Run(true, result);
+  void GetSanitizedUsernameCallback(const DataCallback& callback,
+                                    base::Optional<std::string> result) {
+    callback.Run(true, result.value_or(std::string()));
   }
 
  private:

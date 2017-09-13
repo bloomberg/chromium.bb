@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -15,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/optional.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/blocking_method_caller.h"
@@ -190,7 +192,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
 
   // CryptohomeClient override,
   void GetSanitizedUsername(const cryptohome::Identification& cryptohome_id,
-                            StringDBusMethodCallback callback) override {
+                            DBusMethodCallback<std::string> callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeGetSanitizedUsername);
     dbus::MessageWriter writer(&method_call);
@@ -307,7 +309,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  void TpmGetPassword(StringDBusMethodCallback callback) override {
+  void TpmGetPassword(DBusMethodCallback<std::string> callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeTpmGetPassword);
     proxy_->CallMethod(
@@ -756,7 +758,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  void TpmGetVersion(StringDBusMethodCallback callback) override {
+  void TpmGetVersion(DBusMethodCallback<std::string> callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeTpmGetVersion);
     proxy_->CallMethod(
@@ -1093,19 +1095,19 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // Handles responses for methods with a string value result.
-  void OnStringMethod(StringDBusMethodCallback callback,
+  void OnStringMethod(DBusMethodCallback<std::string> callback,
                       dbus::Response* response) {
     if (!response) {
-      std::move(callback).Run(DBUS_METHOD_CALL_FAILURE, std::string());
+      std::move(callback).Run(base::nullopt);
       return;
     }
     dbus::MessageReader reader(response);
     std::string result;
     if (!reader.PopString(&result)) {
-      std::move(callback).Run(DBUS_METHOD_CALL_FAILURE, std::string());
+      std::move(callback).Run(base::nullopt);
       return;
     }
-    std::move(callback).Run(DBUS_METHOD_CALL_SUCCESS, result);
+    std::move(callback).Run(std::move(result));
   }
 
   // Handles responses for methods with a bool result and data.

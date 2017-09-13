@@ -37,7 +37,7 @@ class UpdateKeyRequest;
 
 class Identification;
 
-} // namespace cryptohome
+}  // namespace cryptohome
 
 namespace chromeos {
 
@@ -180,7 +180,7 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   // call succeeds.
   virtual void GetSanitizedUsername(
       const cryptohome::Identification& cryptohome_id,
-      StringDBusMethodCallback callback) = 0;
+      DBusMethodCallback<std::string> callback) = 0;
 
   // Same as GetSanitizedUsername() but blocks until a reply is received, and
   // returns the sanitized username synchronously. Returns an empty string if
@@ -233,7 +233,7 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   virtual bool CallTpmIsEnabledAndBlock(bool* enabled) = 0;
 
   // Calls TpmGetPassword method.
-  virtual void TpmGetPassword(StringDBusMethodCallback callback) = 0;
+  virtual void TpmGetPassword(DBusMethodCallback<std::string> callback) = 0;
 
   // Calls TpmIsOwned method.
   virtual void TpmIsOwned(const BoolDBusMethodCallback& callback) = 0;
@@ -492,7 +492,7 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
 
   // Asynchronously gets the underlying TPM version information and passes it to
   // the given callback as a string.
-  virtual void TpmGetVersion(StringDBusMethodCallback callback) = 0;
+  virtual void TpmGetVersion(DBusMethodCallback<std::string> callback) = 0;
 
   // Asynchronously calls the GetKeyDataEx method. |callback| will be invoked
   // with the reply protobuf.
