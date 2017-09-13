@@ -40,6 +40,7 @@
 #include <unistd.h>
 #include <linux/fb.h>
 #include <linux/input.h>
+#include <assert.h>
 
 #include <libudev.h>
 
@@ -334,8 +335,6 @@ fbdev_set_screen_info(int fd, struct fbdev_screeninfo *info)
 	return 1;
 }
 
-static void fbdev_frame_buffer_destroy(struct fbdev_output *output);
-
 /* Returns an FD for the frame buffer device. */
 static int
 fbdev_frame_buffer_open(const char *fb_dev,
@@ -400,8 +399,10 @@ fbdev_frame_buffer_map(struct fbdev_output *output, int fd)
 	retval = 0;
 
 out_unmap:
-	if (retval != 0 && output->fb != NULL)
-		fbdev_frame_buffer_destroy(output);
+	if (retval != 0 && output->fb != NULL) {
+		munmap(output->fb, output->fb_info.buffer_length);
+		output->fb = NULL;
+	}
 
 out_close:
 	if (fd >= 0)
@@ -411,9 +412,18 @@ out_close:
 }
 
 static void
-fbdev_frame_buffer_destroy(struct fbdev_output *output)
+fbdev_frame_buffer_unmap(struct fbdev_output *output)
 {
-	weston_log("Destroying fbdev frame buffer.\n");
+	if (!output->fb) {
+		assert(!output->hw_surface);
+		return;
+	}
+
+	weston_log("Unmapping fbdev frame buffer.\n");
+
+	if (output->hw_surface)
+		pixman_image_unref(output->hw_surface);
+	output->hw_surface = NULL;
 
 	if (munmap(output->fb, output->fb_info.buffer_length) < 0)
 		weston_log("Failed to munmap frame buffer: %s\n",
@@ -423,7 +433,6 @@ fbdev_frame_buffer_destroy(struct fbdev_output *output)
 }
 
 static void fbdev_output_destroy(struct weston_output *base);
-static void fbdev_output_disable(struct weston_output *base);
 
 static int
 fbdev_output_enable(struct weston_output *base)
@@ -463,9 +472,7 @@ fbdev_output_enable(struct weston_output *base)
 	return 0;
 
 out_hw_surface:
-	pixman_image_unref(output->hw_surface);
-	output->hw_surface = NULL;
-	fbdev_frame_buffer_destroy(output);
+	fbdev_frame_buffer_unmap(output);
 
 	return -1;
 }
@@ -473,11 +480,12 @@ out_hw_surface:
 static int
 fbdev_output_disable_handler(struct weston_output *base)
 {
+	struct fbdev_output *output = to_fbdev_output(base);
+
 	if (!base->enabled)
 		return 0;
 
-	/* Close the frame buffer. */
-	fbdev_output_disable(base);
+	fbdev_frame_buffer_unmap(output);
 
 	if (base->renderer_state != NULL)
 		pixman_renderer_output_destroy(base);
@@ -628,24 +636,6 @@ err:
 	return -1;
 }
 
-/* NOTE: This leaves output->fb_info populated, caching data so that if
- * fbdev_output_reenable() is called again, it can determine whether a mode-set
- * is needed. */
-static void
-fbdev_output_disable(struct weston_output *base)
-{
-	struct fbdev_output *output = to_fbdev_output(base);
-
-	weston_log("Disabling fbdev output.\n");
-
-	if (output->hw_surface != NULL) {
-		pixman_image_unref(output->hw_surface);
-		output->hw_surface = NULL;
-	}
-
-	fbdev_frame_buffer_destroy(output);
-}
-
 static void
 fbdev_backend_destroy(struct weston_compositor *base)
 {
@@ -687,7 +677,7 @@ session_notify(struct wl_listener *listener, void *data)
 		udev_input_disable(&backend->input);
 
 		wl_list_for_each(output, &compositor->output_list, link) {
-			fbdev_output_disable(output);
+			fbdev_frame_buffer_unmap(to_fbdev_output(output));
 		}
 
 		backend->prev_state = compositor->state;
