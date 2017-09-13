@@ -101,6 +101,10 @@ const FieldTranslationEntry openvpn_fields[] = {
     {::onc::openvpn::kVerifyHash, shill::kOpenVPNVerifyHashProperty},
     {NULL}};
 
+const FieldTranslationEntry arc_vpn_fields[] = {
+    {::onc::arc_vpn::kTunnelChrome, shill::kArcVpnTunnelChromeProperty},
+    {NULL}};
+
 const FieldTranslationEntry verify_x509_fields[] = {
     {::onc::verify_x509::kName, shill::kOpenVPNVerifyX509NameProperty},
     {::onc::verify_x509::kType, shill::kOpenVPNVerifyX509TypeProperty},
@@ -251,6 +255,7 @@ const OncValueTranslationEntry onc_value_translation_table[] = {
     {&kL2TPSignature, l2tp_fields},
     {&kXAUTHSignature, xauth_fields},
     {&kOpenVPNSignature, openvpn_fields},
+    {&kARCVPNSignature, arc_vpn_fields},
     {&kVerifyX509Signature, verify_x509_fields},
     {&kVPNSignature, vpn_fields},
     {&kTetherSignature, tether_fields},
@@ -306,6 +311,7 @@ const StringTranslationEntry kVPNTypeTable[] = {
     {::onc::vpn::kTypeL2TP_IPsec, shill::kProviderL2tpIpsec},
     {::onc::vpn::kOpenVPN, shill::kProviderOpenVpn},
     {::onc::vpn::kThirdPartyVpn, shill::kProviderThirdPartyVpn},
+    {::onc::vpn::kArcVpn, shill::kProviderArcVpn},
     {NULL}};
 
 const StringTranslationEntry kWiFiSecurityTable[] = {

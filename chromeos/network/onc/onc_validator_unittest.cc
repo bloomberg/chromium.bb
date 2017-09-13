@@ -226,6 +226,7 @@ INSTANTIATE_TEST_CASE_P(
         OncParams("third_party_vpn.onc",
                   &kNetworkConfigurationSignature,
                   false),
+        OncParams("arc_vpn.onc", &kNetworkConfigurationSignature, false),
         OncParams("tether.onc", &kNetworkWithStateSignature, false)));
 
 namespace {

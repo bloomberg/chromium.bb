@@ -327,6 +327,7 @@ const char kOpenVPN[] = "OpenVPN";
 const char kPassword[] = "Password";
 const char kSaveCredentials[] = "SaveCredentials";
 const char kThirdPartyVpn[] = "ThirdPartyVPN";
+const char kArcVpn[] = "ARCVPN";
 const char kTypeL2TP_IPsec[] = "L2TP-IPsec";
 const char kType[] = "Type";
 const char kUsername[] = "Username";
@@ -402,6 +403,10 @@ namespace third_party_vpn {
 const char kExtensionID[] = "ExtensionID";
 const char kProviderName[] = "ProviderName";
 }  // third_party_vpn
+
+namespace arc_vpn {
+const char kTunnelChrome[] = "TunnelChrome";
+}  // namespace arc_vpn
 
 namespace verify_x509 {
 const char kName[] = "Name";
