@@ -4,10 +4,14 @@
 
 module blink.mojom;
 
+// This interface is implemented in blink by TextSuggestionBackendImpl. It is
+// called by browser code on Android implementing the spell check/text
+// suggestion menu.
 interface TextSuggestionBackend {
   ApplySpellCheckSuggestion(string suggestion);
+  ApplyTextSuggestion(int32 marker_tag, int32 suggestion_index);
   DeleteActiveSuggestionRange();
-  NewWordAddedToDictionary(string suggestion);
-  SpellCheckMenuTimeoutCallback();
-  SuggestionMenuClosed();
+  OnNewWordAddedToDictionary(string suggestion);
+  OnSuggestionMenuClosed();
+  SuggestionMenuTimeoutCallback(int32 max_number_of_suggestions);
 };

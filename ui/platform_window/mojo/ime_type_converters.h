@@ -5,6 +5,7 @@
 #ifndef UI_PLATFORM_WINDOW_MOJO_IME_TYPE_CONVERTERS_H_
 #define UI_PLATFORM_WINDOW_MOJO_IME_TYPE_CONVERTERS_H_
 
+#include "ui/base/ime/ime_text_span.h"
 #include "ui/platform_window/mojo/mojo_ime_export.h"
 #include "ui/platform_window/mojo/text_input_state.mojom.h"
 #include "ui/platform_window/text_input_state.h"

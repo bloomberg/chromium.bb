@@ -22,8 +22,8 @@ void TextSuggestionHostMojoImplAndroid::Create(
       std::move(request));
 }
 
-void TextSuggestionHostMojoImplAndroid::StartSpellCheckMenuTimer() {
-  text_suggestion_host_->StartSpellCheckMenuTimer();
+void TextSuggestionHostMojoImplAndroid::StartSuggestionMenuTimer() {
+  text_suggestion_host_->StartSuggestionMenuTimer();
 }
 
 void TextSuggestionHostMojoImplAndroid::ShowSpellCheckSuggestionMenu(
@@ -33,6 +33,15 @@ void TextSuggestionHostMojoImplAndroid::ShowSpellCheckSuggestionMenu(
     std::vector<blink::mojom::SpellCheckSuggestionPtr> suggestions) {
   text_suggestion_host_->ShowSpellCheckSuggestionMenu(caret_x, caret_y,
                                                       marked_text, suggestions);
+}
+
+void TextSuggestionHostMojoImplAndroid::ShowTextSuggestionMenu(
+    double caret_x,
+    double caret_y,
+    const std::string& marked_text,
+    std::vector<blink::mojom::TextSuggestionPtr> suggestions) {
+  text_suggestion_host_->ShowTextSuggestionMenu(caret_x, caret_y, marked_text,
+                                                suggestions);
 }
 
 }  // namespace content
