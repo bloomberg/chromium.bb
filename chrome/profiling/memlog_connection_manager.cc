@@ -125,7 +125,7 @@ bool MemlogConnectionManager::DumpProcess(
 
   std::ostringstream oss;
   ExportParams params;
-  params.set = &connection->tracker.live_allocs();
+  params.allocs = connection->tracker.GetCounts();
   params.context_map = &connection->tracker.context();
   params.maps = &maps;
   params.min_size_threshold = kMinSizeThreshold;
@@ -179,7 +179,7 @@ void MemlogConnectionManager::DumpProcessForTracing(
   Connection* connection = it->second.get();
   std::ostringstream oss;
   ExportParams params;
-  params.set = &connection->tracker.live_allocs();
+  params.allocs = connection->tracker.GetCounts();
   params.maps = &maps;
   params.context_map = &connection->tracker.context();
   params.min_size_threshold = kMinSizeThreshold;

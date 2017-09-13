@@ -19,4 +19,11 @@ AllocationEvent::AllocationEvent(AllocatorType allocator,
 
 AllocationEvent::AllocationEvent(Address addr) : address_(addr) {}
 
+AllocationCountMap AllocationEventSetToCountMap(const AllocationEventSet& set) {
+  AllocationCountMap map;
+  for (const auto& alloc : set)
+    map[alloc]++;
+  return map;
+}
+
 }  // namespace profiling

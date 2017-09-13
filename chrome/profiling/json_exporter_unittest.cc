@@ -10,6 +10,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/process/process.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/profiling/backtrace_storage.h"
@@ -87,7 +88,8 @@ const base::Value* FindFirstRegionWithAnyName(
   return nullptr;
 }
 
-int GetStringFromStringTable(const base::Value* strings, const char* text) {
+// Looks up a given string id from the string table. Returns -1 if not found.
+int GetIdFromStringTable(const base::Value* strings, const char* text) {
   for (const auto& string : strings->GetList()) {
     const base::Value* string_id =
         string.FindKeyOfType("id", base::Value::Type::INTEGER);
@@ -98,6 +100,23 @@ int GetStringFromStringTable(const base::Value* strings, const char* text) {
       return string_id->GetInt();
   }
   return -1;
+}
+
+// Looks up a given string from the string table. Returns empty string if not
+// found.
+std::string GetStringFromStringTable(const base::Value* strings, int sid) {
+  for (const auto& string : strings->GetList()) {
+    const base::Value* string_id =
+        string.FindKeyOfType("id", base::Value::Type::INTEGER);
+    if (string_id->GetInt() == sid) {
+      const base::Value* string_text =
+          string.FindKeyOfType("string", base::Value::Type::STRING);
+      if (!string_text)
+        return std::string();
+      return string_text->GetString();
+    }
+  }
+  return std::string();
 }
 
 int GetNodeWithNameID(const base::Value* nodes, int sid) {
@@ -146,13 +165,11 @@ bool IsBacktraceInList(const base::Value* backtraces, int id, int parent) {
 
 TEST(ProfilingJsonExporterTest, TraceHeader) {
   BacktraceStorage backtrace_storage;
-  AllocationEventSet events;
   MemoryMap memory_map;
   std::map<std::string, int> context_map;
   std::ostringstream stream;
 
   ExportParams params;
-  params.set = &events;
   params.context_map = &context_map;
   params.maps = &memory_map;
   params.min_size_threshold = kNoSizeThreshold;
@@ -164,7 +181,8 @@ TEST(ProfilingJsonExporterTest, TraceHeader) {
   base::JSONReader reader(base::JSON_PARSE_RFC);
   std::unique_ptr<base::Value> root = reader.ReadToValue(stream.str());
   ASSERT_EQ(base::JSONReader::JSON_NO_ERROR, reader.error_code())
-      << reader.GetErrorMessage();
+      << reader.GetErrorMessage() << "\n"
+      << stream.str();
   ASSERT_TRUE(root);
 
   const base::Value* process_name = FindEventWithName(*root, "process_name");
@@ -215,7 +233,7 @@ TEST(ProfilingJsonExporterTest, DumpsHeader) {
   std::ostringstream stream;
 
   ExportParams params;
-  params.set = &events;
+  params.allocs = AllocationEventSetToCountMap(events);
   params.context_map = &context_map;
   params.maps = &memory_map;
   params.min_size_threshold = kNoSizeThreshold;
@@ -277,13 +295,15 @@ TEST(ProfilingJsonExporterTest, Simple) {
       AllocationEvent(AllocatorType::kMalloc, Address(0x2), 32, bt2, 0));
   events.insert(
       AllocationEvent(AllocatorType::kMalloc, Address(0x3), 20, bt1, 0));
+  events.insert(AllocationEvent(AllocatorType::kPartitionAlloc, Address(0x4),
+                                20, bt1, 0));
 
   std::ostringstream stream;
   std::map<std::string, int> context_map;
   MemoryMap memory_map;
 
   ExportParams params;
-  params.set = &events;
+  params.allocs = AllocationEventSetToCountMap(events);
   params.context_map = &context_map;
   params.maps = &memory_map;
   params.min_size_threshold = kNoSizeThreshold;
@@ -315,11 +335,11 @@ TEST(ProfilingJsonExporterTest, Simple) {
 
   // Validate the strings table.
   EXPECT_EQ(5u, strings->GetList().size());
-  int sid_unknown = GetStringFromStringTable(strings, "[unknown]");
-  int sid_1234 = GetStringFromStringTable(strings, "pc:1234");
-  int sid_5678 = GetStringFromStringTable(strings, "pc:5678");
-  int sid_9012 = GetStringFromStringTable(strings, "pc:9012");
-  int sid_9013 = GetStringFromStringTable(strings, "pc:9013");
+  int sid_unknown = GetIdFromStringTable(strings, "[unknown]");
+  int sid_1234 = GetIdFromStringTable(strings, "pc:1234");
+  int sid_5678 = GetIdFromStringTable(strings, "pc:5678");
+  int sid_9012 = GetIdFromStringTable(strings, "pc:9012");
+  int sid_9013 = GetIdFromStringTable(strings, "pc:9013");
   EXPECT_NE(-1, sid_unknown);
   EXPECT_NE(-1, sid_1234);
   EXPECT_NE(-1, sid_5678);
@@ -346,7 +366,7 @@ TEST(ProfilingJsonExporterTest, Simple) {
   EXPECT_TRUE(IsBacktraceInList(nodes, id2, id0));
   EXPECT_TRUE(IsBacktraceInList(nodes, id3, id2));
 
-  // Retrieve the allocations and valid their structure.
+  // Retrieve the allocations and validate their structure.
   const base::Value* counts =
       heaps_v2->FindPath({"allocators", "malloc", "counts"});
   const base::Value* types =
@@ -383,6 +403,22 @@ TEST(ProfilingJsonExporterTest, Simple) {
   EXPECT_EQ(0, types->GetList()[node3].GetInt());
   EXPECT_EQ(32, sizes->GetList()[node3].GetInt());
   EXPECT_EQ(id3, backtraces->GetList()[node3].GetInt());
+
+  // Validate that the partition alloc one got through.
+  counts = heaps_v2->FindPath({"allocators", "partition_alloc", "counts"});
+  types = heaps_v2->FindPath({"allocators", "partition_alloc", "types"});
+  sizes = heaps_v2->FindPath({"allocators", "partition_alloc", "sizes"});
+  backtraces = heaps_v2->FindPath({"allocators", "partition_alloc", "nodes"});
+
+  ASSERT_TRUE(counts);
+  ASSERT_TRUE(types);
+  ASSERT_TRUE(sizes);
+  ASSERT_TRUE(backtraces);
+
+  // There should just be one entry for the partition_alloc allocation.
+  EXPECT_EQ(1u, counts->GetList().size());
+  EXPECT_EQ(1u, types->GetList().size());
+  EXPECT_EQ(1u, sizes->GetList().size());
 }
 
 TEST(ProfilingJsonExporterTest, SimpleWithFilteredAllocations) {
@@ -409,9 +445,10 @@ TEST(ProfilingJsonExporterTest, SimpleWithFilteredAllocations) {
       AllocationEvent(AllocatorType::kMalloc, Address(0x3), 1000, bt2, 0));
   events.insert(
       AllocationEvent(AllocatorType::kMalloc, Address(0x4), 1000, bt2, 0));
-  for (size_t i = 0; i < kCountThreshold + 1; ++i)
+  for (size_t i = 0; i < kCountThreshold + 1; ++i) {
     events.insert(
         AllocationEvent(AllocatorType::kMalloc, Address(0x5 + i), 1, bt3, 0));
+  }
 
   // Validate filtering by size and count.
   std::ostringstream stream;
@@ -419,7 +456,7 @@ TEST(ProfilingJsonExporterTest, SimpleWithFilteredAllocations) {
   MemoryMap memory_map;
 
   ExportParams params;
-  params.set = &events;
+  params.allocs = AllocationEventSetToCountMap(events);
   params.context_map = &context_map;
   params.maps = &memory_map;
   params.min_size_threshold = kSizeThreshold;
@@ -448,10 +485,10 @@ TEST(ProfilingJsonExporterTest, SimpleWithFilteredAllocations) {
 
   // Validate the strings table.
   EXPECT_EQ(3u, strings->GetList().size());
-  int sid_unknown = GetStringFromStringTable(strings, "[unknown]");
-  int sid_1234 = GetStringFromStringTable(strings, "pc:1234");
-  int sid_5678 = GetStringFromStringTable(strings, "pc:5678");
-  int sid_9999 = GetStringFromStringTable(strings, "pc:9999");
+  int sid_unknown = GetIdFromStringTable(strings, "[unknown]");
+  int sid_1234 = GetIdFromStringTable(strings, "pc:1234");
+  int sid_5678 = GetIdFromStringTable(strings, "pc:5678");
+  int sid_9999 = GetIdFromStringTable(strings, "pc:9999");
   EXPECT_NE(-1, sid_unknown);
   EXPECT_EQ(-1, sid_1234);  // Must be filtered.
   EXPECT_NE(-1, sid_5678);
@@ -495,7 +532,7 @@ TEST(ProfilingJsonExporterTest, MemoryMaps) {
   std::map<std::string, int> context_map;
 
   ExportParams params;
-  params.set = &events;
+  params.allocs = AllocationEventSetToCountMap(events);
   params.context_map = &context_map;
   params.maps = &memory_maps;
   params.min_size_threshold = kNoSizeThreshold;
@@ -551,7 +588,7 @@ TEST(ProfilingJsonExporterTest, Metadata) {
   MemoryMap memory_map;
 
   ExportParams params;
-  params.set = &events;
+  params.allocs = AllocationEventSetToCountMap(events);
   params.context_map = &context_map;
   params.maps = &memory_map;
   params.min_size_threshold = kNoSizeThreshold;
@@ -572,6 +609,126 @@ TEST(ProfilingJsonExporterTest, Metadata) {
   ASSERT_TRUE(found_metadatas) << "Array contains no metadata";
 
   EXPECT_EQ(metadata_dict_copy, *found_metadatas);
+}
+
+TEST(ProfilingJsonExporterTest, Context) {
+  BacktraceStorage backtrace_storage;
+  std::map<std::string, int> context_map;
+
+  std::vector<Address> stack;
+  stack.push_back(Address(0x1234));
+  const Backtrace* bt = backtrace_storage.Insert(std::move(stack));
+
+  std::string context_str1("Context 1");
+  int context_id1 = 1;
+  context_map[context_str1] = context_id1;
+  std::string context_str2("Context 2");
+  int context_id2 = 2;
+  context_map[context_str2] = context_id2;
+
+  // Make 4 events, all with identical metadata except context. Two share the
+  // same context so should get folded, one has unique context, and one has no
+  // context.
+  AllocationEventSet events;
+  events.insert(AllocationEvent(AllocatorType::kPartitionAlloc, Address(0x1),
+                                16, bt, context_id1));
+  events.insert(AllocationEvent(AllocatorType::kPartitionAlloc, Address(0x2),
+                                16, bt, context_id2));
+  events.insert(
+      AllocationEvent(AllocatorType::kPartitionAlloc, Address(0x3), 16, bt, 0));
+  events.insert(AllocationEvent(AllocatorType::kPartitionAlloc, Address(0x4),
+                                16, bt, context_id1));
+
+  std::ostringstream stream;
+  MemoryMap memory_map;
+
+  ExportParams params;
+  params.allocs = AllocationEventSetToCountMap(events);
+  params.context_map = &context_map;
+  params.maps = &memory_map;
+  params.min_size_threshold = kNoSizeThreshold;
+  params.min_count_threshold = kNoCountThreshold;
+  ExportAllocationEventSetToJSON(1234, params, nullptr, stream);
+  std::string json = stream.str();
+
+  // JSON should parse.
+  base::JSONReader reader(base::JSON_PARSE_RFC);
+  std::unique_ptr<base::Value> root = reader.ReadToValue(stream.str());
+  ASSERT_EQ(base::JSONReader::JSON_NO_ERROR, reader.error_code())
+      << reader.GetErrorMessage();
+  ASSERT_TRUE(root);
+
+  // Retrieve the allocations.
+  const base::Value* periodic_interval = FindFirstPeriodicInterval(*root);
+  ASSERT_TRUE(periodic_interval);
+  const base::Value* heaps_v2 =
+      periodic_interval->FindPath({"args", "dumps", "heaps_v2"});
+  ASSERT_TRUE(heaps_v2);
+
+  const base::Value* counts =
+      heaps_v2->FindPath({"allocators", "partition_alloc", "counts"});
+  ASSERT_TRUE(counts);
+  const base::Value* types =
+      heaps_v2->FindPath({"allocators", "partition_alloc", "types"});
+  ASSERT_TRUE(types);
+
+  const auto& counts_list = counts->GetList();
+  const auto& types_list = types->GetList();
+
+  // There should be three allocations, two coalesced ones, one with unique
+  // context, and one with no context.
+  EXPECT_EQ(3u, counts_list.size());
+  EXPECT_EQ(3u, types_list.size());
+
+  const base::Value* types_map = heaps_v2->FindPath({"maps", "types"});
+  ASSERT_TRUE(types_map);
+  const base::Value* strings = heaps_v2->FindPath({"maps", "strings"});
+  ASSERT_TRUE(strings);
+
+  // Reconstruct the map from type id to string.
+  std::map<int, std::string> type_to_string;
+  for (const auto& type : types_map->GetList()) {
+    const base::Value* id =
+        type.FindKeyOfType("id", base::Value::Type::INTEGER);
+    ASSERT_TRUE(id);
+    const base::Value* name_sid =
+        type.FindKeyOfType("name_sid", base::Value::Type::INTEGER);
+    ASSERT_TRUE(name_sid);
+
+    type_to_string[id->GetInt()] =
+        GetStringFromStringTable(strings, name_sid->GetInt());
+  }
+
+  // Track the three entries we have down to what we expect. The order is not
+  // defined so this is relatively complex to do.
+  bool found_double_context = false;  // Allocations sharing the same context.
+  bool found_single_context = false;  // Allocation with unique context.
+  bool found_no_context = false;      // Allocation with no context.
+  for (size_t i = 0; i < types_list.size(); i++) {
+    const auto& found = type_to_string.find(types_list[i].GetInt());
+    ASSERT_NE(type_to_string.end(), found);
+    if (found->second == context_str1) {
+      // Context string matches the one with two allocations.
+      ASSERT_FALSE(found_double_context);
+      found_double_context = true;
+      ASSERT_EQ(2, counts_list[i].GetInt());
+    } else if (found->second == context_str2) {
+      // Context string matches the one with one allocation.
+      ASSERT_FALSE(found_single_context);
+      found_single_context = true;
+      ASSERT_EQ(1, counts_list[i].GetInt());
+    } else if (found->second == "[unknown]") {
+      // Context string for the one with no context.
+      ASSERT_FALSE(found_no_context);
+      found_no_context = true;
+      ASSERT_EQ(1, counts_list[i].GetInt());
+    }
+  }
+
+  // All three types of things should have been found in the loop.
+  ASSERT_TRUE(found_double_context);
+  ASSERT_TRUE(found_single_context);
+  ASSERT_TRUE(found_no_context);
 }
 
 }  // namespace profiling

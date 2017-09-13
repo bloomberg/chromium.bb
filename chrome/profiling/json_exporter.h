@@ -18,9 +18,15 @@ namespace profiling {
 // Configuration passed to the export functions because they take many
 // arguments. All parameters must be set. The pointers are not managed by this
 // class and must outlive it.
+//
+// Whether something is a pointer or a value is determined by what makes the
+// call site nicer without introducing unnecessary copies.
 struct ExportParams {
+  ExportParams();
+  ~ExportParams();
+
   // Allocation events to export.
-  const AllocationEventSet* set = nullptr;
+  AllocationCountMap allocs;
 
   // VM map of all regions in the process.
   const std::vector<memory_instrumentation::mojom::VmRegionPtr>* maps = nullptr;

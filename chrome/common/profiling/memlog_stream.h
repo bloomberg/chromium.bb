@@ -19,10 +19,12 @@ constexpr uint32_t kFreePacketType = 0xFEFEFEFE;
 constexpr uint32_t kMaxStackEntries = 256;
 constexpr uint32_t kMaxContextLen = 256;
 
+// This should count up from 0 so it can be used to index into an array.
 enum class AllocatorType : uint32_t {
   kMalloc = 0,
   kPartitionAlloc = 1,
-  kOilpan = 2
+  kOilpan = 2,
+  kCount  // Number of allocator types.
 };
 
 #pragma pack(push, 1)

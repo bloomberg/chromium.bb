@@ -36,11 +36,22 @@ class AllocationTracker : public MemlogReceiver {
   const AllocationEventSet& live_allocs() const { return live_allocs_; }
   const ContextMap& context() const { return context_; }
 
+  // Returns the aggregated allocation counts currently live.
+  AllocationCountMap GetCounts() const;
+
  private:
   CompleteCallback complete_callback_;
 
   BacktraceStorage* backtrace_storage_;
 
+  // Need to track all live objects. Since the free information doesn't have
+  // the metadata, we can't keep a map of counts indexed by just the metadata
+  // (which is all the trace JSON needs), but need to keep an index by address.
+  //
+  // This could be a two-level index, where one set of metadata is kept and
+  // addresses index into that. But a full copy of the metadata is about the
+  // same size as the internal map node required for this second index, with
+  // additional complexity.
   AllocationEventSet live_allocs_;
 
   // The context strings are atoms. Since there are O(100's) of these, we do

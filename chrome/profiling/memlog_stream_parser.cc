@@ -161,10 +161,13 @@ MemlogStreamParser::ReadStatus MemlogStreamParser::ParseAlloc() {
   if (!PeekBytes(sizeof(AllocPacket), &alloc_packet))
     return READ_NO_DATA;
 
-  std::vector<Address> stack;
+  // Validate data.
   if (alloc_packet.stack_len > kMaxStackEntries ||
-      alloc_packet.context_byte_len > kMaxContextLen)
-    return READ_ERROR;  // Prevent overflow on corrupted or malicious data.
+      alloc_packet.context_byte_len > kMaxContextLen ||
+      alloc_packet.allocator >= AllocatorType::kCount)
+    return READ_ERROR;
+
+  std::vector<Address> stack;
   stack.resize(alloc_packet.stack_len);
   size_t stack_byte_size = sizeof(Address) * alloc_packet.stack_len;
 
