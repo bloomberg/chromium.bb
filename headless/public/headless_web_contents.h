@@ -99,8 +99,7 @@ class HEADLESS_EXPORT HeadlessWebContents {
 
   virtual int GetMainFrameTreeNodeId() const = 0;
 
- private:
-  friend class HeadlessWebContentsImpl;
+ protected:
   HeadlessWebContents() {}
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessWebContents);
