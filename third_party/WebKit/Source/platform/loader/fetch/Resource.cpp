@@ -325,6 +325,11 @@ void Resource::SetLoader(ResourceLoader* loader) {
 }
 
 void Resource::CheckResourceIntegrity() {
+  // Skip the check and reuse the previous check result, especially on
+  // successful revalidation.
+  if (IntegrityDisposition() != ResourceIntegrityDisposition::kNotChecked)
+    return;
+
   // Loading error occurred? Then result is uncheckable.
   integrity_report_info_.Clear();
   if (ErrorOccurred()) {
@@ -1070,6 +1075,8 @@ void Resource::RevalidationFailed() {
   SECURITY_CHECK(redirect_chain_.IsEmpty());
   ClearData();
   cache_handler_.Clear();
+  integrity_disposition_ = ResourceIntegrityDisposition::kNotChecked;
+  integrity_report_info_.Clear();
   DestroyDecodedDataForFailedRevalidation();
   is_revalidating_ = false;
 }
