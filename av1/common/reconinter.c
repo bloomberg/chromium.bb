@@ -976,11 +976,12 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
 
 #if CONFIG_HIGHBITDEPTH
 #if CONFIG_CONVOLVE_ROUND
+  const int is_conv_no_round = conv_params->round == CONVOLVE_OPT_NO_ROUND;
   DECLARE_ALIGNED(16, CONV_BUF_TYPE, tmp_dst2[MAX_SB_SQUARE]);
   int tmp_dst2_stride = MAX_SB_SIZE;
   CONV_BUF_TYPE *org_dst = conv_params->dst;
   int org_dst_stride = conv_params->dst_stride;
-  if (conv_params->round == CONVOLVE_OPT_NO_ROUND) {
+  if (is_conv_no_round) {
     conv_params->dst = tmp_dst2;
     conv_params->dst_stride = tmp_dst2_stride;
     // mask compound has its own average mechanism
@@ -1003,7 +1004,7 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
 #if CONFIG_COMPOUND_SEGMENT
   if (!plane && comp_data.interinter_compound_type == COMPOUND_SEG) {
 #if CONFIG_CONVOLVE_ROUND
-    if (conv_params->round == CONVOLVE_OPT_NO_ROUND) {
+    if (is_conv_no_round) {
       build_compound_seg_mask_d32(comp_data.seg_mask, comp_data.mask_type,
                                   org_dst, org_dst_stride, tmp_dst2,
                                   tmp_dst2_stride, mi->mbmi.sb_type, h, w,
@@ -1036,7 +1037,7 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
         mi->mbmi.sb_type, wedge_offset_x, wedge_offset_y, h, w);
 #else
 #if CONFIG_CONVOLVE_ROUND
-  if (conv_params->round == CONVOLVE_OPT_NO_ROUND) {
+  if (is_conv_no_round) {
     build_masked_compound_no_round(org_dst, org_dst_stride, org_dst,
                                    org_dst_stride, tmp_dst2, tmp_dst2_stride,
                                    &comp_data, mi->mbmi.sb_type, h, w);
@@ -1069,11 +1070,12 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
 #else  // CONFIG_HIGHBITDEPTH
 
 #if CONFIG_CONVOLVE_ROUND
+  const int is_conv_no_round = conv_params->round == CONVOLVE_OPT_NO_ROUND;
   DECLARE_ALIGNED(16, CONV_BUF_TYPE, tmp_dst2[MAX_SB_SQUARE]);
   int tmp_dst2_stride = MAX_SB_SIZE;
   CONV_BUF_TYPE *org_dst = conv_params->dst;
   int org_dst_stride = conv_params->dst_stride;
-  if (conv_params->round == CONVOLVE_OPT_NO_ROUND) {
+  if (is_conv_no_round) {
     memset(tmp_dst2, 0, sizeof(tmp_dst2));
     conv_params->dst = tmp_dst2;
     conv_params->dst_stride = tmp_dst2_stride;
@@ -1094,7 +1096,7 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
 #if CONFIG_COMPOUND_SEGMENT
   if (!plane && comp_data.interinter_compound_type == COMPOUND_SEG) {
 #if CONFIG_CONVOLVE_ROUND
-    if (conv_params->round == CONVOLVE_OPT_NO_ROUND) {
+    if (is_conv_no_round) {
       build_compound_seg_mask_d32(
           comp_data.seg_mask, comp_data.mask_type, org_dst, org_dst_stride,
           tmp_dst2, tmp_dst2_stride, mi->mbmi.sb_type, h, w, conv_params, 8);
@@ -1114,7 +1116,7 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
                                      wedge_offset_x, wedge_offset_y, h, w);
 #else
 #if CONFIG_CONVOLVE_ROUND
-  if (conv_params->round == CONVOLVE_OPT_NO_ROUND) {
+  if (is_conv_no_round) {
     build_masked_compound_no_round(org_dst, org_dst_stride, org_dst,
                                    org_dst_stride, tmp_dst2, tmp_dst2_stride,
                                    &comp_data, mi->mbmi.sb_type, h, w);
