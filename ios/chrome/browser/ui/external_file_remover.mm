@@ -6,11 +6,16 @@
 
 #include "base/logging.h"
 #import "base/mac/bind_objc_block.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/sessions/core/tab_restore_service.h"
+#include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/chrome_url_util.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
-#import "ios/chrome/browser/ui/browser_view_controller.h"
+#import "ios/chrome/browser/tabs/tab_model.h"
+#import "ios/chrome/browser/tabs/tab_model_list.h"
 #import "ios/chrome/browser/ui/external_file_controller.h"
 #include "ios/web/public/web_thread.h"
 
@@ -18,18 +23,18 @@
 #error "This file requires ARC support."
 #endif
 
-ExternalFileRemover::ExternalFileRemover(BrowserViewController* bvc)
-    : tabRestoreService_(NULL), bvc_(bvc), weak_ptr_factory_(this) {}
+ExternalFileRemover::ExternalFileRemover(ios::ChromeBrowserState* browser_state)
+    : browser_state_(browser_state), weak_ptr_factory_(this) {}
 
 ExternalFileRemover::~ExternalFileRemover() {
-  if (tabRestoreService_)
-    tabRestoreService_->RemoveObserver(this);
+  if (tab_restore_service_)
+    tab_restore_service_->RemoveObserver(this);
 }
 
 void ExternalFileRemover::TabRestoreServiceChanged(
     sessions::TabRestoreService* service) {
   if (service->IsLoaded()) {
-    tabRestoreService_->RemoveObserver(this);
+    tab_restore_service_->RemoveObserver(this);
     RemoveFiles(false, base::Closure());
   }
 }
@@ -45,15 +50,15 @@ void ExternalFileRemover::Remove(bool all_files,
   // |IOSChromeTabRestoreServiceFactory::GetForBrowserState| has to be called on
   // the UI thread.
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  tabRestoreService_ =
-      IOSChromeTabRestoreServiceFactory::GetForBrowserState(bvc_.browserState);
-  DCHECK(tabRestoreService_);
-  if (!tabRestoreService_->IsLoaded()) {
+  tab_restore_service_ =
+      IOSChromeTabRestoreServiceFactory::GetForBrowserState(browser_state_);
+  DCHECK(tab_restore_service_);
+  if (!tab_restore_service_->IsLoaded()) {
     // TODO(crbug.com/430902): In the case of the presence of tab restore
     // service, only unreferenced files are removed. This can be addressed with
     // the larger problem of Clear All browsing data not clearing Tab Restore.
-    tabRestoreService_->AddObserver(this);
-    tabRestoreService_->LoadTabsFromLastSession();
+    tab_restore_service_->AddObserver(this);
+    tab_restore_service_->LoadTabsFromLastSession();
     if (!callback.is_null()) {
       web::WebThread::PostTask(web::WebThread::UI, FROM_HERE, callback);
     }
@@ -64,9 +69,13 @@ void ExternalFileRemover::Remove(bool all_files,
 
 void ExternalFileRemover::RemoveFiles(bool all_files,
                                       const base::Closure& callback) {
-  NSSet* referencedFiles = all_files ? nil : [bvc_ referencedExternalFiles];
+  NSSet* referenced_files = nil;
+  if (all_files) {
+    referenced_files = GetReferencedExternalFiles();
+  }
+
   const NSInteger kMinimumAgeInDays = 30;
-  NSInteger ageInDays = all_files ? 0 : kMinimumAgeInDays;
+  NSInteger age_in_days = all_files ? 0 : kMinimumAgeInDays;
 
   base::Closure callback_wrapper = callback;
   if (callback_wrapper.is_null()) {
@@ -75,8 +84,8 @@ void ExternalFileRemover::RemoveFiles(bool all_files,
   base::PostTaskWithTraitsAndReply(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::BindBlockArc(^{
-        [ExternalFileController removeFilesExcluding:referencedFiles
-                                           olderThan:ageInDays];
+        [ExternalFileController removeFilesExcluding:referenced_files
+                                           olderThan:age_in_days];
       }),
       callback_wrapper);
 }
@@ -98,4 +107,34 @@ void ExternalFileRemover::RemoveAfterDelay(const base::TimeDelta& delay,
         }
       }),
       delay);
+}
+
+NSSet* ExternalFileRemover::GetReferencedExternalFiles() {
+  // Add files from all TabModels.
+  NSMutableSet* referenced_external_files = [NSMutableSet set];
+  for (TabModel* tab_model in GetTabModelsForChromeBrowserState(
+           browser_state_)) {
+    NSSet* tab_model_files = [tab_model currentlyReferencedExternalFiles];
+    if (tab_model_files) {
+      [referenced_external_files unionSet:tab_model_files];
+    }
+  }
+
+  bookmarks::BookmarkModel* bookmark_model =
+      ios::BookmarkModelFactory::GetForBrowserState(browser_state_);
+  // Check if the bookmark model is loaded.
+  if (!bookmark_model || !bookmark_model->loaded())
+    return referenced_external_files;
+
+  // Add files from Bookmarks.
+  std::vector<bookmarks::BookmarkModel::URLAndTitle> bookmarks;
+  bookmark_model->GetBookmarks(&bookmarks);
+  for (const auto& bookmark : bookmarks) {
+    GURL bookmark_url = bookmark.url;
+    if (UrlIsExternalFileReference(bookmark_url)) {
+      [referenced_external_files
+          addObject:base::SysUTF8ToNSString(bookmark_url.ExtractFileName())];
+    }
+  }
+  return referenced_external_files;
 }
