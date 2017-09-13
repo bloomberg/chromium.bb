@@ -1952,7 +1952,6 @@ source_set("browser") {
       "android/composited_touch_handle_drawable.h",
       "android/content_view_core.cc",
       "android/content_view_core.h",
-      "android/content_view_core_observer.h",
       "android/content_view_render_view.cc",
       "android/content_view_render_view.h",
       "android/content_view_statics.cc",

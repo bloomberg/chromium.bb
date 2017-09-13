@@ -17,7 +17,6 @@
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/process/process.h"
-#include "content/browser/android/content_view_core_observer.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -52,9 +51,6 @@ class ContentViewCore : public WebContentsObserver {
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
   WebContents* GetWebContents() const;
   ui::WindowAndroid* GetWindowAndroid() const;
-
-  void AddObserver(ContentViewCoreObserver* observer);
-  void RemoveObserver(ContentViewCoreObserver* observer);
 
   // --------------------------------------------------------------------------
   // Methods called from Java via JNI
@@ -329,9 +325,6 @@ class ContentViewCore : public WebContentsObserver {
 
   // Device scale factor.
   float dpi_scale_;
-
-  // Observer to notify of lifecyle changes.
-  base::ObserverList<ContentViewCoreObserver> observer_list_;
 
   // The cache of device's current orientation set from Java side, this value
   // will be sent to Renderer once it is ready.
