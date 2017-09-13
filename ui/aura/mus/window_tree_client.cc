@@ -62,13 +62,6 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 
-#if defined(HiWord)
-#undef HiWord
-#endif
-#if defined(LoWord)
-#undef LoWord
-#endif
-
 namespace aura {
 namespace {
 
@@ -161,7 +154,10 @@ std::unique_ptr<ui::Event> MapEvent(const ui::Event& event) {
 // the EventSink.
 void DispatchEventToTarget(ui::Event* event, WindowMus* target) {
   ui::Event::DispatcherApi dispatch_helper(event);
-  dispatch_helper.set_target(target->GetWindow());
+  // Ignore the target for key events. They need to go to the focused window,
+  // which may have changed by the time we process the event.
+  if (!event->IsKeyEvent())
+    dispatch_helper.set_target(target->GetWindow());
   GetWindowTreeHostMus(target)->SendEventToSink(event);
 }
 
