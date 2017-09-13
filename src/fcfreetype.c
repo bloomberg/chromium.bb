@@ -1249,21 +1249,21 @@ FcFreeTypeQueryFace (const FT_Face  face,
 
 	  for (i = 0; i < master->num_axis; i++)
 	  {
-	    double value = instance->coords[i] / (double) (1 << 16);
-	    double default_value = master->axis[i].def / (double) (1 << 16);
-	    double mult = value / default_value;
-	    //printf ("named-instance, axis %d tag %lx value %g\n", i, master->axis[i].tag, value);
-	    switch (master->axis[i].tag)
-	    {
-	      case FT_MAKE_TAG ('w','g','h','t'):
-	        weight_mult = mult;
-		break;
+	      double value = instance->coords[i] / (double) (1 << 16);
+	      double default_value = master->axis[i].def / (double) (1 << 16);
+	      double mult = value / default_value;
+	      //printf ("named-instance, axis %d tag %lx value %g\n", i, master->axis[i].tag, value);
+	      switch (master->axis[i].tag)
+	      {
+		case FT_MAKE_TAG ('w','g','h','t'):
+		  weight_mult = mult;
+		  break;
 
-	      case FT_MAKE_TAG ('w','d','t','h'):
-		width_mult = mult;
-		break;
+		case FT_MAKE_TAG ('w','d','t','h'):
+		  width_mult = mult;
+		  break;
 
-	      /* TODO optical size! */
+		/* TODO optical size! */
 	    }
 	  }
 	}
