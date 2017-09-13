@@ -4430,9 +4430,8 @@ void LayerTreeHostImpl::ScrollOffsetAnimationFinished() {
 gfx::ScrollOffset LayerTreeHostImpl::GetScrollOffsetForAnimation(
     ElementId element_id) const {
   if (active_tree()) {
-    LayerImpl* layer = active_tree()->LayerByElementId(element_id);
-    if (layer)
-      return layer->ScrollOffsetForAnimation();
+    return active_tree()->property_trees()->scroll_tree.current_scroll_offset(
+        element_id);
   }
 
   return gfx::ScrollOffset();
