@@ -4,6 +4,9 @@
 
 #include "tools/traffic_annotation/auditor/traffic_annotation_auditor.h"
 
+#include <stdio.h>
+
+#include "base/files/dir_reader_posix.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/process/launch.h"
@@ -11,6 +14,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -65,14 +69,27 @@ const std::string kBlockTypes[] = {"ASSIGNMENT", "ANNOTATION", "CALL"};
 
 const base::FilePath kSafeListPath(
     FILE_PATH_LITERAL("tools/traffic_annotation/auditor/safe_list.txt"));
+
+// The folder that includes the latest Clang built-in library. Inside this
+// folder, there should be another folder with version number, like
+// '.../lib/clang/6.0.0', which would be passed to the clang tool.
+const base::FilePath kClangLibraryPath(
+    FILE_PATH_LITERAL("third_party/llvm-build/Release+Asserts/lib/clang"));
+
 }  // namespace
 
 TrafficAnnotationAuditor::TrafficAnnotationAuditor(
     const base::FilePath& source_path,
-    const base::FilePath& build_path)
+    const base::FilePath& build_path,
+    const base::FilePath& clang_tool_path)
     : source_path_(source_path),
       build_path_(build_path),
-      safe_list_loaded_(false) {}
+      clang_tool_path_(clang_tool_path),
+      safe_list_loaded_(false) {
+  DCHECK(!source_path.empty());
+  DCHECK(!build_path.empty());
+  DCHECK(!clang_tool_path.empty());
+}
 
 TrafficAnnotationAuditor::~TrafficAnnotationAuditor() {}
 
@@ -83,11 +100,36 @@ int TrafficAnnotationAuditor::ComputeHashValue(const std::string& unique_id) {
                             : -1;
 }
 
+base::FilePath TrafficAnnotationAuditor::GetClangLibraryPath() {
+  base::FilePath base_path = source_path_.Append(kClangLibraryPath);
+  std::string library_folder;
+  base::DirReaderPosix dir_reader(base_path.MaybeAsASCII().c_str());
+
+  while (dir_reader.Next()) {
+    if (strcmp(dir_reader.name(), ".") && strcmp(dir_reader.name(), "..")) {
+      library_folder = dir_reader.name();
+      break;
+    }
+  }
+
+  if (library_folder.empty()) {
+    return base::FilePath();
+  } else {
+#if defined(OS_WIN)
+    return base_path.Append(base::ASCIIToUTF16(library_folder));
+#else
+    return base_path.Append(library_folder);
+#endif
+  }
+}
+
 bool TrafficAnnotationAuditor::RunClangTool(
     const std::vector<std::string>& path_filters,
     const bool full_run) {
   if (!safe_list_loaded_ && !LoadSafeList())
     return false;
+
+  // Create a file to pass options to clang scripts.
   base::FilePath options_filepath;
   if (!base::CreateTemporaryFile(&options_filepath)) {
     LOG(ERROR) << "Could not create temporary options file.";
@@ -98,9 +140,17 @@ bool TrafficAnnotationAuditor::RunClangTool(
     LOG(ERROR) << "Could not create temporary options file.";
     return false;
   }
-  fprintf(options_file,
-          "--generate-compdb --tool=traffic_annotation_extractor -p=%s ",
-          build_path_.MaybeAsASCII().c_str());
+
+  // As the checked out clang tool may be in a directory different from the
+  // default one (third_party/llvm-buid/Release+Asserts/bin), its path and
+  // clang's library folder should be passed to the run_tool.py script.
+  fprintf(
+      options_file,
+      "--generate-compdb --tool=traffic_annotation_extractor -p=%s "
+      "--tool-path=%s --tool-args=--extra-arg=-resource-dir=%s ",
+      build_path_.MaybeAsASCII().c_str(),
+      base::MakeAbsoluteFilePath(clang_tool_path_).MaybeAsASCII().c_str(),
+      base::MakeAbsoluteFilePath(GetClangLibraryPath()).MaybeAsASCII().c_str());
 
   // |safe_list_[ALL]| is not passed when |full_run| is happening as there is
   // no way to pass it to run_tools.py except enumerating all alternatives.
@@ -146,6 +196,7 @@ bool TrafficAnnotationAuditor::RunClangTool(
   cmdline.AppendArg(base::StringPrintf(
       "--options-file=%s", options_filepath.MaybeAsASCII().c_str()));
 
+  // Run, and clean after.
   bool result = base::GetAppOutput(cmdline, &clang_tool_raw_output_);
 
   base::DeleteFile(options_filepath, false);
