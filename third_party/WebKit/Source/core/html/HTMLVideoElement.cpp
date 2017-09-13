@@ -67,7 +67,6 @@ enum VideoPersistenceControlsType {
 
 inline HTMLVideoElement::HTMLVideoElement(Document& document)
     : HTMLMediaElement(videoTag, document),
-      media_remoting_status_(MediaRemotingStatus::kNotStarted),
       remoting_interstitial_(nullptr) {
   if (document.GetSettings()) {
     default_poster_url_ =
@@ -510,8 +509,6 @@ ScriptPromise HTMLVideoElement::CreateImageBitmap(
 
 void HTMLVideoElement::MediaRemotingStarted(
     const WebString& remote_device_friendly_name) {
-  DCHECK(media_remoting_status_ == MediaRemotingStatus::kNotStarted);
-  media_remoting_status_ = MediaRemotingStatus::kStarted;
   if (!remoting_interstitial_) {
     remoting_interstitial_ = new MediaRemotingInterstitial(*this);
     ShadowRoot& shadow_root = EnsureUserAgentShadowRoot();
@@ -522,12 +519,8 @@ void HTMLVideoElement::MediaRemotingStarted(
 }
 
 void HTMLVideoElement::MediaRemotingStopped() {
-  DCHECK(media_remoting_status_ == MediaRemotingStatus::kDisabled ||
-         media_remoting_status_ == MediaRemotingStatus::kStarted);
-  if (media_remoting_status_ != MediaRemotingStatus::kDisabled)
-    media_remoting_status_ = MediaRemotingStatus::kNotStarted;
-  DCHECK(remoting_interstitial_);
-  remoting_interstitial_->Hide();
+  if (remoting_interstitial_)
+    remoting_interstitial_->Hide();
 }
 
 WebMediaPlayer::DisplayType HTMLVideoElement::DisplayType() const {
@@ -537,9 +530,12 @@ WebMediaPlayer::DisplayType HTMLVideoElement::DisplayType() const {
 }
 
 void HTMLVideoElement::DisableMediaRemoting() {
-  media_remoting_status_ = MediaRemotingStatus::kDisabled;
   if (GetWebMediaPlayer())
     GetWebMediaPlayer()->RequestRemotePlaybackDisabled(true);
+}
+
+bool HTMLVideoElement::IsRemotingInterstitialVisible() const {
+  return remoting_interstitial_ && remoting_interstitial_->IsVisible();
 }
 
 }  // namespace blink
