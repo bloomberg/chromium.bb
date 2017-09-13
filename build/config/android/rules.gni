@@ -1141,6 +1141,12 @@ if (enable_java_templates) {
 
     _build_config = "$target_gen_dir/$target_name.build_config"
     _build_config_target_name = "${target_name}__build_config"
+    if (defined(invoker.deps)) {
+      # This dep is required if any deps require android (but it doesn't hurt
+      # to add it regardless) and is used by bytecode rewritten classes.
+      invoker.deps +=
+          [ "//build/android/buildhooks:build_hooks_android_impl_java" ]
+    }
     write_build_config(_build_config_target_name) {
       type = "junit_binary"
       build_config = _build_config
