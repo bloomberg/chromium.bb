@@ -53,14 +53,7 @@ IN_PROC_BROWSER_TEST_F(IncognitoApiTest, IncognitoNoScript) {
   EXPECT_TRUE(result);
 }
 
-#if defined(OS_WIN)
-// This test is very flaky on XP. http://crbug.com/248821
-#define MAYBE_IncognitoYesScript DISABLED_IncognitoYesScript
-#else
-#define MAYBE_IncognitoYesScript IncognitoYesScript
-#endif
-
-IN_PROC_BROWSER_TEST_F(IncognitoApiTest, MAYBE_IncognitoYesScript) {
+IN_PROC_BROWSER_TEST_F(IncognitoApiTest, IncognitoYesScript) {
   // Load a dummy extension. This just tests that we don't regress a
   // crash fix when multiple incognito- and non-incognito-enabled extensions
   // are mixed.
