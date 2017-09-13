@@ -43,11 +43,11 @@
 #include "platform/SharedBuffer.h"
 #include "platform/mhtml/MHTMLArchive.h"
 #include "platform/mhtml/MHTMLParser.h"
+#include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SchemeRegistry.h"
-#include "public/platform/Platform.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
@@ -95,8 +95,7 @@ class MHTMLTest : public ::testing::Test {
   void SetUp() override { helper_.Initialize(); }
 
   void TearDown() override {
-    Platform::Current()
-        ->GetURLLoaderMockFactory()
+    platform_->GetURLLoaderMockFactory()
         ->UnregisterAllURLsAndClearMemoryCache();
   }
 
@@ -195,6 +194,7 @@ class MHTMLTest : public ::testing::Test {
   String file_path_;
   Vector<SerializedResource> resources_;
   FrameTestHelpers::WebViewHelper helper_;
+  ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;
 };
 
 // Checks that the domain is set to the actual MHTML file, not the URL it was
