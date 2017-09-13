@@ -238,6 +238,12 @@ class TokenPreloadScanner::StartTagScanner {
     if (!request)
       return nullptr;
 
+    if (Match(tag_impl_, scriptTag)) {
+      request->SetScriptType(type_attribute_value_ == "module"
+                                 ? ScriptType::kModule
+                                 : ScriptType::kClassic);
+    }
+
     request->SetCrossOrigin(cross_origin_);
     request->SetNonce(nonce_);
     request->SetCharset(Charset());
@@ -520,10 +526,6 @@ class TokenPreloadScanner::StartTagScanner {
               ScriptLoader::kAllowLegacyTypeInTypeAttribute, script_type)) {
         return false;
       }
-      // TODO(kouhei): Enable preload for module scripts, with correct
-      // credentials mode.
-      if (type_attribute_value_ == "module")
-        return false;
       if (ScriptLoader::BlockForNoModule(script_type,
                                          nomodule_attribute_value_)) {
         return false;

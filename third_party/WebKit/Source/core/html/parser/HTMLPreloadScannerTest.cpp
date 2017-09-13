@@ -53,6 +53,13 @@ struct ReferrerPolicyTestCase {
   const char* expected_referrer;
 };
 
+struct CORSTestCase {
+  const char* base_url;
+  const char* input_html;
+  WebURLRequest::FetchRequestMode request_mode;
+  WebURLRequest::FetchCredentialsMode credentials_mode;
+};
+
 struct NonceTestCase {
   const char* base_url;
   const char* input_html;
@@ -130,6 +137,19 @@ class HTMLMockHTMLResourcePreloader : public ResourcePreloader {
                    host.Ascii().data());
       EXPECT_EQ(preload_request_->CrossOrigin(), cross_origin);
     }
+  }
+
+  void CORSRequestVerification(
+      Document* document,
+      WebURLRequest::FetchRequestMode request_mode,
+      WebURLRequest::FetchCredentialsMode credentials_mode) {
+    ASSERT_TRUE(preload_request_.get());
+    Resource* resource = preload_request_->Start(document);
+    ASSERT_TRUE(resource);
+    EXPECT_EQ(request_mode,
+              resource->GetResourceRequest().GetFetchRequestMode());
+    EXPECT_EQ(credentials_mode,
+              resource->GetResourceRequest().GetFetchCredentialsMode());
   }
 
   void NonceRequestVerification(const char* nonce) {
@@ -252,6 +272,18 @@ class HTMLPreloadScannerTest : public ::testing::Test {
           test_case.type, test_case.preloaded_url, test_case.output_base_url,
           test_case.resource_width, test_case.referrer_policy);
     }
+  }
+
+  void Test(CORSTestCase test_case) {
+    HTMLMockHTMLResourcePreloader preloader;
+    KURL base_url(kParsedURLString, test_case.base_url);
+    scanner_->AppendToEnd(String(test_case.input_html));
+    PreloadRequestStream requests = scanner_->Scan(base_url, nullptr);
+    preloader.TakeAndPreload(requests);
+
+    preloader.CORSRequestVerification(&dummy_page_holder_->GetDocument(),
+                                      test_case.request_mode,
+                                      test_case.credentials_mode);
   }
 
   void Test(NonceTestCase test_case) {
@@ -758,6 +790,38 @@ TEST_F(HTMLPreloadScannerTest, testReferrerPolicy) {
 
   for (const auto& test_case : test_cases)
     Test(test_case);
+}
+
+TEST_F(HTMLPreloadScannerTest, testCORS) {
+  CORSTestCase test_cases[] = {
+      {"http://example.test", "<script src='/script'></script>",
+       WebURLRequest::kFetchRequestModeNoCORS,
+       WebURLRequest::kFetchCredentialsModeInclude},
+      {"http://example.test", "<script crossorigin src='/script'></script>",
+       WebURLRequest::kFetchRequestModeCORS,
+       WebURLRequest::kFetchCredentialsModeSameOrigin},
+      {"http://example.test",
+       "<script crossorigin=use-credentials src='/script'></script>",
+       WebURLRequest::kFetchRequestModeCORS,
+       WebURLRequest::kFetchCredentialsModeInclude},
+      {"http://example.test", "<script type='module' src='/script'></script>",
+       WebURLRequest::kFetchRequestModeCORS,
+       WebURLRequest::kFetchCredentialsModeOmit},
+      {"http://example.test",
+       "<script type='module' crossorigin='anonymous' src='/script'></script>",
+       WebURLRequest::kFetchRequestModeCORS,
+       WebURLRequest::kFetchCredentialsModeSameOrigin},
+      {"http://example.test",
+       "<script type='module' crossorigin='use-credentials' "
+       "src='/script'></script>",
+       WebURLRequest::kFetchRequestModeCORS,
+       WebURLRequest::kFetchCredentialsModeInclude},
+  };
+
+  for (const auto& test_case : test_cases) {
+    SCOPED_TRACE(test_case.input_html);
+    Test(test_case);
+  }
 }
 
 TEST_F(HTMLPreloadScannerTest, testNonce) {
