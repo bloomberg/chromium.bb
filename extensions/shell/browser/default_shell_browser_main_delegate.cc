@@ -72,9 +72,9 @@ void LoadAppsFromCommandLine(ShellExtensionSystem* extension_system,
   if (launch_app) {
     base::FilePath current_directory;
     base::PathService::Get(base::DIR_CURRENT, &current_directory);
-    apps::LaunchPlatformAppWithCommandLineAndLaunchId(
-        browser_context, launch_app, launch_app->id(), *command_line,
-        current_directory, SOURCE_COMMAND_LINE);
+    apps::LaunchPlatformAppWithCommandLine(browser_context, launch_app,
+                                           *command_line, current_directory,
+                                           SOURCE_COMMAND_LINE);
   } else {
     LOG(ERROR) << "Could not load any apps.";
   }
