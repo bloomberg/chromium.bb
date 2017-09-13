@@ -50,6 +50,11 @@ declare_args() {
     media_use_libvpx = false
   }
 
+  # Cast audio doesn't use video decoder, e.g. libvpx.
+  if (is_cast_audio_only) {
+    media_use_libvpx = false
+  }
+
   # Override to dynamically link the cras (ChromeOS audio) library.
   use_cras = false
 
