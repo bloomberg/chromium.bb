@@ -88,18 +88,32 @@
   [self addSubview:searchStackView];
 
   // Position the stack views.
-  NSArray* constraints = @[
-    @"H:|-horizontalMargin-[searchStackView]-(>=0)-[shortcutStackView]",
-    @"[shortcutStackView]-horizontalMargin-|",
-  ];
-  NSDictionary* viewsDictionary = @{
-    @"searchStackView" : searchStackView,
-    @"shortcutStackView" : shortcutStackView,
-  };
-  NSDictionary* metrics = @{
-    @"horizontalMargin" : @(kHorizontalMargin),
-  };
-  ApplyVisualConstraintsWithMetrics(constraints, viewsDictionary, metrics);
+  if (@available(iOS 11, *)) {
+    UILayoutGuide* layoutGuide = self.safeAreaLayoutGuide;
+    [NSLayoutConstraint activateConstraints:@[
+      [searchStackView.leadingAnchor
+          constraintEqualToAnchor:layoutGuide.leadingAnchor
+                         constant:kHorizontalMargin],
+      [shortcutStackView.trailingAnchor
+          constraintEqualToAnchor:layoutGuide.trailingAnchor
+                         constant:-kHorizontalMargin],
+      [searchStackView.trailingAnchor
+          constraintLessThanOrEqualToAnchor:shortcutStackView.leadingAnchor]
+    ]];
+  } else {
+    NSArray* constraints = @[
+      @"H:|-horizontalMargin-[searchStackView]-(>=0)-[shortcutStackView]",
+      @"[shortcutStackView]-horizontalMargin-|",
+    ];
+    NSDictionary* viewsDictionary = @{
+      @"searchStackView" : searchStackView,
+      @"shortcutStackView" : shortcutStackView,
+    };
+    NSDictionary* metrics = @{
+      @"horizontalMargin" : @(kHorizontalMargin),
+    };
+    ApplyVisualConstraintsWithMetrics(constraints, viewsDictionary, metrics);
+  }
   AddSameCenterYConstraint(searchStackView, self);
   AddSameCenterYConstraint(shortcutStackView, self);
 }
