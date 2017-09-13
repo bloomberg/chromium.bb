@@ -17,6 +17,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/manifest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
@@ -194,15 +195,26 @@ void PaymentAppDatabase::WritePaymentInstrument(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (instrument->icons.size() > 0) {
-    std::unique_ptr<PaymentInstrumentIconFetcher> icon_fetcher =
-        base::MakeUnique<PaymentInstrumentIconFetcher>();
-    icon_fetcher->Start(
-        instrument->icons, service_worker_context_,
+    std::vector<Manifest::Icon> icons;
+    for (const auto& image_object : instrument->icons) {
+      Manifest::Icon icon;
+      icon.src = image_object->src;
+      // TODO(zino): We should pass an actual image size comes from the
+      // renderer, but we just use gfx::Size(0, 0) for now until the feature
+      // is implemented. It means "any" size.
+      // Please see https://crbug.com/763886
+      icon.sizes.emplace_back(gfx::Size());
+      icon.purpose.emplace_back(Manifest::Icon::IconPurpose::ANY);
+      icons.emplace_back(icon);
+    }
+
+    PaymentInstrumentIconFetcher::Start(
+        scope, service_worker_context_->GetProviderHostIds(scope.GetOrigin()),
+        std::move(icons),
         base::BindOnce(&PaymentAppDatabase::DidFetchedPaymentInstrumentIcon,
                        weak_ptr_factory_.GetWeakPtr(), scope, instrument_key,
                        base::Passed(std::move(instrument)),
-                       base::Passed(std::move(callback)),
-                       base::Passed(std::move(icon_fetcher))));
+                       base::Passed(std::move(callback))));
   } else {
     service_worker_context_->FindReadyRegistrationForPattern(
         scope,
@@ -219,11 +231,9 @@ void PaymentAppDatabase::DidFetchedPaymentInstrumentIcon(
     const std::string& instrument_key,
     payments::mojom::PaymentInstrumentPtr instrument,
     WritePaymentInstrumentCallback callback,
-    std::unique_ptr<PaymentInstrumentIconFetcher> icon_fetcher,
     const std::string& icon) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  icon_fetcher.reset();
   if (icon.empty()) {
     std::move(callback).Run(PaymentHandlerStatus::FETCH_INSTRUMENT_ICON_FAILED);
     return;
