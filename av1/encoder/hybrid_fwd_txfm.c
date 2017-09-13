@@ -116,7 +116,11 @@ static void fwd_txfm_8x8(const int16_t *src_diff, tran_low_t *coeff,
 
 static void fwd_txfm_16x16(const int16_t *src_diff, tran_low_t *coeff,
                            int diff_stride, TxfmParam *txfm_param) {
+#if CONFIG_DAALA_DCT16
+  av1_fht16x16_c(src_diff, coeff, diff_stride, txfm_param);
+#else
   av1_fht16x16(src_diff, coeff, diff_stride, txfm_param);
+#endif  // CONFIG_DAALA_DCT16
 }
 
 static void fwd_txfm_32x32(const int16_t *src_diff, tran_low_t *coeff,

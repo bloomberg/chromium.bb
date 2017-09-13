@@ -1843,7 +1843,11 @@ static void inv_txfm_add_16x16(const tran_low_t *input, uint8_t *dest,
     case ADST_DCT:
     case DCT_ADST:
     case ADST_ADST:
+#if CONFIG_DAALA_DCT16
+      av1_iht16x16_256_add_c(input, dest, stride, txfm_param);
+#else
       av1_iht16x16_256_add(input, dest, stride, txfm_param);
+#endif  // CONFIG_DAALA_DCT16
       break;
 #if CONFIG_EXT_TX
     case FLIPADST_DCT:
@@ -1857,7 +1861,11 @@ static void inv_txfm_add_16x16(const tran_low_t *input, uint8_t *dest,
     case H_ADST:
     case V_FLIPADST:
     case H_FLIPADST:
+#if CONFIG_DAALA_DCT16
+      av1_iht16x16_256_add_c(input, dest, stride, txfm_param);
+#else
       av1_iht16x16_256_add(input, dest, stride, txfm_param);
+#endif  // CONFIG_DAALA_DCT16
       break;
     case IDTX: inv_idtx_add_c(input, dest, stride, 16, tx_type); break;
 #endif  // CONFIG_EXT_TX
