@@ -919,15 +919,6 @@ void ServiceWorkerDispatcherHost::UpdateComplete(
     return;
   }
 
-  ServiceWorkerRegistration* registration =
-      GetContext()->GetLiveRegistration(registration_id);
-  DCHECK(registration);
-
-  ServiceWorkerRegistrationObjectInfo info;
-  ServiceWorkerVersionAttributes attrs;
-  GetRegistrationObjectInfoAndVersionAttributes(provider_host->AsWeakPtr(),
-                                                registration, &info, &attrs);
-
   Send(new ServiceWorkerMsg_ServiceWorkerUpdated(thread_id, request_id));
 }
 
