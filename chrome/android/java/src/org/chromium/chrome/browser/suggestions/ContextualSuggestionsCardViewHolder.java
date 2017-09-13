@@ -66,6 +66,7 @@ public class ContextualSuggestionsCardViewHolder extends NewTabPageViewHolder {
         mSuggestion = suggestion;
         mDisplayStyleObserver.attach();
         mSuggestionsBinder.updateViewInformation(mSuggestion);
+        refreshOfflineBadgeVisibility();
     }
 
     @Override
@@ -100,6 +101,11 @@ public class ContextualSuggestionsCardViewHolder extends NewTabPageViewHolder {
 
         params.width = (int) (screenSizePx * CARD_WIDTH_TO_WINDOW_SIZE_RATIO);
         itemView.setLayoutParams(params);
+    }
+
+    public void refreshOfflineBadgeVisibility() {
+        boolean visible = mSuggestion.getOfflinePageOfflineId() != null;
+        mSuggestionsBinder.updateOfflineBadgeVisibility(visible);
     }
 
     private class InteractionsDelegate implements ContextMenuManager.Delegate, View.OnClickListener,
