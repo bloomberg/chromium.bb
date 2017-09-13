@@ -31,7 +31,7 @@
 // An abstract consumer of autocomplete results.
 @protocol AutocompleteResultConsumer<NSObject>
 // Updates the current data and forces a redraw. If animation is YES, adds
-// CALayer animations to fade the OmniboxPopupMaterialRows in.
+// CALayer animations to fade the OmniboxPopupRows in.
 - (void)updateMatches:(NSArray<id<AutocompleteSuggestion>>*)result
         withAnimation:(BOOL)animation;
 @end

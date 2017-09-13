@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_MATERIAL_ROW_H_
-#define IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_MATERIAL_ROW_H_
+#ifndef IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_ROW_H_
+#define IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_ROW_H_
 
 #import <UIKit/UIKit.h>
 
 @class OmniboxPopupTruncatingLabel;
 
 // View used to display an omnibox autocomplete match in the omnibox popup.
-@interface OmniboxPopupMaterialRow : UITableViewCell
+@interface OmniboxPopupRow : UITableViewCell
 
 // A truncate-by-fading version of the textLabel of a UITableViewCell.
 @property(nonatomic, readonly, strong)
@@ -37,4 +37,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_MATERIAL_ROW_H_
+#endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_ROW_H_
