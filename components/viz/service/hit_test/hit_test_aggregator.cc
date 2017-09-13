@@ -6,6 +6,7 @@
 
 #include "components/viz/common/hit_test/aggregated_hit_test_region.h"
 #include "components/viz/service/hit_test/hit_test_aggregator_delegate.h"
+#include "third_party/skia/include/core/SkMatrix44.h"
 
 namespace viz {
 
@@ -36,6 +37,17 @@ bool ValidateHitTestRegionList(
       return false;
   }
   return true;
+}
+
+void PrepareTransformForReadOnlySharedMemory(gfx::Transform* transform) {
+  // |transform| is going to be shared in read-only memory to HitTestQuery.
+  // However, if HitTestQuery tries to operate on it, then it is possible that
+  // it will attempt to perform write on the underlying SkMatrix44 [1], causing
+  // invalid memory write in read-only memory.
+  // [1]
+  // https://cs.chromium.org/chromium/src/third_party/skia/include/core/SkMatrix44.h?l=133
+  // Explicitly calling getType() to compute the type-mask in SkMatrix44.
+  transform->matrix().getType();
 }
 
 }  // namespace
@@ -176,6 +188,7 @@ void HitTestAggregator::AppendRoot(const SurfaceId& surface_id) {
   regions[0].flags = hit_test_region_list->flags;
   regions[0].rect = hit_test_region_list->bounds;
   regions[0].transform = hit_test_region_list->transform;
+  PrepareTransformForReadOnlySharedMemory(&regions[0].transform);
 
   size_t region_index = 1;
   for (const auto& region : hit_test_region_list->regions) {
@@ -230,6 +243,7 @@ size_t HitTestAggregator::AppendRegion(AggregatedHitTestRegion* regions,
         break;
     }
   }
+  PrepareTransformForReadOnlySharedMemory(&element->transform);
   DCHECK_GE(region_index - parent_index - 1, 0u);
   element->child_count = region_index - parent_index - 1;
   return region_index;

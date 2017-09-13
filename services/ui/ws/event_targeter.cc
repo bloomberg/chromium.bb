@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/user_metrics.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/host/hit_test/hit_test_query.h"
@@ -65,9 +66,10 @@ void EventTargeter::FindTargetForLocationNow(
             event_targeter_delegate_->GetWindowFromFrameSinkId(
                 target.frame_sink_id);
         if (!target_window) {
-          // TODO(riajiang): There's no target window with this frame_sink_id,
-          // maybe a security fault. http://crbug.com/746470
-          NOTREACHED();
+          // TODO(riajiang): Investigate when this would be a security fault.
+          // http://crbug.com/746470
+          base::RecordAction(
+              base::UserMetricsAction("EventTargeting_DeletedTarget"));
         }
         deepest_window.window = target_window;
         // TODO(riajiang): use |target.location_in_target|.
