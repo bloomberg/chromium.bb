@@ -223,10 +223,6 @@
       status: "experimental",
     },
     {
-      name: "CSSFontDisplay",
-      status: "stable",
-    },
-    {
       name: "CSSFontSizeAdjust",
       status: "experimental",
     },

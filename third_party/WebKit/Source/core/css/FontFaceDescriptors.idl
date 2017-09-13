@@ -11,5 +11,5 @@ dictionary FontFaceDescriptors {
     DOMString unicodeRange = "U+0-10FFFF";
     DOMString variant = "normal";
     DOMString featureSettings = "normal";
-    [RuntimeEnabled=CSSFontDisplay] DOMString display = "auto";
+    DOMString display = "auto";
 };
