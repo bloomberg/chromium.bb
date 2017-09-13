@@ -568,8 +568,9 @@ post_process_cmdline() {
       log_echo "rawbits requires not ans, so disabling rawbits"
       disable_feature rawbits
     fi
-    if enabled daala_dct64; then
-      enable_feature tx64x64
+    if enabled daala_dct64 && ! enabled tx64x64; then
+      log_echo "daala_dct64 requires tx64x64, so disabling daala_dct64"
+      disable_feature daala_dct64
     fi
     if enabled daala_dct4 ||
 	    enabled daala_dct8 ||
