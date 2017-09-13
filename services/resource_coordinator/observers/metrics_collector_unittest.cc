@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/resource_coordinator/coordination_unit/metrics_collector.h"
+#include "services/resource_coordinator/observers/metrics_collector.h"
 
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"

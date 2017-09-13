@@ -7,9 +7,9 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "services/resource_coordinator/coordination_unit/metrics_collector.h"
-#include "services/resource_coordinator/coordination_unit/tab_signal_generator_impl.h"
 #include "services/resource_coordinator/memory_instrumentation/coordinator_impl.h"
+#include "services/resource_coordinator/observers/metrics_collector.h"
+#include "services/resource_coordinator/observers/tab_signal_generator_impl.h"
 #include "services/resource_coordinator/service_callbacks_impl.h"
 #include "services/resource_coordinator/tracing/agent_registry.h"
 #include "services/resource_coordinator/tracing/coordinator.h"
