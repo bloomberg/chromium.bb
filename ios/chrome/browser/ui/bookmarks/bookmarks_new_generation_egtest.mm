@@ -153,7 +153,7 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       performAction:grey_swipeFastInDirection(kGREYDirectionLeft)];
 
   // Verify context bar does not change when "Delete" shows up.
-  [self verifyContextBarInDefaultState];
+  [self verifyContextBarInDefaultStateWithSelectEnabled:YES];
 
   // Delete it.
   [[EarlGrey selectElementWithMatcher:BookmarksDeleteSwipeButton()]
@@ -171,7 +171,7 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       assertWithMatcher:grey_notNil()];
 
   // Verify context bar remains in default state.
-  [self verifyContextBarInDefaultState];
+  [self verifyContextBarInDefaultStateWithSelectEnabled:YES];
 }
 
 // Tests that the bookmark context bar is shown in MobileBookmarks.
@@ -414,7 +414,7 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
   // Cancel edit mode
   [BookmarksNewGenTestCase closeContextBarEditMode];
 
-  [self verifyContextBarInDefaultState];
+  [self verifyContextBarInDefaultStateWithSelectEnabled:YES];
 }
 
 - (void)testContextMenuForSingleURLSelection {
@@ -1631,7 +1631,63 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       assertWithMatcher:grey_notNil()];
 
   // Verify context bar does not change after editing folder name.
-  [self verifyContextBarInDefaultState];
+  [self verifyContextBarInDefaultStateWithSelectEnabled:YES];
+}
+
+- (void)testEmptyBackgroundAndSelectButton {
+  if (IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
+  }
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
+
+  [BookmarksNewGenTestCase setupStandardBookmarks];
+  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksNewGenTestCase openMobileBookmarks];
+
+  // Enter Folder 1.1 (which is empty)
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1.1")]
+      performAction:grey_tap()];
+
+  // Verify the empty background appears.
+  [self verifyEmptyBackgroundAppears];
+
+  // Come back to Mobile Bookmarks.
+  [[EarlGrey selectElementWithMatcher:BookmarksBackButton()]
+      performAction:grey_tap()];
+
+  // Change to edit mode, using context menu.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          @"context_bar_trailing_button")]
+      performAction:grey_tap()];
+
+  // Select every URL and folder.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL")]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"French URL")]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1.1")]
+      performAction:grey_tap()];
+
+  // Tap delete on context menu.
+  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarDeleteString])]
+      performAction:grey_tap()];
+
+  // Wait for Undo toast to go away from screen.
+  [BookmarksNewGenTestCase waitForUndoToastToGoAway];
+
+  // Verify edit mode is close automatically (context bar switched back to
+  // default state) and select button is disabled.
+  [self verifyContextBarInDefaultStateWithSelectEnabled:NO];
+
+  // Verify the empty background appears.
+  [self verifyEmptyBackgroundAppears];
 }
 
 #pragma mark - Helpers
@@ -1861,7 +1917,7 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
-- (void)verifyContextBarInDefaultState {
+- (void)verifyContextBarInDefaultStateWithSelectEnabled:(BOOL)selectEnabled {
   // Verify the context bar is shown.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"context_bar")]
       assertWithMatcher:grey_notNil()];
@@ -1878,7 +1934,12 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
   [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
                                           [BookmarksNewGenTestCase
                                               contextBarSelectString])]
-      assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
+      assertWithMatcher:grey_allOf(grey_notNil(),
+                                   selectEnabled
+                                       ? grey_enabled()
+                                       : grey_accessibilityTrait(
+                                             UIAccessibilityTraitNotEnabled),
+                                   nil)];
 }
 
 - (void)verifyFolderFlowIsClosed {
@@ -1888,6 +1949,12 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       assertWithMatcher:grey_notVisible()];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder Editor")]
       assertWithMatcher:grey_notVisible()];
+}
+
+- (void)verifyEmptyBackgroundAppears {
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(@"empty_background_label")]
+      assertWithMatcher:grey_sufficientlyVisible()];
 }
 
 // Context bar strings.
@@ -1932,7 +1999,11 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 }
 
 // TODO(crbug.com/695749): Add egtests for:
-// 1. Spinner and empty background.
+// 1. Spinner background.
 // 2. Reorder bookmarks.
+// 3. Current root node removed: Verify that the New Folder, Select button are
+// disabled and empty background appears when _currentRootNode becomes NULL
+// (maybe programmatically remove the current root node from model, and trigger
+// a sync).
 
 @end
