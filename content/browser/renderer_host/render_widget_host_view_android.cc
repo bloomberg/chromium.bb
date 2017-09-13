@@ -460,7 +460,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       text_suggestion_host_(nullptr),
       background_color_(SK_ColorWHITE),
       cached_background_color_(SK_ColorWHITE),
-      view_(this),
+      view_(this, ui::ViewAndroid::LayoutType::MATCH_PARENT),
       gesture_provider_(ui::GetGestureProviderConfig(
                             ui::GestureProviderConfigType::CURRENT_PLATFORM),
                         this),
