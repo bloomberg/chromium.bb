@@ -4,7 +4,6 @@
 
 package org.chromium.android_webview.variations;
 
-import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Service;
 import android.app.job.JobInfo;
@@ -143,13 +142,15 @@ public class AwVariationsConfigurationService extends Service {
         }
     }
 
-    // TODO(crbug.com/762607): Fix getPendingJob API level and remove suppression.
-    @SuppressLint("NewApi")
     private static boolean pendingJobExists() {
         Context context = ContextUtils.getApplicationContext();
         JobScheduler scheduler =
                 (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
-        return scheduler.getPendingJob(TaskIds.WEBVIEW_VARIATIONS_SEED_FETCH_JOB_ID) != null;
+        List<JobInfo> pendingJobs = scheduler.getAllPendingJobs();
+        for (JobInfo job : pendingJobs) {
+            if (job.getId() == TaskIds.WEBVIEW_VARIATIONS_SEED_FETCH_JOB_ID) return true;
+        }
+        return false;
     }
 
     private static void scheduleSeedFetchJob() {
