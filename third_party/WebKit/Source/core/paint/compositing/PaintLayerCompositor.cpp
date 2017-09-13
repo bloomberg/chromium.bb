@@ -663,8 +663,7 @@ void PaintLayerCompositor::PaintInvalidationOnCompositingChange(
   // to the previous frame's compositing state when changing the compositing
   // backing of the layer.
   DisableCompositingQueryAsserts disabler;
-  // FIXME: We should not allow paint invalidation out of paint invalidation
-  // state. crbug.com/457415
+  // We have to do immediate paint invalidation because compositing will change.
   DisablePaintInvalidationStateAsserts paint_invalidation_assertisabler;
 
   ObjectPaintInvalidator(layer->GetLayoutObject())

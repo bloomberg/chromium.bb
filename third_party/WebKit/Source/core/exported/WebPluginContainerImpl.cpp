@@ -203,9 +203,7 @@ void WebPluginContainerImpl::InvalidateRect(const IntRect& rect) {
       (layout_object->BorderLeft() + layout_object->PaddingLeft()).ToInt(),
       (layout_object->BorderTop() + layout_object->PaddingTop()).ToInt());
 
-  pending_invalidation_rect_.Unite(dirty_rect);
-
-  layout_object->SetMayNeedPaintInvalidation();
+  layout_object->InvalidatePaintRectangle(LayoutRect(dirty_rect));
 }
 
 void WebPluginContainerImpl::SetFocused(bool focused, WebFocusType focus_type) {
@@ -1012,19 +1010,6 @@ void WebPluginContainerImpl::FocusPlugin() {
   LocalFrame* frame = element_->GetDocument().GetFrame();
   DCHECK(is_attached_ && frame && frame->GetPage());
   frame->GetPage()->GetFocusController().SetFocusedElement(element_, frame);
-}
-
-void WebPluginContainerImpl::IssuePaintInvalidations() {
-  if (pending_invalidation_rect_.IsEmpty())
-    return;
-
-  LayoutBox* layout_object = ToLayoutBox(element_->GetLayoutObject());
-  if (!layout_object)
-    return;
-
-  layout_object->InvalidatePaintRectangle(
-      LayoutRect(pending_invalidation_rect_));
-  pending_invalidation_rect_ = IntRect();
 }
 
 void WebPluginContainerImpl::ComputeClipRectsForPlugin(

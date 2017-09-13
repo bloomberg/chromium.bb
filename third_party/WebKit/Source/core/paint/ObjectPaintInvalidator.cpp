@@ -353,42 +353,6 @@ void ObjectPaintInvalidator::InvalidatePaintUsingContainer(
   }
 }
 
-LayoutRect ObjectPaintInvalidator::InvalidatePaintRectangle(
-    const LayoutRect& dirty_rect,
-    DisplayItemClient* display_item_client) {
-  CHECK(object_.IsRooted());
-
-  if (dirty_rect.IsEmpty())
-    return LayoutRect();
-
-  if (object_.View()->GetDocument().Printing() &&
-      !RuntimeEnabledFeatures::PrintBrowserEnabled())
-    return LayoutRect();  // Don't invalidate paints if we're printing.
-
-  const LayoutBoxModelObject& paint_invalidation_container =
-      object_.ContainerForPaintInvalidation();
-  LayoutRect dirty_rect_on_backing = dirty_rect;
-  PaintLayer::MapRectToPaintInvalidationBacking(
-      object_, paint_invalidation_container, dirty_rect_on_backing);
-  dirty_rect_on_backing.Move(object_.ScrollAdjustmentForPaintInvalidation(
-      paint_invalidation_container));
-  // TODO(crbug.com/732612): Implement rectangle raster invalidation for SPv2.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    InvalidatePaintUsingContainer(paint_invalidation_container,
-                                  dirty_rect_on_backing,
-                                  PaintInvalidationReason::kRectangle);
-  }
-  SlowSetPaintingLayerNeedsRepaint();
-  if (display_item_client) {
-    InvalidateDisplayItemClient(*display_item_client,
-                                PaintInvalidationReason::kRectangle);
-  } else {
-    object_.InvalidateDisplayItemClients(PaintInvalidationReason::kRectangle);
-  }
-
-  return dirty_rect_on_backing;
-}
-
 void ObjectPaintInvalidator::SlowSetPaintingLayerNeedsRepaint() {
   if (PaintLayer* painting_layer = object_.PaintingLayer())
     painting_layer->SetNeedsRepaint();
@@ -534,7 +498,7 @@ ObjectPaintInvalidatorWithContext::ComputePaintInvalidationReason() {
 }
 
 DISABLE_CFI_PERF
-void ObjectPaintInvalidatorWithContext::InvalidateSelectionIfNeeded(
+void ObjectPaintInvalidatorWithContext::InvalidateSelection(
     PaintInvalidationReason reason) {
   // Update selection rect when we are doing full invalidation with geometry
   // change (in case that the object is moved, composite status changed, etc.)
@@ -572,6 +536,32 @@ void ObjectPaintInvalidatorWithContext::InvalidateSelectionIfNeeded(
 }
 
 DISABLE_CFI_PERF
+void ObjectPaintInvalidatorWithContext::InvalidatePartialRect(
+    PaintInvalidationReason reason) {
+  if (IsImmediateFullPaintInvalidationReason(reason))
+    return;
+
+  auto rect = object_.PartialInvalidationRect();
+  if (rect.IsEmpty())
+    return;
+
+  if (reason == PaintInvalidationReason::kNone) {
+    context_.painting_layer->SetNeedsRepaint();
+    object_.InvalidateDisplayItemClients(PaintInvalidationReason::kRectangle);
+  }
+
+  // TODO(crbug.com/732612): Implement rectangle raster invalidation for SPv2.
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
+  context_.MapLocalRectToVisualRectInBacking(object_, rect);
+  if (rect.IsEmpty())
+    return;
+  InvalidatePaintRectangleWithContext(rect,
+                                      PaintInvalidationReason::kRectangle);
+}
+
+DISABLE_CFI_PERF
 PaintInvalidationReason
 ObjectPaintInvalidatorWithContext::InvalidatePaintWithComputedReason(
     PaintInvalidationReason reason) {
@@ -581,7 +571,9 @@ ObjectPaintInvalidatorWithContext::InvalidatePaintWithComputedReason(
   // We need to invalidate the selection before checking for whether we are
   // doing a full invalidation.  This is because we need to update the previous
   // selection rect regardless.
-  InvalidateSelectionIfNeeded(reason);
+  InvalidateSelection(reason);
+
+  InvalidatePartialRect(reason);
 
   switch (reason) {
     case PaintInvalidationReason::kNone:
