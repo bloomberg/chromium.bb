@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/stl_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -187,7 +188,8 @@ void OffTheRecordChromeBrowserStateIOData::InitializeInternal(
   DCHECK(!channel_id_path_.empty());
   channel_id_store = new net::SQLiteChannelIDStore(
       channel_id_path_,
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::DB));
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND}));
 
   net::ChannelIDService* channel_id_service = new net::ChannelIDService(
       new net::DefaultChannelIDStore(channel_id_store.get()));
