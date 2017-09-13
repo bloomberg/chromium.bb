@@ -14,6 +14,8 @@ const char kHammerdServiceName[] = "org.chromium.hammerd";
 const char kBaseFirmwareUpdateStartedSignal[] = "BaseFirmwareUpdateStarted";
 const char kBaseFirmwareUpdateSucceededSignal[] = "BaseFirmwareUpdateSucceeded";
 const char kBaseFirmwareUpdateFailedSignal[] = "BaseFirmwareUpdateFailed";
+const char kPairChallengeSucceededSignal[] = "PairChallengeSucceeded";
+const char kPairChallengeFailedSignal[] = "PairChallengeFailed";
 
 }  // namespace hammerd
 
