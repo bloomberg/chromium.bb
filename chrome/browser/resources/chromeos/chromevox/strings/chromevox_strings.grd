@@ -2790,6 +2790,9 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="Shown to a user when they press a braille keyboard command that requires on screen keyboard to be enabled." name="IDS_CHROMEVOX_ENABLE_VIRTUAL_KEYBOARD">
         Please enable the on screen keyboard under status tray, accessibility to use extended braille commands.
       </message>
+      <message desc="Shown to a user when they invoke the read current title command in a context without a title." name="IDS_CHROMEVOX_NO_TITLE">
+        No title
+      </message>
     </messages>
   </release>
 </grit>

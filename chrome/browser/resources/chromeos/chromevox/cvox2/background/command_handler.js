@@ -552,18 +552,18 @@ CommandHandler.onCommand = function(command) {
     case 'readCurrentTitle':
       var target = ChromeVoxState.instance.currentRange_.start.node;
       var output = new Output();
+      target = AutomationUtil.getTopLevelRoot(target) || target.parent;
 
-      if (target.root.role == RoleType.ROOT_WEB_AREA) {
-        // Web.
-        target = target.root;
+      // Search for a container (e.g. rootWebArea, window) with a title-like
+      // string.
+      while (target && !target.name && !target.docUrl)
+        target = target.parent;
+
+      if (!target)
+        output.format('@no_title');
+      else
         output.withString(target.name || target.docUrl);
-      } else {
-        // Views.
-        while (target.role != RoleType.WINDOW)
-          target = target.parent;
-        if (target)
-          output.withString(target.name || '');
-      }
+
       output.go();
       return false;
     case 'readCurrentURL':
