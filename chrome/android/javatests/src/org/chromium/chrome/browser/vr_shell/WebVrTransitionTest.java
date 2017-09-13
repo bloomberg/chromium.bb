@@ -11,6 +11,7 @@ import static org.chromium.chrome.browser.vr_shell.VrTestFramework.POLL_TIMEOUT_
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_DON_ENABLED;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 
+import android.app.Activity;
 import android.os.Build;
 import android.support.test.filters.MediumTest;
 
@@ -21,16 +22,17 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.params.ParameterAnnotations.ClassParameter;
 import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.vr_shell.mock.MockVrIntentHandler;
 import org.chromium.chrome.browser.vr_shell.rules.VrActivityRestriction;
 import org.chromium.chrome.browser.vr_shell.util.NfcSimUtils;
@@ -42,8 +44,10 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.WebContents;
 
+import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * End-to-end tests for transitioning between WebVR's magic window and
@@ -149,24 +153,43 @@ public class WebVrTransitionTest {
     @MediumTest
     @CommandLineFlags.Add("enable-features=WebVrAutopresent")
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
-    @DisabledTest(message = "Doesn't work anymore until autopresent isn't forced into CCT")
     public void testTrustedIntentAllowsAutoPresent() throws InterruptedException {
         VrIntentUtils.setHandlerInstanceForTesting(new MockVrIntentHandler(
                 true /* useMockImplementation */, true /* treatIntentsAsTrusted */));
+
+        // Send an autopresent intent, which will open the link in a CCT
         VrTransitionUtils.sendDaydreamAutopresentIntent(
                 VrTestFramework.getHtmlTestFile("test_webvr_autopresent"),
                 mVrTestRule.getActivity());
 
-        // Wait until the link is opened in a new tab
-        final ChromeActivity act = mVrTestRule.getActivity();
+        // Wait until a CCT is opened due to the intent
+        final AtomicReference<CustomTabActivity> cct = new AtomicReference<CustomTabActivity>();
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return act.getTabModelSelector().getTotalTabCount() == 2;
+                List<WeakReference<Activity>> list = ApplicationStatus.getRunningActivities();
+                for (WeakReference<Activity> ref : list) {
+                    Activity activity = ref.get();
+                    if (activity == null) continue;
+                    if (activity instanceof CustomTabActivity) {
+                        cct.set((CustomTabActivity) activity);
+                        return true;
+                    }
+                }
+                return false;
             }
         }, POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_SHORT_MS);
 
-        WebContents wc = mVrTestRule.getActivity().getActivityTab().getWebContents();
+        // Wait until the tab is ready
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                if (cct.get().getActivityTab() == null) return false;
+                return !cct.get().getActivityTab().isLoading();
+            }
+        }, POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_SHORT_MS);
+
+        WebContents wc = cct.get().getActivityTab().getWebContents();
         mVrTestFramework.waitOnJavaScriptStep(wc);
         mVrTestFramework.endTest(wc);
     }
