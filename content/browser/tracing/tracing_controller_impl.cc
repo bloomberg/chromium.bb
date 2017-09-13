@@ -18,6 +18,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -134,7 +135,9 @@ TracingControllerImpl::TracingControllerImpl()
       maximum_trace_buffer_usage_(0),
       approximate_event_count_(0),
       pending_clock_sync_ack_count_(0),
-      enabled_tracing_modes_(0) {
+      enabled_tracing_modes_(0),
+      background_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::TaskPriority::BACKGROUND})) {
   // Deliberately leaked, like this class.
   base::FileTracing::SetProvider(new FileTracingProviderImpl);
 }
@@ -166,19 +169,15 @@ bool TracingControllerImpl::GetCategories(
   return true;
 }
 
-void TracingControllerImpl::SetEnabledOnFileThread(
+void TracingControllerImpl::SetEnabledOnBackgroundThread(
     const TraceConfig& trace_config,
     const base::Closure& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-
   TraceLog::GetInstance()->SetEnabled(trace_config, enabled_tracing_modes_);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
 }
 
-void TracingControllerImpl::SetDisabledOnFileThread(
+void TracingControllerImpl::SetDisabledOnBackgroundThread(
     const base::Closure& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-
   DCHECK(enabled_tracing_modes_);
   TraceLog::GetInstance()->SetDisabled(enabled_tracing_modes_);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
@@ -338,9 +337,9 @@ void TracingControllerImpl::StopTracingAfterClockSync() {
   // interfering with the process.
   base::Closure on_stop_tracing_done_callback = base::Bind(
       &TracingControllerImpl::OnStopTracingDone, base::Unretained(this));
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::BindOnce(&TracingControllerImpl::SetDisabledOnFileThread,
+  background_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&TracingControllerImpl::SetDisabledOnBackgroundThread,
                      base::Unretained(this), on_stop_tracing_done_callback));
 }
 
@@ -418,7 +417,7 @@ void TracingControllerImpl::AddTraceMessageFilter(
 
 void TracingControllerImpl::RemoveTraceMessageFilter(
     TraceMessageFilter* trace_message_filter) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // If a filter is removed while a response from that filter is pending then
   // simulate the response. Otherwise the response count will be wrong and the
@@ -457,7 +456,8 @@ void TracingControllerImpl::AddTracingAgent(const std::string& agent_name) {
   if (agent_name == debug_daemon->GetTracingAgentName()) {
     additional_tracing_agents_.push_back(debug_daemon);
     debug_daemon->SetStopAgentTracingTaskRunner(
-        BrowserThread::GetBlockingPool());
+        base::CreateSequencedTaskRunnerWithTraits(
+            {base::MayBlock(), base::TaskPriority::BACKGROUND}));
     return;
   }
 
@@ -678,16 +678,10 @@ void TracingControllerImpl::StartAgentTracing(
 
   base::Closure on_agent_started =
       base::Bind(callback, kChromeTracingAgentName, true);
-  if (!BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
-          base::BindOnce(&TracingControllerImpl::SetEnabledOnFileThread,
-                         base::Unretained(this), trace_config,
-                         on_agent_started))) {
-    // BrowserThread::PostTask fails if the threads haven't been created yet,
-    // so it should be safe to just use TraceLog::SetEnabled directly.
-    TraceLog::GetInstance()->SetEnabled(trace_config, enabled_tracing_modes_);
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, on_agent_started);
-  }
+  background_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&TracingControllerImpl::SetEnabledOnBackgroundThread,
+                 base::Unretained(this), trace_config, on_agent_started));
 }
 
 void TracingControllerImpl::StopAgentTracing(

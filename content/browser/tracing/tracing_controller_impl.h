@@ -143,10 +143,10 @@ class TracingControllerImpl
   void OnTraceLogStatusReply(TraceMessageFilter* trace_message_filter,
                              const base::trace_event::TraceLogStatus& status);
 
-  void SetEnabledOnFileThread(
+  void SetEnabledOnBackgroundThread(
       const base::trace_event::TraceConfig& trace_config,
       const base::Closure& callback);
-  void SetDisabledOnFileThread(const base::Closure& callback);
+  void SetDisabledOnBackgroundThread(const base::Closure& callback);
   void OnAllTracingAgentsStarted();
   void StopTracingAfterClockSync();
   void OnStopTracingDone();
@@ -198,6 +198,7 @@ class TracingControllerImpl
   scoped_refptr<TraceDataSink> trace_data_sink_;
   scoped_refptr<TraceDataSink> monitoring_data_sink_;
   std::unique_ptr<base::DictionaryValue> metadata_;
+  const scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TracingControllerImpl);
 };
