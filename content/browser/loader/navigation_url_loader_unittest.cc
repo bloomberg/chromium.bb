@@ -5,6 +5,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -13,6 +14,7 @@
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
+#include "content/browser/loader/test_resource_handler.h"
 #include "content/browser/loader_delegate_impl.h"
 #include "content/browser/streams/stream.h"
 #include "content/browser/streams/stream_context.h"
@@ -69,6 +71,27 @@ class StreamProtocolHandler
   DISALLOW_COPY_AND_ASSIGN(StreamProtocolHandler);
 };
 
+class DownloadProtocolHandler
+    : public net::URLRequestJobFactory::ProtocolHandler {
+ public:
+  DownloadProtocolHandler() {}
+
+  // net::URLRequestJobFactory::ProtocolHandler implementation.
+  net::URLRequestJob* MaybeCreateJob(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override {
+    static const char kHeaders[] =
+        "HTTP/1.1 200 OK\n"
+        "Content-type: text/html\n"
+        "Content-disposition: attachment\n"
+        "\n";
+    return new net::URLRequestTestJob(request, network_delegate, kHeaders,
+                                      "test", false);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(DownloadProtocolHandler);
+};
+
 class RequestBlockingResourceDispatcherHostDelegate
     : public ResourceDispatcherHostDelegate {
  public:
@@ -81,13 +104,20 @@ class RequestBlockingResourceDispatcherHostDelegate
   }
 };
 
+std::unique_ptr<ResourceHandler> CreateDownloadResourceHandler(
+    net::URLRequest* request) {
+  return base::MakeUnique<TestResourceHandler>();
+}
+
 }  // namespace
 
 class NavigationURLLoaderTest : public testing::Test {
  public:
   NavigationURLLoaderTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
-        browser_context_(new TestBrowserContext) {
+        browser_context_(new TestBrowserContext),
+        host_(base::Bind(&CreateDownloadResourceHandler),
+              base::ThreadTaskRunnerHandle::Get()) {
     host_.SetLoaderDelegate(&loader_delegate_);
     BrowserContext::EnsureResourceContextInitialized(browser_context_.get());
     base::RunLoop().RunUntilIdle();
@@ -99,6 +129,8 @@ class NavigationURLLoaderTest : public testing::Test {
     job_factory_.SetProtocolHandler(
         "blob", base::MakeUnique<StreamProtocolHandler>(
                     StreamContext::GetFor(browser_context_.get())->registry()));
+    job_factory_.SetProtocolHandler(
+        "download", base::MakeUnique<DownloadProtocolHandler>());
     request_context->set_job_factory(&job_factory_);
 
     // NavigationURLLoader is only used for browser-side navigations.
@@ -109,6 +141,13 @@ class NavigationURLLoaderTest : public testing::Test {
   std::unique_ptr<NavigationURLLoader> MakeTestLoader(
       const GURL& url,
       NavigationURLLoaderDelegate* delegate) {
+    return CreateTestLoader(url, delegate, false);
+  }
+
+  std::unique_ptr<NavigationURLLoader> CreateTestLoader(
+      const GURL& url,
+      NavigationURLLoaderDelegate* delegate,
+      bool allow_download) {
     BeginNavigationParams begin_params(
         std::string(), net::LOAD_NORMAL, false, false,
         REQUEST_CONTEXT_TYPE_LOCATION,
@@ -117,6 +156,7 @@ class NavigationURLLoaderTest : public testing::Test {
         url::Origin(url));
     CommonNavigationParams common_params;
     common_params.url = url;
+    common_params.allow_download = allow_download;
 
     std::unique_ptr<NavigationRequestInfo> request_info(
         new NavigationRequestInfo(common_params, begin_params, url, true, false,
@@ -404,6 +444,32 @@ TEST_F(NavigationURLLoaderTest, OwnedByHandle) {
 
   // Verify that URLRequestTestJob no longer has anything paused.
   EXPECT_FALSE(net::URLRequestTestJob::ProcessOnePendingMessage());
+}
+
+// Tests that download is allowed for the request.
+TEST_F(NavigationURLLoaderTest, DownloadAllowed) {
+  // Fake a top-level request to a URL whose body does not load immediately.
+  TestNavigationURLLoaderDelegate delegate;
+  std::unique_ptr<NavigationURLLoader> loader =
+      CreateTestLoader(GURL("download:test"), &delegate, true);
+
+  delegate.WaitForResponseStarted();
+  EXPECT_TRUE(delegate.is_download());
+  loader.reset();
+  base::RunLoop().RunUntilIdle();
+}
+
+// Tests that download is not allowed for the request.
+TEST_F(NavigationURLLoaderTest, DownloadDisallowed) {
+  // Fake a top-level request to a URL whose body does not load immediately.
+  TestNavigationURLLoaderDelegate delegate;
+  std::unique_ptr<NavigationURLLoader> loader =
+      CreateTestLoader(GURL("download:test"), &delegate, false);
+
+  delegate.WaitForResponseStarted();
+  EXPECT_FALSE(delegate.is_download());
+  loader.reset();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace content

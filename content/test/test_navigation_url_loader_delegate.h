@@ -44,6 +44,7 @@ class TestNavigationURLLoaderDelegate : public NavigationURLLoaderDelegate {
     return should_ssl_errors_be_fatal_;
   }
   int on_request_handled_counter() const { return on_request_handled_counter_; }
+  bool is_download() const { return is_download_; }
 
   // Waits for various navigation events.
   // Note: if the event already happened, the functions will hang.
@@ -86,6 +87,7 @@ class TestNavigationURLLoaderDelegate : public NavigationURLLoaderDelegate {
   base::Optional<net::SSLInfo> ssl_info_;
   bool should_ssl_errors_be_fatal_;
   int on_request_handled_counter_;
+  bool is_download_;
 
   std::unique_ptr<base::RunLoop> request_redirected_;
   std::unique_ptr<base::RunLoop> response_started_;

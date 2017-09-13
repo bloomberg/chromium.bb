@@ -69,6 +69,7 @@ void TestNavigationURLLoaderDelegate::OnResponseStarted(
   response_ = response;
   body_ = std::move(body);
   handle_ = std::move(consumer_handle);
+  is_download_ = is_download;
   if (response_started_)
     response_started_->Quit();
 }
