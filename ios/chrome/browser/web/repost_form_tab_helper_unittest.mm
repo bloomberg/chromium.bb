@@ -7,19 +7,67 @@
 #import <UIKit/UIKit.h>
 
 #include "base/bind.h"
-#include "base/mac/foundation_util.h"
-#include "base/test/ios/wait_util.h"
-#include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/ui/ui_util.h"
-#import "ios/chrome/test/scoped_key_window.h"
+#include "base/mac/bind_objc_block.h"
+#import "ios/chrome/browser/web/repost_form_tab_helper_delegate.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
-#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+// A configurable TabHelper delegate for testing.
+@interface RepostFormTabHelperTestDelegate
+    : NSObject<RepostFormTabHelperDelegate>
+
+// YES if repost form dialog is currently presented.
+@property(nonatomic, readonly, getter=isPresentingDialog) BOOL presentingDialog;
+
+// Location where the dialog was presented last time.
+@property(nonatomic, assign) CGPoint location;
+
+// Tab helper which delegates to this class.
+@property(nonatomic, assign) RepostFormTabHelper* tabHelper;
+
+// Calls |repostFormTabHelper:presentRepostFromDialogAtPoint:completionHandler:|
+// completion handler.
+- (void)allowRepost:(BOOL)shouldContinue;
+
+@end
+
+@implementation RepostFormTabHelperTestDelegate {
+  void (^_completionHandler)(BOOL);
+}
+
+@synthesize presentingDialog = _presentingDialog;
+@synthesize location = _location;
+@synthesize tabHelper = _tabHelper;
+
+- (void)allowRepost:(BOOL)allow {
+  _completionHandler(allow);
+  _presentingDialog = NO;
+}
+
+- (void)repostFormTabHelper:(RepostFormTabHelper*)helper
+    presentRepostFromDialogAtPoint:(CGPoint)location
+                 completionHandler:(void (^)(BOOL))completionHandler {
+  EXPECT_EQ(_tabHelper, helper);
+  EXPECT_FALSE(_presentingDialog);
+  _presentingDialog = YES;
+  _location = location;
+  _completionHandler = [completionHandler copy];
+}
+
+- (void)repostFormTabHelperDismissRepostFormDialog:
+    (RepostFormTabHelper*)helper {
+  EXPECT_EQ(_tabHelper, helper);
+  EXPECT_TRUE(_presentingDialog);
+  _presentingDialog = NO;
+  _completionHandler = nil;
+}
+
+@end
 
 namespace {
 // Test location passed to RepostFormTabHelper.
@@ -35,72 +83,73 @@ class RepostFormTabHelperTest : public PlatformTest {
  protected:
   RepostFormTabHelperTest()
       : web_state_(new web::TestWebState()),
-        location_(CGPointMake(kDialogHLocation, kDialogVLocation)),
-        view_controller_([[UIViewController alloc] init]) {
-    UIView* view = [[UIView alloc] initWithFrame:view_controller_.view.bounds];
-    [view_controller_.view addSubview:view];
-    [scoped_key_window_.Get() setRootViewController:view_controller_];
-
-    web_state_->SetView(view);
-    web_state_->SetWebUsageEnabled(true);
-
-    RepostFormTabHelper::CreateForWebState(web_state_.get());
+        delegate_([[RepostFormTabHelperTestDelegate alloc] init]),
+        location_(CGPointMake(kDialogHLocation, kDialogVLocation)) {
+    RepostFormTabHelper::CreateForWebState(web_state_.get(), delegate_);
+    delegate_.tabHelper = tab_helper();
   }
 
-  // Presents a repost form dialog using RepostFormTabHelperTest.
-  void PresentDialog() {
-    ASSERT_FALSE(GetAlertController());
-    auto* helper = RepostFormTabHelper::FromWebState(web_state_.get());
-    helper->PresentDialog(location_, base::Bind(&IgnoreBool));
-    ASSERT_TRUE(GetAlertController());
-  }
-
-  // Return presented view controller as UIAlertController.
-  UIAlertController* GetAlertController() const {
-    return base::mac::ObjCCastStrict<UIAlertController>(
-        view_controller_.presentedViewController);
+  RepostFormTabHelper* tab_helper() {
+    return RepostFormTabHelper::FromWebState(web_state_.get());
   }
 
  protected:
   std::unique_ptr<web::TestWebState> web_state_;
-
- private:
+  RepostFormTabHelperTestDelegate* delegate_;
   CGPoint location_;
-  ScopedKeyWindow scoped_key_window_;
-  UIViewController* view_controller_;
 };
 
-// Tests presented repost form dialog.
-TEST_F(RepostFormTabHelperTest, Preseting) {
-  PresentDialog();
-  EXPECT_FALSE(GetAlertController().title);
-  EXPECT_TRUE([GetAlertController().message
-      containsString:l10n_util::GetNSString(IDS_HTTP_POST_WARNING_TITLE)]);
-  EXPECT_TRUE([GetAlertController().message
-      containsString:l10n_util::GetNSString(IDS_HTTP_POST_WARNING)]);
-  if (IsIPadIdiom()) {
-    UIPopoverPresentationController* popover_presentation_controller =
-        GetAlertController().popoverPresentationController;
-    CGRect source_rect = popover_presentation_controller.sourceRect;
-    EXPECT_EQ(kDialogHLocation, CGRectGetMinX(source_rect));
-    EXPECT_EQ(kDialogVLocation, CGRectGetMinY(source_rect));
-  }
+// Tests presentation location.
+TEST_F(RepostFormTabHelperTest, Location) {
+  EXPECT_FALSE(CGPointEqualToPoint(delegate_.location, location_));
+  tab_helper()->PresentDialog(location_, base::Bind(&IgnoreBool));
+  EXPECT_TRUE(CGPointEqualToPoint(delegate_.location, location_));
+}
+
+// Tests cancelling repost.
+TEST_F(RepostFormTabHelperTest, CancelRepost) {
+  ASSERT_FALSE(delegate_.presentingDialog);
+  __block bool callback_called = false;
+  tab_helper()->PresentDialog(location_, base::BindBlockArc(^(bool repost) {
+                                EXPECT_FALSE(repost);
+                                callback_called = true;
+                              }));
+  EXPECT_TRUE(delegate_.presentingDialog);
+
+  ASSERT_FALSE(callback_called);
+  [delegate_ allowRepost:NO];
+  EXPECT_TRUE(callback_called);
+}
+
+// Tests allowing repost.
+TEST_F(RepostFormTabHelperTest, AllowRepost) {
+  ASSERT_FALSE(delegate_.presentingDialog);
+  __block bool callback_called = false;
+  tab_helper()->PresentDialog(location_, base::BindBlockArc(^(bool repost) {
+                                EXPECT_TRUE(repost);
+                                callback_called = true;
+                              }));
+  EXPECT_TRUE(delegate_.presentingDialog);
+
+  ASSERT_FALSE(callback_called);
+  [delegate_ allowRepost:YES];
+  EXPECT_TRUE(callback_called);
 }
 
 // Tests that dialog is dismissed when WebState is destroyed.
-TEST_F(RepostFormTabHelperTest, DismissingOnWebViewDestruction) {
-  PresentDialog();
+TEST_F(RepostFormTabHelperTest, DismissingOnWebStateDestruction) {
+  ASSERT_FALSE(delegate_.presentingDialog);
+  tab_helper()->PresentDialog(location_, base::Bind(&IgnoreBool));
+  EXPECT_TRUE(delegate_.presentingDialog);
   web_state_.reset();
-  base::test::ios::WaitUntilCondition(^{
-    return GetAlertController() != nil;
-  });
+  EXPECT_FALSE(delegate_.presentingDialog);
 }
 
 // Tests that dialog is dismissed after provisional navigation has started.
 TEST_F(RepostFormTabHelperTest, DismissingOnNavigationStart) {
-  PresentDialog();
+  ASSERT_FALSE(delegate_.presentingDialog);
+  tab_helper()->PresentDialog(location_, base::Bind(&IgnoreBool));
+  EXPECT_TRUE(delegate_.presentingDialog);
   web_state_->OnNavigationStarted(nullptr /* navigation_context */);
-  base::test::ios::WaitUntilCondition(^{
-    return GetAlertController() != nil;
-  });
+  EXPECT_FALSE(delegate_.presentingDialog);
 }
