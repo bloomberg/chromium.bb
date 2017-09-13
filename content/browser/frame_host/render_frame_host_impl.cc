@@ -167,6 +167,16 @@
 #include "device/vr/vr_service.mojom.h"  // nogncheck
 #endif
 
+// This is temporary to try to locate a core trampler.
+// TODO(bcwhite):  Remove when crbug/736675 is resolved.
+#if defined(OS_ANDROID)
+#include "base/metrics/statistics_recorder.h"
+#define VALIDATE_ALL_HISTOGRAMS(x) \
+  base::StatisticsRecorder::ValidateAllHistograms(x)
+#else
+#define VALIDATE_ALL_HISTOGRAMS(x)
+#endif
+
 using base::TimeDelta;
 
 namespace content {
@@ -558,6 +568,8 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
 }
 
 RenderFrameHostImpl::~RenderFrameHostImpl() {
+  VALIDATE_ALL_HISTOGRAMS(11);
+
   // Destroying navigation handle may call into delegates/observers,
   // so we do it early while |this| object is still in a sane state.
   navigation_handle_.reset();
@@ -566,11 +578,15 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   // RenderFrameHost during cleanup.
   ClearAllWebUI();
 
+  VALIDATE_ALL_HISTOGRAMS(12);
+
   SetLastCommittedSiteUrl(GURL());
 
   GetProcess()->RemoveRoute(routing_id_);
   g_routing_id_frame_map.Get().erase(
       RenderFrameHostID(GetProcess()->GetID(), routing_id_));
+
+  VALIDATE_ALL_HISTOGRAMS(13);
 
   if (overlay_routing_token_)
     g_token_frame_map.Get().erase(*overlay_routing_token_);
@@ -580,10 +596,14 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   if (delegate_ && render_frame_created_)
     delegate_->RenderFrameDeleted(this);
 
+  VALIDATE_ALL_HISTOGRAMS(14);
+
   // If this was the last active frame in the SiteInstance, the
   // DecrementActiveFrameCount call will trigger the deletion of the
   // SiteInstance's proxies.
   GetSiteInstance()->DecrementActiveFrameCount();
+
+  VALIDATE_ALL_HISTOGRAMS(15);
 
   // If this RenderFrameHost is swapping with a RenderFrameProxyHost, the
   // RenderFrame will already be deleted in the renderer process. Main frame
@@ -601,8 +621,12 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   // the dtor has run.  (It may also be null in tests.)
   swapout_event_monitor_timeout_.reset();
 
+  VALIDATE_ALL_HISTOGRAMS(16);
+
   for (const auto& iter : visual_state_callbacks_)
     iter.second.Run(false);
+
+  VALIDATE_ALL_HISTOGRAMS(17);
 
   if (render_widget_host_ &&
       render_widget_host_->owned_by_render_frame_host()) {
@@ -610,9 +634,13 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
     render_widget_host_->ShutdownAndDestroyWidget(true);
   }
 
+  VALIDATE_ALL_HISTOGRAMS(18);
+
   // Notify the FrameTree that this RFH is going away, allowing it to shut down
   // the corresponding RenderViewHost if it is no longer needed.
   frame_tree_->ReleaseRenderViewHostRef(render_view_host_);
+
+  VALIDATE_ALL_HISTOGRAMS(19);
 }
 
 int RenderFrameHostImpl::GetRoutingID() {
@@ -1854,11 +1882,15 @@ void RenderFrameHostImpl::OnSwappedOut() {
   if (!is_waiting_for_swapout_ack_)
     return;
 
+  VALIDATE_ALL_HISTOGRAMS(21);
+
   TRACE_EVENT_ASYNC_END0("navigation", "RenderFrameHostImpl::SwapOut", this);
   if (swapout_event_monitor_timeout_)
     swapout_event_monitor_timeout_->Stop();
 
   ClearAllWebUI();
+
+  VALIDATE_ALL_HISTOGRAMS(22);
 
   // If this is a main frame RFH that's about to be deleted, update its RVH's
   // swapped-out state here. https://crbug.com/505887
@@ -1867,9 +1899,13 @@ void RenderFrameHostImpl::OnSwappedOut() {
     render_view_host_->set_is_swapped_out(true);
   }
 
+  VALIDATE_ALL_HISTOGRAMS(23);
+
   bool deleted =
       frame_tree_node_->render_manager()->DeleteFromPendingList(this);
   CHECK(deleted);
+
+  VALIDATE_ALL_HISTOGRAMS(24);
 }
 
 void RenderFrameHostImpl::DisableSwapOutTimerForTesting() {
