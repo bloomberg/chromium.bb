@@ -113,6 +113,9 @@ CHECK_PROFILE_ENUM(DOLBYVISION_PROFILE4);
 CHECK_PROFILE_ENUM(DOLBYVISION_PROFILE5);
 CHECK_PROFILE_ENUM(DOLBYVISION_PROFILE7);
 CHECK_PROFILE_ENUM(DOLBYVISION_MAX);
+CHECK_PROFILE_ENUM(THEORAPROFILE_MIN);
+CHECK_PROFILE_ENUM(THEORAPROFILE_ANY);
+CHECK_PROFILE_ENUM(THEORAPROFILE_MAX);
 CHECK_PROFILE_ENUM(VIDEO_CODEC_PROFILE_MAX);
 
 #undef CHECK_PROFILE_ENUM
@@ -153,6 +156,7 @@ bool EnumTraits<arc::mojom::VideoCodecProfile, media::VideoCodecProfile>::
     case arc::mojom::VideoCodecProfile::DOLBYVISION_PROFILE4:
     case arc::mojom::VideoCodecProfile::DOLBYVISION_PROFILE5:
     case arc::mojom::VideoCodecProfile::DOLBYVISION_PROFILE7:
+    case arc::mojom::VideoCodecProfile::THEORAPROFILE_ANY:
       *output = static_cast<media::VideoCodecProfile>(input);
       return true;
   }

@@ -45,6 +45,8 @@ VideoCodec VideoCodecProfileToVideoCodec(VideoCodecProfile profile) {
     case DOLBYVISION_PROFILE5:
     case DOLBYVISION_PROFILE7:
       return kCodecDolbyVision;
+    case THEORAPROFILE_ANY:
+      return kCodecTheora;
   }
   NOTREACHED();
   return kUnknownVideoCodec;

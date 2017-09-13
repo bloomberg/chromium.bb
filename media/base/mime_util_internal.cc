@@ -738,6 +738,21 @@ bool MimeUtil::ParseCodecHelper(const std::string& mime_type_lower_case,
       GetStringToCodecMap().find(codec_id);
   if (itr != GetStringToCodecMap().end()) {
     out_result->codec = itr->second;
+
+    // Even "simple" video codecs should have an associated profile.
+    if (MimeUtilToVideoCodec(out_result->codec) != kUnknownVideoCodec) {
+      switch (out_result->codec) {
+        case Codec::VP8:
+          out_result->video_profile = VP8PROFILE_ANY;
+          break;
+        case Codec::THEORA:
+          out_result->video_profile = THEORAPROFILE_ANY;
+          break;
+        default:
+          NOTREACHED();
+      }
+    }
+
     return true;
   }
 

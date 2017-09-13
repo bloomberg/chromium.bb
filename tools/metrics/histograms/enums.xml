@@ -39363,6 +39363,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="20" label="DolbyVision profile4"/>
   <int value="21" label="DolbyVision profile5"/>
   <int value="22" label="DolbyVision profile7"/>
+  <int value="23" label="Theora"/>
 </enum>
 
 <enum name="VideoDecodeAcceleratorError">
