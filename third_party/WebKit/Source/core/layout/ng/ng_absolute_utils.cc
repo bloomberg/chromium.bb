@@ -27,6 +27,24 @@ bool AbsoluteVerticalNeedsEstimate(const ComputedStyle& style) {
          (height.IsAuto() && (style.Top().IsAuto() || style.Bottom().IsAuto()));
 }
 
+// Dominant side:
+// htb ltr => top left
+// htb rtl => top right
+// vlr ltr => top left
+// vlr rtl => bottom left
+// vrl ltr => top right
+// vrl rtl => bottom right
+bool IsLeftDominant(const NGConstraintSpace& space) {
+  return (space.WritingMode() != kVerticalRightLeft) &&
+         !(space.WritingMode() == kHorizontalTopBottom &&
+           space.Direction() == TextDirection::kRtl);
+}
+
+bool IsTopDominant(const NGConstraintSpace& space) {
+  return (space.WritingMode() == kHorizontalTopBottom) ||
+         (space.Direction() != TextDirection::kRtl);
+}
+
 LayoutUnit ResolveWidth(const Length& width,
                         const NGConstraintSpace& space,
                         const ComputedStyle& style,
@@ -113,7 +131,7 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
       margin_right = LayoutUnit();
     DCHECK(child_minmax.has_value());
     width = child_minmax->ShrinkToFit(container_size.width) + border_padding;
-    if (space.Direction() == TextDirection::kLtr) {
+    if (IsLeftDominant(space)) {
       left = static_position.LeftInset(container_size.width, *width,
                                        *margin_left, *margin_right);
     } else {
@@ -131,7 +149,7 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
         margin_right = margin_space / 2;
       } else {
         // Margins are negative.
-        if (space.Direction() == TextDirection::kLtr) {
+        if (IsLeftDominant(space)) {
           margin_left = LayoutUnit();
           margin_right = margin_space;
         } else {
@@ -148,7 +166,7 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
       LayoutUnit margin_extra = margin_space - *margin_left - *margin_right;
       if (margin_extra) {
         // Relax the end.
-        if (space.Direction() == TextDirection::kLtr)
+        if (IsLeftDominant(space))
           right = *right + margin_extra;
         else
           left = *left + margin_extra;
@@ -171,7 +189,7 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
   } else if (!left && !right) {
     // Rule 2.
     DCHECK(width.has_value());
-    if (space.Direction() == TextDirection::kLtr)
+    if (IsLeftDominant(space))
       left = static_position.LeftInset(container_size.width, *width,
                                        *margin_left, *margin_right);
     else
@@ -269,8 +287,13 @@ void ComputeAbsoluteVertical(const NGConstraintSpace& space,
       margin_bottom = LayoutUnit();
     DCHECK(child_minmax.has_value());
     height = child_minmax->ShrinkToFit(container_size.height) + border_padding;
-    top = static_position.TopInset(container_size.height, *height, *margin_top,
-                                   *margin_bottom);
+    if (IsTopDominant(space)) {
+      top = static_position.TopInset(container_size.height, *height,
+                                     *margin_top, *margin_bottom);
+    } else {
+      bottom = static_position.BottomInset(container_size.height, *height,
+                                           *margin_top, *margin_bottom);
+    }
   } else if (top && bottom && height) {
     // Standard: "If top, bottom, and height are not auto:"
     // Compute margins.
@@ -282,8 +305,13 @@ void ComputeAbsoluteVertical(const NGConstraintSpace& space,
         margin_bottom = margin_space / 2;
       } else {
         // Margin space is over-constrained.
-        margin_top = LayoutUnit();
-        margin_bottom = margin_space;
+        if (IsTopDominant(space)) {
+          margin_top = LayoutUnit();
+          margin_bottom = margin_space;
+        } else {
+          margin_top = margin_space;
+          margin_bottom = LayoutUnit();
+        }
       }
     } else if (!margin_top) {
       margin_top = margin_space - *margin_bottom;
@@ -291,8 +319,12 @@ void ComputeAbsoluteVertical(const NGConstraintSpace& space,
       margin_bottom = margin_space - *margin_top;
     } else {
       LayoutUnit margin_extra = margin_space - *margin_top - *margin_bottom;
-      if (margin_extra)
-        bottom = *bottom + margin_extra;
+      if (margin_extra) {
+        if (IsTopDominant(space))
+          bottom = *bottom + margin_extra;
+        else
+          top = *top + margin_extra;
+      }
     }
   }
 
@@ -311,8 +343,13 @@ void ComputeAbsoluteVertical(const NGConstraintSpace& space,
   } else if (!top && !bottom) {
     // Rule 2.
     DCHECK(height.has_value());
-    top = static_position.TopInset(container_size.height, *height, *margin_top,
-                                   *margin_bottom);
+    if (IsTopDominant(space)) {
+      top = static_position.TopInset(container_size.height, *height,
+                                     *margin_top, *margin_bottom);
+    } else {
+      bottom = static_position.BottomInset(container_size.height, *height,
+                                           *margin_top, *margin_bottom);
+    }
   } else if (!height && !bottom) {
     // Rule 3.
     DCHECK(child_minmax.has_value());

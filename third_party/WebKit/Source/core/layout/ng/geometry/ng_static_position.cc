@@ -62,4 +62,14 @@ LayoutUnit NGStaticPosition::TopInset(LayoutUnit container_size,
     return offset.top - height - margin_bottom - margin_top;
 }
 
+LayoutUnit NGStaticPosition::BottomInset(LayoutUnit container_size,
+                                         LayoutUnit height,
+                                         LayoutUnit margin_top,
+                                         LayoutUnit margin_bottom) const {
+  if (HasTop())
+    return container_size - offset.top - height - margin_top - margin_bottom;
+  else
+    return container_size - offset.top;
+}
+
 }  // namespace blink
