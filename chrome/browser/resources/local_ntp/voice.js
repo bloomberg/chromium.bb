@@ -813,21 +813,14 @@ speech.onClick_ = function(shouldSubmit, shouldRetry, navigatingAway) {
   if (speech.finalResult_ && shouldSubmit) {
     speech.submitFinalResult_();
   } else if (speech.currentState_ == speech.State_.STOPPED && shouldRetry) {
-    speech.restart();
+    speech.reset_();
+    speech.start();
   } else if (speech.currentState_ == speech.State_.STOPPED && navigatingAway) {
     // If the user clicks on a "Learn more" or "Details" support page link
     // from an error message, do nothing, and let Chrome navigate to that page.
   } else {
     speech.stop();
   }
-};
-
-/**
- * Restarts voice recognition. Used for the 'Try again' error link.
- */
-speech.restart = function() {
-  speech.reset_();
-  speech.start();
 };
 
 
@@ -970,7 +963,7 @@ text.init = function() {
  */
 text.updateTextArea = function(interimText, opt_finalText = '') {
   window.clearTimeout(text.initializingTimer_);
-  text.cancelListeningTimeout();
+  text.clearListeningTimeout();
 
   text.interim_.textContent = interimText;
   text.final_.textContent = opt_finalText;
@@ -1006,6 +999,7 @@ text.showInitializingMessage = function() {
  */
 text.showReadyMessage = function() {
   window.clearTimeout(text.initializingTimer_);
+  text.clearListeningTimeout();
   text.updateTextArea(speech.messages.ready);
   text.startListeningMessageAnimation_();
 };
@@ -1066,7 +1060,7 @@ text.getErrorLink_ = function(error) {
     case RecognitionError.NO_MATCH:
       linkElement.id = text.RETRY_LINK_ID;
       linkElement.textContent = speech.messages.tryAgain;
-      linkElement.onclick = speech.restart;
+      // When clicked, |view.onWindowClick_| gets called.
       return linkElement;
     case RecognitionError.NO_SPEECH:
     case RecognitionError.AUDIO_CAPTURE:
@@ -1094,7 +1088,7 @@ text.getErrorLink_ = function(error) {
 text.clear = function() {
   text.updateTextArea('');
 
-  text.cancelListeningTimeout();
+  text.clearListeningTimeout();
   window.clearTimeout(text.initializingTimer_);
 
   text.interim_.className = text.TEXT_AREA_CLASS_;
@@ -1105,7 +1099,7 @@ text.clear = function() {
 /**
  * Cancels listening message display.
  */
-text.cancelListeningTimeout = function() {
+text.clearListeningTimeout = function() {
   window.clearTimeout(text.listeningTimer_);
 };
 
@@ -1427,7 +1421,7 @@ view.setReceivingSpeech = function() {
   if (view.isVisible_) {
     view.container_.className = view.RECEIVING_SPEECH_CLASS_;
     microphone.startInputAnimation();
-    text.cancelListeningTimeout();
+    text.clearListeningTimeout();
   }
 };
 
