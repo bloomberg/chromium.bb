@@ -4,7 +4,6 @@
 -ProxyScriptFetcherImplTest.Priority
 -PythonUtils*
 -UDPSocketTest.PartialRecv
--URLRequest*FTP*
 -URLRequestQuic*
 
 # Following tests pass locally, but flake on bots.
