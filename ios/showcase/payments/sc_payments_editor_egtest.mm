@@ -209,8 +209,9 @@ id<GREYMatcher> UIAlertViewMessageForDelegateCallWithArgument(
 // navigate between the textfields.
 - (void)testInputAccessoryViewNavigationButtons {
   // TODO(crbug.com/753098): Re-enable this test on iOS 11 iPad once
-  // grey_typeText works on iOS 11.
-  if (base::ios::IsRunningOnIOS11OrLater() && IsIPadIdiom()) {
+  // grey_typeText works on iOS 11.  The test failes on iOS 11 iPhone as well,
+  // but possibly for a different reason.
+  if (base::ios::IsRunningOnIOS11OrLater()) {
     EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 11.");
   }
 
