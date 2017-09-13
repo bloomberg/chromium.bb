@@ -179,6 +179,8 @@ void InitializerImpl::OnPendingDisconnectRequestsComplete() {
 
   // Shutdown has completed. It is now safe to delete the objects that were
   // shutting down asynchronously.
+  wifi_hotspot_disconnector_.reset();
+  network_configuration_remover_.reset();
   disconnect_tethering_request_sender_.reset();
   ble_connection_manager_.reset();
   remote_beacon_seed_fetcher_.reset();
@@ -302,7 +304,6 @@ void InitializerImpl::StartAsynchronousShutdown() {
   crash_recovery_manager_.reset();
   network_connection_handler_tether_delegate_.reset();
   tether_network_disconnection_handler_.reset();
-  network_configuration_remover_.reset();
   tether_connector_.reset();
   host_connection_metrics_logger_.reset();
   host_scan_scheduler_.reset();
