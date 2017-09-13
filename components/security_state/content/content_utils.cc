@@ -93,7 +93,7 @@ void ExplainCertificateSecurity(
     const security_state::SecurityInfo& security_info,
     content::SecurityStyleExplanations* security_style_explanations) {
   if (security_info.sha1_in_chain) {
-    security_style_explanations->neutral_explanations.push_back(
+    security_style_explanations->insecure_explanations.push_back(
         content::SecurityStyleExplanation(
             l10n_util::GetStringUTF8(IDS_SHA1),
             l10n_util::GetStringUTF8(IDS_SHA1_DESCRIPTION),

@@ -492,10 +492,10 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, SHA1CertificateBlocked) {
 
   const content::SecurityStyleExplanations& interstitial_explanation =
       observer.latest_explanations();
-  ASSERT_EQ(1u, interstitial_explanation.insecure_explanations.size());
-  ASSERT_EQ(1u, interstitial_explanation.neutral_explanations.size());
+  ASSERT_EQ(2u, interstitial_explanation.insecure_explanations.size());
+  ASSERT_EQ(0u, interstitial_explanation.neutral_explanations.size());
   EXPECT_EQ(l10n_util::GetStringUTF8(IDS_SHA1),
-            interstitial_explanation.neutral_explanations[0].summary);
+            interstitial_explanation.insecure_explanations[0].summary);
 
   ProceedThroughInterstitial(
       browser()->tab_strip_model()->GetActiveWebContents());
@@ -507,10 +507,10 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, SHA1CertificateBlocked) {
 
   const content::SecurityStyleExplanations& page_explanation =
       observer.latest_explanations();
-  ASSERT_EQ(1u, page_explanation.insecure_explanations.size());
-  ASSERT_EQ(1u, page_explanation.neutral_explanations.size());
+  ASSERT_EQ(2u, page_explanation.insecure_explanations.size());
+  ASSERT_EQ(0u, page_explanation.neutral_explanations.size());
   EXPECT_EQ(l10n_util::GetStringUTF8(IDS_SHA1),
-            page_explanation.neutral_explanations[0].summary);
+            page_explanation.insecure_explanations[0].summary);
 }
 
 // Test security state for a SHA-1 certificate that is allowed by policy.
@@ -531,10 +531,10 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, SHA1CertificateWarning) {
   const content::SecurityStyleExplanations& explanation =
       observer.latest_explanations();
 
-  ASSERT_EQ(0u, explanation.insecure_explanations.size());
-  ASSERT_EQ(1u, explanation.neutral_explanations.size());
+  ASSERT_EQ(1u, explanation.insecure_explanations.size());
+  ASSERT_EQ(0u, explanation.neutral_explanations.size());
   EXPECT_EQ(l10n_util::GetStringUTF8(IDS_SHA1),
-            explanation.neutral_explanations[0].summary);
+            explanation.insecure_explanations[0].summary);
 }
 
 IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, MixedContent) {
