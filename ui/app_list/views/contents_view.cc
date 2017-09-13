@@ -451,7 +451,7 @@ bool ContentsView::Back() {
         apps_container_view_->app_list_folder_view()->CloseFolderPage();
       } else {
         is_fullscreen_app_list_enabled_
-            ? app_list_view_->SetState(AppListView::CLOSED)
+            ? app_list_view_->Dismiss()
             : SetActiveState(AppListModel::STATE_START);
       }
       break;

@@ -116,6 +116,9 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   // timer to show the UI when a maximum allowed wait time has expired.
   void ShowWhenReady();
 
+  // Dismisses the UI, cleans up and sets the state to CLOSED.
+  void Dismiss();
+
   void UpdateBounds();
 
   // Enables/disables a semi-transparent overlay over the app list (good for
