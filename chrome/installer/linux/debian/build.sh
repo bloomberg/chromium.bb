@@ -4,9 +4,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# TODO(mmoss) This currently only works with official builds, since non-official
-# builds don't add the "${BUILDDIR}/installer/" files needed for packaging.
-
 set -e
 set -o pipefail
 if [ "$VERBOSE" ]; then
@@ -66,14 +63,14 @@ stage_install_debian() {
   fi
   prep_staging_debian
   stage_install_common
-  echo "Staging Debian install files in '${STAGEDIR}'..."
+  log_cmd echo "Staging Debian install files in '${STAGEDIR}'..."
   install -m 755 -d "${STAGEDIR}/${INSTALLDIR}/cron"
   process_template "${BUILDDIR}/installer/common/repo.cron" \
       "${STAGEDIR}/${INSTALLDIR}/cron/${PACKAGE}"
   chmod 755 "${STAGEDIR}/${INSTALLDIR}/cron/${PACKAGE}"
-  pushd "${STAGEDIR}/etc/cron.daily/"
+  pushd "${STAGEDIR}/etc/cron.daily/" > /dev/null
   ln -snf "${INSTALLDIR}/cron/${PACKAGE}" "${PACKAGE}"
-  popd
+  popd > /dev/null
   process_template "${BUILDDIR}/installer/debian/debian.menu" \
     "${STAGEDIR}/usr/share/menu/${PACKAGE}.menu"
   chmod 644 "${STAGEDIR}/usr/share/menu/${PACKAGE}.menu"
@@ -106,7 +103,7 @@ verify_package() {
 
 # Actually generate the package file.
 do_package() {
-  echo "Packaging ${ARCHITECTURE}..."
+  log_cmd echo "Packaging ${ARCHITECTURE}..."
   PREDEPENDS="$COMMON_PREDEPS"
   DEPENDS="${COMMON_DEPS}"
   REPLACES=""
@@ -123,13 +120,13 @@ do_package() {
   else
     local COMPRESSION_OPTS="-Znone"
   fi
-  fakeroot dpkg-deb ${COMPRESSION_OPTS} -b "${STAGEDIR}" .
+  log_cmd fakeroot dpkg-deb ${COMPRESSION_OPTS} -b "${STAGEDIR}" .
   verify_package "$DEPENDS"
 }
 
 # Remove temporary files and unwanted packaging output.
 cleanup() {
-  echo "Cleaning..."
+  log_cmd echo "Cleaning..."
   rm -rf "${STAGEDIR}"
   rm -rf "${TMPFILEDIR}"
 }

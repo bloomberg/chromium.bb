@@ -4,9 +4,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# TODO(mmoss) This currently only works with official builds, since non-official
-# builds don't add the "${BUILDDIR}/installer/" files needed for packaging.
-
 set -e
 if [ "$VERBOSE" ]; then
   set -x
@@ -48,7 +45,7 @@ stage_install_rpm() {
   fi
   prep_staging_rpm
   stage_install_common
-  echo "Staging RPM install files in '${STAGEDIR}'..."
+  log_cmd echo "Staging RPM install files in '${STAGEDIR}'..."
   process_template "${BUILDDIR}/installer/common/rpmrepo.cron" \
     "${STAGEDIR}/etc/cron.daily/${PACKAGE}"
   chmod 755 "${STAGEDIR}/etc/cron.daily/${PACKAGE}"
@@ -80,7 +77,7 @@ verify_package() {
 
 # Actually generate the package file.
 do_package() {
-  echo "Packaging ${ARCHITECTURE}..."
+  log_cmd echo "Packaging ${ARCHITECTURE}..."
   PROVIDES="${PACKAGE}"
   local REPS="$REPLACES"
   REPLACES=""
@@ -120,7 +117,7 @@ do_package() {
   # (brp-compress, etc.), which by default appears to only be enabled on 32-bit,
   # and which doesn't gain us anything since we already explicitly do all the
   # compression, symbol stripping, etc. that we want.
-  fakeroot rpmbuild -bb --target="$ARCHITECTURE" --rmspec \
+  log_cmd fakeroot rpmbuild -bb --target="$ARCHITECTURE" --rmspec \
     --define "_topdir $RPMBUILD_DIR" \
     --define "${COMPRESSION_OPT}" \
     --define "__os_install_post  %{nil}" \
