@@ -60,15 +60,17 @@ bool LocationArbitrator::StartProvider(bool enable_high_accuracy) {
   if (providers_.empty()) {
     RegisterSystemProvider();
 
-    const scoped_refptr<AccessTokenStore> access_token_store =
-        GetAccessTokenStore();
-    if (access_token_store && delegate_->UseNetworkLocationProviders()) {
-      DCHECK(DefaultNetworkProviderURL().is_valid());
-      token_store_callback_.Reset(
-          base::Bind(&LocationArbitrator::OnAccessTokenStoresLoaded,
-                     base::Unretained(this)));
-      access_token_store->LoadAccessTokens(token_store_callback_.callback());
-      return true;
+    if (delegate_->UseNetworkLocationProviders()) {
+      const scoped_refptr<AccessTokenStore> access_token_store =
+          GetAccessTokenStore();
+      if (access_token_store) {
+        DCHECK(DefaultNetworkProviderURL().is_valid());
+        token_store_callback_.Reset(
+            base::Bind(&LocationArbitrator::OnAccessTokenStoresLoaded,
+                       base::Unretained(this)));
+        access_token_store->LoadAccessTokens(token_store_callback_.callback());
+        return true;
+      }
     }
   }
   return DoStartProviders();

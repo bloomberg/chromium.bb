@@ -48,33 +48,18 @@
 namespace android_webview {
 namespace {
 
-class AwAccessTokenStore : public device::AccessTokenStore {
- public:
-  AwAccessTokenStore() { }
-
-  // device::AccessTokenStore implementation
-  void LoadAccessTokens(const LoadAccessTokensCallback& request) override {
-    AccessTokenStore::AccessTokenMap access_token_map;
-    // AccessTokenMap and net::URLRequestContextGetter not used on Android,
-    // but Run needs to be called to finish the geolocation setup.
-    request.Run(access_token_map, NULL);
-  }
-  void SaveAccessToken(const GURL& server_url,
-                       const base::string16& access_token) override {}
-
- private:
-  ~AwAccessTokenStore() override {}
-
-  DISALLOW_COPY_AND_ASSIGN(AwAccessTokenStore);
-};
-
 // A provider of Geolocation services to override AccessTokenStore.
 class AwGeolocationDelegate : public device::GeolocationDelegate {
  public:
   AwGeolocationDelegate() = default;
 
+  // Android doesn't use NetworkLocationProvider (the capability is folded into
+  // the system location provider).
+  bool UseNetworkLocationProviders() override { return false; }
+
   scoped_refptr<device::AccessTokenStore> CreateAccessTokenStore() final {
-    return new AwAccessTokenStore();
+    NOTREACHED() << "No network geolocation for Android webview";
+    return nullptr;
   }
 
  private:

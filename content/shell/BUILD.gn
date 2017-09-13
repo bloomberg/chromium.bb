@@ -102,8 +102,6 @@ static_library("content_shell_lib") {
     "browser/renderer_host/shell_render_widget_host_view_mac_delegate.mm",
     "browser/shell.cc",
     "browser/shell.h",
-    "browser/shell_access_token_store.cc",
-    "browser/shell_access_token_store.h",
     "browser/shell_android.cc",
     "browser/shell_application_mac.h",
     "browser/shell_application_mac.mm",
