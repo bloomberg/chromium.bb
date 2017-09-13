@@ -14,14 +14,18 @@ source_set("ntp") {
     "ntp_incognito_coordinator.mm",
     "ntp_mediator.h",
     "ntp_mediator.mm",
+    "ntp_metrics_recorder.h",
+    "ntp_metrics_recorder.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
     ":ntp_ui",
+    "//base",
     "//components/ntp_snippets",
     "//components/ntp_tiles",
+    "//components/prefs",
     "//components/reading_list/core",
     "//components/strings",
     "//ios/chrome/app/strings:ios_strings_grit",
@@ -42,6 +46,7 @@ source_set("ntp") {
     "//ios/chrome/browser/ui/content_suggestions:content_suggestions_util",
     "//ios/chrome/browser/ui/content_suggestions/cells",
     "//ios/chrome/browser/ui/coordinators",
+    "//ios/chrome/browser/ui/metrics",
     "//ios/chrome/browser/ui/ntp",
     "//ios/chrome/browser/ui/ntp:ntp_controller",
     "//ios/chrome/browser/ui/ntp:ntp_internal",
@@ -98,12 +103,21 @@ source_set("unit_tests") {
     "ntp_home_header_view_controller_unittest.mm",
     "ntp_incognito_coordinator_unittest.mm",
     "ntp_mediator_unittest.mm",
+    "ntp_metrics_recorder_unittest.mm",
     "ntp_view_controller_unittest.mm",
   ]
 
   deps = [
     ":ntp",
     ":ntp_ui",
+    "//base",
+    "//base/test:test_support",
+    "//components/prefs",
+    "//components/prefs:test_support",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/ui/content_suggestions:content_suggestions_constant",
+    "//ios/chrome/browser/ui/metrics:test_support",
+    "//ios/clean/chrome/browser/ui/commands",
     "//testing/gtest",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]

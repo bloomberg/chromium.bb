@@ -6,6 +6,17 @@ source_set("metrics") {
   sources = [
     "metrics_recorder.h",
   ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
 
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "metrics_test_util.h",
+    "metrics_test_util.mm",
+  ]
+  deps = [
+    "//base",
+  ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }

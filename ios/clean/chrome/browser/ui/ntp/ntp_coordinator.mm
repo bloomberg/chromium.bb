@@ -17,8 +17,11 @@
 #import "ios/clean/chrome/browser/ui/ntp/ntp_home_coordinator.h"
 #import "ios/clean/chrome/browser/ui/ntp/ntp_incognito_coordinator.h"
 #import "ios/clean/chrome/browser/ui/ntp/ntp_mediator.h"
+#import "ios/clean/chrome/browser/ui/ntp/ntp_metrics_recorder.h"
 #import "ios/clean/chrome/browser/ui/ntp/ntp_view_controller.h"
 #import "ios/clean/chrome/browser/ui/recent_tabs/recent_tabs_coordinator.h"
+
+class PrefService;
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -31,6 +34,7 @@
 @property(nonatomic, strong) BookmarksCoordinator* bookmarksCoordinator;
 @property(nonatomic, strong) RecentTabsCoordinator* recentTabsCoordinator;
 @property(nonatomic, strong) NTPIncognitoCoordinator* incognitoCoordinator;
+@property(nonatomic, strong) NTPMetricsRecorder* metricsRecorder;
 @end
 
 @implementation NTPCoordinator
@@ -40,6 +44,7 @@
 @synthesize bookmarksCoordinator = _bookmarksCoordinator;
 @synthesize recentTabsCoordinator = _recentTabsCoordinator;
 @synthesize incognitoCoordinator = _incognitoCoordinator;
+@synthesize metricsRecorder = _metricsRecorder;
 
 - (void)start {
   if (self.started)
@@ -58,6 +63,13 @@
       broadcastValue:@"selectedNTPPanel"
             ofObject:self.viewController
             selector:@selector(broadcastSelectedNTPPanel:)];
+
+  PrefService* prefs =
+      ios::ChromeBrowserState::FromBrowserState(self.browser->browser_state())
+          ->GetPrefs();
+  self.metricsRecorder = [[NTPMetricsRecorder alloc] initWithPrefService:prefs];
+  [self.dispatcher registerMetricsRecorder:self.metricsRecorder
+                               forSelector:@selector(showNTPHomePanel)];
   [super start];
 }
 

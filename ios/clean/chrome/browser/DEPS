@@ -3,6 +3,7 @@ include_rules = [
   "+components/browser_sync",
   "+components/ntp_snippets",
   "+components/ntp_tiles",
+  "+components/prefs",
   "+components/reading_list",
   "+components/sessions",
   "+components/sync_sessions",
