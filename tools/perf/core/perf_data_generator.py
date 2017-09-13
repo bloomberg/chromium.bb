@@ -606,10 +606,22 @@ def generate_isolate_script_entry(swarming_dimensions, test_args,
   return result
 
 
-BENCHMARKS_TO_UPLOAD_TO_FLAKINESS_DASHBOARD = ['system_health.common_desktop',
-                                               'system_health.common_mobile',
-                                               'system_health.memory_desktop',
-                                               'system_health.memory_mobile']
+# Manually curated for now. System health is in here because it's an important
+# benchmark. Others are semi randomly chosen; they've failed on the waterfall
+# recently, so should be useful to upload.
+BENCHMARKS_TO_UPLOAD_TO_FLAKINESS_DASHBOARD = [
+    'service_worker.service_worker',
+    'smoothness.tough_texture_upload_cases',
+    'smoothness.tough_webgl_ad_cases',
+    'system_health.common_desktop',
+    'system_health.common_mobile',
+    'system_health.memory_desktop',
+    'system_health.memory_mobile',
+    'v8.browsing_mobile',
+    'v8.browsing_desktop',
+    'v8.runtimestats.browsing_mobile',
+    'v8.runtimestats.browsing_desktop',
+]
 
 
 BENCHMARKS_TO_OUTPUT_HISTOGRAMS = []
