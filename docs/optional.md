@@ -22,13 +22,20 @@ or the [Chromium implementation](https://code.google.com/p/chromium/codesearch#c
 
 When initialized without a value, `base::Optional<T>` will be empty. When empty,
 the `operator bool` will return `false` and `value()` should not be called. An
-empty `base::Optional<T>` is equal to `base::nullopt_t`.
+empty `base::Optional<T>` is equal to `base::nullopt`.
 
 ```C++
 base::Optional<int> opt;
 opt == true; // false
 opt.value(); // illegal, will DCHECK
-opt == base::nullopt_t; // true
+opt == base::nullopt; // true
+```
+
+To pass an empty optional argument to another function, use `base::nullopt`
+where you would otherwise have used a `nullptr`:
+
+``` C++
+OtherFunction(42, base::nullopt);  // Supply an empty optional argument
 ```
 
 To avoid calling `value()` when an `base::Optional<T>` is empty, instead of
@@ -49,7 +56,7 @@ base::Optional<int> opt_2 = base::Optional<int>(2); // .value() == 2
 
 All basic operators should be available on `base::Optional<T>`: it is possible
 to compare a `base::Optional<T>` with another or with a `T` or
-`base::nullopt_t`.
+`base::nullopt`.
 
 ```C++
 base::Optional<int> opt_1;
@@ -60,7 +67,7 @@ opt_1 = 1;
 
 opt_1 <= opt_2; // true
 opt_1 == 1; // true
-opt_1 == base::nullopt_t; // false
+opt_1 == base::nullopt; // false
 ```
 
 `base::Optional<T>` has a helper function `base::make_optional<T&&>`:
