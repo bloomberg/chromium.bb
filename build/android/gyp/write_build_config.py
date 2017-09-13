@@ -588,6 +588,7 @@ def main(argv):
       extra_jars = build_utils.ParseGnList(options.extra_classpath_jars)
       deps_info['extra_classpath_jars'] = extra_jars
       javac_classpath += extra_jars
+      java_full_classpath += extra_jars
 
   # The java code for an instrumentation test apk is assembled differently for
   # ProGuard vs. non-ProGuard.
