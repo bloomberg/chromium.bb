@@ -98,7 +98,7 @@ usage (char *program, int error)
 int
 main (int argc, char **argv)
 {
-    int		id = -1;
+    unsigned int id = (unsigned int) -1;
     int		ignore_blanks = 0;
     FcFontSet   *fs;
     FcChar8     *format = NULL;
@@ -119,7 +119,7 @@ main (int argc, char **argv)
 	    ignore_blanks = 1;
 	    break;
 	case 'i':
-	    id = atoi (optarg);
+	    id = (unsigned int) strtol (optarg, NULL, 0); /* strtol() To handle -1. */
 	    break;
 	case 'f':
 	    format = (FcChar8 *) strdup (optarg);
@@ -150,7 +150,7 @@ main (int argc, char **argv)
     {
 	if (!FcFreeTypeQueryAll ((FcChar8*) argv[i], id, blanks, NULL, fs))
 	{
-	    fprintf (stderr, "Can't query face %d of font file %s\n", id, argv[i]);
+	    fprintf (stderr, "Can't query face %u of font file %s\n", id, argv[i]);
 	    err = 1;
 	}
     }

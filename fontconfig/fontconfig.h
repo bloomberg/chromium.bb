@@ -577,10 +577,10 @@ FcDirCacheUnload (FcCache *cache);
 
 /* fcfreetype.c */
 FcPublic FcPattern *
-FcFreeTypeQuery (const FcChar8 *file, int id, FcBlanks *blanks, int *count);
+FcFreeTypeQuery (const FcChar8 *file, unsigned int id, FcBlanks *blanks, int *count);
 
 FcPublic unsigned int
-FcFreeTypeQueryAll(const FcChar8 *file, int id, FcBlanks *blanks, int *count, FcFontSet *set);
+FcFreeTypeQueryAll(const FcChar8 *file, unsigned int id, FcBlanks *blanks, int *count, FcFontSet *set);
 
 /* fcfs.c */
 

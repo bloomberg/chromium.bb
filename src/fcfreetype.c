@@ -1157,7 +1157,7 @@ static const FT_UShort nameid_order[] = {
 FcPattern *
 FcFreeTypeQueryFace (const FT_Face  face,
 		     const FcChar8  *file,
-		     int	    id,
+		     unsigned int   id,
 		     FcBlanks	    *blanks FC_UNUSED)
 {
     FcPattern	    *pat;
@@ -1972,7 +1972,7 @@ bail0:
 
 FcPattern *
 FcFreeTypeQuery(const FcChar8	*file,
-		int		id,
+		unsigned int	id,
 		FcBlanks	*blanks,
 		int		*count)
 {
@@ -1999,20 +1999,20 @@ bail:
 
 unsigned int
 FcFreeTypeQueryAll(const FcChar8	*file,
-		   int			id,
+		   unsigned int		id,
 		   FcBlanks		*blanks,
 		   int			*count,
 		   FcFontSet            *set)
 {
     FT_Face face;
     FT_Library ftLibrary = NULL;
-    int index_set = id != -1;
-    int set_face_num = index_set ? id & 0xFFFF : 0;
-    int set_instance_num = index_set ? id >> 16 : 0;
-    int face_num = set_face_num;
-    int instance_num = set_instance_num;
-    int num_faces = 0;
-    int num_instances = 0;
+    FcBool index_set = id != (unsigned int) -1;
+    unsigned int set_face_num = index_set ? id & 0xFFFF : 0;
+    unsigned int set_instance_num = index_set ? id >> 16 : 0;
+    unsigned int face_num = set_face_num;
+    unsigned int instance_num = set_instance_num;
+    unsigned int num_faces = 0;
+    unsigned int num_instances = 0;
     unsigned int ret = 0;
     int		err = 0;
 
