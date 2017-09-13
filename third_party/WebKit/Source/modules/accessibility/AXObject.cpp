@@ -1919,9 +1919,13 @@ bool AXObject::OnNativeClickAction() {
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
       LocalFrame::CreateUserGesture(document->GetFrame(),
                                     UserGestureToken::kNewGesture);
-  Element* action_elem = ActionElement();
-  if (action_elem) {
-    action_elem->AccessKeyAction(true);
+
+  Element* element = GetElement();
+  if (!element && GetNode())
+    element = GetNode()->parentElement();
+
+  if (element) {
+    element->AccessKeyAction(true);
     return true;
   }
 
