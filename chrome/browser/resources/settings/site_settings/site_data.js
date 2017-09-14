@@ -141,7 +141,7 @@ Polymer({
       var items = this.$.list.items;
       for (var i = 0; i < items.length; ++i) {
         if (this.showItem_(items[i]))
-          this.browserProxy.removeCookie(items[i].id);
+          this.browserProxy_.removeCookie(items[i].id);
       }
       // We just deleted all items found by the filter, let's reset the filter.
       /** @type {SettingsSubpageSearchElement} */ (this.$.filter).setValue('');
@@ -155,7 +155,7 @@ Polymer({
    */
   onRemoveSiteTap_: function(e) {
     e.stopPropagation();
-    this.browserProxy.removeCookie(e.model.item.id);
+    this.browserProxy_.removeCookie(e.model.item.id);
   },
 
   /**

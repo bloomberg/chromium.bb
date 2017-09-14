@@ -6,12 +6,12 @@ suite('<site-data>', function() {
   /** @type {SiteDataElement} */
   var siteData;
 
-  /** @type {TestSiteSettingsPrefsBrowserProxy} */
+  /** @type {TestLocalDataBrowserProxy} */
   var testBrowserProxy;
 
   setup(function() {
-    testBrowserProxy = new TestSiteSettingsPrefsBrowserProxy;
-    settings.SiteSettingsPrefsBrowserProxyImpl.instance_ = testBrowserProxy;
+    testBrowserProxy = new TestLocalDataBrowserProxy;
+    settings.LocalDataBrowserProxyImpl.instance_ = testBrowserProxy;
     siteData = document.createElement('site-data');
   });
 

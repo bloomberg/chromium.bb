@@ -36,14 +36,13 @@ Polymer({
 
   /**
    * The browser proxy used to retrieve and change cookies.
-   * @private {?settings.SiteSettingsPrefsBrowserProxy}
+   * @private {?settings.LocalDataBrowserProxy}
    */
   browserProxy_: null,
 
   /** @override */
   ready: function() {
-    this.browserProxy_ =
-        settings.SiteSettingsPrefsBrowserProxyImpl.getInstance();
+    this.browserProxy_ = settings.LocalDataBrowserProxyImpl.getInstance();
 
     this.addWebUIListener(
         'onTreeItemRemoved', this.getCookieDetails_.bind(this));

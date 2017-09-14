@@ -10,6 +10,12 @@
 var CookieTreeBehaviorImpl = {
   properties: {
     /**
+     * @type {settings.LocalDataBrowserProxy}
+     * @private
+     */
+    browserProxy_: Object,
+
+    /**
      * A summary list of all sites and how many entities each contain.
      * @type {!Array<!CookieDataSummaryItem>}
      */
@@ -26,6 +32,7 @@ var CookieTreeBehaviorImpl = {
 
   /** @override */
   ready: function() {
+    this.browserProxy_ = settings.LocalDataBrowserProxyImpl.getInstance();
     cr.addWebUIListener(
         'onTreeItemRemoved', this.onTreeItemRemoved_.bind(this));
     this.rootCookieNode = new settings.CookieTreeNode(null);
@@ -51,7 +58,7 @@ var CookieTreeBehaviorImpl = {
       for (var i = 0; i < children.length; i++) {
         var child = children[i];
         if (child.hasChildren) {
-          promises.push(this.browserProxy.loadCookieChildren(prefix + child.id)
+          promises.push(this.browserProxy_.loadCookieChildren(prefix + child.id)
                             .then(loadChildrenRecurse.bind(this)));
         }
       }
@@ -72,7 +79,7 @@ var CookieTreeBehaviorImpl = {
    * @return {Promise}
    */
   loadCookies: function() {
-    return this.browserProxy.reloadCookies().then(
+    return this.browserProxy_.reloadCookies().then(
         this.loadChildren_.bind(this));
   },
 
@@ -91,10 +98,10 @@ var CookieTreeBehaviorImpl = {
    * @return {Promise}
    */
   removeAllCookies: function() {
-    return this.browserProxy.removeAllCookies().then(
+    return this.browserProxy_.removeAllCookies().then(
         this.loadChildren_.bind(this));
   },
 };
 
 /** @polymerBehavior */
-var CookieTreeBehavior = [SiteSettingsBehavior, CookieTreeBehaviorImpl];
+var CookieTreeBehavior = [CookieTreeBehaviorImpl];
