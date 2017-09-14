@@ -61,6 +61,10 @@ void RecordUpdateResult(safe_browsing::V4OperationResult result) {
       safe_browsing::V4OperationResult::OPERATION_RESULT_MAX);
 }
 
+void RecordTimedOut(bool timed_out) {
+  UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.V4Update.TimedOut", timed_out);
+}
+
 }  // namespace
 
 namespace safe_browsing {
@@ -362,7 +366,7 @@ void V4UpdateProtocolManager::IssueUpdateRequest() {
 }
 
 void V4UpdateProtocolManager::HandleTimeout() {
-  UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.V4Update.TimedOut", true);
+  RecordTimedOut(true);
   request_.reset();
   ScheduleNextUpdateWithBackoff(true);
 }
@@ -380,7 +384,7 @@ void V4UpdateProtocolManager::OnURLFetchComplete(
   net::URLRequestStatus status = source->GetStatus();
   V4ProtocolManagerUtil::RecordHttpResponseOrErrorCode(
       "SafeBrowsing.V4Update.Network.Result", status, last_response_code_);
-  UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.V4Update.TimedOut", false);
+  RecordTimedOut(false);
 
   last_response_time_ = Time::Now();
 
