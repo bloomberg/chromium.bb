@@ -13,6 +13,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/containers/queue.h"
+#include "base/containers/small_map.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -258,7 +259,8 @@ class MOJO_CPP_BINDINGS_EXPORT MultiplexRouter
   // NOTE: It is unsafe to call into this object while holding |lock_|.
   PipeControlMessageProxy control_message_proxy_;
 
-  std::map<InterfaceId, scoped_refptr<InterfaceEndpoint>> endpoints_;
+  base::small_map<std::map<InterfaceId, scoped_refptr<InterfaceEndpoint>>, 1>
+      endpoints_;
   uint32_t next_interface_id_value_ = 1;
 
   base::circular_deque<std::unique_ptr<Task>> tasks_;
