@@ -4,6 +4,7 @@
 
 import("//build/config/ui.gni")
 import("//components/viz/viz.gni")
+import("//gpu/vulkan/features.gni")
 
 config("viz_service_implementation") {
 }
@@ -163,6 +164,15 @@ viz_component("service") {
       "display_embedder/compositor_overlay_candidate_validator_win.cc",
       "display_embedder/compositor_overlay_candidate_validator_win.h",
     ]
+  }
+
+  if (enable_vulkan) {
+    sources += [
+      "display/vulkan_renderer.cc",
+      "display/vulkan_renderer.h",
+    ]
+
+    deps += [ "//gpu/vulkan" ]
   }
 }
 

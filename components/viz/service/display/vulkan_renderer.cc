@@ -1,27 +1,26 @@
-// Copyright (c) 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/vulkan_renderer.h"
+#include "components/viz/service/display/vulkan_renderer.h"
+
 #include "cc/output/output_surface.h"
 #include "cc/output/output_surface_frame.h"
 
-namespace cc {
+namespace viz {
 
 VulkanRenderer::~VulkanRenderer() {}
 
 void VulkanRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info) {
-  OutputSurfaceFrame output_frame;
+  cc::OutputSurfaceFrame output_frame;
   output_frame.latency_info = std::move(latency_info);
   output_surface_->SwapBuffers(std::move(output_frame));
 }
 
-VulkanRenderer::VulkanRenderer(const viz::RendererSettings* settings,
-                               OutputSurface* output_surface,
-                               DisplayResourceProvider* resource_provider,
-                               TextureMailboxDeleter* texture_mailbox_deleter,
-                               int highp_threshold_min)
-    : DirectRenderer(settings, output_surface, resource_provider) {}
+VulkanRenderer::VulkanRenderer(const RendererSettings* settings,
+                               cc::OutputSurface* output_surface,
+                               cc::DisplayResourceProvider* resource_provider)
+    : cc::DirectRenderer(settings, output_surface, resource_provider) {}
 
 void VulkanRenderer::DidChangeVisibility() {
   NOTIMPLEMENTED();
@@ -31,11 +30,12 @@ void VulkanRenderer::BindFramebufferToOutputSurface() {
   NOTIMPLEMENTED();
 }
 
-viz::ResourceFormat VulkanRenderer::BackbufferFormat() const {
+ResourceFormat VulkanRenderer::BackbufferFormat() const {
   return resource_provider_->best_texture_format();
 }
 
-bool VulkanRenderer::BindFramebufferToTexture(const ScopedResource* resource) {
+bool VulkanRenderer::BindFramebufferToTexture(
+    const cc::ScopedResource* resource) {
   NOTIMPLEMENTED();
   return false;
 }
@@ -85,7 +85,7 @@ void VulkanRenderer::EnsureScissorTestDisabled() {
 }
 
 void VulkanRenderer::CopyDrawnRenderPass(
-    std::unique_ptr<viz::CopyOutputRequest> request) {
+    std::unique_ptr<CopyOutputRequest> request) {
   NOTIMPLEMENTED();
 }
 
@@ -94,4 +94,4 @@ bool VulkanRenderer::CanPartialSwap() {
   return false;
 }
 
-}  // namespace cc
+}  // namespace viz
