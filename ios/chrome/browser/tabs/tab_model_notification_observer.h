@@ -15,18 +15,18 @@ class TabModelNotificationObserver : public WebStateListObserver {
   explicit TabModelNotificationObserver(TabModel* tab_model);
   ~TabModelNotificationObserver() override;
 
+  // Controls whether sending notification is enabled or not.
+  void SetDisabled(bool disabled);
+
   // WebStateListObserver implementation.
   void WebStateInsertedAt(WebStateList* web_state_list,
                           web::WebState* web_state,
                           int index,
                           bool activating) override;
-  void WebStateReplacedAt(WebStateList* web_state_list,
-                          web::WebState* old_web_state,
-                          web::WebState* new_web_state,
-                          int index) override;
 
  private:
   __weak TabModel* tab_model_;
+  bool disabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TabModelNotificationObserver);
 };
