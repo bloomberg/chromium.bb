@@ -5,6 +5,9 @@
 #ifndef MEDIA_AUDIO_MOCK_AUDIO_MANAGER_H_
 #define MEDIA_AUDIO_MOCK_AUDIO_MANAGER_H_
 
+#include <memory>
+#include <string>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/sequenced_task_runner_helpers.h"
@@ -73,8 +76,6 @@ class MockAudioManager : public AudioManager {
   bool HasAudioOutputDevices() override;
 
   bool HasAudioInputDevices() override;
-
-  base::string16 GetAudioInputDeviceModel() override;
 
   void GetAudioInputDeviceDescriptions(
       media::AudioDeviceDescriptions* device_descriptions) override;

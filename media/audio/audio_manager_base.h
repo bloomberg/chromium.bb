@@ -9,6 +9,7 @@
 #include <string>
 #include <unordered_set>
 #include <utility>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -106,7 +107,6 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
 
   // AudioManager:
   void ShutdownOnAudioThread() override;
-  base::string16 GetAudioInputDeviceModel() override;
 
   void GetAudioInputDeviceDescriptions(
       AudioDeviceDescriptions* device_descriptions) final;
