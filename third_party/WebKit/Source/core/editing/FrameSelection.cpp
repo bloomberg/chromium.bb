@@ -904,6 +904,8 @@ LayoutRect FrameSelection::Bounds() const {
   if (!view)
     return LayoutRect();
 
+  // TODO(pdr): Should this be the VisualViewport's VisibleRectInDocument
+  // instead of VisibleContentRect to include the viewport pan-zoom offset?
   return Intersection(UnclippedBounds(),
                       LayoutRect(view->VisibleContentRect()));
 }
