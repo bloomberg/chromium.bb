@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_account_item.h"
 
 #include "base/mac/foundation_util.h"
+#import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
@@ -58,7 +59,7 @@ const CGFloat kHorizontalErrorIconFixedSize = 25;
   cell.imageView.image = self.image;
   cell.textLabel.text = self.text;
   cell.detailTextLabel.text = self.detailText;
-  cell.accessoryType = self.accessoryType;
+  [cell cr_setAccessoryType:self.accessoryType];
   if (self.shouldDisplayError) {
     cell.errorIcon.image = [UIImage imageNamed:@"settings_error"];
     cell.detailTextLabel.textColor = [[MDCPalette cr_redPalette] tint500];

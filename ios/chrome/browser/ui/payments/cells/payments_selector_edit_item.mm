@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/payments/cells/payments_selector_edit_item.h"
 
+#import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
@@ -65,7 +66,7 @@
 
 - (void)configureCell:(CollectionViewDetailCell*)cell {
   [super configureCell:cell];
-  cell.accessoryType = self.accessoryType;
+  [cell cr_setAccessoryType:self.accessoryType];
   NSString* textLabelFormat = self.required ? @"%@*" : @"%@";
   cell.textLabel.text = [NSString stringWithFormat:textLabelFormat, self.name];
   cell.detailTextLabel.text = self.value;
