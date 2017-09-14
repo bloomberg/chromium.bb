@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Invalid characters in protocol scheme and isProtocolHandlerRegistered Failed to execute 'registerProtocolHandler' on 'Navigator': The scheme 'web+CústomPrótocolFíve' is not valid protocol
-Harness: the test ran to completion.
-

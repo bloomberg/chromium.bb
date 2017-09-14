@@ -2399,7 +2399,6 @@ crbug.com/508730 external/wpt/html/semantics/embedded-content/media-elements/tra
 
 # Fail when run with --enable-wptserve: (crbug.com/508734)
 crbug.com/508734 external/wpt/html/semantics/document-metadata/the-link-element/link-style-error-01.html [ Failure ]
-crbug.com/508734 external/wpt/html/webappapis/system-state-and-capabilities/the-navigator-object/protocol/004.xhtml [ Failure ]
 crbug.com/508734 external/wpt/html/browsers/browsing-the-web/history-traversal/browsing_context_name_cross_origin_3.html [ Failure ]
 crbug.com/508734 external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Pass Failure Timeout ]
 
@@ -3249,7 +3248,6 @@ crbug.com/755405 [ Android ] external/wpt/html/syntax/parsing-html-fragments/the
 crbug.com/755405 [ Android ] external/wpt/html/webappapis/animation-frames/same-dispatch-time.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/html/webappapis/scripting/events/uncompiled_event_handler_with_scripting_disabled.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/html/webappapis/scripting/processing-model-2/window-onerror-runtime-error.html [ Failure ]
-crbug.com/755405 [ Android ] external/wpt/html/webappapis/system-state-and-capabilities/the-navigator-object/content/006.xhtml [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/html/webappapis/timers/type-long-setinterval.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/html/webappapis/timers/type-long-settimeout.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/html-imports/document/document-method-changes.html [ Failure ]
