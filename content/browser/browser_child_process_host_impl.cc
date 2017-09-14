@@ -7,7 +7,7 @@
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/debug/alias.h"
+#include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
@@ -592,9 +592,10 @@ void BrowserChildProcessHostImpl::OnMojoError(
   }
   LOG(ERROR) << "Terminating child process for bad Mojo message: " << error;
 
-  // Create a memory dump with the error message aliased. This will make it easy
-  // to determine details about what interface call failed.
-  base::debug::Alias(&error);
+  // Create a memory dump with the error message captured in a crash key value.
+  // This will make it easy to determine details about what interface call
+  // failed.
+  base::debug::ScopedCrashKey error_key_value("mojo-message-error", error);
   base::debug::DumpWithoutCrashing();
   process->child_process_->GetProcess().Terminate(
       RESULT_CODE_KILLED_BAD_MESSAGE, false);
