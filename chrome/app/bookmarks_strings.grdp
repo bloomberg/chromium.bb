@@ -397,6 +397,9 @@
       =1 {1 item in bookmark list}
       other {# items in bookmark list}}
   </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_LIST_AX_LABEL" desc="Spoken feedback for focusing the bookmark list.">
+    Bookmark list
+  </message>
   <message name="IDS_MD_BOOKMARK_MANAGER_MENU_ADD_BOOKMARK" desc="Title of the bookmark toolbar dropdown menu item that adds a new bookmark.">
     Add new bookmark
   </message>
@@ -442,6 +445,9 @@
   <message name="IDS_MD_BOOKMARK_MANAGER_MORE_ACTIONS" desc="Tooltip of the button in the bookmark manager which shows an action menu for a bookmark, with actions like 'Edit' or 'Delete'">
     More actions
   </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_MORE_ACTIONS_AX_LABEL" desc="Spoken text for the button in the bookmark manager which shows an action menu for a bookmark, with actions like 'Edit' or 'Delete'">
+    More actions for <ph name="BOOKMARK_NAME">$1<ex>Bookmark X</ex></ph>
+  </message>
   <message name="IDS_MD_BOOKMARK_MANAGER_NO_SEARCH_RESULTS" desc="Text on the bookmarks list that indicates that no bookmarks or folders match the search.">
     No search results found
   </message>
@@ -456,6 +462,15 @@
   </message>
   <message name="IDS_MD_BOOKMARK_MANAGER_SEARCH_RESULTS" desc="Message announced by screenreaders when search results are found.">
     Search results for '<ph name="SEARCH_STRING">$1<ex>reading</ex></ph>'
+  </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_SIDEBAR_AX_LABEL" desc="Message announced by screenreaders for the bookmark manager sidebar.">
+    Bookmark folder tree
+  </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_SIDEBAR_NODE_COLLAPSE_AX_LABEL" desc="Message announced by screenreaders for button to collapse a folder in the bookmark manager sidebar.">
+    Collapse <ph name="FOLDER_NAME">$1<ex>Recipes</ex></ph>
+  </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_SIDEBAR_NODE_EXPAND_AX_LABEL" desc="Message announced by screenreaders for button to expand a folder in the bookmark manager sidebar.">
+    Expand <ph name="FOLDER_NAME">$1<ex>Recipes</ex></ph>
   </message>
   <message name="IDS_MD_BOOKMARK_MANAGER_TITLE" desc="Title of the bookmark manager window.">
     Bookmarks

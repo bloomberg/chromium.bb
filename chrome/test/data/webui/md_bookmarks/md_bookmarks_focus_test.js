@@ -94,6 +94,14 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
       assertEquals(
           '-1', getFolderNode('2').$.container.getAttribute('tabindex'));
 
+      store.data.search.term = 'asdf';
+
+      // The selected folder is focus enabled even with a search term.
+      assertEquals(
+          '0', getFolderNode('1').$.container.getAttribute('tabindex'));
+
+      store.data.search.term = '';
+
       // Give keyboard focus to the first item.
       getFolderNode('1').$.container.focus();
 

@@ -51,13 +51,14 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
   AddLocalizedString(source, "editDialogNameInput",
                      IDS_BOOKMARK_MANAGER_NAME_INPUT_PLACE_HOLDER);
   AddLocalizedString(source, "editDialogUrlInput",
-                             IDS_BOOKMARK_MANAGER_URL_INPUT_PLACE_HOLDER);
-  AddLocalizedString(source, "emptyList",
-                     IDS_MD_BOOKMARK_MANAGER_EMPTY_LIST);
+                     IDS_BOOKMARK_MANAGER_URL_INPUT_PLACE_HOLDER);
+  AddLocalizedString(source, "emptyList", IDS_MD_BOOKMARK_MANAGER_EMPTY_LIST);
   AddLocalizedString(source, "folderLabel",
                      IDS_MD_BOOKMARK_MANAGER_FOLDER_LABEL);
   AddLocalizedString(source, "itemsSelected",
                      IDS_MD_BOOKMARK_MANAGER_ITEMS_SELECTED);
+  AddLocalizedString(source, "listAxLabel",
+                     IDS_MD_BOOKMARK_MANAGER_LIST_AX_LABEL);
   AddLocalizedString(source, "menuAddBookmark",
                      IDS_MD_BOOKMARK_MANAGER_MENU_ADD_BOOKMARK);
   AddLocalizedString(source, "menuAddFolder",
@@ -86,6 +87,8 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
   AddLocalizedString(source, "menuSort", IDS_MD_BOOKMARK_MANAGER_MENU_SORT);
   AddLocalizedString(source, "moreActionsButtonTitle",
                      IDS_MD_BOOKMARK_MANAGER_MORE_ACTIONS);
+  AddLocalizedString(source, "moreActionsButtonAxLabel",
+                     IDS_MD_BOOKMARK_MANAGER_MORE_ACTIONS_AX_LABEL);
   AddLocalizedString(source, "noSearchResults",
                      IDS_MD_BOOKMARK_MANAGER_NO_SEARCH_RESULTS);
   AddLocalizedString(source, "openDialogBody",
@@ -100,6 +103,12 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
                      IDS_MD_BOOKMARK_MANAGER_FOLDER_RENAME_TITLE);
   AddLocalizedString(source, "searchPrompt",
                      IDS_BOOKMARK_MANAGER_SEARCH_BUTTON);
+  AddLocalizedString(source, "sidebarAxLabel",
+                     IDS_MD_BOOKMARK_MANAGER_SIDEBAR_AX_LABEL);
+  AddLocalizedString(source, "sidebarNodeCollapseAxLabel",
+                     IDS_MD_BOOKMARK_MANAGER_SIDEBAR_NODE_COLLAPSE_AX_LABEL);
+  AddLocalizedString(source, "sidebarNodeExpandAxLabel",
+                     IDS_MD_BOOKMARK_MANAGER_SIDEBAR_NODE_EXPAND_AX_LABEL);
   AddLocalizedString(source, "searchResults",
                      IDS_MD_BOOKMARK_MANAGER_SEARCH_RESULTS);
   AddLocalizedString(source, "saveEdit", IDS_SAVE);
@@ -151,8 +160,7 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
   source->AddResourcePath("edit_dialog.js", IDR_MD_BOOKMARKS_EDIT_DIALOG_JS);
   source->AddResourcePath("folder_node.html",
                           IDR_MD_BOOKMARKS_FOLDER_NODE_HTML);
-  source->AddResourcePath("folder_node.js",
-                          IDR_MD_BOOKMARKS_FOLDER_NODE_JS);
+  source->AddResourcePath("folder_node.js", IDR_MD_BOOKMARKS_FOLDER_NODE_JS);
   source->AddResourcePath("item.html", IDR_MD_BOOKMARKS_ITEM_HTML);
   source->AddResourcePath("item.js", IDR_MD_BOOKMARKS_ITEM_JS);
   source->AddResourcePath("list.html", IDR_MD_BOOKMARKS_LIST_HTML);
