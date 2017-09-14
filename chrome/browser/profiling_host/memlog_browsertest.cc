@@ -4,6 +4,7 @@
 
 #include "base/allocator/features.h"
 #include "base/json/json_reader.h"
+#include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiling_host/profiling_process_host.h"

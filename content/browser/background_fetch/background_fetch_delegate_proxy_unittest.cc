@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "base/run_loop.h"
 #include "content/browser/background_fetch/background_fetch_delegate.h"
 #include "content/browser/background_fetch/background_fetch_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"

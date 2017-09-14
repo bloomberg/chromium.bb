@@ -5,6 +5,7 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
