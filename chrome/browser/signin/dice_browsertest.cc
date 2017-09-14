@@ -451,8 +451,14 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, MAYBE_Signin) {
   WaitForReconcilorBlockedCount(1);
 }
 
+// This test is flaky on Mac, see https://crbug.com/765093
+#if defined(OS_MACOSX)
+#define MAYBE_Reauth DISABLED_Reauth
+#else
+#define MAYBE_Reauth Reauth
+#endif
 // Checks that re-auth on Gaia triggers the fetch for a refresh token.
-IN_PROC_BROWSER_TEST_F(DiceBrowserTest, Reauth) {
+IN_PROC_BROWSER_TEST_F(DiceBrowserTest, MAYBE_Reauth) {
   // Start from a signed-in state.
   SetupSignedInAccounts();
 
