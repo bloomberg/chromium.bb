@@ -8,7 +8,7 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#include "third_party/webrtc_overrides/webrtc/rtc_base/task_queue.h"
+#include "third_party/webrtc/rtc_base/task_queue.h"
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"

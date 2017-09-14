@@ -18,7 +18,7 @@
 #include "third_party/webrtc/api/mediastreaminterface.h"
 #include "third_party/webrtc/media/base/mediachannel.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"
-#include "third_party/webrtc_overrides/webrtc/rtc_base/task_queue.h"
+#include "third_party/webrtc/rtc_base/task_queue.h"
 
 namespace webrtc {
 
