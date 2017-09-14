@@ -68,10 +68,11 @@ TaskQueueImpl::~TaskQueueImpl() {
 }
 
 TaskQueueImpl::Task::Task()
-    : TaskQueue::Task(base::Location(),
-                      base::Closure(),
-                      base::TimeTicks(),
-                      true),
+    : TaskQueue::Task(TaskQueue::PostedTask(base::Closure(),
+                                            base::Location(),
+                                            base::TimeDelta(),
+                                            true),
+                      base::TimeTicks()),
 #ifndef NDEBUG
       enqueue_order_set_(false),
 #endif
@@ -79,12 +80,10 @@ TaskQueueImpl::Task::Task()
   sequence_num = 0;
 }
 
-TaskQueueImpl::Task::Task(const base::Location& posted_from,
-                          base::OnceClosure task,
+TaskQueueImpl::Task::Task(TaskQueue::PostedTask task,
                           base::TimeTicks desired_run_time,
-                          EnqueueOrder sequence_number,
-                          bool nestable)
-    : TaskQueue::Task(posted_from, std::move(task), desired_run_time, nestable),
+                          EnqueueOrder sequence_number)
+    : TaskQueue::Task(std::move(task), desired_run_time),
 #ifndef NDEBUG
       enqueue_order_set_(false),
 #endif
@@ -92,13 +91,11 @@ TaskQueueImpl::Task::Task(const base::Location& posted_from,
   sequence_num = sequence_number;
 }
 
-TaskQueueImpl::Task::Task(const base::Location& posted_from,
-                          base::OnceClosure task,
+TaskQueueImpl::Task::Task(TaskQueue::PostedTask task,
                           base::TimeTicks desired_run_time,
                           EnqueueOrder sequence_number,
-                          bool nestable,
                           EnqueueOrder enqueue_order)
-    : TaskQueue::Task(posted_from, std::move(task), desired_run_time, nestable),
+    : TaskQueue::Task(std::move(task), desired_run_time),
 #ifndef NDEBUG
       enqueue_order_set_(true),
 #endif
@@ -182,9 +179,8 @@ bool TaskQueueImpl::PostImmediateTaskImpl(TaskQueue::PostedTask task) {
   EnqueueOrder sequence_number =
       any_thread().task_queue_manager->GetNextSequenceNumber();
 
-  PushOntoImmediateIncomingQueueLocked(
-      Task(task.posted_from, std::move(task.callback), base::TimeTicks(),
-           sequence_number, task.nestable, sequence_number));
+  PushOntoImmediateIncomingQueueLocked(Task(std::move(task), base::TimeTicks(),
+                                            sequence_number, sequence_number));
   return true;
 }
 
@@ -204,8 +200,7 @@ bool TaskQueueImpl::PostDelayedTaskImpl(TaskQueue::PostedTask task) {
     base::TimeTicks time_domain_now = main_thread_only().time_domain->Now();
     base::TimeTicks time_domain_delayed_run_time = time_domain_now + task.delay;
     PushOntoDelayedIncomingQueueFromMainThread(
-        Task(task.posted_from, std::move(task.callback),
-             time_domain_delayed_run_time, sequence_number, task.nestable),
+        Task(std::move(task), time_domain_delayed_run_time, sequence_number),
         time_domain_now);
   } else {
     // NOTE posting a delayed task from a different thread is not expected to
@@ -222,8 +217,7 @@ bool TaskQueueImpl::PostDelayedTaskImpl(TaskQueue::PostedTask task) {
     base::TimeTicks time_domain_now = any_thread().time_domain->Now();
     base::TimeTicks time_domain_delayed_run_time = time_domain_now + task.delay;
     PushOntoDelayedIncomingQueueLocked(
-        Task(task.posted_from, std::move(task.callback),
-             time_domain_delayed_run_time, sequence_number, task.nestable));
+        Task(std::move(task), time_domain_delayed_run_time, sequence_number));
   }
   return true;
 }
@@ -253,11 +247,13 @@ void TaskQueueImpl::PushOntoDelayedIncomingQueueLocked(Task pending_task) {
 
   int thread_hop_task_sequence_number =
       any_thread().task_queue_manager->GetNextSequenceNumber();
+  // TODO(altimin): Add a copy method to Task to capture metadata here.
   PushOntoImmediateIncomingQueueLocked(
-      Task(FROM_HERE,
-           base::Bind(&TaskQueueImpl::ScheduleDelayedWorkTask,
-                      base::Unretained(this), base::Passed(&pending_task)),
-           base::TimeTicks(), thread_hop_task_sequence_number, false,
+      Task(TaskQueue::PostedTask(
+               base::Bind(&TaskQueueImpl::ScheduleDelayedWorkTask,
+                          base::Unretained(this), base::Passed(&pending_task)),
+               FROM_HERE, base::TimeDelta(), false),
+           base::TimeTicks(), thread_hop_task_sequence_number,
            thread_hop_task_sequence_number));
 }
 
