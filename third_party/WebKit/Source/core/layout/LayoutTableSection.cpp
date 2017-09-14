@@ -1958,6 +1958,14 @@ int LayoutTableSection::LogicalHeightForRow(
   return logical_height;
 }
 
+int LayoutTableSection::OffsetForRepeatedHeader() const {
+  LayoutTableSection* header = Table()->Header();
+  if (header && header != this)
+    return Table()->RowOffsetFromRepeatingHeader().ToInt();
+  LayoutState* layout_state = View()->GetLayoutState();
+  return layout_state->HeightOffsetForTableHeaders().ToInt();
+}
+
 void LayoutTableSection::AdjustRowForPagination(LayoutTableRow& row_object,
                                                 SubtreeLayoutScope& layouter) {
   row_object.SetPaginationStrut(LayoutUnit());
@@ -1971,14 +1979,14 @@ void LayoutTableSection::AdjustRowForPagination(LayoutTableRow& row_object,
   if (!pagination_strut) {
     LayoutUnit page_logical_height =
         PageLogicalHeightForOffset(row_object.LogicalTop());
-    if (Table()->Header() && Table()->Header() != this &&
-        Table()->RowOffsetFromRepeatingHeader()) {
+    if (OffsetForRepeatedHeader()) {
       offset_from_top_of_page =
           page_logical_height -
           PageRemainingLogicalHeightForOffset(row_object.LogicalTop(),
                                               kAssociateWithLatterPage);
       row_is_at_top_of_column =
           !offset_from_top_of_page ||
+          offset_from_top_of_page <= OffsetForRepeatedHeader() ||
           offset_from_top_of_page <= Table()->VBorderSpacing();
     }
 
@@ -1998,9 +2006,7 @@ void LayoutTableSection::AdjustRowForPagination(LayoutTableRow& row_object,
 
   // If we have a header group we will paint it at the top of each page,
   // move the rows down to accomodate it.
-  LayoutTableSection* header = Table()->Header();
-  if (header && header != this)
-    pagination_strut += Table()->RowOffsetFromRepeatingHeader().ToInt();
+  pagination_strut += OffsetForRepeatedHeader();
   row_object.SetPaginationStrut(LayoutUnit(pagination_strut));
 
   // We have inserted a pagination strut before the row. Adjust the logical top
@@ -2030,12 +2036,13 @@ bool LayoutTableSection::GroupShouldRepeat() const {
     return true;
   LayoutUnit page_height = PageLogicalHeightForOffset(LayoutUnit());
 
-  if (LogicalHeight() > page_height)
+  LayoutUnit logical_height = LogicalHeight() - OffsetForRepeatedHeader();
+  if (logical_height > page_height)
     return false;
 
   // See https://drafts.csswg.org/css-tables-3/#repeated-headers which says
   // a header/footer can repeat if it takes up less than a quarter of the page.
-  if (LogicalHeight() > 0 && page_height / LogicalHeight() < 4)
+  if (logical_height > 0 && page_height / logical_height < 4)
     return false;
 
   return true;
