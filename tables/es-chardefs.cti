@@ -85,8 +85,7 @@ punctuation \x0096        36                  –                   <control> ST
 space       \x00A0        a                                       NO-BREAK SPACE
 punctuation \x00A1        235                 ¡                   INVERTED EXCLAMATION MARK
 punctuation \x00AB        236                 «                   LEFT-POINTING DOUBLE ANGLE QUOTATION MARK
-punctuation \x00AD        36                  ­                   SOFT HYPHEN
-sign        \x00B8        2                   ¸                   CEDILLA
+punctuation \x00AD        36                  ­                    SOFT HYPHEN
 punctuation \x00BB        236                 »                   RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
 punctuation \x00BF        26                  ¿                   INVERTED QUESTION MARK
 math        \x00D7        236                 ×                   MULTIPLICATION SIGN
@@ -120,7 +119,7 @@ punctuation \x2043        36                  ⁃                   HYPHEN BULLE
 # Unicode 0000..007F  C0 Controls and Basic Latin
 # ----------------------------------------------------------------------------------------------
 
-sign        \x0024        345-234             $                   DOLLAR SIGN
+sign        \x0024        456-234             $                   DOLLAR SIGN
 math        \x0025        456-356             %                   PERCENT SIGN
 sign        \x0026        6-12346             &                   AMPERSAND
 math        \x002F        6-2                 /                   SOLIDUS
@@ -142,7 +141,6 @@ sign        \x00A2        45-14               ¢                   CENT SIGN
 sign        \x00A3        5-2346              £                   POUND SIGN
 sign        \x00A5        456-13456           ¥                   YEN SIGN
 sign        \x00A9        126-46-14-345       ©                   COPYRIGHT SIGN
-sign        \x00AA        56-16               ª                   FEMININE ORDINAL INDICATOR
 sign        \x00AE        126-46-1235-345     ®                   REGISTERED SIGN
 math        \x00B1        235-25-36           ±                   PLUS-MINUS SIGN
 sign        \x00B2        16-3456-12          ²                   SUPERSCRIPT TWO
