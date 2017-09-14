@@ -222,6 +222,16 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaDisabledChanged) {
+  RunEventTest(FILE_PATH_LITERAL("aria-disabled-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaRequiredChanged) {
+  RunEventTest(FILE_PATH_LITERAL("aria-required-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
                        AccessibilityEventsCheckedStateChanged) {
   RunEventTest(FILE_PATH_LITERAL("checked-state-changed.html"));
 }
@@ -244,6 +254,16 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
                        AccessibilityEventsExpandedChange) {
   RunEventTest(FILE_PATH_LITERAL("expanded-change.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsFormDisabledChanged) {
+  RunEventTest(FILE_PATH_LITERAL("form-disabled-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsFormRequiredChanged) {
+  RunEventTest(FILE_PATH_LITERAL("form-required-changed.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
