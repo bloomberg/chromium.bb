@@ -4,6 +4,10 @@
 
 static_library("browser") {
   sources = [
+    "baseline_language_model.cc",
+    "baseline_language_model.h",
+    "language_model.cc",
+    "language_model.h",
     "url_language_histogram.cc",
     "url_language_histogram.h",
   ]
@@ -19,6 +23,7 @@ static_library("browser") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "baseline_language_model_unittest.cc",
     "url_language_histogram_unittest.cc",
   ]
   deps = [
@@ -28,6 +33,7 @@ source_set("unit_tests") {
     "//components/prefs",
     "//components/prefs:test_support",
     "//net:test_support",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }
