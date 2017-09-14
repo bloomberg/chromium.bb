@@ -17,3 +17,25 @@ void RecordNTPImpression(IOSNTPImpression impression_type) {
 }
 
 }  // namespace ntp_home
+
+@interface NTPHomeMetrics ()
+@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
+@end
+
+@implementation NTPHomeMetrics
+
+@synthesize browserState = _browserState;
+
+- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
+  self = [super init];
+  if (self) {
+    _browserState = browserState;
+  }
+  return self;
+}
+
+- (void)recordAction:(new_tab_page_uma::ActionType)action {
+  new_tab_page_uma::RecordAction(self.browserState, action);
+}
+
+@end

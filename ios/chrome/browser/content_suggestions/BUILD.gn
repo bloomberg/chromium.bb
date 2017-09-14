@@ -23,6 +23,8 @@ source_set("content_suggestions") {
     "content_suggestions_service_bridge_observer.mm",
     "mediator_util.h",
     "mediator_util.mm",
+    "ntp_home_mediator.h",
+    "ntp_home_mediator.mm",
     "ntp_home_metrics.h",
     "ntp_home_metrics.mm",
   ]

@@ -16,8 +16,8 @@
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
 @protocol ContentSuggestionsCollectionSynchronizing;
+@protocol ContentSuggestionsCommands;
 @protocol ContentSuggestionsHeaderViewControllerDelegate;
-@protocol ContentSuggestionsHeaderViewControllerCommandHandler;
 @protocol OmniboxFocuser;
 @protocol UrlLoader;
 class ReadingListModel;
@@ -37,9 +37,7 @@ class ReadingListModel;
         dispatcher;
 @property(nonatomic, weak) id<ContentSuggestionsHeaderViewControllerDelegate>
     delegate;
-@property(nonatomic, weak)
-    id<ContentSuggestionsHeaderViewControllerCommandHandler>
-        commandHandler;
+@property(nonatomic, weak) id<ContentSuggestionsCommands> commandHandler;
 @property(nonatomic, assign) ReadingListModel* readingListModel;
 
 // Whether the Google logo or doodle is being shown.
