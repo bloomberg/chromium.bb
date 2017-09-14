@@ -212,6 +212,9 @@ void PaintLayerScrollableArea::Dispose() {
       !Box().DocumentBeingDestroyed())
     scroll_anchor_.ClearSelf();
 
+  if (SmoothScrollSequencer* sequencer = GetSmoothScrollSequencer())
+    sequencer->DidDisposeScrollableArea(*this);
+
   has_been_disposed_ = true;
 }
 

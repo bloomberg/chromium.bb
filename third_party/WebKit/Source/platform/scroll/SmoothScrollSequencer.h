@@ -50,6 +50,8 @@ class PLATFORM_EXPORT SmoothScrollSequencer final
   // Abort the currently running animation and all the animations in the queue.
   void AbortAnimations();
 
+  void DidDisposeScrollableArea(const ScrollableArea&);
+
   DECLARE_TRACE();
 
  private:
