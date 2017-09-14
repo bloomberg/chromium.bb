@@ -108,8 +108,9 @@ if (!chrome.embeddedSearch) {
         return GetMostVisitedItemData(restrictedId);
       };
 
-      // This method is restricted to chrome-search://most-visited pages by
-      // checking the invoking context's origin in searchbox_extension.cc.
+      // This method is restricted to chrome-search://most-visited and
+      // chrome-search://local-ntp pages by checking the invoking context's
+      // origin in searchbox_extension.cc.
       this.logEvent = function(histogram_name) {
         LogEvent(histogram_name);
       };

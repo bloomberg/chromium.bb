@@ -109,6 +109,10 @@ test.view.setUp = function() {
     test.view.levelAnimationActive = false;
   });
 
+  test.view.stubs.replace(speech, 'logEvent', function(event) {
+    test.view.state.lastEvent = event;
+  });
+
   view.init(function(shouldSubmit, shouldRetry, navigatingAway) {
     test.view.state.shouldSubmit = shouldSubmit;
     test.view.state.shouldRetry = shouldRetry;
@@ -341,6 +345,7 @@ test.view.testClickMicButtonWithNoMatch = function() {
   assertTrue(test.view.state.shouldRetry);
   assertFalse(test.view.state.shouldSubmit);
   assertFalse(test.view.state.navigatingAway);
+  assertEquals(LOG_TYPE.ACTION_TRY_AGAIN_MIC_BUTTON, test.view.state.lastEvent);
 };
 
 
@@ -361,6 +366,7 @@ test.view.testClickTryAgainLinkWithNoMatch = function() {
   assertTrue(test.view.state.shouldRetry);
   assertFalse(test.view.state.shouldSubmit);
   assertFalse(test.view.state.navigatingAway);
+  assertEquals(LOG_TYPE.ACTION_TRY_AGAIN_LINK, test.view.state.lastEvent);
 };
 
 
@@ -378,6 +384,7 @@ test.view.testClickMicButtonWithResults = function() {
   assertFalse(test.view.state.shouldRetry);
   assertTrue(test.view.state.shouldSubmit);
   assertFalse(test.view.state.navigatingAway);
+  assert(!test.view.state.lastEvent);
 };
 
 
@@ -400,6 +407,7 @@ test.view.testClickMicButtonWithNoMatchAfterResults = function() {
   assertTrue(test.view.state.shouldRetry);
   assertFalse(test.view.state.shouldSubmit);
   assertFalse(test.view.state.navigatingAway);
+  assertEquals(LOG_TYPE.ACTION_TRY_AGAIN_MIC_BUTTON, test.view.state.lastEvent);
 };
 
 
@@ -452,6 +460,7 @@ test.view.testClickSupportLinkWithError = function() {
   assertFalse(test.view.state.shouldRetry);
   assertFalse(test.view.state.shouldSubmit);
   assertTrue(test.view.state.navigatingAway);
+  assertEquals(LOG_TYPE.ACTION_SUPPORT_LINK_CLICKED, test.view.state.lastEvent);
 };
 
 

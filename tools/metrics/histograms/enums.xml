@@ -27613,6 +27613,29 @@ from previous Chrome versions.
   <int value="4" label="User dismissed the promo"/>
 </enum>
 
+<enum name="NewTabPageVoiceAction">
+  <int value="0" label="Activated by clicking on the fakebox icon"/>
+  <int value="1" label="Activated by keyboard shortcut"/>
+  <int value="2" label="Closed overlay by a user's explicit action"/>
+  <int value="3" label="Submitted voice query"/>
+  <int value="4" label="Clicked on support link in error message"/>
+  <int value="5" label="Retried by clicking Try Again link"/>
+  <int value="6" label="Retried by clicking microphone button"/>
+</enum>
+
+<enum name="NewTabPageVoiceError">
+  <int value="0" label="&quot;aborted&quot; error"/>
+  <int value="1" label="&quot;audio-capture&quot; error"/>
+  <int value="2" label="&quot;bad-grammar&quot; error"/>
+  <int value="3" label="&quot;language-not-supported&quot; error"/>
+  <int value="4" label="&quot;network&quot; error"/>
+  <int value="5" label="&quot;no-match&quot; error"/>
+  <int value="6" label="&quot;no-speech&quot; error"/>
+  <int value="7" label="&quot;not-allowed&quot; error"/>
+  <int value="8" label="&quot;other&quot; error"/>
+  <int value="9" label="&quot;service-not-allowed&quot; error"/>
+</enum>
+
 <enum name="NewTabType">
   <int value="0" label="New tab button"/>
   <int value="1" label="Regular menu option"/>
