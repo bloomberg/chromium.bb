@@ -51,8 +51,8 @@
 #include "core/typed_arrays/DOMArrayBufferView.h"
 #include "modules/mediasource/MediaSource.h"
 #include "modules/mediasource/SourceBufferTrackBaseSupplement.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/MathExtras.h"
 #include "public/platform/WebSourceBuffer.h"
 

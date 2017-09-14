@@ -5,7 +5,7 @@
 #include "platform/scheduler/renderer/web_frame_scheduler_impl.h"
 
 #include "base/trace_event/blame_context.h"
-#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/scheduler/base/real_time_domain.h"
 #include "platform/scheduler/base/trace_helper.h"
 #include "platform/scheduler/base/virtual_time_domain.h"

@@ -13,7 +13,6 @@
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSParserIdioms.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {

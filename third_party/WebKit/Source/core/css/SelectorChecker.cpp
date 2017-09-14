@@ -57,7 +57,7 @@
 #include "core/page/Page.h"
 #include "core/probe/CoreProbes.h"
 #include "core/style/ComputedStyle.h"
-#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/wtf/AutoReset.h"

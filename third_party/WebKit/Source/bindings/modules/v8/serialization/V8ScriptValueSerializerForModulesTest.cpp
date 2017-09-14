@@ -17,7 +17,6 @@
 #include "modules/crypto/CryptoResultImpl.h"
 #include "modules/filesystem/DOMFileSystem.h"
 #include "modules/peerconnection/RTCCertificate.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCryptoAlgorithmParams.h"

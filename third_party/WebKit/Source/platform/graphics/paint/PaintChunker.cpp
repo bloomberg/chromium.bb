@@ -4,7 +4,7 @@
 
 #include "platform/graphics/paint/PaintChunker.h"
 
-#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/runtime_enabled_features.h"
 
 namespace blink {
 

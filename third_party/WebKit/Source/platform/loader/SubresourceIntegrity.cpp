@@ -5,8 +5,8 @@
 #include "platform/loader/SubresourceIntegrity.h"
 
 #include "platform/Crypto.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/loader/fetch/Resource.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/ASCIICType.h"

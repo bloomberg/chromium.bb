@@ -10,9 +10,9 @@
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/PaintLayer.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/paint/PaintArtifact.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

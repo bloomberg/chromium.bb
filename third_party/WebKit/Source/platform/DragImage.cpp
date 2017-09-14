@@ -27,7 +27,6 @@
 
 #include <algorithm>
 #include <memory>
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontDescription.h"
@@ -41,6 +40,7 @@
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/text/BidiTextRun.h"
 #include "platform/text/StringTruncator.h"
 #include "platform/text/TextRun.h"

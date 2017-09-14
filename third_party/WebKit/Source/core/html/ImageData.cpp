@@ -32,7 +32,6 @@
 #include "core/dom/DOMException.h"
 #include "core/imagebitmap/ImageBitmap.h"
 #include "core/imagebitmap/ImageBitmapOptions.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/ColorBehavior.h"
 #include "third_party/skia/include/core/SkColorSpaceXform.h"
 #include "v8/include/v8.h"

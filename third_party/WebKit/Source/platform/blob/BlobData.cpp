@@ -33,11 +33,11 @@
 #include <memory>
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "platform/CrossThreadFunctional.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UUID.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/blob/BlobBytesProvider.h"
 #include "platform/blob/BlobRegistry.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/text/LineEnding.h"
 #include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/PtrUtil.h"

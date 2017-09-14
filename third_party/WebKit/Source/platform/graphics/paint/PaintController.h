@@ -8,7 +8,6 @@
 #include <memory>
 #include <utility>
 #include "platform/PlatformExport.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/ContiguousContainer.h"
@@ -19,6 +18,7 @@
 #include "platform/graphics/paint/PaintChunker.h"
 #include "platform/graphics/paint/RasterInvalidationTracking.h"
 #include "platform/graphics/paint/Transform3DDisplayItem.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/Alignment.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/HashMap.h"

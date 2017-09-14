@@ -70,11 +70,11 @@
 #include "core/typed_arrays/ArrayBufferViewHelpers.h"
 #include "core/typed_arrays/DOMArrayBufferBase.h"
 #include "core/typed_arrays/FlexibleArrayBufferView.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/bindings/RuntimeCallStats.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8ObjectConstructor.h"
 #include "platform/bindings/V8PrivateProperty.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/GetPtr.h"
 #include "platform/wtf/RefPtr.h"
 

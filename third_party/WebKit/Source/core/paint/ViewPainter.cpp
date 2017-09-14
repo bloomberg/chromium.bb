@@ -17,7 +17,7 @@
 #include "core/paint/PaintLayer.h"
 #include "core/paint/ScrollRecorder.h"
 #include "core/paint/compositing/CompositedLayerMapping.h"
-#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/runtime_enabled_features.h"
 
 namespace blink {
 

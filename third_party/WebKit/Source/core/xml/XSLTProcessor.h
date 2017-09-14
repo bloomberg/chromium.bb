@@ -25,8 +25,8 @@
 
 #include "core/dom/Node.h"
 #include "core/xml/XSLStyleSheet.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/bindings/ScriptWrappable.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/text/StringHash.h"
 

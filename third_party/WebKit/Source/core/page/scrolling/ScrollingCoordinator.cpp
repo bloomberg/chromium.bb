@@ -44,7 +44,6 @@
 #include "core/paint/compositing/CompositedLayerMapping.h"
 #include "core/paint/compositing/PaintLayerCompositor.h"
 #include "core/plugins/PluginView.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/animation/CompositorAnimationHost.h"
 #include "platform/animation/CompositorAnimationTimeline.h"
 #include "platform/exported/WebScrollbarImpl.h"
@@ -53,6 +52,7 @@
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
+#include "platform/runtime_enabled_features.h"
 #if defined(OS_MACOSX)
 #include "platform/mac/ScrollAnimatorMac.h"
 #endif

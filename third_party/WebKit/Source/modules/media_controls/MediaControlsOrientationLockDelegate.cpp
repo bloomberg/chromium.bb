@@ -17,7 +17,7 @@
 #include "modules/screen_orientation/ScreenOrientation.h"
 #include "modules/screen_orientation/ScreenScreenOrientation.h"
 #include "platform/Histogram.h"
-#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/MathExtras.h"
 #include "public/platform/WebScreenInfo.h"

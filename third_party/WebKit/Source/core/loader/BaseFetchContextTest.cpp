@@ -31,7 +31,7 @@
 #include "core/loader/BaseFetchContext.h"
 
 #include "core/testing/NullExecutionContext.h"
-#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/runtime_enabled_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

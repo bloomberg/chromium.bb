@@ -74,7 +74,6 @@
 #include "core/probe/CoreProbes.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/LayoutTestSupport.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"

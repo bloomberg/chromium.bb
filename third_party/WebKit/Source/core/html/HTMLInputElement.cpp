@@ -72,7 +72,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "platform/Language.h"
-#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/text/PlatformLocale.h"
 #include "platform/wtf/MathExtras.h"
 

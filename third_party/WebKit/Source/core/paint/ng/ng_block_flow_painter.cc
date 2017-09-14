@@ -9,7 +9,6 @@
 #include "core/layout/ng/ng_physical_box_fragment.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/ng/ng_box_fragment_painter.h"
-#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 

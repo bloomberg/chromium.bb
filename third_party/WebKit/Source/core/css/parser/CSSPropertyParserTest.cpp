@@ -6,6 +6,7 @@
 
 #include "core/css/CSSValueList.h"
 #include "core/css/parser/CSSParser.h"
+#include "platform/runtime_enabled_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

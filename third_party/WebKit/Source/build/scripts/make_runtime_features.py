@@ -38,11 +38,12 @@ import template_expander
 
 class RuntimeFeatureWriter(json5_generator.Writer):
     class_name = 'RuntimeEnabledFeatures'
+    file_basename = 'runtime_enabled_features'
 
     def __init__(self, json5_file_path):
         super(RuntimeFeatureWriter, self).__init__(json5_file_path)
-        self._outputs = {(self.class_name + '.h'): self.generate_header,
-                         (self.class_name + '.cpp'): self.generate_implementation,
+        self._outputs = {(self.file_basename + '.h'): self.generate_header,
+                         (self.file_basename + '.cc'): self.generate_implementation,
                         }
 
         self._features = self.json5_file.name_dictionaries
@@ -76,11 +77,11 @@ class RuntimeFeatureWriter(json5_generator.Writer):
             'origin_trial_controlled_features': self._origin_trial_features,
         }
 
-    @template_expander.use_jinja('templates/' + class_name + '.h.tmpl')
+    @template_expander.use_jinja('templates/' + file_basename + '.h.tmpl')
     def generate_header(self):
         return self._template_inputs()
 
-    @template_expander.use_jinja('templates/' + class_name + '.cpp.tmpl')
+    @template_expander.use_jinja('templates/' + file_basename + '.cc.tmpl')
     def generate_implementation(self):
         return self._template_inputs()
 

@@ -32,7 +32,6 @@
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/properties/CSSPropertyAPI.h"
 #include "core/frame/UseCounter.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/wtf/text/StringBuilder.h"
 
 #ifndef NDEBUG

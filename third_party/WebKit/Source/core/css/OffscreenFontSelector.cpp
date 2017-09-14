@@ -12,7 +12,6 @@
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/loader/FrameLoader.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontSelectorClient.h"
 #include "platform/fonts/SimpleFontData.h"

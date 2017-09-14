@@ -27,7 +27,6 @@
 
 #include "core/css/CSSFontFace.h"
 #include "core/css/CSSFontSelector.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontFaceCreationParams.h"
