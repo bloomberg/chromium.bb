@@ -270,10 +270,8 @@ bool NameConstraints::IsPermittedCert(
     }
 
     for (const auto& directory_name : subject_alt_names->directory_names) {
-      if (!IsPermittedDirectoryName(
-              der::Input(directory_name.data(), directory_name.size()))) {
+      if (!IsPermittedDirectoryName(directory_name))
         return false;
-      }
     }
 
     for (const auto& ip_address : subject_alt_names->ip_addresses) {
@@ -316,8 +314,8 @@ bool NameConstraints::IsPermittedCert(
   return IsPermittedDirectoryName(subject_rdn_sequence);
 }
 
-bool NameConstraints::IsPermittedDNSName(const std::string& name) const {
-  for (const std::string& excluded_name : excluded_subtrees_.dns_names) {
+bool NameConstraints::IsPermittedDNSName(base::StringPiece name) const {
+  for (const auto& excluded_name : excluded_subtrees_.dns_names) {
     // When matching wildcard hosts against excluded subtrees, consider it a
     // match if the constraint would match any expansion of the wildcard. Eg,
     // *.bar.com should match a constraint of foo.bar.com.
@@ -330,7 +328,7 @@ bool NameConstraints::IsPermittedDNSName(const std::string& name) const {
   if (!(permitted_subtrees_.present_name_types & GENERAL_NAME_DNS_NAME))
     return true;
 
-  for (const std::string& permitted_name : permitted_subtrees_.dns_names) {
+  for (const auto& permitted_name : permitted_subtrees_.dns_names) {
     // When matching wildcard hosts against permitted subtrees, consider it a
     // match only if the constraint would match all expansions of the wildcard.
     // Eg, *.bar.com should match a constraint of bar.com, but not foo.bar.com.
@@ -344,11 +342,8 @@ bool NameConstraints::IsPermittedDNSName(const std::string& name) const {
 bool NameConstraints::IsPermittedDirectoryName(
     const der::Input& name_rdn_sequence) const {
   for (const auto& excluded_name : excluded_subtrees_.directory_names) {
-    if (VerifyNameInSubtree(
-            name_rdn_sequence,
-            der::Input(excluded_name.data(), excluded_name.size()))) {
+    if (VerifyNameInSubtree(name_rdn_sequence, excluded_name))
       return false;
-    }
   }
 
   // If permitted subtrees are not constrained, any name that is not excluded is
@@ -357,11 +352,8 @@ bool NameConstraints::IsPermittedDirectoryName(
     return true;
 
   for (const auto& permitted_name : permitted_subtrees_.directory_names) {
-    if (VerifyNameInSubtree(
-            name_rdn_sequence,
-            der::Input(permitted_name.data(), permitted_name.size()))) {
+    if (VerifyNameInSubtree(name_rdn_sequence, permitted_name))
       return true;
-    }
   }
 
   return false;

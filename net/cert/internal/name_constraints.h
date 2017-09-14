@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
+#include "base/strings/string_piece_forward.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_export.h"
 #include "net/cert/internal/general_names.h"
@@ -32,7 +33,8 @@ class NET_EXPORT NameConstraints {
   // |extension_value| should be the extnValue from the extension (not including
   // the OCTET STRING tag). |is_critical| should be true if the extension was
   // marked critical. Returns nullptr if parsing the the extension failed.
-  // The object lifetime is not bound to the lifetime of |extension_value| data.
+  // The object may reference data from |extension_value|, so is only valid as
+  // long as |extension_value| is.
   static std::unique_ptr<NameConstraints> Create(
       const der::Input& extension_value,
       bool is_critical,
@@ -53,7 +55,7 @@ class NET_EXPORT NameConstraints {
   // would not be permitted if "bar.com" is permitted and "foo.bar.com" is
   // excluded, while "*.baz.com" would only be permitted if "baz.com" is
   // permitted.
-  bool IsPermittedDNSName(const std::string& name) const;
+  bool IsPermittedDNSName(base::StringPiece name) const;
 
   // Returns true if the directoryName |name_rdn_sequence| is permitted.
   // |name_rdn_sequence| should be the DER-encoded RDNSequence value (not
