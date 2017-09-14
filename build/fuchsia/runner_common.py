@@ -15,7 +15,6 @@ import shutil
 import signal
 import subprocess
 import sys
-import uuid
 
 
 DIR_SOURCE_ROOT = os.path.abspath(
@@ -169,16 +168,14 @@ class BootfsData(object):
 
   bootfs: Local path to .bootfs image file.
   symbols_mapping: A dict mapping executables to their unstripped originals.
-  termination_string: A string to be grep'd for that indicates the target
-                      process on the VM has terminated.
   """
-  def __init__(self, bootfs_name, symbols_mapping, termination_string):
+  def __init__(self, bootfs_name, symbols_mapping):
     self.bootfs = bootfs_name
     self.symbols_mapping = symbols_mapping
-    self.termination_string = termination_string
 
 
-def BuildBootfs(output_directory, runtime_deps, bin_name, child_args, dry_run):
+def BuildBootfs(output_directory, runtime_deps, bin_name, child_args, dry_run,
+                summary_output, power_off):
   # |runtime_deps| already contains (target, source) pairs for the runtime deps,
   # so we can initialize |file_mapping| from it directly.
   file_mapping = dict(runtime_deps)
@@ -186,9 +183,19 @@ def BuildBootfs(output_directory, runtime_deps, bin_name, child_args, dry_run):
   # Generate a script that runs the binaries and shuts down QEMU (if used).
   autorun_file = open(bin_name + '.bootfs_autorun', 'w')
   autorun_file.write('#!/boot/bin/sh\n')
+
   if _IsRunningOnBot():
     # TODO(scottmg): Passed through for https://crbug.com/755282.
     autorun_file.write('export CHROME_HEADLESS=1\n')
+
+  if summary_output:
+    # Unfortunately, devmgr races with this autorun script. This delays long
+    # enough so that the block device is discovered before we try to mount it.
+    autorun_file.write('msleep 2000\n')
+    autorun_file.write('mkdir /volume/results\n')
+    autorun_file.write('mount /dev/class/block/000 /volume/results\n')
+    child_args.append('--test-launcher-summary-output='
+                      '/volume/results/output.json')
 
   autorun_file.write('echo Executing ' + os.path.basename(bin_name) + ' ' +
                      ' '.join(child_args) + '\n')
@@ -201,10 +208,12 @@ def BuildBootfs(output_directory, runtime_deps, bin_name, child_args, dry_run):
     autorun_file.write(' "%s"' % arg);
   autorun_file.write('\n')
 
-  # Generate a unique string that the output processor can look for to know
-  # that the target process is finished.
-  termination_string = 'Process terminated %s.' % uuid.uuid4().hex
-  autorun_file.write('echo ' + termination_string + '\n')
+  if power_off:
+    autorun_file.write('echo Sleeping and shutting down...\n')
+    # A delay is required to give qemu a chance to flush stdout before it
+    # terminates.
+    autorun_file.write('msleep 3000\n')
+    autorun_file.write('dm poweroff\n')
 
   autorun_file.flush()
   os.chmod(autorun_file.name, 0750)
@@ -238,7 +247,7 @@ def BuildBootfs(output_directory, runtime_deps, bin_name, child_args, dry_run):
        '--target=system', manifest_file.name]) != 0:
     return None
 
-  return BootfsData(bootfs_name, symbols_mapping, termination_string)
+  return BootfsData(bootfs_name, symbols_mapping)
 
 
 def _SymbolizeEntries(entries):
@@ -342,24 +351,13 @@ def _SymbolizeBacktrace(backtrace, file_mapping):
   return map(lambda entry: symbolized[entry['frame_id']], backtrace)
 
 
-def _EnsureTunTap(dry_run):
-  """Make sure the tun/tap device is configured. This cannot be done
-  automatically because it requires sudo, unfortunately, so we just print out
-  instructions.
-  """
-  with open(os.devnull, 'w') as nul:
-    p = subprocess.Popen(
-        ['tunctl', '-b', '-u', os.environ.get('USER'), '-t', 'qemu'],
-        stdout=subprocess.PIPE, stderr=nul)
-    output = p.communicate()[0].strip()
-  if output != 'qemu':
-    print 'Configuration of tun/tap device required:'
-    if not os.path.isfile('/usr/sbin/tunctl'):
-      print 'sudo apt-get install uml-utilities'
-    print 'sudo tunctl -u $USER -t qemu'
-    print 'sudo ifconfig qemu up'
-    return False
-  return True
+def _GetResultsFromImg(dry_run, test_launcher_summary_output):
+  """Extract the results .json out of the .minfs image."""
+  if os.path.exists(test_launcher_summary_output):
+    os.unlink(test_launcher_summary_output)
+  img_filename = test_launcher_summary_output + '.minfs'
+  _RunAndCheck(dry_run, [os.path.join(SDK_ROOT, 'tools', 'minfs'), img_filename,
+                         'cp', '::/output.json', test_launcher_summary_output])
 
 
 def RunFuchsia(bootfs_data, use_device, dry_run, test_launcher_summary_output):
@@ -373,9 +371,6 @@ def RunFuchsia(bootfs_data, use_device, dry_run, test_launcher_summary_output):
                           bootfs_data.bootfs]
     return _RunAndCheck(dry_run, bootserver_command)
 
-  if not _EnsureTunTap(dry_run):
-    return 1
-
   qemu_path = os.path.join(SDK_ROOT, 'qemu', 'bin', 'qemu-system-x86_64')
   qemu_command = [qemu_path,
       '-m', '2048',
@@ -387,16 +382,11 @@ def RunFuchsia(bootfs_data, use_device, dry_run, test_launcher_summary_output):
       '-enable-kvm',
       '-cpu', 'host,migratable=no',
 
-      # Configure the tun/tap device used for retrieving test results and
-      # triggering shutdown.
-      '-netdev', 'tap,ifname=qemu,script=no,downscript=no,id=net0',
-      '-device', 'e1000,netdev=net0,mac=52:54:00:63:5e:7a',
-
       # Configure virtual network. It is used in the tests to connect to
       # testserver running on the host.
-      '-netdev', 'user,id=net1,net=%s,dhcpstart=%s,host=%s' %
+      '-netdev', 'user,id=net0,net=%s,dhcpstart=%s,host=%s' %
           (GUEST_NET, GUEST_IP_ADDRESS, HOST_IP_ADDRESS),
-      '-device', 'e1000,netdev=net1,mac=52:54:00:63:5e:7b',
+      '-device', 'e1000,netdev=net0,mac=52:54:00:63:5e:7b',
 
       # Use stdio for the guest OS only; don't attach the QEMU interactive
       # monitor.
@@ -407,6 +397,16 @@ def RunFuchsia(bootfs_data, use_device, dry_run, test_launcher_summary_output):
       # noisy ANSI spew from the user's terminal emulator.
       '-append', 'TERM=dumb kernel.halt_on_panic=true',
     ]
+
+  if test_launcher_summary_output:
+    # Make and mount a 100M minfs formatted image that is used to copy the
+    # results json to, for extraction from the target.
+    img_filename = test_launcher_summary_output + '.minfs'
+    _RunAndCheck(dry_run, ['truncate', '-s100M', img_filename,])
+    _RunAndCheck(dry_run, [os.path.join(SDK_ROOT, 'tools', 'minfs'),
+                           img_filename, 'mkfs'])
+    qemu_command.extend(['-drive', 'file=' + img_filename + ',format=raw'])
+
 
   if dry_run:
     print 'Run:', ' '.join(qemu_command)
@@ -446,19 +446,6 @@ def RunFuchsia(bootfs_data, use_device, dry_run, test_launcher_summary_output):
     if 'SUCCESS: all tests passed.' in line:
       success = True
 
-    if bootfs_data.termination_string in line:
-      print 'Retrieving results and starting shutdown...'
-      sys.stdout.flush()
-
-      if test_launcher_summary_output:
-        _RunAndCheck(dry_run,
-            [os.path.join(SDK_ROOT, 'tools', 'netcp'),
-             ':/tmp/summary_output.json', test_launcher_summary_output])
-      _RunAndCheck(dry_run,
-          [os.path.join(SDK_ROOT, 'tools', 'netruncmd'), ':', 'dm poweroff'])
-      sys.stdout.write('Result retrieval complete.')
-      sys.stdout.flush()
-
     # If the line is not from QEMU then don't try to process it.
     matched = qemu_prefix.match(line)
     if not matched:
@@ -497,5 +484,8 @@ def RunFuchsia(bootfs_data, use_device, dry_run, test_launcher_summary_output):
            'binary': None, 'pc_offset': None})
 
   qemu_popen.wait()
+
+  if test_launcher_summary_output:
+    _GetResultsFromImg(dry_run, test_launcher_summary_output)
 
   return 0 if success else 1
