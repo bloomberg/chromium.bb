@@ -26,6 +26,7 @@
 #include "components/viz/common/surfaces/sequence_surface_reference_factory.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_manager.h"
+#include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_delegate.h"
@@ -436,6 +437,11 @@ void Surface::CommitSurfaceHierarchy(
 
     state_ = pending_state_;
     pending_state_.only_visible_on_secure_output = false;
+
+    window_->SetEventTargetingPolicy(
+        state_.input_region.isEmpty()
+            ? ui::mojom::EventTargetingPolicy::DESCENDANTS_ONLY
+            : ui::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
 
     // We update contents if Attach() has been called since last commit.
     if (has_pending_contents_) {
