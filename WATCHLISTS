@@ -425,9 +425,6 @@
                   '|third_party/WebKit/Source/web/WebFrame' \
                   '|third_party/WebKit/Source/web/WebRemoteFrameImpl'
     },
-    'blink_owners': {
-      'filepath': 'third_party/(WebKit|blink)/.*OWNERS',
-    },
     'blink_paint': {
       'filepath': 'third_party/WebKit/Source/core/paint/'
     },
@@ -1795,7 +1792,6 @@
     'blink_navigator_content_utils': ['gyuyoung.kim@chromium.org'],
     'blink_out_of_process_frames': ['dcheng@chromium.org',
                                     'mlamouri+watch-blink@chromium.org'],
-    'blink_owners': ['abarth@chromium.org'],
     'blink_paint' : ['blink-reviews-paint@chromium.org',
                      'dongseong.hwang@intel.com'],
     'blink_performance_timing': ['panicker+watch@chromium.org'],
@@ -2096,7 +2092,6 @@
     'metrics_xml_files': ['asvitkine+watch@chromium.org'],
     'midi': ['toyoshim+midi@chromium.org'],
     'mojo': ['aa@chromium.org',
-             'abarth@chromium.org',
              'darin@chromium.org',
              'qsr+mojo@chromium.org',
              'viettrungluu+watch@chromium.org'],
