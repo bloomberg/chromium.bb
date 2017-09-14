@@ -87,6 +87,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
     public static final String PREF_PROTECTED_MEDIA_IDENTIFIER_PERMISSION =
             "protected_media_identifier_permission_list";
     public static final String PREF_ADS_PERMISSION = "ads_permission_list";
+    public static final String PREF_SOUND_PERMISSION = "sound_permission_list";
 
     // All permissions from the permissions preference category must be listed here.
     // TODO(mvanouwerkerk): Use this array in more places to reduce verbosity.
@@ -103,6 +104,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
             PREF_POPUP_PERMISSION,
             PREF_PROTECTED_MEDIA_IDENTIFIER_PERMISSION,
             PREF_ADS_PERMISSION,
+            PREF_SOUND_PERMISSION,
     };
 
     private static final int REQUEST_CODE_NOTIFICATION_CHANNEL_SETTINGS = 1;
@@ -251,12 +253,14 @@ public class SingleWebsitePreferences extends PreferenceFragment
                 }
             }
 
+            // TODO(crbug.com/763982): Deal with this TODO colony.
             // TODO(mvanouwerkerk): Make the various info types share a common interface that
             // supports reading the origin or host.
             // TODO(mvanouwerkerk): Merge in PopupExceptionInfo? It uses a pattern, and is never
             // set on Android.
             // TODO(mvanouwerkerk): Merge in JavaScriptExceptionInfo? It uses a pattern.
             // TODO(lshang): Merge in CookieException? It will use patterns.
+            // TODO(steimel): Merge in SoundExceptionInfo? It uses a pattern.
         }
         return merged;
     }
@@ -336,6 +340,9 @@ public class SingleWebsitePreferences extends PreferenceFragment
             setUpListPreference(preference, mSite.getPopupPermission());
         } else if (PREF_PROTECTED_MEDIA_IDENTIFIER_PERMISSION.equals(key)) {
             setUpListPreference(preference, mSite.getProtectedMediaIdentifierPermission());
+        } else if (PREF_SOUND_PERMISSION.equals(key)
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.SOUND_CONTENT_SETTING)) {
+            setUpListPreference(preference, mSite.getSoundPermission());
         }
     }
 
@@ -722,6 +729,8 @@ public class SingleWebsitePreferences extends PreferenceFragment
                 return ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS;
             case PREF_PROTECTED_MEDIA_IDENTIFIER_PERMISSION:
                 return ContentSettingsType.CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER;
+            case PREF_SOUND_PERMISSION:
+                return ContentSettingsType.CONTENT_SETTINGS_TYPE_SOUND;
             default:
                 return 0;
         }
@@ -779,6 +788,8 @@ public class SingleWebsitePreferences extends PreferenceFragment
             mSite.setPopupPermission(permission);
         } else if (PREF_PROTECTED_MEDIA_IDENTIFIER_PERMISSION.equals(preference.getKey())) {
             mSite.setProtectedMediaIdentifierPermission(permission);
+        } else if (PREF_SOUND_PERMISSION.equals(preference.getKey())) {
+            mSite.setSoundPermission(permission);
         }
 
         return true;
@@ -851,6 +862,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
         mSite.setNotificationPermission(ContentSetting.DEFAULT);
         mSite.setPopupPermission(ContentSetting.DEFAULT);
         mSite.setProtectedMediaIdentifierPermission(ContentSetting.DEFAULT);
+        mSite.setSoundPermission(ContentSetting.DEFAULT);
 
         for (UsbInfo info : mSite.getUsbInfo()) info.revoke();
 

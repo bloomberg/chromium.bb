@@ -212,6 +212,7 @@ public abstract class ChromeFeatureList {
     public static final String SERVICE_WORKER_PAYMENT_APPS = "ServiceWorkerPaymentApps";
     public static final String SITE_EXPLORATION_UI = "SiteExplorationUi";
     public static final String SITE_NOTIFICATION_CHANNELS = "SiteNotificationChannels";
+    public static final String SOUND_CONTENT_SETTING = "SoundContentSetting";
     public static final String SPANNABLE_INLINE_AUTOCOMPLETE = "SpannableInlineAutocomplete";
     public static final String TAB_REPARENTING = "TabReparenting";
     public static final String VIDEO_PERSISTENCE = "VideoPersistence";

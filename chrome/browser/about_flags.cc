@@ -3446,11 +3446,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kDoodlesOnLocalNtp)},
 #endif  // !defined(OS_ANDROID)
 
-#if !defined(OS_ANDROID)
     {"sound-content-setting", flag_descriptions::kSoundContentSettingName,
-     flag_descriptions::kSoundContentSettingDescription, kOsDesktop,
+     flag_descriptions::kSoundContentSettingDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kSoundContentSetting)},
-#endif  // !defined(OS_ANDROID)
 
 #if DCHECK_IS_ON() && defined(SYZYASAN)
     {"dcheck-is-fatal", flag_descriptions::kSyzyAsanDcheckIsFatalName,
