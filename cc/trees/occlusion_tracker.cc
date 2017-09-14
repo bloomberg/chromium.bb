@@ -136,7 +136,7 @@ void OcclusionTracker::EnterRenderTarget(
   const RenderSurfaceImpl* new_occlusion_immune_ancestor =
       new_target_surface->nearest_occlusion_immune_ancestor();
 
-  stack_.push_back(StackObject(new_target_surface));
+  stack_.emplace_back(new_target_surface);
 
   // We copy the screen occlusion into the new RenderSurfaceImpl subtree, but we
   // never copy in the occlusion from inside the target, since we are looking
