@@ -9,6 +9,7 @@
 
 #include "base/containers/flat_set.h"
 #include "base/memory/ptr_util.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
@@ -37,6 +38,10 @@ constexpr FrameSinkId kFrameSink3(3, 0);
 // SurfaceManager.
 class SurfaceReferencesTest : public testing::Test {
  public:
+  SurfaceReferencesTest()
+      : task_runner_(base::MakeRefCounted<base::TestMockTimeTaskRunner>()),
+        scoped_context_(task_runner_.get()) {}
+
   SurfaceManager& GetSurfaceManager() { return *manager_->surface_manager(); }
 
   // Creates a new Surface with the provided |frame_sink_id| and |local_id|.
@@ -120,6 +125,10 @@ class SurfaceReferencesTest : public testing::Test {
     supports_.clear();
     manager_.reset();
   }
+
+  // Use a TestMockTimeTaskRunner so we can test timer behaviour in |manager_|.
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
+  base::TestMockTimeTaskRunner::ScopedContext scoped_context_;
 
   std::unordered_map<FrameSinkId,
                      std::unique_ptr<CompositorFrameSinkSupport>,
@@ -546,6 +555,27 @@ TEST_F(SurfaceReferencesTest, TempReferencesWithClientCrash) {
   // it from the ServerWindow hierarchy and won't have an owner for |id2b|. The
   // window server will ask to drop the reference instead.
   GetSurfaceManager().DropTemporaryReference(id1b);
+  ASSERT_THAT(GetAllTempReferences(), IsEmpty());
+}
+
+// Check that old temporary references are deleted, but only for surfaces marked
+// as destroyed.
+TEST_F(SurfaceReferencesTest, MarkOldTemporaryReferences) {
+  constexpr base::TimeDelta kFastForwardTime = base::TimeDelta::FromSeconds(30);
+
+  // Creating the surface should create a temporary reference.
+  const SurfaceId id = CreateSurface(kFrameSink1, 1);
+  ASSERT_THAT(GetAllTempReferences(), UnorderedElementsAre(id));
+
+  // The temporary reference should not be marked as old and then deleted
+  // because the surface is still alive.
+  task_runner_->FastForwardBy(kFastForwardTime);
+  ASSERT_THAT(GetAllTempReferences(), UnorderedElementsAre(id));
+
+  // After the surface is marked as destroyed, the temporary reference should
+  // be marked as old then deleted.
+  DestroySurface(id);
+  task_runner_->FastForwardBy(kFastForwardTime);
   ASSERT_THAT(GetAllTempReferences(), IsEmpty());
 }
 
