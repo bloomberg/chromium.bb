@@ -21,7 +21,8 @@
 
 DEFINE_BROWSER_USER_DATA_KEY(OverlayScheduler);
 
-OverlayScheduler::OverlayScheduler(Browser* browser) : queue_manager_(nullptr) {
+OverlayScheduler::OverlayScheduler(Browser* browser)
+    : queue_manager_(nullptr), paused_(false) {
   // Create the OverlayQueueManager and add the scheduler as an observer to the
   // manager and all its queues.
   OverlayQueueManager::CreateForBrowser(browser);
@@ -67,6 +68,14 @@ void OverlayScheduler::SetQueueManager(OverlayQueueManager* queue_manager) {
 bool OverlayScheduler::IsShowingOverlay() const {
   return !overlay_queues_.empty() &&
          overlay_queues_.front()->IsShowingOverlay();
+}
+
+void OverlayScheduler::SetPaused(bool paused) {
+  if (paused_ == paused)
+    return;
+  paused_ = paused;
+  if (!paused_)
+    TryToStartNextOverlay();
 }
 
 void OverlayScheduler::ReplaceVisibleOverlay(
@@ -156,7 +165,7 @@ void OverlayScheduler::OverlayQueueDidCancelOverlays(OverlayQueue* queue) {
 void OverlayScheduler::TryToStartNextOverlay() {
   // Early return if an overlay is already started or if there are no queued
   // overlays to show.
-  if (overlay_queues_.empty() || IsShowingOverlay())
+  if (paused_ || overlay_queues_.empty() || IsShowingOverlay())
     return;
   // Notify the observers that the next overlay is about to be shown.
   OverlayQueue* queue = overlay_queues_.front();

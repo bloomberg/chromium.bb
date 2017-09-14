@@ -42,6 +42,9 @@ class OverlayServiceImpl : public BrowserListObserver,
   // OverlayService:
   void AddObserver(OverlayServiceObserver* observer) override;
   void RemoveObserver(OverlayServiceObserver* observer) override;
+  void PauseServiceForBrowser(Browser* browser) override;
+  void ResumeServiceForBrowser(Browser* browser) override;
+  bool IsPausedForBrowser(Browser* browser) const override;
   bool IsBrowserShowingOverlay(Browser* browser) const override;
   void ReplaceVisibleOverlay(OverlayCoordinator* overlay_coordinator,
                              Browser* browser) override;

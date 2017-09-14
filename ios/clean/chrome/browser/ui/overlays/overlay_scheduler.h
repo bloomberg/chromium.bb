@@ -39,6 +39,12 @@ class OverlayScheduler : public BrowserUserData<OverlayScheduler>,
   OverlayQueueManager* queue_manager() { return queue_manager_; }
   void SetQueueManager(OverlayQueueManager* queue_manager);
 
+  // Whether the scheduler is paused.  When the scheduler is paused, no queued
+  // overlays will be started.  When unpaused, it will attempt to start the next
+  // queued overlay.
+  void SetPaused(bool paused);
+  bool paused() { return paused_; }
+
   // Whether a scheduled overlay is currently being shown.
   bool IsShowingOverlay() const;
 
@@ -84,6 +90,8 @@ class OverlayScheduler : public BrowserUserData<OverlayScheduler>,
   // the first queue is popped and the first ovelay in the next queue is
   // started.
   std::list<OverlayQueue*> overlay_queues_;
+  // Whether the scheduler is paused.
+  bool paused_;
 
   DISALLOW_COPY_AND_ASSIGN(OverlayScheduler);
 };

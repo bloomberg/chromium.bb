@@ -199,3 +199,22 @@ TEST_F(OverlaySchedulerTest, SwitchWebStateForQueuedOverlays) {
   EXPECT_EQ(parent_1.presentedOverlay, nil);
   EXPECT_FALSE(scheduler()->IsShowingOverlay());
 }
+
+// Tests that pausing the scheduler prevents overlays from being started and
+// that unpausing the scheduler successfully shows queued overlays.
+TEST_F(OverlaySchedulerTest, PauseUnpause) {
+  scheduler()->SetPaused(true);
+  BrowserOverlayQueue* queue = BrowserOverlayQueue::FromBrowser(GetBrowser());
+  ASSERT_TRUE(queue);
+  TestOverlayParentCoordinator* parent =
+      [[TestOverlayParentCoordinator alloc] init];
+  TestOverlayCoordinator* overlay = [[TestOverlayCoordinator alloc] init];
+  queue->AddBrowserOverlay(overlay, parent);
+  EXPECT_FALSE(parent.presentedOverlay);
+  EXPECT_FALSE(scheduler()->IsShowingOverlay());
+  scheduler()->SetPaused(false);
+  EXPECT_EQ(parent.presentedOverlay, overlay);
+  WaitForBrowserCoordinatorActivation(overlay);
+  EXPECT_TRUE(scheduler()->IsShowingOverlay());
+  [overlay stop];
+}
