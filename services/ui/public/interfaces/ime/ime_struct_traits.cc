@@ -75,6 +75,8 @@ EnumTraits<ui::mojom::ImeTextSpanType, ui::ImeTextSpan::Type>::ToMojom(
       return ui::mojom::ImeTextSpanType::kComposition;
     case ui::ImeTextSpan::Type::kSuggestion:
       return ui::mojom::ImeTextSpanType::kSuggestion;
+    case ui::ImeTextSpan::Type::kMisspellingSuggestion:
+      return ui::mojom::ImeTextSpanType::kMisspellingSuggestion;
   }
 
   NOTREACHED();
@@ -91,6 +93,9 @@ bool EnumTraits<ui::mojom::ImeTextSpanType, ui::ImeTextSpan::Type>::FromMojom(
       return true;
     case ui::mojom::ImeTextSpanType::kSuggestion:
       *out = ui::ImeTextSpan::Type::kSuggestion;
+      return true;
+    case ui::mojom::ImeTextSpanType::kMisspellingSuggestion:
+      *out = ui::ImeTextSpan::Type::kMisspellingSuggestion;
       return true;
   }
 

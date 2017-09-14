@@ -40,7 +40,7 @@ class CORE_EXPORT ImeTextSpan {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  enum class Type { kComposition, kSuggestion };
+  enum class Type { kComposition, kSuggestion, kMisspellingSuggestion };
 
   ImeTextSpan(Type,
               unsigned start_offset,

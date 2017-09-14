@@ -49,7 +49,7 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebInputEvent::Type,
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebPageVisibilityState,
                           blink::kWebPageVisibilityStateLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebImeTextSpan::Type,
-                          blink::WebImeTextSpan::Type::kSuggestion)
+                          blink::WebImeTextSpan::Type::kMisspellingSuggestion)
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebImeTextSpan)
   IPC_STRUCT_TRAITS_MEMBER(type)

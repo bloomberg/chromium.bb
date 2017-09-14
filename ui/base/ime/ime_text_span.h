@@ -25,6 +25,10 @@ struct UI_BASE_IME_EXPORT ImeTextSpan {
     // Creates a suggestion marker that isn't cleared after the user picks a
     // replacement.
     kSuggestion,
+    // Creates a suggestion marker that is cleared after the user picks a
+    // replacement, and will be ignored if added to an element with spell
+    // checking disabled.
+    kMisspellingSuggestion,
   };
 
   // The default constructor is used by generated Mojo code.
