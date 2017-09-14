@@ -31,7 +31,6 @@
 #include "extensions/browser/policy_check.h"
 #include "extensions/browser/preload_check_group.h"
 #include "extensions/browser/requirements_checker.h"
-#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/file_util.h"
@@ -43,8 +42,6 @@
 using content::BrowserThread;
 using extensions::Extension;
 using extensions::SharedModuleInfo;
-
-namespace extensions {
 
 namespace {
 
@@ -82,7 +79,8 @@ SimpleExtensionLoadPrompt::SimpleExtensionLoadPrompt(
     Profile* profile,
     const base::Closure& callback)
     : extension_(extension), callback_(callback) {
-  std::unique_ptr<ExtensionInstallUI> ui(CreateExtensionInstallUI(profile));
+  std::unique_ptr<extensions::ExtensionInstallUI> ui(
+      extensions::CreateExtensionInstallUI(profile));
   install_ui_.reset(new ExtensionInstallPrompt(
       profile, ui->GetDefaultInstallDialogParent()));
 }
@@ -106,20 +104,9 @@ void SimpleExtensionLoadPrompt::OnInstallPromptDone(
   delete this;
 }
 
-// Deletes files reserved for use by the Extension system in the kMetadataFolder
-// and the kMetadataFolder itself if it is empty.
-void MaybeCleanupMetadataFolder(const base::FilePath& extension_path) {
-  const std::vector<base::FilePath> reserved_filepaths =
-      file_util::GetReservedMetadataFilePaths(extension_path);
-  for (const auto& file : reserved_filepaths)
-    base::DeleteFile(file, false /*recursive*/);
-
-  const base::FilePath& metadata_dir = extension_path.Append(kMetadataFolder);
-  if (base::IsDirectoryEmpty(metadata_dir))
-    base::DeleteFile(metadata_dir, true /*recursive*/);
-}
-
 }  // namespace
+
+namespace extensions {
 
 // static
 scoped_refptr<UnpackedInstaller> UnpackedInstaller::Create(
@@ -168,7 +155,12 @@ bool UnpackedInstaller::LoadFromCommandLine(const base::FilePath& path_in,
   }
 
   std::string error;
-  if (!LoadExtension(Manifest::COMMAND_LINE, GetFlags(), &error)) {
+  extension_ = file_util::LoadExtension(extension_path_, Manifest::COMMAND_LINE,
+                                        GetFlags(), &error);
+
+  if (!extension() ||
+      !extension_l10n_util::ValidateExtensionLocales(
+          extension_path_, extension()->manifest()->value(), &error)) {
     ReportExtensionLoadError(error);
     return false;
   }
@@ -300,29 +292,6 @@ int UnpackedInstaller::GetFlags() {
   return result;
 }
 
-bool UnpackedInstaller::LoadExtension(Manifest::Location location,
-                                      int flags,
-                                      std::string* error) {
-  base::ThreadRestrictions::AssertIOAllowed();
-
-  // Clean up the kMetadataFolder if necessary. This prevents spurious
-  // warnings/errors and ensures we don't treat a user provided file as one by
-  // the Extension system.
-  MaybeCleanupMetadataFolder(extension_path_);
-
-  // Treat presence of illegal filenames as a hard error for unpacked
-  // extensions.
-  if (!file_util::CheckForIllegalFilenames(extension_path_, error))
-    return false;
-
-  extension_ =
-      file_util::LoadExtension(extension_path_, location, flags, error);
-
-  return extension() &&
-         extension_l10n_util::ValidateExtensionLocales(
-             extension_path_, extension()->manifest()->value(), error);
-}
-
 bool UnpackedInstaller::IsLoadingUnpackedAllowed() const {
   if (!service_weak_.get())
     return true;
@@ -337,6 +306,14 @@ void UnpackedInstaller::GetAbsolutePath() {
 
   extension_path_ = base::MakeAbsoluteFilePath(extension_path_);
 
+  std::string error;
+  if (!file_util::CheckForIllegalFilenames(extension_path_, &error)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&UnpackedInstaller::ReportExtensionLoadError, this,
+                       error));
+    return;
+  }
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&UnpackedInstaller::CheckExtensionFileAccess, this));
@@ -361,7 +338,12 @@ void UnpackedInstaller::LoadWithFileAccess(int flags) {
   base::ThreadRestrictions::AssertIOAllowed();
 
   std::string error;
-  if (!LoadExtension(Manifest::UNPACKED, flags, &error)) {
+  extension_ = file_util::LoadExtension(extension_path_, Manifest::UNPACKED,
+                                        flags, &error);
+
+  if (!extension() ||
+      !extension_l10n_util::ValidateExtensionLocales(
+          extension_path_, extension()->manifest()->value(), &error)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(&UnpackedInstaller::ReportExtensionLoadError, this,
