@@ -24,6 +24,7 @@ symatics should exist.  This is an exact match.
 
 /** TREE
  *Callback(VoidFunc)
+ *  CALLBACK: True
  *  Type()
  *    PrimitiveType(void)
  *  Arguments()
@@ -32,6 +33,7 @@ callback VoidFunc = void();
 
 /** TREE
  *Callback(VoidFuncLongErr)
+ *  CALLBACK: True
  *  Type()
  *    PrimitiveType(void)
  *  Arguments()
@@ -41,6 +43,7 @@ callback VoidFuncLongErr = void ( long );
 
 /** TREE
  *Callback(VoidFuncLong)
+ *  CALLBACK: True
  *  Type()
  *    PrimitiveType(void)
  *  Arguments()
@@ -52,6 +55,7 @@ callback VoidFuncLong = void ( long L1 );
 
 /** TREE
  *Callback(VoidFuncLongSequence)
+ *  CALLBACK: True
  *  Type()
  *    PrimitiveType(void)
  *  Arguments()
@@ -65,6 +69,7 @@ callback VoidFuncLongSequence = void ( sequence<long> L1 );
 
 /** TREE
  *Callback(VoidFuncLongIdent)
+ *  CALLBACK: True
  *  Type()
  *    PrimitiveType(void)
  *  Arguments()
