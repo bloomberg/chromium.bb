@@ -2213,6 +2213,16 @@ TEST_F(ShelfLayoutManagerKeyboardTest,
   layout_manager->LayoutShelf();
   EXPECT_EQ(orig_work_area,
             display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
+}
+
+// Change accessibility keyboard work area in sticky mode.
+TEST_F(ShelfLayoutManagerKeyboardTest, ShelfShouldChangeWorkAreaInStickyMode) {
+  ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
+  InitKeyboardBounds();
+  keyboard::KeyboardController* kb_controller =
+      keyboard::KeyboardController::GetInstance();
+  gfx::Rect orig_work_area(
+      display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
 
   // Open keyboard in sticky mode.
   kb_controller->ShowKeyboard(true);
