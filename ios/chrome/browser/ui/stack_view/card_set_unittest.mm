@@ -14,6 +14,8 @@
 #import "ios/chrome/browser/ui/stack_view/card_stack_layout_manager.h"
 #import "ios/chrome/browser/ui/stack_view/stack_card.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
+#import "ios/web/public/test/fakes/test_navigation_manager.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -46,13 +48,25 @@
 
 @interface CardSetTestTabMock : OCMockComplexTypeHelper
 @end
-@implementation CardSetTestTabMock
+
+@implementation CardSetTestTabMock {
+  web::TestWebState _webState;
+}
 
 using CardSetTestTabMock_url = const GURL& (^)();
 
 - (const GURL&)url {
   return static_cast<CardSetTestTabMock_url>([self blockForSelector:_cmd])();
 }
+
+- (web::WebState*)webState {
+  if (!_webState.GetNavigationManager()) {
+    _webState.SetNavigationManager(
+        std::make_unique<web::TestNavigationManager>());
+  }
+  return &_webState;
+}
+
 @end
 
 @implementation MockTabModel
@@ -79,7 +93,6 @@ using CardSetTestTabMock_url = const GURL& (^)();
 
   [[tab expect] retrieveSnapshot:[OCMArg any]];
   [[[tab stub] andReturn:nil] webController];
-  [[[tab stub] andReturn:nil] favicon];
   [[[tab stub] andReturnValue:OCMOCK_VALUE(no)] canGoBack];
   [[[tab stub] andReturnValue:OCMOCK_VALUE(no)] canGoForward];
   [[[tab stub] andReturn:title] title];

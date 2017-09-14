@@ -25,8 +25,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "components/favicon/core/favicon_driver_observer.h"
-#include "components/favicon/ios/web_favicon_driver.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/history/core/browser/history_context.h"
 #include "components/history/core/browser/history_service.h"
@@ -148,7 +146,6 @@ NSString* const kTabUrlKey = @"url";
 
 namespace {
 class TabHistoryContext;
-class FaviconDriverObserverBridge;
 class TabInfoBarObserver;
 
 // Returns true if |item| is the result of a HTTP redirect.
@@ -224,9 +221,6 @@ class TabHistoryContext : public history::Context {
   // references to Tab.
   TabHistoryContext _tabHistoryContext;
 
-  // C++ bridge that receives notifications from the FaviconDriver.
-  std::unique_ptr<FaviconDriverObserverBridge> _faviconDriverObserverBridge;
-
   // Universal Second Factor (U2F) call controller.
   U2FController* _secondFactorController;
 
@@ -239,9 +233,6 @@ class TabHistoryContext : public history::Context {
 
 // Handles caching and retrieving of snapshots.
 @property(nonatomic, strong) SnapshotManager* snapshotManager;
-
-// Sets the favicon on the current NavigationItem.
-- (void)setFavicon:(const gfx::Image*)image;
 
 // Saves the current title to the history database.
 - (void)saveTitleToHistoryDB;
@@ -261,44 +252,6 @@ class TabHistoryContext : public history::Context {
 @end
 
 namespace {
-class FaviconDriverObserverBridge : public favicon::FaviconDriverObserver {
- public:
-  FaviconDriverObserverBridge(Tab* owner,
-                              favicon::FaviconDriver* favicon_driver);
-  ~FaviconDriverObserverBridge() override;
-
-  // favicon::FaviconDriverObserver implementation.
-  void OnFaviconUpdated(favicon::FaviconDriver* favicon_driver,
-                        NotificationIconType notification_icon_type,
-                        const GURL& icon_url,
-                        bool icon_url_changed,
-                        const gfx::Image& image) override;
-
- private:
-  __weak Tab* owner_;
-  ScopedObserver<favicon::FaviconDriver, favicon::FaviconDriverObserver>
-      scoped_observer_;
-  DISALLOW_COPY_AND_ASSIGN(FaviconDriverObserverBridge);
-};
-
-FaviconDriverObserverBridge::FaviconDriverObserverBridge(
-    Tab* owner,
-    favicon::FaviconDriver* favicon_driver)
-    : owner_(owner), scoped_observer_(this) {
-  scoped_observer_.Add(favicon_driver);
-}
-
-FaviconDriverObserverBridge::~FaviconDriverObserverBridge() {}
-
-void FaviconDriverObserverBridge::OnFaviconUpdated(
-    favicon::FaviconDriver* favicon_driver,
-    NotificationIconType notification_icon_type,
-    const GURL& icon_url,
-    bool icon_url_changed,
-    const gfx::Image& image) {
-  [owner_ setFavicon:&image];
-}
-
 // Observer class that listens for infobar signals.
 class TabInfoBarObserver : public infobars::InfoBarManager::Observer {
  public:
@@ -393,9 +346,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 - (void)attachTabHelpers {
   _tabInfoBarObserver = std::make_unique<TabInfoBarObserver>(
       self, InfoBarManagerImpl::FromWebState(self.webState));
-
-  _faviconDriverObserverBridge = std::make_unique<FaviconDriverObserverBridge>(
-      self, favicon::WebFaviconDriver::FromWebState(self.webState));
 }
 
 - (id<FindInPageControllerDelegate>)findInPageControllerDelegate {
@@ -488,39 +438,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 - (web::WebState*)webState {
   return _webStateImpl;
-}
-
-- (void)fetchFavicon {
-  const GURL& url = self.visibleURL;
-  if (!url.is_valid())
-    return;
-
-  favicon::FaviconDriver* faviconDriver =
-      favicon::WebFaviconDriver::FromWebState(self.webState);
-  if (faviconDriver)
-    faviconDriver->FetchFavicon(url, /*is_same_document=*/false);
-}
-
-- (void)setFavicon:(const gfx::Image*)image {
-  web::NavigationItem* item = [self navigationManager]->GetVisibleItem();
-  if (!item)
-    return;
-  if (image) {
-    item->GetFavicon().image = *image;
-    item->GetFavicon().valid = true;
-  }
-  [_parentTabModel notifyTabChanged:self];
-}
-
-- (UIImage*)favicon {
-  DCHECK([self navigationManager]);
-  web::NavigationItem* item = [self navigationManager]->GetVisibleItem();
-  if (!item)
-    return nil;
-  const gfx::Image& image = item->GetFavicon().image;
-  if (image.IsEmpty())
-    return nil;
-  return image.ToUIImage();
 }
 
 - (UIView*)view {
@@ -780,7 +697,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
   _tabInfoBarObserver.reset();
 
-  _faviconDriverObserverBridge.reset();
   [_openInController detachFromWebController];
   _openInController = nil;
   if (_fullScreenController)
@@ -904,14 +820,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 - (void)webState:(web::WebState*)webState
     didFinishNavigation:(web::NavigationContext*)navigation {
-  if (navigation->IsSameDocument()) {
-    // Fetch the favicon for the new URL.
-    auto* faviconDriver = favicon::WebFaviconDriver::FromWebState(webState);
-    if (faviconDriver)
-      faviconDriver->FetchFavicon(navigation->GetUrl(),
-                                  /*is_same_document=*/true);
-  }
-
   if (!navigation->GetError()) {
     [self addCurrentEntryToHistoryDB];
     [self countMainFrameLoad];
@@ -1144,10 +1052,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
                       object:_parentTabModel
                     userInfo:@{kTabModelTabKey : self}];
   }
-  favicon::FaviconDriver* faviconDriver =
-      favicon::WebFaviconDriver::FromWebState(webState);
-  if (faviconDriver)
-    faviconDriver->FetchFavicon(lastCommittedURL, details.is_in_page);
   [_parentTabModel notifyTabChanged:self];
   if (_parentTabModel) {
     [[NSNotificationCenter defaultCenter]

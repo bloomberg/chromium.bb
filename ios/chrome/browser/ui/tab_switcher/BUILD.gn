@@ -59,6 +59,7 @@ source_set("tab_switcher") {
     "resources:tabswitcher_tablet",
     "//base",
     "//components/browser_sync",
+    "//components/favicon/ios",
     "//components/sessions",
     "//components/signin/core/browser",
     "//components/sync",

@@ -38,6 +38,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/favicon/ios/web_favicon_driver.h"
 #include "components/feature_engagement/public/event_constants.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
@@ -1685,8 +1686,16 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     if (![title length])
       title = [topTab urlDisplayString];
     [topCard setTitle:title];
-    [topCard setFavicon:[topTab favicon]];
     [topCard setImage:image];
+    [topCard setFavicon:nil];
+
+    favicon::FaviconDriver* faviconDriver =
+        favicon::WebFaviconDriver::FromWebState(topTab.webState);
+    if (faviconDriver && faviconDriver->FaviconIsValid()) {
+      gfx::Image favicon = faviconDriver->GetFavicon();
+      if (!favicon.IsEmpty())
+        [topCard setFavicon:favicon.ToUIImage()];
+    }
 
     // 3. A new, blank CardView to represent the new tab being added.
     // Launch the new background tab animation.

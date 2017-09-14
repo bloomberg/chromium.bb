@@ -36,6 +36,7 @@ source_set("tabs") {
     "resources:tabstrip_toggle_button_gradient",
     "//base",
     "//base:i18n",
+    "//components/favicon/ios",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
@@ -68,6 +69,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui",
     "//ios/web/public/test",
+    "//ios/web/public/test/fakes",
     "//testing/gtest",
     "//third_party/ocmock",
   ]

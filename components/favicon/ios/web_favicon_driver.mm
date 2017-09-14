@@ -11,8 +11,10 @@
 #include "components/favicon/ios/favicon_url_util.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/favicon_status.h"
+#include "ios/web/public/load_committed_details.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/navigation_manager.h"
+#include "ios/web/public/web_state/navigation_context.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "skia/ext/skia_utils_ios.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -126,6 +128,10 @@ void WebFaviconDriver::OnFaviconUpdated(
   if (!item || item->GetURL() != page_url)
     return;
 
+  web::FaviconStatus& favicon_status = item->GetFavicon();
+  favicon_status.valid = true;
+  favicon_status.image = image;
+
   NotifyFaviconUpdatedObservers(notification_icon_type, icon_url,
                                 icon_url_changed, image);
 }
@@ -138,6 +144,19 @@ WebFaviconDriver::WebFaviconDriver(web::WebState* web_state,
       image_fetcher_(web_state->GetBrowserState()->GetRequestContext()) {}
 
 WebFaviconDriver::~WebFaviconDriver() {
+}
+
+void WebFaviconDriver::NavigationItemCommitted(
+    const web::LoadCommittedDetails& load_details) {
+  FetchFavicon(web_state()->GetLastCommittedURL(), load_details.is_in_page);
+}
+
+void WebFaviconDriver::DidFinishNavigation(
+    web::NavigationContext* navigation_context) {
+  if (navigation_context->IsSameDocument()) {
+    // Fetch the favicon for the new URL.
+    FetchFavicon(navigation_context->GetUrl(), /*is_same_document=*/true);
+  }
 }
 
 void WebFaviconDriver::FaviconUrlUpdated(

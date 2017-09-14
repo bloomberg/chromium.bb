@@ -163,15 +163,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // TODO(crbug.com/228575): Create a delegate interface and remove this.
 - (void)setParentTabModel:(TabModel*)model;
 
-// Triggers the asynchronous loading of the tab's favicon. This will be done
-// automatically when a page loads, but this can be used to trigger favicon
-// fetch earlier (e.g., for a tab that will be shown without loading).
-- (void)fetchFavicon;
-
-// Returns the favicon for the page currently being shown in this Tab, or |nil|
-// if the current page has no favicon.
-- (UIImage*)favicon;
-
 // The view to display in the view hierarchy based on the current URL. Won't be
 // nil. It is up to the caller to size the view and confirm |webUsageEnabled|.
 - (UIView*)view;

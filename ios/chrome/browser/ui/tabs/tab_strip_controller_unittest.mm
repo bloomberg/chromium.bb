@@ -14,6 +14,8 @@
 #import "ios/chrome/browser/ui/tabs/tab_strip_view.h"
 #import "ios/chrome/browser/ui/tabs/tab_view.h"
 #include "ios/chrome/browser/ui/ui_util.h"
+#import "ios/web/public/test/fakes/test_navigation_manager.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -117,10 +119,27 @@ class TabStripControllerTest : public PlatformTest {
     [[tabModel stub] removeObserver:[OCMArg any]];
 
     // Stub methods for Tabs.
+    test_web_state1_.SetNavigationManager(
+        std::make_unique<web::TestNavigationManager>());
+    [[[tab1 stub] andDo:^(NSInvocation* invocation) {
+      // Use a local variable to store the pointer to the WebState as
+      // -setReturnValue: takes a pointer to a buffer with the value
+      // to copy (and the value is a pointer).
+      web::WebState* web_state = &test_web_state1_;
+      [invocation setReturnValue:&web_state];
+    }] webState];
     [[[tab1 stub] andReturn:@"Tab Title 1"] title];
+
+    test_web_state2_.SetNavigationManager(
+        std::make_unique<web::TestNavigationManager>());
+    [[[tab2 stub] andDo:^(NSInvocation* invocation) {
+      // Use a local variable to store the pointer to the WebState as
+      // -setReturnValue: takes a pointer to a buffer with the value
+      // to copy (and the value is a pointer).
+      web::WebState* web_state = &test_web_state2_;
+      [invocation setReturnValue:&web_state];
+    }] webState];
     [[[tab2 stub] andReturn:@"Tab Title 2"] title];
-    [[[tab1 stub] andReturn:nil] favicon];
-    [[[tab2 stub] andReturn:nil] favicon];
 
     tabModel_ = tabModel;
     tab1_ = tab1;
@@ -135,6 +154,7 @@ class TabStripControllerTest : public PlatformTest {
     [window addSubview:[controller_ view]];
     window_ = window;
   }
+
   void TearDown() override {
     if (!IsIPadIdiom())
       return;
@@ -142,6 +162,8 @@ class TabStripControllerTest : public PlatformTest {
   }
 
   web::TestWebThreadBundle thread_bundle_;
+  web::TestWebState test_web_state1_;
+  web::TestWebState test_web_state2_;
   OCMockObject* tab1_;
   OCMockObject* tab2_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
