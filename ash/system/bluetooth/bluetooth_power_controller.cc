@@ -7,11 +7,17 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 
 namespace ash {
+
+// The delay between bluez started and bluez power initialized. This number is
+// determined empirically: most of the time bluez takes less than 200 ms to
+// initialize power, so taking 1000 ms has enough time buffer for worst cases.
+const int kBluetoothInitializationDelay = 1000;
 
 BluetoothPowerController::BluetoothPowerController() : weak_ptr_factory_(this) {
   device::BluetoothAdapterFactory::GetAdapter(
@@ -160,8 +166,21 @@ void BluetoothPowerController::OnLocalStatePrefServiceInitialized(
 void BluetoothPowerController::AdapterPresentChanged(
     device::BluetoothAdapter* adapter,
     bool present) {
-  if (present)
-    TriggerRunPendingBluetoothTasks();
+  if (present) {
+    // If adapter->IsPresent() has just changed from false to true, this means
+    // that bluez has just started but not yet finished power initialization,
+    // so we should not start any bluetooth tasks until bluez power
+    // initialization is done. Since there is no signal from bluez when that
+    // happens, this adds a bit delay before triggering pending bluetooth tasks.
+    //
+    // TODO(sonnysasaka): Replace this delay hack with a signal from bluez when
+    // it has "initialized" signal in the future (http://crbug.com/765390).
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&BluetoothPowerController::TriggerRunPendingBluetoothTasks,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::TimeDelta::FromMilliseconds(kBluetoothInitializationDelay));
+  }
 }
 
 void BluetoothPowerController::ApplyBluetoothPrimaryUserPref() {
