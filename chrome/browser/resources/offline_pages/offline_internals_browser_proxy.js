@@ -123,14 +123,17 @@ cr.define('offlineInternals', function() {
     getNetworkStatus: function() {},
 
     /**
-     * Schedules the default NWake task.
-     * @return {!Promise} A promise firing when the task has been scheduled.
+     * Schedules the default NWake task.  The returned Promise will reject if
+     *     there is an error while scheduling.
+     * @return {!Promise<string>} A promise firing when the task has been
+     *     scheduled.
      */
     scheduleNwake: function() {},
 
     /**
      * Cancels NWake task.
-     * @return {!Promise} A promise firing when the task has been cancelled.
+     * @return {!Promise} A promise firing when the task has been cancelled. The
+     *     returned Promise will reject if there is an error.
      */
     cancelNwake: function() {},
 

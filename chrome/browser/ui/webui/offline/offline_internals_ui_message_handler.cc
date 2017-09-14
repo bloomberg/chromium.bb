@@ -17,6 +17,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/offline_pages/android/prefetch_background_task_android.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
@@ -31,6 +32,7 @@
 #include "components/offline_pages/core/prefetch/get_operation_request.h"
 #include "components/offline_pages/core/prefetch/prefetch_downloader.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
+#include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "content/public/browser/web_ui.h"
 #include "net/base/network_change_notifier.h"
 
@@ -71,48 +73,6 @@ std::string GetStringFromDeleteRequestResults(
 
 std::string GetStringFromSavePageStatus() {
   return "Available";
-}
-
-std::string GetStringFromPrefetchRequestStatus(
-    offline_pages::PrefetchRequestStatus status) {
-  switch (status) {
-    case offline_pages::PrefetchRequestStatus::SUCCESS:
-      return "Success";
-    case offline_pages::PrefetchRequestStatus::SHOULD_RETRY_WITHOUT_BACKOFF:
-      return "Retry w/out backoff";
-    case offline_pages::PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF:
-      return "Retry w/ backoff";
-    case offline_pages::PrefetchRequestStatus::SHOULD_SUSPEND:
-      return "Suspend";
-    default:
-      NOTREACHED();
-      return "Unknown";
-  }
-}
-
-std::string GetStringRenderPageInfoList(
-    const std::vector<offline_pages::RenderPageInfo>& pages) {
-  std::string str("[\n");
-  bool first = true;
-  for (const auto& page : pages) {
-    if (first)
-      first = false;
-    else
-      str += ",\n";
-    str += base::StringPrintf(
-        "  {\n"
-        "    url: \"%s\",\n"
-        "    redirect_url: \"%s\",\n"
-        "    status: %d,\n"
-        "    body_name: \"%s\",\n"
-        "    body_length: %lld\n"
-        "  }",
-        page.url.c_str(), page.redirect_url.c_str(),
-        static_cast<int>(page.status), page.body_name.c_str(),
-        static_cast<long long>(page.body_length));
-  }
-  str += "\n]";
-  return str;
 }
 
 }  // namespace
@@ -300,8 +260,11 @@ void OfflineInternalsUIMessageHandler::HandleScheduleNwake(
   if (prefetch_service_) {
     prefetch_service_->GetPrefetchBackgroundTaskHandler()
         ->EnsureTaskScheduled();
+    ResolveJavascriptCallback(*callback_id, base::Value("Scheduled."));
+  } else {
+    RejectJavascriptCallback(*callback_id,
+                             base::Value("No prefetch service available."));
   }
-  ResolveJavascriptCallback(*callback_id, base::Value("Scheduled."));
 }
 
 void OfflineInternalsUIMessageHandler::HandleCancelNwake(
@@ -313,9 +276,11 @@ void OfflineInternalsUIMessageHandler::HandleCancelNwake(
   if (prefetch_service_) {
     prefetch_service_->GetPrefetchBackgroundTaskHandler()
         ->CancelBackgroundTask();
+    ResolveJavascriptCallback(*callback_id, base::Value("Cancelled."));
+  } else {
+    RejectJavascriptCallback(*callback_id,
+                             base::Value("No prefetch service available."));
   }
-
-  ResolveJavascriptCallback(*callback_id, base::Value("Cancelled."));
 }
 
 void OfflineInternalsUIMessageHandler::HandleGeneratePageBundle(
@@ -324,18 +289,28 @@ void OfflineInternalsUIMessageHandler::HandleGeneratePageBundle(
   std::string callback_id;
   CHECK(args->GetString(0, &callback_id));
 
+  if (!prefetch_service_) {
+    RejectJavascriptCallback(base::Value(callback_id),
+                             base::Value("No prefetch service available."));
+    return;
+  }
+
   std::string data;
   CHECK(args->GetString(1, &data));
   std::vector<std::string> page_urls = base::SplitStringUsingSubstr(
       data, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  std::vector<offline_pages::PrefetchURL> prefetch_urls;
+  for (auto& page_url : page_urls) {
+    // Creates a dummy prefetch URL with a bogus ID, and using the URL as the
+    // page title.
+    prefetch_urls.push_back(offline_pages::PrefetchURL(
+        "dummy id", GURL(page_url), base::UTF8ToUTF16(page_url)));
+  }
 
-  generate_page_bundle_request_.reset(
-      new offline_pages::GeneratePageBundleRequest(
-          GetUserAgent(), "GCM ID", 1000000, page_urls, chrome::GetChannel(),
-          Profile::FromWebUI(web_ui())->GetRequestContext(),
-          base::Bind(
-              &OfflineInternalsUIMessageHandler::HandlePrefetchRequestCallback,
-              weak_ptr_factory_.GetWeakPtr(), callback_id)));
+  prefetch_service_->GetPrefetchDispatcher()->AddCandidatePrefetchURLs(
+      offline_pages::kSuggestedArticlesNamespace, prefetch_urls);
+  ResolveJavascriptCallback(base::Value(callback_id),
+                            base::Value("Added candidate URLs."));
 }
 
 void OfflineInternalsUIMessageHandler::HandleGetOperation(
@@ -344,16 +319,20 @@ void OfflineInternalsUIMessageHandler::HandleGetOperation(
   std::string callback_id;
   CHECK(args->GetString(0, &callback_id));
 
+  if (!prefetch_service_) {
+    RejectJavascriptCallback(base::Value(callback_id),
+                             base::Value("No prefetch service available."));
+    return;
+  }
+
   std::string name;
   CHECK(args->GetString(1, &name));
   base::TrimWhitespaceASCII(name, base::TRIM_ALL, &name);
 
-  get_operation_request_.reset(new offline_pages::GetOperationRequest(
-      name, chrome::GetChannel(),
-      Profile::FromWebUI(web_ui())->GetRequestContext(),
-      base::Bind(
-          &OfflineInternalsUIMessageHandler::HandlePrefetchRequestCallback,
-          weak_ptr_factory_.GetWeakPtr(), callback_id)));
+  prefetch_service_->GetPrefetchDispatcher()
+      ->GCMOperationCompletedMessageReceived(name);
+  base::Value message("GetOperation will be attempted for any matching pages.");
+  ResolveJavascriptCallback(base::Value(callback_id), message);
 }
 
 void OfflineInternalsUIMessageHandler::HandleDownloadArchive(
@@ -367,17 +346,6 @@ void OfflineInternalsUIMessageHandler::HandleDownloadArchive(
     prefetch_service_->GetPrefetchDownloader()->StartDownload(
         base::GenerateGUID(), name);
   }
-}
-
-void OfflineInternalsUIMessageHandler::HandlePrefetchRequestCallback(
-    std::string callback_id,
-    offline_pages::PrefetchRequestStatus status,
-    const std::string& operation_name,
-    const std::vector<offline_pages::RenderPageInfo>& pages) {
-  ResolveJavascriptCallback(
-      base::Value(callback_id),
-      base::Value(GetStringFromPrefetchRequestStatus(status) + "\n" +
-                  operation_name + "\n" + GetStringRenderPageInfoList(pages)));
 }
 
 void OfflineInternalsUIMessageHandler::HandleSetRecordRequestQueue(
@@ -544,6 +512,10 @@ void OfflineInternalsUIMessageHandler::RegisterMessages() {
       offline_pages::RequestCoordinatorFactory::GetForBrowserContext(profile);
   prefetch_service_ =
       offline_pages::PrefetchServiceFactory::GetForBrowserContext(profile);
+}
+
+void OfflineInternalsUIMessageHandler::OnJavascriptDisallowed() {
+  weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 }  // namespace offline_internals

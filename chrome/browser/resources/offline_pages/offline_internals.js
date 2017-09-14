@@ -160,6 +160,16 @@ cr.define('offlineInternals', function() {
   }
 
   /**
+   * Error callback for prefetch actions.
+   * @param {*} error The error that resulted from the prefetch call.
+   */
+  function prefetchResultError(error) {
+    var errorText = error && error.message ? error.message : error;
+
+    $('prefetch-actions-info').textContent = 'Error: ' + errorText;
+  }
+
+  /**
    * Downloads all the stored page and request queue information into a file.
    * TODO(chili): Create a CSV writer that can abstract out the line joining.
    */
@@ -295,18 +305,24 @@ cr.define('offlineInternals', function() {
       }
     };
     $('schedule-nwake').onclick = function() {
-      browserProxy.scheduleNwake().then(setPrefetchResult);
+      browserProxy.scheduleNwake()
+          .then(setPrefetchResult)
+          .catch(prefetchResultError);
     };
     $('cancel-nwake').onclick = function() {
-      browserProxy.cancelNwake().then(setPrefetchResult);
+      browserProxy.cancelNwake()
+          .then(setPrefetchResult)
+          .catch(prefetchResultError);
     };
     $('generate-page-bundle').onclick = function() {
       browserProxy.generatePageBundle($('generate-urls').value)
-          .then(setPrefetchResult);
+          .then(setPrefetchResult)
+          .catch(prefetchResultError);
     };
     $('get-operation').onclick = function() {
       browserProxy.getOperation($('operation-name').value)
-          .then(setPrefetchResult);
+          .then(setPrefetchResult)
+          .catch(prefetchResultError);
     };
     $('download-archive').onclick = function() {
       browserProxy.downloadArchive($('download-name').value);
