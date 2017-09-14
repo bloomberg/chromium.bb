@@ -5,6 +5,7 @@
 #include "core/editing/SelectionModifier.h"
 
 #include "core/editing/EditingTestBase.h"
+#include "core/editing/VisiblePosition.h"
 
 namespace blink {
 

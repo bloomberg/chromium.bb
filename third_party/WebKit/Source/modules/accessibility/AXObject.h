@@ -30,7 +30,9 @@
 #ifndef AXObject_h
 #define AXObject_h
 
-#include "core/editing/VisiblePosition.h"
+#include "core/dom/Element.h"
+#include "core/editing/Forward.h"
+#include "core/editing/TextAffinity.h"
 #include "core/editing/markers/DocumentMarker.h"
 #include "core/inspector/protocol/Accessibility.h"
 #include "modules/ModulesExport.h"
@@ -38,6 +40,7 @@
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/Color.h"
+#include "platform/weborigin/KURL.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Vector.h"
 
@@ -48,7 +51,6 @@ namespace blink {
 class AccessibleNodeList;
 class AXObject;
 class AXObjectCacheImpl;
-class Element;
 class IntPoint;
 class LayoutObject;
 class LocalFrameView;
@@ -818,9 +820,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual void UpdateAccessibilityRole() {}
 
   // Text metrics. Most of these should be deprecated, needs major cleanup.
-  virtual VisiblePosition VisiblePositionForIndex(int) const {
-    return VisiblePosition();
-  }
+  virtual VisiblePosition VisiblePositionForIndex(int) const;
   int LineForPosition(const VisiblePosition&) const;
   virtual int Index(const VisiblePosition&) const { return -1; }
   virtual void LineBreaks(Vector<int>&) const {}

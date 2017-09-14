@@ -61,6 +61,7 @@
 #include "core/editing/Editor.h"
 #include "core/editing/PlainTextRange.h"
 #include "core/editing/SurroundingText.h"
+#include "core/editing/VisiblePosition.h"
 #include "core/editing/iterators/TextIterator.h"
 #include "core/editing/markers/DocumentMarker.h"
 #include "core/editing/markers/DocumentMarkerController.h"

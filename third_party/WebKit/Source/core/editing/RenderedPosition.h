@@ -32,7 +32,8 @@
 #define RenderedPosition_h
 
 #include "core/CoreExport.h"
-#include "core/editing/VisiblePosition.h"
+#include "core/editing/Forward.h"
+#include "core/editing/TextAffinity.h"
 #include "core/layout/line/InlineBox.h"
 #include "platform/wtf/Allocator.h"
 

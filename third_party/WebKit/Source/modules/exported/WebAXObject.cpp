@@ -35,6 +35,7 @@
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
+#include "core/editing/VisiblePosition.h"
 #include "core/editing/markers/DocumentMarker.h"
 #include "core/exported/WebViewImpl.h"
 #include "core/frame/LocalFrameView.h"

@@ -33,7 +33,6 @@
 #include "core/editing/Position.h"
 #include "core/editing/PositionWithAffinity.h"
 #include "core/editing/TextGranularity.h"
-#include "core/editing/VisiblePosition.h"
 #include "core/events/InputEvent.h"
 #include "platform/text/TextDirection.h"
 #include "platform/wtf/Forward.h"

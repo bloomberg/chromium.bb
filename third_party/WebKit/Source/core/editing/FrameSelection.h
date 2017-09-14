@@ -34,7 +34,6 @@
 #include "core/editing/Forward.h"
 #include "core/editing/SelectionTemplate.h"
 #include "core/editing/SetSelectionOptions.h"
-#include "core/editing/VisiblePosition.h"
 #include "core/layout/ScrollAlignment.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutRect.h"

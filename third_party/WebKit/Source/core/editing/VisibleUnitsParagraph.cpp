@@ -31,6 +31,7 @@
 #include "core/editing/VisibleUnits.h"
 
 #include "core/editing/EditingUtilities.h"
+#include "core/editing/VisiblePosition.h"
 #include "core/layout/LayoutText.h"
 #include "core/layout/api/LayoutItem.h"
 

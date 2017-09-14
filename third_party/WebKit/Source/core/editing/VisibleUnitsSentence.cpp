@@ -30,6 +30,7 @@
 
 #include "core/editing/VisibleUnits.h"
 
+#include "core/editing/VisiblePosition.h"
 #include "platform/text/TextBreakIterator.h"
 
 namespace blink {
