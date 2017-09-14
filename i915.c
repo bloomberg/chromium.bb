@@ -218,7 +218,7 @@ static int i915_align_dimensions(struct bo *bo, uint32_t tiling, uint32_t *strid
 	case DRM_FORMAT_YVU420_ANDROID:
 	case DRM_FORMAT_YVU420:
 		horizontal_alignment *= 2;
-		/* Fall through */
+	/* Fall through */
 	case DRM_FORMAT_NV12:
 		vertical_alignment *= 2;
 		break;
