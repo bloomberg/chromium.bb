@@ -43,7 +43,7 @@ using sandbox::SyscallSets;
 using sandbox::bpf_dsl::Allow;
 using sandbox::bpf_dsl::ResultExpr;
 
-#else
+#else  // BUILDFLAG(USE_SECCOMP_BPF)
 
 // Make sure that seccomp-bpf does not get disabled by mistake. Also make sure
 // that we think twice about this when adding a new architecture.
@@ -51,7 +51,7 @@ using sandbox::bpf_dsl::ResultExpr;
 #error "Seccomp-bpf disabled on supported architecture!"
 #endif  // !defined(ARCH_CPU_ARM64)
 
-#endif  //
+#endif  // BUILDFLAG(USE_SECCOMP_BPF)
 
 namespace content {
 
@@ -59,15 +59,14 @@ namespace content {
 namespace {
 
 // This function takes ownership of |policy|.
-void StartSandboxWithPolicy(sandbox::bpf_dsl::Policy* policy,
+void StartSandboxWithPolicy(std::unique_ptr<sandbox::bpf_dsl::Policy> policy,
                             base::ScopedFD proc_fd) {
   // Starting the sandbox is a one-way operation. The kernel doesn't allow
   // us to unload a sandbox policy after it has been started. Nonetheless,
   // in order to make the use of the "Sandbox" object easier, we allow for
   // the object to be destroyed after the sandbox has been started. Note that
   // doing so does not stop the sandbox.
-  SandboxBPF sandbox(policy);
-
+  SandboxBPF sandbox(std::move(policy));
   sandbox.SetProcFd(std::move(proc_fd));
   CHECK(sandbox.StartSandbox(SandboxBPF::SeccompLevel::SINGLE_THREADED));
 }
@@ -159,16 +158,12 @@ void RunSandboxSanityChecks(const std::string& process_type) {
 }
 
 std::unique_ptr<SandboxBPFBasePolicy> GetGpuProcessSandbox() {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
   if (IsChromeOS() && IsArchitectureArm()) {
-    bool allow_sysv_shm =
-        command_line.HasSwitch(switches::kGpuSandboxAllowSysVShm);
-    return std::unique_ptr<SandboxBPFBasePolicy>(
-        new CrosArmGpuProcessPolicy(allow_sysv_shm));
-  } else {
-    return std::unique_ptr<SandboxBPFBasePolicy>(new GpuProcessPolicy());
+    return std::make_unique<CrosArmGpuProcessPolicy>(
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kGpuSandboxAllowSysVShm));
   }
+  return std::make_unique<GpuProcessPolicy>();
 }
 
 // Initialize the seccomp-bpf sandbox.
@@ -176,31 +171,22 @@ bool StartBPFSandbox(const base::CommandLine& command_line,
                      const std::string& process_type,
                      base::ScopedFD proc_fd) {
   std::unique_ptr<SandboxBPFBasePolicy> policy;
-
   if (process_type == switches::kGpuProcess) {
-    policy.reset(GetGpuProcessSandbox().release());
+    policy = GetGpuProcessSandbox();
   } else if (process_type == switches::kRendererProcess) {
-    policy.reset(new RendererProcessPolicy);
+    policy = std::make_unique<RendererProcessPolicy>();
   } else if (process_type == switches::kPpapiPluginProcess) {
-    policy.reset(new PpapiProcessPolicy);
+    policy = std::make_unique<PpapiProcessPolicy>();
   } else if (process_type == switches::kUtilityProcess) {
-    policy.reset(new UtilityProcessPolicy);
+    policy = std::make_unique<UtilityProcessPolicy>();
   } else {
     NOTREACHED();
-    policy.reset(new AllowAllPolicy);
+    policy = std::make_unique<AllowAllPolicy>();
   }
-
   CHECK(policy->PreSandboxHook());
-  StartSandboxWithPolicy(policy.release(), std::move(proc_fd));
-
+  StartSandboxWithPolicy(std::move(policy), std::move(proc_fd));
   RunSandboxSanityChecks(process_type);
   return true;
-}
-#else  // defined(IN_NACL_HELPER)
-bool StartBPFSandbox(const base::CommandLine& command_line,
-                     const std::string& process_type) {
-  NOTREACHED();
-  return false;
 }
 #endif  // !defined(IN_NACL_HELPER)
 #endif  // !defined(OS_NACL_NONSFI)
@@ -213,24 +199,17 @@ bool StartBPFSandbox(const base::CommandLine& command_line,
 bool SandboxSeccompBPF::IsSeccompBPFDesired() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  if (!command_line.HasSwitch(switches::kNoSandbox) &&
-      !command_line.HasSwitch(switches::kDisableSeccompFilterSandbox)) {
-    return true;
-  } else {
-    return false;
-  }
+  return !command_line.HasSwitch(switches::kNoSandbox) &&
+         !command_line.HasSwitch(switches::kDisableSeccompFilterSandbox);
 }
 
 #if !defined(OS_NACL_NONSFI)
 bool SandboxSeccompBPF::ShouldEnableSeccompBPF(
     const std::string& process_type) {
 #if BUILDFLAG(USE_SECCOMP_BPF)
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (process_type == switches::kGpuProcess)
-    return !command_line.HasSwitch(switches::kDisableGpuSandbox);
-
-  return true;
+  return process_type != switches::kGpuProcess ||
+         !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kDisableGpuSandbox);
 #endif  // USE_SECCOMP_BPF
   return false;
 }
@@ -264,9 +243,7 @@ bool SandboxSeccompBPF::StartSandbox(const std::string& process_type,
       SupportsSandbox()) {
     // If the kernel supports the sandbox, and if the command line says we
     // should enable it, enable it or die.
-    bool started_sandbox =
-        StartBPFSandbox(command_line, process_type, std::move(proc_fd));
-    CHECK(started_sandbox);
+    CHECK(StartBPFSandbox(command_line, process_type, std::move(proc_fd)));
     return true;
   }
 #endif
@@ -280,7 +257,7 @@ bool SandboxSeccompBPF::StartSandboxWithExternalPolicy(
 #if BUILDFLAG(USE_SECCOMP_BPF)
   if (IsSeccompBPFDesired() && SupportsSandbox()) {
     CHECK(policy);
-    StartSandboxWithPolicy(policy.release(), std::move(proc_fd));
+    StartSandboxWithPolicy(std::move(policy), std::move(proc_fd));
     return true;
   }
 #endif  // BUILDFLAG(USE_SECCOMP_BPF)
@@ -291,9 +268,9 @@ bool SandboxSeccompBPF::StartSandboxWithExternalPolicy(
 std::unique_ptr<sandbox::bpf_dsl::Policy>
 SandboxSeccompBPF::GetBaselinePolicy() {
 #if BUILDFLAG(USE_SECCOMP_BPF)
-  return std::unique_ptr<sandbox::bpf_dsl::Policy>(new BaselinePolicy);
+  return std::make_unique<BaselinePolicy>();
 #else
-  return std::unique_ptr<sandbox::bpf_dsl::Policy>();
+  return nullptr;
 #endif  // BUILDFLAG(USE_SECCOMP_BPF)
 }
 #endif  // !defined(OS_NACL_NONSFI)

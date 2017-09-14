@@ -47,9 +47,8 @@ bool SeccompStarterAndroid::StartSandbox() {
         << "Seccomp sandbox";
   }
 
-  SandboxBPF sandbox(policy_.release());
+  SandboxBPF sandbox(std::move(policy_));
   CHECK(sandbox.StartSandbox(SandboxBPF::SeccompLevel::MULTI_THREADED));
-
   status_ = SeccompSandboxStatus::ENGAGED;
   return true;
 #else
@@ -62,21 +61,19 @@ bool SeccompStarterAndroid::IsSupportedBySDK() const {
   if (sdk_int_ < 22) {
     // Seccomp was never available pre-Lollipop.
     return false;
-  } else if (sdk_int_ == 22) {
-    // On Lollipop-MR1, only select Nexus devices have Seccomp available.
-    const char* const kDevices[] = {
-        "deb",   "flo",   "hammerhead", "mako",
-        "manta", "shamu", "sprout",     "volantis",
-    };
-
-    for (auto* device : kDevices) {
-      if (strcmp(device, device_) == 0) {
-        return true;
-      }
-    }
-  } else {
+  }
+  if (sdk_int_ > 22) {
     // On Marshmallow and higher, Seccomp is required by CTS.
     return true;
+  }
+  // On Lollipop-MR1, only select Nexus devices have Seccomp available.
+  const char* const kDevices[] = {
+      "deb",   "flo",   "hammerhead", "mako",
+      "manta", "shamu", "sprout",     "volantis",
+  };
+  for (auto* device : kDevices) {
+    if (strcmp(device, device_) == 0)
+      return true;
   }
 #endif
   return false;

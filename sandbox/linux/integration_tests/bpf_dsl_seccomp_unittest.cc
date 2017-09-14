@@ -116,10 +116,8 @@ SANDBOX_TEST(SandboxBPF, DISABLE_ON_TSAN(VerboseAPITesting)) {
   if (SandboxBPF::SupportsSeccompSandbox(
           SandboxBPF::SeccompLevel::SINGLE_THREADED)) {
     static int counter = 0;
-
-    SandboxBPF sandbox(new VerboseAPITestingPolicy(&counter));
+    SandboxBPF sandbox(std::make_unique<VerboseAPITestingPolicy>(&counter));
     BPF_ASSERT(sandbox.StartSandbox(SandboxBPF::SeccompLevel::SINGLE_THREADED));
-
     BPF_ASSERT_EQ(0, counter);
     BPF_ASSERT_EQ(0, syscall(__NR_uname, 0));
     BPF_ASSERT_EQ(1, counter);
@@ -400,7 +398,7 @@ BPF_TEST_C(SandboxBPF, StackingPolicy, StackingPolicyPartOne) {
 
   // Stack a second sandbox with its own policy. Verify that we can further
   // restrict filters, but we cannot relax existing filters.
-  SandboxBPF sandbox(new StackingPolicyPartTwo());
+  SandboxBPF sandbox(std::make_unique<StackingPolicyPartTwo>());
   BPF_ASSERT(sandbox.StartSandbox(SandboxBPF::SeccompLevel::SINGLE_THREADED));
 
   errno = 0;
@@ -1969,7 +1967,7 @@ SANDBOX_TEST(SandboxBPF, DISABLE_ON_TSAN(SeccompRetTrace)) {
     pid_t my_pid = getpid();
     BPF_ASSERT_NE(-1, ptrace(PTRACE_TRACEME, -1, NULL, NULL));
     BPF_ASSERT_EQ(0, raise(SIGSTOP));
-    SandboxBPF sandbox(new TraceAllPolicy);
+    SandboxBPF sandbox(std::make_unique<TraceAllPolicy>());
     BPF_ASSERT(sandbox.StartSandbox(SandboxBPF::SeccompLevel::SINGLE_THREADED));
 
     // getpid is allowed.
@@ -2168,7 +2166,7 @@ SANDBOX_TEST(SandboxBPF, Tsync) {
   BPF_ASSERT_EQ(0, HANDLE_EINTR(syscall(__NR_nanosleep, &ts, NULL)));
 
   // Engage the sandbox.
-  SandboxBPF sandbox(new BlacklistNanosleepPolicy());
+  SandboxBPF sandbox(std::make_unique<BlacklistNanosleepPolicy>());
   BPF_ASSERT(sandbox.StartSandbox(SandboxBPF::SeccompLevel::MULTI_THREADED));
 
   // This thread should have the filter applied as well.
@@ -2200,7 +2198,7 @@ SANDBOX_DEATH_TEST(
   base::Thread thread("sandbox.linux.StartMultiThreadedAsSingleThreaded");
   BPF_ASSERT(thread.Start());
 
-  SandboxBPF sandbox(new AllowAllPolicy());
+  SandboxBPF sandbox(std::make_unique<AllowAllPolicy>());
   BPF_ASSERT(!sandbox.StartSandbox(SandboxBPF::SeccompLevel::SINGLE_THREADED));
 }
 
