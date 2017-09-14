@@ -96,13 +96,13 @@ class CORE_EXPORT HTMLCanvasElement final
   ~HTMLCanvasElement() override;
 
   // Attributes and functions exposed to script
-  int width() const { return Size().Width(); }
-  int height() const { return Size().Height(); }
+  unsigned width() const { return Size().Width(); }
+  unsigned height() const { return Size().Height(); }
 
   const IntSize& Size() const override { return size_; }
 
-  void setWidth(int, ExceptionState&);
-  void setHeight(int, ExceptionState&);
+  void setWidth(unsigned, ExceptionState&);
+  void setHeight(unsigned, ExceptionState&);
 
   void SetSize(const IntSize& new_size);
 

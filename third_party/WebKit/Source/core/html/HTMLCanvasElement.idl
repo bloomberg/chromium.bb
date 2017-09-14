@@ -31,9 +31,8 @@ interface HTMLCanvasElement : HTMLElement
     // Note: Due to dependecies on modules, getContext is defined in a partial
     // interface in HTMLCanvasElementModule.idl
 
-    // FIXME: width and height should be unsigned long.
-    [RaisesException=Setter, CEReactions] attribute long width;
-    [RaisesException=Setter, CEReactions] attribute long height;
+    [RaisesException=Setter, CEReactions] attribute unsigned long width;
+    [RaisesException=Setter, CEReactions] attribute unsigned long height;
 
     // Note: The arguments argument is variadic in the spec, but not here as
     // only one extra argument is actually used.
