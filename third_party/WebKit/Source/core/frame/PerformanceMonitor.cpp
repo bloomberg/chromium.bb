@@ -26,6 +26,7 @@ namespace blink {
 namespace {
 static const double kLongTaskSubTaskThresholdInSeconds = 0.012;
 static const double kNetworkQuietWindowSeconds = 0.5;
+static const double kNetworkQuietWatchdogSeconds = 2;
 }  // namespace
 
 // static
@@ -70,7 +71,11 @@ PerformanceMonitor* PerformanceMonitor::InstrumentingMonitor(
 }
 
 PerformanceMonitor::PerformanceMonitor(LocalFrame* local_root)
-    : local_root_(local_root) {
+    : local_root_(local_root),
+      network_quiet_timer_(
+          TaskRunnerHelper::Get(TaskType::kUnthrottled, local_root),
+          this,
+          &PerformanceMonitor::NetworkQuietTimerFired) {
   std::fill(std::begin(thresholds_), std::end(thresholds_), 0);
   Platform::Current()->CurrentThread()->AddTaskTimeObserver(this);
   local_root_->GetProbeSink()->addPerformanceMonitor(this);
@@ -107,6 +112,7 @@ void PerformanceMonitor::Shutdown() {
   Platform::Current()->CurrentThread()->RemoveTaskTimeObserver(this);
   local_root_->GetProbeSink()->removePerformanceMonitor(this);
   local_root_ = nullptr;
+  network_quiet_timer_.Stop();
 }
 
 void PerformanceMonitor::UpdateInstrumentation() {
@@ -317,9 +323,13 @@ void PerformanceMonitor::DidLoadResource() {
     network_2_quiet_ = timestamp;
   else if (request_count < 2 && network_2_quiet_ == 0)
     network_2_quiet_ = timestamp;
-
   if (request_count == 0 && network_0_quiet_ >= 0)
     network_0_quiet_ = timestamp;
+
+  if (!network_quiet_timer_.IsActive()) {
+    network_quiet_timer_.StartOneShot(kNetworkQuietWatchdogSeconds,
+                                      BLINK_FROM_HERE);
+  }
 }
 
 void PerformanceMonitor::DomContentLoadedEventFired(LocalFrame* frame) {
@@ -345,14 +355,14 @@ void PerformanceMonitor::WillProcessTask(double start_time) {
   if (network_2_quiet_ > 0 &&
       start_time - network_2_quiet_ > kNetworkQuietWindowSeconds) {
     probe::lifecycleEvent(local_root_->GetDocument(), "networkAlmostIdle",
-                          start_time);
+                          network_2_quiet_);
     network_2_quiet_ = -1;
   }
 
   if (network_0_quiet_ > 0 &&
       start_time - network_0_quiet_ > kNetworkQuietWindowSeconds) {
     probe::lifecycleEvent(local_root_->GetDocument(), "networkIdle",
-                          start_time);
+                          network_0_quiet_);
     network_0_quiet_ = -1;
   }
 
@@ -420,6 +430,13 @@ void PerformanceMonitor::InnerReportGenericViolation(
   for (const auto& it : *client_thresholds) {
     if (it.value < time)
       it.key->ReportGenericViolation(violation, text, time, location.get());
+  }
+}
+
+void PerformanceMonitor::NetworkQuietTimerFired(TimerBase*) {
+  if (network_0_quiet_ > 0 || network_2_quiet_ > 0) {
+    network_quiet_timer_.StartOneShot(kNetworkQuietWatchdogSeconds,
+                                      BLINK_FROM_HERE);
   }
 }
 
