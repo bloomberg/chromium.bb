@@ -32,6 +32,7 @@
 #include "mojo/public/cpp/bindings/pipe_control_message_handler_delegate.h"
 #include "mojo/public/cpp/bindings/pipe_control_message_proxy.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
+#include "mojo/public/cpp/bindings/tracked_scoped_refptr.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -259,7 +260,8 @@ class MOJO_CPP_BINDINGS_EXPORT MultiplexRouter
   // NOTE: It is unsafe to call into this object while holding |lock_|.
   PipeControlMessageProxy control_message_proxy_;
 
-  base::small_map<std::map<InterfaceId, scoped_refptr<InterfaceEndpoint>>, 1>
+  base::small_map<std::map<InterfaceId, TrackedScopedRefPtr<InterfaceEndpoint>>,
+                  1>
       endpoints_;
   uint32_t next_interface_id_value_ = 1;
 
