@@ -13,11 +13,11 @@
 #include "media/base/android_overlay_mojo_factory.h"
 #include "media/base/overlay_info.h"
 #include "media/base/video_decoder.h"
+#include "media/gpu/android/android_video_surface_chooser.h"
+#include "media/gpu/android/avda_codec_allocator.h"
 #include "media/gpu/android/codec_wrapper.h"
 #include "media/gpu/android/device_info.h"
 #include "media/gpu/android/video_frame_factory.h"
-#include "media/gpu/android_video_surface_chooser.h"
-#include "media/gpu/avda_codec_allocator.h"
 #include "media/gpu/media_gpu_export.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 

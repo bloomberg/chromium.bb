@@ -12,12 +12,12 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/gmock_callback_support.h"
 #include "media/base/test_helpers.h"
+#include "media/gpu/android/android_video_surface_chooser_impl.h"
+#include "media/gpu/android/fake_android_video_surface_chooser.h"
 #include "media/gpu/android/fake_codec_allocator.h"
 #include "media/gpu/android/mock_device_info.h"
+#include "media/gpu/android/mock_surface_texture_gl_owner.h"
 #include "media/gpu/android/video_frame_factory.h"
-#include "media/gpu/android_video_surface_chooser_impl.h"
-#include "media/gpu/fake_android_video_surface_chooser.h"
-#include "media/gpu/mock_surface_texture_gl_owner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::InvokeWithoutArgs;

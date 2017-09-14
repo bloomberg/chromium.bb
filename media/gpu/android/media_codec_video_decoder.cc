@@ -15,9 +15,9 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_decoder_config.h"
-#include "media/gpu/android_video_surface_chooser.h"
-#include "media/gpu/avda_codec_allocator.h"
-#include "media/gpu/content_video_view_overlay.h"
+#include "media/gpu/android/android_video_surface_chooser.h"
+#include "media/gpu/android/avda_codec_allocator.h"
+#include "media/gpu/android/content_video_view_overlay.h"
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 #include "media/base/android/extract_sps_and_pps.h"

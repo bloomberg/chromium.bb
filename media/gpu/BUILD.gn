@@ -184,33 +184,33 @@ component("gpu") {
 
   if (is_android) {
     sources += [
+      "android/android_video_decode_accelerator.cc",
+      "android/android_video_decode_accelerator.h",
+      "android/android_video_surface_chooser.h",
+      "android/android_video_surface_chooser_impl.cc",
+      "android/android_video_surface_chooser_impl.h",
+      "android/avda_codec_allocator.cc",
+      "android/avda_codec_allocator.h",
+      "android/avda_codec_image.cc",
+      "android/avda_codec_image.h",
+      "android/avda_picture_buffer_manager.cc",
+      "android/avda_picture_buffer_manager.h",
+      "android/avda_shared_state.cc",
+      "android/avda_shared_state.h",
+      "android/avda_state_provider.h",
+      "android/avda_surface_bundle.cc",
+      "android/avda_surface_bundle.h",
+      "android/content_video_view_overlay.cc",
+      "android/content_video_view_overlay.h",
+      "android/content_video_view_overlay_allocator.cc",
+      "android/content_video_view_overlay_allocator.h",
       "android/device_info.cc",
       "android/device_info.h",
       "android/promotion_hint_aggregator.h",
       "android/promotion_hint_aggregator_impl.cc",
       "android/promotion_hint_aggregator_impl.h",
-      "android_video_decode_accelerator.cc",
-      "android_video_decode_accelerator.h",
-      "android_video_surface_chooser.h",
-      "android_video_surface_chooser_impl.cc",
-      "android_video_surface_chooser_impl.h",
-      "avda_codec_allocator.cc",
-      "avda_codec_allocator.h",
-      "avda_codec_image.cc",
-      "avda_codec_image.h",
-      "avda_picture_buffer_manager.cc",
-      "avda_picture_buffer_manager.h",
-      "avda_shared_state.cc",
-      "avda_shared_state.h",
-      "avda_state_provider.h",
-      "avda_surface_bundle.cc",
-      "avda_surface_bundle.h",
-      "content_video_view_overlay.cc",
-      "content_video_view_overlay.h",
-      "content_video_view_overlay_allocator.cc",
-      "content_video_view_overlay_allocator.h",
-      "surface_texture_gl_owner.cc",
-      "surface_texture_gl_owner.h",
+      "android/surface_texture_gl_owner.cc",
+      "android/surface_texture_gl_owner.h",
     ]
     deps += [
       "//media/mojo:features",
@@ -219,8 +219,8 @@ component("gpu") {
     if (enable_webrtc) {
       deps += [ "//third_party/libyuv" ]
       sources += [
-        "android_video_encode_accelerator.cc",
-        "android_video_encode_accelerator.h",
+        "android/android_video_encode_accelerator.cc",
+        "android/android_video_encode_accelerator.h",
       ]
     }
     if (enable_media_codec_video_decoder) {
@@ -454,20 +454,20 @@ source_set("android_video_decode_accelerator_unittests") {
   if (is_android) {
     testonly = true
     sources = [
+      "android/android_video_decode_accelerator_unittest.cc",
+      "android/android_video_surface_chooser_impl_unittest.cc",
+      "android/avda_codec_allocator_unittest.cc",
+      "android/content_video_view_overlay_allocator_unittest.cc",
+      "android/fake_android_video_surface_chooser.cc",
+      "android/fake_android_video_surface_chooser.h",
       "android/fake_codec_allocator.cc",
       "android/fake_codec_allocator.h",
       "android/mock_device_info.cc",
       "android/mock_device_info.h",
+      "android/mock_surface_texture_gl_owner.cc",
+      "android/mock_surface_texture_gl_owner.h",
       "android/promotion_hint_aggregator_impl_unittest.cc",
-      "android_video_decode_accelerator_unittest.cc",
-      "android_video_surface_chooser_impl_unittest.cc",
-      "avda_codec_allocator_unittest.cc",
-      "content_video_view_overlay_allocator_unittest.cc",
-      "fake_android_video_surface_chooser.cc",
-      "fake_android_video_surface_chooser.h",
-      "mock_surface_texture_gl_owner.cc",
-      "mock_surface_texture_gl_owner.h",
-      "surface_texture_gl_owner_unittest.cc",
+      "android/surface_texture_gl_owner_unittest.cc",
     ]
     if (enable_media_codec_video_decoder) {
       sources += [

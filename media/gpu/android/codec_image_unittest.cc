@@ -11,7 +11,7 @@
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "media/base/android/media_codec_bridge.h"
 #include "media/base/android/mock_media_codec_bridge.h"
-#include "media/gpu/mock_surface_texture_gl_owner.h"
+#include "media/gpu/android/mock_surface_texture_gl_owner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"

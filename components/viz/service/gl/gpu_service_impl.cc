@@ -48,7 +48,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/throw_uncaught_exception.h"
-#include "media/gpu/content_video_view_overlay_allocator.h"
+#include "media/gpu/android/content_video_view_overlay_allocator.h"
 #endif
 
 namespace viz {
