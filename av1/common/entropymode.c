@@ -2244,6 +2244,12 @@ const aom_cdf_prob default_mrc_mask_inter_cdf
     };
 #endif  // CONFIG_MRC_TX
 
+#if CONFIG_INTRABC
+static const aom_cdf_prob default_intrabc_cdf[CDF_SIZE(2)] = {
+  AOM_ICDF(192 * 128), AOM_ICDF(32768), 0,
+};
+#endif  // CONFIG_INTRABC
+
 #define MAX_COLOR_CONTEXT_HASH 8
 // Negative values are invalid
 static const int palette_color_index_context_lookup[MAX_COLOR_CONTEXT_HASH +
@@ -5310,7 +5316,7 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->cfl_alpha_cdf, default_cfl_alpha_cdf);
 #endif
 #if CONFIG_INTRABC
-  fc->intrabc_prob = INTRABC_PROB_DEFAULT;
+  av1_copy(fc->intrabc_cdf, default_intrabc_cdf);
 #endif
 }
 

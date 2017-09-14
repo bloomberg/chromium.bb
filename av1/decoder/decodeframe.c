@@ -4928,11 +4928,6 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 
   if (frame_is_intra_only(cm)) {
     av1_copy(cm->fc->kf_y_cdf, av1_kf_y_mode_cdf);
-#if CONFIG_INTRABC
-    if (cm->allow_screen_content_tools) {
-      av1_diff_update_prob(&r, &fc->intrabc_prob, ACCT_STR);
-    }
-#endif
   } else {
 #if !CONFIG_NEW_MULTISYMBOL
     read_inter_mode_probs(fc, &r);

@@ -213,6 +213,9 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
   av1_cost_tokens(x->switchable_restore_cost, fc->switchable_restore_prob,
                   av1_switchable_restore_tree);
 #endif  // CONFIG_LOOP_RESTORATION
+#if CONFIG_INTRABC
+  av1_cost_tokens_from_cdf(x->intrabc_cost, fc->intrabc_cdf, NULL);
+#endif  // CONFIG_INTRABC
 
   if (!frame_is_intra_only(cm)) {
     for (i = 0; i < NEWMV_MODE_CONTEXTS; ++i) {

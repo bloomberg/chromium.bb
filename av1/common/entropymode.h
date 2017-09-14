@@ -70,10 +70,6 @@ extern "C" {
 
 #define PALETTE_MAX_BLOCK_SIZE (64 * 64)
 
-#if CONFIG_INTRABC
-#define INTRABC_PROB_DEFAULT 192
-#endif  // CONFIG_INTRABC
-
 struct AV1Common;
 
 typedef struct {
@@ -323,7 +319,7 @@ typedef struct frame_contexts {
   nmv_context nmvc[NMV_CONTEXTS];
 #if CONFIG_INTRABC
   nmv_context ndvc;
-  aom_prob intrabc_prob;
+  aom_cdf_prob intrabc_cdf[CDF_SIZE(2)];
 #endif
   int initialized;
 #if CONFIG_EXT_TX

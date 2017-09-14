@@ -9648,7 +9648,6 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
 
   MACROBLOCKD *const xd = &x->e_mbd;
   const TileInfo *tile = &xd->tile;
-  FRAME_CONTEXT *const ec_ctx = xd->tile_ctx;
   MODE_INFO *const mi = xd->mi[0];
   const int mi_row = -xd->mb_to_top_edge / (8 * MI_SIZE);
   const int mi_col = -xd->mb_to_left_edge / (8 * MI_SIZE);
@@ -9768,8 +9767,7 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
     // in MV_COST_WEIGHT is too large. Explore other values.
     int rate_mv = av1_mv_bit_cost(&dv, &dv_ref.as_mv, x->nmvjointcost,
                                   x->mvcost, MV_COST_WEIGHT_SUB);
-    const int rate_mode = av1_cost_bit(ec_ctx->intrabc_prob, 1);
-
+    const int rate_mode = x->intrabc_cost[1];
     RD_STATS rd_stats, rd_stats_uv;
     av1_subtract_plane(x, bsize, 0);
     super_block_yrd(cpi, x, &rd_stats, bsize, INT64_MAX);
