@@ -16,7 +16,7 @@ namespace content {
 class NavigationControllerImpl;
 class InterstitialPageImpl;
 
-// Navigator implementation specific to InterstialPageImpl. It allows only one
+// Navigator implementation specific to InterstitialPageImpl. It allows only one
 // navigation to commit, since interstitial pages are not allowed to navigate.
 class CONTENT_EXPORT InterstitialPageNavigatorImpl : public Navigator {
  public:

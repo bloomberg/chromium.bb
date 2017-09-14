@@ -289,7 +289,7 @@
     You can <ph name="BEGIN_ERROR_LINK">&lt;a href="#" id="report-error-link"&gt;</ph>report a detection problem<ph name="END_ERROR_LINK">&lt;/a&gt;</ph> or, if you understand the risks to your security, <ph name="BEGIN_LINK">&lt;a href="#" id="proceed-link"&gt;</ph>visit this unsafe site<ph name="END_LINK">&lt;/a&gt;</ph>.
   </message>
 
-  <!-- WebView Safe Browsing quiet interstitals medium sized -->
+  <!-- WebView Safe Browsing quiet interstitials medium sized -->
   <message name="IDS_MALWARE_WEBVIEW_HEADING" desc="The heading of the malware interstitial on medium sized Webview.">
     Dangerous content blocked.
   </message>
