@@ -15,13 +15,15 @@ public interface BottomSheetObserver {
     /**
      * A notification that the sheet has been opened, meaning the sheet is any height greater
      * than its peeking state.
+     * @param reason The {@link StateChangeReason} that the sheet was opened.
      */
     void onSheetOpened(@StateChangeReason int reason);
 
     /**
      * A notification that the sheet has closed, meaning the sheet has reached its peeking state.
+     * @param reason The {@link StateChangeReason} that the sheet was closed.
      */
-    void onSheetClosed();
+    void onSheetClosed(@StateChangeReason int reason);
 
     /**
      * A notification that the bottom sheet is no longer being dragged by the user and is instead

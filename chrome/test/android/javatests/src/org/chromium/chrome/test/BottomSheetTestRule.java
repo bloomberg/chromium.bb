@@ -72,7 +72,7 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
         }
 
         @Override
-        public void onSheetClosed() {
+        public void onSheetClosed(@StateChangeReason int reason) {
             mClosedCallbackHelper.notifyCalled();
         }
 

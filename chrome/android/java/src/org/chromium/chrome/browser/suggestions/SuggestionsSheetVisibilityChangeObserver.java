@@ -85,7 +85,7 @@ public abstract class SuggestionsSheetVisibilityChangeObserver
 
     @Override
     @CallSuper
-    public void onSheetClosed() {
+    public void onSheetClosed(@StateChangeReason int reason) {
         onStateChange();
     }
 
