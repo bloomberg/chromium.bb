@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//cc/cc.gni")
-import("//gpu/vulkan/features.gni")
 
 cc_component("cc") {
   sources = [
@@ -439,15 +438,6 @@ cc_component("cc") {
   ]
 
   defines = [ "CC_IMPLEMENTATION=1" ]
-
-  if (enable_vulkan) {
-    sources += [
-      "output/vulkan_renderer.cc",
-      "output/vulkan_renderer.h",
-    ]
-
-    deps += [ "//gpu/vulkan" ]
-  }
 }
 
 cc_static_library("test_support") {
