@@ -36,13 +36,13 @@ PolicyMap::Entry PolicyMap::Entry::DeepCopy() const {
 
 bool PolicyMap::Entry::has_higher_priority_than(
     const PolicyMap::Entry& other) const {
-  if (level == other.level) {
-    if (scope == other.scope) {
-      return source > other.source;
-    }
+  if (level != other.level)
+    return level > other.level;
+
+  if (scope != other.scope)
     return scope > other.scope;
-  }
-  return level > other.level;
+
+  return source > other.source;
 }
 
 bool PolicyMap::Entry::Equals(const PolicyMap::Entry& other) const {
@@ -55,8 +55,7 @@ bool PolicyMap::Entry::Equals(const PolicyMap::Entry& other) const {
                                      other.external_data_fetcher.get());
 }
 
-PolicyMap::PolicyMap() {
-}
+PolicyMap::PolicyMap() {}
 
 PolicyMap::~PolicyMap() {
   Clear();
@@ -136,13 +135,12 @@ void PolicyMap::MergeFrom(const PolicyMap& other) {
   }
 }
 
-void PolicyMap::LoadFrom(
-    const base::DictionaryValue* policies,
-    PolicyLevel level,
-    PolicyScope scope,
-    PolicySource source) {
-  for (base::DictionaryValue::Iterator it(*policies);
-       !it.IsAtEnd(); it.Advance()) {
+void PolicyMap::LoadFrom(const base::DictionaryValue* policies,
+                         PolicyLevel level,
+                         PolicyScope scope,
+                         PolicySource source) {
+  for (base::DictionaryValue::Iterator it(*policies); !it.IsAtEnd();
+       it.Advance()) {
     Set(it.key(), level, scope, source, it.value().CreateDeepCopy(), nullptr);
   }
 }
@@ -169,15 +167,15 @@ void PolicyMap::GetDifferingKeys(const PolicyMap& other,
   }
 
   // Add the remaining entries.
-  for ( ; iter_this != end(); ++iter_this)
-      differing_keys->insert(iter_this->first);
-  for ( ; iter_other != other.end(); ++iter_other)
-      differing_keys->insert(iter_other->first);
+  for (; iter_this != end(); ++iter_this)
+    differing_keys->insert(iter_this->first);
+  for (; iter_other != other.end(); ++iter_other)
+    differing_keys->insert(iter_other->first);
 }
 
 bool PolicyMap::Equals(const PolicyMap& other) const {
   return other.size() == size() &&
-      std::equal(begin(), end(), other.begin(), MapEntryEquals);
+         std::equal(begin(), end(), other.begin(), MapEntryEquals);
 }
 
 bool PolicyMap::empty() const {
