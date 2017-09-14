@@ -12,6 +12,7 @@
 #include "cc/output/layer_tree_frame_sink.h"
 #include "components/exo/layer_tree_frame_sink_holder.h"
 #include "components/exo/surface.h"
+#include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -82,6 +83,10 @@ SurfaceTreeHost::SurfaceTreeHost(const std::string& window_name,
   host_window_->SetName(window_name);
   host_window_->Init(ui::LAYER_SOLID_COLOR);
   host_window_->set_owned_by_parent(false);
+  // The host window is a container of surface tree. It doesn't handle pointer
+  // events.
+  host_window_->SetEventTargetingPolicy(
+      ui::mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
   host_window_->SetEventTargeter(base::MakeUnique<CustomWindowTargeter>(this));
   layer_tree_frame_sink_holder_ = base::MakeUnique<LayerTreeFrameSinkHolder>(
       this, host_window_->CreateLayerTreeFrameSink());
