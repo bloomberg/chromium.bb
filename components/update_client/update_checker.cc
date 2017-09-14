@@ -175,8 +175,10 @@ void UpdateCheckerImpl::UpdateCheckSucceeded(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   const int daynum = results.daystart_elapsed_days;
-  if (daynum != ProtocolParser::kNoDaystart)
+  if (daynum != ProtocolParser::kNoDaystart) {
+    metadata_->SetDateLastActive(ids_checked_, daynum);
     metadata_->SetDateLastRollCall(ids_checked_, daynum);
+  }
   for (const auto& result : results.list) {
     auto entry = result.cohort_attrs.find(ProtocolParser::Result::kCohort);
     if (entry != result.cohort_attrs.end())
