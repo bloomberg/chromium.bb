@@ -48,7 +48,7 @@ class DragControllerTest : public ::testing::Test {
  private:
   void SetUp() override {
     dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
-    performance_ = Performance::Create(&GetFrame());
+    performance_ = Performance::Create(GetDocument().domWindow());
   }
 
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
