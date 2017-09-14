@@ -764,7 +764,7 @@ void InlineTextBoxPainter::PaintDocumentMarkers(
     }
     if (marker.StartOffset() > inline_text_box_.end()) {
       // marker is completely after this run, bail.  A later run will paint it.
-      break;
+      continue;
     }
 
     // marker intersects this run.  Paint it.
