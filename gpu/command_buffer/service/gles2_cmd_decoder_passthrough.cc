@@ -420,6 +420,7 @@ GLES2DecoderPassthroughImpl::GLES2DecoderPassthroughImpl(
       has_robustness_extension_(false),
       context_lost_(false),
       reset_by_robustness_extension_(false),
+      lose_context_when_out_of_memory_(false),
       weak_ptr_factory_(this) {
   DCHECK(client);
   DCHECK(group);
@@ -640,6 +641,8 @@ bool GLES2DecoderPassthroughImpl::Initialize(
 
   has_robustness_extension_ = feature_info_->feature_flags().khr_robustness ||
                               feature_info_->feature_flags().ext_robustness;
+  lose_context_when_out_of_memory_ =
+      attrib_helper.lose_context_when_out_of_memory;
 
   glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_2d_texture_size_);
 
@@ -1530,9 +1533,16 @@ bool GLES2DecoderPassthroughImpl::FlushErrors() {
     had_error = true;
 
     // Check for context loss on out-of-memory errors
-    if (error == GL_OUT_OF_MEMORY && !WasContextLost() && CheckResetStatus()) {
-      MarkContextLost(error::kOutOfMemory);
-      group_->LoseContexts(error::kUnknown);
+    if (error == GL_OUT_OF_MEMORY && !WasContextLost() &&
+        lose_context_when_out_of_memory_) {
+      error::ContextLostReason other = error::kOutOfMemory;
+      if (CheckResetStatus()) {
+        other = error::kUnknown;
+      } else {
+        // Need to lose current context before broadcasting!
+        MarkContextLost(error::kOutOfMemory);
+      }
+      group_->LoseContexts(other);
       break;
     }
 

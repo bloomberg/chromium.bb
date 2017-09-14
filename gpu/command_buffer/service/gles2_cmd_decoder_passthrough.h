@@ -561,6 +561,7 @@ class GPU_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
   bool has_robustness_extension_;
   bool context_lost_;
   bool reset_by_robustness_extension_;
+  bool lose_context_when_out_of_memory_;
 
   // Cache of scratch memory
   std::vector<uint8_t> scratch_memory_;
