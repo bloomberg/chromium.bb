@@ -111,6 +111,9 @@ class {{api_classname}} : public CSSPropertyAPI {
     return RuntimeEnabledFeatures::{{property.runtime_flag}}Enabled();
   }
   {% endif %}
+  {% if not property.affected_by_all %}
+  bool IsAffectedByAll() const override { return false; }
+  {% endif %}
 };
 
 }  // namespace blink

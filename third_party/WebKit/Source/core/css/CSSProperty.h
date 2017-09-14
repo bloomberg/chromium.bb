@@ -94,7 +94,6 @@ class CSSProperty {
   static CSSPropertyID ResolveDirectionAwareProperty(CSSPropertyID,
                                                      TextDirection,
                                                      WritingMode);
-  static bool IsAffectedByAllProperty(CSSPropertyID);
 
   static void FilterEnabledCSSPropertiesIntoVector(const CSSPropertyID*,
                                                    size_t length,

@@ -191,6 +191,17 @@
       valid_type: "bool",
     },
 
+    // - affected_by_all
+    // The affected_by_all flag indicates whether a change to the CSS property
+    // "all" affects this property.
+    // c.f. http://dev.w3.org/csswg/css-cascade/#all-shorthand
+    // Descriptors (is_property: false) are never affected by changes to the
+    // all property.
+    affected_by_all: {
+      default: true,
+      valid_type: "bool",
+    },
+
     // The remaining arguments are used for the StyleBuilder and allow us to
     // succinctly describe how to apply properties. When default handlers are not
     // sufficient, we should prefer to use converter, and failing that define
@@ -416,7 +427,8 @@
     },
     {
       name: "direction",
-      api_class: "CSSPropertyAPIInherited",
+      api_class: true,
+      affected_by_all: false,
       custom_value: true,
       type_name: "TextDirection",
       inherited: true,
@@ -2867,6 +2879,8 @@
     },
     {
       name: "unicode-bidi",
+      api_class: true,
+      affected_by_all: false,
       include_paths: ["platform/text/UnicodeBidi.h"],
       default_value: "normal",
       field_template: "keyword",
@@ -3764,6 +3778,8 @@
 
     {
       name: "all",
+      api_class: true,
+      affected_by_all: false,
       builder_skip: true,
     },
     {

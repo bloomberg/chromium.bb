@@ -1492,7 +1492,8 @@ void StyleResolver::ApplyAllProperty(
     // c.f. http://dev.w3.org/csswg/css-cascade/#all-shorthand
     // We skip applyProperty when a given property is unicode-bidi or
     // direction.
-    if (!CSSProperty::IsAffectedByAllProperty(property_id))
+    if (!CSSPropertyAPI::Get(resolveCSSPropertyID(property_id))
+             .IsAffectedByAll())
       continue;
 
     if (!IsPropertyInWhitelist(property_whitelist_type, property_id,
