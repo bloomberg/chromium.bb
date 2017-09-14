@@ -208,10 +208,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_STREAM_API
 #endif
 
-#ifndef SK_SUPPORT_LEGACY_SLOW_SMALL_BLUR
-#define SK_SUPPORT_LEGACY_SLOW_SMALL_BLUR
-#endif
-
 #ifndef SK_DISABLE_DEFERRED_PROXIES
 #define SK_DISABLE_DEFERRED_PROXIES
 #endif
