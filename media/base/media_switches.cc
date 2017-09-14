@@ -148,6 +148,12 @@ const char kMSEVideoBufferSizeLimit[] = "mse-video-buffer-size-limit";
 const char kIgnoreAutoplayRestrictionsForTests[] =
     "ignore-autoplay-restrictions";
 
+// Specifies the path to the Clear Key CDM for testing, which is necessary to
+// support External Clear Key key system when library CDM is enabled. Note that
+// External Clear Key key system support is also controlled by feature
+// kExternalClearKeyForTesting.
+const char kClearKeyCdmPathForTesting[] = "clear-key-cdm-path-for-testing";
+
 #if !defined(OS_ANDROID)
 // Turns on the internal media session backend. This should be used by embedders
 // that want to control the media playback with the media session interfaces.
@@ -166,7 +172,7 @@ const char kNoUserGestureRequiredPolicy[] = "no-user-gesture-required";
 // Autoplay policy to require a user gesture in order to play.
 const char kUserGestureRequiredPolicy[] = "user-gesture-required";
 
-// Autoplay policy to require a user gesture in ordor to play for cross origin
+// Autoplay policy to require a user gesture in order to play for cross origin
 // iframes.
 const char kUserGestureRequiredForCrossOriginPolicy[] =
     "user-gesture-required-for-cross-origin";

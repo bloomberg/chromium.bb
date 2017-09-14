@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEDIA_PEPPER_CDM_TEST_HELPER_H_
-#define CHROME_BROWSER_MEDIA_PEPPER_CDM_TEST_HELPER_H_
+#ifndef CHROME_BROWSER_MEDIA_LIBRARY_CDM_TEST_HELPER_H_
+#define CHROME_BROWSER_MEDIA_LIBRARY_CDM_TEST_HELPER_H_
 
 #include <string>
 
@@ -12,6 +12,14 @@
 namespace base {
 class CommandLine;
 }
+
+// Registers external clear key CDM in |command_line|.
+void RegisterExternalClearKey(base::CommandLine* command_line,
+                              bool expect_cdm_exists = true);
+
+bool IsLibraryCdmRegistered(const std::string& cdm_type);
+
+// TODO(crbug.com/403462): Remove the following after pepper CDM is deprecated.
 
 // Returns the path a pepper CDM adapter.
 base::FilePath GetPepperCdmPath(const std::string& adapter_base_dir,
@@ -39,4 +47,4 @@ void RegisterPepperCdm(base::CommandLine* command_line,
 // Returns whether a pepper CDM with |mime_type| is registered.
 bool IsPepperCdmRegistered(const std::string& mime_type);
 
-#endif  // CHROME_BROWSER_MEDIA_PEPPER_CDM_TEST_HELPER_H_
+#endif  // CHROME_BROWSER_MEDIA_LIBRARY_CDM_TEST_HELPER_H_

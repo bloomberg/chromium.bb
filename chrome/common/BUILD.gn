@@ -475,6 +475,7 @@ static_library("common") {
       "widevine_cdm_constants.cc",
       "widevine_cdm_constants.h",
     ]
+    public_deps += [ "//media/cdm:cdm_paths" ]
   }
   if (!enable_webrtc) {
     sources -= [ "media/webrtc_logging_messages.h" ]

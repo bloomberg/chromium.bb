@@ -31,7 +31,7 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-#include "chrome/browser/media/pepper_cdm_test_helper.h"
+#include "chrome/browser/media/library_cdm_test_helper.h"
 #include "media/cdm/cdm_paths.h"
 #endif
 
@@ -283,6 +283,9 @@ class EncryptedMediaSupportedTypesExternalClearKeyTest
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EncryptedMediaSupportedTypesTest::SetUpCommandLine(command_line);
+    // TODO(crbug.com/764143): Replace RegisterPepperCdm() with
+    // RegisterExternalClearKey() after we migrate key system support query to
+    // use CdmRegistry.
     RegisterPepperCdm(command_line, media::kClearKeyCdmBaseDirectory,
                       media::kClearKeyCdmAdapterFileName,
                       media::kClearKeyCdmDisplayName,
