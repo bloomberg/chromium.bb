@@ -54,7 +54,11 @@ class MakeElementTypeHelpersWriter(json5_generator.Writer):
             (self.namespace + "ElementTypeHelpers.cpp"): self.generate_helper_implementation,
         }
 
+        base_element_header = 'core/%s/%s_element.h' % (self.namespace.lower(), self.namespace.lower())
+        if not self.snake_case_source_files:
+            base_element_header = 'core/%s/%sElement.h' % (self.namespace.lower(), self.namespace)
         self._template_context = {
+            'base_element_header': base_element_header,
             'input_files': self._input_files,
             'namespace': self.namespace,
             'tags': self.json5_file.name_dictionaries,
