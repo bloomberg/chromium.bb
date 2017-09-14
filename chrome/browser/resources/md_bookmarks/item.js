@@ -212,4 +212,10 @@ Polymer({
     this.$.icon.className = url ? 'website-icon' : 'folder-icon';
     this.$.icon.style.backgroundImage = url ? cr.icon.getFavicon(url) : null;
   },
+
+  /** @private */
+  getButtonAriaLabel_: function() {
+    return loadTimeData.getStringF(
+        'moreActionsButtonAxLabel', this.item_.title);
+  }
 });

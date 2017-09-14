@@ -83,7 +83,7 @@
         on-tap="selectFolder_"
         on-dblclick="toggleFolder_"
         on-contextmenu="onContextMenu_"
-        tabindex$="[[getTabIndex_(isSelectedFolder_)]]"
+        tabindex$="[[getTabIndex_(selectedFolder_, itemId)]]"
         hidden="[[isRootFolder_(depth)]]"
         role="treeitem">
       <template is="dom-if" if="[[hasChildFolder_]]">
@@ -92,7 +92,7 @@
             on-tap="toggleFolder_"
             on-mousedown="preventDefault_"
             tabindex="-1"
-            aria-hidden="true">
+            aria-label$="[[getButtonAriaLabel_(isOpen, item_)]]">
           <iron-icon icon="cr:arrow-drop-down" is-open$="[[isOpen]]">
           </iron-icon>
         </button>
