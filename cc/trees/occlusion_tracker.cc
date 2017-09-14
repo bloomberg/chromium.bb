@@ -215,25 +215,20 @@ static void ReduceOcclusionBelowSurface(
   if (surface_rect.IsEmpty())
     return;
 
-  gfx::Rect affected_area_in_target =
+  gfx::Rect target_rect =
       MathUtil::MapEnclosingClippedRect(surface_transform, surface_rect);
   if (contributing_surface->is_clipped()) {
-    affected_area_in_target.Intersect(contributing_surface->clip_rect());
+    target_rect.Intersect(contributing_surface->clip_rect());
   }
-  if (affected_area_in_target.IsEmpty())
+  if (target_rect.IsEmpty())
     return;
 
-  // The filter's bounds for asymmetric filters (ex: drop shadow) are
-  // relative to the target surface, which moves the pixels from outside of the
-  // clip to the filtered surface. As a result, |affected_area| needs to expand.
-  // Since we are concerned with the target surface, we need to swap the outsets
-  // before applying them to the filtered surface bounds.
-  int outset_top, outset_right, outset_bottom, outset_left;
-  contributing_surface->BackgroundFilters().GetOutsets(
-      &outset_bottom, &outset_left, &outset_top, &outset_right);
+  gfx::Rect affected_area_in_target =
+      contributing_surface->BackgroundFilters().MapRectReverse(target_rect,
+                                                               SkMatrix::I());
+  // Unite target_rect because we only care about positive outsets.
+  affected_area_in_target.Union(target_rect);
 
-  affected_area_in_target.Inset(-outset_left, -outset_top, -outset_right,
-                                -outset_bottom);
   SimpleEnclosedRegion affected_occlusion = *occlusion_from_inside_target;
   affected_occlusion.Intersect(affected_area_in_target);
 
@@ -246,15 +241,20 @@ static void ReduceOcclusionBelowSurface(
     // The left outset of the filters moves pixels on the right side of
     // the occlusion_rect into it, shrinking its right edge.
     int shrink_left =
-        occlusion_rect.x() == affected_area_in_target.x() ? 0 : outset_right;
+        occlusion_rect.x() == affected_area_in_target.x()
+            ? 0
+            : affected_area_in_target.right() - target_rect.right();
     int shrink_top =
-        occlusion_rect.y() == affected_area_in_target.y() ? 0 : outset_bottom;
-    int shrink_right =
-        occlusion_rect.right() == affected_area_in_target.right() ?
-        0 : outset_left;
+        occlusion_rect.y() == affected_area_in_target.y()
+            ? 0
+            : affected_area_in_target.bottom() - target_rect.bottom();
+    int shrink_right = occlusion_rect.right() == affected_area_in_target.right()
+                           ? 0
+                           : target_rect.x() - affected_area_in_target.x();
     int shrink_bottom =
-        occlusion_rect.bottom() == affected_area_in_target.bottom() ?
-        0 : outset_top;
+        occlusion_rect.bottom() == affected_area_in_target.bottom()
+            ? 0
+            : target_rect.y() - affected_area_in_target.y();
 
     occlusion_rect.Inset(shrink_left, shrink_top, shrink_right, shrink_bottom);
 
