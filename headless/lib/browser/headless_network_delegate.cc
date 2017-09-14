@@ -75,34 +75,16 @@ void HeadlessNetworkDelegate::OnCompleted(net::URLRequest* request,
   if (!headless_browser_context_)
     return;
 
-  if (net_error != net::OK) {
-    headless_browser_context_->NotifyUrlRequestFailed(request, net_error);
-    return;
-  }
-
-  if (request->response_info().network_accessed || request->was_cached() ||
-      request->GetResponseCode() != 200 || request->GetRawBodyBytes() > 0) {
-    return;
-  }
-
   const content::ResourceRequestInfo* resource_request_info =
       content::ResourceRequestInfo::ForRequest(request);
   if (!resource_request_info)
     return;
 
-  content::ResourceType resource_type =
-      resource_request_info->GetResourceType();
-
-  if (resource_type != content::RESOURCE_TYPE_MAIN_FRAME &&
-      resource_type != content::RESOURCE_TYPE_SUB_FRAME) {
-    return;
+  bool canceled_by_devtools = resource_request_info->CanceledByDevTools();
+  if (canceled_by_devtools || net_error != net::OK) {
+    headless_browser_context_->NotifyUrlRequestFailed(request, net_error,
+                                                      canceled_by_devtools);
   }
-
-  // The |request| was for a navigation where an empty response was served but
-  // the network wasn't accessed and it wasn't cached, so we can be reasonably
-  // certain that DevTools canceled the associated navigation.  When it does so
-  // an empty resource is served.
-  headless_browser_context_->NotifyUrlRequestFailed(request, net::ERR_ABORTED);
 }
 
 void HeadlessNetworkDelegate::OnURLRequestDestroyed(net::URLRequest* request) {}

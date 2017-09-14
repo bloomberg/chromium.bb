@@ -185,6 +185,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
       context_(context),
       report_raw_headers_(report_raw_headers),
       is_async_(is_async),
+      canceled_by_devtools_(false),
       previews_state_(previews_state),
       body_(body),
       initiated_in_secure_context_(initiated_in_secure_context) {}
@@ -321,6 +322,10 @@ bool ResourceRequestInfoImpl::ShouldReportRawHeaders() const {
 
 NavigationUIData* ResourceRequestInfoImpl::GetNavigationUIData() const {
   return navigation_ui_data_.get();
+}
+
+bool ResourceRequestInfoImpl::CanceledByDevTools() const {
+  return canceled_by_devtools_;
 }
 
 void ResourceRequestInfoImpl::AssociateWithRequest(net::URLRequest* request) {

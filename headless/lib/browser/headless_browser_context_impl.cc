@@ -371,10 +371,11 @@ void HeadlessBrowserContextImpl::NotifyChildContentsCreated(
 
 void HeadlessBrowserContextImpl::NotifyUrlRequestFailed(
     net::URLRequest* request,
-    int net_error) {
+    int net_error,
+    bool canceled_by_devtools) {
   base::AutoLock lock(observers_lock_);
   for (auto& observer : observers_)
-    observer.UrlRequestFailed(request, net_error);
+    observer.UrlRequestFailed(request, net_error, canceled_by_devtools);
 }
 
 HeadlessBrowserContext::Builder::Builder(HeadlessBrowserImpl* browser)

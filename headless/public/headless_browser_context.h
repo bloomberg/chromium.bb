@@ -84,9 +84,11 @@ class HEADLESS_EXPORT HeadlessBrowserContext::Observer {
   virtual void OnChildContentsCreated(HeadlessWebContents* parent,
                                       HeadlessWebContents* child) {}
 
-  // Indicates that a network request failed. This will be delivered on the IO
-  // thread.
-  virtual void UrlRequestFailed(net::URLRequest* request, int net_error) {}
+  // Indicates that a network request failed or was canceled. This will be
+  // delivered on the IO thread.
+  virtual void UrlRequestFailed(net::URLRequest* request,
+                                int net_error,
+                                bool canceled_by_devtools) {}
 
   // Indicates the HeadlessBrowserContext is about to be deleted.
   virtual void OnHeadlessBrowserContextDestruct() {}

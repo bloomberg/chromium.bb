@@ -176,6 +176,9 @@ class ResourceRequestInfo {
   // UI thread at the beginning of navigation.
   virtual NavigationUIData* GetNavigationUIData() const = 0;
 
+  // Whether this request was canceled by DevTools.
+  virtual bool CanceledByDevTools() const = 0;
+
  protected:
   virtual ~ResourceRequestInfo() {}
 };
