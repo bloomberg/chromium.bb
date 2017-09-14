@@ -203,3 +203,8 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileTapHandler) {
   RunTest(base::FilePath(
       FILE_PATH_LITERAL("foreground/js/ui/file_tap_handler_unittest.html")));
 }
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileListSelectionModelTest) {
+  RunTest(base::FilePath(FILE_PATH_LITERAL(
+      "foreground/js/ui/file_list_selection_model_unittest.html")));
+}
