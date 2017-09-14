@@ -331,8 +331,9 @@ void GetSigtrampRange(uintptr_t* start, uintptr_t* end) {
   unw_proc_info_t info;
 
   unw_getcontext(&context);
-  // Set the context's RIP to the beginning of sigtramp.
-  context.data[16] = address;
+  // Set the context's RIP to the beginning of sigtramp,
+  // +1 byte to work around a bug in 10.11 (crbug.com/764468).
+  context.data[16] = address + 1;
   unw_init_local(&cursor, &context);
   unw_get_proc_info(&cursor, &info);
 
