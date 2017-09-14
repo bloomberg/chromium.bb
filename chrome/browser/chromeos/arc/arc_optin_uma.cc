@@ -30,7 +30,8 @@ void UpdateOptInCancelUMA(OptInCancelReason reason) {
 }
 
 void UpdateEnabledStateUMA(bool enabled) {
-  UMA_HISTOGRAM_BOOLEAN("Arc.State", enabled);
+  // Equivalent to UMA_HISTOGRAM_BOOLEAN with the stability flag set.
+  UMA_STABILITY_HISTOGRAM_ENUMERATION("Arc.State", enabled ? 1 : 0, 2);
 }
 
 void UpdateOptInFlowResultUMA(OptInFlowResult result) {
