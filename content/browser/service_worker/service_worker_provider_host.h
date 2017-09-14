@@ -22,7 +22,6 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_container.mojom.h"
-#include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_provider_host_info.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/request_context_frame_type.h"
@@ -44,7 +43,7 @@ class ServiceWorkerContextCore;
 class ServiceWorkerDispatcherHost;
 class ServiceWorkerRequestHandler;
 class ServiceWorkerVersion;
-class BrowserSideServiceWorkerEventDispatcher;
+class BrowserSideControllerServiceWorker;
 class WebContents;
 
 // This class is the browser-process representation of a service worker
@@ -395,6 +394,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void GetRegistrations(GetRegistrationsCallback callback) override;
   void GetRegistrationForReady(
       GetRegistrationForReadyCallback callback) override;
+  void GetControllerServiceWorker(
+      mojom::ControllerServiceWorkerRequest controller_request) override;
 
   // Callback for ServiceWorkerContextCore::RegisterServiceWorker().
   void RegistrationComplete(RegisterCallback callback,
@@ -466,8 +467,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   //    been run.
   std::unique_ptr<GetRegistrationForReadyCallback> get_ready_callback_;
   scoped_refptr<ServiceWorkerVersion> controller_;
-  std::unique_ptr<BrowserSideServiceWorkerEventDispatcher>
-      controller_event_dispatcher_;
+  std::unique_ptr<BrowserSideControllerServiceWorker>
+      controller_service_worker_;
 
   scoped_refptr<ServiceWorkerVersion> running_hosted_version_;
   base::WeakPtr<ServiceWorkerContextCore> context_;

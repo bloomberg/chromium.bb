@@ -13,7 +13,6 @@
 #include "content/child/service_worker/service_worker_dispatcher.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_container.mojom.h"
-#include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/child/child_url_loader_factory_getter.h"
@@ -101,10 +100,8 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
 
   // For service worker clients. The controller for
   // ServiceWorkerContainer#controller.
-  void SetController(
-      std::unique_ptr<ServiceWorkerHandleReference> controller,
-      const std::set<uint32_t>& used_features,
-      mojom::ServiceWorkerEventDispatcherPtrInfo event_dispatcher_ptr_info);
+  void SetController(std::unique_ptr<ServiceWorkerHandleReference> controller,
+                     const std::set<uint32_t>& used_features);
   ServiceWorkerHandleReference* controller();
 
   // S13nServiceWorker:
@@ -136,10 +133,11 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // occur and ensuring the Clients API doesn't return the client).
   void OnNetworkProviderDestroyed();
 
-  // Only for clients that are Documents, see comments of |container_host_|.
   // Gets the mojom::ServiceWorkerContainerHost* for sending requests to
   // browser-side ServiceWorkerProviderHost. May be nullptr if
   // OnNetworkProviderDestroyed() has already been called.
+  // Currently this can be called only for clients that are Documents,
+  // see comments of |container_host_|.
   mojom::ServiceWorkerContainerHost* container_host() const;
 
  private:
@@ -165,12 +163,15 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // connection to the content::ServiceWorkerProviderHost in the browser process
   // alive.
   mojo::AssociatedBinding<mojom::ServiceWorkerContainer> binding_;
-  // The |container_host_| interface which implements functions for
-  // navigator.serviceWorker. Can only be used if |this| is a provider for a
-  // Document, since currently navigator.serviceWorker is only implemented for
-  // Document (https://crbug.com/371690). For other providers, |container_host_|
-  // is just for keeping alive the corresponding browser-side
-  // ServiceWorkerProviderHost instance.
+
+  // The |container_host_| interface represents the connection to the
+  // browser-side ServiceWorkerProviderHost, whose lifetime is bound to
+  // |container_host_| via the Mojo connection.
+  // The |container_host_| interface also implements functions for
+  // navigator.serviceWorker, but all the methods that correspond to
+  // navigator.serviceWorker.* can be used only if |this| is a provider
+  // for a Document, as navigator.serviceWorker is currently only implemented
+  // for Document (https://crbug.com/371690).
   // Note: Currently this is always bound on main thread.
   mojom::ServiceWorkerContainerHostAssociatedPtr container_host_;
 

@@ -4,6 +4,7 @@
 
 module content.mojom;
 
+import "content/common/service_worker/controller_service_worker.mojom";
 import "content/common/service_worker/service_worker_types.mojom";
 import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_error_type.mojom";
 import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom";
@@ -53,8 +54,16 @@ interface ServiceWorkerContainerHost {
     => (blink.mojom.ServiceWorkerRegistrationObjectInfo? registration,
         ServiceWorkerVersionAttributes? attributes);
 
-  // TODO(leonhsl): implement this interface.
-  // GetControllerServiceWorker();
+  // S13nServiceWorker:
+  // Gets a Mojo end point to the controller ServiceWorker. This may start a
+  // service worker instance in a renderer process if the corresponding
+  // instance is not alive.
+  // This method must be called only by the controllees.
+  // If the browser fails to start the service worker it is propagated as a
+  // connection error of the returned pipe. The detailed error reasons are not
+  // reported to the controllees, but the browser process is responsible for
+  // properly handling the failure and recording the reasons.
+  GetControllerServiceWorker(ControllerServiceWorker& controller);
 };
 
 // mojom::ServiceWorkerContainer is a renderer-side interface.
