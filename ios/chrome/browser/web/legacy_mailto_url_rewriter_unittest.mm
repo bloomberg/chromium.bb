@@ -56,6 +56,8 @@ TEST_F(LegacyMailtoURLRewriterTest, TestStandardInstance) {
                               : [LegacyMailtoURLRewriter systemMailApp];
     [rewriter setDefaultHandlerID:appStoreID];
     EXPECT_NSEQ(expectedDefaultAppID, [rewriter defaultHandlerID]);
+    MailtoHandler* foundHandler = [rewriter defaultHandlerByID:appStoreID];
+    EXPECT_NSEQ(handler, foundHandler);
   }
 }
 

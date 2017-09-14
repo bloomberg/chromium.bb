@@ -48,6 +48,10 @@ class GURL;
 // if a default has not been set.
 - (NSString*)defaultHandlerName;
 
+// Returns the mailto:// handler app corresponding to |handlerID|. Returns nil
+// if there is no handler corresponding to |handlerID|.
+- (MailtoHandler*)defaultHandlerByID:(NSString*)handlerID;
+
 // Rewrites |URL| into a new URL that can be "opened" to launch the Mail
 // client app. May return nil if |URL| is not a mailto: URL, a mail client
 // app has not been selected, or there are no Mail client app available.
