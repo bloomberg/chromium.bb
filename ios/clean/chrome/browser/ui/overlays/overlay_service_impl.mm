@@ -82,6 +82,23 @@ void OverlayServiceImpl::RemoveObserver(OverlayServiceObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void OverlayServiceImpl::PauseServiceForBrowser(Browser* browser) {
+  OverlayScheduler* scheduler = OverlayScheduler::FromBrowser(browser);
+  if (scheduler)
+    scheduler->SetPaused(true);
+}
+
+void OverlayServiceImpl::ResumeServiceForBrowser(Browser* browser) {
+  OverlayScheduler* scheduler = OverlayScheduler::FromBrowser(browser);
+  if (scheduler)
+    scheduler->SetPaused(false);
+}
+
+bool OverlayServiceImpl::IsPausedForBrowser(Browser* browser) const {
+  OverlayScheduler* scheduler = OverlayScheduler::FromBrowser(browser);
+  return scheduler && scheduler->paused();
+}
+
 bool OverlayServiceImpl::IsBrowserShowingOverlay(Browser* browser) const {
   if (browser_list_->GetIndexOfBrowser(browser) == BrowserList::kInvalidIndex)
     return false;

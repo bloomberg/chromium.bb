@@ -31,6 +31,11 @@ class OverlayService : public KeyedService {
   virtual void AddObserver(OverlayServiceObserver* observer) = 0;
   virtual void RemoveObserver(OverlayServiceObserver* observer) = 0;
 
+  // The OverlayService can be paused for a particular Browser.
+  virtual void PauseServiceForBrowser(Browser* browser) = 0;
+  virtual void ResumeServiceForBrowser(Browser* browser) = 0;
+  virtual bool IsPausedForBrowser(Browser* browser) const = 0;
+
   // Whether an overlay is currently displayed for |browser|.  This will return
   // true for both WebState-specific or Browser-level overlays.
   virtual bool IsBrowserShowingOverlay(Browser* browser) const = 0;
