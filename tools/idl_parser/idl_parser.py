@@ -1054,7 +1054,7 @@ class IDLParser(object):
     p[0] = self.BuildNamed('StringType', p, 1)
 
   def p_RecordType(self, p):
-    """RecordType : RECORD '<' StringType ',' Type '>'"""
+    """RecordType : RECORD '<' StringType ',' TypeWithExtendedAttributes '>'"""
     p[0] = self.BuildProduction('Record', p, 2, ListFromConcat(p[3], p[5]))
 
   # Error recovery for RecordType.
