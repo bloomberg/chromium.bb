@@ -344,6 +344,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<InvalidationsUI>;
   if (url.host_piece() == chrome::kChromeUILocalStateHost)
     return &NewWebUI<LocalStateUI>;
+  if (url.host_piece() == chrome::kChromeUIMemoryInternalsHost)
+    return &NewWebUI<MemoryInternalsUI>;
   if (url.host_piece() == chrome::kChromeUINetExportHost)
     return &NewWebUI<NetExportUI>;
   if (url.host_piece() == chrome::kChromeUINetInternalsHost)
@@ -414,8 +416,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   // Identity API is not available on Android.
   if (url.host_piece() == chrome::kChromeUIIdentityInternalsHost)
     return &NewWebUI<IdentityInternalsUI>;
-  if (url.host_piece() == chrome::kChromeUIMemoryInternalsHost)
-    return &NewWebUI<MemoryInternalsUI>;
   if (url.host_piece() == chrome::kChromeUINewTabHost)
     return &NewWebUI<NewTabUI>;
   // Settings are implemented with native UI elements on Android.

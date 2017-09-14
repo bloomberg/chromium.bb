@@ -183,7 +183,7 @@ void MemoryInternalsDOMHandler::HandleDumpProcess(const base::ListValue* args) {
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   base::FilePath output_path = user_data_dir.Append(default_file);
   profiling::ProfilingProcessHost::GetInstance()->RequestProcessDump(
-      pid, output_path, base::OnceClosure());
+      pid, std::move(output_path), base::OnceClosure());
   (void)web_ui_;  // Avoid warning about not using private web_ui_ member.
 #else
   if (select_file_dialog_)

@@ -81,7 +81,7 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   // Sends a message to the profiling process that it dump the given process'
   // memory data to the given file.
   void RequestProcessDump(base::ProcessId pid,
-                          const base::FilePath& dest,
+                          base::FilePath dest,
                           base::OnceClosure done);
 
   // Sends a message to the profiling process that it report the given process'
@@ -134,7 +134,7 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
                                mojo::ScopedHandle handle);
 
   void GetOutputFileOnBlockingThread(base::ProcessId pid,
-                                     const base::FilePath& dest,
+                                     base::FilePath dest,
                                      std::string trigger_name,
                                      bool upload,
                                      base::OnceClosure done);
