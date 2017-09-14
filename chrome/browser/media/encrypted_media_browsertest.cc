@@ -802,13 +802,6 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, FileIOTest) {
 // TODO(xhwang): Investigate how to fake capturing activities to test the
 // network link detection logic in OutputProtectionProxy.
 IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, OutputProtectionTest) {
-  // TODO(xhwang): Support output protection in mojo CDM. See
-  // http://crbug.com/479843
-  if (IsUsingMojoCdm()) {
-    DVLOG(0) << "Skipping test; Not working with mojo CDM yet.";
-    return;
-  }
-
   TestNonPlaybackCases(kExternalClearKeyOutputProtectionTestKeySystem,
                        kUnitTestSuccess);
 }
