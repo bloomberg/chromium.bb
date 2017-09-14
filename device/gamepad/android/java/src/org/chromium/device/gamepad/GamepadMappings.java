@@ -35,6 +35,8 @@ abstract class GamepadMappings {
     static final int PS_DUALSHOCK_4_PRODUCT_ID = 1476;
     @VisibleForTesting
     static final int PS_DUALSHOCK_4_SLIM_PRODUCT_ID = 2508;
+    @VisibleForTesting
+    static final int PS_DUALSHOCK_4_USB_RECEIVER_PRODUCT_ID = 2976;
 
     @VisibleForTesting
     static final int XBOX_ONE_S_2016_FIRMWARE_VENDOR_ID = 0x045e;
@@ -58,7 +60,8 @@ abstract class GamepadMappings {
         // so we better go by the product and vendor ids.
         if (vendorId == PS_DUALSHOCK_4_VENDOR_ID
                 && (productId == PS_DUALSHOCK_4_PRODUCT_ID
-                           || productId == PS_DUALSHOCK_4_SLIM_PRODUCT_ID)) {
+                           || productId == PS_DUALSHOCK_4_SLIM_PRODUCT_ID
+                           || productId == PS_DUALSHOCK_4_USB_RECEIVER_PRODUCT_ID)) {
             return new PS4GamepadMappings();
         }
         // Microsoft released a firmware update for the Xbox One S gamepad that modified the button
@@ -390,9 +393,20 @@ abstract class GamepadMappings {
             mappedButtons[CanonicalButtonIndex.LEFT_TRIGGER] = scaleRxRy(rx);
             mappedButtons[CanonicalButtonIndex.RIGHT_TRIGGER] = scaleRxRy(ry);
 
-            mapHatAxisToDpadButtons(mappedButtons, rawAxes);
-            mapCommonStartSelectMetaButtons(mappedButtons, rawButtons);
+            float share = rawButtons[KeyEvent.KEYCODE_BUTTON_L2];
+            float options = rawButtons[KeyEvent.KEYCODE_BUTTON_R2];
+            mappedButtons[CanonicalButtonIndex.BACK_SELECT] = share;
+            mappedButtons[CanonicalButtonIndex.START] = options;
 
+            float thumbL = rawButtons[KeyEvent.KEYCODE_BUTTON_SELECT];
+            float thumbR = rawButtons[KeyEvent.KEYCODE_BUTTON_START];
+            mappedButtons[CanonicalButtonIndex.LEFT_THUMBSTICK] = thumbL;
+            mappedButtons[CanonicalButtonIndex.RIGHT_THUMBSTICK] = thumbR;
+
+            float mode = rawButtons[KeyEvent.KEYCODE_BUTTON_MODE];
+            mappedButtons[CanonicalButtonIndex.META] = mode;
+
+            mapHatAxisToDpadButtons(mappedButtons, rawAxes);
             mapXYAxes(mappedAxes, rawAxes);
             mapZAndRZAxesToRightStick(mappedAxes, rawAxes);
         }
