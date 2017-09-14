@@ -101,8 +101,6 @@ const CGFloat kURLButtonMargin = 10;
     _copiedButtonView.backgroundColor = [UIColor colorWithWhite:0 alpha:0.05];
     _copiedButtonView.layer.cornerRadius = 5;
     _copiedButtonView.translatesAutoresizingMaskIntoConstraints = NO;
-    _copiedButtonView.accessibilityLabel =
-        NSLocalizedString(@"IDS_IOS_OPEN_COPIED_LINK", nil);
     [secondaryEffectView.contentView addSubview:_copiedButtonView];
 
     _openCopiedURLTitleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
@@ -167,13 +165,16 @@ const CGFloat kURLButtonMargin = 10;
   self.copiedButtonView.hidden = NO;
   self.hairlineView.hidden = YES;
   self.copiedURLLabel.text = self.copiedURLString;
-  self.copiedURLLabel.accessibilityLabel = self.copiedURLString;
   self.openCopiedURLTitleLabel.alpha = 1;
   self.openCopiedURLTitleLabel.text =
       NSLocalizedString(@"IDS_IOS_OPEN_COPIED_LINK", nil);
-  self.openCopiedURLTitleLabel.isAccessibilityElement = NO;
   self.copiedURLLabel.alpha = 1;
   self.userInteractionEnabled = YES;
+  self.accessibilityLabel = [NSString
+      stringWithFormat:@"%@ - %@",
+                       NSLocalizedString(@"IDS_IOS_OPEN_COPIED_LINK", nil),
+                       self.copiedURLString];
+  self.accessibilityTraits = UIAccessibilityTraitLink;
 }
 
 - (void)updateUINoCopiedURL {
@@ -182,14 +183,13 @@ const CGFloat kURLButtonMargin = 10;
   self.hairlineView.hidden = NO;
   self.copiedURLLabel.text =
       NSLocalizedString(@"IDS_IOS_NO_COPIED_LINK_MESSAGE", nil);
-  self.copiedURLLabel.accessibilityLabel =
+  self.accessibilityLabel =
       NSLocalizedString(@"IDS_IOS_NO_COPIED_LINK_MESSAGE", nil);
   self.openCopiedURLTitleLabel.text =
       NSLocalizedString(@"IDS_IOS_NO_COPIED_LINK_TITLE", nil);
-  self.openCopiedURLTitleLabel.accessibilityLabel =
+  self.accessibilityLabel =
       NSLocalizedString(@"IDS_IOS_NO_COPIED_LINK_TITLE", nil);
-  self.openCopiedURLTitleLabel.isAccessibilityElement = YES;
-
+  self.accessibilityTraits = UIAccessibilityTraitNone;
   if (base::ios::IsRunningOnIOS10OrLater()) {
     self.copiedURLLabel.alpha = 0.5;
     self.openCopiedURLTitleLabel.alpha = 0.5;
