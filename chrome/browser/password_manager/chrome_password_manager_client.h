@@ -17,6 +17,7 @@
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
+#include "components/password_manager/core/browser/password_manager_client_helper.h"
 #include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_reuse_detection_manager.h"
 #include "components/password_manager/sync/browser/sync_credentials_filter.h"
@@ -41,6 +42,7 @@ class WebContents;
 // ChromePasswordManagerClient implements the PasswordManagerClient interface.
 class ChromePasswordManagerClient
     : public password_manager::PasswordManagerClient,
+      public password_manager::PasswordManagerClientHelperDelegate,
       public content::WebContentsObserver,
       public content::WebContentsUserData<ChromePasswordManagerClient>,
       public autofill::mojom::PasswordManagerClient,
@@ -183,21 +185,13 @@ class ChromePasswordManagerClient
   // filled.
   bool IsPasswordManagementEnabledForCurrentPage() const;
 
-  // Shows the dialog where the user can accept or decline the global autosignin
-  // setting as a first run experience. The dialog won't appear in Incognito or
-  // when the autosign-in is off.
-  void PromptUserToEnableAutosigninIfNecessary();
-
-  // Called as a response to PromptUserToChooseCredentials. nullptr in |form|
-  // means that nothing was chosen. |one_local_credential| is true if there was
-  // just one local credential to be chosen from.
-  void OnCredentialsChosen(const CredentialsCallback& callback,
-                           bool one_local_credential,
-                           const autofill::PasswordForm* form);
-
   // Returns true if this profile has metrics reporting and active sync
   // without custom sync passphrase.
   static bool ShouldAnnotateNavigationEntries(Profile* profile);
+
+  // password_manager::PasswordManagerClientHelperDelegate implementation.
+  void PromptUserToEnableAutosignin() override;
+  password_manager::PasswordManager* GetPasswordManager() override;
 
   Profile* const profile_;
 
@@ -234,10 +228,6 @@ class ChromePasswordManagerClient
 
   std::unique_ptr<password_manager::LogManager> log_manager_;
 
-  // Set during 'NotifyUserCouldBeAutoSignedIn' in order to store the
-  // form for potential use during 'NotifySuccessfulLoginWithExistingPassword'.
-  std::unique_ptr<autofill::PasswordForm> possible_auto_sign_in_;
-
   // If set, this stores a ukm::SourceId that is bound to the last committed
   // navigation of the tab owning this ChromePasswordManagerClient.
   base::Optional<ukm::SourceId> ukm_source_id_;
@@ -251,6 +241,10 @@ class ChromePasswordManagerClient
   // Whether navigator.credentials.store() was ever called from this
   // WebContents. Used for testing.
   bool was_store_ever_called_ = false;
+
+  // Helper for performing logic that is common between
+  // ChromePasswordManagerClient and IOSChromePasswordManagerClient.
+  password_manager::PasswordManagerClientHelper helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromePasswordManagerClient);
 };
