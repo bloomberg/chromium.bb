@@ -441,16 +441,29 @@ def main():
   generate(san, "san-rfc822name.pem")
 
   san = SubjectAltNameGenerator()
+  san.add_name(dns_name("foo.example.com"))
+  generate(san, "san-dnsname.pem")
+
+  san = SubjectAltNameGenerator()
   san.add_name(x400_address())
   generate(san, "san-x400address.pem")
 
   san = SubjectAltNameGenerator()
-  san.add_name(edi_party_name())
-  generate(san, "san-edipartyname.pem")
+  san.add_name(directory_name(n_us))
+  generate(san, "san-directoryname.pem")
 
   san = SubjectAltNameGenerator()
   san.add_name(uniform_resource_identifier('http://example.com'))
   generate(san, "san-uri.pem")
+
+  san = SubjectAltNameGenerator()
+  san.add_name(ip_address((192,168,6,7)))
+  generate(san, "san-ipaddress4.pem")
+
+  san = SubjectAltNameGenerator()
+  san.add_name(ip_address((0xFE, 0x80, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+                           13, 14)))
+  generate(san, "san-ipaddress6.pem")
 
   san = SubjectAltNameGenerator()
   san.add_name(registered_id("1.2.3.4"))

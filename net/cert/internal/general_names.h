@@ -43,9 +43,7 @@ enum GeneralNameTypes {
 // Represents a GeneralNames structure. When processing GeneralNames, it is
 // often necessary to know which types of names were present, and to check
 // all the names of a certain type. Therefore, a bitfield of all the name
-// types is kept, and the names are split into members for each type. Only
-// name types that are handled by this code are stored (though all types are
-// recorded in the bitfield.)
+// types is kept, and the names are split into members for each type.
 struct NET_EXPORT GeneralNames {
   // Controls parsing of iPAddress names in ParseGeneralName.
   // IP_ADDRESS_ONLY parses the iPAddress names as a 4 or 16 byte IP address.
@@ -68,11 +66,26 @@ struct NET_EXPORT GeneralNames {
       const der::Input& general_names_tlv,
       CertErrors* errors);
 
+  // DER-encoded OtherName values.
+  std::vector<der::Input> other_names;
+
+  // ASCII rfc822names.
+  std::vector<base::StringPiece> rfc822_names;
+
   // ASCII hostnames.
   std::vector<base::StringPiece> dns_names;
 
+  // DER-encoded ORAddress values.
+  std::vector<der::Input> x400_addresses;
+
   // DER-encoded Name values (not including the Sequence tag).
   std::vector<der::Input> directory_names;
+
+  // DER-encoded EDIPartyName values.
+  std::vector<der::Input> edi_party_names;
+
+  // ASCII URIs.
+  std::vector<base::StringPiece> uniform_resource_identifiers;
 
   // iPAddresses as sequences of octets in network byte order. This will be
   // populated if the GeneralNames represents a Subject Alternative Name.
@@ -82,8 +95,10 @@ struct NET_EXPORT GeneralNames {
   // if the GeneralNames represents a Name Constraints.
   std::vector<std::pair<IPAddress, unsigned>> ip_address_ranges;
 
+  // DER-encoded OBJECT IDENTIFIERs.
+  std::vector<der::Input> registered_ids;
+
   // Which name types were present, as a bitfield of GeneralNameTypes.
-  // Includes both the supported and unsupported types.
   int present_name_types = GENERAL_NAME_NONE;
 };
 

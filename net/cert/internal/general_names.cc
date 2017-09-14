@@ -18,7 +18,9 @@ DEFINE_CERT_ERROR_ID(kFailedParsingGeneralName, "Failed parsing GeneralName");
 
 namespace {
 
+DEFINE_CERT_ERROR_ID(kRFC822NameNotAscii, "rfc822Name is not ASCII");
 DEFINE_CERT_ERROR_ID(kDnsNameNotAscii, "dNSName is not ASCII");
+DEFINE_CERT_ERROR_ID(kURINotAscii, "uniformResourceIdentifier is not ASCII");
 DEFINE_CERT_ERROR_ID(kFailedParsingIp, "Failed parsing iPAddress");
 DEFINE_CERT_ERROR_ID(kUnknownGeneralNameType, "Unknown GeneralName type");
 DEFINE_CERT_ERROR_ID(kFailedReadingGeneralNames,
@@ -113,9 +115,16 @@ WARN_UNUSED_RESULT bool ParseGeneralName(
   if (tag == der::ContextSpecificConstructed(0)) {
     // otherName                       [0]     OtherName,
     name_type = GENERAL_NAME_OTHER_NAME;
+    subtrees->other_names.push_back(value);
   } else if (tag == der::ContextSpecificPrimitive(1)) {
     // rfc822Name                      [1]     IA5String,
     name_type = GENERAL_NAME_RFC822_NAME;
+    const base::StringPiece s = value.AsStringPiece();
+    if (!base::IsStringASCII(s)) {
+      errors->AddError(kRFC822NameNotAscii);
+      return false;
+    }
+    subtrees->rfc822_names.push_back(s);
   } else if (tag == der::ContextSpecificPrimitive(2)) {
     // dNSName                         [2]     IA5String,
     name_type = GENERAL_NAME_DNS_NAME;
@@ -128,6 +137,7 @@ WARN_UNUSED_RESULT bool ParseGeneralName(
   } else if (tag == der::ContextSpecificConstructed(3)) {
     // x400Address                     [3]     ORAddress,
     name_type = GENERAL_NAME_X400_ADDRESS;
+    subtrees->x400_addresses.push_back(value);
   } else if (tag == der::ContextSpecificConstructed(4)) {
     // directoryName                   [4]     Name,
     name_type = GENERAL_NAME_DIRECTORY_NAME;
@@ -142,9 +152,16 @@ WARN_UNUSED_RESULT bool ParseGeneralName(
   } else if (tag == der::ContextSpecificConstructed(5)) {
     // ediPartyName                    [5]     EDIPartyName,
     name_type = GENERAL_NAME_EDI_PARTY_NAME;
+    subtrees->edi_party_names.push_back(value);
   } else if (tag == der::ContextSpecificPrimitive(6)) {
     // uniformResourceIdentifier       [6]     IA5String,
     name_type = GENERAL_NAME_UNIFORM_RESOURCE_IDENTIFIER;
+    const base::StringPiece s = value.AsStringPiece();
+    if (!base::IsStringASCII(s)) {
+      errors->AddError(kURINotAscii);
+      return false;
+    }
+    subtrees->uniform_resource_identifiers.push_back(s);
   } else if (tag == der::ContextSpecificPrimitive(7)) {
     // iPAddress                       [7]     OCTET STRING,
     name_type = GENERAL_NAME_IP_ADDRESS;
@@ -195,6 +212,7 @@ WARN_UNUSED_RESULT bool ParseGeneralName(
   } else if (tag == der::ContextSpecificPrimitive(8)) {
     // registeredID                    [8]     OBJECT IDENTIFIER }
     name_type = GENERAL_NAME_REGISTERED_ID;
+    subtrees->registered_ids.push_back(value);
   } else {
     errors->AddError(kUnknownGeneralNameType,
                      CreateCertErrorParams1SizeT("tag", tag));
