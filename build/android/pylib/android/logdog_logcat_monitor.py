@@ -13,12 +13,14 @@ class LogdogLogcatMonitor(logcat_monitor.LogcatMonitor):
 
   The logdog stream client will return a url which contains the logcat.
   """
-  def __init__(self, adb, stream_name, clear=True, filter_specs=None):
+  def __init__(self, adb, stream_name, clear=True, filter_specs=None,
+               deobfuscate_func=None):
     super(LogdogLogcatMonitor, self).__init__(adb, clear, filter_specs)
     self._logcat_url = ''
     self._logdog_stream = None
     self._stream_client = None
     self._stream_name = stream_name
+    self._deobfuscate_func = deobfuscate_func or (lambda lines: lines)
 
   def GetLogcatURL(self):
     """Return logcat url.
@@ -64,6 +66,7 @@ class LogdogLogcatMonitor(logcat_monitor.LogcatMonitor):
           if self._stop_recording_event.isSet():
             return
           if data:
+            data = '\n'.join(self._deobfuscate_func([data]))
             self._logdog_stream.write(data + '\n')
           if self._stop_recording_event.isSet():
             return

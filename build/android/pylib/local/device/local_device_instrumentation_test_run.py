@@ -445,7 +445,8 @@ class LocalDeviceInstrumentationTestRun(
         time.strftime('%Y%m%dT%H%M%S-UTC', time.gmtime()),
         device.serial)
     logmon = logdog_logcat_monitor.LogdogLogcatMonitor(
-        device.adb, stream_name, filter_specs=LOGCAT_FILTERS)
+        device.adb, stream_name, filter_specs=LOGCAT_FILTERS,
+        deobfuscate_func=self._test_instance.MaybeDeobfuscateLines)
 
     with contextlib_ext.Optional(
         logmon, self._test_instance.should_save_logcat):
