@@ -636,11 +636,8 @@ class _Generator(object):
           maybe_namespace, var)
     elif underlying_type.property_type == PropertyType.BINARY:
       if is_ptr:
-        vardot = var + '->'
-      else:
-        vardot = var + '.'
-      return ('base::Value::CreateWithCopiedBuffer('
-              '%sdata(), %ssize())' % (vardot, vardot))
+        var = '*%s' % var
+      return 'base::MakeUnique<base::Value>(%s)' % var
     elif underlying_type.property_type == PropertyType.ARRAY:
       return '%s' % self._util_cc_helper.CreateValueFromArray(
           var,
