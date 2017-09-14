@@ -10439,6 +10439,20 @@ should be able to be added at any place in this file.
   <description>Custom Feedback dialog is shown.</description>
 </action>
 
+<action name="MobileCustomRowCameraSearch">
+  <owner>jif@chromium.org</owner>
+  <description>
+    Records when a user starts a camera search from the omnibox' assistive view.
+  </description>
+</action>
+
+<action name="MobileCustomRowVoiceSearch">
+  <owner>jif@chromium.org</owner>
+  <description>
+    Records when a user starts a voice search from the omnibox' assistive view.
+  </description>
+</action>
+
 <action name="MobileExternalNavigationDispatched">
   <owner>mariakhomenko@chromium.org</owner>
   <description>

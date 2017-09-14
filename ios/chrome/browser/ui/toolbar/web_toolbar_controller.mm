@@ -1410,6 +1410,7 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 }
 
 - (void)keyboardAccessoryCameraSearchTouchUp {
+  base::RecordAction(UserMetricsAction("MobileCustomRowCameraSearch"));
   [self.dispatcher showQRScanner];
 }
 
