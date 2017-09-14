@@ -26,8 +26,14 @@ namespace media_router {
 
 class MediaRouterMojoImpl;
 
+// TODO(takumif): Move MockMediaRouteProvider into its own files.
 class MockMediaRouteProvider : public mojom::MediaRouteProvider {
  public:
+  using RouteCallback =
+      base::OnceCallback<void(const base::Optional<MediaRoute>&,
+                              const base::Optional<std::string>&,
+                              RouteRequestResult::ResultCode)>;
+
   MockMediaRouteProvider();
   ~MockMediaRouteProvider() override;
 
@@ -154,7 +160,25 @@ class MockMediaRouteProvider : public mojom::MediaRouteProvider {
                     mojom::MediaStatusObserverPtr& observer,
                     CreateMediaRouteControllerCallback& callback));
 
+  // These methods execute the callbacks with the success or timeout result
+  // code. If the callback takes a route, the route set in SetRouteToReturn() is
+  // used.
+  void RouteRequestSuccess(RouteCallback& cb) const;
+  void RouteRequestTimeout(RouteCallback& cb) const;
+  void TerminateRouteSuccess(TerminateRouteCallback& cb) const;
+  void SendRouteMessageSuccess(SendRouteMessageCallback& cb) const;
+  void SendRouteBinaryMessageSuccess(SendRouteBinaryMessageCallback& cb) const;
+  void SearchSinksSuccess(SearchSinksCallback& cb) const;
+  void CreateMediaRouteControllerSuccess(
+      CreateMediaRouteControllerCallback& cb) const;
+
+  // Sets the route to pass into callbacks.
+  void SetRouteToReturn(const MediaRoute& route);
+
  private:
+  // The route that is passed into callbacks.
+  base::Optional<MediaRoute> route_;
+
   DISALLOW_COPY_AND_ASSIGN(MockMediaRouteProvider);
 };
 
@@ -242,23 +266,6 @@ class MockMediaRouteControllerObserver : public MediaRouteController::Observer {
   MOCK_METHOD0(OnControllerInvalidated, void());
 };
 
-// Mockable class for awaiting RegisterMediaRouteProvider callbacks.
-class RegisterMediaRouteProviderHandler {
- public:
-  RegisterMediaRouteProviderHandler();
-  ~RegisterMediaRouteProviderHandler();
-
-  // A wrapper function to deal with move only parameter |config|.
-  void Invoke(const std::string& instance_id,
-              mojom::MediaRouteProviderConfigPtr config) {
-    InvokeInternal(instance_id, config.get());
-  }
-
-  MOCK_METHOD2(InvokeInternal,
-               void(const std::string& instance_id,
-                    mojom::MediaRouteProviderConfig* config));
-};
-
 // Tests the API call flow between the MediaRouterMojoImpl and the Media Router
 // Mojo service in both directions.
 class MediaRouterMojoTest : public ::testing::Test {
@@ -300,8 +307,6 @@ class MediaRouterMojoTest : public ::testing::Test {
   // Mock objects.
   MockMediaRouteProvider mock_media_route_provider_;
   MockEventPageRequestManager* request_manager_ = nullptr;
-
-  RegisterMediaRouteProviderHandler provide_handler_;
 
  private:
   content::TestBrowserThreadBundle test_thread_bundle_;

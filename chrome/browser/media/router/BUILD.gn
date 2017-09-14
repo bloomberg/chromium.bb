@@ -76,6 +76,8 @@ static_library("router") {
       "media_router_ui_service.h",
       "media_router_ui_service_factory.cc",
       "media_router_ui_service_factory.h",
+      "mojo/extension_media_route_provider_proxy.cc",
+      "mojo/extension_media_route_provider_proxy.h",
       "mojo/media_route_controller.cc",
       "mojo/media_route_controller.h",
       "mojo/media_route_provider_util_win.cc",
