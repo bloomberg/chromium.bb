@@ -180,10 +180,6 @@ target("jumbo_" + modules_target_type, "modules") {
 
 jumbo_source_set("modules_testing") {
   sources = [
-    "$bindings_modules_v8_output_dir/V8InternalsPartial.cpp",
-    "$bindings_modules_v8_output_dir/V8InternalsPartial.h",
-    "$bindings_modules_v8_output_dir/V8WorkerInternalsPartial.cpp",
-    "$bindings_modules_v8_output_dir/V8WorkerInternalsPartial.h",
     "accessibility/testing/InternalsAccessibility.cpp",
     "accessibility/testing/InternalsAccessibility.h",
     "fetch/testing/InternalsFetch.cpp",
@@ -209,6 +205,21 @@ jumbo_source_set("modules_testing") {
     "webaudio/testing/InternalsWebAudio.cpp",
     "webaudio/testing/InternalsWebAudio.h",
   ]
+  if (snake_case_source_files) {
+    sources += [
+      "$bindings_modules_v8_output_dir/v8_internals_partial.cc",
+      "$bindings_modules_v8_output_dir/v8_internals_partial.h",
+      "$bindings_modules_v8_output_dir/v8_worker_internals_partial.cc",
+      "$bindings_modules_v8_output_dir/v8_worker_internals_partial.h",
+    ]
+  } else {
+    sources += [
+      "$bindings_modules_v8_output_dir/V8InternalsPartial.cpp",
+      "$bindings_modules_v8_output_dir/V8InternalsPartial.h",
+      "$bindings_modules_v8_output_dir/V8WorkerInternalsPartial.cpp",
+      "$bindings_modules_v8_output_dir/V8WorkerInternalsPartial.h",
+    ]
+  }
 
   configs += [
     "//third_party/WebKit/Source:config",

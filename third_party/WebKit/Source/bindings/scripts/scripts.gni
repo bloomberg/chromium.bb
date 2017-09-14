@@ -253,7 +253,11 @@ template("idl_compiler") {
         ]
       }
 
-      args = [
+      args = []
+      if (snake_case_source_files) {
+        args += [ "--snake-case-generated-files" ]
+      }
+      args += [
         "--cache-dir",
         rebase_path(bindings_scripts_output_dir, root_build_dir),
         "--output-dir",
@@ -264,9 +268,6 @@ template("idl_compiler") {
         invoker.target_component,
         "{{source}}",
       ]
-      if (snake_case_source_files) {
-        args += [ "--snake-case-generated-files" ]
-      }
     }
   }
 }
@@ -308,13 +309,24 @@ template("idl_impl") {
       rel_path = rebase_path(dict_idl, "//third_party/WebKit/Source")
       impl_dir = get_path_info(rel_path, "dir")
       idl_name = get_path_info(rel_path, "name")
-      outputs += [
-        "${dictionary_impl_output_dir}$impl_dir/$idl_name.cpp",
-        "${dictionary_impl_output_dir}$impl_dir/$idl_name.h",
-      ]
+      if (snake_case_source_files) {
+        outputs += [
+          "${dictionary_impl_output_dir}$impl_dir/$idl_name.cc",
+          "${dictionary_impl_output_dir}$impl_dir/$idl_name.h",
+        ]
+      } else {
+        outputs += [
+          "${dictionary_impl_output_dir}$impl_dir/$idl_name.cpp",
+          "${dictionary_impl_output_dir}$impl_dir/$idl_name.h",
+        ]
+      }
     }
 
-    args = [
+    args = []
+    if (snake_case_source_files) {
+      args += [ "--snake-case-generated-files" ]
+    }
+    args += [
       "--cache-dir",
       rebase_path(bindings_scripts_output_dir, root_build_dir),
       "--output-dir",
@@ -328,9 +340,6 @@ template("idl_impl") {
       "--generate-impl",
       rebase_path(idl_files_list, root_build_dir),
     ]
-    if (snake_case_source_files) {
-      args += [ "--snake-case-generated-files" ]
-    }
 
     deps = [
       # FIXME: should be interfaces_info_core (w/o modules)
