@@ -23,7 +23,7 @@ const CGFloat kTileHeight = 100;
 // Number of rows in the widget. Note that modifying this value will not add
 // extra rows and will break functionality unless additional changes are made.
 const int kRows = 2;
-}
+}  // namespace
 
 @interface ContentWidgetView ()
 
@@ -184,7 +184,25 @@ const int kRows = 2;
       if (faviconImage) {
         attributes = [FaviconAttributes attributesWithImage:faviconImage];
       }
-    } else {
+    }
+    if (!attributes) {
+      if ([site.fallbackMonogram length] == 0) {
+        // Something bad happened when saving the icon. Switch to best effort to
+        // show something to the user.
+        site.fallbackMonogram = @"";
+      }
+      if (!site.fallbackTextColor || !site.fallbackBackgroundColor) {
+        // Something bad happened when saving the icon. Switch to best effort to
+        // show something to the user.
+        // kDefaultTextColor = SK_ColorWHITE;
+        site.fallbackTextColor = [UIColor whiteColor];
+        // kDefaultBackgroundColor = SkColorSetRGB(0x78, 0x78, 0x78);
+        site.fallbackBackgroundColor = [UIColor colorWithRed:0x78 / 255.0f
+                                                       green:0x78 / 255.0f
+                                                        blue:0x78 / 255.0f
+                                                       alpha:1];
+        site.fallbackIsDefaultColor = YES;
+      }
       attributes = [FaviconAttributes
           attributesWithMonogram:site.fallbackMonogram
                        textColor:site.fallbackTextColor
