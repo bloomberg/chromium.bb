@@ -113,7 +113,6 @@ static int mediatek_bo_unmap(struct bo *bo, struct map_info *data)
 {
 	if (data->priv) {
 		struct mediatek_private_map_data *priv = data->priv;
-		memcpy(priv->gem_addr, priv->cached_addr, bo->total_size);
 		data->addr = priv->gem_addr;
 		free(priv->cached_addr);
 		free(priv);
@@ -121,6 +120,16 @@ static int mediatek_bo_unmap(struct bo *bo, struct map_info *data)
 	}
 
 	return munmap(data->addr, data->length);
+}
+
+static int mediatek_bo_flush(struct bo *bo, struct map_info *data)
+{
+	struct mediatek_private_map_data *priv = data->priv;
+
+	if (priv)
+		memcpy(priv->gem_addr, priv->cached_addr, bo->total_size);
+
+	return 0;
 }
 
 static uint32_t mediatek_resolve_format(uint32_t format, uint64_t usage)
@@ -144,6 +153,7 @@ struct backend backend_mediatek = {
 	.bo_import = drv_prime_bo_import,
 	.bo_map = mediatek_bo_map,
 	.bo_unmap = mediatek_bo_unmap,
+	.bo_flush = mediatek_bo_flush,
 	.resolve_format = mediatek_resolve_format,
 };
 

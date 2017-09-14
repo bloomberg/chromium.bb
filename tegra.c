@@ -334,9 +334,6 @@ static int tegra_bo_unmap(struct bo *bo, struct map_info *data)
 {
 	if (data->priv) {
 		struct tegra_private_map_data *priv = data->priv;
-		if (priv->prot & PROT_WRITE)
-			transfer_tiled_memory(bo, priv->tiled, priv->untiled,
-					      TEGRA_WRITE_TILED_BUFFER);
 		data->addr = priv->tiled;
 		free(priv->untiled);
 		free(priv);
@@ -344,6 +341,17 @@ static int tegra_bo_unmap(struct bo *bo, struct map_info *data)
 	}
 
 	return munmap(data->addr, data->length);
+}
+
+static int tegra_bo_flush(struct bo *bo, struct map_info *data)
+{
+	struct tegra_private_map_data *priv = data->priv;
+
+	if (priv && priv->prot & PROT_WRITE)
+		transfer_tiled_memory(bo, priv->tiled, priv->untiled,
+				      TEGRA_WRITE_TILED_BUFFER);
+
+	return 0;
 }
 
 struct backend backend_tegra = {
@@ -354,6 +362,7 @@ struct backend backend_tegra = {
 	.bo_import = tegra_bo_import,
 	.bo_map = tegra_bo_map,
 	.bo_unmap = tegra_bo_unmap,
+	.bo_flush = tegra_bo_flush,
 };
 
 #endif

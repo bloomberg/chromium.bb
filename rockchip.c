@@ -280,7 +280,6 @@ static int rockchip_bo_unmap(struct bo *bo, struct map_info *data)
 {
 	if (data->priv) {
 		struct rockchip_private_map_data *priv = data->priv;
-		memcpy(priv->gem_addr, priv->cached_addr, bo->total_size);
 		data->addr = priv->gem_addr;
 		free(priv->cached_addr);
 		free(priv);
@@ -288,6 +287,16 @@ static int rockchip_bo_unmap(struct bo *bo, struct map_info *data)
 	}
 
 	return munmap(data->addr, data->length);
+}
+
+static int rockchip_bo_flush(struct bo *bo, struct map_info *data)
+{
+	struct rockchip_private_map_data *priv = data->priv;
+
+	if (priv)
+		memcpy(priv->gem_addr, priv->cached_addr, bo->total_size);
+
+	return 0;
 }
 
 static uint32_t rockchip_resolve_format(uint32_t format, uint64_t usage)
@@ -315,6 +324,7 @@ struct backend backend_rockchip = {
 	.bo_import = drv_prime_bo_import,
 	.bo_map = rockchip_bo_map,
 	.bo_unmap = rockchip_bo_unmap,
+	.bo_flush = rockchip_bo_flush,
 	.resolve_format = rockchip_resolve_format,
 };
 

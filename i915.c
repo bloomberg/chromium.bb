@@ -476,13 +476,13 @@ static void *i915_bo_map(struct bo *bo, struct map_info *data, size_t plane, int
 	return addr;
 }
 
-static int i915_bo_unmap(struct bo *bo, struct map_info *data)
+static int i915_bo_flush(struct bo *bo, struct map_info *data)
 {
 	struct i915_device *i915 = bo->drv->priv;
 	if (!i915->has_llc && bo->tiling == I915_TILING_NONE)
 		i915_clflush(data->addr, data->length);
 
-	return munmap(data->addr, data->length);
+	return 0;
 }
 
 static uint32_t i915_resolve_format(uint32_t format, uint64_t usage)
@@ -512,7 +512,8 @@ struct backend backend_i915 = {
 	.bo_destroy = drv_gem_bo_destroy,
 	.bo_import = i915_bo_import,
 	.bo_map = i915_bo_map,
-	.bo_unmap = i915_bo_unmap,
+	.bo_unmap = drv_bo_munmap,
+	.bo_flush = i915_bo_flush,
 	.resolve_format = i915_resolve_format,
 };
 
