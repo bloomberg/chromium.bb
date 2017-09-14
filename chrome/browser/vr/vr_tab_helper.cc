@@ -4,13 +4,10 @@
 
 #include "chrome/browser/vr/vr_tab_helper.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/web_preferences.h"
 #include "device/vr/features/features.h"
-
-#if BUILDFLAG(ENABLE_VR)
-#include "chrome/browser/android/vr_shell/vr_metrics_util.h"
-#endif
 
 using content::WebContents;
 using content::WebPreferences;
@@ -52,9 +49,8 @@ bool VrTabHelper::IsInVr(content::WebContents* contents) {
 
 /* static */
 void VrTabHelper::UISuppressed(vr::UiSuppressedElement element) {
-#if BUILDFLAG(ENABLE_VR)
-  vr_shell::VrMetricsUtil::LogUiSuppression(element);
-#endif  // ENABLE_VR
+  UMA_HISTOGRAM_ENUMERATION("VR.Shell.EncounteredSuppressedUI", element,
+                            vr::UiSuppressedElement::kCount);
 }
 
 }  // namespace vr
