@@ -240,8 +240,9 @@ void RegisterWidevineCdmWithChrome(
   const std::vector<std::string> supported_codecs = base::SplitString(
       codecs, std::string(1, kCdmSupportedCodecsValueDelimiter),
       base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  CdmRegistry::GetInstance()->RegisterCdm(content::CdmInfo(
-      kWidevineCdmType, cdm_version, cdm_path, supported_codecs));
+  CdmRegistry::GetInstance()->RegisterCdm(
+      content::CdmInfo(kWidevineCdmType, cdm_version, cdm_path,
+                       supported_codecs, kWidevineKeySystem, false));
 }
 
 }  // namespace
