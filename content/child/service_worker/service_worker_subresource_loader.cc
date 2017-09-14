@@ -7,6 +7,7 @@
 #include "base/atomic_sequence_num.h"
 #include "base/callback.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/child/service_worker/controller_service_worker_connector.h"
 #include "content/common/service_worker/service_worker_loader_helpers.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/child/child_url_loader_factory_getter.h"
@@ -14,15 +15,6 @@
 #include "ui/base/page_transition_types.h"
 
 namespace content {
-
-namespace {
-
-int GetNextFetchEventID() {
-  static base::AtomicSequenceNumber seq;
-  return seq.GetNext();
-}
-
-}  // namespace
 
 // ServiceWorkerSubresourceLoader -------------------------------------------
 
@@ -34,8 +26,7 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
     const ResourceRequest& resource_request,
     mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-    scoped_refptr<base::RefCountedData<mojom::ServiceWorkerEventDispatcherPtr>>
-        event_dispatcher,
+    scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
     scoped_refptr<ChildURLLoaderFactoryGetter> default_loader_factory_getter,
     const GURL& controller_origin,
     scoped_refptr<base::RefCountedData<storage::mojom::BlobRegistryPtr>>
@@ -43,7 +34,7 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
     : url_loader_client_(std::move(client)),
       url_loader_binding_(this, std::move(request)),
       response_callback_binding_(this),
-      event_dispatcher_(std::move(event_dispatcher)),
+      controller_connector_(std::move(controller_connector)),
       routing_id_(routing_id),
       request_id_(request_id),
       options_(options),
@@ -54,7 +45,7 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
       blob_registry_(std::move(blob_registry)),
       default_loader_factory_getter_(std::move(default_loader_factory_getter)),
       weak_factory_(this) {
-  DCHECK(event_dispatcher_ && event_dispatcher_->data);
+  DCHECK(controller_connector_);
   url_loader_binding_.set_connection_error_handler(base::BindOnce(
       &ServiceWorkerSubresourceLoader::DeleteSoon, weak_factory_.GetWeakPtr()));
   StartRequest(resource_request);
@@ -76,9 +67,11 @@ void ServiceWorkerSubresourceLoader::StartRequest(
   mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_ptr;
   response_callback_binding_.Bind(mojo::MakeRequest(&response_callback_ptr));
 
-  event_dispatcher_->data->DispatchFetchEvent(
-      GetNextFetchEventID(), *request, mojom::FetchEventPreloadHandlePtr(),
-      std::move(response_callback_ptr),
+  // At this point controller should be non-null.
+  // TODO(kinuko): re-start the request if we get connection error before we
+  // get response for this.
+  controller_connector_->GetControllerServiceWorker()->DispatchFetchEvent(
+      *request, std::move(response_callback_ptr),
       base::Bind(&ServiceWorkerSubresourceLoader::OnFetchEventFinished,
                  weak_factory_.GetWeakPtr()));
 }
@@ -284,13 +277,12 @@ void ServiceWorkerSubresourceLoader::OnComplete(
 // ServiceWorkerSubresourceLoaderFactory ------------------------------------
 
 ServiceWorkerSubresourceLoaderFactory::ServiceWorkerSubresourceLoaderFactory(
-    scoped_refptr<base::RefCountedData<mojom::ServiceWorkerEventDispatcherPtr>>
-        event_dispatcher,
+    scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
     scoped_refptr<ChildURLLoaderFactoryGetter> default_loader_factory_getter,
     const GURL& controller_origin,
     scoped_refptr<base::RefCountedData<storage::mojom::BlobRegistryPtr>>
         blob_registry)
-    : event_dispatcher_(std::move(event_dispatcher)),
+    : controller_connector_(std::move(controller_connector)),
       default_loader_factory_getter_(std::move(default_loader_factory_getter)),
       controller_origin_(controller_origin),
       blob_registry_(std::move(blob_registry)) {
@@ -315,7 +307,7 @@ void ServiceWorkerSubresourceLoaderFactory::CreateLoaderAndStart(
   // destructs itself (while the loader client continues to work).
   new ServiceWorkerSubresourceLoader(
       std::move(request), routing_id, request_id, options, resource_request,
-      std::move(client), traffic_annotation, event_dispatcher_,
+      std::move(client), traffic_annotation, controller_connector_,
       default_loader_factory_getter_, controller_origin_, blob_registry_);
 }
 

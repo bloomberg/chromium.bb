@@ -146,6 +146,8 @@ target(link_target_type, "child") {
     "scoped_web_callbacks.h",
     "service_factory.cc",
     "service_factory.h",
+    "service_worker/controller_service_worker_connector.cc",
+    "service_worker/controller_service_worker_connector.h",
     "service_worker/service_worker_dispatcher.cc",
     "service_worker/service_worker_dispatcher.h",
     "service_worker/service_worker_handle_reference.cc",

@@ -8,8 +8,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "content/child/service_worker/controller_service_worker_connector.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
+#include "content/common/service_worker/service_worker_fetch_response_callback.mojom.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -20,19 +21,20 @@
 namespace content {
 
 class ChildURLLoaderFactoryGetter;
+class ControllerServiceWorkerConnector;
 
 // S13nServiceWorker:
 // A custom URLLoader implementation used by Service Worker controllees
 // for loading subresources via the controller Service Worker.
 // Currently an instance of this class is created and used only on
 // the main thread (while the implementation itself is thread agnostic).
-// TODO(kinuko): Consider factoring out the common part with
-// ServiceWorkerURLLoaderJob into WebKit/common.
 class CONTENT_EXPORT ServiceWorkerSubresourceLoader
     : public mojom::URLLoader,
       public mojom::URLLoaderClient,
       public mojom::ServiceWorkerFetchResponseCallback {
  public:
+  // See the comments for ServiceWorkerSubresourceLoaderFactory's ctor (below)
+  // to see how each parameter is used.
   ServiceWorkerSubresourceLoader(
       mojom::URLLoaderRequest request,
       int32_t routing_id,
@@ -41,9 +43,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
       const ResourceRequest& resource_request,
       mojom::URLLoaderClientPtr client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-      scoped_refptr<
-          base::RefCountedData<mojom::ServiceWorkerEventDispatcherPtr>>
-          event_dispatcher,
+      scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
       scoped_refptr<ChildURLLoaderFactoryGetter> default_loader_factory_getter,
       const GURL& controller_origin,
       scoped_refptr<base::RefCountedData<storage::mojom::BlobRegistryPtr>>
@@ -113,8 +113,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   // For handling FetchEvent response.
   mojo::Binding<ServiceWorkerFetchResponseCallback> response_callback_binding_;
 
-  scoped_refptr<base::RefCountedData<mojom::ServiceWorkerEventDispatcherPtr>>
-      event_dispatcher_;
+  scoped_refptr<ControllerServiceWorkerConnector> controller_connector_;
 
   // These are given by the constructor (as the params for
   // URLLoaderFactory::CreateLoaderAndStart).
@@ -155,7 +154,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
 class CONTENT_EXPORT ServiceWorkerSubresourceLoaderFactory
     : public mojom::URLLoaderFactory {
  public:
-  // |event_dispatcher| is used to dispatch FetchEvent to the controller
+  // |controller_connector_| is used to get a connection to the controller
   // ServiceWorker.
   // |default_loader_factory_getter| contains a set of default loader
   // factories for the associated loading context, used to get
@@ -163,8 +162,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoaderFactory
   // network fallback. |controller_origin| is used to create a new Blob public
   // URL (this will become unnecessary once we switch over to MojoBlobs).
   ServiceWorkerSubresourceLoaderFactory(
-      scoped_refptr<base::RefCountedData<
-          mojom::ServiceWorkerEventDispatcherPtr>> event_dispatcher,
+      scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
       scoped_refptr<ChildURLLoaderFactoryGetter> default_loader_factory_getter,
       const GURL& controller_origin,
       scoped_refptr<base::RefCountedData<storage::mojom::BlobRegistryPtr>>
@@ -184,8 +182,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoaderFactory
   void Clone(mojom::URLLoaderFactoryRequest request) override;
 
  private:
-  scoped_refptr<base::RefCountedData<mojom::ServiceWorkerEventDispatcherPtr>>
-      event_dispatcher_;
+  scoped_refptr<ControllerServiceWorkerConnector> controller_connector_;
 
   // Contains a set of default loader factories for the associated loading
   // context. Used to load a blob, and for network fallback.

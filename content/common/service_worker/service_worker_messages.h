@@ -153,9 +153,6 @@ IPC_STRUCT_BEGIN(ServiceWorkerMsg_SetControllerServiceWorker_Params)
   // |used_features| is the set of features that the worker has used.
   // The values must be from blink::UseCounter::Feature enum.
   IPC_STRUCT_MEMBER(std::set<uint32_t>, used_features)
-
-  // Mojo endpoint to dispatch events to the controller.
-  IPC_STRUCT_MEMBER(mojo::MessagePipeHandle, controller_event_dispatcher)
 IPC_STRUCT_END()
 
 //---------------------------------------------------------------------------

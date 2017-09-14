@@ -21,7 +21,6 @@
 #include "content/child/service_worker/web_service_worker_registration_impl.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/webmessageportchannel_impl.h"
-#include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/content_constants.h"
@@ -522,14 +521,6 @@ void ServiceWorkerDispatcher::OnSetControllerServiceWorker(
       "ServiceWorker", "ServiceWorkerDispatcher::OnSetControllerServiceWorker",
       "Thread ID", params.thread_id, "Provider ID", params.provider_id);
 
-  mojom::ServiceWorkerEventDispatcherPtrInfo event_dispatcher_ptr_info;
-  if (params.controller_event_dispatcher.is_valid()) {
-    // Chrome doesn't use interface versioning.
-    event_dispatcher_ptr_info = mojom::ServiceWorkerEventDispatcherPtrInfo(
-        mojo::ScopedMessagePipeHandle(params.controller_event_dispatcher),
-        0u /* version */);
-  }
-
   // Adopt the reference sent from the browser process and pass it to the
   // provider context if it exists.
   std::unique_ptr<ServiceWorkerHandleReference> handle_ref =
@@ -537,8 +528,8 @@ void ServiceWorkerDispatcher::OnSetControllerServiceWorker(
   ProviderContextMap::iterator provider =
       provider_contexts_.find(params.provider_id);
   if (provider != provider_contexts_.end()) {
-    provider->second->SetController(std::move(handle_ref), params.used_features,
-                                    std::move(event_dispatcher_ptr_info));
+    provider->second->SetController(std::move(handle_ref),
+                                    params.used_features);
   }
 
   ProviderClientMap::iterator found =

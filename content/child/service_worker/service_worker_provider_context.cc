@@ -12,6 +12,7 @@
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/child/child_thread_impl.h"
+#include "content/child/service_worker/controller_service_worker_connector.h"
 #include "content/child/service_worker/service_worker_dispatcher.h"
 #include "content/child/service_worker/service_worker_handle_reference.h"
 #include "content/child/service_worker/service_worker_registration_handle_reference.h"
@@ -42,7 +43,8 @@ struct ServiceWorkerProviderContext::ControlleeState {
 
   // S13nServiceWorker:
   // Used to intercept requests from the controllee and dispatch them
-  // as events to the controller ServiceWorker.
+  // as events to the controller ServiceWorker. This is reset when a new
+  // controller is set.
   mojom::URLLoaderFactoryPtr subresource_loader_factory;
 
   // S13nServiceWorker:
@@ -60,6 +62,13 @@ struct ServiceWorkerProviderContext::ControlleeState {
   //   speaking, for its shadow page), then |worker_clients| has one element:
   //   the shared worker.
   std::vector<mojom::ServiceWorkerWorkerClientPtr> worker_clients;
+
+  // S13nServiceWorker
+  // Used in |subresource_loader_factory| to get the connection to the
+  // controller service worker. Kept here in order to call
+  // OnContainerHostConnectionClosed when container_host_ for the
+  // provider is reset.
+  scoped_refptr<ControllerServiceWorkerConnector> controller_connector;
 };
 
 // Holds state for service worker execution contexts.
@@ -139,8 +148,7 @@ void ServiceWorkerProviderContext::GetRegistration(
 
 void ServiceWorkerProviderContext::SetController(
     std::unique_ptr<ServiceWorkerHandleReference> controller,
-    const std::set<uint32_t>& used_features,
-    mojom::ServiceWorkerEventDispatcherPtrInfo event_dispatcher_ptr_info) {
+    const std::set<uint32_t>& used_features) {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   ControlleeState* state = controllee_state_.get();
   DCHECK(state);
@@ -156,22 +164,19 @@ void ServiceWorkerProviderContext::SetController(
   }
   state->controller = std::move(controller);
   state->used_features = used_features;
-  if (event_dispatcher_ptr_info.is_valid()) {
-    CHECK(ServiceWorkerUtils::IsServicificationEnabled());
-    mojom::ServiceWorkerEventDispatcherPtr event_dispatcher_ptr;
-    event_dispatcher_ptr.Bind(std::move(event_dispatcher_ptr_info));
-    auto event_dispatcher = base::MakeRefCounted<
-        base::RefCountedData<mojom::ServiceWorkerEventDispatcherPtr>>();
-    event_dispatcher->data = std::move(event_dispatcher_ptr);
+  if (ServiceWorkerUtils::IsServicificationEnabled()) {
     storage::mojom::BlobRegistryPtr blob_registry_ptr;
     ChildThreadImpl::current()->GetConnector()->BindInterface(
         mojom::kBrowserServiceName, mojo::MakeRequest(&blob_registry_ptr));
     auto blob_registry = base::MakeRefCounted<
         base::RefCountedData<storage::mojom::BlobRegistryPtr>>();
     blob_registry->data = std::move(blob_registry_ptr);
+    state->controller_connector =
+        base::MakeRefCounted<ControllerServiceWorkerConnector>(
+            container_host_.get());
     mojo::MakeStrongBinding(
         base::MakeUnique<ServiceWorkerSubresourceLoaderFactory>(
-            std::move(event_dispatcher), state->default_loader_factory_getter,
+            state->controller_connector, state->default_loader_factory_getter,
             state->controller->url().GetOrigin(), std::move(blob_registry)),
         mojo::MakeRequest(&state->subresource_loader_factory));
   }
@@ -234,6 +239,8 @@ void ServiceWorkerProviderContext::UnregisterWorkerFetchContext(
 
 void ServiceWorkerProviderContext::OnNetworkProviderDestroyed() {
   container_host_.reset();
+  if (controllee_state_ && controllee_state_->controller_connector)
+    controllee_state_->controller_connector->OnContainerHostConnectionClosed();
 }
 
 void ServiceWorkerProviderContext::DestructOnMainThread() const {
