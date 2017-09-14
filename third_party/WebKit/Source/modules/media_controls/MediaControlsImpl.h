@@ -176,6 +176,8 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void StartHideMediaControlsTimer();
   void StopHideMediaControlsTimer();
   void ResetHideMediaControlsTimer();
+  void HideCursor();
+  void ShowCursor();
 
   void ElementSizeChangedTimerFired(TimerBase*);
 
