@@ -267,12 +267,6 @@ RendererSchedulerImpl::LoadingTaskRunner() {
   return default_loading_task_queue_;
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-RendererSchedulerImpl::TimerTaskRunner() {
-  helper_.CheckOnValidThread();
-  return default_timer_task_queue_;
-}
-
 scoped_refptr<MainThreadTaskQueue> RendererSchedulerImpl::DefaultTaskQueue() {
   return helper_.DefaultMainThreadTaskQueue();
 }

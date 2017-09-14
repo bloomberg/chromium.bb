@@ -30,7 +30,6 @@ class MockRendererScheduler : public RendererScheduler {
                scoped_refptr<base::SingleThreadTaskRunner>());
   MOCK_METHOD0(IdleTaskRunner,
                scoped_refptr<blink::scheduler::SingleThreadIdleTaskRunner>());
-  MOCK_METHOD0(TimerTaskRunner, scoped_refptr<base::SingleThreadTaskRunner>());
   MOCK_METHOD0(NewRenderWidgetSchedulingState,
                std::unique_ptr<RenderWidgetSchedulingState>());
   MOCK_METHOD1(WillBeginFrame, void(const viz::BeginFrameArgs&));

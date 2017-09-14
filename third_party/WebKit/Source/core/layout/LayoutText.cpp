@@ -26,6 +26,7 @@
 
 #include <algorithm>
 #include "core/dom/AXObjectCache.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/Text.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/VisiblePosition.h"
@@ -75,10 +76,8 @@ static SecureTextTimerMap* g_secure_text_timers = nullptr;
 class SecureTextTimer final : public TimerBase {
  public:
   SecureTextTimer(LayoutText* layout_text)
-      : TimerBase(Platform::Current()
-                      ->CurrentThread()
-                      ->Scheduler()
-                      ->TimerTaskRunner()),
+      : TimerBase(TaskRunnerHelper::Get(TaskType::kUserInteraction,
+                                        &layout_text->GetDocument())),
         layout_text_(layout_text),
         last_typed_character_offset_(-1) {}
 
