@@ -993,7 +993,7 @@ This file contains the strings for ash.
         Help us improve Chromebooks
       </message>
       <message name="IDS_ASH_HATS_NOTIFICATION_BODY" desc="The body of the notification for Happiness Tracking Survey.">
-        Let us know how we’re doing by answering a few questions.
+        Let us know how we’re doing.
       </message>
       <message name="IDS_ASH_HATS_NOTIFICATION_TAKE_SURVEY_BUTTON" desc="The title of the button in the notification for Happiness Tracking Survey to take the said survey.">
         Take survey

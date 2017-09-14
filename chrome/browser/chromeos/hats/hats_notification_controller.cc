@@ -30,6 +30,7 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification_types.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
+#include "ui/message_center/public/cpp/message_center_switches.h"
 #include "ui/strings/grit/ui_strings.h"
 
 namespace {
@@ -200,8 +201,11 @@ void HatsNotificationController::OnPortalDetectionCompleted(
 
 Notification* HatsNotificationController::CreateNotification() {
   message_center::RichNotificationData optional;
-  optional.buttons.push_back(message_center::ButtonInfo(
-      l10n_util::GetStringUTF16(IDS_ASH_HATS_NOTIFICATION_TAKE_SURVEY_BUTTON)));
+  if (!message_center::IsNewStyleNotificationEnabled()) {
+    optional.buttons.push_back(
+        message_center::ButtonInfo(l10n_util::GetStringUTF16(
+            IDS_ASH_HATS_NOTIFICATION_TAKE_SURVEY_BUTTON)));
+  }
 
   Notification* notification = new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
@@ -213,8 +217,15 @@ Notification* HatsNotificationController::CreateNotification() {
                                  ash::system_notifier::kNotifierHats),
       l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_NOTIFIER_HATS_NAME),
       GURL(kNotificationOriginUrl), kNotificationId, optional, this);
-  notification->set_accent_color(
-      message_center::kSystemNotificationColorNormal);
+  if (message_center::IsNewStyleNotificationEnabled()) {
+    notification->set_icon(gfx::Image());
+    notification->set_accent_color(
+        message_center::kSystemNotificationColorNormal);
+    notification->set_small_image(gfx::Image(gfx::CreateVectorIcon(
+        kNotificationGoogleIcon, message_center::kSmallImageSizeMD,
+        message_center::kSystemNotificationColorNormal)));
+    notification->set_vector_small_image(kNotificationGoogleIcon);
+  }
   return notification;
 }
 

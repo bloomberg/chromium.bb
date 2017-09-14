@@ -122,6 +122,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     icons += [
       "arc_migrate_encryption_notification.icon",
       "notification_captive_portal.icon",
+      "notification_google.icon",
       "warning_badge_circle.1x.icon",
       "warning_badge_circle.icon",
     ]
