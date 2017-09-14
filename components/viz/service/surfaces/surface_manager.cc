@@ -465,14 +465,16 @@ void SurfaceManager::MarkOldTemporaryReference() {
 
   std::vector<SurfaceId> temporary_references_to_delete;
   for (auto& map_entry : temporary_references_) {
+    const SurfaceId& surface_id = map_entry.first;
     TemporaryReferenceData& data = map_entry.second;
     if (data.marked_as_old) {
       // The temporary reference has existed for more than 10 seconds, a surface
       // reference should have replaced it by now. To avoid permanently leaking
       // memory delete the temporary reference.
-      DLOG(ERROR) << "Old/orphaned temporary reference to " << map_entry.first;
-      temporary_references_to_delete.push_back(map_entry.first);
-    } else {
+      DLOG(ERROR) << "Old/orphaned temporary reference to " << surface_id;
+      temporary_references_to_delete.push_back(surface_id);
+    } else if (IsMarkedForDestruction(surface_id)) {
+      // Never mark live surfaces as old, they can't be garbage collected.
       data.marked_as_old = true;
     }
   }
