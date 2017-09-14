@@ -120,7 +120,7 @@ LinuxSandbox::LinuxSandbox(const std::vector<BrokerFilePermission>& permissions)
     : broker_(new sandbox::syscall_broker::BrokerProcess(EPERM, permissions)) {
   CHECK(broker_->Init(
       base::Bind<bool (*)()>(&sandbox::Credentials::DropAllCapabilities)));
-  policy_.reset(new SandboxPolicy(broker_.get()));
+  policy_ = std::make_unique<SandboxPolicy>(broker_.get());
 }
 
 LinuxSandbox::~LinuxSandbox() {}
@@ -146,7 +146,7 @@ void LinuxSandbox::EngageNamespaceSandbox() {
 
 void LinuxSandbox::EngageSeccompSandbox() {
   CHECK(warmed_up_);
-  sandbox::SandboxBPF sandbox(policy_.release());
+  sandbox::SandboxBPF sandbox(std::move(policy_));
   base::ScopedFD proc_fd(HANDLE_EINTR(
       openat(proc_fd_.get(), ".", O_RDONLY | O_DIRECTORY | O_CLOEXEC)));
   CHECK(proc_fd.is_valid());
