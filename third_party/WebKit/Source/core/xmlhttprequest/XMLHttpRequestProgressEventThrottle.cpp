@@ -77,8 +77,8 @@ Event* XMLHttpRequestProgressEventThrottle::DeferredEvent::Take() {
 
 XMLHttpRequestProgressEventThrottle::XMLHttpRequestProgressEventThrottle(
     XMLHttpRequest* target)
-    : TimerBase(
-          Platform::Current()->CurrentThread()->Scheduler()->TimerTaskRunner()),
+    : TimerBase(TaskRunnerHelper::Get(TaskType::kNetworking,
+                                      target->GetExecutionContext())),
       target_(target),
       has_dispatched_progress_progress_event_(false) {
   DCHECK(target);

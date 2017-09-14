@@ -7,6 +7,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/Document.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
@@ -27,32 +28,26 @@ namespace {
 class RegistrationCallback
     : public WebServiceWorkerProvider::WebServiceWorkerRegistrationCallbacks {
  public:
-  explicit RegistrationCallback(LinkLoaderClient* client) : client_(client) {}
+  explicit RegistrationCallback(HTMLLinkElement* owner) : owner_(owner) {}
   ~RegistrationCallback() override {}
 
   void OnSuccess(
       std::unique_ptr<WebServiceWorkerRegistration::Handle> handle) override {
-    Platform::Current()
-        ->CurrentThread()
-        ->Scheduler()
-        ->TimerTaskRunner()
+    TaskRunnerHelper::Get(TaskType::kUnthrottled, &owner_->GetDocument())
         ->PostTask(BLINK_FROM_HERE,
-                   WTF::Bind(&LinkLoaderClient::LinkLoaded, client_));
+                   WTF::Bind(&LinkLoaderClient::LinkLoaded, owner_));
   }
 
   void OnError(const WebServiceWorkerError& error) override {
-    Platform::Current()
-        ->CurrentThread()
-        ->Scheduler()
-        ->TimerTaskRunner()
+    TaskRunnerHelper::Get(TaskType::kUnthrottled, &owner_->GetDocument())
         ->PostTask(BLINK_FROM_HERE,
-                   WTF::Bind(&LinkLoaderClient::LinkLoadingErrored, client_));
+                   WTF::Bind(&LinkLoaderClient::LinkLoadingErrored, owner_));
   }
 
  private:
   WTF_MAKE_NONCOPYABLE(RegistrationCallback);
 
-  Persistent<LinkLoaderClient> client_;
+  Persistent<HTMLLinkElement> owner_;
 };
 }
 

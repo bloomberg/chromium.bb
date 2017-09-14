@@ -61,10 +61,6 @@ class BLINK_PLATFORM_EXPORT RendererScheduler : public ChildScheduler {
   // to resource dispatch, foreground HTML parsing, etc...
   virtual scoped_refptr<base::SingleThreadTaskRunner> LoadingTaskRunner() = 0;
 
-  // Returns the timer task runner.  This queue is intended for DOM Timers.
-  // TODO(alexclarke): Get rid of this default timer queue.
-  virtual scoped_refptr<base::SingleThreadTaskRunner> TimerTaskRunner() = 0;
-
   // Returns a new RenderWidgetSchedulingState.  The signals from this will be
   // used to make scheduling decisions.
   virtual std::unique_ptr<RenderWidgetSchedulingState>

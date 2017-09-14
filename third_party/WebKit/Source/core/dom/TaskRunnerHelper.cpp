@@ -47,6 +47,7 @@ RefPtr<WebTaskRunner> TaskRunnerHelper::Get(TaskType type, LocalFrame* frame) {
     case TaskType::kSensor:
     case TaskType::kPerformanceTimeline:
     case TaskType::kWebGL:
+    case TaskType::kIdleTask:
     case TaskType::kUnspecedTimer:
     case TaskType::kMiscPlatformAPI:
       // TODO(altimin): Move appropriate tasks to throttleable task queue.
@@ -132,6 +133,7 @@ RefPtr<WebTaskRunner> TaskRunnerHelper::Get(TaskType type,
     case TaskType::kSensor:
     case TaskType::kPerformanceTimeline:
     case TaskType::kWebGL:
+    case TaskType::kIdleTask:
     case TaskType::kMiscPlatformAPI:
     case TaskType::kUnspecedTimer:
     case TaskType::kUnspecedLoading:

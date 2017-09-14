@@ -95,6 +95,9 @@ enum class TaskType : unsigned {
   // This task source is used for all tasks in the WebGL spec.
   kWebGL,
 
+  // https://www.w3.org/TR/requestidlecallback/#start-an-event-loop-s-idle-period
+  kIdleTask,
+
   // Use MiscPlatformAPI for a task that is defined in the spec but is not yet
   // associated with any specific task runner in the spec. MiscPlatformAPI is
   // not encouraged for stable and matured APIs. The spec should define the task
