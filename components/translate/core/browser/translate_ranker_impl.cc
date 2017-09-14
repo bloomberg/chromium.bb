@@ -25,7 +25,7 @@
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/common/translate_switches.h"
 #include "components/variations/variations_associated_data.h"
-#include "services/metrics/public/cpp/ukm_entry_builder.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "url/gurl.h"
 
@@ -314,22 +314,18 @@ void TranslateRankerImpl::SendEventToUKM(
   DVLOG(3) << "Sending event for url: " << url.spec();
   ukm::SourceId source_id = ukm_recorder_->GetNewSourceID();
   ukm_recorder_->UpdateSourceURL(source_id, url);
-  std::unique_ptr<ukm::UkmEntryBuilder> builder =
-      ukm_recorder_->GetEntryBuilder(source_id, "Translate");
-  // The metrics added here should be kept in sync with the documented
-  // metrics in tools/metrics/ukm/ukm.xml.
   // TODO(hamelphi): Remove hashing functions once UKM accepts strings metrics.
-  builder->AddMetric("SourceLanguage",
-                     base::HashMetricName(event.source_language()));
-  builder->AddMetric("TargetLanguage",
-                     base::HashMetricName(event.target_language()));
-  builder->AddMetric("Country", base::HashMetricName(event.country()));
-  builder->AddMetric("AcceptCount", event.accept_count());
-  builder->AddMetric("DeclineCount", event.decline_count());
-  builder->AddMetric("IgnoreCount", event.ignore_count());
-  builder->AddMetric("RankerVersion", event.ranker_version());
-  builder->AddMetric("RankerResponse", event.ranker_response());
-  builder->AddMetric("EventType", event.event_type());
+  ukm::builders::Translate(source_id)
+      .SetSourceLanguage(base::HashMetricName(event.source_language()))
+      .SetTargetLanguage(base::HashMetricName(event.target_language()))
+      .SetCountry(base::HashMetricName(event.country()))
+      .SetAcceptCount(event.accept_count())
+      .SetDeclineCount(event.decline_count())
+      .SetIgnoreCount(event.ignore_count())
+      .SetRankerVersion(event.ranker_version())
+      .SetRankerResponse(event.ranker_response())
+      .SetEventType(event.event_type())
+      .Record(ukm_recorder_);
 }
 
 void TranslateRankerImpl::AddTranslateEvent(
