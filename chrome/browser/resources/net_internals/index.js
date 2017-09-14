@@ -45,7 +45,6 @@
 // <include src="prerender_view.js">
 // <include src="chromeos_view.js">
 // <include src="bandwidth_view.js">
-// <include src="sdch_view.js">
 
 document.addEventListener('DOMContentLoaded', function() {
   MainView.getInstance();  // from main.js

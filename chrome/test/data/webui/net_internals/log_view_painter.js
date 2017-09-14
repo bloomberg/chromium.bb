@@ -391,7 +391,7 @@ function painterTestURLRequest() {
           'Connection: keep-alive',
           'User-Agent: Mozilla/5.0',
           'Accept: text/html',
-          'Accept-Encoding: gzip,deflate,sdch',
+          'Accept-Encoding: gzip,deflate',
           'Accept-Language: en-US,en;q=0.8',
           'Accept-Charset: ISO-8859-1'
         ],
@@ -795,7 +795,7 @@ function painterTestURLRequest() {
 '                                    Connection: keep-alive\n' +
 '                                    User-Agent: Mozilla/5.0\n' +
 '                                    Accept: text/html\n' +
-'                                    Accept-Encoding: gzip,deflate,sdch\n' +
+'                                    Accept-Encoding: gzip,deflate\n' +
 '                                    Accept-Language: en-US,en;q=0.8\n' +
 '                                    Accept-Charset: ISO-8859-1\n' +
 't=1338864633361 [st=137]     -HTTP_TRANSACTION_SEND_REQUEST\n' +
@@ -1776,7 +1776,7 @@ function painterTestDontStripCookiesURLRequest() {
           'Connection: keep-alive',
           'User-Agent: Mozilla/5.0',
           'Accept: text/html',
-          'Accept-Encoding: gzip,deflate,sdch',
+          'Accept-Encoding: gzip,deflate',
           'Accept-Language: en-US,en;q=0.8',
           'Accept-Charset: ISO-8859-1',
           'Cookie: MyMagicPony'
@@ -1813,7 +1813,7 @@ function painterTestDontStripCookiesURLRequest() {
 '                              Connection: keep-alive\n' +
 '                              User-Agent: Mozilla/5.0\n' +
 '                              Accept: text/html\n' +
-'                              Accept-Encoding: gzip,deflate,sdch\n' +
+'                              Accept-Encoding: gzip,deflate\n' +
 '                              Accept-Language: en-US,en;q=0.8\n' +
 '                              Accept-Charset: ISO-8859-1\n' +
 '                              Cookie: MyMagicPony';
@@ -1853,7 +1853,7 @@ function painterTestDontStripCookiesSPDYSession() {
           ':version: HTTP/1.1',
           'accept: text/html',
           'accept-charset: ISO-8859-1',
-          'accept-encoding: gzip,deflate,sdch',
+          'accept-encoding: gzip,deflate',
           'accept-language: en-US,en;q=0.8',
           'cookie: MyMagicPony',
           'user-agent: Mozilla/5.0'
@@ -1901,7 +1901,7 @@ function painterTestDontStripCookiesSPDYSession() {
     '                               :version: HTTP/1.1\n' +
     '                               accept: text/html\n' +
     '                               accept-charset: ISO-8859-1\n' +
-    '                               accept-encoding: gzip,deflate,sdch\n' +
+    '                               accept-encoding: gzip,deflate\n' +
     '                               accept-language: en-US,en;q=0.8\n' +
     '                               cookie: MyMagicPony\n' +
     '                               user-agent: Mozilla/5.0\n' +
