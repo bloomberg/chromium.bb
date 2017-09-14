@@ -56,3 +56,6 @@
 -WebViewTests/WebViewSizeTest.Shim_TestResizeWebviewWithDisplayNoneResizesContent/0
 -WebViewTests/WebViewSizeTest.Shim_TestResizeWebviewWithDisplayNoneResizesContent/1
 -WebViewTests/WebViewTest.InterstitialPageFocusedWidget/1
+
+# TODO: fix, http://crbug.com/765414.
+-BrowserOnly/MemlogBrowserTest.EndToEnd/0
