@@ -34,13 +34,15 @@ typedef void (*IntraPred)(uint16_t *dst, ptrdiff_t stride,
 
 struct IntraPredFunc {
   IntraPredFunc(IntraPred pred = NULL, IntraPred ref = NULL,
-                int block_size_value = 0, int bit_depth_value = 0)
-      : pred_fn(pred), ref_fn(ref), block_size(block_size_value),
-        bit_depth(bit_depth_value) {}
+                int block_width_value = 0, int block_height_value = 0,
+                int bit_depth_value = 0)
+      : pred_fn(pred), ref_fn(ref), block_width(block_width_value),
+        block_height(block_height_value), bit_depth(bit_depth_value) {}
 
   IntraPred pred_fn;
   IntraPred ref_fn;
-  int block_size;
+  int block_width;
+  int block_height;
   int bit_depth;
 };
 
@@ -49,7 +51,8 @@ class AV1IntraPredTest : public ::testing::TestWithParam<IntraPredFunc> {
   void RunTest(uint16_t *left_col, uint16_t *above_data, uint16_t *dst,
                uint16_t *ref_dst) {
     ACMRandom rnd(ACMRandom::DeterministicSeed());
-    const int block_size = params_.block_size;
+    const int block_width = params_.block_width;
+    const int block_height = params_.block_height;
     above_row_ = above_data + 16;
     left_col_ = left_col;
     dst_ = dst;
@@ -57,14 +60,14 @@ class AV1IntraPredTest : public ::testing::TestWithParam<IntraPredFunc> {
     int error_count = 0;
     for (int i = 0; i < count_test_block; ++i) {
       // Fill edges with random data, try first with saturated values.
-      for (int x = -1; x <= block_size * 2; x++) {
+      for (int x = -1; x <= block_width * 2; x++) {
         if (i == 0) {
           above_row_[x] = mask_;
         } else {
           above_row_[x] = rnd.Rand16() & mask_;
         }
       }
-      for (int y = 0; y < block_size; y++) {
+      for (int y = 0; y < block_height; y++) {
         if (i == 0) {
           left_col_[y] = mask_;
         } else {
@@ -80,7 +83,7 @@ class AV1IntraPredTest : public ::testing::TestWithParam<IntraPredFunc> {
  protected:
   virtual void SetUp() {
     params_ = GetParam();
-    stride_ = params_.block_size * 3;
+    stride_ = params_.block_width * 3;
     mask_ = (1 << params_.bit_depth) - 1;
   }
 
@@ -93,9 +96,10 @@ class AV1IntraPredTest : public ::testing::TestWithParam<IntraPredFunc> {
 
   void CheckPrediction(int test_case_number, int *error_count) const {
     // For each pixel ensure that the calculated value is the same as reference.
-    const int block_size = params_.block_size;
-    for (int y = 0; y < block_size; y++) {
-      for (int x = 0; x < block_size; x++) {
+    const int block_width = params_.block_width;
+    const int block_height = params_.block_height;
+    for (int y = 0; y < block_height; y++) {
+      for (int x = 0; x < block_width; x++) {
         *error_count += ref_dst_[x + y * stride_] != dst_[x + y * stride_];
         if (*error_count == 1) {
           ASSERT_EQ(ref_dst_[x + y * stride_], dst_[x + y * stride_])
@@ -124,69 +128,38 @@ TEST_P(AV1IntraPredTest, IntraPredTests) {
   RunTest(left_col, above_data, dst, ref_dst);
 }
 
+#define highbd_entry(type, width, height, opt, bd)                            \
+  IntraPredFunc(&aom_highbd_##type##_predictor_##width##x##height##_##opt,    \
+                &aom_highbd_##type##_predictor_##width##x##height##_c, width, \
+                height, bd)
+
 #if HAVE_SSE2
 #if CONFIG_HIGHBITDEPTH
 const IntraPredFunc IntraPredTestVector8[] = {
-  IntraPredFunc(&aom_highbd_dc_predictor_32x32_sse2,
-                &aom_highbd_dc_predictor_32x32_c, 32, 8),
-  IntraPredFunc(&aom_highbd_dc_predictor_4x4_sse2,
-                &aom_highbd_dc_predictor_4x4_c, 4, 8),
-  IntraPredFunc(&aom_highbd_dc_predictor_8x8_sse2,
-                &aom_highbd_dc_predictor_8x8_c, 8, 8),
-  IntraPredFunc(&aom_highbd_dc_predictor_16x16_sse2,
-                &aom_highbd_dc_predictor_16x16_c, 16, 8),
-  IntraPredFunc(&aom_highbd_v_predictor_4x4_sse2, &aom_highbd_v_predictor_4x4_c,
-                4, 8),
-  IntraPredFunc(&aom_highbd_v_predictor_8x8_sse2, &aom_highbd_v_predictor_8x8_c,
-                8, 8),
-  IntraPredFunc(&aom_highbd_v_predictor_16x16_sse2,
-                &aom_highbd_v_predictor_16x16_c, 16, 8),
-  IntraPredFunc(&aom_highbd_v_predictor_32x32_sse2,
-                &aom_highbd_v_predictor_32x32_c, 32, 8)
+  highbd_entry(dc, 4, 4, sse2, 8),   highbd_entry(dc, 8, 8, sse2, 8),
+  highbd_entry(dc, 16, 16, sse2, 8), highbd_entry(dc, 32, 32, sse2, 8),
+  highbd_entry(v, 4, 4, sse2, 8),    highbd_entry(v, 8, 8, sse2, 8),
+  highbd_entry(v, 16, 16, sse2, 8),  highbd_entry(v, 32, 32, sse2, 8),
 };
 
 INSTANTIATE_TEST_CASE_P(SSE2_TO_C_8, AV1IntraPredTest,
                         ::testing::ValuesIn(IntraPredTestVector8));
 
 const IntraPredFunc IntraPredTestVector10[] = {
-  IntraPredFunc(&aom_highbd_dc_predictor_32x32_sse2,
-                &aom_highbd_dc_predictor_32x32_c, 32, 10),
-  IntraPredFunc(&aom_highbd_dc_predictor_4x4_sse2,
-                &aom_highbd_dc_predictor_4x4_c, 4, 10),
-  IntraPredFunc(&aom_highbd_dc_predictor_8x8_sse2,
-                &aom_highbd_dc_predictor_8x8_c, 8, 10),
-  IntraPredFunc(&aom_highbd_dc_predictor_16x16_sse2,
-                &aom_highbd_dc_predictor_16x16_c, 16, 10),
-  IntraPredFunc(&aom_highbd_v_predictor_4x4_sse2, &aom_highbd_v_predictor_4x4_c,
-                4, 10),
-  IntraPredFunc(&aom_highbd_v_predictor_8x8_sse2, &aom_highbd_v_predictor_8x8_c,
-                8, 10),
-  IntraPredFunc(&aom_highbd_v_predictor_16x16_sse2,
-                &aom_highbd_v_predictor_16x16_c, 16, 10),
-  IntraPredFunc(&aom_highbd_v_predictor_32x32_sse2,
-                &aom_highbd_v_predictor_32x32_c, 32, 10)
+  highbd_entry(dc, 4, 4, sse2, 10),   highbd_entry(dc, 8, 8, sse2, 10),
+  highbd_entry(dc, 16, 16, sse2, 10), highbd_entry(dc, 32, 32, sse2, 10),
+  highbd_entry(v, 4, 4, sse2, 10),    highbd_entry(v, 8, 8, sse2, 10),
+  highbd_entry(v, 16, 16, sse2, 10),  highbd_entry(v, 32, 32, sse2, 10),
 };
 
 INSTANTIATE_TEST_CASE_P(SSE2_TO_C_10, AV1IntraPredTest,
                         ::testing::ValuesIn(IntraPredTestVector10));
 
 const IntraPredFunc IntraPredTestVector12[] = {
-  IntraPredFunc(&aom_highbd_dc_predictor_32x32_sse2,
-                &aom_highbd_dc_predictor_32x32_c, 32, 12),
-  IntraPredFunc(&aom_highbd_dc_predictor_4x4_sse2,
-                &aom_highbd_dc_predictor_4x4_c, 4, 12),
-  IntraPredFunc(&aom_highbd_dc_predictor_8x8_sse2,
-                &aom_highbd_dc_predictor_8x8_c, 8, 12),
-  IntraPredFunc(&aom_highbd_dc_predictor_16x16_sse2,
-                &aom_highbd_dc_predictor_16x16_c, 16, 12),
-  IntraPredFunc(&aom_highbd_v_predictor_4x4_sse2, &aom_highbd_v_predictor_4x4_c,
-                4, 12),
-  IntraPredFunc(&aom_highbd_v_predictor_8x8_sse2, &aom_highbd_v_predictor_8x8_c,
-                8, 12),
-  IntraPredFunc(&aom_highbd_v_predictor_16x16_sse2,
-                &aom_highbd_v_predictor_16x16_c, 16, 12),
-  IntraPredFunc(&aom_highbd_v_predictor_32x32_sse2,
-                &aom_highbd_v_predictor_32x32_c, 32, 12)
+  highbd_entry(dc, 4, 4, sse2, 12),   highbd_entry(dc, 8, 8, sse2, 12),
+  highbd_entry(dc, 16, 16, sse2, 12), highbd_entry(dc, 32, 32, sse2, 12),
+  highbd_entry(v, 4, 4, sse2, 12),    highbd_entry(v, 8, 8, sse2, 12),
+  highbd_entry(v, 16, 16, sse2, 12),  highbd_entry(v, 32, 32, sse2, 12),
 };
 
 INSTANTIATE_TEST_CASE_P(SSE2_TO_C_12, AV1IntraPredTest,
