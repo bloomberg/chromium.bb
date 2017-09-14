@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/libfuzzer/fuzzer_test.gni")
+
 static_library("utility") {
   sources = [
     "fingerprint_parser.cc",
@@ -26,5 +28,19 @@ source_set("unit_tests") {
     ":utility",
     "//base",
     "//testing/gtest",
+    "//url",
   ]
+}
+
+fuzzer_test("payment_method_manifest_fuzzer") {
+  sources = [
+    "payment_method_manifest_parser_fuzzer.cc",
+  ]
+  deps = [
+    ":utility",
+    "//base",
+    "//url",
+  ]
+  dict = "json.dict"
+  seed_corpus = "payment_method_manifest_fuzzer_corpus"
 }
