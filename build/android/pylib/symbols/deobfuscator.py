@@ -72,13 +72,13 @@ class Deobfuscator(object):
         out_lines.append(line)
 
     if not self.IsReady():
-      logging.warning('Having to wait for Java deobfuscation.')
+      logging.warning('deobfuscator: Having to wait for Java deobfuscation.')
 
     # Allow only one thread to operate at a time.
     with self._lock:
       if self.IsClosed():
         if not self._closed_called:
-          logging.warning('java_deobfuscate process exited with code=%d.',
+          logging.warning('deobfuscator: Process exited with code=%d.',
                           self._proc.returncode)
           self.Close()
         return lines
@@ -95,15 +95,16 @@ class Deobfuscator(object):
         timeout = max(_MINIUMUM_TIMEOUT, len(lines) * _PER_LINE_TIMEOUT)
         reader_thread.join(timeout)
         if self.IsClosed():
-          logging.warning('Close() called by another thread during join().')
+          logging.warning(
+              'deobfuscator: Close() called by another thread during join().')
           return lines
         if reader_thread.is_alive():
-          logging.error('java_deobfuscate timed out.')
+          logging.error('deobfuscator: Timed out.')
           self.Close()
           return lines
         return out_lines
       except IOError:
-        logging.exception('Exception during java_deobfuscate')
+        logging.exception('deobfuscator: Exception during java_deobfuscate')
         self.Close()
         return lines
 
@@ -117,7 +118,7 @@ class Deobfuscator(object):
   def __del__(self):
     # self._proc is None when Popen() fails.
     if not self._closed_called and self._proc:
-      logging.error('Forgot to Close() deobfuscator')
+      logging.error('deobfuscator: Forgot to Close()')
 
 
 class DeobfuscatorPool(object):
@@ -136,7 +137,7 @@ class DeobfuscatorPool(object):
       # Restart any closed Deobfuscators.
       for i, d in enumerate(self._pool):
         if d.IsClosed():
-          logging.warning('Restarting closed Deobfuscator instance.')
+          logging.warning('deobfuscator: Restarting closed instance.')
           self._pool[i] = Deobfuscator(self._mapping_path)
 
       selected = next((x for x in self._pool if x.IsReady()), self._pool[0])
