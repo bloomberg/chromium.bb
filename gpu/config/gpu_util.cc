@@ -54,9 +54,9 @@ GpuFeatureStatus GetGpuRasterizationFeatureStatus(
     return kGpuFeatureStatusBlacklisted;
 
 #if defined(OS_ANDROID)
-  // GPU Raster is always enabled on non-low-end Android. On low-end, it is
-  // controlled by a Finch experiment.
-  if (!base::SysInfo::IsLowEndDevice())
+  // GPU Raster is always enabled on >512MB Android devices. On 512MB devices,
+  // it is controlled by a Finch experiment.
+  if (base::SysInfo::AmountOfPhysicalMemoryMB() > 512)
     return kGpuFeatureStatusEnabled;
 #endif  // defined(OS_ANDROID)
 
