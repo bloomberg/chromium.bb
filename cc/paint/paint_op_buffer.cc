@@ -743,7 +743,12 @@ PaintOp* ConcatOp::Deserialize(const volatile void* input,
                                void* output,
                                size_t output_size) {
   DCHECK_GE(output_size, sizeof(ConcatOp));
-  return SimpleDeserialize<ConcatOp>(input, input_size, output, output_size);
+  auto* op =
+      SimpleDeserialize<ConcatOp>(input, input_size, output, output_size);
+  // Can't trust malicious clients to provide the correct derived matrix type.
+  if (op)
+    op->matrix.dirtyMatrixTypeCache();
+  return op;
 }
 
 PaintOp* DrawColorOp::Deserialize(const volatile void* input,
@@ -1027,7 +1032,12 @@ PaintOp* SetMatrixOp::Deserialize(const volatile void* input,
                                   void* output,
                                   size_t output_size) {
   DCHECK_GE(output_size, sizeof(SetMatrixOp));
-  return SimpleDeserialize<SetMatrixOp>(input, input_size, output, output_size);
+  auto* op =
+      SimpleDeserialize<SetMatrixOp>(input, input_size, output, output_size);
+  // Can't trust malicious clients to provide the correct derived matrix type.
+  if (op)
+    op->matrix.dirtyMatrixTypeCache();
+  return op;
 }
 
 PaintOp* TranslateOp::Deserialize(const volatile void* input,

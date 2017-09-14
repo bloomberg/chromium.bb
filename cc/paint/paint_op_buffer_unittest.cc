@@ -1844,6 +1844,19 @@ void CompareFlags(const PaintFlags& original, const PaintFlags& written) {
 
 void CompareImages(const PaintImage& original, const PaintImage& written) {}
 
+void CompareMatrices(const SkMatrix& original, const SkMatrix& written) {
+  // Compare the 3x3 matrix values.
+  EXPECT_EQ(original, written);
+
+  // getType will calculate a type but doesn't necessarily figure out that a
+  // matrix is identity (which setting identity will do).  So, verify that
+  // calculating the type on the original ends up with the same as the written,
+  // but not necessarily that the original and written have the same type.
+  SkMatrix orig_copy = original;
+  orig_copy.dirtyMatrixTypeCache();
+  EXPECT_EQ(orig_copy.getType(), written.getType());
+}
+
 void CompareAnnotateOp(const AnnotateOp* original, const AnnotateOp* written) {
   EXPECT_TRUE(original->IsValid());
   EXPECT_TRUE(written->IsValid());
@@ -1885,8 +1898,7 @@ void CompareClipRRectOp(const ClipRRectOp* original,
 void CompareConcatOp(const ConcatOp* original, const ConcatOp* written) {
   EXPECT_TRUE(original->IsValid());
   EXPECT_TRUE(written->IsValid());
-  EXPECT_EQ(original->matrix, written->matrix);
-  EXPECT_EQ(original->matrix.getType(), written->matrix.getType());
+  CompareMatrices(original->matrix, written->matrix);
 }
 
 void CompareDrawColorOp(const DrawColorOp* original,
@@ -2059,7 +2071,7 @@ void CompareSetMatrixOp(const SetMatrixOp* original,
                         const SetMatrixOp* written) {
   EXPECT_TRUE(original->IsValid());
   EXPECT_TRUE(written->IsValid());
-  EXPECT_EQ(original->matrix, written->matrix);
+  CompareMatrices(original->matrix, written->matrix);
 }
 
 void CompareTranslateOp(const TranslateOp* original,
