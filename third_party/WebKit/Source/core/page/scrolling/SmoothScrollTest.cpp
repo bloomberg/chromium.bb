@@ -416,6 +416,64 @@ TEST_F(SmoothScrollTest, ApplyRootElementScrollBehaviorToViewport) {
   ASSERT_EQ(Window().scrollY(), content->OffsetTop());
 }
 
+// This test passes if it doesn't crash/hit an ASAN check.
+TEST_F(SmoothScrollTest, RemoveSequencedScrollableArea) {
+  v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
+  WebView().Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(
+      "<!DOCTYPE html>"
+      "<style>"
+      ".scroller {"
+      "  scroll-behavior: smooth;"
+      "  overflow: scroll;"
+      "  position: absolute;"
+      "  z-index: 0;"
+      "  border: 10px solid #cce;"
+      "}"
+      "#outer {"
+      "  width: 350px;"
+      "  height: 200px;"
+      "  left: 50px;"
+      "  top: 50px;"
+      "}"
+      "#inner {"
+      "  width: 200px;"
+      "  height: 100px;"
+      "  left: 50px;"
+      "  top: 200px;"
+      "}"
+      "#target {"
+      "  margin: 200px 0 20px 200px;"
+      "  width: 50px;"
+      "  height: 30px;"
+      "  background-color: #c88;"
+      "}"
+      "</style>"
+      "<body>"
+      "<div class='scroller' id='outer'>"
+      "  <div class='scroller' id='inner'>"
+      "    <div id='target'></div>"
+      "  </div>"
+      "</div>");
+
+  Compositor().BeginFrame();
+
+  Element* target = GetDocument().getElementById("target");
+  target->scrollIntoView();
+
+  Compositor().BeginFrame();  // update run_state_.
+  Compositor().BeginFrame();  // Set start_time = now.
+
+  Element* inner = GetDocument().getElementById("inner");
+  Element* outer = GetDocument().getElementById("outer");
+  outer->removeChild(inner);
+
+  // Make sure that we don't try to animate the removed scroller.
+  Compositor().BeginFrame(1);
+}
+
 }  // namespace
 
 }  // namespace blink

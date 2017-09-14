@@ -41,6 +41,16 @@ void SmoothScrollSequencer::AbortAnimations() {
   queue_.clear();
 }
 
+void SmoothScrollSequencer::DidDisposeScrollableArea(
+    const ScrollableArea& area) {
+  for (Member<SequencedScroll>& sequenced_scroll : queue_) {
+    if (sequenced_scroll->scrollable_area.Get() == &area) {
+      AbortAnimations();
+      break;
+    }
+  }
+}
+
 DEFINE_TRACE(SmoothScrollSequencer) {
   visitor->Trace(queue_);
   visitor->Trace(current_scrollable_);
