@@ -249,8 +249,17 @@ class PLATFORM_EXPORT V8PerIsolateData {
   explicit V8PerIsolateData(const intptr_t* reference_table);
   ~V8PerIsolateData();
 
+  // A really simple hash function, which makes lookups faster. The set of
+  // possible keys for this is relatively small and fixed at compile time, so
+  // collisions are less of a worry than they would otherwise be.
+  struct SimplePtrHash : WTF::PtrHash<const void> {
+    static unsigned GetHash(const void* key) {
+      uintptr_t k = reinterpret_cast<uintptr_t>(key);
+      return static_cast<unsigned>(k ^ (k >> 8));
+    }
+  };
   using V8FunctionTemplateMap =
-      HashMap<const void*, v8::Eternal<v8::FunctionTemplate>>;
+      HashMap<const void*, v8::Eternal<v8::FunctionTemplate>, SimplePtrHash>;
   V8FunctionTemplateMap& SelectInterfaceTemplateMap(const DOMWrapperWorld&);
   V8FunctionTemplateMap& SelectOperationTemplateMap(const DOMWrapperWorld&);
   bool HasInstance(const WrapperTypeInfo* untrusted,
