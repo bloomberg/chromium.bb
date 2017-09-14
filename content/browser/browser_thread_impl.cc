@@ -17,7 +17,6 @@
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread_delegate.h"
 #include "content/public/browser/content_browser_client.h"
@@ -119,12 +118,6 @@ enum BrowserThreadState {
 using BrowserThreadDelegateAtomicPtr = base::subtle::AtomicWord;
 
 struct BrowserThreadGlobals {
-  BrowserThreadGlobals()
-      : blocking_pool(
-            new base::SequencedWorkerPool(3,
-                                          "BrowserBlocking",
-                                          base::TaskPriority::USER_VISIBLE)) {}
-
   // This lock protects |task_runners| and |states|. Do not read or modify those
   // arrays without holding this lock. Do not block while holding this lock.
   base::Lock lock;
@@ -143,8 +136,6 @@ struct BrowserThreadGlobals {
   // by BrowserThreadGlobals, rather by whoever calls
   // BrowserThread::SetIOThreadDelegate.
   BrowserThreadDelegateAtomicPtr io_thread_delegate = 0;
-
-  const scoped_refptr<base::SequencedWorkerPool> blocking_pool;
 };
 
 base::LazyInstance<BrowserThreadGlobals>::Leaky
@@ -173,26 +164,6 @@ BrowserThreadImpl::BrowserThreadImpl(ID identifier,
 
   DCHECK_EQ(globals.states[identifier_], BrowserThreadState::INITIALIZED);
   globals.states[identifier_] = BrowserThreadState::RUNNING;
-}
-
-// static
-void BrowserThreadImpl::ShutdownThreadPool() {
-  // The goal is to make it impossible for chrome to 'infinite loop' during
-  // shutdown, but to reasonably expect that all BLOCKING_SHUTDOWN tasks queued
-  // during shutdown get run. There's nothing particularly scientific about the
-  // number chosen.
-  const int kMaxNewShutdownBlockingTasks = 1000;
-  BrowserThreadGlobals& globals = g_globals.Get();
-  globals.blocking_pool->Shutdown(kMaxNewShutdownBlockingTasks);
-}
-
-// static
-void BrowserThreadImpl::FlushThreadPoolHelperForTesting() {
-  // We don't want to create a pool if none exists.
-  if (g_globals == nullptr)
-    return;
-  g_globals.Get().blocking_pool->FlushForTesting();
-  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
 }
 
 void BrowserThreadImpl::Init() {
@@ -530,26 +501,12 @@ bool BrowserThreadImpl::PostTaskHelper(BrowserThread::ID identifier,
 }
 
 // static
-bool BrowserThread::PostBlockingPoolSequencedTask(
-    const std::string& sequence_token_name,
-    const base::Location& from_here,
-    base::OnceClosure task) {
-  return g_globals.Get().blocking_pool->PostNamedSequencedWorkerTask(
-      sequence_token_name, from_here, std::move(task));
-}
-
-// static
 void BrowserThread::PostAfterStartupTask(
     const base::Location& from_here,
     const scoped_refptr<base::TaskRunner>& task_runner,
     base::OnceClosure task) {
   GetContentClient()->browser()->PostAfterStartupTask(from_here, task_runner,
                                                       std::move(task));
-}
-
-// static
-base::SequencedWorkerPool* BrowserThread::GetBlockingPool() {
-  return g_globals.Get().blocking_pool.get();
 }
 
 // static

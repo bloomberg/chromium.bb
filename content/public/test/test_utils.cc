@@ -156,8 +156,6 @@ void RunAllPendingInMessageLoop(BrowserThread::ID thread_id) {
 
 void RunAllBlockingPoolTasksUntilIdle() {
   while (true) {
-    content::BrowserThread::GetBlockingPool()->FlushForTesting();
-
     // Setup a task observer to determine if MessageLoop tasks run in the
     // current loop iteration. This must be done before
     // TaskScheduler::FlushForTesting() since this may spin the MessageLoop.

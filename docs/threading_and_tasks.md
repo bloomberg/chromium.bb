@@ -591,17 +591,6 @@ content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::[IDENTIFI
 
 Where `IDENTIFIER` is one of: `DB`, `FILE`, `FILE_USER_BLOCKING`, `PROCESS_LAUNCHER`, `CACHE`.
 
-The Chrome browser process has a “blocking pool” API:
-
-```cpp
-content::BrowserThread::PostBlockingPoolSequencedTask
-content::BrowserThread::GetBlockingPool
-```
-
-All tasks posted through this API are redirected to
-[`base/task_scheduler/post_task.h`](https://cs.chromium.org/chromium/src/base/task_scheduler/post_task.h).
-Therefore, there is no reason to add calls to this API.
-
 ## Using TaskScheduler in a New Process
 
 TaskScheduler needs to be initialized in a process before the functions in
