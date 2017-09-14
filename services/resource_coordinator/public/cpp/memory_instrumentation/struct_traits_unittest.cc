@@ -121,11 +121,9 @@ TEST_F(StructTraitsTest, MemoryAllocatorDump) {
   EXPECT_EQ(10u, output->GetSizeInternal());
   EXPECT_EQ(MemoryDumpLevelOfDetail::DETAILED, output->level_of_detail());
   MemoryAllocatorDump::Entry expected_entry1("size", "bytes", 10);
-  EXPECT_THAT(output->entries_for_testing(),
-              Contains(Eq(ByRef(expected_entry1))));
+  EXPECT_THAT(output->entries(), Contains(Eq(ByRef(expected_entry1))));
   MemoryAllocatorDump::Entry expected_entry2("count", "number", 20);
-  EXPECT_THAT(output->entries_for_testing(),
-              Contains(Eq(ByRef(expected_entry2))));
+  EXPECT_THAT(output->entries(), Contains(Eq(ByRef(expected_entry2))));
 }
 
 TEST_F(StructTraitsTest, ProcessMemoryDump) {
@@ -162,44 +160,40 @@ TEST_F(StructTraitsTest, ProcessMemoryDump) {
     ASSERT_NE(dumps.end(), mad_it);
     MemoryAllocatorDump::Entry expected_entry1("size", "bytes", 10);
     MemoryAllocatorDump::Entry expected_entry2("count", "number", 11);
-    EXPECT_THAT(mad_it->second->entries_for_testing(),
+    EXPECT_THAT(mad_it->second->entries(),
                 Contains(Eq(ByRef(expected_entry1))));
-    EXPECT_THAT(mad_it->second->entries_for_testing(),
+    EXPECT_THAT(mad_it->second->entries(),
                 Contains(Eq(ByRef(expected_entry2))));
   }
   {
     auto mad_it = dumps.find("mad/2");
     ASSERT_NE(dumps.end(), mad_it);
     MemoryAllocatorDump::Entry expected_entry("size", "bytes", 20);
-    EXPECT_EQ(1u, mad_it->second->entries_for_testing().size());
-    EXPECT_THAT(mad_it->second->entries_for_testing(),
-                Contains(Eq(ByRef(expected_entry))));
+    EXPECT_EQ(1u, mad_it->second->entries().size());
+    EXPECT_THAT(mad_it->second->entries(), Contains(Eq(ByRef(expected_entry))));
   }
   {
     auto mad_it = dumps.find("mad/3");
     ASSERT_NE(dumps.end(), mad_it);
     MemoryAllocatorDump::Entry expected_entry("count", "number", 31);
-    EXPECT_EQ(1u, mad_it->second->entries_for_testing().size());
-    EXPECT_THAT(mad_it->second->entries_for_testing(),
-                Contains(Eq(ByRef(expected_entry))));
+    EXPECT_EQ(1u, mad_it->second->entries().size());
+    EXPECT_THAT(mad_it->second->entries(), Contains(Eq(ByRef(expected_entry))));
   }
   {
     auto mad_it = dumps.find("global/1");
     ASSERT_NE(dumps.end(), mad_it);
     EXPECT_FALSE(mad_it->second->flags() & MemoryAllocatorDump::WEAK);
     MemoryAllocatorDump::Entry expected_entry("shared_name", "url", "!");
-    EXPECT_EQ(1u, mad_it->second->entries_for_testing().size());
-    EXPECT_THAT(mad_it->second->entries_for_testing(),
-                Contains(Eq(ByRef(expected_entry))));
+    EXPECT_EQ(1u, mad_it->second->entries().size());
+    EXPECT_THAT(mad_it->second->entries(), Contains(Eq(ByRef(expected_entry))));
   }
   {
     auto mad_it = dumps.find("global/2");
     ASSERT_NE(dumps.end(), mad_it);
     EXPECT_TRUE(mad_it->second->flags() & MemoryAllocatorDump::WEAK);
     MemoryAllocatorDump::Entry expected_entry("shared_weak_name", "url", ".");
-    EXPECT_EQ(1u, mad_it->second->entries_for_testing().size());
-    EXPECT_THAT(mad_it->second->entries_for_testing(),
-                Contains(Eq(ByRef(expected_entry))));
+    EXPECT_EQ(1u, mad_it->second->entries().size());
+    EXPECT_THAT(mad_it->second->entries(), Contains(Eq(ByRef(expected_entry))));
   }
   const auto& edges = output->allocator_dumps_edges_for_testing();
   {
