@@ -43,8 +43,7 @@ public class SigninPromoController {
     private static final int MAX_IMPRESSIONS_BOOKMARKS = 20;
     private static final int MAX_IMPRESSIONS_SETTINGS = 5;
 
-    private String mAccountName;
-    private final ProfileDataCache mProfileDataCache;
+    private @Nullable DisplayableProfileData mProfileData;
     private final @AccountSigninActivity.AccessPoint int mAccessPoint;
     private final @Nullable String mImpressionCountName;
     private final String mImpressionUserActionName;
@@ -88,12 +87,9 @@ public class SigninPromoController {
 
     /**
      * Creates a new SigninPromoController.
-     * @param profileDataCache The profile data cache for the latest used account on the device.
      * @param accessPoint Specifies the AccessPoint from which the promo is to be shown.
      */
-    public SigninPromoController(
-            ProfileDataCache profileDataCache, @AccountSigninActivity.AccessPoint int accessPoint) {
-        mProfileDataCache = profileDataCache;
+    public SigninPromoController(@AccountSigninActivity.AccessPoint int accessPoint) {
         mAccessPoint = accessPoint;
 
         switch (mAccessPoint) {
@@ -157,7 +153,7 @@ public class SigninPromoController {
      */
     public void recordSigninPromoImpression() {
         RecordUserAction.record(mImpressionUserActionName);
-        if (mAccountName == null) {
+        if (mProfileData == null) {
             RecordUserAction.record(mImpressionWithNoAccountUserActionName);
         } else {
             RecordUserAction.record(mImpressionWithAccountUserActionName);
@@ -194,7 +190,7 @@ public class SigninPromoController {
         mWasDisplayed = true;
         view.getDescription().setText(mDescriptionStringId);
 
-        if (mAccountName == null) {
+        if (mProfileData == null) {
             setupColdState(context, view);
         } else {
             setupHotState(context, view);
@@ -216,12 +212,13 @@ public class SigninPromoController {
     }
 
     /**
-     * Sets the the default account found on the device.
-     * @param accountName The name of the default account found on the device. Can be null if there
-     *         are no accounts signed in on the device.
+     * Sets the profile data which will be used to configure the promo.
+     * @param profileData If not null, the promo will be configured to be in the hot state, using
+     *         the account image, email and full name of the user to set the picture and the text of
+     *         the promo appropriately. Otherwise, the promo will be in the cold state.
      */
-    public void setAccountName(@Nullable String accountName) {
-        mAccountName = accountName;
+    public void setProfileData(@Nullable DisplayableProfileData profileData) {
+        mProfileData = profileData;
     }
 
     /** @return the resource used for the text displayed as promo description. */
@@ -243,22 +240,21 @@ public class SigninPromoController {
     }
 
     private void setupHotState(final Context context, SigninPromoView view) {
-        Drawable accountImage = mProfileDataCache.getImage(mAccountName);
+        Drawable accountImage = mProfileData.getImage();
         view.getImage().setImageDrawable(accountImage);
         setImageSize(context, view, R.dimen.signin_promo_account_image_size);
 
-        String accountTitle = getAccountTitle();
-        String signinButtonText =
-                context.getString(R.string.signin_promo_continue_as, accountTitle);
+        String signinButtonText = context.getString(
+                R.string.signin_promo_continue_as, mProfileData.getFullNameOrEmail());
         view.getSigninButton().setText(signinButtonText);
         view.getSigninButton().setOnClickListener(promoView -> {
             recordSigninButtonUsed();
             AccountSigninActivity.startFromConfirmationPage(
-                    context, mAccessPoint, mAccountName, true, true);
+                    context, mAccessPoint, mProfileData.getAccountName(), true, true);
         });
 
-        String chooseAccountButtonText =
-                context.getString(R.string.signin_promo_choose_account, mAccountName);
+        String chooseAccountButtonText = context.getString(
+                R.string.signin_promo_choose_account, mProfileData.getAccountName());
         view.getChooseAccountButton().setText(chooseAccountButtonText);
         view.getChooseAccountButton().setOnClickListener(promoView -> {
             recordSigninButtonUsed();
@@ -285,10 +281,5 @@ public class SigninPromoController {
         layoutParams.height = context.getResources().getDimensionPixelSize(dimenResId);
         layoutParams.width = context.getResources().getDimensionPixelSize(dimenResId);
         view.getImage().setLayoutParams(layoutParams);
-    }
-
-    private String getAccountTitle() {
-        String title = mProfileDataCache.getFullName(mAccountName);
-        return title == null ? mAccountName : title;
     }
 }

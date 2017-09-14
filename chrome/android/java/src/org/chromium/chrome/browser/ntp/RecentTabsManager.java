@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSession;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionCallback;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionTab;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.signin.DisplayableProfileData;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
 import org.chromium.chrome.browser.signin.SigninAccessPoint;
 import org.chromium.chrome.browser.signin.SigninManager;
@@ -108,8 +109,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_SIGNIN_PROMOS)) {
             int imageSize = context.getResources().getDimensionPixelSize(R.dimen.user_picture_size);
             mProfileDataCache = new ProfileDataCache(mContext, profile, imageSize);
-            mSigninPromoController =
-                    new SigninPromoController(mProfileDataCache, SigninAccessPoint.RECENT_TABS);
+            mSigninPromoController = new SigninPromoController(SigninAccessPoint.RECENT_TABS);
         }
 
         mRecentlyClosedTabManager.setTabsUpdatedRunnable(new Runnable() {
@@ -405,11 +405,12 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
         Account[] accounts = AccountManagerFacade.get().tryGetGoogleAccounts();
         String defaultAccountName = accounts.length == 0 ? null : accounts[0].name;
 
+        DisplayableProfileData profileData = null;
         if (defaultAccountName != null) {
             mProfileDataCache.update(Collections.singletonList(defaultAccountName));
+            profileData = mProfileDataCache.getProfileDataOrDefault(defaultAccountName);
         }
-
-        mSigninPromoController.setAccountName(defaultAccountName);
+        mSigninPromoController.setProfileData(profileData);
 
         if (!mIsNewPromoShowing) {
             mIsNewPromoShowing = true;
