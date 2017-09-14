@@ -48,7 +48,7 @@ void HpackStringCollector::Clear() {
 }
 
 bool HpackStringCollector::IsClear() const {
-  return s == "" && len == 0 && huffman_encoded == false && state == kGenesis;
+  return s.empty() && len == 0 && huffman_encoded == false && state == kGenesis;
 }
 
 bool HpackStringCollector::IsInProgress() const {
@@ -64,7 +64,6 @@ void HpackStringCollector::OnStringStart(bool huffman, size_t length) {
   state = kStarted;
   huffman_encoded = huffman;
   len = length;
-  return;
 }
 
 void HpackStringCollector::OnStringData(const char* data, size_t length) {

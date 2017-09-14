@@ -198,7 +198,6 @@ class HTTP2_EXPORT_PRIVATE HpackStringDecoder {
     remaining_ = length_decoder_.value();
     // Make callback so consumer knows what is coming.
     cb->OnStringStart(huffman_encoded_, remaining_);
-    return;
   }
 
   // Passes the available portion of the string to the listener, and signals

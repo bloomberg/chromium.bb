@@ -54,7 +54,6 @@ void HpackEntryDecoderVLoggingListener::OnValueStart(bool huffman_encoded,
   if (wrapped_) {
     wrapped_->OnValueStart(huffman_encoded, len);
   }
-  return;
 }
 
 void HpackEntryDecoderVLoggingListener::OnValueData(const char* data,
@@ -77,7 +76,6 @@ void HpackEntryDecoderVLoggingListener::OnDynamicTableSizeUpdate(size_t size) {
   if (wrapped_) {
     wrapped_->OnDynamicTableSizeUpdate(size);
   }
-  return;
 }
 
 }  // namespace net

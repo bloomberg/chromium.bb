@@ -28,7 +28,6 @@
 using ::testing::AssertionResult;
 using ::testing::AssertionSuccess;
 using ::testing::Combine;
-using ::testing::EndsWith;
 using ::testing::HasSubstr;
 using ::testing::MatchesRegex;
 using ::testing::Not;
