@@ -209,7 +209,7 @@ class IdlCallbackFunction(TypedObject):
 class IdlDictionary(object):
     def __init__(self, node):
         self.extended_attributes = {}
-        self.is_partial = bool(node.GetProperty('Partial'))
+        self.is_partial = bool(node.GetProperty('PARTIAL'))
         self.name = node.GetName()
         self.members = []
         self.parent = None
@@ -308,8 +308,7 @@ class IdlInterface(object):
         self.partial_interfaces = []
 
         self.is_callback = bool(node.GetProperty('CALLBACK'))
-        # FIXME: uppercase 'Partial' => 'PARTIAL' in base IDL parser
-        self.is_partial = bool(node.GetProperty('Partial'))
+        self.is_partial = bool(node.GetProperty('PARTIAL'))
         self.name = node.GetName()
         self.idl_type = IdlType(self.name)
 
