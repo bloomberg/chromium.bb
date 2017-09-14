@@ -171,7 +171,6 @@ class MediaStreamDevicesControllerTest : public WebRtcTestBase {
         PermissionRequestManager::FromWebContents(
             browser()->tab_strip_model()->GetActiveWebContents());
     prompt_factory_.reset(new MockPermissionPromptFactory(manager));
-    manager->DisplayPendingRequests();
 
     // Cleanup.
     media_stream_devices_.clear();
