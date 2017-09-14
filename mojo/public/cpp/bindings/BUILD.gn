@@ -142,6 +142,7 @@ component("bindings") {
     "sync_handle_registry.h",
     "sync_handle_watcher.h",
     "thread_safe_interface_ptr.h",
+    "tracked_scoped_refptr.h",
     "type_converter.h",
     "unique_ptr_impl_ref_traits.h",
   ]
