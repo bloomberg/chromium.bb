@@ -116,7 +116,7 @@ class DraggedNodeImageBuilder {
                             kPaintLayerAppliedTransform |
                             kPaintLayerUncachedClipRects;
     PaintRecordBuilder builder(
-        DataTransfer::DeviceSpaceBounds(bounding_box, *local_frame_));
+        DataTransfer::DeviceSpaceRect(bounding_box, *local_frame_));
 
     dragged_layout_object->GetDocument().Lifecycle().AdvanceTo(
         DocumentLifecycle::kInPaint);
@@ -352,18 +352,14 @@ void DataTransfer::SetDragImageElement(Node* node, const IntPoint& loc) {
 }
 
 // static
-// Converts from bounds in CSS space to device space based on the given
-// frame.
-FloatRect DataTransfer::DeviceSpaceBounds(const FloatRect css_bounds,
-                                          const LocalFrame& frame) {
+// Converts from bounds in CSS space to device space based on the given frame.
+FloatRect DataTransfer::DeviceSpaceRect(const FloatRect css_rect,
+                                        const LocalFrame& frame) {
   float device_scale_factor = frame.GetPage()->DeviceScaleFactorDeprecated();
   float page_scale_factor = frame.GetPage()->GetVisualViewport().Scale();
-  FloatRect device_bounds(css_bounds);
-  device_bounds.SetWidth(css_bounds.Width() * device_scale_factor *
-                         page_scale_factor);
-  device_bounds.SetHeight(css_bounds.Height() * device_scale_factor *
-                          page_scale_factor);
-  return device_bounds;
+  FloatRect device_rect(css_rect);
+  device_rect.Scale(device_scale_factor * page_scale_factor);
+  return device_rect;
 }
 
 // static
@@ -373,7 +369,7 @@ std::unique_ptr<DragImage> DataTransfer::CreateDragImageForFrame(
     const LocalFrame& frame,
     float opacity,
     RespectImageOrientationEnum image_orientation,
-    const FloatRect& css_bounds,
+    const FloatRect& css_rect,
     PaintRecordBuilder& builder,
     const PropertyTreeState& property_tree_state) {
   float device_scale_factor = frame.GetPage()->DeviceScaleFactorDeprecated();
@@ -381,19 +377,19 @@ std::unique_ptr<DragImage> DataTransfer::CreateDragImageForFrame(
 
   // Exclude content not in the visual viewport.
   auto viewport = frame.GetPage()->GetVisualViewport().VisibleRectInDocument();
-  FloatRect clipped_bounds = Intersection(css_bounds, viewport);
+  FloatRect clipped_rect = Intersection(css_rect, viewport);
 
-  FloatRect device_bounds = DeviceSpaceBounds(clipped_bounds, frame);
+  FloatRect device_rect = DeviceSpaceRect(clipped_rect, frame);
 
   AffineTransform transform;
+  transform.Translate(-device_rect.X(), -device_rect.Y());
   transform.Scale(device_scale_factor * page_scale_factor);
-  transform.Translate(-device_bounds.X(), -device_bounds.Y());
 
   // Rasterize upfront, since DragImage::create() is going to do it anyway
   // (SkImage::asLegacyBitmap).
   SkSurfaceProps surface_props(0, kUnknown_SkPixelGeometry);
   sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(
-      device_bounds.Width(), device_bounds.Height(), &surface_props);
+      device_rect.Width(), device_rect.Height(), &surface_props);
   if (!surface)
     return nullptr;
 

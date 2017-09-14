@@ -169,7 +169,7 @@ TEST_F(DataTransferTest, NodeImageUnderScrollOffset) {
             second_image->Size());
 }
 
-TEST_F(DataTransferTest, NodeImageWithPageScaleFactor) {
+TEST_F(DataTransferTest, NodeImageSizeWithPageScaleFactor) {
   SetBodyContent(
       "<style>"
       "  * { margin: 0; } "
@@ -197,6 +197,44 @@ TEST_F(DataTransferTest, NodeImageWithPageScaleFactor) {
   EXPECT_EQ(IntSize(node_width * page_scale_factor,
                     (node_height - scroll_amount) * page_scale_factor),
             image_with_offset->Size());
+}
+
+TEST_F(DataTransferTest, NodeImageWithPageScaleFactor) {
+  // #bluegreen is a 2x1 rectangle where the left pixel is blue and the right
+  // pixel is green. The element is offset by a margin of 1px.
+  SetBodyContent(
+      "<style>"
+      "  * { margin: 0; } "
+      "  #bluegreen {"
+      "    width: 1px;"
+      "    height: 1px;"
+      "    background: #0f0;"
+      "    border-left: 1px solid #00f;"
+      "    margin: 1px;"
+      "  }"
+      "</style>"
+      "<div id='bluegreen'></div>");
+  const int page_scale_factor = 2;
+  GetPage().SetPageScaleFactor(page_scale_factor);
+  Element& blue_green = *GetDocument().getElementById("bluegreen");
+  const auto image = DataTransfer::NodeImage(GetFrame(), blue_green);
+  const int blue_green_width = 2;
+  const int blue_green_height = 1;
+  EXPECT_EQ(IntSize(blue_green_width * page_scale_factor,
+                    blue_green_height * page_scale_factor),
+            image->Size());
+
+  // Even though #bluegreen is offset by a margin of 1px (which is 2px in device
+  // coordinates), we expect it to be painted at 0x0 and completely fill the 4x2
+  // bitmap.
+  SkBitmap expected_bitmap;
+  expected_bitmap.allocN32Pixels(4, 2);
+  expected_bitmap.eraseArea(SkIRect::MakeXYWH(0, 0, 2, 2), 0xFF0000FF);
+  expected_bitmap.eraseArea(SkIRect::MakeXYWH(2, 0, 2, 2), 0xFF00FF00);
+  const SkBitmap& bitmap = image->Bitmap();
+  for (int x = 0; x < bitmap.width(); ++x)
+    for (int y = 0; y < bitmap.height(); ++y)
+      EXPECT_EQ(expected_bitmap.getColor(x, y), bitmap.getColor(x, y));
 }
 
 }  // namespace blink
