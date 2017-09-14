@@ -54,6 +54,12 @@ class ThreadTimesKeySilkCases(_ThreadTimes):
                           [story.expectations.ALL], 'crbug.com/338838')
         self.DisableStory('inbox_app.html?slide_drawer',
                           [story.expectations.ALL], 'crbug.com/446332')
+        self.DisableStory('http://s.codepen.io/befamous/fullpage/pFsqb?scroll',
+                          [story.expectations.ALL], 'crbug.com/764825')
+        self.DisableStory('inbox_app.html?swipe_to_dismiss',
+                          [story.expectations.ALL], 'crbug.com/764825')
+        self.DisableStory('masonry.html',
+                          [story.expectations.ALL], 'crbug.com/764825')
     return StoryExpectations()
 
 
