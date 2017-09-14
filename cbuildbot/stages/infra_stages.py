@@ -11,7 +11,9 @@ import tarfile
 
 from chromite.cbuildbot import commands
 from chromite.cbuildbot.stages import generic_stages
+from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
+from chromite.lib import path_util
 
 
 _GO_BINDIR = '/usr/bin'
@@ -21,7 +23,7 @@ _GO_PACKAGES = (
 _GO_BINARIES = (
     'job_shepherd',
 )
-_GO_TARBALL_NAME = 'go_binaries.tar'
+_GO_TARBALL_NAME = 'go_binaries-%(version)s.tar'
 _GO_UPLOAD_PATH = 'gs://chromeos-infra/go-binaries'
 
 
@@ -32,7 +34,8 @@ class BuildInfraGoBinariesStage(generic_stages.BuilderStage):
     """Build infra Go packages."""
     cmd = ['emerge', '--deep']
     cmd.extend(_GO_PACKAGES)
-    commands.RunBuildScript(self._build_root, cmd, sudo=True)
+    commands.RunBuildScript(self._build_root, cmd,
+                            sudo=True, enter_chroot=True)
 
 
 class UploadInfraGoBinariesStage(generic_stages.BuilderStage,
@@ -42,22 +45,35 @@ class UploadInfraGoBinariesStage(generic_stages.BuilderStage,
   def PerformStage(self):
     """Upload infra Go binaries."""
     with osutils.TempDir() as tempdir:
-      tarball_path = os.path.join(tempdir, _GO_TARBALL_NAME)
+      tarball_name = self._TarballName()
+      tarball_path = os.path.join(tempdir, tarball_name)
+      logging.debug('Using %s for tarball name', tarball_name)
+      logging.info('Creating binaries tarball')
       self._CreateInfraGoTarball(tarball_path)
       # Upload to chromeos-image-archive also to leave build artifacts.
+      logging.info('Uploading standard build artifacts')
       self.UploadArtifact(tarball_path)
+      logging.info('Uploading binaries for use')
       commands.UploadArchivedFile(
           archive_dir=os.path.dirname(tarball_path),
           upload_urls=[_GO_UPLOAD_PATH],
           filename=os.path.basename(tarball_path),
-          debug=True,
+          debug=False,
       )
+
+  def _VersionString(self):
+    return self._run.attrs.version_info.VersionString()
+
+  def _TarballName(self):
+    return _GO_TARBALL_NAME % {
+        'version': self._VersionString(),
+    }
 
   def _CreateInfraGoTarball(self, tarball_path):
     """Create infra Go binary tarball."""
     tarball = tarfile.open(tarball_path, 'w')
     for binary in _GO_BINARIES:
-      binary_path = os.path.join(_GO_BINDIR, binary)
+      binary_path = path_util.FromChrootPath(os.path.join(_GO_BINDIR, binary))
       archive_path = os.path.join('bin', binary)
-      tarball.add(binary_path, arcpath=archive_path)
+      tarball.add(binary_path, arcname=archive_path)
     tarball.close()
