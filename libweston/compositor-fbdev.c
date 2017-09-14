@@ -485,6 +485,9 @@ fbdev_output_disable(struct weston_output *base)
 	if (!base->enabled)
 		return 0;
 
+	wl_event_source_remove(output->finish_frame_timer);
+	output->finish_frame_timer = NULL;
+
 	pixman_renderer_output_destroy(&output->base);
 	fbdev_frame_buffer_unmap(output);
 
