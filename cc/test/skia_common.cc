@@ -83,4 +83,16 @@ PaintImage CreateDiscardablePaintImage(const gfx::Size& size,
       .TakePaintImage();
 }
 
+PaintImage CreateAnimatedImage(const gfx::Size& size,
+                               std::vector<FrameMetadata> frames,
+                               int repetition_count) {
+  return PaintImageBuilder()
+      .set_id(PaintImage::GetNextId())
+      .set_paint_image_generator(sk_make_sp<TestImageGenerator>(
+          SkImageInfo::MakeN32Premul(size.width(), size.height())))
+      .set_animation_type(PaintImage::AnimationType::ANIMATED)
+      .set_repetition_count(repetition_count)
+      .TakePaintImage();
+}
+
 }  // namespace cc

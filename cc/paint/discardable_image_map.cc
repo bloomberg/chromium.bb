@@ -127,6 +127,11 @@ class DiscardableImageGenerator {
   base::flat_map<PaintImage::Id, gfx::Rect> TakeImageIdToRectMap() {
     return std::move(image_id_to_rect_);
   }
+  std::vector<DiscardableImageMap::AnimatedImageMetadata>
+  TakeAnimatedImagesMetadata() {
+    return std::move(animated_images_metadata_);
+  }
+
   void RecordColorHistograms() const {
     if (color_stats_total_image_count_ > 0) {
       int srgb_image_percent = (100 * color_stats_srgb_image_count_) /
@@ -217,6 +222,13 @@ class DiscardableImageGenerator {
       matrix.postConcat(*local_matrix);
 
     image_id_to_rect_[paint_image.stable_id()].Union(image_rect);
+
+    if (paint_image.ShouldAnimate()) {
+      animated_images_metadata_.emplace_back(
+          paint_image.stable_id(), paint_image.completion_state(),
+          paint_image.GetFrameMetadata(), paint_image.repetition_count());
+    }
+
     image_set_.emplace_back(
         DrawImage(std::move(paint_image), src_irect, filter_quality, matrix),
         image_rect);
@@ -227,6 +239,8 @@ class DiscardableImageGenerator {
   PaintTrackingCanvas canvas_;
   std::vector<std::pair<DrawImage, gfx::Rect>> image_set_;
   base::flat_map<PaintImage::Id, gfx::Rect> image_id_to_rect_;
+  std::vector<DiscardableImageMap::AnimatedImageMetadata>
+      animated_images_metadata_;
 
   // Statistics about the number of images and pixels that will require color
   // conversion if the target color space is not sRGB.
@@ -252,6 +266,7 @@ void DiscardableImageMap::Generate(const PaintOpBuffer* paint_op_buffer,
   generator.GatherDiscardableImages(paint_op_buffer);
   generator.RecordColorHistograms();
   image_id_to_rect_ = generator.TakeImageIdToRectMap();
+  animated_images_metadata_ = generator.TakeAnimatedImagesMetadata();
   all_images_are_srgb_ = generator.all_images_are_srgb();
   auto images = generator.TakeImages();
   images_rtree_.Build(
@@ -278,5 +293,20 @@ void DiscardableImageMap::Reset() {
   image_id_to_rect_.shrink_to_fit();
   images_rtree_.Reset();
 }
+
+DiscardableImageMap::AnimatedImageMetadata::AnimatedImageMetadata(
+    PaintImage::Id paint_image_id,
+    PaintImage::CompletionState completion_state,
+    std::vector<FrameMetadata> frames,
+    int repetition_count)
+    : paint_image_id(paint_image_id),
+      completion_state(completion_state),
+      frames(std::move(frames)),
+      repetition_count(repetition_count) {}
+
+DiscardableImageMap::AnimatedImageMetadata::~AnimatedImageMetadata() = default;
+
+DiscardableImageMap::AnimatedImageMetadata::AnimatedImageMetadata(
+    const AnimatedImageMetadata& other) = default;
 
 }  // namespace cc

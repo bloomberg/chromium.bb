@@ -119,6 +119,8 @@ class CC_PAINT_EXPORT PaintImage {
   AnimationType animation_type() const { return animation_type_; }
   CompletionState completion_state() const { return completion_state_; }
   bool is_multipart() const { return is_multipart_; }
+  int repetition_count() const { return repetition_count_; }
+  bool ShouldAnimate() const;
 
   // TODO(vmpstr): Don't get the SkImage here if you don't need to.
   uint32_t unique_id() const { return GetSkImage()->uniqueID(); }
