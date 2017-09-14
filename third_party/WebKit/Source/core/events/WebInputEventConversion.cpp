@@ -59,13 +59,11 @@ float FrameScale(const LocalFrameView* frame_view) {
 }
 
 FloatPoint FrameTranslation(const LocalFrameView* frame_view) {
-  float scale = 1;
   IntPoint visual_viewport;
   FloatSize overscroll_offset;
   if (frame_view) {
     LocalFrameView* root_view = frame_view->GetFrame().LocalFrameRoot().View();
     if (root_view) {
-      scale = root_view->InputEventsScaleFactor();
       visual_viewport = FlooredIntPoint(
           root_view->GetPage()->GetVisualViewport().VisibleRect().Location());
       overscroll_offset =
