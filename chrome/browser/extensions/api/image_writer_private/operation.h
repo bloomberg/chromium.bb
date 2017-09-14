@@ -54,9 +54,9 @@ class OperationManager;
 // allocated/accessed on the blocking thread.  http://crbug.com/344713
 class Operation : public base::RefCountedThreadSafe<Operation> {
  public:
-  // TODO(lazyboy): Turn these into base::OnceCallback. http://crbug.com/749865.
-  typedef base::Callback<void(bool, const std::string&)> StartWriteCallback;
-  typedef base::Callback<void(bool, const std::string&)> CancelWriteCallback;
+  using StartWriteCallback = base::OnceCallback<void(bool, const std::string&)>;
+  using CancelWriteCallback =
+      base::OnceCallback<void(bool, const std::string&)>;
 
   Operation(base::WeakPtr<OperationManager> manager,
             const ExtensionId& extension_id,
