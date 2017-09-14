@@ -10,15 +10,11 @@
 #include <string>
 #include <vector>
 
-#include "build/build_config.h"
+#include "chromeos/dbus/dbus_method_call_status.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/default_component_installer.h"
 #include "components/update_client/update_client.h"
 #include "crypto/sha2.h"
-
-#if defined(OS_CHROMEOS)
-#include "chromeos/dbus/dbus_method_call_status.h"
-#endif  // defined(OS_CHROMEOS)
 
 //  Developer API usage:
 //  ...
@@ -36,7 +32,6 @@
 //
 namespace component_updater {
 
-#if defined(OS_CHROMEOS)
 struct ComponentConfig {
   std::string name;
   std::string env_version;
@@ -107,7 +102,6 @@ class CrOSComponent {
       const std::string& name,
       const base::Callback<void(const std::string&)>& load_callback);
 };
-#endif  // defined(OS_CHROMEOS)
 
 }  // namespace component_updater
 

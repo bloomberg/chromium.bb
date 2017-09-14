@@ -12,14 +12,11 @@
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/component_installer_errors.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/image_loader_client.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/browser_thread.h"
-
-#if defined(OS_CHROMEOS)
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/image_loader_client.h"
-#endif  // defined(OS_CHROMEOS)
 
 // ConfigMap list-initialization expression for all downloadable
 // Chrome OS components.
@@ -41,7 +38,6 @@ using content::BrowserThread;
 
 namespace component_updater {
 
-#if defined(OS_CHROMEOS)
 using ConfigMap = std::map<std::string, std::map<std::string, std::string>>;
 
 void LogRegistrationResult(const std::string& name,
@@ -284,7 +280,5 @@ void CrOSComponent::RegisterComponents(
     RegisterComponent(updater, config, base::Closure());
   }
 }
-
-#endif  // defined(OS_CHROMEOS
 
 }  // namespace component_updater
