@@ -18,7 +18,7 @@ class PerformanceTest : public ::testing::Test {
   void SetUp() override {
     page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
     page_holder_->GetDocument().SetURL(KURL(NullURL(), "https://example.com"));
-    performance_ = Performance::Create(&page_holder_->GetFrame());
+    performance_ = Performance::Create(page_holder_->GetDocument().domWindow());
 
     // Create another dummy page holder and pretend this is the iframe.
     another_page_holder_ = DummyPageHolder::Create(IntSize(400, 300));

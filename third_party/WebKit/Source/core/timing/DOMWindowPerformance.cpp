@@ -41,7 +41,7 @@ Performance* DOMWindowPerformance::performance(LocalDOMWindow& window) {
 
 Performance* DOMWindowPerformance::performance() {
   if (!performance_)
-    performance_ = Performance::Create(GetSupplementable()->GetFrame());
+    performance_ = Performance::Create(GetSupplementable());
   return performance_.Get();
 }
 

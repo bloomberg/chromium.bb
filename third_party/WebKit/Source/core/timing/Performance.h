@@ -53,8 +53,8 @@ class CORE_EXPORT Performance final : public PerformanceBase,
   friend class PerformanceTest;
 
  public:
-  static Performance* Create(LocalFrame* frame) {
-    return new Performance(frame);
+  static Performance* Create(LocalDOMWindow* window) {
+    return new Performance(window);
   }
   ~Performance() override;
 
@@ -71,7 +71,7 @@ class CORE_EXPORT Performance final : public PerformanceBase,
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  explicit Performance(LocalFrame*);
+  explicit Performance(LocalDOMWindow*);
 
   PerformanceNavigationTiming* CreateNavigationTimingInstance() override;
 
