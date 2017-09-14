@@ -38,7 +38,7 @@ namespace protocol {
 class NetworkHandler : public DevToolsDomainHandler,
                        public Network::Backend {
  public:
-  NetworkHandler();
+  explicit NetworkHandler(const std::string& host_id);
   ~NetworkHandler() override;
 
   static std::vector<NetworkHandler*> ForAgentHost(DevToolsAgentHostImpl* host);
@@ -78,6 +78,12 @@ class NetworkHandler : public DevToolsDomainHandler,
 
   Response SetUserAgentOverride(const std::string& user_agent) override;
   Response CanEmulateNetworkConditions(bool* result) override;
+  Response EmulateNetworkConditions(
+      bool offline,
+      double latency,
+      double download_throughput,
+      double upload_throughput,
+      Maybe<protocol::Network::ConnectionType> connection_type) override;
 
   DispatchResponse SetRequestInterceptionEnabled(
       bool enabled,
@@ -130,6 +136,7 @@ class NetworkHandler : public DevToolsDomainHandler,
   std::string user_agent_;
   base::flat_map<std::string, GlobalRequestID> navigation_requests_;
   base::flat_set<GlobalRequestID> canceled_navigation_requests_;
+  std::string host_id_;
   base::WeakPtrFactory<NetworkHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkHandler);

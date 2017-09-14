@@ -11,7 +11,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/devtools/device/android_device_manager.h"
 #include "chrome/browser/devtools/device/tcp_device_provider.h"
-#include "chrome/browser/devtools/devtools_network_protocol_handler.h"
+#include "chrome/browser/devtools/devtools_protocol.h"
 #include "chrome/browser/devtools/devtools_protocol_constants.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -334,8 +334,7 @@ class ChromeDevToolsManagerDelegate::HostData {
   RemoteLocations remote_locations_;
 };
 
-ChromeDevToolsManagerDelegate::ChromeDevToolsManagerDelegate()
-    : network_protocol_handler_(new DevToolsNetworkProtocolHandler()) {
+ChromeDevToolsManagerDelegate::ChromeDevToolsManagerDelegate() {
   content::DevToolsAgentHost::AddObserver(this);
 }
 
@@ -375,7 +374,7 @@ base::DictionaryValue* ChromeDevToolsManagerDelegate::HandleCommand(
   if (method == chrome::devtools::Target::setRemoteLocations::kName)
     return SetRemoteLocations(agent_host, id, params).release();
 
-  return network_protocol_handler_->HandleCommand(agent_host, command_dict);
+  return nullptr;
 }
 
 std::string ChromeDevToolsManagerDelegate::GetTargetType(
@@ -419,15 +418,12 @@ std::string ChromeDevToolsManagerDelegate::GetFrontendResource(
 
 void ChromeDevToolsManagerDelegate::DevToolsAgentHostAttached(
     content::DevToolsAgentHost* agent_host) {
-  network_protocol_handler_->DevToolsAgentStateChanged(agent_host, true);
-
   DCHECK(host_data_.find(agent_host) == host_data_.end());
   host_data_[agent_host].reset(new ChromeDevToolsManagerDelegate::HostData());
 }
 
 void ChromeDevToolsManagerDelegate::DevToolsAgentHostDetached(
     content::DevToolsAgentHost* agent_host) {
-  network_protocol_handler_->DevToolsAgentStateChanged(agent_host, false);
   ToggleAdBlocking(false /* enable */, agent_host);
 
   // This class is created lazily, so it may not know about some attached hosts.

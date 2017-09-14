@@ -32,22 +32,6 @@ action("devtools_protocol_constants") {
 static_library("devtools") {
   # Note: new sources and deps should be generally added in (!is_android) below.
   sources = [
-    "devtools_network_conditions.cc",
-    "devtools_network_conditions.h",
-    "devtools_network_controller.cc",
-    "devtools_network_controller.h",
-    "devtools_network_controller_handle.cc",
-    "devtools_network_controller_handle.h",
-    "devtools_network_interceptor.cc",
-    "devtools_network_interceptor.h",
-    "devtools_network_protocol_handler.cc",
-    "devtools_network_protocol_handler.h",
-    "devtools_network_transaction.cc",
-    "devtools_network_transaction.h",
-    "devtools_network_transaction_factory.cc",
-    "devtools_network_transaction_factory.h",
-    "devtools_network_upload_data_stream.cc",
-    "devtools_network_upload_data_stream.h",
     "devtools_protocol.cc",
     "devtools_protocol.h",
   ]

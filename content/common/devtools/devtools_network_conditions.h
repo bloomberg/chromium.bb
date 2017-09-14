@@ -2,16 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DEVTOOLS_DEVTOOLS_NETWORK_CONDITIONS_H_
-#define CHROME_BROWSER_DEVTOOLS_DEVTOOLS_NETWORK_CONDITIONS_H_
+#ifndef CONTET_COMMON_DEVTOOLS_DEVTOOLS_NETWORK_CONDITIONS_H_
+#define CONTET_COMMON_DEVTOOLS_DEVTOOLS_NETWORK_CONDITIONS_H_
 
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 
+#include "content/common/content_export.h"
+
+namespace content {
+
 // DevToolsNetworkConditions holds information about desired network conditions.
-class DevToolsNetworkConditions {
+class CONTENT_EXPORT DevToolsNetworkConditions {
  public:
   DevToolsNetworkConditions();
   ~DevToolsNetworkConditions();
@@ -38,4 +42,6 @@ class DevToolsNetworkConditions {
   DISALLOW_COPY_AND_ASSIGN(DevToolsNetworkConditions);
 };
 
-#endif  // CHROME_BROWSER_DEVTOOLS_DEVTOOLS_NETWORK_CONDITIONS_H_
+}  // namespace content
+
+#endif  // CONTET_COMMON_DEVTOOLS_DEVTOOLS_NETWORK_CONDITIONS_H_

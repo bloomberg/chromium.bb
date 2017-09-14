@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/devtools/devtools_network_upload_data_stream.h"
+#include "content/common/devtools/devtools_network_upload_data_stream.h"
 
 #include "net/base/net_errors.h"
+
+namespace content {
 
 DevToolsNetworkUploadDataStream::DevToolsNetworkUploadDataStream(
     net::UploadDataStream* upload_data_stream)
@@ -14,8 +16,7 @@ DevToolsNetworkUploadDataStream::DevToolsNetworkUploadDataStream(
           base::Bind(&DevToolsNetworkUploadDataStream::ThrottleCallback,
                      base::Unretained(this))),
       throttled_byte_count_(0),
-      upload_data_stream_(upload_data_stream) {
-}
+      upload_data_stream_(upload_data_stream) {}
 
 DevToolsNetworkUploadDataStream::~DevToolsNetworkUploadDataStream() {
   if (interceptor_)
@@ -51,9 +52,10 @@ void DevToolsNetworkUploadDataStream::StreamInitCallback(int result) {
   OnInitCompleted(result);
 }
 
-int DevToolsNetworkUploadDataStream::ReadInternal(
-    net::IOBuffer* buf, int buf_len) {
-  int result = upload_data_stream_->Read(buf, buf_len,
+int DevToolsNetworkUploadDataStream::ReadInternal(net::IOBuffer* buf,
+                                                  int buf_len) {
+  int result = upload_data_stream_->Read(
+      buf, buf_len,
       base::Bind(&DevToolsNetworkUploadDataStream::StreamReadCallback,
                  base::Unretained(this)));
   return ThrottleRead(result);
@@ -75,11 +77,12 @@ int DevToolsNetworkUploadDataStream::ThrottleRead(int result) {
   if (result > 0)
     throttled_byte_count_ += result;
   return interceptor_->StartThrottle(result, throttled_byte_count_,
-      base::TimeTicks(), false, true, throttle_callback_);
+                                     base::TimeTicks(), false, true,
+                                     throttle_callback_);
 }
 
-void DevToolsNetworkUploadDataStream::ThrottleCallback(
-   int result, int64_t bytes) {
+void DevToolsNetworkUploadDataStream::ThrottleCallback(int result,
+                                                       int64_t bytes) {
   throttled_byte_count_ = bytes;
   OnReadCompleted(result);
 }
@@ -90,3 +93,5 @@ void DevToolsNetworkUploadDataStream::ResetInternal() {
   if (interceptor_)
     interceptor_->StopThrottle(throttle_callback_);
 }
+
+}  // namespace content

@@ -11,20 +11,18 @@
 #include "net/base/request_priority.h"
 #include "net/http/http_transaction_factory.h"
 
-class DevToolsNetworkController;
-
 namespace net {
 class HttpCache;
 class HttpNetworkSession;
 class HttpTransaction;
-}
+}  // namespace net
+
+namespace content {
 
 // NetworkTransactionFactory wraps HttpNetworkTransactions.
 class DevToolsNetworkTransactionFactory : public net::HttpTransactionFactory {
  public:
-  DevToolsNetworkTransactionFactory(
-      DevToolsNetworkController* controller,
-      net::HttpNetworkSession* session);
+  explicit DevToolsNetworkTransactionFactory(net::HttpNetworkSession* session);
   ~DevToolsNetworkTransactionFactory() override;
 
   // net::HttpTransactionFactory methods:
@@ -34,10 +32,11 @@ class DevToolsNetworkTransactionFactory : public net::HttpTransactionFactory {
   net::HttpNetworkSession* GetSession() override;
 
  private:
-  DevToolsNetworkController* controller_;
   std::unique_ptr<net::HttpTransactionFactory> network_layer_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsNetworkTransactionFactory);
 };
+
+}  // namespace content
 
 #endif  // CHROME_BROWSER_DEVTOOLS_DEVTOOLS_NETWORK_TRANSACTION_FACTORY_H_

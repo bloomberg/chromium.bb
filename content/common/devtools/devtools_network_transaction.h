@@ -11,16 +11,14 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/devtools/devtools_network_interceptor.h"
+#include "content/common/content_export.h"
+#include "content/common/devtools/devtools_network_interceptor.h"
 #include "net/base/completion_callback.h"
 #include "net/base/load_states.h"
 #include "net/base/net_error_details.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_transaction.h"
 #include "net/websockets/websocket_handshake_stream_base.h"
-
-class DevToolsNetworkController;
-class DevToolsNetworkUploadDataStream;
 
 namespace net {
 class AuthCredentials;
@@ -33,22 +31,22 @@ class NetLogWithSource;
 class X509Certificate;
 }  // namespace net
 
-namespace test {
+namespace content {
+
+class DevToolsNetworkController;
 class DevToolsNetworkControllerHelper;
-}
+class DevToolsNetworkUploadDataStream;
 
 // DevToolsNetworkTransaction is a wrapper for network transaction. All
 // HttpTransaction methods are proxied to real transaction, but |callback|
 // parameter is saved and replaced with proxy callback. Fail method should be
 // used to simulate network outage. It runs saved callback (if any) with
 // net::ERR_INTERNET_DISCONNECTED result value.
-class DevToolsNetworkTransaction
-    : public net::HttpTransaction {
+class CONTENT_EXPORT DevToolsNetworkTransaction : public net::HttpTransaction {
  public:
   static const char kDevToolsEmulateNetworkConditionsClientId[];
 
-  DevToolsNetworkTransaction(
-      DevToolsNetworkController* controller,
+  explicit DevToolsNetworkTransaction(
       std::unique_ptr<net::HttpTransaction> network_transaction);
 
   ~DevToolsNetworkTransaction() override;
@@ -95,7 +93,7 @@ class DevToolsNetworkTransaction
   void GetConnectionAttempts(net::ConnectionAttempts* out) const override;
 
  protected:
-  friend class test::DevToolsNetworkControllerHelper;
+  friend class content::DevToolsNetworkControllerHelper;
 
  private:
   void Fail();
@@ -104,9 +102,7 @@ class DevToolsNetworkTransaction
   void IOCallback(const net::CompletionCallback& callback,
                   bool start,
                   int result);
-  int Throttle(const net::CompletionCallback& callback,
-               bool start,
-               int result);
+  int Throttle(const net::CompletionCallback& callback, bool start, int result);
   void ThrottleCallback(const net::CompletionCallback& callback,
                         int result,
                         int64_t bytes);
@@ -133,5 +129,7 @@ class DevToolsNetworkTransaction
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsNetworkTransaction);
 };
+
+}  // namespace content
 
 #endif  // CHROME_BROWSER_DEVTOOLS_DEVTOOLS_NETWORK_TRANSACTION_H_

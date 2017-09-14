@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/devtools/devtools_network_interceptor.h"
+#include "content/common/devtools/devtools_network_interceptor.h"
 
 #include <stddef.h>
 #include <algorithm>
@@ -10,8 +10,10 @@
 #include <utility>
 
 #include "base/time/time.h"
-#include "chrome/browser/devtools/devtools_network_conditions.h"
+#include "content/common/devtools/devtools_network_conditions.h"
 #include "net/base/net_errors.h"
+
+namespace content {
 
 namespace {
 
@@ -29,39 +31,34 @@ base::TimeDelta CalculateTickLength(double throughput) {
 
 }  // namespace
 
-DevToolsNetworkInterceptor::ThrottleRecord::ThrottleRecord() {
-}
+DevToolsNetworkInterceptor::ThrottleRecord::ThrottleRecord() {}
 
 DevToolsNetworkInterceptor::ThrottleRecord::ThrottleRecord(
     const ThrottleRecord& other) = default;
 
-DevToolsNetworkInterceptor::ThrottleRecord::~ThrottleRecord() {
-}
+DevToolsNetworkInterceptor::ThrottleRecord::~ThrottleRecord() {}
 
 DevToolsNetworkInterceptor::DevToolsNetworkInterceptor()
     : conditions_(new DevToolsNetworkConditions()),
       download_last_tick_(0),
       upload_last_tick_(0),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
-DevToolsNetworkInterceptor::~DevToolsNetworkInterceptor() {
-}
+DevToolsNetworkInterceptor::~DevToolsNetworkInterceptor() {}
 
 base::WeakPtr<DevToolsNetworkInterceptor>
 DevToolsNetworkInterceptor::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-void DevToolsNetworkInterceptor::FinishRecords(
-    ThrottleRecords* records, bool offline) {
+void DevToolsNetworkInterceptor::FinishRecords(ThrottleRecords* records,
+                                               bool offline) {
   ThrottleRecords temp;
   temp.swap(*records);
   for (const ThrottleRecord& record : temp) {
     bool failed = offline && !record.is_upload;
-    record.callback.Run(
-        failed ? net::ERR_INTERNET_DISCONNECTED : record.result,
-        record.bytes);
+    record.callback.Run(failed ? net::ERR_INTERNET_DISCONNECTED : record.result,
+                        record.bytes);
   }
 }
 
@@ -89,8 +86,8 @@ void DevToolsNetworkInterceptor::UpdateConditions(
   offset_ = now;
 
   download_last_tick_ = 0;
-  download_tick_length_ = CalculateTickLength(
-      conditions_->download_throughput());
+  download_tick_length_ =
+      CalculateTickLength(conditions_->download_throughput());
 
   upload_last_tick_ = 0;
   upload_tick_length_ = CalculateTickLength(conditions_->upload_throughput());
@@ -131,8 +128,8 @@ uint64_t DevToolsNetworkInterceptor::UpdateThrottledRecords(
 void DevToolsNetworkInterceptor::UpdateThrottled(base::TimeTicks now) {
   download_last_tick_ = UpdateThrottledRecords(
       now, &download_, download_last_tick_, download_tick_length_);
-  upload_last_tick_ = UpdateThrottledRecords(
-      now, &upload_, upload_last_tick_, upload_tick_length_);
+  upload_last_tick_ = UpdateThrottledRecords(now, &upload_, upload_last_tick_,
+                                             upload_tick_length_);
   UpdateSuspended(now);
 }
 
@@ -153,8 +150,8 @@ void DevToolsNetworkInterceptor::UpdateSuspended(base::TimeTicks now) {
   suspended_.swap(suspended);
 }
 
-void DevToolsNetworkInterceptor::CollectFinished(
-    ThrottleRecords* records, ThrottleRecords* finished) {
+void DevToolsNetworkInterceptor::CollectFinished(ThrottleRecords* records,
+                                                 ThrottleRecords* finished) {
   ThrottleRecords active;
   for (const ThrottleRecord& record : *records) {
     if (record.bytes < 0)
@@ -201,8 +198,8 @@ void DevToolsNetworkInterceptor::ArmTimer(base::TimeTicks now) {
   base::TimeTicks desired_time = CalculateDesiredTime(
       download_, download_last_tick_, download_tick_length_);
 
-  base::TimeTicks upload_time = CalculateDesiredTime(
-      upload_, upload_last_tick_, upload_tick_length_);
+  base::TimeTicks upload_time =
+      CalculateDesiredTime(upload_, upload_last_tick_, upload_tick_length_);
   if (upload_time < desired_time)
     desired_time = upload_time;
 
@@ -212,18 +209,16 @@ void DevToolsNetworkInterceptor::ArmTimer(base::TimeTicks now) {
       min_baseline = suspended_[i].send_end;
   }
   if (suspend_count) {
-    base::TimeTicks activation_time = base::TimeTicks() +
-        base::TimeDelta::FromMicroseconds(min_baseline) + latency_length_;
+    base::TimeTicks activation_time =
+        base::TimeTicks() + base::TimeDelta::FromMicroseconds(min_baseline) +
+        latency_length_;
     if (activation_time < desired_time)
       desired_time = activation_time;
   }
 
   timer_.Start(
-      FROM_HERE,
-      desired_time - now,
-      base::Bind(
-          &DevToolsNetworkInterceptor::OnTimer,
-          base::Unretained(this)));
+      FROM_HERE, desired_time - now,
+      base::Bind(&DevToolsNetworkInterceptor::OnTimer, base::Unretained(this)));
 }
 
 int DevToolsNetworkInterceptor::StartThrottle(
@@ -276,15 +271,17 @@ void DevToolsNetworkInterceptor::StopThrottle(
 }
 
 void DevToolsNetworkInterceptor::RemoveRecord(
-    ThrottleRecords* records, const ThrottleCallback& callback) {
-  records->erase(
-      std::remove_if(records->begin(), records->end(),
-                     [&callback](const ThrottleRecord& record){
-                       return record.callback.Equals(callback);
-                     }),
-      records->end());
+    ThrottleRecords* records,
+    const ThrottleCallback& callback) {
+  records->erase(std::remove_if(records->begin(), records->end(),
+                                [&callback](const ThrottleRecord& record) {
+                                  return record.callback.Equals(callback);
+                                }),
+                 records->end());
 }
 
 bool DevToolsNetworkInterceptor::IsOffline() {
   return conditions_->offline();
 }
+
+}  // namespace content

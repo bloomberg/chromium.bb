@@ -20,7 +20,6 @@
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
-#include "chrome/browser/devtools/devtools_network_controller_handle.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/storage_partition_descriptor.h"
@@ -186,10 +185,6 @@ class ProfileIOData {
 
   IntegerPrefMember* network_prediction_options() const {
     return &network_prediction_options_;
-  }
-
-  DevToolsNetworkControllerHandle* network_controller_handle() const {
-    return &network_controller_handle_;
   }
 
 #if defined(OS_CHROMEOS)
@@ -620,8 +615,6 @@ class ProfileIOData {
       extension_throttle_manager_;
   mutable std::unique_ptr<ExtensionCookieNotifier> extension_cookie_notifier_;
 #endif
-
-  mutable DevToolsNetworkControllerHandle network_controller_handle_;
 
   mutable std::unique_ptr<certificate_transparency::TreeStateTracker>
       ct_tree_tracker_;
