@@ -48,7 +48,8 @@ class MockClient : public AVDACodecAllocatorClient {
   // Gmock doesn't let us mock methods taking move-only types.
   MOCK_METHOD1(OnCodecConfiguredMock, void(MediaCodecBridge* media_codec));
   void OnCodecConfigured(
-      std::unique_ptr<MediaCodecBridge> media_codec) override {
+      std::unique_ptr<MediaCodecBridge> media_codec,
+      scoped_refptr<AVDASurfaceBundle> surface_bundle) override {
     OnCodecConfiguredMock(media_codec.get());
   }
 };

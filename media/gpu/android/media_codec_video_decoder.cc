@@ -82,14 +82,6 @@ bool ConfigSupported(const VideoDecoderConfig& config,
 
 }  // namespace
 
-CodecAllocatorAdapter::CodecAllocatorAdapter() : weak_factory(this) {}
-CodecAllocatorAdapter::~CodecAllocatorAdapter() = default;
-
-void CodecAllocatorAdapter::OnCodecConfigured(
-    std::unique_ptr<MediaCodecBridge> media_codec) {
-  codec_created_cb.Run(std::move(media_codec));
-}
-
 // static
 PendingDecode PendingDecode::CreateEos() {
   auto nop = [](DecodeStatus s) {};
@@ -111,7 +103,7 @@ MediaCodecVideoDecoder::MediaCodecVideoDecoder(
     std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser,
     std::unique_ptr<VideoFrameFactory> video_frame_factory,
     std::unique_ptr<service_manager::ServiceContextRef> context_ref)
-    : state_(State::kBeforeSurfaceInit),
+    : state_(State::kInitializing),
       lazy_init_pending_(true),
       waiting_for_key_(false),
       reset_generation_(0),
@@ -123,14 +115,15 @@ MediaCodecVideoDecoder::MediaCodecVideoDecoder(
       video_frame_factory_(std::move(video_frame_factory)),
       device_info_(device_info),
       context_ref_(std::move(context_ref)),
-      weak_factory_(this) {
+      weak_factory_(this),
+      codec_allocator_weak_factory_(this) {
   DVLOG(2) << __func__;
 }
 
 MediaCodecVideoDecoder::~MediaCodecVideoDecoder() {
   DVLOG(2) << __func__;
   ReleaseCodec();
-  codec_allocator_->StopThread(&codec_allocator_adapter_);
+  codec_allocator_->StopThread(this);
 }
 
 void MediaCodecVideoDecoder::Destroy() {
@@ -138,6 +131,8 @@ void MediaCodecVideoDecoder::Destroy() {
   // Mojo callbacks require that they're run before destruction.
   if (reset_cb_)
     reset_cb_.Run();
+  // Cancel codec creation and release callbacks.
+  codec_allocator_weak_factory_.InvalidateWeakPtrs();
   ClearPendingDecodes(DecodeStatus::ABORTED);
   StartDrainingCodec(DrainType::kForDestroy);
 }
@@ -167,27 +162,16 @@ void MediaCodecVideoDecoder::Initialize(const VideoDecoderConfig& config,
   decoder_config_ = config;
 
   if (first_init) {
-    if (!codec_allocator_->StartThread(&codec_allocator_adapter_)) {
+    if (!codec_allocator_->StartThread(this)) {
       LOG(ERROR) << "Unable to start thread";
       bound_init_cb.Run(false);
       return;
     }
-
-    codec_config_ = new CodecConfig();
-    codec_config_->codec = config.codec();
-    // TODO(watk): Set |requires_secure_codec| correctly using
-    // MediaDrmBridgeCdmContext::MediaCryptoReadyCB.
-    codec_config_->requires_secure_codec = config.is_encrypted();
   }
 
-  codec_config_->initial_expected_coded_size = config.coded_size();
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-  // We pass the SPS and PPS because it makes MediaCodec initialization
-  // more reliable (http://crbug.com/649185).
-  if (config.codec() == kCodecH264) {
-    ExtractSpsAndPps(config.extra_data(), &codec_config_->csd0,
-                     &codec_config_->csd1);
-  }
+  if (config.codec() == kCodecH264)
+    ExtractSpsAndPps(config.extra_data(), &csd0_, &csd1_);
 #endif
 
   // We defer initialization of the Surface and MediaCodec until we
@@ -228,13 +212,13 @@ void MediaCodecVideoDecoder::SetOverlayInfo(const OverlayInfo& overlay_info) {
   bool overlay_changed = !overlay_info_.RefersToSameOverlayAs(overlay_info);
   overlay_info_ = overlay_info;
   // Only update surface chooser if it's initialized and the overlay changed.
-  if (state_ != State::kBeforeSurfaceInit && overlay_changed)
+  if (state_ != State::kInitializing && overlay_changed)
     surface_chooser_->UpdateState(CreateOverlayFactoryCb(), chooser_state_);
 }
 
 void MediaCodecVideoDecoder::InitializeSurfaceChooser() {
   DVLOG(2) << __func__;
-  DCHECK_EQ(state_, State::kBeforeSurfaceInit);
+  DCHECK_EQ(state_, State::kInitializing);
   // Initialize |surface_chooser_| and wait for its decision. Note: the
   // callback may be reentrant.
   surface_chooser_->Initialize(
@@ -248,107 +232,99 @@ void MediaCodecVideoDecoder::InitializeSurfaceChooser() {
 void MediaCodecVideoDecoder::OnSurfaceChosen(
     std::unique_ptr<AndroidOverlay> overlay) {
   DVLOG(2) << __func__;
+  DCHECK(state_ == State::kInitializing ||
+         device_info_->IsSetOutputSurfaceSupported());
+
   if (overlay) {
     overlay->AddSurfaceDestroyedCallback(
         base::Bind(&MediaCodecVideoDecoder::OnSurfaceDestroyed,
                    weak_factory_.GetWeakPtr()));
+    target_surface_bundle_ = new AVDASurfaceBundle(std::move(overlay));
+  } else {
+    target_surface_bundle_ = surface_texture_bundle_;
   }
 
   // If we were waiting for our first surface during initialization, then
-  // proceed to create a codec with the chosen surface.
-  if (state_ == State::kBeforeSurfaceInit) {
-    codec_config_->surface_bundle =
-        overlay ? new AVDASurfaceBundle(std::move(overlay))
-                : surface_texture_bundle_;
+  // proceed to create a codec.
+  if (state_ == State::kInitializing) {
+    state_ = State::kRunning;
     CreateCodec();
-    return;
   }
-
-  // If setOutputSurface() is not supported we can't do the transition.
-  if (!device_info_->IsSetOutputSurfaceSupported())
-    return;
-
-  // If we're told to switch to a SurfaceTexture but we're already using a
-  // SurfaceTexture, we just cancel any pending transition.
-  // (It's not possible for this to choose the overlay we're already using.)
-  if (!overlay && codec_config_->surface_bundle &&
-      !codec_config_->surface_bundle->overlay) {
-    incoming_surface_ = nullptr;
-    return;
-  }
-
-  incoming_surface_ = overlay ? new AVDASurfaceBundle(std::move(overlay))
-                              : surface_texture_bundle_;
 }
 
 void MediaCodecVideoDecoder::OnSurfaceDestroyed(AndroidOverlay* overlay) {
   DVLOG(2) << __func__;
+  DCHECK_NE(state_, State::kInitializing);
 
-  // If there is a pending transition to the overlay, cancel it.
-  if (incoming_surface_ && incoming_surface_->overlay.get() == overlay) {
-    incoming_surface_ = nullptr;
-    return;
-  }
-
-  // If we've already stopped using the overlay, ignore it.
-  if (!codec_config_->surface_bundle ||
-      codec_config_->surface_bundle->overlay.get() != overlay) {
-    return;
-  }
-
-  // If we can't do the transition, enter state kSurfaceDestroyed.
-  // TODO(watk): If setOutputSurface() is available we're supposed to
-  // transparently handle surface transitions, however we don't handle them
-  // while codec creation is in progress. It should be handled gracefully
-  // by allocating a new codec.
-  if (!device_info_->IsSetOutputSurfaceSupported() ||
-      state_ == State::kWaitingForCodec) {
+  // If SetOutputSurface() is not supported we only ever observe destruction of
+  // a single overlay so this must be the one we're using. In this case it's
+  // the responsibility of our consumer to destroy us for surface transitions.
+  if (!device_info_->IsSetOutputSurfaceSupported()) {
     EnterTerminalState(State::kSurfaceDestroyed);
     return;
   }
 
-  // We're using the destroyed overlay so try to transition away from it
-  // (defaulting to a SurfaceTexture).
-  if (!incoming_surface_)
-    incoming_surface_ = surface_texture_bundle_;
-  TransitionToIncomingSurface();
+  // Reset the target bundle if it is the one being destroyed.
+  if (target_surface_bundle_->overlay.get() == overlay)
+    target_surface_bundle_ = surface_texture_bundle_;
+
+  // Transition the codec away from the overlay if necessary.
+  if (SurfaceTransitionPending())
+    TransitionToTargetSurface();
 }
 
-void MediaCodecVideoDecoder::TransitionToIncomingSurface() {
+bool MediaCodecVideoDecoder::SurfaceTransitionPending() {
+  return codec_ && codec_->SurfaceBundle() != target_surface_bundle_;
+}
+
+void MediaCodecVideoDecoder::TransitionToTargetSurface() {
   DVLOG(2) << __func__;
-  DCHECK(incoming_surface_);
-  DCHECK(codec_);
-  auto surface_bundle = std::move(incoming_surface_);
-  if (codec_->SetSurface(surface_bundle->GetJavaSurface()))
-    codec_config_->surface_bundle = std::move(surface_bundle);
-  else
+  DCHECK(SurfaceTransitionPending());
+  DCHECK(device_info_->IsSetOutputSurfaceSupported());
+
+  if (!codec_->SetSurface(target_surface_bundle_))
     EnterTerminalState(State::kError);
 }
 
 void MediaCodecVideoDecoder::CreateCodec() {
   DCHECK(!codec_);
-  state_ = State::kWaitingForCodec;
-  codec_allocator_adapter_.codec_created_cb = base::Bind(
-      &MediaCodecVideoDecoder::OnCodecCreated, weak_factory_.GetWeakPtr());
+  DCHECK(target_surface_bundle_);
+  DCHECK_EQ(state_, State::kRunning);
+
+  scoped_refptr<CodecConfig> config = new CodecConfig();
+  config->codec = decoder_config_.codec();
+  // TODO(watk): Set |requires_secure_codec| correctly using
+  // MediaDrmBridgeCdmContext::MediaCryptoReadyCB.
+  config->requires_secure_codec = decoder_config_.is_encrypted();
+  config->initial_expected_coded_size = decoder_config_.coded_size();
+  config->surface_bundle = target_surface_bundle_;
   codec_allocator_->CreateMediaCodecAsync(
-      codec_allocator_adapter_.weak_factory.GetWeakPtr(), codec_config_);
+      codec_allocator_weak_factory_.GetWeakPtr(), std::move(config));
 }
 
-void MediaCodecVideoDecoder::OnCodecCreated(
-    std::unique_ptr<MediaCodecBridge> codec) {
-  DCHECK_EQ(state_, State::kWaitingForCodec);
+void MediaCodecVideoDecoder::OnCodecConfigured(
+    std::unique_ptr<MediaCodecBridge> codec,
+    scoped_refptr<AVDASurfaceBundle> surface_bundle) {
   DCHECK(!codec_);
+  DCHECK_EQ(state_, State::kRunning);
 
   if (!codec) {
     EnterTerminalState(State::kError);
     return;
   }
-
-  state_ = State::kOk;
   codec_ = base::MakeUnique<CodecWrapper>(
-      std::move(codec),
+      CodecSurfacePair(std::move(codec), std::move(surface_bundle)),
       BindToCurrentLoop(base::Bind(&MediaCodecVideoDecoder::ManageTimer,
                                    weak_factory_.GetWeakPtr(), true)));
+
+  // If the target surface changed while codec creation was in progress,
+  // transition to it immediately.
+  // Note: this can only happen if we support SetOutputSurface() because if we
+  // don't OnSurfaceDestroyed() cancels codec creations, and
+  // |surface_chooser_| doesn't change the target surface.
+  if (SurfaceTransitionPending())
+    TransitionToTargetSurface();
+
   ManageTimer(true);
 }
 
@@ -372,24 +348,20 @@ void MediaCodecVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
 
 void MediaCodecVideoDecoder::FlushCodec() {
   DVLOG(2) << __func__;
-  if (!codec_ || codec_->IsFlushed() || state_ == State::kSurfaceDestroyed ||
-      state_ == State::kError) {
+  if (!codec_ || codec_->IsFlushed())
     return;
-  }
 
   if (codec_->SupportsFlush(device_info_)) {
     DVLOG(2) << "Flushing codec";
-    if (!codec_->Flush()) {
+    if (!codec_->Flush())
       EnterTerminalState(State::kError);
-      return;
-    }
   } else {
     DVLOG(2) << "flush() workaround: creating a new codec";
-    // Release the codec and create a new one with the same surface bundle.
-    // TODO(watk): We should guarantee that the new codec is created after the
-    // current one is released so they aren't attached to the same surface at
-    // the same time. This doesn't usually happen because the release and
-    // creation usually post to the same thread, but it's not guaranteed.
+    // Release the codec and create a new one.
+    // Note: we may end up with two codecs attached to the same surface if the
+    // release hangs on one thread and create proceeds on another. This will
+    // result in an error, letting the user retry the playback. The alternative
+    // of waiting for the release risks hanging the playback forever.
     ReleaseCodec();
     CreateCodec();
   }
@@ -411,6 +383,8 @@ void MediaCodecVideoDecoder::PumpCodec(bool force_start_timer) {
 void MediaCodecVideoDecoder::ManageTimer(bool start_timer) {
   const base::TimeDelta kPollingPeriod = base::TimeDelta::FromMilliseconds(10);
   const base::TimeDelta kIdleTimeout = base::TimeDelta::FromSeconds(1);
+  if (state_ != State::kRunning)
+    return;
 
   if (!idle_timer_ || start_timer)
     idle_timer_ = base::ElapsedTimer();
@@ -432,11 +406,8 @@ void MediaCodecVideoDecoder::ManageTimer(bool start_timer) {
 
 bool MediaCodecVideoDecoder::QueueInput() {
   DVLOG(4) << __func__;
-  if (state_ == State::kError || state_ == State::kWaitingForCodec ||
-      state_ == State::kBeforeSurfaceInit ||
-      state_ == State::kSurfaceDestroyed || waiting_for_key_) {
+  if (!codec_ || waiting_for_key_)
     return false;
-  }
 
   // If the codec is drained, flush it when there is a pending decode and no
   // unreleased output buffers. This lets us avoid both unbacking frames when we
@@ -488,20 +459,17 @@ bool MediaCodecVideoDecoder::QueueInput() {
 
 bool MediaCodecVideoDecoder::DequeueOutput() {
   DVLOG(4) << __func__;
-  if (state_ == State::kError || state_ == State::kWaitingForCodec ||
-      state_ == State::kBeforeSurfaceInit ||
-      state_ == State::kSurfaceDestroyed || waiting_for_key_) {
+  if (!codec_ || waiting_for_key_)
     return false;
-  }
 
   // If a surface transition is pending, wait for all outstanding buffers to be
   // released before doing the transition. This is necessary because the
   // VideoFrames corresponding to these buffers have metadata flags specific to
   // the surface type, and changing the surface before they're rendered would
   // invalidate them.
-  if (incoming_surface_) {
+  if (SurfaceTransitionPending()) {
     if (!codec_->HasUnreleasedOutputBuffers()) {
-      TransitionToIncomingSurface();
+      TransitionToTargetSurface();
       return true;
     }
     return false;
@@ -534,9 +502,8 @@ bool MediaCodecVideoDecoder::DequeueOutput() {
     }
     if (drain_type_)
       OnCodecDrained();
-    // We don't want to flush the drained codec immediately if !|drain_type_|
-    // because it might be backing unrendered frames near EOS. Instead we'll
-    // flush it after all outstanding buffers are released.
+    // We don't flush the drained codec immediately because it might be
+    // backing unrendered frames near EOS. It's flushed lazily in QueueInput().
     return false;
   }
 
@@ -620,14 +587,16 @@ void MediaCodecVideoDecoder::OnCodecDrained() {
 }
 
 void MediaCodecVideoDecoder::EnterTerminalState(State state) {
-  DVLOG(2) << __func__ << static_cast<int>(state);
+  DVLOG(2) << __func__ << " " << static_cast<int>(state);
   DCHECK(state == State::kError || state == State::kSurfaceDestroyed);
   state_ = state;
 
   // Cancel pending codec creation.
-  codec_allocator_adapter_.weak_factory.InvalidateWeakPtrs();
+  codec_allocator_weak_factory_.InvalidateWeakPtrs();
   pump_codec_timer_.Stop();
-  ReleaseCodecAndBundle();
+  ReleaseCodec();
+  target_surface_bundle_ = nullptr;
+  surface_texture_bundle_ = nullptr;
   if (state == State::kError)
     ClearPendingDecodes(DecodeStatus::DECODE_ERROR);
   if (drain_type_)
@@ -645,15 +614,10 @@ void MediaCodecVideoDecoder::ClearPendingDecodes(DecodeStatus status) {
 void MediaCodecVideoDecoder::ReleaseCodec() {
   if (!codec_)
     return;
-  codec_allocator_->ReleaseMediaCodec(codec_->TakeCodec(),
-                                      codec_config_->surface_bundle);
+  auto pair = codec_->TakeCodecSurfacePair();
   codec_ = nullptr;
-}
-
-void MediaCodecVideoDecoder::ReleaseCodecAndBundle() {
-  DCHECK(codec_config_);
-  ReleaseCodec();
-  codec_config_->surface_bundle = nullptr;
+  codec_allocator_->ReleaseMediaCodec(std::move(pair.first),
+                                      std::move(pair.second));
 }
 
 AndroidOverlayFactoryCB MediaCodecVideoDecoder::CreateOverlayFactoryCb() {

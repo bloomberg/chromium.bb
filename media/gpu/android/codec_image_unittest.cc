@@ -40,8 +40,9 @@ class CodecImageTest : public testing::Test {
   void SetUp() override {
     auto codec = base::MakeUnique<NiceMock<MockMediaCodecBridge>>();
     codec_ = codec.get();
-    wrapper_ = base::MakeUnique<CodecWrapper>(std::move(codec),
-                                              base::Bind(&base::DoNothing));
+    wrapper_ = base::MakeUnique<CodecWrapper>(
+        CodecSurfacePair(std::move(codec), new AVDASurfaceBundle()),
+        base::Bind(&base::DoNothing));
     ON_CALL(*codec_, DequeueOutputBuffer(_, _, _, _, _, _, _))
         .WillByDefault(Return(MEDIA_CODEC_OK));
 
@@ -67,7 +68,7 @@ class CodecImageTest : public testing::Test {
     share_group_ = nullptr;
     surface_ = nullptr;
     gl::init::ShutdownGL();
-    wrapper_->TakeCodec();
+    wrapper_->TakeCodecSurfacePair();
   }
 
   enum ImageKind { kOverlay, kSurfaceTexture };
@@ -182,7 +183,7 @@ TEST_F(CodecImageTest, CanRenderSurfaceTextureImageToBackBuffer) {
 TEST_F(CodecImageTest, CodecBufferInvalidationResultsInRenderingFailure) {
   auto i = NewImage(kSurfaceTexture);
   // Invalidate the backing codec buffer.
-  wrapper_->TakeCodec();
+  wrapper_->TakeCodecSurfacePair();
   ASSERT_FALSE(i->RenderToSurfaceTextureBackBuffer());
 }
 
@@ -208,13 +209,13 @@ TEST_F(CodecImageTest, PromotingTheBackBufferAlwaysSucceeds) {
   i->RenderToSurfaceTextureBackBuffer();
   // Invalidating the codec buffer doesn't matter after it's rendered to the
   // back buffer.
-  wrapper_->TakeCodec();
+  wrapper_->TakeCodecSurfacePair();
   ASSERT_TRUE(i->RenderToFrontBuffer());
 }
 
 TEST_F(CodecImageTest, FrontBufferRenderingFailsIfBackBufferRenderingFailed) {
   auto i = NewImage(kSurfaceTexture);
-  wrapper_->TakeCodec();
+  wrapper_->TakeCodecSurfacePair();
   i->RenderToSurfaceTextureBackBuffer();
   ASSERT_FALSE(i->RenderToFrontBuffer());
 }
