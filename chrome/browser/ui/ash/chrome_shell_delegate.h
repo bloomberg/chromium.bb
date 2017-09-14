@@ -52,11 +52,6 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   base::string16 GetProductName() const override;
   void OpenKeyboardShortcutHelpPage() const override;
   gfx::Image GetDeprecatedAcceleratorImage() const override;
-  bool GetTouchscreenEnabled(
-      ash::TouchscreenEnabledSource source) const override;
-  void SetTouchscreenEnabled(bool enabled,
-                             ash::TouchscreenEnabledSource source) override;
-  void ToggleTouchpad() override;
   ui::InputDeviceControllerClient* GetInputDeviceControllerClient() override;
 
   // content::NotificationObserver override:

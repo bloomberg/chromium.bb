@@ -9,14 +9,13 @@
 #include "ash/ash_switches.h"
 #include "ash/media_controller.h"
 #include "ash/public/cpp/config.h"
-#include "ash/public/cpp/touchscreen_enabled_source.h"
 #include "ash/session/session_controller.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/shell_test_api.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test_media_client.h"
-#include "ash/test_shell_delegate.h"
+#include "ash/touch/touch_devices_controller.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/lock_state_controller_test_api.h"
 #include "ash/wm/power_button_controller.h"
@@ -86,8 +85,6 @@ class TabletPowerButtonControllerTest : public AshTestBase {
     lock_state_controller_ = Shell::Get()->lock_state_controller();
     lock_state_test_api_ =
         std::make_unique<LockStateControllerTestApi>(lock_state_controller_);
-    shell_delegate_ =
-        static_cast<TestShellDelegate*>(Shell::Get()->shell_delegate());
     generator_ = &AshTestBase::GetEventGenerator();
     power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, false);
     EXPECT_FALSE(GetBacklightsForcedOff());
@@ -186,7 +183,7 @@ class TabletPowerButtonControllerTest : public AshTestBase {
   }
 
   bool GetGlobalTouchscreenEnabled() const {
-    return shell_delegate_->GetTouchscreenEnabled(
+    return Shell::Get()->touch_devices_controller()->GetTouchscreenEnabled(
         TouchscreenEnabledSource::GLOBAL);
   }
 
@@ -207,7 +204,6 @@ class TabletPowerButtonControllerTest : public AshTestBase {
   std::unique_ptr<TabletPowerButtonController::TestApi> test_api_;
   std::unique_ptr<LockStateControllerTestApi> lock_state_test_api_;
   base::SimpleTestTickClock* tick_clock_ = nullptr;  // Not owned.
-  TestShellDelegate* shell_delegate_ = nullptr;      // Not owned.
   ui::test::EventGenerator* generator_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(TabletPowerButtonControllerTest);
@@ -605,8 +601,8 @@ TEST_F(TabletPowerButtonControllerTest, LidEventsStopForcingOff) {
 // Tests that with system reboot, the global touchscreen enabled status should
 // be synced with new backlights forced off state from powerd.
 TEST_F(TabletPowerButtonControllerTest, SyncTouchscreenEnabled) {
-  shell_delegate_->SetTouchscreenEnabled(false,
-                                         TouchscreenEnabledSource::GLOBAL);
+  Shell::Get()->touch_devices_controller()->SetTouchscreenEnabled(
+      false, TouchscreenEnabledSource::GLOBAL);
   ASSERT_FALSE(GetGlobalTouchscreenEnabled());
 
   // Simulate system reboot by resetting backlights forced off state in powerd

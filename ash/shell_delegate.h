@@ -41,7 +41,6 @@ class GPUSupport;
 class NetworkingConfigDelegate;
 class PaletteDelegate;
 class WallpaperDelegate;
-enum class TouchscreenEnabledSource;
 
 // Delegate of the Shell.
 class ASH_EXPORT ShellDelegate {
@@ -113,20 +112,6 @@ class ASH_EXPORT ShellDelegate {
   virtual void OpenKeyboardShortcutHelpPage() const {}
 
   virtual gfx::Image GetDeprecatedAcceleratorImage() const = 0;
-
-  // Returns the current touchscreen enabled status as specified by |source|.
-  // Note that the actual state of the touchscreen device is automatically
-  // determined based on the requests of multiple sources.
-  virtual bool GetTouchscreenEnabled(TouchscreenEnabledSource source) const = 0;
-
-  // Sets |source|'s requested touchscreen enabled status to |enabled|. Note
-  // that the actual state of the touchscreen device is automatically determined
-  // based on the requests of multiple sources.
-  virtual void SetTouchscreenEnabled(bool enabled,
-                                     TouchscreenEnabledSource source) = 0;
-
-  // Toggles the status of touchpad between enabled and disabled.
-  virtual void ToggleTouchpad() {}
 
   // Creator of Shell owns this; it's assumed this outlives Shell.
   virtual ui::InputDeviceControllerClient* GetInputDeviceControllerClient() = 0;

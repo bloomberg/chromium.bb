@@ -10,7 +10,6 @@
 #include "ash/keyboard/test_keyboard_ui.h"
 #include "ash/palette_delegate.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/public/cpp/touchscreen_enabled_source.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -128,19 +127,6 @@ base::string16 TestShellDelegate::GetProductName() const {
 
 gfx::Image TestShellDelegate::GetDeprecatedAcceleratorImage() const {
   return gfx::Image();
-}
-
-bool TestShellDelegate::GetTouchscreenEnabled(
-    TouchscreenEnabledSource source) const {
-  return source == TouchscreenEnabledSource::GLOBAL
-             ? global_touchscreen_enabled_
-             : true;
-}
-
-void TestShellDelegate::SetTouchscreenEnabled(bool enabled,
-                                              TouchscreenEnabledSource source) {
-  DCHECK_EQ(TouchscreenEnabledSource::GLOBAL, source);
-  global_touchscreen_enabled_ = enabled;
 }
 
 ui::InputDeviceControllerClient*

@@ -139,15 +139,6 @@ gfx::Image ShellDelegateImpl::GetDeprecatedAcceleratorImage() const {
   return gfx::Image();
 }
 
-bool ShellDelegateImpl::GetTouchscreenEnabled(
-    TouchscreenEnabledSource source) const {
-  return true;
-}
-
-void ShellDelegateImpl::SetTouchscreenEnabled(bool enabled,
-                                              TouchscreenEnabledSource source) {
-}
-
 ui::InputDeviceControllerClient*
 ShellDelegateImpl::GetInputDeviceControllerClient() {
   return nullptr;

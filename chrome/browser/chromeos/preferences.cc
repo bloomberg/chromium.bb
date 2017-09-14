@@ -787,8 +787,6 @@ void Preferences::ApplyPreferences(ApplyReason reason,
                                                remap_pref, value);
     }
   }
-
-  system::InputDeviceSettings::Get()->UpdateTouchDevicesStatusFromPrefs();
 }
 
 void Preferences::OnIsSyncingChanged() {
