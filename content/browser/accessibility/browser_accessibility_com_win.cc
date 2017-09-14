@@ -1971,8 +1971,10 @@ void BrowserAccessibilityComWin::UpdateStep3FireEvents(
     // Do not fire EVENT_OBJECT_STATECHANGE if the change was due to a focus
     // change.
     if ((MSAAState() & ~STATE_SYSTEM_FOCUSED) !=
-        (old_win_attributes_->ia_state & ~STATE_SYSTEM_FOCUSED))
+            (old_win_attributes_->ia_state & ~STATE_SYSTEM_FOCUSED) ||
+        ComputeIA2State() != old_win_attributes_->ia2_state) {
       FireNativeEvent(EVENT_OBJECT_STATECHANGE);
+    }
 
     // Handle selection being added or removed.
     bool is_selected_now = (MSAAState() & STATE_SYSTEM_SELECTED) != 0;

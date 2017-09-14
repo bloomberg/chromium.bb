@@ -24,6 +24,7 @@
 
 #include "core/html/HTMLFormControlElement.h"
 
+#include "core/dom/AXObjectCache.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/events/Event.h"
@@ -188,12 +189,20 @@ void HTMLFormControlElement::DisabledAttributeChanged() {
   if (GetLayoutObject())
     LayoutTheme::GetTheme().ControlStateChanged(*GetLayoutObject(),
                                                 kEnabledControlState);
+  // TODO(dmazzoni): http://crbug.com/699438.
+  // Replace |CheckedStateChanged| with a generic tree changed event.
+  if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
+    cache->CheckedStateChanged(this);
 }
 
 void HTMLFormControlElement::RequiredAttributeChanged() {
   SetNeedsValidityCheck();
   PseudoStateChanged(CSSSelector::kPseudoRequired);
   PseudoStateChanged(CSSSelector::kPseudoOptional);
+  // TODO(dmazzoni): http://crbug.com/699438.
+  // Replace |CheckedStateChanged| with a generic tree changed event.
+  if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
+    cache->CheckedStateChanged(this);
 }
 
 bool HTMLFormControlElement::IsReadOnly() const {
