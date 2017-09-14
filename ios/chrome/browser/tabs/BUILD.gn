@@ -58,6 +58,8 @@ source_set("tabs_internal") {
     "tab_model_synced_window_delegate_getter.mm",
     "tab_model_web_state_list_delegate.h",
     "tab_model_web_state_list_delegate.mm",
+    "tab_model_web_usage_enabled_observer.h",
+    "tab_model_web_usage_enabled_observer.mm",
     "tab_parenting_observer.h",
     "tab_parenting_observer.mm",
   ]
