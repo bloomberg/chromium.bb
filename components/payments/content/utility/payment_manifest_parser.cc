@@ -17,8 +17,6 @@
 #include "base/values.h"
 #include "components/payments/content/utility/fingerprint_parser.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "url/gurl.h"
-#include "url/origin.h"
 #include "url/url_constants.h"
 
 namespace payments {

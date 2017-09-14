@@ -10,12 +10,8 @@
 
 #include "base/macros.h"
 #include "components/payments/mojom/payment_manifest_parser.mojom.h"
-
-class GURL;
-
-namespace url {
-class Origin;
-}
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace payments {
 

@@ -5,8 +5,6 @@
 #include "components/payments/content/utility/payment_manifest_parser.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/gurl.h"
-#include "url/origin.h"
 
 namespace payments {
 namespace {
