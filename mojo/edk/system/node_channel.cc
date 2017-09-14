@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "mojo/edk/system/channel.h"
+#include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/request_context.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -906,6 +907,12 @@ void NodeChannel::WriteChannelMessage(Channel::MessagePtr message) {
     }
   }
 #endif
+
+  // Force a crash if this process attempts to send a message larger than the
+  // maximum allowed size. This is more useful than killing a Channel when we
+  // *receive* an oversized message, as we should consider oversized message
+  // transmission to be a bug and this helps easily identify offending code.
+  CHECK(message->data_num_bytes() < GetConfiguration().max_message_num_bytes);
 
   base::AutoLock lock(channel_lock_);
   if (!channel_)
