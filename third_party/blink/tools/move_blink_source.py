@@ -103,12 +103,31 @@ class MoveBlinkSource(object):
         self._append_unless_upper_dir_exists(dirs, self._fs.join(self._repo_root, 'third_party', 'WebKit', 'Source'))
         self._append_unless_upper_dir_exists(dirs, self._fs.join(self._repo_root, 'third_party', 'WebKit', 'common'))
         self._append_unless_upper_dir_exists(dirs, self._fs.join(self._repo_root, 'third_party', 'WebKit', 'public'))
+        self._append_unless_upper_dir_exists(dirs, self._fs.join(self._repo_root, 'mojo', 'public', 'tools',
+                                                                 'bindings', 'generators', 'cpp_templates'))
         self._update_cpp_includes_in_directories(dirs)
 
         # Content update for individual files
+        self._update_single_file_content('third_party/WebKit/Source/BUILD.gn',
+                                         [('$root_gen_dir/third_party/WebKit',
+                                           '$root_gen_dir/third_party/blink/renderer')])
         self._update_single_file_content('third_party/WebKit/Source/config.gni',
                                          [('snake_case_source_files = false',
                                            'snake_case_source_files = true')])
+        self._update_single_file_content('third_party/WebKit/Source/core/css/CSSProperties.json5',
+                                         [self._update_basename])
+        self._update_single_file_content('third_party/WebKit/Source/core/css/ComputedStyleExtraFields.json5',
+                                         [self._update_basename])
+        self._update_single_file_content('third_party/WebKit/Source/core/inspector/inspector_protocol_config.json',
+                                         [self._update_basename])
+        self._update_single_file_content('third_party/WebKit/public/BUILD.gn',
+                                         [('$root_gen_dir/third_party/WebKit',
+                                           '$root_gen_dir/third_party/blink/renderer')])
+        self._update_single_file_content('third_party/WebKit/public/blink_resources.grd',
+                                         [('../Source/', '../')])
+        self._update_single_file_content('tools/gritsettings/resource_ids',
+                                         [('third_party/WebKit/public', 'third_party/blink/renderer/public'),
+                                          ('third_party/WebKit/Source', 'third_party/blink/renderer')])
 
     def move(self):
         _log.info('Planning renaming ...')
@@ -175,10 +194,19 @@ class MoveBlinkSource(object):
         content = content.replace('//third_party/WebKit/Source', '//third_party/blink/renderer')
         content = content.replace('//third_party/WebKit/common', '//third_party/blink/common')
         content = content.replace('//third_party/WebKit/public', '//third_party/blink/renderer/public')
+        # export_header_blink exists outside of Blink too.
+        content = content.replace('export_header_blink = "third_party/WebKit/public/platform/WebCommon.h"',
+                                  'export_header_blink = "third_party/blink/renderer/public/platform/web_common.h"')
         return content
 
     def _update_blink_build(self, content):
         content = self._update_build(content)
+
+        # Update visibility=[...]
+        content = content.replace('//third_party/WebKit/*', '//third_party/blink/*')
+        content = content.replace('//third_party/WebKit/Source/*', '//third_party/blink/renderer/*')
+        content = content.replace('//third_party/WebKit/public/*', '//third_party/blink/renderer/public/*')
+
         return self._update_basename(content)
 
     def _update_owners(self, content):
@@ -267,7 +295,7 @@ class MoveBlinkSource(object):
             _log.info('Processing #include in %s ...', self._shorten_path(dirname))
             files = self._fs.files_under(
                 dirname, file_filter=lambda fs, _, basename: basename.endswith(
-                    ('.h', '.cc', '.cpp', '.mm', '.cc.tmpl', '.cpp.tmpl', '.h.tmpl')))
+                    ('.h', '.cc', '.cpp', '.mm', '.cc.tmpl', '.cpp.tmpl', '.h.tmpl', 'XPathGrammar.y')))
             for file_path in files:
                 original_content = self._fs.read_text_file(file_path)
 
@@ -340,10 +368,17 @@ class MoveBlinkSource(object):
         full_path = self._fs.join(self._repo_root, file_path)
         original_content = self._fs.read_text_file(full_path)
         content = original_content
-        for src, dest in replace_list:
-            content = content.replace(src, dest)
+        for command in replace_list:
+            if isinstance(command, tuple):
+                src, dest = command
+                content = content.replace(src, dest)
+            elif callable(command):
+                content = command(content)
+            else:
+                raise TypeError('A tuple or a function is expected.')
         if content != original_content:
-            self._fs.write_text_file(full_path, content)
+            if self._options.run:
+                self._fs.write_text_file(full_path, content)
             _log.info('Updated %s', file_path)
         else:
             _log.warning('%s does not contain specified source strings.', file_path)
