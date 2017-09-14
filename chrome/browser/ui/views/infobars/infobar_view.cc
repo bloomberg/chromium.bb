@@ -167,7 +167,7 @@ void InfoBarView::ViewHierarchyChanged(
     }
 
     close_button_ = views::CreateVectorImageButton(this);
-    views::SetImageFromVectorIcon(close_button_, vector_icons::kCloseIcon,
+    views::SetImageFromVectorIcon(close_button_, vector_icons::kClose16Icon,
                                   GetInfobarTextColor());
     close_button_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));

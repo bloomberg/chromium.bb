@@ -173,7 +173,7 @@ const CGFloat kMDCloseButtonSize = 32;
     MDDownloadShelfCloseButton* closeButton = scopedCloseButton;
     closeButton.autoresizingMask =
         [NSView cr_localizedAutoresizingMask:NSViewMinXMargin];
-    closeButton.icon = &vector_icons::kCloseIcon;
+    closeButton.icon = &vector_icons::kClose16Icon;
     [closeButton
         cr_setAccessibilityLabel:l10n_util::GetNSString(IDS_ACCNAME_CLOSE)];
     closeButton.target = self;
