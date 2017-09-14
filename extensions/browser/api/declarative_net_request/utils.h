@@ -9,6 +9,7 @@
 #define EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_UTILS_H_
 
 namespace base {
+class FilePath;
 class Value;
 }  // namespace base
 
@@ -25,6 +26,10 @@ bool IndexAndPersistRules(const base::Value& rules,
                           const Extension& extension,
                           std::string* error,
                           std::vector<InstallWarning>* warnings);
+
+// Returns the path where the indexed ruleset file should be persisted for
+// |extension_path|.
+base::FilePath GetIndexedRulesetPath(const base::FilePath& extension_path);
 
 }  // namespace declarative_net_request
 }  // namespace extensions

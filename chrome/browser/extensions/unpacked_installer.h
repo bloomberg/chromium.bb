@@ -15,7 +15,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "extensions/browser/preload_check.h"
-#include "extensions/common/manifest.h"
 
 class ExtensionService;
 class Profile;
@@ -119,13 +118,6 @@ class UnpackedInstaller
 
   // Helper to get the Extension::CreateFlags for the installing extension.
   int GetFlags();
-
-  // Helper to load an extension. Should be called on a sequence where file IO
-  // is allowed. Loads the extension and validates extension locales. In case of
-  // an error, returns false and populates |error|.
-  bool LoadExtension(Manifest::Location location,
-                     int flags,
-                     std::string* error);
 
   const Extension* extension() { return extension_.get(); }
 
