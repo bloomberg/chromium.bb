@@ -138,9 +138,13 @@ bool ParseCredentialType(const base::DictionaryValue& json,
 }
 
 bool ParseCredentialDictionary(const base::DictionaryValue& json,
-                               CredentialInfo* credential) {
+                               CredentialInfo* credential,
+                               std::string* reason) {
   if (!json.GetString(kCredentialIdKey, &credential->id)) {
     // |id| is required.
+    if (reason) {
+      *reason = "no valid 'id' field";
+    }
     return false;
   }
   json.GetString(kCredentialNameKey, &credential->name);
@@ -150,11 +154,17 @@ bool ParseCredentialDictionary(const base::DictionaryValue& json,
     if (!credential->icon.is_valid() ||
         !web::IsOriginSecure(credential->icon)) {
       // |iconUrl| is either not a valid URL or not a secure URL.
+      if (reason) {
+        *reason = "iconURL is either invalid or insecure URL";
+      }
       return false;
     }
   }
   if (!ParseCredentialType(json, &credential->type)) {
     // Credential has invalid |type|
+    if (reason) {
+      *reason = "Credential has invalid type";
+    }
     return false;
   }
   if (credential->type == CredentialType::CREDENTIAL_TYPE_PASSWORD) {
@@ -162,6 +172,9 @@ bool ParseCredentialDictionary(const base::DictionaryValue& json,
                         &credential->password) ||
         credential->password.empty()) {
       // |password| field is required for PasswordCredential.
+      if (reason) {
+        *reason = "no valid 'password' field";
+      }
       return false;
     }
   }
@@ -171,6 +184,9 @@ bool ParseCredentialDictionary(const base::DictionaryValue& json,
     if (!GURL(federation).is_valid()) {
       // |provider| field must be a valid URL. See
       // https://w3c.github.io/webappsec-credential-management/#provider-identification
+      if (reason) {
+        *reason = "no valid 'provider' field";
+      }
       return false;
     }
     credential->federation = url::Origin(GURL(federation));

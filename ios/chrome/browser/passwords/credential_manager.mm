@@ -101,12 +101,10 @@ bool CredentialManager::HandleScriptCommand(const base::DictionaryValue& json,
   }
   if (command == "credentials.store") {
     CredentialInfo credential;
-    if (!ParseCredentialDictionary(json, &credential)) {
-      // TODO(crbug.com/435047): Refactor ParseCredentialDictionary method to
-      // provide more meaningful error message.
-      RejectCredentialPromiseWithTypeError(
-          web_state_, promise_id,
-          base::ASCIIToUTF16("Invalid Credential object."));
+    std::string parse_message;
+    if (!ParseCredentialDictionary(json, &credential, &parse_message)) {
+      RejectCredentialPromiseWithTypeError(web_state_, promise_id,
+                                           base::UTF8ToUTF16(parse_message));
       return false;
     }
     impl_.Store(credential,
