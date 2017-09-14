@@ -31,6 +31,8 @@ const SkColor kSelectedColor = SkColorSetARGB(15, 0, 0, 0);
 // The keyboard select color for grid views, which are on top of a black shield
 // view for new design (12% white).
 const SkColor kGridSelectedColor = SkColorSetARGB(0x1F, 0xFF, 0xFF, 0xFF);
+// Selection color for answer card (3% black).
+const SkColor kAnswerCardSelectedColor = SkColorSetARGB(0x08, 0x00, 0x00, 0x00);
 
 const SkColor kPagerHoverColor = SkColorSetRGB(0xB4, 0xB4, 0xB4);
 const SkColor kPagerNormalColor = SkColorSetRGB(0xE2, 0xE2, 0xE2);
