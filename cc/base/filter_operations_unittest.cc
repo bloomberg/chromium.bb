@@ -16,18 +16,6 @@
 namespace cc {
 namespace {
 
-TEST(FilterOperationsTest, GetOutsetsBlur) {
-  FilterOperations ops;
-  ops.Append(FilterOperation::CreateBlurFilter(20));
-  int top, right, bottom, left;
-  top = right = bottom = left = 0;
-  ops.GetOutsets(&top, &right, &bottom, &left);
-  EXPECT_EQ(60, top);
-  EXPECT_EQ(60, right);
-  EXPECT_EQ(60, bottom);
-  EXPECT_EQ(60, left);
-}
-
 TEST(FilterOperationsTest, MapRectBlur) {
   FilterOperations ops;
   ops.Append(FilterOperation::CreateBlurFilter(20));
@@ -58,26 +46,6 @@ TEST(FilterOperationsTest, MapRectReverseBlur) {
   EXPECT_EQ(gfx::Rect(-60, -70, 130, 130),
             ops.MapRectReverse(gfx::Rect(0, -10, 10, 10),
                                SkMatrix::MakeScale(1, -1)));
-}
-
-TEST(FilterOperationsTest, GetOutsetsDropShadowReferenceFilter) {
-  // TODO(hendrikw): We need to make outsets for reference filters be in line
-  // with non-reference filters. See crbug.com/523534
-  FilterOperations ops;
-  ops.Append(
-      FilterOperation::CreateReferenceFilter(SkDropShadowImageFilter::Make(
-          SkIntToScalar(3), SkIntToScalar(8), SkIntToScalar(4),
-          SkIntToScalar(9), SK_ColorBLACK,
-          SkDropShadowImageFilter::kDrawShadowAndForeground_ShadowMode,
-          nullptr)));
-
-  int top, right, bottom, left;
-  top = right = bottom = left = 0;
-  ops.GetOutsets(&top, &right, &bottom, &left);
-  EXPECT_EQ(35, top);
-  EXPECT_EQ(9, right);
-  EXPECT_EQ(19, bottom);
-  EXPECT_EQ(15, left);
 }
 
 TEST(FilterOperationsTest, MapRectDropShadowReferenceFilter) {
@@ -179,19 +147,6 @@ TEST(FilterOperationsTest, MapRectReverseCombineNonCommutative) {
                                SkMatrix::MakeScale(1, -1)));
 }
 
-TEST(FilterOperationsTest, GetOutsetsNullReferenceFilter) {
-  FilterOperations ops;
-  ops.Append(FilterOperation::CreateReferenceFilter(nullptr));
-
-  int top, right, bottom, left;
-  top = right = bottom = left = 0;
-  ops.GetOutsets(&top, &right, &bottom, &left);
-  EXPECT_EQ(0, top);
-  EXPECT_EQ(0, right);
-  EXPECT_EQ(0, bottom);
-  EXPECT_EQ(0, left);
-}
-
 TEST(FilterOperationsTest, MapRectNullReferenceFilter) {
   FilterOperations ops;
   ops.Append(FilterOperation::CreateReferenceFilter(nullptr));
@@ -216,18 +171,6 @@ TEST(FilterOperationsTest, MapRectReverseNullReferenceFilter) {
                                SkMatrix::MakeScale(1, -1)));
 }
 
-TEST(FilterOperationsTest, GetOutsetsDropShadow) {
-  FilterOperations ops;
-  ops.Append(FilterOperation::CreateDropShadowFilter(gfx::Point(3, 8), 20, 0));
-  int top, right, bottom, left;
-  top = right = bottom = left = 0;
-  ops.GetOutsets(&top, &right, &bottom, &left);
-  EXPECT_EQ(52, top);
-  EXPECT_EQ(63, right);
-  EXPECT_EQ(68, bottom);
-  EXPECT_EQ(57, left);
-}
-
 TEST(FilterOperationsTest, MapRectDropShadow) {
   FilterOperations ops;
   ops.Append(FilterOperation::CreateDropShadowFilter(gfx::Point(3, 8), 20, 0));
@@ -250,20 +193,6 @@ TEST(FilterOperationsTest, MapRectReverseDropShadow) {
   EXPECT_EQ(gfx::Rect(-63, -62, 130, 130),
             ops.MapRectReverse(gfx::Rect(0, -10, 10, 10),
                                SkMatrix::MakeScale(1, -1)));
-}
-
-TEST(FilterOperationsTest, GetOutsetsDropShadowDoesNotContract) {
-  // Even with a drop-shadow, the original content is still drawn. Thus the
-  // content bounds are never contracted due to a drop-shadow.
-  FilterOperations ops;
-  ops.Append(FilterOperation::CreateDropShadowFilter(gfx::Point(3, 8), 0, 0));
-  int top, right, bottom, left;
-  top = right = bottom = left = 0;
-  ops.GetOutsets(&top, &right, &bottom, &left);
-  EXPECT_EQ(0, top);
-  EXPECT_EQ(3, right);
-  EXPECT_EQ(8, bottom);
-  EXPECT_EQ(0, left);
 }
 
 TEST(FilterOperationsTest, MapRectDropShadowDoesNotContract) {

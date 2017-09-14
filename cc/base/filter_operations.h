@@ -61,7 +61,6 @@ class CC_BASE_EXPORT FilterOperations {
   // in the destination rect.
   gfx::Rect MapRectReverse(const gfx::Rect& rect, const SkMatrix& matrix) const;
 
-  void GetOutsets(int* top, int* right, int* bottom, int* left) const;
   bool HasFilterThatMovesPixels() const;
   bool HasFilterThatAffectsOpacity() const;
   bool HasReferenceFilter() const;

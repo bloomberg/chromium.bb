@@ -58,11 +58,6 @@ bool FilterOperations::IsEmpty() const {
   return operations_.empty();
 }
 
-static int SpreadForStdDeviation(float std_deviation) {
-  // Corresponds to MapStdDeviation in filter_operation.cc.
-  return std_deviation * 3;
-}
-
 gfx::Rect FilterOperations::MapRect(const gfx::Rect& rect,
                                     const SkMatrix& matrix) const {
   auto accumulate_rect = [matrix](const gfx::Rect& rect,
@@ -81,43 +76,6 @@ gfx::Rect FilterOperations::MapRectReverse(const gfx::Rect& rect,
   };
   return std::accumulate(operations_.rbegin(), operations_.rend(), rect,
                          accumulate_rect);
-}
-
-void FilterOperations::GetOutsets(int* top,
-                                  int* right,
-                                  int* bottom,
-                                  int* left) const {
-  *top = *right = *bottom = *left = 0;
-  for (size_t i = 0; i < operations_.size(); ++i) {
-    const FilterOperation& op = operations_[i];
-    // TODO(hendrikw): We should refactor some of this. See crbug.com/523534.
-    if (op.type() == FilterOperation::REFERENCE) {
-      if (!op.image_filter())
-        continue;
-      SkIRect src = SkIRect::MakeWH(0, 0);
-      SkIRect dst = op.image_filter()->filterBounds(src, SkMatrix::I());
-      *top += std::max(0, -dst.top());
-      *right += std::max(0, dst.right());
-      *bottom += std::max(0, dst.bottom());
-      *left += std::max(0, -dst.left());
-    } else {
-      if (op.type() == FilterOperation::BLUR ||
-          op.type() == FilterOperation::DROP_SHADOW) {
-        int spread = SpreadForStdDeviation(op.amount());
-        if (op.type() == FilterOperation::BLUR) {
-          *top += spread;
-          *right += spread;
-          *bottom += spread;
-          *left += spread;
-        } else {
-          *top += std::max(0, spread - op.drop_shadow_offset().y());
-          *right += std::max(0, spread + op.drop_shadow_offset().x());
-          *bottom += std::max(0, spread + op.drop_shadow_offset().y());
-          *left += std::max(0, spread - op.drop_shadow_offset().x());
-        }
-      }
-    }
-  }
 }
 
 bool FilterOperations::HasFilterThatMovesPixels() const {
