@@ -78,6 +78,8 @@
 #include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/layout/ng/ng_layout_result.h"
 #include "core/layout/ng/ng_unpositioned_float.h"
+#include "core/layout/svg/SVGResources.h"
+#include "core/layout/svg/SVGResourcesCache.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/Page.h"
 #include "core/paint/ObjectPaintInvalidator.h"
@@ -3226,6 +3228,12 @@ bool LayoutObject::CanUpdateSelectionOnRootLineBoxes() const {
 }
 
 void LayoutObject::SetNeedsBoundariesUpdate() {
+  if (IsSVGChild()) {
+    // The boundaries affect mask clip.
+    auto* resources = SVGResourcesCache::CachedResourcesForLayoutObject(this);
+    if (resources && resources->Masker())
+      SetNeedsPaintPropertyUpdate();
+  }
   if (LayoutObject* layout_object = Parent())
     layout_object->SetNeedsBoundariesUpdate();
 }

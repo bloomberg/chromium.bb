@@ -1093,6 +1093,8 @@ Bug(none) paint/invalidation/fixed.html [ Failure ]
 # Extra layers for SVG elements. Some have extra invalidations.
 Bug(none) paint/invalidation/svg/absolute-sized-content-with-resources.xhtml [ Failure ]
 Bug(none) paint/invalidation/svg/absolute-sized-document-no-scrollbars.svg [ Failure ]
+Bug(none) paint/invalidation/svg/js-late-mask-and-object-creation.svg [ Failure ]
+Bug(none) paint/invalidation/svg/js-late-mask-creation.svg [ Failure ]
 Bug(none) paint/invalidation/svg/js-update-bounce.svg [ Failure ]
 Bug(none) paint/invalidation/svg/mask-child-changes.svg [ Failure ]
 Bug(none) paint/invalidation/svg/mask-invalidation.svg [ Failure ]
@@ -1181,6 +1183,8 @@ crbug.com/732612 paint/invalidation/repaint-across-writing-mode-boundary.html [ 
 crbug.com/732611 paint/invalidation/overflow-scroll-local-background-text-color-change.html [ Failure ]
 
 # Mask does not work correctly
+crbug.com/707444 paint/invalidation/svg/mask-clip-target-transform.svg [ Failure ]
+crbug.com/707444 paint/invalidation/svg/resource-invalidate-on-target-update.svg [ Failure ]
 crbug.com/707444 svg/W3C-SVG-1.1/masking-intro-01-f.svg [ Failure ]
 crbug.com/707444 svg/batik/masking/maskRegions.svg [ Failure ]
 crbug.com/707444 svg/custom/clamped-masking-clipping.svg [ Failure ]
@@ -1632,12 +1636,6 @@ crbug.com/730284 fast/borders/border-radius-mask-video-shadow.html [ Failure ]
 crbug.com/730284 fast/borders/border-radius-mask-video.html [ Failure ]
 crbug.com/730284 fast/replaced/border-radius-clip-content-edge.html [ Failure ]
 crbug.com/730284 fast/replaced/border-radius-clip.html [ Failure ]
-
-# Paint property under-invalidation
-crbug.com/728913 paint/invalidation/svg/js-late-mask-and-object-creation.svg [ Crash Failure ]
-crbug.com/728913 paint/invalidation/svg/mask-clip-target-transform.svg [ Crash Failure ]
-crbug.com/728913 paint/invalidation/svg/resource-invalidate-on-target-update.svg [ Crash Failure ]
-crbug.com/728913 paint/invalidation/svg/js-late-mask-creation.svg [ Crash Failure ]
 
 # Check failed: layer_list_.empty() || *page_scale_factor == 1
 crbug.com/706066 compositing/background-color/background-color-outside-document.html [ Crash Timeout ]

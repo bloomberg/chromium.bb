@@ -1950,6 +1950,11 @@ void LayoutBlockFlow::LayoutInlineChildren(bool relayout_children,
          walker.Advance()) {
       LayoutObject* o = walker.Current().GetLayoutObject();
 
+      // Layout may change LayoutInline's LinesBoundingBox() which affects
+      // MaskClip.
+      if (o->IsLayoutInline() && o->HasMask())
+        o->SetNeedsPaintPropertyUpdate();
+
       if (!layout_state.HasInlineChild() && o->IsInline())
         layout_state.SetHasInlineChild(true);
 

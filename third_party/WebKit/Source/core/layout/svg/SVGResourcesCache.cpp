@@ -44,6 +44,9 @@ void SVGResourcesCache::AddResourcesFromLayoutObject(
   if (!new_resources)
     return;
 
+  // The new resource may cause new paint property nodes.
+  object->SetNeedsPaintPropertyUpdate();
+
   // Put object in cache.
   SVGResources* resources =
       cache_.Set(object, std::move(new_resources)).stored_value->value.get();
@@ -64,6 +67,9 @@ void SVGResourcesCache::RemoveResourcesFromLayoutObject(LayoutObject* object) {
   std::unique_ptr<SVGResources> resources = cache_.Take(object);
   if (!resources)
     return;
+
+  // Removal of the resource may cause removal of paint property nodes.
+  object->SetNeedsPaintPropertyUpdate();
 
   // Walk resources and unregister the layout object as a client of each
   // resource.
