@@ -83,6 +83,9 @@ def CbuildbotArgs(options):
 
 def RunLocal(options):
   """Run a local tryjob."""
+  if cros_build_lib.IsInsideChroot():
+    cros_build_lib.Die('Local tryjobs cannot be started inside the chroot.')
+
   # Create the buildroot, if needed.
   if not os.path.exists(options.buildroot):
     prompt = 'Create %s as buildroot' % options.buildroot
