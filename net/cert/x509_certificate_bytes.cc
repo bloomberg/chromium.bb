@@ -203,8 +203,10 @@ bool X509Certificate::GetSubjectAltName(
   if (!subject_alt_names)
     return false;
 
-  if (dns_names)
-    *dns_names = subject_alt_names->dns_names;
+  if (dns_names) {
+    for (const auto& dns_name : subject_alt_names->dns_names)
+      dns_names->push_back(dns_name.as_string());
+  }
   if (ip_addrs) {
     for (const IPAddress& addr : subject_alt_names->ip_addresses) {
       ip_addrs->push_back(

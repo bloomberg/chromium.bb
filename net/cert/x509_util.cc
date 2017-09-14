@@ -376,7 +376,8 @@ bool ParseCertificateSandboxed(const base::StringPiece& certificate,
     std::unique_ptr<GeneralNames> subject_alt_names =
         GeneralNames::Create(iter->second.value, &unused_errors);
     if (subject_alt_names) {
-      *dns_names = subject_alt_names->dns_names;
+      for (const auto& dns_name : subject_alt_names->dns_names)
+        dns_names->push_back(dns_name.as_string());
       for (const auto& ip : subject_alt_names->ip_addresses)
         ip_addresses->push_back(ip.ToString());
     }

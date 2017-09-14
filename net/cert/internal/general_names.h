@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/strings/string_piece_forward.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_export.h"
 #include "net/cert/internal/cert_error_id.h"
@@ -59,17 +60,19 @@ struct NET_EXPORT GeneralNames {
   ~GeneralNames();
 
   // Create a GeneralNames object representing the DER-encoded
-  // |general_names_tlv|. Returns nullptr on failure, and may fill |errors| with
+  // |general_names_tlv|. The returned object may reference data from
+  // |general_names_tlv|, so is only valid as long as |general_names_tlv| is.
+  // Returns nullptr on failure, and may fill |errors| with
   // additional information. |errors| must be non-null.
   static std::unique_ptr<GeneralNames> Create(
       const der::Input& general_names_tlv,
       CertErrors* errors);
 
   // ASCII hostnames.
-  std::vector<std::string> dns_names;
+  std::vector<base::StringPiece> dns_names;
 
   // DER-encoded Name values (not including the Sequence tag).
-  std::vector<std::vector<uint8_t>> directory_names;
+  std::vector<der::Input> directory_names;
 
   // iPAddresses as sequences of octets in network byte order. This will be
   // populated if the GeneralNames represents a Subject Alternative Name.

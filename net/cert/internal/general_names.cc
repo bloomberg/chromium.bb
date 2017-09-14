@@ -120,7 +120,7 @@ WARN_UNUSED_RESULT bool ParseGeneralName(
   } else if (tag == der::ContextSpecificPrimitive(2)) {
     // dNSName                         [2]     IA5String,
     name_type = GENERAL_NAME_DNS_NAME;
-    const std::string s = value.AsString();
+    const base::StringPiece s = value.AsStringPiece();
     if (!base::IsStringASCII(s)) {
       errors->AddError(kDnsNameNotAscii);
       return false;
@@ -139,9 +139,7 @@ WARN_UNUSED_RESULT bool ParseGeneralName(
     der::Input name_value;
     if (!name_parser.ReadTag(der::kSequence, &name_value) || parser.HasMore())
       return false;
-    subtrees->directory_names.push_back(
-        std::vector<uint8_t>(name_value.UnsafeData(),
-                             name_value.UnsafeData() + name_value.Length()));
+    subtrees->directory_names.push_back(name_value);
   } else if (tag == der::ContextSpecificConstructed(5)) {
     // ediPartyName                    [5]     EDIPartyName,
     name_type = GENERAL_NAME_EDI_PARTY_NAME;
