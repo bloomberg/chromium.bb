@@ -37,6 +37,8 @@ TEST_F(NullableMailtoURLRewriterTest, TestStandardInstance) {
         [handler isAvailable] ? appStoreID : [MailtoURLRewriter systemMailApp];
     [rewriter setDefaultHandlerID:appStoreID];
     EXPECT_NSEQ(expectedDefaultAppID, [rewriter defaultHandlerID]);
+    MailtoHandler* foundHandler = [rewriter defaultHandlerByID:appStoreID];
+    EXPECT_NSEQ(handler, foundHandler);
   }
 }
 
@@ -60,6 +62,20 @@ TEST_F(NullableMailtoURLRewriterTest, TestWithGmailChoiceNotMade) {
     [[MailtoHandlerSystemMail alloc] init],
     [[FakeMailtoHandlerGmailInstalled alloc] init]
   ]];
+  EXPECT_FALSE([rewriter defaultHandlerID]);
+}
+
+// Tests that it is possible to unset the default handler.
+TEST_F(NullableMailtoURLRewriterTest, TestUnsetDefaultHandler) {
+  NullableMailtoURLRewriter* rewriter =
+      [[NullableMailtoURLRewriter alloc] init];
+  MailtoHandler* gmailInstalled =
+      [[FakeMailtoHandlerGmailInstalled alloc] init];
+  MailtoHandler* systemMail = [[MailtoHandlerSystemMail alloc] init];
+  [rewriter setDefaultHandlers:@[ systemMail, gmailInstalled ]];
+  [rewriter setDefaultHandlerID:[systemMail appStoreID]];
+  EXPECT_NSEQ([systemMail appStoreID], [rewriter defaultHandlerID]);
+  [rewriter setDefaultHandlerID:nil];
   EXPECT_FALSE([rewriter defaultHandlerID]);
 }
 

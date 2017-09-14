@@ -13,3 +13,9 @@ const base::Feature kMailtoUrlRewriting{"MailtoUrlRewriting",
 // value here to enable or disable this feature.
 const base::Feature kMailtoPromptForUserChoice{
     "MailtoPromptForUserChoice", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Feature flag to choose whether to use Material Design style bottom sheet
+// to present choices to the user. Change the default value here to enable
+// to disable this feature.
+const base::Feature kMailtoPromptInMdcStyle{"MailtoPromptInMdcStyle",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};

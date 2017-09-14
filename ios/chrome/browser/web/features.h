@@ -16,4 +16,9 @@ extern const base::Feature kMailtoUrlRewriting;
 // enabled only when kMailtoUrlRewriting is also enabled.
 extern const base::Feature kMailtoPromptForUserChoice;
 
+// Feature flag to choose whether to use Material Design style bottom sheet
+// to present choices to the user. With MDC, it is possible to show a custom
+// row with a toggle switch to remember the setting for future use.
+extern const base::Feature kMailtoPromptInMdcStyle;
+
 #endif  // IOS_CHROME_BROWSER_WEB_FEATURES_H_

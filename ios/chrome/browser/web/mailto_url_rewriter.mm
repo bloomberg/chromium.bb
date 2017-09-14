@@ -57,6 +57,11 @@
   return nil;
 }
 
+- (MailtoHandler*)defaultHandlerByID:(NSString*)handlerID {
+  NOTREACHED();
+  return nil;
+}
+
 - (NSString*)rewriteMailtoURL:(const GURL&)gURL {
   NOTREACHED();
   return nil;

@@ -84,12 +84,15 @@
 }
 
 - (void)setDefaultHandlerID:(NSString*)appStoreID {
-  DCHECK([appStoreID length]);
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   NSString* defaultsKey = [[self class] userDefaultsKey];
-  if ([appStoreID isEqual:[defaults objectForKey:defaultsKey]])
-    return;
-  [defaults setObject:appStoreID forKey:defaultsKey];
+  if (appStoreID) {
+    if ([appStoreID isEqual:[defaults objectForKey:defaultsKey]])
+      return;
+    [defaults setObject:appStoreID forKey:defaultsKey];
+  } else {
+    [defaults removeObjectForKey:defaultsKey];
+  }
   [self.observer rewriterDidChange:self];
 }
 
@@ -99,6 +102,10 @@
     return nil;
   MailtoHandler* handler = _handlers[handlerID];
   return [handler appName];
+}
+
+- (MailtoHandler*)defaultHandlerByID:(NSString*)handlerID {
+  return _handlers[handlerID];
 }
 
 - (NSString*)rewriteMailtoURL:(const GURL&)gURL {
