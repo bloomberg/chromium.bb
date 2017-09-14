@@ -8,11 +8,11 @@
 #include <stdint.h>
 
 #include <memory>
-#include <vector>
 
 #include "base/compiler_specific.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_export.h"
+#include "net/cert/internal/general_names.h"
 
 namespace net {
 
@@ -22,66 +22,10 @@ namespace der {
 class Input;
 }  // namespace der
 
-// Bitfield values for the GeneralName types defined in RFC 5280. The ordering
-// and exact values are not important, but match the order from the RFC for
-// convenience.
-enum GeneralNameTypes {
-  GENERAL_NAME_NONE = 0,
-  GENERAL_NAME_OTHER_NAME = 1 << 0,
-  GENERAL_NAME_RFC822_NAME = 1 << 1,
-  GENERAL_NAME_DNS_NAME = 1 << 2,
-  GENERAL_NAME_X400_ADDRESS = 1 << 3,
-  GENERAL_NAME_DIRECTORY_NAME = 1 << 4,
-  GENERAL_NAME_EDI_PARTY_NAME = 1 << 5,
-  GENERAL_NAME_UNIFORM_RESOURCE_IDENTIFIER = 1 << 6,
-  GENERAL_NAME_IP_ADDRESS = 1 << 7,
-  GENERAL_NAME_REGISTERED_ID = 1 << 8,
-};
-
-// Represents a GeneralNames structure. When processing GeneralNames, it is
-// often necessary to know which types of names were present, and to check
-// all the names of a certain type. Therefore, a bitfield of all the name
-// types is kept, and the names are split into members for each type. Only
-// name types that are handled by this code are stored (though all types are
-// recorded in the bitfield.)
-// TODO(mattm): move this to some other file?
-struct NET_EXPORT GeneralNames {
-  GeneralNames();
-  ~GeneralNames();
-
-  // Create a GeneralNames object representing the DER-encoded
-  // |general_names_tlv|. Returns nullptr on failure, and may fill |errors| with
-  // additional information. |errors| must be non-null.
-  static std::unique_ptr<GeneralNames> Create(
-      const der::Input& general_names_tlv,
-      CertErrors* errors);
-
-  // ASCII hostnames.
-  std::vector<std::string> dns_names;
-
-  // DER-encoded Name values (not including the Sequence tag).
-  std::vector<std::vector<uint8_t>> directory_names;
-
-  // iPAddresses as sequences of octets in network byte order. This will be
-  // populated if the GeneralNames represents a Subject Alternative Name.
-  std::vector<IPAddress> ip_addresses;
-
-  // iPAddress ranges, as <IP, prefix length> pairs. This will be populated
-  // if the GeneralNames represents a Name Constraints.
-  std::vector<std::pair<IPAddress, unsigned>> ip_address_ranges;
-
-  // Which name types were present, as a bitfield of GeneralNameTypes.
-  // Includes both the supported and unsupported types (although unsupported
-  // ones may not be recorded depending on the context, like non-critical name
-  // constraints.)
-  int present_name_types = GENERAL_NAME_NONE;
-};
-
 // Parses a NameConstraints extension value and allows testing whether names are
 // allowed under those constraints as defined by RFC 5280 section 4.2.1.10.
 class NET_EXPORT NameConstraints {
  public:
-
   ~NameConstraints();
 
   // Parses a DER-encoded NameConstraints extension and initializes this object.
