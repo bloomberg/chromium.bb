@@ -20,6 +20,11 @@ class SetAggressivelyFreeResourcesTest : public testing::Test {
     GLManager::Options options;
     options.context_type = gles2::CONTEXT_TYPE_OPENGLES3;
     gl_.Initialize(options);
+    if (!gl_.IsInitialized()) {
+      options.context_type = gles2::CONTEXT_TYPE_OPENGLES2;
+      gl_.Initialize(options);
+    }
+    context_type_ = options.context_type;
 
     // Make sure we start with a clean slate.
     gl_.gles2_implementation()->FreeEverything();
@@ -29,6 +34,7 @@ class SetAggressivelyFreeResourcesTest : public testing::Test {
   void TearDown() override { gl_.Destroy(); }
 
   GLManager gl_;
+  gles2::ContextType context_type_ = gles2::CONTEXT_TYPE_OPENGLES3;
 };
 
 // Tests that SetAggressivelyFreeResources releases command buffer memory.
@@ -127,9 +133,14 @@ TEST_F(SetAggressivelyFreeResourcesTest, FreeAllMemory) {
   memcpy(data, kData, sizeof(kData));
   glUnmapBufferSubDataCHROMIUM(data);
 
-  data = gl_.gles2_implementation()->GetBufferSubDataAsyncCHROMIUM(
-      GL_ARRAY_BUFFER, 0, sizeof(kData));
-  gl_.gles2_implementation()->FreeSharedMemory(data);
+  if (context_type_ == gles2::CONTEXT_TYPE_OPENGLES3) {
+    data = gl_.gles2_implementation()->GetBufferSubDataAsyncCHROMIUM(
+        GL_ARRAY_BUFFER, 0, sizeof(kData));
+    gl_.gles2_implementation()->FreeSharedMemory(data);
+  } else {
+    LOG(ERROR) << "Skip testing of GetBufferSubDataAsyncCHROMIUM because ES3 "
+               << "is not supported";
+  }
 
   glEndQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM);
   glDeleteQueriesEXT(1, &query);
