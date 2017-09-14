@@ -78,8 +78,11 @@ class TracingHandlerTest : public testing::Test {
 
   void TearDown() override { tracing_handler_.reset(); }
 
-  std::string UpdateTraceDataBuffer(const std::string& trace_fragment) {
-    return tracing_handler_->UpdateTraceDataBuffer(trace_fragment);
+  std::string GetValidTraceFragment(const std::string& trace_fragment) {
+    const std::string valid_trace_fragment =
+        tracing_handler_->UpdateTraceDataBuffer(trace_fragment);
+    return valid_trace_fragment.substr(
+        tracing_handler_->trace_data_buffer_state_.offset);
   }
 
  private:
@@ -98,29 +101,35 @@ TEST_F(TracingHandlerTest, GetTraceConfigFromDevToolsConfig) {
   EXPECT_STREQ(kCustomTraceConfigString, trace_config.ToString().c_str());
 }
 
-TEST_F(TracingHandlerTest, SimpleUpdateTraceDataBuffer) {
+TEST_F(TracingHandlerTest, SimpleGetValidTraceFragment) {
   // No prefix is valid.
-  EXPECT_EQ("", UpdateTraceDataBuffer("{pid: 1, "));
+  EXPECT_EQ("", GetValidTraceFragment("{pid: 1, "));
 
   // The longest valid prefix of "{pid: 1, args: {}}, {pid: 2" is
   // "{pid: 1, args: {}}".
-  EXPECT_EQ("{pid: 1, args: {}}", UpdateTraceDataBuffer("args: {}}, {pid: 2"));
+  EXPECT_EQ("{pid: 1, args: {}}", GetValidTraceFragment("args: {}}, {pid: 2"));
 
-  EXPECT_EQ("{pid: 2}, {pid: 3}", UpdateTraceDataBuffer("}, {pid: 3}"));
+  EXPECT_EQ("{pid: 2}, {pid: 3}", GetValidTraceFragment("}, {pid: 3}"));
 }
 
-TEST_F(TracingHandlerTest, ComplexUpdateTraceDataBuffer) {
+TEST_F(TracingHandlerTest, GetValidTraceFragmentBreakBeforeComma) {
+  EXPECT_EQ("{pid: 1}", GetValidTraceFragment("{pid: 1}"));
+  // The comma should be ignored.
+  EXPECT_EQ("{pid: 2}", GetValidTraceFragment(",{pid: 2}"));
+}
+
+TEST_F(TracingHandlerTest, ComplexGetValidTraceFragment) {
   const std::string chunk1 = "{\"pid\":1,\"args\":{\"key\":\"}\"},\"tid\":1}";
   const std::string chunk2 =
       "{\"pid\":2,\"args\":{\"key\":{\"key\":\"\\\"t}\"},\"key2\":2},\"tid\":"
       "2}";
   const std::string trace_data = chunk1 + "," + chunk2;
 
-  EXPECT_EQ("", UpdateTraceDataBuffer(trace_data.substr(0, chunk1.size() - 1)));
-  EXPECT_EQ(chunk1, UpdateTraceDataBuffer(trace_data.substr(
+  EXPECT_EQ("", GetValidTraceFragment(trace_data.substr(0, chunk1.size() - 1)));
+  EXPECT_EQ(chunk1, GetValidTraceFragment(trace_data.substr(
                         chunk1.size() - 1, trace_data.size() - chunk1.size())));
   EXPECT_EQ(chunk2,
-            UpdateTraceDataBuffer(trace_data.substr(trace_data.size() - 1, 1)));
+            GetValidTraceFragment(trace_data.substr(trace_data.size() - 1, 1)));
 }
 
 }  // namespace protocol
