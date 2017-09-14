@@ -1788,6 +1788,7 @@ component("i18n") {
 
 test("base_perftests") {
   sources = [
+    "message_loop/message_loop_perftest.cc",
     "message_loop/message_pump_perftest.cc",
 
     # "test/run_all_unittests.cc",
