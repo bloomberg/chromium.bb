@@ -60,8 +60,8 @@ void RunAllPendingInMessageLoop(BrowserThread::ID thread_id);
 // Runs until the blocking pool, task scheduler, and the current message loop
 // are all empty (have no more scheduled tasks) and no tasks are running.
 //
-// TODO(fdoray): Rename to RunAllTaskSchedulerTasksUntilIdle() once the blocking
-// pool is fully deprecated. https://crbug.com/667892
+// TODO(fdoray): Rename to RunAllTaskSchedulerTasksUntilIdle() now that the
+// blocking pool is fully deprecated. https://crbug.com/667892
 void RunAllBlockingPoolTasksUntilIdle();
 
 // Get task to quit the given RunLoop. It allows a few generations of pending

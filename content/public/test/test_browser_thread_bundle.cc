@@ -32,12 +32,6 @@ TestBrowserThreadBundle::TestBrowserThreadBundle(int options)
 TestBrowserThreadBundle::~TestBrowserThreadBundle() {
   CHECK(threads_created_);
 
-  // To avoid memory leaks, we must ensure that any tasks posted to the blocking
-  // pool via PostTaskAndReply are able to reply back to the originating thread.
-  // Thus we must flush the blocking pool while the browser threads still exist.
-  base::RunLoop().RunUntilIdle();
-  BrowserThreadImpl::FlushThreadPoolHelperForTesting();
-
   // To ensure a clean teardown, each thread's message loop must be flushed
   // just before the thread is destroyed. But stopping a fake thread does not
   // automatically flush the message loop, so we have to do it manually.
@@ -54,11 +48,6 @@ TestBrowserThreadBundle::~TestBrowserThreadBundle() {
   file_thread_->Stop();
   base::RunLoop().RunUntilIdle();
   db_thread_->Stop();
-  base::RunLoop().RunUntilIdle();
-  // This is the point at which we normally shut down the thread pool. So flush
-  // it again in case any shutdown tasks have been posted to the pool from the
-  // threads above.
-  BrowserThreadImpl::FlushThreadPoolHelperForTesting();
   base::RunLoop().RunUntilIdle();
   ui_thread_->Stop();
   base::RunLoop().RunUntilIdle();

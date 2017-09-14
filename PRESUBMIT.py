@@ -334,16 +334,6 @@ _BANNED_CPP_FUNCTIONS = (
       (),
     ),
     (
-      r'/(WebThread|BrowserThread)::GetBlockingPool',
-      (
-        'Use base/task_scheduler/post_task.h instead of the blocking pool. See',
-        'mapping between both APIs in content/public/browser/browser_thread.h.',
-        'For questions, contact base/task_scheduler/OWNERS.',
-      ),
-      True,
-      (),
-    ),
-    (
       r'/(WebThread|BrowserThread)::(FILE|FILE_USER_BLOCKING|DB|CACHE)',
       (
         'The non-UI/IO BrowserThreads are deprecated, please migrate this',

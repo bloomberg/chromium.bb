@@ -21,7 +21,6 @@
 
 namespace base {
 class MessageLoop;
-class SequencedWorkerPool;
 class Thread;
 }
 
@@ -187,27 +186,6 @@ class CONTENT_EXPORT BrowserThread {
     return GetTaskRunnerForThread(identifier)->ReleaseSoon(from_here, object);
   }
 
-  // DEPRECATED: use base/task_scheduler/post_task.h instead.
-  //   * BrowserThread::PostBlockingPoolSequencedTask =>
-  //         Share a single SequencedTaskRunner created via
-  //         base::CreateSequencedTaskRunnerWithTraits() instead of sharing a
-  //         SequenceToken (ping base/task_scheduler/OWNERS if you find a use
-  //         case where that's not possible).
-  //
-  // Posts a task to the blocking pool. The task is guaranteed to run before
-  // shutdown. Tasks posted with the same sequence token name are sequenced.
-  //
-  // If you need to provide different shutdown semantics (like you have
-  // something slow and noncritical that doesn't need to block shutdown),
-  // or you want to manually provide a sequence token (which saves a map
-  // lookup and is guaranteed unique without you having to come up with a
-  // unique string), you can access the sequenced worker pool directly via
-  // GetBlockingPool().
-  static bool PostBlockingPoolSequencedTask(
-      const std::string& sequence_token_name,
-      const base::Location& from_here,
-      base::OnceClosure task);
-
   // For use with scheduling non-critical tasks for execution after startup.
   // The order or execution of tasks posted here is unspecified even when
   // posting to a SequencedTaskRunner and tasks are not guaranteed to be run
@@ -219,18 +197,6 @@ class CONTENT_EXPORT BrowserThread {
       const base::Location& from_here,
       const scoped_refptr<base::TaskRunner>& task_runner,
       base::OnceClosure task);
-
-  // Returns the thread pool used for blocking file I/O. Use this object to
-  // perform random blocking operations such as file writes.
-  //
-  // DEPRECATED: use an independent TaskRunner obtained from
-  // base/task_scheduler/post_task.h instead, e.g.:
-  //   BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
-  //       base::SequencedWorkerPool::GetSequenceToken())
-  //  =>
-  //   base::CreateSequencedTaskRunnerWithTraits(
-  //       {base::MayBlock()}).
-  static base::SequencedWorkerPool* GetBlockingPool() WARN_UNUSED_RESULT;
 
   // Callable on any thread.  Returns whether the given well-known thread is
   // initialized.

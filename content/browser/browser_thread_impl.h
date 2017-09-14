@@ -54,8 +54,6 @@ class CONTENT_EXPORT BrowserThreadImpl : public BrowserThread,
   // Can only be called after a matching RedirectThreadIDToTaskRunner call.
   static void StopRedirectionOfThreadID(BrowserThread::ID identifier);
 
-  static void ShutdownThreadPool();
-
   // Resets globals for |identifier|. Used in tests to clear global state that
   // would otherwise leak to the next test. Globals are not otherwise fully
   // cleaned up in ~BrowserThreadImpl() as there are subtle differences between
@@ -97,7 +95,6 @@ class CONTENT_EXPORT BrowserThreadImpl : public BrowserThread,
   // For testing.
   friend class ContentTestSuiteBaseListener;
   friend class TestBrowserThreadBundle;
-  static void FlushThreadPoolHelperForTesting();
 
   // The identifier of this thread.  Only one thread can exist with a given
   // identifier at a given time.

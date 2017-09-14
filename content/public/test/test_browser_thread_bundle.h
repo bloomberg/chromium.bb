@@ -3,17 +3,17 @@
 // found in the LICENSE file.
 
 // TestBrowserThreadBundle is a convenience class for creating a set of
-// TestBrowserThreads, a blocking pool, and a task scheduler in unit tests. For
-// most tests, it is sufficient to just instantiate the TestBrowserThreadBundle
-// as a member variable. It is a good idea to put the TestBrowserThreadBundle as
-// the first member variable in test classes, so it is destroyed last, and the
-// test threads always exist from the perspective of other classes.
+// TestBrowserThreads and a task scheduler in unit tests. For most tests, it is
+// sufficient to just instantiate the TestBrowserThreadBundle as a member
+// variable. It is a good idea to put the TestBrowserThreadBundle as the first
+// member variable in test classes, so it is destroyed last, and the test
+// threads always exist from the perspective of other classes.
 //
 // By default, all of the created TestBrowserThreads will be backed by a single
 // shared MessageLoop. If a test truly needs separate threads, it can do so by
 // passing the appropriate combination of option values during the
-// TestBrowserThreadBundle construction. TaskScheduler and blocking pool tasks
-// always run on dedicated threads.
+// TestBrowserThreadBundle construction. TaskScheduler tasks always run on
+// dedicated threads.
 //
 // To synchronously run tasks from the shared MessageLoop:
 //
@@ -21,8 +21,8 @@
 //    base::RunLoop::RunUntilIdle();
 //
 // ... until there are no undelayed tasks in the shared MessageLoop, in
-// TaskScheduler or in the blocking pool (excluding tasks not posted from the
-// shared MessageLoop's thread, TaskScheduler or the blocking pool):
+// TaskScheduler (excluding tasks not posted from the shared MessageLoop's
+// thread or TaskScheduler):
 //    content::RunAllBlockingPoolTasksUntilIdle();
 //
 // ... until a condition is met:
@@ -32,15 +32,12 @@
 //    // run_loop.QuitClosure() must be kept somewhere accessible by that task).
 //    run_loop.Run();
 //
-// To wait until there are no pending undelayed tasks in TaskScheduler or in the
-// blocking pool, without running tasks from the shared MessageLoop:
+// To wait until there are no pending undelayed tasks in TaskScheduler, without
+// running tasks from the shared MessageLoop:
 //    base::TaskScheduler::GetInstance()->FlushForTesting();
-//    // Note: content::BrowserThread::GetBlockingPool()->FlushForTesting() is
-//    // equivalent but deprecated.
 //
 // The destructor of TestBrowserThreadBundle runs remaining TestBrowserThreads
-// tasks, remaining blocking pool tasks, and remaining BLOCK_SHUTDOWN task
-// scheduler tasks.
+// tasks and remaining task scheduler tasks.
 //
 // If a test needs a MessageLoopForIO on the main thread, it should use the
 // IO_MAINLOOP option. Most of the time, IO_MAINLOOP avoids needing to use a
