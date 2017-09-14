@@ -113,7 +113,9 @@ struct bo *drv_bo_import(struct driver *drv, struct drv_import_fd_data *data);
 void *drv_bo_map(struct bo *bo, uint32_t x, uint32_t y, uint32_t width, uint32_t height,
 		 uint32_t flags, struct map_info **map_data, size_t plane);
 
-int drv_bo_unmap(struct bo *bo, struct map_info *map_data);
+int drv_bo_unmap(struct bo *bo, struct map_info *data);
+
+int drv_bo_flush(struct bo *bo, struct map_info *data);
 
 uint32_t drv_bo_get_width(struct bo *bo);
 

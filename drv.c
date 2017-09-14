@@ -411,10 +411,9 @@ success:
 
 int drv_bo_unmap(struct bo *bo, struct map_info *data)
 {
-	int ret = 0;
-
-	assert(data);
-	assert(data->refcount >= 0);
+	int ret = drv_bo_flush(bo, data);
+	if (ret)
+		return ret;
 
 	pthread_mutex_lock(&bo->drv->driver_lock);
 
@@ -425,6 +424,18 @@ int drv_bo_unmap(struct bo *bo, struct map_info *data)
 	}
 
 	pthread_mutex_unlock(&bo->drv->driver_lock);
+
+	return ret;
+}
+
+int drv_bo_flush(struct bo *bo, struct map_info *data)
+{
+	int ret = 0;
+	assert(data);
+	assert(data->refcount >= 0);
+
+	if (bo->drv->backend->bo_flush)
+		ret = bo->drv->backend->bo_flush(bo, data);
 
 	return ret;
 }

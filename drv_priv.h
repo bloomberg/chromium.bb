@@ -77,6 +77,7 @@ struct backend {
 	int (*bo_import)(struct bo *bo, struct drv_import_fd_data *data);
 	void *(*bo_map)(struct bo *bo, struct map_info *data, size_t plane, int prot);
 	int (*bo_unmap)(struct bo *bo, struct map_info *data);
+	int (*bo_flush)(struct bo *bo, struct map_info *data);
 	uint32_t (*resolve_format)(uint32_t format, uint64_t usage);
 };
 
