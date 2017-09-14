@@ -26,6 +26,7 @@
 #include "components/ntp_snippets/category_rankers/constant_category_ranker.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/features.h"
+#include "components/ntp_snippets/logger.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/reading_list/reading_list_suggestions_provider.h"
 #include "components/ntp_snippets/remote/persistent_scheduler.h"
@@ -56,6 +57,7 @@ using image_fetcher::CreateIOSImageDecoder;
 using image_fetcher::ImageFetcherImpl;
 using ntp_snippets::ContentSuggestionsService;
 using ntp_snippets::GetFetchEndpoint;
+using ntp_snippets::Logger;
 using ntp_snippets::PersistentScheduler;
 using ntp_snippets::RemoteSuggestionsDatabase;
 using ntp_snippets::RemoteSuggestionsFetcherImpl;
@@ -112,11 +114,13 @@ std::unique_ptr<KeyedService> CreateChromeContentSuggestionsService(
   auto user_classifier = base::MakeUnique<UserClassifier>(
       prefs, base::MakeUnique<base::DefaultClock>());
 
+  auto debug_logger = base::MakeUnique<Logger>();
+
   // TODO(crbug.com/676249): Implement a persistent scheduler for iOS.
   auto scheduler = base::MakeUnique<RemoteSuggestionsSchedulerImpl>(
       /*persistent_scheduler=*/nullptr, user_classifier.get(), prefs,
       GetApplicationContext()->GetLocalState(),
-      base::MakeUnique<base::DefaultClock>());
+      base::MakeUnique<base::DefaultClock>(), debug_logger.get());
 
   // Create the ContentSuggestionsService.
   SigninManager* signin_manager =
@@ -134,7 +138,7 @@ std::unique_ptr<KeyedService> CreateChromeContentSuggestionsService(
       base::MakeUnique<ContentSuggestionsService>(
           State::ENABLED, signin_manager, history_service, large_icon_service,
           prefs, std::move(category_ranker), std::move(user_classifier),
-          std::move(scheduler));
+          std::move(scheduler), std::move(debug_logger));
 
   // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
   return std::move(service);
@@ -195,7 +199,7 @@ void RegisterRemoteSuggestionsProvider(ContentSuggestionsService* service,
       base::MakeUnique<RemoteSuggestionsStatusServiceImpl>(signin_manager,
                                                            prefs, pref_name),
       /*prefetched_pages_tracker=*/nullptr,
-      /*breaking_news_raw_data_provider*/ nullptr);
+      /*breaking_news_raw_data_provider*/ nullptr, service->debug_logger());
 
   service->remote_suggestions_scheduler()->SetProvider(provider.get());
   service->set_remote_suggestions_provider(provider.get());

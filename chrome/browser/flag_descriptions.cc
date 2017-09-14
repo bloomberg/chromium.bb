@@ -1582,6 +1582,11 @@ const char kContentSuggestionsCategoryRankerDescription[] =
     "Set category ranker to order categories of content suggestions (e.g. on "
     "the NTP).";
 
+const char kContentSuggestionsDebugLogName[] = "Content suggestions debug log";
+const char kContentSuggestionsDebugLogDescription[] =
+    "Enable content suggestions debug log accessible through "
+    "snippets-internals.";
+
 const char kContextualSearchContextualCardsBarIntegration[] =
     "Contextual Search - Contextual Cards Integration";
 const char kContextualSearchContextualCardsBarIntegrationDescription[] =

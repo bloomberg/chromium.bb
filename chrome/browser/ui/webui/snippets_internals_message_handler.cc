@@ -242,6 +242,12 @@ void SnippetsInternalsMessageHandler::RegisterMessages() {
           &SnippetsInternalsMessageHandler::HandleToggleDismissedSuggestions,
           base::Unretained(this)));
 
+  web_ui()->RegisterMessageCallback(
+      "initializationCompleted",
+      base::Bind(
+          &SnippetsInternalsMessageHandler::HandleInitializationCompleted,
+          base::Unretained(this)));
+
   content_suggestions_service_observer_.Add(content_suggestions_service_);
 }
 
@@ -277,6 +283,12 @@ void SnippetsInternalsMessageHandler::OnFullRefreshRequired() {
 }
 
 void SnippetsInternalsMessageHandler::ContentSuggestionsServiceShutdown() {}
+
+void SnippetsInternalsMessageHandler::HandleInitializationCompleted(
+    const base::ListValue* args) {
+  DCHECK_EQ(0u, args->GetSize());
+  AllowJavascript();
+}
 
 void SnippetsInternalsMessageHandler::HandleRefreshContent(
     const base::ListValue* args) {
@@ -440,6 +452,10 @@ void SnippetsInternalsMessageHandler::HandlePushDummySuggestionIn10Seconds(
 }
 
 void SnippetsInternalsMessageHandler::SendAllContent() {
+  if (!IsJavascriptAllowed()) {
+    return;
+  }
+
   SendBoolean(
       "flag-article-suggestions",
       base::FeatureList::IsEnabled(ntp_snippets::kArticleSuggestionsFeature));
@@ -478,6 +494,10 @@ void SnippetsInternalsMessageHandler::SendAllContent() {
         "chrome.SnippetsInternals.receiveJson",
         base::Value(fetcher->GetLastJsonForDebugging()));
   }
+
+  CallJavascriptFunction(
+      "chrome.SnippetsInternals.receiveDebugLog",
+      base::Value(content_suggestions_service_->GetDebugLog()));
 
   std::set<variations::VariationID> ids = SnippetsExperiments();
   std::vector<std::string> string_ids;

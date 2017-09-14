@@ -26,6 +26,7 @@ const base::Feature* const kAllFeatures[] = {
     &kBreakingNewsPushFeature,
     &kCategoryOrder,
     &kCategoryRanker,
+    &kContentSuggestionsDebugLog,
     &kForeignSessionsSuggestionsFeature,
     &kIncreasedVisibility,
     &kKeepPrefetchedContentSuggestions,
@@ -159,5 +160,8 @@ const char kNotificationsIgnoredLimitParam[] = "ignored_limit";
 
 const base::Feature kKeepPrefetchedContentSuggestions{
     "KeepPrefetchedContentSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kContentSuggestionsDebugLog{
+    "ContentSuggestionsDebugLog", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace ntp_snippets

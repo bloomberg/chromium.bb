@@ -43,6 +43,7 @@
 #include "components/ntp_snippets/category_rankers/category_ranker.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/features.h"
+#include "components/ntp_snippets/logger.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/remote/persistent_scheduler.h"
 #include "components/ntp_snippets/remote/prefetched_pages_tracker.h"
@@ -354,7 +355,8 @@ void RegisterArticleProviderIfEnabled(ContentSuggestionsService* service,
                                       Profile* profile,
                                       SigninManagerBase* signin_manager,
                                       UserClassifier* user_classifier,
-                                      OfflinePageModel* offline_page_model) {
+                                      OfflinePageModel* offline_page_model,
+                                      ntp_snippets::Logger* debug_logger) {
   if (!IsArticleProviderEnabled()) {
     return;
   }
@@ -418,7 +420,7 @@ void RegisterArticleProviderIfEnabled(ContentSuggestionsService* service,
       base::MakeUnique<RemoteSuggestionsStatusServiceImpl>(
           signin_manager, pref_service, additional_toggle_pref),
       std::move(prefetched_pages_tracker),
-      std::move(breaking_news_raw_data_provider));
+      std::move(breaking_news_raw_data_provider), debug_logger);
 
   service->remote_suggestions_scheduler()->SetProvider(provider.get());
   service->set_remote_suggestions_provider(provider.get());
@@ -512,6 +514,9 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   OfflinePageModel* offline_page_model = nullptr;
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
+  auto debug_logger = base::MakeUnique<ntp_snippets::Logger>();
+  ntp_snippets::Logger* raw_debug_logger = debug_logger.get();
+
   // Create the RemoteSuggestionsScheduler.
   PersistentScheduler* persistent_scheduler = nullptr;
 #if defined(OS_ANDROID)
@@ -519,7 +524,8 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
 #endif  // OS_ANDROID
   auto scheduler = base::MakeUnique<RemoteSuggestionsSchedulerImpl>(
       persistent_scheduler, user_classifier_raw, pref_service,
-      g_browser_process->local_state(), base::MakeUnique<base::DefaultClock>());
+      g_browser_process->local_state(), base::MakeUnique<base::DefaultClock>(),
+      raw_debug_logger);
 
   // Create the ContentSuggestionsService.
   SigninManagerBase* signin_manager =
@@ -535,10 +541,11 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   auto* service = new ContentSuggestionsService(
       State::ENABLED, signin_manager, history_service, large_icon_service,
       pref_service, std::move(category_ranker), std::move(user_classifier),
-      std::move(scheduler));
+      std::move(scheduler), std::move(debug_logger));
 
   RegisterArticleProviderIfEnabled(service, profile, signin_manager,
-                                   user_classifier_raw, offline_page_model);
+                                   user_classifier_raw, offline_page_model,
+                                   raw_debug_logger);
   RegisterBookmarkProviderIfEnabled(service, profile);
   RegisterForeignSessionsProviderIfEnabled(service, profile);
 

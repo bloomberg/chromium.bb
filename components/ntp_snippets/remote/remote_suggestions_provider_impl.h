@@ -24,6 +24,7 @@
 #include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
+#include "components/ntp_snippets/logger.h"
 #include "components/ntp_snippets/remote/cached_image_fetcher.h"
 #include "components/ntp_snippets/remote/json_to_categories.h"
 #include "components/ntp_snippets/remote/prefetched_pages_tracker.h"
@@ -70,7 +71,8 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
       std::unique_ptr<RemoteSuggestionsDatabase> database,
       std::unique_ptr<RemoteSuggestionsStatusService> status_service,
       std::unique_ptr<PrefetchedPagesTracker> prefetched_pages_tracker,
-      std::unique_ptr<BreakingNewsListener> breaking_news_raw_data_provider);
+      std::unique_ptr<BreakingNewsListener> breaking_news_raw_data_provider,
+      Logger* debug_logger);
 
   ~RemoteSuggestionsProviderImpl() override;
 
@@ -442,6 +444,9 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
   // Listens for BreakingNews updates (e.g. through GCM) and notifies the
   // provider.
   std::unique_ptr<BreakingNewsListener> breaking_news_raw_data_provider_;
+
+  // Additional logging, accesible through snippets-internals.
+  Logger* debug_logger_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteSuggestionsProviderImpl);
 };
