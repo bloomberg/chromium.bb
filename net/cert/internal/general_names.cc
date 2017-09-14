@@ -88,8 +88,8 @@ std::unique_ptr<GeneralNames> GeneralNames::Create(
       return nullptr;
     }
 
-    if (!ParseGeneralName(raw_general_name, GENERAL_NAME_ALL_TYPES,
-                          IP_ADDRESS_ONLY, general_names.get(), errors)) {
+    if (!ParseGeneralName(raw_general_name, IP_ADDRESS_ONLY,
+                          general_names.get(), errors)) {
       errors->AddError(kFailedParsingGeneralName);
       return nullptr;
     }
@@ -100,7 +100,6 @@ std::unique_ptr<GeneralNames> GeneralNames::Create(
 
 WARN_UNUSED_RESULT bool ParseGeneralName(
     const der::Input& input,
-    int types_to_record,
     GeneralNames::ParseGeneralNameIPAddressType ip_address_type,
     GeneralNames* subtrees,
     CertErrors* errors) {
@@ -202,8 +201,7 @@ WARN_UNUSED_RESULT bool ParseGeneralName(
     return false;
   }
   DCHECK_NE(GENERAL_NAME_NONE, name_type);
-  if (name_type & types_to_record)
-    subtrees->present_name_types |= name_type;
+  subtrees->present_name_types |= name_type;
   return true;
 }
 

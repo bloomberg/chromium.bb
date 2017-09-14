@@ -111,7 +111,6 @@ bool DNSNameMatches(base::StringPiece name,
 // a default initialized object), and it will be modified regardless of the
 // return value.
 WARN_UNUSED_RESULT bool ParseGeneralSubtrees(const der::Input& value,
-                                             bool is_critical,
                                              GeneralNames* subtrees,
                                              CertErrors* errors) {
   DCHECK(errors);
@@ -139,7 +138,6 @@ WARN_UNUSED_RESULT bool ParseGeneralSubtrees(const der::Input& value,
 
     if (!ParseGeneralName(
             raw_general_name,
-            is_critical ? GENERAL_NAME_ALL_TYPES : kSupportedNameTypes,
             GeneralNames::IP_ADDRESS_AND_NETMASK, subtrees, errors)) {
       errors->AddError(kFailedParsingGeneralName);
       return false;
@@ -204,10 +202,13 @@ bool NameConstraints::Parse(const der::Input& extension_value,
     return false;
   }
   if (had_permitted_subtrees &&
-      !ParseGeneralSubtrees(permitted_subtrees_value, is_critical,
-                            &permitted_subtrees_, errors)) {
+      !ParseGeneralSubtrees(permitted_subtrees_value, &permitted_subtrees_,
+                            errors)) {
     return false;
   }
+  constrained_name_types_ |=
+      permitted_subtrees_.present_name_types &
+      (is_critical ? GENERAL_NAME_ALL_TYPES : kSupportedNameTypes);
 
   bool had_excluded_subtrees = false;
   der::Input excluded_subtrees_value;
@@ -217,10 +218,13 @@ bool NameConstraints::Parse(const der::Input& extension_value,
     return false;
   }
   if (had_excluded_subtrees &&
-      !ParseGeneralSubtrees(excluded_subtrees_value, is_critical,
-                            &excluded_subtrees_, errors)) {
+      !ParseGeneralSubtrees(excluded_subtrees_value, &excluded_subtrees_,
+                            errors)) {
     return false;
   }
+  constrained_name_types_ |=
+      excluded_subtrees_.present_name_types &
+      (is_critical ? GENERAL_NAME_ALL_TYPES : kSupportedNameTypes);
 
   // RFC 5280 section 4.2.1.10:
   // Conforming CAs MUST NOT issue certificates where name constraints is an
@@ -249,8 +253,9 @@ bool NameConstraints::IsPermittedCert(
 
   if (subject_alt_names) {
     // Check unsupported name types:
-    // ConstrainedNameTypes for the unsupported types will only be true if that
-    // type of name was present in a name constraint that was marked critical.
+    // constrained_name_types() for the unsupported types will only be true if
+    // that type of name was present in a name constraint that was marked
+    // critical.
     //
     // RFC 5280 section 4.2.1.10:
     // If a name constraints extension that is marked as critical
@@ -258,7 +263,7 @@ bool NameConstraints::IsPermittedCert(
     // that name form appears in the subject field or subjectAltName
     // extension of a subsequent certificate, then the application MUST
     // either process the constraint or reject the certificate.
-    if (ConstrainedNameTypes() & subject_alt_names->present_name_types &
+    if (constrained_name_types() & subject_alt_names->present_name_types &
         ~kSupportedNameTypes) {
       return false;
     }
@@ -290,7 +295,7 @@ bool NameConstraints::IsPermittedCert(
   // rfc822Name constraint MUST be applied to the attribute of type emailAddress
   // in the subject distinguished name.
   if (!subject_alt_names &&
-      (ConstrainedNameTypes() & GENERAL_NAME_RFC822_NAME)) {
+      (constrained_name_types() & GENERAL_NAME_RFC822_NAME)) {
     bool contained_email_address = false;
     if (!NameContainsEmailAddress(subject_rdn_sequence,
                                   &contained_email_address)) {
@@ -376,11 +381,6 @@ bool NameConstraints::IsPermittedIP(const IPAddress& ip) const {
   }
 
   return false;
-}
-
-int NameConstraints::ConstrainedNameTypes() const {
-  return (permitted_subtrees_.present_name_types |
-          excluded_subtrees_.present_name_types);
 }
 
 }  // namespace net

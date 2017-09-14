@@ -83,23 +83,17 @@ struct NET_EXPORT GeneralNames {
   std::vector<std::pair<IPAddress, unsigned>> ip_address_ranges;
 
   // Which name types were present, as a bitfield of GeneralNameTypes.
-  // Includes both the supported and unsupported types (although unsupported
-  // ones may not be recorded depending on the context, like non-critical name
-  // constraints.)
+  // Includes both the supported and unsupported types.
   int present_name_types = GENERAL_NAME_NONE;
 };
 
 // Parses a GeneralName value and adds it to |subtrees|.
-// |types_to_record| is a bitfield of GeneralNameTypes of the types to be
-// recorded in |subtrees->present_name_types|. It does not affect the recording
-// of the other fields. TODO(mattm): this seems weird.
 // |ip_address_type| specifies how to parse iPAddress names.
 // Returns false on failure, and may fill |errors| with additional information.
 // |errors| must be non-null.
 // TODO(mattm): should this be a method on GeneralNames?
 WARN_UNUSED_RESULT bool ParseGeneralName(
     const der::Input& input,
-    int types_to_record,
     GeneralNames::ParseGeneralNameIPAddressType ip_address_type,
     GeneralNames* subtrees,
     CertErrors* errors);
