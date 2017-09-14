@@ -705,12 +705,6 @@ need to be translated for each locale.-->
         <message name="IDS_MESSAGE_CENTER_NOTIFIER_HATS_NAME" desc="The name of hats notifier that is a system component">
           Survey
         </message>
-        <message name="IDS_MESSAGE_CENTER_NOTIFIER_FINGERPRINT_UNLOCK_FEATURE_NAME" desc="The name of fingerprint unlock feature notifier that is a system component">
-          Fingerprint Unlock Feature
-        </message>
-        <message name="IDS_MESSAGE_CENTER_NOTIFIER_PIN_UNLOCK_FEATURE_NAME" desc="The name of PIN unlock feature notifier that is a system component">
-          PIN Unlock Feature
-        </message>
       </if>
 
       <!-- App list -->

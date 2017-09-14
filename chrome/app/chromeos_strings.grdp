@@ -5275,6 +5275,30 @@ All users must sign out to continue.
     <ph name="PRINTER_MAKE_OR_MODEL">$1<ex>OfficeJet 8710</ex></ph> (USB)
   </message>
 
+  <!-- Unlock Strings -->
+   <message name="IDS_QUICK_UNLOCK_NOTIFICATION_TITLE" desc="The title of the notification for Quick Unlock feature notification.">
+    QU Feature notification title here
+  </message>
+  <message name="IDS_QUICK_UNLOCK_NOTIFICATION_BODY" desc="The body of the notification for Quick Unlock feature notification.">
+    QU Feature notification body goes here. QU Feature notification body goes here. QU Feature notification body goes here. QU Feature notification body goes here. QU Feature notification body goes here.
+  </message>
+  <message name="IDS_FINGERPRINT_NOTIFICATION_TITLE" desc="The title of the notification for fingerprint unlock feature notification.">
+    Enable Fingerprint unlock?
+  </message>
+  <message name="IDS_FINGERPRINT_NOTIFICATION_BODY" desc="The body of the notification for fingerprint unlock feature notification.">
+    Skip the lock screen by just tapping the fingerprint sensor. Click to configure.
+  </message>
+  <message name="IDS_FINGERPRINT_UNLOCK_FEATURE_NOTIFIER_NAME" desc="The name of fingerprint unlock feature notifier that is a system component">
+    Fingerprint Unlock Feature
+  </message>
+  <message name="IDS_PIN_UNLOCK_FEATURE_NOTIFIER_NAME" desc="The name of PIN unlock feature notifier that is a system component">
+    PIN Unlock Feature
+  </message>
+
+  <message name="IDS_WIFI_SCANNING_MESSAGE" desc="Scanning for wifi networks">
+    Searching for Wi-Fi networks...
+  </message>
+
   <!-- Screenshot notification -->
   <message name="IDS_SCREENSHOT_NOTIFICATION_TITLE_SUCCESS" desc="The title of the notification when a screenshot was taken.">
     Screenshot taken
