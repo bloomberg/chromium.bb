@@ -128,7 +128,6 @@ IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest, SucceedsInPopupWindow) {
       GetWebContents());
   auto popup_prompt_factory =
       base::MakeUnique<MockPermissionPromptFactory>(manager);
-  manager->DisplayPendingRequests();
 
   EXPECT_EQ(0, popup_prompt_factory->TotalRequestCount());
   popup_prompt_factory->set_response_type(PermissionRequestManager::ACCEPT_ALL);

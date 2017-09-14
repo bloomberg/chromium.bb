@@ -94,7 +94,6 @@ IN_PROC_BROWSER_TEST_F(PermissionReporterBrowserTest,
   PermissionRequestManager* manager = GetPermissionRequestManager(browser);
   std::unique_ptr<MockPermissionPromptFactory> mock_permission_prompt_factory =
       base::MakeUnique<MockPermissionPromptFactory>(manager);
-  manager->DisplayPendingRequests();
 
   ASSERT_TRUE(embedded_test_server()->Start());
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
@@ -138,7 +137,6 @@ IN_PROC_BROWSER_TEST_F(PermissionReporterBrowserTest,
   PermissionRequestManager* manager = GetPermissionRequestManager(browser);
   std::unique_ptr<MockPermissionPromptFactory> mock_permission_prompt_factory =
       base::MakeUnique<MockPermissionPromptFactory>(manager);
-  manager->DisplayPendingRequests();
 
   ASSERT_TRUE(embedded_test_server()->Start());
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(

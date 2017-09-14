@@ -289,9 +289,6 @@ void GeolocationPermissionContextTests::SetupRequestManager(
   mock_permission_prompt_factories_.push_back(
       base::MakeUnique<MockPermissionPromptFactory>(
           permission_request_manager));
-
-  // Prepare the PermissionRequestManager to display a mock bubble.
-  permission_request_manager->DisplayPendingRequests();
 }
 
 #if defined(OS_ANDROID)
