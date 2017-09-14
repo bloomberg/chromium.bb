@@ -53,6 +53,8 @@
     return;
 
   self.viewController = [[NTPHomeHeaderViewController alloc] init];
+  self.viewController.delegate = self.delegate;
+  self.viewController.commandHandler = self.commandHandler;
 
   [self.browser->broadcaster()
       addObserver:self.viewController

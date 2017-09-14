@@ -39,9 +39,7 @@ class WebState;
 // The web state associated with this NTP.
 @property(nonatomic, assign) web::WebState* webState;
 // Dispatcher.
-@property(nonatomic, weak)
-    id<ApplicationCommands, BrowserCommands, OmniboxFocuser, UrlLoader>
-        dispatcher;
+@property(nonatomic, weak) id<BrowserCommands, UrlLoader> dispatcher;
 // Suggestions service used to get the suggestions.
 @property(nonatomic, assign)
     ntp_snippets::ContentSuggestionsService* suggestionsService;

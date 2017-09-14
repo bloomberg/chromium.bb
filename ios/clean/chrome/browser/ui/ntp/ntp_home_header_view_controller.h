@@ -13,7 +13,7 @@
 #import "ios/chrome/browser/ui/ntp/google_landing_consumer.h"
 
 @protocol ContentSuggestionsCollectionSynchronizing;
-@protocol ContentSuggestionsHeaderViewControllerCommandHandler;
+@protocol ContentSuggestionsCommands;
 @protocol ContentSuggestionsHeaderViewControllerDelegate;
 
 // Coordinator handling the header of the NTP home panel.
@@ -23,9 +23,7 @@
                        ContentSuggestionsHeaderProvider,
                        GoogleLandingConsumer>
 
-@property(nonatomic, weak)
-    id<ContentSuggestionsHeaderViewControllerCommandHandler>
-        commandHandler;
+@property(nonatomic, weak) id<ContentSuggestionsCommands> commandHandler;
 @property(nonatomic, weak) id<ContentSuggestionsHeaderViewControllerDelegate>
     delegate;
 
