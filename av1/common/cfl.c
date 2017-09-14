@@ -184,7 +184,21 @@ static INLINE int cfl_idx_to_alpha(int alpha_idx, int joint_sign,
   return (alpha_sign == CFL_SIGN_POS) ? abs_alpha_q3 + 1 : -abs_alpha_q3 - 1;
 }
 
-// Predict the current transform block using CfL.
+// TODO(ltrudeau) add support for HBD.
+static INLINE void cfl_build_prediction(const int16_t *pred_buf_q3,
+                                        uint8_t *dst, int dst_stride,
+                                        int alpha_q3, int dc_pred, int width,
+                                        int height) {
+  for (int j = 0; j < height; j++) {
+    for (int i = 0; i < width; i++) {
+      dst[i] =
+          clip_pixel(get_scaled_luma_q0(alpha_q3, pred_buf_q3[i]) + dc_pred);
+    }
+    dst += dst_stride;
+    pred_buf_q3 += MAX_SB_SIZE;
+  }
+}
+
 void cfl_predict_block(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,
                        int row, int col, TX_SIZE tx_size, int plane) {
   CFL_CTX *const cfl = xd->cfl;
@@ -193,24 +207,14 @@ void cfl_predict_block(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,
   // CfL parameters must be computed before prediction can be done.
   assert(cfl->are_parameters_computed == 1);
 
-  const int width = tx_size_wide[tx_size];
-  const int height = tx_size_high[tx_size];
   const int16_t *pred_buf_q3 =
       cfl->pred_buf_q3 + ((row * MAX_SB_SIZE + col) << tx_size_wide_log2[0]);
-
-  const int dc_pred = cfl->dc_pred[plane - 1];
   const int alpha_q3 =
       cfl_idx_to_alpha(mbmi->cfl_alpha_idx, mbmi->cfl_alpha_signs, plane - 1);
 
-  for (int j = 0; j < height; j++) {
-    for (int i = 0; i < width; i++) {
-      // TODO(ltrudeau) add support for HBD.
-      dst[i] =
-          clip_pixel(get_scaled_luma_q0(alpha_q3, pred_buf_q3[i]) + dc_pred);
-    }
-    dst += dst_stride;
-    pred_buf_q3 += MAX_SB_SIZE;
-  }
+  cfl_build_prediction(pred_buf_q3, dst, dst_stride, alpha_q3,
+                       cfl->dc_pred[plane - 1], tx_size_wide[tx_size],
+                       tx_size_high[tx_size]);
 }
 
 static INLINE void cfl_luma_subsampling_420(const uint8_t *input,
