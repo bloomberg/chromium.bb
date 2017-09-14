@@ -455,6 +455,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       is_in_vr_(false),
       content_view_core_(nullptr),
       ime_adapter_android_(nullptr),
+      popup_zoomer_(nullptr),
       selection_popup_controller_(nullptr),
       text_suggestion_host_(nullptr),
       background_color_(SK_ColorWHITE),
