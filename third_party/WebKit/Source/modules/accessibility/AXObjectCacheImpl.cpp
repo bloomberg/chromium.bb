@@ -623,9 +623,9 @@ void AXObjectCacheImpl::RemoveAXID(AXObject* object) {
   ids_in_use_.erase(obj_id);
 
   if (aria_owner_to_children_mapping_.Contains(obj_id)) {
-    Vector<AXID> child_axi_ds = aria_owner_to_children_mapping_.at(obj_id);
-    for (size_t i = 0; i < child_axi_ds.size(); ++i)
-      aria_owned_child_to_owner_mapping_.erase(child_axi_ds[i]);
+    Vector<AXID> child_axids = aria_owner_to_children_mapping_.at(obj_id);
+    for (size_t i = 0; i < child_axids.size(); ++i)
+      aria_owned_child_to_owner_mapping_.erase(child_axids[i]);
     aria_owner_to_children_mapping_.erase(obj_id);
   }
   aria_owned_child_to_owner_mapping_.erase(obj_id);
@@ -810,7 +810,7 @@ void AXObjectCacheImpl::UpdateAriaOwns(
 
   // Figure out the children that are owned by this object and are in the tree.
   TreeScope& scope = owner->GetNode()->GetTreeScope();
-  Vector<AXID> new_child_axi_ds;
+  Vector<AXID> new_child_axids;
   for (const String& id_name : id_vector) {
     Element* element = scope.getElementById(AtomicString(id_name));
     if (!element)
@@ -842,20 +842,20 @@ void AXObjectCacheImpl::UpdateAriaOwns(
     if (found_cycle)
       continue;
 
-    new_child_axi_ds.push_back(child->AxObjectID());
+    new_child_axids.push_back(child->AxObjectID());
     owned_children.push_back(child);
   }
 
   // Compare this to the current list of owned children, and exit early if there
   // are no changes.
-  Vector<AXID> current_child_axi_ds =
+  Vector<AXID> current_child_axids =
       aria_owner_to_children_mapping_.at(owner->AxObjectID());
   bool same = true;
-  if (current_child_axi_ds.size() != new_child_axi_ds.size()) {
+  if (current_child_axids.size() != new_child_axids.size()) {
     same = false;
   } else {
-    for (size_t i = 0; i < current_child_axi_ds.size() && same; ++i) {
-      if (current_child_axi_ds[i] != new_child_axi_ds[i])
+    for (size_t i = 0; i < current_child_axids.size() && same; ++i) {
+      if (current_child_axids[i] != new_child_axids[i])
         same = false;
     }
   }
@@ -865,9 +865,9 @@ void AXObjectCacheImpl::UpdateAriaOwns(
   // The list of owned children has changed. Even if they were just reordered,
   // to be safe and handle all cases we remove all of the current owned children
   // and add the new list of owned children.
-  for (size_t i = 0; i < current_child_axi_ds.size(); ++i) {
+  for (size_t i = 0; i < current_child_axids.size(); ++i) {
     // Find the AXObject for the child that this owner no longer owns.
-    AXID removed_child_id = current_child_axi_ds[i];
+    AXID removed_child_id = current_child_axids[i];
     AXObject* removed_child = ObjectFromAXID(removed_child_id);
 
     // It's possible that this child has already been owned by some other owner,
@@ -895,10 +895,10 @@ void AXObjectCacheImpl::UpdateAriaOwns(
     aria_owned_child_to_real_parent_mapping_.erase(removed_child_id);
   }
 
-  for (size_t i = 0; i < new_child_axi_ds.size(); ++i) {
+  for (size_t i = 0; i < new_child_axids.size(); ++i) {
     // Find the AXObject for the child that will now be a child of this
     // owner.
-    AXID added_child_id = new_child_axi_ds[i];
+    AXID added_child_id = new_child_axids[i];
     AXObject* added_child = ObjectFromAXID(added_child_id);
 
     // Add this child to the mapping from child to owner.
@@ -918,7 +918,7 @@ void AXObjectCacheImpl::UpdateAriaOwns(
   }
 
   // Finally, update the mapping from the owner to the list of child IDs.
-  aria_owner_to_children_mapping_.Set(owner->AxObjectID(), new_child_axi_ds);
+  aria_owner_to_children_mapping_.Set(owner->AxObjectID(), new_child_axids);
 }
 
 void AXObjectCacheImpl::UpdateTreeIfElementIdIsAriaOwned(Element* element) {
