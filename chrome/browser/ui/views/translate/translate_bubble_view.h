@@ -154,6 +154,7 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
 
   friend class TranslateBubbleViewTest;
   friend void ::translate::test_utils::PressTranslate(::Browser*);
+  friend void ::translate::test_utils::PressRevert(::Browser*);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, TranslateButton);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, TranslateButtonIn2016Q2UI);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, CloseButtonIn2016Q2UI);
@@ -173,6 +174,7 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
                            CancelButtonReturningAfterTranslate);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, CancelButtonReturningError);
+  FRIEND_TEST_ALL_PREFIXES(TranslateLanguageBrowserTest, TranslateAndRevert);
 
   TranslateBubbleView(views::View* anchor_view,
                       const gfx::Point& anchor_point,
