@@ -253,8 +253,6 @@ split_static_library("browser") {
     "component_updater/component_updater_resource_throttle.h",
     "component_updater/component_updater_utils.cc",
     "component_updater/component_updater_utils.h",
-    "component_updater/cros_component_installer.cc",
-    "component_updater/cros_component_installer.h",
     "component_updater/file_type_policies_component_installer.cc",
     "component_updater/file_type_policies_component_installer.h",
     "component_updater/origin_trials_component_installer.cc",
@@ -2320,6 +2318,8 @@ split_static_library("browser") {
 
   if (is_chromeos) {
     sources += [
+      "component_updater/cros_component_installer.cc",
+      "component_updater/cros_component_installer.h",
       "download/notification/download_item_notification.cc",
       "download/notification/download_item_notification.h",
       "download/notification/download_notification_manager.cc",
