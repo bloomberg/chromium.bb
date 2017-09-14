@@ -985,16 +985,6 @@ This file contains the strings for ash.
         Sign out now
       </message>
 
-      <!-- HaTS Strings -->
-      <message name="IDS_ASH_HATS_NOTIFICATION_TITLE" desc="The title of the notification for Happiness Tracking Survey.">
-        Help us improve Chromebooks
-      </message>
-      <message name="IDS_ASH_HATS_NOTIFICATION_BODY" desc="The body of the notification for Happiness Tracking Survey.">
-        Let us know how we’re doing.
-      </message>
-      <message name="IDS_ASH_HATS_NOTIFICATION_TAKE_SURVEY_BUTTON" desc="The title of the button in the notification for Happiness Tracking Survey to take the said survey.">
-        Take survey
-      </message>
       <message name="IDS_ASH_IME_MENU_ACCESSIBLE_NAME" desc="The accessible text for opt-in IME menu icon in status tray.">
         IME menu button
       </message>
