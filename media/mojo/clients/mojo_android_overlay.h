@@ -34,7 +34,7 @@ class MojoAndroidOverlay : public AndroidOverlay,
  private:
   AndroidOverlayConfig config_;
   mojom::AndroidOverlayPtr overlay_ptr_;
-  std::unique_ptr<mojo::Binding<mojom::AndroidOverlayClient>> binding_;
+  mojo::Binding<mojom::AndroidOverlayClient> binding_;
   gl::ScopedJavaSurface surface_;
 
   // Have we received OnSurfaceReady yet?
