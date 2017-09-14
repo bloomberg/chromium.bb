@@ -1052,7 +1052,7 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
   // Much as above, but accepts a URL parameter and can be used for errors that
   // trigger captive portal checks other than timeouts.  |error_url| should
   // result in an error rather than hanging.
-  // If |delay_portal_response_until_interstital| is true, captive portal probe
+  // If |delay_portal_response_until_interstitial| is true, captive portal probe
   // request are ignored until the interstitial is shown, at which point a
   // captive portal result is sent. This allows testing in conjunction with the
   // certificate error interstitial.
@@ -1060,7 +1060,7 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
       Browser* browser,
       bool expect_open_login_tab,
       const GURL& error_url,
-      bool delay_portal_response_until_interstital);
+      bool delay_portal_response_until_interstitial);
 
   // Navigates the active tab to an SSL error page which triggers an
   // interstitial timer. Also disables captive portal checks indefinitely, so
@@ -1462,7 +1462,7 @@ void CaptivePortalBrowserTest::FastErrorBehindCaptivePortal(
     Browser* browser,
     bool expect_open_login_tab,
     const GURL& error_url,
-    bool delay_portal_response_until_interstital) {
+    bool delay_portal_response_until_interstitial) {
   TabStripModel* tab_strip_model = browser->tab_strip_model();
   // Calling this on a tab that's waiting for a load to manually be timed out
   // will result in a hang.
@@ -1488,7 +1488,7 @@ void CaptivePortalBrowserTest::FastErrorBehindCaptivePortal(
 
   CaptivePortalService* captive_portal_service =
       CaptivePortalServiceFactory::GetForProfile(browser->profile());
-  if (delay_portal_response_until_interstital)
+  if (delay_portal_response_until_interstitial)
     RespondToProbeRequests(false);
 
   MultiNavigationObserver navigation_observer;
@@ -1497,7 +1497,7 @@ void CaptivePortalBrowserTest::FastErrorBehindCaptivePortal(
       browser, error_url, WindowOpenDisposition::CURRENT_TAB,
       ui_test_utils::BROWSER_TEST_NONE);
 
-  if (delay_portal_response_until_interstital) {
+  if (delay_portal_response_until_interstitial) {
     EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE,
               GetStateOfTabReloaderAt(browser, initial_active_index));
     // Once the interstitial is attached, probe for captive portal.
@@ -2387,17 +2387,14 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, SSLCertErrorLogin) {
   // NOTE: this doesn't occur with PlzNavigate, since the SSL interstitial timer
   // is fired synchronously due to different timings when
   // CaptivePortalTabReloader gets the load start callback.
-  bool delay_portal_response_until_interstital =
+  bool delay_portal_response_until_interstitial =
       !content::IsBrowserSideNavigationEnabled();
 
   // The path does not matter.
   GURL cert_error_url = https_server.GetURL(kTestServerLoginPath);
   // A captive portal check is triggered in FastErrorBehindCaptivePortal.
-  FastErrorBehindCaptivePortal(
-      browser(),
-      true,
-      cert_error_url,
-      delay_portal_response_until_interstital);
+  FastErrorBehindCaptivePortal(browser(), true, cert_error_url,
+                               delay_portal_response_until_interstitial);
 
   EXPECT_EQ(SSLBlockingPage::kTypeForTesting,
             GetInterstitialType(broken_tab_contents));

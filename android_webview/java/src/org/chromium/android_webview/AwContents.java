@@ -2989,7 +2989,7 @@ public class AwContents implements SmartClipProvider {
     /**
      * Determine if it's suitable to show the interstitial for browsers and main UIs. If the WebView
      * is close to full-screen, we assume the app is using it as the main UI, so we show the same
-     * interstital Chrome uses. Otherwise, we assume the WebView is part of a larger composed page,
+     * interstitial Chrome uses. Otherwise, we assume the WebView is part of a larger composed page,
      * and will show a different interstitial.
      * @return true if the WebView should display the large interstitial
      */

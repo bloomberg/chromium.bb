@@ -398,7 +398,7 @@ void ClientSideDetectionHost::DidFinishNavigation(
   // report request we have to cancel it to make sure we don't display
   // an interstitial for the wrong page.  Note that this won't cancel
   // the server ping back but only cancel the showing of the
-  // interstial.
+  // interstitial.
   weak_factory_.InvalidateWeakPtrs();
 
   if (!csd_service_) {
@@ -594,7 +594,7 @@ void ClientSideDetectionHost::MaybeShowPhishingWarning(GURL phishing_url,
               web_contents()->GetRenderProcessHost()->GetID(),
               web_contents()->GetMainFrame()->GetRoutingID());
       if (!ui_manager_->IsWhitelisted(resource)) {
-        // We need to stop any pending navigations, otherwise the interstital
+        // We need to stop any pending navigations, otherwise the interstitial
         // might not get created properly.
         web_contents()->GetController().DiscardNonCommittedEntries();
       }
@@ -631,7 +631,7 @@ void ClientSideDetectionHost::MaybeShowMalwareWarning(GURL original_url,
               web_contents()->GetMainFrame()->GetRoutingID());
 
       if (!ui_manager_->IsWhitelisted(resource)) {
-        // We need to stop any pending navigations, otherwise the interstital
+        // We need to stop any pending navigations, otherwise the interstitial
         // might not get created properly.
         web_contents()->GetController().DiscardNonCommittedEntries();
       }

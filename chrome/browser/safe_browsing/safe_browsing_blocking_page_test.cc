@@ -497,7 +497,7 @@ class SafeBrowsingBlockingPageBrowserTest
         browser()->tab_strip_model()->GetActiveWebContents();
     // We use InterstitialPage::GetInterstitialPage(tab) instead of
     // tab->GetInterstitialPage() because the tab doesn't have a pointer
-    // to its interstital page until it gets a command from the renderer
+    // to its interstitial page until it gets a command from the renderer
     // that it has indeed displayed it -- and this sometimes happens after
     // NavigateToURL returns.
     SafeBrowsingBlockingPage* interstitial_page =
