@@ -22,6 +22,12 @@ namespace language {
 // discounted so that the histogram reflects changes in browsing habits. This
 // histogram does not have to contain all languages that ever appeared in user's
 // browsing, languages with insignificant frequency are removed, eventually.
+//
+// Operates as a "wrapper" around profile preferences: the state of the
+// histogram is read from/written to the PrefService in each method call. This
+// allows multiple instances of the histogram to be used in a (non-overlapping)
+// sequence without any instance-specific state going "out of sync". This
+// behaviour is relied on by clients of the histogram.
 class UrlLanguageHistogram : public KeyedService {
  public:
   struct LanguageInfo {
