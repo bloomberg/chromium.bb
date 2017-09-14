@@ -20,6 +20,9 @@ const TranslateBubbleModel* GetCurrentModel(Browser* browser);
 // Presses 'Translate' on the currently open translate bubble.
 void PressTranslate(Browser* browser);
 
+// Presses 'Revert' on the currently opened translate bubble.
+void PressRevert(Browser* browser);
+
 }  // namespace test_utils
 
 }  // namespace translate

@@ -19,6 +19,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/translate/translate_bubble_model.h"
+#include "chrome/browser/ui/translate/translate_bubble_test_utils.h"
 #include "chrome/browser/ui/views/translate/translate_bubble_view.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -31,6 +33,8 @@
 #include "components/translate/core/common/translate_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/url_request/test_url_fetcher_factory.h"
+#include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
 namespace {
@@ -39,6 +43,33 @@ const base::FilePath::CharType kEnglishTestPath[] =
     FILE_PATH_LITERAL("english_page.html");
 const base::FilePath::CharType kFrenchTestPath[] =
     FILE_PATH_LITERAL("french_page.html");
+
+static const char kTestValidScript[] =
+    "var google = {};"
+    "google.translate = (function() {"
+    "  return {"
+    "    TranslateService: function() {"
+    "      return {"
+    "        isAvailable : function() {"
+    "          return true;"
+    "        },"
+    "        restore : function() {"
+    "          return;"
+    "        },"
+    "        getDetectedLanguage : function() {"
+    "          return \"fr\";"
+    "        },"
+    "        translatePage : function(originalLang, targetLang,"
+    "                                 onTranslateProgress) {"
+    "          onTranslateProgress(100, true, false);"
+    "        }"
+    "      };"
+    "    }"
+    "  };"
+    "})();"
+    "cr.googleTranslate.onTranslateElementLoad();";
+
+using translate::test_utils::GetCurrentModel;
 
 using LanguageInfo = language::UrlLanguageHistogram::LanguageInfo;
 
@@ -90,8 +121,31 @@ class TranslateLanguageBrowserTest : public InProcessBrowserTest {
     return UrlLanguageHistogramFactory::GetForBrowserContext(browser_context);
   }
 
+  void Translate() {
+    EXPECT_EQ(expected_lang_, GetLanguageState().current_language());
+    content::WindowedNotificationObserver page_translated_signal(
+        chrome::NOTIFICATION_PAGE_TRANSLATED,
+        content::NotificationService::AllSources());
+    EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE,
+              GetCurrentModel(browser_)->GetViewState());
+    translate::test_utils::PressTranslate(browser_);
+    SimulateURLFetch();
+    page_translated_signal.Wait();
+    EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE,
+              GetCurrentModel(browser_)->GetViewState());
+    EXPECT_EQ("en", GetLanguageState().current_language());
+  }
+
+  void Revert() {
+    EXPECT_EQ("en", GetLanguageState().current_language());
+    // Make page |expected_lang_| again!
+    translate::test_utils::PressRevert(browser_);
+    EXPECT_EQ(expected_lang_, GetLanguageState().current_language());
+  }
+
  private:
   Browser* browser_;
+  net::TestURLFetcherFactory url_fetcher_factory_;
   std::string expected_lang_;
 
   bool OnLanguageDetermined(const content::NotificationSource& source,
@@ -100,6 +154,23 @@ class TranslateLanguageBrowserTest : public InProcessBrowserTest {
         content::Details<translate::LanguageDetectionDetails>(details)
             ->cld_language;
     return language == expected_lang_;
+  }
+
+  translate::LanguageState& GetLanguageState() {
+    auto* const client = ChromeTranslateClient::FromWebContents(
+        browser_->tab_strip_model()->GetActiveWebContents());
+    return client->GetLanguageState();
+  }
+
+  void SimulateURLFetch() {
+    net::TestURLFetcher* const fetcher = url_fetcher_factory_.GetFetcherByID(0);
+    ASSERT_TRUE(fetcher);
+
+    fetcher->set_url(fetcher->GetOriginalURL());
+    fetcher->set_status(net::URLRequestStatus::FromError(net::OK));
+    fetcher->set_response_code(200);
+    fetcher->SetResponseString(kTestValidScript);
+    fetcher->delegate()->OnURLFetchComplete(fetcher);
   }
 
   DISALLOW_COPY_AND_ASSIGN(TranslateLanguageBrowserTest);
@@ -140,6 +211,16 @@ IN_PROC_BROWSER_TEST_F(TranslateLanguageBrowserTest, DontLogInIncognito) {
   const language::UrlLanguageHistogram* const histograms =
       GetUrlLanguageHistogram();
   EXPECT_FALSE(histograms);
+}
+
+IN_PROC_BROWSER_TEST_F(TranslateLanguageBrowserTest, TranslateAndRevert) {
+  // Visit the french page.
+  ASSERT_NO_FATAL_FAILURE(
+      CheckForTranslateUI(base::FilePath(kFrenchTestPath), true, "fr"));
+  // Translate the page.
+  ASSERT_NO_FATAL_FAILURE(Translate());
+  // Revert the page.
+  ASSERT_NO_FATAL_FAILURE(Revert());
 }
 
 #endif  // defined(USE_AURA)
