@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/numerics/math_constants.h"
 #include "base/strings/string_util.h"
 #include "skia/ext/image_operations.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -497,15 +498,9 @@ TEST(ImageOperations, ResizeShouldAverageColors) {
   }
 }
 
-
-#ifndef M_PI
-// No M_PI in math.h on windows? No problem.
-#define M_PI 3.14159265358979323846
-#endif
-
 static double sinc(double x) {
   if (x == 0.0) return 1.0;
-  x *= M_PI;
+  x *= base::kPiDouble;
   return sin(x) / x;
 }
 

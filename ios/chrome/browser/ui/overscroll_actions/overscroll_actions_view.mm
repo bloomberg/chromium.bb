@@ -7,6 +7,7 @@
 #import <QuartzCore/QuartzCore.h>
 
 #include "base/logging.h"
+#include "base/numerics/math_constants.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
@@ -496,7 +497,8 @@ enum class OverscrollViewState {
   [UIView beginAnimations:@"transform" context:NULL];
   [UIView setAnimationDuration:0.1];
   CATransform3D rotation = CATransform3DMakeRotation(
-      MapValueToRange({kFullThreshold / 2.0, kFullThreshold}, {-M_PI_2, M_PI_4},
+      MapValueToRange({kFullThreshold / 2.0, kFullThreshold},
+                      {-base::kPiFloat / 2, base::kPiFloat / 4},
                       self.verticalOffset),
       0, 0, 1);
   self.refreshActionImageView.layer.transform = rotation;
@@ -806,7 +808,7 @@ enum class OverscrollViewState {
   CGFloat deformationDirection = dx > 0 ? 1 : -1;
   for (int i = 0; i < kBezierPathPointCount; i++) {
     CGPoint p;
-    float angle = i * 2 * M_PI / kBezierPathPointCount;
+    float angle = i * 2 * base::kPiFloat / kBezierPathPointCount;
 
     // Circle centered on 0.
     p.x = cos(angle) * radius;

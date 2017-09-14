@@ -4,7 +4,7 @@
 
 #include "ui/ozone/demo/renderer_base.h"
 
-#include <cmath>
+#include "base/numerics/math_constants.h"
 
 namespace ui {
 
@@ -20,7 +20,8 @@ RendererBase::~RendererBase() {
 }
 
 float RendererBase::NextFraction() {
-  float fraction = (sinf(iteration_ * 2 * M_PI / kAnimationSteps) + 1) / 2;
+  float fraction =
+      (sinf(iteration_ * 2 * base::kPiFloat / kAnimationSteps) + 1) / 2;
 
   iteration_++;
   iteration_ %= kAnimationSteps;

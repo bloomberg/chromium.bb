@@ -2,13 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// MSVC++ requires this to be set before any other includes to get M_PI.
-#define _USE_MATH_DEFINES
-
 #include <stddef.h>
 
-#include <cmath>
-
+#include "base/numerics/math_constants.h"
 #include "content/browser/renderer_host/input/motion_event_web.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/blink/blink_event_util.h"
@@ -22,7 +18,7 @@ using ui::PointerProperties;
 namespace content {
 
 TEST(MotionEventWebTest, Constructor) {
-  const float pi = static_cast<float>(M_PI);
+  const float pi = base::kPiFloat;
   const float orientations[] = {-pi, -2.f * pi / 3, -pi / 2};
   const float tilts_x[] = {0.f, -180 / 4, -180 / 3};
   const float tilts_y[] = {0.5f, 180 / 2, 180 / 3};
@@ -72,8 +68,10 @@ TEST(MotionEventWebTest, Constructor) {
       } else {
         // For non-stylus pointers and for styluses with a zero tilt angle,
         // orientation quadrant information is lost.
-        EXPECT_NEAR(fmod(orientation + M_PI + 1e-4, M_PI_2) - 1e-4,
-                    event.GetOrientation(pointer_index), 1e-4);
+        EXPECT_NEAR(
+            fmod(orientation + base::kPiFloat + 1e-4, base::kPiFloat / 2) -
+                1e-4,
+            event.GetOrientation(pointer_index), 1e-4);
       }
 
       generic_event.RemovePointerAt(pointer_index);

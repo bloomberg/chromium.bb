@@ -1,18 +1,16 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-// MSVC++ requires this to be set before any other includes to get M_PI.
-#define _USE_MATH_DEFINES
 
 #include "media/audio/simple_sources.h"
 
 #include <stddef.h>
 
 #include <algorithm>
-#include <cmath>
 
 #include "base/files/file.h"
 #include "base/logging.h"
+#include "base/numerics/math_constants.h"
 #include "base/time/time.h"
 #include "media/audio/sounds/wav_audio_handler.h"
 #include "media/base/audio_bus.h"
@@ -132,7 +130,7 @@ int SineWaveAudioSource::OnMoreData(base::TimeDelta /* delay */,
   int max_frames =
       cap_ > 0 ? std::min(dest->frames(), cap_ - time_state_) : dest->frames();
   for (int i = 0; i < max_frames; ++i)
-    dest->channel(0)[i] = sin(2.0 * M_PI * f_ * time_state_++);
+    dest->channel(0)[i] = sin(2.0 * base::kPiDouble * f_ * time_state_++);
   for (int i = 1; i < dest->channels(); ++i) {
     memcpy(dest->channel(i), dest->channel(0),
            max_frames * sizeof(*dest->channel(i)));

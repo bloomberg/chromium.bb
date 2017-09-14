@@ -15,6 +15,7 @@
 #include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/numerics/math_constants.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -338,7 +339,8 @@ UIImage* BlurImage(UIImage* image,
       // output pixel.
       //
       CGFloat inputRadius = blurRadius * [[UIScreen mainScreen] scale];
-      NSUInteger radius = floor(inputRadius * 3. * sqrt(2 * M_PI) / 4 + 0.5);
+      NSUInteger radius =
+          floor(inputRadius * 3. * sqrt(2 * base::kPiDouble) / 4 + 0.5);
       if (radius % 2 != 1) {
         // force radius to be odd so that the three box-blur methodology works.
         radius += 1;

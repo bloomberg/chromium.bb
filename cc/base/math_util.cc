@@ -23,9 +23,6 @@
 
 namespace cc {
 
-const double MathUtil::kPiDouble = 3.14159265358979323846;
-const float MathUtil::kPiFloat = 3.14159265358979323846f;
-
 static HomogeneousCoordinate ProjectHomogeneousPoint(
     const gfx::Transform& transform,
     const gfx::PointF& p) {

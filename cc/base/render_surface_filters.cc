@@ -8,6 +8,7 @@
 
 #include <algorithm>
 
+#include "base/numerics/math_constants.h"
 #include "cc/base/filter_operation.h"
 #include "cc/base/filter_operations.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
@@ -69,10 +70,8 @@ void GetSaturateMatrix(float amount, SkScalar matrix[20]) {
 }
 
 void GetHueRotateMatrix(float hue, SkScalar matrix[20]) {
-  const float kPi = 3.1415926535897932384626433832795f;
-
-  float cos_hue = cosf(hue * kPi / 180.f);
-  float sin_hue = sinf(hue * kPi / 180.f);
+  float cos_hue = cosf(hue * base::kPiFloat / 180.f);
+  float sin_hue = sinf(hue * base::kPiFloat / 180.f);
   matrix[0] = 0.213f + cos_hue * 0.787f - sin_hue * 0.213f;
   matrix[1] = 0.715f - cos_hue * 0.715f - sin_hue * 0.715f;
   matrix[2] = 0.072f - cos_hue * 0.072f + sin_hue * 0.928f;

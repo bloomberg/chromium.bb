@@ -2,17 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// We would like to use M_PI on windows too.
-#ifdef _WIN32
-#define _USE_MATH_DEFINES
-#endif
-
 #include <stddef.h>
 
 #include <limits>
 #include <vector>
 
 #include "base/memory/ptr_util.h"
+#include "base/numerics/math_constants.h"
 #include "base/stl_util.h"
 #include "cc/output/bsp_compare_result.h"
 #include "cc/quads/draw_polygon.h"
@@ -160,10 +156,10 @@ TEST(DrawPolygonConstructionTest, ManyVertexNormal) {
   std::vector<gfx::Point3F> vertices_c;
   std::vector<gfx::Point3F> vertices_d;
   for (int i = 0; i < 100; i++) {
-    vertices_c.push_back(
-        gfx::Point3F(cos(i * M_PI / 50), sin(i * M_PI / 50), 0.0f));
-    vertices_d.push_back(gfx::Point3F(cos(i * M_PI / 50) + 99.0f,
-                                      sin(i * M_PI / 50) + 99.0f, 100.0f));
+    const double step = i * base::kPiDouble / 50;
+    vertices_c.push_back(gfx::Point3F(cos(step), sin(step), 0.0f));
+    vertices_d.push_back(
+        gfx::Point3F(cos(step) + 99.0f, sin(step) + 99.0f, 100.0f));
   }
   CREATE_TEST_DRAW_FORWARD_POLYGON(polygon_c, vertices_c, 3);
   EXPECT_NORMAL(polygon_c, 0.0f, 0.0f, 1.0f);

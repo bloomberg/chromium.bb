@@ -2,13 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// MSVC++ requires this to be set before any other includes to get M_PI.
-#define _USE_MATH_DEFINES
-
-#include <cmath>
-
-#include "media/base/audio_timestamp_helper.h"
 #include "media/base/fake_audio_render_callback.h"
+
+#include "base/numerics/math_constants.h"
+#include "media/base/audio_timestamp_helper.h"
 
 namespace media {
 
@@ -53,7 +50,8 @@ int FakeAudioRenderCallback::RenderInternal(AudioBus* audio_bus,
 
   // Fill first channel with a sine wave.
   for (int i = 0; i < number_of_frames; ++i)
-    audio_bus->channel(0)[i] = sin(2 * M_PI * (x_ + step_ * i)) * volume;
+    audio_bus->channel(0)[i] =
+        sin(2 * base::kPiDouble * (x_ + step_ * i)) * volume;
   x_ += number_of_frames * step_;
 
   // Copy first channel into the rest of the channels.

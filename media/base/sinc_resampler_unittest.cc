@@ -2,15 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// MSVC++ requires this to be set before any other includes to get M_PI.
-#define _USE_MATH_DEFINES
-
-#include <cmath>
 #include <memory>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/numerics/math_constants.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -226,7 +223,8 @@ class SinusoidalLinearChirpSource {
         double t = static_cast<double>(current_index_) / sample_rate_;
 
         // Sinusoidal linear chirp.
-        destination[i] = sin(2 * M_PI * (kMinFrequency * t + (k_ / 2) * t * t));
+        destination[i] =
+            sin(2 * base::kPiDouble * (kMinFrequency * t + (k_ / 2) * t * t));
       }
     }
   }
@@ -295,7 +293,7 @@ TEST_P(SincResamplerTest, Resample) {
   std::unique_ptr<float[]> kernel(new float[SincResampler::kKernelStorageSize]);
   memcpy(kernel.get(), resampler.get_kernel_for_testing(),
          SincResampler::kKernelStorageSize);
-  resampler.SetRatio(M_PI);
+  resampler.SetRatio(base::kPiDouble);
   ASSERT_NE(0, memcmp(kernel.get(), resampler.get_kernel_for_testing(),
                       SincResampler::kKernelStorageSize));
   resampler.SetRatio(io_ratio);

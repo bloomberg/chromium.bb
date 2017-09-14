@@ -2,13 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// MSVC++ requires this to be set before any other includes to get M_PI.
-#define _USE_MATH_DEFINES
-
 #include "remoting/test/fake_socket_factory.h"
 
 #include <algorithm>
-#include <cmath>
 #include <cstddef>
 #include <cstdlib>
 #include <string>
@@ -17,6 +13,7 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/numerics/math_constants.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -40,9 +37,8 @@ double RandDouble() {
 double GetNormalRandom(double average, double stddev) {
   // Based on Box-Muller transform, see
   // http://en.wikipedia.org/wiki/Box_Muller_transform .
-  return average +
-         stddev * sqrt(-2.0 * log(1.0 - RandDouble())) *
-             cos(RandDouble() * 2.0 * M_PI);
+  return average + stddev * sqrt(-2.0 * log(1.0 - RandDouble())) *
+                       cos(RandDouble() * 2.0 * base::kPiDouble);
 }
 
 class FakeUdpSocket : public rtc::AsyncPacketSocket {
