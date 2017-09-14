@@ -73,6 +73,8 @@ class RegisteredEventListener {
 
   EventListener* Listener() { return listener_; }
 
+  void SetListener(EventListener* listener) { listener_ = listener; }
+
   bool Passive() const { return passive_; }
 
   bool Once() const { return once_; }
