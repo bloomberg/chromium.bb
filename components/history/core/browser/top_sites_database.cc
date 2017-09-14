@@ -21,7 +21,6 @@
 #include "sql/connection.h"
 #include "sql/recovery.h"
 #include "sql/statement.h"
-#include "sql/transaction.h"
 #include "third_party/sqlite/sqlite3.h"
 
 namespace history {
@@ -382,6 +381,26 @@ bool TopSitesDatabase::InitImpl(const base::FilePath& db_name) {
   return true;
 }
 
+void TopSitesDatabase::ApplyDelta(const TopSitesDelta& delta) {
+  sql::Transaction transaction(db_.get());
+  transaction.Begin();
+
+  for (size_t i = 0; i < delta.deleted.size(); ++i) {
+    if (!RemoveURLNoTransaction(delta.deleted[i]))
+      return;
+  }
+
+  for (size_t i = 0; i < delta.added.size(); ++i) {
+    SetPageThumbnailNoTransaction(delta.added[i].url, delta.added[i].rank,
+                                  Images());
+  }
+
+  for (size_t i = 0; i < delta.moved.size(); ++i)
+    UpdatePageRankNoTransaction(delta.moved[i].url, delta.moved[i].rank);
+
+  transaction.Commit();
+}
+
 bool TopSitesDatabase::UpgradeToVersion3() {
   // Add 'last_forced' column.
   if (!db_->Execute(
@@ -442,7 +461,13 @@ void TopSitesDatabase::SetPageThumbnail(const MostVisitedURL& url,
                                         const Images& thumbnail) {
   sql::Transaction transaction(db_.get());
   transaction.Begin();
+  SetPageThumbnailNoTransaction(url, new_rank, thumbnail);
+  transaction.Commit();
+}
 
+void TopSitesDatabase::SetPageThumbnailNoTransaction(const MostVisitedURL& url,
+                                                     int new_rank,
+                                                     const Images& thumbnail) {
   int rank = GetURLRank(url);
   if (rank == kRankOfNonExistingURL) {
     AddPageThumbnail(url, new_rank, thumbnail);
@@ -450,8 +475,6 @@ void TopSitesDatabase::SetPageThumbnail(const MostVisitedURL& url,
     UpdatePageRankNoTransaction(url, new_rank);
     UpdatePageThumbnail(url, thumbnail);
   }
-
-  transaction.Commit();
 }
 
 bool TopSitesDatabase::UpdatePageThumbnail(const MostVisitedURL& url,
@@ -515,17 +538,6 @@ void TopSitesDatabase::AddPageThumbnail(const MostVisitedURL& url,
   // Update rank if this is not a forced thumbnail.
   if (new_rank != kRankOfForcedURL)
     UpdatePageRankNoTransaction(url, new_rank);
-}
-
-void TopSitesDatabase::UpdatePageRank(const MostVisitedURL& url, int new_rank) {
-  DCHECK((url.last_forced_time.ToInternalValue() == 0) ==
-         (new_rank != kRankOfForcedURL))
-      << "Thumbnail without a forced time stamp has a forced rank, or the "
-      << "opposite.";
-  sql::Transaction transaction(db_.get());
-  transaction.Begin();
-  UpdatePageRankNoTransaction(url, new_rank);
-  transaction.Commit();
 }
 
 // Caller should have a transaction open.
@@ -640,36 +652,29 @@ int TopSitesDatabase::GetURLRank(const MostVisitedURL& url) {
   return kRankOfNonExistingURL;
 }
 
-// Remove the record for this URL. Returns true iff removed successfully.
-bool TopSitesDatabase::RemoveURL(const MostVisitedURL& url) {
+bool TopSitesDatabase::RemoveURLNoTransaction(const MostVisitedURL& url) {
   int old_rank = GetURLRank(url);
   if (old_rank == kRankOfNonExistingURL)
-    return false;
+    return true;
 
-  sql::Transaction transaction(db_.get());
-  transaction.Begin();
   if (old_rank != kRankOfForcedURL) {
     // Decrement all following ranks.
-    sql::Statement shift_statement(db_->GetCachedStatement(
-        SQL_FROM_HERE,
-        "UPDATE thumbnails "
-        "SET url_rank = url_rank - 1 "
-        "WHERE url_rank > ?"));
+    sql::Statement shift_statement(
+        db_->GetCachedStatement(SQL_FROM_HERE,
+                                "UPDATE thumbnails "
+                                "SET url_rank = url_rank - 1 "
+                                "WHERE url_rank > ?"));
     shift_statement.BindInt(0, old_rank);
 
     if (!shift_statement.Run())
       return false;
   }
 
-  sql::Statement delete_statement(
-      db_->GetCachedStatement(SQL_FROM_HERE,
-                              "DELETE FROM thumbnails WHERE url = ?"));
+  sql::Statement delete_statement(db_->GetCachedStatement(
+      SQL_FROM_HERE, "DELETE FROM thumbnails WHERE url = ?"));
   delete_statement.BindString(0, url.url.spec());
 
-  if (!delete_statement.Run())
-    return false;
-
-  return transaction.Commit();
+  return delete_statement.Run();
 }
 
 sql::Connection* TopSitesDatabase::CreateDB(const base::FilePath& db_name) {
