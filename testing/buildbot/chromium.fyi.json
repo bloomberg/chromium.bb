@@ -11347,6 +11347,12 @@
         "test": "skia_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "sql_unittests"
+      },
+      {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.ui_base_unittests.filter"
         ],
@@ -11448,6 +11454,12 @@
           "can_use_on_swarming_builders": false
         },
         "test": "skia_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "sql_unittests"
       },
       {
         "args": [

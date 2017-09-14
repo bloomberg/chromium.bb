@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/files/scoped_temp_dir.h"
+#include "build/build_config.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "sql/test/sql_test_base.h"
@@ -163,7 +164,7 @@ TEST_F(SQLiteFeaturesTest, ForeignKeySupport) {
   EXPECT_EQ("", ExecuteWithResult(&db(), kSelectChildren));
 }
 
-#if defined(MOJO_APPTEST_IMPL) || defined(OS_IOS)
+#if defined(MOJO_APPTEST_IMPL) || defined(OS_IOS) || defined(OS_FUCHSIA)
 // If the platform cannot support SQLite mmap'ed I/O, make sure SQLite isn't
 // offering to support it.
 TEST_F(SQLiteFeaturesTest, NoMmap) {
@@ -191,7 +192,7 @@ TEST_F(SQLiteFeaturesTest, NoMmap) {
 }
 #endif
 
-#if !defined(MOJO_APPTEST_IMPL)
+#if !defined(MOJO_APPTEST_IMPL) && !defined(OS_FUCHSIA)
 // Verify that OS file writes are reflected in the memory mapping of a
 // memory-mapped file.  Normally SQLite writes to memory-mapped files using
 // memcpy(), which should stay consistent.  Our SQLite is slightly patched to
@@ -457,7 +458,7 @@ TEST_F(SQLiteFeaturesTest, SmartAutoVacuum) {
 }
 #endif  // !defined(USE_SYSTEM_SQLITE)
 
-#if !defined(USE_SYSTEM_SQLITE)
+#if !defined(USE_SYSTEM_SQLITE) && !defined(OS_FUCHSIA)
 // SQLite WAL mode defaults to checkpointing the WAL on close.  This would push
 // additional work into Chromium shutdown.  Verify that SQLite supports a config
 // option to not checkpoint on close.
