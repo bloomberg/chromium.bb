@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/cells/autofill_data_item.h"
 
+#import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
@@ -42,7 +43,7 @@ const CGFloat kVerticalPadding = 16;
   cell.textLabel.text = self.text;
   cell.leadingDetailTextLabel.text = self.leadingDetailText;
   cell.trailingDetailTextLabel.text = self.trailingDetailText;
-  cell.accessoryType = self.accessoryType;
+  [cell cr_setAccessoryType:self.accessoryType];
 }
 
 @end

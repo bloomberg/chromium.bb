@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/payments/cells/autofill_profile_item.h"
 
+#import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/payments/cells/accessibility_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
@@ -46,7 +47,7 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
 
 - (void)configureCell:(AutofillProfileCell*)cell {
   [super configureCell:cell];
-  cell.accessoryType = self.accessoryType;
+  [cell cr_setAccessoryType:self.accessoryType];
   cell.nameLabel.text = self.name;
   cell.addressLabel.text = self.address;
   cell.phoneNumberLabel.text = self.phoneNumber;

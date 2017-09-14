@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
+#import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -55,6 +56,12 @@
       [self systemLayoutSizeFittingSize:UILayoutFittingCompressedSize];
 
   return computedSize.height;
+}
+
+- (void)cr_setAccessoryType:(MDCCollectionViewCellAccessoryType)accessoryType {
+  self.accessoryType = accessoryType;
+  if (accessoryType == MDCCollectionViewCellAccessoryDisclosureIndicator)
+    self.accessoryView.tintColor = [[MDCPalette greyPalette] tint400];
 }
 
 @end

@@ -60,9 +60,9 @@ const CGFloat kHorizontalErrorIconFixedSize = 25;
   if (self.isEnabled) {
     cell.textLabel.textColor = [[MDCPalette greyPalette] tint900];
     [cell setUserInteractionEnabled:YES];
-    [accessoryImage setTintColor:[[MDCPalette greyPalette] tint900]];
+    [accessoryImage setTintColor:[[MDCPalette greyPalette] tint400]];
   } else {
-    [accessoryImage setTintColor:[[[MDCPalette greyPalette] tint500]
+    [accessoryImage setTintColor:[[[MDCPalette greyPalette] tint200]
                                      colorWithAlphaComponent:0.5]];
     cell.textLabel.textColor = [[MDCPalette greyPalette] tint500];
     [cell setUserInteractionEnabled:NO];
@@ -159,7 +159,7 @@ const CGFloat kHorizontalErrorIconFixedSize = 25;
       base::mac::ObjCCastStrict<UIImageView>(self.accessoryView);
   accessoryImage.image = [accessoryImage.image
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-  [accessoryImage setTintColor:[[MDCPalette greyPalette] tint900]];
+  [accessoryImage setTintColor:[[MDCPalette greyPalette] tint400]];
 }
 
 @end

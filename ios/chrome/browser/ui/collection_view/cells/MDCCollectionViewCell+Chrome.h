@@ -41,6 +41,10 @@
 + (CGFloat)cr_preferredHeightForWidth:(CGFloat)targetWidth
                               forItem:(CollectionViewItem*)item;
 
+// Sets the accessory type and sets its view tint color to match Chrome's
+// settings colors.
+- (void)cr_setAccessoryType:(MDCCollectionViewCellAccessoryType)accessoryType;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_COLLECTION_VIEW_CELLS_MDCCOLLECTIONVIEWCELL_CHROME_H_

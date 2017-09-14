@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/authentication/account_control_item.h"
 
+#import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
@@ -47,7 +48,7 @@ const CGFloat kVerticalPaddingBetweenLabelAndDetailLabel = 8;
 - (void)configureCell:(AccountControlCell*)cell {
   [super configureCell:cell];
   cell.imageView.image = self.image;
-  cell.accessoryType = self.accessoryType;
+  [cell cr_setAccessoryType:self.accessoryType];
 
   cell.textLabel.attributedText =
       [self attributedStringForText:self.text
