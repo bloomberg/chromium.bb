@@ -43,11 +43,6 @@ class CC_BLINK_EXPORT WebLayerImpl : public blink::WebLayer {
 
   cc::Layer* layer() const;
 
-  // If set to true, content opaqueness cannot be changed using setOpaque.
-  // However, it can still be modified using SetContentsOpaque on the
-  // cc::Layer.
-  void SetContentsOpaqueIsFixed(bool fixed);
-
   // WebLayer implementation.
   int Id() const override;
   void InvalidateRect(const blink::WebRect&) override;
@@ -65,6 +60,8 @@ class CC_BLINK_EXPORT WebLayerImpl : public blink::WebLayer {
   void SetMaskLayer(blink::WebLayer* mask) override;
   void SetOpacity(float opacity) override;
   float Opacity() const override;
+  void SetContentsOpaqueIsFixed(bool fixed) override;
+
   void SetBlendMode(blink::WebBlendMode blend_mode) override;
   blink::WebBlendMode BlendMode() const override;
   void SetIsRootForIsolatedGroup(bool root) override;

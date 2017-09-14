@@ -376,9 +376,7 @@ void WebMediaPlayerImpl::Load(LoadType load_type,
 void WebMediaPlayerImpl::OnWebLayerReplaced() {
   DCHECK(bridge_);
   bridge_->GetWebLayer()->CcLayer()->SetContentsOpaque(opaque_);
-  // TODO(lethalantidote): Figure out how to persist opaque setting
-  // without calling WebLayerImpl's SetContentsOpaueIsFixed;
-  // https://crbug/739859.
+  bridge_->GetWebLayer()->SetContentsOpaqueIsFixed(true);
   // TODO(lethalantidote): Figure out how to pass along rotation information.
   // https://crbug/750313.
   client_->SetWebLayer(bridge_->GetWebLayer());
