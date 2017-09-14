@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "ui/accessibility/platform/ax_platform_node_win.h"
+
+#include <vector>
+
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/strings/string_number_conversions.h"
@@ -1068,58 +1071,37 @@ STDMETHODIMP AXPlatformNodeWin::put_accValue(VARIANT var_id,
 STDMETHODIMP AXPlatformNodeWin::get_accSelection(VARIANT* selected) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_SELECTION);
   COM_OBJECT_VALIDATE_1_ARG(selected);
-
-  if (GetData().role != AX_ROLE_LIST_BOX)
-    return E_NOTIMPL;
-
-  unsigned long selected_count = 0;
-  for (auto i = 0; i < delegate_->GetChildCount(); ++i) {
-    AXPlatformNodeWin* node = static_cast<AXPlatformNodeWin*>(
+  std::vector<base::win::ScopedComPtr<IDispatch>> selected_nodes;
+  for (int i = 0; i < delegate_->GetChildCount(); ++i) {
+    auto* node = static_cast<AXPlatformNodeWin*>(
         FromNativeViewAccessible(delegate_->ChildAtIndex(i)));
-
     if (node && node->GetData().HasState(AX_STATE_SELECTED))
-      ++selected_count;
+      selected_nodes.emplace_back(node);
   }
 
-  if (selected_count == 0) {
+  if (selected_nodes.empty()) {
     selected->vt = VT_EMPTY;
     return S_OK;
   }
 
-  if (selected_count == 1) {
-    for (auto i = 0; i < delegate_->GetChildCount(); ++i) {
-      AXPlatformNodeWin* node = static_cast<AXPlatformNodeWin*>(
-          FromNativeViewAccessible(delegate_->ChildAtIndex(i)));
-
-      if (node && node->GetData().HasState(AX_STATE_SELECTED)) {
-        selected->vt = VT_DISPATCH;
-        selected->pdispVal = node;
-        node->AddRef();
-        return S_OK;
+  if (selected_nodes.size() == 1) {
+    selected->vt = VT_DISPATCH;
+    selected->pdispVal = selected_nodes[0].Detach();
+    return S_OK;
       }
-    }
-  }
 
   // Multiple items are selected.
-  base::win::EnumVariant* enum_variant =
-      new base::win::EnumVariant(selected_count);
-  enum_variant->AddRef();
-  unsigned long index = 0;
-  for (auto i = 0; i < delegate_->GetChildCount(); ++i) {
-    AXPlatformNodeWin* node = static_cast<AXPlatformNodeWin*>(
-        FromNativeViewAccessible(delegate_->ChildAtIndex(i)));
-
-    if (node && node->GetData().HasState(AX_STATE_SELECTED)) {
-      enum_variant->ItemAt(index)->vt = VT_DISPATCH;
-      enum_variant->ItemAt(index)->pdispVal = node;
-      node->AddRef();
-      ++index;
-    }
+      LONG selected_count = static_cast<LONG>(selected_nodes.size());
+      auto* enum_variant = new base::win::EnumVariant(selected_count);
+      enum_variant->AddRef();
+      for (LONG i = 0; i < selected_count; ++i) {
+        enum_variant->ItemAt(i)->vt = VT_DISPATCH;
+        enum_variant->ItemAt(i)->pdispVal = selected_nodes[i].Detach();
   }
   selected->vt = VT_UNKNOWN;
-  selected->punkVal = static_cast<IUnknown*>(
-      static_cast<base::win::IUnknownImpl*>(enum_variant));
-  return S_OK;
+  HRESULT hr = enum_variant->QueryInterface(IID_PPV_ARGS(&V_UNKNOWN(selected)));
+  enum_variant->Release();
+  return hr;
 }
 
 STDMETHODIMP AXPlatformNodeWin::accSelect(
