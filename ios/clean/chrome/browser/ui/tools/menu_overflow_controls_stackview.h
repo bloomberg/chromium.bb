@@ -8,10 +8,20 @@
 #import <UIKit/UIKit.h>
 
 @class ToolbarButton;
+@class ToolbarButtonFactory;
 
 // StackView subclass that contains the Overflow Toolbar Buttons that will be
 // inserted in the first row of ToolMenu in compact widths.
 @interface MenuOverflowControlsStackView : UIStackView
+
+// Init with the |buttonFactoy|, creating buttons with the correct style.
+- (instancetype)initWithFactory:(ToolbarButtonFactory*)buttonFactory
+    NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)init NS_UNAVAILABLE;
+- (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
+- (instancetype)initWithCoder:(NSCoder*)coder NS_UNAVAILABLE;
+
 // Share ToolbarButton.
 @property(nonatomic, strong) ToolbarButton* shareButton;
 // Reload ToolbarButton.

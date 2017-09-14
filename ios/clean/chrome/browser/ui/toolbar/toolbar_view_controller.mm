@@ -12,8 +12,10 @@
 #import "ios/clean/chrome/browser/ui/commands/tab_grid_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_strip_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tools_menu_commands.h"
-#import "ios/clean/chrome/browser/ui/toolbar/toolbar_button+factory.h"
+#import "ios/clean/chrome/browser/ui/toolbar/toolbar_button.h"
+#import "ios/clean/chrome/browser/ui/toolbar/toolbar_button_factory.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_component_options.h"
+#import "ios/clean/chrome/browser/ui/toolbar/toolbar_configuration.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_constants.h"
 #import "ios/third_party/material_components_ios/src/components/ProgressView/src/MaterialProgressView.h"
 
@@ -22,6 +24,7 @@
 #endif
 
 @interface ToolbarViewController ()
+@property(nonatomic, strong) ToolbarButtonFactory* buttonFactory;
 @property(nonatomic, strong) UIView* locationBarContainer;
 @property(nonatomic, strong) UIStackView* stackView;
 @property(nonatomic, strong) ToolbarButton* backButton;
@@ -36,6 +39,7 @@
 @end
 
 @implementation ToolbarViewController
+@synthesize buttonFactory = _buttonFactory;
 @synthesize dispatcher = _dispatcher;
 @synthesize locationBarViewController = _locationBarViewController;
 @synthesize stackView = _stackView;
@@ -51,9 +55,16 @@
 @synthesize progressBar = _progressBar;
 @synthesize usesTabStrip = _usesTabStrip;
 
-- (instancetype)init {
-  self = [super init];
+- (instancetype)initWithDispatcher:(id<NavigationCommands,
+                                       TabGridCommands,
+                                       TabHistoryPopupCommands,
+                                       TabStripCommands,
+                                       ToolsMenuCommands>)dispatcher
+                     buttonFactory:(ToolbarButtonFactory*)buttonFactory {
+  _dispatcher = dispatcher;
+  self = [super initWithNibName:nil bundle:nil];
   if (self) {
+    _buttonFactory = buttonFactory;
     [self setUpToolbarButtons];
     [self setUpLocationBarContainer];
     [self setUpProgressBar];
@@ -61,19 +72,11 @@
   return self;
 }
 
-- (instancetype)initWithDispatcher:(id<NavigationCommands,
-                                       TabGridCommands,
-                                       TabHistoryPopupCommands,
-                                       TabStripCommands,
-                                       ToolsMenuCommands>)dispatcher {
-  _dispatcher = dispatcher;
-  return [self init];
-}
-
 #pragma mark - View lifecyle
 
 - (void)viewDidLoad {
-  self.view.backgroundColor = UIColorFromRGB(kToolbarBackgroundColor);
+  self.view.backgroundColor =
+      [self.buttonFactory.toolbarConfiguration backgroundColor];
   [self addChildViewController:self.locationBarViewController
                      toSubview:self.locationBarContainer];
   [self setUpToolbarStackView];
@@ -141,7 +144,7 @@
   NSMutableArray* buttonConstraints = [[NSMutableArray alloc] init];
 
   // Back button.
-  self.backButton = [ToolbarButton backToolbarButton];
+  self.backButton = [self.buttonFactory backToolbarButton];
   self.backButton.visibilityMask = ToolbarComponentVisibilityCompactWidth |
                                    ToolbarComponentVisibilityRegularWidth;
   [buttonConstraints
@@ -157,7 +160,7 @@
   [self.backButton addGestureRecognizer:backHistoryLongPress];
 
   // Forward button.
-  self.forwardButton = [ToolbarButton forwardToolbarButton];
+  self.forwardButton = [self.buttonFactory forwardToolbarButton];
   self.forwardButton.visibilityMask =
       ToolbarComponentVisibilityCompactWidthOnlyWhenEnabled |
       ToolbarComponentVisibilityRegularWidth;
@@ -174,7 +177,8 @@
   [self.forwardButton addGestureRecognizer:forwardHistoryLongPress];
 
   // Tab switcher Strip button.
-  self.tabSwitchStripButton = [ToolbarButton tabSwitcherStripToolbarButton];
+  self.tabSwitchStripButton =
+      [self.buttonFactory tabSwitcherStripToolbarButton];
   self.tabSwitchStripButton.visibilityMask =
       ToolbarComponentVisibilityCompactWidth |
       ToolbarComponentVisibilityRegularWidth;
@@ -184,15 +188,9 @@
   [self.tabSwitchStripButton addTarget:self
                                 action:@selector(tabSwitcherButtonTapped:)
                       forControlEvents:UIControlEventTouchUpInside];
-  [self.tabSwitchStripButton
-      setTitleColor:UIColorFromRGB(kToolbarButtonTitleNormalColor)
-           forState:UIControlStateNormal];
-  [self.tabSwitchStripButton
-      setTitleColor:UIColorFromRGB(kToolbarButtonTitleHighlightedColor)
-           forState:UIControlStateHighlighted];
 
   // Tab switcher Grid button.
-  self.tabSwitchGridButton = [ToolbarButton tabSwitcherGridToolbarButton];
+  self.tabSwitchGridButton = [self.buttonFactory tabSwitcherGridToolbarButton];
   self.tabSwitchGridButton.visibilityMask =
       ToolbarComponentVisibilityCompactWidth |
       ToolbarComponentVisibilityRegularWidth;
@@ -205,7 +203,7 @@
   self.tabSwitchGridButton.hiddenInCurrentState = YES;
 
   // Tools menu button.
-  self.toolsMenuButton = [ToolbarButton toolsMenuToolbarButton];
+  self.toolsMenuButton = [self.buttonFactory toolsMenuToolbarButton];
   self.toolsMenuButton.visibilityMask = ToolbarComponentVisibilityCompactWidth |
                                         ToolbarComponentVisibilityRegularWidth;
   [buttonConstraints
@@ -216,7 +214,7 @@
                  forControlEvents:UIControlEventTouchUpInside];
 
   // Share button.
-  self.shareButton = [ToolbarButton shareToolbarButton];
+  self.shareButton = [self.buttonFactory shareToolbarButton];
   self.shareButton.visibilityMask = ToolbarComponentVisibilityRegularWidth;
   [buttonConstraints
       addObject:[self.shareButton.widthAnchor
@@ -228,7 +226,7 @@
              forControlEvents:UIControlEventTouchUpInside];
 
   // Reload button.
-  self.reloadButton = [ToolbarButton reloadToolbarButton];
+  self.reloadButton = [self.buttonFactory reloadToolbarButton];
   self.reloadButton.visibilityMask = ToolbarComponentVisibilityRegularWidth;
   [buttonConstraints
       addObject:[self.reloadButton.widthAnchor
@@ -238,7 +236,7 @@
               forControlEvents:UIControlEventTouchUpInside];
 
   // Stop button.
-  self.stopButton = [ToolbarButton stopToolbarButton];
+  self.stopButton = [self.buttonFactory stopToolbarButton];
   self.stopButton.visibilityMask = ToolbarComponentVisibilityRegularWidth;
   [buttonConstraints
       addObject:[self.stopButton.widthAnchor
@@ -256,10 +254,11 @@
 - (void)setUpLocationBarContainer {
   UIView* locationBarContainer = [[UIView alloc] initWithFrame:CGRectZero];
   locationBarContainer.translatesAutoresizingMaskIntoConstraints = NO;
-  locationBarContainer.backgroundColor = [UIColor whiteColor];
+  locationBarContainer.backgroundColor =
+      [self.buttonFactory.toolbarConfiguration omniboxBackgroundColor];
   locationBarContainer.layer.borderWidth = kLocationBarBorderWidth;
   locationBarContainer.layer.borderColor =
-      UIColorFromRGB(kLocationBarBorderColor).CGColor;
+      [self.buttonFactory.toolbarConfiguration omniboxBorderColor].CGColor;
   locationBarContainer.layer.shadowRadius = kLocationBarShadowRadius;
   locationBarContainer.layer.shadowOpacity = kLocationBarShadowOpacity;
   locationBarContainer.layer.shadowOffset = CGSizeMake(0.0f, 0.5f);

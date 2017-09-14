@@ -9,6 +9,7 @@ source_set("toolbar") {
   ]
   deps = [
     "//ios/clean/chrome/browser/ui/commands",
+    "//ios/clean/chrome/browser/ui/toolbar:toolbar_components_ui",
     "//ios/clean/chrome/browser/ui/toolbar:toolbar_ui",
     "//ios/showcase/common",
   ]

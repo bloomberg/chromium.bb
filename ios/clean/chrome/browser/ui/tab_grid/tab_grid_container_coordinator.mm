@@ -124,6 +124,7 @@
   menuConfiguration.inTabSwitcher = YES;
   menuConfiguration.noOpenedTabs = self.browser->web_state_list().empty();
   menuConfiguration.inNewTabPage = NO;
+  menuConfiguration.inIncognito = self.incognito;
   toolsCoordinator.toolsMenuConfiguration = menuConfiguration;
   self.toolsMenuCoordinator = toolsCoordinator;
   [toolsCoordinator start];

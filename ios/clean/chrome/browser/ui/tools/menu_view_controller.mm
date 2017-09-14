@@ -14,8 +14,8 @@
 #import "ios/clean/chrome/browser/ui/commands/find_in_page_visibility_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/navigation_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tools_menu_commands.h"
-#import "ios/clean/chrome/browser/ui/toolbar/toolbar_button+factory.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_button.h"
+#import "ios/clean/chrome/browser/ui/toolbar/toolbar_button_factory.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_constants.h"
 #import "ios/clean/chrome/browser/ui/tools/menu_overflow_controls_stackview.h"
 #import "ios/clean/chrome/browser/ui/tools/tools_menu_item.h"
@@ -181,7 +181,8 @@ const CGFloat kCloseButtonHeight = 44.0;
 }
 
 - (void)setUpOverFlowControlsStackView {
-  self.toolbarOverflowStackView = [[MenuOverflowControlsStackView alloc] init];
+  self.toolbarOverflowStackView = [[MenuOverflowControlsStackView alloc]
+      initWithFactory:[[ToolbarButtonFactory alloc] initWithStyle:NORMAL]];
   for (UIView* view in self.toolbarOverflowStackView.arrangedSubviews) {
     if ([view isKindOfClass:[ToolbarButton class]]) {
       ToolbarButton* button = base::mac::ObjCCastStrict<ToolbarButton>(view);

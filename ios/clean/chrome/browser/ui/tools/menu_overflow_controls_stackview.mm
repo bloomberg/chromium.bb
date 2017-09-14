@@ -4,7 +4,8 @@
 
 #import "ios/clean/chrome/browser/ui/tools/menu_overflow_controls_stackview.h"
 
-#import "ios/clean/chrome/browser/ui/toolbar/toolbar_button+factory.h"
+#import "ios/clean/chrome/browser/ui/toolbar/toolbar_button.h"
+#import "ios/clean/chrome/browser/ui/toolbar/toolbar_button_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -14,14 +15,21 @@ namespace {
 const CGFloat kStackSpacing = 15.0;
 }
 
+@interface MenuOverflowControlsStackView ()
+// Factory creating buttons with the correct style.
+@property(nonatomic, strong) ToolbarButtonFactory* factory;
+@end
+
 @implementation MenuOverflowControlsStackView
+@synthesize factory = _factory;
 @synthesize shareButton = _shareButton;
 @synthesize reloadButton = _reloadButton;
 @synthesize stopButton = _stopButton;
 @synthesize starButton = _starButton;
 
-- (instancetype)init {
-  if ((self = [super init])) {
+- (instancetype)initWithFactory:(ToolbarButtonFactory*)buttonFactory {
+  if ((self = [super initWithFrame:CGRectZero])) {
+    _factory = buttonFactory;
     [self setUpToolbarButtons];
     [self addArrangedSubview:self.shareButton];
     [self addArrangedSubview:self.starButton];
@@ -39,16 +47,16 @@ const CGFloat kStackSpacing = 15.0;
 
 - (void)setUpToolbarButtons {
   // Share button.
-  self.shareButton = [ToolbarButton shareToolbarButton];
+  self.shareButton = [self.factory shareToolbarButton];
 
   // Reload button.
-  self.reloadButton = [ToolbarButton reloadToolbarButton];
+  self.reloadButton = [self.factory reloadToolbarButton];
 
   // Stop button.
-  self.stopButton = [ToolbarButton stopToolbarButton];
+  self.stopButton = [self.factory stopToolbarButton];
 
   // Star button.
-  self.starButton = [ToolbarButton starToolbarButton];
+  self.starButton = [self.factory starToolbarButton];
 }
 
 @end

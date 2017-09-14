@@ -8,6 +8,7 @@
 #import "ios/clean/chrome/browser/ui/commands/tab_grid_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_strip_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tools_menu_commands.h"
+#import "ios/clean/chrome/browser/ui/toolbar/toolbar_button_factory.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_view_controller.h"
 #import "ios/showcase/common/protocol_alerter.h"
 
@@ -47,8 +48,9 @@ CGFloat kToolbarHeight = 50.0f;
   id dispatcher =
       static_cast<id<NavigationCommands, TabGridCommands, TabStripCommands,
                      ToolsMenuCommands>>(self.alerter);
-  ToolbarViewController* toolbarViewController =
-      [[ToolbarViewController alloc] initWithDispatcher:dispatcher];
+  ToolbarViewController* toolbarViewController = [[ToolbarViewController alloc]
+      initWithDispatcher:dispatcher
+           buttonFactory:[[ToolbarButtonFactory alloc] initWithStyle:NORMAL]];
   toolbarViewController.usesTabStrip = YES;
   [containerViewController addChildViewController:toolbarViewController];
   toolbarViewController.view.frame = containerView.frame;
