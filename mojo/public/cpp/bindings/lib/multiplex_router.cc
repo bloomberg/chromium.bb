@@ -670,14 +670,14 @@ void MultiplexRouter::OnPipeConnectionError() {
   encountered_error_ = true;
 
   // Calling UpdateEndpointStateMayRemove() may remove the corresponding value
-  // from |endpoints_| and invalidate any interator of |endpoints_|. Therefore,
+  // from |endpoints_| and invalidate any iterator of |endpoints_|. Therefore,
   // copy the endpoint pointers to a vector and iterate over it instead.
   std::vector<TrackedScopedRefPtr<InterfaceEndpoint>> endpoint_vector;
   endpoint_vector.reserve(endpoints_.size());
-  for (auto& pair : endpoints_)
+  for (const auto& pair : endpoints_)
     endpoint_vector.push_back(pair.second);
 
-  for (auto& endpoint : endpoint_vector) {
+  for (const auto& endpoint : endpoint_vector) {
     if (endpoint->client())
       tasks_.push_back(Task::CreateNotifyErrorTask(endpoint.get()));
 
