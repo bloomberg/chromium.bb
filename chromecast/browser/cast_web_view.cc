@@ -12,6 +12,7 @@
 #include "chromecast/base/cast_features.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/browser/cast_web_contents_manager.h"
+#include "chromecast/public/cast_media_shlib.h"
 #include "content/public/browser/media_capture_devices.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -109,6 +110,10 @@ void CastWebView::CloseContents(content::WebContents* source) {
 }
 
 void CastWebView::Show(CastWindowManager* window_manager) {
+  if (media::CastMediaShlib::ClearVideoPlaneImage) {
+    media::CastMediaShlib::ClearVideoPlaneImage();
+  }
+
   DCHECK(window_manager);
   window_->ShowWebContents(web_contents_.get(), window_manager);
   web_contents_->Focus();
