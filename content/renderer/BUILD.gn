@@ -654,6 +654,8 @@ target(link_target_type, "renderer") {
       "media/track_audio_renderer.h",
       "media/user_media_client_impl.cc",
       "media/user_media_client_impl.h",
+      "media/user_media_processor.cc",
+      "media/user_media_processor.h",
       "media/video_track_adapter.cc",
       "media/video_track_adapter.h",
       "media/webaudio_media_stream_source.cc",
