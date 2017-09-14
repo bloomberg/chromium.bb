@@ -160,6 +160,7 @@ class SystemTrayController;
 class SystemTrayNotifier;
 class ToplevelWindowEventHandler;
 class ToastManager;
+class TouchDevicesController;
 class TrayAction;
 class TrayBluetoothHelper;
 class VirtualKeyboardController;
@@ -305,46 +306,125 @@ class ASH_EXPORT Shell : public SessionObserver,
   AccessibilityDelegate* accessibility_delegate() {
     return accessibility_delegate_.get();
   }
+  ::wm::ActivationClient* activation_client();
   app_list::AppList* app_list() { return app_list_.get(); }
   AshDisplayController* ash_display_controller() {
     return ash_display_controller_.get();
+  }
+  chromeos::AudioA11yController* audio_a11y_controller() {
+    return audio_a11y_controller_.get();
+  }
+  AutoclickController* autoclick_controller() {
+    return autoclick_controller_.get();
+  }
+  BluetoothPowerController* bluetooth_power_controller() {
+    return bluetooth_power_controller_.get();
   }
   BrightnessControlDelegate* brightness_control_delegate() {
     return brightness_control_delegate_.get();
   }
   CastConfigController* cast_config() { return cast_config_.get(); }
+  ::wm::CursorManager* cursor_manager() { return cursor_manager_.get(); }
   display::DisplayManager* display_manager() { return display_manager_.get(); }
   DisplayConfigurationController* display_configuration_controller() {
     return display_configuration_controller_.get();
   }
-  EventClientImpl* event_client() { return event_client_.get(); }
+
+  // TODO(oshima): Move these objects to WindowTreeHostManager.
+  display::DisplayConfigurator* display_configurator() {
+    return display_configurator_.get();
+  }
+  DisplayErrorObserver* display_error_observer() {
+    return display_error_observer_.get();
+  }
+
   ::wm::CompoundEventFilter* env_filter() { return env_filter_.get(); }
+  EventClientImpl* event_client() { return event_client_.get(); }
+  EventTransformationHandler* event_transformation_handler() {
+    return event_transformation_handler_.get();
+  }
   FocusCycler* focus_cycler() { return focus_cycler_.get(); }
+  GPUSupport* gpu_support() { return gpu_support_.get(); }
+  HighlighterController* highlighter_controller() {
+    return highlighter_controller_.get();
+  }
+  HighContrastController* high_contrast_controller() {
+    return high_contrast_controller_.get();
+  }
   ImeController* ime_controller() { return ime_controller_.get(); }
   KeyboardBrightnessControlDelegate* keyboard_brightness_control_delegate() {
     return keyboard_brightness_control_delegate_.get();
   }
   KeyboardUI* keyboard_ui() { return keyboard_ui_.get(); }
+  LaserPointerController* laser_pointer_controller() {
+    return laser_pointer_controller_.get();
+  }
   LocaleNotificationController* locale_notification_controller() {
     return locale_notification_controller_.get();
-  }
-  LogoutConfirmationController* logout_confirmation_controller() {
-    return logout_confirmation_controller_.get();
   }
   LockScreenController* lock_screen_controller() {
     return lock_screen_controller_.get();
   }
+  LockStateController* lock_state_controller() {
+    return lock_state_controller_.get();
+  }
+  LogoutConfirmationController* logout_confirmation_controller() {
+    return logout_confirmation_controller_.get();
+  }
+  MagnificationController* magnification_controller() {
+    return magnification_controller_.get();
+  }
   MediaController* media_controller() { return media_controller_.get(); }
+  UserMetricsRecorder* metrics() { return user_metrics_recorder_.get(); }
+  MouseCursorEventFilter* mouse_cursor_filter() {
+    return mouse_cursor_filter_.get();
+  }
   MruWindowTracker* mru_window_tracker() { return mru_window_tracker_.get(); }
   NewWindowController* new_window_controller() {
     return new_window_controller_.get();
   }
   NightLightController* night_light_controller();
+  OverlayEventFilter* overlay_filter() { return overlay_filter_.get(); }
+  PaletteDelegate* palette_delegate() { return palette_delegate_.get(); }
+  PartialMagnificationController* partial_magnification_controller() {
+    return partial_magnification_controller_.get();
+  }
+  PowerButtonController* power_button_controller() {
+    return power_button_controller_.get();
+  }
+  PowerEventObserver* power_event_observer() {
+    return power_event_observer_.get();
+  }
+  ResizeShadowController* resize_shadow_controller() {
+    return resize_shadow_controller_.get();
+  }
+  ResolutionNotificationController* resolution_notification_controller() {
+    return resolution_notification_controller_.get();
+  }
+  ScreenshotController* screenshot_controller() {
+    return screenshot_controller_.get();
+  }
+  ScreenLayoutObserver* screen_layout_observer() {
+    return screen_layout_observer_.get();
+  }
+  ScreenOrientationController* screen_orientation_controller() {
+    return screen_orientation_controller_.get();
+  }
+  ScreenPinningController* screen_pinning_controller() {
+    return screen_pinning_controller_.get();
+  }
   SessionController* session_controller() { return session_controller_.get(); }
   ShelfController* shelf_controller() { return shelf_controller_.get(); }
   ShelfModel* shelf_model();
+  ShellDelegate* shell_delegate() { return shell_delegate_.get(); }
   ShutdownController* shutdown_controller() {
     return shutdown_controller_.get();
+  }
+  SplitViewController* split_view_controller() {
+    return split_view_controller_.get();
+  }
+  StickyKeysController* sticky_keys_controller() {
+    return sticky_keys_controller_.get();
   }
   SystemTrayController* system_tray_controller() {
     return system_tray_controller_.get();
@@ -355,75 +435,39 @@ class ASH_EXPORT Shell : public SessionObserver,
   TabletModeController* tablet_mode_controller() {
     return tablet_mode_controller_.get();
   }
+  ToastManager* toast_manager() { return toast_manager_.get(); }
   views::corewm::TooltipController* tooltip_controller() {
     return tooltip_controller_.get();
   }
-  TrayAction* tray_action() { return tray_action_.get(); }
-  VpnList* vpn_list() { return vpn_list_.get(); }
-  WindowCycleController* window_cycle_controller() {
-    return window_cycle_controller_.get();
-  }
-  WindowSelectorController* window_selector_controller() {
-    return window_selector_controller_.get();
-  }
-  OverlayEventFilter* overlay_filter() { return overlay_filter_.get(); }
-  PowerButtonController* power_button_controller() {
-    return power_button_controller_.get();
-  }
-  LockStateController* lock_state_controller() {
-    return lock_state_controller_.get();
-  }
-  PaletteDelegate* palette_delegate() { return palette_delegate_.get(); }
-  ShellDelegate* shell_delegate() { return shell_delegate_.get(); }
-  VideoDetector* video_detector() { return video_detector_.get(); }
-  WallpaperController* wallpaper_controller() {
-    return wallpaper_controller_.get();
-  }
-  WallpaperDelegate* wallpaper_delegate() { return wallpaper_delegate_.get(); }
-  WindowTreeHostManager* window_tree_host_manager() {
-    return window_tree_host_manager_.get();
-  }
-  PowerEventObserver* power_event_observer() {
-    return power_event_observer_.get();
+  TouchDevicesController* touch_devices_controller() {
+    return touch_devices_controller_.get();
   }
   AshTouchTransformController* touch_transformer_controller() {
     return touch_transformer_controller_.get();
   }
-  LaserPointerController* laser_pointer_controller() {
-    return laser_pointer_controller_.get();
+  TrayAction* tray_action() { return tray_action_.get(); }
+  TrayBluetoothHelper* tray_bluetooth_helper() {
+    return tray_bluetooth_helper_.get();
   }
-  PartialMagnificationController* partial_magnification_controller() {
-    return partial_magnification_controller_.get();
+  VideoDetector* video_detector() { return video_detector_.get(); }
+  VirtualKeyboardController* virtual_keyboard_controller() {
+    return virtual_keyboard_controller_.get();
   }
-  HighlighterController* highlighter_controller() {
-    return highlighter_controller_.get();
+  VpnList* vpn_list() { return vpn_list_.get(); }
+  WallpaperController* wallpaper_controller() {
+    return wallpaper_controller_.get();
   }
-  ScreenshotController* screenshot_controller() {
-    return screenshot_controller_.get();
+  WallpaperDelegate* wallpaper_delegate() { return wallpaper_delegate_.get(); }
+  WindowCycleController* window_cycle_controller() {
+    return window_cycle_controller_.get();
   }
-  MouseCursorEventFilter* mouse_cursor_filter() {
-    return mouse_cursor_filter_.get();
+  WindowPositioner* window_positioner() { return window_positioner_.get(); }
+  WindowSelectorController* window_selector_controller() {
+    return window_selector_controller_.get();
   }
-  EventTransformationHandler* event_transformation_handler() {
-    return event_transformation_handler_.get();
+  WindowTreeHostManager* window_tree_host_manager() {
+    return window_tree_host_manager_.get();
   }
-  ::wm::CursorManager* cursor_manager() { return cursor_manager_.get(); }
-
-  HighContrastController* high_contrast_controller() {
-    return high_contrast_controller_.get();
-  }
-
-  MagnificationController* magnification_controller() {
-    return magnification_controller_.get();
-  }
-
-  AutoclickController* autoclick_controller() {
-    return autoclick_controller_.get();
-  }
-
-  ToastManager* toast_manager() { return toast_manager_.get(); }
-
-  ::wm::ActivationClient* activation_client();
 
   // Force the shelf to query for it's current visibility state.
   // TODO(jamescook): Move to Shelf.
@@ -446,57 +490,8 @@ class ASH_EXPORT Shell : public SessionObserver,
     initially_hide_cursor_ = hide;
   }
 
-  ResizeShadowController* resize_shadow_controller() {
-    return resize_shadow_controller_.get();
-  }
-
-  // Made available for tests.
-  ::wm::ShadowController* shadow_controller() {
-    return shadow_controller_.get();
-  }
-
   // Starts the animation that occurs on first login.
   void DoInitialWorkspaceAnimation();
-
-  // TODO(oshima): Move these objects to WindowTreeHostManager.
-  display::DisplayConfigurator* display_configurator() {
-    return display_configurator_.get();
-  }
-  DisplayErrorObserver* display_error_observer() {
-    return display_error_observer_.get();
-  }
-
-  ScreenLayoutObserver* screen_layout_observer() {
-    return screen_layout_observer_.get();
-  }
-
-  ResolutionNotificationController* resolution_notification_controller() {
-    return resolution_notification_controller_.get();
-  }
-
-  ScreenOrientationController* screen_orientation_controller() {
-    return screen_orientation_controller_.get();
-  }
-
-  TrayBluetoothHelper* tray_bluetooth_helper() {
-    return tray_bluetooth_helper_.get();
-  }
-
-  BluetoothPowerController* bluetooth_power_controller() {
-    return bluetooth_power_controller_.get();
-  }
-
-  VirtualKeyboardController* virtual_keyboard_controller() {
-    return virtual_keyboard_controller_.get();
-  }
-
-  chromeos::AudioA11yController* audio_a11y_controller() {
-    return audio_a11y_controller_.get();
-  }
-
-  WindowPositioner* window_positioner() { return window_positioner_.get(); }
-
-  UserMetricsRecorder* metrics() { return user_metrics_recorder_.get(); }
 
   void SetTouchHudProjectionEnabled(bool enabled);
 
@@ -519,19 +514,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   // compositing is enabled, and vice versa.
   void SetCursorCompositingEnabled(bool enabled);
 
-  StickyKeysController* sticky_keys_controller() {
-    return sticky_keys_controller_.get();
-  }
-
-  ScreenPinningController* screen_pinning_controller() {
-    return screen_pinning_controller_.get();
-  }
-
-  GPUSupport* gpu_support() { return gpu_support_.get(); }
-
-  SplitViewController* split_view_controller() {
-    return split_view_controller_.get();
-  }
 
   // Returns true if split view mode is active.
   bool IsSplitViewModeActive() const;
@@ -707,6 +689,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<SystemTrayController> system_tray_controller_;
   std::unique_ptr<SystemTrayNotifier> system_tray_notifier_;
   std::unique_ptr<ToastManager> toast_manager_;
+  std::unique_ptr<TouchDevicesController> touch_devices_controller_;
   std::unique_ptr<TrayAction> tray_action_;
   std::unique_ptr<VpnList> vpn_list_;
   std::unique_ptr<WallpaperController> wallpaper_controller_;

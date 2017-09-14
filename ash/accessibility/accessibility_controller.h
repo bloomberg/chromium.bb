@@ -54,8 +54,8 @@ class ASH_EXPORT AccessibilityController : public SessionObserver {
   // initial settings.
   void ObservePrefs(PrefService* prefs);
 
-  // Before login returns the signin screen profile prefs. After login returns
-  // the active user profile prefs. Returns null early during startup.
+  // Returns |pref_service_for_test_| if not null, otherwise return
+  // SessionController::GetActivePrefService().
   PrefService* GetActivePrefService() const;
 
   void UpdateLargeCursorFromPref();

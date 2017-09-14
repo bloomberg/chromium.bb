@@ -135,6 +135,10 @@ const char kUserBluetoothAdapterEnabled[] =
 const char kSystemBluetoothAdapterEnabled[] =
     "ash.system.bluetooth.adapter_enabled";
 
+// Boolean prefs for the status of the touchscreen and the touchpad.
+const char kTouchpadEnabled[] = "events.touch_pad.enabled";
+const char kTouchscreenEnabled[] = "events.touch_screen.enabled";
+
 // String pref storing the salt for the pin quick unlock mechanism.
 const char kQuickUnlockPinSalt[] = "quick_unlock.pin.salt";
 

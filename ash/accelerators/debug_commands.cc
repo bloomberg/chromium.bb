@@ -6,12 +6,11 @@
 
 #include "ash/accelerators/accelerator_commands.h"
 #include "ash/ash_switches.h"
-#include "ash/public/cpp/touchscreen_enabled_source.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/system/toast/toast_data.h"
 #include "ash/system/toast/toast_manager.h"
+#include "ash/touch/touch_devices_controller.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wallpaper/wallpaper_delegate.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -137,14 +136,14 @@ void HandleToggleWallpaperMode() {
 
 void HandleToggleTouchpad() {
   base::RecordAction(base::UserMetricsAction("Accel_Toggle_Touchpad"));
-  Shell::Get()->shell_delegate()->ToggleTouchpad();
+  Shell::Get()->touch_devices_controller()->ToggleTouchpad();
 }
 
 void HandleToggleTouchscreen() {
   base::RecordAction(base::UserMetricsAction("Accel_Toggle_Touchscreen"));
-  ShellDelegate* delegate = Shell::Get()->shell_delegate();
-  delegate->SetTouchscreenEnabled(
-      !delegate->GetTouchscreenEnabled(TouchscreenEnabledSource::USER_PREF),
+  TouchDevicesController* controller = Shell::Get()->touch_devices_controller();
+  controller->SetTouchscreenEnabled(
+      !controller->GetTouchscreenEnabled(TouchscreenEnabledSource::USER_PREF),
       TouchscreenEnabledSource::USER_PREF);
 }
 

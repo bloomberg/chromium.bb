@@ -147,9 +147,12 @@ class ASH_EXPORT SessionController : public mojom::SessionController {
   PrefService* GetUserPrefServiceForUser(const AccountId& account_id);
 
   // Returns the PrefService for the last active user that had one or null if no
-  // PrefService connection has been successfully established. Returns the
-  // signin screen profile prefs when at the login screen.
-  PrefService* GetLastActiveUserPrefService();
+  // PrefService connection has been successfully established.
+  PrefService* GetLastActiveUserPrefService() const;
+
+  // Before login returns the signin screen profile prefs. After login returns
+  // the active user profile prefs. Returns null early during startup.
+  PrefService* GetActivePrefService() const;
 
   void AddObserver(SessionObserver* observer);
   void RemoveObserver(SessionObserver* observer);

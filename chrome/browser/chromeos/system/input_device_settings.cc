@@ -4,25 +4,15 @@
 
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 
-#include "ash/public/cpp/touchscreen_enabled_source.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/pref_names.h"
 #include "chromeos/system/statistics_provider.h"
-#include "components/prefs/pref_registry_simple.h"
-#include "components/prefs/pref_service.h"
 
 namespace chromeos {
 namespace system {
 
 namespace {
-
-PrefService* GetActiveProfilePrefs() {
-  Profile* profile = ProfileManager::GetActiveUserProfile();
-  return profile ? profile->GetPrefs() : nullptr;
-}
 
 // Sets |to_set| to |other| if |other| has a value and the value is not equal to
 // |to_set|. This differs from *to_set = other; in so far as nothing is changed
@@ -38,8 +28,7 @@ bool UpdateIfHasValue(const base::Optional<T>& other,
 
 }  // namespace
 
-TouchpadSettings::TouchpadSettings() {
-}
+TouchpadSettings::TouchpadSettings() = default;
 
 TouchpadSettings::TouchpadSettings(const TouchpadSettings& other) = default;
 
@@ -159,8 +148,7 @@ void TouchpadSettings::Apply(const TouchpadSettings& touchpad_settings,
   }
 }
 
-MouseSettings::MouseSettings() {
-}
+MouseSettings::MouseSettings() = default;
 
 MouseSettings::MouseSettings(const MouseSettings& other) = default;
 
@@ -266,74 +254,6 @@ bool InputDeviceSettings::ForceKeyboardDrivenUINavigation() {
   }
 
   return false;
-}
-
-// static
-void InputDeviceSettings::RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(::prefs::kTouchscreenEnabled, true);
-  registry->RegisterBooleanPref(::prefs::kTouchpadEnabled, true);
-}
-
-void InputDeviceSettings::UpdateTouchDevicesStatusFromPrefs() {
-  UpdateTouchscreenEnabled();
-
-  PrefService* pref_service = GetActiveProfilePrefs();
-  if (!pref_service)
-    return;
-
-  const bool touchpad_status =
-      pref_service->HasPrefPath(::prefs::kTouchpadEnabled)
-          ? pref_service->GetBoolean(::prefs::kTouchpadEnabled)
-          : true;
-  SetInternalTouchpadEnabled(touchpad_status);
-}
-
-bool InputDeviceSettings::GetTouchscreenEnabled(
-    ash::TouchscreenEnabledSource source) const {
-  if (source == ash::TouchscreenEnabledSource::GLOBAL)
-    return global_touchscreen_enabled_;
-
-  PrefService* pref_service = GetActiveProfilePrefs();
-  if (!pref_service)
-    return true;
-
-  return pref_service->HasPrefPath(::prefs::kTouchscreenEnabled)
-             ? pref_service->GetBoolean(::prefs::kTouchscreenEnabled)
-             : true;
-}
-
-void InputDeviceSettings::SetTouchscreenEnabled(
-    bool enabled,
-    ash::TouchscreenEnabledSource source) {
-  if (source == ash::TouchscreenEnabledSource::GLOBAL) {
-    global_touchscreen_enabled_ = enabled;
-  } else {
-    PrefService* pref_service = GetActiveProfilePrefs();
-    if (pref_service)
-      pref_service->SetBoolean(::prefs::kTouchscreenEnabled, enabled);
-  }
-
-  UpdateTouchscreenEnabled();
-}
-
-void InputDeviceSettings::ToggleTouchpad() {
-  PrefService* pref_service = GetActiveProfilePrefs();
-  if (!pref_service)
-    return;
-
-  const bool touchpad_status =
-      pref_service->HasPrefPath(::prefs::kTouchpadEnabled)
-          ? pref_service->GetBoolean(::prefs::kTouchpadEnabled)
-          : true;
-
-  pref_service->SetBoolean(::prefs::kTouchpadEnabled, !touchpad_status);
-  SetInternalTouchpadEnabled(!touchpad_status);
-}
-
-void InputDeviceSettings::UpdateTouchscreenEnabled() {
-  SetTouchscreensEnabled(
-      GetTouchscreenEnabled(ash::TouchscreenEnabledSource::GLOBAL) &&
-      GetTouchscreenEnabled(ash::TouchscreenEnabledSource::USER_PREF));
 }
 
 }  // namespace system

@@ -9,8 +9,6 @@
 #include "base/optional.h"
 #include "chromeos/chromeos_export.h"
 
-class PrefRegistrySimple;
-
 namespace ash {
 enum class TouchscreenEnabledSource;
 }  // namespace ash
@@ -134,27 +132,6 @@ class CHROMEOS_EXPORT InputDeviceSettings {
   // where other input devices like mouse are absent.
   static bool ForceKeyboardDrivenUINavigation();
 
-  // Registers profile pref names for touchpad and touchscreen statuses.
-  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
-
-  // Updates the enabled/disabled status of the touchscreen/touchpad from the
-  // preferences.
-  void UpdateTouchDevicesStatusFromPrefs();
-
-  // Returns the current touchscreen enabled status as specified by |source|.
-  // Note that the actual state of the touchscreen device is automatically
-  // determined based on the requests of multiple sources.
-  bool GetTouchscreenEnabled(ash::TouchscreenEnabledSource source) const;
-
-  // Sets |source|'s requested touchscreen enabled status to |enabled|. Note
-  // that the actual state of the touchscreen device is automatically determined
-  // based on the requests of multiple sources.
-  void SetTouchscreenEnabled(bool enabled,
-                             ash::TouchscreenEnabledSource source);
-
-  // Toggles the status of touchpad between enabled and disabled.
-  void ToggleTouchpad();
-
   // Calls |callback|, possibly asynchronously, after determining if a touchpad
   // is connected.
   virtual void TouchpadExists(DeviceExistsCallback callback) = 0;
@@ -211,14 +188,6 @@ class CHROMEOS_EXPORT InputDeviceSettings {
  private:
   virtual void SetInternalTouchpadEnabled(bool enabled) {}
   virtual void SetTouchscreensEnabled(bool enabled) {}
-
-  // Updates the actual enabled/disabled status of the touchscreen. Touchscreen
-  // is enabled if all the touchscreen enabled sources are enabled.
-  void UpdateTouchscreenEnabled();
-
-  // The touchscreen state which is associated with the global touchscreen
-  // enabled source.
-  bool global_touchscreen_enabled_ = false;
 };
 
 }  // namespace system

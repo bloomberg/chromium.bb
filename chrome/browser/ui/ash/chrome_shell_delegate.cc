@@ -35,7 +35,6 @@
 #include "chrome/browser/chromeos/display/display_preferences.h"
 #include "chrome/browser/chromeos/policy/display_rotation_default_handler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/ui/accessibility_focus_ring_controller.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
@@ -497,23 +496,6 @@ void ChromeShellDelegate::OpenKeyboardShortcutHelpPage() const {
 gfx::Image ChromeShellDelegate::GetDeprecatedAcceleratorImage() const {
   return ui::ResourceBundle::GetSharedInstance().GetImageNamed(
       IDR_BLUETOOTH_KEYBOARD);
-}
-
-bool ChromeShellDelegate::GetTouchscreenEnabled(
-    ash::TouchscreenEnabledSource source) const {
-  return chromeos::system::InputDeviceSettings::Get()->GetTouchscreenEnabled(
-      source);
-}
-
-void ChromeShellDelegate::SetTouchscreenEnabled(
-    bool enabled,
-    ash::TouchscreenEnabledSource source) {
-  chromeos::system::InputDeviceSettings::Get()->SetTouchscreenEnabled(enabled,
-                                                                      source);
-}
-
-void ChromeShellDelegate::ToggleTouchpad() {
-  chromeos::system::InputDeviceSettings::Get()->ToggleTouchpad();
 }
 
 std::unique_ptr<keyboard::KeyboardUI> ChromeShellDelegate::CreateKeyboardUI() {

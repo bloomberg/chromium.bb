@@ -432,10 +432,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   policy::DMTokenStorage::RegisterPrefs(registry);
   policy::PolicyCertServiceFactory::RegisterPrefs(registry);
   quirks::QuirksManager::RegisterPrefs(registry);
-
-  // Moved to profile prefs, but we still need to register the prefs in local
-  // state until migration is complete (See MigrateObsoleteBrowserPrefs()).
-  chromeos::system::InputDeviceSettings::RegisterProfilePrefs(registry);
 #endif
 
 #if defined(OS_MACOSX)
@@ -607,7 +603,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   chromeos::quick_unlock::RegisterProfilePrefs(registry);
   chromeos::SAMLOfflineSigninLimiter::RegisterProfilePrefs(registry);
   chromeos::ServicesCustomizationDocument::RegisterProfilePrefs(registry);
-  chromeos::system::InputDeviceSettings::RegisterProfilePrefs(registry);
   chromeos::UserImageSyncObserver::RegisterProfilePrefs(registry);
   extensions::EPKPChallengeUserKey::RegisterProfilePrefs(registry);
   flags_ui::PrefServiceFlagsStorage::RegisterProfilePrefs(registry);
@@ -692,12 +687,6 @@ void RegisterLoginProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 // This method should be periodically pruned of year+ old migrations.
 void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state) {
-#if defined(OS_CHROMEOS)
-  // Added 11/2016
-  local_state->ClearPref(prefs::kTouchscreenEnabled);
-  local_state->ClearPref(prefs::kTouchpadEnabled);
-#endif  // defined(OS_CHROMEOS)
-
 #if defined(OS_ANDROID)
   // Added 8/2017.
   local_state->ClearPref(kStabilityForegroundActivityType);
