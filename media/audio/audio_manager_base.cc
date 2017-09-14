@@ -103,10 +103,6 @@ AudioManagerBase::~AudioManagerBase() {
   CHECK(input_streams_.empty());
 }
 
-base::string16 AudioManagerBase::GetAudioInputDeviceModel() {
-  return base::string16();
-}
-
 void AudioManagerBase::GetAudioInputDeviceDescriptions(
     AudioDeviceDescriptions* device_descriptions) {
   CHECK(GetTaskRunner()->BelongsToCurrentThread());

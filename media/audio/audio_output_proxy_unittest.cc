@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -139,7 +140,6 @@ class MockAudioManager : public AudioManagerBase {
  protected:
   MOCK_METHOD0(HasAudioOutputDevices, bool());
   MOCK_METHOD0(HasAudioInputDevices, bool());
-  MOCK_METHOD0(GetAudioInputDeviceModel, base::string16());
   MOCK_METHOD1(GetAudioInputDeviceNames,
                void(media::AudioDeviceNames* device_name));
   MOCK_METHOD2(GetPreferredOutputStreamParameters, AudioParameters(

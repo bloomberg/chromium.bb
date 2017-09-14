@@ -12,7 +12,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
 #include "media/audio/audio_device_description.h"
@@ -209,10 +208,6 @@ class MEDIA_EXPORT AudioManager {
   // does not guarantee that the existing devices support all formats and
   // sample rates.
   virtual bool HasAudioInputDevices() = 0;
-
-  // Returns a human readable string for the model/make of the active audio
-  // input device for this computer.
-  virtual base::string16 GetAudioInputDeviceModel() = 0;
 
   // Appends a list of available input devices to |device_descriptions|,
   // which must initially be empty. It is not guaranteed that all the

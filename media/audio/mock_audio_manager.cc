@@ -4,6 +4,8 @@
 
 #include "media/audio/mock_audio_manager.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
@@ -27,11 +29,6 @@ bool MockAudioManager::HasAudioOutputDevices() {
 bool MockAudioManager::HasAudioInputDevices() {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   return has_input_devices_;
-}
-
-base::string16 MockAudioManager::GetAudioInputDeviceModel() {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
-  return base::string16();
 }
 
 void MockAudioManager::GetAudioInputDeviceDescriptions(
