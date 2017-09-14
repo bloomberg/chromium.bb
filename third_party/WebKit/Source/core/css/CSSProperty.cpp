@@ -299,31 +299,6 @@ CSSPropertyID CSSProperty::ResolveDirectionAwareProperty(
   }
 }
 
-bool CSSProperty::IsAffectedByAllProperty(CSSPropertyID property_id) {
-  if (property_id == CSSPropertyAll)
-    return false;
-
-  const CSSPropertyAPI& property_api =
-      CSSPropertyAPI::Get(resolveCSSPropertyID(property_id));
-  if (!property_api.IsEnabled())
-    return false;
-
-  if (property_id == CSSPropertyVariable)
-    return false;
-
-  if (!property_api.IsProperty())
-    return false;
-
-  // all shorthand spec says:
-  // The all property is a shorthand that resets all CSS properties except
-  // direction and unicode-bidi. It only accepts the CSS-wide keywords.
-  // c.f. http://dev.w3.org/csswg/css-cascade/#all-shorthand
-  // So CSSPropertyUnicodeBidi and CSSPropertyDirection are not
-  // affected by all property.
-  return property_id != CSSPropertyUnicodeBidi &&
-         property_id != CSSPropertyDirection;
-}
-
 void CSSProperty::FilterEnabledCSSPropertiesIntoVector(
     const CSSPropertyID* properties,
     size_t propertyCount,

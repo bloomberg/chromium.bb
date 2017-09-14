@@ -62,6 +62,7 @@ class CSSPropertyAPI {
   virtual void ApplyValue(StyleResolverState&, const CSSValue&) const {
     NOTREACHED();
   }
+  virtual bool IsAffectedByAll() const { return IsEnabled() && IsProperty(); }
 };
 
 {% for api_class_data in api_classes_by_property_id %}
