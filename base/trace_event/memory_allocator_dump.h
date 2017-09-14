@@ -133,7 +133,7 @@ class BASE_EXPORT MemoryAllocatorDump {
   // expected to have the same guid.
   const MemoryAllocatorDumpGuid& guid() const { return guid_; }
 
-  const std::vector<Entry>& entries_for_testing() const { return entries_; }
+  const std::vector<Entry>& entries() const { return entries_; }
 
   // Only for mojo serialization, which can mutate the collection.
   std::vector<Entry>* mutable_entries_for_serialization() const {
@@ -144,8 +144,8 @@ class BASE_EXPORT MemoryAllocatorDump {
     return const_cast<std::vector<Entry>*>(&entries_);
   }
 
-  // Decprecated testing method. Use entries_for_testing instead.
-  // TODO(hjd): Remove this and refactor callers to use entries_for_testing then
+  // Decprecated testing method. Use |entries()| instead.
+  // TODO(hjd): Remove this and refactor callers to use |entries()| then
   // inline DumpAttributes.
   std::unique_ptr<TracedValue> attributes_for_testing() const;
 
