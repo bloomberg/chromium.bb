@@ -15,6 +15,7 @@
 #include "base/containers/linked_list.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "leveldb/db.h"
@@ -280,7 +281,21 @@ class DBTracker {
                                const std::string& name,
                                TrackedDB** dbptr);
 
+ private:
+  class MemoryDumpProvider;
+  class TrackedDBImpl;
+
   using DatabaseVisitor = base::RepeatingCallback<void(TrackedDB*)>;
+
+  friend class ChromiumEnvDBTrackerTest;
+  FRIEND_TEST_ALL_PREFIXES(ChromiumEnvDBTrackerTest, IsTrackedDB);
+
+  DBTracker();
+  ~DBTracker();
+
+  static base::trace_event::MemoryAllocatorDump* GetOrCreateAllocatorDump(
+      base::trace_event::ProcessMemoryDump* pmd,
+      TrackedDB* db);
 
   // Calls |visitor| for each live database. The database is live from the
   // point it was returned from OpenDatabase() and up until its instance is
@@ -290,19 +305,15 @@ class DBTracker {
   // destroyed (but doesn't lock the databases themselves).
   void VisitDatabases(const DatabaseVisitor& visitor);
 
- private:
-  class TrackedDBImpl;
-  class MemoryDumpProvider;
-
-  DBTracker();
-  ~DBTracker();
+  // Checks if |db| is tracked.
+  bool IsTrackedDB(const leveldb::DB* db) const;
 
   void DatabaseOpened(TrackedDBImpl* database);
   void DatabaseDestroyed(TrackedDBImpl* database);
 
   std::unique_ptr<MemoryDumpProvider> mdp_;
 
-  base::Lock databases_lock_;
+  mutable base::Lock databases_lock_;
   base::LinkedList<TrackedDBImpl> databases_;
 
   DISALLOW_COPY_AND_ASSIGN(DBTracker);
