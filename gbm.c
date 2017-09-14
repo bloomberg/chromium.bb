@@ -242,7 +242,7 @@ PUBLIC void *gbm_bo_map(struct gbm_bo *bo, uint32_t x, uint32_t y, uint32_t widt
 PUBLIC void gbm_bo_unmap(struct gbm_bo *bo, void *map_data)
 {
 	assert(bo);
-	drv_bo_unmap(bo->bo, map_data);
+	drv_bo_flush(bo->bo, map_data);
 }
 
 PUBLIC uint32_t gbm_bo_get_width(struct gbm_bo *bo)
