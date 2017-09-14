@@ -656,44 +656,50 @@ void LayoutTable::UpdateLayout() {
 
     // Lay out table footer to get its raw height. This will help us decide
     // if we can repeat it in each page/column.
-    if (LayoutTableSection* section = Footer()) {
-      if (section->GetPaginationBreakability() != kAllowAnyBreaks) {
-        section->LayoutIfNeeded();
-        int section_logical_height = section->CalcRowLogicalHeight();
-        section->SetLogicalHeight(LayoutUnit(section_logical_height));
+    LayoutTableSection* footer = Footer();
+    if (footer) {
+      if (footer->GetPaginationBreakability() != kAllowAnyBreaks) {
+        footer->LayoutIfNeeded();
+        int footer_logical_height = footer->CalcRowLogicalHeight();
+        footer->SetLogicalHeight(LayoutUnit(footer_logical_height));
       }
-      section->DetermineIfFooterGroupShouldRepeat();
-      if (section->IsRepeatingFooterGroup()) {
-        LayoutUnit offset_for_table_footers =
-            state.HeightOffsetForTableFooters();
-        offset_for_table_footers += section->LogicalHeight();
-        SetRowOffsetFromRepeatingFooter(offset_for_table_footers);
-      }
+      footer->DetermineIfFooterGroupShouldRepeat();
     }
 
     // Lay out table header group.
-    if (LayoutTableSection* section = Header()) {
-      LayoutSection(*section, layouter, section_logical_left,
+    LayoutTableSection* header = Header();
+    if (header) {
+      LayoutSection(*header, layouter, section_logical_left,
                     table_height_changing);
-      if (state.IsPaginated() && IsPageLogicalHeightKnown()) {
-        // If the repeating header group allows at least one row of content,
-        // then store the offset for other sections to offset their rows
-        // against.
-        if (section->IsRepeatingHeaderGroup()) {
-          LayoutUnit offset_for_table_headers =
-              state.HeightOffsetForTableHeaders();
-          offset_for_table_headers += section->LogicalHeight();
-          // Don't include any strut in the header group - we only want the
-          // height from its content.
-          if (LayoutTableRow* row = section->FirstRow())
-            offset_for_table_headers -= row->PaginationStrut();
-          SetRowOffsetFromRepeatingHeader(offset_for_table_headers);
-        }
-      }
     }
 
-    state.SetHeightOffsetForTableHeaders(RowOffsetFromRepeatingHeader());
-    state.SetHeightOffsetForTableFooters(RowOffsetFromRepeatingFooter());
+    LayoutUnit original_offset_for_table_headers =
+        state.HeightOffsetForTableHeaders();
+    LayoutUnit original_offset_for_table_footers =
+        state.HeightOffsetForTableFooters();
+    if (state.IsPaginated() && IsPageLogicalHeightKnown()) {
+      // If the repeating header group allows at least one row of content,
+      // then store the offset for other sections to offset their rows
+      // against.
+      LayoutUnit offset_for_table_headers = original_offset_for_table_headers;
+      if (header && header->IsRepeatingHeaderGroup()) {
+        offset_for_table_headers += header->LogicalHeight();
+        // Don't include any strut in the header group - we only want the
+        // height from its content.
+        if (LayoutTableRow* row = header->FirstRow())
+          offset_for_table_headers -= row->PaginationStrut();
+        SetRowOffsetFromRepeatingHeader(offset_for_table_headers);
+      }
+      state.SetHeightOffsetForTableHeaders(offset_for_table_headers);
+
+      LayoutUnit offset_for_table_footers = original_offset_for_table_footers;
+      if (footer && footer->IsRepeatingFooterGroup()) {
+        offset_for_table_footers += footer->LogicalHeight();
+        SetRowOffsetFromRepeatingFooter(offset_for_table_footers);
+      }
+      state.SetHeightOffsetForTableFooters(offset_for_table_footers);
+    }
+
     // Lay out table body groups, and column groups.
     for (LayoutObject* child = FirstChild(); child;
          child = child->NextSibling()) {
@@ -710,8 +716,8 @@ void LayoutTable::UpdateLayout() {
       }
     }
     // Reset these so they don't affect the layout of footers or captions.
-    state.SetHeightOffsetForTableHeaders(LayoutUnit());
-    state.SetHeightOffsetForTableFooters(LayoutUnit());
+    state.SetHeightOffsetForTableHeaders(original_offset_for_table_headers);
+    state.SetHeightOffsetForTableFooters(original_offset_for_table_footers);
 
     // Change logical width according to any collapsed columns.
     Vector<int> col_collapsed_width;
