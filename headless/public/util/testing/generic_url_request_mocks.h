@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "headless/public/headless_export.h"
 #include "headless/public/util/generic_url_request_job.h"
 #include "headless/public/util/testing/generic_url_request_mocks.h"
 #include "net/cookies/cookie_store.h"
@@ -19,8 +18,7 @@
 
 namespace headless {
 
-class HEADLESS_EXPORT MockGenericURLRequestJobDelegate
-    : public GenericURLRequestJob::Delegate {
+class MockGenericURLRequestJobDelegate : public GenericURLRequestJob::Delegate {
  public:
   MockGenericURLRequestJobDelegate();
   ~MockGenericURLRequestJobDelegate() override;
@@ -41,7 +39,7 @@ class HEADLESS_EXPORT MockGenericURLRequestJobDelegate
 };
 
 // TODO(alexclarke): We may be able to replace this with the CookieMonster.
-class HEADLESS_EXPORT MockCookieStore : public net::CookieStore {
+class MockCookieStore : public net::CookieStore {
  public:
   MockCookieStore();
   ~MockCookieStore() override;
@@ -126,8 +124,7 @@ class HEADLESS_EXPORT MockCookieStore : public net::CookieStore {
   DISALLOW_COPY_AND_ASSIGN(MockCookieStore);
 };
 
-class HEADLESS_EXPORT MockURLRequestDelegate
-    : public net::URLRequest::Delegate {
+class MockURLRequestDelegate : public net::URLRequest::Delegate {
  public:
   MockURLRequestDelegate();
   ~MockURLRequestDelegate() override;

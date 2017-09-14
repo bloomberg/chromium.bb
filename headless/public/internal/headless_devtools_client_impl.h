@@ -8,7 +8,7 @@
 #include <unordered_map>
 
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "content/public/browser/devtools_agent_host_client.h"
 #include "headless/public/devtools/domains/accessibility.h"
 #include "headless/public/devtools/domains/animation.h"
@@ -42,6 +42,7 @@
 #include "headless/public/devtools/domains/target.h"
 #include "headless/public/devtools/domains/tracing.h"
 #include "headless/public/headless_devtools_client.h"
+#include "headless/public/headless_export.h"
 #include "headless/public/internal/message_dispatcher.h"
 
 namespace base {
@@ -54,9 +55,10 @@ class DevToolsAgentHost;
 
 namespace headless {
 
-class HeadlessDevToolsClientImpl : public HeadlessDevToolsClient,
-                                   public content::DevToolsAgentHostClient,
-                                   public internal::MessageDispatcher {
+class HEADLESS_EXPORT HeadlessDevToolsClientImpl
+    : public HeadlessDevToolsClient,
+      public content::DevToolsAgentHostClient,
+      public internal::MessageDispatcher {
  public:
   HeadlessDevToolsClientImpl();
   ~HeadlessDevToolsClientImpl() override;
@@ -121,6 +123,11 @@ class HeadlessDevToolsClientImpl : public HeadlessDevToolsClient,
   bool AttachToHost(content::DevToolsAgentHost* agent_host);
   void ForceAttachToHost(content::DevToolsAgentHost* agent_host);
   void DetachFromHost(content::DevToolsAgentHost* agent_host);
+
+  void SetTaskRunnerForTests(
+      scoped_refptr<base::SequencedTaskRunner> task_runner) {
+    browser_main_thread_ = task_runner;
+  }
 
  private:
   // Contains a callback with or without a result parameter depending on the
@@ -199,7 +206,7 @@ class HeadlessDevToolsClientImpl : public HeadlessDevToolsClient,
   service_worker::ExperimentalDomain service_worker_domain_;
   target::ExperimentalDomain target_domain_;
   tracing::ExperimentalDomain tracing_domain_;
-  scoped_refptr<base::SingleThreadTaskRunner> browser_main_thread_;
+  scoped_refptr<base::SequencedTaskRunner> browser_main_thread_;
   base::WeakPtrFactory<HeadlessDevToolsClientImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessDevToolsClientImpl);
