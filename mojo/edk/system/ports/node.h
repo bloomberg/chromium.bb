@@ -45,6 +45,22 @@ struct PortStatus {
 class MessageFilter;
 class NodeDelegate;
 
+// A Node maintains a collection of Ports (see port.h) indexed by unique 128-bit
+// addresses (names), performing routing and processing of events among the
+// Ports within the Node and to or from other Nodes in the system. Typically
+// (and practically, in all uses today) there is a single Node per system
+// process. Thus a Node boundary effectively models a process boundary.
+//
+// New Ports can be created uninitialized using CreateUninitializedPort (and
+// later initialized using InitializePort), or created in a fully initialized
+// state using CreatePortPair(). Initialized ports have exactly one conjugate
+// port which is the ultimate receiver of any user messages sent by that port.
+// See SendUserMessage().
+//
+// In addition to routing user message events, various control events are used
+// by Nodes to coordinate Port behavior and lifetime within and across Nodes.
+// See Event documentation for description of different types of events used by
+// a Node to coordinate behavior.
 class Node {
  public:
   enum class ShutdownPolicy {

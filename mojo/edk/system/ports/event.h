@@ -22,14 +22,39 @@ class Event;
 
 using ScopedEvent = std::unique_ptr<Event>;
 
+// A Event is the fundmanetal unit of operation and communication within and
+// between Nodes.
 class Event {
  public:
+  // The type of the event.
   enum Type : uint32_t {
+    // A user message event contains arbitrary user-specified payload data
+    // which may include any number of ports and/or system handles (e.g. FDs).
     kUserMessage,
+
+    // When a Node receives a user message with one or more ports attached, it
+    // sends back an instance of this event for every attached port to indicate
+    // that the port has been accepted by its destination node.
     kPortAccepted,
+
+    // This event begins circulation any time a port enters a proxying state. It
+    // may be re-circulated in certain edge cases, but the ultimate purpose of
+    // the event is to ensure that every port along a route is (if necessary)
+    // aware that the proxying port is indeed proxying (and to where) so that it
+    // can begin to be bypassed along the route.
     kObserveProxy,
+
+    // An event used to acknowledge to a proxy that all concerned nodes and
+    // ports are aware of its proxying state and that no more user messages will
+    // be routed to it beyond a given final sequence number.
     kObserveProxyAck,
+
+    // Indicates that a port has been closed. This event fully circulates a
+    // route to ensure that all ports are aware of closure.
     kObserveClosure,
+
+    // Used to request the merging of two routes via two sacrificial receiving
+    // ports, one from each route.
     kMergePort,
   };
 
