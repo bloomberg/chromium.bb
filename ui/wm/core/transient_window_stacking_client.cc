@@ -74,7 +74,7 @@ bool TransientWindowStackingClient::AdjustStacking(
     Window** target,
     Window::StackDirection* direction) {
   const TransientWindowManager* transient_manager =
-      TransientWindowManager::Get(static_cast<const Window*>(*child));
+      TransientWindowManager::GetIfExists(*child);
   if (transient_manager && transient_manager->IsStackingTransient(*target))
     return true;
 

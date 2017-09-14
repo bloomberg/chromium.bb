@@ -203,7 +203,7 @@ TEST_F(WindowAnimationsTest, HideAnimationDetachLayersWithTransientChildren) {
   std::unique_ptr<aura::Window> transient2(
       aura::test::CreateTestWindowWithId(4, parent.get()));
 
-  TransientWindowManager::Get(animating_window.get());
+  TransientWindowManager::GetOrCreate(animating_window.get());
   AddTransientChild(animating_window.get(), transient1.get());
   AddTransientChild(animating_window.get(), transient2.get());
 

@@ -163,12 +163,14 @@ ImmersiveFocusWatcherClassic::ImmersiveFocusWatcherClassic(
     : immersive_fullscreen_controller_(controller) {
   GetWidget()->GetFocusManager()->AddFocusChangeListener(this);
   GetWidget()->AddObserver(this);
-  ::wm::TransientWindowManager::Get(GetWidgetWindow())->AddObserver(this);
+  ::wm::TransientWindowManager::GetOrCreate(GetWidgetWindow())
+      ->AddObserver(this);
   RecreateBubbleObserver();
 }
 
 ImmersiveFocusWatcherClassic::~ImmersiveFocusWatcherClassic() {
-  ::wm::TransientWindowManager::Get(GetWidgetWindow())->RemoveObserver(this);
+  ::wm::TransientWindowManager::GetOrCreate(GetWidgetWindow())
+      ->RemoveObserver(this);
   GetWidget()->GetFocusManager()->RemoveFocusChangeListener(this);
   GetWidget()->RemoveObserver(this);
 }
