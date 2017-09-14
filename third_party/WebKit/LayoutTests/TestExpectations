@@ -3616,7 +3616,6 @@ crbug.com/757955 [ Win7 Debug ] virtual/threaded/transitions/transition-end-even
 crbug.com/758109 [ Linux Debug ] fast/workers/worker-multi-startup.html [ Pass Timeout ]
 
 # This test has a fixed number of time which can depend on performance.
-crbug.com/v8/6448 [ Debug ] external/wpt/hr-time/window-worker-time-origin.html [ Pass Failure ]
 
 crbug.com/669329 http/tests/devtools/tracing/timeline-js/timeline-runtime-stats.html [ Pass Failure Crash ]
 crbug.com/669329 virtual/threaded/http/tests/devtools/tracing/timeline-js/timeline-runtime-stats.html [ Pass Failure Crash ]
