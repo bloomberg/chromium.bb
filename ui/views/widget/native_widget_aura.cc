@@ -187,7 +187,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
       // window. Make sure the transient bubble is only visible if the parent is
       // visible, otherwise the bubble may not make sense by itself.
       if (params.type == Widget::InitParams::TYPE_BUBBLE) {
-        wm::TransientWindowManager::Get(window_)
+        wm::TransientWindowManager::GetOrCreate(window_)
             ->set_parent_controls_visibility(true);
       }
     }

@@ -149,7 +149,8 @@ TEST_F(TransientWindowManagerTest, TransientChildren) {
   // When the parent_controls_visibility is true, TransientWindowManager
   // controls the children's visibility. It stays invisible even if
   // Window::Show() is called, and gets shown when the parent becomes visible.
-  wm::TransientWindowManager::Get(w2)->set_parent_controls_visibility(true);
+  wm::TransientWindowManager::GetOrCreate(w2)->set_parent_controls_visibility(
+      true);
   w1->Hide();
   EXPECT_FALSE(w2->IsVisible());
   w2->Show();
@@ -435,7 +436,8 @@ TEST_F(TransientWindowManagerTest, TransientWindowObserverNotified) {
   std::unique_ptr<Window> w1(CreateTestWindowWithId(1, parent.get()));
 
   TestTransientWindowObserver test_observer;
-  TransientWindowManager::Get(parent.get())->AddObserver(&test_observer);
+  TransientWindowManager::GetOrCreate(parent.get())
+      ->AddObserver(&test_observer);
 
   AddTransientChild(parent.get(), w1.get());
   EXPECT_EQ(1, test_observer.add_count());
@@ -445,7 +447,8 @@ TEST_F(TransientWindowManagerTest, TransientWindowObserverNotified) {
   EXPECT_EQ(1, test_observer.add_count());
   EXPECT_EQ(1, test_observer.remove_count());
 
-  TransientWindowManager::Get(parent.get())->RemoveObserver(&test_observer);
+  TransientWindowManager::GetOrCreate(parent.get())
+      ->RemoveObserver(&test_observer);
 }
 
 }  // namespace wm
