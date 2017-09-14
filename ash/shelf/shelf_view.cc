@@ -541,6 +541,29 @@ void ShelfView::CreateDragIconProxy(
   drag_image_->SetWidgetVisible(true);
 }
 
+void ShelfView::CreateDragIconProxyByLocationWithNoAnimation(
+    const gfx::Point& origin_in_screen_coordinates,
+    const gfx::ImageSkia& icon,
+    views::View* replaced_view,
+    float scale_factor) {
+  drag_replaced_view_ = replaced_view;
+  aura::Window* root_window =
+      drag_replaced_view_->GetWidget()->GetNativeWindow()->GetRootWindow();
+  drag_image_ = base::MakeUnique<DragImageView>(
+      root_window, ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
+  drag_image_->SetImage(icon);
+  gfx::Size size = drag_image_->GetPreferredSize();
+  size.set_width(size.width() * scale_factor);
+  size.set_height(size.height() * scale_factor);
+  gfx::Rect drag_image_bounds(origin_in_screen_coordinates, size);
+  drag_image_->SetBoundsInScreen(drag_image_bounds);
+
+  // Turn off the default visibility animation.
+  drag_image_->GetWidget()->SetVisibilityAnimationTransition(
+      views::Widget::ANIMATE_NONE);
+  drag_image_->SetWidgetVisible(true);
+}
+
 void ShelfView::UpdateDragIconProxy(
     const gfx::Point& location_in_screen_coordinates) {
   // TODO(jennyz): Investigate why drag_image_ becomes null at this point per
@@ -549,6 +572,12 @@ void ShelfView::UpdateDragIconProxy(
     drag_image_->SetScreenPosition(location_in_screen_coordinates -
                                    drag_image_offset_);
   }
+}
+
+void ShelfView::UpdateDragIconProxyByLocation(
+    const gfx::Point& origin_in_screen_coordinates) {
+  if (drag_image_)
+    drag_image_->SetScreenPosition(origin_in_screen_coordinates);
 }
 
 void ShelfView::DestroyDragIconProxy() {

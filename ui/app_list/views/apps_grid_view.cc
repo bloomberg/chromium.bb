@@ -546,8 +546,10 @@ bool AppsGridView::UpdateDragFromItem(Pointer pointer,
   gfx::Point location_in_screen = drag_point_in_grid_view;
   views::View::ConvertPointToScreen(this, &location_in_screen);
   DispatchDragEventToDragAndDropHost(location_in_screen);
-  if (drag_and_drop_host_)
-    drag_and_drop_host_->UpdateDragIconProxy(location_in_screen);
+  if (drag_and_drop_host_) {
+    drag_and_drop_host_->UpdateDragIconProxyByLocation(
+        drag_view_->icon()->GetBoundsInScreen().origin());
+  }
   return true;
 }
 
@@ -2035,9 +2037,10 @@ void AppsGridView::StartDragAndDropHostDrag(const gfx::Point& grid_location) {
   // We have to hide the original item since the drag and drop host will do
   // the OS dependent code to "lift off the dragged item".
   DCHECK(!IsDraggingForReparentInRootLevelGridView());
-  drag_and_drop_host_->CreateDragIconProxy(
-      screen_location, drag_view_->item()->icon(), drag_view_, delta,
-      kDragAndDropProxyScale);
+  drag_and_drop_host_->CreateDragIconProxyByLocationWithNoAnimation(
+      drag_view_->icon()->GetBoundsInScreen().origin(),
+      drag_view_->item()->icon(), drag_view_, kDragAndDropProxyScale);
+
   SetViewHidden(drag_view_, true /* hide */, true /* no animation */);
 }
 

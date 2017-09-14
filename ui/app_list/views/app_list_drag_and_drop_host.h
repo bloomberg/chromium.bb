@@ -22,7 +22,7 @@ namespace app_list {
 // shortcuts onto another host (the launcher).
 class ApplicationDragAndDropHost {
  public:
-  // Create an OS dependent drag proxy icon which can escape the given view.
+  // Creates an OS dependent drag proxy icon which can escape the given view.
   // The proxy should get created using the |icon| with a magnification of
   // |scale_factor| at a center location of |location_in_screen_coordinates.
   // Use |replaced_view| to find the screen which is used.
@@ -35,11 +35,27 @@ class ApplicationDragAndDropHost {
       const gfx::Vector2d& cursor_offset_from_center,
       float scale_factor) = 0;
 
-  // Update the screen location of the Drag icon proxy.
+  // Creates an OS dependent drag proxy icon which can escape the given view.
+  // The proxy should get created using the |icon| with a magnification of
+  // |scale_factor| with its origin at |origin_in_screen_coordinates|.
+  // Use |replaced_view| to find the screen which is used.
+  // The proxy will be created without any visibility animation effect.
+  virtual void CreateDragIconProxyByLocationWithNoAnimation(
+      const gfx::Point& origin_in_screen_coordinates,
+      const gfx::ImageSkia& icon,
+      views::View* replaced_view,
+      float scale_factor) = 0;
+
+  // Updates the screen location of the Drag icon proxy.
   virtual void UpdateDragIconProxy(
       const gfx::Point& location_in_screen_coordinates) = 0;
 
-  // Remove the OS dependent drag proxy from the screen.
+  // Updates the screen location of the Drag icon proxy with its origin at
+  // |origin_in_screen_coordinates|.
+  virtual void UpdateDragIconProxyByLocation(
+      const gfx::Point& origin_in_screen_coordinates) = 0;
+
+  // Removes the OS dependent drag proxy from the screen.
   virtual void DestroyDragIconProxy() = 0;
 
   // A drag operation could get started. The recipient has to return true if

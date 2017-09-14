@@ -108,8 +108,14 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
 
   void SetUIState(UIState state);
 
+  // Scales up app icon if |scale_up| is true; otherwise, scale it back to
+  // normal size.
+  void ScaleAppIcon(bool scale_up);
+
   // Sets |touch_dragging_| flag and updates UI.
   void SetTouchDragging(bool touch_dragging);
+  // Sets |mouse_dragging_| flag and updates UI.
+  void SetMouseDragging(bool mouse_dragging);
 
   // Invoked when |mouse_drag_timer_| fires to show dragging UI.
   void OnMouseDragTimer();
@@ -160,6 +166,11 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
 
   // True if scroll gestures should contribute to dragging.
   bool touch_dragging_ = false;
+
+  // True if the app is enabled for drag/drop operation by mouse.
+  bool mouse_dragging_ = false;
+  // True if the drag host proxy is crated for mouse dragging.
+  bool mouse_drag_proxy_created_ = false;
 
   std::unique_ptr<ImageShadowAnimator> shadow_animator_;
 
