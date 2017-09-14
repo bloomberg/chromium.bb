@@ -1505,8 +1505,8 @@ public class ChromeTabbedActivity
 
             @Override
             public int getHeaderResourceId() {
-                if (getBottomSheet() != null
-                        && getAppMenuPropertiesDelegate().shouldShowPageMenu()) {
+                if (getBottomSheet() != null && getAppMenuPropertiesDelegate().shouldShowPageMenu()
+                        && !getBottomSheet().isSheetOpen()) {
                     return R.layout.chrome_home_iph_header;
                 }
 
