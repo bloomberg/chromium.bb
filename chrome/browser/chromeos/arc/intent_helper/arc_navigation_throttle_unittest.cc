@@ -36,19 +36,36 @@ std::vector<mojom::IntentHandlerInfoPtr> CreateArray(size_t num_elements,
 }  // namespace
 
 TEST(ArcNavigationThrottleTest, TestShouldOverrideUrlLoading) {
-  // A navigation within the same domain shouldn't be overridden.
+  // A navigation within the same domain shouldn't be overridden except if the
+  // domain is google.com.
   EXPECT_FALSE(ArcNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
       GURL("http://google.com"), GURL("http://google.com/")));
-  EXPECT_FALSE(ArcNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
+  EXPECT_TRUE(ArcNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
       GURL("http://google.com"), GURL("http://a.google.com/")));
-  EXPECT_FALSE(ArcNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
+  EXPECT_TRUE(ArcNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
       GURL("http://a.google.com"), GURL("http://google.com/")));
-  EXPECT_FALSE(ArcNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
+  EXPECT_TRUE(ArcNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
       GURL("http://a.google.com"), GURL("http://b.google.com/")));
-  EXPECT_FALSE(ArcNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
+  EXPECT_TRUE(ArcNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
       GURL("http://a.google.com"), GURL("http://b.c.google.com/")));
-  EXPECT_FALSE(ArcNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
+  EXPECT_TRUE(ArcNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
       GURL("http://a.b.google.com"), GURL("http://c.google.com/")));
+  EXPECT_TRUE(ArcNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
+      GURL("http://a.b.google.com"), GURL("http://b.google.com")));
+  EXPECT_TRUE(ArcNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
+      GURL("http://b.google.com"), GURL("http://a.b.google.com")));
+  EXPECT_FALSE(ArcNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
+      GURL("http://notg.com"), GURL("http://notg.com")));
+  EXPECT_FALSE(ArcNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
+      GURL("http://a.notg.com"), GURL("http://notg.com")));
+  EXPECT_FALSE(ArcNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
+      GURL("http://notg.com"), GURL("http://a.notg.com")));
+  EXPECT_FALSE(ArcNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
+      GURL("http://a.notg.com"), GURL("http://b.notg.com")));
+  EXPECT_FALSE(ArcNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
+      GURL("http://a.notg.com"), GURL("http://a.b.notg.com")));
+  EXPECT_FALSE(ArcNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
+      GURL("http://a.b.notg.com"), GURL("http://c.notg.com")));
 
   // Same as last tests, except for "play.google.com".
   EXPECT_TRUE(ArcNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
