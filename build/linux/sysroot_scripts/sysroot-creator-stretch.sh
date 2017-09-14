@@ -24,6 +24,7 @@ HAS_ARCH_I386=1
 HAS_ARCH_ARM=1
 HAS_ARCH_ARM64=1
 HAS_ARCH_MIPS=1
+HAS_ARCH_MIPS64EL=1
 
 # Sysroot packages: these are the packages needed to build chrome.
 # NOTE: When DEBIAN_PACKAGES is modified, the packagelist files must be updated
