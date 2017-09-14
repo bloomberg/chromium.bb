@@ -103,6 +103,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   PreviewsState GetPreviewsState() const override;
   bool ShouldReportRawHeaders() const;
   NavigationUIData* GetNavigationUIData() const override;
+  bool CanceledByDevTools() const override;
 
   CONTENT_EXPORT void AssociateWithRequest(net::URLRequest* request);
 
@@ -199,6 +200,10 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
     on_transfer_ = on_transfer;
   }
 
+  void set_canceled_by_devtools(bool canceled_by_devtools) {
+    canceled_by_devtools_ = canceled_by_devtools;
+  }
+
   void SetBlobHandles(BlobHandles blob_handles);
 
  private:
@@ -235,6 +240,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   ResourceContext* context_;
   bool report_raw_headers_;
   bool is_async_;
+  bool canceled_by_devtools_;
   PreviewsState previews_state_;
   scoped_refptr<ResourceRequestBody> body_;
   bool initiated_in_secure_context_;

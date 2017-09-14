@@ -104,7 +104,9 @@ class HeadlessBrowserContextImpl : public HeadlessBrowserContext,
                                   HeadlessWebContentsImpl* child);
 
   // This will be called on the IO thread.
-  void NotifyUrlRequestFailed(net::URLRequest* request, int net_error);
+  void NotifyUrlRequestFailed(net::URLRequest* request,
+                              int net_error,
+                              bool canceled_by_devtools);
 
  private:
   HeadlessBrowserContextImpl(
