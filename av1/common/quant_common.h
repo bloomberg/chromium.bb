@@ -48,9 +48,7 @@ int av1_get_qindex(const struct segmentation *seg, int segment_id,
 // Reduce the large number of quantizers to a smaller number of levels for which
 // different matrices may be defined
 static INLINE int aom_get_qmlevel(int qindex, int first, int last) {
-  int qmlevel = (qindex * (last + 1 - first) + QINDEX_RANGE / 2) / QINDEX_RANGE;
-  qmlevel = AOMMIN(qmlevel + first, NUM_QM_LEVELS - 1);
-  return qmlevel;
+  return first + (qindex * (last + 1 - first)) / QINDEX_RANGE;
 }
 void aom_qm_init(struct AV1Common *cm);
 qm_val_t *aom_iqmatrix(struct AV1Common *cm, int qindex, int comp,
