@@ -365,8 +365,19 @@ metrics::OmniboxInputType AutocompleteInput::Parse(
   if (parts->scheme.is_nonempty())
     return metrics::OmniboxInputType::URL;
 
-  // Trailing slashes force the input to be treated as a URL.
-  if (parts->path.is_nonempty()) {
+  // Check to see if the username is set and, if so, whether it contains a
+  // space.  Usernames usually do not contain a space.  If a username contains
+  // a space, that's likely an indication of incorrectly parsing of the input.
+  const bool username_has_space =
+      parts->username.is_nonempty() &&
+      (text.substr(parts->username.begin, parts->username.len)
+           .find_first_of(base::kWhitespaceUTF16) != base::string16::npos);
+
+  // Generally, trailing slashes force the input to be treated as a URL.
+  // However, if the username has a space, this may be input like
+  // "dep missing: @test/", which should not be parsed as a URL (with the
+  // username "dep missing: ").
+  if (parts->path.is_nonempty() && !username_has_space) {
     base::char16 c = text[parts->path.end() - 1];
     if ((c == '\\') || (c == '/'))
       return metrics::OmniboxInputType::URL;
@@ -378,6 +389,11 @@ metrics::OmniboxInputType AutocompleteInput::Parse(
   if ((host_info.family == url::CanonHostInfo::IPV4) &&
       (host_info.num_ipv4_components > 1))
     return metrics::OmniboxInputType::QUERY;
+
+  // The URL did not have an explicit scheme and has an unusual-looking
+  // username (with a space).  It's not likely to be a URL.
+  if (username_has_space)
+    return metrics::OmniboxInputType::UNKNOWN;
 
   // If there is more than one recognized non-host component, this is likely to
   // be a URL, even if the TLD is unknown (in which case this is likely an
