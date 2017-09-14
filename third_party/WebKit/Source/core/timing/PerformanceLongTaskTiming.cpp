@@ -6,7 +6,7 @@
 #include "core/frame/DOMWindow.h"
 #include "core/timing/SubTaskAttribution.h"
 #include "core/timing/TaskAttributionTiming.h"
-#include "platform/runtime_enabled_features.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 

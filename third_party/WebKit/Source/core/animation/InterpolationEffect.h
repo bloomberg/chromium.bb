@@ -8,6 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/animation/Interpolation.h"
 #include "core/animation/Keyframe.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/animation/TimingFunction.h"
 
 namespace blink {

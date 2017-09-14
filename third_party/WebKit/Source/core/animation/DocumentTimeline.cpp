@@ -38,6 +38,7 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Page.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/animation/CompositorAnimationTimeline.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/wtf/PtrUtil.h"

@@ -52,6 +52,7 @@
 #include "modules/serviceworkers/ServiceWorkerContainerClient.h"
 #include "modules/serviceworkers/ServiceWorkerError.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8ThrowException.h"
 #include "platform/weborigin/SchemeRegistry.h"

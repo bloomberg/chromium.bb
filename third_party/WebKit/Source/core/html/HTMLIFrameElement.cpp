@@ -31,7 +31,7 @@
 #include "core/html/HTMLDocument.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/LayoutIFrame.h"
-#include "platform/runtime_enabled_features.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 

@@ -22,6 +22,7 @@
 #include "modules/canvas2d/CanvasStyle.h"
 #include "modules/canvas2d/Path2D.h"
 #include "platform/Histogram.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/graphics/CanvasHeuristicParameters.h"
@@ -32,7 +33,6 @@
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/graphics/paint/PaintFlags.h"
 #include "platform/graphics/skia/SkiaUtils.h"
-#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/CheckedNumeric.h"
 
 namespace blink {

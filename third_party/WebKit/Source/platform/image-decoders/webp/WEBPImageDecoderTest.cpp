@@ -31,6 +31,7 @@
 #include "platform/image-decoders/webp/WEBPImageDecoder.h"
 
 #include <memory>
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
 #include "platform/image-decoders/ImageDecoderTestHelpers.h"
 #include "platform/wtf/PtrUtil.h"

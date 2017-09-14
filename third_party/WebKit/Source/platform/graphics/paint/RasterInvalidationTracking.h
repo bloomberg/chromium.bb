@@ -5,6 +5,7 @@
 #ifndef RasterInvalidationTracking_h
 #define RasterInvalidationTracking_h
 
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/Region.h"
 #include "platform/graphics/PaintInvalidationReason.h"
