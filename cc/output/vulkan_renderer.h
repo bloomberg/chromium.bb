@@ -5,19 +5,20 @@
 #ifndef CC_OUTPUT_VULKAN_RENDERER_H_
 #define CC_OUTPUT_VULKAN_RENDERER_H_
 
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/output/direct_renderer.h"
 #include "ui/latency/latency_info.h"
 
 namespace cc {
 
 class TextureMailboxDeleter;
+class OutputSurface;
 
 class CC_EXPORT VulkanRenderer : public DirectRenderer {
  public:
-  VulkanRenderer(const RendererSettings* settings,
+  VulkanRenderer(const viz::RendererSettings* settings,
                  OutputSurface* output_surface,
-                 ResourceProvider* resource_provider,
+                 DisplayResourceProvider* resource_provider,
                  TextureMailboxDeleter* texture_mailbox_deleter,
                  int highp_threshold_min);
   ~VulkanRenderer() override;
@@ -28,28 +29,25 @@ class CC_EXPORT VulkanRenderer : public DirectRenderer {
  protected:
   // Implementations of protected Renderer functions.
   void DidChangeVisibility() override;
+  viz::ResourceFormat BackbufferFormat() const override;
 
   // Implementations of protected DirectRenderer functions.
-  void BindFramebufferToOutputSurface(DrawingFrame* frame) override;
-  bool BindFramebufferToTexture(DrawingFrame* frame,
-                                const ScopedResource* resource) override;
+  void BindFramebufferToOutputSurface() override;
+  bool BindFramebufferToTexture(const ScopedResource* resource) override;
   void SetScissorTestRect(const gfx::Rect& scissor_rect) override;
-  void PrepareSurfaceForPass(DrawingFrame* frame,
-                             SurfaceInitializationMode initialization_mode,
+  void PrepareSurfaceForPass(SurfaceInitializationMode initialization_mode,
                              const gfx::Rect& render_pass_scissor) override;
-  void DoDrawQuad(DrawingFrame* frame,
-                  const viz::DrawQuad* quad,
-                  const gfx::QuadF* clip_region) override;
-  void BeginDrawingFrame(DrawingFrame* frame) override;
-  void FinishDrawingFrame(DrawingFrame* frame) override;
+  void DoDrawQuad(const DrawQuad* quad, const gfx::QuadF* clip_region) override;
+  void BeginDrawingFrame() override;
+  void FinishDrawingFrame() override;
   void FinishDrawingQuadList() override;
-  bool FlippedFramebuffer(const DrawingFrame* frame) const override;
+  bool FlippedFramebuffer() const override;
   void EnsureScissorTestEnabled() override;
   void EnsureScissorTestDisabled() override;
   void CopyDrawnRenderPass(
-      DrawingFrame* frame,
       std::unique_ptr<viz::CopyOutputRequest> request) override;
   bool CanPartialSwap() override;
+  void SetEnableDCLayers(bool enable) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VulkanRenderer);
