@@ -4299,6 +4299,10 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       }
     }
 #endif  // CONFIG_EXT_INTRA
+#if CONFIG_INTRABC
+    if (bsize >= BLOCK_8X8 && cpi->common.allow_screen_content_tools)
+      this_rate += x->intrabc_cost[0];
+#endif  // CONFIG_INTRABC
     this_rd = RDCOST(x->rdmult, this_rate, this_distortion);
 #if CONFIG_FILTER_INTRA
     if (best_rd == INT64_MAX || this_rd - best_rd < (best_rd >> 4)) {
