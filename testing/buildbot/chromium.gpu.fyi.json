@@ -2491,7 +2491,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_deqp_gles2_tests",
         "use_xvfb": false
@@ -2528,7 +2529,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 4
+          "shards": 12
         },
         "test": "angle_deqp_gles3_tests",
         "use_xvfb": false

@@ -1146,6 +1146,9 @@ COMMON_GTESTS = {
         ],
       },
     ],
+    'swarming': {
+      'shards': 4,
+    },
     'test': 'angle_deqp_gles2_tests',
     # Only pass the display type to desktop. The Android runner doesn't support
     # passing args to the executable but only one display type is supported on
@@ -1184,7 +1187,7 @@ COMMON_GTESTS = {
       },
     ],
     'swarming': {
-      'shards': 4,
+      'shards': 12,
     },
     'test': 'angle_deqp_gles3_tests',
     # Only pass the display type to desktop. The Android runner doesn't support
