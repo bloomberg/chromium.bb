@@ -34,6 +34,7 @@
 #include "platform/graphics/ImageBufferSurface.h"
 #include "platform/graphics/paint/PaintRecorder.h"
 #include "platform/wtf/Allocator.h"
+#include "platform/wtf/CheckedNumeric.h"
 #include "platform/wtf/Deque.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/RefPtr.h"
@@ -269,7 +270,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient,
   OpacityMode opacity_mode_;
   const IntSize size_;
   CanvasColorParams color_params_;
-  int recording_pixel_count_;
+  CheckedNumeric<int> recording_pixel_count_;
 
   // Each element in this vector represents an GpuMemoryBuffer-backed texture
   // that is ready to be reused.
