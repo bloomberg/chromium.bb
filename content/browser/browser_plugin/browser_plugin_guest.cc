@@ -36,6 +36,7 @@
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/drag_messages.h"
+#include "content/common/input/ime_text_span_conversions.h"
 #include "content/common/input_messages.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/text_input_state.h"
@@ -62,26 +63,15 @@ namespace content {
 
 namespace {
 
-ui::ImeTextSpan::Type ConvertWebTypeToUiType(blink::WebImeTextSpan::Type type) {
-  switch (type) {
-    case blink::WebImeTextSpan::Type::kComposition:
-      return ui::ImeTextSpan::Type::kComposition;
-    case blink::WebImeTextSpan::Type::kSuggestion:
-      return ui::ImeTextSpan::Type::kSuggestion;
-  }
-
-  NOTREACHED();
-  return ui::ImeTextSpan::Type::kComposition;
-}
-
 std::vector<ui::ImeTextSpan> ConvertToUiImeTextSpan(
     const std::vector<blink::WebImeTextSpan>& ime_text_spans) {
   std::vector<ui::ImeTextSpan> ui_ime_text_spans;
   for (const auto& ime_text_span : ime_text_spans) {
     ui_ime_text_spans.emplace_back(ui::ImeTextSpan(
-        ConvertWebTypeToUiType(ime_text_span.type), ime_text_span.start_offset,
-        ime_text_span.end_offset, ime_text_span.underline_color,
-        ime_text_span.thick, ime_text_span.background_color,
+        ConvertWebImeTextSpanTypeToUiType(ime_text_span.type),
+        ime_text_span.start_offset, ime_text_span.end_offset,
+        ime_text_span.underline_color, ime_text_span.thick,
+        ime_text_span.background_color,
         ime_text_span.suggestion_highlight_color, ime_text_span.suggestions));
   }
   return ui_ime_text_spans;

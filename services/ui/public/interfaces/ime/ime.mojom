@@ -60,6 +60,7 @@ struct CandidateWindowEntry {
 enum ImeTextSpanType {
   kComposition,
   kSuggestion,
+  kMisspellingSuggestion,
 };
 
 // Represents an underlined segment of text currently composed by IME.

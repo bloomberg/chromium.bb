@@ -8,31 +8,19 @@
 #include "build/build_config.h"
 #include "content/browser/renderer_host/input/legacy_input_router_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/common/input/ime_text_span_conversions.h"
 #include "content/common/input_messages.h"
 
 namespace content {
 
 namespace {
 
-blink::WebImeTextSpan::Type ConvertUiImeTextSpanTypeToBlinkType(
-    ui::ImeTextSpan::Type type) {
-  switch (type) {
-    case ui::ImeTextSpan::Type::kComposition:
-      return blink::WebImeTextSpan::Type::kComposition;
-    case ui::ImeTextSpan::Type::kSuggestion:
-      return blink::WebImeTextSpan::Type::kSuggestion;
-  }
-
-  NOTREACHED();
-  return blink::WebImeTextSpan::Type::kComposition;
-}
-
 std::vector<blink::WebImeTextSpan> ConvertToBlinkImeTextSpan(
     const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
   std::vector<blink::WebImeTextSpan> ime_text_spans;
   for (const auto& ime_text_span : ui_ime_text_spans) {
     ime_text_spans.emplace_back(blink::WebImeTextSpan(
-        ConvertUiImeTextSpanTypeToBlinkType(ime_text_span.type),
+        ConvertUiImeTextSpanTypeToWebType(ime_text_span.type),
         ime_text_span.start_offset, ime_text_span.end_offset,
         ime_text_span.underline_color, ime_text_span.thick,
         ime_text_span.background_color,
