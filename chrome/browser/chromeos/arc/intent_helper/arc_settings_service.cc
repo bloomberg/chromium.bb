@@ -159,6 +159,7 @@ class ArcSettingsServiceImpl
   void SyncLocationServiceEnabled() const;
   void SyncProxySettings() const;
   void SyncReportingConsent() const;
+  void SyncSmsConnectEnabled() const;
   void SyncSpokenFeedbackEnabled() const;
   void SyncTimeZone() const;
   void SyncTimeZoneByGeolocation() const;
@@ -265,6 +266,8 @@ void ArcSettingsServiceImpl::OnPrefChanged(const std::string& pref_name) const {
              pref_name == ::prefs::kWebKitDefaultFontSize ||
              pref_name == ::prefs::kWebKitMinimumFontSize) {
     SyncFontSize();
+  } else if (pref_name == prefs::kSmsConnectEnabled) {
+    SyncSmsConnectEnabled();
   } else if (pref_name == proxy_config::prefs::kProxy) {
     SyncProxySettings();
   } else {
@@ -305,6 +308,7 @@ void ArcSettingsServiceImpl::StartObservingSettingsChanges() {
   AddPrefToObserve(ash::prefs::kAccessibilityVirtualKeyboardEnabled);
   AddPrefToObserve(prefs::kArcBackupRestoreEnabled);
   AddPrefToObserve(prefs::kArcLocationServiceEnabled);
+  AddPrefToObserve(prefs::kSmsConnectEnabled);
   AddPrefToObserve(::prefs::kResolveTimezoneByGeolocation);
   AddPrefToObserve(::prefs::kUse24HourClock);
   AddPrefToObserve(::prefs::kWebKitDefaultFixedFontSize);
@@ -348,6 +352,7 @@ void ArcSettingsServiceImpl::SyncBootTimeSettings() const {
   SyncFontSize();
   SyncProxySettings();
   SyncReportingConsent();
+  SyncSmsConnectEnabled();
   SyncSpokenFeedbackEnabled();
   SyncTimeZone();
   SyncTimeZoneByGeolocation();
@@ -517,6 +522,12 @@ void ArcSettingsServiceImpl::SyncReportingConsent() const {
   extras.SetBoolean("reportingConsent", consent);
   SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_REPORTING_CONSENT",
                         extras);
+}
+
+void ArcSettingsServiceImpl::SyncSmsConnectEnabled() const {
+  SendBoolPrefSettingsBroadcast(
+      prefs::kSmsConnectEnabled,
+      "org.chromium.arc.intent_helper.SET_SMS_CONNECT_ENABLED");
 }
 
 void ArcSettingsServiceImpl::SyncSpokenFeedbackEnabled() const {
