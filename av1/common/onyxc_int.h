@@ -35,6 +35,9 @@
 #if CONFIG_PVQ
 #include "av1/common/pvq.h"
 #endif
+#if CONFIG_CFL
+#include "av1/common/cfl.h"
+#endif
 #if CONFIG_HASH_ME
 // TODO(youzhou@microsoft.com): Encoder only. Move it out of common
 #include "av1/encoder/hash_motion.h"
@@ -638,8 +641,13 @@ static INLINE int frame_is_intra_only(const AV1_COMMON *const cm) {
 }
 
 #if CONFIG_CFL
+#if CONFIG_CHROMA_SUB8X8 && CONFIG_DEBUG
+static INLINE void cfl_clear_sub8x8_val(CFL_CTX *cfl) {
+  memset(cfl->sub8x8_val, 0, sizeof(cfl->sub8x8_val));
+}
+#endif  // CONFIG_CHROMA_SUB8X8 && CONFIG_DEBUG
 void cfl_init(CFL_CTX *cfl, AV1_COMMON *cm);
-#endif
+#endif  // CONFIG_CFL
 
 static INLINE void av1_init_macroblockd(AV1_COMMON *cm, MACROBLOCKD *xd,
 #if CONFIG_PVQ

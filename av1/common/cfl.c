@@ -13,8 +13,6 @@
 #include "av1/common/common_data.h"
 #include "av1/common/onyxc_int.h"
 
-#include "aom/internal/aom_codec_internal.h"
-
 void cfl_init(CFL_CTX *cfl, AV1_COMMON *cm) {
   if (!((cm->subsampling_x == 0 && cm->subsampling_y == 0) ||
         (cm->subsampling_x == 1 && cm->subsampling_y == 1))) {
