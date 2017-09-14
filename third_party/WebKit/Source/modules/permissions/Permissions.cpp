@@ -21,7 +21,7 @@
 #include "modules/permissions/PermissionDescriptor.h"
 #include "modules/permissions/PermissionStatus.h"
 #include "modules/permissions/PermissionUtils.h"
-#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/NotFound.h"
 #include "platform/wtf/PtrUtil.h"

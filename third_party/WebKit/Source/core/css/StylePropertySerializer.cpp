@@ -31,6 +31,7 @@
 #include "core/css/CSSPendingSubstitutionValue.h"
 #include "core/css/CSSValuePool.h"
 #include "core/css/properties/CSSPropertyAPI.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/text/StringBuilder.h"
 

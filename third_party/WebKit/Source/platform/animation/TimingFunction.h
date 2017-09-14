@@ -27,7 +27,7 @@
 
 #include "cc/animation/timing_function.h"
 #include "platform/PlatformExport.h"
-#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefCounted.h"

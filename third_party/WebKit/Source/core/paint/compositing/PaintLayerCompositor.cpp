@@ -56,7 +56,6 @@
 #include "core/paint/compositing/GraphicsLayerUpdater.h"
 #include "core/probe/CoreProbes.h"
 #include "platform/Histogram.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/CompositorMutableProperties.h"
@@ -68,6 +67,7 @@
 #include "platform/graphics/paint/TransformDisplayItem.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/json/JSONValues.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/Optional.h"
 
 namespace blink {

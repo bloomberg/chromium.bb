@@ -91,7 +91,7 @@
 #include "core/probe/CoreProbes.h"
 #include "core/style/StyleInheritedVariables.h"
 #include "core/svg/SVGElement.h"
-#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/StdLibExtras.h"
 
 namespace blink {

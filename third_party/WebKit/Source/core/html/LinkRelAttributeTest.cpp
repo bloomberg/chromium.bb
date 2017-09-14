@@ -30,7 +30,6 @@
 
 #include "core/html/LinkRelAttribute.h"
 
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/wtf/text/CString.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -34,7 +34,6 @@
 #include "core/dom/QualifiedName.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/frame/UseCounter.h"
-#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 

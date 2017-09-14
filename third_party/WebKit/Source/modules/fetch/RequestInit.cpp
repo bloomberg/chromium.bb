@@ -20,9 +20,9 @@
 #include "modules/fetch/BlobBytesConsumer.h"
 #include "modules/fetch/FormDataBytesConsumer.h"
 #include "modules/fetch/Headers.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/blob/BlobData.h"
 #include "platform/network/EncodedFormData.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/ReferrerPolicy.h"
 
 namespace blink {

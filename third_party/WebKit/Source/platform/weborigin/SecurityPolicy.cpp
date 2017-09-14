@@ -29,7 +29,7 @@
 #include "platform/weborigin/SecurityPolicy.h"
 
 #include <memory>
-#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/OriginAccessEntry.h"
 #include "platform/weborigin/SchemeRegistry.h"

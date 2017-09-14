@@ -12,7 +12,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/media/AutoplayUmaHelper.h"
-#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/Assertions.h"
 #include "public/platform/WebMediaPlayer.h"
 #include "public/web/WebSettings.h"

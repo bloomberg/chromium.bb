@@ -5,7 +5,6 @@
 #include "core/css/properties/CSSPropertyAPIAlignSelf.h"
 
 #include "core/css/properties/CSSPropertyAlignmentUtils.h"
-#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 

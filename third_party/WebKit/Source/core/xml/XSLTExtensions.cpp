@@ -30,7 +30,7 @@
 #include <libxslt/extensions.h>
 #include <libxslt/extra.h>
 #include <libxslt/xsltutils.h>
-#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/Assertions.h"
 
 namespace blink {

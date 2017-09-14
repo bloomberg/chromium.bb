@@ -32,7 +32,7 @@
 #include "core/css/CSSMarkup.h"
 #include "core/css/CSSSelectorList.h"
 #include "core/css/parser/CSSParserContext.h"
-#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/StdLibExtras.h"

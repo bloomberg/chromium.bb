@@ -30,8 +30,8 @@
 
 #include "platform/weborigin/SecurityOrigin.h"
 
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/blob/BlobURL.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/weborigin/Suborigin.h"
