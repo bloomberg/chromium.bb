@@ -133,7 +133,7 @@ TEST_F(SearchResultAnswerCardViewTest, Basic) {
 
 TEST_F(SearchResultAnswerCardViewTest, ButtonBackground) {
   views::View* button = result_view()->parent();
-  EXPECT_EQ(kSelectedColor, button->background()->get_color());
+  EXPECT_EQ(kAnswerCardSelectedColor, button->background()->get_color());
 
   ClearSelectedIndex();
   EXPECT_EQ(nullptr, button->background());
