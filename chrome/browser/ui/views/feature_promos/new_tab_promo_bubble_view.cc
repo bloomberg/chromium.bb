@@ -16,7 +16,7 @@ NewTabPromoBubbleView* NewTabPromoBubbleView::CreateOwned(
 
 NewTabPromoBubbleView::NewTabPromoBubbleView(const gfx::Rect& anchor_rect)
     : FeaturePromoBubbleView(anchor_rect,
-                             views::BubbleBorder::LEFT_TOP,
+                             views::BubbleBorder::LEFT_CENTER,
                              GetStringSpecifier()) {}
 
 NewTabPromoBubbleView::~NewTabPromoBubbleView() = default;
