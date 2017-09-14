@@ -149,6 +149,8 @@ class CORE_EXPORT PerformanceMonitor final
       const HeapHashSet<Member<Frame>>& frame_contexts,
       Frame* observer_frame);
 
+  void NetworkQuietTimerFired(TimerBase*);
+
   bool enabled_ = false;
   double per_task_style_and_layout_time_ = 0;
   unsigned script_depth_ = 0;
@@ -172,6 +174,7 @@ class CORE_EXPORT PerformanceMonitor final
       subscriptions_;
   double network_0_quiet_ = 0;
   double network_2_quiet_ = 0;
+  TaskRunnerTimer<PerformanceMonitor> network_quiet_timer_;
 };
 
 }  // namespace blink
