@@ -2,98 +2,98 @@ Tests that wild card pattern matching works.
 
 Checking Pattern: *a*a*
 Input: asdfasdf
-Result: true
+Result: 5
 
 Checking Pattern: a*a*
 Input: asdfasdf
-Result: true
+Result: 5
 
 Checking Pattern: a*a
 Input: asdfasdf
-Result: false
+Result: -1
 
 Checking Pattern: a*a*f
 Input: asdfasdf
-Result: true
+Result: 5
 
 Checking Pattern: af
 Input: asdfasdf
-Result: false
+Result: -1
 
 Checking Pattern: *df
 Input: asdfasdf
-Result: true
+Result: 0
 
 Checking Pattern: *
 Input: asdfasdf
-Result: true
+Result: 0
 
 Checking Pattern: *
 Input: 
-Result: true
+Result: 0
 
 Checking Pattern: 
 Input: 
-Result: false
+Result: -1
 
 Checking Pattern: 
 Input: asdfasdf
-Result: false
+Result: -1
 
 Checking Pattern: a*c
 Input: ac
-Result: true
+Result: 1
 
 Checking Pattern: a**c
 Input: ac
-Result: true
+Result: 1
 
 Checking Pattern: a**c
 Input: abc
-Result: true
+Result: 1
 
 Checking Pattern: a*c
 Input: abc
-Result: true
+Result: 1
 
 Checking Pattern: *ac*
 Input: ac
-Result: true
+Result: 2
 
 Checking Pattern: ac
 Input: abc
-Result: false
+Result: -1
 
 Checking Pattern: a\*c
 Input: a*c
-Result: true
+Result: 3
 
 Checking Pattern: a\\*c
 Input: a\c
-Result: true
+Result: 2
 
 Checking Pattern: a\*c
 Input: ac
-Result: false
+Result: -1
 
 Checking Pattern: a\*c
 Input: a**c
-Result: false
+Result: -1
 
 Checking Pattern: a\*\\*c
 Input: a*\*c
-Result: true
+Result: 3
 
 Checking Pattern: a\*\\\*c
 Input: a*\*c
-Result: true
+Result: 5
 
 Checking Pattern: a?c
 Input: a?c
-Result: true
+Result: 3
 
 Checking Pattern: a?c
 Input: acc
-Result: false
+Result: -1
 
 
