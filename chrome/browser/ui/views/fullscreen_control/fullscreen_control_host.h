@@ -45,7 +45,22 @@ class FullscreenControlHost : public DropdownBarHost, public ui::EventHandler {
   }
 
  private:
-  void HandleFullScreenControlVisibility(const ui::LocatedEvent* event);
+  // Ensures symmetric input show and hide (e.g. a touch show is hidden by
+  // touch).
+  enum class InputEntryMethod {
+    NOT_ACTIVE,  // The view is hidden.
+    MOUSE,       // A mouse event caused the view to show.
+    TOUCH,       // A touch event caused the view to show.
+  };
+
+  // DropdownBarHost:
+  void OnVisibilityChanged() override;
+
+  void HandleFullScreenControlVisibility(const ui::LocatedEvent* event,
+                                         InputEntryMethod input_entry_method);
+  void ShowForInputEntryMethod(InputEntryMethod input_entry_method);
+
+  InputEntryMethod input_entry_method_ = InputEntryMethod::NOT_ACTIVE;
 
   BrowserView* const browser_view_;
 

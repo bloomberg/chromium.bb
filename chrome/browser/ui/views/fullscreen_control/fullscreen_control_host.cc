@@ -15,9 +15,9 @@
 namespace {
 
 // +----------------------------+
-// |                |  Control  |
-// |                |           |
-// |                +-----------+ <-- Height
+// |       |  Control  |        |
+// |       |           |        |
+// |       +-----------+        | <-- Height
 // |                            | <-- Height * kExitHeightScaleFactor
 // |          Screen            |       Buffer for mouse moves or pointer events
 // |                            |       before closing the fullscreen exit
@@ -59,46 +59,45 @@ bool FullscreenControlHost::CanHandleAccelerators() const {
 
 gfx::Rect FullscreenControlHost::GetDialogPosition(
     gfx::Rect avoid_overlapping_rect) {
-  gfx::Rect widget_bounds;
-  GetWidgetBounds(&widget_bounds);
-  if (widget_bounds.IsEmpty())
+  gfx::Rect bounds;
+  GetWidgetBounds(&bounds);
+  if (bounds.IsEmpty())
     return gfx::Rect();
 
-  // Ask the view how large an area it needs to draw on.
-  gfx::Size preferred_size = view()->GetPreferredSize();
-
-  preferred_size.SetToMin(widget_bounds.size());
-
-  // Place the view in the top right corner of the widget boundaries (top left
-  // for RTL languages).
-  gfx::Rect view_location;
-  gfx::Point origin = widget_bounds.origin();
-  if (!base::i18n::IsRTL())
-    origin.set_x(widget_bounds.right() - preferred_size.width());
-  return gfx::Rect(origin, preferred_size);
+  // Place the view horizontally centered at the top of the widget.
+  int original_y = bounds.y();
+  bounds.ClampToCenteredSize(view()->GetPreferredSize());
+  bounds.set_y(original_y);
+  return bounds;
 }
 
 void FullscreenControlHost::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_MOVED)
-    HandleFullScreenControlVisibility(event);
+    HandleFullScreenControlVisibility(event, InputEntryMethod::MOUSE);
 }
 
 void FullscreenControlHost::OnTouchEvent(ui::TouchEvent* event) {
   if (event->type() == ui::ET_TOUCH_MOVED)
-    HandleFullScreenControlVisibility(event);
+    HandleFullScreenControlVisibility(event, InputEntryMethod::TOUCH);
 }
 
 void FullscreenControlHost::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_GESTURE_LONG_PRESS && !IsAnimating() &&
-      browser_view_->IsFullscreen() && !IsVisible()) {
-    Show(true);
-  }
+  if (event->type() == ui::ET_GESTURE_LONG_TAP)
+    HandleFullScreenControlVisibility(event, InputEntryMethod::TOUCH);
+}
+
+void FullscreenControlHost::OnVisibilityChanged() {
+  if (!IsVisible())
+    input_entry_method_ = InputEntryMethod::NOT_ACTIVE;
 }
 
 void FullscreenControlHost::HandleFullScreenControlVisibility(
-    const ui::LocatedEvent* event) {
-  if (IsAnimating())
+    const ui::LocatedEvent* event,
+    InputEntryMethod input_entry_method) {
+  if (IsAnimating() || (input_entry_method_ != InputEntryMethod::NOT_ACTIVE &&
+                        input_entry_method_ != input_entry_method)) {
     return;
+  }
 
   if (browser_view_->IsFullscreen()) {
     if (IsVisible()) {
@@ -107,10 +106,18 @@ void FullscreenControlHost::HandleFullScreenControlVisibility(
       if (event->y() >= y_limit)
         Hide(true);
     } else {
-      if (event->y() <= kShowFullscreenExitControlHeight)
-        Show(true);
+      if (event->y() <= kShowFullscreenExitControlHeight ||
+          event->type() == ui::ET_GESTURE_LONG_TAP) {
+        ShowForInputEntryMethod(input_entry_method);
+      }
     }
   } else if (IsVisible()) {
     Hide(true);
   }
+}
+
+void FullscreenControlHost::ShowForInputEntryMethod(
+    InputEntryMethod input_entry_method) {
+  input_entry_method_ = input_entry_method;
+  Show(true);
 }
