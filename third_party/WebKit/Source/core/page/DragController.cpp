@@ -1103,7 +1103,7 @@ std::unique_ptr<DragImage> DragController::DragImageForSelection(
       kGlobalPaintSelectionOnly | kGlobalPaintFlattenCompositingLayers;
 
   PaintRecordBuilder builder(
-      DataTransfer::DeviceSpaceBounds(painting_rect, frame));
+      DataTransfer::DeviceSpaceRect(painting_rect, frame));
   frame.View()->PaintContents(builder.Context(), paint_flags,
                               EnclosingIntRect(painting_rect));
   return DataTransfer::CreateDragImageForFrame(

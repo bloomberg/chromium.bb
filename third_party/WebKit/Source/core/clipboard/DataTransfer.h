@@ -134,12 +134,8 @@ class CORE_EXPORT DataTransfer final
 
   DataObject* GetDataObject() const;
 
-  // Returns the rect with device scale factor and page scale factor applied to
-  // the rect's dimensions.
-  // TODO(pdr): The input rect is in CSS pixels and the output location is in
-  // CSS pixels but the output bounds are in device space (physical pixels).
-  // This should be refactored to return a rect entirely in device coordinates.
-  static FloatRect DeviceSpaceBounds(const FloatRect, const LocalFrame&);
+  // Returns the rect with device scale factor and page scale factor applied.
+  static FloatRect DeviceSpaceRect(const FloatRect css_rect, const LocalFrame&);
   static std::unique_ptr<DragImage> CreateDragImageForFrame(
       const LocalFrame&,
       float,
