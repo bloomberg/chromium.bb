@@ -120,6 +120,12 @@ const int kTileIconSize = 48;
 
 const SkColor kIconColor = gfx::kChromeIconGrey;
 
+// The drag and drop app icon should get scaled by this factor.
+const float kDragDropAppIconScale = 1.2f;
+
+// The drag and drop icon scaling up or down animation transition duration.
+const int kDragDropAppIconScaleTransitionInMs = 20;
+
 // The number of apps shown in the start page app grid.
 const size_t kNumStartPageTiles = 9;
 const size_t kNumStartPageTilesFullscreen = 5;
