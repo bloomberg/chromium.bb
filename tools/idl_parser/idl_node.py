@@ -76,6 +76,11 @@ class IDLAttribute(object):
 # version aware.
 #
 class IDLNode(object):
+  VERBOSE_PROPS = [
+      'PROD', 'NAME', 'VALUE', 'TYPE',
+      'ERRORS', 'WARNINGS', 'FILENAME', 'LINENO', 'POSITION', 'DATETIME',
+  ]
+
   def __init__(self, cls, filename, lineno, pos, children=None):
     self._cls = cls
     self._properties = {
@@ -140,29 +145,28 @@ class IDLNode(object):
     search.Exit(self)
 
 
-  def Tree(self, filter_nodes=None, accept_props=None):
+  def Tree(self, filter_nodes=None, suppress_props=VERBOSE_PROPS):
     class DumpTreeSearch(IDLSearch):
       def __init__(self, props):
         IDLSearch.__init__(self)
         self.out = []
-        self.props = props
+        self.props = props or []
 
       def Enter(self, node):
         tab = ''.rjust(self.depth * 2)
         self.out.append(tab + str(node))
-        if self.props:
-          proplist = []
-          for key, value in node.GetProperties().iteritems():
-            if key in self.props:
-              proplist.append(tab + '    %s: %s' % (key, str(value)))
-          if proplist:
-            self.out.append(tab + '  PROPERTIES')
-            self.out.extend(proplist)
+
+        proplist = []
+        for key, value in node.GetProperties().iteritems():
+          if key not in self.props:
+            proplist.append(tab + '  %s: %s' % (key, str(value)))
+        if proplist:
+          self.out.extend(proplist)
 
     if filter_nodes == None:
       filter_nodes = ['SpecialComment']
 
-    search = DumpTreeSearch(accept_props)
+    search = DumpTreeSearch(suppress_props)
     self.Traverse(search, filter_nodes)
     return search.out
 

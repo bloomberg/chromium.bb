@@ -1173,8 +1173,8 @@ class IDLParser(object):
   def BuildError(self, p, prod):
     self._parse_errors += 1
     name = self.BuildAttribute('NAME', self._last_error_msg)
-    line = self.BuildAttribute('LINE', self._last_error_lineno)
-    pos = self.BuildAttribute('POS', self._last_error_pos)
+    line = self.BuildAttribute('LINENO', self._last_error_lineno)
+    pos = self.BuildAttribute('POSITION', self._last_error_pos)
     prod = self.BuildAttribute('PROD', prod)
 
     node = self.BuildProduction('Error', p, 1,
@@ -1256,7 +1256,7 @@ def main(argv):
 
   ast = IDLNode('AST', '__AST__', 0, 0, nodes)
 
-  print '\n'.join(ast.Tree(accept_props=['PROD']))
+  print '\n'.join(ast.Tree())
   if errors:
     print '\nFound %d errors.\n' % errors
 

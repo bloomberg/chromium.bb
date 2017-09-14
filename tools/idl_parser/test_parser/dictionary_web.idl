@@ -35,6 +35,7 @@ dictionary MyDictInherit : Foo {};
 
 /** TREE
  *Dictionary(MyDictPartial)
+ *  Partial: True
  */
 partial dictionary MyDictPartial { };
 
@@ -64,6 +65,7 @@ dictionary MyDictBig {
 /** TREE
  *Dictionary(MyDictRequired)
  *  Key(setLong)
+ *    REQUIRED: True
  *    Type()
  *      PrimitiveType(long)
  */
@@ -97,6 +99,7 @@ dictionary ForParent NoColon {
  *Dictionary(MyDictNull)
  *  Key(setString)
  *    Type()
+ *      NULLABLE: True
  *      StringType(DOMString)
  *    Default() = "NULL"
  */
@@ -112,6 +115,7 @@ dictionary MyDictUnexpectedAttribute {
 /** TREE
  *Dictionary(MyDictRequiredClampNotAppliedToType)
  *  Key(setLong)
+ *    REQUIRED: True
  *    Type()
  *      PrimitiveType(long)
  *    ExtAttributes()
@@ -124,6 +128,7 @@ dictionary MyDictRequiredClampNotAppliedToType {
 /** TREE
  *Dictionary(MyDictRequired)
  *  Key(setLong)
+ *    REQUIRED: True
  *    Type()
  *      PrimitiveType(long)
  *    ExtAttributes()
@@ -136,6 +141,7 @@ dictionary MyDictRequired {
 /** TREE
  *Dictionary(MyDictRequired)
  *  Key(setLong)
+ *    REQUIRED: True
  *    Type()
  *      PrimitiveType(long)
  *    ExtAttributes()
@@ -149,6 +155,7 @@ dictionary MyDictRequired {
 /** TREE
  *Dictionary(MyDictRequired)
  *  Key(setLong)
+ *    REQUIRED: True
  *    Type()
  *      PrimitiveType(long)
  *      ExtAttributes()
@@ -163,6 +170,7 @@ dictionary MyDictRequired {
 /** TREE
  *Dictionary(MyDictRequired)
  *  Key(setLong)
+ *    REQUIRED: True
  *    Type()
  *      PrimitiveType(long)
  *      ExtAttributes()
@@ -177,6 +185,7 @@ dictionary MyDictRequired {
 /** TREE
  *Dictionary(MyDictRequired)
  *  Key(setLong)
+ *    REQUIRED: True
  *    Type()
  *      PrimitiveType(long)
  *      ExtAttributes()

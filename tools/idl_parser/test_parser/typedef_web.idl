@@ -109,6 +109,7 @@ typedef float MyFloat;
  *Typedef(MyUFloat)
  *  Type()
  *    PrimitiveType(float)
+ *      UNRESTRICTED: True
  */
 typedef unrestricted float MyUFloat;
 
@@ -123,6 +124,7 @@ typedef double MyDouble;
  *Typedef(MyUDouble)
  *  Type()
  *    PrimitiveType(double)
+ *      UNRESTRICTED: True
  */
 typedef unrestricted double MyUDouble;
 
