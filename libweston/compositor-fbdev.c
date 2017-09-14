@@ -91,7 +91,6 @@ struct fbdev_output {
 
 	/* pixman details. */
 	pixman_image_t *hw_surface;
-	uint8_t depth;
 };
 
 static const char default_seat[] = "seat0";
