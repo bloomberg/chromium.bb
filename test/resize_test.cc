@@ -693,6 +693,15 @@ class ResizingCspVideoSource : public ::libaom_test::DummyVideoSource {
   }
 };
 
+#ifdef DISABLE_TRELLISQ_SEARCH
+TEST_P(ResizeCspTest, DISABLED_TestResizeCspWorks) {
+  ResizingCspVideoSource video;
+  init_flags_ = AOM_CODEC_USE_PSNR;
+  cfg_.rc_min_quantizer = cfg_.rc_max_quantizer = 48;
+  cfg_.g_lag_in_frames = 0;
+  ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
+}
+#else
 TEST_P(ResizeCspTest, TestResizeCspWorks) {
   ResizingCspVideoSource video;
   init_flags_ = AOM_CODEC_USE_PSNR;
@@ -700,6 +709,7 @@ TEST_P(ResizeCspTest, TestResizeCspWorks) {
   cfg_.g_lag_in_frames = 0;
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
 }
+#endif
 
 AV1_INSTANTIATE_TEST_CASE(ResizeTest,
                           ::testing::Values(::libaom_test::kRealTime));
