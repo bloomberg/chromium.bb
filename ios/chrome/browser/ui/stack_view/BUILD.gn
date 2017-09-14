@@ -42,6 +42,7 @@ source_set("stack_view") {
     "resources:card_frame_shadow",
     "resources:stack_view_background_noise",
     "//base",
+    "//components/favicon/ios",
     "//components/feature_engagement",
     "//components/strings",
     "//ios/chrome/app/strings",
@@ -88,6 +89,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui",
     "//ios/chrome/test:test_support",
     "//ios/testing:ocmock_support",
+    "//ios/web/public/test/fakes",
     "//testing/gtest",
     "//third_party/ocmock",
   ]

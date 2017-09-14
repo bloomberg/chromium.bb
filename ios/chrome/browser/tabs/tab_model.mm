@@ -15,6 +15,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "components/favicon/ios/web_favicon_driver.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/tab_restore_service.h"
@@ -670,6 +671,13 @@ void CleanCertificatePolicyCache(
     web::WebState* webState = _webStateList->GetWebStateAt(index);
     PagePlaceholderTabHelper::FromWebState(webState)
         ->AddPlaceholderForNextNavigation();
+
+    web::NavigationItem* visible_item =
+        webState->GetNavigationManager()->GetVisibleItem();
+    if (visible_item && visible_item->GetVirtualURL().is_valid()) {
+      favicon::WebFaviconDriver::FromWebState(webState)->FetchFavicon(
+          visible_item->GetVirtualURL(), /*is_same_document=*/false);
+    }
 
     // Restore the CertificatePolicyCache (note that webState is invalid after
     // passing it via move semantic to -initWithWebState:model:).

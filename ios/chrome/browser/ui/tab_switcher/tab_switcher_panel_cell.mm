@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_panel_cell.h"
 
+#include "components/favicon/ios/web_favicon_driver.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/ui/fade_truncated_label.h"
 #import "ios/chrome/browser/ui/image_util.h"
@@ -239,11 +240,20 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
 - (void)setAppearanceForTab:(Tab*)tab cellSize:(CGSize)cellSize {
   [_titleLabel setText:tab.title];
   [self contentView].accessibilityLabel = tab.title;
-  if (tab.favicon) {
-    [_favicon setImage:tab.favicon];
-  } else {
-    [_favicon setImage:NativeImage(IDR_IOS_OMNIBOX_HTTP)];
+
+  UIImage* tabFavicon = nil;
+  favicon::FaviconDriver* faviconDriver =
+      favicon::WebFaviconDriver::FromWebState(tab.webState);
+  if (faviconDriver && faviconDriver->FaviconIsValid()) {
+    gfx::Image favicon = faviconDriver->GetFavicon();
+    if (!favicon.IsEmpty())
+      tabFavicon = favicon.ToUIImage();
   }
+
+  if (!tabFavicon)
+    tabFavicon = NativeImage(IDR_IOS_OMNIBOX_HTTP);
+
+  [_favicon setImage:tabFavicon];
 
   CGSize snapshotSize = cellSize;
   snapshotSize.height -= tabSwitcherLocalSessionCellTopBarHeight();

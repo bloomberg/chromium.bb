@@ -7,6 +7,7 @@
 #import <QuartzCore/QuartzCore.h>
 
 #include "base/logging.h"
+#include "components/favicon/ios/web_favicon_driver.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
@@ -493,7 +494,16 @@ const CGFloat kMaxCardStaggerPercentage = 0.35;
   CardView* view = [[CardView alloc] initWithFrame:frame
                                        isIncognito:[tabModel_ isOffTheRecord]];
   [view setTitle:title];
-  [view setFavicon:[tab favicon]];
+  [view setFavicon:nil];
+
+  favicon::FaviconDriver* faviconDriver =
+      favicon::WebFaviconDriver::FromWebState(tab.webState);
+  if (faviconDriver && faviconDriver->FaviconIsValid()) {
+    gfx::Image favicon = faviconDriver->GetFavicon();
+    if (!favicon.IsEmpty())
+      [view setFavicon:favicon.ToUIImage()];
+  }
+
   [tab retrieveSnapshot:^(UIImage* image) {
     [view setImage:image];
   }];

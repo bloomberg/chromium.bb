@@ -14,6 +14,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/favicon/ios/web_favicon_driver.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #import "ios/chrome/browser/drag_and_drop/drop_and_navigate_delegate.h"
@@ -506,7 +507,15 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
   [view setIncognitoStyle:(_style == TabStrip::kStyleIncognito)];
   [view setContentMode:UIViewContentModeRedraw];
   [[view titleLabel] setText:[tab title]];
-  [view setFavicon:[tab favicon]];
+  [view setFavicon:nil];
+
+  favicon::FaviconDriver* faviconDriver =
+      favicon::WebFaviconDriver::FromWebState(tab.webState);
+  if (faviconDriver && faviconDriver->FaviconIsValid()) {
+    gfx::Image favicon = faviconDriver->GetFavicon();
+    if (!favicon.IsEmpty())
+      [view setFavicon:favicon.ToUIImage()];
+  }
 
   // Install a long press gesture recognizer to handle drag and drop.
   UILongPressGestureRecognizer* longPress =
@@ -988,7 +997,16 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
   NSUInteger index = [self indexForModelIndex:modelIndex];
   TabView* view = [_tabArray objectAtIndex:index];
   [view setTitle:tab.title];
-  [view setFavicon:[tab favicon]];
+  [view setFavicon:nil];
+
+  favicon::FaviconDriver* faviconDriver =
+      favicon::WebFaviconDriver::FromWebState(tab.webState);
+  if (faviconDriver && faviconDriver->FaviconIsValid()) {
+    gfx::Image favicon = faviconDriver->GetFavicon();
+    if (!favicon.IsEmpty())
+      [view setFavicon:favicon.ToUIImage()];
+  }
+
   if (tab.webState->IsLoading())
     [view startProgressSpinner];
   else

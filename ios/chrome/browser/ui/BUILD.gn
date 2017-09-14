@@ -252,6 +252,7 @@ source_set("ui_internal") {
     "//base",
     "//base:i18n",
     "//components/bookmarks/browser",
+    "//components/favicon/ios",
     "//components/feature_engagement",
     "//components/image_fetcher/ios",
     "//components/infobars/core",
