@@ -16,6 +16,7 @@ goog.require('mr.Assertions');
 goog.require('mr.Logger');
 goog.require('mr.MirrorAnalytics');
 goog.require('mr.PlatformUtils');
+goog.require('mr.mirror.Config');
 goog.require('mr.mirror.Error');
 
 /**
@@ -151,77 +152,113 @@ mr.mirror.MirrorMediaStream = class {
   }
 
   /**
+   * Requests a screen capture source from the user via a native dialog and
+   * returns the source ID, or rejects if a timeout is reached or the user
+   * cancels.
+   * @param {number=} timeoutMillis The timeout in milliseconds.
+   * @return {!Promise<string>} Fulfilled with the source ID.
+   * @private
+   */
+  requestScreenCaptureSourceId_(
+      timeoutMillis = mr.mirror.MirrorMediaStream.WINDOW_PICKER_TIMEOUT_) {
+    return new Promise((resolve, reject) => {
+      const desktopChooserConfig = ['screen', 'audio'];
+      if (mr.PlatformUtils.getCurrentOS() == mr.PlatformUtils.OS.LINUX) {
+        desktopChooserConfig.push('window');
+      }
+      let requestId;
+      // Wait 60 seconds and then cancel the picker and reject the
+      // promise.
+
+      const timeoutId = window.setTimeout(() => {
+        if (requestId) {
+          chrome.desktopCapture.cancelChooseDesktopMedia(requestId);
+        }
+        reject(new mr.mirror.Error(
+            'timeout',
+            mr.MirrorAnalytics.CapturingFailure
+                .CAPTURE_DESKTOP_FAIL_ERROR_TIMEOUT));
+      }, timeoutMillis);
+      // https://developer.chrome.com/extensions/desktopCapture#method-chooseDesktopMedia
+      requestId = chrome.desktopCapture.chooseDesktopMedia(
+          desktopChooserConfig, sourceId => {
+            window.clearTimeout(timeoutId);
+            if (!sourceId) {
+              // User cancelled the desktop media selector prompt.
+              reject(new mr.mirror.Error(
+                  'User cancelled capture dialog',
+                  mr.MirrorAnalytics.CapturingFailure
+                      .CAPTURE_DESKTOP_FAIL_ERROR_USER_CANCEL));
+            } else {
+              resolve(sourceId);
+            }
+          });
+    });
+  }
+
+  /**
+   * Generates a screen capture MediaStream from the given
+   * MediaStreamConstraints.
+   * @param {!MediaStreamConstraints} constraints The constraints object to use.
+   * @return {!Promise<MediaStream>} Fulfilled with the MediaStream from
+   *     capture.
+   * @private
+   */
+  generateScreenCaptureStream_(constraints) {
+    return new Promise((resolve, reject) => {
+      this.logger_.info(
+          () => 'Starting desktop capture with constraints ' +
+              JSON.stringify(constraints));
+      navigator.mediaDevices.getUserMedia(constraints)
+          .then(
+              stream => {
+                if (!stream) {
+                  // NOTE(miu): This implies that getUserMedia is broken, and it
+                  // may also be breaking chrome.tabCapture.
+                  reject(new mr.mirror.Error(
+                      mr.mirror.MirrorMediaStream.EMPTY_STREAM_,
+                      mr.MirrorAnalytics.CapturingFailure.DESKTOP_FAIL));
+                }
+                this.setStream_(stream);
+                resolve(stream);
+              },
+              error => {
+                let errorReason =
+                    mr.MirrorAnalytics.CapturingFailure.DESKTOP_FAIL;
+                // Certain errors indicate the user cancelled the request.
+                // https://www.w3.org/TR/mediacapture-streams/#methods-5
+                if (error.name == 'NotAllowedError') {
+                  errorReason = mr.MirrorAnalytics.CapturingFailure
+                                    .CAPTURE_DESKTOP_FAIL_ERROR_USER_CANCEL;
+                }
+                reject(new mr.mirror.Error(
+                    `${error.name} ${error.constraintName}: ${error.message}`,
+                    errorReason));
+              });
+    });
+  }
+
+  /**
    * @return {!Promise<!mr.mirror.MirrorMediaStream>} Fulfilled when capture
    *     has started.
    * @private
    */
   startDesktopCapturing_() {
-    return new Promise((resolve, reject) => {
-             const desktopChooserConfig = ['screen', 'audio'];
-             if (mr.PlatformUtils.getCurrentOS() == mr.PlatformUtils.OS.LINUX) {
-               desktopChooserConfig.push('window');
-             }
-             const requestId = chrome.desktopCapture.chooseDesktopMedia(
-                 desktopChooserConfig, resolve);
-             // Wait 60 seconds and then cancel the picker and reject the
-             // promise.
-             window.setTimeout(() => {
-               chrome.desktopCapture.cancelChooseDesktopMedia(requestId);
-               reject(new mr.mirror.Error(
-                   'timeout',
-                   mr.MirrorAnalytics.CapturingFailure
-                       .CAPTURE_DESKTOP_FAIL_ERROR_TIMEOUT));
+    if (mr.mirror.Config.isDesktopAudioCaptureAvailable &&
+        this.captureParams_.mirrorSettings.shouldCaptureAudio &&
+        !this.captureParams_.mirrorSettings.shouldCaptureVideo) {
+      return this
+          .generateScreenCaptureStream_(
+              this.captureParams_.toMediaConstraints())
+          .then(_ => this);
+    }
 
-             }, mr.mirror.MirrorMediaStream.WINDOW_PICKER_TIMEOUT_);
-           })
-        .then(sourceId => {
-          if (!sourceId) {
-            // User cancelled the desktop media selector prompt. Throw error to
-            // reject the promise.
-            // https://developer.chrome.com/extensions/desktopCapture#method-chooseDesktopMedia
-            throw new mr.mirror.Error(
-                'User cancelled capture dialog',
-                mr.MirrorAnalytics.CapturingFailure
-                    .CAPTURE_DESKTOP_FAIL_ERROR_USER_CANCEL);
-          }
+    // Video capture requires asking the user to pick which screen to capture.
 
-          const constraints = this.captureParams_.toMediaConstraints(sourceId);
-          this.logger_.info(
-              () => 'Starting desktop capture with constraints ' +
-                  JSON.stringify(constraints));
-
-          return new Promise((resolve, reject) => {
-            navigator.webkitGetUserMedia(constraints, resolve, (error) => {
-              let errorReason =
-                  mr.MirrorAnalytics.CapturingFailure.DESKTOP_FAIL;
-              // Certain errors indicate the user cancelled the request.
-              // https://www.w3.org/TR/mediacapture-streams/#methods-5
-              if (error.name == 'PermissionDeniedError' ||
-                  error.name == 'NotAllowedError') {
-                errorReason = mr.MirrorAnalytics.CapturingFailure
-                                  .CAPTURE_DESKTOP_FAIL_ERROR_USER_CANCEL;
-              }
-
-              // Don't throw here, as nothing can catch it. This is not a then()
-              // call.
-              reject(new mr.mirror.Error(
-                  `${error.name} ${error.constraintName}: ${error.message}`,
-                  errorReason));
-            });
-          });
-        })
-        .then(stream => {
-          if (stream) {
-            this.setStream_(stream);
-          } else {
-            // NOTE(miu): This implies that webkitGetUserMedia is broken, and it
-            // may also be breaking chrome.tabCapture.
-            throw new mr.mirror.Error(
-                mr.mirror.MirrorMediaStream.EMPTY_STREAM_,
-                mr.MirrorAnalytics.CapturingFailure.DESKTOP_FAIL);
-          }
-          return this;
-        });
+    return this.requestScreenCaptureSourceId_().then(sourceId => {
+      const constraints = this.captureParams_.toMediaConstraints(sourceId);
+      return this.generateScreenCaptureStream_(constraints).then(_ => this);
+    });
   }
 
   /**

@@ -7,6 +7,7 @@ goog.setTestOnly();
 goog.require('mr.PlatformUtils');
 goog.require('mr.mirror.CaptureParameters');
 goog.require('mr.mirror.CaptureSurfaceType');
+goog.require('mr.mirror.Config');
 goog.require('mr.mirror.Error');
 goog.require('mr.mirror.MirrorMediaStream');
 goog.require('mr.mirror.Settings');
@@ -23,7 +24,7 @@ describe('mr.mirror.MirrorMediaStream', () => {
         jasmine.createSpyObj('tabCapture', ['capture', 'captureOffscreenTab']);
     chrome.desktopCapture = jasmine.createSpyObj(
         'desktopCapture', ['chooseDesktopMedia', 'cancelChooseDesktopMedia']);
-    spyOn(navigator, 'webkitGetUserMedia');
+    spyOn(navigator.mediaDevices, 'getUserMedia');
     spyOn(mr.PlatformUtils, 'getCurrentOS');
 
     mediaStream = jasmine.createSpyObj(
@@ -165,11 +166,18 @@ describe('mr.mirror.MirrorMediaStream', () => {
   });
 
   describe('when capturing the desktop', () => {
+    const supportsAudioCapture =
+        mr.mirror.Config.isDesktopAudioCaptureAvailable;
+
     beforeEach(() => {
       captureParams.captureSurface = mr.mirror.CaptureSurfaceType.DESKTOP;
     });
 
-    it('stores the stream upon successful capture', (done) => {
+    afterEach(() => {
+      mr.mirror.Config.isDesktopAudioCaptureAvailable = supportsAudioCapture;
+    });
+
+    it('stores the audio and video streams upon successful capture', (done) => {
       mediaStream.getVideoTracks.and.returnValue([{}]);
       mediaStream.getAudioTracks.and.returnValue([{}]);
       mediaStream.getTracks.and.returnValue([{}]);
@@ -178,22 +186,49 @@ describe('mr.mirror.MirrorMediaStream', () => {
           (config, callback) => {
             callback('source-id');
           });
-      navigator.webkitGetUserMedia.and.callFake(
-          (constraints, successCallback, errorCallback) => {
-            successCallback(mediaStream);
-          });
+      navigator.mediaDevices.getUserMedia.and.callFake(
+          constraints => Promise.resolve(mediaStream));
 
       instance.start()
           .then(() => {
             expect(chrome.desktopCapture.chooseDesktopMedia).toHaveBeenCalled();
-            expect(navigator.webkitGetUserMedia).toHaveBeenCalled();
+            expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalled();
             expect(instance.getMediaStream()).toBe(mediaStream);
             done();
           })
           .catch(fail);
     });
 
+    it('stores the audio stream upon successful capture', (done) => {
+      mr.mirror.Config.isDesktopAudioCaptureAvailable = true;
+      const audioOnlyMirrorSettings = new mr.mirror.Settings();
+      audioOnlyMirrorSettings.shouldCaptureVideo = false;
+      const audioOnlyCaptureParams = new mr.mirror.CaptureParameters(
+          mr.mirror.CaptureSurfaceType.DESKTOP, audioOnlyMirrorSettings);
+      const audioOnlyInstance =
+          new mr.mirror.MirrorMediaStream(audioOnlyCaptureParams);
+
+      mediaStream.getVideoTracks.and.returnValue([{}]);
+      mediaStream.getAudioTracks.and.returnValue([{}]);
+      mediaStream.getTracks.and.returnValue([{}]);
+
+      navigator.mediaDevices.getUserMedia.and.callFake(
+          constraints => Promise.resolve(mediaStream));
+
+      audioOnlyInstance.start()
+          .then(() => {
+            expect(chrome.desktopCapture.chooseDesktopMedia)
+                .not.toHaveBeenCalled();
+            expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalled();
+            expect(audioOnlyInstance.getMediaStream()).toBe(mediaStream);
+            done();
+          })
+          .catch(fail);
+    });
+
     it('allows choosing only screen, audio for non-linux platforms', (done) => {
+      mr.PlatformUtils.getCurrentOS.and.returnValue(
+          mr.PlatformUtils.OS.WINDOWS);
       chrome.desktopCapture.chooseDesktopMedia.and.callFake(
           (config, callback) => {
             expect(config).toContain('screen');
@@ -223,7 +258,7 @@ describe('mr.mirror.MirrorMediaStream', () => {
         expect(chrome.desktopCapture.chooseDesktopMedia).toHaveBeenCalled();
         expect(chrome.desktopCapture.cancelChooseDesktopMedia)
             .toHaveBeenCalledWith('expected-id');
-        expect(navigator.webkitGetUserMedia).not.toHaveBeenCalled();
+        expect(navigator.mediaDevices.getUserMedia).not.toHaveBeenCalled();
         expect(err instanceof mr.mirror.Error).toBe(true);
         expect(err.reason)
             .toBe(mr.MirrorAnalytics.CapturingFailure
@@ -244,7 +279,7 @@ describe('mr.mirror.MirrorMediaStream', () => {
 
       instance.start().catch((err) => {
         expect(chrome.desktopCapture.chooseDesktopMedia).toHaveBeenCalled();
-        expect(navigator.webkitGetUserMedia).not.toHaveBeenCalled();
+        expect(navigator.mediaDevices.getUserMedia).not.toHaveBeenCalled();
         expect(err instanceof mr.mirror.Error).toBe(true);
         expect(err.reason)
             .toBe(mr.MirrorAnalytics.CapturingFailure
@@ -260,48 +295,16 @@ describe('mr.mirror.MirrorMediaStream', () => {
           (config, callback) => {
             callback('source-id');
           });
-      navigator.webkitGetUserMedia.and.callFake(
-          (constraints, successCallback, errorCallback) => {
-            errorCallback({
-              name: 'SecurityError',
-              constraintName: 'expected-constraint',
-              message: 'expected-message',
-            });
-          });
+
+      navigator.mediaDevices.getUserMedia.and.callFake(
+          constraints => Promise.reject(
+              new DOMException('expected-message', 'SecurityError')));
 
       instance.start().catch((err) => {
         expect(err instanceof mr.mirror.Error).toBe(true);
         expect(err.reason)
             .toBe(mr.MirrorAnalytics.CapturingFailure.DESKTOP_FAIL);
         expect(err.message).toMatch(/\bSecurityError\b/);
-        expect(err.message).toMatch(/\bexpected-constraint\b/);
-        expect(err.message).toMatch(/\bexpected-message\b/);
-        expect(instance.getMediaStream()).toBe(null);
-        done();
-      });
-    });
-
-    it('rejects with an cancelled error upon PermissionDeniedError', (done) => {
-      chrome.desktopCapture.chooseDesktopMedia.and.callFake(
-          (config, callback) => {
-            callback('source-id');
-          });
-      navigator.webkitGetUserMedia.and.callFake(
-          (constraints, successCallback, errorCallback) => {
-            errorCallback({
-              name: 'PermissionDeniedError',
-              constraintName: 'expected-constraint',
-              message: 'expected-message',
-            });
-          });
-
-      instance.start().catch((err) => {
-        expect(err instanceof mr.mirror.Error).toBe(true);
-        expect(err.reason)
-            .toBe(mr.MirrorAnalytics.CapturingFailure
-                      .CAPTURE_DESKTOP_FAIL_ERROR_USER_CANCEL);
-        expect(err.message).toMatch(/\bPermissionDeniedError\b/);
-        expect(err.message).toMatch(/\bexpected-constraint\b/);
         expect(err.message).toMatch(/\bexpected-message\b/);
         expect(instance.getMediaStream()).toBe(null);
         done();
@@ -313,14 +316,9 @@ describe('mr.mirror.MirrorMediaStream', () => {
           (config, callback) => {
             callback('source-id');
           });
-      navigator.webkitGetUserMedia.and.callFake(
-          (constraints, successCallback, errorCallback) => {
-            errorCallback({
-              name: 'NotAllowedError',
-              constraintName: 'expected-constraint',
-              message: 'expected-message',
-            });
-          });
+      navigator.mediaDevices.getUserMedia.and.callFake(
+          constraints => Promise.reject(
+              new DOMException('expected-message', 'NotAllowedError')));
 
       instance.start().catch((err) => {
         expect(err instanceof mr.mirror.Error).toBe(true);
@@ -328,7 +326,6 @@ describe('mr.mirror.MirrorMediaStream', () => {
             .toBe(mr.MirrorAnalytics.CapturingFailure
                       .CAPTURE_DESKTOP_FAIL_ERROR_USER_CANCEL);
         expect(err.message).toMatch(/\bNotAllowedError\b/);
-        expect(err.message).toMatch(/\bexpected-constraint\b/);
         expect(err.message).toMatch(/\bexpected-message\b/);
         expect(instance.getMediaStream()).toBe(null);
         done();
@@ -340,10 +337,8 @@ describe('mr.mirror.MirrorMediaStream', () => {
           (config, callback) => {
             callback('source-id');
           });
-      navigator.webkitGetUserMedia.and.callFake(
-          (constraints, successCallback, errorCallback) => {
-            successCallback(/* no stream */);
-          });
+      navigator.mediaDevices.getUserMedia.and.callFake(
+          constraints => Promise.resolve(null));
 
       instance.start().catch((err) => {
         expect(err instanceof mr.mirror.Error).toBe(true);

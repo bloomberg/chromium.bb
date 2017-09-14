@@ -66,28 +66,33 @@ mr.mirror.CaptureParameters = class {
   }
 
   /**
-   * @param {string=} opt_sourceId The source id of the desktop media.
-   * @return {MediaConstraints} Media constraints for use with platform
-   * capture APIs.
+   * @param {string=} sourceId The source ID of the desktop media.
+   * @return {!MediaStreamConstraints|!Object} Media constraints for use with
+   *     platform capture APIs.
    */
-  toMediaConstraints(opt_sourceId) {
+  toMediaConstraints(sourceId = undefined) {
     if (this.isTab()) {
       return this.toTabMediaConstraints_();
     } else if (this.isOffscreenTab()) {
       return this.toOffscreenTabMediaConstraints_();
     } else {
-      return this.toDesktopMediaConstraints_(mr.Assertions.assertString(
-          opt_sourceId, 'Missing desktop capture source id'));
+      return this.toDesktopMediaConstraints_(sourceId);
     }
   }
 
   /**
-   * @return {MediaConstraints} Media constraints for use with platform
+   * @return {!MediaConstraints} Media constraints for use with platform
    * capture APIs.
    * @private
    */
   toTabMediaConstraints_() {
-    const constraints = /** @type {MediaConstraints} */
+
+    //
+    // Also the tabCapture API shape doesn't match getUserMedia, wich combines
+    // audio and video constraints into a single dictionary.
+    //
+    // Both of these issues make it hard to type toMediaConstraints() properly.
+    const constraints = /** @type {!MediaConstraints} */
         ({
           'audio': this.mirrorSettings.shouldCaptureAudio,
           'video': this.mirrorSettings.shouldCaptureVideo
@@ -104,7 +109,7 @@ mr.mirror.CaptureParameters = class {
   }
 
   /**
-   * @return {MediaConstraints} Media constraints for use with offscreen
+   * @return {!MediaConstraints} Media constraints for use with offscreen
    * capture APIs.
    * @private
    */
@@ -117,16 +122,18 @@ mr.mirror.CaptureParameters = class {
   };
 
   /**
-   * @param {string} sourceId The source id of the desktop media.
-   * @return {MediaConstraints} Media constraints for use with platform
-   * capture APIs.
+   * @param {string=} sourceId The source id of the desktop media. Only required
+   *      if capturing video.
+   * @return {!MediaStreamConstraints} Media constraints for use with platform
+   *     capture APIs.
    * @private
    */
-  toDesktopMediaConstraints_(sourceId) {
-    const constraints = /** @type {MediaStreamConstraints}  */
+  toDesktopMediaConstraints_(sourceId = undefined) {
+    const constraints = /** @type {!MediaStreamConstraints}  */
         ({'audio': false, 'video': false});
 
     if (this.mirrorSettings.shouldCaptureVideo) {
+      mr.Assertions.assert(sourceId);
       constraints['video'] = {
         'mandatory': {
           'chromeMediaSource': 'desktop',
@@ -135,14 +142,24 @@ mr.mirror.CaptureParameters = class {
       };
       this.setCommonVideoConstraints_(constraints['video']['mandatory']);
 
-    }
-
-    if (mr.mirror.Config.isDesktopAudioCaptureAvailable &&
-        this.mirrorSettings.shouldCaptureAudio) {
+      if (mr.mirror.Config.isDesktopAudioCaptureAvailable &&
+          this.mirrorSettings.shouldCaptureAudio) {
+        // NOTE(mfoltz): Nothing in Chrome seems to consume the audio sourceId;
+        // however, continuing to pass it in case something changes in the
+        // future.
+        constraints['audio'] = {
+          'mandatory': {
+            'chromeMediaSource': 'system',
+            'chromeMediaSourceId': sourceId,
+          }
+        };
+      }
+    } else if (this.mirrorSettings.shouldCaptureAudio) {
+      mr.Assertions.assert(!sourceId);
+      mr.Assertions.assert(mr.mirror.Config.isDesktopAudioCaptureAvailable);
       constraints['audio'] = {
         'mandatory': {
           'chromeMediaSource': 'system',
-          'chromeMediaSourceId': sourceId,
         }
       };
     }
@@ -152,7 +169,7 @@ mr.mirror.CaptureParameters = class {
 
   /**
    * Helper to populate common video constraints fields for both capture APIs.
-   * @param {!Object} constraints
+   * @param {!MediaStreamConstraints|!MediaConstraints} constraints
    * @private
    */
   setCommonVideoConstraints_(constraints) {
