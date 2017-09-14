@@ -1,5 +1,4 @@
 SVG 1.1 dynamic animation tests
-
 Test
 Test animVal support for SVGAnimatedString animations.
 

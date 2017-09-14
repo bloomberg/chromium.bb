@@ -2,7 +2,6 @@
 
 
 Initial
-
 {
   "layers": [
     {
@@ -63,7 +62,6 @@ Initial
   ]
 }
 After step 1
-
 {
   "layers": [
     {
@@ -140,7 +138,6 @@ After step 1
   ]
 }
 After step 2
-
 {
   "layers": [
     {

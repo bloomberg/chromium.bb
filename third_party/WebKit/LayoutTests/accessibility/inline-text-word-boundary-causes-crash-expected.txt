@@ -1,5 +1,4 @@
 Heading
-
 Makes sure that accessing the word boundaries of an AXStaticText object doesn't cause a crash when it has an inline text box of length zero.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

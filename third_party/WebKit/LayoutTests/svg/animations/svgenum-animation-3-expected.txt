@@ -1,5 +1,4 @@
 SVG 1.1 dynamic animation tests
-
 Stretched text
 Test SVGLengthAdjustType enumeration animations
 

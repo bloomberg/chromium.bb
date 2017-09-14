@@ -1,6 +1,5 @@
 SVG 1.1 dynamic animation tests
 
-
 This tests values animation with just a single entry
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

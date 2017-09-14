@@ -2,12 +2,9 @@ Tests that the <iframe sandbox> attribute influences whether notification permis
 
 Normal iframe. Should inherit permissions.
 
-
 Sandboxed iframe with allow-same-origin. Should inherit permissions.
 
-
 Sandboxed iframe without allow-same-origin. Should not inherit permissions.
-
 
 
 --------

@@ -4,7 +4,6 @@ PASS successfullyParsed is true
 
 TEST COMPLETE
 Shape across element boundary test
-
 سلام The word by itself.
 سلام Adding a span around a character that forms a ligature. Should render the same as the above, except that half of the middle glyph should be red.
 سل‍ام Same word with a ZWJ character to disallow the ligature.

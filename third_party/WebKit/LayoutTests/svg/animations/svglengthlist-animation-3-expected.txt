@@ -1,5 +1,4 @@
 SVG 1.1 dynamic animation tests
-
 ABCD
 Test 'to' animation of SVGLengthList with different count of items.
 

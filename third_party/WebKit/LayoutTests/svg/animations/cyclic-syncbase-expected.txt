@@ -1,6 +1,5 @@
 SVG 1.1 dynamic animation tests
 
-
 Test cyclic for svg animations for syncbases
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

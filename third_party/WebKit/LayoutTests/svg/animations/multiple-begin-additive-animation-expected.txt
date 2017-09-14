@@ -1,6 +1,5 @@
 SVG 1.1 dynamic animation tests
 
-
 This tests additive='sum' support on animate elements with multiple begin times
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

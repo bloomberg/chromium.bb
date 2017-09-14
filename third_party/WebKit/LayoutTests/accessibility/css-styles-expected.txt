@@ -19,7 +19,6 @@ PASS successfullyParsed is true
 
 TEST COMPLETE
 Heading.
-
 Line one.
 Line two.
 

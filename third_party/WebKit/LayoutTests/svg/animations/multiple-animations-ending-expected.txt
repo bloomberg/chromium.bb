@@ -1,6 +1,5 @@
 Test the effect of multiple animations ending.
 
-
 This checks the effect on multiple animations ending on one target
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

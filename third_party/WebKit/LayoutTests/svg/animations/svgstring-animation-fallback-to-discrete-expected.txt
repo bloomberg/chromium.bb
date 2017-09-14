@@ -1,5 +1,4 @@
 SVG 1.1 dynamic animation tests
-
 Tests fallback to calcMode='discrete' on animation of SVGString with 'values'.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

@@ -3657,6 +3657,7 @@ crbug.com/720047 external/wpt/paint-timing [ Skip ]
 crbug.com/762008 [ Android ] http/tests/appcache/abort-cache-onchecking-resource-404.html [ Pass Crash ]
 
 # Editing commands incorrectly assume no plain text length change after formatting text.
+crbug.com/764489 editing/execCommand/format-block-multiple-paragraphs.html [ Failure ]
 crbug.com/764489 editing/execCommand/format-block-multiple-paragraphs-in-pre.html [ Failure ]
 
 # Sheriff failure 2017-09-06

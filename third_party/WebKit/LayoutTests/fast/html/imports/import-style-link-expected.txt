@@ -13,7 +13,6 @@ PASS successfullyParsed is true
 
 TEST COMPLETE
 These elements should be styled appropriately:
-
 Should be blue.
 Should become aqua.
 Should be white.

@@ -21,7 +21,6 @@ X
 Actual heading:
 
 Hello
-
 This test PASSES in DumpRenderTree. The role is AXRole: AXHeading
 The following should be a link:
 

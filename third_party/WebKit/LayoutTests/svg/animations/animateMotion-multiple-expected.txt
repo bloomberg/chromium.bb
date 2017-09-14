@@ -1,6 +1,5 @@
 SVG 1.1 dynamic animation tests
 
-
 Test for checking position of the svg element when multiple animateMotion are acting on it
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
