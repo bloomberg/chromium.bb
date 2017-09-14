@@ -59,8 +59,3 @@ class PixelExpectations(GpuTestExpectations):
 
     self.Flaky('Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker',
         ['mac', ('nvidia', 0xfe9), 'debug'], bug=751328)
-
-    self.Fail('Pixel_DirectComposition_Video_MP4', bug=760132)
-    self.Fail('Pixel_Video_MP4', bug=760132)
-    self.Fail('Pixel_DirectComposition_Video_VP9', bug=760132)
-    self.Fail('Pixel_Video_VP9', bug=760132)
