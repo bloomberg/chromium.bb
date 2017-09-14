@@ -5,23 +5,7 @@
 module IPC.mojom;
 
 import "mojo/common/read_only_buffer.mojom";
-
-// NOTE: This MUST match the value of MSG_ROUTING_NONE in src/ipc/ipc_message.h.
-const int32 kRoutingIdNone = -2;
-
-struct SerializedHandle {
-  handle the_handle;
-
-  enum Type {
-    MOJO_HANDLE,
-    PLATFORM_FILE,
-    WIN_HANDLE,
-    MACH_PORT,
-    FUCHSIA_HANDLE,
-  };
-
-  Type type;
-};
+import "mojo/public/interfaces/bindings/native_struct.mojom";
 
 // A placeholder interface type since we don't yet support generic associated
 // message pipe handles.
@@ -34,7 +18,7 @@ interface Channel {
 
   // Transmits a classical Chrome IPC message.
   Receive(mojo.common.mojom.ReadOnlyBuffer data,
-          array<SerializedHandle>? handles);
+          array<mojo.native.SerializedHandle>? handles);
 
   // Requests a Channel-associated interface.
   GetAssociatedInterface(string name, associated GenericInterface& request);

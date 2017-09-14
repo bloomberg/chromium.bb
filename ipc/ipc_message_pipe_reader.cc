@@ -54,7 +54,7 @@ bool MessagePipeReader::Send(std::unique_ptr<Message> message) {
                          "MessagePipeReader::Send",
                          message->flags(),
                          TRACE_EVENT_FLAG_FLOW_OUT);
-  base::Optional<std::vector<mojom::SerializedHandlePtr>> handles;
+  base::Optional<std::vector<mojo::native::SerializedHandlePtr>> handles;
   MojoResult result = MOJO_RESULT_OK;
   result = ChannelMojo::ReadFromMessageAttachmentSet(message.get(), &handles);
   if (result != MOJO_RESULT_OK)
@@ -86,7 +86,7 @@ void MessagePipeReader::SetPeerPid(int32_t peer_pid) {
 
 void MessagePipeReader::Receive(
     base::span<const uint8_t> data,
-    base::Optional<std::vector<mojom::SerializedHandlePtr>> handles) {
+    base::Optional<std::vector<mojo::native::SerializedHandlePtr>> handles) {
   Message message(
       data.empty() ? "" : reinterpret_cast<const char*>(data.data()),
       static_cast<uint32_t>(data.size()));

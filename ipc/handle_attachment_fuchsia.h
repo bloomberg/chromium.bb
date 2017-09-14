@@ -9,14 +9,15 @@
 
 #include "base/fuchsia/scoped_mx_handle.h"
 #include "ipc/handle_fuchsia.h"
-#include "ipc/ipc_export.h"
 #include "ipc/ipc_message_attachment.h"
+#include "ipc/ipc_message_support_export.h"
 
 namespace IPC {
 namespace internal {
 
 // This class represents a Fuchsia mx_handle_t attached to a Chrome IPC message.
-class IPC_EXPORT HandleAttachmentFuchsia : public MessageAttachment {
+class IPC_MESSAGE_SUPPORT_EXPORT HandleAttachmentFuchsia
+    : public MessageAttachment {
  public:
   // This constructor makes a copy of |handle| and takes ownership of the
   // result. Should only be called by the sender of a Chrome IPC message.

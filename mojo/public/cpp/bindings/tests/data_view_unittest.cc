@@ -90,21 +90,24 @@ TEST_F(DataViewTest, NestedStruct) {
 
 TEST_F(DataViewTest, NativeStruct) {
   TestStructPtr obj(TestStruct::New());
-  obj->f_native_struct = NativeStruct::New();
+  obj->f_native_struct = native::NativeStruct::New();
   obj->f_native_struct->data = std::vector<uint8_t>({3, 2, 1});
 
   auto data_view_holder = SerializeTestStruct(std::move(obj));
   auto& data_view = *data_view_holder->data_view;
 
-  NativeStructDataView struct_data_view;
+  native::NativeStructDataView struct_data_view;
   data_view.GetFNativeStructDataView(&struct_data_view);
 
-  ASSERT_FALSE(struct_data_view.is_null());
-  ASSERT_EQ(3u, struct_data_view.size());
-  EXPECT_EQ(3, struct_data_view[0]);
-  EXPECT_EQ(2, struct_data_view[1]);
-  EXPECT_EQ(1, struct_data_view[2]);
-  EXPECT_EQ(3, *struct_data_view.data());
+  ArrayDataView<uint8_t> data_data_view;
+  struct_data_view.GetDataDataView(&data_data_view);
+
+  ASSERT_FALSE(data_data_view.is_null());
+  ASSERT_EQ(3u, data_data_view.size());
+  EXPECT_EQ(3, data_data_view[0]);
+  EXPECT_EQ(2, data_data_view[1]);
+  EXPECT_EQ(1, data_data_view[2]);
+  EXPECT_EQ(3, *data_data_view.data());
 }
 
 TEST_F(DataViewTest, BoolArray) {

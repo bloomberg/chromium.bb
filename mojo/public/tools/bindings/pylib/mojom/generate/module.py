@@ -316,6 +316,8 @@ class Struct(ReferenceKind):
     name: {str} The stylized name.
     native_only: {bool} Does the struct have a body (i.e. any fields) or is it
         purely a native struct.
+    custom_serializer: {bool} Should we generate a serializer for the struct or
+        will one be provided by non-generated code.
     fields: {List[StructField]} The members of the struct.
     enums: {List[Enum]} The enums defined in the struct scope.
     constants: {List[Constant]} The constants defined in the struct scope.
@@ -326,6 +328,7 @@ class Struct(ReferenceKind):
   ReferenceKind.AddSharedProperty('mojom_name')
   ReferenceKind.AddSharedProperty('name')
   ReferenceKind.AddSharedProperty('native_only')
+  ReferenceKind.AddSharedProperty('custom_serializer')
   ReferenceKind.AddSharedProperty('fields')
   ReferenceKind.AddSharedProperty('enums')
   ReferenceKind.AddSharedProperty('constants')
@@ -339,6 +342,7 @@ class Struct(ReferenceKind):
     ReferenceKind.__init__(self, spec, False, module)
     self.mojom_name = mojom_name
     self.native_only = False
+    self.custom_serializer = False
     self.fields = []
     self.enums = []
     self.constants = []

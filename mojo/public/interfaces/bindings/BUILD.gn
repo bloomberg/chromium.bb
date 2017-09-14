@@ -8,8 +8,11 @@ mojom("bindings") {
   visibility = []
   sources = [
     "interface_control_messages.mojom",
+    "native_struct.mojom",
     "pipe_control_messages.mojom",
   ]
+
+  allow_native_structs = false
 
   component_output_prefix = "mojo_public_interfaces_bindings"
   export_class_attribute = "MOJO_CPP_BINDINGS_EXPORT"

@@ -78,7 +78,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/mock_overscroll_observer.h"
-#include "ipc/ipc.mojom.h"
+#include "ipc/constants.mojom.h"
 #include "ipc/ipc_security_test_util.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/dns/mock_host_resolver.h"

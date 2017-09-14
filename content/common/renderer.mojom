@@ -6,7 +6,7 @@ module content.mojom;
 
 import "content/common/native_types.mojom";
 import "content/common/service_worker/embedded_worker.mojom";
-import "ipc/ipc.mojom";
+import "ipc/constants.mojom";
 import "mojo/common/time.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/icc_profile.mojom";
@@ -171,7 +171,7 @@ interface Renderer {
   // EffectiveConnectionType is the connection type whose typical performance is
   // most similar to the measured performance of the network in use.
   // The downstream throughput is computed in kilobits per second. If an
-  // estimate of the HTTP or transport RTT is unavailable, it will be set to 
+  // estimate of the HTTP or transport RTT is unavailable, it will be set to
   // net::nqe::internal::InvalidRTT(). If the throughput estimate is
   // unavailable, it will be set to net::nqe::internal::kInvalidThroughput.
   OnNetworkQualityChanged(EffectiveConnectionType effective_connection_type,

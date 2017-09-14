@@ -651,7 +651,7 @@ mojom("mojo_bindings") {
   public_deps = [
     "//components/leveldb/public/interfaces",
     "//content/public/common:interfaces",
-    "//ipc:mojom",
+    "//ipc:mojom_constants",
     "//media/capture/mojo:capture_types",
     "//media/mojo/interfaces",
     "//mojo/common:common_custom_types",

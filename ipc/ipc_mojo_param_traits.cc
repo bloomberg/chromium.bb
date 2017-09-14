@@ -69,7 +69,7 @@ bool ParamTraits<mojo::DataPipeConsumerHandle>::Read(const base::Pickle* m,
   MessageAttachment::Type type =
       static_cast<MessageAttachment*>(attachment.get())->GetType();
   if (type != MessageAttachment::Type::MOJO_HANDLE) {
-    DLOG(ERROR) << "Unexpected attachment type:" << type;
+    DLOG(ERROR) << "Unexpected attachment type:" << static_cast<int>(type);
     return false;
   }
 

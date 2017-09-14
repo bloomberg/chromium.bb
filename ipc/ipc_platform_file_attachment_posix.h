@@ -5,8 +5,8 @@
 #ifndef IPC_IPC_PLATFORM_FILE_ATTACHMENT_H_
 #define IPC_IPC_PLATFORM_FILE_ATTACHMENT_H_
 
-#include "ipc/ipc_export.h"
 #include "ipc/ipc_message_attachment.h"
+#include "ipc/ipc_message_support_export.h"
 
 namespace IPC {
 namespace internal {
@@ -15,7 +15,8 @@ namespace internal {
 // PlatformFileAttachment optionally owns the file and |owning_| is set in that
 // case. Also, |file_| is not cleared even after the ownership is taken.
 // Some old clients require this strange behavior.
-class IPC_EXPORT PlatformFileAttachment : public MessageAttachment {
+class IPC_MESSAGE_SUPPORT_EXPORT PlatformFileAttachment
+    : public MessageAttachment {
  public:
   // Non-owning constructor
   explicit PlatformFileAttachment(base::PlatformFile file);

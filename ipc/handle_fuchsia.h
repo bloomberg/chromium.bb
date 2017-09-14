@@ -9,7 +9,7 @@
 
 #include <string>
 
-#include "ipc/ipc_export.h"
+#include "ipc/ipc_message_support_export.h"
 #include "ipc/ipc_param_traits.h"
 
 namespace base {
@@ -19,7 +19,7 @@ class PickleIterator;
 
 namespace IPC {
 
-class IPC_EXPORT HandleFuchsia {
+class IPC_MESSAGE_SUPPORT_EXPORT HandleFuchsia {
  public:
   // Default constructor makes an invalid mx_handle_t.
   HandleFuchsia();
@@ -33,7 +33,7 @@ class IPC_EXPORT HandleFuchsia {
 };
 
 template <>
-struct IPC_EXPORT ParamTraits<HandleFuchsia> {
+struct IPC_MESSAGE_SUPPORT_EXPORT ParamTraits<HandleFuchsia> {
   typedef HandleFuchsia param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,

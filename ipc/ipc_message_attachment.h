@@ -10,18 +10,31 @@
 #include "base/memory/ref_counted.h"
 #include "base/pickle.h"
 #include "build/build_config.h"
-#include "ipc/ipc.mojom.h"
-#include "ipc/ipc_export.h"
+#include "ipc/ipc_message_support_export.h"
+#include "mojo/public/cpp/system/handle.h"
 
 namespace IPC {
 
 // Auxiliary data sent with |Message|. This can be a platform file descriptor
 // or a mojo |MessagePipe|. |GetType()| returns the type of the subclass.
-class IPC_EXPORT MessageAttachment : public base::Pickle::Attachment {
+class IPC_MESSAGE_SUPPORT_EXPORT MessageAttachment
+    : public base::Pickle::Attachment {
  public:
-  using Type = mojom::SerializedHandle::Type;
+  enum class Type {
+    MOJO_HANDLE,
+    PLATFORM_FILE,
+    WIN_HANDLE,
+    MACH_PORT,
+    FUCHSIA_HANDLE,
+  };
+
+  static scoped_refptr<MessageAttachment> CreateFromMojoHandle(
+      mojo::ScopedHandle handle,
+      Type type);
 
   virtual Type GetType() const = 0;
+
+  mojo::ScopedHandle TakeMojoHandle();
 
  protected:
   friend class base::RefCountedThreadSafe<MessageAttachment>;

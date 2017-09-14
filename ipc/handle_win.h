@@ -9,7 +9,7 @@
 
 #include <string>
 
-#include "ipc/ipc_export.h"
+#include "ipc/ipc_message_support_export.h"
 #include "ipc/ipc_param_traits.h"
 
 namespace base {
@@ -26,7 +26,7 @@ namespace IPC {
 // The ownership semantics for the underlying |handle_| are complex. See
 // ipc/mach_port_mac.h (the OSX analog of this class) for an extensive
 // discussion.
-class IPC_EXPORT HandleWin {
+class IPC_MESSAGE_SUPPORT_EXPORT HandleWin {
  public:
   // Default constructor makes an invalid HANDLE.
   HandleWin();
@@ -40,7 +40,7 @@ class IPC_EXPORT HandleWin {
 };
 
 template <>
-struct IPC_EXPORT ParamTraits<HandleWin> {
+struct IPC_MESSAGE_SUPPORT_EXPORT ParamTraits<HandleWin> {
   typedef HandleWin param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,

@@ -10,15 +10,16 @@
 
 #include "base/macros.h"
 #include "base/process/process_handle.h"
-#include "ipc/ipc_export.h"
 #include "ipc/ipc_message_attachment.h"
+#include "ipc/ipc_message_support_export.h"
 #include "ipc/mach_port_mac.h"
 
 namespace IPC {
 namespace internal {
 
 // This class represents an OSX mach_port_t attached to a Chrome IPC message.
-class IPC_EXPORT MachPortAttachmentMac : public MessageAttachment {
+class IPC_MESSAGE_SUPPORT_EXPORT MachPortAttachmentMac
+    : public MessageAttachment {
  public:
   // This constructor increments the ref count of |mach_port_| and takes
   // ownership of the result. Should only be called by the sender of a Chrome

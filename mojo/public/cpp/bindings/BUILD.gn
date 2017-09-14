@@ -16,6 +16,11 @@ component("bindings") {
     "$interfaces_bindings_gen_dir/interface_control_messages.mojom-shared.h",
     "$interfaces_bindings_gen_dir/interface_control_messages.mojom.cc",
     "$interfaces_bindings_gen_dir/interface_control_messages.mojom.h",
+    "$interfaces_bindings_gen_dir/native_struct.mojom-shared-internal.h",
+    "$interfaces_bindings_gen_dir/native_struct.mojom-shared.cc",
+    "$interfaces_bindings_gen_dir/native_struct.mojom-shared.h",
+    "$interfaces_bindings_gen_dir/native_struct.mojom.cc",
+    "$interfaces_bindings_gen_dir/native_struct.mojom.h",
     "$interfaces_bindings_gen_dir/pipe_control_messages.mojom-shared-internal.h",
     "$interfaces_bindings_gen_dir/pipe_control_messages.mojom-shared.cc",
     "$interfaces_bindings_gen_dir/pipe_control_messages.mojom-shared.h",
@@ -86,9 +91,6 @@ component("bindings") {
     "lib/multiplex_router.h",
     "lib/native_enum_data.h",
     "lib/native_enum_serialization.h",
-    "lib/native_struct.cc",
-    "lib/native_struct_data.cc",
-    "lib/native_struct_data.h",
     "lib/native_struct_serialization.cc",
     "lib/native_struct_serialization.h",
     "lib/pipe_control_message_handler.cc",
@@ -122,8 +124,6 @@ component("bindings") {
     "message.h",
     "message_header_validator.h",
     "native_enum.h",
-    "native_struct.h",
-    "native_struct_data_view.h",
     "pipe_control_message_handler.h",
     "pipe_control_message_handler_delegate.h",
     "pipe_control_message_proxy.h",
@@ -149,12 +149,14 @@ component("bindings") {
   public_deps = [
     ":struct_traits",
     "//base",
+    "//ipc:message_support",
     "//ipc:param_traits",
     "//mojo/public/cpp/system",
   ]
 
   deps = [
     "//base",
+    "//ipc:native_handle_type_converters",
     "//mojo/public/interfaces/bindings:bindings__generator",
     "//mojo/public/interfaces/bindings:bindings_shared__generator",
   ]

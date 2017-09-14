@@ -36,3 +36,15 @@ interface RectService {
   GetLargestRect() => (TypemappedRect largest);
   PassSharedRect(SharedTypemappedRect r) => (SharedTypemappedRect passed);
 };
+
+[Native]
+struct TestNativeStructMojom;
+
+[Native]
+struct TestNativeStructWithAttachmentsMojom;
+
+interface NativeTypeTester {
+  PassNativeStruct(TestNativeStructMojom s) => (TestNativeStructMojom passed);
+  PassNativeStructWithAttachments(TestNativeStructWithAttachmentsMojom s)
+      => (TestNativeStructWithAttachmentsMojom s);
+};

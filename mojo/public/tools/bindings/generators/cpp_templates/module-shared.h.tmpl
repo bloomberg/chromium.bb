@@ -50,12 +50,15 @@ namespace {{namespace}} {
 #include "mojo/public/cpp/bindings/lib/serialization.h"
 #include "mojo/public/cpp/bindings/map_data_view.h"
 #include "mojo/public/cpp/bindings/native_enum.h"
-#include "mojo/public/cpp/bindings/native_struct_data_view.h"
 #include "mojo/public/cpp/bindings/string_data_view.h"
 #include "{{module.path}}-shared-internal.h"
 {%- for import in imports %}
 #include "{{import.path}}-shared.h"
 {%- endfor %}
+
+{% if allow_native_structs %}
+#include "mojo/public/cpp/bindings/lib/native_struct_serialization.h"
+{%- endif %}
 
 {%- if export_header %}
 #include "{{export_header}}"
@@ -66,7 +69,7 @@ namespace {{namespace}} {
 {#--- Struct Forward Declarations -#}
 {%- for struct in structs %}
 {%-   if struct|is_native_only_kind %}
-using {{struct.name}}DataView = mojo::NativeStructDataView;
+using {{struct.name}}DataView = mojo::native::NativeStructDataView;
 {%-   else %}
 class {{struct.name}}DataView;
 {%-   endif %}

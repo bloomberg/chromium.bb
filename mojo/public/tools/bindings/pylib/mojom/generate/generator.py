@@ -157,7 +157,7 @@ class Generator(object):
                bytecode_path=None, for_blink=False, use_once_callback=False,
                js_bindings_mode="new", export_attribute=None,
                export_header=None, generate_non_variant_code=False,
-               support_lazy_serialization=False):
+               support_lazy_serialization=False, allow_native_structs=False):
     self.module = module
     self.output_dir = output_dir
     self.typemap = typemap or {}
@@ -170,6 +170,7 @@ class Generator(object):
     self.export_header = export_header
     self.generate_non_variant_code = generate_non_variant_code
     self.support_lazy_serialization = support_lazy_serialization
+    self.allow_native_structs = allow_native_structs
 
   def Write(self, contents, filename):
     if self.output_dir is None:

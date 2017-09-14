@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
-#include "ipc/ipc_export.h"
+#include "ipc/ipc_message_support_export.h"
 
 namespace IPC {
 
@@ -26,7 +26,7 @@ class MessageAttachment;
 // For ChannelNacl under SFI NaCl, only Type::PLATFORM_FILE is supported. In
 // that case, the FD is sent over socket.
 // -----------------------------------------------------------------------------
-class IPC_EXPORT MessageAttachmentSet
+class IPC_MESSAGE_SUPPORT_EXPORT MessageAttachmentSet
     : public base::RefCountedThreadSafe<MessageAttachmentSet> {
  public:
   MessageAttachmentSet();

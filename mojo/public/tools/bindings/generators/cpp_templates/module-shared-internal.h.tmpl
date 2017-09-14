@@ -15,12 +15,15 @@
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/bindings/lib/map_data_internal.h"
 #include "mojo/public/cpp/bindings/lib/native_enum_data.h"
-#include "mojo/public/cpp/bindings/lib/native_struct_data.h"
 #include "mojo/public/cpp/bindings/lib/buffer.h"
 
 {%- for import in imports %}
 #include "{{import.path}}-shared-internal.h"
 {%- endfor %}
+
+{%- if allow_native_structs %}
+#include "mojo/public/interfaces/bindings/native_struct.mojom-shared-internal.h"
+{%- endif %}
 
 {%- if export_header %}
 #include "{{export_header}}"
@@ -40,7 +43,7 @@ namespace internal {
 {#--- Internal forward declarations #}
 {%- for struct in structs %}
 {%-   if struct|is_native_only_kind %}
-using {{struct.name}}_Data = mojo::internal::NativeStruct_Data;
+using {{struct.name}}_Data = mojo::native::internal::NativeStruct_Data;
 {%-   else %}
 class {{struct.name}}_Data;
 {%-   endif %}

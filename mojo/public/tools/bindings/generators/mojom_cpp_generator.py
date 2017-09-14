@@ -134,6 +134,10 @@ def IsNativeOnlyKind(kind):
       kind.native_only
 
 
+def UseCustomSerializer(kind):
+  return mojom.IsStructKind(kind) and kind.custom_serializer
+
+
 def AllEnumValues(enum):
   """Return all enum values associated with an enum.
 
@@ -286,6 +290,7 @@ class Generator(generator.Generator):
 
     return {
       "all_enums": all_enums,
+      "allow_native_structs": self.allow_native_structs,
       "enums": self.module.enums,
       "export_attribute": self.export_attribute,
       "export_header": self.export_header,
@@ -359,6 +364,7 @@ class Generator(generator.Generator):
       "struct_constructors": self._GetStructConstructors,
       "under_to_camel": generator.ToCamel,
       "unmapped_type_for_serializer": self._GetUnmappedTypeForSerializer,
+      "use_custom_serializer": UseCustomSerializer,
       "wtf_hash_fn_name_for_enum": GetWtfHashFnNameForEnum,
     }
     return cpp_filters
@@ -457,6 +463,8 @@ class Generator(generator.Generator):
       if mojom.IsNullableKind(kind):
         return False
       elif mojom.IsStructKind(kind):
+        if kind.native_only:
+          return False
         if (self._IsTypemappedKind(kind) and
             not self.typemap[self._GetFullMojomNameForKind(kind)]["hashable"]):
           return False

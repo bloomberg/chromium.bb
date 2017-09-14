@@ -8,8 +8,9 @@
 #include <mach/mach.h>
 
 #include "base/macros.h"
-#include "ipc/ipc_export.h"
-#include "ipc/ipc_message_macros.h"
+#include "base/pickle.h"
+#include "ipc/ipc_message_support_export.h"
+#include "ipc/ipc_param_traits.h"
 
 namespace IPC {
 
@@ -18,7 +19,7 @@ namespace IPC {
 // to the Mach port will be duplicated into the destination process by the
 // attachment broker. If needed, attachment brokering can be trivially extended
 // to support duplication of other types of rights.
-class IPC_EXPORT MachPortMac {
+class IPC_MESSAGE_SUPPORT_EXPORT MachPortMac {
  public:
   MachPortMac() : mach_port_(MACH_PORT_NULL) {}
 
@@ -69,7 +70,7 @@ class IPC_EXPORT MachPortMac {
 };
 
 template <>
-struct IPC_EXPORT ParamTraits<MachPortMac> {
+struct IPC_MESSAGE_SUPPORT_EXPORT ParamTraits<MachPortMac> {
   typedef MachPortMac param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
