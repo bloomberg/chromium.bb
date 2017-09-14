@@ -18,12 +18,4 @@
 
 @end
 
-// Commands protocol for the header controller.
-@protocol ContentSuggestionsHeaderViewControllerCommandHandler
-
-// Dismisses all presented modals.
-- (void)dismissModals;
-
-@end
-
 #endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_HEADER_VIEW_CONTROLLER_DELEGATE_H_
