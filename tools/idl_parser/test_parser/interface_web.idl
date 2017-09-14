@@ -134,6 +134,8 @@ interface MyIfaceEmptySequenceDefalutValue {
  *            StringType(DOMString)
  *            Type()
  *              PrimitiveType(long)
+ *              ExtAttributes()
+ *                ExtAttribute(EnforceRange)
  *    Type()
  *      PrimitiveType(void)
  *  Operation(bar)
@@ -151,7 +153,7 @@ interface MyIfaceEmptySequenceDefalutValue {
  *      PrimitiveType(double)
  */
 interface MyIfaceWithRecords {
-  void foo(record<DOMString, long> arg);
+  void foo(record<DOMString, [EnforceRange] long> arg);
   double bar(int arg1, record<ByteString, float> arg2);
 };
 
