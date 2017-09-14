@@ -36,7 +36,8 @@ def main():
   bootfs = BuildBootfs(
       args.output_directory,
       ReadRuntimeDeps(args.runtime_deps_path, args.output_directory),
-      args.exe_name, child_args, args.dry_run)
+      args.exe_name, child_args, args.dry_run, summary_output=None,
+      power_off=False)
   if not bootfs:
     return 2
 

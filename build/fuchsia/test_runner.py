@@ -186,12 +186,11 @@ def main():
     runtime_deps.append(('test_filter_file', test_launcher_filter_file))
     child_args.append('--test-launcher-filter-file=/system/test_filter_file')
 
-  if args.test_launcher_summary_output:
-    child_args.append('--test-launcher-summary-output=/tmp/summary_output.json')
-
   try:
-    bootfs = BuildBootfs(args.output_directory, runtime_deps, args.exe_name,
-                         child_args, args.dry_run)
+    bootfs = BuildBootfs(
+        args.output_directory, runtime_deps, args.exe_name, child_args,
+        args.dry_run, summary_output=args.test_launcher_summary_output,
+        power_off=not args.device)
     if not bootfs:
       return 2
 
