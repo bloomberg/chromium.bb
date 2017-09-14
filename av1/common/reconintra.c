@@ -2326,7 +2326,7 @@ static int intra_edge_filter_strength(int bsz, int delta) {
   return strength;
 }
 
-static void filter_intra_edge(uint8_t *p, int sz, int strength) {
+void av1_filter_intra_edge_c(uint8_t *p, int sz, int strength) {
   if (!strength) return;
 
   const int kernel[INTRA_EDGE_FILT][INTRA_EDGE_TAPS] = {
@@ -2350,7 +2350,7 @@ static void filter_intra_edge(uint8_t *p, int sz, int strength) {
 }
 
 #if CONFIG_HIGHBITDEPTH
-static void filter_intra_edge_high(uint16_t *p, int sz, int strength) {
+void av1_filter_intra_edge_high_c(uint16_t *p, int sz, int strength) {
   if (!strength) return;
 
   const int kernel[INTRA_EDGE_FILT][INTRA_EDGE_TAPS] = {
@@ -2440,8 +2440,8 @@ static void build_intra_predictors_high(
   int i;
   uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);
   uint16_t *ref = CONVERT_TO_SHORTPTR(ref8);
-  DECLARE_ALIGNED(16, uint16_t, left_data[MAX_TX_SIZE * 2 + 16]);
-  DECLARE_ALIGNED(16, uint16_t, above_data[MAX_TX_SIZE * 2 + 16]);
+  DECLARE_ALIGNED(16, uint16_t, left_data[MAX_TX_SIZE * 2 + 32]);
+  DECLARE_ALIGNED(16, uint16_t, above_data[MAX_TX_SIZE * 2 + 32]);
   uint16_t *const above_row = above_data + 16;
   uint16_t *const left_col = left_data + 16;
   const int txwpx = tx_size_wide[tx_size];
@@ -2632,13 +2632,13 @@ static void build_intra_predictors_high(
       if (need_above && n_top_px > 0) {
         const int strength = intra_edge_filter_strength(txwpx, p_angle - 90);
         const int n_px = n_top_px + ab_le + (need_right ? n_topright_px : 0);
-        filter_intra_edge_high(above_row - ab_le, n_px, strength);
+        av1_filter_intra_edge_high(above_row - ab_le, n_px, strength);
       }
       if (need_left && n_left_px > 0) {
         const int strength = intra_edge_filter_strength(txhpx, p_angle - 180);
         const int n_px =
             n_left_px + ab_le + (need_bottom ? n_bottomleft_px : 0);
-        filter_intra_edge_high(left_col - ab_le, n_px, strength);
+        av1_filter_intra_edge_high(left_col - ab_le, n_px, strength);
       }
     }
 #if CONFIG_INTRA_EDGE_UPSAMPLE
@@ -2684,8 +2684,8 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
                                    int plane) {
   int i;
   const uint8_t *above_ref = ref - ref_stride;
-  DECLARE_ALIGNED(16, uint8_t, left_data[MAX_TX_SIZE * 2 + 16]);
-  DECLARE_ALIGNED(16, uint8_t, above_data[MAX_TX_SIZE * 2 + 16]);
+  DECLARE_ALIGNED(16, uint8_t, left_data[MAX_TX_SIZE * 2 + 32]);
+  DECLARE_ALIGNED(16, uint8_t, above_data[MAX_TX_SIZE * 2 + 32]);
   uint8_t *const above_row = above_data + 16;
   uint8_t *const left_col = left_data + 16;
   const int txwpx = tx_size_wide[tx_size];
@@ -2874,13 +2874,13 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
       if (need_above && n_top_px > 0) {
         const int strength = intra_edge_filter_strength(txwpx, p_angle - 90);
         const int n_px = n_top_px + ab_le + (need_right ? n_topright_px : 0);
-        filter_intra_edge(above_row - ab_le, n_px, strength);
+        av1_filter_intra_edge(above_row - ab_le, n_px, strength);
       }
       if (need_left && n_left_px > 0) {
         const int strength = intra_edge_filter_strength(txhpx, p_angle - 180);
         const int n_px =
             n_left_px + ab_le + (need_bottom ? n_bottomleft_px : 0);
-        filter_intra_edge(left_col - ab_le, n_px, strength);
+        av1_filter_intra_edge(left_col - ab_le, n_px, strength);
       }
     }
 #if CONFIG_INTRA_EDGE_UPSAMPLE

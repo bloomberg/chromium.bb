@@ -412,6 +412,12 @@ if (CONFIG_LOOP_RESTORATION)
       "${AOM_ROOT}/av1/encoder/pickrst.h")
 endif ()
 
+if (CONFIG_INTRA_EDGE)
+  set(AOM_AV1_COMMON_INTRIN_SSE4_1
+      ${AOM_AV1_COMMON_INTRIN_SSE4_1}
+      "${AOM_ROOT}/av1/common/x86/intra_edge_sse4.c")
+endif ()
+
 if (CONFIG_PVQ)
   set(AOM_AV1_COMMON_SOURCES
       ${AOM_AV1_COMMON_SOURCES}
