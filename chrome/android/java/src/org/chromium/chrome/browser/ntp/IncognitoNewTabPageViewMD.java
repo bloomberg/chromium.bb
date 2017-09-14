@@ -28,7 +28,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 
@@ -202,7 +202,7 @@ public class IncognitoNewTabPageViewMD extends IncognitoNewTabPageView {
 
         boolean bulletpointsArrangedHorizontally;
 
-        boolean usingChromeHome = ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME);
+        boolean usingChromeHome = FeatureUtilities.isChromeHomeEnabled();
         if (mWidthDp <= WIDE_LAYOUT_THRESHOLD_DP || usingChromeHome) {
             // Small padding.
             // Set the padding to a default for Chrome Home, since we want less padding in this
