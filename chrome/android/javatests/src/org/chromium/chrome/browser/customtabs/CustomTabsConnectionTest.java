@@ -232,6 +232,7 @@ public class CustomTabsConnectionTest {
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
             "enable-features=" + ChromeFeatureList.CCT_BACKGROUND_TAB})
+    @RetryOnFailure
     public void testOnlyOneHiddenTab() throws Exception {
         Assert.assertTrue("Failed warmup()", mCustomTabsConnection.warmup(0));
         CustomTabsSessionToken token = CustomTabsSessionToken.createDummySessionTokenForTesting();
