@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
+#include "ui/base/device_form_factor.h"
 #include "ui/gfx/ios/uikit_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -15,8 +16,7 @@
 #endif
 
 bool IsIPadIdiom() {
-  UIUserInterfaceIdiom idiom = [[UIDevice currentDevice] userInterfaceIdiom];
-  return idiom == UIUserInterfaceIdiomPad;
+  return ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET;
 }
 
 const CGFloat kPortraitWidth[INTERFACE_IDIOM_COUNT] = {
