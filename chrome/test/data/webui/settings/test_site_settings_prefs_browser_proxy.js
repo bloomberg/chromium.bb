@@ -65,7 +65,6 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
     super([
       'fetchUsbDevices',
       'fetchZoomLevels',
-      'getCookieDetails',
       'getDefaultValueForContentType',
       'getExceptionList',
       'getOriginPermissions',
@@ -73,8 +72,6 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
       'isPatternValid',
       'observeProtocolHandlers',
       'observeProtocolHandlersEnabledState',
-      'reloadCookies',
-      'removeCookie',
       'removeProtocolHandler',
       'removeUsbDevice',
       'removeZoomLevel',
@@ -100,9 +97,6 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
 
     /** @private {!Array<!ProtocolEntry>} */
     this.protocolHandlers_ = [];
-
-    /** @private {?CookieList} */
-    this.cookieDetails_ = null;
 
     /** @private {boolean} */
     this.isOriginValid_ = true;
@@ -212,19 +206,6 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
   setOriginPermissions(origin, contentTypes, blanketSetting) {
     this.methodCalled(
         'setOriginPermissions', [origin, contentTypes, blanketSetting]);
-  }
-
-  /** @override */
-  getCookieDetails(site) {
-    this.methodCalled('getCookieDetails', site);
-    return Promise.resolve(this.cookieDetails_  || {id: '', children: []});
-  }
-
-  /**
-   * @param {!CookieList} cookieList
-   */
-  setCookieDetails(cookieList) {
-    this.cookieDetails_ = cookieList;
   }
 
   /** @override */
@@ -427,16 +408,6 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
   fetchZoomLevels() {
     cr.webUIListenerCallback('onZoomLevelsChanged', this.zoomList_);
     this.methodCalled('fetchZoomLevels');
-  }
-
-  /** @override */
-  reloadCookies() {
-    return Promise.resolve({id: null, children: []});
-  }
-
-  /** @override */
-  removeCookie(path) {
-    this.methodCalled('removeCookie', path);
   }
 
   /** @override */

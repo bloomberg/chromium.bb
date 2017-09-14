@@ -826,6 +826,12 @@
       <structure name="IDR_SETTINGS_CLOUD_PRINTING_PAGE_JS"
                  file="printing_page/cloud_printers.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_LOCAL_DATA_BROWSER_PROXY_HTML"
+                 file="site_settings/local_data_browser_proxy.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_LOCAL_DATA_BROWSER_PROXY_JS"
+                 file="site_settings/local_data_browser_proxy.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_PAGE_VISIBILITY_HTML"
                  file="page_visibility.html"
                  type="chrome_html" />
