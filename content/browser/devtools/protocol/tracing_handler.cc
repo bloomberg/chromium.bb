@@ -4,7 +4,13 @@
 
 #include "content/browser/devtools/protocol/tracing_handler.h"
 
+#include <algorithm>
 #include <cmath>
+#include <memory>
+#include <set>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/format_macros.h"
@@ -161,8 +167,9 @@ void TracingHandler::OnTraceDataCollected(const std::string& trace_fragment) {
       "{ \"method\": \"Tracing.dataCollected\", \"params\": { \"value\": [");
   const size_t messageSuffixSize = 10;
   message.reserve(message.size() + valid_trace_fragment.size() +
-                  messageSuffixSize);
-  message += valid_trace_fragment;
+                  messageSuffixSize - trace_data_buffer_state_.offset);
+  message.append(valid_trace_fragment.c_str() +
+                 trace_data_buffer_state_.offset);
   message += "] } }";
   frontend_->sendRawNotification(message);
 }
@@ -183,13 +190,24 @@ void TracingHandler::OnTraceComplete() {
 std::string TracingHandler::UpdateTraceDataBuffer(
     const std::string& trace_fragment) {
   size_t end = 0;
+  size_t last_open = 0;
   TraceDataBufferState& state = trace_data_buffer_state_;
+  state.offset = 0;
+  bool update_offset = state.open_braces == 0;
   for (; state.pos < trace_fragment.size(); ++state.pos) {
     char c = trace_fragment[state.pos];
     switch (c) {
       case '{':
-        if (!state.in_string && !state.slashed)
+        if (!state.in_string && !state.slashed) {
           state.open_braces++;
+          if (state.open_braces == 1) {
+            last_open = state.data.size() + state.pos;
+            if (update_offset) {
+              state.offset = last_open;
+              update_offset = false;
+            }
+          }
+        }
         break;
       case '}':
         if (!state.in_string && !state.slashed) {
@@ -219,13 +237,9 @@ std::string TracingHandler::UpdateTraceDataBuffer(
   // Next starting position is usually 0 except when we are in the middle of
   // processing a unicode character, i.e. \uxxxx.
   state.pos -= trace_fragment.size();
-  std::string complete_str = state.data + trace_fragment;
 
-  // Skip over commas between objects so that the next valid prefix does not
-  // start with a comma.
-  size_t next_start = complete_str.find('{', end);
-  state.data =
-      next_start == std::string::npos ? "" : complete_str.substr(next_start);
+  std::string complete_str = state.data + trace_fragment;
+  state.data = complete_str.substr(std::max(end, last_open));
 
   complete_str.resize(end);
   return complete_str;

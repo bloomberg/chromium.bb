@@ -8,8 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -73,6 +75,7 @@ class TracingHandler : public DevToolsDomainHandler, public Tracing::Backend {
     int open_braces = 0;
     bool in_string = false;
     bool slashed = false;
+    size_t offset = 0;
   };
 
   void OnRecordingEnabled(std::unique_ptr<StartCallback> callback);
