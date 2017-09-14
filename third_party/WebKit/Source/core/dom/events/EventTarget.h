@@ -220,8 +220,6 @@ class CORE_EXPORT EventTarget : public GarbageCollectedFinalized<EventTarget>,
                          EventListenerVector*,
                          EventListenerVector*);
 
-  bool ClearAttributeEventListener(const AtomicString& event_type);
-
   friend class EventListenerIterator;
 };
 

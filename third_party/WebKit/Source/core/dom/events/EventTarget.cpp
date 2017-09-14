@@ -498,13 +498,6 @@ EventListener* EventTarget::GetAttributeEventListener(
   return nullptr;
 }
 
-bool EventTarget::ClearAttributeEventListener(const AtomicString& event_type) {
-  EventListener* listener = GetAttributeEventListener(event_type);
-  if (!listener)
-    return false;
-  return removeEventListener(event_type, listener, false);
-}
-
 bool EventTarget::dispatchEventForBindings(Event* event,
                                            ExceptionState& exception_state) {
   if (!event->WasInitialized()) {
