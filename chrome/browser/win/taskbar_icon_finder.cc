@@ -14,19 +14,18 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_variant.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
+#include "ui/display/win/screen_win.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace {
 
@@ -37,19 +36,11 @@ namespace {
 // monitor.
 class TaskbarIconFinder {
  public:
-  // The result of a search for Chrome's taskbar icon. An empty rect is provided
-  // case of error or if no icon can be found.
-  using ResultCallback = base::OnceCallback<void(const gfx::Rect&)>;
-
-  // Finds the bounding rectangle of Chrome's taskbar icon on the primary
-  // monitor, running |result_callback| with the result when done.
-  static void FindAsync(ResultCallback result_callback);
-
- private:
   // Constructs a new finder and immediately starts running it on a dedicated
   // automation thread in a multi-threaded COM apartment.
-  explicit TaskbarIconFinder(ResultCallback result_callback);
+  explicit TaskbarIconFinder(TaskbarIconFinderResultCallback result_callback);
 
+ private:
   // Receives the result computed on the automation thread, stops the automation
   // thread, passes the results to the caller, then self-destructs.
   void OnComplete(const gfx::Rect& rect);
@@ -84,19 +75,13 @@ class TaskbarIconFinder {
   base::Thread automation_thread_;
 
   // The caller's callback.
-  ResultCallback result_callback_;
+  TaskbarIconFinderResultCallback result_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskbarIconFinder);
 };
 
-// static
-void TaskbarIconFinder::FindAsync(ResultCallback result_callback) {
-  DCHECK(result_callback);
-  // The instance self-destructs in OnComplete.
-  new TaskbarIconFinder(std::move(result_callback));
-}
-
-TaskbarIconFinder::TaskbarIconFinder(ResultCallback result_callback)
+TaskbarIconFinder::TaskbarIconFinder(
+    TaskbarIconFinderResultCallback result_callback)
     : automation_thread_("TaskbarIconFinder"),
       result_callback_(std::move(result_callback)) {
   DCHECK(result_callback_);
@@ -184,8 +169,8 @@ void TaskbarIconFinder::FindRectOnPrimaryMonitor(
   cache_request->AddProperty(UIA_NativeWindowHandlePropertyId);
 
   base::win::ScopedComPtr<IUIAutomationElement> icon;
+  HWND hwnd = 0;
   for (int i = 0; i < length; ++i) {
-    HWND hwnd = 0;
     icons->GetElement(i, icon.GetAddressOf());
 
     // Walk up the tree to find the icon's first parent with an HWND.
@@ -229,8 +214,9 @@ void TaskbarIconFinder::FindRectOnPrimaryMonitor(
   std::vector<double> bounding_rect =
       GetCachedDoubleArrayValue(icon.Get(), UIA_BoundingRectanglePropertyId);
   if (!bounding_rect.empty()) {
-    *rect = gfx::Rect(bounding_rect[0], bounding_rect[1], bounding_rect[2],
-                      bounding_rect[3]);
+    gfx::Rect screen_rect(bounding_rect[0], bounding_rect[1], bounding_rect[2],
+                          bounding_rect[3]);
+    *rect = display::win::ScreenWin::ScreenToDIPRect(hwnd, screen_rect);
   }
 }
 
@@ -289,27 +275,10 @@ HRESULT TaskbarIconFinder::DoOnComThread(gfx::Rect* rect) {
   return S_OK;
 }
 
-// Utilities -------------------------------------------------------------------
-
-// Sets |result_storage| with the value provided through invocation of the
-// callback in |result|, then runs |quit_closure|.
-void SetResultAndContinue(base::Closure quit_closure,
-                          gfx::Rect* result_storage,
-                          const gfx::Rect& result) {
-  *result_storage = result;
-  quit_closure.Run();
-}
-
 }  // namespace
 
-gfx::Rect FindTaskbarIconModal() {
-  gfx::Rect result;
-
-  base::RunLoop run_loop;
-  TaskbarIconFinder::FindAsync(base::BindOnce(&SetResultAndContinue,
-                                              run_loop.QuitClosure(),
-                                              base::Unretained(&result)));
-  run_loop.Run();
-
-  return result;
+void FindTaskbarIcon(TaskbarIconFinderResultCallback result_callback) {
+  DCHECK(result_callback);
+  // The instance self-destructs in OnComplete.
+  new TaskbarIconFinder(std::move(result_callback));
 }

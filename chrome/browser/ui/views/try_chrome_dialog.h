@@ -8,16 +8,13 @@
 #include <stddef.h>
 
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/run_loop.h"
-#include "base/time/time.h"
-#include "chrome/browser/ui/startup/startup_browser_creator.h"
+#include "base/sequence_checker.h"
 #include "chrome/installer/util/experiment_metrics.h"
-#include "chrome/installer/util/experiment_storage.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace views {
 class Widget;
@@ -37,12 +34,13 @@ class Widget;
 //   +-----------------------------------------------+
 //
 // Some variants do not have body text, or only have one button.
-class TryChromeDialog : public views::ButtonListener {
+class TryChromeDialog : public views::ButtonListener,
+                        public views::WidgetObserver {
  public:
   // Receives a closure to run upon process singleton notification when the
   // modal dialog is open, or a null closure when the active dialog is
   // dismissed.
-  typedef base::Callback<void(base::Closure)> ActiveModalDialogListener;
+  using ActiveModalDialogListener = base::Callback<void(base::Closure)>;
 
   enum Result {
     NOT_NOW,                    // Don't launch chrome. Exit now.
@@ -56,84 +54,102 @@ class TryChromeDialog : public views::ButtonListener {
   // Shows a modal dialog asking the user to give Chrome another try. See
   // above for the possible outcomes of the function.
   // |group| selects what strings to present and what controls are shown.
-  // |listener| will be provided with a closure when the dialog becomes active
-  // and when it is dismissed.
+  // |listener| will be provided with a closure when the modal event loop is
+  // started and when it completes.
   // Note that the dialog has no parent and it will position itself in a lower
   // corner of the screen or near the Chrome taskbar button.
   // The dialog does not steal focus and does not have an entry in the taskbar.
   static Result Show(size_t group, ActiveModalDialogListener listener);
 
  private:
-  // Indicates whether the dialog is modal
-  enum class DialogType {
-    MODAL,              // Modal dialog.
-    MODELESS_FOR_TEST,  // Modeless dialog.
+  class Delegate {
+   public:
+    // Called to tell the delegate that the dialog was shown at
+    // |toast_location|.
+    virtual void SetToastLocation(
+        installer::ExperimentMetrics::ToastLocation toast_location) {}
+
+    // Called to tell the delegate that the experiment has entered |state|.
+    virtual void SetExperimentState(installer::ExperimentMetrics::State state) {
+    }
+
+    // Called to tell the delegate that the interaction with the toast has
+    // completed.
+    virtual void InteractionComplete() {}
+
+   protected:
+    virtual ~Delegate() {}
   };
 
-  // Indicates the usage type. Chrome or tests.
-  enum class UsageType {
-    FOR_CHROME,
-    FOR_TESTING,
-  };
+  class ModalShowDelegate;
 
   friend class TryChromeDialogTest;
 
   // Creates a Try Chrome toast dialog. |group| signifies an experiment group
-  // which dictactes messaging text and presence of ui elements.
-  explicit TryChromeDialog(size_t group);
+  // which dictactes messaging text and presence of ui elements. |delegate|,
+  // which must outlive the instance, is notified of relevant details throughout
+  // the interaction.
+  TryChromeDialog(size_t group, Delegate* delegate);
   ~TryChromeDialog() override;
 
-  // Helper function to show the dialog.
-  // The |dialog_type| parameter indicates whether the dialog is modal.
-  // Note that modeless invocation returns before the user has made a
-  // selection, and is used in testing. This case will always return NOT_NOW.
-  // The |usage_type| parameter indicates whether this is being invoked by
-  // Chrome or a test.
-  Result ShowDialog(ActiveModalDialogListener listener,
-                    DialogType dialog_type,
-                    UsageType usage_type);
+  // Starts the process of presenting the dialog by initiating an asychronous
+  // search for Chrome's taskbar icon.
+  void ShowDialogAsync();
 
-  // Concludes the modal interaction by recording |result| and |state|, then
-  // closing the dialog.
-  void CloseDialog(Result result, installer::ExperimentMetrics::State state);
+  // Receives the bounds of Chrome's taskbar icon in |icon_rect|. The
+  // interaction is completed immediately in case of rendezvous to allow
+  // browser startup to continue. Otherwise, the dialog is shown to the user.
+  // The delegate's SetToastLocation method is called with the location.
+  void OnTaskbarIconRect(const gfx::Rect& icon_rect);
+
+  // Returns the bounding rectangle of a popup of size |size| centered "over"
+  // |icon_rect|, taking into account the orientation of the taskbar. Returns an
+  // empty rect if |icon_rect| is empty or in case of error.
+  gfx::Rect ComputePopupBoundsOverTaskbarIcon(const gfx::Size& size,
+                                              const gfx::Rect& icon_rect);
+
+  // Returns the bounding rectangle of a popup of size |size| to be positioned
+  // over the notification area of the screen, taking into account LTR vs RTL
+  // text orientation.
+  gfx::Rect ComputePopupBoundsOverNoficationArea(const gfx::Size& size);
+
+  // Notifies the delegate of the final experiment state and that the
+  // interaction has completed.
+  void CompleteInteraction();
 
   // Invoked upon notification from another process by way of the process
-  // singleton. Closes the dialog, allowing Chrome startup to resume.
+  // singleton. Triggers completion of the interaction by closing the dialog.
   void OnProcessNotification();
 
-  // Returns a screen rectangle that is fit to show the window. In particular
-  // it has the following properties: a) is visible and b) is attached to the
-  // bottom of the working area. For LTR machines it returns a left side
-  // rectangle and for RTL it returns a right side rectangle so that the dialog
-  // does not compete with the standard place of the start menu.
-  gfx::Rect ComputePopupBounds(const gfx::Size& size, bool is_RTL);
-
   // views::ButtonListener:
-  // We have two buttons and according to what the user clicked we set |result_|
-  // and we should always close and end the modal loop.
+  // Updates the result_ and state_ based on which button was pressed and
+  // closes the dialog.
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // Controls whether we're running in testing config.
-  // Experiment metrics setting is disabled in tests.
-  UsageType usage_type_;
+  // views::WidgetObserver:
+  // Completes the interaction.
+  void OnWidgetDestroyed(views::Widget* widget) override;
+  Result result() const { return result_; }
 
   // Controls which experiment group to use for varying the layout and controls.
   const size_t group_;
+  Delegate* const delegate_;
 
-  // Time when the toast was displayed.
-  base::TimeTicks time_shown_;
+  // A closure to run when the interaction has completed.
+  base::Closure on_complete_;
+
+  // The pessimistic result that will prevent launching Chrome.
+  Result result_ = NOT_NOW;
+
+  // The pessimistic state indicating that the dialog was closed via some means
+  // other than its intended UX.
+  installer::ExperimentMetrics::State state_ =
+      installer::ExperimentMetrics::kOtherClose;
 
   // Unowned; |popup_| owns itself.
-  views::Widget* popup_;
+  views::Widget* popup_ = nullptr;
 
-  // RunLoop to run the dialog before the main message loop.
-  std::unique_ptr<base::RunLoop> run_loop_;
-
-  // Experiment feedback interface.
-  installer::ExperimentStorage storage_;
-
-  // Result of displaying the dialog: accepted, dismissed, etc.
-  Result result_;
+  SEQUENCE_CHECKER(my_sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(TryChromeDialog);
 };

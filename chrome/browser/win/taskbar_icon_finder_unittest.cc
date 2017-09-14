@@ -4,6 +4,9 @@
 
 #include "chrome/browser/win/taskbar_icon_finder.h"
 
+#include "base/bind.h"
+#include "base/callback.h"
+#include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -11,5 +14,10 @@
 // cause crashes.
 TEST(TaskbarIconFinder, Simple) {
   base::test::ScopedTaskEnvironment task_environment;
-  FindTaskbarIconModal();
+  base::RunLoop run_loop;
+
+  FindTaskbarIcon(base::Bind([](base::Closure quit_closure,
+                                const gfx::Rect& rect) { quit_closure.Run(); },
+                             run_loop.QuitWhenIdleClosure()));
+  run_loop.Run();
 }
