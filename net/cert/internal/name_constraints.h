@@ -79,7 +79,7 @@ class NET_EXPORT NameConstraints {
   // that name form appears in the subject field or subjectAltName
   // extension of a subsequent certificate, then the application MUST
   // either process the constraint or reject the certificate.
-  int ConstrainedNameTypes() const;
+  int constrained_name_types() const { return constrained_name_types_; }
 
  private:
   bool Parse(const der::Input& extension_value,
@@ -88,6 +88,7 @@ class NET_EXPORT NameConstraints {
 
   GeneralNames permitted_subtrees_;
   GeneralNames excluded_subtrees_;
+  int constrained_name_types_ = GENERAL_NAME_NONE;
 };
 
 }  // namespace net
