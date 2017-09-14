@@ -1283,6 +1283,7 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @DisableIf.Build(supported_abis_includes = "arm64-v8a", message = "crbug.com/765403")
     public void testSwipeExpand() throws InterruptedException, TimeoutException {
         assertNoSearchesLoaded();
         clickWordNode("intelligence");
@@ -1859,6 +1860,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
+    @DisableIf.Build(supported_abis_includes = "arm64-v8a", message = "crbug.com/765403")
     public void testSearchTermResolutionError() throws InterruptedException, TimeoutException {
         clickWordNode("states");
         assertSearchTermRequested();
