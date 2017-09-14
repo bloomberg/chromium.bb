@@ -112,9 +112,6 @@ CreateScopedDisableInternalMouseAndKeyboard() {
 
 }  // namespace
 
-const base::Feature kAutoHideTitleBarsInTabletMode{
-    "AutoHideTitleBarsInTabletMode", base::FEATURE_DISABLED_BY_DEFAULT};
-
 TabletModeController::TabletModeController()
     : have_seen_accelerometer_data_(false),
       can_detect_lid_angle_(false),
@@ -122,8 +119,8 @@ TabletModeController::TabletModeController()
       tick_clock_(new base::DefaultTickClock()),
       tablet_mode_switch_is_on_(false),
       lid_is_closed_(false),
-      auto_hide_title_bars_(
-          base::FeatureList::IsEnabled(kAutoHideTitleBarsInTabletMode)),
+      auto_hide_title_bars_(!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshDisableTabletAutohideTitlebars)),
       scoped_session_observer_(this),
       weak_factory_(this) {
   Shell::Get()->AddShellObserver(this);

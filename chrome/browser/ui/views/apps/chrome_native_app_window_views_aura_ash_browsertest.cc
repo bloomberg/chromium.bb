@@ -5,7 +5,6 @@
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views_aura_ash.h"
 #include "extensions/browser/app_window/app_window.h"
@@ -17,15 +16,7 @@ class ChromeNativeAppWindowViewsAuraAshBrowserTest
   ChromeNativeAppWindowViewsAuraAshBrowserTest() = default;
   ~ChromeNativeAppWindowViewsAuraAshBrowserTest() override = default;
 
-  void SetUpInProcessBrowserTestFixture() override {
-    scoped_feature_list.InitAndEnableFeature(
-        ash::kAutoHideTitleBarsInTabletMode);
-    PlatformAppBrowserTest::SetUpInProcessBrowserTestFixture();
-  }
-
  private:
-  base::test::ScopedFeatureList scoped_feature_list;
-
   DISALLOW_COPY_AND_ASSIGN(ChromeNativeAppWindowViewsAuraAshBrowserTest);
 };
 

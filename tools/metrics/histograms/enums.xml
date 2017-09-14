@@ -24285,6 +24285,7 @@ from previous Chrome versions.
   <int value="1617187093" label="enable-improved-a2hs"/>
   <int value="1622131033" label="ozone-test-single-overlay-support"/>
   <int value="1626824478" label="ExperimentalAppBanners:disabled"/>
+  <int value="1632112977" label="ash-disable-tablet-autohide-titlebars"/>
   <int value="1633456034" label="chrome-home-swipe-logic"/>
   <int value="1634897915" label="password-import-export:enabled"/>
   <int value="1636962093" label="disable-material-design-ntp"/>

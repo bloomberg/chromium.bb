@@ -16,6 +16,12 @@ const char kAshDebugShortcuts[] = "ash-debug-shortcuts";
 // Enable keyboard shortcuts used by developers only.
 const char kAshDeveloperShortcuts[] = "ash-dev-shortcuts";
 
+// Disables autohide titlebars feature. With this flag disabled, apps in tablet
+// mode will have visible titlebars instead of autohidden titlebars.
+// TODO(crbug.com/764393): Remove this flag in M66/M67.
+const char kAshDisableTabletAutohideTitlebars[] =
+    "ash-disable-tablet-autohide-titlebars";
+
 // Disable the Touch Exploration Mode. Touch Exploration Mode will no longer be
 // turned on automatically when spoken feedback is enabled when this flag is
 // set.

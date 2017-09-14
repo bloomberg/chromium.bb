@@ -2303,6 +2303,12 @@ const char kDisableNewVirtualKeyboardBehaviorDescription[] =
     "Disable new window behavior for the accessibility keyboard in non-sticky "
     "mode (do not change work area in non-sticky mode).";
 
+const char kDisableTabletAutohideTitlebarsName[] =
+    "Disable autohide titlebars in tablet mode";
+const char kDisableTabletAutohideTitlebarsDescription[] =
+    "Disable tablet mode autohide titlebars functionality. The user will be "
+    "able to see the titlebar in tablet mode.";
+
 const char kEnablePerUserTimezoneName[] = "Per-user time zone preferences.";
 const char kEnablePerUserTimezoneDescription[] =
     "Chrome OS system timezone preference is stored and handled for each user "

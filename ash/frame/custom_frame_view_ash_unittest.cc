@@ -15,7 +15,6 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
-#include "base/test/scoped_feature_list.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
@@ -243,26 +242,9 @@ TEST_F(CustomFrameViewAshTest, HeaderViewNotifiedOfChildSizeChange) {
   EXPECT_EQ(initial, after_restore);
 }
 
-class HiddenTitlebarsCustomFrameViewAshTest : public CustomFrameViewAshTest {
- public:
-  HiddenTitlebarsCustomFrameViewAshTest() = default;
-  ~HiddenTitlebarsCustomFrameViewAshTest() override = default;
-
-  void SetUp() override {
-    scoped_feature_list.InitAndEnableFeature(kAutoHideTitleBarsInTabletMode);
-    CustomFrameViewAshTest::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list;
-
-  DISALLOW_COPY_AND_ASSIGN(HiddenTitlebarsCustomFrameViewAshTest);
-};
-
 // Verify that when in tablet mode with a maximized window, the height of the
 // header is zero.
-TEST_F(HiddenTitlebarsCustomFrameViewAshTest,
-       FrameHiddenInTabletModeForMaximizedWindows) {
+TEST_F(CustomFrameViewAshTest, FrameHiddenInTabletModeForMaximizedWindows) {
   CustomFrameTestWidgetDelegate* delegate = new CustomFrameTestWidgetDelegate;
   std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
   widget->Maximize();
@@ -273,8 +255,7 @@ TEST_F(HiddenTitlebarsCustomFrameViewAshTest,
 
 // Verify that when in tablet mode with a non maximized window, the height of
 // the header is non zero.
-TEST_F(HiddenTitlebarsCustomFrameViewAshTest,
-       FrameShownInTabletModeForNonMaximizedWindows) {
+TEST_F(CustomFrameViewAshTest, FrameShownInTabletModeForNonMaximizedWindows) {
   CustomFrameTestWidgetDelegate* delegate = new CustomFrameTestWidgetDelegate;
   std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
 
@@ -286,7 +267,7 @@ TEST_F(HiddenTitlebarsCustomFrameViewAshTest,
 
 // Verify that if originally in fullscreen mode, and enter tablet mode, the
 // height of the header remains zero.
-TEST_F(HiddenTitlebarsCustomFrameViewAshTest,
+TEST_F(CustomFrameViewAshTest,
        FrameRemainsHiddenInTabletModeWhenTogglingFullscreen) {
   CustomFrameTestWidgetDelegate* delegate = new CustomFrameTestWidgetDelegate;
   std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
@@ -299,7 +280,7 @@ TEST_F(HiddenTitlebarsCustomFrameViewAshTest,
   EXPECT_EQ(0, delegate->GetCustomFrameViewTopBorderHeight());
 }
 
-TEST_F(HiddenTitlebarsCustomFrameViewAshTest, OpeningAppsInTabletMode) {
+TEST_F(CustomFrameViewAshTest, OpeningAppsInTabletMode) {
   CustomFrameTestWidgetDelegate* delegate = new CustomFrameTestWidgetDelegate;
   views::Widget* widget = new views::Widget();
   views::Widget::InitParams params;
