@@ -44,6 +44,9 @@
 // loaded.
 @property(nonatomic, assign) BOOL usesBottomToolbar;
 
+// Color of the status bar.
+@property(nonatomic, strong) UIColor* statusBarBackgroundColor;
+
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_TAB_TAB_CONTAINER_VIEW_CONTROLLER_H_

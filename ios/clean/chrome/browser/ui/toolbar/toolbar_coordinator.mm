@@ -4,6 +4,7 @@
 
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_coordinator.h"
 
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ui/broadcaster/chrome_broadcaster.h"
 #import "ios/chrome/browser/ui/browser_list/browser.h"
@@ -15,7 +16,10 @@
 #import "ios/clean/chrome/browser/ui/commands/tools_menu_commands.h"
 #import "ios/clean/chrome/browser/ui/history_popup/history_popup_coordinator.h"
 #import "ios/clean/chrome/browser/ui/omnibox/location_bar_coordinator.h"
+#import "ios/clean/chrome/browser/ui/toolbar/toolbar_button_factory.h"
+#import "ios/clean/chrome/browser/ui/toolbar/toolbar_configuration.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_mediator.h"
+#import "ios/clean/chrome/browser/ui/toolbar/toolbar_style.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_view_controller.h"
 #import "ios/clean/chrome/browser/ui/tools/tools_coordinator.h"
 #import "ios/web/public/navigation_manager.h"
@@ -70,8 +74,14 @@
   if (self.started)
     return;
 
-  self.viewController = [[ToolbarViewController alloc]
-      initWithDispatcher:self.callableDispatcher];
+  ToolbarStyle style =
+      self.browser->browser_state()->IsOffTheRecord() ? INCOGNITO : NORMAL;
+  ToolbarButtonFactory* factory =
+      [[ToolbarButtonFactory alloc] initWithStyle:style];
+
+  self.viewController =
+      [[ToolbarViewController alloc] initWithDispatcher:self.callableDispatcher
+                                          buttonFactory:factory];
   self.viewController.usesTabStrip = self.usesTabStrip;
 
   [self.dispatcher startDispatchingToTarget:self
@@ -135,6 +145,8 @@
       [[ToolsMenuConfiguration alloc] initWithDisplayView:nil];
   menuConfiguration.inTabSwitcher = NO;
   menuConfiguration.noOpenedTabs = NO;
+  menuConfiguration.inIncognito =
+      self.browser->browser_state()->IsOffTheRecord();
   menuConfiguration.inNewTabPage =
       (self.webState->GetLastCommittedURL() == GURL(kChromeUINewTabURL));
 

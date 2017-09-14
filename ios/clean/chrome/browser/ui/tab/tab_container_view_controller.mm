@@ -6,8 +6,6 @@
 #import "ios/clean/chrome/browser/ui/tab/tab_container_view_controller+internal.h"
 
 #import "base/logging.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
-#import "ios/clean/chrome/browser/ui/toolbar/toolbar_constants.h"
 #import "ios/clean/chrome/browser/ui/transitions/animators/swap_from_above_animator.h"
 #import "ios/clean/chrome/browser/ui/transitions/containment_transition_context.h"
 #import "ios/clean/chrome/browser/ui/transitions/containment_transitioning_delegate.h"
@@ -51,6 +49,7 @@ const CGFloat kToolbarHeight = 56.0f;
 @synthesize containmentTransitioningDelegate =
     _containmentTransitioningDelegate;
 @synthesize usesBottomToolbar = _usesBottomToolbar;
+@synthesize statusBarBackgroundColor = _statusBarBackgroundColor;
 
 #pragma mark - UIViewController
 
@@ -129,6 +128,11 @@ const CGFloat kToolbarHeight = 56.0f;
   _usesBottomToolbar = usesBottomToolbar;
 }
 
+- (void)setStatusBarBackgroundColor:(UIColor*)statusBarBackgroundColor {
+  _statusBarBackgroundColor = statusBarBackgroundColor;
+  self.statusBarBackgroundView.backgroundColor = statusBarBackgroundColor;
+}
+
 #pragma mark - MenuPresentationDelegate
 
 - (CGRect)boundsForMenuPresentation {
@@ -189,8 +193,7 @@ const CGFloat kToolbarHeight = 56.0f;
   self.findBarView.backgroundColor = [UIColor clearColor];
   self.toolbarView.backgroundColor = [UIColor blackColor];
   self.contentView.backgroundColor = [UIColor blackColor];
-  self.statusBarBackgroundView.backgroundColor =
-      UIColorFromRGB(kToolbarBackgroundColor);
+  self.statusBarBackgroundView.backgroundColor = self.statusBarBackgroundColor;
   self.findBarView.clipsToBounds = YES;
 
   [self.view addSubview:self.containerView];

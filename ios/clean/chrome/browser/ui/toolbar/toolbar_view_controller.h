@@ -17,6 +17,8 @@
 @protocol TabGridCommands;
 @protocol TabHistoryPopupCommands;
 @protocol TabStripCommands;
+@class ToolbarButtonFactory;
+@class ToolbarConfiguration;
 @protocol ToolsMenuCommands;
 
 // View controller for a toolbar, which will show a horizontal row of
@@ -34,9 +36,16 @@
                                        TabGridCommands,
                                        TabHistoryPopupCommands,
                                        TabStripCommands,
-                                       ToolsMenuCommands>)dispatcher;
+                                       ToolsMenuCommands>)dispatcher
+                     buttonFactory:(ToolbarButtonFactory*)buttonFactory
+    NS_DESIGNATED_INITIALIZER;
 
-// The dispatcher for this view controller
+- (instancetype)init NS_UNAVAILABLE;
+- (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
+- (instancetype)initWithNibName:(NSString*)nibNameOrNil
+                         bundle:(NSBundle*)nibBundleOrNil NS_UNAVAILABLE;
+
+// The dispatcher for this view controller.
 @property(nonatomic, weak) id<NavigationCommands,
                               TabGridCommands,
                               TabHistoryPopupCommands,
