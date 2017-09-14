@@ -10,6 +10,7 @@
 #include "content/public/child/worker_thread.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/renderer/script_context.h"
@@ -18,8 +19,6 @@
 namespace extensions {
 
 namespace {
-
-const int kMainThreadId = 0;
 
 class MainThreadIPCMessageSender : public IPCMessageSender {
  public:

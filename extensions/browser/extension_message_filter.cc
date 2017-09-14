@@ -177,8 +177,7 @@ void ExtensionMessageFilter::OnExtensionAddListener(
 
   EventRouter* event_router = GetEventRouter();
   if (crx_file::id_util::IdIsValid(extension_id)) {
-    const bool is_service_worker_context =
-        worker_thread_id != kNonWorkerThreadId;
+    const bool is_service_worker_context = worker_thread_id != kMainThreadId;
     if (is_service_worker_context) {
       DCHECK(listener_or_worker_scope_url.is_valid());
       event_router->AddServiceWorkerEventListener(
@@ -210,8 +209,7 @@ void ExtensionMessageFilter::OnExtensionRemoveListener(
     return;
 
   if (crx_file::id_util::IdIsValid(extension_id)) {
-    const bool is_service_worker_context =
-        worker_thread_id != kNonWorkerThreadId;
+    const bool is_service_worker_context = worker_thread_id != kMainThreadId;
     if (is_service_worker_context) {
       DCHECK(listener_or_worker_scope_url.is_valid());
       GetEventRouter()->RemoveServiceWorkerEventListener(
