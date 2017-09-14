@@ -337,14 +337,12 @@ def RunBranchUtilTest(buildroot, version):
   """Tests that branch-util works at the given manifest version."""
   with osutils.TempDir() as tempdir:
     cmd = [
-        'cbuildbot',
-        'branch-util',
-        '--local',
+        'cros', 'tryjob', '--local', '--yes',
         '--skip-remote-push',
         '--branch-name', 'test_branch',
         '--version', version,
         '--buildroot', tempdir,
-        '--no-buildbot-tags',
+        'branch-util',
     ]
     RunBuildScript(buildroot, cmd, chromite_cmd=True)
 
