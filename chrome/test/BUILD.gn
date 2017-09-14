@@ -3851,6 +3851,7 @@ test("unit_tests") {
       # TODO(crbug.com/646627):
       # Move media_router_ui_service_factory_unittest.cc to chrome/browser/ui.
       "../browser/media/router/media_router_ui_service_factory_unittest.cc",
+      "../browser/media/router/mojo/extension_media_route_provider_proxy_unittest.cc",
       "../browser/media/router/mojo/media_route_controller_unittest.cc",
       "../browser/media/router/mojo/media_router_desktop_unittest.cc",
       "../browser/media/router/mojo/media_router_mojo_impl_unittest.cc",

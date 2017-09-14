@@ -70,6 +70,44 @@ MockMediaRouteProvider::MockMediaRouteProvider() {}
 
 MockMediaRouteProvider::~MockMediaRouteProvider() {}
 
+void MockMediaRouteProvider::RouteRequestSuccess(RouteCallback& cb) const {
+  DCHECK(route_);
+  std::move(cb).Run(route_, std::string(), RouteRequestResult::OK);
+}
+
+void MockMediaRouteProvider::RouteRequestTimeout(RouteCallback& cb) const {
+  std::move(cb).Run(base::nullopt, std::string("error"),
+                    RouteRequestResult::TIMED_OUT);
+}
+
+void MockMediaRouteProvider::TerminateRouteSuccess(
+    TerminateRouteCallback& cb) const {
+  std::move(cb).Run(std::string(), RouteRequestResult::OK);
+}
+
+void MockMediaRouteProvider::SendRouteMessageSuccess(
+    SendRouteMessageCallback& cb) const {
+  std::move(cb).Run(true);
+}
+void MockMediaRouteProvider::SendRouteBinaryMessageSuccess(
+    SendRouteBinaryMessageCallback& cb) const {
+  std::move(cb).Run(true);
+}
+
+void MockMediaRouteProvider::SearchSinksSuccess(SearchSinksCallback& cb) const {
+  std::string sink_id = route_ ? route_->media_sink_id() : std::string();
+  std::move(cb).Run(sink_id);
+}
+
+void MockMediaRouteProvider::CreateMediaRouteControllerSuccess(
+    CreateMediaRouteControllerCallback& cb) const {
+  std::move(cb).Run(true);
+}
+
+void MockMediaRouteProvider::SetRouteToReturn(const MediaRoute& route) {
+  route_ = route;
+}
+
 MockEventPageTracker::MockEventPageTracker() {}
 
 MockEventPageTracker::~MockEventPageTracker() {}
@@ -96,10 +134,6 @@ MockMediaController::MockMediaController()
     : binding_(this), hangouts_binding_(this) {}
 
 MockMediaController::~MockMediaController() {}
-
-RegisterMediaRouteProviderHandler::RegisterMediaRouteProviderHandler() {}
-
-RegisterMediaRouteProviderHandler::~RegisterMediaRouteProviderHandler() {}
 
 void MockMediaController::Bind(mojom::MediaControllerRequest request) {
   binding_.Bind(std::move(request));
@@ -146,11 +180,7 @@ void MediaRouterMojoTest::ConnectProviderManagerService() {
   mojom::MediaRouteProviderPtr mojo_provider;
   binding_ = base::MakeUnique<mojo::Binding<mojom::MediaRouteProvider>>(
       &mock_media_route_provider_, mojo::MakeRequest(&mojo_provider));
-  EXPECT_CALL(provide_handler_, InvokeInternal(kInstanceId, testing::_));
-  media_router_->RegisterMediaRouteProvider(
-      std::move(mojo_provider),
-      base::BindOnce(&RegisterMediaRouteProviderHandler::Invoke,
-                     base::Unretained(&provide_handler_)));
+  media_router_->set_media_route_provider_for_test(std::move(mojo_provider));
 }
 
 void MediaRouterMojoTest::SetUp() {

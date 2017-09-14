@@ -44,8 +44,6 @@ class NullMessageObserver : public RouteMessageObserver {
       final {}
 };
 
-
-
 }  // namespace
 
 class MediaRouterDesktopTest : public MediaRouterMojoTest {
@@ -66,46 +64,6 @@ class MediaRouterDesktopTest : public MediaRouterMojoTest {
     return std::unique_ptr<KeyedService>(new MediaRouterDesktop(context));
   }
 };
-
-TEST_F(MediaRouterDesktopTest, CreateRoute) {
-  TestCreateRoute();
-}
-
-TEST_F(MediaRouterDesktopTest, JoinRoute) {
-  TestJoinRoute();
-}
-
-TEST_F(MediaRouterDesktopTest, ConnectRouteByRouteId) {
-  TestConnectRouteByRouteId();
-}
-
-TEST_F(MediaRouterDesktopTest, TerminateRoute) {
-  TestTerminateRoute();
-}
-
-TEST_F(MediaRouterDesktopTest, SendRouteMessage) {
-  TestSendRouteMessage();
-}
-
-TEST_F(MediaRouterDesktopTest, SendRouteBinaryMessage) {
-  TestSendRouteBinaryMessage();
-}
-
-TEST_F(MediaRouterDesktopTest, DetachRoute) {
-  TestDetachRoute();
-}
-
-TEST_F(MediaRouterDesktopTest, SearchSinks) {
-  TestSearchSinks();
-}
-
-TEST_F(MediaRouterDesktopTest, ProvideSinks) {
-  TestProvideSinks();
-}
-
-TEST_F(MediaRouterDesktopTest, CreateMediaRouteController) {
-  TestCreateMediaRouteController();
-}
 
 #if defined(OS_WIN)
 TEST_F(MediaRouterDesktopTest, EnableMdnsAfterEachRegister) {
@@ -149,40 +107,25 @@ TEST_F(MediaRouterDesktopTest, SyncStateToMediaRouteProvider) {
   std::unique_ptr<MockMediaRoutesObserver> routes_observer;
   std::unique_ptr<NullMessageObserver> messages_observer;
 
-  {
-    router()->OnSinkAvailabilityUpdated(
-        mojom::MediaRouter::SinkAvailability::PER_SOURCE);
-    EXPECT_CALL(mock_media_route_provider_,
-                StartObservingMediaSinks(media_source.id()));
-    sinks_observer = base::MakeUnique<MockMediaSinksObserver>(
-        router(), media_source, url::Origin(GURL(kOrigin)));
-    EXPECT_TRUE(sinks_observer->Init());
+  router()->OnSinkAvailabilityUpdated(
+      mojom::MediaRouter::SinkAvailability::PER_SOURCE);
+  EXPECT_CALL(mock_media_route_provider_,
+              StartObservingMediaSinks(media_source.id()));
+  sinks_observer = base::MakeUnique<MockMediaSinksObserver>(
+      router(), media_source, url::Origin(GURL(kOrigin)));
+  EXPECT_TRUE(sinks_observer->Init());
 
-    EXPECT_CALL(mock_media_route_provider_,
-                StartObservingMediaRoutes(media_source.id()));
-    routes_observer =
-        base::MakeUnique<MockMediaRoutesObserver>(router(), media_source.id());
+  EXPECT_CALL(mock_media_route_provider_,
+              StartObservingMediaRoutes(media_source.id()));
+  routes_observer =
+      base::MakeUnique<MockMediaRoutesObserver>(router(), media_source.id());
 
-    EXPECT_CALL(mock_media_route_provider_,
-                StartListeningForRouteMessages(media_source.id()));
-    messages_observer =
-        base::MakeUnique<NullMessageObserver>(router(), media_source.id());
-    base::RunLoop().RunUntilIdle();
-    EXPECT_TRUE(Mock::VerifyAndClearExpectations(&mock_media_route_provider_));
-  }
-
-  {
-    EXPECT_CALL(mock_media_route_provider_,
-                StartObservingMediaSinks(media_source.id()));
-    EXPECT_CALL(mock_media_route_provider_, StartObservingMediaRoutes(""));
-    EXPECT_CALL(mock_media_route_provider_,
-                StartObservingMediaRoutes(media_source.id()));
-    EXPECT_CALL(mock_media_route_provider_,
-                StartListeningForRouteMessages(media_source.id()));
-    router()->OnConnectionError();
-    ConnectProviderManagerService();
-    base::RunLoop().RunUntilIdle();
-  }
+  EXPECT_CALL(mock_media_route_provider_,
+              StartListeningForRouteMessages(media_source.id()));
+  messages_observer =
+      base::MakeUnique<NullMessageObserver>(router(), media_source.id());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&mock_media_route_provider_));
 }
 
 }  // namespace media_router
