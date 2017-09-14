@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
+#include "components/autofill/core/browser/address_i18n.h"
 #include "components/autofill/core/browser/autofill_address_util.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_profile.h"
@@ -262,17 +263,19 @@
         NOTREACHED();
         return @[];
       }
-      AutofillUIType autofillUIType = AutofillUITypeFromAutofillType(
-          autofill::GetFieldTypeFromString(autofillType));
+      autofill::ServerFieldType serverFieldType =
+          autofill::GetFieldTypeFromString(autofillType);
+      AutofillUIType autofillUIType =
+          AutofillUITypeFromAutofillType(serverFieldType);
 
       NSNumber* fieldKey = [NSNumber numberWithInt:autofillUIType];
       EditorField* field = self.fieldsMap[fieldKey];
       if (!field) {
         NSString* value =
-            [self fieldValueFromProfile:self.address
-                              fieldType:autofill::GetFieldTypeFromString(
-                                            autofillType)];
-        BOOL required = autofillUIType != AutofillUITypeProfileCompanyName;
+            [self fieldValueFromProfile:self.address fieldType:serverFieldType];
+
+        BOOL required = autofill::i18n::IsFieldRequired(
+            serverFieldType, base::SysNSStringToUTF8(self.selectedCountryCode));
         field =
             [[EditorField alloc] initWithAutofillUIType:autofillUIType
                                               fieldType:EditorFieldTypeTextField
