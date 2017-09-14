@@ -224,17 +224,21 @@ class TryjobTestCbuildbotArgs(TryjobTest):
         '--gerrit-patches', '123', '-g', '*123', '-g', '123..456',
         '--committer-email', 'foo@bar',
         '--version', '1.2.3', '--channel', 'chan',
+        '--branch-name', 'test_branch', '--rename-to', 'new_branch',
+        '--delete-branch', '--force-create', '--skip-remote-push',
         '--pass-through=--cbuild-arg', '--pass-through=bar',
         'lumpy-paladin', 'lumpy-release',
     ])
     self.assertEqual(result, [
         '--remote-trybot',
-        '--debug',
+        '--debug', '--no-buildbot-tags',
         '-g', '123', '-g', '*123', '-g', '123..456',
         '--latest-toolchain', '--nochromesdk',
         '--hwtest', '--notests', '--novmtests', '--noimagetests',
         '--timeout', '5', '--sanity-check-build',
         '--version', '1.2.3', '--channel', 'chan',
+        '--branch-name', 'test_branch', '--rename-to', 'new_branch',
+        '--delete-branch', '--force-create', '--skip-remote-push',
         '--cbuild-arg', 'bar'
     ])
 
