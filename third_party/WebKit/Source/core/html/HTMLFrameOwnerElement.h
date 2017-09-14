@@ -76,11 +76,20 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
     STACK_ALLOCATED();
 
    public:
-    PluginDisposeSuspendScope();
-    ~PluginDisposeSuspendScope();
+    PluginDisposeSuspendScope() { suspend_count_ += 2; }
+    ~PluginDisposeSuspendScope() {
+      suspend_count_ -= 2;
+      if (suspend_count_ == 1)
+        PerformDeferredPluginDispose();
+    }
 
    private:
     void PerformDeferredPluginDispose();
+
+    // Low bit indicates if there are plugins to dispose.
+    static int suspend_count_;
+
+    friend class HTMLFrameOwnerElement;
   };
 
   // FrameOwner overrides:
