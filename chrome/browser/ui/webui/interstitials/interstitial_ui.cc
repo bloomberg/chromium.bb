@@ -21,6 +21,7 @@
 #include "chrome/common/features.h"
 #include "chrome/common/url_constants.h"
 #include "components/grit/components_resources.h"
+#include "components/safe_browsing_db/database_manager.h"
 #include "components/security_interstitials/core/ssl_error_ui.h"
 #include "components/supervised_user_error_page/supervised_user_error_page.h"
 #include "content/public/browser/interstitial_page_delegate.h"
@@ -285,7 +286,9 @@ safe_browsing::SafeBrowsingBlockingPage* CreateSafeBrowsingBlockingPage(
       security_interstitials::UnsafeResource::
           GetWebContentsGetter(web_contents->GetRenderProcessHost()->GetID(),
                                web_contents->GetMainFrame()->GetRoutingID());
-  resource.threat_source = safe_browsing::ThreatSource::LOCAL_PVER3;
+  resource.threat_source = g_browser_process->safe_browsing_service()
+                               ->database_manager()
+                               ->GetThreatSource();
 
   // Normally safebrowsing interstitial types which block the main page load
   // (SB_THREAT_TYPE_URL_MALWARE, SB_THREAT_TYPE_URL_PHISHING, and
@@ -331,7 +334,9 @@ TestSafeBrowsingBlockingPageQuiet* CreateSafeBrowsingQuietBlockingPage(
       security_interstitials::UnsafeResource::GetWebContentsGetter(
           web_contents->GetRenderProcessHost()->GetID(),
           web_contents->GetMainFrame()->GetRoutingID());
-  resource.threat_source = safe_browsing::ThreatSource::LOCAL_PVER3;
+  resource.threat_source = g_browser_process->safe_browsing_service()
+                               ->database_manager()
+                               ->GetThreatSource();
 
   // Normally safebrowsing interstitial types which block the main page load
   // (SB_THREAT_TYPE_URL_MALWARE, SB_THREAT_TYPE_URL_PHISHING, and
@@ -450,12 +455,12 @@ void InterstitialHTMLSource::StartDataRequest(
     interstitial_delegate.reset(CreateSafeBrowsingBlockingPage(web_contents));
   } else if (path_without_query == "/clock") {
     interstitial_delegate.reset(CreateBadClockBlockingPage(web_contents));
-  }
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
-  else if (path_without_query == "/captiveportal") {
+  } else if (path_without_query == "/captiveportal") {
     interstitial_delegate.reset(CreateCaptivePortalBlockingPage(web_contents));
-  }
 #endif
+  }
+
   if (path_without_query == "/supervised_user") {
     html = GetSupervisedUserInterstitialHTML(path);
   } else if (path_without_query == "/quietsafebrowsing") {
