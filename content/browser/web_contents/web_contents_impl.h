@@ -629,8 +629,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   double GetPendingPageZoomLevel() override;
 #endif  // !defined(OS_ANDROID)
   FrameTree* GetFrameTree() override;
-  void SetIsVirtualKeyboardRequested(bool requested) override;
-  bool IsVirtualKeyboardRequested() override;
   bool IsOverridingUserAgent() override;
   bool IsJavaScriptDialogShowing() const override;
   bool ShouldIgnoreUnresponsiveRenderer() override;
@@ -1628,8 +1626,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   std::unique_ptr<WebContentsAudioMuter> audio_muter_;
 
   size_t bluetooth_connected_device_count_;
-
-  bool virtual_keyboard_requested_;
 
   // Notifies ResourceDispatcherHostImpl of various events related to loading.
   std::unique_ptr<LoaderIOThreadNotifier> loader_io_thread_notifier_;

@@ -772,10 +772,6 @@ void RenderWidgetHostViewAura::FocusedNodeTouched(
     const gfx::Point& location_dips_screen,
     bool editable) {
 #if defined(OS_WIN)
-  RenderViewHost* rvh = RenderViewHost::From(host_);
-  if (rvh && rvh->GetDelegate())
-    rvh->GetDelegate()->SetIsVirtualKeyboardRequested(editable);
-
   ui::OnScreenKeyboardDisplayManager* osk_display_manager =
       ui::OnScreenKeyboardDisplayManager::GetInstance();
   DCHECK(osk_display_manager);
@@ -1709,10 +1705,6 @@ void RenderWidgetHostViewAura::FocusedNodeChanged(
 #if defined(OS_WIN)
   if (!editable && virtual_keyboard_requested_) {
     virtual_keyboard_requested_ = false;
-
-    RenderViewHost* rvh = RenderViewHost::From(host_);
-    if (rvh && rvh->GetDelegate())
-      rvh->GetDelegate()->SetIsVirtualKeyboardRequested(false);
 
     DCHECK(ui::OnScreenKeyboardDisplayManager::GetInstance());
     ui::OnScreenKeyboardDisplayManager::GetInstance()->DismissVirtualKeyboard();
