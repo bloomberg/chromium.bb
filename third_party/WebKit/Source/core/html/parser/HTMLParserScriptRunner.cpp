@@ -224,7 +224,7 @@ void HTMLParserScriptRunner::ExecutePendingScriptAndDispatchEvent(
     parser_blocking_script_ = nullptr;
   }
 
-  if (ScriptLoader* script_loader = pending_script->GetElement()->Loader()) {
+  if (pending_script->GetElement()->Loader()) {
     // 7. "Increment the parser's script nesting level by one (it should be
     //     zero before this step, so this sets it to one)."
     HTMLParserReentryPermit::ScriptNestingLevelIncrementer
