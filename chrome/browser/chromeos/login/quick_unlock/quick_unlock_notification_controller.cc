@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_notification_controller.h"
 
-#include "ash/strings/grit/ash_strings.h"
 #include "ash/system/system_notifier.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -18,12 +17,12 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_service.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/strings/grit/ui_strings.h"
 
 namespace chromeos {
 namespace quick_unlock {
@@ -58,13 +57,11 @@ QuickUnlockNotificationController::CreateForPin(Profile* profile) {
 
   // Set the PIN notification parameters.
   controller->params_.delegate_id = kPinDelegateId;
-  controller->params_.title_message_id =
-      IDS_ASH_QUICK_UNLOCK_NOTIFICATION_TITLE;
-  controller->params_.body_message_id = IDS_ASH_QUICK_UNLOCK_NOTIFICATION_BODY;
+  controller->params_.title_message_id = IDS_QUICK_UNLOCK_NOTIFICATION_TITLE;
+  controller->params_.body_message_id = IDS_QUICK_UNLOCK_NOTIFICATION_BODY;
   controller->params_.icon_id = IDR_SCREENSHOT_NOTIFICATION_ICON;
   controller->params_.notifier = ash::system_notifier::kNotifierPinUnlock;
-  controller->params_.feature_name_id =
-      IDS_MESSAGE_CENTER_NOTIFIER_PIN_UNLOCK_FEATURE_NAME;
+  controller->params_.feature_name_id = IDS_PIN_UNLOCK_FEATURE_NOTIFIER_NAME;
   controller->params_.notification_id = kPinNotificationId;
   controller->params_.url = GURL(kPinSetupUrl);
   controller->params_.was_shown_pref_id =
@@ -114,13 +111,13 @@ QuickUnlockNotificationController::CreateForFingerprint(Profile* profile) {
 
   // Set the fingerprint notification parameters.
   controller->params_.delegate_id = kFingerprintDelegateId;
-  controller->params_.title_message_id = IDS_ASH_FINGERPRINT_NOTIFICATION_TITLE;
-  controller->params_.body_message_id = IDS_ASH_FINGERPRINT_NOTIFICATION_BODY;
+  controller->params_.title_message_id = IDS_FINGERPRINT_NOTIFICATION_TITLE;
+  controller->params_.body_message_id = IDS_FINGERPRINT_NOTIFICATION_BODY;
   controller->params_.icon_id = IDR_NOTIFICATION_FINGERPRINT;
   controller->params_.notifier =
       ash::system_notifier::kNotifierFingerprintUnlock;
   controller->params_.feature_name_id =
-      IDS_MESSAGE_CENTER_NOTIFIER_FINGERPRINT_UNLOCK_FEATURE_NAME;
+      IDS_FINGERPRINT_UNLOCK_FEATURE_NOTIFIER_NAME;
   controller->params_.notification_id = kFingerprintNotificationId;
   controller->params_.url = GURL(kFingerprintSetupUrl);
   controller->params_.was_shown_pref_id =

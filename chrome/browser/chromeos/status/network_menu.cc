@@ -8,7 +8,6 @@
 
 #include <algorithm>
 
-#include "ash/strings/grit/ash_strings.h"
 #include "ash/system/network/network_icon.h"
 #include "base/bind.h"
 #include "base/logging.h"
@@ -496,7 +495,7 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
   if (handler->IsTechnologyEnabled(NetworkTypePattern::WiFi())) {
     // List Wifi networks.
     int scanning_msg = handler->GetScanningByType(NetworkTypePattern::WiFi())
-                           ? IDS_ASH_STATUS_TRAY_WIFI_SCANNING_MESSAGE
+                           ? IDS_WIFI_SCANNING_MESSAGE
                            : 0;
     for (NetworkStateHandler::NetworkStateList::const_iterator iter =
              network_list.begin(); iter != network_list.end(); ++iter) {

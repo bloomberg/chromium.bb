@@ -8,7 +8,6 @@
 
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/shell.h"
-#include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/profiles/profile.h"
