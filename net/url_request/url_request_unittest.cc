@@ -838,12 +838,29 @@ class URLRequestTest : public PlatformTest {
     return protocol_handler_;
   }
 
+  // Creates a temp test file and writes |data| to the file. The file will be
+  // deleted after the test completes.
+  void CreateTestFile(const char* data,
+                      size_t data_size,
+                      base::FilePath* test_file) {
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    // Get an absolute path since |temp_dir| can contain a symbolic link. As of
+    // now, Mac and Android bots return a path with a symbolic link.
+    base::FilePath absolute_temp_dir =
+        base::MakeAbsoluteFilePath(temp_dir_.GetPath());
+
+    ASSERT_TRUE(base::CreateTemporaryFileInDir(absolute_temp_dir, test_file));
+    ASSERT_EQ(static_cast<int>(data_size),
+              base::WriteFile(*test_file, data, data_size));
+  }
+
  protected:
   TestNetLog net_log_;
   TestNetworkDelegate default_network_delegate_;  // Must outlive URLRequest.
   URLRequestJobFactoryImpl* job_factory_impl_;
   std::unique_ptr<URLRequestJobFactory> job_factory_;
   TestURLRequestContext default_context_;
+  base::ScopedTempDir temp_dir_;
 };
 
 // This NetworkDelegate is picky about what files are accessible. Only
@@ -949,35 +966,27 @@ TEST_F(URLRequestTest, DataURLImageTest) {
 
 #if !BUILDFLAG(DISABLE_FILE_SUPPORT)
 TEST_F(URLRequestTest, FileTest) {
-  base::FilePath app_path;
+  const char kTestFileContent[] = "Hello";
+  base::FilePath test_file;
+  ASSERT_NO_FATAL_FAILURE(
+      CreateTestFile(kTestFileContent, sizeof(kTestFileContent), &test_file));
 
-#if defined(OS_ANDROID)
-  // Android devices are not guaranteed to be able to read /proc/self/exe
-  // Use /etc/hosts instead
-  app_path = base::FilePath("/etc/hosts");
-#else
-  PathService::Get(base::FILE_EXE, &app_path);
-#endif  // OS_ANDROID
-
-  GURL app_url = FilePathToFileURL(app_path);
+  GURL test_url = FilePathToFileURL(test_file);
 
   TestDelegate d;
   {
     std::unique_ptr<URLRequest> r(default_context_.CreateRequest(
-        app_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+        test_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
 
     r->Start();
     EXPECT_TRUE(r->is_pending());
 
     base::RunLoop().Run();
 
-    int64_t file_size = -1;
-    EXPECT_TRUE(base::GetFileSize(app_path, &file_size));
-
     EXPECT_TRUE(!r->is_pending());
     EXPECT_EQ(1, d.response_started_count());
     EXPECT_FALSE(d.received_data_before_response());
-    EXPECT_EQ(d.bytes_received(), static_cast<int>(file_size));
+    EXPECT_EQ(d.bytes_received(), static_cast<int>(sizeof(kTestFileContent)));
     EXPECT_EQ("", r->GetSocketAddress().host());
     EXPECT_EQ(0, r->GetSocketAddress().port());
 
@@ -987,14 +996,17 @@ TEST_F(URLRequestTest, FileTest) {
 }
 
 TEST_F(URLRequestTest, FileTestCancel) {
-  base::FilePath app_path;
-  PathService::Get(base::FILE_EXE, &app_path);
-  GURL app_url = FilePathToFileURL(app_path);
+  const char kTestFileContent[] = "Hello";
+  base::FilePath test_file;
+  ASSERT_NO_FATAL_FAILURE(
+      CreateTestFile(kTestFileContent, sizeof(kTestFileContent), &test_file));
+
+  GURL test_url = FilePathToFileURL(test_file);
 
   TestDelegate d;
   {
     std::unique_ptr<URLRequest> r(default_context_.CreateRequest(
-        app_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+        test_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
 
     r->Start();
     EXPECT_TRUE(r->is_pending());
@@ -1010,14 +1022,10 @@ TEST_F(URLRequestTest, FileTestFullSpecifiedRange) {
   std::unique_ptr<char[]> buffer(new char[buffer_size]);
   FillBuffer(buffer.get(), buffer_size);
 
-  base::FilePath temp_path;
-  EXPECT_TRUE(base::CreateTemporaryFile(&temp_path));
-  GURL temp_url = FilePathToFileURL(temp_path);
-  EXPECT_EQ(static_cast<int>(buffer_size),
-            base::WriteFile(temp_path, buffer.get(), buffer_size));
-
-  int64_t file_size;
-  EXPECT_TRUE(base::GetFileSize(temp_path, &file_size));
+  base::FilePath test_file;
+  ASSERT_NO_FATAL_FAILURE(
+      CreateTestFile(buffer.get(), buffer_size, &test_file));
+  GURL temp_url = FilePathToFileURL(test_file);
 
   const size_t first_byte_position = 500;
   const size_t last_byte_position = buffer_size - first_byte_position;
@@ -1047,8 +1055,6 @@ TEST_F(URLRequestTest, FileTestFullSpecifiedRange) {
     // Don't use EXPECT_EQ, it will print out a lot of garbage if check failed.
     EXPECT_TRUE(partial_buffer_string == d.data_received());
   }
-
-  EXPECT_TRUE(base::DeleteFile(temp_path, false));
 }
 
 TEST_F(URLRequestTest, FileTestHalfSpecifiedRange) {
@@ -1056,13 +1062,10 @@ TEST_F(URLRequestTest, FileTestHalfSpecifiedRange) {
   std::unique_ptr<char[]> buffer(new char[buffer_size]);
   FillBuffer(buffer.get(), buffer_size);
 
-  base::FilePath temp_path;
-  EXPECT_TRUE(base::CreateTemporaryFile(&temp_path));
-  GURL temp_url = FilePathToFileURL(temp_path);
-  EXPECT_TRUE(base::WriteFile(temp_path, buffer.get(), buffer_size));
-
-  int64_t file_size;
-  EXPECT_TRUE(base::GetFileSize(temp_path, &file_size));
+  base::FilePath test_file;
+  ASSERT_NO_FATAL_FAILURE(
+      CreateTestFile(buffer.get(), buffer_size, &test_file));
+  GURL temp_url = FilePathToFileURL(test_file);
 
   const size_t first_byte_position = 500;
   const size_t last_byte_position = buffer_size - 1;
@@ -1091,8 +1094,6 @@ TEST_F(URLRequestTest, FileTestHalfSpecifiedRange) {
     // Don't use EXPECT_EQ, it will print out a lot of garbage if check failed.
     EXPECT_TRUE(partial_buffer_string == d.data_received());
   }
-
-  EXPECT_TRUE(base::DeleteFile(temp_path, false));
 }
 
 TEST_F(URLRequestTest, FileTestMultipleRanges) {
@@ -1100,13 +1101,10 @@ TEST_F(URLRequestTest, FileTestMultipleRanges) {
   std::unique_ptr<char[]> buffer(new char[buffer_size]);
   FillBuffer(buffer.get(), buffer_size);
 
-  base::FilePath temp_path;
-  EXPECT_TRUE(base::CreateTemporaryFile(&temp_path));
-  GURL temp_url = FilePathToFileURL(temp_path);
-  EXPECT_TRUE(base::WriteFile(temp_path, buffer.get(), buffer_size));
-
-  int64_t file_size;
-  EXPECT_TRUE(base::GetFileSize(temp_path, &file_size));
+  base::FilePath test_file;
+  ASSERT_NO_FATAL_FAILURE(
+      CreateTestFile(buffer.get(), buffer_size, &test_file));
+  GURL temp_url = FilePathToFileURL(test_file);
 
   TestDelegate d;
   {
@@ -1122,28 +1120,20 @@ TEST_F(URLRequestTest, FileTestMultipleRanges) {
     base::RunLoop().Run();
     EXPECT_TRUE(d.request_failed());
   }
-
-  EXPECT_TRUE(base::DeleteFile(temp_path, false));
 }
 
 TEST_F(URLRequestTest, AllowFileURLs) {
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  // Get an absolute path since |temp_dir| can contain a symbolic link. As of
-  // now, Mac and Android bots return a path with a symbolic link.
-  base::FilePath absolute_temp_dir =
-      base::MakeAbsoluteFilePath(temp_dir.GetPath());
-
+  std::string test_data("monkey");
   base::FilePath test_file;
-  ASSERT_TRUE(base::CreateTemporaryFileInDir(absolute_temp_dir, &test_file));
+  ASSERT_NO_FATAL_FAILURE(
+      CreateTestFile(test_data.data(), test_data.size(), &test_file));
+
   // The directory part of the path returned from CreateTemporaryFileInDir()
   // can be slightly different from |absolute_temp_dir| on Windows.
   // Example: C:\\Users\\CHROME~2 -> C:\\Users\\chrome-bot
   // Hence the test should use the directory name of |test_file|, rather than
   // |absolute_temp_dir|, for whitelisting.
   base::FilePath real_temp_dir = test_file.DirName();
-  std::string test_data("monkey");
-  base::WriteFile(test_file, test_data.data(), test_data.size());
   GURL test_file_url = FilePathToFileURL(test_file);
   {
     TestDelegate d;
@@ -1177,11 +1167,10 @@ TEST_F(URLRequestTest, AllowFileURLs) {
 #if defined(OS_POSIX) && !defined(OS_FUCHSIA)  // Because of symbolic links.
 
 TEST_F(URLRequestTest, SymlinksToFiles) {
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   // Get an absolute path since temp_dir can contain a symbolic link.
   base::FilePath absolute_temp_dir =
-      base::MakeAbsoluteFilePath(temp_dir.GetPath());
+      base::MakeAbsoluteFilePath(temp_dir_.GetPath());
 
   // Create a good directory (will be whitelisted) and a good file.
   base::FilePath good_dir = absolute_temp_dir.AppendASCII("good");
@@ -1243,11 +1232,10 @@ TEST_F(URLRequestTest, SymlinksToFiles) {
 }
 
 TEST_F(URLRequestTest, SymlinksToDirs) {
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   // Get an absolute path since temp_dir can contain a symbolic link.
   base::FilePath absolute_temp_dir =
-      base::MakeAbsoluteFilePath(temp_dir.GetPath());
+      base::MakeAbsoluteFilePath(temp_dir_.GetPath());
 
   // Create a good directory (will be whitelisted).
   base::FilePath good_dir = absolute_temp_dir.AppendASCII("good");
