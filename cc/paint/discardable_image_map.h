@@ -11,6 +11,7 @@
 #include "base/containers/flat_map.h"
 #include "cc/base/rtree.h"
 #include "cc/paint/draw_image.h"
+#include "cc/paint/image_animation_count.h"
 #include "cc/paint/image_id.h"
 #include "cc/paint/paint_export.h"
 #include "cc/paint/paint_flags.h"
@@ -29,6 +30,20 @@ class PaintOpBuffer;
 // rect and get back a list of DrawImages in that rect.
 class CC_PAINT_EXPORT DiscardableImageMap {
  public:
+  struct AnimatedImageMetadata {
+    AnimatedImageMetadata(PaintImage::Id paint_image_id,
+                          PaintImage::CompletionState completion_state,
+                          std::vector<FrameMetadata> frames,
+                          int repetition_count);
+    AnimatedImageMetadata(const AnimatedImageMetadata& other);
+    ~AnimatedImageMetadata();
+
+    PaintImage::Id paint_image_id;
+    PaintImage::CompletionState completion_state;
+    std::vector<FrameMetadata> frames;
+    int repetition_count;
+  };
+
   DiscardableImageMap();
   ~DiscardableImageMap();
 
@@ -37,6 +52,9 @@ class CC_PAINT_EXPORT DiscardableImageMap {
                                   std::vector<const DrawImage*>* images) const;
   gfx::Rect GetRectForImage(PaintImage::Id image_id) const;
   bool all_images_are_srgb() const { return all_images_are_srgb_; }
+  const std::vector<AnimatedImageMetadata>& animated_images_metadata() const {
+    return animated_images_metadata_;
+  }
 
   void Reset();
   void Generate(const PaintOpBuffer* paint_op_buffer, const gfx::Rect& bounds);
@@ -52,6 +70,7 @@ class CC_PAINT_EXPORT DiscardableImageMap {
       base::flat_map<PaintImage::Id, gfx::Rect> image_id_to_rect);
 
   base::flat_map<PaintImage::Id, gfx::Rect> image_id_to_rect_;
+  std::vector<AnimatedImageMetadata> animated_images_metadata_;
   bool all_images_are_srgb_ = false;
 
   RTree<DrawImage> images_rtree_;

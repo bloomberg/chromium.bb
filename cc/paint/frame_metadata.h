@@ -16,6 +16,10 @@ struct CC_PAINT_EXPORT FrameMetadata {
   FrameMetadata(bool complete, base::TimeDelta duration)
       : complete(complete), duration(duration) {}
 
+  bool operator==(const FrameMetadata& other) const {
+    return complete == other.complete && duration == other.duration;
+  }
+
   // True if the decoder has all encoded content for this frame.
   bool complete = true;
 

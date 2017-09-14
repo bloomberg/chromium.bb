@@ -28,7 +28,12 @@ PaintImage PaintImageBuilder::TakePaintImage() const {
     DCHECK(!paint_image_.paint_image_generator_);
     DCHECK(!paint_image_.sk_image_->isLazyGenerated());
     // TODO(khushalsagar): Assert that we don't have an animated image type
-    // here.
+    // here. The only case where this is possible is DragImage. There are 2 use
+    // cases going through that path, re-orienting the image and for use by the
+    // DragController. The first should never be triggered for an animated
+    // image (orientation changes can only be specified by JPEGs, none of the
+    // animation image types use it). For the latter the image is required to be
+    // decoded and used in blink, and should only need the default frame.
   } else if (paint_image_.paint_record_) {
     DCHECK(!paint_image_.sk_image_);
     DCHECK(!paint_image_.paint_image_generator_);

@@ -693,6 +693,42 @@ TEST_F(DiscardableImageMapTest, GathersDiscardableImagesFromNestedOps) {
   EXPECT_TRUE(discardable_image2 == images[0]->paint_image());
 }
 
+TEST_F(DiscardableImageMapTest, GathersAnimatedImages) {
+  gfx::Rect visible_rect(1000, 1000);
+  FakeContentLayerClient content_layer_client;
+  content_layer_client.set_bounds(visible_rect.size());
+
+  gfx::Size image_size(100, 100);
+  PaintImage static_image = CreateDiscardablePaintImage(image_size);
+  PaintImage animated_loop_none =
+      CreateAnimatedImage(image_size, {FrameMetadata()}, kAnimationNone);
+  PaintImage animation_loop_infinite = CreateAnimatedImage(image_size);
+
+  PaintFlags flags;
+  content_layer_client.add_draw_image(static_image, gfx::Point(0, 0), flags);
+  content_layer_client.add_draw_image(animated_loop_none, gfx::Point(100, 100),
+                                      flags);
+  content_layer_client.add_draw_image(animation_loop_infinite,
+                                      gfx::Point(200, 200), flags);
+
+  scoped_refptr<DisplayItemList> display_list =
+      content_layer_client.PaintContentsToDisplayList(
+          ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
+  display_list->GenerateDiscardableImagesMetadata();
+  const auto& animated_images_metadata =
+      display_list->discardable_image_map().animated_images_metadata();
+
+  ASSERT_EQ(animated_images_metadata.size(), 1u);
+  EXPECT_EQ(animated_images_metadata[0].paint_image_id,
+            animation_loop_infinite.stable_id());
+  EXPECT_EQ(animated_images_metadata[0].completion_state,
+            animation_loop_infinite.completion_state());
+  EXPECT_EQ(animated_images_metadata[0].frames,
+            animation_loop_infinite.GetFrameMetadata());
+  EXPECT_EQ(animated_images_metadata[0].repetition_count,
+            animation_loop_infinite.repetition_count());
+}
+
 class DiscardableImageMapColorSpaceTest
     : public DiscardableImageMapTest,
       public testing::WithParamInterface<gfx::ColorSpace> {};
