@@ -2327,6 +2327,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_new_boards = frozenset([
       'auron',
       'auron_paine',
+      'kahlee',
   ])
 
   # Paladin configs that exist and should stay as experimental until further

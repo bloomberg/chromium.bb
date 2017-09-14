@@ -11956,6 +11956,7 @@
     },
     "kahlee-paladin": {
         "_template": "paladin",
+        "active_waterfall": "chromeos",
         "boards": [
             "kahlee"
         ],
@@ -15480,6 +15481,7 @@
             "guado-paladin",
             "guado_moblab-paladin",
             "hana-paladin",
+            "kahlee-paladin",
             "kevin-paladin",
             "kip-paladin",
             "lakitu-gpu-paladin",
