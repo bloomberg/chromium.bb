@@ -407,6 +407,7 @@ struct MappingData {
     {"054c", "0268", MapperPlaystationSixAxis},  // Playstation SIXAXIS
     {"054c", "05c4", MapperDualshock4},          // Playstation Dualshock 4
     {"054c", "09cc", MapperDualshock4},          // Dualshock 4 (PS4 Slim)
+    {"054c", "0ba0", MapperDualshock4},          // Dualshock 4 USB receiver
     {"0583", "2060", MapperIBuffalo},            // iBuffalo Classic
     {"0925", "0005", MapperSmartJoyPLUS},        // SmartJoy PLUS Adapter
     {"0955", "7210", MapperNvShield},            // Nvidia Shield gamepad
