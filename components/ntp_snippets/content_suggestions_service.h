@@ -26,6 +26,7 @@
 #include "components/ntp_snippets/category_rankers/category_ranker.h"
 #include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
+#include "components/ntp_snippets/logger.h"
 #include "components/ntp_snippets/remote/remote_suggestions_scheduler.h"
 #include "components/ntp_snippets/user_classifier.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -106,8 +107,8 @@ class ContentSuggestionsService : public KeyedService,
       std::unique_ptr<CategoryRanker> category_ranker,
       std::unique_ptr<UserClassifier> user_classifier,
       std::unique_ptr<RemoteSuggestionsScheduler>
-          remote_suggestions_scheduler  // Can be nullptr in unittests.
-      );
+          remote_suggestions_scheduler,  // Can be nullptr in unittests.
+      std::unique_ptr<Logger> debug_logger);
   ~ContentSuggestionsService() override;
 
   // Inherited from KeyedService.
@@ -232,6 +233,10 @@ class ContentSuggestionsService : public KeyedService,
   // supports it).
   void ClearDismissedSuggestionsForDebugging(Category category);
 
+  std::string GetDebugLog() const {
+    return debug_logger_->GetHumanReadableLog();
+  }
+
   // Returns true if the remote suggestions provider is enabled.
   bool AreRemoteSuggestionsEnabled() const;
 
@@ -263,6 +268,8 @@ class ContentSuggestionsService : public KeyedService,
   UserClassifier* user_classifier() { return user_classifier_.get(); }
 
   CategoryRanker* category_ranker() { return category_ranker_.get(); }
+
+  Logger* debug_logger() { return debug_logger_.get(); }
 
  private:
   friend class ContentSuggestionsServiceTest;
@@ -408,6 +415,8 @@ class ContentSuggestionsService : public KeyedService,
 
   // Provides order for categories.
   std::unique_ptr<CategoryRanker> category_ranker_;
+
+  std::unique_ptr<Logger> debug_logger_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSuggestionsService);
 };

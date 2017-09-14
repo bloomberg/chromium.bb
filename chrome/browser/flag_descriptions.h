@@ -980,6 +980,9 @@ extern const char kContentSuggestionsCategoryOrderDescription[];
 extern const char kContentSuggestionsCategoryRankerName[];
 extern const char kContentSuggestionsCategoryRankerDescription[];
 
+extern const char kContentSuggestionsDebugLogName[];
+extern const char kContentSuggestionsDebugLogDescription[];
+
 extern const char kContextualSearchContextualCardsBarIntegration[];
 extern const char kContextualSearchContextualCardsBarIntegrationDescription[];
 

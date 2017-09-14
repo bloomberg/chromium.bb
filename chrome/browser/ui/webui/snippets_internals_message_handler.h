@@ -60,6 +60,7 @@ class SnippetsInternalsMessageHandler
   void OnFullRefreshRequired() override;
   void ContentSuggestionsServiceShutdown() override;
 
+  void HandleInitializationCompleted(const base::ListValue* args);
   void HandleRefreshContent(const base::ListValue* args);
   void HandleDownload(const base::ListValue* args);
   void HandleClearCachedSuggestions(const base::ListValue* args);

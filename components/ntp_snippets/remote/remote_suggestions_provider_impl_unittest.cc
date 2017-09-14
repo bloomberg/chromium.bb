@@ -39,6 +39,7 @@
 #include "components/ntp_snippets/category_rankers/mock_category_ranker.h"
 #include "components/ntp_snippets/fake_content_suggestions_provider_observer.h"
 #include "components/ntp_snippets/features.h"
+#include "components/ntp_snippets/logger.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/remote/json_to_categories.h"
@@ -411,7 +412,7 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
         std::move(image_fetcher), std::move(database),
         std::move(remote_suggestions_status_service),
         std::move(mock_prefetched_pages_tracker),
-        std::move(fake_breaking_news_listener));
+        std::move(fake_breaking_news_listener), &debug_logger_);
   }
 
   std::unique_ptr<RemoteSuggestionsProviderImpl>
@@ -624,6 +625,8 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
 
   base::ScopedTempDir database_dir_;
   RemoteSuggestionsDatabase* database_;
+
+  Logger debug_logger_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteSuggestionsProviderImplTest);
 };

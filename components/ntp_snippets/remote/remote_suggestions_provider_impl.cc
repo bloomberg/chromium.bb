@@ -17,6 +17,7 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -337,7 +338,8 @@ RemoteSuggestionsProviderImpl::RemoteSuggestionsProviderImpl(
     std::unique_ptr<RemoteSuggestionsDatabase> database,
     std::unique_ptr<RemoteSuggestionsStatusService> status_service,
     std::unique_ptr<PrefetchedPagesTracker> prefetched_pages_tracker,
-    std::unique_ptr<BreakingNewsListener> breaking_news_raw_data_provider)
+    std::unique_ptr<BreakingNewsListener> breaking_news_raw_data_provider,
+    Logger* debug_logger)
     : RemoteSuggestionsProvider(observer),
       state_(State::NOT_INITED),
       pref_service_(pref_service),
@@ -356,7 +358,9 @@ RemoteSuggestionsProviderImpl::RemoteSuggestionsProviderImpl(
       clock_(base::MakeUnique<base::DefaultClock>()),
       prefetched_pages_tracker_(std::move(prefetched_pages_tracker)),
       breaking_news_raw_data_provider_(
-          std::move(breaking_news_raw_data_provider)) {
+          std::move(breaking_news_raw_data_provider)),
+      debug_logger_(debug_logger) {
+  DCHECK(debug_logger_);
   RestoreCategoriesFromPrefs();
   // The articles category always exists. Add it if we didn't get it from prefs.
   // TODO(treib): Rethink this.
@@ -445,6 +449,7 @@ bool RemoteSuggestionsProviderImpl::IsDisabled() const {
 void RemoteSuggestionsProviderImpl::FetchSuggestions(
     bool interactive_request,
     FetchStatusCallback callback) {
+  debug_logger_->Log(FROM_HERE, /*message=*/std::string());
   if (!ready()) {
     fetch_when_ready_ = true;
     fetch_when_ready_interactive_ = interactive_request;
@@ -466,6 +471,8 @@ void RemoteSuggestionsProviderImpl::Fetch(
     const Category& category,
     const std::set<std::string>& known_suggestion_ids,
     FetchDoneCallback callback) {
+  debug_logger_->Log(FROM_HERE, /*message=*/std::string());
+
   if (!ready()) {
     CallWithEmptyResults(std::move(callback),
                          Status(StatusCode::TEMPORARY_ERROR,
@@ -763,6 +770,8 @@ void RemoteSuggestionsProviderImpl::OnFetchFinished(
     bool interactive_request,
     Status status,
     RemoteSuggestionsFetcher::OptionalFetchedCategories fetched_categories) {
+  debug_logger_->Log(FROM_HERE, /*message=*/std::string());
+
   if (!ready()) {
     // TODO(tschumann): What happens if this was a user-triggered, interactive
     // request? Is the UI waiting indefinitely now?
@@ -824,6 +833,13 @@ void RemoteSuggestionsProviderImpl::OnFetchFinished(
   // If suggestions were fetched successfully, update our |category_contents_|
   // from each category provided by the server.
   if (fetched_categories) {
+    if (Logger::IsLoggingEnabled()) {
+      debug_logger_->Log(
+          FROM_HERE,
+          base::StringPrintf("fetched categories count = %d",
+                             static_cast<int>(fetched_categories->size())));
+    }
+
     // TODO(treib): Reorder |category_contents_| to match the order we received
     // from the server. crbug.com/653816
     bool response_includes_article_category = false;
@@ -834,6 +850,14 @@ void RemoteSuggestionsProviderImpl::OnFetchFinished(
             std::min(fetched_category.suggestions.size(),
                      static_cast<size_t>(kMaxSuggestionCount + 1)));
         response_includes_article_category = true;
+
+        if (Logger::IsLoggingEnabled()) {
+          debug_logger_->Log(
+              FROM_HERE,
+              base::StringPrintf(
+                  "articles category size = %d",
+                  static_cast<int>(fetched_category.suggestions.size())));
+        }
       }
 
       CategoryContent* content =

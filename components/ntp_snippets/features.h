@@ -123,6 +123,9 @@ constexpr int kNotificationsIgnoredDefaultLimit = 3;
 // have been fetched.
 extern const base::Feature kKeepPrefetchedContentSuggestions;
 
+// Enables debug logging accessible through snippets-internals.
+extern const base::Feature kContentSuggestionsDebugLog;
+
 }  // namespace ntp_snippets
 
 #endif  // COMPONENTS_NTP_SNIPPETS_FEATURES_H_

@@ -16,6 +16,7 @@
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/category_rankers/fake_category_ranker.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
+#include "components/ntp_snippets/logger.h"
 #include "components/ntp_snippets/remote/remote_suggestion_builder.h"
 #include "components/ntp_snippets/user_classifier.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -71,7 +72,8 @@ class FakeContentSuggestionsService : public ContentSuggestionsService {
             base::MakeUnique<UserClassifier>(
                 nullptr,
                 base::MakeUnique<base::SimpleTestClock>()),
-            /*remote_suggestions_scheduler=*/nullptr) {}
+            /*remote_suggestions_scheduler=*/nullptr,
+            base::MakeUnique<ntp_snippets::Logger>()) {}
 };
 
 class FakeArticleProvider : public ContentSuggestionsProvider {
