@@ -552,7 +552,8 @@ void ChromeContentClient::AddContentDecryptionModules(
       const base::Version version(WIDEVINE_CDM_VERSION_STRING);
       DCHECK(version.IsValid());
       cdms->push_back(content::CdmInfo(kWidevineCdmType, version, cdm_path,
-                                       codecs_supported));
+                                       codecs_supported, kWidevineKeySystem,
+                                       false));
     }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE_NOT_COMPONENT)
 
@@ -562,10 +563,14 @@ void ChromeContentClient::AddContentDecryptionModules(
     std::string clear_key_cdm_path =
         command_line->GetSwitchValueASCII(switches::kClearKeyCdmPathForTesting);
     if (!clear_key_cdm_path.empty()) {
+      // TODO(crbug.com/764480): Remove this after we have a central place for
+      // External Clear Key (ECK) related information.
+      const char kExternalClearKeyKeySystem[] = "org.chromium.externalclearkey";
       // Supported codecs are hard-coded in ExternalClearKeyProperties.
-      cdms->push_back(content::CdmInfo(
-          media::kClearKeyCdmType, base::Version("0.1.0.0"),
-          base::FilePath::FromUTF8Unsafe(clear_key_cdm_path), {}));
+      cdms->push_back(
+          content::CdmInfo(media::kClearKeyCdmType, base::Version("0.1.0.0"),
+                           base::FilePath::FromUTF8Unsafe(clear_key_cdm_path),
+                           {}, kExternalClearKeyKeySystem, true));
     }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
   }

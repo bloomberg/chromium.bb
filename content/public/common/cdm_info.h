@@ -19,7 +19,9 @@ struct CONTENT_EXPORT CdmInfo {
   CdmInfo(const std::string& type,
           const base::Version& version,
           const base::FilePath& path,
-          const std::vector<std::string>& supported_codecs);
+          const std::vector<std::string>& supported_codecs,
+          const std::string& supported_key_system,
+          bool supports_sub_key_systems);
   CdmInfo(const CdmInfo& other);
   ~CdmInfo();
 
@@ -37,6 +39,15 @@ struct CONTENT_EXPORT CdmInfo {
   // TODO(jrummell): use the enums from media::AudioCodec and media::VideoCodec
   // instead of strings.
   std::vector<std::string> supported_codecs;
+
+  // The key system supported by this CDM.
+  std::string supported_key_system;
+
+  // Whether we also support sub key systems of the |supported_key_system|.
+  // A sub key system to a key system is like a sub domain to a domain.
+  // For example, com.example.somekeysystem.a and com.example.somekeysystem.b
+  // are both sub key systems of com.example.somekeysystem.
+  bool supports_sub_key_systems = false;
 };
 
 struct CONTENT_EXPORT CdmHostFilePath {
