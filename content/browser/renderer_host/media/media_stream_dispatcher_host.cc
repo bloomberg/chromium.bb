@@ -37,11 +37,13 @@ MediaStreamDispatcherHost::MediaStreamDispatcherHost(
     MediaStreamManager* media_stream_manager)
     : render_process_id_(render_process_id),
       salt_(salt),
-      media_stream_manager_(media_stream_manager) {
+      media_stream_manager_(media_stream_manager),
+      weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  bindings_.set_connection_error_handler(base::Bind(
-      &MediaStreamDispatcherHost::CancelAllRequests, base::Unretained(this)));
+  bindings_.set_connection_error_handler(
+      base::Bind(&MediaStreamDispatcherHost::CancelAllRequests,
+                 weak_factory_.GetWeakPtr()));
 }
 
 MediaStreamDispatcherHost::~MediaStreamDispatcherHost() {
@@ -118,7 +120,7 @@ MediaStreamDispatcherHost::GetMediaStreamDispatcherForFrame(
   auto dispatcher_request = mojo::MakeRequest(&dispatcher);
   dispatcher.set_connection_error_handler(base::BindOnce(
       &MediaStreamDispatcherHost::OnMediaStreamDispatcherConnectionError,
-      base::Unretained(this), render_frame_id));
+      weak_factory_.GetWeakPtr(), render_frame_id));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&BindMediaStreamDispatcherRequest, render_process_id_,
@@ -173,8 +175,8 @@ void MediaStreamDispatcherHost::GenerateStream(
   }
 
   media_stream_manager_->GenerateStream(
-      this, render_process_id_, render_frame_id, salt_, page_request_id,
-      controls, security_origin, user_gesture);
+      weak_factory_.GetWeakPtr(), render_process_id_, render_frame_id, salt_,
+      page_request_id, controls, security_origin, user_gesture);
 }
 
 void MediaStreamDispatcherHost::CancelGenerateStream(int render_frame_id,
@@ -214,9 +216,9 @@ void MediaStreamDispatcherHost::OpenDevice(int32_t render_frame_id,
     return;
   }
 
-  media_stream_manager_->OpenDevice(this, render_process_id_, render_frame_id,
-                                    salt_, page_request_id, device_id, type,
-                                    security_origin);
+  media_stream_manager_->OpenDevice(
+      weak_factory_.GetWeakPtr(), render_process_id_, render_frame_id, salt_,
+      page_request_id, device_id, type, security_origin);
 }
 
 void MediaStreamDispatcherHost::CloseDevice(const std::string& label) {

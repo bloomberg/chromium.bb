@@ -13,6 +13,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -70,7 +71,9 @@ void VideoInputDevicesEnumerated(base::Closure quit_closure,
 // video_capture_host. This is an arbitrary value.
 static const int kDeviceId = 555;
 
-class MockMediaStreamRequester : public MediaStreamRequester {
+class MockMediaStreamRequester
+    : public MediaStreamRequester,
+      public base::SupportsWeakPtr<MockMediaStreamRequester> {
  public:
   MockMediaStreamRequester() {}
   virtual ~MockMediaStreamRequester() {}
@@ -177,7 +180,7 @@ class VideoCaptureTest : public testing::Test,
       base::RunLoop run_loop;
       MediaStreamDevice opened_device;
       media_stream_manager_->OpenDevice(
-          &stream_requester_, render_process_id, render_frame_id,
+          stream_requester_.AsWeakPtr(), render_process_id, render_frame_id,
           browser_context_.GetMediaDeviceIDSalt(), page_request_id,
           video_devices[0].device_id, MEDIA_DEVICE_VIDEO_CAPTURE,
           security_origin);

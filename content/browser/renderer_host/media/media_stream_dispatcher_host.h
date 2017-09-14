@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "content/browser/renderer_host/media/media_stream_requester.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream.mojom.h"
@@ -95,6 +96,8 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
   MediaStreamManager* media_stream_manager_;
   std::map<int, mojom::MediaStreamDispatcherPtr> dispatchers_;
   mojo::BindingSet<mojom::MediaStreamDispatcherHost> bindings_;
+
+  base::WeakPtrFactory<MediaStreamDispatcherHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamDispatcherHost);
 };
