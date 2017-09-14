@@ -39,7 +39,7 @@ class GerritApi(recipe_api.RecipeApi):
         '--commit', commit,
         '--json_file', self.m.json.output()
     ]
-    step_name = 'create_gerrit_branch'
+    step_name = 'create_gerrit_branch (%s %s)' % (project, branch)
     step_result = self(step_name, args, **kwargs)
     ref = step_result.json.output.get('ref')
     return ref
@@ -60,7 +60,7 @@ class GerritApi(recipe_api.RecipeApi):
         '--branch', branch,
         '--json_file', self.m.json.output()
     ]
-    step_name='get_gerrit_branch'
+    step_name = 'get_gerrit_branch (%s %s)' % (project, branch)
     step_result = self(step_name, args, **kwargs)
     revision = step_result.json.output.get('revision')
     return revision

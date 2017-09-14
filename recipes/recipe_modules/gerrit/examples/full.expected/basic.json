@@ -20,7 +20,7 @@
       "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
     },
     "infra_step": true,
-    "name": "gerrit create_gerrit_branch",
+    "name": "gerrit create_gerrit_branch (v8/v8 test)",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"can_delete\": true, @@@",
@@ -49,7 +49,7 @@
       "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
     },
     "infra_step": true,
-    "name": "gerrit get_gerrit_branch",
+    "name": "gerrit get_gerrit_branch (v8/v8 master)",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"ref\": \"refs/heads/master\", @@@",

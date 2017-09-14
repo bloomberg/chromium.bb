@@ -50,11 +50,11 @@ def GenTests(api):
   yield (
       api.test('basic')
       + api.step_data(
-          'gerrit create_gerrit_branch',
+          'gerrit create_gerrit_branch (v8/v8 test)',
           api.gerrit.make_gerrit_create_branch_response_data()
       )
       + api.step_data(
-          'gerrit get_gerrit_branch',
+          'gerrit get_gerrit_branch (v8/v8 master)',
           api.gerrit.make_gerrit_get_branch_response_data()
       )
       + api.step_data(
