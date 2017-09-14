@@ -16,7 +16,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::AssertionResult;
-using ::testing::AssertionSuccess;
 
 namespace net {
 namespace test {

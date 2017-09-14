@@ -117,8 +117,6 @@ class HTTP2_EXPORT_PRIVATE HpackHuffmanDecoder {
     return bit_buffer_.InputProperlyTerminated();
   }
 
-  bool IsEmptyForTest() const { return bit_buffer_.IsEmpty(); }
-
   Http2String DebugString() const;
 
   //////////////////////////////////////////////////////////////////////////////
