@@ -27,8 +27,8 @@
 #define CSSTimingFunctionValue_h
 
 #include "core/css/CSSValue.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/animation/TimingFunction.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/RefPtr.h"
 
 namespace blink {

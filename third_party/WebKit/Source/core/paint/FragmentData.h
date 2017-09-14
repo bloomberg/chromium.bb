@@ -7,7 +7,6 @@
 
 #include "core/paint/ClipRects.h"
 #include "core/paint/ObjectPaintProperties.h"
-#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 

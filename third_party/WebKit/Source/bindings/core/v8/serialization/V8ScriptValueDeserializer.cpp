@@ -24,7 +24,6 @@
 #include "core/offscreencanvas/OffscreenCanvas.h"
 #include "core/typed_arrays/DOMArrayBuffer.h"
 #include "core/typed_arrays/DOMSharedArrayBuffer.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/wtf/CheckedNumeric.h"
 #include "platform/wtf/DateMath.h"
 #include "public/platform/WebBlobInfo.h"

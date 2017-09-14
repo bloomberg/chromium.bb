@@ -30,7 +30,7 @@
 
 #include "public/platform/WebRuntimeFeatures.h"
 
-#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/Assertions.h"
 
 namespace blink {

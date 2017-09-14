@@ -27,7 +27,7 @@
 #include <libxslt/transform.h>
 #include "core/css/StyleSheet.h"
 #include "core/dom/ProcessingInstruction.h"
-#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/RefPtr.h"
 
 namespace blink {

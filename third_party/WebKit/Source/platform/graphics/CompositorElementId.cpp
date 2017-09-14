@@ -4,8 +4,6 @@
 
 #include "platform/graphics/CompositorElementId.h"
 
-#include "platform/RuntimeEnabledFeatures.h"
-
 namespace blink {
 
 UniqueObjectId NewUniqueObjectId() {

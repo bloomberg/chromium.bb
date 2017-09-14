@@ -8,7 +8,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Screen.h"
 #include "core/page/PageVisibilityState.h"
-#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/runtime_enabled_features.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace blink {

@@ -4,7 +4,6 @@
 
 #include "platform/graphics/paint/CompositingDisplayItem.h"
 
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "public/platform/WebDisplayItemList.h"

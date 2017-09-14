@@ -29,7 +29,6 @@
 #include <memory>
 
 #include "build/build_config.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/wtf/PtrUtil.h"
 

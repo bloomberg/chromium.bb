@@ -37,8 +37,8 @@
 #include <string>
 #include "core/exported/WebViewImpl.h"
 #include "core/frame/Settings.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/WebTaskRunner.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/testing/WebLayerTreeViewImplForTesting.h"
 #include "public/platform/Platform.h"

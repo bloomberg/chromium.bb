@@ -54,7 +54,6 @@
 #include "core/workers/WorkerThread.h"
 #include "platform/FontFamilyNames.h"
 #include "platform/HTTPNames.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/loader/fetch/FetchInitiatorTypeNames.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SchemeRegistry.h"
