@@ -1,21 +1,40 @@
-<!DOCTYPE html>
-<html>
-<body>
-<input>
-<hr>
->
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-    if (window.testRunner)
-        testRunner.dumpAsText();
-
-    document.designMode = 'on';
-    document.execCommand('SelectAll');
-    document.execCommand('Strikethrough');
-    document.execCommand('InsertOrderedList');
-    window.getSelection().deleteFromDocument();
-    document.execCommand('SelectAll');
-    document.execCommand('Strikethrough');
-    document.write('The test passes if the page does not crash.');
+// This is a test for crash bag for https://crbug.com/343799.
+test(()=> assert_selection(
+  [
+  "<div contenteditable>",
+    "<strike>",
+      "^<input>",
+    "</strike>",
+    "<hr>",
+    "<strike>",
+      ">|",
+    "</strike>",
+  "</div>"
+  ] ,
+  'InsertOrderedList',
+  [
+  "<div contenteditable>",
+    "<ol>",
+      "<li>",
+        "<strike>",
+          "^<input>",
+        "</strike>",
+      "</li>",
+      "<li>",
+        "<hr>|",
+      "</li>",
+      "<li>",
+        "<strike>",
+          ">",
+        "</strike>",
+      "</li>",
+    "</ol>",
+  "</div>"
+  ]),
+  "This InsertOrderedList should not cause page crash.");
 </script>
-</body>
-</html>
