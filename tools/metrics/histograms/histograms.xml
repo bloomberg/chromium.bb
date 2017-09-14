@@ -73048,6 +73048,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Execution time of ServiceWorkerGlobalScope.onpush.</summary>
 </histogram>
 
+<histogram name="ServiceWorker.RegisteredOriginCount" units="origins">
+  <owner>falken@chromium.org</owner>
+  <summary>
+    The number of origins that have a service worker registration. Recorded near
+    browser startup, when the service worker storage system is initialized.
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorker.RequestTimeouts.Count"
     enum="ServiceWorkerMetrics.EventType">
   <owner>jeremyarcher@google.com</owner>

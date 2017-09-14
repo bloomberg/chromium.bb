@@ -408,6 +408,9 @@ class ServiceWorkerMetrics {
   static void RecordStartServiceWorkerForNavigationHintResult(
       StartServiceWorkerForNavigationHintResult result);
 
+  // Records the number of origins with a registered service worker.
+  static void RecordRegisteredOriginCount(size_t origin_count);
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ServiceWorkerMetrics);
 };
