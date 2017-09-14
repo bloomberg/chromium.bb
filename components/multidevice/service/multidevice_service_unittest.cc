@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "base/barrier_closure.h"
+#include "base/run_loop.h"
 #include "components/multidevice/service/public/interfaces/constants.mojom.h"
 #include "components/multidevice/service/public/interfaces/device_sync.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"

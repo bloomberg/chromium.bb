@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <utility>
+#include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"

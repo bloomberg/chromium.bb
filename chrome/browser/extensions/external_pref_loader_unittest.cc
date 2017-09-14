@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/external_pref_loader.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
