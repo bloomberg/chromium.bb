@@ -27,7 +27,6 @@ import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
 import android.support.annotation.Nullable;
-import android.text.TextUtils;
 import android.widget.ListView;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -43,7 +42,6 @@ import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.SyncPreference;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileAccountManagementMetrics;
-import org.chromium.chrome.browser.profiles.ProfileDownloader;
 import org.chromium.chrome.browser.signin.SignOutDialogFragment.SignOutDialogListener;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
@@ -202,12 +200,8 @@ public class AccountManagementFragment extends PreferenceFragment
 
         addPreferencesFromResource(R.xml.account_management_preferences);
 
-        String fullName = mProfileDataCache.getFullName(mSignedInAccountName);
-        if (TextUtils.isEmpty(fullName)) {
-            fullName = ProfileDownloader.getCachedFullName(mProfile);
-        }
-        if (TextUtils.isEmpty(fullName)) fullName = mSignedInAccountName;
-
+        String fullName = mProfileDataCache.getProfileDataOrDefault(mSignedInAccountName)
+                                  .getFullNameOrEmail();
         getActivity().setTitle(fullName);
 
         configureSignOutSwitch();
@@ -370,7 +364,7 @@ public class AccountManagementFragment extends PreferenceFragment
             Preference pref = new Preference(getActivity());
             pref.setLayoutResource(R.layout.account_management_account_row);
             pref.setTitle(account.name);
-            pref.setIcon(mProfileDataCache.getImage(account.name));
+            pref.setIcon(mProfileDataCache.getProfileDataOrDefault(account.name).getImage());
 
             pref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
                 @Override

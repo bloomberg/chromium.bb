@@ -127,7 +127,7 @@ public class AccountSigninView extends FrameLayout {
     private Listener mListener;
     private Delegate mDelegate;
     private @UndoBehavior int mUndoBehavior;
-    private ProfileDataCache mProfileData;
+    private ProfileDataCache mProfileDataCache;
     private String mSelectedAccountName;
     private boolean mIsDefaultAccountSelected;
     private @StringRes int mCancelButtonTextId;
@@ -154,14 +154,14 @@ public class AccountSigninView extends FrameLayout {
      * Initializes the view from account selection page. After selecting the account, signin
      * confirmation page will be opened.
      *
-     * @param profileData ProfileDataCache that will be used to retrieve user account info.
+     * @param profileDataCache ProfileDataCache that will be used to retrieve user account info.
      * @param isChildAccount Whether this view is for a child account.
      * @param delegate The UI object creation delegate.
      * @param listener The account selection event listener.
      */
-    public void initFromSelectionPage(ProfileDataCache profileData, boolean isChildAccount,
+    public void initFromSelectionPage(ProfileDataCache profileDataCache, boolean isChildAccount,
             Delegate delegate, Listener listener) {
-        setProfileDataCache(profileData);
+        setProfileDataCache(profileDataCache);
         mIsChildAccount = isChildAccount;
         mUndoBehavior = UNDO_BACK_TO_SELECTION;
         mDelegate = delegate;
@@ -173,13 +173,13 @@ public class AccountSigninView extends FrameLayout {
      * Initializes the view from account selection page. After selecting the account, signin
      * confirmation page will be opened.
      *
-     * @param profileData ProfileDataCache that will be used to retrieve user account info.
+     * @param profileDataCache ProfileDataCache that will be used to retrieve user account info.
      * @param delegate The UI object creation delegate.
      * @param listener The account selection event listener.
      */
     public void initFromAddAccountPage(
-            ProfileDataCache profileData, Delegate delegate, Listener listener) {
-        setProfileDataCache(profileData);
+            ProfileDataCache profileDataCache, Delegate delegate, Listener listener) {
+        setProfileDataCache(profileDataCache);
         mIsChildAccount = false; // Children profiles can't add accounts.
         mUndoBehavior = UNDO_ABORT;
         mDelegate = delegate;
@@ -194,7 +194,7 @@ public class AccountSigninView extends FrameLayout {
      * Initializes the view from signin confirmation page. The account name should be provided by
      * the caller.
      *
-     * @param profileData ProfileDataCache that will be used to retrieve user account info.
+     * @param profileDataCache ProfileDataCache that will be used to retrieve user account info.
      * @param isChildAccount Whether this view is for a child account.
      * @param accountName An account that should be used for confirmation page and signin.
      * @param isDefaultAccount Whether {@param accountName} is a default account, used for metrics.
@@ -202,10 +202,10 @@ public class AccountSigninView extends FrameLayout {
      * @param delegate The UI object creation delegate.
      * @param listener The account selection event listener.
      */
-    public void initFromConfirmationPage(ProfileDataCache profileData, boolean isChildAccount,
+    public void initFromConfirmationPage(ProfileDataCache profileDataCache, boolean isChildAccount,
             String accountName, boolean isDefaultAccount, @UndoBehavior int undoBehavior,
             Delegate delegate, Listener listener) {
-        setProfileDataCache(profileData);
+        setProfileDataCache(profileDataCache);
         mIsChildAccount = isChildAccount;
         mUndoBehavior = undoBehavior;
         mDelegate = delegate;
@@ -214,11 +214,11 @@ public class AccountSigninView extends FrameLayout {
         triggerUpdateAccounts();
     }
 
-    private void setProfileDataCache(ProfileDataCache profileData) {
-        assert mProfileData == null;
-        mProfileData = profileData;
+    private void setProfileDataCache(ProfileDataCache profileDataCache) {
+        assert mProfileDataCache == null;
+        mProfileDataCache = profileDataCache;
         if (ViewCompat.isAttachedToWindow(this)) {
-            mProfileData.addObserver(mProfileDataCacheObserver);
+            mProfileDataCache.addObserver(mProfileDataCacheObserver);
         }
     }
 
@@ -252,15 +252,15 @@ public class AccountSigninView extends FrameLayout {
         super.onAttachedToWindow();
         triggerUpdateAccounts();
         AccountManagerFacade.get().addObserver(mAccountsChangedObserver);
-        if (mProfileData != null) {
-            mProfileData.addObserver(mProfileDataCacheObserver);
+        if (mProfileDataCache != null) {
+            mProfileDataCache.addObserver(mProfileDataCacheObserver);
         }
     }
 
     @Override
     protected void onDetachedFromWindow() {
-        if (mProfileData != null) {
-            mProfileData.removeObserver(mProfileDataCacheObserver);
+        if (mProfileDataCache != null) {
+            mProfileDataCache.removeObserver(mProfileDataCacheObserver);
         }
         AccountManagerFacade.get().removeObserver(mAccountsChangedObserver);
         super.onDetachedFromWindow();
@@ -298,7 +298,7 @@ public class AccountSigninView extends FrameLayout {
      * Refresh the list of available system accounts asynchronously.
      */
     private void triggerUpdateAccounts() {
-        if (mProfileData == null) {
+        if (mProfileDataCache == null) {
             return;
         }
 
@@ -354,9 +354,9 @@ public class AccountSigninView extends FrameLayout {
         int accountToSelect = selection.getSelectedAccountIndex();
         boolean shouldJumpToConfirmationScreen = selection.shouldJumpToConfirmationScreen();
 
-        mSigninChooseView.updateAccounts(mAccountNames, accountToSelect, mProfileData);
+        mSigninChooseView.updateAccounts(mAccountNames, accountToSelect, mProfileDataCache);
         setUpSigninButton(!mAccountNames.isEmpty());
-        mProfileData.update(mAccountNames);
+        mProfileDataCache.update(mAccountNames);
 
         boolean selectedAccountChanged = oldAccountNames != null && !oldAccountNames.isEmpty()
                 && (mAccountNames.isEmpty()
@@ -467,17 +467,18 @@ public class AccountSigninView extends FrameLayout {
     }
 
     private void updateProfileData() {
-        mSigninChooseView.updateAccountProfileImages(mProfileData);
+        mSigninChooseView.updateAccountProfileImages(mProfileDataCache);
 
         if (mSelectedAccountName != null) updateSignedInAccountInfo();
     }
 
     private void updateSignedInAccountInfo() {
-        mSigninAccountImage.setImageDrawable(mProfileData.getImage(mSelectedAccountName));
+        DisplayableProfileData profileData =
+                mProfileDataCache.getProfileDataOrDefault(mSelectedAccountName);
+        mSigninAccountImage.setImageDrawable(profileData.getImage());
         String name = null;
-        if (mIsChildAccount) name = mProfileData.getGivenName(mSelectedAccountName);
-        if (name == null) name = mProfileData.getFullName(mSelectedAccountName);
-        if (name == null) name = mSelectedAccountName;
+        if (mIsChildAccount) name = profileData.getGivenName();
+        if (name == null) name = profileData.getFullNameOrEmail();
         mSigninAccountName.setText(getResources().getString(R.string.signin_hi_name, name));
         mSigninAccountEmail.setText(mSelectedAccountName);
     }
@@ -494,7 +495,7 @@ public class AccountSigninView extends FrameLayout {
 
     private void showConfirmSigninPage() {
         updateSignedInAccountInfo();
-        mProfileData.update(Collections.singletonList(mSelectedAccountName));
+        mProfileDataCache.update(Collections.singletonList(mSelectedAccountName));
 
         mSigninChooseView.setVisibility(View.GONE);
         mSigninConfirmationView.setVisibility(View.VISIBLE);

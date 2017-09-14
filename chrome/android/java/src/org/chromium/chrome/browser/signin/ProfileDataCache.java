@@ -90,28 +90,14 @@ public class ProfileDataCache implements ProfileDownloader.Observer, ProfileData
         }
     }
 
-    private static class CacheEntry {
-        public CacheEntry(Drawable picture, String fullName, String givenName) {
-            this.picture = picture;
-            this.fullName = fullName;
-            this.givenName = givenName;
-        }
-
-        public Drawable picture;
-        public String fullName;
-        public String givenName;
-    }
-
     private final Context mContext;
     private final Profile mProfile;
     private final int mImageSize;
-    @Nullable
-    private final BadgeConfig mBadgeConfig;
+    private @Nullable final BadgeConfig mBadgeConfig;
     private final Drawable mPlaceholderImage;
     private final ObserverList<Observer> mObservers = new ObserverList<>();
-    private final HashMap<String, CacheEntry> mCacheEntries = new HashMap<>();
-    @Nullable
-    private final ProfileDataSource mProfileDataSource;
+    private final Map<String, DisplayableProfileData> mCachedProfileData = new HashMap<>();
+    private @Nullable final ProfileDataSource mProfileDataSource;
 
     public ProfileDataCache(Context context, Profile profile, int imageSize) {
         this(context, profile, imageSize, null);
@@ -143,7 +129,7 @@ public class ProfileDataCache implements ProfileDownloader.Observer, ProfileData
         if (mProfileDataSource != null) return;
 
         for (int i = 0; i < accounts.size(); i++) {
-            if (mCacheEntries.get(accounts.get(i)) == null) {
+            if (mCachedProfileData.get(accounts.get(i)) == null) {
                 ProfileDownloader.startFetchingAccountInfoFor(
                         mContext, mProfile, accounts.get(i), mImageSize, true);
             }
@@ -151,36 +137,16 @@ public class ProfileDataCache implements ProfileDownloader.Observer, ProfileData
     }
 
     /**
-     * @param accountId Google account ID for the image that is requested.
-     * @return Returns the profile image for a given Google account ID if it's in
-     *         the cache, otherwise returns a placeholder image.
+     * @return The {@link DisplayableProfileData} containing the profile data corresponding to the
+     *         given account or a {@link DisplayableProfileData} with a placeholder image and null
+     *         full and given name.
      */
-    public Drawable getImage(String accountId) {
-        CacheEntry cacheEntry = mCacheEntries.get(accountId);
-        if (cacheEntry == null) return mPlaceholderImage;
-        return cacheEntry.picture;
-    }
-
-    /**
-     * @param accountId Google account ID for the full name that is requested.
-     * @return Returns the full name for a given Google account ID if it is
-     *         the cache, otherwise returns null.
-     */
-    public String getFullName(String accountId) {
-        CacheEntry cacheEntry = mCacheEntries.get(accountId);
-        if (cacheEntry == null) return null;
-        return cacheEntry.fullName;
-    }
-
-    /**
-     * @param accountId Google account ID for the full name that is requested.
-     * @return Returns the given name for a given Google account ID if it is in the cache, otherwise
-     * returns null.
-     */
-    public String getGivenName(String accountId) {
-        CacheEntry cacheEntry = mCacheEntries.get(accountId);
-        if (cacheEntry == null) return null;
-        return cacheEntry.givenName;
+    public DisplayableProfileData getProfileDataOrDefault(String accountName) {
+        DisplayableProfileData profileData = mCachedProfileData.get(accountName);
+        if (profileData == null) {
+            return new DisplayableProfileData(accountName, mPlaceholderImage, null, null);
+        }
+        return profileData;
     }
 
     /**
@@ -217,20 +183,23 @@ public class ProfileDataCache implements ProfileDownloader.Observer, ProfileData
     private void populateCacheFromProfileDataSource() {
         for (Map.Entry<String, ProfileDataSource.ProfileData> entry :
                 mProfileDataSource.getProfileDataMap().entrySet()) {
-            mCacheEntries.put(entry.getKey(), createCacheEntryFromProfileData(entry.getValue()));
+            mCachedProfileData.put(
+                    entry.getKey(), createDisplayableProfileData(entry.getKey(), entry.getValue()));
         }
     }
 
-    private CacheEntry createCacheEntryFromProfileData(ProfileDataSource.ProfileData profileData) {
-        return new CacheEntry(prepareAvatar(profileData.getAvatar()), profileData.getFullName(),
-                profileData.getGivenName());
+    private DisplayableProfileData createDisplayableProfileData(
+            String accountName, ProfileDataSource.ProfileData profileData) {
+        return new DisplayableProfileData(accountName, prepareAvatar(profileData.getAvatar()),
+                profileData.getFullName(), profileData.getGivenName());
     }
 
     @Override
     public void onProfileDownloaded(String accountId, String fullName, String givenName,
             Bitmap bitmap) {
         ThreadUtils.assertOnUiThread();
-        mCacheEntries.put(accountId, new CacheEntry(prepareAvatar(bitmap), fullName, givenName));
+        mCachedProfileData.put(accountId,
+                new DisplayableProfileData(accountId, prepareAvatar(bitmap), fullName, givenName));
         for (Observer observer : mObservers) {
             observer.onProfileDataUpdated(accountId);
         }
@@ -242,9 +211,9 @@ public class ProfileDataCache implements ProfileDownloader.Observer, ProfileData
         ProfileDataSource.ProfileData profileData =
                 mProfileDataSource.getProfileDataForAccount(accountId);
         if (profileData == null) {
-            mCacheEntries.remove(accountId);
+            mCachedProfileData.remove(accountId);
         } else {
-            mCacheEntries.put(accountId, createCacheEntryFromProfileData(profileData));
+            mCachedProfileData.put(accountId, createDisplayableProfileData(accountId, profileData));
         }
 
         for (Observer observer : mObservers) {
