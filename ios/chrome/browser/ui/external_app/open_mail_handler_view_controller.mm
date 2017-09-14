@@ -96,7 +96,7 @@ const CGFloat kSwitchLabelFontSize = 12.0f;
   [model addSectionWithIdentifier:SectionIdentifierHeader];
   CollectionViewTextItem* titleItem =
       [[CollectionViewTextItem alloc] initWithType:ItemTypeTitle];
-  titleItem.text = l10n_util::GetNSString(IDS_IOS_CHOOSE_EMAIL_CLIENT_APP);
+  titleItem.text = l10n_util::GetNSString(IDS_IOS_CHOOSE_EMAIL_APP);
   titleItem.textFont =
       [[MDCTypography fontLoader] mediumFontOfSize:kBottomSheetTitleFontSize];
   [model addItem:titleItem toSectionWithIdentifier:SectionIdentifierHeader];
