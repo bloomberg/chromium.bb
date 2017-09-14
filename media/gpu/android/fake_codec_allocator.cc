@@ -66,19 +66,22 @@ void FakeCodecAllocator::ReleaseMediaCodec(
                         surface_bundle->surface_texture.get());
 }
 
-MockMediaCodecBridge* FakeCodecAllocator::ProvideMockCodecAsync() {
+MockMediaCodecBridge* FakeCodecAllocator::ProvideMockCodecAsync(
+    std::unique_ptr<MockMediaCodecBridge> codec) {
   DCHECK(codec_creation_pending_);
   codec_creation_pending_ = false;
 
   if (!client_)
     return nullptr;
 
-  auto codec = base::MakeUnique<NiceMock<MockMediaCodecBridge>>();
-  auto* raw_codec = codec.get();
+  auto mock_codec = codec ? std::move(codec)
+                          : base::MakeUnique<NiceMock<MockMediaCodecBridge>>();
+  auto* raw_codec = mock_codec.get();
   most_recent_codec = raw_codec;
-  most_recent_codec_destruction_observer = codec->CreateDestructionObserver();
-  pending_surface_bundle_ = nullptr;
-  client_->OnCodecConfigured(std::move(codec));
+  most_recent_codec_destruction_observer =
+      mock_codec->CreateDestructionObserver();
+  client_->OnCodecConfigured(std::move(mock_codec),
+                             std::move(pending_surface_bundle_));
   return raw_codec;
 }
 
@@ -87,7 +90,7 @@ void FakeCodecAllocator::ProvideNullCodecAsync() {
   codec_creation_pending_ = false;
   most_recent_codec = nullptr;
   if (client_)
-    client_->OnCodecConfigured(nullptr);
+    client_->OnCodecConfigured(nullptr, std::move(pending_surface_bundle_));
 }
 
 }  // namespace media

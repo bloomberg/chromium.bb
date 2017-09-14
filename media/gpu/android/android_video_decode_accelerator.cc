@@ -1078,11 +1078,12 @@ void AndroidVideoDecodeAccelerator::ConfigureMediaCodecSynchronously() {
 
   std::unique_ptr<MediaCodecBridge> media_codec =
       codec_allocator_->CreateMediaCodecSync(codec_config_);
-  OnCodecConfigured(std::move(media_codec));
+  OnCodecConfigured(std::move(media_codec), codec_config_->surface_bundle);
 }
 
 void AndroidVideoDecodeAccelerator::OnCodecConfigured(
-    std::unique_ptr<MediaCodecBridge> media_codec) {
+    std::unique_ptr<MediaCodecBridge> media_codec,
+    scoped_refptr<AVDASurfaceBundle> surface_bundle) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(state_ == WAITING_FOR_CODEC || state_ == SURFACE_DESTROYED);
   // If we are supposed to notify that initialization is complete, then do so

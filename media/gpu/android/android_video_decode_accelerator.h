@@ -85,7 +85,8 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
 
   // AVDACodecAllocatorClient implementation:
   void OnCodecConfigured(
-      std::unique_ptr<MediaCodecBridge> media_codec) override;
+      std::unique_ptr<MediaCodecBridge> media_codec,
+      scoped_refptr<AVDASurfaceBundle> surface_bundle) override;
 
  private:
   friend class AVDAManager;

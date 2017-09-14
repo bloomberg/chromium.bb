@@ -23,13 +23,13 @@ namespace media {
 // CodecOutputBuffer are the only two things that hold references to it.
 class CodecWrapperImpl : public base::RefCountedThreadSafe<CodecWrapperImpl> {
  public:
-  CodecWrapperImpl(std::unique_ptr<MediaCodecBridge> codec,
+  CodecWrapperImpl(CodecSurfacePair codec_surface_pair,
                    base::Closure output_buffer_release_cb);
 
   using DequeueStatus = CodecWrapper::DequeueStatus;
   using QueueStatus = CodecWrapper::QueueStatus;
 
-  std::unique_ptr<MediaCodecBridge> TakeCodec();
+  CodecSurfacePair TakeCodecSurfacePair();
   bool HasUnreleasedOutputBuffers() const;
   void DiscardOutputBuffers();
   bool IsFlushed() const;
@@ -37,13 +37,14 @@ class CodecWrapperImpl : public base::RefCountedThreadSafe<CodecWrapperImpl> {
   bool IsDrained() const;
   bool SupportsFlush(DeviceInfo* device_info) const;
   bool Flush();
+  bool SetSurface(scoped_refptr<AVDASurfaceBundle> surface_bundle);
+  AVDASurfaceBundle* SurfaceBundle();
   QueueStatus QueueInputBuffer(const DecoderBuffer& buffer,
                                const EncryptionScheme& encryption_scheme);
   DequeueStatus DequeueOutputBuffer(
       base::TimeDelta* presentation_time,
       bool* end_of_stream,
       std::unique_ptr<CodecOutputBuffer>* codec_buffer);
-  bool SetSurface(const base::android::JavaRef<jobject>& surface);
 
   // Releases the codec buffer and optionally renders it. This is a noop if
   // the codec buffer is not valid. Can be called on any thread. Returns true if
@@ -66,8 +67,11 @@ class CodecWrapperImpl : public base::RefCountedThreadSafe<CodecWrapperImpl> {
 
   // |lock_| protects access to all member variables.
   mutable base::Lock lock_;
-  std::unique_ptr<MediaCodecBridge> codec_;
   State state_;
+  std::unique_ptr<MediaCodecBridge> codec_;
+
+  // The currently configured surface.
+  scoped_refptr<AVDASurfaceBundle> surface_bundle_;
 
   // Buffer ids are unique for a given CodecWrapper and map to MediaCodec buffer
   // indices.
@@ -103,10 +107,11 @@ bool CodecOutputBuffer::ReleaseToSurface() {
   return codec_->ReleaseCodecOutputBuffer(id_, true);
 }
 
-CodecWrapperImpl::CodecWrapperImpl(std::unique_ptr<MediaCodecBridge> codec,
+CodecWrapperImpl::CodecWrapperImpl(CodecSurfacePair codec_surface_pair,
                                    base::Closure output_buffer_release_cb)
-    : codec_(std::move(codec)),
-      state_(State::kFlushed),
+    : state_(State::kFlushed),
+      codec_(std::move(codec_surface_pair.first)),
+      surface_bundle_(std::move(codec_surface_pair.second)),
       next_buffer_id_(0),
       output_buffer_release_cb_(std::move(output_buffer_release_cb)) {
   DVLOG(2) << __func__;
@@ -114,13 +119,13 @@ CodecWrapperImpl::CodecWrapperImpl(std::unique_ptr<MediaCodecBridge> codec,
 
 CodecWrapperImpl::~CodecWrapperImpl() = default;
 
-std::unique_ptr<MediaCodecBridge> CodecWrapperImpl::TakeCodec() {
+CodecSurfacePair CodecWrapperImpl::TakeCodecSurfacePair() {
   DVLOG(2) << __func__;
   base::AutoLock l(lock_);
   if (!codec_)
-    return nullptr;
+    return {nullptr, nullptr};
   DiscardOutputBuffers_Locked();
-  return std::move(codec_);
+  return {std::move(codec_), std::move(surface_bundle_)};
 }
 
 bool CodecWrapperImpl::IsFlushed() const {
@@ -319,16 +324,23 @@ CodecWrapperImpl::DequeueStatus CodecWrapperImpl::DequeueOutputBuffer(
 }
 
 bool CodecWrapperImpl::SetSurface(
-    const base::android::JavaRef<jobject>& surface) {
+    scoped_refptr<AVDASurfaceBundle> surface_bundle) {
   DVLOG(2) << __func__;
   base::AutoLock l(lock_);
+  DCHECK(surface_bundle);
   DCHECK(codec_ && state_ != State::kError);
 
-  if (!codec_->SetSurface(surface)) {
+  if (!codec_->SetSurface(surface_bundle->GetJavaSurface())) {
     state_ = State::kError;
     return false;
   }
+  surface_bundle_ = std::move(surface_bundle);
   return true;
+}
+
+AVDASurfaceBundle* CodecWrapperImpl::SurfaceBundle() {
+  base::AutoLock l(lock_);
+  return surface_bundle_.get();
 }
 
 bool CodecWrapperImpl::ReleaseCodecOutputBuffer(int64_t id, bool render) {
@@ -359,18 +371,18 @@ bool CodecWrapperImpl::ReleaseCodecOutputBuffer(int64_t id, bool render) {
   return true;
 }
 
-CodecWrapper::CodecWrapper(std::unique_ptr<MediaCodecBridge> codec,
+CodecWrapper::CodecWrapper(CodecSurfacePair codec_surface_pair,
                            base::Closure output_buffer_release_cb)
-    : impl_(new CodecWrapperImpl(std::move(codec),
+    : impl_(new CodecWrapperImpl(std::move(codec_surface_pair),
                                  std::move(output_buffer_release_cb))) {}
 
 CodecWrapper::~CodecWrapper() {
   // The codec must have already been taken.
-  DCHECK(!impl_->TakeCodec());
+  DCHECK(!impl_->TakeCodecSurfacePair().first);
 }
 
-std::unique_ptr<MediaCodecBridge> CodecWrapper::TakeCodec() {
-  return impl_->TakeCodec();
+CodecSurfacePair CodecWrapper::TakeCodecSurfacePair() {
+  return impl_->TakeCodecSurfacePair();
 }
 
 bool CodecWrapper::HasUnreleasedOutputBuffers() const {
@@ -415,8 +427,12 @@ CodecWrapper::DequeueStatus CodecWrapper::DequeueOutputBuffer(
                                     codec_buffer);
 }
 
-bool CodecWrapper::SetSurface(const base::android::JavaRef<jobject>& surface) {
-  return impl_->SetSurface(surface);
+bool CodecWrapper::SetSurface(scoped_refptr<AVDASurfaceBundle> surface_bundle) {
+  return impl_->SetSurface(std::move(surface_bundle));
+}
+
+AVDASurfaceBundle* CodecWrapper::SurfaceBundle() {
+  return impl_->SurfaceBundle();
 }
 
 }  // namespace media

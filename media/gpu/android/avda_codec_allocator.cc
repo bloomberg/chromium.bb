@@ -74,11 +74,6 @@ void DeleteMediaCodecAndSignal(std::unique_ptr<MediaCodecBridge> codec,
     done_event->Signal();
 }
 
-void DropReferenceToSurfaceBundle(
-    scoped_refptr<AVDASurfaceBundle> surface_bundle) {
-  // Do nothing.  Let |surface_bundle| go out of scope.
-}
-
 }  // namespace
 
 CodecConfig::CodecConfig() {}
@@ -200,7 +195,7 @@ void AVDACodecAllocator::CreateMediaCodecAsync(
   if (!task_type) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&AVDACodecAllocatorClient::OnCodecConfigured,
-                              client, nullptr));
+                              client, nullptr, codec_config->surface_bundle));
     return;
   }
 
@@ -248,7 +243,7 @@ void AVDACodecAllocator::ForwardOrDropCodec(
     if (!StartThread(nullptr))
       return;
 
-    ReleaseMediaCodec(std::move(media_codec), surface_bundle);
+    ReleaseMediaCodec(std::move(media_codec), std::move(surface_bundle));
 
     // We can stop the threads immediately.  If other clients are around, then
     // this will do nothing.  Otherwise, this will order the join after the
@@ -257,7 +252,7 @@ void AVDACodecAllocator::ForwardOrDropCodec(
     return;
   }
 
-  client->OnCodecConfigured(std::move(media_codec));
+  client->OnCodecConfigured(std::move(media_codec), std::move(surface_bundle));
 }
 
 void AVDACodecAllocator::ReleaseMediaCodec(
@@ -270,46 +265,35 @@ void AVDACodecAllocator::ReleaseMediaCodec(
   int erased = codec_task_types_.erase(media_codec.get());
   DCHECK(erased);
 
-  // No need to track the release if it's a SurfaceTexture.  We still forward
-  // the reference to |surface_bundle|, though, so that the SurfaceTexture
-  // lasts at least as long as the codec.
-  if (!surface_bundle->overlay) {
-    TaskRunnerFor(task_type)->PostTaskAndReply(
-        FROM_HERE,
-        base::Bind(&DeleteMediaCodecAndSignal,
-                   base::Passed(std::move(media_codec)), nullptr),
-        base::Bind(&DropReferenceToSurfaceBundle, surface_bundle));
-    return;
+  // Save a waitable event for the release if the codec is attached to an
+  // overlay so we can block on it in WaitForPendingRelease().
+  base::WaitableEvent* released_event = nullptr;
+  if (surface_bundle->overlay) {
+    pending_codec_releases_.emplace(
+        std::piecewise_construct,
+        std::forward_as_tuple(surface_bundle->overlay.get()),
+        std::forward_as_tuple(base::WaitableEvent::ResetPolicy::MANUAL,
+                              base::WaitableEvent::InitialState::NOT_SIGNALED));
+    released_event =
+        &pending_codec_releases_.find(surface_bundle->overlay.get())->second;
   }
 
-  DCHECK(!surface_bundle->surface_texture);
-  pending_codec_releases_.emplace(
-      std::piecewise_construct,
-      std::forward_as_tuple(surface_bundle->overlay.get()),
-      std::forward_as_tuple(base::WaitableEvent::ResetPolicy::MANUAL,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED));
-  base::WaitableEvent* released =
-      &pending_codec_releases_.find(surface_bundle->overlay.get())->second;
-
   // Note that we forward |surface_bundle|, too, so that the surface outlasts
-  // the codec.  This doesn't matter so much for CVV surfaces, since they don't
-  // auto-release when they're dropped.  However, for surface owners, this will
-  // become important, so we still handle it.  Plus, it makes sense.
+  // the codec.
   TaskRunnerFor(task_type)->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&DeleteMediaCodecAndSignal,
-                 base::Passed(std::move(media_codec)), released),
+                 base::Passed(std::move(media_codec)), released_event),
       base::Bind(&AVDACodecAllocator::OnMediaCodecReleased,
-                 base::Unretained(this), surface_bundle));
+                 base::Unretained(this), std::move(surface_bundle)));
 }
 
 void AVDACodecAllocator::OnMediaCodecReleased(
     scoped_refptr<AVDASurfaceBundle> surface_bundle) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  // This is a no-op if it's a non overlay bundle.
   pending_codec_releases_.erase(surface_bundle->overlay.get());
-
-  // Also note that |surface_bundle| lasted at least as long as the codec.
 }
 
 bool AVDACodecAllocator::IsAnyRegisteredAVDA() {
