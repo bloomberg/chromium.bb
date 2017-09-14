@@ -13,7 +13,7 @@
 class cros_gralloc_buffer
 {
       public:
-	cros_gralloc_buffer(uint32_t id, struct bo *acquirebo_,
+	cros_gralloc_buffer(uint32_t id, struct bo *acquire_bo,
 			    struct cros_gralloc_handle *acquire_handle);
 	~cros_gralloc_buffer();
 

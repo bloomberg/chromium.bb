@@ -9,9 +9,9 @@
 #include <assert.h>
 #include <sys/mman.h>
 
-cros_gralloc_buffer::cros_gralloc_buffer(uint32_t id, struct bo *acquirebo_,
+cros_gralloc_buffer::cros_gralloc_buffer(uint32_t id, struct bo *acquire_bo,
 					 struct cros_gralloc_handle *acquire_handle)
-    : id_(id), bo_(acquirebo_), hnd_(acquire_handle), refcount_(1), lockcount_(0)
+    : id_(id), bo_(acquire_bo), hnd_(acquire_handle), refcount_(1), lockcount_(0)
 {
 	assert(bo_);
 	num_planes_ = drv_bo_get_num_planes(bo_);
