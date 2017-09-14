@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/coordinators/browser_coordinator.h"
 
+#import "base/ios/block_types.h"
 #import "base/logging.h"
 #import "ios/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 
@@ -11,30 +12,91 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+// Enum class describing the current coordinator and consumer state.
+enum class ActivationState {
+  DEACTIVATED,  // The coordinator has been stopped or has never been started.
+                // its UIViewController has been fully dismissed.
+  ACTIVATING,   // The coordinator has been started, but its UIViewController
+                // hasn't finished being presented.
+  ACTIVATED,    // The coordinator has been started and its UIViewController has
+                // finished being presented.
+  DEACTIVATING,  // The coordinator has been stopped, but its UIViewController
+                 // hasn't finished being dismissed.
+};
+// Returns the presentation state to use after |current_state|.
+ActivationState GetNextActivationState(ActivationState current_state) {
+  switch (current_state) {
+    case ActivationState::DEACTIVATED:
+      return ActivationState::ACTIVATING;
+    case ActivationState::ACTIVATING:
+      return ActivationState::ACTIVATED;
+    case ActivationState::ACTIVATED:
+      return ActivationState::DEACTIVATING;
+    case ActivationState::DEACTIVATING:
+      return ActivationState::DEACTIVATED;
+  }
+}
+}
+
 @interface BrowserCoordinator ()
+// The coordinator's presentation state.
+@property(nonatomic, assign) ActivationState activationState;
 // Child coordinators owned by this object.
 @property(nonatomic, strong)
     NSMutableSet<BrowserCoordinator*>* childCoordinators;
 // Parent coordinator of this object, if any.
 @property(nonatomic, readwrite, weak) BrowserCoordinator* parentCoordinator;
-@property(nonatomic, readwrite) BOOL started;
 @property(nonatomic, readwrite) BOOL overlaying;
+
+// Updates |activationState| to the next appropriate value after the in-
+// progress transition animation finishes.  If there is no animation occurring,
+// the state is updated immediately.
+- (void)updateActivationStateAfterTransition;
+
 @end
 
 @implementation BrowserCoordinator
-
 @synthesize browser = _browser;
 @synthesize dispatcher = _dispatcher;
+@synthesize activationState = _activationState;
 @synthesize childCoordinators = _childCoordinators;
 @synthesize parentCoordinator = _parentCoordinator;
-@synthesize started = _started;
 @synthesize overlaying = _overlaying;
 
 - (instancetype)init {
   if (self = [super init]) {
+    _activationState = ActivationState::DEACTIVATED;
     _childCoordinators = [NSMutableSet set];
   }
   return self;
+}
+
+- (void)dealloc {
+  for (BrowserCoordinator* child in self.children) {
+    [self removeChildCoordinator:child];
+  }
+}
+
+#pragma mark - Accessors
+
+- (BOOL)isStarted {
+  return self.activationState == ActivationState::ACTIVATING ||
+         self.activationState == ActivationState::ACTIVATED;
+}
+
+- (void)setActivationState:(ActivationState)state {
+  if (_activationState == state)
+    return;
+  DCHECK_EQ(state, GetNextActivationState(_activationState))
+      << "Unexpected activation state.  Probably from calling |-stop| while"
+      << "ACTIVATING or |-start| while DEACTIVATING.";
+  _activationState = state;
+  if (_activationState == ActivationState::DEACTIVATED) {
+    [self viewControllerWasDeactivated];
+  } else if (_activationState == ActivationState::ACTIVATED) {
+    [self viewControllerWasActivated];
+  }
 }
 
 #pragma mark - Public API
@@ -44,27 +106,39 @@
 }
 
 - (void)start {
-  if (self.started) {
+  if (self.started)
     return;
-  }
-  self.started = YES;
+  self.activationState = ActivationState::ACTIVATING;
   [self.parentCoordinator childCoordinatorDidStart:self];
+  [self updateActivationStateAfterTransition];
 }
 
 - (void)stop {
-  if (!self.started) {
+  if (!self.started)
     return;
-  }
   [self.parentCoordinator childCoordinatorWillStop:self];
-  self.started = NO;
+  self.activationState = ActivationState::DEACTIVATING;
   for (BrowserCoordinator* child in self.children) {
     [child stop];
   }
+  [self updateActivationStateAfterTransition];
 }
 
-- (void)dealloc {
-  for (BrowserCoordinator* child in self.children) {
-    [self removeChildCoordinator:child];
+#pragma mark - Private
+
+- (void)updateActivationStateAfterTransition {
+  DCHECK(self.activationState == ActivationState::ACTIVATING ||
+         self.activationState == ActivationState::DEACTIVATING);
+  ActivationState nextState = GetNextActivationState(self.activationState);
+  id<UIViewControllerTransitionCoordinator> transitionCoordinator =
+      self.viewController.transitionCoordinator;
+  if (transitionCoordinator) {
+    [transitionCoordinator animateAlongsideTransition:nil
+                                           completion:^(id context) {
+                                             self.activationState = nextState;
+                                           }];
+  } else {
+    self.activationState = nextState;
   }
 }
 
@@ -161,6 +235,14 @@
 }
 
 - (void)childCoordinatorWillStop:(BrowserCoordinator*)childCoordinator {
+  // Default implementation is a no-op.
+}
+
+- (void)viewControllerWasActivated {
+  // Default implementation is a no-op.
+}
+
+- (void)viewControllerWasDeactivated {
   // Default implementation is a no-op.
 }
 

@@ -4,9 +4,13 @@
 
 #import "ios/clean/chrome/browser/ui/overlays/test_helpers/test_overlay_queue.h"
 
+#import "ios/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
+#import "ios/chrome/browser/ui/coordinators/browser_coordinator_test_util.h"
 #import "ios/clean/chrome/browser/ui/overlays/overlay_coordinator+internal.h"
 #import "ios/clean/chrome/browser/ui/overlays/overlay_coordinator.h"
 #import "ios/clean/chrome/browser/ui/overlays/test_helpers/test_overlay_parent_coordinator.h"
+#import "ios/testing/wait_util.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -15,13 +19,16 @@
 TestOverlayQueue::TestOverlayQueue()
     : OverlayQueue(), parent_([[TestOverlayParentCoordinator alloc] init]) {}
 
-void TestOverlayQueue::StartNextOverlay() {
-  [GetFirstOverlay() startOverlayingCoordinator:parent_];
-  OverlayWasStarted();
-}
-
 void TestOverlayQueue::AddOverlay(OverlayCoordinator* overlay) {
   OverlayQueue::AddOverlay(overlay);
+}
+
+void TestOverlayQueue::StartNextOverlay() {
+  OverlayCoordinator* overlay = GetFirstOverlay();
+  EXPECT_TRUE(overlay);
+  [overlay startOverlayingCoordinator:parent_];
+  OverlayWasStarted();
+  WaitForBrowserCoordinatorActivation(overlay);
 }
 
 void TestOverlayQueue::SetBrowser(Browser* browser) {
