@@ -8,17 +8,25 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
+#include "base/run_loop.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
+#include "chrome/browser/win/taskbar_icon_finder.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "chrome/installer/util/experiment.h"
+#include "chrome/installer/util/experiment_storage.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
+#include "ui/display/win/screen_win.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -117,35 +125,125 @@ std::unique_ptr<views::LabelButton> CreateWin10StyleButton(
 
 }  // namespace
 
+// TryChromeDialog::ModalShowDelegate ------------------------------------------
+
+// A delegate for use by the modal Show() function to update the experiment
+// state in the Windows registry and break out of the modal run loop upon
+// completion.
+class TryChromeDialog::ModalShowDelegate : public TryChromeDialog::Delegate {
+ public:
+  // Constructs the updater with a closure to be run after the dialog is closed
+  // to break out of the modal run loop.
+  explicit ModalShowDelegate(base::Closure quit_closure)
+      : quit_closure_(std::move(quit_closure)) {}
+  ~ModalShowDelegate() override = default;
+
+ protected:
+  // TryChromeDialog::Delegate:
+  void SetToastLocation(
+      installer::ExperimentMetrics::ToastLocation toast_location) override;
+  void SetExperimentState(installer::ExperimentMetrics::State state) override;
+  void InteractionComplete() override;
+
+ private:
+  base::Closure quit_closure_;
+  installer::ExperimentStorage storage_;
+
+  // The time at which the toast was shown; used for computing the action delay.
+  base::TimeTicks time_shown_;
+
+  DISALLOW_COPY_AND_ASSIGN(ModalShowDelegate);
+};
+
+void TryChromeDialog::ModalShowDelegate::SetToastLocation(
+    installer::ExperimentMetrics::ToastLocation toast_location) {
+  time_shown_ = base::TimeTicks::Now();
+
+  auto lock = storage_.AcquireLock();
+  installer::Experiment experiment;
+  if (lock->LoadExperiment(&experiment)) {
+    experiment.SetDisplayTime(base::Time::Now());
+    experiment.SetToastCount(experiment.toast_count() + 1);
+    experiment.SetToastLocation(toast_location);
+    // TODO(skare): SetUserSessionUptime
+    lock->StoreExperiment(experiment);
+  }
+}
+
+void TryChromeDialog::ModalShowDelegate::SetExperimentState(
+    installer::ExperimentMetrics::State state) {
+  auto lock = storage_.AcquireLock();
+  installer::Experiment experiment;
+  if (lock->LoadExperiment(&experiment)) {
+    experiment.SetActionDelay(base::TimeTicks::Now() - time_shown_);
+    experiment.SetState(state);
+    lock->StoreExperiment(experiment);
+  }
+}
+
+void TryChromeDialog::ModalShowDelegate::InteractionComplete() {
+  quit_closure_.Run();
+}
+
+// TryChromeDialog -------------------------------------------------------------
+
 // static
 TryChromeDialog::Result TryChromeDialog::Show(
     size_t group,
     ActiveModalDialogListener listener) {
   if (group >= arraysize(kExperiments)) {
-    // This is a test value. We want to make sure we exercise
-    // returning this early. See TryChromeDialogBrowserTest test.
+    // Exit immediately given bogus values; see TryChromeDialogBrowserTest test.
     return NOT_NOW;
   }
 
-  TryChromeDialog dialog(group);
-  return dialog.ShowDialog(std::move(listener), DialogType::MODAL,
-                           UsageType::FOR_CHROME);
+  base::RunLoop run_loop;
+  ModalShowDelegate delegate(run_loop.QuitWhenIdleClosure());
+  TryChromeDialog dialog(group, &delegate);
+
+  dialog.ShowDialogAsync();
+
+  if (listener) {
+    listener.Run(base::Bind(&TryChromeDialog::OnProcessNotification,
+                            base::Unretained(&dialog)));
+  }
+  run_loop.Run();
+  if (listener)
+    listener.Run(base::Closure());
+
+  return dialog.result();
 }
 
-TryChromeDialog::TryChromeDialog(size_t group)
-    : usage_type_(UsageType::FOR_CHROME),
-      group_(group),
-      popup_(nullptr),
-      result_(NOT_NOW) {}
+TryChromeDialog::TryChromeDialog(size_t group, Delegate* delegate)
+    : group_(group), delegate_(delegate) {
+  DCHECK_LT(group, arraysize(kExperiments));
+  DCHECK(delegate);
+}
 
-TryChromeDialog::~TryChromeDialog() {}
+TryChromeDialog::~TryChromeDialog() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
+}
 
-TryChromeDialog::Result TryChromeDialog::ShowDialog(
-    ActiveModalDialogListener listener,
-    DialogType dialog_type,
-    UsageType usage_type) {
-  usage_type_ = usage_type;
+void TryChromeDialog::ShowDialogAsync() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
 
+  // Get the bounding rectangle of Chrome's taskbar icon on the primary monitor.
+  FindTaskbarIcon(base::BindOnce(&TryChromeDialog::OnTaskbarIconRect,
+                                 base::Unretained(this)));
+}
+
+void TryChromeDialog::OnTaskbarIconRect(const gfx::Rect& icon_rect) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
+
+  // It's possible that a rendezvous from another browser process arrived while
+  // searching for the taskbar icon (see OnProcessNotification). In this case,
+  // report the DEFER result and bail out immediately.
+  if (result_ == OPEN_CHROME_DEFER) {
+    DCHECK_EQ(state_, installer::ExperimentMetrics::kOtherLaunch);
+    CompleteInteraction();
+    return;
+  }
+
+  // Create the popup.
   auto icon = base::MakeUnique<views::ImageView>();
   icon->SetImage(gfx::CreateVectorIcon(kInactiveToastLogoIcon, kHeaderColor));
   gfx::Size icon_size = icon->GetPreferredSize();
@@ -156,6 +254,7 @@ TryChromeDialog::Result TryChromeDialog::ShowDialog(
   params.bounds = gfx::Rect(kToastWidth, 120);
   popup_ = new views::Widget;
   popup_->Init(params);
+  popup_->AddObserver(this);
 
   views::View* root_view = popup_->GetRootView();
   root_view->SetBackground(views::CreateSolidBackground(kBackgroundColor));
@@ -256,105 +355,154 @@ TryChromeDialog::Result TryChromeDialog::ShowDialog(
 
   // Padding between buttons and the edge of the view is via the border.
   gfx::Size preferred = layout->GetPreferredSize(root_view);
-  gfx::Rect pos = ComputePopupBounds(preferred, base::i18n::IsRTL());
-  popup_->SetBounds(pos);
+
+  installer::ExperimentMetrics::ToastLocation location =
+      installer::ExperimentMetrics::kOverTaskbarPin;
+  gfx::Rect bounds = ComputePopupBoundsOverTaskbarIcon(preferred, icon_rect);
+  if (bounds.IsEmpty()) {
+    location = installer::ExperimentMetrics::kOverNotificationArea;
+    bounds = ComputePopupBoundsOverNoficationArea(preferred);
+  }
+
+  popup_->SetBounds(bounds);
   layout->Layout(root_view);
 
-  // Update pre-show stats.
-  time_shown_ = base::TimeTicks::Now();
-
-  if (usage_type_ == UsageType::FOR_CHROME) {
-    auto lock = storage_.AcquireLock();
-    installer::Experiment experiment;
-    if (lock->LoadExperiment(&experiment)) {
-      experiment.SetDisplayTime(base::Time::Now());
-      experiment.SetToastCount(experiment.toast_count() + 1);
-      // TODO(skare): SetToastLocation via checking pinned state.
-      // TODO(skare): SetUserSessionUptime
-      lock->StoreExperiment(experiment);
-    }
-  }
-
   popup_->Show();
-
-  if (dialog_type == DialogType::MODAL) {
-    if (listener) {
-      listener.Run(base::Bind(&TryChromeDialog::OnProcessNotification,
-                              base::Unretained(this)));
-    }
-    run_loop_.reset(new base::RunLoop);
-    run_loop_->Run();
-    if (listener)
-      listener.Run(base::Closure());
-  }
-
-  return result_;
+  delegate_->SetToastLocation(location);
 }
 
-void TryChromeDialog::CloseDialog(Result result,
-                                  installer::ExperimentMetrics::State state) {
-  // Exit early if somehow a second notification arrives.
-  if (!popup_)
-    return;
+gfx::Rect TryChromeDialog::ComputePopupBoundsOverTaskbarIcon(
+    const gfx::Size& size,
+    const gfx::Rect& icon_rect) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
 
-  // Record the result of the toast.
-  result_ = result;
+  // Was no taskbar icon found?
+  if (icon_rect.IsEmpty())
+    return icon_rect;
 
-  // Update post-action stats.
-  if (usage_type_ == UsageType::FOR_CHROME) {
-    auto lock = storage_.AcquireLock();
-    installer::Experiment experiment;
-    if (lock->LoadExperiment(&experiment)) {
-      base::TimeDelta action_delay = (base::TimeTicks::Now() - time_shown_);
-      experiment.SetActionDelay(action_delay);
-      experiment.SetState(state);
-      lock->StoreExperiment(experiment);
+  // Get the taskbar and its bounding rectangle (in DIP).
+  RECT temp_rect = {};
+  HWND taskbar = ::FindWindow(L"Shell_TrayWnd", nullptr);
+  if (!taskbar || !::GetWindowRect(taskbar, &temp_rect))
+    return gfx::Rect();
+  gfx::Rect taskbar_rect =
+      display::win::ScreenWin::ScreenToDIPRect(taskbar, gfx::Rect(temp_rect));
+
+  // The taskbar is always on the primary display.
+  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
+  const gfx::Rect& monitor_rect = display.bounds();
+
+  // Is the taskbar not on the primary display (e.g., is it hidden)?
+  if (!monitor_rect.Contains(taskbar_rect))
+    return gfx::Rect();
+
+  // Center the window over/under/next to the taskbar icon, offset by a bit.
+  static constexpr int kOffset = 11;
+  gfx::Rect result(size);
+
+  // Where is the taskbar? Assume that it's "wider" than it is "tall".
+  if (taskbar_rect.width() > taskbar_rect.height()) {
+    // Horizonal.
+    result.set_x(icon_rect.x() + icon_rect.width() / 2 - size.width() / 2);
+    if (taskbar_rect.y() < monitor_rect.y() + monitor_rect.height() / 2) {
+      // Top.
+      result.set_y(icon_rect.y() + icon_rect.height() + kOffset);
+    } else {
+      // Bottom.
+      result.set_y(icon_rect.y() - size.height() - kOffset);
+    }
+  } else {
+    // Vertical.
+    result.set_y(icon_rect.y() + icon_rect.height() / 2 - size.height() / 2);
+    if (taskbar_rect.x() < monitor_rect.x() + monitor_rect.width() / 2) {
+      // Left.
+      result.set_x(icon_rect.x() + icon_rect.width() + kOffset);
+    } else {
+      // Right.
+      result.set_x(icon_rect.x() - size.width() - kOffset);
     }
   }
 
-  // Close the dialog and quit the loop.
-  popup_->Close();
-  popup_ = nullptr;
-  if (run_loop_)
-    run_loop_->QuitWhenIdle();
+  // Make sure it doesn't spill out of the display's work area.
+  // TODO: If Chrome's icon is near the edge of the display, this could move
+  // the dialog off center. In this case, the arrow should stick to |icon_rect|
+  // rather than stay centered in |result|.
+  result.AdjustToFit(display.work_area());
+  return result;
+}
+
+gfx::Rect TryChromeDialog::ComputePopupBoundsOverNoficationArea(
+    const gfx::Size& size) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
+
+  const bool is_RTL = base::i18n::IsRTL();
+  const gfx::Rect work_area = popup_->GetWorkAreaBoundsInScreen();
+  return gfx::Rect(
+      is_RTL ? work_area.x() : work_area.right() - size.width(),
+      work_area.bottom() - size.height() - kHoverAboveTaskbarHeight,
+      size.width(), size.height());
+}
+
+void TryChromeDialog::CompleteInteraction() {
+  delegate_->SetExperimentState(state_);
+  delegate_->InteractionComplete();
 }
 
 void TryChromeDialog::OnProcessNotification() {
-  CloseDialog(OPEN_CHROME_DEFER, installer::ExperimentMetrics::kOtherLaunch);
-}
+  DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
 
-gfx::Rect TryChromeDialog::ComputePopupBounds(const gfx::Size& size,
-                                              bool is_RTL) {
-  gfx::Point origin;
-
-  gfx::Rect work_area = popup_->GetWorkAreaBoundsInScreen();
-  origin.set_x(is_RTL ? work_area.x() : work_area.right() - size.width());
-  origin.set_y(work_area.bottom() - size.height() - kHoverAboveTaskbarHeight);
-
-  return gfx::Rect(origin, size);
+  // Another browser process is trying to rendezvous with this one, which is
+  // either waiting on FindTaskbarIcon to complete or waiting on the user to
+  // interact with the dialog. In the former case, no attempt is made to stop
+  // the search, as it is expected to complete "quickly". When it does complete
+  // (in OnTaskbarIconRect), processing will complete tout de suite. In the
+  // latter case, the dialog is closed so that processing will continue in
+  // OnWidgetDestroyed. OPEN_CHROME_DEFER conveys to this browser process that
+  // it should ignore its own command line and instead handle that provided by
+  // the other browser process.
+  result_ = OPEN_CHROME_DEFER;
+  state_ = installer::ExperimentMetrics::kOtherLaunch;
+  if (popup_)
+    popup_->Close();
 }
 
 void TryChromeDialog::ButtonPressed(views::Button* sender,
                                     const ui::Event& event) {
-  Result result = NOT_NOW;
-  installer::ExperimentMetrics::State state =
-      installer::ExperimentMetrics::kUninitialized;
+  DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
+  DCHECK_EQ(result_, NOT_NOW);
 
+  // Ignore this press if another press or a rendezvous has already been
+  // registered.
+  if (state_ != installer::ExperimentMetrics::kOtherClose)
+    return;
+
+  // Figure out what the subsequent action and experiment state should be based
+  // on which button was pressed.
   switch (sender->tag()) {
     case static_cast<int>(ButtonTag::CLOSE_BUTTON):
-      state = installer::ExperimentMetrics::kSelectedClose;
+      state_ = installer::ExperimentMetrics::kSelectedClose;
       break;
     case static_cast<int>(ButtonTag::OK_BUTTON):
-      result = kExperiments[group_].result;
-      state = installer::ExperimentMetrics::kSelectedOpenChromeAndNoCrash;
+      result_ = kExperiments[group_].result;
+      state_ = installer::ExperimentMetrics::kSelectedOpenChromeAndNoCrash;
       break;
     case static_cast<int>(ButtonTag::NO_THANKS_BUTTON):
-      state = installer::ExperimentMetrics::kSelectedNoThanks;
+      state_ = installer::ExperimentMetrics::kSelectedNoThanks;
       break;
     default:
       NOTREACHED();
       break;
   }
 
-  CloseDialog(result, state);
+  popup_->Close();
+}
+
+void TryChromeDialog::OnWidgetDestroyed(views::Widget* widget) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
+  DCHECK_EQ(widget, popup_);
+
+  popup_->RemoveObserver(this);
+  popup_ = nullptr;
+
+  CompleteInteraction();
 }

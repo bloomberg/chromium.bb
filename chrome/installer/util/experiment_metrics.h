@@ -76,6 +76,9 @@ struct ExperimentMetrics {
     // Another Chrome launch closed the toast.
     kOtherLaunch = 16,
 
+    // The toast was closed via external means.
+    kOtherClose = 17,
+
     NUM_STATES
   };
 

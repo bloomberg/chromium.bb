@@ -5,11 +5,20 @@
 #ifndef CHROME_BROWSER_WIN_TASKBAR_ICON_FINDER_H_
 #define CHROME_BROWSER_WIN_TASKBAR_ICON_FINDER_H_
 
-#include "ui/gfx/geometry/rect.h"
+#include "base/callback.h"
 
-// Finds the bounding rectangle of Chrome's taskbar icon on the primary monitor.
-// Returns an empty rect in case of error or if no icon can be found. This is a
-// blocking call.
-gfx::Rect FindTaskbarIconModal();
+namespace gfx {
+class Rect;
+}
+
+// The result of a search for Chrome's taskbar icon. An empty rect is provided
+// in case of error or if no icon can be found.
+using TaskbarIconFinderResultCallback =
+    base::OnceCallback<void(const gfx::Rect&)>;
+
+// Asynchronosuly finds the bounding rectangle of Chrome's taskbar icon on the
+// primary monitor, running |result_callback| with the result (in DIP) when
+// done.
+void FindTaskbarIcon(TaskbarIconFinderResultCallback result_callback);
 
 #endif  // CHROME_BROWSER_WIN_TASKBAR_ICON_FINDER_H_
