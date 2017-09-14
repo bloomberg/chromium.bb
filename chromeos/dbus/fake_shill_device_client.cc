@@ -634,7 +634,7 @@ void FakeShillDeviceClient::NotifyObserversPropertyChanged(
   base::DictionaryValue* dict = NULL;
   std::string path = device_path.value();
   if (!stub_devices_.GetDictionaryWithoutPathExpansion(path, &dict)) {
-    LOG(ERROR) << "Notify for unknown service: " << path;
+    LOG(ERROR) << "Notify for unknown device: " << path;
     return;
   }
   base::Value* value = NULL;
