@@ -1,0 +1,9 @@
+Tests that resources panel correctly shows mime type when it loads data from memory cache.
+
+Bug 63701 
+image text/html http://127.0.0.1:8000/devtools/devtools/resource-tree/resources/empty.png
+stylesheet text/html http://127.0.0.1:8000/devtools/devtools/resource-tree/resources/styles-initial.css
+document text/html http://127.0.0.1:8000/devtools/startup/resource-tree/resource-tree-mimetype.html
+script application/x-javascript http://127.0.0.1:8000/inspector/inspector-test.js
+script application/x-javascript http://127.0.0.1:8000/inspector/resource-tree/resource-tree-test.js
+
