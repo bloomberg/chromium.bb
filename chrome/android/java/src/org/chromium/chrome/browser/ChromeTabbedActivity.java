@@ -120,7 +120,6 @@ import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.chrome.browser.widget.ViewHighlighter;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetMetrics;
 import org.chromium.chrome.browser.widget.emptybackground.EmptyBackgroundViewWrapper;
 import org.chromium.chrome.browser.widget.textbubble.ViewAnchoredTextBubble;
 import org.chromium.components.feature_engagement.EventConstants;
@@ -1152,9 +1151,8 @@ public class ChromeTabbedActivity
                             && (tabOpenType == TabOpenType.CLOBBER_CURRENT_TAB
                                        || tabOpenType == TabOpenType.OPEN_NEW_TAB
                                        || tabOpenType == TabOpenType.OPEN_NEW_INCOGNITO_TAB);
-                    getBottomSheet().getBottomSheetMetrics().setSheetCloseReason(
-                            BottomSheetMetrics.CLOSED_BY_NAVIGATION);
-                    getBottomSheet().setSheetState(BottomSheet.SHEET_STATE_PEEK, animateSheetClose);
+                    getBottomSheet().setSheetState(BottomSheet.SHEET_STATE_PEEK, animateSheetClose,
+                            StateChangeReason.NAVIGATION);
                 }
             }
 

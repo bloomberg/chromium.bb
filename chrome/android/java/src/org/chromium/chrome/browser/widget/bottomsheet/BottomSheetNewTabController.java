@@ -206,7 +206,7 @@ public class BottomSheetNewTabController extends EmptyBottomSheetObserver {
     }
 
     @Override
-    public void onSheetClosed() {
+    public void onSheetClosed(@StateChangeReason int reason) {
         if (!mIsShowingNewTabUi) return;
 
         mIsShowingNewTabUi = false;

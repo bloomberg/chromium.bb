@@ -73,7 +73,7 @@ public class BottomToolbarPhone extends ToolbarPhone {
         }
 
         @Override
-        public void onSheetClosed() {
+        public void onSheetClosed(@StateChangeReason int reason) {
             if (!mUseModernDesign) {
                 mToolbarShadowPermanentlyHidden = true;
             }

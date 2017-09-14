@@ -118,7 +118,7 @@ public class BottomSheetContentController extends BottomNavigationView
         }
 
         @Override
-        public void onSheetClosed() {
+        public void onSheetClosed(@StateChangeReason int reason) {
             if (mSelectedItemId != 0 && mSelectedItemId != R.id.action_home) {
                 showBottomSheetContent(R.id.action_home);
             } else {

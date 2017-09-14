@@ -411,10 +411,7 @@ public class BottomSheet
             @SheetState
             int targetState = getTargetSheetState(
                     getSheetOffsetFromBottom() + getFlingDistance(-velocityY), -velocityY);
-            if (targetState == SHEET_STATE_PEEK) {
-                mMetrics.setSheetCloseReason(BottomSheetMetrics.CLOSED_BY_SWIPE);
-            }
-            setSheetState(targetState, true);
+            setSheetState(targetState, true, StateChangeReason.SWIPE);
             mIsScrolling = false;
 
             return true;
@@ -550,8 +547,7 @@ public class BottomSheet
         }
 
         if (getSheetState() != SHEET_STATE_PEEK) {
-            getBottomSheetMetrics().setSheetCloseReason(BottomSheetMetrics.CLOSED_BY_BACK_PRESS);
-            setSheetState(SHEET_STATE_PEEK, true);
+            setSheetState(SHEET_STATE_PEEK, true, StateChangeReason.BACK_PRESS);
         }
 
         return consumeEvent;
@@ -644,11 +640,7 @@ public class BottomSheet
                 float currentVelocity = -mVelocityTracker.getYVelocity();
                 @SheetState
                 int targetState = getTargetSheetState(getSheetOffsetFromBottom(), currentVelocity);
-
-                if (targetState == SHEET_STATE_PEEK) {
-                    mMetrics.setSheetCloseReason(BottomSheetMetrics.CLOSED_BY_SWIPE);
-                }
-                setSheetState(targetState, true);
+                setSheetState(targetState, true, StateChangeReason.SWIPE);
             }
         }
 
@@ -910,8 +902,7 @@ public class BottomSheet
         }
 
         // In all non-native cases, minimize the sheet.
-        mMetrics.setSheetCloseReason(BottomSheetMetrics.CLOSED_BY_NAVIGATION);
-        setSheetState(SHEET_STATE_PEEK, true);
+        setSheetState(SHEET_STATE_PEEK, true, StateChangeReason.NAVIGATION);
 
         return tabLoadStatus;
     }
@@ -1152,8 +1143,9 @@ public class BottomSheet
 
     /**
      * A notification that the sheet has returned to the peeking state.
+     * @param reason The {@link StateChangeReason} that the sheet was closed, if any.
      */
-    private void onSheetClosed() {
+    private void onSheetClosed(@StateChangeReason int reason) {
         if (!mIsSheetOpen) return;
         mBottomSheetContentContainer.setVisibility(View.INVISIBLE);
         mBackButtonDismissesChrome = false;
@@ -1163,7 +1155,7 @@ public class BottomSheet
         mFullscreenManager.getBrowserVisibilityDelegate().hideControlsPersistent(
                 mPersistentControlsToken);
 
-        for (BottomSheetObserver o : mObservers) o.onSheetClosed();
+        for (BottomSheetObserver o : mObservers) o.onSheetClosed(reason);
         announceForAccessibility(getResources().getString(R.string.bottom_sheet_closed));
         clearFocus();
         mActivity.removeViewObscuringAllTabs(this);
@@ -1452,7 +1444,7 @@ public class BottomSheet
         }
 
         if (state == SHEET_STATE_PEEK) {
-            onSheetClosed();
+            onSheetClosed(reason);
         } else {
             onSheetOpened(reason);
         }
@@ -1560,8 +1552,7 @@ public class BottomSheet
 
     @Override
     public void onFadingViewClick() {
-        mMetrics.setSheetCloseReason(BottomSheetMetrics.CLOSED_BY_TAP_SCRIM);
-        setSheetState(SHEET_STATE_PEEK, true);
+        setSheetState(SHEET_STATE_PEEK, true, StateChangeReason.TAP_SCRIM);
     }
 
     @Override

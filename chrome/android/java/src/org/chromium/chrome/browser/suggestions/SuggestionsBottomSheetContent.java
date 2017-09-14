@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetNewTabController;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
@@ -172,8 +173,8 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
             }
 
             @Override
-            public void onSheetClosed() {
-                super.onSheetClosed();
+            public void onSheetClosed(@StateChangeReason int reason) {
+                super.onSheetClosed(reason);
                 mRecyclerView.setAdapter(null);
                 updateLogoTransition();
             }

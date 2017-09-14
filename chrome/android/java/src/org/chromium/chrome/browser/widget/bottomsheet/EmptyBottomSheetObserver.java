@@ -15,7 +15,7 @@ public class EmptyBottomSheetObserver implements BottomSheetObserver {
     public void onSheetOpened(@StateChangeReason int reason) {}
 
     @Override
-    public void onSheetClosed() {}
+    public void onSheetClosed(@StateChangeReason int reason) {}
 
     @Override
     public void onSheetReleased() {}
