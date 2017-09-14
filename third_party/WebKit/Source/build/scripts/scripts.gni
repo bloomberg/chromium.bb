@@ -123,7 +123,7 @@ template("process_json5_files") {
       args += invoker.other_args
     }
     if (snake_case_source_files) {
-      args += [ "--snake-case-input-files" ]
+      args += [ "--snake-case-source-files" ]
     }
 
     if (defined(invoker.deps)) {
