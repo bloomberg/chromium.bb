@@ -199,7 +199,6 @@ class LinkageTest(image_test_lib.ImageTestCase):
   def TestLinkage(self):
     """Find main executable binaries and check their linkage."""
     binaries = [
-        'boot/vmlinuz',
         'bin/sed',
     ]
 
