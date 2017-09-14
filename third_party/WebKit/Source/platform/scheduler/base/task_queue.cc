@@ -14,11 +14,12 @@ TaskQueue::TaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl)
 
 TaskQueue::~TaskQueue() {}
 
-TaskQueue::Task::Task(const base::Location& posted_from,
-                      base::OnceClosure task,
-                      base::TimeTicks desired_run_time,
-                      bool nestable)
-    : PendingTask(posted_from, std::move(task), desired_run_time, nestable) {}
+TaskQueue::Task::Task(TaskQueue::PostedTask task,
+                      base::TimeTicks desired_run_time)
+    : PendingTask(task.posted_from,
+                  std::move(task.callback),
+                  desired_run_time,
+                  task.nestable) {}
 
 TaskQueue::PostedTask::PostedTask(base::OnceClosure callback,
                                   base::Location posted_from,
