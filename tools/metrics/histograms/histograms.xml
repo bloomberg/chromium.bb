@@ -70373,6 +70373,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sdch3.Advertisement_Count">
+  <obsolete>
+    Deprecated 2017-9.
+  </obsolete>
   <owner>rdsmith@chromium.org</owner>
   <summary>
     The number of dictionaries advertised in an HTTP GET transaction that
@@ -70381,6 +70384,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sdch3.BlacklistReason" enum="SdchProblemCode">
+  <obsolete>
+    Deprecated 2017-9.
+  </obsolete>
   <owner>rdsmith@chromium.org</owner>
   <summary>
     The reason why a blacklist blocking a request from advertising SDCH was
@@ -70389,6 +70395,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sdch3.Dictionary size loaded" units="bytes">
+  <obsolete>
+    Deprecated 2017-9.
+  </obsolete>
   <owner>rdsmith@chromium.org</owner>
   <summary>
     Each sample is the byte count for a dictionary that is loaded by Chrome. A
@@ -70399,7 +70408,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sdch3.DictionaryFate" enum="SdchDictionaryFate">
-  <owner>rdsmith@chromium.org&gt;</owner>
+  <obsolete>
+    Deprecated 2017-9.
+  </obsolete>
+  <owner>rdsmith@chromium.org</owner>
   <summary>
     The fate, both on input and output, of dictionary requests.  There is
     intended to be two entries in this histogram for each Get-Dictionary seen
@@ -70408,6 +70420,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sdch3.DictionaryUseCount">
+  <obsolete>
+    Deprecated 2017-9.
+  </obsolete>
   <owner>rdsmith@chromium.org</owner>
   <summary>
     The number of times a dictionary has been successfully used for decoding,
@@ -70442,6 +70457,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sdch3.Experiment3_Decode">
+  <obsolete>
+    Deprecated 2017-9.
+  </obsolete>
   <owner>rdsmith@chromium.org</owner>
   <summary>
     Duration in time from the first byte of a request was received, until all
@@ -70452,6 +70470,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sdch3.Experiment3_Holdback">
+  <obsolete>
+    Deprecated 2017-9.
+  </obsolete>
   <owner>rdsmith@chromium.org</owner>
   <summary>
     Duration in time from the first byte of a request was received, until all
@@ -70589,6 +70610,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sdch3.FirstUseInterval" units="ms">
+  <obsolete>
+    Deprecated 2017-9.
+  </obsolete>
   <owner>rdsmith@chromium.org</owner>
   <summary>
     The amount of time between creation/load of an SDCH dictionary and its first
@@ -70680,6 +70704,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sdch3.Network_Decode_Bytes_Processed_b" units="bytes">
+  <obsolete>
+    Deprecated 2017-9.
+  </obsolete>
   <owner>rdsmith@chromium.org</owner>
   <summary>
     The number of bytes processed (received over the net or from cache) by the
@@ -70850,6 +70877,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sdch3.NetworkBytesSpent" units="bytes">
+  <obsolete>
+    Deprecated 2017-9.
+  </obsolete>
   <owner>ellyjones@chromium.org</owner>
   <summary>
     Absolute sizes, in bytes, of SDCH dictionaries fetched over the network.
@@ -70899,6 +70929,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Sdch3.PersistenceFailureReason"
     enum="SdchPersistenceFailureReason">
+  <obsolete>
+    Deprecated 2017-9.
+  </obsolete>
   <owner>rdsmith@chromium.org</owner>
   <summary>
     Tracks failures that occur when reading in or writing out persisted
@@ -70923,12 +70956,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sdch3.ProblemCodes_5" enum="SdchProblemCode">
+  <obsolete>
+    Deprecated 2017-9.
+  </obsolete>
   <owner>rdsmith@chromium.org</owner>
   <summary>Each sample is the report of a distinct problem code.</summary>
 </histogram>
 
 <histogram name="Sdch3.ResponseCorruptionDetection.Cached"
     enum="SdchResponseCorruptionDetectionCauses">
+  <obsolete>
+    Deprecated 2017-9.
+  </obsolete>
   <owner>rdsmith@chromium.org</owner>
   <summary>
     Attempted SDCH decoding can fail at the Read() filter processing stage.  In
@@ -70940,6 +70979,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Sdch3.ResponseCorruptionDetection.Uncached"
     enum="SdchResponseCorruptionDetectionCauses">
+  <obsolete>
+    Deprecated 2017-9.
+  </obsolete>
   <owner>rdsmith@chromium.org</owner>
   <summary>
     Attempted SDCH decoding can fail at the Read() filter processing stage.  In
@@ -70950,6 +70992,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sdch3.TimeWeightedMemoryUse" units="bytes">
+  <obsolete>
+    Deprecated 2017-9.
+  </obsolete>
   <owner>ellyjones@chromium.org</owner>
   <summary>
     Measures the time-weighted memory use of SDCH dictionaries, in bytes. The
@@ -71022,6 +71067,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sdch3.UsageInterval2" units="ms">
+  <obsolete>
+    Deprecated 2017-9.
+  </obsolete>
   <owner>rdsmith@chromium.org</owner>
   <summary>
     The amount of time from the last time an SDCH dictionary was used.  Not
@@ -95723,6 +95771,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram_suffixes>
 
 <histogram_suffixes name="GlobalSdch" separator="_">
+  <obsolete>
+    Deprecated 2017-9.
+  </obsolete>
   <suffix name="global_disable_sdch" label="with SDCH completely disabled"/>
   <suffix name="global_enable_sdch"
       label="with SDCH support for applicable sites"/>
