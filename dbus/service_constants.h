@@ -124,6 +124,14 @@ const char kLivenessServiceInterface[] =
     "org.chromium.LivenessServiceInterface";
 const char kLivenessServiceCheckLivenessMethod[] = "CheckLiveness";
 
+const char kComponentUpdaterServiceName[] =
+    "org.chromium.ComponentUpdaterService";
+const char kComponentUpdaterServicePath[] =
+    "/org/chromium/ComponentUpdaterService";
+const char kComponentUpdaterServiceInterface[] =
+    "org.chromium.ComponentUpdaterService";
+const char kComponentUpdaterServiceLoadComponentMethod[] = "LoadComponent";
+
 const char kKioskAppServiceName[] = "org.chromium.KioskAppService";
 const char kKioskAppServicePath[] = "/org/chromium/KioskAppService";
 const char kKioskAppServiceInterface[] =
