@@ -146,7 +146,7 @@ static int kgsl_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_star
 		ibdesc.gpuaddr = kgsl_ring->bo->gpuaddr;
 		ibdesc.hostptr = kgsl_ring->bo->hostptr;
 		ibdesc.sizedwords = 0x145;
-		req.timestamp = (uint32_t)kgsl_ring->bo->hostptr;
+		req.timestamp = (uintptr_t)kgsl_ring->bo->hostptr;
 	}
 
 	do {
