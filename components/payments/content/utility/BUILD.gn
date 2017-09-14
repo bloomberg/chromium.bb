@@ -44,3 +44,15 @@ fuzzer_test("payment_method_manifest_fuzzer") {
   dict = "payment_manifest_json.dict"
   seed_corpus = "payment_method_manifest_fuzzer_corpus"
 }
+
+fuzzer_test("fingerprint_fuzzer") {
+  sources = [
+    "fingerprint_parser_fuzzer.cc",
+  ]
+  deps = [
+    ":utility",
+    "//base",
+  ]
+  dict = "fingerprint_fuzzer.dict"
+  seed_corpus = "fingerprint_fuzzer_corpus"
+}
