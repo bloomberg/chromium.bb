@@ -26,8 +26,6 @@ class VrMetricsUtil {
                                            const VrCoreInfo& vr_core_info);
   static void LogVrViewerType(gvr::ViewerType viewer_type);
 
-  static void LogUiSuppression(vr::UiSuppressedElement element);
-
  private:
   static ViewerType GetVrViewerType(gvr::ViewerType viewer_type);
 

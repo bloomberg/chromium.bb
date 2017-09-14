@@ -70,12 +70,6 @@ void VrMetricsUtil::LogVrViewerType(gvr::ViewerType viewer_type) {
                             static_cast<int>(ViewerType::VIEWER_TYPE_MAX));
 }
 
-/* static */
-void VrMetricsUtil::LogUiSuppression(vr::UiSuppressedElement element) {
-  UMA_HISTOGRAM_ENUMERATION("VR.Shell.EncounteredSuppressedUI", element,
-                            vr::UiSuppressedElement::kCount);
-}
-
 ViewerType VrMetricsUtil::GetVrViewerType(gvr::ViewerType viewer_type) {
   switch (viewer_type) {
     case gvr::ViewerType::GVR_VIEWER_TYPE_DAYDREAM:
