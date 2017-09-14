@@ -753,7 +753,6 @@ _waterfall_config_map = {
         'arm-generic-full',
         'daisy-full',
         'oak-full',
-        'x86-generic-full',
         'lakitu-full',
 
         # ASAN
@@ -2675,13 +2674,6 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       boards=['beaglebone'],
       trybot_list=True,
       description='Incremental Beaglebone Builder',
-  )
-
-  site_config.Add(
-      'x86-generic-incremental',
-      site_config.templates.incremental,
-      board_configs['x86-generic'],
-      active_waterfall=waterfall.WATERFALL_EXTERNAL,
   )
 
   # Build external source, for an internal board.

@@ -266,8 +266,6 @@ daisy-incremental (gce_beefy)
 lakitu-full (baremetal)
 oak-full (gce_beefy)
 tatl-paladin (gce_beefy)
-x86-generic-full (baremetal)
-x86-generic-incremental (baremetal)
 
 == chromiumos.tryserver ==
 amd64-generic-cheets-compile-only-pre-cq (gce_beefy)

@@ -29387,7 +29387,6 @@
     },
     "x86-generic-full": {
         "_template": "full",
-        "active_waterfall": "chromiumos",
         "boards": [
             "x86-generic"
         ],
@@ -29396,14 +29395,6 @@
         "useflags": [
             "-chrome_internal"
         ]
-    },
-    "x86-generic-incremental": {
-        "_template": "incremental",
-        "active_waterfall": "chromiumos",
-        "boards": [
-            "x86-generic"
-        ],
-        "buildslave_type": "baremetal"
     },
     "x86-generic-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
