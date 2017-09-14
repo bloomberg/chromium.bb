@@ -13,7 +13,6 @@
 #include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
 #include "base/compiler_specific.h"
-#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -44,9 +43,6 @@ class TabletModeControllerTest;
 class TabletModeObserver;
 class TabletModeWindowManager;
 class TabletModeWindowManagerTest;
-
-// Auto hides title bars in tablet mode.
-ASH_EXPORT extern const base::Feature kAutoHideTitleBarsInTabletMode;
 
 // TabletModeController listens to accelerometer events and automatically
 // enters and exits tablet mode when the lid is opened beyond the triggering
