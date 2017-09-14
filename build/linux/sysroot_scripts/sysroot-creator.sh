@@ -49,6 +49,7 @@ readonly HAS_ARCH_I386=${HAS_ARCH_I386:=0}
 readonly HAS_ARCH_ARM=${HAS_ARCH_ARM:=0}
 readonly HAS_ARCH_ARM64=${HAS_ARCH_ARM64:=0}
 readonly HAS_ARCH_MIPS=${HAS_ARCH_MIPS:=0}
+readonly HAS_ARCH_MIPS64EL=${HAS_ARCH_MIPS64EL:=0}
 
 readonly REQUIRED_TOOLS="curl gunzip"
 
@@ -65,6 +66,8 @@ readonly DEBIAN_DEP_LIST_I386="packagelist.${DIST}.i386"
 readonly DEBIAN_DEP_LIST_ARM="packagelist.${DIST}.arm"
 readonly DEBIAN_DEP_LIST_ARM64="packagelist.${DIST}.arm64"
 readonly DEBIAN_DEP_LIST_MIPS="packagelist.${DIST}.mipsel"
+readonly DEBIAN_DEP_LIST_MIPS64EL="packagelist.${DIST}.mips64el"
+
 
 ######################################################################
 # Helper
@@ -117,6 +120,9 @@ SetEnvironmentVariables() {
   echo $1 | grep -qs Amd64$ && ARCH=AMD64
   if [ -z "$ARCH" ]; then
     echo $1 | grep -qs I386$ && ARCH=I386
+  fi
+  if [ -z "$ARCH" ]; then
+    echo $1 | grep -qs Mips64el$ && ARCH=MIPS64EL
   fi
   if [ -z "$ARCH" ]; then
     echo $1 | grep -qs Mips$ && ARCH=MIPS
@@ -249,6 +255,11 @@ GeneratePackageListMips() {
   GeneratePackageListCommon "$1" mipsel "${DEBIAN_PACKAGES}"
 }
 
+GeneratePackageListMips64el() {
+  GeneratePackageListCommon "$1" mips64el "${DEBIAN_PACKAGES}
+  ${DEBIAN_PACKAGES_MIPS64EL:=}"
+}
+
 StripChecksumsFromPackageList() {
   local package_file="$1"
   sed -i 's/ [a-f0-9]\{64\}$//' "$package_file"
@@ -364,6 +375,26 @@ HacksAndPatchesMips() {
   SubBanner "Move pkgconfig files"
   mkdir -p ${INSTALL_ROOT}/usr/lib/pkgconfig
   mv ${INSTALL_ROOT}/usr/lib/mipsel-linux-gnu/pkgconfig/* \
+      ${INSTALL_ROOT}/usr/lib/pkgconfig
+}
+
+
+HacksAndPatchesMips64el() {
+  Banner "Misc Hacks & Patches"
+  # these are linker scripts with absolute pathnames in them
+  # which we rewrite here
+  lscripts="${INSTALL_ROOT}/usr/lib/mips64el-linux-gnuabi64/libpthread.so \
+            ${INSTALL_ROOT}/usr/lib/mips64el-linux-gnuabi64/libc.so"
+
+  # Rewrite linker scripts
+  sed -i -e 's|/usr/lib/mips64el-linux-gnuabi64/||g' ${lscripts}
+  sed -i -e 's|/lib/mips64el-linux-gnuabi64/||g' ${lscripts}
+
+  # This is for chrome's ./build/linux/pkg-config-wrapper
+  # which overwrites PKG_CONFIG_LIBDIR internally
+  SubBanner "Move pkgconfig files"
+  mkdir -p ${INSTALL_ROOT}/usr/lib/pkgconfig
+  mv ${INSTALL_ROOT}/usr/lib/mips64el-linux-gnuabi64/pkgconfig/* \
       ${INSTALL_ROOT}/usr/lib/pkgconfig
 }
 
@@ -544,6 +575,27 @@ BuildSysrootMips() {
   CreateTarBall
 }
 
+
+#@
+#@ BuildSysrootMips64el
+#@
+#@    Build everything and package it
+BuildSysrootMips64el() {
+  if [ "$HAS_ARCH_MIPS64EL" = "0" ]; then
+    return
+  fi
+  ClearInstallDir
+  local package_file="$BUILD_DIR/package_with_sha256sum_mips64el"
+  GeneratePackageListMips64el "$package_file"
+  local files_and_sha256sums="$(cat ${package_file})"
+  StripChecksumsFromPackageList "$package_file"
+  VerifyPackageFilesMatch "$package_file" "$DEBIAN_DEP_LIST_MIPS64EL"
+  InstallIntoSysroot ${files_and_sha256sums}
+  CleanupJailSymlinks
+  HacksAndPatchesMips64el
+  CreateTarBall
+}
+
 #@
 #@ BuildSysrootAll
 #@
@@ -554,6 +606,7 @@ BuildSysrootAll() {
   RunCommand BuildSysrootARM
   RunCommand BuildSysrootARM64
   RunCommand BuildSysrootMips
+  RunCommand BuildSysrootMips64el
 }
 
 UploadSysroot() {
@@ -619,6 +672,16 @@ UploadSysrootMips() {
 }
 
 #@
+#@ UploadSysrootMips64el <revision>
+#@
+UploadSysrootMips64el() {
+  if [ "$HAS_ARCH_MIPS64EL" = "0" ]; then
+    return
+  fi
+  UploadSysroot "$@"
+}
+
+#@
 #@ UploadSysrootAll <revision>
 #@
 #@    Upload sysroot image for all architectures
@@ -628,6 +691,8 @@ UploadSysrootAll() {
   RunCommand UploadSysrootARM "$@"
   RunCommand UploadSysrootARM64 "$@"
   RunCommand UploadSysrootMips "$@"
+  RunCommand UploadSysrootMips64el "$@"
+
 }
 
 #
@@ -779,6 +844,20 @@ UpdatePackageListsMips() {
   StripChecksumsFromPackageList "$DEBIAN_DEP_LIST_MIPS"
 }
 
+
+#@
+#@ UpdatePackageListsMips64el
+#@
+#@     Regenerate the package lists such that they contain an up-to-date
+#@     list of URLs within the Debian archive. (For mips64el)
+UpdatePackageListsMips64el() {
+  if [ "$HAS_ARCH_MIPS64EL" = "0" ]; then
+    return
+  fi
+  GeneratePackageListMips64el "$DEBIAN_DEP_LIST_MIPS64EL"
+  StripChecksumsFromPackageList "$DEBIAN_DEP_LIST_MIPS64EL"
+}
+
 #@
 #@ UpdatePackageListsAll
 #@
@@ -789,6 +868,7 @@ UpdatePackageListsAll() {
   RunCommand UpdatePackageListsARM
   RunCommand UpdatePackageListsARM64
   RunCommand UpdatePackageListsMips
+  RunCommand UpdatePackageListsMips64el
 }
 
 #@
@@ -810,6 +890,9 @@ PrintArchitectures() {
   fi
   if [ "$HAS_ARCH_MIPS" = "1" ]; then
     echo Mips
+  fi
+  if [ "$HAS_ARCH_MIPS64EL" = "1" ]; then
+    echo Mips64el
   fi
 }
 
