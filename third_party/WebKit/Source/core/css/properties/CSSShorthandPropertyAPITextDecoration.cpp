@@ -5,6 +5,7 @@
 #include "core/css/properties/CSSShorthandPropertyAPITextDecoration.h"
 #include "core/StylePropertyShorthand.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 

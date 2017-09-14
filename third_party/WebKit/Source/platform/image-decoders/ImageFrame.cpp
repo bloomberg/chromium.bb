@@ -26,6 +26,7 @@
 
 #include "platform/image-decoders/ImageFrame.h"
 
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/image-decoders/ImageDecoder.h"
 

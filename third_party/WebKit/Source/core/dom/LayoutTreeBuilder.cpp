@@ -41,6 +41,7 @@
 #include "core/layout/LayoutText.h"
 #include "core/layout/LayoutView.h"
 #include "core/svg/SVGElement.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 
